@@ -1,0 +1,10 @@
+{
+    "packages": [
+        "packages/eslint-config",
+        "packages/api",
+        "packages/fx-core",
+        "packages/sdk",
+        "packages/commonlib"
+    ],
+    "version": "independent"
+}

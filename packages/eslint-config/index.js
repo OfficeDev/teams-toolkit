@@ -6,7 +6,7 @@ module.exports = {
     },
     parserOptions: {
         ecmaVersion: 2018,
-        sourceType: 'module',
+        sourceType: "module",
     },
     extends: [
         "plugin:@typescript-eslint/recommended"
@@ -16,6 +16,6 @@ module.exports = {
     ],
     rules: {
         quotes: ["error", "double", { "allowTemplateLiterals": true }],
-        semi: ['error', 'always'],
+        semi: ["error", "always"],
     },
 };

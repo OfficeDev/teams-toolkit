@@ -1,0 +1,10 @@
+{
+  "name": "@shared/eslint-config",
+  "version": "0.0.0",
+  "description": "Shared ESLint configuration",
+  "private": true,
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.19.0",
+    "@typescript-eslint/parser": "^4.19.0"
+  }
+}

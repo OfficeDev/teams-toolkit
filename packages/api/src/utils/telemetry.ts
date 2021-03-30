@@ -46,4 +46,39 @@ export interface TelemetryReporter {
         measurements?: { [key: string]: number },
     ): void;
 }
- 
+
+/**
+ *  Proxy of telemetry reporter to enhance reporter for plugins with some plugin-common ability in the way plugins are not aware of it.
+ */
+ export class PluginTelemetryReporter implements TelemetryReporter {
+    private readonly reporter: TelemetryReporter;
+    private readonly pluginName: string;
+
+    constructor(reporter: TelemetryReporter, pluginName: string) {
+        this.reporter = reporter;
+        this.pluginName = pluginName;
+    }
+
+    sendTelemetryEvent(eventName: string, properties = {} as Record<string, string>, measurements?: { [p: string]: number }): void {
+        this.addPluginProps(properties);
+        this.reporter.sendTelemetryEvent(this.pluginify(eventName), properties, measurements);
+    }
+
+    sendTelemetryErrorEvent(eventName: string, properties = {} as Record<string, string>, measurements?: { [p: string]: number }, errorProps?: string[]): void {
+        this.addPluginProps(properties);
+        this.reporter.sendTelemetryErrorEvent(this.pluginify(eventName), properties, measurements, errorProps);
+    }
+
+    sendTelemetryException(error: Error, properties = {} as Record<string, string>, measurements?: { [p: string]: number }): void {
+        this.addPluginProps(properties);
+        this.reporter.sendTelemetryException(error, properties, measurements);
+    }
+
+    private addPluginProps(properties: { [key: string]: string }) {
+        properties.pluginName = this.pluginName;
+    }
+
+    private pluginify(eventName: string): string {
+        return this.pluginName + "-" + eventName;
+    }
+}

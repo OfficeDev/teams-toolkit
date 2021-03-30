@@ -1,6 +1,7 @@
 {
   "name": "teamsfx",
   "scripts": {
+    "setup": "npm install && npm run bootstrap",
     "bootstrap": "lerna bootstrap",
     "lint:staged": "lerna run lint:staged --stream",
     "lint": "lerna run lint --stream"

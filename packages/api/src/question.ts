@@ -127,7 +127,7 @@ export interface ValidationResult {
 }
 
 export interface BaseQuestion {
-    name: string; //question name, suggest to be consistent with MODS config name
+    name: string; //question name, suggest to be consistent with config name
     description?: string;
     validation?: Validation;
     value?: any;

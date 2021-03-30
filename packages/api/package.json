@@ -28,7 +28,6 @@
     "test": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/**/*.ts"
   },
   "devDependencies": {
-    "@azure/eslint-plugin-azure-sdk": "^2.0.1",
     "@shared/eslint-config": "^0.0.0",
     "@types/chai": "^4.2.14",
     "@types/chai-as-promised": "^7.1.3",

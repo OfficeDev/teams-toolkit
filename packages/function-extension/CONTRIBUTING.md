@@ -1,6 +1,6 @@
 # Contributing
 
-Welcome and thank you for your interest in contributing to **Microsoft.Azure.WebJobs.Extensions.TeamsFx**! Before contributing to this project, please review this document for policies and procedures which will ease the contribution and review process for everyone. If you have questions, please contact **dilin@microsoft.com**. This project adopted Inner Source [model](https://oe-documentation.azurewebsites.net/inner-source/index.html).
+Welcome and thank you for your interest in contributing to **Microsoft.Azure.WebJobs.Extensions.TeamsFx**! Before contributing to this project, please review this document for policies and procedures which will ease the contribution and review process for everyone. If you have questions, please raise your issue on github.
 
 ## Setup Development Environment
 

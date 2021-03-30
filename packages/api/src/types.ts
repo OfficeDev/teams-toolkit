@@ -43,6 +43,3 @@ export enum Platform
     CLI = "cli"
 }
 
-export enum FxConstants{
-    ProductName = "teamsfx"
-}

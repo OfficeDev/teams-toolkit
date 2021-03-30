@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-'use strict';
+"use strict";
 
 /*
  *  ------------
@@ -27,12 +27,12 @@ import {
     AppStudioTokenProvider,
     Dialog,
     TreeProvider
-} from './utils';
-import { Result } from 'neverthrow';
-import { ConfigMap } from './config';
-import { Func, QTreeNode } from './question';
-import { Platform, Stage } from './types';
-import { FxError } from './error';
+} from "./utils";
+import { Result } from "neverthrow";
+import { ConfigMap } from "./config";
+import { Func, QTreeNode } from "./question";
+import { Platform, Stage } from "./types";
+import { FxError } from "./error";
 
 export interface Core {
     /**

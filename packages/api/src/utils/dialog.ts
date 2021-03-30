@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-'use strict';
+"use strict";
  
-import { Result } from 'neverthrow';
-import { FxError } from '../error';
+import { Result } from "neverthrow";
+import { FxError } from "../error";
 export interface Dialog {
     /*
      * Platforms (such as VSCode, CLI) support this function to communicate with core.
@@ -71,9 +71,9 @@ export interface IProgressHandler {
 }
 
 export enum MsgLevel {
-    Info = 'Info',
-    Warning = 'Warning',
-    Error = 'Error',
+    Info = "Info",
+    Warning = "Warning",
+    Error = "Error",
 }
 
 export interface IMessage {
@@ -82,12 +82,12 @@ export interface IMessage {
 }
 
 export enum QuestionType {
-    Text = 'Text',
-    Radio = 'radio',
-    SelectFolder = 'SelectFolder',
-    OpenFolder = 'OpenFolder',
-    ExecuteCmd = 'ExecuteCmd',
-    OpenExternal = 'OpenExternal',
+    Text = "Text",
+    Radio = "radio",
+    SelectFolder = "SelectFolder",
+    OpenFolder = "OpenFolder",
+    ExecuteCmd = "ExecuteCmd",
+    OpenExternal = "OpenExternal",
 }
 
 export interface IQuestion {
@@ -120,11 +120,11 @@ export interface IProgress {
 export type Answer = string | undefined;
 
 export enum DialogType {
-    Show = 'Show',
-    ShowProgress = 'ShowProgress',
-    Ask = 'Ask',
-    Answer = 'Answer',
-    Output = 'Output',
+    Show = "Show",
+    ShowProgress = "ShowProgress",
+    Ask = "Ask",
+    Answer = "Answer",
+    Output = "Output",
 }
 
 export class DialogMsg {

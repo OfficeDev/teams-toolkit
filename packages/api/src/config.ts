@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-'use strict';
+"use strict";
 
-import { OptionItem } from './question';
-import { Json } from './types';
+import { OptionItem } from "./question";
+import { Json } from "./types";
 
 export type ConfigValue =
     | string
@@ -76,7 +76,7 @@ export class ConfigMap extends Map<string, ConfigValue> {
 
     public static fromJSON(obj?: Json): ConfigMap | undefined {
         if (!obj) return undefined;
-        let map = new ConfigMap();
+        const map = new ConfigMap();
         for (const entry of Object.entries(obj)) {
             map.set(entry[0], entry[1]);
         }

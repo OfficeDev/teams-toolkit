@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-'use strict';
+"use strict";
 
 export interface IDeveloper {
     /**
@@ -52,17 +52,17 @@ export interface IConfigurableTab {
     /**
      * Specifies whether the tab offers an experience in the context of a channel in a team, in a 1:1 or group chat, or in an experience scoped to an individual user alone. These options are non-exclusive. Currently, configurable tabs are only supported in the teams and groupchats scopes.
      */
-    scopes: ('team' | 'groupchat')[];
+    scopes: ("team" | "groupchat")[];
     /**
      * The set of contextItem scopes that a tab belong to
      */
     context?: (
-        | 'channelTab'
-        | 'privateChatTab'
-        | 'meetingChatTab'
-        | 'meetingDetailsTab'
-        | 'meetingSidePanel'
-        | 'meetingStage'
+        | "channelTab"
+        | "privateChatTab"
+        | "meetingChatTab"
+        | "meetingDetailsTab"
+        | "meetingSidePanel"
+        | "meetingStage"
     )[];
     /**
      * A relative file path to a tab preview image for use in SharePoint. Size 1024x768.
@@ -71,7 +71,7 @@ export interface IConfigurableTab {
     /**
      * Defines how your tab will be made available in SharePoint.
      */
-    supportedSharePointHosts?: ('sharePointFullPage' | 'sharePointWebPart')[];
+    supportedSharePointHosts?: ("sharePointFullPage" | "sharePointWebPart")[];
 }
 
 export interface IStaticTab {
@@ -99,11 +99,11 @@ export interface IStaticTab {
     /**
      * Specifies whether the tab offers an experience in the context of a channel in a team, or an experience scoped to an individual user alone. These options are non-exclusive. Currently static tabs are only supported in the 'personal' scope.
      */
-    scopes: ('team' | 'personal')[];
+    scopes: ("team" | "personal")[];
     /**
      * The set of contextItem scopes that a tab belong to
      */
-    context?: ('personalTab' | 'channelTab')[];
+    context?: ("personalTab" | "channelTab")[];
 }
 
 export interface ICommand {
@@ -112,7 +112,7 @@ export interface ICommand {
 }
 
 export interface ICommandList {
-    scopes: ('team' | 'personal' | 'groupchat')[];
+    scopes: ("team" | "personal" | "groupchat")[];
     commands: ICommand[];
 }
 
@@ -144,7 +144,7 @@ export interface IBot {
     /**
      * Specifies whether the bot offers an experience in the context of a channel in a team, in a 1:1 or group chat, or in an experience scoped to an individual user alone. These options are non-exclusive.
      */
-    scopes: ('team' | 'personal' | 'groupchat')[];
+    scopes: ("team" | "personal" | "groupchat")[];
     /**
      * The list of commands that the bot supplies, including their usage, description, and the scope for which the commands are valid. A separate command list should be used for each scope.
      */
@@ -163,7 +163,7 @@ export interface IConnector {
     /**
      * Specifies whether the connector offers an experience in the context of a channel in a team, or an experience scoped to an individual user alone. Currently, only the team scope is supported.
      */
-    scopes: 'team'[];
+    scopes: "team"[];
 }
 
 export interface IWebApplicationInfo {
@@ -201,7 +201,7 @@ export interface IComposeExtensionMessageHandler {
     /**
      * Type of the message handler
      */
-    type: 'link';
+    type: "link";
     value: {
         /**
          * A list of domains that the link message handler can register for, and when they are matched the app will be invoked
@@ -220,11 +220,11 @@ export interface IMessagingExtensionCommand {
     /**
      * Type of the command
      */
-    type?: 'query' | 'action';
+    type?: "query" | "action";
     /**
      * Context where the command would apply
      */
-    context?: ('compose' | 'commandBox' | 'message')[];
+    context?: ("compose" | "commandBox" | "message")[];
     /**
      * Title of the command.
      */
@@ -255,7 +255,7 @@ export interface IParameter {
     /**
      * Type of the parameter
      */
-    inputType?: 'text' | 'textarea' | 'number' | 'date' | 'time' | 'toggle' | 'choiceset';
+    inputType?: "text" | "textarea" | "number" | "date" | "time" | "toggle" | "choiceset";
     /**
      * Title of the parameter.
      */
@@ -327,49 +327,49 @@ export interface ILocalizationInfo {
  * manifest definition according to : https://developer.microsoft.com/en-us/json-schemas/teams/v1.8/MicrosoftTeams.schema.json
  */
 export class TeamsAppManifest {
-    $schema?: string = 'https://developer.microsoft.com/en-us/json-schemas/teams/v1.8/MicrosoftTeams.schema.json';
+    $schema?: string = "https://developer.microsoft.com/en-us/json-schemas/teams/v1.8/MicrosoftTeams.schema.json";
     /**
      * The version of the schema this manifest is using.
      */
-    manifestVersion = '1.8';
+    manifestVersion = "1.8";
     /**
      * The version of the app. Changes to your manifest should cause a version change. This version string must follow the semver standard (http://semver.org).
      */
-    version: string = '1.0.0';
+    version = "1.0.0";
     /**
      * A unique identifier for this app. This id must be a GUID.
      */
-    id: string = '{{AppId}}';
+    id = "{{AppId}}";
     /**
      * A unique identifier for this app in reverse domain notation. E.g: com.example.myapp
      */
-    packageName?: string = 'com.microsoft.teams.extension';
+    packageName?: string = "com.microsoft.teams.extension";
 
     localizationInfo?: ILocalizationInfo;
 
     developer: IDeveloper = {
-        name: 'Teams App, Inc.',
-        mpnId: '',
-        websiteUrl: 'https://localhost:3000',
-        privacyUrl: 'https://localhost:3000/privacy',
-        termsOfUseUrl: 'https://localhost:3000/termsofuse',
+        name: "Teams App, Inc.",
+        mpnId: "",
+        websiteUrl: "https://localhost:3000",
+        privacyUrl: "https://localhost:3000/privacy",
+        termsOfUseUrl: "https://localhost:3000/termsofuse",
     };
 
     name: IName = {
-        short: '{{AppName}}',
-        full: 'This field is not used',
+        short: "{{AppName}}",
+        full: "This field is not used",
     };
 
     description: IName = {
-        short: 'Short description for {{AppName}}.',
-        full: 'Full description of {{AppName}}.',
+        short: "Short description for {{AppName}}.",
+        full: "Full description of {{AppName}}.",
     };
 
-    icons: IIcons = { outline: 'outline.png', color: 'color.png' };
+    icons: IIcons = { outline: "outline.png", color: "color.png" };
     /**
      * A color to use in conjunction with the icon. The value must be a valid HTML color code starting with '#', for example `#4464ee`.
      */
-    accentColor: string = '#FFFFFF';
+    accentColor = "#FFFFFF";
     /**
      * These are tabs users can optionally add to their channels and 1:1 or group chats and require extra configuration before they are added. Configurable tabs are not supported in the personal scope. Currently only one configurable tab per app is supported.
      */
@@ -393,15 +393,15 @@ export class TeamsAppManifest {
     /**
      * Specifies the permissions the app requests from users.
      */
-    permissions?: ('identity' | 'messageTeamMembers')[] = ['identity', 'messageTeamMembers'];
+    permissions?: ("identity" | "messageTeamMembers")[] = ["identity", "messageTeamMembers"];
     /**
      * Specify the native features on a user's device that your app may request access to.
      */
-    devicePermissions?: ('geolocation' | 'media' | 'notifications' | 'midi' | 'openExternal')[];
+    devicePermissions?: ("geolocation" | "media" | "notifications" | "midi" | "openExternal")[];
     /**
      * A list of valid domains from which the tabs expect to load any content. Domain listings can include wildcards, for example `*.example.com`. If your tab configuration or content UI needs to navigate to any other domain besides the one use for tab configuration, that domain must be specified here.
      */
-    validDomains?: string[] = ['localhost:3000'];
+    validDomains?: string[] = ["localhost:3000"];
     /**
      * Specify your AAD App ID and Graph information to help users seamlessly sign into your AAD app.
      */

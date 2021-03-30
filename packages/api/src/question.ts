@@ -8,14 +8,14 @@
  * https://www.w3schools.com/tags/att_option_value.asp
  */
 export enum NodeType {
-    text = 'text',
-    password = 'password',
-    singleSelect = 'singleSelect',
-    multiSelect = 'multiSelect',
-    file = 'file',
-    folder = 'folder',
-    group = 'group',
-    func = 'func',
+    text = "text",
+    password = "password",
+    singleSelect = "singleSelect",
+    multiSelect = "multiSelect",
+    file = "file",
+    folder = "folder",
+    group = "group",
+    func = "func",
 }
 
 export interface Func {
@@ -188,7 +188,7 @@ export class QTreeNode {
         if (this.validate()) {
             return this;
         }
-        throw new Error('validation failed');
+        throw new Error("validation failed");
     }
     validate(): boolean {
         //1. validate the cycle depedency

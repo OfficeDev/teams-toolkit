@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-'use strict';
+"use strict";
 
 
 
 export enum PluginType {
-    Frontend = 'Frontend',
-    Backend = 'Backend',
-    DataStorage = 'DataStorage',
+    Frontend = "Frontend",
+    Backend = "Backend",
+    DataStorage = "DataStorage",
 }
 
 export interface Json {

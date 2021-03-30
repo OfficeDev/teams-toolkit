@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-'use strict';
+"use strict";
 
-import { Result } from 'neverthrow'; 
-import { SolutionContext } from './context';
-import { FxError } from './error';
-import { Func, QTreeNode } from './question';
-import { Stage } from './types';
+import { Result } from "neverthrow"; 
+import { SolutionContext } from "./context";
+import { FxError } from "./error";
+import { Func, QTreeNode } from "./question";
+import { Stage } from "./types";
 
 export interface Solution {
     /**

@@ -1,5 +1,5 @@
-import {Result} from 'neverthrow' 
-import { FxError } from '../error';
+import {Result} from "neverthrow"; 
+import { FxError } from "../error";
 
 export interface TreeItem{
     commandId: string;

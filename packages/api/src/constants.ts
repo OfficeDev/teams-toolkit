@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-'use strict';
+"use strict";
 
 export enum Stage
 {
@@ -22,4 +22,4 @@ export enum Platform
     CLI = "cli"
 }
 
-export const ConfName = 'teamsfx';
+export const ConfName = "teamsfx";

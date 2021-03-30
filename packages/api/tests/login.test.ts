@@ -1,3 +1,7 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+"use strict";
+
 import { AzureAccountProvider, GraphTokenProvider } from "../src/utils/login";
 import { assert } from "chai";
 import { TokenCredential } from "@azure/core-auth";

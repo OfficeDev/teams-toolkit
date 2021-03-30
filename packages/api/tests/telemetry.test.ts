@@ -1,3 +1,7 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+"use strict";
+
 import chai from "chai";
 import spies from "chai-spies";
 import { TelemetryReporter, PluginTelemetryReporter } from "../src/utils/telemetry";

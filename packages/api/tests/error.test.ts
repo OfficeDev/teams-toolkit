@@ -1,3 +1,7 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+"use strict";
+
 import { FxError, returnSystemError, returnUserError, SystemError, UserError } from "../src/error";
 import * as chai from "chai";
 

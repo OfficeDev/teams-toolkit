@@ -1,3 +1,7 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+"use strict";
+
 import { assert } from "chai";
 import { LogProvider, LogLevel } from "../src/utils/log";
 

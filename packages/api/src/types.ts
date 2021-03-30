@@ -32,7 +32,8 @@ export enum Stage
     update = "update",
     debug = "debug",
     provision = "provision",
-    deploy = "deploy"
+    deploy = "deploy",
+    publish = "publish",
 }
 
 export enum Platform
@@ -40,4 +41,8 @@ export enum Platform
     VSCode = "vsc",
     VS = "vs",
     CLI = "cli"
+}
+
+export enum FxConstants{
+    ProductName = "teamsfx"
 }

@@ -4,7 +4,8 @@
         "packages/api",
         "packages/fx-core",
         "packages/sdk",
-        "packages/commonlib"
+        "packages/commonlib",
+        "packages/function-extension"
     ],
     "version": "independent"
 }

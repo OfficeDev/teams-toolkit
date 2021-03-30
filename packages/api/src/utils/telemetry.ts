@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-'use strict';
+"use strict";
 
 /**
  * Reporter of telemetry to send event and exception to app insights.

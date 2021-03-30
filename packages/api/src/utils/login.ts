@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-'use strict';
+"use strict";
 
-import { TokenCredential } from '@azure/core-http';
-import { TokenCredentialsBase } from '@azure/ms-rest-nodeauth';
+import { TokenCredential } from "@azure/core-http";
+import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 
 /**
  * Difference between getAccountCredential and getIdentityCredential [Node Azure Authenticate](https://docs.microsoft.com/en-us/azure/developer/javascript/core/node-sdk-azure-authenticate)
@@ -44,7 +44,7 @@ export interface AzureAccountProvider {
      * @param token SignedIn: access token string, SignedOut: undefined.
      * @param accountInfo SignedIn: access token json object, SignedOut: undefined.
      */
-    setStatusChangeCallback(statusChange: (status: string, token?: string, accountInfo?: object) => Promise<void>):  Promise<boolean>;
+    setStatusChangeCallback(statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>):  Promise<boolean>;
 }
 
 
@@ -66,7 +66,7 @@ export interface AzureAccountProvider {
      * - ...
      * @param showDialog Control whether the UI layer displays pop-up windows 
      */
-    getJsonObject(showDialog?: boolean): Promise<object | undefined>;
+    getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined>;
 
     /**
      * App studio sign out
@@ -79,7 +79,7 @@ export interface AzureAccountProvider {
      * @param token SignedIn: access token string, SignedOut: undefined.
      * @param accountInfo SignedIn: access token json object, SignedOut: undefined.
      */
-    setStatusChangeCallback(statusChange: (status: string, token?: string, accountInfo?: object) => Promise<void>):  Promise<boolean>;
+    setStatusChangeCallback(statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>):  Promise<boolean>;
 }
 
 
@@ -101,7 +101,7 @@ export interface AzureAccountProvider {
      * - ...
      * @param showDialog Control whether the UI layer displays pop-up windows.
      */
-    getJsonObject(showDialog?: boolean): Promise<object | undefined>;
+    getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined>;
 
     /**
      * Graph sign out
@@ -114,7 +114,7 @@ export interface AzureAccountProvider {
      * @param token SignedIn: access token string, SignedOut: undefined.
      * @param accountInfo SignedIn: access token json object, SignedOut: undefined.
      */
-    setStatusChangeCallback(statusChange: (status: string, token?: string, accountInfo?: object) => Promise<void>):  Promise<boolean>;
+    setStatusChangeCallback(statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>):  Promise<boolean>;
 }
 
 

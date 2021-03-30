@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-'use strict';
+"use strict";
 
 export enum LogLevel {
     /**

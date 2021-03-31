@@ -32,7 +32,8 @@ export enum Stage
     update = "update",
     debug = "debug",
     provision = "provision",
-    deploy = "deploy"
+    deploy = "deploy",
+    publish = "publish",
 }
 
 export enum Platform
@@ -41,3 +42,4 @@ export enum Platform
     VS = "vs",
     CLI = "cli"
 }
+

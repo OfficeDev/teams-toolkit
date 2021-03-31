@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <AssemblyName>Microsoft.TeamsFxSimpleAuth.Tests</AssemblyName>
+    <RootNamespace>Microsoft.TeamsFxSimpleAuth.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="appsettings.IntegrationTests.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DotNetSeleniumExtras.WaitHelpers" Version="3.11.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="3.1.7" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.7" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="3.1.8" />
+    <PackageReference Include="Microsoft.Graph.Auth" Version="1.0.0-preview.5" />
+    <PackageReference Include="Microsoft.Graph" Version="3.12.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
+    <PackageReference Include="NUnit" Version="3.12.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.17.0" />
+    <PackageReference Include="Selenium.Support" Version="3.141.0" />
+    <PackageReference Include="Selenium.WebDriver" Version="3.141.0" />
+    <PackageReference Include="coverlet.collector" Version="1.2.0" />
+    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="89.0.4389.2300" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TeamsFxSimpleAuth\TeamsFxSimpleAuth.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -11,147 +11,92 @@
  * |    core    | -- Environments & Project
  *  ------------
  *
- *  ------------
- * |  solution  | -- General lifecycle
- *  ------------
+ *  ------------------
+ * |  solution plugin | -- General lifecycle
+ *  -------------------
  *
- *  ------------
- * |   plugin   | -- Specific lifecycle
- *  ------------
+ *  ----------------------
+ * |   resource plugin   | -- Specific lifecycle
+ *  ----------------------
  */
-import {
-    LogProvider,
-    TelemetryReporter,
-    AzureAccountProvider,
-    GraphTokenProvider,
-    AppStudioTokenProvider,
-    Dialog,
-    TreeProvider
-} from "./utils";
-import { Result } from "neverthrow";
-import { ConfigMap } from "./config";
-import { Func, QTreeNode } from "./question";
-import { Platform, Stage } from "./types";
+ 
+import { Result } from "neverthrow"; 
+import { Task } from "./constants";
 import { FxError } from "./error";
+import { Func, QTreeNode } from "./question";
+import { FunctionRouter, Void, ReadonlyConfigMap, Env } from "./types";
+import { ToolsProvider } from "./utils";
 
 export interface Core {
-    /**
-     * init
-     */
-    init: (globalConfig?: ConfigMap) => Promise<Result<null, FxError>>;
 
     /**
-     * declare all the user questions
+     * load global solutions
      */
-    getQuestions?: (stage: Stage, platform: Platform) => Promise<Result<QTreeNode | undefined, FxError>>;
+    init:(globalConfig: ReadonlyConfigMap, tools: ToolsProvider) => Promise<Result<Void, FxError>>;
+ 
+    /**
+     * create a project, return the project path
+     */
+    create: (userAnswers: ReadonlyConfigMap) => Promise<Result<string, FxError>>;
 
     /**
-     * withDialog
+     * provision resource to cloud
      */
-    withDialog: (dialog: Dialog) => Promise<Result<null, FxError>>;
+    provision: (userAnswers: ReadonlyConfigMap) => Promise<Result<Void, FxError>>;
 
     /**
-     * withLogger
+     * deploy resource to cloud
      */
-    withLogger: (logger: LogProvider) => Promise<Result<null, FxError>>;
-
-    /**
-     * withAzureAccount
-     */
-    withAzureAccount: (azureAccount: AzureAccountProvider) => Promise<Result<null, FxError>>;
-
-    /**
-     * withGraphToken
-     */
-    withGraphToken: (graphToken: GraphTokenProvider) => Promise<Result<null, FxError>>;
-
-    /**
-     * withAppStudioToken
-     */
-    withAppStudioToken: (appStudioToken: AppStudioTokenProvider) => Promise<Result<null, FxError>>;
-
-    /**
-     * withTelemetry
-     */
-    withTelemetry: (logger: TelemetryReporter) => Promise<Result<null, FxError>>;
-
-    /**
-     * withTreeProvider
-     */
-    withTreeProvider: (treeProvider: TreeProvider) => Promise<Result<null, FxError>>;
-
-    /**
-     * create a project
-     */
-    create: (answers?: ConfigMap) => Promise<Result<null, FxError>>;
-
-    /**
-     * update existing project
-     */
-    update: (answers?: ConfigMap) => Promise<Result<null, FxError>>;
-
-    /**
-     * open an existing project
-     */
-    open: (workspace?: string) => Promise<Result<null, FxError>>;
-
-    /**
-     * scaffold
-     */
-    scaffold: (answers?: ConfigMap) => Promise<Result<null, FxError>>;
-
-    /**
-     * local debug
-     */
-    localDebug: (answers?: ConfigMap) => Promise<Result<null, FxError>>;
-
-    /**
-     * provision
-     */
-    provision: (answers?: ConfigMap) => Promise<Result<null, FxError>>;
-
-    /**
-     * deploy
-     */
-    deploy: (answers?: ConfigMap) => Promise<Result<null, FxError>>;
+    deploy: (userAnswers: ReadonlyConfigMap) => Promise<Result<Void, FxError>>;
 
     /**
      * publish app
      */
-    publish: (answers?: ConfigMap) => Promise<Result<null, FxError>>;
+    publish: (userAnswers: ReadonlyConfigMap) => Promise<Result<Void, FxError>>;
 
     /**
      * create an environment
      */
-    createEnv: (env: string) => Promise<Result<null, FxError>>;
+    createEnv: (env: Env) => Promise<Result<Void, FxError>>;
 
     /**
      * remove an environment
      */
-    removeEnv: (env: string) => Promise<Result<null, FxError>>;
+    removeEnv: (env: string) => Promise<Result<Void, FxError>>;
 
     /**
      * switch environment
      */
-    switchEnv: (env: string) => Promise<Result<null, FxError>>;
+    switchEnv: (env: string) => Promise<Result<Void, FxError>>;
 
     /**
      * switch environment
      */
-    listEnvs: () => Promise<Result<string[], FxError>>;
+    listEnvs: () => Promise<Result<Env[], FxError>>;
 
     /**
-     * callFunc for question flow
+     * get question model for lifecycle {@link Task} (create, provision, deploy, debug, publish), Questions are organized as a tree. Please check {@link QTreeNode}.
      */
-    callFunc?: (func: Func, answer?: ConfigMap) => Promise<Result<any, FxError>>;
+    getQuestionsForLifecycleTask?: (task:Task, getQuestionConfig: ReadonlyConfigMap) => Promise<Result<QTreeNode | undefined, FxError>>;
 
     /**
-     * user questions for customized task
+     * get question model for user task in additional to normal lifecycle {@link Task}, for example `Add Resource`, `Add Capabilities`, `Update AAD Permission`, etc
+     * `getQuestionsForUserTask` will router the getQuestions request and dispatch from core--->solution--->resource plugin according to `FunctionRouter`.
      */
-    getQuestionsForUserTask?: (func: Func, platform: Platform) => Promise<Result<QTreeNode | undefined, FxError>>;
-
+    getQuestionsForUserTask?: (router:FunctionRouter, getQuestionConfig: ReadonlyConfigMap) => Promise<Result<QTreeNode | undefined, FxError>>;
+     
     /**
-     * execute user customized task in additional to normal lifecycle APIs.
+     * execute user task in additional to normal lifecycle {@link Task}, for example `Add Resource`, `Add Capabilities`, `Update AAD Permission`, etc
+     * `executeUserTask` will router the execute request and dispatch from core--->solution--->resource plugin according to `FunctionRouter`.
      */
-    executeUserTask?: (func: Func, answer?: ConfigMap) => Promise<Result<any, FxError>>;
+    executeUserTask?: (func:Func, userTaskAnswers: ReadonlyConfigMap) => Promise<Result<unknown, FxError>>;
+    
+    /**
+     * There are three scenarios to use this API in question model:
+     * 1. answer questions of type `ApiQuestion`. Unlike normal questions, the answer of which is returned by humen input, the answer of `ApiQuestion` is automatically returned by this `executeApiQuestion` call.
+     * 2. retrieve dynamic option item list for `SingleSelectQuestion` or `MultiSelectQuestion`. In such a case, the option is defined by `DynamicOption`. When the UI visit such select question, this `executeApiQuestion` will be called to get option list.
+     * 3. validation for `TextInputQuestion`, core,solution plugin or resource plugin can define the validation function in `executeApiQuestion`.
+     * `executeApiQuestion` will router the execute request from core--->solution--->resource plugin according to `FunctionRouter`.
+     */
+    executeApiQuestion?: (func:Func, answersOfPreviousQuestions: ReadonlyConfigMap) => Promise<Result<unknown, FxError>>; 
 }

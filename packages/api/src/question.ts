@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+"use strict";
 
+import { FunctionRouter, Json } from "./types";
 
 /**
  * reference:
@@ -9,44 +11,45 @@
  */
 export enum NodeType {
     text = "text",
+    number = "number",
     password = "password",
     singleSelect = "singleSelect",
     multiSelect = "multiSelect",
     file = "file",
     folder = "folder",
     group = "group",
-    func = "func",
+    api = "api",
 }
 
-export interface Func {
-    namespace: string; //scope of api: core, solution, resource plugin
-    method: string; //method name
-    params?: (number | string | undefined)[]; // there are two types of parameters: 1. basic types(number, string, undefined)  2. answer of ancestor question ($parent, $parent.name)
+export interface Func extends FunctionRouter{
+    params?: Json; // there are two types of parameters: 1. basic types(number, string, undefined)  2. answer of ancestor question ($parent, $parent.name)
 }
 
 export interface OptionItem {
     /**
-     * A human-readable string which is rendered prominent. Supports rendering of [theme icons](#ThemeIcon) via
-     * the `$(<name>)`-syntax.
+     * the identifier of the option, not show
+     */
+    id: string;
+
+    /**
+     * A human-readable string which is rendered prominent.
      */
     label: string;
 
     /**
-     * A human-readable string which is rendered less prominent in the same line. Supports rendering of
-     * [theme icons](#ThemeIcon) via the `$(<name>)`-syntax.
+     * A human-readable string which is rendered less prominent in the same line.
      */
     description?: string;
 
     /**
-     * A human-readable string which is rendered less prominent in a separate line. Supports rendering of
-     * [theme icons](#ThemeIcon) via the `$(<name>)`-syntax.
+     * A human-readable string which is rendered less prominent in a separate line.
      */
     detail?: string;
 
     /**
-     * hidden data for this option item
+     * hidden data for this option item, not show
      */
-    data?: any;
+    data?: unknown;
 }
 
 export type StaticOption = string[] | OptionItem[];
@@ -56,49 +59,52 @@ export type DymanicOption = Func;
 export type Option = StaticOption | DymanicOption;
 
 /**
- *
- * JSON Schema Validation reference:
- * http://json-schema.org/draft/2019-09/json-schema-validation.html
- *
+ * Validation for Any Instance Type
+ * JSON Schema Validation reference: http://json-schema.org/draft/2019-09/json-schema-validation.html
  */
-
 export interface AnyValidation {
-    target?: string; // default value: "$parent", you can also reference $parent.property
-    //Validation Keywords for Any Instance Type
-    enum?: any[]; // the value must be contained in this list
-    equals?: number | string | boolean; //non-standard
     required?: boolean; // default value is true
 }
 
-export interface NumericValidation extends AnyValidation {
-    //Validation Keywords for Numeric Instances (number and integer)
+/**
+ * Validation for Numeric Instances (number and integer)
+ */
+export interface NumberValidation extends AnyValidation {
     multipleOf?: number;
     maximum?: number;
     exclusiveMaximum?: number;
     minimum?: number;
-    exclusiveMinimumm?: number;
+    exclusiveMinimum?: number;
+    enum?: number[]; // the value must be contained in this list
+    equals?: number; //non-standard
 }
 
+/**
+ * //Validation for Strings
+ */
 export interface StringValidation extends AnyValidation {
-    //Validation Keywords for Strings
     maxLength?: number;
     minLength?: number;
     pattern?: string;
+    enum?: string[]; // the value must be contained in this list
     startsWith?: string; //non-standard
     endsWith?: string; //non-standard
-    contains?: string; //non-standard
+    includes?: string; //non-standard
+    equals?: string; //non-standard
 }
 
-export interface ArrayValidation extends AnyValidation {
-    //Validation Keywords for Arrays
+/**
+ * Validation for String Arrays
+ */
+export interface StringArrayValidation extends AnyValidation {
     maxItems?: number;
     minItems?: number;
-    uniqueItems?: number;
-    maxContains?: number;
-    minContains?: number;
-    contains?: number | string; ////non-standard
-    containsAll?: string[]; ///non-standard, must contains all items in the array
-    containsAny?: string[]; ///non-standard, contains any one in the array
+    uniqueItems?: boolean;
+    equals?: string[]; //non-standard
+    enum?: string[]; // non-standard all the values must be contained in this list
+    contains?: string; ////non-standard
+    containsAll?: string[]; ///non-standard, the values must contains all items in the array
+    containsAny?: string[]; ///non-standard, the values must contains any one in the array
 }
 
 export interface FileValidation extends AnyValidation {
@@ -109,30 +115,23 @@ export interface FileValidation extends AnyValidation {
 export interface FuncValidation extends Func, AnyValidation {}
 
 export interface LocalFuncValidation extends AnyValidation {
-    validFunc?: (input: string) => string | undefined | null | Promise<string | undefined | null>;
+    validFunc?: (input: string) => string | undefined | Promise<string | undefined>;
 }
 
 export type Validation =
-    | AnyValidation
-    | NumericValidation
+    | NumberValidation
     | StringValidation
-    | ArrayValidation
+    | StringArrayValidation
     | FileValidation
     | FuncValidation
     | LocalFuncValidation;
 
-export interface ValidationResult {
-    valid: boolean;
-    errors?: any[];
-}
-
 export interface BaseQuestion {
-    name: string; //question name, suggest to be consistent with config name
-    description?: string;
-    validation?: Validation;
-    value?: any;
-    default?: any;
+    name: string; //question name, suggest to be consistent with MODS config name
     title?: string;
+    description?: string;
+    value?: string | string[] | number | OptionItem | OptionItem[] | unknown;
+    default?: string | string[] | number | Func;
 }
 
 export interface SingleSelectQuestion extends BaseQuestion {
@@ -155,17 +154,34 @@ export interface MultiSelectQuestion extends BaseQuestion {
     returnObject?: boolean;
 }
 
-export interface InputQuestion extends BaseQuestion {
-    type: NodeType.text | NodeType.password | NodeType.file | NodeType.folder;
+export interface TextInputQuestion extends BaseQuestion {
+    type: NodeType.text | NodeType.password;
     value?: string;
-    default?: string|Func;
+    default?: string | Func;
     placeholder?: string;
     prompt?: string;
+    validation?: StringValidation;
 }
 
-export interface FunctionCallQuestion extends BaseQuestion, Func {
-    type: NodeType.func;
-    value?: any;
+export interface NumberInputQuestion extends BaseQuestion {
+    type: NodeType.number;
+    value?: number;
+    default?: number | Func;
+    placeholder?: string;
+    prompt?: string;
+    validation?: NumberValidation;
+}
+
+export interface FileQuestion extends BaseQuestion {
+    type: NodeType.file | NodeType.folder;
+    value?: string;
+    default?: string;
+    validation?: FileValidation | StringValidation;
+}
+
+export interface ApiQuestion extends BaseQuestion, Func {
+    type: NodeType.api;
+    value?: unknown;
 }
 
 export interface Group {
@@ -174,11 +190,19 @@ export interface Group {
     description?: string; // description
 }
 
-export type Question = SingleSelectQuestion | MultiSelectQuestion | InputQuestion | FunctionCallQuestion;
+export type Question =
+    | SingleSelectQuestion
+    | MultiSelectQuestion
+    | TextInputQuestion
+    | NumberInputQuestion
+    | ApiQuestion
+    | FileQuestion;
 
 export class QTreeNode {
     data: Question | Group;
-    condition?: Validation;
+    condition?: {
+        target?: string; //default value is parent question's answer, noted by "$parent", if parent is an object, you can also refer parent's property using expression "$parent.property"
+    } & Validation;
     children?: QTreeNode[];
     addChild(node: QTreeNode): QTreeNode {
         if (!this.children) {

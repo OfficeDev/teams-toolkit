@@ -19,9 +19,7 @@
                         "type": "integer"
                     }
                 ],
-                "produces": [
-                    "application/json"
-                ],
+                "produces": ["application/json"],
                 "responses": {
                     "200": {
                         "description": "The user information.",
@@ -36,9 +34,7 @@
     "definitions": {
         "User": {
             "type": "object",
-            "required": [
-                "name"
-            ],
+            "required": ["name"],
             "properties": {
                 "id": {
                     "description": "User id",
@@ -55,10 +51,7 @@
                 "status": {
                     "description": "User status",
                     "type": "string",
-                    "enum": [
-                        "Happy",
-                        "Sad"
-                    ]
+                    "enum": ["Happy", "Sad"]
                 },
                 "phoneNumbers": {
                     "description": "User phoneNumbers",

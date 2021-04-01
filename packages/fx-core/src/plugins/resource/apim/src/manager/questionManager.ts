@@ -1,17 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { AssertNotEmpty } from '../error';
-import { IApimAnswer } from '../model/answer';
-import { IApimPluginConfig, ISolutionConfig } from '../model/config';
-import { IOpenApiDocument } from '../model/openApiDocument';
-import {
-    ApimServiceQuestion,
-    ApiNameQuestion,
-    ApiVersionQuestion,
-    NewApiVersionQuestion,
-    OpenApiDocumentQuestion,
-} from '../service/questionService';
-import { OpenApiProcessor } from '../util/openApiProcessor';
+import { AssertNotEmpty } from "../error";
+import { IApimAnswer } from "../model/answer";
+import { IApimPluginConfig, ISolutionConfig } from "../model/config";
+import { IOpenApiDocument } from "../model/openApiDocument";
+import { ApimServiceQuestion, ApiNameQuestion, ApiVersionQuestion, NewApiVersionQuestion, OpenApiDocumentQuestion } from "../service/questionService";
+import { OpenApiProcessor } from "../util/openApiProcessor";
 
 export class QuestionManager {
     private readonly apimServiceQuestion: ApimServiceQuestion;
@@ -27,7 +21,7 @@ export class QuestionManager {
         apiNameQuestion: ApiNameQuestion,
         apiVersionQuestion: ApiVersionQuestion,
         newApiVersionQuestion: NewApiVersionQuestion,
-        openApiProcessor: OpenApiProcessor,
+        openApiProcessor: OpenApiProcessor
     ) {
         this.apimServiceQuestion = apimServiceQuestion;
         this.openApiDocumentQuestion = openApiDocumentQuestion;
@@ -46,12 +40,7 @@ export class QuestionManager {
         }
     }
 
-    async preDeploy(
-        solutionConfig: ISolutionConfig,
-        apimConfig: IApimPluginConfig,
-        projectRootPath: string,
-        answer: IApimAnswer,
-    ): Promise<void> {
+    async preDeploy(solutionConfig: ISolutionConfig, apimConfig: IApimPluginConfig, projectRootPath: string, answer: IApimAnswer): Promise<void> {
         let openApiDocument: IOpenApiDocument | undefined;
         let versionIdentity: string | undefined;
         let existingApiId: string | undefined;
@@ -63,8 +52,8 @@ export class QuestionManager {
             openApiDocument = input.map.get(answer);
         } else {
             openApiDocument = await this.openApiProcessor.loadOpenApiDocument(
-                AssertNotEmpty('apimConfig.apiDocumentPath', apimConfig.apiDocumentPath),
-                projectRootPath,
+                AssertNotEmpty("apimConfig.apiDocumentPath", apimConfig.apiDocumentPath),
+                projectRootPath
             );
         }
 
@@ -86,7 +75,7 @@ export class QuestionManager {
             versionIdentity = await this.newApiVersionQuestion.ask(input);
         }
 
-        answer.versionIdentity = AssertNotEmpty('versionIdentity', versionIdentity);
+        answer.versionIdentity = AssertNotEmpty("versionIdentity", versionIdentity);
         answer.apiId = existingApiId;
     }
 }

@@ -1,21 +1,21 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import 'mocha';
-import * as chai from 'chai';
-import { capitalizeFirstLetter, getFileExtension } from '../../src/util';
+import "mocha";
+import * as chai from "chai";
+import { capitalizeFirstLetter, getFileExtension } from "../../src/util";
 
-describe('Util', () => {
-    describe('#getFileExtension()', () => {
+describe("Util", () => {
+    describe("#getFileExtension()", () => {
         const testInput: { input: string; output: string }[] = [
-            { input: '', output: '' },
-            { input: '.', output: '' },
-            { input: './.tmp', output: '' },
-            { input: '//', output: '' },
-            { input: '/', output: '' },
-            { input: 'test/data.txt', output: 'txt' },
-            { input: 'data', output: '' },
-            { input: 'data.txt/data', output: '' },
-            { input: 'data.txt.tmp', output: 'tmp' },
+            { input: "", output: "" },
+            { input: ".", output: "" },
+            { input: "./.tmp", output: "" },
+            { input: "//", output: "" },
+            { input: "/", output: "" },
+            { input: "test/data.txt", output: "txt" },
+            { input: "data", output: "" },
+            { input: "data.txt/data", output: "" },
+            { input: "data.txt.tmp", output: "tmp" },
         ];
         testInput.forEach((data) => {
             it(`file path: ${data.input}`, () => {
@@ -24,17 +24,17 @@ describe('Util', () => {
         });
     });
 
-    describe('#capitalizeFirstLetter()', () => {
+    describe("#capitalizeFirstLetter()", () => {
         const testInput: { input: string; output: string }[] = [
-            { input: '', output: '' },
-            { input: 'a', output: 'A' },
-            { input: '.', output: '.' },
-            { input: 'ab', output: 'Ab' },
-            { input: 'a.', output: 'A.' },
-            { input: ' a', output: ' a' },
-            { input: 'data', output: 'Data' },
-            { input: 'input data', output: 'Input data' },
-            { input: 'Data', output: 'Data' },
+            { input: "", output: "" },
+            { input: "a", output: "A" },
+            { input: ".", output: "." },
+            { input: "ab", output: "Ab" },
+            { input: "a.", output: "A." },
+            { input: " a", output: " a" },
+            { input: "data", output: "Data" },
+            { input: "input data", output: "Input data" },
+            { input: "Data", output: "Data" },
         ];
         testInput.forEach((data) => {
             it(`file path: ${data.input}`, () => {

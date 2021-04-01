@@ -1,17 +1,17 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import SwaggerParser from '@apidevtools/swagger-parser';
-import { BuildError, InvalidFunctionEndpoint, InvalidOpenApiDocument } from '../error';
-import { OpenApiSchemaVersion, IOpenApiDocument } from '../model/openApiDocument';
-import urlParse from 'url-parse';
-import * as fs from 'fs-extra';
-import * as path from 'path';
-import { ApimDefaultValues } from '../constants';
-import { Telemetry } from '../telemetry';
-import { LogProvider } from 'teamsfx-api';
-import { getFileExtension } from '../util';
-import { LogMessages } from '../log';
-import { OpenAPI, OpenAPIV2, OpenAPIV3 } from 'openapi-types';
+import SwaggerParser from "@apidevtools/swagger-parser";
+import { BuildError, InvalidFunctionEndpoint, InvalidOpenApiDocument } from "../error";
+import { OpenApiSchemaVersion, IOpenApiDocument } from "../model/openApiDocument";
+import urlParse from "url-parse";
+import * as fs from "fs-extra";
+import * as path from "path";
+import { ApimDefaultValues } from "../constants";
+import { Telemetry } from "../telemetry";
+import { LogProvider } from "teamsfx-api";
+import { getFileExtension } from "../util";
+import { LogMessages } from "../log";
+import { OpenAPI, OpenAPIV2, OpenAPIV3 } from "openapi-types";
 
 export class OpenApiProcessor {
     private readonly logger?: LogProvider;
@@ -25,19 +25,19 @@ export class OpenApiProcessor {
     }
 
     public async generateDefaultOpenApi(fileName: string, title: string, version: string): Promise<void> {
-        let exists = fs.existsSync(fileName);
+        const exists = fs.existsSync(fileName);
         if (exists) {
             this.logger?.info(LogMessages.openApiDocumentExists(fileName));
             return;
         }
 
         const spec = {
-            openapi: '3.0.1',
+            openapi: "3.0.1",
             info: {
                 title: title,
-                version: version
+                version: version,
             },
-            paths: {}
+            paths: {},
         };
 
         await fs.outputJSON(fileName, spec, { spaces: 4 });
@@ -46,11 +46,11 @@ export class OpenApiProcessor {
     public async listOpenApiDocument(
         dir: string,
         excludeFolders: string[],
-        openApiDocumentFileExtensions: string[],
+        openApiDocumentFileExtensions: string[]
     ): Promise<Map<string, IOpenApiDocument>> {
         const files = await this.listAllFiles(dir, excludeFolders, openApiDocumentFileExtensions);
         const fileName2OpenApi = new Map<string, IOpenApiDocument>();
-        for (let file of files) {
+        for (const file of files) {
             try {
                 const openApi = await this.loadOpenApiDocument(file);
                 const relativePath = path.relative(dir, file);
@@ -82,15 +82,10 @@ export class OpenApiProcessor {
         };
     }
 
-    public patchOpenApiDocument(
-        spec: OpenAPI.Document,
-        schemaVersion: OpenApiSchemaVersion,
-        endpoint: string,
-        basePath?: string,
-    ): OpenAPI.Document {
+    public patchOpenApiDocument(spec: OpenAPI.Document, schemaVersion: OpenApiSchemaVersion, endpoint: string, basePath?: string): OpenAPI.Document {
         const parsedUrl = urlParse(endpoint);
         basePath = basePath ?? ApimDefaultValues.functionBasePath;
-        parsedUrl.set('pathname', basePath);
+        parsedUrl.set("pathname", basePath);
         const scheme = this.getScheme(parsedUrl.protocol);
         switch (schemaVersion) {
             case OpenApiSchemaVersion.v2:
@@ -110,7 +105,7 @@ export class OpenApiProcessor {
     public async listAllFiles(dir: string, excludeFolders: string[], fileExtensions?: string[]): Promise<string[]> {
         const result: string[] = [];
         const files = await fs.readdir(dir);
-        for (let fileName of files) {
+        for (const fileName of files) {
             try {
                 const filePath = path.join(dir, fileName);
                 if ((await fs.stat(filePath)).isDirectory()) {
@@ -125,7 +120,7 @@ export class OpenApiProcessor {
                         continue;
                     }
 
-                    for (let fileExtension of fileExtensions) {
+                    for (const fileExtension of fileExtensions) {
                         if (filePath.endsWith(`.${fileExtension}`)) {
                             result.push(filePath);
                             break;
@@ -141,9 +136,9 @@ export class OpenApiProcessor {
     }
 
     private getSchemaVersion(spec: OpenAPI.Document, filePath: string): OpenApiSchemaVersion {
-        if ('swagger' in spec) {
+        if ("swagger" in spec) {
             return OpenApiSchemaVersion.v2;
-        } else if ('openapi' in spec) {
+        } else if ("openapi" in spec) {
             return OpenApiSchemaVersion.v3;
         } else {
             throw BuildError(InvalidOpenApiDocument, filePath);
@@ -151,10 +146,10 @@ export class OpenApiProcessor {
     }
 
     private getScheme(protocol: string): string {
-        if (protocol.startsWith('https')) {
-            return 'https';
-        } else if (protocol.startsWith('http')) {
-            return 'http';
+        if (protocol.startsWith("https")) {
+            return "https";
+        } else if (protocol.startsWith("http")) {
+            return "http";
         } else {
             throw BuildError(InvalidFunctionEndpoint);
         }

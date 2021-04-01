@@ -1,66 +1,66 @@
 {
-  "swagger": "2.0",
-  "info": {
-    "title": "user input swagger",
-    "version": "v1"
-  },
-  "paths": {
-    "/users/{id}": {
-      "get": {
-        "description": "Get all users.",
-        "operationId": "getUsers",
-        "summary": "GetUsers",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "user id",
-            "required": true,
-            "type": "integer"
-          }
-        ],
-        "produces": ["application/json"],
-        "responses": {
-          "200": {
-            "description": "The user information.",
-            "schema": {
-              "$ref": "#/definitions/User"
+    "swagger": "2.0",
+    "info": {
+        "title": "user input swagger",
+        "version": "v1"
+    },
+    "paths": {
+        "/users/{id}": {
+            "get": {
+                "description": "Get all users.",
+                "operationId": "getUsers",
+                "summary": "GetUsers",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "user id",
+                        "required": true,
+                        "type": "integer"
+                    }
+                ],
+                "produces": ["application/json"],
+                "responses": {
+                    "200": {
+                        "description": "The user information.",
+                        "schema": {
+                            "$ref": "#/definitions/User"
+                        }
+                    }
+                }
             }
-          }
         }
-      }
-    }
-  },
-  "definitions": {
-    "User": {
-      "type": "object",
-      "required": ["name"],
-      "properties": {
-        "id": {
-          "description": "User id",
-          "type": "integer"
-        },
-        "email": {
-          "description": "User email",
-          "type": "string"
-        },
-        "name": {
-          "description": "User name",
-          "type": "string"
-        },
-        "status": {
-          "description": "User status",
-          "type": "string",
-          "enum": ["Happy", "Sad"]
-        },
-        "phoneNumbers": {
-          "description": "User phoneNumbers",
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
+    },
+    "definitions": {
+        "User": {
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+                "id": {
+                    "description": "User id",
+                    "type": "integer"
+                },
+                "email": {
+                    "description": "User email",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "User name",
+                    "type": "string"
+                },
+                "status": {
+                    "description": "User status",
+                    "type": "string",
+                    "enum": ["Happy", "Sad"]
+                },
+                "phoneNumbers": {
+                    "description": "User phoneNumbers",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
         }
-      }
     }
-  }
 }

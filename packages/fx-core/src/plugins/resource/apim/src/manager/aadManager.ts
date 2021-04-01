@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { LogProvider } from 'teamsfx-api';
-import { ApimPluginConfigKeys, TeamsToolkitComponent } from '../constants';
-import { AssertConfigNotEmpty, AssertNotEmpty, BuildError, InvalidAadObjectId } from '../error';
-import { IAadInfo, IRequiredResourceAccess } from '../model/aadResponse';
-import { IAadPluginConfig, IApimPluginConfig } from '../model/config';
-import { AadService } from '../service/aadService';
-import { Telemetry } from '../telemetry';
-import { NameSanitizer } from '../util/nameSanitizer';
+import { LogProvider } from "teamsfx-api";
+import { ApimPluginConfigKeys, TeamsToolkitComponent } from "../constants";
+import { AssertConfigNotEmpty, AssertNotEmpty, BuildError, InvalidAadObjectId } from "../error";
+import { IAadInfo, IRequiredResourceAccess } from "../model/aadResponse";
+import { IAadPluginConfig, IApimPluginConfig } from "../model/config";
+import { AadService } from "../service/aadService";
+import { Telemetry } from "../telemetry";
+import { NameSanitizer } from "../util/nameSanitizer";
 
 export class AadManager {
     private readonly logger?: LogProvider;
@@ -20,59 +20,51 @@ export class AadManager {
         this.aadService = aadService;
     }
 
-    public async provision(
-        apimPluginConfig: IApimPluginConfig,
-        appName: string,
-    ): Promise<void> {
+    public async provision(apimPluginConfig: IApimPluginConfig, appName: string): Promise<void> {
         if (!apimPluginConfig.apimClientAADObjectId) {
-            const aadInfo = await this.aadService.createAad(
-                NameSanitizer.sanitizeAadDisplayName(appName),
-            );
-            apimPluginConfig.apimClientAADObjectId = AssertNotEmpty('id', aadInfo.id);
-            apimPluginConfig.apimClientAADClientId = AssertNotEmpty('appId', aadInfo.appId);
+            const aadInfo = await this.aadService.createAad(NameSanitizer.sanitizeAadDisplayName(appName));
+            apimPluginConfig.apimClientAADObjectId = AssertNotEmpty("id", aadInfo.id);
+            apimPluginConfig.apimClientAADClientId = AssertNotEmpty("appId", aadInfo.appId);
             const secretResult = await this.aadService.addSecret(
                 apimPluginConfig.apimClientAADObjectId,
-                NameSanitizer.sanitizeAadSecretDisplayName(appName),
+                NameSanitizer.sanitizeAadSecretDisplayName(appName)
             );
-            apimPluginConfig.apimClientAADClientSecret = AssertNotEmpty('secretText', secretResult.secretText);
+            apimPluginConfig.apimClientAADClientSecret = AssertNotEmpty("secretText", secretResult.secretText);
         } else {
             const existingAadInfo = await this.aadService.getAad(apimPluginConfig.apimClientAADObjectId);
             if (!existingAadInfo) {
                 throw BuildError(InvalidAadObjectId, apimPluginConfig.apimClientAADObjectId);
             }
-            apimPluginConfig.apimClientAADClientId = AssertNotEmpty('appId', existingAadInfo.appId);
+            apimPluginConfig.apimClientAADClientId = AssertNotEmpty("appId", existingAadInfo.appId);
 
             if (!apimPluginConfig.apimClientAADClientSecret) {
                 const secretResult = await this.aadService.addSecret(
                     apimPluginConfig.apimClientAADObjectId,
-                    NameSanitizer.sanitizeAadSecretDisplayName(appName),
+                    NameSanitizer.sanitizeAadSecretDisplayName(appName)
                 );
-                apimPluginConfig.apimClientAADClientSecret = AssertNotEmpty('secretText', secretResult.secretText);
+                apimPluginConfig.apimClientAADClientSecret = AssertNotEmpty("secretText", secretResult.secretText);
             }
         }
     }
 
-    public async postProvision(
-        apimPluginConfig: IApimPluginConfig,
-        aadPluginConfig: IAadPluginConfig,
-        redirectUris: string[],
-    ): Promise<void> {
-        const objectId = AssertConfigNotEmpty(TeamsToolkitComponent.ApimPlugin, ApimPluginConfigKeys.apimClientAADObjectId, apimPluginConfig.apimClientAADObjectId);
+    public async postProvision(apimPluginConfig: IApimPluginConfig, aadPluginConfig: IAadPluginConfig, redirectUris: string[]): Promise<void> {
+        const objectId = AssertConfigNotEmpty(
+            TeamsToolkitComponent.ApimPlugin,
+            ApimPluginConfigKeys.apimClientAADObjectId,
+            apimPluginConfig.apimClientAADObjectId
+        );
 
         let existingAadInfo = await this.aadService.getAad(objectId);
-        existingAadInfo = AssertNotEmpty('existingAadInfo', existingAadInfo);
+        existingAadInfo = AssertNotEmpty("existingAadInfo", existingAadInfo);
 
         let data: IAadInfo | undefined;
         data = this.refreshRedirectUri(existingAadInfo.web?.redirectUris, redirectUris, data);
-        data = this.refreshEnableIdTokenIssuance(
-            existingAadInfo.web?.implicitGrantSettings?.enableIdTokenIssuance,
-            data,
-        );
+        data = this.refreshEnableIdTokenIssuance(existingAadInfo.web?.implicitGrantSettings?.enableIdTokenIssuance, data);
         data = this.refreshRequiredResourceAccess(
             existingAadInfo.requiredResourceAccess,
             aadPluginConfig.clientId,
             aadPluginConfig.oauth2PermissionScopeId,
-            data,
+            data
         );
 
         if (data) {
@@ -80,10 +72,7 @@ export class AadManager {
         }
     }
 
-    private refreshEnableIdTokenIssuance(
-        existing: boolean | undefined,
-        data: IAadInfo | undefined,
-    ): IAadInfo | undefined {
+    private refreshEnableIdTokenIssuance(existing: boolean | undefined, data: IAadInfo | undefined): IAadInfo | undefined {
         if (existing !== true) {
             data = data ?? {};
             data.web = data.web ?? {};
@@ -93,14 +82,10 @@ export class AadManager {
         return data;
     }
 
-    private refreshRedirectUri(
-        existingRedirectUris: string[] | undefined,
-        redirectUris: string[],
-        data: IAadInfo | undefined,
-    ): IAadInfo | undefined {
+    private refreshRedirectUri(existingRedirectUris: string[] | undefined, redirectUris: string[], data: IAadInfo | undefined): IAadInfo | undefined {
         existingRedirectUris = existingRedirectUris ?? [];
         const originLength = existingRedirectUris.length;
-        for (let redirectUri of redirectUris) {
+        for (const redirectUri of redirectUris) {
             if (!existingRedirectUris.find((uri) => uri === redirectUri)) {
                 existingRedirectUris.push(redirectUri);
             }
@@ -119,24 +104,22 @@ export class AadManager {
         existingRequiredResourceAccessList: IRequiredResourceAccess[] | undefined,
         resourceClientId: string,
         scopeId: string,
-        data: IAadInfo | undefined,
+        data: IAadInfo | undefined
     ): IAadInfo | undefined {
         existingRequiredResourceAccessList = existingRequiredResourceAccessList ?? [];
-        let requiredResourceAccess = existingRequiredResourceAccessList.find(
-            (o) => o.resourceAppId === resourceClientId,
-        );
+        let requiredResourceAccess = existingRequiredResourceAccessList.find((o) => o.resourceAppId === resourceClientId);
         if (!requiredResourceAccess) {
             requiredResourceAccess = { resourceAppId: resourceClientId };
             existingRequiredResourceAccessList.push(requiredResourceAccess);
         }
 
         const resourceAccess = requiredResourceAccess.resourceAccess?.find(
-            (resourceAccess) => resourceAccess.id === scopeId && resourceAccess.type === 'Scope',
+            (resourceAccess) => resourceAccess.id === scopeId && resourceAccess.type === "Scope"
         );
         if (!resourceAccess) {
             requiredResourceAccess.resourceAccess = (requiredResourceAccess.resourceAccess ?? []).concat({
                 id: scopeId,
-                type: 'Scope',
+                type: "Scope",
             });
             data = data ?? {};
             data.requiredResourceAccess = existingRequiredResourceAccessList;

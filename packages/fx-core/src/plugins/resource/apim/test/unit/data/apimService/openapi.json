@@ -44,9 +44,7 @@
     "components": {
         "schemas": {
             "User": {
-                "required": [
-                    "name"
-                ],
+                "required": ["name"],
                 "type": "object",
                 "properties": {
                     "id": {
@@ -62,10 +60,7 @@
                         "description": "User name"
                     },
                     "status": {
-                        "enum": [
-                            "Happy",
-                            "Sad"
-                        ],
+                        "enum": ["Happy", "Sad"],
                         "type": "string",
                         "description": "User status"
                     },

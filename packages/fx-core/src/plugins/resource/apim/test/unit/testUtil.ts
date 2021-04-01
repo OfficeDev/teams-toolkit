@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { TokenCredentialsBase } from '@azure/ms-rest-nodeauth';
+import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import {
     Dialog,
     DialogMsg,
@@ -13,15 +13,15 @@ import {
     ConfigMap,
     TeamsAppManifest,
     IProgressHandler,
-} from 'teamsfx-api';
-import { BuildError, NotImplemented } from '../../src/error';
-import { TokenCredential } from '@azure/core-auth';
-import { AsyncFunc, Func } from 'mocha';
-import * as msRestNodeAuth from '@azure/ms-rest-nodeauth';
-import { ConfidentialClientApplication } from '@azure/msal-node';
-import { AssertNotEmpty } from '../../src/error';
-import { IAadPluginConfig, IApimPluginConfig, IFunctionPluginConfig, ISolutionConfig } from '../../src/model/config';
-import { TeamsToolkitComponent } from '../../src/constants';
+} from "teamsfx-api";
+import { BuildError, NotImplemented } from "../../src/error";
+import { TokenCredential } from "@azure/core-auth";
+import { AsyncFunc, Func } from "mocha";
+import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
+import { ConfidentialClientApplication } from "@azure/msal-node";
+import { AssertNotEmpty } from "../../src/error";
+import { IAadPluginConfig, IApimPluginConfig, IFunctionPluginConfig, ISolutionConfig } from "../../src/model/config";
+import { TeamsToolkitComponent } from "../../src/constants";
 
 export class MockLogProvider implements LogProvider {
     async log(logLevel: LogLevel, message: string): Promise<boolean> {
@@ -48,22 +48,20 @@ export class MockLogProvider implements LogProvider {
 }
 
 export class MockTelemetryReporter implements TelemetryReporter {
-    sendTelemetryEvent(
-        eventName: string,
-        properties?: { [key: string]: string },
-        measurements?: { [key: string]: number },
-    ): void { }
+    sendTelemetryEvent(eventName: string, properties?: { [key: string]: string }, measurements?: { [key: string]: number }): void {
+        return;
+    }
     sendTelemetryErrorEvent(
         eventName: string,
         properties?: { [key: string]: string },
         measurements?: { [key: string]: number },
-        errorProps?: string[],
-    ): void { }
-    sendTelemetryException(
-        error: Error,
-        properties?: { [key: string]: string },
-        measurements?: { [key: string]: number },
-    ): void { }
+        errorProps?: string[]
+    ): void {
+        return;
+    }
+    sendTelemetryException(error: Error, properties?: { [key: string]: string }, measurements?: { [key: string]: number }): void {
+        return;
+    }
 }
 
 export class MockDialog implements Dialog {
@@ -77,7 +75,9 @@ export class MockDialog implements Dialog {
 }
 
 export class MockAzureAccountProvider implements AzureAccountProvider {
-    setStatusChangeCallback(statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean> {
+    setStatusChangeCallback(
+        statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>
+    ): Promise<boolean> {
         throw BuildError(NotImplemented);
     }
     signout(): Promise<boolean> {
@@ -87,11 +87,9 @@ export class MockAzureAccountProvider implements AzureAccountProvider {
     private credentials: TokenCredentialsBase | undefined;
 
     async login(clientId: string, secret: string, tenantId: string): Promise<void> {
-        this.credentials = await msRestNodeAuth
-            .loginWithServicePrincipalSecretWithAuthResponse(clientId, secret, tenantId)
-            .then((authres) => {
-                return authres.credentials;
-            });
+        this.credentials = await msRestNodeAuth.loginWithServicePrincipalSecretWithAuthResponse(clientId, secret, tenantId).then((authres) => {
+            return authres.credentials;
+        });
     }
 
     async getAccountCredentialAsync(): Promise<TokenCredentialsBase | undefined> {
@@ -124,7 +122,9 @@ export class MockGraphTokenProvider implements GraphTokenProvider {
     getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
         throw BuildError(NotImplemented);
     }
-    setStatusChangeCallback(statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean> {
+    setStatusChangeCallback(
+        statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>
+    ): Promise<boolean> {
         throw BuildError(NotImplemented);
     }
     signout(): Promise<boolean> {
@@ -141,43 +141,41 @@ export class MockGraphTokenProvider implements GraphTokenProvider {
         };
 
         const clientCredentialRequest = {
-            scopes: ['https://graph.microsoft.com/.default'], // replace with your resource
+            scopes: ["https://graph.microsoft.com/.default"], // replace with your resource
         };
 
         const cca = new ConfidentialClientApplication(config);
         const credential = await cca.acquireTokenByClientCredential(clientCredentialRequest);
-        return AssertNotEmpty('accessToken', credential?.accessToken);
+        return AssertNotEmpty("accessToken", credential?.accessToken);
     }
-
 }
-
 
 export class MockPluginContext implements PluginContext {
     configOfOtherPlugins: Map<string, Map<string, string>>;
     config: ConfigMap;
     app: Readonly<TeamsAppManifest> = {
-        manifestVersion: '',
-        version: '',
-        id: '',
+        manifestVersion: "",
+        version: "",
+        id: "",
         developer: {
-            name: '',
-            websiteUrl: '',
-            privacyUrl: '',
-            termsOfUseUrl: '',
+            name: "",
+            websiteUrl: "",
+            privacyUrl: "",
+            termsOfUseUrl: "",
         },
         name: {
-            short: '',
+            short: "",
         },
         description: {
-            short: '',
+            short: "",
         },
         icons: {
-            color: '',
-            outline: '',
+            color: "",
+            outline: "",
         },
-        accentColor: '',
+        accentColor: "",
     };
-    root: string = 'test';
+    root = "test";
     logProvider: MockLogProvider;
     telemetryReporter: MockTelemetryReporter;
     azureAccountProvider: MockAzureAccountProvider;
@@ -195,7 +193,7 @@ export class MockPluginContext implements PluginContext {
         solutionConfig: ISolutionConfig,
         apimConfig?: IApimPluginConfig,
         aadConfig?: IAadPluginConfig,
-        functionConfig?: IFunctionPluginConfig,
+        functionConfig?: IFunctionPluginConfig
     ) {
         this.clientId = clientId;
         this.clientSecret = clientSecret;
@@ -223,7 +221,7 @@ export class MockPluginContext implements PluginContext {
     }
 }
 
-export function skip_if(condition: boolean, name: string, callback: Func | AsyncFunc) {
+export function skip_if(condition: boolean, name: string, callback: Func | AsyncFunc) : void{
     const fn = condition ? it.skip : it;
     fn(name, callback);
 }

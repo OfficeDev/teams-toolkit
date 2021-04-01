@@ -6,9 +6,7 @@
     },
     "host": "xiaofhua-apim-developer.azure-api.net",
     "basePath": "/xiaofhua-apim-auth",
-    "schemes": [
-        "https"
-    ],
+    "schemes": ["https"],
     "paths": {
         "/users/{id}": {
             "get": {

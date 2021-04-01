@@ -1,16 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { AssertNotEmpty, BuildError, EmptyChoice, InvalidApimServiceChoice, NoValidOpenApiDocument } from '../error';
-import { LogProvider, Dialog, DialogMsg, DialogType, QuestionType } from 'teamsfx-api';
-import { IApimServiceResource } from '../model/resource';
-import { QuestionConstants } from '../constants';
-import { ApiContract } from '@azure/arm-apimanagement/src/models';
-import { IApimPluginConfig, ISolutionConfig } from '../model/config';
-import { ApimService } from './apimService';
-import { OpenApiProcessor } from '../util/openApiProcessor';
-import { NameSanitizer } from '../util/nameSanitizer';
-import { IOpenApiDocument } from '../model/openApiDocument';
-import { Telemetry } from '../telemetry';
+import { AssertNotEmpty, BuildError, EmptyChoice, InvalidApimServiceChoice, NoValidOpenApiDocument } from "../error";
+import { LogProvider, Dialog, DialogMsg, DialogType, QuestionType } from "teamsfx-api";
+import { IApimServiceResource } from "../model/resource";
+import { QuestionConstants } from "../constants";
+import { ApiContract } from "@azure/arm-apimanagement/src/models";
+import { IApimPluginConfig, ISolutionConfig } from "../model/config";
+import { ApimService } from "./apimService";
+import { OpenApiProcessor } from "../util/openApiProcessor";
+import { NameSanitizer } from "../util/nameSanitizer";
+import { IOpenApiDocument } from "../model/openApiDocument";
+import { Telemetry } from "../telemetry";
 
 export type SelectQuestionInput<T> = { options: string[]; map: Map<string, T>; defaultValue?: string };
 export type TextQuestionInput = { defaultValue?: string };
@@ -60,7 +60,7 @@ export class ApimServiceQuestion extends BaseQuestion implements IQuestion {
 
     public async generateQuestionInput(): Promise<SelectQuestionInput<IApimServiceResource>> {
         const apimServiceList = await this.apimService.listService();
-        let name2ResourceMap = new Map<string, IApimServiceResource>();
+        const name2ResourceMap = new Map<string, IApimServiceResource>();
         apimServiceList.forEach((resource) => name2ResourceMap.set(resource.serviceName, resource));
         const options = [QuestionConstants.createNewApimOption, ...name2ResourceMap.keys()];
         return { options: options, map: name2ResourceMap };
@@ -73,7 +73,7 @@ export class ApimServiceQuestion extends BaseQuestion implements IQuestion {
                     type: QuestionType.Radio,
                     description: QuestionConstants.askApimServiceDescription,
                     options: input.options,
-                }),
+                })
             )
         ).getAnswer();
 
@@ -84,11 +84,7 @@ export class ApimServiceQuestion extends BaseQuestion implements IQuestion {
         return answer;
     }
 
-    public save(
-        apimConfig: IApimPluginConfig,
-        answer: string,
-        name2ResourceMap: Map<string, IApimServiceResource>,
-    ): void {
+    public save(apimConfig: IApimPluginConfig, answer: string, name2ResourceMap: Map<string, IApimServiceResource>): void {
         if (answer === QuestionConstants.createNewApimOption) {
             apimConfig.resourceGroupName = undefined;
             apimConfig.serviceName = undefined;
@@ -121,7 +117,7 @@ export class OpenApiDocumentQuestion extends BaseQuestion implements IQuestion {
         const filePath2OpenApiMap = await this.openApiProcessor.listOpenApiDocument(
             rootPath,
             QuestionConstants.excludeFolders,
-            QuestionConstants.openApiDocumentFileExtensions,
+            QuestionConstants.openApiDocumentFileExtensions
         );
 
         if (filePath2OpenApiMap.size === 0) {
@@ -138,7 +134,7 @@ export class OpenApiDocumentQuestion extends BaseQuestion implements IQuestion {
                     type: QuestionType.Radio,
                     description: QuestionConstants.askOpenApiDocumentDescription,
                     options: input.options,
-                }),
+                })
             )
         ).getAnswer();
 
@@ -177,7 +173,7 @@ export class ApiNameQuestion extends BaseQuestion implements IQuestion {
                     description: QuestionConstants.askApiNameDescription,
                     prompt: QuestionConstants.askApiNamePrompt,
                     defaultAnswer: input.defaultValue,
-                }),
+                })
             )
         ).getAnswer();
 
@@ -205,21 +201,14 @@ export class ApiVersionQuestion extends BaseQuestion implements IQuestion {
         return true;
     }
 
-    public async generateQuestionInput(
-        solutionConfig: ISolutionConfig,
-        apimConfig: IApimPluginConfig,
-    ): Promise<SelectQuestionInput<ApiContract>> {
+    public async generateQuestionInput(solutionConfig: ISolutionConfig, apimConfig: IApimPluginConfig): Promise<SelectQuestionInput<ApiContract>> {
         const resourceGroupName = apimConfig.resourceGroupName ?? solutionConfig.resourceGroupName;
-        const serviceName = AssertNotEmpty('apimConfig.serviceName', apimConfig.serviceName);
-        const apiPrefix = AssertNotEmpty('apimConfig.apiPrefix', apimConfig.apiPrefix);
+        const serviceName = AssertNotEmpty("apimConfig.serviceName", apimConfig.serviceName);
+        const apiPrefix = AssertNotEmpty("apimConfig.apiPrefix", apimConfig.apiPrefix);
         const versionSetId = apimConfig.versionSetId ?? NameSanitizer.sanitizeVersionSetId(apiPrefix, solutionConfig.resourceNameSuffix);
 
-        let version2ApiContract = new Map<string, ApiContract>();
-        const apiContracts = await this.apimService.listApi(
-            resourceGroupName,
-            serviceName,
-            versionSetId,
-        );
+        const version2ApiContract = new Map<string, ApiContract>();
+        const apiContracts = await this.apimService.listApi(resourceGroupName, serviceName, versionSetId);
 
         // TODO: Deal with same version name.
         apiContracts.forEach((api) => {
@@ -241,7 +230,7 @@ export class ApiVersionQuestion extends BaseQuestion implements IQuestion {
                     type: QuestionType.Radio,
                     description: QuestionConstants.askApiVersionDescription,
                     options: input.options,
-                }),
+                })
             )
         ).getAnswer();
 
@@ -276,7 +265,7 @@ export class NewApiVersionQuestion extends BaseQuestion implements IQuestion {
                     description: QuestionConstants.askNewApiVersionDescription,
                     prompt: QuestionConstants.askNewApiVersionPrompt,
                     defaultAnswer: input.defaultValue,
-                }),
+                })
             )
         ).getAnswer();
 

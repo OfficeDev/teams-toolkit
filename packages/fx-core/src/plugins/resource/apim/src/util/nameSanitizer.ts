@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import md5 from 'md5';
+import md5 from "md5";
 
 // TODO: Validate all the service name after user input and config file loading.
 export class NameSanitizer {
@@ -26,11 +26,11 @@ export class NameSanitizer {
     }
 
     public static sanitizeApiNamePrefix(apiTitle: string): string {
-        return apiTitle.toLowerCase().replace(/[^0-9a-z]+/g, '-');
+        return apiTitle.toLowerCase().replace(/[^0-9a-z]+/g, "-");
     }
 
     public static sanitizeApiVersionIdentity(apiVersion: string): string {
-        return apiVersion.toLowerCase().replace(/[^0-9a-z]+/g, '-');
+        return apiVersion.toLowerCase().replace(/[^0-9a-z]+/g, "-");
     }
 
     public static sanitizeVersionSetId(apiNamePrefix: string, suffix: string): string {

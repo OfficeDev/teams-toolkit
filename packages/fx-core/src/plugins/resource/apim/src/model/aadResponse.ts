@@ -46,6 +46,6 @@ export interface IServicePrincipal {
     appId: string;
 }
 
-export interface IApiApplication{
-    knownClientApplications?: string[]
+export interface IApiApplication {
+    knownClientApplications?: string[];
 }

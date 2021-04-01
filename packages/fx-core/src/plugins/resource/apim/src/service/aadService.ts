@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { AadOperationError, AssertNotEmpty, BuildError } from '../error';
-import { AxiosInstance, Method } from 'axios';
-import { IAadInfo, IPasswordCredential, IServicePrincipals } from '../model/aadResponse';
-import { ErrorHandlerResult } from '../model/errorHandlerResult';
-import { Telemetry } from '../telemetry';
-import { AzureResource, IName, OperationStatus, Operation } from '../model/operation';
-import { LogProvider } from 'teamsfx-api';
-import { LogMessages } from '../log';
+import { AadOperationError, AssertNotEmpty, BuildError } from "../error";
+import { AxiosInstance, Method } from "axios";
+import { IAadInfo, IPasswordCredential, IServicePrincipals } from "../model/aadResponse";
+import { ErrorHandlerResult } from "../model/errorHandlerResult";
+import { Telemetry } from "../telemetry";
+import { AzureResource, IName, OperationStatus, Operation } from "../model/operation";
+import { LogProvider } from "teamsfx-api";
+import { LogMessages } from "../log";
 
 export class AadService {
     private readonly logger?: LogProvider;
@@ -25,15 +25,8 @@ export class AadService {
             displayName: aadName,
         };
 
-        const response = await this.execute(
-            Operation.Create,
-            AzureResource.Aad,
-            undefined,
-            'post',
-            '/applications',
-            body,
-        );
-        const data = AssertNotEmpty('response.data', response?.data);
+        const response = await this.execute(Operation.Create, AzureResource.Aad, undefined, "post", "/applications", body);
+        const data = AssertNotEmpty("response.data", response?.data);
         return data as IAadInfo;
     }
 
@@ -44,37 +37,43 @@ export class AadService {
             },
         };
 
-        let response = await this.execute(
+        const response = await this.execute(
             Operation.Create,
             AzureResource.AadSecret,
             undefined,
-            'post',
+            "post",
             `/applications/${objectId}/addPassword`,
-            body,
+            body
         );
-        const data = AssertNotEmpty('response.data', response?.data);
+        const data = AssertNotEmpty("response.data", response?.data);
         return data as IPasswordCredential;
     }
 
     public async getAad(objectId: string): Promise<IAadInfo | undefined> {
-        let response = await this.execute(
+        const response = await this.execute(
             Operation.Get,
             AzureResource.Aad,
             objectId,
-            'get',
+            "get",
             `/applications/${objectId}`,
             undefined,
-            this._resourceNotFoundErrorHandler,
+            this._resourceNotFoundErrorHandler
         );
         return response?.data as IAadInfo;
     }
 
     public async updateAad(objectId: string, data: IAadInfo): Promise<void> {
-        await this.execute(Operation.Update, AzureResource.Aad, objectId, 'patch', `/applications/${objectId}`, data);
+        await this.execute(Operation.Update, AzureResource.Aad, objectId, "patch", `/applications/${objectId}`, data);
     }
 
     public async createServicePrincipalIfNotExists(appId: string): Promise<void> {
-        const response = await this.execute(Operation.Get, AzureResource.ServicePrincipal, appId, 'get', `/servicePrincipals?$filter=appId eq '${appId}'`);
+        const response = await this.execute(
+            Operation.Get,
+            AzureResource.ServicePrincipal,
+            appId,
+            "get",
+            `/servicePrincipals?$filter=appId eq '${appId}'`
+        );
         const existingServicePrincipals = response?.data as IServicePrincipals;
         if (existingServicePrincipals.value.length > 0) {
             return;
@@ -84,7 +83,7 @@ export class AadService {
         const body = {
             appId: appId,
         };
-        await this.execute(Operation.Create, AzureResource.ServicePrincipal, appId, 'post', '/servicePrincipals', body);
+        await this.execute(Operation.Create, AzureResource.ServicePrincipal, appId, "post", "/servicePrincipals", body);
     }
 
     private async execute(
@@ -94,7 +93,7 @@ export class AadService {
         method: Method,
         url: string,
         data?: any,
-        errorHandler?: (error: any) => ErrorHandlerResult,
+        errorHandler?: (error: any) => ErrorHandlerResult
     ) {
         try {
             this.logger?.info(LogMessages.operationStarts(operation, resourceType, resourceId));

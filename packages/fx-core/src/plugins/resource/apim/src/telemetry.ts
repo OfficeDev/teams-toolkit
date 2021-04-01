@@ -1,16 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { UserError } from 'teamsfx-api';
-import { SystemError, TelemetryReporter } from 'teamsfx-api';
-import { OpenApiSchemaVersion } from './model/openApiDocument';
-import { IName, OperationStatus } from './model/operation';
+import { UserError } from "teamsfx-api";
+import { SystemError, TelemetryReporter } from "teamsfx-api";
+import { OpenApiSchemaVersion } from "./model/openApiDocument";
+import { IName, OperationStatus } from "./model/operation";
 
 class TelemetryEventNameConstants {
-    public static readonly apimOperation: string = 'apim-operation';
-    public static readonly aadOperation: string = 'aad-operation';
-    public static readonly openApiDocument: string = 'openapi-document';
-    public static readonly warning: string = 'warning';
-    public static readonly error: string = 'error';
+    public static readonly apimOperation: string = "apim-operation";
+    public static readonly aadOperation: string = "aad-operation";
+    public static readonly openApiDocument: string = "openapi-document";
+    public static readonly warning: string = "warning";
+    public static readonly error: string = "error";
 }
 
 export class Telemetry {
@@ -51,14 +51,14 @@ export class Telemetry {
         }
     }
 
-    public sendOpenApiDocumentEvent(fileExtension: string, schemaVersion: OpenApiSchemaVersion) {
+    public sendOpenApiDocumentEvent(fileExtension: string, schemaVersion: OpenApiSchemaVersion): void {
         this.telemetry?.sendTelemetryEvent(TelemetryEventNameConstants.openApiDocument, {
-            'file-extension': fileExtension,
-            'schema-version': schemaVersion,
+            "file-extension": fileExtension,
+            "schema-version": schemaVersion,
         });
     }
 
-    public sendErrorEvent(error: UserError | SystemError) {
+    public sendErrorEvent(error: UserError | SystemError): void {
         this.telemetry?.sendTelemetryException(error);
     }
 }

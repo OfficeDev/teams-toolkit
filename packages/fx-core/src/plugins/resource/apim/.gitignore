@@ -3,3 +3,5 @@ build
 coverage
 .npmrc
 .env
+.prettierignore
+.prettierrc.json

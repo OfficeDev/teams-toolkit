@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ConfigValue, ReadonlySolutionConfig } from 'teamsfx-api';
+import { ConfigValue, ReadonlySolutionConfig } from "teamsfx-api";
 import {
     TeamsToolkitComponent,
     ComponentRetryLifeCycle,
@@ -9,8 +9,8 @@ import {
     AadPluginConfigKeys,
     FunctionPluginConfigKeys,
     ApimPluginConfigKeys,
-} from '../constants';
-import { AssertConfigNotEmpty, AssertNotEmpty, BuildError, InvalidPropertyType, NoPluginConfig } from '../error';
+} from "../constants";
+import { AssertConfigNotEmpty, BuildError, InvalidPropertyType, NoPluginConfig } from "../error";
 
 export interface IApimPluginConfig {
     resourceGroupName?: string;
@@ -55,66 +55,65 @@ export class ApimPluginConfig implements IApimPluginConfig {
     get resourceGroupName(): string | undefined {
         return this.getValue(ApimPluginConfigKeys.resourceGroupName);
     }
-    get serviceName(): string | undefined {
-        return this.getValue(ApimPluginConfigKeys.serviceName);
-    }
-    get productId(): string | undefined {
-        return this.getValue(ApimPluginConfigKeys.productId);
-    }
-    get oAuthServerId(): string | undefined {
-        return this.getValue(ApimPluginConfigKeys.oAuthServerId);
-    }
-    get apimClientAADObjectId(): string | undefined {
-        return this.getValue(ApimPluginConfigKeys.apimClientAADObjectId);
-    }
-    get apimClientAADClientId(): string | undefined {
-        return this.getValue(ApimPluginConfigKeys.apimClientAADClientId);
-    }
-    get apimClientAADClientSecret(): string | undefined {
-        return this.getValue(ApimPluginConfigKeys.apimClientAADClientSecret);
-    }
-    get apiPrefix(): string | undefined {
-        return this.getValue(ApimPluginConfigKeys.apiPrefix);
-    }
-    get versionSetId(): string | undefined {
-        return this.getValue(ApimPluginConfigKeys.versionSetId);
-    }
-    get apiPath(): string | undefined {
-        return this.getValue(ApimPluginConfigKeys.apiPath);
-    }
-    get apiDocumentPath(): string | undefined {
-        return this.getValue(ApimPluginConfigKeys.apiDocumentPath);
-    }
-
     set resourceGroupName(value: string | undefined) {
         this.setValue(ApimPluginConfigKeys.resourceGroupName, value);
+    }
+    get serviceName(): string | undefined {
+        return this.getValue(ApimPluginConfigKeys.serviceName);
     }
     set serviceName(value: string | undefined) {
         this.setValue(ApimPluginConfigKeys.serviceName, value);
     }
+    get productId(): string | undefined {
+        return this.getValue(ApimPluginConfigKeys.productId);
+    }
     set productId(value: string | undefined) {
         this.setValue(ApimPluginConfigKeys.productId, value);
+    }
+    get oAuthServerId(): string | undefined {
+        return this.getValue(ApimPluginConfigKeys.oAuthServerId);
     }
     set oAuthServerId(value: string | undefined) {
         this.setValue(ApimPluginConfigKeys.oAuthServerId, value);
     }
+    get apimClientAADObjectId(): string | undefined {
+        return this.getValue(ApimPluginConfigKeys.apimClientAADObjectId);
+    }
     set apimClientAADObjectId(value: string | undefined) {
         this.setValue(ApimPluginConfigKeys.apimClientAADObjectId, value);
+    }
+    get apimClientAADClientId(): string | undefined {
+        return this.getValue(ApimPluginConfigKeys.apimClientAADClientId);
     }
     set apimClientAADClientId(value: string | undefined) {
         this.setValue(ApimPluginConfigKeys.apimClientAADClientId, value);
     }
+    get apimClientAADClientSecret(): string | undefined {
+        return this.getValue(ApimPluginConfigKeys.apimClientAADClientSecret);
+    }
     set apimClientAADClientSecret(value: string | undefined) {
         this.setValue(ApimPluginConfigKeys.apimClientAADClientSecret, value);
+    }
+    get apiPrefix(): string | undefined {
+        return this.getValue(ApimPluginConfigKeys.apiPrefix);
     }
     set apiPrefix(value: string | undefined) {
         this.setValue(ApimPluginConfigKeys.apiPrefix, value);
     }
+    get versionSetId(): string | undefined {
+        return this.getValue(ApimPluginConfigKeys.versionSetId);
+    }
     set versionSetId(value: string | undefined) {
         this.setValue(ApimPluginConfigKeys.versionSetId, value);
     }
+    get apiPath(): string | undefined {
+        return this.getValue(ApimPluginConfigKeys.apiPath);
+    }
     set apiPath(value: string | undefined) {
         this.setValue(ApimPluginConfigKeys.apiPath, value);
+    }
+    get apiDocumentPath(): string | undefined {
+        return this.getValue(ApimPluginConfigKeys.apiDocumentPath);
     }
     set apiDocumentPath(value: string | undefined) {
         this.setValue(ApimPluginConfigKeys.apiDocumentPath, value);
@@ -122,8 +121,8 @@ export class ApimPluginConfig implements IApimPluginConfig {
 
     private getValue(key: string): string | undefined {
         const value = this.config.get(key);
-        if (typeof value !== 'string' && typeof value !== 'undefined') {
-            throw BuildError(InvalidPropertyType, key, 'string');
+        if (typeof value !== "string" && typeof value !== "undefined") {
+            throw BuildError(InvalidPropertyType, key, "string");
         }
 
         return value;
@@ -207,8 +206,8 @@ function checkAndGetOtherPluginConfig(configOfOtherPlugins: ReadonlySolutionConf
     }
 
     const value = AssertConfigNotEmpty(component, key, pluginConfig.get(key));
-    if (typeof value !== 'string') {
-        throw BuildError(InvalidPropertyType, key, 'string');
+    if (typeof value !== "string") {
+        throw BuildError(InvalidPropertyType, key, "string");
     }
     return value;
 }

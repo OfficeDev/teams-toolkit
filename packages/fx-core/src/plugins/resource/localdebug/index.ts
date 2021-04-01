@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+"use strict";
 
 import * as fs from "fs-extra";
 import { Func, FxError, Platform, Plugin, PluginContext, Result, err, ok } from "teamsfx-api";

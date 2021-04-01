@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+"use strict";
 
 import { returnSystemError, returnUserError, SystemError, UserError } from "teamsfx-api";
 

@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+"use strict";
 
 export class LocalDebugPluginInfo {
     public static readonly pluginName: string = "teamsfx-resource-local-debug";

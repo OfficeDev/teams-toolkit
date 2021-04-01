@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+"use strict";
 
 import * as cp from "child_process";
 import * as sudo from "sudo-prompt";

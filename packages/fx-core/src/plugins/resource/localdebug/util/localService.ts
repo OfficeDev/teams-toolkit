@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+"use strict";
 
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";

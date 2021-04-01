@@ -1,0 +1,20 @@
+name: .NET
+
+on:
+  push:
+    branches: 
+    - main
+  pull_request:
+    branches: 
+    - '*'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: use this action, test solution dir
+        uses: zyborg/dotnet-tests-report@v1
+        with:
+          project_path: pacakges/simpleauth/src/TeamsFxSimpleAuth.Tests
+          report_name: TeamsFx
+          report_title: TeamsFx Report

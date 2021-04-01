@@ -14,14 +14,14 @@ import {
     TeamsAppManifest,
     IProgressHandler,
 } from "teamsfx-api";
-import { BuildError, NotImplemented } from "../../../src/plugins/resource/apim/src/error";
+import { BuildError, NotImplemented } from "../../../../../src/plugins/resource/apim/src/error";
 import { TokenCredential } from "@azure/core-auth";
 import { AsyncFunc, Func } from "mocha";
 import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import { ConfidentialClientApplication } from "@azure/msal-node";
-import { AssertNotEmpty } from "../../../src/plugins/resource/apim/src/error";
-import { IAadPluginConfig, IApimPluginConfig, IFunctionPluginConfig, ISolutionConfig } from "../../../src/plugins/resource/apim/src/model/config";
-import { TeamsToolkitComponent } from "../../../src/plugins/resource/apim/src/constants";
+import { AssertNotEmpty } from "../../../../../src/plugins/resource/apim/src/error";
+import { IAadPluginConfig, IApimPluginConfig, IFunctionPluginConfig, ISolutionConfig } from "../../../../../src/plugins/resource/apim/src/model/config";
+import { TeamsToolkitComponent } from "../../../../../src/plugins/resource/apim/src/constants";
 
 export class MockLogProvider implements LogProvider {
     async log(logLevel: LogLevel, message: string): Promise<boolean> {

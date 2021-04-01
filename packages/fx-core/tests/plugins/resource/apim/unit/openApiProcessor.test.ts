@@ -4,10 +4,10 @@ import "mocha";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import path from "path";
-import { OpenApiProcessor } from "../../../src/plugins/resource/apim/src/util/openApiProcessor";
-import { OpenApiSchemaVersion } from "../../../src/plugins/resource/apim/src/model/openApiDocument";
-import { InvalidFunctionEndpoint, InvalidOpenApiDocument } from "../../../src/plugins/resource/apim/src/error";
-import { Telemetry } from "../../../src/plugins/resource/apim/src/telemetry";
+import { OpenApiProcessor } from "../../../../../src/plugins/resource/apim/src/util/openApiProcessor";
+import { OpenApiSchemaVersion } from "../../../../../src/plugins/resource/apim/src/model/openApiDocument";
+import { InvalidFunctionEndpoint, InvalidOpenApiDocument } from "../../../../../src/plugins/resource/apim/src/error";
+import { Telemetry } from "../../../../../src/plugins/resource/apim/src/telemetry";
 chai.use(chaiAsPromised);
 
 describe("OpenApiProcessor", () => {
@@ -21,22 +21,22 @@ describe("OpenApiProcessor", () => {
         const testInput: { message: string; filePath: string; schemaVersion: OpenApiSchemaVersion }[] = [
             {
                 message: "v3 json file",
-                filePath: "./tests/apim/unit/data/openApiProcessor/openapi-user.json",
+                filePath: "./tests/plugins/resource/apim/unit/data/openApiProcessor/openapi-user.json",
                 schemaVersion: OpenApiSchemaVersion.v3,
             },
             {
                 message: "v3 yaml file",
-                filePath: "./tests/apim/unit/data/openApiProcessor/openapi-user.yaml",
+                filePath: "./tests/plugins/resource/apim/unit/data/openApiProcessor/openapi-user.yaml",
                 schemaVersion: OpenApiSchemaVersion.v3,
             },
             {
                 message: "v2 json file",
-                filePath: "./tests/apim/unit/data/openApiProcessor/swagger-user.json",
+                filePath: "./tests/plugins/resource/apim/unit/data/openApiProcessor/swagger-user.json",
                 schemaVersion: OpenApiSchemaVersion.v2,
             },
             {
                 message: "v2 yaml file",
-                filePath: "./tests/apim/unit/data/openApiProcessor/swagger-user.yaml",
+                filePath: "./tests/plugins/resource/apim/unit/data/openApiProcessor/swagger-user.yaml",
                 schemaVersion: OpenApiSchemaVersion.v2,
             },
         ];
@@ -63,43 +63,43 @@ describe("OpenApiProcessor", () => {
         const errorInput: { message: string; filePath: string; error: string }[] = [
             {
                 message: "invalid json file",
-                filePath: "./tests/apim/unit/data/openApiProcessor/errorSpec/invalid.json",
-                error: InvalidOpenApiDocument.message("./tests/apim/unit/data/openApiProcessor/errorSpec/invalid.json"),
+                filePath: "./tests/plugins/resource/apim/unit/data/openApiProcessor/errorSpec/invalid.json",
+                error: InvalidOpenApiDocument.message("./tests/plugins/resource/apim/unit/data/openApiProcessor/errorSpec/invalid.json"),
             },
             {
                 message: "invalid yaml file",
-                filePath: "./tests/apim/unit/data/openApiProcessor/errorSpec/invalid.yaml",
-                error: InvalidOpenApiDocument.message("./tests/apim/unit/data/openApiProcessor/errorSpec/invalid.yaml"),
+                filePath: "./tests/plugins/resource/apim/unit/data/openApiProcessor/errorSpec/invalid.yaml",
+                error: InvalidOpenApiDocument.message("./tests/plugins/resource/apim/unit/data/openApiProcessor/errorSpec/invalid.yaml"),
             },
             {
                 message: "info undefined",
-                filePath: "./tests/apim/unit/data/openApiProcessor/errorSpec/info-undefined.json",
-                error: InvalidOpenApiDocument.message("./tests/apim/unit/data/openApiProcessor/errorSpec/info-undefined.json"),
+                filePath: "./tests/plugins/resource/apim/unit/data/openApiProcessor/errorSpec/info-undefined.json",
+                error: InvalidOpenApiDocument.message("./tests/plugins/resource/apim/unit/data/openApiProcessor/errorSpec/info-undefined.json"),
             },
             {
                 message: "not swagger file",
-                filePath: "./tests/apim/unit/data/openApiProcessor/errorSpec/not-swagger.json",
-                error: InvalidOpenApiDocument.message("./tests/apim/unit/data/openApiProcessor/errorSpec/not-swagger.json"),
+                filePath: "./tests/plugins/resource/apim/unit/data/openApiProcessor/errorSpec/not-swagger.json",
+                error: InvalidOpenApiDocument.message("./tests/plugins/resource/apim/unit/data/openApiProcessor/errorSpec/not-swagger.json"),
             },
             {
                 message: "title empty",
-                filePath: "./tests/apim/unit/data/openApiProcessor/errorSpec/title-empty.json",
-                error: InvalidOpenApiDocument.message("./tests/apim/unit/data/openApiProcessor/errorSpec/title-empty.json"),
+                filePath: "./tests/plugins/resource/apim/unit/data/openApiProcessor/errorSpec/title-empty.json",
+                error: InvalidOpenApiDocument.message("./tests/plugins/resource/apim/unit/data/openApiProcessor/errorSpec/title-empty.json"),
             },
             {
                 message: "title undefined",
-                filePath: "./tests/apim/unit/data/openApiProcessor/errorSpec/title-undefined.yaml",
-                error: InvalidOpenApiDocument.message("./tests/apim/unit/data/openApiProcessor/errorSpec/title-undefined.yaml"),
+                filePath: "./tests/plugins/resource/apim/unit/data/openApiProcessor/errorSpec/title-undefined.yaml",
+                error: InvalidOpenApiDocument.message("./tests/plugins/resource/apim/unit/data/openApiProcessor/errorSpec/title-undefined.yaml"),
             },
             {
                 message: "version empty",
-                filePath: "./tests/apim/unit/data/openApiProcessor/errorSpec/version-empty.yaml",
-                error: InvalidOpenApiDocument.message("./tests/apim/unit/data/openApiProcessor/errorSpec/version-empty.yaml"),
+                filePath: "./tests/plugins/resource/apim/unit/data/openApiProcessor/errorSpec/version-empty.yaml",
+                error: InvalidOpenApiDocument.message("./tests/plugins/resource/apim/unit/data/openApiProcessor/errorSpec/version-empty.yaml"),
             },
             {
                 message: "version undefined",
-                filePath: "./tests/apim/unit/data/openApiProcessor/errorSpec/version-undefined.json",
-                error: InvalidOpenApiDocument.message("./tests/apim/unit/data/openApiProcessor/errorSpec/version-undefined.json"),
+                filePath: "./tests/plugins/resource/apim/unit/data/openApiProcessor/errorSpec/version-undefined.json",
+                error: InvalidOpenApiDocument.message("./tests/plugins/resource/apim/unit/data/openApiProcessor/errorSpec/version-undefined.json"),
             },
         ];
         errorInput.forEach((input) => {
@@ -184,8 +184,8 @@ describe("OpenApiProcessor", () => {
                 const openApiProcessor: OpenApiProcessor = new OpenApiProcessor(mockTelemetry);
                 const openApiFile =
                     input.schemaVersion == OpenApiSchemaVersion.v2
-                        ? "./tests/apim/unit/data/openApiProcessor/swagger-user.json"
-                        : "./tests/apim/unit/data/openApiProcessor/openapi-user.json";
+                        ? "./tests/plugins/resource/apim/unit/data/openApiProcessor/swagger-user.json"
+                        : "./tests/plugins/resource/apim/unit/data/openApiProcessor/openapi-user.json";
                 const openApiDocument = await openApiProcessor.loadOpenApiDocument(openApiFile);
                 const spec = openApiProcessor.patchOpenApiDocument(
                     openApiDocument.spec,
@@ -236,8 +236,8 @@ describe("OpenApiProcessor", () => {
                 const openApiProcessor: OpenApiProcessor = new OpenApiProcessor(mockTelemetry);
                 const openApiFile =
                     input.schemaVersion == OpenApiSchemaVersion.v2
-                        ? "./tests/apim/unit/data/openApiProcessor/swagger-user.json"
-                        : "./tests/apim/unit/data/openApiProcessor/openapi-user.json";
+                        ? "./tests/plugins/resource/apim/unit/data/openApiProcessor/swagger-user.json"
+                        : "./tests/plugins/resource/apim/unit/data/openApiProcessor/openapi-user.json";
                 const openApiDocument = await openApiProcessor.loadOpenApiDocument(openApiFile);
                 chai.expect(() => openApiProcessor.patchOpenApiDocument(openApiDocument.spec, openApiDocument.schemaVersion, input.endpoint)).Throw(
                     input.error
@@ -256,7 +256,7 @@ describe("OpenApiProcessor", () => {
         it("Load valid swagger files", async () => {
             const openApiProcessor: OpenApiProcessor = new OpenApiProcessor(mockTelemetry);
             const result = await openApiProcessor.listOpenApiDocument(
-                "./tests/apim/unit/data/openApiProcessor/loadOpenApiDocument",
+                "./tests/plugins/resource/apim/unit/data/openApiProcessor/loadOpenApiDocument",
                 ["exclude"],
                 ["json", "yaml"]
             );
@@ -305,13 +305,13 @@ describe("OpenApiProcessor", () => {
         testInput.forEach((data) => {
             it(data.message, async () => {
                 const result = await openApiProcessor.listAllFiles(
-                    "./tests/apim/unit/data/openApiProcessor/listAllFiles",
+                    "./tests/plugins/resource/apim/unit/data/openApiProcessor/listAllFiles",
                     data.excludeFolders ?? [],
                     data.fileExtensions
                 );
                 chai.assert.deepEqual(
                     result.sort(),
-                    data.output.map((file) => path.normalize(`./tests/apim/unit/data/openApiProcessor/listAllFiles/${file}`)).sort()
+                    data.output.map((file) => path.normalize(`./tests/plugins/resource/apim/unit/data/openApiProcessor/listAllFiles/${file}`)).sort()
                 );
             });
         });

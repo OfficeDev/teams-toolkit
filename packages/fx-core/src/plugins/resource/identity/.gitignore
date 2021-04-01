@@ -1,0 +1,7 @@
+node_modules
+dist
+coverage
+.npmrc
+.dist
+.nyc_output
+.env

@@ -1,0 +1,4 @@
+swagger: '2.0'
+info:
+      title: user input swagger
+  version: v1

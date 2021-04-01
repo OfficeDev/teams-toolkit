@@ -30,7 +30,7 @@ export class ApimManager {
         await this.openApiProcessor.generateDefaultOpenApi(openApiFileName, app.name.short, app.version);
     }
 
-    public async provision(apimConfig: IApimPluginConfig, solutionConfig: ISolutionConfig, appName: string) {
+    public async provision(apimConfig: IApimPluginConfig, solutionConfig: ISolutionConfig, appName: string): Promise<void> {
         const resourceGroupName = apimConfig.resourceGroupName ?? solutionConfig.resourceGroupName;
         const apimServiceName = apimConfig.serviceName ?? NameSanitizer.sanitizeApimName(appName, solutionConfig.resourceNameSuffix);
 

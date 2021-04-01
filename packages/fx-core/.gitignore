@@ -1,0 +1,8 @@
+node_modules
+build
+coverage
+.nyc_output
+.npmrc
+.env
+.prettierignore
+.prettierrc.json

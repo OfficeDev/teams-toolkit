@@ -43,10 +43,12 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
+    "@azure/arm-appservice": "^7.0.0",
     "@shared/eslint-config": "^0.0.0",
     "@types/adm-zip": "^0.4.33",
     "@types/chai": "^4.2.14",
     "@types/chai-as-promised": "^7.1.3",
+    "@types/faker": "^5.5.0",
     "@types/fs-extra": "^9.0.9",
     "@types/js-yaml": "^4.0.0",
     "@types/md5": "^2.3.0",
@@ -61,6 +63,7 @@
     "chai-as-promised": "^7.1.1",
     "dotenv": "^8.2.0",
     "eslint": "^7.22.0",
+    "faker": "^5.5.2",
     "lint-staged": "^10.5.4",
     "mocha": "^8.2.1",
     "mocha-junit-reporter": "^2.0.0",

@@ -3,21 +3,21 @@
 
 export class Messages {
     // Progress bar messages
-    static readonly ScaffoldProgressTitle = 'Tab frontend scaffolding';
-    static readonly ProvisionProgressTitle = 'Tab frontend provision';
-    static readonly PreDeployProgressTitle = 'Tab frontend building';
-    static readonly DeployProgressTitle = 'Tab frontend deployment';
+    static readonly ScaffoldProgressTitle = "Tab frontend scaffolding";
+    static readonly ProvisionProgressTitle = "Tab frontend provision";
+    static readonly PreDeployProgressTitle = "Tab frontend building";
+    static readonly DeployProgressTitle = "Tab frontend deployment";
 
-    static readonly ProgressStart = 'Preparing.';
-    static readonly ProgressScaffold = 'Scaffolding Tab frontend project.';
-    static readonly ProgressCreateStorage = 'Creating Azure Storage Account.';
-    static readonly ProgressConfigure = 'Configuring.';
-    static readonly ProgressNPMInstall = 'Running "npm install" for Tab frontend project.';
-    static readonly ProgressBuild = 'Building Tab frontend project.';
-    static readonly ProgressCheckStorage = 'Checking Azure Storage Account availability.';
-    static readonly ProgressGetSrcAndDest = 'Getting local source and remote destination to deploy.';
-    static readonly ProgressClear = 'Cleaning up Azure Storage Account.';
-    static readonly ProgressUpload = 'Uploading built Tab project to Azure Storage Account.';
+    static readonly ProgressStart = "Preparing.";
+    static readonly ProgressScaffold = "Scaffolding Tab frontend project.";
+    static readonly ProgressCreateStorage = "Creating Azure Storage Account.";
+    static readonly ProgressConfigure = "Configuring.";
+    static readonly ProgressNPMInstall = "Running \"npm install\" for Tab frontend project.";
+    static readonly ProgressBuild = "Building Tab frontend project.";
+    static readonly ProgressCheckStorage = "Checking Azure Storage Account availability.";
+    static readonly ProgressGetSrcAndDest = "Getting local source and remote destination to deploy.";
+    static readonly ProgressClear = "Cleaning up Azure Storage Account.";
+    static readonly ProgressUpload = "Uploading built Tab project to Azure Storage Account.";
 
     // Logging messages
     static readonly StartScaffold = (name: string) => `Start to scaffold ${name}.`;
@@ -30,9 +30,9 @@ export class Messages {
     static readonly EndPreDeploy = (name: string) => `Successfully pre-deploy ${name}.`;
     static readonly StartDeploy = (name: string) => `Start to deploy ${name}.`;
     static readonly EndDeploy = (name: string) => `Successfully deploy ${name}.`;
-    static readonly SkipBuild = () => 'No changes detected since last building, skip building Tab Frontend project.';
+    static readonly SkipBuild = () => "No changes detected since last building, skip building Tab Frontend project.";
     static readonly SkipDeploy = () =>
-        'No changes detected since last deployment, skip deploying Tab Frontend project.';
+        "No changes detected since last deployment, skip deploying Tab Frontend project.";
 
     static readonly StartCheckResourceGroupExistence = (name: string) =>
         `Start to check existence resource group: ${name}.`;
@@ -52,10 +52,10 @@ export class Messages {
     static readonly FailedFetchManifest = (url: string) => `Failed to fetch manifest from URL: ${url}. Retrying...`;
     static readonly FailedFetchZip = (url: string) => `Failed to fetch zip package from URL: ${url}. Retrying...`;
     static readonly FailedFetchTemplate = () =>
-        'Failed to fetch latest template from GitHub, fall back to using local template.';
+        "Failed to fetch latest template from GitHub, fall back to using local template.";
 
     static readonly FailedOperationWithErrorCode = (doOperation: string, errorCode?: string) =>
         `Failed to ${doOperation} with error code: ${errorCode}.`;
-    static readonly GetEmptyStorageEndpoint = () => 'Get empty endpoint for new created Azure Storage Account.';
-    static readonly GetEmptySasToken = () => 'Get empty SAS token for Azure Storage Account.';
+    static readonly GetEmptyStorageEndpoint = () => "Get empty endpoint for new created Azure Storage Account.";
+    static readonly GetEmptySasToken = () => "Get empty SAS token for Azure Storage Account.";
 }

@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Constants } from '../constants';
-import { IProgressHandler, PluginContext } from 'teamsfx-api';
-import { Messages } from '../resources/messages';
+import { Constants } from "../constants";
+import { IProgressHandler, PluginContext } from "teamsfx-api";
+import { Messages } from "../resources/messages";
 
 export const ScaffoldSteps = {
     Scaffold: Messages.ProgressScaffold,

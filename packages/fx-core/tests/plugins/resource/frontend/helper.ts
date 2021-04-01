@@ -1,27 +1,27 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import * as faker from 'faker';
-import { ApplicationTokenCredentials, TokenCredentialsBase } from '@azure/ms-rest-nodeauth';
-import { AzureAccountProvider, LogLevel, LogProvider, ConfigMap, FolderProvider, PluginContext, TeamsAppManifest } from 'teamsfx-api';
-import { v4 as uuid } from 'uuid';
+import * as faker from "faker";
+import { ApplicationTokenCredentials, TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
+import { AzureAccountProvider, LogLevel, LogProvider, ConfigMap, FolderProvider, PluginContext, TeamsAppManifest } from "teamsfx-api";
+import { v4 as uuid } from "uuid";
 
-import { AxiosResponse } from 'axios';
-import { AzureStorageClient } from '../../../../src/plugins/resource/frontend/clients';
-import { DependentPluginInfo } from '../../../../src/plugins/resource/frontend/constants';
-import { FrontendConfig } from '../../../../src/plugins/resource/frontend/configs';
-import { FrontendPlugin } from '../../../../src/plugins/resource/frontend';
-import { Manifest } from '../../../../src/plugins/resource/frontend/ops/scaffold';
+import { AxiosResponse } from "axios";
+import { AzureStorageClient } from "../../../../src/plugins/resource/frontend/clients";
+import { DependentPluginInfo } from "../../../../src/plugins/resource/frontend/constants";
+import { FrontendConfig } from "../../../../src/plugins/resource/frontend/configs";
+import { FrontendPlugin } from "../../../../src/plugins/resource/frontend";
+import { Manifest } from "../../../../src/plugins/resource/frontend/ops/scaffold";
 
 export class TestHelper {
-    static appName: string = 'app-test';
-    static rgName: string = 'app-test-rg';
-    static location: string = 'eastus2';
+    static appName = "app-test";
+    static rgName = "app-test-rg";
+    static location = "eastus2";
     static rootDir: string = faker.system.directoryPath();
     static storageSuffix: string = uuid().substr(0, 6);
-    static functionDefaultEntry: string = 'httpTrigger';
+    static functionDefaultEntry = "httpTrigger";
     static functionEndpoint: string = faker.internet.url();
     static runtimeEndpoint: string = faker.internet.url();
-    static startLoginPage: string = 'auth-start.html';
+    static startLoginPage = "auth-start.html";
     static fakeCredential: TokenCredentialsBase = new ApplicationTokenCredentials(
         faker.random.uuid(),
         faker.internet.url(),
@@ -83,7 +83,7 @@ export class TestHelper {
         runtimeConfig.set(DependentPluginInfo.RuntimeEndpoint, TestHelper.runtimeEndpoint);
         runtimeConfig.set(DependentPluginInfo.StartLoginPageURL, TestHelper.startLoginPage);
 
-        let pluginContext = {
+        const pluginContext = {
             azureAccountProvider: TestHelper.fakeAzureAccountProvider,
             FolderProvider: TestHelper.fakeFolderProvider,
             logProvider: TestHelper.fakeLogProvider,
@@ -127,11 +127,11 @@ export class TestHelper {
 
     static latestTemplateURL: string = faker.internet.url();
 
-    static getFakeAxiosResponse(data: any, status: number = 200): AxiosResponse<any> {
+    static getFakeAxiosResponse(data: any, status = 200): AxiosResponse<any> {
         return {
             status: status,
             data: data,
-            statusText: 'OK',
+            statusText: "OK",
             config: {},
             headers: {},
         };
@@ -143,19 +143,19 @@ export class TestHelper {
                 b: {
                     c: [
                         {
-                            version: '0.1.0',
+                            version: "0.1.0",
                             url: faker.internet.url(),
                         },
                         {
-                            version: '0.2.0',
+                            version: "0.2.0",
                             url: faker.internet.url(),
                         },
                         {
-                            version: '0.1.3',
+                            version: "0.1.3",
                             url: TestHelper.latestTemplateURL,
                         },
                         {
-                            version: '0.1.2',
+                            version: "0.1.2",
                             url: faker.internet.url(),
                         },
                     ],

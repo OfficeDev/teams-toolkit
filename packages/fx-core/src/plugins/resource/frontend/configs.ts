@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import * as path from 'path';
-import { PluginContext } from 'teamsfx-api';
-import { TokenCredentialsBase } from '@azure/ms-rest-nodeauth';
+import * as path from "path";
+import { PluginContext } from "teamsfx-api";
+import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 
-import { Constants, DependentPluginInfo } from './constants';
-import { InvalidStorageNameError, NotScaffoldError, UnauthenticatedError } from './resources/errors';
-import { Utils } from './utils';
+import { Constants, DependentPluginInfo } from "./constants";
+import { InvalidStorageNameError, NotScaffoldError, UnauthenticatedError } from "./resources/errors";
+import { Utils } from "./utils";
 
 export class FrontendConfig {
     appName: string;

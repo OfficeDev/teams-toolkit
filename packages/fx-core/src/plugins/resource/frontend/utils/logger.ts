@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { LogProvider } from 'teamsfx-api';
+import { LogProvider } from "teamsfx-api";
 
-import { FrontendPluginInfo } from '../constants';
+import { FrontendPluginInfo } from "../constants";
 
 export class Logger {
     static logger: LogProvider | undefined;

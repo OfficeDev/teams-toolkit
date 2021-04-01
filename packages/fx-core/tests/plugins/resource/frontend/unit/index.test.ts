@@ -1,18 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import 'mocha';
+import "mocha";
 
-import * as chai from 'chai';
-import * as faker from 'faker';
-import * as sinon from 'sinon';
-import { FxError, PluginContext } from 'teamsfx-api';
-import { Result } from 'neverthrow';
-import AdmZip from 'adm-zip';
-import chaiAsPromised from 'chai-as-promised';
-import fs from 'fs-extra';
-import path from 'path';
+import * as chai from "chai";
+import * as faker from "faker";
+import * as sinon from "sinon";
+import { FxError, PluginContext } from "teamsfx-api";
+import { Result } from "neverthrow";
+import AdmZip from "adm-zip";
+import chaiAsPromised from "chai-as-promised";
+import fs from "fs-extra";
+import path from "path";
 
-import { AzureStorageClient } from '../../../../../src/plugins/resource/frontend/clients';
+import { AzureStorageClient } from "../../../../../src/plugins/resource/frontend/clients";
 import {
     BuildError,
     CreateStorageAccountError,
@@ -21,18 +21,18 @@ import {
     NoStorageError,
     NotProvisionError,
     StaticWebsiteDisabledError,
-} from '../../src/resources/errors';
-import { FrontendConfig } from '../../src/configs';
-import { FrontendConfigInfo, FrontendPathInfo } from '../../src/constants';
-import { FrontendPlugin } from '../../src';
-import { FrontendProvision } from '../../src/ops/provision';
-import { FrontendScaffold } from '../../src/ops/scaffold';
-import { TestHelper } from '../helper';
-import { Utils } from '../../src/utils';
+} from "../../src/resources/errors";
+import { FrontendConfig } from "../../src/configs";
+import { FrontendConfigInfo, FrontendPathInfo } from "../../src/constants";
+import { FrontendPlugin } from "../../src";
+import { FrontendProvision } from "../../src/ops/provision";
+import { FrontendScaffold } from "../../src/ops/scaffold";
+import { TestHelper } from "../helper";
+import { Utils } from "../../src/utils";
 
 chai.use(chaiAsPromised);
 
-describe('frontendPlugin', () => {
+describe("frontendPlugin", () => {
     function assertError(result: Result<any, FxError>, errorName: string) {
         chai.assert.isTrue(result.isErr());
         result.mapErr((err) => {
@@ -40,7 +40,7 @@ describe('frontendPlugin', () => {
         });
     }
 
-    describe('scaffold', () => {
+    describe("scaffold", () => {
         let frontendPlugin: FrontendPlugin;
         let pluginContext: PluginContext;
 
@@ -53,10 +53,10 @@ describe('frontendPlugin', () => {
             sinon.restore();
         });
 
-        it('happy path', async () => {
-            sinon.stub(FrontendScaffold, 'getTemplateURL').resolves(faker.internet.url());
-            sinon.stub(FrontendScaffold, 'fetchZipFromUrl').resolves(new AdmZip());
-            sinon.stub(FrontendScaffold, 'scaffoldFromZip');
+        it("happy path", async () => {
+            sinon.stub(FrontendScaffold, "getTemplateURL").resolves(faker.internet.url());
+            sinon.stub(FrontendScaffold, "fetchZipFromUrl").resolves(new AdmZip());
+            sinon.stub(FrontendScaffold, "scaffoldFromZip");
 
             const result = await frontendPlugin.scaffold(pluginContext);
 
@@ -64,7 +64,7 @@ describe('frontendPlugin', () => {
         });
     });
 
-    describe('preProvision', () => {
+    describe("preProvision", () => {
         let frontendPlugin: FrontendPlugin;
         let pluginContext: PluginContext;
 
@@ -77,8 +77,8 @@ describe('frontendPlugin', () => {
             sinon.restore();
         });
 
-        it('happy path', async () => {
-            sinon.stub(AzureStorageClient.prototype, 'doesResourceGroupExists').resolves(true);
+        it("happy path", async () => {
+            sinon.stub(AzureStorageClient.prototype, "doesResourceGroupExists").resolves(true);
 
             const result: Result<FrontendConfig, Error> = await frontendPlugin.preProvision(pluginContext);
 
@@ -88,8 +88,8 @@ describe('frontendPlugin', () => {
             });
         });
 
-        it('resource group not exists', async () => {
-            sinon.stub(AzureStorageClient.prototype, 'doesResourceGroupExists').resolves(false);
+        it("resource group not exists", async () => {
+            sinon.stub(AzureStorageClient.prototype, "doesResourceGroupExists").resolves(false);
 
             const result = await frontendPlugin.preProvision(pluginContext);
 
@@ -97,7 +97,7 @@ describe('frontendPlugin', () => {
         });
     });
 
-    describe('provision', () => {
+    describe("provision", () => {
         let frontendPlugin: FrontendPlugin;
         let pluginContext: PluginContext;
         let endpoint: string;
@@ -111,16 +111,16 @@ describe('frontendPlugin', () => {
             endpoint = faker.internet.url();
 
             createStorageAccountStub = sinon
-                .stub(AzureStorageClient.prototype, 'createStorageAccount')
+                .stub(AzureStorageClient.prototype, "createStorageAccount")
                 .resolves(endpoint);
-            enableStaticWebsiteStub = sinon.stub(AzureStorageClient.prototype, 'enableStaticWebsite');
+            enableStaticWebsiteStub = sinon.stub(AzureStorageClient.prototype, "enableStaticWebsite");
         });
 
         afterEach(() => {
             sinon.restore();
         });
 
-        it('happy path', async () => {
+        it("happy path", async () => {
             const hostname = new URL(endpoint).hostname;
 
             const result = await frontendPlugin.provision(pluginContext);
@@ -130,7 +130,7 @@ describe('frontendPlugin', () => {
             chai.assert.equal(pluginContext.config.get(FrontendConfigInfo.Hostname), hostname);
         });
 
-        it('Create storage throw error', async () => {
+        it("Create storage throw error", async () => {
             createStorageAccountStub.throws(Error);
 
             const result = await frontendPlugin.provision(pluginContext);
@@ -138,7 +138,7 @@ describe('frontendPlugin', () => {
             assertError(result, new CreateStorageAccountError().code);
         });
 
-        it('Enable static website throw error', async () => {
+        it("Enable static website throw error", async () => {
             enableStaticWebsiteStub.throws(Error);
 
             const result = await frontendPlugin.provision(pluginContext);
@@ -147,7 +147,7 @@ describe('frontendPlugin', () => {
         });
     });
 
-    describe('postProvision', () => {
+    describe("postProvision", () => {
         let frontendPlugin: FrontendPlugin;
         let pluginContext: PluginContext;
 
@@ -160,14 +160,14 @@ describe('frontendPlugin', () => {
             sinon.restore();
         });
 
-        it('happy path', async () => {
-            sinon.stub(FrontendProvision, 'setEnvironments');
+        it("happy path", async () => {
+            sinon.stub(FrontendProvision, "setEnvironments");
             const result = await frontendPlugin.postProvision(pluginContext);
             chai.assert.isTrue(result.isOk());
         });
     });
 
-    describe('preDeploy', () => {
+    describe("preDeploy", () => {
         let frontendPlugin: FrontendPlugin;
         let pluginContext: PluginContext;
 
@@ -181,23 +181,23 @@ describe('frontendPlugin', () => {
             frontendPlugin = await TestHelper.initializedFrontendPlugin(frontendPlugin, pluginContext);
 
             staticWebsiteEnabledStub = sinon
-                .stub(AzureStorageClient.prototype, 'isStorageStaticWebsiteEnabled')
+                .stub(AzureStorageClient.prototype, "isStorageStaticWebsiteEnabled")
                 .resolves(true);
-            storageExistsStub = sinon.stub(AzureStorageClient.prototype, 'doesStorageAccountExists').resolves(true);
-            rgExistsStub = sinon.stub(AzureStorageClient.prototype, 'doesResourceGroupExists').resolves(true);
+            storageExistsStub = sinon.stub(AzureStorageClient.prototype, "doesStorageAccountExists").resolves(true);
+            rgExistsStub = sinon.stub(AzureStorageClient.prototype, "doesResourceGroupExists").resolves(true);
         });
 
         afterEach(() => {
             sinon.restore();
         });
 
-        it('happy path', async () => {
+        it("happy path", async () => {
             const result = await frontendPlugin.preDeploy(pluginContext);
 
             chai.assert.isTrue(result.isOk());
         });
 
-        it('storage not found', async () => {
+        it("storage not found", async () => {
             storageExistsStub.resolves(false);
 
             const result = await frontendPlugin.preDeploy(pluginContext);
@@ -205,7 +205,7 @@ describe('frontendPlugin', () => {
             assertError(result, new NoStorageError().code);
         });
 
-        it('static website disabled', async () => {
+        it("static website disabled", async () => {
             staticWebsiteEnabledStub.resolves(false);
 
             const result = await frontendPlugin.preDeploy(pluginContext);
@@ -214,7 +214,7 @@ describe('frontendPlugin', () => {
         });
     });
 
-    describe('deploy', () => {
+    describe("deploy", () => {
         let frontendPlugin: FrontendPlugin;
         let pluginContext: PluginContext;
         let fsPathExistsStub: sinon.SinonStub;
@@ -223,23 +223,23 @@ describe('frontendPlugin', () => {
             frontendPlugin = new FrontendPlugin();
             pluginContext = TestHelper.getFakePluginContext();
             frontendPlugin = await TestHelper.initializedFrontendPlugin(frontendPlugin, pluginContext);
-            sinon.stub(AzureStorageClient.prototype, 'getContainer').resolves({} as any);
-            sinon.stub(AzureStorageClient.prototype, 'deleteAllBlobs').resolves();
-            sinon.stub(AzureStorageClient.prototype, 'uploadFiles').resolves();
-            sinon.stub(Utils, 'execute').resolves();
-            fsPathExistsStub = sinon.stub(fs, 'pathExists').resolves(true);
+            sinon.stub(AzureStorageClient.prototype, "getContainer").resolves({} as any);
+            sinon.stub(AzureStorageClient.prototype, "deleteAllBlobs").resolves();
+            sinon.stub(AzureStorageClient.prototype, "uploadFiles").resolves();
+            sinon.stub(Utils, "execute").resolves();
+            fsPathExistsStub = sinon.stub(fs, "pathExists").resolves(true);
         });
 
         afterEach(() => {
             sinon.restore();
         });
 
-        it('happy path', async () => {
+        it("happy path", async () => {
             const result = await frontendPlugin.deploy(pluginContext);
             chai.assert.isTrue(result.isOk());
         });
 
-        it('no deployment parameters', async () => {
+        it("no deployment parameters", async () => {
             frontendPlugin = new FrontendPlugin();
 
             const result = await frontendPlugin.deploy(pluginContext);
@@ -247,7 +247,7 @@ describe('frontendPlugin', () => {
             assertError(result, new NotProvisionError().code);
         });
 
-        it('local path does not exists', async () => {
+        it("local path does not exists", async () => {
             fsPathExistsStub.resolves(false);
 
             const result = await frontendPlugin.deploy(pluginContext);

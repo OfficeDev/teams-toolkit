@@ -9,17 +9,17 @@ import {
     BlockBlobParallelUploadOptions,
     ContainerClient,
     ServiceSetPropertiesResponse,
-} from '@azure/storage-blob';
-import { ResourceGroups, ResourceManagementClientContext } from '@azure/arm-resources';
-import { StorageAccounts, StorageManagementClient, StorageManagementModels } from '@azure/arm-storage';
+} from "@azure/storage-blob";
+import { ResourceGroups, ResourceManagementClientContext } from "@azure/arm-resources";
+import { StorageAccounts, StorageManagementClient, StorageManagementModels } from "@azure/arm-storage";
 
-import * as mime from 'mime';
-import * as path from 'path';
-import { Constants } from './constants';
-import { FrontendConfig } from './configs';
-import { Logger } from './utils/logger';
-import { Messages } from './resources/messages';
-import { Utils } from './utils';
+import * as mime from "mime";
+import * as path from "path";
+import { Constants } from "./constants";
+import { FrontendConfig } from "./configs";
+import { Logger } from "./utils/logger";
+import { Messages } from "./resources/messages";
+import { Utils } from "./utils";
 
 export class AzureStorageClient {
     private resourceGroupClient: ResourceGroups;
@@ -67,7 +67,7 @@ export class AzureStorageClient {
                 this.storageName,
             ),
         );
-        let result = (await blobClient.getProperties()).staticWebsite?.enabled;
+        const result = (await blobClient.getProperties()).staticWebsite?.enabled;
         return result;
     }
 
@@ -82,7 +82,7 @@ export class AzureStorageClient {
             throw new Error(Messages.GetEmptyStorageEndpoint());
         }
 
-        return endpoint.endsWith('/') ? endpoint.substring(0, endpoint.length - 1) : endpoint;
+        return endpoint.endsWith("/") ? endpoint.substring(0, endpoint.length - 1) : endpoint;
     }
 
     public async enableStaticWebsite(): Promise<ServiceSetPropertiesResponse> {
@@ -130,7 +130,7 @@ export class AzureStorageClient {
         const responses = await Promise.all(deleteJobs);
         const errorResponse = responses.find((res) => res.errorCode !== undefined);
         if (errorResponse) {
-            throw new Error(Messages.FailedOperationWithErrorCode('delete blob', errorResponse.errorCode));
+            throw new Error(Messages.FailedOperationWithErrorCode("delete blob", errorResponse.errorCode));
         }
     }
 
@@ -147,7 +147,7 @@ export class AzureStorageClient {
 
         const errorResponse = responses.find((res) => res.errorCode !== undefined);
         if (errorResponse) {
-            throw new Error(Messages.FailedOperationWithErrorCode('upload file', errorResponse.errorCode));
+            throw new Error(Messages.FailedOperationWithErrorCode("upload file", errorResponse.errorCode));
         }
     }
 
@@ -186,9 +186,9 @@ export class AzureStorageClient {
     ): Promise<string> {
         const accountSasParameters: StorageManagementModels.AccountSasParameters = {
             // A workaround, to ignore type checking for the services/resourceTypes/permissions are enum type.
-            services: 'bf' as StorageManagementModels.Services,
-            resourceTypes: 'sco' as StorageManagementModels.SignedResourceTypes,
-            permissions: 'rwld' as StorageManagementModels.Permissions,
+            services: "bf" as StorageManagementModels.Services,
+            resourceTypes: "sco" as StorageManagementModels.SignedResourceTypes,
+            permissions: "rwld" as StorageManagementModels.Permissions,
             sharedAccessExpiryTime: new Date(Date.now() + Constants.SasTokenLifetime),
         };
 

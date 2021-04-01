@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Constants, FrontendPathInfo } from '../constants';
-import { Logger } from '../utils/logger';
-import path from 'path';
+import { Constants, FrontendPathInfo } from "../constants";
+import { Logger } from "../utils/logger";
+import path from "path";
 
 export enum ErrorType {
     User,
@@ -11,18 +11,18 @@ export enum ErrorType {
 }
 
 const tips = {
-    checkLog: 'Read log for more information.',
-    doScaffold: 'Run "Start A New Project" again.',
-    doProvision: 'Run "Provision Resource" before this command.',
-    doLogin: 'Login to Azure first.',
-    reProvision: 'Run "Provision Resource" again.',
+    checkLog: "Read log for more information.",
+    doScaffold: "Run \"Start A New Project\" again.",
+    doProvision: "Run \"Provision Resource\" before this command.",
+    doLogin: "Login to Azure first.",
+    reProvision: "Run \"Provision Resource\" again.",
     doBuild: `Run "npm install" and "npm run build" in ${FrontendPathInfo.WorkingDir} folder.`,
     ensureBuildPath: `Make sure your built project in ${FrontendPathInfo.BuildPath}.`,
     ensureAppNameValid:
         "Make sure your app name only contains alphabets and numbers, and doesn't contain a trademark or reserved word.",
-    checkNetwork: 'Check your network connection.',
-    checkFsPermissions: 'Check if you have Read/Write permissions to your file system.',
-    checkStoragePermissions: 'Check if you have full permissions to the Storage Account.',
+    checkNetwork: "Check your network connection.",
+    checkFsPermissions: "Check if you have Read/Write permissions to your file system.",
+    checkStoragePermissions: "Check if you have full permissions to the Storage Account.",
 };
 
 export class FrontendPluginError extends Error {
@@ -41,7 +41,7 @@ export class FrontendPluginError extends Error {
     }
 
     getMessage(): string {
-        return `${this.message} Suggestions: ${this.suggestions.join('\n')}`;
+        return `${this.message} Suggestions: ${this.suggestions.join("\n")}`;
     }
 
     setInnerError(error: Error): void {
@@ -55,31 +55,31 @@ export class FrontendPluginError extends Error {
 
 export class NotScaffoldError extends FrontendPluginError {
     constructor() {
-        super(ErrorType.User, 'NotScaffoldError', 'Scaffold has not done successfully.', [tips.doScaffold]);
+        super(ErrorType.User, "NotScaffoldError", "Scaffold has not done successfully.", [tips.doScaffold]);
     }
 }
 
 export class UnauthenticatedError extends FrontendPluginError {
     constructor() {
-        super(ErrorType.User, 'UnauthenticatedError', 'Failed to get user login information.', [tips.doLogin]);
+        super(ErrorType.User, "UnauthenticatedError", "Failed to get user login information.", [tips.doLogin]);
     }
 }
 
 export class NotProvisionError extends FrontendPluginError {
     constructor() {
-        super(ErrorType.User, 'NotProvisionError', 'Provision has not done successfully.', [tips.doProvision]);
+        super(ErrorType.User, "NotProvisionError", "Provision has not done successfully.", [tips.doProvision]);
     }
 }
 
 export class NoResourceGroupError extends FrontendPluginError {
     constructor() {
-        super(ErrorType.User, 'NoResourceGroupError', 'Failed to find resource group.', [tips.reProvision]);
+        super(ErrorType.User, "NoResourceGroupError", "Failed to find resource group.", [tips.reProvision]);
     }
 }
 
 export class NoStorageError extends FrontendPluginError {
     constructor() {
-        super(ErrorType.User, 'NoStorageError', 'Failed to find the target Azure Storage Account.', [tips.reProvision]);
+        super(ErrorType.User, "NoStorageError", "Failed to find the target Azure Storage Account.", [tips.reProvision]);
     }
 }
 
@@ -87,8 +87,8 @@ export class StaticWebsiteDisabledError extends FrontendPluginError {
     constructor() {
         super(
             ErrorType.User,
-            'StaticWebsiteDisableError',
-            'Static website feature is disabled for frontend Azure Storage Account.',
+            "StaticWebsiteDisableError",
+            "Static website feature is disabled for frontend Azure Storage Account.",
             [tips.reProvision],
         );
     }
@@ -96,7 +96,7 @@ export class StaticWebsiteDisabledError extends FrontendPluginError {
 
 export class InvalidStorageNameError extends FrontendPluginError {
     constructor() {
-        super(ErrorType.User, 'InvalidStorageNameError', 'The Azure Storage Name is invalid.', [
+        super(ErrorType.User, "InvalidStorageNameError", "The Azure Storage Name is invalid.", [
             tips.ensureAppNameValid,
         ]);
     }
@@ -104,7 +104,7 @@ export class InvalidStorageNameError extends FrontendPluginError {
 
 export class CreateStorageAccountError extends FrontendPluginError {
     constructor() {
-        super(ErrorType.System, 'CreateStorageAccountError', 'Failed to create Azure Storage Account.', [
+        super(ErrorType.System, "CreateStorageAccountError", "Failed to create Azure Storage Account.", [
             tips.ensureAppNameValid,
             tips.checkNetwork,
         ]);
@@ -115,8 +115,8 @@ export class EnableStaticWebsiteError extends FrontendPluginError {
     constructor() {
         super(
             ErrorType.System,
-            'EnableStaticWebsiteError',
-            'Failed to enable static website feature for Azure Storage Account.',
+            "EnableStaticWebsiteError",
+            "Failed to enable static website feature for Azure Storage Account.",
             [tips.checkStoragePermissions, tips.checkNetwork],
         );
     }
@@ -124,7 +124,7 @@ export class EnableStaticWebsiteError extends FrontendPluginError {
 
 export class ClearStorageError extends FrontendPluginError {
     constructor() {
-        super(ErrorType.System, 'ClearStorageError', 'Failed to clear Azure Storage Account.', [tips.checkNetwork]);
+        super(ErrorType.System, "ClearStorageError", "Failed to clear Azure Storage Account.", [tips.checkNetwork]);
     }
 }
 
@@ -132,7 +132,7 @@ export class UploadToStorageError extends FrontendPluginError {
     constructor() {
         super(
             ErrorType.System,
-            'UploadToStorageError',
+            "UploadToStorageError",
             `Failed to upload local path ${path.join(
                 FrontendPathInfo.WorkingDir,
                 FrontendPathInfo.BuildPath,
@@ -146,7 +146,7 @@ export class GetContainerError extends FrontendPluginError {
     constructor() {
         super(
             ErrorType.System,
-            'GetContainerError',
+            "GetContainerError",
             `Failed to get container ${Constants.AzureStorageWebContainer} for Azure Storage Account.`,
             [tips.checkStoragePermissions, tips.checkNetwork],
         );
@@ -155,7 +155,7 @@ export class GetContainerError extends FrontendPluginError {
 
 export class FetchTemplateManifestError extends FrontendPluginError {
     constructor() {
-        super(ErrorType.System, 'FetchTemplateManifestError', 'Failed to fetch manifest for templates.', [
+        super(ErrorType.System, "FetchTemplateManifestError", "Failed to fetch manifest for templates.", [
             tips.checkNetwork,
         ]);
     }
@@ -163,19 +163,19 @@ export class FetchTemplateManifestError extends FrontendPluginError {
 
 export class InvalidTemplateManifestError extends FrontendPluginError {
     constructor() {
-        super(ErrorType.System, 'InvalidTemplateManifestError', 'Failed to find right version template.', []);
+        super(ErrorType.System, "InvalidTemplateManifestError", "Failed to find right version template.", []);
     }
 }
 
 export class FetchTemplatePackageError extends FrontendPluginError {
     constructor() {
-        super(ErrorType.System, 'FetchTemplatePackageError', 'Failed to fetch template package.', [tips.checkNetwork]);
+        super(ErrorType.System, "FetchTemplatePackageError", "Failed to fetch template package.", [tips.checkNetwork]);
     }
 }
 
 export class GetTemplateError extends FrontendPluginError {
     constructor() {
-        super(ErrorType.User, 'GetTemplateError', 'Failed to get template package neither from remote or local.', [
+        super(ErrorType.User, "GetTemplateError", "Failed to get template package neither from remote or local.", [
             tips.checkNetwork,
             tips.checkFsPermissions,
         ]);
@@ -184,7 +184,7 @@ export class GetTemplateError extends FrontendPluginError {
 
 export class UnzipTemplateError extends FrontendPluginError {
     constructor() {
-        super(ErrorType.User, 'UnzipTemplateError', 'Failed to unzip template zip package to your file system.', [
+        super(ErrorType.User, "UnzipTemplateError", "Failed to unzip template zip package to your file system.", [
             tips.checkFsPermissions,
         ]);
     }
@@ -192,7 +192,7 @@ export class UnzipTemplateError extends FrontendPluginError {
 
 export class BuildError extends FrontendPluginError {
     constructor() {
-        super(ErrorType.User, 'BuildError', 'Failed to build Tab Frontend project.', [
+        super(ErrorType.User, "BuildError", "Failed to build Tab Frontend project.", [
             tips.doBuild,
             tips.ensureBuildPath,
         ]);
@@ -201,15 +201,15 @@ export class BuildError extends FrontendPluginError {
 
 export class NpmInstallError extends FrontendPluginError {
     constructor() {
-        super(ErrorType.User, 'NpmInstallError', 'Failed to run "npm install" for Tab Frontend project.', [
+        super(ErrorType.User, "NpmInstallError", "Failed to run \"npm install\" for Tab Frontend project.", [
             tips.doBuild,
             tips.checkNetwork,
         ]);
     }
 }
 
-export const UnhandledErrorCode = 'UnhandledError';
-export const UnhandledErrorMessage = 'Got an unhandled error.';
+export const UnhandledErrorCode = "UnhandledError";
+export const UnhandledErrorMessage = "Got an unhandled error.";
 
 export async function runWithErrorCatchAndThrow<T>(error: FrontendPluginError, fn: () => T | Promise<T>): Promise<T> {
     try {

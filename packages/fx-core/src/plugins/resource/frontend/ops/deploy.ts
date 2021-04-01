@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureStorageClient } from '../clients';
+import { AzureStorageClient } from "../clients";
 import {
     BuildError,
     ClearStorageError,
@@ -9,14 +9,14 @@ import {
     NpmInstallError,
     UploadToStorageError,
     runWithErrorCatchAndThrow,
-} from '../resources/errors';
-import { Commands, Constants, FrontendPathInfo } from '../constants';
-import { DeploySteps, ProgressHelper } from '../utils/progress-helper';
-import { Logger } from '../utils/logger';
-import { Messages } from '../resources/messages';
-import { Utils } from '../utils';
-import fs from 'fs-extra';
-import path from 'path';
+} from "../resources/errors";
+import { Commands, Constants, FrontendPathInfo } from "../constants";
+import { DeploySteps, ProgressHelper } from "../utils/progress-helper";
+import { Logger } from "../utils/logger";
+import { Messages } from "../resources/messages";
+import { Utils } from "../utils";
+import fs from "fs-extra";
+import path from "path";
 
 export class FrontendDeployment {
     public static async needBuild(componentPath: string): Promise<boolean> {

@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { FxError, PluginContext, Result, ok } from 'teamsfx-api';
-import path from 'path';
+import { FxError, PluginContext, Result, ok } from "teamsfx-api";
+import path from "path";
 
-import { AzureStorageClient } from './clients';
+import { AzureStorageClient } from "./clients";
 import {
     CreateStorageAccountError,
     EnableStaticWebsiteError,
@@ -15,23 +15,23 @@ import {
     StaticWebsiteDisabledError,
     UnzipTemplateError,
     runWithErrorCatchAndThrow,
-} from './resources/errors';
+} from "./resources/errors";
 import {
     DependentPluginInfo,
     FrontendConfigInfo,
     FrontendPathInfo,
     FrontendPluginInfo,
     FrontendPluginInfo as PluginInfo,
-} from './constants';
-import { FrontendConfig } from './configs';
-import { FrontendDeployment } from './ops/deploy';
-import { FrontendProvision, FunctionEnvironment, RuntimeEnvironment } from './ops/provision';
-import { Logger } from './utils/logger';
-import { Messages } from './resources/messages';
-import { FrontendScaffold as Scaffold, TemplateInfo } from './ops/scaffold';
-import { TeamsFxResult } from './error-factory';
-import { Utils } from './utils';
-import { PreDeploySteps, ProgressHelper, ProvisionSteps, ScaffoldSteps } from './utils/progress-helper';
+} from "./constants";
+import { FrontendConfig } from "./configs";
+import { FrontendDeployment } from "./ops/deploy";
+import { FrontendProvision, FunctionEnvironment, RuntimeEnvironment } from "./ops/provision";
+import { Logger } from "./utils/logger";
+import { Messages } from "./resources/messages";
+import { FrontendScaffold as Scaffold, TemplateInfo } from "./ops/scaffold";
+import { TeamsFxResult } from "./error-factory";
+import { Utils } from "./utils";
+import { PreDeploySteps, ProgressHelper, ProvisionSteps, ScaffoldSteps } from "./utils/progress-helper";
 
 export class FrontendPluginImpl {
     config?: FrontendConfig;

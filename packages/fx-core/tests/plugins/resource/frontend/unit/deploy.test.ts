@@ -1,17 +1,17 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import 'mocha';
-import * as chai from 'chai';
-import chaiAsPromised from 'chai-as-promised';
+import "mocha";
+import * as chai from "chai";
+import chaiAsPromised from "chai-as-promised";
 
-import faker from 'faker';
-import mockfs from 'mock-fs';
+import faker from "faker";
+import mockfs from "mock-fs";
 
-import { FrontendDeployment } from '../../../../../src/plugins/resource/frontend/ops/deploy';
+import { FrontendDeployment } from "../../../../../src/plugins/resource/frontend/ops/deploy";
 
 chai.use(chaiAsPromised);
 
-describe('deploy', async () => {
+describe("deploy", async () => {
     const today = new Date();
     const yesterday = new Date();
     const tomorrow = new Date();
@@ -20,12 +20,12 @@ describe('deploy', async () => {
     longAgo.setDate(today.getDate() - 10);
     tomorrow.setDate(today.getDate() + 1);
 
-    describe('needBuild', async () => {
+    describe("needBuild", async () => {
         afterEach(() => {
             mockfs.restore();
         });
 
-        it('some files changed since last build', async () => {
+        it("some files changed since last build", async () => {
             mockfs({
                 tabs: mockfs.directory({
                     ctime: longAgo,
@@ -39,7 +39,7 @@ describe('deploy', async () => {
                             mtime: today,
                             ctime: today,
                             items: {
-                                'some-file.txt': mockfs.file({
+                                "some-file.txt": mockfs.file({
                                     content: faker.lorem.lines(),
                                     ctime: today,
                                     mtime: today,
@@ -50,7 +50,7 @@ describe('deploy', async () => {
                             mtime: tomorrow,
                             ctime: tomorrow,
                             items: {
-                                'some-js-file.txt': mockfs.file({
+                                "some-js-file.txt": mockfs.file({
                                     content: faker.lorem.lines(),
                                     ctime: tomorrow,
                                     mtime: tomorrow,
@@ -61,11 +61,11 @@ describe('deploy', async () => {
                 }),
             });
 
-            const result = await FrontendDeployment.needBuild('tabs');
+            const result = await FrontendDeployment.needBuild("tabs");
             chai.assert.isTrue(result);
         });
 
-        it('nothing changed since last build', async () => {
+        it("nothing changed since last build", async () => {
             mockfs({
                 tabs: mockfs.directory({
                     ctime: longAgo,
@@ -79,7 +79,7 @@ describe('deploy', async () => {
                             mtime: yesterday,
                             ctime: yesterday,
                             items: {
-                                'some-file.txt': mockfs.file({
+                                "some-file.txt": mockfs.file({
                                     content: faker.lorem.lines(),
                                     ctime: yesterday,
                                     mtime: yesterday,
@@ -90,7 +90,7 @@ describe('deploy', async () => {
                             mtime: tomorrow,
                             ctime: tomorrow,
                             items: {
-                                'some-js-file.txt': mockfs.file({
+                                "some-js-file.txt": mockfs.file({
                                     content: faker.lorem.lines(),
                                     ctime: tomorrow,
                                     mtime: tomorrow,
@@ -101,17 +101,17 @@ describe('deploy', async () => {
                 }),
             });
 
-            const result = await FrontendDeployment.needBuild('tabs');
+            const result = await FrontendDeployment.needBuild("tabs");
             chai.assert.isFalse(result);
         });
     });
 
-    describe('needDeploy', () => {
+    describe("needDeploy", () => {
         afterEach(() => {
             mockfs.restore();
         });
 
-        it('have built since last deployment', async () => {
+        it("have built since last deployment", async () => {
             mockfs({
                 tabs: mockfs.directory({
                     ctime: longAgo,
@@ -121,11 +121,11 @@ describe('deploy', async () => {
                             mtime: today,
                             ctime: today,
                         }),
-                        '.deployment': mockfs.directory({
+                        ".deployment": mockfs.directory({
                             mtime: yesterday,
                             ctime: yesterday,
                             items: {
-                                'deployment.json': mockfs.file({
+                                "deployment.json": mockfs.file({
                                     content: `{"time":"${yesterday.toJSON()}"}`,
                                     ctime: yesterday,
                                     mtime: yesterday,
@@ -135,11 +135,11 @@ describe('deploy', async () => {
                     },
                 }),
             });
-            const result = await FrontendDeployment.needDeploy('tabs');
+            const result = await FrontendDeployment.needDeploy("tabs");
             chai.assert.isTrue(result);
         });
 
-        it('no built since last deployment', async () => {
+        it("no built since last deployment", async () => {
             mockfs({
                 tabs: mockfs.directory({
                     ctime: longAgo,
@@ -149,11 +149,11 @@ describe('deploy', async () => {
                             mtime: yesterday,
                             ctime: yesterday,
                         }),
-                        '.deployment': mockfs.directory({
+                        ".deployment": mockfs.directory({
                             mtime: today,
                             ctime: today,
                             items: {
-                                'deployment.json': mockfs.file({
+                                "deployment.json": mockfs.file({
                                     content: `{"time":"${today.toJSON()}"}`,
                                     ctime: today,
                                     mtime: today,
@@ -163,7 +163,7 @@ describe('deploy', async () => {
                     },
                 }),
             });
-            const result = await FrontendDeployment.needDeploy('tabs');
+            const result = await FrontendDeployment.needDeploy("tabs");
             chai.assert.isFalse(result);
         });
     });

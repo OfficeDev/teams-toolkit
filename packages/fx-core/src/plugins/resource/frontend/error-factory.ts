@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { FxError, Result, SystemError, UserError, ok } from 'teamsfx-api';
+import { FxError, Result, SystemError, UserError, ok } from "teamsfx-api";
 
-import { Constants, FrontendPluginInfo } from './constants';
+import { Constants, FrontendPluginInfo } from "./constants";
 
 export type TeamsFxResult = Result<any, FxError>;
 

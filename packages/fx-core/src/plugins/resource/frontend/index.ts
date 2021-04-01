@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { FrontendPluginImpl } from './plugin';
-import { Plugin, PluginContext, SystemError, UserError, err } from 'teamsfx-api';
+import { FrontendPluginImpl } from "./plugin";
+import { Plugin, PluginContext, SystemError, UserError, err } from "teamsfx-api";
 
-import { ErrorFactory, TeamsFxResult } from './error-factory';
-import { ErrorType, FrontendPluginError, UnhandledErrorCode, UnhandledErrorMessage } from './resources/errors';
-import { Logger } from './utils/logger';
-import { ProgressHelper } from './utils/progress-helper';
-import { TelemetryEvent } from './constants';
-import { telemetryHelper } from './utils/telemetry-helper';
+import { ErrorFactory, TeamsFxResult } from "./error-factory";
+import { ErrorType, FrontendPluginError, UnhandledErrorCode, UnhandledErrorMessage } from "./resources/errors";
+import { Logger } from "./utils/logger";
+import { ProgressHelper } from "./utils/progress-helper";
+import { TelemetryEvent } from "./constants";
+import { telemetryHelper } from "./utils/telemetry-helper";
 
 export class FrontendPlugin implements Plugin {
     frontendPluginImpl = new FrontendPluginImpl();
@@ -76,5 +76,4 @@ export class FrontendPlugin implements Plugin {
     }
 }
 
-// eslint-disable-next-line @azure/azure-sdk/ts-modules-only-named
 export default new FrontendPlugin();

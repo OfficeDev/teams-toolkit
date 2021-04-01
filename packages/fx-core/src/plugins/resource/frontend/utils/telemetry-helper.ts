@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FrontendPluginInfo, TelemetryKey, TelemetryValue } from '../constants';
-import { FxError, PluginContext, SystemError, UserError } from 'teamsfx-api';
+import { FrontendPluginInfo, TelemetryKey, TelemetryValue } from "../constants";
+import { FxError, PluginContext, SystemError, UserError } from "teamsfx-api";
 
 export class telemetryHelper {
     static sendSuccessEvent(

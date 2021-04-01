@@ -1,24 +1,24 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import * as path from 'path';
-import AdmZip from 'adm-zip';
-import Mustache from 'mustache';
-import axios from 'axios';
-import fs from 'fs-extra';
-import semver from 'semver';
+import * as path from "path";
+import AdmZip from "adm-zip";
+import Mustache from "mustache";
+import axios from "axios";
+import fs from "fs-extra";
+import semver from "semver";
 
 import {
     FetchTemplateManifestError,
     FetchTemplatePackageError,
     InvalidTemplateManifestError,
     runWithErrorCatchAndThrow,
-} from '../resources/errors';
-import { FrontendPathInfo, FrontendPluginInfo as PluginInfo } from '../constants';
-import { Logger } from '../utils/logger';
-import { Messages } from '../resources/messages';
-import { PluginContext } from 'teamsfx-api';
-import { Utils } from '../utils';
-import { telemetryHelper } from '../utils/telemetry-helper';
+} from "../resources/errors";
+import { FrontendPathInfo, FrontendPluginInfo as PluginInfo } from "../constants";
+import { Logger } from "../utils/logger";
+import { Messages } from "../resources/messages";
+import { PluginContext } from "teamsfx-api";
+import { Utils } from "../utils";
+import { telemetryHelper } from "../utils/telemetry-helper";
 
 export interface TemplateVariable {
     AppId: string;
@@ -86,7 +86,7 @@ export class FrontendScaffold {
         const result = await Utils.requestWithRetry(
             async () => {
                 return axios.get(url, {
-                    responseType: 'arraybuffer',
+                    responseType: "arraybuffer",
                 });
             },
             (error) => {
@@ -120,7 +120,7 @@ export class FrontendScaffold {
         } catch (e) {
             telemetryHelper.sendErrorEvent(ctx, Messages.FailedFetchTemplate(), e);
             Logger.warning(Messages.FailedFetchTemplate());
-            const rootDir = path.resolve(__dirname, '../../../../');
+            const rootDir = path.resolve(__dirname, "../../../../");
             return FrontendScaffold.getTemplateZipFromLocal(rootDir);
         }
     }

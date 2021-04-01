@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { EnvironmentUtils } from '../utils/environment-utils';
-import { EnvironmentVariables } from '../constants';
+import { EnvironmentUtils } from "../utils/environment-utils";
+import { EnvironmentVariables } from "../constants";
 
 export interface FunctionEnvironment {
     defaultName: string;

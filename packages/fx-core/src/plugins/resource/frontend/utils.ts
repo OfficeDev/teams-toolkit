@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import * as path from 'path';
-import { AxiosResponse } from 'axios';
-import { exec } from 'child_process';
-import glob from 'glob';
+import * as path from "path";
+import { AxiosResponse } from "axios";
+import { exec } from "child_process";
+import glob from "glob";
 
-import { Constants } from './constants';
-import { Logger } from './utils/logger';
-import fs from 'fs-extra';
-import klaw from 'klaw';
+import { Constants } from "./constants";
+import { Logger } from "./utils/logger";
+import fs from "fs-extra";
+import klaw from "klaw";
 
 export class Utils {
     static async delays(millisecond: number): Promise<void> {
@@ -46,7 +46,7 @@ export class Utils {
         throw error;
     }
 
-    static async execute(command: string, workingDir?: string, ignoreError: boolean = false): Promise<string> {
+    static async execute(command: string, workingDir?: string, ignoreError = false): Promise<string> {
         return new Promise((resolve, reject) => {
             Logger.info(`Start to run command: "${command}".`);
 
@@ -67,9 +67,9 @@ export class Utils {
 
     public static async listFilePaths(directoryPath: string, ignorePattern?: string): Promise<string[]> {
         return new Promise<string[]>((resolve, reject) => {
-            const ignore: string = ignorePattern ? path.join(directoryPath, ignorePattern) : '';
+            const ignore: string = ignorePattern ? path.join(directoryPath, ignorePattern) : "";
             glob(
-                path.join(directoryPath, '**'),
+                path.join(directoryPath, "**"),
                 {
                     dot: true, // Include .dot files
                     nodir: true, // Only match files
@@ -94,14 +94,14 @@ export class Utils {
         await new Promise((resolve, reject) => {
             const stream: klaw.Walker = klaw(root, { filter: filter });
             stream
-                .on('data', (item) => {
+                .on("data", (item) => {
                     if (callback(item.path, item.stats)) {
-                        stream.emit('close');
+                        stream.emit("close");
                     }
                 })
-                .on('end', () => resolve({}))
-                .on('error', (err) => reject(err))
-                .on('close', () => resolve({}));
+                .on("end", () => resolve({}))
+                .on("error", (err) => reject(err))
+                .on("close", () => resolve({}));
         });
     }
 }

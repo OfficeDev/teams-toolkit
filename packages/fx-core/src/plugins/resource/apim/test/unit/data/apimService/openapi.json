@@ -1,0 +1,83 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "test-name",
+        "version": "v1"
+    },
+    "servers": [
+        {
+            "url": "https://xiaofhua-apim-auth.azure-api.net/no-auth-info"
+        }
+    ],
+    "paths": {
+        "/users/{id}": {
+            "get": {
+                "summary": "GetUsers",
+                "description": "Get all users.",
+                "operationId": "getUsers",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "user id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The user information.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "User": {
+                "required": [
+                    "name"
+                ],
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "description": "User id"
+                    },
+                    "email": {
+                        "type": "string",
+                        "description": "User email"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "User name"
+                    },
+                    "status": {
+                        "enum": [
+                            "Happy",
+                            "Sad"
+                        ],
+                        "type": "string",
+                        "description": "User status"
+                    },
+                    "phoneNumbers": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "User phoneNumbers"
+                    }
+                }
+            }
+        }
+    }
+}

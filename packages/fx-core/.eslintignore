@@ -1,3 +1,2 @@
-build/plugins/resource/spfx/templates/*
-src/plugins/resource/spfx/templates/*
-src/plugins/resource/spfx/src/authCode.ts
+templates/plugins/resource/spfx/*
+src/plugins/resource/spfx/authCode.ts

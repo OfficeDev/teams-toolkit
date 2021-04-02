@@ -67,13 +67,16 @@ export class SPFxPluginImpl {
 
     // teams folder
     const teamsDir = `${outputFolderPath}/teams`;
+
+    const templateFolder = path.join(__dirname, "../../../../templates/plugins/resource/spfx");
+
     await fs.mkdir(teamsDir);
     await fs.copyFile(
-      path.resolve(__dirname, "../templates/webpart/base/images/color.png"),
+      path.resolve(templateFolder, "./webpart/base/images/color.png"),
       `${teamsDir}/${componentId}_color.png`
     );
     await fs.copyFile(
-      path.resolve(__dirname, "../templates/webpart/base/images/outline.png"),
+      path.resolve(templateFolder, "./webpart/base/images/outline.png"),
       `${teamsDir}/${componentId}_outline.png`
     );
 
@@ -81,7 +84,7 @@ export class SPFxPluginImpl {
     const srcDir = `${outputFolderPath}/src`;
     await fs.mkdir(srcDir);
     await fs.copyFile(
-      path.resolve(__dirname, "../templates/solution/src/index.ts"),
+      path.resolve(templateFolder, "./solution/src/index.ts"),
       `${srcDir}/index.ts`
     );
 
@@ -92,20 +95,20 @@ export class SPFxPluginImpl {
         });
         await fs.copyFile(
           path.resolve(
-            __dirname,
-            "../templates/webpart/none/{componentClassName}.module.scss"
+            templateFolder,
+            "./webpart/none/{componentClassName}.module.scss"
           ),
           `${srcDir}/webparts/${componentNameCamelCase}/${componentClassName}.module.scss`
         );
         await fs.copyFile(
           path.resolve(
-            __dirname,
-            "../templates/webpart/none/{componentClassName}.ts"
+            templateFolder,
+            "./webpart/none/{componentClassName}.ts"
           ),
           `${srcDir}/webparts/${componentNameCamelCase}/${componentClassName}.ts`
         );
         await fs.copyFile(
-          path.resolve(__dirname, "../templates/webpart/none/package.json"),
+          path.resolve(templateFolder, "./webpart/none/package.json"),
           `${outputFolderPath}/package.json`
         );
         break;
@@ -114,80 +117,80 @@ export class SPFxPluginImpl {
         fs.mkdirSync(componentDir, { recursive: true });
         await fs.copyFile(
           path.resolve(
-            __dirname,
-            "../templates/webpart/react/{componentClassName}.ts"
+            templateFolder,
+            "./webpart/react/{componentClassName}.ts"
           ),
           `${srcDir}/webparts/${componentNameCamelCase}/${componentClassName}.ts`
         );
         await fs.copyFile(
           path.resolve(
-            __dirname,
-            "../templates/webpart/react/components/{componentName}.module.scss"
+            templateFolder,
+            "./webpart/react/components/{componentName}.module.scss"
           ),
           `${componentDir}/${componentName}.module.scss`
         );
         await fs.copyFile(
           path.resolve(
-            __dirname,
-            "../templates/webpart/react/components/{componentName}.tsx"
+            templateFolder,
+            "./webpart/react/components/{componentName}.tsx"
           ),
           `${componentDir}/${componentName}.tsx`
         );
         await fs.copyFile(
           path.resolve(
-            __dirname,
-            "../templates/webpart/react/components/I{componentName}Props.ts"
+            templateFolder,
+            "./webpart/react/components/I{componentName}Props.ts"
           ),
           `${componentDir}/I${componentName}Props.ts`
         );
         await fs.copyFile(
-          path.resolve(__dirname, "../templates/webpart/react/package.json"),
+          path.resolve(templateFolder, "./webpart/react/package.json"),
           `${outputFolderPath}/package.json`
         );
         break;
     }
 
     await fs.copy(
-      path.resolve(__dirname, "../templates/webpart/base/loc"),
+      path.resolve(templateFolder, "./webpart/base/loc"),
       `${srcDir}/webparts/${componentNameCamelCase}/loc`
     );
     await fs.copy(
       path.resolve(
-        __dirname,
-        "../templates/webpart/base/{componentClassName}.manifest.json"
+        templateFolder,
+        "./webpart/base/{componentClassName}.manifest.json"
       ),
       `${srcDir}/webparts/${componentNameCamelCase}/${componentClassName}.manifest.json`
     );
 
     // config folder
     await fs.copy(
-      path.resolve(__dirname, "../templates/solution/config"),
+      path.resolve(templateFolder, "./solution/config"),
       `${outputFolderPath}/config`
     );
 
     // Other files
     await fs.copyFile(
-      path.resolve(__dirname, "../templates/solution/README.md"),
+      path.resolve(templateFolder, "./solution/README.md"),
       `${outputFolderPath}/README.md`
     );
     await fs.copyFile(
-      path.resolve(__dirname, "../templates/solution/_editorconfig"),
+      path.resolve(templateFolder, "./solution/_editorconfig"),
       `${outputFolderPath}/.editorconfig`
     );
     await fs.copyFile(
-      path.resolve(__dirname, "../templates/solution/_gitignore"),
+      path.resolve(templateFolder, "./solution/_gitignore"),
       `${outputFolderPath}/.gitignore`
     );
     await fs.copyFile(
-      path.resolve(__dirname, "../templates/solution/gulpfile.js"),
+      path.resolve(templateFolder, "./solution/gulpfile.js"),
       `${outputFolderPath}/gulpfile.js`
     );
     await fs.copyFile(
-      path.resolve(__dirname, "../templates/solution/tsconfig.json"),
+      path.resolve(templateFolder, "./solution/tsconfig.json"),
       `${outputFolderPath}/tsconfig.json`
     );
     await fs.copyFile(
-      path.resolve(__dirname, "../templates/solution/tslint.json"),
+      path.resolve(templateFolder, "./solution/tslint.json"),
       `${outputFolderPath}/tslint.json`
     );
 

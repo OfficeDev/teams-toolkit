@@ -5,8 +5,8 @@ import * as chai from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
 
-import { FunctionPluginInfo } from "../../src/constants";
-import { forEachFileAndDir } from "../../src/utils/dir-walk";
+import { FunctionPluginInfo } from "../../../../../src/plugins/resource/function/constants";
+import { forEachFileAndDir } from "../../../../../src/plugins/resource/function/utils/dir-walk";
 
 const root = path.join(__dirname, "ut");
 

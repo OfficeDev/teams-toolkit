@@ -57,12 +57,11 @@ namespace Microsoft.TeamsFxSimpleAuth.Components.Auth
                 appId = context.User.FindFirstValue(JWTClaims.AppId);
             }
 
-            if (allowedAppIds == null || !allowedAppIds.Contains(appId))
+            if (allowedAppIds != null && allowedAppIds.Contains(appId))
             {
-                throw new AuthorizationRequestDeniedException($"The App Id: {appId} is not allowed to call this API");
+                //throw new AuthorizationRequestDeniedException($"The App Id: {appId} is not allowed to call this API");
+                context.Succeed(requirement);
             }
-
-            context.Succeed(requirement);
 
             return Task.CompletedTask;
         }
@@ -80,12 +79,11 @@ namespace Microsoft.TeamsFxSimpleAuth.Components.Auth
             var idtype = context.User.FindFirstValue(JWTClaims.IdType);
             var identity = GetIdentityTypeFromIdType(idtype);
 
-            if(identity != requirement.identity)
+            if (identity == requirement.identity)
             {
-                throw new AuthorizationRequestDeniedException($"Token with idtyp {identity} mismatch requirement {requirement.identity}, is not accepted by this API");
+                context.Succeed(requirement);
             }
-
-            context.Succeed(requirement);
+            
             return Task.CompletedTask;
         }
 

@@ -30,65 +30,21 @@ namespace Microsoft.TeamsFxSimpleAuth
             // Add CORS that allows requests from all hosts
             // TODO: Only allow requests from Teams app, requires support from frontend hosting component
             services.AddCors(options =>
-           {
-               options.AddPolicy(name: AllowAllOrigins,
-                                 builder =>
-                                 {
-                                     builder.WithOrigins("*")
-                                     .AllowAnyHeader() // TODO: Need to config CORS in the future
-                                     .AllowAnyMethod(); // TODO: Need to config CORS in the future
-                                 });
-           });
+               {
+                   options.AddPolicy(name: AllowAllOrigins,
+                                     builder =>
+                                     {
+                                         builder.WithOrigins("*")
+                                         .AllowAnyHeader() // TODO: Need to config CORS in the future
+                                         .AllowAnyMethod(); // TODO: Need to config CORS in the future
+                                     });
+               });
 
-            // Add authentication handler that validates OAuth tokens
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
-                {
-                    options.TokenValidationParameters = new IdentityModel.Tokens.TokenValidationParameters()
-                    {
-                        ValidateAudience = true, // only accept token issued to Teams app client id
-                        ValidateIssuer = false, // The is no default support for AAD multi tenant validation, need to provide full list of issuers which is not possible
-                        ValidAudiences = new string[] { Configuration[ConfigurationName.ClientId], Configuration[ConfigurationName.IdentifierUri] },
-                    };
-                    
-                    options.MetadataAddress = Configuration[ConfigurationName.AadMetadataAddress];
-                });
+            services.AddControllers();
 
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy("ValidateTokenVersion", policy => policy.RequireClaim(JWTClaims.Version, new string[] { JWTVersion.Ver1, JWTVersion.Ver2 }));
-
-                options.AddPolicy("ValidateAppId", policy =>
-                {
-                    // TODO: Read allowed App ids from storage or other place
-                    var allowedAppIdsFromConfig = Configuration[ConfigurationName.AllowedAppIds]?.Split(";", StringSplitOptions.RemoveEmptyEntries);
-                    var allowedAppIds = allowedAppIdsFromConfig.Append(Configuration[ConfigurationName.ClientId]).ToArray();
-                    policy.Requirements.Add(new AppIdRequirement(allowedAppIds));
-                });
-
-                options.AddPolicy("ValidateUserIdentity", policy =>
-                {
-                    policy.Requirements.Add(new IdentityRequirement(JWTIdentityType.UserIdentity));
-                });
-            });
-
-            services.AddControllers()
-                .AddNewtonsoftJson(options =>
-                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
-                );
             services.AddSwaggerDocument();
 
-            // DI for IConfidentialClientApplication
-            services.AddSingleton(x =>
-                 ConfidentialClientApplicationBuilder.Create(Configuration[ConfigurationName.ClientId])
-                    .WithClientSecret(Configuration[ConfigurationName.ClientSecret])
-                    .WithAuthority(Configuration[ConfigurationName.OAuthTokenEndpoint])
-                    .Build());
-
-            // DI for AuthHandler
-            services.AddScoped<AuthHandler>();
-            services.AddSingleton<IAuthorizationHandler, AppIdAuthorizationHandler>();
-            services.AddSingleton<IAuthorizationHandler, IdentityAuthorizationHandler>();
+            SimpleAuthWebApiExtension.ConfigureTeamsFxSimipleAuth(services, Configuration);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -96,11 +52,7 @@ namespace Microsoft.TeamsFxSimpleAuth
         {
             if (env.IsDevelopment())
             {
-                app.UseExceptionHandler("/.internal/error-local-development");
-            }
-            else
-            {
-                app.UseExceptionHandler("/.internal/error");
+                app.UseDeveloperExceptionPage();
             }
 
             app.UseOpenApi();

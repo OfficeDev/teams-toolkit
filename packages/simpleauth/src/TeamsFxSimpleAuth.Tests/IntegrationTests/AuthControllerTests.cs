@@ -103,8 +103,8 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             // Act
             var requestBody = new PostTokenRequestBody
             {
-                Scope = DefaultGraphScope,
-                GrantType = PostTokenGrantType.SsoToken,
+                scope = DefaultGraphScope,
+                grant_type = PostTokenGrantType.SsoToken,
             };
             var result = await PostToAuthTokenApi<string>(client, requestBody);
 
@@ -125,8 +125,8 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             // Act
             var requestBody = new PostTokenRequestBody
             {
-                Scope = DefaultGraphScope,
-                GrantType = PostTokenGrantType.SsoToken,
+                scope = DefaultGraphScope,
+                grant_type = PostTokenGrantType.SsoToken,
             };
             var result = await PostToAuthTokenApi<string>(client, requestBody);
 
@@ -147,8 +147,8 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             // Act
             var requestBody = new PostTokenRequestBody
             {
-                Scope = DefaultGraphScope,
-                GrantType = PostTokenGrantType.SsoToken,
+                scope = DefaultGraphScope,
+                grant_type = PostTokenGrantType.SsoToken,
             };
             var result = await PostToAuthTokenApi<string>(client, requestBody);
 
@@ -171,8 +171,8 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             // Act
             var requestBody = new PostTokenRequestBody
             {
-                Scope = DefaultGraphScope,
-                GrantType = PostTokenGrantType.SsoToken,
+                scope = DefaultGraphScope,
+                grant_type = PostTokenGrantType.SsoToken,
             };
             var result = await PostToAuthTokenApi<string>(client, requestBody);
 
@@ -182,31 +182,31 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             Assert.AreEqual("Bearer error=\"invalid_token\", error_description=\"The signature is invalid\"", result.Response.Headers.GetValues("WWW-Authenticate").FirstOrDefault());
         }
 
-        [Test, Category("P1"), Parallelizable]
-        public async Task PostToken_WithExpiredAuthorizationToken_Return401()
-        {
-            // Arrange
-            var ssoToken = await Utilities.GetUserAccessToken(_settings, _configuration[ConfigurationName.ClientId],
-                _configuration[ConfigurationName.ClientSecret], _configuration[ConfigurationName.OAuthTokenEndpoint]).ConfigureAwait(false);
-            var client = _defaultFactory.CreateDefaultClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
+        //[Test, Category("P1"), Parallelizable]
+        //public async Task PostToken_WithExpiredAuthorizationToken_Return401()
+        //{
+        //    // Arrange
+        //    var ssoToken = await Utilities.GetUserAccessToken(_settings, _configuration[ConfigurationName.ClientId],
+        //        _configuration[ConfigurationName.ClientSecret], _configuration[ConfigurationName.OAuthTokenEndpoint]).ConfigureAwait(false);
+        //    var client = _defaultFactory.CreateDefaultClient();
+        //    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
 
-            // Act
-            await Task.Delay(TimeSpan.FromSeconds(15 * 60 + 20)).ConfigureAwait(false);
-            var requestBody = new PostTokenRequestBody
-            {
-                Scope = DefaultGraphScope,
-                GrantType = PostTokenGrantType.SsoToken,
-            };
-            var result = await PostToAuthTokenApi<string>(client, requestBody);
+        //    // Act
+        //    await Task.Delay(TimeSpan.FromSeconds(15 * 60 + 20)).ConfigureAwait(false);
+        //    var requestBody = new PostTokenRequestBody
+        //    {
+        //        scope = DefaultGraphScope,
+        //        grant_type = PostTokenGrantType.SsoToken,
+        //    };
+        //    var result = await PostToAuthTokenApi<string>(client, requestBody);
 
-            // Assert
-            Assert.AreEqual(HttpStatusCode.Unauthorized, result.Response.StatusCode);
-            Assert.IsNull(result.Body);
-            Assert.IsTrue(result.Response.Headers.GetValues("WWW-Authenticate").FirstOrDefault().Contains("Bearer"));
-            Assert.IsTrue(result.Response.Headers.GetValues("WWW-Authenticate").FirstOrDefault().Contains("error=\"invalid_token\""));
-            Assert.IsTrue(result.Response.Headers.GetValues("WWW-Authenticate").FirstOrDefault().Contains("The token expired"));
-        }
+        //    // Assert
+        //    Assert.AreEqual(HttpStatusCode.Unauthorized, result.Response.StatusCode);
+        //    Assert.IsNull(result.Body);
+        //    Assert.IsTrue(result.Response.Headers.GetValues("WWW-Authenticate").FirstOrDefault().Contains("Bearer"));
+        //    Assert.IsTrue(result.Response.Headers.GetValues("WWW-Authenticate").FirstOrDefault().Contains("error=\"invalid_token\""));
+        //    Assert.IsTrue(result.Response.Headers.GetValues("WWW-Authenticate").FirstOrDefault().Contains("The token expired"));
+        //}
 
         [Test, Category("P0"), Parallelizable]
         public async Task PostToken_WithApplicationToken_Return403()
@@ -221,15 +221,14 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             // Act
             var requestBody = new PostTokenRequestBody
             {
-                Scope = DefaultGraphScope,
-                GrantType = PostTokenGrantType.SsoToken,
+                scope = DefaultGraphScope,
+                grant_type = PostTokenGrantType.SsoToken,
             };
             var result = await PostToAuthTokenApi<ProblemDetails>(client, requestBody);
 
             // Assert
             Assert.AreEqual(HttpStatusCode.Forbidden, result.Response.StatusCode);
             Assert.AreEqual((int)HttpStatusCode.Forbidden, result.Body.Status);
-            Assert.AreEqual("Forbidden", result.Body.Title);
             Assert.AreEqual(ExpectedProblemType.AuthorizationRequestDeniedException, result.Body.Type);
             Assert.AreEqual("Token with idtyp ApplicationIdentity mismatch requirement UserIdentity, is not accepted by this API", result.Body.Detail);
         }
@@ -251,8 +250,8 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             // Act
             var requestBody = new PostTokenRequestBody
             {
-                Scope = DefaultGraphScope,
-                GrantType = PostTokenGrantType.SsoToken,
+                scope = DefaultGraphScope,
+                grant_type = PostTokenGrantType.SsoToken,
             };
             var result = await PostToAuthTokenApi<ProblemDetails>(client, requestBody);
 
@@ -261,7 +260,6 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             Assert.AreEqual(ExpectedProblemType.AuthorizationRequestDeniedException, result.Body.Type);
             Assert.AreEqual($"The App Id: {_settings.AdminClientId} is not allowed to call this API", result.Body.Detail);
             Assert.AreEqual((int)HttpStatusCode.Forbidden, result.Body.Status);
-            Assert.AreEqual("Forbidden", result.Body.Title);
         }
 
         [Test, Category("P0"), Parallelizable]
@@ -324,7 +322,6 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             // Assert
             Assert.AreEqual(HttpStatusCode.BadRequest, result.Response.StatusCode);
             Assert.AreEqual(ExpectedProblemType.InvalidModelException, result.Body.Type);
-            Assert.AreEqual("Bad Request", result.Body.Title);
             Assert.AreEqual((int)HttpStatusCode.BadRequest, result.Body.Status);
             Assert.AreEqual("grant_type not_supported_grant_type is not supported", result.Body.Detail);
         }
@@ -341,15 +338,14 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             // Act
             var requestBody = new PostTokenRequestBody()
             {
-                GrantType = null,
-                Scope = DefaultGraphScope
+                grant_type = null,
+                scope = DefaultGraphScope
             };
             var result = await PostToAuthTokenApi<ProblemDetails>(client, requestBody);
 
             // Assert
             Assert.AreEqual(HttpStatusCode.BadRequest, result.Response.StatusCode);
             Assert.AreEqual(ExpectedProblemType.InvalidModelException, result.Body.Type);
-            Assert.AreEqual("Bad Request", result.Body.Title);
             Assert.AreEqual((int)HttpStatusCode.BadRequest, result.Body.Status);
             Assert.AreEqual("grant_type is required in request body", result.Body.Detail);
         }
@@ -373,7 +369,6 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             // Assert
             Assert.AreEqual(HttpStatusCode.BadRequest, result.Response.StatusCode);
             Assert.AreEqual(ExpectedProblemType.InvalidModelException, result.Body.Type);
-            Assert.AreEqual("Bad Request", result.Body.Title);
             Assert.AreEqual((int)HttpStatusCode.BadRequest, result.Body.Status);
             Assert.AreEqual("grant_type is required in request body", result.Body.Detail);
         }
@@ -390,10 +385,10 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             // Act
             var requestBody = new PostTokenRequestBody
             {
-                RedirectUri = _settings.RedirectUri,
-                GrantType = AadGrantType.AuthorizationCode,
-                Code = Utilities.GetAuthorizationCode(_settings, _configuration),
-                CodeVerifier = _settings.CodeVerifier
+                redirect_uri = _settings.RedirectUri,
+                grant_type = AadGrantType.AuthorizationCode,
+                code = Utilities.GetAuthorizationCode(_settings, _configuration),
+                code_verifier = _settings.CodeVerifier
             };
             var result = await PostToAuthTokenApi<ProblemDetails>(client, requestBody);
 
@@ -401,7 +396,6 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             Assert.AreEqual(HttpStatusCode.BadRequest, result.Response.StatusCode);
             Assert.AreEqual("application/problem+json; charset=utf-8", result.Response.Content.Headers.ContentType.ToString());
             Assert.AreEqual(ExpectedProblemType.InvalidModelException, result.Body.Type);
-            Assert.AreEqual("Bad Request", result.Body.Title);
             Assert.AreEqual((int)HttpStatusCode.BadRequest, result.Body.Status);
             Assert.AreEqual("scope is required in request body", result.Body.Detail);
         }
@@ -418,11 +412,11 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             // Act
             var requestBody = new PostTokenRequestBody
             {
-                Scope = "",
-                RedirectUri = _settings.RedirectUri,
-                GrantType = AadGrantType.AuthorizationCode,
-                Code = Utilities.GetAuthorizationCode(_settings, _configuration),
-                CodeVerifier = _settings.CodeVerifier
+                scope = "",
+                redirect_uri = _settings.RedirectUri,
+                grant_type = AadGrantType.AuthorizationCode,
+                code = Utilities.GetAuthorizationCode(_settings, _configuration),
+                code_verifier = _settings.CodeVerifier
             };
             var result = await PostToAuthTokenApi<ProblemDetails>(client, requestBody);
 
@@ -431,7 +425,6 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             Assert.AreEqual("application/problem+json; charset=utf-8", result.Response.Content.Headers.ContentType.ToString());
             Assert.AreEqual("scope is required in request body", result.Body.Detail);
             Assert.AreEqual((int)HttpStatusCode.BadRequest, result.Body.Status);
-            Assert.AreEqual("Bad Request", result.Body.Title);
             Assert.AreEqual(ExpectedProblemType.InvalidModelException, result.Body.Type);
         }
 
@@ -447,11 +440,11 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             // Act
             var requestBody = new PostTokenRequestBody
             {
-                Scope = "https://storage.azure.com/.default",
-                RedirectUri = _settings.RedirectUri,
-                GrantType = AadGrantType.AuthorizationCode,
-                Code = Utilities.GetAuthorizationCode(_settings, _configuration),
-                CodeVerifier = _settings.CodeVerifier
+                scope = "https://storage.azure.com/.default",
+                redirect_uri = _settings.RedirectUri,
+                grant_type = AadGrantType.AuthorizationCode,
+                code = Utilities.GetAuthorizationCode(_settings, _configuration),
+                code_verifier = _settings.CodeVerifier
             };
             var result = await PostToAuthTokenApi<ProblemDetails>(client, requestBody);
 
@@ -459,7 +452,6 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             Assert.AreEqual(HttpStatusCode.BadRequest, result.Response.StatusCode);
             Assert.AreEqual("application/problem+json; charset=utf-8", result.Response.Content.Headers.ContentType.ToString());
             Assert.AreEqual((int)HttpStatusCode.BadRequest, result.Body.Status);
-            Assert.AreEqual("Bad Request", result.Body.Title);
             Assert.AreEqual(ExpectedProblemType.AadClientException, result.Body.Type);
             Assert.IsTrue(result.Body.Detail.Contains("AADSTS65005"));
         }
@@ -476,11 +468,11 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             // Act
             var requestBody = new PostTokenRequestBody
             {
-                Scope = DefaultGraphScope,
-                RedirectUri = _settings.RedirectUri + "incorrect_value",
-                GrantType = AadGrantType.AuthorizationCode,
-                Code = Utilities.GetAuthorizationCode(_settings, _configuration),
-                CodeVerifier = _settings.CodeVerifier
+                scope = DefaultGraphScope,
+                redirect_uri = _settings.RedirectUri + "incorrect_value",
+                grant_type = AadGrantType.AuthorizationCode,
+                code = Utilities.GetAuthorizationCode(_settings, _configuration),
+                code_verifier = _settings.CodeVerifier
             };
             var result = await PostToAuthTokenApi<ProblemDetails>(client, requestBody);
 
@@ -488,7 +480,6 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             Assert.AreEqual(HttpStatusCode.BadRequest, result.Response.StatusCode);
             Assert.AreEqual("application/problem+json; charset=utf-8", result.Response.Content.Headers.ContentType.ToString());
             Assert.AreEqual((int)HttpStatusCode.BadRequest, result.Body.Status);
-            Assert.AreEqual("Bad Request", result.Body.Title);
             Assert.AreEqual(ExpectedProblemType.AadClientException, result.Body.Type);
             Assert.IsTrue(result.Body.Detail.Contains("invalid_client"));
             Assert.IsTrue(result.Body.Detail.Contains("AADSTS50011")); // Invalid reply url error
@@ -506,11 +497,11 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             // Act
             var requestBody = new PostTokenRequestBody
             {
-                Scope = DefaultGraphScope,
-                RedirectUri = _settings.RedirectUri,
-                GrantType = AadGrantType.AuthorizationCode,
-                Code = Utilities.GetAuthorizationCode(_settings, _configuration) + "incorrect_value",
-                CodeVerifier = _settings.CodeVerifier
+                scope = DefaultGraphScope,
+                redirect_uri = _settings.RedirectUri,
+                grant_type = AadGrantType.AuthorizationCode,
+                code = Utilities.GetAuthorizationCode(_settings, _configuration) + "incorrect_value",
+                code_verifier = _settings.CodeVerifier
             };
             var result = await PostToAuthTokenApi<ProblemDetails>(client, requestBody);
 
@@ -518,7 +509,6 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             Assert.AreEqual(HttpStatusCode.BadRequest, result.Response.StatusCode);
             Assert.AreEqual("application/problem+json; charset=utf-8", result.Response.Content.Headers.ContentType.ToString());
             Assert.AreEqual((int)HttpStatusCode.BadRequest, result.Body.Status);
-            Assert.AreEqual("Bad Request", result.Body.Title);
             Assert.AreEqual(ExpectedProblemType.AadClientException, result.Body.Type);
             Assert.IsTrue(result.Body.Detail.Contains("invalid_grant"));
         }
@@ -535,11 +525,11 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             // Act
             var requestBody = new PostTokenRequestBody
             {
-                Scope = DefaultGraphScope,
-                RedirectUri = _settings.RedirectUri,
-                GrantType = AadGrantType.AuthorizationCode,
-                Code = Utilities.GetAuthorizationCode(_settings, _configuration),
-                CodeVerifier = _settings.CodeVerifier + "incorrect_value"
+                scope = DefaultGraphScope,
+                redirect_uri = _settings.RedirectUri,
+                grant_type = AadGrantType.AuthorizationCode,
+                code = Utilities.GetAuthorizationCode(_settings, _configuration),
+                code_verifier = _settings.CodeVerifier + "incorrect_value"
             };
             var result = await PostToAuthTokenApi<ProblemDetails>(client, requestBody);
 
@@ -547,7 +537,6 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             Assert.AreEqual(HttpStatusCode.BadRequest, result.Response.StatusCode);
             Assert.AreEqual("application/problem+json; charset=utf-8", result.Response.Content.Headers.ContentType.ToString());
             Assert.AreEqual((int)HttpStatusCode.BadRequest, result.Body.Status);
-            Assert.AreEqual("Bad Request", result.Body.Title);
             Assert.AreEqual(ExpectedProblemType.AadClientException, result.Body.Type);
             var detail = JsonConvert.DeserializeObject<Dictionary<string, object>>(result.Body.Detail);
             Assert.AreEqual("invalid_grant", detail["error"]);
@@ -570,11 +559,11 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             {
                 var requestBody = new PostTokenRequestBody
                 {
-                    Scope = DefaultGraphScope,
-                    RedirectUri = _settings.RedirectUri,
-                    GrantType = AadGrantType.AuthorizationCode,
-                    Code = Utilities.GetAuthorizationCode(_settings, _configuration), // Reusing same auth code will result in error, so cannot use the retry handler
-                    CodeVerifier = _settings.CodeVerifier
+                    scope = DefaultGraphScope,
+                    redirect_uri = _settings.RedirectUri,
+                    grant_type = AadGrantType.AuthorizationCode,
+                    code = Utilities.GetAuthorizationCode(_settings, _configuration), // Reusing same auth code will result in error, so cannot use the retry handler
+                    code_verifier = _settings.CodeVerifier
                 };
                 result = await PostToAuthTokenApi<PostTokenResponse>(client, requestBody);
                 if (result.Response.IsSuccessStatusCode)
@@ -588,10 +577,10 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             // Assert
             Assert.AreEqual(HttpStatusCode.OK, result.Response.StatusCode);
             Assert.AreEqual("application/json; charset=utf-8", result.Response.Content.Headers.ContentType.ToString());
-            Assert.NotNull(result.Body.Scope);
-            Assert.IsTrue(result.Body.Scope.Contains(DefaultGraphScope));
-            Assert.AreNotEqual(DateTimeOffset.MinValue, result.Body.ExpiresOn);
-            Assert.NotNull(result.Body.AccessToken);
+            Assert.NotNull(result.Body.scope);
+            Assert.IsTrue(result.Body.scope.Contains(DefaultGraphScope));
+            Assert.AreNotEqual(DateTimeOffset.MinValue, result.Body.expires_on);
+            Assert.NotNull(result.Body.access_token);
         }
 
         [Test, Category("P0"), Parallelizable]
@@ -629,10 +618,10 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             // Assert
             Assert.AreEqual(HttpStatusCode.OK, result.Response.StatusCode);
             Assert.AreEqual("application/json; charset=utf-8", result.Response.Content.Headers.ContentType.ToString());
-            Assert.NotNull(result.Body.Scope);
-            Assert.IsTrue(result.Body.Scope.Contains(DefaultGraphScope));
-            Assert.AreNotEqual(DateTimeOffset.MinValue, result.Body.ExpiresOn);
-            Assert.NotNull(result.Body.AccessToken);
+            Assert.NotNull(result.Body.scope);
+            Assert.IsTrue(result.Body.scope.Contains(DefaultGraphScope));
+            Assert.AreNotEqual(DateTimeOffset.MinValue, result.Body.expires_on);
+            Assert.NotNull(result.Body.access_token);
         }
 
         [Test, Category("P0"), Parallelizable]
@@ -650,11 +639,11 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             // Act
             var requestBody = new PostTokenRequestBody
             {
-                Scope = DefaultGraphScope,
-                RedirectUri = _settings.RedirectUri,
-                GrantType = AadGrantType.AuthorizationCode,
-                Code = Utilities.GetAuthorizationCode(_settings, _configuration),
-                CodeVerifier = _settings.CodeVerifier
+                scope = DefaultGraphScope,
+                redirect_uri = _settings.RedirectUri,
+                grant_type = AadGrantType.AuthorizationCode,
+                code = Utilities.GetAuthorizationCode(_settings, _configuration),
+                code_verifier = _settings.CodeVerifier
             };
             var result = await PostToAuthTokenApi<ProblemDetails>(client, requestBody);
 
@@ -662,7 +651,6 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             Assert.AreEqual(HttpStatusCode.InternalServerError, result.Response.StatusCode);
             Assert.AreEqual("application/problem+json; charset=utf-8", result.Response.Content.Headers.ContentType.ToString());
             Assert.AreEqual((int)HttpStatusCode.InternalServerError, result.Body.Status);
-            Assert.AreEqual("An error occured while processing your request.", result.Body.Title);
             Assert.AreEqual(ExpectedProblemType.AuthInternalServerException, result.Body.Type);
             Assert.AreEqual("The AAD configuration in server is invalid.", result.Body.Detail);
         }
@@ -679,7 +667,7 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             // Act
             var requestBody = new PostTokenRequestBody
             {
-                GrantType = PostTokenGrantType.SsoToken
+                grant_type = PostTokenGrantType.SsoToken
             };
             var result = await PostToAuthTokenApi<ProblemDetails>(client, requestBody);
 
@@ -687,7 +675,6 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             Assert.AreEqual(HttpStatusCode.BadRequest, result.Response.StatusCode);
             Assert.AreEqual("application/problem+json; charset=utf-8", result.Response.Content.Headers.ContentType.ToString());
             Assert.AreEqual((int)HttpStatusCode.BadRequest, result.Body.Status);
-            Assert.AreEqual("Bad Request", result.Body.Title);
             Assert.AreEqual(ExpectedProblemType.InvalidModelException, result.Body.Type);
             Assert.AreEqual("scope is required in request body", result.Body.Detail);
         }
@@ -704,8 +691,8 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             // Act
             var requestBody = new PostTokenRequestBody
             {
-                Scope = "",
-                GrantType = PostTokenGrantType.SsoToken
+                scope = "",
+                grant_type = PostTokenGrantType.SsoToken
             };
             var result = await PostToAuthTokenApi<ProblemDetails>(client, requestBody);
 
@@ -713,7 +700,6 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             Assert.AreEqual(HttpStatusCode.BadRequest, result.Response.StatusCode);
             Assert.AreEqual("application/problem+json; charset=utf-8", result.Response.Content.Headers.ContentType.ToString());
             Assert.AreEqual((int)HttpStatusCode.BadRequest, result.Body.Status);
-            Assert.AreEqual("Bad Request", result.Body.Title);
             Assert.AreEqual(ExpectedProblemType.InvalidModelException, result.Body.Type);
             Assert.AreEqual("scope is required in request body", result.Body.Detail);
         }
@@ -730,8 +716,8 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             // Act
             var requestBody = new PostTokenRequestBody
             {
-                Scope = "invalidscope",
-                GrantType = PostTokenGrantType.SsoToken
+                scope = "invalidscope",
+                grant_type = PostTokenGrantType.SsoToken
             };
             var result = await PostToAuthTokenApi<ProblemDetails>(client, requestBody);
 
@@ -739,7 +725,6 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             Assert.AreEqual(HttpStatusCode.BadRequest, result.Response.StatusCode);
             Assert.AreEqual("application/problem+json; charset=utf-8", result.Response.Content.Headers.ContentType.ToString());
             Assert.AreEqual((int)HttpStatusCode.BadRequest, result.Body.Status);
-            Assert.AreEqual("Bad Request", result.Body.Title);
             Assert.AreEqual(ExpectedProblemType.AadUiRequiredException, result.Body.Type);
             Assert.IsTrue(result.Body.Detail.Contains("AADSTS65001"));
         }
@@ -756,8 +741,8 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             // Act
             var requestBody = new PostTokenRequestBody
             {
-                Scope = "https://graph.microsoft.com/User.Export.All",
-                GrantType = PostTokenGrantType.SsoToken
+                scope = "https://graph.microsoft.com/User.Export.All",
+                grant_type = PostTokenGrantType.SsoToken
             };
             var result = await PostToAuthTokenApi<ProblemDetails>(client, requestBody);
 
@@ -765,7 +750,6 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             Assert.AreEqual(HttpStatusCode.BadRequest, result.Response.StatusCode);
             Assert.AreEqual("application/problem+json; charset=utf-8", result.Response.Content.Headers.ContentType.ToString());
             Assert.AreEqual((int)HttpStatusCode.BadRequest, result.Body.Status);
-            Assert.AreEqual("Bad Request", result.Body.Title);
             Assert.AreEqual(ExpectedProblemType.AadUiRequiredException, result.Body.Type);
             Assert.IsTrue(result.Body.Detail.Contains("AADSTS65001"));
         }
@@ -782,17 +766,17 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             // Act
             var requestBody = new PostTokenRequestBody
             {
-                Scope = DefaultGraphScope,
-                GrantType = PostTokenGrantType.SsoToken
+                scope = DefaultGraphScope,
+                grant_type = PostTokenGrantType.SsoToken
             };
             var result = await PostToAuthTokenApi<PostTokenResponse>(client, requestBody);
 
             // Assert
             Assert.AreEqual(HttpStatusCode.OK, result.Response.StatusCode);
             Assert.AreEqual("application/json; charset=utf-8", result.Response.Content.Headers.ContentType.ToString());
-            Assert.IsNotNull(result.Body.AccessToken);
-            Assert.IsTrue(result.Body.Scope.Contains(DefaultGraphScope));
-            Assert.AreNotEqual(DateTimeOffset.MinValue, result.Body.ExpiresOn);
+            Assert.IsNotNull(result.Body.access_token);
+            Assert.IsTrue(result.Body.scope.Contains(DefaultGraphScope));
+            Assert.AreNotEqual(DateTimeOffset.MinValue, result.Body.expires_on);
         }
 
         [Test, Category("P0"), Parallelizable]
@@ -816,9 +800,9 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             // Assert
             Assert.AreEqual(HttpStatusCode.OK, result.Response.StatusCode);
             Assert.AreEqual("application/json; charset=utf-8", result.Response.Content.Headers.ContentType.ToString());
-            Assert.IsNotNull(result.Body.AccessToken);
-            Assert.IsTrue(result.Body.Scope.Contains(DefaultGraphScope));
-            Assert.AreNotEqual(DateTimeOffset.MinValue, result.Body.ExpiresOn);
+            Assert.IsNotNull(result.Body.access_token);
+            Assert.IsTrue(result.Body.scope.Contains(DefaultGraphScope));
+            Assert.AreNotEqual(DateTimeOffset.MinValue, result.Body.expires_on);
         }
 
         [Test, Category("P0"), Parallelizable]
@@ -833,8 +817,8 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             // Act
             var firstRequestBody = new PostTokenRequestBody
             {
-                Scope = DefaultGraphScope,
-                GrantType = PostTokenGrantType.SsoToken
+                scope = DefaultGraphScope,
+                grant_type = PostTokenGrantType.SsoToken
             };
             var firstResult = await PostToAuthTokenApi<PostTokenResponse>(client, firstRequestBody);
             Assert.AreEqual(HttpStatusCode.OK, firstResult.Response.StatusCode);
@@ -845,16 +829,16 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
 
             var secondRequestBody = new PostTokenRequestBody
             {
-                Scope = "https://graph.microsoft.com/User.Read User.ReadBasic.All",
-                GrantType = PostTokenGrantType.SsoToken
+                scope = "https://graph.microsoft.com/User.Read User.ReadBasic.All",
+                grant_type = PostTokenGrantType.SsoToken
             };
             var secondResult = await PostToAuthTokenApi<PostTokenResponse>(client, secondRequestBody);
             Assert.AreEqual(HttpStatusCode.OK, secondResult.Response.StatusCode);
 
             // Assert
-            Assert.IsTrue(firstResult.Body.Scope.ToLowerInvariant().Contains("https://graph.microsoft.com/user.read"));
-            Assert.IsFalse(firstResult.Body.Scope.ToLowerInvariant().Contains("https://graph.microsoft.com/user.readbasic.all"));
-            Assert.IsTrue(secondResult.Body.Scope.ToLowerInvariant().Contains("https://graph.microsoft.com/user.readbasic.all"));
+            Assert.IsTrue(firstResult.Body.scope.ToLowerInvariant().Contains("https://graph.microsoft.com/user.read"));
+            Assert.IsFalse(firstResult.Body.scope.ToLowerInvariant().Contains("https://graph.microsoft.com/user.readbasic.all"));
+            Assert.IsTrue(secondResult.Body.scope.ToLowerInvariant().Contains("https://graph.microsoft.com/user.readbasic.all"));
         }
 
         [Test, Category("P0"), Parallelizable]
@@ -869,22 +853,22 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             // Act
             var firstRequestBody = new PostTokenRequestBody
             {
-                Scope = DefaultGraphScope,
-                GrantType = PostTokenGrantType.SsoToken
+                scope = DefaultGraphScope,
+                grant_type = PostTokenGrantType.SsoToken
             };
             var firstResult = await PostToAuthTokenApi<PostTokenResponse>(client, firstRequestBody);
             Assert.AreEqual(HttpStatusCode.OK, firstResult.Response.StatusCode);
 
             var secondRequestBody = new PostTokenRequestBody
             {
-                Scope = DefaultGraphScope,
-                GrantType = PostTokenGrantType.SsoToken
+                scope = DefaultGraphScope,
+                grant_type = PostTokenGrantType.SsoToken
             };
             var secondResult = await PostToAuthTokenApi<PostTokenResponse>(client, secondRequestBody);
             Assert.AreEqual(HttpStatusCode.OK, secondResult.Response.StatusCode);
 
             // Assert
-            Assert.AreEqual(firstResult.Body.AccessToken, secondResult.Body.AccessToken);
+            Assert.AreEqual(firstResult.Body.access_token, secondResult.Body.access_token);
         }
 
         [Test, Category("P0"), Parallelizable]
@@ -904,13 +888,13 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             // Act
             var firstRequestBody = new PostTokenRequestBody
             {
-                Scope = DefaultGraphScope,
-                GrantType = PostTokenGrantType.SsoToken
+                scope = DefaultGraphScope,
+                grant_type = PostTokenGrantType.SsoToken
             };
             var firstResult = await PostToAuthTokenApi<PostTokenResponse>(client, firstRequestBody);
             Assert.AreEqual(HttpStatusCode.OK, firstResult.Response.StatusCode);
 
-            var secondsToWait = (firstResult.Body.ExpiresOn - DateTimeOffset.UtcNow).TotalSeconds - 4 * 60;
+            var secondsToWait = (firstResult.Body.expires_on - DateTimeOffset.UtcNow).TotalSeconds - 4 * 60;
             if (secondsToWait > 0)
             {
                 await Task.Delay(TimeSpan.FromSeconds(secondsToWait)).ConfigureAwait(false); // Wait until 4 minutes before token expire, MSAL will refresh token 5 minutes before expire
@@ -918,15 +902,15 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
 
             var secondRequestBody = new PostTokenRequestBody
             {
-                Scope = DefaultGraphScope,
-                GrantType = PostTokenGrantType.SsoToken
+                scope = DefaultGraphScope,
+                grant_type = PostTokenGrantType.SsoToken
             };
             var secondResult = await PostToAuthTokenApi<PostTokenResponse>(client, secondRequestBody);
             Assert.AreEqual(HttpStatusCode.OK, secondResult.Response.StatusCode);
 
             // Assert
-            Assert.AreNotEqual(firstResult.Body.AccessToken, secondResult.Body.AccessToken);
-            Assert.IsTrue((secondResult.Body.ExpiresOn - DateTimeOffset.UtcNow).TotalSeconds > 5 * 60); // Token lifetime is refreshed
+            Assert.AreNotEqual(firstResult.Body.access_token, secondResult.Body.access_token);
+            Assert.IsTrue((secondResult.Body.expires_on - DateTimeOffset.UtcNow).TotalSeconds > 5 * 60); // Token lifetime is refreshed
         }
 
         [Test, Category("P0"), Parallelizable]
@@ -944,8 +928,8 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             // Act
             var requestBody = new PostTokenRequestBody
             {
-                Scope = DefaultGraphScope,
-                GrantType = PostTokenGrantType.SsoToken
+                scope = DefaultGraphScope,
+                grant_type = PostTokenGrantType.SsoToken
             };
             var result = await PostToAuthTokenApi<ProblemDetails>(client, requestBody);
 
@@ -953,7 +937,6 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             Assert.AreEqual(HttpStatusCode.InternalServerError, result.Response.StatusCode);
             Assert.AreEqual("application/problem+json; charset=utf-8", result.Response.Content.Headers.ContentType.ToString());
             Assert.AreEqual((int)HttpStatusCode.InternalServerError, result.Body.Status);
-            Assert.AreEqual("An error occured while processing your request.", result.Body.Title);
             Assert.AreEqual(ExpectedProblemType.AuthInternalServerException, result.Body.Type);
             Assert.AreEqual("The AAD configuration in server is invalid.", result.Body.Detail);
         }

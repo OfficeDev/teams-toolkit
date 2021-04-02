@@ -4,7 +4,6 @@ namespace Microsoft.TeamsFxSimpleAuth.Models
 {
     public class PostApplicationTokenRequestBody
     {
-        [JsonProperty("scope")]
-        public string Scope { get; set; }
+        public string scope { get; set; }
     }
 }

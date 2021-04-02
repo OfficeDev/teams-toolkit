@@ -40,9 +40,6 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 3.1.x
-    - name: Install Chrome driver
-      run:
-        sudo apt-get update && sudo apt-get install -y chromium-chromedriver
     - name: Build
       run: 
         ls && chmod +x "scripts/build.sh" && "scripts/build.sh"

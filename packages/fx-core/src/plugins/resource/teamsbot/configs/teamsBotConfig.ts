@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ConfigValue, PluginContext } from 'teamsfx-api';
+import { ConfigValue, PluginContext } from "teamsfx-api";
 
-import { LocalDebugConfig } from './localDebugConfig';
-import { ProvisionConfig } from './provisionConfig';
-import { ScaffoldConfig } from './scaffoldConfig';
-import { PluginSolution, PluginAAD } from '../resources/strings';
-import { PluginActRoles } from '../enums/pluginActRoles';
-import { QuestionNames } from '../constants';
+import { LocalDebugConfig } from "./localDebugConfig";
+import { ProvisionConfig } from "./provisionConfig";
+import { ScaffoldConfig } from "./scaffoldConfig";
+import { PluginSolution, PluginAAD } from "../resources/strings";
+import { PluginActRoles } from "../enums/pluginActRoles";
+import { QuestionNames } from "../constants";
 
 export class TeamsBotConfig {
     public scaffold: ScaffoldConfig = new ScaffoldConfig();
@@ -19,7 +19,7 @@ export class TeamsBotConfig {
     public teamsAppTenant?: string;
     public actRoles: PluginActRoles[] = [];
 
-    public async restoreConfigFromContext(context: PluginContext) {
+    public async restoreConfigFromContext(context: PluginContext): Promise<void> {
         await this.scaffold.restoreConfigFromContext(context);
         await this.provision.restoreConfigFromContext(context);
         await this.localDebug.restoreConfigFromContext(context);
@@ -54,7 +54,7 @@ export class TeamsBotConfig {
         }
     }
 
-    public saveConfigIntoContext(context: PluginContext) {
+    public saveConfigIntoContext(context: PluginContext): void {
         this.scaffold.saveConfigIntoContext(context);
         this.provision.saveConfigIntoContext(context);
     }

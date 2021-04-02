@@ -7,10 +7,6 @@
         "JavaScript": [
             ".env",
             ".vscode/launch.json"
-        ],
-        "CSharp": [
-            "appsettings.json",
-            ".vscode/launch.json"
         ]
     },
     "UnPackConfig": {
@@ -19,10 +15,6 @@
         ],
         "JavaScript": [
             "node_modules"
-        ],
-        "CSharp": [
-            "bin",
-            "obj"
         ]
     }
 }

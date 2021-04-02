@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import * as appService from '@azure/arm-appservice';
-import * as msRest from '@azure/ms-rest-js';
-import { AzureBotService } from '@azure/arm-botservice';
-import { ClientCreationException } from './exceptions';
-import { ClientNames } from './resources/strings';
+import * as appService from "@azure/arm-appservice";
+import * as msRest from "@azure/ms-rest-js";
+import { AzureBotService } from "@azure/arm-botservice";
+import { ClientCreationException } from "./exceptions";
+import { ClientNames } from "./resources/strings";
 
 export function createAzureBotServiceClient(creds: msRest.ServiceClientCredentials, subs: string): AzureBotService {
     try {

@@ -1,20 +1,20 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import 'mocha';
-import * as chai from 'chai';
-import * as sinon from 'sinon';
+import "mocha";
+import * as chai from "chai";
+import * as sinon from "sinon";
 
-import { ResourceNameFactory } from '../../src/utils/resourceNameFactory';
-import * as utils from '../../src/utils/common';
+import { ResourceNameFactory } from "../../../../../src/plugins/resource/teamsbot/utils/resourceNameFactory";
+import * as utils from "../../../../../src/plugins/resource/teamsbot/utils/common";
 
-describe('Resource Name Factory', () => {
-    describe('createCommonName', () => {
-        it('Happy Path', () => {
+describe("Resource Name Factory", () => {
+    describe("createCommonName", () => {
+        it("Happy Path", () => {
             // Arrange
-            const appName = 'demo0329';
-            const limit: number = 10;
+            const appName = "demo0329";
+            const limit = 10;
 
-            sinon.stub(utils, 'genUUID').returns('abcdefg');
+            sinon.stub(utils, "genUUID").returns("abcdefg");
 
             // Act
 
@@ -22,7 +22,7 @@ describe('Resource Name Factory', () => {
 
             console.log(name);
             // Assert
-            const expectName = 'tbpabcdefg';
+            const expectName = "tbpabcdefg";
             chai.assert.lengthOf(name, limit);
             chai.assert.isTrue(name === expectName);
         });

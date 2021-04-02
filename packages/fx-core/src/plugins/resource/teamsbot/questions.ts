@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ProgrammingLanguage } from './enums/programmingLanguage';
-import { WayToRegisterBot } from './enums/wayToRegisterBot';
-import { QuestionNames, RegularExprs } from './constants';
-import { NodeType, QTreeNode } from 'teamsfx-api';
+import { ProgrammingLanguage } from "./enums/programmingLanguage";
+import { WayToRegisterBot } from "./enums/wayToRegisterBot";
+import { QuestionNames, RegularExprs } from "./constants";
+import { NodeType, QTreeNode } from "teamsfx-api";
 
 const createQuestions = new QTreeNode({
     type: NodeType.group
@@ -13,7 +13,7 @@ const programmingLanguageQuestion = new QTreeNode({
     name: QuestionNames.PROGRAMMING_LANGUAGE,
     type: NodeType.singleSelect,
     option: Object.values(ProgrammingLanguage).map((value) => value.toLowerCase()),
-    title: 'Which programming language is scaffold based on?',
+    title: "Which programming language is scaffold based on?",
     default: ProgrammingLanguage.TypeScript
 });
 
@@ -21,15 +21,15 @@ const wayToRegisterBotQuestion = new QTreeNode({
     name: QuestionNames.WAY_TO_REGISTER_BOT,
     type: NodeType.singleSelect,
     option: Object.values(WayToRegisterBot).map((value) => value.toLowerCase()),
-    title: 'Which way to get a bot registration?',
+    title: "Which way to get a bot registration?",
     default: WayToRegisterBot.CreateNew
 });
 
 const botIdQuestion = new QTreeNode({
     name: QuestionNames.GET_BOT_ID,
     type: NodeType.text,
-    title: 'Please enter bot id',
-    default: '',
+    title: "Please enter bot id",
+    default: "",
     validation: {
         validFunc: async (botId: string) => {
 
@@ -45,8 +45,8 @@ const botIdQuestion = new QTreeNode({
 const botPasswordQuestion = new QTreeNode({
     name: QuestionNames.GET_BOT_PASSWORD,
     type: NodeType.password,
-    title: 'Please enter bot password',
-    default: '',
+    title: "Please enter bot password",
+    default: "",
     validation: {
         validFunc: async (botPassword: string) => {
 

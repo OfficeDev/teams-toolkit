@@ -1,25 +1,25 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Base64 } from 'js-base64';
-import { Uuid } from 'node-ts-uuid';
-import { exec } from 'child_process';
-import { default as urlParse } from 'url-parse';
-import AdmZip from 'adm-zip';
+import { Base64 } from "js-base64";
+import { Uuid } from "node-ts-uuid";
+import { exec } from "child_process";
+import { default as urlParse } from "url-parse";
+import AdmZip from "adm-zip";
 
-import { ConfigValue, PluginContext, IBot } from 'teamsfx-api';
-import { RegularExprs, WebAppConstants } from '../constants';
+import { ConfigValue, PluginContext, IBot } from "teamsfx-api";
+import { RegularExprs, WebAppConstants } from "../constants";
 
-export function toBase64(source: string) {
+export function toBase64(source: string): string {
     return Base64.encode(source);
 }
 
-export function genUUID() {
+export function genUUID(): string {
     return Uuid.generate();
 }
 
-export function zipAFolder(sourceDir: string, notIncluded: string[]) {
+export function zipAFolder(sourceDir: string, notIncluded: string[]): Buffer {
     const zip = new AdmZip();
-    zip.addLocalFolder(sourceDir, '', (filename: string) => {
+    zip.addLocalFolder(sourceDir, "", (filename: string) => {
         const result = notIncluded.find((notIncludedItem) => {
             return filename.startsWith(notIncludedItem);
         });
@@ -54,7 +54,7 @@ export async function execute(command: string, workingDir?: string): Promise<str
     });
 }
 
-export function checkAndSaveConfig(context: PluginContext, key: string, value: ConfigValue) {
+export function checkAndSaveConfig(context: PluginContext, key: string, value: ConfigValue): void {
     if (!value) {
         return;
     }
@@ -73,7 +73,7 @@ export function isHttpCodeOkOrCreated(code: number): boolean {
 export function genBotSectionInManifest(botId: string): string {
     const botSection: IBot[] = [{
         botId: botId,
-        scopes: ['personal', 'team', 'groupchat'],
+        scopes: ["personal", "team", "groupchat"],
         supportsFiles: false,
         isNotificationOnly: false
     }];

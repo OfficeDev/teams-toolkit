@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 
-import { IProgressHandler, PluginContext } from 'teamsfx-api';
+import { IProgressHandler, PluginContext } from "teamsfx-api";
 
 export class ProgressBarFactory {
     // To store working progress bars.
@@ -28,7 +28,7 @@ export class ProgressBarFactory {
         return handler;
     }
 
-    public static async closeProgressBar(name?: string) {
+    public static async closeProgressBar(name?: string): Promise<void> {
         if (name) {
             await ProgressBarFactory.progressBars.get(name)?.end();
         } else {

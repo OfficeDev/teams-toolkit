@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Dialog, DialogMsg, DialogType, MsgLevel, PluginContext, QuestionType } from 'teamsfx-api';
+import { Dialog, DialogMsg, DialogType, MsgLevel, PluginContext, QuestionType } from "teamsfx-api";
 
 export class DialogUtils {
     public static async output(ctx: PluginContext, message: string, level = MsgLevel.Info): Promise<void> {
@@ -26,7 +26,7 @@ export class DialogUtils {
         validateInput?: (value: string) => string | undefined | null | Promise<string | undefined | null>,
         options?: string[],
     ): Promise<string | undefined> {
-        let questionType: QuestionType = options ? QuestionType.Radio : QuestionType.Text;
+        const questionType: QuestionType = options ? QuestionType.Radio : QuestionType.Text;
 
         const content: DialogMsg = new DialogMsg(DialogType.Ask, {
             type: questionType,

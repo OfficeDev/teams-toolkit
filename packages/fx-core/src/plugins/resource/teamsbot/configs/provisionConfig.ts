@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ConfigValue, PluginContext } from 'teamsfx-api';
-import { ServiceClientCredentials } from '@azure/ms-rest-js';
+import { ConfigValue, PluginContext } from "teamsfx-api";
+import { ServiceClientCredentials } from "@azure/ms-rest-js";
 
-import * as utils from '../utils/common';
-import { PluginSolution } from '../resources/strings';
-import { ContextConfigKeys } from '../constants';
+import * as utils from "../utils/common";
+import { PluginSolution } from "../resources/strings";
+import { ContextConfigKeys } from "../constants";
 
 export class ProvisionConfig {
     public subscriptionId?: string;
@@ -17,9 +17,9 @@ export class ProvisionConfig {
     public siteEndpoint?: string;
     public serviceClientCredentials?: ServiceClientCredentials;
     public graphToken?: string;
-    public provisioned: boolean = false;
+    public provisioned = false;
 
-    public async restoreConfigFromContext(context: PluginContext) {
+    public async restoreConfigFromContext(context: PluginContext): Promise<void> {
 
         this.serviceClientCredentials = await context.azureAccountProvider?.getAccountCredentialAsync();
 
@@ -61,7 +61,7 @@ export class ProvisionConfig {
 
         const provisionedValue: ConfigValue = context.config.get(ContextConfigKeys.PROVISIONED);
         if (provisionedValue) {
-            this.provisioned = (provisionedValue as string) === 'true';
+            this.provisioned = (provisionedValue as string) === "true";
         }
 
         const botChannelRegNameValue: ConfigValue = context.config.get(ContextConfigKeys.BOT_CHANNEL_REGISTRATION);
@@ -70,11 +70,11 @@ export class ProvisionConfig {
         }
     }
 
-    public saveConfigIntoContext(context: PluginContext) {
+    public saveConfigIntoContext(context: PluginContext): void {
         utils.checkAndSaveConfig(context, ContextConfigKeys.APP_SERVICE_PLAN, this.appServicePlan);
         utils.checkAndSaveConfig(context, ContextConfigKeys.BOT_CHANNEL_REGISTRATION, this.botChannelRegName);
         utils.checkAndSaveConfig(context, ContextConfigKeys.SITE_NAME, this.siteName);
         utils.checkAndSaveConfig(context, ContextConfigKeys.SITE_ENDPOINT, this.siteEndpoint);
-        utils.checkAndSaveConfig(context, ContextConfigKeys.PROVISIONED, this.provisioned ? 'true' : 'false');
+        utils.checkAndSaveConfig(context, ContextConfigKeys.PROVISIONED, this.provisioned ? "true" : "false");
     }
 }

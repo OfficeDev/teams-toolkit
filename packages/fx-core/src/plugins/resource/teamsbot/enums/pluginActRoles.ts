@@ -1,4 +1,4 @@
 export enum PluginActRoles {
-    Bot = 'Bot',
-    MessageExtension = 'MessageExtension'
+    Bot = "Bot",
+    MessageExtension = "MessageExtension"
 }

@@ -1,32 +1,32 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { PluginContext, Result, Stage, QTreeNode, NodeType, FxError } from 'teamsfx-api';
+import { PluginContext, Result, Stage, QTreeNode, NodeType, FxError } from "teamsfx-api";
 
-import * as path from 'path';
-import * as aadReg from './aadRegistration';
-import * as factory from './clientFactory';
-import * as utils from './utils/common';
-import { createQuestions } from './questions';
-import { LanguageStrategy } from './languageStrategy';
-import { Messages } from './resources/messages';
-import { ConfigNames } from './resources/strings';
-import { FxResult, FxTeamsBotPluginResultFactory as ResultFactory } from './result';
-import { ScaffoldPlaceholders, ProgressBarConstants, QuestionNames, ContextConfigKeys, WebAppConstants, LifecycleFuncNames, TemplateProjectsConstants, ExceptionNames } from './constants';
-import { WayToRegisterBot } from './enums/wayToRegisterBot';
-import { getZipDeployEndpoint } from './utils/zipDeploy';
+import * as path from "path";
+import * as aadReg from "./aadRegistration";
+import * as factory from "./clientFactory";
+import * as utils from "./utils/common";
+import { createQuestions } from "./questions";
+import { LanguageStrategy } from "./languageStrategy";
+import { Messages } from "./resources/messages";
+import { ConfigNames } from "./resources/strings";
+import { FxResult, FxTeamsBotPluginResultFactory as ResultFactory } from "./result";
+import { ScaffoldPlaceholders, ProgressBarConstants, QuestionNames, ContextConfigKeys, WebAppConstants, LifecycleFuncNames, TemplateProjectsConstants } from "./constants";
+import { WayToRegisterBot } from "./enums/wayToRegisterBot";
+import { getZipDeployEndpoint } from "./utils/zipDeploy";
 
-import * as appService from '@azure/arm-appservice';
-import * as fs from 'fs-extra';
-import { CommonStrings, TelemetryStrings } from './resources/strings';
-import { DialogUtils } from './utils/dialog';
-import { CheckThrowSomethingMissing, ConfigUpdatingException, ListPublishingCredentialsException, MessageEndpointUpdatingException, PackDirExistenceException, ProvisionException, SomethingMissingException, UserInputsException, ValidationException, ZipDeployException } from './exceptions';
-import { TeamsBotConfig } from './configs/teamsBotConfig';
-import { default as axios } from 'axios';
-import AdmZip from 'adm-zip';
-import { ProgrammingLanguage } from './enums/programmingLanguage';
-import { ProgressBarFactory } from './progressBars';
-import { PluginActRoles } from './enums/pluginActRoles';
-import { ResourceNameFactory } from './utils/resourceNameFactory';
+import * as appService from "@azure/arm-appservice";
+import * as fs from "fs-extra";
+import { CommonStrings, TelemetryStrings } from "./resources/strings";
+import { DialogUtils } from "./utils/dialog";
+import { CheckThrowSomethingMissing, ConfigUpdatingException, ListPublishingCredentialsException, MessageEndpointUpdatingException, PackDirExistenceException, ProvisionException, SomethingMissingException, UserInputsException, ValidationException, ZipDeployException } from "./exceptions";
+import { TeamsBotConfig } from "./configs/teamsBotConfig";
+import { default as axios } from "axios";
+import AdmZip from "adm-zip";
+import { ProgrammingLanguage } from "./enums/programmingLanguage";
+import { ProgressBarFactory } from "./progressBars";
+import { PluginActRoles } from "./enums/pluginActRoles";
+import { ResourceNameFactory } from "./utils/resourceNameFactory";
 
 export class TeamsBotImpl {
     // Made config plubic, because expect the upper layer to fill inputs.
@@ -71,8 +71,8 @@ export class TeamsBotImpl {
         const pickedWay: WayToRegisterBot = rawWay as WayToRegisterBot;
 
         let botRegistration = {
-            botId: '',
-            botPassword: '',
+            botId: "",
+            botPassword: "",
         };
 
         if (pickedWay === WayToRegisterBot.ReuseExisting) {
@@ -107,7 +107,7 @@ export class TeamsBotImpl {
         await this.config.restoreConfigFromContext(context);
 
         if (this.config.scaffold.scaffolded) {
-            this.ctx?.logProvider?.debug('Skip scaffold since scaffolded.');
+            this.ctx?.logProvider?.debug("Skip scaffold since scaffolded.");
             return ResultFactory.Success();
         }
 
@@ -118,7 +118,7 @@ export class TeamsBotImpl {
         // Get group name.
         let group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
         if (!this.config.actRoles || this.config.actRoles.length === 0) {
-            throw new SomethingMissingException('act roles');
+            throw new SomethingMissingException("act roles");
         }
 
         const hasBot = this.config.actRoles.includes(PluginActRoles.Bot);
@@ -132,10 +132,10 @@ export class TeamsBotImpl {
         }
 
         await handler?.next(ProgressBarConstants.SCAFFOLD_STEP_FETCH_ZIP);
-        let zipContent: AdmZip = await LanguageStrategy.getTemplateProjectZip(this.config.scaffold.programmingLanguage!, group_name);
+        const zipContent: AdmZip = await LanguageStrategy.getTemplateProjectZip(this.config.scaffold.programmingLanguage!, group_name);
 
         await handler?.next(ProgressBarConstants.SCAFFOLD_STEP_REPLACEMENT);
-        let configFiles = LanguageStrategy.getConfigFiles(this.config.scaffold.programmingLanguage!);
+        const configFiles = LanguageStrategy.getConfigFiles(this.config.scaffold.programmingLanguage!);
         configFiles.forEach((fileName) => {
 
             if (!utils.pathInZipArchive(zipContent, fileName)) {
@@ -216,7 +216,7 @@ export class TeamsBotImpl {
 
             await handler?.next(ProgressBarConstants.PROVISION_STEP_REPLACEMENT);
             // Replace {BOT_ID} & {BOT_PASSWORD} on disk.
-            let configFiles = LanguageStrategy.getConfigFiles(this.config.scaffold.programmingLanguage!);
+            const configFiles = LanguageStrategy.getConfigFiles(this.config.scaffold.programmingLanguage!);
             configFiles.forEach((fileName) => {
                 const fullFilePath: string = path.join(this.config.scaffold.workingDir!, fileName);
                 let fileContent: string = fs.readFileSync(fullFilePath, CommonStrings.DEFAULT_FILE_ENCODING);
@@ -253,13 +253,13 @@ export class TeamsBotImpl {
         );
 
         // 1. Provsion app service plan.
-        let appServicePlan: appService.WebSiteManagementModels.AppServicePlan = {
+        const appServicePlan: appService.WebSiteManagementModels.AppServicePlan = {
             location: this.config.provision.location!,
-            kind: 'app',
+            kind: "app",
             sku: {
-                name: 'F1',
-                tier: 'Free',
-                size: 'F1',
+                name: "F1",
+                tier: "Free",
+                size: "F1",
             },
         };
 
@@ -284,7 +284,7 @@ export class TeamsBotImpl {
 
         // 2. Provision web app.
 
-        let siteEnvelope: appService.WebSiteManagementModels.Site = LanguageStrategy.getSiteEnvelope(
+        const siteEnvelope: appService.WebSiteManagementModels.Site = LanguageStrategy.getSiteEnvelope(
             this.config.scaffold.programmingLanguage!,
             appServicePlanName,
             this.config.provision.location!
@@ -323,7 +323,7 @@ export class TeamsBotImpl {
         this.markEnterAndLogConfig(LifecycleFuncNames.POST_PROVISION);
 
         // 1. Get required config items from other plugins.
-        // 2. Update bot hosting env's app settings.
+        // 2. Update bot hosting env"s app settings.
         await this.config.restoreConfigFromContext(context);
 
 
@@ -352,10 +352,10 @@ export class TeamsBotImpl {
             this.config.provision.appServicePlan!,
             this.config.provision.location!,
             [
-                { name: 'TeamsAppId', value: teamsAppClientId },
-                { name: 'TeamsAppPassword', value: teamsAppClientSecret },
-                { name: 'TeamsAppTenant', value: teamsAppTenant },
-                { name: 'BaseUrl', value: baseUrl },
+                { name: "TeamsAppId", value: teamsAppClientId },
+                { name: "TeamsAppPassword", value: teamsAppClientSecret },
+                { name: "TeamsAppTenant", value: teamsAppTenant },
+                { name: "BaseUrl", value: baseUrl },
             ],
         );
 
@@ -387,7 +387,7 @@ export class TeamsBotImpl {
                 // Remind end developers to update message endpoint manually.
                 await DialogUtils.show(
                     context,
-                    `Please update bot's message endpoint manually using ${this.config.provision.siteEndpoint}/api/messages before you run this bot.`,
+                    `Please update bot"s message endpoint manually using ${this.config.provision.siteEndpoint}/api/messages before you run this bot.`,
                 );
                 break;
             }
@@ -423,7 +423,7 @@ export class TeamsBotImpl {
         CheckThrowSomethingMissing(ConfigNames.RESOURCE_GROUP, this.config.provision.resourceGroup);
 
         if (!utils.isDomainValidForAzureWebApp(this.config.provision.siteEndpoint!)) {
-            throw new ValidationException('siteEndpoint', this.config.provision.siteEndpoint!);
+            throw new ValidationException("siteEndpoint", this.config.provision.siteEndpoint!);
         }
 
         this.telemetryStepOutSuccess(LifecycleFuncNames.PRE_DEPLOY);
@@ -451,7 +451,7 @@ export class TeamsBotImpl {
         const zipBuffer = await LanguageStrategy.buildAndZipPackage(this.config.scaffold.programmingLanguage!, packDir);
 
         // 2.2 Retrieve publishing credentials.
-        let publishingUserName: string = '';
+        let publishingUserName = "";
         let publishingPassword: string | undefined = undefined;
 
         const webSiteMgmtClient = new appService.WebSiteManagementClient(
@@ -480,9 +480,9 @@ export class TeamsBotImpl {
         publishingUserName = listResponse.publishingUserName;
         publishingPassword = listResponse.publishingPassword;
 
-        let encryptedCreds: string = utils.toBase64(`${publishingUserName}:${publishingPassword}`);
+        const encryptedCreds: string = utils.toBase64(`${publishingUserName}:${publishingPassword}`);
 
-        let config = {
+        const config = {
             headers: {
                 Authorization: `Basic ${encryptedCreds}`,
             },
@@ -541,7 +541,7 @@ export class TeamsBotImpl {
 
             await handler?.next(ProgressBarConstants.LOCAL_DEBUG_STEP_REPLACEMENT);
             // Replace {BOT_ID} & {BOT_PASSWORD} on disk.
-            let configFiles = LanguageStrategy.getConfigFiles(this.config.scaffold.programmingLanguage!);
+            const configFiles = LanguageStrategy.getConfigFiles(this.config.scaffold.programmingLanguage!);
             configFiles.forEach((fileName) => {
                 const fullFilePath: string = path.join(this.config.scaffold.workingDir!, fileName);
                 let fileContent: string = fs.readFileSync(fullFilePath, CommonStrings.DEFAULT_FILE_ENCODING);
@@ -582,7 +582,7 @@ export class TeamsBotImpl {
                 // Remind end developers to update message endpoint manually.
                 await DialogUtils.show(
                     context,
-                    `Please update bot's message endpoint manually using ${this.config.provision.siteEndpoint}/api/messages before you run this bot.`,
+                    `Please update bot"s message endpoint manually using ${this.config.provision.siteEndpoint}/api/messages before you run this bot.`,
                 );
                 break;
             }
@@ -688,12 +688,12 @@ export class TeamsBotImpl {
                 this.config.provision.resourceGroup!,
                 botChannelRegistrationName,
                 {
-                    location: 'global',
-                    kind: 'bot',
+                    location: "global",
+                    kind: "bot",
                     properties: {
                         displayName: botChannelRegistrationName,
-                        endpoint: '',
-                        msaAppId: botAuthCreds.clientId,
+                        endpoint: "",
+                        msaAppId: botAuthCreds.clientId!,
                     },
                 },
             );
@@ -714,12 +714,12 @@ export class TeamsBotImpl {
             channelResponse = await botClient.channels.create(
                 this.config.provision.resourceGroup!,
                 botChannelRegistrationName,
-                'MsTeamsChannel',
+                "MsTeamsChannel",
                 {
-                    location: 'global',
-                    kind: 'bot',
+                    location: "global",
+                    kind: "bot",
                     properties: {
-                        channelName: 'MsTeamsChannel',
+                        channelName: "MsTeamsChannel",
                         properties: {
                             isEnabled: true,
                         },
@@ -741,7 +741,7 @@ export class TeamsBotImpl {
         this.config.scaffold.botPassword = botAuthCreds.clientSecret;
         this.config.provision.botChannelRegName = botChannelRegistrationName;
 
-        this.ctx!.config.set(ContextConfigKeys.BOTS_SECTION, utils.genBotSectionInManifest(this.config.scaffold.botId));
+        this.ctx!.config.set(ContextConfigKeys.BOTS_SECTION, utils.genBotSectionInManifest(this.config.scaffold.botId!));
 
         this.telemetryStepOutSuccess(LifecycleFuncNames.CREATE_NEW_BOT_REG);
     }
@@ -777,7 +777,7 @@ export class TeamsBotImpl {
     private telemetryStepOutSuccess(funcName: string) {
         this.ctx?.telemetryReporter?.sendTelemetryEvent(`${funcName}-end`, {
             component: TelemetryStrings.COMPONENT_NAME,
-            success: 'yes',
+            success: "yes",
         });
     }
 }

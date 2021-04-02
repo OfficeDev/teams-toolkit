@@ -1,10 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ExceptionNames } from './constants';
-import { Messages } from './resources/messages';
-import { CommonStrings } from './resources/strings';
-import { Logger } from './logger';
+import { ExceptionNames } from "./constants";
+import { Messages } from "./resources/messages";
+import { CommonStrings } from "./resources/strings";
 
 export enum ExceptionType {
     User,
@@ -28,8 +27,8 @@ export class PluginException extends Error {
         Object.setPrototypeOf(this, PluginException.prototype);
     }
 
-    genMessage() {
-        return `${this.message} Suggestions: ${this.suggestions.join('\n')}`;
+    genMessage(): string {
+        return `${this.message} Suggestions: ${this.suggestions.join("\n")}`;
     }
 }
 
@@ -54,7 +53,7 @@ export class SomethingMissingException extends PreconditionException {
         );
     }
 }
-export function CheckThrowSomethingMissing(name: string, value: any) {
+export function CheckThrowSomethingMissing(name: string, value: any): void {
     if (!value) {
         throw new SomethingMissingException(name);
     }
@@ -106,7 +105,7 @@ export class ConfigUpdatingException extends PluginException {
         super(
             ExceptionType.System,
             ExceptionNames.CONFIG_UPDATING_EXCEPTION,
-            Messages.FailToUpdateConfigs('azure web app'),
+            Messages.FailToUpdateConfigs("azure web app"),
             [
                 Messages.ReferToIssueLink
             ],
@@ -133,7 +132,7 @@ export class PackDirExistenceException extends PluginException {
         super(
             ExceptionType.User,
             ExceptionNames.PACK_DIR_EXISTENCE_EXCEPTION,
-            Messages.SomethingIsNotExisting('pack directory'),
+            Messages.SomethingIsNotExisting("pack directory"),
             [
                 Messages.ReferToHelpLink
             ]
@@ -202,7 +201,7 @@ export class TplManifestFormatException extends PluginException {
         super(
             ExceptionType.System,
             ExceptionNames.MANIFEST_FORMAT_EXCEPTION,
-            Messages.SomethingIsInWrongFormat('Templates\' manifest.json'),
+            Messages.SomethingIsInWrongFormat("Templates\" manifest.json"),
             [
                 Messages.ReferToIssueLink
             ]
@@ -215,7 +214,7 @@ export class TemplateProjectNotFoundException extends PluginException {
         super(
             ExceptionType.System,
             ExceptionNames.TEMPLATE_PROJECT_NOT_FOUND_EXCEPTION,
-            Messages.SomethingIsNotFound('Template project for scaffold'),
+            Messages.SomethingIsNotFound("Template project for scaffold"),
             [
                 Messages.ReferToIssueLink
             ]
@@ -246,6 +245,6 @@ export class CommandExecutionException extends PluginException {
                 Messages.ReferToIssueLink
             ],
             innerError
-        )
+        );
     }
 }

@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Plugin, PluginContext, Result, QTreeNode, Stage, FxError } from 'teamsfx-api';
+import { Plugin, PluginContext, Result, QTreeNode, Stage, FxError } from "teamsfx-api";
 
-import { FxResult, FxTeamsBotPluginResultFactory as ResultFactory } from './result';
-import { TeamsBotImpl } from './plugin';
-import { ProgressBarFactory } from './progressBars';
-import { ProgressBarConstants } from './constants';
-import { ExceptionType, PluginException } from './exceptions';
-import { Logger } from './logger';
+import { FxResult, FxTeamsBotPluginResultFactory as ResultFactory } from "./result";
+import { TeamsBotImpl } from "./plugin";
+import { ProgressBarFactory } from "./progressBars";
+import { ProgressBarConstants } from "./constants";
+import { ExceptionType, PluginException } from "./exceptions";
+import { Logger } from "./logger";
 
 export class TeamsBot implements Plugin {
     public teamsBotImpl: TeamsBotImpl = new TeamsBotImpl();
@@ -127,5 +127,4 @@ export class TeamsBot implements Plugin {
     }
 }
 
-// eslint-disable-next-line @azure/azure-sdk/ts-modules-only-named
 export default new TeamsBot();

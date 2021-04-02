@@ -4,22 +4,21 @@
 
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { FxError, SystemError, UserError } from 'teamsfx-api';
-import { Result, err, ok } from 'neverthrow';
+import { FxError, Result, SystemError, UserError, err, ok } from "teamsfx-api";
 
-import { Links, Alias } from './constants';
+import { Links, Alias } from "./constants";
 
 export type FxResult = Result<any, FxError>;
 
 class FxResultFactory {
-    static readonly source: string = 'Teamsfx';
-    static readonly defaultHelpLink = '';
-    static readonly defaultIssueLink = '';
+    static readonly source: string = "Teamsfx";
+    static readonly defaultHelpLink = "";
+    static readonly defaultIssueLink = "";
 
     private static _FxError(errorMessage: string, innerError: any): FxError {
         // TODO: These fields are unclear to me, it may be updated in the future.
         return {
-            name: 'TeamsfxError',
+            name: "TeamsfxError",
             message: errorMessage,
             source: this.source,
             timestamp: new Date(),

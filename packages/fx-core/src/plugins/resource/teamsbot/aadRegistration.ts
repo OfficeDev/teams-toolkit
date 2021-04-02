@@ -1,19 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import * as utils from './utils/common';
-import { AxiosInstance, default as axios } from 'axios';
+import * as utils from "./utils/common";
+import { AxiosInstance, default as axios } from "axios";
 
-import { AADRegistrationConstants, RetryTimes } from './constants';
-import { IAADApplication } from './appStudio/interfaces/IAADApplication';
-import { AppStudio } from './appStudio/appStudio';
-import { ProvisionException } from './exceptions';
-import { CommonStrings, Prefixes } from './resources/strings';
-import { Logger } from './logger';
+import { AADRegistrationConstants, RetryTimes } from "./constants";
+import { IAADApplication } from "./appStudio/interfaces/IAADApplication";
+import * as AppStudio from "./appStudio/appStudio";
+import { ProvisionException } from "./exceptions";
+import { CommonStrings } from "./resources/strings";
+import { Logger } from "./logger";
 
 export class BotAuthCredential {
-    public clientId: string = '';
-    public objectId: string = '';
-    public clientSecret: string = '';
+    public clientId?: string;
+    public objectId?: string;
+    public clientSecret?: string;
 }
 
 export async function registerAADAppAndGetSecretByGraph(graphToken: string, displayName: string): Promise<BotAuthCredential> {
@@ -53,7 +53,7 @@ export async function registerAADAppAndGetSecretByGraph(graphToken: string, disp
             `${AADRegistrationConstants.GRAPH_REST_BASE_URL}/applications/${result.objectId}/addPassword`,
             {
                 passwordCredential: {
-                    displayName: 'default',
+                    displayName: "default",
                 },
             },
         );
@@ -80,14 +80,14 @@ export async function registerAADAppAndGetSecretByAppStudio(appStudioToken: stri
     };
 
     const app = await AppStudio.createAADApp(appConfig);
-    result.clientId = app.id!;
+    result.clientId = app.id;
 
-    // Sync with toolkit's implmentation to retry at most 5 times.
+    // Sync with toolkit"s implmentation to retry at most 5 times.
     let retries = RetryTimes.GENERATE_CLIENT_SECRET;
     while (retries > 0) {
         let password = undefined;
         try {
-            password = await AppStudio.createAADAppPassword(app.objectId!);
+            password = await AppStudio.createAADAppPassword(app.objectId);
         } catch (e) {
             Logger.debug(`createAADAppPassword exception: ${e}`);
         }

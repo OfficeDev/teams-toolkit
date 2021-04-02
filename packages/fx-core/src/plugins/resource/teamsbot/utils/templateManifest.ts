@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { default as axios } from 'axios';
-import Ajv, {JSONSchemaType } from 'ajv';
-import semver from 'semver';
+import { default as axios } from "axios";
+import Ajv, { JSONSchemaType } from "ajv";
+import semver from "semver";
 
-import { ProgrammingLanguage } from '../enums/programmingLanguage';
-import { TemplateProjectsConstants } from '../constants';
-import { DownloadException, TemplateProjectNotFoundException, TplManifestFormatException } from '../exceptions';
+import { ProgrammingLanguage } from "../enums/programmingLanguage";
+import { TemplateProjectsConstants } from "../constants";
+import { DownloadException, TemplateProjectNotFoundException, TplManifestFormatException } from "../exceptions";
 
 type Manifest = {
     [groupName: string]: {
@@ -32,7 +32,7 @@ export class TemplateManifest {
         } catch (e) {
             throw new DownloadException(url, e);
         }
-        
+
         if (!res || res.status !== 200) {
             throw new DownloadException(url);
         }
@@ -41,23 +41,23 @@ export class TemplateManifest {
         const ajv = new Ajv();
 
         const schema: JSONSchemaType<Manifest> = {
-            type: 'object',
+            type: "object",
             patternProperties: {
-                '^.*$': {
-                    type: 'object',
+                "^.*$": {
+                    type: "object",
                     patternProperties: {
-                        '^.*$': {
-                            type: 'object',
+                        "^.*$": {
+                            type: "object",
                             patternProperties: {
-                                '^.*$': {
-                                    type: 'array',
+                                "^.*$": {
+                                    type: "array",
                                     items: {
-                                        type: 'object',
+                                        type: "object",
                                         properties: {
-                                            version: { type: 'string' },
-                                            url: { type: 'string' },
+                                            version: { type: "string" },
+                                            url: { type: "string" },
                                         },
-                                        required: ['version', 'url'],
+                                        required: ["version", "url"],
                                     },
                                 },
                             },
@@ -89,7 +89,7 @@ export class TemplateManifest {
         if (!this.manifest[group_name]?.[lang]?.[scenario]) {
             throw new TemplateProjectNotFoundException();
         }
-        
+
         const scenarioTemplates = this.manifest[group_name][lang][scenario].filter((x) =>
             semver.satisfies(x.version, TemplateProjectsConstants.VERSION_RANGE),
         );

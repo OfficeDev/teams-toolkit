@@ -17,7 +17,7 @@ import { getZipDeployEndpoint } from "./utils/zipDeploy";
 
 import * as appService from "@azure/arm-appservice";
 import * as fs from "fs-extra";
-import { CommonStrings, TelemetryStrings } from "./resources/strings";
+import { CommonStrings, PluginBot } from "./resources/strings";
 import { DialogUtils } from "./utils/dialog";
 import { CheckThrowSomethingMissing, ConfigUpdatingException, ListPublishingCredentialsException, MessageEndpointUpdatingException, PackDirExistenceException, ProvisionException, SomethingMissingException, UserInputsException, ValidationException, ZipDeployException } from "./exceptions";
 import { TeamsBotConfig } from "./configs/teamsBotConfig";
@@ -770,13 +770,13 @@ export class TeamsBotImpl {
 
     private telemetryStepIn(funcName: string) {
         this.ctx?.telemetryReporter?.sendTelemetryEvent(`${funcName}-start`, {
-            component: TelemetryStrings.COMPONENT_NAME,
+            component: PluginBot.PLUGIN_NAME,
         });
     }
 
     private telemetryStepOutSuccess(funcName: string) {
         this.ctx?.telemetryReporter?.sendTelemetryEvent(`${funcName}-end`, {
-            component: TelemetryStrings.COMPONENT_NAME,
+            component: PluginBot.PLUGIN_NAME,
             success: "yes",
         });
     }

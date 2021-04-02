@@ -11,7 +11,7 @@ import { Links, Alias } from "./constants";
 export type FxResult = Result<any, FxError>;
 
 class FxResultFactory {
-    static readonly source: string = "Teamsfx";
+    static readonly source: string = "bot";
     static readonly defaultHelpLink = "";
     static readonly defaultIssueLink = "";
 

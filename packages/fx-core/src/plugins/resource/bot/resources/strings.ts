@@ -33,6 +33,15 @@ export class PluginSolution {
     public static readonly TENANT_ID = "tenantId";
 }
 
+export class PluginBot {
+    public static readonly PLUGIN_NAME = "teamsfx-resource-bot";
+    public static readonly BOT_ID = "botId";
+    public static readonly BOT_PASSWORD = "botPassword";
+    public static readonly PROGRAMMING_LANGUAGE = "programmingLanguage";
+    public static readonly WAY_TO_REGISTER_BOT = "wayToRegisterBot";
+    public static readonly SCAFFOLDED = "scaffolded";
+}
+
 export class TelemetryStrings {
     public static readonly COMPONENT_NAME = "teamsfx-resource-bot";
 }

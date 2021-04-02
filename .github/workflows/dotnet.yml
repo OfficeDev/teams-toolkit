@@ -44,7 +44,6 @@ jobs:
       run: 
         ls && chmod +x "scripts/build.sh" && "scripts/build.sh"
     - name: Test
-      uses: jesseloudon/azure-storage-firewall-default-action/v1.1
       env: 
         SimpleAuthAdminClientSecret: ${{secrets.SIMPLE_AUTH_TEST_ADMIN_CLIENT_SECRET}}
         SimpleAuthPassword: ${{secrets.SIMPLE_AUTH_TEST_PASSWORD}}

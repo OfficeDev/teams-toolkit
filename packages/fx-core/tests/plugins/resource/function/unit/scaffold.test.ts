@@ -54,7 +54,10 @@ describe(FunctionPluginInfo.pluginName, () => {
 
         it("Test scaffold", async () => {
             // Arrange
-            context.answers = new Map<string, string>([["function-name", "httpTrigger"]]);
+            context.answers = new Map<string, string>([
+                ["function-name", "httpTrigger"],
+                ["function-language", "JavaScript"],
+            ]);
             const zip = new AdmZip();
             zip.addFile("test.js.tpl", Buffer.from("{{appName}} {{functionName}}"));
             sinon.stub(fetch, "getTemplateURL").resolves(undefined);
@@ -72,7 +75,10 @@ describe(FunctionPluginInfo.pluginName, () => {
 
         it("Test scaffold with additional function", async () => {
             // Arrange
-            context.answers = new Map<string, string>([["function-name", "httpTrigger"]]);
+            context.answers = new Map<string, string>([
+                ["function-name", "httpTrigger"],
+                ["function-language", "JavaScript"],
+            ]);
             const zip = new AdmZip();
             zip.addFile("test.js.tpl", Buffer.from("{{appName}} {{functionName}}"));
             sinon.stub(fetch, "getTemplateURL").resolves(undefined);
@@ -90,7 +96,10 @@ describe(FunctionPluginInfo.pluginName, () => {
 
         it("Test scaffold with fallback", async () => {
             // Arrange
-            context.answers = new Map<string, string>([["function-name", "httpTrigger"]]);
+            context.answers = new Map<string, string>([
+                ["function-name", "httpTrigger"],
+                ["function-language", "JavaScript"],
+            ]);
             const zip = new AdmZip();
             zip.addFile("test.js.tpl", Buffer.from("{{appName}} {{functionName}}"));
             sinon.stub(fetch, "getTemplateURL").rejects(new Error());

@@ -4,8 +4,8 @@ import "mocha";
 import * as chai  from "chai";
 import chaiAsPromised  from "chai-as-promised";
 
-import { FunctionPluginInfo } from "../../src/constants";
-import { execute } from "../../src/utils/execute";
+import { FunctionPluginInfo } from "../../../../../src/plugins/resource/function/constants";
+import { execute } from "../../../../../src/plugins/resource/function/utils/execute";
 
 chai.use(chaiAsPromised);
 

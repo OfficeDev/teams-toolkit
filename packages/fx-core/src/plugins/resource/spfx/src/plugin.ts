@@ -287,7 +287,7 @@ export class SPFxPluginImpl {
   }
 
   public async deploy(ctx: PluginContext): Promise<Result<any, FxError>> {
-    const workspace: string = `${ctx.root}/SPFx`;
+    const workspace = `${ctx.root}/SPFx`;
     const progressHandler = ctx.dialog?.createProgressBar(
       "[SPFx] Upload SharePoint Package",
       2
@@ -301,12 +301,12 @@ export class SPFxPluginImpl {
       await progressHandler?.start("");
       await progressHandler?.next("Get SharePoint App Catalog");
       const SHAREPOINT_APP_CATALOG = `${tenant}/_api/SP_TenantSettings_Current`;
-      let response = await axios.get(SHAREPOINT_APP_CATALOG);
+      const response = await axios.get(SHAREPOINT_APP_CATALOG);
       let appCatalogSite = response.data.CorporateCatalogUrl;
       let refreshTime = 0;
       while (appCatalogSite == null) {
         await sleep(Constants.APP_CATALOG_REFRESH_TIME);
-        let response = await axios.get(SHAREPOINT_APP_CATALOG);
+        const response = await axios.get(SHAREPOINT_APP_CATALOG);
         appCatalogSite = response.data.CorporateCatalogUrl;
         refreshTime += 1;
         if (refreshTime > Constants.APP_CATALOG_MAX_TIMES) {
@@ -419,7 +419,7 @@ export class SPFxPluginImpl {
   }
 
   private async getSPTenant(ctx: PluginContext): Promise<string> {
-    let accessToken = await AuthCode.getToken(ctx, ["User.Read"]);
+    const accessToken = await AuthCode.getToken(ctx, ["User.Read"]);
     const GRAPH_TENANT_ENDPT =
       "https://graph.microsoft.com/v1.0/sites/root?$select=webUrl";
 
@@ -427,7 +427,7 @@ export class SPFxPluginImpl {
       axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
 
       ctx.logProvider?.info("======Get SharePoint Tenant======");
-      let response = await axios.get(GRAPH_TENANT_ENDPT);
+      const response = await axios.get(GRAPH_TENANT_ENDPT);
       return response.data.webUrl;
     } else {
       throw returnSystemError(

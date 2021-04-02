@@ -16,10 +16,10 @@ import { SPFxPluginImpl } from "./plugin";
 import { TelemetryEvent } from "./utils/constants";
 import { telemetryHelper } from "./utils/telemetry-helper";
 export class SpfxConfig {
-  webpartName: string = "my-SPFx-app";
-  webpartDesc: string = "This is a SPFx app.";
-  framework: string = "none";
-  isPrivate: boolean = true;
+  webpartName = "my-SPFx-app";
+  webpartDesc = "This is a SPFx app.";
+  framework = "none";
+  isPrivate = true;
 }
 
 export enum SPFXQuestionNames {

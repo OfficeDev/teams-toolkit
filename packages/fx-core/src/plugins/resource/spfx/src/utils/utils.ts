@@ -13,7 +13,7 @@ export async function configure(
   let files: string[] = [];
   const extensions = ["*.json", "*.ts", "*.js", "*.scss"];
 
-  for (let ext of extensions) {
+  for (const ext of extensions) {
     files = files.concat(glob.sync(`${dir}/**/${ext}`, { nodir: true }));
   }
 
@@ -38,7 +38,7 @@ export async function execute(
   title?: string,
   workingDir?: string,
   logProvider?: LogProvider,
-  showInOutputWindow: boolean = false
+  showInOutputWindow = false
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     if (showInOutputWindow) {

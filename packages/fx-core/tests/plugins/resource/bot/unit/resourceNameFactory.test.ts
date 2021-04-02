@@ -22,7 +22,7 @@ describe("Resource Name Factory", () => {
 
             console.log(name);
             // Assert
-            const expectName = "tbpabcdefg";
+            const expectName = "9bpabcdefg";
             chai.assert.lengthOf(name, limit);
             chai.assert.isTrue(name === expectName);
         });

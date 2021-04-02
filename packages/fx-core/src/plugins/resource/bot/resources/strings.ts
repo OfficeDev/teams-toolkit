@@ -34,7 +34,7 @@ export class PluginSolution {
 }
 
 export class TelemetryStrings {
-    public static readonly COMPONENT_NAME = "teamsfx-resource-teamsbot";
+    public static readonly COMPONENT_NAME = "teamsfx-resource-bot";
 }
 
 export class ConfigNames {

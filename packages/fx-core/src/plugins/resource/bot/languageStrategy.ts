@@ -99,7 +99,7 @@ export class LanguageStrategy {
 
     private static async generateLocalFallbackFilePath(programmingLanguage: ProgrammingLanguage, groupName: string): Promise<string> {
         const fxCorePath = path.join(__dirname, "..", "..", "..", "..");
-        const targetFilePath = path.join(fxCorePath, "templates", "plugins", "resource", "teamsbot", `${groupName}.${programmingLanguage}.${TemplateProjectsConstants.DEFAULT_SCENARIO_NAME}.zip`);
+        const targetFilePath = path.join(fxCorePath, "templates", "plugins", "resource", "bot", `${groupName}.${programmingLanguage}.${TemplateProjectsConstants.DEFAULT_SCENARIO_NAME}.zip`);
 
         const targetExisted = await fs.pathExists(targetFilePath);
         if (!targetExisted) {

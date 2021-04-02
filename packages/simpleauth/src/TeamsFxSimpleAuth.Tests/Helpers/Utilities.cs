@@ -59,7 +59,7 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.Helpers
             string codeChallenge, string testAccountUserName, string testAccountPassword)
         {
             var chromeOptions = new ChromeOptions();
-            chromeOptions.AddArguments("--no-sandbox", "--headless", "--whitelisted-ips=\"\"", "--window-size=1920,1080");
+            chromeOptions.AddArguments("--no-sandbox", "--headless", "--whitelisted-ips=", "--window-size=1920,1080");
             // Here System.Environment.CurrentDirectory will return the current directory path.
             // This update is for ask Cloudtest to find the correct chromedriver from the built folder 
             // e.g. src/TeamsFxSimpleAuth.Test/bin/Release/netcoreapp3.1/

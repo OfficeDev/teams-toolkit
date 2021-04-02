@@ -14,9 +14,9 @@ import {
   GraphTokenProvider,
 } from "teamsfx-api";
 import sinon from "sinon";
-import { ConfigKeys, ConfigKeysOfOtherPlugin, Plugins } from "../../../../src/plugins/resource/aad/src/constants";
+import { ConfigKeys, ConfigKeysOfOtherPlugin, Plugins } from "../../../../src/plugins/resource/aad/constants";
 import jwt_decode from "jwt-decode";
-import { Utils } from "../../../../src/plugins/resource/aad/src/utils/common";
+import { Utils } from "../../../../src/plugins/resource/aad/utils/common";
 
 const permissions = "[{\"resource\": \"Microsoft Graph\",\"scopes\": [\"User.Read\"]}]";
 const permissionsWrong =

@@ -5,7 +5,7 @@ import "mocha";
 import * as chai from "chai";
 import * as dotenv from "dotenv";
 import { ConfigMap, Func, PluginContext } from "teamsfx-api";
-import { AadAppForTeamsPlugin } from "../../../../../src/plugins/resource/aad/src/index";
+import { AadAppForTeamsPlugin } from "../../../../../src/plugins/resource/aad/index";
 import {
   mockTokenProviderAzure,
   mockProvisionResult,
@@ -14,11 +14,11 @@ import {
   mockTokenProviderAzureGraph,
   mockTokenProviderGraph,
 } from "../helper";
-import { Envs } from "../../../../../src/plugins/resource/aad/src/interfaces/models";
+import { Envs } from "../../../../../src/plugins/resource/aad/interfaces/models";
 import sinon from "sinon";
-import { AadAppClient } from "../../../../../src/plugins/resource/aad/src/aadAppClient";
+import { AadAppClient } from "../../../../../src/plugins/resource/aad/aadAppClient";
 import { getAppStudioToken, getGraphToken } from "../tokenProvider";
-import { Constants } from "../../../../../src/plugins/resource/aad/src/constants";
+import { Constants } from "../../../../../src/plugins/resource/aad/constants";
 
 dotenv.config();
 const testWithAzure: boolean = process.env.UT_TEST_ON_AZURE ? true : false;

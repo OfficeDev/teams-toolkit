@@ -1,0 +1,46 @@
+name: .NET
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+defaults:
+  run:
+    working-directory: packages/
+
+jobs:
+  test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.x
+    - name: Install func CLI
+      run: 
+        wget -q https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb && sudo dpkg -i packages-microsoft-prod.deb &&
+        sudo apt-get update && sudo apt-get install azure-functions-core-tools-3
+    - name: Build
+      run: 
+        ls && chmod +x "simpleauth/scripts/build.sh" && "simpleauth/scripts/build.sh"
+    - name: Test
+      env: 
+        SimpleAuthAdminClientSecret: ${{secrets.SIMPLE_AUTH_TEST_ADMIN_CLIENT_SECRET}}
+        SimpleAuthPassword: ${{secrets.SIMPLE_AUTH_TEST_PASSWORD}}
+      run:
+        chmod +x "simpleauth/scripts/test.sh" && "simpleauth/scripts/test.sh"
+    - name: Build
+      run: 
+        ls && chmod +x "function-extension/scripts/build.sh" && "function-extension/scripts/build.sh"
+    - name: Test
+      env: 
+        ClientSecret: ${{secrets.FUNCTION_EXTENSION_CLIENT_SECRET}}
+        UnauthorizedAadAppClientSecret: ${{secrets.FUNCTION_EXTENSION_UNAUTHORIZED_AAD_APP_CLIENT_SECRET}}
+        AllowedAppClientSecret: ${{secrets.FUNCTION_EXTENSION_ALLOWED_APP_SECRET}}
+      run:
+        chmod +x "function-extension/scripts/test.sh" && chmod +x "function-extension/scripts/start_js_function.sh" && "function-extension/scripts/test.sh"

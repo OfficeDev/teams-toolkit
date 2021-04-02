@@ -158,7 +158,7 @@ export interface MultiSelectQuestion extends BaseQuestion {
 export interface InputQuestion extends BaseQuestion {
     type: NodeType.text | NodeType.password | NodeType.file | NodeType.folder;
     value?: string;
-    default?: string;
+    default?: string|Func;
     placeholder?: string;
     prompt?: string;
 }

@@ -8,7 +8,6 @@ export * from "./context";
 export * from "./core";
 export * from "./error";
 export * from "./manifest";
-export * from "./qm/question";
 export * from "./resourcePlugin";
 export * from "./solutionPlugin";
 export * from "./config";

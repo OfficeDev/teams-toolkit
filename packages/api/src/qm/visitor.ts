@@ -16,7 +16,7 @@ import {
     FileQuestion,
     Core
   } from "../index";
-import { getValidationFunction, validate } from "../utils/validation";
+import { getValidationFunction, validate } from "./validation";
 import { NumberInputQuestion, ReadonlyUserInputs, UserInputs } from "./question";
 import { InputResult, InputResultType, UserInterface } from "./ui";
  
@@ -185,7 +185,7 @@ import { InputResult, InputResultType, UserInterface } from "./ui";
     };
   };
   
-  export async function traverse(
+export async function traverse(
     root: QTreeNode,
     userInputs: UserInputs,
     ui: UserInterface,

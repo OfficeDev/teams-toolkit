@@ -10,7 +10,7 @@ import {
   StringArrayValidation,
   StringValidation,
   Validation
-} from "../qm/question";
+} from "./question";
 import * as fs from "fs-extra";
 import { Core } from "../core";
 import * as jsonschema from "jsonschema"; 

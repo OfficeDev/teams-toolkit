@@ -159,7 +159,13 @@ export class VsCodeUi implements UserInterface{
                 await option.validation(text)
               );
               latestValidation = validationRes;
-              const message: string | undefined | null = await validationRes;
+              let message: string | undefined | null = await validationRes;
+              if(message === undefined && option.number){
+                const num = Number(text);
+                if(isNaN(num)){
+                  message = text + " is not a valid number";
+                }
+              }
               if (validationRes === latestValidation) {
                 inputBox.validationMessage = message || "";
               }

@@ -1,0 +1,35 @@
+{
+    "extends": "./node_modules/@microsoft/rush-stack-compiler-3.7/includes/tsconfig-web.json",
+    "compilerOptions": {
+    "target": "es5",                           /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', 'ES2018', 'ES2019', 'ES2020', or 'ESNEXT'. */                          /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', 'ES2018', 'ES2019', 'ES2020', or 'ESNEXT'. */
+    "forceConsistentCasingInFileNames": true,  /* Disallow inconsistently-cased references to the same file. */
+    "module": "esnext",                        /* Specify module code generation: 'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', 'es2020', or 'ESNext'. */
+    "moduleResolution": "node",                /* Specify module resolution strategy: 'node' (Node.js) or 'classic' (TypeScript pre-1.6). */
+    "jsx": "react",                            /* Specify JSX code generation: 'preserve', 'react-native', or 'react'. */
+    "declaration": true,                       /* Generates corresponding '.d.ts' file. */
+    "sourceMap": true,                         /* Generates corresponding '.map' file. */
+    "experimentalDecorators": true,            /* Enables experimental support for ES7 decorators. */
+    "skipLibCheck": true,                      /* Skip type checking of declaration files. */
+    "outDir": "lib",                           /* Redirect output structure to the directory. */
+    "inlineSources": false,                    /* Emit the source alongside the sourcemaps within a single file; requires '--inlineSourceMap' or '--sourceMap' to be set. */
+    "strictNullChecks": false,                 /* Enable strict null checks. */
+    "noUnusedLocals": false,                   /* Report errors on unused locals. */
+    "typeRoots": [                             /* List of folders to include type definitions from. */
+          "./node_modules/@types",
+          "./node_modules/@microsoft"
+        ],
+    "types": [                                 /* Type declaration files to be included in compilation. */
+          "webpack-env"
+        ],
+    "lib": [                                   /* Specify library files to be included in the compilation. */
+          "es5",
+          "dom",
+          "es2015.collection",
+          "es2015.promise"
+        ]
+      },
+    "include": [
+      "src/**/*.ts",
+      "src/**/*.tsx"
+    ]
+}

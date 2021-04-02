@@ -16,9 +16,12 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "jsx": "react",
-    "declaration": true,
+    "declaration": true
   },
   "include": ["src", "resource"],
-  "exclude": ["node_modules", "**/test/*"]
+  "exclude": [
+    "node_modules",
+    "**/test/*",
+    "src/plugins/resource/spfx/templates"
+  ]
 }
-

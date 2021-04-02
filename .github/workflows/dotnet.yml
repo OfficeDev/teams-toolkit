@@ -51,4 +51,4 @@ jobs:
         SimpleAuthAdminClientSecret: ${{secrets.SIMPLE_AUTH_TEST_ADMIN_CLIENT_SECRET}}
         SimpleAuthPassword: ${{secrets.SIMPLE_AUTH_TEST_PASSWORD}}
       run:
-        chmod +x "scripts/test.sh" && chmod +x "scripts/start_js_function.sh" && "scripts/test.sh"
+        chmod +x "scripts/test.sh" && "scripts/test.sh"

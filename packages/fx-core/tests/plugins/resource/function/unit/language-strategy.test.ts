@@ -3,9 +3,9 @@
 import "mocha";
 import * as chai from "chai";
 
-import { FunctionLanguage } from "../../src/enums";
-import { FunctionPluginInfo } from "../../src/constants";
-import { LanguageStrategyFactory } from "../../src/language-strategy";
+import { FunctionLanguage } from "../../../../../src/plugins/resource/function/enums";
+import { FunctionPluginInfo } from "../../../../../src/plugins/resource/function/constants";
+import { LanguageStrategyFactory } from "../../../../../src/plugins/resource/function/language-strategy";
 
 
 describe(FunctionPluginInfo.pluginName, () => {

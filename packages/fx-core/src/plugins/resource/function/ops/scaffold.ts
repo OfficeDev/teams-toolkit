@@ -42,7 +42,8 @@ export class FunctionScaffold {
             return await runWithErrorCatchAndThrow(new TemplateZipFallbackError(), async() => {
                 const fileName: string = [group, language, scenario].join(PathInfo.templateZipNameSep) + PathInfo.templateZipExt;
                 const fxCoreDir: string = path.join(__dirname, "..", "..", "..", "..", "..");
-                const data: Buffer = await fs.readFile(path.join(fxCoreDir, PathInfo.templateFolderPath, fileName));
+                const zipPath: string = path.join(fxCoreDir, PathInfo.templateFolderPath, fileName);
+                const data: Buffer = await fs.readFile(zipPath);
                 const zip: AdmZip = new AdmZip(data);
                 return zip;
             });

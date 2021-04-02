@@ -5,8 +5,8 @@ import { SystemError } from "teamsfx-api";
 import { UserError } from "teamsfx-api";
 import { expect } from "chai";
 
-import { ErrorType, FunctionPluginError, runWithErrorCatchAndThrow } from "../../src/resources/errors";
-import { FunctionPluginInfo } from "../../src/constants";
+import { ErrorType, FunctionPluginError, runWithErrorCatchAndThrow } from "../../../../../src/plugins/resource/function/resources/errors";
+import { FunctionPluginInfo } from "../../../../../src/plugins/resource/function/constants";
 
 describe(FunctionPluginInfo.pluginName, async () => {
     describe("Error Catch Test", async () => {

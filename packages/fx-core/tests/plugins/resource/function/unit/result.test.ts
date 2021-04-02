@@ -4,8 +4,8 @@ import "mocha";
 import * as chai from "chai";
 import { FxError, SystemError, UserError } from "teamsfx-api";
 
-import { DefaultValues, FunctionPluginInfo } from "../../src/constants";
-import { FxResult, FunctionPluginResultFactory as ResultFactory } from "../../src/result";
+import { DefaultValues, FunctionPluginInfo } from "../../../../../src/plugins/resource/function/constants";
+import { FxResult, FunctionPluginResultFactory as ResultFactory } from "../../../../../src/plugins/resource/function/result";
 
 describe(FunctionPluginInfo.pluginName, () => {
     describe("Result Factory Test", () => {

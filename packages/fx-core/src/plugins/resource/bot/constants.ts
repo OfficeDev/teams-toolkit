@@ -142,5 +142,5 @@ export class Links {
 }
 
 export class Alias {
-    public static readonly TEAMS_BOT_PLUGIN = "TBP";
+    public static readonly TEAMS_BOT_PLUGIN = "BP";
 }

@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { EnvMeta, EnvConfig,  ProjectSettings, ProjectStates, ReadonlyResourceConfig } from "./config";
+import { ProjectSettings, ProjectStates } from "./config";
 import { Dialog } from "./utils/dialog";
 import { LogProvider, TelemetryReporter } from "./utils";
 
@@ -47,57 +47,4 @@ export interface Context {
      */
     states: ProjectStates;
 }
-
-/**
- * SolutionContext is env dependent
- */
-// export interface SolutionContext extends Context {
-
-//     /**
-//      * environment data
-//      */
-//     envMeta: EnvMeta;
-
-//     /**
-//      * env config
-//      */
-//     envConfig: EnvConfig;
-    
-//     /**
-//      * solution config
-//      */
-//     solutionConfig: SolutionConfig;
-// }
-
-// /**
-//  * ResourceContext is env dependent
-//  */
-// export interface ResourceContext extends Context {
-    
-//     /**
-//      * environment data
-//      */
-//     envMeta: EnvMeta;
-
-//     /**
-//      * env config
-//      */
-//     envConfig: EnvConfig;
-
-//     /**
-//      * A readonly view of solution's config which stores answers to common questions shared by all plugins. e.g. Azure Location, tenantId, etc.
-//      */
-//     solutionConfig: ReadonlyResourceConfig;
-
-//     /**
-//      * A mutable config for current resource
-//      */
-//     config: Config;
-
-//     /**
-//      * the state of current resource
-//      */
-//     state: Config;
-// }
-
-
+ 

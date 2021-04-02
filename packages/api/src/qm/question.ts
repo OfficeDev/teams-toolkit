@@ -2,8 +2,8 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { Platform } from "./constants";
-import { Dict, FunctionRouter, Json } from "./config";
+import { Platform } from "../constants";
+import { Dict, FunctionRouter} from "../config";
 
 /**
  * reference:
@@ -19,10 +19,10 @@ export enum NodeType {
     file = "file",
     folder = "folder",
     group = "group",
-    api = "api",
+    func = "func",
 }
 
-export type AnswerValue = string | string[] | number | OptionItem | OptionItem[] | undefined;
+export type AnswerValue = string | string[] | number | OptionItem | OptionItem[] | undefined | unknown;
 
 export interface UserInputs extends Dict<AnswerValue>{
     platform: Platform;
@@ -31,7 +31,7 @@ export interface UserInputs extends Dict<AnswerValue>{
 export type ReadonlyUserInputs = Readonly<UserInputs>;
 
 export interface Func extends FunctionRouter{
-    params?: Json|string|string[]; // there are two types of parameters: 1. basic types(number, string, undefined)  2. answer of ancestor question ($parent, $parent.name)
+    params?: string|string[]; // there are two types of parameters: 1. basic types(number, string, undefined)  2. answer of ancestor question ($parent, $parent.name)
 }
 
 export interface OptionItem {
@@ -147,6 +147,7 @@ export interface SingleSelectQuestion extends BaseQuestion {
     placeholder?: string;
     prompt?: string;
     returnObject?: boolean;
+    skipSingleOption?:boolean;
 }
 
 export interface MultiSelectQuestion extends BaseQuestion {
@@ -185,8 +186,7 @@ export interface FileQuestion extends BaseQuestion {
 }
 
 export interface FuncQuestion extends BaseQuestion, Func {
-    type: NodeType.api;
-    value?: unknown;
+    type: NodeType.func;
 }
 
 export interface Group {

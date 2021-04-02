@@ -5,7 +5,7 @@
 import { Result } from "neverthrow"; 
 import { Task } from "./constants"; 
 import { FxError } from "./error";
-import { Func, QTreeNode, ReadonlyUserInputs } from "./question"; 
+import { Func, QTreeNode, ReadonlyUserInputs } from "./qm/question"; 
 import { EnvConfig, EnvMeta, FunctionRouter, ResourceConfigs, ResourceTemplates, Void } from "./config";
 import { Context } from "./context";
 import { TokenProvider } from "./utils";

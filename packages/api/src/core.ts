@@ -23,7 +23,7 @@
 import { Result } from "neverthrow"; 
 import { Task } from "./constants";
 import { FxError } from "./error";
-import { Func, QTreeNode, ReadonlyUserInputs } from "./question";
+import { Func, QTreeNode, ReadonlyUserInputs } from "./qm/question";
 import { ConfigValue, Dict, EnvMeta, FunctionRouter, Void} from "./config";
 import { ToolsProvider } from "./utils";
 
@@ -82,19 +82,19 @@ export interface Core {
     /**
      * get question model for lifecycle {@link Task} (create, provision, deploy, debug, publish), Questions are organized as a tree. Please check {@link QTreeNode}.
      */
-    getQuestionsForLifecycleTask?: (task:Task, userInputs: ReadonlyUserInputs) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getQuestionsForLifecycleTask: (task:Task, userInputs: ReadonlyUserInputs) => Promise<Result<QTreeNode | undefined, FxError>>;
 
     /**
      * get question model for user task in additional to normal lifecycle {@link Task}, for example `Add Resource`, `Add Capabilities`, `Update AAD Permission`, etc
      * `getQuestionsForUserTask` will router the getQuestions request and dispatch from core--->solution--->resource plugin according to `FunctionRouter`.
      */
-    getQuestionsForUserTask?: (router:FunctionRouter, userInputs: ReadonlyUserInputs) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getQuestionsForUserTask: (router:FunctionRouter, userInputs: ReadonlyUserInputs) => Promise<Result<QTreeNode | undefined, FxError>>;
      
     /**
      * execute user task in additional to normal lifecycle {@link Task}, for example `Add Resource`, `Add Capabilities`, `Update AAD Permission`, etc
      * `executeUserTask` will router the execute request and dispatch from core--->solution--->resource plugin according to `FunctionRouter`.
      */
-    executeUserTask?: (func:Func, userInputs: ReadonlyUserInputs) => Promise<Result<unknown, FxError>>;
+    executeUserTask: (func:Func, userInputs: ReadonlyUserInputs) => Promise<Result<unknown, FxError>>;
     
     /**
      * There are three scenarios to use this API in question model:
@@ -103,5 +103,5 @@ export interface Core {
      * 3. validation for `TextInputQuestion`, core,solution plugin or resource plugin can define the validation function in `executeApiQuestion`.
      * `executeFuncQuestion` will router the execute request from core--->solution--->resource plugin according to `FunctionRouter`.
      */
-    executeFuncQuestion?: (func:Func, previousAnswers: ReadonlyUserInputs) => Promise<Result<unknown, FxError>>; 
+    executeFuncQuestion: (func:Func, previousAnswers: ReadonlyUserInputs) => Promise<Result<unknown, FxError>>; 
 }

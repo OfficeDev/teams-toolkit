@@ -6,20 +6,20 @@ import {
   FuncValidation,
   LocalFuncValidation,
   NumberValidation,
+  ReadonlyUserInputs,
   StringArrayValidation,
   StringValidation,
   Validation
-} from "../question";
+} from "../qm/question";
 import * as fs from "fs-extra";
 import { Core } from "../core";
-import * as jsonschema from "jsonschema";
-import { ConfigMap, ReadonlyConfigMap } from "../config";
+import * as jsonschema from "jsonschema"; 
  
 
 export function getValidationFunction(
   validation: Validation,
   core?: Core,
-  answers?: ConfigMap
+  answers?: ReadonlyUserInputs
 ): (input: string | string[]) => Promise<string | undefined> {
   return async function(input: string | string[]): Promise<string | undefined> {
     return await validate(validation, input, core, answers);
@@ -30,16 +30,15 @@ export async function validate(
   validation: Validation,
   valueToValidate: string | string[],
   core?: Core,
-  answers?: ConfigMap
+  answers?: ReadonlyUserInputs
 ): Promise<string | undefined> {
   
   //FuncValidation
   {
     const funcValidation: FuncValidation = validation as FuncValidation;
     if (core && funcValidation.method && core.executeFuncQuestion && answers) {
-      funcValidation.params = valueToValidate as string;
-      const romap:ReadonlyConfigMap = answers;
-      const res = await core.executeFuncQuestion(funcValidation, romap);
+      funcValidation.params = valueToValidate as string; 
+      const res = await core.executeFuncQuestion(funcValidation, answers as ReadonlyUserInputs);
       if (res.isOk()) {
         return res.value as string;
       } else {

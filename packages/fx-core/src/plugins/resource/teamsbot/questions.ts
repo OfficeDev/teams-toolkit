@@ -34,7 +34,7 @@ const botIdQuestion = new QTreeNode({
         validFunc: async (botId: string) => {
 
             if (!RegularExprs.BOT_ID.test(botId)) {
-                return `The bot id entered is in wrong format. Please refer to regex ${RegularExprs.BOT_ID} .`
+                return `The bot id entered is in wrong format. Please refer to regex ${RegularExprs.BOT_ID} .`;
             }
 
             return undefined;
@@ -51,7 +51,7 @@ const botPasswordQuestion = new QTreeNode({
         validFunc: async (botPassword: string) => {
 
             if (!RegularExprs.BOT_PASSWORD.test(botPassword)) {
-                return `The bot password entered is in wrong format. Please refer to regex ${RegularExprs.BOT_PASSWORD} .`
+                return `The bot password entered is in wrong format. Please refer to regex ${RegularExprs.BOT_PASSWORD} .`;
             }
 
             return undefined;

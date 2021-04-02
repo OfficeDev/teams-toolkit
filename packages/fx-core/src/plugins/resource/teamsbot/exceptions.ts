@@ -8,7 +8,7 @@ import { CommonStrings } from "./resources/strings";
 export enum ExceptionType {
     User,
     System
-};
+}
 
 export class PluginException extends Error {
     public name: string;

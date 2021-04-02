@@ -1,0 +1,28 @@
+{
+    "ConfigFiles": {
+        "TypeScript": [
+            ".env",
+            ".vscode/launch.json"
+        ],
+        "JavaScript": [
+            ".env",
+            ".vscode/launch.json"
+        ],
+        "CSharp": [
+            "appsettings.json",
+            ".vscode/launch.json"
+        ]
+    },
+    "UnPackConfig": {
+        "TypeScript": [
+            "node_modules"
+        ],
+        "JavaScript": [
+            "node_modules"
+        ],
+        "CSharp": [
+            "bin",
+            "obj"
+        ]
+    }
+}

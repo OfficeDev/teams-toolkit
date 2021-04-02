@@ -15,7 +15,7 @@ import { QuestionNames, ScaffoldPlaceholders } from "../../../../../src/plugins/
 import * as downloadByUrl from "../../../../../src/plugins/resource/bot/utils/downloadByUrl";
 import * as utils from "../../../../../src/plugins/resource/bot/utils/common";
 import { ProgrammingLanguage } from "../../../../../src/plugins/resource/bot/enums/programmingLanguage";
-import { FxTeamsBotPluginResultFactory as ResultFactory } from "../../../../../src/plugins/resource/bot/result";
+import { FxBotPluginResultFactory as ResultFactory } from "../../../../../src/plugins/resource/bot/result";
 import { WayToRegisterBot } from "../../../../../src/plugins/resource/bot/enums/wayToRegisterBot";
 import * as testUtils from "./utils";
 import { PluginActRoles } from "../../../../../src/plugins/resource/bot/enums/pluginActRoles";

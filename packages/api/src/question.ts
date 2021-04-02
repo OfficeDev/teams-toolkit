@@ -2,7 +2,8 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { FunctionRouter, Json } from "./types";
+import { Platform } from "./constants";
+import { Dict, FunctionRouter, Json } from "./config";
 
 /**
  * reference:
@@ -21,8 +22,16 @@ export enum NodeType {
     api = "api",
 }
 
+export type AnswerValue = string | string[] | number | OptionItem | OptionItem[] | undefined;
+
+export interface UserInputs extends Dict<AnswerValue>{
+    platform: Platform;
+}    
+
+export type ReadonlyUserInputs = Readonly<UserInputs>;
+
 export interface Func extends FunctionRouter{
-    params?: Json; // there are two types of parameters: 1. basic types(number, string, undefined)  2. answer of ancestor question ($parent, $parent.name)
+    params?: Json|string|string[]; // there are two types of parameters: 1. basic types(number, string, undefined)  2. answer of ancestor question ($parent, $parent.name)
 }
 
 export interface OptionItem {
@@ -30,22 +39,18 @@ export interface OptionItem {
      * the identifier of the option, not show
      */
     id: string;
-
     /**
      * A human-readable string which is rendered prominent.
      */
     label: string;
-
     /**
      * A human-readable string which is rendered less prominent in the same line.
      */
     description?: string;
-
     /**
      * A human-readable string which is rendered less prominent in a separate line.
      */
     detail?: string;
-
     /**
      * hidden data for this option item, not show
      */
@@ -130,7 +135,7 @@ export interface BaseQuestion {
     name: string; //question name, suggest to be consistent with MODS config name
     title?: string;
     description?: string;
-    value?: string | string[] | number | OptionItem | OptionItem[] | unknown;
+    value?: AnswerValue;
     default?: string | string[] | number | Func;
 }
 
@@ -179,7 +184,7 @@ export interface FileQuestion extends BaseQuestion {
     validation?: FileValidation | StringValidation;
 }
 
-export interface ApiQuestion extends BaseQuestion, Func {
+export interface FuncQuestion extends BaseQuestion, Func {
     type: NodeType.api;
     value?: unknown;
 }
@@ -195,7 +200,7 @@ export type Question =
     | MultiSelectQuestion
     | TextInputQuestion
     | NumberInputQuestion
-    | ApiQuestion
+    | FuncQuestion
     | FileQuestion;
 
 export class QTreeNode {

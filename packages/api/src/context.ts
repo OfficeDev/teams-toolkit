@@ -2,9 +2,8 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { ConfigMap, ResourceConfig, ReadonlyResourceConfig, SolutionConfig, Env } from "./types";
+import { EnvMeta, EnvConfig,  ProjectSettings, ProjectStates, ReadonlyResourceConfig } from "./config";
 import { Dialog } from "./utils/dialog";
-import { TreeProvider } from "./utils/tree"; 
 import { LogProvider, TelemetryReporter } from "./utils";
 
 
@@ -14,12 +13,12 @@ import { LogProvider, TelemetryReporter } from "./utils";
  */
 export interface Context {
     /**
-     * project folder path, no need to persist
+     * project folder path, not persist
      */
     path: string;
 
     /**
-     * appName is shared between framework and plugins, need to persist in settins.json
+     * appName is shared between framework and plugins, need to persist
      */
     appName: string; 
 
@@ -37,44 +36,68 @@ export interface Context {
      * telemetry tool
      */
     telemetryReporter: TelemetryReporter;
+
+    /**
+     * Static meta data describing the settings or states of the project, for example, activated resources plugins
+     */
+    settings: ProjectSettings;
+
+    /**
+     * Dynamic data or temporary state of the project, for example, whether the project is built or not. Loss of such data will not affect the normal development workflow or such state data can be re-generated easily.
+     */
+    states: ProjectStates;
 }
 
 /**
  * SolutionContext is env dependent
  */
-export interface SolutionContext extends Context {
+// export interface SolutionContext extends Context {
 
-    env: Env;
-    /**
-     * can solution read-write config file instead of core? for task like provision, the progress is long, solution can save the templary result before provision finish.
-     * If so, SolutionConfig is unecessary here
-     */
-    config: SolutionConfig;
+//     /**
+//      * environment data
+//      */
+//     envMeta: EnvMeta;
 
-    state: ConfigMap;
-
-    // Tree provider is undefined for non-vscode drivers.
-    treeProvider?: TreeProvider;
-}
-
-/**
- * ResourceContext is env dependent
- */
-export interface ResourceContext extends Context {
+//     /**
+//      * env config
+//      */
+//     envConfig: EnvConfig;
     
-    env: Env;
+//     /**
+//      * solution config
+//      */
+//     solutionConfig: SolutionConfig;
+// }
 
-    /**
-     * A readonly view of solution's config which stores answers to common questions shared by all plugins. e.g. Azure Location, tenantId, etc.
-     */
-    commonConfig: ReadonlyResourceConfig;
+// /**
+//  * ResourceContext is env dependent
+//  */
+// export interface ResourceContext extends Context {
+    
+//     /**
+//      * environment data
+//      */
+//     envMeta: EnvMeta;
 
-    // A mutable config for current plugin
-    config: ResourceConfig;
+//     /**
+//      * env config
+//      */
+//     envConfig: EnvConfig;
 
-    // A readonly of view of teams manifest. Useful for bot plugin.
-    //TODO optional? for SPFx plugin, this app property is undefined
-    // app?: Readonly<TeamsAppManifest>;
+//     /**
+//      * A readonly view of solution's config which stores answers to common questions shared by all plugins. e.g. Azure Location, tenantId, etc.
+//      */
+//     solutionConfig: ReadonlyResourceConfig;
 
-    state: ConfigMap;
-}
+//     /**
+//      * A mutable config for current resource
+//      */
+//     config: Config;
+
+//     /**
+//      * the state of current resource
+//      */
+//     state: Config;
+// }
+
+

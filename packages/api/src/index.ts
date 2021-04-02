@@ -11,5 +11,5 @@ export * from "./manifest";
 export * from "./question";
 export * from "./resourcePlugin";
 export * from "./solutionPlugin";
-export * from "./types";
+export * from "./config";
 export * from "neverthrow";

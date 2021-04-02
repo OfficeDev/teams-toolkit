@@ -11,7 +11,7 @@ import { Links, Alias } from "./constants";
 export type FxResult = Result<any, FxError>;
 
 class FxResultFactory {
-    static readonly source: string = Alias.TEAMS_BOT_PLUGIN;
+    static readonly source: string = Alias.TEAMS_FX;
     static readonly defaultHelpLink = "";
     static readonly defaultIssueLink = "";
 
@@ -53,7 +53,7 @@ class FxResultFactory {
     }
 }
 
-export class FxTeamsBotPluginResultFactory extends FxResultFactory {
+export class FxBotPluginResultFactory extends FxResultFactory {
     static readonly source: string = Alias.TEAMS_BOT_PLUGIN;
     static readonly defaultHelpLink = Links.HELP_LINK;
     static readonly defaultIssueLink = Links.ISSUE_LINK;

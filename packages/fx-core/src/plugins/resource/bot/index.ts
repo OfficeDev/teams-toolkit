@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import { Plugin, PluginContext, Result, QTreeNode, Stage, FxError } from "teamsfx-api";
 
-import { FxResult, FxTeamsBotPluginResultFactory as ResultFactory } from "./result";
+import { FxResult, FxBotPluginResultFactory as ResultFactory } from "./result";
 import { TeamsBotImpl } from "./plugin";
 import { ProgressBarFactory } from "./progressBars";
 import { ProgressBarConstants } from "./constants";

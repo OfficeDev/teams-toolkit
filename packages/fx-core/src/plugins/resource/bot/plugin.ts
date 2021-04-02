@@ -10,7 +10,7 @@ import { createQuestions } from "./questions";
 import { LanguageStrategy } from "./languageStrategy";
 import { Messages } from "./resources/messages";
 import { ConfigNames } from "./resources/strings";
-import { FxResult, FxTeamsBotPluginResultFactory as ResultFactory } from "./result";
+import { FxResult, FxBotPluginResultFactory as ResultFactory } from "./result";
 import { ScaffoldPlaceholders, ProgressBarConstants, QuestionNames, ContextConfigKeys, WebAppConstants, LifecycleFuncNames, TemplateProjectsConstants } from "./constants";
 import { WayToRegisterBot } from "./enums/wayToRegisterBot";
 import { getZipDeployEndpoint } from "./utils/zipDeploy";

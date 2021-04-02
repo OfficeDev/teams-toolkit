@@ -6,15 +6,15 @@ import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import * as sinon from "sinon";
 
-import { SimpleAuthPlugin } from "../../../../../src/plugins/resource/simpleAuth/src/index";
+import { SimpleAuthPlugin } from "../../../../../src/plugins/resource/simpleAuth/index";
 import { TestHelper } from "../helper";
-import { Constants } from "../../../../../src/plugins/resource/simpleAuth/src/constants";
+import { Constants } from "../../../../../src/plugins/resource/simpleAuth/constants";
 import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import * as fs from "fs-extra";
-import { WebAppClient } from "../../../../../src/plugins/resource/simpleAuth/src/webAppClient";
+import { WebAppClient } from "../../../../../src/plugins/resource/simpleAuth/webAppClient";
 import * as faker from "faker";
 import * as dotenv from "dotenv";
-import { Utils } from "../../../../../src/plugins/resource/simpleAuth/src/utils/common";
+import { Utils } from "../../../../../src/plugins/resource/simpleAuth/utils/common";
 import { PluginContext } from "teamsfx-api";
 
 chai.use(chaiAsPromised);

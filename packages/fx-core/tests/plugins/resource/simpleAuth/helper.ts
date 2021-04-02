@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import { PluginContext } from "teamsfx-api";
 import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
-import { Constants } from "../../../../src/plugins/resource/simpleAuth/src/constants";
+import { Constants } from "../../../../src/plugins/resource/simpleAuth/constants";
 
 export class TestHelper {
     static async pluginContext(credentials: msRestNodeAuth.TokenCredentialsBase): Promise<PluginContext> {

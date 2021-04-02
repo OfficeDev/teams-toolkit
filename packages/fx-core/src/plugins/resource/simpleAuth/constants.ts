@@ -26,7 +26,7 @@ export class Constants {
     static readonly SimpleAuthPlugin = {
         id: "teamsfx-resource-simpleAuth",
         name: "Simple Auth Plugin",
-        shortName: "rc",
+        shortName: "sa",
         configKeys: {
             endpoint: "endpoint",
             filePath: "filePath",
@@ -35,7 +35,7 @@ export class Constants {
         },
     };
 
-    static readonly ResourcesFolderName: string = "resources";
+    static readonly ResourcesFolderName: string = "assets";
     static readonly SimpleAuthFileName: string = "SimpleAuth.zip";
 
     static readonly ResourceNameMaxLength = 40;

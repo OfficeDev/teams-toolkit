@@ -16,7 +16,7 @@ export class Utils {
     }
 
     public static getSimpleAuthFilePath(): string {
-        return path.join(__dirname, "..", "..", Constants.ResourcesFolderName, Constants.SimpleAuthFileName);
+        return path.join(__dirname, "..", Constants.ResourcesFolderName, Constants.SimpleAuthFileName);
     }
 
     public static getWebAppConfig(ctx: PluginContext, isLocalDebug: boolean): { [propertyName: string]: string } {

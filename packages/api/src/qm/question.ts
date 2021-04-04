@@ -132,7 +132,7 @@ export type Validation =
     | LocalFuncValidation;
 
 export interface BaseQuestion {
-    name: string; //question name, suggest to be consistent with MODS config name
+    name: string;
     title?: string;
     description?: string;
     value?: AnswerValue;

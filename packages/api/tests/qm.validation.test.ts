@@ -2,61 +2,42 @@
 // Licensed under the MIT license.
 
 import {
-  ConfigMap,
-  Core,
-  Environment,
-  err,
   FileValidation,
   Func,
-  FunctionRouter,
-  FuncValidation,
   FxError,
   LocalFuncValidation,
   NumberValidation,
   ok,
-  QTreeNode,
-  ReadonlyConfigMap,
+  Platform,
+  ReadonlyUserInputs,
+  RemoteFuncValidation,
   Result,
   StringArrayValidation,
   StringValidation,
-  Task,
-  ToolsProvider,
-  UserError,
-  Void
+  UserInputs
 } from "../src/index";
 import * as chai from "chai";
-import { validate } from "../src/utils/validation";
+import { RemoteFuncExecutor, validate } from "../src/qm/validation";
 import * as fs from "fs-extra";
 import * as os from "os";
+import * as path from "path";
 
 /**
  * cmd: mocha -r ts-node/register --no-timeout tests/qm.validation.test.ts
  */
 
-class MockCore implements Core{
-  async init(globalConfig: ReadonlyConfigMap, tools: ToolsProvider) : Promise<Result<Void, FxError>> {return err(new UserError("NotSupportError", "NotSupportError", "UnitTest"));}
-  async create(userAnswers: ReadonlyConfigMap)  : Promise<Result<string, FxError>>{return err(new UserError("NotSupportError", "NotSupportError", "UnitTest"));}
-  async provision(userAnswers: ReadonlyConfigMap) : Promise<Result<Void, FxError>>{return err(new UserError("NotSupportError", "NotSupportError", "UnitTest"));}
-  async build (userAnswers: ReadonlyConfigMap) : Promise<Result<Void, FxError>>{return err(new UserError("NotSupportError", "NotSupportError", "UnitTest"));}
-  async deploy (userAnswers: ReadonlyConfigMap) : Promise<Result<Void, FxError>>{return err(new UserError("NotSupportError", "NotSupportError", "UnitTest"));}
-  async publish(userAnswers: ReadonlyConfigMap) : Promise<Result<Void, FxError>>{return err(new UserError("NotSupportError", "NotSupportError", "UnitTest"));}
-  async createEnv(env: Environment) : Promise<Result<Void, FxError>>{return err(new UserError("NotSupportError", "NotSupportError", "UnitTest"));}
-  async removeEnv(env: string) : Promise<Result<Void, FxError>>{return err(new UserError("NotSupportError", "NotSupportError", "UnitTest"));}
-  async switchEnv(env: string) : Promise<Result<Void, FxError>>{return err(new UserError("NotSupportError", "NotSupportError", "UnitTest"));}
-  async listEnvs() : Promise<Result<Environment[], FxError>>{return err(new UserError("NotSupportError", "NotSupportError", "UnitTest"));}
-  async getQuestionsForLifecycleTask (task:Task, getQuestionConfig: ReadonlyConfigMap) : Promise<Result<QTreeNode | undefined, FxError>>{return err(new UserError("NotSupportError", "NotSupportError", "UnitTest"));}
-  async getQuestionsForUserTask(router:FunctionRouter, getQuestionConfig: ReadonlyConfigMap) : Promise<Result<QTreeNode | undefined, FxError>>{return err(new UserError("NotSupportError", "NotSupportError", "UnitTest"));}
-  async executeUserTask(func:Func, userTaskAnswers: ReadonlyConfigMap) : Promise<Result<unknown, FxError>>{return err(new UserError("NotSupportError", "NotSupportError", "UnitTest"));}
-  async executeFuncQuestion(func:Func, answersOfPreviousQuestions: ReadonlyConfigMap) : Promise<Result<unknown, FxError>>
-  {
+const mockRemoteFuncExecutor:RemoteFuncExecutor = async function (func:Func, answers: ReadonlyUserInputs) : Promise<Result<string|undefined, FxError>>
+{
+  if(func.method === "mockValidator"){
     const input = func.params as string;
     if(input.length > 5) return ok("input too long");
-    return ok(undefined);
+    else return ok(undefined);
   }
-}
+  return ok(undefined);
+};
 
 
-describe("Validation Test", () => {
+describe("Question Model - Validation Test", () => {
    
   it("StringValidation.equals", async () => {
     const validation: StringValidation = { equals: "123" };
@@ -419,9 +400,13 @@ describe("Validation Test", () => {
     const value1 = folder;
     const res1 = await validate(validation, value1);
     chai.assert.isTrue(res1 === undefined);
-    const value2 = folder + "/hahaha";
-    const res2 = await validate(validation, value2);
-    chai.assert.isTrue(fs.existsSync(value2) ? res2 === undefined : res2 !== undefined);
+    const filePath = path.resolve(folder, `${new Date().getTime()}.txt`);
+    await fs.ensureFile(filePath);
+    const res2 = await validate(validation, filePath);
+    chai.assert.isTrue( res2 === undefined);
+    await fs.remove(filePath);
+    const res3 = await validate(validation, filePath);
+    chai.assert.isTrue( res3 !== undefined);
   });
 
   it("FileValidation.notExist", async () => {
@@ -432,21 +417,28 @@ describe("Validation Test", () => {
     const value1 = folder;
     const res1 = await validate(validation, value1);
     chai.assert.isTrue(res1 !== undefined);
-    const value2 = folder + "/hahaha";
-    const res2 = await validate(validation, value2);
-    chai.assert.isTrue(!fs.existsSync(value2) ? res2 === undefined : res2 !== undefined);
+    const filePath = path.resolve(folder, `${new Date().getTime()}.txt`);
+    await fs.ensureFile(filePath);
+    const res2 = await validate(validation, filePath);
+    chai.assert.isTrue( res2 !== undefined);
+    await fs.remove(filePath);
+    const res3 = await validate(validation, filePath);
+    chai.assert.isTrue( res3 === undefined);
   });
 
-  it("FuncValidation", async () => {
-    const core:Core = new MockCore();
-    const validation:FuncValidation = {
+  it("RemoteFuncValidation", async () => {
+    
+    const validation:RemoteFuncValidation = {
       namespace : "",
-      method : "validateTest"
+      method : "mockValidator"
     };
-    const answers = new ConfigMap();
-    answers.set("app-name", "myapp");
+    const answers:UserInputs = {platform:Platform.VSCode};
+    answers["app-name"] = "myapp";
     const value1 = "1234888888888888888856";
-    const res1 = await validate(validation, value1, core, answers);
+    const res1 = await validate(validation, value1, mockRemoteFuncExecutor, answers);
     chai.assert.isTrue(res1 === "input too long");
+    const value2 = "1234";
+    const res2 = await validate(validation, value2, mockRemoteFuncExecutor, answers);
+    chai.assert.isTrue(res2 === undefined);
   });
 });

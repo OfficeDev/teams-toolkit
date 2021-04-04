@@ -12,10 +12,9 @@ export interface FxQuickPickItem extends QuickPickItem {
   data?: unknown;
 }
 
-export class VsCodeUi implements UserInterface{
+export class VsCodeUI implements UserInterface{
   async showQuickPick (option: FxQuickPickOption) : Promise<InputResult>{
     const disposables: Disposable[] = [];
-    // let isPrompting = false;
     try {
       const quickPick: QuickPick<QuickPickItem> = window.createQuickPick();
       disposables.push(quickPick);
@@ -70,18 +69,18 @@ export class VsCodeUi implements UserInterface{
               resolve({ type: InputResultType.cancel });
             })
           );
-          if (option.backButton) {
+          if(option.backButton) {
             disposables.push(
-              quickPick.onDidTriggerButton((_btn) => {
+              quickPick.onDidTriggerButton((button) => {
                 resolve({ type: InputResultType.back });
               })
             );
           }
-          // isPrompting = true;
+          
           try {
-            const isStringArray = !!(typeof option.items[0] === "string");
+            const optionIsString = !!(typeof option.items[0] === "string");
             /// set items
-            if (isStringArray) {
+            if (optionIsString) {
               quickPick.items = (option.items as string[]).map((i: string) => {
                 return { label: i, id: i };
               });
@@ -96,19 +95,23 @@ export class VsCodeUi implements UserInterface{
                 };
               });
             }
-  
+            
+            const items = quickPick.items as FxQuickPickItem[];
+            const optionMap = new Map<string, FxQuickPickItem>();
+            for(const item of items){
+              optionMap.set(item.id, item);
+            }
+
             /// set default values
             if (option.defaultValue) {
-              const modsItems = quickPick.items as FxQuickPickItem[];
+              const items = quickPick.items as FxQuickPickItem[];
               if (option.canSelectMany) {
-                const defaultStringArrayValue = option.defaultValue as string[];
-                quickPick.selectedItems = modsItems.filter((i) =>
-                  defaultStringArrayValue.includes(i.id)
-                );
+                const ids = option.defaultValue as string[];
+                quickPick.selectedItems = ids.map(id=>optionMap.get(id)!);
               } else {
                 const defaultStringValue = option.defaultValue as string;
-                const newitems = modsItems.filter((i) => i.id !== defaultStringValue);
-                for (const i of modsItems) {
+                const newitems = items.filter((i) => i.id !== defaultStringValue);
+                for (const i of items) {
                   if (i.id === defaultStringValue) {
                     newitems.unshift(i);
                     break;
@@ -117,6 +120,30 @@ export class VsCodeUi implements UserInterface{
                 quickPick.items = newitems;
               }
             }
+
+            if(option.onDidChangeSelection){
+              const changeHandler = async function(items:QuickPickItem[]):Promise<any>{
+                const optionItems:OptionItem[] = items.map(i=>{
+                  const fxitem:FxQuickPickItem = i as FxQuickPickItem;
+                  return {
+                    id: fxitem.id,
+                    label: fxitem.label,
+                    description: fxitem.description,
+                    detail: fxitem.detail,
+                    data: fxitem.data
+                  }
+                });
+                const oldIds = quickPick.selectedItems.map(i=>{return (i as FxQuickPickItem).id;}).sort();
+                const newIds:string[] = (await option.onDidChangeSelection!(optionItems)).sort();
+                if(oldIds.join(",") !== newIds.join(",")){
+                  quickPick.selectedItems = newIds.map(id=>optionMap.get(id)!);
+                }
+              };
+              disposables.push(
+                quickPick.onDidChangeSelection(changeHandler)
+              );
+            }
+
             quickPick.show();
           } catch (err) {
             resolve({
@@ -127,7 +154,6 @@ export class VsCodeUi implements UserInterface{
         }
       );
     } finally {
-      // isPrompting = false;
       disposables.forEach((d) => {
         d.dispose();
       });
@@ -137,7 +163,6 @@ export class VsCodeUi implements UserInterface{
 
   async showInputBox(option: FxInputBoxOption) : Promise<InputResult>{
     const disposables: Disposable[] = [];
-    // let isPrompting = false;
     try {
       const inputBox: InputBox = window.createInputBox();
       disposables.push(inputBox);
@@ -148,41 +173,39 @@ export class VsCodeUi implements UserInterface{
       inputBox.password = option.password;
       inputBox.placeholder = option.placeholder;
       inputBox.prompt = option.prompt;
-      let latestValidation: Promise<string | undefined | null> = option.validation
-        ? Promise.resolve(await option.validation(inputBox.value))
-        : Promise.resolve("");
-      return await new Promise<InputResult>((resolve, reject): void => {
+      if(option.number){
+        const numberValidation = async function(input:string):Promise<string|undefined>{
+          if(!input || input.trim() === "" ||isNaN(Number(input))) return `'${input}' is not a valid number`;
+          return undefined;
+        };
+        const oldValidation = option.validation;
+        const newValidation = async function(input:string):Promise<string|undefined>{
+          const res = oldValidation ? await oldValidation(input): undefined;
+          if(res !== undefined) return res;
+          return await numberValidation(input);
+        };
+        option.validation = newValidation;
+      }
+      return await new Promise<InputResult>((resolve): void => {
         disposables.push(
           inputBox.onDidChangeValue(async (text) => {
             if (option.validation) {
-              const validationRes: Promise<string | undefined | null> = Promise.resolve(
-                await option.validation(text)
-              );
-              latestValidation = validationRes;
-              let message: string | undefined | null = await validationRes;
-              if(message === undefined && option.number){
-                const num = Number(text);
-                if(isNaN(num)){
-                  message = text + " is not a valid number";
-                }
+              const validationRes = option.validation ? await option.validation(text) : undefined;
+              if (!!validationRes) {
+                inputBox.validationMessage = validationRes;
               }
-              if (validationRes === latestValidation) {
-                inputBox.validationMessage = message || "";
+              else{
+                inputBox.validationMessage = undefined;
               }
             }
           }),
           inputBox.onDidAccept(async () => {
-            // Run final validation and resolve if value passes
-            inputBox.enabled = false;
-            inputBox.busy = true;
-            const message: string | undefined | null = await latestValidation;
-            if (!message) {
+            const validationRes = option.validation ? await option.validation(inputBox.value) : undefined;
+            if (!validationRes) {
               resolve({ type: InputResultType.sucess, result: inputBox.value });
             } else {
-              inputBox.validationMessage = message;
+              inputBox.validationMessage = validationRes;
             }
-            inputBox.enabled = true;
-            inputBox.busy = false;
           }),
           inputBox.onDidHide(() => {
             resolve({ type: InputResultType.cancel });
@@ -190,16 +213,14 @@ export class VsCodeUi implements UserInterface{
         );
         if (option.backButton) {
           disposables.push(
-            inputBox.onDidTriggerButton((_btn) => {
+            inputBox.onDidTriggerButton((button) => {
               resolve({ type: InputResultType.back });
             })
           );
         }
         inputBox.show();
-        // isPrompting = true;
       });
     } finally {
-      // isPrompting = false;
       disposables.forEach((d) => {
         d.dispose();
       });

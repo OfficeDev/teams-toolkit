@@ -117,7 +117,7 @@ export interface FileValidation extends AnyValidation {
     notExist?: boolean;
 }
 
-export interface FuncValidation extends Func, AnyValidation {}
+export interface RemoteFuncValidation extends Func, AnyValidation {}
 
 export interface LocalFuncValidation extends AnyValidation {
     validFunc?: (input: string) => string | undefined | Promise<string | undefined>;
@@ -128,7 +128,7 @@ export type Validation =
     | StringValidation
     | StringArrayValidation
     | FileValidation
-    | FuncValidation
+    | RemoteFuncValidation
     | LocalFuncValidation;
 
 export interface BaseQuestion {
@@ -138,7 +138,6 @@ export interface BaseQuestion {
     value?: AnswerValue;
     default?: string | string[] | number | Func;
 }
-
 export interface SingleSelectQuestion extends BaseQuestion {
     type: NodeType.singleSelect;
     option: Option;
@@ -158,6 +157,7 @@ export interface MultiSelectQuestion extends BaseQuestion {
     placeholder?: string;
     prompt?: string;
     returnObject?: boolean;
+    onDidChangeSelection?: (items: OptionItem[]) => Promise<string[]>;
 }
 
 export interface TextInputQuestion extends BaseQuestion {
@@ -166,7 +166,7 @@ export interface TextInputQuestion extends BaseQuestion {
     default?: string | Func;
     placeholder?: string;
     prompt?: string;
-    validation?: StringValidation;
+    validation?: StringValidation | RemoteFuncValidation | LocalFuncValidation;
 }
 
 export interface NumberInputQuestion extends BaseQuestion {
@@ -175,14 +175,14 @@ export interface NumberInputQuestion extends BaseQuestion {
     default?: number | Func;
     placeholder?: string;
     prompt?: string;
-    validation?: NumberValidation;
+    validation?: NumberValidation | RemoteFuncValidation | LocalFuncValidation;
 }
 
 export interface FileQuestion extends BaseQuestion {
     type: NodeType.file | NodeType.folder;
     value?: string;
     default?: string;
-    validation?: FileValidation | StringValidation;
+    validation?: FileValidation | StringValidation | RemoteFuncValidation | LocalFuncValidation;
 }
 
 export interface FuncQuestion extends BaseQuestion, Func {

@@ -24,15 +24,12 @@ import { Result } from "neverthrow";
 import { Task } from "./constants";
 import { FxError } from "./error";
 import { Func, QTreeNode, ReadonlyUserInputs } from "./qm/question";
-import { ConfigValue, Dict, EnvMeta, FunctionRouter, Void} from "./config";
-import { ToolsProvider } from "./utils";
+import { EnvMeta, FunctionRouter, Void} from "./config";
 
 export interface Core {
 
-    /**
-     * constructor
-     */
-    constructor:(globalConfig: Dict<ConfigValue>, tools: ToolsProvider) => Promise<Result<Void, FxError>>;
+    
+    // init:(globalConfig: Dict<ConfigValue>, tools: ToolsProvider) => void;
  
     /**
      * create a project, return the project path

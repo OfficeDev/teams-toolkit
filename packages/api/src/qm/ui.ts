@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { FxError } from "../error";
-import { AnswerValue, StaticOption } from "./question";
+import { AnswerValue, OptionItem, StaticOption } from "./question";
 
  
 
@@ -14,6 +14,7 @@ export interface FxQuickPickOption {
   placeholder?: string;
   backButton?: boolean;
   returnObject?: boolean;
+  onDidChangeSelection?: (items: OptionItem[]) => Promise<string[]>;
 }
 
 export interface FxInputBoxOption {
@@ -22,7 +23,7 @@ export interface FxInputBoxOption {
   defaultValue?: string;
   placeholder?: string;
   prompt?: string;
-  validation?: (input: string | string[]) => Promise<string | undefined | null>;
+  validation?: (input: string) => Promise<string | undefined>;
   backButton?: boolean;
   number?:boolean;
 }

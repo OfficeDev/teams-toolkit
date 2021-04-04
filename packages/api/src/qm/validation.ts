@@ -3,42 +3,46 @@
 
 import {
   FileValidation,
-  FuncValidation,
+  RemoteFuncValidation,
   LocalFuncValidation,
   NumberValidation,
   ReadonlyUserInputs,
   StringArrayValidation,
   StringValidation,
-  Validation
+  Validation,
+  Func
 } from "./question";
 import * as fs from "fs-extra";
-import { Core } from "../core";
 import * as jsonschema from "jsonschema"; 
+import { Result } from "neverthrow";
+import { FxError } from "../error";
  
+
+export type RemoteFuncExecutor = (func:Func, answers: ReadonlyUserInputs) => Promise<Result<unknown, FxError>>; 
 
 export function getValidationFunction(
   validation: Validation,
-  core?: Core,
+  remoteFuncValidator?: RemoteFuncExecutor,
   answers?: ReadonlyUserInputs
 ): (input: string | string[]) => Promise<string | undefined> {
   return async function(input: string | string[]): Promise<string | undefined> {
-    return await validate(validation, input, core, answers);
+    return await validate(validation, input, remoteFuncValidator, answers);
   };
 }
 
 export async function validate(
   validation: Validation,
   valueToValidate: string | string[],
-  core?: Core,
+  remoteFuncValidator?: RemoteFuncExecutor,
   answers?: ReadonlyUserInputs
 ): Promise<string | undefined> {
   
-  //FuncValidation
+  //RemoteFuncValidation
   {
-    const funcValidation: FuncValidation = validation as FuncValidation;
-    if (core && funcValidation.method && core.executeFuncQuestion && answers) {
-      funcValidation.params = valueToValidate as string; 
-      const res = await core.executeFuncQuestion(funcValidation, answers as ReadonlyUserInputs);
+    const funcValidation: RemoteFuncValidation = validation as RemoteFuncValidation;
+    if (funcValidation.method && remoteFuncValidator) {
+      funcValidation.params = [valueToValidate as string]; 
+      const res = await remoteFuncValidator(funcValidation as Func, answers as ReadonlyUserInputs);
       if (res.isOk()) {
         return res.value as string;
       } else {
@@ -212,12 +216,3 @@ export async function validate(
   }
   return undefined;
 }
-
-// import * as chai from 'chai';
-// async function test() {
-//   const validation:StringArrayValidation = {equals:['3','2','1']};
-//   let value1 = ['1','2','3'];
-//   let res1 = await validate(validation, value1);
-//   console.log(res1);
-// }
-// test();

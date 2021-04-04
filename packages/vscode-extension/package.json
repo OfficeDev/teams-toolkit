@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "scripts": {
     "lint:staged": "lint-staged",
-    "lint": "eslint \"**/*.ts\""
+    "lint": "eslint \"**/*.ts\"",
+    "build": "tsc -p ./"
   },
   "devDependencies": {
     "@shared/eslint-config": "^0.0.0",

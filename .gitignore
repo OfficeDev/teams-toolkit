@@ -348,3 +348,4 @@ MigrationBackup/
 .ionide/
 packages/api/build/
 packages/fx-core/build/
+packages/vscode-extension/out

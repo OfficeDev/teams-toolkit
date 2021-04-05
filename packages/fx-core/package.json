@@ -28,6 +28,7 @@
     "@azure/arm-apimanagement": "^6.0.0",
     "@azure/arm-appservice": "^6.1.0",
     "@azure/arm-resources": "^4.0.0",
+    "@azure/arm-sql": "^7.0.2",
     "@azure/arm-storage": "^15.2.0",
     "@azure/ms-rest-nodeauth": "^3.0.8",
     "@azure/msal-node": "^1.0.0",
@@ -49,6 +50,7 @@
     "semver": "^7.3.5",
     "sudo-prompt": "^9.2.1",
     "teamsfx-api": "^1.0.0",
+    "tedious": "^9.2.1",
     "tslib": "^2.1.0",
     "url-parse": "^1.5.1",
     "uuid": "^8.3.2"
@@ -72,6 +74,7 @@
     "@types/node-forge": "^0.9.7",
     "@types/semver": "^7.3.4",
     "@types/sinon": "^9.0.10",
+    "@types/tedious": "^4.0.3",
     "@types/url-parse": "^1.4.3",
     "@types/uuid": "^8.3.0",
     "@typescript-eslint/eslint-plugin": "^4.19.0",

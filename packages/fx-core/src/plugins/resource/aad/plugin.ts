@@ -86,34 +86,18 @@ export class AadAppForTeamsImpl {
       isLocalDebug
     );
 
+    await TokenProvider.init(ctx);
+
     if (
       ctx.config.get(
         Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.objectId)
-      ) &&
-      ctx.config.get(
-        Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.clientId)
-      ) &&
-      ctx.config.get(
-        Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.clientSecret)
-      ) &&
-      ctx.config.get(
-        Utils.addLocalDebugPrefix(
-          isLocalDebug,
-          ConfigKeys.oauth2PermissionScopeId
-        )
-      ) &&
-      ctx.config.get(ConfigKeys.oauthAuthority)
+      )
     ) {
-      if (!ctx.config.get(ConfigKeys.teamsMobileDesktopAppId)) {
-        ctx.config.set(
-          ConfigKeys.teamsMobileDesktopAppId,
-          Constants.teamsMobileDesktopAppId
-        );
-      }
-
-      if (!ctx.config.get(ConfigKeys.teamsWebAppId)) {
-        ctx.config.set(ConfigKeys.teamsWebAppId, Constants.teamsWebAppId);
-      }
+      const objectId = ctx.config.get(
+        Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.objectId)
+      );
+      const config = await AadAppClient.getAadApp(objectId as string, isLocalDebug);
+      config.saveConfigIntoContext(ctx, TokenProvider.tenantId as string);
 
       Utils.addLogAndTelemetryWithLocalDebug(
         ctx.logProvider,
@@ -121,7 +105,6 @@ export class AadAppForTeamsImpl {
         Messages.EndLocalDebug,
         isLocalDebug
       );
-
       return ResultFactory.Success();
     }
 
@@ -131,7 +114,6 @@ export class AadAppForTeamsImpl {
       ProgressTitle.ProvisionSteps
     );
 
-    await TokenProvider.init(ctx);
     const config: ProvisionConfig = new ProvisionConfig(isLocalDebug);
     await config.restoreConfigFromContext(ctx);
     const permissions = AadAppForTeamsImpl.parsePermission(

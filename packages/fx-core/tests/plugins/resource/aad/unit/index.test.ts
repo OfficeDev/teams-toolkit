@@ -18,7 +18,8 @@ import { Envs } from "../../../../../src/plugins/resource/aad/interfaces/models"
 import sinon from "sinon";
 import { AadAppClient } from "../../../../../src/plugins/resource/aad/aadAppClient";
 import { getAppStudioToken, getGraphToken } from "../tokenProvider";
-import { Constants } from "../../../../../src/plugins/resource/aad/constants";
+import { ConfigKeys, Constants } from "../../../../../src/plugins/resource/aad/constants";
+import { ProvisionConfig } from "../../../../../src/plugins/resource/aad/utils/configs";
 
 dotenv.config();
 const testWithAzure: boolean = process.env.UT_TEST_ON_AZURE ? true : false;
@@ -34,6 +35,7 @@ describe("AadAppForTeamsPlugin: CI", () => {
     sinon.stub(AadAppClient, "updateAadAppRedirectUri").resolves();
     sinon.stub(AadAppClient, "updateAadAppIdUri").resolves();
     sinon.stub(AadAppClient, "updateAadAppPermission").resolves();
+    sinon.stub(AadAppClient, "getAadApp").resolves(new ProvisionConfig());
   });
 
   afterEach(() => {
@@ -231,5 +233,18 @@ describe("AadAppForTeamsPlugin: Azure", () => {
     // context.config.set(ConfigKeys.applicationIdUri, "errorAppIdUri")
     // const postProvisionError = await plugin.postProvision(context);
     // chai.assert.isTrue(postProvisionError.isErr());
+
+    // Test for provision again with objectId in context
+    context.config.set(ConfigKeys.clientId, "");
+    context.config.set(ConfigKeys.oauth2PermissionScopeId, "");
+
+    const provisionSecond = await plugin.provision(context);
+    chai.assert.isTrue(provisionSecond.isOk());
+
+    const setAppIdSecond = plugin.setApplicationInContext(context);
+    chai.assert.isTrue(setAppIdSecond.isOk());
+
+    const postProvisionSecond = await plugin.postProvision(context);
+    chai.assert.isTrue(postProvisionSecond.isOk());
   });
 });

@@ -10,6 +10,7 @@ import {
   UpdateAppIdUriError,
   UpdatePermissionError,
   UpdateRedirectUriError,
+  GetAppError,
 } from "./errors";
 import { GraphClient } from "./graph";
 import { IAADPassword } from "./interfaces/IAADApplication";
@@ -91,7 +92,7 @@ export class AadAppClient {
   public static async updateAadAppRedirectUri(
     objectId: string,
     redirectUris: string[]
-  ) {
+  ): Promise<void> {
     try {
       const updateRedirectUriObject = AadAppClient.getAadUrlObject(
         redirectUris
@@ -126,7 +127,7 @@ export class AadAppClient {
   public static async updateAadAppIdUri(
     objectId: string,
     applicationIdUri: string
-  ) {
+  ): Promise<void> {
     try {
       const updateAppIdObject = AadAppClient.getAadApplicationIdObject(
         applicationIdUri
@@ -186,6 +187,31 @@ export class AadAppClient {
       throw ResultFactory.SystemError(
         UpdatePermissionError.name,
         UpdatePermissionError.message(),
+        error
+      );
+    }
+  }
+
+  public static async getAadApp(
+    objectId: string,
+    islocalDebug: boolean,
+  ): Promise<ProvisionConfig> {
+    try {
+      let getAppObject: IAADDefinition;
+      if (TokenProvider.audience === TokenAudience.AppStudio) {
+        getAppObject = await AppStudio.getAadApp(TokenProvider.token as string, objectId);
+      } else {
+        getAppObject = await GraphClient.getAadApp(TokenProvider.token as string, objectId);
+      }
+      const config = new ProvisionConfig(islocalDebug);
+      config.clientId = getAppObject.appId;
+      config.objectId = objectId;
+      config.oauth2PermissionScopeId = getAppObject.api?.oauth2PermissionScopes[0].id;
+      return config;
+    } catch (error) {
+      throw ResultFactory.SystemError(
+        GetAppError.name,
+        GetAppError.message(objectId),
         error
       );
     }

@@ -17,31 +17,24 @@ import * as fs from "fs-extra";
 
 export class LanguageStrategy {
     public static async getTemplateProjectZip(programmingLanguage: ProgrammingLanguage, groupName: string): Promise<AdmZip> {
+        const langKey = LanguageStrategy.convertToLangKey(programmingLanguage);
         try {
-            const zipUrl = await LanguageStrategy.getTemplateProjectZipUrl(programmingLanguage, groupName);
+            const zipUrl = await LanguageStrategy.getTemplateProjectZipUrl(langKey, groupName);
             const zipBuffer = await downloadByUrl(zipUrl);
             return new AdmZip(zipBuffer);
         } catch (e) {
             // ToDo: Add log for debug.
-            const fallbackFilePath = await LanguageStrategy.generateLocalFallbackFilePath(programmingLanguage, groupName);
+            const fallbackFilePath = await LanguageStrategy.generateLocalFallbackFilePath(langKey, groupName);
             return new AdmZip(fallbackFilePath);
         }
     }
 
-    public static async getTemplateProjectZipUrl(programmingLanguage: ProgrammingLanguage, groupName: string): Promise<string> {
+    public static async getTemplateProjectZipUrl(programmingLanguage: string, groupName: string): Promise<string> {
         const manifest: TemplateManifest = await TemplateManifest.fromUrl(
             TemplateProjectsConstants.NEWEST_MANIFEST_URL,
         );
 
         return manifest.getNewestTemplateUrl(programmingLanguage, groupName);
-    }
-
-    public static getConfigFiles(programmingLanguage: ProgrammingLanguage): string[] {
-        if (!languageStrategyContent.ConfigFiles?.[programmingLanguage]) {
-            throw new LanguageStrategyNotFoundException(programmingLanguage as string);
-        }
-
-        return languageStrategyContent.ConfigFiles[programmingLanguage];
     }
 
     public static getSiteEnvelope(
@@ -79,7 +72,7 @@ export class LanguageStrategy {
         return siteEnvelope;
     }
 
-    public static async buildAndZipPackage(programmingLanguage: ProgrammingLanguage, packDir: string): Promise<Buffer> {
+    public static async buildAndZipPackage(programmingLanguage: ProgrammingLanguage, packDir: string, unPackFlag?: boolean): Promise<Buffer> {
         if (programmingLanguage === ProgrammingLanguage.TypeScript) {
             //Typescript needs tsc build before deploy because of windows app server. other languages don"t need it.
             try {
@@ -94,10 +87,10 @@ export class LanguageStrategy {
             throw new LanguageStrategyNotFoundException(programmingLanguage);
         }
 
-        return utils.zipAFolder(packDir, languageStrategyContent.UnPackConfig[programmingLanguage]);
+        return utils.zipAFolder(packDir, unPackFlag ? languageStrategyContent.UnPackConfig[programmingLanguage] : []);
     }
 
-    private static async generateLocalFallbackFilePath(programmingLanguage: ProgrammingLanguage, groupName: string): Promise<string> {
+    private static async generateLocalFallbackFilePath(programmingLanguage: string, groupName: string): Promise<string> {
         const fxCorePath = path.join(__dirname, "..", "..", "..", "..");
         const targetFilePath = path.join(fxCorePath, "templates", "plugins", "resource", "bot", `${groupName}.${programmingLanguage}.${TemplateProjectsConstants.DEFAULT_SCENARIO_NAME}.zip`);
 
@@ -107,5 +100,19 @@ export class LanguageStrategy {
         }
 
         return targetFilePath;
+    }
+
+    private static convertToLangKey(programmingLanguage: ProgrammingLanguage): string {
+        switch (programmingLanguage) {
+            case ProgrammingLanguage.JavaScript: {
+                return "JavaScript";
+            }
+            case ProgrammingLanguage.TypeScript: {
+                return "TypeScript";
+            }
+            default: {
+                return "JavaScript";
+            }
+        }
     }
 }

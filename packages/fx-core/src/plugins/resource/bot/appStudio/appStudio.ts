@@ -1,4 +1,5 @@
 import { IAADApplication, IAADPassword } from "./interfaces/IAADApplication";
+import { IBotRegistration } from "./interfaces/IBotRegistration";
 
 import { AxiosInstance, default as axios } from "axios";
 import { ProvisionException } from "../exceptions";
@@ -73,4 +74,24 @@ export async function createAADAppPassword(aadAppObjectId?: string): Promise<IAA
     }
 
     return app;
+}
+
+export async function createBotRegistration(registration: IBotRegistration): Promise<void> {
+
+    if (!registration || !axiosInstance) {
+        throw new ProvisionException(CommonStrings.APPSTUDIO_BOT_REGISTRATION);
+    }
+
+    let response = undefined;
+    try {
+        response = await axios.post(`${baseUrl}/api/botframework`, registration);
+    } catch (e) {
+        throw new ProvisionException(CommonStrings.APPSTUDIO_BOT_REGISTRATION, e);
+    }
+
+    if (!response || !response.data) {
+        throw new ProvisionException(CommonStrings.APPSTUDIO_BOT_REGISTRATION);
+    }
+
+    return;
 }

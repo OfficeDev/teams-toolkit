@@ -1,19 +1,9 @@
 {
-    "ConfigFiles": {
-        "TypeScript": [
-            ".env",
-            ".vscode/launch.json"
-        ],
-        "JavaScript": [
-            ".env",
-            ".vscode/launch.json"
-        ]
-    },
     "UnPackConfig": {
-        "TypeScript": [
+        "typescript": [
             "node_modules"
         ],
-        "JavaScript": [
+        "javascript": [
             "node_modules"
         ]
     }

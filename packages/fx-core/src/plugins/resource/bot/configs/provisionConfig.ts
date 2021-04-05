@@ -4,8 +4,7 @@ import { ConfigValue, PluginContext } from "teamsfx-api";
 import { ServiceClientCredentials } from "@azure/ms-rest-js";
 
 import * as utils from "../utils/common";
-import { PluginSolution } from "../resources/strings";
-import { ContextConfigKeys } from "../constants";
+import { PluginSolution, PluginBot } from "../resources/strings";
 
 export class ProvisionConfig {
     public subscriptionId?: string;
@@ -44,37 +43,37 @@ export class ProvisionConfig {
             this.location = locationValue as string;
         }
 
-        const appServicePlanValue: ConfigValue = context.config.get(ContextConfigKeys.APP_SERVICE_PLAN);
+        const appServicePlanValue: ConfigValue = context.config.get(PluginBot.APP_SERVICE_PLAN);
         if (appServicePlanValue) {
             this.appServicePlan = appServicePlanValue as string;
         }
 
-        const siteNameValue: ConfigValue = context.config.get(ContextConfigKeys.SITE_NAME);
+        const siteNameValue: ConfigValue = context.config.get(PluginBot.SITE_NAME);
         if (siteNameValue) {
             this.siteName = siteNameValue as string;
         }
 
-        const siteEndpointValue: ConfigValue = context.config.get(ContextConfigKeys.SITE_ENDPOINT);
+        const siteEndpointValue: ConfigValue = context.config.get(PluginBot.SITE_ENDPOINT);
         if (siteEndpointValue) {
             this.siteEndpoint = siteEndpointValue as string;
         }
 
-        const provisionedValue: ConfigValue = context.config.get(ContextConfigKeys.PROVISIONED);
+        const provisionedValue: ConfigValue = context.config.get(PluginBot.PROVISIONED);
         if (provisionedValue) {
             this.provisioned = (provisionedValue as string) === "true";
         }
 
-        const botChannelRegNameValue: ConfigValue = context.config.get(ContextConfigKeys.BOT_CHANNEL_REGISTRATION);
+        const botChannelRegNameValue: ConfigValue = context.config.get(PluginBot.BOT_CHANNEL_REGISTRATION);
         if (botChannelRegNameValue) {
             this.botChannelRegName = botChannelRegNameValue as string;
         }
     }
 
     public saveConfigIntoContext(context: PluginContext): void {
-        utils.checkAndSaveConfig(context, ContextConfigKeys.APP_SERVICE_PLAN, this.appServicePlan);
-        utils.checkAndSaveConfig(context, ContextConfigKeys.BOT_CHANNEL_REGISTRATION, this.botChannelRegName);
-        utils.checkAndSaveConfig(context, ContextConfigKeys.SITE_NAME, this.siteName);
-        utils.checkAndSaveConfig(context, ContextConfigKeys.SITE_ENDPOINT, this.siteEndpoint);
-        utils.checkAndSaveConfig(context, ContextConfigKeys.PROVISIONED, this.provisioned ? "true" : "false");
+        utils.checkAndSaveConfig(context, PluginBot.APP_SERVICE_PLAN, this.appServicePlan);
+        utils.checkAndSaveConfig(context, PluginBot.BOT_CHANNEL_REGISTRATION, this.botChannelRegName);
+        utils.checkAndSaveConfig(context, PluginBot.SITE_NAME, this.siteName);
+        utils.checkAndSaveConfig(context, PluginBot.SITE_ENDPOINT, this.siteEndpoint);
+        utils.checkAndSaveConfig(context, PluginBot.PROVISIONED, this.provisioned ? "true" : "false");
     }
 }

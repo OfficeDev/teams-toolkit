@@ -7,13 +7,46 @@ import { AnswerValue, OptionItem, StaticOption } from "./question";
  
 
 export interface FxQuickPickOption {
+  /**
+   * title text of the QuickPick
+   */
   title: string;
+  /**
+   * select option list
+   */
   items: StaticOption;
+  /**
+   * whether is multiple select or single select
+   */
   canSelectMany: boolean;
+  /**
+   * The default selected `id` (for single select) or `id` array (for multiple select)
+   */
   defaultValue?: string | string[];
+
+  /**
+   * placeholder text
+   */
   placeholder?: string;
+
+  /**
+   * whether enable `go back` button
+   */
   backButton?: boolean;
+
+  /**
+   * whether the answer return the original `OptionItem` object array.
+   * if true: the answer is the original `OptionItem` object array; 
+   * if false: the answer is the `id` array of the `OptionItem`
+   * The default value is false
+   */
   returnObject?: boolean;
+
+  /**
+   * a callback function when the select changes
+   * @items: current selected `OptionItem` array
+   * @returns: the new selected `id` array
+   */
   onDidChangeSelection?: (items: OptionItem[]) => Promise<string[]>;
 }
 

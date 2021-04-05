@@ -18,9 +18,7 @@ import {
 import { getValidationFunction, RemoteFuncExecutor, validate } from "./validation";
 import { NumberInputQuestion, ReadonlyUserInputs, UserInputs } from "./question";
 import { InputResult, InputResultType, UserInterface } from "./ui";
-import { operationOptionsToRequestOptionsBase } from "@azure/core-http";
- 
-   
+    
 async function getRealValue(
   parentValue: unknown,
   defaultValue: unknown,

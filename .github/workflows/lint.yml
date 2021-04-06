@@ -32,6 +32,7 @@ jobs:
         run: |
           npm install
           npm run bootstrap
+
       - name: Lint code
         run: |
           npm run lint

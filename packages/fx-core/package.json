@@ -5,7 +5,7 @@
   "types": "build/core/index.d.ts",
   "scripts": {
     "lint:staged": "lint-staged",
-    "lint": "eslint \"**/*.ts\"",
+    "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
     "test": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/**/*.test.ts",
     "test:actions": "echo 'to be implemented'",
     "clean": "rm -rf build",

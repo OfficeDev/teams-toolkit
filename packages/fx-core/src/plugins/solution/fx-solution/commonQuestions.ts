@@ -158,7 +158,6 @@ async function askCommonQuestions(
     config: SolutionConfig,
     dialog?: Dialog,
     azureToken?: TokenCredentialsBase,
-    // eslint-disable-next-line @typescript-eslint/ban-types
     appstudioTokenJson?: object,
 ): Promise<Result<CommonQuestions, FxError>> {
     if (appstudioTokenJson === undefined) {

@@ -11,7 +11,10 @@ import {
   err,
   Result,
   ok,
+  TeamsAppManifest
 } from "teamsfx-api";
+import * as fs from "fs-extra";
+import * as path from "path";
 import { SPFxPluginImpl } from "./plugin";
 import { TelemetryEvent } from "./utils/constants";
 import { telemetryHelper } from "./utils/telemetry-helper";
@@ -105,6 +108,14 @@ export class SpfxPlugin implements Plugin {
     return await this.runWithErrorHandling(ctx, TelemetryEvent.Deploy, () =>
       this.spfxPluginImpl.deploy(ctx)
     );
+  }
+
+  public async getManifest(): Promise<TeamsAppManifest> {
+    const templateFolder = path.join(__dirname, "../../../../templates/plugins/resource/spfx");
+    const manifestFile = path.resolve(templateFolder, "./solution/manifest.json");
+    const manifestString = fs.readFileSync(manifestFile).toString();
+    const manifest: TeamsAppManifest = JSON.parse(manifestString);
+    return manifest;
   }
 
   private async runWithErrorHandling(

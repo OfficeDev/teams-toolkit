@@ -211,6 +211,7 @@ export class SPFxPluginImpl {
     );
 
     await configure(outputFolderPath, replaceMap);
+    await configure(`${ctx.root}/.mods/manifest.remote.json`, replaceMap);
     return ok(undefined);
   }
 

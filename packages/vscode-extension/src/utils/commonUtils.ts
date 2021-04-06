@@ -32,7 +32,6 @@ export async function sleep(ms: number) {
   await new Promise((resolve) => setTimeout(resolve, 0));
 }
 
-// https://github.com/OfficeDev/teamsfx-core/pull/456#discussion_r601059522
 export function isWindows() {
   return os.type() === "Windows_NT";
 }

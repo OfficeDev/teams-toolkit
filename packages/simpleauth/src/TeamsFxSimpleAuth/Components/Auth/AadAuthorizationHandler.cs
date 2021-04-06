@@ -59,7 +59,6 @@ namespace Microsoft.TeamsFxSimpleAuth.Components.Auth
 
             if (allowedAppIds != null && allowedAppIds.Contains(appId))
             {
-                //throw new AuthorizationRequestDeniedException($"The App Id: {appId} is not allowed to call this API");
                 context.Succeed(requirement);
             }
 

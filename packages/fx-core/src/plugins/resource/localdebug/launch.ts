@@ -325,7 +325,7 @@ export function generateCompounds(includeFrontend: boolean, includeBackend: bool
             },
             {
                 name: "Debug (Chrome)",
-                configurations: includeBackend ? ["Start and Attach to Frontend (Chrome)", "Start and Attach to Bot", "Start and Attach to Backend", ] : ["Start and Attach to Frontend (Edge)", "Start and Attach to Bot"],
+                configurations: includeBackend ? ["Start and Attach to Frontend (Chrome)", "Start and Attach to Bot", "Start and Attach to Backend", ] : ["Start and Attach to Frontend (Chrome)", "Start and Attach to Bot"],
                 preLaunchTask: "Pre Debug Check",
                 presentation: {
                     group: "all",

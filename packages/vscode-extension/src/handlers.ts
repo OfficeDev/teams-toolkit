@@ -615,18 +615,18 @@ function getHtmlForWebview() {
 
 export async function cmdHdlLoadTreeView(context: ExtensionContext) {
   const treeViewProvider = CommandsTreeViewProvider.getInstance();
-  const provider = window.registerTreeDataProvider("tamsfx", treeViewProvider);
+  const provider = window.registerTreeDataProvider("teamsfx", treeViewProvider);
   context.subscriptions.push(provider);
 
   // Register SignOut tree view command
-  commands.registerCommand("tamsfx-extension.signOut", async (node: TreeViewCommand) => {
+  commands.registerCommand("teamsfx-extension.signOut", async (node: TreeViewCommand) => {
     switch (node.contextValue) {
       case "signedinM365": {
         const result = await AppStudioTokenInstance.signout();
         if (result) {
           await CommandsTreeViewProvider.getInstance().refresh([
             {
-              commandId: "tamsfx-extension.signinM365",
+              commandId: "teamsfx-extension.signinM365",
               label: "Sign In M365...",
               contextValue: "signinM365"
             }

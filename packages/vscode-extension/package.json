@@ -294,7 +294,7 @@
     "check-format": "prettier --list-different --config .prettierrc.json --ignore-path .prettierignore \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,json}\"",
     "format": "prettier --write --config .prettierrc.json --ignore-path .prettierignore \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,json}\"",
     "lint:fix": "eslint --config .eslintrc.json package.json src test --ext .ts --fix --fix-type [problem,suggestion]",
-    "lint": "eslint --config .eslintrc.json package.json src test --ext .ts"
+    "lint": "eslint \"**/*.ts\""
   },
   "devDependencies": {
     "@shared/eslint-config": "^0.0.0",

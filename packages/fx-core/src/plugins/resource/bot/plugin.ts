@@ -143,7 +143,7 @@ export class TeamsBotImpl {
             }
 
             const entry = zipContent.getEntry(fileName);
-            let entryContent = entry.getData().toString();
+            let entryContent = entry!.getData().toString();
 
             if (this.config.scaffold.wayToRegisterBot === WayToRegisterBot.ReuseExisting) {
                 entryContent = entryContent.replace(ScaffoldPlaceholders.BOT_ID, this.config.scaffold.botId!);
@@ -153,7 +153,7 @@ export class TeamsBotImpl {
                 );
             }
 
-            entry.setData(Buffer.from(entryContent, CommonStrings.DEFAULT_FILE_ENCODING));
+            entry!.setData(Buffer.from(entryContent, CommonStrings.DEFAULT_FILE_ENCODING));
         });
 
         await handler?.next(ProgressBarConstants.SCAFFOLD_STEP_UNZIP);

@@ -253,7 +253,7 @@ export class FunctionDeploy {
             const content = await fs.readFile(filePath);
             zip.addFile(zipPath, content);
             if (stats) {
-                (zip.getEntry(zipPath).header as any).time = stats.mtime;
+                (zip.getEntry(zipPath)!.header as any).time = stats.mtime;
             }
         };
 

@@ -287,7 +287,7 @@ export async function traverse(
         parentMap.set(child, curr);
         if (child.condition) {
           const realValue = child.condition.target
-            ? getRealValue(currValue, child.condition.target)
+            ? getRealValue(currValue, child.condition.target, answerMap)
             : currValue;
           const validRes = await validate(child.condition, realValue, answerMap);
           if (validRes !== undefined) {

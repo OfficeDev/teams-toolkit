@@ -1,10 +1,20 @@
 {
     "compilerOptions": {
-        "outDir": "out",
-        "target": "es2017", /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017','ES2018' or 'ESNEXT'. */
-        "module": "commonjs", /* Specify module code generation: 'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', or 'ESNext'. */
-        "declaration": true, /* Generates corresponding '.d.ts' file. */
-        "strict": true, /* Enable all strict type-checking options. */
-        "esModuleInterop": true /* Enables emit interoperability between CommonJS and ES Modules via creation of namespace objects for all imports. Implies 'allowSyntheticDefaultImports'. */
-    }
-}
+      "module": "commonjs",
+      "target": "es6",
+      "outDir": "out",
+      "lib": ["es6", "dom", "esnext.asynciterable"],
+      "sourceMap": true,
+      "rootDir": ".",
+      "resolveJsonModule": true,
+      "skipLibCheck": true,
+      "strict": true /* enable all strict type-checking options */,
+      "jsx": "react"
+      /* Additional Checks */
+      // "noImplicitReturns": true, /* Report error when not all code paths in function return a value. */
+      // "noFallthroughCasesInSwitch": true, /* Report errors for fallthrough cases in switch statement. */
+      // "noUnusedParameters": true,  /* Report errors on unused parameters. */
+    },
+    "exclude": ["node_modules", ".vscode-test", "test-folder"]
+  }
+  

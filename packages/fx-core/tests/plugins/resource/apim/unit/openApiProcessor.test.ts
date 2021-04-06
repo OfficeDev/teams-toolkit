@@ -124,60 +124,75 @@ describe("OpenApiProcessor", () => {
             basePath?: string;
             expectedResult: { [key: string]: any };
         }[] = [
-            {
-                message: "v2 https://test-host/",
-                schemaVersion: OpenApiSchemaVersion.v2,
-                endpoint: "https://test-host/",
-                expectedResult: { schemes: ["https"], host: "test-host", basePath: "/api" },
-            },
-            {
-                message: "v2 http://test-host",
-                schemaVersion: OpenApiSchemaVersion.v2,
-                endpoint: "http://test-host",
-                expectedResult: { schemes: ["http"], host: "test-host", basePath: "/api" },
-            },
-            {
-                message: "v2 http://test-host with base path '/basepath'",
-                schemaVersion: OpenApiSchemaVersion.v2,
-                endpoint: "http://test-host",
-                basePath: "/basepath",
-                expectedResult: { schemes: ["http"], host: "test-host", basePath: "/basepath" },
-            },
-            {
-                message: "v2 http://test-host with base path 'basepath'",
-                schemaVersion: OpenApiSchemaVersion.v2,
-                endpoint: "http://test-host",
-                basePath: "basepath",
-                expectedResult: { schemes: ["http"], host: "test-host", basePath: "/basepath" },
-            },
-
-            {
-                message: "v3 https://test-host",
-                schemaVersion: OpenApiSchemaVersion.v3,
-                endpoint: "https://test-host",
-                expectedResult: { servers: [{ url: "https://test-host/api" }] },
-            },
-            {
-                message: "v3 https://test-host/",
-                schemaVersion: OpenApiSchemaVersion.v3,
-                endpoint: "https://test-host/",
-                expectedResult: { servers: [{ url: "https://test-host/api" }] },
-            },
-            {
-                message: "v3 https://test-host/ with base path '/basepath'",
-                schemaVersion: OpenApiSchemaVersion.v3,
-                endpoint: "https://test-host/",
-                basePath: "/basepath",
-                expectedResult: { servers: [{ url: "https://test-host/basepath" }] },
-            },
-            {
-                message: "v3 https://test-host/ with base path 'basepath'",
-                schemaVersion: OpenApiSchemaVersion.v3,
-                endpoint: "https://test-host/",
-                basePath: "basepath",
-                expectedResult: { servers: [{ url: "https://test-host/basepath" }] },
-            },
-        ];
+                {
+                    message: "v2 https://test-host/",
+                    schemaVersion: OpenApiSchemaVersion.v2,
+                    endpoint: "https://test-host/",
+                    expectedResult: {
+                        schemes: ["https"],
+                        host: "test-host",
+                        basePath: "/api",
+                    },
+                },
+                {
+                    message: "v2 http://test-host",
+                    schemaVersion: OpenApiSchemaVersion.v2,
+                    endpoint: "http://test-host",
+                    expectedResult: {
+                        schemes: ["http"],
+                        host: "test-host",
+                        basePath: "/api",
+                    },
+                },
+                {
+                    message: "v2 http://test-host with base path '/basepath'",
+                    schemaVersion: OpenApiSchemaVersion.v2,
+                    endpoint: "http://test-host",
+                    basePath: "/basepath",
+                    expectedResult: {
+                        schemes: ["http"],
+                        host: "test-host",
+                        basePath: "/basepath",
+                    },
+                },
+                {
+                    message: "v2 http://test-host with base path 'basepath'",
+                    schemaVersion: OpenApiSchemaVersion.v2,
+                    endpoint: "http://test-host",
+                    basePath: "basepath",
+                    expectedResult: {
+                        schemes: ["http"],
+                        host: "test-host",
+                        basePath: "/basepath",
+                    },
+                },
+                {
+                    message: "v3 https://test-host",
+                    schemaVersion: OpenApiSchemaVersion.v3,
+                    endpoint: "https://test-host",
+                    expectedResult: { servers: [{ url: "https://test-host/api" }] },
+                },
+                {
+                    message: "v3 https://test-host/",
+                    schemaVersion: OpenApiSchemaVersion.v3,
+                    endpoint: "https://test-host/",
+                    expectedResult: { servers: [{ url: "https://test-host/api" }] },
+                },
+                {
+                    message: "v3 https://test-host/ with base path '/basepath'",
+                    schemaVersion: OpenApiSchemaVersion.v3,
+                    endpoint: "https://test-host/",
+                    basePath: "/basepath",
+                    expectedResult: { servers: [{ url: "https://test-host/basepath" }] },
+                },
+                {
+                    message: "v3 https://test-host/ with base path 'basepath'",
+                    schemaVersion: OpenApiSchemaVersion.v3,
+                    endpoint: "https://test-host/",
+                    basePath: "basepath",
+                    expectedResult: { servers: [{ url: "https://test-host/basepath" }] },
+                },
+            ];
 
         testInput.forEach((input) => {
             it(`[valid endpoint] ${input.message}`, async () => {
@@ -205,31 +220,31 @@ describe("OpenApiProcessor", () => {
             endpoint: string;
             error: string;
         }[] = [
-            {
-                message: "v2 test-host",
-                schemaVersion: OpenApiSchemaVersion.v2,
-                endpoint: "test-host",
-                error: InvalidFunctionEndpoint.message(),
-            },
-            {
-                message: "v3 test-host",
-                schemaVersion: OpenApiSchemaVersion.v3,
-                endpoint: "test-host",
-                error: InvalidFunctionEndpoint.message(),
-            },
-            {
-                message: "v2 ftp://test-host",
-                schemaVersion: OpenApiSchemaVersion.v2,
-                endpoint: "ftp://test-host",
-                error: InvalidFunctionEndpoint.message(),
-            },
-            {
-                message: "v3 ftp://test-host",
-                schemaVersion: OpenApiSchemaVersion.v3,
-                endpoint: "ftp://test-host",
-                error: InvalidFunctionEndpoint.message(),
-            },
-        ];
+                {
+                    message: "v2 test-host",
+                    schemaVersion: OpenApiSchemaVersion.v2,
+                    endpoint: "test-host",
+                    error: InvalidFunctionEndpoint.message(),
+                },
+                {
+                    message: "v3 test-host",
+                    schemaVersion: OpenApiSchemaVersion.v3,
+                    endpoint: "test-host",
+                    error: InvalidFunctionEndpoint.message(),
+                },
+                {
+                    message: "v2 ftp://test-host",
+                    schemaVersion: OpenApiSchemaVersion.v2,
+                    endpoint: "ftp://test-host",
+                    error: InvalidFunctionEndpoint.message(),
+                },
+                {
+                    message: "v3 ftp://test-host",
+                    schemaVersion: OpenApiSchemaVersion.v3,
+                    endpoint: "ftp://test-host",
+                    error: InvalidFunctionEndpoint.message(),
+                },
+            ];
 
         invalidInput.forEach((input) => {
             it(`[invalid endpoint] ${input.message}`, async () => {
@@ -279,29 +294,37 @@ describe("OpenApiProcessor", () => {
             fileExtensions?: string[];
             output: string[];
         }[] = [
-            {
-                message: "list all the files under folder",
-                output: ["a/a1.json", "a/a2.txt", "a/a3", "a/a4.yaml", "b/b1.json", "b/b2.txt", "b/b3", "b/b4.yaml"],
-            },
-            {
-                message: "list the files not in folder 'a'",
-                excludeFolders: ["a"],
-                output: ["b/b1.json", "b/b2.txt", "b/b3", "b/b4.yaml"],
-            },
-            { message: "list the files not in folder 'a' & 'b'", excludeFolders: ["a", "b"], output: [] },
-            { message: "list all the json files", fileExtensions: ["json"], output: ["a/a1.json", "b/b1.json"] },
-            {
-                message: "list all the json & yaml files",
-                fileExtensions: ["json", "yaml"],
-                output: ["a/a1.json", "b/b1.json", "a/a4.yaml", "b/b4.yaml"],
-            },
-            {
-                message: "list all the json & yaml files exclude folder 'a'",
-                excludeFolders: ["a"],
-                fileExtensions: ["json", "yaml"],
-                output: ["b/b1.json", "b/b4.yaml"],
-            },
-        ];
+                {
+                    message: "list all the files under folder",
+                    output: ["a/a1.json", "a/a2.txt", "a/a3", "a/a4.yaml", "b/b1.json", "b/b2.txt", "b/b3", "b/b4.yaml"],
+                },
+                {
+                    message: "list the files not in folder 'a'",
+                    excludeFolders: ["a"],
+                    output: ["b/b1.json", "b/b2.txt", "b/b3", "b/b4.yaml"],
+                },
+                {
+                    message: "list the files not in folder 'a' & 'b'",
+                    excludeFolders: ["a", "b"],
+                    output: [],
+                },
+                {
+                    message: "list all the json files",
+                    fileExtensions: ["json"],
+                    output: ["a/a1.json", "b/b1.json"],
+                },
+                {
+                    message: "list all the json & yaml files",
+                    fileExtensions: ["json", "yaml"],
+                    output: ["a/a1.json", "b/b1.json", "a/a4.yaml", "b/b4.yaml"],
+                },
+                {
+                    message: "list all the json & yaml files exclude folder 'a'",
+                    excludeFolders: ["a"],
+                    fileExtensions: ["json", "yaml"],
+                    output: ["b/b1.json", "b/b4.yaml"],
+                },
+            ];
         testInput.forEach((data) => {
             it(data.message, async () => {
                 const result = await openApiProcessor.listAllFiles(

@@ -7,6 +7,10 @@ export class ProgressBar {
     private progressBarMap = new Map<ProgressStep, IProgressHandler>();
 
     public async init(step: ProgressStep, ctx: PluginContext): Promise<void> {
+        if (step === ProgressStep.None) {
+            return;
+        }
+
         await this.progressBarMap.get(step)?.end();
 
         const progressBar = ctx.dialog?.createProgressBar(step, Object.keys(ProgressMessages[step]).length);
@@ -18,10 +22,18 @@ export class ProgressBar {
     }
 
     public async next(step: ProgressStep, detail: string): Promise<void> {
+        if (step === ProgressStep.None) {
+            return;
+        }
+
         await this.progressBarMap.get(step)?.next(detail);
     }
 
     public async close(step: ProgressStep): Promise<void> {
+        if (step === ProgressStep.None) {
+            return;
+        }
+        
         await this.progressBarMap.get(step)?.end();
     }
 

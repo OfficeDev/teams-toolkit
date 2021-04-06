@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-
+/* eslint-disable @typescript-eslint/ban-types */
 /**
  * Void is used to construct Result<Void, FxError>.
  * e.g. return ok(Void);

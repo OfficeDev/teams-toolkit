@@ -45,32 +45,31 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
         );
     }
     */
-    const launchConfigurations: Record<string, unknown>[] = [];
+    const launchConfigurations: Record<string, unknown>[] = [
+        {
+            name: "Launch Remote (Edge)",
+            type: LaunchBrowser.edge,
+            request: "launch",
+            url: "https://teams.microsoft.com/_#/l/app/${teamsAppId}?installAppPackage=true",
+            presentation: {
+                group: "remote",
+                order: 1,
+            },
+        },
+        {
+            name: "Launch Remote (Chrome)",
+            type: LaunchBrowser.chrome,
+            request: "launch",
+            url: "https://teams.microsoft.com/_#/l/app/${teamsAppId}?installAppPackage=true",
+            presentation: {
+                group: "remote",
+                order: 2,
+            },
+        },
+    ];
 
     // Tab only
     if (includeFrontend && !includeBot) {
-        launchConfigurations.push(
-            {
-                name: "Launch Remote (Edge)",
-                type: LaunchBrowser.edge,
-                request: "launch",
-                url: "https://teams.microsoft.com/_#/l/app/${teamsAppId}?installAppPackage=true",
-                presentation: {
-                    group: "remote",
-                    order: 1,
-                },
-            },
-            {
-                name: "Launch Remote (Chrome)",
-                type: LaunchBrowser.chrome,
-                request: "launch",
-                url: "https://teams.microsoft.com/_#/l/app/${teamsAppId}?installAppPackage=true",
-                presentation: {
-                    group: "remote",
-                    order: 2,
-                },
-            },
-        );
         // hidden configurations
         if (includeBackend) {
             launchConfigurations.push(
@@ -148,30 +147,11 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
     if (!includeFrontend && includeBot) {
         launchConfigurations.push(
             {
-                name: "Launch Remote (Edge)",
-                type: LaunchBrowser.edge,
-                request: "launch",
-                url: "https://teams.microsoft.com/l/chat/0/0?users=28:{botId}",
-                presentation: {
-                    group: "remote",
-                    order: 1,
-                },
-            },
-            {
-                name: "Launch Remote (Chrome)",
-                type: LaunchBrowser.chrome,
-                request: "launch",
-                url: "https://teams.microsoft.com/l/chat/0/0?users=28:{botId}",
-                presentation: {
-                    group: "remote",
-                    order: 2,
-                },
-            },
-            {
                 name: "Lauch Bot (Edge)",
                 type: LaunchBrowser.edge,
                 request: "launch",
-                url: "https://teams.microsoft.com/l/chat/0/0?users=28:{localBotId}",
+                url: "https://teams.microsoft.com/_#/l/app/${localTeamsAppId}?installAppPackage=true",
+                preLaunchTask: `${ProductName}: auth start`,
                 postDebugTask: "Stop All Services",
                 cascadeTerminateToConfigurations: ["Start and Attach to Bot"],
                 presentation: {
@@ -183,7 +163,7 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
                 name: "Lauch Bot (Chrome)",
                 type: LaunchBrowser.chrome,
                 request: "launch",
-                url: "https://teams.microsoft.com/l/chat/0/0?users=28:{localBotId}",
+                url: "https://teams.microsoft.com/_#/l/app/${localTeamsAppId}?installAppPackage=true",
                 postDebugTask: "Stop All Services",
                 cascadeTerminateToConfigurations: ["Start and Attach to Bot"],
                 presentation: {
@@ -208,7 +188,64 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
 
     // Tab and bot
     if (includeFrontend && includeBot) {
-        // TODO
+        launchConfigurations.push(
+            {
+                name: "Start and Attach to Frontend (Edge)",
+                type: LaunchBrowser.edge,
+                request: "launch",
+                url: "https://teams.microsoft.com/_#/l/app/${localTeamsAppId}?installAppPackage=true",
+                preLaunchTask: "Start Frontend",
+                postDebugTask: "Stop All Services",
+                cascadeTerminateToConfigurations: includeBackend ? ["Start and Attach to Bot", "Start and Attach to Backend"]: ["Start and Attach to Bot"],
+                presentation: {
+                    group: "all",
+                    hidden: true,
+                },
+            },
+            {
+                name: "Start and Attach to Frontend (Chrome)",
+                type: LaunchBrowser.chrome,
+                request: "launch",
+                url: "https://teams.microsoft.com/_#/l/app/${localTeamsAppId}?installAppPackage=true",
+                preLaunchTask: "Start Frontend",
+                postDebugTask: "Stop All Services",
+                cascadeTerminateToConfigurations: includeBackend ? ["Start and Attach to Bot", "Start and Attach to Backend"]: ["Start and Attach to Bot"],
+                presentation: {
+                    group: "all",
+                    hidden: true,
+                },
+            },
+            {
+                name: "Start and Attach to Bot",
+                type: "node",
+                request: "attach",
+                port: 9239,
+                restart: true,
+                preLaunchTask: `${ProductName}: bot start`,
+                presentation: {
+                    group: "all",
+                    hidden: true,
+                },
+                internalConsoleOptions: "neverOpen",
+            }
+        );
+        if (includeBackend) {
+            launchConfigurations.push(
+                {
+                    name: "Start and Attach to Backend",
+                    type: "node",
+                    request: "attach",
+                    port: 9229,
+                    restart: true,
+                    preLaunchTask: `${ProductName}: backend start`,
+                    presentation: {
+                        group: "all",
+                        hidden: true,
+                    },
+                    internalConsoleOptions: "neverOpen",
+                },
+            );
+        }
     }
 
     return launchConfigurations;
@@ -275,7 +312,28 @@ export function generateCompounds(includeFrontend: boolean, includeBackend: bool
 
     // Tab and bot
     if (includeFrontend && includeBot) {
-        // TODO
+        launchCompounds.push(
+            {
+                name: "Debug (Edge)",
+                configurations: includeBackend ? ["Start and Attach to Frontend (Edge)", "Start and Attach to Bot", "Start and Attach to Backend", ] : ["Start and Attach to Frontend (Edge)", "Start and Attach to Bot"],
+                preLaunchTask: "Pre Debug Check",
+                presentation: {
+                    group: "all",
+                    order: 2,
+                },
+                stopAll: true,
+            },
+            {
+                name: "Debug (Chrome)",
+                configurations: includeBackend ? ["Start and Attach to Frontend (Chrome)", "Start and Attach to Bot", "Start and Attach to Backend", ] : ["Start and Attach to Frontend (Edge)", "Start and Attach to Bot"],
+                preLaunchTask: "Pre Debug Check",
+                presentation: {
+                    group: "all",
+                    order: 2,
+                },
+                stopAll: true,
+            },
+        );
     }
 
     /* No attach until CLI ready

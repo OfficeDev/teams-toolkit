@@ -24,28 +24,28 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
             type: "shell",
             command: "echo ${input:terminate}",
         },
-        {
-            label: "Pre Debug Check",
-            dependsOn: [
-                "dependency check",
-                "prepare dev env",
-            ],
-            dependsOrder: "sequence",
-        },
-        {
-            label: "dependency check",
-            type: "shell",
-            command: "echo ${command:vscode-teamsfx.validate-dependencies}",
-        },
     ];
 
     // Tab only
     if (includeFrontend && !includeBot) {
         tasks.push(
             {
+                label: "Pre Debug Check",
+                dependsOn: [
+                    "dependency check",
+                    "prepare dev env",
+                ],
+                dependsOrder: "sequence",
+            },
+            {
                 label: "Start Frontend",
                 dependsOn: [`${ProductName}: frontend start`, `${ProductName}: auth start`],
                 dependsOrder: "parallel",
+            },
+            {
+                label: "dependency check",
+                type: "shell",
+                command: "echo ${command:vscode-teamsfx.validate-dependencies}",
             },
             {
                 label: "prepare dev env",
@@ -95,9 +95,18 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
     if (!includeFrontend && includeBot) {
         tasks.push(
             {
-                label: "prepare dev env",
-                dependsOn: ["start ngrok", "prepare local environment"],
+                label: "Pre Debug Check",
+                dependsOn: [
+                    "dependency check",
+                    "start ngrok",
+                    "prepare dev env",
+                ],
                 dependsOrder: "sequence",
+            },
+            {
+                label: "dependency check",
+                type: "shell",
+                command: "echo ${command:vscode-teamsfx.validate-dependencies}",
             },
             {
                 label: "start ngrok",
@@ -108,6 +117,10 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
                     panel: "new",
                 },
                 dependsOn: ["bot npm install"],
+            },
+            {
+                label: "prepare dev env",
+                dependsOn: ["prepare local environment"],
             },
             {
                 label: "bot npm install",
@@ -127,7 +140,87 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
 
     // Tab and bot
     if (includeFrontend && includeBot) {
-        // TODO
+        tasks.push(
+            {
+                label: "Pre Debug Check",
+                dependsOn: [
+                    "dependency check",
+                    "start ngrok",
+                    "prepare dev env",
+                ],
+                dependsOrder: "sequence",
+            },
+            {
+                label: "Start Frontend",
+                dependsOn: [`${ProductName}: frontend start`, `${ProductName}: auth start`],
+                dependsOrder: "parallel",
+            },
+            {
+                label: "dependency check",
+                type: "shell",
+                command: "echo ${command:vscode-teamsfx.validate-dependencies}",
+            },
+            {
+                label: "start ngrok",
+                type: ProductName,
+                command: "ngrok start",
+                isBackground: true,
+                presentation: {
+                    panel: "new",
+                },
+                dependsOn: ["bot npm install"],
+            },
+            {
+                label: "prepare dev env",
+                dependsOn: includeBackend
+                    ? ["prepare local environment", "backend npm install", "frontend npm install"]
+                    : ["prepare local environment", "frontend npm install"],
+                dependsOrder: "parallel",
+            },
+            {
+                label: "bot npm install",
+                type: "shell",
+                command: "npm install",
+                options: {
+                    cwd: "${workspaceFolder}/bot",
+                },
+            },
+            {
+                label: "prepare local environment",
+                type: "shell",
+                command: "echo ${command:vscode-teamsfx.pre-debug-check}",
+            },
+            {
+                label: "frontend npm install",
+                type: "shell",
+                command: "npm install",
+                options: {
+                    cwd: "${workspaceFolder}/tabs",
+                },
+            },
+        );
+
+        if (includeBackend) {
+            tasks.push(
+                {
+                    label: "backend npm install",
+                    type: "shell",
+                    command: "npm install",
+                    options: {
+                        cwd: "${workspaceFolder}/api",
+                    },
+                    presentation: {
+                        reveal: "silent",
+                    },
+                    dependsOn: "backend extensions install",
+                },
+                {
+                    label: "backend extensions install",
+                    type: "shell",
+                    command: "echo ${command:vscode-teamsfx.backend-extensions-install}",
+                },
+            );
+        }
     }
 
     return tasks;

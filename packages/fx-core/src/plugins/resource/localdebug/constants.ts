@@ -30,6 +30,7 @@ export class LocalDebugConfigKeys {
     public static readonly LocalFunctionEndpoint: string = "localFunctionEndpoint";
 
     public static readonly LocalBotEndpoint: string = "localBotEndpoint";
+    public static readonly LocalBotDomain: string = "localBotDomain";
 }
 
 export class AadPlugin {
@@ -111,6 +112,12 @@ export const LocalEnvCertKeys = Object.freeze({
 });
 
 export const LocalEnvBotKeys = Object.freeze({
-    BotId: "BOT_BotId",
-    BotPassword: "BOT_BotPassword",
+    BotId: "BOT_BOT_ID",
+    BotPassword: "BOT_BOT_PASSWORD",
+    ClientId: "BOT_M365_CLIENT_ID",
+    ClientSecret: "BOT_M365_CLIENT_SECRET",
+    TenantID: "BOT_TENANT_ID",
+    OauthAuthority: "BOT_M365_AUTHORITY_HOST",
+    LoginUrl: "BOT_INITIATE_LOGIN_ENDPOINT",
+    IdentifierUri: "BOT_M365_APPLICATION_ID_URI",
 });

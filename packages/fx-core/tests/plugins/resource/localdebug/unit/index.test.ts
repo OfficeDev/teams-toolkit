@@ -122,11 +122,71 @@ describe(LocalDebugPluginInfo.pluginName, ()=> {
 
             //assert output local.env
             const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
-            chai.assert.equal(Object.keys(localEnvs).length, 9);
+            chai.assert.equal(Object.keys(localEnvs).length, 15);
         });
 
-        it("happy path: tab and bot", async () => {
-            // TODO
+        it("happy path: tab with function and bot", async () => {
+            pluginContext.platform = Platform.VSCode;
+            pluginContext.configOfOtherPlugins = new Map([
+                ["solution", new Map([
+                    ["selectedPlugins", ["teamsfx-resource-aad-app-for-teams", "teamsfx-resource-frontend-hosting", "teamsfx-resource-function", "teamsfx-resource-teamsbot"]]
+                ])]]);
+            const result = await plugin.scaffold(pluginContext);
+            chai.assert.isTrue(result.isOk());
+
+            //assert output launch.json
+            const launch = fs.readJSONSync(expectedLaunchFile);
+            const configurations:[] = launch["configurations"];
+            const compounds:[] = launch["compounds"];
+            chai.assert.equal(configurations.length, 6);
+            chai.assert.equal(compounds.length, 2);
+
+            //assert output tasks.json
+            const tasksAll = fs.readJSONSync(expectedTasksFile);
+            const tasks:[] = tasksAll["tasks"];
+            const tasksInput:[] = tasksAll["inputs"];
+            chai.assert.equal(tasks.length, 11);
+            chai.assert.equal(tasksInput.length, 1);
+
+            //assert output settings.json
+            const settings = fs.readJSONSync(expectedSettingsFile);
+            chai.assert.isTrue(Object.keys(settings).some(key => key === "azureFunctions.stopFuncTaskPostDebug"));
+            chai.assert.equal(settings["azureFunctions.stopFuncTaskPostDebug"], false);
+
+            //assert output local.env
+            const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
+            chai.assert.equal(Object.keys(localEnvs).length, 31);
+        });
+
+        it("happy path: tab without function and bot", async () => {
+            pluginContext.platform = Platform.VSCode;
+            pluginContext.configOfOtherPlugins = new Map([
+                ["solution", new Map([
+                    ["selectedPlugins", ["teamsfx-resource-aad-app-for-teams", "teamsfx-resource-frontend-hosting", "teamsfx-resource-teamsbot"]]
+                ])]]);
+            const result = await plugin.scaffold(pluginContext);
+            chai.assert.isTrue(result.isOk());
+
+            //assert output launch.json
+            const launch = fs.readJSONSync(expectedLaunchFile);
+            const configurations:[] = launch["configurations"];
+            const compounds:[] = launch["compounds"];
+            chai.assert.equal(configurations.length, 5);
+            chai.assert.equal(compounds.length, 2);
+
+            //assert output tasks.json
+            const tasksAll = fs.readJSONSync(expectedTasksFile);
+            const tasks:[] = tasksAll["tasks"];
+            const tasksInput:[] = tasksAll["inputs"];
+            chai.assert.equal(tasks.length, 9);
+            chai.assert.equal(tasksInput.length, 1);
+
+            //no settings.json
+            chai.assert.isFalse(fs.existsSync(expectedSettingsFile));
+
+            //assert output local.env
+            const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
+            chai.assert.equal(Object.keys(localEnvs).length, 21);
         });
 
         it("spfx", async () => {

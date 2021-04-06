@@ -1130,16 +1130,27 @@ export class TeamsAppSolution implements Solution {
                     returnUserError(new Error("No resource to deploy"), "Solution", SolutionError.NoResourceToDeploy),
                 );
             }
-            const options: OptionItem[] = res.value
-                .filter((plugin) => !!plugin.deploy)
-                .map((plugin) => {
-                    const item: OptionItem = { label: plugin.displayName, data: plugin.name };
-                    return item;
-                });
+            const pluginsToDeploy = res.value.filter((plugin) => !!plugin.deploy);
+
+            const options: OptionItem[] = pluginsToDeploy.map((plugin) => {
+                const item: OptionItem = { label: plugin.displayName, data: plugin.name };
+                return item;
+            });
             const selectQuestion = DeployPluginSelectQuestion;
             selectQuestion.option = options;
             const pluginSelection = new QTreeNode(selectQuestion);
-            node = pluginSelection;
+            node.addChild(pluginSelection);
+
+            for (const plugin of pluginsToDeploy) {
+                if (plugin.getQuestions) {
+                    const pluginCtx = getPluginContext(ctx, plugin.name, this.manifest);
+                    const getQuestionRes = await plugin.getQuestions(stage, pluginCtx);
+                    if (getQuestionRes.isErr()) return getQuestionRes;
+                    const subnode = getQuestionRes.value as QTreeNode;
+                    subnode.condition = { equals: plugin.displayName };
+                    if (subnode.data) pluginSelection.addChild(subnode);
+                }
+            }
         }
         return ok(node);
     }

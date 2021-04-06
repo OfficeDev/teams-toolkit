@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-
-namespace Microsoft.TeamsFxSimpleAuth.Models
+﻿namespace Microsoft.TeamsFxSimpleAuth.Models
 {
     public class PostTokenRequestBody
     {

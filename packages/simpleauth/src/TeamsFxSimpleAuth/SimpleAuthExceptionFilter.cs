@@ -1,28 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.TeamsFxSimpleAuth.Exceptions;
-using Microsoft.Extensions.Logging;
-using System.Web;
+﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.TeamsFxSimpleAuth.Exceptions;
+using System;
+using System.Collections.Generic;
 using System.Net;
+using System.Web;
 
 namespace Microsoft.TeamsFxSimpleAuth
 {
     public class SimpleAuthExceptionFilter : ExceptionFilterAttribute
     {
         private ILogger<SimpleAuthExceptionFilter> _logger;
-        private ProblemDetailsFactory _problemDetailsFactory;
+        private bool _isDevelopment;
         private const string ProblemTypeUriPrefix = "";
         private const string UnhandledExceptionProblemType = ProblemTypeUriPrefix + "UnhandledException";
         private const string UnhandledErrorHandlingExceptionProblemType = ProblemTypeUriPrefix + "UnhandledErrorHandlingException";
 
-        public SimpleAuthExceptionFilter(ILogger<SimpleAuthExceptionFilter> logger, ProblemDetailsFactory problemDetailsFactory)
+        public SimpleAuthExceptionFilter(ILogger<SimpleAuthExceptionFilter> logger, IWebHostEnvironment env)
         {
             _logger = logger;
+            _isDevelopment = env.IsDevelopment();
         }
 
         public override void OnException(ExceptionContext context)
@@ -52,6 +52,12 @@ namespace Microsoft.TeamsFxSimpleAuth
                         Status = (int)exception.Status,
                         Detail = exception.Message
                     };
+
+                    if(_isDevelopment)
+                    {
+                        problemDetails.Extensions.TryAdd("Exception", exception.ToString());
+                    }
+
                     context.Result = new ObjectResult(problemDetails)
                     {
                         StatusCode = problemDetails.Status
@@ -68,6 +74,12 @@ namespace Microsoft.TeamsFxSimpleAuth
                         Status = (int)HttpStatusCode.InternalServerError,
                         Detail = context.Exception.Message
                     };
+
+                    if (_isDevelopment)
+                    {
+                        problemDetails.Extensions.TryAdd("Exception", context.Exception.ToString());
+                    }
+
                     context.Result = new ObjectResult(problemDetails)
                     {
                         StatusCode = problemDetails.Status

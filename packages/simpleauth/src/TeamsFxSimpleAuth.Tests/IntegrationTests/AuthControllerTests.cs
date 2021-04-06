@@ -74,6 +74,8 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
 
         private async Task<HttpResponseWithBody<T>> PostToAuthTokenApi<T>(HttpClient client, StringContent body)
         {
+
+            TestContext.WriteLine($"Making request to Simple Auth with body: {await body.ReadAsStringAsync()}");
             HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, TokenApiRoute)
             {
                 Content = body
@@ -182,31 +184,31 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             Assert.AreEqual("Bearer error=\"invalid_token\", error_description=\"The signature is invalid\"", result.Response.Headers.GetValues("WWW-Authenticate").FirstOrDefault());
         }
 
-        //[Test, Category("P1"), Parallelizable]
-        //public async Task PostToken_WithExpiredAuthorizationToken_Return401()
-        //{
-        //    // Arrange
-        //    var ssoToken = await Utilities.GetUserAccessToken(_settings, _configuration[ConfigurationName.ClientId],
-        //        _configuration[ConfigurationName.ClientSecret], _configuration[ConfigurationName.OAuthTokenEndpoint]).ConfigureAwait(false);
-        //    var client = _defaultFactory.CreateDefaultClient();
-        //    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
+        [Test, Category("P1"), Parallelizable]
+        public async Task PostToken_WithExpiredAuthorizationToken_Return401()
+        {
+            // Arrange
+            var ssoToken = await Utilities.GetUserAccessToken(_settings, _configuration[ConfigurationName.ClientId],
+                _configuration[ConfigurationName.ClientSecret], _configuration[ConfigurationName.OAuthTokenEndpoint]).ConfigureAwait(false);
+            var client = _defaultFactory.CreateDefaultClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
 
-        //    // Act
-        //    await Task.Delay(TimeSpan.FromSeconds(15 * 60 + 20)).ConfigureAwait(false);
-        //    var requestBody = new PostTokenRequestBody
-        //    {
-        //        scope = DefaultGraphScope,
-        //        grant_type = PostTokenGrantType.SsoToken,
-        //    };
-        //    var result = await PostToAuthTokenApi<string>(client, requestBody);
+            // Act
+            await Task.Delay(TimeSpan.FromSeconds(15 * 60 + 20)).ConfigureAwait(false);
+            var requestBody = new PostTokenRequestBody
+            {
+                scope = DefaultGraphScope,
+                grant_type = PostTokenGrantType.SsoToken,
+            };
+            var result = await PostToAuthTokenApi<string>(client, requestBody);
 
-        //    // Assert
-        //    Assert.AreEqual(HttpStatusCode.Unauthorized, result.Response.StatusCode);
-        //    Assert.IsNull(result.Body);
-        //    Assert.IsTrue(result.Response.Headers.GetValues("WWW-Authenticate").FirstOrDefault().Contains("Bearer"));
-        //    Assert.IsTrue(result.Response.Headers.GetValues("WWW-Authenticate").FirstOrDefault().Contains("error=\"invalid_token\""));
-        //    Assert.IsTrue(result.Response.Headers.GetValues("WWW-Authenticate").FirstOrDefault().Contains("The token expired"));
-        //}
+            // Assert
+            Assert.AreEqual(HttpStatusCode.Unauthorized, result.Response.StatusCode);
+            Assert.IsNull(result.Body);
+            Assert.IsTrue(result.Response.Headers.GetValues("WWW-Authenticate").FirstOrDefault().Contains("Bearer"));
+            Assert.IsTrue(result.Response.Headers.GetValues("WWW-Authenticate").FirstOrDefault().Contains("error=\"invalid_token\""));
+            Assert.IsTrue(result.Response.Headers.GetValues("WWW-Authenticate").FirstOrDefault().Contains("The token expired"));
+        }
 
         [Test, Category("P0"), Parallelizable]
         public async Task PostToken_WithApplicationToken_Return403()
@@ -224,13 +226,10 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
                 scope = DefaultGraphScope,
                 grant_type = PostTokenGrantType.SsoToken,
             };
-            var result = await PostToAuthTokenApi<ProblemDetails>(client, requestBody);
+            var result = await PostToAuthTokenApi<string>(client, requestBody);
 
             // Assert
             Assert.AreEqual(HttpStatusCode.Forbidden, result.Response.StatusCode);
-            Assert.AreEqual((int)HttpStatusCode.Forbidden, result.Body.Status);
-            Assert.AreEqual(ExpectedProblemType.AuthorizationRequestDeniedException, result.Body.Type);
-            Assert.AreEqual("Token with idtyp ApplicationIdentity mismatch requirement UserIdentity, is not accepted by this API", result.Body.Detail);
         }
 
         [Test, Category("P0"), Parallelizable]
@@ -253,13 +252,10 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
                 scope = DefaultGraphScope,
                 grant_type = PostTokenGrantType.SsoToken,
             };
-            var result = await PostToAuthTokenApi<ProblemDetails>(client, requestBody);
+            var result = await PostToAuthTokenApi<string>(client, requestBody);
 
             // Assert
             Assert.AreEqual(HttpStatusCode.Forbidden, result.Response.StatusCode);
-            Assert.AreEqual(ExpectedProblemType.AuthorizationRequestDeniedException, result.Body.Type);
-            Assert.AreEqual($"The App Id: {_settings.AdminClientId} is not allowed to call this API", result.Body.Detail);
-            Assert.AreEqual((int)HttpStatusCode.Forbidden, result.Body.Status);
         }
 
         [Test, Category("P0"), Parallelizable]

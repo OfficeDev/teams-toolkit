@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
-using Microsoft.TeamsFxSimpleAuth.Controllers;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Identity.Client;
 using Microsoft.TeamsFxSimpleAuth.Components.Auth;
 using Microsoft.TeamsFxSimpleAuth.Components.Auth.Models;
-using Microsoft.Identity.Client;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.TeamsFxSimpleAuth.Controllers;
+using System;
+using System.Linq;
 
 namespace Microsoft.TeamsFxSimpleAuth
 {

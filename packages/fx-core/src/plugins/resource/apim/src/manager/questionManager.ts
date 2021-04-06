@@ -1,81 +1,103 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { AssertNotEmpty } from "../error";
-import { IApimAnswer } from "../model/answer";
-import { IApimPluginConfig, ISolutionConfig } from "../model/config";
-import { IOpenApiDocument } from "../model/openApiDocument";
-import { ApimServiceQuestion, ApiNameQuestion, ApiVersionQuestion, NewApiVersionQuestion, OpenApiDocumentQuestion } from "../service/questionService";
-import { OpenApiProcessor } from "../util/openApiProcessor";
+import { Func, PluginContext, QTreeNode, Stage } from "teamsfx-api";
+import { BuildError, NotImplemented } from "../error";
+import { IApimPluginConfig } from "../model/config";
+import {
+    ApimServiceQuestion,
+    ApiPrefixQuestion,
+    ApiVersionQuestion,
+    NewApiVersionQuestion,
+    OpenApiDocumentQuestion,
+    IQuestionService,
+    ExistingOpenApiDocumentFunc,
+} from "../service/questionService";
 
-export class QuestionManager {
+export interface IQuestionManager {
+    callFunc(func: Func, ctx: PluginContext): Promise<any>;
+    update(apimConfig: IApimPluginConfig): Promise<QTreeNode | undefined>;
+    deploy(apimConfig: IApimPluginConfig): Promise<QTreeNode>;
+}
+
+export class VscQuestionManager implements IQuestionManager {
     private readonly apimServiceQuestion: ApimServiceQuestion;
     private readonly openApiDocumentQuestion: OpenApiDocumentQuestion;
-    private readonly apiNameQuestion: ApiNameQuestion;
+    private readonly existingOpenApiDocumentFunc: ExistingOpenApiDocumentFunc;
+    private readonly apiPrefixQuestion: ApiPrefixQuestion;
     private readonly apiVersionQuestion: ApiVersionQuestion;
     private readonly newApiVersionQuestion: NewApiVersionQuestion;
-    private readonly openApiProcessor: OpenApiProcessor;
 
     constructor(
         apimServiceQuestion: ApimServiceQuestion,
         openApiDocumentQuestion: OpenApiDocumentQuestion,
-        apiNameQuestion: ApiNameQuestion,
+        apiPrefixQuestion: ApiPrefixQuestion,
         apiVersionQuestion: ApiVersionQuestion,
         newApiVersionQuestion: NewApiVersionQuestion,
-        openApiProcessor: OpenApiProcessor
+        existingOpenApiDocumentFunc: ExistingOpenApiDocumentFunc
     ) {
         this.apimServiceQuestion = apimServiceQuestion;
         this.openApiDocumentQuestion = openApiDocumentQuestion;
-        this.apiNameQuestion = apiNameQuestion;
+        this.apiPrefixQuestion = apiPrefixQuestion;
         this.apiVersionQuestion = apiVersionQuestion;
         this.newApiVersionQuestion = newApiVersionQuestion;
-        this.openApiProcessor = openApiProcessor;
+        this.existingOpenApiDocumentFunc = existingOpenApiDocumentFunc;
     }
 
-    async preScaffold(apimConfig: IApimPluginConfig): Promise<void> {
-        if (this.apimServiceQuestion.isVisible(apimConfig)) {
-            const input = await this.apimServiceQuestion.generateQuestionInput();
-            const answer = await this.apimServiceQuestion.ask(input);
-
-            await this.apimServiceQuestion.save(apimConfig, answer, input.map);
+    async callFunc(func: Func, ctx: PluginContext): Promise<any> {
+        const questionServices: IQuestionService[] = [
+            this.apimServiceQuestion,
+            this.openApiDocumentQuestion,
+            this.apiPrefixQuestion,
+            this.apiVersionQuestion,
+            this.newApiVersionQuestion,
+            this.existingOpenApiDocumentFunc,
+        ];
+        for (const questionService of questionServices) {
+            if (questionService.funcName === func.method) {
+                return await questionService.executeFunc(ctx);
+            }
         }
+
+        throw BuildError(NotImplemented);
     }
 
-    async preDeploy(solutionConfig: ISolutionConfig, apimConfig: IApimPluginConfig, projectRootPath: string, answer: IApimAnswer): Promise<void> {
-        let openApiDocument: IOpenApiDocument | undefined;
-        let versionIdentity: string | undefined;
-        let existingApiId: string | undefined;
+    async update(apimConfig: IApimPluginConfig): Promise<QTreeNode | undefined> {
+        if (apimConfig.serviceName) {
+            return undefined;
+        }
 
-        if (this.openApiDocumentQuestion.isVisible(apimConfig)) {
-            const input = await this.openApiDocumentQuestion.generateQuestionInput(projectRootPath);
-            const answer = await this.openApiDocumentQuestion.ask(input);
-            this.openApiDocumentQuestion.save(apimConfig, answer);
-            openApiDocument = input.map.get(answer);
+        const question = this.apimServiceQuestion.getQuestion();
+        const node = new QTreeNode(question);
+        return node;
+    }
+
+    async deploy(apimConfig: IApimPluginConfig): Promise<QTreeNode> {
+        let rootNode: QTreeNode;
+        if (!apimConfig.apiDocumentPath) {
+            const documentPathQuestion = this.openApiDocumentQuestion.getQuestion();
+            const documentPathQuestionNode = new QTreeNode(documentPathQuestion);
+            rootNode = documentPathQuestionNode;
         } else {
-            openApiDocument = await this.openApiProcessor.loadOpenApiDocument(
-                AssertNotEmpty("apimConfig.apiDocumentPath", apimConfig.apiDocumentPath),
-                projectRootPath
-            );
+            const documentPathFunc = this.existingOpenApiDocumentFunc.getQuestion();
+            const documentPathFuncNode = new QTreeNode(documentPathFunc);
+            rootNode = documentPathFuncNode;
         }
 
-        // [First time] ask user the title and the version
-        if (this.apiNameQuestion.isVisible(apimConfig)) {
-            const input = await this.apiNameQuestion.generateQuestionInput(openApiDocument?.spec.info.title);
-            const answer = await this.apiNameQuestion.ask(input);
-            this.apiNameQuestion.save(apimConfig, answer);
+        if (!apimConfig.apiPrefix) {
+            const apiPrefixQuestion = this.apiPrefixQuestion.getQuestion();
+            const apiPrefixQuestionNode = new QTreeNode(apiPrefixQuestion);
+            rootNode.addChild(apiPrefixQuestionNode);
         }
 
-        if (this.apiVersionQuestion.isVisible(apimConfig)) {
-            const input = await this.apiVersionQuestion.generateQuestionInput(solutionConfig, apimConfig);
-            versionIdentity = await this.apiVersionQuestion.ask(input);
-            existingApiId = input.map.get(versionIdentity)?.name;
-        }
+        const versionQuestion = this.apiVersionQuestion.getQuestion();
+        const versionQuestionNode = new QTreeNode(versionQuestion);
+        rootNode.addChild(versionQuestionNode);
 
-        if (this.newApiVersionQuestion.isVisible(versionIdentity)) {
-            const input = await this.newApiVersionQuestion.generateQuestionInput(openApiDocument?.spec.info.version);
-            versionIdentity = await this.newApiVersionQuestion.ask(input);
-        }
+        const newVersionQuestion = this.newApiVersionQuestion.getQuestion();
+        const newVersionQuestionNode = new QTreeNode(newVersionQuestion);
+        newVersionQuestionNode.condition = this.newApiVersionQuestion.condition("$parent");
+        versionQuestionNode.addChild(newVersionQuestionNode);
 
-        answer.versionIdentity = AssertNotEmpty("versionIdentity", versionIdentity);
-        answer.apiId = existingApiId;
+        return rootNode;
     }
 }

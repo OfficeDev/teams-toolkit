@@ -1,20 +1,23 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Plugin, FxError, PluginContext, SystemError, UserError, Result, err, ok } from "teamsfx-api";
-import { AssertNotEmpty, BuildError, UnhandledError } from "./error";
+import { Plugin, FxError, PluginContext, SystemError, UserError, Result, err, ok, QTreeNode, Stage, Func } from "teamsfx-api";
+import { BuildError, UnhandledError } from "./error";
 import { Telemetry } from "./telemetry";
 import { AadPluginConfig, ApimPluginConfig, FunctionPluginConfig, SolutionConfig } from "./model/config";
 import { AadDefaultValues, ProgressMessages, ProgressStep } from "./constants";
 import { Factory } from "./factory";
-import { IApimAnswer } from "./model/answer";
 import { ProgressBar } from "./util/progressBar";
+import { buildAnswer } from "./model/answer";
 
 export class ApimPlugin implements Plugin {
-    private answer: IApimAnswer = {};
     private progressBar: ProgressBar = new ProgressBar();
 
-    public async preScaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
-        return await this.executeWithFxError(ProgressStep.None, _preScaffold, ctx);
+    public async getQuestions(stage: Stage, ctx: PluginContext): Promise<Result<QTreeNode | undefined, FxError>> {
+        return await this.executeWithFxError(ProgressStep.None, _getQuestions, ctx, stage);
+    }
+
+    public async callFunc(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
+        return await this.executeWithFxError(ProgressStep.None, _callFunc, ctx, func);
     }
 
     public async scaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
@@ -29,24 +32,20 @@ export class ApimPlugin implements Plugin {
         return await this.executeWithFxError(ProgressStep.PostProvision, _postProvision, ctx);
     }
 
-    public async preDeploy(ctx: PluginContext): Promise<Result<any, FxError>> {
-        return await this.executeWithFxError(ProgressStep.None, _preDeploy, ctx);
-    }
-
     public async deploy(ctx: PluginContext): Promise<Result<any, FxError>> {
         return await this.executeWithFxError(ProgressStep.Deploy, _deploy, ctx);
     }
 
     private async executeWithFxError<T>(
         progressStep: ProgressStep,
-        fn: (ctx: PluginContext, telemetry: Telemetry, progressBar: ProgressBar, answer: IApimAnswer, ...params: any[]) => Promise<T>,
+        fn: (ctx: PluginContext, telemetry: Telemetry, progressBar: ProgressBar, ...params: any[]) => Promise<T>,
         ctx: PluginContext,
         ...params: any[]
     ): Promise<Result<T, FxError>> {
         const telemetry = Factory.buildTelemetry(ctx);
         try {
             await this.progressBar.init(progressStep, ctx);
-            const result = await fn(ctx, telemetry, this.progressBar, this.answer, ...params);
+            const result = await fn(ctx, telemetry, this.progressBar, ...params);
             return ok(result);
         } catch (error) {
             let packagedError: SystemError | UserError;
@@ -68,23 +67,38 @@ export class ApimPlugin implements Plugin {
     }
 }
 
-async function _preScaffold(ctx: PluginContext, telemetry: Telemetry, progressBar: ProgressBar, answer: IApimAnswer): Promise<void> {
+async function _getQuestions(ctx: PluginContext, telemetry: Telemetry, progressBar: ProgressBar, stage: Stage): Promise<QTreeNode | undefined> {
     const solutionConfig = new SolutionConfig(ctx.configOfOtherPlugins);
     const apimConfig = new ApimPluginConfig(ctx.config);
     const questionManager = await Factory.buildQuestionManager(ctx, solutionConfig, telemetry);
-
-    await questionManager.preScaffold(apimConfig);
+    switch (stage) {
+        case Stage.update:
+            return await questionManager.update(apimConfig);
+        case Stage.deploy:
+            return await questionManager.deploy(apimConfig);
+        default:
+            return undefined;
+    }
 }
 
-async function _scaffold(ctx: PluginContext, telemetry: Telemetry, progressBar: ProgressBar, answer: IApimAnswer): Promise<void> {
+async function _callFunc(ctx: PluginContext, telemetry: Telemetry, progressBar: ProgressBar, func: Func): Promise<any> {
     const solutionConfig = new SolutionConfig(ctx.configOfOtherPlugins);
+    const questionManager = await Factory.buildQuestionManager(ctx, solutionConfig, telemetry);
+    return await questionManager.callFunc(func, ctx);
+}
+
+async function _scaffold(ctx: PluginContext, telemetry: Telemetry, progressBar: ProgressBar): Promise<void> {
+    const solutionConfig = new SolutionConfig(ctx.configOfOtherPlugins);
+    const apimConfig = new ApimPluginConfig(ctx.config);
+    const answer = buildAnswer(ctx);
     const apimManager = await Factory.buildApimManager(ctx, solutionConfig, telemetry);
+    answer.save(Stage.deploy, apimConfig);
 
     await progressBar.next(ProgressStep.Scaffold, ProgressMessages[ProgressStep.Scaffold].Scaffold);
     await apimManager.scaffold(ctx.app, ctx.root);
 }
 
-async function _provision(ctx: PluginContext, telemetry: Telemetry, progressBar: ProgressBar, answer: IApimAnswer): Promise<void> {
+async function _provision(ctx: PluginContext, telemetry: Telemetry, progressBar: ProgressBar): Promise<void> {
     const solutionConfig = new SolutionConfig(ctx.configOfOtherPlugins);
     const apimConfig = new ApimPluginConfig(ctx.config);
 
@@ -98,7 +112,7 @@ async function _provision(ctx: PluginContext, telemetry: Telemetry, progressBar:
     await aadManager.provision(apimConfig, ctx.app.name.short);
 }
 
-async function _postProvision(ctx: PluginContext, telemetry: Telemetry, progressBar: ProgressBar, answer: IApimAnswer): Promise<void> {
+async function _postProvision(ctx: PluginContext, telemetry: Telemetry, progressBar: ProgressBar): Promise<void> {
     const solutionConfig = new SolutionConfig(ctx.configOfOtherPlugins);
     const apimConfig = new ApimPluginConfig(ctx.config);
     const aadConfig = new AadPluginConfig(ctx.configOfOtherPlugins);
@@ -117,23 +131,17 @@ async function _postProvision(ctx: PluginContext, telemetry: Telemetry, progress
     await teamsAppAadManager.postProvision(aadConfig, apimConfig);
 }
 
-async function _preDeploy(ctx: PluginContext, telemetry: Telemetry, progressBar: ProgressBar, answer: IApimAnswer): Promise<void> {
-    const solutionConfig = new SolutionConfig(ctx.configOfOtherPlugins);
-    const apimConfig = new ApimPluginConfig(ctx.config);
-    const questionManager = await Factory.buildQuestionManager(ctx, solutionConfig, telemetry);
-
-    await questionManager.preDeploy(solutionConfig, apimConfig, ctx.root, AssertNotEmpty("answer", answer));
-}
-
-async function _deploy(ctx: PluginContext, telemetry: Telemetry, progressBar: ProgressBar, answer: IApimAnswer): Promise<void> {
+async function _deploy(ctx: PluginContext, telemetry: Telemetry, progressBar: ProgressBar): Promise<void> {
     const solutionConfig = new SolutionConfig(ctx.configOfOtherPlugins);
     const apimConfig = new ApimPluginConfig(ctx.config);
     const functionConfig = new FunctionPluginConfig(ctx.configOfOtherPlugins);
+    const answer = buildAnswer(ctx);
+    answer.save(Stage.deploy, apimConfig);
 
     const apimManager = await Factory.buildApimManager(ctx, solutionConfig, telemetry);
 
     await progressBar.next(ProgressStep.Deploy, ProgressMessages[ProgressStep.Deploy].ImportApi);
-    await apimManager.deploy(apimConfig, solutionConfig, functionConfig, AssertNotEmpty("answer", answer), ctx.root);
+    await apimManager.deploy(apimConfig, solutionConfig, functionConfig, answer, ctx.root);
 }
 
 export default new ApimPlugin();

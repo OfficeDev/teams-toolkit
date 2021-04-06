@@ -13,6 +13,7 @@ import {
     ConfigMap,
     TeamsAppManifest,
     IProgressHandler,
+    OptionItem,
 } from "teamsfx-api";
 import { BuildError, NotImplemented } from "../../../../../src/plugins/resource/apim/src/error";
 import { TokenCredential } from "@azure/core-auth";
@@ -180,11 +181,12 @@ export class MockPluginContext implements PluginContext {
         },
         accentColor: "",
     };
-    root = "test";
+    root = "./test/scaffold";
     logProvider: MockLogProvider;
     telemetryReporter: MockTelemetryReporter;
     azureAccountProvider: MockAzureAccountProvider;
     graphTokenProvider: MockGraphTokenProvider;
+    answers: ConfigMap | undefined;
 
     private clientId: string;
     private clientSecret: string;
@@ -198,7 +200,8 @@ export class MockPluginContext implements PluginContext {
         solutionConfig: ISolutionConfig,
         apimConfig?: IApimPluginConfig,
         aadConfig?: IAadPluginConfig,
-        functionConfig?: IFunctionPluginConfig
+        functionConfig?: IFunctionPluginConfig,
+        answers?: { [key: string]: OptionItem | string }
     ) {
         this.clientId = clientId;
         this.clientSecret = clientSecret;
@@ -218,6 +221,10 @@ export class MockPluginContext implements PluginContext {
 
         if (functionConfig) {
             this.configOfOtherPlugins.set(TeamsToolkitComponent.FunctionPlugin, new Map(Object.entries(functionConfig)));
+        }
+
+        if (answers) {
+            this.answers = new ConfigMap(Object.entries(answers));
         }
     }
 

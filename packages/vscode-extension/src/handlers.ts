@@ -316,8 +316,8 @@ async function runUserTask(func: Func): Promise<Result<null, FxError>> {
       VsCodeLogInstance.info(`Question tree:${JSON.stringify(node, null, 4)}`);
       const res: InputResult = await traverse(node, answers, ext.visit);
       VsCodeLogInstance.info(`User input:${JSON.stringify(res, null, 4)}`);
-      if (res.type === InputResultType.error) {
-        throw res.error!;
+      if (res.type === InputResultType.error && res.error) {
+        throw res.error;
       } else if (res.type === InputResultType.cancel) {
         throw new UserError(ExtensionErrors.UserCancel, "User Cancel", ExtensionSource);
       }

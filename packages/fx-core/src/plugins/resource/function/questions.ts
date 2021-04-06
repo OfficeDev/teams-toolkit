@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { FuncValidation, NodeType, QTreeNode } from "teamsfx-api";
+import { RemoteFuncValidation, NodeType, QTreeNode } from "teamsfx-api";
 
 import { DefaultValues, DependentPluginInfo, FunctionPluginInfo, QuestionValidationFunc } from "./constants";
 import { FunctionLanguage, QuestionKey } from "./enums";
@@ -14,7 +14,7 @@ export const functionNameQuestion = new QTreeNode({
     validation: {
         namespace: `${DependentPluginInfo.solutionPluginFullName}/${FunctionPluginInfo.pluginName}`,
         method: QuestionValidationFunc.validateFunctionName
-    } as FuncValidation
+    } as RemoteFuncValidation
 });
 
 export const functionLanguageQuestion = new QTreeNode({

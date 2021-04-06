@@ -43,7 +43,7 @@ export class ProvisionConfig {
   }
 
   public async restoreConfigFromContext(ctx: PluginContext): Promise<void> {
-    const displayName: ConfigValue = ctx.app.name.short;
+    const displayName:string = ctx.app.name.short;
     if (displayName) {
       this.displayName = displayName.substr(
         0,

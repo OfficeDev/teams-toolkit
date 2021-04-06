@@ -212,7 +212,7 @@ export class LocalDebugPlugin implements Plugin {
 
     public async callFunc(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
         if (func.method == "getLaunchInput") {
-            const env = func.params?.[0] as string;
+            const env = func.params as string;
             const solutionConfigs = ctx.configOfOtherPlugins.get(SolutionPlugin.Name);
             if (env === "remote") {
                 // return remote teams app id

@@ -56,7 +56,7 @@ export function objectToMap(o: Json): Map<any, any> {
         if (entry[1] instanceof Array) {
             m.set(entry[0], entry[1]);
         } else if (entry[1] instanceof Object) {
-            m.set(entry[0], objectToConfigMap(entry[1]));
+            m.set(entry[0], objectToConfigMap(entry[1] as Json));
         } else {
             m.set(entry[0], entry[1]);
         }

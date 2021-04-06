@@ -1133,7 +1133,7 @@ export class TeamsAppSolution implements Solution {
             const options: OptionItem[] = res.value
                 .filter((plugin) => !!plugin.deploy)
                 .map((plugin) => {
-                    const item: OptionItem = { label: plugin.displayName, data: plugin.name };
+                    const item: OptionItem = { id: plugin.name, label: plugin.displayName, data: plugin.name };
                     return item;
                 });
             const selectQuestion = DeployPluginSelectQuestion;
@@ -1337,7 +1337,7 @@ export class TeamsAppSolution implements Solution {
 
     async callFunc(func: Func, ctx: SolutionContext): Promise<Result<any, FxError>> {
         const namespace = func.namespace;
-        const array = namespace.split("/");
+        const array = namespace?namespace.split("/"):[];
         if (array.length == 2) {
             const pluginName = array[1];
             const plugin = this.pluginMap.get(pluginName);
@@ -1366,7 +1366,7 @@ export class TeamsAppSolution implements Solution {
      */
     async getQuestionsForUserTask(func: Func, ctx: SolutionContext): Promise<Result<QTreeNode | undefined, FxError>> {
         const namespace = func.namespace;
-        const array = namespace.split("/");
+        const array = namespace?namespace.split("/"):[];
         if (array.length == 2) {
             const pluginName = array[1];
             const plugin = this.pluginMap.get(pluginName);
@@ -1393,7 +1393,7 @@ export class TeamsAppSolution implements Solution {
      */
     async executeUserTask(func: Func, ctx: SolutionContext): Promise<Result<any, FxError>> {
         const namespace = func.namespace;
-        const array = namespace.split("/");
+        const array = namespace?namespace.split("/"):[];
         if (array.length == 2) {
             const pluginName = array[1];
             const plugin = this.pluginMap.get(pluginName);

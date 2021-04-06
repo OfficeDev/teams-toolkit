@@ -74,16 +74,16 @@ export class SqlPluginImpl {
 
     public async callFunc(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
         if (func.method === Constants.questionKey.adminName) {
-            const name = func.params?.[0] as string;
+            const name = func.params as string;
             const res = sqlUserNameValidator(name);
             return ok(res);
         } else if (func.method === Constants.questionKey.adminPassword) {
-            const password = func.params?.[0] as string;
+            const password = func.params as string;
             const name = ctx.answers?.get(Constants.questionKey.adminName) as string;
             const res = sqlPasswordValidatorGenerator(name)(password);
             return ok(res);
         } else if (func.method === Constants.questionKey.confirmPassword) {
-            const confirm = func.params?.[0] as string;
+            const confirm = func.params as string;
             const password = ctx.answers?.get(Constants.questionKey.adminPassword) as string;
             const res = sqlConfirmPasswordValidatorGenerator(password)(confirm);
             return ok(res);

@@ -38,6 +38,7 @@ import {
     StringValidation,
     FxError,
     ProductName,
+    Json,
 } from "teamsfx-api";
 import * as path from "path";
 // import * as Bundles from '../resource/bundles.json';
@@ -135,8 +136,8 @@ class CoreImpl implements Core {
 
     async getQuestionsForUserTask(func: Func, platform: Platform): Promise<Result<QTreeNode | undefined, FxError>> {
         const namespace = func.namespace;
-        const array = namespace.split("/");
-        if ("" !== namespace && array.length > 0) {
+        const array = namespace? namespace.split("/") : [];
+        if (namespace && "" !== namespace && array.length > 0) {
             const solutionName = array[0];
             const solution = this.globalSolutions.get(solutionName);
             if (solution && solution.getQuestionsForUserTask) {
@@ -154,7 +155,7 @@ class CoreImpl implements Core {
     }
     async executeUserTask(func: Func, answer?: ConfigMap): Promise<Result<QTreeNode | undefined, FxError>> {
         const namespace = func.namespace;
-        const array = namespace.split("/");
+        const array = namespace? namespace.split("/"):[];
         if ("" !== namespace && array.length > 0) {
             const solutionName = array[0];
             const solution = this.globalSolutions.get(solutionName);
@@ -183,11 +184,11 @@ class CoreImpl implements Core {
 
     async callFunc(func: Func, answer?: ConfigMap): Promise<Result<any, FxError>> {
         const namespace = func.namespace;
-        const array = namespace.split("/");
-        if ("" === namespace || array.length === 0) {
+        const array = namespace?namespace.split("/"):[];
+        if (!namespace || "" === namespace || array.length === 0) {
             if (func.method === "validateFolder") {
-                if (!func.params || !func.params[0]) return ok(undefined);
-                return await this.validateFolder(func.params![0] as string, answer);
+                if (!func.params) return ok(undefined);
+                return await this.validateFolder(func.params as string, answer);
             }
         } else {
             const solutionName = array[0];
@@ -390,7 +391,7 @@ class CoreImpl implements Core {
                 }
                 const filePath = `${this.ctx.root}/.${ProductName}/${file}`;
                 this.ctx.logProvider?.info(`[Core] read config file:${filePath} start ... `);
-                const config: SolutionConfig = await fs.readJson(filePath);
+                const config: Json = await fs.readJson(filePath);
                 this.configs.set(slice[1], objectToMap(config));
                 this.ctx.logProvider?.info(`[Core] read config file:${filePath} success! `);
             }

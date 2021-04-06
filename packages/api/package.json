@@ -49,8 +49,10 @@
     "typescript": "^4.2.3"
   },
   "dependencies": {
-    "@azure/ms-rest-nodeauth": "^3.0.6",
     "@azure/core-http": "^1.2.2",
+    "@azure/ms-rest-nodeauth": "^3.0.6",
+    "@types/fs-extra": "^9.0.10",
+    "jsonschema": "^1.4.0",
     "neverthrow": "^3.2.0"
   },
   "lint-staged": {

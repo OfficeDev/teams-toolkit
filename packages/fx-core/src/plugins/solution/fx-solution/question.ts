@@ -3,17 +3,20 @@
 import { MultiSelectQuestion, NodeType, OptionItem, SingleSelectQuestion } from "teamsfx-api";
 
 export const TabOptionItem: OptionItem = {
+    id: "Tab",
     label: "Tab",
     description: "Embeds a web-based app experience in a tab in a Teams chat, channel, or personal workspace.",
 };
 
 export const BotOptionItem: OptionItem = {
+    id: "Bot",
     label: "Bot",
     description:
         "Bots allow you to interact with and obtain information from a software or website in a text/search/conversational manner.",
 };
 
 export const MessageExtensionItem: OptionItem = {
+    id: "MessageExtension",
     label: "MessageExtension",
     description:
         "Messaging extensions allow users to interact with your web service through buttons and forms in the Microsoft Teams client.",
@@ -30,26 +33,31 @@ export enum AzureSolutionQuestionNames {
 }
 
 export const HostTypeOptionAzure: OptionItem = {
+    id:"Azure",
     label: "Azure",
     description: "Azure Cloud",
 };
 
 export const HostTypeOptionSPFx: OptionItem = {
+    id:"SPFx",
     label: "SPFx",
     description: "SharePoint Framework",
 };
 
 export const AzureResourceSQL: OptionItem = {
+    id:"sql",
     label: "sql",
     description: "Azure SQL Database",
 };
 
 export const AzureResourceFunction: OptionItem = {
+    id:"function",
     label: "function",
     description: "New APIs from Azure Functions",
 };
 
 export const AzureResourceApim: OptionItem = {
+    id:"apim",
     label: "apim",
     description: "Publish APIs to API Management",
 };
@@ -71,8 +79,7 @@ export function createCapabilityQuestion(featureFlag: boolean): MultiSelectQuest
         prompt: "Choose the capabilities for your project setup",
         type: NodeType.multiSelect,
         option: featureFlag ? [TabOptionItem, BotOptionItem, MessageExtensionItem] : [TabOptionItem],
-        default: [TabOptionItem.label],
-        validation: { minItems: 1 },
+        default: [TabOptionItem.label]
     };
 }
 

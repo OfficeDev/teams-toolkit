@@ -119,7 +119,7 @@ export interface IUserInput {
 }
 
 export class UserInput implements IUserInput {
-  constructor() {}
+  // constructor() {}
 
   public async showQuickPick(
     items: string[] | Thenable<string[]>,

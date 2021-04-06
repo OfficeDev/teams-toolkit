@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 

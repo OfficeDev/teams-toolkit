@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 

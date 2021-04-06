@@ -27,7 +27,11 @@ import { ExtensionErrors, ExtensionSource } from "../error";
 
 const core:CoreProxy = CoreProxy.getInstance();
 
-export function getRealValue(parentValue: any, defaultValue: any): any {
+export async function getRealValue(
+  parentValue: any,
+  defaultValue: any,
+  answers?: ConfigMap
+): Promise<any> {
   let output: any = defaultValue;
   if (typeof defaultValue === "string") {
     const defstr = defaultValue as string;
@@ -36,6 +40,14 @@ export function getRealValue(parentValue: any, defaultValue: any): any {
     } else if (defstr.startsWith("$parent.") && parentValue instanceof Object) {
       const property = defstr.substr(8);
       output = parentValue[property];
+    }
+  } else {
+    const func: Func = defaultValue as Func;
+    if (func && func.method) {
+      const res = await core.callFunc(defaultValue as Func, answers);
+      if (res.isOk()) {
+        return res.value;
+      }
     }
   }
   return output;
@@ -76,7 +88,7 @@ export async function questionVisit(
   } else {
     let defaultValue: any = undefined;
     if (question.default) {
-      defaultValue = getRealValue(parentValue, question.default);
+      defaultValue = await getRealValue(parentValue, question.default, answers);
     }
     const validationFunc = getValidationFunction(question.validation, answers);
     if (type === NodeType.text || type === NodeType.password) {
@@ -105,6 +117,9 @@ export async function questionVisit(
           if (res.isOk()) {
             option = res.value as StaticOption;
           }
+          else {
+            return { type: InputResultType.error, error: res.error };
+          }
         }
       }
       if (!option || option.length === 0) {
@@ -117,14 +132,22 @@ export async function questionVisit(
           )
         };
       }
-      const arrayValidation: ArrayValidation = question.validation as ArrayValidation;
-
-      if (option.length === 1 && type === NodeType.singleSelect) {
-        return {
-          type: InputResultType.pass,
-          result: typeof option[0] === "string" ? option[0] : (option[0] as OptionItem).label
-        };
-      }
+      //skip single option select
+      if (type === NodeType.singleSelect  && option.length === 1) {
+        const optionIsString = typeof option[0] === "string";
+        if(selectQuestion.returnObject){
+            return {
+                type: InputResultType.pass,
+                result: optionIsString ? { label: option[0] as string }: (option[0] as OptionItem)
+              };
+        }
+        else {
+            return {
+                type: InputResultType.pass,
+                result: optionIsString ? option[0] : (option[0] as OptionItem).label
+            };
+        }
+    }
       return await showQuickPick({
         title: selectQuestion.title || selectQuestion.description || selectQuestion.name,
         items: option,

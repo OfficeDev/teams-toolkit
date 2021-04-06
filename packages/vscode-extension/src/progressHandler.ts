@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-this-alias */
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 "use strict";

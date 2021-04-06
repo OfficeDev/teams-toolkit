@@ -51,7 +51,7 @@ export class AppStudioLogin implements AppStudioTokenProvider {
   private static statusChange?: (
     status: string,
     token?: string,
-    accountInfo?: object
+    accountInfo?: Record<string, unknown>
   ) => Promise<void>;
 
   private constructor() {
@@ -93,7 +93,7 @@ export class AppStudioLogin implements AppStudioTokenProvider {
     return AppStudioLogin.codeFlowInstance.getToken();
   }
 
-  async getJsonObject(showDialog = true): Promise<object | undefined> {
+  async getJsonObject(showDialog = true): Promise<Record<string, unknown> | undefined> {
     const token = await this.getAccessToken(showDialog);
     if (token) {
       const array = token.split(".");
@@ -131,7 +131,7 @@ export class AppStudioLogin implements AppStudioTokenProvider {
   }
 
   async setStatusChangeCallback(
-    statusChange: (status: string, token?: string, accountInfo?: object) => Promise<void>
+    statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>
   ): Promise<boolean> {
     AppStudioLogin.statusChange = statusChange;
     await AppStudioLogin.codeFlowInstance.reloadCache();

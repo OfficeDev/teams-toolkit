@@ -18,7 +18,7 @@ export class AzureAccountManager implements AzureAccountProvider {
   private static statusChange?: (
     status: string,
     token?: string,
-    accountInfo?: object
+    accountInfo?: Record<string, unknown>
   ) => Promise<void>;
 
   private constructor() {}
@@ -162,7 +162,7 @@ export class AzureAccountManager implements AzureAccountProvider {
     return Promise.resolve(userSelected === confirm);
   }
 
-  async getJsonObject(showDialog = true): Promise<object | undefined> {
+  async getJsonObject(showDialog = true): Promise<Record<string, unknown> | undefined> {
     const credential = await this.getAccountCredentialAsync(showDialog);
     const token = await credential?.getToken();
     if (token) {
@@ -195,7 +195,7 @@ export class AzureAccountManager implements AzureAccountProvider {
    * Add update account info callback
    */
   async setStatusChangeCallback(
-    statusChange: (status: string, token?: string, accountInfo?: object) => Promise<void>
+    statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>
   ): Promise<boolean> {
     AzureAccountManager.statusChange = statusChange;
     return new Promise((resolve) => {

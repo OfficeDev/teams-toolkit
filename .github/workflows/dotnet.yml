@@ -1,4 +1,4 @@
-name: .NET
+name: TeamsFx .NET Repo CI
 
 on:
   push:

@@ -9,11 +9,5 @@ pushd "$DIR"
 echo "Start Node Js Function App"
 $DIR/start_js_function.sh
 
-# get secrets from environment
-export TeamsFx_BINDING_IntegrationTestSettings__ClientSecret=$ClientSecret
-export TeamsFx_BINDING_IntegrationTestSettings__UnauthorizedAadAppClientSecret=$UnauthorizedAadAppClientSecret
-export TeamsFx_BINDING_IntegrationTestSettings__AllowedAppClientSecret=$AllowedAppClientSecret
-export TeamsFx_BINDING_IntegrationTestSettings__AllowedApp2ClientSecret=$AllowedApp2Secret
-
 # run test
 dotnet test $DIR/..

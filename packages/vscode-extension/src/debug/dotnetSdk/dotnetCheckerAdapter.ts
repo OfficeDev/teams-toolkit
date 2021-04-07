@@ -10,6 +10,7 @@ import commonlibLogger from "../../commonlib/log";
 export { isWindows, isLinux, isMacOS } from "../../utils/commonUtils";
 export { cpUtils } from "../cpUtils";
 export const logger = commonlibLogger;
+export { runWithProgressIndicator } from "../progressIndicator";
 
 
 /**

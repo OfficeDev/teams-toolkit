@@ -27,7 +27,7 @@ jobs:
         dotnet-version: 3.1.x
     - name: Build
       run: 
-        ls && chmod +x "simpleauth/scripts/build.sh" && "simpleauth/scripts/build.sh"
+        dotnet build -c Release -p:WebDriverPlatform=linux64 TeamsFxSimpleAuth.sln
     - name: Test
       env: 
         TEAMS_SIMPLE_AUTH_IntegrationTestSettings__AdminClientSecret: ${{secrets.SIMPLE_AUTH_TEST_ADMIN_CLIENT_SECRET}}
@@ -49,11 +49,11 @@ jobs:
         sudo apt-get update && sudo apt-get install azure-functions-core-tools-3
     - name: Build
       run: 
-        ls && chmod +x "function-extension/scripts/build.sh" && "function-extension/scripts/build.sh"
+        dotnet build -c Release function-extension/Microsoft.Azure.WebJobs.Extensions.TeamsFx.sln
     - name: Test
       env: 
         TeamsFx_BINDING_IntegrationTestSettings__ClientSecret: ${{secrets.FUNCTION_EXTENSION_CLIENT_SECRET}}
         TeamsFx_BINDING_IntegrationTestSettings__UnauthorizedAadAppClientSecret: ${{secrets.FUNCTION_EXTENSION_UNAUTHORIZED_AAD_APP_CLIENT_SECRET}}
         TeamsFx_BINDING_IntegrationTestSettings__AllowedAppClientSecret: ${{secrets.FUNCTION_EXTENSION_ALLOWED_APP_SECRET}}
       run:
-        env && chmod +x "function-extension/scripts/test.sh" && chmod +x "function-extension/scripts/start_js_function.sh" && "function-extension/scripts/test.sh"
+        chmod +x "function-extension/scripts/test.sh" && chmod +x "function-extension/scripts/start_js_function.sh" && "function-extension/scripts/test.sh"

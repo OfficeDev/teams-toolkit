@@ -46,7 +46,7 @@ echo "## Get secret from pipeline variables"
 files=$(ls $local_settings_json_dir)
 for filename in $files
 do
-    sed -i "s/__CLIENT_SECRET__/$ClientSecret/g" $local_settings_json_dir/$filename
+    sed -i "s/__CLIENT_SECRET__/$TeamsFx_BINDING_IntegrationTestSettings__ClientSecret/g" $local_settings_json_dir/$filename
 done
 
 # TODO: Move the logic to C# test cases.

@@ -273,7 +273,7 @@
           "fx-extension.validateDotnetSdk": {
             "type": "boolean",
             "description": "Validate the .NET SDK is installed before using it.",
-            "default": false
+            "default": true
           }
         }
       }

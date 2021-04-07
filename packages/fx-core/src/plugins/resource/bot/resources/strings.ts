@@ -13,6 +13,10 @@ export class CommonStrings {
     public static readonly APPSTUDIO_BOT_REGISTRATION = "app studio bot registration";
     public static readonly CONFIG_ITEM = "config item";
     public static readonly SHORT_APP_NAME = "short app name";
+    public static readonly AUTH_REDIRECT_URI_SUFFIX = "/public";
+    public static readonly AUTH_LOGIN_URI_SUFFIX = "/public/auth-start.html";
+    public static readonly HTTPS_PREFIX = "https://";
+    public static readonly MESSAGE_ENDPOINT_SUFFIX = "/api/messages";
 }
 
 export class PluginAAD {
@@ -48,7 +52,7 @@ export class PluginBot {
     public static readonly APP_SERVICE_PLAN = "appServicePlan";
     public static readonly SITE_NAME = "siteName";
     public static readonly SITE_ENDPOINT = "siteEndpoint";
-    public static readonly VALID_DOMAINS = "validDomains";
+    public static readonly VALID_DOMAIN = "validDomain";
     public static readonly PROVISIONED = "provisioned";
     public static readonly WEB_APPLICATION_INFO_ID = "webApplicationInfo.id";
     public static readonly WEB_APPLICATION_INFO_RESOURCE = "webApplicationInfo.resource";
@@ -56,6 +60,8 @@ export class PluginBot {
     public static readonly BOT_CHANNEL_REGISTRATION = "botChannelReg";
     public static readonly UNPACK_FLAG = "unPackFlag";
     public static readonly MESSAGE_EXTENSION_SECTION = "composeExtensions";
+    public static readonly REDIRECT_URI = "redirectUri";
+    public static readonly LOCAL_REDIRECT_URI = "local_redirectUri";
 }
 
 export class TelemetryStrings {

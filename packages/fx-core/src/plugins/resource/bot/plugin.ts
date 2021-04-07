@@ -265,9 +265,13 @@ export class TeamsBotImpl {
             throw new ProvisionException(CommonStrings.AZURE_WEB_APP);
         }
 
-        this.config.provision.siteEndpoint = `https://${webappResponse.defaultHostName}`;
+        this.config.provision.siteEndpoint = `${CommonStrings.HTTPS_PREFIX}${webappResponse.defaultHostName}`;
+        this.config.provision.redirectUri = `${this.config.provision.siteEndpoint}${CommonStrings.AUTH_REDIRECT_URI_SUFFIX}`;
 
         this.config.provision.appServicePlan = appServicePlanName;
+
+        // Update config for manifest.json
+        this.ctx!.config.set(PluginBot.VALID_DOMAIN, `${this.config.provision.siteName}.${WebAppConstants.WEB_APP_SITE_DOMAIN}`);
 
         this.telemetryStepOutSuccess(LifecycleFuncNames.PROVISION_WEB_APP);
     }
@@ -300,9 +304,6 @@ export class TeamsBotImpl {
         CheckThrowSomethingMissing(ConfigNames.AUTH_APPLICATION_ID_URIS, applicationIdUris);
         CheckThrowSomethingMissing(ConfigNames.SITE_ENDPOINT, siteEndpoint);
 
-        // Update config for manifest.json
-        this.ctx.config.set(PluginBot.VALID_DOMAINS, [`${this.config.provision.siteName}.${WebAppConstants.WEB_APP_SITE_DOMAIN}`]);
-
         const webSiteMgmtClient = factory.createWebSiteMgmtClient(
             this.config.provision.serviceClientCredentials!,
             this.config.provision.subscriptionId!,
@@ -313,13 +314,13 @@ export class TeamsBotImpl {
             this.config.provision.appServicePlan!,
             this.config.provision.location!,
             [
-                { name: AuthEnvNames.BOT_ID, value: this.config.scaffold.botId },
-                { name: AuthEnvNames.BOT_PASSWORD, value: this.config.scaffold.botPassword },
+                { name: AuthEnvNames.BOT_ID, value: botId },
+                { name: AuthEnvNames.BOT_PASSWORD, value: botPassword },
                 { name: AuthEnvNames.M365_CLIENT_ID, value: teamsAppClientId },
                 { name: AuthEnvNames.M365_CLIENT_SECRET, value: teamsAppClientSecret },
                 { name: AuthEnvNames.M365_TENANT_ID, value: teamsAppTenant },
                 { name: AuthEnvNames.M365_AUTHORITY_HOST, value: AuthValues.M365_AUTHORITY_HOST },
-                { name: AuthEnvNames.INITIATE_LOGIN_ENDPOINT, value: `${this.config.provision.siteEndpoint}/public/auth-start.html` },
+                { name: AuthEnvNames.INITIATE_LOGIN_ENDPOINT, value: `${this.config.provision.siteEndpoint}${CommonStrings.AUTH_LOGIN_URI_SUFFIX}` },
                 { name: AuthEnvNames.M365_APPLICATION_ID_URI, value: applicationIdUris }
             ],
         );
@@ -345,14 +346,14 @@ export class TeamsBotImpl {
         // 3. Update message endpoint for bot registration.
         switch (this.config.scaffold.wayToRegisterBot) {
             case WayToRegisterBot.CreateNew: {
-                await this.updateMessageEndpointOnAzure(`${this.config.provision.siteEndpoint}/api/messages`);
+                await this.updateMessageEndpointOnAzure(`${this.config.provision.siteEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`);
                 break;
             }
             case WayToRegisterBot.ReuseExisting: {
                 // Remind end developers to update message endpoint manually.
                 await DialogUtils.show(
                     context,
-                    `Please update bot's message endpoint manually using ${this.config.provision.siteEndpoint}/api/messages before you run this bot.`,
+                    `Please update bot's message endpoint manually using ${this.config.provision.siteEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX} before you run this bot.`,
                 );
                 break;
             }
@@ -527,14 +528,14 @@ export class TeamsBotImpl {
 
         switch (this.config.scaffold.wayToRegisterBot) {
             case WayToRegisterBot.CreateNew: {
-                await this.updateMessageEndpointOnAppStudio(`${this.config.localDebug.localEndpoint}/api/messages`);
+                await this.updateMessageEndpointOnAppStudio(`${this.config.localDebug.localEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`);
                 break;
             }
             case WayToRegisterBot.ReuseExisting: {
                 // Remind end developers to update message endpoint manually.
                 await DialogUtils.show(
                     context,
-                    `Please update bot's message endpoint manually using ${this.config.provision.siteEndpoint}/api/messages before you run this bot.`,
+                    `Please update bot's message endpoint manually using ${this.config.localDebug.localEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX} before you run this bot.`,
                 );
                 break;
             }
@@ -744,7 +745,7 @@ export class TeamsBotImpl {
         this.config.scaffold.botPassword = botAuthCreds.clientSecret;
         this.config.provision.botChannelRegName = botChannelRegistrationName;
 
-        this.ctx!.config.set(PluginBot.BOTS_SECTION, utils.genBotSectionInManifest(this.config.scaffold.botId!));
+        this.updateManifest(this.config.scaffold.botId!);
 
         this.telemetryStepOutSuccess(LifecycleFuncNames.CREATE_NEW_BOT_REG_AZURE);
     }

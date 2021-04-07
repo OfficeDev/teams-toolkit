@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { WayToRegisterBot } from "./enums/wayToRegisterBot";
-import { OptionItem } from "teamsfx-api";
+import { OptionItem } from "fx-api";
 import { ProgrammingLanguage } from "./enums/programmingLanguage";
 
 export class RegularExprs {
@@ -104,8 +104,9 @@ export class LifecycleFuncNames {
     public static readonly CREATE_NEW_BOT_REG_APPSTUDIO = "createNewBotRegistrationOnAppStudio";
 }
 
-export class RetryTimes {
-    public static readonly GENERATE_CLIENT_SECRET = 5;
+export class Retry {
+    public static readonly GENERATE_CLIENT_SECRET_TIMES = 10;
+    public static readonly GENERATE_CLIENT_SECRET_GAP_MS = 5000;
 }
 export class ExceptionNames {
     // System Exceptions
@@ -166,4 +167,8 @@ export class AuthEnvNames {
 
 export class AuthValues {
     public static readonly M365_AUTHORITY_HOST = "https://login.microsoftonline.com";
+}
+
+export class DeployConfigs {
+    public static readonly UN_PACK_DIRS = ["node_modules"];
 }

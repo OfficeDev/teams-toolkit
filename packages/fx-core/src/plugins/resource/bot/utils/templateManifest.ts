@@ -83,7 +83,7 @@ export class TemplateManifest {
     }
 
     public getNewestTemplateUrl(
-        lang: string,
+        lang: ProgrammingLanguage,
         group_name: string,
         scenario = TemplateProjectsConstants.DEFAULT_SCENARIO_NAME,
     ): string {

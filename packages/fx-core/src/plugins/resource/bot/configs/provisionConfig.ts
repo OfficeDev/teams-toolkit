@@ -4,7 +4,7 @@ import { ConfigValue, PluginContext } from "fx-api";
 import { ServiceClientCredentials } from "@azure/ms-rest-js";
 
 import * as utils from "../utils/common";
-import { PluginSolution, PluginBot } from "../resources/strings";
+import { PluginSolution, PluginBot, CommonStrings } from "../resources/strings";
 
 export class ProvisionConfig {
     public subscriptionId?: string;
@@ -14,6 +14,7 @@ export class ProvisionConfig {
     public botChannelRegName?: string;
     public siteName?: string;
     public siteEndpoint?: string;
+    public redirectUri?: string;
     public serviceClientCredentials?: ServiceClientCredentials;
     public graphToken?: string;
     public provisioned = false;
@@ -56,6 +57,7 @@ export class ProvisionConfig {
         const siteEndpointValue: ConfigValue = context.config.get(PluginBot.SITE_ENDPOINT);
         if (siteEndpointValue) {
             this.siteEndpoint = siteEndpointValue as string;
+            this.redirectUri = `${siteEndpointValue}${CommonStrings.AUTH_REDIRECT_URI_SUFFIX}`;
         }
 
         const provisionedValue: ConfigValue = context.config.get(PluginBot.PROVISIONED);
@@ -75,5 +77,6 @@ export class ProvisionConfig {
         utils.checkAndSaveConfig(context, PluginBot.SITE_NAME, this.siteName);
         utils.checkAndSaveConfig(context, PluginBot.SITE_ENDPOINT, this.siteEndpoint);
         utils.checkAndSaveConfig(context, PluginBot.PROVISIONED, this.provisioned ? "true" : "false");
+        utils.checkAndSaveConfig(context, PluginBot.REDIRECT_URI, this.redirectUri);
     }
 }

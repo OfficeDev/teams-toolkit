@@ -8,6 +8,7 @@ import AdmZip from "adm-zip";
 
 import { ConfigValue, PluginContext, IBot, IComposeExtension } from "fx-api";
 import { RegularExprs, WebAppConstants } from "../constants";
+import { ProgrammingLanguage } from "../enums/programmingLanguage";
 
 export function toBase64(source: string): string {
     return Base64.encode(source);
@@ -173,4 +174,18 @@ export function genMsgExtSectionInManifest(botId: string): string {
         }
     ];
     return JSON.stringify(composeExtensions);
+}
+
+export function convertToLangKey(programmingLanguage: ProgrammingLanguage): string {
+    switch (programmingLanguage) {
+        case ProgrammingLanguage.JavaScript: {
+            return "JavaScript";
+        }
+        case ProgrammingLanguage.TypeScript: {
+            return "TypeScript";
+        }
+        default: {
+            return "JavaScript";
+        }
+    }
 }

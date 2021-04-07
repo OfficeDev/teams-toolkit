@@ -14,7 +14,7 @@ import {
     IFunctionPluginConfig,
     ISolutionConfig,
 } from "../../../../../src/plugins/resource/apim/src/model/config";
-import { DialogMsg, DialogType, IQuestion, PluginContext, QuestionType } from "teamsfx-api";
+import { DialogMsg, DialogType, IQuestion, PluginContext, QuestionType } from "fx-api";
 dotenv.config();
 chai.use(chaiAsPromised);
 const enableTest: boolean = process.env.OVERALL_TEST ? process.env.OVERALL_TEST === "true" : false;
@@ -37,7 +37,7 @@ describe("ApimPlugin", () => {
     describe("Happy path", () => {
         const apimPlugin = new ApimPlugin();
         skip_if(!enableTest, "First time create", async () => {
-            const ctx = await buildContext("teamsfx-apim-test", testCreateSuffix);
+            const ctx = await buildContext("fx-apim-test", testCreateSuffix);
             const mockDialog = new MockDialog();
             sinon.stub(mockDialog, "communicate").callsFake((msg: any) => {
                 msg = msg as DialogMsg;

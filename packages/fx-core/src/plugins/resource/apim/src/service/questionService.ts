@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { AssertNotEmpty, BuildError, EmptyChoice, InvalidApimServiceChoice, NoValidOpenApiDocument } from "../error";
-import { LogProvider, Dialog, DialogMsg, DialogType, QuestionType } from "teamsfx-api";
+import { LogProvider, Dialog, DialogMsg, DialogType, QuestionType } from "fx-api";
 import { IApimServiceResource } from "../model/resource";
 import { QuestionConstants } from "../constants";
 import { ApiContract } from "@azure/arm-apimanagement/src/models";

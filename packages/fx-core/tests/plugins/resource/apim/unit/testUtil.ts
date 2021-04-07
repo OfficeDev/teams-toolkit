@@ -13,7 +13,7 @@ import {
     ConfigMap,
     TeamsAppManifest,
     IProgressHandler,
-} from "teamsfx-api";
+} from "fx-api";
 import { BuildError, NotImplemented } from "../../../../../src/plugins/resource/apim/src/error";
 import { TokenCredential } from "@azure/core-auth";
 import { AsyncFunc, Func } from "mocha";

@@ -1,5 +1,5 @@
 {
-  "name": "teamsfx-api",
+  "name": "fx-api",
   "version": "1.0.0",
   "description": "framework api",
   "main": "build/index.js",
@@ -20,7 +20,7 @@
   ],
   "scripts": {
     "lint:staged": "lint-staged",
-    "lint": "eslint \"**/*.ts\"",
+    "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
     "build": "tsc -p ./",
     "prepare": "npm run build",
     "eslint:fix": "eslint package.json tsconfig.json src --ext .ts --fix",
@@ -49,8 +49,10 @@
     "typescript": "^4.2.3"
   },
   "dependencies": {
-    "@azure/ms-rest-nodeauth": "^3.0.6",
     "@azure/core-http": "^1.2.2",
+    "@azure/ms-rest-nodeauth": "^3.0.6",
+    "@types/fs-extra": "^9.0.10",
+    "jsonschema": "^1.4.0",
     "neverthrow": "^3.2.0"
   },
   "lint-staged": {

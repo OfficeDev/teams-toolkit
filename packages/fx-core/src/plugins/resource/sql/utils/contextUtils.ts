@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import {
     PluginContext,
-} from "teamsfx-api";
+} from "fx-api";
 
 export class ContextUtils {
     static ctx: PluginContext;

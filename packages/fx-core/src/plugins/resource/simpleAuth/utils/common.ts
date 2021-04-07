@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ConfigValue, LogProvider, PluginContext } from "teamsfx-api";
+import { ConfigValue, LogProvider, PluginContext } from "fx-api";
 import * as path from "path";
 import { Constants, Message } from "../constants";
 import { NoConfigError } from "../errors";

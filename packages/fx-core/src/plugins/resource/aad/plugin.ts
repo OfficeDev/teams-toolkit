@@ -11,7 +11,7 @@ import {
   PluginContext,
   QTreeNode,
   Result,
-} from "teamsfx-api";
+} from "fx-api";
 import { AadResult, ResultFactory } from "./results";
 import {
   PostProvisionConfig,

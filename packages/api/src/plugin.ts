@@ -4,9 +4,9 @@
  
 import { Context, PluginContext } from "./context";
 import { Result } from "neverthrow";
-import { Func, QTreeNode } from "./question";
-import { Stage } from "./types";
 import { FxError } from "./error";
+import { Stage } from "./constants";
+import { Func, QTreeNode } from "./qm";
 /**
  * Plugin.
  */

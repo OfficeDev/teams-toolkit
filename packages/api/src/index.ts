@@ -8,10 +8,10 @@ export * from "./core";
 export * from "./config";
 export * from "./plugin";
 export * from "./solution";
-export * from "./types";
 export * from "./vscode";
 export * from "./manifest";
-export * from "./question";
 export * from "./utils";
 export * from "./error";
+export * from "./qm";
+
 export * from "neverthrow";

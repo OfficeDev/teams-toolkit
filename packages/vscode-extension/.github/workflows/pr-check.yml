@@ -1,0 +1,77 @@
+name: PR CI Check
+
+on:
+  push:
+    branches:
+      - dev
+  pull_request:
+    branches:
+      - dev
+      - main
+
+jobs:
+  build-and-test:
+    name: Build and Test (${{ matrix.os }} node ${{ matrix.node-version }})
+
+    strategy:
+      matrix:
+        os: [windows-latest]
+        node-version: [10.x]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Create .npmrc file
+        run: |
+          echo "${{ secrets.NPMRC_CONF }}" > ~/.npmrc
+
+      - name: Build
+        run: |
+          npm install
+          npm run build
+
+      - name: Test when Linux
+        run: xvfb-run -a npm test
+        if: runner.os == 'Linux'
+
+      - name: Test when not Linux
+        run: npm test
+        if: runner.os != 'Linux'
+
+      - name: Upload unit test results
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: Unit test results (${{ matrix.os }} node ${{ matrix.node-version }})
+          path: test-results.*.xml
+
+  publish-test-results:
+    name: Publish unit test results
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: success() || failure()
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: artifacts
+
+      - name: Display artifacts
+        run: ls -R
+        working-directory: artifacts
+
+      - name: Publish unit test results
+        uses: EnricoMi/publish-unit-test-result-action@v1.6
+        with:
+          check_name: Unit test results
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          files: artifacts/**/*.xml

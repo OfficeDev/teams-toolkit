@@ -142,16 +142,21 @@ export class Alias {
 export class QuestionOptions {
     public static readonly WAY_TO_REGISTER_BOT_OPTIONS: OptionItem[] = [
         {
-            label: WayToRegisterBot.CreateNew,
-            description: "Create a new bot registration"
+            id: WayToRegisterBot.CreateNew,
+            label: "Create a new bot registration"
         },
         {
-            label: WayToRegisterBot.ReuseExisting,
-            description: "Reuse an existing bot registration"
+            id: WayToRegisterBot.ReuseExisting,
+            label: "Reuse an existing bot registration"
         }
     ];
 
-    public static readonly PROGRAMMING_LANGUAGE_OPTIONS: string[] = Object.values(ProgrammingLanguage);
+    public static readonly PROGRAMMING_LANGUAGE_OPTIONS: OptionItem[] = Object.values(ProgrammingLanguage).map((value) => {
+        return {
+            id: value.toLowerCase(),
+            label: value
+        };
+    });
 }
 
 export class AuthEnvNames {

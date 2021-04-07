@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ConfigValue, PluginContext } from "teamsfx-api";
-import { PluginBot } from '../resources/strings';
+import { ConfigValue, PluginContext } from "fx-api";
+import { PluginBot } from "../resources/strings";
 import * as utils from "../utils/common";
 
 export class DeployConfig {

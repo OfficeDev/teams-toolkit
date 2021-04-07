@@ -178,7 +178,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
   ): Promise<vscode.Task> {
     const command: string = constants.botStartCommand;
     definition = definition || { type: TeamsfxTaskProvider.type, command };
-    const commandLine = "nodemon index.js";
+    const commandLine = "nodemon --inspect=9239 index.js";
     const env = await commonUtils.getBotLocalEnv();
     const options: vscode.ShellExecutionOptions = {
       cwd: projectRoot,

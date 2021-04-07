@@ -87,6 +87,8 @@ export class ConfigNames {
     public static readonly BOT_PASSWORD = "bot password";
     public static readonly LOCAL_BOT_ID = "local bot id";
     public static readonly LOCAL_BOT_PASSWORD = "local bot password";
+
+    public static readonly APPSTUDIO_TOKEN = "app studio token";
 }
 
 export class Commands {

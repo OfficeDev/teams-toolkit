@@ -95,7 +95,7 @@ import {
 import Mustache from "mustache";
 import path from "node:path";
 
-type LoadedPlugin = Plugin & { name: string; displayName: string; version: string };
+type LoadedPlugin = Plugin & { name: string; displayName: string; };
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
 
 type ParamForRegisterTeamsAppAndAad = {
@@ -110,7 +110,6 @@ function newIdentityPlugin(): LoadedPlugin {
     const pluginWithMeta: LoadedPlugin = plugin as LoadedPlugin;
     pluginWithMeta.name = "fx-resource-identity";
     pluginWithMeta.displayName = "Microsoft Identity";
-    pluginWithMeta.version = "0.0.16";
     return pluginWithMeta;
 }
 
@@ -119,7 +118,6 @@ function newFehostPlugin(): LoadedPlugin {
     const pluginWithMeta: LoadedPlugin = plugin as LoadedPlugin;
     pluginWithMeta.name = "fx-resource-frontend-hosting";
     pluginWithMeta.displayName = "Tab Front-end";
-    pluginWithMeta.version = "0.1.0";
     return pluginWithMeta;
 }
 
@@ -128,7 +126,6 @@ function newSqlPlugin(): LoadedPlugin {
     const pluginWithMeta: LoadedPlugin = plugin as LoadedPlugin;
     pluginWithMeta.name = "fx-resource-azure-sql";
     pluginWithMeta.displayName = "Azure SQL Datebase";
-    pluginWithMeta.version = "0.1.8";
     return pluginWithMeta;
 }
 
@@ -137,7 +134,6 @@ function newSpfxPlugin(): LoadedPlugin {
     const pluginWithMeta: LoadedPlugin = plugin as LoadedPlugin;
     pluginWithMeta.name = "fx-resource-spfx";
     pluginWithMeta.displayName = "SharePoint Framework (SPFx)";
-    pluginWithMeta.version = "0.1.13";
     return pluginWithMeta;
 }
 
@@ -146,7 +142,6 @@ function newBotPlugin(): LoadedPlugin {
     const pluginWithMeta: LoadedPlugin = plugin as LoadedPlugin;
     pluginWithMeta.name = "fx-resource-teamsbot";
     pluginWithMeta.displayName = "Bot";
-    pluginWithMeta.version = "0.1.7";
     return pluginWithMeta;
 }
 
@@ -155,7 +150,6 @@ function newAadPlugin(): LoadedPlugin {
     const pluginWithMeta: LoadedPlugin = plugin as LoadedPlugin;
     pluginWithMeta.name = "fx-resource-aad-app-for-teams";
     pluginWithMeta.displayName = "AAD";
-    pluginWithMeta.version = "0.0.6";
     return pluginWithMeta;
 }
 
@@ -164,7 +158,6 @@ function newFunctionPlugin(): LoadedPlugin {
     const pluginWithMeta: LoadedPlugin = plugin as LoadedPlugin;
     pluginWithMeta.name = "fx-resource-function";
     pluginWithMeta.displayName = "Azure Function";
-    pluginWithMeta.version = "0.1.7";
     return pluginWithMeta;
 }
 
@@ -172,8 +165,7 @@ function newSimpleAuthPlugin(): LoadedPlugin {
     const plugin: Plugin = new SimpleAuthPlugin();
     const pluginWithMeta: LoadedPlugin = plugin as LoadedPlugin;
     pluginWithMeta.name = "fx-resource-runtime-connector";
-    pluginWithMeta.displayName = "Runtime Connector";
-    pluginWithMeta.version = "0.0.1";
+    pluginWithMeta.displayName = "Simple Auth";
     return pluginWithMeta;
 }
 
@@ -182,7 +174,6 @@ function newLocalDebugPlugin(): LoadedPlugin {
     const pluginWithMeta: LoadedPlugin = plugin as LoadedPlugin;
     pluginWithMeta.name = "fx-resource-local-debug";
     pluginWithMeta.displayName = "LocalDebug";
-    pluginWithMeta.version = "0.0.2";
     return pluginWithMeta;
 }
 
@@ -191,7 +182,6 @@ function newApimPlugin(): LoadedPlugin {
     const pluginWithMeta: LoadedPlugin = plugin as LoadedPlugin;
     pluginWithMeta.name = "fx-resource-apim";
     pluginWithMeta.displayName = "API Management";
-    pluginWithMeta.version = "0.0.1";
     return pluginWithMeta;
 }
 

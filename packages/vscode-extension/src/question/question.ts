@@ -47,6 +47,9 @@ export async function getRealValue(
       if (res.isOk()) {
         return res.value;
       }
+      else {
+        return undefined;
+      }
     }
   }
   return output;
@@ -285,6 +288,7 @@ export async function traverse(
     if (curr.children) {
       for (let i = curr.children.length - 1; i >= 0; --i) {
         const child = curr.children[i];
+        if(!child) continue;
         parentMap.set(child, curr);
         if (child.condition) {
           const realValue = child.condition.target

@@ -13,6 +13,13 @@ export enum Platform
     CLI = "cli"
 }
 
+export enum VsCodeEnv
+{
+    local = "local",
+    codespaceBrowser = "codespaceBrowser",
+    codespaceVsCode = "codespaceVsCode",
+    remoteContainer = "remoteContainer"
+}
  
 export enum Task
 {

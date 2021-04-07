@@ -119,17 +119,21 @@ class CoreImpl implements Core {
                 if (v.getQuestions) {
                     const res = await v.getQuestions(stage, this.solutionContext(answers));
                     if (res.isErr()) return res;
-                    const solutionNode = res.value as QTreeNode;
-                    solutionNode.condition = { equals: k };
-                    if (solutionNode.data) select_solution.addChild(solutionNode);
+                    if(res.value){
+                        const solutionNode = res.value as QTreeNode;
+                        solutionNode.condition = { equals: k };
+                        if (solutionNode.data) select_solution.addChild(solutionNode);
+                    }
                 }
             }
             node.addChild(new QTreeNode(QuestionRootFolder));
         } else if (this.selectedSolution) {
             const res = await this.selectedSolution.getQuestions(stage, this.solutionContext(answers));
             if (res.isErr()) return res;
-            const child = res.value as QTreeNode;
-            if (child.data) node.addChild(child);
+            if(res.value){
+                const child = res.value as QTreeNode;
+                if (child.data) node.addChild(child);
+            }
         }
         return ok(node);
     }
@@ -776,12 +780,18 @@ export class CoreProxy implements Core {
         );
     }
     async executeUserTask(func: Func, answers?: ConfigMap): Promise<Result<any, FxError>> {
-        return await this.runWithErrorHandling<QTreeNode | undefined>(
-            "executeUserTask",
-            true,
-            err(error.NotSupportedProjectType()),
-            () => this.coreImpl.executeUserTask(func, answers),
-        );
+         ////////////////hard code for VS init scenario
+         const platform = answers?.getString("platform");
+         let check = true;
+         if (Platform.VS === platform) check = false;
+         ////////////////////////////
+ 
+         return await this.runWithErrorHandling<QTreeNode | undefined>(
+             "executeUserTask",
+             check,
+             err(error.NotSupportedProjectType()),
+             () => this.coreImpl.executeUserTask(func, answers),
+         );
     }
     async callFunc(func: Func, answer?: ConfigMap): Promise<Result<any, FxError>> {
         const stage = answer?.getString("stage");

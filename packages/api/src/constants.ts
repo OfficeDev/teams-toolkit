@@ -4,6 +4,7 @@
 
 
 export const ConfigFolderName = "fx";
+export const ProductName = "teamsfx";
 
 export enum Platform
 {

@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { IBotRegistration, IAADApplication, IAADPassword, IAppDefinition } from "./interface";
-import { TeamsAppManifest, ConfigMap, LogProvider, } from "fx-api";
+import { TeamsAppManifest, ConfigMap, LogProvider } from "fx-api";
 import { AzureSolutionQuestionNames, BotOptionItem, HostTypeOptionAzure, MessageExtensionItem } from "../question";
 import { TEAMS_APP_MANIFEST_TEMPLATE } from "../constants";
 import axios, { AxiosInstance } from "axios";
@@ -214,9 +214,12 @@ export namespace AppStudio {
         manifest: string,
         appId: string,
         endpoint: string,
-        domain: string,
+        domains: string[],
+        webApplicationInfoResource?: string,
         appName?: string,
         version?: string,
+        bots?: string,
+        composeExtensions?: string,
     ): [IAppDefinition, TeamsAppManifest] {
         if (appName) {
             manifest = replaceConfigValue(manifest, "appName", appName);
@@ -224,13 +227,28 @@ export namespace AppStudio {
         if (version) {
             manifest = replaceConfigValue(manifest, "version", version);
         }
-        manifest = replaceConfigValue(manifest, "baseUrl", endpoint);
+        manifest = replaceConfigValue(manifest, "baseUrl", endpoint ? endpoint : "https://localhost:3000");
         manifest = replaceConfigValue(manifest, "appClientId", appId);
         manifest = replaceConfigValue(manifest, "appid", appId);
-        manifest = replaceConfigValue(manifest, "frontEndDomain", domain);
+
+        // Convert manifest json string to json object.
+        const manifestJson = JSON.parse(manifest); // exception handling.
+        if (bots) {
+            manifestJson["bots"] = bots;
+        }
+        if (composeExtensions) {
+            manifestJson["composeExtensions"] = composeExtensions;
+        }
+        if (webApplicationInfoResource) {
+            manifestJson["webApplicationInfo"]["resource"] = webApplicationInfoResource;
+        }
+        manifest = JSON.stringify(manifestJson);
 
         const updatedManifest = JSON.parse(manifest) as TeamsAppManifest;
-        updatedManifest.validDomains?.push(domain);
+
+        for (const domain of domains) {
+            updatedManifest.validDomains?.push(domain);
+        }
 
         return [convertToAppDefinition(updatedManifest), updatedManifest];
     }

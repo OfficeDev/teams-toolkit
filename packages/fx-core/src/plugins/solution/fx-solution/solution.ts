@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
@@ -53,6 +54,14 @@ import {
     SOLUTION_PROVISION_SUCCEEDED,
     BOTS,
     COMPOSE_EXTENSIONS,
+    BOT_DOMAIN,
+    LOCAL_APPLICATION_ID_URIS,
+    LOCAL_CLIENT_SECRET,
+    LOCAL_DEBUG_BOT_DOMAIN,
+    REMOTE_AAD_ID,
+    REMOTE_APPLICATION_ID_URIS,
+    REMOTE_CLIENT_SECRET,
+    WEB_APPLICATION_INFO_SOURCE,
 } from "./constants";
 
 import { SpfxPlugin } from "../../resource/spfx";
@@ -83,9 +92,18 @@ import {
     createCapabilityQuestion,
     createAddAzureResourceQuestion,
 } from "./question";
+import Mustache from "mustache";
+import path from "node:path";
 
 type LoadedPlugin = Plugin & { name: string; displayName: string; };
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
+
+type ParamForRegisterTeamsAppAndAad = {
+    "app-name": string;
+    environment: "local" | "remote";
+    endpoint: string;
+    "root-path": string;
+};
 
 function newIdentityPlugin(): LoadedPlugin {
     const plugin: Plugin = new IdentityPlugin();
@@ -182,7 +200,7 @@ export class TeamsAppSolution implements Solution {
     botPlugin: LoadedPlugin = newBotPlugin();
     aadPlugin: LoadedPlugin = newAadPlugin();
     functionPlugin: LoadedPlugin = newFunctionPlugin();
-    runtimeConnectorPlugin: LoadedPlugin = newSimpleAuthPlugin();
+    simpleAuthPlugin: LoadedPlugin = newSimpleAuthPlugin();
     localDebugPlugin: LoadedPlugin = newLocalDebugPlugin();
     apimPlugin: LoadedPlugin = newApimPlugin();
 
@@ -196,7 +214,7 @@ export class TeamsAppSolution implements Solution {
         this.botPlugin,
         this.aadPlugin,
         this.functionPlugin,
-        this.runtimeConnectorPlugin,
+        this.simpleAuthPlugin,
         this.localDebugPlugin,
         this.apimPlugin,
     ];
@@ -335,7 +353,7 @@ export class TeamsAppSolution implements Solution {
                 }
                 // AAD, LocalDebug and runtimeConnector are enabled for azure by default
                 selectedPlugins.push(this.aadPlugin);
-                selectedPlugins.push(this.runtimeConnectorPlugin);
+                selectedPlugins.push(this.simpleAuthPlugin);
                 selectedPlugins.push(this.localDebugPlugin);
             } else if (HostTypeOptionSPFx.label === frontendHostType) {
                 selectedPlugins.push(this.spfxPlugin);
@@ -348,6 +366,9 @@ export class TeamsAppSolution implements Solution {
             selectedPlugins.push(this.botPlugin);
             if (!selectedPlugins.includes(this.aadPlugin)) {
                 selectedPlugins.push(this.aadPlugin);
+            }
+            if (!selectedPlugins.includes(this.localDebugPlugin)) {
+                selectedPlugins.push(this.localDebugPlugin);
             }
         }
 
@@ -700,11 +721,30 @@ export class TeamsAppSolution implements Solution {
             }
         }
         const manifestString = JSON.stringify(manifest);
+
+        const validDomains: string[] = [];
+        if (domain) {
+            validDomains.push(domain);
+        }
+
+        const validBotDomain = ctx.config.get(this.botPlugin.name)?.get(BOT_DOMAIN);
+        if (validBotDomain) {
+            validDomains.push(validBotDomain as string);
+        }
+
+        const webApplicationInfoResource: string | undefined = ctx.config.get(this.aadPlugin.name)?.getString(WEB_APPLICATION_INFO_SOURCE);
+        if (webApplicationInfoResource) {
+            ctx.logProvider?.debug(`Succeed to get webApplicationInfoResource: ${webApplicationInfoResource}`);
+        } else {
+            ctx.logProvider?.debug(`Failed to get webApplicationInfoResource from aad by key ${WEB_APPLICATION_INFO_SOURCE}.`);
+        }
+
         const [appDefinition, updatedManifest] = AppStudio.getDevAppDefinition(
             manifestString,
             clientId,
             endpoint.endsWith("/") ? endpoint.substring(0, endpoint.length - 1) : endpoint,
-            domain,
+            validDomains,
+            webApplicationInfoResource
         );
         const teamsAppId = ctx.config.get(GLOBAL_CONFIG)?.getString(REMOTE_TEAMS_APP_ID);
         if (!teamsAppId) {
@@ -1179,6 +1219,7 @@ export class TeamsAppSolution implements Solution {
         }
         return ok(node);
     }
+    
 
     // Update app manifest
     private async updateApp(
@@ -1271,13 +1312,29 @@ export class TeamsAppSolution implements Solution {
         }
 
         const [localTabEndpoint, localTabDomain, localAADId] = maybeConfig.value;
+        const validDomains: string[] = [localTabEndpoint];
+
+        const localBotDomain = ctx.config.get(this.localDebugPlugin.name)?.get(LOCAL_DEBUG_BOT_DOMAIN);
+        if (localBotDomain) {
+            validDomains.push(localBotDomain as string);
+        }
+
+        const bots = ctx.config.get(this.botPlugin.name)?.getString(BOTS);
+
+        const composeExtensions = ctx.config.get(this.botPlugin.name)?.getString(COMPOSE_EXTENSIONS);
+
+        const webApplicationInfoResource = ctx.config.get(this.aadPlugin.name)?.getString(WEB_APPLICATION_INFO_SOURCE);
+
         const [appDefinition, _updatedManifest] = AppStudio.getDevAppDefinition(
             TEAMS_APP_MANIFEST_TEMPLATE,
             localAADId,
             localTabEndpoint,
-            localTabDomain,
+            validDomains,
+            webApplicationInfoResource,
             this.manifest!.name.short,
             this.manifest!.version,
+            bots,
+            composeExtensions
         );
 
         const maybeTeamsAppId = await this.createAndUpdateApp(
@@ -1306,8 +1363,7 @@ export class TeamsAppSolution implements Solution {
         return executeConcurrently(postLocalDebugWithCtx);
     }
 
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    private loadTeamsAppTenantId(config: SolutionConfig, appStudioToken?: object): Result<SolutionConfig, FxError> {
+    private parseTeamsAppTenantId(appStudioToken?: object): Result<string, FxError> {
         if (appStudioToken === undefined) {
             return err(
                 returnSystemError(
@@ -1332,10 +1388,15 @@ export class TeamsAppSolution implements Solution {
                 ),
             );
         }
-
-        config.get(GLOBAL_CONFIG)?.set("teamsAppTenantId", teamsAppTenantId);
-        return ok(config);
+        return ok(teamsAppTenantId);
     }
+    private loadTeamsAppTenantId(config: SolutionConfig, appStudioToken?: object): Result<SolutionConfig, FxError> {
+        return this.parseTeamsAppTenantId(appStudioToken).andThen((teamsAppTenantId) => {
+            config.get(GLOBAL_CONFIG)?.set("teamsAppTenantId", teamsAppTenantId);
+            return ok(config);
+        });
+    }
+
 
     private getLocalDebugConfig(config: SolutionConfig): Result<[string, string, string], SystemError> {
         const localTabEndpoint = config.get(this.localDebugPlugin.name)?.get(LOCAL_DEBUG_TAB_ENDPOINT);
@@ -1373,7 +1434,7 @@ export class TeamsAppSolution implements Solution {
 
     async callFunc(func: Func, ctx: SolutionContext): Promise<Result<any, FxError>> {
         const namespace = func.namespace;
-        const array = namespace?namespace.split("/"):[];
+        const array = namespace.split("/");
         if (array.length == 2) {
             const pluginName = array[1];
             const plugin = this.pluginMap.get(pluginName);
@@ -1402,7 +1463,7 @@ export class TeamsAppSolution implements Solution {
      */
     async getQuestionsForUserTask(func: Func, ctx: SolutionContext): Promise<Result<QTreeNode | undefined, FxError>> {
         const namespace = func.namespace;
-        const array = namespace?namespace.split("/"):[];
+        const array = namespace.split("/");
         if (array.length == 2) {
             const pluginName = array[1];
             const plugin = this.pluginMap.get(pluginName);
@@ -1429,8 +1490,15 @@ export class TeamsAppSolution implements Solution {
      */
     async executeUserTask(func: Func, ctx: SolutionContext): Promise<Result<any, FxError>> {
         const namespace = func.namespace;
-        const array = namespace?namespace.split("/"):[];
-        if (array.length == 2) {
+        const method = func.method;
+        const array = namespace.split("/");
+        if (namespace.includes("solution") && method === "registerTeamsAppAndAad") {
+            const maybeParams = this.extractParamForRegisterTeamsAppAndAad(ctx.answers);
+            if (maybeParams.isErr()) {
+                return maybeParams;
+            }
+            return this.registerTeamsAppAndAad(ctx, maybeParams.value);
+        } else if (array.length == 2) {
             const pluginName = array[1];
             const plugin = this.pluginMap.get(pluginName);
             if (plugin && plugin.executeUserTask) {
@@ -1451,5 +1519,185 @@ export class TeamsAppSolution implements Solution {
                 `executeUserTaskRouteFailed`,
             ),
         );
+    }
+
+    private extractParamForRegisterTeamsAppAndAad(
+        answers?: ConfigMap,
+    ): Result<ParamForRegisterTeamsAppAndAad, FxError> {
+        if (answers == undefined) {
+            return err(
+                returnSystemError(
+                    new Error("Input is undefined"),
+                    "Solution",
+                    SolutionError.FailedToGetParamForRegisterTeamsAppAndAad,
+                ),
+            );
+        }
+
+        const param: ParamForRegisterTeamsAppAndAad = {
+            "app-name": "",
+            endpoint: "",
+            environment: "local",
+            "root-path": "",
+        };
+        for (const key of Object.keys(param)) {
+            const value = answers.getString(key);
+            if (value == undefined) {
+                return err(
+                    returnSystemError(
+                        new Error(`${key} not found`),
+                        "Solution",
+                        SolutionError.FailedToGetParamForRegisterTeamsAppAndAad,
+                    ),
+                );
+            }
+            (param as any)[key] = value;
+        }
+
+        return ok(param);
+    }
+
+    private prepareConfigForRegisterTeamsAppAndAad(
+        config: SolutionConfig,
+        params: ParamForRegisterTeamsAppAndAad,
+    ): string {
+        const endpoint = params.endpoint;
+        const domain = new URL(endpoint).hostname;
+
+        if (config.get(GLOBAL_CONFIG) == undefined) {
+            config.set(GLOBAL_CONFIG, new ConfigMap());
+        }
+        config.get(GLOBAL_CONFIG)!.set(PERMISSION_REQUEST, JSON.stringify(DEFAULT_PERMISSION_REQUEST));
+
+        if (config.get(this.aadPlugin.name) == undefined) {
+            config.set(this.aadPlugin.name, new ConfigMap());
+        }
+        config.get(this.aadPlugin.name)!.set("domain", domain);
+        config.get(this.aadPlugin.name)!.set("endpoint", endpoint);
+        return domain;
+    }
+
+    private extractConfigForRegisterTeamsAppAndAad(config: SolutionConfig, isLocal: boolean): Result<{aadId: string, applicationIdUri: string, clientSecret: string}, FxError> {
+        const aadId = config.get(this.aadPlugin.name)?.get(isLocal ? LOCAL_DEBUG_AAD_ID : REMOTE_AAD_ID);
+        if (aadId === undefined || typeof aadId !== "string") {
+            return err(
+                returnSystemError(
+                    new Error(`config ${LOCAL_DEBUG_AAD_ID} is missing`),
+                    "Solution",
+                    SolutionError.RegisterTeamsAppAndAadError,
+                ),
+            );
+        }
+        const applicationIdUri = config.get(this.aadPlugin.name)?.get(isLocal ? LOCAL_APPLICATION_ID_URIS : REMOTE_APPLICATION_ID_URIS);
+        if (applicationIdUri === undefined || typeof applicationIdUri !== "string") {
+            return err(
+                returnSystemError(
+                    new Error(`config ${LOCAL_APPLICATION_ID_URIS} is missing`),
+                    "Solution",
+                    SolutionError.RegisterTeamsAppAndAadError,
+                ),
+            );
+        }
+        const clientSecret = config.get(this.aadPlugin.name)?.get(isLocal ? LOCAL_CLIENT_SECRET : REMOTE_CLIENT_SECRET);
+        if (clientSecret === undefined || typeof clientSecret !== "string") {
+            return err(
+                returnSystemError(
+                    new Error(`config ${LOCAL_CLIENT_SECRET} is missing`),
+                    "Solution",
+                    SolutionError.RegisterTeamsAppAndAadError,
+                ),
+            );
+        }
+        return ok({
+            aadId,
+            applicationIdUri,
+            clientSecret 
+        });
+    }
+
+    /**
+     * This function is only called by cli: teamsfx init. The context may be different from that of vsc: no .${ConfigFolderName} folder, no permissions.json
+     * In order to reuse aad plugin, we need to pretend we are still in vsc context.
+     *
+     */
+    private async registerTeamsAppAndAad(
+        ctx: SolutionContext,
+        params: ParamForRegisterTeamsAppAndAad,
+    ): Promise<
+        Result<
+            { teamsAppId: string; clientId: string; clientSecret: string; tenantId: string; applicationIdUri: string },
+            FxError
+        >
+    > {
+        const rootPath = params["root-path"];
+        const isLocal: boolean = params.environment === "local";
+        const mockedManifest = new TeamsAppManifest();
+        mockedManifest.name.short = params["app-name"];
+        const domain = this.prepareConfigForRegisterTeamsAppAndAad(ctx.config, params);
+        const aadPluginCtx = getPluginContext(ctx, this.aadPlugin.name, mockedManifest);
+        const aadPlugin: AadAppForTeamsPlugin = this.aadPlugin as any;
+
+        const provisionResult = isLocal ? await aadPlugin.localDebug(aadPluginCtx) : await aadPlugin.provision(aadPluginCtx);
+        if (provisionResult.isErr()) {
+            return provisionResult;
+        }
+        aadPlugin.setApplicationInContext(aadPluginCtx, isLocal);
+        const postProvisionResult = isLocal ? await aadPlugin.postLocalDebug(aadPluginCtx) : await aadPlugin.postProvision(aadPluginCtx);
+        if (postProvisionResult.isErr()) {
+            return postProvisionResult;
+        }
+
+        const configResult = this.extractConfigForRegisterTeamsAppAndAad(ctx.config, isLocal);
+        if (configResult.isErr()) {
+            return err(configResult.error);
+        }
+
+        const manifestPath: string = path.join(rootPath, "manifest", isLocal ? "local" : "remote", "manifest.json");
+        const appSettingsJSONPath = path.join(rootPath, "blazor-server-tabs", isLocal ? "appsettings.Development.json" : "appsettings.json");
+
+        const manifestTpl = (await fs.readFile(manifestPath)).toString();
+        const manifestStr: string = Mustache.render(manifestTpl, {
+            "client-id": configResult.value.aadId,
+            "app-name": params["app-name"],
+            endpoint: params.endpoint,
+            domain: domain,
+            "application-id-uri": configResult.value.applicationIdUri,
+        });
+        const manifest: TeamsAppManifest = JSON.parse(manifestStr);
+        await fs.writeFile(manifestPath, manifestStr);
+        const appDefinition = AppStudio.convertToAppDefinition(manifest);
+        const maybeTeamsAppId = await this.createAndUpdateApp(
+            appDefinition,
+            "remote",
+            ctx.logProvider,
+            await ctx.appStudioToken?.getAccessToken(),
+        );
+        if (maybeTeamsAppId.isErr()) {
+            return err(maybeTeamsAppId.error);
+        }
+        const teamsAppId = maybeTeamsAppId.value;
+
+        const appSettingsJSONTpl = (await fs.readFile(appSettingsJSONPath)).toString();
+        const maybeTenantId = this.parseTeamsAppTenantId(await ctx.appStudioToken?.getJsonObject());
+        if (maybeTenantId.isErr()) {
+            return err(maybeTenantId.error);
+        }
+        const appSettingsJSON = Mustache.render(appSettingsJSONTpl, { "client-id": configResult.value.aadId, "client-secret": configResult.value.clientSecret, "application-id-uri": configResult.value.applicationIdUri, "endpoint": params.endpoint, "tenant-id": maybeTenantId.value,  });
+        await fs.writeFile(appSettingsJSONPath, appSettingsJSON);
+
+        if (isLocal) {
+            const launchSettingsJSONPath: string = path.join(rootPath, "blazor-server-tabs", "Properties", "launchSettings.json");
+            const launchSettingsJSONTpl = (await fs.readFile(launchSettingsJSONPath)).toString();
+            const launchSettingsJSON = Mustache.render(launchSettingsJSONTpl, { "teams-app-id": teamsAppId });
+            await fs.writeFile(launchSettingsJSONPath, launchSettingsJSON);
+        }
+        return ok({
+            teamsAppId: teamsAppId,
+            clientId: configResult.value.aadId,
+            clientSecret: configResult.value.clientSecret,
+            tenantId: maybeTenantId.value,
+            applicationIdUri: configResult.value.applicationIdUri
+        });
+
     }
 }

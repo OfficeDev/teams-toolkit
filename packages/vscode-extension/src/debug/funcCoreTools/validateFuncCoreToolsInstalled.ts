@@ -77,11 +77,10 @@ async function validateFuncCoreToolsInstalled(): Promise<boolean> {
           Messages.installButtonText,
           async () => {
             EnvCheckerTelemetry.sendEvent(EnvCheckerEvent.installingFunc);
-            const start = performance.now();
-            await installFuncCoreTools(packageManagers, supportedVersion);
-            const timecost = (performance.now() - start) / 1000;
-            EnvCheckerTelemetry.sendEvent(EnvCheckerEvent.installedFunc, timecost);
-            installed = true;
+            EnvCheckerTelemetry.sendEventWithDuration(EnvCheckerEvent.installedFunc, async () => {
+              await installFuncCoreTools(packageManagers, supportedVersion);
+              installed = true;
+            });
           }
         );
       } else {

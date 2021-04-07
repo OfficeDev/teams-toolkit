@@ -45,6 +45,17 @@ export class EnvCheckerTelemetry {
     ExtTelemetry.sendTelemetryEvent(eventName, properties, measurements);
   }
 
+  public static async sendEventWithDuration(
+    eventName: EnvCheckerEvent,
+    action: () => Promise<void>
+  ): Promise<void> {
+    const start = performance.now();
+    await action();
+    // use seconds instead of milliseconds
+    const timecost = (performance.now() - start) / 1000;
+    this.sendEvent(eventName, timecost);
+  }
+
   public static sendUserErrorEvent(eventName: EnvCheckerEvent, errorMessage: string): void {
     const error = new UserError(eventName, errorMessage, this._telemetryComponentType);
     ExtTelemetry.sendTelemetryErrorEvent(eventName, error, {
@@ -57,7 +68,12 @@ export class EnvCheckerTelemetry {
     errorMessage: string,
     errorStack: string
   ): void {
-    const error = new SystemError(eventName, errorMessage, this._telemetryComponentType, errorStack);
+    const error = new SystemError(
+      eventName,
+      errorMessage,
+      this._telemetryComponentType,
+      errorStack
+    );
     ExtTelemetry.sendTelemetryErrorEvent(eventName, error, {
       [TelemetryProperty.Component]: this._telemetryComponentType
     });

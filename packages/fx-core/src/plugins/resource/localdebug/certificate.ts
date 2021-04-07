@@ -193,7 +193,7 @@ export class LocalCertificateManager {
     private async verifyCertificateInStore(thumbprint: string): Promise<boolean> {
         try {
             if (os.type() === "Windows_NT") {
-                const getCertCommand = `(Get-ChildItem -Path Cert:\\CurrentUser\\Root | Where-Object { $_.Thumbprint -match "${thumbprint}" }).Thumbprint`;
+                const getCertCommand = `(Get-ChildItem -Path Cert:\\CurrentUser\\Root | Where-Object { $_.Thumbprint -match '${thumbprint}' }).Thumbprint`;
                 const existingThumbprint = (await ps.execPowerShell(getCertCommand)).trim();
                 return (existingThumbprint.toUpperCase() === thumbprint.toUpperCase());
             } else if (os.type() === "Darwin") {
@@ -234,10 +234,10 @@ export class LocalCertificateManager {
             if (os.type() === "Windows_NT") {
                 progress?.start("Tooklit is going to add local certificate to your trusted root certificate store. Please confirm in popup window to continue.");
 
-                const installCertCommand = `(Import-Certificate -FilePath "${certPath}" -CertStoreLocation Cert:\\CurrentUser\\Root)[0].Thumbprint`;
+                const installCertCommand = `(Import-Certificate -FilePath '${certPath}' -CertStoreLocation Cert:\\CurrentUser\\Root)[0].Thumbprint`;
                 const thumbprint = (await ps.execPowerShell(installCertCommand)).trim();
 
-                const friendlyNameCommand = `(Get-ChildItem -Path Cert:\\CurrentUser\\Root\\${thumbprint}).FriendlyName="${friendlyName}"`;
+                const friendlyNameCommand = `(Get-ChildItem -Path Cert:\\CurrentUser\\Root\\${thumbprint}).FriendlyName='${friendlyName}'`;
                 await ps.execPowerShell(friendlyNameCommand);
 
                 return true;

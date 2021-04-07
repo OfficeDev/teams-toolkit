@@ -8,15 +8,13 @@ import {
   PackageManager,
   configurationPrefix,
   validateFuncCoreToolsKey,
-  funcCoreToolsHelpLink,
-  ProgressBarMessages
+  funcCoreToolsHelpLink
 } from "../constants";
 import { cpUtils } from "../cpUtils";
 import { getFuncPackageManagers } from "./getFuncPackageManagers";
 import { installFuncCoreTools } from "./installFuncCoreTools";
 import { displayLearnMore, displayWarningMessage } from "../commonUtils";
 import { FuncVersion, getFuncToolsVersion } from "./funcVersion";
-import DialogManagerInstance from "../../userInterface";
 
 export async function tryValidateFuncCoreToolsInstalled(): Promise<boolean> {
   try {
@@ -46,11 +44,6 @@ async function validateFuncCoreToolsInstalled(): Promise<boolean> {
   const supportedVersion = FuncVersion.v3;
   const installedVersion = await getInstalledFuncToolsVersion();
 
-  const handler = DialogManagerInstance.createProgressBar(
-    Messages.installingDependencies,
-    Object.keys(ProgressBarMessages.func).length
-  );
-
   switch (installedVersion) {
     case FuncVersion.v1:
       await displayLearnMore(Messages.needReplaceWithFuncCoreToolV3, funcCoreToolsHelpLink);
@@ -69,11 +62,8 @@ async function validateFuncCoreToolsInstalled(): Promise<boolean> {
           Messages.needInstallFuncCoreToolV3,
           Messages.installButtonText,
           async () => {
-            await handler?.start();
-            await handler?.next(ProgressBarMessages.func.installing);
             await installFuncCoreTools(packageManagers, supportedVersion);
             installed = true;
-            await handler?.end();
           }
         );
       } else {

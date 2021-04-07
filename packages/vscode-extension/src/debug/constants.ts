@@ -38,19 +38,8 @@ export class Messages {
 
   public static readonly failToDetectOrInstallDotnet =
     "Failed to detect or install .NET Core SDK, please install .NET Core SDK yourself and update the config file '@ConfigPath' or create it if it does not exist.";
-  public static readonly installingDependencies = "Installing required dependencies";
   public static readonly failToInstallBackendExtensions = "Failed to install backend extensions.";
 }
-
-export const ProgressBarMessages = {
-  func: {
-    installing: "Installing Azure Function Core Tools."
-  },
-  dotnet: {
-    downloading: "Downloading .NET Core SDK.",
-    validating: "Validating .NET Core SDK."
-  }
-};
 
 export enum PackageManager {
   npm = "npm",

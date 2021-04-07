@@ -2,8 +2,8 @@ import { IAADApplication, IAADPassword } from "./interfaces/IAADApplication";
 import { IBotRegistration } from "./interfaces/IBotRegistration";
 
 import { AxiosInstance, default as axios } from "axios";
-import { ProvisionException } from "../exceptions";
-import { CommonStrings } from "../resources/strings";
+import { ConfigUpdatingException, ProvisionException } from "../exceptions";
+import { CommonStrings, ConfigNames } from "../resources/strings";
 
 
 const baseUrl = "https://dev.teams.microsoft.com";
@@ -91,6 +91,26 @@ export async function createBotRegistration(registration: IBotRegistration): Pro
 
     if (!response || !response.data) {
         throw new ProvisionException(CommonStrings.APPSTUDIO_BOT_REGISTRATION);
+    }
+
+    return;
+}
+
+export async function updateMessageEndpoint(botId: string, registration: IBotRegistration): Promise<void> {
+
+    if (!registration || !axiosInstance) {
+        throw new ConfigUpdatingException(ConfigNames.MESSAGE_ENDPOINT);
+    }
+
+    let response = undefined;
+    try {
+        response = await axios.post(`${baseUrl}/api/botframework/${botId}`, registration);
+    } catch (e) {
+        throw new ConfigUpdatingException(ConfigNames.MESSAGE_ENDPOINT, e);
+    }
+
+    if (!response || !response.data) {
+        throw new ConfigUpdatingException(ConfigNames.MESSAGE_ENDPOINT);
     }
 
     return;

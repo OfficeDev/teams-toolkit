@@ -93,7 +93,7 @@ import {
     createAddAzureResourceQuestion,
 } from "./question";
 import Mustache from "mustache";
-import path from "node:path";
+import path from "path";
 
 type LoadedPlugin = Plugin & { name: string; displayName: string; };
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -140,7 +140,7 @@ function newSpfxPlugin(): LoadedPlugin {
 function newBotPlugin(): LoadedPlugin {
     const plugin: Plugin = new TeamsBot();
     const pluginWithMeta: LoadedPlugin = plugin as LoadedPlugin;
-    pluginWithMeta.name = "fx-resource-teamsbot";
+    pluginWithMeta.name = "fx-resource-bot";
     pluginWithMeta.displayName = "Bot";
     return pluginWithMeta;
 }
@@ -1299,12 +1299,13 @@ export class TeamsAppSolution implements Solution {
 
     async localDebug(ctx: SolutionContext): Promise<Result<any, FxError>> {
         const maybeSelectedPlugins = this.getSelectedPlugins(ctx.config);
+        
         if (maybeSelectedPlugins.isErr()) {
             return maybeSelectedPlugins;
         }
 
         const selectedPlugins = maybeSelectedPlugins.value;
-
+    
         const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, selectedPlugins);
         const localDebugWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {
             return [plugin?.localDebug?.bind(plugin), context, plugin.name];
@@ -1312,18 +1313,25 @@ export class TeamsAppSolution implements Solution {
         const postLocalDebugWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {
             return [plugin?.postLocalDebug?.bind(plugin), context, plugin.name];
         });
+        
         const localDebugResult = await executeConcurrently(localDebugWithCtx);
         if (localDebugResult.isErr()) {
             return localDebugResult;
         }
 
         const maybeConfig = this.getLocalDebugConfig(ctx.config);
+        
         if (maybeConfig.isErr()) {
             return maybeConfig;
         }
 
         const [localTabEndpoint, localTabDomain, localAADId] = maybeConfig.value;
-        const validDomains: string[] = [localTabEndpoint];
+
+        const validDomains: string[] = [];
+
+        if (localTabDomain) {
+            validDomains.push(localTabDomain);
+        }
 
         const localBotDomain = ctx.config.get(this.localDebugPlugin.name)?.get(LOCAL_DEBUG_BOT_DOMAIN);
         if (localBotDomain) {
@@ -1335,6 +1343,11 @@ export class TeamsAppSolution implements Solution {
         const composeExtensions = ctx.config.get(this.botPlugin.name)?.getString(COMPOSE_EXTENSIONS);
 
         const webApplicationInfoResource = ctx.config.get(this.aadPlugin.name)?.getString(WEB_APPLICATION_INFO_SOURCE);
+
+        ctx.logProvider?.debug(`IvanJobs localBotDomain: ${localBotDomain}`);
+        ctx.logProvider?.debug(`IvanJobs bots: ${JSON.stringify(bots)}`);
+        ctx.logProvider?.debug(`IvanJobs msgext: ${JSON.stringify(composeExtensions)}`);
+        ctx.logProvider?.debug(`IvanJobs resource: ${webApplicationInfoResource}`);
 
         const [appDefinition, _updatedManifest] = AppStudio.getDevAppDefinition(
             TEAMS_APP_MANIFEST_TEMPLATE,

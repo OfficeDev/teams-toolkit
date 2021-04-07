@@ -27,6 +27,7 @@ import { PluginActRoles } from "./enums/pluginActRoles";
 import { ResourceNameFactory } from "./utils/resourceNameFactory";
 import * as AppStudio from "./appStudio/appStudio";
 import { IBotRegistration } from "./appStudio/interfaces/IBotRegistration";
+import { Logger } from "./logger";
 
 export class TeamsBotImpl {
     // Made config plubic, because expect the upper layer to fill inputs.
@@ -153,7 +154,7 @@ export class TeamsBotImpl {
         CheckThrowSomethingMissing(ConfigNames.LOCATION, this.config.provision.location);
 
         this.config.provision.siteName = ResourceNameFactory.createCommonName(this.ctx?.app.name.short);
-        this.ctx?.logProvider?.debug(`Site name generated to use is ${this.config.provision.siteName}.`);
+        Logger.debug(`Site name generated to use is ${this.config.provision.siteName}.`);
 
         this.telemetryStepOutSuccess(LifecycleFuncNames.PRE_PROVISION);
 
@@ -326,13 +327,13 @@ export class TeamsBotImpl {
                 siteEnvelope,
             );
         } catch (e) {
-            throw new ConfigUpdatingException(e);
+            throw new ConfigUpdatingException(ConfigNames.AZURE_WEB_APP_AUTH_CONFIGS, e);
         }
 
         this.logRestResponse(res);
 
         if (!res || !utils.isHttpCodeOkOrCreated(res._response.status)) {
-            throw new ConfigUpdatingException();
+            throw new ConfigUpdatingException(ConfigNames.AZURE_WEB_APP_AUTH_CONFIGS);
         }
 
         // 3. Update message endpoint for bot registration.
@@ -492,7 +493,6 @@ export class TeamsBotImpl {
         this.telemetryStepIn(LifecycleFuncNames.POST_LOCAL_DEBUG);
         this.markEnterAndLogConfig(LifecycleFuncNames.POST_LOCAL_DEBUG);
 
-
         CheckThrowSomethingMissing(ConfigNames.LOCAL_ENDPOINT, this.config.localDebug.localEndpoint);
 
         switch (this.config.scaffold.wayToRegisterBot) {
@@ -531,7 +531,7 @@ export class TeamsBotImpl {
             callingEndpoint: ""
         };
 
-        await AppStudio.createBotRegistration(botReg);
+        await AppStudio.updateMessageEndpoint(botReg.botId!, botReg);
 
         this.telemetryStepOutSuccess(LifecycleFuncNames.UPDATE_MESSAGE_ENDPOINT_APPSTUDIO);
     }
@@ -604,19 +604,21 @@ export class TeamsBotImpl {
 
     private async createNewBotRegistrationOnAppStudio() {
         this.telemetryStepIn(LifecycleFuncNames.CREATE_NEW_BOT_REG_APPSTUDIO);
-
         this.markEnterAndLogConfig(LifecycleFuncNames.CREATE_NEW_BOT_REG_APPSTUDIO);
+        Logger.debug(`Start to create new bot registration on app studio.`);
 
         // 1. Create a new AAD App Registraion with client secret.
         const appStudioToken = await this.ctx?.appStudioToken?.getAccessToken();
         CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
 
         const aadDisplayName = ResourceNameFactory.createCommonName(this.ctx?.app.name.short);
+        
 
         const botAuthCreds = await aadReg.registerAADAppAndGetSecretByAppStudio(
             appStudioToken!,
             aadDisplayName
         );
+        Logger.debug(`ClientId ${botAuthCreds.clientId}, ClientSecret: ${botAuthCreds.clientSecret} generated.`);
 
         // 2. Register bot by app studio.
         const botReg: IBotRegistration = {
@@ -628,7 +630,14 @@ export class TeamsBotImpl {
             callingEndpoint: ""
         };
 
+        Logger.debug(`Start to create bot registration by ${JSON.stringify(botReg)}`);
+
         await AppStudio.createBotRegistration(botReg);
+
+        this.config.localDebug.localBotId = botAuthCreds.clientId;
+        this.config.localDebug.localBotPassword = botAuthCreds.clientSecret;
+
+        this.updateManifest(this.config.localDebug.localBotId!);
 
         this.telemetryStepOutSuccess(LifecycleFuncNames.CREATE_NEW_BOT_REG_APPSTUDIO);
     }
@@ -732,8 +741,8 @@ export class TeamsBotImpl {
     }
 
     private markEnterAndLogConfig(funcName: string, joinedParams?: string) {
-        this.ctx?.logProvider?.debug(Messages.EnterFunc(funcName, joinedParams));
-        this.ctx?.logProvider?.debug(`config: ${this.config.toString()}\n`);
+        Logger.debug(Messages.EnterFunc(funcName, joinedParams));
+        Logger.debug(`config: ${this.config.toString()}\n`);
     }
 
     private logRestResponse(obj: any) {
@@ -750,7 +759,7 @@ export class TeamsBotImpl {
             responseString = e.message;
         }
 
-        this.ctx?.logProvider?.debug(`Rest response: ${responseString}.\n`);
+        Logger.debug(`Rest response: ${responseString}.\n`);
     }
 
     private telemetryStepIn(funcName: string) {

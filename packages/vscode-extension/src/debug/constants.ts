@@ -30,8 +30,8 @@ export class Messages {
   public static readonly installButtonText = "Install";
   public static readonly learnMoreButtonText = "Learn more";
   public static readonly installFuncCoreToolsAndDotnetSdk =
-    "Starting to check and install Azure Functions Core Tools and .NET SDK if needed.";
-  public static readonly installDotnetSdk = "Starting to check and install .NET SDK if needed.";
+    "Starting to check and install Azure Functions Core Tools and .NET Core SDK if needed.";
+  public static readonly installDotnetSdk = "Starting to check and install .NET Core SDK if needed.";
 
   public static readonly needInstallFuncCoreToolV3 =
     "You must have the Azure Functions Core Tools v3 installed to debug your local functions.";

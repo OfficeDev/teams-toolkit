@@ -6,12 +6,11 @@ export async function runWithProgressIndicator(
   outputChannel: OutputChannel,
   callback: () => Promise<void>
 ): Promise<void> {
-  let timer: NodeJS.Timeout;
+  const timer = setInterval(() => outputChannel.append("."), downloadIndicatorInterval);
   try {
-    timer = setInterval(() => outputChannel.append("."), downloadIndicatorInterval);
     await callback();
   } finally {
     outputChannel.appendLine("");
-    clearTimeout(timer!);
+    clearTimeout(timer);
   }
 }

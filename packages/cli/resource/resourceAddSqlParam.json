@@ -1,0 +1,37 @@
+[
+    {
+        "data": {
+            "name": "add-azure-resources",
+            "title": "Select Azure resources to add",
+            "type": "multiSelect",
+            "option": [
+                {
+                    "label": "sql",
+                    "description": "Azure SQL Database"
+                },
+                {
+                    "label": "function",
+                    "description": "New APIs from Azure Functions"
+                }
+            ],
+            "default": [
+                "sql"
+            ],
+            "hide": true
+        }
+    },
+    {
+        "data": {
+            "type": "text",
+            "name": "sql-username",
+            "description": "Admin name of SQL"
+        }
+    },
+    {
+        "data": {
+            "type": "text",
+            "name": "sql-password",
+            "description": "Admin password of SQL"
+        }
+    }
+]

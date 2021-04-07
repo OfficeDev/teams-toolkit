@@ -1,0 +1,158 @@
+[
+    {
+        "data": {
+            "type": "text",
+            "name": "app-name",
+            "title": "App Name",
+            "validation": {
+                "pattern": "^[\\da-zA-Z]+$"
+            },
+            "default": "myapp"
+        }
+    },
+    {
+        "data": {
+            "type": "singleSelect",
+            "name": "solution",
+            "title": "Select a solution",
+            "option": [
+                "fx-solution-azure"
+            ],
+            "default": "fx-solution-azure"
+        }
+    },
+    {
+        "data": {
+            "type": "folder",
+            "name": "folder",
+            "title": "Select root folder of the project",
+            "validation": {
+                "namespace": "",
+                "method": "validateFolder"
+            },
+            "default": "./"
+        }
+    },
+    {
+        "data": {
+            "name": "capabilities",
+            "title": "Add capabilities",
+            "prompt": "Choose the capabilities for your project setup",
+            "type": "multiSelect",
+            "option": [
+                {
+                    "label": "Tab",
+                    "description": "Embeds a web-based app experience in a tab in a Teams chat, channel, or personal workspace."
+                }
+            ],
+            "default": [
+                "Tab"
+            ],
+            "validation": {
+                "minItems": 1
+            }
+        }
+    },
+    {
+        "data": {
+            "name": "tab-scopes",
+            "title": "Tab scopes",
+            "type": "singleSelect",
+            "option": [
+                "personal"
+            ],
+            "default": "personal"
+        }
+    },
+    {
+        "data": {
+            "name": "host-type",
+            "title": "Select front-end hosting type",
+            "type": "singleSelect",
+            "option": [
+                {
+                    "label": "Azure",
+                    "description": "Azure Cloud"
+                },
+                {
+                    "label": "SPFx",
+                    "description": "SharePoint Framework"
+                }
+            ],
+            "default": "Azure"
+        }
+    },
+    {
+        "data": {
+            "name": "azure-resources",
+            "title": "Additional cloud resources",
+            "type": "multiSelect",
+            "option": [
+                {
+                    "label": "sql",
+                    "description": "Azure SQL Database"
+                },
+                {
+                    "label": "function",
+                    "description": "New APIs from Azure Functions"
+                }
+            ],
+            "default": []
+        },
+        "condition": {
+            "equals": "Azure"
+        }
+    },
+    {
+        "data": {
+            "name": "function-name",
+            "description": "Please provide function name.",
+            "type": "text",
+            "default": "myFunc",
+            "validation": {
+                "namespace": "fx-solution-azure/fx-resource-function",
+                "method": "validateFunctionName"
+            }
+        },
+        "condition": {
+            "minItems": 1
+        }
+    },
+    {
+        "data": {
+            "type": "singleSelect",
+            "name": "spfx-framework-type",
+            "title": "Which framework would you like to use?",
+            "option": [
+                "none",
+                "react"
+            ],
+            "default": "none",
+            "validation": {
+                "required": true
+            }
+        }
+    },
+    {
+        "data": {
+            "type": "text",
+            "name": "spfx-webpart-name",
+            "title": "Webpart Name",
+            "default": "helloworld",
+            "validation": {
+                "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$"
+            }
+        }
+    },
+    {
+        "data": {
+            "type": "text",
+            "name": "spfx-webpart-desp",
+            "title": "Webpart Description",
+            "default": "helloworld description",
+            "validation": {
+                "required": true
+            }
+        }
+    }
+]

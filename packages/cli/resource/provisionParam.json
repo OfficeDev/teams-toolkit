@@ -1,0 +1,31 @@
+[
+    {
+        "data": {
+            "type": "folder",
+            "name": "folder",
+            "description": "Select root folder of the project",
+            "default": "./"
+        }
+    },
+    {
+        "data": {
+            "type": "text",
+            "name": "subscription",
+            "description": "Please select a subscription"
+        }
+    },
+    {
+        "data": {
+            "type": "text",
+            "name": "sql-username",
+            "description": "Admin name of SQL"
+        }
+    },
+    {
+        "data": {
+            "type": "text",
+            "name": "sql-password",
+            "description": "Admin password of SQL"
+        }
+    }
+]

@@ -1,0 +1,38 @@
+[
+    {
+        "data": {
+            "name": "add-azure-resources",
+            "title": "Select Azure resources to add",
+            "type": "multiSelect",
+            "option": [
+                {
+                    "label": "sql",
+                    "description": "Azure SQL Database"
+                },
+                {
+                    "label": "function",
+                    "description": "New APIs from Azure Functions"
+                }
+            ],
+            "default": [
+                "function"
+            ],
+            "hide": true
+        }
+    },
+    {
+        "data": {
+            "name": "function-name",
+            "description": "Please provide function name.",
+            "type": "text",
+            "default": "myFunc",
+            "validation": {
+                "namespace": "fx-solution-azure/fx-resource-function",
+                "method": "validateFunctionName"
+            }
+        },
+        "condition": {
+            "contains": "function"
+        }
+    }
+]

@@ -1,0 +1,25 @@
+[
+    {
+        "data": {
+            "type": "folder",
+            "name": "folder",
+            "description": "Select root folder of the project",
+            "default": "./"
+        }
+    },
+    {
+        "data": {
+            "type": "multiSelect",
+            "name": "deploy-plugin",
+            "description": "Which resources do you want to deploy",
+            "option": [
+                "frontend",
+                "azure-function",
+                "spfx"
+            ],
+            "default": [
+                "frontend"
+            ]
+        }
+    }
+]

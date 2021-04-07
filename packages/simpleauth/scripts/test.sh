@@ -13,7 +13,7 @@ chromium-browser --product-version
 sudo apt-get update && sudo apt-get install -y chromium-chromedriver
 
 cd ..
-dotnet test TeamsFxSimpleAuth.sln
+dotnet test TeamsFxSimpleAuth.sln --filter TestCategory="P0"
 popd
 
 exit 0

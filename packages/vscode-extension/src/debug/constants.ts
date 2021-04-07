@@ -39,7 +39,7 @@ export class Messages {
   public static readonly failToDetectOrInstallDotnet =
     "Failed to detect or install .NET Core SDK, please install .NET Core SDK yourself and update the config file '@ConfigPath' or create it if it does not exist.";
   public static readonly failToInstallBackendExtensions = "Failed to install backend extensions.";
-  public static readonly linuxNotSupported = "Linux platform is not supported, please install the required dependencies manually.";
+  public static readonly linuxNotSupported = "Please install the required dependencies for Linux manually.";
 }
 
 export enum PackageManager {

@@ -61,17 +61,7 @@ export const AzureResourceApim: OptionItem = {
     label: "apim",
     description: "Publish APIs to API Management",
 };
-
-// export const CapabilityQuestion: MultiSelectQuestion = {
-//     name: AzureSolutionQuestionNames.Capabilities,
-//     title: 'Add capabilities',
-//     prompt: 'Choose the capabilities for your project setup',
-//     type: NodeType.multiSelect,
-//     option: [TabOptionItem, BotOptionItem, MessageExtensionItem],
-//     default: [TabOptionItem.label],
-//     validation: { minItems: 1 },
-// };
-
+ 
 export function createCapabilityQuestion(featureFlag: boolean): MultiSelectQuestion {
     return {
         name: AzureSolutionQuestionNames.Capabilities,
@@ -79,7 +69,7 @@ export function createCapabilityQuestion(featureFlag: boolean): MultiSelectQuest
         prompt: "Choose the capabilities for your project setup",
         type: NodeType.multiSelect,
         option: featureFlag ? [TabOptionItem, BotOptionItem, MessageExtensionItem] : [TabOptionItem],
-        default: [TabOptionItem.label]
+        default: [TabOptionItem.id]
     };
 }
 
@@ -96,7 +86,7 @@ export const FrontendHostTypeQuestion: SingleSelectQuestion = {
     title: "Select front-end hosting type",
     type: NodeType.singleSelect,
     option: [HostTypeOptionAzure, HostTypeOptionSPFx],
-    default: HostTypeOptionAzure.label,
+    default: HostTypeOptionAzure.id,
 };
 
 export const AzureResourcesQuestion: MultiSelectQuestion = {
@@ -130,6 +120,5 @@ export const DeployPluginSelectQuestion: MultiSelectQuestion = {
     title: `Please select which resource(s) to deploy`,
     type: NodeType.multiSelect,
     option: [],
-    default: [],
-    returnObject: true,
+    default: []
 };

@@ -965,7 +965,7 @@ export class TeamsAppSolution implements Solution {
             return loadManifestResult;
         }
 
-        const optionsToDeploy = ctx.answers?.getOptionItemArray(AzureSolutionQuestionNames.PluginSelectionDeploy);
+        const optionsToDeploy = ctx.answers?.getStringArray(AzureSolutionQuestionNames.PluginSelectionDeploy);
         if (optionsToDeploy === undefined || optionsToDeploy.length === 0) {
             return err(
                 returnUserError(new Error(`No plugin selected`), "Solution", SolutionError.NoResourcePluginSelected),
@@ -973,8 +973,8 @@ export class TeamsAppSolution implements Solution {
         }
 
         const pluginsToDeploy: LoadedPlugin[] = [];
-        for (const optionItem of optionsToDeploy) {
-            const filtered = this.pluginMap.get(optionItem.data as string);
+        for (const optionId of optionsToDeploy) {
+            const filtered = this.pluginMap.get(optionId);
             if (filtered) {
                 pluginsToDeploy.push(filtered);
             }
@@ -1167,7 +1167,7 @@ export class TeamsAppSolution implements Solution {
             }
             const pluginsToDeploy = res.value.filter((plugin) => !!plugin.deploy);
             const options: OptionItem[] = pluginsToDeploy.map((plugin) => {
-                const item: OptionItem = {id: plugin.name, label: plugin.displayName, data: plugin.name };
+                const item: OptionItem = {id: plugin.name, label: plugin.displayName};
                 return item;
             });
             const selectQuestion = DeployPluginSelectQuestion;

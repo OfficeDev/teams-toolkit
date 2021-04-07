@@ -7,10 +7,10 @@ import * as constants from "./constants";
 import * as commonUtils from "./commonUtils";
 import { DotnetChecker } from "./dotnetSdk/dotnetChecker";
 import { dotnetCheckerEnabled } from "./dotnetSdk/dotnetCheckerAdapter";
-import { ConfigFolderName } from "fx-api";
+import { ProductName } from "fx-api";
 
 export class TeamsfxTaskProvider implements vscode.TaskProvider {
-  public static readonly type: string = ConfigFolderName;
+  public static readonly type: string = ProductName;
 
   public async provideTasks(token?: vscode.CancellationToken | undefined): Promise<vscode.Task[]> {
     const tasks: vscode.Task[] = [];
@@ -178,7 +178,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
   ): Promise<vscode.Task> {
     const command: string = constants.botStartCommand;
     definition = definition || { type: TeamsfxTaskProvider.type, command };
-    const commandLine = "nodemon index.js";
+    const commandLine = "nodemon --inspect=9239 index.js";
     const env = await commonUtils.getBotLocalEnv();
     const options: vscode.ShellExecutionOptions = {
       cwd: projectRoot,

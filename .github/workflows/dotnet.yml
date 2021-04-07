@@ -3,8 +3,8 @@ name: .NET
 on:
   push:
     path:
-    - 'packages/simpleauth'
-    - 'pacakges/function-extension'
+    - 'packages/simpleauth/**'
+    - 'pacakges/function-extension/**'
     branches: [ main ]
   pull_request:
     branches: [ main ]

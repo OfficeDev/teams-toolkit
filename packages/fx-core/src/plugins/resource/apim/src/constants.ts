@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 export class ProjectConstants {
     public static readonly pluginShortName: string = "APIM";
+    public static readonly pluginDisplayName: string = "API Management";
     public static readonly configFilePath: string = "env.default.json";
     public static readonly workingDir: string = "openapi";
     public static readonly openApiDocumentFileName: string = "openapi.json";

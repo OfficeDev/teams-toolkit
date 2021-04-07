@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-
-export const teamsfx = "teamsfx";
-
+ 
 export const frontendStartCommand = "frontend start";
 export const backendStartCommand = "backend start";
 export const authStartCommand = "auth start";
@@ -14,8 +12,7 @@ export const backendProblemMatcher = "$teamsfx-backend-watch";
 export const authProblemMatcher = "$teamsfx-auth-watch";
 export const ngrokProblemMatcher = "$teamsfx-ngrok-watch";
 export const botProblemMatcher = "$teamsfx-bot-watch";
-
-export const teamsfxFolderName = ".teamsfx";
+ 
 export const frontendFolderName = "tabs";
 export const backendFolderName = "api";
 export const botFolderName = "bot";
@@ -65,7 +62,7 @@ export const funcCoreToolsHelpLink = "https://aka.ms/Dqur4e";
 export const funcCliPath = "func";
 export const funcPackageName = "azure-functions-core-tools";
 
-export const configurationPrefix = "teamsfx-extension";
+export const configurationPrefix = "fx-extension";
 export const validateFuncCoreToolsKey = "validateFuncCoreTools";
 export const validateDotnetSdkKey = "validateDotnetSdk";
 

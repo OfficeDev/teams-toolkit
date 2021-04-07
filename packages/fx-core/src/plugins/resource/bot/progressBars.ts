@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 
-import { IProgressHandler, PluginContext } from "teamsfx-api";
+import { IProgressHandler, PluginContext } from "fx-api";
 
 export class ProgressBarFactory {
     // To store working progress bars.

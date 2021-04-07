@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { MultiSelectQuestion, NodeType, OptionItem, SingleSelectQuestion } from "teamsfx-api";
+import { MultiSelectQuestion, NodeType, OptionItem, SingleSelectQuestion } from "fx-api";
 
 export const TabOptionItem: OptionItem = {
     id: "Tab",

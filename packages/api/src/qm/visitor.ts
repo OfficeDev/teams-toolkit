@@ -16,15 +16,15 @@ import {
     NumberInputQuestion
   } from "./question";
 import { getValidationFunction, RemoteFuncExecutor, validate } from "./validation";
-import { ReadonlyUserInputs, UserInputs } from "../config";
+import { Inputs } from "../config";
 import { InputResult, InputResultType, UserInterface } from "./ui";
 import { returnUserError } from "../error";
     
 async function getRealValue(
   parentValue: unknown,
   defaultValue: unknown,
-  remoteFuncExecutor?:RemoteFuncExecutor,
-  inputs?: UserInputs
+  remoteFuncExecutor:RemoteFuncExecutor,
+  inputs: Inputs
 ): Promise<unknown> {
   let output: unknown = defaultValue;
   if (typeof defaultValue === "string") {
@@ -38,8 +38,8 @@ async function getRealValue(
     }
   } else {
     const func: Func = defaultValue as Func;
-    if (remoteFuncExecutor && func && func.method) {
-      const res = await remoteFuncExecutor(defaultValue as Func, inputs as ReadonlyUserInputs);
+    if (func && func.method) {
+      const res = await remoteFuncExecutor(defaultValue as Func, inputs);
       if (res.isOk()) {
         return res.value;
       }
@@ -63,30 +63,30 @@ type QuestionVistor = (
   question: Question,
   parentValue: unknown,
   ui: UserInterface,
-  backButton?: boolean,
-  remoteFuncExecutor?:RemoteFuncExecutor,
-  answers?: UserInputs
+  backButton: boolean,
+  remoteFuncExecutor:RemoteFuncExecutor,
+  inputs: Inputs
 ) => Promise<InputResult>;
 
 /**
  * ask question when visiting the question tree
  * @param question
  * @param core
- * @param answers
+ * @param inputs
  */
 const questionVisitor:QuestionVistor = async function(
   question: Question,
   parentValue: unknown,
   ui: UserInterface,
-  backButton?: boolean,
-  remoteFuncExecutor?:RemoteFuncExecutor,
-  answers?: UserInputs
+  backButton: boolean,
+  remoteFuncExecutor:RemoteFuncExecutor,
+  inputs: Inputs
 ): Promise<InputResult> {
   const type = question.type;
   //FunctionCallQuestion
   if (type === NodeType.func) {
     if (remoteFuncExecutor) {
-      const res = await remoteFuncExecutor(question as Func, answers as ReadonlyUserInputs);
+      const res = await remoteFuncExecutor(question as Func, inputs);
       if (res.isOk()) {
         return { type: InputResultType.sucess, result: res.value};
       }
@@ -94,11 +94,11 @@ const questionVisitor:QuestionVistor = async function(
   } else {
     let defaultValue: unknown = undefined;
     if (question.default) {
-      defaultValue = await getRealValue(parentValue, question.default, remoteFuncExecutor, answers as ReadonlyUserInputs);
+      defaultValue = await getRealValue(parentValue, question.default, remoteFuncExecutor, inputs);
     }
     if (type === NodeType.text || type === NodeType.password || type === NodeType.number) {
       const inputQuestion: TextInputQuestion|NumberInputQuestion = question as (TextInputQuestion | NumberInputQuestion);
-      const validationFunc = inputQuestion.validation ? getValidationFunction(inputQuestion.validation,  remoteFuncExecutor, answers as ReadonlyUserInputs) : undefined;
+      const validationFunc = inputQuestion.validation ? getValidationFunction(inputQuestion.validation,  remoteFuncExecutor, inputs) : undefined;
       return await ui.showInputBox({
         title: inputQuestion.title || inputQuestion.description || inputQuestion.name,
         password: !!(type === NodeType.password),
@@ -120,7 +120,7 @@ const questionVisitor:QuestionVistor = async function(
       } else {
         // DynamicOption
         if (remoteFuncExecutor) {
-          const res = await remoteFuncExecutor(selectQuestion.option as Func, answers as ReadonlyUserInputs);
+          const res = await remoteFuncExecutor(selectQuestion.option as Func, inputs);
           if (res.isOk()) {
             option = res.value as StaticOption;
           }
@@ -164,7 +164,7 @@ const questionVisitor:QuestionVistor = async function(
       });
     } else if (type === NodeType.folder) {
       const fileQuestion: FileQuestion = question as FileQuestion;
-      const validationFunc = fileQuestion.validation? getValidationFunction(fileQuestion.validation, remoteFuncExecutor, answers as ReadonlyUserInputs) : undefined;
+      const validationFunc = fileQuestion.validation? getValidationFunction(fileQuestion.validation, remoteFuncExecutor, inputs) : undefined;
       return await ui.showOpenDialog({
           defaultUri: defaultValue as string|undefined,
           canSelectFiles: false,
@@ -187,9 +187,9 @@ const questionVisitor:QuestionVistor = async function(
 
 export async function traverse(
   root: QTreeNode,
-  userInputs: UserInputs,
+  inputs: Inputs,
   ui: UserInterface,
-  remoteFuncExecutor?:RemoteFuncExecutor
+  remoteFuncExecutor:RemoteFuncExecutor
 ): Promise<InputResult> {
   const stack: QTreeNode[] = [];
   const history: QTreeNode[] = [];
@@ -208,7 +208,7 @@ export async function traverse(
       const parent = parentMap.get(curr);
       const parentValue = parent && parent.data.type !== NodeType.group ? parent.data.value : undefined;
       if (!firstQuestion) firstQuestion = question;
-      const inputResult = await questionVisitor(question, parentValue, ui, question !== firstQuestion, remoteFuncExecutor, userInputs);
+      const inputResult = await questionVisitor(question, parentValue, ui, question !== firstQuestion, remoteFuncExecutor, inputs);
       if (inputResult.type === InputResultType.back) {
         //go back
         if (curr.children) {
@@ -264,7 +264,7 @@ export async function traverse(
         //success or pass
         question.value = inputResult.result;
         currValue = question.value;
-        userInputs[question.name]= question.value;
+        inputs[question.name]= question.value;
       }
     }
 
@@ -276,7 +276,7 @@ export async function traverse(
       if(curr.data.type === NodeType.singleSelect){
         const sq:SingleSelectQuestion = curr.data;
         if(sq.returnObject){
-          currValue = (sq.value as OptionItem).label;
+          currValue = (sq.value as OptionItem).id;
         }
       }
 
@@ -285,10 +285,10 @@ export async function traverse(
         parentMap.set(child, curr);
         if (child.condition) {
           const realValue = child.condition.target
-            ? await getRealValue(currValue, child.condition.target, remoteFuncExecutor, userInputs as ReadonlyUserInputs)
+            ? await getRealValue(currValue, child.condition.target, remoteFuncExecutor, inputs)
             : currValue;
           if(realValue){
-              const validRes = await validate(child.condition, realValue as string|string[], remoteFuncExecutor, userInputs as ReadonlyUserInputs);
+              const validRes = await validate(child.condition, realValue as string|string[], remoteFuncExecutor, inputs);
               if (validRes !== undefined) {
                   continue;
               }

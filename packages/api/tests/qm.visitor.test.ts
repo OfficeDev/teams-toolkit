@@ -14,10 +14,9 @@ import {
   OptionItem,
   Platform,
   QTreeNode,
-  ReadonlyUserInputs,
+  Inputs,
   Result,
   SingleSelectQuestion,
-  StaticOption,
   traverse,
   UserInputs,
   UserInterface
@@ -29,7 +28,7 @@ import { RemoteFuncExecutor } from "../src/qm/validation";
  * cmd: mocha -r ts-node/register --no-timeout tests/qm.visitor.test.ts
  */
 
-const mockRemoteFuncExecutor:RemoteFuncExecutor = async function (func:Func, answers: ReadonlyUserInputs) : Promise<Result<string|undefined, FxError>>
+const mockRemoteFuncExecutor:RemoteFuncExecutor = async function (func:Func, answers: Inputs) : Promise<Result<string|undefined, FxError>>
 {
   if(func.method === "mockValidator"){
     const input = func.params as string;

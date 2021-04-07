@@ -8,9 +8,9 @@ import {
   RemoteFuncValidation,
   StringArrayValidation,
   Validation,
-} from "teamsfx-api";
+} from "fx-api";
 import * as fs from "fs-extra";
-import { CoreProxy } from "teamsfx-core";
+import { CoreProxy } from "fx-core";
 import * as jsonschema from "jsonschema";
 
 let core: CoreProxy;

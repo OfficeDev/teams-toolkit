@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { IBotRegistration, IAADApplication, IAADPassword, IAppDefinition } from "./interface";
-import { TeamsAppManifest, ConfigMap, LogProvider, } from "teamsfx-api";
+import { TeamsAppManifest, ConfigMap, LogProvider, } from "fx-api";
 import { AzureSolutionQuestionNames, BotOptionItem, HostTypeOptionAzure, MessageExtensionItem } from "../question";
 import { TEAMS_APP_MANIFEST_TEMPLATE } from "../constants";
 import axios, { AxiosInstance } from "axios";

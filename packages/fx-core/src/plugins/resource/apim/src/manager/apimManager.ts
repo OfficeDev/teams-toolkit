@@ -8,8 +8,8 @@ import { OpenApiProcessor } from "../util/openApiProcessor";
 import { Telemetry } from "../telemetry";
 import { NameSanitizer } from "../util/nameSanitizer";
 import { IApimAnswer } from "../model/answer";
-import { LogProvider } from "teamsfx-api";
-import { TeamsAppManifest } from "teamsfx-api";
+import { LogProvider } from "fx-api";
+import { TeamsAppManifest } from "fx-api";
 import * as path from "path";
 
 export class ApimManager {

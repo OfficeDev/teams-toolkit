@@ -1,5 +1,5 @@
 {
-  "name": "teamsfx-api",
+  "name": "fx-api",
   "version": "1.0.0",
   "description": "framework api",
   "main": "build/index.js",
@@ -20,7 +20,7 @@
   ],
   "scripts": {
     "lint:staged": "lint-staged",
-    "lint": "eslint \"**/*.ts\"",
+    "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
     "build": "tsc -p ./",
     "prepare": "npm run build",
     "eslint:fix": "eslint package.json tsconfig.json src --ext .ts --fix",

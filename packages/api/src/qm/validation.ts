@@ -15,26 +15,26 @@ import * as fs from "fs-extra";
 import * as jsonschema from "jsonschema"; 
 import { Result } from "neverthrow";
 import { FxError } from "../error";
-import { ReadonlyUserInputs } from "../config";
+import { Inputs } from "../config";
  
 
-export type RemoteFuncExecutor = (func:Func, answers: ReadonlyUserInputs) => Promise<Result<unknown, FxError>>; 
+export type RemoteFuncExecutor = (func:Func, answers: Inputs) => Promise<Result<unknown, FxError>>; 
 
 export function getValidationFunction(
   validation: Validation,
-  remoteFuncValidator?: RemoteFuncExecutor,
-  answers?: ReadonlyUserInputs
+  remoteFuncValidator: RemoteFuncExecutor,
+  inputs: Inputs
 ): (input: string | string[]) => Promise<string | undefined> {
   return async function(input: string | string[]): Promise<string | undefined> {
-    return await validate(validation, input, remoteFuncValidator, answers);
+    return await validate(validation, input, remoteFuncValidator, inputs);
   };
 }
 
 export async function validate(
   validation: Validation,
   valueToValidate: string | string[],
-  remoteFuncValidator?: RemoteFuncExecutor,
-  answers?: ReadonlyUserInputs
+  remoteFuncValidator: RemoteFuncExecutor,
+  inputs: Inputs
 ): Promise<string | undefined> {
   
   //RemoteFuncValidation
@@ -42,7 +42,7 @@ export async function validate(
     const funcValidation: RemoteFuncValidation = validation as RemoteFuncValidation;
     if (funcValidation.method && remoteFuncValidator) {
       funcValidation.params = valueToValidate as string; 
-      const res = await remoteFuncValidator(funcValidation as Func, answers as ReadonlyUserInputs);
+      const res = await remoteFuncValidator(funcValidation as Func, inputs);
       if (res.isOk()) {
         return res.value as string;
       } else {

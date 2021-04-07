@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { ProductName } from "teamsfx-api";
+import { ConfigFolderName } from "fx-api";
 
 export function generateTasks(includeFrontend: boolean, includeBackend: boolean, includeBot: boolean): Record<string, unknown>[] {
     /**
@@ -44,7 +44,7 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
         tasks.push(
             {
                 label: "Start Frontend",
-                dependsOn: [`${ProductName}: frontend start`, `${ProductName}: auth start`],
+                dependsOn: [`${ConfigFolderName}: frontend start`, `${ConfigFolderName}: auth start`],
                 dependsOrder: "parallel",
             },
             {
@@ -101,7 +101,7 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
             },
             {
                 label: "start ngrok",
-                type: ProductName,
+                type: ConfigFolderName,
                 command: "ngrok start",
                 isBackground: true,
                 presentation: {

@@ -150,11 +150,9 @@ export interface ProjectStates
 }
  
 
-export interface UserInputs extends Dict<AnswerValue>{
+export interface Inputs extends Dict<AnswerValue>{
     platform: Platform;
 }    
-
-export type ReadonlyUserInputs = Readonly<UserInputs>;
 
 export interface Json{
     [k : string]:unknown;

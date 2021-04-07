@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
  
 import { Disposable, InputBox, QuickInputButtons, QuickPick, QuickPickItem, Uri, window } from "vscode";
-import { FxInputBoxOption, FxOpenDialogOption, FxQuickPickOption, InputResult, InputResultType, OptionItem, returnSystemError, UserInterface } from "teamsfx-api";
+import { FxInputBoxOption, FxOpenDialogOption, FxQuickPickOption, InputResult, InputResultType, OptionItem, returnSystemError, UserInterface } from "fx-api";
 import { ExtensionErrors, ExtensionSource } from "../error";
  
 
@@ -131,12 +131,14 @@ export class VsCodeUI implements UserInterface{
                     description: fxitem.description,
                     detail: fxitem.detail,
                     data: fxitem.data
-                  }
+                  };
                 });
                 const oldIds = quickPick.selectedItems.map(i=>{return (i as FxQuickPickItem).id;}).sort();
-                const newIds:string[] = (await option.onDidChangeSelection!(optionItems)).sort();
-                if(oldIds.join(",") !== newIds.join(",")){
-                  quickPick.selectedItems = newIds.map(id=>optionMap.get(id)!);
+                if(option.onDidChangeSelection){
+                  const newIds:string[] = (await option.onDidChangeSelection(optionItems)).sort();
+                  if(oldIds.join(",") !== newIds.join(",")){
+                    quickPick.selectedItems = newIds.map(id=>optionMap.get(id)!);
+                  }
                 }
               };
               disposables.push(

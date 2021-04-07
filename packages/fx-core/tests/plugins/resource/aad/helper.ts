@@ -12,7 +12,7 @@ import {
   LogLevel,
   AppStudioTokenProvider,
   GraphTokenProvider,
-} from "teamsfx-api";
+} from "fx-api";
 import sinon from "sinon";
 import { ConfigKeys, ConfigKeysOfOtherPlugin, Plugins } from "../../../../src/plugins/resource/aad/constants";
 import jwt_decode from "jwt-decode";

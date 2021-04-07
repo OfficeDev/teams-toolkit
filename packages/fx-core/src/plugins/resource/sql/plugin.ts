@@ -10,7 +10,7 @@ import {
     QTreeNode,
     NodeType,
     Func,
-} from "teamsfx-api";
+} from "fx-api";
 import { ManagementClient } from "./managementClient";
 import { ErrorMessage } from "./errors";
 import { SqlResultFactory } from "./results";

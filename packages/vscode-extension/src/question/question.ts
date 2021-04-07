@@ -15,9 +15,9 @@ import {
   MultiSelectQuestion,
   TextInputQuestion,
   FileQuestion
-} from "teamsfx-api";
+} from "fx-api";
 import { window } from "vscode";
-import { CoreProxy } from "teamsfx-core";
+import { CoreProxy } from "fx-core";
 import { InputResult, InputResultType } from "./types";
 import { showInputBox, showQuickPick } from "./vscode_ui";
 import VsCodeLogInstance from "../commonlib/log";

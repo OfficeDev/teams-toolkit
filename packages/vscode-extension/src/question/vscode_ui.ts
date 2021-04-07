@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Option, OptionItem, returnSystemError, StaticOption } from "teamsfx-api";
+import { Option, OptionItem, returnSystemError, StaticOption } from "fx-api";
 import { Disposable, InputBox, QuickInputButtons, QuickPick, QuickPickItem, window } from "vscode";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { InputResult, InputResultType } from "./types";

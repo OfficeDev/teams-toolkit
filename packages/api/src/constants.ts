@@ -3,7 +3,7 @@
 "use strict";
 
 
-export const ProductName = "teamsfx";
+export const ConfigFolderName = "fx";
 
 export enum Platform
 {

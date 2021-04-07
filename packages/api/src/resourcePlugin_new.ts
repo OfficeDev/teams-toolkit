@@ -6,7 +6,7 @@ import { Result } from "neverthrow";
 import { Task } from "./constants";
 import {  Context } from "./context";
 import { FxError } from "./error";
-import { Void, ResourceConfig, EnvConfig, EnvMeta, ReadonlyResourceConfig, ResourceTemplate, ReadonlyResourceConfigs, ReadonlyUserInputs } from "./config";
+import { Void, ResourceConfig, EnvConfig, EnvMeta, ReadonlyResourceConfig, ResourceTemplate, ReadonlyResourceConfigs, Inputs } from "./config";
 import { TokenProvider } from "./utils";
 import { Func, FunctionRouter, QTreeNode } from "./qm";
 
@@ -59,19 +59,19 @@ export interface ResourcePlugin {
     /**
      * scaffold source code on disk
      */
-    scaffoldSourceCode?: (ctx: Context, userInputs: ReadonlyUserInputs) => Promise<Result<Void, FxError>>;  
+    scaffoldSourceCode?: (ctx: Context, userInputs: Inputs) => Promise<Result<Void, FxError>>;  
 
     /**
      * scaffold a memory version of config template
      */
-    scaffoldResourceTemplate?: (ctx: Context, userInputs: ReadonlyUserInputs) => Promise<Result<ResourceTemplate, FxError>>; 
+    scaffoldResourceTemplate?: (ctx: Context, userInputs: Inputs) => Promise<Result<ResourceTemplate, FxError>>; 
     
     /**
      * Provisons the resource owned by this plugin. Answers to questions before provision collected by getQuestions will be available in ctx.
      * A plugin can call azure/graph/teams appstudio RESTful api using the respective token in ctx.tokenProvider.
      * Provision of all plugins will run concurrently.
      */
-    provision?: (ctx: ResourceProvisionContext, userInputs: ReadonlyUserInputs) => Promise<Result<EnvConfig, FxError>>;
+    provision?: (ctx: ResourceProvisionContext, userInputs: Inputs) => Promise<Result<EnvConfig, FxError>>;
 
     /**
      * Configures provisioned resources. You can read the config values of your interest from configOfOtherPlugins, and change
@@ -82,34 +82,34 @@ export interface ResourcePlugin {
     /**
      * build artifacts
      */
-    build?: (ctx: Context, userInputs: ReadonlyUserInputs) => Promise<Result<Void, FxError>>;
+    build?: (ctx: Context, userInputs: Inputs) => Promise<Result<Void, FxError>>;
 
     /**
      * deploy resource
      */
-    deploy?: (ctx: ResourceProvisionContext, userInputs: ReadonlyUserInputs) => Promise<Result<Void, FxError>>;
+    deploy?: (ctx: ResourceProvisionContext, userInputs: Inputs) => Promise<Result<Void, FxError>>;
 
     /**
      * publish app
      */
-    publish?: (ctx: ResourceProvisionContext, userInputs: ReadonlyUserInputs) => Promise<Result<Void, FxError>>;
+    publish?: (ctx: ResourceProvisionContext, userInputs: Inputs) => Promise<Result<Void, FxError>>;
    
     /**
      * Declare what user input you need for each {@link task}. Questions are organized as a tree. Please check {@link QTreeNode}.
      * ctx only exist for non-create task
      */
-    getQuestionsForLifecycleTask?: (task: Task, inputs: ReadonlyUserInputs, ctx?: Context & {envMeta: EnvMeta}) => Promise<Result<QTreeNode|undefined, FxError>>;
+    getQuestionsForLifecycleTask?: (task: Task, inputs: Inputs, ctx?: ResourceProvisionContext) => Promise<Result<QTreeNode|undefined, FxError>>;
 
     /**
      * get question model for lifecycle {@link Task} (create, provision, deploy, debug, publish), Questions are organized as a tree. Please check {@link QTreeNode}.
      */
-    getQuestionsForUserTask?: (router: FunctionRouter, userInputs: ReadonlyUserInputs, ctx?: Context & {envMeta: EnvMeta}) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getQuestionsForUserTask?: (router: FunctionRouter, userInputs: Inputs, ctx?: ResourceProvisionContext) => Promise<Result<QTreeNode | undefined, FxError>>;
 
     /**
      * execute user task in additional to normal lifecycle {@link Task}, for example `Add Resource`, `Add Capabilities`, `Update AAD Permission`, etc
      * `executeUserTask` will router the execute request and dispatch from core--->solution--->resource plugin according to `FunctionRouter`.
      */
-    executeUserTask?: (func:Func, userInputs: ReadonlyUserInputs, ctx?: Context & {envMeta: EnvMeta}) => Promise<Result<unknown, FxError>>;
+    executeUserTask?: (func:Func, userInputs: Inputs, ctx?: ResourceProvisionContext) => Promise<Result<unknown, FxError>>;
     
     /**
      * There are three scenarios to use this API in question model:
@@ -118,5 +118,5 @@ export interface ResourcePlugin {
      * 3. validation for `TextInputQuestion`, core,solution plugin or resource plugin can define the validation function in `executeFuncQuestion`.
      * `executeFuncQuestion` will router the execute request from core--->solution--->resource plugin according to `FunctionRouter`.
      */
-    executeFuncQuestion?: (func:Func, userInputs: ReadonlyUserInputs, ctx?: Context & {envMeta: EnvMeta}) => Promise<Result<unknown, FxError>>;
+    executeFuncQuestion?: (func:Func, userInputs: Inputs, ctx?: ResourceProvisionContext) => Promise<Result<unknown, FxError>>;
 }

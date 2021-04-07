@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { PluginContext, ConfigValue } from "teamsfx-api";
+import { PluginContext, ConfigValue } from "fx-api";
 import {
   Constants,
   Plugins,

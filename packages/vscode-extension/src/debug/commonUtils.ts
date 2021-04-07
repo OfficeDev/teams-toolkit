@@ -7,6 +7,7 @@ import * as dotenv from "dotenv";
 import * as vscode from "vscode";
 import * as constants from "./constants";
 import { openUrl } from "./funcCoreTools/openUrl";
+import { ConfigFolderName } from "fx-api";
 
 export async function getProjectRoot(
   folderPath: string,
@@ -25,7 +26,7 @@ async function getLocalEnv(prefix = ""): Promise<{ [key: string]: string } | und
   const workspacePath: string = vscode.workspace.workspaceFolders[0].uri.fsPath;
   const localEnvFilePath: string = path.join(
     workspacePath,
-    constants.teamsfxFolderName,
+    `.${ConfigFolderName}`,
     constants.localEnvFileName
   );
   if (!(await fs.pathExists(localEnvFilePath))) {
@@ -66,8 +67,8 @@ export async function getBotLocalEnv(): Promise<{ [key: string]: string } | unde
   return getLocalEnv(constants.botLocalEnvPrefix);
 }
 
-export async function isModsProject(folderPath: string): Promise<boolean> {
-  return fs.pathExists(path.join(folderPath, constants.teamsfxFolderName));
+export async function isFxProject(folderPath: string): Promise<boolean> {
+  return fs.pathExists(path.join(folderPath, `.${ConfigFolderName}`));
 }
 
 export async function hasTeamsfxBackend(): Promise<boolean> {
@@ -77,7 +78,7 @@ export async function hasTeamsfxBackend(): Promise<boolean> {
 
   const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
   const workspacePath: string = workspaceFolder.uri.fsPath;
-  if (!(await isModsProject(workspacePath))) {
+  if (!(await isFxProject(workspacePath))) {
     return false;
   }
 

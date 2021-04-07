@@ -75,10 +75,10 @@ export enum LifeCycle {
 }
 
 export enum TeamsToolkitComponent {
-    FunctionPlugin = "teamsfx-resource-function",
-    AadPlugin = "teamsfx-resource-aad-app-for-teams",
+    FunctionPlugin = "fx-resource-function",
+    AadPlugin = "fx-resource-aad-app-for-teams",
     Solution = "solution",
-    ApimPlugin = "teamsfx-resource-apim",
+    ApimPlugin = "fx-resource-apim",
 }
 
 export const LifeCycleCommands: { [key in LifeCycle]: string } = Object.freeze({

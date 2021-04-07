@@ -6,7 +6,7 @@ import { Result } from "neverthrow";
 import { Task } from "./constants"; 
 import { FxError } from "./error";
 import { Func, QTreeNode, FunctionRouter } from "./qm/question"; 
-import { EnvConfig, EnvMeta, ReadonlyUserInputs, ResourceConfigs, ResourceTemplates, Void } from "./config";
+import { EnvConfig, EnvMeta, Inputs, ResourceConfigs, ResourceTemplates, Void } from "./config";
 import { Context } from "./context";
 import { TokenProvider } from "./utils";
 
@@ -38,50 +38,50 @@ export interface SolutionPlugin {
     /**
      * scaffold a project and return solution config template
      */
-    scaffold: (ctx: Context, userInputs: ReadonlyUserInputs) => Promise<Result<ResourceTemplates, FxError>>;
+    scaffold: (ctx: Context, userInputs: Inputs) => Promise<Result<ResourceTemplates, FxError>>;
 
     /**
      * update(add resource), return solution config template
      */
-    update: (ctx: Context, userInputs: ReadonlyUserInputs) => Promise<Result<ResourceTemplates, FxError>>;
+    update: (ctx: Context, userInputs: Inputs) => Promise<Result<ResourceTemplates, FxError>>;
 
     /**
      * provision
      */
-    provision: (ctx: SolutionProvisionContext, userInputs: ReadonlyUserInputs) => Promise<Result<EnvConfig, FxError>>;
+    provision: (ctx: SolutionProvisionContext, userInputs: Inputs) => Promise<Result<EnvConfig, FxError>>;
 
     /**
      * build
      */
-    build: (ctx: Context, userInputs: ReadonlyUserInputs) => Promise<Result<Void, FxError>>;
+    build: (ctx: Context, userInputs: Inputs) => Promise<Result<Void, FxError>>;
 
     /**
      * deploy
      */
-    deploy: (ctx: SolutionProvisionContext, userInputs: ReadonlyUserInputs) => Promise<Result<Void, FxError>>;
+    deploy: (ctx: SolutionProvisionContext, userInputs: Inputs) => Promise<Result<Void, FxError>>;
  
     /**
      * publish
      */
-    publish: (ctx: SolutionProvisionContext, userInputs: ReadonlyUserInputs) => Promise<Result<Void, FxError>>;
+    publish: (ctx: SolutionProvisionContext, userInputs: Inputs) => Promise<Result<Void, FxError>>;
 
     /**
      * get question model for user task in additional to normal lifecycle {@link Task}, for example `Add Resource`, `Add Capabilities`, `Update AAD Permission`, etc
      * `getQuestionsForUserTask` will router the getQuestions request and dispatch from core--->solution--->resource plugin according to `FunctionRouter`.
      */
-    getQuestionsForLifecycleTask: (task: Task, userInputs: ReadonlyUserInputs, ctx?: Context & {envMeta: EnvMeta}) => Promise<Result<QTreeNode|undefined, FxError>>;
+    getQuestionsForLifecycleTask: (task: Task, userInputs: Inputs, ctx?: SolutionProvisionContext) => Promise<Result<QTreeNode|undefined, FxError>>;
 
     /**
      * get question model for user task in additional to normal lifecycle {@link Task}, for example `Add Resource`, `Add Capabilities`, `Update AAD Permission`, etc
      * `getQuestionsForUserTask` will router the getQuestions request and dispatch from core--->solution--->resource plugin according to `FunctionRouter`.
      */
-    getQuestionsForUserTask?: (router: FunctionRouter, userInputs: ReadonlyUserInputs, ctx?: Context & {envMeta: EnvMeta}) => Promise<Result<QTreeNode|undefined, FxError>>;
+    getQuestionsForUserTask?: (router: FunctionRouter, userInputs: Inputs, ctx?: SolutionProvisionContext) => Promise<Result<QTreeNode|undefined, FxError>>;
 
     /**
      * execute user task in additional to normal lifecycle {@link Task}, for example `Add Resource`, `Add Capabilities`, `Update AAD Permission`, etc
      * `executeUserTask` will router the execute request and dispatch from core--->solution--->resource plugin according to `FunctionRouter`.
      */
-    executeUserTask?: (func:Func, userInputs: ReadonlyUserInputs, ctx?: Context & {envMeta: EnvMeta}) => Promise<Result<unknown, FxError>>;
+    executeUserTask?: (func:Func, userInputs: Inputs, ctx?: SolutionProvisionContext) => Promise<Result<unknown, FxError>>;
 
     /**
      * There are three scenarios to use this API in question model:
@@ -90,5 +90,5 @@ export interface SolutionPlugin {
      * 3. validation for `TextInputQuestion`, core,solution plugin or resource plugin can define the validation function in `executeFuncQuestion`.
      * `executeFuncQuestion` will router the execute request from core--->solution--->resource plugin according to `FunctionRouter`.
      */
-     executeFuncQuestion?: (func:Func, previousAnswers: ReadonlyUserInputs, ctx?: Context & {envMeta: EnvMeta}) => Promise<Result<unknown, FxError>>;
+     executeFuncQuestion?: (func:Func, previousAnswers: Inputs, ctx?: SolutionProvisionContext) => Promise<Result<unknown, FxError>>;
 }

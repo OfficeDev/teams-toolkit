@@ -12,7 +12,7 @@ export class Constants {
     };
 
     static readonly AadAppPlugin = {
-        id: "teamsfx-resource-aad-app-for-teams",
+        id: "fx-resource-aad-app-for-teams",
         configKeys: {
             clientId: "clientId",
             clientSecret: "clientSecret",
@@ -24,7 +24,7 @@ export class Constants {
     };
 
     static readonly SimpleAuthPlugin = {
-        id: "teamsfx-resource-simpleAuth",
+        id: "fx-resource-simpleAuth",
         name: "Simple Auth Plugin",
         shortName: "sa",
         configKeys: {

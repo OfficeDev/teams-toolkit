@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { FileQuestion, NodeType, Question, SingleSelectQuestion, TextInputQuestion } from "teamsfx-api";
+import { FileQuestion, NodeType, Question, SingleSelectQuestion, TextInputQuestion } from "fx-api";
 
 export enum CoreQuestionNames {
     AppName = "app-name",

@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import { exec } from "child_process";
 import * as fs from "fs-extra";
-import { ConfigMap, Json } from "teamsfx-api";
+import { ConfigMap, Json } from "fx-api";
 import { promisify } from "util";
 
 const execAsync = promisify(exec);

@@ -9,7 +9,7 @@ import logger from "../../commonlib/log";
 import * as util from "util";
 import { isLinux, isWindows } from "../../utils/commonUtils";
 import { cpUtils } from "../cpUtils";
-import { IProgressHandler } from "teamsfx-api";
+import { IProgressHandler } from "fx-api";
 import { ProgressBarMessages } from "../constants";
 
 const exec = util.promisify(child_process.exec);

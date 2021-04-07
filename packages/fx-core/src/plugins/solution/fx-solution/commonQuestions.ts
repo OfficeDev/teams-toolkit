@@ -14,7 +14,7 @@ import {
     Result,
     SolutionConfig,
     SystemError,
-} from "teamsfx-api";
+} from "fx-api";
 import { GLOBAL_CONFIG, SolutionError } from "./constants";
 import { v4 as uuidv4 } from "uuid";
 import { ResourceManagementClient } from "@azure/arm-resources";

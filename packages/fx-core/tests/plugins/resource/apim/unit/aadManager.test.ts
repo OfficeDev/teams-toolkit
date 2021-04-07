@@ -216,7 +216,12 @@ describe("AadManager", () => {
                 added: ["https://added-url"],
                 expected: ["https://added-url"],
             },
-            { message: "Empty source", source: [], added: ["https://added-url"], expected: ["https://added-url"] },
+            {
+                message: "Empty source",
+                source: [],
+                added: ["https://added-url"],
+                expected: ["https://added-url"],
+            },
             {
                 message: "No existing redirect uri",
                 source: ["https://existing-url"],

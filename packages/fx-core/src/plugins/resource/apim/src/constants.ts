@@ -12,11 +12,11 @@ export class ApimDefaultValues {
     public static readonly productDescription: string = "Created by TeamsFX.";
     public static readonly oAuthServerDescription: string = "Created by TeamsFX.";
     public static readonly enableScopeName: string = ".default";
-    public static readonly userId = "sample@microsoft.com";
+    public static readonly userId: string = "sample@microsoft.com";
 }
 
 export class AadDefaultValues {
-    public static readonly graphApiBasePath = "https://graph.microsoft.com/v1.0";
+    public static readonly graphApiBasePath: string = "https://graph.microsoft.com/v1.0";
     public static readonly redirectUris: string[] = [];
 }
 
@@ -77,7 +77,7 @@ export enum LifeCycle {
 export enum TeamsToolkitComponent {
     FunctionPlugin = "fx-resource-function",
     AadPlugin = "fx-resource-aad-app-for-teams",
-    Solution = "fx-solution-azure",
+    Solution = "solution",
     ApimPlugin = "fx-resource-apim",
 }
 
@@ -128,16 +128,15 @@ export const ConfigRetryLifeCycle: { [key in TeamsToolkitComponent]: { [key: str
 };
 
 export enum ProgressStep {
-    PreScaffold = "Ask questions about API Management",
+    None = "",
     Scaffold = "Scaffold OpenAPI document",
     Provision = "Create API Management and client AAD app",
     PostProvision = "Configure API Management and AAD apps",
-    PreDeploy = "Ask questions about API",
     Deploy = "Import API into API Management",
 }
 
 export const ProgressMessages: { [key in ProgressStep]: { [step: string]: string } } = {
-    [ProgressStep.PreScaffold]: {},
+    [ProgressStep.None]: {},
     [ProgressStep.Scaffold]: {
         Scaffold: "Scaffold OpenAPI document",
     },
@@ -150,7 +149,6 @@ export const ProgressMessages: { [key in ProgressStep]: { [step: string]: string
         ConfigClientAad: "Configure client AAD app registration",
         ConfigAppAad: `Update AAD app for Teams app`,
     },
-    [ProgressStep.PreDeploy]: {},
     [ProgressStep.Deploy]: {
         ImportApi: "Import API into API management",
     },

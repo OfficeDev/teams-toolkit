@@ -14,7 +14,7 @@ export class ApimPlugin implements Plugin {
     private progressBar: ProgressBar = new ProgressBar();
 
     public async preScaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
-        return await this.executeWithFxError(ProgressStep.PreScaffold, _preScaffold, ctx);
+        return await this.executeWithFxError(ProgressStep.None, _preScaffold, ctx);
     }
 
     public async scaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
@@ -30,23 +30,24 @@ export class ApimPlugin implements Plugin {
     }
 
     public async preDeploy(ctx: PluginContext): Promise<Result<any, FxError>> {
-        return await this.executeWithFxError(ProgressStep.PreDeploy, _preDeploy, ctx);
+        return await this.executeWithFxError(ProgressStep.None, _preDeploy, ctx);
     }
 
     public async deploy(ctx: PluginContext): Promise<Result<any, FxError>> {
         return await this.executeWithFxError(ProgressStep.Deploy, _deploy, ctx);
     }
 
-    private async executeWithFxError(
+    private async executeWithFxError<T>(
         progressStep: ProgressStep,
-        fn: (ctx: PluginContext, telemetry: Telemetry, progressBar: ProgressBar, answer: IApimAnswer) => Promise<void>,
-        ctx: PluginContext
-    ): Promise<Result<any, FxError>> {
+        fn: (ctx: PluginContext, telemetry: Telemetry, progressBar: ProgressBar, answer: IApimAnswer, ...params: any[]) => Promise<T>,
+        ctx: PluginContext,
+        ...params: any[]
+    ): Promise<Result<T, FxError>> {
         const telemetry = Factory.buildTelemetry(ctx);
         try {
             await this.progressBar.init(progressStep, ctx);
-            await fn(ctx, telemetry, this.progressBar, this.answer);
-            return ok(undefined);
+            const result = await fn(ctx, telemetry, this.progressBar, this.answer, ...params);
+            return ok(result);
         } catch (error) {
             let packagedError: SystemError | UserError;
             if (error instanceof SystemError || error instanceof UserError) {

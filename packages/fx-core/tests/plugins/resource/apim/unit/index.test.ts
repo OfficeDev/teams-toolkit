@@ -8,7 +8,12 @@ import sinon from "sinon";
 import { ApimPlugin } from "../../../../../src/plugins/resource/apim/src/index";
 import { v4 } from "uuid";
 import { skip_if, MockPluginContext, MockDialog } from "./testUtil";
-import { IAadPluginConfig, IApimPluginConfig, IFunctionPluginConfig, ISolutionConfig } from "../../../../../src/plugins/resource/apim/src/model/config";
+import {
+    IAadPluginConfig,
+    IApimPluginConfig,
+    IFunctionPluginConfig,
+    ISolutionConfig,
+} from "../../../../../src/plugins/resource/apim/src/model/config";
 import { DialogMsg, DialogType, IQuestion, PluginContext, QuestionType } from "fx-api";
 dotenv.config();
 chai.use(chaiAsPromised);

@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Plugin, PluginContext, Result, QTreeNode, Stage, FxError } from "teamsfx-api";
+import { Plugin, PluginContext, Result, QTreeNode, Stage, FxError } from "fx-api";
 
 import { FxResult, FxBotPluginResultFactory as ResultFactory } from "./result";
 import { TeamsBotImpl } from "./plugin";

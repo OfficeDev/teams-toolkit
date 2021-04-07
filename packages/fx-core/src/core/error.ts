@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
  
-import {returnSystemError, returnUserError, SystemError, UserError} from "teamsfx-api";
+import {returnSystemError, returnUserError, SystemError, UserError} from "fx-api";
 
 export const CoreSource = "Core";
 

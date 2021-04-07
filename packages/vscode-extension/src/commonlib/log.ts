@@ -3,7 +3,7 @@
 
 "use strict";
 
-import { LogLevel, LogProvider } from "teamsfx-api";
+import { LogLevel, LogProvider } from "fx-api";
 import * as vscode from "vscode";
 
 const outputChannelDisplayName = "Teams Toolkit";

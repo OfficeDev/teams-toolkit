@@ -3,7 +3,7 @@
 "use strict";
 
 import * as fs from "fs-extra";
-import { Dialog, LogProvider, PluginContext, ProductName } from "teamsfx-api";
+import { Dialog, LogProvider, PluginContext, ConfigFolderName } from "fx-api";
 import { asn1, md, pki } from "node-forge";
 import * as os from "os";
 import { v4 as uuidv4 } from "uuid";
@@ -25,11 +25,11 @@ export class LocalCertificateManager {
     constructor(ctx: PluginContext | undefined) {
         this.dialog = ctx?.dialog;
         this.logger = ctx?.logProvider;
-        this.certFolder = `${os.homedir()}/.${ProductName}/certificate`;
+        this.certFolder = `${os.homedir()}/.${ConfigFolderName}/certificate`;
     }
 
     /**
-     * Local certificates are located at {home}/.teamsfx/certificate/
+     * Local certificates are located at {home}/.fx/certificate/
      * Public certificate should be trusted into user"s certificate store.
      * 
      * - Check and generate cert and key files (subject, usage, expiration, ...)

@@ -10,7 +10,7 @@ import * as http from "http";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { Mutex } from "async-mutex";
-import { returnSystemError, UserError } from "teamsfx-api";
+import { returnSystemError, UserError } from "fx-api";
 import VsCodeLogInstance from "./log";
 import * as crypto from "crypto";
 import { AddressInfo } from "net";

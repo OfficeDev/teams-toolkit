@@ -17,7 +17,7 @@ import {
   CancellationToken
 } from "vscode";
 
-import { IProgressStatus, Result, FxError } from "teamsfx-api";
+import { IProgressStatus, Result, FxError } from "fx-api";
 
 /**
  * Wrapper interface of several `vscode.window` methods that handle user input. The main reason for this interface

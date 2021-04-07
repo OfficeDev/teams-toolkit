@@ -17,7 +17,7 @@ import {
   PluginContext,
   QuestionType,
   returnSystemError,
-} from "teamsfx-api";
+} from "fx-api";
 
 const config = {
   auth: {

@@ -1,7 +1,7 @@
 
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Func, FxError, Plugin, PluginContext, QTreeNode, Result, Stage, SystemError, UserError, err } from "teamsfx-api";
+import { Func, FxError, Plugin, PluginContext, QTreeNode, Result, Stage, SystemError, UserError, err } from "fx-api";
 
 import { DeploySteps, PostProvisionSteps, PreDeploySteps, ProvisionSteps, ScaffoldSteps, StepHelperFactory } from "./resources/steps";
 import { ErrorType, FunctionPluginError } from "./resources/errors";

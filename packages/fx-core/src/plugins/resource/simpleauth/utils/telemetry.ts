@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { PluginContext } from "teamsfx-api";
+import { PluginContext } from "fx-api";
 import { Constants } from "../constants";
 
 export class TelemetryUtils {

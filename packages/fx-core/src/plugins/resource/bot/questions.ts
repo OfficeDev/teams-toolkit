@@ -2,8 +2,8 @@
 // Licensed under the MIT license.
 import { ProgrammingLanguage } from "./enums/programmingLanguage";
 import { WayToRegisterBot } from "./enums/wayToRegisterBot";
-import { QuestionNames, RegularExprs } from "./constants";
-import { NodeType, QTreeNode } from "teamsfx-api";
+import { QuestionNames, RegularExprs, QuestionOptions } from "./constants";
+import { NodeType, QTreeNode } from "fx-api";
 
 const createQuestions = new QTreeNode({
     type: NodeType.group
@@ -12,7 +12,7 @@ const createQuestions = new QTreeNode({
 const programmingLanguageQuestion = new QTreeNode({
     name: QuestionNames.PROGRAMMING_LANGUAGE,
     type: NodeType.singleSelect,
-    option: Object.values(ProgrammingLanguage).map((value) => value.toLowerCase()),
+    option: QuestionOptions.PROGRAMMING_LANGUAGE_OPTIONS,
     title: "Which programming language is scaffold based on?",
     default: ProgrammingLanguage.TypeScript
 });
@@ -20,7 +20,7 @@ const programmingLanguageQuestion = new QTreeNode({
 const wayToRegisterBotQuestion = new QTreeNode({
     name: QuestionNames.WAY_TO_REGISTER_BOT,
     type: NodeType.singleSelect,
-    option: Object.values(WayToRegisterBot).map((value) => value.toLowerCase()),
+    option: QuestionOptions.WAY_TO_REGISTER_BOT_OPTIONS,
     title: "Which way to get a bot registration?",
     default: WayToRegisterBot.CreateNew
 });

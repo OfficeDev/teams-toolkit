@@ -7,6 +7,7 @@ import semver from "semver";
 import { ProgrammingLanguage } from "../enums/programmingLanguage";
 import { TemplateProjectsConstants } from "../constants";
 import { DownloadException, TemplateProjectNotFoundException, TplManifestFormatException } from "../exceptions";
+import { Logger } from "../logger";
 
 type Manifest = {
     [groupName: string]: {
@@ -86,6 +87,8 @@ export class TemplateManifest {
         group_name: string,
         scenario = TemplateProjectsConstants.DEFAULT_SCENARIO_NAME,
     ): string {
+        Logger.debug(`getNewestTemplateUrl for ${lang},${group_name},${scenario}.`);
+
         if (!this.manifest[group_name]?.[lang]?.[scenario]) {
             throw new TemplateProjectNotFoundException();
         }
@@ -99,6 +102,7 @@ export class TemplateManifest {
         }
 
         const sortedTemplates = scenarioTemplates.sort((a, b) => -semver.compare(a.version, b.version));
+        Logger.debug(`Trying to use the template url: ${sortedTemplates[0].url}.`);
         return sortedTemplates[0].url;
     }
 }

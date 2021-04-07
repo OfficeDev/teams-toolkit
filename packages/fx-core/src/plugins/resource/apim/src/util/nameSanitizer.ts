@@ -42,7 +42,7 @@ export class NameSanitizer {
     }
 
     public static sanitizeApiId(apiNamePrefix: string, versionIdentity: string, suffix: string): string {
-        return `${apiNamePrefix}-${versionIdentity}-${suffix}`;
+        return `${apiNamePrefix}-${suffix}-${versionIdentity}`;
     }
 
     public static sanitizeApiPath(apiNamePrefix: string, suffix: string): string {

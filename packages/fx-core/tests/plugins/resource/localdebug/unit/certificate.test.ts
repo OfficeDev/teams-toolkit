@@ -12,13 +12,14 @@ import os from "os";
 import * as path from "path";
 
 import { LocalCertificateManager } from "../../../../../src/plugins/resource/localdebug/certificate";
+import { ConfigFolderName } from "fx-api";
 
 chai.use(chaiAsPromised);
 
 describe("certificate", () => {
     const workspaceFolder = path.resolve(__dirname, "../data/");
-    const expectedCertFile = path.resolve(workspaceFolder, ".home/.teamsfx/certificate/localhost.crt");
-    const expectedKeyFile = path.resolve(workspaceFolder, ".home/.teamsfx/certificate/localhost.key");
+    const expectedCertFile = path.resolve(workspaceFolder, `.home/.${ConfigFolderName}/certificate/localhost.crt`);
+    const expectedKeyFile = path.resolve(workspaceFolder, `.home/.${ConfigFolderName}/certificate/localhost.key`);
     beforeEach(() => {
         fs.emptyDirSync(workspaceFolder);
     });

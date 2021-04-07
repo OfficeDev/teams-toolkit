@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { FxError, PluginContext, Result, ok } from "teamsfx-api";
+import { FxError, PluginContext, Result, ok } from "fx-api";
 import path from "path";
 
 import { AzureStorageClient } from "./clients";

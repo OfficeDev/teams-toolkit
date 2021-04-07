@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import * as faker from "faker";
 import { ApplicationTokenCredentials, TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-import { AzureAccountProvider, LogLevel, LogProvider, ConfigMap, PluginContext, TeamsAppManifest } from "teamsfx-api";
+import { AzureAccountProvider, LogLevel, LogProvider, ConfigMap, PluginContext, TeamsAppManifest } from "fx-api";
 import { v4 as uuid } from "uuid";
 
 import { AxiosResponse } from "axios";

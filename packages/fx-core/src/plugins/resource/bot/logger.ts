@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { LogProvider } from "teamsfx-api";
+import { LogProvider } from "fx-api";
 
 export class Logger {
     static logger: LogProvider | undefined;

@@ -5,14 +5,14 @@
 import * as dotenv from "dotenv";
 import * as fs from "fs-extra";
 import * as os from "os";
-import { ProductName } from "teamsfx-api";
+import { ConfigFolderName } from "fx-api";
 
 import { LocalEnvFrontendKeys, LocalEnvBackendKeys, LocalEnvAuthKeys, LocalEnvBotKeys } from "./constants";
 
 export class LocalEnvProvider {
     private readonly localEnvFilePath: string;
     constructor(workspaceFolder: string) {
-        this.localEnvFilePath = `${workspaceFolder}/.${ProductName}/local.env`;
+        this.localEnvFilePath = `${workspaceFolder}/.${ConfigFolderName}/local.env`;
     }
 
     public async loadLocalEnv(): Promise<{ [name: string]: string }> {

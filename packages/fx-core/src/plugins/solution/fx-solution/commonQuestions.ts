@@ -14,7 +14,7 @@ import {
     Result,
     SolutionConfig,
     SystemError,
-} from "teamsfx-api";
+} from "fx-api";
 import { GLOBAL_CONFIG, SolutionError } from "./constants";
 import { v4 as uuidv4 } from "uuid";
 import { ResourceManagementClient } from "@azure/arm-resources";
@@ -109,8 +109,8 @@ export async function askSubscription(config: SolutionConfig, azureToken: TokenC
             returnUserError(
                 new Error("No Subscription was found."),
                 "Solution",
-                SolutionError.NoSubscriptionFound,
-                "https://github.com/OfficeDev/MODS-toolkit-extension/wiki/Error:-No-Subscription-Found",
+                SolutionError.NoSubscriptionFound
+               // "https://github.com/OfficeDev/MODS-toolkit-extension/wiki/Error:-No-Subscription-Found",
             ),
         );
     }

@@ -7,7 +7,7 @@ import * as chai from "chai";
 import * as fs from "fs-extra";
 import * as vscode from "vscode";
 
-import { Result, FxError } from "teamsfx-api";
+import { Result, FxError } from "fx-api";
 
 import { ext } from "../../../src/extensionVariables";
 import { testWorkspace } from "../../globalVaribles";
@@ -25,9 +25,9 @@ suite("Extension Integration Tests (Specified Folder)", async () => {
 
   // test("Provision", async function(this: Mocha.Context) {
   //   // use default values of every user input.
-  //   ext.ui.showInformationMessage(`[TEST]: execute 'teamsfx-extension.provision' command.`);
+  //   ext.ui.showInformationMessage(`[TEST]: execute 'fx-extension.provision' command.`);
   //   const result: Result<null, FxError> | undefined = await vscode.commands.executeCommand(
-  //     "teamsfx-extension.provision"
+  //     "fx-extension.provision"
   //   );
   //   chai.assert.ok(result && result.isOk());
   // });
@@ -35,39 +35,39 @@ suite("Extension Integration Tests (Specified Folder)", async () => {
   // test("Deploy", async function (this: Mocha.Context) {
   //     // use default values of every user input.
   //     ext.ui.showInformationMessage(
-  //         `[TEST]: execute 'teamsfx-extension.deploy' command.`,
+  //         `[TEST]: execute 'fx-extension.deploy' command.`,
   //     );
   //     const result:
   //         | Result<null, FxError>
   //         | undefined = await vscode.commands.executeCommand(
-  //         "teamsfx-extension.deploy",
+  //         "fx-extension.deploy",
   //     );
   //     chai.assert.ok(result && result.isOk());
   // });
 
   // test("Debug", async function(this: Mocha.Context) {
   //   // use default values of every user input.
-  //   ext.ui.showInformationMessage(`[TEST]: execute 'teamsfx-extension.debug' command.`);
+  //   ext.ui.showInformationMessage(`[TEST]: execute 'fx-extension.debug' command.`);
   //   const result: Result<null, FxError> | undefined = await vscode.commands.executeCommand(
-  //     "teamsfx-extension.debug"
+  //     "fx-extension.debug"
   //   );
   //   chai.assert.ok(result && result.isOk());
   // });
 
   // test("Build", async function(this: Mocha.Context) {
   //   // use default values of every user input.
-  //   ext.ui.showInformationMessage(`[TEST]: execute 'teamsfx-extension.build' command.`);
+  //   ext.ui.showInformationMessage(`[TEST]: execute 'fx-extension.build' command.`);
   //   const result: Result<null, FxError> | undefined = await vscode.commands.executeCommand(
-  //     "teamsfx-extension.build"
+  //     "fx-extension.build"
   //   );
   //   chai.assert.ok(result && result.isOk());
   // });
 
   // test("Publish", async function(this: Mocha.Context) {
   //   // use default values of every user input.
-  //   ext.ui.showInformationMessage(`[TEST]: execute 'teamsfx-extension.publish' command.`);
+  //   ext.ui.showInformationMessage(`[TEST]: execute 'fx-extension.publish' command.`);
   //   const result: Result<null, FxError> | undefined = await vscode.commands.executeCommand(
-  //     "teamsfx-extension.publish"
+  //     "fx-extension.publish"
   //   );
   //   chai.assert.ok(result && result.isOk());
   // });
@@ -76,11 +76,11 @@ suite("Extension Integration Tests (Specified Folder)", async () => {
   //     this.timeout(0);
   //     // use default values of every user input.
   //     ext.ui.showInformationMessage(
-  //         `[TEST]: execute 'teamsfx-extension.scaffoldOne' command.`,
+  //         `[TEST]: execute 'fx-extension.scaffoldOne' command.`,
   //     );
   //     try {
   //         await vscode.commands.executeCommand(
-  //             "teamsfx-extension.scaffoldOne",
+  //             "fx-extension.scaffoldOne",
   //         );
   //         chai.assert.ok(false, "[Test] it should be an error");
   //     } catch (error) {
@@ -90,27 +90,27 @@ suite("Extension Integration Tests (Specified Folder)", async () => {
 
   // test("Provision One", async function(this: Mocha.Context) {
   //   // use default values of every user input.
-  //   ext.ui.showInformationMessage(`[TEST]: execute 'teamsfx-extension.provisionOne' command.`);
+  //   ext.ui.showInformationMessage(`[TEST]: execute 'fx-extension.provisionOne' command.`);
   //   const result: Result<null, FxError> | undefined = await vscode.commands.executeCommand(
-  //     "teamsfx-extension.provisionOne"
+  //     "fx-extension.provisionOne"
   //   );
   //   chai.assert.ok(result && result.isOk());
   // });
 
   // test("Debug One", async function(this: Mocha.Context) {
   //   // use default values of every user input.
-  //   ext.ui.showInformationMessage(`[TEST]: execute 'teamsfx-extension.debugOne' command.`);
+  //   ext.ui.showInformationMessage(`[TEST]: execute 'fx-extension.debugOne' command.`);
   //   const result: Result<null, FxError> | undefined = await vscode.commands.executeCommand(
-  //     "teamsfx-extension.debugOne"
+  //     "fx-extension.debugOne"
   //   );
   //   chai.assert.ok(result && result.isOk());
   // });
 
   // test("Build One", async function(this: Mocha.Context) {
   //   // use default values of every user input.
-  //   ext.ui.showInformationMessage(`[TEST]: execute 'teamsfx-extension.buildOne' command.`);
+  //   ext.ui.showInformationMessage(`[TEST]: execute 'fx-extension.buildOne' command.`);
   //   const result: Result<null, FxError> | undefined = await vscode.commands.executeCommand(
-  //     "teamsfx-extension.buildOne"
+  //     "fx-extension.buildOne"
   //   );
   //   chai.assert.ok(result && result.isOk());
   // });
@@ -118,21 +118,21 @@ suite("Extension Integration Tests (Specified Folder)", async () => {
   // test("Deploy One", async function (this: Mocha.Context) {
   //     // use default values of every user input.
   //     ext.ui.showInformationMessage(
-  //         `[TEST]: execute 'teamsfx-extension.deployOne' command.`,
+  //         `[TEST]: execute 'fx-extension.deployOne' command.`,
   //     );
   //     const result:
   //         | Result<null, FxError>
   //         | undefined = await vscode.commands.executeCommand(
-  //         "teamsfx-extension.deployOne",
+  //         "fx-extension.deployOne",
   //     );
   //     chai.assert.ok(result && result.isOk());
   // });
 
   // test("Publish One", async function(this: Mocha.Context) {
   //   // use default values of every user input.
-  //   ext.ui.showInformationMessage(`[TEST]: execute 'teamsfx-extension.publishOne' command.`);
+  //   ext.ui.showInformationMessage(`[TEST]: execute 'fx-extension.publishOne' command.`);
   //   const result: Result<null, FxError> | undefined = await vscode.commands.executeCommand(
-  //     "teamsfx-extension.publishOne"
+  //     "fx-extension.publishOne"
   //   );
   //   chai.assert.ok(result && result.isOk());
   // });

@@ -222,19 +222,6 @@ export class TemplateProjectNotFoundException extends PluginException {
     }
 }
 
-export class LanguageStrategyNotFoundException extends PluginException {
-    constructor(lang: string) {
-        super(
-            ExceptionType.System,
-            ExceptionNames.LANGUAGE_STRATEGY_NOT_FOUND_EXCEPTION,
-            Messages.FailToFindSomethingFor(CommonStrings.CONFIG_ITEM, lang),
-            [
-                Messages.ReferToIssueLink
-            ]
-        );
-    }
-}
-
 export class CommandExecutionException extends PluginException {
     constructor(cmd: string, message: string, innerError?: Error) {
         super(

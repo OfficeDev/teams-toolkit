@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import { exec } from "child_process";
 import * as fs from "fs-extra";
-import { ConfigMap, Json } from "teamsfx-api";
+import { ConfigMap, Json } from "fx-api";
 import { promisify } from "util";
 
 const execAsync = promisify(exec);
@@ -56,7 +56,7 @@ export function objectToMap(o: Json): Map<any, any> {
         if (entry[1] instanceof Array) {
             m.set(entry[0], entry[1]);
         } else if (entry[1] instanceof Object) {
-            m.set(entry[0], objectToConfigMap(entry[1]));
+            m.set(entry[0], objectToConfigMap(entry[1] as Json));
         } else {
             m.set(entry[0], entry[1]);
         }

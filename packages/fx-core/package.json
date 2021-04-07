@@ -1,5 +1,5 @@
 {
-  "name": "teamsfx-core",
+  "name": "fx-core",
   "version": "1.0.0",
   "main": "build/core/index.js",
   "types": "build/core/index.d.ts",
@@ -58,7 +58,7 @@
     "openapi-types": "^7.2.3",
     "semver": "^7.3.4",
     "sudo-prompt": "^9.2.1",
-    "teamsfx-api": "^1.0.0",
+    "fx-api": "^1.0.0",
     "tedious": "^9.2.1",
     "tslib": "^2.1.0",
     "url-parse": "^1.5.1",

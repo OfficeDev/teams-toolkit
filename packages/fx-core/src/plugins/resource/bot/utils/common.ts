@@ -6,8 +6,9 @@ import { exec } from "child_process";
 import { default as urlParse } from "url-parse";
 import AdmZip from "adm-zip";
 
-import { ConfigValue, PluginContext, IBot } from "teamsfx-api";
+import { ConfigValue, PluginContext, IBot, IComposeExtension } from "fx-api";
 import { RegularExprs, WebAppConstants } from "../constants";
+import { ProgrammingLanguage } from "../enums/programmingLanguage";
 
 export function toBase64(source: string): string {
     return Base64.encode(source);
@@ -75,11 +76,116 @@ export function genBotSectionInManifest(botId: string): string {
         botId: botId,
         scopes: ["personal", "team", "groupchat"],
         supportsFiles: false,
-        isNotificationOnly: false
+        isNotificationOnly: false,
+        commandLists: [
+            {
+                scopes: ["personal", "team", "groupchat"],
+                commands: [
+                    {
+                        title: "bot command title",
+                        description: "bot command description"
+                    }
+                ]
+            }
+        ]
     }];
     return JSON.stringify(botSection);
 }
 
-export function pathInZipArchive(zip: AdmZip, path: string): boolean {
-    return zip.getEntries().find((value) => value.entryName === path) !== undefined;
+export function genMsgExtSectionInManifest(botId: string): string {
+    const composeExtensions: IComposeExtension[] = [
+        {
+            botId: botId,
+            commands: [
+                {
+                    id: "createCard",
+                    context: [
+                        "compose"
+                    ],
+                    description: "Command to run action to create a Card from Compose Box",
+                    title: "Create Card",
+                    type: "action",
+                    parameters: [
+                        {
+                            "name": "title",
+                            "title": "Card title",
+                            "description": "Title for the card",
+                            "inputType": "text"
+                        },
+                        {
+                            "name": "subTitle",
+                            "title": "Subtitle",
+                            "description": "Subtitle for the card",
+                            "inputType": "text"
+                        },
+                        {
+                            "name": "text",
+                            "title": "Text",
+                            "description": "Text for the card",
+                            "inputType": "textarea"
+                        }
+                    ]
+                },
+                {
+                    id: "shareMessage",
+                    context: [
+                        "message"
+                    ],
+                    description: "Test command to run action on message context (message sharing)",
+                    title: "Share Message",
+                    type: "action",
+                    parameters: [
+                        {
+                            "name": "includeImage",
+                            "title": "Include Image",
+                            "description": "Include image in Hero Card",
+                            "inputType": "toggle"
+                        }
+                    ]
+                },
+                {
+                    id: "searchQuery",
+                    context: [
+                        "compose", "commandBox"
+                    ],
+                    description: "Test command to run query",
+                    title: "Search",
+                    type: "query",
+                    parameters: [
+                        {
+                            name: "searchQuery",
+                            title: "Search Query",
+                            description: "Your search query",
+                            inputType: "text"
+                        }
+                    ]
+                }
+            ],
+            messageHandlers: [
+                {
+                    type: "link",
+                    value: {
+                        domains: [
+                            "*.botframework.com"
+                        ]
+                    }
+                }
+            ]
+        }
+    ];
+    return JSON.stringify(composeExtensions);
+}
+
+export function convertToLangKey(programmingLanguage: ProgrammingLanguage): string {
+    switch (programmingLanguage) {
+        case ProgrammingLanguage.JavaScript: {
+            return "JavaScript";
+        }
+        case ProgrammingLanguage.TypeScript: {
+            return "TypeScript";
+        }
+        default: {
+            return "JavaScript";
+        }
+    }
 }

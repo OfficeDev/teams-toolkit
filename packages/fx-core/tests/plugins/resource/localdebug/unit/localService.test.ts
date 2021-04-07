@@ -12,6 +12,7 @@ import os from "os";
 import * as path from "path";
 
 import { prepareLocalAuthService } from "../../../../../src/plugins/resource/localdebug/util/localService";
+import { ConfigFolderName } from "fx-api";
 
 chai.use(chaiAsPromised);
 
@@ -41,12 +42,12 @@ describe("localService", () => {
 
             const localAuthFolder = await prepareLocalAuthService(`${fakeHomeDir}/test.zip`);
 
-            chai.assert.equal(localAuthFolder, `${fakeHomeDir}/.teamsfx/localauth`);
+            chai.assert.equal(localAuthFolder, `${fakeHomeDir}/.${ConfigFolderName}/localauth`);
             chai.assert.isTrue(fs.pathExistsSync(`${localAuthFolder}/Microsoft.TeamsFxSimpleAuth.dll`));
         });
 
         it("dll exists", async() => {
-            fs.createFileSync(`${fakeHomeDir}/.teamsfx/localauth/Microsoft.TeamsFxSimpleAuth.dll`);
+            fs.createFileSync(`${fakeHomeDir}/.${ConfigFolderName}/localauth/Microsoft.TeamsFxSimpleAuth.dll`);
             fs.createFileSync(`${fakeHomeDir}/test.dll`);
             const zip = new AdmZip();
             zip.addLocalFile(`${fakeHomeDir}/test.dll`);
@@ -54,9 +55,9 @@ describe("localService", () => {
 
             const localAuthFolder = await prepareLocalAuthService(`${fakeHomeDir}/test.zip`);
 
-            chai.assert.equal(localAuthFolder, `${fakeHomeDir}/.teamsfx/localauth`);
+            chai.assert.equal(localAuthFolder, `${fakeHomeDir}/.${ConfigFolderName}/localauth`);
             chai.assert.isTrue(fs.pathExistsSync(`${localAuthFolder}/Microsoft.TeamsFxSimpleAuth.dll`));
-            chai.assert.isFalse(fs.pathExistsSync(`${fakeHomeDir}/.teamsfx/localauth/test.dll`));
+            chai.assert.isFalse(fs.pathExistsSync(`${fakeHomeDir}/.${ConfigFolderName}/localauth/test.dll`));
         });
     });
 });

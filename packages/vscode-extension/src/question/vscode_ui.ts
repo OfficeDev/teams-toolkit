@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Option, OptionItem, returnSystemError, StaticOption } from "teamsfx-api";
+import { Option, OptionItem, returnSystemError, StaticOption } from "fx-api";
 import { Disposable, InputBox, QuickInputButtons, QuickPick, QuickPickItem, window } from "vscode";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { InputResult, InputResultType } from "./types";
@@ -28,6 +28,7 @@ export interface FxInputBoxOption {
 }
 
 export interface FxQuickPickItem extends QuickPickItem {
+  id: string;
   data?: any;
 }
 
@@ -56,12 +57,14 @@ export async function showQuickPick(option: FxQuickPickOption): Promise<InputRes
               );
               let result: OptionItem[] | string[] = strArray;
               if (option.returnObject) {
-                result = quickPick.selectedItems.map((i: FxQuickPickItem) => {
+                result = quickPick.selectedItems.map((i) => {
+                  const fi:FxQuickPickItem = i as FxQuickPickItem;
                   const item: OptionItem = {
-                    label: i.label,
-                    description: i.description,
-                    detail: i.detail,
-                    data: i.data
+                    id: fi.id,
+                    label: fi.label,
+                    description: fi.description,
+                    detail: fi.detail,
+                    data: fi.data
                   };
                   return item;
                 });
@@ -71,10 +74,11 @@ export async function showQuickPick(option: FxQuickPickOption): Promise<InputRes
                 result: result
               });
             } else {
-              const item: FxQuickPickItem = quickPick.selectedItems[0];
+              const item: FxQuickPickItem = quickPick.selectedItems[0] as FxQuickPickItem;
               let result: string | OptionItem = item.label;
               if (option.returnObject) {
                 result = {
+                  id: item.id,
                   label: item.label,
                   description: item.description,
                   detail: item.detail,

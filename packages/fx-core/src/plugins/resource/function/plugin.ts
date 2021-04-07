@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import * as path from "path";
-import { Func, FxError, NodeType, PluginContext, QTreeNode, ReadonlyPluginConfig, Result, Stage } from "teamsfx-api";
+import { Func, FxError, NodeType, PluginContext, QTreeNode, ReadonlyPluginConfig, Result, Stage } from "fx-api";
 import { StorageManagementClient } from "@azure/arm-storage";
 import { StringDictionary } from "@azure/arm-appservice/esm/models";
 import { WebSiteManagementClient, WebSiteManagementModels } from "@azure/arm-appservice";
@@ -139,7 +139,7 @@ export class FunctionPluginImpl {
     public async callFunc(func: Func, ctx: PluginContext): Promise<FxResult> {
         if (func.method === QuestionValidationFunc.validateFunctionName) {
             const workingPath: string = this.getFunctionProjectRootPath(ctx);
-            const name = func.params?.[0] as string;
+            const name = func.params as string;
             if (!name || !RegularExpr.validFunctionNamePattern.test(name)) {
                 return ResultFactory.Success(ErrorMessages.invalidFunctionName);
             }

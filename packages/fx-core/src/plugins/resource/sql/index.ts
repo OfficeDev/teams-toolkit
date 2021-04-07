@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { err, Func, FxError, Plugin, PluginContext, QTreeNode, Result, Stage, SystemError, UserError } from "teamsfx-api";
+import { err, Func, FxError, Plugin, PluginContext, QTreeNode, Result, Stage, SystemError, UserError } from "fx-api";
 import { ErrorMessage } from "./errors";
 import { SqlPluginImpl } from "./plugin";
 import { SqlResult, SqlResultFactory } from "./results";

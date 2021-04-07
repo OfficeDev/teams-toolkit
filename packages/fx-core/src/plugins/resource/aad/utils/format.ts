@@ -34,7 +34,7 @@ function formatEndpoint(endpoint: string): string {
 
   try {
     const url = new URL(endpoint);
-    endpoint = url.origin;
+    endpoint = url.href;
     return endpoint;
   } catch {
     throw new Error(

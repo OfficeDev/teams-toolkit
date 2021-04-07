@@ -2,12 +2,12 @@
 // Licensed under the MIT license.
 import * as vscode from "vscode";
 import Reporter from "vscode-extension-telemetry";
-import { TelemetryReporter } from "teamsfx-api";
+import { TelemetryReporter } from "fx-api";
 import { getPackageVersion } from "../utils/commonUtils";
 import logger from "./log";
 
 /**
- *  VSCode telemetry reporter used by teamsfx-core.
+ *  VSCode telemetry reporter used by fx-core.
  *  Usage:
  *    let reporter = new VSCodeTelemetryReporter(key, extensionVersion, extensionId)
  *  Illustrate:

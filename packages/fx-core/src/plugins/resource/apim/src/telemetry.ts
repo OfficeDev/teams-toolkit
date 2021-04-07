@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { UserError } from "teamsfx-api";
-import { SystemError, TelemetryReporter } from "teamsfx-api";
+import { UserError } from "fx-api";
+import { SystemError, TelemetryReporter } from "fx-api";
 import { OpenApiSchemaVersion } from "./model/openApiDocument";
 import { IName, OperationStatus } from "./model/operation";
 

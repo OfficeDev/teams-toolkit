@@ -8,7 +8,7 @@
 
 import { TokenCredential } from "@azure/core-auth";
 import { TokenCredentialsBase, DeviceTokenCredentials } from "@azure/ms-rest-nodeauth";
-import { AzureAccountProvider, UserError } from "teamsfx-api";
+import { AzureAccountProvider, UserError } from "fx-api";
 import { ExtensionErrors } from "../error";
 import { CodeFlowLogin, LoginFailureError, ConvertTokenToJson } from "./codeFlowLogin";
 import * as vscode from "vscode";

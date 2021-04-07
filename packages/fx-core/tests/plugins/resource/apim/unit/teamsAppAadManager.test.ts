@@ -50,8 +50,16 @@ describe("TeamsAppAadManager", () => {
             const aadConfig = buildAadPluginConfig(aadInfo.id!, aadInfo.appId!);
             await teamsAppAadManager.postProvision(aadConfig, { apimClientAADClientId: testClientId });
             assert.calledThrice(spy);
-            assert.calledWithMatch(spy, { method: "get", url: `/servicePrincipals?$filter=appId eq '${aadInfo.appId!}'`, data: undefined });
-            assert.calledWithMatch(spy, { method: "post", url: `/servicePrincipals`, data: { appId: aadInfo.appId! } });
+            assert.calledWithMatch(spy, {
+                method: "get",
+                url: `/servicePrincipals?$filter=appId eq '${aadInfo.appId!}'`,
+                data: undefined,
+            });
+            assert.calledWithMatch(spy, {
+                method: "post",
+                url: `/servicePrincipals`,
+                data: { appId: aadInfo.appId! },
+            });
             assert.calledWithMatch(spy, {
                 method: "patch",
                 url: `/applications/${aadInfo.id!}`,
@@ -64,7 +72,11 @@ describe("TeamsAppAadManager", () => {
             const aadConfig = buildAadPluginConfig(testScopeObjectId, testScopeClientId);
             await teamsAppAadManager.postProvision(aadConfig, { apimClientAADClientId: testClientId });
             assert.calledTwice(spy);
-            assert.calledWithMatch(spy, { method: "get", url: `/servicePrisncipals?$filter=appId eq '${testScopeClientId}'`, data: undefined });
+            assert.calledWithMatch(spy, {
+                method: "get",
+                url: `/servicePrisncipals?$filter=appId eq '${testScopeClientId}'`,
+                data: undefined,
+            });
             assert.calledWithMatch(spy, {
                 method: "patch",
                 url: `/applications/${testScopeObjectId}`,

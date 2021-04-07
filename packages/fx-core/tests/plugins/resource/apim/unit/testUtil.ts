@@ -13,14 +13,19 @@ import {
     ConfigMap,
     TeamsAppManifest,
     IProgressHandler,
-} from "teamsfx-api";
+} from "fx-api";
 import { BuildError, NotImplemented } from "../../../../../src/plugins/resource/apim/src/error";
 import { TokenCredential } from "@azure/core-auth";
 import { AsyncFunc, Func } from "mocha";
 import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import { ConfidentialClientApplication } from "@azure/msal-node";
 import { AssertNotEmpty } from "../../../../../src/plugins/resource/apim/src/error";
-import { IAadPluginConfig, IApimPluginConfig, IFunctionPluginConfig, ISolutionConfig } from "../../../../../src/plugins/resource/apim/src/model/config";
+import {
+    IAadPluginConfig,
+    IApimPluginConfig,
+    IFunctionPluginConfig,
+    ISolutionConfig,
+} from "../../../../../src/plugins/resource/apim/src/model/config";
 import { TeamsToolkitComponent } from "../../../../../src/plugins/resource/apim/src/constants";
 
 export class MockLogProvider implements LogProvider {
@@ -221,7 +226,7 @@ export class MockPluginContext implements PluginContext {
     }
 }
 
-export function skip_if(condition: boolean, name: string, callback: Func | AsyncFunc) : void{
+export function skip_if(condition: boolean, name: string, callback: Func | AsyncFunc): void {
     const fn = condition ? it.skip : it;
     fn(name, callback);
 }

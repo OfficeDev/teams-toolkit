@@ -26,9 +26,10 @@ import {
   UserError,
   SystemError,
   returnUserError,
-  returnSystemError
-} from "teamsfx-api";
-import { CoreProxy } from "teamsfx-core";
+  returnSystemError,
+  ConfigFolderName
+} from "fx-api";
+import { CoreProxy } from "fx-core";
 import DialogManagerInstance from "./userInterface";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -135,6 +136,7 @@ export async function activate(): Promise<Result<null, FxError>> {
     {
       const globalConfig = new ConfigMap();
       globalConfig.set("featureFlag", isFeatureFlag());
+      globalConfig.set("function-dotnet-checker-enabled", dotnetCheckerEnabled());
       const result = await core.init(globalConfig);
       if (result.isErr()) {
         showError(result.error);
@@ -316,8 +318,8 @@ async function runUserTask(func: Func): Promise<Result<null, FxError>> {
       VsCodeLogInstance.info(`Question tree:${JSON.stringify(node, null, 4)}`);
       const res: InputResult = await traverse(node, answers, ext.visit);
       VsCodeLogInstance.info(`User input:${JSON.stringify(res, null, 4)}`);
-      if (res.type === InputResultType.error) {
-        throw res.error!;
+      if (res.type === InputResultType.error && res.error) {
+        throw res.error;
       } else if (res.type === InputResultType.cancel) {
         throw new UserError(ExtensionErrors.UserCancel, "User Cancel", ExtensionSource);
       }
@@ -404,7 +406,7 @@ export async function updateAADHandler(): Promise<Result<null, FxError>> {
     [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
   });
   const func: Func = {
-    namespace: "teamsfx-solution-azure/teamsfx-plugin-aad-app-for-teams",
+    namespace: "fx-solution-azure/teamsfx-plugin-aad-app-for-teams",
     method: "aadUpdatePermission"
   };
   return await runUserTask(func);
@@ -533,7 +535,7 @@ export async function openManifestHandler(): Promise<Result<null, FxError>> {
     const workspaceFolder = workspace.workspaceFolders[0];
     const configRoot = await commonUtils.getProjectRoot(
       workspaceFolder.uri.fsPath,
-      constants.teamsfxFolderName
+      `.${ConfigFolderName}`
     );
     const manifestFile = `${configRoot}/${constants.manifestFileName}`;
     if (fs.existsSync(manifestFile)) {
@@ -619,14 +621,14 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
   context.subscriptions.push(provider);
 
   // Register SignOut tree view command
-  commands.registerCommand("teamsfx-extension.signOut", async (node: TreeViewCommand) => {
+  commands.registerCommand("fx-extension.signOut", async (node: TreeViewCommand) => {
     switch (node.contextValue) {
       case "signedinM365": {
         const result = await AppStudioTokenInstance.signout();
         if (result) {
           await CommandsTreeViewProvider.getInstance().refresh([
             {
-              commandId: "teamsfx-extension.signinM365",
+              commandId: "fx-extension.signinM365",
               label: "Sign In M365...",
               contextValue: "signinM365"
             }
@@ -639,16 +641,16 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
         if (result) {
           await CommandsTreeViewProvider.getInstance().refresh([
             {
-              commandId: "teamsfx-extension.signinAzure",
+              commandId: "fx-extension.signinAzure",
               label: "Sign In Azure...",
               contextValue: "signinAzure"
             }
           ]);
           await CommandsTreeViewProvider.getInstance().remove([
             {
-              commandId: "teamsfx-extension.selectSubscription",
+              commandId: "fx-extension.selectSubscription",
               label: "",
-              parent: "teamsfx-extension.signinAzure"
+              parent: "fx-extension.signinAzure"
             }
           ]);
         }

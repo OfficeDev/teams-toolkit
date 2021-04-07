@@ -3,9 +3,7 @@
 
 import {
   ConfigMap,
-  FileValidation,
   Func,
-  InputQuestion,
   NodeType,
   QTreeNode,
   Question,
@@ -15,15 +13,16 @@ import {
   StaticOption,
   OptionItem,
   MultiSelectQuestion,
-  ArrayValidation
-} from "teamsfx-api";
+  TextInputQuestion,
+  FileQuestion
+} from "fx-api";
 import { window } from "vscode";
-import { CoreProxy } from "teamsfx-core";
+import { CoreProxy } from "fx-core";
 import { InputResult, InputResultType } from "./types";
 import { showInputBox, showQuickPick } from "./vscode_ui";
-import { getValidationFunction, validate } from "./validation";
 import VsCodeLogInstance from "../commonlib/log";
 import { ExtensionErrors, ExtensionSource } from "../error";
+import { getValidationFunction, validate } from "./validation";
 
 const core:CoreProxy = CoreProxy.getInstance();
 
@@ -47,6 +46,9 @@ export async function getRealValue(
       const res = await core.callFunc(defaultValue as Func, answers);
       if (res.isOk()) {
         return res.value;
+      }
+      else {
+        return undefined;
       }
     }
   }
@@ -90,9 +92,10 @@ export async function questionVisit(
     if (question.default) {
       defaultValue = await getRealValue(parentValue, question.default, answers);
     }
-    const validationFunc = getValidationFunction(question.validation, answers);
+    
     if (type === NodeType.text || type === NodeType.password) {
-      const inputQuestion: InputQuestion = question as InputQuestion;
+      const inputQuestion: TextInputQuestion = question as TextInputQuestion;
+      const validationFunc = inputQuestion.validation? getValidationFunction(inputQuestion.validation, answers):undefined;
       return await showInputBox({
         title: inputQuestion.title || inputQuestion.description || inputQuestion.name,
         password: !!(type === NodeType.password),
@@ -155,10 +158,10 @@ export async function questionVisit(
         returnObject: selectQuestion.returnObject,
         defaultValue: defaultValue,
         placeholder: selectQuestion.placeholder,
-        validation: validationFunc,
-        backButton: canGoBack
+        backButton: canGoBack,
       });
     } else if (type === NodeType.folder) {
+      const fileQuestion = question as FileQuestion;
       while (true) {
         const uri = await window.showOpenDialog({
           defaultUri: defaultValue,
@@ -171,6 +174,7 @@ export async function questionVisit(
         if (!res) {
           return { type: InputResultType.cancel };
         }
+        const validationFunc = getValidationFunction(fileQuestion.validation, answers);
         const vres = await validationFunc(res);
         if (!vres) {
           return { type: InputResultType.sucess, result: res };
@@ -284,6 +288,7 @@ export async function traverse(
     if (curr.children) {
       for (let i = curr.children.length - 1; i >= 0; --i) {
         const child = curr.children[i];
+        if(!child) continue;
         parentMap.set(child, curr);
         if (child.condition) {
           const realValue = child.condition.target

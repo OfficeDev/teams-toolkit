@@ -21,56 +21,56 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // 1.1 Register the creating command.
   const createCmd = vscode.commands.registerCommand(
-    "teamsfx-extension.create",
+    "fx-extension.create",
     handlers.createNewProjectHandler
   );
   context.subscriptions.push(createCmd);
 
   // 1.2 Register the creating command.
   const updateCmd = vscode.commands.registerCommand(
-    "teamsfx-extension.update",
+    "fx-extension.update",
     handlers.updateProjectHandler
   );
   context.subscriptions.push(updateCmd);
 
   // 1.3 Register the provision command.
   const provisionCmd = vscode.commands.registerCommand(
-    "teamsfx-extension.provision",
+    "fx-extension.provision",
     handlers.provisionHandler
   );
   context.subscriptions.push(provisionCmd);
 
   // 1.5 Register the deploy command.
   const deployCmd = vscode.commands.registerCommand(
-    "teamsfx-extension.deploy",
+    "fx-extension.deploy",
     handlers.deployHandler
   );
   context.subscriptions.push(deployCmd);
 
   // 1.6 update aad command
   const updateAadCmd = vscode.commands.registerCommand(
-    "teamsfx-extension.updateAad",
+    "fx-extension.updateAad",
     handlers.updateAADHandler
   );
   context.subscriptions.push(updateAadCmd);
 
   // 1.7 validate dependencies command (hide from UI)
   const validateDependenciesCmd = vscode.commands.registerCommand(
-    "teamsfx-extension.validate-dependencies",
+    "fx-extension.validate-dependencies",
     handlers.validateDependenciesHandler
   );
   context.subscriptions.push(validateDependenciesCmd);
 
   // 1.8 pre debug check command (hide from UI)
   const preDebugCheckCmd = vscode.commands.registerCommand(
-    "teamsfx-extension.pre-debug-check",
+    "fx-extension.pre-debug-check",
     handlers.preDebugCheckHandler
   );
   context.subscriptions.push(preDebugCheckCmd);
 
   // 1.9 Register backend extensions install command (hide from UI)
   const backendExtensionsInstallCmd = vscode.commands.registerCommand(
-    "teamsfx-extension.backend-extensions-install",
+    "fx-extension.backend-extensions-install",
     handlers.backendExtensionsInstallHandler
   );
   context.subscriptions.push(backendExtensionsInstallCmd);
@@ -82,31 +82,31 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   const mailtoCmd = vscode.commands.registerCommand(
-    "teamsfx-extension.mailto",
+    "fx-extension.mailto",
     handlers.mailtoHandler
   );
   context.subscriptions.push(mailtoCmd);
 
   const devProgramCmd = vscode.commands.registerCommand(
-    "teamsfx-extension.devProgram",
+    "fx-extension.devProgram",
     handlers.devProgramHandler
   );
   context.subscriptions.push(devProgramCmd);
 
   const openWelcomeCmd = vscode.commands.registerCommand(
-    "teamsfx-extension.openWelcome",
+    "fx-extension.openWelcome",
     handlers.openWelcomeHandler
   );
   context.subscriptions.push(provisionCmd);
 
   const openDocumentCmd = vscode.commands.registerCommand(
-    "teamsfx-extension.openDocument",
+    "fx-extension.openDocument",
     handlers.openDocumentHandler
   );
   context.subscriptions.push(openDocumentCmd);
 
   const openManifestCmd = vscode.commands.registerCommand(
-    "teamsfx-extension.openManifest",
+    "fx-extension.openManifest",
     handlers.openManifestHandler
   );
   context.subscriptions.push(provisionCmd);

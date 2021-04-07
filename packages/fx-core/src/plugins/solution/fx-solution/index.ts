@@ -1,5 +1,5 @@
 export * from "./solution";
-import { ok, FxError, Result, Solution } from "teamsfx-api";
+import { ok, FxError, Result, Solution } from "fx-api";
 import { TeamsAppSolution } from "./solution";
 
 export async function Default(): Promise<Result<Solution, FxError>> {

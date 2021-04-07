@@ -3,7 +3,7 @@
 "use strict";
 
 import * as fs from "fs-extra";
-import { Func, FxError, Platform, Plugin, PluginContext, Result, err, ok } from "teamsfx-api";
+import { Func, FxError, Platform, Plugin, PluginContext, Result, err, ok } from "fx-api";
 import * as os from "os";
 
 import { LocalCertificateManager } from "./certificate";
@@ -212,7 +212,7 @@ export class LocalDebugPlugin implements Plugin {
 
     public async callFunc(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
         if (func.method == "getLaunchInput") {
-            const env = func.params?.[0] as string;
+            const env = func.params as string;
             const solutionConfigs = ctx.configOfOtherPlugins.get(SolutionPlugin.Name);
             if (env === "remote") {
                 // return remote teams app id

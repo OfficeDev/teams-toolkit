@@ -3,7 +3,7 @@ import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import * as dotenv from "dotenv";
 import * as fs from "fs-extra";
-import { Platform, PluginContext } from "teamsfx-api";
+import { ConfigFolderName, Platform, PluginContext } from "fx-api";
 import * as path from "path";
 
 import { LocalDebugPluginInfo } from "../../../../../src/plugins/resource/localdebug/constants";
@@ -13,7 +13,7 @@ chai.use(chaiAsPromised);
 
 describe(LocalDebugPluginInfo.pluginName, ()=> {
     const expectedLaunchFile = path.resolve(__dirname, "../data/.vscode/launch.json");
-    const expectedLocalEnvFile = path.resolve(__dirname, "../data/.teamsfx/local.env");
+    const expectedLocalEnvFile = path.resolve(__dirname, `../data/.${ConfigFolderName}/local.env`);
     const expectedSettingsFile = path.resolve(__dirname, "../data/.vscode/settings.json");
     const expectedTasksFile = path.resolve(__dirname, "../data/.vscode/tasks.json");
 
@@ -33,9 +33,9 @@ describe(LocalDebugPluginInfo.pluginName, ()=> {
             pluginContext.platform = Platform.VSCode;
             pluginContext.configOfOtherPlugins = new Map([
                 ["solution", new Map([
-                    ["selectedPlugins", ["teamsfx-resource-aad-app-for-teams", "teamsfx-resource-frontend-hosting", "teamsfx-resource-function"]]
+                    ["selectedPlugins", ["fx-resource-aad-app-for-teams", "fx-resource-frontend-hosting", "fx-resource-function"]]
                 ])],
-                ["teamsfx-resource-function", new Map()]]);
+                ["fx-resource-function", new Map()]]);
             const result = await plugin.scaffold(pluginContext);
             chai.assert.isTrue(result.isOk());
 
@@ -67,7 +67,7 @@ describe(LocalDebugPluginInfo.pluginName, ()=> {
             pluginContext.platform = Platform.VSCode;
             pluginContext.configOfOtherPlugins = new Map([
                 ["solution", new Map([
-                    ["selectedPlugins", ["teamsfx-resource-aad-app-for-teams", "teamsfx-resource-frontend-hosting"]]
+                    ["selectedPlugins", ["fx-resource-aad-app-for-teams", "fx-resource-frontend-hosting"]]
                 ])]]);
             const result = await plugin.scaffold(pluginContext);
             chai.assert.isTrue(result.isOk());
@@ -98,7 +98,7 @@ describe(LocalDebugPluginInfo.pluginName, ()=> {
             pluginContext.platform = Platform.VSCode;
             pluginContext.configOfOtherPlugins = new Map([
                 ["solution", new Map([
-                    ["selectedPlugins", ["teamsfx-resource-aad-app-for-teams", "teamsfx-resource-teamsbot"]]
+                    ["selectedPlugins", ["fx-resource-aad-app-for-teams", "fx-resource-teamsbot"]]
                 ])]]);
             const result = await plugin.scaffold(pluginContext);
             chai.assert.isTrue(result.isOk());
@@ -133,7 +133,7 @@ describe(LocalDebugPluginInfo.pluginName, ()=> {
             pluginContext.platform = Platform.VSCode;
             pluginContext.configOfOtherPlugins = new Map([
                 ["solution", new Map([
-                    ["selectedPlugins", ["teamsfx-resource-spfx"]]
+                    ["selectedPlugins", ["fx-resource-spfx"]]
                 ])]]);
             const result = await plugin.scaffold(pluginContext);
             chai.assert.isTrue(result.isOk());
@@ -161,9 +161,9 @@ describe(LocalDebugPluginInfo.pluginName, ()=> {
             pluginContext.platform = Platform.CLI;
             pluginContext.configOfOtherPlugins = new Map([
                 ["solution", new Map([
-                    ["selectedPlugins", ["teamsfx-resource-aad-app-for-teams", "teamsfx-resource-function"]]
+                    ["selectedPlugins", ["fx-resource-aad-app-for-teams", "fx-resource-function"]]
                 ])],
-                ["teamsfx-resource-function", new Map()]]);
+                ["fx-resource-function", new Map()]]);
             const result = await plugin.scaffold(pluginContext);
             chai.assert.isTrue(result.isOk());
 

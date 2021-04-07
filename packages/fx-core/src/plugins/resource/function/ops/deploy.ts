@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import * as fs from "fs-extra";
 import * as path from "path";
-import { MsgLevel, PluginContext } from "teamsfx-api";
+import { MsgLevel, PluginContext } from "fx-api";
 import { WebSiteManagementClient } from "@azure/arm-appservice";
 import AdmZip from "adm-zip";
 import axios from "axios";
@@ -253,7 +253,7 @@ export class FunctionDeploy {
             const content = await fs.readFile(filePath);
             zip.addFile(zipPath, content);
             if (stats) {
-                (zip.getEntry(zipPath).header as any).time = stats.mtime;
+                (zip.getEntry(zipPath)!.header as any).time = stats.mtime;
             }
         };
 

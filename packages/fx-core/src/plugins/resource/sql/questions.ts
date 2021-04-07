@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { FuncValidation, NodeType, QTreeNode } from "teamsfx-api";
+import { RemoteFuncValidation, NodeType, QTreeNode } from "fx-api";
 import { Constants } from "./constants";
 
 export const adminNameQuestion = new QTreeNode({
@@ -10,7 +10,7 @@ export const adminNameQuestion = new QTreeNode({
     validation: {
         namespace: `${Constants.solutionPluginFullName}/${Constants.pluginFullName}`,
         method: Constants.questionKey.adminName
-    } as FuncValidation
+    } as RemoteFuncValidation
 });
 
 export const adminPasswordQuestion = new QTreeNode({
@@ -20,7 +20,7 @@ export const adminPasswordQuestion = new QTreeNode({
     validation: {
         namespace: `${Constants.solutionPluginFullName}/${Constants.pluginFullName}`,
         method: Constants.questionKey.adminPassword
-    } as FuncValidation
+    } as RemoteFuncValidation
 });
 
 export const confirmPasswordQuestion = new QTreeNode({
@@ -30,5 +30,5 @@ export const confirmPasswordQuestion = new QTreeNode({
     validation: {
         namespace: `${Constants.solutionPluginFullName}/${Constants.pluginFullName}`,
         method: Constants.questionKey.confirmPassword
-    } as FuncValidation
+    } as RemoteFuncValidation
 });

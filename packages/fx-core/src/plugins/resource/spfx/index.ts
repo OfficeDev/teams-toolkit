@@ -12,7 +12,7 @@ import {
   Result,
   ok,
   TeamsAppManifest
-} from "teamsfx-api";
+} from "fx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { SPFxPluginImpl } from "./plugin";
@@ -49,10 +49,7 @@ export class SpfxPlugin implements Plugin {
         name: SPFXQuestionNames.framework_type,
         title: "Which framework would you like to use?",
         option: ["none", "react"],
-        default: "none",
-        validation: {
-          required: true,
-        },
+        default: "none"
       });
       spfx_frontend_host.addChild(spfx_framework_type);
 

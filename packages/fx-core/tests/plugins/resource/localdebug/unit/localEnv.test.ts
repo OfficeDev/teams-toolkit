@@ -7,12 +7,13 @@ import * as path from "path";
 
 import { LocalEnvProvider } from "../../../../../src/plugins/resource/localdebug/localEnv";
 import { LocalEnvFrontendKeys, LocalEnvBackendKeys, LocalEnvAuthKeys, LocalEnvBotKeys } from "../../../../../src/plugins/resource/localdebug/constants";
+import { ConfigFolderName } from "fx-api";
 
 chai.use(chaiAsPromised);
 
 describe("LocalEnvProvider", ()=> {
     const workspaceFolder = path.resolve(__dirname, "../data/");
-    const testFilePath = path.resolve(__dirname, "../data/.teamsfx/local.env");
+    const testFilePath = path.resolve(__dirname, `../data/.${ConfigFolderName}/local.env`);
     const testContent = `ENV1=foo${os.EOL}ENV2=bar${os.EOL}`;
 
     describe("loadLocalEnv", () => {

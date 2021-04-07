@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Func, PluginContext, QTreeNode, Stage } from "teamsfx-api";
+import { Func, PluginContext, QTreeNode, Stage } from "fx-api";
 import { BuildError, NotImplemented } from "../error";
 import { IApimPluginConfig } from "../model/config";
 import {
@@ -95,7 +95,7 @@ export class VscQuestionManager implements IQuestionManager {
 
         const newVersionQuestion = this.newApiVersionQuestion.getQuestion();
         const newVersionQuestionNode = new QTreeNode(newVersionQuestion);
-        newVersionQuestionNode.condition = this.newApiVersionQuestion.condition("$parent");
+        newVersionQuestionNode.condition = this.newApiVersionQuestion.condition();
         versionQuestionNode.addChild(newVersionQuestionNode);
 
         return rootNode;

@@ -13,7 +13,7 @@ import {
     IFunctionPluginConfig,
     ISolutionConfig,
 } from "../../../../../src/plugins/resource/apim/src/model/config";
-import { PluginContext } from "teamsfx-api";
+import { PluginContext } from "fx-api";
 import { QuestionConstants } from "../../../../../src/plugins/resource/apim/src/constants";
 dotenv.config();
 chai.use(chaiAsPromised);
@@ -37,7 +37,7 @@ describe("ApimPlugin", () => {
     describe("Happy path", () => {
         const apimPlugin = new ApimPlugin();
         skip_if(!enableTest, "First time create", async () => {
-            const ctx = await buildContext("teamsfx-apim-test", testCreateSuffix);
+            const ctx = await buildContext("fx-apim-test", testCreateSuffix);
 
             let result = await apimPlugin.scaffold(ctx);
             chai.assert.isTrue(result.isOk(), "Operation apimPlugin.scaffold should be succeeded.");

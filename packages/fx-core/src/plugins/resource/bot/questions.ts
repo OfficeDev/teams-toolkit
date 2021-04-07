@@ -3,7 +3,7 @@
 import { ProgrammingLanguage } from "./enums/programmingLanguage";
 import { WayToRegisterBot } from "./enums/wayToRegisterBot";
 import { QuestionNames, RegularExprs } from "./constants";
-import { NodeType, QTreeNode } from "teamsfx-api";
+import { NodeType, QTreeNode } from "fx-api";
 
 const createQuestions = new QTreeNode({
     type: NodeType.group

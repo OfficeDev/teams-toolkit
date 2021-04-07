@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Platform, PluginContext } from "teamsfx-api";
+import { Platform, PluginContext } from "fx-api";
 import { AssertNotEmpty, BuildError, NotImplemented } from "./error";
 import { ApimService } from "./service/apimService";
 import { SolutionConfig } from "./model/config";

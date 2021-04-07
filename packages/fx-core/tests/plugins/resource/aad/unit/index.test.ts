@@ -4,7 +4,7 @@
 import "mocha";
 import * as chai from "chai";
 import * as dotenv from "dotenv";
-import { ConfigMap, Func, PluginContext } from "teamsfx-api";
+import { ConfigMap, Func, PluginContext } from "fx-api";
 import { AadAppForTeamsPlugin } from "../../../../../src/plugins/resource/aad/index";
 import {
   mockTokenProviderAzure,

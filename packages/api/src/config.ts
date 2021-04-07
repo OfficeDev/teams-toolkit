@@ -2,8 +2,9 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { OptionItem } from "./question";
-import { Json } from "./types";
+import { OptionItem } from "./qm";
+import { Platform } from "./constants";
+import { AnswerValue } from "./qm";
 
 export type ConfigValue =
     | string
@@ -14,7 +15,8 @@ export type ConfigValue =
     | boolean[]
     | OptionItem[]
     | OptionItem
-    | undefined;
+    | undefined
+    | unknown;
 
 export type PluginIdentity = string;
 
@@ -66,15 +68,15 @@ export class ConfigMap extends Map<string, ConfigValue> {
         return v as OptionItem[];
     }
 
-    toJSON(): Json {
-        const out: Json = {};
+    toJSON(): Dict<unknown> {
+        const out: Dict<unknown> = {};
         for (const entry of super.entries()) {
             out[entry[0]] = entry[1];
         }
         return out;
     }
 
-    public static fromJSON(obj?: Json): ConfigMap | undefined {
+    public static fromJSON(obj?: Dict<unknown>): ConfigMap | undefined {
         if (!obj) return undefined;
         const map = new ConfigMap();
         for (const entry of Object.entries(obj)) {
@@ -84,19 +86,74 @@ export class ConfigMap extends Map<string, ConfigValue> {
     }
 }
 
-// let map = new ConfigMap();
-// map.set('a', {label:'sfs', description:'desr'});
-// map.set('b', 1234);
-// map.set('c', true);
-// map.set('d', [{label:'sfs1', description:'desr1'}, {label:'sfs2', description:'desr2'}]);
-// map.set('e', [1,2,3,4]);
-// map.set('f', undefined);
-// let obj = map.toJSON();
-// console.log(JSON.stringify(obj));
 
-// let map2 = ConfigMap.fromJSON(obj);
-// console.log(map2);
-// let obj2 = map2?.toJSON();
-// console.log(JSON.stringify(obj2));
+// eslint-disable-next-line @typescript-eslint/ban-types
+export type Void = {};
+export const Void = {};
 
-// console.log(ConfigMap.fromJSON());
+
+export  interface Dict<T> {
+    [key: string]: T | undefined;
+}
+
+export type ResourceTemplate = Dict<ConfigValue>;
+
+export type ResourceTemplates = {
+    [k:string]: ResourceTemplate|undefined;
+};
+
+export type ResourceConfig = ResourceTemplate;
+
+export type ResourceConfigs = ResourceTemplates;
+
+export type ReadonlyResourceConfig = Readonly<ResourceConfig>;
+
+export type ReadonlyResourceConfigs = Readonly<{
+    [k:string]:ReadonlyResourceConfig|undefined;
+}>;
+
+
+/**
+ * environment meta data
+ */
+export interface EnvMeta{
+    name:string,
+    local:boolean,
+    sideloading:boolean
+}
+
+export type EnvConfig = Dict<string>;
+
+
+/**
+ * project static settings
+ */
+export interface ProjectSettings{
+    solution:Dict<ConfigValue> & {name:string},
+    resources: 
+    {
+        [k:string]: Dict<ConfigValue>
+    }
+}
+
+
+/**
+ * project dynamic states
+ */
+export interface ProjectStates
+{
+    solution:Dict<ConfigValue>,
+    resources: 
+    {
+        [k:string]: Dict<ConfigValue>
+    }
+}
+ 
+
+export interface Inputs extends Dict<AnswerValue>{
+    platform: Platform;
+}    
+
+export interface Json{
+    [k : string]:unknown;
+}

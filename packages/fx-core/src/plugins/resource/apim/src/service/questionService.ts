@@ -8,11 +8,11 @@ import {
     SingleSelectQuestion,
     NodeType,
     Question,
-    InputQuestion,
     Validation,
     PluginContext,
-    FunctionCallQuestion,
-} from "teamsfx-api";
+    FuncQuestion,
+    TextInputQuestion,
+} from "fx-api";
 import { ApimDefaultValues, ApimPluginConfigKeys, QuestionConstants, TeamsToolkitComponent } from "../constants";
 import { ApimPluginConfig, SolutionConfig } from "../model/config";
 import { ApimService } from "./apimService";
@@ -62,9 +62,9 @@ export class ApimServiceQuestion extends BaseQuestionService implements IQuestio
     public async executeFunc(ctx: PluginContext): Promise<OptionItem[]> {
         const apimServiceList = await this.apimService.listService();
         const existingOptions = apimServiceList.map((apimService) => {
-            return { label: apimService.serviceName, description: apimService.resourceGroupName, data: apimService };
+            return { id: apimService.serviceName, label: apimService.serviceName, description: apimService.resourceGroupName, data: apimService };
         });
-        const newOption = { label: QuestionConstants.Apim.createNewApimOption };
+        const newOption = { id: QuestionConstants.Apim.createNewApimOption, label: QuestionConstants.Apim.createNewApimOption };
         return [newOption, ...existingOptions];
     }
 
@@ -103,7 +103,7 @@ export class OpenApiDocumentQuestion extends BaseQuestionService implements IQue
         }
 
         const result: OptionItem[] = [];
-        filePath2OpenApiMap.forEach((value, key) => result.push({ label: key, data: value }));
+        filePath2OpenApiMap.forEach((value, key) => result.push({ id: key, label: key, data: value }));
         return result;
     }
 
@@ -138,10 +138,10 @@ export class ExistingOpenApiDocumentFunc extends BaseQuestionService implements 
             apimConfig.apiDocumentPath
         );
         const openApiDocument = await this.openApiProcessor.loadOpenApiDocument(openApiDocumentPath, ctx.root);
-        return { label: openApiDocumentPath, data: openApiDocument };
+        return { id: openApiDocumentPath, label: openApiDocumentPath, data: openApiDocument };
     }
 
-    public getQuestion(): FunctionCallQuestion {
+    public getQuestion(): FuncQuestion {
         return {
             type: NodeType.func,
             name: QuestionConstants.ExistingOpenApiDocument.questionName,
@@ -163,7 +163,7 @@ export class ApiPrefixQuestion extends BaseQuestionService implements IQuestionS
         return !!apiTitle ? NameSanitizer.sanitizeApiNamePrefix(apiTitle) : ApimDefaultValues.apiPrefix;
     }
 
-    public getQuestion(): InputQuestion {
+    public getQuestion(): TextInputQuestion {
         return {
             type: NodeType.text,
             name: QuestionConstants.ApiPrefix.questionName,
@@ -200,7 +200,7 @@ export class ApiVersionQuestion extends BaseQuestionService implements IQuestion
         const existingApiVersionOptions: OptionItem[] = apiContracts.map((api) => {
             return { label: api.apiVersion, description: api.name, detail: api.displayName, data: api } as OptionItem;
         });
-        const createNewApiVersionOption: OptionItem = { label: QuestionConstants.ApiVersion.createNewApiVersionOption };
+        const createNewApiVersionOption: OptionItem = { id: QuestionConstants.ApiVersion.createNewApiVersionOption, label: QuestionConstants.ApiVersion.createNewApiVersionOption };
         return [createNewApiVersionOption, ...existingApiVersionOptions];
     }
 
@@ -225,9 +225,8 @@ export class NewApiVersionQuestion extends BaseQuestionService implements IQuest
         super(dialog, telemetry, logger);
     }
 
-    public condition(parentAnswerPath: string): Validation {
+    public condition(): Validation {
         return {
-            target: parentAnswerPath,
             equals: QuestionConstants.ApiVersion.createNewApiVersionOption,
         };
     }
@@ -237,7 +236,7 @@ export class NewApiVersionQuestion extends BaseQuestionService implements IQuest
         return !!apiVersion ? NameSanitizer.sanitizeApiVersionIdentity(apiVersion) : ApimDefaultValues.apiVersion;
     }
 
-    public getQuestion(): InputQuestion {
+    public getQuestion(): TextInputQuestion {
         return {
             type: NodeType.text,
             name: QuestionConstants.NewApiVersion.questionName,

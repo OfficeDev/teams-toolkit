@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ProductName, SystemError, UserError } from "teamsfx-api";
+import { ConfigFolderName, SystemError, UserError } from "fx-api";
 
 import { FunctionPluginPathInfo } from "../constants";
 import { Logger } from "../utils/logger";
@@ -11,7 +11,7 @@ export enum ErrorType {
 }
 
 const tips = {
-    recoverTeamsfxConfigFiles: `If you manually changed TeamsFX configure files (files under .${ProductName}), please recover them.`,
+    recoverTeamsfxConfigFiles: `If you manually changed TeamsFX configure files (files under .${ConfigFolderName}), please recover them.`,
     recreateProject: "If you can not recover TeamsFX configure files, please start a new project.",
     checkNetwork: "Check your network connection.",
     retryRequest: "Retry the failed command after network connection resume.",

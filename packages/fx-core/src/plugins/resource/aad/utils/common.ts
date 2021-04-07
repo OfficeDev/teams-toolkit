@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { LogProvider } from "teamsfx-api";
+import { LogProvider } from "fx-api";
 import { Constants, Messages } from "../constants";
 import { TelemetryUtils } from "./telemetry";
 

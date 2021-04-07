@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { NodeType, Question, SingleSelectQuestion } from "teamsfx-api";
+import { FileQuestion, NodeType, Question, SingleSelectQuestion, TextInputQuestion } from "fx-api";
 
 export enum CoreQuestionNames {
     AppName = "app-name",
@@ -10,7 +10,7 @@ export enum CoreQuestionNames {
     SubStage = "substage",
 }
 
-export const QuestionAppName: Question = {
+export const QuestionAppName: TextInputQuestion = {
     type: NodeType.text,
     name: CoreQuestionNames.AppName,
     title: "App Name",
@@ -20,7 +20,7 @@ export const QuestionAppName: Question = {
     default: "myapp",
 };
 
-export const QuestionRootFolder: Question = {
+export const QuestionRootFolder: FileQuestion = {
     type: NodeType.folder,
     name: CoreQuestionNames.Foler,
     title: "Select root folder of the project",

@@ -7,6 +7,9 @@ on:
     - 'pacakges/function-extension/**'
     branches: [ main ]
   pull_request:
+    path:
+      - 'packages/simpleauth/**'
+      - 'pacakges/function-extension/**'
     branches: [ main ]
 
 defaults:

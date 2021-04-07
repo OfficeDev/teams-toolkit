@@ -8,21 +8,25 @@ import { ScaffoldConfig } from "./scaffoldConfig";
 import { PluginSolution, PluginAAD } from "../resources/strings";
 import { PluginActRoles } from "../enums/pluginActRoles";
 import { QuestionNames } from "../constants";
+import { DeployConfig } from "./deployConfig";
 
 export class TeamsBotConfig {
     public scaffold: ScaffoldConfig = new ScaffoldConfig();
     public provision: ProvisionConfig = new ProvisionConfig();
     public localDebug: LocalDebugConfig = new LocalDebugConfig();
+    public deploy: DeployConfig = new DeployConfig();
 
     public teamsAppClientId?: string;
     public teamsAppClientSecret?: string;
     public teamsAppTenant?: string;
+    public applicationIdUris?: string;
     public actRoles: PluginActRoles[] = [];
 
     public async restoreConfigFromContext(context: PluginContext): Promise<void> {
         await this.scaffold.restoreConfigFromContext(context);
         await this.provision.restoreConfigFromContext(context);
         await this.localDebug.restoreConfigFromContext(context);
+        await this.deploy.restoreConfigFromContext(context);
 
         const clientIdValue: ConfigValue = context.configOfOtherPlugins
             .get(PluginAAD.PLUGIN_NAME)
@@ -38,9 +42,14 @@ export class TeamsBotConfig {
             this.teamsAppClientSecret = clientSecretValue as string;
         }
 
-        const tenantIdValue: ConfigValue = context.configOfOtherPlugins.get(PluginSolution.PLUGIN_NAME)?.get(PluginSolution.TENANT_ID);
+        const tenantIdValue: ConfigValue = context.configOfOtherPlugins.get(PluginSolution.PLUGIN_NAME)?.get(PluginSolution.M365_TENANT_ID);
         if (tenantIdValue) {
             this.teamsAppTenant = tenantIdValue as string;
+        }
+
+        const applicationIdUrisValue: ConfigValue = context.configOfOtherPlugins.get(PluginAAD.PLUGIN_NAME)?.get(PluginAAD.APPLICATION_ID_URIS);
+        if (applicationIdUrisValue) {
+            this.applicationIdUris = applicationIdUrisValue as string;
         }
 
         const capabilities = context.answers?.getStringArray(QuestionNames.CAPABILITIES);
@@ -57,6 +66,8 @@ export class TeamsBotConfig {
     public saveConfigIntoContext(context: PluginContext): void {
         this.scaffold.saveConfigIntoContext(context);
         this.provision.saveConfigIntoContext(context);
+        this.localDebug.saveConfigIntoContext(context);
+        this.deploy.saveConfigIntoContext(context);
     }
 
     public toString(): string {

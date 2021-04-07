@@ -69,8 +69,6 @@ describe("Teams Bot Resource Plugin", () => {
             botPluginImpl = new TeamsBotImpl();
             botPlugin.teamsBotImpl = botPluginImpl;
 
-            botPluginImpl.config.scaffold.scaffolded = false;
-
             botPluginImpl.config.scaffold.botId = utils.genUUID();
             botPluginImpl.config.scaffold.botPassword = utils.genUUID();
 

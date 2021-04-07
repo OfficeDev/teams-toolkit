@@ -12,8 +12,8 @@ export type FxResult = Result<any, FxError>;
 
 class FxResultFactory {
     static readonly source: string = Alias.TEAMS_FX;
-    static readonly defaultHelpLink = "";
-    static readonly defaultIssueLink = "";
+    static readonly defaultHelpLink: string = "";
+    static readonly defaultIssueLink: string = "";
 
     private static _FxError(errorMessage: string, innerError: any): FxError {
         // TODO: These fields are unclear to me, it may be updated in the future.

@@ -1,16 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import * as languageStrategyContent from "./languageStrategyContent.json";
 import * as utils from "./utils/common";
 import { ProgrammingLanguage } from "./enums/programmingLanguage";
 import { TemplateManifest } from "./utils/templateManifest";
-import { TemplateProjectsConstants } from "./constants";
+import { DeployConfigs, TemplateProjectsConstants } from "./constants";
 import { Commands } from "./resources/strings";
 
 import * as appService from "@azure/arm-appservice";
 import { NameValuePair } from "@azure/arm-appservice/esm/models";
 import AdmZip from "adm-zip";
-import { CommandExecutionException, LanguageStrategyNotFoundException, SomethingMissingException } from "./exceptions";
+import { CommandExecutionException, SomethingMissingException } from "./exceptions";
 import { downloadByUrl } from "./utils/downloadByUrl";
 import * as path from "path";
 import * as fs from "fs-extra";
@@ -34,14 +33,6 @@ export class LanguageStrategy {
         );
 
         return manifest.getNewestTemplateUrl(programmingLanguage, groupName);
-    }
-
-    public static getConfigFiles(programmingLanguage: ProgrammingLanguage): string[] {
-        if (!languageStrategyContent.ConfigFiles?.[programmingLanguage]) {
-            throw new LanguageStrategyNotFoundException(programmingLanguage as string);
-        }
-
-        return languageStrategyContent.ConfigFiles[programmingLanguage];
     }
 
     public static getSiteEnvelope(
@@ -79,7 +70,7 @@ export class LanguageStrategy {
         return siteEnvelope;
     }
 
-    public static async buildAndZipPackage(programmingLanguage: ProgrammingLanguage, packDir: string): Promise<Buffer> {
+    public static async buildAndZipPackage(programmingLanguage: ProgrammingLanguage, packDir: string, unPackFlag?: boolean): Promise<Buffer> {
         if (programmingLanguage === ProgrammingLanguage.TypeScript) {
             //Typescript needs tsc build before deploy because of windows app server. other languages don"t need it.
             try {
@@ -90,11 +81,16 @@ export class LanguageStrategy {
             }
         }
 
-        if (!languageStrategyContent.UnPackConfig?.[programmingLanguage]) {
-            throw new LanguageStrategyNotFoundException(programmingLanguage);
+        if (programmingLanguage === ProgrammingLanguage.JavaScript) {
+            // Since teamfx package is in private registry, have to npm install to pack the node_modulre folder.
+            try {
+                await utils.execute("npm install", packDir);
+            } catch (e) {
+                throw new CommandExecutionException(`${Commands.NPM_INSTALL}`, e.message, e);
+            }
         }
 
-        return utils.zipAFolder(packDir, languageStrategyContent.UnPackConfig[programmingLanguage]);
+        return utils.zipAFolder(packDir, unPackFlag ? DeployConfigs.UN_PACK_DIRS : []);
     }
 
     private static async generateLocalFallbackFilePath(programmingLanguage: ProgrammingLanguage, groupName: string): Promise<string> {

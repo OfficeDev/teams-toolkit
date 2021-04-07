@@ -15,6 +15,7 @@ import { getFuncPackageManagers } from "./getFuncPackageManagers";
 import { installFuncCoreTools } from "./installFuncCoreTools";
 import { displayLearnMore, displayWarningMessage } from "../commonUtils";
 import { FuncVersion, getFuncToolsVersion } from "./funcVersion";
+import { EnvCheckerTelemetry, EnvCheckerEvent, TelemtryMessages } from "../envCheckerTelemetry";
 
 export async function tryValidateFuncCoreToolsInstalled(): Promise<boolean> {
   try {
@@ -24,9 +25,13 @@ export async function tryValidateFuncCoreToolsInstalled(): Promise<boolean> {
       return false;
     }
   } catch (err) {
-    // TODO: add log and telemetry
     await displayLearnMore(Messages.failToInstallFuncCoreTool, funcCoreToolsHelpLink);
     await debug.stopDebugging();
+    EnvCheckerTelemetry.sendSystemErrorEvent(
+      EnvCheckerEvent.installingFunc,
+      TelemtryMessages.failedToInstallFunc,
+      err
+    );
     return false;
   }
 
@@ -35,6 +40,7 @@ export async function tryValidateFuncCoreToolsInstalled(): Promise<boolean> {
 
 async function validateFuncCoreToolsInstalled(): Promise<boolean> {
   if (!needValidateFuncCoreTools()) {
+    EnvCheckerTelemetry.sendEvent(EnvCheckerEvent.skipCheckFunc);
     return true;
   }
 
@@ -44,14 +50,22 @@ async function validateFuncCoreToolsInstalled(): Promise<boolean> {
   const supportedVersion = FuncVersion.v3;
   const installedVersion = await getInstalledFuncToolsVersion();
 
+  EnvCheckerTelemetry.sendEvent(EnvCheckerEvent.checkFunc);
   switch (installedVersion) {
     case FuncVersion.v1:
       await displayLearnMore(Messages.needReplaceWithFuncCoreToolV3, funcCoreToolsHelpLink);
+      EnvCheckerTelemetry.sendEvent(EnvCheckerEvent.funcV1Installed);
+      EnvCheckerTelemetry.sendUserErrorEvent(
+        EnvCheckerEvent.checkFunc,
+        TelemtryMessages.funcV1Installed
+      );
       break;
     case FuncVersion.v2:
+      EnvCheckerTelemetry.sendEvent(EnvCheckerEvent.funcV2Installed);
       installed = true;
       break;
     case FuncVersion.v3:
+      EnvCheckerTelemetry.sendEvent(EnvCheckerEvent.funcV3Installed);
       installed = true;
       break;
     default:
@@ -62,12 +76,20 @@ async function validateFuncCoreToolsInstalled(): Promise<boolean> {
           Messages.needInstallFuncCoreToolV3,
           Messages.installButtonText,
           async () => {
+            EnvCheckerTelemetry.sendEvent(EnvCheckerEvent.installingFunc);
+            const start = performance.now();
             await installFuncCoreTools(packageManagers, supportedVersion);
+            const timecost = (performance.now() - start) / 1000;
+            EnvCheckerTelemetry.sendEvent(EnvCheckerEvent.installedFunc, timecost);
             installed = true;
           }
         );
       } else {
         await displayLearnMore(Messages.needInstallFuncCoreToolV3, funcCoreToolsHelpLink);
+        EnvCheckerTelemetry.sendUserErrorEvent(
+          EnvCheckerEvent.installingFunc,
+          TelemtryMessages.packageManagerNotFound
+        );
       }
   }
 

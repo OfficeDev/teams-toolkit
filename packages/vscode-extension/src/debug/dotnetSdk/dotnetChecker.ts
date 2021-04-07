@@ -6,7 +6,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as child_process from "child_process";
 import * as util from "util";
-import { ConfigFolderName } from "fx-api"; 
+import { ConfigFolderName } from "fx-api";
 import { logger, isWindows, isLinux, cpUtils } from "./dotnetCheckerAdapter";
 
 const exec = util.promisify(child_process.exec);
@@ -79,7 +79,7 @@ export class DotnetChecker {
   private static async install(version: DotnetVersion): Promise<void> {
     try {
       if (isLinux()) {
-        await DotnetChecker.handleLinuxDependency();
+        throw new DotnetCheckerLinuxNotSupportedError ();
       }
       const installDir = DotnetChecker.getDefaultInstallPath();
       // NOTE: we don't need to handle directory creation since dotnet-install script will handle it.
@@ -306,5 +306,23 @@ export class DotnetChecker {
       return null;
     }
     return match.groups?.major_version + "." + match.groups?.minor_version;
+  }
+}
+
+class DotnetCheckerError extends Error {
+  constructor() {
+    super();
+
+    // Set the prototype explicitly.
+    Object.setPrototypeOf(this, DotnetCheckerError.prototype);
+  }
+}
+
+export class DotnetCheckerLinuxNotSupportedError extends DotnetCheckerError {
+  constructor() {
+    super();
+
+    // Set the prototype explicitly.
+    Object.setPrototypeOf(this, DotnetCheckerLinuxNotSupportedError.prototype);
   }
 }

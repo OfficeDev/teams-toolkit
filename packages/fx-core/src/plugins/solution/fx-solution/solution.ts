@@ -108,7 +108,7 @@ type ParamForRegisterTeamsAppAndAad = {
 function newIdentityPlugin(): LoadedPlugin {
     const plugin: Plugin = new IdentityPlugin();
     const pluginWithMeta: LoadedPlugin = plugin as LoadedPlugin;
-    pluginWithMeta.name = "mods-toolkit-plugin-identity";
+    pluginWithMeta.name = "fx-resource-identity";
     pluginWithMeta.displayName = "Microsoft Identity";
     pluginWithMeta.version = "0.0.16";
     return pluginWithMeta;
@@ -117,7 +117,7 @@ function newIdentityPlugin(): LoadedPlugin {
 function newFehostPlugin(): LoadedPlugin {
     const plugin: Plugin = new FrontendPlugin();
     const pluginWithMeta: LoadedPlugin = plugin as LoadedPlugin;
-    pluginWithMeta.name = "mods-toolkit-plugin-frontend-hosting";
+    pluginWithMeta.name = "fx-resource-frontend-hosting";
     pluginWithMeta.displayName = "Tab Front-end";
     pluginWithMeta.version = "0.1.0";
     return pluginWithMeta;
@@ -126,7 +126,7 @@ function newFehostPlugin(): LoadedPlugin {
 function newSqlPlugin(): LoadedPlugin {
     const plugin: Plugin = new SqlPlugin();
     const pluginWithMeta: LoadedPlugin = plugin as LoadedPlugin;
-    pluginWithMeta.name = "mods-toolkit-plugin-azure-sql";
+    pluginWithMeta.name = "fx-resource-azure-sql";
     pluginWithMeta.displayName = "Azure SQL Datebase";
     pluginWithMeta.version = "0.1.8";
     return pluginWithMeta;
@@ -135,7 +135,7 @@ function newSqlPlugin(): LoadedPlugin {
 function newSpfxPlugin(): LoadedPlugin {
     const plugin: Plugin = new SpfxPlugin();
     const pluginWithMeta: LoadedPlugin = plugin as LoadedPlugin;
-    pluginWithMeta.name = "mods-toolkit-plugin-spfx";
+    pluginWithMeta.name = "fx-resource-spfx";
     pluginWithMeta.displayName = "SharePoint Framework (SPFx)";
     pluginWithMeta.version = "0.1.13";
     return pluginWithMeta;
@@ -144,7 +144,7 @@ function newSpfxPlugin(): LoadedPlugin {
 function newBotPlugin(): LoadedPlugin {
     const plugin: Plugin = new TeamsBot();
     const pluginWithMeta: LoadedPlugin = plugin as LoadedPlugin;
-    pluginWithMeta.name = "mods-toolkit-plugin-teamsbot";
+    pluginWithMeta.name = "fx-resource-teamsbot";
     pluginWithMeta.displayName = "Bot";
     pluginWithMeta.version = "0.1.7";
     return pluginWithMeta;
@@ -153,7 +153,7 @@ function newBotPlugin(): LoadedPlugin {
 function newAadPlugin(): LoadedPlugin {
     const plugin: Plugin = new AadAppForTeamsPlugin();
     const pluginWithMeta: LoadedPlugin = plugin as LoadedPlugin;
-    pluginWithMeta.name = "mods-toolkit-plugin-aad-app-for-teams";
+    pluginWithMeta.name = "fx-resource-aad-app-for-teams";
     pluginWithMeta.displayName = "AAD";
     pluginWithMeta.version = "0.0.6";
     return pluginWithMeta;
@@ -162,7 +162,7 @@ function newAadPlugin(): LoadedPlugin {
 function newFunctionPlugin(): LoadedPlugin {
     const plugin: Plugin = new FunctionPlugin();
     const pluginWithMeta: LoadedPlugin = plugin as LoadedPlugin;
-    pluginWithMeta.name = "mods-toolkit-plugin-function";
+    pluginWithMeta.name = "fx-resource-function";
     pluginWithMeta.displayName = "Azure Function";
     pluginWithMeta.version = "0.1.7";
     return pluginWithMeta;
@@ -171,7 +171,7 @@ function newFunctionPlugin(): LoadedPlugin {
 function newSimpleAuthPlugin(): LoadedPlugin {
     const plugin: Plugin = new SimpleAuthPlugin();
     const pluginWithMeta: LoadedPlugin = plugin as LoadedPlugin;
-    pluginWithMeta.name = "mods-toolkit-plugin-runtime-connector";
+    pluginWithMeta.name = "fx-resource-runtime-connector";
     pluginWithMeta.displayName = "Runtime Connector";
     pluginWithMeta.version = "0.0.1";
     return pluginWithMeta;
@@ -180,7 +180,7 @@ function newSimpleAuthPlugin(): LoadedPlugin {
 function newLocalDebugPlugin(): LoadedPlugin {
     const plugin: Plugin = new LocalDebugPlugin();
     const pluginWithMeta: LoadedPlugin = plugin as LoadedPlugin;
-    pluginWithMeta.name = "mods-toolkit-plugin-local-debug";
+    pluginWithMeta.name = "fx-resource-local-debug";
     pluginWithMeta.displayName = "LocalDebug";
     pluginWithMeta.version = "0.0.2";
     return pluginWithMeta;
@@ -189,7 +189,7 @@ function newLocalDebugPlugin(): LoadedPlugin {
 function newApimPlugin(): LoadedPlugin {
     const plugin: Plugin = new ApimPlugin();
     const pluginWithMeta: LoadedPlugin = plugin as LoadedPlugin;
-    pluginWithMeta.name = "mods-toolkit-plugin-apim";
+    pluginWithMeta.name = "fx-resource-apim";
     pluginWithMeta.displayName = "API Management";
     pluginWithMeta.version = "0.0.1";
     return pluginWithMeta;
@@ -263,12 +263,12 @@ export class TeamsAppSolution implements Solution {
         if (!this.spfxSelected(ctx.config)) {
             this.manifest = await AppStudio.createManifest(ctx.answers);
             if (this.manifest) Object.assign(ctx.app, this.manifest);
-            await fs.writeFile(`${ctx.root}/.mods/manifest.remote.json`, JSON.stringify(this.manifest, null, 4));
+            await fs.writeFile(`${ctx.root}/.${ConfigFolderName}/manifest.remote.json`, JSON.stringify(this.manifest, null, 4));
             await fs.writeJSON(`${ctx.root}/permissions.json`, DEFAULT_PERMISSION_REQUEST, { spaces: 4 });
             return this.updatePermissionRequest(ctx.root, ctx.config);
         } else {
             this.manifest = await ((this.spfxPlugin as unknown) as SpfxPlugin).getManifest();
-            await fs.writeFile(`${ctx.root}/.mods/manifest.remote.json`, JSON.stringify(this.manifest, null, 4));
+            await fs.writeFile(`${ctx.root}/.${ConfigFolderName}/manifest.remote.json`, JSON.stringify(this.manifest, null, 4));
             return ok(null);
         }
     }
@@ -281,7 +281,7 @@ export class TeamsAppSolution implements Solution {
         // read manifest
         if (!this.spfxSelected(ctx.config)) {
             try {
-                this.manifest = await fs.readJson(`${ctx.root}/.mods/manifest.remote.json`);
+                this.manifest = await fs.readJson(`${ctx.root}/.${ConfigFolderName}/manifest.remote.json`);
                 if (!this.manifest) {
                     return err(
                         returnSystemError(
@@ -772,7 +772,7 @@ export class TeamsAppSolution implements Solution {
             ctx.logProvider?.info(`Teams app created ${result.value}`);
             appDefinition.appId = result.value;
             ctx.config.get(GLOBAL_CONFIG)?.set(REMOTE_TEAMS_APP_ID, result.value);
-            await fs.writeFile(`${ctx.root}/.mods/manifest.remote.json`, JSON.stringify(updatedManifest, null, 4));
+            await fs.writeFile(`${ctx.root}/.${ConfigFolderName}/manifest.remote.json`, JSON.stringify(updatedManifest, null, 4));
             return ok(appDefinition);
         } else {
             ctx.logProvider?.info(`Teams app already created: ${teamsAppId}`);
@@ -787,7 +787,7 @@ export class TeamsAppSolution implements Solution {
             if (result.isErr()) {
                 return result.map((_) => appDefinition);
             }
-            await fs.writeFile(`${ctx.root}/.mods/manifest.remote.json`, JSON.stringify(updatedManifest, null, 4));
+            await fs.writeFile(`${ctx.root}/.${ConfigFolderName}/manifest.remote.json`, JSON.stringify(updatedManifest, null, 4));
             ctx.logProvider?.info(`Teams app updated ${JSON.stringify(updatedManifest)}`);
             return ok(appDefinition);
         }
@@ -1589,7 +1589,7 @@ export class TeamsAppSolution implements Solution {
     }
 
     /**
-     * This function is only called by cli: mods init. The context may be different from that of vsc: no .mods folder, no permissions.json
+     * This function is only called by cli: teamsfx init. The context may be different from that of vsc: no .${ConfigFolderName} folder, no permissions.json
      * In order to reuse aad plugin, we need to pretend we are still in vsc context.
      *
      */

@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ConfigValue, ReadonlySolutionConfig } from "teamsfx-api";
+import { ConfigValue, ReadonlySolutionConfig } from "fx-api";
 import {
     TeamsToolkitComponent,
     ComponentRetryLifeCycle,
@@ -46,7 +46,7 @@ export interface ISolutionConfig {
 }
 
 export class ApimPluginConfig implements IApimPluginConfig {
-    // TODO update teamsfx-api to the latest version
+    // TODO update fx-api to the latest version
     private readonly config: Map<string, ConfigValue>;
     constructor(config: Map<string, ConfigValue>) {
         this.config = config;

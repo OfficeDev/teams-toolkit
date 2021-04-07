@@ -38,7 +38,6 @@ export interface Dialog {
      * Create a new progress bar with the specified title and the number of steps. It will 
      * return a progress handler and you can use this handler to control the detail message 
      * of it.
-     * The message looks like `[TeamsFx Toolkit] ${title}: [${currentStep}/${totalSteps}] ${detail}`
      * ${currentStep} will increase from 0 to ${totalSteps}.
      * @param title the title of this progress bar.
      * @param totalSteps the number of steps.

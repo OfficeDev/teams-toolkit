@@ -11,7 +11,10 @@ import {
   err,
   Result,
   ok,
-} from "teamsfx-api";
+  TeamsAppManifest
+} from "fx-api";
+import * as fs from "fs-extra";
+import * as path from "path";
 import { SPFxPluginImpl } from "./plugin";
 import { TelemetryEvent } from "./utils/constants";
 import { telemetryHelper } from "./utils/telemetry-helper";
@@ -46,10 +49,7 @@ export class SpfxPlugin implements Plugin {
         name: SPFXQuestionNames.framework_type,
         title: "Which framework would you like to use?",
         option: ["none", "react"],
-        default: "none",
-        validation: {
-          required: true,
-        },
+        default: "none"
       });
       spfx_frontend_host.addChild(spfx_framework_type);
 
@@ -105,6 +105,14 @@ export class SpfxPlugin implements Plugin {
     return await this.runWithErrorHandling(ctx, TelemetryEvent.Deploy, () =>
       this.spfxPluginImpl.deploy(ctx)
     );
+  }
+
+  public async getManifest(): Promise<TeamsAppManifest> {
+    const templateFolder = path.join(__dirname, "../../../../templates/plugins/resource/spfx");
+    const manifestFile = path.resolve(templateFolder, "./solution/manifest.json");
+    const manifestString = fs.readFileSync(manifestFile).toString();
+    const manifest: TeamsAppManifest = JSON.parse(manifestString);
+    return manifest;
   }
 
   private async runWithErrorHandling(

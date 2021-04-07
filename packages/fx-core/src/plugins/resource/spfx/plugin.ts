@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 import {
   PluginContext,
+  ConfigFolderName,
   FxError,
   Result,
   ok,
@@ -13,7 +14,7 @@ import {
   SystemError,
   returnUserError,
   returnSystemError,
-} from "teamsfx-api";
+} from "fx-api";
 import * as uuid from "uuid";
 import lodash from "lodash";
 import * as fs from "fs-extra";
@@ -211,6 +212,7 @@ export class SPFxPluginImpl {
     );
 
     await configure(outputFolderPath, replaceMap);
+    await configure(`${ctx.root}/.${ConfigFolderName}/manifest.remote.json`, replaceMap);
     return ok(undefined);
   }
 

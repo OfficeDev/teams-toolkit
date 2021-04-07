@@ -109,8 +109,8 @@ export async function askSubscription(config: SolutionConfig, azureToken: TokenC
             returnUserError(
                 new Error("No Subscription was found."),
                 "Solution",
-                SolutionError.NoSubscriptionFound,
-                "https://github.com/OfficeDev/MODS-toolkit-extension/wiki/Error:-No-Subscription-Found",
+                SolutionError.NoSubscriptionFound
+               // "https://github.com/OfficeDev/MODS-toolkit-extension/wiki/Error:-No-Subscription-Found",
             ),
         );
     }

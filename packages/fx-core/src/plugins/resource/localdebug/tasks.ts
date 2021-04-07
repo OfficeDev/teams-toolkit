@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { ProductName} from "fx-api";
+import { ProductName } from "fx-api";
 
 export function generateTasks(includeFrontend: boolean, includeBackend: boolean, includeBot: boolean): Record<string, unknown>[] {
     /**
@@ -45,7 +45,7 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
             {
                 label: "dependency check",
                 type: "shell",
-                command: "echo ${command:vscode-teamsfx.validate-dependencies}",
+                command: "echo ${command:fx-extension.validate-dependencies}",
             },
             {
                 label: "prepare dev env",
@@ -57,7 +57,7 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
             {
                 label: "prepare local environment",
                 type: "shell",
-                command: "echo ${command:vscode-teamsfx.pre-debug-check}",
+                command: "echo ${command:fx-extension.pre-debug-check}",
             },
             {
                 label: "frontend npm install",
@@ -85,7 +85,7 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
                 {
                     label: "backend extensions install",
                     type: "shell",
-                    command: "echo ${command:vscode-teamsfx.backend-extensions-install}",
+                    command: "echo ${command:fx-extension.backend-extensions-install}",
                 },
             );
         }
@@ -106,7 +106,7 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
             {
                 label: "dependency check",
                 type: "shell",
-                command: "echo ${command:vscode-teamsfx.validate-dependencies}",
+                command: "echo ${command:fx-extension.validate-dependencies}",
             },
             {
                 label: "start ngrok",
@@ -133,7 +133,7 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
             {
                 label: "prepare local environment",
                 type: "shell",
-                command: "echo ${command:vscode-teamsfx.pre-debug-check}",
+                command: "echo ${command:fx-extension.pre-debug-check}",
             },
         );
     }
@@ -158,7 +158,7 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
             {
                 label: "dependency check",
                 type: "shell",
-                command: "echo ${command:vscode-teamsfx.validate-dependencies}",
+                command: "echo ${command:fx-extension.validate-dependencies}",
             },
             {
                 label: "start ngrok",
@@ -188,7 +188,7 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
             {
                 label: "prepare local environment",
                 type: "shell",
-                command: "echo ${command:vscode-teamsfx.pre-debug-check}",
+                command: "echo ${command:fx-extension.pre-debug-check}",
             },
             {
                 label: "frontend npm install",
@@ -217,7 +217,7 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
                 {
                     label: "backend extensions install",
                     type: "shell",
-                    command: "echo ${command:vscode-teamsfx.backend-extensions-install}",
+                    command: "echo ${command:fx-extension.backend-extensions-install}",
                 },
             );
         }

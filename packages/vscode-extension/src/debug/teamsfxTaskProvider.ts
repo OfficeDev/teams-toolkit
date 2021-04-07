@@ -7,10 +7,10 @@ import * as constants from "./constants";
 import * as commonUtils from "./commonUtils";
 import { DotnetChecker } from "./dotnetSdk/dotnetChecker";
 import { dotnetCheckerEnabled } from "./dotnetSdk/dotnetCheckerAdapter";
-import { ConfigFolderName } from "fx-api";
+import { ProductName } from "fx-api";
 
 export class TeamsfxTaskProvider implements vscode.TaskProvider {
-  public static readonly type: string = ConfigFolderName;
+  public static readonly type: string = ProductName;
 
   public async provideTasks(token?: vscode.CancellationToken | undefined): Promise<vscode.Task[]> {
     const tasks: vscode.Task[] = [];

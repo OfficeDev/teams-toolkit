@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { ConfigFolderName } from "fx-api";
+import { ProductName } from "fx-api";
 import { LaunchBrowser } from "./constants";
 
 export function generateConfigurations(includeFrontend: boolean, includeBackend: boolean, includeBot: boolean): Record<string, unknown>[] {
@@ -105,7 +105,7 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
                     request: "attach",
                     port: 9229,
                     restart: true,
-                    preLaunchTask: `${ConfigFolderName}: backend start`,
+                    preLaunchTask: `${ProductName}: backend start`,
                     presentation: {
                         group: "all",
                         hidden: true,
@@ -221,7 +221,7 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
                 request: "attach",
                 port: 9239,
                 restart: true,
-                preLaunchTask: `${ConfigFolderName}: bot start`,
+                preLaunchTask: `${ProductName}: bot start`,
                 presentation: {
                     group: "all",
                     hidden: true,

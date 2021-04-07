@@ -35,6 +35,9 @@ function formatEndpoint(endpoint: string): string {
   try {
     const url = new URL(endpoint);
     endpoint = url.href;
+    if (endpoint.endsWith("/")) {
+      endpoint = endpoint.slice(0, -1);
+    }
     return endpoint;
   } catch {
     throw new Error(

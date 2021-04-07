@@ -56,4 +56,4 @@ jobs:
         TeamsFx_BINDING_IntegrationTestSettings__UnauthorizedAadAppClientSecret: ${{secrets.FUNCTION_EXTENSION_UNAUTHORIZED_AAD_APP_CLIENT_SECRET}}
         TeamsFx_BINDING_IntegrationTestSettings__AllowedAppClientSecret: ${{secrets.FUNCTION_EXTENSION_ALLOWED_APP_SECRET}}
       run:
-        echo env && chmod +x "function-extension/scripts/test.sh" && chmod +x "function-extension/scripts/start_js_function.sh" && "function-extension/scripts/test.sh"
+        env && chmod +x "function-extension/scripts/test.sh" && chmod +x "function-extension/scripts/start_js_function.sh" && "function-extension/scripts/test.sh"

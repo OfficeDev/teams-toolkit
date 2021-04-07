@@ -14,7 +14,7 @@ export TeamsFx_BINDING_IntegrationTestSettings__ClientSecret=$ClientSecret
 export TeamsFx_BINDING_IntegrationTestSettings__UnauthorizedAadAppClientSecret=$UnauthorizedAadAppClientSecret
 export TeamsFx_BINDING_IntegrationTestSettings__AllowedAppClientSecret=$AllowedAppClientSecret
 
-echo env
+env
 
 # run test
 dotnet test $DIR/..

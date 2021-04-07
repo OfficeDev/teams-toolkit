@@ -255,4 +255,7 @@ export class VsCodeUI implements UserInterface{
     }
   }
 }
+
+
+export const VS_CODE_UI = new VsCodeUI();
   

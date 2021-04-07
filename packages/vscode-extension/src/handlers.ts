@@ -11,7 +11,6 @@ import {
   ExtensionContext,
   env,
   ViewColumn,
-  ProgressLocation,
   debug
 } from "vscode";
 import {
@@ -20,14 +19,19 @@ import {
   err,
   ok,
   Stage,
-  ConfigMap,
   Platform,
   Func,
   UserError,
   SystemError,
   returnUserError,
   returnSystemError,
-  ConfigFolderName
+  ConfigFolderName,
+  traverse,
+  RemoteFuncExecutor,
+  Inputs,
+  ConfigMap,
+  InputResult,
+  InputResultType
 } from "fx-api";
 import { CoreProxy } from "fx-core";
 import DialogManagerInstance from "./userInterface";
@@ -39,7 +43,6 @@ import { VSCodeTelemetryReporter } from "./commonlib/telemetry";
 import { CommandsTreeViewProvider, TreeViewCommand } from "./commandsTreeViewProvider";
 import * as extensionPackage from "./../package.json";
 import { ext } from "./extensionVariables";
-import { traverse } from "./question/question";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import {
   TelemetryEvent,
@@ -47,7 +50,6 @@ import {
   TelemetryTiggerFrom,
   TelemetrySuccess
 } from "./telemetry/extTelemetryEvents";
-import { InputResult, InputResultType } from "./question/types";
 import * as commonUtils from "./debug/commonUtils";
 import { ExtensionErrors, ExtensionSource } from "./error";
 import { WebviewPanel } from "./controls/webviewPanel";
@@ -63,6 +65,7 @@ import { isFeatureFlag } from "./utils/commonUtils";
 import { cpUtils } from "./debug/cpUtils";
 import * as path from "path";
 import * as fs from "fs-extra";
+import { VsCodeUI, VS_CODE_UI } from "./qm/vsc_ui";
 
 export let core: CoreProxy;
 const runningTasks = new Set<string>(); // to control state of task execution
@@ -199,6 +202,11 @@ export async function deployHandler(): Promise<Result<null, FxError>> {
   return await runCommand(Stage.deploy);
 }
 
+const coreExeceutor:RemoteFuncExecutor = async function (func:Func, answers: Inputs|ConfigMap) : Promise<Result<unknown, FxError>>{
+  return await core.callFunc(func, answers as ConfigMap);
+  throw new Error();
+};
+
 async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
   const eventName = ExtTelemetry.stageToEvent(stage);
   let result: Result<null, FxError> = ok(null);
@@ -240,7 +248,7 @@ async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
     if (node) {
       VsCodeLogInstance.info(`Question tree:${JSON.stringify(node, null, 4)}`);
       answers.set("substage", "askQuestions");
-      const res: InputResult = await traverse(node, answers, ext.visit);
+      const res: InputResult = await traverse(node, answers, VS_CODE_UI, coreExeceutor);
       VsCodeLogInstance.info(`User input:${JSON.stringify(res, null, 4)}`);
       if (res.type === InputResultType.error) {
         throw res.error!;
@@ -316,7 +324,7 @@ async function runUserTask(func: Func): Promise<Result<null, FxError>> {
     const node = qres.value;
     if (node) {
       VsCodeLogInstance.info(`Question tree:${JSON.stringify(node, null, 4)}`);
-      const res: InputResult = await traverse(node, answers, ext.visit);
+      const res: InputResult = await traverse(node, answers, VS_CODE_UI, coreExeceutor);
       VsCodeLogInstance.info(`User input:${JSON.stringify(res, null, 4)}`);
       if (res.type === InputResultType.error && res.error) {
         throw res.error;

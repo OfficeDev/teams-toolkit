@@ -84,6 +84,10 @@ export class ConfigMap extends Map<string, ConfigValue> {
         }
         return map;
     }
+    constructor(){
+        super();
+        Object.setPrototypeOf(this, ConfigMap.prototype);
+    }
 }
 
 

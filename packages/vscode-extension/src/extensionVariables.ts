@@ -3,12 +3,9 @@
 // Licensed under the MIT license.
 
 "use strict";
-
-import { ConfigMap, ConfigValue, Core, Question } from "fx-api";
+ 
 import * as vscode from "vscode";
-import { ExtensionContext, Uri } from "vscode";
-import { questionVisit } from "./question/question";
-import { InputResult } from "./question/types";
+import { ExtensionContext, Uri } from "vscode"; 
 import { UserInput, IUserInput } from "./userInput";
 
 /**
@@ -18,12 +15,6 @@ export namespace ext {
   export let context: ExtensionContext;
   export let ui: IUserInput;
   export let workspaceUri: Uri;
-  export let visit: (
-    q: Question,
-    parentValue: any,
-    answers: ConfigMap,
-    canGoBack?: boolean
-  ) => Promise<InputResult>;
 }
 
 export function initializeExtensionVariables(ctx: ExtensionContext): void {
@@ -34,5 +25,4 @@ export function initializeExtensionVariables(ctx: ExtensionContext): void {
   }
   ext.context = ctx;
   ext.ui = new UserInput();
-  ext.visit = questionVisit;
 }

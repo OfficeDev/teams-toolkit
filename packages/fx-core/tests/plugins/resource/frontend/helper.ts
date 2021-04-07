@@ -107,7 +107,7 @@ export class TestHelper {
         return new AzureStorageClient(config);
     }
 
-    static async initializedFrontendPlugin(frontendPlugin: FrontendPlugin, pluginContext: PluginContext) {
+    static async initializedFrontendPlugin(frontendPlugin: FrontendPlugin, pluginContext: PluginContext): Promise<FrontendPlugin> {
         const config = await TestHelper.getFakeFrontendConfig(pluginContext);
         frontendPlugin.frontendPluginImpl.config = config;
 

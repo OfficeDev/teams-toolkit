@@ -9,7 +9,6 @@ import { FxError, PluginContext, Result } from "fx-api";
 import AdmZip from "adm-zip";
 import chaiAsPromised from "chai-as-promised";
 import fs from "fs-extra";
-import path from "path";
 
 import { AzureStorageClient } from "../../../../../src/plugins/resource/frontend/clients";
 import {
@@ -22,7 +21,7 @@ import {
     StaticWebsiteDisabledError,
 } from "../../../../../src/plugins/resource/frontend/resources/errors";
 import { FrontendConfig } from "../../../../../src/plugins/resource/frontend/configs";
-import { FrontendConfigInfo, FrontendPathInfo } from "../../../../../src/plugins/resource/frontend/constants";
+import { FrontendConfigInfo } from "../../../../../src/plugins/resource/frontend/constants";
 import { FrontendPlugin } from "../../../../../src/plugins/resource/frontend/";
 import { FrontendProvision } from "../../../../../src/plugins/resource/frontend/ops/provision";
 import { FrontendScaffold } from "../../../../../src/plugins/resource/frontend/ops/scaffold";
@@ -172,7 +171,6 @@ describe("frontendPlugin", () => {
 
         let staticWebsiteEnabledStub: sinon.SinonStub;
         let storageExistsStub: sinon.SinonStub;
-        let rgExistsStub: sinon.SinonStub;
 
         beforeEach(async () => {
             frontendPlugin = new FrontendPlugin();
@@ -183,7 +181,7 @@ describe("frontendPlugin", () => {
                 .stub(AzureStorageClient.prototype, "isStorageStaticWebsiteEnabled")
                 .resolves(true);
             storageExistsStub = sinon.stub(AzureStorageClient.prototype, "doesStorageAccountExists").resolves(true);
-            rgExistsStub = sinon.stub(AzureStorageClient.prototype, "doesResourceGroupExists").resolves(true);
+            sinon.stub(AzureStorageClient.prototype, "doesResourceGroupExists").resolves(true);
         });
 
         afterEach(() => {

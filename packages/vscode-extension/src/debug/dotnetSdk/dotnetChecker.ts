@@ -42,6 +42,11 @@ export class DotnetChecker {
       logger.info(`use global dotnet path = ${await DotnetChecker.getDotnetExecPath()}`);
       return true;
     }
+
+    if (isLinux()) {
+        throw new DotnetCheckerLinuxNotSupportedError();
+    }
+
     // logger.debug(`[start] cleanup bin/dotnet and config`);
     await DotnetChecker.cleanup();
     // logger.debug(`[end] cleanup bin/dotnet and config`);
@@ -84,7 +89,7 @@ export class DotnetChecker {
   private static async install(version: DotnetVersion): Promise<void> {
     try {
       if (isLinux()) {
-        throw new DotnetCheckerLinuxNotSupportedError ();
+        await this.handleLinuxDependency();
       }
       const installDir = DotnetChecker.getDefaultInstallPath();
       // NOTE: we don't need to handle directory creation since dotnet-install script will handle it.
@@ -95,7 +100,7 @@ export class DotnetChecker {
       await DotnetChecker.persistDotnetExecPath(dotnetExecPath);
       // logger.debug(`[end] write dotnet path to config`);
     } catch (error) {
-      logger.error(`Failed to install dotnet, error =${error}`);
+      logger.error(`Failed to install dotnet, error = ${error}`);
     }
   }
 

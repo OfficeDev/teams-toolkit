@@ -319,7 +319,7 @@ export function generateCompounds(includeFrontend: boolean, includeBackend: bool
                 preLaunchTask: "Pre Debug Check",
                 presentation: {
                     group: "all",
-                    order: 2,
+                    order: 1,
                 },
                 stopAll: true,
             },

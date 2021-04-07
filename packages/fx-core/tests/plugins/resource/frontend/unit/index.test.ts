@@ -5,8 +5,7 @@ import "mocha";
 import * as chai from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
-import { FxError, PluginContext } from "teamsfx-api";
-import { Result } from "neverthrow";
+import { FxError, PluginContext, Result } from "teamsfx-api";
 import AdmZip from "adm-zip";
 import chaiAsPromised from "chai-as-promised";
 import fs from "fs-extra";
@@ -21,14 +20,14 @@ import {
     NoStorageError,
     NotProvisionError,
     StaticWebsiteDisabledError,
-} from "../../src/resources/errors";
-import { FrontendConfig } from "../../src/configs";
-import { FrontendConfigInfo, FrontendPathInfo } from "../../src/constants";
-import { FrontendPlugin } from "../../src";
-import { FrontendProvision } from "../../src/ops/provision";
-import { FrontendScaffold } from "../../src/ops/scaffold";
+} from "../../../../../src/plugins/resource/frontend/resources/errors";
+import { FrontendConfig } from "../../../../../src/plugins/resource/frontend/configs";
+import { FrontendConfigInfo, FrontendPathInfo } from "../../../../../src/plugins/resource/frontend/constants";
+import { FrontendPlugin } from "../../../../../src/plugins/resource/frontend/";
+import { FrontendProvision } from "../../../../../src/plugins/resource/frontend/ops/provision";
+import { FrontendScaffold } from "../../../../../src/plugins/resource/frontend/ops/scaffold";
 import { TestHelper } from "../helper";
-import { Utils } from "../../src/utils";
+import { Utils } from "../../../../../src/plugins/resource/frontend/utils";
 
 chai.use(chaiAsPromised);
 

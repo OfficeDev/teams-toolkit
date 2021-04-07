@@ -1132,7 +1132,7 @@ export class TeamsAppSolution implements Solution {
             }
             const pluginsToDeploy = res.value.filter((plugin) => !!plugin.deploy);
             const options: OptionItem[] = pluginsToDeploy.map((plugin) => {
-                const item: OptionItem = { label: plugin.displayName, data: plugin.name };
+                const item: OptionItem = {id: plugin.name, label: plugin.displayName, data: plugin.name };
                 return item;
             });
             const selectQuestion = DeployPluginSelectQuestion;

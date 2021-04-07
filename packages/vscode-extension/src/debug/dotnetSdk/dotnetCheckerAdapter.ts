@@ -5,7 +5,12 @@ import { workspace, debug, WorkspaceConfiguration } from "vscode";
 import { configurationPrefix, validateDotnetSdkKey, Messages, dotnetHelpLink } from "../constants";
 import { DotnetChecker } from "./dotnetChecker";
 import * as commonUtils from "../commonUtils";
-import logger from "../../commonlib/log";
+import commonlibLogger from "../../commonlib/log";
+
+export { isWindows, isLinux, isMacOS } from "../../utils/commonUtils";
+export { cpUtils } from "../cpUtils";
+export const logger = commonlibLogger;
+
 
 /**
  * This file contains the extension related functionalities of dotnet checker.

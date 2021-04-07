@@ -135,6 +135,7 @@ export async function activate(): Promise<Result<null, FxError>> {
     {
       const globalConfig = new ConfigMap();
       globalConfig.set("featureFlag", isFeatureFlag());
+      globalConfig.set("function-dotnet-checker-enabled", dotnetCheckerEnabled());
       const result = await core.init(globalConfig);
       if (result.isErr()) {
         showError(result.error);

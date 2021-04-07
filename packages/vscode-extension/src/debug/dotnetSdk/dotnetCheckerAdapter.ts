@@ -2,16 +2,9 @@
 // Licensed under the MIT license.
 
 import { workspace, debug, WorkspaceConfiguration } from "vscode";
-import {
-  configurationPrefix,
-  validateDotnetSdkKey,
-  Messages,
-  dotnetHelpLink,
-  ProgressBarMessages
-} from "../constants";
+import { configurationPrefix, validateDotnetSdkKey, Messages, dotnetHelpLink } from "../constants";
 import { DotnetChecker } from "./dotnetChecker";
 import * as commonUtils from "../commonUtils";
-import DialogManagerInstance from "../../userInterface";
 import logger from "../../commonlib/log";
 
 /**
@@ -28,13 +21,8 @@ export async function tryValidateDotnetInstalled(): Promise<boolean> {
     return true;
   }
 
-  const handler = DialogManagerInstance.createProgressBar(
-    Messages.installingDependencies,
-    Object.keys(ProgressBarMessages.dotnet).length
-  );
-
   try {
-    if (!(await DotnetChecker.ensureDotnet(handler))) {
+    if (!(await DotnetChecker.ensureDotnet())) {
       // TODO(aochengwang): remove this code after using exception to handle errors for ensureDotnet()
       throw new Error("Failed to ensureDotnet(), reason: unknown");
     }

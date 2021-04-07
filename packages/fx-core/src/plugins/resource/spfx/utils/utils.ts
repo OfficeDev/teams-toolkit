@@ -7,14 +7,18 @@ import { exec } from "child_process";
 import { LogProvider } from "teamsfx-api";
 
 export async function configure(
-  dir: string,
+  configurePath: string,
   map: Map<string, string>
 ): Promise<void> {
   let files: string[] = [];
-  const extensions = ["*.json", "*.ts", "*.js", "*.scss"];
+  const extensions = ["*.json", "*.ts", "*.js", "*.scss", "*.tsx"];
 
-  for (const ext of extensions) {
-    files = files.concat(glob.sync(`${dir}/**/${ext}`, { nodir: true }));
+  if (fs.lstatSync(configurePath).isFile()) {
+    files = [configurePath];
+  } else {
+    for (const ext of extensions) {
+      files = files.concat(glob.sync(`${configurePath}/**/${ext}`, { nodir: true }));
+    }
   }
 
   files.forEach(async function (file) {

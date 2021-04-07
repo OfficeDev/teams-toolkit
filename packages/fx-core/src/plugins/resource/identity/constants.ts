@@ -18,7 +18,7 @@ export class Constants {
 }
 
 export class Telemetry {
-    static readonly telemetryName = `${Constants.prefix}-toolkit-plugin-identity`;
+    static readonly telemetryName = `${Constants.prefix}-resource-identity`;
     static readonly provisionStart = `${Telemetry.telemetryName}/provision-start`;
     static readonly provisionEnd = `${Telemetry.telemetryName}/provision`;
 

@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 import {
   PluginContext,
+  ProductName,
   FxError,
   Result,
   ok,
@@ -211,6 +212,7 @@ export class SPFxPluginImpl {
     );
 
     await configure(outputFolderPath, replaceMap);
+    await configure(`${ctx.root}/.${ProductName}/manifest.remote.json`, replaceMap);
     return ok(undefined);
   }
 

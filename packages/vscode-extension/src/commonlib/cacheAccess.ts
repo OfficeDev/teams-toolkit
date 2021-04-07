@@ -5,12 +5,13 @@
 "use strict";
 
 import * as fs from "fs-extra";
+import { ConfigFolderName } from "fx-api";
 import * as os from "os";
 import VsCodeLogInstance from "./log";
 
-export const cacheDir = os.homedir + "/.teamsfx/account";
-export const cachePath = os.homedir + "/.teamsfx/account/token.cache.";
-export const accountPath = os.homedir + "/.teamsfx/account/homeId.cache.";
+export const cacheDir = os.homedir + `/.${ConfigFolderName}/account`;
+export const cachePath = os.homedir + `/.${ConfigFolderName}/account/token.cache.`;
+export const accountPath = os.homedir + `/.${ConfigFolderName}/account/homeId.cache.`;
 export const homeAccountId = "home_account_id";
 export const UTF8 = "utf-8";
 const cachePathEnd = ".json";

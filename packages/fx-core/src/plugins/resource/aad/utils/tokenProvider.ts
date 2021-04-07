@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { PluginContext } from "teamsfx-api";
+import { PluginContext } from "fx-api";
 import { ResultFactory } from "../results";
 import { GetTokenError, TenantNotExistError } from "../errors";
 

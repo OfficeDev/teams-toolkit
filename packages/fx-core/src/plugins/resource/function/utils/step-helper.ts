@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Dialog, IProgressHandler } from "teamsfx-api";
+import { Dialog, IProgressHandler } from "fx-api";
 
 export class StepHelper {
     progressHandler?: IProgressHandler;

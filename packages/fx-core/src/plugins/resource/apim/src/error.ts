@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { FxError, returnSystemError, returnUserError } from "teamsfx-api";
+import { FxError, returnSystemError, returnUserError } from "fx-api";
 import { ProjectConstants, ConfigRetryLifeCycle, LifeCycleCommands, TeamsToolkitComponent } from "./constants";
 
 enum ErrorType {

@@ -3,7 +3,7 @@
 import * as tedious from "tedious";
 import { Constants, HelpLinks } from "./constants";
 import { SqlConfig } from "./config";
-import { PluginContext } from "teamsfx-api";
+import { PluginContext } from "fx-api";
 import { ErrorMessage } from "./errors";
 import { SqlResultFactory } from "./results";
 export class SqlClient {

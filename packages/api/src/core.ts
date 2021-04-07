@@ -30,8 +30,8 @@ import {
 } from "./utils";
 import { Result } from "neverthrow";
 import { ConfigMap } from "./config";
-import { Func, QTreeNode } from "./question";
-import { Platform, Stage } from "./types";
+import { Func, QTreeNode } from "./qm";
+import { Platform, Stage } from "./constants";
 import { FxError } from "./error";
 
 export interface Core {

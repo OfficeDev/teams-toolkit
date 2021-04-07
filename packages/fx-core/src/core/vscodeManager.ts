@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import * as fs from "fs-extra";
-import { err, FxError, ok, Result, returnSystemError, VsCode } from "teamsfx-api";
+import { err, FxError, ok, Result, returnSystemError, VsCode } from "fx-api";
 import * as path from "path";
 
 export class VscodeManager implements VsCode {

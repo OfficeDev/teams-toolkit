@@ -5,7 +5,7 @@ import * as vscode from "vscode";
 
 import * as commonUtils from "./commonUtils";
 import { core, showError } from "../handlers";
-import { Func } from "teamsfx-api";
+import { Func } from "fx-api";
 
 export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
   public async resolveDebugConfiguration?(
@@ -15,7 +15,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
   ): Promise<vscode.DebugConfiguration | undefined> {
     try {
       if (folder) {
-        if (!(await commonUtils.isModsProject(folder.uri.fsPath))) {
+        if (!(await commonUtils.isFxProject(folder.uri.fsPath))) {
           return debugConfiguration;
         }
 
@@ -37,7 +37,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
         }
 
         const func: Func = {
-          namespace: "teamsfx-solution-azure/teamsfx-plugin-local-debug",
+          namespace: "fx-solution-azure/teamsfx-plugin-local-debug",
           method: "getLaunchInput",
           params: isLocalSideloadingConfiguration ? ["local"] : ["remote"]
         };

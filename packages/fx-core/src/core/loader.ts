@@ -4,7 +4,7 @@
 
 import * as fs from "fs-extra";
 import * as path from "path";
-import { Context, err, FxError, ok, ProductName, Result, returnUserError, Solution} from "teamsfx-api";
+import { Context, err, FxError, ok, ConfigFolderName, Result, returnUserError, Solution} from "fx-api";
 
 import { Settings } from "./settings";
 
@@ -21,12 +21,12 @@ export class Loader {
     /*
      * This is our contract that each plugin & solution should follow this prefix.
      */
-    public static PLUGIN_PREFIX = `${ProductName}-resource-`;
-    public static SOLUTION_PREFIX = `${ProductName}-solution-`;
+    public static PLUGIN_PREFIX = `${ConfigFolderName}-resource-`;
+    public static SOLUTION_PREFIX = `${ConfigFolderName}-solution-`;
 
     public static async loadSelectSolution(ctx: Context, rootPath: string): Promise<Result<Meta, FxError>> {
         
-        const fp = path.resolve(`${rootPath}/.${ProductName}/settings.json`);
+        const fp = path.resolve(`${rootPath}/.${ConfigFolderName}/settings.json`);
         if (!fs.pathExists(fp)) {
         return err(returnUserError(new Error(`FileNotFound:${fp}`), CoreSource, CoreErrorNames.FileNotFound));
         }
@@ -49,11 +49,11 @@ export class Loader {
             return err(result.error);
         }
         const as = Object.assign(result.value, {
-            name: "teamsfx-solution-azure",
+            name: "fx-solution-azure",
             displayName: "azure",
             version: "1.0.0",
         });
-        resources.set("teamsfx-solution-azure", as);
+        resources.set("fx-solution-azure", as);
         return ok(resources);
     }
 }

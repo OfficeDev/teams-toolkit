@@ -14,7 +14,7 @@ import {
   Result,
   FxError,
   ok
-} from "teamsfx-api";
+} from "fx-api";
 
 import { ext } from "../../../src/extensionVariables";
 import DialogManagerInstance from "../../../src/userInterface";

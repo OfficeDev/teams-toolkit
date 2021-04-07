@@ -2,16 +2,15 @@
 // Licensed under the MIT license.
 
 import {
-  ArrayValidation,
   ConfigMap,
   FileValidation,
-  FuncValidation,
   LocalFuncValidation,
+  RemoteFuncValidation,
+  StringArrayValidation,
   Validation,
-  ValidationResult
-} from "teamsfx-api";
+} from "fx-api";
 import * as fs from "fs-extra";
-import { CoreProxy } from "teamsfx-core";
+import { CoreProxy } from "fx-core";
 import * as jsonschema from "jsonschema";
 
 let core: CoreProxy;
@@ -41,7 +40,7 @@ export async function validate(
   }
 
   /// callFunc validation
-  const funcValidation: FuncValidation = validation as FuncValidation;
+  const funcValidation: RemoteFuncValidation = validation as RemoteFuncValidation;
   if (funcValidation.method) {
     //function validation
     core = CoreProxy.getInstance();
@@ -116,7 +115,7 @@ export async function validate(
     }
   }
 
-  const arrayValidation: ArrayValidation = validation as ArrayValidation;
+  const arrayValidation: StringArrayValidation = validation as StringArrayValidation;
   if (arrayValidation.containsAll) {
     const containsAll: string[] = arrayValidation.containsAll;
     if (containsAll.length > 0) {
@@ -148,21 +147,4 @@ export async function validate(
 
   return undefined;
 }
-
-// async function test()
-// {
-//   let validation:Validation = {containsAny:["d", "a"]};
-//   console.log(await validate(validation, []));
-//   console.log(await validate(validation, ["d"]));
-//   console.log(await validate(validation, ["a"]));
-//   console.log(await validate(validation, ["c"]));
-
-//   let validationAll:Validation = {containsAll:["a", "b"]};
-//   console.log(await validate(validationAll, []));
-//   console.log(await validate(validationAll, ["a"]));
-//   console.log(await validate(validationAll, ["b"]));
-//   console.log(await validate(validationAll, ["a", "b"]));
-//   console.log(await validate(validationAll, ["a", "c"]));
-//   console.log(await validate(validationAll, ["a", "b", "d"]));
-// }
-// test();
+ 

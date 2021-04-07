@@ -5,10 +5,8 @@ import * as os from "os";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as child_process from "child_process";
-import logger from "../../commonlib/log";
 import * as util from "util";
-import { isLinux, isWindows } from "../../utils/commonUtils";
-import { cpUtils } from "../cpUtils";
+import { logger, isWindows, isLinux, cpUtils } from "./dotnetCheckerAdapter";
 
 const exec = util.promisify(child_process.exec);
 

@@ -84,7 +84,7 @@ export class LanguageStrategy {
         if (programmingLanguage === ProgrammingLanguage.JavaScript) {
             // Since teamfx package is in private registry, have to npm install to pack the node_modulre folder.
             try {
-                await utils.execute('npm install', packDir);
+                await utils.execute("npm install", packDir);
             } catch (e) {
                 throw new CommandExecutionException(`${Commands.NPM_INSTALL}`, e.message, e);
             }

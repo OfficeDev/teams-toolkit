@@ -9,8 +9,7 @@ import logger from "../../commonlib/log";
 import * as util from "util";
 import { isLinux, isWindows } from "../../utils/commonUtils";
 import { cpUtils } from "../cpUtils";
-import { ConfigFolderName, IProgressHandler } from "fx-api";
-import { ProgressBarMessages } from "../constants";
+import { ConfigFolderName } from "fx-api"; 
 
 const exec = util.promisify(child_process.exec);
 

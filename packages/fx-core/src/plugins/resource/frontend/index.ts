@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { FrontendPluginImpl } from "./plugin";
-import { Plugin, PluginContext, err } from "fx-api";
+import { Plugin, PluginContext, err, SystemError, UserError } from "fx-api";
 
 import { ErrorFactory, TeamsFxResult } from "./error-factory";
 import { ErrorType, FrontendPluginError, UnhandledErrorCode, UnhandledErrorMessage } from "./resources/errors";
@@ -67,6 +67,10 @@ export class FrontendPlugin implements Plugin {
                         : ErrorFactory.SystemError(e.code, e.getMessage(), e.getInnerError(), e.getInnerError()?.stack);
                 telemetryHelper.sendErrorEvent(ctx, stage, error);
                 return err(error);
+            }
+
+            if (e instanceof UserError || e instanceof SystemError) {
+                return err(e);
             }
 
             const error = ErrorFactory.SystemError(UnhandledErrorCode, UnhandledErrorMessage, e, e.stack);

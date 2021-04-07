@@ -44,7 +44,7 @@ export async function validate(
   if (funcValidation.method) {
     //function validation
     core = CoreProxy.getInstance();
-    funcValidation.params = [valueToValidate];
+    funcValidation.params = valueToValidate;
     const res = await core.callFunc(funcValidation, answers);
     if (res.isOk()) {
       return res.value as string;

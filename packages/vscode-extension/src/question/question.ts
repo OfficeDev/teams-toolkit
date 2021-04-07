@@ -47,6 +47,9 @@ export async function getRealValue(
       if (res.isOk()) {
         return res.value;
       }
+      else {
+        return undefined;
+      }
     }
   }
   return output;

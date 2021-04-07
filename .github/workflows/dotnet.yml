@@ -29,7 +29,7 @@ jobs:
       run: 
         ls && chmod +x "simpleauth/scripts/build.sh" && "simpleauth/scripts/build.sh"
     - name: Test
-      env: 
+      environment: 
         TEAMS_SIMPLE_AUTH_IntegrationTestSettings__AdminClientSecret: ${{secrets.SIMPLE_AUTH_TEST_ADMIN_CLIENT_SECRET}}
         TEAMS_SIMPLE_AUTH_IntegrationTestSettings__TestPassword: ${{secrets.SIMPLE_AUTH_TEST_PASSWORD}}
       run:
@@ -37,7 +37,7 @@ jobs:
   
   Function-Extension:
     runs-on: ubuntu-20.04
-    env: 
+    environment: 
         TeamsFx_BINDING_IntegrationTestSettings__ClientSecret: ${{secrets.FUNCTION_EXTENSION_CLIENT_SECRET}}
         TeamsFx_BINDING_IntegrationTestSettings__UnauthorizedAadAppClientSecret: ${{secrets.FUNCTION_EXTENSION_UNAUTHORIZED_AAD_APP_CLIENT_SECRET}}
         TeamsFx_BINDING_IntegrationTestSettings__AllowedAppClientSecret: ${{secrets.FUNCTION_EXTENSION_ALLOWED_APP_SECRET}}

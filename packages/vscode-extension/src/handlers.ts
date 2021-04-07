@@ -417,7 +417,15 @@ export async function updateAADHandler(): Promise<Result<null, FxError>> {
  */
 export async function validateDependenciesHandler(): Promise<void> {
   let shouldContinue = true;
-  if (shouldContinue && (await commonUtils.hasTeamsfxBackend())) {
+  const hasBackend = await commonUtils.hasTeamsfxBackend();
+
+  if (hasBackend) {
+    logger.info(constants.Messages.installFuncCoreToolsAndDotnetSdk);
+  } else {
+    logger.info(constants.Messages.installDotnetSdk);
+  }
+
+  if (shouldContinue && hasBackend) {
     shouldContinue = await tryValidateFuncCoreToolsInstalled();
   }
 

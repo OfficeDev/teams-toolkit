@@ -6,8 +6,8 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as child_process from "child_process";
 import * as util from "util";
-import { ConfigFolderName } from "fx-api"; 
-import { logger, isWindows, isLinux, cpUtils } from "./dotnetCheckerAdapter";
+import { ConfigFolderName } from "fx-api";
+import { logger, isWindows, isLinux, cpUtils, runWithProgressIndicator } from "./dotnetCheckerAdapter";
 
 const exec = util.promisify(child_process.exec);
 
@@ -47,7 +47,12 @@ export class DotnetChecker {
     logger.debug(`[end] cleanup bin/dotnet and config`);
 
     logger.debug(`[start] install dotnet ${DotnetChecker.installVersion}`);
-    await DotnetChecker.install(DotnetChecker.installVersion);
+    // TODO: explain why we need to install .NET SDK
+    logger.outputChannel.show(false);
+    logger.info("Downloading and installing .NET SDK.");
+    await runWithProgressIndicator(logger.outputChannel, async () => {
+      await DotnetChecker.install(DotnetChecker.installVersion);
+    });
     logger.debug(`[end] install dotnet ${DotnetChecker.installVersion}`);
 
     logger.debug(`[start] validate dotnet version`);

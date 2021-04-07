@@ -29,7 +29,7 @@ jobs:
       run: 
         ls && chmod +x "simpleauth/scripts/build.sh" && "simpleauth/scripts/build.sh"
     - name: Test
-      environment: 
+      env: 
         TEAMS_SIMPLE_AUTH_IntegrationTestSettings__AdminClientSecret: ${{secrets.SIMPLE_AUTH_TEST_ADMIN_CLIENT_SECRET}}
         TEAMS_SIMPLE_AUTH_IntegrationTestSettings__TestPassword: ${{secrets.SIMPLE_AUTH_TEST_PASSWORD}}
       run:
@@ -37,10 +37,6 @@ jobs:
   
   Function-Extension:
     runs-on: ubuntu-20.04
-    environment: 
-        TeamsFx_BINDING_IntegrationTestSettings__ClientSecret: ${{secrets.FUNCTION_EXTENSION_CLIENT_SECRET}}
-        TeamsFx_BINDING_IntegrationTestSettings__UnauthorizedAadAppClientSecret: ${{secrets.FUNCTION_EXTENSION_UNAUTHORIZED_AAD_APP_CLIENT_SECRET}}
-        TeamsFx_BINDING_IntegrationTestSettings__AllowedAppClientSecret: ${{secrets.FUNCTION_EXTENSION_ALLOWED_APP_SECRET}}
     steps:
     - uses: actions/checkout@v2
     - name: Setup .NET
@@ -55,5 +51,9 @@ jobs:
       run: 
         ls && chmod +x "function-extension/scripts/build.sh" && "function-extension/scripts/build.sh"
     - name: Test
+      env: 
+        TeamsFx_BINDING_IntegrationTestSettings__ClientSecret: ${{secrets.FUNCTION_EXTENSION_CLIENT_SECRET}}
+        TeamsFx_BINDING_IntegrationTestSettings__UnauthorizedAadAppClientSecret: ${{secrets.FUNCTION_EXTENSION_UNAUTHORIZED_AAD_APP_CLIENT_SECRET}}
+        TeamsFx_BINDING_IntegrationTestSettings__AllowedAppClientSecret: ${{secrets.FUNCTION_EXTENSION_ALLOWED_APP_SECRET}}
       run:
-        chmod +x "function-extension/scripts/test.sh" && chmod +x "function-extension/scripts/start_js_function.sh" && "function-extension/scripts/test.sh"
+        echo env && chmod +x "function-extension/scripts/test.sh" && chmod +x "function-extension/scripts/start_js_function.sh" && "function-extension/scripts/test.sh"

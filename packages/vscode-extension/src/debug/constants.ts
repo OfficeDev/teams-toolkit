@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
- 
+
 export const frontendStartCommand = "frontend start";
 export const backendStartCommand = "backend start";
 export const authStartCommand = "auth start";
@@ -12,7 +12,7 @@ export const backendProblemMatcher = "$teamsfx-backend-watch";
 export const authProblemMatcher = "$teamsfx-auth-watch";
 export const ngrokProblemMatcher = "$teamsfx-ngrok-watch";
 export const botProblemMatcher = "$teamsfx-bot-watch";
- 
+
 export const frontendFolderName = "tabs";
 export const backendFolderName = "api";
 export const botFolderName = "bot";
@@ -43,6 +43,7 @@ export class Messages {
   public static readonly failToDetectOrInstallDotnet =
     "Failed to detect or install .NET Core SDK, please install .NET Core SDK yourself and update the config file '@ConfigPath' or create it if it does not exist.";
   public static readonly failToInstallBackendExtensions = "Failed to install backend extensions.";
+  public static readonly linuxNotSupported = "Please install the required dependencies for Linux manually.";
 }
 
 export enum PackageManager {

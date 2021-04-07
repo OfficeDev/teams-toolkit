@@ -9,7 +9,7 @@ import logger from "../../commonlib/log";
 import * as util from "util";
 import { isLinux, isWindows } from "../../utils/commonUtils";
 import { cpUtils } from "../cpUtils";
-import { IProgressHandler } from "fx-api";
+import { ConfigFolderName, IProgressHandler } from "fx-api";
 import { ProgressBarMessages } from "../constants";
 
 const exec = util.promisify(child_process.exec);
@@ -83,7 +83,7 @@ export class DotnetChecker {
   }
 
   public static getDotnetConfigPath(): string {
-    return path.join(os.homedir(), ".mods", "dotnet.json");
+    return path.join(os.homedir(), `.${ConfigFolderName}`, "dotnet.json");
   }
 
   private static async install(version: DotnetVersion): Promise<void> {
@@ -254,7 +254,7 @@ export class DotnetChecker {
   }
 
   private static getDefaultInstallPath(): string {
-    return path.join(os.homedir(), ".mods", "bin", "dotnet");
+    return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "dotnet");
   }
 
   private static async getInstallCommand(
@@ -296,7 +296,7 @@ export class DotnetChecker {
         return false;
       }
       // todo: by far, use first valid dotnet sdk
-      // todo: write dotnetExecPath into user settings instead of into .mods/dotnet.json
+      // todo: write dotnetExecPath into user settings instead of into .fx/dotnet.json
       const selectedSdk: DotnetSDK = sdks[0];
       const dotnetExecPath: string = DotnetChecker.getDotnetExecPathFromDotnetInstallationDir(
         path.resolve(selectedSdk.path, "..")

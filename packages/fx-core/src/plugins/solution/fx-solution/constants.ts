@@ -1,11 +1,13 @@
+/* eslint-disable @typescript-eslint/ban-types */
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+
 /**
- * Void is used to construct Result<Void, FxError>.
+ * Void is used to construct Result<Void, ModsError>.
  * e.g. return ok(Void);
  * It exists because ok(void) does not compile.
  */
-export type Void = Record<string, never>;
+export type Void = {};
 export const Void = {};
 
 /**
@@ -60,6 +62,8 @@ export enum SolutionError {
     LocalTabEndpointMissing = "LocalTabEndpointMissing",
     LocalTabDomainMissing = "LocalTabDomainMissing",
     LocalClientIDMissing = "LocalDebugClientIDMissing",
+    LocalApplicationIdUrisMissing = "LocalApplicationIdUrisMissing",
+    LocalClientSecretMissing = "LocalClientSecretMissing",
     CannotUpdatePermissionForSPFx = "CannotUpdatePermissionForSPFx",
     CannotAddResourceForSPFx = "CannotAddResourceForSPFx",
     FailedToParseAzureTenantId = "FailedToParseAzureTenantId",
@@ -76,13 +80,26 @@ export enum SolutionError {
     CannotDeployBeforeProvision = "CannotDeployBeforeProvision",
     NoSubscriptionFound = "NoSubscriptionFound",
     NoSubscriptionSelected = "NoSubscriptionSelected",
+    FailedToGetParamForRegisterTeamsAppAndAad = "FailedToGetParamForRegisterTeamsAppAndAad",
     BotInternalError = "BotInternalError",
     InternelError = "InternelError",
+    RegisterTeamsAppAndAadError = "RegisterTeamsAppAndAadError",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";
 export const LOCAL_DEBUG_TAB_DOMAIN = "localTabDomain";
+export const LOCAL_DEBUG_BOT_DOMAIN = "localBotDomain";
+export const BOT_DOMAIN = "validDomain";
+export const BOT_SECTION = "bots";
+export const COMPOSE_EXTENSIONS_SECTION = "composeExtensions";
+export const LOCAL_WEB_APPLICATION_INFO_SOURCE = "local_applicationIdUris";
+export const WEB_APPLICATION_INFO_SOURCE = "applicationIdUris";
 export const LOCAL_DEBUG_AAD_ID = "local_clientId";
+export const REMOTE_AAD_ID = "clientId";
+export const LOCAL_APPLICATION_ID_URIS = "local_applicationIdUris";
+export const REMOTE_APPLICATION_ID_URIS = "applicationIdUris";
+export const LOCAL_CLIENT_SECRET = "local_clientSecret";
+export const REMOTE_CLIENT_SECRET = "clientSecret";
 // Teams App Id for local debug
 export const LOCAL_DEBUG_TEAMS_APP_ID = "localDebugTeamsAppId";
 // Teams App Id for remote

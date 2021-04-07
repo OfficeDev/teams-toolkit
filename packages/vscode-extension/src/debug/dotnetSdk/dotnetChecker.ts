@@ -9,8 +9,6 @@ import logger from "../../commonlib/log";
 import * as util from "util";
 import { isLinux, isWindows } from "../../utils/commonUtils";
 import { cpUtils } from "../cpUtils";
-import { IProgressHandler } from "teamsfx-api";
-import { ProgressBarMessages } from "../constants";
 
 const exec = util.promisify(child_process.exec);
 
@@ -28,44 +26,37 @@ export class DotnetChecker {
   private static maxBuffer = 500 * 1024;
 
   // TODO: make this method returns void and use exception to handle all errors
-  public static async ensureDotnet(handler: IProgressHandler | undefined): Promise<boolean> {
-    try {
-      const configPath = DotnetChecker.getDotnetConfigPath();
+  public static async ensureDotnet(): Promise<boolean> {
+    const configPath = DotnetChecker.getDotnetConfigPath();
 
-      logger.debug(`[start] read dotnet path from '${configPath}'`);
-      const dotnetPath = await DotnetChecker.getDotnetExecPath();
-      logger.debug(`[end] read dotnet path from '${configPath}', dotnetPath = '${dotnetPath}'`);
+    logger.debug(`[start] read dotnet path from '${configPath}'`);
+    const dotnetPath = await DotnetChecker.getDotnetExecPath();
+    logger.debug(`[end] read dotnet path from '${configPath}', dotnetPath = '${dotnetPath}'`);
 
-      logger.debug(`[start] check dotnet version`);
-      if (dotnetPath !== null && (await DotnetChecker.isDotnetInstalledCorrectly())) {
-        return true;
-      }
-      logger.debug(`[end] check dotnet version`);
-
-      if ((await DotnetChecker.tryAcquireGlobalDotnetSdk()) && (await DotnetChecker.validate())) {
-        logger.info(`use global dotnet path = ${await DotnetChecker.getDotnetExecPath()}`);
-        return true;
-      }
-      await handler?.start();
-      await handler?.next(ProgressBarMessages.dotnet.downloading);
-      logger.debug(`[start] cleanup bin/dotnet and config`);
-      await DotnetChecker.cleanup();
-      logger.debug(`[end] cleanup bin/dotnet and config`);
-
-      logger.debug(`[start] install dotnet ${DotnetChecker.installVersion}`);
-      await DotnetChecker.install(DotnetChecker.installVersion);
-      logger.debug(`[end] install dotnet ${DotnetChecker.installVersion}`);
-
-      await handler?.next(ProgressBarMessages.dotnet.validating);
-      logger.debug(`[start] validate dotnet version`);
-      if (!(await DotnetChecker.validate())) {
-        await DotnetChecker.cleanup();
-        return false;
-      }
+    logger.debug(`[start] check dotnet version`);
+    if (dotnetPath !== null && (await DotnetChecker.isDotnetInstalledCorrectly())) {
       return true;
-    } finally {
-      handler?.end();
     }
+    logger.debug(`[end] check dotnet version`);
+
+    if ((await DotnetChecker.tryAcquireGlobalDotnetSdk()) && (await DotnetChecker.validate())) {
+      logger.info(`use global dotnet path = ${await DotnetChecker.getDotnetExecPath()}`);
+      return true;
+    }
+    logger.debug(`[start] cleanup bin/dotnet and config`);
+    await DotnetChecker.cleanup();
+    logger.debug(`[end] cleanup bin/dotnet and config`);
+
+    logger.debug(`[start] install dotnet ${DotnetChecker.installVersion}`);
+    await DotnetChecker.install(DotnetChecker.installVersion);
+    logger.debug(`[end] install dotnet ${DotnetChecker.installVersion}`);
+
+    logger.debug(`[start] validate dotnet version`);
+    if (!(await DotnetChecker.validate())) {
+      await DotnetChecker.cleanup();
+      return false;
+    }
+    return true;
   }
 
   public static async getDotnetExecPath(): Promise<string | null> {

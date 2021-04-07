@@ -34,7 +34,7 @@ describe("FrontendScaffold", () => {
             zip.addFile(entryName, Buffer.from(data));
 
             const pluginContext: PluginContext = TestHelper.getFakePluginContext();
-            const dstPath: string = pluginContext.FolderProvider.getWorkingPath(FrontendPathInfo.WorkingDir);
+            const dstPath: string = path.join(pluginContext.root, FrontendPathInfo.WorkingDir);
             const filePath = path.join(dstPath, entryName);
 
             await FrontendScaffold.scaffoldFromZip(zip, dstPath);
@@ -47,7 +47,7 @@ describe("FrontendScaffold", () => {
         it("happy path", async () => {
             const entryName: string = faker.system.filePath() + FrontendPathInfo.TemplateFileExt;
             const pluginContext: PluginContext = TestHelper.getFakePluginContext();
-            const dstPath: string = pluginContext.FolderProvider.getWorkingPath(FrontendPathInfo.WorkingDir);
+            const dstPath: string = path.join(pluginContext.root, FrontendPathInfo.WorkingDir);
             const filePath = path.join(dstPath, entryName);
 
             const rowData: string = faker.lorem.text();

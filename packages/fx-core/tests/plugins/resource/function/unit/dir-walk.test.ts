@@ -19,8 +19,8 @@ describe(FunctionPluginInfo.pluginName, async () => {
     describe("DirWalk Test", async () => {
         it("Test dir-walk", async () => {
             // Arrange
-            fs.ensureDir(root);
-            fs.writeFile(path.join(root, "ut-file"), "ut-file");
+            await fs.ensureDir(root);
+            await fs.writeFile(path.join(root, "ut-file"), "ut-file");
             const collect: string[] = [];
 
             // Act

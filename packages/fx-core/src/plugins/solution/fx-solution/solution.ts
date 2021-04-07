@@ -1080,7 +1080,7 @@ export class TeamsAppSolution implements Solution {
                     const azure_function = res.value as QTreeNode;
                     if (alreadyHasFunction)
                         // if already has function, the question will appear depends on whether user select function, otherwise, the question will always show
-                        azure_function.condition = { contains: AzureResourceFunction.label };
+                        azure_function.condition = { contains: AzureResourceFunction.id };
                     if (azure_function.data) addAzureResources.addChild(azure_function);
                 }
 
@@ -1090,8 +1090,18 @@ export class TeamsAppSolution implements Solution {
                     const res = await this.sqlPlugin.getQuestions(stage, pluginCtx);
                     if (res.isErr()) return res;
                     const azure_sql = res.value as QTreeNode;
-                    azure_sql.condition = { contains: AzureResourceSQL.label };
+                    azure_sql.condition = { contains: AzureResourceSQL.id };
                     if (azure_sql.data) addAzureResources.addChild(azure_sql);
+                }
+
+                //APIM
+                if (this.apimPlugin.getQuestions) {
+                    const pluginCtx = getPluginContext(ctx, this.apimPlugin.name, this.manifest);
+                    const res = await this.apimPlugin.getQuestions(stage, pluginCtx);
+                    if (res.isErr()) return res;
+                    const apim = res.value as QTreeNode;
+                    apim.condition = { contains: AzureResourceApim.id };
+                    if (apim.data) addAzureResources.addChild(apim);
                 }
             } else {
                 return err(
@@ -1146,7 +1156,7 @@ export class TeamsAppSolution implements Solution {
                     const getQuestionRes = await plugin.getQuestions(stage, pluginCtx);
                     if (getQuestionRes.isErr()) return getQuestionRes;
                     const subnode = getQuestionRes.value as QTreeNode;
-                    subnode.condition = { equals: plugin.displayName };
+                    subnode.condition = { contains: plugin.name };
                     if (subnode.data) pluginSelection.addChild(subnode);
                 }
             }

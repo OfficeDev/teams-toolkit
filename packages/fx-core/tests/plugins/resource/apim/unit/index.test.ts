@@ -67,9 +67,11 @@ async function buildContext(resourceName: string, resourceNameSuffix: string): P
     };
     const answer = {
         [QuestionConstants.Apim.questionName]: {
+            id: QuestionConstants.Apim.createNewApimOption,
             label: QuestionConstants.Apim.createNewApimOption,
         },
         [QuestionConstants.ApiVersion.questionName]: {
+            id: QuestionConstants.ApiVersion.createNewApiVersionOption,
             label: QuestionConstants.ApiVersion.createNewApiVersionOption,
         },
         [QuestionConstants.NewApiVersion.questionName]: "v1",

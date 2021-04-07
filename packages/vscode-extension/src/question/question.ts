@@ -136,21 +136,24 @@ export async function questionVisit(
         };
       }
       //skip single option select
-      if (type === NodeType.singleSelect  && option.length === 1) {
+      const ss = selectQuestion as SingleSelectQuestion;
+      const skipSingleOption = ss.skipSingleOption;
+      if (type === NodeType.singleSelect  && (skipSingleOption === undefined || skipSingleOption === true) && option.length === 1) {
         const optionIsString = typeof option[0] === "string";
         if(selectQuestion.returnObject){
             return {
                 type: InputResultType.pass,
-                result: optionIsString ? { label: option[0] as string }: (option[0] as OptionItem)
+                result: optionIsString ? { id: option[0] }: option[0]
               };
         }
         else {
             return {
                 type: InputResultType.pass,
-                result: optionIsString ? option[0] : (option[0] as OptionItem).label
+                result: optionIsString ? option[0] : (option[0] as OptionItem).id
             };
         }
-    }
+      }
+      
       return await showQuickPick({
         title: selectQuestion.title || selectQuestion.description || selectQuestion.name,
         items: option,
@@ -197,12 +200,6 @@ export async function questionVisit(
 export async function traverse(
   node: QTreeNode,
   answerMap: ConfigMap,
-  visit: (
-    q: Question,
-    parentValue: any,
-    answers: ConfigMap,
-    canGoBack?: boolean
-  ) => Promise<InputResult>
 ): Promise<InputResult> {
   const stack: QTreeNode[] = [];
   const history: QTreeNode[] = [];
@@ -222,7 +219,7 @@ export async function traverse(
         parent && parent.data.type !== NodeType.group ? parent.data.value : undefined;
       VsCodeLogInstance.info(`ask question:${JSON.stringify(question)}`);
       if (!firstQuestion) firstQuestion = question;
-      const inputResult = await visit(question, parentValue, answerMap, question !== firstQuestion);
+      const inputResult = await questionVisit(question, parentValue, answerMap, question !== firstQuestion);
       VsCodeLogInstance.info(`answer:${JSON.stringify(inputResult)}`);
       if (inputResult.type === InputResultType.back) {
         //go back

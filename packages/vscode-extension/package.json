@@ -34,7 +34,7 @@
     "Snippets"
   ],
   "aiKey": "AIF-d9b70cd4-b9f9-4d70-929b-a071c400b217",
-  "featureFlag": "false",
+  "featureFlag": "true",
   "activationEvents": [
     "*",
     "onCommand:fx-extension.create",

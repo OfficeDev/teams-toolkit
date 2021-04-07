@@ -368,6 +368,17 @@ export class TeamsAppSolution implements Solution {
 
     async scaffoldOne(plugin: LoadedPlugin, ctx: SolutionContext): Promise<Result<any, FxError>> {
         const pctx = getPluginContext(ctx, plugin.name, this.manifest);
+        // if(plugin.getQuestions){
+        //     const res  = await plugin.getQuestions(Stage.create, pctx);
+        //     if(res.isErr()) {
+        //         return res;
+        //     }
+        //     if(res.value){
+        //         const node = res.value as QTreeNode;
+
+        //     }
+        // }
+       
         if (plugin.preScaffold) {
             const result = await plugin.preScaffold(pctx);
             if (result.isErr()) {

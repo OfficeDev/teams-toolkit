@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { IProgressHandler, PluginContext } from "teamsfx-api";
+import { IProgressHandler, PluginContext } from "fx-api";
 import { ProgressMessages, ProgressStep } from "../constants";
 
 export class ProgressBar {

@@ -51,11 +51,11 @@ export class Constants {
 
 export class Plugins {
   static pluginName = "Aad App for Teams App";
-  static pluginNameComplex = "teamsfx-resource-aad-app-for-teams";
+  static pluginNameComplex = "fx-resource-aad-app-for-teams";
   static pluginNameShort = "aad";
-  static frontendHosting = "teamsfx-resource-frontend-hosting";
-  static teamsBot = "teamsfx-resource-teamsbot";
-  static localDebug = "teamsfx-resource-local-debug";
+  static frontendHosting = "fx-resource-frontend-hosting";
+  static teamsBot = "fx-resource-teamsbot";
+  static localDebug = "fx-resource-local-debug";
   static solution = "solution";
 }
 

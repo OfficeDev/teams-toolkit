@@ -4,8 +4,8 @@
 
 "use strict";
 
-import { UserError } from "teamsfx-api";
-import { GraphTokenProvider } from "teamsfx-api";
+import { UserError } from "fx-api";
+import { GraphTokenProvider } from "fx-api";
 import { LogLevel } from "@azure/msal-node";
 import { ExtensionErrors } from "../error";
 import { CodeFlowLogin } from "./codeFlowLogin";

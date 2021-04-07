@@ -3,7 +3,7 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { IProgressStatus, ok } from "teamsfx-api";
+import { IProgressStatus, ok } from "fx-api";
 import { ProgressLocation } from "vscode";
 import { ext } from "./extensionVariables";
 import { sleep } from "./utils/commonUtils";

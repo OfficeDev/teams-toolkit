@@ -3,7 +3,7 @@
 export class Constants {
     public static readonly pluginName: string = "SQL Plugin";
     public static readonly pluginNameShort: string = "SQL";
-    public static readonly pluginFullName: string = "teamsfx-resource-azure-sql";
+    public static readonly pluginFullName: string = "fx-resource-azure-sql";
 
     public static readonly firewall = {
         azureIp: "0.0.0.0",
@@ -22,7 +22,7 @@ export class Constants {
     public static readonly skipAddingUser: string = "skipAddingUser";
 
     public static readonly solution: string = "solution";
-    public static readonly solutionPluginFullName = "teamsfx-solution-azure";
+    public static readonly solutionPluginFullName = "fx-solution-azure";
 
     public static readonly solutionConfigKey = {
         subscriptionId: "subscriptionId",
@@ -32,7 +32,7 @@ export class Constants {
         tenantId: "tenantId",
     };
 
-    public static readonly identityPlugin: string = "teamsfx-resource-identity";
+    public static readonly identityPlugin: string = "fx-resource-identity";
     public static readonly identity: string = "identity";
 
     public static readonly userQuestion = {
@@ -49,7 +49,7 @@ export class Constants {
 }
 
 export class Telemetry {
-    static readonly telemetryName = "teamsfx-resource-azure-sql";
+    static readonly telemetryName = "fx-resource-azure-sql";
     static readonly provisionStart = `${Telemetry.telemetryName}/provision-start`;
     static readonly provisionEnd = `${Telemetry.telemetryName}/provision`;
     static readonly postProvisionStart = `${Telemetry.telemetryName}/post-provision-start`;

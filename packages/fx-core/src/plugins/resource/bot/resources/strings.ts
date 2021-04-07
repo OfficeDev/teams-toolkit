@@ -16,14 +16,14 @@ export class CommonStrings {
 }
 
 export class PluginAAD {
-    public static readonly PLUGIN_NAME = "teamsfx-resource-aad-app-for-teams";
+    public static readonly PLUGIN_NAME = "fx-resource-aad-app-for-teams";
     public static readonly CLIENT_ID = "clientId";
     public static readonly CLIENT_SECRET = "clientSecret";
     public static readonly APPLICATION_ID_URIS = "applicationIdUris";
 }
 
 export class PluginLocalDebug {
-    public static readonly PLUGIN_NAME = "teamsfx-resource-local-debug";
+    public static readonly PLUGIN_NAME = "fx-resource-local-debug";
     public static readonly LOCAL_BOT_ENDPOINT = "localBotEndpoint";
 }
 
@@ -37,7 +37,7 @@ export class PluginSolution {
 }
 
 export class PluginBot {
-    public static readonly PLUGIN_NAME = "teamsfx-resource-bot";
+    public static readonly PLUGIN_NAME = "fx-resource-bot";
     public static readonly BOT_ID = "botId";
     public static readonly BOT_PASSWORD = "botPassword";
     public static readonly LOCAL_BOT_ID = "localBotId";
@@ -59,7 +59,7 @@ export class PluginBot {
 }
 
 export class TelemetryStrings {
-    public static readonly COMPONENT_NAME = "teamsfx-resource-bot";
+    public static readonly COMPONENT_NAME = "fx-resource-bot";
 }
 
 export class ConfigNames {

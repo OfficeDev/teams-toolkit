@@ -4,7 +4,7 @@
 
 "use strict";
 
-import { ConfigMap, ConfigValue, Core, Question } from "teamsfx-api";
+import { ConfigMap, ConfigValue, Core, Question } from "fx-api";
 import * as vscode from "vscode";
 import { ExtensionContext, Uri } from "vscode";
 import { questionVisit } from "./question/question";

@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { PluginContext, Result, Stage, QTreeNode, NodeType, FxError } from "teamsfx-api";
+import { PluginContext, Result, Stage, QTreeNode, NodeType, FxError } from "fx-api";
 
 import * as aadReg from "./aadRegistration";
 import * as factory from "./clientFactory";

@@ -4,7 +4,7 @@ import lodash from "lodash";
 import * as fs from "fs-extra";
 import { glob } from "glob";
 import { exec } from "child_process";
-import { LogProvider } from "teamsfx-api";
+import { LogProvider } from "fx-api";
 
 export async function configure(
   configurePath: string,

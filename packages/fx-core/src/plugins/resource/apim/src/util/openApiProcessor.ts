@@ -8,7 +8,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import { ApimDefaultValues } from "../constants";
 import { Telemetry } from "../telemetry";
-import { LogProvider } from "teamsfx-api";
+import { LogProvider } from "fx-api";
 import { getFileExtension } from "../util";
 import { LogMessages } from "../log";
 import { OpenAPI, OpenAPIV2, OpenAPIV3 } from "openapi-types";

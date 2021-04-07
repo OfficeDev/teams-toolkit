@@ -6,7 +6,7 @@ import { exec } from "child_process";
 import { default as urlParse } from "url-parse";
 import AdmZip from "adm-zip";
 
-import { ConfigValue, PluginContext, IBot, IComposeExtension } from "teamsfx-api";
+import { ConfigValue, PluginContext, IBot, IComposeExtension } from "fx-api";
 import { RegularExprs, WebAppConstants } from "../constants";
 
 export function toBase64(source: string): string {

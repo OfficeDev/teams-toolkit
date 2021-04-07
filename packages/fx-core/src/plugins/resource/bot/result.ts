@@ -1,10 +1,10 @@
 /**
- * This file is used to wrap result type of teamsfx-api for function plugin because of its instability.
+ * This file is used to wrap result type of fx-api for function plugin because of its instability.
  */
 
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { FxError, Result, SystemError, UserError, err, ok } from "teamsfx-api";
+import { FxError, Result, SystemError, UserError, err, ok } from "fx-api";
 
 import { Links, Alias } from "./constants";
 

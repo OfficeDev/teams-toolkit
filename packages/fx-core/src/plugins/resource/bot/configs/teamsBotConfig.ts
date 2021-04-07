@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ConfigValue, PluginContext } from "teamsfx-api";
+import { ConfigValue, PluginContext } from "fx-api";
 
 import { LocalDebugConfig } from "./localDebugConfig";
 import { ProvisionConfig } from "./provisionConfig";

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ConfigValue, FxError } from "teamsfx-api";
+import { ConfigValue, FxError } from "fx-api";
 
 export enum InputResultType {
   cancel = "cancel",

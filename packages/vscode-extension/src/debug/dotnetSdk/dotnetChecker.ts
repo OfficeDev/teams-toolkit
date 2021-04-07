@@ -5,12 +5,9 @@ import * as os from "os";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as child_process from "child_process";
-import logger from "../../commonlib/log";
 import * as util from "util";
-import { isLinux, isWindows } from "../../utils/commonUtils";
-import { cpUtils } from "../cpUtils";
-import { IProgressHandler } from "teamsfx-api";
-import { ProgressBarMessages } from "../constants";
+import { ConfigFolderName } from "fx-api"; 
+import { logger, isWindows, isLinux, cpUtils } from "./dotnetCheckerAdapter";
 
 const exec = util.promisify(child_process.exec);
 
@@ -28,44 +25,37 @@ export class DotnetChecker {
   private static maxBuffer = 500 * 1024;
 
   // TODO: make this method returns void and use exception to handle all errors
-  public static async ensureDotnet(handler: IProgressHandler | undefined): Promise<boolean> {
-    try {
-      const configPath = DotnetChecker.getDotnetConfigPath();
+  public static async ensureDotnet(): Promise<boolean> {
+    const configPath = DotnetChecker.getDotnetConfigPath();
 
-      logger.debug(`[start] read dotnet path from '${configPath}'`);
-      const dotnetPath = await DotnetChecker.getDotnetExecPath();
-      logger.debug(`[end] read dotnet path from '${configPath}', dotnetPath = '${dotnetPath}'`);
+    logger.debug(`[start] read dotnet path from '${configPath}'`);
+    const dotnetPath = await DotnetChecker.getDotnetExecPath();
+    logger.debug(`[end] read dotnet path from '${configPath}', dotnetPath = '${dotnetPath}'`);
 
-      logger.debug(`[start] check dotnet version`);
-      if (dotnetPath !== null && (await DotnetChecker.isDotnetInstalledCorrectly())) {
-        return true;
-      }
-      logger.debug(`[end] check dotnet version`);
-
-      if ((await DotnetChecker.tryAcquireGlobalDotnetSdk()) && (await DotnetChecker.validate())) {
-        logger.info(`use global dotnet path = ${await DotnetChecker.getDotnetExecPath()}`);
-        return true;
-      }
-      await handler?.start();
-      await handler?.next(ProgressBarMessages.dotnet.downloading);
-      logger.debug(`[start] cleanup bin/dotnet and config`);
-      await DotnetChecker.cleanup();
-      logger.debug(`[end] cleanup bin/dotnet and config`);
-
-      logger.debug(`[start] install dotnet ${DotnetChecker.installVersion}`);
-      await DotnetChecker.install(DotnetChecker.installVersion);
-      logger.debug(`[end] install dotnet ${DotnetChecker.installVersion}`);
-
-      await handler?.next(ProgressBarMessages.dotnet.validating);
-      logger.debug(`[start] validate dotnet version`);
-      if (!(await DotnetChecker.validate())) {
-        await DotnetChecker.cleanup();
-        return false;
-      }
+    logger.debug(`[start] check dotnet version`);
+    if (dotnetPath !== null && (await DotnetChecker.isDotnetInstalledCorrectly())) {
       return true;
-    } finally {
-      handler?.end();
     }
+    logger.debug(`[end] check dotnet version`);
+
+    if ((await DotnetChecker.tryAcquireGlobalDotnetSdk()) && (await DotnetChecker.validate())) {
+      logger.info(`use global dotnet path = ${await DotnetChecker.getDotnetExecPath()}`);
+      return true;
+    }
+    logger.debug(`[start] cleanup bin/dotnet and config`);
+    await DotnetChecker.cleanup();
+    logger.debug(`[end] cleanup bin/dotnet and config`);
+
+    logger.debug(`[start] install dotnet ${DotnetChecker.installVersion}`);
+    await DotnetChecker.install(DotnetChecker.installVersion);
+    logger.debug(`[end] install dotnet ${DotnetChecker.installVersion}`);
+
+    logger.debug(`[start] validate dotnet version`);
+    if (!(await DotnetChecker.validate())) {
+      await DotnetChecker.cleanup();
+      return false;
+    }
+    return true;
   }
 
   public static async getDotnetExecPath(): Promise<string | null> {
@@ -83,7 +73,7 @@ export class DotnetChecker {
   }
 
   public static getDotnetConfigPath(): string {
-    return path.join(os.homedir(), ".mods", "dotnet.json");
+    return path.join(os.homedir(), `.${ConfigFolderName}`, "dotnet.json");
   }
 
   private static async install(version: DotnetVersion): Promise<void> {
@@ -254,7 +244,7 @@ export class DotnetChecker {
   }
 
   private static getDefaultInstallPath(): string {
-    return path.join(os.homedir(), ".mods", "bin", "dotnet");
+    return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "dotnet");
   }
 
   private static async getInstallCommand(
@@ -296,7 +286,7 @@ export class DotnetChecker {
         return false;
       }
       // todo: by far, use first valid dotnet sdk
-      // todo: write dotnetExecPath into user settings instead of into .mods/dotnet.json
+      // todo: write dotnetExecPath into user settings instead of into .fx/dotnet.json
       const selectedSdk: DotnetSDK = sdks[0];
       const dotnetExecPath: string = DotnetChecker.getDotnetExecPathFromDotnetInstallationDir(
         path.resolve(selectedSdk.path, "..")

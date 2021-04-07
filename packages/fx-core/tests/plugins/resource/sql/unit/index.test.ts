@@ -4,7 +4,7 @@ import chaiAsPromised from "chai-as-promised";
 import { TestHelper } from "../helper";
 import { SqlPlugin } from "../../../../../src/plugins/resource/sql";
 import * as dotenv from "dotenv";
-import { ConfigMap, PluginContext, Stage } from "teamsfx-api";
+import { ConfigMap, PluginContext, Stage } from "fx-api";
 import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import * as faker from "faker";
 import * as sinon from "sinon";

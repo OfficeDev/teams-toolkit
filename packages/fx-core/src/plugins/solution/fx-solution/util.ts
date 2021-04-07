@@ -16,7 +16,7 @@ import {
     Result,
     err,
     ResultAsync
-} from "teamsfx-api";
+} from "fx-api";
 
 async function ask(description: string, dialog?: Dialog, defaultAnswer?: string): Promise<Result<string, FxError>> {
     const answer: string | undefined = (

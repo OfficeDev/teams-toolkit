@@ -3,7 +3,7 @@
 // Licensed under the MIT license.
 
 /**
- * Void is used to construct Result<Void, ModsError>.
+ * Void is used to construct Result<Void, FxError>.
  * e.g. return ok(Void);
  * It exists because ok(void) does not compile.
  */

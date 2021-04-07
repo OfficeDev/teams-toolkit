@@ -77,7 +77,7 @@ export enum LifeCycle {
 export enum TeamsToolkitComponent {
     FunctionPlugin = "fx-resource-function",
     AadPlugin = "fx-resource-aad-app-for-teams",
-    Solution = "solution",
+    Solution = "fx-solution-azure",
     ApimPlugin = "fx-resource-apim",
 }
 

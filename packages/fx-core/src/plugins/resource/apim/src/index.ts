@@ -92,7 +92,7 @@ async function _scaffold(ctx: PluginContext, telemetry: Telemetry, progressBar: 
     const apimConfig = new ApimPluginConfig(ctx.config);
     const answer = buildAnswer(ctx);
     const apimManager = await Factory.buildApimManager(ctx, solutionConfig, telemetry);
-    answer.save(Stage.deploy, apimConfig);
+    answer.save(Stage.update, apimConfig);
 
     await progressBar.next(ProgressStep.Scaffold, ProgressMessages[ProgressStep.Scaffold].Scaffold);
     await apimManager.scaffold(ctx.app, ctx.root);

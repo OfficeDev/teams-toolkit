@@ -23,7 +23,7 @@ export class AadDefaultValues {
 }
 
 export class QuestionConstants {
-    public static readonly namespace: string = "teamsfx-solution-azure/teamsfx-resource-apim";
+    public static readonly namespace: string = "fx-solution-azure/fx-resource-apim";
 
     public static readonly Apim = class {
         public static readonly questionName: string = "apim-service";

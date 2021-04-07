@@ -68,12 +68,12 @@ export class VscAnswer implements IApimVscAnswer {
     save(stage: Stage, apimConfig: IApimPluginConfig): void {
         switch (stage) {
             case Stage.update:
-                apimConfig.resourceGroupName = this.resourceGroupName;
-                apimConfig.serviceName = this.apimServiceName;
+                apimConfig.resourceGroupName = this.resourceGroupName ?? apimConfig.resourceGroupName;
+                apimConfig.serviceName = this.apimServiceName ?? apimConfig.serviceName;
                 break;
             case Stage.deploy:
-                apimConfig.apiDocumentPath = this.apiDocumentPath;
-                apimConfig.apiPrefix = this.apiPrefix;
+                apimConfig.apiDocumentPath = this.apiDocumentPath ?? apimConfig.apiDocumentPath;
+                apimConfig.apiPrefix = this.apiPrefix ?? apimConfig.apiPrefix;
                 break;
         }
     }

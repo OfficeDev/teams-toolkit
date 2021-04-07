@@ -23,7 +23,7 @@ import { buildAnswer } from "../model/answer";
 
 export interface IQuestionService {
     // Control whether the question is displayed to the user.
-    condition?(parentAnswerPath: string): Validation;
+    condition?(parentAnswerPath: string): { target?: string; } & Validation;
 
     // Define the method name
     funcName: string;
@@ -78,6 +78,7 @@ export class ApimServiceQuestion extends BaseQuestionService implements IQuestio
                 method: QuestionConstants.Apim.funcName,
             },
             returnObject: true,
+            skipSingleOption: false
         };
     }
 }
@@ -117,6 +118,7 @@ export class OpenApiDocumentQuestion extends BaseQuestionService implements IQue
                 method: QuestionConstants.OpenApiDocument.funcName,
             },
             returnObject: true,
+            skipSingleOption: false
         };
     }
 }
@@ -214,6 +216,7 @@ export class ApiVersionQuestion extends BaseQuestionService implements IQuestion
                 method: QuestionConstants.ApiVersion.funcName,
             },
             returnObject: true,
+            skipSingleOption: false
         };
     }
 }
@@ -225,8 +228,9 @@ export class NewApiVersionQuestion extends BaseQuestionService implements IQuest
         super(dialog, telemetry, logger);
     }
 
-    public condition(): Validation {
+    public condition(): { target?: string; } & Validation {
         return {
+            target: "$parent.id",
             equals: QuestionConstants.ApiVersion.createNewApiVersionOption,
         };
     }

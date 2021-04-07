@@ -38,7 +38,7 @@ export class FrontendPluginInfo {
     static TemplateLanguage = "JavaScript";
     static TemplateDefaultScenario = "default";
     static TemplateWithFunctionScenario = "with-function";
-    static TemplateVersion = "0.1.x";
+    static TemplateVersion = "0.2.x";
 }
 
 export class Commands {
@@ -56,7 +56,7 @@ export class EnvironmentVariables {
 export class FrontendPathInfo {
     static WorkingDir = "tabs";
     static TemplateDir = "templates/plugins/resource/frontend";
-    static TemplateFileName = "0.1.0+tab.JavaScript.default.zip";
+    static TemplateFileName = "0.2.0+tab.JavaScript.default.zip";
     static TemplateFileExt = ".tpl";
     static BuildFolderName = "build";
     static BuildPath = `${FrontendPathInfo.BuildFolderName}${path.sep}`;

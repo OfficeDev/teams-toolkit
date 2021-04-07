@@ -62,6 +62,7 @@ import {
     REMOTE_APPLICATION_ID_URIS,
     REMOTE_CLIENT_SECRET,
     WEB_APPLICATION_INFO_SOURCE,
+    LOCAL_WEB_APPLICATION_INFO_SOURCE
 } from "./constants";
 
 import { SpfxPlugin } from "../../resource/spfx";
@@ -1342,7 +1343,7 @@ export class TeamsAppSolution implements Solution {
 
         const composeExtensions = ctx.config.get(this.botPlugin.name)?.getString(COMPOSE_EXTENSIONS);
 
-        const webApplicationInfoResource = ctx.config.get(this.aadPlugin.name)?.getString(WEB_APPLICATION_INFO_SOURCE);
+        const webApplicationInfoResource = ctx.config.get(this.aadPlugin.name)?.getString(LOCAL_WEB_APPLICATION_INFO_SOURCE);
 
         ctx.logProvider?.debug(`IvanJobs localBotDomain: ${localBotDomain}`);
         ctx.logProvider?.debug(`IvanJobs bots: ${JSON.stringify(bots)}`);

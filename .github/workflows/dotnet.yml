@@ -19,12 +19,12 @@ defaults:
 jobs:
   SimpleAuth:
     runs-on: ubuntu-20.04
+    steps:
     - uses: actions/checkout@v2
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 3.1.x
-    steps:
     - name: Build
       run: 
         dotnet build -c Release -p:WebDriverPlatform=linux64 simpleauth/TeamsFxSimpleAuth.sln
@@ -35,14 +35,14 @@ jobs:
       run:
         chmod +x "simpleauth/scripts/test.sh" && "simpleauth/scripts/test.sh"
   
-  Run Function-extension CI:
+  Function-extension:
     runs-on: ubuntu-20.04
+    steps:
     - uses: actions/checkout@v2
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 3.1.x
-    steps:
     - name: Install func CLI
       run: 
         wget -q https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb && sudo dpkg -i packages-microsoft-prod.deb &&

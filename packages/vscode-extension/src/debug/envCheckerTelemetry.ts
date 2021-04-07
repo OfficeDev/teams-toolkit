@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { SystemError, UserError } from "teamsfx-api";
+import { SystemError, UserError } from "fx-api";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryProperty } from "../telemetry/extTelemetryEvents";
 

@@ -6,6 +6,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as child_process from "child_process";
 import * as util from "util";
+import { ConfigFolderName } from "fx-api"; 
 import { logger, isWindows, isLinux, cpUtils } from "./dotnetCheckerAdapter";
 
 const exec = util.promisify(child_process.exec);
@@ -72,7 +73,7 @@ export class DotnetChecker {
   }
 
   public static getDotnetConfigPath(): string {
-    return path.join(os.homedir(), ".mods", "dotnet.json");
+    return path.join(os.homedir(), `.${ConfigFolderName}`, "dotnet.json");
   }
 
   private static async install(version: DotnetVersion): Promise<void> {
@@ -243,7 +244,7 @@ export class DotnetChecker {
   }
 
   private static getDefaultInstallPath(): string {
-    return path.join(os.homedir(), ".mods", "bin", "dotnet");
+    return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "dotnet");
   }
 
   private static async getInstallCommand(
@@ -285,7 +286,7 @@ export class DotnetChecker {
         return false;
       }
       // todo: by far, use first valid dotnet sdk
-      // todo: write dotnetExecPath into user settings instead of into .mods/dotnet.json
+      // todo: write dotnetExecPath into user settings instead of into .fx/dotnet.json
       const selectedSdk: DotnetSDK = sdks[0];
       const dotnetExecPath: string = DotnetChecker.getDotnetExecPathFromDotnetInstallationDir(
         path.resolve(selectedSdk.path, "..")

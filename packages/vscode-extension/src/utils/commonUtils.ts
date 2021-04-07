@@ -5,7 +5,7 @@ import * as extensionPackage from "./../../package.json";
 import * as fs from "fs-extra";
 import { ext } from "../extensionVariables";
 import * as path from "path";
-import { ProductName } from "teamsfx-api";
+import { ConfigFolderName } from "fx-api";
 
 export function getPackageVersion(versionStr: string): string {
   if (versionStr.includes("alpha")) {
@@ -56,9 +56,9 @@ export function isWorkspaceSupported(workspace: string): boolean {
   const checklist: string[] = [
     p,
     `${p}/package.json`,
-    `${p}/.${ProductName}`,
-    `${p}/.${ProductName}/settings.json`,
-    `${p}/.${ProductName}/env.default.json`
+    `${p}/.${ConfigFolderName}`,
+    `${p}/.${ConfigFolderName}/settings.json`,
+    `${p}/.${ConfigFolderName}/env.default.json`
   ];
 
   for (const fp of checklist) {
@@ -74,7 +74,7 @@ export function getTeamsAppId() {
     const ws = ext.workspaceUri.fsPath;
     if (isWorkspaceSupported(ws)) {
       const env = getActiveEnv();
-      const envJsonPath = path.join(ws, `.${ProductName}/env.${env}.json`);
+      const envJsonPath = path.join(ws, `.${ConfigFolderName}/env.${env}.json`);
       const envJson = JSON.parse(fs.readFileSync(envJsonPath, "utf8"));
       return envJson.solution.remoteTeamsAppId;
     }

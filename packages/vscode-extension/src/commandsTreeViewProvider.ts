@@ -4,7 +4,7 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import { ext } from "./extensionVariables";
-import { TreeItem, TreeCategory, Result, FxError, ok } from "teamsfx-api";
+import { TreeItem, TreeCategory, Result, FxError, ok } from "fx-api";
 import { isFeatureFlag } from "./utils/commonUtils";
 
 export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeViewCommand> {
@@ -27,8 +27,8 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
       vscode.TreeItemCollapsibleState.Expanded,
       TreeCategory.GettingStarted,
       [
-        new TreeViewCommand("Welcome", "Welcome", "teamsfx-extension.openWelcome"),
-        new TreeViewCommand("Documentation", "Documentation", "teamsfx-extension.openDocument")
+        new TreeViewCommand("Welcome", "Welcome", "fx-extension.openWelcome"),
+        new TreeViewCommand("Documentation", "Documentation", "fx-extension.openDocument")
       ]
     );
 
@@ -42,7 +42,7 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
         new TreeViewCommand(
           "Sign Up for M365 Dev Account",
           "Go to M365 developer program to try",
-          "teamsfx-extension.devProgram"
+          "fx-extension.devProgram"
         )
       ]
     );
@@ -57,7 +57,7 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
         new TreeViewCommand(
           "Create New Project",
           "Create a new Project for Teams App",
-          "teamsfx-extension.create",
+          "fx-extension.create",
           vscode.TreeItemCollapsibleState.None,
           undefined,
           undefined,
@@ -66,17 +66,17 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
         new TreeViewCommand(
           "Manifest Editor",
           "Manifest Editor",
-          "teamsfx-extension.openManifest",
+          "fx-extension.openManifest",
           vscode.TreeItemCollapsibleState.None,
           undefined,
           undefined,
           "manifestEditor"
         ),
-        new TreeViewCommand("Provision", "Provision resources", "teamsfx-extension.provision"),
+        new TreeViewCommand("Provision", "Provision resources", "fx-extension.provision"),
         new TreeViewCommand(
           "Deploy",
           "Deploy resources",
-          "teamsfx-extension.deploy",
+          "fx-extension.deploy",
           vscode.TreeItemCollapsibleState.None,
           undefined,
           undefined,
@@ -95,7 +95,7 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
         new TreeViewCommand(
           "Report issues",
           "Report issue to us by email",
-          "teamsfx-extension.mailto"
+          "fx-extension.mailto"
         )
       ]
     );

@@ -78,11 +78,11 @@ export class DependentPluginInfo {
     static readonly ResourceNameSuffix = "resourceNameSuffix";
     static readonly Location = "location";
 
-    static readonly FunctionPluginName = "teamsfx-resource-function";
+    static readonly FunctionPluginName = "fx-resource-function";
     static readonly FunctionEndpoint = "functionEndpoint";
     static readonly FunctionDefaultName = "defaultFunctionName";
 
-    static readonly RuntimePluginName = "teamsfx-resource-runtime-connector";
+    static readonly RuntimePluginName = "fx-resource-runtime-connector";
     static readonly RuntimeEndpoint = "endpoint";
     static readonly StartLoginPageURL = "auth-start.html";
 }

@@ -4,7 +4,7 @@ import { WebSiteManagementClient } from "@azure/arm-appservice";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import axios from "axios";
 import * as fs from "fs-extra";
-import { PluginContext } from "teamsfx-api";
+import { PluginContext } from "fx-api";
 import { Constants, Messages } from "./constants";
 import { CreateAppServicePlanError, CreateWebAppError, UpdateApplicationSettingsError, ZipDeployError } from "./errors";
 import { ResultFactory } from "./result";
@@ -126,7 +126,7 @@ export class WebAppClient {
     /**
      * Allow users to set SKU name for App Service Plan as only 10 free App Service Plan is allowed in a Subscription.
      * The order is:
-     * 1. 'skuName' config of 'teamsfx-resource-simpleAuth' in env.default.json file
+     * 1. 'skuName' config of 'fx-resource-simpleAuth' in env.default.json file
      * 2. 'SIMPLE_AUTH_SKU_NAME' environment variable
      * 3. 'F1' Free Tier
      */

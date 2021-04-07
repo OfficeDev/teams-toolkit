@@ -40,7 +40,7 @@ async function validateFuncCoreToolsInstalled(): Promise<boolean> {
 
   let installed = false;
 
-  // TODO: verify that Func Tools v2 is not supported by MODS local debug
+  // TODO: verify that Func Tools v2 is not supported by local debug
   const supportedVersion = FuncVersion.v3;
   const installedVersion = await getInstalledFuncToolsVersion();
 

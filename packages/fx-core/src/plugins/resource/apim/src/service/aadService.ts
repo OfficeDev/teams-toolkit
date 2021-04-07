@@ -6,7 +6,7 @@ import { IAadInfo, IPasswordCredential, IServicePrincipals } from "../model/aadR
 import { ErrorHandlerResult } from "../model/errorHandlerResult";
 import { Telemetry } from "../telemetry";
 import { AzureResource, IName, OperationStatus, Operation } from "../model/operation";
-import { LogProvider } from "teamsfx-api";
+import { LogProvider } from "fx-api";
 import { LogMessages } from "../log";
 
 export class AadService {

@@ -8,11 +8,11 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import * as vscode from "vscode";
 
-import { Result, FxError } from "teamsfx-api";
+import { Result, FxError } from "fx-api";
 
 import { ext } from "../../../src/extensionVariables";
 import { testFolder } from "../../globalVaribles";
-import { LogLevel } from "teamsfx-api";
+import { LogLevel } from "fx-api";
 import { AzureAccountManager } from "../../../src/commonlib/azureLogin";
 import VsCodeLogInstance from "../../../src/commonlib/log";
 import { EInputType, TestUserInput } from "../../testUserInput";
@@ -53,9 +53,9 @@ suite("Extension Integration Tests (No Folder)", async () => {
   //     { type: EInputType.specifiedValue, value: "default" }
   //   ]);
   //   // use default values of every user input.
-  //   ext.ui.showInformationMessage(`[TEST]: execute 'teamsfx-extension.create' command.`);
+  //   ext.ui.showInformationMessage(`[TEST]: execute 'fx-extension.create' command.`);
   //   const result: Result<null, FxError> | undefined = await vscode.commands.executeCommand(
-  //     "teamsfx-extension.create"
+  //     "fx-extension.create"
   //   );
   //   chai.assert.ok(result && result.isOk());
   // });

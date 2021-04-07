@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { FrontendPluginImpl } from "./plugin";
-import { Plugin, PluginContext, SystemError, UserError, err } from "teamsfx-api";
+import { Plugin, PluginContext, SystemError, UserError, err } from "fx-api";
 
 import { ErrorFactory, TeamsFxResult } from "./error-factory";
 import { ErrorType, FrontendPluginError, UnhandledErrorCode, UnhandledErrorMessage } from "./resources/errors";

@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Dialog, DialogMsg, DialogType, MsgLevel, PluginContext, QuestionType } from "teamsfx-api";
+import { Dialog, DialogMsg, DialogType, MsgLevel, PluginContext, QuestionType } from "fx-api";
 
 export class DialogUtils {
     public static async output(ctx: PluginContext, message: string, level = MsgLevel.Info): Promise<void> {

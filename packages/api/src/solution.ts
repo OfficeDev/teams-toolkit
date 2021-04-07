@@ -5,8 +5,8 @@
 import { Result } from "neverthrow"; 
 import { SolutionContext } from "./context";
 import { FxError } from "./error";
-import { Func, QTreeNode } from "./question";
-import { Stage } from "./types";
+import { Func, QTreeNode } from "./qm";
+import { Stage } from "./constants";
 
 export interface Solution {
     /**

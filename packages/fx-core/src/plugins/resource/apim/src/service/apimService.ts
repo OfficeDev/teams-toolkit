@@ -18,7 +18,7 @@ import { OpenApiSchemaVersion } from "../model/openApiDocument";
 import { ErrorHandlerResult } from "../model/errorHandlerResult";
 import { Telemetry } from "../telemetry";
 import { AzureResource, IName, OperationStatus, Operation } from "../model/operation";
-import { LogProvider } from "teamsfx-api";
+import { LogProvider } from "fx-api";
 import { LogMessages } from "../log";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { OpenAPI } from "openapi-types";

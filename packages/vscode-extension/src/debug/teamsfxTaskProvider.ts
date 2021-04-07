@@ -7,16 +7,17 @@ import * as constants from "./constants";
 import * as commonUtils from "./commonUtils";
 import { DotnetChecker } from "./dotnetSdk/dotnetChecker";
 import { dotnetCheckerEnabled } from "./dotnetSdk/dotnetCheckerAdapter";
+import { ConfigFolderName } from "fx-api";
 
 export class TeamsfxTaskProvider implements vscode.TaskProvider {
-  public static readonly type: string = constants.teamsfx;
+  public static readonly type: string = ConfigFolderName;
 
   public async provideTasks(token?: vscode.CancellationToken | undefined): Promise<vscode.Task[]> {
     const tasks: vscode.Task[] = [];
     if (vscode.workspace.workspaceFolders) {
       const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
       const workspacePath: string = workspaceFolder.uri.fsPath;
-      if (!(await commonUtils.isModsProject(workspacePath))) {
+      if (!(await commonUtils.isFxProject(workspacePath))) {
         return tasks;
       }
 

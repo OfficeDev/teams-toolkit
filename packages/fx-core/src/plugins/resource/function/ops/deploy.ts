@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import * as fs from "fs-extra";
 import * as path from "path";
-import { MsgLevel, PluginContext } from "teamsfx-api";
+import { MsgLevel, PluginContext } from "fx-api";
 import { WebSiteManagementClient } from "@azure/arm-appservice";
 import AdmZip from "adm-zip";
 import axios from "axios";

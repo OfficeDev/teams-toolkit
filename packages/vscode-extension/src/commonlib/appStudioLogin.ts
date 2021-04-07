@@ -5,7 +5,7 @@
 
 "use strict";
 
-import { AppStudioTokenProvider, UserError } from "teamsfx-api";
+import { AppStudioTokenProvider, UserError } from "fx-api";
 import { LogLevel } from "@azure/msal-node";
 import { ExtensionErrors } from "../error";
 import { CodeFlowLogin } from "./codeFlowLogin";

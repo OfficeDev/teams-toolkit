@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ok, Result, FxError, PluginContext } from "teamsfx-api";
+import { ok, Result, FxError, PluginContext } from "fx-api";
 
 export type LifecyclesWithContext = [
     OmitThisParameter<(ctx: PluginContext) => Promise<Result<any, FxError>>> | undefined,

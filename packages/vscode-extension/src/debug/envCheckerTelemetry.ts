@@ -29,12 +29,12 @@ enum TelemetryMessurement {
   installFunc = "install-func"
 }
 
-const TelemetryComponentType = "extension:debug:envchecker";
+export class EnvCheckerTelemetry {
+  private static readonly _telemetryComponentType = "extension:debug:envchecker";
 
-export namespace EnvCheckerTelemetry {
-  export function sendEvent(eventName: EnvCheckerEvent, timecost?: number): void {
+  public static sendEvent(eventName: EnvCheckerEvent, timecost?: number): void {
     const properties: { [p: string]: string } = {
-      [TelemetryProperty.Component]: TelemetryComponentType
+      [TelemetryProperty.Component]: this._telemetryComponentType
     };
 
     const measurements: { [p: string]: number } = {};
@@ -45,21 +45,21 @@ export namespace EnvCheckerTelemetry {
     ExtTelemetry.sendTelemetryEvent(eventName, properties, measurements);
   }
 
-  export function sendUserErrorEvent(eventName: EnvCheckerEvent, errorMessage: string): void {
-    const error = new UserError(eventName, errorMessage, TelemetryComponentType);
+  public static sendUserErrorEvent(eventName: EnvCheckerEvent, errorMessage: string): void {
+    const error = new UserError(eventName, errorMessage, this._telemetryComponentType);
     ExtTelemetry.sendTelemetryErrorEvent(eventName, error, {
-      [TelemetryProperty.Component]: TelemetryComponentType
+      [TelemetryProperty.Component]: this._telemetryComponentType
     });
   }
 
-  export function sendSystemErrorEvent(
+  public static sendSystemErrorEvent(
     eventName: EnvCheckerEvent,
     errorMessage: string,
     errorStack: string
   ): void {
-    const error = new SystemError(eventName, errorMessage, TelemetryComponentType, errorStack);
+    const error = new SystemError(eventName, errorMessage, this._telemetryComponentType, errorStack);
     ExtTelemetry.sendTelemetryErrorEvent(eventName, error, {
-      [TelemetryProperty.Component]: TelemetryComponentType
+      [TelemetryProperty.Component]: this._telemetryComponentType
     });
   }
 }

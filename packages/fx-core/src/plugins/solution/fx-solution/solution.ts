@@ -62,7 +62,7 @@ import { SqlPlugin } from "../../resource/sql";
 import { TeamsBot } from "../../resource/bot";
 import { AadAppForTeamsPlugin } from "../../resource/aad";
 import { FunctionPlugin } from "../../resource/function";
-import { SimpleAuthPlugin } from "../../resource/simpleAuth";
+import { SimpleAuthPlugin } from "../../resource/simpleauth";
 import { LocalDebugPlugin } from "../../resource/localdebug";
 import { ApimPlugin } from "../../resource/apim/src";
 import { IAppDefinition } from "./appstudio/interface";

@@ -356,7 +356,8 @@
     "webpack": "^4.44.1",
     "webpack-cli": "^3.3.12",
     "winston": "^3.3.3",
-    "yarn": "^1.22.10"
+    "yarn": "^1.22.10",
+    "vscode-test": "^1.5.2"
   },
   "dependencies": {
     "@azure/identity": "^1.2.1",

@@ -70,6 +70,8 @@ export class ConfigKeys {
   static domain = "domain";
   static endpoint = "endpoint";
   static oauthAuthority = "oauthAuthority";
+  static oauthHost = "oauthHost";
+  static tenantId = "tenantId";
 }
 
 export class ConfigKeysOfOtherPlugin {

@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import * as path from "path";
 import { PluginContext } from "fx-api";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 
@@ -37,7 +36,7 @@ export class FrontendConfig {
         this.credentials = credentials;
     }
 
-    static async fromPluginContext(ctx: PluginContext) {
+    static async fromPluginContext(ctx: PluginContext): Promise<FrontendConfig> {
         const credentials = await ctx.azureAccountProvider?.getAccountCredentialAsync();
         if (!credentials) {
             throw new UnauthenticatedError();

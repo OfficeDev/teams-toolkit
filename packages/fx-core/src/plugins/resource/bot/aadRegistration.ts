@@ -3,7 +3,7 @@
 import * as utils from "./utils/common";
 import { AxiosInstance, default as axios } from "axios";
 
-import { AADRegistrationConstants, RetryTimes } from "./constants";
+import { AADRegistrationConstants, Retry } from "./constants";
 import { IAADApplication } from "./appStudio/interfaces/IAADApplication";
 import * as AppStudio from "./appStudio/appStudio";
 import { ProvisionException } from "./exceptions";
@@ -83,7 +83,7 @@ export async function registerAADAppAndGetSecretByAppStudio(appStudioToken: stri
     result.clientId = app.id;
 
     // Sync with toolkit"s implmentation to retry at most 5 times.
-    let retries = RetryTimes.GENERATE_CLIENT_SECRET;
+    let retries = Retry.GENERATE_CLIENT_SECRET_TIMES;
     while (retries > 0) {
         let password = undefined;
         try {
@@ -96,7 +96,7 @@ export async function registerAADAppAndGetSecretByAppStudio(appStudioToken: stri
 
             retries = retries - 1;
             if (retries > 0) {
-                await new Promise((resolve) => setTimeout(resolve, 3000));
+                await new Promise((resolve) => setTimeout(resolve, Retry.GENERATE_CLIENT_SECRET_GAP_MS));
             }
             continue;
         }

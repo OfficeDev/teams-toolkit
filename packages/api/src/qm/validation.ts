@@ -15,28 +15,27 @@ import * as fs from "fs-extra";
 import * as jsonschema from "jsonschema"; 
 import { Result } from "neverthrow";
 import { FxError } from "../error";
-import { Inputs } from "../config";
+import { ConfigMap, Inputs } from "../config";
  
 
-export type RemoteFuncExecutor = (func:Func, answers: Inputs) => Promise<Result<unknown, FxError>>; 
+export type RemoteFuncExecutor = (func:Func, answers: Inputs|ConfigMap) => Promise<Result<unknown, FxError>>; 
 
 export function getValidationFunction(
   validation: Validation,
-  remoteFuncValidator: RemoteFuncExecutor,
-  inputs: Inputs
+  outputs: Inputs|ConfigMap,
+  remoteFuncValidator?: RemoteFuncExecutor,
 ): (input: string | string[]) => Promise<string | undefined> {
   return async function(input: string | string[]): Promise<string | undefined> {
-    return await validate(validation, input, remoteFuncValidator, inputs);
+    return await validate(validation, input, outputs, remoteFuncValidator);
   };
 }
 
 export async function validate(
   validation: Validation,
   valueToValidate: string | string[],
-  remoteFuncValidator: RemoteFuncExecutor,
-  inputs: Inputs
+  inputs: Inputs|ConfigMap,
+  remoteFuncValidator?: RemoteFuncExecutor
 ): Promise<string | undefined> {
-  
   //RemoteFuncValidation
   {
     const funcValidation: RemoteFuncValidation = validation as RemoteFuncValidation;

@@ -6,7 +6,7 @@ import fs from "fs-extra";
 dotenv.config();
 
 export class EnvironmentUtils {
-    static async writeEnvironments(envFile: string, variables: { [key: string]: string }) {
+    static async writeEnvironments(envFile: string, variables: { [key: string]: string }): Promise<void> {
         await fs.ensureFile(envFile);
         for (const key in variables) {
             if (variables[key] === process.env[key]) {

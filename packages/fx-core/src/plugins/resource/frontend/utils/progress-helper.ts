@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Constants } from "../constants";
 import { IProgressHandler, PluginContext } from "fx-api";
 import { Messages } from "../resources/messages";
 

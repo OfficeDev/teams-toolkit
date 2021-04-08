@@ -18,7 +18,7 @@ export class FrontendProvision {
         envFilePath: string,
         functionEnv?: FunctionEnvironment,
         runtimeEnv?: RuntimeEnvironment,
-    ) {
+    ): Promise<void> {
         const envs: { [key: string]: string } = {};
         if (functionEnv) {
             envs[EnvironmentVariables.FuncName] = functionEnv.defaultName;

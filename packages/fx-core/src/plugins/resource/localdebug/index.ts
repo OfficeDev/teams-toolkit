@@ -128,6 +128,7 @@ export class LocalDebugPlugin implements Plugin {
                     return err(NgrokTunnelNotConnected());
                 } else {
                     ctx.config.set(LocalDebugConfigKeys.LocalBotEndpoint, ngrokHttpUrl);
+                    ctx.config.set(LocalDebugConfigKeys.LocalBotDomain, ngrokHttpUrl.slice(8));
                 }
             }
         }
@@ -202,6 +203,12 @@ export class LocalDebugPlugin implements Plugin {
                 const botConfigs = ctx.configOfOtherPlugins.get(BotPlugin.Name);
                 localEnvs[LocalEnvBotKeys.BotId] = botConfigs?.get(BotPlugin.LocalBotId) as string;
                 localEnvs[LocalEnvBotKeys.BotPassword] = botConfigs?.get(BotPlugin.LocalBotPassword) as string;
+                localEnvs[LocalEnvBotKeys.ClientId] = clientId;
+                localEnvs[LocalEnvBotKeys.ClientSecret] = clientSecret;
+                localEnvs[LocalEnvBotKeys.TenantID] = teamsAppTenantId;
+                localEnvs[LocalEnvBotKeys.OauthAuthority] = `https://login.microsoftonline.com/${teamsAppTenantId}/oauth2/v2.0/token`;
+                localEnvs[LocalEnvBotKeys.LoginUrl] = `${localDebugConfigs.get(LocalDebugConfigKeys.LocalBotEndpoint) as string}/auth-start.html`;
+                localEnvs[LocalEnvBotKeys.IdentifierUri] = aadConfigs?.get(AadPlugin.LocalAppIdUri) as string;
             }
 
             await localEnvProvider.saveLocalEnv(localEnvs);

@@ -6,8 +6,8 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as child_process from "child_process";
 import * as util from "util";
-import { ConfigFolderName } from "fx-api"; 
-import { logger, isWindows, isLinux, cpUtils } from "./dotnetCheckerAdapter";
+import { ConfigFolderName } from "fx-api";
+import { logger, isWindows, isLinux, cpUtils, runWithProgressIndicator } from "./dotnetCheckerAdapter";
 
 const exec = util.promisify(child_process.exec);
 
@@ -28,29 +28,39 @@ export class DotnetChecker {
   public static async ensureDotnet(): Promise<boolean> {
     const configPath = DotnetChecker.getDotnetConfigPath();
 
-    logger.debug(`[start] read dotnet path from '${configPath}'`);
+    // logger.debug(`[start] read dotnet path from '${configPath}'`);
     const dotnetPath = await DotnetChecker.getDotnetExecPath();
-    logger.debug(`[end] read dotnet path from '${configPath}', dotnetPath = '${dotnetPath}'`);
+    // logger.debug(`[end] read dotnet path from '${configPath}', dotnetPath = '${dotnetPath}'`);
 
-    logger.debug(`[start] check dotnet version`);
+    // logger.debug(`[start] check dotnet version`);
     if (dotnetPath !== null && (await DotnetChecker.isDotnetInstalledCorrectly())) {
       return true;
     }
-    logger.debug(`[end] check dotnet version`);
+    // logger.debug(`[end] check dotnet version`);
 
     if ((await DotnetChecker.tryAcquireGlobalDotnetSdk()) && (await DotnetChecker.validate())) {
       logger.info(`use global dotnet path = ${await DotnetChecker.getDotnetExecPath()}`);
       return true;
     }
-    logger.debug(`[start] cleanup bin/dotnet and config`);
+
+    if (isLinux()) {
+        throw new DotnetCheckerLinuxNotSupportedError();
+    }
+
+    // logger.debug(`[start] cleanup bin/dotnet and config`);
     await DotnetChecker.cleanup();
-    logger.debug(`[end] cleanup bin/dotnet and config`);
+    // logger.debug(`[end] cleanup bin/dotnet and config`);
 
-    logger.debug(`[start] install dotnet ${DotnetChecker.installVersion}`);
-    await DotnetChecker.install(DotnetChecker.installVersion);
-    logger.debug(`[end] install dotnet ${DotnetChecker.installVersion}`);
+    // logger.debug(`[start] install dotnet ${DotnetChecker.installVersion}`);
+    // TODO: explain why we need to install .NET SDK
+    logger.outputChannel.show(false);
+    logger.info("Downloading and installing .NET SDK.");
+    await runWithProgressIndicator(logger.outputChannel, async () => {
+      await DotnetChecker.install(DotnetChecker.installVersion);
+    });
+    // logger.debug(`[end] install dotnet ${DotnetChecker.installVersion}`);
 
-    logger.debug(`[start] validate dotnet version`);
+    // logger.debug(`[start] validate dotnet version`);
     if (!(await DotnetChecker.validate())) {
       await DotnetChecker.cleanup();
       return false;
@@ -67,7 +77,7 @@ export class DotnetChecker {
         return config.dotnetExecutablePath;
       }
     } catch (error) {
-      logger.debug(`get dotnet path failed, error: ${error}`);
+      // logger.debug(`get dotnet path failed, error: ${error}`);
     }
     return null;
   }
@@ -79,18 +89,18 @@ export class DotnetChecker {
   private static async install(version: DotnetVersion): Promise<void> {
     try {
       if (isLinux()) {
-        await DotnetChecker.handleLinuxDependency();
+        await this.handleLinuxDependency();
       }
       const installDir = DotnetChecker.getDefaultInstallPath();
       // NOTE: we don't need to handle directory creation since dotnet-install script will handle it.
       await DotnetChecker.installDotnet(version, installDir);
 
-      logger.debug(`[start] write dotnet path to config`);
+      // logger.debug(`[start] write dotnet path to config`);
       const dotnetExecPath = DotnetChecker.getDotnetExecPathFromDotnetInstallationDir(installDir);
       await DotnetChecker.persistDotnetExecPath(dotnetExecPath);
-      logger.debug(`[end] write dotnet path to config`);
+      // logger.debug(`[end] write dotnet path to config`);
     } catch (error) {
-      logger.error(`Failed to install dotnet, error =${error}`);
+      logger.error(`Failed to install dotnet, error = ${error}`);
     }
   }
 
@@ -123,14 +133,14 @@ export class DotnetChecker {
     const windowsFullCommand = `powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "& { [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12 ; & ${installCommand} }`;
 
     try {
-      logger.debug(`[start] exec install script`);
+      // logger.debug(`[start] exec install script`);
       const { stdout, stderr } = await exec(isWindows() ? windowsFullCommand : installCommand, {
         cwd: process.cwd(),
         maxBuffer: DotnetChecker.maxBuffer,
         timeout: DotnetChecker.timeout,
         killSignal: "SIGKILL"
       });
-      logger.debug(`[end] exec install script`);
+      // logger.debug(`[end] exec install script`);
 
       if (stderr && stderr.length > 0) {
         logger.error(
@@ -154,7 +164,7 @@ export class DotnetChecker {
         .filter((version) => version !== null) as string[];
       return DotnetChecker.isDotnetVersionsInstalled(installedVersions);
     } catch (e) {
-      logger.debug(`validate private install failed, err = ${e}`);
+      // logger.debug(`validate private install failed, err = ${e}`);
       return false;
     }
   }
@@ -222,7 +232,7 @@ export class DotnetChecker {
         }
       });
     } catch (e) {
-      logger.debug(`Failed to search dotnet sdk by dotnetPath = ${dotnetExecPath}`);
+      // logger.debug(`Failed to search dotnet sdk by dotnetPath = ${dotnetExecPath}`);
     }
     return sdks;
   }
@@ -294,7 +304,7 @@ export class DotnetChecker {
       await DotnetChecker.persistDotnetExecPath(dotnetExecPath);
       return true;
     } catch (e) {
-      logger.debug(`Failed to acquire global dotnet sdk, err = ${e}`);
+      // logger.debug(`Failed to acquire global dotnet sdk, err = ${e}`);
       return false;
     }
   }
@@ -306,5 +316,23 @@ export class DotnetChecker {
       return null;
     }
     return match.groups?.major_version + "." + match.groups?.minor_version;
+  }
+}
+
+class DotnetCheckerError extends Error {
+  constructor() {
+    super();
+
+    // Set the prototype explicitly.
+    Object.setPrototypeOf(this, DotnetCheckerError.prototype);
+  }
+}
+
+export class DotnetCheckerLinuxNotSupportedError extends DotnetCheckerError {
+  constructor() {
+    super();
+
+    // Set the prototype explicitly.
+    Object.setPrototypeOf(this, DotnetCheckerLinuxNotSupportedError.prototype);
   }
 }

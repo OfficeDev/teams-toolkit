@@ -3,7 +3,7 @@
 "use strict";
 
 import { OptionItem } from "./qm";
-import { Platform } from "./constants";
+import { Platform, VsCodeEnv } from "./constants";
 import { AnswerValue } from "./qm";
 
 export type ConfigValue =
@@ -84,6 +84,10 @@ export class ConfigMap extends Map<string, ConfigValue> {
         }
         return map;
     }
+    constructor(){
+        super();
+        Object.setPrototypeOf(this, ConfigMap.prototype);
+    }
 }
 
 
@@ -152,6 +156,7 @@ export interface ProjectStates
 
 export interface Inputs extends Dict<AnswerValue>{
     platform: Platform;
+    vscodeEnv?:VsCodeEnv;
 }    
 
 export interface Json{

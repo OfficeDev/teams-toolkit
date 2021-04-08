@@ -37,9 +37,9 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
         }
 
         const func: Func = {
-          namespace: "fx-solution-azure/teamsfx-plugin-local-debug",
+          namespace: "fx-solution-azure/fx-resource-local-debug",
           method: "getLaunchInput",
-          params: isLocalSideloadingConfiguration ? ["local"] : ["remote"]
+          params: isLocalSideloadingConfiguration ? "local" : "remote"
         };
         try {
           const result = await core.callFunc(func);

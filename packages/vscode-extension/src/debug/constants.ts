@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
- 
+
 export const frontendStartCommand = "frontend start";
 export const backendStartCommand = "backend start";
 export const authStartCommand = "auth start";
@@ -12,7 +12,7 @@ export const backendProblemMatcher = "$teamsfx-backend-watch";
 export const authProblemMatcher = "$teamsfx-auth-watch";
 export const ngrokProblemMatcher = "$teamsfx-ngrok-watch";
 export const botProblemMatcher = "$teamsfx-bot-watch";
- 
+
 export const frontendFolderName = "tabs";
 export const backendFolderName = "api";
 export const botFolderName = "bot";
@@ -29,6 +29,10 @@ export const botLocalEnvPrefix = "BOT_";
 export class Messages {
   public static readonly installButtonText = "Install";
   public static readonly learnMoreButtonText = "Learn more";
+  public static readonly installFuncCoreToolsAndDotnetSdk =
+    "Starting to check and install Azure Functions Core Tools and .NET Core SDK if needed.";
+  public static readonly installDotnetSdk = "Starting to check and install .NET Core SDK if needed.";
+
   public static readonly needInstallFuncCoreToolV3 =
     "You must have the Azure Functions Core Tools v3 installed to debug your local functions.";
   public static readonly needReplaceWithFuncCoreToolV3 =
@@ -39,6 +43,7 @@ export class Messages {
   public static readonly failToDetectOrInstallDotnet =
     "Failed to detect or install .NET Core SDK, please install .NET Core SDK yourself and update the config file '@ConfigPath' or create it if it does not exist.";
   public static readonly failToInstallBackendExtensions = "Failed to install backend extensions.";
+  public static readonly linuxNotSupported = "Please install the required dependencies for Linux manually.";
 }
 
 export enum PackageManager {

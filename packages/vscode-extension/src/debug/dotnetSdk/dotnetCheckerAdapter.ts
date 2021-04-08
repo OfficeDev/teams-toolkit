@@ -3,13 +3,14 @@
 
 import { workspace, debug, WorkspaceConfiguration } from "vscode";
 import { configurationPrefix, validateDotnetSdkKey, Messages, dotnetHelpLink } from "../constants";
-import { DotnetChecker } from "./dotnetChecker";
+import { DotnetChecker, DotnetCheckerLinuxNotSupportedError } from "./dotnetChecker";
 import * as commonUtils from "../commonUtils";
 import commonlibLogger from "../../commonlib/log";
 
 export { isWindows, isLinux, isMacOS } from "../../utils/commonUtils";
 export { cpUtils } from "../cpUtils";
 export const logger = commonlibLogger;
+export { runWithProgressIndicator } from "../progressIndicator";
 
 
 /**
@@ -32,8 +33,13 @@ export async function tryValidateDotnetInstalled(): Promise<boolean> {
       throw new Error("Failed to ensureDotnet(), reason: unknown");
     }
   } catch (e) {
-    logger.error(`Failed to ensureDotnet(), exception: '${e}'`);
-    await dotnetCheckerFailurePopup();
+    if (e instanceof DotnetCheckerLinuxNotSupportedError) {
+      logger.info(Messages.linuxNotSupported);
+      await dotnetCheckerFailurePopup(Messages.linuxNotSupported);
+    } else {
+      logger.error(`Failed to ensureDotnet(), exception: '${e}'`);
+      await dotnetCheckerFailurePopup();
+    }
 
     // Stop debugging to prevent error popup
     // TODO(aochengwang): stopDebugging() won't stop the "backend extensions install" task
@@ -44,10 +50,13 @@ export async function tryValidateDotnetInstalled(): Promise<boolean> {
   return true;
 }
 
-async function dotnetCheckerFailurePopup() {
-  const message = Messages.failToDetectOrInstallDotnet.replace(
-    "@ConfigPath",
-    DotnetChecker.getDotnetConfigPath()
-  );
+async function dotnetCheckerFailurePopup(message?: string) {
+  if (!message) {
+    message = Messages.failToDetectOrInstallDotnet.replace(
+      "@ConfigPath",
+      DotnetChecker.getDotnetConfigPath()
+    );
+  }
+
   commonUtils.displayLearnMore(message, dotnetHelpLink);
 }

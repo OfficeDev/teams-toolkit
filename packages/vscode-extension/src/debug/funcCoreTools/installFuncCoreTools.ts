@@ -5,6 +5,7 @@ import { cpUtils } from "../cpUtils";
 import { funcPackageName, PackageManager } from "../constants";
 import log from "../../commonlib/log";
 import { FuncVersion } from "./funcVersion";
+import { runWithProgressIndicator } from "../progressIndicator";
 
 export async function installFuncCoreTools(
   packageManagers: PackageManager[],
@@ -14,15 +15,17 @@ export async function installFuncCoreTools(
   // Use the first package manager
   switch (packageManagers[0]) {
     case PackageManager.npm:
-      await cpUtils.executeCommand(
-        undefined,
-        log,
-        undefined,
-        "npm",
-        "install",
-        "-g",
-        `${funcPackageName}@${version}`
-      );
+      await runWithProgressIndicator(log.outputChannel, async () => {
+        await cpUtils.executeCommand(
+          undefined,
+          log,
+          undefined,
+          "npm",
+          "install",
+          "-g",
+          `${funcPackageName}@${version}`
+        );
+      });
       break;
     case PackageManager.brew:
       // TODO: support brew for macOS

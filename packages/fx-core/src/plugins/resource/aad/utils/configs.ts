@@ -73,6 +73,8 @@ export class ProvisionConfig {
   }
 
   public saveConfigIntoContext(ctx: PluginContext, tenantId: string): void {
+    const oauthAuthority = ProvisionConfig.getOauthAuthority(tenantId);
+
     checkAndSaveConfig(
       ctx,
       Utils.addLocalDebugPrefix(this.isLocalDebug, ConfigKeys.clientId),
@@ -110,6 +112,11 @@ export class ProvisionConfig {
     );
     checkAndSaveConfig(ctx, ConfigKeys.oauthHost, Constants.oauthAuthorityPrefix);
     checkAndSaveConfig(ctx, ConfigKeys.teamsWebAppId, Constants.teamsWebAppId);
+    checkAndSaveConfig(ctx, ConfigKeys.oauthAuthority, oauthAuthority);
+  }
+
+  private static getOauthAuthority(tenantId: string): string {
+    return Constants.oauthAuthorityPrefix + tenantId;
   }
 }
 

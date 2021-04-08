@@ -3,11 +3,7 @@
 
 import React from 'react';
 import './App.css';
-import {
-  TeamsUserCredential,
-  createMicrosoftGraphClient,
-  loadConfiguration,
-} from "@microsoft/teamsfx";
+import { teamsfx } from 'teamsdev-client';
 import { Button } from '@fluentui/react-northstar'
 
 /**
@@ -36,27 +32,18 @@ class Tab extends React.Component {
   }
 
   async initTeamsFx() {
-    loadConfiguration({
-      authentication: {
-        initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
-        simpleAuthEndpoint: process.env.REACT_APP_TEAMSFX_ENDPOINT,
-        clientId: process.env.REACT_APP_CLIENT_ID,
-      }
-    });
-    const credential = new TeamsUserCredential();
-    const userInfo = await credential.getUserInfo();
-
+    var teamsfxEndpoint = process.env.REACT_APP_TEAMSFX_ENDPOINT;
+    var startLoginPageUrl = process.env.REACT_APP_START_LOGIN_PAGE_URL;
+    await teamsfx.init(teamsfxEndpoint, startLoginPageUrl);
+    var userInfo = teamsfx.getUserInfo();
     this.setState({
       userInfo: userInfo
     });
-
-    this.credential = credential;
-    this.scope = ["User.Read"];
   }
 
   async callGraphSilent() {
     try {
-      var graphClient = await createMicrosoftGraphClient(this.credential, this.scope);
+      var graphClient = await teamsfx.getMicrosoftGraphClient();
       var profile = await graphClient.api('/me').get();
 
       this.setState({
@@ -85,7 +72,7 @@ class Tab extends React.Component {
 
   async loginBtnClick() {
     try {
-      await this.credential.login(this.scope);
+      await teamsfx.popupLoginPage();
     }
     catch (err) {
       alert('Login failed: ' + err);
@@ -101,7 +88,7 @@ class Tab extends React.Component {
     return (
       <div>
         <h2>Basic info from SSO</h2>
-        <p><b>Name:</b> {this.state.userInfo.displayName}</p>
+        <p><b>Name:</b> {this.state.userInfo.userName}</p>
         <p><b>E-mail:</b> {this.state.userInfo.preferredUserName}</p>
 
         {this.state.showLoginBtn && <Button content='Grant permission & get information' onClick={() => this.loginBtnClick()} primary />}

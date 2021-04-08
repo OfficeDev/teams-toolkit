@@ -3,14 +3,7 @@
 
 import React from 'react';
 import './App.css';
-import {
-  TeamsUserCredential,
-  createMicrosoftGraphClient,
-  loadConfiguration,
-  getResourceConfiguration,
-  ResourceType
-} from "@microsoft/teamsfx";
-import * as axios from "axios";
+import { teamsfx } from 'teamsdev-client';
 import { Button } from '@fluentui/react-northstar'
 
 /**
@@ -42,36 +35,19 @@ class Tab extends React.Component {
   }
 
   async initTeamsFx() {
-    loadConfiguration({
-      authentication: {
-        initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
-        simpleAuthEndpoint: process.env.REACT_APP_TEAMSFX_ENDPOINT,
-        clientId: process.env.REACT_APP_CLIENT_ID,
-      },
-      resources: [
-        {
-          type: ResourceType.API,
-          name: "default",
-          properties: {
-            endpoint: process.env.REACT_API_ENDPOINT
-          }
-        }
-      ]
-    });
-    const credential = new TeamsUserCredential();
-    const userInfo = await credential.getUserInfo();
-
+    var teamsfxEndpoint = process.env.REACT_APP_TEAMSFX_ENDPOINT;
+    var startLoginPageUrl = process.env.REACT_APP_START_LOGIN_PAGE_URL;
+    var functionEndpoint = process.env.REACT_APP_FUNC_ENDPOINT;
+    await teamsfx.init(teamsfxEndpoint, startLoginPageUrl, functionEndpoint);
+    var userInfo = teamsfx.getUserInfo();
     this.setState({
       userInfo: userInfo
     });
-
-    this.credential = credential;
-    this.scope = ["User.Read"];
   }
 
   async callGraphSilent() {
     try {
-      var graphClient = await createMicrosoftGraphClient(this.credential, this.scope);
+      var graphClient = await teamsfx.getMicrosoftGraphClient();
       var profile = await graphClient.api('/me').get();
 
       var message = '';
@@ -80,14 +56,8 @@ class Tab extends React.Component {
 
       try {
         var functionName = process.env.REACT_APP_FUNC_NAME || 'myFunc';
-        const accessToken = await this.credential.getToken("");
-        const apiConfig = getResourceConfiguration(ResourceType.API);
-        const response = await axios.default.get(apiConfig.endpoint + "/api/" + functionName, {
-          headers: {
-            authorization: "Bearer " + accessToken.token
-          }
-        });
-        message = JSON.stringify(response.data, undefined, 2);
+        var messageJson = await teamsfx.callFunction(functionName, 'post', 'hello');
+        message = JSON.stringify(messageJson, undefined, 2);
       } catch (err) {
         if (err.response && err.response.status && err.response.status === 404) {
           funcErrorMsg = 'There may be a problem with the deployment of Azure Function App, please deploy Azure Function (Run command palette "TeamsFx - Deploy Package") first before running this App';
@@ -137,7 +107,7 @@ class Tab extends React.Component {
 
   async loginBtnClick() {
     try {
-      await this.credential.login(this.scope);
+      await teamsfx.popupLoginPage();
     }
     catch (err) {
       alert('Login failed: ' + err);
@@ -153,7 +123,7 @@ class Tab extends React.Component {
     return (
       <div>
         <h2>Basic info from SSO</h2>
-        <p><b>Name:</b> {this.state.userInfo.displayName}</p>
+        <p><b>Name:</b> {this.state.userInfo.userName}</p>
         <p><b>E-mail:</b> {this.state.userInfo.preferredUserName}</p>
 
         {this.state.showLoginBtn && <Button content='Grant permission & get information' onClick={() => this.loginBtnClick()} primary />}
@@ -180,7 +150,7 @@ class Tab extends React.Component {
         {
           this.state.showFunctionMessage &&
           <p>
-            <h2>Message from Azure Function: {process.env.REACT_API_ENDPOINT}</h2>
+            <h2>Message from Azure Function: {process.env.REACT_APP_FUNC_ENDPOINT}</h2>
             <div>
               {this.state.functionMessage &&<pre>{this.state.functionMessage}</pre> }
               {this.state.functionErrorMessage && <div>{this.state.functionErrorMessage}</div>}

@@ -5,13 +5,16 @@
 
 import { TokenCredential } from "@azure/core-auth";
 import { TokenCredentialsBase, DeviceTokenCredentials } from "@azure/ms-rest-nodeauth";
-import { AzureAccountProvider, UserError } from "fx-api";
+import { AzureAccountProvider, err, FxError, ok, Result } from "fx-api";
 import { CodeFlowLogin, LoginFailureError, ConvertTokenToJson } from "./codeFlowLogin";
-import * as identity from "@azure/identity";
 import { MemoryCache } from "./memoryCache";
 import VsCodeLogInstance from "./log";
 import { getBeforeCacheAccess, getAfterCacheAccess } from "./cacheAccess";
+import { SubscriptionClient } from "@azure/arm-subscriptions";
 import { LogLevel } from "@azure/msal-node";
+import { NotFoundSubscriptionId, NotSupportedProjectType } from "../error";
+import * as fs from "fs-extra";
+import * as path from "path";
 
 const env = {
   name: "AzureCloud",
@@ -271,6 +274,69 @@ export class AzureAccountManager implements AzureAccountProvider {
     }
     return Promise.resolve(true);
   }
+
+  async getSubscriptionList(azureToken: TokenCredentialsBase): Promise<AzureSubscription[]> {
+    let client = new SubscriptionClient(azureToken);
+    const subscriptions = await listAll(client.subscriptions, client.subscriptions.list());
+    let subs: Partial<AzureSubscription>[] = subscriptions.map((sub) => {
+      return { displayName: sub.displayName, subscriptionId: sub.subscriptionId };
+    });
+    let filteredSubs = subs.filter(
+      (sub) => sub.displayName !== undefined && sub.subscriptionId !== undefined
+    );
+    return filteredSubs.map((sub) => {
+      return { displayName: sub.displayName!, subscriptionId: sub.subscriptionId! };
+    });
+  }
+
+  public async setSubscriptionId(
+    subscriptionId: string,
+    root_folder: string = "./"
+  ): Promise<Result<null, FxError>> {
+    const token = await this.getAccountCredentialAsync();
+    const subscriptions = await this.getSubscriptionList(token!);
+
+    if (subscriptions.findIndex((sub) => sub.subscriptionId === subscriptionId) < 0) {
+      return err(NotFoundSubscriptionId());
+    }
+
+    /// TODO: use api's constant
+    const configPath = path.resolve(root_folder, `.fx/env.default.json`);
+    if (!(await fs.pathExists(configPath))) {
+      return err(NotSupportedProjectType());
+    }
+    const configJson = await fs.readJson(configPath);
+    configJson["solution"].subscriptionId = subscriptionId;
+    await fs.writeFile(configPath, JSON.stringify(configJson, null, 4));
+
+    return ok(null);
+  }
 }
+
+interface PartialList<T> extends Array<T> {
+  nextLink?: string;
+}
+
+// Copied from https://github.com/microsoft/vscode-azure-account/blob/2b3c1a8e81e237580465cc9a1f4da5caa34644a6/sample/src/extension.ts
+// to list all subscriptions
+async function listAll<T>(
+  client: { listNext(nextPageLink: string): Promise<PartialList<T>> },
+  first: Promise<PartialList<T>>
+): Promise<T[]> {
+  const all: T[] = [];
+  for (
+    let list = await first;
+    list.length || list.nextLink;
+    list = list.nextLink ? await client.listNext(list.nextLink) : []
+  ) {
+    all.push(...list);
+  }
+  return all;
+}
+
+export type AzureSubscription = {
+  displayName: string;
+  subscriptionId: string;
+};
 
 export default AzureAccountManager.getInstance();

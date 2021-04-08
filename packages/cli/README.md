@@ -40,10 +40,10 @@ teamsfx new --app-name azureApp --solution fx-solution-azure --capabilities Tab 
 teamsfx new --app-name azureApp --azure-resources sql
 
 # create a teams app which hosting on Azure (with function).
-teamsfx new --app-name azureApp --azure-resources function
+teamsfx new --app-name azureApp --azure-resources function --function-language JavaScript
 
 # create a teams app which hosting on Azure (with sql and function).
-teamsfx new --app-name azureApp0326 --azure-resources sql function
+teamsfx new --app-name azureApp0326 --azure-resources sql function --function-language JavaScript
 
 # create a teams app which hosting on SPFx.
 teamsfx new --app-name spfxApp --host-type SPFx
@@ -89,7 +89,9 @@ teamsfx resource configure aad --aad-env both
 ### Provision
 
 ```bash
-teamsfx provision --subscription 1756abc0-3554-4341-8d6a-46674962ea19 --sql-username zhiyou123 --sql-password Zhiyu123
+# cd to your azure project with function/sql
+cd /path/to/your/azure/project/
+teamsfx provision --subscription 1756abc0-3554-4341-8d6a-46674962ea19 --sql-admin-name Abc123321 --sql-password Cab232332 --sql-confirm-password Cab232332
 ```
 
 ### Deploy

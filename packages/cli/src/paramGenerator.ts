@@ -190,11 +190,7 @@ async function getProvisionParams(workspace: string): Promise<Result<QTreeNode[]
     }
     const allNodes = result.value;
 
-    const params = [constants.RootFolderNode].concat(allNodes, [
-      constants.SubscriptionNode,
-      constants.SqlUsernameNode,
-      constants.SqlPasswordNode
-    ]);
+    const params = [constants.RootFolderNode, constants.SubscriptionNode].concat(allNodes);
     return ok(params);
   }
 }

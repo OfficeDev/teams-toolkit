@@ -123,13 +123,6 @@ export class DialogManager implements Dialog {
         return undefined;
       /// TODO: remove this part of hard code
       case QuestionType.Text:
-        switch (question.description) {
-          case "Admin name of SQL":
-            return DialogManager.answers.getString("sql-username");
-          case "Admin password of SQL":
-          case "Confirm admin password of SQL":
-            return DialogManager.answers.getString("sql-password");
-        }
         break;
     }
     const err = NotSupportedQuestionType(question);

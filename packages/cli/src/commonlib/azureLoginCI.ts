@@ -10,7 +10,7 @@ import { SubscriptionClient } from "@azure/arm-subscriptions";
 import * as fs from "fs-extra";
 import * as path from "path";
 
-import { AzureAccountProvider, ConfigFolderName, err, FxError, ok, Result } from "fx-api";
+import { AzureAccountProvider, err, FxError, ok, Result } from "fx-api";
 
 import { NotSupportedProjectType, NotFoundSubscriptionId } from "../error";
 
@@ -132,7 +132,8 @@ export class AzureAccountManager implements AzureAccountProvider {
     }
     AzureAccountManager.subscriptionId = subscriptionId;
 
-    const configPath = path.resolve(root_folder, `${ConfigFolderName}/env.default.json`);
+    /// TODO: use api's constant
+    const configPath = path.resolve(root_folder, `.fx/env.default.json`);
     if (!(await fs.pathExists(configPath))) {
       return err(NotSupportedProjectType());
     }

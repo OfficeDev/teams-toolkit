@@ -9,10 +9,9 @@ import * as path from "path";
 import { FxError, err, ok, Result, ConfigMap, Stage, Platform } from "fx-api";
 
 import activate from "../activate";
-import AzureTokenProvider from "../commonlib/azureLoginCI";
+import AzureTokenProvider from "../commonlib/azureLogin1st";
 import * as constants from "../constants";
 import { validateAndUpdateAnswers } from "../question/question";
-import CLIDialogManager from "../userInterface";
 import { getParamJson } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 
@@ -43,9 +42,6 @@ export default class Provision extends YargsCommand {
         return result;
       }
     }
-
-    /// TODO: remove this hard code
-    CLIDialogManager.presetAnswers(answers);
 
     const result = await activate(rootFolder);
     if (result.isErr()) {

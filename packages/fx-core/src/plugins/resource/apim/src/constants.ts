@@ -14,6 +14,8 @@ export class ApimDefaultValues {
     public static readonly oAuthServerDescription: string = "Created by TeamsFX.";
     public static readonly enableScopeName: string = ".default";
     public static readonly userId: string = "sample@microsoft.com";
+    public static readonly apiPrefix: string = "title";
+    public static readonly apiVersion: string = "v1";
 }
 
 export class AadDefaultValues {
@@ -22,17 +24,48 @@ export class AadDefaultValues {
 }
 
 export class QuestionConstants {
-    public static readonly askApimServiceDescription: string = "Select API Management service";
-    public static readonly askOpenApiDocumentDescription: string = "Select Open API document";
-    public static readonly askApiNameDescription: string = "Input API name prefix";
-    public static readonly askApiVersionDescription: string = "Select an API version";
-    public static readonly askNewApiVersionDescription: string = "Input API version";
-    public static readonly askApiNamePrompt: string = "Input API name prefix";
-    public static readonly askNewApiVersionPrompt: string = "Input API version";
-    public static readonly createNewApimOption: string = "+ Create a new API Management service";
-    public static readonly createNewApiVersionOption: string = "+ Create a new API version";
-    public static readonly excludeFolders: string[] = ["node_modules"];
-    public static readonly openApiDocumentFileExtensions: string[] = ["json", "yaml"];
+    public static readonly namespace: string = "fx-solution-azure/fx-resource-apim";
+
+    public static readonly Apim = class {
+        public static readonly questionName: string = "apim-service";
+        public static readonly funcName: string = "apim-service-option";
+        public static readonly description: string = "Select API Management service";
+        public static readonly createNewApimOption: string = "+ Create a new API Management service";
+    };
+
+    public static readonly OpenApiDocument = class {
+        public static readonly questionName: string = "open-api-document";
+        public static readonly funcName: string = "open-api-document-option";
+        public static readonly description: string = "Select Open API document";
+        public static readonly excludeFolders: string[] = ["node_modules"];
+        public static readonly openApiDocumentFileExtensions: string[] = ["json", "yaml"];
+    };
+
+    public static readonly ExistingOpenApiDocument = class {
+        public static readonly questionName: string = QuestionConstants.OpenApiDocument.questionName;
+        public static readonly funcName: string = "existing-open-api-document-option";
+    };
+
+    public static readonly ApiPrefix = class {
+        public static readonly questionName: string = "api-prefix";
+        public static readonly funcName: string = "api-prefix-default-value";
+        public static readonly description: string = "Input API name prefix";
+        public static readonly prompt: string = "Input API name prefix";
+    };
+
+    public static readonly ApiVersion = class {
+        public static readonly questionName: string = "api-version";
+        public static readonly funcName: string = "api-version-option";
+        public static readonly description: string = "Select an API version";
+        public static readonly createNewApiVersionOption: string = "+ Create a new API version";
+    };
+
+    public static readonly NewApiVersion = class {
+        public static readonly questionName: string = "new-api-version";
+        public static readonly funcName: string = "new-api-version-default-value";
+        public static readonly description: string = "Input API version";
+        public static readonly prompt: string = "Input API version";
+    };
 }
 
 export class ApimPluginConfigKeys {

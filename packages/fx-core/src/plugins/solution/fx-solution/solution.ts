@@ -1137,9 +1137,13 @@ export class TeamsAppSolution implements Solution {
                     if (res.isErr()) return res;
                     if (res.value) {
                         const azure_function = res.value as QTreeNode;
-                        if (alreadyHasFunction)
+                        if (alreadyHasFunction){
                             // if already has function, the question will appear depends on whether user select function, otherwise, the question will always show
                             azure_function.condition = { contains: AzureResourceFunction.id };
+                        }
+                        else { // if not function activated, select any option will trigger function question
+                            azure_function.condition = { minItems: 1};
+                        }
                         if (azure_function.data) addAzureResources.addChild(azure_function);
                     }
                 }

@@ -1,0 +1,33 @@
+{
+  "name": "teamsfx-template-tab",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@microsoft/teams-js": "^1.6.0",
+    "@microsoft/teamsfx": "^0.0.4",
+    "@fluentui/react-northstar": "^0.51.0",
+    "axios": "^0.21.1",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-router-dom": "^5.1.2",
+    "react-scripts": "^3.4.3"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "eject": "react-scripts eject"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "homepage": "."
+}

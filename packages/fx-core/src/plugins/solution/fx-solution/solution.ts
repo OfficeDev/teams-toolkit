@@ -93,7 +93,7 @@ import {
     createAddAzureResourceQuestion,
 } from "./question";
 import Mustache from "mustache";
-import path from "node:path";
+import path from "path";
 
 type LoadedPlugin = Plugin & { name: string; displayName: string; };
 export type PluginsWithContext = [LoadedPlugin, PluginContext];

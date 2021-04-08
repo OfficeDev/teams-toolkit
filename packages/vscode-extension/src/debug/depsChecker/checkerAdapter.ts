@@ -9,10 +9,11 @@ export { cpUtils } from "../cpUtils";
 export const logger = commonlibLogger;
 
 const downloadIndicatorInterval = 1000; // same as vscode-dotnet-runtime
+const validateDotnetSdkKey = "validateDotnetSdk";
 
-export function getConfiguration<T>(key: string, defaultValue: T): T {
+export function dotnetCheckerEnabled(): boolean {
   const configuration: WorkspaceConfiguration = workspace.getConfiguration(configurationPrefix);
-  return configuration.get<T>(key, defaultValue);
+  return configuration.get<boolean>(validateDotnetSdkKey, false);
 }
 
 export async function runWithProgressIndicator(

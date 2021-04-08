@@ -7,7 +7,7 @@ import * as path from "path";
 import * as child_process from "child_process";
 import * as util from "util";
 import { ConfigFolderName } from "fx-api";
-import { logger, cpUtils, runWithProgressIndicator, getConfiguration } from "./checkerAdapter";
+import { logger, cpUtils, runWithProgressIndicator } from "./checkerAdapter";
 import { DepsCheckerError, isWindows, isLinux } from "./checker";
 
 const exec = util.promisify(child_process.exec);
@@ -24,11 +24,6 @@ export class DotnetCheckerImpl {
   private static supportedVersions = [DotnetVersion.v31];
   private static timeout = 3 * 60 * 1000; // same as vscode-dotnet-runtime
   private static maxBuffer = 500 * 1024;
-  private static validateDotnetSdkConfigurationKey = "validateDotnetSdk";
-
-  public static async isEnabled(): Promise<boolean> {
-    return getConfiguration<boolean>(DotnetCheckerImpl.validateDotnetSdkConfigurationKey, false);
-  }
 
   public static async isInstalled(): Promise<boolean> {
     const configPath = DotnetCheckerImpl.getDotnetConfigPath();

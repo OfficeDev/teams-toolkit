@@ -162,7 +162,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
             pluginContext.platform = Platform.VSCode;
             pluginContext.configOfOtherPlugins = new Map([
                 ["solution", new Map([
-                    ["selectedPlugins", ["teamsfx-resource-aad-app-for-teams", "teamsfx-resource-frontend-hosting", "teamsfx-resource-teamsbot"]]
+                    ["selectedPlugins", ["fx-resource-aad-app-for-teams", "fx-resource-frontend-hosting", "fx-resource-teamsbot"]]
                 ])]]);
             const result = await plugin.scaffold(pluginContext);
             chai.assert.isTrue(result.isOk());

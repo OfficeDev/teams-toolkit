@@ -58,7 +58,7 @@ export class FuncToolChecker implements IDepsChecker {
     logger.info(startInstallFunctionCoreTool);
     await runWithProgressIndicator(logger.outputChannel, async () => {
       try {
-        await installFuncCoreTools(FuncVersion.v3)
+        await installFuncCoreTools(FuncVersion.v3);
       } catch (error) {
         throw new DepsCheckerError(failToInstallFuncCoreTool, helpLink);
       }

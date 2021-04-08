@@ -14,7 +14,7 @@ export class DotnetCoreChecker implements IDepsChecker {
     if (execPath) {
       map.set("execPath", execPath);
     }
-    map.set("configPath", DotnetCheckerImpl.getDotnetConfigPath())
+    map.set("configPath", DotnetCheckerImpl.getDotnetConfigPath());
     return {
       nameWithVersion: `${DotnetCoreSDKName} (v${DotnetVersion.v31})`,
       details: map

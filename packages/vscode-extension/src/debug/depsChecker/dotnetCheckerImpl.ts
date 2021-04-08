@@ -8,7 +8,8 @@ import * as child_process from "child_process";
 import * as util from "util";
 import { ConfigFolderName } from "fx-api";
 import { logger, cpUtils, runWithProgressIndicator } from "./checkerAdapter";
-import { DepsCheckerError, isWindows, isLinux } from "./checker";
+import { DepsCheckerError } from "./checker";
+import { isWindows, isLinux } from "./common";
 
 const exec = util.promisify(child_process.exec);
 const helpLink = "https://review.docs.microsoft.com/en-us/mods/?branch=main";

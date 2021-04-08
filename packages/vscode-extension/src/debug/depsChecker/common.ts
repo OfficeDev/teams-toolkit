@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import * as os from "os";
 const opn = require("opn");
 
 export async function openUrl(url: string): Promise<void> {
@@ -10,4 +11,16 @@ export async function openUrl(url: string): Promise<void> {
   // await vscode.env.openExternal(vscode.Uri.parse(url));
 
   opn(url);
+}
+
+export function isWindows() {
+  return os.type() === "Windows_NT";
+}
+
+export function isMacOS() {
+  return os.type() === "Darwin";
+}
+
+export function isLinux() {
+  return os.type() === "Linux";
 }

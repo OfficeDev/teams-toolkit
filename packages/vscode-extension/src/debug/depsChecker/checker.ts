@@ -2,13 +2,18 @@
 // Licensed under the MIT license.
 
 import { displayLearnMore, displayWarningMessage } from "./checkerAdapter";
-import * as os from "os";
+import { isLinux } from "./common";
 
 export interface IDepsChecker {
   isEnabled(): Promise<boolean>;
   isInstalled(): Promise<boolean>;
   install(): Promise<void>;
-  getDepsInfo(): Promise<Map<string, string>>;
+  getDepsInfo(): Promise<DepsInfo>;
+}
+
+export interface DepsInfo {
+  nameWithVersion: string;
+  details: Map<string, string>;
 }
 
 const defaultErrorMessage = "Please install the required dependencies manually.";
@@ -46,7 +51,7 @@ export class DepsChecker {
     }
 
     // TODO: add log and telemetry
-    const confirmMessage = this.generateMessage(validCheckers);
+    const confirmMessage = await this.generateMessage(validCheckers);
     return await displayWarningMessage(confirmMessage, "Install", async () => {
       for (const checker of validCheckers) {
         try {
@@ -77,20 +82,18 @@ export class DepsChecker {
     return validCheckers;
   }
 
-  private generateMessage(checkers: Array<IDepsChecker>): string {
-    // TODO: generate message according to the checkers.
-    throw new Error("Method not implemented.");
+  private async generateMessage(checkers: Array<IDepsChecker>): Promise<string> {
+    const depsInfo = [];
+    for (const checker of checkers) {
+      const info = await checker.getDepsInfo();
+      depsInfo.push(info.nameWithVersion);
+    }
+
+    const message = depsInfo.join(" and ");
+    return `The toolkit cannot find ${message} on your machine.
+
+As a fundamental runtime context for Teams app, these dependencies are required. Following steps will help you to install the appropriate version to run the Microsoft Teams Toolkit.
+
+Click “Install” to continue.`;
   }
-}
-
-export function isWindows() {
-  return os.type() === "Windows_NT";
-}
-
-export function isMacOS() {
-  return os.type() === "Darwin";
-}
-
-export function isLinux() {
-  return os.type() === "Linux";
 }

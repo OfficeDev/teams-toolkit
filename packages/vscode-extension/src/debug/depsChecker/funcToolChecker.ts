@@ -1,13 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { workspace, WorkspaceConfiguration } from "vscode";
 import { cpUtils } from "../cpUtils";
 import { IDepsChecker, DepsCheckerError } from "./checker";
 import { checkerEnabled, logger, runWithProgressIndicator } from "./checkerAdapter";
 
 const funcPackageName = "azure-functions-core-tools";
-const configurationPrefix = "fx-extension";
 const validateFuncCoreToolsKey = "validateFuncCoreTools";
 
 // TODO: extract to messages.ts

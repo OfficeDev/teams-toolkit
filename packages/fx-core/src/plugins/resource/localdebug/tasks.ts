@@ -265,8 +265,8 @@ export function generateSpfxTasks(): Record<string, unknown>[] {
                     ],
                     background: {
                         activeOnStart: true,
-                        beginsPattern: "^.*Staring gulp.*",
-                        endsPattern: "^.*Finished subtask \"reload\".*",
+                        beginsPattern: "^.*Starting gulp.*",
+                        endsPattern: "^.*Finished subtask 'reload'.*",
                     },
                 },
             ],

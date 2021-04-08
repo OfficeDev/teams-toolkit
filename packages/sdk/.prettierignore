@@ -1,0 +1,7 @@
+**/src/generated/
+review
+**/*.yml
+**/*.yaml
+**/*.d.ts
+tools
+doc

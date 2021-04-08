@@ -3,7 +3,7 @@
 "use strict";
 
 export class LocalDebugPluginInfo {
-    public static readonly pluginName: string = "teamsfx-resource-local-debug";
+    public static readonly pluginName: string = "fx-resource-local-debug";
     public static readonly displayName: string = "LocalDebug Plugin";
 }
 
@@ -30,10 +30,11 @@ export class LocalDebugConfigKeys {
     public static readonly LocalFunctionEndpoint: string = "localFunctionEndpoint";
 
     public static readonly LocalBotEndpoint: string = "localBotEndpoint";
+    public static readonly LocalBotDomain: string = "localBotDomain";
 }
 
 export class AadPlugin {
-    public static readonly Name: string = "teamsfx-resource-aad-app-for-teams";
+    public static readonly Name: string = "fx-resource-aad-app-for-teams";
     public static readonly LocalAppIdUri: string = "local_applicationIdUris";
     public static readonly LocalClientId: string = "local_clientId";
     public static readonly LocalClientSecret: string = "local_clientSecret";
@@ -42,17 +43,17 @@ export class AadPlugin {
 }
 
 export class FunctionPlugin {
-    public static readonly Name: string = "teamsfx-resource-function";
+    public static readonly Name: string = "fx-resource-function";
     public static readonly DefaultFunctionName: string = "defaultFunctionName";
 }
 
 export class RuntimeConnectorPlugin {
-    public static readonly Name: string = "teamsfx-resource-runtime-connector";
+    public static readonly Name: string = "fx-resource-runtime-connector";
     public static readonly FilePath: string = "filePath";
 }
 
 export class SpfxPlugin {
-    public static readonly Name: string = "teamsfx-resource-spfx";
+    public static readonly Name: string = "fx-resource-spfx";
 }
 
 export class SolutionPlugin {
@@ -64,11 +65,11 @@ export class SolutionPlugin {
 }
 
 export class FrontendHostingPlugin {
-    public static readonly Name: string = "teamsfx-resource-frontend-hosting";
+    public static readonly Name: string = "fx-resource-frontend-hosting";
 }
 
 export class BotPlugin {
-    public static readonly Name: string = "teamsfx-resource-teamsbot";
+    public static readonly Name: string = "fx-resource-teamsbot";
     public static readonly LocalBotId: string = "localBotId";
     public static readonly LocalBotPassword: string = "localBotPassword";
 }
@@ -111,6 +112,12 @@ export const LocalEnvCertKeys = Object.freeze({
 });
 
 export const LocalEnvBotKeys = Object.freeze({
-    BotId: "BOT_BotId",
-    BotPassword: "BOT_BotPassword",
+    BotId: "BOT_BOT_ID",
+    BotPassword: "BOT_BOT_PASSWORD",
+    ClientId: "BOT_M365_CLIENT_ID",
+    ClientSecret: "BOT_M365_CLIENT_SECRET",
+    TenantID: "BOT_TENANT_ID",
+    OauthAuthority: "BOT_M365_AUTHORITY_HOST",
+    LoginUrl: "BOT_INITIATE_LOGIN_ENDPOINT",
+    IdentifierUri: "BOT_M365_APPLICATION_ID_URI",
 });

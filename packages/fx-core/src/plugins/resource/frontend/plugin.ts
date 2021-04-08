@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { FxError, PluginContext, Result, ok } from "teamsfx-api";
+import { PluginContext, ok } from "fx-api";
 import path from "path";
 
 import { AzureStorageClient } from "./clients";
@@ -30,7 +30,6 @@ import { Logger } from "./utils/logger";
 import { Messages } from "./resources/messages";
 import { FrontendScaffold as Scaffold, TemplateInfo } from "./ops/scaffold";
 import { TeamsFxResult } from "./error-factory";
-import { Utils } from "./utils";
 import { PreDeploySteps, ProgressHelper, ProvisionSteps, ScaffoldSteps } from "./utils/progress-helper";
 
 export class FrontendPluginImpl {

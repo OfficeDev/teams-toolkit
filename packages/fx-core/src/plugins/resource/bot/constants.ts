@@ -1,5 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+
+import { WayToRegisterBot } from "./enums/wayToRegisterBot";
+import { OptionItem } from "fx-api";
+import { ProgrammingLanguage } from "./enums/programmingLanguage";
+
 export class RegularExprs {
     public static readonly NORMAL_NAME: RegExp = /^[a-zA-Z0-9\-]{2,60}$/;
     public static readonly BOT_ID: RegExp = /^[a-z0-9\-]{36}$/;
@@ -35,30 +40,27 @@ export class TemplateProjectsConstants {
 }
 
 export class ProgressBarConstants {
-    public static readonly SCAFFOLD_TITLE: string = "Scaffolding";
+    public static readonly SCAFFOLD_TITLE: string = "Scaffolding Bot";
     public static readonly SCAFFOLD_STEP_START = "Start to do scaffolding.";
     public static readonly SCAFFOLD_STEP_FETCH_ZIP = "Start to fetch the template zip.";
-    public static readonly SCAFFOLD_STEP_REPLACEMENT = "Start to replace placeholders in config files.";
     public static readonly SCAFFOLD_STEP_UNZIP = "Start to extract template zip to target folder.";
 
-    public static readonly SCAFFOLD_STEPS_NUM: number = 3;
+    public static readonly SCAFFOLD_STEPS_NUM: number = 2;
 
-    public static readonly PROVISION_TITLE: string = "Provisioning";
+    public static readonly PROVISION_TITLE: string = "Provisioning Bot";
     public static readonly PROVISION_STEP_START = "Start to do provisioning.";
     public static readonly PROVISION_STEP_BOT_REG = "Start to do bot registration.";
-    public static readonly PROVISION_STEP_REPLACEMENT = "Start to replace placeholders in config files.";
     public static readonly PROVISION_STEP_WEB_APP = "Start to provision azure web app.";
 
-    public static readonly PROVISION_STEPS_NUM: number = 3;
+    public static readonly PROVISION_STEPS_NUM: number = 2;
 
-    public static readonly LOCAL_DEBUG_TITLE: string = "Local Debug Provisioning";
+    public static readonly LOCAL_DEBUG_TITLE: string = "Local Debug Provisioning Bot";
     public static readonly LOCAL_DEBUG_STEP_START = "Start to do local debug provisioning.";
     public static readonly LOCAL_DEBUG_STEP_BOT_REG = "Start to do bot registration.";
-    public static readonly LOCAL_DEBUG_STEP_REPLACEMENT = "Start to replace placeholders in config files.";
 
-    public static readonly LOCAL_DEBUG_STEPS_NUM: number = 2;
+    public static readonly LOCAL_DEBUG_STEPS_NUM: number = 1;
 
-    public static readonly DEPLOY_TITLE: string = "Deploying";
+    public static readonly DEPLOY_TITLE: string = "Deploying Bot";
     public static readonly DEPLOY_STEP_START = "Start to do deployment.";
     public static readonly DEPLOY_STEP_BUILD_ZIP = "Start to build and zip package.";
     public static readonly DEPLOY_STEP_LIST_CRED = "Start to list publish credentials.";
@@ -74,18 +76,6 @@ export class QuestionNames {
     public static readonly GET_BOT_ID = "botIdQuestion";
     public static readonly GET_BOT_PASSWORD = "botPasswordQuestion";
     public static readonly CAPABILITIES = "capabilities";
-}
-
-export class ContextConfigKeys {
-    public static readonly APP_SERVICE_PLAN = "appServicePlan";
-    public static readonly SITE_NAME = "siteName";
-    public static readonly SITE_ENDPOINT = "siteEndpoint";
-    public static readonly VALID_DOMAINS = "validDomains";
-    public static readonly PROVISIONED = "provisioned";
-    public static readonly WEB_APPLICATION_INFO_ID = "webApplicationInfo.id";
-    public static readonly WEB_APPLICATION_INFO_RESOURCE = "webApplicationInfo.resource";
-    public static readonly BOTS_SECTION = "bots";
-    public static readonly BOT_CHANNEL_REGISTRATION = "botChannelReg";
 }
 
 export class LifecycleFuncNames {
@@ -107,13 +97,16 @@ export class LifecycleFuncNames {
 
     // extra
     public static readonly PROVISION_WEB_APP = "provisionWebApp";
-    public static readonly UPDATE_MESSAGE_ENDPOINT = "updateMessageEndpoint";
+    public static readonly UPDATE_MESSAGE_ENDPOINT_AZURE = "updateMessageEndpointOnAzure";
+    public static readonly UPDATE_MESSAGE_ENDPOINT_APPSTUDIO = "updateMessageEndpointOnAppStudio";
     public static readonly REUSE_EXISTING_BOT_REG = "reuseExistingBotRegistration";
-    public static readonly CREATE_NEW_BOT_REG = "createNewBotRegistration";
+    public static readonly CREATE_NEW_BOT_REG_AZURE = "createNewBotRegistrationOnAzure";
+    public static readonly CREATE_NEW_BOT_REG_APPSTUDIO = "createNewBotRegistrationOnAppStudio";
 }
 
-export class RetryTimes {
-    public static readonly GENERATE_CLIENT_SECRET = 5;
+export class Retry {
+    public static readonly GENERATE_CLIENT_SECRET_TIMES = 10;
+    public static readonly GENERATE_CLIENT_SECRET_GAP_MS = 5000;
 }
 export class ExceptionNames {
     // System Exceptions
@@ -137,11 +130,50 @@ export class ExceptionNames {
 }
 
 export class Links {
-    public static readonly ISSUE_LINK = "";
-    public static readonly HELP_LINK = "";
+    public static readonly ISSUE_LINK = "https://github.com/OfficeDev/TeamsFx/issues/new";
+    public static readonly HELP_LINK = "https://github.com/OfficeDev/TeamsFx/wiki";
 }
 
 export class Alias {
     public static readonly TEAMS_BOT_PLUGIN = "BP";
     public static readonly TEAMS_FX = "Teamsfx";
+}
+
+export class QuestionOptions {
+    public static readonly WAY_TO_REGISTER_BOT_OPTIONS: OptionItem[] = [
+        {
+            id: WayToRegisterBot.CreateNew,
+            label: "Create a new bot registration"
+        },
+        {
+            id: WayToRegisterBot.ReuseExisting,
+            label: "Reuse an existing bot registration"
+        }
+    ];
+
+    public static readonly PROGRAMMING_LANGUAGE_OPTIONS: OptionItem[] = Object.values(ProgrammingLanguage).map((value) => {
+        return {
+            id: value.toLowerCase(),
+            label: value
+        };
+    });
+}
+
+export class AuthEnvNames {
+    public static readonly BOT_ID = "BOT_ID";
+    public static readonly BOT_PASSWORD = "BOT_PASSWORD";
+    public static readonly M365_CLIENT_ID = "M365_CLIENT_ID";
+    public static readonly M365_CLIENT_SECRET = "M365_CLIENT_SECRET";
+    public static readonly M365_TENANT_ID = "M365_TENANT_ID";
+    public static readonly M365_AUTHORITY_HOST = "M365_AUTHORITY_HOST";
+    public static readonly INITIATE_LOGIN_ENDPOINT = "INITIATE_LOGIN_ENDPOINT";
+    public static readonly M365_APPLICATION_ID_URI = "M365_APPLICATION_ID_URI";
+}
+
+export class AuthValues {
+    public static readonly M365_AUTHORITY_HOST = "https://login.microsoftonline.com";
+}
+
+export class DeployConfigs {
+    public static readonly UN_PACK_DIRS = ["node_modules"];
 }

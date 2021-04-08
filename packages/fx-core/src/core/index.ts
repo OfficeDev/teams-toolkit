@@ -37,8 +37,9 @@ import {
     SingleSelectQuestion,
     StringValidation,
     FxError,
-    ProductName,
-} from "teamsfx-api";
+    ConfigFolderName,
+    Json,
+} from "fx-api";
 import * as path from "path";
 // import * as Bundles from '../resource/bundles.json';
 import * as error from "./error";
@@ -83,7 +84,7 @@ class CoreImpl implements Core {
         this.ctx = {
             root: os.homedir() + "/teams_app/",
         };  
-        this.globalFxFolder = os.homedir() + `/.${ProductName}/`;
+        this.globalFxFolder = os.homedir() + `/.${ConfigFolderName}/`;
     }
 
     async localDebug(answers?: ConfigMap): Promise<Result<null, FxError>> {
@@ -118,25 +119,29 @@ class CoreImpl implements Core {
                 if (v.getQuestions) {
                     const res = await v.getQuestions(stage, this.solutionContext(answers));
                     if (res.isErr()) return res;
-                    const solutionNode = res.value as QTreeNode;
-                    solutionNode.condition = { equals: k };
-                    if (solutionNode.data) select_solution.addChild(solutionNode);
+                    if(res.value){
+                        const solutionNode = res.value as QTreeNode;
+                        solutionNode.condition = { equals: k };
+                        if (solutionNode.data) select_solution.addChild(solutionNode);
+                    }
                 }
             }
             node.addChild(new QTreeNode(QuestionRootFolder));
         } else if (this.selectedSolution) {
             const res = await this.selectedSolution.getQuestions(stage, this.solutionContext(answers));
             if (res.isErr()) return res;
-            const child = res.value as QTreeNode;
-            if (child.data) node.addChild(child);
+            if(res.value){
+                const child = res.value as QTreeNode;
+                if (child.data) node.addChild(child);
+            }
         }
         return ok(node);
     }
 
     async getQuestionsForUserTask(func: Func, platform: Platform): Promise<Result<QTreeNode | undefined, FxError>> {
         const namespace = func.namespace;
-        const array = namespace.split("/");
-        if ("" !== namespace && array.length > 0) {
+        const array = namespace? namespace.split("/") : [];
+        if (namespace && "" !== namespace && array.length > 0) {
             const solutionName = array[0];
             const solution = this.globalSolutions.get(solutionName);
             if (solution && solution.getQuestionsForUserTask) {
@@ -154,7 +159,7 @@ class CoreImpl implements Core {
     }
     async executeUserTask(func: Func, answer?: ConfigMap): Promise<Result<QTreeNode | undefined, FxError>> {
         const namespace = func.namespace;
-        const array = namespace.split("/");
+        const array = namespace? namespace.split("/"):[];
         if ("" !== namespace && array.length > 0) {
             const solutionName = array[0];
             const solution = this.globalSolutions.get(solutionName);
@@ -183,11 +188,11 @@ class CoreImpl implements Core {
 
     async callFunc(func: Func, answer?: ConfigMap): Promise<Result<any, FxError>> {
         const namespace = func.namespace;
-        const array = namespace.split("/");
-        if ("" === namespace || array.length === 0) {
+        const array = namespace?namespace.split("/"):[];
+        if (!namespace || "" === namespace || array.length === 0) {
             if (func.method === "validateFolder") {
-                if (!func.params || !func.params[0]) return ok(undefined);
-                return await this.validateFolder(func.params![0] as string, answer);
+                if (!func.params) return ok(undefined);
+                return await this.validateFolder(func.params as string, answer);
             }
         } else {
             const solutionName = array[0];
@@ -263,7 +268,7 @@ class CoreImpl implements Core {
         const targetFolder = path.resolve(this.target.ctx.root);
 
         await fs.ensureDir(targetFolder);
-        await fs.ensureDir(`${targetFolder}/.${ProductName}`);
+        await fs.ensureDir(`${targetFolder}/.${ConfigFolderName}`);
 
         this.ctx.logProvider?.info(`[Core] create - call solution.create()`);
         const result = await this.target.selectedSolution!.create(this.target.solutionContext(answers));
@@ -363,9 +368,9 @@ class CoreImpl implements Core {
         const checklist: string[] = [
             p,
             `${p}/package.json`,
-            `${p}/.${ProductName}`,
-            `${p}/.${ProductName}/settings.json`,
-            `${p}/.${ProductName}/env.default.json`,
+            `${p}/.${ConfigFolderName}`,
+            `${p}/.${ConfigFolderName}/settings.json`,
+            `${p}/.${ConfigFolderName}/env.default.json`,
         ];
         for (const fp of checklist) {
             if (!(await fs.pathExists(path.resolve(fp)))) {
@@ -376,21 +381,21 @@ class CoreImpl implements Core {
     }
 
     public async readConfigs(): Promise<Result<null, FxError>> {
-        if (!fs.existsSync(`${this.ctx.root}/.${ProductName}`)) {
-            this.ctx.logProvider?.warning(`[Core] readConfigs() silent pass, folder not exist:${this.ctx.root}/.${ProductName}`);
+        if (!fs.existsSync(`${this.ctx.root}/.${ConfigFolderName}`)) {
+            this.ctx.logProvider?.warning(`[Core] readConfigs() silent pass, folder not exist:${this.ctx.root}/.${ConfigFolderName}`);
             return ok(null);
         }
         try {
             // load env
             const reg = /env\.(\w+)\.json/;
-            for (const file of fs.readdirSync(`${this.ctx.root}/.${ProductName}`)) {
+            for (const file of fs.readdirSync(`${this.ctx.root}/.${ConfigFolderName}`)) {
                 const slice = reg.exec(file);
                 if (!slice) {
                     continue;
                 }
-                const filePath = `${this.ctx.root}/.${ProductName}/${file}`;
+                const filePath = `${this.ctx.root}/.${ConfigFolderName}/${file}`;
                 this.ctx.logProvider?.info(`[Core] read config file:${filePath} start ... `);
-                const config: SolutionConfig = await fs.readJson(filePath);
+                const config: Json = await fs.readJson(filePath);
                 this.configs.set(slice[1], objectToMap(config));
                 this.ctx.logProvider?.info(`[Core] read config file:${filePath} success! `);
             }
@@ -404,13 +409,13 @@ class CoreImpl implements Core {
     }
 
     public async writeConfigs(): Promise<Result<null, FxError>> {
-        if (!fs.existsSync(`${this.ctx.root}/.${ProductName}`)) {
-            this.ctx.logProvider?.warning(`[Core] writeConfigs() silent pass, folder not exist:${this.ctx.root}/.${ProductName}`);
+        if (!fs.existsSync(`${this.ctx.root}/.${ConfigFolderName}`)) {
+            this.ctx.logProvider?.warning(`[Core] writeConfigs() silent pass, folder not exist:${this.ctx.root}/.${ConfigFolderName}`);
             return ok(null);
         }
         try {
             for (const entry of this.configs.entries()) {
-                const filePath = `${this.ctx.root}/.${ProductName}/env.${entry[0]}.json`;
+                const filePath = `${this.ctx.root}/.${ConfigFolderName}/env.${entry[0]}.json`;
                 this.ctx.logProvider?.info(`[Core] write config file:${filePath} start ... `);
                 const content = JSON.stringify(mapToJson(entry[1]), null, 4);
                 await fs.writeFile(filePath, content);
@@ -488,7 +493,7 @@ class CoreImpl implements Core {
     }
 
     private async readAnswersFromFile(projectFolder: string): Promise<ConfigMap | undefined> {
-        const file = `${projectFolder}/.${ProductName}/answers.json`;
+        const file = `${projectFolder}/.${ConfigFolderName}/answers.json`;
         const exist = await fs.pathExists(file);
         if (!exist) return undefined;
         this.ctx.logProvider?.info(`[Core] read answer file:${file} start ... `);
@@ -499,7 +504,7 @@ class CoreImpl implements Core {
     }
 
     private async writeAnswersToFile(projectFolder: string, answers?: ConfigMap): Promise<void> {
-        const file = `${projectFolder}/.${ProductName}/answers.json`;
+        const file = `${projectFolder}/.${ConfigFolderName}/answers.json`;
         const answerObj = answers ? mapToJson(answers as Map<any, any>) : {};
         this.ctx.logProvider?.info(`[Core] write answers file:${file} start ... `);
         await fs.writeFile(file, JSON.stringify(answerObj, null, 4));
@@ -576,7 +581,7 @@ class CoreImpl implements Core {
                 },
             };
 
-            await fs.writeFile(`${this.target.ctx.root}/.${ProductName}/settings.json`, JSON.stringify(settings, null, 4));
+            await fs.writeFile(`${this.target.ctx.root}/.${ConfigFolderName}/settings.json`, JSON.stringify(settings, null, 4));
             const appName = answers?.getString(QuestionAppName.name);
             await fs.writeFile(
                 `${this.target.ctx.root}/package.json`,
@@ -775,12 +780,18 @@ export class CoreProxy implements Core {
         );
     }
     async executeUserTask(func: Func, answers?: ConfigMap): Promise<Result<any, FxError>> {
-        return await this.runWithErrorHandling<QTreeNode | undefined>(
-            "executeUserTask",
-            true,
-            err(error.NotSupportedProjectType()),
-            () => this.coreImpl.executeUserTask(func, answers),
-        );
+         ////////////////hard code for VS init scenario
+         const platform = answers?.getString("platform");
+         let check = true;
+         if (Platform.VS === platform) check = false;
+         ////////////////////////////
+ 
+         return await this.runWithErrorHandling<QTreeNode | undefined>(
+             "executeUserTask",
+             check,
+             err(error.NotSupportedProjectType()),
+             () => this.coreImpl.executeUserTask(func, answers),
+         );
     }
     async callFunc(func: Func, answer?: ConfigMap): Promise<Result<any, FxError>> {
         const stage = answer?.getString("stage");

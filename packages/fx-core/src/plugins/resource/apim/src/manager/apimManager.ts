@@ -8,8 +8,8 @@ import { OpenApiProcessor } from "../util/openApiProcessor";
 import { Telemetry } from "../telemetry";
 import { NameSanitizer } from "../util/nameSanitizer";
 import { IApimAnswer } from "../model/answer";
-import { LogProvider } from "teamsfx-api";
-import { TeamsAppManifest } from "teamsfx-api";
+import { LogProvider } from "fx-api";
+import { TeamsAppManifest } from "fx-api";
 import * as path from "path";
 
 export class ApimManager {
@@ -42,7 +42,12 @@ export class ApimManager {
         apimConfig.productId = productId;
     }
 
-    public async postProvision(apimConfig: IApimPluginConfig, solutionConfig: ISolutionConfig, aadConfig: IAadPluginConfig, appName: string): Promise<void> {
+    public async postProvision(
+        apimConfig: IApimPluginConfig,
+        solutionConfig: ISolutionConfig,
+        aadConfig: IAadPluginConfig,
+        appName: string
+    ): Promise<void> {
         const resourceGroupName = apimConfig.resourceGroupName ?? solutionConfig.resourceGroupName;
         const apimServiceName = AssertConfigNotEmpty(TeamsToolkitComponent.ApimPlugin, ApimPluginConfigKeys.serviceName, apimConfig.serviceName);
         const clientId = AssertConfigNotEmpty(

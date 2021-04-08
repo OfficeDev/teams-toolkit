@@ -3,7 +3,7 @@
 "use strict";
 
 import * as fs from "fs-extra";
-import { Dialog, LogProvider, PluginContext, ProductName } from "teamsfx-api";
+import { Dialog, LogProvider, PluginContext, ConfigFolderName } from "fx-api";
 import { asn1, md, pki } from "node-forge";
 import * as os from "os";
 import { v4 as uuidv4 } from "uuid";
@@ -25,11 +25,11 @@ export class LocalCertificateManager {
     constructor(ctx: PluginContext | undefined) {
         this.dialog = ctx?.dialog;
         this.logger = ctx?.logProvider;
-        this.certFolder = `${os.homedir()}/.${ProductName}/certificate`;
+        this.certFolder = `${os.homedir()}/.${ConfigFolderName}/certificate`;
     }
 
     /**
-     * Local certificates are located at {home}/.teamsfx/certificate/
+     * Local certificates are located at {home}/.fx/certificate/
      * Public certificate should be trusted into user"s certificate store.
      * 
      * - Check and generate cert and key files (subject, usage, expiration, ...)
@@ -193,7 +193,7 @@ export class LocalCertificateManager {
     private async verifyCertificateInStore(thumbprint: string): Promise<boolean> {
         try {
             if (os.type() === "Windows_NT") {
-                const getCertCommand = `(Get-ChildItem -Path Cert:\\CurrentUser\\Root | Where-Object { $_.Thumbprint -match "${thumbprint}" }).Thumbprint`;
+                const getCertCommand = `(Get-ChildItem -Path Cert:\\CurrentUser\\Root | Where-Object { $_.Thumbprint -match '${thumbprint}' }).Thumbprint`;
                 const existingThumbprint = (await ps.execPowerShell(getCertCommand)).trim();
                 return (existingThumbprint.toUpperCase() === thumbprint.toUpperCase());
             } else if (os.type() === "Darwin") {
@@ -234,10 +234,10 @@ export class LocalCertificateManager {
             if (os.type() === "Windows_NT") {
                 progress?.start("Tooklit is going to add local certificate to your trusted root certificate store. Please confirm in popup window to continue.");
 
-                const installCertCommand = `(Import-Certificate -FilePath "${certPath}" -CertStoreLocation Cert:\\CurrentUser\\Root)[0].Thumbprint`;
+                const installCertCommand = `(Import-Certificate -FilePath '${certPath}' -CertStoreLocation Cert:\\CurrentUser\\Root)[0].Thumbprint`;
                 const thumbprint = (await ps.execPowerShell(installCertCommand)).trim();
 
-                const friendlyNameCommand = `(Get-ChildItem -Path Cert:\\CurrentUser\\Root\\${thumbprint}).FriendlyName="${friendlyName}"`;
+                const friendlyNameCommand = `(Get-ChildItem -Path Cert:\\CurrentUser\\Root\\${thumbprint}).FriendlyName='${friendlyName}'`;
                 await ps.execPowerShell(friendlyNameCommand);
 
                 return true;

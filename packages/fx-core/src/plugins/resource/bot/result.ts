@@ -1,10 +1,10 @@
 /**
- * This file is used to wrap result type of teamsfx-api for function plugin because of its instability.
+ * This file is used to wrap result type of fx-api for function plugin because of its instability.
  */
 
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { FxError, Result, SystemError, UserError, err, ok } from "teamsfx-api";
+import { FxError, Result, SystemError, UserError, err, ok } from "fx-api";
 
 import { Links, Alias } from "./constants";
 
@@ -12,8 +12,8 @@ export type FxResult = Result<any, FxError>;
 
 class FxResultFactory {
     static readonly source: string = Alias.TEAMS_FX;
-    static readonly defaultHelpLink = "";
-    static readonly defaultIssueLink = "";
+    static readonly defaultHelpLink: string = "";
+    static readonly defaultIssueLink: string = "";
 
     private static _FxError(errorMessage: string, innerError: any): FxError {
         // TODO: These fields are unclear to me, it may be updated in the future.

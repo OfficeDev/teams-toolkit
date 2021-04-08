@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import * as faker from "faker";
 import { ApplicationTokenCredentials, TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-import { AzureAccountProvider, LogLevel, LogProvider, ConfigMap, FolderProvider, PluginContext, TeamsAppManifest } from "teamsfx-api";
+import { AzureAccountProvider, LogLevel, LogProvider, ConfigMap, PluginContext, TeamsAppManifest } from "fx-api";
 import { v4 as uuid } from "uuid";
 
 import { AxiosResponse } from "axios";
@@ -37,12 +37,6 @@ export class TestHelper {
             return TestHelper.fakeCredential;
         },
     } as AzureAccountProvider;
-
-    static fakeFolderProvider: FolderProvider = {
-        getWorkingPath: () => {
-            return faker.system.directoryPath();
-        },
-    };
 
     static fakeLogProvider: LogProvider = {
         async log(logLevel: LogLevel, message: string): Promise<boolean> {
@@ -85,7 +79,6 @@ export class TestHelper {
 
         const pluginContext = {
             azureAccountProvider: TestHelper.fakeAzureAccountProvider,
-            FolderProvider: TestHelper.fakeFolderProvider,
             logProvider: TestHelper.fakeLogProvider,
             configOfOtherPlugins: new Map([
                 [DependentPluginInfo.SolutionPluginName, solutionConfig],
@@ -114,7 +107,7 @@ export class TestHelper {
         return new AzureStorageClient(config);
     }
 
-    static async initializedFrontendPlugin(frontendPlugin: FrontendPlugin, pluginContext: PluginContext) {
+    static async initializedFrontendPlugin(frontendPlugin: FrontendPlugin, pluginContext: PluginContext): Promise<FrontendPlugin> {
         const config = await TestHelper.getFakeFrontendConfig(pluginContext);
         frontendPlugin.frontendPluginImpl.config = config;
 

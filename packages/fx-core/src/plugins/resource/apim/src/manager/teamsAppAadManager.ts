@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { LogProvider } from "teamsfx-api";
+import { LogProvider } from "fx-api";
 import { ApimPluginConfigKeys, TeamsToolkitComponent } from "../constants";
 import { AssertConfigNotEmpty } from "../error";
 import { IApimPluginConfig, IAadPluginConfig } from "../model/config";
@@ -18,7 +18,7 @@ export class TeamsAppAadManager {
         this.aadService = aadService;
     }
 
-    public async postProvision(aadConfig: IAadPluginConfig, apimConfig: IApimPluginConfig) : Promise<void> {
+    public async postProvision(aadConfig: IAadPluginConfig, apimConfig: IApimPluginConfig): Promise<void> {
         const apimClientAADClientId = AssertConfigNotEmpty(
             TeamsToolkitComponent.ApimPlugin,
             ApimPluginConfigKeys.apimClientAADClientId,

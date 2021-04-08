@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import * as utils from "../utils/common";
 import { CommonStrings, PluginBot } from "../resources/strings";
-import { ConfigValue, PluginContext } from "teamsfx-api";
+import { ConfigValue, PluginContext } from "fx-api";
 import { ProgrammingLanguage } from "../enums/programmingLanguage";
 import { WayToRegisterBot } from "../enums/wayToRegisterBot";
 
@@ -12,7 +12,6 @@ export class ScaffoldConfig {
     public programmingLanguage?: ProgrammingLanguage;
     public wayToRegisterBot?: WayToRegisterBot;
     public workingDir?: string;
-    public scaffolded = false;
 
     public async restoreConfigFromContext(context: PluginContext): Promise<void> {
 
@@ -48,10 +47,6 @@ export class ScaffoldConfig {
             this.wayToRegisterBot = rawWay as WayToRegisterBot;
         }
 
-        const scaffoldedValue: ConfigValue = context.config.get(PluginBot.SCAFFOLDED);
-        if (scaffoldedValue) {
-            this.scaffolded = (scaffoldedValue as string) === "true";
-        }
     }
 
     public saveConfigIntoContext(context: PluginContext): void {
@@ -59,6 +54,5 @@ export class ScaffoldConfig {
         utils.checkAndSaveConfig(context, PluginBot.BOT_PASSWORD, this.botPassword);
         utils.checkAndSaveConfig(context, PluginBot.PROGRAMMING_LANGUAGE, this.programmingLanguage);
         utils.checkAndSaveConfig(context, PluginBot.WAY_TO_REGISTER_BOT, this.wayToRegisterBot);
-        utils.checkAndSaveConfig(context, PluginBot.SCAFFOLDED, this.scaffolded ? "true" : "false");
     }
 }

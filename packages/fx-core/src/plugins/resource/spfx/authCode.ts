@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
@@ -16,7 +17,7 @@ import {
   PluginContext,
   QuestionType,
   returnSystemError,
-} from "teamsfx-api";
+} from "fx-api";
 
 const config = {
   auth: {
@@ -77,7 +78,7 @@ export class AuthCode {
     };
 
     let deferredRedirect: Deferred<string>;
-    let redirectPromise: Promise<string> = new Promise<string>(
+    const redirectPromise: Promise<string> = new Promise<string>(
       (resolve, reject) => (deferredRedirect = { resolve, reject })
     );
 
@@ -176,10 +177,10 @@ export class AuthCode {
   private static async startServer(server: http.Server): Promise<string> {
     // handle port timeout
     let defferedPort: Deferred<string>;
-    let portPromise: Promise<string> = new Promise<string>(
+    const portPromise: Promise<string> = new Promise<string>(
       (resolve, reject) => (defferedPort = { resolve, reject })
     );
-    let portTimer = setTimeout(() => {
+    const portTimer = setTimeout(() => {
       defferedPort.reject(
         returnSystemError(
           new Error(ErrorMessage.portConflictMessage),

@@ -17,7 +17,7 @@ export class CommonConstants {
 
 export class FunctionPluginInfo {
     public static readonly alias: string = "BE";
-    public static readonly pluginName: string = "teamsfx-resource-function";
+    public static readonly pluginName: string = "fx-resource-function";
     public static readonly displayName: string = "Function Plugin";
     public static readonly expectDotnetSDKs: string[] = ["3.1", "5.0"];
 
@@ -77,31 +77,31 @@ export class DefaultValues {
 }
 
 export class DependentPluginInfo {
-    public static readonly solutionPluginFullName = "teamsfx-solution-azure";
+    public static readonly solutionPluginFullName = "fx-solution-azure";
     public static readonly solutionPluginName = "solution";
     public static readonly resourceGroupName: string = "resourceGroupName";
     public static readonly subscriptionId: string = "subscriptionId";
     public static readonly resourceNameSuffix: string = "resourceNameSuffix";
     public static readonly location: string = "location";
 
-    public static readonly aadPluginName: string = "teamsfx-resource-aad-app-for-teams";
+    public static readonly aadPluginName: string = "fx-resource-aad-app-for-teams";
     public static readonly aadClientId: string = "clientId";
     public static readonly aadClientSecret: string = "clientSecret";
     public static readonly aadOauthAuthority: string = "oauthAuthority";
 
-    public static readonly sqlPluginName: string = "teamsfx-resource-azure-sql";
+    public static readonly sqlPluginName: string = "fx-resource-azure-sql";
     public static readonly databaseName: string = "databaseName";
     public static readonly sqlEndpoint: string = "sqlEndpoint";
 
-    public static readonly identityPluginName: string = "teamsfx-resource-identity";
+    public static readonly identityPluginName: string = "fx-resource-identity";
     public static readonly identityId: string = "identityId";
     public static readonly identityName: string = "identityName";
 
-    public static readonly frontendPluginName: string = "teamsfx-resource-frontend-hosting";
+    public static readonly frontendPluginName: string = "fx-resource-frontend-hosting";
     public static readonly frontendEndpoint: string = "endpoint";
     public static readonly frontendDomain: string = "domain";
 
-    public static readonly apimPluginName: string = "teamsfx-resource-apim";
+    public static readonly apimPluginName: string = "fx-resource-apim";
     public static readonly apimAppId: string = "apimClientAADClientId";
 }
 

@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { LogProvider } from "teamsfx-api";
+import { LogProvider } from "fx-api";
 import { ApimPluginConfigKeys, TeamsToolkitComponent } from "../constants";
 import { AssertConfigNotEmpty, AssertNotEmpty, BuildError, InvalidAadObjectId } from "../error";
 import { IAadInfo, IRequiredResourceAccess } from "../model/aadResponse";

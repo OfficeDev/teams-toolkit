@@ -7,7 +7,7 @@ import {
     Plugin,
     ok,
     err
-} from "teamsfx-api";
+} from "fx-api";
 import { IdentityConfig } from "./config";
 import { Constants, Telemetry } from "./constants";
 import { ContextUtils } from "./utils/contextUtils";
@@ -19,7 +19,7 @@ import { formatEndpoint } from "./utils/commonUtils";
 export class IdentityPlugin implements Plugin {
     template: any;
     parameters: any;
-    armTemplateDir: string = path.resolve(path.dirname(__dirname), "arm-template");
+    armTemplateDir: string = path.resolve(__dirname, "arm-template");
     config: IdentityConfig = new IdentityConfig();
 
     async provision(ctx: PluginContext): Promise<Result> {

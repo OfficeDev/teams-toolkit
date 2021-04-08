@@ -200,7 +200,8 @@ export class ApiVersionQuestion extends BaseQuestionService implements IQuestion
         const apiContracts = await this.apimService.listApi(resourceGroupName, serviceName, versionSetId);
 
         const existingApiVersionOptions: OptionItem[] = apiContracts.map((api) => {
-            return { label: api.apiVersion, description: api.name, detail: api.displayName, data: api } as OptionItem;
+            const result: OptionItem = { id: api.name ?? "", label: api.apiVersion ?? "", description: api.name, data: api };
+            return result;
         });
         const createNewApiVersionOption: OptionItem = { id: QuestionConstants.ApiVersion.createNewApiVersionOption, label: QuestionConstants.ApiVersion.createNewApiVersionOption };
         return [createNewApiVersionOption, ...existingApiVersionOptions];

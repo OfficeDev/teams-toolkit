@@ -366,12 +366,12 @@
     "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "fx-api": "^1.0.1-alpha.2",
+    "fx-core": "^1.0.0-alpha.2",
     "jsonschema": "^1.4.0",
     "opn": "^6.0.0",
-    "vscode-extension-telemetry": "^0.1.6",
     "underscore": "^1.12.1",
-    "fx-api": "1.0.0",
-    "fx-core": "1.0.0"
+    "vscode-extension-telemetry": "^0.1.6"
   },
   "lint-staged": {
     "**/*.ts": [

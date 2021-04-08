@@ -4,7 +4,6 @@
 import { IDepsChecker } from "./checker";
 import { DotnetCheckerImpl } from "./dotnetCheckerImpl";
 import { dotnetCheckerEnabled } from "./checkerAdapter";
-import { DotnetChecker } from "../dotnetSdk/dotnetChecker";
 
 export class DotnetCoreChecker implements IDepsChecker {
   public async getDepsInfo(): Promise<Map<string, string>> {

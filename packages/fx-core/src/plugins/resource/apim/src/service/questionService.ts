@@ -230,7 +230,6 @@ export class NewApiVersionQuestion extends BaseQuestionService implements IQuest
 
     public condition(): { target?: string; } & Validation {
         return {
-            target: "$parent.id",
             equals: QuestionConstants.ApiVersion.createNewApiVersionOption,
         };
     }

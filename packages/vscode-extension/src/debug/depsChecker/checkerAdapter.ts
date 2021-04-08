@@ -2,12 +2,18 @@
 // Licensed under the MIT license.
 
 import commonlibLogger from "../../commonlib/log";
-import { OutputChannel } from "vscode";
+import { workspace, WorkspaceConfiguration, OutputChannel } from "vscode";
+import { configurationPrefix } from "../constants";
 
 export { cpUtils } from "../cpUtils";
 export const logger = commonlibLogger;
 
 const downloadIndicatorInterval = 1000; // same as vscode-dotnet-runtime
+
+export function getConfiguration<T>(key: string, defaultValue: T): T {
+  const configuration: WorkspaceConfiguration = workspace.getConfiguration(configurationPrefix);
+  return configuration.get<T>(key, defaultValue);
+}
 
 export async function runWithProgressIndicator(
   outputChannel: OutputChannel,

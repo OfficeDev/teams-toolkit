@@ -11,6 +11,7 @@ import { logger, cpUtils, runWithProgressIndicator } from "./checkerAdapter";
 import { DepsCheckerError, isWindows, isLinux } from "./checker";
 
 const exec = util.promisify(child_process.exec);
+const helpLink = "https://review.docs.microsoft.com/en-us/mods/?branch=main";
 
 export enum DotnetVersion {
   v31 = "3.1"
@@ -64,7 +65,7 @@ export class DotnetCheckerImpl {
     if (!(await DotnetCheckerImpl.validate())) {
       await DotnetCheckerImpl.cleanup();
       // TODO: remove hardcoding
-      throw new DepsCheckerError("Failed to install .NET Core SDK.");
+      throw new DepsCheckerError("Failed to install .NET Core SDK.", helpLink);
     }
   }
 

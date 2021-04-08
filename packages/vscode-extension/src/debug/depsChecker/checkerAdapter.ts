@@ -2,7 +2,8 @@
 // Licensed under the MIT license.
 
 import commonlibLogger from "../../commonlib/log";
-import { workspace, WorkspaceConfiguration, OutputChannel } from "vscode";
+import { window, workspace, WorkspaceConfiguration, OutputChannel, MessageItem } from "vscode";
+import { openUrl } from "./common";
 
 export { cpUtils } from "../cpUtils";
 export const logger = commonlibLogger;
@@ -33,8 +34,11 @@ export async function runWithProgressIndicator(
   }
 }
 
-export async function displayLearnMoreMessage(message?: string): Promise<boolean> {
-  throw new Error("Not implemented");
+export async function displayLearnMore(message: string, link: string): Promise<boolean> {
+  return await displayWarningMessage(message, "Learn more", () => {
+    openUrl(link);
+    return Promise.resolve(true);
+  });
 }
 
 export async function displayWarningMessage(
@@ -42,7 +46,15 @@ export async function displayWarningMessage(
   buttonText: string,
   action: () => Promise<boolean>
 ): Promise<boolean> {
-  throw new Error("Not implemented");
+  const button: MessageItem = { title: buttonText };
+  const input = await window.showWarningMessage(message, { modal: true }, button);
+  if (input === button) {
+    await action();
+    return true;
+  }
+
+  // click cancel button
+  return false;
 }
 
 function checkerEnabled(key: string): boolean {

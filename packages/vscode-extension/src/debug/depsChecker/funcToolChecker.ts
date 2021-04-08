@@ -18,6 +18,7 @@ const needInstallFuncCoreTool =
   "You must have the Azure Functions Core Tools v3 installed to debug your local functions.";
 const failToInstallFuncCoreTool =
   "The Azure Functions Core Tools v3 installation has failed and will have to be installed manually.";
+const helpLink = "https://review.docs.microsoft.com/en-us/mods/?branch=main";
 
 export class FuncToolChecker implements IDepsChecker {
   getDepsInfo(): Promise<Map<string, string>> {
@@ -34,7 +35,7 @@ export class FuncToolChecker implements IDepsChecker {
 
     switch (installedVersion) {
       case FuncVersion.v1:
-        throw new DepsCheckerError(needReplaceWithFuncCoreToolV3);
+        throw new DepsCheckerError(needReplaceWithFuncCoreToolV3, helpLink);
       case FuncVersion.v2:
         return installed;
       case FuncVersion.v3:
@@ -47,7 +48,7 @@ export class FuncToolChecker implements IDepsChecker {
   async install(): Promise<void> {
     if (!(await hasNPM())) {
       // provided with Learn More link if npm doesn't exist.
-      throw new DepsCheckerError(needInstallFuncCoreTool);
+      throw new DepsCheckerError(needInstallFuncCoreTool, helpLink);
     }
 
     logger.info(startInstallFunctionCoreTool);
@@ -55,13 +56,13 @@ export class FuncToolChecker implements IDepsChecker {
       try {
         await installFuncCoreTools(FuncVersion.v3)
       } catch (error) {
-        throw new DepsCheckerError(failToInstallFuncCoreTool);
+        throw new DepsCheckerError(failToInstallFuncCoreTool, helpLink);
       }
     });
 
     const isInstalled = await this.isInstalled();
     if (!isInstalled) {
-      throw new DepsCheckerError(failToInstallFuncCoreTool);
+      throw new DepsCheckerError(failToInstallFuncCoreTool, helpLink);
     }
 
     logger.info(finishInstallFunctionCoreTool);

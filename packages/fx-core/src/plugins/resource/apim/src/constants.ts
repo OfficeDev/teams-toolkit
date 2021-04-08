@@ -73,6 +73,7 @@ export enum LifeCycle {
     Update,
     Provision,
     Deploy,
+    Login
 }
 
 export enum TeamsToolkitComponent {
@@ -87,6 +88,7 @@ export const LifeCycleCommands: { [key in LifeCycle]: string } = Object.freeze({
     [LifeCycle.Update]: "add the resource",
     [LifeCycle.Provision]: "provision resource",
     [LifeCycle.Deploy]: "deploy package",
+    [LifeCycle.Login]: "login and choose a subscription",
 });
 
 export const ComponentRetryLifeCycle: { [key in TeamsToolkitComponent]: LifeCycle } = Object.freeze({
@@ -108,7 +110,7 @@ export const ConfigRetryLifeCycle: { [key in TeamsToolkitComponent]: { [key: str
     },
     [TeamsToolkitComponent.Solution]: {
         [SolutionConfigKeys.resourceNameSuffix]: LifeCycle.Create,
-        [SolutionConfigKeys.subscriptionId]: LifeCycle.Provision,
+        [SolutionConfigKeys.subscriptionId]: LifeCycle.Login,
         [SolutionConfigKeys.tenantId]: LifeCycle.Provision,
         [SolutionConfigKeys.resourceGroupName]: LifeCycle.Provision,
         [SolutionConfigKeys.location]: LifeCycle.Provision,

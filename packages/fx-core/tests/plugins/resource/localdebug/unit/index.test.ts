@@ -11,7 +11,7 @@ import { LocalDebugPlugin } from "../../../../../src/plugins/resource/localdebug
 
 chai.use(chaiAsPromised);
 
-describe(LocalDebugPluginInfo.pluginName, ()=> {
+describe(LocalDebugPluginInfo.pluginName, () => {
     const expectedLaunchFile = path.resolve(__dirname, "../data/.vscode/launch.json");
     const expectedLocalEnvFile = path.resolve(__dirname, `../data/.${ConfigFolderName}/local.env`);
     const expectedSettingsFile = path.resolve(__dirname, "../data/.vscode/settings.json");
@@ -41,15 +41,15 @@ describe(LocalDebugPluginInfo.pluginName, ()=> {
 
             //assert output launch.json
             const launch = fs.readJSONSync(expectedLaunchFile);
-            const configurations:[] = launch["configurations"];
-            const compounds:[] = launch["compounds"];
+            const configurations: [] = launch["configurations"];
+            const compounds: [] = launch["compounds"];
             chai.assert.equal(configurations.length, 5);
             chai.assert.equal(compounds.length, 2);
 
             //assert output tasks.json
             const tasksAll = fs.readJSONSync(expectedTasksFile);
-            const tasks:[] = tasksAll["tasks"];
-            const tasksInput:[] = tasksAll["inputs"];
+            const tasks: [] = tasksAll["tasks"];
+            const tasksInput: [] = tasksAll["inputs"];
             chai.assert.equal(tasks.length, 9);
             chai.assert.equal(tasksInput.length, 1);
 
@@ -74,15 +74,15 @@ describe(LocalDebugPluginInfo.pluginName, ()=> {
 
             //assert output launch.json
             const launch = fs.readJSONSync(expectedLaunchFile);
-            const configurations:[] = launch["configurations"];
-            const compounds:[] = launch["compounds"];
+            const configurations: [] = launch["configurations"];
+            const compounds: [] = launch["compounds"];
             chai.assert.equal(configurations.length, 4);
             chai.assert.equal(compounds.length, 2);
 
             //assert output tasks.json
             const tasksAll = fs.readJSONSync(expectedTasksFile);
-            const tasks:[] = tasksAll["tasks"];
-            const tasksInput:[] = tasksAll["inputs"];
+            const tasks: [] = tasksAll["tasks"];
+            const tasksInput: [] = tasksAll["inputs"];
             chai.assert.equal(tasks.length, 7);
             chai.assert.equal(tasksInput.length, 1);
 
@@ -105,15 +105,15 @@ describe(LocalDebugPluginInfo.pluginName, ()=> {
 
             //assert output launch.json
             const launch = fs.readJSONSync(expectedLaunchFile);
-            const configurations:[] = launch["configurations"];
-            const compounds:[] = launch["compounds"];
+            const configurations: [] = launch["configurations"];
+            const compounds: [] = launch["compounds"];
             chai.assert.equal(configurations.length, 5);
             chai.assert.equal(compounds.length, 2);
 
             //assert output tasks.json
             const tasksAll = fs.readJSONSync(expectedTasksFile);
-            const tasks:[] = tasksAll["tasks"];
-            const tasksInput:[] = tasksAll["inputs"];
+            const tasks: [] = tasksAll["tasks"];
+            const tasksInput: [] = tasksAll["inputs"];
             chai.assert.equal(tasks.length, 7);
             chai.assert.equal(tasksInput.length, 1);
 
@@ -129,22 +129,22 @@ describe(LocalDebugPluginInfo.pluginName, ()=> {
             pluginContext.platform = Platform.VSCode;
             pluginContext.configOfOtherPlugins = new Map([
                 ["solution", new Map([
-                    ["selectedPlugins", ["teamsfx-resource-aad-app-for-teams", "teamsfx-resource-frontend-hosting", "teamsfx-resource-function", "teamsfx-resource-teamsbot"]]
+                    ["selectedPlugins", ["fx-resource-aad-app-for-teams", "fx-resource-frontend-hosting", "fx-resource-function", "fx-resource-teamsbot"]]
                 ])]]);
             const result = await plugin.scaffold(pluginContext);
             chai.assert.isTrue(result.isOk());
 
             //assert output launch.json
             const launch = fs.readJSONSync(expectedLaunchFile);
-            const configurations:[] = launch["configurations"];
-            const compounds:[] = launch["compounds"];
+            const configurations: [] = launch["configurations"];
+            const compounds: [] = launch["compounds"];
             chai.assert.equal(configurations.length, 6);
             chai.assert.equal(compounds.length, 2);
 
             //assert output tasks.json
             const tasksAll = fs.readJSONSync(expectedTasksFile);
-            const tasks:[] = tasksAll["tasks"];
-            const tasksInput:[] = tasksAll["inputs"];
+            const tasks: [] = tasksAll["tasks"];
+            const tasksInput: [] = tasksAll["inputs"];
             chai.assert.equal(tasks.length, 11);
             chai.assert.equal(tasksInput.length, 1);
 
@@ -162,22 +162,22 @@ describe(LocalDebugPluginInfo.pluginName, ()=> {
             pluginContext.platform = Platform.VSCode;
             pluginContext.configOfOtherPlugins = new Map([
                 ["solution", new Map([
-                    ["selectedPlugins", ["teamsfx-resource-aad-app-for-teams", "teamsfx-resource-frontend-hosting", "teamsfx-resource-teamsbot"]]
+                    ["selectedPlugins", ["fx-resource-aad-app-for-teams", "fx-resource-frontend-hosting", "fx-resource-teamsbot"]]
                 ])]]);
             const result = await plugin.scaffold(pluginContext);
             chai.assert.isTrue(result.isOk());
 
             //assert output launch.json
             const launch = fs.readJSONSync(expectedLaunchFile);
-            const configurations:[] = launch["configurations"];
-            const compounds:[] = launch["compounds"];
+            const configurations: [] = launch["configurations"];
+            const compounds: [] = launch["compounds"];
             chai.assert.equal(configurations.length, 5);
             chai.assert.equal(compounds.length, 2);
 
             //assert output tasks.json
             const tasksAll = fs.readJSONSync(expectedTasksFile);
-            const tasks:[] = tasksAll["tasks"];
-            const tasksInput:[] = tasksAll["inputs"];
+            const tasks: [] = tasksAll["tasks"];
+            const tasksInput: [] = tasksAll["inputs"];
             chai.assert.equal(tasks.length, 9);
             chai.assert.equal(tasksInput.length, 1);
 
@@ -200,13 +200,13 @@ describe(LocalDebugPluginInfo.pluginName, ()=> {
 
             //assert output launch.json
             const launch = fs.readJSONSync(expectedLaunchFile);
-            const configurations:[] = launch["configurations"];
+            const configurations: [] = launch["configurations"];
             chai.assert.equal(configurations.length, 2);
 
             //assert output tasks.json
             const tasksAll = fs.readJSONSync(expectedTasksFile);
-            const tasks:[] = tasksAll["tasks"];
-            const tasksInput:[] = tasksAll["inputs"];
+            const tasks: [] = tasksAll["tasks"];
+            const tasksInput: [] = tasksAll["inputs"];
             chai.assert.equal(tasks.length, 3);
             chai.assert.equal(tasksInput.length, 1);
 

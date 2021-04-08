@@ -94,7 +94,7 @@ const questionVisitor:QuestionVistor = async function(
         return { type: InputResultType.sucess, result: res.value};
       }
       else {
-        return { type: InputResultType.error, result: res.error};
+        return { type: InputResultType.error, error: res.error};
       }
     }
   } else {
@@ -133,7 +133,7 @@ const questionVisitor:QuestionVistor = async function(
           else {
             return {
               type: InputResultType.error,
-              result: res.error
+              error: res.error
             };
           }
         }

@@ -233,7 +233,7 @@ function mockConfigOfOtherPluginsLocalDebug(
         [ConfigKeysOfOtherPlugin.localDebugBotEndpoint, botEndpoint],
       ]),
     ],
-    [Plugins.teamsBot, new Map([[ConfigKeysOfOtherPlugin.teamsBotId, botId]])],
+    [Plugins.teamsBot, new Map([[ConfigKeysOfOtherPlugin.teamsBotIdLocal, botId]])],
   ]);
 }
 

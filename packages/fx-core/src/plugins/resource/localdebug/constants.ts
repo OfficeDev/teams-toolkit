@@ -23,7 +23,7 @@ export class LocalDebugCertificate {
  */
 export class LocalDebugConfigKeys {
     public static readonly LocalAuthEndpoint: string = "localAuthEndpoint";
-    
+
     public static readonly LocalTabEndpoint: string = "localTabEndpoint";
     public static readonly LocalTabDomain: string = "localTabDomain";
 

@@ -65,8 +65,7 @@ export class AzureAccountManager implements AzureAccountProvider {
    * @returns the instance of TokenCredential
    */
   getIdentityCredential(showDialog = true): TokenCredential | undefined {
-    const vsCredential = new identity.VisualStudioCodeCredential();
-    return vsCredential;
+    throw new Error("Method not implemented.");
   }
 
   /**
@@ -144,8 +143,10 @@ export class AzureAccountManager implements AzureAccountProvider {
 
   private doGetIdentityCredentialAsync(): Promise<TokenCredential | undefined> {
     if (this.isUserLogin()) {
-      return new Promise((resolve) => {
-        const vsCredential = new identity.VisualStudioCodeCredential();
+      return new Promise(async (resolve) => {
+        const tokenJson = await this.getJsonObject();
+        const tenantId = (tokenJson as any).tid;
+        const vsCredential = new identity.VisualStudioCodeCredential({ tenantId: tenantId });
         resolve(vsCredential);
       });
     }

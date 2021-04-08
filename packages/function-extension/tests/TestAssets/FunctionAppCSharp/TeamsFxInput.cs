@@ -11,11 +11,11 @@ namespace Microsoft.Azure.WebJobs.Extensions.TeamsFx.TestsAssets.FunctionAppCSha
         public static IActionResult Run(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = "teamsfxbinding")] HttpRequest req,
             ILogger log,
-            [TeamsFx] string TeamsFxConfig)
+            [TeamsFx] string TeamsFxContext)
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
-            return new OkObjectResult(TeamsFxConfig);
+            return new OkObjectResult(TeamsFxContext);
         }
     }
 }

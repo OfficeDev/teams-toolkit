@@ -109,16 +109,9 @@ namespace Microsoft.Azure.WebJobs.Extensions.TeamsFx
             }
 
             // Return a value provider
-            var config = new TeamsFxConfig
+            var config = new TeamsFxContext
             {
-                AccessToken = accessToken,
-                ClientId = _bindingAttribute.ClientId,
-                ClientSecret = _bindingAttribute.ClientSecret,
-                FunctionEndpoint = _bindingAttribute.FunctionEndpoint,
-                Database = _bindingAttribute.Database,
-                IdentityId = _bindingAttribute.IdentityId,
-                SqlEndpoint = _bindingAttribute.SqlEndpoint,
-                OAuthAuthority = _bindingAttribute.OAuthAuthority
+                AccessToken = accessToken
             };
             return new TeamsFxValueProvider(config, _logger);
         }

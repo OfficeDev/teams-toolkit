@@ -215,7 +215,7 @@ export namespace AppStudio {
         appId: string,
         endpoint: string,
         domains: string[],
-        webApplicationInfoResource?: string,
+        webApplicationInfoResource: string,
         appName?: string,
         version?: string,
         bots?: string,
@@ -230,6 +230,7 @@ export namespace AppStudio {
         manifest = replaceConfigValue(manifest, "baseUrl", endpoint ? endpoint : "https://localhost:3000");
         manifest = replaceConfigValue(manifest, "appClientId", appId);
         manifest = replaceConfigValue(manifest, "appid", appId);
+        manifest = replaceConfigValue(manifest, "webApplicationInfoResource", webApplicationInfoResource);
 
         const updatedManifest = JSON.parse(manifest) as TeamsAppManifest;
 
@@ -239,10 +240,6 @@ export namespace AppStudio {
 
         if (composeExtensions) {
             updatedManifest.composeExtensions = JSON.parse(composeExtensions) as IComposeExtension[];
-        }
-
-        if (webApplicationInfoResource && updatedManifest.webApplicationInfo) {
-            updatedManifest.webApplicationInfo.resource = webApplicationInfoResource;
         }
 
         for (const domain of domains) {

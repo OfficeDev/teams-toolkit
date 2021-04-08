@@ -422,7 +422,7 @@ export async function updateAADHandler(): Promise<Result<null, FxError>> {
  */
 export async function validateDependenciesHandler(): Promise<void> {
   // const depsChecker = new DepsChecker([new FuncToolChecker(), new DotnetCoreChecker()]);
-  // await depsChecker.resolve(commonUtils.displayWarningMessage);
+  // await depsChecker.resolve();
 
   let shouldContinue = true;
   const hasBackend = await commonUtils.hasTeamsfxBackend();

@@ -2,10 +2,12 @@
 // Licensed under the MIT license.
 
 import commonlibLogger from "../../commonlib/log";
+import { OutputChannel } from "vscode";
+
 export { isWindows, isLinux, isMacOS } from "../../utils/commonUtils";
 export { cpUtils } from "../cpUtils";
 export const logger = commonlibLogger;
-import { OutputChannel } from "vscode";
+export { displayWarningMessage, displayLearnMore } from "../commonUtils";
 
 const downloadIndicatorInterval = 1000; // same as vscode-dotnet-runtime
 
@@ -21,4 +23,3 @@ export async function runWithProgressIndicator(
     clearTimeout(timer);
   }
 }
-

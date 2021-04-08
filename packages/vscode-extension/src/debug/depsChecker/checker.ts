@@ -1,4 +1,4 @@
-import { isLinux } from "./checkerAdapter";
+import { isLinux, displayLearnMoreMessage, displayWarningMessage } from "./checkerAdapter";
 
 export interface IDepsChecker {
   isEnabled(): boolean;
@@ -36,10 +36,7 @@ export class DepsChecker {
   }
 
   // check & install
-  public async resolve(
-    displayWarningMessage: (message: string, text: string, action: () => Promise<boolean>) => Promise<boolean>,
-    displayLearnMoreMessage: (message?: string) => Promise<boolean>
-  ): Promise<boolean> {
+  public async resolve(): Promise<boolean> {
     const shouldContinue = true;
     const validCheckers = await this.check();
     if (validCheckers.length === 0) {

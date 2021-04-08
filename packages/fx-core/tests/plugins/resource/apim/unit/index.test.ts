@@ -86,7 +86,6 @@ async function buildContext(resourceName: string, resourceNameSuffix: string): P
         testServicePrincipalClientId,
         testServicePrincipalClientSecret,
         buildSolutionConfig(resourceNameSuffix),
-        apimConfig,
         aadConfig,
         functionConfig
     );

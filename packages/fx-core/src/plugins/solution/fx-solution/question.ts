@@ -59,7 +59,7 @@ export const AzureResourceFunction: OptionItem = {
 export const AzureResourceApim: OptionItem = {
     id:"apim",
     label: "apim",
-    description: "Publish APIs to API Management",
+    description: "New APIs in API Management",
 };
  
 export function createCapabilityQuestion(featureFlag: boolean): MultiSelectQuestion {

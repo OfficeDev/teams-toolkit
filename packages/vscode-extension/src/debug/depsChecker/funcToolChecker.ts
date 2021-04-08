@@ -9,7 +9,7 @@ const funcPackageName = "azure-functions-core-tools";
 const funcToolName = "Azure Function Core Tool";
 // TODO: extract to messages.ts
 const startInstallFunctionCoreTool =
-  "Starting to install the Azure Functions Core Tools v3.";
+  "Downloading and installing the Azure Functions Core Tools v3.";
 const finishInstallFunctionCoreTool =
   "Successfully installed the Azure Functions Core Tools v3.";
 const needReplaceWithFuncCoreToolV3 =

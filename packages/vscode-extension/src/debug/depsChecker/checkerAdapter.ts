@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import commonlibLogger from "../../commonlib/log";
-import { window, workspace, WorkspaceConfiguration, OutputChannel, MessageItem } from "vscode";
+import { window, workspace, WorkspaceConfiguration, OutputChannel, MessageItem, debug } from "vscode";
 import { openUrl } from "./common";
 
 export { cpUtils } from "../cpUtils";
@@ -13,6 +13,10 @@ const downloadIndicatorInterval = 1000; // same as vscode-dotnet-runtime
 const configurationPrefix = "fx-extension";
 const validateDotnetSdkKey = "validateDotnetSdk";
 const validateFuncCoreToolsKey = "validateFuncCoreTools";
+
+export async function stopProcess(): Promise<void> {
+  await debug.stopDebugging();
+}
 
 export function dotnetCheckerEnabled(): boolean {
   return checkerEnabled(validateDotnetSdkKey);

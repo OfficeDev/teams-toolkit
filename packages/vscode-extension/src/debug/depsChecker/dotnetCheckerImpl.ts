@@ -56,10 +56,11 @@ export class DotnetCheckerImpl {
     // logger.debug(`[start] install dotnet ${DotnetChecker.installVersion}`);
     // TODO: explain why we need to install .NET SDK
     logger.outputChannel.show(false);
-    logger.info("Downloading and installing .NET SDK.");
+    logger.info("Downloading and installing .NET Core SDK.");
     await runWithProgressIndicator(logger.outputChannel, async () => {
       await DotnetCheckerImpl.install(DotnetCheckerImpl.installVersion);
     });
+    logger.info("Successfully installed .NET Core SDK.");
     // logger.debug(`[end] install dotnet ${DotnetChecker.installVersion}`);
 
     // logger.debug(`[start] validate dotnet version`);

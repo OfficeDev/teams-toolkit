@@ -7,7 +7,7 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests
 {
     public class RetryHandler : DelegatingHandler
     {
-        private const int MaxRetries = 5;
+        private const int MaxRetries = 9;
 
         public RetryHandler(HttpMessageHandler innerHandler)
             : base(innerHandler)

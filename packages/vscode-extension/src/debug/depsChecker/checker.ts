@@ -1,3 +1,4 @@
+import { displayLearnMoreMessage, displayWarningMessage } from "./checkerAdapter";
 import * as os from "os";
 
 export interface IDepsChecker {
@@ -10,15 +11,6 @@ export interface IDepsChecker {
 export interface DepsInfo {
   name: string;
   version: string;
-}
-
-export interface Logger {
-  trace(message: string): Promise<boolean>;
-  debug(message: string): Promise<boolean>;
-  info(message: string): Promise<boolean>;
-  warning(message: string): Promise<boolean>;
-  error(message: string): Promise<boolean>;
-  fatal(message: string): Promise<boolean>;
 }
 
 export class DepsCheckerError extends Error {
@@ -37,10 +29,7 @@ export class DepsChecker {
   }
 
   // check & install
-  public async resolve(
-    displayWarningMessage: (message: string, text: string, action: () => Promise<boolean>) => Promise<boolean>,
-    displayLearnMoreMessage: (message?: string) => Promise<boolean>
-  ): Promise<boolean> {
+  public async resolve(): Promise<boolean> {
     const shouldContinue = true;
     const validCheckers = await this.check();
     if (validCheckers.length === 0) {

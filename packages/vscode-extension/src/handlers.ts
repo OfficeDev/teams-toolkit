@@ -421,8 +421,8 @@ export async function updateAADHandler(): Promise<Result<null, FxError>> {
  * check & install required dependencies during local debug.
  */
 export async function validateDependenciesHandler(): Promise<void> {
-  // const depsChecker = new DepsChecker([new FuncToolChecker(logger), new DotnetCoreChecker(logger)]);
-  // await depsChecker.resolve(commonUtils.displayWarningMessage);
+  // const depsChecker = new DepsChecker([new FuncToolChecker(), new DotnetCoreChecker()]);
+  // await depsChecker.resolve();
 
   let shouldContinue = true;
   const hasBackend = await commonUtils.hasTeamsfxBackend();

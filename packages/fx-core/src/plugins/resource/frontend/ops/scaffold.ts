@@ -19,24 +19,12 @@ import { Messages } from "../resources/messages";
 import { PluginContext } from "fx-api";
 import { Utils } from "../utils";
 import { telemetryHelper } from "../utils/telemetry-helper";
+import { TemplateInfo } from "../resources/templateInfo";
 
 export interface TemplateVariable {
     AppId: string;
 }
 
-export class TemplateInfo {
-    group: string;
-    language: string;
-    scenario: string;
-    version: string;
-
-    constructor(language?: string, scenario?: string) {
-        this.group = PluginInfo.TemplateGroupName;
-        this.language = language ?? PluginInfo.TemplateLanguage;
-        this.scenario = scenario ?? PluginInfo.TemplateDefaultScenario;
-        this.version = PluginInfo.TemplateVersion;
-    }
-}
 
 export type Manifest = {
     [key: string]: {

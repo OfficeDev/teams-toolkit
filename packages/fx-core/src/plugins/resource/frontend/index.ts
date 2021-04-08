@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { FrontendPluginImpl } from "./plugin";
-import { Plugin, PluginContext, err, SystemError, UserError } from "fx-api";
+import { Plugin, PluginContext, err, SystemError, UserError, Stage, QTreeNode, Result, FxError } from "fx-api";
 
 import { ErrorFactory, TeamsFxResult } from "./error-factory";
 import { ErrorType, FrontendPluginError, UnhandledErrorCode, UnhandledErrorMessage } from "./resources/errors";
@@ -12,6 +12,10 @@ import { telemetryHelper } from "./utils/telemetry-helper";
 
 export class FrontendPlugin implements Plugin {
     frontendPluginImpl = new FrontendPluginImpl();
+
+    public async getQuestions(stage: Stage, ctx: PluginContext): Promise<Result<QTreeNode | undefined, FxError>> {
+        return this.frontendPluginImpl.getQuestions(stage, ctx);
+    }
 
     public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
         Logger.setLogger(ctx.logProvider);

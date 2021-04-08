@@ -34,11 +34,6 @@ export class FrontendPluginInfo {
     static HelpLink = ""; // TODO: default help link
     static readonly templateManifestURL =
         "https://github.com/henzhang-ms/Teams-Templates/releases/latest/download/manifest.json";
-    static TemplateGroupName = "tab";
-    static TemplateLanguage = "JavaScript";
-    static TemplateDefaultScenario = "default";
-    static TemplateWithFunctionScenario = "with-function";
-    static TemplateVersion = "0.2.x";
 }
 
 export class Commands {
@@ -49,7 +44,7 @@ export class Commands {
 export class EnvironmentVariables {
     static FuncEndpoint = "REACT_APP_FUNC_ENDPOINT";
     static FuncName = "REACT_APP_FUNC_NAME";
-    static RuntimeEndpoint = "REACT_APP_TEAMSFX_ENDPOINT"; // TODO: renaming the env variables pending on runtime connector plugin
+    static RuntimeEndpoint = "REACT_APP_TEAMSFX_ENDPOINT";
     static StartLoginPage = "REACT_APP_START_LOGIN_PAGE_URL";
 }
 

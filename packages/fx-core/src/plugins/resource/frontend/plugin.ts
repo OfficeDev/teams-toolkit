@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { PluginContext, ok } from "fx-api";
+import { PluginContext, ok, QTreeNode, NodeType, Stage, Result, FxError } from "fx-api";
 import path from "path";
 
 import { AzureStorageClient } from "./clients";
@@ -20,7 +20,6 @@ import {
     DependentPluginInfo,
     FrontendConfigInfo,
     FrontendPathInfo,
-    FrontendPluginInfo,
     FrontendPluginInfo as PluginInfo,
 } from "./constants";
 import { FrontendConfig } from "./configs";
@@ -28,9 +27,11 @@ import { FrontendDeployment } from "./ops/deploy";
 import { FrontendProvision, FunctionEnvironment, RuntimeEnvironment } from "./ops/provision";
 import { Logger } from "./utils/logger";
 import { Messages } from "./resources/messages";
-import { FrontendScaffold as Scaffold, TemplateInfo } from "./ops/scaffold";
+import { FrontendScaffold as Scaffold } from "./ops/scaffold";
 import { TeamsFxResult } from "./error-factory";
 import { PreDeploySteps, ProgressHelper, ProvisionSteps, ScaffoldSteps } from "./utils/progress-helper";
+import { tabLanguageQuestion } from "./resources/questions";
+import { TemplateInfo } from "./resources/templateInfo";
 
 export class FrontendPluginImpl {
     config?: FrontendConfig;
@@ -43,16 +44,19 @@ export class FrontendPluginImpl {
         ctx.config.set(key, value);
     }
 
+    public getQuestions(stage: Stage, ctx: PluginContext): Result<QTreeNode | undefined, FxError> {
+        if (stage === Stage.create) {
+            return ok(tabLanguageQuestion);
+        }
+        return ok(new QTreeNode({ type: NodeType.group }));
+    }
+
     public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
         Logger.info(Messages.StartScaffold(PluginInfo.DisplayName));
         const progressHandler = await ProgressHelper.startScaffoldProgressHandler(ctx);
         await progressHandler?.next(ScaffoldSteps.Scaffold);
 
-        const templateInfo = new TemplateInfo();
-        const functionPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.FunctionPluginName);
-        if (functionPlugin) {
-            templateInfo.scenario = FrontendPluginInfo.TemplateWithFunctionScenario;
-        }
+        const templateInfo = new TemplateInfo(ctx);
 
         const zip = await runWithErrorCatchAndThrow(
             new GetTemplateError(),

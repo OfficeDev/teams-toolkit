@@ -356,8 +356,7 @@
     "webpack": "^4.44.1",
     "webpack-cli": "^3.3.12",
     "winston": "^3.3.3",
-    "yarn": "^1.22.10",
-    "vscode-test": "^1.5.2"
+    "yarn": "^1.22.10"
   },
   "dependencies": {
     "@azure/identity": "^1.2.1",
@@ -366,12 +365,13 @@
     "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
-    "fx-api": "^1.0.1",
-    "fx-core": "^1.0.1",
     "jsonschema": "^1.4.0",
     "opn": "^6.0.0",
+    "vscode-test": "^1.5.2",
+    "vscode-extension-telemetry": "^0.1.6",
     "underscore": "^1.12.1",
-    "vscode-extension-telemetry": "^0.1.6"
+    "fx-api": "^1.0.1",
+    "fx-core": "^1.0.1"
   },
   "lint-staged": {
     "**/*.ts": [

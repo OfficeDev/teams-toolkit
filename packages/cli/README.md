@@ -61,7 +61,8 @@ teamsfx account login azure
 # login appStudio
 teamsfx account login m365
 
-# set azure subscription
+# set azure subscription for an project
+cd /path/to/your/project
 teamsfx account set --subscription 1756abc0-3554-4341-8d6a-46674962ea19
 ```
 

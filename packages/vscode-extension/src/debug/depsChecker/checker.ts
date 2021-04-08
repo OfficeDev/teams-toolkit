@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { displayLearnMoreMessage, displayWarningMessage } from "./checkerAdapter";
+import { displayLearnMore, displayWarningMessage } from "./checkerAdapter";
 import * as os from "os";
 
 export interface IDepsChecker {
@@ -11,10 +11,16 @@ export interface IDepsChecker {
   getDepsInfo(): Promise<Map<string, string>>;
 }
 
+const defaultErrorMessage = "Please install the required dependencies manually.";
+const defaultHelpLink = "https://review.docs.microsoft.com/en-us/mods/?branch=main";
+
 export class DepsCheckerError extends Error {
-  constructor(message: string) {
+  public readonly helpLink: string;
+
+  constructor(message: string, helpLink: string) {
     super(message);
 
+    this.helpLink = helpLink;
     Object.setPrototypeOf(this, DepsCheckerError.prototype);
   }
 }
@@ -47,10 +53,12 @@ export class DepsChecker {
           await checker.install();
         } catch (error) {
           if (error instanceof DepsCheckerError) {
-            return await displayLearnMoreMessage(error.message);
+            await displayLearnMore(error.message, (error as DepsCheckerError).helpLink);
           } else {
-            return await displayLearnMoreMessage();
+            await displayLearnMore(defaultErrorMessage, defaultHelpLink);
           }
+
+          return !shouldContinue;
         }
       }
 

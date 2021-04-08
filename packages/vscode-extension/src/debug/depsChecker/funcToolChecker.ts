@@ -3,7 +3,7 @@
 
 import { cpUtils } from "../cpUtils";
 import { IDepsChecker, DepsCheckerError, DepsInfo } from "./checker";
-import { funcToolCheckerEnabled, logger, runWithProgressIndicator } from "./checkerAdapter";
+import { funcToolCheckerEnabled, hasTeamsfxBackend, logger, runWithProgressIndicator } from "./checkerAdapter";
 
 const funcPackageName = "azure-functions-core-tools";
 const funcToolName = "Azure Function Core Tool";
@@ -28,8 +28,9 @@ export class FuncToolChecker implements IDepsChecker {
     });
   }
 
-  isEnabled(): Promise<boolean> {
-    return Promise.resolve(funcToolCheckerEnabled());
+  async isEnabled(): Promise<boolean> {
+    const hasBackend = await hasTeamsfxBackend();
+    return hasBackend && funcToolCheckerEnabled();
   }
 
   async isInstalled(): Promise<boolean> {

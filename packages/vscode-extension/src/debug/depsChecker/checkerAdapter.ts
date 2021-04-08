@@ -6,6 +6,7 @@ import { window, workspace, WorkspaceConfiguration, OutputChannel, MessageItem }
 import { openUrl } from "./common";
 
 export { cpUtils } from "../cpUtils";
+export { hasTeamsfxBackend } from "../commonUtils";
 export const logger = commonlibLogger;
 
 const downloadIndicatorInterval = 1000; // same as vscode-dotnet-runtime

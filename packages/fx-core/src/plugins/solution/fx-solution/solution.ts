@@ -979,6 +979,11 @@ export class TeamsAppSolution implements Solution {
             return canDeploy;
         }
         try {
+            // Just to trigger M365 login before the concurrent execution of deploy. 
+            // Because concurrent exectution of deploy may getAccessToken() concurrently, which
+            // causes 2 M365 logins before the token caching in common lib takes effect.
+            await ctx.graphTokenProvider?.getAccessToken();
+
             this.runningState = SolutionRunningState.DeployInProgress;
             const result = await this.doDeploy(ctx);
             if (result.isOk()) {

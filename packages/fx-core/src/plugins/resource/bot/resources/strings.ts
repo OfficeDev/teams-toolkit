@@ -11,6 +11,7 @@ export class CommonStrings {
     public static readonly AAD_APP = "aad app";
     public static readonly AAD_CLIENT_SECRET = "add client secret";
     public static readonly APPSTUDIO_BOT_REGISTRATION = "app studio bot registration";
+    public static readonly APPSTUDIO_MSG_ENDPOINT = "app studio message endpoint";
     public static readonly CONFIG_ITEM = "config item";
     public static readonly SHORT_APP_NAME = "short app name";
     public static readonly AUTH_REDIRECT_URI_SUFFIX = "/public";
@@ -89,6 +90,10 @@ export class ConfigNames {
     public static readonly LOCAL_BOT_PASSWORD = "local bot password";
 
     public static readonly APPSTUDIO_TOKEN = "app studio token";
+
+    public static readonly AZURE_WEB_APP_AUTH_CONFIGS = "azure web app's auth configs";
+    public static readonly MESSAGE_ENDPOINT = "message endpoint";
+    
 }
 
 export class Commands {

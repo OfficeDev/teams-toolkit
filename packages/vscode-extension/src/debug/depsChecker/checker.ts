@@ -2,15 +2,10 @@ import { displayLearnMoreMessage, displayWarningMessage } from "./checkerAdapter
 import * as os from "os";
 
 export interface IDepsChecker {
-  isEnabled(): boolean;
+  isEnabled(): Promise<boolean>;
   isInstalled(): Promise<boolean>;
   install(): Promise<void>;
-  getDepsInfo(): DepsInfo;
-}
-
-export interface DepsInfo {
-  name: string;
-  version: string;
+  getDepsInfo(): Promise<Map<string, string>>;
 }
 
 export class DepsCheckerError extends Error {

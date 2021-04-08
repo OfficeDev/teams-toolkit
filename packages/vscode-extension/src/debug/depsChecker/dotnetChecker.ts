@@ -1,17 +1,26 @@
-import { IDepsChecker, DepsInfo } from "./checker";
-import { logger } from "./checkerAdapter";
+import { IDepsChecker } from "./checker";
+import { DotnetCheckerImpl } from "./dotnetCheckerImpl";
 
 export class DotnetCoreChecker implements IDepsChecker {
-  getDepsInfo(): DepsInfo {
-    throw new Error("Method not implemented.");
+  async getDepsInfo(): Promise<Map<string, string>> {
+    const map = new Map<string, string>();
+    const execPath = await DotnetCheckerImpl.getDotnetExecPath();
+    if (execPath) {
+      map.set("execPath", execPath);
+    }
+    map.set("configPath", DotnetCheckerImpl.getDotnetConfigPath())
+    return map;
   }
-  isEnabled(): boolean {
-    throw new Error("Method not implemented.");
+
+  isEnabled(): Promise<boolean> {
+    return DotnetCheckerImpl.isEnabled();
   }
+
   isInstalled(): Promise<boolean> {
-    throw new Error("Method not implemented.");
+    return DotnetCheckerImpl.isInstalled();
   }
+
   install(): Promise<void> {
-    throw new Error("Method not implemented.");
+    return DotnetCheckerImpl.doInstall();
   }
 }

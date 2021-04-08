@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { PluginContext } from "fx-api";
-import { AssertNotEmpty } from "./error";
+import { Platform, PluginContext } from "fx-api";
+import { AssertNotEmpty, BuildError, NotImplemented } from "./error";
 import { ApimService } from "./service/apimService";
 import { SolutionConfig } from "./model/config";
 import { AadService } from "./service/aadService";
@@ -9,8 +9,15 @@ import { OpenApiProcessor } from "./util/openApiProcessor";
 import { ApimManager } from "./manager/apimManager";
 import { AadManager } from "./manager/aadManager";
 import { Telemetry } from "./telemetry";
-import { QuestionManager } from "./manager/questionManager";
-import { ApimServiceQuestion, ApiNameQuestion, ApiVersionQuestion, NewApiVersionQuestion, OpenApiDocumentQuestion } from "./service/questionService";
+import { IQuestionManager, VscQuestionManager } from "./manager/questionManager";
+import {
+    ApimServiceQuestion,
+    ApiPrefixQuestion,
+    ApiVersionQuestion,
+    ExistingOpenApiDocumentFunc,
+    NewApiVersionQuestion,
+    OpenApiDocumentQuestion,
+} from "./service/questionService";
 import { ApiManagementClient } from "@azure/arm-apimanagement";
 import { TeamsAppAadManager } from "./manager/teamsAppAadManager";
 import axios from "axios";
@@ -37,24 +44,30 @@ export class Factory {
         return new TeamsAppAadManager(aadService, telemetry, ctx.logProvider);
     }
 
-    public static async buildQuestionManager(ctx: PluginContext, solutionConfig: SolutionConfig, telemetry: Telemetry): Promise<QuestionManager> {
-        const dialog = AssertNotEmpty("ctx.dialog", ctx.dialog);
-        const apimService = await this.buildApimService(ctx, solutionConfig, telemetry);
-        const openApiProcessor = new OpenApiProcessor(telemetry, ctx.logProvider);
-        const apimServiceQuestion = new ApimServiceQuestion(apimService, dialog, telemetry, ctx.logProvider);
-        const openApiDocumentQuestion = new OpenApiDocumentQuestion(openApiProcessor, dialog, telemetry, ctx.logProvider);
-        const apiNameQuestion = new ApiNameQuestion(dialog, telemetry, ctx.logProvider);
-        const apiVersionQuestion = new ApiVersionQuestion(apimService, dialog, telemetry, ctx.logProvider);
-        const newApiVersionQuestion = new NewApiVersionQuestion(dialog, telemetry, ctx.logProvider);
+    public static async buildQuestionManager(ctx: PluginContext, solutionConfig: SolutionConfig, telemetry: Telemetry): Promise<IQuestionManager> {
+        switch (ctx.platform) {
+            case Platform.VSCode:
+                const dialog = AssertNotEmpty("ctx.dialog", ctx.dialog);
+                const apimService = await this.buildApimService(ctx, solutionConfig, telemetry);
+                const openApiProcessor = new OpenApiProcessor(telemetry, ctx.logProvider);
+                const apimServiceQuestion = new ApimServiceQuestion(apimService, dialog, telemetry, ctx.logProvider);
+                const openApiDocumentQuestion = new OpenApiDocumentQuestion(openApiProcessor, dialog, telemetry, ctx.logProvider);
+                const existingOpenApiDocumentFunc = new ExistingOpenApiDocumentFunc(openApiProcessor, dialog, telemetry, ctx.logProvider);
+                const apiPrefixQuestion = new ApiPrefixQuestion(dialog, telemetry, ctx.logProvider);
+                const apiVersionQuestion = new ApiVersionQuestion(apimService, dialog, telemetry, ctx.logProvider);
+                const newApiVersionQuestion = new NewApiVersionQuestion(dialog, telemetry, ctx.logProvider);
 
-        return new QuestionManager(
-            apimServiceQuestion,
-            openApiDocumentQuestion,
-            apiNameQuestion,
-            apiVersionQuestion,
-            newApiVersionQuestion,
-            openApiProcessor
-        );
+                return new VscQuestionManager(
+                    apimServiceQuestion,
+                    openApiDocumentQuestion,
+                    apiPrefixQuestion,
+                    apiVersionQuestion,
+                    newApiVersionQuestion,
+                    existingOpenApiDocumentFunc
+                );
+            default:
+                throw BuildError(NotImplemented);
+        }
     }
 
     private static async buildApimService(ctx: PluginContext, solutionConfig: SolutionConfig, telemetry: Telemetry): Promise<ApimService> {

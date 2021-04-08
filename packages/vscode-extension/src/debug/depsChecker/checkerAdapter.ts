@@ -3,16 +3,21 @@
 
 import commonlibLogger from "../../commonlib/log";
 import { workspace, WorkspaceConfiguration, OutputChannel } from "vscode";
-import { configurationPrefix } from "../constants";
 
 export { cpUtils } from "../cpUtils";
 export const logger = commonlibLogger;
 
 const downloadIndicatorInterval = 1000; // same as vscode-dotnet-runtime
+const configurationPrefix = "fx-extension";
+const validateDotnetSdkKey = "validateDotnetSdk";
+const validateFuncCoreToolsKey = "validateFuncCoreTools";
 
-export function checkerEnabled(key: string): boolean {
-  const configuration: WorkspaceConfiguration = workspace.getConfiguration(configurationPrefix);
-  return configuration.get<boolean>(key, false);
+export function dotnetCheckerEnabled(): boolean {
+  return checkerEnabled(validateDotnetSdkKey);
+}
+
+export function funcToolCheckerEnabled(): boolean {
+  return checkerEnabled(validateFuncCoreToolsKey);
 }
 
 export async function runWithProgressIndicator(
@@ -38,4 +43,9 @@ export async function displayWarningMessage(
   action: () => Promise<boolean>
 ): Promise<boolean> {
   throw new Error("Not implemented");
+}
+
+function checkerEnabled(key: string): boolean {
+  const configuration: WorkspaceConfiguration = workspace.getConfiguration(configurationPrefix);
+  return configuration.get<boolean>(key, false);
 }

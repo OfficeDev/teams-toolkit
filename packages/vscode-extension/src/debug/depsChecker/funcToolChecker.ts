@@ -3,10 +3,9 @@
 
 import { cpUtils } from "../cpUtils";
 import { IDepsChecker, DepsCheckerError } from "./checker";
-import { checkerEnabled, logger, runWithProgressIndicator } from "./checkerAdapter";
+import { funcToolCheckerEnabled, logger, runWithProgressIndicator } from "./checkerAdapter";
 
 const funcPackageName = "azure-functions-core-tools";
-const validateFuncCoreToolsKey = "validateFuncCoreTools";
 
 // TODO: extract to messages.ts
 const startInstallFunctionCoreTool =
@@ -26,7 +25,7 @@ export class FuncToolChecker implements IDepsChecker {
   }
 
   isEnabled(): Promise<boolean> {
-    return Promise.resolve(checkerEnabled(validateFuncCoreToolsKey));
+    return Promise.resolve(funcToolCheckerEnabled());
   }
 
   async isInstalled(): Promise<boolean> {

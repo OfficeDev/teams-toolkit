@@ -3,9 +3,7 @@
 
 import { IDepsChecker } from "./checker";
 import { DotnetCheckerImpl } from "./dotnetCheckerImpl";
-import { checkerEnabled } from "./checkerAdapter";
-
-const validateDotnetSdkKey = "validateDotnetSdk";
+import { dotnetCheckerEnabled } from "./checkerAdapter";
 
 export class DotnetCoreChecker implements IDepsChecker {
   async getDepsInfo(): Promise<Map<string, string>> {
@@ -19,7 +17,7 @@ export class DotnetCoreChecker implements IDepsChecker {
   }
 
   isEnabled(): Promise<boolean> {
-    return Promise.resolve(checkerEnabled(validateDotnetSdkKey));
+    return Promise.resolve(dotnetCheckerEnabled());
   }
 
   isInstalled(): Promise<boolean> {

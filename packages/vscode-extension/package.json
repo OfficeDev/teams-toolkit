@@ -316,7 +316,6 @@
     "@types/react-dom": "^17.0.2",
     "@types/react-router-dom": "^5.1.7",
     "@types/sinon": "^9.0.9",
-    "@types/terser-webpack-plugin": "^4.1.0",
     "@types/underscore": "^1.11.0",
     "@types/uuid": "^8.3.0",
     "@types/vscode": "^1.51.0",
@@ -370,7 +369,6 @@
     "fx-core": "^1.0.1",
     "jsonschema": "^1.4.0",
     "opn": "^6.0.0",
-    "terser-webpack-plugin": "^4.1.0",
     "underscore": "^1.12.1",
     "vscode-test": "^1.5.2",
     "vscode-extension-telemetry": "^0.1.6"

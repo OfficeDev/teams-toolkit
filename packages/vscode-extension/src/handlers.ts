@@ -421,7 +421,7 @@ export async function updateAADHandler(): Promise<Result<null, FxError>> {
  * check & install required dependencies during local debug.
  */
 export async function validateDependenciesHandler(): Promise<void> {
-  // const depsChecker = new DepsChecker([new FuncToolChecker(logger), new DotnetCoreChecker(logger)]);
+  // const depsChecker = new DepsChecker([new FuncToolChecker(), new DotnetCoreChecker()]);
   // await depsChecker.resolve(commonUtils.displayWarningMessage);
 
   let shouldContinue = true;

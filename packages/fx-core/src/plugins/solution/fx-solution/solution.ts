@@ -855,7 +855,13 @@ export class TeamsAppSolution implements Solution {
         if (canProvision.isErr()) {
             return canProvision;
         }
+        
         try {
+            // Just to trigger M365 login before the concurrent execution of provision. 
+            // Because concurrent exectution of provision may getAccessToken() concurrently, which
+            // causes 2 M365 logins before the token caching in common lib takes effect.
+            await ctx.graphTokenProvider?.getAccessToken();
+
             this.runningState = SolutionRunningState.ProvisionInProgress;
 
             const provisionResult = await this.doProvision(ctx);
@@ -973,6 +979,11 @@ export class TeamsAppSolution implements Solution {
             return canDeploy;
         }
         try {
+            // Just to trigger M365 login before the concurrent execution of deploy. 
+            // Because concurrent exectution of deploy may getAccessToken() concurrently, which
+            // causes 2 M365 logins before the token caching in common lib takes effect.
+            await ctx.graphTokenProvider?.getAccessToken();
+
             this.runningState = SolutionRunningState.DeployInProgress;
             const result = await this.doDeploy(ctx);
             if (result.isOk()) {
@@ -1041,6 +1052,7 @@ export class TeamsAppSolution implements Solution {
     }
 
     async publish(ctx: SolutionContext): Promise<Result<any, FxError>> {
+
         return ok({});
     }
 
@@ -1311,6 +1323,11 @@ export class TeamsAppSolution implements Solution {
         }
 
         const selectedPlugins = maybeSelectedPlugins.value;
+
+        // Just to trigger M365 login before the concurrent execution of localDebug. 
+        // Because concurrent exectution of localDebug may getAccessToken() concurrently, which
+        // causes 2 M365 logins before the token caching in common lib takes effect.
+        await ctx.graphTokenProvider?.getAccessToken();
 
         const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, selectedPlugins);
         const localDebugWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {

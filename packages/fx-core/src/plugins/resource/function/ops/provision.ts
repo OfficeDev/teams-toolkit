@@ -75,7 +75,7 @@ export class FunctionProvision {
     }
 
     // Push AppSettings when it is not included.
-    private static pushAppSettings(site: Site, newName: string, newValue: string, replace = false): void {
+    private static pushAppSettings(site: Site, newName: string, newValue: string, replace = true): void {
         if (!site.siteConfig) {
             site.siteConfig = {};
         }
@@ -101,10 +101,18 @@ export class FunctionProvision {
 
     // The following APIs are prepared for post-provision.
     public static updateFunctionSettingsForAAD(
-        site: Site, clientId: string, clientSecret: string, oauthAuthority: string): void {
+        site: Site,
+        clientId: string,
+        clientSecret: string,
+        oauthHost: string,
+        tenantId: string,
+        applicationIdUris: string
+    ): void {
         this.pushAppSettings(site, FunctionAppSettingKeys.clientId, clientId);
         this.pushAppSettings(site, FunctionAppSettingKeys.clientSecret, clientSecret);
-        this.pushAppSettings(site, FunctionAppSettingKeys.oauthAuthority, oauthAuthority);
+        this.pushAppSettings(site, FunctionAppSettingKeys.oauthHost, oauthHost);
+        this.pushAppSettings(site, FunctionAppSettingKeys.tenantId, tenantId);
+        this.pushAppSettings(site, FunctionAppSettingKeys.applicationIdUris, applicationIdUris);
     }
 
     public static updateFunctionSettingsForSQL(
@@ -127,19 +135,23 @@ export class FunctionProvision {
         }
 
         site.siteConfig.cors = {
-            allowedOrigins: DefaultProvisionConfigs.functionAppCORSAllowedOrigins.concat([frontendEndpoint]),
+            allowedOrigins: [frontendEndpoint],
             supportCredentials: false
         };
     }
 
     public static constructFunctionAuthSettings(
-        clientId: string, frontendDomain: string,
-        frontendEndpoint: string, oauthAuthority: string): SiteAuthSettings {
+        clientId: string,
+        frontendDomain: string,
+        frontendEndpoint: string,
+        oauthHost: string,
+        tenantId: string
+    ): SiteAuthSettings {
         return {
             enabled: true,
             defaultProvider: "AzureActiveDirectory",
             clientId: clientId,
-            issuer: `${oauthAuthority}/v2.0`,
+            issuer: `${oauthHost}/${tenantId}/v2.0`,
             allowedAudiences: [
                 frontendEndpoint,
                 `api://${frontendDomain}/${clientId}`

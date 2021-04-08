@@ -84,7 +84,7 @@ export async function createBotRegistration(registration: IBotRegistration): Pro
 
     let response = undefined;
     try {
-        response = await axios.post(`${baseUrl}/api/botframework`, registration);
+        response = await axiosInstance.post(`${baseUrl}/api/botframework`, registration);
     } catch (e) {
         throw new ProvisionException(CommonStrings.APPSTUDIO_BOT_REGISTRATION, e);
     }
@@ -104,7 +104,7 @@ export async function updateMessageEndpoint(botId: string, registration: IBotReg
 
     let response = undefined;
     try {
-        response = await axios.post(`${baseUrl}/api/botframework/${botId}`, registration);
+        response = await axiosInstance.post(`${baseUrl}/api/botframework/${botId}`, registration);
     } catch (e) {
         throw new ConfigUpdatingException(ConfigNames.MESSAGE_ENDPOINT, e);
     }

@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Plugin, PluginContext, Result, QTreeNode, Stage, FxError } from "fx-api";
+import { Plugin, PluginContext, Result, QTreeNode, Stage, FxError, err, UserError, SystemError } from "fx-api";
 
 import { FxResult, FxBotPluginResultFactory as ResultFactory } from "./result";
 import { TeamsBotImpl } from "./plugin";
@@ -113,6 +113,10 @@ export class TeamsBot implements Plugin {
 
             await ProgressBarFactory.closeProgressBar(); // Close all progress bars.
 
+            if (e instanceof UserError || e instanceof SystemError) {
+                return err(e);
+            }
+
             if (e instanceof PluginException) {
 
                 const result = (e.exceptionType === ExceptionType.System ?
@@ -123,6 +127,7 @@ export class TeamsBot implements Plugin {
                 // Unrecognized Exception.
                 return ResultFactory.SystemError(e.name, e.message, undefined, e);
             }
+
         }
     }
 }

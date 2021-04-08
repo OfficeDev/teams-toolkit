@@ -156,6 +156,8 @@ export class TeamsBotImpl {
         this.config.provision.siteName = ResourceNameFactory.createCommonName(this.ctx?.app.name.short);
         Logger.debug(`Site name generated to use is ${this.config.provision.siteName}.`);
 
+        this.config.saveConfigIntoContext(context);
+
         this.telemetryStepOutSuccess(LifecycleFuncNames.PRE_PROVISION);
 
         return ResultFactory.Success();
@@ -352,6 +354,7 @@ export class TeamsBotImpl {
             }
         }
 
+        this.config.saveConfigIntoContext(context);
         this.telemetryStepOutSuccess(LifecycleFuncNames.POST_PROVISION);
 
         return ResultFactory.Success();
@@ -382,6 +385,7 @@ export class TeamsBotImpl {
             throw new ValidationException("siteEndpoint", this.config.provision.siteEndpoint!);
         }
 
+        this.config.saveConfigIntoContext(context);
         this.telemetryStepOutSuccess(LifecycleFuncNames.PRE_DEPLOY);
 
         return ResultFactory.Success();
@@ -460,6 +464,7 @@ export class TeamsBotImpl {
             throw new ZipDeployException();
         }
 
+        this.config.saveConfigIntoContext(context);
         this.telemetryStepOutSuccess(LifecycleFuncNames.DEPLOY);
 
         return ResultFactory.Success();
@@ -481,6 +486,7 @@ export class TeamsBotImpl {
             await this.createNewBotRegistrationOnAppStudio();
         }
 
+        this.config.saveConfigIntoContext(context);
         this.telemetryStepOutSuccess(LifecycleFuncNames.LOCAL_DEBUG);
 
         return ResultFactory.Success();
@@ -510,6 +516,7 @@ export class TeamsBotImpl {
             }
         }
 
+        this.config.saveConfigIntoContext(context);
         this.telemetryStepOutSuccess(LifecycleFuncNames.POST_LOCAL_DEBUG);
 
         return ResultFactory.Success();
@@ -612,7 +619,7 @@ export class TeamsBotImpl {
         CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
 
         const aadDisplayName = ResourceNameFactory.createCommonName(this.ctx?.app.name.short);
-        
+
 
         const botAuthCreds = await aadReg.registerAADAppAndGetSecretByAppStudio(
             appStudioToken!,

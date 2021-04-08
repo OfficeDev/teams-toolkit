@@ -54,7 +54,7 @@ export class Plugins {
   static pluginNameComplex = "fx-resource-aad-app-for-teams";
   static pluginNameShort = "aad";
   static frontendHosting = "fx-resource-frontend-hosting";
-  static teamsBot = "fx-resource-bot";
+  static teamsBot = "fx-resource-teamsbot";
   static localDebug = "fx-resource-local-debug";
   static solution = "solution";
 }

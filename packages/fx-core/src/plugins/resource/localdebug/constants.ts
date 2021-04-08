@@ -23,7 +23,7 @@ export class LocalDebugCertificate {
  */
 export class LocalDebugConfigKeys {
     public static readonly LocalAuthEndpoint: string = "localAuthEndpoint";
-    
+
     public static readonly LocalTabEndpoint: string = "localTabEndpoint";
     public static readonly LocalTabDomain: string = "localTabDomain";
 
@@ -69,7 +69,7 @@ export class FrontendHostingPlugin {
 }
 
 export class BotPlugin {
-    public static readonly Name: string = "fx-resource-bot";
+    public static readonly Name: string = "fx-resource-teamsbot";
     public static readonly LocalBotId: string = "localBotId";
     public static readonly LocalBotPassword: string = "localBotPassword";
 }

@@ -141,7 +141,7 @@ function newSpfxPlugin(): LoadedPlugin {
 function newBotPlugin(): LoadedPlugin {
     const plugin: Plugin = new TeamsBot();
     const pluginWithMeta: LoadedPlugin = plugin as LoadedPlugin;
-    pluginWithMeta.name = "fx-resource-bot";
+    pluginWithMeta.name = "fx-resource-teamsbot";
     pluginWithMeta.displayName = "Bot";
     return pluginWithMeta;
 }
@@ -400,7 +400,7 @@ export class TeamsAppSolution implements Solution {
 
         //     }
         // }
-       
+
         if (plugin.preScaffold) {
             const result = await plugin.preScaffold(pctx);
             if (result.isErr()) {
@@ -1077,7 +1077,7 @@ export class TeamsAppSolution implements Solution {
                 const pluginCtx = getPluginContext(ctx, this.spfxPlugin.name);
                 const res = await this.spfxPlugin.getQuestions(stage, pluginCtx);
                 if (res.isErr()) return res;
-                if (res.value){
+                if (res.value) {
                     const spfx = res.value as QTreeNode;
                     spfx.condition = { equals: HostTypeOptionSPFx.label };
                     if (spfx.data) frontend_host_type.addChild(spfx);
@@ -1089,7 +1089,7 @@ export class TeamsAppSolution implements Solution {
                 const pluginCtx = getPluginContext(ctx, this.functionPlugin.name, this.manifest);
                 const res = await this.functionPlugin.getQuestions(stage, pluginCtx);
                 if (res.isErr()) return res;
-                if (res.value){
+                if (res.value) {
                     const azure_function = res.value as QTreeNode;
                     azure_function.condition = { minItems: 1 };
                     if (azure_function.data) azure_resources.addChild(azure_function);
@@ -1101,7 +1101,7 @@ export class TeamsAppSolution implements Solution {
                 const pluginCtx = getPluginContext(ctx, this.sqlPlugin.name, this.manifest);
                 const res = await this.sqlPlugin.getQuestions(stage, pluginCtx);
                 if (res.isErr()) return res;
-                if (res.value){
+                if (res.value) {
                     const azure_sql = res.value as QTreeNode;
                     azure_sql.condition = { contains: AzureResourceSQL.label };
                     if (azure_sql.data) azure_resources.addChild(azure_sql);
@@ -1112,7 +1112,7 @@ export class TeamsAppSolution implements Solution {
                 const pluginCtx = getPluginContext(ctx, this.botPlugin.name, this.manifest);
                 const res = await this.botPlugin.getQuestions(stage, pluginCtx);
                 if (res.isErr()) return res;
-                if (res.value){
+                if (res.value) {
                     const botGroup = res.value as QTreeNode;
                     botGroup.condition = { containsAny: [BotOptionItem.label, MessageExtensionItem.label] };
                     capabilities.addChild(botGroup);
@@ -1135,7 +1135,7 @@ export class TeamsAppSolution implements Solution {
                     const pluginCtx = getPluginContext(ctx, this.functionPlugin.name, this.manifest);
                     const res = await this.functionPlugin.getQuestions(stage, pluginCtx);
                     if (res.isErr()) return res;
-                    if (res.value){
+                    if (res.value) {
                         const azure_function = res.value as QTreeNode;
                         if (alreadyHasFunction)
                             // if already has function, the question will appear depends on whether user select function, otherwise, the question will always show
@@ -1149,7 +1149,7 @@ export class TeamsAppSolution implements Solution {
                     const pluginCtx = getPluginContext(ctx, this.sqlPlugin.name, this.manifest);
                     const res = await this.sqlPlugin.getQuestions(stage, pluginCtx);
                     if (res.isErr()) return res;
-                    if (res.value){
+                    if (res.value) {
                         const azure_sql = res.value as QTreeNode;
                         azure_sql.condition = { contains: AzureResourceSQL.id };
                         if (azure_sql.data) addAzureResources.addChild(azure_sql);
@@ -1161,7 +1161,7 @@ export class TeamsAppSolution implements Solution {
                     const pluginCtx = getPluginContext(ctx, this.apimPlugin.name, this.manifest);
                     const res = await this.apimPlugin.getQuestions(stage, pluginCtx);
                     if (res.isErr()) return res;
-                    if (res.value){
+                    if (res.value) {
                         const apim = res.value as QTreeNode;
                         apim.condition = { contains: AzureResourceApim.id };
                         if (apim.data) addAzureResources.addChild(apim);
@@ -1189,7 +1189,7 @@ export class TeamsAppSolution implements Solution {
                     const pluginCtx = getPluginContext(ctx, plugin.name, this.manifest);
                     const getQuestionRes = await plugin.getQuestions(stage, pluginCtx);
                     if (getQuestionRes.isErr()) return getQuestionRes;
-                    if(getQuestionRes.value){
+                    if (getQuestionRes.value) {
                         const subnode = getQuestionRes.value as QTreeNode;
                         node.addChild(subnode);
                     }
@@ -1208,7 +1208,7 @@ export class TeamsAppSolution implements Solution {
             }
             const pluginsToDeploy = res.value.filter((plugin) => !!plugin.deploy);
             const options: OptionItem[] = pluginsToDeploy.map((plugin) => {
-                const item: OptionItem = {id: plugin.name, label: plugin.displayName};
+                const item: OptionItem = { id: plugin.name, label: plugin.displayName };
                 return item;
             });
             const selectQuestion = DeployPluginSelectQuestion;
@@ -1221,7 +1221,7 @@ export class TeamsAppSolution implements Solution {
                     const pluginCtx = getPluginContext(ctx, plugin.name, this.manifest);
                     const getQuestionRes = await plugin.getQuestions(stage, pluginCtx);
                     if (getQuestionRes.isErr()) return getQuestionRes;
-                    if(getQuestionRes.value){
+                    if (getQuestionRes.value) {
                         const subnode = getQuestionRes.value as QTreeNode;
                         subnode.condition = { contains: plugin.name };
                         if (subnode.data) pluginSelection.addChild(subnode);
@@ -1231,7 +1231,7 @@ export class TeamsAppSolution implements Solution {
         }
         return ok(node);
     }
-    
+
 
     // Update app manifest
     private async updateApp(
@@ -1300,13 +1300,13 @@ export class TeamsAppSolution implements Solution {
 
     async localDebug(ctx: SolutionContext): Promise<Result<any, FxError>> {
         const maybeSelectedPlugins = this.getSelectedPlugins(ctx.config);
-        
+
         if (maybeSelectedPlugins.isErr()) {
             return maybeSelectedPlugins;
         }
 
         const selectedPlugins = maybeSelectedPlugins.value;
-    
+
         const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, selectedPlugins);
         const localDebugWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {
             return [plugin?.localDebug?.bind(plugin), context, plugin.name];
@@ -1314,14 +1314,14 @@ export class TeamsAppSolution implements Solution {
         const postLocalDebugWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {
             return [plugin?.postLocalDebug?.bind(plugin), context, plugin.name];
         });
-        
+
         const localDebugResult = await executeConcurrently(localDebugWithCtx);
         if (localDebugResult.isErr()) {
             return localDebugResult;
         }
 
         const maybeConfig = this.getLocalDebugConfig(ctx.config);
-        
+
         if (maybeConfig.isErr()) {
             return maybeConfig;
         }
@@ -1344,11 +1344,6 @@ export class TeamsAppSolution implements Solution {
         const composeExtensions = ctx.config.get(this.botPlugin.name)?.getString(COMPOSE_EXTENSIONS);
 
         const webApplicationInfoResource = ctx.config.get(this.aadPlugin.name)?.getString(LOCAL_WEB_APPLICATION_INFO_SOURCE);
-
-        ctx.logProvider?.debug(`IvanJobs localBotDomain: ${localBotDomain}`);
-        ctx.logProvider?.debug(`IvanJobs bots: ${JSON.stringify(bots)}`);
-        ctx.logProvider?.debug(`IvanJobs msgext: ${JSON.stringify(composeExtensions)}`);
-        ctx.logProvider?.debug(`IvanJobs resource: ${webApplicationInfoResource}`);
 
         const [appDefinition, _updatedManifest] = AppStudio.getDevAppDefinition(
             TEAMS_APP_MANIFEST_TEMPLATE,
@@ -1602,7 +1597,7 @@ export class TeamsAppSolution implements Solution {
         return domain;
     }
 
-    private extractConfigForRegisterTeamsAppAndAad(config: SolutionConfig, isLocal: boolean): Result<{aadId: string, applicationIdUri: string, clientSecret: string}, FxError> {
+    private extractConfigForRegisterTeamsAppAndAad(config: SolutionConfig, isLocal: boolean): Result<{ aadId: string, applicationIdUri: string, clientSecret: string }, FxError> {
         const aadId = config.get(this.aadPlugin.name)?.get(isLocal ? LOCAL_DEBUG_AAD_ID : REMOTE_AAD_ID);
         if (aadId === undefined || typeof aadId !== "string") {
             return err(
@@ -1636,7 +1631,7 @@ export class TeamsAppSolution implements Solution {
         return ok({
             aadId,
             applicationIdUri,
-            clientSecret 
+            clientSecret
         });
     }
 
@@ -1707,7 +1702,7 @@ export class TeamsAppSolution implements Solution {
         if (maybeTenantId.isErr()) {
             return err(maybeTenantId.error);
         }
-        const appSettingsJSON = Mustache.render(appSettingsJSONTpl, { "client-id": configResult.value.aadId, "client-secret": configResult.value.clientSecret, "application-id-uri": configResult.value.applicationIdUri, "endpoint": params.endpoint, "tenant-id": maybeTenantId.value,  });
+        const appSettingsJSON = Mustache.render(appSettingsJSONTpl, { "client-id": configResult.value.aadId, "client-secret": configResult.value.clientSecret, "application-id-uri": configResult.value.applicationIdUri, "endpoint": params.endpoint, "tenant-id": maybeTenantId.value, });
         await fs.writeFile(appSettingsJSONPath, appSettingsJSON);
 
         if (isLocal) {

@@ -93,6 +93,9 @@ const questionVisitor:QuestionVistor = async function(
       if (res.isOk()) {
         return { type: InputResultType.sucess, result: res.value};
       }
+      else {
+        return { type: InputResultType.error, result: res.error};
+      }
     }
   } else {
     let defaultValue: unknown = undefined;
@@ -126,6 +129,12 @@ const questionVisitor:QuestionVistor = async function(
           const res = await remoteFuncExecutor(selectQuestion.option as Func, inputs);
           if (res.isOk()) {
             option = res.value as StaticOption;
+          }
+          else {
+            return {
+              type: InputResultType.error,
+              result: res.error
+            };
           }
         }
       }

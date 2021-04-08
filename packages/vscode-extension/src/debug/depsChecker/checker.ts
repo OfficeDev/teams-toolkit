@@ -1,4 +1,5 @@
-import { isLinux, displayLearnMoreMessage, displayWarningMessage } from "./checkerAdapter";
+import { displayLearnMoreMessage, displayWarningMessage } from "./checkerAdapter";
+import * as os from "os";
 
 export interface IDepsChecker {
   isEnabled(): boolean;
@@ -17,14 +18,6 @@ export class DepsCheckerError extends Error {
     super(message);
 
     Object.setPrototypeOf(this, DepsCheckerError.prototype);
-  }
-}
-
-export class DotnetCheckerInstallError extends Error {
-  constructor(message: string) {
-    super(message);
-
-    Object.setPrototypeOf(this, DotnetCheckerInstallError.prototype);
   }
 }
 
@@ -82,4 +75,16 @@ export class DepsChecker {
     // TODO: generate message according to the checkers.
     throw new Error("Method not implemented.");
   }
+}
+
+export function isWindows() {
+  return os.type() === "Windows_NT";
+}
+
+export function isMacOS() {
+  return os.type() === "Darwin";
+}
+
+export function isLinux() {
+  return os.type() === "Linux";
 }

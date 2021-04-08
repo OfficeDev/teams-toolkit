@@ -4,10 +4,8 @@
 import commonlibLogger from "../../commonlib/log";
 import { OutputChannel } from "vscode";
 
-export { isWindows, isLinux, isMacOS } from "../../utils/commonUtils";
 export { cpUtils } from "../cpUtils";
 export const logger = commonlibLogger;
-export { displayWarningMessage, displayLearnMore } from "../commonUtils";
 
 const downloadIndicatorInterval = 1000; // same as vscode-dotnet-runtime
 
@@ -22,4 +20,16 @@ export async function runWithProgressIndicator(
     outputChannel.appendLine("");
     clearTimeout(timer);
   }
+}
+
+export async function displayLearnMoreMessage(message?: string): Promise<boolean> {
+  throw new Error("Not implemented");
+}
+
+export async function displayWarningMessage(
+  message: string,
+  buttonText: string,
+  action: () => Promise<boolean>
+): Promise<boolean> {
+  throw new Error("Not implemented");
 }

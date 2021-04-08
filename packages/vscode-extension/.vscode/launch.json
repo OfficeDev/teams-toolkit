@@ -13,7 +13,8 @@
 				"--extensionDevelopmentPath=${workspaceFolder}"
 			],
 			"resolveSourceMapLocations": [
-				"${workspaceFolder}/out/**/*.js"
+				"${workspaceFolder}/out/**/*.js",
+				"${workspaceFolder}/../fx-core/build/**/*.js"
 			],
 			"preLaunchTask": "npm: build"
 		},
@@ -43,19 +44,6 @@
 				"${workspaceFolder}/out/test/**/*.js"
 			],
 			"preLaunchTask": "npm: test-watch"
-		},
-		{
-            "type": "node",
-            "request": "launch",
-            "name": "Launch Test Program",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "program": "${workspaceFolder}\\out\\src\\question\\validation.js",
-            "outFiles": [
-                "${workspaceFolder}/out/src/**/*.js"
-            ],
-			"preLaunchTask": "npm: build"
-        }
+		}
 	]
 }

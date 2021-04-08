@@ -2,6 +2,8 @@
 // Licensed under the MIT license.
 import { LogProvider } from "fx-api";
 
+const PLUGIN_NAME_IN_LOG = "Bot Plugin";
+
 export class Logger {
     static logger: LogProvider | undefined;
 
@@ -10,18 +12,18 @@ export class Logger {
     }
 
     public static debug(message: string): void {
-        this.logger?.debug(message);
+        this.logger?.debug(`[${PLUGIN_NAME_IN_LOG}] ${message}`);
     }
 
     public static info(message: string): void {
-        this.logger?.info(message);
+        this.logger?.info(`[${PLUGIN_NAME_IN_LOG}] ${message}`);
     }
 
     public static warning(message: string): void {
-        this.logger?.warning(message);
+        this.logger?.warning(`[${PLUGIN_NAME_IN_LOG}] ${message}`);
     }
 
     public static error(message: string): void {
-        this.logger?.error(message);
+        this.logger?.error(`[${PLUGIN_NAME_IN_LOG}] ${message}`);
     }
 }

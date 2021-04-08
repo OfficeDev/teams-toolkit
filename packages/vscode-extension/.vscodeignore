@@ -19,3 +19,4 @@ test-folder/**
 !node_modules\adm-zip
 !node_modules\@azure-tools\azcopy-node
 !node_modules\rimraf 
+!node_modules\fx-core\templates

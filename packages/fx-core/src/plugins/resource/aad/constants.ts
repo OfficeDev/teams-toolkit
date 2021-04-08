@@ -70,12 +70,15 @@ export class ConfigKeys {
   static domain = "domain";
   static endpoint = "endpoint";
   static oauthAuthority = "oauthAuthority";
+  static oauthHost = "oauthHost";
+  static tenantId = "tenantId";
 }
 
 export class ConfigKeysOfOtherPlugin {
   static frontendHostingDomain = "domain";
   static frontendHostingEndpoint = "endpoint";
   static teamsBotId = "botId";
+  static teamsBotIdLocal = "localBotId";
   static teamsBotEndpoint = "redirectUri";
   static localDebugTabDomain = "localTabDomain";
   static localDebugTabEndpoint = "localTabEndpoint";

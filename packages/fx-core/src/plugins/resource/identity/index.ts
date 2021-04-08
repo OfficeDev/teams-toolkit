@@ -11,7 +11,7 @@ import {
 import { IdentityConfig } from "./config";
 import { Constants, Telemetry } from "./constants";
 import { ContextUtils } from "./utils/contextUtils";
-import { ResultFactory,Result } from "./results";
+import { ResultFactory, Result } from "./results";
 import { Message } from "./utils/messages";
 import { TelemetryUtils } from "./utils/telemetryUtil";
 import { formatEndpoint } from "./utils/commonUtils";
@@ -19,7 +19,7 @@ import { formatEndpoint } from "./utils/commonUtils";
 export class IdentityPlugin implements Plugin {
     template: any;
     parameters: any;
-    armTemplateDir: string = path.resolve(__dirname, "arm-template");
+    armTemplateDir: string = path.resolve(__dirname, "..", "..", "..", "..", "templates", "plugins", "resource", "identity");
     config: IdentityConfig = new IdentityConfig();
 
     async provision(ctx: PluginContext): Promise<Result> {

@@ -101,11 +101,11 @@ export class ProvisionException extends PluginException {
 }
 
 export class ConfigUpdatingException extends PluginException {
-    constructor(innerError?: Error) {
+    constructor(configName: string, innerError?: Error) {
         super(
             ExceptionType.System,
             ExceptionNames.CONFIG_UPDATING_EXCEPTION,
-            Messages.FailToUpdateConfigs("azure web app"),
+            Messages.FailToUpdateConfigs(configName),
             [
                 Messages.ReferToIssueLink
             ],

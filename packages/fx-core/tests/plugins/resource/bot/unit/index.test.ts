@@ -90,10 +90,9 @@ describe("Teams Bot Resource Plugin", () => {
             // Prepare fake zip buffer
             const zip = new AdmZip();
             zip.addFile(
-                ".env",
-                Buffer.from(`${ScaffoldPlaceholders.BOT_ID}\n${ScaffoldPlaceholders.BOT_PASSWORD}`),
+                "anyfile",
+                Buffer.from("anycontent"),
             );
-            zip.addFile(".vscode/launch.json", Buffer.from(ScaffoldPlaceholders.TEAMS_APP_ID));
 
             sinon.stub(downloadByUrl, "downloadByUrl").resolves(zip.toBuffer());
 
@@ -105,8 +104,6 @@ describe("Teams Bot Resource Plugin", () => {
 
             // Assert
             chai.assert.deepEqual(result, ResultFactory.Success());
-            chai.assert.isTrue(await fs.pathExists(`${scaffoldDir}/bot/.env`));
-            chai.assert.isTrue(await fs.pathExists(`${scaffoldDir}/bot/.vscode/launch.json`));
         });
 
         it("happy path javascript", async () => {
@@ -118,10 +115,9 @@ describe("Teams Bot Resource Plugin", () => {
             // Prepare fake zip buffer
             const zip = new AdmZip();
             zip.addFile(
-                ".env",
-                Buffer.from(`${ScaffoldPlaceholders.BOT_ID}\n${ScaffoldPlaceholders.BOT_PASSWORD}`),
+                "anyfile",
+                Buffer.from("anycontent"),
             );
-            zip.addFile(".vscode/launch.json", Buffer.from(ScaffoldPlaceholders.TEAMS_APP_ID));
 
             sinon.stub(downloadByUrl, "downloadByUrl").resolves(zip.toBuffer());
 
@@ -133,8 +129,6 @@ describe("Teams Bot Resource Plugin", () => {
 
             // Assert
             chai.assert.deepEqual(result, ResultFactory.Success());
-            chai.assert.isTrue(await fs.pathExists(`${scaffoldDir}/bot/.env`));
-            chai.assert.isTrue(await fs.pathExists(`${scaffoldDir}/bot/.vscode/launch.json`));
         });
     });
 

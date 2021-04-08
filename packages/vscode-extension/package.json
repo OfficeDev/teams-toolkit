@@ -298,6 +298,7 @@
     "prepare": "npm run build"
   },
   "devDependencies": {
+    "@shared/eslint-config": "^0.0.0",
     "@typescript-eslint/eslint-plugin": "^4.19.0",
     "@typescript-eslint/parser": "^4.19.0",
     "eslint": "^7.22.0",

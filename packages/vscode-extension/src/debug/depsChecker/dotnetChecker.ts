@@ -4,9 +4,10 @@
 import { IDepsChecker } from "./checker";
 import { DotnetCheckerImpl } from "./dotnetCheckerImpl";
 import { dotnetCheckerEnabled } from "./checkerAdapter";
+import { DotnetChecker } from "../dotnetSdk/dotnetChecker";
 
 export class DotnetCoreChecker implements IDepsChecker {
-  async getDepsInfo(): Promise<Map<string, string>> {
+  public async getDepsInfo(): Promise<Map<string, string>> {
     const map = new Map<string, string>();
     const execPath = await DotnetCheckerImpl.getDotnetExecPath();
     if (execPath) {
@@ -16,15 +17,30 @@ export class DotnetCoreChecker implements IDepsChecker {
     return map;
   }
 
-  isEnabled(): Promise<boolean> {
+  public isEnabled(): Promise<boolean> {
     return Promise.resolve(dotnetCheckerEnabled());
   }
 
-  isInstalled(): Promise<boolean> {
+  public isInstalled(): Promise<boolean> {
     return DotnetCheckerImpl.isInstalled();
   }
 
-  install(): Promise<void> {
+  public install(): Promise<void> {
     return DotnetCheckerImpl.doInstall();
   }
+
+  public async getDotnetExecPath(): Promise<string> {
+    let dotnetExecPath = "";
+    if (this.isEnabled()) {
+      const execPath = await DotnetCheckerImpl.getDotnetExecPath();
+      if (execPath !== null) {
+        dotnetExecPath = execPath;
+      }
+    } else {
+      dotnetExecPath = "dotnet";
+    }
+    return dotnetExecPath;
+  }
 }
+
+export const dotnetChecker = new DotnetCoreChecker();

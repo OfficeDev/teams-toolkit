@@ -57,9 +57,9 @@ import { cpUtils } from "./debug/cpUtils";
 import * as path from "path";
 import * as fs from "fs-extra";
 import { VsCodeUI, VS_CODE_UI } from "./qm/vsc_ui";
-import { DepsChecker } from "./debug/depsChecker/checker";
+import { DepsChecker, DepsCheckerError } from "./debug/depsChecker/checker";
 import { FuncToolChecker } from "./debug/depsChecker/funcToolChecker";
-import { DotnetCoreChecker } from "./debug/depsChecker/dotnetChecker";
+import { DotnetCoreChecker, dotnetChecker } from "./debug/depsChecker/dotnetChecker";
 
 export let core: CoreProxy;
 const runningTasks = new Set<string>(); // to control state of task execution
@@ -446,21 +446,10 @@ export async function validateDependenciesHandler(): Promise<void> {
  * install functions binding before launch local debug
  */
 export async function backendExtensionsInstallHandler(): Promise<void> {
-  let dotnetExecPath;
-  if (dotnetCheckerEnabled()) {
-    dotnetExecPath = await DotnetChecker.getDotnetExecPath();
-  } else {
-    dotnetExecPath = "dotnet";
-  }
+  const dotnetExecPath = await dotnetChecker.getDotnetExecPath();
 
-  if (!dotnetExecPath) {
-    logger.error(`Failed to run backend extension install, .NET SDK executable not found`);
-    commonUtils.displayLearnMore(
-      constants.Messages.failToInstallBackendExtensions,
-      constants.backendExtensionsHelpLink
-    );
-    await debug.stopDebugging();
-    return;
+  if (dotnetExecPath === "") {
+    throw new Error("Failed to run backend extension install, .NET SDK executable not found");
   }
 
   if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
@@ -481,13 +470,7 @@ export async function backendExtensionsInstallHandler(): Promise<void> {
         "bin"
       );
     } catch (error) {
-      logger.error(`Failed to run backend extension install: error = '${error}'`);
-      commonUtils.displayLearnMore(
-        constants.Messages.failToInstallBackendExtensions,
-        constants.backendExtensionsHelpLink
-      );
-      await debug.stopDebugging();
-      return;
+      throw new Error(`Failed to run backend extension install: error = '${error}'`);
     }
   }
 }

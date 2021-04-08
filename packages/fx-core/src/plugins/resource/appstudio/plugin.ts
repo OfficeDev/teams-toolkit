@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, ok, PluginContext, Result, TeamsAppManifest } from "teamsfx-api";
+import { FxError, ok, PluginContext, Result, TeamsAppManifest } from "fx-api";
 import { AppStudioClient } from "./appStudio";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";

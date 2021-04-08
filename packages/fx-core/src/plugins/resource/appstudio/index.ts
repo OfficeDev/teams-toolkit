@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ConfigFolderName, FxError, NodeType, ok, Plugin, PluginContext, QTreeNode, Result, Stage } from "teamsfx-api";
+import { ConfigFolderName, FxError, NodeType, ok, Plugin, PluginContext, QTreeNode, Result, Stage } from "fx-api";
 import { AppStudioPluginImpl } from "./plugin";
 import { Constants } from "./constants";
 

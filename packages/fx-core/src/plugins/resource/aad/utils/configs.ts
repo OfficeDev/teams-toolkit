@@ -142,14 +142,9 @@ export class SetApplicationInContextConfig {
       }
     }
 
-    const botId: ConfigValue = ctx.configOfOtherPlugins
-      .get(Plugins.teamsBot)
-      ?.get(
-        Utils.addLocalDebugPrefix(
-          this.isLocalDebug,
-          ConfigKeysOfOtherPlugin.teamsBotId
-        )
-      );
+    const botId: ConfigValue = this.isLocalDebug ?
+      ctx.configOfOtherPlugins.get(Plugins.teamsBot)?.get(ConfigKeysOfOtherPlugin.teamsBotIdLocal) :
+      ctx.configOfOtherPlugins.get(Plugins.teamsBot)?.get(ConfigKeysOfOtherPlugin.teamsBotId);
     if (botId) {
       this.botId = format(botId as string, Formats.UUID);
     }

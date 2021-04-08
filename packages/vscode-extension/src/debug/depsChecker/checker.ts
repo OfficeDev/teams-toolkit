@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { displayLearnMoreMessage, displayWarningMessage } from "./checkerAdapter";
 import * as os from "os";
 

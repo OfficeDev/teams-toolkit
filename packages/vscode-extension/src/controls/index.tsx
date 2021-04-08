@@ -3,7 +3,7 @@ import * as ReactDOM from 'react-dom';
 import { IntlProvider } from 'react-intl';
 import { MemoryRouter, Route } from "react-router-dom";
 import { initializeIcons } from "@fluentui/react/lib/Icons";
-import WelcomePanel from './WelcomePanel'
+import WelcomePanel from './WelcomePanel';
 
 const language = "en";
 

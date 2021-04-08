@@ -1,4 +1,7 @@
 // Copyright (c) Microsoft Corporation.
+
+import path from "path";
+
 // Licensed under the MIT license.
 export class Constants {
     static readonly SolutionPlugin = {
@@ -35,7 +38,7 @@ export class Constants {
         },
     };
 
-    static readonly ResourcesFolderName: string = "assets";
+    static readonly ResourcesFolderName: string = path.join("templates", "plugins", "resource", "simpleauth");
     static readonly SimpleAuthFileName: string = "SimpleAuth.zip";
 
     static readonly ResourceNameMaxLength = 40;

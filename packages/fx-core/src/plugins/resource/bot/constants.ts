@@ -153,7 +153,7 @@ export class QuestionOptions {
 
     public static readonly PROGRAMMING_LANGUAGE_OPTIONS: OptionItem[] = Object.values(ProgrammingLanguage).map((value) => {
         return {
-            id: value.toLowerCase(),
+            id: value,
             label: value
         };
     });

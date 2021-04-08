@@ -43,6 +43,20 @@ export class PreconditionException extends PluginException {
     }
 }
 
+export class DeployWithoutProvisionException extends PluginException {
+    constructor() {
+        super(
+            ExceptionType.User,
+            ExceptionNames.PRECONDITION_EXCEPTION,
+            Messages.DoSthBeforeSth('provision', 'running deploy'),
+            [
+                'Please run provision first',
+                Messages.ReferToHelpLink
+            ]
+        );
+    }
+}
+
 export class SomethingMissingException extends PreconditionException {
     constructor(something: string) {
         super(

@@ -6,7 +6,7 @@ import { PluginBot } from "../resources/strings";
 import * as utils from "../utils/common";
 
 export class DeployConfig {
-    public unPackFlag = "false";
+    public unPackFlag = "true";
 
     public async restoreConfigFromContext(context: PluginContext): Promise<void> {
 

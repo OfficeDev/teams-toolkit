@@ -81,7 +81,7 @@ export class LanguageStrategy {
             }
         }
 
-        if (programmingLanguage === ProgrammingLanguage.JavaScript) {
+        if (!unPackFlag && programmingLanguage === ProgrammingLanguage.JavaScript) {
             // Since teamfx package is in private registry, have to npm install to pack the node_modulre folder.
             try {
                 await utils.execute("npm install", packDir);

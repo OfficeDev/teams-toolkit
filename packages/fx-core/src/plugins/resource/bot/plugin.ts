@@ -17,7 +17,7 @@ import * as appService from "@azure/arm-appservice";
 import * as fs from "fs-extra";
 import { CommonStrings, PluginBot, ConfigNames, TelemetryStrings } from "./resources/strings";
 import { DialogUtils } from "./utils/dialog";
-import { CheckThrowSomethingMissing, ConfigUpdatingException, ListPublishingCredentialsException, MessageEndpointUpdatingException, PackDirExistenceException, PreconditionException, ProvisionException, SomethingMissingException, UserInputsException, ValidationException, ZipDeployException } from "./exceptions";
+import { CheckThrowSomethingMissing, ConfigUpdatingException, DeployWithoutProvisionException, ListPublishingCredentialsException, MessageEndpointUpdatingException, PackDirExistenceException, PreconditionException, ProvisionException, SomethingMissingException, UserInputsException, ValidationException, ZipDeployException } from "./exceptions";
 import { TeamsBotConfig } from "./configs/teamsBotConfig";
 import { default as axios } from "axios";
 import AdmZip from "adm-zip";
@@ -367,6 +367,10 @@ export class TeamsBotImpl {
         this.telemetryStepIn(LifecycleFuncNames.PRE_DEPLOY);
         this.markEnterAndLogConfig(LifecycleFuncNames.PRE_DEPLOY);
 
+        if (!this.config.provision.provisioned) {
+            throw new DeployWithoutProvisionException();
+        }
+
         // Preconditions checking.
         const packDir = this.config.scaffold.workingDir!;
 
@@ -612,7 +616,12 @@ export class TeamsBotImpl {
     private async createNewBotRegistrationOnAppStudio() {
         this.telemetryStepIn(LifecycleFuncNames.CREATE_NEW_BOT_REG_APPSTUDIO);
         this.markEnterAndLogConfig(LifecycleFuncNames.CREATE_NEW_BOT_REG_APPSTUDIO);
-        Logger.debug(`Start to create new bot registration on app studio.`);
+        Logger.debug("Start to create new bot registration on app studio.");
+
+        if (this.config.localDebug.botRegistrationCreated()) {
+            Logger.debug("Local bot has already been registered, just return.");
+            return ;
+        }
 
         // 1. Create a new AAD App Registraion with client secret.
         const appStudioToken = await this.ctx?.appStudioToken?.getAccessToken();

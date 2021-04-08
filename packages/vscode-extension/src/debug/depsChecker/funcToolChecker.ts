@@ -2,11 +2,11 @@
 // Licensed under the MIT license.
 
 import { cpUtils } from "../cpUtils";
-import { IDepsChecker, DepsCheckerError } from "./checker";
+import { IDepsChecker, DepsCheckerError, DepsInfo } from "./checker";
 import { funcToolCheckerEnabled, logger, runWithProgressIndicator } from "./checkerAdapter";
 
 const funcPackageName = "azure-functions-core-tools";
-
+const funcToolName = "Azure Function Core Tool";
 // TODO: extract to messages.ts
 const startInstallFunctionCoreTool =
   "Starting to install the Azure Functions Core Tools v3.";
@@ -21,8 +21,11 @@ const failToInstallFuncCoreTool =
 const helpLink = "https://review.docs.microsoft.com/en-us/mods/?branch=main";
 
 export class FuncToolChecker implements IDepsChecker {
-  getDepsInfo(): Promise<Map<string, string>> {
-    return Promise.resolve(new Map<string, string>());
+  getDepsInfo(): Promise<DepsInfo> {
+    return Promise.resolve({
+      nameWithVersion: `${funcToolName} (v${FuncVersion.v3})`,
+      details: new Map<string, string>()
+    });
   }
 
   isEnabled(): Promise<boolean> {

@@ -1,19 +1,24 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { IDepsChecker } from "./checker";
-import { DotnetCheckerImpl } from "./dotnetCheckerImpl";
+import { DepsInfo, IDepsChecker } from "./checker";
+import { DotnetCheckerImpl, DotnetVersion } from "./dotnetCheckerImpl";
 import { dotnetCheckerEnabled } from "./checkerAdapter";
 
+const DotnetCoreSDKName = ".NET Core SDK";
+
 export class DotnetCoreChecker implements IDepsChecker {
-  async getDepsInfo(): Promise<Map<string, string>> {
+  async getDepsInfo(): Promise<DepsInfo> {
     const map = new Map<string, string>();
     const execPath = await DotnetCheckerImpl.getDotnetExecPath();
     if (execPath) {
       map.set("execPath", execPath);
     }
     map.set("configPath", DotnetCheckerImpl.getDotnetConfigPath())
-    return map;
+    return {
+      nameWithVersion: `${DotnetCoreSDKName} (v${DotnetVersion.v31})`,
+      details: map
+    };
   }
 
   isEnabled(): Promise<boolean> {

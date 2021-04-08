@@ -1,5 +1,11 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { IDepsChecker } from "./checker";
 import { DotnetCheckerImpl } from "./dotnetCheckerImpl";
+import { checkerEnabled } from "./checkerAdapter";
+
+const validateDotnetSdkKey = "validateDotnetSdk";
 
 export class DotnetCoreChecker implements IDepsChecker {
   async getDepsInfo(): Promise<Map<string, string>> {
@@ -13,7 +19,7 @@ export class DotnetCoreChecker implements IDepsChecker {
   }
 
   isEnabled(): Promise<boolean> {
-    return DotnetCheckerImpl.isEnabled();
+    return Promise.resolve(checkerEnabled(validateDotnetSdkKey));
   }
 
   isInstalled(): Promise<boolean> {

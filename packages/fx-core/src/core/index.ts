@@ -49,6 +49,7 @@ import { VscodeManager } from "./vscodeManager";
 import { Settings } from "./settings";
 import { CoreQuestionNames, QuestionAppName, QuestionRootFolder, QuestionSelectSolution } from "./question";
 import * as jsonschema from "jsonschema";
+import { FxBotPluginResultFactory } from "../plugins/resource/bot/result";
 
 class CoreImpl implements Core {
     private target?: CoreImpl;
@@ -599,6 +600,10 @@ class CoreImpl implements Core {
                     null,
                     4,
                 ),
+            );
+            await fs.writeFile(
+                `${this.target.ctx.root}/.gitignore`,
+                `node_modules\n/.${ConfigFolderName}/*.env`
             );
         } catch (e) {
             return err(error.WriteFileError(e));

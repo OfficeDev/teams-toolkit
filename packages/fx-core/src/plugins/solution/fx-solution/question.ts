@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { MultiSelectQuestion, NodeType, OptionItem, SingleSelectQuestion } from "fx-api";
+import { FuncQuestion, MultiSelectQuestion, NodeType, OptionItem, SingleSelectQuestion } from "fx-api";
 
 export const TabOptionItem: OptionItem = {
     id: "Tab",
@@ -30,6 +30,7 @@ export enum AzureSolutionQuestionNames {
     PluginSelectionDeploy = "deploy-plugin",
     AddResources = "add-azure-resources",
     AppName = "app-name",
+    AskSub = "ask-subscription"
 }
 
 export const HostTypeOptionAzure: OptionItem = {
@@ -121,4 +122,12 @@ export const DeployPluginSelectQuestion: MultiSelectQuestion = {
     type: NodeType.multiSelect,
     option: [],
     default: []
+};
+
+
+export const AskSubscriptionQuestion: FuncQuestion = {
+    name: AzureSolutionQuestionNames.AskSub,
+    type: NodeType.func,
+    namespace: "fx-solution-azure",
+    method: "askSubscription"
 };

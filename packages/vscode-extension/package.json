@@ -298,7 +298,6 @@
     "prepare": "npm run build"
   },
   "devDependencies": {
-    "@shared/eslint-config": "^0.0.0",
     "@typescript-eslint/eslint-plugin": "^4.19.0",
     "@typescript-eslint/parser": "^4.19.0",
     "eslint": "^7.22.0",
@@ -367,7 +366,7 @@
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "fx-api": "^1.0.1-alpha.2",
-    "fx-core": "^1.0.0-alpha.2",
+    "fx-core": "^1.0.1-alpha.3",
     "jsonschema": "^1.4.0",
     "opn": "^6.0.0",
     "underscore": "^1.12.1",

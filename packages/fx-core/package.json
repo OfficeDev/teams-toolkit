@@ -1,6 +1,6 @@
 {
   "name": "fx-core",
-  "version": "1.0.0-alpha.2",
+  "version": "1.0.1-alpha.3",
   "main": "build/core/index.js",
   "types": "build/core/index.d.ts",
   "scripts": {
@@ -71,7 +71,6 @@
     "@azure/arm-appservice": "^7.0.0",
     "@azure/arm-resources": "^4.0.0",
     "@azure/storage-blob": "^12.5.0",
-    "@shared/eslint-config": "^0.0.0",
     "@types/adm-zip": "^0.4.33",
     "@types/chai": "^4.2.14",
     "@types/chai-as-promised": "^7.1.3",

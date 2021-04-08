@@ -163,7 +163,7 @@ export class FunctionPluginImpl {
             type: NodeType.group
         });
 
-        if (stage === Stage.create) {
+        if (stage === Stage.create || (stage === Stage.update && !ctx.config.get(FunctionConfigKey.functionLanguage))) {
             res.addChild(functionLanguageQuestion);
         }
 

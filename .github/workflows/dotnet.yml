@@ -1,0 +1,59 @@
+name: TeamsFx .NET Repo CI
+
+on:
+  push:
+    path:
+    - 'packages/simpleauth/**'
+    - 'pacakges/function-extension/**'
+    branches: [ main ]
+  pull_request:
+    path:
+      - 'packages/simpleauth/**'
+      - 'pacakges/function-extension/**'
+    branches: [ main ]
+
+defaults:
+  run:
+    working-directory: packages/
+
+jobs:
+  SimpleAuth:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.x
+    - name: Build
+      run: 
+        dotnet build -c Release simpleauth/TeamsFxSimpleAuth.sln 
+    - name: Test
+      env: 
+        TEAMS_SIMPLE_AUTH_IntegrationTestSettings__AdminClientSecret: ${{secrets.SIMPLE_AUTH_TEST_ADMIN_CLIENT_SECRET}}
+        TEAMS_SIMPLE_AUTH_IntegrationTestSettings__TestPassword: ${{secrets.SIMPLE_AUTH_TEST_PASSWORD}}
+      run:
+        chmod +x "simpleauth/scripts/test.sh" && "simpleauth/scripts/test.sh"
+  
+  Function-Extension:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.x
+    - name: Install func CLI
+      run: 
+        wget -q https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb && sudo dpkg -i packages-microsoft-prod.deb &&
+        sudo apt-get update && sudo apt-get install azure-functions-core-tools-3
+    - name: Build
+      run: 
+        dotnet build -c Release function-extension/Microsoft.Azure.WebJobs.Extensions.TeamsFx.sln
+    - name: Test
+      env: 
+        TeamsFx_BINDING_IntegrationTestSettings__ClientSecret: ${{secrets.FUNCTION_EXTENSION_CLIENT_SECRET}}
+        TeamsFx_BINDING_IntegrationTestSettings__UnauthorizedAadAppClientSecret: ${{secrets.FUNCTION_EXTENSION_UNAUTHORIZED_AAD_APP_CLIENT_SECRET}}
+        TeamsFx_BINDING_IntegrationTestSettings__AllowedAppClientSecret: ${{secrets.FUNCTION_EXTENSION_ALLOWED_APP_SECRET}}
+      run:
+        chmod +x "function-extension/scripts/test.sh" && chmod +x "function-extension/scripts/start_js_function.sh" && "function-extension/scripts/test.sh"

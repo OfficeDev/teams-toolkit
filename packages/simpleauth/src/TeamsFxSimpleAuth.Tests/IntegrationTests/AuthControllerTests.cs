@@ -378,7 +378,7 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             Assert.AreEqual("grant_type is required in request body", result.Body.Detail);
         }
 
-        [Test, Category("P0"), Parallelizable]
+        [Test, Category("P0")]
         public async Task PostToken_AuthCodeGrantWithNoScopeInBody_Return400()
         {
             // Arrange
@@ -406,7 +406,7 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             Assert.AreEqual("scope is required in request body", result.Body.Detail);
         }
 
-        [Test, Category("P0"), Parallelizable]
+        [Test, Category("P0")]
         public async Task PostToken_AuthCodeGrantWithEmptyScopeInBody_Return400()
         {
             // Arrange
@@ -435,7 +435,7 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             Assert.AreEqual(ExpectedProblemType.InvalidModelException, result.Body.Type);
         }
 
-        [Test, Category("P0"), Parallelizable]
+        [Test, Category("P0")]
         public async Task PostToken_AuthCodeGrantWithInvalidScope_Return400()
         {
             // Arrange
@@ -464,7 +464,7 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             Assert.IsTrue(result.Body.Detail.Contains("AADSTS65005"));
         }
 
-        [Test, Category("P0"), Parallelizable]
+        [Test, Category("P0")]
         public async Task PostToken_AuthCodeGrantWithIncorrectRedirectUri_Return400()
         {
             // Arrange
@@ -494,7 +494,7 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             Assert.IsTrue(result.Body.Detail.Contains("AADSTS50011")); // Invalid reply url error
         }
 
-        [Test, Category("P0"), Parallelizable]
+        [Test, Category("P0")]
         public async Task PostToken_AuthCodeGrantWithIncorrectAuthCode_Return400()
         {
             // Arrange
@@ -523,7 +523,7 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             Assert.IsTrue(result.Body.Detail.Contains("invalid_grant"));
         }
 
-        [Test, Category("P0"), Parallelizable]
+        [Test, Category("P0")]
         public async Task PostToken_AuthCodeGrantWithIncorrectCodeVerifier_Return400()
         {
             // Arrange
@@ -554,7 +554,7 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             Assert.IsTrue(detail["error_description"].ToString().Contains("The Code_Verifier does not match the code_challenge supplied in the authorization request"));
         }
 
-        [Test, Category("P0"), Parallelizable]
+        [Test, Category("P0")]
         public async Task PostToken_AuthCodeGrantWithCorrectBody_Return200()
         {
             // Arrange
@@ -594,7 +594,7 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             Assert.NotNull(result.Body.AccessToken);
         }
 
-        [Test, Category("P0"), Parallelizable]
+        [Test, Category("P0")]
         public async Task PostToken_AuthCodeGrantWithAdditionalPropertyInBody_Return200()
         {
             // Arrange
@@ -635,7 +635,7 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             Assert.NotNull(result.Body.AccessToken);
         }
 
-        [Test, Category("P0"), Parallelizable]
+        [Test, Category("P0")]
         public async Task PostToken_AuthCodeGrantWithInvalidClientSecretInApiSetting_Return500()
         {
             // Arrange
@@ -821,7 +821,7 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
             Assert.AreNotEqual(DateTimeOffset.MinValue, result.Body.ExpiresOn);
         }
 
-        [Test, Category("P0"), Parallelizable]
+        [Test, Category("P0")]
         public async Task PostToken_SsoGrantWithAnotherConsentedScope_Return200WithNewScopeInToken()
         {
             // Arrange

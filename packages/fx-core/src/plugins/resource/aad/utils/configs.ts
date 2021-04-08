@@ -33,8 +33,6 @@ export class ProvisionConfig {
   public password?: string;
   public objectId?: string;
   public oauth2PermissionScopeId?: string;
-  public oauthAuthority?: string;
-  public tenantId?: string;
   private isLocalDebug: boolean;
 
   constructor(isLocalDebug = false) {
@@ -43,7 +41,7 @@ export class ProvisionConfig {
   }
 
   public async restoreConfigFromContext(ctx: PluginContext): Promise<void> {
-    const displayName:string = ctx.app.name.short;
+    const displayName: string = ctx.app.name.short;
     if (displayName) {
       this.displayName = displayName.substr(
         0,
@@ -75,8 +73,6 @@ export class ProvisionConfig {
   }
 
   public saveConfigIntoContext(ctx: PluginContext, tenantId: string): void {
-    this.oauthAuthority = ProvisionConfig.getOauthAuthority(tenantId);
-
     checkAndSaveConfig(
       ctx,
       Utils.addLocalDebugPrefix(this.isLocalDebug, ConfigKeys.clientId),
@@ -105,12 +101,15 @@ export class ProvisionConfig {
       ConfigKeys.teamsMobileDesktopAppId,
       Constants.teamsMobileDesktopAppId
     );
+    checkAndSaveConfig(ctx,
+      Utils.addLocalDebugPrefix(
+        this.isLocalDebug,
+        ConfigKeys.tenantId
+      ),
+      tenantId
+    );
+    checkAndSaveConfig(ctx, ConfigKeys.oauthHost, Constants.oauthAuthorityPrefix);
     checkAndSaveConfig(ctx, ConfigKeys.teamsWebAppId, Constants.teamsWebAppId);
-    checkAndSaveConfig(ctx, ConfigKeys.oauthAuthority, this.oauthAuthority);
-  }
-
-  private static getOauthAuthority(tenantId: string): string {
-    return Constants.oauthAuthorityPrefix + tenantId;
   }
 }
 
@@ -132,11 +131,11 @@ export class SetApplicationInContextConfig {
     } else {
       frontendDomain = this.isLocalDebug
         ? ctx.configOfOtherPlugins
-            .get(Plugins.localDebug)
-            ?.get(ConfigKeysOfOtherPlugin.localDebugTabDomain)
+          .get(Plugins.localDebug)
+          ?.get(ConfigKeysOfOtherPlugin.localDebugTabDomain)
         : ctx.configOfOtherPlugins
-            .get(Plugins.frontendHosting)
-            ?.get(ConfigKeysOfOtherPlugin.frontendHostingDomain);
+          .get(Plugins.frontendHosting)
+          ?.get(ConfigKeysOfOtherPlugin.frontendHostingDomain);
       if (frontendDomain) {
         this.frontendDomain = format(frontendDomain as string, Formats.Domain);
       }
@@ -199,11 +198,11 @@ export class PostProvisionConfig {
     } else {
       frontendEndpoint = this.isLocalDebug
         ? ctx.configOfOtherPlugins
-            .get(Plugins.localDebug)
-            ?.get(ConfigKeysOfOtherPlugin.localDebugTabEndpoint)
+          .get(Plugins.localDebug)
+          ?.get(ConfigKeysOfOtherPlugin.localDebugTabEndpoint)
         : ctx.configOfOtherPlugins
-            .get(Plugins.frontendHosting)
-            ?.get(ConfigKeysOfOtherPlugin.frontendHostingEndpoint);
+          .get(Plugins.frontendHosting)
+          ?.get(ConfigKeysOfOtherPlugin.frontendHostingEndpoint);
       if (frontendEndpoint) {
         this.frontendEndpoint = format(
           frontendEndpoint as string,
@@ -214,11 +213,11 @@ export class PostProvisionConfig {
 
     const botEndpoint: ConfigValue = this.isLocalDebug
       ? ctx.configOfOtherPlugins
-          .get(Plugins.localDebug)
-          ?.get(ConfigKeysOfOtherPlugin.localDebugBotEndpoint)
+        .get(Plugins.localDebug)
+        ?.get(ConfigKeysOfOtherPlugin.localDebugBotEndpoint)
       : ctx.configOfOtherPlugins
-          .get(Plugins.teamsBot)
-          ?.get(ConfigKeysOfOtherPlugin.teamsBotEndpoint);
+        .get(Plugins.teamsBot)
+        ?.get(ConfigKeysOfOtherPlugin.teamsBotEndpoint);
     if (botEndpoint) {
       this.botEndpoint = format(botEndpoint as string, Formats.Endpoint);
     }

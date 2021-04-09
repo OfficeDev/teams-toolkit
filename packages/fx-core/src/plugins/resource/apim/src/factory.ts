@@ -48,6 +48,7 @@ export class Factory {
     public static async buildQuestionManager(ctx: PluginContext, solutionConfig: SolutionConfig, telemetry: Telemetry): Promise<IQuestionManager> {
         switch (ctx.platform) {
             case Platform.VSCode:
+                // Lazy init apim service to get the latest subscription id in configuration
                 const lazyApimService = new Lazy<ApimService>(async () => await Factory.buildApimService(ctx.azureAccountProvider, solutionConfig, telemetry, ctx.logProvider));
                 const dialog = AssertNotEmpty("ctx.dialog", ctx.dialog);
                 const openApiProcessor = new OpenApiProcessor(telemetry, ctx.logProvider);

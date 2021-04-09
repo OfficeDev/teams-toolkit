@@ -2,12 +2,12 @@ name: FunctionExtension CI
 
 on:
   push:
-    path:
-    - 'pacakges/function-extension/**'
+    paths:
+    - 'packages/function-extension/**'
     branches: [ main ]
   pull_request:
-    path:
-      - 'pacakges/function-extension/**'
+    paths:
+      - 'packages/function-extension/**'
     branches: [ main ]
 
 defaults:

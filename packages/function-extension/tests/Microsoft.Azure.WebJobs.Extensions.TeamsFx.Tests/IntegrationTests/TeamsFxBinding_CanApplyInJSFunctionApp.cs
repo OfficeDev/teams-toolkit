@@ -69,7 +69,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.TeamsFx.Tests.IntegrationTests
             // Assert
             var responseObject = JsonConvert.DeserializeObject<Dictionary<string, string>>(responseBody);
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-            Assert.AreEqual("Bearer " + _defaultAccessToken, responseObject["AccessToken"]);
+            Assert.AreEqual(_defaultAccessToken, responseObject["AccessToken"]);
         }
 
         [Test]
@@ -85,7 +85,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.TeamsFx.Tests.IntegrationTests
             var responseBody = await response.Content.ReadAsStringAsync();
             var responseObject = JsonConvert.DeserializeObject<Dictionary<string, string>>(responseBody);
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-            Assert.AreEqual("Bearer " + accessTokenOfAllowedApp, responseObject["AccessToken"]);
+            Assert.AreEqual(accessTokenOfAllowedApp, responseObject["AccessToken"]);
         }
 
         [Test]

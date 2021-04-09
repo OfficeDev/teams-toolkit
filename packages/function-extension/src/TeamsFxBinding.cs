@@ -111,7 +111,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.TeamsFx
             // Return a value provider
             var config = new TeamsFxContext
             {
-                AccessToken = accessToken
+                AccessToken = accessToken.Substring("Bearer ".Length)
             };
             return new TeamsFxValueProvider(config, _logger);
         }

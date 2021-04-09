@@ -11,7 +11,7 @@ export class Lazy<T> {
         this.factoryFunc = factoryFunc;
     }
 
-    async value(): Promise<T> {
+    async getValue(): Promise<T> {
         if (typeof this.factoryOutput === "undefined") {
             this.factoryOutput = await this.factoryFunc();
         }

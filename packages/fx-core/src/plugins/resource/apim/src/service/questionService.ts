@@ -63,7 +63,7 @@ export class ApimServiceQuestion extends BaseQuestionService implements IQuestio
     }
 
     public async executeFunc(ctx: PluginContext): Promise<OptionItem[]> {
-        const apimService: ApimService = await this.lazyApimService.value();
+        const apimService: ApimService = await this.lazyApimService.getValue();
         const apimServiceList = await apimService.listService();
         const existingOptions = apimServiceList.map((apimService) => {
             return { id: apimService.serviceName, label: apimService.serviceName, description: apimService.resourceGroupName, data: apimService };
@@ -192,7 +192,7 @@ export class ApiVersionQuestion extends BaseQuestionService implements IQuestion
     }
 
     public async executeFunc(ctx: PluginContext): Promise<OptionItem[]> {
-        const apimService = await this.lazyApimService.value();
+        const apimService = await this.lazyApimService.getValue();
         const apimConfig = new ApimPluginConfig(ctx.config);
         const solutionConfig = new SolutionConfig(ctx.configOfOtherPlugins);
         const answer = buildAnswer(ctx);

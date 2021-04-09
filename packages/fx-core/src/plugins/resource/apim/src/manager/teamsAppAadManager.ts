@@ -20,7 +20,7 @@ export class TeamsAppAadManager {
     }
 
     public async postProvision(aadConfig: IAadPluginConfig, apimConfig: IApimPluginConfig): Promise<void> {
-        const aadService = await this.lazyAadService.value();
+        const aadService = await this.lazyAadService.getValue();
         const apimClientAADClientId = AssertConfigNotEmpty(
             TeamsToolkitComponent.ApimPlugin,
             ApimPluginConfigKeys.apimClientAADClientId,

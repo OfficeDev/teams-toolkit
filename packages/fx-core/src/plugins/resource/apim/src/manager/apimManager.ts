@@ -31,7 +31,7 @@ export class ApimManager {
     }
 
     public async provision(apimConfig: IApimPluginConfig, solutionConfig: ISolutionConfig, appName: string): Promise<void> {
-        const apimService: ApimService = await this.lazyApimService.value();
+        const apimService: ApimService = await this.lazyApimService.getValue();
         const resourceGroupName = apimConfig.resourceGroupName ?? solutionConfig.resourceGroupName;
         const apimServiceName = apimConfig.serviceName ?? NameSanitizer.sanitizeApimName(appName, solutionConfig.resourceNameSuffix);
 
@@ -49,7 +49,7 @@ export class ApimManager {
         aadConfig: IAadPluginConfig,
         appName: string
     ): Promise<void> {
-        const apimService: ApimService = await this.lazyApimService.value();
+        const apimService: ApimService = await this.lazyApimService.getValue();
         const resourceGroupName = apimConfig.resourceGroupName ?? solutionConfig.resourceGroupName;
         const apimServiceName = AssertConfigNotEmpty(TeamsToolkitComponent.ApimPlugin, ApimPluginConfigKeys.serviceName, apimConfig.serviceName);
         const clientId = AssertConfigNotEmpty(
@@ -84,7 +84,7 @@ export class ApimManager {
         answer: IAnswer,
         projectRootPath: string
     ): Promise<void> {
-        const apimService: ApimService = await this.lazyApimService.value();
+        const apimService: ApimService = await this.lazyApimService.getValue();
         const resourceGroupName = apimConfig.resourceGroupName ?? solutionConfig.resourceGroupName;
         const apimServiceName = AssertConfigNotEmpty(TeamsToolkitComponent.ApimPlugin, ApimPluginConfigKeys.serviceName, apimConfig.serviceName);
         const apiPrefix = AssertConfigNotEmpty(TeamsToolkitComponent.ApimPlugin, ApimPluginConfigKeys.apiPrefix, apimConfig.apiPrefix);

@@ -22,7 +22,7 @@ export class AadManager {
     }
 
     public async provision(apimPluginConfig: IApimPluginConfig, appName: string): Promise<void> {
-        const aadService: AadService = await this.lazyAadService.value();
+        const aadService: AadService = await this.lazyAadService.getValue();
         if (!apimPluginConfig.apimClientAADObjectId) {
             const aadInfo = await aadService.createAad(NameSanitizer.sanitizeAadDisplayName(appName));
             apimPluginConfig.apimClientAADObjectId = AssertNotEmpty("id", aadInfo.id);
@@ -50,7 +50,7 @@ export class AadManager {
     }
 
     public async postProvision(apimPluginConfig: IApimPluginConfig, aadPluginConfig: IAadPluginConfig, redirectUris: string[]): Promise<void> {
-        const aadService: AadService = await this.lazyAadService.value();
+        const aadService: AadService = await this.lazyAadService.getValue();
         const objectId = AssertConfigNotEmpty(
             TeamsToolkitComponent.ApimPlugin,
             ApimPluginConfigKeys.apimClientAADObjectId,

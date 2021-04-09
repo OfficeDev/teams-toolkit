@@ -5,6 +5,7 @@ import * as fs from "fs-extra";
 import { glob } from "glob";
 import { exec } from "child_process";
 import { LogProvider } from "fx-api";
+import axios, { AxiosInstance } from "axios";
 
 export async function configure(
   configurePath: string,
@@ -68,4 +69,13 @@ export async function execute(
 
 export async function sleep(ms: number) {
   await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export function createAxiosInstanceWithToken(accessToken: string): AxiosInstance {
+  const axiosInstance = axios.create({
+    headers: {
+      authorization: `Bearer ${accessToken}`,
+    },
+  });
+  return axiosInstance;
 }

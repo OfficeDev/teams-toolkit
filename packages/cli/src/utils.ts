@@ -52,7 +52,7 @@ export function getParamJson(jsonFilePath: string): { [_: string]: Options } {
         description: data.description || data.title || "",
         default: data.default,
         choices: choices,
-        hidden: !!(data as any).hidden
+        hidden: !!(data as any).hide
       };
     });
     return params;

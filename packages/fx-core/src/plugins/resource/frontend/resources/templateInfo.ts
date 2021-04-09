@@ -1,8 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import path from "path";
 import { PluginContext } from "fx-api";
-import { DependentPluginInfo } from "../constants";
+import { DependentPluginInfo, FrontendPathInfo } from "../constants";
 import { QuestionKey } from "./questions";
 
 export class TabLanguage {
@@ -20,6 +21,7 @@ export class TemplateInfo {
     language: string;
     scenario: string;
     version: string;
+    localTemplatePath: string;
 
     constructor(ctx: PluginContext) {
         this.group = TemplateInfo.TemplateGroupName;
@@ -28,6 +30,9 @@ export class TemplateInfo {
 
         const functionPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.FunctionPluginName);
         this.scenario = functionPlugin ? Scenario.WithFunction : Scenario.Default;
+        // local template package only for default scenario
+        const localTemplateFileName = [this.group, this.language, Scenario.Default].join(".");
+        this.localTemplatePath = path.join(FrontendPathInfo.TemplateDir, localTemplateFileName + FrontendPathInfo.TemplatePackageExt);
     }
 
     static readonly TemplateGroupName = "tab";

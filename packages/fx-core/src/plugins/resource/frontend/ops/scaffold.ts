@@ -89,8 +89,8 @@ export class FrontendScaffold {
         return new AdmZip(result.data);
     }
 
-    public static getTemplateZipFromLocal(rootDir: string): AdmZip {
-        const templatePath = path.resolve(rootDir, FrontendPathInfo.TemplateDir, FrontendPathInfo.TemplateFileName);
+    public static getTemplateZipFromLocal(templateInfo: TemplateInfo): AdmZip {
+        const templatePath = path.resolve(FrontendPathInfo.RootDir, templateInfo.localTemplatePath);
         return new AdmZip(templatePath);
     }
 
@@ -108,7 +108,7 @@ export class FrontendScaffold {
         } catch (e) {
             telemetryHelper.sendErrorEvent(ctx, Messages.FailedFetchTemplate(), e);
             Logger.warning(Messages.FailedFetchTemplate());
-            return FrontendScaffold.getTemplateZipFromLocal(FrontendPathInfo.RootDir);
+            return FrontendScaffold.getTemplateZipFromLocal(templateInfo);
         }
     }
 

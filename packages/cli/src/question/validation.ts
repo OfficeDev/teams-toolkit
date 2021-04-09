@@ -12,6 +12,7 @@ import {
 } from "fx-api";
 import * as fs from "fs-extra";
 import * as jsonschema from "jsonschema";
+import { ContextFactory } from "../context";
 
 export async function validate(
   core: Core,
@@ -32,7 +33,7 @@ export async function validate(
   if (funcValidation.method) {
     //function validation
     funcValidation.params = [valueToValidate];
-    const res = await core.callFunc!(funcValidation, answers);
+    const res = await core.callFunc!(ContextFactory.get(), funcValidation, answers);
     if (res.isOk()) {
       return res.value as string;
     } else {

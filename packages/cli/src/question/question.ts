@@ -7,9 +7,7 @@ import { ConfigMap, NodeType, QTreeNode, OptionItem, Core } from "fx-api";
 
 import CLILogProvider from "../commonlib/log";
 import * as constants from "../constants";
-import { NotValidInputValue } from "../error";
 import { flattenNodes } from "../utils";
-import { validate } from "./validation";
 
 export async function validateAndUpdateAnswers(
   core: Core,

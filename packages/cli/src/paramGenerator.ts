@@ -23,10 +23,11 @@ import {
   SingleSelectQuestion
 } from "fx-api";
 
-import activate from "./activate";
 import CLILogProvider from "./commonlib/log";
 import * as constants from "./constants";
 import { flattenNodes } from "./utils";
+import { TeamsCore } from "fx-core";
+import { ContextFactory } from "./context";
 
 async function main() {
   CLILogProvider.setLogLevel(constants.CLILogLevel.debug);
@@ -95,11 +96,7 @@ async function main() {
 }
 
 async function getNewParams(): Promise<Result<QTreeNode[], FxError>> {
-  const result = await activate();
-  if (result.isErr()) {
-    return err(result.error);
-  }
-  const core = result.value;
+  const core = TeamsCore.getInstance();
 
   {
     const result = await getParams(core, Stage.create);
@@ -126,14 +123,10 @@ async function createAzureProject(params: QTreeNode[]): Promise<Result<string, F
 async function getResourceAddParams(
   workspace: string
 ): Promise<Result<{ [_: string]: QTreeNode[] }, FxError>> {
-  const result = await activate(workspace);
-  if (result.isErr()) {
-    return err(result.error);
-  }
-  const core = result.value;
+  const core = TeamsCore.getInstance();
 
   {
-    const result = await getParams(core, Stage.update);
+    const result = await getParams(core, Stage.update, workspace);
     if (result.isErr()) {
       return err(result.error);
     }
@@ -163,24 +156,17 @@ async function getResourceAddParams(
     const sqlNodes = allNodes.filter((node) => node.data.name?.includes("sql"));
 
     const params: { [_: string]: QTreeNode[] } = {};
-    params[constants.resourceAddSqlParamPath] = [
-      sqlResourceNode,
-      ...sqlNodes
-    ];
+    params[constants.resourceAddSqlParamPath] = [sqlResourceNode, ...sqlNodes];
     params[constants.resourceAddFunctionParamPath] = [functionResourceNode, ...functionNodes];
     return ok(params);
   }
 }
 
 async function getProvisionParams(workspace: string): Promise<Result<QTreeNode[], FxError>> {
-  const result = await activate(workspace);
-  if (result.isErr()) {
-    return err(result.error);
-  }
-  const core = result.value;
+  const core = TeamsCore.getInstance();
 
   {
-    const result = await getParams(core, Stage.provision);
+    const result = await getParams(core, Stage.provision, workspace);
     if (result.isErr()) {
       return err(result.error);
     }
@@ -192,14 +178,10 @@ async function getProvisionParams(workspace: string): Promise<Result<QTreeNode[]
 }
 
 async function getDeployParams(workspace: string): Promise<Result<QTreeNode[], FxError>> {
-  const result = await activate(workspace);
-  if (result.isErr()) {
-    return err(result.error);
-  }
-  const core = result.value;
+  const core = TeamsCore.getInstance();
 
   {
-    const result = await getParams(core, Stage.deploy);
+    const result = await getParams(core, Stage.deploy, workspace);
     if (result.isErr()) {
       return err(result.error);
     }
@@ -210,8 +192,12 @@ async function getDeployParams(workspace: string): Promise<Result<QTreeNode[], F
   }
 }
 
-async function getParams(core: Core, stage: Stage): Promise<Result<QTreeNode[], FxError>> {
-  const result = await core.getQuestions!(stage, Platform.VSCode);
+async function getParams(
+  core: Core,
+  stage: Stage,
+  workspace?: string
+): Promise<Result<QTreeNode[], FxError>> {
+  const result = await core.getQuestions!(ContextFactory.get(workspace), stage, Platform.VSCode);
   if (result.isErr()) {
     return err(result.error);
   }

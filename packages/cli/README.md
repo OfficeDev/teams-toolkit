@@ -1,33 +1,135 @@
-# Project
+# teamsfx-cli
 
-> This repo has been populated by an initial template to help get you started. Please
-> make sure to update the content to build a great experience for community-building.
+## For developpers to build and run your local project
+0. Download the repo and cd to the repo path.
+1. Run: `npm install`
+2. Run: `npm run build`
+3. Run: `npm link --force`
+4. Now the package is installed in your global npm folder. You can type 'teamsfx --help' to see how to use the cli tool.
 
-As the maintainer of this project, please make a few updates:
+## For users to install the package
+1. Run: `npm install -g teamsfx-cli` (Pls check the version is the latest version)
+2. Now the package is installed in your global npm folder. You can type 'teamsfx --help' to see how to use the cli tool.
 
-- Improving this README.MD file to provide a great experience
-- Updating SUPPORT.MD with content about this project's support experience
-- Understanding the security reporting process in SECURITY.MD
-- Remove this section from the README
+## Example
 
-## Contributing
+### Verbose or debug
 
-This project welcomes contributions and suggestions.  Most contributions require you to agree to a
-Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
-the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
+We add two boolean options `verbose` and `debug`. By default, `verbose` is `true` and `debug` is `false`, so the log provider shows `info/warn/error` messages. When set `debug` as `true`, it will show all messages. When set `verbose` and `debug` as `false`, it only shows `error` messages. The priority of `debug` is higher than `verbose`.
 
-When you submit a pull request, a CLA bot will automatically determine whether you need to provide
-a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions
-provided by the bot. You will only need to do this once across all repos using our CLA.
+```bash
+# verbose is false and debug is false
+teamsfx xxx --verbose false
+# verbose is true and debug is false
+teamsfx xxx
+# debug is true
+teamsfx xxx --debug
+```
 
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
-For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
-contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+### New commands
 
-## Trademarks
+```bash
+cd /path/to/a/folder/
 
-This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft 
-trademarks or logos is subject to and must follow 
-[Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general).
-Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship.
-Any use of third-party trademarks or logos are subject to those third-party's policies.
+# create a teams app which hosting on Azure (with no sql/function).
+teamsfx new --app-name azureApp
+
+# create a teams app which hosting on Azure (with sql).
+teamsfx new --app-name azureApp --azure-resources sql
+
+# create a teams app which hosting on Azure (with function).
+teamsfx new --app-name azureApp --azure-resources function --function-language JavaScript
+
+# create a teams app which hosting on Azure (with sql and function).
+teamsfx new --app-name azureApp --azure-resources function sql --function-language JavaScript
+
+# create a teams app which hosting on SPFx.
+teamsfx new --app-name spfxApp --host-type SPFx
+```
+
+### Login && set subscription
+
+```bash
+cd /path/to/your/project/
+
+# login azure
+teamsfx account login azure
+# login appStudio
+teamsfx account login m365
+
+# set azure subscription for an project
+cd /path/to/your/project
+teamsfx account set --subscription 1756abc0-3554-4341-8d6a-46674962ea19
+```
+
+### Add resource to project
+
+```bash
+cd /path/to/your/project/
+
+# Add Azure Function
+teamsfx resource add azure-function --function-language JavaScript --subscription 1756abc0-3554-4341-8d6a-46674962ea19
+# Add Azure SQL
+teamsfx resource add azure-sql
+```
+
+### Show/List resource config of the project
+```bash
+teamsfx resource list
+teamsfx resource show azure-function
+```
+
+### Update AAD Permission
+```bash
+teamsfx resource configure aad --aad-env both
+```
+### Provision
+
+```bash
+# cd to your azure project with function/sql
+cd /path/to/your/azure/project/
+teamsfx provision --subscription 1756abc0-3554-4341-8d6a-46674962ea19 --sql-admin-name Abc123321 --sql-password Cab232332 --sql-confirm-password Cab232332
+```
+
+### Deploy
+
+```bash
+teamsfx deploy --deploy-plugin fx-resource-frontend-hosting
+teamsfx deploy --deploy-plugin fx-resource-frontend-hosting fx-resource-function
+teamsfx deploy --deploy-plugin fx-resource-spfx
+```
+
+## How to Generate Parameter Files (for Repo Contributors)
+
+Now CLI cannot get all questions through `core.getQuestions`, because this API depends on an existing project. There are some hard code in the `src/paramGenerator.ts` to specify some question nodes.
+
+```bash
+git clone https://github.com/OfficeDev/TeamsFx.git
+cd packages\cli
+npm install
+npm run build
+npm link --force
+
+# new an azure project
+teamsfx new --app-name azureApp --azure-resources sql function --folder test-folder
+# call param generator
+ts-node .\src\paramGenerator.ts
+```
+
+## Known issue
+1. Currently SPFx only support Node.JS V10.x
+2. The experience of 'SPFx Scaffold' on Windows CMD/Powershell with Node.JS V10.x is broken. You can switch to Linux/MacOS or use linux bash on Windows system. 
+3. teamsfx start/init
+
+## The rest of work
+
+### features for user:
+1. login/logout azure by popuping window
+2. move the logic of `set subscription` to common lib
+3. script to collect questions
+4. interact with user
+5. webpack
+6. double confirm: depends on 8
+
+### features for e2e test:
+1. use test account to login azure/appstudio

@@ -1,15 +1,7 @@
 import * as React from 'react';
-import { Icon, IIconProps } from '@fluentui/react'
 import "./WelcomePanel.scss"
-import { ActionButton, TooltipHost, ProgressIndicator, IconButton } from '@fluentui/react'
+import { ActionButton, TooltipHost, ProgressIndicator, IconButton, Icon } from '@fluentui/react'
 import { Commands } from './Commands'
-
-interface vscode {
-    postMessage(message: any): void;
-}
-
-declare const vscode: vscode;
-
 interface CardState{
     show: boolean;
     showCancel: boolean
@@ -62,7 +54,8 @@ export default class WelcomePanel extends React.Component<any, IWelcomePanelStat
                                 <div
                                     className="get-started-card"
                                     onMouseEnter={this.showCancelLearnToolkitCard}
-                                    onMouseLeave={this.hideCancelLearnToolkitCard}>
+                                    onMouseLeave={this.hideCancelLearnToolkitCard}
+                                    onClick={this.navigateToLearnToolkit}>
                                     <Icon style={{ color: "#3794FF", fontSize: 24, width: 24, height: 24 }} iconName="lightbulb" className="icon" />
                                     <div className="card-body">
                                         <h2>Learn about the Toolkit</h2>
@@ -190,7 +183,10 @@ export default class WelcomePanel extends React.Component<any, IWelcomePanelStat
                                                 calloutMain: { background: '#333333' }
                                             }}}>
                                         <ActionButton
-                                            iconProps={{ iconName: 'Link' }}>
+                                            iconProps={{ iconName: 'Link' }}
+                                            onClick={() => {
+                                                this.cloneSampleApp("To Do List", "https://github.com/HuihuiWu-Microsoft/Sample-app-graph/releases/download/v1.0/sample.app.graph.zip")
+                                            }}>
                                             Blank app
                                         </ActionButton>
                                     </TooltipHost>
@@ -320,5 +316,19 @@ export default class WelcomePanel extends React.Component<any, IWelcomePanelStat
             command: Commands.OpenExternalLink,
             data: link
         })
+    }
+
+    cloneSampleApp = (sampleAppName: string, sampleAppUrl: string) => {
+        vscode.postMessage({
+            command: Commands.CloneSampleApp,
+            data: {
+                appName: sampleAppName,
+                appUrl: sampleAppUrl
+            }
+        })
+    }
+
+    navigateToLearnToolkit = () => {
+        this.props.history.push('/learn-toolkit');
     }
 }

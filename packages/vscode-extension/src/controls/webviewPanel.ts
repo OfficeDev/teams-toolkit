@@ -5,6 +5,9 @@ import * as path from "path";
 import * as vscode from "vscode";
 import { ext } from "../extensionVariables";
 import { Commands } from "./Commands";
+import axios from "axios";
+import * as AdmZip from "adm-zip";
+import * as fs from "fs-extra";
 
 export class WebviewPanel {
   private static readonly viewType = "react";
@@ -47,10 +50,38 @@ export class WebviewPanel {
 
     // Handle messages from the webview
     this.panel.webview.onDidReceiveMessage(
-      (msg) => {
+      async (msg) => {
         switch (msg.command) {
           case Commands.OpenExternalLink:
             vscode.env.openExternal(vscode.Uri.parse(msg.data));
+            break;
+          case Commands.CloneSampleApp:
+            const selection = await vscode.window.showInformationMessage(
+              `Clone '${msg.data.appName}' from Github. This will clone '${msg.data.appName}' repository to your local machine`,
+              { modal: false },
+              "Clone",
+              "Cancel"
+            );
+            if (selection === "Clone") {
+              const folder = await vscode.window.showOpenDialog({
+                canSelectFiles: false,
+                canSelectFolders: true,
+                canSelectMany: false,
+                title: "Select folder to clone the sample app"
+              });
+              if (folder !== undefined) {
+                const result = await this.fetchCodeZip(msg.data.appUrl);
+                if (result !== undefined) {
+                  await this.saveFilesRecursively(new AdmZip(result.data), folder[0].fsPath);
+
+                  vscode.commands.executeCommand("vscode.openFolder", folder[0]);
+                } else {
+                  vscode.window.showErrorMessage("Failed to clone sample app");
+                }
+              }
+            }
+            break;
+          case Commands.DisplayCommandPalette:
             break;
           default:
             break;
@@ -62,6 +93,40 @@ export class WebviewPanel {
 
     // Set the webview's initial html content
     this.panel.webview.html = this.getHtmlForWebview();
+  }
+
+  private async fetchCodeZip(url: string) {
+    let retries = 3;
+    let result = undefined;
+    while (retries > 0) {
+      retries--;
+      try {
+        result = await axios.get(url, {
+          responseType: "arraybuffer"
+        });
+        if (result.status === 200 || result.status === 201) {
+          return result;
+        }
+      } catch (e) {
+        await new Promise<void>((resolve: () => void): NodeJS.Timer => setTimeout(resolve, 10000));
+      }
+    }
+    return result;
+  }
+
+  private async saveFilesRecursively(zip: AdmZip, dstPath: string): Promise<void> {
+    await Promise.all(
+      zip
+        .getEntries()
+        .filter((entry) => !entry.isDirectory)
+        .map(async (entry) => {
+          const data = entry.getData().toString();
+
+          const filePath = path.join(dstPath, entry.entryName);
+          await fs.ensureDir(path.dirname(filePath));
+          await fs.writeFile(filePath, data);
+        })
+    );
   }
 
   private getHtmlForWebview() {

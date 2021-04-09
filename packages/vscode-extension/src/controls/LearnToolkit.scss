@@ -1,0 +1,122 @@
+.learn-toolkit-page{
+  margin: 100px 100px 100px 100px;
+}
+
+.back{
+    margin-bottom: 40px;
+    height: 16px;
+
+    button{
+      height: 16px;
+    }
+
+    span{
+    font-size: 13px;
+    line-height: 15px;
+    align-items: center;
+    color: #3794FF;
+  }
+}
+
+.flex-section{
+  display: flex;
+}
+
+.header{
+  margin-bottom: 20px;
+}
+
+.table-of-contents{
+  width: 50%;
+  margin-right: 90px;
+}
+
+.logo{
+    width: 28px;
+    height: 28px;
+}
+
+.title{
+  width: auto;
+
+  h2{
+    font-size: 26px;
+    line-height: 30px;
+    color: #CCCCCC;
+    font-weight: normal;
+  }
+
+  h3{
+    font-size: 12px;
+    line-height: 14px;
+    color: #CCCCCC;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    font-weight: normal;
+  }
+}
+
+.stage{
+  width: 50%;
+}
+
+.action-card{
+  background-color: #252526;
+  border-radius: 4px;
+  padding: 12px 12px 12px 12px;
+  margin-bottom: 12px;
+}
+
+.collapse-action-card{
+  padding: 12px 12px 12px 12px;
+  margin-bottom: 12px;
+}
+
+.action-icon{
+  min-width: 16px;
+  margin-right: 8px;
+}
+
+.action-title{
+  font-size: 13px;
+  line-height: 15px;
+  color: #FFFFFF;
+}
+
+.left{
+  float: left;
+
+  span{
+    font-size: 13px;
+    line-height: 15px;
+    align-items: center;
+    text-align: center;
+  }
+}
+
+.right{
+  float: right;
+
+  span{
+    font-size: 13px;
+    line-height: 15px;
+    align-items: center;
+    text-align: center;
+    color: #3794FF;
+  }
+}
+
+.tip{
+  color: #808080;
+  font-size: 11px;
+  line-height: 16px;
+  align-items: center;
+}
+
+.card-line{
+  margin-bottom: 8px;
+}
+
+.left-right-align{
+  overflow: hidden;
+}

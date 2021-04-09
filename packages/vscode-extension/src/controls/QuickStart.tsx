@@ -124,6 +124,12 @@ export default class QuickStart extends React.Component<any, any>{
                     </div>
                     <div className="stage">
                         {
+                            this.state.currentStep === 1 && (
+                                <video id="capabilitiesVideo">
+                                    <source src="https://s3.amazonaws.com/codecademy-content/courses/React/react_video-fast.mp4"></source>
+                                </video>
+                            )
+                        }
                         {
                             this.state.currentStep === 2 && (
                                 <Image
@@ -200,6 +206,10 @@ export default class QuickStart extends React.Component<any, any>{
     }
 
     onWatchVideo = () => {
+        const video = document.getElementById("capabilitiesVideo") as HTMLMediaElement;
+        if(video && video.paused){
+            video!.play();
+        }
 
         let done = this.state.stepsDone;
         done[0] = true;

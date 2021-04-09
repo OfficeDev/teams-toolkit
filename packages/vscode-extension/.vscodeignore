@@ -18,8 +18,3 @@ webpack.config.js
 .github
 
 !node_modules/fx-core
-!node_modules/adm-zip
-!node_modules/keytar
-!node_modules/diagnostic-channel
-!node_modules/diagnostic-channel-publishers
-!node_modules/applicationinsights-native-metrics 

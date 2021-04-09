@@ -281,7 +281,7 @@
   },
   "scripts": {
     "lint:staged": "lint-staged",
-    "vscode:prepublish": "npm run build",
+    "vscode:prepublish": "rimraf out && npm run build",
     "copy-files": "copyfiles -u 1 src/**/*.html src/**/*.css src/**/*.ps1 src/**/*.sh out/src/",
     "compile": "tsc -p ./ && yarn copy-files",
     "build": "npm run compile",
@@ -298,7 +298,6 @@
     "prepare": "npm run build"
   },
   "devDependencies": {
-    "@shared/eslint-config": "^0.0.0",
     "@azure/arm-subscriptions": "^3.0.0",
     "@azure/eslint-plugin-azure-sdk": "^2.0.1",
     "@commitlint/cli": "^12.0.1",
@@ -340,6 +339,7 @@
     "mocha-multi-reporters": "^1.5.1",
     "mock-require": "^3.0.3",
     "ms-rest": "^2.5.4",
+    "node-loader": "^2.0.0",
     "node-sass": "^5.0.0",
     "prettier": "^1.16.4",
     "react": "^17.0.2",
@@ -373,8 +373,8 @@
     "jsonschema": "^1.4.0",
     "opn": "^6.0.0",
     "underscore": "^1.12.1",
-    "vscode-test": "^1.5.2",
-    "vscode-extension-telemetry": "^0.1.6"
+    "vscode-extension-telemetry": "^0.1.6",
+    "vscode-test": "^1.5.2"
   },
   "lint-staged": {
     "**/*.ts": [

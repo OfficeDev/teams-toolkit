@@ -1,15 +1,11 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 
 namespace Microsoft.TeamsFxSimpleAuth.Models
 {
     public class PostTokenResponse
     {
-        [JsonProperty("scope")]
-        public string Scope { get; set; }
-        [JsonProperty("expires_on")]
-        public DateTimeOffset ExpiresOn { get; set; }
-        [JsonProperty("access_token")]
-        public string AccessToken { get; set; }
+        public string scope { get; set; }
+        public DateTimeOffset expires_on { get; set; }
+        public string access_token { get; set; }
     }
 }

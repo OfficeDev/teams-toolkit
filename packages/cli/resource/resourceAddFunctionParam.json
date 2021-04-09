@@ -1,0 +1,60 @@
+[
+    {
+        "data": {
+            "name": "add-azure-resources",
+            "title": "Select Azure resources to add",
+            "type": "multiSelect",
+            "option": [
+                {
+                    "id": "sql",
+                    "label": "sql",
+                    "description": "Azure SQL Database"
+                },
+                {
+                    "id": "function",
+                    "label": "function",
+                    "description": "New APIs from Azure Functions"
+                },
+                {
+                    "id": "apim",
+                    "label": "apim",
+                    "description": "Publish APIs to API Management"
+                }
+            ],
+            "default": [
+                "function"
+            ],
+            "hide": true
+        }
+    },
+    {
+        "data": {
+            "type": "text",
+            "name": "subscription",
+            "description": "Please select a subscription"
+        }
+    },
+    {
+        "data": {
+            "name": "function-language",
+            "description": "Please choose a programming language for the Azure function app.",
+            "type": "singleSelect",
+            "option": [
+                "JavaScript",
+                "TypeScript"
+            ]
+        }
+    },
+    {
+        "data": {
+            "name": "function-name",
+            "description": "Please provide function name.",
+            "type": "text",
+            "default": "myFunc",
+            "validation": {
+                "namespace": "fx-solution-azure/fx-resource-function",
+                "method": "validateFunctionName"
+            }
+        }
+    }
+]

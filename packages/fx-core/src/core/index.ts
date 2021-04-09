@@ -31,6 +31,8 @@ import {
     TelemetryReporter,
     AppStudioTokenProvider,
     TreeProvider,
+    TreeCategory,
+    TreeItem,
     returnUserError,
     SystemError,
     UserError,
@@ -49,6 +51,8 @@ import { VscodeManager } from "./vscodeManager";
 import { Settings } from "./settings";
 import { CoreQuestionNames, QuestionAppName, QuestionRootFolder, QuestionSelectSolution } from "./question";
 import * as jsonschema from "jsonschema";
+import { FxBotPluginResultFactory } from "../plugins/resource/bot/result";
+import { AzureSubscription, getSubscriptionList } from "./loginUtils";
 
 class CoreImpl implements Core {
     private target?: CoreImpl;
@@ -319,17 +323,184 @@ class CoreImpl implements Core {
      * open an existing project
      */
     public async open(workspace?: string): Promise<Result<null, FxError>> {
+        let supported = true;
         if (!workspace) {
-            return ok(null);
+            supported = false;
+        } else {
+            this.ctx.root = workspace;
+            supported = await this.isSupported();
+            if (!supported) {
+                this.ctx.logProvider?.warning(`non Teams project:${workspace}`);
+            }
         }
 
-        this.ctx.root = workspace;
+        let getSelectSubItem: undefined | ((token: any) => Promise<TreeItem>) = undefined;
+        if (this.ctx.treeProvider) {
+            getSelectSubItem = async (token: any): Promise<TreeItem> => {
+                let selectSubLabel = "";
+                const subscriptions = await getSubscriptionList(token);
+                const activeSubscriptionId = this.configs.get(this.env!)!.get("solution")?.getString("subscriptionId");
+                const activeSubscription = subscriptions.find(
+                    (subscription) => subscription.subscriptionId === activeSubscriptionId,
+                );
+                if (activeSubscriptionId === undefined || activeSubscription === undefined) {
+                    selectSubLabel = `${subscriptions.length} subscriptions discovered`;
+                } else {
+                    selectSubLabel = activeSubscription.displayName;
+                }
+                return {
+                    commandId: "fx-extension.selectSubscription",
+                    label: selectSubLabel,
+                    callback: selectSubscriptionCallback,
+                    parent: "fx-extension.signinAzure",
+                };
+            };
 
-        const supported = await this.isSupported();
-        if (!supported) {
-            this.ctx.logProvider?.warning(`non Teams project:${workspace}`);
-            return ok(null);
+            const selectSubscriptionCallback = async (): Promise<Result<null, FxError>> => {
+                const azureToken = await this.ctx.azureAccountProvider?.getAccountCredentialAsync();
+                const subscriptions: AzureSubscription[] = await getSubscriptionList(azureToken!);
+                const subscriptionNames: string[] = subscriptions.map((subscription) => subscription.displayName);
+                const subscriptionName = (
+                    await this.ctx.dialog?.communicate(
+                        new DialogMsg(DialogType.Ask, {
+                            type: QuestionType.Radio,
+                            description: "Please select a subscription",
+                            options: subscriptionNames,
+                        }),
+                    )
+                )?.getAnswer();
+                if (subscriptionName === undefined || subscriptionName == "unknown") {
+                    return err({
+                        name: "emptySubscription",
+                        message: "No subscription selected",
+                        source: __filename,
+                        timestamp: new Date(),
+                    });
+                }
+
+                this.ctx.treeProvider?.refresh([
+                    {
+                        commandId: "fx-extension.selectSubscription",
+                        label: subscriptionName,
+                        callback: selectSubscriptionCallback,
+                        parent: "fx-extension.signinAzure",
+                    },
+                ]);
+
+                const subscription = subscriptions.find((subscription) => subscription.displayName === subscriptionName);
+
+                if(subscription){
+                    this.readConfigs();
+                    this.configs.get(this.env!)!.get("solution")!.set("subscriptionId", subscription!.subscriptionId!);
+                    this.writeConfigs();
+                }
+
+                return ok(null);
+            };
+
+            const signinM365Callback = async (): Promise<Result<null, FxError>> => {
+                const token = await this.ctx.appStudioToken?.getJsonObject(false);
+                if (token !== undefined) {
+                    this.ctx.treeProvider?.refresh([
+                        {
+                            commandId: "fx-extension.signinM365",
+                            label: (token as any).upn ? (token as any).upn : "",
+                            callback: signinM365Callback,
+                            parent: TreeCategory.Account,
+                            contextValue: "signedinM365",
+                        },
+                    ]);
+                }
+
+                return ok(null);
+            };
+
+            const signinAzureCallback = async (validFxProject: boolean): Promise<Result<null, FxError>> => {
+                const token = await this.ctx.azureAccountProvider?.getAccountCredentialAsync(false);
+                if (token !== undefined) {
+                    this.ctx.treeProvider?.refresh([
+                        {
+                            commandId: "fx-extension.signinAzure",
+                            label: (token as any).username ? (token as any).username : "",
+                            callback: signinAzureCallback,
+                            parent: TreeCategory.Account,
+                            contextValue: "signedinAzure",
+                        },
+                    ]);
+
+                    if (validFxProject) {
+                        const subItem = await getSelectSubItem!(token);
+                        this.ctx.treeProvider?.add([subItem]);
+                    }
+                }
+
+                return ok(null);
+            };
+
+            let azureAccountLabel = "Sign In Azure...";
+            let azureAccountContextValue = "signinAzure";
+            const token = this.ctx.azureAccountProvider?.getAccountCredential();
+            if (token !== undefined) {
+                azureAccountLabel = (token as any).username ? (token as any).username : "";
+                azureAccountContextValue = "signedinAzure";
+            }
+
+            this.ctx.appStudioToken?.setStatusChangeCallback(
+                (status: string, token?: string | undefined, accountInfo?: Record<string, unknown> | undefined) => {
+                    if (status === "SignedIn") {
+                        signinM365Callback();
+                    }
+                    return Promise.resolve();
+                },
+            );
+            this.ctx.azureAccountProvider?.setStatusChangeCallback(
+                async (status: string, token?: string | undefined, accountInfo?: Record<string, unknown> | undefined) => {
+                    if (status === "SignedIn") {
+                        const token = this.ctx.azureAccountProvider?.getAccountCredential();
+                        if (token !== undefined) {
+                            this.ctx.treeProvider?.refresh([
+                                {
+                                    commandId: "fx-extension.signinAzure",
+                                    label: (token as any).username ? (token as any).username : "",
+                                    callback: signinAzureCallback,
+                                    parent: TreeCategory.Account,
+                                    contextValue: "signedinAzure",
+                                },
+                            ]);
+                            if (supported) {
+                                const subItem = await getSelectSubItem!(token);
+                                this.ctx.treeProvider?.add([subItem]);
+                            }
+                        }
+                    }
+                    return Promise.resolve();
+                },
+            );
+
+            this.ctx.treeProvider.add([
+                {
+                    commandId: "fx-extension.signinM365",
+                    label: "Sign In M365...",
+                    callback: signinM365Callback,
+                    parent: TreeCategory.Account,
+                    contextValue: "signinM365",
+                    icon: "M365",
+                },
+                {
+                    commandId: "fx-extension.signinAzure",
+                    label: azureAccountLabel,
+                    callback: async () => {
+                        return signinAzureCallback(supported);
+                    },
+                    parent: TreeCategory.Account,
+                    contextValue: azureAccountContextValue,
+                    subTreeItems: [],
+                    icon: "azure",
+                },
+            ]);
         }
+
+        if (!supported) return ok(null);
 
         // update selectedSolution
         const result = await Loader.loadSelectSolution(this.ctx, this.ctx.root);
@@ -354,6 +525,12 @@ class CoreImpl implements Core {
         const readRes = await this.readConfigs();
         if (readRes.isErr()) {
             return readRes;
+        }
+
+        const token = this.ctx.azureAccountProvider?.getAccountCredential();
+        if (token !== undefined && getSelectSubItem !== undefined) {
+            const subItem = await getSelectSubItem(token);
+            this.ctx.treeProvider?.add([subItem]);
         }
 
         return await this.selectedSolution.open(this.solutionContext());
@@ -599,6 +776,10 @@ class CoreImpl implements Core {
                     null,
                     4,
                 ),
+            );
+            await fs.writeFile(
+                `${this.target.ctx.root}/.gitignore`,
+                `node_modules\n/.${ConfigFolderName}/*.env`
             );
         } catch (e) {
             return err(error.WriteFileError(e));

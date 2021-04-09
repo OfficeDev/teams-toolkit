@@ -1,0 +1,30 @@
+[
+    {
+        "data": {
+            "name": "add-azure-resources",
+            "title": "Select Azure resources to add",
+            "type": "multiSelect",
+            "option": [
+                {
+                    "id": "sql",
+                    "label": "sql",
+                    "description": "Azure SQL Database"
+                },
+                {
+                    "id": "function",
+                    "label": "function",
+                    "description": "New APIs from Azure Functions"
+                },
+                {
+                    "id": "apim",
+                    "label": "apim",
+                    "description": "Publish APIs to API Management"
+                }
+            ],
+            "default": [
+                "sql"
+            ],
+            "hide": true
+        }
+    }
+]

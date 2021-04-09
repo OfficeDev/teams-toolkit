@@ -57,10 +57,9 @@ export class DialogManager implements Dialog {
         return new DialogMsg(DialogType.Answer, await this.askQuestion(msg.content as IQuestion));
       }
       case DialogType.Show: {
-        await this.showMessage(msg.content as IMessage);
-        return new DialogMsg(DialogType.Show, {
-          description: "Show Successfully",
-          level: MsgLevel.Info
+        return new Promise(async (resolve, reject) => {
+          const result = await this.showMessage(msg.content as IMessage);
+          resolve(new DialogMsg(DialogType.Answer, result));
         });
       }
       case DialogType.Output: {
@@ -120,20 +119,25 @@ export class DialogManager implements Dialog {
    * @param msg
    * @returns message
    */
-  private async showMessage(msg: IMessage): Promise<undefined> {
+  private async showMessage(msg: IMessage): Promise<string | undefined> {
+    let result = undefined;
     switch (msg.level) {
       case MsgLevel.Info:
-        ext.ui.showInformationMessage(msg.description);
+        result = ext.ui.showInformationMessage(msg.description, ...(msg.items ? msg.items : []));
         break;
       case MsgLevel.Warning:
-        ext.ui.showWarningMessage(msg.description);
+        result = ext.ui.showWarningMessage(msg.description, ...(msg.items ? msg.items : []));
         break;
       case MsgLevel.Error:
-        ext.ui.showErrorMessage(msg.description);
+        result = ext.ui.showErrorMessage(msg.description, ...(msg.items ? msg.items : []));
         break;
     }
     await sleep(0);
-    return undefined;
+    if (msg.items) {
+      return result;
+    } else {
+      return Promise.resolve("Show Successfully");
+    }
   }
 
   private async showProgress(prog: IProgress): Promise<Result<null, FxError>> {

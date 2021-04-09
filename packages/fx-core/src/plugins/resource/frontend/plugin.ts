@@ -45,10 +45,13 @@ export class FrontendPluginImpl {
     }
 
     public getQuestions(stage: Stage, ctx: PluginContext): Result<QTreeNode | undefined, FxError> {
+        const res = new QTreeNode({
+            type: NodeType.group
+        });
         if (stage === Stage.create) {
-            return ok(tabLanguageQuestion);
+            res.addChild(tabLanguageQuestion);
         }
-        return ok(new QTreeNode({ type: NodeType.group }));
+        return ok(res);
     }
 
     public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {

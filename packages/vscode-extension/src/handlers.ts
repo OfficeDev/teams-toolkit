@@ -202,6 +202,13 @@ export async function deployHandler(): Promise<Result<null, FxError>> {
   return await runCommand(Stage.deploy);
 }
 
+export async function publishHandler(): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.PublishStart, {
+    [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
+  });
+  return await runCommand(Stage.publish);
+}
+
 const coreExeceutor:RemoteFuncExecutor = async function (func:Func, answers: Inputs|ConfigMap) : Promise<Result<unknown, FxError>>{
   return await core.callFunc(func, answers as ConfigMap);
   throw new Error();
@@ -264,6 +271,7 @@ async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
     else if (stage === Stage.provision) result = await core.provision(answers);
     else if (stage === Stage.deploy) result = await core.deploy(answers);
     else if (stage === Stage.debug) result = await core.localDebug(answers);
+    else if (stage === Stage.publish) result = await core.publish(answers);
     else {
       throw new SystemError(
         ExtensionErrors.UnsupportedOperation,

@@ -284,7 +284,7 @@
     "vscode:prepublish": "rimraf out && npm run package",
     "copy-files": "copyfiles -u 1 src/**/*.html src/**/*.css src/**/*.ps1 src/**/*.sh out/src/",
     "compile": "tsc -p ./ && yarn copy-files",
-    "build": "rimraf out && npm run package",
+    "build": "npm run compile",
     "watch": "webpack --watch --devtool nosources-source-map --info-verbosity verbose --config ./webpack.config.js",
     "package": "webpack --mode production --config ./webpack.config.js",
     "test-compile": "tsc -p ./",

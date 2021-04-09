@@ -52,6 +52,7 @@ import { Settings } from "./settings";
 import { CoreQuestionNames, QuestionAppName, QuestionRootFolder, QuestionSelectSolution } from "./question";
 import * as jsonschema from "jsonschema";
 import { FxBotPluginResultFactory } from "../plugins/resource/bot/result";
+import { AzureSubscription, getSubscriptionList } from "./loginUtils";
 
 class CoreImpl implements Core {
     private target?: CoreImpl;

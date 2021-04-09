@@ -1,9 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { GraphTokenProvider, LogProvider } from "fx-api";
+import { LogProvider } from "fx-api";
 import { ApimPluginConfigKeys, TeamsToolkitComponent } from "../constants";
 import { AssertConfigNotEmpty } from "../error";
-import { Factory } from "../factory";
 import { IApimPluginConfig, IAadPluginConfig } from "../model/config";
 import { AadService } from "../service/aadService";
 import { Telemetry } from "../telemetry";

@@ -8,10 +8,9 @@ import { OpenApiProcessor } from "../util/openApiProcessor";
 import { Telemetry } from "../telemetry";
 import { NameSanitizer } from "../util/nameSanitizer";
 import { IAnswer } from "../model/answer";
-import { AzureAccountProvider, LogProvider, TeamsAppManifest } from "fx-api";
+import { LogProvider, TeamsAppManifest } from "fx-api";
 import * as path from "path";
 import { Lazy } from "../util/lazy";
-import { Factory } from "../factory";
 
 export class ApimManager {
     private readonly logger?: LogProvider;

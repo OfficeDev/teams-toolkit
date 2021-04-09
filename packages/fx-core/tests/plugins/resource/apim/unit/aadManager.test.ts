@@ -16,7 +16,6 @@ import { Telemetry } from "../../../../../src/plugins/resource/apim/src/telemetr
 import { IAadPluginConfig, IApimPluginConfig, ISolutionConfig } from "../../../../../src/plugins/resource/apim/src/model/config";
 import { AadDefaultValues } from "../../../../../src/plugins/resource/apim/src/constants";
 import { Lazy } from "../../../../../src/plugins/resource/apim/src/util/lazy";
-import { ApimService } from "../../../../../src/plugins/resource/apim/src/service/apimService";
 dotenv.config();
 chai.use(chaiAsPromised);
 

@@ -83,6 +83,11 @@ export class WebviewPanel {
             break;
           case Commands.DisplayCommandPalette:
             break;
+          case Commands.DisplayCliCommands:
+            const terminal = vscode.window.activeTerminal ? vscode.window.activeTerminal : vscode.window.createTerminal("Teams toolkit");
+            terminal.show();
+            terminal.sendText(msg.data);
+            break;
           default:
             break;
         }

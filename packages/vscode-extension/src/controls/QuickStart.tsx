@@ -99,6 +99,10 @@ export default class QuickStart extends React.Component<any, any>{
     }
 
     displayCliCommands = () => {
+        vscode.postMessage({
+            command: Commands.DisplayCliCommands,
+            data: "teams --help"
+        });
     }
 
     downloadNode = () => {

@@ -4,5 +4,6 @@
 export enum Commands {
   OpenExternalLink = "open-external-link",
   CloneSampleApp = "clone-sample-app",
-  DisplayCommandPalette = "display-command-palette"
+  DisplayCommandPalette = "display-command-palette",
+  DisplayCliCommands = "display-cli-commands",
 }

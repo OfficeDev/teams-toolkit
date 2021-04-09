@@ -214,7 +214,7 @@ export class ApimService {
             path: apiPath,
             apiVersion: version,
             apiVersionSetId: `/apiVersionSets/${versionSetId}`,
-            format: schemaVersion === OpenApiSchemaVersion.v2 ? "swagger-json" : "openapi+json",
+            format: schemaVersion === OpenApiSchemaVersion.V2 ? "swagger-json" : "openapi+json",
             value: JSON.stringify(spec),
             subscriptionRequired: false,
             protocols: ["https"],

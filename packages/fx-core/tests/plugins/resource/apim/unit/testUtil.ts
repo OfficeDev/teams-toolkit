@@ -198,7 +198,6 @@ export class MockPluginContext implements PluginContext {
         clientId: string,
         clientSecret: string,
         solutionConfig: ISolutionConfig,
-        apimConfig?: IApimPluginConfig,
         aadConfig?: IAadPluginConfig,
         functionConfig?: IFunctionPluginConfig,
         answers?: { [key: string]: OptionItem | string }
@@ -210,7 +209,7 @@ export class MockPluginContext implements PluginContext {
         this.azureAccountProvider = new MockAzureAccountProvider();
         this.logProvider = new MockLogProvider();
         this.telemetryReporter = new MockTelemetryReporter();
-        this.config = !!apimConfig ? new ConfigMap(Object.entries(apimConfig)) : new ConfigMap();
+        this.config = new ConfigMap();
         this.configOfOtherPlugins = new Map<string, Map<string, string>>();
         this.configOfOtherPlugins.set(TeamsToolkitComponent.Solution, new Map(Object.entries(solutionConfig)));
         this.app.name.short = appName;

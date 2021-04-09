@@ -11,6 +11,12 @@ export class Constants {
         localRule: "AllowLocal"
     };
 
+    public static readonly jwtToken = {
+        ver1: "1.0",
+        ver2: "2.0",
+        userType: "0",
+    };
+
     public static readonly sqlAdministratorType: string = "ActiveDirectory";
 
     public static readonly echoIpAddress: string = "https://api.ipify.org";

@@ -19,22 +19,22 @@ export class ErrorMessage {
 
     public static readonly SqlCreateError = {
         name: "SqlCreateError",
-        message: (sqlName: string) => `create SQL server ${sqlName} failed. ${ErrorMessage.ShowDetailMessage}`
+        message: (sqlName: string, reason = "") => `create SQL server ${sqlName} failed. ${reason}`
     };
 
     public static readonly DatabaseCreateError = {
         name: "SqlDBCreateError",
-        message: (databaseName: string) => `create database ${databaseName} failed. ${ErrorMessage.ShowDetailMessage}`
+        message: (databaseName: string, reason = "") => `create database ${databaseName} failed. ${reason}`
     };
 
     public static readonly DatabaseUserCreateError = {
         name: "DatabaseUserCreateError",
-        message: (sqlName: string, database: string, user: string) => `database ${sqlName}.${database} create user ${user} failed. ${ErrorMessage.ShowDetailMessage}`
+        message: (sqlName: string, database: string, user: string, reason = "") => `database ${sqlName}.${database} create user ${user} failed. ${reason}`
     };
 
     public static readonly SqlAddAdminError = {
         name: "SqlAddAdminError",
-        message: (account: string) => `add aad admin ${account} into SQL failed. ${ErrorMessage.ShowDetailMessage}`
+        message: (account: string, reason = "") => `add aad admin ${account} into SQL failed. ${reason}`
     };
 
     public static readonly SqlAzureFirwallError = {

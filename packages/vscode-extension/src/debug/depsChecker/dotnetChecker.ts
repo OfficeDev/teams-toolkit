@@ -2,10 +2,8 @@
 // Licensed under the MIT license.
 
 import { DepsInfo, IDepsChecker } from "./checker";
-import { DotnetCheckerImpl, DotnetVersion } from "./dotnetCheckerImpl";
+import { DotnetCheckerImpl, DotnetCoreSDKName, DotnetVersion } from "./dotnetCheckerImpl";
 import { dotnetCheckerEnabled } from "./checkerAdapter";
-
-const DotnetCoreSDKName = ".NET Core SDK";
 
 export class DotnetCoreChecker implements IDepsChecker {
   async getDepsInfo(): Promise<DepsInfo> {

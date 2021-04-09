@@ -5,25 +5,33 @@ import { cpUtils } from "../cpUtils";
 import { IDepsChecker, DepsCheckerError, DepsInfo } from "./checker";
 import { funcToolCheckerEnabled, hasTeamsfxBackend, logger, runWithProgressIndicator } from "./checkerAdapter";
 
+enum FuncVersion {
+  v1 = "1",
+  v2 = "2",
+  v3 = "3"
+}
+
 const funcPackageName = "azure-functions-core-tools";
 const funcToolName = "Azure Function Core Tool";
+const installedNameWithVersion = `${funcToolName} (v${FuncVersion.v3})`;
+
 // TODO: extract to messages.ts
 const startInstallFunctionCoreTool =
-  "Downloading and installing the Azure Functions Core Tools v3.";
+  `Downloading and installing ${installedNameWithVersion}.`;
 const finishInstallFunctionCoreTool =
-  "Successfully installed the Azure Functions Core Tools v3.";
+  `Successfully installed ${installedNameWithVersion}.`;
 const needReplaceWithFuncCoreToolV3 =
-  "You must replace with the Azure Functions Core Tools v3 to debug your local functions.";
+  `You must replace with ${installedNameWithVersion} to debug your local functions.`;
 const needInstallFuncCoreTool =
-  "You must have the Azure Functions Core Tools v3 installed to debug your local functions.";
+  `You must have ${installedNameWithVersion} installed to debug your local functions.`;
 const failToInstallFuncCoreTool =
-  "The Azure Functions Core Tools v3 installation has failed and will have to be installed manually.";
+  `${installedNameWithVersion} installation has failed and will have to be installed manually.`;
 const helpLink = "https://review.docs.microsoft.com/en-us/mods/?branch=main";
 
 export class FuncToolChecker implements IDepsChecker {
   getDepsInfo(): Promise<DepsInfo> {
     return Promise.resolve({
-      nameWithVersion: `${funcToolName} (v${FuncVersion.v3})`,
+      nameWithVersion: installedNameWithVersion,
       details: new Map<string, string>()
     });
   }
@@ -71,12 +79,6 @@ export class FuncToolChecker implements IDepsChecker {
 
     logger.info(finishInstallFunctionCoreTool);
   }
-}
-
-enum FuncVersion {
-  v1 = "1",
-  v2 = "2",
-  v3 = "3"
 }
 
 async function getInstalledFuncToolsVersion(): Promise<FuncVersion | null> {

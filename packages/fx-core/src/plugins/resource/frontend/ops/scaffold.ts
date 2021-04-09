@@ -120,8 +120,7 @@ export class FrontendScaffold {
         } catch (e) {
             telemetryHelper.sendErrorEvent(ctx, Messages.FailedFetchTemplate(), e);
             Logger.warning(Messages.FailedFetchTemplate());
-            const rootDir = path.resolve(__dirname, "../../../../");
-            return FrontendScaffold.getTemplateZipFromLocal(rootDir);
+            return FrontendScaffold.getTemplateZipFromLocal(FrontendPathInfo.RootDir);
         }
     }
 

@@ -8,6 +8,7 @@ import * as commonUtils from "./commonUtils";
 import { DotnetChecker } from "./dotnetSdk/dotnetChecker";
 import { dotnetCheckerEnabled } from "./dotnetSdk/dotnetCheckerAdapter";
 import { ProductName } from "fx-api";
+import { dotnetChecker } from "./depsChecker/dotnetChecker";
 
 export class TeamsfxTaskProvider implements vscode.TaskProvider {
   public static readonly type: string = ProductName;
@@ -124,15 +125,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     const command: string = constants.authStartCommand;
     definition = definition || { type: TeamsfxTaskProvider.type, command };
 
-    // TODO: error handling when getDotnetExecPath() returns null
-    // NOTE(aochengwang): We must pass empty string instead of null to vscode.ProcessExecution(),
-    //   otherwise, VS Code will be stuck when F5.
-    let dotnetPath;
-    if (dotnetCheckerEnabled()) {
-      dotnetPath = (await DotnetChecker.getDotnetExecPath()) || "";
-    } else {
-      dotnetPath = "dotnet";
-    }
+    const dotnetPath = await dotnetChecker.getDotnetExecPath();
 
     const env = await commonUtils.getAuthLocalEnv();
     const options: vscode.ShellExecutionOptions = {

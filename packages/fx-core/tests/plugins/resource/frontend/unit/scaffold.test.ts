@@ -14,6 +14,7 @@ import fs from "fs-extra";
 
 import { FrontendPathInfo } from "../../../../../src/plugins/resource/frontend/constants";
 import { FrontendScaffold, TemplateVariable } from "../../../../../src/plugins/resource/frontend/ops/scaffold";
+import { TemplateInfo } from "../../../../../src/plugins/resource/frontend/ops/scaffold";
 import { TestHelper } from "../helper";
 
 chai.use(chaiAsPromised);
@@ -58,6 +59,17 @@ describe("FrontendScaffold", () => {
 
             const result: string = FrontendScaffold.fulfill(filePath, Buffer.from(data), variables);
             chai.assert.equal(result, rowData + variables.AppId);
+        });
+    });
+
+    describe("getTemplateZip", () => {
+        it("fallback", async () => {
+            sinon.stub(FrontendScaffold, "getTemplateURL").rejects();
+            const pluginContext: PluginContext = TestHelper.getFakePluginContext();
+            const templateInfo = new TemplateInfo();
+
+            const zip = await FrontendScaffold.getTemplateZip(pluginContext, templateInfo);
+            chai.assert.exists(zip);
         });
     });
 

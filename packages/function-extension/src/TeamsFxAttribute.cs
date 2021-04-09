@@ -11,9 +11,13 @@ namespace Microsoft.Azure.WebJobs.Extensions.TeamsFx
         {
             ClientId = Environment.GetEnvironmentVariable(ConfigurationNames.ClientId);
             ClientSecret = Environment.GetEnvironmentVariable(ConfigurationNames.ClientSecret);
-            OAuthAuthority = Environment.GetEnvironmentVariable(ConfigurationNames.OAuthAuthorityHost).TrimEnd('/')
-                + '/' + Environment.GetEnvironmentVariable(ConfigurationNames.TenantId);
             AllowedAppIds = Environment.GetEnvironmentVariable(ConfigurationNames.AllowedAppIds);
+            string authorityHost = Environment.GetEnvironmentVariable(ConfigurationNames.OAuthAuthorityHost);
+            string tenantId = Environment.GetEnvironmentVariable(ConfigurationNames.TenantId);
+            if (authorityHost != null && tenantId != null)
+            {
+                OAuthAuthority = authorityHost.TrimEnd('/') + '/' + tenantId;
+            }
 
             var TokenRefreshBufferMinutesConfig = Environment.GetEnvironmentVariable(ConfigurationNames.TokenRefreshBufferMinutes);
             if (int.TryParse(TokenRefreshBufferMinutesConfig, out int bufferMinutes))

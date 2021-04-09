@@ -23,7 +23,7 @@ export class LocalDebugCertificate {
  */
 export class LocalDebugConfigKeys {
     public static readonly LocalAuthEndpoint: string = "localAuthEndpoint";
-    
+
     public static readonly LocalTabEndpoint: string = "localTabEndpoint";
     public static readonly LocalTabDomain: string = "localTabDomain";
 
@@ -116,7 +116,7 @@ export const LocalEnvBotKeys = Object.freeze({
     BotPassword: "BOT_BOT_PASSWORD",
     ClientId: "BOT_M365_CLIENT_ID",
     ClientSecret: "BOT_M365_CLIENT_SECRET",
-    TenantID: "BOT_TENANT_ID",
+    TenantID: "BOT_M365_TENANT_ID",
     OauthAuthority: "BOT_M365_AUTHORITY_HOST",
     LoginUrl: "BOT_INITIATE_LOGIN_ENDPOINT",
     IdentifierUri: "BOT_M365_APPLICATION_ID_URI",

@@ -4,17 +4,17 @@ import "mocha";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import dotenv from "dotenv";
-import sinon from "sinon";
 import { ApimPlugin } from "../../../../../src/plugins/resource/apim/src/index";
 import { v4 } from "uuid";
-import { skip_if, MockPluginContext, MockDialog } from "./testUtil";
+import { skip_if, MockPluginContext } from "./testUtil";
 import {
     IAadPluginConfig,
     IApimPluginConfig,
     IFunctionPluginConfig,
     ISolutionConfig,
 } from "../../../../../src/plugins/resource/apim/src/model/config";
-import { DialogMsg, DialogType, IQuestion, PluginContext, QuestionType } from "fx-api";
+import { PluginContext } from "fx-api";
+import { QuestionConstants } from "../../../../../src/plugins/resource/apim/src/constants";
 dotenv.config();
 chai.use(chaiAsPromised);
 const enableTest: boolean = process.env.OVERALL_TEST ? process.env.OVERALL_TEST === "true" : false;
@@ -38,28 +38,13 @@ describe("ApimPlugin", () => {
         const apimPlugin = new ApimPlugin();
         skip_if(!enableTest, "First time create", async () => {
             const ctx = await buildContext("fx-apim-test", testCreateSuffix);
-            const mockDialog = new MockDialog();
-            sinon.stub(mockDialog, "communicate").callsFake((msg: any) => {
-                msg = msg as DialogMsg;
-                const content = msg?.content as IQuestion;
-                if (content.type === QuestionType.Radio) {
-                    return Promise.resolve(new DialogMsg(DialogType.Answer, content?.options?.pop() ?? ""));
-                } else {
-                    return Promise.resolve(new DialogMsg(DialogType.Answer, content?.defaultAnswer ?? ""));
-                }
-            });
-            ctx.dialog = mockDialog;
 
-            let result = await apimPlugin.preScaffold(ctx);
-            chai.assert.isTrue(result.isOk(), "Operation apimPlugin.preScaffold should be succeeded.");
-            result = await apimPlugin.scaffold(ctx);
+            let result = await apimPlugin.scaffold(ctx);
             chai.assert.isTrue(result.isOk(), "Operation apimPlugin.scaffold should be succeeded.");
             result = await apimPlugin.provision(ctx);
             chai.assert.isTrue(result.isOk(), "Operation apimPlugin.provision should be succeeded.");
             result = await apimPlugin.postProvision(ctx);
             chai.assert.isTrue(result.isOk(), "Operation apimPlugin.postProvision should be succeeded.");
-            result = await apimPlugin.preDeploy(ctx);
-            chai.assert.isTrue(result.isOk(), "Operation apimPlugin.preDeploy should be succeeded.");
             result = await apimPlugin.deploy(ctx);
             chai.assert.isTrue(result.isOk(), "Operation apimPlugin.deploy should be succeeded.");
         });
@@ -80,6 +65,17 @@ async function buildContext(resourceName: string, resourceNameSuffix: string): P
         apiDocumentPath: "./test/unit/data/index/openapi.json",
         apiPrefix: "apim-plugin-test",
     };
+    const answer = {
+        [QuestionConstants.Apim.questionName]: {
+            id: QuestionConstants.Apim.createNewApimOption,
+            label: QuestionConstants.Apim.createNewApimOption,
+        },
+        [QuestionConstants.ApiVersion.questionName]: {
+            id: QuestionConstants.ApiVersion.createNewApiVersionOption,
+            label: QuestionConstants.ApiVersion.createNewApiVersionOption,
+        },
+        [QuestionConstants.NewApiVersion.questionName]: "v1",
+    };
     const ctx = new MockPluginContext(
         resourceName,
         testTenantId,
@@ -88,7 +84,8 @@ async function buildContext(resourceName: string, resourceNameSuffix: string): P
         buildSolutionConfig(resourceNameSuffix),
         apimConfig,
         aadConfig,
-        functionConfig
+        functionConfig,
+        answer
     );
     await ctx.init();
     return ctx;

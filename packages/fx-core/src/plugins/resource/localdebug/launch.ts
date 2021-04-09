@@ -3,6 +3,7 @@
 "use strict";
 
 import { ProductName } from "fx-api";
+import * as os from "os";
 import { LaunchBrowser } from "./constants";
 
 export function generateConfigurations(includeFrontend: boolean, includeBackend: boolean, includeBot: boolean): Record<string, unknown>[] {
@@ -45,6 +46,13 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
         );
     }
     */
+
+    let edgeOrder = 2, chromeOrder = 1;
+    if (os.type() === "Windows_NT") {
+        edgeOrder = 1;
+        chromeOrder = 2;
+    }
+
     const launchConfigurations: Record<string, unknown>[] = [
         {
             name: "Launch Remote (Edge)",
@@ -53,7 +61,7 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
             url: "https://teams.microsoft.com/_#/l/app/${teamsAppId}?installAppPackage=true",
             presentation: {
                 group: "remote",
-                order: 1,
+                order: edgeOrder,
             },
         },
         {
@@ -63,7 +71,7 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
             url: "https://teams.microsoft.com/_#/l/app/${teamsAppId}?installAppPackage=true",
             presentation: {
                 group: "remote",
-                order: 2,
+                order: chromeOrder,
             },
         },
     ];
@@ -253,6 +261,11 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
 
 export function generateCompounds(includeFrontend: boolean, includeBackend: boolean, includeBot: boolean): Record<string, unknown>[] {
     const launchCompounds: Record<string, unknown>[] = [];
+    let edgeOrder = 2, chromeOrder = 1;
+    if (os.type() === "Windows_NT") {
+        edgeOrder = 1;
+        chromeOrder = 2;
+    }
 
     // Tab only
     if (includeFrontend && !includeBot) {
@@ -265,7 +278,7 @@ export function generateCompounds(includeFrontend: boolean, includeBackend: bool
                 preLaunchTask: "Pre Debug Check",
                 presentation: {
                     group: "all",
-                    order: 1,
+                    order: edgeOrder,
                 },
                 stopAll: true,
             },
@@ -277,7 +290,7 @@ export function generateCompounds(includeFrontend: boolean, includeBackend: bool
                 preLaunchTask: "Pre Debug Check",
                 presentation: {
                     group: "all",
-                    order: 2,
+                    order: chromeOrder,
                 },
                 stopAll: true,
             },
@@ -293,7 +306,7 @@ export function generateCompounds(includeFrontend: boolean, includeBackend: bool
                 preLaunchTask: "Pre Debug Check",
                 presentation: {
                     group: "all",
-                    order: 1,
+                    order: edgeOrder,
                 },
                 stopAll: true,
             },
@@ -303,7 +316,7 @@ export function generateCompounds(includeFrontend: boolean, includeBackend: bool
                 preLaunchTask: "Pre Debug Check",
                 presentation: {
                     group: "all",
-                    order: 2,
+                    order: chromeOrder,
                 },
                 stopAll: true,
             },
@@ -319,7 +332,7 @@ export function generateCompounds(includeFrontend: boolean, includeBackend: bool
                 preLaunchTask: "Pre Debug Check",
                 presentation: {
                     group: "all",
-                    order: 1,
+                    order: edgeOrder,
                 },
                 stopAll: true,
             },
@@ -329,7 +342,7 @@ export function generateCompounds(includeFrontend: boolean, includeBackend: bool
                 preLaunchTask: "Pre Debug Check",
                 presentation: {
                     group: "all",
-                    order: 2,
+                    order: chromeOrder,
                 },
                 stopAll: true,
             },

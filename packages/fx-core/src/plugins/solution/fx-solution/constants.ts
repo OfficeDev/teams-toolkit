@@ -84,6 +84,7 @@ export enum SolutionError {
     BotInternalError = "BotInternalError",
     InternelError = "InternelError",
     RegisterTeamsAppAndAadError = "RegisterTeamsAppAndAadError",
+    UpdateManifestError = "UpdateManifestError",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";
@@ -151,6 +152,6 @@ export const TEAMS_APP_MANIFEST_TEMPLATE = `{
     "validDomains": [],
     "webApplicationInfo": {
         "id": "{appClientId}",
-        "resource": "api://{frontEndDomain}/{appClientId}"
+        "resource": "{webApplicationInfoResource}"
     }
 }`;

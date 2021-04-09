@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { IBotRegistration, IAADApplication, IAADPassword, IAppDefinition } from "./interface";
-import { TeamsAppManifest, ConfigMap, LogProvider } from "fx-api";
+import { TeamsAppManifest, ConfigMap, LogProvider, IBot, IComposeExtension } from "fx-api";
 import { AzureSolutionQuestionNames, BotOptionItem, HostTypeOptionAzure, MessageExtensionItem } from "../question";
 import { TEAMS_APP_MANIFEST_TEMPLATE } from "../constants";
 import axios, { AxiosInstance } from "axios";
@@ -215,7 +215,7 @@ export namespace AppStudio {
         appId: string,
         endpoint: string,
         domains: string[],
-        webApplicationInfoResource?: string,
+        webApplicationInfoResource: string,
         appName?: string,
         version?: string,
         bots?: string,
@@ -230,21 +230,17 @@ export namespace AppStudio {
         manifest = replaceConfigValue(manifest, "baseUrl", endpoint ? endpoint : "https://localhost:3000");
         manifest = replaceConfigValue(manifest, "appClientId", appId);
         manifest = replaceConfigValue(manifest, "appid", appId);
-
-        // Convert manifest json string to json object.
-        const manifestJson = JSON.parse(manifest); // exception handling.
-        if (bots) {
-            manifestJson["bots"] = bots;
-        }
-        if (composeExtensions) {
-            manifestJson["composeExtensions"] = composeExtensions;
-        }
-        if (webApplicationInfoResource) {
-            manifestJson["webApplicationInfo"]["resource"] = webApplicationInfoResource;
-        }
-        manifest = JSON.stringify(manifestJson);
+        manifest = replaceConfigValue(manifest, "webApplicationInfoResource", webApplicationInfoResource);
 
         const updatedManifest = JSON.parse(manifest) as TeamsAppManifest;
+
+        if (bots) {
+            updatedManifest.bots = JSON.parse(bots) as IBot[];
+        }
+
+        if (composeExtensions) {
+            updatedManifest.composeExtensions = JSON.parse(composeExtensions) as IComposeExtension[];
+        }
 
         for (const domain of domains) {
             updatedManifest.validDomains?.push(domain);
@@ -277,6 +273,7 @@ export namespace AppStudio {
         appDefinition.configurableTabs = appManifest.configurableTabs;
 
         appDefinition.bots = appManifest.bots;
+        appDefinition.messagingExtensions = appManifest.composeExtensions;
 
         if (appManifest.webApplicationInfo) {
             appDefinition.webApplicationInfoId = appManifest.webApplicationInfo.id;

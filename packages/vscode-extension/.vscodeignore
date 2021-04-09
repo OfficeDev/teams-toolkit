@@ -17,4 +17,7 @@ build/**
 webpack.config.js
 .github
 
+#remove node modules after fx-core support webpack
+#node_modules/**
+
 !node_modules/fx-core

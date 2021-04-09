@@ -281,7 +281,7 @@
   },
   "scripts": {
     "lint:staged": "lint-staged",
-    "vscode:prepublish": "rimraf out && npm run build",
+    "vscode:prepublish": "rimraf out && npm run package",
     "copy-files": "copyfiles -u 1 src/**/*.html src/**/*.css src/**/*.ps1 src/**/*.sh out/src/",
     "compile": "tsc -p ./ && yarn copy-files",
     "build": "npm run compile",

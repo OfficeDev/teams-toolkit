@@ -78,7 +78,7 @@ export class AppStudioPluginImpl {
     }
 
     private convertToAppDefinition(appManifest: TeamsAppManifest): IAppDefinition {
-        let appDefinition: IAppDefinition = {
+        const appDefinition: IAppDefinition = {
             appName: appManifest.name.short,
             validDomains: appManifest.validDomains,
         };

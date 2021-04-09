@@ -23,7 +23,7 @@ export namespace AppStudioClient {
         try {
             const requester = createRequesterWithToken(appStudioToken);
             const buffer = Buffer.from(manifestString, "utf8");
-            const response = await requester.post("/api/appdefinitions/prevalidation", buffer, {headers: {'Content-Type': 'application/json'}});
+            const response = await requester.post("/api/appdefinitions/prevalidation", buffer, {headers: {"Content-Type": "application/json"}});
             if (response && response.data) {
                 let validationResult: string[] = [];
                 validationResult = validationResult.concat(response.data.errors);
@@ -80,10 +80,10 @@ export namespace AppStudioClient {
             let response = null;
             if (appCatalogAppId) {
                 // update the existing app
-                response = await requester.post(`/api/publishing/${teamsAppId}/appdefinitions`, file, {headers: {'Content-Type': 'application/zip'}});
+                response = await requester.post(`/api/publishing/${teamsAppId}/appdefinitions`, file, {headers: {"Content-Type": "application/zip"}});
             } else {
                 // publish a new app to Teams App Catalog               
-                response = await requester.post("/api/publishing", file,  {headers: {'Content-Type': 'application/zip'}});
+                response = await requester.post("/api/publishing", file,  {headers: {"Content-Type": "application/zip"}});
             }
             
             if (response && response.data) {

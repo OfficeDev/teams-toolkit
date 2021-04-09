@@ -11,6 +11,7 @@ import { TeamsAppAadManager } from "../../../../../src/plugins/resource/apim/src
 import axios, { AxiosInstance } from "axios";
 import { AadDefaultValues } from "../../../../../src/plugins/resource/apim/src/constants";
 import { assert } from "sinon";
+import { Lazy } from "../../../../../src/plugins/resource/apim/src/util/lazy";
 dotenv.config();
 chai.use(chaiAsPromised);
 
@@ -100,7 +101,8 @@ async function buildService(
         },
     });
     const aadService = new AadService(axiosInstance, mockTelemetry);
-    const teamsAppAadManager = new TeamsAppAadManager(aadService, new Telemetry());
+    const lazyAadService = new Lazy<AadService>(() => Promise.resolve(aadService));
+    const teamsAppAadManager = new TeamsAppAadManager(lazyAadService, new Telemetry());
     return { axiosInstance, aadService, teamsAppAadManager };
 }
 

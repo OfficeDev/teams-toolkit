@@ -8,20 +8,22 @@ import { OpenApiProcessor } from "../util/openApiProcessor";
 import { Telemetry } from "../telemetry";
 import { NameSanitizer } from "../util/nameSanitizer";
 import { IAnswer } from "../model/answer";
-import { LogProvider, TeamsAppManifest } from "fx-api";
+import { AzureAccountProvider, LogProvider, TeamsAppManifest } from "fx-api";
 import * as path from "path";
+import { Lazy } from "../util/lazy";
+import { Factory } from "../factory";
 
 export class ApimManager {
     private readonly logger?: LogProvider;
     private readonly telemetry: Telemetry;
-    private readonly apimService: ApimService;
+    private readonly lazyApimService: Lazy<ApimService>;
     private readonly openApiProcessor: OpenApiProcessor;
 
-    constructor(apimService: ApimService, openApiProcessor: OpenApiProcessor, telemetry: Telemetry, logger?: LogProvider) {
+    constructor(lazyApimService: Lazy<ApimService>, openApiProcessor: OpenApiProcessor, telemetry: Telemetry, logger?: LogProvider) {
+        this.lazyApimService = lazyApimService;
+        this.openApiProcessor = openApiProcessor;
         this.logger = logger;
         this.telemetry = telemetry;
-        this.apimService = apimService;
-        this.openApiProcessor = openApiProcessor;
     }
 
     public async scaffold(app: Readonly<TeamsAppManifest>, projectRootPath: string): Promise<void> {
@@ -30,14 +32,15 @@ export class ApimManager {
     }
 
     public async provision(apimConfig: IApimPluginConfig, solutionConfig: ISolutionConfig, appName: string): Promise<void> {
+        const apimService: ApimService = await this.lazyApimService.value();
         const resourceGroupName = apimConfig.resourceGroupName ?? solutionConfig.resourceGroupName;
         const apimServiceName = apimConfig.serviceName ?? NameSanitizer.sanitizeApimName(appName, solutionConfig.resourceNameSuffix);
 
-        await this.apimService.createService(resourceGroupName, apimServiceName, solutionConfig.location);
+        await apimService.createService(resourceGroupName, apimServiceName, solutionConfig.location);
         apimConfig.serviceName = apimServiceName;
 
         const productId = apimConfig.productId ?? NameSanitizer.sanitizeProductId(appName, solutionConfig.resourceNameSuffix);
-        await this.apimService.createProduct(resourceGroupName, apimServiceName, productId);
+        await apimService.createProduct(resourceGroupName, apimServiceName, productId);
         apimConfig.productId = productId;
     }
 
@@ -47,6 +50,7 @@ export class ApimManager {
         aadConfig: IAadPluginConfig,
         appName: string
     ): Promise<void> {
+        const apimService: ApimService = await this.lazyApimService.value();
         const resourceGroupName = apimConfig.resourceGroupName ?? solutionConfig.resourceGroupName;
         const apimServiceName = AssertConfigNotEmpty(TeamsToolkitComponent.ApimPlugin, ApimPluginConfigKeys.serviceName, apimConfig.serviceName);
         const clientId = AssertConfigNotEmpty(
@@ -62,7 +66,7 @@ export class ApimManager {
 
         const oAuthServerId = apimConfig.oAuthServerId ?? NameSanitizer.sanitizeOAuthServerId(appName, solutionConfig.resourceNameSuffix);
         const scopeName = `${aadConfig.applicationIdUris}/${ApimDefaultValues.enableScopeName}`;
-        await this.apimService.createOrUpdateOAuthService(
+        await apimService.createOrUpdateOAuthService(
             resourceGroupName,
             apimServiceName,
             oAuthServerId,
@@ -81,6 +85,7 @@ export class ApimManager {
         answer: IAnswer,
         projectRootPath: string
     ): Promise<void> {
+        const apimService: ApimService = await this.lazyApimService.value();
         const resourceGroupName = apimConfig.resourceGroupName ?? solutionConfig.resourceGroupName;
         const apimServiceName = AssertConfigNotEmpty(TeamsToolkitComponent.ApimPlugin, ApimPluginConfigKeys.serviceName, apimConfig.serviceName);
         const apiPrefix = AssertConfigNotEmpty(TeamsToolkitComponent.ApimPlugin, ApimPluginConfigKeys.apiPrefix, apimConfig.apiPrefix);
@@ -107,10 +112,10 @@ export class ApimManager {
 
         const versionSetDisplayName = NameSanitizer.sanitizeVersionSetDisplayName(openApiDocument.spec.info.title);
 
-        await this.apimService.createVersionSet(resourceGroupName, apimServiceName, versionSetId, versionSetDisplayName);
+        await apimService.createVersionSet(resourceGroupName, apimServiceName, versionSetId, versionSetDisplayName);
         apimConfig.versionSetId = versionSetId;
 
-        await this.apimService.importApi(
+        await apimService.importApi(
             resourceGroupName,
             apimServiceName,
             apiId,
@@ -123,6 +128,6 @@ export class ApimManager {
         );
         apimConfig.apiPath = apiPath;
 
-        await this.apimService.addApiToProduct(resourceGroupName, apimServiceName, productId, apiId);
+        await apimService.addApiToProduct(resourceGroupName, apimServiceName, productId, apiId);
     }
 }

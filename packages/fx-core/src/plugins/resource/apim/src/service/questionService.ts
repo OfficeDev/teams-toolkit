@@ -12,14 +12,17 @@ import {
     PluginContext,
     FuncQuestion,
     TextInputQuestion,
+    AzureAccountProvider,
 } from "fx-api";
 import { ApimDefaultValues, ApimPluginConfigKeys, QuestionConstants, TeamsToolkitComponent } from "../constants";
-import { ApimPluginConfig, SolutionConfig } from "../model/config";
+import { ApimPluginConfig, ISolutionConfig, SolutionConfig } from "../model/config";
 import { ApimService } from "./apimService";
 import { OpenApiProcessor } from "../util/openApiProcessor";
 import { NameSanitizer } from "../util/nameSanitizer";
 import { Telemetry } from "../telemetry";
 import { buildAnswer } from "../model/answer";
+import { Lazy } from "../util/lazy";
+import { Factory } from "../factory";
 
 export interface IQuestionService {
     // Control whether the question is displayed to the user.
@@ -51,16 +54,17 @@ class BaseQuestionService {
 }
 
 export class ApimServiceQuestion extends BaseQuestionService implements IQuestionService {
-    private readonly apimService: ApimService;
+    private readonly lazyApimService: Lazy<ApimService>;
     public readonly funcName = QuestionConstants.Apim.funcName;
 
-    constructor(apimService: ApimService, dialog: Dialog, telemetry: Telemetry, logger?: LogProvider) {
+    constructor(lazyApimService: Lazy<ApimService>, dialog: Dialog, telemetry: Telemetry, logger?: LogProvider) {
         super(dialog, telemetry, logger);
-        this.apimService = apimService;
+        this.lazyApimService = lazyApimService;
     }
 
     public async executeFunc(ctx: PluginContext): Promise<OptionItem[]> {
-        const apimServiceList = await this.apimService.listService();
+        const apimService: ApimService = await this.lazyApimService.value();
+        const apimServiceList = await apimService.listService();
         const existingOptions = apimServiceList.map((apimService) => {
             return { id: apimService.serviceName, label: apimService.serviceName, description: apimService.resourceGroupName, data: apimService };
         });
@@ -179,15 +183,16 @@ export class ApiPrefixQuestion extends BaseQuestionService implements IQuestionS
 }
 
 export class ApiVersionQuestion extends BaseQuestionService implements IQuestionService {
-    private readonly apimService: ApimService;
+    private readonly lazyApimService: Lazy<ApimService>;
     public readonly funcName = QuestionConstants.ApiVersion.funcName;
 
-    constructor(apimService: ApimService, dialog: Dialog, telemetry: Telemetry, logger?: LogProvider) {
+    constructor(lazyApimService: Lazy<ApimService>, dialog: Dialog, telemetry: Telemetry, logger?: LogProvider) {
         super(dialog, telemetry, logger);
-        this.apimService = apimService;
+        this.lazyApimService = lazyApimService;
     }
 
     public async executeFunc(ctx: PluginContext): Promise<OptionItem[]> {
+        const apimService = await this.lazyApimService.value();
         const apimConfig = new ApimPluginConfig(ctx.config);
         const solutionConfig = new SolutionConfig(ctx.configOfOtherPlugins);
         const answer = buildAnswer(ctx);
@@ -197,7 +202,7 @@ export class ApiVersionQuestion extends BaseQuestionService implements IQuestion
             answer.apiPrefix ?? AssertConfigNotEmpty(TeamsToolkitComponent.ApimPlugin, ApimPluginConfigKeys.apiPrefix, apimConfig.apiPrefix);
         const versionSetId = apimConfig.versionSetId ?? NameSanitizer.sanitizeVersionSetId(apiPrefix, solutionConfig.resourceNameSuffix);
 
-        const apiContracts = await this.apimService.listApi(resourceGroupName, serviceName, versionSetId);
+        const apiContracts = await apimService.listApi(resourceGroupName, serviceName, versionSetId);
 
         const existingApiVersionOptions: OptionItem[] = apiContracts.map((api) => {
             const result: OptionItem = { id: api.name ?? "", label: api.apiVersion ?? "", description: api.name, data: api };

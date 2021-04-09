@@ -10,6 +10,8 @@ import * as AdmZip from "adm-zip";
 import * as fs from "fs-extra";
 import AzureAccountManager from "../commonlib/azureLogin";
 import AppStudioTokenInstance from "../commonlib/appStudioLogin";
+import { runCommand } from "../handlers";
+import { Stage } from "fx-api";
 
 export class WebviewPanel {
   private static readonly viewType = "react";
@@ -95,6 +97,9 @@ export class WebviewPanel {
             break;
           case Commands.SigninAzure:
             await AzureAccountManager.getAccountCredentialAsync(false);
+            break;
+          case Commands.CreateNewProject:
+            await runCommand(Stage.create);
             break;
           default:
             break;

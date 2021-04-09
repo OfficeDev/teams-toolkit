@@ -187,6 +187,12 @@ export default class QuickStart extends React.Component<any, any>{
         });
     }
 
+    createNewProject = () => {
+        vscode.postMessage({
+            command: Commands.CreateNewProject
+        });
+    }
+
     onCollapsedCardClicked = (step: number) => {
         this.setState({
             currentStep: step

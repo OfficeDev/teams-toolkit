@@ -8,4 +8,5 @@ export enum Commands {
   DisplayCliCommands = "display-cli-commands",
   SigninM365 = "sign-in-m365",
   SigninAzure = "sign-in-azure",
+  CreateNewProject = "create-new-project"
 }

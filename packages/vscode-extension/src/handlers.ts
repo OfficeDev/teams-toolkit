@@ -204,7 +204,7 @@ const coreExeceutor: RemoteFuncExecutor = async function(
   throw new Error();
 };
 
-async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
+export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
   const eventName = ExtTelemetry.stageToEvent(stage);
   let result: Result<null, FxError> = ok(null);
 

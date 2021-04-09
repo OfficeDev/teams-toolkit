@@ -2,11 +2,11 @@ name: SimpleAuth CI
 
 on:
   push:
-    path:
+    paths:
     - 'packages/simpleauth/**'
     branches: [ main ]
   pull_request:
-    path:
+    paths:
       - 'packages/simpleauth/**'
     branches: [ main ]
 

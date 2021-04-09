@@ -1,0 +1,83 @@
+name: Build and Test SDK
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - packages/sdk/**
+  pull_request:
+    branches:
+      - main
+    paths:
+      - packages/sdk/**
+
+defaults:
+  run:
+    working-directory: packages/sdk/
+
+jobs:
+  build-and-test-on-lowest-version:
+    name: Test SDK on (${{ matrix.os }} with node ${{ matrix.node-version }})
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node-version: [10]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Build
+        run: |
+          npm ci
+          npm run build
+
+      - name: Check Format
+        run: |
+          npm run check-format
+
+      - name: Test
+        run: |
+          npm run test
+
+  build-and-test-on-latest-version:
+    name: Test SDK on (${{ matrix.os }} with node ${{ matrix.node-version }})
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node-version: [14]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Remove File
+        uses: JesseTG/rm@v1.0.0
+        with:
+          path: package-lock.json
+
+      - name: Build
+        run: |
+          npm install
+          npm run build
+
+      - name: Test
+        run: |
+          npm run test

@@ -3,16 +3,7 @@
 
 "use strict";
 
-import {
-  commands,
-  Uri,
-  window,
-  workspace,
-  ExtensionContext,
-  env,
-  ViewColumn,
-  debug
-} from "vscode";
+import { commands, Uri, window, workspace, ExtensionContext, env, ViewColumn, debug } from "vscode";
 import {
   Result,
   FxError,
@@ -66,6 +57,9 @@ import { cpUtils } from "./debug/cpUtils";
 import * as path from "path";
 import * as fs from "fs-extra";
 import { VsCodeUI, VS_CODE_UI } from "./qm/vsc_ui";
+import { DepsChecker, DepsCheckerError } from "./debug/depsChecker/checker";
+import { FuncToolChecker } from "./debug/depsChecker/funcToolChecker";
+import { DotnetCoreChecker, dotnetChecker } from "./debug/depsChecker/dotnetChecker";
 
 export let core: CoreProxy;
 const runningTasks = new Set<string>(); // to control state of task execution
@@ -202,7 +196,10 @@ export async function deployHandler(): Promise<Result<null, FxError>> {
   return await runCommand(Stage.deploy);
 }
 
-const coreExeceutor:RemoteFuncExecutor = async function (func:Func, answers: Inputs|ConfigMap) : Promise<Result<unknown, FxError>>{
+const coreExeceutor: RemoteFuncExecutor = async function(
+  func: Func,
+  answers: Inputs | ConfigMap
+): Promise<Result<unknown, FxError>> {
   return await core.callFunc(func, answers as ConfigMap);
   throw new Error();
 };
@@ -424,43 +421,18 @@ export async function updateAADHandler(): Promise<Result<null, FxError>> {
  * check & install required dependencies during local debug.
  */
 export async function validateDependenciesHandler(): Promise<void> {
-  let shouldContinue = true;
-  const hasBackend = await commonUtils.hasTeamsfxBackend();
-
-  if (hasBackend) {
-    logger.info(constants.Messages.installFuncCoreToolsAndDotnetSdk);
-  } else {
-    logger.info(constants.Messages.installDotnetSdk);
-  }
-
-  if (shouldContinue && hasBackend) {
-    shouldContinue = await tryValidateFuncCoreToolsInstalled();
-  }
-
-  if (shouldContinue) {
-    shouldContinue = await tryValidateDotnetInstalled();
-  }
+  const depsChecker = new DepsChecker([new FuncToolChecker(), new DotnetCoreChecker()]);
+  await depsChecker.resolve();
 }
 
 /**
  * install functions binding before launch local debug
  */
 export async function backendExtensionsInstallHandler(): Promise<void> {
-  let dotnetExecPath;
-  if (dotnetCheckerEnabled()) {
-    dotnetExecPath = await DotnetChecker.getDotnetExecPath();
-  } else {
-    dotnetExecPath = "dotnet";
-  }
+  const dotnetExecPath = await dotnetChecker.getDotnetExecPath();
 
-  if (!dotnetExecPath) {
-    logger.error(`Failed to run backend extension install, .NET SDK executable not found`);
-    commonUtils.displayLearnMore(
-      constants.Messages.failToInstallBackendExtensions,
-      constants.backendExtensionsHelpLink
-    );
-    await debug.stopDebugging();
-    return;
+  if (dotnetExecPath === "") {
+    throw new Error("Failed to run backend extension install, .NET SDK executable not found");
   }
 
   if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
@@ -481,13 +453,7 @@ export async function backendExtensionsInstallHandler(): Promise<void> {
         "bin"
       );
     } catch (error) {
-      logger.error(`Failed to run backend extension install: error = '${error}'`);
-      commonUtils.displayLearnMore(
-        constants.Messages.failToInstallBackendExtensions,
-        constants.backendExtensionsHelpLink
-      );
-      await debug.stopDebugging();
-      return;
+      throw new Error(`Failed to run backend extension install: error = '${error}'`);
     }
   }
 }
@@ -518,9 +484,7 @@ export async function preDebugCheckHandler(): Promise<void> {
 }
 
 export async function mailtoHandler(): Promise<boolean> {
-  return env.openExternal(
-    Uri.parse("https://github.com/OfficeDev/teamsfx/issues/new")
-  );
+  return env.openExternal(Uri.parse("https://github.com/OfficeDev/teamsfx/issues/new"));
 }
 
 export async function openDocumentHandler(): Promise<boolean> {

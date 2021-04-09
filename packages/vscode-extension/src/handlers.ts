@@ -422,7 +422,10 @@ export async function updateAADHandler(): Promise<Result<null, FxError>> {
  */
 export async function validateDependenciesHandler(): Promise<void> {
   const depsChecker = new DepsChecker([new FuncToolChecker(), new DotnetCoreChecker()]);
-  await depsChecker.resolve();
+  const shouldContinue = await depsChecker.resolve();
+  if (!shouldContinue) {
+    await debug.stopDebugging();
+  }
 }
 
 /**

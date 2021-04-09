@@ -81,8 +81,7 @@ jobs:
       - name: Remove File
         uses: JesseTG/rm@v1.0.0
         with:
-          path: package-lock.json
-        working-directory: ./packages/sdk
+          path: packages/sdk/package-lock.json
 
       - name: Build
         run: |

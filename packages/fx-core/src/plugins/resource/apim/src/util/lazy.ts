@@ -12,7 +12,7 @@ export class Lazy<T> {
     }
 
     async value(): Promise<T> {
-        if (typeof this.factoryOutput === 'undefined') {
+        if (typeof this.factoryOutput === "undefined") {
             this.factoryOutput = await this.factoryFunc();
         }
         return this.factoryOutput;

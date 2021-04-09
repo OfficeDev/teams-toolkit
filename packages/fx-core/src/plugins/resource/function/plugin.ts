@@ -483,12 +483,20 @@ export class FunctionPluginImpl {
         throw new ValidationError(key);
     }
 
+    public isPluginEnabled(ctx: PluginContext, plugin: string): boolean {
+        const solutionConfig: ReadonlyPluginConfig | undefined =
+            ctx.configOfOtherPlugins.get(DependentPluginInfo.solutionPluginName);
+        const selectedPlugins: string[] = solutionConfig?.get(DependentPluginInfo.selectedPlugins) as string[] ?? [];
+
+        return selectedPlugins.includes(plugin);
+    }
+
     private collectFunctionAppSettings(ctx: PluginContext, site: Site): void {
         const functionEndpoint: string = this.checkAndGet(this.config.functionEndpoint, FunctionConfigKey.functionEndpoint);
         FunctionProvision.updateFunctionSettingsSelf(site, functionEndpoint);
 
         const aadConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(DependentPluginInfo.aadPluginName);
-        if (aadConfig) {
+        if (this.isPluginEnabled(ctx, DependentPluginInfo.aadPluginName) && aadConfig) {
             Logger.info(InfoMessages.dependPluginDetected(DependentPluginInfo.aadPluginName));
 
             const clientId: string =
@@ -502,7 +510,7 @@ export class FunctionPluginImpl {
         }
 
         const frontendConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(DependentPluginInfo.frontendPluginName);
-        if (frontendConfig) {
+        if (this.isPluginEnabled(ctx, DependentPluginInfo.frontendPluginName) && frontendConfig) {
             Logger.info(InfoMessages.dependPluginDetected(DependentPluginInfo.frontendPluginName));
 
             const frontendEndpoint: string =
@@ -513,7 +521,10 @@ export class FunctionPluginImpl {
 
         const sqlConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(DependentPluginInfo.sqlPluginName);
         const identityConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(DependentPluginInfo.identityPluginName);
-        if (sqlConfig && identityConfig) {
+        if (this.isPluginEnabled(ctx, DependentPluginInfo.sqlPluginName) &&
+            this.isPluginEnabled(ctx, DependentPluginInfo.identityPluginName) &&
+            sqlConfig && identityConfig) {
+
             Logger.info(InfoMessages.dependPluginDetected(DependentPluginInfo.sqlPluginName));
             Logger.info(InfoMessages.dependPluginDetected(DependentPluginInfo.identityPluginName));
 
@@ -530,7 +541,7 @@ export class FunctionPluginImpl {
         }
 
         const apimConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(DependentPluginInfo.apimPluginName);
-        if (apimConfig) {
+        if (this.isPluginEnabled(ctx, DependentPluginInfo.apimPluginName) && apimConfig) {
             Logger.info(InfoMessages.dependPluginDetected(DependentPluginInfo.apimPluginName));
 
             const clientId: string =
@@ -544,7 +555,10 @@ export class FunctionPluginImpl {
         const aadConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(DependentPluginInfo.aadPluginName);
         const frontendConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(DependentPluginInfo.frontendPluginName);
 
-        if (aadConfig && frontendConfig) {
+        if (this.isPluginEnabled(ctx, DependentPluginInfo.aadPluginName) &&
+            this.isPluginEnabled(ctx, DependentPluginInfo.frontendPluginName) &&
+            aadConfig && frontendConfig) {
+
             const clientId: string =
                 this.checkAndGet(aadConfig.get(DependentPluginInfo.aadClientId) as string, "AAD client Id");
             const oauthAuthority: string =

@@ -203,7 +203,7 @@ describe("ApimService", () => {
                 testNewApiVersion,
                 testNewVersionSetId,
                 testOAuthServer,
-                OpenApiSchemaVersion.v3,
+                OpenApiSchemaVersion.V3,
                 spec
             );
             const api = await apimService.getApi(testResourceGroup, testApim, testNewApiName);
@@ -224,7 +224,7 @@ describe("ApimService", () => {
                 testNewApiVersion,
                 testVersionSetId,
                 testOAuthServer,
-                OpenApiSchemaVersion.v3,
+                OpenApiSchemaVersion.V3,
                 spec
             );
             const api = await apimService.getApi(testResourceGroup, testApim, testNewApiName);
@@ -243,7 +243,7 @@ describe("ApimService", () => {
                 testApiVersion,
                 testVersionSetId,
                 testOAuthServer,
-                OpenApiSchemaVersion.v2,
+                OpenApiSchemaVersion.V2,
                 spec
             );
             const api = await apimService.getApi(testResourceGroup, testApim, testApiName);
@@ -275,7 +275,7 @@ describe("ApimService", () => {
                 testNewApiVersion,
                 testNewVersionSetId,
                 testOAuthServer,
-                OpenApiSchemaVersion.v3,
+                OpenApiSchemaVersion.V3,
                 spec
             );
             await apimService.createProduct(testResourceGroup, testApim, `${testProduct}-addApiToProduct-${testCreateSuffix}`);

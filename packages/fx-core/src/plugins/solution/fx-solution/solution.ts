@@ -92,6 +92,7 @@ import {
     AzureResourceApim,
     createCapabilityQuestion,
     createAddAzureResourceQuestion,
+    AskSubscriptionQuestion,
 } from "./question";
 import Mustache from "mustache";
 import path from "path";
@@ -390,17 +391,6 @@ export class TeamsAppSolution implements Solution {
 
     async scaffoldOne(plugin: LoadedPlugin, ctx: SolutionContext): Promise<Result<any, FxError>> {
         const pctx = getPluginContext(ctx, plugin.name, this.manifest);
-        // if(plugin.getQuestions){
-        //     const res  = await plugin.getQuestions(Stage.create, pctx);
-        //     if(res.isErr()) {
-        //         return res;
-        //     }
-        //     if(res.value){
-        //         const node = res.value as QTreeNode;
-
-        //     }
-        // }
-
         if (plugin.preScaffold) {
             const result = await plugin.preScaffold(pctx);
             if (result.isErr()) {
@@ -512,24 +502,24 @@ export class TeamsAppSolution implements Solution {
         }
 
         if (!alreadyHaveApim && addApim) {
-            // Ask subscription
-            if (!ctx.config.get(GLOBAL_CONFIG)?.getString("subscriptionId")) {
-                const azureToken = await ctx.azureAccountProvider?.getAccountCredentialAsync();
-                if (azureToken === undefined) {
-                    return err(
-                        returnUserError(
-                            new Error("Please login to azure using Azure Account Extension"),
-                            "Solution",
-                            SolutionError.NotLoginToAzure,
-                        ),
-                    );
-                }
-                const result = await askSubscription(ctx.config, azureToken, ctx.dialog);
-                if (result.isErr()) {
-                    return err(result.error);
-                }
-                ctx.config.get(GLOBAL_CONFIG)?.set("subscriptionId", result.value);
-            }
+            // // Ask subscription
+            // if (!ctx.config.get(GLOBAL_CONFIG)?.getString("subscriptionId")) {
+            //     const azureToken = await ctx.azureAccountProvider?.getAccountCredentialAsync();
+            //     if (azureToken === undefined) {
+            //         return err(
+            //             returnUserError(
+            //                 new Error("Please login to azure using Azure Account Extension"),
+            //                 "Solution",
+            //                 SolutionError.NotLoginToAzure,
+            //             ),
+            //         );
+            //     }
+            //     const result = await askSubscription(ctx.config, azureToken, ctx.dialog);
+            //     if (result.isErr()) {
+            //         return err(result.error);
+            //     }
+            //     ctx.config.get(GLOBAL_CONFIG)?.set("subscriptionId", result.value);
+            // }
 
             // Scaffold apim
             ctx.logProvider?.info(`start scaffolding API Management .....`);
@@ -979,10 +969,12 @@ export class TeamsAppSolution implements Solution {
             return canDeploy;
         }
         try {
-            // Just to trigger M365 login before the concurrent execution of deploy. 
-            // Because concurrent exectution of deploy may getAccessToken() concurrently, which
-            // causes 2 M365 logins before the token caching in common lib takes effect.
-            await ctx.appStudioToken?.getAccessToken();
+            if (!this.spfxSelected(ctx.config)) {
+                // Just to trigger M365 login before the concurrent execution of deploy. 
+                // Because concurrent exectution of deploy may getAccessToken() concurrently, which
+                // causes 2 M365 logins before the token caching in common lib takes effect.
+                await ctx.appStudioToken?.getAccessToken();
+            }
 
             this.runningState = SolutionRunningState.DeployInProgress;
             const result = await this.doDeploy(ctx);
@@ -1179,9 +1171,15 @@ export class TeamsAppSolution implements Solution {
                     const res = await this.apimPlugin.getQuestions(stage, pluginCtx);
                     if (res.isErr()) return res;
                     if (res.value) {
+                        const groupNode = new QTreeNode({type:NodeType.group});
+                        groupNode.condition = { contains: AzureResourceApim.id };
+                        addAzureResources.addChild(groupNode);
                         const apim = res.value as QTreeNode;
-                        apim.condition = { contains: AzureResourceApim.id };
-                        if (apim.data) addAzureResources.addChild(apim);
+                        if (apim.data){
+                            const funcNode =  new QTreeNode(AskSubscriptionQuestion);
+                            groupNode.addChild(funcNode);
+                            groupNode.addChild(apim);
+                        } 
                     }
                 }
             } else {
@@ -1483,7 +1481,7 @@ export class TeamsAppSolution implements Solution {
     async callFunc(func: Func, ctx: SolutionContext): Promise<Result<any, FxError>> {
         const namespace = func.namespace;
         const array = namespace.split("/");
-        if (array.length == 2) {
+        if (array.length === 2) {
             const pluginName = array[1];
             const plugin = this.pluginMap.get(pluginName);
             if (plugin && plugin.callFunc) {
@@ -1495,6 +1493,28 @@ export class TeamsAppSolution implements Solution {
                     }
                 }
                 return await plugin.callFunc(func, pctx);
+            }
+        }
+        else if(array.length === 1){
+            if (func.method === "askSubscription") {
+                if (!ctx.config.get(GLOBAL_CONFIG)?.getString("subscriptionId")) {
+                    const azureToken = await ctx.azureAccountProvider?.getAccountCredentialAsync();
+                    if (azureToken === undefined) {
+                        return err(
+                            returnUserError(
+                                new Error("Please login to azure using Azure Account Extension"),
+                                "Solution",
+                                SolutionError.NotLoginToAzure,
+                            ),
+                        );
+                    }
+                    const result = await askSubscription(ctx.config, azureToken, ctx.dialog);
+                    if (result.isErr()) {
+                        return err(result.error);
+                    }
+                    ctx.config.get(GLOBAL_CONFIG)?.set("subscriptionId", result.value);
+                    return ok(null);
+                }
             }
         }
         return err(

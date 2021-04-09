@@ -25,9 +25,9 @@ export class ApimManager {
         this.telemetry = telemetry;
     }
 
-    public async scaffold(app: Readonly<TeamsAppManifest>, projectRootPath: string): Promise<void> {
+    public async scaffold(appName: string, projectRootPath: string): Promise<void> {
         const openApiFileName = path.join(projectRootPath, ProjectConstants.workingDir, ProjectConstants.openApiDocumentFileName);
-        await this.openApiProcessor.generateDefaultOpenApi(openApiFileName, app.name.short, app.version);
+        await this.openApiProcessor.generateDefaultOpenApi(openApiFileName, appName, ApimDefaultValues.apiVersion);
     }
 
     public async provision(apimConfig: IApimPluginConfig, solutionConfig: ISolutionConfig, appName: string): Promise<void> {

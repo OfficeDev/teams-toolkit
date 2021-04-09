@@ -208,6 +208,12 @@ export class NpmInstallError extends FrontendPluginError {
     }
 }
 
+export class TSTemplateNotReadyError extends FrontendPluginError {
+    constructor() {
+        super(ErrorType.System, "TSTemplateNotReadyError", "The TypeScript template for tab frontend isn't ready yet.", []);
+    }
+}
+
 export const UnhandledErrorCode = "UnhandledError";
 export const UnhandledErrorMessage = "Got an unhandled error.";
 

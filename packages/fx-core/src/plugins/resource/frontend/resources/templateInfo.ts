@@ -5,6 +5,7 @@ import path from "path";
 import { PluginContext } from "fx-api";
 import { DependentPluginInfo, FrontendPathInfo } from "../constants";
 import { QuestionKey } from "./questions";
+import { TSTemplateNotReadyError } from "./errors";
 
 export class TabLanguage {
     static readonly JavaScript = "JavaScript";
@@ -26,6 +27,10 @@ export class TemplateInfo {
     constructor(ctx: PluginContext) {
         this.group = TemplateInfo.TemplateGroupName;
         this.language = (ctx.answers?.getString(QuestionKey.TabLanguage)) ?? TabLanguage.JavaScript;
+        //TODO: Throw error until TS template ready
+        if (this.language === TabLanguage.TypeScript) {
+            throw new TSTemplateNotReadyError();
+        }
         this.version = TemplateInfo.version;
 
         const functionPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.FunctionPluginName);

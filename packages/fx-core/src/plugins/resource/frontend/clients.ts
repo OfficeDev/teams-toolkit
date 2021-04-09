@@ -85,8 +85,14 @@ export class AzureStorageClient {
         return endpoint.endsWith("/") ? endpoint.substring(0, endpoint.length - 1) : endpoint;
     }
 
-    public async enableStaticWebsite(): Promise<ServiceSetPropertiesResponse> {
+    public async enableStaticWebsite(): Promise<ServiceSetPropertiesResponse | undefined> {
         Logger.debug(Messages.StartEnableStaticWebsite(this.storageName));
+
+        if (await this.isStorageStaticWebsiteEnabled()) {
+            Logger.debug(Messages.SkipEnableStaticWebsite(this.storageName));
+            return;
+        }
+
         const properties: BlobServiceProperties = AzureStorageClient.getStaticWebsiteEnableParams();
 
         const blobClient = await AzureStorageClient.getBlobServiceClient(

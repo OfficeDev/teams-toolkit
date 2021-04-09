@@ -13,7 +13,7 @@ export default class QuickStart extends React.Component<any, any>{
             m365Account: undefined,
             azureAccount: undefined,
             stepsDone: [false, false, false, false, false, false]
-    }
+        }
     }
 
     componentDidMount() {
@@ -266,7 +266,7 @@ export default class QuickStart extends React.Component<any, any>{
         this.setState({
             stepsDone: done
         });
-}
+    }
 
     viewAllSamples = () => {
         let done = this.state.stepsDone;
@@ -342,11 +342,11 @@ class GetStartedAction extends React.Component<any, any>{
                     </div>
                 </div>
             )
-    }
+        }
     }
 
     onCollapseClicked = () => {
         this.props.onCollapsedCardClicked(this.props.step);
     }
-    }
+}
 

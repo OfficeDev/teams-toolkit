@@ -2,8 +2,13 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { ConfigMap, PluginConfig, ReadonlySolutionConfig, SolutionConfig } from "./config";
- 
+import {
+    ConfigMap,
+    PluginConfig,
+    ReadonlySolutionConfig,
+    SolutionConfig,
+} from "./config";
+
 import { VsCode } from "./vscode";
 import { TeamsAppManifest } from "./manifest";
 import {
@@ -13,8 +18,8 @@ import {
     AzureAccountProvider,
     AppStudioTokenProvider,
     Dialog,
-    TreeProvider
-} from "./utils"; 
+    TreeProvider,
+} from "./utils";
 import { Platform } from "./constants";
 
 /*
@@ -22,7 +27,6 @@ import { Platform } from "./constants";
  * develop a Teams APP.
  */
 export interface Context {
-    
     root: string;
 
     dialog?: Dialog;
@@ -39,9 +43,11 @@ export interface Context {
 
     treeProvider?: TreeProvider;
 
-    platform? : Platform;
+    platform?: Platform;
 
     answers?: ConfigMap; // for question model
+
+    globalConfig?: ConfigMap;
 }
 
 export interface SolutionContext extends Context {

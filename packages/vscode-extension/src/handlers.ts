@@ -14,7 +14,6 @@ import {
   Func,
   UserError,
   SystemError,
-  returnUserError,
   returnSystemError,
   ConfigFolderName,
   traverse,
@@ -24,16 +23,11 @@ import {
   InputResult,
   InputResultType
 } from "fx-api";
-import { CoreProxy } from "fx-core";
-import DialogManagerInstance from "./userInterface";
-import GraphManagerInstance from "./commonlib/graphLogin";
+import { TeamsCore } from "fx-core";
 import AzureAccountManager from "./commonlib/azureLogin";
 import AppStudioTokenInstance from "./commonlib/appStudioLogin";
 import VsCodeLogInstance from "./commonlib/log";
-import { VSCodeTelemetryReporter } from "./commonlib/telemetry";
 import { CommandsTreeViewProvider, TreeViewCommand } from "./commandsTreeViewProvider";
-import * as extensionPackage from "./../package.json";
-import { ext } from "./extensionVariables";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import {
   TelemetryEvent,
@@ -43,7 +37,6 @@ import {
 } from "./telemetry/extTelemetryEvents";
 import * as commonUtils from "./debug/commonUtils";
 import { ExtensionErrors, ExtensionSource } from "./error";
-import { WebviewPanel } from "./controls/webviewPanel";
 import { tryValidateFuncCoreToolsInstalled } from "./debug/funcCoreTools/validateFuncCoreToolsInstalled";
 import {
   dotnetCheckerEnabled,
@@ -52,118 +45,16 @@ import {
 import { DotnetChecker } from "./debug/dotnetSdk/dotnetChecker";
 import * as constants from "./debug/constants";
 import logger from "./commonlib/log";
-import { isFeatureFlag } from "./utils/commonUtils";
 import { cpUtils } from "./debug/cpUtils";
-import * as path from "path";
 import * as fs from "fs-extra";
 import { VsCodeUI, VS_CODE_UI } from "./qm/vsc_ui";
 import { DepsChecker, DepsCheckerError } from "./debug/depsChecker/checker";
 import { FuncToolChecker } from "./debug/depsChecker/funcToolChecker";
 import { DotnetCoreChecker, dotnetChecker } from "./debug/depsChecker/dotnetChecker";
+import { ContextFactory } from "./context";
 
-export let core: CoreProxy;
+export let core: TeamsCore;
 const runningTasks = new Set<string>(); // to control state of task execution
-
-export async function activate(): Promise<Result<null, FxError>> {
-  const result: Result<null, FxError> = ok(null);
-  try {
-    core = CoreProxy.getInstance();
-
-    {
-      const result = await core.withDialog(DialogManagerInstance);
-      if (result.isErr()) {
-        showError(result.error);
-        return err(result.error);
-      }
-    }
-
-    {
-      const result = await core.withGraphToken(GraphManagerInstance);
-      if (result.isErr()) {
-        showError(result.error);
-        return err(result.error);
-      }
-    }
-
-    {
-      const result = await core.withAzureAccount(AzureAccountManager);
-      if (result.isErr()) {
-        showError(result.error);
-        return err(result.error);
-      }
-    }
-
-    {
-      const result = await core.withAppStudioToken(AppStudioTokenInstance);
-      if (result.isErr()) {
-        showError(result.error);
-        return err(result.error);
-      }
-    }
-
-    {
-      const telemetry = new VSCodeTelemetryReporter(
-        extensionPackage.aiKey,
-        extensionPackage.name,
-        extensionPackage.version
-      );
-      const result = await core.withTelemetry(telemetry);
-      if (result.isErr()) {
-        showError(result.error);
-        return err(result.error);
-      }
-    }
-
-    {
-      const result = await core.withLogger(VsCodeLogInstance);
-      if (result.isErr()) {
-        showError(result.error);
-        return err(result.error);
-      }
-    }
-
-    {
-      const result = await core.withTreeProvider(CommandsTreeViewProvider.getInstance());
-      if (result.isErr()) {
-        showError(result.error);
-        return err(result.error);
-      }
-    }
-
-    {
-      const globalConfig = new ConfigMap();
-      globalConfig.set("featureFlag", isFeatureFlag());
-      globalConfig.set("function-dotnet-checker-enabled", dotnetCheckerEnabled());
-      const result = await core.init(globalConfig);
-      if (result.isErr()) {
-        showError(result.error);
-        return err(result.error);
-      }
-    }
-
-    {
-      const workspacePath: string | undefined = workspace.workspaceFolders?.length
-        ? workspace.workspaceFolders[0].uri.fsPath
-        : undefined;
-      const result = await core.open(workspacePath);
-      if (result.isErr()) {
-        showError(result.error);
-        return err(result.error);
-      }
-    }
-  } catch (e) {
-    const FxError: FxError = {
-      name: e.name,
-      source: ExtensionSource,
-      message: e.message,
-      stack: e.stack,
-      timestamp: new Date()
-    };
-    showError(FxError);
-    return err(FxError);
-  }
-  return result;
-}
 
 export async function createNewProjectHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, {
@@ -200,8 +91,7 @@ const coreExeceutor: RemoteFuncExecutor = async function(
   func: Func,
   answers: Inputs | ConfigMap
 ): Promise<Result<unknown, FxError>> {
-  return await core.callFunc(func, answers as ConfigMap);
-  throw new Error();
+  return await core.callFunc(ContextFactory.get(), func, answers as ConfigMap);
 };
 
 async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
@@ -235,7 +125,7 @@ async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
     answers.set("stage", stage);
 
     // 4. getQuestions
-    const qres = await core.getQuestions(stage, Platform.VSCode);
+    const qres = await core.getQuestions(ContextFactory.get(), stage, Platform.VSCode);
     if (qres.isErr()) {
       throw qres.error;
     }
@@ -256,11 +146,12 @@ async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
 
     // 6. run task
     answers.set("substage", "runTask");
-    if (stage === Stage.create) result = await core.create(answers);
-    else if (stage === Stage.update) result = await core.update(answers);
-    else if (stage === Stage.provision) result = await core.provision(answers);
-    else if (stage === Stage.deploy) result = await core.deploy(answers);
-    else if (stage === Stage.debug) result = await core.localDebug(answers);
+    if (stage === Stage.create) result = await core.create(ContextFactory.get(), answers);
+    else if (stage === Stage.update) result = await core.update(ContextFactory.get(), answers);
+    else if (stage === Stage.provision)
+      result = await core.provision(ContextFactory.get(), answers);
+    else if (stage === Stage.deploy) result = await core.deploy(ContextFactory.get(), answers);
+    else if (stage === Stage.debug) result = await core.localDebug(ContextFactory.get(), answers);
     else {
       throw new SystemError(
         ExtensionErrors.UnsupportedOperation,
@@ -312,7 +203,7 @@ async function runUserTask(func: Func): Promise<Result<null, FxError>> {
     answers.set("task", eventName);
 
     // 4. getQuestions
-    const qres = await core.getQuestionsForUserTask(func, Platform.VSCode);
+    const qres = await core.getQuestionsForUserTask(ContextFactory.get(), func, Platform.VSCode);
     if (qres.isErr()) {
       throw qres.error;
     }
@@ -331,7 +222,7 @@ async function runUserTask(func: Func): Promise<Result<null, FxError>> {
     }
 
     // 6. run task
-    result = await core.executeUserTask(func, answers);
+    result = await core.executeUserTask(ContextFactory.get(), func, answers);
   } catch (e) {
     result = wrapError(e);
   }

@@ -41,10 +41,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(provisionCmd);
 
   // 1.5 Register the deploy command.
-  const deployCmd = vscode.commands.registerCommand(
-    "fx-extension.deploy",
-    handlers.deployHandler
-  );
+  const deployCmd = vscode.commands.registerCommand("fx-extension.deploy", handlers.deployHandler);
   context.subscriptions.push(deployCmd);
 
   // 1.6 update aad command
@@ -81,10 +78,7 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.tasks.registerTaskProvider(TeamsfxTaskProvider.type, taskProvider)
   );
 
-  const mailtoCmd = vscode.commands.registerCommand(
-    "fx-extension.mailto",
-    handlers.mailtoHandler
-  );
+  const mailtoCmd = vscode.commands.registerCommand("fx-extension.mailto", handlers.mailtoHandler);
   context.subscriptions.push(mailtoCmd);
 
   const devProgramCmd = vscode.commands.registerCommand(
@@ -127,8 +121,6 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   await handlers.cmdHdlLoadTreeView(context);
-  // 2. Call activate function of toolkit core.
-  await handlers.activate();
 
   // Trigger telemetry when start debug session
   const debug = vscode.debug.onDidStartDebugSession((e) => {

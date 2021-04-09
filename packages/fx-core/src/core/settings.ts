@@ -7,4 +7,5 @@ export interface Settings {
         name: string;
         version: string;
     };
+    currentEnv: string;
 }

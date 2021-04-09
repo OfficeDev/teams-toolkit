@@ -14,6 +14,7 @@ import {
   SystemError,
   returnUserError,
   returnSystemError,
+  QuestionType,
 } from "fx-api";
 import * as uuid from "uuid";
 import lodash from "lodash";
@@ -366,17 +367,29 @@ export class SPFxPluginImpl {
             );
             SPFxPluginImpl.validateSPItem(appListItem);
             await progressHandler?.end();
-            await ctx.dialog?.communicate(
-              new DialogMsg(DialogType.Show, {
-                description: util.format(
-                  "[SPFx] %s has been deployed to %s",
-                  files[0],
-                  appCatalogSite
-                ),
-                level: MsgLevel.Info,
-              })
-            );
-
+            const appCatalogButton = "Go to SharePoint App Catalog";
+            ctx.dialog
+              ?.communicate(
+                new DialogMsg(DialogType.Show, {
+                  description: util.format(
+                    "[SPFx] %s has been deployed to %s",
+                    files[0],
+                    appCatalogSite,
+                  ),
+                  level: MsgLevel.Info,
+                  items: [appCatalogButton],
+                }),
+              )
+              .then(async (selected) => {
+                if (selected?.content === appCatalogButton) {
+                  await ctx.dialog?.communicate(
+                    new DialogMsg(DialogType.Ask, {
+                      description: appCatalogSite,
+                      type: QuestionType.OpenExternal,
+                    }),
+                  );
+                }
+              });
             // Download Teams App Package.
             const teamsResponse = await axios.get(
               `${appCatalogSite}/_api/web/tenantappcatalog/DownloadTeamsSolutionByUniqueId(id=\'${appListItem.ID}\')/$value`,

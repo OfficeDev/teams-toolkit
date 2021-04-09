@@ -78,6 +78,7 @@ export enum MsgLevel {
 export interface IMessage {
     description: string;
     level: MsgLevel;
+    items?: string[];
 }
 
 export enum QuestionType {

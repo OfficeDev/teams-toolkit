@@ -110,12 +110,16 @@ export class LocalDebugPlugin implements Plugin {
         // TODO: dynamicly determine local ports
         if (ctx.platform === Platform.VSCode)
         {
+            const includeFrontend = ctx.configOfOtherPlugins.has(FrontendHostingPlugin.Name);
             const includeBackend = ctx.configOfOtherPlugins.has(FunctionPlugin.Name);
             const includeBot = ctx.configOfOtherPlugins.has(BotPlugin.Name);
 
             ctx.config.set(LocalDebugConfigKeys.LocalAuthEndpoint, "http://localhost:5000");
-            ctx.config.set(LocalDebugConfigKeys.LocalTabEndpoint, "https://localhost:3000");
-            ctx.config.set(LocalDebugConfigKeys.LocalTabDomain, "localhost");
+
+            if (includeFrontend) {
+                ctx.config.set(LocalDebugConfigKeys.LocalTabEndpoint, "https://localhost:3000");
+                ctx.config.set(LocalDebugConfigKeys.LocalTabDomain, "localhost");
+            }
 
             if (includeBackend)
             {

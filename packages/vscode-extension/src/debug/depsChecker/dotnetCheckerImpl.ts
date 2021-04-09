@@ -21,6 +21,8 @@ export enum DotnetVersion {
 export const DotnetCoreSDKName = ".NET Core SDK";
 export type DotnetSDK = { version: string; path: string };
 
+const installedNameWithVersion = `${DotnetCoreSDKName} (v${DotnetVersion.v31})`;
+
 export class DotnetCheckerImpl {
   private static encoding = "utf-8";
   private static installVersion = DotnetVersion.v31;
@@ -53,18 +55,18 @@ export class DotnetCheckerImpl {
     // logger.debug(`[end] cleanup bin/dotnet and config`);
 
     // logger.debug(`[start] install dotnet ${DotnetChecker.installVersion}`);
-    logger.info(`Downloading and installing ${DotnetCoreSDKName} (v${DotnetVersion.v31}).`);
+    logger.info(`Downloading and installing ${installedNameWithVersion}.`);
     await runWithProgressIndicator(logger.outputChannel, async () => {
       await DotnetCheckerImpl.install(DotnetCheckerImpl.installVersion);
     });
-    logger.info(`Successfully installed ${DotnetCoreSDKName} (v${DotnetVersion.v31}).`);
+    logger.info(`Successfully installed ${installedNameWithVersion}.`);
     // logger.debug(`[end] install dotnet ${DotnetChecker.installVersion}`);
 
     // logger.debug(`[start] validate dotnet version`);
     if (!(await DotnetCheckerImpl.validate())) {
       await DotnetCheckerImpl.cleanup();
       // TODO: remove hardcoding
-      throw new DepsCheckerError(`Failed to install ${DotnetCoreSDKName} (v${DotnetVersion.v31}).`, helpLink);
+      throw new DepsCheckerError(`Failed to install ${installedNameWithVersion}.`, helpLink);
     }
   }
 

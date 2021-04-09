@@ -14,7 +14,6 @@ commitlint.config.js
 build/**
 .prettierrc.json
 .prettierignore
-node_modules/**
 webpack.config.js
 .github
 

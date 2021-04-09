@@ -8,6 +8,7 @@ import { Commands } from "./Commands";
 import axios from "axios";
 import * as AdmZip from "adm-zip";
 import * as fs from "fs-extra";
+import AzureAccountManager from "../commonlib/azureLogin";
 import AppStudioTokenInstance from "../commonlib/appStudioLogin";
 
 export class WebviewPanel {
@@ -92,6 +93,9 @@ export class WebviewPanel {
           case Commands.SigninM365:
             await AppStudioTokenInstance.getJsonObject(false);
             break;
+          case Commands.SigninAzure:
+            await AzureAccountManager.getAccountCredentialAsync(false);
+            break;
           default:
             break;
         }
@@ -109,6 +113,25 @@ export class WebviewPanel {
       if (this.panel && this.panel.webview) {
         this.panel.webview.postMessage({
           message: "m365AccountChange",
+          data: email
+        });
+      }
+
+      return Promise.resolve();
+    });
+
+    AzureAccountManager.setStatusChangeCallback((status, token, accountInfo) => {
+      let email = undefined;
+      if (status === "SignedIn") {
+        const token = AzureAccountManager.getAccountCredential();
+        if (token !== undefined) {
+          email = (token as any).username ? (token as any).username : undefined;
+        }
+      }
+
+      if (this.panel && this.panel.webview) {
+        this.panel.webview.postMessage({
+          message: "azureAccountChange",
           data: email
         });
       }
@@ -213,6 +236,11 @@ export class WebviewPanel {
     AppStudioTokenInstance.setStatusChangeCallback((status, token, accountInfo) => {
       return Promise.resolve();
     });
+
+    AzureAccountManager.setStatusChangeCallback((status, token, accountInfo) => {
+      return Promise.resolve();
+    });
+
     // Clean up our resources
     this.panel.dispose();
 

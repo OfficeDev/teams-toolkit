@@ -126,6 +126,17 @@ export default class QuickStart extends React.Component<any, any>{
             stepsDone: done
         });
     }
+
+    signinAzure = () => {
+        vscode.postMessage({
+            command: Commands.SigninAzure
+        });
+
+        let done = this.state.stepsDone;
+        done[4] = true;
+        this.setState({
+            stepsDone: done
+        });
 }
 
 class GetStartedAction extends React.Component<any, any>{

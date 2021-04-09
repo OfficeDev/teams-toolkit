@@ -7,4 +7,5 @@ export enum Commands {
   DisplayCommandPalette = "display-command-palette",
   DisplayCliCommands = "display-cli-commands",
   SigninM365 = "sign-in-m365",
+  SigninAzure = "sign-in-azure",
 }

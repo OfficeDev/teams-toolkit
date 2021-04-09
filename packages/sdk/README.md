@@ -8,7 +8,7 @@ Use the library to:
 - Write user authentication code in a simplified way.
 
 [Source code](https://github.com/OfficeDev/TeamsFx/tree/main/packages/sdk) |
-[Package (NPM)](https://www.npmjs.com/package/@microsoft/teamsfx-sdk) |
+[Package (NPM)](https://www.npmjs.com/package/@microsoft/teamsfx) |
 [API reference documentation]() |
 [Product documentation]() |
 [Samples]()
@@ -24,12 +24,12 @@ Use the library to:
 - A project created by TeamsFx toolkit VS Code extension.
 - If your project has installed `botbuilder-core` and `botbuilder-dialogs` packages as dependencies, ensure they have version `>= 4.9.3`.
 
-### Install the `@microsoft/teamsfx-sdk` package
+### Install the `@microsoft/teamsfx` package
 
 Install the TeamsFx SDK for TypeScript/JavaScript with `npm`:
 
 ```bash
-npm install @microsoft/teamsfx-sdk
+npm install @microsoft/teamsfx
 ```
 
 ### Create and authenticate a `MicrosoftGraphClient`

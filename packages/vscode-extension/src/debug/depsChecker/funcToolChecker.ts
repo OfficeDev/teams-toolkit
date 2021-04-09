@@ -3,13 +3,13 @@
 
 import { cpUtils } from "../cpUtils";
 import { IDepsChecker, DepsCheckerError, DepsInfo } from "./checker";
-import { funcToolCheckerEnabled, logger, runWithProgressIndicator } from "./checkerAdapter";
+import { funcToolCheckerEnabled, hasTeamsfxBackend, logger, runWithProgressIndicator } from "./checkerAdapter";
 
 const funcPackageName = "azure-functions-core-tools";
 const funcToolName = "Azure Function Core Tool";
 // TODO: extract to messages.ts
 const startInstallFunctionCoreTool =
-  "Starting to install the Azure Functions Core Tools v3.";
+  "Downloading and installing the Azure Functions Core Tools v3.";
 const finishInstallFunctionCoreTool =
   "Successfully installed the Azure Functions Core Tools v3.";
 const needReplaceWithFuncCoreToolV3 =
@@ -28,8 +28,9 @@ export class FuncToolChecker implements IDepsChecker {
     });
   }
 
-  isEnabled(): Promise<boolean> {
-    return Promise.resolve(funcToolCheckerEnabled());
+  async isEnabled(): Promise<boolean> {
+    const hasBackend = await hasTeamsfxBackend();
+    return hasBackend && funcToolCheckerEnabled();
   }
 
   async isInstalled(): Promise<boolean> {
@@ -57,7 +58,7 @@ export class FuncToolChecker implements IDepsChecker {
     logger.info(startInstallFunctionCoreTool);
     await runWithProgressIndicator(logger.outputChannel, async () => {
       try {
-        await installFuncCoreTools(FuncVersion.v3)
+        await installFuncCoreTools(FuncVersion.v3);
       } catch (error) {
         throw new DepsCheckerError(failToInstallFuncCoreTool, helpLink);
       }

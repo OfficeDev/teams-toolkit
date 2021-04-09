@@ -36,6 +36,13 @@ export class FrontendPluginImpl {
     config?: FrontendConfig;
     azureStorageClient?: AzureStorageClient;
 
+    private setConfigIfNotExists(ctx: PluginContext, key: string, value: string): void {
+        if (ctx.config.get(key)) {
+            return;
+        }
+        ctx.config.set(key, value);
+    }
+
     public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
         Logger.info(Messages.StartScaffold(PluginInfo.DisplayName));
         const progressHandler = await ProgressHelper.startScaffoldProgressHandler(ctx);
@@ -93,14 +100,15 @@ export class FrontendPluginImpl {
         );
 
         await progressHandler?.next(ProvisionSteps.Configure);
-        await runWithErrorCatchAndThrow(new EnableStaticWebsiteError(), async () => {
-            await client.enableStaticWebsite();
-        });
+        await runWithErrorCatchAndThrow(
+            new EnableStaticWebsiteError(),
+            async () => await client.enableStaticWebsite()
+        );
 
         const hostname = new URL(endpoint).hostname;
-        ctx.config.set(FrontendConfigInfo.Endpoint, endpoint);
-        ctx.config.set(FrontendConfigInfo.Hostname, hostname);
-        ctx.config.set(FrontendConfigInfo.StorageName, storageName);
+        this.setConfigIfNotExists(ctx, FrontendConfigInfo.Endpoint, endpoint);
+        this.setConfigIfNotExists(ctx, FrontendConfigInfo.Hostname, hostname);
+        this.setConfigIfNotExists(ctx, FrontendConfigInfo.StorageName, storageName);
 
         await ProgressHelper.endProvisionProgress();
         Logger.info(Messages.EndProvision(PluginInfo.DisplayName));

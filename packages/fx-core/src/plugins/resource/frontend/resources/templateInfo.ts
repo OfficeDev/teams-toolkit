@@ -26,18 +26,16 @@ export class TemplateInfo {
     constructor(ctx: PluginContext) {
         this.group = TemplateInfo.TemplateGroupName;
         this.language = (ctx.answers?.getString(QuestionKey.TabLanguage)) ?? TabLanguage.JavaScript;
-        this.version = TemplateInfo.versions[this.language];
+        this.version = TemplateInfo.version;
 
         const functionPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.FunctionPluginName);
         this.scenario = functionPlugin ? Scenario.WithFunction : Scenario.Default;
+
         // local template package only for default scenario
-        const localTemplateFileName = [this.group, this.language, Scenario.Default].join(".");
-        this.localTemplatePath = path.join(FrontendPathInfo.TemplateDir, localTemplateFileName + FrontendPathInfo.TemplatePackageExt);
+        const localTemplateFileName = [this.group, this.language, Scenario.Default].join(".") + FrontendPathInfo.TemplatePackageExt;
+        this.localTemplatePath = path.join(FrontendPathInfo.TemplateDir, localTemplateFileName);
     }
 
     static readonly TemplateGroupName = "tab";
-    static readonly versions: { [key: string]: string } = {
-        "JavaScript": "0.2.x",
-        "TypeScript": "0.1.x",
-    };
+    static readonly version = "0.2.x";
 }

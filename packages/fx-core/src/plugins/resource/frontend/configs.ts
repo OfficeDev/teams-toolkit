@@ -3,7 +3,7 @@
 import { PluginContext } from "fx-api";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 
-import { Constants, DependentPluginInfo } from "./constants";
+import { Constants, DependentPluginInfo, FrontendConfigInfo } from "./constants";
 import { InvalidStorageNameError, NotScaffoldError, UnauthenticatedError } from "./resources/errors";
 import { Utils } from "./utils";
 
@@ -53,7 +53,10 @@ export class FrontendConfig {
             throw new NotScaffoldError();
         }
 
-        const storageName = Utils.generateStorageAccountName(appName, resourceNameSuffix, Constants.FrontendSuffix);
+        let storageName = ctx.config.getString(FrontendConfigInfo.StorageName);
+        if (!storageName) {
+            storageName = Utils.generateStorageAccountName(appName, resourceNameSuffix, Constants.FrontendSuffix);
+        }
         if (!Constants.FrontendStorageNamePattern.test(storageName)) {
             throw new InvalidStorageNameError();
         }

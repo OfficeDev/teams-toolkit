@@ -15,6 +15,7 @@ import { AadService } from "../../../../../src/plugins/resource/apim/src/service
 import { Telemetry } from "../../../../../src/plugins/resource/apim/src/telemetry";
 import { IAadPluginConfig, IApimPluginConfig, ISolutionConfig } from "../../../../../src/plugins/resource/apim/src/model/config";
 import { AadDefaultValues } from "../../../../../src/plugins/resource/apim/src/constants";
+import { Lazy } from "../../../../../src/plugins/resource/apim/src/util/lazy";
 dotenv.config();
 chai.use(chaiAsPromised);
 
@@ -142,50 +143,50 @@ describe("AadManager", () => {
             source: IRequiredResourceAccess[] | undefined;
             expected: IRequiredResourceAccess[] | undefined;
         }[] = [
-            {
-                message: "Undefined source",
-                source: undefined,
-                expected: [{ resourceAppId: "0", resourceAccess: [{ id: "0", type: "Scope" }] }],
-            },
-            {
-                message: "Empty source",
-                source: [],
-                expected: [{ resourceAppId: "0", resourceAccess: [{ id: "0", type: "Scope" }] }],
-            },
-            {
-                message: "No existing client id",
-                source: [{ resourceAppId: "1" }],
-                expected: [{ resourceAppId: "1" }, { resourceAppId: "0", resourceAccess: [{ id: "0", type: "Scope" }] }],
-            },
-            {
-                message: "Existing client id and undefined resource access",
-                source: [{ resourceAppId: "0" }],
-                expected: [{ resourceAppId: "0", resourceAccess: [{ id: "0", type: "Scope" }] }],
-            },
-            {
-                message: "Existing client id and empty resource access",
-                source: [{ resourceAppId: "0", resourceAccess: [] }],
-                expected: [{ resourceAppId: "0", resourceAccess: [{ id: "0", type: "Scope" }] }],
-            },
-            {
-                message: "Existing client id and no scope id",
-                source: [{ resourceAppId: "0", resourceAccess: [{ id: "1", type: "Scope" }] }],
-                expected: [
-                    {
-                        resourceAppId: "0",
-                        resourceAccess: [
-                            { id: "1", type: "Scope" },
-                            { id: "0", type: "Scope" },
-                        ],
-                    },
-                ],
-            },
-            {
-                message: "Existing client id and existing scope id",
-                source: [{ resourceAppId: "0", resourceAccess: [{ id: "0", type: "Scope" }] }],
-                expected: undefined,
-            },
-        ];
+                {
+                    message: "Undefined source",
+                    source: undefined,
+                    expected: [{ resourceAppId: "0", resourceAccess: [{ id: "0", type: "Scope" }] }],
+                },
+                {
+                    message: "Empty source",
+                    source: [],
+                    expected: [{ resourceAppId: "0", resourceAccess: [{ id: "0", type: "Scope" }] }],
+                },
+                {
+                    message: "No existing client id",
+                    source: [{ resourceAppId: "1" }],
+                    expected: [{ resourceAppId: "1" }, { resourceAppId: "0", resourceAccess: [{ id: "0", type: "Scope" }] }],
+                },
+                {
+                    message: "Existing client id and undefined resource access",
+                    source: [{ resourceAppId: "0" }],
+                    expected: [{ resourceAppId: "0", resourceAccess: [{ id: "0", type: "Scope" }] }],
+                },
+                {
+                    message: "Existing client id and empty resource access",
+                    source: [{ resourceAppId: "0", resourceAccess: [] }],
+                    expected: [{ resourceAppId: "0", resourceAccess: [{ id: "0", type: "Scope" }] }],
+                },
+                {
+                    message: "Existing client id and no scope id",
+                    source: [{ resourceAppId: "0", resourceAccess: [{ id: "1", type: "Scope" }] }],
+                    expected: [
+                        {
+                            resourceAppId: "0",
+                            resourceAccess: [
+                                { id: "1", type: "Scope" },
+                                { id: "0", type: "Scope" },
+                            ],
+                        },
+                    ],
+                },
+                {
+                    message: "Existing client id and existing scope id",
+                    source: [{ resourceAppId: "0", resourceAccess: [{ id: "0", type: "Scope" }] }],
+                    expected: undefined,
+                },
+            ];
 
         testInput.forEach((input) => {
             it(input.message, async () => {
@@ -210,43 +211,43 @@ describe("AadManager", () => {
             added: string[];
             expected: string[] | undefined;
         }[] = [
-            {
-                message: "Undefined source",
-                source: undefined,
-                added: ["https://added-url"],
-                expected: ["https://added-url"],
-            },
-            {
-                message: "Empty source",
-                source: [],
-                added: ["https://added-url"],
-                expected: ["https://added-url"],
-            },
-            {
-                message: "No existing redirect uri",
-                source: ["https://existing-url"],
-                added: ["https://added-url"],
-                expected: ["https://existing-url", "https://added-url"],
-            },
-            {
-                message: "Existing redirect uri",
-                source: ["https://existing-url", "https://added-url"],
-                added: ["https://added-url"],
-                expected: undefined,
-            },
-            {
-                message: "Add multiple redirect uris",
-                source: ["https://existing-url", "https://added-url"],
-                added: ["https://added-url", "https://added-url-1"],
-                expected: ["https://existing-url", "https://added-url", "https://added-url-1"],
-            },
-            {
-                message: "Not add uri",
-                source: ["https://existing-url", "https://added-url"],
-                added: [],
-                expected: undefined,
-            },
-        ];
+                {
+                    message: "Undefined source",
+                    source: undefined,
+                    added: ["https://added-url"],
+                    expected: ["https://added-url"],
+                },
+                {
+                    message: "Empty source",
+                    source: [],
+                    added: ["https://added-url"],
+                    expected: ["https://added-url"],
+                },
+                {
+                    message: "No existing redirect uri",
+                    source: ["https://existing-url"],
+                    added: ["https://added-url"],
+                    expected: ["https://existing-url", "https://added-url"],
+                },
+                {
+                    message: "Existing redirect uri",
+                    source: ["https://existing-url", "https://added-url"],
+                    added: ["https://added-url"],
+                    expected: undefined,
+                },
+                {
+                    message: "Add multiple redirect uris",
+                    source: ["https://existing-url", "https://added-url"],
+                    added: ["https://added-url", "https://added-url-1"],
+                    expected: ["https://existing-url", "https://added-url", "https://added-url-1"],
+                },
+                {
+                    message: "Not add uri",
+                    source: ["https://existing-url", "https://added-url"],
+                    added: [],
+                    expected: undefined,
+                },
+            ];
 
         testInput.forEach((input) => {
             it(input.message, async () => {
@@ -277,7 +278,8 @@ async function buildAadService(enableLogin: boolean): Promise<AadService> {
 
 function buildAadManager(aadService: AadService): AadManager {
     const mockTelemetry = new Telemetry();
-    return new AadManager(aadService, mockTelemetry);
+    const lazyAadService = new Lazy<AadService>(() => Promise.resolve(aadService));
+    return new AadManager(lazyAadService, mockTelemetry);
 }
 
 function buildApimPluginConfig(objectId?: string, clientSecret?: string): IApimPluginConfig {

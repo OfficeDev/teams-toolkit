@@ -83,6 +83,7 @@ export class DependentPluginInfo {
     public static readonly subscriptionId: string = "subscriptionId";
     public static readonly resourceNameSuffix: string = "resourceNameSuffix";
     public static readonly location: string = "location";
+    public static readonly selectedPlugins: string = "selectedPlugins";
 
     public static readonly aadPluginName: string = "fx-resource-aad-app-for-teams";
     public static readonly aadClientId: string = "clientId";

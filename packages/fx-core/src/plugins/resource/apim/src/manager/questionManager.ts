@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Func, PluginContext, QTreeNode, Stage } from "fx-api";
+import { Func, PluginContext, QTreeNode } from "fx-api";
 import { BuildError, NotImplemented } from "../error";
 import { IApimPluginConfig } from "../model/config";
 import {

@@ -73,14 +73,18 @@ describe("AzureStorageClient", () => {
     });
 
     describe("enableStaticWebsite", () => {
+        let setPropertiesStub: sinon.SinonStub;
+        beforeEach(() => {
+            setPropertiesStub = sinon.stub(BlobServiceClient.prototype, "setProperties");
+            sinon.stub(AzureStorageClient.prototype, "isStorageStaticWebsiteEnabled").resolves(false);
+            sinon.stub(StorageAccounts.prototype, "listAccountSAS").resolves(sampleStorageAccountListSasResult);
+        });
         afterEach(() => {
             sinon.restore();
         });
 
         it("happy path", async () => {
             const azureClient = await TestHelper.getFakeAzureStorageClient();
-            const setPropertiesStub = sinon.stub(BlobServiceClient.prototype, "setProperties");
-            sinon.stub(StorageAccounts.prototype, "listAccountSAS").resolves(sampleStorageAccountListSasResult);
             const parameters = AzureStorageClient.getStaticWebsiteEnableParams();
 
             await azureClient.enableStaticWebsite();

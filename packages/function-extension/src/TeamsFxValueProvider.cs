@@ -19,7 +19,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.TeamsFx
             }
         }
 
-        public TeamsFxValueProvider(TeamsFxConfig config, ILogger logger)
+        public TeamsFxValueProvider(TeamsFxContext config, ILogger logger)
         {
             _logger = logger;
 

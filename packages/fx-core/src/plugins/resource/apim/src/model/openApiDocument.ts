@@ -3,8 +3,8 @@
 
 import { OpenAPI } from "openapi-types";
 export enum OpenApiSchemaVersion {
-    v2 = "v2",
-    v3 = "v3",
+    V2 = "v2",
+    V3 = "v3",
 }
 
 export interface IOpenApiDocument {

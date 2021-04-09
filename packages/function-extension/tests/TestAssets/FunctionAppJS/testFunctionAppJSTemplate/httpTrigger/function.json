@@ -17,7 +17,7 @@
     },
     {
       "direction": "in",
-      "name": "TeamsFxConfig",
+      "name": "TeamsFxContext",
       "type": "TeamsFx"
     }
   ]

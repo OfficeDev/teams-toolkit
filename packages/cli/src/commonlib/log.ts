@@ -14,8 +14,6 @@ export class CLILogProvider implements LogProvider {
 
   private static logLevel: CLILogLevel = CLILogLevel.error;
 
-  private constructor() {}
-
   public getLogLevel() {
     return CLILogProvider.logLevel;
   }

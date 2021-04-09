@@ -29,10 +29,6 @@ export class DialogManager implements Dialog {
   private static instance: DialogManager;
 
   public static answers: ConfigMap;
-  /**
-   * It can be only called by inner function.
-   */
-  private constructor() {}
 
   /**
    * Gets instance

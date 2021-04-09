@@ -179,7 +179,7 @@ export class ResourceConfigureAAD extends YargsCommand {
     }
 
     const core = result.value;
-    let func: Func = {
+    const func: Func = {
       namespace: "fx-solution-azure/teamsfx-plugin-aad-app-for-teams",
       method: "aadUpdatePermission"
     };
@@ -279,7 +279,7 @@ export class ResourceList extends YargsCommand {
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     const rootFolder = path.resolve(args["folder"] || "./");
     const result = await readConfigs(rootFolder);
-    let pluginNameMap: Map<string, string> = new Map();
+    const pluginNameMap: Map<string, string> = new Map();
     pluginNameMap.set("azure-sql", "azure-sql");
     pluginNameMap.set("function", "azure-function");
 

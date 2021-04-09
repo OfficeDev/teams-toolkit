@@ -20,8 +20,7 @@ const config = {
   },
   system: {
     loggerOptions: {
-      // @ts-ignore
-      loggerCallback(loglevel, message, containsPii) {
+      loggerCallback(loglevel: any, message: any, containsPii: any) {
         CLILogProvider.log(4 - loglevel, message);
       },
       piiLoggingEnabled: false,
@@ -39,8 +38,6 @@ export class GraphLogin implements GraphTokenProvider {
 
   private static accessToken: string | undefined;
 
-  private constructor() {}
-
   /**
    * Gets instance
    * @returns instance
@@ -56,7 +53,7 @@ export class GraphLogin implements GraphTokenProvider {
   async getAccessToken(): Promise<string | undefined> {
     const cca = new ConfidentialClientApplication(config);
 
-    var authenticationResult = await cca.acquireTokenByClientCredential(clientCredentialRequest);
+    const authenticationResult = await cca.acquireTokenByClientCredential(clientCredentialRequest);
 
     GraphLogin.accessToken = authenticationResult?.accessToken;
     return new Promise((resolve) => {
@@ -66,7 +63,7 @@ export class GraphLogin implements GraphTokenProvider {
 
   getJsonObject(): Promise<Record<string, unknown> | undefined> {
     if (GraphLogin.accessToken != undefined) {
-      var array = GraphLogin.accessToken?.split(".");
+      const array = GraphLogin.accessToken?.split(".");
       const buff = Buffer.from(array![1], "base64");
       return new Promise((resolve) => {
         resolve(JSON.parse(buff.toString("utf-8")));

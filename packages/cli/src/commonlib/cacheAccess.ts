@@ -16,8 +16,7 @@ export const UTF8 = "utf-8";
 const cachePathEnd = ".json";
 
 export function getBeforeCacheAccess(accountName: string) {
-  //@ts-ignore
-  const beforeCacheAccess = async (cacheContext): Promise<void> => {
+  const beforeCacheAccess = async (cacheContext: any): Promise<void> => {
     return new Promise(async (resolve, reject) => {
       await fs.ensureDir(cacheDir);
       const fileCachePath = getCachePath(accountName);
@@ -51,8 +50,7 @@ export function getBeforeCacheAccess(accountName: string) {
 }
 
 export function getAfterCacheAccess(scopes: string[], accountName: string) {
-  //@ts-ignore
-  const afterCacheAccess = async (cacheContext) => {
+  const afterCacheAccess = async (cacheContext: any) => {
     if (cacheContext.cacheHasChanged) {
       const fileCachePath = getCachePath(accountName);
       // save token
@@ -63,8 +61,8 @@ export function getAfterCacheAccess(scopes: string[], accountName: string) {
       });
 
       // save home_account_id for later restore
-      var data = JSON.parse(cacheContext.tokenCache.serialize());
-      for (var key in data.AccessToken) {
+      const data = JSON.parse(cacheContext.tokenCache.serialize());
+      for (const key in data.AccessToken) {
         if (key.indexOf(scopes[0].toLowerCase()) != -1) {
           fs.writeFile(accountPath + accountName, data.AccessToken[key][homeAccountId], (err) => {
             if (err) {

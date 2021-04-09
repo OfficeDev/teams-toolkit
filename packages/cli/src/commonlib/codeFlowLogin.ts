@@ -48,8 +48,8 @@ export class CodeFlowLogin {
 
   async reloadCache() {
     if (fs.existsSync(accountPath + this.accountName)) {
-      var accountCache = String(fs.readFileSync(accountPath + this.accountName, UTF8));
-      var dataCache = await this.msalTokenCache!.getAccountByHomeId(accountCache);
+      const accountCache = String(fs.readFileSync(accountPath + this.accountName, UTF8));
+      const dataCache = await this.msalTokenCache!.getAccountByHomeId(accountCache);
       if (dataCache) {
         this.account = dataCache;
       }
@@ -57,9 +57,9 @@ export class CodeFlowLogin {
   }
 
   async login(): Promise<string> {
-    var codeVerifier = CodeFlowLogin.toBase64UrlEncoding(crypto.randomBytes(32).toString("base64"));
-    var codeChallenge = CodeFlowLogin.toBase64UrlEncoding(await CodeFlowLogin.sha256(codeVerifier));
-    var serverPort = this.port;
+    const codeVerifier = CodeFlowLogin.toBase64UrlEncoding(crypto.randomBytes(32).toString("base64"));
+    const codeChallenge = CodeFlowLogin.toBase64UrlEncoding(await CodeFlowLogin.sha256(codeVerifier));
+    let serverPort = this.port;
 
     // try get an unused port
     const app = express();
@@ -75,7 +75,7 @@ export class CodeFlowLogin {
     };
 
     let deferredRedirect: Deferred<string>;
-    let redirectPromise: Promise<string> = new Promise<string>(
+    const redirectPromise: Promise<string> = new Promise<string>(
       (resolve, reject) => (deferredRedirect = { resolve, reject })
     );
 
@@ -145,8 +145,8 @@ export class CodeFlowLogin {
   }
 
   async logout(): Promise<boolean> {
-    var accountCache = String(fs.readFileSync(accountPath + this.accountName, UTF8));
-    var dataCache = await this.msalTokenCache!.getAccountByHomeId(accountCache);
+    const accountCache = String(fs.readFileSync(accountPath + this.accountName, UTF8));
+    const dataCache = await this.msalTokenCache!.getAccountByHomeId(accountCache);
     this.msalTokenCache?.removeAccount(dataCache!);
     if (fs.existsSync(accountPath + this.accountName)) {
       fs.writeFileSync(accountPath + this.accountName, "", UTF8);
@@ -160,7 +160,7 @@ export class CodeFlowLogin {
         await this.reloadCache();
       }
       if (!this.account) {
-        var accessToken = await this.login();
+        const accessToken = await this.login();
         return accessToken;
       } else {
         return this.pca!.acquireTokenSilent({
@@ -177,7 +177,7 @@ export class CodeFlowLogin {
           })
           .catch(async (error) => {
             CliCodeLogInstance.error("[Login] silent acquire token : " + error.message);
-            var accessToken = await this.login();
+            const accessToken = await this.login();
             return accessToken;
           });
       }
@@ -190,10 +190,10 @@ export class CodeFlowLogin {
   async startServer(server: http.Server, port: number): Promise<string> {
     // handle port timeout
     let defferedPort: Deferred<string>;
-    let portPromise: Promise<string> = new Promise<string>(
+    const portPromise: Promise<string> = new Promise<string>(
       (resolve, reject) => (defferedPort = { resolve, reject })
     );
-    let portTimer = setTimeout(() => {
+    const portTimer = setTimeout(() => {
       defferedPort.reject(
         returnSystemError(
           new Error(ErrorMessage.portConflictMessage),
@@ -222,10 +222,10 @@ export class CodeFlowLogin {
   }
 
   static sha256(s: string | Uint8Array): Promise<string> {
-    return require("crypto")
+    return new Promise(solve => solve(crypto
       .createHash("sha256")
       .update(s)
-      .digest("base64");
+      .digest("base64")));
   }
 }
 
@@ -239,7 +239,7 @@ function sendFile(
     if (err) {
       CliCodeLogInstance.error(err.message);
     } else {
-      var data = body.toString();
+      let data = body.toString();
       data = data.replace(/\${accountName}/g, accountName == "azure" ? "Azure" : "M365");
       body = Buffer.from(data, UTF8);
       res.writeHead(200, {
@@ -262,8 +262,8 @@ export function LoginFailureError(innerError?: any): UserError {
   );
 }
 
-export function ConvertTokenToJson(token: string): object {
-  var array = token!.split(".");
+export function ConvertTokenToJson(token: string): any {
+  const array = token!.split(".");
   const buff = Buffer.from(array[1], "base64");
   return JSON.parse(buff.toString(UTF8));
 }

@@ -6,7 +6,7 @@
 import { AppStudioTokenProvider, UserError } from "fx-api";
 import { LogLevel } from "@azure/msal-node";
 import { CodeFlowLogin } from "./codeFlowLogin";
-import VsCodeLogInstance from "./log";
+import CLILogProvider from "./log";
 import { getBeforeCacheAccess, getAfterCacheAccess } from "./cacheAccess";
 
 const accountName = "appStudio";
@@ -28,12 +28,11 @@ const config = {
   },
   system: {
     loggerOptions: {
-      // @ts-ignore
-      loggerCallback(loglevel, message, containsPii) {
-        VsCodeLogInstance.info(message);
+      loggerCallback(loglevel: any, message: any, containsPii: any) {
+        CLILogProvider.log(4 - loglevel, message);
       },
       piiLoggingEnabled: false,
-      logLevel: LogLevel.Error
+      logLevel: LogLevel.Verbose
     }
   },
   cache: {
@@ -72,7 +71,7 @@ export class AppStudioLogin implements AppStudioTokenProvider {
    */
   async getAccessToken(showDialog = true): Promise<string | undefined> {
     if (!AppStudioLogin.codeFlowInstance.account) {
-      var loginToken = await AppStudioLogin.codeFlowInstance.getToken();
+      const loginToken = await AppStudioLogin.codeFlowInstance.getToken();
       if (loginToken && AppStudioLogin.statusChange !== undefined) {
         const tokenJson = await this.getJsonObject();
         await AppStudioLogin.statusChange("SignedIn", loginToken, tokenJson);
@@ -86,7 +85,7 @@ export class AppStudioLogin implements AppStudioTokenProvider {
   async getJsonObject(showDialog = true): Promise<Record<string, unknown> | undefined> {
     const token = await this.getAccessToken(showDialog);
     if (token) {
-      var array = token.split(".");
+      const array = token.split(".");
       const buff = Buffer.from(array[1], "base64");
       return new Promise((resolve) => {
         resolve(JSON.parse(buff.toString("utf-8")));
@@ -115,7 +114,7 @@ export class AppStudioLogin implements AppStudioTokenProvider {
     AppStudioLogin.statusChange = statusChange;
     await AppStudioLogin.codeFlowInstance.reloadCache();
     if (AppStudioLogin.codeFlowInstance.account) {
-      var loginToken = await AppStudioLogin.codeFlowInstance.getToken();
+      const loginToken = await AppStudioLogin.codeFlowInstance.getToken();
       const tokenJson = await this.getJsonObject();
       await AppStudioLogin.statusChange("SignedIn", loginToken, tokenJson);
     }

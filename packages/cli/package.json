@@ -19,8 +19,8 @@
     "test:e2e:actions": "mocha --no-timeouts --parallel --require ts-node/register test/e2e/**/*.test.ts",
     "check-format": "prettier --list-different --config .prettierrc.json --ignore-path .prettierignore \"src/**/*.ts\" \"*.{js,json}\"",
     "format": "prettier --write --config .prettierrc.json --ignore-path .prettierignore \"src/**/*.ts\" \"*.{js,json}\"",
-    "eslint:fix": "eslint package.json tsconfig.json src --ext .ts --fix",
-    "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\""
+    "eslint:fix": "eslint src --ext .ts --fix",
+    "lint": "eslint \"src/**/*.ts\""
   },
   "keywords": [
     "teamsfx",

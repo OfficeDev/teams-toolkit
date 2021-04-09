@@ -27,8 +27,6 @@ export class AzureAccountManager implements AzureAccountProvider {
 
   private static instance: AzureAccountManager;
 
-  private constructor() {}
-
   /**
    * Gets instance
    * @returns instance
@@ -56,7 +54,7 @@ export class AzureAccountManager implements AzureAccountProvider {
 
   async getAccountCredentialAsync(): Promise<TokenCredentialsBase | undefined> {
     if (AzureAccountManager.tokenCredentialsBase == undefined) {
-      var authres = await msRestNodeAuth.loginWithServicePrincipalSecretWithAuthResponse(
+      const authres = await msRestNodeAuth.loginWithServicePrincipalSecretWithAuthResponse(
         clientId,
         secret,
         tenantId
@@ -71,7 +69,7 @@ export class AzureAccountManager implements AzureAccountProvider {
 
   async getIdentityCredentialAsync(): Promise<TokenCredential | undefined> {
     if (AzureAccountManager.tokenCredential == undefined) {
-      var identityCredential = new identity.ClientSecretCredential(tenantId, clientId, secret);
+      const identityCredential = new identity.ClientSecretCredential(tenantId, clientId, secret);
       const credentialChain = new identity.ChainedTokenCredential(identityCredential);
       AzureAccountManager.tokenCredential = credentialChain;
     }
@@ -107,12 +105,12 @@ export class AzureAccountManager implements AzureAccountProvider {
   }
 
   async getSubscriptionList(azureToken: TokenCredentialsBase): Promise<AzureSubscription[]> {
-    let client = new SubscriptionClient(azureToken);
+    const client = new SubscriptionClient(azureToken);
     const subscriptions = await listAll(client.subscriptions, client.subscriptions.list());
-    let subs: Partial<AzureSubscription>[] = subscriptions.map((sub) => {
+    const subs: Partial<AzureSubscription>[] = subscriptions.map((sub) => {
       return { displayName: sub.displayName, subscriptionId: sub.subscriptionId };
     });
-    let filteredSubs = subs.filter(
+    const filteredSubs = subs.filter(
       (sub) => sub.displayName !== undefined && sub.subscriptionId !== undefined
     );
     return filteredSubs.map((sub) => {
@@ -122,7 +120,7 @@ export class AzureAccountManager implements AzureAccountProvider {
 
   public async setSubscriptionId(
     subscriptionId: string,
-    root_folder: string = "./"
+    root_folder = "./"
   ): Promise<Result<null, FxError>> {
     const token = await this.getAccountCredentialAsync();
     const subscriptions = await this.getSubscriptionList(token!);

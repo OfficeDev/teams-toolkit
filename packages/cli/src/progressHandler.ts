@@ -30,7 +30,9 @@ export class ProgressHandler {
     CLILogProvider.info(this.generateWholeMessage());
   }
 
-  public async end() {}
+  public async end() {
+    this.currentStep = 0;
+  }
 
   public async next(detail?: string) {
     this.detail = detail;

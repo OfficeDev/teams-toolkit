@@ -28,11 +28,11 @@ export async function validate(
   }
 
   /// callFunc validation, there is dependancy about core.callFunc
-  let funcValidation: RemoteFuncValidation = validation as RemoteFuncValidation;
+  const funcValidation: RemoteFuncValidation = validation as RemoteFuncValidation;
   if (funcValidation.method) {
     //function validation
     funcValidation.params = [valueToValidate];
-    let res = await core.callFunc!(funcValidation, answers);
+    const res = await core.callFunc!(funcValidation, answers);
     if (res.isOk()) {
       return res.value as string;
     } else {
@@ -41,16 +41,16 @@ export async function validate(
   }
 
   ///local function validation
-  let localFuncValidation: LocalFuncValidation = validation as LocalFuncValidation;
+  const localFuncValidation: LocalFuncValidation = validation as LocalFuncValidation;
   if (localFuncValidation.validFunc) {
     const res = await localFuncValidation.validFunc(valueToValidate as string);
     return res as string;
   }
 
   ///file validation
-  let fileValidation: FileValidation = validation as FileValidation;
+  const fileValidation: FileValidation = validation as FileValidation;
   if (fileValidation.exists || fileValidation.notExist) {
-    let path = valueToValidate as string;
+    const path = valueToValidate as string;
     if (!path) {
       return `path should not be empty!`;
     }
@@ -102,11 +102,11 @@ export async function validate(
     }
   }
 
-  let arrayValidation: StringArrayValidation = validation as StringArrayValidation;
+  const arrayValidation: StringArrayValidation = validation as StringArrayValidation;
   if (arrayValidation.containsAll) {
     const containsAll: string[] = arrayValidation.containsAll;
     if (containsAll.length > 0) {
-      let array = valueToValidate as string[];
+      const array = valueToValidate as string[];
       for (const i of containsAll) {
         if (!array.includes(i)) {
           return `'${array}' does not meet containsAll '${containsAll}'`;
@@ -118,7 +118,7 @@ export async function validate(
   if (arrayValidation.containsAny) {
     const containsAny: string[] = arrayValidation.containsAny;
     if (containsAny.length > 0) {
-      let array = valueToValidate as string[];
+      const array = valueToValidate as string[];
       let found = false;
       for (const i of containsAny) {
         if (array.includes(i)) {

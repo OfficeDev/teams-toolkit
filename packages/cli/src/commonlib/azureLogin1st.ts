@@ -8,7 +8,7 @@ import { TokenCredentialsBase, DeviceTokenCredentials } from "@azure/ms-rest-nod
 import { AzureAccountProvider, err, FxError, ok, Result } from "fx-api";
 import { CodeFlowLogin, LoginFailureError, ConvertTokenToJson } from "./codeFlowLogin";
 import { MemoryCache } from "./memoryCache";
-import VsCodeLogInstance from "./log";
+import CLILogProvider from "./log";
 import { getBeforeCacheAccess, getAfterCacheAccess } from "./cacheAccess";
 import { SubscriptionClient } from "@azure/arm-subscriptions";
 import { LogLevel } from "@azure/msal-node";
@@ -56,12 +56,11 @@ const config = {
   },
   system: {
     loggerOptions: {
-      // @ts-ignore
-      loggerCallback(loglevel, message, containsPii) {
-        VsCodeLogInstance.info(message);
+      loggerCallback(loglevel: any, message: any, containsPii: any) {
+        CLILogProvider.log(4 - loglevel, message);
       },
       piiLoggingEnabled: false,
-      logLevel: LogLevel.Error
+      logLevel: LogLevel.Verbose
     }
   },
   cache: {
@@ -69,8 +68,9 @@ const config = {
   }
 };
 
-//@ts-ignore
-var memory = new MemoryCache();
+// eslint-disable-next-line
+// @ts-ignore
+const memory = new MemoryCache();
 
 export class AzureAccountManager implements AzureAccountProvider {
   private static instance: AzureAccountManager;
@@ -113,7 +113,7 @@ export class AzureAccountManager implements AzureAccountProvider {
    */
   getAccountCredential(showDialog = true): TokenCredentialsBase | undefined {
     if (AzureAccountManager.codeFlowInstance.account && memory.size() > 0) {
-      var credential = new DeviceTokenCredentials(
+      const credential = new DeviceTokenCredentials(
         config.auth.clientId,
         AzureAccountManager.domain,
         AzureAccountManager.username,
@@ -142,14 +142,14 @@ export class AzureAccountManager implements AzureAccountProvider {
    */
   async getAccountCredentialAsync(showDialog = true): Promise<TokenCredentialsBase | undefined> {
     if (AzureAccountManager.codeFlowInstance.account) {
-      var loginToken = await AzureAccountManager.codeFlowInstance.getToken();
+      const loginToken = await AzureAccountManager.codeFlowInstance.getToken();
       const tokenJson = await this.getJsonObject();
       this.setMemoryCache(loginToken, tokenJson);
     }
     if (AzureAccountManager.codeFlowInstance.account) {
       return new Promise(async (resolve) => {
         const tokenJson = await this.getJsonObject();
-        var credential = new DeviceTokenCredentials(
+        const credential = new DeviceTokenCredentials(
           config.auth.clientId,
           (tokenJson as any).tid,
           (tokenJson as any).upn,
@@ -185,17 +185,17 @@ export class AzureAccountManager implements AzureAccountProvider {
   }
 
   private async login(showDialog: boolean): Promise<void> {
-    var accessToken = await AzureAccountManager.codeFlowInstance.getToken();
+    const accessToken = await AzureAccountManager.codeFlowInstance.getToken();
     const tokenJson = await this.getJsonObject();
     this.setMemoryCache(accessToken, tokenJson);
   }
 
-  private setMemoryCache(accessToken: string | undefined, tokenJson: object | undefined) {
+  private setMemoryCache(accessToken: string | undefined, tokenJson: any) {
     if (accessToken) {
       AzureAccountManager.domain = (tokenJson as any).tid;
       AzureAccountManager.username = (tokenJson as any).upn;
       tokenJson = ConvertTokenToJson(accessToken);
-      var tokenExpiresIn =
+      const tokenExpiresIn =
         Math.round(new Date().getTime() / 1000) - ((tokenJson as any).iat as number);
       memory.add(
         [
@@ -210,7 +210,7 @@ export class AzureAccountManager implements AzureAccountProvider {
             _authority: env.activeDirectoryEndpointUrl + AzureAccountManager.domain
           }
         ],
-        function() {}
+        function() { const _ = 1; }
       );
     }
   }
@@ -218,7 +218,7 @@ export class AzureAccountManager implements AzureAccountProvider {
   private async doGetAccountCredentialAsync(): Promise<TokenCredentialsBase | undefined> {
     if (AzureAccountManager.codeFlowInstance.account) {
       const dataJson = await this.getJsonObject();
-      var credential = new DeviceTokenCredentials(
+      const credential = new DeviceTokenCredentials(
         config.auth.clientId,
         (dataJson as any).tid,
         (dataJson as any).upn,
@@ -236,9 +236,9 @@ export class AzureAccountManager implements AzureAccountProvider {
   }
 
   async getJsonObject(showDialog = true): Promise<Record<string, unknown> | undefined> {
-    var token = await AzureAccountManager.codeFlowInstance.getToken();
+    const token = await AzureAccountManager.codeFlowInstance.getToken();
     if (token) {
-      var array = token!.split(".");
+      const array = token!.split(".");
       const buff = Buffer.from(array[1], "base64");
       return Promise.resolve(JSON.parse(buff.toString("utf-8")));
     } else {
@@ -267,7 +267,7 @@ export class AzureAccountManager implements AzureAccountProvider {
     AzureAccountManager.statusChange = statusChange;
     await AzureAccountManager.codeFlowInstance.reloadCache();
     if (AzureAccountManager.codeFlowInstance.account) {
-      var loginToken = await AzureAccountManager.codeFlowInstance.getToken();
+      const loginToken = await AzureAccountManager.codeFlowInstance.getToken();
       const tokenJson = await this.getJsonObject();
       this.setMemoryCache(loginToken, tokenJson);
       await AzureAccountManager.statusChange("SignedIn", loginToken, tokenJson);
@@ -276,12 +276,12 @@ export class AzureAccountManager implements AzureAccountProvider {
   }
 
   async getSubscriptionList(azureToken: TokenCredentialsBase): Promise<AzureSubscription[]> {
-    let client = new SubscriptionClient(azureToken);
+    const client = new SubscriptionClient(azureToken);
     const subscriptions = await listAll(client.subscriptions, client.subscriptions.list());
-    let subs: Partial<AzureSubscription>[] = subscriptions.map((sub) => {
+    const subs: Partial<AzureSubscription>[] = subscriptions.map((sub) => {
       return { displayName: sub.displayName, subscriptionId: sub.subscriptionId };
     });
-    let filteredSubs = subs.filter(
+    const filteredSubs = subs.filter(
       (sub) => sub.displayName !== undefined && sub.subscriptionId !== undefined
     );
     return filteredSubs.map((sub) => {
@@ -291,7 +291,7 @@ export class AzureAccountManager implements AzureAccountProvider {
 
   public async setSubscriptionId(
     subscriptionId: string,
-    root_folder: string = "./"
+    root_folder = "./"
   ): Promise<Result<null, FxError>> {
     const token = await this.getAccountCredentialAsync();
     const subscriptions = await this.getSubscriptionList(token!);

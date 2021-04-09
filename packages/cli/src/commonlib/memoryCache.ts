@@ -19,7 +19,7 @@ export function MemoryCache(this: any) {
  *                             first parameter.
  */
 MemoryCache.prototype.remove = function(entries: any, callback: () => void) {
-  var updatedEntries = underscore.filter(this._entries, function(element) {
+  const updatedEntries = underscore.filter(this._entries, function(element) {
     if (underscore.findWhere(entries, element)) {
       return false;
     }
@@ -52,7 +52,7 @@ MemoryCache.prototype.add = function(entries: any, callback: (arg0: null, arg1: 
 
   // Add the new entries to the end of the cache.
   entries = underscore.compact(entries);
-  for (var i = 0; i < entries.length; i++) {
+  for (let i = 0; i < entries.length; i++) {
     this._entries.push(entries[i]);
   }
 
@@ -72,7 +72,7 @@ MemoryCache.prototype.find = function(
   query: Partial<any>,
   callback: (arg0: null, arg1: any[]) => void
 ) {
-  var results = underscore.where(this._entries, query);
+  const results = underscore.where(this._entries, query);
   callback(null, results);
 };
 

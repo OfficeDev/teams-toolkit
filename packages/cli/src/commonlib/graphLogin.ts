@@ -3,11 +3,11 @@
 
 "use strict";
 
-import { UserError } from "fx-api";
 import { GraphTokenProvider } from "fx-api";
 import { LogLevel } from "@azure/msal-node";
 import { CodeFlowLogin } from "./codeFlowLogin";
-import VsCodeLogInstance from "./log";
+
+import CLILogProvider from "./log";
 
 const accountName = "graph";
 const scopes = ["Directory.AccessAsUser.All"];
@@ -20,12 +20,11 @@ const config = {
   },
   system: {
     loggerOptions: {
-      // @ts-ignore
-      loggerCallback(loglevel, message, containsPii) {
-        VsCodeLogInstance.info(message);
+      loggerCallback(loglevel: any, message: any, containsPii: any) {
+        CLILogProvider.log(4 - loglevel, message);
       },
       piiLoggingEnabled: false,
-      logLevel: LogLevel.Error
+      logLevel: LogLevel.Verbose
     }
   }
   // TODO: add this back after graph change to 7ea7c24c-b1f6-4a20-9d11-9ae12e9e7ac0 first party app
@@ -69,21 +68,21 @@ export class GraphLogin implements GraphTokenProvider {
 
   async getAccessToken(showDialog = true): Promise<string | undefined> {
     if (!GraphLogin.codeFlowInstance.account) {
-      var loginToken = await GraphLogin.codeFlowInstance.getToken();
+      const loginToken = await GraphLogin.codeFlowInstance.getToken();
       if (loginToken && GraphLogin.statusChange !== undefined) {
         const tokenJson = await this.getJsonObject();
         await GraphLogin.statusChange("SignedIn", loginToken, tokenJson);
       }
       return loginToken;
     }
-    let accessToken = GraphLogin.codeFlowInstance.getToken();
+    const accessToken = GraphLogin.codeFlowInstance.getToken();
     return accessToken;
   }
 
   async getJsonObject(showDialog = true): Promise<Record<string, unknown> | undefined> {
     const token = await this.getAccessToken();
     if (token) {
-      var array = token.split(".");
+      const array = token.split(".");
       const buff = Buffer.from(array[1], "base64");
       return new Promise((resolve) => {
         resolve(JSON.parse(buff.toString("utf-8")));
@@ -110,7 +109,7 @@ export class GraphLogin implements GraphTokenProvider {
   ): Promise<boolean> {
     GraphLogin.statusChange = statusChange;
     if (GraphLogin.codeFlowInstance.account) {
-      var loginToken = await GraphLogin.codeFlowInstance.getToken();
+      const loginToken = await GraphLogin.codeFlowInstance.getToken();
       const tokenJson = await this.getJsonObject();
       await GraphLogin.statusChange("SignedIn", loginToken, tokenJson);
     }

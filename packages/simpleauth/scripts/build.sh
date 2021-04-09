@@ -7,7 +7,7 @@ pushd "$DIR"
 
 echo "Step build."
 cd ..
-dotnet build -c Release -p:WebDriverPlatform=win32 TeamsFxSimpleAuth.sln
+dotnet build -c Release -p:WebDriverPlatform=linux64 TeamsFxSimpleAuth.sln
 EXIT_CODE=$?
 
 popd

@@ -120,10 +120,7 @@ suite("UI Unit Tests", async () => {
             level: MsgLevel.Info
           })
         ),
-        new DialogMsg(DialogType.Show, {
-          description: "Show Successfully",
-          level: MsgLevel.Info
-        })
+        new DialogMsg(DialogType.Answer, "Show Successfully")
       );
 
       chai.assert.deepEqual(

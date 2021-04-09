@@ -19,7 +19,7 @@ import { SqlConfig } from "./config";
 import { SqlClient } from "./sqlClient";
 import { ContextUtils } from "./utils/contextUtils";
 import { formatEndpoint, parseToken, UserType } from "./utils/commonUtils";
-import { Constants, Telemetry } from "./constants";
+import { Constants, HelpLinks, Telemetry } from "./constants";
 import { Message } from "./utils/message";
 import { TelemetryUtils } from "./utils/telemetryUtils";
 import { adminNameQuestion, adminPasswordQuestion, confirmPasswordQuestion } from "./questions";
@@ -29,7 +29,6 @@ export class SqlPluginImpl {
     config: SqlConfig = new SqlConfig();
 
     init(ctx: PluginContext) {
-        if (!this.config.azureSubscriptionId) {
             ContextUtils.init(ctx);
             this.config.azureSubscriptionId = ContextUtils.getConfigString(Constants.solution, Constants.solutionConfigKey.subscriptionId);
             this.config.resourceGroup = ContextUtils.getConfigString(Constants.solution, Constants.solutionConfigKey.resourceGroupName);
@@ -44,7 +43,6 @@ export class SqlPluginImpl {
             // database
             const defaultDatabase = `${ctx.app.name.short}-db-${this.config.resourceNameSuffix}`;
             this.config.databaseName = defaultDatabase;
-        }
     }
 
     async getQuestions(stage: Stage, ctx: PluginContext): Promise<Result<QTreeNode | undefined, FxError>> {
@@ -98,11 +96,6 @@ export class SqlPluginImpl {
         this.init(ctx);
         DialogUtils.init(ctx);
 
-        this.config.azureSubscriptionId = ContextUtils.getConfigString(Constants.solution, Constants.solutionConfigKey.subscriptionId);
-        this.config.resourceGroup = ContextUtils.getConfigString(Constants.solution, Constants.solutionConfigKey.resourceGroupName);
-        this.config.resourceNameSuffix = ContextUtils.getConfigString(Constants.solution, Constants.solutionConfigKey.resourceNameSuffix);
-        this.config.location = ContextUtils.getConfigString(Constants.solution, Constants.solutionConfigKey.location);
-        this.config.tenantId = ContextUtils.getConfigString(Constants.solution, Constants.solutionConfigKey.tenantId);
         this.config.skipAddingUser = ctx.config.get(Constants.skipAddingUser) as boolean;
         // sql server name
         ctx.logProvider?.debug(Message.endpoint(this.config.sqlEndpoint));
@@ -229,7 +222,7 @@ export class SqlPluginImpl {
                     ctx.logProvider?.info(Message.existUser(this.config.identity));
                 }
             } else {
-                DialogUtils.show(`[${Constants.pluginName}] service principal admin in azure sql can't add database user <${this.config.identity}>. You can add it for ${this.config.databaseName} manually`, MsgLevel.Warning);
+                DialogUtils.show(`[${Constants.pluginName}] service principal admin in azure sql can't add database user <${this.config.identity}>. You can add it for ${this.config.databaseName}. Refer ${HelpLinks}`, MsgLevel.Warning);
             }
         } else {
             ctx.logProvider?.info(Message.skipAddUser);

@@ -5,6 +5,7 @@ import { MemoryRouter, Route } from "react-router-dom";
 import { initializeIcons } from "@fluentui/react/lib/Icons";
 import WelcomePanel from './WelcomePanel';
 import LearnToolkit from './LearnToolkit';
+import QuickStart from './QuickStart';
 
 const language = "en";
 
@@ -21,10 +22,11 @@ export default function App(props: any) {
 
   return (
     <MemoryRouter
-      initialEntries={["/welcome-page", "/sample-page"]}
-      initialIndex={0}>
+      initialEntries={["/welcome-page", "/learn-toolkit", "/quick-start"]}
+      initialIndex={2}>
       <Route path='/welcome-page' component={WelcomePanel} />
       <Route path='/learn-toolkit' component={LearnToolkit} />
+      <Route path='/quick-start' component={QuickStart} />
     </MemoryRouter>
   );
 }

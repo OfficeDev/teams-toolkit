@@ -18,7 +18,7 @@ export class AppStudioPlugin implements Plugin {
 
         if (stage === Stage.publish) {
             const app_path = new QTreeNode({
-                type: NodeType.file,
+                type: NodeType.folder,
                 name: Constants.PUBLISH_PATH_QUESTION,
                 title: "Please select the folder contains manifest.json and icons",
                 default: `${ctx.root}/.${ConfigFolderName}`
@@ -34,8 +34,8 @@ export class AppStudioPlugin implements Plugin {
      * @param {string} manifestString - the string of manifest.json file
      * @returns {string[]} an array of errors
      */
-    public async validateManifest(manifestString: string): Promise<Result<string[], FxError>> {
-        const validationResult = await this.appStudioPluginImpl.validateManifest(manifestString);
+    public async validateManifest(ctx: PluginContext, manifestString: string): Promise<Result<string[], FxError>> {
+        const validationResult = await this.appStudioPluginImpl.validateManifest(ctx, manifestString);
         return ok(validationResult);
     }
 

@@ -95,6 +95,7 @@ import {
 } from "./question";
 import Mustache from "mustache";
 import path from "path";
+import { AppStudioPlugin } from "../../resource/appstudio";
 
 type LoadedPlugin = Plugin & { name: string; displayName: string; };
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -186,11 +187,20 @@ function newApimPlugin(): LoadedPlugin {
     return pluginWithMeta;
 }
 
+function newAppStudioPlugin(): LoadedPlugin {
+    const plugin: Plugin = new AppStudioPlugin();
+    const pluginWithMeta: LoadedPlugin = plugin as LoadedPlugin;
+    pluginWithMeta.name = "fx-resource-appstudio";
+    pluginWithMeta.displayName = "App Studio";
+    return pluginWithMeta;
+}
+
 // Maybe we need a state machine to track state transition.
 enum SolutionRunningState {
     Idle = "idle",
     ProvisionInProgress = "ProvisionInProgress",
     DeployInProgress = "DeployInProgress",
+    PublishInProgress = "PublishInProgress"
 }
 
 export class TeamsAppSolution implements Solution {
@@ -204,6 +214,7 @@ export class TeamsAppSolution implements Solution {
     simpleAuthPlugin: LoadedPlugin = newSimpleAuthPlugin();
     localDebugPlugin: LoadedPlugin = newLocalDebugPlugin();
     apimPlugin: LoadedPlugin = newApimPlugin();
+    appStudioPlugin: LoadedPlugin = newAppStudioPlugin();
 
     runningState: SolutionRunningState;
 
@@ -1040,7 +1051,32 @@ export class TeamsAppSolution implements Solution {
     }
 
     async publish(ctx: SolutionContext): Promise<Result<any, FxError>> {
-        return ok({});
+        try {
+            this.runningState = SolutionRunningState.PublishInProgress;
+
+            const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, [this.appStudioPlugin]);
+            const publishWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {
+                return [plugin?.publish?.bind(plugin), context, plugin.name];
+            });
+
+            const result = await executeLifecycles([], publishWithCtx, []);
+
+            if (result.isOk()) {
+                ctx.logProvider?.info(`[Teams Toolkit] publish success!`);
+                await ctx.dialog?.communicate(
+                    new DialogMsg(DialogType.Show, {
+                        description: "[Teams Toolkit]: Successfully published to the admin portal. Once approved, your app will be available for your organization.",
+                        level: MsgLevel.Info,
+                    }),
+                );
+            } else {
+                ctx.logProvider?.error(`[Teams Toolkit] publish failed!`);
+            }
+
+            return result;
+        } finally {
+            this.runningState = SolutionRunningState.Idle;
+        }
     }
 
     /**
@@ -1229,6 +1265,19 @@ export class TeamsAppSolution implements Solution {
                         const subnode = getQuestionRes.value as QTreeNode;
                         subnode.condition = { contains: plugin.name };
                         if (subnode.data) pluginSelection.addChild(subnode);
+                    }
+                }
+            }
+        } else if (stage === Stage.publish) {
+            const pluginsToPublish = [this.appStudioPlugin];
+            for (const plugin of pluginsToPublish) {
+                const pluginCtx = getPluginContext(ctx, plugin.name, this.manifest);
+                if (plugin.getQuestions) {
+                    const getQuestionRes = await plugin.getQuestions(stage, pluginCtx);
+                    if (getQuestionRes.isErr()) return getQuestionRes;
+                    if (getQuestionRes.value) {
+                        const subnode = getQuestionRes.value as QTreeNode;
+                        node.addChild(subnode);
                     }
                 }
             }

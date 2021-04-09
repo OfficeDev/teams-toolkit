@@ -8,21 +8,13 @@ import { AppStudioResultFactory } from "./results";
 import { Constants } from "./constants";
 import { IAppDefinition } from "../../solution/fx-solution/appstudio/interface";
 import AdmZip from "adm-zip";
-import Ajv from "ajv";
 import * as fs from "fs-extra";
 
 export class AppStudioPluginImpl {
-    private manifestSchema = require("./../../resource/MicrosoftTeams.schema.json");
-    private ajv = new Ajv();
-    private validate = this.ajv.compile(this.manifestSchema);
 
-    public async validateManifest(manifestString: string): Promise<string[]> {
-        const valid = this.validate(manifestString);
-        if (!valid && this.validate.errors) {
-            return this.validate.errors.map(error => error.keyword + error.message);
-        } else {
-            return [];
-        }
+    public async validateManifest(ctx: PluginContext, manifestString: string): Promise<string[]> {
+        const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
+        return await AppStudioClient.validateManifest(manifestString, appStudioToken!);
     }
 
     public async buildTeamsAppPackage(appDirectory: string): Promise<string> {
@@ -30,12 +22,12 @@ export class AppStudioPluginImpl {
         if (!status.isDirectory()) {
             throw AppStudioResultFactory.UserError(AppStudioError.NotADirectoryError.name, AppStudioError.NotADirectoryError.message(appDirectory));
         }
-        let manifestFile = `${appDirectory}/${Constants.MANIFEST_REMOTE}`;
+        const manifestFile = `${appDirectory}/${Constants.MANIFEST_REMOTE}`;
         if (!fs.existsSync(manifestFile)) {
             throw AppStudioResultFactory.UserError(AppStudioError.FileNotFoundError.name, AppStudioError.FileNotFoundError.message(manifestFile));
         }
         const manifest: TeamsAppManifest = await fs.readJSON(manifestFile);
-        let colorFile = `${appDirectory}/${manifest.icons.color}`;
+        const colorFile = `${appDirectory}/${manifest.icons.color}`;
         if (!fs.existsSync(colorFile)) {
             throw AppStudioResultFactory.UserError(AppStudioError.FileNotFoundError.name, AppStudioError.FileNotFoundError.message(colorFile));
         }
@@ -45,7 +37,7 @@ export class AppStudioPluginImpl {
         }
         
         const zip = new AdmZip();
-        zip.addLocalFile(manifestFile);
+        zip.addLocalFile(manifestFile, "", Constants.MANIFEST_FILE);
         zip.addLocalFile(colorFile);
         zip.addLocalFile(outlineFile);
         
@@ -60,11 +52,11 @@ export class AppStudioPluginImpl {
         if (!appDirectory) {
             throw AppStudioResultFactory.SystemError(AppStudioError.ParamUndefinedError.name, AppStudioError.ParamUndefinedError.message(Constants.PUBLISH_PATH_QUESTION));
         }
-        let manifestFile = `${appDirectory}/${Constants.MANIFEST_REMOTE}`;
+        const manifestFile = `${appDirectory}/${Constants.MANIFEST_REMOTE}`;
         if (!fs.existsSync(manifestFile)) {
             throw AppStudioResultFactory.UserError(AppStudioError.FileNotFoundError.name, AppStudioError.FileNotFoundError.message(manifestFile));
         }
-        const validationResult = await this.validateManifest((await fs.readFile(manifestFile)).toString());
+        const validationResult = await this.validateManifest(ctx, (await fs.readFile(manifestFile)).toString());
         if (validationResult.length > 0) {
             throw AppStudioResultFactory.UserError(AppStudioError.ValidationFailedError.name, AppStudioError.ValidationFailedError.message(validationResult));
         }
@@ -80,8 +72,8 @@ export class AppStudioPluginImpl {
         
         // Publish Teams App
         appStudioToken = await ctx?.appStudioToken?.getAccessToken();
-        const fileBuffer = Buffer.from(appPackage, "base64");
-        const teamsAppId = await AppStudioClient.publishTeamsApp(manifest.id, fileBuffer, appStudioToken!);
+        const appContent = await fs.readFile(appPackage);
+        const teamsAppId = await AppStudioClient.publishTeamsApp(manifest.id, appContent, appStudioToken!);
         return teamsAppId;
     }
 

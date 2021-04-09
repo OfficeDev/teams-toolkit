@@ -445,8 +445,8 @@ class CoreImpl implements Core {
     /**
      * publish app
      */
-    public async publish(): Promise<Result<null, FxError>> {
-        return ok(null);
+    public async publish(answers?: ConfigMap): Promise<Result<null, FxError>> {
+        return await this.selectedSolution!.publish(this.solutionContext(answers));
     }
 
     /**
@@ -827,9 +827,9 @@ export class CoreProxy implements Core {
             this.coreImpl.deploy(answers),
         );
     }
-    async publish(): Promise<Result<null, FxError>> {
+    async publish(answers?: ConfigMap | undefined): Promise<Result<null, FxError>> {
         return await this.runWithErrorHandling<null>("publish", true, err(error.NotSupportedProjectType()), () =>
-            this.coreImpl.publish(),
+            this.coreImpl.publish(answers),
         );
     }
     async createEnv(env: string): Promise<Result<null, FxError>> {

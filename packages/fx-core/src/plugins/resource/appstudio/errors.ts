@@ -36,4 +36,9 @@ export class AppStudioError {
         name: "TeamsAppPublishFailed",
         message: (teamsAppId: string) => `Failed to publish Teams app with ID ${teamsAppId}.`
     }
+
+    public static readonly TeamsAppPublishConflictError = {
+        name: "TeamsAppPublishConflict",
+        message: (teamsAppId: string) => `Failed to update Teams app with ID ${teamsAppId} in tenant App Catalog, please let the admin handle the pending approval.`
+    }
 }

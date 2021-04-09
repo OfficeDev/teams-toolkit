@@ -24,7 +24,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="3.1.7" />
     <PackageReference Include="Microsoft.Identity.Client" Version="4.17.1" />
     <PackageReference Include="NSwag.AspNetCore" Version="13.7.0" />
-    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="87.0.4280.8800" />
   </ItemGroup>
 
 

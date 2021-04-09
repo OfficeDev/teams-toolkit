@@ -60,6 +60,7 @@ import { VsCodeUI, VS_CODE_UI } from "./qm/vsc_ui";
 import { DepsChecker, DepsCheckerError } from "./debug/depsChecker/checker";
 import { FuncToolChecker } from "./debug/depsChecker/funcToolChecker";
 import { DotnetCoreChecker, dotnetChecker } from "./debug/depsChecker/dotnetChecker";
+import { stopProcess } from "./debug/depsChecker/checkerAdapter";
 
 export let core: CoreProxy;
 const runningTasks = new Set<string>(); // to control state of task execution
@@ -422,7 +423,10 @@ export async function updateAADHandler(): Promise<Result<null, FxError>> {
  */
 export async function validateDependenciesHandler(): Promise<void> {
   const depsChecker = new DepsChecker([new FuncToolChecker(), new DotnetCoreChecker()]);
-  await depsChecker.resolve();
+  const shouldContinue = await depsChecker.resolve();
+  if (!shouldContinue) {
+    await debug.stopDebugging();
+  }
 }
 
 /**

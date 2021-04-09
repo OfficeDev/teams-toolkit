@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { displayLearnMore, displayWarningMessage, logger, stopProcess } from "./checkerAdapter";
+import { displayLearnMore, displayWarningMessage, logger } from "./checkerAdapter";
 import { isLinux } from "./common";
 
 export interface IDepsChecker {
@@ -64,7 +64,6 @@ export class DepsChecker {
             await displayLearnMore(defaultErrorMessage, defaultHelpLink);
           }
 
-          await stopProcess();
           return !shouldContinue;
         }
       }
@@ -76,7 +75,7 @@ export class DepsChecker {
   private async check(): Promise<Array<IDepsChecker>> {
     const validCheckers = new Array<IDepsChecker>();
     for (const checker of this._checkers) {
-      if (checker.isEnabled() && !(await checker.isInstalled())) {
+      if (await checker.isEnabled() && !(await checker.isInstalled())) {
         validCheckers.push(checker);
       }
     }

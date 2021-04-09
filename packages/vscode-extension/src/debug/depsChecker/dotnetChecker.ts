@@ -35,7 +35,7 @@ export class DotnetCoreChecker implements IDepsChecker {
 
   public async getDotnetExecPath(): Promise<string> {
     let dotnetExecPath = "";
-    if (this.isEnabled()) {
+    if (await this.isEnabled()) {
       const execPath = await DotnetCheckerImpl.getDotnetExecPath();
       if (execPath !== null) {
         dotnetExecPath = execPath;

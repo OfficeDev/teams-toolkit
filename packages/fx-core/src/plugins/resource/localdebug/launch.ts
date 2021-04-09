@@ -172,6 +172,7 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
                 type: LaunchBrowser.chrome,
                 request: "launch",
                 url: "https://teams.microsoft.com/_#/l/app/${localTeamsAppId}?installAppPackage=true",
+                preLaunchTask: `${ProductName}: auth start`,
                 postDebugTask: "Stop All Services",
                 cascadeTerminateToConfigurations: ["Start and Attach to Bot"],
                 presentation: {

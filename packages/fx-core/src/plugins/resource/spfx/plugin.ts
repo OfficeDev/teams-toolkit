@@ -23,13 +23,13 @@ import * as path from "path";
 import { SpfxConfig } from ".";
 import {
   configure,
+  createAxiosInstanceWithToken,
   execute,
   normalizeComponentName,
   sleep,
 } from "./utils/utils";
 import { Constants, PlaceHolders } from "./utils/constants";
 import { AuthCode } from "./authCode";
-import axios from "axios";
 import * as util from "util";
 export class SPFxPluginImpl {
   public async scaffold(
@@ -232,8 +232,8 @@ export class SPFxPluginImpl {
       // Ensure Tenant App catalog and create one if no existing one.
       ctx.logProvider?.info("======Ensure SharePoint App Catatlog======");
       const accessToken = await AuthCode.getToken(ctx, [`${tenant}/.default`]);
-      axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
-      await axios.post(
+      const axiosInstance = createAxiosInstanceWithToken(accessToken);
+      await axiosInstance.post(
         `${tenant}/_api/web/EnsureTenantAppCatalog(callerId='${Constants.CALLED_ID}')`
       );
     } catch (error) {
@@ -302,17 +302,17 @@ export class SPFxPluginImpl {
       const tenant = await this.getSPTenant(ctx);
 
       const accessToken = await AuthCode.getToken(ctx, [`${tenant}/.default`]);
-      axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
+      const axiosInstance = createAxiosInstanceWithToken(accessToken);
 
       await progressHandler?.start("");
       await progressHandler?.next("Get SharePoint App Catalog");
       const SHAREPOINT_APP_CATALOG = `${tenant}/_api/SP_TenantSettings_Current`;
-      const response = await axios.get(SHAREPOINT_APP_CATALOG);
+      const response = await axiosInstance.get(SHAREPOINT_APP_CATALOG);
       let appCatalogSite = response.data.CorporateCatalogUrl;
       let refreshTime = 0;
       while (appCatalogSite == null) {
         await sleep(Constants.APP_CATALOG_REFRESH_TIME);
-        const response = await axios.get(SHAREPOINT_APP_CATALOG);
+        const response = await axiosInstance.get(SHAREPOINT_APP_CATALOG);
         appCatalogSite = response.data.CorporateCatalogUrl;
         refreshTime += 1;
         if (refreshTime > Constants.APP_CATALOG_MAX_TIMES) {
@@ -345,27 +345,18 @@ export class SPFxPluginImpl {
           try {
             // Upload SPFx Package.
             await progressHandler?.next("Upload and Deploy SPFx Package");
-            await axios.post(
+            await axiosInstance.post(
               `${appCatalogSite}/_api/web/tenantappcatalog/Add(overwrite=true, url='${files[0]}')`,
               file
             );
 
             // Deploy SPFx App.
             const deploySetting = { skipFeatureDeployment: true };
-            await axios.post(
+            await axiosInstance.post(
               `${appCatalogSite}/_api/web/tenantappcatalog/AvailableApps/GetById('${appID}')/Deploy`,
               deploySetting
             );
 
-            // Get SPFx App list ID and Do validation.
-            const response = await axios.get(
-              `${appCatalogSite}/_api/web/tenantappcatalog/AvailableApps`
-            );
-            const appListItem = SPFxPluginImpl.getSPListItem(
-              appID,
-              response.data.value
-            );
-            SPFxPluginImpl.validateSPItem(appListItem);
             await progressHandler?.end();
             const appCatalogButton = "Go to SharePoint App Catalog";
             ctx.dialog
@@ -390,28 +381,6 @@ export class SPFxPluginImpl {
                   );
                 }
               });
-            // Download Teams App Package.
-            const teamsResponse = await axios.get(
-              `${appCatalogSite}/_api/web/tenantappcatalog/DownloadTeamsSolutionByUniqueId(id=\'${appListItem.ID}\')/$value`,
-              { responseType: "stream" }
-            );
-            const teamsPackageLocalPath = `${workspace}/teamspackage.zip`;
-            const writeStream = fs.createWriteStream(teamsPackageLocalPath);
-            teamsResponse.data.pipe(writeStream);
-            writeStream.on("error", (error) => {
-              writeStream.close();
-              throw error;
-            });
-
-            await ctx.dialog?.communicate(
-              new DialogMsg(DialogType.Show, {
-                description: util.format(
-                  "[SPFx] Teams App package has been downloaded to %s",
-                  teamsPackageLocalPath
-                ),
-                level: MsgLevel.Info,
-              })
-            );
             return ok(undefined);
           } catch (error) {
             if (error.response && error.response.data) {
@@ -442,10 +411,9 @@ export class SPFxPluginImpl {
       "https://graph.microsoft.com/v1.0/sites/root?$select=webUrl";
 
     if (accessToken && accessToken.length > 0) {
-      axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
-
+      const axiosInstance = createAxiosInstanceWithToken(accessToken);
       ctx.logProvider?.info("======Get SharePoint Tenant======");
-      const response = await axios.get(GRAPH_TENANT_ENDPT);
+      const response = await axiosInstance.get(GRAPH_TENANT_ENDPT);
       return response.data.webUrl;
     } else {
       throw returnSystemError(
@@ -475,35 +443,5 @@ export class SPFxPluginImpl {
       gulpCommand = "gulp";
     }
     return gulpCommand;
-  }
-
-  private static getSPListItem(
-    productID: string,
-    listData: { ProductId: string }[]
-  ): any {
-    for (const item of listData) {
-      if (item.ProductId === productID) {
-        return item;
-      }
-    }
-    return {};
-  }
-
-  private static validateSPItem(appListItem: any) {
-    if (!appListItem.ID) {
-      throw new Error(
-        "[SPFx] Cannot find the app in SharePoint AppCatalog. Pls retry the deploy command or manually upload the package."
-      );
-    }
-    if (!appListItem.IsValidAppPackage) {
-      throw new Error(
-        `[SPFx] Not Valid App package:${appListItem.ErrorMessage}`
-      );
-    }
-    if (!appListItem.SkipDeploymentFeature) {
-      throw new Error(
-        `[SPFx] Deploy failed.Pls retry the deploy command or manually deploy.`
-      );
-    }
   }
 }

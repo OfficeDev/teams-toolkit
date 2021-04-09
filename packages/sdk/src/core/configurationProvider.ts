@@ -8,6 +8,7 @@ import {
   ResourceConfiguration,
   ResourceType
 } from "../models/configuration";
+import { internalLogger } from "../util/logger";
 import { formatString } from "../util/utils";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "./errors";
 
@@ -26,13 +27,14 @@ export let config: Configuration;
  * @throws {InvalidParameter} if configuration is not passed in when in browser environment
  */
 export function loadConfiguration(configuration?: Configuration): void {
+  internalLogger.info("load configuration");
+
   // browser environment
   if (!isNode) {
     if (!configuration) {
-      throw new ErrorWithCode(
-        "You are running the code in browser. Configuration must be passed in.",
-        ErrorCode.InvalidParameter
-      );
+      const errorMsg = "You are running the code in browser. Configuration must be passed in.";
+      internalLogger.error(errorMsg);
+      throw new ErrorWithCode(errorMsg, ErrorCode.InvalidParameter);
     }
     config = configuration;
     return;
@@ -105,16 +107,23 @@ export function getResourceConfiguration(
   resourceType: ResourceType,
   resourceName = "default"
 ): { [index: string]: any } {
+  internalLogger.info(
+    `Get resource configuration of ${ResourceType[resourceType]} from ${resourceName}`
+  );
   const result: ResourceConfiguration | undefined = config.resources?.find(
     (item) => item.type === resourceType && item.name === resourceName
   );
   if (result) {
     return result.properties;
   }
-  throw new ErrorWithCode(
-    formatString(ErrorMessage.MissingResourceConfiguration, resourceType.toString(), resourceName),
-    ErrorCode.InvalidConfiguration
+
+  const errorMsg = formatString(
+    ErrorMessage.MissingResourceConfiguration,
+    ResourceType[resourceType],
+    resourceName
   );
+  internalLogger.error(errorMsg);
+  throw new ErrorWithCode(errorMsg, ErrorCode.InvalidConfiguration);
 }
 
 /**
@@ -126,14 +135,15 @@ export function getResourceConfiguration(
  * @throws {InvalidConfiguration} if global configuration does not exist
  */
 export function getAuthenticationConfiguration(): AuthenticationConfiguration | undefined {
+  internalLogger.info("Get authentication configuration");
   if (config) {
     return config.authentication;
   }
+  const errorMsg =
+    "Please call loadConfiguration() first before calling getAuthenticationConfiguration().";
+  internalLogger.error(errorMsg);
   throw new ErrorWithCode(
-    formatString(
-      ErrorMessage.ConfigurationNotExists,
-      "Please call loadConfiguration() first before calling getAuthenticationConfiguration()."
-    ),
+    formatString(ErrorMessage.ConfigurationNotExists, errorMsg),
     ErrorCode.InvalidConfiguration
   );
 }

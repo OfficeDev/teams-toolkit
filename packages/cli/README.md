@@ -94,9 +94,9 @@ teamsfx provision --subscription 1756abc0-3554-4341-8d6a-46674962ea19 --sql-admi
 ### Deploy
 
 ```bash
-teamsfx deploy --deploy-plugin spfx
-teamsfx deploy --deploy-plugin frontend
-teamsfx deploy --deploy-plugin frontend azure-function
+teamsfx deploy --deploy-plugin fx-resource-frontend-hosting
+teamsfx deploy --deploy-plugin fx-resource-frontend-hosting fx-resource-function
+teamsfx deploy --deploy-plugin fx-resource-spfx
 ```
 
 ## How to Generate Parameter Files (for Repo Contributors)

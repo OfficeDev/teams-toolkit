@@ -6,7 +6,7 @@
 import { Result, FxError, err, ok, Core, UserError, SystemError } from "fx-api";
 
 import GraphManagerInstance from "./commonlib/graphLogin";
-import AzureAccountManager from "./commonlib/azureLogin1st";
+import AzureAccountManager from "./commonlib/azureLoginCI";
 import AppStudioTokenProvider from "./commonlib/appStudioLogin";
 import CLILogProvider from "./commonlib/log";
 import { UnknownError } from "./error";

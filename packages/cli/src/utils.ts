@@ -41,7 +41,7 @@ export function getParamJson(jsonFilePath: string): { [_: string]: Options } {
         if (typeof option[0] === "string") {
           choices = option as string[];
         } else {
-          choices = (option as OptionItem[]).map((op) => op.label);
+          choices = (option as OptionItem[]).map((op) => op.id);
         }
       } else {
         choices = undefined;

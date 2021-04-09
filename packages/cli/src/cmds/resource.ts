@@ -9,12 +9,11 @@ import { Argv, Options } from "yargs";
 import { ConfigMap, err, Func, FxError, ok, Platform, Result, Stage } from "fx-api";
 
 import activate from "../activate";
+import AzureTokenProvider from "../commonlib/azureLogin1st";
 import * as constants from "../constants";
 import { validateAndUpdateAnswers } from "../question/question";
-import CLIDialogManager from "../userInterface";
 import { getParamJson, readConfigs } from "../utils";
 import { YargsCommand } from "../yargsCommand";
-import * as fs from "fs-extra";
 
 export class ResourceAdd extends YargsCommand {
   public readonly commandHead = `add`;
@@ -57,8 +56,6 @@ export class ResourceAddSql extends YargsCommand {
     const rootFolder = path.resolve(answers.getString("folder") || "./");
     answers.delete("folder");
 
-    CLIDialogManager.presetAnswers(answers);
-
     const result = await activate(rootFolder);
     if (result.isErr()) {
       return err(result.error);
@@ -66,7 +63,7 @@ export class ResourceAddSql extends YargsCommand {
 
     const core = result.value;
     {
-      const result = await core.getQuestions!(Stage.update, Platform.CLI);
+      const result = await core.getQuestions!(Stage.update, Platform.VSCode);
       if (result.isErr()) {
         return err(result.error);
       }
@@ -104,7 +101,12 @@ export class ResourceAddFunction extends YargsCommand {
     const rootFolder = path.resolve(answers.getString("folder") || "./");
     answers.delete("folder");
 
-    CLIDialogManager.presetAnswers(answers);
+    if ("subscription" in args) {
+      const result = await AzureTokenProvider.setSubscriptionId(args.subscription, rootFolder);
+      if (result.isErr()) {
+        return result;
+      }
+    }
 
     const result = await activate(rootFolder);
     if (result.isErr()) {
@@ -113,7 +115,7 @@ export class ResourceAddFunction extends YargsCommand {
 
     const core = result.value;
     {
-      const result = await core.getQuestions!(Stage.update, Platform.CLI);
+      const result = await core.getQuestions!(Stage.update, Platform.VSCode);
       if (result.isErr()) {
         return err(result.error);
       }

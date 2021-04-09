@@ -33,8 +33,6 @@ cd /path/to/a/folder/
 
 # create a teams app which hosting on Azure (with no sql/function).
 teamsfx new --app-name azureApp
-# equals
-teamsfx new --app-name azureApp --solution fx-solution-azure --capabilities Tab --tab-scopes personal --host-type Azure --azure-resources
 
 # create a teams app which hosting on Azure (with sql).
 teamsfx new --app-name azureApp --azure-resources sql
@@ -43,12 +41,10 @@ teamsfx new --app-name azureApp --azure-resources sql
 teamsfx new --app-name azureApp --azure-resources function --function-language JavaScript
 
 # create a teams app which hosting on Azure (with sql and function).
-teamsfx new --app-name azureApp0326 --azure-resources sql function --function-language JavaScript
+teamsfx new --app-name azureApp --azure-resources function sql --function-language JavaScript
 
 # create a teams app which hosting on SPFx.
 teamsfx new --app-name spfxApp --host-type SPFx
-# equals
-teamsfx new --app-name spfxApp --solution fx-solution-azure --capabilities Tab  --tab-scopes personal --host-type SPFx --spfx-framework-type none --spfx-webpart-name helloworld --spfx-webpart-desp "helloworld description"
 ```
 
 ### Login && set subscription
@@ -71,10 +67,10 @@ teamsfx account set --subscription 1756abc0-3554-4341-8d6a-46674962ea19
 ```bash
 cd /path/to/your/project/
 
-# Add Azure SQL
-teamsfx resource add azure-sql --sql-username <admin-username> --sql-password <admin-password>
 # Add Azure Function
-teamsfx resource add azure-function --function-name myFunc
+teamsfx resource add azure-function --function-language JavaScript --subscription 1756abc0-3554-4341-8d6a-46674962ea19
+# Add Azure SQL
+teamsfx resource add azure-sql
 ```
 
 ### Show/List resource config of the project

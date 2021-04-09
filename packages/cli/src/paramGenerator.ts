@@ -159,19 +159,15 @@ async function getResourceAddParams(
     const functionResourceNode = new QTreeNode(Object.assign({}, resourceNode.data));
     (functionResourceNode.data as MultiSelectQuestion).default = ["function"];
 
-    const functionNodeParamName = "function-name";
-    const functionNameNode = allNodes.filter((node) => node.data.name === functionNodeParamName)[0];
-    if (!functionNameNode) {
-      throw Error(`${functionNodeParamName} is not found in the update stage's param list.`);
-    }
+    const functionNodes = allNodes.filter((node) => node.data.name?.includes("function"));
+    const sqlNodes = allNodes.filter((node) => node.data.name?.includes("sql"));
 
     const params: { [_: string]: QTreeNode[] } = {};
     params[constants.resourceAddSqlParamPath] = [
       sqlResourceNode,
-      constants.SqlUsernameNode,
-      constants.SqlPasswordNode
+      ...sqlNodes
     ];
-    params[constants.resourceAddFunctionParamPath] = [functionResourceNode, functionNameNode];
+    params[constants.resourceAddFunctionParamPath] = [functionResourceNode, ...functionNodes];
     return ok(params);
   }
 }
@@ -209,13 +205,13 @@ async function getDeployParams(workspace: string): Promise<Result<QTreeNode[], F
     }
     const allNodes = result.value;
 
-    const params = [constants.RootFolderNode].concat(allNodes, [constants.DeployedPluginNode]);
+    const params = [constants.RootFolderNode].concat(allNodes);
     return ok(params);
   }
 }
 
 async function getParams(core: Core, stage: Stage): Promise<Result<QTreeNode[], FxError>> {
-  const result = await core.getQuestions!(stage, Platform.CLI);
+  const result = await core.getQuestions!(stage, Platform.VSCode);
   if (result.isErr()) {
     return err(result.error);
   }

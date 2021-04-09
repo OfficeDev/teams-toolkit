@@ -9,7 +9,7 @@ import { FxError, ok, Result } from "fx-api";
 
 import { YargsCommand } from "../yargsCommand";
 import AppStudioTokenProvider from "../commonlib/appStudioLogin";
-import AzureTokenProvider from "../commonlib/azureLogin1st";
+import AzureTokenProvider from "../commonlib/azureLoginCI";
 import CLILogProvider from "../commonlib/log";
 import * as constants from "../constants";
 

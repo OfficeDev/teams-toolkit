@@ -9,17 +9,24 @@
     },
     {
         "data": {
-            "type": "multiSelect",
             "name": "deploy-plugin",
-            "description": "Which resources do you want to deploy",
+            "title": "Please select which resource(s) to deploy",
+            "type": "multiSelect",
             "option": [
-                "frontend",
-                "azure-function",
-                "spfx"
+                {
+                    "id": "fx-resource-frontend-hosting",
+                    "label": "Tab Front-end"
+                },
+                {
+                    "id": "fx-resource-function",
+                    "label": "Azure Function"
+                },
+                {
+                    "id": "fx-resource-spfx",
+                    "label": "SharePoint Framework (SPFx)"
+                }
             ],
-            "default": [
-                "frontend"
-            ]
+            "default": []
         }
     }
 ]

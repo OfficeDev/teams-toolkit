@@ -32,16 +32,6 @@ export default class Deploy extends YargsCommand {
       answers.set(name, args[name] || this.params[name].default);
     }
 
-    const deployedPlugins = answers.getStringArray("deploy-plugin")!;
-    answers.set(
-      "deploy-plugin",
-      deployedPlugins.map((name) => {
-        if (name === "frontend") return "Tab Front-end";
-        else if (name === "azure-function") return "Azure Function";
-        else return "SharePoint Framework (SPFx)";
-      })
-    );
-
     const rootFolder = path.resolve(answers.getString("folder") || "./");
     answers.delete("folder");
 
@@ -52,7 +42,7 @@ export default class Deploy extends YargsCommand {
 
     const core = result.value;
     {
-      const result = await core.getQuestions!(Stage.deploy, Platform.CLI);
+      const result = await core.getQuestions!(Stage.deploy, Platform.VSCode);
       if (result.isErr()) {
         return err(result.error);
       }

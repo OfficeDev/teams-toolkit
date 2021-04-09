@@ -38,30 +38,10 @@ export const RootFolderNode = new QTreeNode({
   default: "./"
 });
 
-export const SqlUsernameNode = new QTreeNode({
-  type: NodeType.text,
-  name: "sql-username",
-  description: "Admin name of SQL"
-});
-
-export const SqlPasswordNode = new QTreeNode({
-  type: NodeType.text,
-  name: "sql-password",
-  description: "Admin password of SQL"
-});
-
 export const SubscriptionNode = new QTreeNode({
   type: NodeType.text,
   name: "subscription",
   description: "Please select a subscription"
-});
-
-export const DeployedPluginNode = new QTreeNode({
-  type: NodeType.multiSelect,
-  name: "deploy-plugin",
-  description: "Which resources do you want to deploy",
-  option: ["frontend", "azure-function", "spfx"],
-  default: ["frontend"]
 });
 
 export enum CLILogLevel {

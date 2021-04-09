@@ -860,7 +860,7 @@ export class TeamsAppSolution implements Solution {
             // Just to trigger M365 login before the concurrent execution of provision. 
             // Because concurrent exectution of provision may getAccessToken() concurrently, which
             // causes 2 M365 logins before the token caching in common lib takes effect.
-            await ctx.graphTokenProvider?.getAccessToken();
+            await ctx.appStudioToken?.getAccessToken();
 
             this.runningState = SolutionRunningState.ProvisionInProgress;
 
@@ -982,7 +982,7 @@ export class TeamsAppSolution implements Solution {
             // Just to trigger M365 login before the concurrent execution of deploy. 
             // Because concurrent exectution of deploy may getAccessToken() concurrently, which
             // causes 2 M365 logins before the token caching in common lib takes effect.
-            await ctx.graphTokenProvider?.getAccessToken();
+            await ctx.appStudioToken?.getAccessToken();
 
             this.runningState = SolutionRunningState.DeployInProgress;
             const result = await this.doDeploy(ctx);
@@ -1327,7 +1327,7 @@ export class TeamsAppSolution implements Solution {
         // Just to trigger M365 login before the concurrent execution of localDebug. 
         // Because concurrent exectution of localDebug may getAccessToken() concurrently, which
         // causes 2 M365 logins before the token caching in common lib takes effect.
-        await ctx.graphTokenProvider?.getAccessToken();
+        await ctx.appStudioToken?.getAccessToken();
 
         const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, selectedPlugins);
         const localDebugWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {

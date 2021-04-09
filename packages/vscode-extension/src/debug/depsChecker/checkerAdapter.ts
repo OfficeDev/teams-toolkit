@@ -14,10 +14,6 @@ const configurationPrefix = "fx-extension";
 const validateDotnetSdkKey = "validateDotnetSdk";
 const validateFuncCoreToolsKey = "validateFuncCoreTools";
 
-export async function stopProcess(): Promise<void> {
-  await debug.stopDebugging();
-}
-
 export function dotnetCheckerEnabled(): boolean {
   return checkerEnabled(validateDotnetSdkKey);
 }

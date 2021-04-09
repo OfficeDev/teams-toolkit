@@ -201,7 +201,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
             //assert output launch.json
             const launch = fs.readJSONSync(expectedLaunchFile);
             const configurations: [] = launch["configurations"];
-            chai.assert.equal(configurations.length, 2);
+            chai.assert.equal(configurations.length, 4);
 
             //assert output tasks.json
             const tasksAll = fs.readJSONSync(expectedTasksFile);

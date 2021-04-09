@@ -1,0 +1,38 @@
+
+.narrow {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.page-padding {
+  padding: 4rem;
+}
+
+.welcome.page > .narrow > img {
+  margin: 0 auto;
+  display: block;
+  width: 200px;
+}
+
+.center {
+  text-align: center;
+}
+
+.section {
+  margin: 6rem auto;
+}
+
+pre {
+  background-color: #e5e5e5;
+  padding: 1rem;
+  box-shadow: 0px 1px 2px rgba(0,0,0,0.2);
+  border-radius: 3px;
+}
+
+code {
+  background-color: #e5e5e5;
+  display:inline-block;
+  padding: 0px 6px;
+  border-radius: 3px;
+  box-shadow: 0px 1px 2px rgba(0,0,0,0.2);
+}

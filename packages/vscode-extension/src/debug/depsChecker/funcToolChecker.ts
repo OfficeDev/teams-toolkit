@@ -5,19 +5,26 @@ import { cpUtils } from "../cpUtils";
 import { IDepsChecker, DepsCheckerError, DepsInfo } from "./checker";
 import { funcToolCheckerEnabled, hasTeamsfxBackend, logger, runWithProgressIndicator } from "./checkerAdapter";
 
+enum FuncVersion {
+  v1 = "1",
+  v2 = "2",
+  v3 = "3"
+}
+
 const funcPackageName = "azure-functions-core-tools";
 const funcToolName = "Azure Function Core Tool";
+
 // TODO: extract to messages.ts
 const startInstallFunctionCoreTool =
-  "Downloading and installing the Azure Functions Core Tools v3.";
+  `Downloading and installing ${funcToolName} (v${FuncVersion.v3}).`;
 const finishInstallFunctionCoreTool =
-  "Successfully installed the Azure Functions Core Tools v3.";
+  `Successfully installed ${funcToolName} (v${FuncVersion.v3}).`;
 const needReplaceWithFuncCoreToolV3 =
-  "You must replace with the Azure Functions Core Tools v3 to debug your local functions.";
+  `You must replace with ${funcToolName} (v${FuncVersion.v3}) to debug your local functions.`;
 const needInstallFuncCoreTool =
-  "You must have the Azure Functions Core Tools v3 installed to debug your local functions.";
+  `You must have ${funcToolName} (v${FuncVersion.v3}) installed to debug your local functions.`;
 const failToInstallFuncCoreTool =
-  "The Azure Functions Core Tools v3 installation has failed and will have to be installed manually.";
+  `${funcToolName} (v${FuncVersion.v3}) installation has failed and will have to be installed manually.`;
 const helpLink = "https://review.docs.microsoft.com/en-us/mods/?branch=main";
 
 export class FuncToolChecker implements IDepsChecker {
@@ -71,12 +78,6 @@ export class FuncToolChecker implements IDepsChecker {
 
     logger.info(finishInstallFunctionCoreTool);
   }
-}
-
-enum FuncVersion {
-  v1 = "1",
-  v2 = "2",
-  v3 = "3"
 }
 
 async function getInstalledFuncToolsVersion(): Promise<FuncVersion | null> {

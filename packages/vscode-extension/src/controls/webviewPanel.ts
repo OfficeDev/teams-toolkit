@@ -68,7 +68,7 @@ export class WebviewPanel {
     const scriptBasePathOnDisk = vscode.Uri.file(path.join(this.extensionPath, "out/"));
     const scriptBaseUri = scriptBasePathOnDisk.with({ scheme: "vscode-resource" });
 
-    const scriptPathOnDisk = vscode.Uri.file(path.join(this.extensionPath, "out", "client.js"));
+    const scriptPathOnDisk = vscode.Uri.file(path.join(this.extensionPath, "out/src", "client.js"));
     const scriptUri = scriptPathOnDisk.with({ scheme: "vscode-resource" });
 
     // Use a nonce to whitelist which scripts can be run

@@ -209,7 +209,7 @@ export class AzureStorageClient {
             kind: Constants.AzureStorageDefaultKind as StorageManagementModels.Kind,
             location: location,
             enableHttpsTrafficOnly: true,
-            isHnsEnabled: true,
+            isHnsEnabled: false,
         };
     }
 

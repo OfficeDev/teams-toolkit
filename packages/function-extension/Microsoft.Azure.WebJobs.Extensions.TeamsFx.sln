@@ -1,0 +1,30 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30503.244
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.WebJobs.Extensions.TeamsFx", "src\Microsoft.Azure.WebJobs.Extensions.TeamsFx.csproj", "{E731EAE6-CE0C-4B94-81F1-51697749C04C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Azure.WebJobs.Extensions.TeamsFx.Tests", "tests\Microsoft.Azure.WebJobs.Extensions.TeamsFx.Tests\Microsoft.Azure.WebJobs.Extensions.TeamsFx.Tests.csproj", "{30D3EA3E-3328-4213-B426-1AAC71D0C784}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E731EAE6-CE0C-4B94-81F1-51697749C04C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E731EAE6-CE0C-4B94-81F1-51697749C04C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E731EAE6-CE0C-4B94-81F1-51697749C04C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E731EAE6-CE0C-4B94-81F1-51697749C04C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30D3EA3E-3328-4213-B426-1AAC71D0C784}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30D3EA3E-3328-4213-B426-1AAC71D0C784}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30D3EA3E-3328-4213-B426-1AAC71D0C784}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30D3EA3E-3328-4213-B426-1AAC71D0C784}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BDE4D3D3-30E7-4FD2-81D5-C7AA4B792F6E}
+	EndGlobalSection
+EndGlobal

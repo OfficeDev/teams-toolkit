@@ -365,13 +365,13 @@
     "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "fx-api": "^1.0.1",
+    "fx-core": "file:../fx-core",
     "jsonschema": "^1.4.0",
     "opn": "^6.0.0",
-    "vscode-test": "^1.5.2",
-    "vscode-extension-telemetry": "^0.1.6",
     "underscore": "^1.12.1",
-    "fx-api": "^1.0.1",
-    "fx-core": "^1.0.1"
+    "vscode-extension-telemetry": "^0.1.6",
+    "vscode-test": "^1.5.2"
   },
   "lint-staged": {
     "**/*.ts": [

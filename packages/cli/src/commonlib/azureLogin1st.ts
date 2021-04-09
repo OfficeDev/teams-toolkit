@@ -5,7 +5,7 @@
 
 import { TokenCredential } from "@azure/core-auth";
 import { TokenCredentialsBase, DeviceTokenCredentials } from "@azure/ms-rest-nodeauth";
-import { AzureAccountProvider, err, FxError, ok, Result } from "fx-api";
+import { AzureAccountProvider, ConfigFolderName, err, FxError, ok, Result } from "fx-api";
 import { CodeFlowLogin, LoginFailureError, ConvertTokenToJson } from "./codeFlowLogin";
 import { MemoryCache } from "./memoryCache";
 import CLILogProvider from "./log";
@@ -301,7 +301,7 @@ export class AzureAccountManager implements AzureAccountProvider {
     }
 
     /// TODO: use api's constant
-    const configPath = path.resolve(root_folder, `.fx/env.default.json`);
+    const configPath = path.resolve(root_folder, `.${ConfigFolderName}/env.default.json`);
     if (!(await fs.pathExists(configPath))) {
       return err(NotSupportedProjectType());
     }

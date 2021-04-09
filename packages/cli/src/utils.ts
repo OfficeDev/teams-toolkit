@@ -76,7 +76,7 @@ export function getActiveEnv(): string {
 
 export async function readConfigs(rootfolder: string): Promise<Result<any, FxError>> {
   // TODO: change the dirname to teamsFx for monorepo
-  const filePath = `${rootfolder}/${ConfigFolderName}/env.${getActiveEnv()}.json`;
+  const filePath = `${rootfolder}/.${ConfigFolderName}/env.${getActiveEnv()}.json`;
   if (!fs.existsSync(filePath)) {
     return err(ConfigNotFoundError(filePath));
   }

@@ -1,40 +1,44 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { AssertNotEmpty, BuildError, EmptyChoice, InvalidApimServiceChoice, NoValidOpenApiDocument } from "../error";
-import { LogProvider, Dialog, DialogMsg, DialogType, QuestionType } from "fx-api";
-import { IApimServiceResource } from "../model/resource";
-import { QuestionConstants } from "../constants";
-import { ApiContract } from "@azure/arm-apimanagement/src/models";
-import { IApimPluginConfig, ISolutionConfig } from "../model/config";
+import { AssertConfigNotEmpty, BuildError, NoValidOpenApiDocument } from "../error";
+import {
+    LogProvider,
+    Dialog,
+    OptionItem,
+    SingleSelectQuestion,
+    NodeType,
+    Question,
+    Validation,
+    PluginContext,
+    FuncQuestion,
+    TextInputQuestion,
+} from "fx-api";
+import { ApimDefaultValues, ApimPluginConfigKeys, QuestionConstants, TeamsToolkitComponent } from "../constants";
+import { ApimPluginConfig, SolutionConfig } from "../model/config";
 import { ApimService } from "./apimService";
 import { OpenApiProcessor } from "../util/openApiProcessor";
 import { NameSanitizer } from "../util/nameSanitizer";
-import { IOpenApiDocument } from "../model/openApiDocument";
 import { Telemetry } from "../telemetry";
+import { buildAnswer } from "../model/answer";
 
-export type SelectQuestionInput<T> = { options: string[]; map: Map<string, T>; defaultValue?: string };
-export type TextQuestionInput = { defaultValue?: string };
-export type QuestionInput = SelectQuestionInput<any> | TextQuestionInput;
-
-interface IQuestion {
+export interface IQuestionService {
     // Control whether the question is displayed to the user.
-    isVisible(...params: any[]): boolean;
+    condition?(parentAnswerPath: string): { target?: string; } & Validation;
 
-    // Generate the options and default value of the question.
-    generateQuestionInput(...params: any[]): Promise<QuestionInput>;
+    // Define the method name
+    funcName: string;
 
-    // Use dialog to ask user the question and return the answer.
-    // TODO: Remove it after use question model.
-    ask(input: QuestionInput): Promise<string>;
+    // Generate the options / default value / answer of the question.
+    executeFunc(ctx: PluginContext): Promise<string | OptionItem | OptionItem[]>;
 
-    // Save the answer to the configuration.
-    save?(apimConfig: IApimPluginConfig, answer: string, map?: Map<string, any>): void;
+    // Generate the question
+    getQuestion(): Question;
 
     // Validate the answer of the question.
     validate?(answer: string): boolean;
 }
 
-class BaseQuestion {
+class BaseQuestionService {
     protected readonly dialog: Dialog;
     protected readonly logger?: LogProvider;
     protected readonly telemetry?: Telemetry;
@@ -46,233 +50,205 @@ class BaseQuestion {
     }
 }
 
-export class ApimServiceQuestion extends BaseQuestion implements IQuestion {
+export class ApimServiceQuestion extends BaseQuestionService implements IQuestionService {
     private readonly apimService: ApimService;
+    public readonly funcName = QuestionConstants.Apim.funcName;
 
     constructor(apimService: ApimService, dialog: Dialog, telemetry: Telemetry, logger?: LogProvider) {
         super(dialog, telemetry, logger);
         this.apimService = apimService;
     }
 
-    public isVisible(apimConfig: IApimPluginConfig): boolean {
-        return !apimConfig.serviceName;
-    }
-
-    public async generateQuestionInput(): Promise<SelectQuestionInput<IApimServiceResource>> {
+    public async executeFunc(ctx: PluginContext): Promise<OptionItem[]> {
         const apimServiceList = await this.apimService.listService();
-        const name2ResourceMap = new Map<string, IApimServiceResource>();
-        apimServiceList.forEach((resource) => name2ResourceMap.set(resource.serviceName, resource));
-        const options = [QuestionConstants.createNewApimOption, ...name2ResourceMap.keys()];
-        return { options: options, map: name2ResourceMap };
+        const existingOptions = apimServiceList.map((apimService) => {
+            return { id: apimService.serviceName, label: apimService.serviceName, description: apimService.resourceGroupName, data: apimService };
+        });
+        const newOption = { id: QuestionConstants.Apim.createNewApimOption, label: QuestionConstants.Apim.createNewApimOption };
+        return [newOption, ...existingOptions];
     }
 
-    public async ask(input: SelectQuestionInput<IApimServiceResource>): Promise<string> {
-        const answer = (
-            await this.dialog.communicate(
-                new DialogMsg(DialogType.Ask, {
-                    type: QuestionType.Radio,
-                    description: QuestionConstants.askApimServiceDescription,
-                    options: input.options,
-                })
-            )
-        ).getAnswer();
-
-        if (!answer) {
-            throw BuildError(EmptyChoice, QuestionConstants.askApimServiceDescription);
-        }
-
-        return answer;
-    }
-
-    public save(apimConfig: IApimPluginConfig, answer: string, name2ResourceMap: Map<string, IApimServiceResource>): void {
-        if (answer === QuestionConstants.createNewApimOption) {
-            apimConfig.resourceGroupName = undefined;
-            apimConfig.serviceName = undefined;
-            return;
-        }
-
-        const resource = name2ResourceMap.get(answer);
-        if (!resource) {
-            throw BuildError(InvalidApimServiceChoice, answer);
-        }
-
-        apimConfig.resourceGroupName = resource.resourceGroupName;
-        apimConfig.serviceName = resource.serviceName;
+    public getQuestion(): SingleSelectQuestion {
+        return {
+            type: NodeType.singleSelect,
+            name: QuestionConstants.Apim.questionName,
+            description: QuestionConstants.Apim.description,
+            option: {
+                namespace: QuestionConstants.namespace,
+                method: QuestionConstants.Apim.funcName,
+            },
+            returnObject: true,
+            skipSingleOption: false
+        };
     }
 }
 
-export class OpenApiDocumentQuestion extends BaseQuestion implements IQuestion {
+export class OpenApiDocumentQuestion extends BaseQuestionService implements IQuestionService {
     private readonly openApiProcessor: OpenApiProcessor;
+    public readonly funcName = QuestionConstants.OpenApiDocument.funcName;
 
     constructor(openApiProcessor: OpenApiProcessor, dialog: Dialog, telemetry: Telemetry, logger?: LogProvider) {
         super(dialog, telemetry, logger);
         this.openApiProcessor = openApiProcessor;
     }
 
-    public isVisible(apimConfig: IApimPluginConfig): boolean {
-        return !apimConfig.apiDocumentPath;
-    }
-
-    public async generateQuestionInput(rootPath: string): Promise<SelectQuestionInput<IOpenApiDocument>> {
+    public async executeFunc(ctx: PluginContext): Promise<OptionItem[]> {
         const filePath2OpenApiMap = await this.openApiProcessor.listOpenApiDocument(
-            rootPath,
-            QuestionConstants.excludeFolders,
-            QuestionConstants.openApiDocumentFileExtensions
+            ctx.root,
+            QuestionConstants.OpenApiDocument.excludeFolders,
+            QuestionConstants.OpenApiDocument.openApiDocumentFileExtensions
         );
 
         if (filePath2OpenApiMap.size === 0) {
             throw BuildError(NoValidOpenApiDocument);
         }
 
-        return { options: [...filePath2OpenApiMap.keys()], map: filePath2OpenApiMap };
+        const result: OptionItem[] = [];
+        filePath2OpenApiMap.forEach((value, key) => result.push({ id: key, label: key, data: value }));
+        return result;
     }
 
-    public async ask(input: SelectQuestionInput<IOpenApiDocument>): Promise<string> {
-        const answer = (
-            await this.dialog.communicate(
-                new DialogMsg(DialogType.Ask, {
-                    type: QuestionType.Radio,
-                    description: QuestionConstants.askOpenApiDocumentDescription,
-                    options: input.options,
-                })
-            )
-        ).getAnswer();
-
-        if (!answer) {
-            throw BuildError(EmptyChoice, QuestionConstants.askOpenApiDocumentDescription);
-        }
-
-        return answer;
-    }
-
-    public save(apimConfig: IApimPluginConfig, answer: string): void {
-        apimConfig.apiDocumentPath = answer;
+    public getQuestion(): SingleSelectQuestion {
+        return {
+            type: NodeType.singleSelect,
+            name: QuestionConstants.OpenApiDocument.questionName,
+            description: QuestionConstants.OpenApiDocument.description,
+            option: {
+                namespace: QuestionConstants.namespace,
+                method: QuestionConstants.OpenApiDocument.funcName,
+            },
+            returnObject: true,
+            skipSingleOption: false
+        };
     }
 }
 
-export class ApiNameQuestion extends BaseQuestion implements IQuestion {
+export class ExistingOpenApiDocumentFunc extends BaseQuestionService implements IQuestionService {
+    private readonly openApiProcessor: OpenApiProcessor;
+    public readonly funcName = QuestionConstants.ExistingOpenApiDocument.funcName;
+
+    constructor(openApiProcessor: OpenApiProcessor, dialog: Dialog, telemetry: Telemetry, logger?: LogProvider) {
+        super(dialog, telemetry, logger);
+        this.openApiProcessor = openApiProcessor;
+    }
+
+    public async executeFunc(ctx: PluginContext): Promise<OptionItem> {
+        const apimConfig = new ApimPluginConfig(ctx.config);
+        const openApiDocumentPath = AssertConfigNotEmpty(
+            TeamsToolkitComponent.ApimPlugin,
+            ApimPluginConfigKeys.apiDocumentPath,
+            apimConfig.apiDocumentPath
+        );
+        const openApiDocument = await this.openApiProcessor.loadOpenApiDocument(openApiDocumentPath, ctx.root);
+        return { id: openApiDocumentPath, label: openApiDocumentPath, data: openApiDocument };
+    }
+
+    public getQuestion(): FuncQuestion {
+        return {
+            type: NodeType.func,
+            name: QuestionConstants.ExistingOpenApiDocument.questionName,
+            namespace: QuestionConstants.namespace,
+            method: QuestionConstants.ExistingOpenApiDocument.funcName,
+        };
+    }
+}
+
+export class ApiPrefixQuestion extends BaseQuestionService implements IQuestionService {
+    public readonly funcName = QuestionConstants.ApiPrefix.funcName;
+
     constructor(dialog: Dialog, telemetry: Telemetry, logger?: LogProvider) {
         super(dialog, telemetry, logger);
     }
 
-    public isVisible(apimConfig: IApimPluginConfig): boolean {
-        return !apimConfig.apiPrefix;
+    public async executeFunc(ctx: PluginContext): Promise<string> {
+        const apiTitle = buildAnswer(ctx)?.openApiDocumentSpec?.info.title;
+        return !!apiTitle ? NameSanitizer.sanitizeApiNamePrefix(apiTitle) : ApimDefaultValues.apiPrefix;
     }
 
-    public async generateQuestionInput(apiTitle?: string): Promise<TextQuestionInput> {
+    public getQuestion(): TextInputQuestion {
         return {
-            defaultValue: !!apiTitle ? NameSanitizer.sanitizeApiNamePrefix(apiTitle) : undefined,
+            type: NodeType.text,
+            name: QuestionConstants.ApiPrefix.questionName,
+            description: QuestionConstants.ApiPrefix.description,
+            default: {
+                namespace: QuestionConstants.namespace,
+                method: QuestionConstants.ApiPrefix.funcName,
+            },
         };
-    }
-
-    public async ask(input: TextQuestionInput): Promise<string> {
-        const answer = (
-            await this.dialog.communicate(
-                new DialogMsg(DialogType.Ask, {
-                    type: QuestionType.Text,
-                    description: QuestionConstants.askApiNameDescription,
-                    prompt: QuestionConstants.askApiNamePrompt,
-                    defaultAnswer: input.defaultValue,
-                })
-            )
-        ).getAnswer();
-
-        if (!answer) {
-            throw BuildError(EmptyChoice, QuestionConstants.askApiNameDescription);
-        }
-
-        return answer;
-    }
-
-    public save(apimConfig: IApimPluginConfig, answer: string): void {
-        apimConfig.apiPrefix = answer;
     }
 }
 
-export class ApiVersionQuestion extends BaseQuestion implements IQuestion {
+export class ApiVersionQuestion extends BaseQuestionService implements IQuestionService {
     private readonly apimService: ApimService;
+    public readonly funcName = QuestionConstants.ApiVersion.funcName;
 
     constructor(apimService: ApimService, dialog: Dialog, telemetry: Telemetry, logger?: LogProvider) {
         super(dialog, telemetry, logger);
         this.apimService = apimService;
     }
 
-    public isVisible(apimConfig: IApimPluginConfig): boolean {
-        return true;
-    }
-
-    public async generateQuestionInput(solutionConfig: ISolutionConfig, apimConfig: IApimPluginConfig): Promise<SelectQuestionInput<ApiContract>> {
+    public async executeFunc(ctx: PluginContext): Promise<OptionItem[]> {
+        const apimConfig = new ApimPluginConfig(ctx.config);
+        const solutionConfig = new SolutionConfig(ctx.configOfOtherPlugins);
+        const answer = buildAnswer(ctx);
         const resourceGroupName = apimConfig.resourceGroupName ?? solutionConfig.resourceGroupName;
-        const serviceName = AssertNotEmpty("apimConfig.serviceName", apimConfig.serviceName);
-        const apiPrefix = AssertNotEmpty("apimConfig.apiPrefix", apimConfig.apiPrefix);
+        const serviceName = AssertConfigNotEmpty(TeamsToolkitComponent.ApimPlugin, ApimPluginConfigKeys.serviceName, apimConfig.serviceName);
+        const apiPrefix =
+            answer.apiPrefix ?? AssertConfigNotEmpty(TeamsToolkitComponent.ApimPlugin, ApimPluginConfigKeys.apiPrefix, apimConfig.apiPrefix);
         const versionSetId = apimConfig.versionSetId ?? NameSanitizer.sanitizeVersionSetId(apiPrefix, solutionConfig.resourceNameSuffix);
 
-        const version2ApiContract = new Map<string, ApiContract>();
         const apiContracts = await this.apimService.listApi(resourceGroupName, serviceName, versionSetId);
 
-        // TODO: Deal with same version name.
-        apiContracts.forEach((api) => {
-            if (!!api.apiVersion) {
-                version2ApiContract.set(api.apiVersion, api);
-            }
+        const existingApiVersionOptions: OptionItem[] = apiContracts.map((api) => {
+            const result: OptionItem = { id: api.name ?? "", label: api.apiVersion ?? "", description: api.name, data: api };
+            return result;
         });
-
-        return {
-            options: [QuestionConstants.createNewApiVersionOption, ...version2ApiContract.keys()],
-            map: version2ApiContract,
-        };
+        const createNewApiVersionOption: OptionItem = { id: QuestionConstants.ApiVersion.createNewApiVersionOption, label: QuestionConstants.ApiVersion.createNewApiVersionOption };
+        return [createNewApiVersionOption, ...existingApiVersionOptions];
     }
 
-    public async ask(input: SelectQuestionInput<ApiContract>): Promise<string> {
-        const answer = (
-            await this.dialog.communicate(
-                new DialogMsg(DialogType.Ask, {
-                    type: QuestionType.Radio,
-                    description: QuestionConstants.askApiVersionDescription,
-                    options: input.options,
-                })
-            )
-        ).getAnswer();
-
-        if (!answer) {
-            throw BuildError(EmptyChoice, QuestionConstants.askApiVersionDescription);
-        }
-
-        return answer;
+    public getQuestion(): SingleSelectQuestion {
+        return {
+            type: NodeType.singleSelect,
+            name: QuestionConstants.ApiVersion.questionName,
+            description: QuestionConstants.ApiVersion.description,
+            option: {
+                namespace: QuestionConstants.namespace,
+                method: QuestionConstants.ApiVersion.funcName,
+            },
+            returnObject: true,
+            skipSingleOption: false
+        };
     }
 }
 
-export class NewApiVersionQuestion extends BaseQuestion implements IQuestion {
+export class NewApiVersionQuestion extends BaseQuestionService implements IQuestionService {
+    public readonly funcName = QuestionConstants.NewApiVersion.funcName;
+
     constructor(dialog: Dialog, telemetry: Telemetry, logger?: LogProvider) {
         super(dialog, telemetry, logger);
     }
 
-    public isVisible(parent?: string): boolean {
-        return !parent || parent === QuestionConstants.createNewApiVersionOption;
-    }
-
-    public async generateQuestionInput(apiVersion?: string): Promise<TextQuestionInput> {
+    public condition(): { target?: string; } & Validation {
         return {
-            defaultValue: !!apiVersion ? NameSanitizer.sanitizeApiVersionIdentity(apiVersion) : apiVersion,
+            equals: QuestionConstants.ApiVersion.createNewApiVersionOption,
         };
     }
 
-    public async ask(input: TextQuestionInput): Promise<string> {
-        const answer = (
-            await this.dialog.communicate(
-                new DialogMsg(DialogType.Ask, {
-                    type: QuestionType.Text,
-                    description: QuestionConstants.askNewApiVersionDescription,
-                    prompt: QuestionConstants.askNewApiVersionPrompt,
-                    defaultAnswer: input.defaultValue,
-                })
-            )
-        ).getAnswer();
+    public async executeFunc(ctx: PluginContext): Promise<string> {
+        const apiVersion = buildAnswer(ctx)?.openApiDocumentSpec?.info.version;
+        return !!apiVersion ? NameSanitizer.sanitizeApiVersionIdentity(apiVersion) : ApimDefaultValues.apiVersion;
+    }
 
-        if (!answer) {
-            throw BuildError(EmptyChoice, QuestionConstants.askNewApiVersionDescription);
-        }
-
-        return answer;
+    public getQuestion(): TextInputQuestion {
+        return {
+            type: NodeType.text,
+            name: QuestionConstants.NewApiVersion.questionName,
+            description: QuestionConstants.NewApiVersion.description,
+            default: {
+                namespace: QuestionConstants.namespace,
+                method: QuestionConstants.NewApiVersion.funcName,
+            },
+        };
     }
 }

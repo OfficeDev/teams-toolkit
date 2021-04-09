@@ -7,9 +7,8 @@ import { ApimService } from "../service/apimService";
 import { OpenApiProcessor } from "../util/openApiProcessor";
 import { Telemetry } from "../telemetry";
 import { NameSanitizer } from "../util/nameSanitizer";
-import { IApimAnswer } from "../model/answer";
-import { LogProvider } from "fx-api";
-import { TeamsAppManifest } from "fx-api";
+import { IAnswer } from "../model/answer";
+import { LogProvider, TeamsAppManifest } from "fx-api";
 import * as path from "path";
 
 export class ApimManager {
@@ -79,7 +78,7 @@ export class ApimManager {
         apimConfig: IApimPluginConfig,
         solutionConfig: ISolutionConfig,
         functionConfig: IFunctionPluginConfig,
-        answer: IApimAnswer,
+        answer: IAnswer,
         projectRootPath: string
     ): Promise<void> {
         const resourceGroupName = apimConfig.resourceGroupName ?? solutionConfig.resourceGroupName;

@@ -6,4 +6,5 @@ export enum Commands {
   CloneSampleApp = "clone-sample-app",
   DisplayCommandPalette = "display-command-palette",
   DisplayCliCommands = "display-cli-commands",
+  SigninM365 = "sign-in-m365",
 }

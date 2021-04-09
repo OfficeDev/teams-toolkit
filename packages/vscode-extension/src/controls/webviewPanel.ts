@@ -8,6 +8,7 @@ import { Commands } from "./Commands";
 import axios from "axios";
 import * as AdmZip from "adm-zip";
 import * as fs from "fs-extra";
+import AppStudioTokenInstance from "../commonlib/appStudioLogin";
 
 export class WebviewPanel {
   private static readonly viewType = "react";
@@ -88,6 +89,9 @@ export class WebviewPanel {
             terminal.show();
             terminal.sendText(msg.data);
             break;
+          case Commands.SigninM365:
+            await AppStudioTokenInstance.getJsonObject(false);
+            break;
           default:
             break;
         }
@@ -95,6 +99,22 @@ export class WebviewPanel {
       undefined,
       ext.context.subscriptions
     );
+
+    AppStudioTokenInstance.setStatusChangeCallback((status, token, accountInfo) => {
+      let email = undefined;
+      if (status === "SignedIn") {
+        email = (accountInfo as any).upn ? (accountInfo as any).upn : undefined;
+      }
+
+      if (this.panel && this.panel.webview) {
+        this.panel.webview.postMessage({
+          message: "m365AccountChange",
+          data: email
+        });
+      }
+
+      return Promise.resolve();
+    });
 
     // Set the webview's initial html content
     this.panel.webview.html = this.getHtmlForWebview();
@@ -190,6 +210,9 @@ export class WebviewPanel {
   public dispose() {
     WebviewPanel.currentPanel = undefined;
 
+    AppStudioTokenInstance.setStatusChangeCallback((status, token, accountInfo) => {
+      return Promise.resolve();
+    });
     // Clean up our resources
     this.panel.dispose();
 

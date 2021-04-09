@@ -87,6 +87,13 @@ export default class QuickStart extends React.Component<any, any>{
         const message = event.data.message;
         console.log(`Received message: ${JSON.stringify(message)}`);
 
+        switch (message) {
+            case 'm365AccountChange':
+                this.setState({ m365Account: event.data.data });
+                break;
+            default:
+                break;
+        }
     }
 
     onNextStep = (step: number) => {
@@ -106,6 +113,19 @@ export default class QuickStart extends React.Component<any, any>{
     }
 
     downloadNode = () => {
+    }
+
+    signinM365 = () => {
+        vscode.postMessage({
+            command: Commands.SigninM365
+        });
+
+        let done = this.state.stepsDone;
+        done[3] = true;
+        this.setState({
+            stepsDone: done
+        });
+    }
 }
 
 class GetStartedAction extends React.Component<any, any>{

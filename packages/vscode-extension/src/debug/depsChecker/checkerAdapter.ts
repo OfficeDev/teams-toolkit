@@ -50,8 +50,7 @@ export async function displayWarningMessage(
   const button: MessageItem = { title: buttonText };
   const input = await window.showWarningMessage(message, { modal: true }, button);
   if (input === button) {
-    await action();
-    return true;
+    return await action();
   }
 
   // click cancel button

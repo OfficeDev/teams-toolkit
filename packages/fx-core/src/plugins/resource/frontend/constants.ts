@@ -55,7 +55,8 @@ export class EnvironmentVariables {
 
 export class FrontendPathInfo {
     static WorkingDir = "tabs";
-    static TemplateDir = "templates/plugins/resource/frontend";
+    static TemplateDir = path.join("templates", "plugins", "resource", "frontend");
+    static RootDir = path.join(__dirname, "..", "..", "..", "..");
     static TemplateFileName = "0.2.0+tab.JavaScript.default.zip";
     static TemplateFileExt = ".tpl";
     static BuildFolderName = "build";

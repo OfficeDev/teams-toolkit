@@ -1073,6 +1073,18 @@ export class TeamsAppSolution implements Solution {
             const frontend_host_type = new QTreeNode(FrontendHostTypeQuestion);
             tab_group.addChild(frontend_host_type);
 
+            //Frontend plugin
+            if (this.fehostPlugin.getQuestions) {
+                const pluginCtx = getPluginContext(ctx, this.fehostPlugin.name);
+                const res = await this.fehostPlugin.getQuestions(stage, pluginCtx);
+                if (res.isErr()) return res;
+                if (res.value) {
+                    const frontend = res.value as QTreeNode;
+                    frontend.condition = { equals: HostTypeOptionAzure.label };
+                    if (frontend.data) frontend_host_type.addChild(frontend);
+                }
+            }
+
             const azure_resources = new QTreeNode(AzureResourcesQuestion);
             azure_resources.condition = { equals: HostTypeOptionAzure.label };
             frontend_host_type.addChild(azure_resources);

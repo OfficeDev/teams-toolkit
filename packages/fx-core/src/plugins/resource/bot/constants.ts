@@ -179,3 +179,8 @@ export class AuthValues {
 export class DeployConfigs {
     public static readonly UN_PACK_DIRS = ["node_modules"];
 }
+
+export class FolderNames {
+    public static readonly NODE_MODULES = "node_modules";
+    public static readonly KEYTAR = "keytar";
+}

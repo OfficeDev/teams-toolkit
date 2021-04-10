@@ -29,6 +29,7 @@ import * as AppStudio from "./appStudio/appStudio";
 import { IBotRegistration } from "./appStudio/interfaces/IBotRegistration";
 import { Logger } from "./logger";
 import { Retry } from "./constants";
+import Timer, { FormattedDuration } from '@dbpiper/timer';
 
 export class TeamsBotImpl {
     // Made config plubic, because expect the upper layer to fill inputs.
@@ -458,7 +459,9 @@ export class TeamsBotImpl {
 
         let res = undefined;
         try {
+            const timer = new Timer();
             res = await axios.post(zipDeployEndpoint, zipBuffer, config);
+            Logger.debug(`Deploy costs ${timer.stop().toString()}`);
         } catch (e) {
             throw new ZipDeployException(e);
         }
@@ -774,10 +777,11 @@ export class TeamsBotImpl {
 
     private markEnterAndLogConfig(funcName: string, joinedParams?: string) {
         Logger.debug(Messages.EnterFunc(funcName, joinedParams));
-        Logger.debug(`config: ${this.config.toString()}\n`);
+        // Logger.debug(`config: ${this.config.toString()}\n`);
     }
 
     private logRestResponse(obj: any) {
+        return ;
 
         if (!obj) {
             return;

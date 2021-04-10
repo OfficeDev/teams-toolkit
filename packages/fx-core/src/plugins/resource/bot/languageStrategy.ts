@@ -3,7 +3,7 @@
 import * as utils from "./utils/common";
 import { ProgrammingLanguage } from "./enums/programmingLanguage";
 import { TemplateManifest } from "./utils/templateManifest";
-import { DeployConfigs, TemplateProjectsConstants } from "./constants";
+import { DeployConfigs, FolderNames, TemplateProjectsConstants } from "./constants";
 import { Commands } from "./resources/strings";
 
 import * as appService from "@azure/arm-appservice";
@@ -81,16 +81,16 @@ export class LanguageStrategy {
             }
         }
 
-        if (!unPackFlag && programmingLanguage === ProgrammingLanguage.JavaScript) {
-            // Since teamfx package is in private registry, have to npm install to pack the node_modulre folder.
+        if (programmingLanguage === ProgrammingLanguage.JavaScript) {
             try {
-                await utils.execute("npm install", packDir);
+                // fail to npm install keytar on azure web app, so pack it locally.
+                await utils.execute("npm install keytar", packDir);
             } catch (e) {
                 throw new CommandExecutionException(`${Commands.NPM_INSTALL}`, e.message, e);
             }
         }
 
-        return utils.zipAFolder(packDir, unPackFlag ? DeployConfigs.UN_PACK_DIRS : []);
+        return utils.zipAFolder(packDir, DeployConfigs.UN_PACK_DIRS, [`${FolderNames.NODE_MODULES}/${FolderNames.KEYTAR}`]);
     }
 
     private static async generateLocalFallbackFilePath(programmingLanguage: ProgrammingLanguage, groupName: string): Promise<string> {

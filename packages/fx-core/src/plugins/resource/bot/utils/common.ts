@@ -9,6 +9,7 @@ import AdmZip from "adm-zip";
 import { ConfigValue, PluginContext, IBot, IComposeExtension } from "fx-api";
 import { RegularExprs, WebAppConstants } from "../constants";
 import { ProgrammingLanguage } from "../enums/programmingLanguage";
+import { Logger } from "../logger";
 
 export function toBase64(source: string): string {
     return Base64.encode(source);
@@ -18,14 +19,36 @@ export function genUUID(): string {
     return Uuid.generate();
 }
 
-export function zipAFolder(sourceDir: string, notIncluded: string[]): Buffer {
+export function zipAFolder(sourceDir: string, notIncluded?: string[], mustIncluded?: string[]): Buffer {
+    Logger.debug(`notInluded: ${JSON.stringify(notIncluded)}`);
+    Logger.debug(`mustIncluded: ${JSON.stringify(mustIncluded)}`);
     const zip = new AdmZip();
     zip.addLocalFolder(sourceDir, "", (filename: string) => {
-        const result = notIncluded.find((notIncludedItem) => {
-            return filename.startsWith(notIncludedItem);
-        });
 
-        return !result;
+        if (mustIncluded) {
+            const hit = mustIncluded.find((mustItem) => {
+                return filename.startsWith(mustItem);
+            });
+
+            if (hit) {
+                Logger.debug(`zip add ${filename}`);
+                return true;
+            }
+        }
+
+        if (notIncluded) {
+            const hit = notIncluded.find((notIncludedItem) => {
+                return filename.startsWith(notIncludedItem);
+            });
+
+            if (!hit) {
+                Logger.debug(`zip add ${filename}`);
+            }
+            return !hit;
+        }
+
+        Logger.debug(`zip add ${filename}`);
+        return true;
     });
 
     return zip.toBuffer();

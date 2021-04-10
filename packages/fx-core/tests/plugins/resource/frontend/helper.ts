@@ -85,7 +85,7 @@ export class TestHelper {
                 [DependentPluginInfo.FunctionPluginName, functionConfig],
                 [DependentPluginInfo.RuntimePluginName, runtimeConfig],
             ]),
-            config: new Map() as ConfigMap,
+            config: new ConfigMap(),
             app: {
                 name: {
                     short: TestHelper.appName,

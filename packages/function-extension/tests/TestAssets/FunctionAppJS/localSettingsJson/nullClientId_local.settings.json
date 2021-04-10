@@ -3,12 +3,9 @@
   "Values": {
     "AzureWebJobsStorage": "",
     "FUNCTIONS_WORKER_RUNTIME": "node",
-    "CLIENT_SECRET": "__CLIENT_SECRET__",
+    "M365_CLIENT_SECRET": "__CLIENT_SECRET__",
     "ALLOWED_APP_IDS": "6c7b6e6f-242a-42d0-ae07-823434beb336;98de5138-0f72-4b1b-a1a9-f28060d22837",
-    "OAUTH_AUTHORITY": "https://login.microsoftonline.com/546a2d59-2038-4a68-acff-f0239a409516/",
-    "FUNCTION_ENDPOINT": "MockFunctionEndpointValue",
-    "SQL_ENDPOINT": "MockSqlEndpointValue",
-    "DATABASE_NAME": "MockDatabaseNameValue",
-    "IDENTITY_ID": "MockIdentityIdValue"
+    "M365_AUTHORITY_HOST": "https://login.microsoftonline.com",
+    "M365_TENANT_ID": "546a2d59-2038-4a68-acff-f0239a409516"
   }
 }

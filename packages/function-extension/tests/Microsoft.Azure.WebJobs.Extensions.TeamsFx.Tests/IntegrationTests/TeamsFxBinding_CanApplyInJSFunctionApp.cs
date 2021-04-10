@@ -69,14 +69,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.TeamsFx.Tests.IntegrationTests
             // Assert
             var responseObject = JsonConvert.DeserializeObject<Dictionary<string, string>>(responseBody);
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-            Assert.AreEqual("Bearer " + _defaultAccessToken, responseObject["AccessToken"]);
-            Assert.AreEqual(_integrationTestings.ClientId, responseObject["ClientId"]);
-            Assert.AreEqual(_integrationTestings.ClientSecret, responseObject["ClientSecret"]);
-            Assert.AreEqual(_integrationTestings.OAuthAuthority, responseObject["OAuthAuthority"]);
-            Assert.AreEqual("MockFunctionEndpointValue", responseObject["FunctionEndpoint"]);
-            Assert.AreEqual("MockSqlEndpointValue", responseObject["SqlEndpoint"]);
-            Assert.AreEqual("MockDatabaseNameValue", responseObject["Database"]);
-            Assert.AreEqual("MockIdentityIdValue", responseObject["IdentityId"]);
+            Assert.AreEqual(_defaultAccessToken, responseObject["AccessToken"]);
         }
 
         [Test]
@@ -92,7 +85,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.TeamsFx.Tests.IntegrationTests
             var responseBody = await response.Content.ReadAsStringAsync();
             var responseObject = JsonConvert.DeserializeObject<Dictionary<string, string>>(responseBody);
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-            Assert.AreEqual("Bearer " + accessTokenOfAllowedApp, responseObject["AccessToken"]);
+            Assert.AreEqual(accessTokenOfAllowedApp, responseObject["AccessToken"]);
         }
 
         [Test]
@@ -129,26 +122,6 @@ namespace Microsoft.Azure.WebJobs.Extensions.TeamsFx.Tests.IntegrationTests
         }
 
         [Test]
-        public async Task ReadEnvVar_WithEmptyStringProperties_Return200WithNullProperties()
-        {
-            // Action
-            HttpResponseMessage response = await invokeFunctionHostTriggerWithTokenAsync(_integrationTestings.EmptyStringPropertiesTestFunctionPort, _defaultAccessToken);
-
-            // Assert
-            var responseBody = await response.Content.ReadAsStringAsync();
-            var responseObject = JsonConvert.DeserializeObject<Dictionary<string, string>>(responseBody);
-            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-            Assert.AreEqual("Bearer " + _defaultAccessToken, responseObject["AccessToken"]);
-            Assert.AreEqual(_integrationTestings.ClientId, responseObject["ClientId"]);
-            Assert.AreEqual(null, responseObject["ClientSecret"]);
-            Assert.AreEqual(_integrationTestings.OAuthAuthority, responseObject["OAuthAuthority"]);
-            Assert.AreEqual(null, responseObject["FunctionEndpoint"]);
-            Assert.AreEqual(null, responseObject["SqlEndpoint"]);
-            Assert.AreEqual(null, responseObject["Database"]);
-            Assert.AreEqual(null, responseObject["IdentityId"]);
-        }
-
-        [Test]
         public async Task ReadEnvVar_WithNullClientId_Return403()
         {
             // Action
@@ -161,26 +134,6 @@ namespace Microsoft.Azure.WebJobs.Extensions.TeamsFx.Tests.IntegrationTests
             Assert.AreEqual(new MediaTypeHeaderValue("text/plain") { CharSet = "utf-8" }, response.Content.Headers.ContentType);
             Assert.AreEqual(expectedBody.Length, response.Content.Headers.ContentLength);
             Assert.AreEqual(expectedBody, responseBody);
-        }
-
-        [Test]
-        public async Task ReadEnvVar_WithNullProperties_Return200WithNullProperties()
-        {
-            // Action
-            HttpResponseMessage response = await invokeFunctionHostTriggerWithTokenAsync(_integrationTestings.NullPropertiesTestFunctionPort, _defaultAccessToken);
-
-            // Assert
-            var responseBody = await response.Content.ReadAsStringAsync();
-            var responseObject = JsonConvert.DeserializeObject<Dictionary<string, string>>(responseBody);
-            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-            Assert.AreEqual("Bearer " + _defaultAccessToken, responseObject["AccessToken"]);
-            Assert.AreEqual(_integrationTestings.ClientId, responseObject["ClientId"]);
-            Assert.AreEqual(null, responseObject["ClientSecret"]);
-            Assert.AreEqual(_integrationTestings.OAuthAuthority, responseObject["OAuthAuthority"]);
-            Assert.AreEqual(null, responseObject["FunctionEndpoint"]);
-            Assert.AreEqual(null, responseObject["SqlEndpoint"]);
-            Assert.AreEqual(null, responseObject["Database"]);
-            Assert.AreEqual(null, responseObject["IdentityId"]);
         }
     }
 }

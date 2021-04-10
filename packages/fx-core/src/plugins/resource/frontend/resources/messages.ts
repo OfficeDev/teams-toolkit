@@ -42,6 +42,8 @@ export class Messages {
         `Start to create Azure Storage Account ${name} in the resource group ${resourceGroupName}.`;
     static readonly StartEnableStaticWebsite = (name: string) =>
         `Start to enable static website feature for Azure Storage Account ${name}.`;
+    static readonly SkipEnableStaticWebsite = (name: string) =>
+        `Static website feature has been enabled for Azure Storage Account ${name}, skip enabling.`;
     static readonly StartSyncLocalToStorage = (localPath: string, storageName: string) =>
         `Start to sync local path ${localPath} to Azure Storage Account ${storageName}.`;
     static readonly StartDeleteAllBlobs = (storageName: string, containerName: string) =>

@@ -233,7 +233,7 @@
         "background": {
           "activeOnStart": true,
           "beginsPattern": "Session Status\\s*connecting",
-          "endsPattern": "Session Status\\s*(online|unknown|reconnecting)"
+          "endsPattern": ".*"
         }
       },
       {

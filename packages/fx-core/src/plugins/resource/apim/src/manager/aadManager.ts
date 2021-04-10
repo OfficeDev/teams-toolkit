@@ -7,38 +7,40 @@ import { IAadInfo, IRequiredResourceAccess } from "../model/aadResponse";
 import { IAadPluginConfig, IApimPluginConfig } from "../model/config";
 import { AadService } from "../service/aadService";
 import { Telemetry } from "../telemetry";
+import { Lazy } from "../util/lazy";
 import { NameSanitizer } from "../util/nameSanitizer";
 
 export class AadManager {
     private readonly logger?: LogProvider;
     private readonly telemetry: Telemetry;
-    private readonly aadService: AadService;
+    private readonly lazyAadService: Lazy<AadService>;
 
-    constructor(aadService: AadService, telemetry: Telemetry, logger?: LogProvider) {
+    constructor(lazyAadService: Lazy<AadService>, telemetry: Telemetry, logger?: LogProvider) {
         this.logger = logger;
         this.telemetry = telemetry;
-        this.aadService = aadService;
+        this.lazyAadService = lazyAadService;
     }
 
     public async provision(apimPluginConfig: IApimPluginConfig, appName: string): Promise<void> {
+        const aadService: AadService = await this.lazyAadService.getValue();
         if (!apimPluginConfig.apimClientAADObjectId) {
-            const aadInfo = await this.aadService.createAad(NameSanitizer.sanitizeAadDisplayName(appName));
+            const aadInfo = await aadService.createAad(NameSanitizer.sanitizeAadDisplayName(appName));
             apimPluginConfig.apimClientAADObjectId = AssertNotEmpty("id", aadInfo.id);
             apimPluginConfig.apimClientAADClientId = AssertNotEmpty("appId", aadInfo.appId);
-            const secretResult = await this.aadService.addSecret(
+            const secretResult = await aadService.addSecret(
                 apimPluginConfig.apimClientAADObjectId,
                 NameSanitizer.sanitizeAadSecretDisplayName(appName)
             );
             apimPluginConfig.apimClientAADClientSecret = AssertNotEmpty("secretText", secretResult.secretText);
         } else {
-            const existingAadInfo = await this.aadService.getAad(apimPluginConfig.apimClientAADObjectId);
+            const existingAadInfo = await aadService.getAad(apimPluginConfig.apimClientAADObjectId);
             if (!existingAadInfo) {
                 throw BuildError(InvalidAadObjectId, apimPluginConfig.apimClientAADObjectId);
             }
             apimPluginConfig.apimClientAADClientId = AssertNotEmpty("appId", existingAadInfo.appId);
 
             if (!apimPluginConfig.apimClientAADClientSecret) {
-                const secretResult = await this.aadService.addSecret(
+                const secretResult = await aadService.addSecret(
                     apimPluginConfig.apimClientAADObjectId,
                     NameSanitizer.sanitizeAadSecretDisplayName(appName)
                 );
@@ -48,13 +50,14 @@ export class AadManager {
     }
 
     public async postProvision(apimPluginConfig: IApimPluginConfig, aadPluginConfig: IAadPluginConfig, redirectUris: string[]): Promise<void> {
+        const aadService: AadService = await this.lazyAadService.getValue();
         const objectId = AssertConfigNotEmpty(
             TeamsToolkitComponent.ApimPlugin,
             ApimPluginConfigKeys.apimClientAADObjectId,
             apimPluginConfig.apimClientAADObjectId
         );
 
-        let existingAadInfo = await this.aadService.getAad(objectId);
+        let existingAadInfo = await aadService.getAad(objectId);
         existingAadInfo = AssertNotEmpty("existingAadInfo", existingAadInfo);
 
         let data: IAadInfo | undefined;
@@ -68,7 +71,7 @@ export class AadManager {
         );
 
         if (data) {
-            await this.aadService.updateAad(objectId, data);
+            await aadService.updateAad(objectId, data);
         }
     }
 

@@ -28,6 +28,7 @@ import { ResourceNameFactory } from "./utils/resourceNameFactory";
 import * as AppStudio from "./appStudio/appStudio";
 import { IBotRegistration } from "./appStudio/interfaces/IBotRegistration";
 import { Logger } from "./logger";
+import { Retry } from "./constants";
 
 export class TeamsBotImpl {
     // Made config plubic, because expect the upper layer to fill inputs.
@@ -542,7 +543,22 @@ export class TeamsBotImpl {
             callingEndpoint: ""
         };
 
-        await AppStudio.updateMessageEndpoint(botReg.botId!, botReg);
+        Logger.debug(`Update message endpoint with botId: ${botReg.botId}, botReg: ${JSON.stringify(botReg)}`);
+        
+        let retries = Retry.UPDATE_MESSAGE_ENDPOINT_TIMES;
+        while (retries > 0) {
+            try {
+                await AppStudio.updateMessageEndpoint(botReg.botId!, botReg);
+            } catch (e) {
+                Logger.debug(`updateMessageExtension exception: ${e}`);
+                retries = retries - 1;
+                if (retries > 0) {
+                    await new Promise((resolve) => setTimeout(resolve, Retry.UPDATE_MESSAGE_ENDPOINT_GAP_MS));
+                }
+                continue;
+            }
+            break;
+        }
 
         this.telemetryStepOutSuccess(LifecycleFuncNames.UPDATE_MESSAGE_ENDPOINT_APPSTUDIO);
     }

@@ -107,6 +107,8 @@ export class LifecycleFuncNames {
 export class Retry {
     public static readonly GENERATE_CLIENT_SECRET_TIMES = 10;
     public static readonly GENERATE_CLIENT_SECRET_GAP_MS = 5000;
+    public static readonly UPDATE_MESSAGE_ENDPOINT_TIMES = 10;
+    public static readonly UPDATE_MESSAGE_ENDPOINT_GAP_MS = 5000;
 }
 export class ExceptionNames {
     // System Exceptions

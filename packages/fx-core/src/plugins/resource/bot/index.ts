@@ -9,6 +9,7 @@ import { ProgressBarConstants } from "./constants";
 import { ExceptionType, PluginException } from "./exceptions";
 import { Logger } from "./logger";
 import { PluginBot } from "./resources/strings";
+import * as utils from "./utils/common";
 
 export class TeamsBot implements Plugin {
     public teamsBotImpl: TeamsBotImpl = new TeamsBotImpl();
@@ -111,7 +112,7 @@ export class TeamsBot implements Plugin {
             return await fn();
         } catch (e) {
             this.ctx?.logProvider?.debug(`On top exception: ${e}.`);
-            this.ctx?.telemetryReporter?.sendTelemetryErrorEvent(e.name, {
+            this.ctx?.telemetryReporter?.sendTelemetryErrorEvent(utils.convertToTelemetryName(e.name), {
                 component: PluginBot.PLUGIN_NAME
             });
 

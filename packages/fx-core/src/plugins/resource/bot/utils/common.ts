@@ -212,3 +212,7 @@ export function convertToLangKey(programmingLanguage: ProgrammingLanguage): stri
         }
     }
 }
+
+export function convertToTelemetryName(raw: string): string {
+    return raw.toLowerCase().replace(/ /g, "-");
+}

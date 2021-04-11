@@ -61,12 +61,13 @@ export class ProgressBarConstants {
     public static readonly LOCAL_DEBUG_STEPS_NUM: number = 1;
 
     public static readonly DEPLOY_TITLE: string = "Deploying Bot";
-    public static readonly DEPLOY_STEP_START = "Start to do deployment.";
-    public static readonly DEPLOY_STEP_BUILD_ZIP = "Start to build and zip package.";
-    public static readonly DEPLOY_STEP_LIST_CRED = "Start to list publish credentials.";
-    public static readonly DEPLOY_STEP_ZIP_DEPLOY = "Start to do zip deployment.";
+    public static readonly DEPLOY_STEP_START = "Start to deploy.";
+    public static readonly DEPLOY_STEP_NPM_INSTALL = "Run npm install.";
+    public static readonly DEPLOY_STEP_ZIP_FOLDER = "Zip package folder."
+    public static readonly DEPLOY_STEP_LIST_CRED = "List publish credentials.";
+    public static readonly DEPLOY_STEP_ZIP_DEPLOY = "Call zip deploy rest api.";
 
-    public static readonly DEPLOY_STEPS_NUM: number = 3;
+    public static readonly DEPLOY_STEPS_NUM: number = 4;
 
 }
 

@@ -4,9 +4,9 @@
 
 import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks";
 import * as fs from "fs-extra";
-import { err, SolutionConfig, ConfigMap, ConfigFolderName } from "fx-api";
+import { err, SolutionConfig, ConfigMap, ConfigFolderName, Dict, Json } from "fx-api";
 import * as error from "../error";
-import { objectToConfigMap, mapToJson } from "../tools";
+import { objectToConfigMap, mapToJson, objectToMap } from "../tools";
 import { Settings } from "../settings";
 import { InternalError } from "../error";
 import { CoreContext } from "../context";
@@ -46,9 +46,15 @@ export const readConfigMW: Middleware = async (
             if (!slice) {
                 continue;
             }
+            const envName = file.substr(4, file.length-9);
             const filePath = `${coreCtx.root}/.${ConfigFolderName}/${file}`;
-            const config: SolutionConfig = await fs.readJson(filePath);
-            configs.set(slice[1], config);
+            const localDataPath = `${coreCtx.root}/.${ConfigFolderName}/${envName}.userdata`;
+            const dictContent = await fs.readFile(localDataPath, "UTF-8");
+            const dict:Dict<string> = deserializeDict(dictContent);
+            const configJson: Json = await fs.readJson(filePath);
+            mergeSerectData(dict, configJson);
+            const solutionConfig: SolutionConfig = objectToMap(configJson);
+            configs.set(slice[1], solutionConfig);
         }
 
         // read answers
@@ -84,6 +90,7 @@ export const readConfigMW: Middleware = async (
     await next();
 };
 
+
 /**
  * This middleware will help to persist configs if necessary.
  */
@@ -110,9 +117,15 @@ export const writeConfigMW: Middleware = async (
 
     try {
         for (const entry of coreCtx.configs.entries()) {
-            const filePath = `${coreCtx.root}/.${ConfigFolderName}/env.${entry[0]}.json`;
-            const content = JSON.stringify(mapToJson(entry[1]), null, 4);
+            const envName = entry[0];
+            const solutionConfig = entry[1];
+            const configJson = mapToJson(solutionConfig);
+            const filePath = `${coreCtx.root}/.${ConfigFolderName}/env.${envName}.json`;
+            const localDataPath = `${coreCtx.root}/.${ConfigFolderName}/${envName}.userdata`;
+            const localData = sperateSecretData(configJson);
+            const content = JSON.stringify(configJson, null, 4);
             await fs.writeFile(filePath, content);
+            await fs.writeFile(localDataPath, serializeDict(localData));
         }
 
         const file = `${coreCtx.root}/.${ConfigFolderName}/answers.json`;
@@ -137,3 +150,86 @@ export const writeConfigMW: Middleware = async (
         return;
     }
 };
+
+
+
+
+
+const SecretDataMatchers = ["fx-resource-aad-app-for-teams.clientSecret",
+"fx-resource-aad-app-for-teams.local_clientSecret",
+"fx-resource-simple-auth.filePath",
+"fx-resource-simple-auth.environmentVariableParams",
+"fx-resource-local-debug.*",
+"fx-resource-teamsbot.botPassword",
+"fx-resource-teamsbot.botPassword"];
+
+function sperateSecretData(configJson:Json): Dict<string>{
+    const res:Dict<string> = {};
+    for(const matcher of SecretDataMatchers ){
+        const splits = matcher.split(".");
+        const resourceId = splits[0];
+        const item = splits[1];
+        const resourceConfig:any = configJson[resourceId];
+        if("*" !== item) {
+            const originalItemValue = resourceConfig[item];
+            const keyName = `${resourceId}.${item}`;
+            res[keyName] = originalItemValue;
+            resourceConfig[item] = `{{${keyName}}}`;
+        }
+        else {
+            for(const entry of resourceConfig.entryes()){
+                const itemName:string = entry[0];
+                const originalItemValue = entry[1];
+                const keyName = `${resourceId}.${itemName}`;
+                res[keyName] = originalItemValue;
+                resourceConfig[itemName] = `{{${keyName}}}`;
+            }
+        }
+    }
+    return res;
+}
+
+function mergeSerectData(dict: Dict<string>, configJson:Json):void{
+    for(const matcher of SecretDataMatchers ){
+        const splits = matcher.split(".");
+        const resourceId = splits[0];
+        const item = splits[1];
+        const resourceConfig:any = configJson[resourceId];
+        if("*" !== item) {
+            const originalItemValue:string|undefined = resourceConfig[item] as string|undefined;
+            if(originalItemValue && originalItemValue.startsWith("{{") && originalItemValue.endsWith("}}")){
+                const keyName = `${resourceId}.${item}`;
+                resourceConfig[item] = dict[keyName];
+            }
+        }
+        else {
+            for(const entry of resourceConfig.entryes()){
+                const itemName:string = entry[0];
+                const originalItemValue = entry[1];
+                if(originalItemValue && originalItemValue.startsWith("{{") && originalItemValue.endsWith("}}")){
+                    const keyName = `${resourceId}.${item}`;
+                    resourceConfig[itemName] = dict[keyName];
+                }
+            }
+        }
+    }
+}
+
+function serializeDict(dict: Dict<string>):string{
+    const array:string[] = [];
+    for(const key of Object.keys(dict)){
+       const value = dict[key];
+       array.push(`${key}=${value}`);
+    }
+    return array.join("\n");
+}
+
+function deserializeDict(data:string):Dict<string>{
+    const lines = data.split("\n");
+    const dict: Dict<string> = {};
+    for(const line of lines){
+        const kv = line.split("=");
+        dict[kv[0]] = kv[1];
+    }
+    return dict;
+}

@@ -779,7 +779,7 @@ class CoreImpl implements Core {
             );
             await fs.writeFile(
                 `${this.target.ctx.root}/.gitignore`,
-                `node_modules\n/.${ConfigFolderName}/*.env`
+                `node_modules\n/.${ConfigFolderName}/*.env\n.DS_Store`
             );
         } catch (e) {
             return err(error.WriteFileError(e));

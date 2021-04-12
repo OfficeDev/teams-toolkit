@@ -9,10 +9,9 @@ import * as util from "util";
 import { ConfigFolderName } from "fx-api";
 import { logger, cpUtils, runWithProgressIndicator } from "./checkerAdapter";
 import { DepsCheckerError } from "./checker";
-import { isWindows, isLinux } from "./common";
+import { isWindows, isLinux, Messages, dotnetHelpLink } from "./common";
 
 const exec = util.promisify(child_process.exec);
-const helpLink = "https://review.docs.microsoft.com/en-us/mods/?branch=main";
 
 export enum DotnetVersion {
   v31 = "3.1"
@@ -21,7 +20,7 @@ export enum DotnetVersion {
 export const DotnetCoreSDKName = ".NET Core SDK";
 export type DotnetSDK = { version: string; path: string };
 
-const installedNameWithVersion = `${DotnetCoreSDKName} (v${DotnetVersion.v31})`;
+export const installedNameWithVersion = `${DotnetCoreSDKName} (v${DotnetVersion.v31})`;
 
 export class DotnetCheckerImpl {
   private static encoding = "utf-8";
@@ -42,7 +41,7 @@ export class DotnetCheckerImpl {
     // logger.debug(`[end] check dotnet version`);
 
     if ((await DotnetCheckerImpl.tryAcquireGlobalDotnetSdk()) && (await DotnetCheckerImpl.validate())) {
-      logger.info(`use global dotnet path = ${await DotnetCheckerImpl.getDotnetExecPath()}`);
+      logger.info(`${Messages.useGlobalDotnet} '${await DotnetCheckerImpl.getDotnetExecPath()}'`);
       return true;
     }
 
@@ -55,18 +54,18 @@ export class DotnetCheckerImpl {
     // logger.debug(`[end] cleanup bin/dotnet and config`);
 
     // logger.debug(`[start] install dotnet ${DotnetChecker.installVersion}`);
-    logger.info(`Downloading and installing ${installedNameWithVersion}.`);
+    logger.info(Messages.downloadDotnet);
     await runWithProgressIndicator(async () => {
       await DotnetCheckerImpl.install(DotnetCheckerImpl.installVersion);
     });
-    logger.info(`Successfully installed ${installedNameWithVersion}.`);
+    logger.info(Messages.finishInstallDotnet);
     // logger.debug(`[end] install dotnet ${DotnetChecker.installVersion}`);
 
     // logger.debug(`[start] validate dotnet version`);
     if (!(await DotnetCheckerImpl.validate())) {
       await DotnetCheckerImpl.cleanup();
       // TODO: remove hardcoding
-      throw new DepsCheckerError(`Failed to install ${installedNameWithVersion}.`, helpLink);
+      throw new DepsCheckerError(Messages.failToInstallDotnet, dotnetHelpLink);
     }
   }
 
@@ -102,7 +101,7 @@ export class DotnetCheckerImpl {
       await DotnetCheckerImpl.persistDotnetExecPath(dotnetExecPath);
       // logger.debug(`[end] write dotnet path to config`);
     } catch (error) {
-      logger.error(`Failed to install dotnet, error = ${error}`);
+      logger.error(`${Messages.failToInstallDotnet}, error = ${error}`);
     }
   }
 
@@ -147,13 +146,13 @@ export class DotnetCheckerImpl {
 
       if (stderr && stderr.length > 0) {
         logger.error(
-          `dotnet-install command failed without error exit code but with non-empty standard error, stdout: '${stdout}', stderr: '${stderr}'`
+          `${Messages.failToInstallDotnet} ${Messages.dotnetInstallStderr} stdout: '${stdout}', stderr: '${stderr}'`
         );
       }
     } catch (error) {
       // swallow the exception since later validate will find out the errors anyway
       logger.error(
-        `dotnet-install command failed, error: '${error}', stdout = '${error.stdout}', stderr = '${error.stderr}'`
+        `${Messages.failToInstallDotnet} ${Messages.dotnetInstallErrorCode} error: '${error}', stdout = '${error.stdout}', stderr = '${error.stderr}'`
       );
     }
   }

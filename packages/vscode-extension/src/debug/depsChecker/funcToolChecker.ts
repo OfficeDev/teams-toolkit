@@ -6,7 +6,7 @@ import * as path from "path";
 import { cpUtils } from "../cpUtils";
 import { IDepsChecker, DepsCheckerError, DepsInfo } from "./checker";
 import { funcToolCheckerEnabled, hasTeamsfxBackend, logger, runWithProgressIndicator } from "./checkerAdapter";
-import { isWindows } from "./common";
+import { isWindows, Messages, functionCoreToolsHelpLink } from "./common";
 
 export enum FuncVersion {
   v1 = "1",
@@ -16,20 +16,7 @@ export enum FuncVersion {
 
 const funcPackageName = "azure-functions-core-tools";
 const funcToolName = "Azure Function Core Tool";
-const installedNameWithVersion = `${funcToolName} (v${FuncVersion.v3})`;
-
-// TODO: extract to messages.ts
-const startInstallFunctionCoreTool =
-  `Downloading and installing ${installedNameWithVersion}.`;
-const finishInstallFunctionCoreTool =
-  `Successfully installed ${installedNameWithVersion}.`;
-const needReplaceWithFuncCoreToolV3 =
-  `You must replace with ${installedNameWithVersion} to debug your local functions.`;
-const needInstallFuncCoreTool =
-  `You must have ${installedNameWithVersion} installed to debug your local functions.`;
-const failToInstallFuncCoreTool =
-  `${installedNameWithVersion} installation has failed and will have to be installed manually.`;
-const helpLink = "https://review.docs.microsoft.com/en-us/mods/?branch=main";
+export const installedNameWithVersion = `${funcToolName} (v${FuncVersion.v3})`;
 
 export class FuncToolChecker implements IDepsChecker {
   getDepsInfo(): Promise<DepsInfo> {
@@ -50,7 +37,7 @@ export class FuncToolChecker implements IDepsChecker {
 
     switch (installedVersion) {
       case FuncVersion.v1:
-        throw new DepsCheckerError(needReplaceWithFuncCoreToolV3, helpLink);
+        throw new DepsCheckerError(Messages.needReplaceWithFuncCoreToolV3, functionCoreToolsHelpLink);
       case FuncVersion.v2:
         return installed;
       case FuncVersion.v3:
@@ -63,24 +50,24 @@ export class FuncToolChecker implements IDepsChecker {
   async install(): Promise<void> {
     if (!(await hasNPM())) {
       // provided with Learn More link if npm doesn't exist.
-      throw new DepsCheckerError(needInstallFuncCoreTool, helpLink);
+      throw new DepsCheckerError(Messages.needInstallFuncCoreTool, functionCoreToolsHelpLink);
     }
 
-    logger.info(startInstallFunctionCoreTool);
+    logger.info(Messages.startInstallFunctionCoreTool);
     await runWithProgressIndicator(async () => {
       try {
         await installFuncCoreTools(FuncVersion.v3);
       } catch (error) {
-        throw new DepsCheckerError(failToInstallFuncCoreTool, helpLink);
+        throw new DepsCheckerError(Messages.failToInstallFuncCoreTool, functionCoreToolsHelpLink);
       }
     });
 
     const isInstalled = await this.isInstalled();
     if (!isInstalled) {
-      throw new DepsCheckerError(failToInstallFuncCoreTool, helpLink);
+      throw new DepsCheckerError(Messages.failToInstallFuncCoreTool, functionCoreToolsHelpLink);
     }
 
-    logger.info(finishInstallFunctionCoreTool);
+    logger.info(Messages.finishInstallFunctionCoreTool);
   }
 }
 

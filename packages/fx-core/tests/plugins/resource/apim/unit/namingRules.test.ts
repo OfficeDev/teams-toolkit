@@ -26,16 +26,16 @@ describe("NamingRules", () => {
             ];
         testData.forEach((data) => {
             it(`Enable nothing, "${data.input}" -> "${data.id}"`, () => {
-                chai.assert.equal(NamingRules.sanitizeId(data.input, false, true), data.id)
+                chai.assert.equal(NamingRules.sanitizeId(data.input, false, true), data.id);
             });
             it(`Enable lowercase, "${data.input}" -> "${data.lowerCase}"`, () => {
-                chai.assert.equal(NamingRules.sanitizeId(data.input, true, true), data.lowerCase)
+                chai.assert.equal(NamingRules.sanitizeId(data.input, true, true), data.lowerCase);
             });
             it(`Enable remove leading number, "${data.input}" -> "${data.removeLeadingNumber}"`, () => {
-                chai.assert.equal(NamingRules.sanitizeId(data.input, false, false), data.removeLeadingNumber)
+                chai.assert.equal(NamingRules.sanitizeId(data.input, false, false), data.removeLeadingNumber);
             });
             it(`Enable all, "${data.input}" -> "${data.all}"`, () => {
-                chai.assert.equal(NamingRules.sanitizeId(data.input, true, false), data.all)
+                chai.assert.equal(NamingRules.sanitizeId(data.input, true, false), data.all);
             });
         });
     });

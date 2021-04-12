@@ -58,9 +58,8 @@ export const NoPluginConfig: IApimPluginError = {
 export const InvalidConfigValue: IApimPluginError = {
     type: ErrorType.User,
     code: "InvalidConfigValue",
-    message: (component: string, name: string, message: string) =>
-        `Project configuration '${name}' of ${component} is invalid. ${message}`,
-}
+    message: (component: string, name: string, message: string) => `Project configuration '${name}' of ${component} is invalid. ${message}`,
+};
 
 // System error
 export const NotImplemented: IApimPluginError = {
@@ -102,8 +101,8 @@ export const InvalidPropertyType: IApimPluginError = {
 export const ShortenToEmpty: IApimPluginError = {
     type: ErrorType.System,
     code: "ShortenToEmpty",
-    message: (value: string) => `The value '${value}' cannot be shorten to empty.'`,
-}
+    message: (value: string) => `The value '${value}' cannot be shorten to empty.`,
+};
 
 export const ApimOperationError: IApimPluginError = {
     type: ErrorType.System,

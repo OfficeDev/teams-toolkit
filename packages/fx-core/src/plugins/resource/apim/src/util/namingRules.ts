@@ -125,10 +125,10 @@ export class NamingRules {
 
     static validate(value: string, namingRule: INamingRule): string | undefined {
         if (namingRule.minLength && value.length < namingRule.minLength) {
-            return `The value should be longer than ${namingRule.minLength}.`
+            return `The value should be longer than ${namingRule.minLength}.`;
         }
         if (namingRule.maxLength && value.length > namingRule.maxLength) {
-            return `The value should be shorter than ${namingRule.maxLength}.`
+            return `The value should be shorter than ${namingRule.maxLength}.`;
         }
         if (!namingRule.validPattern.regex.test(value)) {
             return namingRule.validPattern.message;

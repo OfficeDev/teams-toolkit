@@ -5,13 +5,14 @@ import fs from "fs-extra";
 
 export class EnvironmentUtils {
     static async writeEnvironments(envFile: string, variables: { [key: string]: string }): Promise<void> {
-        dotenv.config({ path: envFile });
         await fs.ensureFile(envFile);
-        for (const key in variables) {
-            if (variables[key] === process.env[key]) {
-                continue;
-            }
-            await fs.appendFile(envFile, `${key}=${variables[key]}\r\n`);
+        const configs = dotenv.parse(fs.readFileSync(envFile));
+        Object.assign(configs, variables);
+
+        let envs = "";
+        for (const key in configs) {
+            envs += `${key}=${configs[key]}\r\n`;
         }
+        await fs.writeFile(envFile, envs);
     }
 }

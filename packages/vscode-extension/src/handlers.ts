@@ -243,7 +243,7 @@ async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
     }
 
     answers.set("vscenv", detectVsCodeEnv());
-    console.log(`VS Code Environment: ${detectVsCodeEnv()}`);
+    VsCodeLogInstance.info(`VS Code Environment: ${detectVsCodeEnv()}`);
 
     // 5. run question model
     const node = qres.value;

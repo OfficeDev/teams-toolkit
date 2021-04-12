@@ -4,12 +4,12 @@ on:
   push:
     branches:
       - main
+      - nintan/sdk-ci
     paths:
       - packages/sdk/**
   pull_request:
     branches:
       - main
-      - nintan/sdk-ci
     paths:
       - packages/sdk/**
 
@@ -40,7 +40,6 @@ jobs:
 
       - name: Build
         run: |
-          npm ci
           npm run build
         working-directory: ./packages/sdk
 

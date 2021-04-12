@@ -412,6 +412,10 @@ export function generateSpfxConfigurations(): Record<string, unknown>[] {
                 group: "all",
                 order: edgeOrder,
             },
+            resolveSourceMapLocations: [
+                "${workspaceFolder}/SPFx/**",
+                "!SPFx/node_modules/**"
+            ],
         },
         {
             name: "Local workbench (Chrome)",
@@ -433,6 +437,10 @@ export function generateSpfxConfigurations(): Record<string, unknown>[] {
                 group: "all",
                 order: chromeOrder,
             },
+            resolveSourceMapLocations: [
+                "${workspaceFolder}/SPFx/**",
+                "!SPFx/node_modules/**"
+            ],
         },
         {
             name: "Hosted workbench (Edge)",
@@ -454,6 +462,10 @@ export function generateSpfxConfigurations(): Record<string, unknown>[] {
                 group: "remote",
                 order: edgeOrder,
             },
+            resolveSourceMapLocations: [
+                "${workspaceFolder}/SPFx/**",
+                "!SPFx/node_modules/**"
+            ],
         },
         {
             name: "Hosted workbench (Chrome)",
@@ -475,6 +487,10 @@ export function generateSpfxConfigurations(): Record<string, unknown>[] {
                 group: "remote",
                 order: chromeOrder,
             },
+            resolveSourceMapLocations: [
+                "${workspaceFolder}/SPFx/**",
+                "!SPFx/node_modules/**"
+            ],
         },
     ];
 }

@@ -133,10 +133,11 @@ export class DotnetCheckerImpl {
   private static async installDotnet(version: DotnetVersion, installDir: string): Promise<void> {
     const installCommand: string = await DotnetCheckerImpl.getInstallCommand(version, installDir);
     const windowsFullCommand = `powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "& { [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12 ; & ${installCommand} }`;
+    const unixFullCommand = `bash ${installCommand}`;
 
     try {
       // logger.debug(`[start] exec install script`);
-      const { stdout, stderr } = await exec(isWindows() ? windowsFullCommand : installCommand, {
+      const { stdout, stderr } = await exec(isWindows() ? windowsFullCommand : unixFullCommand, {
         cwd: process.cwd(),
         maxBuffer: DotnetCheckerImpl.maxBuffer,
         timeout: DotnetCheckerImpl.timeout,

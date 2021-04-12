@@ -26,7 +26,9 @@ namespace Microsoft.TeamsFx.SimpleAuth
                    options.AddPolicy(name: AllowTabApp,
                                      builder =>
                                      {
-                                         builder.WithOrigins(Configuration[ConfigurationName.TabAppEndpoint]);
+                                         builder.WithOrigins(Configuration[ConfigurationName.TabAppEndpoint])
+                                            .AllowAnyHeader()
+                                            .AllowAnyMethod();
                                      });
                });
 

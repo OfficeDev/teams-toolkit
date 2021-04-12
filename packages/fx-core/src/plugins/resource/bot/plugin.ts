@@ -29,7 +29,7 @@ import * as AppStudio from "./appStudio/appStudio";
 import { IBotRegistration } from "./appStudio/interfaces/IBotRegistration";
 import { Logger } from "./logger";
 import { Retry } from "./constants";
-import Timer from '@dbpiper/timer';
+import Timer from "@dbpiper/timer";
 
 export class TeamsBotImpl {
     // Made config plubic, because expect the upper layer to fill inputs.
@@ -82,7 +82,7 @@ export class TeamsBotImpl {
 
             this.config.scaffold.botId = botRegistration.botId;
             this.config.scaffold.botPassword = botRegistration.botPassword;
-            
+
             this.config.localDebug.localBotId = botRegistration.botId;
             this.config.localDebug.localBotPassword = botRegistration.botPassword;
 
@@ -209,7 +209,7 @@ export class TeamsBotImpl {
             this.config.provision.redirectUri !== undefined &&
             this.config.provision.appServicePlan !== undefined) {
             Logger.debug(`Already provisioned azure web app, just return.`);
-            return ;
+            return;
         }
 
         this.telemetryStepIn(LifecycleFuncNames.PROVISION_WEB_APP);
@@ -566,7 +566,7 @@ export class TeamsBotImpl {
         };
 
         Logger.debug(`Update message endpoint with botId: ${botReg.botId}, botReg: ${JSON.stringify(botReg)}`);
-        
+
         let retries = Retry.UPDATE_MESSAGE_ENDPOINT_TIMES;
         while (retries > 0) {
             try {
@@ -658,7 +658,7 @@ export class TeamsBotImpl {
 
         if (this.config.localDebug.botRegistrationCreated()) {
             Logger.debug("Local bot has already been registered, just return.");
-            return ;
+            return;
         }
 
         // 1. Create a new AAD App Registraion with client secret.
@@ -702,7 +702,7 @@ export class TeamsBotImpl {
             this.config.scaffold.botPassword !== undefined &&
             this.config.provision.botChannelRegName !== undefined) {
             Logger.debug(`Already created bot registration on azure, just return.`);
-            return ;
+            return;
         }
 
         this.telemetryStepIn(LifecycleFuncNames.CREATE_NEW_BOT_REG_AZURE);

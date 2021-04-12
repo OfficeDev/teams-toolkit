@@ -60,7 +60,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
 
             //assert output local.env
             const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
-            chai.assert.equal(Object.keys(localEnvs).length, 23);
+            chai.assert.equal(Object.keys(localEnvs).length, 27);
         });
 
         it("happy path: tab without function", async () => {
@@ -155,7 +155,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
 
             //assert output local.env
             const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
-            chai.assert.equal(Object.keys(localEnvs).length, 31);
+            chai.assert.equal(Object.keys(localEnvs).length, 35);
         });
 
         it("happy path: tab without function and bot", async () => {

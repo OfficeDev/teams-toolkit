@@ -48,9 +48,9 @@ export class DeployWithoutProvisionException extends PluginException {
         super(
             ExceptionType.User,
             ExceptionNames.PRECONDITION_EXCEPTION,
-            Messages.DoSthBeforeSth('provision', 'running deploy'),
+            Messages.DoSthBeforeSth("provision", "running deploy"),
             [
-                'Please run provision first',
+                "Please run provision first",
                 Messages.ReferToHelpLink
             ]
         );

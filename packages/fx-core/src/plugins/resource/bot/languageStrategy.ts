@@ -13,7 +13,7 @@ import { CommandExecutionException, SomethingMissingException } from "./exceptio
 import { downloadByUrl } from "./utils/downloadByUrl";
 import * as path from "path";
 import * as fs from "fs-extra";
-import Timer from '@dbpiper/timer';
+import Timer from "@dbpiper/timer";
 import { Logger } from "./logger";
 
 export class LanguageStrategy {

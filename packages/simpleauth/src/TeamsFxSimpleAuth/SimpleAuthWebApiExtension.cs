@@ -41,7 +41,7 @@ namespace Microsoft.TeamsFx.SimpleAuth
                     options.TokenValidationParameters = new IdentityModel.Tokens.TokenValidationParameters()
                     {
                         ValidateAudience = true, // only accept token issued to Teams app client id
-                        ValidateIssuer = false, // The is no default support for AAD multi tenant validation, need to provide full list of issuers which is not possible
+                        ValidateIssuer = true,
                         ValidAudiences = new string[] { configuration[ConfigurationName.ClientId], configuration[ConfigurationName.IdentifierUri] },
                     };
 

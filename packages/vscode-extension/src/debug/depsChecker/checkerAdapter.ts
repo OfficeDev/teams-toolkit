@@ -23,14 +23,13 @@ export function funcToolCheckerEnabled(): boolean {
 }
 
 export async function runWithProgressIndicator(
-  outputChannel: OutputChannel,
   callback: () => Promise<void>
 ): Promise<void> {
-  const timer = setInterval(() => outputChannel.append("."), downloadIndicatorInterval);
+  const timer = setInterval(() => logger.outputChannel.append("."), downloadIndicatorInterval);
   try {
     await callback();
   } finally {
-    outputChannel.appendLine("");
+    logger.outputChannel.appendLine("");
     clearTimeout(timer);
   }
 }
@@ -55,6 +54,10 @@ export async function displayWarningMessage(
 
   // click cancel button
   return false;
+}
+
+export function showOutputChannel() {
+  logger.outputChannel.show(false);
 }
 
 function checkerEnabled(key: string): boolean {

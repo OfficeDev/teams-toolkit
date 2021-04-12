@@ -79,7 +79,7 @@ export class ConfigKeysOfOtherPlugin {
   static frontendHostingEndpoint = "endpoint";
   static teamsBotId = "botId";
   static teamsBotIdLocal = "localBotId";
-  static teamsBotEndpoint = "redirectUri";
+  static teamsBotEndpoint = "siteEndpoint";
   static localDebugTabDomain = "localTabDomain";
   static localDebugTabEndpoint = "localTabEndpoint";
   static localDebugBotEndpoint = "localBotEndpoint";

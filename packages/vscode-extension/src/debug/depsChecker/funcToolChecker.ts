@@ -9,7 +9,7 @@ import { funcToolCheckerEnabled, hasTeamsfxBackend, logger, runWithProgressIndic
 import { isWindows } from "./common";
 import { DepsCheckerTelemetry, DepsCheckerEvent, TelemtryMessages } from "./telemetry";
 
-enum FuncVersion {
+export enum FuncVersion {
   v1 = "1",
   v2 = "2",
   v3 = "3"
@@ -87,10 +87,10 @@ export class FuncToolChecker implements IDepsChecker {
     }
 
     logger.info(startInstallFunctionCoreTool);
-
+    
     try {
       await DepsCheckerTelemetry.sendEventWithDuration(DepsCheckerEvent.installedFunc, async () => {
-        await runWithProgressIndicator(logger.outputChannel, async () => {
+        await runWithProgressIndicator(async () => {
           await installFuncCoreTools(FuncVersion.v3);
         });
       });
@@ -189,7 +189,7 @@ async function getFuncPSScriptPath(): Promise<string> {
   }
 }
 
-function getFuncToolsVersion(output: string): FuncVersion | null {
+export function getFuncToolsVersion(output: string): FuncVersion | null {
   const regex = /(?<major_version>\d+)\.(?<minor_version>\d+)\.(?<patch_version>\d+)/gm;
   const match = regex.exec(output);
   if (!match) {

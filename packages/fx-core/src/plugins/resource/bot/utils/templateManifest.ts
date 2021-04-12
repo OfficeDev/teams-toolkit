@@ -8,6 +8,7 @@ import { ProgrammingLanguage } from "../enums/programmingLanguage";
 import { TemplateProjectsConstants } from "../constants";
 import { DownloadException, TemplateProjectNotFoundException, TplManifestFormatException } from "../exceptions";
 import { Logger } from "../logger";
+import * as utils from "../utils/common";
 
 type Manifest = {
     [groupName: string]: {
@@ -89,11 +90,13 @@ export class TemplateManifest {
     ): string {
         Logger.debug(`getNewestTemplateUrl for ${lang},${group_name},${scenario}.`);
 
-        if (!this.manifest[group_name]?.[lang]?.[scenario]) {
+        const langKey = utils.convertToLangKey(lang);
+
+        if (!this.manifest[group_name]?.[langKey]?.[scenario]) {
             throw new TemplateProjectNotFoundException();
         }
 
-        const scenarioTemplates = this.manifest[group_name][lang][scenario].filter((x) =>
+        const scenarioTemplates = this.manifest[group_name][langKey][scenario].filter((x) =>
             semver.satisfies(x.version, TemplateProjectsConstants.VERSION_RANGE),
         );
 

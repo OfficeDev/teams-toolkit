@@ -15,7 +15,7 @@ export class CommonStrings {
     public static readonly CONFIG_ITEM = "config item";
     public static readonly SHORT_APP_NAME = "short app name";
     public static readonly AUTH_REDIRECT_URI_SUFFIX = "/public";
-    public static readonly AUTH_LOGIN_URI_SUFFIX = "/public/auth-start.html";
+    public static readonly AUTH_LOGIN_URI_SUFFIX = "/auth-start.html";
     public static readonly HTTPS_PREFIX = "https://";
     public static readonly MESSAGE_ENDPOINT_SUFFIX = "/api/messages";
 }

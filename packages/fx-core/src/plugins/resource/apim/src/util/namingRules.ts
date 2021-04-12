@@ -25,7 +25,7 @@ export class NamingRules {
         maxLength: 40,
         validPattern: ValidationConstants.resourceIdValidPattern,
         sanitize: (apiTitle: string): string => {
-            return NamingRules.short(NamingRules.sanitizeId(apiTitle, true, false), 40);
+            return NamingRules.short(NamingRules.sanitizeId(apiTitle, true, true), 40);
         }
     }
 
@@ -34,7 +34,7 @@ export class NamingRules {
         maxLength: 15,
         validPattern: ValidationConstants.resourceIdValidPattern,
         sanitize: (apiVersion: string): string => {
-            return NamingRules.short(NamingRules.sanitizeId(apiVersion, true, false), 15);
+            return NamingRules.short(NamingRules.sanitizeId(apiVersion, true, true), 15);
         }
     }
 

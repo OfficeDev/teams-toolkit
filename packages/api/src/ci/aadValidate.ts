@@ -89,7 +89,7 @@ export class AadValidator {
 
 export async function deleteAadApp(ctx: any) {
     const token = await AppStudioTokenProvider.getAccessToken();
-    const objectId: string = (<IAadObject>ctx[aadPluginName]).clientId;
+    const objectId: string = (<IAadObject>ctx[aadPluginName]).objectId;
     axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     return axios.delete(`${baseUrl}/${objectId}`);
 }

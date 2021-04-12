@@ -50,6 +50,7 @@
   },
   "dependencies": {
     "@azure/arm-sql": "^7.0.2",
+    "@azure/arm-subscriptions": "^3.0.0",
     "@azure/core-http": "^1.2.2",
     "@azure/identity": "^1.3.0",
     "@azure/ms-rest-nodeauth": "^3.0.6",

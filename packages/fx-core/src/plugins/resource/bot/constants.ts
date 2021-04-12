@@ -72,10 +72,10 @@ export class ProgressBarConstants {
 }
 
 export class QuestionNames {
-    public static readonly PROGRAMMING_LANGUAGE = "programmingLanguageQuestion";
-    public static readonly WAY_TO_REGISTER_BOT = "wayToRegisterBotQuestion";
-    public static readonly GET_BOT_ID = "botIdQuestion";
-    public static readonly GET_BOT_PASSWORD = "botPasswordQuestion";
+    public static readonly PROGRAMMING_LANGUAGE = "programming-language";
+    public static readonly WAY_TO_REGISTER_BOT = "way-to-register-bot";
+    public static readonly GET_BOT_ID = "bot-id";
+    public static readonly GET_BOT_PASSWORD = "bot-password";
     public static readonly CAPABILITIES = "capabilities";
 }
 

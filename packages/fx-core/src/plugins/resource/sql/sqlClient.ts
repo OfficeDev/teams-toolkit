@@ -53,7 +53,7 @@ export class SqlClient {
             const credential = await this.ctx.azureAccountProvider!.getIdentityCredentialAsync();
             if (!credential) {
                 const link = HelpLinks.addDBUser;
-                const message = ErrorMessage.DatabaseUserCreateError.message(this.config.sqlServer, this.config.databaseName, this.config.identity, "identity credential is undefiend.");
+                const message = ErrorMessage.DatabaseUserCreateError.message(this.config.sqlServer, this.config.databaseName, this.config.identity, ErrorMessage.IdentityCredentialUndefine);
                 this.ctx.logProvider?.error(message + ` You can follow ${link} to handle it`);
                 throw SqlResultFactory.UserError(ErrorMessage.DatabaseUserCreateError.name, message, undefined, undefined, link);
             } 

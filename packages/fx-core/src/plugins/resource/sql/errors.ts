@@ -84,4 +84,8 @@ export class ErrorMessage {
         name: "UnhandledError",
         message: () => "Unhandled Error"
     };
+
+    public static readonly IdentityCredentialUndefine = "the logged-in azure account is unable to access sql for credential undefined";
+
+    public static readonly ServicePrincipalWarning = (user: string, databaseName: string) => `service principal admin in azure sql can't add database user <${user}>. You can add the user for ${databaseName} manually`;
 }

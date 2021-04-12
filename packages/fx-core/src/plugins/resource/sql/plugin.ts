@@ -29,20 +29,20 @@ export class SqlPluginImpl {
     config: SqlConfig = new SqlConfig();
 
     init(ctx: PluginContext) {
-            ContextUtils.init(ctx);
-            this.config.azureSubscriptionId = ContextUtils.getConfigString(Constants.solution, Constants.solutionConfigKey.subscriptionId);
-            this.config.resourceGroup = ContextUtils.getConfigString(Constants.solution, Constants.solutionConfigKey.resourceGroupName);
-            this.config.resourceNameSuffix = ContextUtils.getConfigString(Constants.solution, Constants.solutionConfigKey.resourceNameSuffix);
-            this.config.location = ContextUtils.getConfigString(Constants.solution, Constants.solutionConfigKey.location);
-            this.config.tenantId = ContextUtils.getConfigString(Constants.solution, Constants.solutionConfigKey.tenantId);
+        ContextUtils.init(ctx);
+        this.config.azureSubscriptionId = ContextUtils.getConfigString(Constants.solution, Constants.solutionConfigKey.subscriptionId);
+        this.config.resourceGroup = ContextUtils.getConfigString(Constants.solution, Constants.solutionConfigKey.resourceGroupName);
+        this.config.resourceNameSuffix = ContextUtils.getConfigString(Constants.solution, Constants.solutionConfigKey.resourceNameSuffix);
+        this.config.location = ContextUtils.getConfigString(Constants.solution, Constants.solutionConfigKey.location);
+        this.config.tenantId = ContextUtils.getConfigString(Constants.solution, Constants.solutionConfigKey.tenantId);
 
-            let defaultEndpoint = `${ctx.app.name.short}-sql-${this.config.resourceNameSuffix}`;
-            defaultEndpoint = formatEndpoint(defaultEndpoint);
-            this.config.sqlServer = defaultEndpoint;
-            this.config.sqlEndpoint = `${this.config.sqlServer}.database.windows.net`;
-            // database
-            const defaultDatabase = `${ctx.app.name.short}-db-${this.config.resourceNameSuffix}`;
-            this.config.databaseName = defaultDatabase;
+        let defaultEndpoint = `${ctx.app.name.short}-sql-${this.config.resourceNameSuffix}`;
+        defaultEndpoint = formatEndpoint(defaultEndpoint);
+        this.config.sqlServer = defaultEndpoint;
+        this.config.sqlEndpoint = `${this.config.sqlServer}.database.windows.net`;
+        // database
+        const defaultDatabase = `${ctx.app.name.short}-db-${this.config.resourceNameSuffix}`;
+        this.config.databaseName = defaultDatabase;
     }
 
     async getQuestions(stage: Stage, ctx: PluginContext): Promise<Result<QTreeNode | undefined, FxError>> {
@@ -222,7 +222,8 @@ export class SqlPluginImpl {
                     ctx.logProvider?.info(Message.existUser(this.config.identity));
                 }
             } else {
-                DialogUtils.show(`[${Constants.pluginName}] service principal admin in azure sql can't add database user <${this.config.identity}>. You can add it for ${this.config.databaseName}. Refer ${HelpLinks}`, MsgLevel.Warning);
+                const message = ErrorMessage.ServicePrincipalWarning(this.config.identity, this.config.databaseName);
+                DialogUtils.show(`[${Constants.pluginName}] ${message}. You can follow ${HelpLinks.addDBUser} to handle it`, MsgLevel.Warning);
             }
         } else {
             ctx.logProvider?.info(Message.skipAddUser);

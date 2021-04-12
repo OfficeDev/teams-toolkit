@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { AppStudio } from "./appStudio";
-import { Constants } from "./constants";
+import { ConfigKeys, Constants } from "./constants";
 import {
   AppStudioErrorMessage,
   CreateSecretError,
@@ -10,7 +10,8 @@ import {
   UpdateAppIdUriError,
   UpdatePermissionError,
   UpdateRedirectUriError,
-  GetAppError
+  GetAppError,
+  GetAppConfigError
 } from "./errors";
 import { GraphClient } from "./graph";
 import { IAADPassword } from "./interfaces/IAADApplication";
@@ -197,19 +198,13 @@ export class AadAppClient {
     islocalDebug: boolean,
     clientSecret: string | undefined
   ): Promise<ProvisionConfig> {
+    let getAppObject: IAADDefinition;
     try {
-      let getAppObject: IAADDefinition;
       if (TokenProvider.audience === TokenAudience.AppStudio) {
         getAppObject = await AppStudio.getAadApp(TokenProvider.token as string, objectId);
       } else {
         getAppObject = await GraphClient.getAadApp(TokenProvider.token as string, objectId);
       }
-      const config = new ProvisionConfig(islocalDebug);
-      config.clientId = getAppObject.appId;
-      config.objectId = objectId;
-      config.oauth2PermissionScopeId = getAppObject.api?.oauth2PermissionScopes[0].id;
-      config.password = clientSecret;
-      return config;
     } catch (error) {
       throw ResultFactory.SystemError(
         GetAppError.name,
@@ -217,6 +212,20 @@ export class AadAppClient {
         error
       );
     }
+
+    const config = new ProvisionConfig(islocalDebug);
+    if (getAppObject.api?.oauth2PermissionScopes && getAppObject.api?.oauth2PermissionScopes[0].id) {
+      config.oauth2PermissionScopeId = getAppObject.api?.oauth2PermissionScopes[0].id;
+    } else {
+      throw ResultFactory.UserError(
+        GetAppConfigError.name,
+        GetAppConfigError.message(ConfigKeys.oauth2PermissionScopeId)
+      );
+    }
+    config.objectId = objectId;
+    config.clientId = getAppObject.appId;
+    config.password = clientSecret;
+    return config;
   }
 
   private static async retryHanlder(

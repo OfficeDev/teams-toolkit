@@ -28,6 +28,7 @@ import {
   UnknownPermissionName,
   UnknownPermissionRole,
   UnknownPermissionScope,
+  GetSkipAppConfigError,
 } from "./errors";
 import { Envs } from "./interfaces/models";
 import { DialogUtils } from "./utils/dialog";
@@ -86,16 +87,48 @@ export class AadAppForTeamsImpl {
       isLocalDebug
     );
 
-    const skip: string = ctx.config.get(ConfigKeys.skip) as string;
-    if (skip.toLowerCase() === "true") {
-      ctx.logProvider?.info(Messages.SkipProvision);
-      Utils.addLogAndTelemetryWithLocalDebug(
-        ctx.logProvider,
-        Messages.EndProvision,
-        Messages.EndLocalDebug,
-        isLocalDebug
-      );
-      return ResultFactory.Success();
+    await TokenProvider.init(ctx);
+    const skip: boolean = ctx.config.get(ConfigKeys.skip) as boolean;
+    if (skip) {
+      ctx.logProvider?.info(Messages.getLog(Messages.SkipProvision));
+      if (
+        ctx.config.get(
+          Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.objectId)
+        ) &&
+        ctx.config.get(
+          Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.clientId)
+        ) &&
+        ctx.config.get(
+          Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.clientSecret)
+        ) &&
+        ctx.config.get(
+          Utils.addLocalDebugPrefix(
+            isLocalDebug,
+            ConfigKeys.oauth2PermissionScopeId
+          )
+        )
+      ) {
+        const config: ProvisionConfig = new ProvisionConfig(isLocalDebug);
+        config.oauth2PermissionScopeId = ctx.config.get(
+          Utils.addLocalDebugPrefix(
+            isLocalDebug,
+            ConfigKeys.oauth2PermissionScopeId
+          )
+        ) as string;
+        config.saveConfigIntoContext(ctx, TokenProvider.tenantId as string);
+        Utils.addLogAndTelemetryWithLocalDebug(
+          ctx.logProvider,
+          Messages.EndProvision,
+          Messages.EndLocalDebug,
+          isLocalDebug
+        );
+        return ResultFactory.Success();
+      } else {
+        throw ResultFactory.UserError(
+          GetSkipAppConfigError.name,
+          GetSkipAppConfigError.message()
+        );
+      }
     }
 
     DialogUtils.init(
@@ -104,7 +137,6 @@ export class AadAppForTeamsImpl {
       ProgressTitle.ProvisionSteps
     );
 
-    await TokenProvider.init(ctx);
     let config: ProvisionConfig = new ProvisionConfig(isLocalDebug);
     await config.restoreConfigFromContext(ctx);
     const permissions = AadAppForTeamsImpl.parsePermission(
@@ -153,11 +185,6 @@ export class AadAppForTeamsImpl {
     ctx: PluginContext,
     isLocalDebug = false
   ): AadResult {
-    const skip: string = ctx.config.get(ConfigKeys.skip) as string;
-    if (skip.toLowerCase() === "true") {
-      return ResultFactory.Success();
-    }
-
     const config: SetApplicationInContextConfig = new SetApplicationInContextConfig(
       isLocalDebug
     );
@@ -196,8 +223,9 @@ export class AadAppForTeamsImpl {
       isLocalDebug
     );
 
-    const skip: string = ctx.config.get(ConfigKeys.skip) as string;
-    if (skip.toLowerCase() === "true") {
+    const skip: boolean = ctx.config.get(ConfigKeys.skip) as boolean;
+    if (skip) {
+      ctx.logProvider?.info(Messages.SkipProvision);
       Utils.addLogAndTelemetryWithLocalDebug(
         ctx.logProvider,
         Messages.EndPostProvision,
@@ -250,8 +278,8 @@ export class AadAppForTeamsImpl {
   public async updatePermission(ctx: PluginContext): Promise<AadResult> {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartUpdatePermission);
-    const skip: string = ctx.config.get(ConfigKeys.skip) as string;
-    if (skip.toLowerCase() === "true") {
+    const skip: boolean = ctx.config.get(ConfigKeys.skip) as boolean;
+    if (skip) {
       ctx.logProvider?.info(Messages.SkipProvision);
       Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndUpdatePermission);
       return ResultFactory.Success();

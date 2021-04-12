@@ -499,14 +499,7 @@ export async function backendExtensionsInstallHandler(): Promise<void> {
  */
 export async function preDebugCheckHandler(): Promise<void> {
   let result: Result<any, FxError> = ok(null);
-
-  // try {
-  // TODO(kuojianlu): improve the check
-  const authLocalEnv = await commonUtils.getAuthLocalEnv();
-  const clientID = authLocalEnv ? authLocalEnv["CLIENT_ID"] : undefined;
-  if (clientID === undefined) {
-    result = await runCommand(Stage.debug);
-  }
+  result = await runCommand(Stage.debug);
   if (result.isErr()) {
     throw result.error;
   }

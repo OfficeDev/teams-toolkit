@@ -178,7 +178,7 @@ export class AuthValues {
 }
 
 export class DeployConfigs {
-    public static readonly UN_PACK_DIRS = ["node_modules"];
+    public static readonly UN_PACK_DIRS = ["node_modules", "package-lock.json"];
 }
 
 export class FolderNames {

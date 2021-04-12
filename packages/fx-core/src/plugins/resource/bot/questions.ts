@@ -13,7 +13,7 @@ const programmingLanguageQuestion = new QTreeNode({
     name: QuestionNames.PROGRAMMING_LANGUAGE,
     type: NodeType.singleSelect,
     option: QuestionOptions.PROGRAMMING_LANGUAGE_OPTIONS,
-    title: "[Bot] Which programming language for scaffolding?",
+    title: "Select language for bot project",
     default: ProgrammingLanguage.TypeScript
 });
 
@@ -21,7 +21,7 @@ const wayToRegisterBotQuestion = new QTreeNode({
     name: QuestionNames.WAY_TO_REGISTER_BOT,
     type: NodeType.singleSelect,
     option: QuestionOptions.WAY_TO_REGISTER_BOT_OPTIONS,
-    title: "Which way to get bot registration?",
+    title: "Select way to get bot registration",
     default: WayToRegisterBot.CreateNew
 });
 

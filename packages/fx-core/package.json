@@ -68,10 +68,10 @@
     "zip-a-folder": "0.0.12"
   },
   "devDependencies": {
-    "@shared/eslint-config": "^0.0.0",
     "@azure/arm-appservice": "^7.0.0",
     "@azure/arm-resources": "^4.0.0",
     "@azure/storage-blob": "^12.5.0",
+    "@shared/eslint-config": "^0.0.0",
     "@types/adm-zip": "^0.4.33",
     "@types/chai": "^4.2.14",
     "@types/chai-as-promised": "^7.1.3",

@@ -136,7 +136,9 @@ async function getFuncPSScriptPath(): Promise<string> {
     const output = await cpUtils.executeCommand(
       undefined,
       logger,
-      undefined,
+      {
+        shell: "cmd.exe"
+      },
       "where",
       "func",
     );

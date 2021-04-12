@@ -75,7 +75,7 @@ export default class QuickStart extends React.Component<any, any>{
                             />
                         <GetStartedAction
                             title="3. Install Node.js"
-                            content={["The toolkit cannot find Node.js (v.10.x) on your machine.", <br />, "As a fundamental runtime context for Teams app, Node.js (v.10.x) is required. Please install the appropriate version to run the Microsoft Teams Toolkit.", <br />, "Read more about ", <a href="http://npm.github.io/installation-setup-docs/installing/using-a-node-version-manager.html">managing Node.js versions</a>, "."]}
+                            content={["The toolkit cannot find Node.js >10.x on your machine.", <br />, "As a fundamental runtime context for Teams app, Node.js 12.x is recommended. Please install the appropriate version to run the Microsoft Teams Toolkit.", <br />, "Read more about ", <a href="http://npm.github.io/installation-setup-docs/installing/using-a-node-version-manager.html">managing Node.js versions</a>, "."]}
                             actionText="Download"
                             onAction={this.downloadNode}
                             secondaryActionText="Next"

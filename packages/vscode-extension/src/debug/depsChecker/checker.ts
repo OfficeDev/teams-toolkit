@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { displayLearnMore, displayWarningMessage, logger } from "./checkerAdapter";
+import { displayLearnMore, displayWarningMessage, showOutputChannel } from "./checkerAdapter";
 import { isLinux } from "./common";
 
 export interface IDepsChecker {
@@ -53,7 +53,7 @@ export class DepsChecker {
     // TODO: add log and telemetry
     const confirmMessage = await this.generateMessage(validCheckers);
     return await displayWarningMessage(confirmMessage, "Install", async () => {
-      logger.outputChannel.show(false);
+      showOutputChannel();
       for (const checker of validCheckers) {
         try {
           await checker.install();

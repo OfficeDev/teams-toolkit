@@ -6,7 +6,7 @@ import * as path from "path";
 import * as dotenv from "dotenv";
 import * as vscode from "vscode";
 import * as constants from "./constants";
-import { openUrl } from "./funcCoreTools/openUrl";
+import { openUrl } from "./depsChecker/common";
 import { ConfigFolderName } from "fx-api";
 
 export async function getProjectRoot(

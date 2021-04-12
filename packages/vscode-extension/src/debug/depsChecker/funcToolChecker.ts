@@ -30,6 +30,8 @@ const needInstallFuncCoreTool =
   `You must have ${installedNameWithVersion} installed to debug your local functions.`;
 const failToInstallFuncCoreTool =
   `${installedNameWithVersion} installation has failed and will have to be installed manually.`;
+const failToValidate =
+  `Validatation failure after installed ${installedNameWithVersion}.`;
 const helpLink = "https://review.docs.microsoft.com/en-us/mods/?branch=main";
 
 export class FuncToolChecker implements IDepsChecker {
@@ -88,7 +90,9 @@ export class FuncToolChecker implements IDepsChecker {
 
     try {
       await DepsCheckerTelemetry.sendEventWithDuration(DepsCheckerEvent.installedFunc, async () => {
-        await this.installCore();
+        await runWithProgressIndicator(logger.outputChannel, async () => {
+          await installFuncCoreTools(FuncVersion.v3);
+        });
       });
     } catch (error) {
       DepsCheckerTelemetry.sendSystemErrorEvent(
@@ -97,26 +101,22 @@ export class FuncToolChecker implements IDepsChecker {
         error
       );
 
-      throw error;
+      throw new DepsCheckerError(failToInstallFuncCoreTool, helpLink);
     }
-
-    logger.info(finishInstallFunctionCoreTool);
-  }
-
-  private async installCore(): Promise<void> {
-    await runWithProgressIndicator(logger.outputChannel, async () => {
-      try {
-        await installFuncCoreTools(FuncVersion.v3);
-      } catch (error) {
-        throw new DepsCheckerError(failToInstallFuncCoreTool, helpLink);
-      }
-    });
 
     // validate after installation.
     const isInstalled = await this.isInstalled();
     if (!isInstalled) {
+      DepsCheckerTelemetry.sendSystemErrorEvent(
+        DepsCheckerEvent.installingFunc,
+        TelemtryMessages.failedToInstallFunc,
+        failToValidate
+      );
+
       throw new DepsCheckerError(failToInstallFuncCoreTool, helpLink);
     }
+
+    logger.info(finishInstallFunctionCoreTool);
   }
 }
 

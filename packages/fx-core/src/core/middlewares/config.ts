@@ -48,11 +48,13 @@ export const readConfigMW: Middleware = async (
             }
             const envName = file.substr(4, file.length-9);
             const filePath = `${coreCtx.root}/.${ConfigFolderName}/${file}`;
-            const localDataPath = `${coreCtx.root}/.${ConfigFolderName}/${envName}.userdata`;
-            const dictContent = await fs.readFile(localDataPath, "UTF-8");
-            const dict:Dict<string> = deserializeDict(dictContent);
             const configJson: Json = await fs.readJson(filePath);
-            mergeSerectData(dict, configJson);
+            const localDataPath = `${coreCtx.root}/.${ConfigFolderName}/${envName}.userdata`;
+            if(await fs.pathExists(localDataPath)){
+                const dictContent = await fs.readFile(localDataPath, "UTF-8");
+                const dict:Dict<string> = deserializeDict(dictContent);
+                mergeSerectData(dict, configJson);
+            }
             const solutionConfig: SolutionConfig = objectToMap(configJson);
             configs.set(slice[1], solutionConfig);
         }
@@ -152,16 +154,13 @@ export const writeConfigMW: Middleware = async (
 };
 
 
-
-
-
 const SecretDataMatchers = ["fx-resource-aad-app-for-teams.clientSecret",
-"fx-resource-aad-app-for-teams.local_clientSecret",
-"fx-resource-simple-auth.filePath",
-"fx-resource-simple-auth.environmentVariableParams",
-"fx-resource-local-debug.*",
-"fx-resource-teamsbot.botPassword",
-"fx-resource-teamsbot.botPassword"];
+		"fx-resource-aad-app-for-teams.local_clientSecret",
+		"fx-resource-simple-auth.filePath",
+		"fx-resource-simple-auth.environmentVariableParams",
+		"fx-resource-local-debug.*",
+		"fx-resource-teamsbot.botPassword",
+		"fx-resource-teamsbot.localBotPassword"];
 
 function sperateSecretData(configJson:Json): Dict<string>{
     const res:Dict<string> = {};
@@ -177,9 +176,8 @@ function sperateSecretData(configJson:Json): Dict<string>{
             resourceConfig[item] = `{{${keyName}}}`;
         }
         else {
-            for(const entry of resourceConfig.entryes()){
-                const itemName:string = entry[0];
-                const originalItemValue = entry[1];
+            for(const itemName of Object.keys(resourceConfig)){
+                const originalItemValue = resourceConfig[itemName];
                 const keyName = `${resourceId}.${itemName}`;
                 res[keyName] = originalItemValue;
                 resourceConfig[itemName] = `{{${keyName}}}`;
@@ -203,11 +201,10 @@ function mergeSerectData(dict: Dict<string>, configJson:Json):void{
             }
         }
         else {
-            for(const entry of resourceConfig.entryes()){
-                const itemName:string = entry[0];
-                const originalItemValue = entry[1];
+            for(const itemName of Object.keys(resourceConfig)){
+                const originalItemValue = resourceConfig[itemName];
                 if(originalItemValue && originalItemValue.startsWith("{{") && originalItemValue.endsWith("}}")){
-                    const keyName = `${resourceId}.${item}`;
+                    const keyName = `${resourceId}.${itemName}`;
                     resourceConfig[itemName] = dict[keyName];
                 }
             }
@@ -228,8 +225,13 @@ function deserializeDict(data:string):Dict<string>{
     const lines = data.split("\n");
     const dict: Dict<string> = {};
     for(const line of lines){
-        const kv = line.split("=");
-        dict[kv[0]] = kv[1];
+        const index = line.indexOf("=");
+        if(index > 0){
+            const key = line.substr(0, index);
+            const value = line.substr(index+1);
+            dict[key] = value;
+        }
+         
     }
     return dict;
 }

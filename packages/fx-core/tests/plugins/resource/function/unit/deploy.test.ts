@@ -26,7 +26,8 @@ const context: any = {
         [DependentPluginInfo.aadPluginName, new Map<string, string>([
             [DependentPluginInfo.aadClientId, "ut"],
             [DependentPluginInfo.aadClientSecret, "ut"],
-            [DependentPluginInfo.aadOauthAuthority, "ut"],
+            [DependentPluginInfo.oauthHost, "ut"],
+            [DependentPluginInfo.tenantId, "ut"],
         ])],
         [DependentPluginInfo.frontendPluginName, new Map<string, string>([
             [DependentPluginInfo.frontendDomain, "ut"],
@@ -34,7 +35,8 @@ const context: any = {
         ])],
         [DependentPluginInfo.identityPluginName, new Map<string, string>([
             [DependentPluginInfo.identityId, "ut"],
-            [DependentPluginInfo.identityName, "ut"],
+            [DependentPluginInfo.oauthHost, "ut"],
+            [DependentPluginInfo.tenantId, "ut"],
         ])],
         [DependentPluginInfo.sqlPluginName, new Map<string, string>([
             [DependentPluginInfo.sqlPluginName, "ut"],

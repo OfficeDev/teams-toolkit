@@ -5,7 +5,7 @@ import * as path from "path";
 import AdmZip from "adm-zip";
 import Mustache from "mustache";
 
-import { CommonConstants, FunctionPluginPathInfo as PathInfo, FunctionPluginInfo as PluginInfo, RegularExpr } from "../constants";
+import { CommonConstants, FunctionPluginPathInfo as PathInfo, FunctionPluginInfo as PluginInfo, RegularExpr, FunctionPluginPathInfo } from "../constants";
 import { FunctionLanguage } from "../enums";
 import { InfoMessages } from "../resources/message";
 import { LanguageStrategyFactory } from "../language-strategy";
@@ -41,8 +41,7 @@ export class FunctionScaffold {
             Logger.error(e.toString());
             return await runWithErrorCatchAndThrow(new TemplateZipFallbackError(), async() => {
                 const fileName: string = [group, language, scenario].join(PathInfo.templateZipNameSep) + PathInfo.templateZipExt;
-                const fxCoreDir: string = path.join(__dirname, "..", "..", "..", "..", "..");
-                const zipPath: string = path.join(fxCoreDir, PathInfo.templateFolderPath, fileName);
+                const zipPath: string = path.join(FunctionPluginPathInfo.rootPath, PathInfo.templateFolderPath, fileName);
                 const data: Buffer = await fs.readFile(zipPath);
                 const zip: AdmZip = new AdmZip(data);
                 return zip;

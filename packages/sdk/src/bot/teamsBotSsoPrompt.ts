@@ -30,6 +30,7 @@ import { OnBehalfOfUserCredential } from "../core/onBehalfOfUserCredential";
 import { v4 as uuidv4 } from "uuid";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 import { formatString, getISOExpirationFromJWT } from "../util/utils";
+import { internalLogger } from "../util/logger";
 
 const invokeResponseType = "invokeResponse";
 /**
@@ -126,7 +127,7 @@ export interface TeamsBotSsoPromptSettings {
  */
 export class TeamsBotSsoPrompt extends Dialog {
   /**
-   * Creates a new TeamsBotSsoPrompt instance.
+   * Create a new TeamsBotSsoPrompt instance.
    *
    * @param dialogId Unique ID of the dialog within its parent `DialogSet` or `ComponentDialog`.
    * @param settings Settings used to configure the prompt.
@@ -135,6 +136,7 @@ export class TeamsBotSsoPrompt extends Dialog {
    */
   constructor(dialogId: string, private settings: TeamsBotSsoPromptSettings) {
     super(dialogId);
+    internalLogger.info("Create a new Teams Bot SSO Prompt");
   }
 
   /**
@@ -152,6 +154,7 @@ export class TeamsBotSsoPrompt extends Dialog {
    * @beta
    */
   public async beginDialog(dc: DialogContext): Promise<DialogTurnResult> {
+    internalLogger.info("Begin Teams Bot SSO Prompt");
     this.ensureMsTeamsChannel(dc);
 
     // Initialize prompt state
@@ -159,16 +162,15 @@ export class TeamsBotSsoPrompt extends Dialog {
     let timeout: number = default_timeout;
     if (this.settings.timeout) {
       if (typeof this.settings.timeout != "number") {
-        throw new ErrorWithCode(
-          "type of timeout property in teamsBotSsoPromptSettings should be number.",
-          ErrorCode.InvalidParameter
-        );
+        const errorMsg = "type of timeout property in teamsBotSsoPromptSettings should be number.";
+        internalLogger.error(errorMsg);
+        throw new ErrorWithCode(errorMsg, ErrorCode.InvalidParameter);
       }
       if (this.settings.timeout <= 0) {
-        throw new ErrorWithCode(
-          "value of timeout property in teamsBotSsoPromptSettings should be positive.",
-          ErrorCode.InvalidParameter
-        );
+        const errorMsg =
+          "value of timeout property in teamsBotSsoPromptSettings should be positive.";
+        internalLogger.error(errorMsg);
+        throw new ErrorWithCode(errorMsg, ErrorCode.InvalidParameter);
       }
       timeout = this.settings.timeout;
     }
@@ -201,6 +203,7 @@ export class TeamsBotSsoPrompt extends Dialog {
    * @beta
    */
   public async continueDialog(dc: DialogContext): Promise<DialogTurnResult> {
+    internalLogger.info("Continue Teams Bot SSO Prompt");
     this.ensureMsTeamsChannel(dc);
 
     // Check for timeout
@@ -215,6 +218,7 @@ export class TeamsBotSsoPrompt extends Dialog {
     // check to see if this TeamsBotSsoPrompt Expiration has elapsed, and end the dialog if so.
     const hasTimedOut: boolean = isTimeoutActivityType && new Date().getTime() > state.expires;
     if (hasTimedOut) {
+      internalLogger.warn("End Teams Bot SSO Prompt due to timeout");
       return await dc.endDialog(undefined);
     } else {
       if (
@@ -230,6 +234,7 @@ export class TeamsBotSsoPrompt extends Dialog {
           return await dc.endDialog(recognized.value);
         }
       } else if (isMessage && this.settings.endOnInvalidMessage) {
+        internalLogger.warn("End Teams Bot SSO Prompt due to invalid message");
         return await dc.endDialog(undefined);
       }
 
@@ -245,10 +250,12 @@ export class TeamsBotSsoPrompt extends Dialog {
    */
   private ensureMsTeamsChannel(dc: DialogContext) {
     if (dc.context.activity.channelId != Channels.Msteams) {
-      throw new ErrorWithCode(
-        formatString(ErrorMessage.OnlyMSTeamsChannelSupported, "Teams Bot SSO Prompt"),
-        ErrorCode.ChannelNotSupported
+      const errorMsg = formatString(
+        ErrorMessage.OnlyMSTeamsChannelSupported,
+        "Teams Bot SSO Prompt"
       );
+      internalLogger.error(errorMsg);
+      throw new ErrorWithCode(errorMsg, ErrorCode.ChannelNotSupported);
     }
   }
 
@@ -259,6 +266,8 @@ export class TeamsBotSsoPrompt extends Dialog {
    * @internal
    */
   private async sendOAuthCardAsync(context: TurnContext): Promise<void> {
+    internalLogger.verbose("Send OAuth card to get SSO token");
+
     const signInResource = this.getSignInResource();
     const card = CardFactory.oauthCard(
       "",
@@ -282,6 +291,7 @@ export class TeamsBotSsoPrompt extends Dialog {
    * @internal
    */
   private getSignInResource() {
+    internalLogger.verbose("Get sign in authentication configuration");
     const missingConfigurations: string[] = [];
 
     if (!config?.authentication?.initiateLoginEndpoint) {
@@ -301,14 +311,13 @@ export class TeamsBotSsoPrompt extends Dialog {
     }
 
     if (missingConfigurations.length != 0) {
-      throw new ErrorWithCode(
-        formatString(
-          ErrorMessage.InvalidConfiguration,
-          missingConfigurations.join(", "),
-          "undefined"
-        ),
-        ErrorCode.InvalidConfiguration
+      const errorMsg = formatString(
+        ErrorMessage.InvalidConfiguration,
+        missingConfigurations.join(", "),
+        "undefined"
       );
+      internalLogger.error(errorMsg);
+      throw new ErrorWithCode(errorMsg, ErrorCode.InvalidConfiguration);
     }
 
     const signInLink = `${config.authentication!.initiateLoginEndpoint}?scope=${encodeURI(
@@ -331,17 +340,19 @@ export class TeamsBotSsoPrompt extends Dialog {
   private async recognizeToken(
     dc: DialogContext
   ): Promise<PromptRecognizerResult<TeamsBotSsoPromptTokenResponse>> {
+    internalLogger.verbose("Exchange access token");
     const context = dc.context;
     let tokenResponse: TeamsBotSsoPromptTokenResponse | undefined;
 
     if (this.isTokenExchangeRequestInvoke(context)) {
       // Received activity is not a token exchange request
       if (!(context.activity.value && this.isTokenExchangeRequest(context.activity.value))) {
+        const warningMsg =
+          "The bot received an InvokeActivity that is missing a TokenExchangeInvokeRequest value. This is required to be sent with the InvokeActivity.";
+
+        internalLogger.warn(warningMsg);
         await context.sendActivity(
-          this.getTokenExchangeInvokeResponse(
-            StatusCodes.BAD_REQUEST,
-            "The bot received an InvokeActivity that is missing a TokenExchangeInvokeRequest value. This is required to be sent with the InvokeActivity."
-          )
+          this.getTokenExchangeInvokeResponse(StatusCodes.BAD_REQUEST, warningMsg)
         );
       } else {
         const ssoToken = context.activity.value.token;
@@ -364,10 +375,12 @@ export class TeamsBotSsoPrompt extends Dialog {
             };
           }
         } catch (error) {
+          const warningMsg = "The bot is unable to exchange token. Ask for user consent.";
+          internalLogger.warn(warningMsg);
           await context.sendActivity(
             this.getTokenExchangeInvokeResponse(
               StatusCodes.PRECONDITION_FAILED,
-              "The bot is unable to exchange token. Ask for user consent.",
+              warningMsg,
               context.activity.value.id
             )
           );

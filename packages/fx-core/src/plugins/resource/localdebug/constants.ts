@@ -81,6 +81,7 @@ export const LocalEnvFrontendKeys = Object.freeze({
     LoginUrl: "FRONTEND_REACT_APP_START_LOGIN_PAGE_URL",
     FuncEndpoint: "FRONTEND_REACT_APP_FUNC_ENDPOINT",
     FuncName: "FRONTEND_REACT_APP_FUNC_NAME",
+    ClientId: "FRONTEND_REACT_APP_CLIENT_ID",
 });
 
 export const LocalEnvBackendKeys = Object.freeze({

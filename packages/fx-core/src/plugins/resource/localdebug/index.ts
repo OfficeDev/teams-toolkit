@@ -170,6 +170,7 @@ export class LocalDebugPlugin implements Plugin {
                 // frontend local envs
                 localEnvs[LocalEnvFrontendKeys.TeamsFxEndpoint] = localDebugConfigs.get(LocalDebugConfigKeys.LocalAuthEndpoint) as string;
                 localEnvs[LocalEnvFrontendKeys.LoginUrl] = `${localDebugConfigs.get(LocalDebugConfigKeys.LocalTabEndpoint) as string}/auth-start.html`;
+                localEnvs[LocalEnvFrontendKeys.ClientId] = clientId;
 
                 if (includeBackend) {
                     localEnvs[LocalEnvFrontendKeys.FuncEndpoint] = localDebugConfigs.get(LocalDebugConfigKeys.LocalFunctionEndpoint) as string;

@@ -67,17 +67,17 @@ export class AppStudioPluginImpl {
         }
 
         // Update App in App Studio
+        const remoteTeamsAppId = ctx.config.getString(REMOTE_TEAMS_APP_ID);
         const manifest: TeamsAppManifest = await fs.readJSON(manifestFile);
         const appDefinition = this.convertToAppDefinition(manifest);
         let appStudioToken = await ctx?.appStudioToken?.getAccessToken();
-        await AppStudioClient.updateTeamsApp(manifest.id, appDefinition, appStudioToken!);
+        await AppStudioClient.updateTeamsApp(remoteTeamsAppId!, appDefinition, appStudioToken!);
 
         // Build Teams App package
         const appPackage = await this.buildTeamsAppPackage(appDirectory);
         
         // Publish Teams App
         appStudioToken = await ctx.appStudioToken?.getAccessToken();
-        const remoteTeamsAppId = ctx.config.getString(REMOTE_TEAMS_APP_ID);
         const appContent = await fs.readFile(appPackage);
         const appIdInAppCatalog = await AppStudioClient.publishTeamsApp(remoteTeamsAppId!, appContent, appStudioToken!);
         return appIdInAppCatalog;

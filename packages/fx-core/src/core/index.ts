@@ -584,12 +584,6 @@ class CoreImpl implements Core {
                 }
                 const solutionConfig: SolutionConfig = objectToMap(configJson);
                 this.configs.set(envName, solutionConfig);
-                
-                // const filePath = `${this.ctx.root}/.${ConfigFolderName}/${file}`;
-                // this.ctx.logProvider?.info(`[Core] read config file:${filePath} start ... `);
-                // const config: Json = await fs.readJson(filePath);
-                // this.configs.set(slice[1], objectToMap(config));
-                // this.ctx.logProvider?.info(`[Core] read config file:${filePath} success! `);
             }
 
             // read answers
@@ -616,11 +610,6 @@ class CoreImpl implements Core {
                 const content = JSON.stringify(configJson, null, 4);
                 await fs.writeFile(filePath, content);
                 await fs.writeFile(localDataPath, serializeDict(localData));
-                // const filePath = `${this.ctx.root}/.${ConfigFolderName}/env.${entry[0]}.json`;
-                // this.ctx.logProvider?.info(`[Core] write config file:${filePath} start ... `);
-                // const content = JSON.stringify(mapToJson(entry[1]), null, 4);
-                // await fs.writeFile(filePath, content);
-                // this.ctx.logProvider?.info(`[Core] write config file:${filePath} success! content: \n${content}`);
             }
             await this.writeAnswersToFile(this.ctx.root, this.ctx.answers);
         } catch (e) {

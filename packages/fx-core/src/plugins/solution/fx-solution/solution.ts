@@ -1176,13 +1176,13 @@ export class TeamsAppSolution implements Solution {
             const capabilities = ctx.answers?.getStringArray(AzureSolutionQuestionNames.Capabilities);
             const htype = ctx.answers?.getString(AzureSolutionQuestionNames.HostType);
             if (capabilities && capabilities?.includes(TabOptionItem.label) && htype === HostTypeOptionAzure.label) {
-                const addQuestion = createAddAzureResourceQuestion(featureFlag);
+                
+                const selectedPlugins = ctx.config.get(GLOBAL_CONFIG)?.getStringArray(SELECTED_PLUGINS);
+                const alreadyHaveFunction = selectedPlugins?.includes(this.functionPlugin.name);
+
+                const addQuestion = createAddAzureResourceQuestion(alreadyHaveFunction === true);
                 const addAzureResources = new QTreeNode(addQuestion);
                 node.addChild(addAzureResources);
-
-                //Azure Function
-                const oldResources = ctx.answers?.get(AzureResourcesQuestion.name) as string[];
-                const alreadyHasFunction = oldResources.includes(AzureResourceFunction.label);
 
                 // there two cases to add function re-scaffold: 1. select add function   2. select add sql and function is not selected when creating
                 if (this.functionPlugin.getQuestions) {
@@ -1191,7 +1191,7 @@ export class TeamsAppSolution implements Solution {
                     if (res.isErr()) return res;
                     if (res.value) {
                         const azure_function = res.value as QTreeNode;
-                        if (alreadyHasFunction){
+                        if (alreadyHaveFunction){
                             // if already has function, the question will appear depends on whether user select function, otherwise, the question will always show
                             azure_function.condition = { contains: AzureResourceFunction.id };
                         }

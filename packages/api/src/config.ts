@@ -137,13 +137,24 @@ export type EnvConfig = Dict<string>;
  * project static settings
  */
 export interface ProjectSettings{
-    solution:Dict<ConfigValue> & {name:string},
-    resources: 
-    {
-        [k:string]: Dict<ConfigValue>
-    }
+    appName:string,
+    solutionSettings?:SolutionSettings,
 }
 
+/**
+ * solution settings
+ */
+export interface SolutionSettings extends Dict<ConfigValue>{
+    name:string;
+    version:string
+}
+
+export interface AzureSolutionSettings extends SolutionSettings{
+    capabilities:string[],
+    hostType?:"Azure"|"SPFx",
+    azureResources?:("sql"|"function"|"apim")[],
+    activeResourcePlugins:string[]
+}
 
 /**
  * project dynamic states

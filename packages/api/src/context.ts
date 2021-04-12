@@ -5,6 +5,7 @@
 import {
     ConfigMap,
     PluginConfig,
+    ProjectSettings,
     ReadonlySolutionConfig,
     SolutionConfig,
 } from "./config";
@@ -48,6 +49,8 @@ export interface Context {
     answers?: ConfigMap; // for question model
 
     globalConfig?: ConfigMap;
+
+    projectSettings?: ProjectSettings;
 }
 
 export interface SolutionContext extends Context {

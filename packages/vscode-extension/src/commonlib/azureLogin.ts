@@ -213,11 +213,11 @@ export class AzureAccountManager implements AzureAccountProvider {
     const azureAccount: AzureAccount = vscode.extensions.getExtension<AzureAccount>(
       "ms-vscode.azure-account"
     )!.exports;
-    var arr: SubscriptionInfo[] = [];
+    const arr: SubscriptionInfo[] = [];
     if (azureAccount.status === "LoggedIn") {
       if (azureAccount.subscriptions.length > 0) {
-        for (var i = 0; i < azureAccount.subscriptions.length; ++i) {
-          let item = azureAccount.subscriptions[i];
+        for (let i = 0; i < azureAccount.subscriptions.length; ++i) {
+          const item = azureAccount.subscriptions[i];
           arr.push({ subscriptionId: item.subscription.subscriptionId!, subscriptionName: item.subscription.displayName!, tenantId: item.session.tenantId! });
         }
       }

@@ -1060,6 +1060,8 @@ export class TeamsAppSolution implements Solution {
 
             const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, [this.appStudioPlugin]);
             const publishWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {
+                const teamsAppId = ctx.config.get(GLOBAL_CONFIG)?.getString(REMOTE_TEAMS_APP_ID);
+                context.config.set(REMOTE_TEAMS_APP_ID, teamsAppId);
                 return [plugin?.publish?.bind(plugin), context, plugin.name];
             });
 

@@ -1,12 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, ok, PluginContext, Result, TeamsAppManifest } from "fx-api";
+import { PluginContext, TeamsAppManifest } from "fx-api";
 import { AppStudioClient } from "./appStudio";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
 import { Constants } from "./constants";
 import { IAppDefinition } from "../../solution/fx-solution/appstudio/interface";
+import { REMOTE_TEAMS_APP_ID } from "../../solution/fx-solution/constants";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
 
@@ -23,16 +24,19 @@ export class AppStudioPluginImpl {
             throw AppStudioResultFactory.UserError(AppStudioError.NotADirectoryError.name, AppStudioError.NotADirectoryError.message(appDirectory));
         }
         const manifestFile = `${appDirectory}/${Constants.MANIFEST_REMOTE}`;
-        if (!fs.existsSync(manifestFile)) {
+        const manifestFileState = await fs.stat(manifestFile);
+        if (!manifestFileState.isFile()) {
             throw AppStudioResultFactory.UserError(AppStudioError.FileNotFoundError.name, AppStudioError.FileNotFoundError.message(manifestFile));
         }
         const manifest: TeamsAppManifest = await fs.readJSON(manifestFile);
         const colorFile = `${appDirectory}/${manifest.icons.color}`;
-        if (!fs.existsSync(colorFile)) {
+        const colorFileState = await fs.stat(colorFile);
+        if (!colorFileState.isFile()) {
             throw AppStudioResultFactory.UserError(AppStudioError.FileNotFoundError.name, AppStudioError.FileNotFoundError.message(colorFile));
         }
         const outlineFile = `${appDirectory}/${manifest.icons.outline}`;
-        if (!fs.existsSync(outlineFile)) {
+        const outlineFileState = await fs.stat(outlineFile);
+        if (!outlineFileState.isFile()) {
             throw AppStudioResultFactory.UserError(AppStudioError.FileNotFoundError.name, AppStudioError.FileNotFoundError.message(outlineFile));
         }
         
@@ -71,10 +75,11 @@ export class AppStudioPluginImpl {
         const appPackage = await this.buildTeamsAppPackage(appDirectory);
         
         // Publish Teams App
-        appStudioToken = await ctx?.appStudioToken?.getAccessToken();
+        appStudioToken = await ctx.appStudioToken?.getAccessToken();
+        const remoteTeamsAppId = ctx.config.getString(REMOTE_TEAMS_APP_ID);
         const appContent = await fs.readFile(appPackage);
-        const teamsAppId = await AppStudioClient.publishTeamsApp(manifest.id, appContent, appStudioToken!);
-        return teamsAppId;
+        const appIdInAppCatalog = await AppStudioClient.publishTeamsApp(remoteTeamsAppId!, appContent, appStudioToken!);
+        return appIdInAppCatalog;
     }
 
     private convertToAppDefinition(appManifest: TeamsAppManifest): IAppDefinition {

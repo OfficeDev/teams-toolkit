@@ -12,21 +12,21 @@ export class AppStudioPlugin implements Plugin {
         stage: Stage,
         ctx: PluginContext
     ): Promise<Result<QTreeNode | undefined, FxError>> {
-        const app_studio_questions = new QTreeNode({
+        const appStudioQuestions = new QTreeNode({
             type: NodeType.group
         });
 
         if (stage === Stage.publish) {
-            const app_path = new QTreeNode({
+            const appPath = new QTreeNode({
                 type: NodeType.folder,
                 name: Constants.PUBLISH_PATH_QUESTION,
                 title: "Please select the folder contains manifest.json and icons",
                 default: `${ctx.root}/.${ConfigFolderName}`
             });
-            app_studio_questions.addChild(app_path);
+            appStudioQuestions.addChild(appPath);
         }
 
-        return ok(app_studio_questions);
+        return ok(appStudioQuestions);
     }
     
     /**

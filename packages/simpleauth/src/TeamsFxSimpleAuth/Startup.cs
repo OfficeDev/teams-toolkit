@@ -4,11 +4,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace Microsoft.TeamsFxSimpleAuth
+namespace Microsoft.TeamsFx.SimpleAuth
 {
     public class Startup
     {
-        readonly string AllowAllOrigins = "CORS_AllowAllOrigins"; // TODO: Need to config CORS in the future
+        readonly string AllowTabApp = "CORS_AllowTabApp";
 
         public Startup(IConfiguration configuration)
         {
@@ -20,16 +20,13 @@ namespace Microsoft.TeamsFxSimpleAuth
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            // Add CORS that allows requests from all hosts
-            // TODO: Only allow requests from Teams app, requires support from frontend hosting component
+            // Add CORS that allows requests from tab app
             services.AddCors(options =>
                {
-                   options.AddPolicy(name: AllowAllOrigins,
+                   options.AddPolicy(name: AllowTabApp,
                                      builder =>
                                      {
-                                         builder.WithOrigins("*")
-                                         .AllowAnyHeader() // TODO: Need to config CORS in the future
-                                         .AllowAnyMethod(); // TODO: Need to config CORS in the future
+                                         builder.WithOrigins(Configuration[ConfigurationName.TabAppEndpoint]);
                                      });
                });
 
@@ -54,12 +51,10 @@ namespace Microsoft.TeamsFxSimpleAuth
 
             app.UseRouting();
 
-            app.UseCors(AllowAllOrigins);
+            app.UseCors(AllowTabApp);
 
             app.UseAuthentication();
             app.UseAuthorization();
-
-            app.UseStaticFiles();
 
             app.UseEndpoints(endpoints =>
             {

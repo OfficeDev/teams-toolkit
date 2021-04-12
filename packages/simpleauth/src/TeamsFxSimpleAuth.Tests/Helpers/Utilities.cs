@@ -7,14 +7,14 @@ using System.Web;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Graph;
-using Microsoft.TeamsFxSimpleAuth.Components.Auth;
-using Microsoft.TeamsFxSimpleAuth.Tests.Models;
+using Microsoft.TeamsFx.SimpleAuth.Components.Auth;
+using Microsoft.TeamsFx.SimpleAuth.Tests.Models;
 using Newtonsoft.Json;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
 
-namespace Microsoft.TeamsFxSimpleAuth.Tests.Helpers
+namespace Microsoft.TeamsFx.SimpleAuth.Tests.Helpers
 {
     public static class Utilities
     {

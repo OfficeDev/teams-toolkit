@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <AssemblyName>Microsoft.TeamsFxSimpleAuth</AssemblyName>
-    <RootNamespace>Microsoft.TeamsFxSimpleAuth</RootNamespace>
+    <AssemblyName>Microsoft.TeamsFx.SimpleAuth</AssemblyName>
+    <RootNamespace>Microsoft.TeamsFx.SimpleAuth</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup>

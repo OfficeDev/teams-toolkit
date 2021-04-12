@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
-using Microsoft.TeamsFxSimpleAuth.Components.Auth;
-using Microsoft.TeamsFxSimpleAuth.Models;
-using Microsoft.TeamsFxSimpleAuth.Tests.Helpers;
-using Microsoft.TeamsFxSimpleAuth.Tests.Models;
+using Microsoft.TeamsFx.SimpleAuth.Components.Auth;
+using Microsoft.TeamsFx.SimpleAuth.Models;
+using Microsoft.TeamsFx.SimpleAuth.Tests.Helpers;
+using Microsoft.TeamsFx.SimpleAuth.Tests.Models;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using System;
@@ -15,7 +15,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 
-namespace Microsoft.TeamsFxSimpleAuth.Tests.IntegrationTests
+namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
 {
     [TestFixture]
     public class AuthControllerTests

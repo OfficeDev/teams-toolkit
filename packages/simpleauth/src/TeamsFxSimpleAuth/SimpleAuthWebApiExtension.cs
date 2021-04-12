@@ -3,13 +3,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Identity.Client;
-using Microsoft.TeamsFxSimpleAuth.Components.Auth;
-using Microsoft.TeamsFxSimpleAuth.Components.Auth.Models;
-using Microsoft.TeamsFxSimpleAuth.Controllers;
+using Microsoft.TeamsFx.SimpleAuth.Components.Auth;
+using Microsoft.TeamsFx.SimpleAuth.Components.Auth.Models;
+using Microsoft.TeamsFx.SimpleAuth.Controllers;
 using System;
 using System.Linq;
 
-namespace Microsoft.TeamsFxSimpleAuth
+namespace Microsoft.TeamsFx.SimpleAuth
 {
     public static class SimpleAuthWebApiExtension
     {
@@ -58,7 +58,6 @@ namespace Microsoft.TeamsFxSimpleAuth
 
                 options.AddPolicy("ValidateAppId", policy =>
                 {
-                    // TODO: Read allowed App ids from storage or other place
                     var allowedAppIdsFromConfig = configuration[ConfigurationName.AllowedAppIds]?.Split(";", StringSplitOptions.RemoveEmptyEntries);
                     var allowedAppIds = allowedAppIdsFromConfig.Append(configuration[ConfigurationName.ClientId]).ToArray();
                     policy.Requirements.Add(new AppIdRequirement(allowedAppIds));

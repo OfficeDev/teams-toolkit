@@ -1,8 +1,8 @@
-﻿using Microsoft.TeamsFxSimpleAuth.Exceptions;
+﻿using Microsoft.TeamsFx.SimpleAuth.Exceptions;
 using System;
 using System.Net;
 
-namespace Microsoft.TeamsFxSimpleAuth.Components.Auth.Exceptions
+namespace Microsoft.TeamsFx.SimpleAuth.Components.Auth.Exceptions
 {
     // Indicates 5xx error returned by AAD server
     public class AadServerException : ApiExceptionBase

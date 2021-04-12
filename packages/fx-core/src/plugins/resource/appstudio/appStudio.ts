@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import axios, { AxiosInstance } from "axios";
+import { SystemError } from "fx-api";
 import { IAppDefinition } from "../../solution/fx-solution/appstudio/interface";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
@@ -87,18 +88,18 @@ export namespace AppStudioClient {
             }
             
             if (response && response.data) {
-                if (response.data.errorMessage) {
-                    const error = JSON.parse(response.data.errorMessage);
-                    if (error.code === "Conflict") {
+                if (response.data.error) {
+                    if (response.data.error.code === "Conflict") {
                         throw AppStudioResultFactory.SystemError(
                             AppStudioError.TeamsAppPublishConflictError.name,
                             AppStudioError.TeamsAppPublishConflictError.message(teamsAppId),
-                            response.data.errorMessage
+                            response.data.error.message
                         );
                     } else {
                         throw AppStudioResultFactory.SystemError(
                             AppStudioError.TeamsAppPublishFailedError.name,
-                            AppStudioError.TeamsAppPublishFailedError.message(teamsAppId)
+                            AppStudioError.TeamsAppPublishFailedError.message(teamsAppId),
+                            response.data.error.message
                         );
                     }
                 } else {
@@ -111,11 +112,15 @@ export namespace AppStudioClient {
                 );
             }
         } catch (error) {
-            throw AppStudioResultFactory.SystemError(
-                AppStudioError.TeamsAppPublishFailedError.name,
-                AppStudioError.TeamsAppPublishFailedError.message(teamsAppId),
-                error
-            );
+            if (error instanceof SystemError) {
+                throw error;
+            } else {
+                throw AppStudioResultFactory.SystemError(
+                    AppStudioError.TeamsAppPublishFailedError.name,
+                    AppStudioError.TeamsAppPublishFailedError.message(teamsAppId),
+                    error
+                );
+            }
         }
     }
 

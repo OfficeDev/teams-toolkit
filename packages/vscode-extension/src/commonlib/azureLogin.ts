@@ -204,6 +204,32 @@ export class AzureAccountManager implements AzureAccountProvider {
       resolve(true);
     });
   }
+
+  /**
+  * list all subscriptions
+  */
+   async listSubscriptions(): Promise<SubscriptionInfo[]> {
+    await this.getAccountCredentialAsync();
+    const azureAccount: AzureAccount = vscode.extensions.getExtension<AzureAccount>(
+      "ms-vscode.azure-account"
+    )!.exports;
+    var arr: SubscriptionInfo[] = [];
+    if (azureAccount.status === "LoggedIn") {
+      if (azureAccount.subscriptions.length > 0) {
+        for (var i = 0; i < azureAccount.subscriptions.length; ++i) {
+          let item = azureAccount.subscriptions[i];
+          arr.push({ subscriptionId: item.subscription.subscriptionId!, subscriptionName: item.subscription.displayName!, tenantId: item.session.tenantId! });
+        }
+      }
+    }
+    return arr;
+  }
 }
+
+export type SubscriptionInfo = {
+  subscriptionName: string;
+  subscriptionId: string;
+  tenantId: string;
+};
 
 export default AzureAccountManager.getInstance();

@@ -8,7 +8,7 @@ import { IAadPluginConfig, IApimPluginConfig } from "../model/config";
 import { AadService } from "../service/aadService";
 import { Telemetry } from "../telemetry";
 import { Lazy } from "../util/lazy";
-import { NameSanitizer } from "../util/nameSanitizer";
+import { NamingRules } from "../util/namingRules";
 
 export class AadManager {
     private readonly logger?: LogProvider;
@@ -24,12 +24,12 @@ export class AadManager {
     public async provision(apimPluginConfig: IApimPluginConfig, appName: string): Promise<void> {
         const aadService: AadService = await this.lazyAadService.getValue();
         if (!apimPluginConfig.apimClientAADObjectId) {
-            const aadInfo = await aadService.createAad(NameSanitizer.sanitizeAadDisplayName(appName));
+            const aadInfo = await aadService.createAad(NamingRules.aadDisplayName.sanitize(appName));
             apimPluginConfig.apimClientAADObjectId = AssertNotEmpty("id", aadInfo.id);
             apimPluginConfig.apimClientAADClientId = AssertNotEmpty("appId", aadInfo.appId);
             const secretResult = await aadService.addSecret(
                 apimPluginConfig.apimClientAADObjectId,
-                NameSanitizer.sanitizeAadSecretDisplayName(appName)
+                NamingRules.aadSecretDisplayName.sanitize(appName)
             );
             apimPluginConfig.apimClientAADClientSecret = AssertNotEmpty("secretText", secretResult.secretText);
         } else {
@@ -42,7 +42,7 @@ export class AadManager {
             if (!apimPluginConfig.apimClientAADClientSecret) {
                 const secretResult = await aadService.addSecret(
                     apimPluginConfig.apimClientAADObjectId,
-                    NameSanitizer.sanitizeAadSecretDisplayName(appName)
+                    NamingRules.aadSecretDisplayName.sanitize(appName)
                 );
                 apimPluginConfig.apimClientAADClientSecret = AssertNotEmpty("secretText", secretResult.secretText);
             }

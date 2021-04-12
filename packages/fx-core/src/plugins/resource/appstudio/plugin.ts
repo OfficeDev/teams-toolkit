@@ -19,7 +19,7 @@ export class AppStudioPluginImpl {
     }
 
     public async buildTeamsAppPackage(appDirectory: string): Promise<string> {
-        const status = fs.lstatSync(appDirectory);
+        const status = await fs.lstat(appDirectory);
         if (!status.isDirectory()) {
             throw AppStudioResultFactory.UserError(AppStudioError.NotADirectoryError.name, AppStudioError.NotADirectoryError.message(appDirectory));
         }
@@ -57,7 +57,8 @@ export class AppStudioPluginImpl {
             throw AppStudioResultFactory.SystemError(AppStudioError.ParamUndefinedError.name, AppStudioError.ParamUndefinedError.message(Constants.PUBLISH_PATH_QUESTION));
         }
         const manifestFile = `${appDirectory}/${Constants.MANIFEST_REMOTE}`;
-        if (!fs.existsSync(manifestFile)) {
+        const manifestFileState = await fs.stat(manifestFile);
+        if (!manifestFileState.isFile()) {
             throw AppStudioResultFactory.UserError(AppStudioError.FileNotFoundError.name, AppStudioError.FileNotFoundError.message(manifestFile));
         }
         const validationResult = await this.validateManifest(ctx, (await fs.readFile(manifestFile)).toString());

@@ -96,6 +96,13 @@ export const AzureResourcesQuestion: MultiSelectQuestion = {
     type: NodeType.multiSelect,
     option: [AzureResourceSQL, AzureResourceFunction],
     default: [],
+    onDidChangeSelection:async function(selectedItems: OptionItem[]) : Promise<string[]>{
+        const hasSQL = selectedItems.some(i=>i.id === AzureResourceSQL.id);
+        if(hasSQL){
+            return [AzureResourceSQL.id, AzureResourceFunction.id];
+        }
+        return selectedItems.map(i=>i.id);
+    }
 };
 
 // export const AddAzureResourceQuestion: MultiSelectQuestion = {
@@ -106,13 +113,23 @@ export const AzureResourcesQuestion: MultiSelectQuestion = {
 //     default: [],
 // };
 
-export function createAddAzureResourceQuestion(featureFlag: boolean): MultiSelectQuestion {
+export function createAddAzureResourceQuestion(alreadyHaveFunction: boolean): MultiSelectQuestion {
     return {
         name: AzureSolutionQuestionNames.AddResources,
         title: "Select Azure resources to add",
         type: NodeType.multiSelect,
         option: [AzureResourceSQL, AzureResourceFunction, AzureResourceApim],
         default: [],
+        onDidChangeSelection:async function(selectedItems: OptionItem[]) : Promise<string[]>{
+            const hasSQL = selectedItems.some(i=>i.id === AzureResourceSQL.id);
+            const hasAPIM = selectedItems.some(i=>i.id === AzureResourceApim.id);
+            const ids = selectedItems.map(i=>i.id);
+            /// when SQL or APIM is selected and function is not selected, then function must be selected
+            if( (hasSQL||hasAPIM) && !alreadyHaveFunction && !ids.includes(AzureResourceFunction.id)){
+                ids.push(AzureResourceFunction.id);
+            }
+            return ids;
+        }
     };
 }
 

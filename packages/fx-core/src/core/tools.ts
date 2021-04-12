@@ -99,17 +99,21 @@ export function sperateSecretData(configJson:Json): Dict<string>{
         const item = splits[1];
         const resourceConfig:any = configJson[resourceId];
         if("*" !== item) {
-            const originalItemValue = resourceConfig[item];
-            const keyName = `${resourceId}.${item}`;
-            res[keyName] = originalItemValue;
-            resourceConfig[item] = `{{${keyName}}}`;
+            const configValue = resourceConfig[item];
+            if(configValue){
+                const keyName = `${resourceId}.${item}`;
+                res[keyName] = configValue;
+                resourceConfig[item] = `{{${keyName}}}`;
+            }
         }
         else {
             for(const itemName of Object.keys(resourceConfig)){
-                const originalItemValue = resourceConfig[itemName];
-                const keyName = `${resourceId}.${itemName}`;
-                res[keyName] = originalItemValue;
-                resourceConfig[itemName] = `{{${keyName}}}`;
+                const configValue = resourceConfig[itemName];
+                if(configValue){
+                    const keyName = `${resourceId}.${itemName}`;
+                    res[keyName] = configValue;
+                    resourceConfig[itemName] = `{{${keyName}}}`;
+                }
             }
         }
     }

@@ -5,7 +5,7 @@
 
 // Import polyfills for fetch required by msgraph-sdk-javascript.
 require('isomorphic-fetch');
-const teamsfx = require('teamsdev-client/dist');
+const teamsfx = require('teamsdev-client');
 
 /**
  * This function handles requests from teamsfx client.
@@ -36,7 +36,7 @@ module.exports = async function (context, req, teamsfxContext) {
   };
 
   // Put an echo into response body.
-  res.body['receivedHTTPRequestBody'] = req.body || '';
+  res.body.receivedHTTPRequestBody = req.body || '';
 
   // Set default configuration for teamsfx SDK.
   try {
@@ -46,7 +46,7 @@ module.exports = async function (context, req, teamsfxContext) {
     return {
       status: 500,
       body: {
-        error: 'Fail to initialize teamsfx SDK.'
+        error: 'Failed to load app configuration.'
       }
     }
   }
@@ -71,7 +71,9 @@ module.exports = async function (context, req, teamsfxContext) {
     return {
       status: 500,
       body: {
-        error: 'Configuration is invalid, please check Function app settings.'
+        error:
+          'Failed to obtain on-behalf-of credential using your accessToken. ' +
+          'Ensure your function app is configured with the right Azure AD App registration.'
       }
     }
   }
@@ -80,9 +82,9 @@ module.exports = async function (context, req, teamsfxContext) {
   try {
     const currentUser = await credential.getUserInfo();
     if (currentUser && currentUser.displayName) {
-      res.body['userInfoMessage'] = `User display name is ${currentUser.displayName}.`;
+      res.body.userInfoMessage = `User display name is ${currentUser.displayName}.`;
     } else {
-      res.body['userInfoMessage'] = `No user information was found in access token.`;
+      res.body.userInfoMessage = `No user information was found in access token.`;
     }
   } catch(e) {
     context.log.error(e);
@@ -98,13 +100,13 @@ module.exports = async function (context, req, teamsfxContext) {
   try {
     const graphClient = teamsfx.createMicrosoftGraphClient(credential, ['.default']);
     const profile = await graphClient.api('/me').get();
-    res.body['graphClientMessage'] = profile;
+    res.body.graphClientMessage = profile;
   } catch (e) {
     context.log.error(e);
     return {
       status: 500,
       body: {
-        error: 'Fail to get profile, maybe consent flow is required.'
+        error: 'Failed to retrieve user profile from Microsoft Graph. The application may not be authorized.'
       }
     }
   }

@@ -6,8 +6,7 @@ When building a Teams application, TeamsFX provides an option for you to add a b
 
 To start enjoying full functionalities to develop an API with Azure Functions for your Teams Application, you need to:
 - Install [Azure Functions Core Tools](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local?tabs=windows%2Ccsharp%2Cbash).
-- Install [TeamsFX Server SDK Package](https://aka.ms/MODSPrivatePreview/server-sdk).
-- Add an API during project creation or using command, see [TeamsFX User Manual](https://mods-landingpage-web.azurewebsites.net/md/guide/index).
+- Add an API during project creation or using command, see [TeamsFX User Manual]().
 
 ## Develop
 

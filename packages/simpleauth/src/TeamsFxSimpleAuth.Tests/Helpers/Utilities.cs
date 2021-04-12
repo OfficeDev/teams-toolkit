@@ -140,8 +140,9 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.Helpers
             }
         }
 
-        public static async Task<string> GetUserAccessToken(IntegrationTestSettings settings, string clientId, string clientSecret, string oauthTokenEndpoint, string scope = null)
+        public static async Task<string> GetUserAccessToken(IntegrationTestSettings settings, string clientId, string clientSecret, string oauthAuthority, string scope = null)
         {
+            var oauthTokenEndpoint = oauthAuthority.TrimEnd('/') + "/oauth2/v2.0/token";
             PasswordCredentialRequestBody content = new PasswordCredentialRequestBody
             {
                 Grant_type = AadGrantType.Password,

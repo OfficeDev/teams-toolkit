@@ -73,7 +73,7 @@ namespace Microsoft.TeamsFx.SimpleAuth
             services.AddSingleton(x =>
                  ConfidentialClientApplicationBuilder.Create(configuration[ConfigurationName.ClientId])
                     .WithClientSecret(configuration[ConfigurationName.ClientSecret])
-                    .WithAuthority(configuration[ConfigurationName.OAuthTokenEndpoint])
+                    .WithAuthority(configuration[ConfigurationName.OAuthAuthority])
                     .Build());
 
             // DI for AuthHandler

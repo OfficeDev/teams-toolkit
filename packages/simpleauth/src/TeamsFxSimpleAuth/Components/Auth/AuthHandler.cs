@@ -28,7 +28,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Components.Auth
             _logger = logger;
             _clientId = configuration[ConfigurationName.ClientId];
             _clientSecret = configuration[ConfigurationName.ClientSecret];
-            _oauthTokenEndpoint = configuration[ConfigurationName.OAuthTokenEndpoint];
+            _oauthTokenEndpoint = configuration[ConfigurationName.OAuthAuthority].TrimEnd('/') + "/oauth2/v2.0/token";
             _confidentialClientApplication = confidentialClientApplication;
         }
 

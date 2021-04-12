@@ -1,6 +1,6 @@
 {
   "name": "fx-core",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "main": "build/core/index.js",
   "types": "build/core/index.d.ts",
   "scripts": {

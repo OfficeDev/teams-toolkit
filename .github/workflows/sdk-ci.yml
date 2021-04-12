@@ -10,6 +10,7 @@ on:
   pull_request:
     branches:
       - main
+      - nintan/sdk-ci
     paths:
       - packages/sdk/**
 

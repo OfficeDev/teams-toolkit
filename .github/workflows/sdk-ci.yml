@@ -85,8 +85,9 @@ jobs:
       
       - name: Remove package-lock(Windows)
         if: matrix.os == 'windows-latest'
-        run: |
-          del /f "packages\sdk\package-lock.json"
+        uses: JesseTG/rm@v1.0.0
+        with:
+          path: packages\sdk\package-lock.json
 
       - name: Build
         run: |

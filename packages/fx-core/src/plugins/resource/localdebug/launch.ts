@@ -155,7 +155,7 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
     if (!includeFrontend && includeBot) {
         launchConfigurations.push(
             {
-                name: "Lauch Bot (Edge)",
+                name: "Launch Bot (Edge)",
                 type: LaunchBrowser.edge,
                 request: "launch",
                 url: "https://teams.microsoft.com/_#/l/app/${localTeamsAppId}?installAppPackage=true",
@@ -168,7 +168,7 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
                 },
             },
             {
-                name: "Lauch Bot (Chrome)",
+                name: "Launch Bot (Chrome)",
                 type: LaunchBrowser.chrome,
                 request: "launch",
                 url: "https://teams.microsoft.com/_#/l/app/${localTeamsAppId}?installAppPackage=true",
@@ -303,7 +303,7 @@ export function generateCompounds(includeFrontend: boolean, includeBackend: bool
         launchCompounds.push(
             {
                 name: "Debug (Edge)",
-                configurations: ["Lauch Bot (Edge)", "Start and Attach to Bot"],
+                configurations: ["Launch Bot (Edge)", "Start and Attach to Bot"],
                 preLaunchTask: "Pre Debug Check",
                 presentation: {
                     group: "all",
@@ -313,7 +313,7 @@ export function generateCompounds(includeFrontend: boolean, includeBackend: bool
             },
             {
                 name: "Debug (Chrome)",
-                configurations: ["Lauch Bot (Chrome)", "Start and Attach to Bot"],
+                configurations: ["Launch Bot (Chrome)", "Start and Attach to Bot"],
                 preLaunchTask: "Pre Debug Check",
                 presentation: {
                     group: "all",
@@ -385,10 +385,16 @@ export function generateCompounds(includeFrontend: boolean, includeBackend: bool
 }
 
 export function generateSpfxConfigurations(): Record<string, unknown>[] {
+    let edgeOrder = 2, chromeOrder = 1;
+    if (os.type() === "Windows_NT") {
+        edgeOrder = 1;
+        chromeOrder = 2;
+    }
+
     return [
         {
-            name: "Local workbench",
-            type: "pwa-chrome",
+            name: "Local workbench (Edge)",
+            type: LaunchBrowser.edge,
             request: "launch",
             url: "https://localhost:5432/workbench",
             webRoot: "${workspaceRoot}/SPFx",
@@ -402,10 +408,35 @@ export function generateSpfxConfigurations(): Record<string, unknown>[] {
             runtimeArgs: ["--remote-debugging-port=9222"],
             preLaunchTask: "gulp serve",
             postDebugTask: "Terminate All Tasks",
+            presentation: {
+                group: "all",
+                order: edgeOrder,
+            },
         },
         {
-            name: "Hosted workbench",
-            type: "pwa-chrome",
+            name: "Local workbench (Chrome)",
+            type: LaunchBrowser.chrome,
+            request: "launch",
+            url: "https://localhost:5432/workbench",
+            webRoot: "${workspaceRoot}/SPFx",
+            sourceMaps: true,
+            sourceMapPathOverrides: {
+                "webpack:///.././src/*": "${webRoot}/src/*",
+                "webpack:///../../../src/*": "${webRoot}/src/*",
+                "webpack:///../../../../src/*": "${webRoot}/src/*",
+                "webpack:///../../../../../src/*": "${webRoot}/src/*",
+            },
+            runtimeArgs: ["--remote-debugging-port=9222"],
+            preLaunchTask: "gulp serve",
+            postDebugTask: "Terminate All Tasks",
+            presentation: {
+                group: "all",
+                order: chromeOrder,
+            },
+        },
+        {
+            name: "Hosted workbench (Edge)",
+            type: LaunchBrowser.edge,
             request: "launch",
             url: "https://enter-your-SharePoint-site/_layouts/workbench.aspx",
             webRoot: "${workspaceRoot}/SPFx",
@@ -419,6 +450,31 @@ export function generateSpfxConfigurations(): Record<string, unknown>[] {
             runtimeArgs: ["--remote-debugging-port=9222", "-incognito"],
             preLaunchTask: "gulp serve",
             postDebugTask: "Terminate All Tasks",
+            presentation: {
+                group: "remote",
+                order: edgeOrder,
+            },
+        },
+        {
+            name: "Hosted workbench (Chrome)",
+            type: LaunchBrowser.chrome,
+            request: "launch",
+            url: "https://enter-your-SharePoint-site/_layouts/workbench.aspx",
+            webRoot: "${workspaceRoot}/SPFx",
+            sourceMaps: true,
+            sourceMapPathOverrides: {
+                "webpack:///.././src/*": "${webRoot}/src/*",
+                "webpack:///../../../src/*": "${webRoot}/src/*",
+                "webpack:///../../../../src/*": "${webRoot}/src/*",
+                "webpack:///../../../../../src/*": "${webRoot}/src/*",
+            },
+            runtimeArgs: ["--remote-debugging-port=9222", "-incognito"],
+            preLaunchTask: "gulp serve",
+            postDebugTask: "Terminate All Tasks",
+            presentation: {
+                group: "remote",
+                order: chromeOrder,
+            },
         },
     ];
 }

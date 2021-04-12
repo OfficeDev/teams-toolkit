@@ -48,7 +48,7 @@ export class FunctionPlugin {
 }
 
 export class RuntimeConnectorPlugin {
-    public static readonly Name: string = "fx-resource-runtime-connector";
+    public static readonly Name: string = "fx-resource-simple-auth";
     public static readonly FilePath: string = "filePath";
 }
 

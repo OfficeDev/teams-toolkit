@@ -166,7 +166,7 @@ function newFunctionPlugin(): LoadedPlugin {
 function newSimpleAuthPlugin(): LoadedPlugin {
     const plugin: Plugin = new SimpleAuthPlugin();
     const pluginWithMeta: LoadedPlugin = plugin as LoadedPlugin;
-    pluginWithMeta.name = "fx-resource-runtime-connector";
+    pluginWithMeta.name = "fx-resource-simple-auth";
     pluginWithMeta.displayName = "Simple Auth";
     return pluginWithMeta;
 }

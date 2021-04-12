@@ -132,12 +132,16 @@ export class LocalDebugPlugin implements Plugin {
                 localFuncEndpoint = "http://localhost:7071";
             }
 
+            const includeFrontend = ctx.configOfOtherPlugins.has(FrontendHostingPlugin.Name);
             const includeBackend = ctx.configOfOtherPlugins.has(FunctionPlugin.Name);
             const includeBot = ctx.configOfOtherPlugins.has(BotPlugin.Name);
 
             ctx.config.set(LocalDebugConfigKeys.LocalAuthEndpoint, localAuthEndpoint);
-            ctx.config.set(LocalDebugConfigKeys.LocalTabEndpoint, localTabEndpoint);
-            ctx.config.set(LocalDebugConfigKeys.LocalTabDomain, localTabDomain);
+
+            if (includeFrontend) {
+                ctx.config.set(LocalDebugConfigKeys.LocalTabEndpoint, localTabEndpoint);
+                ctx.config.set(LocalDebugConfigKeys.LocalTabDomain, localTabDomain);
+            }
 
             if (includeBackend)
             {

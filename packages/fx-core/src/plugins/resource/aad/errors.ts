@@ -10,6 +10,11 @@ export interface AadError {
   helpLink?: string;
 }
 
+export const GetAppError: AadError = {
+  name: "AadGetAppError",
+  message: (objectId: string) => `Failed to get app info with Object ID: ${objectId}.`,
+};
+
 export const CreateAppError: AadError = {
   name: "AadCreateAppError",
   message: () => `Failed to create Azure AD app. ${referLogMessage}`,
@@ -107,6 +112,8 @@ export class AppStudioErrorMessage {
     "Update Azure AD app failed when calling App Studio Api.";
   static readonly CreateSecretFailed =
     "Create secret for Azure AD app failed when calling App Studio Api.";
+  static readonly GetFailed =
+    "Get Azure AD app failed then calling App Studio Api.";
 
   static readonly AppDefinitionIsNull = "App Definition is null.";
   static readonly AppObjectIdIsNull = "Object Id is null.";
@@ -121,6 +128,8 @@ export class GraphClientErrorMessage {
     "Update Azure AD app failed when calling Graph Api.";
   static readonly CreateSecretFailed =
     "Create secret for Azure AD app failed when calling Graph Api.";
+  static readonly GetFailed =
+    "Get Azure AD app failed then calling Graph Api.";
 
   static readonly AppDefinitionIsNull = "App Definition is null.";
   static readonly AppObjectIdIsNull = "Object Id is null.";

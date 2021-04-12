@@ -24,7 +24,7 @@ export interface IRcObject {
     endpoint: string
 }
 
-export class RcValidator{
+export class RcValidator {
     private static subscriptionId: string;
     private static rg: string;
 

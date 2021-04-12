@@ -27,7 +27,7 @@ export class Constants {
     };
 
     static readonly SimpleAuthPlugin = {
-        id: "fx-resource-simpleAuth",
+        id: "fx-resource-simple-auth",
         name: "Simple Auth Plugin",
         shortName: "sa",
         configKeys: {

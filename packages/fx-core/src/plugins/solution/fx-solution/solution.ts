@@ -1065,13 +1065,15 @@ export class TeamsAppSolution implements Solution {
                 return [plugin?.publish?.bind(plugin), context, plugin.name];
             });
 
+            ctx.logProvider?.info(`[Solution] publish start!`);
+
             const result = await executeLifecycles([], publishWithCtx, []);
 
             if (result.isOk()) {
                 ctx.logProvider?.info(`[Teams Toolkit] publish success!`);
                 await ctx.dialog?.communicate(
                     new DialogMsg(DialogType.Show, {
-                        description: "[Teams Toolkit]: Successfully published to the admin portal. Once approved, your app will be available for your organization.",
+                        description: `[Teams Toolkit]: ${ctx.app.name.short} successfully published to the admin portal. Once approved, your app will be available for your organization.`,
                         level: MsgLevel.Info,
                     }),
                 );

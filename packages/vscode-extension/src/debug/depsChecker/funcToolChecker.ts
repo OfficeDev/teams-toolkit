@@ -7,6 +7,7 @@ import { cpUtils } from "../cpUtils";
 import { IDepsChecker, DepsCheckerError, DepsInfo } from "./checker";
 import { funcToolCheckerEnabled, hasTeamsfxBackend, logger, runWithProgressIndicator } from "./checkerAdapter";
 import { isWindows } from "./common";
+import { DepsCheckerTelemetry, DepsCheckerEvent, TelemtryMessages } from "./telemetry";
 
 enum FuncVersion {
   v1 = "1",
@@ -32,41 +33,77 @@ const failToInstallFuncCoreTool =
 const helpLink = "https://review.docs.microsoft.com/en-us/mods/?branch=main";
 
 export class FuncToolChecker implements IDepsChecker {
-  getDepsInfo(): Promise<DepsInfo> {
+  public getDepsInfo(): Promise<DepsInfo> {
     return Promise.resolve({
       nameWithVersion: installedNameWithVersion,
       details: new Map<string, string>()
     });
   }
 
-  async isEnabled(): Promise<boolean> {
+  public async isEnabled(): Promise<boolean> {
     const hasBackend = await hasTeamsfxBackend();
-    return hasBackend && funcToolCheckerEnabled();
+    const checkerEnabled = funcToolCheckerEnabled();
+    if (!checkerEnabled) {
+      DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.skipCheckFunc);
+    }
+
+    return hasBackend && checkerEnabled;
   }
 
-  async isInstalled(): Promise<boolean> {
+  public async isInstalled(): Promise<boolean> {
     const installed = true;
     const installedVersion = await getInstalledFuncToolsVersion();
 
+    DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.checkFunc);
     switch (installedVersion) {
       case FuncVersion.v1:
+        DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.funcV1Installed);
+        DepsCheckerTelemetry.sendUserErrorEvent(
+          DepsCheckerEvent.checkFunc,
+          TelemtryMessages.funcV1Installed
+        );
         throw new DepsCheckerError(needReplaceWithFuncCoreToolV3, helpLink);
       case FuncVersion.v2:
+        DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.funcV2Installed);
         return installed;
       case FuncVersion.v3:
+        DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.funcV3Installed);
         return installed;
       default:
         return !installed;
     }
   }
 
-  async install(): Promise<void> {
+  public async install(): Promise<void> {
     if (!(await hasNPM())) {
       // provided with Learn More link if npm doesn't exist.
+      DepsCheckerTelemetry.sendUserErrorEvent(
+        DepsCheckerEvent.installingFunc,
+        TelemtryMessages.NPMNotFound
+      );
       throw new DepsCheckerError(needInstallFuncCoreTool, helpLink);
     }
 
     logger.info(startInstallFunctionCoreTool);
+
+    try {
+      await DepsCheckerTelemetry.sendEventWithDuration(DepsCheckerEvent.installedFunc, async () => {
+        await this.installCore();
+      });
+    } catch (error) {
+      DepsCheckerTelemetry.sendSystemErrorEvent(
+        DepsCheckerEvent.installingFunc,
+        TelemtryMessages.failedToInstallFunc,
+        error
+      );
+
+      throw error;
+    }
+
+    logger.info(finishInstallFunctionCoreTool);
+  }
+
+  private async installCore(): Promise<void> {
     await runWithProgressIndicator(logger.outputChannel, async () => {
       try {
         await installFuncCoreTools(FuncVersion.v3);
@@ -75,12 +112,11 @@ export class FuncToolChecker implements IDepsChecker {
       }
     });
 
+    // validate after installation.
     const isInstalled = await this.isInstalled();
     if (!isInstalled) {
       throw new DepsCheckerError(failToInstallFuncCoreTool, helpLink);
     }
-
-    logger.info(finishInstallFunctionCoreTool);
   }
 }
 

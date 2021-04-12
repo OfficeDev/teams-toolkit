@@ -22,7 +22,8 @@ import {
   Inputs,
   ConfigMap,
   InputResult,
-  InputResultType
+  InputResultType,
+  VsCodeEnv
 } from "fx-api";
 import { CoreProxy } from "fx-core";
 import DialogManagerInstance from "./userInterface";
@@ -56,6 +57,7 @@ import { isFeatureFlag } from "./utils/commonUtils";
 import { cpUtils } from "./debug/cpUtils";
 import * as path from "path";
 import * as fs from "fs-extra";
+import * as vscode from "vscode";
 import { VsCodeUI, VS_CODE_UI } from "./qm/vsc_ui";
 import { DepsChecker, DepsCheckerError } from "./debug/depsChecker/checker";
 import { FuncToolChecker } from "./debug/depsChecker/funcToolChecker";
@@ -240,6 +242,9 @@ async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
       throw qres.error;
     }
 
+    answers.set("vscenv", detectVsCodeEnv());
+    console.log(`VS Code Environment: ${detectVsCodeEnv()}`);
+
     // 5. run question model
     const node = qres.value;
     if (node) {
@@ -281,6 +286,24 @@ async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
   return result;
 }
 
+function detectVsCodeEnv(): VsCodeEnv {
+    // extensionKind returns ExtensionKind.UI when running locally, so use this to detect remote
+    const extension = vscode.extensions.getExtension("Microsoft.teamsfx-extension");
+  
+    if (extension?.extensionKind === vscode.ExtensionKind.Workspace) {
+        // running remotely
+        // Codespaces browser-based editor will return UIKind.Web for uiKind
+        if (vscode.env.uiKind === vscode.UIKind.Web) {
+            return VsCodeEnv.codespaceBrowser;
+        } else {
+            return VsCodeEnv.codespaceVsCode;
+        }
+    } else {
+        // running locally
+        return VsCodeEnv.local;
+    }
+  }
+  
 async function runUserTask(func: Func): Promise<Result<null, FxError>> {
   const eventName = func.method;
   let result: Result<null, FxError> = ok(null);

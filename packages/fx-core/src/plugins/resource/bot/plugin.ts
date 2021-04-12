@@ -440,7 +440,6 @@ export class TeamsBotImpl {
             this.config.provision.subscriptionId!,
         );
 
-        await handler?.next(ProgressBarConstants.DEPLOY_STEP_LIST_CRED);
         let listResponse = undefined;
         try {
             const timer = new Timer();

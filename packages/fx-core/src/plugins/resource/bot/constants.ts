@@ -48,26 +48,25 @@ export class ProgressBarConstants {
     public static readonly SCAFFOLD_STEPS_NUM: number = 2;
 
     public static readonly PROVISION_TITLE: string = "Provisioning Bot";
-    public static readonly PROVISION_STEP_START = "Start to do provisioning.";
-    public static readonly PROVISION_STEP_BOT_REG = "Start to do bot registration.";
-    public static readonly PROVISION_STEP_WEB_APP = "Start to provision azure web app.";
+    public static readonly PROVISION_STEP_START = "Provisioning azure resources.";
+    public static readonly PROVISION_STEP_BOT_REG = "Registering bot.";
+    public static readonly PROVISION_STEP_WEB_APP = "Provisioning azure web app.";
 
     public static readonly PROVISION_STEPS_NUM: number = 2;
 
     public static readonly LOCAL_DEBUG_TITLE: string = "Local Debug Provisioning Bot";
-    public static readonly LOCAL_DEBUG_STEP_START = "Start to do local debug provisioning.";
-    public static readonly LOCAL_DEBUG_STEP_BOT_REG = "Start to do bot registration.";
+    public static readonly LOCAL_DEBUG_STEP_START = "Provisioning local debug.";
+    public static readonly LOCAL_DEBUG_STEP_BOT_REG = "Registering bot.";
 
     public static readonly LOCAL_DEBUG_STEPS_NUM: number = 1;
 
     public static readonly DEPLOY_TITLE: string = "Deploying Bot";
     public static readonly DEPLOY_STEP_START = "Start to deploy.";
-    public static readonly DEPLOY_STEP_NPM_INSTALL = "Run npm install.";
-    public static readonly DEPLOY_STEP_ZIP_FOLDER = "Zip package folder."
-    public static readonly DEPLOY_STEP_LIST_CRED = "List publish credentials.";
-    public static readonly DEPLOY_STEP_ZIP_DEPLOY = "Call zip deploy rest api.";
+    public static readonly DEPLOY_STEP_NPM_INSTALL = "Running npm install.";
+    public static readonly DEPLOY_STEP_ZIP_FOLDER = "Zipping package folder."
+    public static readonly DEPLOY_STEP_ZIP_DEPLOY = "Uploading package.";
 
-    public static readonly DEPLOY_STEPS_NUM: number = 4;
+    public static readonly DEPLOY_STEPS_NUM: number = 3;
 
 }
 

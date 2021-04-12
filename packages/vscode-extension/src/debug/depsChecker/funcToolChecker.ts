@@ -8,7 +8,7 @@ import { IDepsChecker, DepsCheckerError, DepsInfo } from "./checker";
 import { funcToolCheckerEnabled, hasTeamsfxBackend, logger, runWithProgressIndicator } from "./checkerAdapter";
 import { isWindows } from "./common";
 
-enum FuncVersion {
+export enum FuncVersion {
   v1 = "1",
   v2 = "2",
   v3 = "3"
@@ -67,7 +67,7 @@ export class FuncToolChecker implements IDepsChecker {
     }
 
     logger.info(startInstallFunctionCoreTool);
-    await runWithProgressIndicator(logger.outputChannel, async () => {
+    await runWithProgressIndicator(async () => {
       try {
         await installFuncCoreTools(FuncVersion.v3);
       } catch (error) {
@@ -153,7 +153,7 @@ async function getFuncPSScriptPath(): Promise<string> {
   }
 }
 
-function getFuncToolsVersion(output: string): FuncVersion | null {
+export function getFuncToolsVersion(output: string): FuncVersion | null {
   const regex = /(?<major_version>\d+)\.(?<minor_version>\d+)\.(?<patch_version>\d+)/gm;
   const match = regex.exec(output);
   if (!match) {

@@ -45,12 +45,6 @@ import {
 import * as commonUtils from "./debug/commonUtils";
 import { ExtensionErrors, ExtensionSource } from "./error";
 import { WebviewPanel } from "./controls/webviewPanel";
-import { tryValidateFuncCoreToolsInstalled } from "./debug/funcCoreTools/validateFuncCoreToolsInstalled";
-import {
-  dotnetCheckerEnabled,
-  tryValidateDotnetInstalled
-} from "./debug/dotnetSdk/dotnetCheckerAdapter";
-import { DotnetChecker } from "./debug/dotnetSdk/dotnetChecker";
 import * as constants from "./debug/constants";
 import logger from "./commonlib/log";
 import { isFeatureFlag } from "./utils/commonUtils";
@@ -135,7 +129,7 @@ export async function activate(): Promise<Result<null, FxError>> {
     {
       const globalConfig = new ConfigMap();
       globalConfig.set("featureFlag", isFeatureFlag());
-      globalConfig.set("function-dotnet-checker-enabled", dotnetCheckerEnabled());
+      globalConfig.set("function-dotnet-checker-enabled", dotnetChecker.isEnabled());
       const result = await core.init(globalConfig);
       if (result.isErr()) {
         showError(result.error);
@@ -297,7 +291,7 @@ export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
 function detectVsCodeEnv(): VsCodeEnv {
     // extensionKind returns ExtensionKind.UI when running locally, so use this to detect remote
     const extension = vscode.extensions.getExtension("Microsoft.teamsfx-extension");
-  
+
     if (extension?.extensionKind === vscode.ExtensionKind.Workspace) {
         // running remotely
         // Codespaces browser-based editor will return UIKind.Web for uiKind
@@ -311,7 +305,7 @@ function detectVsCodeEnv(): VsCodeEnv {
         return VsCodeEnv.local;
     }
   }
-  
+
 async function runUserTask(func: Func): Promise<Result<null, FxError>> {
   const eventName = func.method;
   let result: Result<null, FxError> = ok(null);

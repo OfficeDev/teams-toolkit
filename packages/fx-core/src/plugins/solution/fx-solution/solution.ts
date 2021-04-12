@@ -252,6 +252,9 @@ export class TeamsAppSolution implements Solution {
         //Reload plugins according to user answers
         this.reloadPlugins(ctx.config, ctx.answers!);
 
+        const defaultIconPath = path.join(__dirname, "../../../../templates/plugins/solution/defaultIcon.png");
+        await fs.copy(defaultIconPath, `${ctx.root}/.${ConfigFolderName}/color.png`);
+        await fs.copy(defaultIconPath, `${ctx.root}/.${ConfigFolderName}/outline.png`);
         if (!this.spfxSelected(ctx.config)) {
             this.manifest = await AppStudio.createManifest(ctx.answers);
             if (this.manifest) Object.assign(ctx.app, this.manifest);

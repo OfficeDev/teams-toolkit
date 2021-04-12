@@ -102,6 +102,10 @@
         "title": "TeamsFx - Deploy Package"
       },
       {
+        "command": "fx-extension.publish",
+        "title": "TeamsFx - Publish Teams App"
+      },
+      {
         "command": "fx-extension.updateAad",
         "title": "TeamsFx - Update AAD Permission"
       },

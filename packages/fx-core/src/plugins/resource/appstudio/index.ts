@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ConfigFolderName, FxError, NodeType, ok, Plugin, PluginContext, QTreeNode, Result, Stage } from "fx-api";
+import { ConfigFolderName, FxError, NodeType, ok, Platform, Plugin, PluginContext, QTreeNode, Result, Stage } from "fx-api";
 import { AppStudioPluginImpl } from "./plugin";
 import { Constants } from "./constants";
 
@@ -24,6 +24,15 @@ export class AppStudioPlugin implements Plugin {
                 default: `${ctx.root}/.${ConfigFolderName}`
             });
             appStudioQuestions.addChild(appPath);
+
+            if (ctx.platform !== Platform.VSCode) {
+                const remoteTeamsAppId = new QTreeNode({
+                    type: NodeType.text,
+                    name: Constants.REMOTE_TEAMS_APP_ID,
+                    title: "Please input the teams app id in App Studio"
+                });
+                appStudioQuestions.addChild(remoteTeamsAppId);
+            }
         }
 
         return ok(appStudioQuestions);

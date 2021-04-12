@@ -190,7 +190,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         {
             // Arrange
             var ssoToken = await Utilities.GetUserAccessToken(_settings, _configuration[ConfigurationName.ClientId],
-                _configuration[ConfigurationName.ClientSecret], _configuration[ConfigurationName.OAuthTokenEndpoint]).ConfigureAwait(false);
+                _configuration[ConfigurationName.ClientSecret], _configuration[ConfigurationName.OAuthAuthority]).ConfigureAwait(false);
             var client = _defaultFactory.CreateDefaultClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
 

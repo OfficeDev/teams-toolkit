@@ -23,13 +23,15 @@ import {
   ConfigMap,
   InputResult,
   InputResultType,
-  VsCodeEnv
+  VsCodeEnv,
+  AppStudioTokenProvider
 } from "fx-api";
 import { CoreProxy } from "fx-core";
 import DialogManagerInstance from "./userInterface";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
 import AppStudioTokenInstance from "./commonlib/appStudioLogin";
+import AppStudioCodeSpaceTokenInstance from "./commonlib/appStudioCodeSpaceLogin";
 import VsCodeLogInstance from "./commonlib/log";
 import { VSCodeTelemetryReporter } from "./commonlib/telemetry";
 import { CommandsTreeViewProvider, TreeViewCommand } from "./commandsTreeViewProvider";
@@ -96,7 +98,13 @@ export async function activate(): Promise<Result<null, FxError>> {
     }
 
     {
-      const result = await core.withAppStudioToken(AppStudioTokenInstance);
+      let appstudioLogin: AppStudioTokenProvider = AppStudioTokenInstance;
+      const vscodeEnv = detectVsCodeEnv();
+      if (vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode) {
+        appstudioLogin = AppStudioCodeSpaceTokenInstance;
+      }
+      
+      const result = await core.withAppStudioToken(appstudioLogin);
       if (result.isErr()) {
         showError(result.error);
         return err(result.error);
@@ -638,7 +646,12 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
   commands.registerCommand("fx-extension.signOut", async (node: TreeViewCommand) => {
     switch (node.contextValue) {
       case "signedinM365": {
-        const result = await AppStudioTokenInstance.signout();
+        let appstudioLogin: AppStudioTokenProvider = AppStudioTokenInstance;
+        const vscodeEnv = detectVsCodeEnv();
+        if (vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode) {
+          appstudioLogin = AppStudioCodeSpaceTokenInstance;
+        }
+        const result = await appstudioLogin.signout();
         if (result) {
           await CommandsTreeViewProvider.getInstance().refresh([
             {

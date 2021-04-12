@@ -16,7 +16,7 @@ describe("QuestionOptions", () => {
             // Assert
             for (const item of options) {
                 chai.assert.isTrue(Object.values(ProgrammingLanguage).map((value) => value as string).includes(item.label));
-                chai.assert.isTrue(Object.values(ProgrammingLanguage).map((value) => value.toLowerCase()).includes(item.id));
+                chai.assert.isTrue(Object.values(ProgrammingLanguage).map((value) => value as string).includes(item.id));
             }
         });
     });

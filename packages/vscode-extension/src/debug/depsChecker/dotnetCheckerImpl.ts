@@ -56,7 +56,7 @@ export class DotnetCheckerImpl {
 
     // logger.debug(`[start] install dotnet ${DotnetChecker.installVersion}`);
     logger.info(`Downloading and installing ${installedNameWithVersion}.`);
-    await runWithProgressIndicator(logger.outputChannel, async () => {
+    await runWithProgressIndicator(async () => {
       await DotnetCheckerImpl.install(DotnetCheckerImpl.installVersion);
     });
     logger.info(`Successfully installed ${installedNameWithVersion}.`);

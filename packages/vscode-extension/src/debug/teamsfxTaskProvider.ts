@@ -5,8 +5,6 @@ import * as vscode from "vscode";
 
 import * as constants from "./constants";
 import * as commonUtils from "./commonUtils";
-import { DotnetChecker } from "./dotnetSdk/dotnetChecker";
-import { dotnetCheckerEnabled } from "./dotnetSdk/dotnetCheckerAdapter";
 import { ProductName } from "fx-api";
 import { dotnetChecker } from "./depsChecker/dotnetChecker";
 

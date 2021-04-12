@@ -132,12 +132,16 @@ export class LocalDebugPlugin implements Plugin {
                 localFuncEndpoint = "http://localhost:7071";
             }
 
+            const includeFrontend = ctx.configOfOtherPlugins.has(FrontendHostingPlugin.Name);
             const includeBackend = ctx.configOfOtherPlugins.has(FunctionPlugin.Name);
             const includeBot = ctx.configOfOtherPlugins.has(BotPlugin.Name);
 
             ctx.config.set(LocalDebugConfigKeys.LocalAuthEndpoint, localAuthEndpoint);
-            ctx.config.set(LocalDebugConfigKeys.LocalTabEndpoint, localTabEndpoint);
-            ctx.config.set(LocalDebugConfigKeys.LocalTabDomain, localTabDomain);
+
+            if (includeFrontend) {
+                ctx.config.set(LocalDebugConfigKeys.LocalTabEndpoint, localTabEndpoint);
+                ctx.config.set(LocalDebugConfigKeys.LocalTabDomain, localTabDomain);
+            }
 
             if (includeBackend)
             {
@@ -231,7 +235,7 @@ export class LocalDebugPlugin implements Plugin {
                 localEnvs[LocalEnvBotKeys.ClientId] = clientId;
                 localEnvs[LocalEnvBotKeys.ClientSecret] = clientSecret;
                 localEnvs[LocalEnvBotKeys.TenantID] = teamsAppTenantId;
-                localEnvs[LocalEnvBotKeys.OauthAuthority] = `https://login.microsoftonline.com/${teamsAppTenantId}/oauth2/v2.0/token`;
+                localEnvs[LocalEnvBotKeys.OauthAuthority] = "https://login.microsoftonline.com";
                 localEnvs[LocalEnvBotKeys.LoginUrl] = `${localDebugConfigs.get(LocalDebugConfigKeys.LocalBotEndpoint) as string}/auth-start.html`;
                 localEnvs[LocalEnvBotKeys.IdentifierUri] = aadConfigs?.get(AadPlugin.LocalAppIdUri) as string;
             }

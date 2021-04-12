@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { PluginContext, TeamsAppManifest } from "fx-api";
+import { PluginContext, TeamsAppManifest, Platform } from "fx-api";
 import { AppStudioClient } from "./appStudio";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
@@ -73,7 +73,12 @@ export class AppStudioPluginImpl {
             }
 
             // Update App in App Studio
-            const remoteTeamsAppId = ctx.config.getString(REMOTE_TEAMS_APP_ID);
+            let remoteTeamsAppId: string | undefined = undefined;
+            if (ctx.platform === Platform.VSCode) {
+                remoteTeamsAppId = ctx.config.getString(REMOTE_TEAMS_APP_ID);
+            } else {
+                remoteTeamsAppId = ctx.answers?.getString(Constants.REMOTE_TEAMS_APP_ID);
+            }
             await publishProgress?.next(`Updating app definition for app ${remoteTeamsAppId} in app studio`);
             const manifest: TeamsAppManifest = await fs.readJSON(manifestFile);
             const appDefinition = this.convertToAppDefinition(manifest);

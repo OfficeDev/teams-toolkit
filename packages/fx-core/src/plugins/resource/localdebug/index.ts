@@ -178,8 +178,10 @@ export class LocalDebugPlugin implements Plugin {
                     // function local envs
                     localEnvs[LocalEnvBackendKeys.ClientId] = clientId;
                     localEnvs[LocalEnvBackendKeys.ClientSecret] = clientSecret;
-                    localEnvs[LocalEnvBackendKeys.OauthAuthority] = `https://login.microsoftonline.com/${teamsAppTenantId}`;
-                    localEnvs[LocalEnvBackendKeys.FuncEndpoint] = localDebugConfigs.get(LocalDebugConfigKeys.LocalFunctionEndpoint) as string;
+                    localEnvs[LocalEnvBackendKeys.AuthorityHost] = "https://login.microsoftonline.com";
+                    localEnvs[LocalEnvBackendKeys.TenantId] = teamsAppTenantId;
+                    localEnvs[LocalEnvBackendKeys.ApiEndpoint] = localDebugConfigs.get(LocalDebugConfigKeys.LocalFunctionEndpoint) as string;
+                    localEnvs[LocalEnvBackendKeys.ApplicationIdUri] = aadConfigs?.get(AadPlugin.LocalAppIdUri) as string;
                     localEnvs[LocalEnvBackendKeys.AllowedAppIds] = [teamsMobileDesktopAppId, teamsWebAppId].join(";");
 
                     // TODO: SQL Local Debug

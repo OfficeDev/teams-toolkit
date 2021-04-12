@@ -102,7 +102,7 @@ export const InvalidPropertyType: IApimPluginError = {
 export const ShortenToEmpty: IApimPluginError = {
     type: ErrorType.System,
     code: "ShortenToEmpty",
-    message: (value: string) => `Value '${value}' is shorten to empty.'`,
+    message: (value: string) => `The value '${value}' cannot be shorten to empty.'`,
 }
 
 export const ApimOperationError: IApimPluginError = {

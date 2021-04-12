@@ -69,32 +69,32 @@ export class QuestionConstants {
 }
 
 export class ValidationConstants {
-    public static readonly DefaultMinLength = 1;
-    public static readonly DefaultMaxLength = 256;
+    public static readonly defaultMinLength = 1;
+    public static readonly defaultMaxLength = 256;
 
     // https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/resource-name-rules#microsoftresources
-    public static readonly ResourceGroupValidPattern = {
+    public static readonly resourceGroupValidPattern = {
         regex: /^[-\w\._\(\)]+$/,
         message: "The value can include alphanumeric, underscore, parentheses, hyphen, period (except at end), and unicode characters that match the allowed characters.",
     }
 
     // https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/resource-name-rules#microsoftapimanagement
-    public static readonly ServiceIdValidPattern = {
+    public static readonly serviceIdValidPattern = {
         regex: /^[a-zA-Z](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$/,
         message: "The value can contain only letters, numbers and hyphens. The first character must be a letter and last character must be a letter or a number.",
     }
 
-    public static readonly ResourceIdValidPattern = {
+    public static readonly resourceIdValidPattern = {
         regex: /^[0-9a-zA-Z](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$/,
         message: "The value can contain only numbers, letters, and hyphens when preceded and followed by number or a letter.",
     }
 
-    public static readonly DefaultValidPattern = {
+    public static readonly defaultValidPattern = {
         regex: /^[^*#&+:<>?]+$/,
         message: "The value cannot contain any character in '*#&+:<>?'.",
     }
 
-    public static readonly GuidValidPattern = {
+    public static readonly guidValidPattern = {
         regex: /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
         message: "The value should be a GUID."
     }

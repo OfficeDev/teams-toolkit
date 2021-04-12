@@ -21,105 +21,105 @@ export interface IValidPattern {
 
 export class NamingRules {
     static apiPrefix: INamingRule & ISanitizer = {
-        minLength: ValidationConstants.DefaultMinLength,
+        minLength: ValidationConstants.defaultMinLength,
         maxLength: 40,
-        validPattern: ValidationConstants.ResourceIdValidPattern,
+        validPattern: ValidationConstants.resourceIdValidPattern,
         sanitize: (apiTitle: string): string => {
             return NamingRules.short(NamingRules.sanitizeId(apiTitle, true, false), 40);
         }
     }
 
     static versionIdentity: INamingRule & ISanitizer = {
-        minLength: ValidationConstants.DefaultMinLength,
+        minLength: ValidationConstants.defaultMinLength,
         maxLength: 15,
-        validPattern: ValidationConstants.ResourceIdValidPattern,
+        validPattern: ValidationConstants.resourceIdValidPattern,
         sanitize: (apiVersion: string): string => {
             return NamingRules.short(NamingRules.sanitizeId(apiVersion, true, false), 15);
         }
     }
 
     static resourceGroupName: INamingRule = {
-        minLength: ValidationConstants.DefaultMinLength,
+        minLength: ValidationConstants.defaultMinLength,
         maxLength: 90,
-        validPattern: ValidationConstants.ResourceGroupValidPattern,
+        validPattern: ValidationConstants.resourceGroupValidPattern,
     }
 
     static apimServiceName: INamingRule & ISanitizer = {
-        minLength: ValidationConstants.DefaultMinLength,
+        minLength: ValidationConstants.defaultMinLength,
         maxLength: 50,
-        validPattern: ValidationConstants.ServiceIdValidPattern,
+        validPattern: ValidationConstants.serviceIdValidPattern,
         sanitize(appName: string, suffix: string): string {
             return `${NamingRules.short(appName, 48 - suffix.length)}am${suffix}`;
         }
     }
 
     static productId: INamingRule & ISanitizer = {
-        minLength: ValidationConstants.DefaultMinLength,
-        maxLength: ValidationConstants.DefaultMaxLength,
-        validPattern: ValidationConstants.DefaultValidPattern,
+        minLength: ValidationConstants.defaultMinLength,
+        maxLength: ValidationConstants.defaultMaxLength,
+        validPattern: ValidationConstants.defaultValidPattern,
         sanitize(appName: string, suffix: string): string {
             return `${NamingRules.short(appName, 80 - suffix.length - 9)}-${suffix}-product`;
         }
     };
 
     static oAuthServerId: INamingRule & ISanitizer = {
-        minLength: ValidationConstants.DefaultMinLength,
-        maxLength: ValidationConstants.DefaultMaxLength,
-        validPattern: ValidationConstants.DefaultValidPattern,
+        minLength: ValidationConstants.defaultMinLength,
+        maxLength: ValidationConstants.defaultMaxLength,
+        validPattern: ValidationConstants.defaultValidPattern,
         sanitize(appName: string, suffix: string): string {
             return `${NamingRules.short(appName, 80 - suffix.length - 8)}-${suffix}-server`;
         }
     };
 
     static versionSetId: INamingRule & ISanitizer = {
-        minLength: ValidationConstants.DefaultMinLength,
-        maxLength: ValidationConstants.DefaultMaxLength,
-        validPattern: ValidationConstants.DefaultValidPattern,
+        minLength: ValidationConstants.defaultMinLength,
+        maxLength: ValidationConstants.defaultMaxLength,
+        validPattern: ValidationConstants.defaultValidPattern,
         sanitize(apiNamePrefix: string, suffix: string): string {
             return md5(`${apiNamePrefix}-${suffix}`);
         }
     }
 
     static apiPath: INamingRule & ISanitizer = {
-        minLength: ValidationConstants.DefaultMinLength,
-        maxLength: ValidationConstants.DefaultMaxLength,
-        validPattern: ValidationConstants.DefaultValidPattern,
+        minLength: ValidationConstants.defaultMinLength,
+        maxLength: ValidationConstants.defaultMaxLength,
+        validPattern: ValidationConstants.defaultValidPattern,
         sanitize(apiNamePrefix: string, suffix: string): string {
-            return `${NamingRules.short(apiNamePrefix, ValidationConstants.DefaultMaxLength - suffix.length - 1)}-${suffix}`;
+            return `${NamingRules.short(apiNamePrefix, ValidationConstants.defaultMaxLength - suffix.length - 1)}-${suffix}`;
         }
     }
 
     static apiId: INamingRule & ISanitizer = {
-        minLength: ValidationConstants.DefaultMinLength,
+        minLength: ValidationConstants.defaultMinLength,
         maxLength: 80,
-        validPattern: ValidationConstants.ResourceIdValidPattern,
+        validPattern: ValidationConstants.resourceIdValidPattern,
         sanitize(apiNamePrefix: string, versionIdentity: string, suffix: string): string {
             return `${NamingRules.short(apiNamePrefix, 40)}-${NamingRules.short(suffix, 20)}-${NamingRules.short(versionIdentity, 15)}`;
         }
     }
 
     static apimClientAADObjectId: INamingRule = {
-        validPattern: ValidationConstants.GuidValidPattern
+        validPattern: ValidationConstants.guidValidPattern
     }
     static apimClientAADClientId: INamingRule = {
-        validPattern: ValidationConstants.GuidValidPattern
+        validPattern: ValidationConstants.guidValidPattern
     }
 
     static aadDisplayName: ISanitizer = {
         sanitize(appName: string): string {
-            return `${NamingRules.short(appName, ValidationConstants.DefaultMaxLength - 7)}-client`;
+            return `${NamingRules.short(appName, ValidationConstants.defaultMaxLength - 7)}-client`;
         }
     }
 
     static aadSecretDisplayName: ISanitizer = {
         sanitize(appName: string): string {
-            return NamingRules.short(appName, ValidationConstants.DefaultMaxLength);
+            return NamingRules.short(appName, ValidationConstants.defaultMaxLength);
         }
     }
 
     static versionSetDisplayName: ISanitizer = {
         sanitize(apiTitle: string): string {
-            return NamingRules.short(apiTitle, ValidationConstants.DefaultMaxLength);
+            return NamingRules.short(apiTitle, ValidationConstants.defaultMaxLength);
         }
     }
 

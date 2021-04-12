@@ -28,4 +28,5 @@ export class Messages {
     public static readonly ReferToIssueLink = `Please refer to ${Links.ISSUE_LINK}.`;
     public static readonly ReferToHelpLink = `Please refer to ${Links.HELP_LINK}.`;
     public static readonly CommandFailWithMessage = (command: string, message: string): string => `Run ${command} failed with message: ${message}`;
+    public static readonly DoSthBeforeSth = (sth: string, beforeSth: string): string => `Please do ${sth} before ${beforeSth}.`;
 }

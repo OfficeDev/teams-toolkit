@@ -1,9 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import * as fs from "fs-extra";
+import * as path from "path";
 import { cpUtils } from "../cpUtils";
 import { IDepsChecker, DepsCheckerError, DepsInfo } from "./checker";
 import { funcToolCheckerEnabled, hasTeamsfxBackend, logger, runWithProgressIndicator } from "./checkerAdapter";
+import { isWindows } from "./common";
 
 enum FuncVersion {
   v1 = "1",
@@ -117,6 +120,37 @@ async function installFuncCoreTools(version: FuncVersion): Promise<void> {
     "-g",
     `${funcPackageName}@${version}`
   );
+
+  // delete func.ps1 if exists to workaround the powershell execution policy issue:
+  // https://github.com/npm/cli/issues/470
+  if (isWindows()) {
+    const funcPSScript = await getFuncPSScriptPath();
+    if (await fs.pathExists(funcPSScript)) {
+      await fs.remove(funcPSScript);
+    }
+  }
+}
+
+async function getFuncPSScriptPath(): Promise<string> {
+  try {
+    const output = await cpUtils.executeCommand(
+      undefined,
+      logger,
+      {
+        shell: "cmd.exe"
+      },
+      "where",
+      "func",
+    );
+
+    const funcPath = output.split(/\r?\n/)[0];
+    const funcFolder = path.dirname(funcPath);
+
+    return path.join(funcFolder, "func.ps1");
+  } catch {
+    // ignore error and regard func.ps1 as not found.
+    return "";
+  }
 }
 
 function getFuncToolsVersion(output: string): FuncVersion | null {

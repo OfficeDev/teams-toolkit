@@ -48,33 +48,33 @@ export class ProgressBarConstants {
     public static readonly SCAFFOLD_STEPS_NUM: number = 2;
 
     public static readonly PROVISION_TITLE: string = "Provisioning Bot";
-    public static readonly PROVISION_STEP_START = "Start to do provisioning.";
-    public static readonly PROVISION_STEP_BOT_REG = "Start to do bot registration.";
-    public static readonly PROVISION_STEP_WEB_APP = "Start to provision azure web app.";
+    public static readonly PROVISION_STEP_START = "Provisioning azure resources.";
+    public static readonly PROVISION_STEP_BOT_REG = "Registering bot.";
+    public static readonly PROVISION_STEP_WEB_APP = "Provisioning azure web app.";
 
     public static readonly PROVISION_STEPS_NUM: number = 2;
 
     public static readonly LOCAL_DEBUG_TITLE: string = "Local Debug Provisioning Bot";
-    public static readonly LOCAL_DEBUG_STEP_START = "Start to do local debug provisioning.";
-    public static readonly LOCAL_DEBUG_STEP_BOT_REG = "Start to do bot registration.";
+    public static readonly LOCAL_DEBUG_STEP_START = "Provisioning local debug.";
+    public static readonly LOCAL_DEBUG_STEP_BOT_REG = "Registering bot.";
 
     public static readonly LOCAL_DEBUG_STEPS_NUM: number = 1;
 
     public static readonly DEPLOY_TITLE: string = "Deploying Bot";
-    public static readonly DEPLOY_STEP_START = "Start to do deployment.";
-    public static readonly DEPLOY_STEP_BUILD_ZIP = "Start to build and zip package.";
-    public static readonly DEPLOY_STEP_LIST_CRED = "Start to list publish credentials.";
-    public static readonly DEPLOY_STEP_ZIP_DEPLOY = "Start to do zip deployment.";
+    public static readonly DEPLOY_STEP_START = "Start to deploy.";
+    public static readonly DEPLOY_STEP_NPM_INSTALL = "Running npm install.";
+    public static readonly DEPLOY_STEP_ZIP_FOLDER = "Zipping package folder."
+    public static readonly DEPLOY_STEP_ZIP_DEPLOY = "Uploading package.";
 
     public static readonly DEPLOY_STEPS_NUM: number = 3;
 
 }
 
 export class QuestionNames {
-    public static readonly PROGRAMMING_LANGUAGE = "programmingLanguageQuestion";
-    public static readonly WAY_TO_REGISTER_BOT = "wayToRegisterBotQuestion";
-    public static readonly GET_BOT_ID = "botIdQuestion";
-    public static readonly GET_BOT_PASSWORD = "botPasswordQuestion";
+    public static readonly PROGRAMMING_LANGUAGE = "programming-language";
+    public static readonly WAY_TO_REGISTER_BOT = "way-to-register-bot";
+    public static readonly GET_BOT_ID = "bot-id";
+    public static readonly GET_BOT_PASSWORD = "bot-password";
     public static readonly CAPABILITIES = "capabilities";
 }
 
@@ -107,6 +107,8 @@ export class LifecycleFuncNames {
 export class Retry {
     public static readonly GENERATE_CLIENT_SECRET_TIMES = 10;
     public static readonly GENERATE_CLIENT_SECRET_GAP_MS = 5000;
+    public static readonly UPDATE_MESSAGE_ENDPOINT_TIMES = 10;
+    public static readonly UPDATE_MESSAGE_ENDPOINT_GAP_MS = 5000;
 }
 export class ExceptionNames {
     // System Exceptions
@@ -153,7 +155,7 @@ export class QuestionOptions {
 
     public static readonly PROGRAMMING_LANGUAGE_OPTIONS: OptionItem[] = Object.values(ProgrammingLanguage).map((value) => {
         return {
-            id: value.toLowerCase(),
+            id: value,
             label: value
         };
     });
@@ -175,5 +177,10 @@ export class AuthValues {
 }
 
 export class DeployConfigs {
-    public static readonly UN_PACK_DIRS = ["node_modules"];
+    public static readonly UN_PACK_DIRS = ["node_modules", "package-lock.json"];
+}
+
+export class FolderNames {
+    public static readonly NODE_MODULES = "node_modules";
+    public static readonly KEYTAR = "keytar";
 }

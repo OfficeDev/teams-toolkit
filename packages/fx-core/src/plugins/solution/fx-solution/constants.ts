@@ -85,6 +85,7 @@ export enum SolutionError {
     InternelError = "InternelError",
     RegisterTeamsAppAndAadError = "RegisterTeamsAppAndAadError",
     UpdateManifestError = "UpdateManifestError",
+    GetLocalDebugConfigError = "GetLocalDebugConfigError",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";

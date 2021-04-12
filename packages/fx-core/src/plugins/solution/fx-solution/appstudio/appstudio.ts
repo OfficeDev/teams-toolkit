@@ -213,9 +213,9 @@ export namespace AppStudio {
     export function getDevAppDefinition(
         manifest: string,
         appId: string,
-        endpoint: string,
         domains: string[],
         webApplicationInfoResource: string,
+        tabEndpoint?: string,
         appName?: string,
         version?: string,
         bots?: string,
@@ -227,7 +227,7 @@ export namespace AppStudio {
         if (version) {
             manifest = replaceConfigValue(manifest, "version", version);
         }
-        manifest = replaceConfigValue(manifest, "baseUrl", endpoint ? endpoint : "https://localhost:3000");
+        manifest = replaceConfigValue(manifest, "baseUrl", tabEndpoint ? tabEndpoint : "https://localhost:3000");
         manifest = replaceConfigValue(manifest, "appClientId", appId);
         manifest = replaceConfigValue(manifest, "appid", appId);
         manifest = replaceConfigValue(manifest, "webApplicationInfoResource", webApplicationInfoResource);

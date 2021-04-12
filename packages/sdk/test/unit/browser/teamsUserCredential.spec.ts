@@ -338,7 +338,7 @@ describe("TeamsUserCredential - browser", () => {
     const credential: any = new TeamsUserCredential();
     const scopeStr = "user.read";
     sinon
-      .stub(TeamsUserCredential.prototype, <any>"getAndCacheAccessTokenFromRuntimeConnector")
+      .stub(TeamsUserCredential.prototype, <any>"getAndCacheAccessTokenFromSimpleAuthServer")
       .callsFake(
         async (scopesStr: string): Promise<AccessToken> => {
           return new Promise((resolve, reject) => {
@@ -377,7 +377,7 @@ describe("TeamsUserCredential - browser", () => {
     const credential: any = new TeamsUserCredential();
     const scopeStr = "user.read";
     sinon
-      .stub(TeamsUserCredential.prototype, <any>"getAndCacheAccessTokenFromRuntimeConnector")
+      .stub(TeamsUserCredential.prototype, <any>"getAndCacheAccessTokenFromSimpleAuthServer")
       .callsFake(
         async (scopesStr: string): Promise<AccessToken> => {
           throw new ErrorWithCode(

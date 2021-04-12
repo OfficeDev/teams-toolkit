@@ -21,6 +21,8 @@ export enum TelemetryEvent {
   UpdateAadStart = "update-aad-start",
   UpdateAad = "update-aad",
 
+  PublishStart = "publish-start",
+
   F5Start = "f5-start",
   F5 = "f5"
 }

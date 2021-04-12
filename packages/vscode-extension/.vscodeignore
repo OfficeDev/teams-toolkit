@@ -14,13 +14,10 @@ commitlint.config.js
 build/**
 .prettierrc.json
 .prettierignore
-node_modules/**
 webpack.config.js
 .github
 
+#remove node modules after fx-core support webpack
+#node_modules/**
+
 !node_modules/fx-core
-!node_modules/adm-zip
-!node_modules/keytar
-!node_modules/diagnostic-channel
-!node_modules/diagnostic-channel-publishers
-!node_modules/applicationinsights-native-metrics 

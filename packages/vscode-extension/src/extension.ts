@@ -47,6 +47,12 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(deployCmd);
 
+  const publishCmd = vscode.commands.registerCommand(
+    "fx-extension.publish",
+    handlers.publishHandler
+  );
+  context.subscriptions.push(publishCmd);
+
   // 1.6 update aad command
   const updateAadCmd = vscode.commands.registerCommand(
     "fx-extension.updateAad",

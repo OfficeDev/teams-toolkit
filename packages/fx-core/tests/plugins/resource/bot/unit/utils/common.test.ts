@@ -113,4 +113,18 @@ describe("Common Utils", () => {
             chai.assert.isTrue(result.length > 0);
         });
     });
+
+    describe("convertToTelemetryName", () => {
+        it("Happy Path", () => {
+            // Arrange
+            const raw = "A b C";
+
+            // Act
+            const result = utils.convertToTelemetryName(raw);
+            console.log(result);
+
+            // Assert
+            chai.assert.isTrue(result === "a-b-c");
+        });
+    });
 });

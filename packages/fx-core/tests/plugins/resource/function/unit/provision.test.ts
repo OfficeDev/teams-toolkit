@@ -21,7 +21,9 @@ const context: any = {
         [DependentPluginInfo.aadPluginName, new Map<string, string>([
             [DependentPluginInfo.aadClientId, "ut"],
             [DependentPluginInfo.aadClientSecret, "ut"],
-            [DependentPluginInfo.aadOauthAuthority, "ut"],
+            [DependentPluginInfo.oauthHost, "ut"],
+            [DependentPluginInfo.tenantId, "ut"],
+            [DependentPluginInfo.applicationIdUris, "ut"],
         ])],
         [DependentPluginInfo.frontendPluginName, new Map<string, string>([
             [DependentPluginInfo.frontendDomain, "ut"],

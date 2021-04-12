@@ -14,7 +14,7 @@ export class ProvisionConfig {
     public botChannelRegName?: string;
     public siteName?: string;
     public siteEndpoint?: string;
-    public redirectUri?: string;
+    public redirectUri?: string; // it's going to be useless, mark.
     public serviceClientCredentials?: ServiceClientCredentials;
     public graphToken?: string;
     public provisioned = false;

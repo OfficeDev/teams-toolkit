@@ -5,7 +5,6 @@
 
 import { Result, FxError, err, ok, Core, UserError, SystemError } from "fx-api";
 
-import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLoginCI";
 import AppStudioTokenProvider from "./commonlib/appStudioLogin";
 import CLILogProvider from "./commonlib/log";
@@ -29,13 +28,6 @@ export default async function activate(rootPath?: string): Promise<Result<Core, 
 
     {
       const result = await core.init();
-      if (result.isErr()) {
-        return err(result.error);
-      }
-    }
-
-    {
-      const result = await core.withGraphToken(GraphManagerInstance);
       if (result.isErr()) {
         return err(result.error);
       }

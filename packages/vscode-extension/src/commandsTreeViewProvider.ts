@@ -72,7 +72,15 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
           undefined,
           "manifestEditor"
         ),
-        new TreeViewCommand("Provision", "Provision resources", "fx-extension.provision"),
+        new TreeViewCommand(
+          "Provision",
+          "Provision resources",
+          "fx-extension.provision",
+          vscode.TreeItemCollapsibleState.None,
+          undefined,
+          undefined,
+          "provision"
+        ),
         new TreeViewCommand(
           "Deploy",
           "Deploy resources",
@@ -81,6 +89,15 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
           undefined,
           undefined,
           "deploy"
+        ),
+        new TreeViewCommand(
+          "Publish to Teams",
+          "Publish to Teams",
+          "fx-extension.publish",
+          vscode.TreeItemCollapsibleState.None,
+          undefined,
+          undefined,
+          "publish"
         )
       ]
     );

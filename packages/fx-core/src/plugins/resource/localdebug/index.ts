@@ -3,7 +3,7 @@
 "use strict";
 
 import * as fs from "fs-extra";
-import { Func, FxError, Platform, Plugin, PluginContext, Result, err, ok } from "fx-api";
+import { Func, FxError, Platform, Plugin, PluginContext, Result, err, ok, VsCodeEnv } from "fx-api";
 import * as os from "os";
 
 import { LocalCertificateManager } from "./certificate";
@@ -16,6 +16,7 @@ import { LocalEnvProvider } from "./localEnv";
 import { MissingStep, NgrokTunnelNotConnected } from "./util/error";
 import { prepareLocalAuthService } from "./util/localService";
 import { getNgrokHttpUrl } from "./util/ngrok";
+import { getCodespaceName, getCodespaceUrl } from "./util/codespace";
 
 export class LocalDebugPlugin implements Plugin {
 
@@ -110,16 +111,41 @@ export class LocalDebugPlugin implements Plugin {
         // TODO: dynamicly determine local ports
         if (ctx.platform === Platform.VSCode)
         {
+            const vscEnv = ctx.answers?.getString("vscEnv");
+
+            let localTabEndpoint: string;
+            let localTabDomain: string;
+            let localAuthEndpoint: string;
+            let localFuncEndpoint: string;
+
+            if (vscEnv === VsCodeEnv.codespaceBrowser || vscEnv === VsCodeEnv.codespaceVsCode) {
+                const codespaceName = await getCodespaceName();
+
+                localTabDomain = `${codespaceName}-3000`;
+                localTabEndpoint = getCodespaceUrl(codespaceName, 3000);
+                localAuthEndpoint =  getCodespaceUrl(codespaceName, 5000);
+                localFuncEndpoint =  getCodespaceUrl(codespaceName, 7071);
+            } else {
+                localTabDomain = "localhost";
+                localTabEndpoint = "https://localhost:3000";
+                localAuthEndpoint = "http://localhost:5000";
+                localFuncEndpoint = "http://localhost:7071";
+            }
+
+            const includeFrontend = ctx.configOfOtherPlugins.has(FrontendHostingPlugin.Name);
             const includeBackend = ctx.configOfOtherPlugins.has(FunctionPlugin.Name);
             const includeBot = ctx.configOfOtherPlugins.has(BotPlugin.Name);
 
-            ctx.config.set(LocalDebugConfigKeys.LocalAuthEndpoint, "http://localhost:5000");
-            ctx.config.set(LocalDebugConfigKeys.LocalTabEndpoint, "https://localhost:3000");
-            ctx.config.set(LocalDebugConfigKeys.LocalTabDomain, "localhost");
+            ctx.config.set(LocalDebugConfigKeys.LocalAuthEndpoint, localAuthEndpoint);
+
+            if (includeFrontend) {
+                ctx.config.set(LocalDebugConfigKeys.LocalTabEndpoint, localTabEndpoint);
+                ctx.config.set(LocalDebugConfigKeys.LocalTabDomain, localTabDomain);
+            }
 
             if (includeBackend)
             {
-                ctx.config.set(LocalDebugConfigKeys.LocalFunctionEndpoint, "http://localhost:7071");
+                ctx.config.set(LocalDebugConfigKeys.LocalFunctionEndpoint, localFuncEndpoint);
             }
 
             if (includeBot) {
@@ -170,6 +196,7 @@ export class LocalDebugPlugin implements Plugin {
                 // frontend local envs
                 localEnvs[LocalEnvFrontendKeys.TeamsFxEndpoint] = localDebugConfigs.get(LocalDebugConfigKeys.LocalAuthEndpoint) as string;
                 localEnvs[LocalEnvFrontendKeys.LoginUrl] = `${localDebugConfigs.get(LocalDebugConfigKeys.LocalTabEndpoint) as string}/auth-start.html`;
+                localEnvs[LocalEnvFrontendKeys.ClientId] = clientId;
 
                 if (includeBackend) {
                     localEnvs[LocalEnvFrontendKeys.FuncEndpoint] = localDebugConfigs.get(LocalDebugConfigKeys.LocalFunctionEndpoint) as string;
@@ -178,8 +205,10 @@ export class LocalDebugPlugin implements Plugin {
                     // function local envs
                     localEnvs[LocalEnvBackendKeys.ClientId] = clientId;
                     localEnvs[LocalEnvBackendKeys.ClientSecret] = clientSecret;
-                    localEnvs[LocalEnvBackendKeys.OauthAuthority] = `https://login.microsoftonline.com/${teamsAppTenantId}`;
-                    localEnvs[LocalEnvBackendKeys.FuncEndpoint] = localDebugConfigs.get(LocalDebugConfigKeys.LocalFunctionEndpoint) as string;
+                    localEnvs[LocalEnvBackendKeys.AuthorityHost] = "https://login.microsoftonline.com";
+                    localEnvs[LocalEnvBackendKeys.TenantId] = teamsAppTenantId;
+                    localEnvs[LocalEnvBackendKeys.ApiEndpoint] = localDebugConfigs.get(LocalDebugConfigKeys.LocalFunctionEndpoint) as string;
+                    localEnvs[LocalEnvBackendKeys.ApplicationIdUri] = aadConfigs?.get(AadPlugin.LocalAppIdUri) as string;
                     localEnvs[LocalEnvBackendKeys.AllowedAppIds] = [teamsMobileDesktopAppId, teamsWebAppId].join(";");
 
                     // TODO: SQL Local Debug
@@ -206,7 +235,7 @@ export class LocalDebugPlugin implements Plugin {
                 localEnvs[LocalEnvBotKeys.ClientId] = clientId;
                 localEnvs[LocalEnvBotKeys.ClientSecret] = clientSecret;
                 localEnvs[LocalEnvBotKeys.TenantID] = teamsAppTenantId;
-                localEnvs[LocalEnvBotKeys.OauthAuthority] = `https://login.microsoftonline.com/${teamsAppTenantId}/oauth2/v2.0/token`;
+                localEnvs[LocalEnvBotKeys.OauthAuthority] = "https://login.microsoftonline.com";
                 localEnvs[LocalEnvBotKeys.LoginUrl] = `${localDebugConfigs.get(LocalDebugConfigKeys.LocalBotEndpoint) as string}/auth-start.html`;
                 localEnvs[LocalEnvBotKeys.IdentifierUri] = aadConfigs?.get(AadPlugin.LocalAppIdUri) as string;
             }

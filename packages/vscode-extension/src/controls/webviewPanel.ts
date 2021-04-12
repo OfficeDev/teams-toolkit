@@ -8,6 +8,10 @@ import { Commands } from "./Commands";
 import axios from "axios";
 import * as AdmZip from "adm-zip";
 import * as fs from "fs-extra";
+import AzureAccountManager from "../commonlib/azureLogin";
+import AppStudioTokenInstance from "../commonlib/appStudioLogin";
+import { runCommand } from "../handlers";
+import { Stage } from "fx-api";
 
 export class WebviewPanel {
   private static readonly viewType = "react";
@@ -83,6 +87,20 @@ export class WebviewPanel {
             break;
           case Commands.DisplayCommandPalette:
             break;
+          case Commands.DisplayCliCommands:
+            const terminal = vscode.window.activeTerminal ? vscode.window.activeTerminal : vscode.window.createTerminal("Teams toolkit");
+            terminal.show();
+            terminal.sendText(msg.data);
+            break;
+          case Commands.SigninM365:
+            await AppStudioTokenInstance.getJsonObject(false);
+            break;
+          case Commands.SigninAzure:
+            await AzureAccountManager.getAccountCredentialAsync(false);
+            break;
+          case Commands.CreateNewProject:
+            await runCommand(Stage.create);
+            break;
           default:
             break;
         }
@@ -90,6 +108,41 @@ export class WebviewPanel {
       undefined,
       ext.context.subscriptions
     );
+
+    AppStudioTokenInstance.setStatusChangeCallback((status, token, accountInfo) => {
+      let email = undefined;
+      if (status === "SignedIn") {
+        email = (accountInfo as any).upn ? (accountInfo as any).upn : undefined;
+      }
+
+      if (this.panel && this.panel.webview) {
+        this.panel.webview.postMessage({
+          message: "m365AccountChange",
+          data: email
+        });
+      }
+
+      return Promise.resolve();
+    });
+
+    AzureAccountManager.setStatusChangeCallback((status, token, accountInfo) => {
+      let email = undefined;
+      if (status === "SignedIn") {
+        const token = AzureAccountManager.getAccountCredential();
+        if (token !== undefined) {
+          email = (token as any).username ? (token as any).username : undefined;
+        }
+      }
+
+      if (this.panel && this.panel.webview) {
+        this.panel.webview.postMessage({
+          message: "azureAccountChange",
+          data: email
+        });
+      }
+
+      return Promise.resolve();
+    });
 
     // Set the webview's initial html content
     this.panel.webview.html = this.getHtmlForWebview();
@@ -184,6 +237,14 @@ export class WebviewPanel {
 
   public dispose() {
     WebviewPanel.currentPanel = undefined;
+
+    AppStudioTokenInstance.setStatusChangeCallback((status, token, accountInfo) => {
+      return Promise.resolve();
+    });
+
+    AzureAccountManager.setStatusChangeCallback((status, token, accountInfo) => {
+      return Promise.resolve();
+    });
 
     // Clean up our resources
     this.panel.dispose();

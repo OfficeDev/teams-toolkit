@@ -10,6 +10,10 @@ export class LocalDebugConfig {
     public localBotPassword?: string;
     public localRedirectUri?: string;
 
+    public botRegistrationCreated(): boolean {
+        return this.localBotId !== undefined && this.localBotPassword !== undefined;
+    }
+
     public async restoreConfigFromContext(context: PluginContext): Promise<void> {
         const localBotEndpoint: ConfigValue | undefined = context.configOfOtherPlugins
             .get(PluginLocalDebug.PLUGIN_NAME)

@@ -1,0 +1,123 @@
+.quick-start-page{
+  margin: 100px 100px 100px 100px;
+
+    .section{
+        display: flex;
+        margin-bottom: 36px;
+    }
+
+    .flex-section{
+    display: flex;
+    }
+
+    .table-of-contents{
+    width: 50%;
+    margin-right: 90px;
+    }
+
+    .logo{
+        width: 28px;
+        height: 28px;
+        font-size: 28px;
+        color: #3794FF;
+    }
+
+    .title{
+    width: auto;
+    margin-left: 12px;
+
+    h2{
+        font-size: 26px;
+        line-height: 30px;
+        color: #CCCCCC;
+        margin-top: 0px;
+        margin-bottom: 0px;
+        font-weight: normal;
+    }
+
+    h3{
+        font-size: 12px;
+        line-height: 14px;
+        color: #CCCCCC;
+        margin-top: 0px;
+        margin-bottom: 0px;
+        font-weight: normal;
+    }
+    }
+
+    .stage{
+    width: 50%;
+    }
+
+    .action-card{
+    background-color: #252526;
+    border-radius: 4px;
+    padding: 12px 12px 12px 12px;
+    margin-bottom: 12px;
+    }
+
+    .collapse-action-card{
+    padding: 12px 12px 12px 12px;
+    margin-bottom: 12px;
+    }
+
+    .action-icon{
+    min-width: 16px;
+    margin-right: 8px;
+    font-size: 16px;
+    }
+
+    .action-title{
+    font-size: 13px;
+    line-height: 15px;
+    }
+
+    .action-content{
+        font-size: 12px;
+        color: #BBBBBB;
+    }
+
+    .left{
+    float: left;
+
+    button{
+        background-color: #0E639C;
+    }
+
+    span{
+        font-size: 13px;
+        line-height: 15px;
+        align-items: center;
+        text-align: center;
+        font-weight: normal;
+    }
+    }
+
+    .right{
+    float: right;
+
+    span{
+        font-size: 13px;
+        line-height: 15px;
+        align-items: center;
+        text-align: center;
+        color: #3794FF;
+    }
+    }
+
+    .tip{
+    color: #808080;
+    font-size: 11px;
+    line-height: 16px;
+    align-items: center;
+    }
+
+    .card-line{
+    margin-bottom: 8px;
+    }
+
+    .left-right-align{
+    overflow: hidden;
+    }
+}
+

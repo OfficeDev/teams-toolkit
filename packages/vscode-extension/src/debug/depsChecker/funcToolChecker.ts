@@ -1,11 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import * as fs from "fs-extra";
+import * as path from "path";
 import { cpUtils } from "../cpUtils";
 import { IDepsChecker, DepsCheckerError, DepsInfo } from "./checker";
 import { funcToolCheckerEnabled, hasTeamsfxBackend, logger, runWithProgressIndicator } from "./checkerAdapter";
+import { isWindows } from "./common";
 
-enum FuncVersion {
+export enum FuncVersion {
   v1 = "1",
   v2 = "2",
   v3 = "3"
@@ -64,7 +67,7 @@ export class FuncToolChecker implements IDepsChecker {
     }
 
     logger.info(startInstallFunctionCoreTool);
-    await runWithProgressIndicator(logger.outputChannel, async () => {
+    await runWithProgressIndicator(async () => {
       try {
         await installFuncCoreTools(FuncVersion.v3);
       } catch (error) {
@@ -117,9 +120,40 @@ async function installFuncCoreTools(version: FuncVersion): Promise<void> {
     "-g",
     `${funcPackageName}@${version}`
   );
+
+  // delete func.ps1 if exists to workaround the powershell execution policy issue:
+  // https://github.com/npm/cli/issues/470
+  if (isWindows()) {
+    const funcPSScript = await getFuncPSScriptPath();
+    if (await fs.pathExists(funcPSScript)) {
+      await fs.remove(funcPSScript);
+    }
+  }
 }
 
-function getFuncToolsVersion(output: string): FuncVersion | null {
+async function getFuncPSScriptPath(): Promise<string> {
+  try {
+    const output = await cpUtils.executeCommand(
+      undefined,
+      logger,
+      {
+        shell: "cmd.exe"
+      },
+      "where",
+      "func",
+    );
+
+    const funcPath = output.split(/\r?\n/)[0];
+    const funcFolder = path.dirname(funcPath);
+
+    return path.join(funcFolder, "func.ps1");
+  } catch {
+    // ignore error and regard func.ps1 as not found.
+    return "";
+  }
+}
+
+export function getFuncToolsVersion(output: string): FuncVersion | null {
   const regex = /(?<major_version>\d+)\.(?<minor_version>\d+)\.(?<patch_version>\d+)/gm;
   const match = regex.exec(output);
   if (!match) {

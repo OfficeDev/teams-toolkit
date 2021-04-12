@@ -48,7 +48,7 @@ export class FunctionPlugin {
 }
 
 export class RuntimeConnectorPlugin {
-    public static readonly Name: string = "fx-resource-runtime-connector";
+    public static readonly Name: string = "fx-resource-simple-auth";
     public static readonly FilePath: string = "filePath";
 }
 
@@ -81,18 +81,23 @@ export const LocalEnvFrontendKeys = Object.freeze({
     LoginUrl: "FRONTEND_REACT_APP_START_LOGIN_PAGE_URL",
     FuncEndpoint: "FRONTEND_REACT_APP_FUNC_ENDPOINT",
     FuncName: "FRONTEND_REACT_APP_FUNC_NAME",
+    ClientId: "FRONTEND_REACT_APP_CLIENT_ID",
 });
 
 export const LocalEnvBackendKeys = Object.freeze({
     WebJobsStorage: "BACKEND_AzureWebJobsStorage",
     FuncWorkerRuntime: "BACKEND_FUNCTIONS_WORKER_RUNTIME",
-    ClientId: "BACKEND_CLIENT_ID",
-    ClientSecret: "BACKEND_CLIENT_SECRET",
-    OauthAuthority: "BACKEND_OAUTH_AUTHORITY",
-    FuncEndpoint: "BACKEND_FUNCTION_ENDPOINT",
+    AuthorityHost: "BACKEND_M365_AUTHORITY_HOST",
+    TenantId: "BACKEND_M365_TENANT_ID",
+    ClientId: "BACKEND_M365_CLIENT_ID",
+    ClientSecret: "BACKEND_M365_CLIENT_SECRET",
     SqlEndpoint: "BACKEND_SQL_ENDPOINT",
-    SqlDbName: "BACKEND_DATABASE_NAME",
+    SqlDbName: "BACKEND_SQL_DATABASE_NAME",
+    SqlUserName: "BACKEND_SQL_USER_NAME",
+    SqlPassword: "BACKEND_SQL_PASSWORD",
     IdentityId: "BACKEND_IDENTITY_ID",
+    ApiEndpoint: "BACKEND_API_ENDPOINT",
+    ApplicationIdUri: "BACKEND_M365_APPLICATION_ID_URI",
     AllowedAppIds: "BACKEND_ALLOWED_APP_IDS",
 });
 

@@ -84,7 +84,7 @@ export class ErrorMessage {
         message: () => "Unhandled Error"
     };
 
-    public static readonly IdentityCredentialUndefine = (platform: string, user: string, databaseName: string) => `this tool can't support to access database ${databaseName} in ${platform}. You can add database user ${user} manually`;
+    public static readonly IdentityCredentialUndefine = (platform: string, user: string, databaseName: string) => `it is not supported to access database ${databaseName} in ${platform}. You can add database user ${user} manually`;
 
     public static readonly ServicePrincipalWarning = (user: string, databaseName: string) => `service principal admin in azure sql can't add database user <${user}>. You can add the user for ${databaseName} manually`;
 }

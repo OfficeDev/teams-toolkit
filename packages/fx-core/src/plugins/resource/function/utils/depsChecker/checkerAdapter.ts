@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import * as path from "path";
-import { Dialog, DialogMsg, DialogType, QuestionType } from "fx-api";
 import { Logger } from "../logger";
 import { openUrl } from "./common";
 
@@ -22,10 +21,8 @@ export async function runWithProgressIndicator(
 }
 
 export async function displayLearnMore(message: string, link: string): Promise<boolean> {
-  return await displayWarningMessage(message, "Learn more", () => {
-    openUrl(link);
-    return Promise.resolve(true);
-  });
+  // TODO: implement learn more popup in plugin
+  return true;
 }
 
 export async function displayWarningMessage(
@@ -33,24 +30,7 @@ export async function displayWarningMessage(
   buttonText: string,
   action: () => Promise<boolean>
 ): Promise<boolean> {
-  const answer = await _dialog?.communicate(new DialogMsg(
-    DialogType.Ask,
-    {
-      type: QuestionType.Radio,
-      description: message,
-      defaultAnswer: "Cancel",
-      options: [buttonText, "Cancel"],
-    }
-  ));
-  if (answer?.getAnswer() === buttonText) {
-    return await action();
-  }
-
-  return false;
-}
-
-export function setDialog(dialog: Dialog): void {
-  _dialog = dialog;
+  return await action();
 }
 
 export function showOutputChannel(): void {
@@ -60,5 +40,3 @@ export function showOutputChannel(): void {
 export function getResourceDir(): string {
   return path.resolve(path.join(__dirname, "..", "..", "..", "..", "..", "..", "resource", "plugins", "resource", "function"));
 }
-
-let _dialog: Dialog | null;

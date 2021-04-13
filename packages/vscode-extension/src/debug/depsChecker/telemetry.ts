@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { performance } from "perf_hooks";
 import { SystemError, UserError } from "fx-api";
 import { ExtTelemetry, TelemetryProperty } from "./checkerAdapter";
 
@@ -48,10 +49,10 @@ export class DepsCheckerTelemetry {
     eventName: DepsCheckerEvent,
     action: () => Promise<void>
   ): Promise<void> {
-    const start = Date.now();
+    const start = performance.now();
     await action();
     // use seconds instead of milliseconds
-    const timecost = (Date.now() - start) / 1000;
+    const timecost = Number(((performance.now() - start) / 1000).toFixed(2));
     this.sendEvent(eventName, timecost);
   }
 

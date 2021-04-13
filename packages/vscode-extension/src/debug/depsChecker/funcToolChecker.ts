@@ -46,7 +46,8 @@ export class FuncToolChecker implements IDepsChecker {
     const hasBackend = await hasTeamsfxBackend();
     const checkerEnabled = funcToolCheckerEnabled();
     if (!checkerEnabled) {
-      DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.skipCheckFunc);
+      // TODO: should send this event per user.
+      // DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.skipCheckFunc);
     }
 
     return hasBackend && checkerEnabled;
@@ -59,17 +60,20 @@ export class FuncToolChecker implements IDepsChecker {
     DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.checkFunc);
     switch (installedVersion) {
       case FuncVersion.v1:
-        DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.funcV1Installed);
-        DepsCheckerTelemetry.sendUserErrorEvent(
-          DepsCheckerEvent.checkFunc,
-          TelemtryMessages.funcV1Installed
-        );
+        // TODO: should send this event per user.
+        // DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.funcV1Installed);
+        // DepsCheckerTelemetry.sendUserErrorEvent(
+        //   DepsCheckerEvent.checkFunc,
+        //   TelemtryMessages.funcV1Installed
+        // );
         throw new DepsCheckerError(needReplaceWithFuncCoreToolV3, helpLink);
       case FuncVersion.v2:
-        DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.funcV2Installed);
+        // TODO: should send this event per user.
+        // DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.funcV2Installed);
         return installed;
       case FuncVersion.v3:
-        DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.funcV3Installed);
+        // TODO: should send this event per user.
+        // DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.funcV3Installed);
         return installed;
       default:
         return !installed;
@@ -87,7 +91,7 @@ export class FuncToolChecker implements IDepsChecker {
     }
 
     logger.info(startInstallFunctionCoreTool);
-    
+
     try {
       await DepsCheckerTelemetry.sendEventWithDuration(DepsCheckerEvent.installedFunc, async () => {
         await runWithProgressIndicator(async () => {

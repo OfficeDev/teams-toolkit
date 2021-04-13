@@ -30,7 +30,6 @@ import { Messages } from "./resources/messages";
 import { FrontendScaffold as Scaffold } from "./ops/scaffold";
 import { TeamsFxResult } from "./error-factory";
 import { PreDeploySteps, ProgressHelper, ProvisionSteps, ScaffoldSteps } from "./utils/progress-helper";
-import { tabLanguageQuestion } from "./resources/questions";
 import { TemplateInfo } from "./resources/templateInfo";
 
 export class FrontendPluginImpl {
@@ -48,9 +47,6 @@ export class FrontendPluginImpl {
         const res = new QTreeNode({
             type: NodeType.group
         });
-        if (stage === Stage.create) {
-            res.addChild(tabLanguageQuestion);
-        }
         return ok(res);
     }
 

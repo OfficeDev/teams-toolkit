@@ -8,8 +8,8 @@ import { QuestionKey } from "./questions";
 import { TSTemplateNotReadyError } from "./errors";
 
 export class TabLanguage {
-    static readonly JavaScript = "JavaScript";
-    static readonly TypeScript = "TypeScript";
+    static readonly JavaScript = "javascript";
+    static readonly TypeScript = "typescript";
 }
 
 export class Scenario {

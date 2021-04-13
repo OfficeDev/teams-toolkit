@@ -39,7 +39,15 @@ export class DepsChecker {
   // check & install
   public async resolve(): Promise<boolean> {
     const shouldContinue = true;
-    const validCheckers = await this.check();
+
+    let validCheckers: IDepsChecker[];
+    try {
+      validCheckers = await this.check();
+    } catch (error) {
+      await this.handleError(error);
+      return !shouldContinue;
+    }
+
     if (validCheckers.length === 0) {
       return shouldContinue;
     }
@@ -57,12 +65,7 @@ export class DepsChecker {
         try {
           await checker.install();
         } catch (error) {
-          if (error instanceof DepsCheckerError) {
-            await displayLearnMore(error.message, (error as DepsCheckerError).helpLink);
-          } else {
-            await displayLearnMore(Messages.defaultErrorMessage, defaultHelpLink);
-          }
-
+          await this.handleError(error);
           return !shouldContinue;
         }
       }
@@ -96,5 +99,13 @@ export class DepsChecker {
     const installMessage = installPackages.join(" and ");
     const supportedMessage = supportedPackages.join(" and ");
     return Messages.depsNotFound.replace("@InstallPackages", installMessage).replace("@SupportedPackages", supportedMessage);
+  }
+
+  private async handleError(error: Error): Promise<void> {
+    if (error instanceof DepsCheckerError) {
+      await displayLearnMore(error.message, (error as DepsCheckerError).helpLink);
+    } else {
+      await displayLearnMore(Messages.defaultErrorMessage, defaultHelpLink);
+    }
   }
 }

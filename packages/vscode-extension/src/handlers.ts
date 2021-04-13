@@ -22,13 +22,16 @@ import {
   Inputs,
   ConfigMap,
   InputResult,
-  InputResultType
+  InputResultType,
+  VsCodeEnv,
+  AppStudioTokenProvider
 } from "fx-api";
 import { CoreProxy } from "fx-core";
 import DialogManagerInstance from "./userInterface";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
 import AppStudioTokenInstance from "./commonlib/appStudioLogin";
+import AppStudioCodeSpaceTokenInstance from "./commonlib/appStudioCodeSpaceLogin";
 import VsCodeLogInstance from "./commonlib/log";
 import { VSCodeTelemetryReporter } from "./commonlib/telemetry";
 import { CommandsTreeViewProvider, TreeViewCommand } from "./commandsTreeViewProvider";
@@ -44,18 +47,13 @@ import {
 import * as commonUtils from "./debug/commonUtils";
 import { ExtensionErrors, ExtensionSource } from "./error";
 import { WebviewPanel } from "./controls/webviewPanel";
-import { tryValidateFuncCoreToolsInstalled } from "./debug/funcCoreTools/validateFuncCoreToolsInstalled";
-import {
-  dotnetCheckerEnabled,
-  tryValidateDotnetInstalled
-} from "./debug/dotnetSdk/dotnetCheckerAdapter";
-import { DotnetChecker } from "./debug/dotnetSdk/dotnetChecker";
 import * as constants from "./debug/constants";
 import logger from "./commonlib/log";
 import { isFeatureFlag } from "./utils/commonUtils";
 import { cpUtils } from "./debug/cpUtils";
 import * as path from "path";
 import * as fs from "fs-extra";
+import * as vscode from "vscode";
 import { VsCodeUI, VS_CODE_UI } from "./qm/vsc_ui";
 import { DepsChecker, DepsCheckerError } from "./debug/depsChecker/checker";
 import { FuncToolChecker } from "./debug/depsChecker/funcToolChecker";
@@ -94,7 +92,13 @@ export async function activate(): Promise<Result<null, FxError>> {
     }
 
     {
-      const result = await core.withAppStudioToken(AppStudioTokenInstance);
+      let appstudioLogin: AppStudioTokenProvider = AppStudioTokenInstance;
+      const vscodeEnv = detectVsCodeEnv();
+      if (vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode) {
+        appstudioLogin = AppStudioCodeSpaceTokenInstance;
+      }
+      
+      const result = await core.withAppStudioToken(appstudioLogin);
       if (result.isErr()) {
         showError(result.error);
         return err(result.error);
@@ -133,7 +137,7 @@ export async function activate(): Promise<Result<null, FxError>> {
     {
       const globalConfig = new ConfigMap();
       globalConfig.set("featureFlag", isFeatureFlag());
-      globalConfig.set("function-dotnet-checker-enabled", dotnetCheckerEnabled());
+      globalConfig.set("function-dotnet-checker-enabled", dotnetChecker.isEnabled());
       const result = await core.init(globalConfig);
       if (result.isErr()) {
         showError(result.error);
@@ -247,6 +251,9 @@ export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
       throw qres.error;
     }
 
+    answers.set("vscenv", detectVsCodeEnv());
+    VsCodeLogInstance.info(`VS Code Environment: ${detectVsCodeEnv()}`);
+
     // 5. run question model
     const node = qres.value;
     if (node) {
@@ -288,6 +295,24 @@ export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
 
   return result;
 }
+
+function detectVsCodeEnv(): VsCodeEnv {
+    // extensionKind returns ExtensionKind.UI when running locally, so use this to detect remote
+    const extension = vscode.extensions.getExtension("Microsoft.teamsfx-extension");
+
+    if (extension?.extensionKind === vscode.ExtensionKind.Workspace) {
+        // running remotely
+        // Codespaces browser-based editor will return UIKind.Web for uiKind
+        if (vscode.env.uiKind === vscode.UIKind.Web) {
+            return VsCodeEnv.codespaceBrowser;
+        } else {
+            return VsCodeEnv.codespaceVsCode;
+        }
+    } else {
+        // running locally
+        return VsCodeEnv.local;
+    }
+  }
 
 async function runUserTask(func: Func): Promise<Result<null, FxError>> {
   const eventName = func.method;
@@ -474,14 +499,7 @@ export async function backendExtensionsInstallHandler(): Promise<void> {
  */
 export async function preDebugCheckHandler(): Promise<void> {
   let result: Result<any, FxError> = ok(null);
-
-  // try {
-  // TODO(kuojianlu): improve the check
-  const authLocalEnv = await commonUtils.getAuthLocalEnv();
-  const clientID = authLocalEnv ? authLocalEnv["CLIENT_ID"] : undefined;
-  if (clientID === undefined) {
-    result = await runCommand(Stage.debug);
-  }
+  result = await runCommand(Stage.debug);
   if (result.isErr()) {
     throw result.error;
   }
@@ -615,7 +633,12 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
   commands.registerCommand("fx-extension.signOut", async (node: TreeViewCommand) => {
     switch (node.contextValue) {
       case "signedinM365": {
-        const result = await AppStudioTokenInstance.signout();
+        let appstudioLogin: AppStudioTokenProvider = AppStudioTokenInstance;
+        const vscodeEnv = detectVsCodeEnv();
+        if (vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode) {
+          appstudioLogin = AppStudioCodeSpaceTokenInstance;
+        }
+        const result = await appstudioLogin.signout();
         if (result) {
           await CommandsTreeViewProvider.getInstance().refresh([
             {

@@ -21,6 +21,7 @@ export const functionLanguageQuestion = new QTreeNode({
     name: QuestionKey.functionLanguage,
     description: InfoMessages.askFunctionLanguage,
     type: NodeType.singleSelect,
+    default: FunctionLanguage.JavaScript,
     option: [
         FunctionLanguage.JavaScript,
         FunctionLanguage.TypeScript

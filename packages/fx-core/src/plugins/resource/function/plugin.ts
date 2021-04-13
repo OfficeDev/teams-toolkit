@@ -331,12 +331,15 @@ export class FunctionPluginImpl {
                         storageConnectionString)
                 )
             );
+
         if (!site.defaultHostName) {
             Logger.error(ErrorMessages.failToGetFunctionAppEndpoint);
             throw new ProvisionError(ResourceType.functionApp);
         }
 
-        this.config.functionEndpoint = `https://${site.defaultHostName}`;
+        if (!this.config.functionEndpoint) {
+            this.config.functionEndpoint = `https://${site.defaultHostName}`;
+        }
 
         this.syncConfigToContext(ctx);
         return ResultFactory.Success();
@@ -503,10 +506,14 @@ export class FunctionPluginImpl {
                 this.checkAndGet(aadConfig.get(DependentPluginInfo.aadClientId) as string, "AAD client Id");
             const clientSecret: string =
                 this.checkAndGet(aadConfig.get(DependentPluginInfo.aadClientSecret) as string, "AAD secret");
-            const oauthAuthority: string =
-                this.checkAndGet(aadConfig.get(DependentPluginInfo.aadOauthAuthority) as string, "OAuth Authority");
+            const oauthHost: string =
+                this.checkAndGet(aadConfig.get(DependentPluginInfo.oauthHost) as string, "OAuth Host");
+            const tenantId: string =
+                this.checkAndGet(aadConfig.get(DependentPluginInfo.tenantId) as string, "Tenant Id");
+            const applicationIdUris: string =
+                this.checkAndGet(aadConfig.get(DependentPluginInfo.applicationIdUris) as string, "Application Id URI");
 
-            FunctionProvision.updateFunctionSettingsForAAD(site, clientId, clientSecret, oauthAuthority);
+            FunctionProvision.updateFunctionSettingsForAAD(site, clientId, clientSecret, oauthHost, tenantId, applicationIdUris);
         }
 
         const frontendConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(DependentPluginInfo.frontendPluginName);
@@ -530,12 +537,12 @@ export class FunctionPluginImpl {
 
             const identityId: string =
                 this.checkAndGet(identityConfig.get(DependentPluginInfo.identityId) as string, "identity Id");
-            const identityName: string =
-                this.checkAndGet(identityConfig.get(DependentPluginInfo.identityName) as string, "identity name");
             const databaseName: string =
                 this.checkAndGet(sqlConfig.get(DependentPluginInfo.databaseName) as string, "database name");
             const sqlEndpoint: string =
                 this.checkAndGet(sqlConfig.get(DependentPluginInfo.sqlEndpoint) as string, "sql endpoint");
+            const identityName: string =
+                this.checkAndGet(identityConfig.get(DependentPluginInfo.identityName) as string, "identity name");
 
             FunctionProvision.updateFunctionSettingsForSQL(site, identityId, databaseName, sqlEndpoint, identityName);
         }
@@ -561,14 +568,16 @@ export class FunctionPluginImpl {
 
             const clientId: string =
                 this.checkAndGet(aadConfig.get(DependentPluginInfo.aadClientId) as string, "AAD client Id");
-            const oauthAuthority: string =
-                this.checkAndGet(aadConfig.get(DependentPluginInfo.aadOauthAuthority) as string, "OAuth Authority");
+            const oauthHost: string =
+                this.checkAndGet(aadConfig.get(DependentPluginInfo.oauthHost) as string, "OAuth Host");
+            const tenantId: string =
+                this.checkAndGet(aadConfig.get(DependentPluginInfo.tenantId) as string, "tenant Id");
             const frontendEndpoint: string =
                 this.checkAndGet(frontendConfig.get(DependentPluginInfo.frontendEndpoint) as string, "frontend endpoint");
             const frontendDomain: string =
                 this.checkAndGet(frontendConfig.get(DependentPluginInfo.frontendDomain) as string, "frontend domain");
 
-            return FunctionProvision.constructFunctionAuthSettings(clientId, frontendDomain, frontendEndpoint, oauthAuthority);
+            return FunctionProvision.constructFunctionAuthSettings(clientId, frontendDomain, frontendEndpoint, oauthHost, tenantId);
         }
 
         return undefined;

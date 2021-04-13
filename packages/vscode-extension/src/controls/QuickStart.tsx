@@ -274,6 +274,8 @@ export default class QuickStart extends React.Component<any, any>{
         this.setState({
             stepsDone: done
         });
+
+        this.props.history.push('/sample-gallery');
     }
 }
 

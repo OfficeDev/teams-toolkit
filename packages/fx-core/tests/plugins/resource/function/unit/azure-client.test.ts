@@ -38,7 +38,7 @@ describe(FunctionPluginInfo.pluginName, async () => {
             const res = await AzureLib.ensureAppServicePlans(client, resourceGroupName, appServicePlanName, {} as any);
 
             // Assert
-            chai.assert.notEqual(res, undefined);
+            chai.assert.equal(res, undefined);
         });
 
         it("Test ensureAppServicePlans", async () => {

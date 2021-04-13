@@ -1,11 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import * as fs from "fs-extra";
+import * as path from "path";
 import { cpUtils } from "../cpUtils";
 import { IDepsChecker, DepsCheckerError, DepsInfo } from "./checker";
 import { funcToolCheckerEnabled, hasTeamsfxBackend, logger, runWithProgressIndicator } from "./checkerAdapter";
+import { isWindows, Messages, functionCoreToolsHelpLink } from "./common";
 
-enum FuncVersion {
+export enum FuncVersion {
   v1 = "1",
   v2 = "2",
   v3 = "3"
@@ -13,20 +16,7 @@ enum FuncVersion {
 
 const funcPackageName = "azure-functions-core-tools";
 const funcToolName = "Azure Function Core Tool";
-const installedNameWithVersion = `${funcToolName} (v${FuncVersion.v3})`;
-
-// TODO: extract to messages.ts
-const startInstallFunctionCoreTool =
-  `Downloading and installing ${installedNameWithVersion}.`;
-const finishInstallFunctionCoreTool =
-  `Successfully installed ${installedNameWithVersion}.`;
-const needReplaceWithFuncCoreToolV3 =
-  `You must replace with ${installedNameWithVersion} to debug your local functions.`;
-const needInstallFuncCoreTool =
-  `You must have ${installedNameWithVersion} installed to debug your local functions.`;
-const failToInstallFuncCoreTool =
-  `${installedNameWithVersion} installation has failed and will have to be installed manually.`;
-const helpLink = "https://review.docs.microsoft.com/en-us/mods/?branch=main";
+export const installedNameWithVersion = `${funcToolName} (v${FuncVersion.v3})`;
 
 export class FuncToolChecker implements IDepsChecker {
   getDepsInfo(): Promise<DepsInfo> {
@@ -47,7 +37,7 @@ export class FuncToolChecker implements IDepsChecker {
 
     switch (installedVersion) {
       case FuncVersion.v1:
-        throw new DepsCheckerError(needReplaceWithFuncCoreToolV3, helpLink);
+        throw new DepsCheckerError(Messages.needReplaceWithFuncCoreToolV3.replace("@NameVersion", installedNameWithVersion), functionCoreToolsHelpLink);
       case FuncVersion.v2:
         return installed;
       case FuncVersion.v3:
@@ -60,24 +50,24 @@ export class FuncToolChecker implements IDepsChecker {
   async install(): Promise<void> {
     if (!(await hasNPM())) {
       // provided with Learn More link if npm doesn't exist.
-      throw new DepsCheckerError(needInstallFuncCoreTool, helpLink);
+      throw new DepsCheckerError(Messages.needInstallFuncCoreTool.replace("@NameVersion", installedNameWithVersion), functionCoreToolsHelpLink);
     }
 
-    logger.info(startInstallFunctionCoreTool);
-    await runWithProgressIndicator(logger.outputChannel, async () => {
+    logger.info(Messages.startInstallFunctionCoreTool.replace("@NameVersion", installedNameWithVersion));
+    await runWithProgressIndicator(async () => {
       try {
         await installFuncCoreTools(FuncVersion.v3);
       } catch (error) {
-        throw new DepsCheckerError(failToInstallFuncCoreTool, helpLink);
+        throw new DepsCheckerError(Messages.failToInstallFuncCoreTool.replace("@NameVersion", installedNameWithVersion), functionCoreToolsHelpLink);
       }
     });
 
     const isInstalled = await this.isInstalled();
     if (!isInstalled) {
-      throw new DepsCheckerError(failToInstallFuncCoreTool, helpLink);
+      throw new DepsCheckerError(Messages.failToInstallFuncCoreTool.replace("@NameVersion", installedNameWithVersion), functionCoreToolsHelpLink);
     }
 
-    logger.info(finishInstallFunctionCoreTool);
+    logger.info(Messages.finishInstallFunctionCoreTool.replace("@NameVersion", installedNameWithVersion));
   }
 }
 
@@ -107,7 +97,35 @@ async function hasNPM(): Promise<boolean> {
 }
 
 async function installFuncCoreTools(version: FuncVersion): Promise<void> {
-  // TODO: handle the case that npm install globally need admin permission on macOS.
+  if (isWindows()) {
+    await installFuncCoreToolsOnWindows(version);
+  } else {
+    await installFuncCoreToolsOnUnix(version);
+  }
+}
+
+async function installFuncCoreToolsOnWindows(version: FuncVersion): Promise<void> {
+  // on Windows, forced install is needed if the func command is broken.
+  await cpUtils.executeCommand(
+    undefined,
+    logger,
+    undefined,
+    "npm",
+    "install",
+    "-g",
+    "-f",
+    `${funcPackageName}@${version}`
+  );
+
+  // delete func.ps1 if exists to workaround the powershell execution policy issue:
+  // https://github.com/npm/cli/issues/470
+  const funcPSScript = await getFuncPSScriptPath();
+  if (await fs.pathExists(funcPSScript)) {
+    await fs.remove(funcPSScript);
+  }
+}
+
+async function installFuncCoreToolsOnUnix(version: FuncVersion): Promise<void> {
   await cpUtils.executeCommand(
     undefined,
     logger,
@@ -119,7 +137,29 @@ async function installFuncCoreTools(version: FuncVersion): Promise<void> {
   );
 }
 
-function getFuncToolsVersion(output: string): FuncVersion | null {
+async function getFuncPSScriptPath(): Promise<string> {
+  try {
+    const output = await cpUtils.executeCommand(
+      undefined,
+      logger,
+      {
+        shell: "cmd.exe"
+      },
+      "where",
+      "func",
+    );
+
+    const funcPath = output.split(/\r?\n/)[0];
+    const funcFolder = path.dirname(funcPath);
+
+    return path.join(funcFolder, "func.ps1");
+  } catch {
+    // ignore error and regard func.ps1 as not found.
+    return "";
+  }
+}
+
+export function getFuncToolsVersion(output: string): FuncVersion | null {
   const regex = /(?<major_version>\d+)\.(?<minor_version>\d+)\.(?<patch_version>\d+)/gm;
   const match = regex.exec(output);
   if (!match) {

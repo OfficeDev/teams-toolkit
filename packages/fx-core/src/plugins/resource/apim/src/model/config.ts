@@ -10,7 +10,8 @@ import {
     FunctionPluginConfigKeys,
     ApimPluginConfigKeys,
 } from "../constants";
-import { AssertConfigNotEmpty, BuildError, InvalidPropertyType, NoPluginConfig } from "../error";
+import { AssertConfigNotEmpty, BuildError, InvalidConfigValue, InvalidPropertyType, NoPluginConfig } from "../error";
+import { INamingRule, NamingRules } from "../util/namingRules";
 
 export interface IApimPluginConfig {
     resourceGroupName?: string;
@@ -53,37 +54,37 @@ export class ApimPluginConfig implements IApimPluginConfig {
     }
 
     get resourceGroupName(): string | undefined {
-        return this.getValue(ApimPluginConfigKeys.resourceGroupName);
+        return this.getValue(ApimPluginConfigKeys.resourceGroupName, NamingRules.resourceGroupName);
     }
     set resourceGroupName(value: string | undefined) {
         this.setValue(ApimPluginConfigKeys.resourceGroupName, value);
     }
     get serviceName(): string | undefined {
-        return this.getValue(ApimPluginConfigKeys.serviceName);
+        return this.getValue(ApimPluginConfigKeys.serviceName, NamingRules.apimServiceName);
     }
     set serviceName(value: string | undefined) {
         this.setValue(ApimPluginConfigKeys.serviceName, value);
     }
     get productId(): string | undefined {
-        return this.getValue(ApimPluginConfigKeys.productId);
+        return this.getValue(ApimPluginConfigKeys.productId, NamingRules.productId);
     }
     set productId(value: string | undefined) {
         this.setValue(ApimPluginConfigKeys.productId, value);
     }
     get oAuthServerId(): string | undefined {
-        return this.getValue(ApimPluginConfigKeys.oAuthServerId);
+        return this.getValue(ApimPluginConfigKeys.oAuthServerId, NamingRules.oAuthServerId);
     }
     set oAuthServerId(value: string | undefined) {
         this.setValue(ApimPluginConfigKeys.oAuthServerId, value);
     }
     get apimClientAADObjectId(): string | undefined {
-        return this.getValue(ApimPluginConfigKeys.apimClientAADObjectId);
+        return this.getValue(ApimPluginConfigKeys.apimClientAADObjectId, NamingRules.apimClientAADObjectId);
     }
     set apimClientAADObjectId(value: string | undefined) {
         this.setValue(ApimPluginConfigKeys.apimClientAADObjectId, value);
     }
     get apimClientAADClientId(): string | undefined {
-        return this.getValue(ApimPluginConfigKeys.apimClientAADClientId);
+        return this.getValue(ApimPluginConfigKeys.apimClientAADClientId, NamingRules.apimClientAADClientId);
     }
     set apimClientAADClientId(value: string | undefined) {
         this.setValue(ApimPluginConfigKeys.apimClientAADClientId, value);
@@ -95,19 +96,19 @@ export class ApimPluginConfig implements IApimPluginConfig {
         this.setValue(ApimPluginConfigKeys.apimClientAADClientSecret, value);
     }
     get apiPrefix(): string | undefined {
-        return this.getValue(ApimPluginConfigKeys.apiPrefix);
+        return this.getValue(ApimPluginConfigKeys.apiPrefix, NamingRules.apiPrefix);
     }
     set apiPrefix(value: string | undefined) {
         this.setValue(ApimPluginConfigKeys.apiPrefix, value);
     }
     get versionSetId(): string | undefined {
-        return this.getValue(ApimPluginConfigKeys.versionSetId);
+        return this.getValue(ApimPluginConfigKeys.versionSetId, NamingRules.versionSetId);
     }
     set versionSetId(value: string | undefined) {
         this.setValue(ApimPluginConfigKeys.versionSetId, value);
     }
     get apiPath(): string | undefined {
-        return this.getValue(ApimPluginConfigKeys.apiPath);
+        return this.getValue(ApimPluginConfigKeys.apiPath, NamingRules.apiPath);
     }
     set apiPath(value: string | undefined) {
         this.setValue(ApimPluginConfigKeys.apiPath, value);
@@ -119,12 +120,18 @@ export class ApimPluginConfig implements IApimPluginConfig {
         this.setValue(ApimPluginConfigKeys.apiDocumentPath, value);
     }
 
-    private getValue(key: string): string | undefined {
+    private getValue(key: string, namingRule?: INamingRule): string | undefined {
         const value = this.config.get(key);
         if (typeof value !== "string" && typeof value !== "undefined") {
             throw BuildError(InvalidPropertyType, key, "string");
         }
 
+        if (namingRule && typeof value === "string") {
+            const message = NamingRules.validate(value, namingRule);
+            if (message) {
+                throw BuildError(InvalidConfigValue, TeamsToolkitComponent.ApimPlugin, key, message);
+            }
+        }
         return value;
     }
 

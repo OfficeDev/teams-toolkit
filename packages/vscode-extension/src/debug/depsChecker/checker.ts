@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { displayLearnMore, displayWarningMessage, logger } from "./checkerAdapter";
-import { isLinux } from "./common";
+import { displayLearnMore, displayWarningMessage, showOutputChannel } from "./checkerAdapter";
+import { isLinux, Messages, defaultHelpLink } from "./common";
 
 export interface IDepsChecker {
   isEnabled(): Promise<boolean>;
@@ -15,9 +15,6 @@ export interface DepsInfo {
   nameWithVersion: string;
   details: Map<string, string>;
 }
-
-const defaultErrorMessage = "Please install the required dependencies manually.";
-const defaultHelpLink = "https://review.docs.microsoft.com/en-us/mods/?branch=main";
 
 export class DepsCheckerError extends Error {
   public readonly helpLink: string;
@@ -53,7 +50,7 @@ export class DepsChecker {
     // TODO: add log and telemetry
     const confirmMessage = await this.generateMessage(validCheckers);
     return await displayWarningMessage(confirmMessage, "Install", async () => {
-      logger.outputChannel.show(false);
+      showOutputChannel();
       for (const checker of validCheckers) {
         try {
           await checker.install();
@@ -61,7 +58,7 @@ export class DepsChecker {
           if (error instanceof DepsCheckerError) {
             await displayLearnMore(error.message, (error as DepsCheckerError).helpLink);
           } else {
-            await displayLearnMore(defaultErrorMessage, defaultHelpLink);
+            await displayLearnMore(Messages.defaultErrorMessage, defaultHelpLink);
           }
 
           return !shouldContinue;
@@ -91,10 +88,6 @@ export class DepsChecker {
     }
 
     const message = depsInfo.join(" and ");
-    return `The toolkit cannot find ${message} on your machine.
-
-As a fundamental runtime context for Teams app, these dependencies are required. Following steps will help you to install the appropriate version to run the Microsoft Teams Toolkit.
-
-Click “Install” to continue.`;
+    return Messages.depsNotFound.replace("@Message", message);
   }
 }

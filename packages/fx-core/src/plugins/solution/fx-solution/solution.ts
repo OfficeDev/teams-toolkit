@@ -263,6 +263,9 @@ export class TeamsAppSolution implements Solution {
         //Reload plugins according to user answers
         this.reloadPlugins(ctx.config, ctx.answers!);
 
+        const defaultIconPath = path.join(__dirname, "../../../../templates/plugins/solution/defaultIcon.png");
+        await fs.copy(defaultIconPath, `${ctx.root}/.${ConfigFolderName}/color.png`);
+        await fs.copy(defaultIconPath, `${ctx.root}/.${ConfigFolderName}/outline.png`);
         if (!this.spfxSelected(ctx.config)) {
             this.manifest = await AppStudio.createManifest(ctx.answers);
             if (this.manifest) Object.assign(ctx.app, this.manifest);
@@ -692,7 +695,7 @@ export class TeamsAppSolution implements Solution {
             );
         }
 
-        const manifest = this.manifest!;
+        const manifest = await fs.readJSON(`${ctx.root}/.${ConfigFolderName}/manifest.remote.json`);
         if (selectedPlugins.some((plugin) => plugin.name === this.botPlugin.name)) {
             const capabilities = ctx.answers?.getStringArray(AzureSolutionQuestionNames.Capabilities);
             const hasBot = capabilities?.includes(BotOptionItem.label);
@@ -756,9 +759,9 @@ export class TeamsAppSolution implements Solution {
         const [appDefinition, updatedManifest] = AppStudio.getDevAppDefinition(
             manifestString,
             clientId,
-            endpoint.endsWith("/") ? endpoint.substring(0, endpoint.length - 1) : endpoint,
             validDomains,
-            webApplicationInfoResource
+            webApplicationInfoResource,
+            endpoint.endsWith("/") ? endpoint.substring(0, endpoint.length - 1) : endpoint,
         );
         const teamsAppId = ctx.config.get(GLOBAL_CONFIG)?.getString(REMOTE_TEAMS_APP_ID);
         if (!teamsAppId) {
@@ -776,7 +779,7 @@ export class TeamsAppSolution implements Solution {
             ctx.logProvider?.info(`Teams app created ${result.value}`);
             appDefinition.appId = result.value;
             ctx.config.get(GLOBAL_CONFIG)?.set(REMOTE_TEAMS_APP_ID, result.value);
-            await fs.writeFile(`${ctx.root}/.${ConfigFolderName}/manifest.remote.json`, JSON.stringify(updatedManifest, null, 4));
+            // await fs.writeFile(`${ctx.root}/.${ConfigFolderName}/manifest.remote.json`, JSON.stringify(updatedManifest, null, 4));
             return ok(appDefinition);
         } else {
             ctx.logProvider?.info(`Teams app already created: ${teamsAppId}`);
@@ -791,7 +794,7 @@ export class TeamsAppSolution implements Solution {
             if (result.isErr()) {
                 return result.map((_) => appDefinition);
             }
-            await fs.writeFile(`${ctx.root}/.${ConfigFolderName}/manifest.remote.json`, JSON.stringify(updatedManifest, null, 4));
+            // await fs.writeFile(`${ctx.root}/.${ConfigFolderName}/manifest.remote.json`, JSON.stringify(updatedManifest, null, 4));
             ctx.logProvider?.info(`Teams app updated ${JSON.stringify(updatedManifest)}`);
             return ok(appDefinition);
         }
@@ -1065,13 +1068,15 @@ export class TeamsAppSolution implements Solution {
                 return [plugin?.publish?.bind(plugin), context, plugin.name];
             });
 
+            ctx.logProvider?.info(`[Solution] publish start!`);
+
             const result = await executeLifecycles([], publishWithCtx, []);
 
             if (result.isOk()) {
                 ctx.logProvider?.info(`[Teams Toolkit] publish success!`);
                 await ctx.dialog?.communicate(
                     new DialogMsg(DialogType.Show, {
-                        description: "[Teams Toolkit]: Successfully published to the admin portal. Once approved, your app will be available for your organization.",
+                        description: `[Teams Toolkit]: ${ctx.app.name.short} successfully published to the admin portal. Once approved, your app will be available for your organization.`,
                         level: MsgLevel.Info,
                     }),
                 );
@@ -1415,7 +1420,7 @@ export class TeamsAppSolution implements Solution {
             return maybeConfig;
         }
 
-        const [localTabEndpoint, localTabDomain, localAADId] = maybeConfig.value;
+        const {localTabEndpoint, localTabDomain, localAADId, localBotDomain, bots, composeExtensions, webApplicationInfoResource} = maybeConfig.value;
 
         const validDomains: string[] = [];
 
@@ -1423,45 +1428,49 @@ export class TeamsAppSolution implements Solution {
             validDomains.push(localTabDomain);
         }
 
-        const localBotDomain = ctx.config.get(this.localDebugPlugin.name)?.getString(LOCAL_DEBUG_BOT_DOMAIN);
         if (localBotDomain) {
             validDomains.push(localBotDomain);
         }
 
-        const bots = ctx.config.get(this.botPlugin.name)?.getString(BOTS);
-
-        const composeExtensions = ctx.config.get(this.botPlugin.name)?.getString(COMPOSE_EXTENSIONS);
-
-        // This config value is set by aadPlugin.setApplicationInContext. so aadPlugin.setApplicationInContext needs to run first.
-        const webApplicationInfoResource = ctx.config.get(this.aadPlugin.name)?.getString(LOCAL_WEB_APPLICATION_INFO_SOURCE);
-
-        if (!webApplicationInfoResource) {
-            return err(returnSystemError(new Error("Failed to get webApplicationInfoResource"), "Solution", SolutionError.UpdateManifestError));
-        }
-
+        const manifestTpl = (await fs.readFile(`${ctx.root}/.${ConfigFolderName}/manifest.remote.json`)).toString();
         const [appDefinition, _updatedManifest] = AppStudio.getDevAppDefinition(
-            TEAMS_APP_MANIFEST_TEMPLATE,
+            manifestTpl,
             localAADId,
-            localTabEndpoint,
             validDomains,
             webApplicationInfoResource,
+            localTabEndpoint,
             this.manifest!.name.short,
             this.manifest!.version,
             bots,
             composeExtensions
         );
 
-        const maybeTeamsAppId = await this.createAndUpdateApp(
-            appDefinition,
-            "localDebug",
-            ctx.logProvider,
-            await ctx.appStudioToken?.getAccessToken(),
-        );
-        if (maybeTeamsAppId.isErr()) {
-            return maybeTeamsAppId;
+        const localTeamsAppID = ctx.config.get(GLOBAL_CONFIG)?.getString(LOCAL_DEBUG_TEAMS_APP_ID);
+        // If localTeamsAppID is present, we should reuse the teams app id.
+        if (localTeamsAppID) {
+            const result = await this.updateApp(
+                localTeamsAppID, 
+                appDefinition, 
+                "localDebug", 
+                ctx.logProvider, 
+                await ctx.appStudioToken?.getAccessToken()
+            );
+            if (result.isErr()) {
+                return result;
+            }
+        } else {
+            const maybeTeamsAppId = await this.createAndUpdateApp(
+                appDefinition,
+                "localDebug",
+                ctx.logProvider,
+                await ctx.appStudioToken?.getAccessToken(),
+            );
+            if (maybeTeamsAppId.isErr()) {
+                return maybeTeamsAppId;
+            }
+            ctx.config.get(GLOBAL_CONFIG)?.set(LOCAL_DEBUG_TEAMS_APP_ID, maybeTeamsAppId.value);
         }
 
-        ctx.config.get(GLOBAL_CONFIG)?.set(LOCAL_DEBUG_TEAMS_APP_ID, maybeTeamsAppId.value);
         const result = this.loadTeamsAppTenantId(ctx.config, await ctx.appStudioToken?.getJsonObject());
 
         if (result.isErr()) {
@@ -1505,39 +1514,60 @@ export class TeamsAppSolution implements Solution {
         });
     }
 
+    private getLocalDebugConfig(config: SolutionConfig): Result<{localTabEndpoint?: string, localTabDomain?:string, localAADId: string, localBotDomain?: string, bots?: string, composeExtensions?: string, webApplicationInfoResource: string}, SystemError> {
+        const localTabEndpoint = config.get(this.localDebugPlugin.name)?.getString(LOCAL_DEBUG_TAB_ENDPOINT);
+        const localTabDomain = config.get(this.localDebugPlugin.name)?.getString(LOCAL_DEBUG_TAB_DOMAIN);
+        const localAADId = config.get(this.aadPlugin.name)?.getString(LOCAL_DEBUG_AAD_ID);
+        const localBotDomain = config.get(this.localDebugPlugin.name)?.getString(LOCAL_DEBUG_BOT_DOMAIN);
+        const bots = config.get(this.botPlugin.name)?.getString(BOTS);
+        const composeExtensions = config.get(this.botPlugin.name)?.getString(COMPOSE_EXTENSIONS);
+        // This config value is set by aadPlugin.setApplicationInContext. so aadPlugin.setApplicationInContext needs to run first.
+        const webApplicationInfoResource = config.get(this.aadPlugin.name)?.getString(LOCAL_WEB_APPLICATION_INFO_SOURCE);
+        if (!webApplicationInfoResource) {
+            return err(returnSystemError(new Error("Failed to get webApplicationInfoResource"), "Solution", SolutionError.GetLocalDebugConfigError));
+        }
 
-    private getLocalDebugConfig(config: SolutionConfig): Result<[string, string, string], SystemError> {
-        const localTabEndpoint = config.get(this.localDebugPlugin.name)?.get(LOCAL_DEBUG_TAB_ENDPOINT);
-        const localTabDomain = config.get(this.localDebugPlugin.name)?.get(LOCAL_DEBUG_TAB_DOMAIN);
-        const localAADId = config.get(this.aadPlugin.name)?.get(LOCAL_DEBUG_AAD_ID);
-        if (localTabEndpoint === undefined || typeof localTabEndpoint !== "string") {
-            return err(
-                returnSystemError(
-                    new Error(`config ${LOCAL_DEBUG_TAB_ENDPOINT} is missing`),
-                    "Solution",
-                    SolutionError.LocalTabEndpointMissing,
-                ),
-            );
-        }
-        if (localTabDomain === undefined || typeof localTabDomain !== "string") {
-            return err(
-                returnSystemError(
-                    new Error(`config ${LOCAL_DEBUG_TAB_DOMAIN} is missing`),
-                    "Solution",
-                    SolutionError.LocalTabDomainMissing,
-                ),
-            );
-        }
-        if (localAADId === undefined || typeof localAADId !== "string") {
+        if (!localAADId) {
             return err(
                 returnSystemError(
                     new Error(`config ${LOCAL_DEBUG_AAD_ID} is missing`),
                     "Solution",
-                    SolutionError.LocalClientIDMissing,
+                    SolutionError.GetLocalDebugConfigError,
                 ),
             );
         }
-        return ok([localTabEndpoint, localTabDomain, localAADId]);
+        // localTabEndpoint, bots and composeExtensions can't all be undefined
+        if (!localTabEndpoint && !bots && !composeExtensions) {
+            return err(
+                returnSystemError(
+                    new Error(`${LOCAL_DEBUG_TAB_ENDPOINT}, ${BOTS}, ${COMPOSE_EXTENSIONS} are all missing`),
+                    "Solution",
+                    SolutionError.GetLocalDebugConfigError,
+                ),
+            );
+        }
+        if ((localTabEndpoint && !localTabDomain) || (!localTabEndpoint && localTabDomain)) {
+            return err(
+                returnSystemError(
+                    new Error(`Invalid config for tab: ${LOCAL_DEBUG_TAB_ENDPOINT}=${localTabEndpoint} ${LOCAL_DEBUG_TAB_DOMAIN}=${localTabDomain}`),
+                    "Solution",
+                    SolutionError.GetLocalDebugConfigError,
+                ),
+            );
+        }
+        if (bots || composeExtensions) {
+            if (!localBotDomain) {
+                return err(
+                    returnSystemError(
+                        new Error(`${LOCAL_DEBUG_BOT_DOMAIN} is undefined`),
+                        "Solution",
+                        SolutionError.GetLocalDebugConfigError
+                    )
+                );
+            }
+        }
+        
+        return ok({localTabEndpoint, localTabDomain, localAADId, localBotDomain, bots, composeExtensions, webApplicationInfoResource});
     }
 
     async callFunc(func: Func, ctx: SolutionContext): Promise<Result<any, FxError>> {
@@ -1575,8 +1605,8 @@ export class TeamsAppSolution implements Solution {
                         return err(result.error);
                     }
                     ctx.config.get(GLOBAL_CONFIG)?.set("subscriptionId", result.value);
-                    return ok(null);
                 }
+                return ok(null);
             }
         }
         return err(

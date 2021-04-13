@@ -783,8 +783,8 @@ export class TeamsAppSolution implements Solution {
             return err(returnSystemError(new Error("Failed to get webApplicationInfoResource"), "Solution", SolutionError.UpdateManifestError));
         }
         // STATIC_TABS and CONFIGURABLE_TABS are only available after postProvision.
-        const staticTabs = ctx.config.get(this.botPlugin.name)?.getString(STATIC_TABS);
-        const configurableTabs = ctx.config.get(this.botPlugin.name)?.getString(CONFIGURABLE_TABS);
+        const staticTabs = ctx.config.get(this.fehostPlugin.name)?.getString(STATIC_TABS);
+        const configurableTabs = ctx.config.get(this.fehostPlugin.name)?.getString(CONFIGURABLE_TABS);
         if (!staticTabs || !configurableTabs || 
                 (staticTabs === "[]" && configurableTabs === "[]")) {
             return err(returnSystemError(
@@ -1476,8 +1476,8 @@ export class TeamsAppSolution implements Solution {
         }
 
         // STATIC_TABS and CONFIGURABLE_TABS are only available after postProvision.
-        const staticTabs = ctx.config.get(this.botPlugin.name)?.getString(STATIC_TABS);
-        const configurableTabs = ctx.config.get(this.botPlugin.name)?.getString(CONFIGURABLE_TABS);
+        const staticTabs = ctx.config.get(this.fehostPlugin.name)?.getString(STATIC_TABS);
+        const configurableTabs = ctx.config.get(this.fehostPlugin.name)?.getString(CONFIGURABLE_TABS);
         if (!staticTabs || !configurableTabs || 
                 (staticTabs === "[]" && configurableTabs === "[]")) {
             return err(returnSystemError(

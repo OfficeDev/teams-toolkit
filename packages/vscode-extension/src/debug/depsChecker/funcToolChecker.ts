@@ -6,6 +6,7 @@ import * as path from "path";
 import { cpUtils } from "../cpUtils";
 import { IDepsChecker, DepsCheckerError, DepsInfo } from "./checker";
 import { funcToolCheckerEnabled, hasTeamsfxBackend, logger, runWithProgressIndicator } from "./checkerAdapter";
+import { DepsCheckerTelemetry, DepsCheckerEvent, TelemtryMessages } from "./telemetry";
 import { isWindows, Messages, functionCoreToolsHelpLink } from "./common";
 
 export enum FuncVersion {
@@ -19,54 +20,92 @@ const funcToolName = "Azure Function Core Tool";
 export const installedNameWithVersion = `${funcToolName} (v${FuncVersion.v3})`;
 
 export class FuncToolChecker implements IDepsChecker {
-  getDepsInfo(): Promise<DepsInfo> {
+  public getDepsInfo(): Promise<DepsInfo> {
     return Promise.resolve({
       nameWithVersion: installedNameWithVersion,
       details: new Map<string, string>()
     });
   }
 
-  async isEnabled(): Promise<boolean> {
+  public async isEnabled(): Promise<boolean> {
     const hasBackend = await hasTeamsfxBackend();
-    return hasBackend && funcToolCheckerEnabled();
+    const checkerEnabled = funcToolCheckerEnabled();
+    if (!checkerEnabled) {
+      // TODO: should send this event per user.
+      // DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.skipCheckFunc);
+    }
+
+    return hasBackend && checkerEnabled;
   }
 
-  async isInstalled(): Promise<boolean> {
+  public async isInstalled(): Promise<boolean> {
     const installed = true;
     const installedVersion = await getInstalledFuncToolsVersion();
 
+    DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.checkFunc);
     switch (installedVersion) {
       case FuncVersion.v1:
+        // TODO: should send this event per user.
+        // DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.funcV1Installed);
+        // DepsCheckerTelemetry.sendUserErrorEvent(
+        //   DepsCheckerEvent.checkFunc,
+        //   TelemtryMessages.funcV1Installed
+        // );
         throw new DepsCheckerError(Messages.needReplaceWithFuncCoreToolV3.replace("@NameVersion", installedNameWithVersion), functionCoreToolsHelpLink);
       case FuncVersion.v2:
+        // TODO: should send this event per user.
+        // DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.funcV2Installed);
         return installed;
       case FuncVersion.v3:
+        // TODO: should send this event per user.
+        // DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.funcV3Installed);
         return installed;
       default:
         return !installed;
     }
   }
 
-  async install(): Promise<void> {
+  public async install(): Promise<void> {
     if (!(await hasNPM())) {
       // provided with Learn More link if npm doesn't exist.
+      DepsCheckerTelemetry.sendUserErrorEvent(
+        DepsCheckerEvent.installingFunc,
+        TelemtryMessages.NPMNotFound
+      );
       throw new DepsCheckerError(Messages.needInstallFuncCoreTool.replace("@NameVersion", installedNameWithVersion), functionCoreToolsHelpLink);
     }
 
     logger.info(Messages.startInstallFunctionCoreTool.replace("@NameVersion", installedNameWithVersion));
-    await runWithProgressIndicator(async () => {
-      try {
-        await installFuncCoreTools(FuncVersion.v3);
-      } catch (error) {
-        throw new DepsCheckerError(Messages.failToInstallFuncCoreTool.replace("@NameVersion", installedNameWithVersion), functionCoreToolsHelpLink);
-      }
-    });
 
-    const isInstalled = await this.isInstalled();
-    if (!isInstalled) {
+    try {
+      await DepsCheckerTelemetry.sendEventWithDuration(DepsCheckerEvent.installedFunc, async () => {
+        await runWithProgressIndicator(async () => {
+          await installFuncCoreTools(FuncVersion.v3);
+        });
+      });
+    } catch (error) {
+      DepsCheckerTelemetry.sendSystemErrorEvent(
+        DepsCheckerEvent.installingFunc,
+        TelemtryMessages.failedToInstallFunc,
+        error
+      );
+
       throw new DepsCheckerError(Messages.failToInstallFuncCoreTool.replace("@NameVersion", installedNameWithVersion), functionCoreToolsHelpLink);
     }
 
+    // validate after installation.
+    const isInstalled = await this.isInstalled();
+    if (!isInstalled) {
+      DepsCheckerTelemetry.sendSystemErrorEvent(
+        DepsCheckerEvent.validateFunc,
+        TelemtryMessages.failedToInstallFunc,
+        Messages.failToValidateFuncCoreTool.replace("@NameVersion", installedNameWithVersion)
+      );
+
+      throw new DepsCheckerError(Messages.failToInstallFuncCoreTool.replace("@NameVersion", installedNameWithVersion), functionCoreToolsHelpLink);
+    }
+
+    DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.installedValidFunc);
     logger.info(Messages.finishInstallFunctionCoreTool.replace("@NameVersion", installedNameWithVersion));
   }
 }

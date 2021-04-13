@@ -135,7 +135,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       workspaceFolder,
       command,
       TeamsfxTaskProvider.type,
-      new vscode.ProcessExecution(dotnetPath, ["Microsoft.TeamsRuntimeConnector.dll"], options),
+      new vscode.ProcessExecution(dotnetPath, ["Microsoft.TeamsFx.SimpleAuth.dll"], options),
       constants.authProblemMatcher
     );
     task.isBackground = true;

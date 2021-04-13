@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import * as path from "path";
 import commonlibLogger from "../../commonlib/log";
 import { window, workspace, WorkspaceConfiguration, MessageItem } from "vscode";
 import { openUrl } from "./common";
@@ -61,6 +62,10 @@ export async function displayWarningMessage(
 
 export function showOutputChannel(): void {
   logger.outputChannel.show(false);
+}
+
+export function getResourceDir(): string {
+  return path.resolve(__dirname, "resource");
 }
 
 function checkerEnabled(key: string): boolean {

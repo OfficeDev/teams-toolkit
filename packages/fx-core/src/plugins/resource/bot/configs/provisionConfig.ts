@@ -15,13 +15,10 @@ export class ProvisionConfig {
     public siteName?: string;
     public siteEndpoint?: string;
     public redirectUri?: string; // it's going to be useless, mark.
-    public serviceClientCredentials?: ServiceClientCredentials;
     public graphToken?: string;
     public provisioned = false;
 
     public async restoreConfigFromContext(context: PluginContext): Promise<void> {
-
-        this.serviceClientCredentials = await context.azureAccountProvider?.getAccountCredentialAsync();
 
         const subscriptionIdValue: ConfigValue = context.configOfOtherPlugins
             .get(PluginSolution.PLUGIN_NAME)

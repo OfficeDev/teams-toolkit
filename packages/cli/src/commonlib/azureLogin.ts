@@ -72,7 +72,7 @@ const config = {
 // @ts-ignore
 const memory = new MemoryCache();
 
-export class AzureAccountManager implements AzureAccountProvider {
+class AzureAccountManager implements AzureAccountProvider {
   private static instance: AzureAccountManager;
   private static codeFlowInstance: CodeFlowLogin;
   private static domain: string | undefined;
@@ -339,4 +339,9 @@ export type AzureSubscription = {
   subscriptionId: string;
 };
 
-export default AzureAccountManager.getInstance();
+import { MockAzureAccountProvider } from "fx-api";
+
+const ciEnabled = process.env.CI_ENABLED;
+const azureLogin = ciEnabled && ciEnabled === "true" ? MockAzureAccountProvider.getInstance() : AzureAccountManager.getInstance();
+
+export default azureLogin;

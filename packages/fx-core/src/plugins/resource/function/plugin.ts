@@ -83,7 +83,7 @@ export class FunctionPluginImpl {
         this.config.resourceGroupName = solutionConfig?.get(DependentPluginInfo.resourceGroupName) as string;
         this.config.subscriptionId = solutionConfig?.get(DependentPluginInfo.subscriptionId) as string;
         this.config.location = solutionConfig?.get(DependentPluginInfo.location) as string;
-        this.config.functionLanguage = solutionConfig?.get(DependentPluginInfo.programmingLanguage) as FunctionLanguage ?? FunctionLanguage.JavaScript;
+        this.config.functionLanguage = ctx.answers?.get(QuestionKey.programmingLanguage) as FunctionLanguage;
         this.config.nodeVersion = ctx.config.get(FunctionConfigKey.nodeVersion) as NodeVersion;
         this.config.defaultFunctionName = ctx.config.get(FunctionConfigKey.defaultFunctionName) as string;
         this.config.functionAppName = ctx.config.get(FunctionConfigKey.functionAppName) as string;
@@ -156,8 +156,11 @@ export class FunctionPluginImpl {
                 return ResultFactory.Success();
             }
 
-            // TODO: DefaultValues.functionLanguage should be replaced once TS is ready.
-            if (await FunctionScaffold.doesFunctionPathExist(workingPath, DefaultValues.functionLanguage, name)) {
+            const language: FunctionLanguage =
+                ctx.answers?.get(QuestionKey.programmingLanguage) as FunctionLanguage;
+
+            // If language is unknown, skip checking and let scaffold handle the error.
+            if (language && await FunctionScaffold.doesFunctionPathExist(workingPath, language, name)) {
                 return ResultFactory.Success(ErrorMessages.functionAlreadyExists);
             }
         }

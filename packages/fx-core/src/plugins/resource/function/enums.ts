@@ -18,7 +18,7 @@ export enum FunctionConfigKey {
     credential = "credential",
     location = "location",
     resourceNameSuffix = "resourceNameSuffix",
-    functionLanguage = "functionLanguage",
+    functionLanguage = "programmingLanguage",
 
     /* Config exported by Function plugin */
     nodeVersion = "nodeVersion",
@@ -39,6 +39,7 @@ export enum FunctionConfigKey {
 
 export enum QuestionKey {
     functionName = "function-name",
+    programmingLanguage = "programming-language",
     nodeVersion = "node-version",
     stage = "stage"
 }

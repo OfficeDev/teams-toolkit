@@ -6,7 +6,7 @@ import * as sinon from "sinon";
 
 import { AzureClientFactory, AzureLib } from "../../../../../src/plugins/resource/function/utils/azure-client";
 import { DependentPluginInfo, FunctionPluginInfo } from "../../../../../src/plugins/resource/function/constants";
-import { FunctionLanguage, NodeVersion } from "../../../../../src/plugins/resource/function/enums";
+import { FunctionLanguage, NodeVersion, QuestionKey } from "../../../../../src/plugins/resource/function/enums";
 import { FunctionPlugin } from "../../../../../src/plugins/resource/function";
 
 
@@ -17,7 +17,6 @@ const context: any = {
             [DependentPluginInfo.subscriptionId, "ut"],
             [DependentPluginInfo.resourceNameSuffix, "ut"],
             [DependentPluginInfo.location, "ut"],
-            [DependentPluginInfo.programmingLanguage, FunctionLanguage.JavaScript],
             [DependentPluginInfo.selectedPlugins, [
                 DependentPluginInfo.aadPluginName,
                 DependentPluginInfo.frontendPluginName,
@@ -58,6 +57,9 @@ const context: any = {
     config: new Map<string, string>([
         ["nodeVersion", NodeVersion.Version14],
         ["scaffoldDone", "true"]
+    ]),
+    answers: new Map<string, string>([
+        [QuestionKey.programmingLanguage, FunctionLanguage.JavaScript],
     ]),
     azureAccountProvider: {
         getAccountCredential: () => ({

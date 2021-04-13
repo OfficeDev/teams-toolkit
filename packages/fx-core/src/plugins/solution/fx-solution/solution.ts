@@ -981,18 +981,17 @@ export class TeamsAppSolution implements Solution {
             },
             async () => {
                 ctx.logProvider?.info("[Teams Toolkit]: provison finished!");
+                if (selectedPlugins.some((plugin) => plugin.name === this.aadPlugin.name)) {
+                    const aadPlugin: AadAppForTeamsPlugin = this.aadPlugin as any;
+                    return aadPlugin.setApplicationInContext(
+                        getPluginContext(ctx, this.aadPlugin.name, this.manifest),
+                    );
+                    
+                }
                 return ok(undefined);
             },
             async () => {
-                if (selectedPlugins.some((plugin) => plugin.name === this.aadPlugin.name)) {
-                    const aadPlugin: AadAppForTeamsPlugin = this.aadPlugin as any;
-                    const result = aadPlugin.setApplicationInContext(
-                        getPluginContext(ctx, this.aadPlugin.name, this.manifest),
-                    );
-                    if (result.isErr()) {
-                        return result;
-                    }
-                }
+                
                 const result = this.createAndConfigTeamsManifest(ctx);
                 ctx.logProvider?.info("[Teams Toolkit]: configuration finished!");
                 return result;

@@ -6,6 +6,7 @@ import { Constants } from "../../../../src/plugins/resource/simpleauth/constants
 
 export class TestHelper {
     static async pluginContext(credentials: msRestNodeAuth.TokenCredentialsBase): Promise<PluginContext> {
+        const mockEndpoint = "https://endpoint.mock";
         const pluginContext = ({
             azureAccountProvider: {
                 getAccountCredentialAsync() {
@@ -106,6 +107,18 @@ export class TestHelper {
                             "mock-local-applicationIdUris",
                         ],
                     ]),
+                ],
+                [
+                    Constants.FrontendPlugin.id,
+                    new Map([
+                        [Constants.FrontendPlugin.configKeys.endpoint, mockEndpoint],
+                    ])
+                ],
+                [
+                    Constants.LocalDebugPlugin.id,
+                    new Map([
+                        [Constants.LocalDebugPlugin.configKeys.endpoint, mockEndpoint],
+                    ])
                 ],
             ]),
             app: {

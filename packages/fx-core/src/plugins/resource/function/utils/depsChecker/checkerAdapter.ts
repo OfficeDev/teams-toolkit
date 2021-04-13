@@ -33,6 +33,13 @@ export async function displayWarningMessage(
   return await action();
 }
 
+export async function displayContinueWithLearnMore(
+  message: string,
+  link: string
+): Promise<boolean> {
+  return true;
+}
+
 export function showOutputChannel(): void {
   // TODO: find a way to implement in plugin
 }

@@ -8,19 +8,19 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import { ApimDefaultValues } from "../constants";
 import { Telemetry } from "../telemetry";
-import { LogProvider } from "fx-api";
+import { LogProvider, TelemetryReporter } from "fx-api";
 import { getFileExtension } from "../util";
 import { LogMessages } from "../log";
 import { OpenAPI, OpenAPIV2, OpenAPIV3 } from "openapi-types";
 
 export class OpenApiProcessor {
     private readonly logger?: LogProvider;
-    private readonly telemetry: Telemetry;
+    private readonly telemetryReporter?: TelemetryReporter;
     private readonly swaggerParser: SwaggerParser;
 
-    constructor(telemetry: Telemetry, logger?: LogProvider) {
+    constructor(telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
         this.logger = logger;
-        this.telemetry = telemetry;
+        this.telemetryReporter = telemetryReporter;
         this.swaggerParser = new SwaggerParser();
     }
 
@@ -75,7 +75,7 @@ export class OpenApiProcessor {
         }
 
         const schemaVersion = this.getSchemaVersion(srcSpec, filepath);
-        this.telemetry.sendOpenApiDocumentEvent(getFileExtension(filepath), schemaVersion);
+        Telemetry.sendOpenApiDocumentEvent(this.telemetryReporter, getFileExtension(filepath), schemaVersion);
         return {
             schemaVersion: schemaVersion,
             spec: srcSpec,

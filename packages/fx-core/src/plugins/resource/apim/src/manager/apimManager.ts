@@ -5,24 +5,23 @@ import { AssertConfigNotEmpty, AssertNotEmpty } from "../error";
 import { IAadPluginConfig, IApimPluginConfig, IFunctionPluginConfig, ISolutionConfig } from "../model/config";
 import { ApimService } from "../service/apimService";
 import { OpenApiProcessor } from "../util/openApiProcessor";
-import { Telemetry } from "../telemetry";
 import { IAnswer } from "../model/answer";
-import { LogProvider } from "fx-api";
+import { LogProvider, TelemetryReporter } from "fx-api";
 import * as path from "path";
 import { Lazy } from "../util/lazy";
 import { NamingRules } from "../util/namingRules";
 
 export class ApimManager {
     private readonly logger?: LogProvider;
-    private readonly telemetry: Telemetry;
+    private readonly telemetryReporter?: TelemetryReporter;
     private readonly lazyApimService: Lazy<ApimService>;
     private readonly openApiProcessor: OpenApiProcessor;
 
-    constructor(lazyApimService: Lazy<ApimService>, openApiProcessor: OpenApiProcessor, telemetry: Telemetry, logger?: LogProvider) {
+    constructor(lazyApimService: Lazy<ApimService>, openApiProcessor: OpenApiProcessor, telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
         this.lazyApimService = lazyApimService;
         this.openApiProcessor = openApiProcessor;
         this.logger = logger;
-        this.telemetry = telemetry;
+        this.telemetryReporter = telemetryReporter;
     }
 
     public async scaffold(appName: string, projectRootPath: string): Promise<void> {

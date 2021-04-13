@@ -159,6 +159,13 @@ export class MockAzureAccountProvider implements AzureAccountProvider {
     
         return ok(null);
     }
+
+    setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean> {
+        throw new Error("Method not implemented.");
+    }
+    removeStatusChangeMap(name: string): Promise<boolean> {
+        throw new Error("Method not implemented.");
+    }
 }
   
 interface PartialList<T> extends Array<T> {

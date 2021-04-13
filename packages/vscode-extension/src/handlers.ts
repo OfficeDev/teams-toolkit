@@ -59,6 +59,7 @@ import { DepsChecker } from "./debug/depsChecker/checker";
 import { FuncToolChecker } from "./debug/depsChecker/funcToolChecker";
 import { DotnetChecker, dotnetChecker } from "./debug/depsChecker/dotnetChecker";
 import { PanelType } from "./controls/PanelType";
+import { NodeChecker } from "./debug/depsChecker/nodeChecker";
 
 export let core: CoreProxy;
 const runningTasks = new Set<string>(); // to control state of task execution
@@ -208,7 +209,7 @@ export async function publishHandler(): Promise<Result<null, FxError>> {
   return await runCommand(Stage.publish);
 }
 
-const coreExeceutor: RemoteFuncExecutor = async function(
+const coreExeceutor: RemoteFuncExecutor = async function (
   func: Func,
   answers: Inputs | ConfigMap
 ): Promise<Result<unknown, FxError>> {
@@ -468,7 +469,7 @@ export async function addCapabilityHandler(): Promise<Result<null, FxError>> {
  * check & install required dependencies during local debug.
  */
 export async function validateDependenciesHandler(): Promise<void> {
-  const depsChecker = new DepsChecker([new FuncToolChecker(), new DotnetChecker()]);
+  const depsChecker = new DepsChecker([new NodeChecker(), new FuncToolChecker(), new DotnetChecker()]);
   const shouldContinue = await depsChecker.resolve();
   if (!shouldContinue) {
     await debug.stopDebugging();
@@ -539,12 +540,6 @@ export async function devProgramHandler(): Promise<boolean> {
 }
 
 export async function openWelcomeHandler() {
-  const welcomePanel = window.createWebviewPanel("react", "Teams Toolkit", ViewColumn.One, {
-    enableScripts: true,
-    retainContextWhenHidden: true
-  });
-  welcomePanel.webview.html = getHtmlForWebview();
-
   if (isFeatureFlag()) {
     WebviewPanel.createOrShow(ext.context.extensionPath, PanelType.QuickStart);
   } else {

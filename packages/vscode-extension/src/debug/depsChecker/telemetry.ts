@@ -2,8 +2,7 @@
 // Licensed under the MIT license.
 
 import { SystemError, UserError } from "fx-api";
-import { ExtTelemetry } from "../../telemetry/extTelemetry";
-import { TelemetryProperty } from "../../telemetry/extTelemetryEvents";
+import { ExtTelemetry, TelemetryProperty } from "./checkerAdapter";
 
 export enum DepsCheckerEvent {
   skipCheckFunc = "skip-check-func",

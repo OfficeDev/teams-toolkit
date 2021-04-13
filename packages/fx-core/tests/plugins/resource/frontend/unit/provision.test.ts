@@ -15,25 +15,33 @@ chai.use(chaiAsPromised);
 
 describe("FrontendProvision", () => {
     describe("setEnvironment", () => {
-        it("happy path", async () => {
+        let writeFileStub: sinon.SinonStub;
+
+        beforeEach(() => {
+            sinon.stub(fs, "ensureFile").resolves(Buffer.from(""));
+            sinon.stub(fs, "readFileSync").returns(Buffer.from(`${EnvironmentVariables.FuncName}=testFunc`));
+            writeFileStub = sinon.stub(fs, "writeFile") as any;
+        });
+
+        afterEach(() => {
+            sinon.restore();
+        });
+
+        it("overwrite .env", async () => {
             const envPath = faker.system.filePath();
             const funcEnv = { defaultName: "httpTrigger", endpoint: faker.internet.url() };
             const runtimeEnv = { endpoint: faker.internet.url(), startLoginPageUrl: "start-login.html" };
 
-            sinon.stub(fs, "ensureFile").resolves(Buffer.from(""));
-            const appendFileStub = sinon.stub(fs, "appendFile");
-
-            const args = [
-                [envPath, `${EnvironmentVariables.FuncName}=${funcEnv.defaultName}\r\n`],
-                [envPath, `${EnvironmentVariables.FuncEndpoint}=${funcEnv.endpoint}\r\n`],
-                [envPath, `${EnvironmentVariables.RuntimeEndpoint}=${runtimeEnv.endpoint}\r\n`],
-                [envPath, `${EnvironmentVariables.StartLoginPage}=${runtimeEnv.startLoginPageUrl}\r\n`],
-            ];
+            const args = [envPath,
+                `${EnvironmentVariables.FuncName}=${funcEnv.defaultName}\r\n` +
+                `${EnvironmentVariables.FuncEndpoint}=${funcEnv.endpoint}\r\n` +
+                `${EnvironmentVariables.RuntimeEndpoint}=${runtimeEnv.endpoint}\r\n` +
+                `${EnvironmentVariables.StartLoginPage}=${runtimeEnv.startLoginPageUrl}\r\n`];
 
             await FrontendProvision.setEnvironments(envPath, funcEnv, runtimeEnv);
-            const calls = appendFileStub.getCalls();
+            const call = writeFileStub.getCall(0);
             chai.assert.deepEqual(
-                calls.map((call) => call.args as string[]),
+                call.args,
                 args,
             );
         });

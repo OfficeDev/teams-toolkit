@@ -1,8 +1,8 @@
 ﻿using System.Collections;
-using Microsoft.TeamsFxSimpleAuth.Tests.Helpers;
+using Microsoft.TeamsFx.SimpleAuth.Tests.Helpers;
 using NUnit.Framework;
 
-namespace Microsoft.TeamsFxSimpleAuth.Tests
+namespace Microsoft.TeamsFx.SimpleAuth.Tests
 {
     [SetUpFixture]
     public class AadInstanceSetUp

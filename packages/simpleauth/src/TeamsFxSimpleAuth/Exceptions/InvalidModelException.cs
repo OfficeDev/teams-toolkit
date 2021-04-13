@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace Microsoft.TeamsFxSimpleAuth.Exceptions
+namespace Microsoft.TeamsFx.SimpleAuth.Exceptions
 {
     // Indicates request body validation failure
     public class InvalidModelException : ApiExceptionBase

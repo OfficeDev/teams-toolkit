@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Microsoft.TeamsFxSimpleAuth
+namespace Microsoft.TeamsFx.SimpleAuth
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
     public class ProblemTypeAttribute : Attribute

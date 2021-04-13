@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 
-namespace Microsoft.TeamsFxSimpleAuth.Exceptions
+namespace Microsoft.TeamsFx.SimpleAuth.Exceptions
 {
     // Error handler will set http status code to Status property for child classes of ApiExceptionBase
     // Name of the child class will be used as problem type and return to client as part of error response

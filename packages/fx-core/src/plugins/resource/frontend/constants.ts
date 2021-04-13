@@ -38,7 +38,7 @@ export class FrontendPluginInfo {
     static TemplateLanguage = "JavaScript";
     static TemplateDefaultScenario = "default";
     static TemplateWithFunctionScenario = "with-function";
-    static TemplateVersion = "0.2.x";
+    static TemplateVersion = "0.3.x";
 }
 
 export class Commands {
@@ -51,13 +51,14 @@ export class EnvironmentVariables {
     static FuncName = "REACT_APP_FUNC_NAME";
     static RuntimeEndpoint = "REACT_APP_TEAMSFX_ENDPOINT"; // TODO: renaming the env variables pending on runtime connector plugin
     static StartLoginPage = "REACT_APP_START_LOGIN_PAGE_URL";
+    static ClientID = "REACT_APP_CLIENT_ID";
 }
 
 export class FrontendPathInfo {
     static WorkingDir = "tabs";
     static TemplateDir = path.join("templates", "plugins", "resource", "frontend");
     static RootDir = path.join(__dirname, "..", "..", "..", "..");
-    static TemplateFileName = "0.2.0+tab.JavaScript.default.zip";
+    static TemplateFileName = "tab.JavaScript.default.zip";
     static TemplateFileExt = ".tpl";
     static BuildFolderName = "build";
     static BuildPath = `${FrontendPathInfo.BuildFolderName}${path.sep}`;
@@ -86,6 +87,9 @@ export class DependentPluginInfo {
     static readonly RuntimePluginName = "fx-resource-simple-auth";
     static readonly RuntimeEndpoint = "endpoint";
     static readonly StartLoginPageURL = "auth-start.html";
+
+    static readonly AADPluginName = "fx-resource-aad-app-for-teams";
+    static readonly ClientID = "clientId";
 }
 
 export class FrontendConfigInfo {

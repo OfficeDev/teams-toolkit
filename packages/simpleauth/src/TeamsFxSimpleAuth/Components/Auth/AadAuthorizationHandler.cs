@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
-using Microsoft.TeamsFxSimpleAuth.Components.Auth.Exceptions;
-using Microsoft.TeamsFxSimpleAuth.Components.Auth.Models;
+using Microsoft.TeamsFx.SimpleAuth.Components.Auth.Exceptions;
+using Microsoft.TeamsFx.SimpleAuth.Components.Auth.Models;
 using Newtonsoft.Json;
 using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace Microsoft.TeamsFxSimpleAuth.Components.Auth
+namespace Microsoft.TeamsFx.SimpleAuth.Components.Auth
 {
     public abstract class AuthenticatedUserHandler<TRequirement> : AuthorizationHandler<TRequirement> where TRequirement : IAuthorizationRequirement
     {

@@ -3,13 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.TeamsFxSimpleAuth.Exceptions;
+using Microsoft.TeamsFx.SimpleAuth.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Web;
 
-namespace Microsoft.TeamsFxSimpleAuth
+namespace Microsoft.TeamsFx.SimpleAuth
 {
     public class SimpleAuthExceptionFilter : ExceptionFilterAttribute
     {

@@ -1,0 +1,100 @@
+.sample-gallery{
+    margin: 52px 100px 52px 100px;
+
+     .section{
+        display: flex;
+        margin-bottom: 36px;
+    }
+
+    .logo{
+        width: 28px;
+        height: 28px;
+        font-size: 28px;
+        color: #3794FF;
+    }
+
+    .title{
+        width: auto;
+        margin-left: 12px;
+
+        h2{
+            font-size: 26px;
+            line-height: 30px;
+            color: #CCCCCC;
+            margin-top: 0px;
+            margin-bottom: 0px;
+            font-weight: normal;
+        }
+
+        h3{
+            font-size: 12px;
+            line-height: 14px;
+            color: #CCCCCC;
+            margin-top: 0px;
+            margin-bottom: 0px;
+            font-weight: normal;
+        }
+    }
+
+    .sample-app-card{
+        background-color: #262626;
+        border-radius: 2px;
+        width: 278px;
+
+        .section{
+            display: flex;
+            margin-bottom: 0px;
+        }
+
+        .tag{
+            background-color: #333333;
+            border-radius: 20px;
+            width: fit-content;
+            padding: 3px 8px 3px 8px;
+            font-size: 9px;
+            line-height: 11px;
+            align-items: center;
+            text-align: center;
+            color: #CCCCCC;
+            margin: 8px 0px 0px 8px;
+        }
+
+        h2{
+            font-size: 12px;
+            text-align: center;
+            color: #CCCCCC;
+            font-weight: normal;
+            text-align: left;
+            margin: 12px 12px 0px 12px;
+        }
+
+        h3{
+            font-size: 12px;
+            color: #CCCCCC;
+            opacity: 50%;
+            font-weight: normal;
+            text-align: left;
+            margin: 8px 12px 0px 12px;
+        }
+
+        button{
+            font-size: 13px;
+            text-align: center;
+            color: #FFFFFF;
+            background-color: #0E639C;
+        }
+
+        span{
+            font-weight: normal;
+        }
+
+        .buttons{
+            margin: 28px 12px 12px auto;
+        }
+
+        .right-aligned{
+            margin-left: auto;
+            margin-right: 8px;
+        }
+    }
+}

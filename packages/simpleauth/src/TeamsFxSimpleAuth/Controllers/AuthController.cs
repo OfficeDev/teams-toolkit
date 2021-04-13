@@ -2,15 +2,15 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.TeamsFxSimpleAuth.Components.Auth;
-using Microsoft.TeamsFxSimpleAuth.Exceptions;
-using Microsoft.TeamsFxSimpleAuth.Models;
+using Microsoft.TeamsFx.SimpleAuth.Components.Auth;
+using Microsoft.TeamsFx.SimpleAuth.Exceptions;
+using Microsoft.TeamsFx.SimpleAuth.Models;
 using Newtonsoft.Json;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Microsoft.TeamsFxSimpleAuth.Controllers
+namespace Microsoft.TeamsFx.SimpleAuth.Controllers
 {
     [ApiController]
     [ServiceFilter(typeof(SimpleAuthExceptionFilter))]

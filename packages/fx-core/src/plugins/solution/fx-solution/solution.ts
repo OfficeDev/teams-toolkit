@@ -62,7 +62,8 @@ import {
     REMOTE_APPLICATION_ID_URIS,
     REMOTE_CLIENT_SECRET,
     WEB_APPLICATION_INFO_SOURCE,
-    LOCAL_WEB_APPLICATION_INFO_SOURCE
+    LOCAL_WEB_APPLICATION_INFO_SOURCE,
+    PROVISION_MANIFEST
 } from "./constants";
 
 import { SpfxPlugin } from "../../resource/spfx";
@@ -242,9 +243,9 @@ export class TeamsAppSolution implements Solution {
         this.runningState = SolutionRunningState.Idle;
     }
 
-    private getPluginAndContextArray(ctx: SolutionContext, selectedPlugins: LoadedPlugin[]): PluginsWithContext[] {
+    private getPluginAndContextArray(ctx: SolutionContext, selectedPlugins: LoadedPlugin[], manifest?: TeamsAppManifest): PluginsWithContext[] {
         // let pluginContextConstructor = getPluginContextConstructor(ctx);
-        return selectedPlugins.map((plugin) => [plugin, getPluginContext(ctx, plugin.name, this.manifest)]);
+        return selectedPlugins.map((plugin) => [plugin, getPluginContext(ctx, plugin.name, manifest ?? this.manifest)]);
     }
 
     async init(ctx: SolutionContext): Promise<Result<any, FxError>> {
@@ -779,7 +780,7 @@ export class TeamsAppSolution implements Solution {
             ctx.logProvider?.info(`Teams app created ${result.value}`);
             appDefinition.appId = result.value;
             ctx.config.get(GLOBAL_CONFIG)?.set(REMOTE_TEAMS_APP_ID, result.value);
-            // await fs.writeFile(`${ctx.root}/.${ConfigFolderName}/manifest.remote.json`, JSON.stringify(updatedManifest, null, 4));
+            ctx.config.get(GLOBAL_CONFIG)?.set(PROVISION_MANIFEST, JSON.stringify(updatedManifest));
             return ok(appDefinition);
         } else {
             ctx.logProvider?.info(`Teams app already created: ${teamsAppId}`);
@@ -794,7 +795,7 @@ export class TeamsAppSolution implements Solution {
             if (result.isErr()) {
                 return result.map((_) => appDefinition);
             }
-            // await fs.writeFile(`${ctx.root}/.${ConfigFolderName}/manifest.remote.json`, JSON.stringify(updatedManifest, null, 4));
+            ctx.config.get(GLOBAL_CONFIG)?.set(PROVISION_MANIFEST, JSON.stringify(updatedManifest));
             ctx.logProvider?.info(`Teams app updated ${JSON.stringify(updatedManifest)}`);
             return ok(appDefinition);
         }
@@ -977,6 +978,32 @@ export class TeamsAppSolution implements Solution {
         });
     }
 
+    private canPublish(solutionConfig: SolutionConfig): Result<TeamsAppManifest, FxError> {
+        return this.checkWhetherSolutionIsIdle().andThen((_) => {
+            return this.checkWetherProvisionSucceeded(solutionConfig)
+                ? ok(Void)
+                : err(
+                    returnUserError(
+                        new Error("Please provision before publishing"),
+                        "Solution",
+                        SolutionError.CannotPublishBeforeProvision,
+                    ),
+                );
+        }).andThen((_) => {
+            const manifestString = solutionConfig.get(GLOBAL_CONFIG)?.getString(PROVISION_MANIFEST);
+            if (!manifestString) {
+                return err(
+                    returnSystemError(
+                        new Error("Teams app manifest not found"),
+                        "Solution",
+                        SolutionError.CannotPublishBeforeProvision
+                    )
+                );
+            }
+            return ok(JSON.parse(manifestString));
+        });
+    }
+
     async deploy(ctx: SolutionContext): Promise<Result<any, FxError>> {
         const canDeploy = this.canDeploy(ctx.config);
         if (canDeploy.isErr()) {
@@ -1058,19 +1085,33 @@ export class TeamsAppSolution implements Solution {
     }
 
     async publish(ctx: SolutionContext): Promise<Result<any, FxError>> {
+        if (this.spfxSelected(ctx.config)) {
+            return err(
+                returnUserError(
+                    new Error("Cannot publish for SPFx projects"),
+                    "Solution",
+                    SolutionError.CannotRunThisTaskInSPFxProject,
+                ),
+            );
+        }
+
+        const maybeManifest = this.canPublish(ctx.config);
+        if (maybeManifest.isErr()) {
+            return maybeManifest;
+        }
+        const manifest = maybeManifest.value;
         try {
             this.runningState = SolutionRunningState.PublishInProgress;
 
-            const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, [this.appStudioPlugin]);
+            
+            const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, [this.appStudioPlugin], manifest);
             const publishWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {
-                const teamsAppId = ctx.config.get(GLOBAL_CONFIG)?.getString(REMOTE_TEAMS_APP_ID);
-                context.config.set(REMOTE_TEAMS_APP_ID, teamsAppId);
                 return [plugin?.publish?.bind(plugin), context, plugin.name];
             });
 
             ctx.logProvider?.info(`[Solution] publish start!`);
 
-            const result = await executeLifecycles([], publishWithCtx, []);
+            const result = await executeConcurrently(publishWithCtx);
 
             if (result.isOk()) {
                 ctx.logProvider?.info(`[Teams Toolkit] publish success!`);
@@ -1605,8 +1646,8 @@ export class TeamsAppSolution implements Solution {
                         return err(result.error);
                     }
                     ctx.config.get(GLOBAL_CONFIG)?.set("subscriptionId", result.value);
-                    return ok(null);
                 }
+                return ok(null);
             }
         }
         return err(

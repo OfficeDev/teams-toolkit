@@ -1,4 +1,4 @@
-﻿namespace Microsoft.TeamsFxSimpleAuth.Tests.Models
+﻿namespace Microsoft.TeamsFx.SimpleAuth.Tests.Models
 {
     public class PasswordCredentialRequestBody
     {

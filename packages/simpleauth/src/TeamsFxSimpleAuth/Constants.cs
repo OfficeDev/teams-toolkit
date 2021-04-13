@@ -1,13 +1,14 @@
-﻿namespace Microsoft.TeamsFxSimpleAuth
+﻿namespace Microsoft.TeamsFx.SimpleAuth
 {
     public class ConfigurationName
     {
         public const string ClientId = "CLIENT_ID";
         public const string ClientSecret = "CLIENT_SECRET";
-        public const string OAuthTokenEndpoint = "OAUTH_TOKEN_ENDPOINT";
+        public const string OAuthAuthority = "OAUTH_AUTHORITY";
         public const string AadMetadataAddress = "AAD_METADATA_ADDRESS";
         public const string IdentifierUri = "IDENTIFIER_URI";
         public const string AllowedAppIds = "ALLOWED_APP_IDS";
+        public const string TabAppEndpoint = "TAB_APP_ENDPOINT";
     }
 
     public class JWTClaims

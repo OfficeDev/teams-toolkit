@@ -12,6 +12,8 @@ import { CodeFlowLogin } from "./codeFlowLogin";
 import VsCodeLogInstance from "./log";
 import * as vscode from "vscode";
 import { getBeforeCacheAccess, getAfterCacheAccess } from "./cacheAccess";
+import { signedIn, signedOut } from "./common/constant";
+import { login } from "./common/login";
 
 const accountName = "appStudio";
 const scopes = ["https://dev.teams.microsoft.com/AppDefinitions.ReadWrite"];
@@ -45,7 +47,7 @@ const config = {
   }
 };
 
-export class AppStudioLogin implements AppStudioTokenProvider {
+export class AppStudioLogin extends login implements AppStudioTokenProvider {
   private static instance: AppStudioLogin;
   private static codeFlowInstance: CodeFlowLogin;
 
@@ -56,6 +58,7 @@ export class AppStudioLogin implements AppStudioTokenProvider {
   ) => Promise<void>;
 
   private constructor() {
+    super();
     AppStudioLogin.codeFlowInstance = new CodeFlowLogin(scopes, config, SERVER_PORT, accountName);
   }
 
@@ -88,6 +91,7 @@ export class AppStudioLogin implements AppStudioTokenProvider {
         const tokenJson = await this.getJsonObject();
         await AppStudioLogin.statusChange("SignedIn", loginToken, tokenJson);
       }
+      await this.notifyStatus();
       return loginToken;
     }
 
@@ -115,6 +119,7 @@ export class AppStudioLogin implements AppStudioTokenProvider {
       await AppStudioLogin.statusChange("SignedOut", undefined, undefined);
     }
     AppStudioLogin.codeFlowInstance.logout();
+    await this.notifyStatus();
     return new Promise((resolve) => {
       resolve(true);
     });
@@ -144,6 +149,23 @@ export class AppStudioLogin implements AppStudioTokenProvider {
     return new Promise((resolve) => {
       resolve(true);
     });
+  }
+
+  async notifyStatus(): Promise<boolean> {
+    if (this.statusChangeMap.size > 0) {
+      if (AppStudioLogin.codeFlowInstance.account) {
+        const loginToken = await AppStudioLogin.codeFlowInstance.getToken();
+        const tokenJson = await this.getJsonObject();
+        for (const entry of this.statusChangeMap.entries()) {
+          entry[1](signedIn, loginToken, tokenJson);
+        }
+      } else {
+        for (const entry of this.statusChangeMap.entries()) {
+          entry[1](signedOut, undefined, undefined);
+        }
+      }
+    }
+    return true;
   }
 }
 

@@ -8,6 +8,8 @@ import { LogLevel } from "@azure/msal-node";
 import { CodeFlowLogin } from "./codeFlowLogin";
 
 import CLILogProvider from "./log";
+import { login } from "./common/login";
+import { signedIn, signedOut } from "./common/constant";
 
 const accountName = "graph";
 const scopes = ["Directory.AccessAsUser.All"];
@@ -39,7 +41,7 @@ const SERVER_PORT = 8400;
 /**
  * use msal to implement graph login
  */
-export class GraphLogin implements GraphTokenProvider {
+export class GraphLogin extends login implements GraphTokenProvider {
   private static instance: GraphLogin;
 
   private static codeFlowInstance: CodeFlowLogin;
@@ -51,6 +53,7 @@ export class GraphLogin implements GraphTokenProvider {
   ) => Promise<void>;
 
   private constructor() {
+    super();
     GraphLogin.codeFlowInstance = new CodeFlowLogin(scopes, config, SERVER_PORT, accountName);
   }
 
@@ -73,6 +76,7 @@ export class GraphLogin implements GraphTokenProvider {
         const tokenJson = await this.getJsonObject();
         await GraphLogin.statusChange("SignedIn", loginToken, tokenJson);
       }
+      await this.notifyStatus();
       return loginToken;
     }
     const accessToken = GraphLogin.codeFlowInstance.getToken();
@@ -99,6 +103,7 @@ export class GraphLogin implements GraphTokenProvider {
     if (GraphLogin.statusChange !== undefined) {
       await GraphLogin.statusChange("SignedOut", undefined, undefined);
     }
+    await this.notifyStatus();
     return new Promise((resolve) => {
       resolve(true);
     });
@@ -116,6 +121,23 @@ export class GraphLogin implements GraphTokenProvider {
     return new Promise((resolve) => {
       resolve(true);
     });
+  }
+
+  async notifyStatus(): Promise<boolean> {
+    if (this.statusChangeMap.size > 0) {
+      if (GraphLogin.codeFlowInstance.account) {
+        const loginToken = await GraphLogin.codeFlowInstance.getToken();
+        const tokenJson = await this.getJsonObject();
+        for (const entry of this.statusChangeMap.entries()) {
+          entry[1](signedIn, loginToken, tokenJson);
+        }
+      } else {
+        for (const entry of this.statusChangeMap.entries()) {
+          entry[1](signedOut, undefined, undefined);
+        }
+      }
+    }
+    return true;
   }
 }
 

@@ -15,6 +15,8 @@ import { LogLevel } from "@azure/msal-node";
 import { NotFoundSubscriptionId, NotSupportedProjectType } from "../error";
 import * as fs from "fs-extra";
 import * as path from "path";
+import { signedIn, signedOut } from "./common/constant";
+import { login } from "./common/login";
 
 const env = {
   name: "AzureCloud",
@@ -72,7 +74,7 @@ const config = {
 // @ts-ignore
 const memory = new MemoryCache();
 
-export class AzureAccountManager implements AzureAccountProvider {
+export class AzureAccountManager extends login implements AzureAccountProvider {
   private static instance: AzureAccountManager;
   private static codeFlowInstance: CodeFlowLogin;
   private static domain: string | undefined;
@@ -85,6 +87,7 @@ export class AzureAccountManager implements AzureAccountProvider {
   ) => Promise<void>;
 
   private constructor() {
+    super();
     AzureAccountManager.codeFlowInstance = new CodeFlowLogin(
       scopes,
       config,
@@ -182,6 +185,7 @@ export class AzureAccountManager implements AzureAccountProvider {
       const accountJson = await this.getJsonObject();
       await AzureAccountManager.statusChange("SignedIn", accessToken?.accessToken, accountJson);
     }
+    await this.notifyStatus();
   }
 
   private async login(showDialog: boolean): Promise<void> {
@@ -255,6 +259,7 @@ export class AzureAccountManager implements AzureAccountProvider {
       await AzureAccountManager.statusChange("SignedOut", undefined, undefined);
     }
     AzureAccountManager.codeFlowInstance.logout();
+    await this.notifyStatus();
     return Promise.resolve(true);
   }
 
@@ -310,6 +315,24 @@ export class AzureAccountManager implements AzureAccountProvider {
     await fs.writeFile(configPath, JSON.stringify(configJson, null, 4));
 
     return ok(null);
+  }
+
+  async notifyStatus(): Promise<boolean> {
+    if (this.statusChangeMap.size > 0) {
+      if (AzureAccountManager.codeFlowInstance.account) {
+        const credential = await this.doGetAccountCredentialAsync();
+        const accessToken = await credential?.getToken();
+        const accountJson = await this.getJsonObject();
+        for (const entry of this.statusChangeMap.entries()) {
+          entry[1](signedIn, accessToken?.accessToken, accountJson);
+        }
+      } else {
+        for (const entry of this.statusChangeMap.entries()) {
+          entry[1](signedOut, undefined, undefined);
+        }
+      }
+    }
+    return true;
   }
 }
 

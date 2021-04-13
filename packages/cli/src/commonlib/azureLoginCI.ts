@@ -13,12 +13,13 @@ import * as path from "path";
 import { AzureAccountProvider, ConfigFolderName, err, FxError, ok, Result } from "fx-api";
 
 import { NotSupportedProjectType, NotFoundSubscriptionId } from "../error";
+import { login } from "./common/login";
 
 const clientId = process.env.E2E_CLIENT_ID ?? "";
 const secret = process.env.E2E_SECRET ?? "";
 const tenantId = process.env.E2E_TENANT_ID ?? "";
 
-export class AzureAccountManager implements AzureAccountProvider {
+export class AzureAccountManager extends login implements AzureAccountProvider {
   static tokenCredentialsBase: TokenCredentialsBase;
 
   static tokenCredential: TokenCredential;
@@ -140,6 +141,10 @@ export class AzureAccountManager implements AzureAccountProvider {
     await fs.writeFile(configPath, JSON.stringify(configJson, null, 4));
 
     return ok(null);
+  }
+
+  async notifyStatus(): Promise<boolean> {
+    return true;
   }
 }
 

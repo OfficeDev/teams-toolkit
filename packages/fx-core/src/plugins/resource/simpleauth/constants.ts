@@ -26,6 +26,13 @@ export class Constants {
         },
     };
 
+    static readonly FrontendPlugin = {
+        id: "fx-resource-frontend-hosting",
+        configKeys: {
+            endpoint: "endpoint"
+        },
+    }
+
     static readonly SimpleAuthPlugin = {
         id: "fx-resource-simple-auth",
         name: "Simple Auth Plugin",
@@ -50,9 +57,11 @@ export class Constants {
     static readonly ApplicationSettingsKeys = {
         clientId: "CLIENT_ID",
         clientSecret: "CLIENT_SECRET",
-        oauthTokenEndpoint: "OAUTH_TOKEN_ENDPOINT",
+        oauthTokenEndpoint: "OAUTH_AUTHORITY",
         applicationIdUris: "IDENTIFIER_URI",
         allowedAppIds: "ALLOWED_APP_IDS",
+        tabAppEndpoint: "TAB_APP_ENDPOINT",
+        aadMetadataAddress: "AAD_METADATA_ADDRESS"
     };
 
     static readonly ProgressBar = {

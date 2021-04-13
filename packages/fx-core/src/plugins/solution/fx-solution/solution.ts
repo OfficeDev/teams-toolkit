@@ -1605,8 +1605,8 @@ export class TeamsAppSolution implements Solution {
                         return err(result.error);
                     }
                     ctx.config.get(GLOBAL_CONFIG)?.set("subscriptionId", result.value);
-                    return ok(null);
                 }
+                return ok(null);
             }
         }
         return err(

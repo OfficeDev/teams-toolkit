@@ -18,6 +18,7 @@ export class Constants {
     static FrontendSuffix = "fe";
 
     static EmptyString = "";
+    static EmptyListString = "[]";
 
     static DayInMS = 1000 * 60 * 60 * 24;
     static SasTokenLifetime = Constants.DayInMS * 3;
@@ -90,12 +91,17 @@ export class DependentPluginInfo {
 
     static readonly AADPluginName = "fx-resource-aad-app-for-teams";
     static readonly ClientID = "clientId";
+
+    static readonly LocalDebugPluginName = "fx-resource-local-debug";
+    static readonly LocalTabEndpoint = "localTabEndpoint";
 }
 
 export class FrontendConfigInfo {
     static readonly StorageName = "storageName";
     static readonly Endpoint = "endpoint";
     static readonly Hostname = "domain";
+    static readonly StaticTab = "staticTabs";
+    static readonly ConfigurableTab = "configurableTabs";
 }
 
 export class TelemetryEvent {
@@ -109,6 +115,8 @@ export class TelemetryEvent {
 
     static readonly PreDeploy = "pre-deploy";
     static readonly Deploy = "deploy";
+
+    static readonly PostDebug = "post-debug";
 }
 
 export class TelemetryKey {

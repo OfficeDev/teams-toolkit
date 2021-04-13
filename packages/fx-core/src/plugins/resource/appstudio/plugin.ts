@@ -125,6 +125,8 @@ export class AppStudioPluginImpl {
             validDomains: appManifest.validDomains,
         };
 
+        appDefinition.appId = appManifest.id;
+
         appDefinition.appName = appManifest.name.short;
         appDefinition.shortName = appManifest.name.short;
         appDefinition.version = appManifest.version;

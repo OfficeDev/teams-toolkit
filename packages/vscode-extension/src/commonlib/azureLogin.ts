@@ -150,6 +150,7 @@ export class AzureAccountManager implements AzureAccountProvider {
               }
             }
           }
+          // TODO - If the correct process is always selecting subs before other calls, throw error if selected subs not exist.
           resolve(credential2);
         } else if (azureAccount.sessions.length > 0) {
           resolve(azureAccount.sessions[0].credentials2);
@@ -208,6 +209,8 @@ export class AzureAccountManager implements AzureAccountProvider {
     if (AzureAccountManager.statusChange !== undefined) {
       await AzureAccountManager.statusChange("SignedOut", undefined, undefined);
     }
+    AzureAccountManager.tenantId = undefined;
+    AzureAccountManager.subscriptionId = undefined;
     return new Promise((resolve) => {
       resolve(true);
     });
@@ -257,9 +260,20 @@ export class AzureAccountManager implements AzureAccountProvider {
    * set tenantId and subscriptionId
    */
   async setTeanantAndSubscription(tenantId: string, subscriptionId: string): Promise<boolean> {
-    AzureAccountManager.tenantId = tenantId;
-    AzureAccountManager.subscriptionId = subscriptionId;
-    return true;
+    if (this.isUserLogin()) {
+      const azureAccount: AzureAccount = vscode.extensions.getExtension<AzureAccount>(
+        "ms-vscode.azure-account"
+      )!.exports;
+      for (let i = 0; i < azureAccount.subscriptions.length; ++i) {
+        const item = azureAccount.subscriptions[i];
+        if (item.session.tenantId == tenantId && item.subscription.subscriptionId == subscriptionId) {
+          AzureAccountManager.tenantId = tenantId;
+          AzureAccountManager.subscriptionId = subscriptionId;
+          return true;
+        }
+      }
+    }
+    return false;
   }
 }
 

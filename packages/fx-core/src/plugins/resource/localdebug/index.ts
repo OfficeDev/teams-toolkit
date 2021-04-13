@@ -111,7 +111,7 @@ export class LocalDebugPlugin implements Plugin {
         // TODO: dynamicly determine local ports
         if (ctx.platform === Platform.VSCode)
         {
-            const vscEnv = ctx.answers?.getString("vscEnv");
+            const vscEnv = ctx.answers?.getString("vscenv");
 
             let localTabEndpoint: string;
             let localTabDomain: string;
@@ -121,8 +121,8 @@ export class LocalDebugPlugin implements Plugin {
             if (vscEnv === VsCodeEnv.codespaceBrowser || vscEnv === VsCodeEnv.codespaceVsCode) {
                 const codespaceName = await getCodespaceName();
 
-                localTabDomain = `${codespaceName}-3000`;
                 localTabEndpoint = getCodespaceUrl(codespaceName, 3000);
+                localTabDomain = (new URL(localTabEndpoint)).host;
                 localAuthEndpoint =  getCodespaceUrl(codespaceName, 5000);
                 localFuncEndpoint =  getCodespaceUrl(codespaceName, 7071);
             } else {

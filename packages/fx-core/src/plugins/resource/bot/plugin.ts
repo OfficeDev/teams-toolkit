@@ -154,7 +154,6 @@ export class TeamsBotImpl {
         CheckThrowSomethingMissing(ConfigNames.PROGRAMMING_LANGUAGE, this.config.scaffold.programmingLanguage);
         // CheckThrowSomethingMissing(ConfigNames.GRAPH_TOKEN, this.config.scaffold.graphToken);
         CheckThrowSomethingMissing(ConfigNames.SUBSCRIPTION_ID, this.config.provision.subscriptionId);
-        CheckThrowSomethingMissing(ConfigNames.SERVICE_CLIENT_CREDENTIALS, this.config.provision.serviceClientCredentials);
         CheckThrowSomethingMissing(ConfigNames.RESOURCE_GROUP, this.config.provision.resourceGroup);
         CheckThrowSomethingMissing(ConfigNames.LOCATION, this.config.provision.location);
 
@@ -204,9 +203,13 @@ export class TeamsBotImpl {
         this.telemetryStepIn(LifecycleFuncNames.PROVISION_WEB_APP);
         this.markEnter(LifecycleFuncNames.PROVISION_WEB_APP);
 
+        const serviceClientCredentials = await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
+        if (!serviceClientCredentials) {
+            throw new PreconditionException(Messages.FAIL_TO_GET_AZURE_CREDS, [Messages.LOGIN_AZURE_ACCOUNT]);
+        }
         // Suppose we get creds and subs from context.
         const webSiteMgmtClient = factory.createWebSiteMgmtClient(
-            this.config.provision.serviceClientCredentials!,
+            serviceClientCredentials,
             this.config.provision.subscriptionId!,
         );
 
@@ -301,8 +304,13 @@ export class TeamsBotImpl {
         CheckThrowSomethingMissing(ConfigNames.AUTH_APPLICATION_ID_URIS, applicationIdUris);
         CheckThrowSomethingMissing(ConfigNames.SITE_ENDPOINT, siteEndpoint);
 
+        const serviceClientCredentials = await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
+        if (!serviceClientCredentials) {
+            throw new PreconditionException(Messages.FAIL_TO_GET_AZURE_CREDS, [Messages.LOGIN_AZURE_ACCOUNT]);
+        }
+
         const webSiteMgmtClient = factory.createWebSiteMgmtClient(
-            this.config.provision.serviceClientCredentials!,
+            serviceClientCredentials,
             this.config.provision.subscriptionId!,
         );
 
@@ -384,7 +392,6 @@ export class TeamsBotImpl {
         CheckThrowSomethingMissing(ConfigNames.SITE_ENDPOINT, this.config.provision.siteEndpoint);
         CheckThrowSomethingMissing(ConfigNames.PROGRAMMING_LANGUAGE, this.config.scaffold.programmingLanguage);
         CheckThrowSomethingMissing(ConfigNames.SUBSCRIPTION_ID, this.config.provision.subscriptionId);
-        CheckThrowSomethingMissing(ConfigNames.SERVICE_CLIENT_CREDENTIALS, this.config.provision.serviceClientCredentials);
         CheckThrowSomethingMissing(ConfigNames.RESOURCE_GROUP, this.config.provision.resourceGroup);
 
         if (!utils.isDomainValidForAzureWebApp(this.config.provision.siteEndpoint!)) {
@@ -424,8 +431,13 @@ export class TeamsBotImpl {
         let publishingUserName = "";
         let publishingPassword: string | undefined = undefined;
 
+        const serviceClientCredentials = await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
+        if (!serviceClientCredentials) {
+            throw new PreconditionException(Messages.FAIL_TO_GET_AZURE_CREDS, [Messages.LOGIN_AZURE_ACCOUNT]);
+        }
+
         const webSiteMgmtClient = new appService.WebSiteManagementClient(
-            this.config.provision.serviceClientCredentials!,
+            serviceClientCredentials,
             this.config.provision.subscriptionId!,
         );
 
@@ -578,8 +590,13 @@ export class TeamsBotImpl {
 
         this.markEnter(LifecycleFuncNames.UPDATE_MESSAGE_ENDPOINT_AZURE, endpoint);
 
+        const serviceClientCredentials = await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
+        if (!serviceClientCredentials) {
+            throw new PreconditionException(Messages.FAIL_TO_GET_AZURE_CREDS, [Messages.LOGIN_AZURE_ACCOUNT]);
+        }
+
         const botClient = factory.createAzureBotServiceClient(
-            this.config.provision.serviceClientCredentials!,
+            serviceClientCredentials,
             this.config.provision.subscriptionId!,
         );
 
@@ -699,9 +716,14 @@ export class TeamsBotImpl {
             aadDisplayName
         );
 
+        const serviceClientCredentials = await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
+        if (!serviceClientCredentials) {
+            throw new PreconditionException(Messages.FAIL_TO_GET_AZURE_CREDS, [Messages.LOGIN_AZURE_ACCOUNT]);
+        }
+
         // 2. Provision a bot channel registration resource on azure.
         const botClient = factory.createAzureBotServiceClient(
-            this.config.provision.serviceClientCredentials!,
+            serviceClientCredentials,
             this.config.provision.subscriptionId!,
         );
 

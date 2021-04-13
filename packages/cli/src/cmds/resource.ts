@@ -9,7 +9,7 @@ import { Argv, Options } from "yargs";
 import { ConfigMap, err, Func, FxError, ok, Platform, Result, Stage } from "fx-api";
 
 import activate from "../activate";
-import AzureTokenProvider from "../commonlib/azureLogin1st";
+import AzureTokenProvider from "../commonlib/azureLogin";
 import * as constants from "../constants";
 import { validateAndUpdateAnswers } from "../question/question";
 import { getParamJson, readConfigs } from "../utils";

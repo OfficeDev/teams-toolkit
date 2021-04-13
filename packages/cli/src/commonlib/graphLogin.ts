@@ -39,7 +39,7 @@ const SERVER_PORT = 8400;
 /**
  * use msal to implement graph login
  */
-export class GraphLogin implements GraphTokenProvider {
+class GraphLogin implements GraphTokenProvider {
   private static instance: GraphLogin;
 
   private static codeFlowInstance: CodeFlowLogin;
@@ -119,4 +119,9 @@ export class GraphLogin implements GraphTokenProvider {
   }
 }
 
-export default GraphLogin.getInstance();
+import { MockGraphTokenProvider } from "fx-api";
+
+const ciEnabled = process.env.CI_ENABLED;
+const graphLogin = ciEnabled && ciEnabled === "true" ? MockGraphTokenProvider.getInstance() : GraphLogin.getInstance();
+
+export default graphLogin;

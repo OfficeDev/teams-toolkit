@@ -9,7 +9,7 @@ import * as path from "path";
 import { FxError, err, ok, Result, ConfigMap, Stage, Platform } from "fx-api";
 
 import activate from "../activate";
-import AzureTokenProvider from "../commonlib/azureLogin1st";
+import AzureTokenProvider from "../commonlib/azureLogin";
 import * as constants from "../constants";
 import { validateAndUpdateAnswers } from "../question/question";
 import { getParamJson } from "../utils";

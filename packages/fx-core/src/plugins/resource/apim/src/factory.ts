@@ -67,13 +67,13 @@ export class Factory {
         }
     }
 
-    public static async buildApimService(azureAccountProvider: AzureAccountProvider | undefined, solutionConfig: ISolutionConfig, telemetry?: TelemetryReporter, logger?: LogProvider): Promise<ApimService> {
+    public static async buildApimService(azureAccountProvider: AzureAccountProvider | undefined, solutionConfig: ISolutionConfig, telemetryReporter?: TelemetryReporter, logger?: LogProvider): Promise<ApimService> {
         const credential = AssertNotEmpty("credential", await azureAccountProvider?.getAccountCredentialAsync());
         const apiManagementClient = new ApiManagementClient(credential, solutionConfig.subscriptionId);
-        return new ApimService(apiManagementClient, credential, solutionConfig.subscriptionId, telemetry, logger);
+        return new ApimService(apiManagementClient, credential, solutionConfig.subscriptionId, telemetryReporter, logger);
     }
 
-    public static async buildAadService(graphTokenProvider: GraphTokenProvider | undefined, telemetry?: TelemetryReporter, logger?: LogProvider): Promise<AadService> {
+    public static async buildAadService(graphTokenProvider: GraphTokenProvider | undefined, telemetryReporter?: TelemetryReporter, logger?: LogProvider): Promise<AadService> {
         const accessToken = AssertNotEmpty("accessToken", await graphTokenProvider?.getAccessToken());
         const axiosInstance = axios.create({
             baseURL: AadDefaultValues.graphApiBasePath,
@@ -82,6 +82,6 @@ export class Factory {
                 "content-type": "application/json",
             },
         });
-        return new AadService(axiosInstance, telemetry, logger);
+        return new AadService(axiosInstance, telemetryReporter, logger);
     }
 }

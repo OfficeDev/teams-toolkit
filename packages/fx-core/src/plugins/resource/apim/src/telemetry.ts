@@ -14,15 +14,15 @@ class TelemetryEventNameConstants {
 }
 
 export class Telemetry {
-    public static sendApimOperationEvent(telemetry: TelemetryReporter | undefined, operation: IName, resourceType: IName, status: OperationStatus): void {
+    public static sendApimOperationEvent(telemetryReporter: TelemetryReporter | undefined, operation: IName, resourceType: IName, status: OperationStatus): void {
         if (status === OperationStatus.Failed) {
-            telemetry?.sendTelemetryErrorEvent(TelemetryEventNameConstants.apimOperation, {
+            telemetryReporter?.sendTelemetryErrorEvent(TelemetryEventNameConstants.apimOperation, {
                 operation: operation.shortName,
                 resource: resourceType.shortName,
                 status: status,
             });
         } else {
-            telemetry?.sendTelemetryEvent(TelemetryEventNameConstants.apimOperation, {
+            telemetryReporter?.sendTelemetryEvent(TelemetryEventNameConstants.apimOperation, {
                 operation: operation.shortName,
                 resource: resourceType.shortName,
                 status: status,
@@ -30,15 +30,15 @@ export class Telemetry {
         }
     }
 
-    public static sendAadOperationEvent(telemetry: TelemetryReporter | undefined, operation: IName, resourceType: IName, status: OperationStatus): void {
+    public static sendAadOperationEvent(telemetryReporter: TelemetryReporter | undefined, operation: IName, resourceType: IName, status: OperationStatus): void {
         if (status === OperationStatus.Failed) {
-            telemetry?.sendTelemetryErrorEvent(TelemetryEventNameConstants.aadOperation, {
+            telemetryReporter?.sendTelemetryErrorEvent(TelemetryEventNameConstants.aadOperation, {
                 operation: operation.shortName,
                 resource: resourceType.shortName,
                 status: status,
             });
         } else {
-            telemetry?.sendTelemetryEvent(TelemetryEventNameConstants.aadOperation, {
+            telemetryReporter?.sendTelemetryEvent(TelemetryEventNameConstants.aadOperation, {
                 operation: operation.shortName,
                 resource: resourceType.shortName,
                 status: status,
@@ -46,14 +46,14 @@ export class Telemetry {
         }
     }
 
-    public static sendOpenApiDocumentEvent(telemetry: TelemetryReporter | undefined, fileExtension: string, schemaVersion: OpenApiSchemaVersion): void {
-        telemetry?.sendTelemetryEvent(TelemetryEventNameConstants.openApiDocument, {
+    public static sendOpenApiDocumentEvent(telemetryReporter: TelemetryReporter | undefined, fileExtension: string, schemaVersion: OpenApiSchemaVersion): void {
+        telemetryReporter?.sendTelemetryEvent(TelemetryEventNameConstants.openApiDocument, {
             "file-extension": fileExtension,
             "schema-version": schemaVersion,
         });
     }
 
-    public static sendErrorEvent(telemetry: TelemetryReporter | undefined, error: UserError | SystemError): void {
-        telemetry?.sendTelemetryException(error);
+    public static sendErrorEvent(telemetryReporter: TelemetryReporter | undefined, error: UserError | SystemError): void {
+        telemetryReporter?.sendTelemetryException(error);
     }
 }

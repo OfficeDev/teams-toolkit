@@ -9,12 +9,12 @@ import { Lazy } from "../util/lazy";
 
 export class TeamsAppAadManager {
     private readonly logger?: LogProvider;
-    private readonly telemetry?: TelemetryReporter;
+    private readonly telemetryReporter?: TelemetryReporter;
     private readonly lazyAadService: Lazy<AadService>;
 
-    constructor(lazyAadService: Lazy<AadService>, telemetry?: TelemetryReporter, logger?: LogProvider) {
+    constructor(lazyAadService: Lazy<AadService>, telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
         this.logger = logger;
-        this.telemetry = telemetry;
+        this.telemetryReporter = telemetryReporter;
         this.lazyAadService = lazyAadService;
     }
 

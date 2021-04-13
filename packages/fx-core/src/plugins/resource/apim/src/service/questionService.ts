@@ -39,11 +39,11 @@ export interface IQuestionService {
 class BaseQuestionService {
     protected readonly dialog: Dialog;
     protected readonly logger?: LogProvider;
-    protected readonly telemetry?: TelemetryReporter;
+    protected readonly telemetryReporter?: TelemetryReporter;
 
-    constructor(dialog: Dialog, telemetry?: TelemetryReporter, logger?: LogProvider) {
+    constructor(dialog: Dialog, telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
         this.dialog = dialog;
-        this.telemetry = telemetry;
+        this.telemetryReporter = telemetryReporter;
         this.logger = logger;
     }
 }
@@ -52,8 +52,8 @@ export class ApimServiceQuestion extends BaseQuestionService implements IQuestio
     private readonly lazyApimService: Lazy<ApimService>;
     public readonly funcName = QuestionConstants.Apim.funcName;
 
-    constructor(lazyApimService: Lazy<ApimService>, dialog: Dialog, telemetry?: TelemetryReporter, logger?: LogProvider) {
-        super(dialog, telemetry, logger);
+    constructor(lazyApimService: Lazy<ApimService>, dialog: Dialog, telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
+        super(dialog, telemetryReporter, logger);
         this.lazyApimService = lazyApimService;
     }
 
@@ -86,8 +86,8 @@ export class OpenApiDocumentQuestion extends BaseQuestionService implements IQue
     private readonly openApiProcessor: OpenApiProcessor;
     public readonly funcName = QuestionConstants.OpenApiDocument.funcName;
 
-    constructor(openApiProcessor: OpenApiProcessor, dialog: Dialog, telemetry?: TelemetryReporter, logger?: LogProvider) {
-        super(dialog, telemetry, logger);
+    constructor(openApiProcessor: OpenApiProcessor, dialog: Dialog, telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
+        super(dialog, telemetryReporter, logger);
         this.openApiProcessor = openApiProcessor;
     }
 
@@ -126,8 +126,8 @@ export class ExistingOpenApiDocumentFunc extends BaseQuestionService implements 
     private readonly openApiProcessor: OpenApiProcessor;
     public readonly funcName = QuestionConstants.ExistingOpenApiDocument.funcName;
 
-    constructor(openApiProcessor: OpenApiProcessor, dialog: Dialog, telemetry?: TelemetryReporter, logger?: LogProvider) {
-        super(dialog, telemetry, logger);
+    constructor(openApiProcessor: OpenApiProcessor, dialog: Dialog, telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
+        super(dialog, telemetryReporter, logger);
         this.openApiProcessor = openApiProcessor;
     }
 
@@ -155,8 +155,8 @@ export class ExistingOpenApiDocumentFunc extends BaseQuestionService implements 
 export class ApiPrefixQuestion extends BaseQuestionService implements IQuestionService {
     public readonly funcName = QuestionConstants.ApiPrefix.funcName;
 
-    constructor(dialog: Dialog, telemetry?: TelemetryReporter, logger?: LogProvider) {
-        super(dialog, telemetry, logger);
+    constructor(dialog: Dialog, telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
+        super(dialog, telemetryReporter, logger);
     }
 
     public async executeFunc(ctx: PluginContext): Promise<string> {
@@ -184,8 +184,8 @@ export class ApiVersionQuestion extends BaseQuestionService implements IQuestion
     private readonly lazyApimService: Lazy<ApimService>;
     public readonly funcName = QuestionConstants.ApiVersion.funcName;
 
-    constructor(lazyApimService: Lazy<ApimService>, dialog: Dialog, telemetry?: TelemetryReporter, logger?: LogProvider) {
-        super(dialog, telemetry, logger);
+    constructor(lazyApimService: Lazy<ApimService>, dialog: Dialog, telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
+        super(dialog, telemetryReporter, logger);
         this.lazyApimService = lazyApimService;
     }
 
@@ -228,8 +228,8 @@ export class ApiVersionQuestion extends BaseQuestionService implements IQuestion
 export class NewApiVersionQuestion extends BaseQuestionService implements IQuestionService {
     public readonly funcName = QuestionConstants.NewApiVersion.funcName;
 
-    constructor(dialog: Dialog, telemetry?: TelemetryReporter, logger?: LogProvider) {
-        super(dialog, telemetry, logger);
+    constructor(dialog: Dialog, telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
+        super(dialog, telemetryReporter, logger);
     }
 
     public condition(): { target?: string; } & Validation {

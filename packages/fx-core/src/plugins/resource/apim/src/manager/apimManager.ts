@@ -13,15 +13,15 @@ import { NamingRules } from "../util/namingRules";
 
 export class ApimManager {
     private readonly logger?: LogProvider;
-    private readonly telemetry?: TelemetryReporter;
+    private readonly telemetryReporter?: TelemetryReporter;
     private readonly lazyApimService: Lazy<ApimService>;
     private readonly openApiProcessor: OpenApiProcessor;
 
-    constructor(lazyApimService: Lazy<ApimService>, openApiProcessor: OpenApiProcessor, telemetry?: TelemetryReporter, logger?: LogProvider) {
+    constructor(lazyApimService: Lazy<ApimService>, openApiProcessor: OpenApiProcessor, telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
         this.lazyApimService = lazyApimService;
         this.openApiProcessor = openApiProcessor;
         this.logger = logger;
-        this.telemetry = telemetry;
+        this.telemetryReporter = telemetryReporter;
     }
 
     public async scaffold(appName: string, projectRootPath: string): Promise<void> {

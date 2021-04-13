@@ -15,12 +15,12 @@ import { OpenAPI, OpenAPIV2, OpenAPIV3 } from "openapi-types";
 
 export class OpenApiProcessor {
     private readonly logger?: LogProvider;
-    private readonly telemetry?: TelemetryReporter;
+    private readonly telemetryReporter?: TelemetryReporter;
     private readonly swaggerParser: SwaggerParser;
 
-    constructor(telemetry?: TelemetryReporter, logger?: LogProvider) {
+    constructor(telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
         this.logger = logger;
-        this.telemetry = telemetry;
+        this.telemetryReporter = telemetryReporter;
         this.swaggerParser = new SwaggerParser();
     }
 
@@ -75,7 +75,7 @@ export class OpenApiProcessor {
         }
 
         const schemaVersion = this.getSchemaVersion(srcSpec, filepath);
-        Telemetry.sendOpenApiDocumentEvent(this.telemetry, getFileExtension(filepath), schemaVersion);
+        Telemetry.sendOpenApiDocumentEvent(this.telemetryReporter, getFileExtension(filepath), schemaVersion);
         return {
             schemaVersion: schemaVersion,
             spec: srcSpec,

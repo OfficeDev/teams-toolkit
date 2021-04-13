@@ -26,7 +26,7 @@ import { OpenAPI } from "openapi-types";
 export class ApimService {
     private readonly subscriptionId: string;
     private readonly apimClient: ApiManagementClient;
-    private readonly telemetry?: TelemetryReporter;
+    private readonly telemetryReporter?: TelemetryReporter;
     private readonly logger?: LogProvider;
     private readonly credential: TokenCredentialsBase;
 
@@ -34,13 +34,13 @@ export class ApimService {
         apimClient: ApiManagementClient,
         credential: TokenCredentialsBase,
         subscriptionId: string,
-        telemetry?: TelemetryReporter,
+        telemetryReporter?: TelemetryReporter,
         logger?: LogProvider
     ) {
         this.credential = credential;
         this.subscriptionId = subscriptionId;
         this.apimClient = apimClient;
-        this.telemetry = telemetry;
+        this.telemetryReporter = telemetryReporter;
         this.logger = logger;
     }
 
@@ -284,15 +284,15 @@ export class ApimService {
     ) {
         try {
             this.logger?.info(LogMessages.operationStarts(operation, resourceType, resourceId));
-            Telemetry.sendApimOperationEvent(this.telemetry, operation, resourceType, OperationStatus.Started);
+            Telemetry.sendApimOperationEvent(this.telemetryReporter, operation, resourceType, OperationStatus.Started);
             const result = await fn();
             this.logger?.info(LogMessages.operationSuccess(operation, resourceType, resourceId));
-            Telemetry.sendApimOperationEvent(this.telemetry, operation, resourceType, OperationStatus.Succeeded);
+            Telemetry.sendApimOperationEvent(this.telemetryReporter, operation, resourceType, OperationStatus.Succeeded);
             return result;
         } catch (error) {
             if (!!errorHandler && errorHandler(error) === ErrorHandlerResult.Return) {
                 this.logger?.info(LogMessages.operationSuccess(operation, resourceType, resourceId));
-                Telemetry.sendApimOperationEvent(this.telemetry, operation, resourceType, OperationStatus.Succeeded);
+                Telemetry.sendApimOperationEvent(this.telemetryReporter, operation, resourceType, OperationStatus.Succeeded);
                 if (operation === Operation.Get) {
                     this.logger?.info(LogMessages.resourceNotFound(resourceType, resourceId));
                 }
@@ -300,7 +300,7 @@ export class ApimService {
             }
 
             this.logger?.info(LogMessages.operationFailed(operation, resourceType, resourceId));
-            Telemetry.sendApimOperationEvent(this.telemetry, operation, resourceType, OperationStatus.Failed);
+            Telemetry.sendApimOperationEvent(this.telemetryReporter, operation, resourceType, OperationStatus.Failed);
             throw BuildError(ApimOperationError, error, operation.displayName, resourceType.displayName);
         }
     }

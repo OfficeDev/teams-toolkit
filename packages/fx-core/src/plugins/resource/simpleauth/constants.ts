@@ -57,7 +57,7 @@ export class Constants {
     static readonly ApplicationSettingsKeys = {
         clientId: "CLIENT_ID",
         clientSecret: "CLIENT_SECRET",
-        oauthTokenEndpoint: "OAUTH_AUTHORITY",
+        oauthAuthority: "OAUTH_AUTHORITY",
         applicationIdUris: "IDENTIFIER_URI",
         allowedAppIds: "ALLOWED_APP_IDS",
         tabAppEndpoint: "TAB_APP_ENDPOINT",

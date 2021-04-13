@@ -33,7 +33,7 @@ export class Utils {
             Constants.AadAppPlugin.configKeys.clientSecret,
             isLocalDebug,
         ) as string;
-        const oauthTokenEndpointBase = Utils.getConfigValueWithValidation(
+        const oauthAuthority = Utils.getConfigValueWithValidation(
             ctx,
             Constants.AadAppPlugin.id,
             Constants.AadAppPlugin.configKeys.oauthAuthority,
@@ -61,7 +61,7 @@ export class Utils {
         ) as string;
 
         const allowedAppIds = [teamsMobileDesktopAppId, teamsWebAppId].join(";");
-        const aadMetadataAddress = `${oauthTokenEndpointBase}/v2.0/.well-known/openid-configuration`;
+        const aadMetadataAddress = `${oauthAuthority}/v2.0/.well-known/openid-configuration`;
         let endpointUrl;
         try {
             endpointUrl = new URL(endpoint);
@@ -73,7 +73,7 @@ export class Utils {
         return {
             [Constants.ApplicationSettingsKeys.clientId]: clientId,
             [Constants.ApplicationSettingsKeys.clientSecret]: clientSecret,
-            [Constants.ApplicationSettingsKeys.oauthTokenEndpoint]: oauthTokenEndpointBase,
+            [Constants.ApplicationSettingsKeys.oauthAuthority]: oauthAuthority,
             [Constants.ApplicationSettingsKeys.applicationIdUris]: applicationIdUris,
             [Constants.ApplicationSettingsKeys.allowedAppIds]: allowedAppIds,
             [Constants.ApplicationSettingsKeys.tabAppEndpoint]: tabAppEndpoint,

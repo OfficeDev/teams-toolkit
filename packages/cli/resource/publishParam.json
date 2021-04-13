@@ -4,7 +4,15 @@
             "type": "folder",
             "name": "manifest-folder",
             "title": "the folder path of manifest file",
-            "default": "./.fx"
+            "hide": true
+        }
+    },    
+    {
+        "data": {
+            "type": "folder",
+            "name": "folder",
+            "title": "Select root folder of the project",
+            "default": "./"
         }
     },
     {

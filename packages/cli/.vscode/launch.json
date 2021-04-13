@@ -183,7 +183,7 @@
             "program": "${workspaceFolder}/lib/cli.js",
             "args": [
                 "publish",
-                "--manifest-folder", "./test-folder/azureApp/.fx",
+                "--folder", "./test-folder/azureApp"
             ],
             "outFiles": [
                 "${workspaceFolder}/lib/**/*.js"

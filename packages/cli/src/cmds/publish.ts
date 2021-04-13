@@ -5,7 +5,7 @@
 
 import { Argv, Options } from "yargs";
 import * as path from "path";
-import { FxError, err, ok, Result, ConfigMap } from "fx-api";
+import { FxError, err, ok, Result, ConfigMap, ConfigFolderName } from "fx-api";
 import activate from "../activate";
 import * as constants from "../constants";
 import { YargsCommand } from "../yargsCommand";
@@ -28,15 +28,28 @@ export default class New extends YargsCommand {
   }): Promise<Result<null, FxError>> {
     const answers = new ConfigMap();
     for (const name in this.params) {
-      if(name.endsWith("folder")){
-        answers.set(name,path.resolve(args[name] as string));
+      if (!args[name]) {
+        continue;
       }
-      else{
+      if (name.endsWith("folder")) {
+        answers.set(name, path.resolve(args[name] as string));
+      } else {
         answers.set(name, args[name]);
       }
     }
 
-    const rootFolder = path.resolve(path.join(answers.getString("manifest-folder")!,"..") || "./");
+    const manifestFolderParamName = "manifest-folder";
+    let rootFolder;
+    if (answers.has(manifestFolderParamName)) {
+      rootFolder = path.join(answers.getString(manifestFolderParamName)!, "..");
+    }
+    else {
+      rootFolder = answers.getString("folder");
+      const manifestFolder = path.join(rootFolder!, `.${ConfigFolderName}`);
+      answers.set(manifestFolderParamName, manifestFolder);
+    }
+
+    answers.delete("folder");
     const result = await activate(rootFolder);
     if (result.isErr()) {
       return err(result.error);

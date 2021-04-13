@@ -102,7 +102,7 @@ teamsfx deploy --deploy-plugin fx-resource-spfx
 ### publish
 
 ```bash
-teamsfx publish --manifest-folder /path/to/your/project/.fx
+teamsfx publish
 ```
 
 ## How to Generate Parameter Files (for Repo Contributors)

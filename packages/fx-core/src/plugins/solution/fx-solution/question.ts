@@ -29,6 +29,7 @@ export enum AzureSolutionQuestionNames {
     AzureResources = "azure-resources",
     PluginSelectionDeploy = "deploy-plugin",
     AddResources = "add-azure-resources",
+    AddCapabilities = "add-capabilities",
     AppName = "app-name",
     AskSub = "ask-subscription",
     ProgrammingLanguage = "programming-language",
@@ -114,12 +115,15 @@ export const AzureResourcesQuestion: MultiSelectQuestion = {
 //     default: [],
 // };
 
-export function createAddAzureResourceQuestion(alreadyHaveFunction: boolean): MultiSelectQuestion {
+export function createAddAzureResourceQuestion(alreadyHaveFunction: boolean, alreadhHaveSQL: boolean, alreadyHaveAPIM: boolean): MultiSelectQuestion {
+    const options:OptionItem[] = [AzureResourceFunction];
+    if(!alreadhHaveSQL) options.push(AzureResourceSQL);
+    if(!alreadyHaveAPIM) options.push(AzureResourceApim);
     return {
         name: AzureSolutionQuestionNames.AddResources,
         title: "Select Azure resources to add",
         type: NodeType.multiSelect,
-        option: [AzureResourceSQL, AzureResourceFunction, AzureResourceApim],
+        option: options,
         default: [],
         onDidChangeSelection:async function(selectedItems: OptionItem[]) : Promise<string[]>{
             const hasSQL = selectedItems.some(i=>i.id === AzureResourceSQL.id);
@@ -131,6 +135,19 @@ export function createAddAzureResourceQuestion(alreadyHaveFunction: boolean): Mu
             }
             return ids;
         }
+    };
+}
+
+export function createAddCapabilityQuestion(alreadyHaveTab: boolean, alreadyHaveBot: boolean): MultiSelectQuestion {
+    const options:OptionItem[] = [];
+    if(!alreadyHaveTab) options.push(TabOptionItem);
+    if(!alreadyHaveBot) options.push(BotOptionItem);
+    return {
+        name: AzureSolutionQuestionNames.AddCapabilities,
+        title: "Select Capabilities to add",
+        type: NodeType.multiSelect,
+        option: options,
+        default: []
     };
 }
 

@@ -87,13 +87,13 @@ export class DepsChecker {
     const supportedPackages = [];
     for (const checker of checkers) {
       const info = await checker.getDepsInfo();
-      installPackages.push(`${info.name} (v${info.installVersion})`)
+      installPackages.push(`${info.name} (v${info.installVersion})`);
       const supportedVersions = info.supportedVersions.map(version => "v" + version).join(" or ");
       const supportedPackage = `${info.name} (${supportedVersions})`;
-      supportedPackages.push(supportedPackage)
+      supportedPackages.push(supportedPackage);
     }
 
-    const installMessage = installPackages.join(" and ")
+    const installMessage = installPackages.join(" and ");
     const supportedMessage = supportedPackages.join(" and ");
     return Messages.depsNotFound.replace("@InstallPackages", installMessage).replace("@SupportedPackages", supportedMessage);
   }

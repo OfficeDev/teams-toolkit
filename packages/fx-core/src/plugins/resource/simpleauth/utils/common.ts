@@ -56,8 +56,8 @@ export class Utils {
         ) as string;
         const endpoint = Utils.getConfigValueWithValidation(
             ctx,
-            Constants.FrontendPlugin.id,
-            Constants.FrontendPlugin.configKeys.endpoint,
+            isLocalDebug ? Constants.LocalDebugPlugin.id : Constants.FrontendPlugin.id,
+            isLocalDebug ? Constants.LocalDebugPlugin.configKeys.endpoint: Constants.FrontendPlugin.configKeys.endpoint,
         ) as string;
 
         const allowedAppIds = [teamsMobileDesktopAppId, teamsWebAppId].join(";");

@@ -29,8 +29,15 @@ export class Constants {
     static readonly FrontendPlugin = {
         id: "fx-resource-frontend-hosting",
         configKeys: {
-            endpoint: "endpoint"
+            endpoint: "endpoint",
         },
+    };
+
+    static readonly LocalDebugPlugin = {
+        id: "fx-resource-local-debug",
+        configKeys: {
+            endpoint: "localTabEndpoint",
+        }
     }
 
     static readonly SimpleAuthPlugin = {

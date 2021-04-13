@@ -27,8 +27,9 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
       vscode.TreeItemCollapsibleState.Expanded,
       TreeCategory.GettingStarted,
       [
-        new TreeViewCommand("Welcome", "Welcome", "fx-extension.openWelcome"),
-        new TreeViewCommand("Documentation", "Documentation", "fx-extension.openDocument")
+        new TreeViewCommand("Quick Start", "Quick Start", "fx-extension.openWelcome", vscode.TreeItemCollapsibleState.None, TreeCategory.GettingStarted, undefined, "lightningBolt_16"),
+        new TreeViewCommand("Samples", "Samples", "fx-extension.openSamples", vscode.TreeItemCollapsibleState.None, TreeCategory.GettingStarted, undefined, "heart_16"),
+        new TreeViewCommand("Documentation", "Documentation", "fx-extension.openDocument", vscode.TreeItemCollapsibleState.None, TreeCategory.GettingStarted, undefined, "book_16")
       ]
     );
 

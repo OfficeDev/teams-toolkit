@@ -12,28 +12,35 @@ import AzureAccountManager from "../commonlib/azureLogin";
 import AppStudioTokenInstance from "../commonlib/appStudioLogin";
 import { runCommand } from "../handlers";
 import { Stage } from "fx-api";
+import { PanelType } from './PanelType'
 
 export class WebviewPanel {
   private static readonly viewType = "react";
   public static currentPanel: WebviewPanel | undefined;
+  public static currentPanelType: PanelType =  PanelType.QuickStart;
 
   private panel: vscode.WebviewPanel;
   private readonly extensionPath: string;
   private disposables: vscode.Disposable[] = [];
 
-  public static createOrShow(extensionPath: string) {
+  public static createOrShow(extensionPath: string, panelType: PanelType) {
     const column = vscode.window.activeTextEditor
       ? vscode.window.activeTextEditor.viewColumn
       : undefined;
-    if (WebviewPanel.currentPanel) {
+    if (WebviewPanel.currentPanel && WebviewPanel.currentPanelType == panelType) {
       WebviewPanel.currentPanel.panel.reveal(column);
     } else {
-      WebviewPanel.currentPanel = new WebviewPanel(extensionPath, column || vscode.ViewColumn.One);
+      if (WebviewPanel.currentPanel) {
+        WebviewPanel.currentPanel.dispose();
+      }
+
+      WebviewPanel.currentPanel = new WebviewPanel(extensionPath, panelType, column || vscode.ViewColumn.One);
     }
   }
 
-  private constructor(extensionPath: string, column: vscode.ViewColumn) {
+  private constructor(extensionPath: string, panelType: PanelType, column: vscode.ViewColumn) {
     this.extensionPath = extensionPath;
+    WebviewPanel.currentPanelType = panelType;
 
     // Create and show a new webview panel
     this.panel = vscode.window.createWebviewPanel(
@@ -101,6 +108,9 @@ export class WebviewPanel {
           case Commands.CreateNewProject:
             await runCommand(Stage.create);
             break;
+          case Commands.SwitchPanel:
+            WebviewPanel.currentPanelType = msg.data;
+            break;
           default:
             break;
         }
@@ -145,7 +155,7 @@ export class WebviewPanel {
     });
 
     // Set the webview's initial html content
-    this.panel.webview.html = this.getHtmlForWebview();
+    this.panel.webview.html = this.getHtmlForWebview(panelType);
   }
 
   private async fetchCodeZip(url: string) {
@@ -182,7 +192,7 @@ export class WebviewPanel {
     );
   }
 
-  private getHtmlForWebview() {
+  private getHtmlForWebview(panelType: PanelType) {
     const scriptBasePathOnDisk = vscode.Uri.file(path.join(this.extensionPath, "out/"));
     const scriptBaseUri = scriptBasePathOnDisk.with({ scheme: "vscode-resource" });
 
@@ -204,6 +214,7 @@ export class WebviewPanel {
             <div id="root"></div>
             <script>
               const vscode = acquireVsCodeApi();
+              const panelType = '${panelType}';
               window.onload = function() {
                 console.log('Ready to accept data.');
               };

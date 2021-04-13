@@ -58,6 +58,7 @@ import { VsCodeUI, VS_CODE_UI } from "./qm/vsc_ui";
 import { DepsChecker, DepsCheckerError } from "./debug/depsChecker/checker";
 import { FuncToolChecker } from "./debug/depsChecker/funcToolChecker";
 import { DotnetCoreChecker, dotnetChecker } from "./debug/depsChecker/dotnetChecker";
+import { PanelType } from "./controls/PanelType";
 
 export let core: CoreProxy;
 const runningTasks = new Set<string>(); // to control state of task execution
@@ -533,7 +534,11 @@ export async function openWelcomeHandler() {
   });
   welcomePanel.webview.html = getHtmlForWebview();
 
-  //WebviewPanel.createOrShow(ext.context.extensionPath);
+  //WebviewPanel.createOrShow(ext.context.extensionPath, PanelType.QuickStart);
+}
+
+export async function openSamplesHandler() {
+  WebviewPanel.createOrShow(ext.context.extensionPath, PanelType.SampleGallery);
 }
 
 export async function openManifestHandler(): Promise<Result<null, FxError>> {

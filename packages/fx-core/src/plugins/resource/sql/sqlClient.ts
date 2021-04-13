@@ -63,7 +63,7 @@ export class SqlClient {
                 this.token = accessToken!.token;
             } catch (error) {
                 const link = HelpLinks.addDBUser;
-                const message = ErrorMessage.DatabaseUserCreateError.message(this.config.sqlServer, this.config.databaseName, this.config.identity, error.message);
+                const message = ErrorMessage.DatabaseUserCreateError.message(this.config.sqlServer, this.config.databaseName, this.config.identity, `access database failed for ${error.message}`);
                 this.ctx.logProvider?.error(message + ` You can follow ${link} to handle it`);
                 throw SqlResultFactory.UserError(ErrorMessage.DatabaseUserCreateError.name, message, error, undefined, link);
             }

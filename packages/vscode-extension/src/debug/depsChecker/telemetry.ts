@@ -15,6 +15,7 @@ export enum DepsCheckerEvent {
 
   installingFunc = "installing-func",
   installedFunc = "installed-func",
+  installedValidFunc = "installed-func-with-validation",
 
   validateFunc = "validate-func"
 }

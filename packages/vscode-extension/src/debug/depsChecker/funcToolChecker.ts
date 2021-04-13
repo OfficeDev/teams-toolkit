@@ -112,7 +112,7 @@ export class FuncToolChecker implements IDepsChecker {
     const isInstalled = await this.isInstalled();
     if (!isInstalled) {
       DepsCheckerTelemetry.sendSystemErrorEvent(
-        DepsCheckerEvent.installingFunc,
+        DepsCheckerEvent.validateFunc,
         TelemtryMessages.failedToInstallFunc,
         failToValidate
       );
@@ -120,6 +120,7 @@ export class FuncToolChecker implements IDepsChecker {
       throw new DepsCheckerError(failToInstallFuncCoreTool, helpLink);
     }
 
+    DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.installedValidFunc);
     logger.info(finishInstallFunctionCoreTool);
   }
 }

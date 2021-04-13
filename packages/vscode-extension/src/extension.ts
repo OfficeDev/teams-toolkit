@@ -123,6 +123,24 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(openManifestCmd);
 
+  const openAppManagementCmd = vscode.commands.registerCommand(
+    "fx-extension.openAppManagement",
+    handlers.openAppManagement
+  );
+  context.subscriptions.push(openAppManagementCmd);
+
+  const openBotManagementCmd = vscode.commands.registerCommand(
+    "fx-extension.openBotManagement",
+    handlers.openBotManagement
+  );
+  context.subscriptions.push(openBotManagementCmd);
+
+  const openReportIssuesCmd = vscode.commands.registerCommand(
+    "fx-extension.openReportIssues",
+    handlers.openReportIssues
+  );
+  context.subscriptions.push(openReportIssuesCmd);
+  
   // Register debug configuration provider
   const debugProvider: TeamsfxDebugProvider = new TeamsfxDebugProvider();
   context.subscriptions.push(

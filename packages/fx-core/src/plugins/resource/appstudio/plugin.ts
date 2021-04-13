@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { PluginContext, TeamsAppManifest, Platform } from "fx-api";
+import { ConfigFolderName, PluginContext, TeamsAppManifest, Platform } from "fx-api";
 import { AppStudioClient } from "./appStudio";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
@@ -63,7 +63,13 @@ export class AppStudioPluginImpl {
         // Validate manifest
         try {
             await publishProgress?.start("Validating manifest file");
-            const appDirectory = ctx.answers?.getString(Constants.PUBLISH_PATH_QUESTION);
+            let appDirectory: string | undefined = undefined;
+            if (ctx.platform === Platform.VSCode) {
+                appDirectory = `${ctx.root}/.${ConfigFolderName}`;
+            } else {
+                appDirectory = ctx.answers?.getString(Constants.PUBLISH_PATH_QUESTION);
+            }
+            
             if (!appDirectory) {
                 throw AppStudioResultFactory.SystemError(AppStudioError.ParamUndefinedError.name, AppStudioError.ParamUndefinedError.message(Constants.PUBLISH_PATH_QUESTION));
             }

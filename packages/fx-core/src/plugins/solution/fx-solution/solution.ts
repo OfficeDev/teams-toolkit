@@ -96,6 +96,7 @@ import {
     createAddAzureResourceQuestion,
     AskSubscriptionQuestion,
     createAddCapabilityQuestion,
+    ProgrammingLanguageQuestion,
 } from "./question";
 import Mustache from "mustache";
 import path from "path";
@@ -1197,6 +1198,8 @@ export class TeamsAppSolution implements Solution {
             const capNode = new QTreeNode(capQuestion);
 
             node.addChild(capNode);
+            
+            node.addChild(new QTreeNode(ProgrammingLanguageQuestion));
 
             /////Tab
             const tabRes = await this.getTabScaffoldQuestions(ctx);

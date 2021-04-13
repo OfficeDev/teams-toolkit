@@ -74,7 +74,7 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
           "manifestEditor"
         ),
         new TreeViewCommand(
-          "Provision",
+          "Provision in the Cloud",
           "Provision resources",
           "fx-extension.provision",
           vscode.TreeItemCollapsibleState.None,
@@ -83,7 +83,7 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
           "provision"
         ),
         new TreeViewCommand(
-          "Deploy",
+          "Deploy to the Cloud",
           "Deploy resources",
           "fx-extension.deploy",
           vscode.TreeItemCollapsibleState.None,

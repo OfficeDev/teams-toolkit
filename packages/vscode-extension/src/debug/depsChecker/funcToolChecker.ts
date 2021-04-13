@@ -5,9 +5,14 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import { cpUtils } from "../cpUtils";
 import { IDepsChecker, DepsCheckerError, DepsInfo } from "./checker";
-import { funcToolCheckerEnabled, hasTeamsfxBackend, logger, runWithProgressIndicator } from "./checkerAdapter";
+import {
+  funcToolCheckerEnabled,
+  hasTeamsfxBackend,
+  logger,
+  runWithProgressIndicator
+} from "./checkerAdapter";
 import { DepsCheckerTelemetry, DepsCheckerEvent, TelemtryMessages } from "./telemetry";
-import { isWindows, Messages, functionCoreToolsHelpLink } from "./common";
+import { isWindows, isMacOS, Messages, functionCoreToolsHelpLink } from "./common";
 
 export enum FuncVersion {
   v1 = "1",
@@ -56,7 +61,10 @@ export class FuncToolChecker implements IDepsChecker {
         //   DepsCheckerEvent.checkFunc,
         //   TelemtryMessages.funcV1Installed
         // );
-        throw new DepsCheckerError(Messages.needReplaceWithFuncCoreToolV3.replace("@NameVersion", installedNameWithVersion), functionCoreToolsHelpLink);
+        throw new DepsCheckerError(
+          Messages.needReplaceWithFuncCoreToolV3.replace("@NameVersion", installedNameWithVersion),
+          functionCoreToolsHelpLink
+        );
       case FuncVersion.v2:
         // TODO: should send this event per user.
         // DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.funcV2Installed);
@@ -77,10 +85,15 @@ export class FuncToolChecker implements IDepsChecker {
         DepsCheckerEvent.installingFunc,
         TelemtryMessages.NPMNotFound
       );
-      throw new DepsCheckerError(Messages.needInstallFuncCoreTool.replace("@NameVersion", installedNameWithVersion), functionCoreToolsHelpLink);
+      throw new DepsCheckerError(
+        Messages.needInstallFuncCoreTool.replace("@NameVersion", installedNameWithVersion),
+        functionCoreToolsHelpLink
+      );
     }
 
-    logger.info(Messages.startInstallFunctionCoreTool.replace("@NameVersion", installedNameWithVersion));
+    logger.info(
+      Messages.startInstallFunctionCoreTool.replace("@NameVersion", installedNameWithVersion)
+    );
 
     try {
       await DepsCheckerTelemetry.sendEventWithDuration(DepsCheckerEvent.installedFunc, async () => {
@@ -95,7 +108,10 @@ export class FuncToolChecker implements IDepsChecker {
         error
       );
 
-      throw new DepsCheckerError(Messages.failToInstallFuncCoreTool.replace("@NameVersion", installedNameWithVersion), functionCoreToolsHelpLink);
+      throw new DepsCheckerError(
+        Messages.failToInstallFuncCoreTool.replace("@NameVersion", installedNameWithVersion),
+        functionCoreToolsHelpLink
+      );
     }
 
     // validate after installation.
@@ -107,11 +123,16 @@ export class FuncToolChecker implements IDepsChecker {
         Messages.failToValidateFuncCoreTool.replace("@NameVersion", installedNameWithVersion)
       );
 
-      throw new DepsCheckerError(Messages.failToInstallFuncCoreTool.replace("@NameVersion", installedNameWithVersion), functionCoreToolsHelpLink);
+      throw new DepsCheckerError(
+        Messages.failToInstallFuncCoreTool.replace("@NameVersion", installedNameWithVersion),
+        functionCoreToolsHelpLink
+      );
     }
 
     DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.installedValidFunc);
-    logger.info(Messages.finishInstallFunctionCoreTool.replace("@NameVersion", installedNameWithVersion));
+    logger.info(
+      Messages.finishInstallFunctionCoreTool.replace("@NameVersion", installedNameWithVersion)
+    );
   }
 }
 
@@ -170,7 +191,7 @@ async function installFuncCoreToolsOnWindows(version: FuncVersion): Promise<void
 }
 
 async function installFuncCoreToolsOnUnix(version: FuncVersion): Promise<void> {
-  await cpUtils.executeCommand(
+  const result: cpUtils.ICommandResult = await cpUtils.tryExecuteCommand(
     undefined,
     logger,
     undefined,
@@ -179,6 +200,22 @@ async function installFuncCoreToolsOnUnix(version: FuncVersion): Promise<void> {
     "-g",
     `${funcPackageName}@${version}`
   );
+
+  const tryInstallfailed: boolean = result.code !== 0;
+  const needAdminPermission: boolean = result.cmdOutputIncludingStderr.includes(
+    "permission denied"
+  );
+  const command = `npm install -g ${funcPackageName}@${version} --unsafe-perm true`;
+
+  if (tryInstallfailed && needAdminPermission && isMacOS()) {
+    await cpUtils.execSudo(command);
+  } else if (tryInstallfailed) {
+    const tryInstallCommand = `npm install -g ${funcPackageName}@${version}`;
+    logger.error(result.cmdOutputIncludingStderr);
+    throw new Error(
+      `Failed to run "${tryInstallCommand}" command. Check output window for more details.`
+    );
+  }
 }
 
 async function getFuncPSScriptPath(): Promise<string> {
@@ -190,7 +227,7 @@ async function getFuncPSScriptPath(): Promise<string> {
         shell: "cmd.exe"
       },
       "where",
-      "func",
+      "func"
     );
 
     const funcPath = output.split(/\r?\n/)[0];

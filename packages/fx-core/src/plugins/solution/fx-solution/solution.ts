@@ -49,7 +49,6 @@ import {
     FRONTEND_DOMAIN,
     FRONTEND_ENDPOINT,
     AAD_REMOTE_CLIENT_ID,
-    TEAMS_APP_MANIFEST_TEMPLATE,
     REMOTE_TEAMS_APP_ID,
     Void,
     SOLUTION_PROVISION_SUCCEEDED,
@@ -65,7 +64,9 @@ import {
     WEB_APPLICATION_INFO_SOURCE,
     LOCAL_WEB_APPLICATION_INFO_SOURCE,
     PROVISION_MANIFEST,
-    PROGRAMMING_LANGUAGE
+    PROGRAMMING_LANGUAGE,
+    CONFIGURABLE_TABS,
+    STATIC_TABS
 } from "./constants";
 
 import { SpfxPlugin } from "../../resource/spfx";
@@ -781,12 +782,25 @@ export class TeamsAppSolution implements Solution {
             ctx.logProvider?.debug(`Failed to get webApplicationInfoResource from aad by key ${WEB_APPLICATION_INFO_SOURCE}.`);
             return err(returnSystemError(new Error("Failed to get webApplicationInfoResource"), "Solution", SolutionError.UpdateManifestError));
         }
+        // STATIC_TABS and CONFIGURABLE_TABS are only available after postProvision.
+        const staticTabs = ctx.config.get(this.botPlugin.name)?.getString(STATIC_TABS);
+        const configurableTabs = ctx.config.get(this.botPlugin.name)?.getString(CONFIGURABLE_TABS);
+        if (!staticTabs || !configurableTabs || 
+                (staticTabs === "[]" && configurableTabs === "[]") || 
+                (staticTabs !== "[]" && configurableTabs !== "[]")) {
+            return err(returnSystemError(
+                new Error(`Invalid frontend config: ${STATIC_TABS}: ${staticTabs} ${CONFIGURABLE_TABS}: ${configurableTabs}`),
+                "Solution", 
+                SolutionError.UpdateManifestError));
+        }
 
         const [appDefinition, updatedManifest] = AppStudio.getDevAppDefinition(
             manifestString,
             clientId,
             validDomains,
             webApplicationInfoResource,
+            staticTabs,
+            configurableTabs,
             endpoint.endsWith("/") ? endpoint.substring(0, endpoint.length - 1) : endpoint,
         );
         const teamsAppId = ctx.config.get(GLOBAL_CONFIG)?.getString(REMOTE_TEAMS_APP_ID);
@@ -968,6 +982,9 @@ export class TeamsAppSolution implements Solution {
             },
             async () => {
                 ctx.logProvider?.info("[Teams Toolkit]: provison finished!");
+                return ok(undefined);
+            },
+            async () => {
                 if (selectedPlugins.some((plugin) => plugin.name === this.aadPlugin.name)) {
                     const aadPlugin: AadAppForTeamsPlugin = this.aadPlugin as any;
                     const result = aadPlugin.setApplicationInContext(
@@ -977,11 +994,9 @@ export class TeamsAppSolution implements Solution {
                         return result;
                     }
                 }
-                return this.createAndConfigTeamsManifest(ctx);
-            },
-            async () => {
+                let result = this.createAndConfigTeamsManifest(ctx);
                 ctx.logProvider?.info("[Teams Toolkit]: configuration finished!");
-                return ok(undefined);
+                return result;
             },
         );
     }
@@ -1432,6 +1447,16 @@ export class TeamsAppSolution implements Solution {
                 return result;
             }
         }
+        const result = this.loadTeamsAppTenantId(ctx.config, await ctx.appStudioToken?.getJsonObject());
+
+        if (result.isErr()) {
+            return result;
+        }
+        
+        let postLocalDebugResult = await executeConcurrently(postLocalDebugWithCtx);
+        if (postLocalDebugResult.isErr()) {
+            return postLocalDebugResult;
+        }
 
         const maybeConfig = this.getLocalDebugConfig(ctx.config);
 
@@ -1451,12 +1476,25 @@ export class TeamsAppSolution implements Solution {
             validDomains.push(localBotDomain);
         }
 
+        // STATIC_TABS and CONFIGURABLE_TABS are only available after postProvision.
+        const staticTabs = ctx.config.get(this.botPlugin.name)?.getString(STATIC_TABS);
+        const configurableTabs = ctx.config.get(this.botPlugin.name)?.getString(CONFIGURABLE_TABS);
+        if (!staticTabs || !configurableTabs || 
+                (staticTabs === "[]" && configurableTabs === "[]") || 
+                (staticTabs !== "[]" && configurableTabs !== "[]")) {
+            return err(returnSystemError(
+                new Error(`Invalid frontend config: ${STATIC_TABS}: ${staticTabs} ${CONFIGURABLE_TABS}: ${configurableTabs}`),
+                "Solution", 
+                SolutionError.UpdateManifestError));
+        }
         const manifestTpl = (await fs.readFile(`${ctx.root}/.${ConfigFolderName}/manifest.remote.json`)).toString();
         const [appDefinition, _updatedManifest] = AppStudio.getDevAppDefinition(
             manifestTpl,
             localAADId,
             validDomains,
             webApplicationInfoResource,
+            staticTabs,
+            configurableTabs,
             localTabEndpoint,
             this.manifest!.name.short,
             this.manifest!.version,
@@ -1489,14 +1527,7 @@ export class TeamsAppSolution implements Solution {
             }
             ctx.config.get(GLOBAL_CONFIG)?.set(LOCAL_DEBUG_TEAMS_APP_ID, maybeTeamsAppId.value);
         }
-
-        const result = this.loadTeamsAppTenantId(ctx.config, await ctx.appStudioToken?.getJsonObject());
-
-        if (result.isErr()) {
-            return result;
-        }
-        
-        return executeConcurrently(postLocalDebugWithCtx);
+        return ok(Void);
     }
 
     private parseTeamsAppTenantId(appStudioToken?: object): Result<string, FxError> {

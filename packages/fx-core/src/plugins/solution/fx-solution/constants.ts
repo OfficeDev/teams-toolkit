@@ -31,6 +31,8 @@ export const PERMISSION_REQUEST = "permissionRequest";
  * Config key whose value is either javascript, typescript or csharp.
  */
 export const PROGRAMMING_LANGUAGE = "programmingLanguage";
+export const STATIC_TABS = "staticTabs";
+export const CONFIGURABLE_TABS = "configurableTabs";
 
 /**
  * Config keys that are useful for generating remote teams app manifest

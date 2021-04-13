@@ -13,15 +13,15 @@ export async function openUrl(url: string): Promise<void> {
   opn(url);
 }
 
-export function isWindows() {
+export function isWindows(): boolean {
   return os.type() === "Windows_NT";
 }
 
-export function isMacOS() {
+export function isMacOS(): boolean {
   return os.type() === "Darwin";
 }
 
-export function isLinux() {
+export function isLinux(): boolean {
   return os.type() === "Linux";
 }
 

@@ -1,0 +1,18 @@
+[
+    {
+        "data": {
+            "type": "folder",
+            "name": "manifest-folder",
+            "title": "the folder path of manifest file",
+            "default": "./.fx"
+        }
+    },
+    {
+        "data": {
+            "type": "text",
+            "name": "teams-app-id",
+            "title": "Please input the teams app id in App Studio",
+            "hide": true
+        }
+    }
+]

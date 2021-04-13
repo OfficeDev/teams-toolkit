@@ -172,6 +172,25 @@
             "resolveSourceMapLocations": [
                 "${workspaceFolder}/lib/**/*.js"
             ]
+        },
+        {
+            "type": "pwa-node",
+            "request": "launch",
+            "name": "Launch publish command",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/lib/cli.js",
+            "args": [
+                "publish",
+                "--manifest-folder", "./test-folder/azureApp/.fx",
+            ],
+            "outFiles": [
+                "${workspaceFolder}/lib/**/*.js"
+            ],
+            "resolveSourceMapLocations": [
+                "${workspaceFolder}/lib/**/*.js"
+            ]
         }
     ]
 }

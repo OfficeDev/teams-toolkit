@@ -99,6 +99,12 @@ teamsfx deploy --deploy-plugin fx-resource-frontend-hosting fx-resource-function
 teamsfx deploy --deploy-plugin fx-resource-spfx
 ```
 
+### publish
+
+```bash
+teamsfx publish --manifest-folder /path/to/your/project/.fx
+```
+
 ## How to Generate Parameter Files (for Repo Contributors)
 
 Now CLI cannot get all questions through `core.getQuestions`, because this API depends on an existing project. There are some hard code in the `src/paramGenerator.ts` to specify some question nodes.
@@ -117,9 +123,8 @@ ts-node .\src\paramGenerator.ts
 ```
 
 ## Known issue
-1. Currently SPFx only support Node.JS V10.x
-2. The experience of 'SPFx Scaffold' on Windows CMD/Powershell with Node.JS V10.x is broken. You can switch to Linux/MacOS or use linux bash on Windows system. 
-3. teamsfx start/init
+1. Currently SPFx support Node.JS V12.x
+2. teamsfx start
 
 ## The rest of work
 

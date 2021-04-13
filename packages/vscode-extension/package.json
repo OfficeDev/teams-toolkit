@@ -77,6 +77,12 @@
           "when": "view == teamsfx && viewItem == signedinAzure",
           "group": "inline"
         }
+      ],
+      "commandPalette": [
+        {
+          "command": "fx-extension.signOut",
+          "when": "false"
+        }
       ]
     },
     "commands": [

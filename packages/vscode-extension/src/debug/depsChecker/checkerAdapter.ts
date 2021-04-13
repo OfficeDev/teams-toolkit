@@ -7,6 +7,9 @@ import { openUrl } from "./common";
 
 export { cpUtils } from "../cpUtils";
 export { hasTeamsfxBackend } from "../commonUtils";
+export { ExtTelemetry } from "../../telemetry/extTelemetry";
+export { TelemetryProperty } from "../../telemetry/extTelemetryEvents";
+
 export const logger = commonlibLogger;
 
 const downloadIndicatorInterval = 1000; // same as vscode-dotnet-runtime

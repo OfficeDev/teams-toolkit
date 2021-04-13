@@ -70,6 +70,7 @@ export enum SolutionError {
     FailedToGetAppStudioToken = "FailedToGetAppStudioToken",
     FailedToLoadManifestFile = "FailedToLoadManifestFile",
     CannotRunProvisionInSPFxProject = "CannotRunProvisionInSPFxProject",
+    CannotRunThisTaskInSPFxProject = "CannotRunThisTaskInSPFxProject",
     FrontendEndpointAndDomainNotFound = "FrontendEndpointAndDomainNotFound",
     RemoteClientIdNotFound = "RemoteClientIdNotFound",
     AddResourceNotSupport = "AddResourceNotSupport",
@@ -78,6 +79,7 @@ export enum SolutionError {
     DeploymentInProgress = "DeploymentInProgress",
     UnknownSolutionRunningState = "UnknownSolutionRunningState",
     CannotDeployBeforeProvision = "CannotDeployBeforeProvision",
+    CannotPublishBeforeProvision = "CannotPublishBeforeProvision",
     NoSubscriptionFound = "NoSubscriptionFound",
     NoSubscriptionSelected = "NoSubscriptionSelected",
     FailedToGetParamForRegisterTeamsAppAndAad = "FailedToGetParamForRegisterTeamsAppAndAad",
@@ -106,6 +108,8 @@ export const REMOTE_CLIENT_SECRET = "clientSecret";
 export const LOCAL_DEBUG_TEAMS_APP_ID = "localDebugTeamsAppId";
 // Teams App Id for remote
 export const REMOTE_TEAMS_APP_ID = "remoteTeamsAppId";
+
+export const PROVISION_MANIFEST = "provisionManifest";
 
 export const TEAMS_APP_MANIFEST_TEMPLATE = `{
     "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.7/MicrosoftTeams.schema.json",

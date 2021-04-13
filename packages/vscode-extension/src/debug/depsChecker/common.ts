@@ -33,6 +33,7 @@ export const Messages = {
   needReplaceWithFuncCoreToolV3: `You must replace with @NameVersion to debug your local functions.`,
   needInstallFuncCoreTool: `You must have @NameVersion installed to debug your local functions.`,
   failToInstallFuncCoreTool: `@NameVersion installation has failed and will have to be installed manually.`,
+  failToValidateFuncCoreTool: `Failed to validate @NameVersion after its installation.`,
 
   downloadDotnet: `Downloading and installing @NameVersion.`,
   finishInstallDotnet: `Successfully installed @NameVersion.`,

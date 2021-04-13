@@ -12,7 +12,7 @@ import AzureAccountManager from "../commonlib/azureLogin";
 import AppStudioTokenInstance from "../commonlib/appStudioLogin";
 import { runCommand } from "../handlers";
 import { Stage } from "fx-api";
-import { PanelType } from './PanelType'
+import { PanelType } from "./PanelType";
 
 export class WebviewPanel {
   private static readonly viewType = "react";

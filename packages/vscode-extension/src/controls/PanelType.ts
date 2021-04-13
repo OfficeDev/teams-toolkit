@@ -1,4 +1,4 @@
 export enum PanelType{
-    QuickStart = 'quick-start',
-    SampleGallery = 'sample-gallery'
+    QuickStart = "quick-start",
+    SampleGallery = "sample-gallery"
 }

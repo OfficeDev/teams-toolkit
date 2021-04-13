@@ -18,9 +18,9 @@ import { ApimDefaultValues, ApimPluginConfigKeys, QuestionConstants, TeamsToolki
 import { ApimPluginConfig, SolutionConfig } from "../model/config";
 import { ApimService } from "./apimService";
 import { OpenApiProcessor } from "../util/openApiProcessor";
-import { NameSanitizer } from "../util/nameSanitizer";
 import { buildAnswer } from "../model/answer";
 import { Lazy } from "../util/lazy";
+import { NamingRules } from "../util/namingRules";
 
 export interface IQuestionService {
     // Control whether the question is displayed to the user.
@@ -34,9 +34,6 @@ export interface IQuestionService {
 
     // Generate the question
     getQuestion(): Question;
-
-    // Validate the answer of the question.
-    validate?(answer: string): boolean;
 }
 
 class BaseQuestionService {
@@ -164,7 +161,7 @@ export class ApiPrefixQuestion extends BaseQuestionService implements IQuestionS
 
     public async executeFunc(ctx: PluginContext): Promise<string> {
         const apiTitle = buildAnswer(ctx)?.openApiDocumentSpec?.info.title;
-        return !!apiTitle ? NameSanitizer.sanitizeApiNamePrefix(apiTitle) : ApimDefaultValues.apiPrefix;
+        return !!apiTitle ? NamingRules.apiPrefix.sanitize(apiTitle) : ApimDefaultValues.apiPrefix;
     }
 
     public getQuestion(): TextInputQuestion {
@@ -176,6 +173,9 @@ export class ApiPrefixQuestion extends BaseQuestionService implements IQuestionS
                 namespace: QuestionConstants.namespace,
                 method: QuestionConstants.ApiPrefix.funcName,
             },
+            validation: {
+                validFunc: (input: string): string | undefined => NamingRules.validate(input, NamingRules.apiPrefix)
+            }
         };
     }
 }
@@ -198,7 +198,7 @@ export class ApiVersionQuestion extends BaseQuestionService implements IQuestion
         const serviceName = AssertConfigNotEmpty(TeamsToolkitComponent.ApimPlugin, ApimPluginConfigKeys.serviceName, apimConfig.serviceName);
         const apiPrefix =
             answer.apiPrefix ?? AssertConfigNotEmpty(TeamsToolkitComponent.ApimPlugin, ApimPluginConfigKeys.apiPrefix, apimConfig.apiPrefix);
-        const versionSetId = apimConfig.versionSetId ?? NameSanitizer.sanitizeVersionSetId(apiPrefix, solutionConfig.resourceNameSuffix);
+        const versionSetId = apimConfig.versionSetId ?? NamingRules.versionSetId.sanitize(apiPrefix, solutionConfig.resourceNameSuffix);
 
         const apiContracts = await apimService.listApi(resourceGroupName, serviceName, versionSetId);
 
@@ -240,7 +240,7 @@ export class NewApiVersionQuestion extends BaseQuestionService implements IQuest
 
     public async executeFunc(ctx: PluginContext): Promise<string> {
         const apiVersion = buildAnswer(ctx)?.openApiDocumentSpec?.info.version;
-        return !!apiVersion ? NameSanitizer.sanitizeApiVersionIdentity(apiVersion) : ApimDefaultValues.apiVersion;
+        return !!apiVersion ? NamingRules.versionIdentity.sanitize(apiVersion) : ApimDefaultValues.apiVersion;
     }
 
     public getQuestion(): TextInputQuestion {
@@ -252,6 +252,9 @@ export class NewApiVersionQuestion extends BaseQuestionService implements IQuest
                 namespace: QuestionConstants.namespace,
                 method: QuestionConstants.NewApiVersion.funcName,
             },
+            validation: {
+                validFunc: (input: string): string | undefined => NamingRules.validate(input, NamingRules.versionIdentity)
+            }
         };
     }
 }

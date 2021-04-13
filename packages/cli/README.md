@@ -102,21 +102,31 @@ teamsfx deploy --deploy-plugin fx-resource-frontend-hosting fx-resource-function
 teamsfx deploy --deploy-plugin fx-resource-spfx
 ```
 
+### publish
+
+```bash
+teamsfx publish
+```
+
 ## How to run e2e-test locally
 
 ### Setup environment variables
 1. TEST_USER_NAME="metadev@microsoft.com"
-2. TEST_USER_PASSWORD=<$PASSWORD>
-3. 
+2. TEST_USER_PASSWORD="<$PASSWORD>"
 
 You can ask `Long Hao` or `Zhiyu You` for `$PASSWORD`.
 
-### Run
+### Setup repo
 1. `git clone https://github.com/OfficeDev/TeamsFx.git`
 2. `cd TeamsFx`
 3. `npm run bootstrap`
-4. `cd packages/cli`
-5. `npm run e2e-test`
+
+### Run
+1. `cd packages/cli`
+2. Set environment variable `CI_ENABLED` to `true`.
+2. `npm run e2e-test`
+
+If you want to use the default way of sign (not for CI/CD), please don't set `CI_ENABLED` or set it to `false`.
 
 ## How to Generate Parameter Files (for Repo Contributors)
 
@@ -134,6 +144,10 @@ teamsfx new --app-name azureApp --azure-resources sql function --folder test-fol
 # call param generator
 ts-node .\src\paramGenerator.ts
 ```
+
+## Known issue
+1. Currently SPFx support Node.JS V12.x
+2. teamsfx start
 
 ## The rest of work
 

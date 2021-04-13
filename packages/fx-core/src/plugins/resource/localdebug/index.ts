@@ -184,19 +184,21 @@ export class LocalDebugPlugin implements Plugin {
             const teamsWebAppId = aadConfigs?.get(AadPlugin.TeamsWebAppId) as string;
             const localAuthPackagePath = runtimeConnectorConfigs?.get(RuntimeConnectorPlugin.FilePath) as string;
 
-            // auth local envs
-            localEnvs[LocalEnvAuthKeys.ClientId] = clientId;
-            localEnvs[LocalEnvAuthKeys.ClientSecret] = clientSecret;
-            localEnvs[LocalEnvAuthKeys.IdentifierUri] = aadConfigs?.get(AadPlugin.LocalAppIdUri) as string;
-            localEnvs[LocalEnvAuthKeys.OauthTokenEndpoint] = `https://login.microsoftonline.com/${teamsAppTenantId}/oauth2/v2.0/token`;
-            localEnvs[LocalEnvAuthKeys.AllowedAppIds] = [teamsMobileDesktopAppId, teamsWebAppId].join(";");
-            localEnvs[LocalEnvAuthKeys.ServicePath] = await prepareLocalAuthService(localAuthPackagePath);
-
             if (includeFrontend) {
                 // frontend local envs
                 localEnvs[LocalEnvFrontendKeys.TeamsFxEndpoint] = localDebugConfigs.get(LocalDebugConfigKeys.LocalAuthEndpoint) as string;
                 localEnvs[LocalEnvFrontendKeys.LoginUrl] = `${localDebugConfigs.get(LocalDebugConfigKeys.LocalTabEndpoint) as string}/auth-start.html`;
                 localEnvs[LocalEnvFrontendKeys.ClientId] = clientId;
+
+                // auth local envs (auth is only required by frontend)
+                localEnvs[LocalEnvAuthKeys.ClientId] = clientId;
+                localEnvs[LocalEnvAuthKeys.ClientSecret] = clientSecret;
+                localEnvs[LocalEnvAuthKeys.IdentifierUri] = aadConfigs?.get(AadPlugin.LocalAppIdUri) as string;
+                localEnvs[LocalEnvAuthKeys.AadMetadataAddress] = `https://login.microsoftonline.com/${teamsAppTenantId}/v2.0/.well-known/openid-configuration`;
+                localEnvs[LocalEnvAuthKeys.OauthAuthority] = `https://login.microsoftonline.com/${teamsAppTenantId}`;
+                localEnvs[LocalEnvAuthKeys.TabEndpoint] = localDebugConfigs.get(LocalDebugConfigKeys.LocalTabEndpoint) as string;
+                localEnvs[LocalEnvAuthKeys.AllowedAppIds] = [teamsMobileDesktopAppId, teamsWebAppId].join(";");
+                localEnvs[LocalEnvAuthKeys.ServicePath] = await prepareLocalAuthService(localAuthPackagePath);
 
                 if (includeBackend) {
                     localEnvs[LocalEnvFrontendKeys.FuncEndpoint] = localDebugConfigs.get(LocalDebugConfigKeys.LocalFunctionEndpoint) as string;
@@ -210,8 +212,6 @@ export class LocalDebugPlugin implements Plugin {
                     localEnvs[LocalEnvBackendKeys.ApiEndpoint] = localDebugConfigs.get(LocalDebugConfigKeys.LocalFunctionEndpoint) as string;
                     localEnvs[LocalEnvBackendKeys.ApplicationIdUri] = aadConfigs?.get(AadPlugin.LocalAppIdUri) as string;
                     localEnvs[LocalEnvBackendKeys.AllowedAppIds] = [teamsMobileDesktopAppId, teamsWebAppId].join(";");
-
-                    // TODO: SQL Local Debug
                 }
 
                 // local certificate

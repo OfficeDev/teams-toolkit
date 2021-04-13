@@ -528,8 +528,6 @@ export class TeamsAppSolution implements Solution {
         const alreadyHaveSql = selectedPlugins?.includes(this.sqlPlugin.name);
         const alreadyHaveApim = selectedPlugins?.includes(this.apimPlugin.name);
 
-        const existingResources = settings.azureResources ? settings.azureResources : [];
-
         const addResourcesInQuestion = ctx.answers?.get(AzureSolutionQuestionNames.AddResources) as string[];
 
         const addSQL = addResourcesInQuestion.includes(AzureResourceSQL.label);
@@ -550,15 +548,7 @@ export class TeamsAppSolution implements Solution {
             addResourceItemsForNotification.push(AzureResourceApim.description!);
         }
 
-        // add AzureResource in answer
-        let reloadPlugin = false;
-        for (const item of addResourceForPlugin) {
-            if (!existingResources.includes(item)) {
-                existingResources.push(item);
-                reloadPlugin = true;
-            }
-        }
-
+       
         if (addFunc || ((addSQL || addApim) && !alreadyHaveFunction)) {
             ctx.logProvider?.info(`start scaffolding Azure Function .....`);
             const result1 = await this.scaffoldOne(this.functionPlugin, ctx);
@@ -584,6 +574,14 @@ export class TeamsAppSolution implements Solution {
         }
 
         if (addResourceItemsForNotification.length > 0) {
+            // add azureResources and reload plugins
+            let reloadPlugin = false;
+            for (const item of addResourceForPlugin) {
+                if (!settings.azureResources?.includes(item)) {
+                    settings.azureResources?.push(item);
+                    reloadPlugin = true;
+                }
+            }
             if (reloadPlugin) {
                 this.reloadPlugins(ctx);
                 ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false); //if selected plugin changed, we need to re-do provision
@@ -1784,7 +1782,7 @@ export class TeamsAppSolution implements Solution {
         }
 
         //Bot sub tree
-        if(this.botPlugin.getQuestions){
+        if(!alreadyHaveBot && this.botPlugin.getQuestions){
             const pluginCtx = getPluginContext(ctx, this.botPlugin.name, this.manifest);
             const res = await this.botPlugin.getQuestions(Stage.create, pluginCtx);
             if (res.isErr()) return res;
@@ -1846,16 +1844,11 @@ export class TeamsAppSolution implements Solution {
 
         const settings = this.getAzureSolutionSettings(ctx);
  
-        for(const cap of addCapabilitiesInQuestion!){
-            if(!settings.capabilities?.includes(cap)){
-                settings.capabilities?.push(cap);
-            }
-        }
-
         const addCapabilityNotification:string[]  = [];
 
         if(addCapabilitiesInQuestion?.includes(TabOptionItem.id)){
             const hostType = ctx.answers?.getString(AzureSolutionQuestionNames.HostType);
+            settings.hostType = hostType;
             if(hostType === HostTypeOptionAzure.id){
                 ctx.logProvider?.info(`start scaffolding Tab Frontend .....`);
                 const scaffoldRes = await this.scaffoldOne(this.fehostPlugin, ctx);
@@ -1890,6 +1883,13 @@ export class TeamsAppSolution implements Solution {
         }
 
         if(addCapabilityNotification.length > 0){
+            // finally add capabilities array and reload plugins
+            for(const cap of addCapabilitiesInQuestion!){
+                if(!settings.capabilities?.includes(cap)){
+                    settings.capabilities?.push(cap);
+                }
+            }
+            this.reloadPlugins(ctx);
 
             ctx.dialog?.communicate(
                 new DialogMsg(DialogType.Show, {
@@ -1899,8 +1899,6 @@ export class TeamsAppSolution implements Solution {
                     level: MsgLevel.Info,
                 }),
             );
-
-            this.reloadPlugins(ctx);
         }
 
         return ok({});

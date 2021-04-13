@@ -286,7 +286,7 @@ export class DotnetChecker implements IDepsChecker {
   }
 
   private static getDotnetInstallScriptPath(): string {
-    return path.join(getResourceDir(), isWindows() ? "dotnet-install.ps1" : "dotnet-install.sh")
+    return path.join(getResourceDir(), isWindows() ? "dotnet-install.ps1" : "dotnet-install.sh");
   }
 
   private static getDefaultInstallPath(): string {

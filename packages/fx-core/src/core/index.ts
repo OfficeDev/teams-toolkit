@@ -42,6 +42,8 @@ import {
     ConfigFolderName,
     Json,
     Dict,
+    AzureSolutionSettings,
+    ProjectSettings,
 } from "fx-api";
 import * as path from "path";
 // import * as Bundles from '../resource/bundles.json';
@@ -237,7 +239,7 @@ class CoreImpl implements Core {
         const validateResult = jsonschema.validate(appName, {
             pattern: (QuestionAppName.validation as StringValidation).pattern,
         });
-        if (validateResult.errors && validateResult.errors.length > 0) {
+        if (!appName || validateResult.errors && validateResult.errors.length > 0) {
             return err(
                 new UserError(
                     error.CoreErrorNames.InvalidInput,
@@ -246,6 +248,7 @@ class CoreImpl implements Core {
                 ),
             );
         }
+        
         const folder = answers?.getString(QuestionRootFolder.name);
 
         const projFolder = path.resolve(`${folder}/${appName}`);
@@ -270,6 +273,24 @@ class CoreImpl implements Core {
             }
         }
 
+        if(!this.target.selectedSolution){
+            return err(
+                new UserError(
+                    error.CoreErrorNames.InvalidInput,
+                    `Solution is not selected!`,
+                    error.CoreSource,
+                ),
+            );
+        }
+
+        this.target.ctx.projectSettings = {
+            appName: appName,
+            solutionSettings:{
+                name: this.target.selectedSolution.name,
+                version: this.target.selectedSolution.version
+            }
+        };
+
         const targetFolder = path.resolve(this.target.ctx.root);
 
         await fs.ensureDir(targetFolder);
@@ -288,10 +309,7 @@ class CoreImpl implements Core {
             return createResult;
         }
 
-        // await this.writeAnswersToFile(targetFolder, answers);
-
-        // await this.target.writeConfigs();
-
+       
         this.ctx.logProvider?.info(`[Core] create - create basic folder with configs`);
 
         this.ctx.logProvider?.info(`[Core] scaffold start!`);
@@ -586,8 +604,8 @@ class CoreImpl implements Core {
                 this.configs.set(envName, solutionConfig);
             }
 
-            // read answers
-            this.ctx.answers = await this.readAnswersFromFile(this.ctx.root);
+            // read projectSettings
+            this.ctx.projectSettings = await this.readSettings(this.ctx.root);
         } catch (e) {
             return err(error.ReadFileError(e));
         }
@@ -611,7 +629,8 @@ class CoreImpl implements Core {
                 await fs.writeFile(filePath, content);
                 await fs.writeFile(localDataPath, serializeDict(localData));
             }
-            await this.writeAnswersToFile(this.ctx.root, this.ctx.answers);
+            //write settings
+            await this.writeSettings(this.ctx.root, this.ctx.projectSettings);
         } catch (e) {
             return err(error.WriteFileError(e));
         }
@@ -682,23 +701,18 @@ class CoreImpl implements Core {
         return ok(Array.from(this.configs.keys()));
     }
 
-    private async readAnswersFromFile(projectFolder: string): Promise<ConfigMap | undefined> {
-        const file = `${projectFolder}/.${ConfigFolderName}/answers.json`;
+    private async readSettings(projectFolder: string): Promise<ProjectSettings | undefined> {
+        const file = `${projectFolder}/.${ConfigFolderName}/settings.json`;
         const exist = await fs.pathExists(file);
         if (!exist) return undefined;
-        this.ctx.logProvider?.info(`[Core] read answer file:${file} start ... `);
-        const answersObj: any = await fs.readJSON(file);
-        const answers = objectToConfigMap(answersObj) as ConfigMap;
-        this.ctx.logProvider?.info(`[Core] read answer file:${file} success! `);
-        return answers;
+        const settings:ProjectSettings = await fs.readJSON(file); 
+        return settings;
     }
 
-    private async writeAnswersToFile(projectFolder: string, answers?: ConfigMap): Promise<void> {
-        const file = `${projectFolder}/.${ConfigFolderName}/answers.json`;
-        const answerObj = answers ? mapToJson(answers as Map<any, any>) : {};
-        this.ctx.logProvider?.info(`[Core] write answers file:${file} start ... `);
-        await fs.writeFile(file, JSON.stringify(answerObj, null, 4));
-        this.ctx.logProvider?.info(`[Core] write answers file:${file} success！ `);
+    private async writeSettings(projectFolder: string, settings?: ProjectSettings): Promise<void> {
+        if(!settings) return;
+        const file = `${projectFolder}/.${ConfigFolderName}/settings.json`;
+        await fs.writeFile(file, JSON.stringify(settings, null, 4));
     }
 
     public async scaffold(answers?: ConfigMap): Promise<Result<null, FxError>> {
@@ -764,14 +778,7 @@ class CoreImpl implements Core {
             return ok(null);
         }
         try {
-            const settings: Settings = {
-                selectedSolution: {
-                    name: this.target.selectedSolution!.name,
-                    version: this.target.selectedSolution!.version,
-                },
-            };
 
-            await fs.writeFile(`${this.target.ctx.root}/.${ConfigFolderName}/settings.json`, JSON.stringify(settings, null, 4));
             const appName = answers?.getString(QuestionAppName.name);
             await fs.writeFile(
                 `${this.target.ctx.root}/package.json`,
@@ -816,29 +823,13 @@ class CoreImpl implements Core {
     }
 
     private solutionContext(answers?: ConfigMap): SolutionContext {
-        answers = this.mergeConfigMap(this.globalConfig, answers);
-        const stage = answers?.getString(CoreQuestionNames.Stage);
-        const substage = answers?.getString(CoreQuestionNames.SubStage);
-        let ctx: SolutionContext;
-        if ("create" === stage && ("getQuestions" === substage || "askQuestions" === substage)) {
-            // for create stage, SolutionContext is new and clean
-            ctx = {
-                ...this.ctx,
-                answers: answers,
-                app: new TeamsAppManifest(),
-                config: new Map<string, ConfigMap>(),
-                dotVsCode: VscodeManager.getInstance(),
-                root: os.homedir() + "/teams_app/",
-            };
-        } else {
-            ctx = {
-                ...this.ctx,
-                answers: this.mergeConfigMap(this.ctx.answers, answers),
-                app: this.app,
-                config: this.configs.get(this.env)!,
-                dotVsCode: VscodeManager.getInstance(),
-            };
-        }
+        const ctx: SolutionContext= {
+            ...this.ctx,
+            answers: answers,
+            app: this.app,
+            config: this.configs.get(this.env)!,
+            dotVsCode: VscodeManager.getInstance(),
+        };
         return ctx;
     }
 }

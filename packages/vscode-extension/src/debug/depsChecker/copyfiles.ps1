@@ -1,4 +1,4 @@
-# run this file to copy to the function plugin if you changed dotnet checker in extension
+# run this file to copy to the function plugin if you changed deps checker in extension
 Set-PSDebug -Trace 1
 
 $ProjectRoot = git rev-parse --show-toplevel

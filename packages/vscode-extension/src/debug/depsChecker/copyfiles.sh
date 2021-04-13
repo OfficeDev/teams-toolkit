@@ -1,5 +1,5 @@
 #!/bin/bash
-# run this file to copy to the function plugin if you changed dotnet checker in extension
+# run this file to copy to the function plugin if you changed deps checker in extension
 set -xue
 
 PROJECT_ROOT="$(git rev-parse --show-toplevel)"

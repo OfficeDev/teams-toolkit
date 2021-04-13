@@ -110,7 +110,35 @@ async function hasNPM(): Promise<boolean> {
 }
 
 async function installFuncCoreTools(version: FuncVersion): Promise<void> {
-  // TODO: handle the case that npm install globally need admin permission on macOS.
+  if (isWindows()) {
+    await installFuncCoreToolsOnWindows(version);
+  } else {
+    await installFuncCoreToolsOnUnix(version);
+  }
+}
+
+async function installFuncCoreToolsOnWindows(version: FuncVersion): Promise<void> {
+  // on Windows, forced install is needed if the func command is broken.
+  await cpUtils.executeCommand(
+    undefined,
+    logger,
+    undefined,
+    "npm",
+    "install",
+    "-g",
+    "-f",
+    `${funcPackageName}@${version}`
+  );
+
+  // delete func.ps1 if exists to workaround the powershell execution policy issue:
+  // https://github.com/npm/cli/issues/470
+  const funcPSScript = await getFuncPSScriptPath();
+  if (await fs.pathExists(funcPSScript)) {
+    await fs.remove(funcPSScript);
+  }
+}
+
+async function installFuncCoreToolsOnUnix(version: FuncVersion): Promise<void> {
   await cpUtils.executeCommand(
     undefined,
     logger,
@@ -120,15 +148,6 @@ async function installFuncCoreTools(version: FuncVersion): Promise<void> {
     "-g",
     `${funcPackageName}@${version}`
   );
-
-  // delete func.ps1 if exists to workaround the powershell execution policy issue:
-  // https://github.com/npm/cli/issues/470
-  if (isWindows()) {
-    const funcPSScript = await getFuncPSScriptPath();
-    if (await fs.pathExists(funcPSScript)) {
-      await fs.remove(funcPSScript);
-    }
-  }
 }
 
 async function getFuncPSScriptPath(): Promise<string> {

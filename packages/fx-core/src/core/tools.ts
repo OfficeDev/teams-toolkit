@@ -99,6 +99,7 @@ export function sperateSecretData(configJson:Json): Dict<string>{
         const resourceId = splits[0];
         const item = splits[1];
         const resourceConfig:any = configJson[resourceId];
+        if(!resourceConfig) continue;
         if("*" !== item) {
             const configValue = resourceConfig[item];
             if(configValue){
@@ -127,6 +128,7 @@ export function mergeSerectData(dict: Dict<string>, configJson:Json):void{
         const resourceId = splits[0];
         const item = splits[1];
         const resourceConfig:any = configJson[resourceId];
+        if(!resourceConfig) continue;
         if("*" !== item) {
             const originalItemValue:string|undefined = resourceConfig[item] as string|undefined;
             if(originalItemValue && originalItemValue.startsWith("{{") && originalItemValue.endsWith("}}")){

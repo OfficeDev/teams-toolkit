@@ -37,7 +37,7 @@ export class FuncToolChecker implements IDepsChecker {
 
     switch (installedVersion) {
       case FuncVersion.v1:
-        throw new DepsCheckerError(Messages.needReplaceWithFuncCoreToolV3, functionCoreToolsHelpLink);
+        throw new DepsCheckerError(Messages.needReplaceWithFuncCoreToolV3.replace("@NameVersion", installedNameWithVersion), functionCoreToolsHelpLink);
       case FuncVersion.v2:
         return installed;
       case FuncVersion.v3:
@@ -50,24 +50,24 @@ export class FuncToolChecker implements IDepsChecker {
   async install(): Promise<void> {
     if (!(await hasNPM())) {
       // provided with Learn More link if npm doesn't exist.
-      throw new DepsCheckerError(Messages.needInstallFuncCoreTool, functionCoreToolsHelpLink);
+      throw new DepsCheckerError(Messages.needInstallFuncCoreTool.replace("@NameVersion", installedNameWithVersion), functionCoreToolsHelpLink);
     }
 
-    logger.info(Messages.startInstallFunctionCoreTool);
+    logger.info(Messages.startInstallFunctionCoreTool.replace("@NameVersion", installedNameWithVersion));
     await runWithProgressIndicator(async () => {
       try {
         await installFuncCoreTools(FuncVersion.v3);
       } catch (error) {
-        throw new DepsCheckerError(Messages.failToInstallFuncCoreTool, functionCoreToolsHelpLink);
+        throw new DepsCheckerError(Messages.failToInstallFuncCoreTool.replace("@NameVersion", installedNameWithVersion), functionCoreToolsHelpLink);
       }
     });
 
     const isInstalled = await this.isInstalled();
     if (!isInstalled) {
-      throw new DepsCheckerError(Messages.failToInstallFuncCoreTool, functionCoreToolsHelpLink);
+      throw new DepsCheckerError(Messages.failToInstallFuncCoreTool.replace("@NameVersion", installedNameWithVersion), functionCoreToolsHelpLink);
     }
 
-    logger.info(Messages.finishInstallFunctionCoreTool);
+    logger.info(Messages.finishInstallFunctionCoreTool.replace("@NameVersion", installedNameWithVersion));
   }
 }
 

@@ -54,18 +54,18 @@ export class DotnetCheckerImpl {
     // logger.debug(`[end] cleanup bin/dotnet and config`);
 
     // logger.debug(`[start] install dotnet ${DotnetChecker.installVersion}`);
-    logger.info(Messages.downloadDotnet);
+    logger.info(Messages.downloadDotnet.replace("@NameVersion", installedNameWithVersion));
     await runWithProgressIndicator(async () => {
       await DotnetCheckerImpl.install(DotnetCheckerImpl.installVersion);
     });
-    logger.info(Messages.finishInstallDotnet);
+    logger.info(Messages.finishInstallDotnet.replace("@NameVersion", installedNameWithVersion));
     // logger.debug(`[end] install dotnet ${DotnetChecker.installVersion}`);
 
     // logger.debug(`[start] validate dotnet version`);
     if (!(await DotnetCheckerImpl.validate())) {
       await DotnetCheckerImpl.cleanup();
       // TODO: remove hardcoding
-      throw new DepsCheckerError(Messages.failToInstallDotnet, dotnetHelpLink);
+      throw new DepsCheckerError(Messages.failToInstallDotnet.replace("@NameVersion", installedNameWithVersion), dotnetHelpLink);
     }
   }
 
@@ -101,7 +101,7 @@ export class DotnetCheckerImpl {
       await DotnetCheckerImpl.persistDotnetExecPath(dotnetExecPath);
       // logger.debug(`[end] write dotnet path to config`);
     } catch (error) {
-      logger.error(`${Messages.failToInstallDotnet}, error = ${error}`);
+      logger.error(`${Messages.failToInstallDotnet.replace("@NameVersion", installedNameWithVersion)}, error = ${error}`);
     }
   }
 
@@ -146,13 +146,13 @@ export class DotnetCheckerImpl {
 
       if (stderr && stderr.length > 0) {
         logger.error(
-          `${Messages.failToInstallDotnet} ${Messages.dotnetInstallStderr} stdout: '${stdout}', stderr: '${stderr}'`
+          `${Messages.failToInstallDotnet.replace("@NameVersion", installedNameWithVersion)} ${Messages.dotnetInstallStderr} stdout: '${stdout}', stderr: '${stderr}'`
         );
       }
     } catch (error) {
       // swallow the exception since later validate will find out the errors anyway
       logger.error(
-        `${Messages.failToInstallDotnet} ${Messages.dotnetInstallErrorCode} error: '${error}', stdout = '${error.stdout}', stderr = '${error.stderr}'`
+        `${Messages.failToInstallDotnet.replace("@NameVersion", installedNameWithVersion)} ${Messages.dotnetInstallErrorCode} error: '${error}', stdout = '${error.stdout}', stderr = '${error.stderr}'`
       );
     }
   }

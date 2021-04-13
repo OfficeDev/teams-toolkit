@@ -4,8 +4,6 @@
 
 import * as os from "os";
 const opn = require("opn");
-import { installedNameWithVersion as funcInstalledNameWithVersion } from "./funcToolChecker";
-import { installedNameWithVersion as dotnetInstalledNameWithVersion } from "./dotnetCheckerImpl";
 
 export async function openUrl(url: string): Promise<void> {
   // Using this functionality is blocked by https://github.com/Microsoft/vscode/issues/25852
@@ -30,18 +28,18 @@ export function isLinux() {
 export const Messages = {
   defaultErrorMessage: "Please install the required dependencies manually.",
 
-  startInstallFunctionCoreTool: `Downloading and installing ${funcInstalledNameWithVersion}.`,
-  finishInstallFunctionCoreTool: `Successfully installed ${funcInstalledNameWithVersion}.`,
-  needReplaceWithFuncCoreToolV3: `You must replace with ${funcInstalledNameWithVersion} to debug your local functions.`,
-  needInstallFuncCoreTool: `You must have ${funcInstalledNameWithVersion} installed to debug your local functions.`,
-  failToInstallFuncCoreTool: `${funcInstalledNameWithVersion} installation has failed and will have to be installed manually.`,
+  startInstallFunctionCoreTool: `Downloading and installing @NameVersion.`,
+  finishInstallFunctionCoreTool: `Successfully installed @NameVersion.`,
+  needReplaceWithFuncCoreToolV3: `You must replace with @NameVersion to debug your local functions.`,
+  needInstallFuncCoreTool: `You must have @NameVersion installed to debug your local functions.`,
+  failToInstallFuncCoreTool: `@NameVersion installation has failed and will have to be installed manually.`,
 
-  downloadDotnet: `Downloading and installing ${dotnetInstalledNameWithVersion}.`,
-  finishInstallDotnet: `Successfully installed ${dotnetInstalledNameWithVersion}.`,
+  downloadDotnet: `Downloading and installing @NameVersion.`,
+  finishInstallDotnet: `Successfully installed @NameVersion.`,
   useGlobalDotnet: `Use global dotnet from PATH.`,
   dotnetInstallStderr: `dotnet-install command failed without error exit code but with non-empty standard error.`,
   dotnetInstallErrorCode: `dotnet-install command failed.`,
-  failToInstallDotnet: `Failed to install ${dotnetInstalledNameWithVersion}.`,
+  failToInstallDotnet: `Failed to install @NameVersion.`,
 
   depsNotFound: `The toolkit cannot find @Message on your machine.
 

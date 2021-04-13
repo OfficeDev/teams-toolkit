@@ -178,6 +178,8 @@ export class AuthValues {
 
 export class DeployConfigs {
     public static readonly UN_PACK_DIRS = ["node_modules", "package-lock.json"];
+    public static readonly DEPLOYMENT_FOLDER = ".deployment";
+    public static readonly DEPLOYMENT_CONFIG_FILE = "bot.json";
 }
 
 export class FolderNames {

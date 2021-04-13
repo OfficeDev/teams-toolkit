@@ -1195,7 +1195,8 @@ export class TeamsAppSolution implements Solution {
         if (!featureFlag) featureFlag = false;
         if (stage === Stage.create) {
             const capQuestion = createCapabilityQuestion(featureFlag);
-            const capNode = new QTreeNode(capQuestion);
+ 
+            const capNode = new QTreeNode(capQuestion); 
 
             node.addChild(capNode);
             

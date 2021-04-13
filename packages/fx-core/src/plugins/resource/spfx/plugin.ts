@@ -9,11 +9,6 @@ import {
   DialogMsg,
   DialogType,
   MsgLevel,
-  err,
-  UserError,
-  SystemError,
-  returnUserError,
-  returnSystemError,
   QuestionType,
 } from "fx-api";
 import * as uuid from "uuid";
@@ -28,9 +23,11 @@ import {
   normalizeComponentName,
   sleep,
 } from "./utils/utils";
-import { Constants, PlaceHolders } from "./utils/constants";
+import { Constants, DeployProgressMessage, PlaceHolders, PreDeployProgressMessage } from "./utils/constants";
 import { AuthCode } from "./authCode";
 import * as util from "util";
+import { BuildSPPackageError, DeploySPPackageError, EmptyAccessTokenError, EnsureAppCatalogFailedError, MultiSPPackageError, NoAppCatalogError, NoSPPackageError, SPFxDeployError, UploadSPPackageError } from "./error";
+import { ProgressHelper } from "./utils/progress-helper";
 export class SPFxPluginImpl {
   public async scaffold(
     ctx: PluginContext,
@@ -218,38 +215,32 @@ export class SPFxPluginImpl {
   }
 
   public async preDeploy(ctx: PluginContext): Promise<Result<any, FxError>> {
+    await ctx.dialog?.communicate(
+      new DialogMsg(DialogType.Show, {
+        description: "[SPFx] Ensuring Tenant App Catalog.",
+        level: MsgLevel.Info,
+      })
+    );
+    if (!AuthCode.account) {
+      await AuthCode.login(ctx);
+    }
+    const tenant = await this.getSPTenant(ctx);
+    // Ensure Tenant App catalog and create one if no existing one.
+    ctx.logProvider?.info("======Ensure SharePoint App Catatlog======");
+    const accessToken = await AuthCode.getToken(ctx, [`${tenant}/.default`]);
+    const axiosInstance = createAxiosInstanceWithToken(accessToken);
     try {
-      await ctx.dialog?.communicate(
-        new DialogMsg(DialogType.Show, {
-          description: "[SPFx] Ensuring Tenant App Catalog.",
-          level: MsgLevel.Info,
-        })
-      );
-      if (!AuthCode.account) {
-        await AuthCode.login(ctx);
-      }
-      const tenant = await this.getSPTenant(ctx);
-      // Ensure Tenant App catalog and create one if no existing one.
-      ctx.logProvider?.info("======Ensure SharePoint App Catatlog======");
-      const accessToken = await AuthCode.getToken(ctx, [`${tenant}/.default`]);
-      const axiosInstance = createAxiosInstanceWithToken(accessToken);
       await axiosInstance.post(
         `${tenant}/_api/web/EnsureTenantAppCatalog(callerId='${Constants.CALLED_ID}')`
       );
     } catch (error) {
-      if (error instanceof UserError || error instanceof SystemError) {
-        return err(error);
-      }
-      return err(returnSystemError(error, "SPFx", "EnsureAppCatalogFail"));
+      throw EnsureAppCatalogFailedError(error);
     }
-    const progressHandler = ctx.dialog?.createProgressBar(
-      "[SPFx] Build SharePoint Package",
-      3
-    );
+
+    const progressHandler = await ProgressHelper.startPreDeployProgressHandler(ctx);
     try {
       const workspacePath = `${ctx.root}/SPFx`;
-      await progressHandler?.start("");
-      await progressHandler?.next("Run: npm install");
+      await progressHandler?.next(PreDeployProgressMessage.NpmInstall);
       await execute(
         `npm install`,
         "SPFx",
@@ -258,9 +249,7 @@ export class SPFxPluginImpl {
         true
       );
       const gulpCommand = await SPFxPluginImpl.findGulpCommand(workspacePath);
-      await progressHandler?.next(
-        `Run: ${gulpCommand} bundle --ship --no-color`
-      );
+      await progressHandler?.next(PreDeployProgressMessage.GulpBundle);
       await execute(
         `${gulpCommand} bundle --ship --no-color`,
         "SPFx",
@@ -268,9 +257,7 @@ export class SPFxPluginImpl {
         ctx.logProvider,
         true
       );
-      await progressHandler?.next(
-        `Run: ${gulpCommand} package-solution --ship --no-color`
-      );
+      await progressHandler?.next(PreDeployProgressMessage.GulpPackage);
       await execute(
         `${gulpCommand} package-solution --ship --no-color`,
         "SPFx",
@@ -278,7 +265,7 @@ export class SPFxPluginImpl {
         ctx.logProvider,
         true
       );
-      await progressHandler?.end();
+      await ProgressHelper.endPreDeployProgress();
       await ctx.dialog?.communicate(
         new DialogMsg(DialogType.Show, {
           description: "[SPFx] SharePoint Package Build Success.",
@@ -287,25 +274,21 @@ export class SPFxPluginImpl {
       );
       return ok(undefined);
     } catch (error) {
-      await progressHandler?.end();
-      return err(returnUserError(error, "SPFx", "buildSpfxPackageFail"));
+      await ProgressHelper.endPreDeployProgress();
+      throw BuildSPPackageError(error);
     }
   }
 
   public async deploy(ctx: PluginContext): Promise<Result<any, FxError>> {
-    const workspace = `${ctx.root}/SPFx`;
-    const progressHandler = ctx.dialog?.createProgressBar(
-      "[SPFx] Upload SharePoint Package",
-      2
-    );
     try {
+      const workspace = `${ctx.root}/SPFx`;
+      const progressHandler = await ProgressHelper.startDeployProgressHandler(ctx);
       const tenant = await this.getSPTenant(ctx);
 
       const accessToken = await AuthCode.getToken(ctx, [`${tenant}/.default`]);
       const axiosInstance = createAxiosInstanceWithToken(accessToken);
 
-      await progressHandler?.start("");
-      await progressHandler?.next("Get SharePoint App Catalog");
+      await progressHandler?.next(DeployProgressMessage.GetSPAppCatalog);
       const SHAREPOINT_APP_CATALOG = `${tenant}/_api/SP_TenantSettings_Current`;
       const response = await axiosInstance.get(SHAREPOINT_APP_CATALOG);
       let appCatalogSite = response.data.CorporateCatalogUrl;
@@ -316,12 +299,7 @@ export class SPFxPluginImpl {
         appCatalogSite = response.data.CorporateCatalogUrl;
         refreshTime += 1;
         if (refreshTime > Constants.APP_CATALOG_MAX_TIMES) {
-          throw new Error(
-            util.format(
-              "There is no App Catalog site for tenant %s, please contact your global admin or tenant admin.",
-              tenant
-            )
-          );
+          throw NoAppCatalogError(tenant);
         }
       }
 
@@ -332,77 +310,69 @@ export class SPFxPluginImpl {
         `${workspace}/config/package-solution.json`
       );
       const appID = solutionConfig["solution"]["id"];
-      let errMessage: string;
       switch (files.length) {
         case 0:
-          errMessage = util.format(
-            "[SPFx] Cannot find file with .sppkg extension under %s",
-            distFolder
-          );
-          throw new Error(errMessage);
+          throw NoSPPackageError(distFolder);
         case 1:
           const file = await fs.readFile(`${distFolder}/${files[0]}`);
           try {
             // Upload SPFx Package.
-            await progressHandler?.next("Upload and Deploy SPFx Package");
+            await progressHandler?.next(DeployProgressMessage.UploadAndDeploy);
             await axiosInstance.post(
               `${appCatalogSite}/_api/web/tenantappcatalog/Add(overwrite=true, url='${files[0]}')`,
               file
             );
+          }
+          catch (error) {
+            throw UploadSPPackageError(error);
+          }
 
+          try {
             // Deploy SPFx App.
             const deploySetting = { skipFeatureDeployment: true };
             await axiosInstance.post(
               `${appCatalogSite}/_api/web/tenantappcatalog/AvailableApps/GetById('${appID}')/Deploy`,
               deploySetting
             );
-
-            await progressHandler?.end();
-            const appCatalogButton = "Go to SharePoint App Catalog";
-            ctx.dialog
-              ?.communicate(
-                new DialogMsg(DialogType.Show, {
-                  description: util.format(
-                    "[SPFx] %s has been deployed to %s",
-                    files[0],
-                    appCatalogSite,
-                  ),
-                  level: MsgLevel.Info,
-                  items: [appCatalogButton],
-                }),
-              )
-              .then(async (selected) => {
-                if (selected?.content === appCatalogButton) {
-                  await ctx.dialog?.communicate(
-                    new DialogMsg(DialogType.Ask, {
-                      description: appCatalogSite,
-                      type: QuestionType.OpenExternal,
-                    }),
-                  );
-                }
-              });
-            return ok(undefined);
-          } catch (error) {
-            if (error.response && error.response.data) {
-              errMessage = JSON.stringify(error.response.data);
-              throw new Error(errMessage);
-            }
-            throw error;
           }
+          catch (error) {
+            throw DeploySPPackageError(error);
+          }
+
+          await ProgressHelper.endDeployProgress();
+          const appCatalogButton = "Go to SharePoint App Catalog";
+          ctx.dialog
+            ?.communicate(
+              new DialogMsg(DialogType.Show, {
+                description: util.format(
+                  "[SPFx] %s has been deployed to %s",
+                  files[0],
+                  appCatalogSite,
+                ),
+                level: MsgLevel.Info,
+                items: [appCatalogButton],
+              }),
+            )
+            .then(async (selected) => {
+              if (selected?.content === appCatalogButton) {
+                await ctx.dialog?.communicate(
+                  new DialogMsg(DialogType.Ask, {
+                    description: appCatalogSite,
+                    type: QuestionType.OpenExternal,
+                  }),
+                );
+              }
+            });
+          return ok(undefined);
         default:
-          errMessage = util.format(
-            "There are multiple files with *.sppkg extension type under %s",
-            distFolder
-          );
-          throw new Error(errMessage);
+          throw MultiSPPackageError(distFolder);
       }
-    } catch (error) {
-      await progressHandler?.end();
-      if (error instanceof UserError || error instanceof SystemError) {
-        return err(error);
-      }
-      return err(returnUserError(error, "SPFx", "deploySpfxPackageFail"));
     }
+    catch (error) {
+      await ProgressHelper.endDeployProgress();
+      throw SPFxDeployError(error);
+    }
+
   }
 
   private async getSPTenant(ctx: PluginContext): Promise<string> {
@@ -416,11 +386,7 @@ export class SPFxPluginImpl {
       const response = await axiosInstance.get(GRAPH_TENANT_ENDPT);
       return response.data.webUrl;
     } else {
-      throw returnSystemError(
-        new Error("EmptyAccessToken"),
-        "SPFx",
-        "LoginFail"
-      );
+      throw EmptyAccessTokenError();
     }
   }
 

@@ -17,7 +17,7 @@ const context: any = {
             [DependentPluginInfo.subscriptionId, "ut"],
             [DependentPluginInfo.resourceNameSuffix, "ut"],
             [DependentPluginInfo.location, "ut"],
-            [DependentPluginInfo.programmingLanguage, "JavaScript"],
+            [DependentPluginInfo.programmingLanguage, FunctionLanguage.JavaScript],
             [DependentPluginInfo.selectedPlugins, [
                 DependentPluginInfo.aadPluginName,
                 DependentPluginInfo.frontendPluginName,

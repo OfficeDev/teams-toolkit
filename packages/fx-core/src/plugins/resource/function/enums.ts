@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 export enum FunctionLanguage {
-    JavaScript = "JavaScript",
-    TypeScript = "TypeScript",
-    CSharp = "CSharp"
+    JavaScript = "javascript",
+    TypeScript = "typescript",
+    CSharp = "csharp"
 }
 
 export enum NodeVersion {

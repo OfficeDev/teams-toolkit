@@ -3,7 +3,6 @@
 import { EnvironmentUtils } from "../utils/environment-utils";
 import { EnvironmentVariables, FrontendConfigInfo } from "../constants";
 import { PluginContext } from "fx-api";
-import { Manifest } from "./scaffold";
 import { ManifestVariables, TabScopeManifest } from "../resources/tabScope";
 import { QuestionKey } from "../resources/questions";
 

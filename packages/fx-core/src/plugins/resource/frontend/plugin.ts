@@ -31,8 +31,8 @@ import { Messages } from "./resources/messages";
 import { FrontendScaffold as Scaffold, TemplateInfo } from "./ops/scaffold";
 import { TeamsFxResult } from "./error-factory";
 import { PreDeploySteps, ProgressHelper, ProvisionSteps, ScaffoldSteps } from "./utils/progress-helper";
-import { tabScopeQuestion, QuestionKey } from "./resources/questions";
-import { ManifestVariables, TabScopeManifest } from "./resources/tabScope";
+import { tabScopeQuestion } from "./resources/questions";
+import { ManifestVariables } from "./resources/tabScope";
 
 export class FrontendPluginImpl {
     config?: FrontendConfig;

@@ -136,8 +136,7 @@ describe("LocalEnvProvider", ()=> {
             
             chai.assert.isDefined(initLocalEnvs);
             const actualEntries = Object.entries(initLocalEnvs);
-            const expectedKeys = Object.values(LocalEnvBotKeys)
-                .concat(Object.values(LocalEnvAuthKeys));
+            const expectedKeys = Object.values(LocalEnvBotKeys);
             chai.assert.equal(actualEntries.length, expectedKeys.length);
             for (const key of expectedKeys) {
                 chai.assert.isDefined(initLocalEnvs[key]);

@@ -686,19 +686,19 @@ class CoreImpl implements Core {
         const file = `${projectFolder}/.${ConfigFolderName}/answers.json`;
         const exist = await fs.pathExists(file);
         if (!exist) return undefined;
-        this.ctx.logProvider?.info(`[Core] read answer file:${file} start ... `);
+        // this.ctx.logProvider?.info(`[Core] read answer file:${file} start ... `);
         const answersObj: any = await fs.readJSON(file);
         const answers = objectToConfigMap(answersObj) as ConfigMap;
-        this.ctx.logProvider?.info(`[Core] read answer file:${file} success! `);
+        // this.ctx.logProvider?.info(`[Core] read answer file:${file} success! `);
         return answers;
     }
 
     private async writeAnswersToFile(projectFolder: string, answers?: ConfigMap): Promise<void> {
         const file = `${projectFolder}/.${ConfigFolderName}/answers.json`;
         const answerObj = answers ? mapToJson(answers as Map<any, any>) : {};
-        this.ctx.logProvider?.info(`[Core] write answers file:${file} start ... `);
+        // this.ctx.logProvider?.info(`[Core] write answers file:${file} start ... `);
         await fs.writeFile(file, JSON.stringify(answerObj, null, 4));
-        this.ctx.logProvider?.info(`[Core] write answers file:${file} success！ `);
+        // this.ctx.logProvider?.info(`[Core] write answers file:${file} success！ `);
     }
 
     public async scaffold(answers?: ConfigMap): Promise<Result<null, FxError>> {

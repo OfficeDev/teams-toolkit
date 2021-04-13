@@ -502,11 +502,6 @@ export class TeamsAppSolution implements Solution {
             }
         }
 
-        if (reloadPlugin) {
-            this.reloadPlugins(ctx.config, ctx.answers!);
-            ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false); //if selected plugin changed, we need to re-do provision
-        }
-
         if (addFunc || ((addSQL || addApim) && !alreadyHaveFunction)) {
             ctx.logProvider?.info(`start scaffolding Azure Function .....`);
             const result1 = await this.scaffoldOne(this.functionPlugin, ctx);
@@ -528,9 +523,14 @@ export class TeamsAppSolution implements Solution {
                 return err(result.error);
             }
             ctx.logProvider?.info(`finish scaffolding API Management!`);
+            addResourceItemsForNotification.push(AzureResourceApim.description!);
         }
 
         if (addResourceItemsForNotification.length > 0) {
+            if (reloadPlugin) {
+                this.reloadPlugins(ctx.config, ctx.answers!);
+                ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false); //if selected plugin changed, we need to re-do provision
+            }
             ctx.dialog?.communicate(
                 new DialogMsg(DialogType.Show, {
                     description: `[Teams Toolkit] Resource "${addResourceItemsForNotification.join(
@@ -1693,6 +1693,10 @@ export class TeamsAppSolution implements Solution {
         const alreadyHaveTab = selectedPlugins.some(i=>i === this.fehostPlugin.name || i === this.spfxPlugin.name);
 
         const alreadyHaveBot = selectedPlugins.includes( this.botPlugin.name );
+
+        if(alreadyHaveBot && alreadyHaveTab){
+            return ok(undefined);
+        }
         
         const addCapQuestion = createAddCapabilityQuestion(alreadyHaveTab, alreadyHaveBot);
 
@@ -1716,7 +1720,7 @@ export class TeamsAppSolution implements Solution {
             if (res.isErr()) return res;
             if (res.value) {
                 const child = res.value as QTreeNode;
-                child.condition = { contains: TabOptionItem.id };
+                child.condition = { contains: BotOptionItem.id };
                 if (child.data) addCapNode.addChild(child);
             }
         }
@@ -1764,23 +1768,25 @@ export class TeamsAppSolution implements Solution {
             );
         }
 
-        const capabilities = ctx.answers?.getStringArray(AzureSolutionQuestionNames.AddCapabilities);
+        const addCapabilities = ctx.answers.getStringArray(AzureSolutionQuestionNames.AddCapabilities);
 
-        if(capabilities?.length === 0) {
-            return ok({});
+        if(!addCapabilities){
+            return ok(Void);
         }
 
-        const answers = new ConfigMap();
+        const oldCapabilities = ctx.answers.getStringArray(AzureSolutionQuestionNames.Capabilities);
 
-        answers.set(AzureSolutionQuestionNames.Capabilities, capabilities);
-        answers.set(AzureSolutionQuestionNames.HostType, ctx.answers.getStringArray(AzureSolutionQuestionNames.HostType));
-        answers.set(AzureSolutionQuestionNames.AzureResources, ctx.answers.getStringArray(AzureSolutionQuestionNames.AzureResources));
+        
 
-        this.reloadPlugins(ctx.config, answers);
+        for(const cap of addCapabilities!){
+            if(!oldCapabilities?.includes(cap)){
+                oldCapabilities?.push(cap);
+            }
+        }
 
         const addCapabilityNotification:string[]  = [];
 
-        if(capabilities?.includes(TabOptionItem.id)){
+        if(addCapabilities?.includes(TabOptionItem.id)){
             const hostType = ctx.answers?.getString(AzureSolutionQuestionNames.HostType);
             if(hostType === HostTypeOptionAzure.id){
                 ctx.logProvider?.info(`start scaffolding Tab Frontend .....`);
@@ -1804,7 +1810,7 @@ export class TeamsAppSolution implements Solution {
             }
         }
 
-        if(capabilities?.includes(BotOptionItem.id)){
+        if(addCapabilities?.includes(BotOptionItem.id)){
             ctx.logProvider?.info(`start scaffolding Bot.....`);
             const scaffoldRes = await this.scaffoldOne(this.botPlugin, ctx);
             if (scaffoldRes.isErr()) {
@@ -1816,6 +1822,7 @@ export class TeamsAppSolution implements Solution {
         }
 
         if(addCapabilityNotification.length > 0){
+
             ctx.dialog?.communicate(
                 new DialogMsg(DialogType.Show, {
                     description: `[Teams Toolkit] Capability "${addCapabilityNotification.join(
@@ -1824,6 +1831,13 @@ export class TeamsAppSolution implements Solution {
                     level: MsgLevel.Info,
                 }),
             );
+
+            const answers = new ConfigMap();
+            answers.set(AzureSolutionQuestionNames.Capabilities, oldCapabilities);
+            answers.set(AzureSolutionQuestionNames.HostType, ctx.answers.getStringArray(AzureSolutionQuestionNames.HostType));
+            answers.set(AzureSolutionQuestionNames.AzureResources, ctx.answers.getStringArray(AzureSolutionQuestionNames.AzureResources));
+    
+            this.reloadPlugins(ctx.config, answers);
         }
 
         return ok({});

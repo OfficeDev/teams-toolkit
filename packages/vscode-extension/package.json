@@ -39,6 +39,7 @@
     "*",
     "onCommand:fx-extension.create",
     "onCommand:fx-extension.update",
+    "onCommand:fx-extension.addCapability",
     "onCommand:fx-extension.provision",
     "onCommand:fx-extension.deploy",
     "onCommand:fx-extension.updateAad",

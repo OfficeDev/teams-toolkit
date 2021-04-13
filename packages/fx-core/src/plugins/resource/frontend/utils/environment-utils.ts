@@ -6,7 +6,9 @@ import fs from "fs-extra";
 export class EnvironmentUtils {
     static async writeEnvironments(envFile: string, variables: { [key: string]: string }): Promise<void> {
         await fs.ensureFile(envFile);
-        const configs = dotenv.parse(fs.readFileSync(envFile));
+        const envBuffer = await fs.readFile(envFile);
+
+        const configs = dotenv.parse(envBuffer);
         Object.assign(configs, variables);
 
         let envs = "";

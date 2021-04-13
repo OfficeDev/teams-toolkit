@@ -1,19 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { LogProvider } from "fx-api";
+import { LogProvider, TelemetryReporter } from "fx-api";
 import { ApimPluginConfigKeys, TeamsToolkitComponent } from "../constants";
 import { AssertConfigNotEmpty } from "../error";
 import { IApimPluginConfig, IAadPluginConfig } from "../model/config";
 import { AadService } from "../service/aadService";
-import { Telemetry } from "../telemetry";
 import { Lazy } from "../util/lazy";
 
 export class TeamsAppAadManager {
     private readonly logger?: LogProvider;
-    private readonly telemetry: Telemetry;
+    private readonly telemetry?: TelemetryReporter;
     private readonly lazyAadService: Lazy<AadService>;
 
-    constructor(lazyAadService: Lazy<AadService>, telemetry: Telemetry, logger?: LogProvider) {
+    constructor(lazyAadService: Lazy<AadService>, telemetry?: TelemetryReporter, logger?: LogProvider) {
         this.logger = logger;
         this.telemetry = telemetry;
         this.lazyAadService = lazyAadService;

@@ -12,17 +12,15 @@ import {
     PluginContext,
     FuncQuestion,
     TextInputQuestion,
-    AzureAccountProvider,
+    TelemetryReporter
 } from "fx-api";
 import { ApimDefaultValues, ApimPluginConfigKeys, QuestionConstants, TeamsToolkitComponent } from "../constants";
-import { ApimPluginConfig, ISolutionConfig, SolutionConfig } from "../model/config";
+import { ApimPluginConfig, SolutionConfig } from "../model/config";
 import { ApimService } from "./apimService";
 import { OpenApiProcessor } from "../util/openApiProcessor";
 import { NameSanitizer } from "../util/nameSanitizer";
-import { Telemetry } from "../telemetry";
 import { buildAnswer } from "../model/answer";
 import { Lazy } from "../util/lazy";
-import { Factory } from "../factory";
 
 export interface IQuestionService {
     // Control whether the question is displayed to the user.
@@ -44,9 +42,9 @@ export interface IQuestionService {
 class BaseQuestionService {
     protected readonly dialog: Dialog;
     protected readonly logger?: LogProvider;
-    protected readonly telemetry?: Telemetry;
+    protected readonly telemetry?: TelemetryReporter;
 
-    constructor(dialog: Dialog, telemetry?: Telemetry, logger?: LogProvider) {
+    constructor(dialog: Dialog, telemetry?: TelemetryReporter, logger?: LogProvider) {
         this.dialog = dialog;
         this.telemetry = telemetry;
         this.logger = logger;
@@ -57,7 +55,7 @@ export class ApimServiceQuestion extends BaseQuestionService implements IQuestio
     private readonly lazyApimService: Lazy<ApimService>;
     public readonly funcName = QuestionConstants.Apim.funcName;
 
-    constructor(lazyApimService: Lazy<ApimService>, dialog: Dialog, telemetry: Telemetry, logger?: LogProvider) {
+    constructor(lazyApimService: Lazy<ApimService>, dialog: Dialog, telemetry?: TelemetryReporter, logger?: LogProvider) {
         super(dialog, telemetry, logger);
         this.lazyApimService = lazyApimService;
     }
@@ -91,7 +89,7 @@ export class OpenApiDocumentQuestion extends BaseQuestionService implements IQue
     private readonly openApiProcessor: OpenApiProcessor;
     public readonly funcName = QuestionConstants.OpenApiDocument.funcName;
 
-    constructor(openApiProcessor: OpenApiProcessor, dialog: Dialog, telemetry: Telemetry, logger?: LogProvider) {
+    constructor(openApiProcessor: OpenApiProcessor, dialog: Dialog, telemetry?: TelemetryReporter, logger?: LogProvider) {
         super(dialog, telemetry, logger);
         this.openApiProcessor = openApiProcessor;
     }
@@ -131,7 +129,7 @@ export class ExistingOpenApiDocumentFunc extends BaseQuestionService implements 
     private readonly openApiProcessor: OpenApiProcessor;
     public readonly funcName = QuestionConstants.ExistingOpenApiDocument.funcName;
 
-    constructor(openApiProcessor: OpenApiProcessor, dialog: Dialog, telemetry: Telemetry, logger?: LogProvider) {
+    constructor(openApiProcessor: OpenApiProcessor, dialog: Dialog, telemetry?: TelemetryReporter, logger?: LogProvider) {
         super(dialog, telemetry, logger);
         this.openApiProcessor = openApiProcessor;
     }
@@ -160,7 +158,7 @@ export class ExistingOpenApiDocumentFunc extends BaseQuestionService implements 
 export class ApiPrefixQuestion extends BaseQuestionService implements IQuestionService {
     public readonly funcName = QuestionConstants.ApiPrefix.funcName;
 
-    constructor(dialog: Dialog, telemetry: Telemetry, logger?: LogProvider) {
+    constructor(dialog: Dialog, telemetry?: TelemetryReporter, logger?: LogProvider) {
         super(dialog, telemetry, logger);
     }
 
@@ -186,7 +184,7 @@ export class ApiVersionQuestion extends BaseQuestionService implements IQuestion
     private readonly lazyApimService: Lazy<ApimService>;
     public readonly funcName = QuestionConstants.ApiVersion.funcName;
 
-    constructor(lazyApimService: Lazy<ApimService>, dialog: Dialog, telemetry: Telemetry, logger?: LogProvider) {
+    constructor(lazyApimService: Lazy<ApimService>, dialog: Dialog, telemetry?: TelemetryReporter, logger?: LogProvider) {
         super(dialog, telemetry, logger);
         this.lazyApimService = lazyApimService;
     }
@@ -230,7 +228,7 @@ export class ApiVersionQuestion extends BaseQuestionService implements IQuestion
 export class NewApiVersionQuestion extends BaseQuestionService implements IQuestionService {
     public readonly funcName = QuestionConstants.NewApiVersion.funcName;
 
-    constructor(dialog: Dialog, telemetry: Telemetry, logger?: LogProvider) {
+    constructor(dialog: Dialog, telemetry?: TelemetryReporter, logger?: LogProvider) {
         super(dialog, telemetry, logger);
     }
 

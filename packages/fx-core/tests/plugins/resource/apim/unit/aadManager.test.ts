@@ -12,7 +12,6 @@ import { MockGraphTokenProvider, skip_if } from "./testUtil";
 import { InvalidAadObjectId } from "../../../../../src/plugins/resource/apim/src/error";
 import { IRequiredResourceAccess } from "../../../../../src/plugins/resource/apim/src/model/aadResponse";
 import { AadService } from "../../../../../src/plugins/resource/apim/src/service/aadService";
-import { Telemetry } from "../../../../../src/plugins/resource/apim/src/telemetry";
 import { IAadPluginConfig, IApimPluginConfig, ISolutionConfig } from "../../../../../src/plugins/resource/apim/src/model/config";
 import { AadDefaultValues } from "../../../../../src/plugins/resource/apim/src/constants";
 import { Lazy } from "../../../../../src/plugins/resource/apim/src/util/lazy";
@@ -263,7 +262,6 @@ describe("AadManager", () => {
 });
 
 async function buildAadService(enableLogin: boolean): Promise<AadService> {
-    const mockTelemetry = new Telemetry();
     const mockGraphTokenProvider = new MockGraphTokenProvider(testTenantId, testServicePrincipalClientId, testServicePrincipalClientSecret);
     const graphToken = enableLogin ? await mockGraphTokenProvider.getAccessToken() : "";
     const axiosInstance = axios.create({
@@ -273,13 +271,12 @@ async function buildAadService(enableLogin: boolean): Promise<AadService> {
             "content-type": "application/json",
         },
     });
-    return new AadService(axiosInstance, mockTelemetry);
+    return new AadService(axiosInstance);
 }
 
 function buildAadManager(aadService: AadService): AadManager {
-    const mockTelemetry = new Telemetry();
     const lazyAadService = new Lazy<AadService>(() => Promise.resolve(aadService));
-    return new AadManager(lazyAadService, mockTelemetry);
+    return new AadManager(lazyAadService);
 }
 
 function buildApimPluginConfig(objectId?: string, clientSecret?: string): IApimPluginConfig {

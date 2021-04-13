@@ -5,20 +5,19 @@ import { AssertConfigNotEmpty, AssertNotEmpty } from "../error";
 import { IAadPluginConfig, IApimPluginConfig, IFunctionPluginConfig, ISolutionConfig } from "../model/config";
 import { ApimService } from "../service/apimService";
 import { OpenApiProcessor } from "../util/openApiProcessor";
-import { Telemetry } from "../telemetry";
 import { NameSanitizer } from "../util/nameSanitizer";
 import { IAnswer } from "../model/answer";
-import { LogProvider, TeamsAppManifest } from "fx-api";
+import { LogProvider, TelemetryReporter } from "fx-api";
 import * as path from "path";
 import { Lazy } from "../util/lazy";
 
 export class ApimManager {
     private readonly logger?: LogProvider;
-    private readonly telemetry: Telemetry;
+    private readonly telemetry?: TelemetryReporter;
     private readonly lazyApimService: Lazy<ApimService>;
     private readonly openApiProcessor: OpenApiProcessor;
 
-    constructor(lazyApimService: Lazy<ApimService>, openApiProcessor: OpenApiProcessor, telemetry: Telemetry, logger?: LogProvider) {
+    constructor(lazyApimService: Lazy<ApimService>, openApiProcessor: OpenApiProcessor, telemetry?: TelemetryReporter, logger?: LogProvider) {
         this.lazyApimService = lazyApimService;
         this.openApiProcessor = openApiProcessor;
         this.logger = logger;

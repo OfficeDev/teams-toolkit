@@ -65,7 +65,7 @@ export class AppStudioPluginImpl {
             await publishProgress?.start("Validating manifest file");
             let appDirectory: string | undefined = undefined;
             if (ctx.platform === Platform.VSCode) {
-                appDirectory = `${ctx.root}/.${ConfigFolderName}`
+                appDirectory = `${ctx.root}/.${ConfigFolderName}`;
             } else {
                 appDirectory = ctx.answers?.getString(Constants.PUBLISH_PATH_QUESTION);
             }

@@ -44,10 +44,10 @@ export class DepsChecker {
       return shouldContinue;
     }
 
-    // if (isLinux()) {
-    //   // TODO: provide with unsupported message
-    //   return !shouldContinue;
-    // }
+    if (isLinux()) {
+      // TODO: provide with unsupported message
+      return !shouldContinue;
+    }
 
     // TODO: add log and telemetry
     const confirmMessage = await this.generateMessage(validCheckers);

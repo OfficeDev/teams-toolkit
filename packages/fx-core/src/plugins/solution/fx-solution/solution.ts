@@ -328,7 +328,7 @@ export class TeamsAppSolution implements Solution {
             ctx.config.set(GLOBAL_CONFIG, new ConfigMap());
         }
         let lang = ctx.answers?.getString(AzureSolutionQuestionNames.ProgrammingLanguage);
-        ctx.config.get(GLOBAL_CONFIG)!.set(PROGRAMMING_LANGUAGE, lang ?? "javascript");
+        ctx.config.get(GLOBAL_CONFIG)?.set(PROGRAMMING_LANGUAGE, lang ?? "javascript");
 
         const settingsRes = this.fillInSolutionSettings(ctx);
         if(settingsRes.isErr()) 

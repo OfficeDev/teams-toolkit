@@ -595,11 +595,15 @@ class CoreImpl implements Core {
                 const filePath = `${this.ctx.root}/.${ConfigFolderName}/${file}`;
                 const configJson: Json = await fs.readJson(filePath);
                 const localDataPath = `${this.ctx.root}/.${ConfigFolderName}/${envName}.userdata`;
+                let dict:Dict<string>;
                 if(await fs.pathExists(localDataPath)){
                     const dictContent = await fs.readFile(localDataPath, "UTF-8");
-                    const dict:Dict<string> = deserializeDict(dictContent);
-                    mergeSerectData(dict, configJson);
+                    dict = deserializeDict(dictContent);
                 }
+                else{
+                    dict = {};
+                } 
+                mergeSerectData(dict, configJson);
                 const solutionConfig: SolutionConfig = objectToMap(configJson);
                 this.configs.set(envName, solutionConfig);
             }

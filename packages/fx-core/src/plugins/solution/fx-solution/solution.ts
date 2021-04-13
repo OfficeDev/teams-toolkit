@@ -40,7 +40,6 @@ import * as fs from "fs-extra";
 import {
     DEFAULT_PERMISSION_REQUEST,
     GLOBAL_CONFIG,
-    SELECTED_PLUGINS,
     PERMISSION_REQUEST,
     SolutionError,
     LOCAL_DEBUG_TAB_DOMAIN,
@@ -448,16 +447,11 @@ export class TeamsAppSolution implements Solution {
         }
 
         solutionSettings.activeResourcePlugins = Array.from(pluginNameSet);
-
-        ctx.config.get(GLOBAL_CONFIG)?.set(
-            SELECTED_PLUGINS,
-            Array.from(pluginNameSet),
-        );
     }
 
     private spfxSelected(ctx: SolutionContext): boolean {
         // Generally, if SPFx is selected, there should be no other plugins. But we don't check this invariant here.
-        const spfxExists = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings).activeResourcePlugins.some((pluginName) => pluginName === this.spfxPlugin.name);
+        const spfxExists = this.getAzureSolutionSettings(ctx).activeResourcePlugins.some((pluginName) => pluginName === this.spfxPlugin.name);
         return spfxExists === undefined ? false : spfxExists;
     }
 
@@ -609,26 +603,7 @@ export class TeamsAppSolution implements Solution {
 
     private getSelectedPlugins(ctx: SolutionContext): Result<LoadedPlugin[], FxError> {
         const settings = this.getAzureSolutionSettings(ctx);
-        let pluginNames = settings.activeResourcePlugins;
-
-        if (pluginNames === undefined) {
-            return err(
-                returnUserError(
-                    new Error("Selected plugin name is not valid"),
-                    "Solution",
-                    SolutionError.InvalidSelectedPluginNames,
-                ),
-            );
-        }
-
-        if (pluginNames instanceof Map) {
-            const list: string[] = [];
-            for (const pluginName of pluginNames.values()) {
-                list.push(pluginName);
-            }
-            pluginNames = list;
-        }
-
+        const pluginNames = settings.activeResourcePlugins;
         const selectedPlugins = [];
         for (const pluginName of pluginNames as string[]) {
             const plugin = this.pluginMap.get(pluginName);

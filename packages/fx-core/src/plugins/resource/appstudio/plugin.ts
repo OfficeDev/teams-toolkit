@@ -76,7 +76,7 @@ export class AppStudioPluginImpl {
             // Update App in App Studio
             let remoteTeamsAppId: string | undefined = undefined;
             if (ctx.platform === Platform.VSCode) {
-                remoteTeamsAppId = ctx.config.getString(REMOTE_TEAMS_APP_ID);
+                remoteTeamsAppId = ctx.configOfOtherPlugins.get("solution")?.get(REMOTE_TEAMS_APP_ID) as string;
             } else {
                 remoteTeamsAppId = ctx.answers?.getString(Constants.REMOTE_TEAMS_APP_ID);
             }

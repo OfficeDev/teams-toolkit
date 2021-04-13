@@ -60,7 +60,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
 
             //assert output local.env
             const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
-            chai.assert.equal(Object.keys(localEnvs).length, 27);
+            chai.assert.equal(Object.keys(localEnvs).length, 30);
         });
 
         it("happy path: tab without function", async () => {
@@ -91,7 +91,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
 
             //assert output local.env
             const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
-            chai.assert.equal(Object.keys(localEnvs).length, 13);
+            chai.assert.equal(Object.keys(localEnvs).length, 16);
         });
 
         it("happy path: bot", async () => {
@@ -122,7 +122,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
 
             //assert output local.env
             const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
-            chai.assert.equal(Object.keys(localEnvs).length, 15);
+            chai.assert.equal(Object.keys(localEnvs).length, 8);
         });
 
         it("happy path: tab with function and bot", async () => {
@@ -155,7 +155,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
 
             //assert output local.env
             const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
-            chai.assert.equal(Object.keys(localEnvs).length, 35);
+            chai.assert.equal(Object.keys(localEnvs).length, 38);
         });
 
         it("happy path: tab without function and bot", async () => {
@@ -186,7 +186,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
 
             //assert output local.env
             const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
-            chai.assert.equal(Object.keys(localEnvs).length, 21);
+            chai.assert.equal(Object.keys(localEnvs).length, 24);
         });
 
         it("spfx", async () => {

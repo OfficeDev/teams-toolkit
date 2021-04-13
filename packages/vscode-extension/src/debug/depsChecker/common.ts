@@ -13,15 +13,15 @@ export async function openUrl(url: string): Promise<void> {
   opn(url);
 }
 
-export function isWindows() {
+export function isWindows(): boolean {
   return os.type() === "Windows_NT";
 }
 
-export function isMacOS() {
+export function isMacOS(): boolean {
   return os.type() === "Darwin";
 }
 
-export function isLinux() {
+export function isLinux(): boolean {
   return os.type() === "Linux";
 }
 
@@ -33,6 +33,7 @@ export const Messages = {
   needReplaceWithFuncCoreToolV3: `You must replace with @NameVersion to debug your local functions.`,
   needInstallFuncCoreTool: `You must have @NameVersion installed to debug your local functions.`,
   failToInstallFuncCoreTool: `@NameVersion installation has failed and will have to be installed manually.`,
+  failToValidateFuncCoreTool: `Failed to validate @NameVersion after its installation.`,
 
   downloadDotnet: `Downloading and installing @NameVersion.`,
   finishInstallDotnet: `Successfully installed @NameVersion.`,
@@ -41,11 +42,13 @@ export const Messages = {
   dotnetInstallErrorCode: `dotnet-install command failed.`,
   failToInstallDotnet: `Failed to install @NameVersion.`,
 
-  depsNotFound: `The toolkit cannot find @Message on your machine.
+  depsNotFound: `The toolkit cannot find @SupportedPackages on your machine.
 
 As a fundamental runtime context for Teams app, these dependencies are required. Following steps will help you to install the appropriate version to run the Microsoft Teams Toolkit.
 
-Click "Install" to continue.`
+Please notice that these dependencies only need to be installed once.
+
+Click "Install" to install @InstallPackages.`
 };
 
 export const defaultHelpLink = "https://review.docs.microsoft.com/en-us/mods/?branch=main";

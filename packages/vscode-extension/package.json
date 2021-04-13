@@ -2,7 +2,7 @@
   "name": "teamsfx-extension",
   "displayName": "Teams Toolkit V2",
   "description": "Create, debug, and deploy Teams apps directly from Teams Toolkit v2",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "publisher": "Microsoft",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -76,6 +76,12 @@
           "command": "fx-extension.signOut",
           "when": "view == teamsfx && viewItem == signedinAzure",
           "group": "inline"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "fx-extension.signOut",
+          "when": "false"
         }
       ]
     },
@@ -285,7 +291,7 @@
   },
   "scripts": {
     "lint:staged": "lint-staged",
-    "vscode:prepublish": "rimraf out && npm run package",
+    "vscode:prepublish": "rimraf out && npm run build",
     "copy-files": "copyfiles -u 1 src/**/*.html src/**/*.css src/**/*.ps1 src/**/*.sh out/src/",
     "compile": "tsc -p ./ && yarn copy-files",
     "build": "npm run compile",
@@ -377,6 +383,7 @@
     "fx-core": "^1.0.1",
     "jsonschema": "^1.4.0",
     "opn": "^6.0.0",
+    "sudo-prompt": "^9.2.1",
     "underscore": "^1.12.1",
     "vscode-extension-telemetry": "^0.1.6",
     "vscode-test": "^1.5.2"

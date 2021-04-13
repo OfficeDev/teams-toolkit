@@ -13,5 +13,6 @@ export * from "./manifest";
 export * from "./utils";
 export * from "./error";
 export * from "./qm";
+export * from "./ci";
 
 export * from "neverthrow";

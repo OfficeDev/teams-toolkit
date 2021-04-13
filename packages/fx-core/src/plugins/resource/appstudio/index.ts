@@ -17,18 +17,18 @@ export class AppStudioPlugin implements Plugin {
         });
 
         if (stage === Stage.publish) {
-            const appPath = new QTreeNode({
-                type: NodeType.folder,
-                name: Constants.PUBLISH_PATH_QUESTION,
-                title: "Please select the folder contains manifest.json and icons",
-                default: `${ctx.root}/.${ConfigFolderName}`,
-                validation: {
-                    required: true,
-                },
-            });
-            appStudioQuestions.addChild(appPath);
-
             if (ctx.platform !== Platform.VSCode) {
+                const appPath = new QTreeNode({
+                    type: NodeType.folder,
+                    name: Constants.PUBLISH_PATH_QUESTION,
+                    title: "Please select the folder contains manifest.json and icons",
+                    default: `${ctx.root}/.${ConfigFolderName}`,
+                    validation: {
+                        required: true,
+                    },
+                });
+                appStudioQuestions.addChild(appPath);
+
                 const remoteTeamsAppId = new QTreeNode({
                     type: NodeType.text,
                     name: Constants.REMOTE_TEAMS_APP_ID,

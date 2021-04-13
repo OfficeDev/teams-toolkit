@@ -4,7 +4,6 @@
 
 import * as cp from "child_process";
 import * as os from "os";
-import * as util from "util";
 import { VsCodeLogProvider } from "../commonlib/log";
 
 export namespace cpUtils {

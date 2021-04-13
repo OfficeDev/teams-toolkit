@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { DepsInfo, IDepsChecker } from "./checker";
-import { DotnetCheckerImpl, DotnetCoreSDKName, DotnetVersion } from "./dotnetCheckerImpl";
+import { DotnetCheckerImpl, DotnetCoreSDKName, installVersion, supportedVersions } from "./dotnetCheckerImpl";
 import { dotnetCheckerEnabled } from "./checkerAdapter";
 
 export class DotnetCoreChecker implements IDepsChecker {
@@ -14,7 +14,9 @@ export class DotnetCoreChecker implements IDepsChecker {
     }
     map.set("configPath", DotnetCheckerImpl.getDotnetConfigPath());
     return {
-      nameWithVersion: `${DotnetCoreSDKName} (v${DotnetVersion.v31})`,
+      name: DotnetCoreSDKName,
+      installVersion: `${installVersion}`,
+      supportedVersions: supportedVersions,
       details: map
     };
   }

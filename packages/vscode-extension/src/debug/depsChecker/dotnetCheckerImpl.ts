@@ -14,18 +14,19 @@ import { isWindows, isLinux, Messages, dotnetHelpLink } from "./common";
 const exec = util.promisify(child_process.exec);
 
 export enum DotnetVersion {
-  v31 = "3.1"
+  v31 = "3.1",
+  v50 = "5.0"
 }
 
 export const DotnetCoreSDKName = ".NET Core SDK";
 export type DotnetSDK = { version: string; path: string };
 
-export const installedNameWithVersion = `${DotnetCoreSDKName} (v${DotnetVersion.v31})`;
+export const installVersion = DotnetVersion.v31;
+export const supportedVersions = [DotnetVersion.v31, DotnetVersion.v50];
+const installedNameWithVersion = `${DotnetCoreSDKName} (v${DotnetVersion.v31})`;
 
 export class DotnetCheckerImpl {
   private static encoding = "utf-8";
-  private static installVersion = DotnetVersion.v31;
-  private static supportedVersions = [DotnetVersion.v31];
   private static timeout = 3 * 60 * 1000; // same as vscode-dotnet-runtime
   private static maxBuffer = 500 * 1024;
 
@@ -56,7 +57,7 @@ export class DotnetCheckerImpl {
     // logger.debug(`[start] install dotnet ${DotnetChecker.installVersion}`);
     logger.info(Messages.downloadDotnet.replace("@NameVersion", installedNameWithVersion));
     await runWithProgressIndicator(async () => {
-      await DotnetCheckerImpl.install(DotnetCheckerImpl.installVersion);
+      await DotnetCheckerImpl.install(installVersion);
     });
     logger.info(Messages.finishInstallDotnet.replace("@NameVersion", installedNameWithVersion));
     // logger.debug(`[end] install dotnet ${DotnetChecker.installVersion}`);
@@ -172,7 +173,6 @@ export class DotnetCheckerImpl {
   }
 
   private static async isDotnetVersionsInstalled(installedVersions: string[]): Promise<boolean> {
-    const supportedVersions: string[] = DotnetCheckerImpl.supportedVersions;
     try {
       const validVersions = DotnetCheckerImpl.arrayIntersection(installedVersions, supportedVersions);
       return validVersions.length > 0;

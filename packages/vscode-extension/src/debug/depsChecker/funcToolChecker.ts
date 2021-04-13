@@ -17,12 +17,17 @@ export enum FuncVersion {
 
 const funcPackageName = "azure-functions-core-tools";
 const funcToolName = "Azure Function Core Tool";
-export const installedNameWithVersion = `${funcToolName} (v${FuncVersion.v3})`;
+
+const installVersion = FuncVersion.v3;
+const supportedVersions = [FuncVersion.v2, FuncVersion.v3];
+const installedNameWithVersion = `${funcToolName} (v${FuncVersion.v3})`;
 
 export class FuncToolChecker implements IDepsChecker {
   public getDepsInfo(): Promise<DepsInfo> {
     return Promise.resolve({
-      nameWithVersion: installedNameWithVersion,
+      name: funcToolName,
+      installVersion: installVersion,
+      supportedVersions: supportedVersions,
       details: new Map<string, string>()
     });
   }

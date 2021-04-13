@@ -12,7 +12,9 @@ export interface IDepsChecker {
 }
 
 export interface DepsInfo {
-  nameWithVersion: string;
+  name: string,
+  installVersion: string;
+  supportedVersions: string[];
   details: Map<string, string>;
 }
 
@@ -81,13 +83,18 @@ export class DepsChecker {
   }
 
   private async generateMessage(checkers: Array<IDepsChecker>): Promise<string> {
-    const depsInfo = [];
+    const installPackages = [];
+    const supportedPackages = [];
     for (const checker of checkers) {
       const info = await checker.getDepsInfo();
-      depsInfo.push(info.nameWithVersion);
+      installPackages.push(`${info.name} (v${info.installVersion})`);
+      const supportedVersions = info.supportedVersions.map(version => "v" + version).join(" or ");
+      const supportedPackage = `${info.name} (${supportedVersions})`;
+      supportedPackages.push(supportedPackage);
     }
 
-    const message = depsInfo.join(" and ");
-    return Messages.depsNotFound.replace("@Message", message);
+    const installMessage = installPackages.join(" and ");
+    const supportedMessage = supportedPackages.join(" and ");
+    return Messages.depsNotFound.replace("@InstallPackages", installMessage).replace("@SupportedPackages", supportedMessage);
   }
 }

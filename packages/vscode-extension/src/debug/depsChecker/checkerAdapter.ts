@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import commonlibLogger from "../../commonlib/log";
-import { window, workspace, WorkspaceConfiguration, OutputChannel, MessageItem } from "vscode";
+import { window, workspace, WorkspaceConfiguration, MessageItem } from "vscode";
 import { openUrl } from "./common";
 
 export { cpUtils } from "../cpUtils";
@@ -59,7 +59,7 @@ export async function displayWarningMessage(
   return false;
 }
 
-export function showOutputChannel() {
+export function showOutputChannel(): void {
   logger.outputChannel.show(false);
 }
 

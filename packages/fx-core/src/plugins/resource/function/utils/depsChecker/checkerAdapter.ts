@@ -17,7 +17,7 @@ export function dotnetCheckerEnabled(): boolean {
 export async function runWithProgressIndicator(
   callback: () => Promise<void>
 ): Promise<void> {
-  // NOTE: plugin does not have output channel so just ignore it
+  // TODO: implement progress indicator in plugin
   await callback();
 }
 
@@ -33,8 +33,6 @@ export async function displayWarningMessage(
   buttonText: string,
   action: () => Promise<boolean>
 ): Promise<boolean> {
-  // TODO: implement with Dialog
-
   const answer = await _dialog?.communicate(new DialogMsg(
     DialogType.Ask,
     {
@@ -51,12 +49,13 @@ export async function displayWarningMessage(
   return false;
 }
 
-export function setDialog(dialog: Dialog) {
+export function setDialog(dialog: Dialog): void {
   _dialog = dialog;
 }
 
-// TODO: find a way to implement in plugin
-export function showOutputChannel() {}
+export function showOutputChannel(): void {
+  // TODO: find a way to implement in plugin
+}
 
 export function getResourceDir(): string {
   return path.resolve(path.join(__dirname, "..", "..", "..", "..", "..", "..", "resource", "plugins", "resource", "function"));

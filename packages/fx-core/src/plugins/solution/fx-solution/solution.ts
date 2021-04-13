@@ -786,8 +786,7 @@ export class TeamsAppSolution implements Solution {
         const staticTabs = ctx.config.get(this.botPlugin.name)?.getString(STATIC_TABS);
         const configurableTabs = ctx.config.get(this.botPlugin.name)?.getString(CONFIGURABLE_TABS);
         if (!staticTabs || !configurableTabs || 
-                (staticTabs === "[]" && configurableTabs === "[]") || 
-                (staticTabs !== "[]" && configurableTabs !== "[]")) {
+                (staticTabs === "[]" && configurableTabs === "[]")) {
             return err(returnSystemError(
                 new Error(`Invalid frontend config: ${STATIC_TABS}: ${staticTabs} ${CONFIGURABLE_TABS}: ${configurableTabs}`),
                 "Solution", 
@@ -1480,8 +1479,7 @@ export class TeamsAppSolution implements Solution {
         const staticTabs = ctx.config.get(this.botPlugin.name)?.getString(STATIC_TABS);
         const configurableTabs = ctx.config.get(this.botPlugin.name)?.getString(CONFIGURABLE_TABS);
         if (!staticTabs || !configurableTabs || 
-                (staticTabs === "[]" && configurableTabs === "[]") || 
-                (staticTabs !== "[]" && configurableTabs !== "[]")) {
+                (staticTabs === "[]" && configurableTabs === "[]")) {
             return err(returnSystemError(
                 new Error(`Invalid frontend config: ${STATIC_TABS}: ${staticTabs} ${CONFIGURABLE_TABS}: ${configurableTabs}`),
                 "Solution", 

@@ -10,6 +10,7 @@ import Provision from "./provision";
 import Deploy from "./deploy";
 import Resource from "./resource";
 import Init from "./init";
+import Publish from "./publish";
 
 export const commands: YargsCommand[] = [
   new Account(),
@@ -17,5 +18,6 @@ export const commands: YargsCommand[] = [
   new Provision(),
   new Deploy(),
   new Resource(),
-  new Init()
+  new Init(),
+  new Publish()
 ];

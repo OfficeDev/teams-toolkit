@@ -3,19 +3,13 @@
 
 "use strict";
 
-import { ConfigMap, NodeType, QTreeNode, OptionItem, Core } from "fx-api";
+import { ConfigMap, NodeType, QTreeNode, OptionItem } from "fx-api";
 
 import CLILogProvider from "../commonlib/log";
 import * as constants from "../constants";
-import { NotValidInputValue } from "../error";
 import { flattenNodes } from "../utils";
-import { validate } from "./validation";
 
-export async function validateAndUpdateAnswers(
-  core: Core,
-  root: QTreeNode,
-  answers: ConfigMap
-): Promise<void> {
+export async function validateAndUpdateAnswers(root: QTreeNode, answers: ConfigMap): Promise<void> {
   const nodes = flattenNodes(root);
   for (const node of nodes) {
     if (node.data.type === NodeType.group) {
@@ -26,15 +20,6 @@ export async function validateAndUpdateAnswers(
     if (!ans) {
       continue;
     }
-
-    // if (node.data.validation) {
-    //   const result = await validate(core, node.data.validation, ans, answers);
-
-    //   if (result) {
-    //     console.log(result);
-    //     throw NotValidInputValue(node.data.name, result);
-    //   }
-    // }
 
     if ("returnObject" in node.data && !!node.data.returnObject) {
       const option = node.data.option;

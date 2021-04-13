@@ -8,12 +8,13 @@ import { Argv, Options } from "yargs";
 
 import { ConfigMap, err, Func, FxError, ok, Platform, Result, Stage } from "fx-api";
 
-import activate from "../activate";
 import AzureTokenProvider from "../commonlib/azureLogin";
 import * as constants from "../constants";
 import { validateAndUpdateAnswers } from "../question/question";
 import { getParamJson, readConfigs } from "../utils";
 import { YargsCommand } from "../yargsCommand";
+import { TeamsCore } from "fx-core";
+import { ContextFactory } from "../context";
 
 export class ResourceAdd extends YargsCommand {
   public readonly commandHead = `add`;
@@ -56,22 +57,21 @@ export class ResourceAddSql extends YargsCommand {
     const rootFolder = path.resolve(answers.getString("folder") || "./");
     answers.delete("folder");
 
-    const result = await activate(rootFolder);
-    if (result.isErr()) {
-      return err(result.error);
-    }
-
-    const core = result.value;
+    const core = TeamsCore.getInstance();
     {
-      const result = await core.getQuestions!(Stage.update, Platform.VSCode);
+      const result = await core.getQuestions(
+        ContextFactory.get(rootFolder),
+        Stage.update,
+        Platform.VSCode
+      );
       if (result.isErr()) {
         return err(result.error);
       }
-      await validateAndUpdateAnswers(core, result.value!, answers);
+      await validateAndUpdateAnswers(result.value!, answers);
     }
 
     {
-      const result = await core.update(answers);
+      const result = await core.update(ContextFactory.get(rootFolder), answers);
       if (result.isErr()) {
         return err(result.error);
       }
@@ -108,22 +108,21 @@ export class ResourceAddFunction extends YargsCommand {
       }
     }
 
-    const result = await activate(rootFolder);
-    if (result.isErr()) {
-      return err(result.error);
-    }
-
-    const core = result.value;
+    const core = TeamsCore.getInstance();
     {
-      const result = await core.getQuestions!(Stage.update, Platform.VSCode);
+      const result = await core.getQuestions(
+        ContextFactory.get(rootFolder),
+        Stage.update,
+        Platform.VSCode
+      );
       if (result.isErr()) {
         return err(result.error);
       }
-      await validateAndUpdateAnswers(core, result.value!, answers);
+      await validateAndUpdateAnswers(result.value!, answers);
     }
 
     {
-      const result = await core.update(answers);
+      const result = await core.update(ContextFactory.get(rootFolder), answers);
       if (result.isErr()) {
         return err(result.error);
       }
@@ -173,18 +172,13 @@ export class ResourceConfigureAAD extends YargsCommand {
     const rootFolder = path.resolve(answers.getString("folder") || "./");
     answers.delete("folder");
 
-    const result = await activate(rootFolder);
-    if (result.isErr()) {
-      return err(result.error);
-    }
-
-    const core = result.value;
+    const core = TeamsCore.getInstance();
     const func: Func = {
       namespace: "fx-solution-azure/teamsfx-plugin-aad-app-for-teams",
       method: "aadUpdatePermission"
     };
     {
-      const result = await core.executeUserTask!(func, answers);
+      const result = await core.executeUserTask(ContextFactory.get(rootFolder), func, answers);
       if (result.isErr()) {
         return err(result.error);
       }

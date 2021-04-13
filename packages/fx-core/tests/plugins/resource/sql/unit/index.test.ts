@@ -8,7 +8,12 @@ import { ConfigMap, PluginContext, Stage } from "fx-api";
 import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import * as faker from "faker";
 import * as sinon from "sinon";
-import { Databases, Servers, FirewallRules, ServerAzureADAdministrators } from "@azure/arm-sql";
+import {
+  Databases,
+  Servers,
+  FirewallRules,
+  ServerAzureADAdministrators,
+} from "@azure/arm-sql";
 import { ApplicationTokenCredentials } from "@azure/ms-rest-nodeauth";
 import { TokenResponse } from "adal-node/lib/adal";
 import { SqlClient } from "../../../../../src/plugins/resource/sql/sqlClient";
@@ -21,98 +26,109 @@ dotenv.config();
 const testWithAzure: boolean = process.env.UT_TEST_ON_AZURE ? true : false;
 
 describe("sqlPlugin", () => {
-    let sqlPlugin: SqlPlugin;
-    let pluginContext: PluginContext;
-    let credentials: msRestNodeAuth.TokenCredentialsBase;
+  let sqlPlugin: SqlPlugin;
+  let pluginContext: PluginContext;
+  let credentials: msRestNodeAuth.TokenCredentialsBase;
 
-    before(async () => {
-        if (testWithAzure) {
-            credentials = await msRestNodeAuth.interactiveLogin();
-        } else {
-            credentials = new msRestNodeAuth.ApplicationTokenCredentials(
-                faker.random.uuid(),
-                faker.internet.url(),
-                faker.internet.password(),
-            );
-        }
-    });
+  before(async () => {
+    if (testWithAzure) {
+      credentials = await msRestNodeAuth.interactiveLogin();
+    } else {
+      credentials = new msRestNodeAuth.ApplicationTokenCredentials(
+        faker.random.uuid(),
+        faker.internet.url(),
+        faker.internet.password()
+      );
+    }
+  });
 
-    beforeEach(async () => {
-        sqlPlugin = new SqlPlugin();
-        pluginContext = await TestHelper.pluginContext(credentials);
-    });
+  beforeEach(async () => {
+    sqlPlugin = new SqlPlugin();
+    pluginContext = await TestHelper.pluginContext(credentials);
+  });
 
-    afterEach(() => {
-        sinon.restore();
-    });
+  afterEach(() => {
+    sinon.restore();
+  });
 
-    it("getQuestions", async function () {
-        // Arrange
-        sinon.stub(Servers.prototype, "checkNameAvailability").resolves({ available: true });
+  it("getQuestions", async function () {
+    // Arrange
+    sinon
+      .stub(Servers.prototype, "checkNameAvailability")
+      .resolves({ available: true });
 
-        // Act
-        const getQuestionResult = await sqlPlugin.getQuestions(Stage.provision, pluginContext);
+    // Act
+    const getQuestionResult = await sqlPlugin.getQuestions(
+      Stage.provision,
+      pluginContext
+    );
 
-        // Assert
-        chai.assert.isTrue(getQuestionResult.isOk());
-    });
+    // Assert
+    chai.assert.isTrue(getQuestionResult.isOk());
+  });
 
-    it("preProvision", async function () {
-        // Arrange
-        sinon.stub(ApplicationTokenCredentials.prototype, "getToken").resolves({ accessToken: faker.random.word() } as TokenResponse);
-        const mockInfo: commonUtils.TokenInfo = {
-            name: faker.random.word(),
-            objectId: faker.random.word(),
-            userType: commonUtils.UserType.User
-        };
-        sinon.stub(commonUtils, "parseToken").returns(mockInfo);
-        pluginContext.answers = new ConfigMap([
-            [Constants.questionKey.adminName, "test-admin"],
-            [Constants.questionKey.adminPassword, "test-password"],
-        ]);
+  it("preProvision", async function () {
+    // Arrange
+    sinon
+      .stub(ApplicationTokenCredentials.prototype, "getToken")
+      .resolves({ accessToken: faker.random.word() } as TokenResponse);
+    const mockInfo: commonUtils.TokenInfo = {
+      name: faker.random.word(),
+      objectId: faker.random.word(),
+      userType: commonUtils.UserType.User,
+    };
+    sinon.stub(commonUtils, "parseToken").returns(mockInfo);
+    pluginContext.answers = new ConfigMap();
+    pluginContext.answers.set(Constants.questionKey.adminName, "test-admin");
+    pluginContext.answers.set(
+      Constants.questionKey.adminPassword,
+      "test-password"
+    );
 
-        // Act
-        const preProvisionResult = await sqlPlugin.preProvision(pluginContext);
+    // Act
+    const preProvisionResult = await sqlPlugin.preProvision(pluginContext);
 
-        // Assert
-        chai.assert.isTrue(preProvisionResult.isOk());
-    });
+    // Assert
+    chai.assert.isTrue(preProvisionResult.isOk());
+  });
 
+  it("provision", async function () {
+    sqlPlugin.sqlImpl.config.existSql = false;
+    sqlPlugin.sqlImpl.config.sqlServer = "test-sql";
 
-    it("provision", async function () {
-        sqlPlugin.sqlImpl.config.existSql = false;
-        sqlPlugin.sqlImpl.config.sqlServer = "test-sql";
+    // Arrange
+    sinon.stub(Servers.prototype, "createOrUpdate").resolves();
+    sinon.stub(Databases.prototype, "listByServer").resolves();
+    sinon.stub(Databases.prototype, "createOrUpdate").resolves();
 
-        // Arrange
-        sinon.stub(Servers.prototype, "createOrUpdate").resolves();
-        sinon.stub(Databases.prototype, "listByServer").resolves();
-        sinon.stub(Databases.prototype, "createOrUpdate").resolves();
+    // Act
+    const provisionResult = await sqlPlugin.provision(pluginContext);
 
-        // Act
-        const provisionResult = await sqlPlugin.provision(pluginContext);
+    // Assert
+    chai.assert.isTrue(provisionResult.isOk());
+  });
 
-        // Assert
-        chai.assert.isTrue(provisionResult.isOk());
-    });
+  it("postProvision", async function () {
+    sqlPlugin.sqlImpl.config.existSql = false;
+    sqlPlugin.sqlImpl.config.sqlServer = "test-sql";
 
-    it("postProvision", async function () {
-        sqlPlugin.sqlImpl.config.existSql = false;
-        sqlPlugin.sqlImpl.config.sqlServer = "test-sql";
+    // Arrange
+    sinon.stub(FirewallRules.prototype, "createOrUpdate").resolves();
+    sinon.stub(FirewallRules.prototype, "deleteMethod").resolves();
+    sinon
+      .stub(ServerAzureADAdministrators.prototype, "listByServer")
+      .resolves([]);
+    sinon
+      .stub(ServerAzureADAdministrators.prototype, "createOrUpdate")
+      .resolves();
+    sinon.stub(SqlClient.prototype, "initToken").resolves();
+    sinon.stub(SqlClient.prototype, "existUser").resolves(false);
+    sinon.stub(SqlClient.prototype, "addDatabaseUser").resolves();
 
-        // Arrange
-        sinon.stub(FirewallRules.prototype, "createOrUpdate").resolves();
-        sinon.stub(FirewallRules.prototype, "deleteMethod").resolves();
-        sinon.stub(ServerAzureADAdministrators.prototype, "listByServer").resolves([]);
-        sinon.stub(ServerAzureADAdministrators.prototype, "createOrUpdate").resolves();
-        sinon.stub(SqlClient.prototype, "initToken").resolves();
-        sinon.stub(SqlClient.prototype, "existUser").resolves(false);
-        sinon.stub(SqlClient.prototype, "addDatabaseUser").resolves();
+    // Act
+    const postProvisionResult = await sqlPlugin.postProvision(pluginContext);
 
-
-        // Act
-        const postProvisionResult = await sqlPlugin.postProvision(pluginContext);
-
-        // Assert
-        chai.assert.isTrue(postProvisionResult.isOk());
-    });
+    // Assert
+    chai.assert.isTrue(postProvisionResult.isOk());
+  });
 });

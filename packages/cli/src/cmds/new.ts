@@ -8,11 +8,12 @@ import * as path from "path";
 
 import { FxError, err, ok, Result, ConfigMap, Stage, Platform } from "fx-api";
 
-import activate from "../activate";
 import * as constants from "../constants";
 import { validateAndUpdateAnswers } from "../question/question";
 import { YargsCommand } from "../yargsCommand";
 import { getParamJson } from "../utils";
+import { TeamsCore } from "fx-core";
+import { ContextFactory } from "../context";
 
 export default class New extends YargsCommand {
   public readonly commandHead = `new`;
@@ -37,22 +38,21 @@ export default class New extends YargsCommand {
     const rootFolder = path.resolve(answers.getString("folder") || "./");
     answers.set("folder", rootFolder);
 
-    const result = await activate();
-    if (result.isErr()) {
-      return err(result.error);
-    }
-
-    const core = result.value;
+    const core = TeamsCore.getInstance();
     {
-      const result = await core.getQuestions!(Stage.create, Platform.CLI);
+      const result = await core.getQuestions(
+        ContextFactory.get(rootFolder),
+        Stage.create,
+        Platform.CLI
+      );
       if (result.isErr()) {
         return err(result.error);
       }
-      await validateAndUpdateAnswers(core, result.value!, answers);
+      await validateAndUpdateAnswers(result.value!, answers);
     }
 
     {
-      const result = await core.create(answers);
+      const result = await core.create(ContextFactory.get(rootFolder), answers);
       if (result.isErr()) {
         return err(result.error);
       }

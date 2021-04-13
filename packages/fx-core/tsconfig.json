@@ -16,11 +16,9 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "jsx": "react",
-    "declaration": true
+    "declaration": true,
+    "experimentalDecorators": true
   },
-  "include": ["src"],
-  "exclude": [
-    "node_modules",
-    "**/tests/*"
-  ]
+  "include": ["src", "tests"],
+  "exclude": ["node_modules", "tests/integration"]
 }

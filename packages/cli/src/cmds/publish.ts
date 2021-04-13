@@ -6,10 +6,11 @@
 import { Argv, Options } from "yargs";
 import * as path from "path";
 import { FxError, err, ok, Result, ConfigMap, ConfigFolderName } from "fx-api";
-import activate from "../activate";
 import * as constants from "../constants";
 import { YargsCommand } from "../yargsCommand";
 import { getParamJson } from "../utils";
+import { TeamsCore } from "fx-core";
+import { ContextFactory } from "../context";
 
 export default class New extends YargsCommand {
   public readonly commandHead = `publish`;
@@ -42,22 +43,17 @@ export default class New extends YargsCommand {
     let rootFolder;
     if (answers.has(manifestFolderParamName)) {
       rootFolder = path.join(answers.getString(manifestFolderParamName)!, "..");
-    }
-    else {
+    } else {
       rootFolder = answers.getString("folder");
       const manifestFolder = path.join(rootFolder!, `.${ConfigFolderName}`);
       answers.set(manifestFolderParamName, manifestFolder);
     }
 
     answers.delete("folder");
-    const result = await activate(rootFolder);
-    if (result.isErr()) {
-      return err(result.error);
-    }
 
-    const core = result.value;
+    const core = TeamsCore.getInstance();
     {
-      const result = await core.publish(answers);
+      const result = await core.publish(ContextFactory.get(rootFolder), answers);
       if (result.isErr()) {
         return err(result.error);
       }

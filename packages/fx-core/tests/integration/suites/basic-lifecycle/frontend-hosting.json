@@ -1,0 +1,19 @@
+{
+  "description": "integration test for frontend-hosting",
+  "answer": {
+    "app-name": "frontendHostingIntegrationTest",
+    "folder": "/tmp",
+    "solution": "mods-toolkit-solution-azure",
+    "capabilities": ["Tab"],
+    "tab-scopes": "personal",
+    "host-type": "Azure",
+    "azure-resources": [],
+    "deploy-plugin": ["mods-toolkit-plugin-frontend-hosting"]
+  },
+  "question": [
+    {
+      "description": "Please select a subscription",
+      "value": "Teams Cloud - Dev Test with TTL = 7 Days"
+    }
+  ]
+}

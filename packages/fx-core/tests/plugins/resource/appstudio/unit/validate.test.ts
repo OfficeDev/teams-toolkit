@@ -5,29 +5,36 @@ import "mocha";
 import * as chai from "chai";
 import fs from "fs-extra";
 import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio";
+import { newPluginContext } from "../../bot/unit/utils";
 
 describe("validate manifest", () => {
-    it("valid", async() => {
-        const manifest = await fs.readJson("./../resources/valid.manifest.json");
-        const manifestString = manifest.toString();
+  it("valid", async () => {
+    const manifest = await fs.readJson("./../resources/valid.manifest.json");
+    const manifestString = manifest.toString();
 
-        const plugin = new AppStudioPlugin();
-        const validationResult = await plugin.validateManifest(manifestString);
-        chai.assert.isTrue(validationResult.isOk());
-        if (validationResult.isOk()) {
-            chai.assert.equal(validationResult.value, []);
-        }
-    });
+    const plugin = new AppStudioPlugin();
+    const validationResult = await plugin.validateManifest(
+      newPluginContext(),
+      manifestString
+    );
+    chai.assert.isTrue(validationResult.isOk());
+    if (validationResult.isOk()) {
+      chai.assert.equal(validationResult.value, []);
+    }
+  });
 
-    it("invalid", async() => {
-        const manifest = await fs.readJson("./../resources/invalid.manifest.json");
-        const manifestString = manifest.toString();
+  it("invalid", async () => {
+    const manifest = await fs.readJson("./../resources/invalid.manifest.json");
+    const manifestString = manifest.toString();
 
-        const plugin = new AppStudioPlugin();
-        const validationResult = await plugin.validateManifest(manifestString);
-        chai.assert.isTrue(validationResult.isOk());
-        if (validationResult.isOk()) {
-            chai.assert(validationResult.value.length > 0);
-        }
-    });
+    const plugin = new AppStudioPlugin();
+    const validationResult = await plugin.validateManifest(
+      newPluginContext(),
+      manifestString
+    );
+    chai.assert.isTrue(validationResult.isOk());
+    if (validationResult.isOk()) {
+      chai.assert(validationResult.value.length > 0);
+    }
+  });
 });

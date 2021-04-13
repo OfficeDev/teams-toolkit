@@ -1,0 +1,41 @@
+{
+  "description": "integration test for sql",
+  "answer": {
+    "app-name": "sqlIntegrationTest",
+    "folder": "/tmp",
+    "solution": "mods-toolkit-solution-azure",
+    "capabilities": [
+      "Tab"
+    ],
+    "tab-scopes": "personal",
+    "host-type": "Azure",
+    "azure-resources": [
+      "sql",
+      "function"
+    ],
+    "function-name":"myFunc",
+    "sql-admin-name": "testname",
+    "sql-password": "Test2021",
+    "deploy-plugin": [
+      "mods-toolkit-plugin-frontend-hosting"
+    ]
+  },
+  "question": [
+    {
+      "description": "Please select a subscription",
+      "value": "Teams Cloud - Dev Test with TTL = 7 Days"
+    },
+    {
+      "description": "Admin name of SQL",
+      "value": "testname"
+    },
+    {
+      "description": "Admin password of SQL",
+      "value": "Test2021"
+    },
+    {
+      "description": "Confirm admin password of SQL",
+      "value": "Test2021"
+    }
+  ]
+}

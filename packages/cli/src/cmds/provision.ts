@@ -8,12 +8,13 @@ import * as path from "path";
 
 import { FxError, err, ok, Result, ConfigMap, Stage, Platform } from "fx-api";
 
-import activate from "../activate";
 import AzureTokenProvider from "../commonlib/azureLogin";
 import * as constants from "../constants";
 import { validateAndUpdateAnswers } from "../question/question";
 import { getParamJson } from "../utils";
 import { YargsCommand } from "../yargsCommand";
+import { TeamsCore } from "fx-core";
+import { ContextFactory } from "../context";
 
 export default class Provision extends YargsCommand {
   public readonly commandHead = `provision`;
@@ -43,22 +44,21 @@ export default class Provision extends YargsCommand {
       }
     }
 
-    const result = await activate(rootFolder);
-    if (result.isErr()) {
-      return err(result.error);
-    }
-
-    const core = result.value;
+    const core = TeamsCore.getInstance();
     {
-      const result = await core.getQuestions!(Stage.provision, Platform.CLI);
+      const result = await core.getQuestions(
+        ContextFactory.get(rootFolder),
+        Stage.provision,
+        Platform.CLI
+      );
       if (result.isErr()) {
         return err(result.error);
       }
-      await validateAndUpdateAnswers(core, result.value!, answers);
+      await validateAndUpdateAnswers(result.value!, answers);
     }
 
     {
-      const result = await core.provision(answers);
+      const result = await core.provision(ContextFactory.get(rootFolder), answers);
       if (result.isErr()) {
         return err(result.error);
       }

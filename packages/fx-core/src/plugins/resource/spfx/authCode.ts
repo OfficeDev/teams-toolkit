@@ -114,7 +114,7 @@ export class AuthCode {
     const server = app.listen(SERVER_PORT);
     const httpClose = require("http-close");
     httpClose({ timeout: 1 }, server);
-    let token = undefined;
+    let token = "";
     try {
       const response = await this.startServer(server);
 

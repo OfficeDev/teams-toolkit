@@ -7,12 +7,13 @@ import { Argv, Options } from "yargs";
 import * as path from "path";
 
 import { FxError, err, ok, Result, ConfigMap, Stage, Platform } from "fx-api";
+import { TeamsCore } from "fx-core";
 
-import activate from "../activate";
 import * as constants from "../constants";
 import { validateAndUpdateAnswers } from "../question/question";
 import { YargsCommand } from "../yargsCommand";
 import { getParamJson } from "../utils";
+import { ContextFactory } from "../context";
 
 export default class Deploy extends YargsCommand {
   public readonly commandHead = `deploy`;
@@ -35,22 +36,21 @@ export default class Deploy extends YargsCommand {
     const rootFolder = path.resolve(answers.getString("folder") || "./");
     answers.delete("folder");
 
-    const result = await activate(rootFolder);
-    if (result.isErr()) {
-      return err(result.error);
-    }
-
-    const core = result.value;
+    const core = TeamsCore.getInstance();
     {
-      const result = await core.getQuestions!(Stage.deploy, Platform.VSCode);
+      const result = await core.getQuestions(
+        ContextFactory.get(rootFolder),
+        Stage.deploy,
+        Platform.VSCode
+      );
       if (result.isErr()) {
         return err(result.error);
       }
-      await validateAndUpdateAnswers(core, result.value!, answers);
+      await validateAndUpdateAnswers(result.value!, answers);
     }
 
     {
-      const result = await core.deploy(answers);
+      const result = await core.deploy(ContextFactory.get(rootFolder), answers);
       if (result.isErr()) {
         return err(result.error);
       }

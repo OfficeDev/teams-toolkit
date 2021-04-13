@@ -3,8 +3,9 @@
 "use strict";
 
 export interface Settings {
-    selectedSolution: {
-        name: string;
-        version: string;
-    };
+  selectedSolution: {
+    name: string;
+    version: string;
+  };
+  currentEnv: string;
 }

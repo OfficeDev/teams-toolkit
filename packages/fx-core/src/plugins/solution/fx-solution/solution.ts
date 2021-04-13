@@ -1937,12 +1937,19 @@ export class TeamsAppSolution implements Solution {
         if(method === "addCapability"){
             return await this.executeAddCapability(func, ctx);
         }
-        if (namespace.includes("solution") && method === "registerTeamsAppAndAad") {
-            const maybeParams = this.extractParamForRegisterTeamsAppAndAad(ctx.answers);
-            if (maybeParams.isErr()) {
-                return maybeParams;
+        if (namespace.includes("solution")) {
+            if (method === "registerTeamsAppAndAad") {
+                const maybeParams = this.extractParamForRegisterTeamsAppAndAad(ctx.answers);
+                if (maybeParams.isErr()) {
+                    return maybeParams;
+                }
+                return this.registerTeamsAppAndAad(ctx, maybeParams.value);
+            } else if (method === "VSpublish") {
+                // VSpublish means VS calling cli to do publish. It is different than normal cli work flow
+                // It's teamsfx init followed by teamsfx  publish without running provision.
+                // Using executeUserTask here could bypass the fx project check.
+                return this.publish(ctx);
             }
-            return this.registerTeamsAppAndAad(ctx, maybeParams.value);
         } else if (array.length == 2) {
             const pluginName = array[1];
             const plugin = this.pluginMap.get(pluginName);

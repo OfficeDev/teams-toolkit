@@ -62,7 +62,8 @@ import {
     REMOTE_APPLICATION_ID_URIS,
     REMOTE_CLIENT_SECRET,
     WEB_APPLICATION_INFO_SOURCE,
-    LOCAL_WEB_APPLICATION_INFO_SOURCE
+    LOCAL_WEB_APPLICATION_INFO_SOURCE,
+    PROGRAMMING_LANGUAGE
 } from "./constants";
 
 import { SpfxPlugin } from "../../resource/spfx";
@@ -93,6 +94,7 @@ import {
     createCapabilityQuestion,
     createAddAzureResourceQuestion,
     AskSubscriptionQuestion,
+    ProgrammingLanguageQuestion,
 } from "./question";
 import Mustache from "mustache";
 import path from "path";
@@ -1103,6 +1105,7 @@ export class TeamsAppSolution implements Solution {
             const capabilities = new QTreeNode(capQuestion);
 
             node.addChild(capabilities);
+            node.addChild(new QTreeNode(ProgrammingLanguageQuestion));
 
             /////tab
             const tab_group = new QTreeNode({ type: NodeType.group });

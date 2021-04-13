@@ -7,7 +7,7 @@ import * as path from "path";
 import * as child_process from "child_process";
 import * as util from "util";
 import { ConfigFolderName } from "fx-api";
-import { logger, cpUtils, runWithProgressIndicator } from "./checkerAdapter";
+import { logger, cpUtils, runWithProgressIndicator, getResourceDir } from "./checkerAdapter";
 import { IDepsChecker, DepsCheckerError } from "./checker";
 import { isWindows, isLinux, Messages, dotnetHelpLink } from "./common";
 import { DepsInfo } from "./checker";
@@ -286,9 +286,7 @@ export class DotnetChecker implements IDepsChecker {
   }
 
   private static getDotnetInstallScriptPath(): string {
-    return isWindows()
-      ? path.join(__dirname, "resource", "dotnet-install.ps1")
-      : path.join(__dirname, "resource", "dotnet-install.sh");
+    return path.join(getResourceDir(), isWindows() ? "dotnet-install.ps1" : "dotnet-install.sh");
   }
 
   private static getDefaultInstallPath(): string {

@@ -3,7 +3,7 @@
 "use strict";
 
 import * as fs from "fs-extra";
-import { Func, FxError, Platform, Plugin, PluginContext, Result, err, ok, VsCodeEnv } from "fx-api";
+import { Func, FxError, Platform, Plugin, PluginContext, Result, err, ok, VsCodeEnv, AzureSolutionSettings } from "fx-api";
 import * as os from "os";
 
 import { LocalCertificateManager } from "./certificate";
@@ -24,8 +24,7 @@ export class LocalDebugPlugin implements Plugin {
         // scaffold for both vscode and cli
         if (ctx.platform === Platform.VSCode || ctx.platform === Platform.CLI)
         {
-            const solutionConfigs = ctx.configOfOtherPlugins.get(SolutionPlugin.Name);
-            const selectedPlugins = solutionConfigs?.get(SolutionPlugin.SelectedPlugins) as string[];
+            const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings).activeResourcePlugins;
 
             const isSpfx = selectedPlugins.some((pluginName) => pluginName === SpfxPlugin.Name);
 
@@ -111,7 +110,7 @@ export class LocalDebugPlugin implements Plugin {
         // TODO: dynamicly determine local ports
         if (ctx.platform === Platform.VSCode)
         {
-            const vscEnv = ctx.answers?.getString("vscEnv");
+            const vscEnv = ctx.answers?.getString("vscenv");
 
             let localTabEndpoint: string;
             let localTabDomain: string;

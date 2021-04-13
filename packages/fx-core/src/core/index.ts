@@ -146,6 +146,7 @@ class CoreImpl implements Core {
     }
 
     async getQuestionsForUserTask(func: Func, platform: Platform): Promise<Result<QTreeNode | undefined, FxError>> {
+        this.ctx.platform = platform;
         const namespace = func.namespace;
         const array = namespace? namespace.split("/") : [];
         if (namespace && "" !== namespace && array.length > 0) {
@@ -872,8 +873,14 @@ export class CoreProxy implements Core {
         checkAndConfig: boolean,
         notSupportedRes: Result<T, FxError>,
         fn: () => Promise<Result<T, FxError>>,
+        answers? : ConfigMap
     ): Promise<Result<T, FxError>> {
-        this.coreImpl.ctx.logProvider?.info(`[Core] run task name：${name}, checkAndConfig:${checkAndConfig}`);
+
+        // set platform for each task
+        const platform = answers?.getString("platform") as Platform;
+        if(!this.coreImpl.ctx.platform && platform)
+            this.coreImpl.ctx.platform = platform;
+        
         try {
             // check if this project is supported
             if (checkAndConfig) {
@@ -894,8 +901,8 @@ export class CoreProxy implements Core {
 
             // do it
             const res = await fn();
-
-            this.coreImpl.ctx.logProvider?.info(`[Core] run task ${name} finish, isOk: ${res.isOk()}!`);
+            if(res.isErr())
+                this.coreImpl.ctx.logProvider?.info(`[Core] run task ${name} finish, isOk: ${res.isOk()}!`);
             return res;
         } catch (e) {
             this.coreImpl.ctx.logProvider?.error(
@@ -919,7 +926,7 @@ export class CoreProxy implements Core {
                     this.coreImpl.ctx.logProvider?.info(`[Core] persist config failed:${writeRes.error}!`);
                     return err(writeRes.error);
                 }
-                this.coreImpl.ctx.logProvider?.info(`[Core] persist config success!`);
+                // this.coreImpl.ctx.logProvider?.info(`[Core] persist config success!`);
             }
         }
     }
@@ -976,45 +983,46 @@ export class CoreProxy implements Core {
              check,
              err(error.NotSupportedProjectType()),
              () => this.coreImpl.executeUserTask(func, answers),
+             answers
          );
     }
     async callFunc(func: Func, answer?: ConfigMap): Promise<Result<any, FxError>> {
         const stage = answer?.getString("stage");
         const checkAndConfig = !(stage === Stage.create);
         return await this.runWithErrorHandling("callFunc", checkAndConfig, ok({}), () =>
-            this.coreImpl.callFunc(func, answer),
+            this.coreImpl.callFunc(func, answer), answer
         );
     }
     async create(answers?: ConfigMap | undefined): Promise<Result<null, FxError>> {
-        return await this.runWithErrorHandling<null>("create", false, ok(null), () => this.coreImpl.create(answers));
+        return await this.runWithErrorHandling<null>("create", false, ok(null), () => this.coreImpl.create(answers), answers);
     }
     async update(answers?: ConfigMap | undefined): Promise<Result<null, FxError>> {
-        return await this.runWithErrorHandling<null>("update", true, ok(null), () => this.coreImpl.update(answers));
+        return await this.runWithErrorHandling<null>("update", true, ok(null), () => this.coreImpl.update(answers), answers);
     }
     async open(workspace?: string | undefined): Promise<Result<null, FxError>> {
         return this.runWithErrorHandling<null>("open", false, ok(null), () => this.coreImpl.open(workspace)); //open project readConfigs in open() logic!!!
     }
     async scaffold(answers?: ConfigMap | undefined): Promise<Result<null, FxError>> {
-        return await this.runWithErrorHandling<null>("scaffold", true, ok(null), () => this.coreImpl.scaffold(answers));
+        return await this.runWithErrorHandling<null>("scaffold", true, ok(null), () => this.coreImpl.scaffold(answers), answers);
     }
     async localDebug(answers?: ConfigMap | undefined): Promise<Result<null, FxError>> {
         return await this.runWithErrorHandling<null>("localDebug", true, err(error.NotSupportedProjectType()), () =>
-            this.coreImpl.localDebug(answers),
+            this.coreImpl.localDebug(answers), answers
         );
     }
     async provision(answers?: ConfigMap | undefined): Promise<Result<null, FxError>> {
         return await this.runWithErrorHandling<null>("provision", true, err(error.NotSupportedProjectType()), () =>
-            this.coreImpl.provision(answers),
+            this.coreImpl.provision(answers), answers
         );
     }
     async deploy(answers?: ConfigMap | undefined): Promise<Result<null, FxError>> {
         return await this.runWithErrorHandling<null>("deploy", true, err(error.NotSupportedProjectType()), () =>
-            this.coreImpl.deploy(answers),
+            this.coreImpl.deploy(answers), answers
         );
     }
     async publish(answers?: ConfigMap | undefined): Promise<Result<null, FxError>> {
         return await this.runWithErrorHandling<null>("publish", true, err(error.NotSupportedProjectType()), () =>
-            this.coreImpl.publish(answers),
+            this.coreImpl.publish(answers), answers
         );
     }
     async createEnv(env: string): Promise<Result<null, FxError>> {

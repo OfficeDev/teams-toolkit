@@ -29,7 +29,6 @@ export enum AzureSolutionQuestionNames {
     AzureResources = "azure-resources",
     PluginSelectionDeploy = "deploy-plugin",
     AddResources = "add-azure-resources",
-    AddCapabilities = "add-capabilities",
     AppName = "app-name",
     AskSub = "ask-subscription",
     ProgrammingLanguage = "programming-language",
@@ -143,7 +142,7 @@ export function createAddCapabilityQuestion(alreadyHaveTab: boolean, alreadyHave
     if(!alreadyHaveTab) options.push(TabOptionItem);
     if(!alreadyHaveBot) options.push(BotOptionItem);
     return {
-        name: AzureSolutionQuestionNames.AddCapabilities,
+        name: AzureSolutionQuestionNames.Capabilities,
         title: "Select Capabilities to add",
         type: NodeType.multiSelect,
         option: options,

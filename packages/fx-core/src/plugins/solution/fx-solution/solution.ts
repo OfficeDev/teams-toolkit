@@ -584,6 +584,14 @@ export class TeamsAppSolution implements Solution {
             }
             if (reloadPlugin) {
                 this.reloadPlugins(ctx);
+                ctx.logProvider?.info(`start scaffolding Local Debug Configs.....`);
+                const scaffoldRes = await this.scaffoldOne(this.localDebugPlugin, ctx);
+                if (scaffoldRes.isErr()) {
+                    ctx.logProvider?.info(`failed to scaffold Debug Configs!`);
+                    return err(scaffoldRes.error);
+                }
+                ctx.logProvider?.info(`finish scaffolding Local Debug Configs!`);
+
                 ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false); //if selected plugin changed, we need to re-do provision
             }
             ctx.dialog?.communicate(
@@ -1836,9 +1844,9 @@ export class TeamsAppSolution implements Solution {
             );
         }
 
-        const addCapabilitiesInQuestion = ctx.answers.getStringArray(AzureSolutionQuestionNames.AddCapabilities);
+        const capabilitiesAnswer = ctx.answers.getStringArray(AzureSolutionQuestionNames.Capabilities);
 
-        if(!addCapabilitiesInQuestion){
+        if(!capabilitiesAnswer || capabilitiesAnswer.length === 0){
             return ok(Void);
         }
 
@@ -1846,11 +1854,11 @@ export class TeamsAppSolution implements Solution {
  
         const addCapabilityNotification:string[]  = [];
 
-        if(addCapabilitiesInQuestion?.includes(TabOptionItem.id)){
+        if(capabilitiesAnswer?.includes(TabOptionItem.id)){
             const hostType = ctx.answers?.getString(AzureSolutionQuestionNames.HostType);
             settings.hostType = hostType;
             if(hostType === HostTypeOptionAzure.id){
-                ctx.logProvider?.info(`start scaffolding Tab Frontend .....`);
+                ctx.logProvider?.info(`start scaffolding Azure Tab Frontend .....`);
                 const scaffoldRes = await this.scaffoldOne(this.fehostPlugin, ctx);
                 if (scaffoldRes.isErr()) {
                     ctx.logProvider?.info(`failed to scaffold Azure Tab Frontend!`);
@@ -1871,7 +1879,7 @@ export class TeamsAppSolution implements Solution {
             }
         }
 
-        if(addCapabilitiesInQuestion?.includes(BotOptionItem.id)){
+        if(capabilitiesAnswer?.includes(BotOptionItem.id)){
             ctx.logProvider?.info(`start scaffolding Bot.....`);
             const scaffoldRes = await this.scaffoldOne(this.botPlugin, ctx);
             if (scaffoldRes.isErr()) {
@@ -1884,13 +1892,23 @@ export class TeamsAppSolution implements Solution {
 
         if(addCapabilityNotification.length > 0){
             // finally add capabilities array and reload plugins
-            for(const cap of addCapabilitiesInQuestion!){
+            let reload = false;
+            for(const cap of capabilitiesAnswer!){
                 if(!settings.capabilities?.includes(cap)){
                     settings.capabilities?.push(cap);
+                    reload = true;
                 }
             }
-            this.reloadPlugins(ctx);
-
+            if(reload){
+                this.reloadPlugins(ctx);
+                ctx.logProvider?.info(`start scaffolding Local Debug Configs.....`);
+                const scaffoldRes = await this.scaffoldOne(this.localDebugPlugin, ctx);
+                if (scaffoldRes.isErr()) {
+                    ctx.logProvider?.info(`failed to scaffold Debug Configs!`);
+                    return err(scaffoldRes.error);
+                }
+                ctx.logProvider?.info(`finish scaffolding Local Debug Configs!`);
+            }
             ctx.dialog?.communicate(
                 new DialogMsg(DialogType.Show, {
                     description: `[Teams Toolkit] Capability "${addCapabilityNotification.join(

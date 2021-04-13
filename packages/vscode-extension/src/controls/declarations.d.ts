@@ -5,3 +5,4 @@ declare module "*.svg";
 declare module "*.gif";
 
 declare const vscode: vscode;
+declare const panelType: string;

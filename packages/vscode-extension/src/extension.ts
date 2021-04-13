@@ -103,7 +103,13 @@ export async function activate(context: vscode.ExtensionContext) {
     "fx-extension.openWelcome",
     handlers.openWelcomeHandler
   );
-  context.subscriptions.push(provisionCmd);
+  context.subscriptions.push(openWelcomeCmd);
+
+  const openSamplesCmd = vscode.commands.registerCommand(
+    "fx-extension.openSamples",
+    handlers.openSamplesHandler
+  );
+  context.subscriptions.push(openSamplesCmd);
 
   const openDocumentCmd = vscode.commands.registerCommand(
     "fx-extension.openDocument",
@@ -115,7 +121,7 @@ export async function activate(context: vscode.ExtensionContext) {
     "fx-extension.openManifest",
     handlers.openManifestHandler
   );
-  context.subscriptions.push(provisionCmd);
+  context.subscriptions.push(openManifestCmd);
 
   // Register debug configuration provider
   const debugProvider: TeamsfxDebugProvider = new TeamsfxDebugProvider();

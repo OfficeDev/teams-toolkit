@@ -1,6 +1,10 @@
 .quick-start-page{
   margin: 100px 100px 100px 100px;
 
+  a{
+      text-decoration: none;
+  }
+
     .section{
         display: flex;
         margin-bottom: 36px;
@@ -47,6 +51,7 @@
 
     .stage{
     width: 50%;
+    overflow: hidden;
     }
 
     .action-card{

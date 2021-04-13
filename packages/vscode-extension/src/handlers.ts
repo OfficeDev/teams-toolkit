@@ -522,9 +522,7 @@ export async function openDocumentHandler(): Promise<boolean> {
 }
 
 export async function devProgramHandler(): Promise<boolean> {
-  return env.openExternal(
-    Uri.parse("https://developer.microsoft.com/en-us/microsoft-365/dev-program")
-  );
+  return env.openExternal(Uri.parse("https://developer.microsoft.com/en-us/microsoft-365/dev-program"));
 }
 
 export async function openWelcomeHandler() {
@@ -539,6 +537,18 @@ export async function openWelcomeHandler() {
 
 export async function openSamplesHandler() {
   WebviewPanel.createOrShow(ext.context.extensionPath, PanelType.SampleGallery);
+}
+
+export async function openAppManagement() {
+  return env.openExternal(Uri.parse("https://dev.teams.microsoft.com/apps"));
+}
+
+export async function openBotManagement() {
+  return env.openExternal(Uri.parse("https://dev.teams.microsoft.com/bots"));
+}
+
+export async function openReportIssues() {
+  return env.openExternal(Uri.parse("https://github.com/OfficeDev/TeamsFx/issues"));
 }
 
 export async function openManifestHandler(): Promise<Result<null, FxError>> {

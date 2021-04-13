@@ -34,18 +34,12 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
     );
 
     const accountTreeViewCommand = new TreeViewCommand(
-      "ACCOUNT",
+      "ACCOUNTS",
       "Your account list",
       undefined,
       vscode.TreeItemCollapsibleState.Expanded,
       TreeCategory.Account,
-      [
-        new TreeViewCommand(
-          "Sign Up for M365 Dev Account",
-          "Go to M365 developer program to try",
-          "fx-extension.devProgram"
-        )
-      ]
+      []
     );
 
     const projectTreeViewCommand = new TreeViewCommand(
@@ -103,6 +97,18 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
       ]
     );
 
+    const teamDevCenterTreeViewCommand = new TreeViewCommand(
+      "TEAMS DEV CENTER",
+      "Get started with Teamsfx",
+      undefined,
+      vscode.TreeItemCollapsibleState.Expanded,
+      TreeCategory.TeamsDevCenter,
+      [
+        new TreeViewCommand("App Management", "App Management", "fx-extension.openAppManagement", vscode.TreeItemCollapsibleState.None, TreeCategory.TeamsDevCenter, undefined, "appManagement"),
+        new TreeViewCommand("Bot Management", "Bot Management", "fx-extension.openBotManagement", vscode.TreeItemCollapsibleState.None, TreeCategory.TeamsDevCenter, undefined, "bot"),
+      ]
+    );
+
     const feedbackTreeViewCommand = new TreeViewCommand(
       "FEEDBACK",
       "Please send feedback to us if you meet any problems",
@@ -110,21 +116,15 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
       vscode.TreeItemCollapsibleState.Expanded,
       TreeCategory.Feedback,
       [
-        new TreeViewCommand(
-          "Report issues",
-          "Report issue to us by email",
-          "fx-extension.mailto"
-        )
+        new TreeViewCommand("Report issues", "Report issue to us", "fx-extension.openBotManagement", vscode.TreeItemCollapsibleState.None, TreeCategory.Feedback, undefined, "reportIssues"),
       ]
     );
-
+    https://github.com/OfficeDev/TeamsFx/issues
     this.commands.push(getStartTreeViewCommand);
     this.commands.push(accountTreeViewCommand);
+    this.commands.push(projectTreeViewCommand);
+    this.commands.push(teamDevCenterTreeViewCommand);
     this.commands.push(feedbackTreeViewCommand);
-
-    if (isFeatureFlag()) {
-      this.commands.push(projectTreeViewCommand);
-    }
   }
 
   public static getInstance(): CommandsTreeViewProvider {

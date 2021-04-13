@@ -53,7 +53,8 @@ export class SqlClient {
             const credential = await this.ctx.azureAccountProvider!.getIdentityCredentialAsync();
             if (!credential) {
                 const link = HelpLinks.addDBUser;
-                const message = ErrorMessage.DatabaseUserCreateError.message(this.config.sqlServer, this.config.databaseName, this.config.identity, ErrorMessage.IdentityCredentialUndefine);
+                const reason = ErrorMessage.IdentityCredentialUndefine(this.ctx.platform as string, this.config.identity, this.config.databaseName);
+                const message = ErrorMessage.DatabaseUserCreateError.message(this.config.sqlServer, this.config.databaseName, this.config.identity, reason);
                 this.ctx.logProvider?.error(message + ` You can follow ${link} to handle it`);
                 throw SqlResultFactory.UserError(ErrorMessage.DatabaseUserCreateError.name, message, undefined, undefined, link);
             } 

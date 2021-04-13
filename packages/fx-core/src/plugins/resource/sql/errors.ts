@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-
 import { Constants } from "./constants";
 
 export class ErrorMessage {
@@ -85,7 +84,7 @@ export class ErrorMessage {
         message: () => "Unhandled Error"
     };
 
-    public static readonly IdentityCredentialUndefine = "the logged-in azure account is unable to access sql for credential undefined";
+    public static readonly IdentityCredentialUndefine = (platform: string, user: string, databaseName: string) => `this tool can't support to access database ${databaseName} in ${platform}. You can add database user ${user} manually`;
 
     public static readonly ServicePrincipalWarning = (user: string, databaseName: string) => `service principal admin in azure sql can't add database user <${user}>. You can add the user for ${databaseName} manually`;
 }

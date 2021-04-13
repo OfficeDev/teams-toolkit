@@ -94,6 +94,7 @@ import {
     createCapabilityQuestion,
     createAddAzureResourceQuestion,
     AskSubscriptionQuestion,
+    createAddCapabilityQuestion,
 } from "./question";
 import Mustache from "mustache";
 import path from "path";
@@ -517,24 +518,6 @@ export class TeamsAppSolution implements Solution {
         }
 
         if (!alreadyHaveApim && addApim) {
-            // // Ask subscription
-            // if (!ctx.config.get(GLOBAL_CONFIG)?.getString("subscriptionId")) {
-            //     const azureToken = await ctx.azureAccountProvider?.getAccountCredentialAsync();
-            //     if (azureToken === undefined) {
-            //         return err(
-            //             returnUserError(
-            //                 new Error("Please login to azure using Azure Account Extension"),
-            //                 "Solution",
-            //                 SolutionError.NotLoginToAzure,
-            //             ),
-            //         );
-            //     }
-            //     const result = await askSubscription(ctx.config, azureToken, ctx.dialog);
-            //     if (result.isErr()) {
-            //         return err(result.error);
-            //     }
-            //     ctx.config.get(GLOBAL_CONFIG)?.set("subscriptionId", result.value);
-            // }
 
             // Scaffold apim
             ctx.logProvider?.info(`start scaffolding API Management .....`);
@@ -1131,6 +1114,70 @@ export class TeamsAppSolution implements Solution {
         }
     }
 
+    async getTabScaffoldQuestions(ctx: SolutionContext):Promise<Result<QTreeNode | undefined, FxError>> {
+        const tabNode = new QTreeNode({ type: NodeType.group });
+       
+        const tab_scope = new QTreeNode(TabScopQuestion);
+        tabNode.addChild(tab_scope);
+
+        const frontend_host_type = new QTreeNode(FrontendHostTypeQuestion);
+        tabNode.addChild(frontend_host_type);
+
+        //Frontend plugin
+        if (this.fehostPlugin.getQuestions) {
+            const pluginCtx = getPluginContext(ctx, this.fehostPlugin.name);
+            const res = await this.fehostPlugin.getQuestions(Stage.create, pluginCtx);
+            if (res.isErr()) return res;
+            if (res.value) {
+                const frontend = res.value as QTreeNode;
+                frontend.condition = { equals: HostTypeOptionAzure.label };
+                if (frontend.data) frontend_host_type.addChild(frontend);
+            }
+        }
+
+        const azure_resources = new QTreeNode(AzureResourcesQuestion);
+        azure_resources.condition = { equals: HostTypeOptionAzure.label };
+        frontend_host_type.addChild(azure_resources);
+
+        //SPFX plugin
+        if (this.spfxPlugin.getQuestions) {
+            const pluginCtx = getPluginContext(ctx, this.spfxPlugin.name);
+            const res = await this.spfxPlugin.getQuestions(Stage.create, pluginCtx);
+            if (res.isErr()) return res;
+            if (res.value) {
+                const spfx = res.value as QTreeNode;
+                spfx.condition = { equals: HostTypeOptionSPFx.label };
+                if (spfx.data) frontend_host_type.addChild(spfx);
+            }
+        }
+
+        //Azure Function
+        if (this.functionPlugin.getQuestions) {
+            const pluginCtx = getPluginContext(ctx, this.functionPlugin.name, this.manifest);
+            const res = await this.functionPlugin.getQuestions(Stage.create, pluginCtx);
+            if (res.isErr()) return res;
+            if (res.value) {
+                const azure_function = res.value as QTreeNode;
+                azure_function.condition = { minItems: 1 };
+                if (azure_function.data) azure_resources.addChild(azure_function);
+            }
+        }
+
+        //Azure SQL
+        if (this.sqlPlugin.getQuestions) {
+            const pluginCtx = getPluginContext(ctx, this.sqlPlugin.name, this.manifest);
+            const res = await this.sqlPlugin.getQuestions(Stage.create, pluginCtx);
+            if (res.isErr()) return res;
+            if (res.value) {
+                const azure_sql = res.value as QTreeNode;
+                azure_sql.condition = { contains: AzureResourceSQL.label };
+                if (azure_sql.data) azure_resources.addChild(azure_sql);
+            }
+        }
+
+        return ok(tabNode);
+    }
+
     /**
      * collect solution level question
      * @param ctx
@@ -1141,151 +1188,34 @@ export class TeamsAppSolution implements Solution {
         if (!featureFlag) featureFlag = false;
         if (stage === Stage.create) {
             const capQuestion = createCapabilityQuestion(featureFlag);
-            const capabilities = new QTreeNode(capQuestion);
+            const capNode = new QTreeNode(capQuestion);
 
-            node.addChild(capabilities);
+            node.addChild(capNode);
 
-            /////tab
-            const tab_group = new QTreeNode({ type: NodeType.group });
-            tab_group.condition = { contains: TabOptionItem.label };
-            capabilities.addChild(tab_group);
-
-            const tab_scope = new QTreeNode(TabScopQuestion);
-            tab_group.addChild(tab_scope);
-
-            const frontend_host_type = new QTreeNode(FrontendHostTypeQuestion);
-            tab_group.addChild(frontend_host_type);
-
-            //Frontend plugin
-            if (this.fehostPlugin.getQuestions) {
-                const pluginCtx = getPluginContext(ctx, this.fehostPlugin.name);
-                const res = await this.fehostPlugin.getQuestions(stage, pluginCtx);
-                if (res.isErr()) return res;
-                if (res.value) {
-                    const frontend = res.value as QTreeNode;
-                    frontend.condition = { equals: HostTypeOptionAzure.label };
-                    if (frontend.data) frontend_host_type.addChild(frontend);
-                }
+            /////Tab
+            const tabRes = await this.getTabScaffoldQuestions(ctx);
+            if (tabRes.isErr()) return tabRes;
+            if (tabRes.value) {
+                const tabNode = tabRes.value;
+                tabNode.condition = { contains: TabOptionItem.id };
+                capNode.addChild(tabNode);
             }
 
-            const azure_resources = new QTreeNode(AzureResourcesQuestion);
-            azure_resources.condition = { equals: HostTypeOptionAzure.label };
-            frontend_host_type.addChild(azure_resources);
-
-            //SPFX plugin
-            if (this.spfxPlugin.getQuestions) {
-                const pluginCtx = getPluginContext(ctx, this.spfxPlugin.name);
-                const res = await this.spfxPlugin.getQuestions(stage, pluginCtx);
-                if (res.isErr()) return res;
-                if (res.value) {
-                    const spfx = res.value as QTreeNode;
-                    spfx.condition = { equals: HostTypeOptionSPFx.label };
-                    if (spfx.data) frontend_host_type.addChild(spfx);
-                }
-            }
-
-            //Azure Function
-            if (this.functionPlugin.getQuestions) {
-                const pluginCtx = getPluginContext(ctx, this.functionPlugin.name, this.manifest);
-                const res = await this.functionPlugin.getQuestions(stage, pluginCtx);
-                if (res.isErr()) return res;
-                if (res.value) {
-                    const azure_function = res.value as QTreeNode;
-                    azure_function.condition = { minItems: 1 };
-                    if (azure_function.data) azure_resources.addChild(azure_function);
-                }
-            }
-
-            //Azure SQL
-            if (this.sqlPlugin.getQuestions) {
-                const pluginCtx = getPluginContext(ctx, this.sqlPlugin.name, this.manifest);
-                const res = await this.sqlPlugin.getQuestions(stage, pluginCtx);
-                if (res.isErr()) return res;
-                if (res.value) {
-                    const azure_sql = res.value as QTreeNode;
-                    azure_sql.condition = { contains: AzureResourceSQL.label };
-                    if (azure_sql.data) azure_resources.addChild(azure_sql);
-                }
-            }
-
+            ////Bot
             if (featureFlag && this.botPlugin.getQuestions) {
                 const pluginCtx = getPluginContext(ctx, this.botPlugin.name, this.manifest);
                 const res = await this.botPlugin.getQuestions(stage, pluginCtx);
                 if (res.isErr()) return res;
                 if (res.value) {
                     const botGroup = res.value as QTreeNode;
-                    botGroup.condition = { containsAny: [BotOptionItem.label, MessageExtensionItem.label] };
-                    capabilities.addChild(botGroup);
+                    botGroup.condition = { containsAny: [BotOptionItem.id, MessageExtensionItem.id] };
+                    capNode.addChild(botGroup);
                 }
             }
         } else if (stage === Stage.update) {
-            const capabilities = ctx.answers?.getStringArray(AzureSolutionQuestionNames.Capabilities);
-            const htype = ctx.answers?.getString(AzureSolutionQuestionNames.HostType);
-            if (capabilities && capabilities?.includes(TabOptionItem.label) && htype === HostTypeOptionAzure.label) {
-                
-                const selectedPlugins = ctx.config.get(GLOBAL_CONFIG)?.getStringArray(SELECTED_PLUGINS);
-                const alreadyHaveFunction = selectedPlugins?.includes(this.functionPlugin.name);
-
-                const addQuestion = createAddAzureResourceQuestion(alreadyHaveFunction === true);
-                const addAzureResources = new QTreeNode(addQuestion);
-                node.addChild(addAzureResources);
-
-                // there two cases to add function re-scaffold: 1. select add function   2. select add sql and function is not selected when creating
-                if (this.functionPlugin.getQuestions) {
-                    const pluginCtx = getPluginContext(ctx, this.functionPlugin.name, this.manifest);
-                    const res = await this.functionPlugin.getQuestions(stage, pluginCtx);
-                    if (res.isErr()) return res;
-                    if (res.value) {
-                        const azure_function = res.value as QTreeNode;
-                        if (alreadyHaveFunction){
-                            // if already has function, the question will appear depends on whether user select function, otherwise, the question will always show
-                            azure_function.condition = { contains: AzureResourceFunction.id };
-                        }
-                        else { // if not function activated, select any option will trigger function question
-                            azure_function.condition = { minItems: 1};
-                        }
-                        if (azure_function.data) addAzureResources.addChild(azure_function);
-                    }
-                }
-
-                //Azure SQL
-                if (this.sqlPlugin.getQuestions) {
-                    const pluginCtx = getPluginContext(ctx, this.sqlPlugin.name, this.manifest);
-                    const res = await this.sqlPlugin.getQuestions(stage, pluginCtx);
-                    if (res.isErr()) return res;
-                    if (res.value) {
-                        const azure_sql = res.value as QTreeNode;
-                        azure_sql.condition = { contains: AzureResourceSQL.id };
-                        if (azure_sql.data) addAzureResources.addChild(azure_sql);
-                    }
-                }
-
-                //APIM
-                if (this.apimPlugin.getQuestions) {
-                    const pluginCtx = getPluginContext(ctx, this.apimPlugin.name, this.manifest);
-                    const res = await this.apimPlugin.getQuestions(stage, pluginCtx);
-                    if (res.isErr()) return res;
-                    if (res.value) {
-                        const groupNode = new QTreeNode({type:NodeType.group});
-                        groupNode.condition = { contains: AzureResourceApim.id };
-                        addAzureResources.addChild(groupNode);
-                        const apim = res.value as QTreeNode;
-                        if (apim.data){
-                            const funcNode =  new QTreeNode(AskSubscriptionQuestion);
-                            groupNode.addChild(funcNode);
-                            groupNode.addChild(apim);
-                        } 
-                    }
-                }
-            } else {
-                return err(
-                    returnUserError(
-                        new Error("Add resource is only supported for Tab app hosted in Azure."),
-                        "Solution",
-                        SolutionError.AddResourceNotSupport,
-                    ),
-                );
-            }
+            
+            return await this.getQuestionsForAddResource(ctx);
+        
         } else if (stage === Stage.provision) {
             const checkRes = await this.checkWhetherSolutionIsIdle();
             if (checkRes.isErr()) return err(checkRes.error);
@@ -1659,12 +1589,144 @@ export class TeamsAppSolution implements Solution {
         );
     }
 
+    async getQuestionsForAddResource(ctx: SolutionContext): Promise<Result<QTreeNode | undefined, FxError>>{
+       
+        const selectedPlugins = ctx.config.get(GLOBAL_CONFIG)?.getStringArray(SELECTED_PLUGINS);
+        
+        if(!selectedPlugins) {
+            return err(
+                returnUserError(
+                    new Error("selectedPlugins is empty"),
+                    "Solution",
+                    SolutionError.InternelError,
+                ),
+            );
+        }
+
+        const haveAzureFrontend = selectedPlugins.some(i=> (i === this.fehostPlugin.name));
+
+        if(!haveAzureFrontend){
+            return err(
+                returnUserError(
+                    new Error("Add resource is only supported for Tab app hosted in Azure."),
+                    "Solution",
+                    SolutionError.AddResourceNotSupport,
+                ),
+            );
+        }
+
+        const alreadyHaveFunction = selectedPlugins.includes(this.functionPlugin.name);
+        const alreadyHaveSQL = selectedPlugins.includes(this.sqlPlugin.name);
+        const alreadyHaveAPIM = selectedPlugins.includes(this.apimPlugin.name);
+        
+        const addQuestion = createAddAzureResourceQuestion(alreadyHaveFunction, alreadyHaveSQL, alreadyHaveAPIM);
+
+        const addAzureResourceNode = new QTreeNode(addQuestion);
+        
+        // there two cases to add function re-scaffold: 1. select add function   2. select add sql and function is not selected when creating
+        if (this.functionPlugin.getQuestions) {
+            const pluginCtx = getPluginContext(ctx, this.functionPlugin.name, this.manifest);
+            const res = await this.functionPlugin.getQuestions(Stage.update, pluginCtx);
+            if (res.isErr()) return res;
+            if (res.value) {
+                const azure_function = res.value as QTreeNode;
+                if (alreadyHaveFunction){
+                    // if already has function, the question will appear depends on whether user select function, otherwise, the question will always show
+                    azure_function.condition = { contains: AzureResourceFunction.id };
+                }
+                else { // if not function activated, select any option will trigger function question
+                    azure_function.condition = { minItems: 1};
+                }
+                if (azure_function.data) addAzureResourceNode.addChild(azure_function);
+            }
+        }
+
+        //Azure SQL
+        if (this.sqlPlugin.getQuestions && !alreadyHaveSQL) {
+            const pluginCtx = getPluginContext(ctx, this.sqlPlugin.name, this.manifest);
+            const res = await this.sqlPlugin.getQuestions(Stage.update, pluginCtx);
+            if (res.isErr()) return res;
+            if (res.value) {
+                const azure_sql = res.value as QTreeNode;
+                azure_sql.condition = { contains: AzureResourceSQL.id };
+                if (azure_sql.data) addAzureResourceNode.addChild(azure_sql);
+            }
+        }
+
+        //APIM
+        if (this.apimPlugin.getQuestions && !alreadyHaveAPIM) {
+            const pluginCtx = getPluginContext(ctx, this.apimPlugin.name, this.manifest);
+            const res = await this.apimPlugin.getQuestions(Stage.update, pluginCtx);
+            if (res.isErr()) return res;
+            if (res.value) {
+                const groupNode = new QTreeNode({type:NodeType.group});
+                groupNode.condition = { contains: AzureResourceApim.id };
+                addAzureResourceNode.addChild(groupNode);
+                const apim = res.value as QTreeNode;
+                if (apim.data){
+                    const funcNode =  new QTreeNode(AskSubscriptionQuestion);
+                    groupNode.addChild(funcNode);
+                    groupNode.addChild(apim);
+                } 
+            }
+        } 
+        return ok(addAzureResourceNode);
+    }
+
+    async getQuestionsForAddCapability(ctx: SolutionContext): Promise<Result<QTreeNode | undefined, FxError>> {
+        const selectedPlugins = ctx.config.get(GLOBAL_CONFIG)?.getStringArray(SELECTED_PLUGINS);
+        if(!selectedPlugins) {
+            return err(
+                returnUserError(
+                    new Error("selectedPlugins is empty"),
+                    "Solution",
+                    SolutionError.InternelError,
+                ),
+            );
+        }
+        const alreadyHaveTab = selectedPlugins.some(i=>i === this.fehostPlugin.name || i === this.spfxPlugin.name);
+
+        const alreadyHaveBot = selectedPlugins.includes( this.botPlugin.name );
+        
+        const addCapQuestion = createAddCapabilityQuestion(alreadyHaveTab, alreadyHaveBot);
+
+        const addCapNode = new QTreeNode(addCapQuestion);
+
+        //Tab sub tree
+        if(!alreadyHaveTab){
+            const tabRes = await this.getTabScaffoldQuestions(ctx);
+            if (tabRes.isErr()) return tabRes;
+            if (tabRes.value) {
+                const tabNode = tabRes.value;
+                tabNode.condition = { contains: TabOptionItem.id };
+                addCapNode.addChild(tabNode);
+            }
+        }
+
+        //Bot sub tree
+        if(this.botPlugin.getQuestions){
+            const pluginCtx = getPluginContext(ctx, this.botPlugin.name, this.manifest);
+            const res = await this.botPlugin.getQuestions(Stage.create, pluginCtx);
+            if (res.isErr()) return res;
+            if (res.value) {
+                const child = res.value as QTreeNode;
+                child.condition = { contains: TabOptionItem.id };
+                if (child.data) addCapNode.addChild(child);
+            }
+        }
+
+        return ok(addCapNode);
+    }
+
     /**
      * user questions for customized task
      */
     async getQuestionsForUserTask(func: Func, ctx: SolutionContext): Promise<Result<QTreeNode | undefined, FxError>> {
         const namespace = func.namespace;
         const array = namespace.split("/");
+        if(func.method === "addCapability"){
+            return await this.getQuestionsForAddCapability(ctx);
+        }
         if (array.length == 2) {
             const pluginName = array[1];
             const plugin = this.pluginMap.get(pluginName);
@@ -1685,7 +1747,81 @@ export class TeamsAppSolution implements Solution {
             ),
         );
     }
+    async executeAddCapability(func: Func, ctx: SolutionContext): Promise<Result<any, FxError>> {
+        if(!ctx.answers){
+            return err(
+                returnUserError(
+                    new Error(`answer is emtry!`),
+                    "Solution",
+                    SolutionError.InternelError,
+                )
+            );
+        }
 
+        const capabilities = ctx.answers?.getStringArray(AzureSolutionQuestionNames.AddCapabilities);
+
+        if(capabilities?.length === 0) {
+            return ok({});
+        }
+
+        const answers = new ConfigMap();
+
+        answers.set(AzureSolutionQuestionNames.Capabilities, capabilities);
+        answers.set(AzureSolutionQuestionNames.HostType, ctx.answers.getStringArray(AzureSolutionQuestionNames.HostType));
+        answers.set(AzureSolutionQuestionNames.AzureResources, ctx.answers.getStringArray(AzureSolutionQuestionNames.AzureResources));
+
+        this.reloadPlugins(ctx.config, answers);
+
+        const addCapabilityNotification:string[]  = [];
+
+        if(capabilities?.includes(TabOptionItem.id)){
+            const hostType = ctx.answers?.getString(AzureSolutionQuestionNames.HostType);
+            if(hostType === HostTypeOptionAzure.id){
+                ctx.logProvider?.info(`start scaffolding Tab Frontend .....`);
+                const scaffoldRes = await this.scaffoldOne(this.fehostPlugin, ctx);
+                if (scaffoldRes.isErr()) {
+                    ctx.logProvider?.info(`failed to scaffold Azure Tab Frontend!`);
+                    return err(scaffoldRes.error);
+                }
+                ctx.logProvider?.info(`finish scaffolding Azure Tab Frontend!`);
+                addCapabilityNotification.push("Azure Tab Frontend");
+            }
+            else if(hostType === HostTypeOptionSPFx.id){
+                ctx.logProvider?.info(`start scaffolding SPFx Tab Frontend.....`);
+                const scaffoldRes = await this.scaffoldOne(this.spfxPlugin, ctx);
+                if (scaffoldRes.isErr()) {
+                    ctx.logProvider?.info(`failed to scaffold SPFx Tab Frontend!`);
+                    return err(scaffoldRes.error);
+                }
+                ctx.logProvider?.info(`finish scaffolding SPFx Tab Frontend!`);
+                addCapabilityNotification.push("SPFx Tab Frontend");
+            }
+        }
+
+        if(capabilities?.includes(BotOptionItem.id)){
+            ctx.logProvider?.info(`start scaffolding Bot.....`);
+            const scaffoldRes = await this.scaffoldOne(this.botPlugin, ctx);
+            if (scaffoldRes.isErr()) {
+                ctx.logProvider?.info(`failed to scaffold Bot!`);
+                return err(scaffoldRes.error);
+            }
+            ctx.logProvider?.info(`finish scaffolding Bot!`);
+            addCapabilityNotification.push("Bot");
+        }
+
+        if(addCapabilityNotification.length > 0){
+            ctx.dialog?.communicate(
+                new DialogMsg(DialogType.Show, {
+                    description: `[Teams Toolkit] Capability "${addCapabilityNotification.join(
+                        ",",
+                    )}" have been successfully configured for your project, trigger 'TeamsFx - Provision Resource' will create the resource(s) in your Azure subscription.`,
+                    level: MsgLevel.Info,
+                }),
+            );
+        }
+
+        return ok({});
+    }
     /**
      * execute user task
      */
@@ -1693,6 +1829,9 @@ export class TeamsAppSolution implements Solution {
         const namespace = func.namespace;
         const method = func.method;
         const array = namespace.split("/");
+        if(method === "addCapability"){
+            return await this.executeAddCapability(func, ctx);
+        }
         if (namespace.includes("solution") && method === "registerTeamsAppAndAad") {
             const maybeParams = this.extractParamForRegisterTeamsAppAndAad(ctx.answers);
             if (maybeParams.isErr()) {

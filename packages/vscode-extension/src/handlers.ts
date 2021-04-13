@@ -187,6 +187,7 @@ export async function updateProjectHandler(): Promise<Result<null, FxError>> {
   return await runCommand(Stage.update);
 }
 
+
 export async function provisionHandler(): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ProvisionStart, {
     [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
@@ -447,6 +448,18 @@ export async function updateAADHandler(): Promise<Result<null, FxError>> {
   const func: Func = {
     namespace: "fx-solution-azure/teamsfx-plugin-aad-app-for-teams",
     method: "aadUpdatePermission"
+  };
+  return await runUserTask(func);
+}
+
+
+export async function addCapabilityHandler(): Promise<Result<null, FxError>> {
+  // ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddCapStart, {
+  //   [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
+  // });
+  const func: Func = {
+    namespace: "fx-solution-azure",
+    method: "addCapability"
   };
   return await runUserTask(func);
 }

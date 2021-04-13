@@ -993,7 +993,7 @@ export class TeamsAppSolution implements Solution {
                         return result;
                     }
                 }
-                let result = this.createAndConfigTeamsManifest(ctx);
+                const result = this.createAndConfigTeamsManifest(ctx);
                 ctx.logProvider?.info("[Teams Toolkit]: configuration finished!");
                 return result;
             },
@@ -1178,9 +1178,6 @@ export class TeamsAppSolution implements Solution {
     async getTabScaffoldQuestions(ctx: SolutionContext):Promise<Result<QTreeNode | undefined, FxError>> {
         const tabNode = new QTreeNode({ type: NodeType.group });
        
-        const tab_scope = new QTreeNode(TabScopQuestion);
-        tabNode.addChild(tab_scope);
-
         const frontend_host_type = new QTreeNode(FrontendHostTypeQuestion);
         tabNode.addChild(frontend_host_type);
 
@@ -1452,7 +1449,7 @@ export class TeamsAppSolution implements Solution {
             return result;
         }
         
-        let postLocalDebugResult = await executeConcurrently(postLocalDebugWithCtx);
+        const postLocalDebugResult = await executeConcurrently(postLocalDebugWithCtx);
         if (postLocalDebugResult.isErr()) {
             return postLocalDebugResult;
         }

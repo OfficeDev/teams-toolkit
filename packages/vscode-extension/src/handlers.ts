@@ -57,7 +57,7 @@ import * as vscode from "vscode";
 import { VsCodeUI, VS_CODE_UI } from "./qm/vsc_ui";
 import { DepsChecker, DepsCheckerError } from "./debug/depsChecker/checker";
 import { FuncToolChecker } from "./debug/depsChecker/funcToolChecker";
-import { DotnetCoreChecker, dotnetChecker } from "./debug/depsChecker/dotnetChecker";
+import { DotnetChecker, dotnetChecker } from "./debug/depsChecker/dotnetChecker";
 import { PanelType } from "./controls/PanelType";
 
 export let core: CoreProxy;
@@ -98,7 +98,7 @@ export async function activate(): Promise<Result<null, FxError>> {
       if (vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode) {
         appstudioLogin = AppStudioCodeSpaceTokenInstance;
       }
-      
+
       const result = await core.withAppStudioToken(appstudioLogin);
       if (result.isErr()) {
         showError(result.error);
@@ -455,7 +455,7 @@ export async function updateAADHandler(): Promise<Result<null, FxError>> {
  * check & install required dependencies during local debug.
  */
 export async function validateDependenciesHandler(): Promise<void> {
-  const depsChecker = new DepsChecker([new FuncToolChecker(), new DotnetCoreChecker()]);
+  const depsChecker = new DepsChecker([new FuncToolChecker(), new DotnetChecker()]);
   const shouldContinue = await depsChecker.resolve();
   if (!shouldContinue) {
     await debug.stopDebugging();

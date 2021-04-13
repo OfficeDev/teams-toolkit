@@ -2,11 +2,14 @@
 // Licensed under the MIT license.
 
 import commonlibLogger from "../../commonlib/log";
-import { window, workspace, WorkspaceConfiguration, OutputChannel, MessageItem, debug } from "vscode";
+import { window, workspace, WorkspaceConfiguration, MessageItem } from "vscode";
 import { openUrl } from "./common";
 
 export { cpUtils } from "../cpUtils";
 export { hasTeamsfxBackend } from "../commonUtils";
+export { ExtTelemetry } from "../../telemetry/extTelemetry";
+export { TelemetryProperty } from "../../telemetry/extTelemetryEvents";
+
 export const logger = commonlibLogger;
 
 const downloadIndicatorInterval = 1000; // same as vscode-dotnet-runtime
@@ -56,7 +59,7 @@ export async function displayWarningMessage(
   return false;
 }
 
-export function showOutputChannel() {
+export function showOutputChannel(): void {
   logger.outputChannel.show(false);
 }
 

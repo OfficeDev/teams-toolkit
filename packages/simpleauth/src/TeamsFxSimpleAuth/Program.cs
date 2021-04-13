@@ -4,7 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.AzureAppServices;
 
-namespace Microsoft.TeamsFxSimpleAuth
+namespace Microsoft.TeamsFx.SimpleAuth
 {
     public class Program
     {

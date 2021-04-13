@@ -1,6 +1,6 @@
 ﻿using System.Net.Http;
 
-namespace Microsoft.TeamsFxSimpleAuth.Tests.Models
+namespace Microsoft.TeamsFx.SimpleAuth.Tests.Models
 {
     public class HttpResponseWithBody<T>
     {

@@ -16,16 +16,20 @@ describe("Deploy to Azure", function() {
 
   it(`Deploy react app without Azure Function and SQL - Test Plan ID 9454296`, async function() {
     // new a project
-    const newResult = await execAsync(
-      `teamsfx new --app-name ${appName} --verbose false`,
-      {
-        cwd: testFolder,
-        env: process.env,
-        timeout: 0
-      }
-    );
+    const newResult = await execAsync(`teamsfx new --app-name ${appName} --verbose false`, {
+      cwd: testFolder,
+      env: process.env,
+      timeout: 0
+    });
     expect(newResult.stdout).to.eq("");
     expect(newResult.stderr).to.eq("");
+
+    {
+      // set fx-resource-simple-auth.skuName as B1
+      const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
+      context["fx-resource-simple-auth"]["skuName"] = "B1";
+      await fs.writeJSON(`${projectPath}/.fx/env.default.json`, context, { spaces: 4 });
+    }
 
     // provision
     const provisionResult = await execAsync(
@@ -49,23 +53,6 @@ describe("Deploy to Azure", function() {
     // Validate Simple Auth
     const simpleAuth = SimpleAuthValidator.init(context);
     await SimpleAuthValidator.validate(simpleAuth, aad);
-
-    // run npm install in tabs
-    /// TODO: this should be removed. It's a bug of frontend
-    try {
-      const npmInstallResult = await execAsync(
-        `npm install`,
-        {
-          cwd: path.resolve(projectPath, "tabs"),
-          env: process.env,
-          timeout: 0
-        }
-      );
-      expect(npmInstallResult.stderr).to.eq("");
-    } catch(e) {
-      console.log(e);
-      throw e;
-    }
 
     // deploy
     const deployResult = await execAsync(

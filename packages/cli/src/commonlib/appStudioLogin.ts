@@ -40,7 +40,7 @@ const config = {
   }
 };
 
-export class AppStudioLogin implements AppStudioTokenProvider {
+class AppStudioLogin implements AppStudioTokenProvider {
   private static instance: AppStudioLogin;
   private static codeFlowInstance: CodeFlowLogin;
 
@@ -124,4 +124,9 @@ export class AppStudioLogin implements AppStudioTokenProvider {
   }
 }
 
-export default AppStudioLogin.getInstance();
+import { MockAppStudioTokenProvider } from "fx-api";
+
+const ciEnabled = process.env.CI_ENABLED;
+const appStudioLogin = ciEnabled && ciEnabled === "true" ? MockAppStudioTokenProvider.getInstance() : AppStudioLogin.getInstance();
+
+export default appStudioLogin;

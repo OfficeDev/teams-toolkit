@@ -1,7 +1,7 @@
 ﻿using System.Net;
-using Microsoft.TeamsFxSimpleAuth.Exceptions;
+using Microsoft.TeamsFx.SimpleAuth.Exceptions;
 
-namespace Microsoft.TeamsFxSimpleAuth.Components.Auth.Exceptions
+namespace Microsoft.TeamsFx.SimpleAuth.Components.Auth.Exceptions
 {
     public class AuthorizationRequestDeniedException: ApiExceptionBase
     {

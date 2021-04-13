@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { displayLearnMore, displayWarningMessage, showOutputChannel } from "./checkerAdapter";
-import { isLinux } from "./common";
+import { isLinux, Messages, defaultHelpLink } from "./common";
 
 export interface IDepsChecker {
   isEnabled(): Promise<boolean>;
@@ -12,12 +12,11 @@ export interface IDepsChecker {
 }
 
 export interface DepsInfo {
-  nameWithVersion: string;
+  name: string,
+  installVersion: string;
+  supportedVersions: string[];
   details: Map<string, string>;
 }
-
-const defaultErrorMessage = "Please install the required dependencies manually.";
-const defaultHelpLink = "https://review.docs.microsoft.com/en-us/mods/?branch=main";
 
 export class DepsCheckerError extends Error {
   public readonly helpLink: string;
@@ -40,7 +39,15 @@ export class DepsChecker {
   // check & install
   public async resolve(): Promise<boolean> {
     const shouldContinue = true;
-    const validCheckers = await this.check();
+
+    let validCheckers: IDepsChecker[];
+    try {
+      validCheckers = await this.check();
+    } catch (error) {
+      await this.handleError(error);
+      return !shouldContinue;
+    }
+
     if (validCheckers.length === 0) {
       return shouldContinue;
     }
@@ -58,12 +65,7 @@ export class DepsChecker {
         try {
           await checker.install();
         } catch (error) {
-          if (error instanceof DepsCheckerError) {
-            await displayLearnMore(error.message, (error as DepsCheckerError).helpLink);
-          } else {
-            await displayLearnMore(defaultErrorMessage, defaultHelpLink);
-          }
-
+          await this.handleError(error);
           return !shouldContinue;
         }
       }
@@ -84,17 +86,26 @@ export class DepsChecker {
   }
 
   private async generateMessage(checkers: Array<IDepsChecker>): Promise<string> {
-    const depsInfo = [];
+    const installPackages = [];
+    const supportedPackages = [];
     for (const checker of checkers) {
       const info = await checker.getDepsInfo();
-      depsInfo.push(info.nameWithVersion);
+      installPackages.push(`${info.name} (v${info.installVersion})`);
+      const supportedVersions = info.supportedVersions.map(version => "v" + version).join(" or ");
+      const supportedPackage = `${info.name} (${supportedVersions})`;
+      supportedPackages.push(supportedPackage);
     }
 
-    const message = depsInfo.join(" and ");
-    return `The toolkit cannot find ${message} on your machine.
+    const installMessage = installPackages.join(" and ");
+    const supportedMessage = supportedPackages.join(" and ");
+    return Messages.depsNotFound.replace("@InstallPackages", installMessage).replace("@SupportedPackages", supportedMessage);
+  }
 
-As a fundamental runtime context for Teams app, these dependencies are required. Following steps will help you to install the appropriate version to run the Microsoft Teams Toolkit.
-
-Click “Install” to continue.`;
+  private async handleError(error: Error): Promise<void> {
+    if (error instanceof DepsCheckerError) {
+      await displayLearnMore(error.message, (error as DepsCheckerError).helpLink);
+    } else {
+      await displayLearnMore(Messages.defaultErrorMessage, defaultHelpLink);
+    }
   }
 }

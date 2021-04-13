@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Client;
-using Microsoft.TeamsFxSimpleAuth.Components.Auth.Exceptions;
-using Microsoft.TeamsFxSimpleAuth.Components.Auth.Models;
-using Microsoft.TeamsFxSimpleAuth.Exceptions;
+using Microsoft.TeamsFx.SimpleAuth.Components.Auth.Exceptions;
+using Microsoft.TeamsFx.SimpleAuth.Components.Auth.Models;
+using Microsoft.TeamsFx.SimpleAuth.Exceptions;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -12,7 +12,7 @@ using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace Microsoft.TeamsFxSimpleAuth.Components.Auth
+namespace Microsoft.TeamsFx.SimpleAuth.Components.Auth
 {
     public class AuthHandler
     {
@@ -28,7 +28,7 @@ namespace Microsoft.TeamsFxSimpleAuth.Components.Auth
             _logger = logger;
             _clientId = configuration[ConfigurationName.ClientId];
             _clientSecret = configuration[ConfigurationName.ClientSecret];
-            _oauthTokenEndpoint = configuration[ConfigurationName.OAuthTokenEndpoint];
+            _oauthTokenEndpoint = configuration[ConfigurationName.OAuthAuthority].TrimEnd('/') + "/oauth2/v2.0/token";
             _confidentialClientApplication = confidentialClientApplication;
         }
 

@@ -4,8 +4,8 @@
 
 import * as cp from "child_process";
 import * as os from "os";
-import * as util from "util";
 import { VsCodeLogProvider } from "../commonlib/log";
+import * as sudo from "sudo-prompt";
 
 export namespace cpUtils {
   export async function executeCommand(
@@ -92,5 +92,29 @@ export namespace cpUtils {
    */
   export function wrapArgInQuotes(arg: string): string {
     return quotationMark + arg + quotationMark;
+  }
+
+  /**
+   * Run sudo command and return stdout content.
+   * Note: the return value may contains EOL.
+   */
+  export function execSudo(command: string): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      try {
+        sudo.exec(command, { name: "TeamsFx Toolkit" }, (error, stdout, stderr) => {
+          if (error) {
+            reject(error);
+          }
+
+          if (stdout) {
+            resolve(stdout.toString());
+          } else {
+            resolve("");
+          }
+        });
+      } catch (error) {
+        reject(error);
+      }
+    });
   }
 }

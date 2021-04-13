@@ -57,7 +57,8 @@ import * as vscode from "vscode";
 import { VsCodeUI, VS_CODE_UI } from "./qm/vsc_ui";
 import { DepsChecker, DepsCheckerError } from "./debug/depsChecker/checker";
 import { FuncToolChecker } from "./debug/depsChecker/funcToolChecker";
-import { DotnetCoreChecker, dotnetChecker } from "./debug/depsChecker/dotnetChecker";
+import { DotnetChecker, dotnetChecker } from "./debug/depsChecker/dotnetChecker";
+import { PanelType } from "./controls/PanelType";
 
 export let core: CoreProxy;
 const runningTasks = new Set<string>(); // to control state of task execution
@@ -97,7 +98,7 @@ export async function activate(): Promise<Result<null, FxError>> {
       if (vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode) {
         appstudioLogin = AppStudioCodeSpaceTokenInstance;
       }
-      
+
       const result = await core.withAppStudioToken(appstudioLogin);
       if (result.isErr()) {
         showError(result.error);
@@ -454,7 +455,7 @@ export async function updateAADHandler(): Promise<Result<null, FxError>> {
  * check & install required dependencies during local debug.
  */
 export async function validateDependenciesHandler(): Promise<void> {
-  const depsChecker = new DepsChecker([new FuncToolChecker(), new DotnetCoreChecker()]);
+  const depsChecker = new DepsChecker([new FuncToolChecker(), new DotnetChecker()]);
   const shouldContinue = await depsChecker.resolve();
   if (!shouldContinue) {
     await debug.stopDebugging();
@@ -499,14 +500,7 @@ export async function backendExtensionsInstallHandler(): Promise<void> {
  */
 export async function preDebugCheckHandler(): Promise<void> {
   let result: Result<any, FxError> = ok(null);
-
-  // try {
-  // TODO(kuojianlu): improve the check
-  const authLocalEnv = await commonUtils.getAuthLocalEnv();
-  const clientID = authLocalEnv ? authLocalEnv["CLIENT_ID"] : undefined;
-  if (clientID === undefined) {
-    result = await runCommand(Stage.debug);
-  }
+  result = await runCommand(Stage.debug);
   if (result.isErr()) {
     throw result.error;
   }
@@ -528,9 +522,7 @@ export async function openDocumentHandler(): Promise<boolean> {
 }
 
 export async function devProgramHandler(): Promise<boolean> {
-  return env.openExternal(
-    Uri.parse("https://developer.microsoft.com/en-us/microsoft-365/dev-program")
-  );
+  return env.openExternal(Uri.parse("https://developer.microsoft.com/en-us/microsoft-365/dev-program"));
 }
 
 export async function openWelcomeHandler() {
@@ -540,7 +532,23 @@ export async function openWelcomeHandler() {
   });
   welcomePanel.webview.html = getHtmlForWebview();
 
-  //WebviewPanel.createOrShow(ext.context.extensionPath);
+  //WebviewPanel.createOrShow(ext.context.extensionPath, PanelType.QuickStart);
+}
+
+export async function openSamplesHandler() {
+  WebviewPanel.createOrShow(ext.context.extensionPath, PanelType.SampleGallery);
+}
+
+export async function openAppManagement() {
+  return env.openExternal(Uri.parse("https://dev.teams.microsoft.com/apps"));
+}
+
+export async function openBotManagement() {
+  return env.openExternal(Uri.parse("https://dev.teams.microsoft.com/bots"));
+}
+
+export async function openReportIssues() {
+  return env.openExternal(Uri.parse("https://github.com/OfficeDev/TeamsFx/issues"));
 }
 
 export async function openManifestHandler(): Promise<Result<null, FxError>> {

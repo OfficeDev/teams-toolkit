@@ -55,6 +55,12 @@ export const NoPluginConfig: IApimPluginError = {
     message: (component: string, retryCommand: string) => `Cannot found ${component} configuration. Please retry to ${retryCommand}.`,
 };
 
+export const InvalidConfigValue: IApimPluginError = {
+    type: ErrorType.User,
+    code: "InvalidConfigValue",
+    message: (component: string, name: string, message: string) => `Project configuration '${name}' of ${component} is invalid. ${message}`,
+};
+
 // System error
 export const NotImplemented: IApimPluginError = {
     type: ErrorType.System,
@@ -90,6 +96,12 @@ export const InvalidPropertyType: IApimPluginError = {
     type: ErrorType.System,
     code: "InvalidPropertyType",
     message: (name: string, type: string) => `Property '${name}' is not type '${type}'`,
+};
+
+export const ShortenToEmpty: IApimPluginError = {
+    type: ErrorType.System,
+    code: "ShortenToEmpty",
+    message: (value: string) => `The value '${value}' cannot be shorten to empty.`,
 };
 
 export const ApimOperationError: IApimPluginError = {

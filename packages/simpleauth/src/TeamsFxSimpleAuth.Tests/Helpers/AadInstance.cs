@@ -10,9 +10,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Graph;
 using Microsoft.Graph.Auth;
 using Microsoft.Identity.Client;
-using Microsoft.TeamsFxSimpleAuth.Tests.Models;
+using Microsoft.TeamsFx.SimpleAuth.Tests.Models;
 
-namespace Microsoft.TeamsFxSimpleAuth.Tests.Helpers
+namespace Microsoft.TeamsFx.SimpleAuth.Tests.Helpers
 {
     public class AadInstance<TStartup> where TStartup : class
     {

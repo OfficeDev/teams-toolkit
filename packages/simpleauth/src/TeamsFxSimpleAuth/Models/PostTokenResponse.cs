@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Microsoft.TeamsFxSimpleAuth.Models
+namespace Microsoft.TeamsFx.SimpleAuth.Models
 {
     public class PostTokenResponse
     {

@@ -1,4 +1,4 @@
-﻿namespace Microsoft.TeamsFxSimpleAuth.Tests
+﻿namespace Microsoft.TeamsFx.SimpleAuth.Tests
 {
     public class PostTokenGrantType
     {

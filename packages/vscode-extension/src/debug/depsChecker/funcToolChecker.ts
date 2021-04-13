@@ -5,8 +5,14 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import { cpUtils } from "../cpUtils";
 import { IDepsChecker, DepsCheckerError, DepsInfo } from "./checker";
-import { funcToolCheckerEnabled, hasTeamsfxBackend, logger, runWithProgressIndicator } from "./checkerAdapter";
-import { isWindows } from "./common";
+import {
+  funcToolCheckerEnabled,
+  hasTeamsfxBackend,
+  logger,
+  runWithProgressIndicator
+} from "./checkerAdapter";
+import { DepsCheckerTelemetry, DepsCheckerEvent, TelemtryMessages } from "./telemetry";
+import { isWindows, isMacOS, Messages, functionCoreToolsHelpLink } from "./common";
 
 export enum FuncVersion {
   v1 = "1",
@@ -16,71 +22,117 @@ export enum FuncVersion {
 
 const funcPackageName = "azure-functions-core-tools";
 const funcToolName = "Azure Function Core Tool";
+
+const installVersion = FuncVersion.v3;
+const supportedVersions = [FuncVersion.v2, FuncVersion.v3];
 const installedNameWithVersion = `${funcToolName} (v${FuncVersion.v3})`;
 
-// TODO: extract to messages.ts
-const startInstallFunctionCoreTool =
-  `Downloading and installing ${installedNameWithVersion}.`;
-const finishInstallFunctionCoreTool =
-  `Successfully installed ${installedNameWithVersion}.`;
-const needReplaceWithFuncCoreToolV3 =
-  `You must replace with ${installedNameWithVersion} to debug your local functions.`;
-const needInstallFuncCoreTool =
-  `You must have ${installedNameWithVersion} installed to debug your local functions.`;
-const failToInstallFuncCoreTool =
-  `${installedNameWithVersion} installation has failed and will have to be installed manually.`;
-const helpLink = "https://review.docs.microsoft.com/en-us/mods/?branch=main";
-
 export class FuncToolChecker implements IDepsChecker {
-  getDepsInfo(): Promise<DepsInfo> {
+  public getDepsInfo(): Promise<DepsInfo> {
     return Promise.resolve({
-      nameWithVersion: installedNameWithVersion,
+      name: funcToolName,
+      installVersion: installVersion,
+      supportedVersions: supportedVersions,
       details: new Map<string, string>()
     });
   }
 
-  async isEnabled(): Promise<boolean> {
+  public async isEnabled(): Promise<boolean> {
     const hasBackend = await hasTeamsfxBackend();
-    return hasBackend && funcToolCheckerEnabled();
+    const checkerEnabled = funcToolCheckerEnabled();
+    if (!checkerEnabled) {
+      // TODO: should send this event per user.
+      // DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.skipCheckFunc);
+    }
+
+    return hasBackend && checkerEnabled;
   }
 
-  async isInstalled(): Promise<boolean> {
+  public async isInstalled(): Promise<boolean> {
     const installed = true;
     const installedVersion = await getInstalledFuncToolsVersion();
 
+    DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.checkFunc);
     switch (installedVersion) {
       case FuncVersion.v1:
-        throw new DepsCheckerError(needReplaceWithFuncCoreToolV3, helpLink);
+        // TODO: should send this event per user.
+        // DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.funcV1Installed);
+        // DepsCheckerTelemetry.sendUserErrorEvent(
+        //   DepsCheckerEvent.checkFunc,
+        //   TelemtryMessages.funcV1Installed
+        // );
+        throw new DepsCheckerError(
+          Messages.needReplaceWithFuncCoreToolV3.replace("@NameVersion", installedNameWithVersion),
+          functionCoreToolsHelpLink
+        );
       case FuncVersion.v2:
+        // TODO: should send this event per user.
+        // DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.funcV2Installed);
         return installed;
       case FuncVersion.v3:
+        // TODO: should send this event per user.
+        // DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.funcV3Installed);
         return installed;
       default:
         return !installed;
     }
   }
 
-  async install(): Promise<void> {
+  public async install(): Promise<void> {
     if (!(await hasNPM())) {
       // provided with Learn More link if npm doesn't exist.
-      throw new DepsCheckerError(needInstallFuncCoreTool, helpLink);
+      DepsCheckerTelemetry.sendUserErrorEvent(
+        DepsCheckerEvent.installingFunc,
+        TelemtryMessages.NPMNotFound
+      );
+      throw new DepsCheckerError(
+        Messages.needInstallFuncCoreTool.replace("@NameVersion", installedNameWithVersion),
+        functionCoreToolsHelpLink
+      );
     }
 
-    logger.info(startInstallFunctionCoreTool);
-    await runWithProgressIndicator(async () => {
-      try {
-        await installFuncCoreTools(FuncVersion.v3);
-      } catch (error) {
-        throw new DepsCheckerError(failToInstallFuncCoreTool, helpLink);
-      }
-    });
+    logger.info(
+      Messages.startInstallFunctionCoreTool.replace("@NameVersion", installedNameWithVersion)
+    );
 
+    try {
+      await DepsCheckerTelemetry.sendEventWithDuration(DepsCheckerEvent.installedFunc, async () => {
+        await runWithProgressIndicator(async () => {
+          await installFuncCoreTools(FuncVersion.v3);
+        });
+      });
+    } catch (error) {
+      DepsCheckerTelemetry.sendSystemErrorEvent(
+        DepsCheckerEvent.installingFunc,
+        TelemtryMessages.failedToInstallFunc,
+        error
+      );
+
+      throw new DepsCheckerError(
+        Messages.failToInstallFuncCoreTool.replace("@NameVersion", installedNameWithVersion),
+        functionCoreToolsHelpLink
+      );
+    }
+
+    // validate after installation.
     const isInstalled = await this.isInstalled();
     if (!isInstalled) {
-      throw new DepsCheckerError(failToInstallFuncCoreTool, helpLink);
+      DepsCheckerTelemetry.sendSystemErrorEvent(
+        DepsCheckerEvent.validateFunc,
+        TelemtryMessages.failedToInstallFunc,
+        Messages.failToValidateFuncCoreTool.replace("@NameVersion", installedNameWithVersion)
+      );
+
+      throw new DepsCheckerError(
+        Messages.failToInstallFuncCoreTool.replace("@NameVersion", installedNameWithVersion),
+        functionCoreToolsHelpLink
+      );
     }
 
-    logger.info(finishInstallFunctionCoreTool);
+    DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.installedValidFunc);
+    logger.info(
+      Messages.finishInstallFunctionCoreTool.replace("@NameVersion", installedNameWithVersion)
+    );
   }
 }
 
@@ -110,8 +162,36 @@ async function hasNPM(): Promise<boolean> {
 }
 
 async function installFuncCoreTools(version: FuncVersion): Promise<void> {
-  // TODO: handle the case that npm install globally need admin permission on macOS.
+  if (isWindows()) {
+    await installFuncCoreToolsOnWindows(version);
+  } else {
+    await installFuncCoreToolsOnUnix(version);
+  }
+}
+
+async function installFuncCoreToolsOnWindows(version: FuncVersion): Promise<void> {
+  // on Windows, forced install is needed if the func command is broken.
   await cpUtils.executeCommand(
+    undefined,
+    logger,
+    undefined,
+    "npm",
+    "install",
+    "-g",
+    "-f",
+    `${funcPackageName}@${version}`
+  );
+
+  // delete func.ps1 if exists to workaround the powershell execution policy issue:
+  // https://github.com/npm/cli/issues/470
+  const funcPSScript = await getFuncPSScriptPath();
+  if (await fs.pathExists(funcPSScript)) {
+    await fs.remove(funcPSScript);
+  }
+}
+
+async function installFuncCoreToolsOnUnix(version: FuncVersion): Promise<void> {
+  const result: cpUtils.ICommandResult = await cpUtils.tryExecuteCommand(
     undefined,
     logger,
     undefined,
@@ -121,13 +201,20 @@ async function installFuncCoreTools(version: FuncVersion): Promise<void> {
     `${funcPackageName}@${version}`
   );
 
-  // delete func.ps1 if exists to workaround the powershell execution policy issue:
-  // https://github.com/npm/cli/issues/470
-  if (isWindows()) {
-    const funcPSScript = await getFuncPSScriptPath();
-    if (await fs.pathExists(funcPSScript)) {
-      await fs.remove(funcPSScript);
-    }
+  const tryInstallfailed: boolean = result.code !== 0;
+  const needAdminPermission: boolean = result.cmdOutputIncludingStderr.includes(
+    "permission denied"
+  );
+  const command = `npm install -g ${funcPackageName}@${version} --unsafe-perm true`;
+
+  if (tryInstallfailed && needAdminPermission && isMacOS()) {
+    await cpUtils.execSudo(command);
+  } else if (tryInstallfailed) {
+    const tryInstallCommand = `npm install -g ${funcPackageName}@${version}`;
+    logger.error(result.cmdOutputIncludingStderr);
+    throw new Error(
+      `Failed to run "${tryInstallCommand}" command. Check output window for more details.`
+    );
   }
 }
 
@@ -140,7 +227,7 @@ async function getFuncPSScriptPath(): Promise<string> {
         shell: "cmd.exe"
       },
       "where",
-      "func",
+      "func"
     );
 
     const funcPath = output.split(/\r?\n/)[0];

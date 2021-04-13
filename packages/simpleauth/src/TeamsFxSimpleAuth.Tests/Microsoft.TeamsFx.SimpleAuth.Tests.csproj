@@ -3,8 +3,8 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <IsPackable>false</IsPackable>
-    <AssemblyName>Microsoft.TeamsFxSimpleAuth.Tests</AssemblyName>
-    <RootNamespace>Microsoft.TeamsFxSimpleAuth.Tests</RootNamespace>
+    <AssemblyName>Microsoft.TeamsFx.SimpleAuth.Tests</AssemblyName>
+    <RootNamespace>Microsoft.TeamsFx.SimpleAuth.Tests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -32,7 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TeamsFxSimpleAuth\TeamsFxSimpleAuth.csproj" />
+    <ProjectReference Include="..\TeamsFxSimpleAuth\Microsoft.TeamsFx.SimpleAuth.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,4 +1,4 @@
-﻿namespace Microsoft.TeamsFxSimpleAuth.Models
+﻿namespace Microsoft.TeamsFx.SimpleAuth.Models
 {
     public class PostTokenRequestBody
     {

@@ -61,9 +61,12 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
 
         private void replaceTenantId()
         {
-            _settings.AuthorizeUrl.Replace("${TenantId}", _settings.TenantId);
-            _defaultConfigurations[ConfigurationName.OAuthAuthority].Replace("${TenantId}", _settings.TenantId);
-            _defaultConfigurations[ConfigurationName.AadMetadataAddress].Replace("${TenantId}", _settings.TenantId);
+            var AuthorizeUrl = _settings.AuthorizeUrl;
+            _settings.AuthorizeUrl = AuthorizeUrl.Replace("${TenantId}", _settings.TenantId);
+            var oAuthAuthority = _defaultConfigurations[ConfigurationName.OAuthAuthority];
+            _defaultConfigurations[ConfigurationName.OAuthAuthority] = oAuthAuthority.Replace("${TenantId}", _settings.TenantId);
+            var aadMetadataAddress = _defaultConfigurations[ConfigurationName.AadMetadataAddress];
+            _defaultConfigurations[ConfigurationName.AadMetadataAddress] = aadMetadataAddress.Replace("${TenantId}", _settings.TenantId);
         }
 
         #region Utility

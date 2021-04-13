@@ -155,12 +155,13 @@ export const writeConfigMW: Middleware = async (
 
 
 const SecretDataMatchers = ["fx-resource-aad-app-for-teams.clientSecret",
-		"fx-resource-aad-app-for-teams.local_clientSecret",
-		"fx-resource-simple-auth.filePath",
-		"fx-resource-simple-auth.environmentVariableParams",
-		"fx-resource-local-debug.*",
-		"fx-resource-teamsbot.botPassword",
-		"fx-resource-teamsbot.localBotPassword"];
+    "fx-resource-aad-app-for-teams.local_clientSecret",
+    "fx-resource-simple-auth.filePath",
+    "fx-resource-simple-auth.environmentVariableParams",
+    "fx-resource-local-debug.*",
+    "fx-resource-teamsbot.botPassword",
+    "fx-resource-teamsbot.localBotPassword",
+    "fx-resource-apim.apimClientAADClientSecret"];
 
 function sperateSecretData(configJson:Json): Dict<string>{
     const res:Dict<string> = {};

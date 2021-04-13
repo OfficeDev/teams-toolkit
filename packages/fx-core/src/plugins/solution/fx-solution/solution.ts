@@ -64,7 +64,8 @@ import {
     REMOTE_CLIENT_SECRET,
     WEB_APPLICATION_INFO_SOURCE,
     LOCAL_WEB_APPLICATION_INFO_SOURCE,
-    PROVISION_MANIFEST
+    PROVISION_MANIFEST,
+    PROGRAMMING_LANGUAGE
 } from "./constants";
 
 import { SpfxPlugin } from "../../resource/spfx";
@@ -326,6 +327,8 @@ export class TeamsAppSolution implements Solution {
         if (!ctx.config.has(GLOBAL_CONFIG)) {
             ctx.config.set(GLOBAL_CONFIG, new ConfigMap());
         }
+        let lang = ctx.answers?.getString(AzureSolutionQuestionNames.ProgrammingLanguage);
+        ctx.config.get(GLOBAL_CONFIG)!.set(PROGRAMMING_LANGUAGE, lang ?? "javascript");
 
         const settingsRes = this.fillInSolutionSettings(ctx);
         if(settingsRes.isErr()) 

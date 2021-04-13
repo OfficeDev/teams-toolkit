@@ -169,10 +169,6 @@ export class TeamsBotImpl {
     }
 
     public async provision(context: PluginContext): Promise<FxResult> {
-        if (this.config.provision.provisioned) {
-            Logger.debug(`Already provisioned, so just return.`);
-            return ResultFactory.Success();
-        }
 
         await this.config.restoreConfigFromContext(context);
         this.ctx = context;
@@ -204,13 +200,6 @@ export class TeamsBotImpl {
     }
 
     private async provisionWebApp() {
-        // Idempotent alignment.
-        if (this.config.provision.siteEndpoint !== undefined &&
-            this.config.provision.redirectUri !== undefined &&
-            this.config.provision.appServicePlan !== undefined) {
-            Logger.debug(`Already provisioned azure web app, just return.`);
-            return;
-        }
 
         this.telemetryStepIn(LifecycleFuncNames.PROVISION_WEB_APP);
         this.markEnter(LifecycleFuncNames.PROVISION_WEB_APP);
@@ -232,7 +221,7 @@ export class TeamsBotImpl {
             },
         };
 
-        const appServicePlanName = ResourceNameFactory.createCommonName(this.ctx?.app.name.short);
+        const appServicePlanName = this.config.provision.appServicePlan ? this.config.provision.appServicePlan : ResourceNameFactory.createCommonName(this.ctx?.app.name.short);
 
         let planResponse = undefined;
         try {
@@ -696,13 +685,6 @@ export class TeamsBotImpl {
     }
 
     private async createNewBotRegistrationOnAzure() {
-        // Idempotent alignment.
-        if (this.config.scaffold.botId !== undefined &&
-            this.config.scaffold.botPassword !== undefined &&
-            this.config.provision.botChannelRegName !== undefined) {
-            Logger.debug(`Already created bot registration on azure, just return.`);
-            return;
-        }
 
         this.telemetryStepIn(LifecycleFuncNames.CREATE_NEW_BOT_REG_AZURE);
         this.markEnter(LifecycleFuncNames.CREATE_NEW_BOT_REG_AZURE);
@@ -723,7 +705,8 @@ export class TeamsBotImpl {
             this.config.provision.subscriptionId!,
         );
 
-        const botChannelRegistrationName = ResourceNameFactory.createCommonName(this.ctx?.app.name.short);
+        const botChannelRegistrationName = this.config.provision.botChannelRegName ?
+            this.config.provision.botChannelRegName : ResourceNameFactory.createCommonName(this.ctx?.app.name.short);
 
         let botResponse = undefined;
         try {

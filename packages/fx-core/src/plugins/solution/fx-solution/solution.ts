@@ -511,7 +511,8 @@ export class TeamsAppSolution implements Solution {
      * update
      */
     async update(ctx: SolutionContext): Promise<Result<any, FxError>> {
-        const selectedPlugins = ctx.config.get(GLOBAL_CONFIG)?.getStringArray(SELECTED_PLUGINS);
+        const settings = this.getAzureSolutionSettings(ctx);
+        const selectedPlugins = settings.activeResourcePlugins;
         const isSPFx = selectedPlugins?.includes(this.spfxPlugin.name);
         if (isSPFx) {
             return err(
@@ -527,12 +528,13 @@ export class TeamsAppSolution implements Solution {
         const alreadyHaveSql = selectedPlugins?.includes(this.sqlPlugin.name);
         const alreadyHaveApim = selectedPlugins?.includes(this.apimPlugin.name);
 
-        const oldResources = ctx.answers?.get(AzureSolutionQuestionNames.AzureResources) as string[];
-        const addResources = ctx.answers?.get(AzureSolutionQuestionNames.AddResources) as string[];
+        const existingResources = settings.azureResources ? settings.azureResources : [];
 
-        const addSQL = addResources.includes(AzureResourceSQL.label);
-        const addFunc = addResources.includes(AzureResourceFunction.label);
-        const addApim = addResources.includes(AzureResourceApim.label);
+        const addResourcesInQuestion = ctx.answers?.get(AzureSolutionQuestionNames.AddResources) as string[];
+
+        const addSQL = addResourcesInQuestion.includes(AzureResourceSQL.label);
+        const addFunc = addResourcesInQuestion.includes(AzureResourceFunction.label);
+        const addApim = addResourcesInQuestion.includes(AzureResourceApim.label);
 
         const addResourceForPlugin: string[] = [];
         const addResourceItemsForNotification: string[] = [];
@@ -551,8 +553,8 @@ export class TeamsAppSolution implements Solution {
         // add AzureResource in answer
         let reloadPlugin = false;
         for (const item of addResourceForPlugin) {
-            if (!oldResources.includes(item)) {
-                oldResources.push(item);
+            if (!existingResources.includes(item)) {
+                existingResources.push(item);
                 reloadPlugin = true;
             }
         }
@@ -599,8 +601,9 @@ export class TeamsAppSolution implements Solution {
     }
 
 
-    private getSelectedPlugins(solutionConfig: SolutionConfig): Result<LoadedPlugin[], FxError> {
-        let pluginNames = solutionConfig.get(GLOBAL_CONFIG)?.get(SELECTED_PLUGINS);
+    private getSelectedPlugins(ctx: SolutionContext): Result<LoadedPlugin[], FxError> {
+        const settings = this.getAzureSolutionSettings(ctx);
+        let pluginNames = settings.activeResourcePlugins;
 
         if (pluginNames === undefined) {
             return err(
@@ -641,7 +644,7 @@ export class TeamsAppSolution implements Solution {
      * scaffold
      */
     async scaffold(ctx: SolutionContext): Promise<Result<any, FxError>> {
-        const maybeSelectedPlugins = this.getSelectedPlugins(ctx.config);
+        const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
         if (maybeSelectedPlugins.isErr()) {
             return maybeSelectedPlugins;
         }
@@ -702,7 +705,7 @@ export class TeamsAppSolution implements Solution {
     // 1. this.manifest is not undefined(for azure projects) already contains the latest manifest(loaded via reloadManifestAndCheckRequiredFields)
     // 2. provision of frontend hosting is done and config values has already been loaded into ctx.config
     private async createAndConfigTeamsManifest(ctx: SolutionContext): Promise<Result<IAppDefinition, FxError>> {
-        const maybeSelectedPlugins = this.getSelectedPlugins(ctx.config);
+        const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
         if (maybeSelectedPlugins.isErr()) {
             return err(maybeSelectedPlugins.error);
         }
@@ -931,7 +934,7 @@ export class TeamsAppSolution implements Solution {
      * provision
      */
     async doProvision(ctx: SolutionContext): Promise<Result<any, FxError>> {
-        const maybeSelectedPlugins = this.getSelectedPlugins(ctx.config);
+        const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
         if (maybeSelectedPlugins.isErr()) {
             return maybeSelectedPlugins;
         }
@@ -1084,7 +1087,7 @@ export class TeamsAppSolution implements Solution {
      * deploy
      */
     private async doDeploy(ctx: SolutionContext): Promise<Result<any, FxError>> {
-        const res = this.getSelectedPlugins(ctx.config);
+        const res = this.getSelectedPlugins(ctx);
         if (res.isErr()) {
             return res;
         }
@@ -1283,7 +1286,7 @@ export class TeamsAppSolution implements Solution {
             const checkRes = await this.checkWhetherSolutionIsIdle();
             if (checkRes.isErr()) return err(checkRes.error);
 
-            const res = this.getSelectedPlugins(ctx.config);
+            const res = this.getSelectedPlugins(ctx);
             if (res.isErr()) {
                 return err(res.error);
             }
@@ -1303,7 +1306,7 @@ export class TeamsAppSolution implements Solution {
             if (canDeploy.isErr()) {
                 return err(canDeploy.error);
             }
-            const res = this.getSelectedPlugins(ctx.config);
+            const res = this.getSelectedPlugins(ctx);
             if (res.isErr()) {
                 return err(
                     returnUserError(new Error("No resource to deploy"), "Solution", SolutionError.NoResourceToDeploy),
@@ -1415,7 +1418,7 @@ export class TeamsAppSolution implements Solution {
     }
 
     async localDebug(ctx: SolutionContext): Promise<Result<any, FxError>> {
-        const maybeSelectedPlugins = this.getSelectedPlugins(ctx.config);
+        const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
 
         if (maybeSelectedPlugins.isErr()) {
             return maybeSelectedPlugins;
@@ -1652,9 +1655,15 @@ export class TeamsAppSolution implements Solution {
         );
     }
 
+    getAzureSolutionSettings(ctx: SolutionContext):AzureSolutionSettings{
+        return ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
+    }
+
     async getQuestionsForAddResource(ctx: SolutionContext): Promise<Result<QTreeNode | undefined, FxError>>{
        
-        const selectedPlugins = ctx.config.get(GLOBAL_CONFIG)?.getStringArray(SELECTED_PLUGINS);
+        const settings = this.getAzureSolutionSettings(ctx);
+
+        const selectedPlugins = settings.activeResourcePlugins;
         
         if(!selectedPlugins) {
             return err(
@@ -1737,7 +1746,11 @@ export class TeamsAppSolution implements Solution {
     }
 
     async getQuestionsForAddCapability(ctx: SolutionContext): Promise<Result<QTreeNode | undefined, FxError>> {
-        const selectedPlugins = ctx.config.get(GLOBAL_CONFIG)?.getStringArray(SELECTED_PLUGINS);
+        
+        const settings = this.getAzureSolutionSettings(ctx);
+
+        const selectedPlugins = settings.activeResourcePlugins;
+
         if(!selectedPlugins) {
             return err(
                 returnUserError(
@@ -1825,25 +1838,23 @@ export class TeamsAppSolution implements Solution {
             );
         }
 
-        const addCapabilities = ctx.answers.getStringArray(AzureSolutionQuestionNames.AddCapabilities);
+        const addCapabilitiesInQuestion = ctx.answers.getStringArray(AzureSolutionQuestionNames.AddCapabilities);
 
-        if(!addCapabilities){
+        if(!addCapabilitiesInQuestion){
             return ok(Void);
         }
 
-        const oldCapabilities = ctx.answers.getStringArray(AzureSolutionQuestionNames.Capabilities);
-
-        
-
-        for(const cap of addCapabilities!){
-            if(!oldCapabilities?.includes(cap)){
-                oldCapabilities?.push(cap);
+        const settings = this.getAzureSolutionSettings(ctx);
+ 
+        for(const cap of addCapabilitiesInQuestion!){
+            if(!settings.capabilities?.includes(cap)){
+                settings.capabilities?.push(cap);
             }
         }
 
         const addCapabilityNotification:string[]  = [];
 
-        if(addCapabilities?.includes(TabOptionItem.id)){
+        if(addCapabilitiesInQuestion?.includes(TabOptionItem.id)){
             const hostType = ctx.answers?.getString(AzureSolutionQuestionNames.HostType);
             if(hostType === HostTypeOptionAzure.id){
                 ctx.logProvider?.info(`start scaffolding Tab Frontend .....`);
@@ -1867,7 +1878,7 @@ export class TeamsAppSolution implements Solution {
             }
         }
 
-        if(addCapabilities?.includes(BotOptionItem.id)){
+        if(addCapabilitiesInQuestion?.includes(BotOptionItem.id)){
             ctx.logProvider?.info(`start scaffolding Bot.....`);
             const scaffoldRes = await this.scaffoldOne(this.botPlugin, ctx);
             if (scaffoldRes.isErr()) {
@@ -1889,11 +1900,6 @@ export class TeamsAppSolution implements Solution {
                 }),
             );
 
-            const answers = new ConfigMap();
-            answers.set(AzureSolutionQuestionNames.Capabilities, oldCapabilities);
-            answers.set(AzureSolutionQuestionNames.HostType, ctx.answers.getStringArray(AzureSolutionQuestionNames.HostType));
-            answers.set(AzureSolutionQuestionNames.AzureResources, ctx.answers.getStringArray(AzureSolutionQuestionNames.AzureResources));
-    
             this.reloadPlugins(ctx);
         }
 

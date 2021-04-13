@@ -521,15 +521,19 @@ class CoreImpl implements Core {
 
         if (!supported) return ok(null);
 
-        // update selectedSolution
-        const result = await Loader.loadSelectSolution(this.ctx, this.ctx.root);
+         
+        // read configs
+        const readRes = await this.readConfigs();
+        if (readRes.isErr()) {
+            return readRes;
+        }
 
-        if (result.isErr()) {
-            return err(result.error);
+        if (!this.ctx.projectSettings || !this.ctx.projectSettings?.solutionSettings) {
+            return err(error.InvalidContext());
         }
 
         for (const entry of this.globalSolutions.entries()) {
-            if (entry[0] === result.value.name) {
+            if (entry[0] === this.ctx.projectSettings.solutionSettings.name) {
                 this.selectedSolution = entry[1];
                 break;
             }
@@ -540,11 +544,6 @@ class CoreImpl implements Core {
         }
 
         this.env = "default";
-
-        const readRes = await this.readConfigs();
-        if (readRes.isErr()) {
-            return readRes;
-        }
 
         const token = this.ctx.azureAccountProvider?.getAccountCredential();
         if (token !== undefined && getSelectSubItem !== undefined) {
@@ -823,7 +822,8 @@ class CoreImpl implements Core {
     }
 
     private solutionContext(answers?: ConfigMap): SolutionContext {
-        const ctx: SolutionContext= {
+        answers = this.mergeConfigMap(answers, this.globalConfig);
+        const ctx: SolutionContext = {
             ...this.ctx,
             answers: answers,
             app: this.app,

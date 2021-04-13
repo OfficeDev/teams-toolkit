@@ -119,7 +119,7 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
         new TreeViewCommand("Report issues", "Report issue to us", "fx-extension.openBotManagement", vscode.TreeItemCollapsibleState.None, TreeCategory.Feedback, undefined, "reportIssues"),
       ]
     );
-    https://github.com/OfficeDev/TeamsFx/issues
+
     this.commands.push(getStartTreeViewCommand);
     this.commands.push(accountTreeViewCommand);
     this.commands.push(projectTreeViewCommand);

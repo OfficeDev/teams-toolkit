@@ -46,7 +46,7 @@ export const Messages = {
 As a fundamental runtime context for Teams app, these dependencies are required. Following steps will help you to install the appropriate version to run the Microsoft Teams Toolkit.
 
 Click "Install" to continue.`
-}
+};
 
 export const defaultHelpLink = "https://review.docs.microsoft.com/en-us/mods/?branch=main";
 export const functionCoreToolsHelpLink = "https://review.docs.microsoft.com/en-us/mods/?branch=main";

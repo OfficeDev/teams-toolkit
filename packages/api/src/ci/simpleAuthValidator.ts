@@ -6,7 +6,7 @@ import * as chai from "chai";
 import { MockAzureAccountProvider } from "./mockAzureAccountProvider";
 import { IAadObject } from "./interfaces/IAADDefinition";
 
-const rcPluginName = "fx-resource-runtime-connector";
+const simpleAuthPluginName = "fx-resource-simple-auth";
 const solutionPluginName = "solution";
 const subscriptionKey = "subscriptionId";
 const rgKey = "resourceGroupName";
@@ -20,26 +20,26 @@ export class PropertiesKeys {
     static identifierUri = "IDENTIFIER_URI";
 }
 
-export interface IRcObject {
+export interface ISimpleAuthObject {
     endpoint: string
 }
 
-export class RcValidator {
+export class SimpleAuthValidator {
     private static subscriptionId: string;
     private static rg: string;
 
-    public static init(ctx: any, isLocalDebug = false): IRcObject {
+    public static init(ctx: any, isLocalDebug = false): ISimpleAuthObject {
         console.log("Start to init validator for Runtime Connector.");
 
-        let rcObject: IRcObject;
+        let simpleAuthObject: ISimpleAuthObject;
         if (!isLocalDebug) {
-            rcObject = <IRcObject>ctx[rcPluginName];
+            simpleAuthObject = <ISimpleAuthObject>ctx[simpleAuthPluginName];
         } else {
-            rcObject = {
-                endpoint: ctx[rcPluginName]["endpoint"]
-            } as IRcObject;
+            simpleAuthObject = {
+                endpoint: ctx[simpleAuthPluginName]["endpoint"]
+            } as ISimpleAuthObject;
         }
-        chai.assert.exists(rcObject);
+        chai.assert.exists(simpleAuthObject);
 
         this.subscriptionId = ctx[solutionPluginName][subscriptionKey];
         chai.assert.exists(this.subscriptionId);
@@ -48,13 +48,13 @@ export class RcValidator {
         chai.assert.exists(this.rg);
 
         console.log("Successfully init validator for Runtime Connector.");
-        return rcObject;
+        return simpleAuthObject;
     }
 
-    public static async validate(rcObject: IRcObject, aadObject: IAadObject) {
+    public static async validate(simpleAuthObject: ISimpleAuthObject, aadObject: IAadObject) {
         console.log("Start to validate Runtime Connector.");
 
-        const resourceName: string = rcObject.endpoint.slice(8, -18);
+        const resourceName: string = simpleAuthObject.endpoint.slice(8, -18);
         chai.assert.exists(resourceName);
 
         const response = await this.getWebappConfigs(this.subscriptionId, this.rg, resourceName);
@@ -74,13 +74,13 @@ export class RcValidator {
     
         try {
             axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-            const rcGetResponse = await axios.post(baseUrl(subscriptionId, rg, name));
-            if (!rcGetResponse || !rcGetResponse.data || !rcGetResponse.data.properties) {
+            const simpleAuthGetResponse = await axios.post(baseUrl(subscriptionId, rg, name));
+            if (!simpleAuthGetResponse || !simpleAuthGetResponse.data || !simpleAuthGetResponse.data.properties) {
                 return undefined;
             }
     
-            console.log(JSON.stringify(rcGetResponse.data.properties));
-            return rcGetResponse.data.properties;
+            console.log(JSON.stringify(simpleAuthGetResponse.data.properties));
+            return simpleAuthGetResponse.data.properties;
         } catch (error) {
             console.log(error);
             return undefined;

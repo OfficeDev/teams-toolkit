@@ -7,5 +7,5 @@ export * from "./mockAppStudioTokenProvider";
 export * from "./mockAzureAccountProvider";
 export * from "./mockGraphTokenProvider";
 export * from "./aadValidate";
-export * from "./rcValidate";
+export * from "./simpleAuthValidator";
 export * from "./sqlValidate";

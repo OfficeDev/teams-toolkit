@@ -88,6 +88,6 @@ export class DepsChecker {
     }
 
     const message = depsInfo.join(" and ");
-    return Messages.depNotFound.replace("@Message", message);
+    return Messages.depsNotFound.replace("@Message", message);
   }
 }

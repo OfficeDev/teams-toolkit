@@ -43,7 +43,7 @@ export const Messages = {
   dotnetInstallErrorCode: `dotnet-install command failed.`,
   failToInstallDotnet: `Failed to install ${dotnetInstalledNameWithVersion}.`,
 
-  depNotFound: `The toolkit cannot find @Message on your machine.
+  depsNotFound: `The toolkit cannot find @Message on your machine.
 
 As a fundamental runtime context for Teams app, these dependencies are required. Following steps will help you to install the appropriate version to run the Microsoft Teams Toolkit.
 

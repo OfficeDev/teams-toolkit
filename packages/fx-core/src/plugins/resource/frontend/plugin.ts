@@ -170,9 +170,7 @@ export class FrontendPluginImpl {
             baseUrl: ctx.config.get(FrontendConfigInfo.Endpoint) as string
         };
 
-        const tabScope = ctx.answers?.getString(QuestionKey.TabScope);
-        this.setConfigIfNotExists(ctx, FrontendConfigInfo.ConfigurableTab, TabScopeManifest.getConfigurableTab(variables, tabScope));
-        this.setConfigIfNotExists(ctx, FrontendConfigInfo.StaticTab, TabScopeManifest.getStaticTab(variables, tabScope));
+        FrontendProvision.setTabScope(ctx, variables);
 
         return ok(this.config);
     }
@@ -235,9 +233,7 @@ export class FrontendPluginImpl {
             baseUrl: localTabEndpoint
         };
 
-        const tabScope = ctx.answers?.getString(QuestionKey.TabScope);
-        this.setConfigIfNotExists(ctx, FrontendConfigInfo.ConfigurableTab, TabScopeManifest.getConfigurableTab(variables, tabScope));
-        this.setConfigIfNotExists(ctx, FrontendConfigInfo.StaticTab, TabScopeManifest.getStaticTab(variables, tabScope));
+        FrontendProvision.setTabScope(ctx, variables);
 
         return ok(this.config);
     }

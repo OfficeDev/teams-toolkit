@@ -1,17 +1,20 @@
 # teamsfx-cli
 
 ## For developpers to build and run your local project
-0. Download the repo and cd to the repo path.
-1. Run: `npm install`
-2. Run: `npm run build`
-3. Run: `npm link --force`
-4. Now the package is installed in your global npm folder. You can type 'teamsfx --help' to see how to use the cli tool.
+
+1. `git clone https://github.com/OfficeDev/TeamsFx.git`
+2. `cd TeamsFx`
+3. `npm run bootstrap`
+4. `cd packages/cli`
+5. `npm link --force --production`
+
+This will break the links of `fx-api/fx-core` and download them from npm registry, so after running `npm link --force --production`, you can remove `packages/cli/node_modules/fx-api` and `packages/cli/node_modules/fx-core`, then run `npm run bootstrap` again. 
 
 ## For users to install the package
 1. Run: `npm install -g teamsfx-cli` (Pls check the version is the latest version)
 2. Now the package is installed in your global npm folder. You can type 'teamsfx --help' to see how to use the cli tool.
 
-## Example
+## Commands
 
 ### Verbose or debug
 
@@ -99,6 +102,22 @@ teamsfx deploy --deploy-plugin fx-resource-frontend-hosting fx-resource-function
 teamsfx deploy --deploy-plugin fx-resource-spfx
 ```
 
+## How to run e2e-test locally
+
+### Setup environment variables
+1. TEST_USER_NAME="metadev@microsoft.com"
+2. TEST_USER_PASSWORD=<$PASSWORD>
+3. 
+
+You can ask `Long Hao` or `Zhiyu You` for `$PASSWORD`.
+
+### Run
+1. `git clone https://github.com/OfficeDev/TeamsFx.git`
+2. `cd TeamsFx`
+3. `npm run bootstrap`
+4. `cd packages/cli`
+5. `npm run e2e-test`
+
 ## How to Generate Parameter Files (for Repo Contributors)
 
 Now CLI cannot get all questions through `core.getQuestions`, because this API depends on an existing project. There are some hard code in the `src/paramGenerator.ts` to specify some question nodes.
@@ -116,20 +135,11 @@ teamsfx new --app-name azureApp --azure-resources sql function --folder test-fol
 ts-node .\src\paramGenerator.ts
 ```
 
-## Known issue
-1. Currently SPFx only support Node.JS V10.x
-2. The experience of 'SPFx Scaffold' on Windows CMD/Powershell with Node.JS V10.x is broken. You can switch to Linux/MacOS or use linux bash on Windows system. 
-3. teamsfx start/init
-
 ## The rest of work
 
 ### features for user:
-1. login/logout azure by popuping window
-2. move the logic of `set subscription` to common lib
-3. script to collect questions
-4. interact with user
-5. webpack
-6. double confirm: depends on 8
+1. interact with user
+2. webpack
+3. double confirm
 
 ### features for e2e test:
-1. use test account to login azure/appstudio

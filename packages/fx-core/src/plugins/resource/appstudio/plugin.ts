@@ -25,13 +25,23 @@ export class AppStudioPluginImpl {
         }
         const manifest: TeamsAppManifest = JSON.parse(manifestString);
         const colorFile = `${appDirectory}/${manifest.icons.color}`;
-        const colorFileState = await fs.stat(colorFile);
-        if (!colorFileState.isFile()) {
+        
+        try {
+            const colorFileState = await fs.stat(colorFile);
+            if (!colorFileState.isFile()) {
+                throw AppStudioResultFactory.UserError(AppStudioError.FileNotFoundError.name, AppStudioError.FileNotFoundError.message(colorFile));
+            }
+        } catch (error) {
             throw AppStudioResultFactory.UserError(AppStudioError.FileNotFoundError.name, AppStudioError.FileNotFoundError.message(colorFile));
         }
+        
         const outlineFile = `${appDirectory}/${manifest.icons.outline}`;
-        const outlineFileState = await fs.stat(outlineFile);
-        if (!outlineFileState.isFile()) {
+        try {
+            const outlineFileState = await fs.stat(outlineFile);
+            if (!outlineFileState.isFile()) {
+                throw AppStudioResultFactory.UserError(AppStudioError.FileNotFoundError.name, AppStudioError.FileNotFoundError.message(outlineFile));
+            }
+        } catch (error) {
             throw AppStudioResultFactory.UserError(AppStudioError.FileNotFoundError.name, AppStudioError.FileNotFoundError.message(outlineFile));
         }
         
@@ -60,14 +70,22 @@ export class AppStudioPluginImpl {
 
             let manifestString: string | undefined = undefined;
             const manifestFile = `${appDirectory}/${Constants.MANIFEST_FILE}`;
-            const manifestFileState = await fs.stat(manifestFile);
+
             // For vs platform, read the local manifest.json file
             // For cli/vsc platform, get manifest from ctx
-            if (ctx.platform === Platform.CLI && manifestFileState.isFile()) {
-                manifestString = (await fs.readFile(manifestFile)).toString();
+            if (ctx.platform === Platform.CLI) {
+                try {
+                    const manifestFileState = await fs.stat(manifestFile);
+                    if (manifestFileState.isFile()) {
+                        manifestString = (await fs.readFile(manifestFile)).toString();
+                    }
+                } catch (error) {
+                    manifestString = JSON.stringify(ctx.app);
+                }
             } else {
                 manifestString = JSON.stringify(ctx.app);
             }
+            
             const validationResult = await this.validateManifest(ctx, manifestString!);
             if (validationResult.length > 0) {
                 throw AppStudioResultFactory.UserError(AppStudioError.ValidationFailedError.name, AppStudioError.ValidationFailedError.message(validationResult));
@@ -81,14 +99,14 @@ export class AppStudioPluginImpl {
                 remoteTeamsAppId = ctx.answers?.getString(Constants.REMOTE_TEAMS_APP_ID);
             }
             await publishProgress?.next(`Updating app definition for app ${remoteTeamsAppId} in app studio`);
-            const manifest: TeamsAppManifest = JSON.parse(manifestString);
+            const manifest: TeamsAppManifest = JSON.parse(manifestString!);
             const appDefinition = this.convertToAppDefinition(manifest);
             let appStudioToken = await ctx?.appStudioToken?.getAccessToken();
             await AppStudioClient.updateTeamsApp(remoteTeamsAppId!, appDefinition, appStudioToken!);
 
             // Build Teams App package
             await publishProgress?.next(`Building Teams app package in ${appDirectory}.`);
-            const appPackage = await this.buildTeamsAppPackage(appDirectory, manifestString);
+            const appPackage = await this.buildTeamsAppPackage(appDirectory, manifestString!);
 
             // Publish Teams App
             await publishProgress?.next(`Publishing ${ctx.app.name.short}`);

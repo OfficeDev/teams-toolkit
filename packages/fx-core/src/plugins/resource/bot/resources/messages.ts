@@ -30,6 +30,8 @@ export class Messages {
     public static readonly CommandFailWithMessage = (command: string, message: string): string => `Run ${command} failed with message: ${message}`;
     public static readonly DoSthBeforeSth = (sth: string, beforeSth: string): string => `Please do ${sth} before ${beforeSth}.`;
 
+    public static readonly WORKING_DIR_IS_MISSING = "Working directory is missing.";
     public static readonly FAIL_TO_GET_AZURE_CREDS = "Fail to get azure credentials.";
-    public static readonly LOGIN_AZURE_ACCOUNT = "Please login azure account.";
+    public static readonly TRY_LOGIN_AZURE = "Please try to login azure.";
+    public static readonly SKIP_DEPLOY_NO_UPDATES = "Skip deploy since no updates.";
 }

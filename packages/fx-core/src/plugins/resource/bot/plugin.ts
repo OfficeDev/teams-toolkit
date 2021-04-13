@@ -29,6 +29,7 @@ import { IBotRegistration } from "./appStudio/interfaces/IBotRegistration";
 import { Logger } from "./logger";
 import { Retry } from "./constants";
 import Timer from "@dbpiper/timer";
+import { DeployMgr } from "./deployMgr";
 
 export class TeamsBotImpl {
     // Made config plubic, because expect the upper layer to fill inputs.
@@ -195,8 +196,9 @@ export class TeamsBotImpl {
 
         const serviceClientCredentials = await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
         if (!serviceClientCredentials) {
-            throw new PreconditionException(Messages.FAIL_TO_GET_AZURE_CREDS, [Messages.LOGIN_AZURE_ACCOUNT]);
+            throw new PreconditionException(Messages.FAIL_TO_GET_AZURE_CREDS, [Messages.TRY_LOGIN_AZURE]);
         }
+
         // Suppose we get creds and subs from context.
         const webSiteMgmtClient = factory.createWebSiteMgmtClient(
             serviceClientCredentials,
@@ -296,7 +298,7 @@ export class TeamsBotImpl {
 
         const serviceClientCredentials = await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
         if (!serviceClientCredentials) {
-            throw new PreconditionException(Messages.FAIL_TO_GET_AZURE_CREDS, [Messages.LOGIN_AZURE_ACCOUNT]);
+            throw new PreconditionException(Messages.FAIL_TO_GET_AZURE_CREDS, [Messages.TRY_LOGIN_AZURE]);
         }
 
         const webSiteMgmtClient = factory.createWebSiteMgmtClient(
@@ -401,11 +403,23 @@ export class TeamsBotImpl {
         this.telemetryStepIn(LifecycleFuncNames.DEPLOY);
         this.markEnter(LifecycleFuncNames.DEPLOY);
 
+        if (!this.config.scaffold.workingDir) {
+            throw new PreconditionException(Messages.WORKING_DIR_IS_MISSING, []);
+        }
+
+        const deployMgr = new DeployMgr(this.config.scaffold.workingDir);
+        await deployMgr.init();
+        const needsRedeploy = await deployMgr.needsToRedeploy();
+        if (!needsRedeploy) {
+            Logger.debug(Messages.SKIP_DEPLOY_NO_UPDATES);
+            return ResultFactory.Success();
+        }
+
         const handler = await ProgressBarFactory.newProgressBar(ProgressBarConstants.DEPLOY_TITLE, ProgressBarConstants.DEPLOY_STEPS_NUM, this.ctx);
 
         await handler?.start(ProgressBarConstants.DEPLOY_STEP_START);
 
-        const packDir = this.config.scaffold.workingDir!;
+        const packDir = this.config.scaffold.workingDir;
 
         await handler?.next(ProgressBarConstants.DEPLOY_STEP_NPM_INSTALL);
         const buildTimer = new Timer();
@@ -423,7 +437,7 @@ export class TeamsBotImpl {
 
         const serviceClientCredentials = await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
         if (!serviceClientCredentials) {
-            throw new PreconditionException(Messages.FAIL_TO_GET_AZURE_CREDS, [Messages.LOGIN_AZURE_ACCOUNT]);
+            throw new PreconditionException(Messages.FAIL_TO_GET_AZURE_CREDS, [Messages.TRY_LOGIN_AZURE]);
         }
 
         const webSiteMgmtClient = new appService.WebSiteManagementClient(
@@ -481,6 +495,7 @@ export class TeamsBotImpl {
             throw new ZipDeployException();
         }
 
+        await deployMgr.updateLastDeployTime(new Date());
         this.config.saveConfigIntoContext(context);
         this.telemetryStepOutSuccess(LifecycleFuncNames.DEPLOY);
 
@@ -585,7 +600,7 @@ export class TeamsBotImpl {
 
         const serviceClientCredentials = await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
         if (!serviceClientCredentials) {
-            throw new PreconditionException(Messages.FAIL_TO_GET_AZURE_CREDS, [Messages.LOGIN_AZURE_ACCOUNT]);
+            throw new PreconditionException(Messages.FAIL_TO_GET_AZURE_CREDS, [Messages.TRY_LOGIN_AZURE]);
         }
 
         const botClient = factory.createAzureBotServiceClient(
@@ -713,7 +728,7 @@ export class TeamsBotImpl {
 
         const serviceClientCredentials = await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
         if (!serviceClientCredentials) {
-            throw new PreconditionException(Messages.FAIL_TO_GET_AZURE_CREDS, [Messages.LOGIN_AZURE_ACCOUNT]);
+            throw new PreconditionException(Messages.FAIL_TO_GET_AZURE_CREDS, [Messages.TRY_LOGIN_AZURE]);
         }
 
         // 2. Provision a bot channel registration resource on azure.

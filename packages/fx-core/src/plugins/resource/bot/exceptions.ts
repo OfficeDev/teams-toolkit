@@ -51,7 +51,6 @@ export class DeployWithoutProvisionException extends PluginException {
             Messages.DoSthBeforeSth("provision", "running deploy"),
             [
                 "Please run provision first",
-                Messages.ReferToHelpLink
             ]
         );
     }
@@ -61,9 +60,7 @@ export class SomethingMissingException extends PreconditionException {
     constructor(something: string) {
         super(
             Messages.SomethingIsMissing(something),
-            [
-                Messages.ReferToIssueLink
-            ]
+            []
         );
     }
 }
@@ -92,9 +89,7 @@ export class ClientCreationException extends PluginException {
             ExceptionType.System,
             ExceptionNames.CLIENT_CREATION_EXCEPTION,
             Messages.FailToCreateSomeClient(clientName),
-            [
-                Messages.ReferToIssueLink
-            ],
+            [],
             innerError
         );
     }
@@ -106,9 +101,7 @@ export class ProvisionException extends PluginException {
             ExceptionType.System,
             ExceptionNames.PROVISION_EXCEPTION,
             Messages.FailToProvisionSomeResource(resource),
-            [
-                Messages.ReferToIssueLink
-            ],
+            [],
             innerError
         );
     }
@@ -120,9 +113,7 @@ export class ConfigUpdatingException extends PluginException {
             ExceptionType.System,
             ExceptionNames.CONFIG_UPDATING_EXCEPTION,
             Messages.FailToUpdateConfigs(configName),
-            [
-                Messages.ReferToIssueLink
-            ],
+            [],
             innerError
         );
     }
@@ -134,9 +125,7 @@ export class ValidationException extends PluginException {
             ExceptionType.System,
             ExceptionNames.VALIDATION_EXCEPTION,
             Messages.SomethingIsInvalidWithValue(name, value),
-            [
-                Messages.ReferToIssueLink
-            ]
+            []
         );
     }
 }
@@ -147,9 +136,7 @@ export class PackDirExistenceException extends PluginException {
             ExceptionType.User,
             ExceptionNames.PACK_DIR_EXISTENCE_EXCEPTION,
             Messages.SomethingIsNotExisting("pack directory"),
-            [
-                Messages.ReferToHelpLink
-            ]
+            []
         );
     }
 }
@@ -160,9 +147,7 @@ export class ListPublishingCredentialsException extends PluginException {
             ExceptionType.System,
             ExceptionNames.LIST_PUBLISHING_CREDENTIALS_EXCEPTION,
             Messages.FailToListPublishingCredentials,
-            [
-                Messages.ReferToIssueLink
-            ],
+            [],
             innerError
         );
     }
@@ -175,7 +160,7 @@ export class ZipDeployException extends PluginException {
             ExceptionNames.ZIP_DEPLOY_EXCEPTION,
             Messages.FailToDoZipDeploy,
             [
-                Messages.ReferToIssueLink
+                "Please retry the deploy command."
             ],
             innerError
         );
@@ -188,9 +173,7 @@ export class MessageEndpointUpdatingException extends PluginException {
             ExceptionType.System,
             ExceptionNames.MSG_ENDPOINT_UPDATING_EXCEPTION,
             Messages.FailToUpdateMessageEndpoint(endpoint),
-            [
-                Messages.ReferToIssueLink
-            ],
+            [],
             innerError
         );
     }
@@ -203,7 +186,7 @@ export class DownloadException extends PluginException {
             ExceptionNames.DOWNLOAD_EXCEPTION,
             Messages.FailToDownloadFrom(url),
             [
-                Messages.ReferToIssueLink
+                "Please check your network status and retry."
             ],
             innerError
         );
@@ -216,9 +199,7 @@ export class TplManifestFormatException extends PluginException {
             ExceptionType.System,
             ExceptionNames.MANIFEST_FORMAT_EXCEPTION,
             Messages.SomethingIsInWrongFormat("Templates\" manifest.json"),
-            [
-                Messages.ReferToIssueLink
-            ]
+            []
         );
     }
 }
@@ -229,9 +210,7 @@ export class TemplateProjectNotFoundException extends PluginException {
             ExceptionType.System,
             ExceptionNames.TEMPLATE_PROJECT_NOT_FOUND_EXCEPTION,
             Messages.SomethingIsNotFound("Template project for scaffold"),
-            [
-                Messages.ReferToIssueLink
-            ]
+            []
         );
     }
 }
@@ -242,9 +221,7 @@ export class CommandExecutionException extends PluginException {
             ExceptionType.System,
             ExceptionNames.COMMAND_EXECUTION_EXCEPTION,
             Messages.CommandFailWithMessage(cmd, message),
-            [
-                Messages.ReferToIssueLink
-            ],
+            [],
             innerError
         );
     }

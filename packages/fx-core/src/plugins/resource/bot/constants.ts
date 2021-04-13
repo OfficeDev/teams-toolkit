@@ -180,6 +180,7 @@ export class DeployConfigs {
     public static readonly UN_PACK_DIRS = ["node_modules", "package-lock.json"];
     public static readonly DEPLOYMENT_FOLDER = ".deployment";
     public static readonly DEPLOYMENT_CONFIG_FILE = "bot.json";
+    public static readonly WALK_SKIP_PATHS = ["node_modules", ".fx", DeployConfigs.DEPLOYMENT_FOLDER, ".vscode"];
 }
 
 export class FolderNames {

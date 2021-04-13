@@ -4,8 +4,10 @@
 import { DeployConfigs } from "./constants";
 import * as path from "path";
 import * as fs from "fs-extra";
-import { SomethingMissingException } from "./exceptions";
+import { PreconditionException, SomethingMissingException } from "./exceptions";
 import { Logger } from "./logger";
+import { forEachFileAndDir } from "./utils/dir-walk";
+import { Messages } from "./resources/messages";
 
 export class DeployMgr {
     private workingDir?: string;
@@ -35,19 +37,59 @@ export class DeployMgr {
     }
 
     public async needsToRedeploy(): Promise<boolean> {
-        const lastDeployTime = await this.getLastDeployTime();
-        const currentChangeTime = await this.getCurrentChangeTime();
+        // Iterate all source files and config files to determine if anything changed.
+        if (!this.workingDir) {
+            throw new PreconditionException(Messages.WORKING_DIR_IS_MISSING, []);
+        }
 
-        Logger.debug(`lastDeployTime: ${lastDeployTime}.`);
-        Logger.debug(`currentChangeTime: ${currentChangeTime}.`);
+        const lastBotDeployTime = await this.getLastDeployTime();
+        let changed = false;
+        await forEachFileAndDir(this.workingDir!,
+            (itemPath: string, stats: fs.Stats) => {
 
-        return currentChangeTime > lastDeployTime;
+                const relativePath = path.relative(this.workingDir!, itemPath);
+
+                if (relativePath && stats.mtime > lastBotDeployTime) {
+                    Logger.debug(`relativePath: ${relativePath}, lastBotDeployTime: ${lastBotDeployTime}, stats.mtime: ${stats.mtime}.`);
+                    changed = true;
+                    // Return true to stop walking.
+                    return true;
+                }
+            },
+            (itemPath: string) => {
+                return !DeployConfigs.WALK_SKIP_PATHS.find((value) => {
+                    const absolutePathPrefix = path.join(this.workingDir!, value);
+                    return itemPath.startsWith(absolutePathPrefix);
+                });
+            }
+        );
+
+        return changed;
     }
 
-    private async getCurrentChangeTime(): Promise<Date> {
-        // Iterate all source files and config files to get the biggest timestamp.
+    public async updateLastDeployTime(time: Date): Promise<void> {
+        if (!this.deploymentDir) {
+            throw new SomethingMissingException(DeployConfigs.DEPLOYMENT_FOLDER);
+        }
 
+        const configFile = path.join(this.deploymentDir, DeployConfigs.DEPLOYMENT_CONFIG_FILE);
+        let botDeployJson = {
+            time: new Date(0)
+        };
+        try {
+            botDeployJson = await fs.readJSON(configFile);
+        } catch (e) {
+            Logger.debug(`readJson ${configFile} failed with error: ${e}.`);
+        }
 
+        botDeployJson.time = time;
+
+        try {
+            await fs.writeJson(configFile, botDeployJson);
+        } catch (e) {
+            // If anything wrong here, don't throw exception to fail end users.
+            Logger.debug(`writeJson ${configFile} failed with error: ${e}.`);
+        }
     }
 
     private async getLastDeployTime(): Promise<Date> {
@@ -70,6 +112,4 @@ export class DeployMgr {
 
         return botDeployJson.time;
     }
-
-
 }

@@ -6,15 +6,22 @@ export enum FunctionLanguage {
     CSharp = "CSharp"
 }
 
+export enum NodeVersion {
+    Version10 = "10",
+    Version12 = "12",
+    Version14 = "14"
+}
+
 export enum FunctionConfigKey {
     resourceGroupName = "resourceGroupName",
     subscriptionId = "subscriptionId",
     credential = "credential",
     location = "location",
     resourceNameSuffix = "resourceNameSuffix",
+    functionLanguage = "functionLanguage",
 
     /* Config exported by Function plugin */
-    functionLanguage = "functionLanguage",
+    nodeVersion = "nodeVersion",
     functionAppName = "functionAppName",
     defaultFunctionName = "defaultFunctionName",
     storageAccountName = "storageAccountName",
@@ -32,7 +39,7 @@ export enum FunctionConfigKey {
 
 export enum QuestionKey {
     functionName = "function-name",
-    functionLanguage = "function-language",
+    nodeVersion = "node-version",
     stage = "stage"
 }
 

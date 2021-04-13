@@ -1,17 +1,16 @@
-import * as configurableTab from "../static/configurableTabs.json";
-import * as staticTab from "../static/staticTabs.json";
+import configurableTabs from "../static/configurableTabs.json";
+import staticTabs from "../static/staticTabs.json";
 import Mustache from "mustache";
 import { TabScope } from "./questions";
 import { Constants } from "../constants";
-import { PluginContext } from "fx-api";
 
 export interface ManifestVariables {
     baseUrl: string;
 }
 
 export class TabScopeManifest {
-    static readonly configurableTab = JSON.stringify(configurableTab);
-    static readonly staticTab = JSON.stringify(staticTab);
+    static readonly configurableTab = JSON.stringify(configurableTabs);
+    static readonly staticTab = JSON.stringify(staticTabs);
 
     public static getConfigurableTab(variables: ManifestVariables, tabScope?: string): string {
         if (tabScope === TabScope.GroupTab) {

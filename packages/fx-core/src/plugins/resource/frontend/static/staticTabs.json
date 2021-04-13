@@ -2,8 +2,8 @@
     {
         "entityId": "index",
         "name": "Personal Tab",
-        "contentUrl": "{baseUrl}/index.html#/tab",
-        "websiteUrl": "{baseUrl}/index.html#/tab",
+        "contentUrl": "{{{baseUrl}}}/index.html#/tab",
+        "websiteUrl": "{{{baseUrl}}}/index.html#/tab",
         "scopes": [
             "personal"
         ]

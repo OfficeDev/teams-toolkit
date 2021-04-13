@@ -1,6 +1,6 @@
 [
     {
-        "configurationUrl": "{baseUrl}/config",
+        "configurationUrl": "{{{baseUrl}}}/config",
         "canUpdateConfiguration": true,
         "scopes": [
             "team",

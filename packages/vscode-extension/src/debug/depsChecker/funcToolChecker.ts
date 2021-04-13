@@ -99,7 +99,7 @@ export class FuncToolChecker implements IDepsChecker {
       DepsCheckerTelemetry.sendSystemErrorEvent(
         DepsCheckerEvent.validateFunc,
         TelemtryMessages.failedToInstallFunc,
-        failToValidate
+        Messages.failToValidateFuncCoreTool.replace("@NameVersion", installedNameWithVersion)
       );
 
       throw new DepsCheckerError(Messages.failToInstallFuncCoreTool.replace("@NameVersion", installedNameWithVersion), functionCoreToolsHelpLink);

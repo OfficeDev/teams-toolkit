@@ -102,10 +102,10 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
       "Get started with Teamsfx",
       undefined,
       vscode.TreeItemCollapsibleState.Expanded,
-      TreeCategory.TeamsDevCenter,
+      undefined,
       [
-        new TreeViewCommand("App Management", "App Management", "fx-extension.openAppManagement", vscode.TreeItemCollapsibleState.None, TreeCategory.TeamsDevCenter, undefined, "appManagement"),
-        new TreeViewCommand("Bot Management", "Bot Management", "fx-extension.openBotManagement", vscode.TreeItemCollapsibleState.None, TreeCategory.TeamsDevCenter, undefined, "bot"),
+        new TreeViewCommand("App Management", "App Management", "fx-extension.openAppManagement", vscode.TreeItemCollapsibleState.None, undefined, undefined, "appManagement"),
+        new TreeViewCommand("Bot Management", "Bot Management", "fx-extension.openBotManagement", vscode.TreeItemCollapsibleState.None, undefined, undefined, "bot"),
       ]
     );
 

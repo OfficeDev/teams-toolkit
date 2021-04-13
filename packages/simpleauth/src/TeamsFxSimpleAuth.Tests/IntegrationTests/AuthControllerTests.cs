@@ -63,10 +63,14 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         {
             var AuthorizeUrl = _settings.AuthorizeUrl;
             _settings.AuthorizeUrl = AuthorizeUrl.Replace("${TenantId}", _settings.TenantId);
+
             var oAuthAuthority = _defaultConfigurations[ConfigurationName.OAuthAuthority];
             _defaultConfigurations[ConfigurationName.OAuthAuthority] = oAuthAuthority.Replace("${TenantId}", _settings.TenantId);
+            _configuration[ConfigurationName.OAuthAuthority] = oAuthAuthority.Replace("${TenantId}", _settings.TenantId);
+
             var aadMetadataAddress = _defaultConfigurations[ConfigurationName.AadMetadataAddress];
             _defaultConfigurations[ConfigurationName.AadMetadataAddress] = aadMetadataAddress.Replace("${TenantId}", _settings.TenantId);
+            _configuration[ConfigurationName.AadMetadataAddress] = aadMetadataAddress.Replace("${TenantId}", _settings.TenantId);
         }
 
         #region Utility
@@ -596,6 +600,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         public async Task PostToken_AuthCodeGrantWithAdditionalPropertyInBody_Return200()
         {
             // Arrange
+            Console.WriteLine("==================")
             var ssoToken = await Utilities.GetUserAccessToken(_settings, _configuration[ConfigurationName.ClientId],
                 _configuration[ConfigurationName.ClientSecret], _configuration[ConfigurationName.OAuthAuthority]).ConfigureAwait(false);
             var client = _defaultFactory.CreateDefaultClient(new RetryHandler(new HttpClientHandler()));

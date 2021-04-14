@@ -2,7 +2,7 @@
   "name": "teamsfx-extension",
   "displayName": "Teams Toolkit V2",
   "description": "Create, debug, and deploy Teams apps directly from Teams Toolkit v2",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "publisher": "Microsoft",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",

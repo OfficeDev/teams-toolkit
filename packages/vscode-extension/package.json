@@ -275,6 +275,11 @@
       {
         "title": "Teams Toolkit",
         "properties": {
+          "fx-extension.validateNode": {
+            "type": "boolean",
+            "description": "Validate the Node.js is installed before local debugging.",
+            "default": true
+          },
           "fx-extension.validateFuncCoreTools": {
             "type": "boolean",
             "description": "Validate the Azure Functions Core Tools is installed before local debugging.",

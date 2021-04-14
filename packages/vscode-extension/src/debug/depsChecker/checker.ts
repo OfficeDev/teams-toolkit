@@ -26,7 +26,7 @@ export interface IDepsChecker {
 
 export interface DepsInfo {
   name: string;
-  installVersion: string;
+  installVersion?: string;
   supportedVersions: string[];
   details: Map<string, string>;
 }
@@ -42,14 +42,14 @@ export class DepsChecker {
   public async resolve(): Promise<boolean> {
     const shouldContinue = true;
 
-    let validCheckers: IDepsChecker[];
-    try {
-      validCheckers = await this.check();
-    } catch (error) {
-      await this.handleError(error);
+    const validCheckers = await this.check();
+
+    // stop the process when validChecker is null.
+    if (validCheckers === null) {
       return !shouldContinue;
     }
 
+    // go to next step when no need to check.
     if (validCheckers.length === 0) {
       return shouldContinue;
     }
@@ -78,11 +78,18 @@ export class DepsChecker {
     });
   }
 
-  private async check(): Promise<Array<IDepsChecker>> {
+  private async check(): Promise<Array<IDepsChecker> | null> {
     const validCheckers = new Array<IDepsChecker>();
     for (const checker of this._checkers) {
-      if ((await checker.isEnabled()) && !(await checker.isInstalled())) {
-        validCheckers.push(checker);
+      try {
+        if ((await checker.isEnabled()) && !(await checker.isInstalled())) {
+          validCheckers.push(checker);
+        }
+      } catch (error) {
+        const continueNext = await this.handleError(error);
+        if (!continueNext) {
+          return null;
+        }
       }
     }
 
@@ -94,7 +101,9 @@ export class DepsChecker {
     const supportedPackages = [];
     for (const checker of checkers) {
       const info = await checker.getDepsInfo();
-      installPackages.push(`${info.name} (v${info.installVersion})`);
+      if (info.installVersion) {
+        installPackages.push(`${info.name} (v${info.installVersion})`);
+      }
       const supportedVersions = info.supportedVersions.map((version) => "v" + version).join(" or ");
       const supportedPackage = `${info.name} (${supportedVersions})`;
       supportedPackages.push(supportedPackage);

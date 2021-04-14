@@ -17,7 +17,7 @@ const downloadIndicatorInterval = 1000; // same as vscode-dotnet-runtime
 const configurationPrefix = "fx-extension";
 const validateDotnetSdkKey = "validateDotnetSdk";
 const validateFuncCoreToolsKey = "validateFuncCoreTools";
-const validateNodeVersionKey = "validateNodeVersion";
+const validateNodeVersionKey = "validateNode";
 
 export function dotnetCheckerEnabled(): boolean {
   return checkerEnabled(validateDotnetSdkKey);

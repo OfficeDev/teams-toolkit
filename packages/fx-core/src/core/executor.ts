@@ -20,6 +20,7 @@ import {
   UserError,
   SingleSelectQuestion,
   StringValidation,
+  ConfigFolderName,
 } from "fx-api";
 import * as path from "path";
 import { hooks } from "@feathersjs/hooks";
@@ -27,7 +28,6 @@ import * as fs from "fs-extra";
 import * as jsonschema from "jsonschema";
 
 import * as error from "./error";
-import * as tools from "./tools";
 import {
   CoreQuestionNames,
   QuestionAppName,
@@ -195,7 +195,7 @@ export class Executor {
     );
   }
 
-  @hooks([solutionMW, readConfigMW])
+  @hooks([solutionMW, writeConfigMW])
   static async create(
     ctx: CoreContext,
     answers?: ConfigMap
@@ -204,15 +204,7 @@ export class Executor {
       return err(error.InvalidContext());
     }
     ctx.logProvider?.info(`[Core] create - create target object`);
-    const targetCtx = new CoreContext(ctx);
-
-    targetCtx.dialog = ctx.dialog;
-    targetCtx.azureAccountProvider = ctx.azureAccountProvider;
-    targetCtx.graphTokenProvider = ctx.graphTokenProvider;
-    targetCtx.telemetryReporter = ctx.telemetryReporter;
-    targetCtx.logProvider = ctx.logProvider;
-    targetCtx.platform = ctx.platform;
-    targetCtx.answers = answers;
+    ctx.answers = answers;
 
     const appName = answers?.getString(QuestionAppName.name);
     const validateResult = jsonschema.validate(appName, {
@@ -240,25 +232,25 @@ export class Executor {
         )
       );
     }
-    targetCtx.root = projFolder;
+    ctx.root = projFolder;
 
     const solutionName = answers?.getString(QuestionSelectSolution.name);
     ctx.logProvider?.info(`[Core] create - select solution`);
     for (const s of ctx.globalSolutions.values()) {
       if (s.name === solutionName) {
-        targetCtx.selectedSolution = s;
+        ctx.selectedSolution = s;
         break;
       }
     }
 
-    const targetFolder = path.resolve(targetCtx.root);
+    const targetFolder = path.resolve(ctx.root);
 
     await fs.ensureDir(targetFolder);
-    await fs.ensureDir(`${targetFolder}/.mods`);
+    await fs.ensureDir(`${targetFolder}/.${ConfigFolderName}`);
 
     ctx.logProvider?.info(`[Core] create - call solution.create()`);
-    const result = await targetCtx.selectedSolution!.create(
-      targetCtx.toSolutionContext(answers)
+    const result = await ctx.selectedSolution!.create(
+      ctx.toSolutionContext(answers)
     );
     if (result.isErr()) {
       ctx.logProvider?.info(`[Core] create - call solution.create() failed!`);
@@ -268,7 +260,7 @@ export class Executor {
 
     try {
       await fs.writeFile(
-        `${targetCtx.root}/package.json`,
+        `${ctx.root}/package.json`,
         JSON.stringify(
           {
             name: appName,
@@ -290,25 +282,6 @@ export class Executor {
 
     ctx.logProvider?.info(`[Core] create - create basic folder with configs`);
 
-    ctx.logProvider?.info(`[Core] scaffold start!`);
-    const scaffoldRes = await Executor.scaffold(targetCtx, answers);
-
-    if (scaffoldRes.isErr()) {
-      ctx.logProvider?.info(`[Core] scaffold failed!`);
-      return scaffoldRes;
-    }
-
-    ctx.logProvider?.info(
-      `[Core] scaffold success! open target folder:${targetFolder}`
-    );
-
-    await ctx.dialog?.communicate(
-      new DialogMsg(DialogType.Ask, {
-        type: QuestionType.OpenFolder,
-        description: targetFolder,
-      })
-    );
-
     return ok(null);
   }
 
@@ -317,7 +290,28 @@ export class Executor {
     ctx: CoreContext,
     answers?: ConfigMap
   ): Promise<Result<null, FxError>> {
-    return ctx.selectedSolution!.scaffold(ctx.toSolutionContext(answers));
+    ctx.logProvider?.info(`[Core] scaffold start!`);
+
+    const scaffoldRes = await ctx.selectedSolution!.scaffold(
+      ctx.toSolutionContext(answers)
+    );
+
+    if (scaffoldRes.isErr()) {
+      ctx.logProvider?.info(`[Core] scaffold failed!`);
+      return scaffoldRes;
+    }
+
+    ctx.logProvider?.info(
+      `[Core] scaffold success! open target folder:${ctx.root}`
+    );
+
+    await ctx.dialog?.communicate(
+      new DialogMsg(DialogType.Ask, {
+        type: QuestionType.OpenFolder,
+        description: ctx.root,
+      })
+    );
+    return ok(null);
   }
 
   @hooks([versionControlMW, solutionMW, readConfigMW, writeConfigMW])

@@ -83,6 +83,18 @@ export class UserInputsException extends PluginException {
     }
 }
 
+export class CallAppStudioException extends PluginException {
+    constructor(apiName: string, innerError?: Error) {
+        super(
+            ExceptionType.System,
+            ExceptionNames.CALL_APPSTUDIO_API_EXCEPTION,
+            Messages.FailToCallAppStudio(apiName),
+            [],
+            innerError
+        );
+    }
+}
+
 export class ClientCreationException extends PluginException {
     constructor(clientName: string, innerError?: Error) {
         super(

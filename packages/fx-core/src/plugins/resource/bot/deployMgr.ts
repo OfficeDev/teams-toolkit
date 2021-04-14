@@ -49,8 +49,8 @@ export class DeployMgr {
 
                 const relativePath = path.relative(this.workingDir!, itemPath);
 
-                if (relativePath && stats.mtime > lastBotDeployTime) {
-                    Logger.debug(`relativePath: ${relativePath}, lastBotDeployTime: ${lastBotDeployTime}, stats.mtime: ${stats.mtime}.`);
+                if (relativePath && stats.mtime.getTime() > lastBotDeployTime) {
+                    Logger.debug(`relativePath: ${relativePath}, lastBotDeployTime: ${lastBotDeployTime}, stats.mtime: ${stats.mtime.getTime()}.`);
                     changed = true;
                     // Return true to stop walking.
                     return true;
@@ -67,14 +67,14 @@ export class DeployMgr {
         return changed;
     }
 
-    public async updateLastDeployTime(time: Date): Promise<void> {
+    public async updateLastDeployTime(time: number): Promise<void> {
         if (!this.deploymentDir) {
             throw new SomethingMissingException(DeployConfigs.DEPLOYMENT_FOLDER);
         }
 
         const configFile = path.join(this.deploymentDir, DeployConfigs.DEPLOYMENT_CONFIG_FILE);
         let botDeployJson = {
-            time: new Date(0)
+            time: 0
         };
         try {
             botDeployJson = await fs.readJSON(configFile);
@@ -92,7 +92,7 @@ export class DeployMgr {
         }
     }
 
-    private async getLastDeployTime(): Promise<Date> {
+    public async getLastDeployTime(): Promise<number> {
 
         if (!this.deploymentDir) {
             throw new SomethingMissingException(DeployConfigs.DEPLOYMENT_FOLDER);
@@ -107,7 +107,7 @@ export class DeployMgr {
         }
 
         if (!botDeployJson || !botDeployJson.time) {
-            return new Date(0);
+            return 0;
         }
 
         return botDeployJson.time;

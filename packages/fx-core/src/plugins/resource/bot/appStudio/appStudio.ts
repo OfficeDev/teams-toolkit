@@ -2,9 +2,10 @@ import { IAADApplication, IAADPassword } from "./interfaces/IAADApplication";
 import { IBotRegistration } from "./interfaces/IBotRegistration";
 
 import { AxiosInstance, default as axios } from "axios";
-import { ConfigUpdatingException, ProvisionException } from "../exceptions";
+import { CallAppStudioException, ConfigUpdatingException, ProvisionException } from "../exceptions";
 import { CommonStrings, ConfigNames } from "../resources/strings";
-
+import { LifecycleFuncNames } from "../constants";
+import { Logger } from "../logger";
 
 const baseUrl = "https://dev.teams.microsoft.com";
 let axiosInstance: AxiosInstance | undefined = undefined;
@@ -28,14 +29,15 @@ export async function init(accessToken: string): Promise<boolean> {
     }
 }
 
-export async function createAADApp(aadApp: IAADApplication): Promise<IAADApplication> {
+export async function createAADApp(aadApp: IAADApplication, useV2 = true): Promise<IAADApplication> {
     if (!aadApp || !axiosInstance) {
         throw new ProvisionException(CommonStrings.AAD_APP);
     }
 
     let response = undefined;
+    const endpoint = useV2 ? `${baseUrl}/api/aadapp/v2` : `${baseUrl}/api/aadapp`;
     try {
-        response = await axiosInstance.post(`${baseUrl}/api/aadapp`, aadApp);
+        response = await axiosInstance.post(endpoint, aadApp);
     } catch (e) {
         throw new ProvisionException(CommonStrings.AAD_APP, e);
     }
@@ -50,6 +52,32 @@ export async function createAADApp(aadApp: IAADApplication): Promise<IAADApplica
     }
 
     return app;
+}
+
+export async function checkAADApp(objectId: string, useV2 = true): Promise<boolean> {
+
+    if (!objectId || !axiosInstance) {
+        throw new CallAppStudioException(LifecycleFuncNames.CHECK_AAD_APP);
+    }
+
+    let response = undefined;
+    const endpoint = useV2 ? `${baseUrl}/api/aadapp/v2/${objectId}` : `${baseUrl}/api/aadapp/${objectId}`;
+    try {
+        response = await axiosInstance.get(endpoint);
+    } catch (e) {
+        throw new CallAppStudioException(LifecycleFuncNames.CHECK_AAD_APP, e);
+    }
+
+    if (!response || !response.data) {
+        return false;
+    }
+
+    const app = response.data as IAADApplication;
+    if (!app || !app.id || !app.objectId) {
+        return false;
+    }
+
+    return true;
 }
 
 export async function createAADAppPassword(aadAppObjectId?: string): Promise<IAADPassword> {

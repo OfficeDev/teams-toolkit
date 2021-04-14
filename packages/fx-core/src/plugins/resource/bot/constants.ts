@@ -102,14 +102,14 @@ export class LifecycleFuncNames {
     public static readonly REUSE_EXISTING_BOT_REG = "reuseExistingBotRegistration";
     public static readonly CREATE_NEW_BOT_REG_AZURE = "createNewBotRegistrationOnAzure";
     public static readonly CREATE_NEW_BOT_REG_APPSTUDIO = "createNewBotRegistrationOnAppStudio";
+    public static readonly CHECK_AAD_APP = "checkAADApp";
 }
 
 export class Retry {
-    public static readonly GENERATE_CLIENT_SECRET_TIMES = 10;
-    public static readonly GENERATE_CLIENT_SECRET_GAP_MS = 5000;
-    public static readonly UPDATE_MESSAGE_ENDPOINT_TIMES = 10;
-    public static readonly UPDATE_MESSAGE_ENDPOINT_GAP_MS = 5000;
+    public static readonly RETRY_TIMES = 10;
+    public static readonly BACKOFF_TIME_MS = 5000;
 }
+
 export class ExceptionNames {
     // System Exceptions
     public static readonly PRECONDITION_EXCEPTION = "Precondition Exception";
@@ -125,6 +125,7 @@ export class ExceptionNames {
     public static readonly TEMPLATE_PROJECT_NOT_FOUND_EXCEPTION = "Template Project Not Found Exception";
     public static readonly LANGUAGE_STRATEGY_NOT_FOUND_EXCEPTION = "Language Strategy Not Found Exception";
     public static readonly COMMAND_EXECUTION_EXCEPTION = "Command Execution Exception";
+    public static readonly CALL_APPSTUDIO_API_EXCEPTION = "Call AppStudio API Exception";
 
     // User Exceptions
     public static readonly USER_INPUTS_EXCEPTION = "User Inputs Exception";

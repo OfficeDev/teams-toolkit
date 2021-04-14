@@ -28,8 +28,8 @@ import * as AppStudio from "./appStudio/appStudio";
 import { IBotRegistration } from "./appStudio/interfaces/IBotRegistration";
 import { Logger } from "./logger";
 import { Retry } from "./constants";
-import Timer from "@dbpiper/timer";
 import { DeployMgr } from "./deployMgr";
+import { BotAuthCredential } from "./botAuthCredential";
 
 export class TeamsBotImpl {
     // Made config plubic, because expect the upper layer to fill inputs.
@@ -260,10 +260,17 @@ export class TeamsBotImpl {
             throw new ProvisionException(CommonStrings.AZURE_WEB_APP);
         }
 
-        this.config.provision.siteEndpoint = `${CommonStrings.HTTPS_PREFIX}${webappResponse.defaultHostName}`;
-        this.config.provision.redirectUri = `${this.config.provision.siteEndpoint}${CommonStrings.AUTH_REDIRECT_URI_SUFFIX}`;
+        if (!this.config.provision.siteEndpoint) {
+            this.config.provision.siteEndpoint = `${CommonStrings.HTTPS_PREFIX}${webappResponse.defaultHostName}`;
+        }
 
-        this.config.provision.appServicePlan = appServicePlanName;
+        if (!this.config.provision.redirectUri) {
+            this.config.provision.redirectUri = `${this.config.provision.siteEndpoint}${CommonStrings.AUTH_REDIRECT_URI_SUFFIX}`;
+        }
+
+        if (!this.config.provision.appServicePlan) {
+            this.config.provision.appServicePlan = appServicePlanName;
+        }
 
         // Update config for manifest.json
         this.ctx!.config.set(PluginBot.VALID_DOMAIN, `${this.config.provision.siteName}.${WebAppConstants.WEB_APP_SITE_DOMAIN}`);
@@ -407,6 +414,7 @@ export class TeamsBotImpl {
             throw new PreconditionException(Messages.WORKING_DIR_IS_MISSING, []);
         }
 
+        const deployTimeCandidate = Date.now();
         const deployMgr = new DeployMgr(this.config.scaffold.workingDir);
         await deployMgr.init();
         const needsRedeploy = await deployMgr.needsToRedeploy();
@@ -422,14 +430,11 @@ export class TeamsBotImpl {
         const packDir = this.config.scaffold.workingDir;
 
         await handler?.next(ProgressBarConstants.DEPLOY_STEP_NPM_INSTALL);
-        const buildTimer = new Timer();
+
         await LanguageStrategy.localBuild(this.config.scaffold.programmingLanguage!, packDir, this.config.deploy.unPackFlag === "true" ? true : false);
-        Logger.debug(`Local build costs ${buildTimer.stop().toString()}.`);
 
         await handler?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_FOLDER);
-        const zipTimer = new Timer();
         const zipBuffer = utils.zipAFolder(packDir, DeployConfigs.UN_PACK_DIRS, [`${FolderNames.NODE_MODULES}/${FolderNames.KEYTAR}`]);
-        Logger.debug(`Zip ${packDir} costs ${zipTimer.stop().toString()}.`);
 
         // 2.2 Retrieve publishing credentials.
         let publishingUserName = "";
@@ -447,12 +452,10 @@ export class TeamsBotImpl {
 
         let listResponse = undefined;
         try {
-            const timer = new Timer();
             listResponse = await webSiteMgmtClient.webApps.listPublishingCredentials(
                 this.config.provision.resourceGroup!,
                 this.config.provision.siteName!,
             );
-            Logger.debug(`listPublishingCredentials costs ${timer.stop().toString()}.`);
         } catch (e) {
             throw new ListPublishingCredentialsException(e);
         }
@@ -482,9 +485,7 @@ export class TeamsBotImpl {
 
         let res = undefined;
         try {
-            const timer = new Timer();
             res = await axios.post(zipDeployEndpoint, zipBuffer, config);
-            Logger.debug(`Deploy costs ${timer.stop().toString()}.`);
         } catch (e) {
             throw new ZipDeployException(e);
         }
@@ -495,7 +496,7 @@ export class TeamsBotImpl {
             throw new ZipDeployException();
         }
 
-        await deployMgr.updateLastDeployTime(new Date());
+        await deployMgr.updateLastDeployTime(deployTimeCandidate);
         this.config.saveConfigIntoContext(context);
         this.telemetryStepOutSuccess(LifecycleFuncNames.DEPLOY);
 
@@ -574,7 +575,7 @@ export class TeamsBotImpl {
 
         Logger.debug(`Update message endpoint with botId: ${botReg.botId}, botReg: ${JSON.stringify(botReg)}`);
 
-        let retries = Retry.UPDATE_MESSAGE_ENDPOINT_TIMES;
+        let retries = Retry.RETRY_TIMES;
         while (retries > 0) {
             try {
                 await AppStudio.init(appStudioToken!);
@@ -583,7 +584,7 @@ export class TeamsBotImpl {
                 Logger.debug(`updateMessageExtension exception: ${e}`);
                 retries = retries - 1;
                 if (retries > 0) {
-                    await new Promise((resolve) => setTimeout(resolve, Retry.UPDATE_MESSAGE_ENDPOINT_GAP_MS));
+                    await new Promise((resolve) => setTimeout(resolve, Retry.BACKOFF_TIME_MS));
                 }
                 continue;
             }
@@ -669,23 +670,22 @@ export class TeamsBotImpl {
         this.markEnter(LifecycleFuncNames.CREATE_NEW_BOT_REG_APPSTUDIO);
         Logger.debug("Start to create new bot registration on app studio.");
 
-        if (this.config.localDebug.botRegistrationCreated()) {
+        const appStudioToken = await this.ctx?.appStudioToken?.getAccessToken();
+        CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
+        await AppStudio.init(appStudioToken!);
+
+        if (this.config.localDebug.botRegistrationCreated() && (await AppStudio.checkAADApp(this.config.localDebug.localObjectId!))) {
             Logger.debug("Local bot has already been registered, just return.");
             return;
         }
 
         // 1. Create a new AAD App Registraion with client secret.
-        const appStudioToken = await this.ctx?.appStudioToken?.getAccessToken();
-        CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
-
         const aadDisplayName = ResourceNameFactory.createCommonName(this.ctx?.app.name.short);
-
 
         const botAuthCreds = await aadReg.registerAADAppAndGetSecretByAppStudio(
             appStudioToken!,
             aadDisplayName
         );
-        Logger.debug(`ClientId ${botAuthCreds.clientId}, ClientSecret: ${botAuthCreds.clientSecret} generated.`);
 
         // 2. Register bot by app studio.
         const botReg: IBotRegistration = {
@@ -699,11 +699,19 @@ export class TeamsBotImpl {
 
         Logger.debug(`Start to create bot registration by ${JSON.stringify(botReg)}`);
 
-        await AppStudio.init(appStudioToken!);
         await AppStudio.createBotRegistration(botReg);
 
-        this.config.localDebug.localBotId = botAuthCreds.clientId;
-        this.config.localDebug.localBotPassword = botAuthCreds.clientSecret;
+        if (!this.config.localDebug.localBotId) {
+            this.config.localDebug.localBotId = botAuthCreds.clientId;
+        }
+
+        if (!this.config.localDebug.localBotPassword) {
+            this.config.localDebug.localBotPassword = botAuthCreds.clientSecret;
+        }
+
+        if (!this.config.localDebug.localObjectId) {
+            this.config.localDebug.localObjectId = botAuthCreds.objectId;
+        }
 
         this.updateManifest(this.config.localDebug.localBotId!);
 
@@ -719,12 +727,19 @@ export class TeamsBotImpl {
         const appStudioToken = await this.ctx?.appStudioToken?.getAccessToken();
         CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
 
-        const aadDisplayName = ResourceNameFactory.createCommonName(this.ctx?.app.name.short);
+        let botAuthCreds = new BotAuthCredential();
 
-        const botAuthCreds = await aadReg.registerAADAppAndGetSecretByAppStudio(
-            appStudioToken!,
-            aadDisplayName
-        );
+        if (!this.config.scaffold.botRegistrationCreated()) {
+            const aadDisplayName = ResourceNameFactory.createCommonName(this.ctx?.app.name.short);
+            botAuthCreds = await aadReg.registerAADAppAndGetSecretByAppStudio(
+                appStudioToken!,
+                aadDisplayName
+            );
+        } else {
+            botAuthCreds.clientId = this.config.scaffold.botId;
+            botAuthCreds.clientSecret = this.config.scaffold.botPassword;
+            botAuthCreds.objectId = this.config.scaffold.objectId;
+        }
 
         const serviceClientCredentials = await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
         if (!serviceClientCredentials) {
@@ -795,9 +810,21 @@ export class TeamsBotImpl {
             throw new ProvisionException(CommonStrings.MS_TEAMS_CHANNEL);
         }
 
-        this.config.scaffold.botId = botAuthCreds.clientId;
-        this.config.scaffold.botPassword = botAuthCreds.clientSecret;
-        this.config.provision.botChannelRegName = botChannelRegistrationName;
+        if (!this.config.scaffold.botId) {
+            this.config.scaffold.botId = botAuthCreds.clientId;
+        }
+
+        if (!this.config.scaffold.botPassword) {
+            this.config.scaffold.botPassword = botAuthCreds.clientSecret;
+        }
+
+        if (!this.config.scaffold.objectId) {
+            this.config.scaffold.objectId = botAuthCreds.objectId;
+        }
+
+        if (!this.config.provision.botChannelRegName) {
+            this.config.provision.botChannelRegName = botChannelRegistrationName;
+        }
 
         this.updateManifest(this.config.scaffold.botId!);
 

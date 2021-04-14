@@ -216,3 +216,11 @@ export function convertToLangKey(programmingLanguage: ProgrammingLanguage): stri
 export function convertToTelemetryName(raw: string): string {
     return raw.toLowerCase().replace(/ /g, "-");
 }
+
+export function genYesterday(): number {
+    return Date.now() - 24 * 60 * 60 * 1000;
+}
+
+export function genTomorrow(): number {
+    return Date.now() + 24 * 60 * 60 * 1000;
+}

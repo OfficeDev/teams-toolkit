@@ -40,9 +40,7 @@ export class NodeChecker implements IDepsChecker {
     return true;
   }
 
-  public async install(): Promise<void> {
-    return Promise.resolve();
-  }
+  public async install(): Promise<void> { }
 
   public async getDepsInfo(): Promise<DepsInfo> {
     return {

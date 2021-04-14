@@ -44,7 +44,7 @@ export class DefaultTediousConnectionConfiguration {
       throw err;
     }
 
-    if (this.isMsiAuthentication()) {
+    if (!this.isMsiAuthentication()) {
       const configWithUPS = this.generateDefaultConfig(configuration);
       internalLogger.verbose("SQL configuration with username and password generated");
       return configWithUPS;
@@ -72,10 +72,10 @@ export class DefaultTediousConnectionConfiguration {
     const configuration = <SqlConfiguration>getResourceConfiguration(ResourceType.SQL);
     if (configuration?.sqlUsername != null && configuration?.sqlPassword != null) {
       internalLogger.verbose("Login with username and password");
-      return true;
+      return false;
     }
     internalLogger.verbose("Login with MSI identity");
-    return false;
+    return true;
   }
 
   /**

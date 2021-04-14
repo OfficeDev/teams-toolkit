@@ -3,9 +3,7 @@
         "packages/eslint-config",
         "packages/api",
         "packages/fx-core",
-        "packages/sdk",
-        "packages/cli",
-        "packages/vscode-extension"
+        "packages/sdk"
     ],
     "version": "independent"
 }

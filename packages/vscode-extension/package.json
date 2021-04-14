@@ -182,7 +182,7 @@
         "applyTo": "allDocuments",
         "fileLocation": [
           "relative",
-          "${workspaceFolder}"
+          "${workspaceFolder}/api"
         ],
         "pattern": [
           {

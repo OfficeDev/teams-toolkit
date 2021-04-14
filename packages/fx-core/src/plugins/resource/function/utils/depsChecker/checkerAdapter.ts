@@ -3,21 +3,36 @@
 
 import * as path from "path";
 import { Logger } from "../logger";
-import { openUrl } from "./common";
+import { dotnetChecker, DotnetChecker } from "./dotnetChecker";
+import { ConfigMap } from "fx-api";
 
 export { cpUtils } from "./cpUtils";
 export const logger = Logger;
 
+const downloadIndicatorInterval = 1000; // same as vscode-dotnet-runtime
+let enabled = false;
+
 export function dotnetCheckerEnabled(): boolean {
-  // TODO: implement me
+  // TODO: enable dotnet checker after all features are ready
+  // return enabled;
   return false;
 }
 
 export async function runWithProgressIndicator(
   callback: () => Promise<void>
 ): Promise<void> {
-  // TODO: implement progress indicator in plugin
-  await callback();
+  // NOTE: We cannot use outputChannel in plugin to print the dots in one line.
+  let counter = 1;
+  const timer = setInterval(() =>  {
+    const dots = Array(counter).fill(".").join("");
+    logger.info(dots);
+    counter += 1;
+  }, downloadIndicatorInterval);
+  try {
+    await callback();
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 export async function displayLearnMore(message: string, link: string): Promise<boolean> {
@@ -46,4 +61,16 @@ export function showOutputChannel(): void {
 
 export function getResourceDir(): string {
   return path.resolve(path.join(__dirname, "..", "..", "..", "..", "..", "..", "resource", "plugins", "resource", "function"));
+}
+
+const answerKey = "function-dotnet-checker-enabled";
+
+export function setFeatureFlag(answers?: ConfigMap): void {
+  enabled = answers?.getBoolean(answerKey) || false;
+}
+
+// get dotnet exec path and escape for shell execution
+export async function getDotnetForShell(): Promise<string> {
+  const execPath = await dotnetChecker.getDotnetExecPath();
+  return DotnetChecker.escapeFilePath(execPath);
 }

@@ -5,7 +5,6 @@ import * as vscode from "vscode";
 import * as path from "path";
 import { ext } from "./extensionVariables";
 import { TreeItem, TreeCategory, Result, FxError, ok } from "fx-api";
-import { isFeatureFlag } from "./utils/commonUtils";
 
 export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeViewCommand> {
   public static readonly TreeViewFlag = "TreeView";

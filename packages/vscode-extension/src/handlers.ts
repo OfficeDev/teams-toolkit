@@ -137,7 +137,6 @@ export async function activate(): Promise<Result<null, FxError>> {
 
     {
       const globalConfig = new ConfigMap();
-      globalConfig.set("featureFlag", isFeatureFlag());
       globalConfig.set("function-dotnet-checker-enabled", dotnetChecker.isEnabled());
       const result = await core.init(globalConfig);
       if (result.isErr()) {
@@ -532,7 +531,15 @@ export async function openWelcomeHandler() {
   });
   welcomePanel.webview.html = getHtmlForWebview();
 
-  //WebviewPanel.createOrShow(ext.context.extensionPath, PanelType.QuickStart);
+  if (isFeatureFlag()) {
+    WebviewPanel.createOrShow(ext.context.extensionPath, PanelType.QuickStart)
+  } else {
+    const welcomePanel = window.createWebviewPanel("react", "Teams Toolkit", ViewColumn.One, {
+      enableScripts: true,
+      retainContextWhenHidden: true
+    });
+    welcomePanel.webview.html = getHtmlForWebview();
+  }
 }
 
 export async function openSamplesHandler() {

@@ -253,6 +253,17 @@ export class FunctionAppOpError extends FunctionPluginError {
     }
 }
 
+export class DotnetError extends FunctionPluginError {
+    constructor(message: string) {
+        super(
+            ErrorType.User,
+            "DotnetError",
+            message,
+            []
+        );
+    }
+}
+
 export class DotnetVersionError extends FunctionPluginError {
     constructor() {
         super(

@@ -19,7 +19,8 @@ import {
     NotScaffoldError,
     ProvisionError,
     ValidationError,
-    runWithErrorCatchAndThrow
+    runWithErrorCatchAndThrow,
+    DotnetError
 } from "./resources/errors";
 import {
     DefaultProvisionConfigs, DefaultValues, DependentPluginInfo,
@@ -38,6 +39,11 @@ import { FxResult, FunctionPluginResultFactory as ResultFactory } from "./result
 import { Logger } from "./utils/logger";
 import { PostProvisionSteps, PreDeploySteps, ProvisionSteps, StepGroup, step } from "./resources/steps";
 import { functionNameQuestion, nodeVersionQuestion } from "./questions";
+import { dotnetHelpLink, Messages } from "./utils/depsChecker/common";
+import { DotnetChecker } from "./utils/depsChecker/dotnetChecker";
+import { handleDotnetError } from "./utils/depsChecker/checkerAdapter";
+import { isLinux } from "./utils/depsChecker/common";
+import { DepsCheckerError } from "./utils/depsChecker/errors";
 
 type Site = WebSiteManagementModels.Site;
 type AppServicePlan = WebSiteManagementModels.AppServicePlan;
@@ -446,7 +452,7 @@ export class FunctionPluginImpl {
             return ResultFactory.Success();
         }
 
-        await FunctionDeploy.checkDotNetVersion(ctx, workingPath);
+        await this.handleDotnetChecker();
 
         await runWithErrorCatchAndThrow(new InstallTeamsfxBindingError(), async () =>
             await step(StepGroup.PreDeployStepGroup, PreDeploySteps.installTeamsfxBinding, async () =>
@@ -593,5 +599,34 @@ export class FunctionPluginImpl {
         }
 
         return undefined;
+    }
+
+    private async handleDotnetChecker(): Promise<void> {
+        await runWithErrorCatchAndThrow(new DotnetError(Messages.defaultErrorMessage), async () => {
+            const dotnetChecker = new DotnetChecker();
+            const shouldContinue = true;
+            try {
+                if (await dotnetChecker.isInstalled()) {
+                    return;
+                }
+            } catch (error) {
+                handleDotnetError(error);
+                return !shouldContinue;
+            }
+
+            await step(StepGroup.PreDeployStepGroup, PreDeploySteps.dotnetInstall, async () => {
+                if (isLinux()) {
+                    // TODO: handle linux installation
+                    handleDotnetError(new DepsCheckerError(Messages.defaultErrorMessage, dotnetHelpLink));
+                    return;
+                }
+
+                try {
+                    await dotnetChecker.install();
+                } catch (error) {
+                    handleDotnetError(error);
+                }
+            });
+        });
     }
 }

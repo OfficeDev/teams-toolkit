@@ -3,8 +3,10 @@
 
 import * as path from "path";
 import { Logger } from "../logger";
+import { DepsCheckerError } from "./errors";
 import { dotnetChecker, DotnetChecker } from "./dotnetChecker";
-import { ConfigMap } from "fx-api";
+import { ConfigMap, PluginContext, returnUserError } from "fx-api";
+import { Messages, dotnetHelpLink } from "./common";
 
 export { cpUtils } from "./cpUtils";
 export const logger = Logger;
@@ -73,4 +75,13 @@ export function setFeatureFlag(answers?: ConfigMap): void {
 export async function getDotnetForShell(): Promise<string> {
   const execPath = await dotnetChecker.getDotnetExecPath();
   return DotnetChecker.escapeFilePath(execPath);
+}
+
+export function handleDotnetError(error: Error): void {
+  if (error instanceof DepsCheckerError) {
+    throw returnUserError(error, "function", "DepsCheckerError", error.helpLink, error);
+    // throw new DotnetError(error.message, error.helpLink);
+  } else {
+    throw returnUserError(new Error(Messages.defaultErrorMessage), "function", "DepsCheckerError", dotnetHelpLink, error);
+  }
 }

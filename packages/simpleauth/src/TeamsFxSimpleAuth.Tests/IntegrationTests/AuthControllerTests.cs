@@ -55,7 +55,22 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
                 [ConfigurationName.AadMetadataAddress] = _configuration[ConfigurationName.AadMetadataAddress]
             };
 
+            replaceTenantId();
             _defaultFactory = _aadInstance.ConfigureWebApplicationFactory(_defaultConfigurations);
+        }
+
+        private void replaceTenantId()
+        {
+            var AuthorizeUrl = _settings.AuthorizeUrl;
+            _settings.AuthorizeUrl = AuthorizeUrl.Replace("__TENANT_ID__", _settings.TenantId);
+
+            var oAuthAuthority = _defaultConfigurations[ConfigurationName.OAuthAuthority];
+            _defaultConfigurations[ConfigurationName.OAuthAuthority] = oAuthAuthority.Replace("__TENANT_ID__", _settings.TenantId);
+            _configuration[ConfigurationName.OAuthAuthority] = oAuthAuthority.Replace("__TENANT_ID__", _settings.TenantId);
+
+            var aadMetadataAddress = _defaultConfigurations[ConfigurationName.AadMetadataAddress];
+            _defaultConfigurations[ConfigurationName.AadMetadataAddress] = aadMetadataAddress.Replace("__TENANT_ID__", _settings.TenantId);
+            _configuration[ConfigurationName.AadMetadataAddress] = aadMetadataAddress.Replace("__TENANT_ID__", _settings.TenantId);
         }
 
         #region Utility

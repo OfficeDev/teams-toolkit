@@ -452,6 +452,7 @@ export class FunctionPluginImpl {
             return ResultFactory.Success();
         }
 
+        // NOTE: make sure this step is before using `dotnet` command if you refactor this code.
         await this.handleDotnetChecker();
 
         await runWithErrorCatchAndThrow(new InstallTeamsfxBindingError(), async () =>
@@ -602,7 +603,7 @@ export class FunctionPluginImpl {
     }
 
     private async handleDotnetChecker(): Promise<void> {
-        await runWithErrorCatchAndThrow(new DotnetError(Messages.defaultErrorMessage), async () => {
+        await step(StepGroup.PreDeployStepGroup, PreDeploySteps.dotnetInstall, async () => {
             const dotnetChecker = new DotnetChecker();
             try {
                 if (await dotnetChecker.isInstalled()) {
@@ -613,19 +614,17 @@ export class FunctionPluginImpl {
                 return;
             }
 
-            await step(StepGroup.PreDeployStepGroup, PreDeploySteps.dotnetInstall, async () => {
-                if (isLinux()) {
-                    // TODO: handle linux installation
-                    handleDotnetError(new DepsCheckerError(Messages.defaultErrorMessage, dotnetHelpLink));
-                    return;
-                }
+            if (isLinux()) {
+                // TODO: handle linux installation
+                handleDotnetError(new DepsCheckerError(Messages.defaultErrorMessage, dotnetHelpLink));
+                return;
+            }
 
-                try {
-                    await dotnetChecker.install();
-                } catch (error) {
-                    handleDotnetError(error);
-                }
-            });
+            try {
+                await dotnetChecker.install();
+            } catch (error) {
+                handleDotnetError(error);
+            }
         });
     }
 }

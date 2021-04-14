@@ -7,7 +7,7 @@ pushd "$DIR"
 apt-get update && apt-get install -y chromium-chromedriver=87.0.4280.8800
 
 cd ..
-dotnet test TeamsFxSimpleAuth.sln --filter TestCategory="P0"
+dotnet test Microsoft.TeamsFx.SimpleAuth.sln --filter TestCategory="P0"
 popd
 
 exit 0

@@ -6,11 +6,11 @@ import { IAadPluginConfig, IApimPluginConfig, IFunctionPluginConfig, ISolutionCo
 import { ApimService } from "../service/apimService";
 import { OpenApiProcessor } from "../util/openApiProcessor";
 import { Telemetry } from "../telemetry";
-import { NameSanitizer } from "../util/nameSanitizer";
 import { IAnswer } from "../model/answer";
-import { LogProvider, TeamsAppManifest } from "fx-api";
+import { LogProvider } from "fx-api";
 import * as path from "path";
 import { Lazy } from "../util/lazy";
+import { NamingRules } from "../util/namingRules";
 
 export class ApimManager {
     private readonly logger?: LogProvider;
@@ -33,12 +33,12 @@ export class ApimManager {
     public async provision(apimConfig: IApimPluginConfig, solutionConfig: ISolutionConfig, appName: string): Promise<void> {
         const apimService: ApimService = await this.lazyApimService.getValue();
         const resourceGroupName = apimConfig.resourceGroupName ?? solutionConfig.resourceGroupName;
-        const apimServiceName = apimConfig.serviceName ?? NameSanitizer.sanitizeApimName(appName, solutionConfig.resourceNameSuffix);
+        const apimServiceName = apimConfig.serviceName ?? NamingRules.apimServiceName.sanitize(appName, solutionConfig.resourceNameSuffix);
 
         await apimService.createService(resourceGroupName, apimServiceName, solutionConfig.location);
         apimConfig.serviceName = apimServiceName;
 
-        const productId = apimConfig.productId ?? NameSanitizer.sanitizeProductId(appName, solutionConfig.resourceNameSuffix);
+        const productId = apimConfig.productId ?? NamingRules.productId.sanitize(appName, solutionConfig.resourceNameSuffix);
         await apimService.createProduct(resourceGroupName, apimServiceName, productId);
         apimConfig.productId = productId;
     }
@@ -63,7 +63,7 @@ export class ApimManager {
             apimConfig.apimClientAADClientSecret
         );
 
-        const oAuthServerId = apimConfig.oAuthServerId ?? NameSanitizer.sanitizeOAuthServerId(appName, solutionConfig.resourceNameSuffix);
+        const oAuthServerId = apimConfig.oAuthServerId ?? NamingRules.oAuthServerId.sanitize(appName, solutionConfig.resourceNameSuffix);
         const scopeName = `${aadConfig.applicationIdUris}/${ApimDefaultValues.enableScopeName}`;
         await apimService.createOrUpdateOAuthService(
             resourceGroupName,
@@ -97,9 +97,9 @@ export class ApimManager {
         );
         const versionIdentity = AssertNotEmpty("versionAnswer.versionIdentity", answer.versionIdentity);
 
-        const apiId = answer.apiId ?? NameSanitizer.sanitizeApiId(apiPrefix, versionIdentity, solutionConfig.resourceNameSuffix);
-        const versionSetId = apimConfig.versionSetId ?? NameSanitizer.sanitizeVersionSetId(apiPrefix, solutionConfig.resourceNameSuffix);
-        const apiPath = apimConfig.apiPath ?? NameSanitizer.sanitizeApiPath(apiPrefix, solutionConfig.resourceNameSuffix);
+        const apiId = answer.apiId ?? NamingRules.apiId.sanitize(apiPrefix, versionIdentity, solutionConfig.resourceNameSuffix);
+        const versionSetId = apimConfig.versionSetId ?? NamingRules.versionSetId.sanitize(apiPrefix, solutionConfig.resourceNameSuffix);
+        const apiPath = apimConfig.apiPath ?? NamingRules.apiPath.sanitize(apiPrefix, solutionConfig.resourceNameSuffix);
 
         const openApiDocument = await this.openApiProcessor.loadOpenApiDocument(apiDocumentPath, projectRootPath);
         const spec = this.openApiProcessor.patchOpenApiDocument(
@@ -109,7 +109,7 @@ export class ApimManager {
             ApimDefaultValues.functionBasePath
         );
 
-        const versionSetDisplayName = NameSanitizer.sanitizeVersionSetDisplayName(openApiDocument.spec.info.title);
+        const versionSetDisplayName = NamingRules.versionSetDisplayName.sanitize(openApiDocument.spec.info.title);
 
         await apimService.createVersionSet(resourceGroupName, apimServiceName, versionSetId, versionSetDisplayName);
         apimConfig.versionSetId = versionSetId;

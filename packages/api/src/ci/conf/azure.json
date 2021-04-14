@@ -1,0 +1,10 @@
+{
+  "subscription": {
+    "name": "Teams Cloud - Dev Test with TTL = 7 Days",
+    "id": "1756abc0-3554-4341-8d6a-46674962ea19"
+  },
+  "tenant": {
+    "id": "72f988bf-86f1-41af-91ab-2d7cd011db47"
+  },
+  "client_id": "7ea7c24c-b1f6-4a20-9d11-9ae12e9e7ac0"
+}

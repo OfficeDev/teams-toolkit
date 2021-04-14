@@ -41,12 +41,13 @@ import {
     FxError,
     ConfigFolderName,
     Json,
+    Dict,
 } from "fx-api";
 import * as path from "path";
 // import * as Bundles from '../resource/bundles.json';
 import * as error from "./error";
 import { Loader, Meta } from "./loader";
-import { mapToJson, objectToConfigMap, objectToMap } from "./tools";
+import { deserializeDict, mapToJson, mergeSerectData, objectToConfigMap, objectToMap, serializeDict, sperateSecretData } from "./tools";
 import { VscodeManager } from "./vscodeManager";
 import { Settings } from "./settings";
 import { CoreQuestionNames, QuestionAppName, QuestionRootFolder, QuestionSelectSolution } from "./question";
@@ -557,6 +558,8 @@ class CoreImpl implements Core {
         return true;
     }
 
+      
+
     public async readConfigs(): Promise<Result<null, FxError>> {
         if (!fs.existsSync(`${this.ctx.root}/.${ConfigFolderName}`)) {
             this.ctx.logProvider?.warning(`[Core] readConfigs() silent pass, folder not exist:${this.ctx.root}/.${ConfigFolderName}`);
@@ -570,11 +573,17 @@ class CoreImpl implements Core {
                 if (!slice) {
                     continue;
                 }
+                const envName = slice[1];
                 const filePath = `${this.ctx.root}/.${ConfigFolderName}/${file}`;
-                this.ctx.logProvider?.info(`[Core] read config file:${filePath} start ... `);
-                const config: Json = await fs.readJson(filePath);
-                this.configs.set(slice[1], objectToMap(config));
-                this.ctx.logProvider?.info(`[Core] read config file:${filePath} success! `);
+                const configJson: Json = await fs.readJson(filePath);
+                const localDataPath = `${this.ctx.root}/.${ConfigFolderName}/${envName}.userdata`;
+                if(await fs.pathExists(localDataPath)){
+                    const dictContent = await fs.readFile(localDataPath, "UTF-8");
+                    const dict:Dict<string> = deserializeDict(dictContent);
+                    mergeSerectData(dict, configJson);
+                }
+                const solutionConfig: SolutionConfig = objectToMap(configJson);
+                this.configs.set(envName, solutionConfig);
             }
 
             // read answers
@@ -592,11 +601,15 @@ class CoreImpl implements Core {
         }
         try {
             for (const entry of this.configs.entries()) {
-                const filePath = `${this.ctx.root}/.${ConfigFolderName}/env.${entry[0]}.json`;
-                this.ctx.logProvider?.info(`[Core] write config file:${filePath} start ... `);
-                const content = JSON.stringify(mapToJson(entry[1]), null, 4);
+                const envName = entry[0];
+                const solutionConfig = entry[1];
+                const configJson = mapToJson(solutionConfig);
+                const filePath = `${this.ctx.root}/.${ConfigFolderName}/env.${envName}.json`;
+                const localDataPath = `${this.ctx.root}/.${ConfigFolderName}/${envName}.userdata`;
+                const localData = sperateSecretData(configJson);
+                const content = JSON.stringify(configJson, null, 4);
                 await fs.writeFile(filePath, content);
-                this.ctx.logProvider?.info(`[Core] write config file:${filePath} success! content: \n${content}`);
+                await fs.writeFile(localDataPath, serializeDict(localData));
             }
             await this.writeAnswersToFile(this.ctx.root, this.ctx.answers);
         } catch (e) {
@@ -622,8 +635,8 @@ class CoreImpl implements Core {
     /**
      * publish app
      */
-    public async publish(): Promise<Result<null, FxError>> {
-        return ok(null);
+    public async publish(answers?: ConfigMap): Promise<Result<null, FxError>> {
+        return await this.selectedSolution!.publish(this.solutionContext(answers));
     }
 
     /**
@@ -779,7 +792,7 @@ class CoreImpl implements Core {
             );
             await fs.writeFile(
                 `${this.target.ctx.root}/.gitignore`,
-                `node_modules\n/.${ConfigFolderName}/*.env`
+                `node_modules\n/.${ConfigFolderName}/*.env\n/.${ConfigFolderName}/*.userdata\n.DS_Store`
             );
         } catch (e) {
             return err(error.WriteFileError(e));
@@ -1008,9 +1021,9 @@ export class CoreProxy implements Core {
             this.coreImpl.deploy(answers),
         );
     }
-    async publish(): Promise<Result<null, FxError>> {
+    async publish(answers?: ConfigMap | undefined): Promise<Result<null, FxError>> {
         return await this.runWithErrorHandling<null>("publish", true, err(error.NotSupportedProjectType()), () =>
-            this.coreImpl.publish(),
+            this.coreImpl.publish(answers),
         );
     }
     async createEnv(env: string): Promise<Result<null, FxError>> {

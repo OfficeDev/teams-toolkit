@@ -23,6 +23,8 @@ const tokenRefreshTimeSpanInMillisecond = 5 * 60 * 1000;
 const getSSOTokenTimeoutInMillisecond = 5000;
 const loginPageWidth = 600;
 const loginPageHeight = 535;
+const maxRetryCount = 3;
+const retryTimeSpanInMillisecond = 3000;
 
 /**
  * Used within Teams client applications.
@@ -100,21 +102,7 @@ export class TeamsUserCredential implements TokenCredential {
 
             const authCodeResult: AuthCodeResult = JSON.parse(result);
             try {
-              const axiosInstance: AxiosInstance = await this.getAxiosInstance();
-              const response = await axiosInstance.post("/auth/token", {
-                scope: scopesStr,
-                code: authCodeResult.code,
-                code_verifier: authCodeResult.codeVerifier,
-                redirect_uri: authCodeResult.redirectUri,
-                grant_type: GrantType.authCode
-              });
-
-              const tokenResult: AccessTokenResult = response.data;
-              const key = await this.getAccessTokenCacheKey(scopesStr);
-              this.setTokenCache(key, {
-                token: tokenResult.access_token,
-                expiresOnTimestamp: tokenResult.expires_on
-              });
+              await this.exchangeAccessTokenFromSimpleAuthServer(scopesStr, authCodeResult);
               resolve();
             } catch (err) {
               this.generateAuthServerError(err);
@@ -185,7 +173,7 @@ export class TeamsUserCredential implements TokenCredential {
         internalLogger.verbose("No cached access token");
       }
 
-      const accessToken = await this.getAndCacheAccessTokenFromRuntimeConnector(scopeStr);
+      const accessToken = await this.getAndCacheAccessTokenFromSimpleAuthServer(scopeStr);
       return accessToken;
     }
   }
@@ -209,11 +197,49 @@ export class TeamsUserCredential implements TokenCredential {
     return getUserInfoFromSsoToken(ssoToken.token);
   }
 
+  private async exchangeAccessTokenFromSimpleAuthServer(
+    scopesStr: string,
+    authCodeResult: AuthCodeResult
+  ): Promise<void> {
+    const axiosInstance: AxiosInstance = await this.getAxiosInstance();
+
+    let retryCount = 0;
+    while (true) {
+      try {
+        const response = await axiosInstance.post("/auth/token", {
+          scope: scopesStr,
+          code: authCodeResult.code,
+          code_verifier: authCodeResult.codeVerifier,
+          redirect_uri: authCodeResult.redirectUri,
+          grant_type: GrantType.authCode
+        });
+
+        const tokenResult: AccessTokenResult = response.data;
+        const key = await this.getAccessTokenCacheKey(scopesStr);
+        this.setTokenCache(key, {
+          token: tokenResult.access_token,
+          expiresOnTimestamp: tokenResult.expires_on
+        });
+        return;
+      } catch (err) {
+        if (err.response?.data?.type && err.response.data.type === "AadUiRequiredException") {
+          internalLogger.warn("Exchange access token failed, retry...");
+          if (retryCount < maxRetryCount) {
+            await this.sleep(retryTimeSpanInMillisecond);
+            retryCount++;
+            continue;
+          }
+        }
+        throw err;
+      }
+    }
+  }
+
   /**
    * Get access token cache from authentication server
    * @returns access token
    */
-  private async getAndCacheAccessTokenFromRuntimeConnector(
+  private async getAndCacheAccessTokenFromSimpleAuthServer(
     scopesStr: string
   ): Promise<AccessToken> {
     try {
@@ -459,5 +485,9 @@ export class TeamsUserCredential implements TokenCredential {
 
     const fullErrorMsg = "Failed to get access token with error: " + errorMessage;
     throw new ErrorWithCode(fullErrorMsg, ErrorCode.InternalError);
+  }
+
+  private sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }

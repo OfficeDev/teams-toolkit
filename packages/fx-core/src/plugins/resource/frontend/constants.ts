@@ -46,6 +46,7 @@ export class EnvironmentVariables {
     static FuncName = "REACT_APP_FUNC_NAME";
     static RuntimeEndpoint = "REACT_APP_TEAMSFX_ENDPOINT";
     static StartLoginPage = "REACT_APP_START_LOGIN_PAGE_URL";
+    static ClientID = "REACT_APP_CLIENT_ID";
 }
 
 export class FrontendPathInfo {
@@ -78,9 +79,12 @@ export class DependentPluginInfo {
     static readonly FunctionEndpoint = "functionEndpoint";
     static readonly FunctionDefaultName = "defaultFunctionName";
 
-    static readonly RuntimePluginName = "fx-resource-runtime-connector";
+    static readonly RuntimePluginName = "fx-resource-simple-auth";
     static readonly RuntimeEndpoint = "endpoint";
     static readonly StartLoginPageURL = "auth-start.html";
+
+    static readonly AADPluginName = "fx-resource-aad-app-for-teams";
+    static readonly ClientID = "clientId";
 }
 
 export class FrontendConfigInfo {

@@ -126,7 +126,7 @@ export class WebAppClient {
     /**
      * Allow users to set SKU name for App Service Plan as only 10 free App Service Plan is allowed in a Subscription.
      * The order is:
-     * 1. 'skuName' config of 'fx-resource-simpleAuth' in env.default.json file
+     * 1. 'skuName' config of 'fx-resource-simple-auth' in env.default.json file
      * 2. 'SIMPLE_AUTH_SKU_NAME' environment variable
      * 3. 'F1' Free Tier
      */

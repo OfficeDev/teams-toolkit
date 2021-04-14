@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AssemblyName>Microsoft.TeamsFx.SimpleAuth</AssemblyName>
+    <RootNamespace>Microsoft.TeamsFx.SimpleAuth</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+	  <SolutionDir Condition="'$(SolutionDir)' == ''">$(ProjectDir)..\..\</SolutionDir>
+	  <CodeAnalysisRuleSet>$(SolutionDir)\ruleset\AllInOne.ruleset</CodeAnalysisRuleSet>
+	  <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+	  <LangVersion>8.0</LangVersion>
+	  <Version>0.1.1</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.1.6" />
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="3.1.7" />
+    <PackageReference Include="Microsoft.Identity.Client" Version="4.17.1" />
+    <PackageReference Include="NSwag.AspNetCore" Version="13.7.0" />
+  </ItemGroup>
+
+
+</Project>

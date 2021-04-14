@@ -24,7 +24,7 @@ import {
 } from "./constants";
 import { FrontendConfig } from "./configs";
 import { FrontendDeployment } from "./ops/deploy";
-import { FrontendProvision, FunctionEnvironment, RuntimeEnvironment } from "./ops/provision";
+import { AADEnvironment, FrontendProvision, FunctionEnvironment, RuntimeEnvironment } from "./ops/provision";
 import { Logger } from "./utils/logger";
 import { Messages } from "./resources/messages";
 import { FrontendScaffold as Scaffold } from "./ops/scaffold";
@@ -121,6 +121,7 @@ export class FrontendPluginImpl {
     public async postProvision(ctx: PluginContext): Promise<TeamsFxResult> {
         let functionEnv: FunctionEnvironment | undefined;
         let runtimeEnv: RuntimeEnvironment | undefined;
+        let aadEnv: AADEnvironment | undefined;
 
         const functionPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.FunctionPluginName);
         if (functionPlugin) {
@@ -138,11 +139,19 @@ export class FrontendPluginImpl {
             };
         }
 
-        if (functionEnv || runtimeEnv) {
+        const aadPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.AADPluginName);
+        if (aadPlugin) {
+            aadEnv = {
+                clientId: aadPlugin.get(DependentPluginInfo.ClientID) as string,
+            };
+        }
+
+        if (functionEnv || runtimeEnv || aadEnv) {
             await FrontendProvision.setEnvironments(
                 path.join(ctx.root, FrontendPathInfo.WorkingDir, FrontendPathInfo.TabEnvironmentFilePath),
                 functionEnv,
                 runtimeEnv,
+                aadEnv,
             );
         }
 

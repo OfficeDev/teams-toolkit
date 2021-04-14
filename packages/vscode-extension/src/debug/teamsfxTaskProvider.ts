@@ -5,8 +5,6 @@ import * as vscode from "vscode";
 
 import * as constants from "./constants";
 import * as commonUtils from "./commonUtils";
-import { DotnetChecker } from "./dotnetSdk/dotnetChecker";
-import { dotnetCheckerEnabled } from "./dotnetSdk/dotnetCheckerAdapter";
 import { ProductName } from "fx-api";
 import { dotnetChecker } from "./depsChecker/dotnetChecker";
 
@@ -137,7 +135,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       workspaceFolder,
       command,
       TeamsfxTaskProvider.type,
-      new vscode.ProcessExecution(dotnetPath, ["Microsoft.TeamsRuntimeConnector.dll"], options),
+      new vscode.ProcessExecution(dotnetPath, ["Microsoft.TeamsFx.SimpleAuth.dll"], options),
       constants.authProblemMatcher
     );
     task.isBackground = true;

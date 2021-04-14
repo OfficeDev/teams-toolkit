@@ -9,7 +9,7 @@ import { createQuestions } from "./questions";
 import { LanguageStrategy } from "./languageStrategy";
 import { Messages } from "./resources/messages";
 import { FxResult, FxBotPluginResultFactory as ResultFactory } from "./result";
-import { ProgressBarConstants, QuestionNames, WebAppConstants, LifecycleFuncNames, TemplateProjectsConstants, AuthEnvNames, AuthValues } from "./constants";
+import { ProgressBarConstants, DeployConfigs, FolderNames, QuestionNames, WebAppConstants, LifecycleFuncNames, TemplateProjectsConstants, AuthEnvNames, AuthValues } from "./constants";
 import { WayToRegisterBot } from "./enums/wayToRegisterBot";
 import { getZipDeployEndpoint } from "./utils/zipDeploy";
 
@@ -17,7 +17,7 @@ import * as appService from "@azure/arm-appservice";
 import * as fs from "fs-extra";
 import { CommonStrings, PluginBot, ConfigNames, TelemetryStrings } from "./resources/strings";
 import { DialogUtils } from "./utils/dialog";
-import { CheckThrowSomethingMissing, ConfigUpdatingException, ListPublishingCredentialsException, MessageEndpointUpdatingException, PackDirExistenceException, PreconditionException, ProvisionException, SomethingMissingException, UserInputsException, ValidationException, ZipDeployException } from "./exceptions";
+import { CheckThrowSomethingMissing, ConfigUpdatingException, DeployWithoutProvisionException, ListPublishingCredentialsException, MessageEndpointUpdatingException, PackDirExistenceException, PreconditionException, ProvisionException, SomethingMissingException, UserInputsException, ValidationException, ZipDeployException } from "./exceptions";
 import { TeamsBotConfig } from "./configs/teamsBotConfig";
 import { default as axios } from "axios";
 import AdmZip from "adm-zip";
@@ -28,6 +28,8 @@ import { ResourceNameFactory } from "./utils/resourceNameFactory";
 import * as AppStudio from "./appStudio/appStudio";
 import { IBotRegistration } from "./appStudio/interfaces/IBotRegistration";
 import { Logger } from "./logger";
+import { Retry } from "./constants";
+import Timer from "@dbpiper/timer";
 
 export class TeamsBotImpl {
     // Made config plubic, because expect the upper layer to fill inputs.
@@ -51,7 +53,7 @@ export class TeamsBotImpl {
         await this.config.restoreConfigFromContext(context);
         this.ctx = context;
         this.telemetryStepIn(LifecycleFuncNames.PRE_SCAFFOLD);
-        this.markEnterAndLogConfig(LifecycleFuncNames.PRE_SCAFFOLD);
+        this.markEnter(LifecycleFuncNames.PRE_SCAFFOLD);
 
         const rawProgrammingLanguage = this.ctx.answers?.get(QuestionNames.PROGRAMMING_LANGUAGE);
 
@@ -81,6 +83,9 @@ export class TeamsBotImpl {
             this.config.scaffold.botId = botRegistration.botId;
             this.config.scaffold.botPassword = botRegistration.botPassword;
 
+            this.config.localDebug.localBotId = botRegistration.botId;
+            this.config.localDebug.localBotPassword = botRegistration.botPassword;
+
             this.updateManifest(this.config.scaffold.botId);
         }
 
@@ -103,7 +108,7 @@ export class TeamsBotImpl {
 
         this.telemetryStepIn(LifecycleFuncNames.SCAFFOLD);
 
-        this.markEnterAndLogConfig(LifecycleFuncNames.SCAFFOLD);
+        this.markEnter(LifecycleFuncNames.SCAFFOLD);
 
         await this.config.restoreConfigFromContext(context);
 
@@ -143,13 +148,12 @@ export class TeamsBotImpl {
         await this.config.restoreConfigFromContext(context);
         this.ctx = context;
         this.telemetryStepIn(LifecycleFuncNames.PRE_PROVISION);
-        this.markEnterAndLogConfig(LifecycleFuncNames.PRE_PROVISION);
+        this.markEnter(LifecycleFuncNames.PRE_PROVISION);
 
         // Preconditions checking.
         CheckThrowSomethingMissing(ConfigNames.PROGRAMMING_LANGUAGE, this.config.scaffold.programmingLanguage);
         // CheckThrowSomethingMissing(ConfigNames.GRAPH_TOKEN, this.config.scaffold.graphToken);
         CheckThrowSomethingMissing(ConfigNames.SUBSCRIPTION_ID, this.config.provision.subscriptionId);
-        CheckThrowSomethingMissing(ConfigNames.SERVICE_CLIENT_CREDENTIALS, this.config.provision.serviceClientCredentials);
         CheckThrowSomethingMissing(ConfigNames.RESOURCE_GROUP, this.config.provision.resourceGroup);
         CheckThrowSomethingMissing(ConfigNames.LOCATION, this.config.provision.location);
 
@@ -168,8 +172,7 @@ export class TeamsBotImpl {
         await this.config.restoreConfigFromContext(context);
         this.ctx = context;
         this.telemetryStepIn(LifecycleFuncNames.PROVISION);
-        this.markEnterAndLogConfig(LifecycleFuncNames.PROVISION);
-
+        this.markEnter(LifecycleFuncNames.PROVISION);
 
         // Create and register progress bar for cleanup.
         const handler = await ProgressBarFactory.newProgressBar(ProgressBarConstants.PROVISION_TITLE, ProgressBarConstants.PROVISION_STEPS_NUM, this.ctx);
@@ -198,11 +201,15 @@ export class TeamsBotImpl {
     private async provisionWebApp() {
 
         this.telemetryStepIn(LifecycleFuncNames.PROVISION_WEB_APP);
-        this.markEnterAndLogConfig(LifecycleFuncNames.PROVISION_WEB_APP);
+        this.markEnter(LifecycleFuncNames.PROVISION_WEB_APP);
 
+        const serviceClientCredentials = await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
+        if (!serviceClientCredentials) {
+            throw new PreconditionException(Messages.FAIL_TO_GET_AZURE_CREDS, [Messages.LOGIN_AZURE_ACCOUNT]);
+        }
         // Suppose we get creds and subs from context.
         const webSiteMgmtClient = factory.createWebSiteMgmtClient(
-            this.config.provision.serviceClientCredentials!,
+            serviceClientCredentials,
             this.config.provision.subscriptionId!,
         );
 
@@ -217,7 +224,7 @@ export class TeamsBotImpl {
             },
         };
 
-        const appServicePlanName = ResourceNameFactory.createCommonName(this.ctx?.app.name.short);
+        const appServicePlanName = this.config.provision.appServicePlan ? this.config.provision.appServicePlan : ResourceNameFactory.createCommonName(this.ctx?.app.name.short);
 
         let planResponse = undefined;
         try {
@@ -277,12 +284,10 @@ export class TeamsBotImpl {
         await this.config.restoreConfigFromContext(context);
         this.ctx = context;
         this.telemetryStepIn(LifecycleFuncNames.POST_PROVISION);
-        this.markEnterAndLogConfig(LifecycleFuncNames.POST_PROVISION);
+        this.markEnter(LifecycleFuncNames.POST_PROVISION);
 
         // 1. Get required config items from other plugins.
         // 2. Update bot hosting env"s app settings.
-
-
         const botId = this.config.scaffold.botId;
         const botPassword = this.config.scaffold.botPassword;
         const teamsAppClientId = this.config.teamsAppClientId;
@@ -299,8 +304,13 @@ export class TeamsBotImpl {
         CheckThrowSomethingMissing(ConfigNames.AUTH_APPLICATION_ID_URIS, applicationIdUris);
         CheckThrowSomethingMissing(ConfigNames.SITE_ENDPOINT, siteEndpoint);
 
+        const serviceClientCredentials = await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
+        if (!serviceClientCredentials) {
+            throw new PreconditionException(Messages.FAIL_TO_GET_AZURE_CREDS, [Messages.LOGIN_AZURE_ACCOUNT]);
+        }
+
         const webSiteMgmtClient = factory.createWebSiteMgmtClient(
-            this.config.provision.serviceClientCredentials!,
+            serviceClientCredentials,
             this.config.provision.subscriptionId!,
         );
 
@@ -365,7 +375,11 @@ export class TeamsBotImpl {
         await this.config.restoreConfigFromContext(context);
         this.ctx = context;
         this.telemetryStepIn(LifecycleFuncNames.PRE_DEPLOY);
-        this.markEnterAndLogConfig(LifecycleFuncNames.PRE_DEPLOY);
+        this.markEnter(LifecycleFuncNames.PRE_DEPLOY);
+
+        if (!this.config.provision.provisioned) {
+            throw new DeployWithoutProvisionException();
+        }
 
         // Preconditions checking.
         const packDir = this.config.scaffold.workingDir!;
@@ -378,7 +392,6 @@ export class TeamsBotImpl {
         CheckThrowSomethingMissing(ConfigNames.SITE_ENDPOINT, this.config.provision.siteEndpoint);
         CheckThrowSomethingMissing(ConfigNames.PROGRAMMING_LANGUAGE, this.config.scaffold.programmingLanguage);
         CheckThrowSomethingMissing(ConfigNames.SUBSCRIPTION_ID, this.config.provision.subscriptionId);
-        CheckThrowSomethingMissing(ConfigNames.SERVICE_CLIENT_CREDENTIALS, this.config.provision.serviceClientCredentials);
         CheckThrowSomethingMissing(ConfigNames.RESOURCE_GROUP, this.config.provision.resourceGroup);
 
         if (!utils.isDomainValidForAzureWebApp(this.config.provision.siteEndpoint!)) {
@@ -396,7 +409,7 @@ export class TeamsBotImpl {
         await this.config.restoreConfigFromContext(context);
         this.ctx = context;
         this.telemetryStepIn(LifecycleFuncNames.DEPLOY);
-        this.markEnterAndLogConfig(LifecycleFuncNames.DEPLOY);
+        this.markEnter(LifecycleFuncNames.DEPLOY);
 
         const handler = await ProgressBarFactory.newProgressBar(ProgressBarConstants.DEPLOY_TITLE, ProgressBarConstants.DEPLOY_STEPS_NUM, this.ctx);
 
@@ -404,26 +417,38 @@ export class TeamsBotImpl {
 
         const packDir = this.config.scaffold.workingDir!;
 
-        await handler?.next(ProgressBarConstants.DEPLOY_STEP_BUILD_ZIP);
-        const zipBuffer = await LanguageStrategy.buildAndZipPackage(this.config.scaffold.programmingLanguage!, packDir, this.config.deploy.unPackFlag === "true" ? true : false);
+        await handler?.next(ProgressBarConstants.DEPLOY_STEP_NPM_INSTALL);
+        const buildTimer = new Timer();
+        await LanguageStrategy.localBuild(this.config.scaffold.programmingLanguage!, packDir, this.config.deploy.unPackFlag === "true" ? true : false);
+        Logger.debug(`Local build costs ${buildTimer.stop().toString()}.`);
+
+        await handler?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_FOLDER);
+        const zipTimer = new Timer();
+        const zipBuffer = utils.zipAFolder(packDir, DeployConfigs.UN_PACK_DIRS, [`${FolderNames.NODE_MODULES}/${FolderNames.KEYTAR}`]);
+        Logger.debug(`Zip ${packDir} costs ${zipTimer.stop().toString()}.`);
 
         // 2.2 Retrieve publishing credentials.
         let publishingUserName = "";
         let publishingPassword: string | undefined = undefined;
 
+        const serviceClientCredentials = await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
+        if (!serviceClientCredentials) {
+            throw new PreconditionException(Messages.FAIL_TO_GET_AZURE_CREDS, [Messages.LOGIN_AZURE_ACCOUNT]);
+        }
+
         const webSiteMgmtClient = new appService.WebSiteManagementClient(
-            this.config.provision.serviceClientCredentials!,
+            serviceClientCredentials,
             this.config.provision.subscriptionId!,
         );
 
-        await handler?.next(ProgressBarConstants.DEPLOY_STEP_LIST_CRED);
-
         let listResponse = undefined;
         try {
+            const timer = new Timer();
             listResponse = await webSiteMgmtClient.webApps.listPublishingCredentials(
                 this.config.provision.resourceGroup!,
                 this.config.provision.siteName!,
             );
+            Logger.debug(`listPublishingCredentials costs ${timer.stop().toString()}.`);
         } catch (e) {
             throw new ListPublishingCredentialsException(e);
         }
@@ -453,7 +478,9 @@ export class TeamsBotImpl {
 
         let res = undefined;
         try {
+            const timer = new Timer();
             res = await axios.post(zipDeployEndpoint, zipBuffer, config);
+            Logger.debug(`Deploy costs ${timer.stop().toString()}.`);
         } catch (e) {
             throw new ZipDeployException(e);
         }
@@ -475,7 +502,7 @@ export class TeamsBotImpl {
         await this.config.restoreConfigFromContext(context);
         this.ctx = context;
         this.telemetryStepIn(LifecycleFuncNames.LOCAL_DEBUG);
-        this.markEnterAndLogConfig(LifecycleFuncNames.LOCAL_DEBUG);
+        this.markEnter(LifecycleFuncNames.LOCAL_DEBUG);
 
         const handler = await ProgressBarFactory.newProgressBar(ProgressBarConstants.LOCAL_DEBUG_TITLE, ProgressBarConstants.LOCAL_DEBUG_STEPS_NUM, this.ctx);
 
@@ -497,7 +524,7 @@ export class TeamsBotImpl {
         await this.config.restoreConfigFromContext(context);
         this.ctx = context;
         this.telemetryStepIn(LifecycleFuncNames.POST_LOCAL_DEBUG);
-        this.markEnterAndLogConfig(LifecycleFuncNames.POST_LOCAL_DEBUG);
+        this.markEnter(LifecycleFuncNames.POST_LOCAL_DEBUG);
 
         CheckThrowSomethingMissing(ConfigNames.LOCAL_ENDPOINT, this.config.localDebug.localEndpoint);
 
@@ -525,8 +552,10 @@ export class TeamsBotImpl {
     private async updateMessageEndpointOnAppStudio(endpoint: string) {
         this.telemetryStepIn(LifecycleFuncNames.UPDATE_MESSAGE_ENDPOINT_APPSTUDIO);
 
-        this.markEnterAndLogConfig(LifecycleFuncNames.UPDATE_MESSAGE_ENDPOINT_APPSTUDIO, endpoint);
+        this.markEnter(LifecycleFuncNames.UPDATE_MESSAGE_ENDPOINT_APPSTUDIO, endpoint);
 
+        const appStudioToken = await this.ctx?.appStudioToken?.getAccessToken();
+        CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
         CheckThrowSomethingMissing(ConfigNames.LOCAL_BOT_ID, this.config.localDebug.localBotId);
 
         const botReg: IBotRegistration = {
@@ -538,7 +567,23 @@ export class TeamsBotImpl {
             callingEndpoint: ""
         };
 
-        await AppStudio.updateMessageEndpoint(botReg.botId!, botReg);
+        Logger.debug(`Update message endpoint with botId: ${botReg.botId}, botReg: ${JSON.stringify(botReg)}`);
+
+        let retries = Retry.UPDATE_MESSAGE_ENDPOINT_TIMES;
+        while (retries > 0) {
+            try {
+                await AppStudio.init(appStudioToken!);
+                await AppStudio.updateMessageEndpoint(botReg.botId!, botReg);
+            } catch (e) {
+                Logger.debug(`updateMessageExtension exception: ${e}`);
+                retries = retries - 1;
+                if (retries > 0) {
+                    await new Promise((resolve) => setTimeout(resolve, Retry.UPDATE_MESSAGE_ENDPOINT_GAP_MS));
+                }
+                continue;
+            }
+            break;
+        }
 
         this.telemetryStepOutSuccess(LifecycleFuncNames.UPDATE_MESSAGE_ENDPOINT_APPSTUDIO);
     }
@@ -546,10 +591,15 @@ export class TeamsBotImpl {
     private async updateMessageEndpointOnAzure(endpoint: string) {
         this.telemetryStepIn(LifecycleFuncNames.UPDATE_MESSAGE_ENDPOINT_AZURE);
 
-        this.markEnterAndLogConfig(LifecycleFuncNames.UPDATE_MESSAGE_ENDPOINT_AZURE, endpoint);
+        this.markEnter(LifecycleFuncNames.UPDATE_MESSAGE_ENDPOINT_AZURE, endpoint);
+
+        const serviceClientCredentials = await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
+        if (!serviceClientCredentials) {
+            throw new PreconditionException(Messages.FAIL_TO_GET_AZURE_CREDS, [Messages.LOGIN_AZURE_ACCOUNT]);
+        }
 
         const botClient = factory.createAzureBotServiceClient(
-            this.config.provision.serviceClientCredentials!,
+            serviceClientCredentials,
             this.config.provision.subscriptionId!,
         );
 
@@ -587,7 +637,7 @@ export class TeamsBotImpl {
     private async reuseExistingBotRegistration() {
         this.telemetryStepIn(LifecycleFuncNames.REUSE_EXISTING_BOT_REG);
 
-        this.markEnterAndLogConfig(LifecycleFuncNames.REUSE_EXISTING_BOT_REG);
+        this.markEnter(LifecycleFuncNames.REUSE_EXISTING_BOT_REG);
 
         const rawBotId = this.ctx!.answers?.get(QuestionNames.GET_BOT_ID);
         if (!rawBotId) {
@@ -611,8 +661,13 @@ export class TeamsBotImpl {
 
     private async createNewBotRegistrationOnAppStudio() {
         this.telemetryStepIn(LifecycleFuncNames.CREATE_NEW_BOT_REG_APPSTUDIO);
-        this.markEnterAndLogConfig(LifecycleFuncNames.CREATE_NEW_BOT_REG_APPSTUDIO);
-        Logger.debug(`Start to create new bot registration on app studio.`);
+        this.markEnter(LifecycleFuncNames.CREATE_NEW_BOT_REG_APPSTUDIO);
+        Logger.debug("Start to create new bot registration on app studio.");
+
+        if (this.config.localDebug.botRegistrationCreated()) {
+            Logger.debug("Local bot has already been registered, just return.");
+            return;
+        }
 
         // 1. Create a new AAD App Registraion with client secret.
         const appStudioToken = await this.ctx?.appStudioToken?.getAccessToken();
@@ -639,6 +694,7 @@ export class TeamsBotImpl {
 
         Logger.debug(`Start to create bot registration by ${JSON.stringify(botReg)}`);
 
+        await AppStudio.init(appStudioToken!);
         await AppStudio.createBotRegistration(botReg);
 
         this.config.localDebug.localBotId = botAuthCreds.clientId;
@@ -650,12 +706,13 @@ export class TeamsBotImpl {
     }
 
     private async createNewBotRegistrationOnAzure() {
-        this.telemetryStepIn(LifecycleFuncNames.CREATE_NEW_BOT_REG_AZURE);
 
-        this.markEnterAndLogConfig(LifecycleFuncNames.CREATE_NEW_BOT_REG_AZURE);
+        this.telemetryStepIn(LifecycleFuncNames.CREATE_NEW_BOT_REG_AZURE);
+        this.markEnter(LifecycleFuncNames.CREATE_NEW_BOT_REG_AZURE);
 
         // 1. Create a new AAD App Registraion with client secret.
         const appStudioToken = await this.ctx?.appStudioToken?.getAccessToken();
+        CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
 
         const aadDisplayName = ResourceNameFactory.createCommonName(this.ctx?.app.name.short);
 
@@ -664,13 +721,19 @@ export class TeamsBotImpl {
             aadDisplayName
         );
 
+        const serviceClientCredentials = await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
+        if (!serviceClientCredentials) {
+            throw new PreconditionException(Messages.FAIL_TO_GET_AZURE_CREDS, [Messages.LOGIN_AZURE_ACCOUNT]);
+        }
+
         // 2. Provision a bot channel registration resource on azure.
         const botClient = factory.createAzureBotServiceClient(
-            this.config.provision.serviceClientCredentials!,
+            serviceClientCredentials,
             this.config.provision.subscriptionId!,
         );
 
-        const botChannelRegistrationName = ResourceNameFactory.createCommonName(this.ctx?.app.name.short);
+        const botChannelRegistrationName = this.config.provision.botChannelRegName ?
+            this.config.provision.botChannelRegName : ResourceNameFactory.createCommonName(this.ctx?.app.name.short);
 
         let botResponse = undefined;
         try {
@@ -747,9 +810,8 @@ export class TeamsBotImpl {
         }
     }
 
-    private markEnterAndLogConfig(funcName: string, joinedParams?: string) {
+    private markEnter(funcName: string, joinedParams?: string) {
         Logger.debug(Messages.EnterFunc(funcName, joinedParams));
-        Logger.debug(`config: ${this.config.toString()}\n`);
     }
 
     private logRestResponse(obj: any) {

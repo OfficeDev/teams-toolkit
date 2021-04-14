@@ -32,15 +32,18 @@ export class LocalEnvProvider {
 
     public initialLocalEnvs(includeFrontend: boolean, includeBackend: boolean, includeBot: boolean): { [name: string]: string } {
         const localEnvs: { [name: string]: string } = {};
-        let keys = Object.values(LocalEnvAuthKeys);
-        for (const key of keys) {
-            // initial with empty string
-            localEnvs[key] = "";
-        }
-        // setup const environment variables
-        localEnvs[LocalEnvAuthKeys.Urls] = "http://localhost:5000";
+        let keys: string[];
 
         if (includeFrontend) {
+            // auth is only required by frontend
+            keys = Object.values(LocalEnvAuthKeys);
+            for (const key of keys) {
+                // initial with empty string
+                localEnvs[key] = "";
+            }
+            // setup const environment variables
+            localEnvs[LocalEnvAuthKeys.Urls] = "http://localhost:5000";
+
             keys = Object.values(LocalEnvFrontendKeys);
             for (const key of keys) {
                 // initial with empty string

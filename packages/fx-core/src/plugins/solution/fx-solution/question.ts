@@ -30,7 +30,8 @@ export enum AzureSolutionQuestionNames {
     PluginSelectionDeploy = "deploy-plugin",
     AddResources = "add-azure-resources",
     AppName = "app-name",
-    AskSub = "ask-subscription"
+    AskSub = "ask-subscription",
+    ProgrammingLanguage = "programming-language",
 }
 
 export const HostTypeOptionAzure: OptionItem = {
@@ -96,6 +97,13 @@ export const AzureResourcesQuestion: MultiSelectQuestion = {
     type: NodeType.multiSelect,
     option: [AzureResourceSQL, AzureResourceFunction],
     default: [],
+    onDidChangeSelection:async function(selectedItems: OptionItem[]) : Promise<string[]>{
+        const hasSQL = selectedItems.some(i=>i.id === AzureResourceSQL.id);
+        if(hasSQL){
+            return [AzureResourceSQL.id, AzureResourceFunction.id];
+        }
+        return selectedItems.map(i=>i.id);
+    }
 };
 
 // export const AddAzureResourceQuestion: MultiSelectQuestion = {
@@ -106,13 +114,23 @@ export const AzureResourcesQuestion: MultiSelectQuestion = {
 //     default: [],
 // };
 
-export function createAddAzureResourceQuestion(featureFlag: boolean): MultiSelectQuestion {
+export function createAddAzureResourceQuestion(alreadyHaveFunction: boolean): MultiSelectQuestion {
     return {
         name: AzureSolutionQuestionNames.AddResources,
         title: "Select Azure resources to add",
         type: NodeType.multiSelect,
         option: [AzureResourceSQL, AzureResourceFunction, AzureResourceApim],
         default: [],
+        onDidChangeSelection:async function(selectedItems: OptionItem[]) : Promise<string[]>{
+            const hasSQL = selectedItems.some(i=>i.id === AzureResourceSQL.id);
+            const hasAPIM = selectedItems.some(i=>i.id === AzureResourceApim.id);
+            const ids = selectedItems.map(i=>i.id);
+            /// when SQL or APIM is selected and function is not selected, then function must be selected
+            if( (hasSQL||hasAPIM) && !alreadyHaveFunction && !ids.includes(AzureResourceFunction.id)){
+                ids.push(AzureResourceFunction.id);
+            }
+            return ids;
+        }
     };
 }
 
@@ -130,4 +148,12 @@ export const AskSubscriptionQuestion: FuncQuestion = {
     type: NodeType.func,
     namespace: "fx-solution-azure",
     method: "askSubscription"
+};
+
+export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
+    name: AzureSolutionQuestionNames.ProgrammingLanguage,
+    title: "Please select programming language for your project",
+    type: NodeType.singleSelect,
+    option: ["javascript"],
+    default: "javascript"
 };

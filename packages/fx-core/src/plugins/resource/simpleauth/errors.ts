@@ -39,3 +39,8 @@ export const UnhandledError: PluginError = {
     name: "UnhandledError",
     message: (message) => `Unhandled Error: ${message}`,
 };
+
+export const EndpointInvalidError: PluginError = {
+    name: "EndpointInvalidError",
+    message: (endpoint, message) => `Failed to verify endpoint: ${endpoint}. Reason: ${message}`,
+};

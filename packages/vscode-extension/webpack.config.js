@@ -58,7 +58,7 @@ const config = {
         ],
       },
       {
-        test: /\.(jpg|png|svg)$/,
+        test: /\.(jpg|png|svg|gif)$/,
         use: {
           loader: 'url-loader',
         },
@@ -75,8 +75,8 @@ const config = {
     new webpack.IgnorePlugin({ resourceRegExp: /original-fs/ }),
     new CopyPlugin({
       patterns: [
-        { from: "./src/debug/dotnetSdk/resource/dotnet-install.sh", to: "debug/dotnetSdk/resource/dotnet-install.sh" },
-        { from: "./src/debug/dotnetSdk/resource/dotnet-install.ps1", to: "debug/dotnetSdk/resource/dotnet-install.ps1" },
+        { from: "./src/debug/depsChecker/resource/dotnet-install.sh", to: "resource/dotnet-install.sh" },
+        { from: "./src/debug/depsChecker/resource/dotnet-install.ps1", to: "resource/dotnet-install.ps1" },
       ],
     }),
   ],

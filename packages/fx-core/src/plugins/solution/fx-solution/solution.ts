@@ -1883,7 +1883,7 @@ export class TeamsAppSolution implements Solution {
 
         if(capabilitiesAnswer?.includes(BotOptionItem.id)){
             ctx.logProvider?.info(`start scaffolding Bot.....`);
-            existingCapabilities.push(TabOptionItem.id);
+            existingCapabilities.push(BotOptionItem.id);
             ctx.answers.set(AzureSolutionQuestionNames.Capabilities, existingCapabilities);
             const scaffoldRes = await this.scaffoldOne(this.botPlugin, ctx);
             if (scaffoldRes.isErr()) {

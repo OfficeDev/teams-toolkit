@@ -93,7 +93,7 @@ export const readConfigMW: Middleware = async (
       coreCtx.projectSettings = settings;
 
       for (const entry of coreCtx.globalSolutions.entries()) {
-        if (entry[0] === settings.solution.name) {
+        if (entry[0] === settings.solutionSettings!.name) {
           coreCtx.selectedSolution = entry[1];
           break;
         }

@@ -24,7 +24,10 @@ export type PluginConfig = ConfigMap;
 export type ReadonlyPluginConfig = ReadonlyMap<string, ConfigValue>;
 
 export type SolutionConfig = Map<PluginIdentity, PluginConfig>;
-export type ReadonlySolutionConfig = ReadonlyMap<PluginIdentity, ReadonlyPluginConfig>;
+export type ReadonlySolutionConfig = ReadonlyMap<
+    PluginIdentity,
+    ReadonlyPluginConfig
+>;
 
 export class ConfigMap extends Map<string, ConfigValue> {
     getString(k: string, defaultValue?: string): string | undefined {
@@ -52,17 +55,26 @@ export class ConfigMap extends Map<string, ConfigValue> {
         if (!v) return defaultValue;
         return v as number[];
     }
-    getBooleanArray(k: string, defaultValue?: boolean[]): boolean[] | undefined {
+    getBooleanArray(
+        k: string,
+        defaultValue?: boolean[],
+    ): boolean[] | undefined {
         const v = super.get(k);
         if (!v) return defaultValue;
         return v as boolean[];
     }
-    getOptionItem(k: string, defaultValue?: OptionItem): OptionItem | undefined {
+    getOptionItem(
+        k: string,
+        defaultValue?: OptionItem,
+    ): OptionItem | undefined {
         const v = super.get(k);
         if (!v) return defaultValue;
         return v as OptionItem;
     }
-    getOptionItemArray(k: string, defaultValue?: OptionItem[]): OptionItem[] | undefined {
+    getOptionItemArray(
+        k: string,
+        defaultValue?: OptionItem[],
+    ): OptionItem[] | undefined {
         const v = super.get(k);
         if (!v) return defaultValue;
         return v as OptionItem[];
@@ -88,26 +100,24 @@ export class ConfigMap extends Map<string, ConfigValue> {
     //     super();
     //     Object.setPrototypeOf(this, ConfigMap.prototype);
     // }
-    constructor(entries?: readonly (readonly [string, ConfigValue])[] | null){
+    constructor(entries?: readonly (readonly [string, ConfigValue])[] | null) {
         super(entries);
         Object.setPrototypeOf(this, ConfigMap.prototype);
     }
 }
 
-
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type Void = {};
 export const Void = {};
 
-
-export  interface Dict<T> {
+export interface Dict<T> {
     [key: string]: T | undefined;
 }
 
 export type ResourceTemplate = Dict<ConfigValue>;
 
 export type ResourceTemplates = {
-    [k:string]: ResourceTemplate|undefined;
+    [k: string]: ResourceTemplate | undefined;
 };
 
 export type ResourceConfig = ResourceTemplate;
@@ -117,64 +127,59 @@ export type ResourceConfigs = ResourceTemplates;
 export type ReadonlyResourceConfig = Readonly<ResourceConfig>;
 
 export type ReadonlyResourceConfigs = Readonly<{
-    [k:string]:ReadonlyResourceConfig|undefined;
+    [k: string]: ReadonlyResourceConfig | undefined;
 }>;
-
 
 /**
  * environment meta data
  */
-export interface EnvMeta{
-    name:string,
-    local:boolean,
-    sideloading:boolean
+export interface EnvMeta {
+    name: string;
+    local: boolean;
+    sideloading: boolean;
 }
 
 export type EnvConfig = Dict<string>;
 
-
 /**
  * project static settings
  */
-export interface ProjectSettings{
-    appName:string,
-    solutionSettings?:SolutionSettings,
+export interface ProjectSettings {
+    appName: string;
+    solutionSettings?: SolutionSettings;
 }
 
 /**
  * solution settings
  */
-export interface SolutionSettings extends Dict<ConfigValue>{
-    name:string;
-    version:string
+export interface SolutionSettings extends Dict<ConfigValue> {
+    name: string;
+    version: string;
 }
 
-export interface AzureSolutionSettings extends SolutionSettings{
-    capabilities:string[],
-    hostType?:string,
-    azureResources?:string[],
-    activeResourcePlugins:string[]
+export interface AzureSolutionSettings extends SolutionSettings {
+    capabilities: string[];
+    hostType?: string;
+    azureResources?: string[];
+    activeResourcePlugins: string[];
 }
-
 
 /**
  * project dynamic states
  */
-export interface ProjectStates
-{
-    solution:Dict<ConfigValue>,
-    resources: 
-    {
-        [k:string]: Dict<ConfigValue>
-    }
+export interface ProjectStates {
+    solution: Dict<ConfigValue>;
+    resources: {
+        [k: string]: Dict<ConfigValue>;
+    };
 }
- 
 
-export interface Inputs extends Dict<AnswerValue>{
+export interface Inputs extends Dict<AnswerValue> {
     platform: Platform;
-    vscodeEnv?:VsCodeEnv;
-}    
-
-export interface Json{
-    [k : string]:unknown;
+    vscodeEnv?: VsCodeEnv;
 }
+
+export interface Json {
+    [k: string]: unknown;
+}
+

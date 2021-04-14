@@ -238,6 +238,14 @@ export class Executor {
       }
     }
 
+    ctx.projectSettings = {
+      appName: appName!,
+      solutionSettings: {
+        name: ctx.selectedSolution!.name,
+        version: ctx.selectedSolution!.version,
+      },
+    };
+
     const targetFolder = path.resolve(ctx.root);
 
     await fs.ensureDir(targetFolder);

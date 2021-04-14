@@ -323,10 +323,15 @@ export class TeamsBotSsoPrompt extends Dialog {
     const signInLink = `${config.authentication!.initiateLoginEndpoint}?scope=${encodeURI(
       this.settings.scopes.join(" ")
     )}&clientId=${config.authentication!.clientId}&tenantId=${config.authentication!.tenantId}`;
+
+    internalLogger.verbose("Sign in link: " + signInLink);
+
     const tokenExchangeResource: TokenExchangeResource = {
       id: uuidv4(),
       uri: config.authentication?.applicationIdUri!.replace(/\/$/, "") + "/access_as_user"
     };
+
+    internalLogger.verbose("Token exchange resource uri: " + tokenExchangeResource.uri);
 
     return {
       signInLink: signInLink,
@@ -340,11 +345,11 @@ export class TeamsBotSsoPrompt extends Dialog {
   private async recognizeToken(
     dc: DialogContext
   ): Promise<PromptRecognizerResult<TeamsBotSsoPromptTokenResponse>> {
-    internalLogger.verbose("Exchange access token");
     const context = dc.context;
     let tokenResponse: TeamsBotSsoPromptTokenResponse | undefined;
 
     if (this.isTokenExchangeRequestInvoke(context)) {
+      internalLogger.verbose("Receive token exchange request");
       // Received activity is not a token exchange request
       if (!(context.activity.value && this.isTokenExchangeRequest(context.activity.value))) {
         const warningMsg =
@@ -376,7 +381,7 @@ export class TeamsBotSsoPrompt extends Dialog {
           }
         } catch (error) {
           const warningMsg = "The bot is unable to exchange token. Ask for user consent.";
-          internalLogger.warn(warningMsg);
+          internalLogger.info(warningMsg);
           await context.sendActivity(
             this.getTokenExchangeInvokeResponse(
               StatusCodes.PRECONDITION_FAILED,
@@ -387,6 +392,7 @@ export class TeamsBotSsoPrompt extends Dialog {
         }
       }
     } else if (this.isTeamsVerificationInvoke(context)) {
+      internalLogger.verbose("Receive Teams state verification request");
       await this.sendOAuthCardAsync(dc.context);
       await context.sendActivity({ type: invokeResponseType, value: { status: StatusCodes.OK } });
     }

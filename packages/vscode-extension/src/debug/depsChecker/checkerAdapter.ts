@@ -4,7 +4,7 @@
 import * as path from "path";
 import commonlibLogger from "../../commonlib/log";
 import { window, workspace, WorkspaceConfiguration, MessageItem } from "vscode";
-import { openUrl } from "./common";
+import { Messages, openUrl } from "./common";
 
 export { cpUtils } from "../cpUtils";
 export { hasTeamsfxBackend } from "../commonUtils";
@@ -45,8 +45,8 @@ export async function displayContinueWithLearnMore(
   message: string,
   link: string
 ): Promise<boolean> {
-  const learnMoreButton: MessageItem = { title: "Learn more" };
-  const continueButton: MessageItem = { title: "Continue" };
+  const learnMoreButton: MessageItem = { title: Messages.learnMoreButtonText };
+  const continueButton: MessageItem = { title: Messages.continueButtonText };
   const input = await window.showWarningMessage(
     message,
     { modal: true },
@@ -64,7 +64,7 @@ export async function displayContinueWithLearnMore(
 }
 
 export async function displayLearnMore(message: string, link: string): Promise<boolean> {
-  return await displayWarningMessage(message, "Learn more", async () => {
+  return await displayWarningMessage(message, Messages.learnMoreButtonText, async () => {
     await openUrl(link);
     return Promise.resolve(false);
   });

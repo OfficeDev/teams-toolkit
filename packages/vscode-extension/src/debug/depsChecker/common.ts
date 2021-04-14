@@ -33,6 +33,9 @@ export function isLinux(): boolean {
 }
 
 export const Messages = {
+  learnMoreButtonText: "Learn more",
+  continueButtonText: "Continue",
+
   defaultErrorMessage: "Please install the required dependencies manually.",
 
   startInstallFunctionCoreTool: `Downloading and installing @NameVersion.`,

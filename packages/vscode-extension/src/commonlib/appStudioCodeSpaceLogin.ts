@@ -5,11 +5,13 @@
 
 import { AppStudioTokenProvider } from "fx-api";
 import * as vscode from "vscode";
+import { login, LoginStatus } from "./common/login";
+import { signedIn, signedOut } from "./common/constant";
 
 const scopes = ["https://dev.teams.microsoft.com/AppDefinitions.ReadWrite"];
 
 // this login to work for code space only
-export class AppStudioCodeSpaceLogin implements AppStudioTokenProvider {
+export class AppStudioCodeSpaceLogin extends login implements AppStudioTokenProvider {
   private static instance: AppStudioCodeSpaceLogin;
 
   private static statusChange?: (
@@ -47,7 +49,7 @@ export class AppStudioCodeSpaceLogin implements AppStudioTokenProvider {
         if (AppStudioCodeSpaceLogin.statusChange) {
           await AppStudioCodeSpaceLogin.statusChange("SignedIn", session.accessToken, tokenJson);
         }
-
+        await this.notifyStatus();
         return session.accessToken;
       }
     }
@@ -64,6 +66,7 @@ export class AppStudioCodeSpaceLogin implements AppStudioTokenProvider {
     if (AppStudioCodeSpaceLogin.statusChange !== undefined) {
       await AppStudioCodeSpaceLogin.statusChange("SignedOut", undefined, undefined);
     }
+    await this.notifyStatus();
     return new Promise((resolve) => {
       resolve(true);
     });
@@ -100,6 +103,16 @@ export class AppStudioCodeSpaceLogin implements AppStudioTokenProvider {
       return JSON.parse(buff.toString("utf-8"));
     } else {
       return undefined;
+    }
+  }
+
+  async getStatus(): Promise<LoginStatus> {
+    const session = await this.tryAuthenticate(false);
+    if (session && session.accessToken) {
+      const tokenJson = await this.getJsonObject();
+      return Promise.resolve({ status: signedIn, token: session.accessToken, accountInfo: tokenJson });
+    } else {
+      return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });
     }
   }
 }

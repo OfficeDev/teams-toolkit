@@ -55,7 +55,7 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import * as vscode from "vscode";
 import { VsCodeUI, VS_CODE_UI } from "./qm/vsc_ui";
-import { DepsChecker, DepsCheckerError } from "./debug/depsChecker/checker";
+import { DepsChecker } from "./debug/depsChecker/checker";
 import { FuncToolChecker } from "./debug/depsChecker/funcToolChecker";
 import { DotnetChecker, dotnetChecker } from "./debug/depsChecker/dotnetChecker";
 import { PanelType } from "./controls/PanelType";

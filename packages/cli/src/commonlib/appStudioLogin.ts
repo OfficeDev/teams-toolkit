@@ -8,6 +8,8 @@ import { LogLevel } from "@azure/msal-node";
 import { CodeFlowLogin } from "./codeFlowLogin";
 import CLILogProvider from "./log";
 import { getBeforeCacheAccess, getAfterCacheAccess } from "./cacheAccess";
+import { signedIn, signedOut } from "./common/constant";
+import { login, LoginStatus } from "./common/login";
 
 const accountName = "appStudio";
 const scopes = ["https://dev.teams.microsoft.com/AppDefinitions.ReadWrite"];
@@ -40,7 +42,7 @@ const config = {
   }
 };
 
-class AppStudioLogin implements AppStudioTokenProvider {
+export class AppStudioLogin extends login implements AppStudioTokenProvider {
   private static instance: AppStudioLogin;
   private static codeFlowInstance: CodeFlowLogin;
 
@@ -51,6 +53,7 @@ class AppStudioLogin implements AppStudioTokenProvider {
   ) => Promise<void>;
 
   private constructor() {
+    super();
     AppStudioLogin.codeFlowInstance = new CodeFlowLogin(scopes, config, SERVER_PORT, accountName);
   }
 
@@ -76,6 +79,7 @@ class AppStudioLogin implements AppStudioTokenProvider {
         const tokenJson = await this.getJsonObject();
         await AppStudioLogin.statusChange("SignedIn", loginToken, tokenJson);
       }
+      await this.notifyStatus();
       return loginToken;
     }
 
@@ -103,6 +107,7 @@ class AppStudioLogin implements AppStudioTokenProvider {
       await AppStudioLogin.statusChange("SignedOut", undefined, undefined);
     }
     AppStudioLogin.codeFlowInstance.logout();
+    await this.notifyStatus();
     return new Promise((resolve) => {
       resolve(true);
     });
@@ -121,6 +126,16 @@ class AppStudioLogin implements AppStudioTokenProvider {
     return new Promise((resolve) => {
       resolve(true);
     });
+  }
+
+  async getStatus(): Promise<LoginStatus> {
+    if (AppStudioLogin.codeFlowInstance.account) {
+      const loginToken = await AppStudioLogin.codeFlowInstance.getToken();
+      const tokenJson = await this.getJsonObject();
+      return Promise.resolve({ status: signedIn, token: loginToken, accountInfo: tokenJson });
+    } else {
+      return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });
+    }
   }
 }
 

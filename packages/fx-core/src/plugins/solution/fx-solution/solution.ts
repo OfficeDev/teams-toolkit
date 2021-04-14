@@ -723,7 +723,7 @@ export class TeamsAppSolution implements Solution {
 
         const manifest = await fs.readJSON(`${ctx.root}/.${ConfigFolderName}/manifest.remote.json`);
         if (selectedPlugins.some((plugin) => plugin.name === this.botPlugin.name)) {
-            const capabilities = ctx.answers?.getStringArray(AzureSolutionQuestionNames.Capabilities);
+            const capabilities = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings).capabilities;
             const hasBot = capabilities?.includes(BotOptionItem.label);
             const hasMsgExt = capabilities?.includes(MessageExtensionItem.label);
             if (!hasBot && !hasMsgExt) {

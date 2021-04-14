@@ -266,6 +266,13 @@ export interface MultiSelectQuestion extends BaseQuestion {
     returnObject?: boolean;
 
     /**
+     * whether to skip the single option select question
+     * if true: single select question will be automtically answered with the single option;
+     * if false: use still need to do the selection manually even there is no secon choice
+     */
+    skipSingleOption?:boolean;
+
+    /**
      * a callback function when the select changes
      * @items: current selected `OptionItem` array
      * @returns: the new selected `id` array

@@ -44,6 +44,11 @@
                     "id": "Tab",
                     "label": "Tab",
                     "description": "Embeds a web-based app experience in a tab in a Teams chat, channel, or personal workspace."
+                },
+                {
+                    "id": "Bot",
+                    "label": "Bot",
+                    "description": "Bots allow you to interact with and obtain information from a software or website in a text/search/conversational manner."
                 }
             ],
             "default": [
@@ -110,6 +115,7 @@
             "name": "function-language",
             "description": "Please choose a programming language for the Azure function app.",
             "type": "singleSelect",
+            "default": "JavaScript",
             "option": [
                 "JavaScript",
                 "TypeScript"
@@ -160,6 +166,60 @@
             "validation": {
                 "required": true
             }
+        }
+    },
+    {
+        "data": {
+            "name": "programming-language",
+            "type": "singleSelect",
+            "option": [
+                {
+                    "id": "javascript",
+                    "label": "javascript"
+                },
+                {
+                    "id": "typescript",
+                    "label": "typescript"
+                }
+            ],
+            "title": "Select language for bot project",
+            "default": "typescript"
+        }
+    },
+    {
+        "data": {
+            "name": "way-to-register-bot",
+            "type": "singleSelect",
+            "option": [
+                {
+                    "id": "create-new",
+                    "label": "Create a new bot registration"
+                },
+                {
+                    "id": "reuse-existing",
+                    "label": "Reuse an existing bot registration"
+                }
+            ],
+            "title": "Select way to get bot registration",
+            "default": "create-new"
+        }
+    },
+    {
+        "data": {
+            "name": "bot-id",
+            "type": "text",
+            "title": "Please enter bot id",
+            "default": "",
+            "validation": {}
+        }
+    },
+    {
+        "data": {
+            "name": "bot-password",
+            "type": "password",
+            "title": "Please enter bot password",
+            "default": "",
+            "validation": {}
         }
     }
 ]

@@ -28,6 +28,7 @@ import {
   UnknownPermissionName,
   UnknownPermissionRole,
   UnknownPermissionScope,
+  GetSkipAppConfigError,
 } from "./errors";
 import { Envs } from "./interfaces/models";
 import { DialogUtils } from "./utils/dialog";
@@ -86,43 +87,48 @@ export class AadAppForTeamsImpl {
       isLocalDebug
     );
 
-    if (
-      ctx.config.get(
-        Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.objectId)
-      ) &&
-      ctx.config.get(
-        Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.clientId)
-      ) &&
-      ctx.config.get(
-        Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.clientSecret)
-      ) &&
-      ctx.config.get(
-        Utils.addLocalDebugPrefix(
-          isLocalDebug,
-          ConfigKeys.oauth2PermissionScopeId
+    await TokenProvider.init(ctx);
+    const skip: boolean = ctx.config.get(ConfigKeys.skip) as boolean;
+    if (skip) {
+      ctx.logProvider?.info(Messages.getLog(Messages.SkipProvision));
+      if (
+        ctx.config.get(
+          Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.objectId)
+        ) &&
+        ctx.config.get(
+          Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.clientId)
+        ) &&
+        ctx.config.get(
+          Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.clientSecret)
+        ) &&
+        ctx.config.get(
+          Utils.addLocalDebugPrefix(
+            isLocalDebug,
+            ConfigKeys.oauth2PermissionScopeId
+          )
         )
-      ) &&
-      ctx.config.get(ConfigKeys.oauthAuthority)
-    ) {
-      if (!ctx.config.get(ConfigKeys.teamsMobileDesktopAppId)) {
-        ctx.config.set(
-          ConfigKeys.teamsMobileDesktopAppId,
-          Constants.teamsMobileDesktopAppId
+      ) {
+        const config: ProvisionConfig = new ProvisionConfig(isLocalDebug);
+        config.oauth2PermissionScopeId = ctx.config.get(
+          Utils.addLocalDebugPrefix(
+            isLocalDebug,
+            ConfigKeys.oauth2PermissionScopeId
+          )
+        ) as string;
+        config.saveConfigIntoContext(ctx, TokenProvider.tenantId as string);
+        Utils.addLogAndTelemetryWithLocalDebug(
+          ctx.logProvider,
+          Messages.EndProvision,
+          Messages.EndLocalDebug,
+          isLocalDebug
+        );
+        return ResultFactory.Success();
+      } else {
+        throw ResultFactory.UserError(
+          GetSkipAppConfigError.name,
+          GetSkipAppConfigError.message()
         );
       }
-
-      if (!ctx.config.get(ConfigKeys.teamsWebAppId)) {
-        ctx.config.set(ConfigKeys.teamsWebAppId, Constants.teamsWebAppId);
-      }
-
-      Utils.addLogAndTelemetryWithLocalDebug(
-        ctx.logProvider,
-        Messages.EndProvision,
-        Messages.EndLocalDebug,
-        isLocalDebug
-      );
-
-      return ResultFactory.Success();
     }
 
     DialogUtils.init(
@@ -131,8 +137,7 @@ export class AadAppForTeamsImpl {
       ProgressTitle.ProvisionSteps
     );
 
-    await TokenProvider.init(ctx);
-    const config: ProvisionConfig = new ProvisionConfig(isLocalDebug);
+    let config: ProvisionConfig = new ProvisionConfig(isLocalDebug);
     await config.restoreConfigFromContext(ctx);
     const permissions = AadAppForTeamsImpl.parsePermission(
       config.permissionRequest as string,
@@ -140,15 +145,23 @@ export class AadAppForTeamsImpl {
     );
 
     DialogUtils.progress?.start(ProgressDetail.Starting);
-    DialogUtils.progress?.next(ProgressDetail.ProvisionAadApp);
-    await AadAppClient.createAadApp(config);
-    ctx.logProvider?.info(Messages.getLog(Messages.CreateAadAppSuccess));
+    if (config.objectId) {
+      DialogUtils.progress?.next(ProgressDetail.GetAadApp);
+      config = await AadAppClient.getAadApp(config.objectId, isLocalDebug, config.password);
+      ctx.logProvider?.info(Messages.getLog(Messages.GetAadAppSuccess));
+    } else {
+      DialogUtils.progress?.next(ProgressDetail.ProvisionAadApp);
+      await AadAppClient.createAadApp(config);
+      ctx.logProvider?.info(Messages.getLog(Messages.CreateAadAppSuccess));
+    }
 
-    DialogUtils.progress?.next(ProgressDetail.CreateAadAppSecret);
-    await AadAppClient.createAadAppSecret(config);
-    ctx.logProvider?.info(
-      Messages.getLog(Messages.CreateAadAppPasswordSuccess)
-    );
+    if (!config.password) {
+      DialogUtils.progress?.next(ProgressDetail.CreateAadAppSecret);
+      await AadAppClient.createAadAppSecret(config);
+      ctx.logProvider?.info(
+        Messages.getLog(Messages.CreateAadAppPasswordSuccess)
+      );
+    }
 
     DialogUtils.progress?.next(ProgressDetail.UpdatePermission);
     await AadAppClient.updateAadAppPermission(
@@ -210,6 +223,18 @@ export class AadAppForTeamsImpl {
       isLocalDebug
     );
 
+    const skip: boolean = ctx.config.get(ConfigKeys.skip) as boolean;
+    if (skip) {
+      ctx.logProvider?.info(Messages.SkipProvision);
+      Utils.addLogAndTelemetryWithLocalDebug(
+        ctx.logProvider,
+        Messages.EndPostProvision,
+        Messages.EndPostLocalDebug,
+        isLocalDebug
+      );
+      return ResultFactory.Success();
+    }
+
     DialogUtils.init(
       ctx.dialog as Dialog,
       ProgressTitle.PostProvision,
@@ -253,6 +278,13 @@ export class AadAppForTeamsImpl {
   public async updatePermission(ctx: PluginContext): Promise<AadResult> {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartUpdatePermission);
+    const skip: boolean = ctx.config.get(ConfigKeys.skip) as boolean;
+    if (skip) {
+      ctx.logProvider?.info(Messages.SkipProvision);
+      Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndUpdatePermission);
+      return ResultFactory.Success();
+    }
+
     DialogUtils.init(
       ctx.dialog as Dialog,
       ProgressTitle.UpdatePermission,

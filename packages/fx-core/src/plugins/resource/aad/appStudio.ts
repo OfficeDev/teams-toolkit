@@ -20,9 +20,8 @@ export namespace AppStudio {
       );
     }
 
-    axios.defaults.headers.common["Authorization"] = `Bearer ${appStudioToken}`;
-
-    const response = await axios.post(`${baseUrl}/api/aadapp/v2`, aadApp);
+    const instance = initAxiosInstance(appStudioToken);
+    const response = await instance.post(`${baseUrl}/api/aadapp/v2`, aadApp);
     if (response && response.data) {
       const app = <IAADDefinition>response.data;
 
@@ -53,9 +52,8 @@ export namespace AppStudio {
       );
     }
 
-    axios.defaults.headers.common["Authorization"] = `Bearer ${appStudioToken}`;
-
-    await axios.post(`${baseUrl}/api/aadapp/${appId}`, aadApp);
+    const instance = initAxiosInstance(appStudioToken);
+    await instance.post(`${baseUrl}/api/aadapp/${appId}`, aadApp);
   }
 
   export async function createAADAppPassword(
@@ -68,9 +66,8 @@ export namespace AppStudio {
       );
     }
 
-    axios.defaults.headers.common["Authorization"] = `Bearer ${appStudioToken}`;
-
-    const response = await axios.post(
+    const instance = initAxiosInstance(appStudioToken);
+    const response = await instance.post(
       `${baseUrl}/api/aadapp/${aadAppObjectId}/passwords`
     );
     if (response && response.data) {
@@ -84,5 +81,38 @@ export namespace AppStudio {
     throw new Error(
       `${AppStudioErrorMessage.CreateSecretFailed}: ${AppStudioErrorMessage.EmptyResponse}.`
     );
+  }
+
+  export async function getAadApp(
+    appStudioToken: string,
+    aadAppObjectId: string,
+  ): Promise<IAADDefinition> {
+    if (!aadAppObjectId) {
+      throw new Error(
+        `${AppStudioErrorMessage.GetFailed}: ${AppStudioErrorMessage.AppObjectIdIsNull}.`
+      );
+    }
+
+    const instance = initAxiosInstance(appStudioToken);
+    const response = await instance.get(`${baseUrl}/api/aadapp/v2/${aadAppObjectId}`);
+    if (response && response.data) {
+      const app = <IAADDefinition>response.data;
+
+      if (app) {
+        return app;
+      }
+    }
+
+    throw new Error(
+      `${AppStudioErrorMessage.CreateFailed}: ${AppStudioErrorMessage.EmptyResponse}.`
+    );
+  }
+
+  function initAxiosInstance(appStudioToken: string) {
+    const instance = axios.create({
+      baseURL: baseUrl
+    });
+    instance.defaults.headers.common["Authorization"] = `Bearer ${appStudioToken}`;
+    return instance;
   }
 }

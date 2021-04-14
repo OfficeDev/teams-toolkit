@@ -123,7 +123,7 @@ export class CodeFlowLogin {
           ErrorMessage.loginError
         )
       );
-    }, 60 * 1000);
+    }, 5 * 60 * 1000); // keep the same as azure login
 
     function cancelCodeTimer() {
       clearTimeout(codeTimer);

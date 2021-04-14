@@ -573,8 +573,6 @@ export class TeamsBotImpl {
             callingEndpoint: ""
         };
 
-        Logger.debug(`Update message endpoint with botId: ${botReg.botId}, botReg: ${JSON.stringify(botReg)}`);
-
         let retries = Retry.RETRY_TIMES;
         while (retries > 0) {
             try {
@@ -847,20 +845,8 @@ export class TeamsBotImpl {
     }
 
     private logRestResponse(obj: any) {
-
-        if (!obj) {
-            return;
-        }
-
-        let responseString = undefined;
-        try {
-            // Catch circular reference exception when meet some complex response.
-            responseString = JSON.stringify(obj);
-        } catch (e) {
-            responseString = e.message;
-        }
-
-        Logger.debug(`Rest response: ${responseString}.\n`);
+        // ToDo: Keep the placeholder here to log some simple information from response in the future.
+        return;
     }
 
     private telemetryStepIn(funcName: string) {

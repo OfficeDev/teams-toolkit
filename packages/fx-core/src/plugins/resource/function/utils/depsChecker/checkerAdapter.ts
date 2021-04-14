@@ -80,7 +80,6 @@ export async function getDotnetForShell(): Promise<string> {
 export function handleDotnetError(error: Error): void {
   if (error instanceof DepsCheckerError) {
     throw returnUserError(error, "function", "DepsCheckerError", error.helpLink, error);
-    // throw new DotnetError(error.message, error.helpLink);
   } else {
     throw returnUserError(new Error(Messages.defaultErrorMessage), "function", "DepsCheckerError", dotnetHelpLink, error);
   }

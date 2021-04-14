@@ -38,14 +38,13 @@ export class ApimPlugin implements Plugin {
 
     private async executeWithFxError<T>(
         progressStep: ProgressStep,
-        fn: (ctx: PluginContext, telemetry: Telemetry, progressBar: ProgressBar, ...params: any[]) => Promise<T>,
+        fn: (ctx: PluginContext, progressBar: ProgressBar, ...params: any[]) => Promise<T>,
         ctx: PluginContext,
         ...params: any[]
     ): Promise<Result<T, FxError>> {
-        const telemetry = Factory.buildTelemetry(ctx);
         try {
             await this.progressBar.init(progressStep, ctx);
-            const result = await fn(ctx, telemetry, this.progressBar, ...params);
+            const result = await fn(ctx, this.progressBar, ...params);
             return ok(result);
         } catch (error) {
             let packagedError: SystemError | UserError;
@@ -59,7 +58,7 @@ export class ApimPlugin implements Plugin {
 
             // TODO: According to solution plugin's design to decide whether we need to keep the log and telemetry here.
             ctx.logProvider?.error(error.message);
-            telemetry.sendErrorEvent(packagedError);
+            Telemetry.sendErrorEvent(ctx.telemetryReporter, packagedError);
             return err(packagedError);
         } finally {
             await this.progressBar.close(progressStep);
@@ -67,10 +66,10 @@ export class ApimPlugin implements Plugin {
     }
 }
 
-async function _getQuestions(ctx: PluginContext, telemetry: Telemetry, progressBar: ProgressBar, stage: Stage): Promise<QTreeNode | undefined> {
+async function _getQuestions(ctx: PluginContext, progressBar: ProgressBar, stage: Stage): Promise<QTreeNode | undefined> {
     const solutionConfig = new SolutionConfig(ctx.configOfOtherPlugins);
     const apimConfig = new ApimPluginConfig(ctx.config);
-    const questionManager = await Factory.buildQuestionManager(ctx, solutionConfig, telemetry);
+    const questionManager = await Factory.buildQuestionManager(ctx, solutionConfig);
     switch (stage) {
         case Stage.update:
             return await questionManager.update(apimConfig);
@@ -81,29 +80,29 @@ async function _getQuestions(ctx: PluginContext, telemetry: Telemetry, progressB
     }
 }
 
-async function _callFunc(ctx: PluginContext, telemetry: Telemetry, progressBar: ProgressBar, func: Func): Promise<any> {
+async function _callFunc(ctx: PluginContext, progressBar: ProgressBar, func: Func): Promise<any> {
     const solutionConfig = new SolutionConfig(ctx.configOfOtherPlugins);
-    const questionManager = await Factory.buildQuestionManager(ctx, solutionConfig, telemetry);
+    const questionManager = await Factory.buildQuestionManager(ctx, solutionConfig);
     return await questionManager.callFunc(func, ctx);
 }
 
-async function _scaffold(ctx: PluginContext, telemetry: Telemetry, progressBar: ProgressBar): Promise<void> {
+async function _scaffold(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
     const solutionConfig = new SolutionConfig(ctx.configOfOtherPlugins);
     const apimConfig = new ApimPluginConfig(ctx.config);
     const answer = buildAnswer(ctx);
-    const apimManager = await Factory.buildApimManager(ctx, solutionConfig, telemetry);
+    const apimManager = await Factory.buildApimManager(ctx, solutionConfig);
     answer.save(Stage.update, apimConfig);
 
     await progressBar.next(ProgressStep.Scaffold, ProgressMessages[ProgressStep.Scaffold].Scaffold);
     await apimManager.scaffold(ctx.app.name.short, ctx.root);
 }
 
-async function _provision(ctx: PluginContext, telemetry: Telemetry, progressBar: ProgressBar): Promise<void> {
+async function _provision(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
     const solutionConfig = new SolutionConfig(ctx.configOfOtherPlugins);
     const apimConfig = new ApimPluginConfig(ctx.config);
 
-    const apimManager = await Factory.buildApimManager(ctx, solutionConfig, telemetry);
-    const aadManager = await Factory.buildAadManager(ctx, telemetry);
+    const apimManager = await Factory.buildApimManager(ctx, solutionConfig);
+    const aadManager = await Factory.buildAadManager(ctx);
 
     await progressBar.next(ProgressStep.Provision, ProgressMessages[ProgressStep.Provision].CreateApim);
     await apimManager.provision(apimConfig, solutionConfig, ctx.app.name.short);
@@ -112,14 +111,14 @@ async function _provision(ctx: PluginContext, telemetry: Telemetry, progressBar:
     await aadManager.provision(apimConfig, ctx.app.name.short);
 }
 
-async function _postProvision(ctx: PluginContext, telemetry: Telemetry, progressBar: ProgressBar): Promise<void> {
+async function _postProvision(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
     const solutionConfig = new SolutionConfig(ctx.configOfOtherPlugins);
     const apimConfig = new ApimPluginConfig(ctx.config);
     const aadConfig = new AadPluginConfig(ctx.configOfOtherPlugins);
 
-    const apimManager = await Factory.buildApimManager(ctx, solutionConfig, telemetry);
-    const aadManager = await Factory.buildAadManager(ctx, telemetry);
-    const teamsAppAadManager = await Factory.buildTeamsAppAadManager(ctx, telemetry);
+    const apimManager = await Factory.buildApimManager(ctx, solutionConfig);
+    const aadManager = await Factory.buildAadManager(ctx, );
+    const teamsAppAadManager = await Factory.buildTeamsAppAadManager(ctx);
 
     await progressBar.next(ProgressStep.PostProvision, ProgressMessages[ProgressStep.PostProvision].ConfigClientAad);
     await aadManager.postProvision(apimConfig, aadConfig, AadDefaultValues.redirectUris);
@@ -131,14 +130,14 @@ async function _postProvision(ctx: PluginContext, telemetry: Telemetry, progress
     await teamsAppAadManager.postProvision(aadConfig, apimConfig);
 }
 
-async function _deploy(ctx: PluginContext, telemetry: Telemetry, progressBar: ProgressBar): Promise<void> {
+async function _deploy(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
     const solutionConfig = new SolutionConfig(ctx.configOfOtherPlugins);
     const apimConfig = new ApimPluginConfig(ctx.config);
     const functionConfig = new FunctionPluginConfig(ctx.configOfOtherPlugins);
     const answer = buildAnswer(ctx);
     answer.save(Stage.deploy, apimConfig);
 
-    const apimManager = await Factory.buildApimManager(ctx, solutionConfig, telemetry);
+    const apimManager = await Factory.buildApimManager(ctx, solutionConfig);
 
     await progressBar.next(ProgressStep.Deploy, ProgressMessages[ProgressStep.Deploy].ImportApi);
     await apimManager.deploy(apimConfig, solutionConfig, functionConfig, answer, ctx.root);

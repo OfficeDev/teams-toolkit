@@ -88,6 +88,13 @@ export class MockGraphTokenProvider implements GraphTokenProvider {
             resolve(true);
         });
     }
+
+    setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean> {
+        throw new Error("Method not implemented.");
+    }
+    removeStatusChangeMap(name: string): Promise<boolean> {
+        throw new Error("Method not implemented.");
+    }
 }
 
 export default MockGraphTokenProvider.getInstance();

@@ -7,16 +7,10 @@ import path from "path";
 import { OpenApiProcessor } from "../../../../../src/plugins/resource/apim/src/util/openApiProcessor";
 import { OpenApiSchemaVersion } from "../../../../../src/plugins/resource/apim/src/model/openApiDocument";
 import { InvalidFunctionEndpoint, InvalidOpenApiDocument } from "../../../../../src/plugins/resource/apim/src/error";
-import { Telemetry } from "../../../../../src/plugins/resource/apim/src/telemetry";
 chai.use(chaiAsPromised);
 
 describe("OpenApiProcessor", () => {
     describe("#loadOpenApiDocument()", () => {
-        let mockTelemetry: Telemetry;
-
-        before(async () => {
-            mockTelemetry = new Telemetry();
-        });
 
         const testInput: { message: string; filePath: string; schemaVersion: OpenApiSchemaVersion }[] = [
             {
@@ -43,7 +37,7 @@ describe("OpenApiProcessor", () => {
 
         testInput.forEach((input) => {
             it(input.message, async () => {
-                const openApiProcessor: OpenApiProcessor = new OpenApiProcessor(mockTelemetry);
+                const openApiProcessor: OpenApiProcessor = new OpenApiProcessor();
                 const result = await openApiProcessor.loadOpenApiDocument(input.filePath);
                 chai.assert.equal("user input swagger", result.spec.info.title);
                 chai.assert.equal("v1", result.spec.info.version);
@@ -104,19 +98,13 @@ describe("OpenApiProcessor", () => {
         ];
         errorInput.forEach((input) => {
             it(input.message, async () => {
-                const openApiProcessor: OpenApiProcessor = new OpenApiProcessor(mockTelemetry);
+                const openApiProcessor: OpenApiProcessor = new OpenApiProcessor();
                 await chai.expect(openApiProcessor.loadOpenApiDocument(input.filePath)).to.be.rejectedWith(input.error);
             });
         });
     });
 
     describe("#generateOpenApiDocument()", () => {
-        let mockTelemetry: Telemetry;
-
-        before(async () => {
-            mockTelemetry = new Telemetry();
-        });
-
         const testInput: {
             message: string;
             schemaVersion: OpenApiSchemaVersion;
@@ -196,7 +184,7 @@ describe("OpenApiProcessor", () => {
 
         testInput.forEach((input) => {
             it(`[valid endpoint] ${input.message}`, async () => {
-                const openApiProcessor: OpenApiProcessor = new OpenApiProcessor(mockTelemetry);
+                const openApiProcessor: OpenApiProcessor = new OpenApiProcessor();
                 const openApiFile =
                     input.schemaVersion == OpenApiSchemaVersion.V2
                         ? "./tests/plugins/resource/apim/unit/data/openApiProcessor/swagger-user.json"
@@ -248,7 +236,7 @@ describe("OpenApiProcessor", () => {
 
         invalidInput.forEach((input) => {
             it(`[invalid endpoint] ${input.message}`, async () => {
-                const openApiProcessor: OpenApiProcessor = new OpenApiProcessor(mockTelemetry);
+                const openApiProcessor: OpenApiProcessor = new OpenApiProcessor();
                 const openApiFile =
                     input.schemaVersion == OpenApiSchemaVersion.V2
                         ? "./tests/plugins/resource/apim/unit/data/openApiProcessor/swagger-user.json"
@@ -262,14 +250,8 @@ describe("OpenApiProcessor", () => {
     });
 
     describe("#loadOpenApiDocument()", () => {
-        let mockTelemetry: Telemetry;
-
-        before(async () => {
-            mockTelemetry = new Telemetry();
-        });
-
         it("Load valid swagger files", async () => {
-            const openApiProcessor: OpenApiProcessor = new OpenApiProcessor(mockTelemetry);
+            const openApiProcessor: OpenApiProcessor = new OpenApiProcessor();
             const result = await openApiProcessor.listOpenApiDocument(
                 "./tests/plugins/resource/apim/unit/data/openApiProcessor/loadOpenApiDocument",
                 ["exclude"],
@@ -286,7 +268,7 @@ describe("OpenApiProcessor", () => {
     describe("#listAllFiles()", () => {
         let openApiProcessor: OpenApiProcessor;
         before(async () => {
-            openApiProcessor = new OpenApiProcessor(new Telemetry());
+            openApiProcessor = new OpenApiProcessor();
         });
 
         const testInput: {

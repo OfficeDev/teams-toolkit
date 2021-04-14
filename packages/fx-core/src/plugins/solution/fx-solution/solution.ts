@@ -723,7 +723,7 @@ export class TeamsAppSolution implements Solution {
 
         const manifest = await fs.readJSON(`${ctx.root}/.${ConfigFolderName}/manifest.remote.json`);
         if (selectedPlugins.some((plugin) => plugin.name === this.botPlugin.name)) {
-            const capabilities = ctx.answers?.getStringArray(AzureSolutionQuestionNames.Capabilities);
+            const capabilities = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings).capabilities;
             const hasBot = capabilities?.includes(BotOptionItem.label);
             const hasMsgExt = capabilities?.includes(MessageExtensionItem.label);
             if (!hasBot && !hasMsgExt) {
@@ -1884,6 +1884,7 @@ export class TeamsAppSolution implements Solution {
                     return err(scaffoldRes.error);
                 }
                 ctx.logProvider?.info(`finish scaffolding Local Debug Configs!`);
+                ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false); //if selected plugin changed, we need to re-do provision
             }
             ctx.dialog?.communicate(
                 new DialogMsg(DialogType.Show, {

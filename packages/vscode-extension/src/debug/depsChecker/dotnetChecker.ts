@@ -127,6 +127,18 @@ export class DotnetChecker implements IDepsChecker {
     return dotnetExecPath;
   }
 
+  public static escapeFilePath(path: string): string {
+    if (isWindows()) {
+      // Need to escape apostrophes with two apostrophes
+      const dotnetInstallDirEscaped = path.replace(/'/g, `''`);
+
+      // Surround with single quotes instead of double quotes (see https://github.com/dotnet/cli/issues/11521)
+      return `'${dotnetInstallDirEscaped}'`;
+    } else {
+      return `"${path}"`;
+    }
+  }
+
   private static getDotnetConfigPath(): string {
     return path.join(os.homedir(), `.${ConfigFolderName}`, "dotnet.json");
   }
@@ -351,18 +363,6 @@ export class DotnetChecker implements IDepsChecker {
 
     const scriptPath = DotnetChecker.getDotnetInstallScriptPath();
     return `${DotnetChecker.escapeFilePath(scriptPath)} ${args.join(" ")}`;
-  }
-
-  private static escapeFilePath(path: string): string {
-    if (isWindows()) {
-      // Need to escape apostrophes with two apostrophes
-      const dotnetInstallDirEscaped = path.replace(/'/g, `''`);
-
-      // Surround with single quotes instead of double quotes (see https://github.com/dotnet/cli/issues/11521)
-      return `'${dotnetInstallDirEscaped}'`;
-    } else {
-      return `"${path}"`;
-    }
   }
 
   private static async validate(): Promise<boolean> {

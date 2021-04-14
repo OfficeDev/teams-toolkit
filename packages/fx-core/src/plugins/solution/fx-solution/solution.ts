@@ -1228,10 +1228,8 @@ export class TeamsAppSolution implements Solution {
      */
     async getQuestions(stage: Stage, ctx: SolutionContext): Promise<Result<QTreeNode | undefined, FxError>> {
         const node = new QTreeNode({ type: NodeType.group });
-        let featureFlag = ctx.answers?.getBoolean("featureFlag");
-        if (!featureFlag) featureFlag = false;
         if (stage === Stage.create) {
-            const capQuestion = createCapabilityQuestion(featureFlag);
+            const capQuestion = createCapabilityQuestion(true);
  
             const capNode = new QTreeNode(capQuestion); 
 
@@ -1249,7 +1247,7 @@ export class TeamsAppSolution implements Solution {
             }
 
             ////Bot
-            if (featureFlag && this.botPlugin.getQuestions) {
+            if (this.botPlugin.getQuestions) {
                 const pluginCtx = getPluginContext(ctx, this.botPlugin.name, this.manifest);
                 const res = await this.botPlugin.getQuestions(stage, pluginCtx);
                 if (res.isErr()) return res;

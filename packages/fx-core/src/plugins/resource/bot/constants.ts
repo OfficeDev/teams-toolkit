@@ -171,6 +171,12 @@ export class AuthEnvNames {
     public static readonly M365_AUTHORITY_HOST = "M365_AUTHORITY_HOST";
     public static readonly INITIATE_LOGIN_ENDPOINT = "INITIATE_LOGIN_ENDPOINT";
     public static readonly M365_APPLICATION_ID_URI = "M365_APPLICATION_ID_URI";
+    public static readonly SQL_ENDPOINT = "SQL_ENDPOINT";
+    public static readonly SQL_DATABASE_NAME = "SQL_DATABASE_NAME";
+    public static readonly SQL_USER_NAME = "SQL_USER_NAME";
+    public static readonly SQL_PASSWORD = "SQL_PASSWORD";
+    public static readonly IDENTITY_ID = "IDENTITY_ID";
+    public static readonly API_ENDPOINT = "API_ENDPOINT";
 }
 
 export class AuthValues {

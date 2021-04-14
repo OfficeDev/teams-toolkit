@@ -21,7 +21,7 @@ export class ProvisionConfig {
     public identityId?: string;
     public sqlUserName?: string;
     public sqlPassword?: string;
-    public apiEndpoint?: string;
+    public functionEndpoint?: string;
 
     public provisioned = false;
 
@@ -48,15 +48,6 @@ export class ProvisionConfig {
             this.location = locationValue as string;
         }
 
-        /* 
-public sqlEndpoint?: string;
-public sqlDatabaseName?: string;
-public identityId?: string;
-public sqlUserName?: string;
-public sqlPassword?: string;
-public apiEndpoint?: string;
-*/
-
         const sqlEndpointValue: ConfigValue = context.configOfOtherPlugins
             .get(PluginSql.PLUGIN_NAME)
             ?.get(PluginSql.SQL_ENDPOINT);
@@ -69,6 +60,34 @@ public apiEndpoint?: string;
             ?.get(PluginSql.SQL_DATABASE_NAME);
         if (sqlDatabaseNameValue) {
             this.sqlDatabaseName = sqlDatabaseNameValue as string;
+        }
+
+        const sqlUsernameValue: ConfigValue = context.configOfOtherPlugins
+            .get(PluginSql.PLUGIN_NAME)
+            ?.get(PluginSql.SQL_USERNAME);
+        if (sqlUsernameValue) {
+            this.sqlUserName = sqlUsernameValue as string;
+        }
+
+        const sqlPasswordValue: ConfigValue = context.configOfOtherPlugins
+            .get(PluginSql.PLUGIN_NAME)
+            ?.get(PluginSql.SQL_PASSWORD);
+        if (sqlPasswordValue) {
+            this.sqlPassword = sqlPasswordValue as string;
+        }
+
+        const identityValue: ConfigValue = context.configOfOtherPlugins
+            .get(PluginIdentity.PLUGIN_NAME)
+            ?.get(PluginIdentity.IDENTITY_ID);
+        if (identityValue) {
+            this.identityId = identityValue as string;
+        }
+
+        const functionEndpointValue: ConfigValue = context.configOfOtherPlugins
+            .get(PluginFunction.PLUGIN_NAME)
+            ?.get(PluginFunction.ENDPOINT);
+        if (functionEndpointValue) {
+            this.functionEndpoint = functionEndpointValue as string;
         }
 
         const appServicePlanValue: ConfigValue = context.config.get(PluginBot.APP_SERVICE_PLAN);

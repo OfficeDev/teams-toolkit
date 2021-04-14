@@ -64,7 +64,7 @@ export async function checkAADApp(objectId: string): Promise<boolean> {
 
     let response = undefined;
     try {
-        response = await axiosInstance.get(`${baseUrl}/api/aadapp/${objectId}`);
+        response = await axiosInstance.get(`${baseUrl}/api/aadapp/v2/${objectId}`);
     } catch (e) {
         throw new CallAppStudioException(LifecycleFuncNames.CHECK_AAD_APP, e);
     }

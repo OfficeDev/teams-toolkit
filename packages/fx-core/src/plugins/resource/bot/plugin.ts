@@ -313,20 +313,41 @@ export class TeamsBotImpl {
             this.config.provision.subscriptionId!,
         );
 
+        const appSettings = [
+            { name: AuthEnvNames.BOT_ID, value: botId },
+            { name: AuthEnvNames.BOT_PASSWORD, value: botPassword },
+            { name: AuthEnvNames.M365_CLIENT_ID, value: teamsAppClientId },
+            { name: AuthEnvNames.M365_CLIENT_SECRET, value: teamsAppClientSecret },
+            { name: AuthEnvNames.M365_TENANT_ID, value: teamsAppTenant },
+            { name: AuthEnvNames.M365_AUTHORITY_HOST, value: AuthValues.M365_AUTHORITY_HOST },
+            { name: AuthEnvNames.INITIATE_LOGIN_ENDPOINT, value: `${this.config.provision.siteEndpoint}${CommonStrings.AUTH_LOGIN_URI_SUFFIX}` },
+            { name: AuthEnvNames.M365_APPLICATION_ID_URI, value: applicationIdUris }
+        ];
+
+        if (this.config.provision.sqlEndpoint) {
+            appSettings.push({ name: AuthEnvNames.SQL_ENDPOINT, value: this.config.provision.sqlEndpoint });
+        }
+        if (this.config.provision.sqlDatabaseName) {
+            appSettings.push({ name: AuthEnvNames.SQL_DATABASE_NAME, value: this.config.provision.sqlDatabaseName });
+        }
+        if (this.config.provision.sqlUserName) {
+            appSettings.push({ name: AuthEnvNames.SQL_USER_NAME, value: this.config.provision.sqlUserName });
+        }
+        if (this.config.provision.sqlPassword) {
+            appSettings.push({ name: AuthEnvNames.SQL_PASSWORD, value: this.config.provision.sqlPassword });
+        }
+        if (this.config.provision.identityId) {
+            appSettings.push({ name: AuthEnvNames.IDENTITY_ID, value: this.config.provision.identityId });
+        }
+        if (this.config.provision.functionEndpoint) {
+            appSettings.push({ name: AuthEnvNames.API_ENDPOINT, value: this.config.provision.functionEndpoint });
+        }
+
         const siteEnvelope: appService.WebSiteManagementModels.Site = LanguageStrategy.getSiteEnvelope(
             this.config.scaffold.programmingLanguage!,
             this.config.provision.appServicePlan!,
             this.config.provision.location!,
-            [
-                { name: AuthEnvNames.BOT_ID, value: botId },
-                { name: AuthEnvNames.BOT_PASSWORD, value: botPassword },
-                { name: AuthEnvNames.M365_CLIENT_ID, value: teamsAppClientId },
-                { name: AuthEnvNames.M365_CLIENT_SECRET, value: teamsAppClientSecret },
-                { name: AuthEnvNames.M365_TENANT_ID, value: teamsAppTenant },
-                { name: AuthEnvNames.M365_AUTHORITY_HOST, value: AuthValues.M365_AUTHORITY_HOST },
-                { name: AuthEnvNames.INITIATE_LOGIN_ENDPOINT, value: `${this.config.provision.siteEndpoint}${CommonStrings.AUTH_LOGIN_URI_SUFFIX}` },
-                { name: AuthEnvNames.M365_APPLICATION_ID_URI, value: applicationIdUris }
-            ],
+            appSettings
         );
 
         let res = undefined;

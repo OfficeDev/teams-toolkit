@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { FrontendPluginImpl } from "./plugin";
-import { Plugin, PluginContext, err, SystemError, UserError } from "fx-api";
+import { Plugin, PluginContext, ok, err, SystemError, UserError, Stage, QTreeNode, Result, FxError } from "fx-api";
 
 import { ErrorFactory, TeamsFxResult } from "./error-factory";
 import { ErrorType, FrontendPluginError, UnhandledErrorCode, UnhandledErrorMessage } from "./resources/errors";
@@ -12,6 +12,10 @@ import { telemetryHelper } from "./utils/telemetry-helper";
 
 export class FrontendPlugin implements Plugin {
     frontendPluginImpl = new FrontendPluginImpl();
+
+    public async getQuestions(stage: Stage, ctx: PluginContext): Promise<Result<QTreeNode | undefined, FxError>> {
+        return this.frontendPluginImpl.getQuestions(stage, ctx);
+    }
 
     public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
         Logger.setLogger(ctx.logProvider);
@@ -46,6 +50,16 @@ export class FrontendPlugin implements Plugin {
         Logger.setLogger(ctx.logProvider);
         return this.runWithErrorHandling(ctx, TelemetryEvent.Deploy, () => this.frontendPluginImpl.deploy(ctx));
     }
+
+    public async localDebug(ctx: PluginContext): Promise<TeamsFxResult> {
+        return ok(undefined);
+    }
+
+    public async postLocalDebug(ctx: PluginContext): Promise<TeamsFxResult> {
+        Logger.setLogger(ctx.logProvider);
+        return this.runWithErrorHandling(ctx, TelemetryEvent.PostDebug, () => this.frontendPluginImpl.postDebug(ctx));
+    }
+
 
     private async runWithErrorHandling(
         ctx: PluginContext,

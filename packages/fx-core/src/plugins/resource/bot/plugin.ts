@@ -554,6 +554,8 @@ export class TeamsBotImpl {
 
         this.markEnter(LifecycleFuncNames.UPDATE_MESSAGE_ENDPOINT_APPSTUDIO, endpoint);
 
+        const appStudioToken = await this.ctx?.appStudioToken?.getAccessToken();
+        CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
         CheckThrowSomethingMissing(ConfigNames.LOCAL_BOT_ID, this.config.localDebug.localBotId);
 
         const botReg: IBotRegistration = {
@@ -570,6 +572,7 @@ export class TeamsBotImpl {
         let retries = Retry.UPDATE_MESSAGE_ENDPOINT_TIMES;
         while (retries > 0) {
             try {
+                await AppStudio.init(appStudioToken!);
                 await AppStudio.updateMessageEndpoint(botReg.botId!, botReg);
             } catch (e) {
                 Logger.debug(`updateMessageExtension exception: ${e}`);
@@ -691,6 +694,7 @@ export class TeamsBotImpl {
 
         Logger.debug(`Start to create bot registration by ${JSON.stringify(botReg)}`);
 
+        await AppStudio.init(appStudioToken!);
         await AppStudio.createBotRegistration(botReg);
 
         this.config.localDebug.localBotId = botAuthCreds.clientId;
@@ -708,6 +712,7 @@ export class TeamsBotImpl {
 
         // 1. Create a new AAD App Registraion with client secret.
         const appStudioToken = await this.ctx?.appStudioToken?.getAccessToken();
+        CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
 
         const aadDisplayName = ResourceNameFactory.createCommonName(this.ctx?.app.name.short);
 

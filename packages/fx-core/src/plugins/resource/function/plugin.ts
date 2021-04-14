@@ -604,14 +604,13 @@ export class FunctionPluginImpl {
     private async handleDotnetChecker(): Promise<void> {
         await runWithErrorCatchAndThrow(new DotnetError(Messages.defaultErrorMessage), async () => {
             const dotnetChecker = new DotnetChecker();
-            const shouldContinue = true;
             try {
                 if (await dotnetChecker.isInstalled()) {
                     return;
                 }
             } catch (error) {
                 handleDotnetError(error);
-                return !shouldContinue;
+                return;
             }
 
             await step(StepGroup.PreDeployStepGroup, PreDeploySteps.dotnetInstall, async () => {

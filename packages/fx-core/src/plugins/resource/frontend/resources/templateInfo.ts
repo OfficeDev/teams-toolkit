@@ -26,7 +26,9 @@ export class TemplateInfo {
 
     constructor(ctx: PluginContext) {
         this.group = TemplateInfo.TemplateGroupName;
-        this.language = (ctx.answers?.getString(QuestionKey.TabLanguage)) ?? TabLanguage.JavaScript;
+
+        const solutionPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.SolutionPluginName);
+        this.language = solutionPlugin?.get(DependentPluginInfo.ProgrammingLanguage) as string ?? TabLanguage.JavaScript;
         //TODO: Throw error until TS template ready
         if (this.language === TabLanguage.TypeScript) {
             throw new TSTemplateNotReadyError();

@@ -75,6 +75,7 @@ export class DependentPluginInfo {
     static readonly ResourceGroupName = "resourceGroupName";
     static readonly ResourceNameSuffix = "resourceNameSuffix";
     static readonly Location = "location";
+    static readonly ProgrammingLanguage = "programmingLanguage";
 
     static readonly FunctionPluginName = "fx-resource-function";
     static readonly FunctionEndpoint = "functionEndpoint";

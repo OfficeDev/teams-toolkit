@@ -3,7 +3,7 @@
 import { FunctionPluginPathInfo as PathInfo, RegularExpr } from "../constants";
 
 export class InfoMessages {
-    public static readonly askFunctionLanguage: string = "Please choose a programming language for the Azure function app.";
+    public static readonly askNodeVersion: string = "Please select a node version for the Azure function app.";
     public static readonly askFunctionName: string = "Please provide function name.";
 
     public static readonly checkDotNetVersion: string = "Check .Net Core version.";

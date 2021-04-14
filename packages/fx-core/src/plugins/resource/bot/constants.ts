@@ -138,7 +138,7 @@ export class Links {
 }
 
 export class Alias {
-    public static readonly TEAMS_BOT_PLUGIN = "BP";
+    public static readonly TEAMS_BOT_PLUGIN = "BT";
     public static readonly TEAMS_FX = "Teamsfx";
 }
 

@@ -4,7 +4,7 @@
 "use strict";
 
 import * as os from "os";
-import { Context, ConfigMap } from "fx-api";
+import { Context, ConfigMap, Platform } from "fx-api";
 
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -22,7 +22,8 @@ export class ContextFactory {
       azureAccountProvider: AzureAccountManager,
       graphTokenProvider: GraphManagerInstance,
       appStudioToken: AppStudioTokenProvider,
-      globalConfig: globalConfig
+      globalConfig: globalConfig,
+      platform: Platform.CLI
     };
   }
 }

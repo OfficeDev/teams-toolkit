@@ -87,7 +87,12 @@ export class TeamsCore implements Core {
     ctx: Context,
     answers?: ConfigMap
   ): Promise<Result<null, FxError>> {
-    return Executor.create(new CoreContext(ctx), answers);
+    const coreCtx = new CoreContext(ctx);
+    let result = await Executor.create(coreCtx, answers);
+    if (result.isErr()) {
+      return result;
+    }
+    return Executor.create(coreCtx, answers);
   }
 
   @hooks([recoverMW, concurrentMW])

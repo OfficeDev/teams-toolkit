@@ -3,7 +3,7 @@
 
 "use strict";
 
-import { Context, ConfigMap } from "fx-api";
+import { Context, ConfigMap, Platform, Stage } from "fx-api";
 import * as os from "os";
 import { workspace } from "vscode";
 
@@ -19,7 +19,7 @@ import { dotnetChecker } from "./debug/depsChecker/dotnetChecker";
 import * as extensionPackage from "./../package.json";
 
 export class ContextFactory {
-  public static get(): Context {
+  public static get(stage?: Stage): Context {
     const globalConfig = new ConfigMap();
     globalConfig.set("featureFlag", isFeatureFlag());
     globalConfig.set("function-dotnet-checker-enabled", dotnetChecker.isEnabled());
@@ -28,6 +28,7 @@ export class ContextFactory {
       : undefined;
     return {
       root: workspacePath ?? `${os.homedir()}/teams`,
+      stage: stage,
       dialog: DialogManagerInstance,
       logProvider: VsCodeLogInstance,
       telemetryReporter: new VSCodeTelemetryReporter(
@@ -39,7 +40,8 @@ export class ContextFactory {
       graphTokenProvider: GraphManagerInstance,
       appStudioToken: AppStudioTokenInstance,
       treeProvider: CommandsTreeViewProvider.getInstance(),
-      globalConfig: globalConfig
+      globalConfig: globalConfig,
+      platform: Platform.VSCode
     };
   }
 }

@@ -61,7 +61,7 @@ import { DotnetChecker, dotnetChecker } from "./debug/depsChecker/dotnetChecker"
 import { PanelType } from "./controls/PanelType";
 import { ContextFactory } from "./context";
 
-export let core: TeamsCore;
+export let core = TeamsCore.getInstance();
 const runningTasks = new Set<string>(); // to control state of task execution
 
 export async function createNewProjectHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -140,7 +140,7 @@ export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
     answers.set("stage", stage);
 
     // 4. getQuestions
-    const qres = await core.getQuestions(ContextFactory.get(), stage, Platform.VSCode);
+    const qres = await core.getQuestions(ContextFactory.get(stage), stage, Platform.VSCode);
     if (qres.isErr()) {
       throw qres.error;
     }
@@ -164,13 +164,15 @@ export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
 
     // 6. run task
     answers.set("substage", "runTask");
-    if (stage === Stage.create) result = await core.create(ContextFactory.get(), answers);
-    else if (stage === Stage.update) result = await core.update(ContextFactory.get(), answers);
+    if (stage === Stage.create) result = await core.create(ContextFactory.get(stage), answers);
+    else if (stage === Stage.update) result = await core.update(ContextFactory.get(stage), answers);
     else if (stage === Stage.provision)
-      result = await core.provision(ContextFactory.get(), answers);
-    else if (stage === Stage.deploy) result = await core.deploy(ContextFactory.get(), answers);
-    else if (stage === Stage.debug) result = await core.localDebug(ContextFactory.get(), answers);
-    else if (stage === Stage.publish) result = await core.publish(ContextFactory.get(), answers);
+      result = await core.provision(ContextFactory.get(stage), answers);
+    else if (stage === Stage.deploy) result = await core.deploy(ContextFactory.get(stage), answers);
+    else if (stage === Stage.debug)
+      result = await core.localDebug(ContextFactory.get(stage), answers);
+    else if (stage === Stage.publish)
+      result = await core.publish(ContextFactory.get(stage), answers);
     else {
       throw new SystemError(
         ExtensionErrors.UnsupportedOperation,

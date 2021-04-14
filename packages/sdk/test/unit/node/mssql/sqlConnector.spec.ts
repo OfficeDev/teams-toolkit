@@ -12,7 +12,7 @@ import {
   ErrorCode,
   ErrorWithCode,
   setLogLevel,
-  LogLevel
+  LogLevel,
 } from "../../../../src";
 
 chaiUse(chaiPromises);
@@ -28,7 +28,7 @@ describe("TediousSQLConectConfig - node", () => {
   const fakeToken = "fake_token";
   const defaultAuthenticationType = "default";
   const tokenAuthenticationType = "azure-active-directory-access-token";
-  
+
   // error code.
   const invalidConfiguration = "InvalidConfiguration";
 
@@ -38,16 +38,16 @@ describe("TediousSQLConectConfig - node", () => {
   after(() => {
     setLogLevel(LogLevel.Info);
   });
-  afterEach(function() {
+  afterEach(function () {
     restore();
   });
 
-  it("getConfig success with username and password", async function() {
+  it("getConfig success with username and password", async function () {
     restore = mockedEnv({
       SQL_ENDPOINT: fakeSQLServerEndpoint,
       SQL_DATABASE: fakeSQLDataName,
       SQL_USER_NAME: fakeSQLUserName,
-      SQL_PASSWORD: fakeSQLPassword
+      SQL_PASSWORD: fakeSQLPassword,
     });
     loadConfiguration();
 
@@ -62,11 +62,11 @@ describe("TediousSQLConectConfig - node", () => {
     assert.strictEqual(tediousConnectConfig.authentication!.options.password, fakeSQLPassword);
   });
 
-  it("getConfig success with access token", async function() {
+  it("getConfig success with access token", async function () {
     restore = mockedEnv({
       SQL_ENDPOINT: fakeSQLServerEndpoint,
       SQL_DATABASE: fakeSQLDataName,
-      IDENTITY_ID: fakeSQLIdentityId
+      IDENTITY_ID: fakeSQLIdentityId,
     });
     loadConfiguration();
 
@@ -76,7 +76,7 @@ describe("TediousSQLConectConfig - node", () => {
         return new Promise<AccessToken>((resolve) => {
           resolve({
             token: fakeToken,
-            expiresOnTimestamp: 12345678
+            expiresOnTimestamp: 12345678,
           });
         });
       }
@@ -94,11 +94,11 @@ describe("TediousSQLConectConfig - node", () => {
     sinon.restore();
   });
 
-  it("getConfig failed without host name", async function() {
+  it("getConfig failed without host name", async function () {
     restore = mockedEnv({
       SQL_DATABASE: fakeSQLDataName,
       SQL_USER_NAME: fakeSQLUserName,
-      SQL_PASSWORD: fakeSQLPassword
+      SQL_PASSWORD: fakeSQLPassword,
     });
     loadConfiguration();
 
@@ -108,10 +108,10 @@ describe("TediousSQLConectConfig - node", () => {
       .and.property("code", invalidConfiguration);
   });
 
-  it("getConfig fail without username, password or identity id", async function() {
+  it("getConfig fail without username, password or identity id", async function () {
     restore = mockedEnv({
       SQL_ENDPOINT: fakeSQLServerEndpoint,
-      SQL_DATABASE: fakeSQLDataName
+      SQL_DATABASE: fakeSQLDataName,
     });
     loadConfiguration();
 

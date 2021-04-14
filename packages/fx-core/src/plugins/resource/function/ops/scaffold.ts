@@ -21,7 +21,7 @@ export interface TemplateVariables {
 
 export class FunctionScaffold {
     public static async doesFunctionPathExist(componentPath: string, language: FunctionLanguage, entryName: string): Promise<boolean> {
-        const entryFileOrFolderName: string = LanguageStrategyFactory.getStrategy(language).getFunctionEntryFileOrFolderName(entryName);
+        const entryFileOrFolderName: string = (await LanguageStrategyFactory.getStrategy(language)).getFunctionEntryFileOrFolderName(entryName);
         return fs.pathExists(path.join(componentPath, entryFileOrFolderName));
     }
 

@@ -4,6 +4,7 @@ import * as path from "path";
 
 import { Commands, CommonConstants, FunctionPluginPathInfo } from "./constants";
 import { FunctionLanguage, NodeVersion } from "./enums";
+import { getDotnetForShell } from "./utils/depsChecker/checkerAdapter";
 
 export interface FunctionLanguageStrategy {
     /* For scaffolding. */
@@ -58,7 +59,8 @@ const TypeScriptLanguageStrategy: FunctionLanguageStrategy = {
     }],
 };
 
-const CSharpLanguageStrategy: FunctionLanguageStrategy = {
+async function getCSharpLanguageStrategy(): Promise<FunctionLanguageStrategy> {
+  return {
     getFunctionEntryFileOrFolderName: (entryName: string) => `${entryName}.cs`,
     functionAppRuntimeSettings: (version?: string) => {
         return {
@@ -67,21 +69,22 @@ const CSharpLanguageStrategy: FunctionLanguageStrategy = {
     },
     skipFuncExtensionInstall: true,
     buildCommands: [{
-        command: Commands.dotnetPublish,
-        relativePath: CommonConstants.emptyString
+      command: Commands.dotnetPublish(await getDotnetForShell()),
+      relativePath: CommonConstants.emptyString
     }],
     deployFolderRelativePath: path.join("bin", "Release", "netcoreapp3.1", "publish")
-};
+  };
+}
 
 export class LanguageStrategyFactory {
-    public static getStrategy(language: FunctionLanguage): FunctionLanguageStrategy {
+    public static async getStrategy(language: FunctionLanguage): Promise<FunctionLanguageStrategy> {
         switch (language) {
             case FunctionLanguage.JavaScript:
                 return JavaScriptLanguageStrategy;
             case FunctionLanguage.TypeScript:
                 return TypeScriptLanguageStrategy;
             case FunctionLanguage.CSharp:
-                return CSharpLanguageStrategy;
+                return await getCSharpLanguageStrategy();
         }
     }
 }

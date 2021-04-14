@@ -11,7 +11,6 @@ import ignore, { Ignore } from "ignore";
 import { AzureInfo, Commands, CommonConstants, DefaultValues, FunctionPluginInfo, FunctionPluginPathInfo } from "../constants";
 import {
     ConfigFunctionAppError,
-    DotnetVersionError,
     FunctionAppOpError,
     PublishCredentialError,
     UploadZipError,
@@ -28,6 +27,7 @@ import { WebAppsListPublishingCredentialsResponse } from "@azure/arm-appservice/
 import { execute } from "../utils/execute";
 import { forEachFileAndDir } from "../utils/dir-walk";
 import { requestWithRetry } from "../utils/templates-fetch";
+import { getDotnetForShell } from "../utils/depsChecker/checkerAdapter";
 
 export class FunctionDeploy {
 
@@ -39,7 +39,7 @@ export class FunctionDeploy {
     }
 
     public static async hasUpdatedContent(componentPath: string, language: FunctionLanguage): Promise<boolean> {
-        const folderFilter = LanguageStrategyFactory.getStrategy(language).hasUpdatedContentFilter;
+        const folderFilter = (await LanguageStrategyFactory.getStrategy(language)).hasUpdatedContentFilter;
 
         try {
             const lastFunctionDeployTime = await this.getLastDeploymentTime(componentPath);
@@ -71,24 +71,8 @@ export class FunctionDeploy {
         }
     }
 
-    // We do not prevent deployment if the .Net Core version mismatch, we just alert user to take care.
-    public static async checkDotNetVersion(ctx: PluginContext, componentPath: string): Promise<void> {
-        await runWithErrorCatchAndThrow(new DotnetVersionError(), async () => {
-            const currentVersion =
-                await execute(Commands.currentDotnetVersionQuery, componentPath);
-            Logger.info(InfoMessages.dotnetVersion(currentVersion));
-
-            const isExpectedDotNetVersion = (version: string) => currentVersion.startsWith(version + CommonConstants.versionSep);
-            if (!FunctionPluginInfo.expectDotnetSDKs.find(isExpectedDotNetVersion)) {
-                const msg = InfoMessages.dotNetVersionUnexpected(currentVersion, FunctionPluginInfo.expectDotnetSDKs);
-                Logger.warning(msg);
-                DialogUtils.show(ctx, msg, MsgLevel.Warning);
-            }
-        });
-    }
-
     public static async build(componentPath: string, language: FunctionLanguage): Promise<void> {
-        for (const commandItem of LanguageStrategyFactory.getStrategy(language).buildCommands) {
+        for (const commandItem of (await LanguageStrategyFactory.getStrategy(language)).buildCommands) {
             const command: string = commandItem.command;
             const relativePath: string = commandItem.relativePath;
             const absolutePath: string = path.join(componentPath, relativePath);
@@ -97,12 +81,12 @@ export class FunctionDeploy {
     }
 
     public static async installFuncExtensions(componentPath: string, language: FunctionLanguage): Promise<void> {
-        if (LanguageStrategyFactory.getStrategy(language).skipFuncExtensionInstall) {
+        if ((await LanguageStrategyFactory.getStrategy(language)).skipFuncExtensionInstall) {
             return;
         }
 
         const binPath = path.join(componentPath, FunctionPluginPathInfo.functionExtensionsFolderName);
-        const command = Commands.functionExtensionsInstall(FunctionPluginPathInfo.functionExtensionsFileName, binPath);
+        const command = Commands.functionExtensionsInstall(await getDotnetForShell(), FunctionPluginPathInfo.functionExtensionsFileName, binPath);
         await execute(command, componentPath);
     }
 
@@ -113,7 +97,7 @@ export class FunctionDeploy {
         const deployTime: Date = new Date();
 
         // To parallel execute the three tasks, we first create all and then await them.
-        const publishRelativePath: string = LanguageStrategyFactory.getStrategy(language).deployFolderRelativePath;
+        const publishRelativePath: string = (await LanguageStrategyFactory.getStrategy(language)).deployFolderRelativePath;
         const publishAbsolutePath: string = path.join(componentPath, publishRelativePath);
 
         const zip: AdmZip =

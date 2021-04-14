@@ -28,7 +28,7 @@ export class ScaffoldConfig {
         }
 
         let rawProgrammingLanguage = "";
-        const programmingLanguageValue: ConfigValue = context.config.get(PluginBot.PROGRAMMING_LANGUAGE);
+        const programmingLanguageValue: ConfigValue = context.answers?.get(PluginBot.PROGRAMMING_LANGUAGE);
         if (programmingLanguageValue) {
             rawProgrammingLanguage = programmingLanguageValue as string;
         }

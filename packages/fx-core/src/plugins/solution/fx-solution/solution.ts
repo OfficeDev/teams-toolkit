@@ -91,7 +91,6 @@ import {
     HostTypeOptionSPFx,
     FrontendHostTypeQuestion,
     TabOptionItem,
-    TabScopQuestion,
     MessageExtensionItem,
     AzureResourceApim,
     createCapabilityQuestion,
@@ -1242,7 +1241,7 @@ export class TeamsAppSolution implements Solution {
     async getQuestions(stage: Stage, ctx: SolutionContext): Promise<Result<QTreeNode | undefined, FxError>> {
         const node = new QTreeNode({ type: NodeType.group });
         if (stage === Stage.create) {
-            const capQuestion = createCapabilityQuestion(true);
+            const capQuestion = createCapabilityQuestion();
  
             const capNode = new QTreeNode(capQuestion); 
 
@@ -1850,9 +1849,11 @@ export class TeamsAppSolution implements Solution {
         if(!capabilitiesAnswer || capabilitiesAnswer.length === 0){
             return ok(Void);
         }
-
+        
         const settings = this.getAzureSolutionSettings(ctx);
- 
+
+        const existingCapabilities = settings.capabilities;
+
         const addCapabilityNotification:string[]  = [];
 
         if(capabilitiesAnswer?.includes(TabOptionItem.id)){
@@ -1882,6 +1883,8 @@ export class TeamsAppSolution implements Solution {
 
         if(capabilitiesAnswer?.includes(BotOptionItem.id)){
             ctx.logProvider?.info(`start scaffolding Bot.....`);
+            existingCapabilities.push(TabOptionItem.id);
+            ctx.answers.set(AzureSolutionQuestionNames.Capabilities, existingCapabilities);
             const scaffoldRes = await this.scaffoldOne(this.botPlugin, ctx);
             if (scaffoldRes.isErr()) {
                 ctx.logProvider?.info(`failed to scaffold Bot!`);

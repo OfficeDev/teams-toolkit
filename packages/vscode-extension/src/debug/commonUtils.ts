@@ -86,19 +86,3 @@ export async function hasTeamsfxBackend(): Promise<boolean> {
 
   return backendRoot !== undefined;
 }
-
-export async function displayLearnMore(message: string, link: string): Promise<void> {
-  await displayWarningMessage(message, constants.Messages.learnMoreButtonText, () => openUrl(link));
-}
-
-export async function displayWarningMessage(
-  message: string,
-  buttonText: string,
-  action: () => Promise<void>
-): Promise<void> {
-  const button: vscode.MessageItem = { title: buttonText };
-  const input = await vscode.window.showWarningMessage(message, { modal: true }, button);
-  if (input === button) {
-    await action();
-  }
-}

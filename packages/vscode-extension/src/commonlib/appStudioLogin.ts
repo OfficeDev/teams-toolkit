@@ -135,7 +135,7 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
       confirm,
       learnMore
     );
-    while (userSelected === learnMore) {
+    do {
       vscode.env.openExternal(vscode.Uri.parse("https://developer.microsoft.com/en-us/microsoft-365/dev-program"));
       userSelected = await vscode.window.showWarningMessage(
         warningMsg,
@@ -143,7 +143,7 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
         confirm,
         learnMore
       );
-    }
+    } while (userSelected === learnMore);
     return Promise.resolve(userSelected === confirm);
   }
 

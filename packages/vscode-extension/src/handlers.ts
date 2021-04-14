@@ -539,12 +539,6 @@ export async function devProgramHandler(): Promise<boolean> {
 }
 
 export async function openWelcomeHandler() {
-  const welcomePanel = window.createWebviewPanel("react", "Teams Toolkit", ViewColumn.One, {
-    enableScripts: true,
-    retainContextWhenHidden: true
-  });
-  welcomePanel.webview.html = getHtmlForWebview();
-
   if (isFeatureFlag()) {
     WebviewPanel.createOrShow(ext.context.extensionPath, PanelType.QuickStart);
   } else {

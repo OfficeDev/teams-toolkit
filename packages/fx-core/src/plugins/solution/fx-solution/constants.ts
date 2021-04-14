@@ -35,6 +35,7 @@ export const PROGRAMMING_LANGUAGE = "programmingLanguage";
 /**
  * Config keys that are useful for generating remote teams app manifest
  */
+export const REMOTE_MANIFEST = "manifest.remote.json";
 export const FRONTEND_ENDPOINT = "endpoint";
 export const FRONTEND_DOMAIN = "domain";
 export const AAD_REMOTE_CLIENT_ID = "clientId";

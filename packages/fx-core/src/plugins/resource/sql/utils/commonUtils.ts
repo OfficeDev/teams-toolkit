@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import jwtDecode from "jwt-decode";
+import { Constants } from "../constants";
 
 export enum UserType {
     User = "User",
@@ -22,15 +23,15 @@ export class TokenInfo {
 export function parseToken(accessToken: string): TokenInfo {
     const jwt = jwtDecode(accessToken) as any;
     let authType: string;
-    if (jwt.ver === "1.0") {
+    if (jwt.ver === Constants.jwtToken.ver1) {
         authType = jwt.appidacr;
-    } else if (jwt.ver === "2.0") {
+    } else if (jwt.ver === Constants.jwtToken.ver2) {
         authType = jwt.azpacr;
     } else {
         throw new Error("invalide token");
     }
 
-    if (authType === "0") {
+    if (authType === Constants.jwtToken.userType) {
         return new TokenInfo(jwt.name, jwt.oid, UserType.User);
     } else {
         return new TokenInfo(jwt.appid, jwt.oid, UserType.ServicePrincipal);

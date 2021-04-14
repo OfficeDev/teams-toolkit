@@ -7,6 +7,7 @@ import { ExtTelemetry, TelemetryProperty } from "./checkerAdapter";
 
 export enum DepsCheckerEvent {
   skipCheckFunc = "skip-check-func",
+  skipCheckDotnet = "skip-check-dotnet",
   checkFunc = "check-func",
 
   funcV1Installed = "func-v1-installed",
@@ -16,14 +17,21 @@ export enum DepsCheckerEvent {
   installingFunc = "installing-func",
   installedFunc = "installed-func",
   installedValidFunc = "installed-func-with-validation",
+  dotnetAlreadyInstalled = "dotnet-already-installed",
+  dotnetInstallCompleted = "dotnet-install-completed",
+  dotnetInstallError = "dotnet-install-error",
+  dotnetInstallScriptCompleted = "dotnet-install-script-completed",
+  dotnetInstallScriptError = "dotnet-install-script-error",
 
+  validateDotnetError = "validate-dotnet-error",
   validateFunc = "validate-func"
 }
 
 export enum TelemtryMessages {
   failedToInstallFunc = "failed to install Func core tools.",
   funcV1Installed = "func v1 is installed by user.",
-  NPMNotFound = "npm is not found."
+  NPMNotFound = "npm is not found.",
+  failedToExecDotnetScript = "failed to exec dotnet script"
 }
 
 enum TelemetryMessurement {

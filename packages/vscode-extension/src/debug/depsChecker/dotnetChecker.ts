@@ -14,11 +14,11 @@ import * as path from "path";
 import * as child_process from "child_process";
 import * as util from "util";
 import { ConfigFolderName } from "fx-api";
-import { logger, cpUtils, runWithProgressIndicator, getResourceDir } from "./checkerAdapter";
-import { IDepsChecker, DepsCheckerError } from "./checker";
-import { isWindows, isLinux, Messages, dotnetHelpLink } from "./common";
-import { DepsInfo } from "./checker";
-import { dotnetCheckerEnabled } from "./checkerAdapter";
+import { cpUtils, dotnetCheckerEnabled, getResourceDir, logger, runWithProgressIndicator } from "./checkerAdapter";
+import { DepsCheckerError, DepsInfo, IDepsChecker } from "./checker";
+import { dotnetHelpLink, isLinux, isWindows, Messages } from "./common";
+import { DepsCheckerEvent, DepsCheckerTelemetry, TelemtryMessages } from "./telemetry";
+import { performance } from "perf_hooks";
 
 const exec = util.promisify(child_process.exec);
 
@@ -55,6 +55,8 @@ export class DotnetChecker implements IDepsChecker {
   }
 
   public isEnabled(): Promise<boolean> {
+    // TODO: should send this event per user
+    // DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.skipCheckDotnet);
     return Promise.resolve(dotnetCheckerEnabled());
   }
 
@@ -70,6 +72,7 @@ export class DotnetChecker implements IDepsChecker {
     // logger.debug(`[end] check dotnet version`);
 
     if ((await DotnetChecker.tryAcquireGlobalDotnetSdk()) && (await DotnetChecker.validate())) {
+      DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.dotnetAlreadyInstalled);
       logger.info(`${Messages.useGlobalDotnet} '${await DotnetChecker.getDotnetExecPathFromConfig()}'`);
       return true;
     }
@@ -93,9 +96,10 @@ export class DotnetChecker implements IDepsChecker {
     // logger.debug(`[start] validate dotnet version`);
     if (!(await DotnetChecker.validate())) {
       await DotnetChecker.cleanup();
-      // TODO: remove hardcoding
+      DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.dotnetInstallError);
       throw new DepsCheckerError(Messages.failToInstallDotnet.replace("@NameVersion", installedNameWithVersion), dotnetHelpLink);
     }
+    DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.dotnetInstallCompleted);
   }
 
   public async getDotnetExecPath(): Promise<string> {
@@ -110,7 +114,6 @@ export class DotnetChecker implements IDepsChecker {
     }
     return dotnetExecPath;
   }
-
 
   private static getDotnetConfigPath(): string {
     return path.join(os.homedir(), `.${ConfigFolderName}`, "dotnet.json");
@@ -179,21 +182,25 @@ export class DotnetChecker implements IDepsChecker {
     const unixFullCommand = `bash ${installCommand}`;
 
     try {
-      // logger.debug(`[start] exec install script`);
+      const start = performance.now();
       const { stdout, stderr } = await exec(isWindows() ? windowsFullCommand : unixFullCommand, {
         cwd: process.cwd(),
         maxBuffer: DotnetChecker.maxBuffer,
         timeout: DotnetChecker.timeout,
         killSignal: "SIGKILL"
       });
-      // logger.debug(`[end] exec install script`);
+      const timecost = Number(((performance.now() - start) / 1000).toFixed(2));
 
       if (stderr && stderr.length > 0) {
+        DepsCheckerTelemetry.sendSystemErrorEvent(DepsCheckerEvent.dotnetInstallScriptError, TelemtryMessages.failedToExecDotnetScript, `stdout: ${stdout}, stderr: ${stderr}`);
         logger.error(
           `${Messages.failToInstallDotnet.replace("@NameVersion", installedNameWithVersion)} ${Messages.dotnetInstallStderr} stdout: '${stdout}', stderr: '${stderr}'`
         );
+      }else {
+        DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.dotnetInstallScriptCompleted, timecost);
       }
     } catch (error) {
+      DepsCheckerTelemetry.sendSystemErrorEvent(DepsCheckerEvent.dotnetInstallScriptError, TelemtryMessages.failedToExecDotnetScript, error);
       // swallow the exception since later validate will find out the errors anyway
       logger.error(
         `${Messages.failToInstallDotnet.replace("@NameVersion", installedNameWithVersion)} ${Messages.dotnetInstallErrorCode} error: '${error}', stdout = '${error.stdout}', stderr = '${error.stderr}'`
@@ -329,7 +336,11 @@ export class DotnetChecker implements IDepsChecker {
 
   private static async validate(): Promise<boolean> {
     // TODO: validate with dotnet hello world
-    return await DotnetChecker.isDotnetInstalledCorrectly();
+    const isInstallationValid = await DotnetChecker.isDotnetInstalledCorrectly();
+    if(!isInstallationValid) {
+      DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.validateDotnetError);
+    }
+    return isInstallationValid;
   }
 
   private static async tryAcquireGlobalDotnetSdk(): Promise<boolean> {

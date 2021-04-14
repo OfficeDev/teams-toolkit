@@ -91,7 +91,6 @@ import {
     HostTypeOptionSPFx,
     FrontendHostTypeQuestion,
     TabOptionItem,
-    TabScopQuestion,
     MessageExtensionItem,
     AzureResourceApim,
     createCapabilityQuestion,

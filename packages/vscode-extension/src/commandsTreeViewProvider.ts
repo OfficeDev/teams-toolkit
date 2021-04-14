@@ -27,24 +27,19 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
       vscode.TreeItemCollapsibleState.Expanded,
       TreeCategory.GettingStarted,
       [
-        new TreeViewCommand("Welcome", "Welcome", "fx-extension.openWelcome"),
-        new TreeViewCommand("Documentation", "Documentation", "fx-extension.openDocument")
+        new TreeViewCommand("Quick Start", "Quick Start", "fx-extension.openWelcome", vscode.TreeItemCollapsibleState.None, TreeCategory.GettingStarted, undefined, "lightningBolt_16"),
+        new TreeViewCommand("Samples", "Samples", "fx-extension.openSamples", vscode.TreeItemCollapsibleState.None, TreeCategory.GettingStarted, undefined, "heart_16"),
+        new TreeViewCommand("Documentation", "Documentation", "fx-extension.openDocument", vscode.TreeItemCollapsibleState.None, TreeCategory.GettingStarted, undefined, "book_16")
       ]
     );
 
     const accountTreeViewCommand = new TreeViewCommand(
-      "ACCOUNT",
+      "ACCOUNTS",
       "Your account list",
       undefined,
       vscode.TreeItemCollapsibleState.Expanded,
       TreeCategory.Account,
-      [
-        new TreeViewCommand(
-          "Sign Up for M365 Dev Account",
-          "Go to M365 developer program to try",
-          "fx-extension.devProgram"
-        )
-      ]
+      []
     );
 
     const projectTreeViewCommand = new TreeViewCommand(
@@ -73,7 +68,7 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
           "manifestEditor"
         ),
         new TreeViewCommand(
-          "Provision",
+          "Provision in the Cloud",
           "Provision resources",
           "fx-extension.provision",
           vscode.TreeItemCollapsibleState.None,
@@ -82,7 +77,7 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
           "provision"
         ),
         new TreeViewCommand(
-          "Deploy",
+          "Deploy to the Cloud",
           "Deploy resources",
           "fx-extension.deploy",
           vscode.TreeItemCollapsibleState.None,
@@ -102,6 +97,18 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
       ]
     );
 
+    const teamDevCenterTreeViewCommand = new TreeViewCommand(
+      "TEAMS DEV CENTER",
+      "Get started with Teamsfx",
+      undefined,
+      vscode.TreeItemCollapsibleState.Expanded,
+      undefined,
+      [
+        new TreeViewCommand("App Management", "App Management", "fx-extension.openAppManagement", vscode.TreeItemCollapsibleState.None, undefined, undefined, "appManagement"),
+        new TreeViewCommand("Bot Management", "Bot Management", "fx-extension.openBotManagement", vscode.TreeItemCollapsibleState.None, undefined, undefined, "bot"),
+      ]
+    );
+
     const feedbackTreeViewCommand = new TreeViewCommand(
       "FEEDBACK",
       "Please send feedback to us if you meet any problems",
@@ -109,21 +116,15 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
       vscode.TreeItemCollapsibleState.Expanded,
       TreeCategory.Feedback,
       [
-        new TreeViewCommand(
-          "Report issues",
-          "Report issue to us by email",
-          "fx-extension.mailto"
-        )
+        new TreeViewCommand("Report issues", "Report issue to us", "fx-extension.openReportIssues", vscode.TreeItemCollapsibleState.None, TreeCategory.Feedback, undefined, "reportIssues"),
       ]
     );
 
     this.commands.push(getStartTreeViewCommand);
     this.commands.push(accountTreeViewCommand);
+    this.commands.push(projectTreeViewCommand);
+    this.commands.push(teamDevCenterTreeViewCommand);
     this.commands.push(feedbackTreeViewCommand);
-
-    if (isFeatureFlag()) {
-      this.commands.push(projectTreeViewCommand);
-    }
   }
 
   public static getInstance(): CommandsTreeViewProvider {

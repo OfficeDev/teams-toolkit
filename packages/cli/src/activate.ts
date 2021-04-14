@@ -5,8 +5,9 @@
 
 import { Result, FxError, err, ok, Core, UserError, SystemError } from "fx-api";
 
-import AzureAccountManager from "./commonlib/azureLoginCI";
+import AzureAccountManager from "./commonlib/azureLogin";
 import AppStudioTokenProvider from "./commonlib/appStudioLogin";
+import GraphTokenProvider from "./commonlib/graphLogin";
 import CLILogProvider from "./commonlib/log";
 import { UnknownError } from "./error";
 import DialogManagerInstance from "./userInterface";
@@ -42,6 +43,13 @@ export default async function activate(rootPath?: string): Promise<Result<Core, 
 
     {
       const result = await core.withAppStudioToken(AppStudioTokenProvider);
+      if (result.isErr()) {
+        return err(result.error);
+      }
+    }
+
+    {
+      const result = await core.withGraphToken(GraphTokenProvider);
       if (result.isErr()) {
         return err(result.error);
       }

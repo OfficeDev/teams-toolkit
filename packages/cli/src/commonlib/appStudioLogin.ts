@@ -139,4 +139,9 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
   }
 }
 
-export default AppStudioLogin.getInstance();
+import { MockAppStudioTokenProvider } from "fx-api";
+
+const ciEnabled = process.env.CI_ENABLED;
+const appStudioLogin = ciEnabled && ciEnabled === "true" ? MockAppStudioTokenProvider.getInstance() : AppStudioLogin.getInstance();
+
+export default appStudioLogin;

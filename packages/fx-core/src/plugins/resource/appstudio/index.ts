@@ -17,15 +17,18 @@ export class AppStudioPlugin implements Plugin {
         });
 
         if (stage === Stage.publish) {
-            const appPath = new QTreeNode({
-                type: NodeType.folder,
-                name: Constants.PUBLISH_PATH_QUESTION,
-                title: "Please select the folder contains manifest.json and icons",
-                default: `${ctx.root}/.${ConfigFolderName}`
-            });
-            appStudioQuestions.addChild(appPath);
-
             if (ctx.platform !== Platform.VSCode) {
+                const appPath = new QTreeNode({
+                    type: NodeType.folder,
+                    name: Constants.PUBLISH_PATH_QUESTION,
+                    title: "Please select the folder contains manifest.json and icons",
+                    default: `${ctx.root}/.${ConfigFolderName}`,
+                    validation: {
+                        required: true,
+                    },
+                });
+                appStudioQuestions.addChild(appPath);
+
                 const remoteTeamsAppId = new QTreeNode({
                     type: NodeType.text,
                     name: Constants.REMOTE_TEAMS_APP_ID,
@@ -53,8 +56,8 @@ export class AppStudioPlugin implements Plugin {
      * @param {string} appDirectory - The directory contains manifest.remote.json and two images
      * @returns {string} - Path of built appPackage.zip
      */
-    public async buildTeamsPackage(appDirectory: string): Promise<Result<string, FxError>> {
-        const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(appDirectory);
+    public async buildTeamsPackage(appDirectory: string, manifestString: string): Promise<Result<string, FxError>> {
+        const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(appDirectory, manifestString);
         return ok(appPackagePath);
     }
 

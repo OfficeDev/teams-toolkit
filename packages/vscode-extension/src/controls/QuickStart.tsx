@@ -1,7 +1,8 @@
 import * as React from 'react';
-import { ActionButton, Icon, PrimaryButton, Image, IIconProps } from '@fluentui/react'
+import { ActionButton, Icon, PrimaryButton, Image } from '@fluentui/react'
 import "./QuickStart.scss"
 import { Commands } from './Commands'
+import { PanelType } from './PanelType'
 import CLI from '../../media/teams.png'
 
 export default class QuickStart extends React.Component<any, any>{
@@ -274,6 +275,13 @@ export default class QuickStart extends React.Component<any, any>{
         this.setState({
             stepsDone: done
         });
+
+        vscode.postMessage({
+            command: Commands.SwitchPanel,
+            data: PanelType.SampleGallery
+        })
+        
+        this.props.history.push('/sample-gallery');
     }
 }
 

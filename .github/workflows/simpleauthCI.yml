@@ -30,7 +30,10 @@ jobs:
         dotnet build -c Release -p:WebDriverPlatform=linux64 Microsoft.TeamsFx.SimpleAuth.sln
     - name: Test
       env: 
+        TEAMS_SIMPLE_AUTH_IntegrationTestSettings__AdminClientId: ${{secrets.SIMPLE_AUTH_TEST_ADMIN_CLIENT_ID}}
         TEAMS_SIMPLE_AUTH_IntegrationTestSettings__AdminClientSecret: ${{secrets.SIMPLE_AUTH_TEST_ADMIN_CLIENT_SECRET}}
+        TEAMS_SIMPLE_AUTH_IntegrationTestSettings__TenantId: ${{secrets.SIMPLE_AUTH_TEST_TENANT_ID}}
+        TEAMS_SIMPLE_AUTH_IntegrationTestSettings__TestUserName: ${{secrets.SIMPLE_AUTH_TEST_TEST_USER_NAME}}
         TEAMS_SIMPLE_AUTH_IntegrationTestSettings__TestPassword: ${{secrets.SIMPLE_AUTH_TEST_PASSWORD}}
       run:
         chmod +x "scripts/test.sh" && "scripts/test.sh"

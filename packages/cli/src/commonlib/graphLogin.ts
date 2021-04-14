@@ -134,4 +134,9 @@ export class GraphLogin extends login implements GraphTokenProvider {
   }
 }
 
-export default GraphLogin.getInstance();
+import { MockGraphTokenProvider } from "fx-api";
+
+const ciEnabled = process.env.CI_ENABLED;
+const graphLogin = ciEnabled && ciEnabled === "true" ? MockGraphTokenProvider.getInstance() : GraphLogin.getInstance();
+
+export default graphLogin;

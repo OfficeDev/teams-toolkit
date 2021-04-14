@@ -30,7 +30,8 @@ export enum AzureSolutionQuestionNames {
     PluginSelectionDeploy = "deploy-plugin",
     AddResources = "add-azure-resources",
     AppName = "app-name",
-    AskSub = "ask-subscription"
+    AskSub = "ask-subscription",
+    ProgrammingLanguage = "programming-language",
 }
 
 export const HostTypeOptionAzure: OptionItem = {
@@ -147,4 +148,12 @@ export const AskSubscriptionQuestion: FuncQuestion = {
     type: NodeType.func,
     namespace: "fx-solution-azure",
     method: "askSubscription"
+};
+
+export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
+    name: AzureSolutionQuestionNames.ProgrammingLanguage,
+    title: "Please select programming language for your project",
+    type: NodeType.singleSelect,
+    option: ["javascript"],
+    default: "javascript"
 };

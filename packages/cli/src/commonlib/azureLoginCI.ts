@@ -13,7 +13,8 @@ import * as path from "path";
 import { AzureAccountProvider, ConfigFolderName, err, FxError, ok, Result } from "fx-api";
 
 import { NotSupportedProjectType, NotFoundSubscriptionId } from "../error";
-import { login } from "./common/login";
+import { login, LoginStatus } from "./common/login";
+import { signedOut } from "./common/constant";
 
 const clientId = process.env.E2E_CLIENT_ID ?? "";
 const secret = process.env.E2E_SECRET ?? "";
@@ -143,8 +144,8 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     return ok(null);
   }
 
-  async notifyStatus(): Promise<boolean> {
-    return true;
+  async getStatus(): Promise<LoginStatus> {
+    throw new Error("Method not implemented.");
   }
 }
 

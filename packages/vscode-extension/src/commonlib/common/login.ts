@@ -8,9 +8,28 @@ export abstract class login {
 
     async setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean> {
         this.statusChangeMap.set(name, statusChange);
-        this.notifyStatus();
+        const loginStatus: LoginStatus = await this.getStatus();
+        statusChange(loginStatus.status, loginStatus.token, loginStatus.accountInfo);
         return true;
     }
 
-    abstract notifyStatus(): Promise<boolean>;
+    async removeStatusChangeMap(name: string): Promise<boolean> {
+        this.statusChangeMap.delete(name);
+        return true;
+    }
+
+    abstract getStatus(): Promise<LoginStatus>;
+
+    async notifyStatus(): Promise<void> {
+        const loginStatus: LoginStatus = await this.getStatus();
+        for (const entry of this.statusChangeMap.entries()) {
+            entry[1](loginStatus.status, loginStatus.token, loginStatus.accountInfo);
+        }
+    }
 }
+
+export type LoginStatus = {
+    status: string;
+    token?: string;
+    accountInfo?: Record<string, unknown>;
+};

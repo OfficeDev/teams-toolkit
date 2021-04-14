@@ -5,7 +5,7 @@
 
 import { AppStudioTokenProvider } from "fx-api";
 import * as vscode from "vscode";
-import { login } from "./common/login";
+import { login, LoginStatus } from "./common/login";
 import { signedIn, signedOut } from "./common/constant";
 
 const scopes = ["https://dev.teams.microsoft.com/AppDefinitions.ReadWrite"];
@@ -106,21 +106,14 @@ export class AppStudioCodeSpaceLogin extends login implements AppStudioTokenProv
     }
   }
 
-  async notifyStatus(): Promise<boolean> {
-    if (this.statusChangeMap.size > 0) {
-      const session = await this.tryAuthenticate(false);
-      if (session && session.accessToken) {
-        const tokenJson = await this.getJsonObject();
-        for (const entry of this.statusChangeMap.entries()) {
-         entry[1](signedIn, session.accessToken, tokenJson);
-        }
-      } else {
-        for (const entry of this.statusChangeMap.entries()) {
-          entry[1](signedOut, undefined, undefined);
-        }
-      }
+  async getStatus(): Promise<LoginStatus> {
+    const session = await this.tryAuthenticate(false);
+    if (session && session.accessToken) {
+      const tokenJson = await this.getJsonObject();
+      return Promise.resolve({ status: signedIn, token: session.accessToken, accountInfo: tokenJson });
+    } else {
+      return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });
     }
-    return true;
   }
 }
 

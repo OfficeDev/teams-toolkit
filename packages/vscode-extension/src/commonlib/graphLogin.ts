@@ -12,7 +12,7 @@ import { CodeFlowLogin } from "./codeFlowLogin";
 import VsCodeLogInstance from "./log";
 import * as vscode from "vscode";
 import { signedIn, signedOut } from "./common/constant";
-import { login } from "./common/login";
+import { login, LoginStatus } from "./common/login";
 
 const accountName = "graph";
 const scopes = ["Directory.AccessAsUser.All"];
@@ -145,21 +145,14 @@ export class GraphLogin extends login implements GraphTokenProvider {
     });
   }
 
-  async notifyStatus(): Promise<boolean> {
-    if (this.statusChangeMap.size > 0) {
-      if (GraphLogin.codeFlowInstance.account) {
-        const loginToken = await GraphLogin.codeFlowInstance.getToken();
-        const tokenJson = await this.getJsonObject();
-        for (const entry of this.statusChangeMap.entries()) {
-          entry[1](signedIn, loginToken, tokenJson);
-        }
-      } else {
-        for (const entry of this.statusChangeMap.entries()) {
-          entry[1](signedOut, undefined, undefined);
-        }
-      }
+  async getStatus(): Promise<LoginStatus> {
+    if (GraphLogin.codeFlowInstance.account) {
+      const loginToken = await GraphLogin.codeFlowInstance.getToken();
+      const tokenJson = await this.getJsonObject();
+      return Promise.resolve({ status: signedIn, token: loginToken, accountInfo: tokenJson });
+    } else {
+      return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });
     }
-    return true;
   }
 }
 

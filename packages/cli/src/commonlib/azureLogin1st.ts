@@ -16,7 +16,7 @@ import { NotFoundSubscriptionId, NotSupportedProjectType } from "../error";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { signedIn, signedOut } from "./common/constant";
-import { login } from "./common/login";
+import { login, LoginStatus } from "./common/login";
 
 const env = {
   name: "AzureCloud",
@@ -214,7 +214,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
             _authority: env.activeDirectoryEndpointUrl + AzureAccountManager.domain
           }
         ],
-        function() { const _ = 1; }
+        function () { const _ = 1; }
       );
     }
   }
@@ -317,22 +317,15 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     return ok(null);
   }
 
-  async notifyStatus(): Promise<boolean> {
-    if (this.statusChangeMap.size > 0) {
-      if (AzureAccountManager.codeFlowInstance.account) {
-        const credential = await this.doGetAccountCredentialAsync();
-        const accessToken = await credential?.getToken();
-        const accountJson = await this.getJsonObject();
-        for (const entry of this.statusChangeMap.entries()) {
-          entry[1](signedIn, accessToken?.accessToken, accountJson);
-        }
-      } else {
-        for (const entry of this.statusChangeMap.entries()) {
-          entry[1](signedOut, undefined, undefined);
-        }
-      }
+  async getStatus(): Promise<LoginStatus> {
+    if (AzureAccountManager.codeFlowInstance.account) {
+      const credential = await this.doGetAccountCredentialAsync();
+      const token = await credential?.getToken();
+      const accountJson = await this.getJsonObject();
+      return Promise.resolve({ status: signedIn, token: token?.accessToken, accountInfo: accountJson });
+    } else {
+      return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });
     }
-    return true;
   }
 }
 

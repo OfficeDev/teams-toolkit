@@ -13,7 +13,7 @@ import VsCodeLogInstance from "./log";
 import * as vscode from "vscode";
 import { getBeforeCacheAccess, getAfterCacheAccess } from "./cacheAccess";
 import { signedIn, signedOut } from "./common/constant";
-import { login } from "./common/login";
+import { login, LoginStatus } from "./common/login";
 
 const accountName = "appStudio";
 const scopes = ["https://dev.teams.microsoft.com/AppDefinitions.ReadWrite"];
@@ -151,21 +151,14 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
     });
   }
 
-  async notifyStatus(): Promise<boolean> {
-    if (this.statusChangeMap.size > 0) {
-      if (AppStudioLogin.codeFlowInstance.account) {
-        const loginToken = await AppStudioLogin.codeFlowInstance.getToken();
-        const tokenJson = await this.getJsonObject();
-        for (const entry of this.statusChangeMap.entries()) {
-          entry[1](signedIn, loginToken, tokenJson);
-        }
-      } else {
-        for (const entry of this.statusChangeMap.entries()) {
-          entry[1](signedOut, undefined, undefined);
-        }
-      }
+  async getStatus(): Promise<LoginStatus> {
+    if (AppStudioLogin.codeFlowInstance.account) {
+      const loginToken = await AppStudioLogin.codeFlowInstance.getToken();
+      const tokenJson = await this.getJsonObject();
+      return Promise.resolve({ status: signedIn, token: loginToken, accountInfo: tokenJson });
+    } else {
+      return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });
     }
-    return true;
   }
 }
 

@@ -7,7 +7,7 @@ import { GraphTokenProvider } from "fx-api";
 import { LogLevel, ConfidentialClientApplication } from "@azure/msal-node";
 
 import CLILogProvider from "./log";
-import { login } from "./common/login";
+import { login, LoginStatus } from "./common/login";
 
 /**
  * help link
@@ -95,8 +95,8 @@ export class GraphLogin extends login implements GraphTokenProvider {
     });
   }
 
-  async notifyStatus(): Promise<boolean> {
-    return true;
+  getStatus(): Promise<LoginStatus> {
+    throw new Error("Method not implemented.");
   }
 }
 

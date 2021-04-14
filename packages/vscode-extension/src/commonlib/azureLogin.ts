@@ -13,7 +13,7 @@ import { LoginFailureError } from "./codeFlowLogin";
 import * as vscode from "vscode";
 import * as identity from "@azure/identity";
 import { signedIn, signedOut } from "./common/constant";
-import { login } from "./common/login";
+import { login, LoginStatus } from "./common/login";
 
 export class AzureAccountManager extends login implements AzureAccountProvider {
   private static instance: AzureAccountManager;
@@ -282,22 +282,15 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     return false;
   }
 
-  async notifyStatus(): Promise<boolean> {
-    if (this.statusChangeMap.size > 0) {
-      if (this.isUserLogin()) {
-        const credential = await this.doGetAccountCredentialAsync();
-        const accessToken = await credential?.getToken();
-        const accountJson = await this.getJsonObject();
-        for (const entry of this.statusChangeMap.entries()) {
-          entry[1](signedIn, accessToken?.accessToken, accountJson);
-        }
-      } else {
-        for (const entry of this.statusChangeMap.entries()) {
-          entry[1](signedOut, undefined, undefined);
-        }
-      }
+  async getStatus(): Promise<LoginStatus> {
+    if (this.isUserLogin()) {
+      const credential = await this.doGetAccountCredentialAsync();
+      const token = await credential?.getToken();
+      const accountJson = await this.getJsonObject();
+      return Promise.resolve({ status: signedIn, token: token?.accessToken, accountInfo: accountJson });
+    } else {
+      return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });
     }
-    return true;
   }
 }
 

@@ -15,15 +15,14 @@ import VsCodeLogInstance from "./commonlib/log";
 import { VSCodeTelemetryReporter } from "./commonlib/telemetry";
 import { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
 import { isFeatureFlag } from "./utils/commonUtils";
-import { dotnetCheckerEnabled } from "./debug/dotnetSdk/dotnetCheckerAdapter";
-
+import { dotnetChecker } from "./debug/depsChecker/dotnetChecker";
 import * as extensionPackage from "./../package.json";
 
 export class ContextFactory {
   public static get(): Context {
     const globalConfig = new ConfigMap();
     globalConfig.set("featureFlag", isFeatureFlag());
-    globalConfig.set("function-dotnet-checker-enabled", dotnetCheckerEnabled());
+    globalConfig.set("function-dotnet-checker-enabled", dotnetChecker.isEnabled());
     const workspacePath: string | undefined = workspace.workspaceFolders?.length
       ? workspace.workspaceFolders[0].uri.fsPath
       : undefined;

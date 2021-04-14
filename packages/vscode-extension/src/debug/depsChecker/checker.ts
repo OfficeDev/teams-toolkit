@@ -8,8 +8,14 @@
 // and run the scripts (tools/depsChecker/copyfiles.sh or tools/depsChecker/copyfiles.ps1 according to your OS)
 // to copy you changes to function plugin.
 
-import { displayLearnMore, displayWarningMessage, showOutputChannel } from "./checkerAdapter";
+import {
+  displayContinueWithLearnMore,
+  displayLearnMore,
+  displayWarningMessage,
+  showOutputChannel
+} from "./checkerAdapter";
 import { isLinux, Messages, defaultHelpLink } from "./common";
+import { DepsCheckerError, NodeNotFoundError, NotSupportedNodeError } from "./errors";
 
 export interface IDepsChecker {
   isEnabled(): Promise<boolean>;
@@ -19,21 +25,10 @@ export interface IDepsChecker {
 }
 
 export interface DepsInfo {
-  name: string,
+  name: string;
   installVersion: string;
   supportedVersions: string[];
   details: Map<string, string>;
-}
-
-export class DepsCheckerError extends Error {
-  public readonly helpLink: string;
-
-  constructor(message: string, helpLink: string) {
-    super(message);
-
-    this.helpLink = helpLink;
-    Object.setPrototypeOf(this, DepsCheckerError.prototype);
-  }
 }
 
 export class DepsChecker {
@@ -72,8 +67,10 @@ export class DepsChecker {
         try {
           await checker.install();
         } catch (error) {
-          await this.handleError(error);
-          return !shouldContinue;
+          const continueNext = await this.handleError(error);
+          if (!continueNext) {
+            return !shouldContinue;
+          }
         }
       }
 
@@ -84,7 +81,7 @@ export class DepsChecker {
   private async check(): Promise<Array<IDepsChecker>> {
     const validCheckers = new Array<IDepsChecker>();
     for (const checker of this._checkers) {
-      if (await checker.isEnabled() && !(await checker.isInstalled())) {
+      if ((await checker.isEnabled()) && !(await checker.isInstalled())) {
         validCheckers.push(checker);
       }
     }
@@ -98,21 +95,30 @@ export class DepsChecker {
     for (const checker of checkers) {
       const info = await checker.getDepsInfo();
       installPackages.push(`${info.name} (v${info.installVersion})`);
-      const supportedVersions = info.supportedVersions.map(version => "v" + version).join(" or ");
+      const supportedVersions = info.supportedVersions.map((version) => "v" + version).join(" or ");
       const supportedPackage = `${info.name} (${supportedVersions})`;
       supportedPackages.push(supportedPackage);
     }
 
     const installMessage = installPackages.join(" and ");
     const supportedMessage = supportedPackages.join(" and ");
-    return Messages.depsNotFound.replace("@InstallPackages", installMessage).replace("@SupportedPackages", supportedMessage);
+    return Messages.depsNotFound
+      .replace("@InstallPackages", installMessage)
+      .replace("@SupportedPackages", supportedMessage);
   }
 
-  private async handleError(error: Error): Promise<void> {
-    if (error instanceof DepsCheckerError) {
-      await displayLearnMore(error.message, (error as DepsCheckerError).helpLink);
+  private async handleError(error: Error): Promise<boolean> {
+    if (error instanceof NotSupportedNodeError) {
+      return await displayContinueWithLearnMore(
+        error.message,
+        (error as NotSupportedNodeError).helpLink
+      );
+    } else if (error instanceof NodeNotFoundError) {
+      return await displayLearnMore(error.message, (error as NodeNotFoundError).helpLink);
+    } else if (error instanceof DepsCheckerError) {
+      return await displayLearnMore(error.message, (error as DepsCheckerError).helpLink);
     } else {
-      await displayLearnMore(Messages.defaultErrorMessage, defaultHelpLink);
+      return await displayLearnMore(Messages.defaultErrorMessage, defaultHelpLink);
     }
   }
 }

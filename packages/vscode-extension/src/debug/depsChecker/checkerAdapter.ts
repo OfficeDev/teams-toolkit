@@ -17,6 +17,7 @@ const downloadIndicatorInterval = 1000; // same as vscode-dotnet-runtime
 const configurationPrefix = "fx-extension";
 const validateDotnetSdkKey = "validateDotnetSdk";
 const validateFuncCoreToolsKey = "validateFuncCoreTools";
+const validateNodeVersionKey = "validateNodeVersion";
 
 export function dotnetCheckerEnabled(): boolean {
   return checkerEnabled(validateDotnetSdkKey);
@@ -26,9 +27,11 @@ export function funcToolCheckerEnabled(): boolean {
   return checkerEnabled(validateFuncCoreToolsKey);
 }
 
-export async function runWithProgressIndicator(
-  callback: () => Promise<void>
-): Promise<void> {
+export function nodeCheckerEnabled(): boolean {
+  return checkerEnabled(validateNodeVersionKey);
+}
+
+export async function runWithProgressIndicator(callback: () => Promise<void>): Promise<void> {
   const timer = setInterval(() => logger.outputChannel.append("."), downloadIndicatorInterval);
   try {
     await callback();
@@ -38,10 +41,32 @@ export async function runWithProgressIndicator(
   }
 }
 
+export async function displayContinueWithLearnMore(
+  message: string,
+  link: string
+): Promise<boolean> {
+  const learnMoreButton: MessageItem = { title: "Learn more" };
+  const continueButton: MessageItem = { title: "Continue" };
+  const input = await window.showWarningMessage(
+    message,
+    { modal: true },
+    learnMoreButton,
+    continueButton
+  );
+
+  if (input === continueButton) {
+    return true;
+  } else if (input == learnMoreButton) {
+    await openUrl(link);
+  }
+
+  return false;
+}
+
 export async function displayLearnMore(message: string, link: string): Promise<boolean> {
-  return await displayWarningMessage(message, "Learn more", () => {
-    openUrl(link);
-    return Promise.resolve(true);
+  return await displayWarningMessage(message, "Learn more", async () => {
+    await openUrl(link);
+    return Promise.resolve(false);
   });
 }
 

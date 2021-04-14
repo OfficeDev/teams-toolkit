@@ -4,7 +4,7 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import { cpUtils } from "../cpUtils";
-import { IDepsChecker, DepsCheckerError, DepsInfo } from "./checker";
+import { IDepsChecker, DepsInfo } from "./checker";
 import {
   funcToolCheckerEnabled,
   hasTeamsfxBackend,
@@ -13,6 +13,7 @@ import {
 } from "./checkerAdapter";
 import { DepsCheckerTelemetry, DepsCheckerEvent, TelemtryMessages } from "./telemetry";
 import { isWindows, isMacOS, Messages, functionCoreToolsHelpLink } from "./common";
+import { DepsCheckerError } from "./errors";
 
 export enum FuncVersion {
   v1 = "1",

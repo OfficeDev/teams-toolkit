@@ -19,8 +19,7 @@ import {
     NotScaffoldError,
     ProvisionError,
     ValidationError,
-    runWithErrorCatchAndThrow,
-    DotnetError
+    runWithErrorCatchAndThrow
 } from "./resources/errors";
 import {
     DefaultProvisionConfigs, DefaultValues, DependentPluginInfo,

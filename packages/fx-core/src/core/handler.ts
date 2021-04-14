@@ -8,10 +8,8 @@ import {
   Func,
   FxError,
   ok,
-  Platform,
   QTreeNode,
   Result,
-  Stage,
   Context,
 } from "fx-api";
 import { hooks } from "@feathersjs/hooks";
@@ -44,27 +42,20 @@ export class TeamsCore implements Core {
 
   @hooks([recoverMW])
   public async getQuestions(
-    ctx: Context,
-    stage: Stage,
-    platform: Platform
+    ctx: Context
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    return Executor.getQuestions(new CoreContext(ctx), stage, platform);
+    return Executor.getQuestions(new CoreContext(ctx));
   }
 
-  @hooks([recoverMW, concurrentMW])
+  @hooks([recoverMW])
   public async getQuestionsForUserTask(
     ctx: Context,
-    func: Func,
-    platform: Platform
+    func: Func
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    return Executor.getQuestionsForUserTask(
-      new CoreContext(ctx),
-      func,
-      platform
-    );
+    return Executor.getQuestionsForUserTask(new CoreContext(ctx), func);
   }
 
-  @hooks([recoverMW, concurrentMW])
+  @hooks([recoverMW])
   public async executeUserTask(
     ctx: Context,
     func: Func,
@@ -82,7 +73,7 @@ export class TeamsCore implements Core {
     return Executor.callFunc(new CoreContext(ctx), func, answers);
   }
 
-  @hooks([recoverMW, concurrentMW])
+  @hooks([recoverMW])
   public async create(
     ctx: Context,
     answers?: ConfigMap
@@ -92,7 +83,7 @@ export class TeamsCore implements Core {
     if (result.isErr()) {
       return result;
     }
-    return Executor.create(coreCtx, answers);
+    return Executor.scaffold(coreCtx, answers);
   }
 
   @hooks([recoverMW, concurrentMW])

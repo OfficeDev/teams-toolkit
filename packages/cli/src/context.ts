@@ -3,8 +3,7 @@
 
 "use strict";
 
-import * as os from "os";
-import { Context, ConfigMap, Platform } from "fx-api";
+import { Context, ConfigMap, Platform, Stage } from "fx-api";
 
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -13,10 +12,11 @@ import CLILogProvider from "./commonlib/log";
 import DialogManagerInstance from "./userInterface";
 
 export class ContextFactory {
-  public static get(rootPath?: string): Context {
+  public static get(rootPath: string, stage: Stage): Context {
     const globalConfig = new ConfigMap();
     return {
-      root: rootPath ?? `${os.homedir()}/teams`,
+      root: rootPath,
+      stage: stage,
       dialog: DialogManagerInstance,
       logProvider: CLILogProvider,
       azureAccountProvider: AzureAccountManager,

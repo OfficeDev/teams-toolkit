@@ -19,19 +19,9 @@
  * |   plugin   | -- Specific lifecycle
  *  ------------
  */
-import {
-    LogProvider,
-    TelemetryReporter,
-    AzureAccountProvider,
-    GraphTokenProvider,
-    AppStudioTokenProvider,
-    Dialog,
-    TreeProvider,
-} from "./utils";
 import { Result } from "neverthrow";
 import { ConfigMap } from "./config";
 import { Func, QTreeNode } from "./qm";
-import { Platform, Stage } from "./constants";
 import { FxError } from "./error";
 import { Context } from "./context";
 
@@ -41,8 +31,6 @@ export interface Core {
      */
     getQuestions?: (
         ctx: Context,
-        stage: Stage,
-        platform: Platform,
     ) => Promise<Result<QTreeNode | undefined, FxError>>;
 
     /**
@@ -136,7 +124,6 @@ export interface Core {
     getQuestionsForUserTask?: (
         ctx: Context,
         func: Func,
-        platform: Platform,
     ) => Promise<Result<QTreeNode | undefined, FxError>>;
 
     /**

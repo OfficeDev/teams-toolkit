@@ -5,7 +5,7 @@ import * as vscode from "vscode";
 
 import * as commonUtils from "./commonUtils";
 import { core, showError } from "../handlers";
-import { Func } from "fx-api";
+import { Func, Stage } from "fx-api";
 import { ContextFactory } from "../context";
 
 export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
@@ -43,7 +43,7 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
           params: isLocalSideloadingConfiguration ? "local" : "remote"
         };
         try {
-          const result = await core.callFunc(ContextFactory.get(), func);
+          const result = await core.callFunc(ContextFactory.get(Stage.debug), func);
           if (result.isErr()) {
             throw result.error;
           }

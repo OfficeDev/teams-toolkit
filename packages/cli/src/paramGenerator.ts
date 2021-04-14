@@ -185,7 +185,7 @@ async function getDeployParams(workspace: string): Promise<Result<QTreeNode[], F
 
 async function getParams(stage: Stage, workspace?: string): Promise<Result<QTreeNode[], FxError>> {
   const core = TeamsCore.getInstance();
-  const result = await core.getQuestions(ContextFactory.get(workspace), stage, Platform.VSCode);
+  const result = await core.getQuestions(ContextFactory.get(workspace!, stage));
   if (result.isErr()) {
     return err(result.error);
   }

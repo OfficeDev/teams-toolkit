@@ -5,7 +5,7 @@
 
 import { Argv, Options } from "yargs";
 
-import { FxError, err, ok, Result, Func, ConfigMap, Platform } from "fx-api";
+import { FxError, err, ok, Result, Func, ConfigMap, Platform, Stage } from "fx-api";
 
 import { YargsCommand } from "../yargsCommand";
 import { TeamsCore } from "fx-core";
@@ -69,7 +69,7 @@ export default class Init extends YargsCommand {
       };
 
       const result = await core.executeUserTask(
-        ContextFactory.get(args["root-path"] as string),
+        ContextFactory.get(args["root-path"] as string, Stage.userTask),
         func,
         answers
       );

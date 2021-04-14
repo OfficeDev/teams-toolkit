@@ -3,10 +3,8 @@
 "use strict";
 
 import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks";
-
 import * as fs from "fs-extra";
 import * as path from "path";
-
 import { err, Stage, Platform, ConfigFolderName } from "fx-api";
 
 import { NotSupportedProjectType, InternalError } from "../error";
@@ -23,17 +21,11 @@ export const versionControlMW: Middleware = async (
   console.log("in versionControlMW");
 
   let coreCtx: CoreContext;
-  let stage: Stage | undefined;
 
   for (const i in ctx.arguments) {
     if (ctx.arguments[i] instanceof CoreContext) {
       coreCtx = ctx.arguments[i];
-      continue;
-    }
-
-    if (typeof ctx.arguments[i] === "string" && ctx.arguments[i] in Stage) {
-      stage = ctx.arguments[i];
-      continue;
+      break;
     }
   }
 
@@ -42,26 +34,25 @@ export const versionControlMW: Middleware = async (
     return;
   }
 
-  if (stage! === undefined) {
-    stage = coreCtx.stage;
+  if (coreCtx.stage === Stage.create || coreCtx.platform === Platform.VS) {
+    await next();
+    return;
   }
 
-  if ((!stage && stage !== Stage.create) || coreCtx.platform === Platform.VS) {
-    const p = process.cwd();
-    // some validation
-    const checklist: string[] = [
-      p,
-      `${p}/package.json`,
-      `${p}/.${ConfigFolderName}`,
-      `${p}/.${ConfigFolderName}/settings.json`,
-      `${p}/.${ConfigFolderName}/env.default.json`,
-      `${p}/.${ConfigFolderName}/answers.json`,
-    ];
-    for (const fp of checklist) {
-      if (!(await fs.pathExists(path.resolve(fp)))) {
-        ctx.result = err(NotSupportedProjectType());
-        return;
-      }
+  const p = process.cwd();
+  // some validation
+  const checklist: string[] = [
+    p,
+    `${p}/package.json`,
+    `${p}/.${ConfigFolderName}`,
+    `${p}/.${ConfigFolderName}/settings.json`,
+    `${p}/.${ConfigFolderName}/env.default.json`,
+    `${p}/.${ConfigFolderName}/answers.json`,
+  ];
+  for (const fp of checklist) {
+    if (!(await fs.pathExists(path.resolve(fp)))) {
+      ctx.result = err(NotSupportedProjectType());
+      return;
     }
   }
 

@@ -19,7 +19,7 @@ import { dotnetChecker } from "./debug/depsChecker/dotnetChecker";
 import * as extensionPackage from "./../package.json";
 
 export class ContextFactory {
-  public static get(stage?: Stage): Context {
+  public static get(stage: Stage): Context {
     const globalConfig = new ConfigMap();
     globalConfig.set("featureFlag", isFeatureFlag());
     globalConfig.set("function-dotnet-checker-enabled", dotnetChecker.isEnabled());

@@ -2,23 +2,9 @@
 // Licensed under the MIT license.
 "use strict";
 
-import * as fs from "fs-extra";
-import * as path from "path";
-import {
-  Context,
-  err,
-  FxError,
-  ok,
-  ConfigFolderName,
-  Result,
-  returnUserError,
-  Solution,
-} from "fx-api";
-
-import { Settings } from "./settings";
+import { err, FxError, ok, ConfigFolderName, Result, Solution } from "fx-api";
 
 import { Default } from "../plugins/solution/fx-solution";
-import { CoreErrorNames, CoreSource } from "./error";
 
 export interface Meta {
   name: string;
@@ -32,28 +18,6 @@ export class Loader {
    */
   public static PLUGIN_PREFIX = `${ConfigFolderName}-resource-`;
   public static SOLUTION_PREFIX = `${ConfigFolderName}-solution-`;
-
-  public static async loadSelectSolution(
-    ctx: Context,
-    rootPath: string
-  ): Promise<Result<Meta, FxError>> {
-    const fp = path.resolve(`${rootPath}/.${ConfigFolderName}/settings.json`);
-    if (!fs.pathExists(fp)) {
-      return err(
-        returnUserError(
-          new Error(`FileNotFound:${fp}`),
-          CoreSource,
-          CoreErrorNames.FileNotFound
-        )
-      );
-    }
-    const settings: Settings = await fs.readJSON(fp);
-    return ok({
-      name: settings.selectedSolution.name,
-      displayName: settings.selectedSolution.name,
-      version: settings.selectedSolution.version,
-    });
-  }
 
   /*
    * TODO @Long

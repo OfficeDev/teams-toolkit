@@ -11,7 +11,6 @@ import {
   FxError,
   NodeType,
   ok,
-  Platform,
   QTreeNode,
   QuestionType,
   Result,
@@ -50,16 +49,13 @@ export class Executor {
 
   @hooks([versionControlMW, solutionMW, readConfigMW])
   static async getQuestions(
-    ctx: CoreContext,
-    stage: Stage,
-    platform: Platform
+    ctx: CoreContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    ctx.platform = platform;
     const answers = new ConfigMap();
-    answers.set("stage", stage);
+    answers.set("stage", ctx.stage);
     answers.set("substage", "getQuestions");
     const node = new QTreeNode({ type: NodeType.group });
-    if (stage === Stage.create) {
+    if (ctx.stage === Stage.create) {
       node.addChild(new QTreeNode(QuestionAppName));
 
       //make sure that global solutions are loaded
@@ -75,7 +71,7 @@ export class Executor {
       for (const [k, v] of ctx.globalSolutions) {
         if (v.getQuestions) {
           const res = await v.getQuestions(
-            stage,
+            ctx.stage,
             ctx.toSolutionContext(answers)
           );
           if (res.isErr()) return res;
@@ -89,7 +85,7 @@ export class Executor {
       node.addChild(new QTreeNode(QuestionRootFolder));
     } else if (ctx.selectedSolution) {
       const res = await ctx.selectedSolution.getQuestions(
-        stage,
+        ctx.stage,
         ctx.toSolutionContext(answers)
       );
       if (res.isErr()) return res;
@@ -104,8 +100,7 @@ export class Executor {
   @hooks([versionControlMW, solutionMW, readConfigMW])
   static async getQuestionsForUserTask(
     ctx: CoreContext,
-    func: Func,
-    platform: Platform
+    func: Func
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     const namespace = func.namespace;
     const array = namespace ? namespace.split("/") : [];

@@ -6,7 +6,7 @@
 import { Argv, Options } from "yargs";
 import * as path from "path";
 
-import { FxError, err, ok, Result, ConfigMap, Stage, Platform } from "fx-api";
+import { FxError, err, ok, Result, ConfigMap, Stage } from "fx-api";
 import { TeamsCore } from "fx-core";
 
 import * as constants from "../constants";
@@ -38,11 +38,7 @@ export default class Deploy extends YargsCommand {
 
     const core = TeamsCore.getInstance();
     {
-      const result = await core.getQuestions(
-        ContextFactory.get(rootFolder),
-        Stage.deploy,
-        Platform.VSCode
-      );
+      const result = await core.getQuestions(ContextFactory.get(rootFolder, Stage.deploy));
       if (result.isErr()) {
         return err(result.error);
       }
@@ -50,7 +46,7 @@ export default class Deploy extends YargsCommand {
     }
 
     {
-      const result = await core.deploy(ContextFactory.get(rootFolder), answers);
+      const result = await core.deploy(ContextFactory.get(rootFolder, Stage.deploy), answers);
       if (result.isErr()) {
         return err(result.error);
       }

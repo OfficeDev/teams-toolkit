@@ -14,7 +14,6 @@ import {
   Func,
   UserError,
   SystemError,
-  returnUserError,
   returnSystemError,
   ConfigFolderName,
   traverse,
@@ -27,15 +26,11 @@ import {
   AppStudioTokenProvider
 } from "fx-api";
 import { TeamsCore } from "fx-core";
-import DialogManagerInstance from "./userInterface";
-import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
 import AppStudioTokenInstance from "./commonlib/appStudioLogin";
 import AppStudioCodeSpaceTokenInstance from "./commonlib/appStudioCodeSpaceLogin";
 import VsCodeLogInstance from "./commonlib/log";
-import { VSCodeTelemetryReporter } from "./commonlib/telemetry";
 import { CommandsTreeViewProvider, TreeViewCommand } from "./commandsTreeViewProvider";
-import * as extensionPackage from "./../package.json";
 import { ext } from "./extensionVariables";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import {
@@ -49,13 +44,11 @@ import { ExtensionErrors, ExtensionSource } from "./error";
 import { WebviewPanel } from "./controls/webviewPanel";
 import * as constants from "./debug/constants";
 import logger from "./commonlib/log";
-import { isFeatureFlag } from "./utils/commonUtils";
 import { cpUtils } from "./debug/cpUtils";
-import * as path from "path";
 import * as fs from "fs-extra";
 import * as vscode from "vscode";
-import { VsCodeUI, VS_CODE_UI } from "./qm/vsc_ui";
-import { DepsChecker, DepsCheckerError } from "./debug/depsChecker/checker";
+import { VS_CODE_UI } from "./qm/vsc_ui";
+import { DepsChecker } from "./debug/depsChecker/checker";
 import { FuncToolChecker } from "./debug/depsChecker/funcToolChecker";
 import { DotnetChecker, dotnetChecker } from "./debug/depsChecker/dotnetChecker";
 import { PanelType } from "./controls/PanelType";
@@ -104,9 +97,10 @@ export async function publishHandler(): Promise<Result<null, FxError>> {
 
 const coreExeceutor: RemoteFuncExecutor = async function(
   func: Func,
-  answers: Inputs | ConfigMap
+  answers: Inputs | ConfigMap,
+  stage: Stage
 ): Promise<Result<unknown, FxError>> {
-  return await core.callFunc(ContextFactory.get(), func, answers as ConfigMap);
+  return await core.callFunc(ContextFactory.get(stage), func, answers as ConfigMap);
 };
 
 export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
@@ -140,7 +134,7 @@ export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
     answers.set("stage", stage);
 
     // 4. getQuestions
-    const qres = await core.getQuestions(ContextFactory.get(stage), stage, Platform.VSCode);
+    const qres = await core.getQuestions(ContextFactory.get(stage));
     if (qres.isErr()) {
       throw qres.error;
     }
@@ -153,7 +147,7 @@ export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
     if (node) {
       VsCodeLogInstance.info(`Question tree:${JSON.stringify(node, null, 4)}`);
       answers.set("substage", "askQuestions");
-      const res: InputResult = await traverse(node, answers, VS_CODE_UI, coreExeceutor);
+      const res: InputResult = await traverse(node, answers, VS_CODE_UI, stage, coreExeceutor);
       VsCodeLogInstance.info(`User input:${JSON.stringify(res, null, 4)}`);
       if (res.type === InputResultType.error) {
         throw res.error!;
@@ -211,7 +205,7 @@ function detectVsCodeEnv(): VsCodeEnv {
   }
 }
 
-async function runUserTask(func: Func): Promise<Result<null, FxError>> {
+async function runUserTask(stage: Stage, func: Func): Promise<Result<null, FxError>> {
   const eventName = func.method;
   let result: Result<null, FxError> = ok(null);
 
@@ -242,7 +236,7 @@ async function runUserTask(func: Func): Promise<Result<null, FxError>> {
     answers.set("task", eventName);
 
     // 4. getQuestions
-    const qres = await core.getQuestionsForUserTask(ContextFactory.get(), func, Platform.VSCode);
+    const qres = await core.getQuestionsForUserTask(ContextFactory.get(Stage.userTask), func);
     if (qres.isErr()) {
       throw qres.error;
     }
@@ -251,7 +245,7 @@ async function runUserTask(func: Func): Promise<Result<null, FxError>> {
     const node = qres.value;
     if (node) {
       VsCodeLogInstance.info(`Question tree:${JSON.stringify(node, null, 4)}`);
-      const res: InputResult = await traverse(node, answers, VS_CODE_UI, coreExeceutor);
+      const res: InputResult = await traverse(node, answers, VS_CODE_UI, stage, coreExeceutor);
       VsCodeLogInstance.info(`User input:${JSON.stringify(res, null, 4)}`);
       if (res.type === InputResultType.error && res.error) {
         throw res.error;
@@ -261,7 +255,7 @@ async function runUserTask(func: Func): Promise<Result<null, FxError>> {
     }
 
     // 6. run task
-    result = await core.executeUserTask(ContextFactory.get(), func, answers);
+    result = await core.executeUserTask(ContextFactory.get(Stage.userTask), func, answers);
   } catch (e) {
     result = wrapError(e);
   }
@@ -344,7 +338,7 @@ export async function updateAADHandler(): Promise<Result<null, FxError>> {
     namespace: "fx-solution-azure/teamsfx-plugin-aad-app-for-teams",
     method: "aadUpdatePermission"
   };
-  return await runUserTask(func);
+  return await runUserTask(Stage.update, func);
 }
 
 /**

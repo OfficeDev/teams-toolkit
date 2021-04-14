@@ -5,7 +5,7 @@
 
 import { Argv, Options } from "yargs";
 import * as path from "path";
-import { FxError, err, ok, Result, ConfigMap, ConfigFolderName } from "fx-api";
+import { FxError, err, ok, Result, ConfigMap, ConfigFolderName, Stage } from "fx-api";
 import * as constants from "../constants";
 import { YargsCommand } from "../yargsCommand";
 import { getParamJson } from "../utils";
@@ -53,7 +53,7 @@ export default class New extends YargsCommand {
 
     const core = TeamsCore.getInstance();
     {
-      const result = await core.publish(ContextFactory.get(rootFolder), answers);
+      const result = await core.publish(ContextFactory.get(rootFolder!, Stage.publish), answers);
       if (result.isErr()) {
         return err(result.error);
       }

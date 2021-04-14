@@ -30,7 +30,9 @@ import { Platform, Stage } from "./constants";
 export interface Context {
     root: string;
 
-    stage?: Stage;
+    stage: Stage;
+
+    platform: Platform;
 
     dialog?: Dialog;
 
@@ -45,8 +47,6 @@ export interface Context {
     appStudioToken?: AppStudioTokenProvider;
 
     treeProvider?: TreeProvider;
-
-    platform?: Platform;
 
     answers?: ConfigMap; // for question model
 

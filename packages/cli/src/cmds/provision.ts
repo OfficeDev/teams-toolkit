@@ -6,7 +6,7 @@
 import { Argv, Options } from "yargs";
 import * as path from "path";
 
-import { FxError, err, ok, Result, ConfigMap, Stage, Platform } from "fx-api";
+import { FxError, err, ok, Result, ConfigMap, Stage } from "fx-api";
 
 import AzureTokenProvider from "../commonlib/azureLogin";
 import * as constants from "../constants";
@@ -46,11 +46,7 @@ export default class Provision extends YargsCommand {
 
     const core = TeamsCore.getInstance();
     {
-      const result = await core.getQuestions(
-        ContextFactory.get(rootFolder),
-        Stage.provision,
-        Platform.CLI
-      );
+      const result = await core.getQuestions(ContextFactory.get(rootFolder, Stage.provision));
       if (result.isErr()) {
         return err(result.error);
       }
@@ -58,7 +54,7 @@ export default class Provision extends YargsCommand {
     }
 
     {
-      const result = await core.provision(ContextFactory.get(rootFolder), answers);
+      const result = await core.provision(ContextFactory.get(rootFolder, Stage.provision), answers);
       if (result.isErr()) {
         return err(result.error);
       }

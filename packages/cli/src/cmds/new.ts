@@ -6,7 +6,7 @@
 import { Argv, Options } from "yargs";
 import * as path from "path";
 
-import { FxError, err, ok, Result, ConfigMap, Stage, Platform } from "fx-api";
+import { FxError, err, ok, Result, ConfigMap, Stage } from "fx-api";
 
 import * as constants from "../constants";
 import { validateAndUpdateAnswers } from "../question/question";
@@ -40,11 +40,7 @@ export default class New extends YargsCommand {
 
     const core = TeamsCore.getInstance();
     {
-      const result = await core.getQuestions(
-        ContextFactory.get(rootFolder),
-        Stage.create,
-        Platform.CLI
-      );
+      const result = await core.getQuestions(ContextFactory.get(rootFolder, Stage.create));
       if (result.isErr()) {
         return err(result.error);
       }
@@ -52,7 +48,7 @@ export default class New extends YargsCommand {
     }
 
     {
-      const result = await core.create(ContextFactory.get(rootFolder), answers);
+      const result = await core.create(ContextFactory.get(rootFolder, Stage.create), answers);
       if (result.isErr()) {
         return err(result.error);
       }

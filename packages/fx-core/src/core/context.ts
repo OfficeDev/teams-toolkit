@@ -18,14 +18,15 @@ import {
   Solution,
   SolutionContext,
   TeamsAppManifest,
+  ProjectSettings,
+  VsCode,
 } from "fx-api";
 
 import { Meta } from "./loader";
 import * as tools from "./tools";
-import { CoreQuestionNames } from "./question";
 import { VscodeManager } from "./vscodeManager";
 
-export class CoreContext implements Context {
+export class CoreContext implements SolutionContext {
   public globalConfig?: ConfigMap;
   public globalSolutions: Map<string, Solution & Meta>;
 
@@ -40,10 +41,16 @@ export class CoreContext implements Context {
   public root: string;
   public configs: Map<string, SolutionConfig>;
   public env: string;
-  public stage?: Stage;
-  public platform?: Platform;
+  public stage: Stage;
+  public platform: Platform;
   public selectedSolution?: Solution & Meta;
   public answers?: ConfigMap;
+  public projectSettings?: ProjectSettings;
+
+  // for solution
+  public dotVsCode?: VsCode;
+  public app: TeamsAppManifest;
+  public config: SolutionConfig;
 
   public constructor(c: Context) {
     this.globalConfig = c.globalConfig;
@@ -57,40 +64,24 @@ export class CoreContext implements Context {
     this.treeProvider = c.treeProvider;
 
     this.root = c.root;
+    this.stage = c.stage;
     this.env = "default";
     this.platform = c.platform;
     this.answers = c.answers;
     this.configs = new Map();
     this.globalSolutions = new Map();
+
+    this.app = new TeamsAppManifest();
+    this.config = new Map<string, ConfigMap>();
   }
 
-  public toSolutionContext(answers?: ConfigMap): SolutionContext {
+  public toSolutionContext(answers?: ConfigMap): CoreContext {
     const allAnswers = tools.mergeConfigMap(this.globalConfig, this.answers);
-    const stage = allAnswers?.getString(CoreQuestionNames.Stage);
-    const substage = allAnswers?.getString(CoreQuestionNames.SubStage);
-    let sCtx: SolutionContext;
-    if (
-      "create" === stage &&
-      ("getQuestions" === substage || "askQuestions" === substage)
-    ) {
-      // for create stage, SolutionContext is new and clean
-      sCtx = {
-        ...this,
-        answers: allAnswers,
-        app: new TeamsAppManifest(),
-        config: new Map<string, ConfigMap>(),
-        dotVsCode: VscodeManager.getInstance(),
-        root: require("os").homedir() + "/teams_app/",
-      };
+    if (this.stage === Stage.create) {
+      this.answers = allAnswers;
     } else {
-      sCtx = {
-        ...this,
-        answers: tools.mergeConfigMap(allAnswers, answers),
-        app: new TeamsAppManifest(),
-        config: this.configs.get(this.env)!,
-        dotVsCode: VscodeManager.getInstance(),
-      };
+      this.answers = tools.mergeConfigMap(allAnswers, answers);
     }
-    return sCtx;
+    return this;
   }
 }

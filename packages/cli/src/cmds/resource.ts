@@ -59,11 +59,7 @@ export class ResourceAddSql extends YargsCommand {
 
     const core = TeamsCore.getInstance();
     {
-      const result = await core.getQuestions(
-        ContextFactory.get(rootFolder),
-        Stage.update,
-        Platform.VSCode
-      );
+      const result = await core.getQuestions(ContextFactory.get(rootFolder, Stage.update));
       if (result.isErr()) {
         return err(result.error);
       }
@@ -71,7 +67,7 @@ export class ResourceAddSql extends YargsCommand {
     }
 
     {
-      const result = await core.update(ContextFactory.get(rootFolder), answers);
+      const result = await core.update(ContextFactory.get(rootFolder, Stage.update), answers);
       if (result.isErr()) {
         return err(result.error);
       }
@@ -110,11 +106,7 @@ export class ResourceAddFunction extends YargsCommand {
 
     const core = TeamsCore.getInstance();
     {
-      const result = await core.getQuestions(
-        ContextFactory.get(rootFolder),
-        Stage.update,
-        Platform.VSCode
-      );
+      const result = await core.getQuestions(ContextFactory.get(rootFolder, Stage.update));
       if (result.isErr()) {
         return err(result.error);
       }
@@ -122,7 +114,7 @@ export class ResourceAddFunction extends YargsCommand {
     }
 
     {
-      const result = await core.update(ContextFactory.get(rootFolder), answers);
+      const result = await core.update(ContextFactory.get(rootFolder, Stage.update), answers);
       if (result.isErr()) {
         return err(result.error);
       }
@@ -178,7 +170,11 @@ export class ResourceConfigureAAD extends YargsCommand {
       method: "aadUpdatePermission"
     };
     {
-      const result = await core.executeUserTask(ContextFactory.get(rootFolder), func, answers);
+      const result = await core.executeUserTask(
+        ContextFactory.get(rootFolder, Stage.userTask),
+        func,
+        answers
+      );
       if (result.isErr()) {
         return err(result.error);
       }

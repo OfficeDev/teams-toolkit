@@ -29,15 +29,14 @@ export async function init(accessToken: string): Promise<boolean> {
     }
 }
 
-export async function createAADApp(aadApp: IAADApplication, useV2 = true): Promise<IAADApplication> {
+export async function createAADApp(aadApp: IAADApplication): Promise<IAADApplication> {
     if (!aadApp || !axiosInstance) {
         throw new ProvisionException(CommonStrings.AAD_APP);
     }
 
     let response = undefined;
-    const endpoint = useV2 ? `${baseUrl}/api/aadapp/v2` : `${baseUrl}/api/aadapp`;
     try {
-        response = await axiosInstance.post(endpoint, aadApp);
+        response = await axiosInstance.post(`${baseUrl}/api/aadapp`, aadApp);
     } catch (e) {
         throw new ProvisionException(CommonStrings.AAD_APP, e);
     }
@@ -54,16 +53,15 @@ export async function createAADApp(aadApp: IAADApplication, useV2 = true): Promi
     return app;
 }
 
-export async function checkAADApp(objectId: string, useV2 = true): Promise<boolean> {
+export async function checkAADApp(objectId: string): Promise<boolean> {
 
     if (!objectId || !axiosInstance) {
         throw new CallAppStudioException(LifecycleFuncNames.CHECK_AAD_APP);
     }
 
     let response = undefined;
-    const endpoint = useV2 ? `${baseUrl}/api/aadapp/v2/${objectId}` : `${baseUrl}/api/aadapp/${objectId}`;
     try {
-        response = await axiosInstance.get(endpoint);
+        response = await axiosInstance.get(`${baseUrl}/api/aadapp/${objectId}`);
     } catch (e) {
         throw new CallAppStudioException(LifecycleFuncNames.CHECK_AAD_APP, e);
     }

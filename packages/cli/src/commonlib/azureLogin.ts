@@ -15,6 +15,8 @@ import { LogLevel } from "@azure/msal-node";
 import { NotFoundSubscriptionId, NotSupportedProjectType } from "../error";
 import * as fs from "fs-extra";
 import * as path from "path";
+import { signedIn, signedOut } from "./common/constant";
+import { login, LoginStatus } from "./common/login";
 
 const env = {
   name: "AzureCloud",
@@ -72,7 +74,7 @@ const config = {
 // @ts-ignore
 const memory = new MemoryCache();
 
-class AzureAccountManager implements AzureAccountProvider {
+export class AzureAccountManager extends login implements AzureAccountProvider {
   private static instance: AzureAccountManager;
   private static codeFlowInstance: CodeFlowLogin;
   private static domain: string | undefined;
@@ -85,6 +87,7 @@ class AzureAccountManager implements AzureAccountProvider {
   ) => Promise<void>;
 
   private constructor() {
+    super();
     AzureAccountManager.codeFlowInstance = new CodeFlowLogin(
       scopes,
       config,
@@ -182,6 +185,7 @@ class AzureAccountManager implements AzureAccountProvider {
       const accountJson = await this.getJsonObject();
       await AzureAccountManager.statusChange("SignedIn", accessToken?.accessToken, accountJson);
     }
+    await this.notifyStatus();
   }
 
   private async login(showDialog: boolean): Promise<void> {
@@ -210,7 +214,7 @@ class AzureAccountManager implements AzureAccountProvider {
             _authority: env.activeDirectoryEndpointUrl + AzureAccountManager.domain
           }
         ],
-        function() { const _ = 1; }
+        function () { const _ = 1; }
       );
     }
   }
@@ -255,6 +259,7 @@ class AzureAccountManager implements AzureAccountProvider {
       await AzureAccountManager.statusChange("SignedOut", undefined, undefined);
     }
     AzureAccountManager.codeFlowInstance.logout();
+    await this.notifyStatus();
     return Promise.resolve(true);
   }
 
@@ -310,6 +315,17 @@ class AzureAccountManager implements AzureAccountProvider {
     await fs.writeFile(configPath, JSON.stringify(configJson, null, 4));
 
     return ok(null);
+  }
+
+  async getStatus(): Promise<LoginStatus> {
+    if (AzureAccountManager.codeFlowInstance.account) {
+      const credential = await this.doGetAccountCredentialAsync();
+      const token = await credential?.getToken();
+      const accountJson = await this.getJsonObject();
+      return Promise.resolve({ status: signedIn, token: token?.accessToken, accountInfo: accountJson });
+    } else {
+      return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });
+    }
   }
 }
 

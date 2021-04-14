@@ -11,6 +11,8 @@ import { ExtensionErrors } from "../error";
 import { CodeFlowLogin } from "./codeFlowLogin";
 import VsCodeLogInstance from "./log";
 import * as vscode from "vscode";
+import { signedIn, signedOut } from "./common/constant";
+import { login, LoginStatus } from "./common/login";
 
 const accountName = "graph";
 const scopes = ["Directory.AccessAsUser.All"];
@@ -43,7 +45,7 @@ const SERVER_PORT = 8400;
 /**
  * use msal to implement graph login
  */
-export class GraphLogin implements GraphTokenProvider {
+export class GraphLogin extends login implements GraphTokenProvider {
   private static instance: GraphLogin;
 
   private static codeFlowInstance: CodeFlowLogin;
@@ -55,6 +57,7 @@ export class GraphLogin implements GraphTokenProvider {
   ) => Promise<void>;
 
   private constructor() {
+    super();
     GraphLogin.codeFlowInstance = new CodeFlowLogin(scopes, config, SERVER_PORT, accountName);
   }
 
@@ -84,6 +87,7 @@ export class GraphLogin implements GraphTokenProvider {
         const tokenJson = await this.getJsonObject();
         await GraphLogin.statusChange("SignedIn", loginToken, tokenJson);
       }
+      await this.notifyStatus();
       return loginToken;
     }
     const accessToken = GraphLogin.codeFlowInstance.getToken();
@@ -110,6 +114,7 @@ export class GraphLogin implements GraphTokenProvider {
     if (GraphLogin.statusChange !== undefined) {
       await GraphLogin.statusChange("SignedOut", undefined, undefined);
     }
+    await this.notifyStatus();
     return new Promise((resolve) => {
       resolve(true);
     });
@@ -138,6 +143,16 @@ export class GraphLogin implements GraphTokenProvider {
     return new Promise((resolve) => {
       resolve(true);
     });
+  }
+
+  async getStatus(): Promise<LoginStatus> {
+    if (GraphLogin.codeFlowInstance.account) {
+      const loginToken = await GraphLogin.codeFlowInstance.getToken();
+      const tokenJson = await this.getJsonObject();
+      return Promise.resolve({ status: signedIn, token: loginToken, accountInfo: tokenJson });
+    } else {
+      return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });
+    }
   }
 }
 

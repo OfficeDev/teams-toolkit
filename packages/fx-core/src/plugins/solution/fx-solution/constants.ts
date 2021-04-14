@@ -28,6 +28,11 @@ export const SOLUTION_PROVISION_SUCCEEDED = "provisionSucceeded";
 export const PERMISSION_REQUEST = "permissionRequest";
 
 /**
+ * Config key whose value is either javascript, typescript or csharp.
+ */
+export const PROGRAMMING_LANGUAGE = "programmingLanguage";
+
+/**
  * Config keys that are useful for generating remote teams app manifest
  */
 export const FRONTEND_ENDPOINT = "endpoint";

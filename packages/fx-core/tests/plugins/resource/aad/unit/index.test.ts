@@ -213,7 +213,7 @@ describe("AadAppForTeamsPlugin: Azure", () => {
     sinon.restore();
   });
 
-  it("azure: provision and error app id uri", async function () {
+  it("provision: tab and bot with context changes", async function () {
     context = await TestHelper.pluginContext(new Map(), true, true, false);
     context.appStudioToken = mockTokenProviderAzure(appStudioToken as string);
     context.graphTokenProvider = mockTokenProviderAzureGraph(
@@ -229,16 +229,10 @@ describe("AadAppForTeamsPlugin: Azure", () => {
     const postProvision = await plugin.postProvision(context);
     chai.assert.isTrue(postProvision.isOk());
 
-    // Commented since now errorAppIdUri can be set as app id uri
-    // context.config.set(ConfigKeys.applicationIdUri, "errorAppIdUri")
-    // const postProvisionError = await plugin.postProvision(context);
-    // chai.assert.isTrue(postProvisionError.isErr());
-
-    // Test for provision again with objectId in context
+    // Remove clientId and oauth2PermissionScopeId.
     context.config.set(ConfigKeys.clientId, "");
     context.config.set(ConfigKeys.oauth2PermissionScopeId, "");
-    console.log(context.config);
-    
+
     const provisionSecond = await plugin.provision(context);
     chai.assert.isTrue(provisionSecond.isOk());
 
@@ -247,6 +241,23 @@ describe("AadAppForTeamsPlugin: Azure", () => {
 
     const postProvisionSecond = await plugin.postProvision(context);
     chai.assert.isTrue(postProvisionSecond.isOk());
-    console.log(context.config);
+
+    // Remove objectId.
+    // Create a new context with same context.config since error will occur with same endpoint and botId.
+    context.config.set(ConfigKeys.objectId, "");
+    context = await TestHelper.pluginContext(context.config, true, true);
+    context.appStudioToken = mockTokenProviderAzure(appStudioToken as string);
+    context.graphTokenProvider = mockTokenProviderAzureGraph(
+      graphToken as string
+    );
+
+    const provisionThird = await plugin.provision(context);
+    chai.assert.isTrue(provisionThird.isOk());
+
+    const setAppIdThird = plugin.setApplicationInContext(context);
+    chai.assert.isTrue(setAppIdThird.isOk());
+
+    const postProvisionThird = await plugin.postProvision(context);
+    chai.assert.isTrue(postProvisionThird.isOk());
   });
 });

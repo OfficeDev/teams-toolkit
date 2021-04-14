@@ -36,7 +36,7 @@ export default class Provision extends YargsCommand {
     const rootFolder = path.resolve(answers.getString("folder") || "./");
     answers.delete("folder");
 
-    if ("subscription" in args) {
+    if ("subscription" in args && !!args.subscription) {
       const result = await AzureTokenProvider.setSubscriptionId(args.subscription, rootFolder);
       if (result.isErr()) {
         return result;

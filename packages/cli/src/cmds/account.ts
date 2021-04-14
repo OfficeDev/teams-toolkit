@@ -96,7 +96,7 @@ class SetAccount extends YargsCommand {
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    if ("subscription" in args) {
+    if ("subscription" in args && !!args.subscription) {
       return AzureTokenProvider.setSubscriptionId(args.subscription, args.folder);
     }
     return ok(null);

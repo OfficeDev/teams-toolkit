@@ -3,7 +3,7 @@
 
 "use strict";
 
-import { Result, FxError, err, ok, Core, UserError, SystemError } from "fx-api";
+import { Result, FxError, err, ok, Core, UserError, SystemError, ConfigMap } from "fx-api";
 
 import AzureAccountManager from "./commonlib/azureLogin";
 import AppStudioTokenProvider from "./commonlib/appStudioLogin";
@@ -22,13 +22,6 @@ export default async function activate(rootPath?: string): Promise<Result<Core, 
   try {
     {
       const result = await core.withDialog(DialogManagerInstance);
-      if (result.isErr()) {
-        return err(result.error);
-      }
-    }
-
-    {
-      const result = await core.init();
       if (result.isErr()) {
         return err(result.error);
       }
@@ -57,6 +50,15 @@ export default async function activate(rootPath?: string): Promise<Result<Core, 
 
     {
       const result = await core.withLogger(CLILogProvider);
+      if (result.isErr()) {
+        return err(result.error);
+      }
+    }
+
+    {
+      const globalConfig = new ConfigMap();
+      globalConfig.set("featureFlag", true);
+      const result = await core.init(globalConfig);
       if (result.isErr()) {
         return err(result.error);
       }

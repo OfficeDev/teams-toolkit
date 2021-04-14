@@ -31,7 +31,7 @@ export enum TelemtryMessages {
   failedToInstallFunc = "failed to install Func core tools.",
   funcV1Installed = "func v1 is installed by user.",
   NPMNotFound = "npm is not found.",
-  failedToExecDotnetScript = "failed to exec dotnet script"
+  failedToExecDotnetScript = "failed to exec dotnet script."
 }
 
 enum TelemetryMessurement {

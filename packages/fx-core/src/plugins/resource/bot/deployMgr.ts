@@ -27,7 +27,11 @@ export class DeployMgr {
 
         const configFile = path.join(this.deploymentDir, DeployConfigs.DEPLOYMENT_CONFIG_FILE);
 
-        const botDeployJson = {};
+        if (fs.pathExists(configFile)) {
+            return;
+        }
+
+        const botDeployJson = { time: Date.now() };
         try {
             await fs.writeJSON(configFile, botDeployJson);
         } catch (e) {
@@ -103,6 +107,7 @@ export class DeployMgr {
         try {
             botDeployJson = await fs.readJSON(configFile);
         } catch (e) {
+            return 0;
             Logger.debug(`readJson ${configFile} failed with error: ${e}.`);
         }
 

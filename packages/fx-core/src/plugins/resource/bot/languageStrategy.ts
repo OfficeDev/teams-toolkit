@@ -13,7 +13,6 @@ import { CommandExecutionException, SomethingMissingException } from "./exceptio
 import { downloadByUrl } from "./utils/downloadByUrl";
 import * as path from "path";
 import * as fs from "fs-extra";
-import Timer from "@dbpiper/timer";
 import { Logger } from "./logger";
 
 export class LanguageStrategy {
@@ -78,10 +77,8 @@ export class LanguageStrategy {
         if (programmingLanguage === ProgrammingLanguage.TypeScript) {
             //Typescript needs tsc build before deploy because of windows app server. other languages don"t need it.
             try {
-                const timer = new Timer();
                 await utils.execute("npm install", packDir);
                 await utils.execute("npm run build", packDir);
-                Logger.debug(`Local build for ${ProgrammingLanguage.TypeScript} costs ${timer.stop().toString()}.`);
             } catch (e) {
                 throw new CommandExecutionException(`${Commands.NPM_INSTALL},${Commands.NPM_BUILD}`, e.message, e);
             }
@@ -90,9 +87,7 @@ export class LanguageStrategy {
         if (programmingLanguage === ProgrammingLanguage.JavaScript) {
             try {
                 // fail to npm install teamsdev-client on azure web app, so pack it locally.
-                const timer = new Timer();
                 await utils.execute("npm install teamsdev-client", packDir);
-                Logger.debug(`Local build for ${ProgrammingLanguage.JavaScript} costs ${timer.stop().toString()}.`);
             } catch (e) {
                 throw new CommandExecutionException(`${Commands.NPM_INSTALL}`, e.message, e);
             }

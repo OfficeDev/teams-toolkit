@@ -1852,7 +1852,13 @@ export class TeamsAppSolution implements Solution {
         
         const settings = this.getAzureSolutionSettings(ctx);
 
-        const existingCapabilities = settings.capabilities;
+        let reload = false;
+        for(const cap of capabilitiesAnswer!){
+            if(!settings.capabilities?.includes(cap)){
+                settings.capabilities?.push(cap);
+                reload = true;
+            }
+        }
 
         const addCapabilityNotification:string[]  = [];
 
@@ -1883,8 +1889,7 @@ export class TeamsAppSolution implements Solution {
 
         if(capabilitiesAnswer?.includes(BotOptionItem.id)){
             ctx.logProvider?.info(`start scaffolding Bot.....`);
-            existingCapabilities.push(BotOptionItem.id);
-            ctx.answers.set(AzureSolutionQuestionNames.Capabilities, existingCapabilities);
+            ctx.answers.set(AzureSolutionQuestionNames.Capabilities, settings.capabilities);
             const scaffoldRes = await this.scaffoldOne(this.botPlugin, ctx);
             if (scaffoldRes.isErr()) {
                 ctx.logProvider?.info(`failed to scaffold Bot!`);
@@ -1896,13 +1901,6 @@ export class TeamsAppSolution implements Solution {
 
         if(addCapabilityNotification.length > 0){
             // finally add capabilities array and reload plugins
-            let reload = false;
-            for(const cap of capabilitiesAnswer!){
-                if(!settings.capabilities?.includes(cap)){
-                    settings.capabilities?.push(cap);
-                    reload = true;
-                }
-            }
             if(reload){
                 this.reloadPlugins(ctx);
                 ctx.logProvider?.info(`start scaffolding Local Debug Configs.....`);

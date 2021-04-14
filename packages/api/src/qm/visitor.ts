@@ -148,11 +148,9 @@ const questionVisitor: QuestionVistor = async function (
           )
         };
       }
-      //skip single/mulitple option select
-      const ss = selectQuestion as (SingleSelectQuestion | MultiSelectQuestion);
-      const skipSingleOption = ss.skipSingleOption;
-      if ((type === NodeType.singleSelect || type === NodeType.multiSelect) &&
-        (skipSingleOption === undefined || skipSingleOption === true) && option.length === 1) {
+
+      // Skip single/mulitple option select
+      if (isAutoSkipSelect(selectQuestion)) {
         const optionIsString = typeof option[0] === "string";
         let returnResult;
         if (selectQuestion.returnObject) {

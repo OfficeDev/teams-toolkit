@@ -14,7 +14,7 @@ export const Void = {};
  * The key of global config visible to all resource plugins.
  */
 export const GLOBAL_CONFIG = "solution";
-export const SELECTED_PLUGINS = "selectedPlugins";
+// export const SELECTED_PLUGINS = "selectedPlugins";
 
 /**
  * Used to track whether provision succeeded

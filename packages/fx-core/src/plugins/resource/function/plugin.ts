@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import * as path from "path";
-import { Func, FxError, NodeType, PluginContext, QTreeNode, ReadonlyPluginConfig, Result, Stage } from "fx-api";
+import { AzureSolutionSettings, Func, FxError, NodeType, PluginContext, QTreeNode, ReadonlyPluginConfig, Result, Stage } from "fx-api";
 import { StorageManagementClient } from "@azure/arm-storage";
 import { StringDictionary } from "@azure/arm-appservice/esm/models";
 import { WebSiteManagementClient, WebSiteManagementModels } from "@azure/arm-appservice";
@@ -499,8 +499,8 @@ export class FunctionPluginImpl {
     public isPluginEnabled(ctx: PluginContext, plugin: string): boolean {
         const solutionConfig: ReadonlyPluginConfig | undefined =
             ctx.configOfOtherPlugins.get(DependentPluginInfo.solutionPluginName);
-        const selectedPlugins: string[] = solutionConfig?.get(DependentPluginInfo.selectedPlugins) as string[] ?? [];
-
+        // const selectedPlugins: string[] = solutionConfig?.get(DependentPluginInfo.selectedPlugins) as string[] ?? [];
+        const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings).activeResourcePlugins;
         return selectedPlugins.includes(plugin);
     }
 

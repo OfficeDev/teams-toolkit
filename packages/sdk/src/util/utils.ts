@@ -37,6 +37,21 @@ export function getISOExpirationFromJWT(token: string): string {
   return "";
 }
 
+/**
+ * get expiration number for JWT token (e.g. 1537234948)
+ * @param token jwt token
+ * @returns return expiration time number. If fail to parse jwt, return -1.
+ *
+ * @internal
+ */
+export function getExpirationNumberFromJWT(token: string): number {
+  const obj = parseJwt(token) as SSOTokenInfoBase;
+  if (obj && obj.exp) {
+    return obj.exp;
+  }
+  return -1;
+}
+
 export function getUserInfoFromSsoToken(ssoToken: string): UserInfo {
   if (!ssoToken) {
     const errorMsg = "SSO token is undefined.";

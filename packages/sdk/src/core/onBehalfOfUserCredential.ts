@@ -6,7 +6,7 @@ import { AuthenticationResult, ConfidentialClientApplication } from "@azure/msal
 import { config } from "../core/configurationProvider";
 import { UserInfo } from "../models/userinfo";
 import { internalLogger } from "../util/logger";
-import { formatString, getUserInfoFromSsoToken } from "../util/utils";
+import { formatString, getExpirationNumberFromJWT, getUserInfoFromSsoToken } from "../util/utils";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "./errors";
 
 /**
@@ -94,35 +94,49 @@ export class OnBehalfOfUserCredential implements TokenCredential {
     scopes: string | string[],
     options?: GetTokenOptions
   ): Promise<AccessToken | null> {
-    const scopesArray: string[] = typeof scopes === "string" ? scopes.split(" ") : scopes;
-    internalLogger.info("Get access token with scopes: " + scopesArray.join(" "));
+    let scopesArray: string[] = typeof scopes === "string" ? scopes.split(" ") : scopes;
+    scopesArray = scopesArray.filter((x) => x !== null && x !== "");
 
-    let result: AuthenticationResult | null;
-    try {
-      result = await this.msalClient.acquireTokenOnBehalfOf({
-        oboAssertion: this.ssoToken,
-        scopes: scopesArray
-      });
-    } catch (error) {
-      const errorMsg = formatString(ErrorMessage.FailToAcquireTokenOnBehalfOfUser, error.message);
-      internalLogger.error(errorMsg);
-      // Todo based on error message, use different ErrorCode
-      throw new ErrorWithCode(errorMsg, ErrorCode.InternalError);
-    }
+    let result: AccessToken | null;
+    if (!scopesArray.length) {
+      internalLogger.info("Get SSO token.");
 
-    if (result) {
-      return {
-        token: result.accessToken,
-        expiresOnTimestamp: result.expiresOn!.getTime()
+      result = {
+        token: this.ssoToken,
+        expiresOnTimestamp: getExpirationNumberFromJWT(this.ssoToken)
       };
     } else {
-      const errorMsg = "Access token is null";
-      internalLogger.error(errorMsg);
-      throw new ErrorWithCode(
-        formatString(ErrorMessage.FailToAcquireTokenOnBehalfOfUser, errorMsg),
-        ErrorCode.InternalError
-      );
+      internalLogger.info("Get access token with scopes: " + scopesArray.join(" "));
+
+      let authenticationResult: AuthenticationResult | null;
+      try {
+        authenticationResult = await this.msalClient.acquireTokenOnBehalfOf({
+          oboAssertion: this.ssoToken,
+          scopes: scopesArray
+        });
+      } catch (error) {
+        const errorMsg = formatString(ErrorMessage.FailToAcquireTokenOnBehalfOfUser, error.message);
+        internalLogger.error(errorMsg);
+        // Todo based on error message, use different ErrorCode
+        throw new ErrorWithCode(errorMsg, ErrorCode.InternalError);
+      }
+
+      if (!authenticationResult) {
+        const errorMsg = "Access token is null";
+        internalLogger.error(errorMsg);
+        throw new ErrorWithCode(
+          formatString(ErrorMessage.FailToAcquireTokenOnBehalfOfUser, errorMsg),
+          ErrorCode.InternalError
+        );
+      }
+
+      result = {
+        token: authenticationResult.accessToken,
+        expiresOnTimestamp: authenticationResult.expiresOn!.getTime()
+      };
     }
+
+    return result;
   }
 
   /**

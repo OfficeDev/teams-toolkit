@@ -33,6 +33,13 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(updateCmd);
 
+  // add capability
+  const addCapCmd = vscode.commands.registerCommand(
+    "fx-extension.addCapability",
+    handlers.addCapabilityHandler
+  );
+  context.subscriptions.push(addCapCmd);
+
   // 1.3 Register the provision command.
   const provisionCmd = vscode.commands.registerCommand(
     "fx-extension.provision",

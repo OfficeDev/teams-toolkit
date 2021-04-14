@@ -15,10 +15,11 @@ import * as child_process from "child_process";
 import * as util from "util";
 import { ConfigFolderName } from "fx-api";
 import { cpUtils, dotnetCheckerEnabled, getResourceDir, logger, runWithProgressIndicator } from "./checkerAdapter";
-import { DepsCheckerError, DepsInfo, IDepsChecker } from "./checker";
+import { DepsInfo, IDepsChecker } from "./checker";
 import { dotnetHelpLink, isLinux, isWindows, Messages } from "./common";
 import { DepsCheckerEvent, DepsCheckerTelemetry, TelemtryMessages } from "./telemetry";
 import { performance } from "perf_hooks";
+import { DepsCheckerError } from "./errors";
 
 const exec = util.promisify(child_process.exec);
 

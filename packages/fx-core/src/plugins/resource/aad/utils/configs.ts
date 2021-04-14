@@ -70,6 +70,16 @@ export class ProvisionConfig {
         )
       );
     }
+
+    const objectId: ConfigValue = ctx.config.get(ConfigKeys.objectId);
+    if (objectId) {
+      this.objectId = objectId as string;
+    }
+
+    const clientSecret: ConfigValue = ctx.config.get(ConfigKeys.clientSecret);
+    if (clientSecret) {
+      this.password = clientSecret as string;
+    }
   }
 
   public saveConfigIntoContext(ctx: PluginContext, tenantId: string): void {

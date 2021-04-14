@@ -72,6 +72,7 @@ export class ConfigKeys {
   static oauthAuthority = "oauthAuthority";
   static oauthHost = "oauthHost";
   static tenantId = "tenantId";
+  static skip = "skipProvision";
 }
 
 export class ConfigKeysOfOtherPlugin {
@@ -147,6 +148,7 @@ export class Messages {
     telemetry: Messages.getEventName("update-permission"),
   };
 
+  static readonly GetAadAppSuccess = "Successfully get Azure AD app.";
   static readonly CreateAadAppSuccess = "Successfully created Azure AD app.";
   static readonly CreateAadAppPasswordSuccess =
     "Successfully created password for Azure AD app.";
@@ -164,6 +166,7 @@ export class Messages {
   static readonly UserCancelled = "Selection is cancelled by user.";
   static readonly UpdatePermissionSuccessMessage =
     "Successfully updated permission for Azure AD app. You can go to Azure Portal to check the permission or grant admin consent.";
+  static readonly SkipProvision = "Azure AD app provision skipped. You need to mannual provision and config Azure AD app.";
 }
 
 export class ProgressTitle {
@@ -180,6 +183,7 @@ export class ProgressDetail {
 
   static readonly ProvisionAadApp = "Provision Azure AD app";
   static readonly CreateAadAppSecret = "Create secret for Azure AD app";
+  static readonly GetAadApp = "Get Azure AD app";
 
   static readonly UpdateRedirectUri = "Update redirect uri for Azure AD app";
   static readonly UpdateAppIdUri = "Update application id uri for Azure AD app";

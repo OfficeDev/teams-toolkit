@@ -39,6 +39,7 @@
     "*",
     "onCommand:fx-extension.create",
     "onCommand:fx-extension.update",
+    "onCommand:fx-extension.addCapability",
     "onCommand:fx-extension.provision",
     "onCommand:fx-extension.deploy",
     "onCommand:fx-extension.updateAad",
@@ -98,6 +99,10 @@
       {
         "command": "fx-extension.update",
         "title": "TeamsFx - Add Resource"
+      },
+      {
+        "command": "fx-extension.addCapability",
+        "title": "TeamsFx - Add Capability"
       },
       {
         "command": "fx-extension.provision",
@@ -275,6 +280,11 @@
       {
         "title": "Teams Toolkit",
         "properties": {
+          "fx-extension.validateNode": {
+            "type": "boolean",
+            "description": "Validate the Node.js is installed before local debugging.",
+            "default": true
+          },
           "fx-extension.validateFuncCoreTools": {
             "type": "boolean",
             "description": "Validate the Azure Functions Core Tools is installed before local debugging.",
@@ -291,12 +301,12 @@
   },
   "scripts": {
     "lint:staged": "lint-staged",
-    "vscode:prepublish": "rimraf out && npm run build",
+    "vscode:prepublish": "rimraf out && npm run package",
     "copy-files": "copyfiles -u 1 src/**/*.html src/**/*.css src/**/*.ps1 src/**/*.sh out/src/",
     "compile": "tsc -p ./ && yarn copy-files",
     "build": "npm run compile",
     "watch": "webpack --watch --devtool nosources-source-map --info-verbosity verbose --config ./webpack.config.js",
-    "package": "webpack --mode production --config ./webpack.config.js",
+    "package": "rimraf out && webpack --mode production --config ./webpack.config.js",
     "test-compile": "tsc -p ./",
     "test-watch": "tsc -watch -p ./",
     "pretest": "npm run lint && npm run check-format && npm run test-compile",

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import * as path from "path";
-import { Func, FxError, NodeType, PluginContext, QTreeNode, ReadonlyPluginConfig, Result, Stage } from "fx-api";
+import { AzureSolutionSettings, Func, FxError, NodeType, PluginContext, QTreeNode, ReadonlyPluginConfig, Result, Stage } from "fx-api";
 import { StorageManagementClient } from "@azure/arm-storage";
 import { StringDictionary } from "@azure/arm-appservice/esm/models";
 import { WebSiteManagementClient, WebSiteManagementModels } from "@azure/arm-appservice";
@@ -83,7 +83,7 @@ export class FunctionPluginImpl {
         this.config.resourceGroupName = solutionConfig?.get(DependentPluginInfo.resourceGroupName) as string;
         this.config.subscriptionId = solutionConfig?.get(DependentPluginInfo.subscriptionId) as string;
         this.config.location = solutionConfig?.get(DependentPluginInfo.location) as string;
-        this.config.functionLanguage = ctx.answers?.get(QuestionKey.programmingLanguage) as FunctionLanguage;
+        this.config.functionLanguage = solutionConfig?.get(DependentPluginInfo.programmingLanguage) as FunctionLanguage;
         this.config.nodeVersion = ctx.config.get(FunctionConfigKey.nodeVersion) as NodeVersion;
         this.config.defaultFunctionName = ctx.config.get(FunctionConfigKey.defaultFunctionName) as string;
         this.config.functionAppName = ctx.config.get(FunctionConfigKey.functionAppName) as string;
@@ -157,7 +157,10 @@ export class FunctionPluginImpl {
             }
 
             const language: FunctionLanguage =
-                ctx.answers?.get(QuestionKey.programmingLanguage) as FunctionLanguage;
+                ctx.answers?.get(QuestionKey.programmingLanguage) as FunctionLanguage ??
+                ctx.configOfOtherPlugins
+                   .get(DependentPluginInfo.solutionPluginName)
+                   ?.get(DependentPluginInfo.programmingLanguage) as FunctionLanguage;
 
             // If language is unknown, skip checking and let scaffold handle the error.
             if (language && await FunctionScaffold.doesFunctionPathExist(workingPath, language, name)) {
@@ -499,8 +502,7 @@ export class FunctionPluginImpl {
     public isPluginEnabled(ctx: PluginContext, plugin: string): boolean {
         const solutionConfig: ReadonlyPluginConfig | undefined =
             ctx.configOfOtherPlugins.get(DependentPluginInfo.solutionPluginName);
-        const selectedPlugins: string[] = solutionConfig?.get(DependentPluginInfo.selectedPlugins) as string[] ?? [];
-
+        const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings).activeResourcePlugins;
         return selectedPlugins.includes(plugin);
     }
 

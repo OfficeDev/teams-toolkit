@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import * as utils from "../utils/common";
-import { CommonStrings, PluginBot } from "../resources/strings";
+import { CommonStrings, PluginBot, PluginSolution } from "../resources/strings";
 import { ConfigValue, PluginContext } from "fx-api";
 import { ProgrammingLanguage } from "../enums/programmingLanguage";
 import { WayToRegisterBot } from "../enums/wayToRegisterBot";
@@ -28,7 +28,7 @@ export class ScaffoldConfig {
         }
 
         let rawProgrammingLanguage = "";
-        const programmingLanguageValue: ConfigValue = context.config.get(PluginBot.PROGRAMMING_LANGUAGE);
+        const programmingLanguageValue: ConfigValue = context.configOfOtherPlugins.get(PluginSolution.PLUGIN_NAME)?.get(PluginBot.PROGRAMMING_LANGUAGE);
         if (programmingLanguageValue) {
             rawProgrammingLanguage = programmingLanguageValue as string;
         }

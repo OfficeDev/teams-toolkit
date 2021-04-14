@@ -20,21 +20,15 @@ describe(FunctionPluginInfo.pluginName, () => {
 
         const checkUserError = (err: UserError, link: string) => {
             checkErrorCommon(err, "ut");
+            chai.assert.isTrue(err instanceof UserError);
             chai.assert.equal(err.helpLink, link);
         };
 
         const checkSystemError = (err: SystemError, link: string) => {
             checkErrorCommon(err, "ut");
+            chai.assert.isTrue(err instanceof SystemError);
             chai.assert.equal(err.issueLink, link);
         };
-
-        it("create FxError", async () => {
-            const result: FxResult = ResultFactory.FxError(errorMsg);
-            chai.assert.isTrue(result.isErr());
-
-            const err: FxError = result._unsafeUnwrapErr() as FxError;
-            checkErrorCommon(err, "FxError");
-        });
 
         it("create UserError with link", async () => {
             const result: FxResult = ResultFactory.UserError(errorMsg, "ut", link);
@@ -58,14 +52,6 @@ describe(FunctionPluginInfo.pluginName, () => {
 
             const err: SystemError = result._unsafeUnwrapErr() as SystemError;
             checkSystemError(err, link);
-        });
-
-        it("create FxError without link", async () => {
-            const result: FxResult = ResultFactory.SystemError(errorMsg, "ut");
-            chai.assert.isTrue(result.isErr());
-
-            const err: SystemError = result._unsafeUnwrapErr() as SystemError;
-            checkSystemError(err, DefaultValues.issueLink);
         });
 
         it("create Success", async () => {

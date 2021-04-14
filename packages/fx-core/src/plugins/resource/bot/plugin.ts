@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { PluginContext, Result, Stage, QTreeNode, NodeType, FxError } from "fx-api";
+import { PluginContext, Result, Stage, QTreeNode, NodeType, FxError, ReadonlyPluginConfig } from "fx-api";
 
 import * as aadReg from "./aadRegistration";
 import * as factory from "./clientFactory";
@@ -15,13 +15,12 @@ import { getZipDeployEndpoint } from "./utils/zipDeploy";
 
 import * as appService from "@azure/arm-appservice";
 import * as fs from "fs-extra";
-import { CommonStrings, PluginBot, ConfigNames, TelemetryStrings } from "./resources/strings";
+import { CommonStrings, PluginBot, ConfigNames, TelemetryStrings, PluginSolution } from "./resources/strings";
 import { DialogUtils } from "./utils/dialog";
 import { CheckThrowSomethingMissing, ConfigUpdatingException, DeployWithoutProvisionException, ListPublishingCredentialsException, MessageEndpointUpdatingException, PackDirExistenceException, PreconditionException, ProvisionException, SomethingMissingException, UserInputsException, ValidationException, ZipDeployException } from "./exceptions";
 import { TeamsBotConfig } from "./configs/teamsBotConfig";
 import { default as axios } from "axios";
 import AdmZip from "adm-zip";
-import { ProgrammingLanguage } from "./enums/programmingLanguage";
 import { ProgressBarFactory } from "./progressBars";
 import { PluginActRoles } from "./enums/pluginActRoles";
 import { ResourceNameFactory } from "./utils/resourceNameFactory";
@@ -55,14 +54,6 @@ export class TeamsBotImpl {
         this.telemetryStepIn(LifecycleFuncNames.PRE_SCAFFOLD);
         this.markEnter(LifecycleFuncNames.PRE_SCAFFOLD);
 
-        const rawProgrammingLanguage = this.ctx.answers?.get(QuestionNames.PROGRAMMING_LANGUAGE);
-
-        if (!rawProgrammingLanguage) {
-            throw new UserInputsException(QuestionNames.PROGRAMMING_LANGUAGE, rawProgrammingLanguage as string);
-        }
-
-        const pickedProgrammingLanguage: ProgrammingLanguage = rawProgrammingLanguage as ProgrammingLanguage;
-
         const rawWay = this.ctx.answers?.get(QuestionNames.WAY_TO_REGISTER_BOT);
 
         if (!rawWay) {
@@ -89,7 +80,6 @@ export class TeamsBotImpl {
             this.updateManifest(this.config.scaffold.botId);
         }
 
-        this.config.scaffold.programmingLanguage = pickedProgrammingLanguage;
         this.config.scaffold.wayToRegisterBot = pickedWay;
 
         this.config.saveConfigIntoContext(context);

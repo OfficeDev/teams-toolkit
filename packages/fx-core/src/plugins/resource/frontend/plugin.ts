@@ -31,7 +31,7 @@ import { Messages } from "./resources/messages";
 import { FrontendScaffold as Scaffold, TemplateInfo } from "./ops/scaffold";
 import { TeamsFxResult } from "./error-factory";
 import { PreDeploySteps, ProgressHelper, ProvisionSteps, ScaffoldSteps } from "./utils/progress-helper";
-import { tabScopeQuestion } from "./resources/questions";
+import { QuestionKey, TabScope, tabScopeQuestion } from "./resources/questions";
 import { ManifestVariables } from "./resources/tabScope";
 
 export class FrontendPluginImpl {
@@ -67,6 +67,9 @@ export class FrontendPluginImpl {
         if (functionPlugin) {
             templateInfo.scenario = FrontendPluginInfo.TemplateWithFunctionScenario;
         }
+
+        const tabScope = ctx.answers?.getString(QuestionKey.TabScope) ?? TabScope.PersonalTab;
+        this.setConfigIfNotExists(ctx, QuestionKey.TabScope, tabScope);
 
         const zip = await runWithErrorCatchAndThrow(
             new GetTemplateError(),

@@ -17,13 +17,7 @@ const context: any = {
             [DependentPluginInfo.subscriptionId, "ut"],
             [DependentPluginInfo.resourceNameSuffix, "ut"],
             [DependentPluginInfo.location, "ut"],
-            [DependentPluginInfo.selectedPlugins, [
-                DependentPluginInfo.aadPluginName,
-                DependentPluginInfo.frontendPluginName,
-                DependentPluginInfo.identityPluginName,
-                DependentPluginInfo.sqlPluginName,
-                DependentPluginInfo.apimPluginName
-            ]]
+            [DependentPluginInfo.programmingLanguage, "javascript"]
         ])],
         [DependentPluginInfo.aadPluginName, new Map<string, string>([
             [DependentPluginInfo.aadClientId, "ut"],
@@ -58,9 +52,17 @@ const context: any = {
         ["nodeVersion", NodeVersion.Version14],
         ["scaffoldDone", "true"]
     ]),
-    answers: new Map<string, string>([
-        [QuestionKey.programmingLanguage, FunctionLanguage.JavaScript],
-    ]),
+    projectSettings: {
+        solutionSettings: {
+            activeResourcePlugins: [
+                DependentPluginInfo.aadPluginName,
+                DependentPluginInfo.frontendPluginName,
+                DependentPluginInfo.identityPluginName,
+                DependentPluginInfo.sqlPluginName,
+                DependentPluginInfo.apimPluginName
+            ]
+        }
+    },
     azureAccountProvider: {
         getAccountCredential: () => ({
             signRequest: () => {

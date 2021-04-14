@@ -532,7 +532,7 @@ export async function openWelcomeHandler() {
   welcomePanel.webview.html = getHtmlForWebview();
 
   if (isFeatureFlag()) {
-    WebviewPanel.createOrShow(ext.context.extensionPath, PanelType.QuickStart)
+    WebviewPanel.createOrShow(ext.context.extensionPath, PanelType.QuickStart);
   } else {
     const welcomePanel = window.createWebviewPanel("react", "Teams Toolkit", ViewColumn.One, {
       enableScripts: true,

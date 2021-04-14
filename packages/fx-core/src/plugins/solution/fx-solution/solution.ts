@@ -1884,6 +1884,7 @@ export class TeamsAppSolution implements Solution {
                     return err(scaffoldRes.error);
                 }
                 ctx.logProvider?.info(`finish scaffolding Local Debug Configs!`);
+                ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false); //if selected plugin changed, we need to re-do provision
             }
             ctx.dialog?.communicate(
                 new DialogMsg(DialogType.Show, {

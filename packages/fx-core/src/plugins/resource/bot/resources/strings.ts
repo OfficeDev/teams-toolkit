@@ -42,7 +42,7 @@ export class PluginSolution {
 }
 
 export class PluginSql {
-    public static readonly PLUGIN_NAME = "fx-resource-sql";
+    public static readonly PLUGIN_NAME = "fx-resource-azure-sql";
     public static readonly SQL_ENDPOINT = "sqlEndpoint";
     public static readonly SQL_DATABASE_NAME = "databaseName";
     public static readonly SQL_USERNAME = "sqlUsername";

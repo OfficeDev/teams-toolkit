@@ -19,7 +19,7 @@ describe("FrontendProvision", () => {
 
         beforeEach(() => {
             sinon.stub(fs, "ensureFile").resolves(Buffer.from(""));
-            sinon.stub(fs, "readFileSync").returns(Buffer.from(`${EnvironmentVariables.FuncName}=testFunc`));
+            sinon.stub(fs, "readFile").resolves(Buffer.from(`${EnvironmentVariables.FuncName}=testFunc`));
             writeFileStub = sinon.stub(fs, "writeFile") as any;
         });
 

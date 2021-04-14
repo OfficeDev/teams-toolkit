@@ -19,6 +19,7 @@ chaiUse(chaiPromises);
 let restore: () => void;
 
 describe("TediousSQLConectConfig - node", () => {
+  // fake configuration for sql.
   const fakeSQLServerEndpoint = "xxx.database.windows.net";
   const fakeSQLUserName = "fake_name";
   const fakeSQLPassword = "fake_password";
@@ -27,6 +28,9 @@ describe("TediousSQLConectConfig - node", () => {
   const fakeToken = "fake_token";
   const defaultAuthenticationType = "default";
   const tokenAuthenticationType = "azure-active-directory-access-token";
+  
+  // error code.
+  const invalidConfiguration = "InvalidConfiguration";
 
   before(() => {
     setLogLevel(LogLevel.Verbose);
@@ -101,7 +105,7 @@ describe("TediousSQLConectConfig - node", () => {
     const sqlConnector = new DefaultTediousConnectionConfiguration();
     await expect(sqlConnector.getConfig())
       .to.eventually.be.rejectedWith(ErrorWithCode)
-      .and.property("code", ErrorCode.InvalidConfiguration);
+      .and.property("code", invalidConfiguration);
   });
 
   it("getConfig fail without username, password or identity id", async function() {
@@ -114,6 +118,6 @@ describe("TediousSQLConectConfig - node", () => {
     const sqlConnector = new DefaultTediousConnectionConfiguration();
     await expect(sqlConnector.getConfig())
       .to.eventually.be.rejectedWith(ErrorWithCode)
-      .and.property("code", ErrorCode.InvalidConfiguration);
+      .and.property("code", invalidConfiguration);
   });
 });

@@ -60,20 +60,20 @@ const TypeScriptLanguageStrategy: FunctionLanguageStrategy = {
 };
 
 async function getCSharpLanguageStrategy(): Promise<FunctionLanguageStrategy> {
-  return {
-    getFunctionEntryFileOrFolderName: (entryName: string) => `${entryName}.cs`,
-    functionAppRuntimeSettings: (version?: string) => {
-        return {
-            "FUNCTIONS_WORKER_RUNTIME": "dotnet"
-        };
-    },
-    skipFuncExtensionInstall: true,
-    buildCommands: [{
-      command: Commands.dotnetPublish(await getDotnetForShell()),
-      relativePath: CommonConstants.emptyString
-    }],
-    deployFolderRelativePath: path.join("bin", "Release", "netcoreapp3.1", "publish")
-  };
+    return {
+        getFunctionEntryFileOrFolderName: (entryName: string) => `${entryName}.cs`,
+        functionAppRuntimeSettings: (version?: string) => {
+            return {
+                "FUNCTIONS_WORKER_RUNTIME": "dotnet"
+            };
+        },
+        skipFuncExtensionInstall: true,
+        buildCommands: [{
+            command: Commands.dotnetPublish(await getDotnetForShell()),
+            relativePath: CommonConstants.emptyString
+        }],
+        deployFolderRelativePath: path.join("bin", "Release", "netcoreapp3.1", "publish")
+    };
 }
 
 export class LanguageStrategyFactory {

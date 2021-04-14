@@ -16,8 +16,7 @@ let enabled = false;
 
 export function dotnetCheckerEnabled(): boolean {
   // TODO: enable dotnet checker after all features are ready
-  // return enabled;
-  return false;
+  return enabled;
 }
 
 export async function runWithProgressIndicator(

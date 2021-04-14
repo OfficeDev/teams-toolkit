@@ -106,6 +106,9 @@ export class AadAppForTeamsPlugin implements Plugin {
   private returnError(e: any, ctx: PluginContext): AadResult {
     if (e instanceof SystemError || e instanceof UserError) {
       ctx.logProvider?.error(e.message);
+      if (e.innerError) {
+        ctx.logProvider?.error(`Detailed error: ${e.innerError.message}`);
+      }
       TelemetryUtils.init(ctx);
       TelemetryUtils.sendException(e);
       DialogUtils.progress?.end();

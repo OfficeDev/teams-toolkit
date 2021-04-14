@@ -22,7 +22,7 @@ export class FunctionPluginInfo {
     public static readonly expectDotnetSDKs: string[] = ["3.1", "5.0"];
 
     public static readonly FunctionPluginPersistentConfig: FunctionConfigKey[] = [
-        FunctionConfigKey.functionLanguage,
+        FunctionConfigKey.nodeVersion,
         FunctionConfigKey.defaultFunctionName,
         FunctionConfigKey.functionAppName,
         FunctionConfigKey.storageAccountName,
@@ -85,7 +85,7 @@ export class DependentPluginInfo {
     public static readonly subscriptionId: string = "subscriptionId";
     public static readonly resourceNameSuffix: string = "resourceNameSuffix";
     public static readonly location: string = "location";
-    public static readonly selectedPlugins: string = "selectedPlugins";
+    // public static readonly selectedPlugins: string = "selectedPlugins";
 
     public static readonly aadPluginName: string = "fx-resource-aad-app-for-teams";
     public static readonly aadClientId: string = "clientId";

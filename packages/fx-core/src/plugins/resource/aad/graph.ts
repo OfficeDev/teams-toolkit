@@ -21,9 +21,8 @@ export namespace GraphClient {
       );
     }
 
-    axios.defaults.headers.common["Authorization"] = `Bearer ${graphToken}`;
-
-    const response = await axios.post(`${baseUrl}/applications`, aadApp);
+    const instance = initAxiosInstance(graphToken);
+    const response = await instance.post(`${baseUrl}/applications`, aadApp);
     if (response && response.data) {
       const app = <IAADDefinition>response.data;
 
@@ -54,9 +53,8 @@ export namespace GraphClient {
       );
     }
 
-    axios.defaults.headers.common["Authorization"] = `Bearer ${graphToken}`;
-
-    await axios.patch(`${baseUrl}/applications/${objectId}`, aadApp);
+    const instance = initAxiosInstance(graphToken);
+    await instance.patch(`${baseUrl}/applications/${objectId}`, aadApp);
   }
 
   export async function createAadAppSecret(
@@ -69,11 +67,9 @@ export namespace GraphClient {
       );
     }
 
-    axios.defaults.headers.common["Authorization"] = `Bearer ${graphToken}`;
-
+    const instance = initAxiosInstance(graphToken);
     const aadSecretObject = createAadAppSecretObject();
-
-    const response = await axios.post(
+    const response = await instance.post(
       `${baseUrl}/applications/${objectId}/addPassword`,
       aadSecretObject
     );
@@ -94,6 +90,36 @@ export namespace GraphClient {
     throw new Error(
       `${GraphClientErrorMessage.UpdateFailed}: ${GraphClientErrorMessage.EmptyResponse}.`
     );
+  }
+
+  export async function getAadApp(
+    graphToken: string,
+    objectId: string,
+  ): Promise<IAADDefinition> {
+    if (!objectId) {
+      throw new Error(
+        `${GraphClientErrorMessage.GetFailed}: ${GraphClientErrorMessage.AppObjectIdIsNull}.`
+      );
+    }
+
+    const instance = initAxiosInstance(graphToken);
+    const response = await instance.get(`${baseUrl}/applications/${objectId}`);
+    if (response && response.data) {
+      const app = <IAADDefinition>response.data;
+      return app;
+    }
+
+    throw new Error(
+      `${GraphClientErrorMessage.GetFailed}: ${GraphClientErrorMessage.EmptyResponse}.`
+    );
+  }
+
+  function initAxiosInstance(graphToken: string) {
+    const instance = axios.create({
+      baseURL: baseUrl
+    });
+    instance.defaults.headers.common["Authorization"] = `Bearer ${graphToken}`;
+    return instance;
   }
 
   function createAadAppSecretObject() {

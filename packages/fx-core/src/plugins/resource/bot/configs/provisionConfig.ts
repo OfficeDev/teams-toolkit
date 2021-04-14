@@ -3,7 +3,7 @@
 import { ConfigValue, PluginContext } from "fx-api";
 
 import * as utils from "../utils/common";
-import { PluginSolution, PluginBot, CommonStrings } from "../resources/strings";
+import { PluginSolution, PluginBot, PluginSql, PluginIdentity, PluginFunction, CommonStrings } from "../resources/strings";
 
 export class ProvisionConfig {
     public subscriptionId?: string;
@@ -15,6 +15,14 @@ export class ProvisionConfig {
     public siteEndpoint?: string;
     public redirectUri?: string; // it's going to be useless, mark.
     public graphToken?: string;
+    // Configs from SQL and Function.
+    public sqlEndpoint?: string;
+    public sqlDatabaseName?: string;
+    public identityId?: string;
+    public sqlUserName?: string;
+    public sqlPassword?: string;
+    public apiEndpoint?: string;
+
     public provisioned = false;
 
     public async restoreConfigFromContext(context: PluginContext): Promise<void> {
@@ -38,6 +46,29 @@ export class ProvisionConfig {
             ?.get(PluginSolution.LOCATION);
         if (locationValue) {
             this.location = locationValue as string;
+        }
+
+        /* 
+public sqlEndpoint?: string;
+public sqlDatabaseName?: string;
+public identityId?: string;
+public sqlUserName?: string;
+public sqlPassword?: string;
+public apiEndpoint?: string;
+*/
+
+        const sqlEndpointValue: ConfigValue = context.configOfOtherPlugins
+            .get(PluginSql.PLUGIN_NAME)
+            ?.get(PluginSql.SQL_ENDPOINT);
+        if (sqlEndpointValue) {
+            this.sqlEndpoint = sqlEndpointValue as string;
+        }
+
+        const sqlDatabaseNameValue: ConfigValue = context.configOfOtherPlugins
+            .get(PluginSql.PLUGIN_NAME)
+            ?.get(PluginSql.SQL_DATABASE_NAME);
+        if (sqlDatabaseNameValue) {
+            this.sqlDatabaseName = sqlDatabaseNameValue as string;
         }
 
         const appServicePlanValue: ConfigValue = context.config.get(PluginBot.APP_SERVICE_PLAN);

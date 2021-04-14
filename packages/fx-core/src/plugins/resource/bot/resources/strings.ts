@@ -41,6 +41,24 @@ export class PluginSolution {
     public static readonly M365_TENANT_ID = "teamsAppTenantId";
 }
 
+export class PluginSql {
+    public static readonly PLUGIN_NAME = "fx-resource-sql";
+    public static readonly SQL_ENDPOINT = "sqlEndpoint";
+    public static readonly SQL_DATABASE_NAME = "databaseName";
+    public static readonly SQL_USERNAME = "sqlUsername";
+    public static readonly SQL_PASSWORD = "sqlPassword";
+}
+
+export class PluginIdentity {
+    public static readonly PLUGIN_NAME = "fx-resource-identity";
+    public static readonly IDENTITY_ID = "identity";
+}
+
+export class PluginFunction {
+    public static readonly PLUGIN_NAME = "fx-resource-function";
+    public static readonly ENDPOINT = "functionEndpoint";
+}
+
 export class PluginBot {
     public static readonly PLUGIN_NAME = "fx-resource-bot";
     public static readonly BOT_ID = "botId";

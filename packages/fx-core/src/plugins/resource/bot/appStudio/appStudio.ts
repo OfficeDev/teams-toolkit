@@ -20,6 +20,9 @@ export async function init(accessToken: string): Promise<boolean> {
             headers: {
                 post: {
                     "Authorization": `Bearer ${accessToken}`
+                },
+                get: {
+                    "Authorization": `Bearer ${accessToken}`
                 }
             }
         });

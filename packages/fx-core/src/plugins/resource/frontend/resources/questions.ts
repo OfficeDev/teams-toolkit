@@ -33,4 +33,4 @@ export const tabScopeQuestion: Question = {
 
 export const FrontendQuestionsOnScaffold = [
     new FrontendQuestion({ question: tabScopeQuestion, configKey: FrontendConfigInfo.TabScopes })
-]
+];

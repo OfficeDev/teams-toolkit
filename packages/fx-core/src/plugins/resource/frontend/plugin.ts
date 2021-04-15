@@ -51,7 +51,7 @@ export class FrontendPluginImpl {
         });
 
         if (stage === Stage.create) {
-            FrontendQuestionsOnScaffold.map((item) => {
+            FrontendQuestionsOnScaffold.forEach((item) => {
                 res.addChild(item.question);
             });
         }
@@ -87,7 +87,7 @@ export class FrontendPluginImpl {
     }
 
     private syncAnswerToContextConfig(ctx: PluginContext, questions: FrontendQuestion[]): void {
-        questions.map((item) => {
+        questions.forEach((item) => {
             const answer = ctx.answers?.get(item.questionKey) ?? item.defaultValue;
             this.setConfigIfNotExists(ctx, item.configKey, answer);
         });

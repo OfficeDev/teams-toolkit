@@ -5,7 +5,7 @@
 
 import { Argv, Options } from "yargs";
 import * as path from "path";
-import { FxError, err, ok, Result, ConfigMap, ConfigFolderName } from "fx-api";
+import { FxError, err, ok, Result, ConfigMap, ConfigFolderName, Platform, Func } from "fx-api";
 import activate from "../activate";
 import * as constants from "../constants";
 import { YargsCommand } from "../yargsCommand";
@@ -39,28 +39,37 @@ export default class New extends YargsCommand {
     }
 
     const manifestFolderParamName = "manifest-folder";
-    let rootFolder;
+    let result;
+    // if input manifestFolderParam(actually also teams-app-id param), 
+    // this call is from VS platform, since CLI hide these two param from users.
     if (answers.has(manifestFolderParamName)) {
-      rootFolder = path.join(answers.getString(manifestFolderParamName)!, "..");
+      result = await activate();
     }
     else {
-      rootFolder = answers.getString("folder");
-      const manifestFolder = path.join(rootFolder!, `.${ConfigFolderName}`);
-      answers.set(manifestFolderParamName, manifestFolder);
+      const rootFolder = answers.getString("folder");
+      answers.delete("folder");
+      result = await activate(rootFolder);
     }
 
-    answers.delete("folder");
-    const result = await activate(rootFolder);
     if (result.isErr()) {
       return err(result.error);
     }
 
     const core = result.value;
-    {
-      const result = await core.publish(answers);
-      if (result.isErr()) {
-        return err(result.error);
-      }
+    if (answers.has(manifestFolderParamName)) {
+      answers.set("platform", Platform.VS);
+      const func: Func = {
+        namespace: "fx-solution-azure",
+        method: "VSpublish"
+      };
+      result = await core.executeUserTask!(func, answers);
+    }
+    else {
+      answers.set("platform", Platform.CLI);
+      result = await core.publish(answers);
+    }
+    if (result.isErr()) {
+      return err(result.error);
     }
     return ok(null);
   }

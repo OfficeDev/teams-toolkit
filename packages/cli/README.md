@@ -4,11 +4,16 @@
 
 1. `git clone https://github.com/OfficeDev/TeamsFx.git`
 2. `cd TeamsFx`
-3. `npm run bootstrap`
-4. `cd packages/cli`
-5. `npm link --force --production`
+3. `npm install`
+4. `npm run bootstrap`
+5. `cd packages/cli`
+6. `npm link --force --production`
 
-This will break the links of `fx-api/fx-core` and download them from npm registry, so after running `npm link --force --production`, you can remove `packages/cli/node_modules/fx-api` and `packages/cli/node_modules/fx-core`, then run `npm run bootstrap` again. 
+If you meet the error showing that some package cannot install, you can delete this package's `package-lock.json` file and try `npm run bootstrap` again.
+
+`npm link` will search `fx-api/fx-core` from npm registry (not link) and now they are in the private npm registry, so you should setup the private npm registry.
+
+`npm link --force --production` will break the links of `fx-api/fx-core` and download them from npm registry, so after running `npm link --force --production`, you should remove `packages/cli/node_modules/fx-api` and `packages/cli/node_modules/fx-core`, then run `npm run bootstrap` again.
 
 ## For users to install the package
 1. Run: `npm install -g teamsfx-cli` (Pls check the version is the latest version)
@@ -123,19 +128,13 @@ You can ask `Long Hao` or `Zhiyu You` for `$PASSWORD`.
 
 ## How to Generate Parameter Files (for Repo Contributors)
 
-Now CLI cannot get all questions through `core.getQuestions`, because this API depends on an existing project. There are some hard code in the `src/paramGenerator.ts` to specify some question nodes.
+### Setup repo
+You can follow `For developpers to build and run your local project` at the top of this readme.
 
+### Run
 ```bash
-git clone https://github.com/OfficeDev/TeamsFx.git
-cd packages\cli
-npm install
-npm run build
-npm link --force
-
-# new an azure project
-teamsfx new --app-name azureApp --azure-resources sql function --folder test-folder
-# call param generator
-ts-node .\src\paramGenerator.ts
+# get new/resource-add/provision stage parameters
+node .\lib\generators\ new resource-add provision
 ```
 
 ## Known issue

@@ -58,20 +58,20 @@ const TypeScriptLanguageStrategy: FunctionLanguageStrategy = {
     }],
 };
 
-// const CSharpLanguageStrategy: FunctionLanguageStrategy = {
-//     getFunctionEntryFileOrFolderName: (entryName: string) => `${entryName}.cs`,
-//     functionAppRuntimeSettings: (version?: string) => {
-//         return {
-//             "FUNCTIONS_WORKER_RUNTIME": "dotnet"
-//         };
-//     },
-//     skipFuncExtensionInstall: true,
-//     buildCommands: [{
-//         command: Commands.dotnetPublish,
-//         relativePath: CommonConstants.emptyString
-//     }],
-//     deployFolderRelativePath: path.join("bin", "Release", "netcoreapp3.1", "publish")
-// };
+const CSharpLanguageStrategy: FunctionLanguageStrategy = {
+    getFunctionEntryFileOrFolderName: (entryName: string) => `${entryName}.cs`,
+    functionAppRuntimeSettings: (version?: string) => {
+        return {
+            "FUNCTIONS_WORKER_RUNTIME": "dotnet"
+        };
+    },
+    skipFuncExtensionInstall: true,
+    buildCommands: [{
+        command: Commands.dotnetPublish,
+        relativePath: CommonConstants.emptyString
+    }],
+    deployFolderRelativePath: path.join("bin", "Release", "netcoreapp3.1", "publish")
+};
 
 export class LanguageStrategyFactory {
     public static getStrategy(language: FunctionLanguage): FunctionLanguageStrategy {
@@ -80,8 +80,8 @@ export class LanguageStrategyFactory {
                 return JavaScriptLanguageStrategy;
             case FunctionLanguage.TypeScript:
                 return TypeScriptLanguageStrategy;
-            // case FunctionLanguage.CSharp:
-            //     return CSharpLanguageStrategy;
+            case FunctionLanguage.CSharp:
+                return CSharpLanguageStrategy;
         }
     }
 }

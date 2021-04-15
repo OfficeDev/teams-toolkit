@@ -143,6 +143,6 @@ export class QuestionDescription {
 }
 
 export class TabScope {
-    static readonly PersonalTab = "personal tab";
-    static readonly GroupTab = "group tab";
+    static readonly PersonalTab = "personal";
+    static readonly GroupTab = "group";
 }

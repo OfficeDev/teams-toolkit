@@ -64,10 +64,10 @@ export class AppStudioPluginImpl {
         try {
             await publishProgress?.start("Validating manifest file");
             let appDirectory: string | undefined = undefined;
-            if (ctx.platform === Platform.VSCode) {
-                appDirectory = `${ctx.root}/.${ConfigFolderName}`;
-            } else {
+            if (ctx.platform === Platform.VS) {
                 appDirectory = ctx.answers?.getString(Constants.PUBLISH_PATH_QUESTION);
+            } else {
+                appDirectory = `${ctx.root}/.${ConfigFolderName}`;
             }
             
             if (!appDirectory) {
@@ -79,14 +79,16 @@ export class AppStudioPluginImpl {
 
             // For vs platform, read the local manifest.json file
             // For cli/vsc platform, get manifest from ctx
-            if (ctx.platform === Platform.CLI) {
+            if (ctx.platform === Platform.VS) {
                 try {
                     const manifestFileState = await fs.stat(manifestFile);
                     if (manifestFileState.isFile()) {
                         manifestString = (await fs.readFile(manifestFile)).toString();
+                    } else {
+                        throw AppStudioResultFactory.SystemError(AppStudioError.FileNotFoundError.name, AppStudioError.FileNotFoundError.message(manifestFile));
                     }
                 } catch (error) {
-                    manifestString = JSON.stringify(ctx.app);
+                    throw AppStudioResultFactory.SystemError(AppStudioError.FileNotFoundError.name, AppStudioError.FileNotFoundError.message(manifestFile));
                 }
             } else {
                 manifestString = JSON.stringify(ctx.app);
@@ -99,10 +101,10 @@ export class AppStudioPluginImpl {
 
             // Update App in App Studio
             let remoteTeamsAppId: string | undefined = undefined;
-            if (ctx.platform === Platform.VSCode) {
-                remoteTeamsAppId = ctx.configOfOtherPlugins.get("solution")?.get(REMOTE_TEAMS_APP_ID) as string;
-            } else {
+            if (ctx.platform === Platform.VS) {
                 remoteTeamsAppId = ctx.answers?.getString(Constants.REMOTE_TEAMS_APP_ID);
+            } else {
+                remoteTeamsAppId = ctx.configOfOtherPlugins.get("solution")?.get(REMOTE_TEAMS_APP_ID) as string;
             }
             await publishProgress?.next(`Updating app definition for app ${remoteTeamsAppId} in app studio`);
             const manifest: TeamsAppManifest = JSON.parse(manifestString!);

@@ -15,13 +15,14 @@ import {
     BuildError,
     CreateStorageAccountError,
     EnableStaticWebsiteError,
+    InvalidTabScopeError,
     NoResourceGroupError,
     NoStorageError,
     NotProvisionError,
     StaticWebsiteDisabledError,
 } from "../../../../../src/plugins/resource/frontend/resources/errors";
 import { FrontendConfig } from "../../../../../src/plugins/resource/frontend/configs";
-import { FrontendConfigInfo } from "../../../../../src/plugins/resource/frontend/constants";
+import { Constants, FrontendConfigInfo } from "../../../../../src/plugins/resource/frontend/constants";
 import { FrontendPlugin } from "../../../../../src/plugins/resource/frontend/";
 import { FrontendProvision } from "../../../../../src/plugins/resource/frontend/ops/provision";
 import { FrontendScaffold } from "../../../../../src/plugins/resource/frontend/ops/scaffold";
@@ -59,6 +60,7 @@ describe("frontendPlugin", () => {
             const result = await frontendPlugin.scaffold(pluginContext);
 
             chai.assert.isTrue(result.isOk());
+            chai.assert.equal(pluginContext.config.get(FrontendConfigInfo.TabScopes), TestHelper.tabScope);
         });
     });
 
@@ -98,7 +100,6 @@ describe("frontendPlugin", () => {
     describe("provision", () => {
         let frontendPlugin: FrontendPlugin;
         let pluginContext: PluginContext;
-        let endpoint: string;
 
         let createStorageAccountStub: sinon.SinonStub;
         let enableStaticWebsiteStub: sinon.SinonStub;
@@ -106,11 +107,10 @@ describe("frontendPlugin", () => {
         beforeEach(async () => {
             pluginContext = TestHelper.getFakePluginContext();
             frontendPlugin = await TestHelper.initializedFrontendPlugin(new FrontendPlugin(), pluginContext);
-            endpoint = faker.internet.url();
 
             createStorageAccountStub = sinon
                 .stub(AzureStorageClient.prototype, "createStorageAccount")
-                .resolves(endpoint);
+                .resolves(TestHelper.storageEndpoint);
             enableStaticWebsiteStub = sinon.stub(AzureStorageClient.prototype, "enableStaticWebsite");
         });
 
@@ -119,12 +119,12 @@ describe("frontendPlugin", () => {
         });
 
         it("happy path", async () => {
-            const hostname = new URL(endpoint).hostname;
+            const hostname = new URL(TestHelper.storageEndpoint).hostname;
 
             const result = await frontendPlugin.provision(pluginContext);
 
             chai.assert.isTrue(result.isOk());
-            chai.assert.equal(pluginContext.config.get(FrontendConfigInfo.Endpoint), endpoint);
+            chai.assert.equal(pluginContext.config.get(FrontendConfigInfo.Endpoint), TestHelper.storageEndpoint);
             chai.assert.equal(pluginContext.config.get(FrontendConfigInfo.Hostname), hostname);
         });
 
@@ -151,6 +151,8 @@ describe("frontendPlugin", () => {
 
         beforeEach(async () => {
             pluginContext = TestHelper.getFakePluginContext();
+            pluginContext.config.set(FrontendConfigInfo.TabScopes, TestHelper.tabScope);
+            pluginContext.config.set(FrontendConfigInfo.Endpoint, TestHelper.storageEndpoint);
             frontendPlugin = await TestHelper.initializedFrontendPlugin(new FrontendPlugin(), pluginContext);
         });
 
@@ -160,8 +162,12 @@ describe("frontendPlugin", () => {
 
         it("happy path", async () => {
             sinon.stub(FrontendProvision, "setEnvironments");
+
             const result = await frontendPlugin.postProvision(pluginContext);
+
             chai.assert.isTrue(result.isOk());
+            chai.assert.include(pluginContext.config.get(FrontendConfigInfo.StaticTab), TestHelper.storageEndpoint);
+            chai.assert.equal(pluginContext.config.get(FrontendConfigInfo.ConfigurableTab), Constants.EmptyListString);
         });
     });
 
@@ -250,6 +256,23 @@ describe("frontendPlugin", () => {
             const result = await frontendPlugin.deploy(pluginContext);
 
             assertError(result, new BuildError().code);
+        });
+    });
+
+    describe("post-debug", () => {
+        let frontendPlugin: FrontendPlugin;
+        let pluginContext: PluginContext;
+
+        beforeEach(async () => {
+            frontendPlugin = new FrontendPlugin();
+            pluginContext = TestHelper.getFakePluginContext();
+            frontendPlugin = await TestHelper.initializedFrontendPlugin(frontendPlugin, pluginContext);
+        });
+
+        it("Empty tab scope", async () => {
+            const result = await frontendPlugin.postLocalDebug(pluginContext);
+
+            assertError(result, new InvalidTabScopeError().code);
         });
     });
 });

@@ -39,7 +39,6 @@ export const CONFIGURABLE_TABS = "configurableTabs";
  */
 export const FRONTEND_ENDPOINT = "endpoint";
 export const FRONTEND_DOMAIN = "domain";
-export const AAD_REMOTE_CLIENT_ID = "clientId";
 export const BOTS = "bots";
 export const COMPOSE_EXTENSIONS = "composeExtensions";
 
@@ -95,6 +94,8 @@ export enum SolutionError {
     RegisterTeamsAppAndAadError = "RegisterTeamsAppAndAadError",
     UpdateManifestError = "UpdateManifestError",
     GetLocalDebugConfigError = "GetLocalDebugConfigError",
+    GetRemoteConfigError = "GetLocalDebugConfigError",
+    UnsupportedPlatform = "UnsupportedPlatform",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";

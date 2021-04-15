@@ -21,7 +21,6 @@ import {
     Solution,
     SolutionConfig,
     SolutionContext,
-    SystemError,
     DialogMsg,
     DialogType,
     TeamsAppManifest,
@@ -29,7 +28,6 @@ import {
     OptionItem,
     MsgLevel,
     ConfigFolderName,
-    Platform,
     AzureSolutionSettings
 } from "fx-api";
 import { askSubscription, fillInCommonQuestions } from "./commonQuestions";
@@ -48,7 +46,6 @@ import {
     LOCAL_DEBUG_TEAMS_APP_ID,
     FRONTEND_DOMAIN,
     FRONTEND_ENDPOINT,
-    AAD_REMOTE_CLIENT_ID,
     REMOTE_TEAMS_APP_ID,
     Void,
     SOLUTION_PROVISION_SUCCEEDED,
@@ -685,43 +682,12 @@ export class TeamsAppSolution implements Solution {
         return ok(ctx.config);
     }
 
-    // The assumptions of this function are:
-    // 1. this.manifest is not undefined(for azure projects) already contains the latest manifest(loaded via reloadManifestAndCheckRequiredFields)
-    // 2. provision of frontend hosting is done and config values has already been loaded into ctx.config
-    private async createAndConfigTeamsManifest(ctx: SolutionContext): Promise<Result<IAppDefinition, FxError>> {
+    private createManifestForRemote(ctx: SolutionContext, manifestTpl: string): Result<[IAppDefinition, TeamsAppManifest], FxError> {
         const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
         if (maybeSelectedPlugins.isErr()) {
             return err(maybeSelectedPlugins.error);
         }
         const selectedPlugins = maybeSelectedPlugins.value;
-        let endpoint: string | undefined = "";
-        let domain: string | undefined = "";
-        if (selectedPlugins.some((plugin) => plugin.name === this.fehostPlugin.name)) {
-            endpoint = ctx.config.get(this.fehostPlugin.name)?.getString(FRONTEND_ENDPOINT);
-            domain = ctx.config.get(this.fehostPlugin.name)?.getString(FRONTEND_DOMAIN);
-            if (endpoint === undefined || domain === undefined) {
-                return err(
-                    returnSystemError(
-                        new Error("Frontend endpoint or domain not found"),
-                        "Solution",
-                        SolutionError.FrontendEndpointAndDomainNotFound,
-                    ),
-                );
-            }
-        }
-
-        const clientId = ctx.config.get(this.aadPlugin.name)?.getString(AAD_REMOTE_CLIENT_ID);
-        if (clientId === undefined) {
-            return err(
-                returnSystemError(
-                    new Error("Remote clientId not found"),
-                    "Solution",
-                    SolutionError.RemoteClientIdNotFound,
-                ),
-            );
-        }
-
-        const manifest = await fs.readJSON(`${ctx.root}/.${ConfigFolderName}/manifest.remote.json`);
         if (selectedPlugins.some((plugin) => plugin.name === this.botPlugin.name)) {
             const capabilities = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings).capabilities;
             const hasBot = capabilities?.includes(BotOptionItem.label);
@@ -746,7 +712,6 @@ export class TeamsAppSolution implements Solution {
                         ),
                     );
                 }
-                manifest.bots = JSON.parse(bots);
             }
             if (hasMsgExt) {
                 const composeExtensions = ctx.config.get(this.botPlugin.name)?.getString(COMPOSE_EXTENSIONS);
@@ -759,48 +724,50 @@ export class TeamsAppSolution implements Solution {
                         ),
                     );
                 }
-                manifest.composeExtensions = JSON.parse(composeExtensions);
             }
         }
-        const manifestString = JSON.stringify(manifest);
+        const maybeConfig = this.getConfigForCreatingManifest(ctx.config, false);
+        if (maybeConfig.isErr()) {
+            return err(maybeConfig.error);
+        }
+
+        const {tabEndpoint, tabDomain, aadId, botDomain, bots, composeExtensions, webApplicationInfoResource, staticTabs, configurableTabs} = maybeConfig.value;
 
         const validDomains: string[] = [];
-        if (domain) {
-            validDomains.push(domain);
+
+        if (tabDomain) {
+            validDomains.push(tabDomain);
         }
 
-        const validBotDomain = ctx.config.get(this.botPlugin.name)?.get(BOT_DOMAIN);
-        if (validBotDomain) {
-            validDomains.push(validBotDomain as string);
+        if (botDomain) {
+            validDomains.push(botDomain);
         }
 
-        const webApplicationInfoResource: string | undefined = ctx.config.get(this.aadPlugin.name)?.getString(WEB_APPLICATION_INFO_SOURCE);
-        if (webApplicationInfoResource) {
-            ctx.logProvider?.debug(`Succeed to get webApplicationInfoResource: ${webApplicationInfoResource}`);
-        } else {
-            ctx.logProvider?.debug(`Failed to get webApplicationInfoResource from aad by key ${WEB_APPLICATION_INFO_SOURCE}.`);
-            return err(returnSystemError(new Error("Failed to get webApplicationInfoResource"), "Solution", SolutionError.UpdateManifestError));
-        }
-        // STATIC_TABS and CONFIGURABLE_TABS are only available after postProvision.
-        const staticTabs = ctx.config.get(this.fehostPlugin.name)?.getString(STATIC_TABS);
-        const configurableTabs = ctx.config.get(this.fehostPlugin.name)?.getString(CONFIGURABLE_TABS);
-        if (!staticTabs || !configurableTabs || 
-                (staticTabs === "[]" && configurableTabs === "[]")) {
-            return err(returnSystemError(
-                new Error(`Invalid frontend config: ${STATIC_TABS}: ${staticTabs} ${CONFIGURABLE_TABS}: ${configurableTabs}`),
-                "Solution", 
-                SolutionError.UpdateManifestError));
-        }
-
-        const [appDefinition, updatedManifest] = AppStudio.getDevAppDefinition(
-            manifestString,
-            clientId,
+        return ok(AppStudio.getDevAppDefinition(
+            manifestTpl,
+            aadId,
             validDomains,
             webApplicationInfoResource,
             staticTabs,
             configurableTabs,
-            endpoint.endsWith("/") ? endpoint.substring(0, endpoint.length - 1) : endpoint,
-        );
+            tabEndpoint,
+            this.manifest!.name.short,
+            this.manifest!.version,
+            bots,
+            composeExtensions
+        ));
+    }
+
+    // The assumptions of this function are:
+    // 1. this.manifest is not undefined(for azure projects) already contains the latest manifest(loaded via reloadManifestAndCheckRequiredFields)
+    // 2. provision of frontend hosting is done and config values has already been loaded into ctx.config
+    private async createAndConfigTeamsManifest(ctx: SolutionContext): Promise<Result<IAppDefinition, FxError>> {
+        const manifestTpl = (await fs.readFile(`${ctx.root}/.${ConfigFolderName}/manifest.remote.json`)).toString();
+        const result = this.createManifestForRemote(ctx, manifestTpl);
+        if (result.isErr()) {
+            return err(result.error);
+        }
+        const [appDefinition, updatedManifest] = result.value;
         const teamsAppId = ctx.config.get(GLOBAL_CONFIG)?.getString(REMOTE_TEAMS_APP_ID);
         if (!teamsAppId) {
             ctx.logProvider?.info(`Teams app not created`);
@@ -990,7 +957,6 @@ export class TeamsAppSolution implements Solution {
                 return ok(undefined);
             },
             async () => {
-                
                 const result = this.createAndConfigTeamsManifest(ctx);
                 ctx.logProvider?.info("[Teams Toolkit]: configuration finished!");
                 return result;
@@ -1015,14 +981,9 @@ export class TeamsAppSolution implements Solution {
         });
     }
 
-    private canPublish(solutionConfig: SolutionConfig, platform?: Platform): Result<TeamsAppManifest | undefined, FxError> {
-        // Note this is a temporary solution to support VS calling CLI, which is not a normal teamsfx publish workflow. The manifest
-        // will not be generated by provision.
-        if (platform !== "vsc") {
-            return ok(undefined);
-        }
+    private canPublish(ctx: SolutionContext, manifestTpl: string): Result<TeamsAppManifest, FxError> {
         return this.checkWhetherSolutionIsIdle().andThen((_) => {
-            return this.checkWetherProvisionSucceeded(solutionConfig)
+            return this.checkWetherProvisionSucceeded(ctx.config)
                 ? ok(Void)
                 : err(
                     returnUserError(
@@ -1032,17 +993,7 @@ export class TeamsAppSolution implements Solution {
                     ),
                 );
         }).andThen((_) => {
-            const manifestString = solutionConfig.get(GLOBAL_CONFIG)?.getString(PROVISION_MANIFEST);
-            if (!manifestString) {
-                return err(
-                    returnSystemError(
-                        new Error("Teams app manifest not found"),
-                        "Solution",
-                        SolutionError.CannotPublishBeforeProvision
-                    )
-                );
-            }
-            return ok(JSON.parse(manifestString));
+            return this.createManifestForRemote(ctx, manifestTpl).map((result) => result[1]);
         });
     }
 
@@ -1137,14 +1088,14 @@ export class TeamsAppSolution implements Solution {
             );
         }
 
-        const maybeManifest = this.canPublish(ctx.config, ctx.platform);
+        const manifestTpl = (await fs.readFile(`${ctx.root}/.${ConfigFolderName}/manifest.remote.json`)).toString();
+        const maybeManifest = this.canPublish(ctx, manifestTpl);
         if (maybeManifest.isErr()) {
             return maybeManifest;
         }
         const manifest = maybeManifest.value;
         try {
             this.runningState = SolutionRunningState.PublishInProgress;
-
             
             const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, [this.appStudioPlugin], manifest);
             const publishWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {
@@ -1153,7 +1104,7 @@ export class TeamsAppSolution implements Solution {
 
             ctx.logProvider?.info(`[Solution] publish start!`);
 
-            const result = await executeConcurrently(publishWithCtx);
+            const result = await executeConcurrently("", publishWithCtx);
 
             if (result.isOk()) {
                 ctx.logProvider?.info(`[Teams Toolkit] publish success!`);
@@ -1430,7 +1381,7 @@ export class TeamsAppSolution implements Solution {
             return [plugin?.postLocalDebug?.bind(plugin), context, plugin.name];
         });
 
-        const localDebugResult = await executeConcurrently(localDebugWithCtx);
+        const localDebugResult = await executeConcurrently("", localDebugWithCtx);
         if (localDebugResult.isErr()) {
             return localDebugResult;
         }
@@ -1447,7 +1398,7 @@ export class TeamsAppSolution implements Solution {
             return result;
         }
         
-        const postLocalDebugResult = await executeConcurrently(postLocalDebugWithCtx);
+        const postLocalDebugResult = await executeConcurrently("post", postLocalDebugWithCtx);
         if (postLocalDebugResult.isErr()) {
             return postLocalDebugResult;
         }
@@ -1458,7 +1409,7 @@ export class TeamsAppSolution implements Solution {
             return maybeConfig;
         }
 
-        const {localTabEndpoint, localTabDomain, localAADId, localBotDomain, bots, composeExtensions, webApplicationInfoResource} = maybeConfig.value;
+        const {localTabEndpoint, localTabDomain, localAADId, localBotDomain, bots, composeExtensions, webApplicationInfoResource, staticTabs, configurableTabs} = maybeConfig.value;
 
         const validDomains: string[] = [];
 
@@ -1470,16 +1421,6 @@ export class TeamsAppSolution implements Solution {
             validDomains.push(localBotDomain);
         }
 
-        // STATIC_TABS and CONFIGURABLE_TABS are only available after postProvision.
-        const staticTabs = ctx.config.get(this.fehostPlugin.name)?.getString(STATIC_TABS);
-        const configurableTabs = ctx.config.get(this.fehostPlugin.name)?.getString(CONFIGURABLE_TABS);
-        if (!staticTabs || !configurableTabs || 
-                (staticTabs === "[]" && configurableTabs === "[]")) {
-            return err(returnSystemError(
-                new Error(`Invalid frontend config: ${STATIC_TABS}: ${staticTabs} ${CONFIGURABLE_TABS}: ${configurableTabs}`),
-                "Solution", 
-                SolutionError.UpdateManifestError));
-        }
         const manifestTpl = (await fs.readFile(`${ctx.root}/.${ConfigFolderName}/manifest.remote.json`)).toString();
         const [appDefinition, _updatedManifest] = AppStudio.getDevAppDefinition(
             manifestTpl,
@@ -1557,60 +1498,93 @@ export class TeamsAppSolution implements Solution {
         });
     }
 
-    private getLocalDebugConfig(config: SolutionConfig): Result<{localTabEndpoint?: string, localTabDomain?:string, localAADId: string, localBotDomain?: string, bots?: string, composeExtensions?: string, webApplicationInfoResource: string}, SystemError> {
-        const localTabEndpoint = config.get(this.localDebugPlugin.name)?.getString(LOCAL_DEBUG_TAB_ENDPOINT);
-        const localTabDomain = config.get(this.localDebugPlugin.name)?.getString(LOCAL_DEBUG_TAB_DOMAIN);
-        const localAADId = config.get(this.aadPlugin.name)?.getString(LOCAL_DEBUG_AAD_ID);
-        const localBotDomain = config.get(this.localDebugPlugin.name)?.getString(LOCAL_DEBUG_BOT_DOMAIN);
+    private getConfigForCreatingManifest(config: SolutionConfig, localDebug: boolean): Result<{tabEndpoint?: string, tabDomain?:string, aadId: string, botDomain?: string, bots?: string, composeExtensions?: string, webApplicationInfoResource: string, staticTabs: string, configurableTabs: string}, FxError> {
+        const tabEndpoint = localDebug ? config.get(this.localDebugPlugin.name)?.getString(LOCAL_DEBUG_TAB_ENDPOINT) : config.get(this.fehostPlugin.name)?.getString(FRONTEND_ENDPOINT);
+        const tabDomain = localDebug ? config.get(this.localDebugPlugin.name)?.getString(LOCAL_DEBUG_TAB_DOMAIN) : config.get(this.fehostPlugin.name)?.getString(FRONTEND_DOMAIN);
+        const aadId = config.get(this.aadPlugin.name)?.getString(localDebug ? LOCAL_DEBUG_AAD_ID : REMOTE_AAD_ID);
+        const botDomain = localDebug ? config.get(this.localDebugPlugin.name)?.getString(LOCAL_DEBUG_BOT_DOMAIN) : config.get(this.botPlugin.name)?.getString(BOT_DOMAIN);
         const bots = config.get(this.botPlugin.name)?.getString(BOTS);
         const composeExtensions = config.get(this.botPlugin.name)?.getString(COMPOSE_EXTENSIONS);
         // This config value is set by aadPlugin.setApplicationInContext. so aadPlugin.setApplicationInContext needs to run first.
-        const webApplicationInfoResource = config.get(this.aadPlugin.name)?.getString(LOCAL_WEB_APPLICATION_INFO_SOURCE);
+        const webApplicationInfoResource = config.get(this.aadPlugin.name)?.getString(localDebug ? LOCAL_WEB_APPLICATION_INFO_SOURCE : WEB_APPLICATION_INFO_SOURCE);
         if (!webApplicationInfoResource) {
-            return err(returnSystemError(new Error("Failed to get webApplicationInfoResource"), "Solution", SolutionError.GetLocalDebugConfigError));
+            return err(returnSystemError(
+                new Error("Failed to get webApplicationInfoResource"), 
+                "Solution", 
+                localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError));
         }
 
-        if (!localAADId) {
+        if (!aadId) {
             return err(
                 returnSystemError(
                     new Error(`config ${LOCAL_DEBUG_AAD_ID} is missing`),
                     "Solution",
-                    SolutionError.GetLocalDebugConfigError,
+                    localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError,
                 ),
             );
         }
         // localTabEndpoint, bots and composeExtensions can't all be undefined
-        if (!localTabEndpoint && !bots && !composeExtensions) {
+        if (!tabEndpoint && !bots && !composeExtensions) {
             return err(
                 returnSystemError(
                     new Error(`${LOCAL_DEBUG_TAB_ENDPOINT}, ${BOTS}, ${COMPOSE_EXTENSIONS} are all missing`),
                     "Solution",
-                    SolutionError.GetLocalDebugConfigError,
+                    localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError,
                 ),
             );
         }
-        if ((localTabEndpoint && !localTabDomain) || (!localTabEndpoint && localTabDomain)) {
+        if ((tabEndpoint && !tabDomain) || (!tabEndpoint && tabDomain)) {
             return err(
                 returnSystemError(
-                    new Error(`Invalid config for tab: ${LOCAL_DEBUG_TAB_ENDPOINT}=${localTabEndpoint} ${LOCAL_DEBUG_TAB_DOMAIN}=${localTabDomain}`),
+                    new Error(`Invalid config for tab: ${LOCAL_DEBUG_TAB_ENDPOINT}=${tabEndpoint} ${LOCAL_DEBUG_TAB_DOMAIN}=${tabDomain}`),
                     "Solution",
-                    SolutionError.GetLocalDebugConfigError,
+                    localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError,
                 ),
             );
         }
         if (bots || composeExtensions) {
-            if (!localBotDomain) {
+            if (!botDomain) {
                 return err(
                     returnSystemError(
                         new Error(`${LOCAL_DEBUG_BOT_DOMAIN} is undefined`),
                         "Solution",
-                        SolutionError.GetLocalDebugConfigError
+                        localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError,
                     )
                 );
             }
         }
+
+        // STATIC_TABS and CONFIGURABLE_TABS are only available after postProvision.
+        const staticTabs = config.get(this.fehostPlugin.name)?.getString(STATIC_TABS) ?? "[]";
+        const configurableTabs = config.get(this.fehostPlugin.name)?.getString(CONFIGURABLE_TABS) ?? "[]";
+        if (tabEndpoint) {
+            if (!staticTabs || !configurableTabs || 
+                    (staticTabs === "[]" && configurableTabs === "[]")) {
+                return err(returnSystemError(
+                    new Error(`Invalid frontend config: ${STATIC_TABS}: ${staticTabs} ${CONFIGURABLE_TABS}: ${configurableTabs}`),
+                    "Solution", 
+                    localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError));
+            }
+        }
         
-        return ok({localTabEndpoint, localTabDomain, localAADId, localBotDomain, bots, composeExtensions, webApplicationInfoResource});
+        return ok({tabEndpoint, tabDomain, aadId, botDomain, bots, composeExtensions, webApplicationInfoResource, staticTabs, configurableTabs});
+
+    }
+
+    private getLocalDebugConfig(config: SolutionConfig): Result<{localTabEndpoint?: string, localTabDomain?:string, localAADId: string, localBotDomain?: string, bots?: string, composeExtensions?: string, webApplicationInfoResource: string, staticTabs: string, configurableTabs: string}, FxError> {
+        return this.getConfigForCreatingManifest(config, true).map((conf) => {
+            return {
+                localTabEndpoint: conf.tabEndpoint,
+                localTabDomain: conf.tabDomain,
+                localAADId: conf.aadId,
+                localBotDomain: conf.botDomain,
+                bots: conf.bots,
+                composeExtension: conf.composeExtensions,
+                webApplicationInfoResource: conf.webApplicationInfoResource,
+                staticTabs: conf.staticTabs,
+                configurableTabs: conf.configurableTabs
+            };
+        });
     }
 
     async callFunc(func: Func, ctx: SolutionContext): Promise<Result<any, FxError>> {
@@ -1945,7 +1919,26 @@ export class TeamsAppSolution implements Solution {
                 // VSpublish means VS calling cli to do publish. It is different than normal cli work flow
                 // It's teamsfx init followed by teamsfx  publish without running provision.
                 // Using executeUserTask here could bypass the fx project check.
-                return this.publish(ctx);
+                if (ctx.platform !== "vs") {
+                    return err(
+                        returnSystemError(new Error(`VS publish is not supposed to run on platform ${ctx.platform}`), 
+                        "Solution", 
+                        SolutionError.UnsupportedPlatform));
+                }
+                const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
+                const pluginCtx = getPluginContext(ctx, this.appStudioPlugin.name);
+                return appStudioPlugin.publish(pluginCtx);
+            } else if (method === "validateManifest") {
+                const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
+                const pluginCtx = getPluginContext(ctx, this.appStudioPlugin.name);
+                const manifestTpl = (await fs.readFile(`${ctx.root}/.${ConfigFolderName}/manifest.remote.json`)).toString();
+                const manifest = this.createManifestForRemote(ctx, manifestTpl).map((result) => result[1]);
+                return appStudioPlugin.validateManifest(pluginCtx, JSON.stringify(manifest));
+            } else if (method === "buildPackage") {
+                const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
+                const manifestTpl = (await fs.readFile(`${ctx.root}/.${ConfigFolderName}/manifest.remote.json`)).toString();
+                const manifest = this.createManifestForRemote(ctx, manifestTpl).map((result) => result[1]);
+                return appStudioPlugin.buildTeamsPackage(`${ctx.root}/.${ConfigFolderName}`, JSON.stringify(manifest));
             }
         } else if (array.length == 2) {
             const pluginName = array[1];

@@ -56,42 +56,42 @@ export class AppStudioPluginImpl {
     }
 
     public async publish(ctx: PluginContext): Promise<string> {
+        let appDirectory: string | undefined = undefined;
+        let manifestString: string | undefined = undefined;
+
+        // For vs platform, read the local manifest.json file
+        // For cli/vsc platform, get manifest from ctx
+        if (ctx.platform === Platform.VS) {
+            appDirectory = ctx.answers?.getString(Constants.PUBLISH_PATH_QUESTION);
+            const manifestFile = `${appDirectory}/${Constants.MANIFEST_FILE}`;
+            try {
+                const manifestFileState = await fs.stat(manifestFile);
+                if (manifestFileState.isFile()) {
+                    manifestString = (await fs.readFile(manifestFile)).toString();
+                } else {
+                    throw AppStudioResultFactory.SystemError(AppStudioError.FileNotFoundError.name, AppStudioError.FileNotFoundError.message(manifestFile));
+                }
+            } catch (error) {
+                throw AppStudioResultFactory.SystemError(AppStudioError.FileNotFoundError.name, AppStudioError.FileNotFoundError.message(manifestFile));
+            }
+        } else {
+            appDirectory = `${ctx.root}/.${ConfigFolderName}`;
+            manifestString = JSON.stringify(ctx.app);
+        }
+
+        if (!appDirectory) {
+            throw AppStudioResultFactory.SystemError(AppStudioError.ParamUndefinedError.name, AppStudioError.ParamUndefinedError.message(Constants.PUBLISH_PATH_QUESTION));
+        }
+
+        const manifest = JSON.parse(manifestString);
         const publishProgress = ctx.dialog?.createProgressBar(
-            `Publishing ${ctx.app.name.short}`,
+            `Publishing ${manifest.name.short}`,
             3,
         );
-        // Validate manifest
+        
         try {
+            // Validate manifest
             await publishProgress?.start("Validating manifest file");
-            let appDirectory: string | undefined = undefined;
-            if (ctx.platform === Platform.VSCode) {
-                appDirectory = `${ctx.root}/.${ConfigFolderName}`;
-            } else {
-                appDirectory = ctx.answers?.getString(Constants.PUBLISH_PATH_QUESTION);
-            }
-            
-            if (!appDirectory) {
-                throw AppStudioResultFactory.SystemError(AppStudioError.ParamUndefinedError.name, AppStudioError.ParamUndefinedError.message(Constants.PUBLISH_PATH_QUESTION));
-            }
-
-            let manifestString: string | undefined = undefined;
-            const manifestFile = `${appDirectory}/${Constants.MANIFEST_FILE}`;
-
-            // For vs platform, read the local manifest.json file
-            // For cli/vsc platform, get manifest from ctx
-            if (ctx.platform === Platform.CLI) {
-                try {
-                    const manifestFileState = await fs.stat(manifestFile);
-                    if (manifestFileState.isFile()) {
-                        manifestString = (await fs.readFile(manifestFile)).toString();
-                    }
-                } catch (error) {
-                    manifestString = JSON.stringify(ctx.app);
-                }
-            } else {
-                manifestString = JSON.stringify(ctx.app);
-            }
-            
             const validationResult = await this.validateManifest(ctx, manifestString!);
             if (validationResult.length > 0) {
                 throw AppStudioResultFactory.UserError(AppStudioError.ValidationFailedError.name, AppStudioError.ValidationFailedError.message(validationResult));
@@ -99,10 +99,10 @@ export class AppStudioPluginImpl {
 
             // Update App in App Studio
             let remoteTeamsAppId: string | undefined = undefined;
-            if (ctx.platform === Platform.VSCode) {
-                remoteTeamsAppId = ctx.configOfOtherPlugins.get("solution")?.get(REMOTE_TEAMS_APP_ID) as string;
-            } else {
+            if (ctx.platform === Platform.VS) {
                 remoteTeamsAppId = ctx.answers?.getString(Constants.REMOTE_TEAMS_APP_ID);
+            } else {
+                remoteTeamsAppId = ctx.configOfOtherPlugins.get("solution")?.get(REMOTE_TEAMS_APP_ID) as string;
             }
             await publishProgress?.next(`Updating app definition for app ${remoteTeamsAppId} in app studio`);
             const manifest: TeamsAppManifest = JSON.parse(manifestString!);
@@ -115,7 +115,7 @@ export class AppStudioPluginImpl {
             const appPackage = await this.buildTeamsAppPackage(appDirectory, manifestString!);
 
             // Publish Teams App
-            await publishProgress?.next(`Publishing ${ctx.app.name.short}`);
+            await publishProgress?.next(`Publishing ${manifest.name.short}`);
             appStudioToken = await ctx.appStudioToken?.getAccessToken();
             const appContent = await fs.readFile(appPackage);
             const appIdInAppCatalog = await AppStudioClient.publishTeamsApp(remoteTeamsAppId!, appContent, appStudioToken!);

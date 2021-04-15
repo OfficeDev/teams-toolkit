@@ -98,11 +98,18 @@ export class CodeFlowLogin {
               });
               deferredRedirect.resolve(response.accessToken);
 
-              sendFile(
-                res,
-                path.join(__dirname, "./codeFlowResult/index.html"),
-                "text/html; charset=utf-8"
-              );
+              const resultFilePath = path.join(__dirname, "./codeFlowResult/index.html");
+              if (fs.existsSync(resultFilePath)) {
+                sendFile(
+                  res,
+                  resultFilePath,
+                  "text/html; charset=utf-8"
+                );
+              } else {
+                // do not break if result file has issue
+                VsCodeLogInstance.error("[Login] Result file not found, return simple OK message.");
+                res.sendStatus(200);
+              }
             }
           } else {
             throw new Error("get no response");

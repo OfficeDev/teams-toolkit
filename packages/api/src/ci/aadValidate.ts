@@ -6,7 +6,8 @@
 import * as chai from "chai";
 import axios from "axios";
 
-import AppStudioTokenProvider from "./mockAppStudioTokenProvider";
+import MockAppStudioTokenProvider from "./mockAppStudioTokenProvider";
+import { AppStudioTokenProvider } from "../utils/login";
 import { IAADDefinition, IAadObject, IAadObjectLocal } from "./interfaces/IAADDefinition";
 
 const aadPluginName = "fx-resource-aad-app-for-teams";
@@ -18,8 +19,12 @@ function delay(ms: number) {
 }
 
 export class AadValidator {
-    public static init(ctx: any, isLocalDebug = false): IAadObject {
+    public static provider: AppStudioTokenProvider;
+
+    public static init(ctx: any, isLocalDebug = false, provider?: AppStudioTokenProvider): IAadObject {
         console.log("Start to init validator for Azure AD app.");
+
+        AadValidator.provider = provider || MockAppStudioTokenProvider;
 
         const aadObject: IAadObject | undefined = AadValidator.parseConfig(ctx[aadPluginName], isLocalDebug);
         chai.assert.exists(aadObject);
@@ -52,7 +57,7 @@ export class AadValidator {
     }
 
     private static async getAadApp(objectId: string) {
-        const token = await AppStudioTokenProvider.getAccessToken();
+        const token = await this.provider.getAccessToken();
     
         let retries = 10;
         while (retries > 0) {
@@ -87,8 +92,8 @@ export class AadValidator {
     }
 }
 
-export async function deleteAadApp(ctx: any) {
-    const token = await AppStudioTokenProvider.getAccessToken();
+export async function deleteAadApp(ctx: any, provider?: AppStudioTokenProvider) {
+    const token = await (provider || MockAppStudioTokenProvider).getAccessToken();
     const objectId: string = (<IAadObject>ctx[aadPluginName]).objectId;
     axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     return axios.delete(`${baseUrl}/${objectId}`);

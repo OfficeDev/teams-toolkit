@@ -31,14 +31,14 @@ import { Messages } from "./resources/messages";
 import { FrontendScaffold as Scaffold, TemplateInfo } from "./ops/scaffold";
 import { TeamsFxResult } from "./error-factory";
 import { PreDeploySteps, ProgressHelper, ProvisionSteps, ScaffoldSteps } from "./utils/progress-helper";
-import { QuestionKey, TabScope, tabScopeQuestion } from "./resources/questions";
+import { FrontendQuestionsOnScaffold, FrontendQuestion } from "./resources/questions";
 import { ManifestVariables } from "./resources/tabScope";
 
 export class FrontendPluginImpl {
     config?: FrontendConfig;
     azureStorageClient?: AzureStorageClient;
 
-    private setConfigIfNotExists(ctx: PluginContext, key: string, value: string): void {
+    private setConfigIfNotExists<T>(ctx: PluginContext, key: string, value: T): void {
         if (ctx.config.get(key)) {
             return;
         }
@@ -51,7 +51,9 @@ export class FrontendPluginImpl {
         });
 
         if (stage === Stage.create) {
-            res.addChild(tabScopeQuestion);
+            FrontendQuestionsOnScaffold.map((item) => {
+                res.addChild(item.question);
+            });
         }
 
         return ok(res);
@@ -62,14 +64,13 @@ export class FrontendPluginImpl {
         const progressHandler = await ProgressHelper.startScaffoldProgressHandler(ctx);
         await progressHandler?.next(ScaffoldSteps.Scaffold);
 
+        this.syncAnswerToContextConfig(ctx, FrontendQuestionsOnScaffold);
+
         const templateInfo = new TemplateInfo();
         const functionPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.FunctionPluginName);
         if (functionPlugin) {
             templateInfo.scenario = FrontendPluginInfo.TemplateWithFunctionScenario;
         }
-
-        const tabScope = ctx.answers?.getString(QuestionKey.TabScope) ?? TabScope.PersonalTab;
-        this.setConfigIfNotExists(ctx, QuestionKey.TabScope, tabScope);
 
         const zip = await runWithErrorCatchAndThrow(
             new GetTemplateError(),
@@ -83,6 +84,13 @@ export class FrontendPluginImpl {
         await ProgressHelper.endScaffoldProgress();
         Logger.info(Messages.EndScaffold(PluginInfo.DisplayName));
         return ok(undefined);
+    }
+
+    private syncAnswerToContextConfig(ctx: PluginContext, questions: FrontendQuestion[]): void {
+        questions.map((item) => {
+            const answer = ctx.answers?.get(item.questionKey) ?? item.defaultValue;
+            this.setConfigIfNotExists(ctx, item.configKey, answer);
+        });
     }
 
     public async preProvision(ctx: PluginContext): Promise<TeamsFxResult> {

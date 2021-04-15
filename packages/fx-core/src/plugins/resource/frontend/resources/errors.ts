@@ -12,7 +12,7 @@ export enum ErrorType {
 
 const tips = {
     checkLog: "Read log for more information.",
-    doScaffold: "Run \"Start A New Project\" again.",
+    reScaffold: "Run \"Start A New Project\" again.",
     doProvision: "Run \"Provision Resource\" before this command.",
     doLogin: "Login to Azure first.",
     reProvision: "Run \"Provision Resource\" again.",
@@ -23,6 +23,7 @@ const tips = {
     checkNetwork: "Check your network connection.",
     checkFsPermissions: "Check if you have Read/Write permissions to your file system.",
     checkStoragePermissions: "Check if you have full permissions to the Storage Account.",
+    restoreEnvironment: "Restore the env.default.json file if you modified it.",
 };
 
 export class FrontendPluginError extends Error {
@@ -55,7 +56,7 @@ export class FrontendPluginError extends Error {
 
 export class NotScaffoldError extends FrontendPluginError {
     constructor() {
-        super(ErrorType.User, "NotScaffoldError", "Scaffold has not done successfully.", [tips.doScaffold]);
+        super(ErrorType.User, "NotScaffoldError", "Scaffold has not done successfully.", [tips.reScaffold]);
     }
 }
 
@@ -205,6 +206,12 @@ export class NpmInstallError extends FrontendPluginError {
             tips.doBuild,
             tips.checkNetwork,
         ]);
+    }
+}
+
+export class InvalidTabScopeError extends FrontendPluginError {
+    constructor() {
+        super(ErrorType.User, "InvalidTabScopeError", "The Tab scope is invalid.", [tips.restoreEnvironment, tips.reScaffold]);
     }
 }
 

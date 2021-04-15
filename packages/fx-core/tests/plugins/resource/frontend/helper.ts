@@ -7,7 +7,7 @@ import { v4 as uuid } from "uuid";
 
 import { AxiosResponse } from "axios";
 import { AzureStorageClient } from "../../../../src/plugins/resource/frontend/clients";
-import { DependentPluginInfo } from "../../../../src/plugins/resource/frontend/constants";
+import { DependentPluginInfo, QuestionKey, TabScope } from "../../../../src/plugins/resource/frontend/constants";
 import { FrontendConfig } from "../../../../src/plugins/resource/frontend/configs";
 import { FrontendPlugin } from "../../../../src/plugins/resource/frontend";
 import { Manifest } from "../../../../src/plugins/resource/frontend/ops/scaffold";
@@ -28,6 +28,7 @@ export class TestHelper {
         faker.internet.password(),
     );
     static fakeSubscriptionId: string = faker.random.uuid();
+    static tabScope: string[] = [TabScope.PersonalTab];
 
     static fakeAzureAccountProvider: AzureAccountProvider = {
         getAccountCredential: () => {
@@ -85,6 +86,7 @@ export class TestHelper {
                 [DependentPluginInfo.FunctionPluginName, functionConfig],
                 [DependentPluginInfo.RuntimePluginName, runtimeConfig],
             ]),
+            answers: new ConfigMap([[QuestionKey.TabScopes, TestHelper.tabScope]]),
             config: new ConfigMap(),
             app: {
                 name: {

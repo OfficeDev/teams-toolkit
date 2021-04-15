@@ -59,6 +59,7 @@ describe("frontendPlugin", () => {
             const result = await frontendPlugin.scaffold(pluginContext);
 
             chai.assert.isTrue(result.isOk());
+            chai.assert.equal(pluginContext.config.get(FrontendConfigInfo.TabScopes), TestHelper.tabScope);
         });
     });
 
@@ -151,6 +152,7 @@ describe("frontendPlugin", () => {
 
         beforeEach(async () => {
             pluginContext = TestHelper.getFakePluginContext();
+            pluginContext.config.set(FrontendConfigInfo.TabScopes, TestHelper.tabScope);
             frontendPlugin = await TestHelper.initializedFrontendPlugin(new FrontendPlugin(), pluginContext);
         });
 

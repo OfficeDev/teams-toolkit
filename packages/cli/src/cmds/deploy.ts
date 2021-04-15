@@ -46,7 +46,7 @@ export default class Deploy extends YargsCommand {
       if (result.isErr()) {
         return err(result.error);
       }
-      await validateAndUpdateAnswers(core, result.value!, answers);
+      await validateAndUpdateAnswers(result.value!, answers);
     }
 
     {

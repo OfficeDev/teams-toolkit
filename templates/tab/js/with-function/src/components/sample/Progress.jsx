@@ -4,7 +4,6 @@ import { AcceptIcon } from "@fluentui/react-northstar";
 import "./Progress.css";
 
 export function Progress({ children, selectedIndex }) {
-  console.log(children);
   return (
     <div className="progress-indicator">
       <div className="line"></div>

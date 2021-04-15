@@ -10,10 +10,10 @@ export async function forEachFileAndDir(root: string,
     await new Promise((resolve, reject) => {
         const stream: klaw.Walker = klaw(root, { filter: filter });
         stream.on("data", item => {
-            if (callback(item.path, item.stats)) {
-                stream.emit("close");
-            }
-        })
+                if (callback(item.path, item.stats)) {
+                    stream.emit("close");
+                }
+            })
             .on("end", () => resolve({}))
             .on("error", err => reject(err))
             .on("close", () => resolve({}));

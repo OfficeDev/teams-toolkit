@@ -8,6 +8,7 @@ import * as fs from "fs-extra";
 
 import { DeployMgr } from "../../../../../src/plugins/resource/bot/deployMgr";
 import * as utils from "../../../../../src/plugins/resource/bot/utils/common";
+import { genTomorrow } from "./utils";
 
 describe("Deploy Manager", () => {
     describe("Test updateLastDeployTime", () => {
@@ -55,7 +56,7 @@ describe("Deploy Manager", () => {
             await deployMgr.init();
 
             await fs.writeFile(path.join(testDir, "index.js"), "anything");
-            await deployMgr.updateLastDeployTime(utils.genTomorrow());
+            await deployMgr.updateLastDeployTime(genTomorrow());
 
             // Act
             const needsRedeploy = await deployMgr.needsToRedeploy();

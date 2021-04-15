@@ -194,3 +194,7 @@ export class FolderNames {
     public static readonly NODE_MODULES = "node_modules";
     public static readonly KEYTAR = "keytar";
 }
+
+export class TypeNames {
+    public static readonly NUMBER = "number";
+}

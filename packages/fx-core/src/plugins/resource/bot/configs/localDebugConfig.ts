@@ -12,7 +12,11 @@ export class LocalDebugConfig {
     public localRedirectUri?: string;
 
     public botRegistrationCreated(): boolean {
-        return !(!this.localBotId || !this.localBotPassword || !this.localObjectId);
+        if (this.localBotId && this.localBotPassword && this.localObjectId && true) {
+            return true;
+        }
+
+        return false;
     }
 
     public async restoreConfigFromContext(context: PluginContext): Promise<void> {

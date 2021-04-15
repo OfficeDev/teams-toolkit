@@ -15,7 +15,11 @@ export class ScaffoldConfig {
     public workingDir?: string;
 
     public botRegistrationCreated(): boolean {
-        return !(!this.botId || !this.botPassword || !this.objectId);
+        if (this.botId && this.botPassword && this.objectId && true) {
+            return true;
+        }
+
+        return false;
     }
 
     public async restoreConfigFromContext(context: PluginContext): Promise<void> {

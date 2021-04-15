@@ -6,19 +6,19 @@
             "type": "multiSelect",
             "option": [
                 {
-                    "id": "sql",
-                    "label": "sql",
-                    "description": "Azure SQL Database"
-                },
-                {
                     "id": "function",
                     "label": "function",
                     "description": "New APIs from Azure Functions"
                 },
                 {
+                    "id": "sql",
+                    "label": "sql",
+                    "description": "Azure SQL Database"
+                },
+                {
                     "id": "apim",
                     "label": "apim",
-                    "description": "Publish APIs to API Management"
+                    "description": "New API in Azure API Management"
                 }
             ],
             "default": [

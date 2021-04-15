@@ -1,16 +1,14 @@
 {
   "name": "fx-api",
   "version": "1.0.4",
-  "description": "framework api",
+  "description": "teamsfx framework api",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "license": "MIT",
   "keywords": [
-    "TeamsFx",
+    "teamsfx",
     "api"
   ],
-  "author": "Microsoft Corporation",
-  "publisher": "Microsoft",
   "repository": {
     "type": "git",
     "url": "https://github.com/OfficeDev/TeamsFx"

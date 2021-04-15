@@ -15,7 +15,6 @@ const downloadIndicatorInterval = 1000; // same as vscode-dotnet-runtime
 let enabled = false;
 
 export function dotnetCheckerEnabled(): boolean {
-  // TODO: enable dotnet checker after all features are ready
   return enabled;
 }
 

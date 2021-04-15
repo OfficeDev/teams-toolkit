@@ -91,7 +91,6 @@ import {
     HostTypeOptionSPFx,
     FrontendHostTypeQuestion,
     TabOptionItem,
-    TabScopQuestion,
     MessageExtensionItem,
     AzureResourceApim,
     createCapabilityQuestion,
@@ -1242,7 +1241,7 @@ export class TeamsAppSolution implements Solution {
     async getQuestions(stage: Stage, ctx: SolutionContext): Promise<Result<QTreeNode | undefined, FxError>> {
         const node = new QTreeNode({ type: NodeType.group });
         if (stage === Stage.create) {
-            const capQuestion = createCapabilityQuestion(true);
+            const capQuestion = createCapabilityQuestion();
  
             const capNode = new QTreeNode(capQuestion); 
 
@@ -1850,9 +1849,17 @@ export class TeamsAppSolution implements Solution {
         if(!capabilitiesAnswer || capabilitiesAnswer.length === 0){
             return ok(Void);
         }
-
+        
         const settings = this.getAzureSolutionSettings(ctx);
- 
+
+        let reload = false;
+        for(const cap of capabilitiesAnswer!){
+            if(!settings.capabilities?.includes(cap)){
+                settings.capabilities?.push(cap);
+                reload = true;
+            }
+        }
+
         const addCapabilityNotification:string[]  = [];
 
         if(capabilitiesAnswer?.includes(TabOptionItem.id)){
@@ -1882,6 +1889,7 @@ export class TeamsAppSolution implements Solution {
 
         if(capabilitiesAnswer?.includes(BotOptionItem.id)){
             ctx.logProvider?.info(`start scaffolding Bot.....`);
+            ctx.answers.set(AzureSolutionQuestionNames.Capabilities, settings.capabilities);
             const scaffoldRes = await this.scaffoldOne(this.botPlugin, ctx);
             if (scaffoldRes.isErr()) {
                 ctx.logProvider?.info(`failed to scaffold Bot!`);
@@ -1893,13 +1901,6 @@ export class TeamsAppSolution implements Solution {
 
         if(addCapabilityNotification.length > 0){
             // finally add capabilities array and reload plugins
-            let reload = false;
-            for(const cap of capabilitiesAnswer!){
-                if(!settings.capabilities?.includes(cap)){
-                    settings.capabilities?.push(cap);
-                    reload = true;
-                }
-            }
             if(reload){
                 this.reloadPlugins(ctx);
                 ctx.logProvider?.info(`start scaffolding Local Debug Configs.....`);

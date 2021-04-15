@@ -28,7 +28,6 @@ import {
     OptionItem,
     MsgLevel,
     ConfigFolderName,
-    Platform,
     AzureSolutionSettings
 } from "fx-api";
 import { askSubscription, fillInCommonQuestions } from "./commonQuestions";
@@ -1509,7 +1508,10 @@ export class TeamsAppSolution implements Solution {
         // This config value is set by aadPlugin.setApplicationInContext. so aadPlugin.setApplicationInContext needs to run first.
         const webApplicationInfoResource = config.get(this.aadPlugin.name)?.getString(localDebug ? LOCAL_WEB_APPLICATION_INFO_SOURCE : WEB_APPLICATION_INFO_SOURCE);
         if (!webApplicationInfoResource) {
-            return err(returnSystemError(new Error("Failed to get webApplicationInfoResource"), "Solution", SolutionError.GetLocalDebugConfigError));
+            return err(returnSystemError(
+                new Error("Failed to get webApplicationInfoResource"), 
+                "Solution", 
+                localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError));
         }
 
         if (!aadId) {
@@ -1553,14 +1555,16 @@ export class TeamsAppSolution implements Solution {
         }
 
         // STATIC_TABS and CONFIGURABLE_TABS are only available after postProvision.
-        const staticTabs = config.get(this.fehostPlugin.name)?.getString(STATIC_TABS);
-        const configurableTabs = config.get(this.fehostPlugin.name)?.getString(CONFIGURABLE_TABS);
-        if (!staticTabs || !configurableTabs || 
-                (staticTabs === "[]" && configurableTabs === "[]")) {
-            return err(returnSystemError(
-                new Error(`Invalid frontend config: ${STATIC_TABS}: ${staticTabs} ${CONFIGURABLE_TABS}: ${configurableTabs}`),
-                "Solution", 
-                localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError));
+        const staticTabs = config.get(this.fehostPlugin.name)?.getString(STATIC_TABS) ?? "[]";
+        const configurableTabs = config.get(this.fehostPlugin.name)?.getString(CONFIGURABLE_TABS) ?? "[]";
+        if (tabEndpoint) {
+            if (!staticTabs || !configurableTabs || 
+                    (staticTabs === "[]" && configurableTabs === "[]")) {
+                return err(returnSystemError(
+                    new Error(`Invalid frontend config: ${STATIC_TABS}: ${staticTabs} ${CONFIGURABLE_TABS}: ${configurableTabs}`),
+                    "Solution", 
+                    localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError));
+            }
         }
         
         return ok({tabEndpoint, tabDomain, aadId, botDomain, bots, composeExtensions, webApplicationInfoResource, staticTabs, configurableTabs});

@@ -5,7 +5,7 @@ import * as path from "path";
 import { Logger } from "../logger";
 import { DepsCheckerError } from "./errors";
 import { dotnetChecker, DotnetChecker } from "./dotnetChecker";
-import { ConfigMap, PluginContext, returnUserError } from "fx-api";
+import { ConfigMap, returnUserError } from "fx-api";
 import { Messages, dotnetHelpLink } from "./common";
 
 export { cpUtils } from "./cpUtils";
@@ -15,9 +15,7 @@ const downloadIndicatorInterval = 1000; // same as vscode-dotnet-runtime
 let enabled = false;
 
 export function dotnetCheckerEnabled(): boolean {
-  // TODO: enable dotnet checker after all features are ready
-  // return enabled;
-  return false;
+  return enabled;
 }
 
 export async function runWithProgressIndicator(

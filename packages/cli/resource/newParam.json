@@ -45,11 +45,6 @@
                                         "id": "Bot",
                                         "label": "Bot",
                                         "description": "Bots allow you to interact with and obtain information from a software or website in a text/search/conversational manner."
-                                    },
-                                    {
-                                        "id": "MessageExtension",
-                                        "label": "MessageExtension",
-                                        "description": "Messaging extensions allow users to interact with your web service through buttons and forms in the Microsoft Teams client."
                                     }
                                 ],
                                 "default": [
@@ -62,17 +57,6 @@
                                         "type": "group"
                                     },
                                     "children": [
-                                        {
-                                            "data": {
-                                                "name": "tab-scopes",
-                                                "title": "Tab scopes",
-                                                "type": "singleSelect",
-                                                "option": [
-                                                    "personal"
-                                                ],
-                                                "default": "personal"
-                                            }
-                                        },
                                         {
                                             "data": {
                                                 "name": "host-type",

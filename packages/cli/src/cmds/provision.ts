@@ -50,11 +50,11 @@ export default class Provision extends YargsCommand {
 
     const core = result.value;
     {
-      const result = await core.getQuestions!(Stage.provision, Platform.CLI);
+      const result = await core.getQuestions!(Stage.provision, Platform.VSCode);
       if (result.isErr()) {
         return err(result.error);
       }
-      await validateAndUpdateAnswers(core, result.value!, answers);
+      await validateAndUpdateAnswers(result.value!, answers);
     }
 
     {

@@ -1,7 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { EnvironmentUtils } from "../utils/environment-utils";
-import { EnvironmentVariables } from "../constants";
+import { EnvironmentVariables, FrontendConfigInfo } from "../constants";
+import { PluginContext } from "fx-api";
+import { ManifestVariables, TabScopeManifest } from "../resources/tabScope";
+import { QuestionKey } from "../resources/questions";
 
 export interface FunctionEnvironment {
     defaultName: string;
@@ -40,5 +43,12 @@ export class FrontendProvision {
         }
 
         await EnvironmentUtils.writeEnvironments(envFilePath, envs);
+    }
+
+    public static setTabScope(ctx: PluginContext, variables: ManifestVariables): void {
+        const tabScope = ctx.config.getString(QuestionKey.TabScope);
+        // Always overwrite these configs to support both local debug and remote debug
+        ctx.config.set(FrontendConfigInfo.ConfigurableTab, TabScopeManifest.getConfigurableTab(variables, tabScope));
+        ctx.config.set(FrontendConfigInfo.StaticTab, TabScopeManifest.getStaticTab(variables, tabScope));
     }
 }

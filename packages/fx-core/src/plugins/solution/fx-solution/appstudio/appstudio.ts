@@ -215,6 +215,8 @@ export namespace AppStudio {
         appId: string,
         domains: string[],
         webApplicationInfoResource: string,
+        staticTabs: string,
+        configurableTabs: string,
         tabEndpoint?: string,
         appName?: string,
         version?: string,
@@ -240,6 +242,14 @@ export namespace AppStudio {
 
         if (composeExtensions) {
             updatedManifest.composeExtensions = JSON.parse(composeExtensions) as IComposeExtension[];
+        }
+
+        if (staticTabs) {
+            updatedManifest.staticTabs = JSON.parse(staticTabs);
+        }
+
+        if (configurableTabs) {
+            updatedManifest.configurableTabs = JSON.parse(configurableTabs);
         }
 
         for (const domain of domains) {

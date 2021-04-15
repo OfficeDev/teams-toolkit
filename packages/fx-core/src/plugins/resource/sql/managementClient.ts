@@ -31,8 +31,8 @@ export class ManagementClient {
         try {
             await this.client!.servers.createOrUpdate(this.config.resourceGroup, this.config.sqlServer, model);
         } catch (error) {
-            this.ctx.logProvider?.error(ErrorMessage.SqlCreateError.message(this.config.sqlEndpoint) + `:${error.message}`);
-            throw SqlResultFactory.SystemError(ErrorMessage.SqlCreateError.name, ErrorMessage.SqlCreateError.message(this.config.sqlEndpoint), error);
+            this.ctx.logProvider?.error(ErrorMessage.SqlCreateError.message(this.config.sqlEndpoint, error.message));
+            throw SqlResultFactory.SystemError(ErrorMessage.SqlCreateError.name, ErrorMessage.SqlCreateError.message(this.config.sqlEndpoint, ErrorMessage.GetDetail), error);
         }
     }
 
@@ -47,8 +47,8 @@ export class ManagementClient {
                 return true;
             }
         } catch (error) {
-            this.ctx.logProvider?.error(ErrorMessage.SqlCheckError.message(this.config.sqlEndpoint) + `:${error.message}`);
-            throw SqlResultFactory.SystemError(ErrorMessage.SqlCheckError.name, ErrorMessage.SqlCheckError.message(this.config.sqlEndpoint), error);
+            this.ctx.logProvider?.error(ErrorMessage.SqlCheckError.message(this.config.sqlEndpoint, error.message));
+            throw SqlResultFactory.SystemError(ErrorMessage.SqlCheckError.name, ErrorMessage.SqlCheckError.message(this.config.sqlEndpoint, ErrorMessage.GetDetail), error);
         }
     }
 
@@ -61,8 +61,8 @@ export class ManagementClient {
                 return false;
             }
         } catch (error) {
-            this.ctx.logProvider?.error(ErrorMessage.SqlCheckAdminError.message(this.config.identity) + `:${error.message}`);
-            throw SqlResultFactory.SystemError(ErrorMessage.SqlCheckAdminError.name, ErrorMessage.SqlCheckAdminError.message(this.config.identity), error);
+            this.ctx.logProvider?.error(ErrorMessage.SqlCheckAdminError.message(this.config.identity, error.message));
+            throw SqlResultFactory.SystemError(ErrorMessage.SqlCheckAdminError.name, ErrorMessage.SqlCheckAdminError.message(this.config.identity, ErrorMessage.GetDetail), error);
         }
     }
 
@@ -75,8 +75,8 @@ export class ManagementClient {
             // when the request returned, the instance of database may not be ready. Let's wait a moment
             await this.delay(10);
         } catch (error) {
-            this.ctx.logProvider?.error(ErrorMessage.DatabaseCreateError.message(this.config.databaseName) + `:${error.message}`);
-            throw SqlResultFactory.SystemError(ErrorMessage.DatabaseCreateError.name, ErrorMessage.DatabaseCreateError.message(this.config.databaseName), error);
+            this.ctx.logProvider?.error(ErrorMessage.DatabaseCreateError.message(this.config.databaseName, error.message));
+            throw SqlResultFactory.SystemError(ErrorMessage.DatabaseCreateError.name, ErrorMessage.DatabaseCreateError.message(this.config.databaseName, ErrorMessage.GetDetail), error);
         }
     }
 
@@ -89,8 +89,8 @@ export class ManagementClient {
                 return false;
             }
         } catch (error) {
-            this.ctx.logProvider?.error(ErrorMessage.SqlCheckDBError.message(this.config.databaseName) + `:${error.message}`);
-            throw SqlResultFactory.SystemError(ErrorMessage.SqlCheckDBError.name, ErrorMessage.SqlCheckDBError.message(this.config.databaseName), error);
+            this.ctx.logProvider?.error(ErrorMessage.SqlCheckDBError.message(this.config.databaseName, error.message));
+            throw SqlResultFactory.SystemError(ErrorMessage.SqlCheckDBError.name, ErrorMessage.SqlCheckDBError.message(this.config.databaseName, ErrorMessage.GetDetail), error);
         }
     }
 
@@ -106,8 +106,8 @@ export class ManagementClient {
         try {
             await this.client!.serverAzureADAdministrators.createOrUpdate(this.config.resourceGroup, this.config.sqlServer, model);
         } catch (error) {
-            this.ctx.logProvider?.error(ErrorMessage.SqlAddAdminError.message(this.config.aadAdmin) + `:${error.message}`);
-            throw SqlResultFactory.SystemError(ErrorMessage.SqlAddAdminError.name, ErrorMessage.SqlAddAdminError.message(this.config.aadAdmin), error);
+            this.ctx.logProvider?.error(ErrorMessage.SqlAddAdminError.message(this.config.aadAdmin, error.message));
+            throw SqlResultFactory.SystemError(ErrorMessage.SqlAddAdminError.name, ErrorMessage.SqlAddAdminError.message(this.config.aadAdmin, ErrorMessage.GetDetail), error);
         }
     }
 
@@ -119,8 +119,8 @@ export class ManagementClient {
         try {
             await this.client!.firewallRules.createOrUpdate(this.config.resourceGroup, this.config.sqlServer, Constants.firewall.azureRule, model);
         } catch (error) {
-            this.ctx.logProvider?.error(ErrorMessage.SqlAzureFirwallError.message(this.config.sqlEndpoint) + `:${error.message}`);
-            throw SqlResultFactory.SystemError(ErrorMessage.SqlAzureFirwallError.name, ErrorMessage.SqlAzureFirwallError.message(this.config.sqlEndpoint), error);
+            this.ctx.logProvider?.error(ErrorMessage.SqlAzureFirwallError.message(this.config.sqlEndpoint, error.message));
+            throw SqlResultFactory.SystemError(ErrorMessage.SqlAzureFirwallError.name, ErrorMessage.SqlAzureFirwallError.message(this.config.sqlEndpoint, ErrorMessage.GetDetail), error);
         }
     }
 
@@ -136,8 +136,8 @@ export class ManagementClient {
         try {
             await this.client!.firewallRules.createOrUpdate(this.config.resourceGroup, this.config.sqlServer, Constants.firewall.localRule, model);
         } catch (error) {
-            this.ctx.logProvider?.error(ErrorMessage.SqlLocalFirwallError.message(this.config.sqlEndpoint) + `:${error.message}`);
-            throw SqlResultFactory.SystemError(ErrorMessage.SqlLocalFirwallError.name, ErrorMessage.SqlLocalFirwallError.message(this.config.sqlEndpoint), error);
+            this.ctx.logProvider?.error(ErrorMessage.SqlLocalFirwallError.message(this.config.sqlEndpoint, error.message));
+            throw SqlResultFactory.SystemError(ErrorMessage.SqlLocalFirwallError.name, ErrorMessage.SqlLocalFirwallError.message(this.config.sqlEndpoint, ErrorMessage.GetDetail), error);
         }
     }
 
@@ -145,8 +145,8 @@ export class ManagementClient {
         try {
             await this.client!.firewallRules.deleteMethod(this.config.resourceGroup, this.config.sqlServer, Constants.firewall.localRule);
         } catch (error) {
-            this.ctx.logProvider?.error(ErrorMessage.SqlDeleteLocalFirwallError.message(this.config.sqlEndpoint) + `:${error.message}`);
-            throw SqlResultFactory.SystemError(ErrorMessage.SqlDeleteLocalFirwallError.name, ErrorMessage.SqlDeleteLocalFirwallError.message(this.config.sqlEndpoint), error);
+            this.ctx.logProvider?.error(ErrorMessage.SqlDeleteLocalFirwallError.message(this.config.sqlEndpoint, error.message));
+            throw SqlResultFactory.SystemError(ErrorMessage.SqlDeleteLocalFirwallError.name, ErrorMessage.SqlDeleteLocalFirwallError.message(this.config.sqlEndpoint, ErrorMessage.GetDetail), error);
         }
     }
 

@@ -30,7 +30,8 @@ export enum AzureSolutionQuestionNames {
     PluginSelectionDeploy = "deploy-plugin",
     AddResources = "add-azure-resources",
     AppName = "app-name",
-    AskSub = "ask-subscription"
+    AskSub = "ask-subscription",
+    ProgrammingLanguage = "programming-language",
 }
 
 export const HostTypeOptionAzure: OptionItem = {
@@ -63,24 +64,16 @@ export const AzureResourceApim: OptionItem = {
     description: "New API in Azure API Management",
 };
  
-export function createCapabilityQuestion(featureFlag: boolean): MultiSelectQuestion {
+export function createCapabilityQuestion(): MultiSelectQuestion {
     return {
         name: AzureSolutionQuestionNames.Capabilities,
         title: "Add capabilities",
         prompt: "Choose the capabilities for your project setup",
         type: NodeType.multiSelect,
-        option: featureFlag ? [TabOptionItem, BotOptionItem, MessageExtensionItem] : [TabOptionItem],
+        option: [TabOptionItem, BotOptionItem],
         default: [TabOptionItem.id]
     };
 }
-
-export const TabScopQuestion: SingleSelectQuestion = {
-    name: AzureSolutionQuestionNames.TabScopes,
-    title: "Tab scopes",
-    type: NodeType.singleSelect,
-    option: ["personal"],
-    default: "personal",
-};
 
 export const FrontendHostTypeQuestion: SingleSelectQuestion = {
     name: AzureSolutionQuestionNames.HostType,
@@ -113,12 +106,15 @@ export const AzureResourcesQuestion: MultiSelectQuestion = {
 //     default: [],
 // };
 
-export function createAddAzureResourceQuestion(alreadyHaveFunction: boolean): MultiSelectQuestion {
+export function createAddAzureResourceQuestion(alreadyHaveFunction: boolean, alreadhHaveSQL: boolean, alreadyHaveAPIM: boolean): MultiSelectQuestion {
+    const options:OptionItem[] = [AzureResourceFunction];
+    if(!alreadhHaveSQL) options.push(AzureResourceSQL);
+    if(!alreadyHaveAPIM) options.push(AzureResourceApim);
     return {
         name: AzureSolutionQuestionNames.AddResources,
         title: "Select Azure resources to add",
         type: NodeType.multiSelect,
-        option: [AzureResourceSQL, AzureResourceFunction, AzureResourceApim],
+        option: options,
         default: [],
         onDidChangeSelection:async function(selectedItems: OptionItem[]) : Promise<string[]>{
             const hasSQL = selectedItems.some(i=>i.id === AzureResourceSQL.id);
@@ -130,6 +126,19 @@ export function createAddAzureResourceQuestion(alreadyHaveFunction: boolean): Mu
             }
             return ids;
         }
+    };
+}
+
+export function createAddCapabilityQuestion(alreadyHaveTab: boolean, alreadyHaveBot: boolean): MultiSelectQuestion {
+    const options:OptionItem[] = [];
+    if(!alreadyHaveTab) options.push(TabOptionItem);
+    if(!alreadyHaveBot) options.push(BotOptionItem);
+    return {
+        name: AzureSolutionQuestionNames.Capabilities,
+        title: "Select Capabilities to add",
+        type: NodeType.multiSelect,
+        option: options,
+        default: []
     };
 }
 
@@ -147,4 +156,12 @@ export const AskSubscriptionQuestion: FuncQuestion = {
     type: NodeType.func,
     namespace: "fx-solution-azure",
     method: "askSubscription"
+};
+
+export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
+    name: AzureSolutionQuestionNames.ProgrammingLanguage,
+    title: "Please select programming language for your project",
+    type: NodeType.singleSelect,
+    option: ["javascript"],
+    default: "javascript"
 };

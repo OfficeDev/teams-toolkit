@@ -12,8 +12,10 @@ import { AzureAccount } from "./azure-account.api";
 import { LoginFailureError } from "./codeFlowLogin";
 import * as vscode from "vscode";
 import * as identity from "@azure/identity";
+import { signedIn, signedOut } from "./common/constant";
+import { login, LoginStatus } from "./common/login";
 
-export class AzureAccountManager implements AzureAccountProvider {
+export class AzureAccountManager extends login implements AzureAccountProvider {
   private static instance: AzureAccountManager;
   private static subscriptionId: string | undefined;
   private static tenantId: string | undefined;
@@ -24,7 +26,9 @@ export class AzureAccountManager implements AzureAccountProvider {
     accountInfo?: Record<string, unknown>
   ) => Promise<void>;
 
-  private constructor() {}
+  private constructor() {
+    super();
+  }
 
   /**
    * Gets instance
@@ -108,6 +112,7 @@ export class AzureAccountManager implements AzureAccountProvider {
       const accountJson = await this.getJsonObject();
       await AzureAccountManager.statusChange("SignedIn", accessToken?.accessToken, accountJson);
     }
+    await this.notifyStatus();
   }
 
   private isUserLogin(): boolean {
@@ -175,7 +180,7 @@ export class AzureAccountManager implements AzureAccountProvider {
   }
 
   private async doesUserConfirmLogin(): Promise<boolean> {
-    const warningMsg = "Please sign into your Azure account";
+    const warningMsg = "The Teams Toolkit requires an Azure account and subscription to deploy Azure resources for your application.";
     const confirm = "Confirm";
     const userSelected: string | undefined = await vscode.window.showWarningMessage(
       warningMsg,
@@ -209,6 +214,7 @@ export class AzureAccountManager implements AzureAccountProvider {
     if (AzureAccountManager.statusChange !== undefined) {
       await AzureAccountManager.statusChange("SignedOut", undefined, undefined);
     }
+    await this.notifyStatus();
     AzureAccountManager.tenantId = undefined;
     AzureAccountManager.subscriptionId = undefined;
     return new Promise((resolve) => {
@@ -274,6 +280,17 @@ export class AzureAccountManager implements AzureAccountProvider {
       }
     }
     return false;
+  }
+
+  async getStatus(): Promise<LoginStatus> {
+    if (this.isUserLogin()) {
+      const credential = await this.doGetAccountCredentialAsync();
+      const token = await credential?.getToken();
+      const accountJson = await this.getJsonObject();
+      return Promise.resolve({ status: signedIn, token: token?.accessToken, accountInfo: accountJson });
+    } else {
+      return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });
+    }
   }
 }
 

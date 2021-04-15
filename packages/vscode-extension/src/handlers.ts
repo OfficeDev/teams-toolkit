@@ -55,10 +55,11 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import * as vscode from "vscode";
 import { VsCodeUI, VS_CODE_UI } from "./qm/vsc_ui";
-import { DepsChecker, DepsCheckerError } from "./debug/depsChecker/checker";
+import { DepsChecker } from "./debug/depsChecker/checker";
 import { FuncToolChecker } from "./debug/depsChecker/funcToolChecker";
 import { DotnetChecker, dotnetChecker } from "./debug/depsChecker/dotnetChecker";
 import { PanelType } from "./controls/PanelType";
+import { NodeChecker } from "./debug/depsChecker/nodeChecker";
 
 export let core: CoreProxy;
 const runningTasks = new Set<string>(); // to control state of task execution
@@ -137,8 +138,7 @@ export async function activate(): Promise<Result<null, FxError>> {
 
     {
       const globalConfig = new ConfigMap();
-      globalConfig.set("featureFlag", isFeatureFlag());
-      globalConfig.set("function-dotnet-checker-enabled", dotnetChecker.isEnabled());
+      globalConfig.set("function-dotnet-checker-enabled", await dotnetChecker.isEnabled());
       const result = await core.init(globalConfig);
       if (result.isErr()) {
         showError(result.error);
@@ -187,6 +187,7 @@ export async function updateProjectHandler(): Promise<Result<null, FxError>> {
   return await runCommand(Stage.update);
 }
 
+
 export async function provisionHandler(): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ProvisionStart, {
     [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
@@ -208,7 +209,7 @@ export async function publishHandler(): Promise<Result<null, FxError>> {
   return await runCommand(Stage.publish);
 }
 
-const coreExeceutor: RemoteFuncExecutor = async function(
+const coreExeceutor: RemoteFuncExecutor = async function (
   func: Func,
   answers: Inputs | ConfigMap
 ): Promise<Result<unknown, FxError>> {
@@ -245,6 +246,7 @@ export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
 
     const answers = new ConfigMap();
     answers.set("stage", stage);
+    answers.set("platform", Platform.VSCode);
 
     // 4. getQuestions
     const qres = await core.getQuestions(stage, Platform.VSCode);
@@ -252,14 +254,14 @@ export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
       throw qres.error;
     }
 
-    answers.set("vscenv", detectVsCodeEnv());
-    VsCodeLogInstance.info(`VS Code Environment: ${detectVsCodeEnv()}`);
+    const vscenv = detectVsCodeEnv();
+    answers.set("vscenv", vscenv);
+    VsCodeLogInstance.info(`VS Code Environment: ${vscenv}`);
 
     // 5. run question model
     const node = qres.value;
     if (node) {
       VsCodeLogInstance.info(`Question tree:${JSON.stringify(node, null, 4)}`);
-      answers.set("substage", "askQuestions");
       const res: InputResult = await traverse(node, answers, VS_CODE_UI, coreExeceutor);
       VsCodeLogInstance.info(`User input:${JSON.stringify(res, null, 4)}`);
       if (res.type === InputResultType.error) {
@@ -270,7 +272,6 @@ export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
     }
 
     // 6. run task
-    answers.set("substage", "runTask");
     if (stage === Stage.create) result = await core.create(answers);
     else if (stage === Stage.update) result = await core.update(answers);
     else if (stage === Stage.provision) result = await core.provision(answers);
@@ -344,7 +345,8 @@ async function runUserTask(func: Func): Promise<Result<null, FxError>> {
 
     const answers = new ConfigMap();
     answers.set("task", eventName);
-
+    answers.set("platform", Platform.VSCode);
+    
     // 4. getQuestions
     const qres = await core.getQuestionsForUserTask(func, Platform.VSCode);
     if (qres.isErr()) {
@@ -451,11 +453,23 @@ export async function updateAADHandler(): Promise<Result<null, FxError>> {
   return await runUserTask(func);
 }
 
+
+export async function addCapabilityHandler(): Promise<Result<null, FxError>> {
+  // ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddCapStart, {
+  //   [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
+  // });
+  const func: Func = {
+    namespace: "fx-solution-azure",
+    method: "addCapability"
+  };
+  return await runUserTask(func);
+}
+
 /**
  * check & install required dependencies during local debug.
  */
 export async function validateDependenciesHandler(): Promise<void> {
-  const depsChecker = new DepsChecker([new FuncToolChecker(), new DotnetChecker()]);
+  const depsChecker = new DepsChecker([new NodeChecker(), new FuncToolChecker(), new DotnetChecker()]);
   const shouldContinue = await depsChecker.resolve();
   if (!shouldContinue) {
     await debug.stopDebugging();
@@ -526,13 +540,15 @@ export async function devProgramHandler(): Promise<boolean> {
 }
 
 export async function openWelcomeHandler() {
-  const welcomePanel = window.createWebviewPanel("react", "Teams Toolkit", ViewColumn.One, {
-    enableScripts: true,
-    retainContextWhenHidden: true
-  });
-  welcomePanel.webview.html = getHtmlForWebview();
-
-  //WebviewPanel.createOrShow(ext.context.extensionPath, PanelType.QuickStart);
+  if (isFeatureFlag()) {
+    WebviewPanel.createOrShow(ext.context.extensionPath, PanelType.QuickStart);
+  } else {
+    const welcomePanel = window.createWebviewPanel("react", "Teams Toolkit", ViewColumn.One, {
+      enableScripts: true,
+      retainContextWhenHidden: true
+    });
+    welcomePanel.webview.html = getHtmlForWebview();
+  }
 }
 
 export async function openSamplesHandler() {

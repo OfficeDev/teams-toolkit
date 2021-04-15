@@ -33,6 +33,7 @@ export function getISOExpirationFromJWT(token: string): string {
   if (obj && obj.exp) {
     return new Date(obj.exp * 1000).toISOString();
   }
+  internalLogger.warn("Cannot read expiration info from token");
   return "";
 }
 

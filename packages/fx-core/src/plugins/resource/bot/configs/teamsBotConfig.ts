@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ConfigValue, PluginContext } from "fx-api";
+import { ConfigValue, PluginContext, AzureSolutionSettings } from "fx-api";
 
 import { LocalDebugConfig } from "./localDebugConfig";
 import { ProvisionConfig } from "./provisionConfig";
@@ -52,7 +52,7 @@ export class TeamsBotConfig {
             this.applicationIdUris = applicationIdUrisValue as string;
         }
 
-        const capabilities = context.answers?.getStringArray(QuestionNames.CAPABILITIES);
+        const capabilities = (context.projectSettings?.solutionSettings as AzureSolutionSettings).capabilities;
 
         if (capabilities?.includes(PluginActRoles.Bot) && !this.actRoles.includes(PluginActRoles.Bot)) {
             this.actRoles.push(PluginActRoles.Bot);

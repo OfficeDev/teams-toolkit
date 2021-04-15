@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
-/* eslint-disable @typescript-eslint/ban-types */
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
@@ -8,15 +5,18 @@
 
 import { TokenCredential } from "@azure/core-auth";
 import { TokenCredentialsBase, DeviceTokenCredentials } from "@azure/ms-rest-nodeauth";
-import { AzureAccountProvider, UserError } from "fx-api";
-import { ExtensionErrors } from "../error";
+import { AzureAccountProvider, ConfigFolderName, err, FxError, ok, Result } from "fx-api";
 import { CodeFlowLogin, LoginFailureError, ConvertTokenToJson } from "./codeFlowLogin";
-import * as vscode from "vscode";
-import * as identity from "@azure/identity";
 import { MemoryCache } from "./memoryCache";
-import VsCodeLogInstance from "./log";
+import CLILogProvider from "./log";
 import { getBeforeCacheAccess, getAfterCacheAccess } from "./cacheAccess";
+import { SubscriptionClient } from "@azure/arm-subscriptions";
 import { LogLevel } from "@azure/msal-node";
+import { NotFoundSubscriptionId, NotSupportedProjectType } from "../error";
+import * as fs from "fs-extra";
+import * as path from "path";
+import { signedIn, signedOut } from "./common/constant";
+import { login, LoginStatus } from "./common/login";
 
 const env = {
   name: "AzureCloud",
@@ -40,7 +40,7 @@ const env = {
 };
 
 const accountName = "azure";
-const scopes = ["https://management.azure.com/user_impersonation"];
+const scopes = ["https://management.core.windows.net/user_impersonation"];
 const SERVER_PORT = 0;
 
 const beforeCacheAccess = getBeforeCacheAccess(accountName);
@@ -58,12 +58,11 @@ const config = {
   },
   system: {
     loggerOptions: {
-      // @ts-ignore
-      loggerCallback(loglevel, message, containsPii) {
-        VsCodeLogInstance.info(message);
+      loggerCallback(loglevel: any, message: any, containsPii: any) {
+        CLILogProvider.log(4 - loglevel, message);
       },
       piiLoggingEnabled: false,
-      logLevel: LogLevel.Error
+      logLevel: LogLevel.Verbose
     }
   },
   cache: {
@@ -71,10 +70,11 @@ const config = {
   }
 };
 
-//@ts-ignore
+// eslint-disable-next-line
+// @ts-ignore
 const memory = new MemoryCache();
 
-export class AzureAccountManager implements AzureAccountProvider {
+export class AzureAccountManager extends login implements AzureAccountProvider {
   private static instance: AzureAccountManager;
   private static codeFlowInstance: CodeFlowLogin;
   private static domain: string | undefined;
@@ -87,6 +87,7 @@ export class AzureAccountManager implements AzureAccountProvider {
   ) => Promise<void>;
 
   private constructor() {
+    super();
     AzureAccountManager.codeFlowInstance = new CodeFlowLogin(
       scopes,
       config,
@@ -144,6 +145,11 @@ export class AzureAccountManager implements AzureAccountProvider {
    */
   async getAccountCredentialAsync(showDialog = true): Promise<TokenCredentialsBase | undefined> {
     if (AzureAccountManager.codeFlowInstance.account) {
+      const loginToken = await AzureAccountManager.codeFlowInstance.getToken();
+      const tokenJson = await this.getJsonObject();
+      this.setMemoryCache(loginToken, tokenJson);
+    }
+    if (AzureAccountManager.codeFlowInstance.account) {
       return new Promise(async (resolve) => {
         const tokenJson = await this.getJsonObject();
         const credential = new DeviceTokenCredentials(
@@ -179,22 +185,16 @@ export class AzureAccountManager implements AzureAccountProvider {
       const accountJson = await this.getJsonObject();
       await AzureAccountManager.statusChange("SignedIn", accessToken?.accessToken, accountJson);
     }
+    await this.notifyStatus();
   }
 
   private async login(showDialog: boolean): Promise<void> {
-    if (showDialog) {
-      const userConfirmation: boolean = await this.doesUserConfirmLogin();
-      if (!userConfirmation) {
-        // throw user cancel error
-        throw new UserError(ExtensionErrors.UserCancel, "User Cancel", "Login");
-      }
-    }
     const accessToken = await AzureAccountManager.codeFlowInstance.getToken();
     const tokenJson = await this.getJsonObject();
     this.setMemoryCache(accessToken, tokenJson);
   }
 
-  private setMemoryCache(accessToken: string | undefined, tokenJson: object | undefined) {
+  private setMemoryCache(accessToken: string | undefined, tokenJson: any) {
     if (accessToken) {
       AzureAccountManager.domain = (tokenJson as any).tid;
       AzureAccountManager.username = (tokenJson as any).upn;
@@ -214,7 +214,7 @@ export class AzureAccountManager implements AzureAccountProvider {
             _authority: env.activeDirectoryEndpointUrl + AzureAccountManager.domain
           }
         ],
-        function() {}
+        function () { const _ = 1; }
       );
     }
   }
@@ -239,20 +239,9 @@ export class AzureAccountManager implements AzureAccountProvider {
     return Promise.resolve(undefined);
   }
 
-  private async doesUserConfirmLogin(): Promise<boolean> {
-    const warningMsg = "Please sign into your Azure account";
-    const confirm = "Confirm";
-    const userSelected: string | undefined = await vscode.window.showWarningMessage(
-      warningMsg,
-      { modal: true },
-      confirm
-    );
-    return Promise.resolve(userSelected === confirm);
-  }
-
   async getJsonObject(showDialog = true): Promise<Record<string, unknown> | undefined> {
-    if (AzureAccountManager.codeFlowInstance.account) {
-      const token = await AzureAccountManager.codeFlowInstance.getToken();
+    const token = await AzureAccountManager.codeFlowInstance.getToken();
+    if (token) {
       const array = token!.split(".");
       const buff = Buffer.from(array[1], "base64");
       return Promise.resolve(JSON.parse(buff.toString("utf-8")));
@@ -270,6 +259,7 @@ export class AzureAccountManager implements AzureAccountProvider {
       await AzureAccountManager.statusChange("SignedOut", undefined, undefined);
     }
     AzureAccountManager.codeFlowInstance.logout();
+    await this.notifyStatus();
     return Promise.resolve(true);
   }
 
@@ -289,6 +279,85 @@ export class AzureAccountManager implements AzureAccountProvider {
     }
     return Promise.resolve(true);
   }
+
+  async getSubscriptionList(azureToken: TokenCredentialsBase): Promise<AzureSubscription[]> {
+    const client = new SubscriptionClient(azureToken);
+    const subscriptions = await listAll(client.subscriptions, client.subscriptions.list());
+    const subs: Partial<AzureSubscription>[] = subscriptions.map((sub) => {
+      return { displayName: sub.displayName, subscriptionId: sub.subscriptionId };
+    });
+    const filteredSubs = subs.filter(
+      (sub) => sub.displayName !== undefined && sub.subscriptionId !== undefined
+    );
+    return filteredSubs.map((sub) => {
+      return { displayName: sub.displayName!, subscriptionId: sub.subscriptionId! };
+    });
+  }
+
+  public async setSubscriptionId(
+    subscriptionId: string,
+    root_folder = "./"
+  ): Promise<Result<null, FxError>> {
+    const token = await this.getAccountCredentialAsync();
+    const subscriptions = await this.getSubscriptionList(token!);
+
+    if (subscriptions.findIndex((sub) => sub.subscriptionId === subscriptionId) < 0) {
+      return err(NotFoundSubscriptionId());
+    }
+
+    /// TODO: use api's constant
+    const configPath = path.resolve(root_folder, `.${ConfigFolderName}/env.default.json`);
+    if (!(await fs.pathExists(configPath))) {
+      return err(NotSupportedProjectType());
+    }
+    const configJson = await fs.readJson(configPath);
+    configJson["solution"].subscriptionId = subscriptionId;
+    await fs.writeFile(configPath, JSON.stringify(configJson, null, 4));
+
+    return ok(null);
+  }
+
+  async getStatus(): Promise<LoginStatus> {
+    if (AzureAccountManager.codeFlowInstance.account) {
+      const credential = await this.doGetAccountCredentialAsync();
+      const token = await credential?.getToken();
+      const accountJson = await this.getJsonObject();
+      return Promise.resolve({ status: signedIn, token: token?.accessToken, accountInfo: accountJson });
+    } else {
+      return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });
+    }
+  }
 }
 
-export default AzureAccountManager.getInstance();
+interface PartialList<T> extends Array<T> {
+  nextLink?: string;
+}
+
+// Copied from https://github.com/microsoft/vscode-azure-account/blob/2b3c1a8e81e237580465cc9a1f4da5caa34644a6/sample/src/extension.ts
+// to list all subscriptions
+async function listAll<T>(
+  client: { listNext(nextPageLink: string): Promise<PartialList<T>> },
+  first: Promise<PartialList<T>>
+): Promise<T[]> {
+  const all: T[] = [];
+  for (
+    let list = await first;
+    list.length || list.nextLink;
+    list = list.nextLink ? await client.listNext(list.nextLink) : []
+  ) {
+    all.push(...list);
+  }
+  return all;
+}
+
+export type AzureSubscription = {
+  displayName: string;
+  subscriptionId: string;
+};
+
+import { MockAzureAccountProvider } from "fx-api";
+
+const ciEnabled = process.env.CI_ENABLED;
+const azureLogin = ciEnabled && ciEnabled === "true" ? MockAzureAccountProvider.getInstance() : AzureAccountManager.getInstance();
+
+export default azureLogin;

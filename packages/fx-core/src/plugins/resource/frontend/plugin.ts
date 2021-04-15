@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { PluginContext, ok } from "fx-api";
+import { PluginContext, ok, Stage, NodeType, QTreeNode, FxError, Result } from "fx-api";
 import path from "path";
 
 import { AzureStorageClient } from "./clients";
@@ -31,6 +31,8 @@ import { Messages } from "./resources/messages";
 import { FrontendScaffold as Scaffold, TemplateInfo } from "./ops/scaffold";
 import { TeamsFxResult } from "./error-factory";
 import { PreDeploySteps, ProgressHelper, ProvisionSteps, ScaffoldSteps } from "./utils/progress-helper";
+import { QuestionKey, TabScope, tabScopeQuestion } from "./resources/questions";
+import { ManifestVariables } from "./resources/tabScope";
 
 export class FrontendPluginImpl {
     config?: FrontendConfig;
@@ -43,6 +45,18 @@ export class FrontendPluginImpl {
         ctx.config.set(key, value);
     }
 
+    public getQuestions(stage: Stage, ctx: PluginContext): Result<QTreeNode | undefined, FxError> {
+        const res = new QTreeNode({
+            type: NodeType.group
+        });
+
+        if (stage === Stage.create) {
+            res.addChild(tabScopeQuestion);
+        }
+
+        return ok(res);
+    }
+
     public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
         Logger.info(Messages.StartScaffold(PluginInfo.DisplayName));
         const progressHandler = await ProgressHelper.startScaffoldProgressHandler(ctx);
@@ -53,6 +67,9 @@ export class FrontendPluginImpl {
         if (functionPlugin) {
             templateInfo.scenario = FrontendPluginInfo.TemplateWithFunctionScenario;
         }
+
+        const tabScope = ctx.answers?.getString(QuestionKey.TabScope) ?? TabScope.PersonalTab;
+        this.setConfigIfNotExists(ctx, QuestionKey.TabScope, tabScope);
 
         const zip = await runWithErrorCatchAndThrow(
             new GetTemplateError(),
@@ -152,6 +169,12 @@ export class FrontendPluginImpl {
             );
         }
 
+        const variables: ManifestVariables = {
+            baseUrl: ctx.config.get(FrontendConfigInfo.Endpoint) as string
+        };
+
+        FrontendProvision.setTabScope(ctx, variables);
+
         return ok(this.config);
     }
 
@@ -200,6 +223,21 @@ export class FrontendPluginImpl {
 
         await ProgressHelper.endDeployProgress();
         Logger.info(Messages.EndDeploy(PluginInfo.DisplayName));
+        return ok(this.config);
+    }
+
+    public async postDebug(ctx: PluginContext): Promise<TeamsFxResult> {
+        Logger.info(Messages.StartPostDebug(PluginInfo.DisplayName));
+
+        const localDebugPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.LocalDebugPluginName);
+        const localTabEndpoint = localDebugPlugin?.get(DependentPluginInfo.LocalTabEndpoint) as string;
+
+        const variables: ManifestVariables = {
+            baseUrl: localTabEndpoint
+        };
+
+        FrontendProvision.setTabScope(ctx, variables);
+
         return ok(this.config);
     }
 }

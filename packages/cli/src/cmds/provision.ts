@@ -9,7 +9,7 @@ import * as path from "path";
 import { FxError, err, ok, Result, ConfigMap, Stage, Platform } from "fx-api";
 
 import activate from "../activate";
-import AzureTokenProvider from "../commonlib/azureLogin1st";
+import AzureTokenProvider from "../commonlib/azureLogin";
 import * as constants from "../constants";
 import { validateAndUpdateAnswers } from "../question/question";
 import { getParamJson } from "../utils";
@@ -36,7 +36,7 @@ export default class Provision extends YargsCommand {
     const rootFolder = path.resolve(answers.getString("folder") || "./");
     answers.delete("folder");
 
-    if ("subscription" in args) {
+    if ("subscription" in args && !!args.subscription) {
       const result = await AzureTokenProvider.setSubscriptionId(args.subscription, rootFolder);
       if (result.isErr()) {
         return result;

@@ -112,24 +112,24 @@ export class Retry {
 
 export class ExceptionNames {
     // System Exceptions
-    public static readonly PRECONDITION_EXCEPTION = "PreconditionException";
-    public static readonly CLIENT_CREATION_EXCEPTION = "ClientCreationException";
-    public static readonly PROVISION_EXCEPTION = "ProvisionException";
-    public static readonly CONFIG_UPDATING_EXCEPTION = "ConfigUpdatingException";
-    public static readonly VALIDATION_EXCEPTION = "ValidationException";
-    public static readonly LIST_PUBLISHING_CREDENTIALS_EXCEPTION = "ListPublishingCredentialsException";
-    public static readonly ZIP_DEPLOY_EXCEPTION = "ZipDeployException";
-    public static readonly MSG_ENDPOINT_UPDATING_EXCEPTION = "MessageEndpointUpdatingException";
-    public static readonly DOWNLOAD_EXCEPTION = "DownloadException";
-    public static readonly MANIFEST_FORMAT_EXCEPTION = "TemplateManifestFormatException";
-    public static readonly TEMPLATE_PROJECT_NOT_FOUND_EXCEPTION = "TemplateProjectNotFoundException";
-    public static readonly LANGUAGE_STRATEGY_NOT_FOUND_EXCEPTION = "LanguageStrategyNotFoundException";
-    public static readonly COMMAND_EXECUTION_EXCEPTION = "CommandExecutionException";
-    public static readonly CALL_APPSTUDIO_API_EXCEPTION = "CallAppStudioAPIException";
+    public static readonly PRECONDITION_ERROR = "PreconditionError";
+    public static readonly CLIENT_CREATION_ERROR = "ClientCreationError";
+    public static readonly PROVISION_ERROR = "ProvisionError";
+    public static readonly CONFIG_UPDATING_ERROR = "ConfigUpdatingError";
+    public static readonly VALIDATION_ERROR = "ValidationError";
+    public static readonly LIST_PUBLISHING_CREDENTIALS_ERROR = "ListPublishingCredentialsError";
+    public static readonly ZIP_DEPLOY_ERROR = "ZipDeployError";
+    public static readonly MSG_ENDPOINT_UPDATING_ERROR = "MessageEndpointUpdatingError";
+    public static readonly DOWNLOAD_ERROR = "DownloadError";
+    public static readonly MANIFEST_FORMAT_ERROR = "TemplateManifestFormatError";
+    public static readonly TEMPLATE_PROJECT_NOT_FOUND_ERROR = "TemplateProjectNotFoundError";
+    public static readonly LANGUAGE_STRATEGY_NOT_FOUND_ERROR = "LanguageStrategyNotFoundError";
+    public static readonly COMMAND_EXECUTION_ERROR = "CommandExecutionError";
+    public static readonly CALL_APPSTUDIO_API_ERROR = "CallAppStudioAPIError";
 
     // User Exceptions
-    public static readonly USER_INPUTS_EXCEPTION = "UserInputsException";
-    public static readonly PACK_DIR_EXISTENCE_EXCEPTION = "PackDirectoryExistenceException";
+    public static readonly USER_INPUTS_ERROR = "UserInputsError";
+    public static readonly PACK_DIR_EXISTENCE_ERROR = "PackDirectoryExistenceError";
 }
 
 export class Links {

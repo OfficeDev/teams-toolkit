@@ -36,7 +36,7 @@ export class PreconditionException extends PluginException {
     constructor(message: string, suggestions: string[]) {
         super(
             ExceptionType.System,
-            ExceptionNames.PRECONDITION_EXCEPTION,
+            ExceptionNames.PRECONDITION_ERROR,
             message,
             suggestions
         );
@@ -47,7 +47,7 @@ export class DeployWithoutProvisionException extends PluginException {
     constructor() {
         super(
             ExceptionType.User,
-            ExceptionNames.PRECONDITION_EXCEPTION,
+            ExceptionNames.PRECONDITION_ERROR,
             Messages.DoSthBeforeSth("provision", "running deploy"),
             [
                 "Please run provision first",
@@ -74,7 +74,7 @@ export class UserInputsException extends PluginException {
     constructor(input: string, value: string) {
         super(
             ExceptionType.User,
-            ExceptionNames.USER_INPUTS_EXCEPTION,
+            ExceptionNames.USER_INPUTS_ERROR,
             Messages.SomethingIsInvalidWithValue(input, value),
             [
                 Messages.InputValidValueForSomething(input)
@@ -87,7 +87,7 @@ export class CallAppStudioException extends PluginException {
     constructor(apiName: string, innerError?: Error) {
         super(
             ExceptionType.System,
-            ExceptionNames.CALL_APPSTUDIO_API_EXCEPTION,
+            ExceptionNames.CALL_APPSTUDIO_API_ERROR,
             Messages.FailToCallAppStudio(apiName),
             [],
             innerError
@@ -99,7 +99,7 @@ export class ClientCreationException extends PluginException {
     constructor(clientName: string, innerError?: Error) {
         super(
             ExceptionType.System,
-            ExceptionNames.CLIENT_CREATION_EXCEPTION,
+            ExceptionNames.CLIENT_CREATION_ERROR,
             Messages.FailToCreateSomeClient(clientName),
             [],
             innerError
@@ -111,7 +111,7 @@ export class ProvisionException extends PluginException {
     constructor(resource: string, innerError?: Error) {
         super(
             ExceptionType.System,
-            ExceptionNames.PROVISION_EXCEPTION,
+            ExceptionNames.PROVISION_ERROR,
             Messages.FailToProvisionSomeResource(resource),
             [],
             innerError
@@ -123,7 +123,7 @@ export class ConfigUpdatingException extends PluginException {
     constructor(configName: string, innerError?: Error) {
         super(
             ExceptionType.System,
-            ExceptionNames.CONFIG_UPDATING_EXCEPTION,
+            ExceptionNames.CONFIG_UPDATING_ERROR,
             Messages.FailToUpdateConfigs(configName),
             [],
             innerError
@@ -135,7 +135,7 @@ export class ValidationException extends PluginException {
     constructor(name: string, value: string) {
         super(
             ExceptionType.System,
-            ExceptionNames.VALIDATION_EXCEPTION,
+            ExceptionNames.VALIDATION_ERROR,
             Messages.SomethingIsInvalidWithValue(name, value),
             []
         );
@@ -146,7 +146,7 @@ export class PackDirExistenceException extends PluginException {
     constructor() {
         super(
             ExceptionType.User,
-            ExceptionNames.PACK_DIR_EXISTENCE_EXCEPTION,
+            ExceptionNames.PACK_DIR_EXISTENCE_ERROR,
             Messages.SomethingIsNotExisting("pack directory"),
             []
         );
@@ -157,7 +157,7 @@ export class ListPublishingCredentialsException extends PluginException {
     constructor(innerError?: Error) {
         super(
             ExceptionType.System,
-            ExceptionNames.LIST_PUBLISHING_CREDENTIALS_EXCEPTION,
+            ExceptionNames.LIST_PUBLISHING_CREDENTIALS_ERROR,
             Messages.FailToListPublishingCredentials,
             [],
             innerError
@@ -169,7 +169,7 @@ export class ZipDeployException extends PluginException {
     constructor(innerError?: Error) {
         super(
             ExceptionType.System,
-            ExceptionNames.ZIP_DEPLOY_EXCEPTION,
+            ExceptionNames.ZIP_DEPLOY_ERROR,
             Messages.FailToDoZipDeploy,
             [
                 "Please retry the deploy command."
@@ -183,7 +183,7 @@ export class MessageEndpointUpdatingException extends PluginException {
     constructor(endpoint: string, innerError?: Error) {
         super(
             ExceptionType.System,
-            ExceptionNames.MSG_ENDPOINT_UPDATING_EXCEPTION,
+            ExceptionNames.MSG_ENDPOINT_UPDATING_ERROR,
             Messages.FailToUpdateMessageEndpoint(endpoint),
             [],
             innerError
@@ -195,7 +195,7 @@ export class DownloadException extends PluginException {
     constructor(url: string, innerError?: Error) {
         super(
             ExceptionType.System,
-            ExceptionNames.DOWNLOAD_EXCEPTION,
+            ExceptionNames.DOWNLOAD_ERROR,
             Messages.FailToDownloadFrom(url),
             [
                 "Please check your network status and retry."
@@ -209,7 +209,7 @@ export class TplManifestFormatException extends PluginException {
     constructor() {
         super(
             ExceptionType.System,
-            ExceptionNames.MANIFEST_FORMAT_EXCEPTION,
+            ExceptionNames.MANIFEST_FORMAT_ERROR,
             Messages.SomethingIsInWrongFormat("Templates\" manifest.json"),
             []
         );
@@ -220,7 +220,7 @@ export class TemplateProjectNotFoundException extends PluginException {
     constructor() {
         super(
             ExceptionType.System,
-            ExceptionNames.TEMPLATE_PROJECT_NOT_FOUND_EXCEPTION,
+            ExceptionNames.TEMPLATE_PROJECT_NOT_FOUND_ERROR,
             Messages.SomethingIsNotFound("Template project for scaffold"),
             []
         );
@@ -231,7 +231,7 @@ export class CommandExecutionException extends PluginException {
     constructor(cmd: string, message: string, innerError?: Error) {
         super(
             ExceptionType.System,
-            ExceptionNames.COMMAND_EXECUTION_EXCEPTION,
+            ExceptionNames.COMMAND_EXECUTION_ERROR,
             Messages.CommandFailWithMessage(cmd, message),
             [],
             innerError

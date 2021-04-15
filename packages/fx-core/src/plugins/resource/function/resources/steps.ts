@@ -22,6 +22,7 @@ export enum PostProvisionSteps {
 }
 
 export enum PreDeploySteps {
+    dotnetInstall = "Install .NET Core SDK if needed.",
     installTeamsfxBinding = "Install TeamsFX Binding.",
     npmPrepare = "Install/Build js files."
 }

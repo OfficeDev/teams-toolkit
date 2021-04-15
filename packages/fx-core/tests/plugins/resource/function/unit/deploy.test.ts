@@ -22,6 +22,7 @@ const context: any = {
             [DependentPluginInfo.subscriptionId, "ut"],
             [DependentPluginInfo.resourceNameSuffix, "ut"],
             [DependentPluginInfo.location, "ut"],
+            [DependentPluginInfo.programmingLanguage, "javascript"]
         ])],
         [DependentPluginInfo.aadPluginName, new Map<string, string>([
             [DependentPluginInfo.aadClientId, "ut"],
@@ -56,9 +57,6 @@ const context: any = {
         ["functionAppName", "ut"],
         ["scaffoldDone", "true"],
         ["provisionDone", "true"]
-    ]),
-    answers: new Map<string, string>([
-        [QuestionKey.programmingLanguage, FunctionLanguage.JavaScript],
     ]),
     azureAccountProvider: {
         getAccountCredential: () => ({

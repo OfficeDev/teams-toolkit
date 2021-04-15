@@ -58,7 +58,7 @@ export class SpfxPlugin {
 
 export class SolutionPlugin {
     public static readonly Name: string = "solution";
-    public static readonly SelectedPlugins: string = "selectedPlugins";
+    // public static readonly SelectedPlugins: string = "selectedPlugins";
     public static readonly LocalTeamsAppId: string = "localDebugTeamsAppId";
     public static readonly RemoteTeamsAppId: string = "remoteTeamsAppId";
     public static readonly TeamsAppTenantId: string = "teamsAppTenantId";

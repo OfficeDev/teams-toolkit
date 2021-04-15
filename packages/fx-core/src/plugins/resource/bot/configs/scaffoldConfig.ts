@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import * as utils from "../utils/common";
-import { CommonStrings, PluginBot } from "../resources/strings";
+import { CommonStrings, PluginBot, PluginSolution } from "../resources/strings";
 import { ConfigValue, PluginContext } from "fx-api";
 import { ProgrammingLanguage } from "../enums/programmingLanguage";
 import { WayToRegisterBot } from "../enums/wayToRegisterBot";
@@ -9,9 +9,18 @@ import { WayToRegisterBot } from "../enums/wayToRegisterBot";
 export class ScaffoldConfig {
     public botId?: string;
     public botPassword?: string;
+    public objectId?: string;
     public programmingLanguage?: ProgrammingLanguage;
     public wayToRegisterBot?: WayToRegisterBot;
     public workingDir?: string;
+
+    public botRegistrationCreated(): boolean {
+        if (this.botId && this.botPassword && this.objectId) {
+            return true;
+        }
+
+        return false;
+    }
 
     public async restoreConfigFromContext(context: PluginContext): Promise<void> {
 
@@ -27,8 +36,13 @@ export class ScaffoldConfig {
             this.botPassword = botPasswordValue as string;
         }
 
+        const objectIdValue: ConfigValue = context.config.get(PluginBot.OBJECT_ID);
+        if (objectIdValue) {
+            this.objectId = objectIdValue as string;
+        }
+
         let rawProgrammingLanguage = "";
-        const programmingLanguageValue: ConfigValue = context.config.get(PluginBot.PROGRAMMING_LANGUAGE);
+        const programmingLanguageValue: ConfigValue = context.configOfOtherPlugins.get(PluginSolution.PLUGIN_NAME)?.get(PluginBot.PROGRAMMING_LANGUAGE);
         if (programmingLanguageValue) {
             rawProgrammingLanguage = programmingLanguageValue as string;
         }
@@ -52,6 +66,7 @@ export class ScaffoldConfig {
     public saveConfigIntoContext(context: PluginContext): void {
         utils.checkAndSaveConfig(context, PluginBot.BOT_ID, this.botId);
         utils.checkAndSaveConfig(context, PluginBot.BOT_PASSWORD, this.botPassword);
+        utils.checkAndSaveConfig(context, PluginBot.OBJECT_ID, this.objectId);
         utils.checkAndSaveConfig(context, PluginBot.PROGRAMMING_LANGUAGE, this.programmingLanguage);
         utils.checkAndSaveConfig(context, PluginBot.WAY_TO_REGISTER_BOT, this.wayToRegisterBot);
     }

@@ -98,6 +98,7 @@ export class FrontendConfigInfo {
     static readonly Hostname = "domain";
     static readonly StaticTab = "staticTabs";
     static readonly ConfigurableTab = "configurableTabs";
+    static readonly TabScopes = "tabScopes";
 }
 
 export class TelemetryEvent {
@@ -112,7 +113,7 @@ export class TelemetryEvent {
     static readonly PreDeploy = "pre-deploy";
     static readonly Deploy = "deploy";
 
-    static readonly PostDebug = "post-debug";
+    static readonly postLocalDebug = "post-local-debug";
 }
 
 export class TelemetryKey {
@@ -127,4 +128,17 @@ export class TelemetryValue {
     static readonly Fail = "no";
     static readonly UserError = "user";
     static readonly SystemError = "system";
+}
+
+export class QuestionKey {
+    static readonly TabScopes = "tab-scopes";
+}
+
+export class QuestionDescription {
+    static readonly TabScopes = "Select tab scopes";
+}
+
+export class TabScope {
+    static readonly PersonalTab = "personal";
+    static readonly GroupTab = "group";
 }

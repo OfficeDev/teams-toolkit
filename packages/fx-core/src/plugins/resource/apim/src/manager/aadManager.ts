@@ -1,23 +1,22 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { LogProvider } from "fx-api";
+import { LogProvider, TelemetryReporter } from "fx-api";
 import { ApimPluginConfigKeys, TeamsToolkitComponent } from "../constants";
 import { AssertConfigNotEmpty, AssertNotEmpty, BuildError, InvalidAadObjectId } from "../error";
 import { IAadInfo, IRequiredResourceAccess } from "../model/aadResponse";
 import { IAadPluginConfig, IApimPluginConfig } from "../model/config";
 import { AadService } from "../service/aadService";
-import { Telemetry } from "../telemetry";
 import { Lazy } from "../util/lazy";
 import { NamingRules } from "../util/namingRules";
 
 export class AadManager {
     private readonly logger?: LogProvider;
-    private readonly telemetry: Telemetry;
+    private readonly telemetryReporter?: TelemetryReporter;
     private readonly lazyAadService: Lazy<AadService>;
 
-    constructor(lazyAadService: Lazy<AadService>, telemetry: Telemetry, logger?: LogProvider) {
+    constructor(lazyAadService: Lazy<AadService>, telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
         this.logger = logger;
-        this.telemetry = telemetry;
+        this.telemetryReporter = telemetryReporter;
         this.lazyAadService = lazyAadService;
     }
 

@@ -17,12 +17,11 @@ describe("Resource Name Factory", () => {
             sinon.stub(utils, "genUUID").returns("abcdefg");
 
             // Act
-
             const name = ResourceNameFactory.createCommonName(appName, limit);
 
             console.log(name);
             // Assert
-            const expectName = "9bpabcdefg";
+            const expectName = "9btabcdefg";
             chai.assert.lengthOf(name, limit);
             chai.assert.isTrue(name === expectName);
         });

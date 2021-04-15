@@ -4,9 +4,6 @@ import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import {
     Dialog,
     DialogMsg,
-    LogLevel,
-    LogProvider,
-    TelemetryReporter,
     AzureAccountProvider,
     GraphTokenProvider,
     PluginContext,
@@ -23,62 +20,10 @@ import { ConfidentialClientApplication } from "@azure/msal-node";
 import { AssertNotEmpty } from "../../../../../src/plugins/resource/apim/src/error";
 import {
     IAadPluginConfig,
-    IApimPluginConfig,
     IFunctionPluginConfig,
     ISolutionConfig,
 } from "../../../../../src/plugins/resource/apim/src/model/config";
 import { TeamsToolkitComponent } from "../../../../../src/plugins/resource/apim/src/constants";
-
-export class MockLogProvider implements LogProvider {
-    async log(logLevel: LogLevel, message: string): Promise<boolean> {
-        return true;
-    }
-    async trace(message: string): Promise<boolean> {
-        return true;
-    }
-    async debug(message: string): Promise<boolean> {
-        return true;
-    }
-    async info(message: string): Promise<boolean> {
-        return true;
-    }
-    async warning(message: string): Promise<boolean> {
-        return true;
-    }
-    async error(message: string): Promise<boolean> {
-        return true;
-    }
-    async fatal(message: string): Promise<boolean> {
-        return true;
-    }
-}
-
-export class MockTelemetryReporter implements TelemetryReporter {
-    sendTelemetryEvent(eventName: string, properties?: { [key: string]: string }, measurements?: { [key: string]: number }): void {
-        return;
-    }
-    sendTelemetryErrorEvent(
-        eventName: string,
-        properties?: { [key: string]: string },
-        measurements?: { [key: string]: number },
-        errorProps?: string[]
-    ): void {
-        return;
-    }
-    sendTelemetryException(error: Error, properties?: { [key: string]: string }, measurements?: { [key: string]: number }): void {
-        return;
-    }
-}
-
-export class MockDialog implements Dialog {
-    createProgressBar(title: string, totalSteps: number): IProgressHandler {
-        throw BuildError(NotImplemented);
-    }
-
-    communicate(msg: DialogMsg): Promise<DialogMsg> {
-        throw BuildError(NotImplemented);
-    }
-}
 
 export class MockAzureAccountProvider implements AzureAccountProvider {
     setStatusChangeCallback(
@@ -182,8 +127,6 @@ export class MockPluginContext implements PluginContext {
         accentColor: "",
     };
     root = "./test/scaffold";
-    logProvider: MockLogProvider;
-    telemetryReporter: MockTelemetryReporter;
     azureAccountProvider: MockAzureAccountProvider;
     graphTokenProvider: MockGraphTokenProvider;
     answers: ConfigMap | undefined;
@@ -207,8 +150,6 @@ export class MockPluginContext implements PluginContext {
         this.tenantId = tenantId;
         this.graphTokenProvider = new MockGraphTokenProvider(tenantId, clientId, clientSecret);
         this.azureAccountProvider = new MockAzureAccountProvider();
-        this.logProvider = new MockLogProvider();
-        this.telemetryReporter = new MockTelemetryReporter();
         this.config = new ConfigMap();
         this.configOfOtherPlugins = new Map<string, Map<string, string>>();
         this.configOfOtherPlugins.set(TeamsToolkitComponent.Solution, new Map(Object.entries(solutionConfig)));

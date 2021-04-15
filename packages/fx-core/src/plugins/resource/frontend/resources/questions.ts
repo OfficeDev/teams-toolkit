@@ -1,22 +1,36 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { NodeType, QTreeNode } from "fx-api";
+import { NodeType, QTreeNode, Question } from "fx-api";
+import { FrontendConfigInfo, QuestionDescription, QuestionKey, TabScope } from "../constants";
 
-export class QuestionKey {
-    static readonly TabLanguage = "programming-language";
-    static readonly TabScope = "TabScope";
+export interface FrontendQuestionData {
+    question: Question,
+    configKey: string,
 }
 
-export class TabScope {
-    static readonly PersonalTab = "personal tab";
-    static readonly GroupTab = "group tab";
+export class FrontendQuestion {
+    questionNode: QTreeNode;
+    configKey: string;
+    questionKey: string;
+    defaultValue: any;
+
+    constructor(data: FrontendQuestionData) {
+        this.questionNode = new QTreeNode(data.question);
+        this.configKey = data.configKey;
+        this.questionKey = data.question.name;
+        this.defaultValue = data.question.default;
+    }
 }
 
-export const tabScopeQuestion = new QTreeNode({
-    name: QuestionKey.TabScope,
-    description: "Select tab scope",
-    type: NodeType.singleSelect,
+export const tabScopeQuestion: Question = {
+    name: QuestionKey.TabScopes,
+    description: QuestionDescription.TabScopes,
+    type: NodeType.multiSelect,
     option: [TabScope.PersonalTab, TabScope.GroupTab],
-    default: TabScope.PersonalTab,
-});
+    default: [TabScope.PersonalTab],
+};
+
+export const FrontendQuestionsOnScaffold = [
+    new FrontendQuestion({ question: tabScopeQuestion, configKey: FrontendConfigInfo.TabScopes })
+];

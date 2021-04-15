@@ -95,7 +95,7 @@ export class WebviewPanel {
           case Commands.DisplayCommandPalette:
             break;
           case Commands.DisplayCliCommands:
-            const terminal = vscode.window.activeTerminal ? vscode.window.activeTerminal : vscode.window.createTerminal("Teams toolkit");
+            const terminal = vscode.window.activeTerminal ? vscode.window.activeTerminal : vscode.window.createTerminal("Teams toolkit", "C: \\Windows\\System32\\cmd.exe");
             terminal.show();
             terminal.sendText(msg.data);
             break;
@@ -119,7 +119,7 @@ export class WebviewPanel {
       ext.context.subscriptions
     );
 
-    AppStudioTokenInstance.setStatusChangeCallback((status, token, accountInfo) => {
+    AppStudioTokenInstance.setStatusChangeMap("quick-start-webview", (status, token, accountInfo) => {
       let email = undefined;
       if (status === "SignedIn") {
         email = (accountInfo as any).upn ? (accountInfo as any).upn : undefined;
@@ -135,7 +135,7 @@ export class WebviewPanel {
       return Promise.resolve();
     });
 
-    AzureAccountManager.setStatusChangeCallback((status, token, accountInfo) => {
+    AzureAccountManager.setStatusChangeMap("quick-start-webview", (status, token, accountInfo) => {
       let email = undefined;
       if (status === "SignedIn") {
         const token = AzureAccountManager.getAccountCredential();
@@ -249,13 +249,9 @@ export class WebviewPanel {
   public dispose() {
     WebviewPanel.currentPanel = undefined;
 
-    AppStudioTokenInstance.setStatusChangeCallback((status, token, accountInfo) => {
-      return Promise.resolve();
-    });
+    AppStudioTokenInstance.removeStatusChangeMap("quick-start-webview");
 
-    AzureAccountManager.setStatusChangeCallback((status, token, accountInfo) => {
-      return Promise.resolve();
-    });
+    AzureAccountManager.removeStatusChangeMap("quick-start-webview");
 
     // Clean up our resources
     this.panel.dispose();

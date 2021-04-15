@@ -6,6 +6,7 @@ const path = require("path");
 const HtmlWebPackPlugin = require("html-webpack-plugin");
 const webpack = require("webpack");
 const CopyPlugin = require('copy-webpack-plugin');
+const terserWebpackPlugin = require('terser-webpack-plugin');
 
 /**@type {import('webpack').Configuration}*/
 const config = {
@@ -66,10 +67,11 @@ const config = {
     ]
   },
   plugins: [
-    new HtmlWebPackPlugin({template: "./src/commonlib/codeFlowResult/index.html", filename: "../codeFlowResult/index.html" }),
+    new HtmlWebPackPlugin({template: "./src/commonlib/codeFlowResult/index.html", filename: "codeFlowResult/index.html" }),
     new webpack.ContextReplacementPlugin(/express[\/\\]lib/, false, /$^/),
     new webpack.ContextReplacementPlugin(/applicationinsights[\/\\]out[\/\\]AutoCollection/, false, /$^/),
     new webpack.ContextReplacementPlugin(/applicationinsights[\/\\]out[\/\\]Library/, false, /$^/),
+    new webpack.ContextReplacementPlugin(/ms-rest[\/\\]lib/, false, /$^/),
     new webpack.IgnorePlugin({ resourceRegExp: /@opentelemetry\/tracing/ }),
     new webpack.IgnorePlugin({ resourceRegExp: /applicationinsights-native-metrics/ }),
     new webpack.IgnorePlugin({ resourceRegExp: /original-fs/ }),
@@ -80,5 +82,15 @@ const config = {
       ],
     }),
   ],
+  optimization: {
+    minimizer: [
+        new terserWebpackPlugin({
+            terserOptions: {
+                mangle: false,
+                keep_fnames: true
+            }
+        })
+    ]
+}
 };
 module.exports = config;

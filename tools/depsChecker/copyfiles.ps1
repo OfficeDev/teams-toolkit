@@ -8,6 +8,7 @@ $FunctionRoot = "$ProjectRoot/packages/fx-core/src/plugins/resource/function"
 Write-Host $ProjectRoot
 
 Copy-Item "$CheckerRoot/checker.ts" -Destination "$FunctionRoot/utils/depsChecker"
+Copy-Item "$CheckerRoot/errors.ts" -Destination "$FunctionRoot/utils/depsChecker"
 Copy-Item "$CheckerRoot/common.ts" -Destination "$FunctionRoot/utils/depsChecker"
 Copy-Item "$CheckerRoot/dotnetChecker.ts" -Destination "$FunctionRoot/utils/depsChecker"
 

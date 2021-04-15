@@ -8,6 +8,7 @@ import { expect } from "chai";
 import { AadValidator, SimpleAuthValidator, deleteAadApp, MockAzureAccountProvider } from "fx-api";
 
 import { execAsync, getTestFolder, getUniqueAppName } from "./commonUtils";
+import AppStudioLogin from "../../src/commonlib/appStudioLogin";
 
 describe("Deploy to Azure", function() {
   const testFolder = getTestFolder();
@@ -16,13 +17,14 @@ describe("Deploy to Azure", function() {
 
   it(`Deploy react app without Azure Function and SQL - Test Plan ID 9454296`, async function() {
     // new a project
-    const newResult = await execAsync(`teamsfx new --app-name ${appName} --verbose false`, {
+    const newResult = await execAsync(`teamsfx new --app-name ${appName} --interactive false --verbose false`, {
       cwd: testFolder,
       env: process.env,
       timeout: 0
     });
     expect(newResult.stdout).to.eq("");
     expect(newResult.stderr).to.eq("");
+    console.log("new");
 
     {
       // set fx-resource-simple-auth.skuName as B1
@@ -42,17 +44,19 @@ describe("Deploy to Azure", function() {
     );
     expect(provisionResult.stdout).to.eq("");
     expect(provisionResult.stderr).to.eq("");
+    console.log("provision");
 
     // Get context
     const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
 
     // Validate Aad App
-    const aad = AadValidator.init(context);
+    const aad = AadValidator.init(context, false, AppStudioLogin);
     await AadValidator.validate(aad);
 
     // Validate Simple Auth
     const simpleAuth = SimpleAuthValidator.init(context);
     await SimpleAuthValidator.validate(simpleAuth, aad);
+    console.log("validate");
 
     // deploy
     const deployResult = await execAsync(
@@ -70,7 +74,7 @@ describe("Deploy to Azure", function() {
   this.afterAll(async () => {
     // delete aad app
     const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
-    await deleteAadApp(context);
+    await deleteAadApp(context, AppStudioLogin);
 
     // remove resouce
     await MockAzureAccountProvider.getInstance().deleteResourceGroup(`${appName}-rg`);

@@ -180,7 +180,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   private async doesUserConfirmLogin(): Promise<boolean> {
-    const warningMsg = "Please sign into your Azure account";
+    const warningMsg = "The Teams Toolkit requires an Azure account and subscription to deploy Azure resources for your application.";
     const confirm = "Confirm";
     const userSelected: string | undefined = await vscode.window.showWarningMessage(
       warningMsg,

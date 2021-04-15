@@ -126,13 +126,24 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
   }
 
   private async doesUserConfirmLogin(): Promise<boolean> {
-    const warningMsg = "Please sign into your M365 account";
+    const warningMsg = "The Teams Toolkit requires a Microsoft 365 account. This is the account that you use to log in to Microsoft Teams. The Teams Toolkit will publish your application using this Microsoft 365 account.\nYou can quickly get started by using a developer account from the M365 Developer Program.";
     const confirm = "Confirm";
-    const userSelected: string | undefined = await vscode.window.showWarningMessage(
+    const learnMore = "Learn More";
+    let userSelected: string | undefined = await vscode.window.showWarningMessage(
       warningMsg,
       { modal: true },
-      confirm
+      confirm,
+      learnMore
     );
+    do {
+      vscode.env.openExternal(vscode.Uri.parse("https://developer.microsoft.com/en-us/microsoft-365/dev-program"));
+      userSelected = await vscode.window.showWarningMessage(
+        warningMsg,
+        { modal: true },
+        confirm,
+        learnMore
+      );
+    } while (userSelected === learnMore);
     return Promise.resolve(userSelected === confirm);
   }
 

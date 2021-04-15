@@ -85,7 +85,7 @@ export class DependentPluginInfo {
     public static readonly subscriptionId: string = "subscriptionId";
     public static readonly resourceNameSuffix: string = "resourceNameSuffix";
     public static readonly location: string = "location";
-    public static readonly selectedPlugins: string = "selectedPlugins";
+    public static readonly programmingLanguage: string = "programmingLanguage";
 
     public static readonly aadPluginName: string = "fx-resource-aad-app-for-teams";
     public static readonly aadClientId: string = "clientId";
@@ -176,10 +176,9 @@ export class AzureInfo {
 export class Commands {
     public static readonly npmInstall: string = "npm install";
     public static readonly npmBuild: string = "npm run build";
-    public static readonly currentDotnetVersionQuery: string = "dotnet --version";
-    public static readonly functionExtensionsInstall = (csprojFilePath: string, outputFolderPath: string) =>
-        `dotnet build ${csprojFilePath}  -o "${outputFolderPath}"`;
-    public static readonly dotnetPublish: string = "dotnet publish --configuration Release";
+    public static readonly functionExtensionsInstall = (dotnetPath: string, csprojFilePath: string, outputFolderPath: string) =>
+        `${dotnetPath} build ${csprojFilePath}  -o "${outputFolderPath}"`;
+    public static readonly dotnetPublish = (dotnetPath: string) => `${dotnetPath} publish --configuration Release`;
 }
 
 export class QuestionValidationFunc {

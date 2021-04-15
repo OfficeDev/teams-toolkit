@@ -4,7 +4,6 @@ import { EnvironmentUtils } from "../utils/environment-utils";
 import { EnvironmentVariables, FrontendConfigInfo } from "../constants";
 import { PluginContext } from "fx-api";
 import { ManifestVariables, TabScopeManifest } from "../resources/tabScope";
-import { QuestionKey } from "../resources/questions";
 
 export interface FunctionEnvironment {
     defaultName: string;
@@ -46,9 +45,10 @@ export class FrontendProvision {
     }
 
     public static setTabScope(ctx: PluginContext, variables: ManifestVariables): void {
-        const tabScope = ctx.answers?.getString(QuestionKey.TabScope);
+        const tabScopes = ctx.config.getStringArray(FrontendConfigInfo.TabScopes);
+        const validatedTabScopes = TabScopeManifest.validateScopes(tabScopes);
         // Always overwrite these configs to support both local debug and remote debug
-        ctx.config.set(FrontendConfigInfo.ConfigurableTab, TabScopeManifest.getConfigurableTab(variables, tabScope));
-        ctx.config.set(FrontendConfigInfo.StaticTab, TabScopeManifest.getStaticTab(variables, tabScope));
+        ctx.config.set(FrontendConfigInfo.ConfigurableTab, TabScopeManifest.getConfigurableTab(variables, validatedTabScopes));
+        ctx.config.set(FrontendConfigInfo.StaticTab, TabScopeManifest.getStaticTab(variables, validatedTabScopes));
     }
 }

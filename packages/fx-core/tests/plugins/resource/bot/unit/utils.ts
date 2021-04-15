@@ -32,6 +32,14 @@ export function newPluginContext(): PluginContext {
         ]),
         config: new ConfigMap(),
         answers: new ConfigMap(),
+        projectSettings: {
+            appName: "My App",
+            solutionSettings: {
+                name: "AnyName",
+                version: "0.0.1",
+                capabilities: ["Bot"]
+            }
+        },
         app: {
             manifestVersion: "1.8",
             version: "1.0.0",
@@ -57,4 +65,8 @@ export function newPluginContext(): PluginContext {
             accentColor: "",
         },
     };
+}
+
+export function genTomorrow(): number {
+    return Date.now() + 24 * 60 * 60 * 1000;
 }

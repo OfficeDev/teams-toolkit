@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { WayToRegisterBot } from "./enums/wayToRegisterBot";
-import { OptionItem } from "fx-api";
+import { OptionItem, ConfigFolderName } from "fx-api";
 import { ProgrammingLanguage } from "./enums/programmingLanguage";
 
 export class RegularExprs {
@@ -187,7 +187,7 @@ export class DeployConfigs {
     public static readonly UN_PACK_DIRS = ["node_modules", "package-lock.json"];
     public static readonly DEPLOYMENT_FOLDER = ".deployment";
     public static readonly DEPLOYMENT_CONFIG_FILE = "bot.json";
-    public static readonly WALK_SKIP_PATHS = ["node_modules", ".fx", DeployConfigs.DEPLOYMENT_FOLDER, ".vscode"];
+    public static readonly WALK_SKIP_PATHS = ["node_modules", `.${ConfigFolderName}`, DeployConfigs.DEPLOYMENT_FOLDER, ".vscode"];
 }
 
 export class FolderNames {

@@ -31,7 +31,7 @@ export class DeployMgr {
             return;
         }
 
-        const botDeployJson = { time: Date.now() };
+        const botDeployJson = { time: 0 };
         try {
             await fs.writeJSON(configFile, botDeployJson);
         } catch (e) {

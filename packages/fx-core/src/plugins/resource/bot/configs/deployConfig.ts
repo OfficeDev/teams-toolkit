@@ -6,7 +6,8 @@ import { PluginBot } from "../resources/strings";
 import * as utils from "../utils/common";
 
 export class DeployConfig {
-    public unPackFlag = "true"; // ToDo: remove keytar module if keytar issue is resolved.
+    // TODO: (ruhe) remove keytar module if keytar issue is resolved
+    public unPackFlag = "true";
 
     public async restoreConfigFromContext(context: PluginContext): Promise<void> {
 

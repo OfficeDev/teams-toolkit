@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ok, Result, FxError, PluginContext } from "fx-api";
+import { ok, Result, FxError, PluginContext, LogProvider } from "fx-api";
 
 export type LifecyclesWithContext = [
     OmitThisParameter<(ctx: PluginContext) => Promise<Result<any, FxError>>> | undefined,
     PluginContext,
-    string,
+    string
 ];
 
 /**
@@ -13,24 +13,42 @@ export type LifecyclesWithContext = [
  *
  */
 export async function executeSequentially(
+    step:string,
     lifecycleAndContext: LifecyclesWithContext[],
 ): Promise<Result<any, FxError>> {
+    let logger:LogProvider|undefined;
+    const results:(Result<any, FxError>|undefined)[] = [];
     for (const pair of lifecycleAndContext) {
         const lifecycle = pair[0];
         const context = pair[1];
-        const pluginName = pair[2];
+        logger = context.logProvider;
         if (lifecycle) {
-            const taskname = lifecycle.name.replace("bound ", "");
-            context.logProvider?.info(`Execute sequentially ${pluginName}.${taskname}() -------- start!`);
             const result = await lifecycle(context);
+            results.push(result);
             if (result.isErr()) {
-                context.logProvider?.info(`Execute sequentially ${pluginName}.${taskname}() -------- failed!`);
-                return result;
+                break;
             }
-            context.logProvider?.info(`Execute sequentially ${pluginName}.${taskname}() -------- success!`);
+        }
+        else {
+            results.push(undefined);
         }
     }
-
+    if(logger) logger?.info(`${("Execute "+ step + "Task summpary").padEnd(64,"-")}`);
+    for (let i = 0 ; i < results.length; ++ i) {
+        const pair = lifecycleAndContext[i];
+        const lifecycle = pair[0];
+        const context = pair[1];
+        const pluginName = pair[2];
+        const result = results[i];
+        if(!result || !lifecycle) continue;
+        const taskname = lifecycle?.name.replace("bound ", "");
+        context.logProvider?.info(`${(pluginName + "." + taskname).padEnd(60,".")} ${(result.isOk()?"[ok]":"[failed]")}`);
+        if (result.isErr()) {
+            if(logger) logger?.info(`${"overall result".padEnd(60,".")}[failed]`);
+            return result;
+        }
+    }
+    if(logger) logger?.info(`${"overall result".padEnd(60,".")}[ok]`);
     return ok(undefined);
 }
 
@@ -41,18 +59,17 @@ export async function executeSequentially(
  * Currently, on success, return value is discarded by returning undefined on sucess.
  */
 export async function executeConcurrently(
+    step:string,
     lifecycleAndContext: LifecyclesWithContext[],
 ): Promise<Result<any, FxError>> {
+    let logger:LogProvider|undefined;
     const promises: Promise<Result<any, FxError>>[] = lifecycleAndContext.map(
         async (pair: LifecyclesWithContext): Promise<Result<any, FxError>> => {
             const lifecycle = pair[0];
             const context = pair[1];
-            const pluginName = pair[2];
+            logger = context.logProvider;
             if (lifecycle) {
-                const taskname = lifecycle.name.replace("bound ", "");
-                context.logProvider?.info(`Execute concurrently ${pluginName}.${taskname}() -------- start!`);
                 const res = lifecycle(context);
-                context.logProvider?.info(`Execute concurrently ${pluginName}.${taskname}() -------- finish!`);
                 return res;
             } else {
                 return ok(undefined);
@@ -61,12 +78,23 @@ export async function executeConcurrently(
     );
 
     const results = await Promise.all(promises);
-    for (const result of results) {
+    if(logger) logger?.info(`${("Execute "+ step + "Task summpary").padEnd(64,"-")}`);
+    let res:Result<any, FxError> = ok(undefined);
+    for (let i = 0 ; i < results.length; ++ i) {
+        const pair = lifecycleAndContext[i];
+        const lifecycle = pair[0];
+        const context = pair[1];
+        const pluginName = pair[2];
+        const result = results[i];
+        if(!result || !lifecycle) continue;
+        const taskname = lifecycle?.name.replace("bound ", "");
+        context.logProvider?.info(`${(pluginName + "." + taskname).padEnd(60,".")} ${(result.isOk()?"[ok]":"[failed]")}`);
         if (result.isErr()) {
-            return result;
+            res = result;
         }
     }
-    return ok(undefined);
+    if(logger) logger?.info(`${"overall result".padEnd(60,".")}${res.isOk()?"[ok]":"[failed]"}`);
+    return res;
 }
 
 /**
@@ -85,7 +113,7 @@ export async function executeLifecycles(
     onPostLifecycleFinished?: () => Promise<Result<any, FxError>>,
 ): Promise<Result<any, FxError>> {
     // Questions are asked sequentially during preLifecycles.
-    const preResult = await executeSequentially(preLifecycles);
+    const preResult = await executeSequentially("pre", preLifecycles);
     if (preResult.isErr()) {
         return preResult;
     }
@@ -96,7 +124,7 @@ export async function executeLifecycles(
         }
     }
 
-    const result = await executeConcurrently(lifecycles);
+    const result = await executeConcurrently("", lifecycles);
     if (result.isErr()) {
         return result;
     }
@@ -107,7 +135,7 @@ export async function executeLifecycles(
         }
     }
 
-    const postResult = await executeConcurrently(postLifecycles);
+    const postResult = await executeConcurrently("post", postLifecycles);
     if (postResult.isErr()) {
         return postResult;
     }

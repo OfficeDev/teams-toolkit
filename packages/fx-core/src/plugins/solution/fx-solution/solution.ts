@@ -1153,7 +1153,7 @@ export class TeamsAppSolution implements Solution {
 
             ctx.logProvider?.info(`[Solution] publish start!`);
 
-            const result = await executeConcurrently(publishWithCtx);
+            const result = await executeConcurrently("", publishWithCtx);
 
             if (result.isOk()) {
                 ctx.logProvider?.info(`[Teams Toolkit] publish success!`);
@@ -1430,7 +1430,7 @@ export class TeamsAppSolution implements Solution {
             return [plugin?.postLocalDebug?.bind(plugin), context, plugin.name];
         });
 
-        const localDebugResult = await executeConcurrently(localDebugWithCtx);
+        const localDebugResult = await executeConcurrently("", localDebugWithCtx);
         if (localDebugResult.isErr()) {
             return localDebugResult;
         }
@@ -1447,7 +1447,7 @@ export class TeamsAppSolution implements Solution {
             return result;
         }
         
-        const postLocalDebugResult = await executeConcurrently(postLocalDebugWithCtx);
+        const postLocalDebugResult = await executeConcurrently("post", postLocalDebugWithCtx);
         if (postLocalDebugResult.isErr()) {
             return postLocalDebugResult;
         }

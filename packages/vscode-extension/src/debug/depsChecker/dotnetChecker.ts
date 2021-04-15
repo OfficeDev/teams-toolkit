@@ -68,6 +68,7 @@ export class DotnetChecker implements IDepsChecker {
   }
 
   public async isInstalled(): Promise<boolean> {
+    const configPath = DotnetChecker.getDotnetConfigPath();
     logger.debug(`[start] read dotnet path from '${configPath}'`);
     const dotnetPath = await DotnetChecker.getDotnetExecPathFromConfig();
     logger.debug(`[end] read dotnet path from '${configPath}', dotnetPath = '${dotnetPath}'`);

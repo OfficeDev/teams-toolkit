@@ -30,27 +30,27 @@ export class CheckerLogger {
   }
 
   async trace(message: string): Promise<boolean> {
-    await this.writeLog(LogLevel.Fatal, message);
+    await this.writeLog(LogLevel.Trace, message);
     return true;
   }
 
   async debug(message: string): Promise<boolean> {
-    await this.writeLog(LogLevel.Fatal, message);
+    await this.writeLog(LogLevel.Debug, message);
     return true;
   }
 
   async info(message: string): Promise<boolean> {
-    await this.writeLog(LogLevel.Fatal, message);
+    await this.writeLog(LogLevel.Info, message);
     return await this.logger.info(message);
   }
 
   async warning(message: string): Promise<boolean> {
-    await this.writeLog(LogLevel.Fatal, message);
+    await this.writeLog(LogLevel.Warning, message);
     return await this.logger.warning(message);
   }
 
   async error(message: string): Promise<boolean> {
-    await this.writeLog(LogLevel.Fatal, message);
+    await this.writeLog(LogLevel.Error, message);
     return await this.logger.error(message);
   }
 
@@ -60,7 +60,7 @@ export class CheckerLogger {
   }
 
   private async writeLog(level: LogLevel, message: string): Promise<void> {
-    const line = `${level} ${new Date().toISOString()}: ${message}` + path.sep;
+    const line = `${LogLevel[level]} ${new Date().toISOString()}: ${message}` + path.sep;
 
     // make sure dir exists before append the file
     await mkdir(path.basename(CheckerLogger.loggerFilePath));

@@ -9,10 +9,7 @@
     "teamsfx",
     "api"
   ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/OfficeDev/TeamsFx"
-  },
+  "repository": "https://github.com/",
   "files": [
     "build/**/*"
   ],

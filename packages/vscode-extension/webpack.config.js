@@ -66,7 +66,7 @@ const config = {
     ]
   },
   plugins: [
-    new HtmlWebPackPlugin({template: "./src/commonlib/codeFlowResult/index.html", filename: "./codeFlowResult/index.html" }),
+    new HtmlWebPackPlugin({template: "./src/commonlib/codeFlowResult/index.html", filename: "codeFlowResult/index.html" }),
     new webpack.ContextReplacementPlugin(/express[\/\\]lib/, false, /$^/),
     new webpack.ContextReplacementPlugin(/applicationinsights[\/\\]out[\/\\]AutoCollection/, false, /$^/),
     new webpack.ContextReplacementPlugin(/applicationinsights[\/\\]out[\/\\]Library/, false, /$^/),

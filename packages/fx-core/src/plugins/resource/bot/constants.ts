@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { WayToRegisterBot } from "./enums/wayToRegisterBot";
-import { OptionItem } from "fx-api";
+import { OptionItem, ConfigFolderName } from "fx-api";
 import { ProgrammingLanguage } from "./enums/programmingLanguage";
 
 export class RegularExprs {
@@ -102,33 +102,34 @@ export class LifecycleFuncNames {
     public static readonly REUSE_EXISTING_BOT_REG = "reuseExistingBotRegistration";
     public static readonly CREATE_NEW_BOT_REG_AZURE = "createNewBotRegistrationOnAzure";
     public static readonly CREATE_NEW_BOT_REG_APPSTUDIO = "createNewBotRegistrationOnAppStudio";
+    public static readonly CHECK_AAD_APP = "checkAADApp";
 }
 
 export class Retry {
-    public static readonly GENERATE_CLIENT_SECRET_TIMES = 10;
-    public static readonly GENERATE_CLIENT_SECRET_GAP_MS = 5000;
-    public static readonly UPDATE_MESSAGE_ENDPOINT_TIMES = 10;
-    public static readonly UPDATE_MESSAGE_ENDPOINT_GAP_MS = 5000;
+    public static readonly RETRY_TIMES = 10;
+    public static readonly BACKOFF_TIME_MS = 5000;
 }
+
 export class ExceptionNames {
     // System Exceptions
-    public static readonly PRECONDITION_EXCEPTION = "Precondition Exception";
-    public static readonly CLIENT_CREATION_EXCEPTION = "Client Creation Exception";
-    public static readonly PROVISION_EXCEPTION = "Provision Exception";
-    public static readonly CONFIG_UPDATING_EXCEPTION = "Config Updating Exception";
-    public static readonly VALIDATION_EXCEPTION = "Validation Exception";
-    public static readonly LIST_PUBLISHING_CREDENTIALS_EXCEPTION = "List Publishing Credentials Exception";
-    public static readonly ZIP_DEPLOY_EXCEPTION = "Zip Deploy Exception";
-    public static readonly MSG_ENDPOINT_UPDATING_EXCEPTION = "Message Endpoint Updating Exception";
-    public static readonly DOWNLOAD_EXCEPTION = "Download Exception";
-    public static readonly MANIFEST_FORMAT_EXCEPTION = "Template Manifest Format Exception";
-    public static readonly TEMPLATE_PROJECT_NOT_FOUND_EXCEPTION = "Template Project Not Found Exception";
-    public static readonly LANGUAGE_STRATEGY_NOT_FOUND_EXCEPTION = "Language Strategy Not Found Exception";
-    public static readonly COMMAND_EXECUTION_EXCEPTION = "Command Execution Exception";
+    public static readonly PRECONDITION_ERROR = "PreconditionError";
+    public static readonly CLIENT_CREATION_ERROR = "ClientCreationError";
+    public static readonly PROVISION_ERROR = "ProvisionError";
+    public static readonly CONFIG_UPDATING_ERROR = "ConfigUpdatingError";
+    public static readonly VALIDATION_ERROR = "ValidationError";
+    public static readonly LIST_PUBLISHING_CREDENTIALS_ERROR = "ListPublishingCredentialsError";
+    public static readonly ZIP_DEPLOY_ERROR = "ZipDeployError";
+    public static readonly MSG_ENDPOINT_UPDATING_ERROR = "MessageEndpointUpdatingError";
+    public static readonly DOWNLOAD_ERROR = "DownloadError";
+    public static readonly MANIFEST_FORMAT_ERROR = "TemplateManifestFormatError";
+    public static readonly TEMPLATE_PROJECT_NOT_FOUND_ERROR = "TemplateProjectNotFoundError";
+    public static readonly LANGUAGE_STRATEGY_NOT_FOUND_ERROR = "LanguageStrategyNotFoundError";
+    public static readonly COMMAND_EXECUTION_ERROR = "CommandExecutionError";
+    public static readonly CALL_APPSTUDIO_API_ERROR = "CallAppStudioAPIError";
 
     // User Exceptions
-    public static readonly USER_INPUTS_EXCEPTION = "User Inputs Exception";
-    public static readonly PACK_DIR_EXISTENCE_EXCEPTION = "Pack Directory Existence Exception";
+    public static readonly USER_INPUTS_ERROR = "UserInputsError";
+    public static readonly PACK_DIR_EXISTENCE_ERROR = "PackDirectoryExistenceError";
 }
 
 export class Links {
@@ -137,7 +138,7 @@ export class Links {
 }
 
 export class Alias {
-    public static readonly TEAMS_BOT_PLUGIN = "BP";
+    public static readonly TEAMS_BOT_PLUGIN = "BT";
     public static readonly TEAMS_FX = "Teamsfx";
 }
 
@@ -170,6 +171,12 @@ export class AuthEnvNames {
     public static readonly M365_AUTHORITY_HOST = "M365_AUTHORITY_HOST";
     public static readonly INITIATE_LOGIN_ENDPOINT = "INITIATE_LOGIN_ENDPOINT";
     public static readonly M365_APPLICATION_ID_URI = "M365_APPLICATION_ID_URI";
+    public static readonly SQL_ENDPOINT = "SQL_ENDPOINT";
+    public static readonly SQL_DATABASE_NAME = "SQL_DATABASE_NAME";
+    public static readonly SQL_USER_NAME = "SQL_USER_NAME";
+    public static readonly SQL_PASSWORD = "SQL_PASSWORD";
+    public static readonly IDENTITY_ID = "IDENTITY_ID";
+    public static readonly API_ENDPOINT = "API_ENDPOINT";
 }
 
 export class AuthValues {
@@ -178,9 +185,16 @@ export class AuthValues {
 
 export class DeployConfigs {
     public static readonly UN_PACK_DIRS = ["node_modules", "package-lock.json"];
+    public static readonly DEPLOYMENT_FOLDER = ".deployment";
+    public static readonly DEPLOYMENT_CONFIG_FILE = "bot.json";
+    public static readonly WALK_SKIP_PATHS = ["node_modules", `.${ConfigFolderName}`, DeployConfigs.DEPLOYMENT_FOLDER, ".vscode"];
 }
 
 export class FolderNames {
     public static readonly NODE_MODULES = "node_modules";
     public static readonly KEYTAR = "keytar";
+}
+
+export class TypeNames {
+    public static readonly NUMBER = "number";
 }

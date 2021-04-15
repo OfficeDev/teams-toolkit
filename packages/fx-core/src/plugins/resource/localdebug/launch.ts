@@ -109,7 +109,7 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
                 },
                 {
                     name: "Start and Attach to Backend",
-                    type: "node",
+                    type: "pwa-node",
                     request: "attach",
                     port: 9229,
                     restart: true,
@@ -180,7 +180,7 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
             },
             {
                 name: "Start and Attach to Bot",
-                type: "node",
+                type: "pwa-node",
                 request: "attach",
                 port: 9239,
                 restart: true,
@@ -224,7 +224,7 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
             },
             {
                 name: "Start and Attach to Bot",
-                type: "node",
+                type: "pwa-node",
                 request: "attach",
                 port: 9239,
                 restart: true,
@@ -240,7 +240,7 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
             launchConfigurations.push(
                 {
                     name: "Start and Attach to Backend",
-                    type: "node",
+                    type: "pwa-node",
                     request: "attach",
                     port: 9229,
                     restart: true,

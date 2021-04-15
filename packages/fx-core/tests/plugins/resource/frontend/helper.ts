@@ -18,17 +18,20 @@ export class TestHelper {
     static location = "eastus2";
     static rootDir: string = faker.system.directoryPath();
     static storageSuffix: string = uuid().substr(0, 6);
+    static storageEndpoint: string = faker.internet.url();
     static functionDefaultEntry = "httpTrigger";
     static functionEndpoint: string = faker.internet.url();
     static runtimeEndpoint: string = faker.internet.url();
+    static localTabEndpoint: string = faker.internet.url();
     static startLoginPage = "auth-start.html";
     static fakeCredential: TokenCredentialsBase = new ApplicationTokenCredentials(
         faker.random.uuid(),
         faker.internet.url(),
         faker.internet.password(),
     );
-    static fakeSubscriptionId: string = faker.random.uuid();
+    static fakeSubscriptionId: string = faker.datatype.uuid();
     static tabScope: string[] = [TabScope.PersonalTab];
+    static fakeClientId: string = faker.datatype.uuid();
 
     static fakeAzureAccountProvider: AzureAccountProvider = {
         getAccountCredential: () => {
@@ -77,6 +80,12 @@ export class TestHelper {
         const runtimeConfig = new Map();
         runtimeConfig.set(DependentPluginInfo.RuntimeEndpoint, TestHelper.runtimeEndpoint);
         runtimeConfig.set(DependentPluginInfo.StartLoginPageURL, TestHelper.startLoginPage);
+
+        const aadConfig = new Map();
+        aadConfig.set(DependentPluginInfo.ClientID, TestHelper.fakeClientId);
+
+        const localDebugConfig = new Map();
+        localDebugConfig.set(DependentPluginInfo.LocalTabEndpoint, TestHelper.localTabEndpoint);
 
         const pluginContext = {
             azureAccountProvider: TestHelper.fakeAzureAccountProvider,

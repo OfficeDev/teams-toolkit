@@ -57,7 +57,7 @@ export class FrontendPlugin implements Plugin {
 
     public async postLocalDebug(ctx: PluginContext): Promise<TeamsFxResult> {
         Logger.setLogger(ctx.logProvider);
-        return this.runWithErrorHandling(ctx, TelemetryEvent.PostDebug, () => this.frontendPluginImpl.postDebug(ctx));
+        return this.runWithErrorHandling(ctx, TelemetryEvent.postLocalDebug, () => this.frontendPluginImpl.postLocalDebug(ctx));
     }
 
 

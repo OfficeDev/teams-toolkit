@@ -11,14 +11,12 @@ import { UncatchedError } from "../error";
  * to catch exceptions and return specific error.
  */
 export const recoverMW: Middleware = async (
-    ctx: HookContext,
-    next: NextFunction,
+  ctx: HookContext,
+  next: NextFunction
 ) => {
-    console.log("in recoverMW");
-    console.log(ctx);
-    try {
-        await next();
-    } catch (e) {
-        ctx.result = err(UncatchedError());
-    }
+  try {
+    await next();
+  } catch (e) {
+    ctx.result = err(UncatchedError());
+  }
 };

@@ -11,23 +11,23 @@ import { CoreContext } from "../context";
  * This middleware will help to load solutions dynamicly in the future.
  */
 export const solutionMW: Middleware = async (
-    ctx: HookContext,
-    next: NextFunction,
+  ctx: HookContext,
+  next: NextFunction
 ) => {
-    console.log("loadsolutions");
-    for (const i in ctx.arguments) {
-        if (ctx.arguments[i] instanceof CoreContext) {
-            const coreCtx = ctx.arguments[i] as CoreContext;
+  console.log("loadsolutions");
+  for (const i in ctx.arguments) {
+    if (ctx.arguments[i] instanceof CoreContext) {
+      const coreCtx = ctx.arguments[i] as CoreContext;
 
-            const loadResult = await Loader.loadSolutions();
-            if (loadResult.isErr()) {
-                ctx.result = err(loadResult.error);
-                return;
-            }
-            coreCtx.globalSolutions = loadResult.value;
+      const loadResult = await Loader.loadSolutions();
+      if (loadResult.isErr()) {
+        ctx.result = err(loadResult.error);
+        return;
+      }
+      coreCtx.globalSolutions = loadResult.value;
 
-            ctx.arguments[i] = coreCtx;
-        }
+      ctx.arguments[i] = coreCtx;
     }
-    await next();
+  }
+  await next();
 };

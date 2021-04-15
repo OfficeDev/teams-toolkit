@@ -39,7 +39,7 @@ export const versionControlMW: Middleware = async (
     return;
   }
 
-  const p = process.cwd();
+  const p = coreCtx.root;
   // some validation
   const checklist: string[] = [
     p,

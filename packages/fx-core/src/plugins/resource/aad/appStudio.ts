@@ -104,7 +104,7 @@ export namespace AppStudio {
     }
 
     throw new Error(
-      `${AppStudioErrorMessage.CreateFailed}: ${AppStudioErrorMessage.EmptyResponse}.`
+      `${AppStudioErrorMessage.GetFailed}: ${AppStudioErrorMessage.EmptyResponse}.`
     );
   }
 

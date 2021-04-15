@@ -41,12 +41,32 @@ export class PluginSolution {
     public static readonly M365_TENANT_ID = "teamsAppTenantId";
 }
 
+export class PluginSql {
+    public static readonly PLUGIN_NAME = "fx-resource-azure-sql";
+    public static readonly SQL_ENDPOINT = "sqlEndpoint";
+    public static readonly SQL_DATABASE_NAME = "databaseName";
+    public static readonly SQL_USERNAME = "sqlUsername";
+    public static readonly SQL_PASSWORD = "sqlPassword";
+}
+
+export class PluginIdentity {
+    public static readonly PLUGIN_NAME = "fx-resource-identity";
+    public static readonly IDENTITY_ID = "identity";
+}
+
+export class PluginFunction {
+    public static readonly PLUGIN_NAME = "fx-resource-function";
+    public static readonly ENDPOINT = "functionEndpoint";
+}
+
 export class PluginBot {
     public static readonly PLUGIN_NAME = "fx-resource-bot";
     public static readonly BOT_ID = "botId";
     public static readonly BOT_PASSWORD = "botPassword";
+    public static readonly OBJECT_ID = "objectId";
     public static readonly LOCAL_BOT_ID = "localBotId";
     public static readonly LOCAL_BOT_PASSWORD = "localBotPassword";
+    public static readonly LOCAL_OBJECT_ID = "localObjectId";
     public static readonly PROGRAMMING_LANGUAGE = "programmingLanguage";
     public static readonly WAY_TO_REGISTER_BOT = "wayToRegisterBot";
     public static readonly SCAFFOLDED = "scaffolded";
@@ -93,7 +113,7 @@ export class ConfigNames {
 
     public static readonly AZURE_WEB_APP_AUTH_CONFIGS = "azure web app's auth configs";
     public static readonly MESSAGE_ENDPOINT = "message endpoint";
-    
+
 }
 
 export class Commands {

@@ -71,7 +71,7 @@ Please notice that these dependencies only need to be installed once.
 Click "Install" to install @InstallPackages.`
 };
 
-export const defaultHelpLink = "https://review.docs.microsoft.com/en-us/mods/?branch=main";
-export const functionCoreToolsHelpLink = "https://review.docs.microsoft.com/en-us/mods/?branch=main";
-export const dotnetHelpLink = "https://review.docs.microsoft.com/en-us/mods/?branch=main";
-export const nodeHelpLink = "https://review.docs.microsoft.com/en-us/mods/?branch=main";
+export const defaultHelpLink = "https://aka.ms/AAby4tx";
+export const functionCoreToolsHelpLink = "https://aka.ms/AAby4tx";
+export const dotnetHelpLink = "https://aka.ms/AAby4tx";
+export const nodeHelpLink = "https://aka.ms/AAby4tx";

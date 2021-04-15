@@ -265,15 +265,19 @@ class CoreImpl implements Core {
         }
         this.target.ctx.root = projFolder;
 
+        const loadRes = await Loader.loadSolutions(this.target.ctx);
+        if(loadRes.isErr()) {
+            return err(loadRes.error);
+        }
         const solutionName = answers?.getString(QuestionSelectSolution.name);
         this.ctx.logProvider?.info(`[Core] create - select solution`);
-        for (const s of this.globalSolutions.values()) {
+        for (const s of loadRes.value.values()) {
             if (s.name === solutionName) {
                 this.target.selectedSolution = s;
                 break;
             }
-        }
-
+        } 
+        
         if(!this.target.selectedSolution){
             return err(
                 new UserError(
@@ -298,7 +302,8 @@ class CoreImpl implements Core {
         await fs.ensureDir(`${targetFolder}/.${ConfigFolderName}`);
 
         this.ctx.logProvider?.info(`[Core] create - call solution.create()`);
-        const result = await this.target.selectedSolution!.create(this.target.solutionContext(answers));
+        const solutionContext = this.target.solutionContext(answers);
+        const result = await this.target.selectedSolution.create(solutionContext);
         if (result.isErr()) {
             this.ctx.logProvider?.info(`[Core] create - call solution.create() failed!`);
             return result;
@@ -314,7 +319,7 @@ class CoreImpl implements Core {
         this.ctx.logProvider?.info(`[Core] create - create basic folder with configs`);
 
         this.ctx.logProvider?.info(`[Core] scaffold start!`);
-        const scaffoldRes = await this.target.scaffold(answers);
+        const scaffoldRes = await this.target.selectedSolution.scaffold(solutionContext);
 
         if (scaffoldRes.isErr()) {
             this.ctx.logProvider?.info(`[Core] scaffold failed!`);

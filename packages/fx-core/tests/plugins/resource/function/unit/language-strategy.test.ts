@@ -10,9 +10,9 @@ import { LanguageStrategyFactory } from "../../../../../src/plugins/resource/fun
 
 describe(FunctionPluginInfo.pluginName, () => {
     describe("Function Language Strategy Test", () => {
-        it("Test get CSharp language strategy", async () => {
+        it("Test get TypeScript language strategy", async () => {
             // Arrange
-            const language = FunctionLanguage.CSharp;
+            const language = FunctionLanguage.TypeScript;
 
             // Act
             const res = LanguageStrategyFactory.getStrategy(language);

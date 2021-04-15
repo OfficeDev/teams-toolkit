@@ -11,7 +11,7 @@ import path from "path";
 import { TeamsBot } from "../../../../../src/plugins/resource/bot/index";
 import { TeamsBotImpl } from "../../../../../src/plugins/resource/bot/plugin";
 
-import { QuestionNames, ScaffoldPlaceholders } from "../../../../../src/plugins/resource/bot/constants";
+import { QuestionNames } from "../../../../../src/plugins/resource/bot/constants";
 import * as downloadByUrl from "../../../../../src/plugins/resource/bot/utils/downloadByUrl";
 import * as utils from "../../../../../src/plugins/resource/bot/utils/common";
 import { ProgrammingLanguage } from "../../../../../src/plugins/resource/bot/enums/programmingLanguage";

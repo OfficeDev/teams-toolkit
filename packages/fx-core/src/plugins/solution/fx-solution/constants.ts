@@ -31,13 +31,14 @@ export const PERMISSION_REQUEST = "permissionRequest";
  * Config key whose value is either javascript, typescript or csharp.
  */
 export const PROGRAMMING_LANGUAGE = "programmingLanguage";
+export const STATIC_TABS = "staticTabs";
+export const CONFIGURABLE_TABS = "configurableTabs";
 
 /**
  * Config keys that are useful for generating remote teams app manifest
  */
 export const FRONTEND_ENDPOINT = "endpoint";
 export const FRONTEND_DOMAIN = "domain";
-export const AAD_REMOTE_CLIENT_ID = "clientId";
 export const BOTS = "bots";
 export const COMPOSE_EXTENSIONS = "composeExtensions";
 
@@ -93,6 +94,8 @@ export enum SolutionError {
     RegisterTeamsAppAndAadError = "RegisterTeamsAppAndAadError",
     UpdateManifestError = "UpdateManifestError",
     GetLocalDebugConfigError = "GetLocalDebugConfigError",
+    GetRemoteConfigError = "GetLocalDebugConfigError",
+    UnsupportedPlatform = "UnsupportedPlatform",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";

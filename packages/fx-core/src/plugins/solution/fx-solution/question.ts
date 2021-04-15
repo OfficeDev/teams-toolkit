@@ -64,24 +64,16 @@ export const AzureResourceApim: OptionItem = {
     description: "New API in Azure API Management",
 };
  
-export function createCapabilityQuestion(featureFlag: boolean): MultiSelectQuestion {
+export function createCapabilityQuestion(): MultiSelectQuestion {
     return {
         name: AzureSolutionQuestionNames.Capabilities,
         title: "Add capabilities",
         prompt: "Choose the capabilities for your project setup",
         type: NodeType.multiSelect,
-        option: featureFlag ? [TabOptionItem, BotOptionItem, MessageExtensionItem] : [TabOptionItem],
+        option: [TabOptionItem, BotOptionItem],
         default: [TabOptionItem.id]
     };
 }
-
-export const TabScopQuestion: SingleSelectQuestion = {
-    name: AzureSolutionQuestionNames.TabScopes,
-    title: "Tab scopes",
-    type: NodeType.singleSelect,
-    option: ["personal"],
-    default: "personal",
-};
 
 export const FrontendHostTypeQuestion: SingleSelectQuestion = {
     name: AzureSolutionQuestionNames.HostType,

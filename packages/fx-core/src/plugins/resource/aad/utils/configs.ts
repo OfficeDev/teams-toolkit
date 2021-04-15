@@ -71,12 +71,16 @@ export class ProvisionConfig {
       );
     }
 
-    const objectId: ConfigValue = ctx.config.get(ConfigKeys.objectId);
+    const objectId: ConfigValue = ctx.config.get(
+      Utils.addLocalDebugPrefix(this.isLocalDebug, ConfigKeys.objectId),
+    );
     if (objectId) {
       this.objectId = objectId as string;
     }
 
-    const clientSecret: ConfigValue = ctx.config.get(ConfigKeys.clientSecret);
+    const clientSecret: ConfigValue = ctx.config.get(
+      Utils.addLocalDebugPrefix(this.isLocalDebug, ConfigKeys.clientSecret),
+    );
     if (clientSecret) {
       this.password = clientSecret as string;
     }

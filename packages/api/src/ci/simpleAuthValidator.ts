@@ -80,8 +80,7 @@ export class SimpleAuthValidator {
             if (!simpleAuthGetResponse || !simpleAuthGetResponse.data || !simpleAuthGetResponse.data.properties) {
                 return undefined;
             }
-    
-            console.log(JSON.stringify(simpleAuthGetResponse.data.properties));
+            
             return simpleAuthGetResponse.data.properties;
         } catch (error) {
             console.log(error);

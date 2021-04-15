@@ -32,7 +32,6 @@ export class AadValidator {
         console.log("Start to validate Azure AD app.");
 
         const groundTruth = await AadValidator.getAadApp(aadObject.objectId);
-        console.log(groundTruth);
         chai.assert.exists(groundTruth);
 
         chai.assert(aadObject.clientId, groundTruth?.appId);
@@ -40,6 +39,7 @@ export class AadValidator {
         chai.assert(aadObject.applicationIdUris, groundTruth?.identifierUris![0]);
 
         if (expectedPermission) {
+            console.log("Start to validate permission for Azure AD app.");
             chai.assert(expectedPermission, JSON.stringify(groundTruth?.requiredResourceAccess));
         }
 
@@ -68,7 +68,7 @@ export class AadValidator {
                     return <IAADDefinition>aadGetResponse.data;
                 }
             } catch (error) {
-                console.log(error);
+                console.log("Azure AD app get failed. Retry.");
             }
 
             await delay(10000);

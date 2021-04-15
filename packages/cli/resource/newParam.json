@@ -84,14 +84,16 @@
                                                     "children": [
                                                         {
                                                             "data": {
-                                                                "name": "TabScope",
-                                                                "description": "Select tab scope",
-                                                                "type": "singleSelect",
+                                                                "name": "tab-scopes",
+                                                                "description": "Select tab scopes",
+                                                                "type": "multiSelect",
                                                                 "option": [
-                                                                    "personal tab",
-                                                                    "group tab"
+                                                                    "personal",
+                                                                    "group"
                                                                 ],
-                                                                "default": "personal tab"
+                                                                "default": [
+                                                                    "personal"
+                                                                ]
                                                             }
                                                         }
                                                     ],

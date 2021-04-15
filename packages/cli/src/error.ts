@@ -4,7 +4,9 @@
 "use strict";
 
 import {
+  Question,
   IQuestion,
+  QTreeNode,
   returnSystemError,
   returnUserError,
   SystemError,
@@ -57,4 +59,20 @@ export function ReadFileError(e: Error): SystemError {
 
 export function UnknownError(e: Error): SystemError {
   return returnSystemError(e, constants.cliSource, "UnknownError");
+}
+
+export function QTNConditionNotSupport(node: QTreeNode): SystemError {
+  return returnSystemError(
+    new Error(`The condition of the question tree node is not supported. (${JSON.stringify(node.condition)})`),
+    constants.cliSource,
+    "QTNConditionNotSupport"
+  );
+}
+
+export function QTNQuestionTypeNotSupport(data: Question): SystemError {
+  return returnSystemError(
+    new Error(`The condition of the question tree node is not supported. (${JSON.stringify(data)})`),
+    constants.cliSource,
+    "QTNQuestionTypeNotSupport"
+  );
 }

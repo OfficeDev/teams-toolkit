@@ -17,7 +17,7 @@ export class AppStudioPlugin implements Plugin {
         });
 
         if (stage === Stage.publish) {
-            if (ctx.platform !== Platform.VSCode) {
+            if (ctx.platform === Platform.VS) {
                 const appPath = new QTreeNode({
                     type: NodeType.folder,
                     name: Constants.PUBLISH_PATH_QUESTION,

@@ -269,7 +269,7 @@ describe("frontendPlugin", () => {
             frontendPlugin = await TestHelper.initializedFrontendPlugin(frontendPlugin, pluginContext);
         });
 
-        it("Invalid tab scope", async () => {
+        it("Empty tab scope", async () => {
             const result = await frontendPlugin.postLocalDebug(pluginContext);
 
             assertError(result, new InvalidTabScopeError().code);

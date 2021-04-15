@@ -67,6 +67,39 @@ describe("Deploy to Azure", function() {
     expect(deployResult.stderr).to.eq("");
   });
 
+  it(`Provision Resource: Update Permission for AAD - Test Plan Id 9729543`, async function() {
+    // new a project
+    const newResult = await execAsync(`teamsfx new --app-name ${appName} --verbose false`, {
+      cwd: testFolder,
+      env: process.env,
+      timeout: 0
+    });
+    expect(newResult.stdout).to.eq("");
+    expect(newResult.stderr).to.eq("");
+
+    {
+      // set fx-resource-simple-auth.skuName as B1
+      const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
+      context["fx-resource-simple-auth"]["skuName"] = "B1";
+      await fs.writeJSON(`${projectPath}/.fx/env.default.json`, context, { spaces: 4 });
+
+      // update permission
+      context["solution"]["permissionRequest"] = "[{\"resource\":\"Microsoft Graph\",\"scopes\": [\"User.Read\",\"User.Read.All\"]}]";
+    }
+
+    // provision
+    const provisionResult = await execAsync(
+      `teamsfx provision --subscription 1756abc0-3554-4341-8d6a-46674962ea19 --verbose false`,
+      {
+        cwd: projectPath,
+        env: process.env,
+        timeout: 0
+      }
+    );
+    expect(provisionResult.stdout).to.eq("");
+    expect(provisionResult.stderr).to.eq("");
+  });
+
   this.afterAll(async () => {
     // delete aad app
     const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);

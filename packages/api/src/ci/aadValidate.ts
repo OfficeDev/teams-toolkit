@@ -28,7 +28,7 @@ export class AadValidator {
         return aadObject!;
     }
 
-    public static async validate(aadObject: IAadObject) {
+    public static async validate(aadObject: IAadObject, expectedPermission?: string) {
         console.log("Start to validate Azure AD app.");
 
         const groundTruth = await AadValidator.getAadApp(aadObject.objectId);
@@ -38,6 +38,10 @@ export class AadValidator {
         chai.assert(aadObject.clientId, groundTruth?.appId);
         chai.assert(aadObject.oauth2PermissionScopeId, groundTruth?.api?.oauth2PermissionScopes![0].id);
         chai.assert(aadObject.applicationIdUris, groundTruth?.identifierUris![0]);
+
+        if (expectedPermission) {
+            chai.assert(expectedPermission, JSON.stringify(groundTruth.requiredResourceAccess));
+        }
 
         console.log("Successfully validate Azure AD app.");
     }

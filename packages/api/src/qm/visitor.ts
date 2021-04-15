@@ -2,29 +2,29 @@
 // Licensed under the MIT license.
 
 import {
-    Func,
-    TextInputQuestion,
-    NodeType,
-    QTreeNode,
-    Question,
-    SingleSelectQuestion,
-    Option,
-    StaticOption,
-    OptionItem,
-    MultiSelectQuestion,
-    FileQuestion,
-    NumberInputQuestion
-  } from "./question";
+  Func,
+  TextInputQuestion,
+  NodeType,
+  QTreeNode,
+  Question,
+  SingleSelectQuestion,
+  Option,
+  StaticOption,
+  OptionItem,
+  MultiSelectQuestion,
+  FileQuestion,
+  NumberInputQuestion
+} from "./question";
 import { getValidationFunction, RemoteFuncExecutor, validate } from "./validation";
 import { ConfigMap, Inputs } from "../config";
 import { InputResult, InputResultType, UserInterface } from "./ui";
-import { returnUserError } from "../error";
-    
+import { returnSystemError, returnUserError } from "../error";
+
 async function getRealValue(
   parentValue: unknown,
   defaultValue: unknown,
-  inputs: Inputs|ConfigMap,
-  remoteFuncExecutor?:RemoteFuncExecutor
+  inputs: Inputs | ConfigMap,
+  remoteFuncExecutor?: RemoteFuncExecutor
 ): Promise<unknown> {
   let output: unknown = defaultValue;
   if (typeof defaultValue === "string") {
@@ -52,8 +52,8 @@ async function getRealValue(
 }
 
 function isAutoSkipSelect(q: Question): boolean {
-  if (q.type === NodeType.singleSelect) {
-    const select: SingleSelectQuestion = q as SingleSelectQuestion;
+  if (q.type === NodeType.singleSelect || q.type === NodeType.multiSelect) {
+    const select = q as (SingleSelectQuestion | MultiSelectQuestion);
     const options = select.option as StaticOption;
     if (select.skipSingleOption && select.option instanceof Array && options.length === 1) {
       return true;
@@ -67,8 +67,8 @@ type QuestionVistor = (
   parentValue: unknown,
   ui: UserInterface,
   backButton: boolean,
-  inputs: Inputs|ConfigMap,
-  remoteFuncExecutor?:RemoteFuncExecutor
+  inputs: Inputs | ConfigMap,
+  remoteFuncExecutor?: RemoteFuncExecutor
 ) => Promise<InputResult>;
 
 /**
@@ -77,13 +77,13 @@ type QuestionVistor = (
  * @param core
  * @param inputs
  */
-const questionVisitor:QuestionVistor = async function(
+const questionVisitor: QuestionVistor = async function (
   question: Question,
   parentValue: unknown,
   ui: UserInterface,
   backButton: boolean,
-  inputs: Inputs|ConfigMap,
-  remoteFuncExecutor?:RemoteFuncExecutor
+  inputs: Inputs | ConfigMap,
+  remoteFuncExecutor?: RemoteFuncExecutor
 ): Promise<InputResult> {
   const type = question.type;
   //FunctionCallQuestion
@@ -91,10 +91,10 @@ const questionVisitor:QuestionVistor = async function(
     if (remoteFuncExecutor) {
       const res = await remoteFuncExecutor(question as Func, inputs);
       if (res.isOk()) {
-        return { type: InputResultType.sucess, result: res.value};
+        return { type: InputResultType.sucess, result: res.value };
       }
       else {
-        return { type: InputResultType.error, error: res.error};
+        return { type: InputResultType.error, error: res.error };
       }
     }
   } else {
@@ -103,8 +103,8 @@ const questionVisitor:QuestionVistor = async function(
       defaultValue = await getRealValue(parentValue, question.default, inputs, remoteFuncExecutor);
     }
     if (type === NodeType.text || type === NodeType.password || type === NodeType.number) {
-      const inputQuestion: TextInputQuestion|NumberInputQuestion = question as (TextInputQuestion | NumberInputQuestion);
-      const validationFunc = inputQuestion.validation ? getValidationFunction(inputQuestion.validation,inputs,remoteFuncExecutor) : undefined;
+      const inputQuestion: TextInputQuestion | NumberInputQuestion = question as (TextInputQuestion | NumberInputQuestion);
+      const validationFunc = inputQuestion.validation ? getValidationFunction(inputQuestion.validation, inputs, remoteFuncExecutor) : undefined;
       return await ui.showInputBox({
         title: inputQuestion.title || inputQuestion.description || inputQuestion.name,
         password: !!(type === NodeType.password),
@@ -141,52 +141,58 @@ const questionVisitor:QuestionVistor = async function(
       if (!option || option.length === 0) {
         return {
           type: InputResultType.error,
-          error: returnUserError(
+          error: returnSystemError(
             new Error("Select option is empty!"),
             "API",
             "EmptySelectOption"
           )
         };
       }
-      //skip single option select
-      const ss = selectQuestion as SingleSelectQuestion;
-      const skipSingleOption = ss.skipSingleOption;
-      if (type === NodeType.singleSelect  && (skipSingleOption === undefined || skipSingleOption === true) && option.length === 1) {
-          const optionIsString = typeof option[0] === "string";
-          if(selectQuestion.returnObject){
-              return {
-                  type: InputResultType.pass,
-                  result: optionIsString ? { id: option[0] }: option[0]
-                };
-          }
-          else {
-              return {
-                  type: InputResultType.pass,
-                  result: optionIsString ? option[0] : (option[0] as OptionItem).id
-              };
-          }
+
+      // Skip single/mulitple option select
+      if (isAutoSkipSelect(selectQuestion)) {
+        const optionIsString = typeof option[0] === "string";
+        let returnResult;
+        if (selectQuestion.returnObject) {
+          returnResult = optionIsString ? { id: option[0] } : option[0];
+        }
+        else {
+          returnResult = optionIsString ? option[0] : (option[0] as OptionItem).id;
+        }
+        if (type === NodeType.singleSelect){
+          return {
+            type: InputResultType.pass,
+            result: returnResult
+          };
+        }
+        else{
+          return {
+            type: InputResultType.pass,
+            result: [returnResult]
+          };
+        }
       }
       return await ui.showQuickPick({
         title: selectQuestion.title || selectQuestion.description || selectQuestion.name,
         items: option,
         canSelectMany: !!(type === NodeType.multiSelect),
         returnObject: selectQuestion.returnObject,
-        defaultValue: defaultValue as string|string[]|undefined,
+        defaultValue: defaultValue as string | string[] | undefined,
         placeholder: selectQuestion.placeholder,
         backButton: backButton,
-        onDidChangeSelection: type === NodeType.multiSelect ? (selectQuestion as MultiSelectQuestion).onDidChangeSelection:undefined
+        onDidChangeSelection: type === NodeType.multiSelect ? (selectQuestion as MultiSelectQuestion).onDidChangeSelection : undefined
       });
     } else if (type === NodeType.folder) {
       const fileQuestion: FileQuestion = question as FileQuestion;
-      const validationFunc = fileQuestion.validation? getValidationFunction(fileQuestion.validation, inputs, remoteFuncExecutor) : undefined;
+      const validationFunc = fileQuestion.validation ? getValidationFunction(fileQuestion.validation, inputs, remoteFuncExecutor) : undefined;
       return await ui.showOpenDialog({
-          defaultUri: defaultValue as string|undefined,
-          canSelectFiles: false,
-          canSelectFolders: true,
-          canSelectMany: false,
-          title: fileQuestion.title || fileQuestion.description || fileQuestion.name,
-          validation: validationFunc
-        });
+        defaultUri: defaultValue as string | undefined,
+        canSelectFiles: false,
+        canSelectFolders: true,
+        canSelectMany: false,
+        title: fileQuestion.title || fileQuestion.description || fileQuestion.name,
+        validation: validationFunc
+      });
     }
   }
   return {
@@ -201,9 +207,9 @@ const questionVisitor:QuestionVistor = async function(
 
 export async function traverse(
   root: QTreeNode,
-  inputs: Inputs|ConfigMap,
+  inputs: Inputs | ConfigMap,
   ui: UserInterface,
-  remoteFuncExecutor?:RemoteFuncExecutor
+  remoteFuncExecutor?: RemoteFuncExecutor
 ): Promise<InputResult> {
   const stack: QTreeNode[] = [];
   const history: QTreeNode[] = [];
@@ -214,7 +220,7 @@ export async function traverse(
 
   while (stack.length > 0) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const curr:QTreeNode = stack.pop()!;
+    const curr: QTreeNode = stack.pop()!;
     let currValue: unknown = undefined;
     //visit
     if (curr.data.type !== NodeType.group) {
@@ -278,13 +284,13 @@ export async function traverse(
         //success or pass
         question.value = inputResult.result;
         currValue = question.value;
-        if(inputs instanceof ConfigMap){
+        if (inputs instanceof ConfigMap) {
           (inputs as ConfigMap).set(question.name, question.value);
         }
         else {
-          (inputs as Inputs)[question.name]= question.value;
+          (inputs as Inputs)[question.name] = question.value;
         }
-        
+
       }
     }
 
@@ -293,26 +299,26 @@ export async function traverse(
     if (curr.children) {
 
       /// if current node is single select node and return OptionItem as value, then the currnetValue is it's label
-      if(curr.data.type === NodeType.singleSelect){
-        const sq:SingleSelectQuestion = curr.data;
-        if(sq.returnObject){
+      if (curr.data.type === NodeType.singleSelect) {
+        const sq: SingleSelectQuestion = curr.data;
+        if (sq.returnObject) {
           currValue = (sq.value as OptionItem).id;
         }
       }
 
       for (let i = curr.children.length - 1; i >= 0; --i) {
         const child = curr.children[i];
-        if(!child) continue;
+        if (!child) continue;
         parentMap.set(child, curr);
         if (child.condition) {
           const realValue = child.condition.target
             ? await getRealValue(currValue, child.condition.target, inputs, remoteFuncExecutor)
             : currValue;
-          if(realValue){
-              const validRes = await validate(child.condition, realValue as string|string[], inputs, remoteFuncExecutor);
-              if (validRes !== undefined) {
-                  continue;
-              }
+          if (realValue) {
+            const validRes = await validate(child.condition, realValue as string | string[], inputs, remoteFuncExecutor);
+            if (validRes !== undefined) {
+              continue;
+            }
           }
         }
         stack.push(child);

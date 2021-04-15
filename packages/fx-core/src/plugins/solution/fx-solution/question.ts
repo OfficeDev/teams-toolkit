@@ -146,6 +146,7 @@ export const DeployPluginSelectQuestion: MultiSelectQuestion = {
     name: AzureSolutionQuestionNames.PluginSelectionDeploy,
     title: `Please select which resource(s) to deploy`,
     type: NodeType.multiSelect,
+    skipSingleOption: true,
     option: [],
     default: []
 };

@@ -23,6 +23,7 @@ export namespace cpUtils {
       ...args
     );
     if (result.code !== 0) {
+      await logger?.debug(`Failed to run command: "${command} ${result.formattedArgs}", code: '${result.code}', cmdOutputIncludingStderr: '${result.cmdOutputIncludingStderr}'`);
       throw new Error(`Failed to run "${command}" command. Check output window for more details.`);
     } else {
       await logger?.debug(`Finished running command: "${command} ${result.formattedArgs}".`);

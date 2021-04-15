@@ -68,15 +68,15 @@ export class DotnetChecker implements IDepsChecker {
   }
 
   public async isInstalled(): Promise<boolean> {
-    // logger.debug(`[start] read dotnet path from '${configPath}'`);
+    logger.debug(`[start] read dotnet path from '${configPath}'`);
     const dotnetPath = await DotnetChecker.getDotnetExecPathFromConfig();
-    // logger.debug(`[end] read dotnet path from '${configPath}', dotnetPath = '${dotnetPath}'`);
+    logger.debug(`[end] read dotnet path from '${configPath}', dotnetPath = '${dotnetPath}'`);
 
-    // logger.debug(`[start] check dotnet version`);
+    logger.debug(`[start] check dotnet version`);
     if (dotnetPath !== null && (await DotnetChecker.isDotnetInstalledCorrectly())) {
       return true;
     }
-    // logger.debug(`[end] check dotnet version`);
+    logger.debug(`[end] check dotnet version`);
 
     if ((await DotnetChecker.tryAcquireGlobalDotnetSdk()) && (await DotnetChecker.validate())) {
       DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.dotnetAlreadyInstalled);
@@ -90,19 +90,19 @@ export class DotnetChecker implements IDepsChecker {
   }
 
   public async install(): Promise<void> {
-    // logger.debug(`[start] cleanup bin/dotnet and config`);
+    logger.debug(`[start] cleanup bin/dotnet and config`);
     await DotnetChecker.cleanup();
-    // logger.debug(`[end] cleanup bin/dotnet and config`);
+    logger.debug(`[end] cleanup bin/dotnet and config`);
 
-    // logger.debug(`[start] install dotnet ${DotnetChecker.installVersion}`);
+    logger.debug(`[start] install dotnet ${installVersion}`);
     logger.info(Messages.downloadDotnet.replace("@NameVersion", installedNameWithVersion));
     await runWithProgressIndicator(async () => {
       await DotnetChecker.handleInstall(installVersion);
     });
     logger.info(Messages.finishInstallDotnet.replace("@NameVersion", installedNameWithVersion));
-    // logger.debug(`[end] install dotnet ${DotnetChecker.installVersion}`);
+    logger.debug(`[end] install dotnet ${installVersion}`);
 
-    // logger.debug(`[start] validate dotnet version`);
+    logger.debug(`[start] validate dotnet version`);
     if (!(await DotnetChecker.validate())) {
       await DotnetChecker.cleanup();
       DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.dotnetInstallError);
@@ -152,7 +152,7 @@ export class DotnetChecker implements IDepsChecker {
         return config.dotnetExecutablePath;
       }
     } catch (error) {
-      // logger.debug(`get dotnet path failed, error: ${error}`);
+      logger.debug(`get dotnet path failed, error: ${error}`);
     }
     return null;
   }
@@ -166,10 +166,10 @@ export class DotnetChecker implements IDepsChecker {
       // NOTE: we don't need to handle directory creation since dotnet-install script will handle it.
       await DotnetChecker.runDotnetInstallScript(version, installDir);
 
-      // logger.debug(`[start] write dotnet path to config`);
+      logger.debug(`[start] write dotnet path to config`);
       const dotnetExecPath = DotnetChecker.getDotnetExecPathFromDotnetInstallationDir(installDir);
       await DotnetChecker.persistDotnetExecPath(dotnetExecPath);
-      // logger.debug(`[end] write dotnet path to config`);
+      logger.debug(`[end] write dotnet path to config`);
     } catch (error) {
       logger.error(
         `${Messages.failToInstallDotnet.replace(
@@ -260,7 +260,7 @@ export class DotnetChecker implements IDepsChecker {
         .filter((version) => version !== null) as string[];
       return DotnetChecker.isDotnetVersionsInstalled(installedVersions);
     } catch (e) {
-      // logger.debug(`validate private install failed, err = ${e}`);
+      logger.debug(`validate private install failed, err = ${e}`);
       return false;
     }
   }
@@ -327,7 +327,7 @@ export class DotnetChecker implements IDepsChecker {
         }
       });
     } catch (e) {
-      // logger.debug(`Failed to search dotnet sdk by dotnetPath = ${dotnetExecPath}`);
+      logger.debug(`Failed to search dotnet sdk by dotnetPath = ${dotnetExecPath}`);
     }
     return sdks;
   }
@@ -389,7 +389,7 @@ export class DotnetChecker implements IDepsChecker {
       await DotnetChecker.persistDotnetExecPath(dotnetExecPath);
       return true;
     } catch (e) {
-      // logger.debug(`Failed to acquire global dotnet sdk, err = ${e}`);
+      logger.debug(`Failed to acquire global dotnet sdk, err = ${e}`);
       return false;
     }
   }

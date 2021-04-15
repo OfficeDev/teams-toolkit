@@ -15,7 +15,7 @@ export class ScaffoldConfig {
     public workingDir?: string;
 
     public botRegistrationCreated(): boolean {
-        if (this.botId && this.botPassword && this.objectId && true) {
+        if (this.botId && this.botPassword && this.objectId) {
             return true;
         }
 

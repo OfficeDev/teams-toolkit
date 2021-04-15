@@ -152,7 +152,7 @@ export class AadAppForTeamsImpl {
     } else {
       DialogUtils.progress?.next(ProgressDetail.ProvisionAadApp);
       await AadAppClient.createAadApp(config);
-      ctx.config.set(ConfigKeys.clientSecret, undefined);
+      config.password = undefined;
       ctx.logProvider?.info(Messages.getLog(Messages.CreateAadAppSuccess));
     }
 

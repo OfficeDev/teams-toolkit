@@ -7,7 +7,8 @@ import * as dotenv from "dotenv";
 import * as vscode from "vscode";
 import * as constants from "./constants";
 import { openUrl } from "./depsChecker/common";
-import { ConfigFolderName } from "fx-api";
+import { ConfigFolderName, Func } from "fx-api";
+import { core, showError } from "../handlers";
 
 export async function getProjectRoot(
   folderPath: string,
@@ -85,4 +86,21 @@ export async function hasTeamsfxBackend(): Promise<boolean> {
   const backendRoot = await getProjectRoot(workspacePath, constants.backendFolderName);
 
   return backendRoot !== undefined;
+}
+
+export async function getLocalDebugTeamsAppId(isLocalSideloadingConfiguration: boolean): Promise<string|undefined> {
+  const func: Func = {
+    namespace: "fx-solution-azure/fx-resource-local-debug",
+    method: "getLaunchInput",
+    params: isLocalSideloadingConfiguration ? "local" : "remote"
+  };
+  try {
+    const result = await core.callFunc(func);
+    if (result.isErr()) {
+      throw result.error;
+    }
+    return result.value as string;
+  } catch (err) {
+    await showError(err);
+  }   
 }

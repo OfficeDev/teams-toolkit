@@ -36,23 +36,12 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
           return debugConfiguration;
         }
 
-        const func: Func = {
-          namespace: "fx-solution-azure/fx-resource-local-debug",
-          method: "getLaunchInput",
-          params: isLocalSideloadingConfiguration ? "local" : "remote"
-        };
-        try {
-          const result = await core.callFunc(func);
-          if (result.isErr()) {
-            throw result.error;
-          }
-          debugConfiguration.url = (debugConfiguration.url as string).replace(
-            isLocalSideloadingConfiguration ? localTeamsAppIdPlaceholder : teamsAppIdPlaceholder,
-            result.value as string
-          );
-        } catch (err) {
-          await showError(err);
-        }
+        const teamsAppId = await commonUtils.getLocalDebugTeamsAppId(isLocalSideloadingConfiguration);
+        debugConfiguration.url = (debugConfiguration.url as string).replace(
+          isLocalSideloadingConfiguration ? localTeamsAppIdPlaceholder : teamsAppIdPlaceholder,
+          teamsAppId as string
+        );
+
       }
     } catch (err) {
       // TODO(kuojianlu): add log and telemetry

@@ -5,7 +5,7 @@ import * as path from "path";
 import { Logger } from "../logger";
 import { DepsCheckerError } from "./errors";
 import { dotnetChecker, DotnetChecker } from "./dotnetChecker";
-import { ConfigMap, returnUserError } from "fx-api";
+import { ConfigMap, returnUserError, FxError, UserError, TelemetryReporter } from "fx-api";
 import { Messages, dotnetHelpLink } from "./common";
 
 export { cpUtils } from "./cpUtils";
@@ -80,5 +80,108 @@ export function handleDotnetError(error: Error): void {
     throw returnUserError(error, "function", "DepsCheckerError", error.helpLink, error);
   } else {
     throw returnUserError(new Error(Messages.defaultErrorMessage), "function", "DepsCheckerError", dotnetHelpLink, error);
+  }
+}
+
+// telemetry implementation in plugin
+export enum TelemetryProperty {
+  Component = "component",
+  Success = "success",
+  ErrorType = "error-type",
+  ErrorCode = "error-code",
+  ErrorMessage = "error-message",
+}
+
+const TelemetryComponentType = "function-plugin";
+
+export enum TelemetrySuccess {
+  Yes = "yes",
+  No = "no"
+}
+
+export enum TelemetryErrorType {
+  UserError = "user",
+  SystemError = "system"
+}
+
+export namespace ExtTelemetry {
+  let reporter: TelemetryReporter | undefined;
+
+  export function setReporter(newReporter?: TelemetryReporter) {
+    reporter = newReporter;
+  }
+
+  export function sendTelemetryEvent(
+    eventName: string,
+    properties?: { [p: string]: string },
+    measurements?: { [p: string]: number }
+  ): void {
+    if (!reporter) {
+      return;
+    }
+
+    if (!properties) {
+      properties = {};
+    }
+
+    if (TelemetryProperty.Component in properties === false) {
+      properties[TelemetryProperty.Component] = TelemetryComponentType;
+    }
+
+    reporter.sendTelemetryEvent(eventName, properties, measurements);
+  }
+
+  export function sendTelemetryErrorEvent(
+    eventName: string,
+    error: FxError,
+    properties?: { [p: string]: string },
+    measurements?: { [p: string]: number },
+    errorProps?: string[]
+  ): void {
+    if (!reporter) {
+      return;
+    }
+
+    if (!properties) {
+      properties = {};
+    }
+
+    if (TelemetryProperty.Component in properties === false) {
+      properties[TelemetryProperty.Component] = TelemetryComponentType;
+    }
+
+    properties[TelemetryProperty.Success] = TelemetrySuccess.No;
+    if (error instanceof UserError) {
+      properties[TelemetryProperty.ErrorType] = TelemetryErrorType.UserError;
+    } else {
+      properties[TelemetryProperty.ErrorType] = TelemetryErrorType.SystemError;
+    }
+
+    properties[TelemetryProperty.ErrorCode] = `${error.source}.${error.name}`;
+    properties[TelemetryProperty.ErrorMessage] = error.message;
+
+    if (reporter) {
+      reporter.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
+    }
+  }
+
+  export function sendTelemetryException(
+    error: Error,
+    properties?: { [p: string]: string },
+    measurements?: { [p: string]: number }
+  ): void {
+    if (!reporter) {
+      return;
+    }
+
+    if (!properties) {
+      properties = {};
+    }
+
+    if (TelemetryProperty.Component in properties === false) {
+      properties[TelemetryProperty.Component] = TelemetryComponentType;
+    }
+
+    reporter.sendTelemetryException(error, properties, measurements);
   }
 }

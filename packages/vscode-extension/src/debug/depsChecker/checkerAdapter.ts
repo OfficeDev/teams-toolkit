@@ -10,7 +10,6 @@ import { window, workspace, WorkspaceConfiguration, MessageItem, OutputChannel }
 import { LogLevel, ConfigFolderName } from "fx-api";
 import { Messages, openUrl } from "./common";
 const appendFile = util.promisify(fs.appendFile);
-const mkdir = util.promisify(fs.mkdir);
 
 export { cpUtils } from "../cpUtils";
 export { hasTeamsfxBackend } from "../commonUtils";
@@ -19,7 +18,7 @@ export { TelemetryProperty } from "../../telemetry/extTelemetryEvents";
 
 export class CheckerLogger {
   private static checkerLogFileName = "env-checker.log";
-  private static loggerFilePath = path.join(os.homedir(), `.${ConfigFolderName}`, CheckerLogger.checkerLogFileName);
+  private static logFilePath = path.join(os.homedir(), `.${ConfigFolderName}`, CheckerLogger.checkerLogFileName);
 
   public outputChannel: OutputChannel;
   private logger: VsCodeLogProvider;
@@ -27,6 +26,8 @@ export class CheckerLogger {
   public constructor(logger: VsCodeLogProvider) {
     this.outputChannel = logger.outputChannel;
     this.logger = logger;
+
+    fs.mkdirSync(path.resolve(CheckerLogger.logFilePath, ".."), { recursive: true });
   }
 
   async trace(message: string): Promise<boolean> {
@@ -60,11 +61,8 @@ export class CheckerLogger {
   }
 
   private async writeLog(level: LogLevel, message: string): Promise<void> {
-    const line = `${LogLevel[level]} ${new Date().toISOString()}: ${message}` + path.sep;
-
-    // make sure dir exists before append the file
-    await mkdir(path.basename(CheckerLogger.loggerFilePath));
-    await appendFile(CheckerLogger.loggerFilePath, line);
+    const line = `${LogLevel[level]} ${new Date().toISOString()}: ${message}` + os.EOL;
+    await appendFile(CheckerLogger.logFilePath, line);
   }
 }
 

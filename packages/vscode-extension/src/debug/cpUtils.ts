@@ -23,7 +23,7 @@ export namespace cpUtils {
       ...args
     );
     if (result.code !== 0) {
-      await logger?.debug(`Failed to run command: "${command} ${result.formattedArgs}", code: '${result.code}', cmdOutputIncludingStderr: '${result.cmdOutputIncludingStderr}'`);
+      await logger?.debug(`Failed to run command: "${command} ${result.formattedArgs}", code: '${result.code}'`);
       throw new Error(`Failed to run "${command}" command. Check output window for more details.`);
     } else {
       await logger?.debug(`Finished running command: "${command} ${result.formattedArgs}".`);
@@ -68,7 +68,7 @@ export namespace cpUtils {
 
         childProc.on("error", reject);
         childProc.on("close", (code: number) => {
-          logger?.debug(cmdOutputIncludingStderr);
+          logger?.debug(`cmdOutputIncludingStderr: '${cmdOutputIncludingStderr}'`);
           resolve({
             code,
             cmdOutput,

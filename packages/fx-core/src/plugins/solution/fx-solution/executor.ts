@@ -33,7 +33,7 @@ export async function executeSequentially(
             results.push(undefined);
         }
     }
-    if(logger) logger?.info(`${("Execute "+ step + "Task summpary").padEnd(64,"-")}`);
+    if(logger) logger?.info(`${("Execute "+ step + "Task summary").padEnd(64,"-")}`);
     for (let i = 0 ; i < results.length; ++ i) {
         const pair = lifecycleAndContext[i];
         const lifecycle = pair[0];
@@ -78,7 +78,7 @@ export async function executeConcurrently(
     );
 
     const results = await Promise.all(promises);
-    if(logger) logger?.info(`${("Execute "+ step + "Task summpary").padEnd(64,"-")}`);
+    if(logger) logger?.info(`${("Execute "+ step + "Task summary").padEnd(64,"-")}`);
     let res:Result<any, FxError> = ok(undefined);
     for (let i = 0 ; i < results.length; ++ i) {
         const pair = lifecycleAndContext[i];

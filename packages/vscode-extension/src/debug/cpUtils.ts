@@ -66,7 +66,10 @@ export namespace cpUtils {
           cmdOutputIncludingStderr = cmdOutputIncludingStderr.concat(data);
         });
 
-        childProc.on("error", reject);
+        childProc.on("error", (error) => {
+          logger?.debug(`failed to run command '${command} ${formattedArgs}': '${cmdOutputIncludingStderr}'`);
+          reject(error);
+        });
         childProc.on("close", (code: number) => {
           logger?.debug(`cmdOutputIncludingStderr: '${cmdOutputIncludingStderr}'`);
           resolve({

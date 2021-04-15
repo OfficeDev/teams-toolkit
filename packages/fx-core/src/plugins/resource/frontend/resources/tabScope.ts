@@ -17,11 +17,13 @@ export class TabScopeManifest {
             throw new InvalidTabScopeError();
         }
 
-        if (!tabScopes.includes(TabScope.PersonalTab) && !tabScopes.includes(TabScope.GroupTab)) {
-            throw new InvalidTabScopeError();
+        for (const [_key, value] of Object.entries(TabScope)) {
+            if (tabScopes.includes(value)) {
+                return tabScopes;
+            }
         }
 
-        return tabScopes;
+        throw new InvalidTabScopeError();
     }
 
     public static getConfigurableTab(variables: ManifestVariables, tabScopes: string[]): string {

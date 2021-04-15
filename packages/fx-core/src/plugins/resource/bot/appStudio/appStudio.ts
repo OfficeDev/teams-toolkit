@@ -5,7 +5,7 @@ import { AxiosInstance, default as axios } from "axios";
 import { CallAppStudioException, ConfigUpdatingException, ProvisionException } from "../exceptions";
 import { CommonStrings, ConfigNames } from "../resources/strings";
 import { LifecycleFuncNames } from "../constants";
-import { Logger } from "../logger";
+import { RetryHanlder } from "../utils/retryHandler";
 
 const baseUrl = "https://dev.teams.microsoft.com";
 let axiosInstance: AxiosInstance | undefined = undefined;
@@ -39,7 +39,7 @@ export async function createAADApp(aadApp: IAADApplication): Promise<IAADApplica
 
     let response = undefined;
     try {
-        response = await axiosInstance.post(`${baseUrl}/api/aadapp`, aadApp);
+        response = await RetryHanlder(() => axiosInstance!.post(`${baseUrl}/api/aadapp`, aadApp));
     } catch (e) {
         throw new ProvisionException(CommonStrings.AAD_APP, e);
     }
@@ -64,7 +64,7 @@ export async function checkAADApp(objectId: string): Promise<boolean> {
 
     let response = undefined;
     try {
-        response = await axiosInstance.get(`${baseUrl}/api/aadapp/v2/${objectId}`);
+        response = await RetryHanlder(() => axiosInstance!.get(`${baseUrl}/api/aadapp/v2/${objectId}`));
     } catch (e) {
         throw new CallAppStudioException(LifecycleFuncNames.CHECK_AAD_APP, e);
     }
@@ -88,7 +88,7 @@ export async function createAADAppPassword(aadAppObjectId?: string): Promise<IAA
 
     let response = undefined;
     try {
-        response = await axiosInstance.post(`${baseUrl}/api/aadapp/${aadAppObjectId}/passwords`);
+        response = await RetryHanlder(() => axiosInstance!.post(`${baseUrl}/api/aadapp/${aadAppObjectId}/passwords`));
     } catch (e) {
         throw new ProvisionException(CommonStrings.AAD_CLIENT_SECRET, e);
     }
@@ -113,7 +113,7 @@ export async function createBotRegistration(registration: IBotRegistration): Pro
 
     let response = undefined;
     try {
-        response = await axiosInstance.post(`${baseUrl}/api/botframework`, registration);
+        response = await RetryHanlder(() => axiosInstance!.post(`${baseUrl}/api/botframework`, registration));
     } catch (e) {
         throw new ProvisionException(CommonStrings.APPSTUDIO_BOT_REGISTRATION, e);
     }
@@ -133,7 +133,7 @@ export async function updateMessageEndpoint(botId: string, registration: IBotReg
 
     let response = undefined;
     try {
-        response = await axiosInstance.post(`${baseUrl}/api/botframework/${botId}`, registration);
+        response = await RetryHanlder(() => axiosInstance!.post(`${baseUrl}/api/botframework/${botId}`, registration));
     } catch (e) {
         throw new ConfigUpdatingException(ConfigNames.MESSAGE_ENDPOINT, e);
     }

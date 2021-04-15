@@ -78,32 +78,13 @@ export async function registerAADAppAndGetSecretByAppStudio(appStudioToken: stri
     result.clientId = app.id;
     result.objectId = app.objectId;
 
-    // Sync with toolkit"s implmentation to retry at most 5 times.
-    let retries = Retry.RETRY_TIMES;
-    while (retries > 0) {
-        let password = undefined;
-        try {
-            password = await AppStudio.createAADAppPassword(app.objectId);
-        } catch (e) {
-            Logger.debug(`createAADAppPassword exception: ${e}`);
-        }
+    const password = await AppStudio.createAADAppPassword(app.objectId);
 
-        if (!password || !password.value) {
-
-            retries = retries - 1;
-            if (retries > 0) {
-                await new Promise((resolve) => setTimeout(resolve, Retry.BACKOFF_TIME_MS));
-            }
-            continue;
-        }
-
-        result.clientSecret = password.value;
-        break;
-    }
-
-    if (!result.clientSecret) {
+    if (!password || !password.value) {
         throw new ProvisionException(CommonStrings.AAD_CLIENT_SECRET);
     }
+
+    result.clientSecret = password.value;
 
     return result;
 }

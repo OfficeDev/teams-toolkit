@@ -594,21 +594,8 @@ export class TeamsBotImpl {
             callingEndpoint: ""
         };
 
-        let retries = Retry.RETRY_TIMES;
-        while (retries > 0) {
-            try {
-                await AppStudio.init(appStudioToken!);
-                await AppStudio.updateMessageEndpoint(botReg.botId!, botReg);
-            } catch (e) {
-                Logger.debug(`updateMessageExtension exception: ${e}`);
-                retries = retries - 1;
-                if (retries > 0) {
-                    await new Promise((resolve) => setTimeout(resolve, Retry.BACKOFF_TIME_MS));
-                }
-                continue;
-            }
-            break;
-        }
+        await AppStudio.init(appStudioToken!);
+        await AppStudio.updateMessageEndpoint(botReg.botId!, botReg);
 
         this.telemetryStepOutSuccess(LifecycleFuncNames.UPDATE_MESSAGE_ENDPOINT_APPSTUDIO);
     }

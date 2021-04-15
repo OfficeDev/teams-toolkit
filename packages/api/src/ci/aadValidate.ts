@@ -40,7 +40,7 @@ export class AadValidator {
         chai.assert(aadObject.applicationIdUris, groundTruth?.identifierUris![0]);
 
         if (expectedPermission) {
-            chai.assert(expectedPermission, JSON.stringify(groundTruth.requiredResourceAccess));
+            chai.assert(expectedPermission, JSON.stringify(groundTruth?.requiredResourceAccess));
         }
 
         console.log("Successfully validate Azure AD app.");

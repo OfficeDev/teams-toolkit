@@ -98,6 +98,14 @@ describe("Deploy to Azure", function() {
     );
     expect(provisionResult.stdout).to.eq("");
     expect(provisionResult.stderr).to.eq("");
+
+    // Get context
+    const expectedPermission = "[{\"resourceAppId\":\"00000003-0000-0000-c000-000000000000\",\"resourceAccess\": [{\"id\": \"e1fe6dd8-ba31-4d61-89e7-88639da4683d\",\"type\": \"Scope\"},{\"id\": \"a154be20-db9c-4678-8ab7-66f6cc099a59\",\"type\": \"Scope\"}]}]";
+    const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
+
+    // Validate Aad App
+    const aad = AadValidator.init(context);
+    await AadValidator.validate(aad, expectedPermission);
   });
 
   this.afterAll(async () => {

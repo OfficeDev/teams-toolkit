@@ -99,10 +99,12 @@ export namespace cpUtils {
    * Run sudo command and return stdout content.
    * Note: the return value may contains EOL.
    */
-  export function execSudo(command: string): Promise<string> {
+  export function execSudo(logger: CheckerLogger, command: string): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       try {
         sudo.exec(command, { name: "TeamsFx Toolkit" }, (error, stdout, stderr) => {
+          logger.debug(`Running execSudo, command: '${command}', error: '${error}', stdout: '${stdout}', stderr: '${stderr}'`);
+
           if (error) {
             reject(error);
           }
@@ -114,6 +116,7 @@ export namespace cpUtils {
           }
         });
       } catch (error) {
+        logger.debug(`Failed to run execSudo, command: '${command}', error: '${error}'`);
         reject(error);
       }
     });

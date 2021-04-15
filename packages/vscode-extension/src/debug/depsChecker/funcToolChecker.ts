@@ -187,7 +187,7 @@ async function installFuncCoreToolsOnWindows(version: FuncVersion): Promise<void
   // https://github.com/npm/cli/issues/470
   const funcPSScript = await getFuncPSScriptPath();
   if (await fs.pathExists(funcPSScript)) {
-    logger.debug(`deleting func.ps1 from ${funcPSScript}`)
+    logger.debug(`deleting func.ps1 from ${funcPSScript}`);
     await fs.remove(funcPSScript);
   }
 }

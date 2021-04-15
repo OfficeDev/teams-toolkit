@@ -117,7 +117,7 @@ export class TelemetryEvent {
     static readonly PreDeploy = "pre-deploy";
     static readonly Deploy = "deploy";
 
-    static readonly PostDebug = "post-debug";
+    static readonly postLocalDebug = "post-local-debug";
 }
 
 export class TelemetryKey {

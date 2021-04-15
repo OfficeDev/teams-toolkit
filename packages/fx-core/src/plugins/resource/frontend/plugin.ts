@@ -234,8 +234,8 @@ export class FrontendPluginImpl {
         return ok(this.config);
     }
 
-    public async postDebug(ctx: PluginContext): Promise<TeamsFxResult> {
-        Logger.info(Messages.StartPostDebug(PluginInfo.DisplayName));
+    public async postLocalDebug(ctx: PluginContext): Promise<TeamsFxResult> {
+        Logger.info(Messages.StartPostLocalDebug(PluginInfo.DisplayName));
 
         const localDebugPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.LocalDebugPluginName);
         const localTabEndpoint = localDebugPlugin?.get(DependentPluginInfo.LocalTabEndpoint) as string;

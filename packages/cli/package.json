@@ -72,6 +72,7 @@
     "fs-extra": "^9.1.0",
     "fx-api": "^1.0.4",
     "fx-core": "^1.0.6",
+    "inquirer": "^8.0.0",
     "open": "^7.3.1",
     "underscore": "^1.12.1",
     "yargs": "^16.2.0"

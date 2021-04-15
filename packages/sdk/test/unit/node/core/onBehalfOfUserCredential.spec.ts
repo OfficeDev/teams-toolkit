@@ -203,6 +203,7 @@ describe("OnBehalfOfUserCredential - node", () => {
       );
   });
 
+  // TODO: in the future, OnBehalfOfUserCredential will return different errors based on MSAL response. (instead of returning internalError)
   it("should throw InternalError when fail to get access token due to AAD outage", async function() {
     // Mock AAD outage
     sandbox.restore();

@@ -11,10 +11,6 @@ const baseUrl = "https://dev.teams.microsoft.com";
 let axiosInstance: AxiosInstance | undefined = undefined;
 
 export async function init(accessToken: string): Promise<boolean> {
-    if (axiosInstance) {
-        return true;
-    }
-
     if (accessToken) {
         axiosInstance = axios.create({
             headers: {

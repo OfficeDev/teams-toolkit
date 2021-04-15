@@ -13,6 +13,9 @@
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
     <PackageReference Include="Microsoft.Azure.WebJobs" Version="3.0.22" />
     <PackageReference Include="Microsoft.Identity.Client" Version="4.22.0" />
+	<!--This reference is to fix security issue, and can be removed when Microsoft.AspNetCore.Http fix this issue-->
+	<!--See this issue: https://github.com/dotnet/aspnetcore/issues/31826 -->
+    <PackageReference Include="System.Text.Encodings.Web" Version="4.5.1" />
   </ItemGroup>
 
 </Project>

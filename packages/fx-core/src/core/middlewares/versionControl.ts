@@ -46,8 +46,6 @@ export const versionControlMW: Middleware = async (
     `${p}/package.json`,
     `${p}/.${ConfigFolderName}`,
     `${p}/.${ConfigFolderName}/settings.json`,
-    `${p}/.${ConfigFolderName}/env.default.json`,
-    `${p}/.${ConfigFolderName}/answers.json`,
   ];
   for (const fp of checklist) {
     if (!(await fs.pathExists(path.resolve(fp)))) {

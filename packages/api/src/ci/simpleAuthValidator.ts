@@ -16,8 +16,9 @@ const baseUrl = (subscriptionId: string, rg: string, name: string) =>
 export class PropertiesKeys {
     static clientId = "CLIENT_ID";
     static clientSecret = "CLIENT_SECRET";
-    static oauthEndpoint = "OAUTH_TOKEN_ENDPOINT";
+    static oauthAuthority = "OAUTH_AUTHORITY";
     static identifierUri = "IDENTIFIER_URI";
+    static aadMetadataAddreass = "AAD_METADATA_ADDRESS";
 }
 
 export interface ISimpleAuthObject {
@@ -29,7 +30,7 @@ export class SimpleAuthValidator {
     private static rg: string;
 
     public static init(ctx: any, isLocalDebug = false): ISimpleAuthObject {
-        console.log("Start to init validator for Runtime Connector.");
+        console.log("Start to init validator for Simple Auth.");
 
         let simpleAuthObject: ISimpleAuthObject;
         if (!isLocalDebug) {
@@ -47,12 +48,12 @@ export class SimpleAuthValidator {
         this.rg = ctx[solutionPluginName][rgKey];
         chai.assert.exists(this.rg);
 
-        console.log("Successfully init validator for Runtime Connector.");
+        console.log("Successfully init validator for Simple Auth.");
         return simpleAuthObject;
     }
 
     public static async validate(simpleAuthObject: ISimpleAuthObject, aadObject: IAadObject) {
-        console.log("Start to validate Runtime Connector.");
+        console.log("Start to validate Simple Auth.");
 
         const resourceName: string = simpleAuthObject.endpoint.slice(8, -18);
         chai.assert.exists(resourceName);
@@ -60,11 +61,12 @@ export class SimpleAuthValidator {
         const response = await this.getWebappConfigs(this.subscriptionId, this.rg, resourceName);
         chai.assert.exists(response);
         chai.assert.equal(aadObject.clientId, response[PropertiesKeys.clientId]);
-        chai.assert.equal(aadObject.clientSecret, response[PropertiesKeys.clientSecret]);
+        // chai.assert.equal(aadObject.clientSecret, response[PropertiesKeys.clientSecret]);
         chai.assert.equal(aadObject.applicationIdUris, response[PropertiesKeys.identifierUri]);
-        chai.assert.equal(`${aadObject.oauthAuthority}/oauth2/v2.0/token`, response[PropertiesKeys.oauthEndpoint]);
+        chai.assert.equal(aadObject.oauthAuthority, response[PropertiesKeys.oauthAuthority]);
+        chai.assert.equal(`${aadObject.oauthAuthority}/v2.0/.well-known/openid-configuration`, response[PropertiesKeys.aadMetadataAddreass]);
 
-        console.log("Successfully validate Runtime Connector.");
+        console.log("Successfully validate Simple Auth.");
     }
 
     private static async getWebappConfigs(subscriptionId: string, rg: string, name: string) {

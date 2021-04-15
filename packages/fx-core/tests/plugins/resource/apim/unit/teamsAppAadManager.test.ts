@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import "mocha";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
@@ -5,7 +7,6 @@ import sinon from "sinon";
 import dotenv from "dotenv";
 import { MockGraphTokenProvider, skip_if } from "./testUtil";
 import { AadService } from "../../../../../src/plugins/resource/apim/src/service/aadService";
-import { Telemetry } from "../../../../../src/plugins/resource/apim/src/telemetry";
 import { IAadPluginConfig } from "../../../../../src/plugins/resource/apim/src/model/config";
 import { TeamsAppAadManager } from "../../../../../src/plugins/resource/apim/src/manager/teamsAppAadManager";
 import axios, { AxiosInstance } from "axios";
@@ -90,7 +91,6 @@ describe("TeamsAppAadManager", () => {
 async function buildService(
     enableLogin: boolean
 ): Promise<{ axiosInstance: AxiosInstance; aadService: AadService; teamsAppAadManager: TeamsAppAadManager }> {
-    const mockTelemetry = new Telemetry();
     const mockGraphTokenProvider = new MockGraphTokenProvider(testTenantId, testServicePrincipalClientId, testServicePrincipalClientSecret);
     const graphToken = enableLogin ? await mockGraphTokenProvider.getAccessToken() : "";
     const axiosInstance = axios.create({
@@ -100,9 +100,9 @@ async function buildService(
             "content-type": "application/json",
         },
     });
-    const aadService = new AadService(axiosInstance, mockTelemetry);
+    const aadService = new AadService(axiosInstance);
     const lazyAadService = new Lazy<AadService>(() => Promise.resolve(aadService));
-    const teamsAppAadManager = new TeamsAppAadManager(lazyAadService, new Telemetry());
+    const teamsAppAadManager = new TeamsAppAadManager(lazyAadService);
     return { axiosInstance, aadService, teamsAppAadManager };
 }
 

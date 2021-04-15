@@ -46,7 +46,7 @@ export class FrontendProvision {
     }
 
     public static setTabScope(ctx: PluginContext, variables: ManifestVariables): void {
-        const tabScope = ctx.answers?.getString(QuestionKey.TabScope);
+        const tabScope = ctx.config.getString(QuestionKey.TabScope);
         // Always overwrite these configs to support both local debug and remote debug
         ctx.config.set(FrontendConfigInfo.ConfigurableTab, TabScopeManifest.getConfigurableTab(variables, tabScope));
         ctx.config.set(FrontendConfigInfo.StaticTab, TabScopeManifest.getStaticTab(variables, tabScope));

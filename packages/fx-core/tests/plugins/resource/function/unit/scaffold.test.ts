@@ -21,6 +21,7 @@ const context: any = {
                 [DependentPluginInfo.resourceGroupName, "ut"],
                 [DependentPluginInfo.subscriptionId, "ut"],
                 [DependentPluginInfo.resourceNameSuffix, "ut"],
+                [DependentPluginInfo.programmingLanguage, "javascript"]
             ]),
         ],
     ]),

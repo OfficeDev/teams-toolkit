@@ -47,3 +47,19 @@ export class TelemetryEvent {
   static readonly PreDeploy = "pre-deploy";
   static readonly Deploy = "deploy";
 }
+
+export class ProgressTitleMessage {
+  static readonly PreDeployProgressTitle = `[${Constants.PLUGIN_NAME}] Build SharePoint Package`;
+  static readonly DeployProgressTitle = `[${Constants.PLUGIN_NAME}] Deploy SharePoint Package`;
+}
+
+export class PreDeployProgressMessage{
+  static readonly NpmInstall = "Run: npm install";
+  static readonly GulpBundle = "Run: gulp bundle --ship";
+  static readonly GulpPackage = "Run: gulp package-solution --ship";
+}
+
+export class DeployProgressMessage{
+  static readonly GetSPAppCatalog = "Get SharePoint app catalog";
+  static readonly UploadAndDeploy = "Upload and deploy SPFx package on your tenant website";
+}

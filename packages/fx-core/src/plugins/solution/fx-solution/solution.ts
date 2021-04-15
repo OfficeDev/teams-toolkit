@@ -49,7 +49,6 @@ import {
     FRONTEND_DOMAIN,
     FRONTEND_ENDPOINT,
     AAD_REMOTE_CLIENT_ID,
-    TEAMS_APP_MANIFEST_TEMPLATE,
     REMOTE_TEAMS_APP_ID,
     Void,
     SOLUTION_PROVISION_SUCCEEDED,
@@ -67,6 +66,8 @@ import {
     PROVISION_MANIFEST,
     PROGRAMMING_LANGUAGE,
     REMOTE_MANIFEST
+    CONFIGURABLE_TABS,
+    STATIC_TABS
 } from "./constants";
 
 import { SpfxPlugin } from "../../resource/spfx";
@@ -91,7 +92,6 @@ import {
     HostTypeOptionSPFx,
     FrontendHostTypeQuestion,
     TabOptionItem,
-    TabScopQuestion,
     MessageExtensionItem,
     AzureResourceApim,
     createCapabilityQuestion,
@@ -724,7 +724,7 @@ export class TeamsAppSolution implements Solution {
 
         const manifest = await fs.readJSON(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`);
         if (selectedPlugins.some((plugin) => plugin.name === this.botPlugin.name)) {
-            const capabilities = ctx.answers?.getStringArray(AzureSolutionQuestionNames.Capabilities);
+            const capabilities = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings).capabilities;
             const hasBot = capabilities?.includes(BotOptionItem.label);
             const hasMsgExt = capabilities?.includes(MessageExtensionItem.label);
             if (!hasBot && !hasMsgExt) {
@@ -782,12 +782,24 @@ export class TeamsAppSolution implements Solution {
             ctx.logProvider?.debug(`Failed to get webApplicationInfoResource from aad by key ${WEB_APPLICATION_INFO_SOURCE}.`);
             return err(returnSystemError(new Error("Failed to get webApplicationInfoResource"), "Solution", SolutionError.UpdateManifestError));
         }
+        // STATIC_TABS and CONFIGURABLE_TABS are only available after postProvision.
+        const staticTabs = ctx.config.get(this.fehostPlugin.name)?.getString(STATIC_TABS);
+        const configurableTabs = ctx.config.get(this.fehostPlugin.name)?.getString(CONFIGURABLE_TABS);
+        if (!staticTabs || !configurableTabs || 
+                (staticTabs === "[]" && configurableTabs === "[]")) {
+            return err(returnSystemError(
+                new Error(`Invalid frontend config: ${STATIC_TABS}: ${staticTabs} ${CONFIGURABLE_TABS}: ${configurableTabs}`),
+                "Solution", 
+                SolutionError.UpdateManifestError));
+        }
 
         const [appDefinition, updatedManifest] = AppStudio.getDevAppDefinition(
             manifestString,
             clientId,
             validDomains,
             webApplicationInfoResource,
+            staticTabs,
+            configurableTabs,
             endpoint.endsWith("/") ? endpoint.substring(0, endpoint.length - 1) : endpoint,
         );
         const teamsAppId = ctx.config.get(GLOBAL_CONFIG)?.getString(REMOTE_TEAMS_APP_ID);
@@ -971,18 +983,18 @@ export class TeamsAppSolution implements Solution {
                 ctx.logProvider?.info("[Teams Toolkit]: provison finished!");
                 if (selectedPlugins.some((plugin) => plugin.name === this.aadPlugin.name)) {
                     const aadPlugin: AadAppForTeamsPlugin = this.aadPlugin as any;
-                    const result = aadPlugin.setApplicationInContext(
+                    return aadPlugin.setApplicationInContext(
                         getPluginContext(ctx, this.aadPlugin.name, this.manifest),
                     );
-                    if (result.isErr()) {
-                        return result;
-                    }
+                    
                 }
-                return this.createAndConfigTeamsManifest(ctx);
+                return ok(undefined);
             },
             async () => {
+                
+                const result = this.createAndConfigTeamsManifest(ctx);
                 ctx.logProvider?.info("[Teams Toolkit]: configuration finished!");
-                return ok(undefined);
+                return result;
             },
         );
     }
@@ -1175,9 +1187,6 @@ export class TeamsAppSolution implements Solution {
     async getTabScaffoldQuestions(ctx: SolutionContext):Promise<Result<QTreeNode | undefined, FxError>> {
         const tabNode = new QTreeNode({ type: NodeType.group });
        
-        const tab_scope = new QTreeNode(TabScopQuestion);
-        tabNode.addChild(tab_scope);
-
         const frontend_host_type = new QTreeNode(FrontendHostTypeQuestion);
         tabNode.addChild(frontend_host_type);
 
@@ -1243,7 +1252,7 @@ export class TeamsAppSolution implements Solution {
     async getQuestions(stage: Stage, ctx: SolutionContext): Promise<Result<QTreeNode | undefined, FxError>> {
         const node = new QTreeNode({ type: NodeType.group });
         if (stage === Stage.create) {
-            const capQuestion = createCapabilityQuestion(true);
+            const capQuestion = createCapabilityQuestion();
  
             const capNode = new QTreeNode(capQuestion); 
 
@@ -1443,6 +1452,16 @@ export class TeamsAppSolution implements Solution {
                 return result;
             }
         }
+        const result = this.loadTeamsAppTenantId(ctx.config, await ctx.appStudioToken?.getJsonObject());
+
+        if (result.isErr()) {
+            return result;
+        }
+        
+        const postLocalDebugResult = await executeConcurrently(postLocalDebugWithCtx);
+        if (postLocalDebugResult.isErr()) {
+            return postLocalDebugResult;
+        }
 
         const maybeConfig = this.getLocalDebugConfig(ctx.config);
 
@@ -1462,12 +1481,24 @@ export class TeamsAppSolution implements Solution {
             validDomains.push(localBotDomain);
         }
 
+        // STATIC_TABS and CONFIGURABLE_TABS are only available after postProvision.
+        const staticTabs = ctx.config.get(this.fehostPlugin.name)?.getString(STATIC_TABS);
+        const configurableTabs = ctx.config.get(this.fehostPlugin.name)?.getString(CONFIGURABLE_TABS);
+        if (!staticTabs || !configurableTabs || 
+                (staticTabs === "[]" && configurableTabs === "[]")) {
+            return err(returnSystemError(
+                new Error(`Invalid frontend config: ${STATIC_TABS}: ${staticTabs} ${CONFIGURABLE_TABS}: ${configurableTabs}`),
+                "Solution", 
+                SolutionError.UpdateManifestError));
+        }
         const manifestTpl = (await fs.readFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)).toString();
         const [appDefinition, _updatedManifest] = AppStudio.getDevAppDefinition(
             manifestTpl,
             localAADId,
             validDomains,
             webApplicationInfoResource,
+            staticTabs,
+            configurableTabs,
             localTabEndpoint,
             this.manifest!.name.short,
             this.manifest!.version,
@@ -1500,14 +1531,7 @@ export class TeamsAppSolution implements Solution {
             }
             ctx.config.get(GLOBAL_CONFIG)?.set(LOCAL_DEBUG_TEAMS_APP_ID, maybeTeamsAppId.value);
         }
-
-        const result = this.loadTeamsAppTenantId(ctx.config, await ctx.appStudioToken?.getJsonObject());
-
-        if (result.isErr()) {
-            return result;
-        }
-        
-        return executeConcurrently(postLocalDebugWithCtx);
+        return ok(Void);
     }
 
     private parseTeamsAppTenantId(appStudioToken?: object): Result<string, FxError> {
@@ -1836,9 +1860,17 @@ export class TeamsAppSolution implements Solution {
         if(!capabilitiesAnswer || capabilitiesAnswer.length === 0){
             return ok(Void);
         }
-
+        
         const settings = this.getAzureSolutionSettings(ctx);
- 
+
+        let reload = false;
+        for(const cap of capabilitiesAnswer!){
+            if(!settings.capabilities?.includes(cap)){
+                settings.capabilities?.push(cap);
+                reload = true;
+            }
+        }
+
         const addCapabilityNotification:string[]  = [];
 
         if(capabilitiesAnswer?.includes(TabOptionItem.id)){
@@ -1868,6 +1900,7 @@ export class TeamsAppSolution implements Solution {
 
         if(capabilitiesAnswer?.includes(BotOptionItem.id)){
             ctx.logProvider?.info(`start scaffolding Bot.....`);
+            ctx.answers.set(AzureSolutionQuestionNames.Capabilities, settings.capabilities);
             const scaffoldRes = await this.scaffoldOne(this.botPlugin, ctx);
             if (scaffoldRes.isErr()) {
                 ctx.logProvider?.info(`failed to scaffold Bot!`);
@@ -1879,13 +1912,6 @@ export class TeamsAppSolution implements Solution {
 
         if(addCapabilityNotification.length > 0){
             // finally add capabilities array and reload plugins
-            let reload = false;
-            for(const cap of capabilitiesAnswer!){
-                if(!settings.capabilities?.includes(cap)){
-                    settings.capabilities?.push(cap);
-                    reload = true;
-                }
-            }
             if(reload){
                 this.reloadPlugins(ctx);
                 ctx.logProvider?.info(`start scaffolding Local Debug Configs.....`);
@@ -1895,6 +1921,7 @@ export class TeamsAppSolution implements Solution {
                     return err(scaffoldRes.error);
                 }
                 ctx.logProvider?.info(`finish scaffolding Local Debug Configs!`);
+                ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false); //if selected plugin changed, we need to re-do provision
             }
             ctx.dialog?.communicate(
                 new DialogMsg(DialogType.Show, {
@@ -1918,12 +1945,19 @@ export class TeamsAppSolution implements Solution {
         if(method === "addCapability"){
             return await this.executeAddCapability(func, ctx);
         }
-        if (namespace.includes("solution") && method === "registerTeamsAppAndAad") {
-            const maybeParams = this.extractParamForRegisterTeamsAppAndAad(ctx.answers);
-            if (maybeParams.isErr()) {
-                return maybeParams;
+        if (namespace.includes("solution")) {
+            if (method === "registerTeamsAppAndAad") {
+                const maybeParams = this.extractParamForRegisterTeamsAppAndAad(ctx.answers);
+                if (maybeParams.isErr()) {
+                    return maybeParams;
+                }
+                return this.registerTeamsAppAndAad(ctx, maybeParams.value);
+            } else if (method === "VSpublish") {
+                // VSpublish means VS calling cli to do publish. It is different than normal cli work flow
+                // It's teamsfx init followed by teamsfx  publish without running provision.
+                // Using executeUserTask here could bypass the fx project check.
+                return this.publish(ctx);
             }
-            return this.registerTeamsAppAndAad(ctx, maybeParams.value);
         } else if (array.length == 2) {
             const pluginName = array[1];
             const plugin = this.pluginMap.get(pluginName);

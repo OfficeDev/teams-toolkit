@@ -30,7 +30,7 @@ export class Messages {
     static readonly EndPreDeploy = (name: string) => `Successfully pre-deploy ${name}.`;
     static readonly StartDeploy = (name: string) => `Start to deploy ${name}.`;
     static readonly EndDeploy = (name: string) => `Successfully deploy ${name}.`;
-    static readonly StartPostDebug = (name: string) => `Start to post debug ${name}.`;
+    static readonly StartPostLocalDebug = (name: string) => `Start to post local debug ${name}.`;
     static readonly SkipBuild = () => "No changes detected since last building, skip building Tab Frontend project.";
     static readonly SkipDeploy = () =>
         "No changes detected since last deployment, skip deploying Tab Frontend project.";

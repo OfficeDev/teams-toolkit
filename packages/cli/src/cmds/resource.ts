@@ -67,7 +67,7 @@ export class ResourceAddSql extends YargsCommand {
       if (result.isErr()) {
         return err(result.error);
       }
-      await validateAndUpdateAnswers(core, result.value!, answers);
+      await validateAndUpdateAnswers(result.value!, answers);
     }
 
     {
@@ -119,7 +119,7 @@ export class ResourceAddFunction extends YargsCommand {
       if (result.isErr()) {
         return err(result.error);
       }
-      await validateAndUpdateAnswers(core, result.value!, answers);
+      await validateAndUpdateAnswers(result.value!, answers);
     }
 
     {
@@ -232,7 +232,7 @@ export class ResourceShowFunction extends YargsCommand {
     const pluginName = "fx-resource-function";
     if (result.isOk()) {
       if (pluginName in result.value) {
-        console.log(JSON.stringify(result.value[pluginName]));
+        console.log(result.value[pluginName]);
       }
       return ok(null);
     } else {

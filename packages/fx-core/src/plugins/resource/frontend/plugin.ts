@@ -31,14 +31,14 @@ import { Messages } from "./resources/messages";
 import { FrontendScaffold as Scaffold, TemplateInfo } from "./ops/scaffold";
 import { TeamsFxResult } from "./error-factory";
 import { PreDeploySteps, ProgressHelper, ProvisionSteps, ScaffoldSteps } from "./utils/progress-helper";
-import { QuestionKey, TabScope, tabScopeQuestion } from "./resources/questions";
+import { FrontendQuestionsOnScaffold, FrontendQuestion } from "./resources/questions";
 import { ManifestVariables } from "./resources/tabScope";
 
 export class FrontendPluginImpl {
     config?: FrontendConfig;
     azureStorageClient?: AzureStorageClient;
 
-    private setConfigIfNotExists(ctx: PluginContext, key: string, value: string): void {
+    private setConfigIfNotExists(ctx: PluginContext, key: string, value: unknown): void {
         if (ctx.config.get(key)) {
             return;
         }
@@ -51,7 +51,9 @@ export class FrontendPluginImpl {
         });
 
         if (stage === Stage.create) {
-            res.addChild(tabScopeQuestion);
+            FrontendQuestionsOnScaffold.forEach((item) => {
+                res.addChild(item.questionNode);
+            });
         }
 
         return ok(res);
@@ -62,14 +64,13 @@ export class FrontendPluginImpl {
         const progressHandler = await ProgressHelper.startScaffoldProgressHandler(ctx);
         await progressHandler?.next(ScaffoldSteps.Scaffold);
 
+        this.syncAnswerToContextConfig(ctx, FrontendQuestionsOnScaffold);
+
         const templateInfo = new TemplateInfo();
         const functionPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.FunctionPluginName);
         if (functionPlugin) {
             templateInfo.scenario = FrontendPluginInfo.TemplateWithFunctionScenario;
         }
-
-        const tabScope = ctx.answers?.getString(QuestionKey.TabScope) ?? TabScope.PersonalTab;
-        this.setConfigIfNotExists(ctx, QuestionKey.TabScope, tabScope);
 
         const zip = await runWithErrorCatchAndThrow(
             new GetTemplateError(),
@@ -83,6 +84,13 @@ export class FrontendPluginImpl {
         await ProgressHelper.endScaffoldProgress();
         Logger.info(Messages.EndScaffold(PluginInfo.DisplayName));
         return ok(undefined);
+    }
+
+    private syncAnswerToContextConfig(ctx: PluginContext, questions: FrontendQuestion[]): void {
+        questions.forEach((item) => {
+            const answer = ctx.answers?.get(item.questionKey) ?? item.defaultValue;
+            this.setConfigIfNotExists(ctx, item.configKey, answer);
+        });
     }
 
     public async preProvision(ctx: PluginContext): Promise<TeamsFxResult> {
@@ -226,8 +234,8 @@ export class FrontendPluginImpl {
         return ok(this.config);
     }
 
-    public async postDebug(ctx: PluginContext): Promise<TeamsFxResult> {
-        Logger.info(Messages.StartPostDebug(PluginInfo.DisplayName));
+    public async postLocalDebug(ctx: PluginContext): Promise<TeamsFxResult> {
+        Logger.info(Messages.StartPostLocalDebug(PluginInfo.DisplayName));
 
         const localDebugPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.LocalDebugPluginName);
         const localTabEndpoint = localDebugPlugin?.get(DependentPluginInfo.LocalTabEndpoint) as string;

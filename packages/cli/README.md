@@ -32,29 +32,25 @@ teamsfx xxx --debug
 ### New commands
 
 ```bash
-cd /path/to/a/folder/
+# create interactively.
+teamsfx new
 
-# create a teams app which hosting on Azure (with no sql/function).
-teamsfx new --app-name azureApp
+# non-interactively create a teams app which hosting on Azure (with sql).
+teamsfx new --interactive false --app-name azureApp --azure-resources sql
 
-# create a teams app which hosting on Azure (with sql).
-teamsfx new --app-name azureApp --azure-resources sql
+# non-interactively create a teams app which hosting on Azure (with function).
+teamsfx new --interactive false --app-name azureApp --azure-resources function
 
-# create a teams app which hosting on Azure (with function).
-teamsfx new --app-name azureApp --azure-resources function --function-language JavaScript
+# non-interactively create a teams app which hosting on Azure (with sql and function).
+teamsfx new --interactive false --app-name azureApp --azure-resources function sql
 
-# create a teams app which hosting on Azure (with sql and function).
-teamsfx new --app-name azureApp --azure-resources function sql --function-language JavaScript
-
-# create a teams app which hosting on SPFx.
-teamsfx new --app-name spfxApp --host-type SPFx
+# non-interactively create a teams app which hosting on SPFx.
+teamsfx new --interactive false --app-name spfxApp --host-type SPFx
 ```
 
 ### Login && set subscription
 
 ```bash
-cd /path/to/your/project/
-
 # login azure
 teamsfx account login azure
 # login appStudio
@@ -69,9 +65,8 @@ teamsfx account set --subscription 1756abc0-3554-4341-8d6a-46674962ea19
 
 ```bash
 cd /path/to/your/project/
-
 # Add Azure Function
-teamsfx resource add azure-function --function-language JavaScript --subscription 1756abc0-3554-4341-8d6a-46674962ea19
+teamsfx resource add azure-function
 # Add Azure SQL
 teamsfx resource add azure-sql
 ```
@@ -91,7 +86,7 @@ teamsfx resource configure aad --aad-env both
 ```bash
 # cd to your azure project with function/sql
 cd /path/to/your/azure/project/
-teamsfx provision --subscription 1756abc0-3554-4341-8d6a-46674962ea19 --sql-admin-name Abc123321 --sql-password Cab232332 --sql-confirm-password Cab232332
+teamsfx provision --sql-admin-name Abc123321 --sql-password Cab232332 --sql-confirm-password Cab232332
 ```
 
 ### Deploy
@@ -110,23 +105,21 @@ teamsfx publish
 
 ## How to run e2e-test locally
 
-### Setup environment variables
-1. TEST_USER_NAME="metadev@microsoft.com"
-2. TEST_USER_PASSWORD="<$PASSWORD>"
-
-You can ask `Long Hao` or `Zhiyu You` for `$PASSWORD`.
-
 ### Setup repo
-1. `git clone https://github.com/OfficeDev/TeamsFx.git`
-2. `cd TeamsFx`
-3. `npm run bootstrap`
+You can follow `For developpers to build and run your local project` at the top of this readme.
 
 ### Run
-1. `cd packages/cli`
-2. Set environment variable `CI_ENABLED` to `true`.
-2. `npm run e2e-test`
+`npm run e2e-test`
 
-If you want to use the default way of sign (not for CI/CD), please don't set `CI_ENABLED` or set it to `false`.
+### Setup environment variables (Optional)
+If you want to use the test account to run e2e test cases, you should set the following environment variables.
+
+1. TEST_USER_NAME="metadev@microsoft.com"
+2. TEST_USER_PASSWORD="<$PASSWORD>"
+3. Set environment variable `CI_ENABLED` to `true`.
+
+If you want to use the default way of signin/signout (not for CI/CD), please don't set `CI_ENABLED` or set it to `false`.
+You can ask `Long Hao` or `Zhiyu You` for `$PASSWORD`.
 
 ## How to Generate Parameter Files (for Repo Contributors)
 

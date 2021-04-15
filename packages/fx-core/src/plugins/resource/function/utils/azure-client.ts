@@ -43,8 +43,16 @@ export class AzureLib {
         return res.body;
     }
 
-    private static async ensureResource<T>(createOrUpdateFn: () => Promise<T>): Promise<T> {
-        return createOrUpdateFn();
+    private static async ensureResource<T>(
+        createFn: () => Promise<T>,
+        findFn?: () => Promise<T | undefined>
+    ): Promise<T> {
+        const _t: T | undefined = await findFn?.();
+        if (!_t) {
+            return createFn();
+        }
+        Logger.info(InfoMessages.resourceExists);
+        return _t;
     }
 
     public static async findAppServicePlans(
@@ -61,7 +69,8 @@ export class AzureLib {
         appServicePlanName: string, options: AppServicePlan): Promise<AppServicePlan> {
 
         return this.ensureResource<AppServicePlan>(
-            () => client.appServicePlans.createOrUpdate(resourceGroupName, appServicePlanName, options)
+            () => client.appServicePlans.createOrUpdate(resourceGroupName, appServicePlanName, options),
+            () => this.findAppServicePlans(client, resourceGroupName, appServicePlanName)
         );
     }
 

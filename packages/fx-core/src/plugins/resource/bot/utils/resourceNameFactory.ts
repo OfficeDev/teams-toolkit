@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { Alias, RegularExprs } from "../constants";
 import { SomethingMissingException } from "../exceptions";
 import { CommonStrings } from "../resources/strings";

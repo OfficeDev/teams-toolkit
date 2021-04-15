@@ -6,7 +6,7 @@ import { AuthenticationResult, ConfidentialClientApplication } from "@azure/msal
 import { config } from "../core/configurationProvider";
 import { UserInfo } from "../models/userinfo";
 import { internalLogger } from "../util/logger";
-import { formatString, getExpirationNumberFromJWT, getUserInfoFromSsoToken } from "../util/utils";
+import { formatString, getUserInfoFromSsoToken, parseJwt } from "../util/utils";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "./errors";
 
 /**
@@ -104,7 +104,7 @@ export class OnBehalfOfUserCredential implements TokenCredential {
 
       result = {
         token: this.ssoToken,
-        expiresOnTimestamp: getExpirationNumberFromJWT(this.ssoToken)
+        expiresOnTimestamp: parseJwt(this.ssoToken).exp
       };
     } else {
       internalLogger.info("Get access token with scopes: " + scopesArray.join(" "));

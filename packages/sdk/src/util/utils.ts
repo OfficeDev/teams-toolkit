@@ -11,45 +11,19 @@ import { internalLogger } from "./logger";
  * @param token
  * @returns payload object
  */
-export function parseJwt(token: string): any {
+export function parseJwt(token: string): SSOTokenInfoBase {
   try {
-    return jwt_decode(token);
+    const tokenObj = jwt_decode(token) as SSOTokenInfoBase;
+    if (!tokenObj || !tokenObj.exp) {
+      throw new ErrorWithCode("Decoded token is null or exp claim does not exists.", ErrorCode.InternalError);
+    }
+
+    return tokenObj;
   } catch (err) {
     const errorMsg = "Parse jwt token failed in node env with error: " + err.message;
     internalLogger.error(errorMsg);
     throw new ErrorWithCode(errorMsg, ErrorCode.InternalError);
   }
-}
-
-/**
- * get expiration for JWT token, in ISO 8601 format (e.g. "2007-04-05T14:30Z")
- * @param token jwt token
- * @returns return expiration time in ISO 8601 format, string. If fail to parse jwt, return empty string.
- *
- * @internal
- */
-export function getISOExpirationFromJWT(token: string): string {
-  const obj = parseJwt(token) as SSOTokenInfoBase;
-  if (obj && obj.exp) {
-    return new Date(obj.exp * 1000).toISOString();
-  }
-  internalLogger.warn("Cannot read expiration info from token");
-  return "";
-}
-
-/**
- * get expiration number for JWT token (e.g. 1537234948)
- * @param token jwt token
- * @returns return expiration time number. If fail to parse jwt, return -1.
- *
- * @internal
- */
-export function getExpirationNumberFromJWT(token: string): number {
-  const obj = parseJwt(token) as SSOTokenInfoBase;
-  if (obj && obj.exp) {
-    return obj.exp;
-  }
-  return -1;
 }
 
 export function getUserInfoFromSsoToken(ssoToken: string): UserInfo {

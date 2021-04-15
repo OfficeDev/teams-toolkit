@@ -39,7 +39,7 @@ export interface Core {
     create: (
         ctx: Context,
         answers?: ConfigMap,
-    ) => Promise<Result<null, FxError>>;
+    ) => Promise<Result<string, FxError>>;
 
     /**
      * update existing project

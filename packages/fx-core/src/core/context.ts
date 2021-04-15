@@ -68,6 +68,7 @@ export class CoreContext implements SolutionContext {
     this.env = "default";
     this.platform = c.platform;
     this.answers = c.answers;
+    this.projectSettings = c.projectSettings;
     this.configs = new Map();
     this.globalSolutions = new Map();
 
@@ -76,12 +77,7 @@ export class CoreContext implements SolutionContext {
   }
 
   public toSolutionContext(answers?: ConfigMap): CoreContext {
-    const allAnswers = tools.mergeConfigMap(this.globalConfig, this.answers);
-    if (this.stage === Stage.create) {
-      this.answers = allAnswers;
-    } else {
-      this.answers = tools.mergeConfigMap(allAnswers, answers);
-    }
+    this.answers = tools.mergeConfigMap(this.globalConfig, answers);
     return this;
   }
 }

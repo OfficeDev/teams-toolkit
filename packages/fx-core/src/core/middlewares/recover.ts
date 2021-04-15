@@ -3,7 +3,7 @@
 "use strict";
 
 import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks";
-import { err } from "fx-api";
+import { err, SystemError, UserError } from "fx-api";
 import { UncatchedError } from "../error";
 
 /**
@@ -17,6 +17,11 @@ export const recoverMW: Middleware = async (
   try {
     await next();
   } catch (e) {
-    ctx.result = err(UncatchedError());
+    if (  e instanceof UserError || e instanceof SystemError) {
+      ctx.result = err(e);
+    }
+    else {
+      ctx.result = err(UncatchedError());
+    }
   }
 };

@@ -62,8 +62,7 @@ export const readConfigMW: Middleware = async (
       const localDataPath = `${coreCtx.root}/.${ConfigFolderName}/${envName}.userdata`;
       let dict: Dict<string>;
       if (await fs.pathExists(localDataPath)) {
-        const dictContent = await fs.readFile(localDataPath, "UTF-8");
-        dict = tools.deserializeDict(dictContent);
+        dict = await fs.readJSON(localDataPath);
       } else {
         dict = {};
       }
@@ -140,7 +139,7 @@ export const writeConfigMW: Middleware = async (
       const localData = tools.sperateSecretData(configJson);
       const content = JSON.stringify(configJson, null, 4);
       await fs.writeFile(filePath, content);
-      await fs.writeFile(localDataPath, tools.serializeDict(localData));
+      await fs.writeFile(localDataPath, JSON.stringify(localData, null, 4));
     }
 
     // write answers

@@ -53,6 +53,7 @@ import { FuncToolChecker } from "./debug/depsChecker/funcToolChecker";
 import { DotnetChecker, dotnetChecker } from "./debug/depsChecker/dotnetChecker";
 import { PanelType } from "./controls/PanelType";
 import { ContextFactory } from "./context";
+import DialogManagerInstance from "./userInterface";
 
 export let core = TeamsCore.getInstance();
 const runningTasks = new Set<string>(); // to control state of task execution
@@ -146,7 +147,6 @@ export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
     const node = qres.value;
     if (node) {
       VsCodeLogInstance.info(`Question tree:${JSON.stringify(node, null, 4)}`);
-      answers.set("substage", "askQuestions");
       const res: InputResult = await traverse(node, answers, VS_CODE_UI, stage, coreExeceutor);
       VsCodeLogInstance.info(`User input:${JSON.stringify(res, null, 4)}`);
       if (res.type === InputResultType.error) {
@@ -157,8 +157,17 @@ export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
     }
 
     // 6. run task
-    answers.set("substage", "runTask");
-    if (stage === Stage.create) result = await core.create(ContextFactory.get(stage), answers);
+    if (stage === Stage.create){
+      const createRes = await core.create(ContextFactory.get(stage), answers);
+      if(createRes.isOk()){
+        const folder = createRes.value;
+        const uri = Uri.file(folder);
+        await ext.ui.openFolder(uri);
+        result = ok(null);
+      }
+      else 
+        result = err(createRes.error);
+    } 
     else if (stage === Stage.update) result = await core.update(ContextFactory.get(stage), answers);
     else if (stage === Stage.provision)
       result = await core.provision(ContextFactory.get(stage), answers);

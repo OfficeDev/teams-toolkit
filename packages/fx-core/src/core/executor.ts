@@ -52,8 +52,6 @@ export class Executor {
     ctx: CoreContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     const answers = new ConfigMap();
-    answers.set("stage", ctx.stage);
-    answers.set("substage", "getQuestions");
     const node = new QTreeNode({ type: NodeType.group });
     if (ctx.stage === Stage.create) {
       node.addChild(new QTreeNode(QuestionAppName));
@@ -194,12 +192,11 @@ export class Executor {
   static async create(
     ctx: CoreContext,
     answers?: ConfigMap
-  ): Promise<Result<null, FxError>> {
+  ): Promise<Result<string, FxError>> {
     if (!ctx.dialog) {
       return err(error.InvalidContext());
     }
     ctx.logProvider?.info(`[Core] create - create target object`);
-    ctx.answers = answers;
 
     const appName = answers?.getString(QuestionAppName.name);
     const validateResult = jsonschema.validate(appName, {
@@ -271,7 +268,7 @@ export class Executor {
             description: "",
             author: "",
             scripts: {
-              test: 'echo "Error: no test specified" && exit 1',
+              test: "echo \"Error: no test specified\" && exit 1",
             },
             license: "MIT",
           },
@@ -285,7 +282,7 @@ export class Executor {
 
     ctx.logProvider?.info(`[Core] create - create basic folder with configs`);
 
-    return ok(null);
+    return ok(projFolder);
   }
 
   @hooks([solutionMW, readConfigMW, writeConfigMW])
@@ -293,28 +290,9 @@ export class Executor {
     ctx: CoreContext,
     answers?: ConfigMap
   ): Promise<Result<null, FxError>> {
-    ctx.logProvider?.info(`[Core] scaffold start!`);
-
-    const scaffoldRes = await ctx.selectedSolution!.scaffold(
+    return await ctx.selectedSolution!.scaffold(
       ctx.toSolutionContext(answers)
     );
-
-    if (scaffoldRes.isErr()) {
-      ctx.logProvider?.info(`[Core] scaffold failed!`);
-      return scaffoldRes;
-    }
-
-    ctx.logProvider?.info(
-      `[Core] scaffold success! open target folder:${ctx.root}`
-    );
-
-    await ctx.dialog?.communicate(
-      new DialogMsg(DialogType.Ask, {
-        type: QuestionType.OpenFolder,
-        description: ctx.root,
-      })
-    );
-    return ok(null);
   }
 
   @hooks([versionControlMW, solutionMW, readConfigMW, writeConfigMW])
@@ -339,6 +317,14 @@ export class Executor {
     answers?: ConfigMap
   ): Promise<Result<null, FxError>> {
     return ctx.selectedSolution!.deploy(ctx.toSolutionContext(answers));
+  }
+
+  @hooks([versionControlMW, solutionMW, readConfigMW, writeConfigMW])
+  static async publish(
+    ctx: CoreContext,
+    answers?: ConfigMap
+  ): Promise<Result<null, FxError>> {
+    return ctx.selectedSolution!.publish(ctx.toSolutionContext(answers));
   }
 
   @hooks([versionControlMW, solutionMW, readConfigMW, writeConfigMW])

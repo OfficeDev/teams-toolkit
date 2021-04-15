@@ -11,6 +11,7 @@ import {
   QTreeNode,
   Result,
   Context,
+  err,
 } from "fx-api";
 import { hooks } from "@feathersjs/hooks";
 import { concurrentMW } from "./middlewares/concurrent";
@@ -37,14 +38,14 @@ export class TeamsCore implements Core {
     ctx: Context,
     answers?: ConfigMap
   ): Promise<Result<null, FxError>> {
-    return Executor.localDebug(new CoreContext(ctx), answers);
+    return await Executor.localDebug(new CoreContext(ctx), answers);
   }
 
   @hooks([recoverMW])
   public async getQuestions(
     ctx: Context
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    return Executor.getQuestions(new CoreContext(ctx));
+    return await Executor.getQuestions(new CoreContext(ctx));
   }
 
   @hooks([recoverMW])
@@ -52,7 +53,7 @@ export class TeamsCore implements Core {
     ctx: Context,
     func: Func
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    return Executor.getQuestionsForUserTask(new CoreContext(ctx), func);
+    return await Executor.getQuestionsForUserTask(new CoreContext(ctx), func);
   }
 
   @hooks([recoverMW])
@@ -61,7 +62,7 @@ export class TeamsCore implements Core {
     func: Func,
     answers?: ConfigMap
   ): Promise<Result<any, FxError>> {
-    return Executor.executeUserTask(new CoreContext(ctx), func, answers);
+    return await Executor.executeUserTask(new CoreContext(ctx), func, answers);
   }
 
   @hooks([recoverMW])
@@ -70,20 +71,25 @@ export class TeamsCore implements Core {
     func: Func,
     answers?: ConfigMap
   ): Promise<Result<any, FxError>> {
-    return Executor.callFunc(new CoreContext(ctx), func, answers);
+    return await Executor.callFunc(new CoreContext(ctx), func, answers);
   }
 
   @hooks([recoverMW])
   public async create(
     ctx: Context,
     answers?: ConfigMap
-  ): Promise<Result<null, FxError>> {
+  ): Promise<Result<string, FxError>> {
     const coreCtx = new CoreContext(ctx);
-    let result = await Executor.create(coreCtx, answers);
+    const result = await Executor.create(coreCtx, answers);
     if (result.isErr()) {
       return result;
     }
-    return Executor.scaffold(coreCtx, answers);
+    const folder = result.value;
+    const result2 = await Executor.scaffold(coreCtx, answers);
+    if (result2.isErr()) {
+      return err(result2.error);
+    }
+    return ok(folder);
   }
 
   @hooks([recoverMW, concurrentMW])
@@ -91,7 +97,7 @@ export class TeamsCore implements Core {
     ctx: Context,
     answers?: ConfigMap
   ): Promise<Result<null, FxError>> {
-    return Executor.scaffold(new CoreContext(ctx), answers);
+    return await Executor.scaffold(new CoreContext(ctx), answers);
   }
 
   @hooks([recoverMW, concurrentMW])
@@ -99,7 +105,7 @@ export class TeamsCore implements Core {
     ctx: Context,
     answers?: ConfigMap
   ): Promise<Result<null, FxError>> {
-    return Executor.update(new CoreContext(ctx), answers);
+    return await Executor.update(new CoreContext(ctx), answers);
   }
 
   @hooks([recoverMW, concurrentMW])
@@ -107,7 +113,7 @@ export class TeamsCore implements Core {
     ctx: Context,
     answers?: ConfigMap
   ): Promise<Result<null, FxError>> {
-    return Executor.provision(new CoreContext(ctx), answers);
+    return await Executor.provision(new CoreContext(ctx), answers);
   }
 
   @hooks([recoverMW, concurrentMW])
@@ -115,7 +121,7 @@ export class TeamsCore implements Core {
     ctx: Context,
     answers?: ConfigMap
   ): Promise<Result<null, FxError>> {
-    return Executor.deploy(new CoreContext(ctx), answers);
+    return await Executor.deploy(new CoreContext(ctx), answers);
   }
 
   @hooks([recoverMW, concurrentMW])
@@ -123,7 +129,7 @@ export class TeamsCore implements Core {
     ctx: Context,
     answers?: ConfigMap
   ): Promise<Result<null, FxError>> {
-    return ok(null);
+    return await Executor.publish(new CoreContext(ctx), answers);
   }
 
   @hooks([recoverMW, concurrentMW])
@@ -131,7 +137,7 @@ export class TeamsCore implements Core {
     ctx: Context,
     env: string
   ): Promise<Result<null, FxError>> {
-    return Executor.createEnv(new CoreContext(ctx), env);
+    return await Executor.createEnv(new CoreContext(ctx), env);
   }
 
   @hooks([recoverMW, concurrentMW])
@@ -139,7 +145,7 @@ export class TeamsCore implements Core {
     ctx: Context,
     env: string
   ): Promise<Result<null, FxError>> {
-    return Executor.removeEnv(new CoreContext(ctx), env);
+    return await Executor.removeEnv(new CoreContext(ctx), env);
   }
 
   @hooks([recoverMW, concurrentMW])
@@ -147,11 +153,11 @@ export class TeamsCore implements Core {
     ctx: Context,
     env: string
   ): Promise<Result<null, FxError>> {
-    return Executor.switchEnv(new CoreContext(ctx), env);
+    return await Executor.switchEnv(new CoreContext(ctx), env);
   }
 
   @hooks([recoverMW, concurrentMW])
   public async listEnvs(ctx: Context): Promise<Result<string[], FxError>> {
-    return Executor.listEnvs(new CoreContext(ctx));
+    return await Executor.listEnvs(new CoreContext(ctx));
   }
 }

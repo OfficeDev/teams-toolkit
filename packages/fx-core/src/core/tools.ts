@@ -154,29 +154,6 @@ export function mergeSerectData(dict: Dict<string>, configJson: Json): void {
   }
 }
 
-export function serializeDict(dict: Dict<string>): string {
-  const array: string[] = [];
-  for (const key of Object.keys(dict)) {
-    const value = dict[key];
-    array.push(`${key}=${value}`);
-  }
-  return array.join("\n");
-}
-
-export function deserializeDict(data: string): Dict<string> {
-  const lines = data.split("\n");
-  const dict: Dict<string> = {};
-  for (const line of lines) {
-    const index = line.indexOf("=");
-    if (index > 0) {
-      const key = line.substr(0, index);
-      const value = line.substr(index + 1);
-      dict[key] = value;
-    }
-  }
-  return dict;
-}
-
 export const deepCopy = <T>(target: T): T => {
   if (target === null) {
     return target;

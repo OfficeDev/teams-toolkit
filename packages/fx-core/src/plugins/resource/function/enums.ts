@@ -2,8 +2,8 @@
 // Licensed under the MIT license.
 export enum FunctionLanguage {
     JavaScript = "javascript",
-    TypeScript = "typescript"
-    // CSharp = "csharp"
+    TypeScript = "typescript",
+    CSharp = "csharp"
 }
 
 export enum NodeVersion {

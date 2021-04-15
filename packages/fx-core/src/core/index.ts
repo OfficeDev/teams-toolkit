@@ -265,15 +265,19 @@ class CoreImpl implements Core {
         }
         this.target.ctx.root = projFolder;
 
+        const loadRes = await Loader.loadSolutions(this.target.ctx);
+        if(loadRes.isErr()) {
+            return err(loadRes.error);
+        }
         const solutionName = answers?.getString(QuestionSelectSolution.name);
         this.ctx.logProvider?.info(`[Core] create - select solution`);
-        for (const s of this.globalSolutions.values()) {
+        for (const s of loadRes.value.values()) {
             if (s.name === solutionName) {
                 this.target.selectedSolution = s;
                 break;
             }
-        }
-
+        } 
+        
         if(!this.target.selectedSolution){
             return err(
                 new UserError(

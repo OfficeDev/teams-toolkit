@@ -18,7 +18,7 @@ export { TelemetryProperty } from "../../telemetry/extTelemetryEvents";
 
 export class CheckerLogger {
   private static checkerLogFileName = "env-checker.log";
-  private static logFilePath = path.join(os.homedir(), `.${ConfigFolderName}`, CheckerLogger.checkerLogFileName);
+  private static globalConfigFolder = path.join(os.homedir(), `.${ConfigFolderName}`);
 
   public outputChannel: OutputChannel;
   private logger: VsCodeLogProvider;
@@ -27,7 +27,7 @@ export class CheckerLogger {
     this.outputChannel = logger.outputChannel;
     this.logger = logger;
 
-    fs.mkdirSync(path.resolve(CheckerLogger.logFilePath, ".."), { recursive: true });
+    fs.mkdirSync(CheckerLogger.globalConfigFolder, { recursive: true });
   }
 
   async trace(message: string): Promise<boolean> {
@@ -62,7 +62,8 @@ export class CheckerLogger {
 
   private async writeLog(level: LogLevel, message: string): Promise<void> {
     const line = `${LogLevel[level]} ${new Date().toISOString()}: ${message}` + os.EOL;
-    await appendFile(CheckerLogger.logFilePath, line);
+    const logFilePath = path.join(CheckerLogger.globalConfigFolder, CheckerLogger.checkerLogFileName);
+    await appendFile(logFilePath, line);
   }
 }
 

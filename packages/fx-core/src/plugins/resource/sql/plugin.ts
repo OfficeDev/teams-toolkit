@@ -142,8 +142,8 @@ export class SqlPluginImpl {
         const managementClient: ManagementClient = new ManagementClient(ctx, this.config);
         await managementClient.init();
 
-        DialogUtils.progressBar?.start();
-        DialogUtils.progressBar?.next(ProcessMessage.provisionSQL);
+        await DialogUtils.progressBar?.start();
+        await DialogUtils.progressBar?.next(ProcessMessage.provisionSQL);
         if (!this.config.existSql) {
             ctx.logProvider?.info(Message.provisionSql);
             await managementClient.createAzureSQL();
@@ -151,7 +151,7 @@ export class SqlPluginImpl {
             ctx.logProvider?.info(Message.skipProvisionSql);
         }
 
-        DialogUtils.progressBar?.next(ProcessMessage.provisionDatabase);
+        await DialogUtils.progressBar?.next(ProcessMessage.provisionDatabase);
         let existDatabase = false;
         if (this.config.existSql) {
             ctx.logProvider?.info(Message.checkDatabase);
@@ -166,7 +166,7 @@ export class SqlPluginImpl {
 
         TelemetryUtils.sendEvent(Telemetry.provisionEnd);
         ctx.logProvider?.info(Message.endProvision);
-        DialogUtils.progressBar?.end();
+        await DialogUtils.progressBar?.end();
         return ok(undefined);
     }
 
@@ -184,8 +184,8 @@ export class SqlPluginImpl {
         await managementClient.addLocalFirewallRule();
         await managementClient.addAzureFirewallRule();
 
-        DialogUtils.progressBar?.start();
-        DialogUtils.progressBar?.next(ProcessMessage.postProvisionAddAadmin);
+        await DialogUtils.progressBar?.start();
+        await DialogUtils.progressBar?.next(ProcessMessage.postProvisionAddAadmin);
         let existAdmin = false;
         ctx.logProvider?.info(Message.checkAadAdmin);
         existAdmin = await managementClient.existAadAdmin();
@@ -205,7 +205,7 @@ export class SqlPluginImpl {
         }
 
         if (!this.config.skipAddingUser) {
-            DialogUtils.progressBar?.next(ProcessMessage.postProvisionAddUser);
+            await DialogUtils.progressBar?.next(ProcessMessage.postProvisionAddUser);
             // azure sql does not support service principal admin to add databse user currently, so just notice developer if so.
             if (this.config.aadAdminType === UserType.User) {
                 ctx.logProvider?.info(Message.connectDatabase);
@@ -233,7 +233,7 @@ export class SqlPluginImpl {
 
         TelemetryUtils.sendEvent(Telemetry.postProvisionEnd);
         ctx.logProvider?.info(Message.endPostProvision);
-        DialogUtils.progressBar?.end();
+        await DialogUtils.progressBar?.end();
         return ok(undefined);
     }
 }

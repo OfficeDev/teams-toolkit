@@ -1181,7 +1181,7 @@ export class TeamsAppSolution implements Solution {
 
         //Frontend plugin
         if (this.fehostPlugin.getQuestions) {
-            const pluginCtx = getPluginContext(ctx, this.fehostPlugin.name);
+            const pluginCtx = getPluginContext(ctx, this.fehostPlugin.name, this.manifest, true);
             const res = await this.fehostPlugin.getQuestions(Stage.create, pluginCtx);
             if (res.isErr()) return res;
             if (res.value) {
@@ -1197,7 +1197,7 @@ export class TeamsAppSolution implements Solution {
 
         //SPFX plugin
         if (this.spfxPlugin.getQuestions) {
-            const pluginCtx = getPluginContext(ctx, this.spfxPlugin.name);
+            const pluginCtx = getPluginContext(ctx, this.spfxPlugin.name, this.manifest, true);
             const res = await this.spfxPlugin.getQuestions(Stage.create, pluginCtx);
             if (res.isErr()) return res;
             if (res.value) {
@@ -1209,7 +1209,7 @@ export class TeamsAppSolution implements Solution {
 
         //Azure Function
         if (this.functionPlugin.getQuestions) {
-            const pluginCtx = getPluginContext(ctx, this.functionPlugin.name, this.manifest);
+            const pluginCtx = getPluginContext(ctx, this.functionPlugin.name, this.manifest, true);
             const res = await this.functionPlugin.getQuestions(Stage.create, pluginCtx);
             if (res.isErr()) return res;
             if (res.value) {
@@ -1221,7 +1221,7 @@ export class TeamsAppSolution implements Solution {
 
         //Azure SQL
         if (this.sqlPlugin.getQuestions) {
-            const pluginCtx = getPluginContext(ctx, this.sqlPlugin.name, this.manifest);
+            const pluginCtx = getPluginContext(ctx, this.sqlPlugin.name, this.manifest, true);
             const res = await this.sqlPlugin.getQuestions(Stage.create, pluginCtx);
             if (res.isErr()) return res;
             if (res.value) {
@@ -1260,7 +1260,7 @@ export class TeamsAppSolution implements Solution {
 
             ////Bot
             if (this.botPlugin.getQuestions) {
-                const pluginCtx = getPluginContext(ctx, this.botPlugin.name, this.manifest);
+                const pluginCtx = getPluginContext(ctx, this.botPlugin.name, this.manifest, true);
                 const res = await this.botPlugin.getQuestions(stage, pluginCtx);
                 if (res.isErr()) return res;
                 if (res.value) {
@@ -1283,7 +1283,7 @@ export class TeamsAppSolution implements Solution {
             }
             for (const plugin of res.value) {
                 if (plugin.getQuestions) {
-                    const pluginCtx = getPluginContext(ctx, plugin.name, this.manifest);
+                    const pluginCtx = getPluginContext(ctx, plugin.name, this.manifest, true);
                     const getQuestionRes = await plugin.getQuestions(stage, pluginCtx);
                     if (getQuestionRes.isErr()) return getQuestionRes;
                     if (getQuestionRes.value) {
@@ -1315,7 +1315,7 @@ export class TeamsAppSolution implements Solution {
 
             for (const plugin of pluginsToDeploy) {
                 if (plugin.getQuestions) {
-                    const pluginCtx = getPluginContext(ctx, plugin.name, this.manifest);
+                    const pluginCtx = getPluginContext(ctx, plugin.name, this.manifest, true);
                     const getQuestionRes = await plugin.getQuestions(stage, pluginCtx);
                     if (getQuestionRes.isErr()) return getQuestionRes;
                     if (getQuestionRes.value) {
@@ -1328,7 +1328,7 @@ export class TeamsAppSolution implements Solution {
         } else if (stage === Stage.publish) {
             const pluginsToPublish = [this.appStudioPlugin];
             for (const plugin of pluginsToPublish) {
-                const pluginCtx = getPluginContext(ctx, plugin.name, this.manifest);
+                const pluginCtx = getPluginContext(ctx, plugin.name, this.manifest, true);
                 if (plugin.getQuestions) {
                     const getQuestionRes = await plugin.getQuestions(stage, pluginCtx);
                     if (getQuestionRes.isErr()) return getQuestionRes;
@@ -1620,7 +1620,7 @@ export class TeamsAppSolution implements Solution {
             const pluginName = array[1];
             const plugin = this.pluginMap.get(pluginName);
             if (plugin && plugin.callFunc) {
-                const pctx = getPluginContext(ctx, plugin.name, this.manifest);
+                const pctx = getPluginContext(ctx, plugin.name, this.manifest, true);
                 if (func.method === "aadUpdatePermission") {
                     const result = await this.updatePermissionRequest(ctx);
                     if (result.isErr()) {
@@ -1703,7 +1703,7 @@ export class TeamsAppSolution implements Solution {
         
         // there two cases to add function re-scaffold: 1. select add function   2. select add sql and function is not selected when creating
         if (this.functionPlugin.getQuestions) {
-            const pluginCtx = getPluginContext(ctx, this.functionPlugin.name, this.manifest);
+            const pluginCtx = getPluginContext(ctx, this.functionPlugin.name, this.manifest, true);
             const res = await this.functionPlugin.getQuestions(Stage.update, pluginCtx);
             if (res.isErr()) return res;
             if (res.value) {
@@ -1721,7 +1721,7 @@ export class TeamsAppSolution implements Solution {
 
         //Azure SQL
         if (this.sqlPlugin.getQuestions && !alreadyHaveSQL) {
-            const pluginCtx = getPluginContext(ctx, this.sqlPlugin.name, this.manifest);
+            const pluginCtx = getPluginContext(ctx, this.sqlPlugin.name, this.manifest, true);
             const res = await this.sqlPlugin.getQuestions(Stage.update, pluginCtx);
             if (res.isErr()) return res;
             if (res.value) {
@@ -1733,7 +1733,7 @@ export class TeamsAppSolution implements Solution {
 
         //APIM
         if (this.apimPlugin.getQuestions && !alreadyHaveAPIM) {
-            const pluginCtx = getPluginContext(ctx, this.apimPlugin.name, this.manifest);
+            const pluginCtx = getPluginContext(ctx, this.apimPlugin.name, this.manifest, true);
             const res = await this.apimPlugin.getQuestions(Stage.update, pluginCtx);
             if (res.isErr()) return res;
             if (res.value) {
@@ -1791,7 +1791,7 @@ export class TeamsAppSolution implements Solution {
 
         //Bot sub tree
         if(!alreadyHaveBot && this.botPlugin.getQuestions){
-            const pluginCtx = getPluginContext(ctx, this.botPlugin.name, this.manifest);
+            const pluginCtx = getPluginContext(ctx, this.botPlugin.name, this.manifest, true);
             const res = await this.botPlugin.getQuestions(Stage.create, pluginCtx);
             if (res.isErr()) return res;
             if (res.value) {
@@ -1818,7 +1818,7 @@ export class TeamsAppSolution implements Solution {
             const plugin = this.pluginMap.get(pluginName);
             if (plugin) {
                 if (plugin.getQuestionsForUserTask) {
-                    const pctx = getPluginContext(ctx, plugin.name, this.manifest);
+                    const pctx = getPluginContext(ctx, plugin.name, this.manifest, true);
                     return await plugin.getQuestionsForUserTask(func, pctx);
                 } else {
                     return ok(undefined);

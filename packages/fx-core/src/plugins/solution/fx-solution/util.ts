@@ -74,10 +74,11 @@ export function askWithoutDefaultAnswerWith<T>(
 export function getPluginContext(
     solutionCtx: SolutionContext,
     pluginIdentifier: string,
-    manifest?: TeamsAppManifest
+    manifest?: TeamsAppManifest,
+    readonly?: boolean
 ): PluginContext {
     const baseCtx: Context = solutionCtx;
-    if (!solutionCtx.config.has(pluginIdentifier)) {
+    if ( (readonly === false || readonly === undefined) && !solutionCtx.config.has(pluginIdentifier)) {
         solutionCtx.config.set(pluginIdentifier, new ConfigMap());
     }
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

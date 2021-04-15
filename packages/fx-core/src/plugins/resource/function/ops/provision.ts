@@ -44,7 +44,7 @@ export class FunctionProvision {
     ): Promise<Site> {
         const settings: NameValuePair[] = Object.entries({
             ...DefaultProvisionConfigs.functionAppStaticSettings,
-            ...(await this.getFunctionAppRuntimeSettings(language, version)),
+            ...this.getFunctionAppRuntimeSettings(language, version),
             ...this.getFunctionAppStorageSettings(storageConnectionString)
         }).map(kv => ({
             name: kv[0],
@@ -63,8 +63,8 @@ export class FunctionProvision {
     }
 
     // TODO: Extend to support multiple language and versions.
-    private static async getFunctionAppRuntimeSettings(language: FunctionLanguage, version: string): Promise<{ [key: string]: string }> {
-        return (await LanguageStrategyFactory.getStrategy(language)).functionAppRuntimeSettings(version);
+    private static getFunctionAppRuntimeSettings(language: FunctionLanguage, version: string): { [key: string]: string } {
+        return LanguageStrategyFactory.getStrategy(language).functionAppRuntimeSettings(version);
     }
 
     private static getFunctionAppStorageSettings(storageConnectionString: string): { [key: string]: string } {

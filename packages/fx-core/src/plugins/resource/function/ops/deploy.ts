@@ -39,7 +39,7 @@ export class FunctionDeploy {
     }
 
     public static async hasUpdatedContent(componentPath: string, language: FunctionLanguage): Promise<boolean> {
-        const folderFilter = (await LanguageStrategyFactory.getStrategy(language)).hasUpdatedContentFilter;
+        const folderFilter = LanguageStrategyFactory.getStrategy(language).hasUpdatedContentFilter;
 
         try {
             const lastFunctionDeployTime = await this.getLastDeploymentTime(componentPath);
@@ -72,7 +72,7 @@ export class FunctionDeploy {
     }
 
     public static async build(componentPath: string, language: FunctionLanguage): Promise<void> {
-        for (const commandItem of (await LanguageStrategyFactory.getStrategy(language)).buildCommands) {
+        for (const commandItem of LanguageStrategyFactory.getStrategy(language).buildCommands) {
             const command: string = commandItem.command;
             const relativePath: string = commandItem.relativePath;
             const absolutePath: string = path.join(componentPath, relativePath);
@@ -81,7 +81,7 @@ export class FunctionDeploy {
     }
 
     public static async installFuncExtensions(componentPath: string, language: FunctionLanguage): Promise<void> {
-        if ((await LanguageStrategyFactory.getStrategy(language)).skipFuncExtensionInstall) {
+        if (LanguageStrategyFactory.getStrategy(language).skipFuncExtensionInstall) {
             return;
         }
 
@@ -97,7 +97,7 @@ export class FunctionDeploy {
         const deployTime: Date = new Date();
 
         // To parallel execute the three tasks, we first create all and then await them.
-        const publishRelativePath: string = (await LanguageStrategyFactory.getStrategy(language)).deployFolderRelativePath;
+        const publishRelativePath: string = LanguageStrategyFactory.getStrategy(language).deployFolderRelativePath;
         const publishAbsolutePath: string = path.join(componentPath, publishRelativePath);
 
         const zip: AdmZip =

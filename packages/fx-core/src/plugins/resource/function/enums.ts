@@ -3,7 +3,7 @@
 export enum FunctionLanguage {
     JavaScript = "javascript",
     TypeScript = "typescript",
-    CSharp = "csharp"
+    // CSharp = "csharp"
 }
 
 export enum NodeVersion {

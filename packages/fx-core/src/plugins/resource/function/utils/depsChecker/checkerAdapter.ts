@@ -5,7 +5,7 @@ import * as path from "path";
 import { Logger } from "../logger";
 import { DepsCheckerError } from "./errors";
 import { dotnetChecker, DotnetChecker } from "./dotnetChecker";
-import { ConfigMap, PluginContext, returnUserError } from "fx-api";
+import { ConfigMap, returnUserError } from "fx-api";
 import { Messages, dotnetHelpLink } from "./common";
 
 export { cpUtils } from "./cpUtils";

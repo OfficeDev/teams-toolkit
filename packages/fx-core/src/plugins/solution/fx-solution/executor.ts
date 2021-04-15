@@ -33,7 +33,7 @@ export async function executeSequentially(
             results.push(undefined);
         }
     }
-    if(logger) logger?.info(`${("Execute "+ step + "Task summary").padEnd(64,"-")}`);
+    if(logger) logger?.info(`${("[Solution] Execute "+ step + "Task summary").padEnd(64,"-")}`);
     for (let i = 0 ; i < results.length; ++ i) {
         const pair = lifecycleAndContext[i];
         const lifecycle = pair[0];
@@ -44,11 +44,11 @@ export async function executeSequentially(
         const taskname = lifecycle?.name.replace("bound ", "");
         context.logProvider?.info(`${(pluginName + "." + taskname).padEnd(60,".")} ${(result.isOk()?"[ok]":"[failed]")}`);
         if (result.isErr()) {
-            if(logger) logger?.info(`${"overall result".padEnd(60,".")}[failed]`);
+            if(logger) logger?.info(`${("[Solution] " + step + "Task overall result").padEnd(60,".")}[failed]`);
             return result;
         }
     }
-    if(logger) logger?.info(`${"overall result".padEnd(60,".")}[ok]`);
+    if(logger) logger?.info(`${("[Solution] " + step + "Task overall result").padEnd(60,".")}[ok]`);
     return ok(undefined);
 }
 
@@ -78,7 +78,7 @@ export async function executeConcurrently(
     );
 
     const results = await Promise.all(promises);
-    if(logger) logger?.info(`${("Execute "+ step + "Task summary").padEnd(64,"-")}`);
+    if(logger) logger?.info(`${("[Solution] Execute "+ step + "Task summary").padEnd(64,"-")}`);
     let res:Result<any, FxError> = ok(undefined);
     for (let i = 0 ; i < results.length; ++ i) {
         const pair = lifecycleAndContext[i];
@@ -93,7 +93,7 @@ export async function executeConcurrently(
             res = result;
         }
     }
-    if(logger) logger?.info(`${"overall result".padEnd(60,".")}${res.isOk()?"[ok]":"[failed]"}`);
+    if(logger) logger?.info(`${("[Solution] " + step + "Task overall result").padEnd(60,".")}${res.isOk()?"[ok]":"[failed]"}`);
     return res;
 }
 

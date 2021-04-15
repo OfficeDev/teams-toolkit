@@ -15,7 +15,10 @@ export function parseJwt(token: string): SSOTokenInfoBase {
   try {
     const tokenObj = jwt_decode(token) as SSOTokenInfoBase;
     if (!tokenObj || !tokenObj.exp) {
-      throw new ErrorWithCode("Decoded token is null or exp claim does not exists.", ErrorCode.InternalError);
+      throw new ErrorWithCode(
+        "Decoded token is null or exp claim does not exists.",
+        ErrorCode.InternalError
+      );
     }
 
     return tokenObj;

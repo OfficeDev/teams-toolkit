@@ -38,7 +38,7 @@ export class FrontendPluginImpl {
     config?: FrontendConfig;
     azureStorageClient?: AzureStorageClient;
 
-    private setConfigIfNotExists<T>(ctx: PluginContext, key: string, value: T): void {
+    private setConfigIfNotExists(ctx: PluginContext, key: string, value: unknown): void {
         if (ctx.config.get(key)) {
             return;
         }

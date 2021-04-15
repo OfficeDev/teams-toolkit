@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 export enum FunctionLanguage {
     JavaScript = "javascript",
-    TypeScript = "typescript",
+    TypeScript = "typescript"
     // CSharp = "csharp"
 }
 

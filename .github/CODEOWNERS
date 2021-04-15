@@ -22,3 +22,33 @@
 /packages/api @jayzhang @1yefuwang1 @LongOddCode
 
 /packages/sdk @tecton @blackchoey @SLdragon @dilin-MS @wenytang-ms
+
+/packages/fx-core/src/core @jayzhang @LongOddCode
+
+/packages/fx-core/src/plugins/solution/fx-solution @1yefuwang1 @jayzhang
+
+/packages/fx-core/src/plugins/resource/aad @KennethBWSong
+
+/packages/fx-core/src/plugins/resource/apim @XiaofuHuang
+
+/packages/fx-core/src/plugins/resource/appstudio @nliu-ms
+
+/packages/fx-core/src/plugins/resource/spfx @jiayi-ruan @nliu-ms
+
+/packages/fx-core/src/plugins/resource/bot @IvanJobs
+
+/packages/fx-core/src/plugins/resource/frontend @hund030
+
+/packages/fx-core/src/plugins/resource/function @henzhang-ms
+
+/packages/fx-core/src/plugins/resource/identity @xzf0587
+
+/packages/fx-core/src/plugins/resource/sql @xzf0587
+
+/packages/fx-core/src/plugins/resource/localdebug @swatDong @kuojianlu
+
+/packages/fx-core/src/plugins/resource/simpleauth @KennethBWSong
+
+
+
+

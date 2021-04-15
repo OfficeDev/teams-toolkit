@@ -17,8 +17,9 @@ export class TabScopeManifest {
             throw new InvalidTabScopeError();
         }
 
-        for (const [_key, value] of Object.entries(TabScope)) {
-            if (tabScopes.includes(value)) {
+        // tabScopes is valid as long as it contains an valid scope
+        for (const [_key, validScope] of Object.entries(TabScope)) {
+            if (tabScopes.includes(validScope)) {
                 return tabScopes;
             }
         }

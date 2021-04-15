@@ -52,7 +52,7 @@ export class FrontendPluginImpl {
 
         if (stage === Stage.create) {
             FrontendQuestionsOnScaffold.forEach((item) => {
-                res.addChild(item.question);
+                res.addChild(item.questionNode);
             });
         }
 

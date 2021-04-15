@@ -4,19 +4,19 @@
 import { NodeType, QTreeNode, Question } from "fx-api";
 import { FrontendConfigInfo, QuestionDescription, QuestionKey, TabScope } from "../constants";
 
-export interface FrontendQuestionGroup {
+export interface FrontendQuestionData {
     question: Question,
     configKey: string,
 }
 
 export class FrontendQuestion {
-    question: QTreeNode;
+    questionNode: QTreeNode;
     configKey: string;
     questionKey: string;
     defaultValue: any;
 
-    constructor(data: FrontendQuestionGroup) {
-        this.question = new QTreeNode(data.question);
+    constructor(data: FrontendQuestionData) {
+        this.questionNode = new QTreeNode(data.question);
         this.configKey = data.configKey;
         this.questionKey = data.question.name;
         this.defaultValue = data.question.default;

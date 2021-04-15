@@ -14,12 +14,10 @@ import { CoreContext } from "../context";
  * this middleware will help to check if current folder is supported or not.
  * if not supported, return a NotSupportedProjectType
  */
-export const versionControlMW: Middleware = async (
+export const validationMW: Middleware = async (
   ctx: HookContext,
   next: NextFunction
 ) => {
-  console.log("in versionControlMW");
-
   let coreCtx: CoreContext;
 
   for (const i in ctx.arguments) {
@@ -40,6 +38,7 @@ export const versionControlMW: Middleware = async (
   }
 
   const p = coreCtx.root;
+
   // some validation
   const checklist: string[] = [
     p,

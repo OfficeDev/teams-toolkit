@@ -276,6 +276,11 @@ export class Executor {
           4
         )
       );
+
+      await fs.writeFile(
+        `${ctx.root}/.gitignore`,
+        `node_modules\n/.${ConfigFolderName}/*.env\n/.${ConfigFolderName}/*.userdata\n.DS_Store`
+      );
     } catch (e) {
       return err(error.WriteFileError(e));
     }
@@ -332,11 +337,6 @@ export class Executor {
     ctx: CoreContext,
     env: string
   ): Promise<Result<null, FxError>> {
-    if (ctx.configs.has(env)) {
-      return err(error.EnvAlreadyExist(env));
-    } else {
-      ctx.configs.set(env, new Map());
-    }
     return ok(null);
   }
 
@@ -345,11 +345,6 @@ export class Executor {
     ctx: CoreContext,
     env: string
   ): Promise<Result<null, FxError>> {
-    if (!ctx.configs.has(env)) {
-      return err(error.EnvNotExist(env));
-    } else {
-      ctx.configs.delete(env);
-    }
     return ok(null);
   }
 
@@ -358,16 +353,11 @@ export class Executor {
     ctx: CoreContext,
     env: string
   ): Promise<Result<null, FxError>> {
-    if (ctx.configs.has(env)) {
-      ctx.env = env;
-    } else {
-      return err(error.EnvNotExist(env));
-    }
     return ok(null);
   }
 
   @hooks([versionControlMW, solutionMW, readConfigMW])
   static async listEnvs(ctx: CoreContext): Promise<Result<string[], FxError>> {
-    return ok(Array.from(ctx.configs.keys()));
+    return ok([]);
   }
 }

@@ -24,7 +24,6 @@ import {
 
 import { Meta } from "./loader";
 import * as tools from "./tools";
-import { VscodeManager } from "./vscodeManager";
 
 export class CoreContext implements SolutionContext {
   public globalConfig?: ConfigMap;
@@ -39,9 +38,8 @@ export class CoreContext implements SolutionContext {
   public treeProvider?: TreeProvider;
 
   public root: string;
-  public configs: Map<string, SolutionConfig>;
-  public env: string;
   public stage: Stage;
+  public env: string;
   public platform: Platform;
   public selectedSolution?: Solution & Meta;
   public answers?: ConfigMap;
@@ -65,19 +63,20 @@ export class CoreContext implements SolutionContext {
 
     this.root = c.root;
     this.stage = c.stage;
-    this.env = "default";
     this.platform = c.platform;
+    this.env = "default";
     this.answers = c.answers;
+
     this.projectSettings = c.projectSettings;
-    this.configs = new Map();
     this.globalSolutions = new Map();
 
     this.app = new TeamsAppManifest();
-    this.config = new Map<string, ConfigMap>();
+    this.config = new Map();
   }
 
   public toSolutionContext(answers?: ConfigMap): CoreContext {
-    this.answers = tools.mergeConfigMap(this.globalConfig, answers);
+    const allAnswers = tools.mergeConfigMap(this.globalConfig, this.answers);
+    this.answers = tools.mergeConfigMap(allAnswers, answers);
     return this;
   }
 }

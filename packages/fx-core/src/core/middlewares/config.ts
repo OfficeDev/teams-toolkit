@@ -45,7 +45,7 @@ export const readConfigMW: Middleware = async (
   }
 
   const configs: Map<string, SolutionConfig> = new Map();
-   
+
   let settings: ProjectSettings;
   try {
     // load env
@@ -67,9 +67,9 @@ export const readConfigMW: Middleware = async (
       }
       tools.mergeSerectData(dict, configJson);
       const solutionConfig: SolutionConfig = tools.objectToMap(configJson);
-      coreCtx.configs.set(envName, solutionConfig);
+      configs.set(envName, solutionConfig);
     }
- 
+
     // read settings.json to set solution & env & global configs.
     const settingsFile = `${coreCtx.root}/.${ConfigFolderName}/settings.json`;
     settings = await fs.readJSON(settingsFile);
@@ -81,8 +81,10 @@ export const readConfigMW: Middleware = async (
   for (const i in ctx.arguments) {
     if (ctx.arguments[i] instanceof CoreContext) {
       const coreCtx = ctx.arguments[i] as CoreContext;
-      coreCtx.configs = configs;
       coreCtx.projectSettings = settings;
+      // TODO @long
+      // refactor this code when PM figure out the requirements of env
+      coreCtx.config = configs.get("default")!;
 
       for (const entry of coreCtx.globalSolutions.entries()) {
         if (entry[0] === settings.solutionSettings!.name) {
@@ -107,7 +109,7 @@ export const writeConfigMW: Middleware = async (
   await next();
   console.log("writeconfig");
 
-  let coreCtx: CoreContext|undefined;
+  let coreCtx: CoreContext | undefined;
 
   for (const i in ctx.arguments) {
     if (ctx.arguments[i] instanceof CoreContext) {
@@ -134,6 +136,7 @@ export const writeConfigMW: Middleware = async (
       await fs.writeFile(filePath, content);
       await fs.writeFile(localDataPath, JSON.stringify(localData, null, 4));
     }
+
     // write settings
     await fs.writeFile(
       `${coreCtx.root}/.${ConfigFolderName}/settings.json`,

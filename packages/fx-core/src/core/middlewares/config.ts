@@ -7,7 +7,6 @@ import * as fs from "fs-extra";
 import {
   err,
   SolutionConfig,
-  ConfigMap,
   ConfigFolderName,
   Dict,
   Json,
@@ -46,7 +45,7 @@ export const readConfigMW: Middleware = async (
   }
 
   const configs: Map<string, SolutionConfig> = new Map();
-  let answers: ConfigMap;
+   
   let settings: ProjectSettings;
   try {
     // load env
@@ -70,12 +69,7 @@ export const readConfigMW: Middleware = async (
       const solutionConfig: SolutionConfig = tools.objectToMap(configJson);
       coreCtx.configs.set(envName, solutionConfig);
     }
-
-    // read answers
-    const answerFile = `${coreCtx.root}/.${ConfigFolderName}/answers.json`;
-    const answersObj: any = await fs.readJSON(answerFile);
-    answers = tools.objectToConfigMap(answersObj);
-
+ 
     // read settings.json to set solution & env & global configs.
     const settingsFile = `${coreCtx.root}/.${ConfigFolderName}/settings.json`;
     settings = await fs.readJSON(settingsFile);
@@ -88,7 +82,6 @@ export const readConfigMW: Middleware = async (
     if (ctx.arguments[i] instanceof CoreContext) {
       const coreCtx = ctx.arguments[i] as CoreContext;
       coreCtx.configs = configs;
-      coreCtx.answers = answers;
       coreCtx.projectSettings = settings;
 
       for (const entry of coreCtx.globalSolutions.entries()) {
@@ -114,7 +107,7 @@ export const writeConfigMW: Middleware = async (
   await next();
   console.log("writeconfig");
 
-  let coreCtx: CoreContext;
+  let coreCtx: CoreContext|undefined;
 
   for (const i in ctx.arguments) {
     if (ctx.arguments[i] instanceof CoreContext) {
@@ -123,7 +116,7 @@ export const writeConfigMW: Middleware = async (
     }
   }
 
-  if (coreCtx! === undefined) {
+  if (coreCtx === undefined) {
     ctx.result = err(InternalError());
     return;
   }
@@ -141,11 +134,6 @@ export const writeConfigMW: Middleware = async (
       await fs.writeFile(filePath, content);
       await fs.writeFile(localDataPath, JSON.stringify(localData, null, 4));
     }
-
-    // write answers
-    const file = `${coreCtx.root}/.${ConfigFolderName}/answers.json`;
-    await fs.writeFile(file, JSON.stringify(coreCtx.answers, null, 4));
-
     // write settings
     await fs.writeFile(
       `${coreCtx.root}/.${ConfigFolderName}/settings.json`,

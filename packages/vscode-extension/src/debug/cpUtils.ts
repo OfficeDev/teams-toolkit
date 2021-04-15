@@ -4,13 +4,13 @@
 
 import * as cp from "child_process";
 import * as os from "os";
-import { VsCodeLogProvider } from "../commonlib/log";
+import { CheckerLogger } from "./depsChecker/checkerAdapter";
 import * as sudo from "sudo-prompt";
 
 export namespace cpUtils {
   export async function executeCommand(
     workingDirectory: string | undefined,
-    logger: VsCodeLogProvider | undefined,
+    logger: CheckerLogger | undefined,
     options: cp.SpawnOptions | undefined,
     command: string,
     ...args: string[]
@@ -25,7 +25,7 @@ export namespace cpUtils {
     if (result.code !== 0) {
       throw new Error(`Failed to run "${command}" command. Check output window for more details.`);
     } else {
-      // await logger?.debug(`Finished running command: "${command} ${result.formattedArgs}".`);
+      await logger?.debug(`Finished running command: "${command} ${result.formattedArgs}".`);
     }
 
     return result.cmdOutput;
@@ -33,7 +33,7 @@ export namespace cpUtils {
 
   export async function tryExecuteCommand(
     workingDirectory: string | undefined,
-    logger: VsCodeLogProvider | undefined,
+    logger: CheckerLogger | undefined,
     additionalOptions: cp.SpawnOptions | undefined,
     command: string,
     ...args: string[]
@@ -52,7 +52,7 @@ export namespace cpUtils {
         Object.assign(options, additionalOptions);
 
         const childProc: cp.ChildProcess = cp.spawn(command, args, options);
-        // logger?.debug(`Running command: "${command} ${formattedArgs}"...`);
+        logger?.debug(`Running command: "${command} ${formattedArgs}"...`);
 
         childProc.stdout?.on("data", (data: string | Buffer) => {
           data = data.toString();
@@ -67,7 +67,7 @@ export namespace cpUtils {
 
         childProc.on("error", reject);
         childProc.on("close", (code: number) => {
-          // logger?.debug(cmdOutputIncludingStderr);
+          logger?.debug(cmdOutputIncludingStderr);
           resolve({
             code,
             cmdOutput,

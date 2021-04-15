@@ -56,44 +56,42 @@ export class AppStudioPluginImpl {
     }
 
     public async publish(ctx: PluginContext): Promise<string> {
-        const publishProgress = ctx.dialog?.createProgressBar(
-            `Publishing ${ctx.app.name.short}`,
-            3,
-        );
-        // Validate manifest
-        try {
-            await publishProgress?.start("Validating manifest file");
-            let appDirectory: string | undefined = undefined;
-            if (ctx.platform === Platform.VS) {
-                appDirectory = ctx.answers?.getString(Constants.PUBLISH_PATH_QUESTION);
-            } else {
-                appDirectory = `${ctx.root}/.${ConfigFolderName}`;
-            }
-            
-            if (!appDirectory) {
-                throw AppStudioResultFactory.SystemError(AppStudioError.ParamUndefinedError.name, AppStudioError.ParamUndefinedError.message(Constants.PUBLISH_PATH_QUESTION));
-            }
+        let appDirectory: string | undefined = undefined;
+        let manifestString: string | undefined = undefined;
 
-            let manifestString: string | undefined = undefined;
+        // For vs platform, read the local manifest.json file
+        // For cli/vsc platform, get manifest from ctx
+        if (ctx.platform === Platform.VS) {
+            appDirectory = ctx.answers?.getString(Constants.PUBLISH_PATH_QUESTION);
             const manifestFile = `${appDirectory}/${Constants.MANIFEST_FILE}`;
-
-            // For vs platform, read the local manifest.json file
-            // For cli/vsc platform, get manifest from ctx
-            if (ctx.platform === Platform.VS) {
-                try {
-                    const manifestFileState = await fs.stat(manifestFile);
-                    if (manifestFileState.isFile()) {
-                        manifestString = (await fs.readFile(manifestFile)).toString();
-                    } else {
-                        throw AppStudioResultFactory.SystemError(AppStudioError.FileNotFoundError.name, AppStudioError.FileNotFoundError.message(manifestFile));
-                    }
-                } catch (error) {
+            try {
+                const manifestFileState = await fs.stat(manifestFile);
+                if (manifestFileState.isFile()) {
+                    manifestString = (await fs.readFile(manifestFile)).toString();
+                } else {
                     throw AppStudioResultFactory.SystemError(AppStudioError.FileNotFoundError.name, AppStudioError.FileNotFoundError.message(manifestFile));
                 }
-            } else {
-                manifestString = JSON.stringify(ctx.app);
+            } catch (error) {
+                throw AppStudioResultFactory.SystemError(AppStudioError.FileNotFoundError.name, AppStudioError.FileNotFoundError.message(manifestFile));
             }
-            
+        } else {
+            appDirectory = `${ctx.root}/.${ConfigFolderName}`;
+            manifestString = JSON.stringify(ctx.app);
+        }
+
+        if (!appDirectory) {
+            throw AppStudioResultFactory.SystemError(AppStudioError.ParamUndefinedError.name, AppStudioError.ParamUndefinedError.message(Constants.PUBLISH_PATH_QUESTION));
+        }
+
+        const manifest = JSON.parse(manifestString);
+        const publishProgress = ctx.dialog?.createProgressBar(
+            `Publishing ${manifest.name.short}`,
+            3,
+        );
+        
+        try {
+            // Validate manifest
+            await publishProgress?.start("Validating manifest file");
             const validationResult = await this.validateManifest(ctx, manifestString!);
             if (validationResult.length > 0) {
                 throw AppStudioResultFactory.UserError(AppStudioError.ValidationFailedError.name, AppStudioError.ValidationFailedError.message(validationResult));
@@ -117,7 +115,7 @@ export class AppStudioPluginImpl {
             const appPackage = await this.buildTeamsAppPackage(appDirectory, manifestString!);
 
             // Publish Teams App
-            await publishProgress?.next(`Publishing ${ctx.app.name.short}`);
+            await publishProgress?.next(`Publishing ${manifest.name.short}`);
             appStudioToken = await ctx.appStudioToken?.getAccessToken();
             const appContent = await fs.readFile(appPackage);
             const appIdInAppCatalog = await AppStudioClient.publishTeamsApp(remoteTeamsAppId!, appContent, appStudioToken!);

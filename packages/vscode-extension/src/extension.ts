@@ -10,6 +10,7 @@ import { ExtTelemetry } from "./telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "./telemetry/extTelemetryEvents";
 import { TeamsfxTaskProvider } from "./debug/teamsfxTaskProvider";
 import { TeamsfxDebugProvider } from "./debug/teamsfxDebugProvider";
+import { ExtensionSurvey } from "./utils/survey";
 
 export async function activate(context: vscode.ExtensionContext) {
   console.log("Teams Toolkit v2 extension is now active!");
@@ -174,6 +175,9 @@ export async function activate(context: vscode.ExtensionContext) {
     });
   });
   context.subscriptions.push(debug);
+
+  const survey = new ExtensionSurvey(context);
+  survey.activate();
 }
 
 // this method is called when your extension is deactivated

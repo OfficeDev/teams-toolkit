@@ -44,7 +44,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
 
       const botRoot = await commonUtils.getProjectRoot(workspacePath, constants.botFolderName);
       if (botRoot) {
-        tasks.push(await this.createNgrokStartTask(workspaceFolder));
+        tasks.push(await this.createNgrokStartTask(workspaceFolder, botRoot));
         tasks.push(await this.createBotStartTask(workspaceFolder, botRoot));
       }
     }
@@ -145,17 +145,21 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
 
   private async createNgrokStartTask(
     workspaceFolder: vscode.WorkspaceFolder,
+    projectRoot: string,
     definition?: vscode.TaskDefinition
   ): Promise<vscode.Task> {
     const command: string = constants.ngrokStartCommand;
     definition = definition || { type: TeamsfxTaskProvider.type, command };
     const commandLine = "npx ngrok http 3978";
+    const options: vscode.ShellExecutionOptions = {
+      cwd: projectRoot,
+    };
     const task = new vscode.Task(
       definition,
       workspaceFolder,
       command,
       TeamsfxTaskProvider.type,
-      new vscode.ShellExecution(commandLine),
+      new vscode.ShellExecution(commandLine, options),
       constants.ngrokProblemMatcher
     );
     task.isBackground = true;

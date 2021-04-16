@@ -235,8 +235,12 @@ export class LocalDebugPlugin implements Plugin {
                 localEnvs[LocalEnvBotKeys.ClientSecret] = clientSecret;
                 localEnvs[LocalEnvBotKeys.TenantID] = teamsAppTenantId;
                 localEnvs[LocalEnvBotKeys.OauthAuthority] = "https://login.microsoftonline.com";
-                localEnvs[LocalEnvBotKeys.LoginUrl] = `${localDebugConfigs.get(LocalDebugConfigKeys.LocalBotEndpoint) as string}/auth-start.html`;
-                localEnvs[LocalEnvBotKeys.IdentifierUri] = aadConfigs?.get(AadPlugin.LocalAppIdUri) as string;
+                localEnvs[LocalEnvBotKeys.LoginEndpoint] = `${localDebugConfigs.get(LocalDebugConfigKeys.LocalBotEndpoint) as string}/auth-start.html`;
+                localEnvs[LocalEnvBotKeys.ApplicationIdUri] = aadConfigs?.get(AadPlugin.LocalAppIdUri) as string;
+
+                if (includeBackend) {
+                    localEnvs[LocalEnvBackendKeys.ApiEndpoint] = localDebugConfigs.get(LocalDebugConfigKeys.LocalFunctionEndpoint) as string;
+                }
             }
 
             await localEnvProvider.saveLocalEnv(localEnvs);

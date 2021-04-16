@@ -27,7 +27,7 @@ export class DeployMgr {
 
         const configFile = path.join(this.deploymentDir, DeployConfigs.DEPLOYMENT_CONFIG_FILE);
 
-        if (fs.pathExists(configFile)) {
+        if (await fs.pathExists(configFile)) {
             return;
         }
 

@@ -15,9 +15,14 @@ import { getZipDeployEndpoint } from "./utils/zipDeploy";
 
 import * as appService from "@azure/arm-appservice";
 import * as fs from "fs-extra";
-import { CommonStrings, PluginBot, ConfigNames, TelemetryStrings, PluginSolution } from "./resources/strings";
+import { CommonStrings, PluginBot, ConfigNames } from "./resources/strings";
 import { DialogUtils } from "./utils/dialog";
-import { CheckThrowSomethingMissing, ConfigUpdatingError, DeployWithoutProvisionError, ListPublishingCredentialsError, MessageEndpointUpdatingError, PackDirExistenceError, PreconditionError, ProvisionError, SomethingMissingError, UserInputsError, ValidationError, ZipDeployError } from "./errors";
+import {
+    CheckThrowSomethingMissing, ConfigUpdatingError, DeployWithoutProvisionError,
+    ListPublishingCredentialsError, MessageEndpointUpdatingError, PackDirExistenceError,
+    PreconditionError, ProvisionError, SomethingMissingError, UserInputsError,
+    ValidationError, ZipDeployError
+} from "./errors";
 import { TeamsBotConfig } from "./configs/teamsBotConfig";
 import { default as axios } from "axios";
 import AdmZip from "adm-zip";

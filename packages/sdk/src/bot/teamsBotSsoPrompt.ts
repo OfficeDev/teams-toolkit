@@ -29,8 +29,9 @@ import { config } from "../core/configurationProvider";
 import { OnBehalfOfUserCredential } from "../core/onBehalfOfUserCredential";
 import { v4 as uuidv4 } from "uuid";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
-import { formatString, getISOExpirationFromJWT } from "../util/utils";
 import { internalLogger } from "../util/logger";
+import { formatString, parseJwt } from "../util/utils";
+import { SSOTokenInfoBase } from "../models/ssoTokenInfo";
 
 const invokeResponseType = "invokeResponse";
 /**
@@ -371,9 +372,10 @@ export class TeamsBotSsoPrompt extends Dialog {
               this.getTokenExchangeInvokeResponse(StatusCodes.OK, "", context.activity.value.id)
             );
 
+            const ssoTokenExpiration = parseJwt(ssoToken).exp;
             tokenResponse = {
               ssoToken: ssoToken,
-              ssoTokenExpiration: getISOExpirationFromJWT(ssoToken),
+              ssoTokenExpiration: new Date(ssoTokenExpiration * 1000).toISOString(),
               connectionName: "",
               token: exchangedToken.token,
               expiration: exchangedToken.expiresOnTimestamp.toString()

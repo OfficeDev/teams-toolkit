@@ -83,7 +83,7 @@ export class FuncToolChecker implements IDepsChecker {
     if (!(await hasNPM())) {
       // provided with Learn More link if npm doesn't exist.
       DepsCheckerTelemetry.sendUserErrorEvent(
-        DepsCheckerEvent.installingFunc,
+        DepsCheckerEvent.funcInstall,
         TelemtryMessages.NPMNotFound
       );
       throw new DepsCheckerError(
@@ -97,14 +97,14 @@ export class FuncToolChecker implements IDepsChecker {
     );
 
     try {
-      await DepsCheckerTelemetry.sendEventWithDuration(DepsCheckerEvent.installedFunc, async () => {
+      await DepsCheckerTelemetry.sendEventWithDuration(DepsCheckerEvent.funcInstallCompleted, async () => {
         await runWithProgressIndicator(async () => {
           await installFuncCoreTools(FuncVersion.v3);
         });
       });
     } catch (error) {
       DepsCheckerTelemetry.sendSystemErrorEvent(
-        DepsCheckerEvent.installingFunc,
+        DepsCheckerEvent.funcInstall,
         TelemtryMessages.failedToInstallFunc,
         error
       );
@@ -119,7 +119,7 @@ export class FuncToolChecker implements IDepsChecker {
     const isInstalled = await this.isInstalled();
     if (!isInstalled) {
       DepsCheckerTelemetry.sendSystemErrorEvent(
-        DepsCheckerEvent.validateFunc,
+        DepsCheckerEvent.funcValidation,
         TelemtryMessages.failedToInstallFunc,
         Messages.failToValidateFuncCoreTool.replace("@NameVersion", installedNameWithVersion)
       );
@@ -130,7 +130,7 @@ export class FuncToolChecker implements IDepsChecker {
       );
     }
 
-    DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.installedValidFunc);
+    DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.funcValidationCompleted);
     logger.info(
       Messages.finishInstallFunctionCoreTool.replace("@NameVersion", installedNameWithVersion)
     );

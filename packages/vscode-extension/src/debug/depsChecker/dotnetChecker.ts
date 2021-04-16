@@ -260,6 +260,7 @@ export class DotnetChecker implements IDepsChecker {
         .filter((version) => version !== null) as string[];
       return DotnetChecker.isDotnetVersionsInstalled(installedVersions);
     } catch (e) {
+      DepsCheckerTelemetry.sendSystemErrorEvent(DepsCheckerEvent.dotnetValidationError, TelemtryMessages.failedToValidateDotnet, e);
       // logger.debug(`validate private install failed, err = ${e}`);
       return false;
     }
@@ -369,7 +370,7 @@ export class DotnetChecker implements IDepsChecker {
     // TODO: validate with dotnet hello world
     const isInstallationValid = await DotnetChecker.isDotnetInstalledCorrectly();
     if (!isInstallationValid) {
-      DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.validateDotnetError);
+      DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.dotnetValidationError);
     }
     return isInstallationValid;
   }

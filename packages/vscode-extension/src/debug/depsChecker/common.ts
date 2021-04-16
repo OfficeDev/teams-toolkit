@@ -75,3 +75,4 @@ export const defaultHelpLink = "https://aka.ms/AAby4tx";
 export const functionCoreToolsHelpLink = "https://aka.ms/AAby4tx";
 export const dotnetHelpLink = "https://aka.ms/AAby4tx";
 export const nodeHelpLink = "https://aka.ms/AAby4tx";
+export const backendExtensionsInstallHelpLink = "https://aka.ms/AAby4tx";

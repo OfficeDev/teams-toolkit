@@ -50,12 +50,12 @@ import { WebviewPanel } from "./controls/webviewPanel";
 import * as constants from "./debug/constants";
 import logger from "./commonlib/log";
 import { isFeatureFlag } from "./utils/commonUtils";
-import { cpUtils } from "./debug/cpUtils";
 import * as path from "path";
 import * as fs from "fs-extra";
 import * as vscode from "vscode";
 import { VsCodeUI, VS_CODE_UI } from "./qm/vsc_ui";
 import { DepsChecker } from "./debug/depsChecker/checker";
+import { backendExtensionsInstall } from "./debug/depsChecker/backendExtensionsInstall";
 import { FuncToolChecker } from "./debug/depsChecker/funcToolChecker";
 import { DotnetChecker, dotnetChecker } from "./debug/depsChecker/dotnetChecker";
 import { PanelType } from "./controls/PanelType";
@@ -480,12 +480,6 @@ export async function validateDependenciesHandler(): Promise<void> {
  * install functions binding before launch local debug
  */
 export async function backendExtensionsInstallHandler(): Promise<void> {
-  const dotnetExecPath = await dotnetChecker.getDotnetExecPath();
-
-  if (dotnetExecPath === "") {
-    throw new Error("Failed to run backend extension install, .NET SDK executable not found");
-  }
-
   if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     const workspaceFolder = workspace.workspaceFolders[0];
     const backendRoot = await commonUtils.getProjectRoot(
@@ -493,18 +487,8 @@ export async function backendExtensionsInstallHandler(): Promise<void> {
       constants.backendFolderName
     );
 
-    try {
-      await cpUtils.executeCommand(
-        backendRoot,
-        logger,
-        { shell: false },
-        dotnetExecPath,
-        "build",
-        "-o",
-        "bin"
-      );
-    } catch (error) {
-      throw new Error(`Failed to run backend extension install: error = '${error}'`);
+    if (backendRoot) {
+      await backendExtensionsInstall(backendRoot);
     }
   }
 }

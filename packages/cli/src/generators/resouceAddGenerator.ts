@@ -28,7 +28,6 @@ abstract class ResourceAddGenerator extends Generator {
       return err(result.error);
     }
     const allNodes = result.value as QTreeNode[];
-    console.log(allNodes);
 
     // get add-azure-resources node
     const resourceParamName = "add-azure-resources";
@@ -37,9 +36,9 @@ abstract class ResourceAddGenerator extends Generator {
       throw Error(`${resourceParamName} is not found in the update stage's param list.`);
     }
     const option = (resourceNode.data as MultiSelectQuestion).option as OptionItem[];
-    const optionLabels = option.map((op) => op.label);
-    if (!optionLabels.includes("sql") || !optionLabels.includes("function")) {
-      throw Error(`${optionLabels} do not include sql or function`);
+    const optionIds = option.map((op) => op.id);
+    if (!optionIds.includes(this.resourceName)) {
+      throw Error(`${optionIds} do not include ${this.resourceName}`);
     }
 
     // create a new resource node and set default to resource name and hide it

@@ -36,6 +36,8 @@ export default class QuickStart extends React.Component<any, any>{
             azureAccountContent = `You have successfully signed in with your Azure account (${this.state.azureAccount}).`;
         }
 
+        let stepCount: number = 1;
+
         return (
             <div className="quick-start-page">
                 <div className="section">
@@ -49,83 +51,105 @@ export default class QuickStart extends React.Component<any, any>{
                 </div>
                 <div className="flex-section">
                     <div className="table-of-contents">
-                        <GetStartedAction
-                            title="1. What are Teams app 'Capabilities'?"
-                            content={[<a href="https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/capabilities-overview">Capabilities</a>, " are the extension points for building apps on the Microsoft Teams platform."]}
-                            actionText="Watch Video (1 min)"
-                            onAction={this.onWatchVideo}
-                            secondaryActionText="Next"
-                            onSecondaryAction={() => { this.onNextStep(1); }}
-                            expanded={this.state.currentStep === 1}
-                            onCollapsedCardClicked={this.onCollapsedCardClicked}
-                            step={1}
-                            done={this.state.stepsDone[0]}
-                             />
-                        <GetStartedAction
-                            title="2. Explore Teams Toolkit commands"
-                            content="Open Command Palette (⇧⌘P) and type ‘Teamsfx’ to find all relevant commands or use Command Line Interface (CLI) to increase productivity. "
-                            actionText="Display all CLI commands"
-                            onAction={this.displayCliCommands}
-                            secondaryActionText="Next"
-                            onSecondaryAction={() => { this.onNextStep(2); }}
-                            expanded={this.state.currentStep === 2}
-                            tip={["Tip: ", <a href="https://github.com/OfficeDev/TeamsFx/tree/main/packages/cli">Dowonload CLI reference</a>]}
-                            onCollapsedCardClicked={this.onCollapsedCardClicked}
-                            step={2}
-                            done={this.state.stepsDone[1]} 
+                        {(()=>{
+                            const curStep = stepCount;
+                            stepCount++;
+                            return <GetStartedAction
+                                title={`${curStep}. What are Teams app "Capabilities"?`}
+                                content={[<a href="https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/capabilities-overview">Capabilities</a>, " are the extension points for building apps on the Microsoft Teams platform."]}
+                                actionText="Watch Video (1 min)"
+                                onAction={this.onWatchVideo}
+                                secondaryActionText="Next"
+                                onSecondaryAction={() => { this.onNextStep(curStep); }}
+                                expanded={this.state.currentStep === curStep}
+                                onCollapsedCardClicked={this.onCollapsedCardClicked}
+                                step={curStep}
+                                done={this.state.stepsDone[curStep - 1]}
                             />
-                        {
-                            !isSupportedNode && (
-                                <GetStartedAction
-                                    title="3. Install Node.js"
+                        })()}
+                        {(() => {
+                                const curStep = stepCount;
+                                stepCount++;
+                                return <GetStartedAction
+                                    title={`${curStep}. Explore Teams Toolkit commands`}
+                                    content="Open Command Palette (⇧⌘P) and type ‘Teamsfx’ to find all relevant commands or use Command Line Interface (CLI) to increase productivity. "
+                                    actionText="Display all CLI commands"
+                                    onAction={this.displayCliCommands}
+                                    secondaryActionText="Next"
+                                    onSecondaryAction={() => { this.onNextStep(curStep); }}
+                                    expanded={this.state.currentStep === curStep}
+                                    tip={["Tip: ", <a href="https://github.com/OfficeDev/TeamsFx/tree/main/packages/cli">Dowonload CLI reference</a>]}
+                                    onCollapsedCardClicked={this.onCollapsedCardClicked}
+                                    step={curStep}
+                                    done={this.state.stepsDone[curStep - 1]}
+                                />
+                            })()}
+                        {(() => {
+                            if(!isSupportedNode){
+                                const curStep = stepCount;
+                                stepCount++;
+                                return <GetStartedAction
+                                    title={`${curStep}. Install Node.js`}
                                     content={["The toolkit cannot find Node.js >10.x on your machine.", <br />, "As a fundamental runtime context for Teams app, Node.js 12.x is recommended. Please install the appropriate version to run the Microsoft Teams Toolkit.", <br />, "Read more about ", <a href="http://npm.github.io/installation-setup-docs/installing/using-a-node-version-manager.html">managing Node.js versions</a>, "."]}
                                     actionText="Download"
                                     onAction={this.downloadNode}
                                     secondaryActionText="Next"
-                                    onSecondaryAction={() => { this.onNextStep(3); }}
-                                    expanded={this.state.currentStep === 3}
+                                    onSecondaryAction={() => { this.onNextStep(curStep); }}
+                                    expanded={this.state.currentStep === curStep}
                                     onCollapsedCardClicked={this.onCollapsedCardClicked}
-                                    step={3}
-                                    done={this.state.stepsDone[2]}
+                                    step={curStep}
+                                    done={this.state.stepsDone[curStep - 1]}
                                 />
-                            )
-                        }
-                        <GetStartedAction
-                            title="4. Prepare M365 account"
-                            content={m365AccountContent}
-                            actionText={this.state.m365Account === undefined ? "Sign in to M365" : undefined}
-                            onAction={this.signinM365}
-                            secondaryActionText="Next"
-                            onSecondaryAction={() => { this.onNextStep(4); }}
-                            expanded={this.state.currentStep === 4}
-                            onCollapsedCardClicked={this.onCollapsedCardClicked}
-                            step={4}
-                            done={this.state.stepsDone[3] || this.state.m365Account} 
+                            }
+                        })()}
+                        {(() => {
+                            const curStep = stepCount;
+                            stepCount++;
+                            return <GetStartedAction
+                                title={`${curStep}. Prepare M365 account`}
+                                content={m365AccountContent}
+                                actionText={this.state.m365Account === undefined ? "Sign in to M365" : undefined}
+                                onAction={this.signinM365}
+                                secondaryActionText="Next"
+                                onSecondaryAction={() => { this.onNextStep(curStep); }}
+                                expanded={this.state.currentStep === curStep}
+                                onCollapsedCardClicked={this.onCollapsedCardClicked}
+                                step={curStep}
+                                done={this.state.stepsDone[curStep - 1] || this.state.m365Account}
                             />
-                        <GetStartedAction
-                            title="5. Prepare Azure account"
-                            content={azureAccountContent}
-                            actionText={this.state.azureAccount === undefined ? "Sign in to Azure" : undefined}
-                            onAction={this.signinAzure}
-                            secondaryActionText="Next"
-                            onSecondaryAction={() => { this.onNextStep(5); }}
-                            expanded={this.state.currentStep === 5}
-                            onCollapsedCardClicked={this.onCollapsedCardClicked}
-                            step={5}
-                            done={this.state.stepsDone[4] || this.state.azureAccount} 
+                        })()}
+                        {(() => {
+                            const curStep = stepCount;
+                            stepCount++;
+                            return <GetStartedAction
+                                title={`${curStep}. Prepare Azure account`}
+                                content={azureAccountContent}
+                                actionText={this.state.azureAccount === undefined ? "Sign in to Azure" : undefined}
+                                onAction={this.signinAzure}
+                                secondaryActionText="Next"
+                                onSecondaryAction={() => { this.onNextStep(curStep); }}
+                                expanded={this.state.currentStep === curStep}
+                                onCollapsedCardClicked={this.onCollapsedCardClicked}
+                                step={curStep}
+                                done={this.state.stepsDone[curStep - 1] || this.state.azureAccount}
                             />
-                        <GetStartedAction
-                            title="6. Build your first Teams app from samples"
-                            content={["Explore our sample apps to help you quickly get started with the Teams app concepts and code structures.", <br />, "Do you already have a clear idea of which Teams app to build? If so, create a new project from the scratch."]}
-                            actionText="View all Samples"
-                            onAction={this.viewAllSamples}
-                            secondaryActionText="Create New Project"
-                            onSecondaryAction={this.createNewProject}
-                            expanded={this.state.currentStep === 6}
-                            onCollapsedCardClicked={this.onCollapsedCardClicked}
-                            step={6}
-                            done={this.state.stepsDone[5]} 
+                        })()}
+                        {(() => {
+                            const curStep = stepCount;
+                            stepCount++;
+                            return <GetStartedAction
+                                title={`${curStep}. Build your first Teams app from samples`}
+                                content={["Explore our sample apps to help you quickly get started with the Teams app concepts and code structures.", <br />, "Do you already have a clear idea of which Teams app to build? If so, create a new project from the scratch."]}
+                                actionText="View all Samples"
+                                onAction={this.viewAllSamples}
+                                secondaryActionText="Create New Project"
+                                onSecondaryAction={this.createNewProject}
+                                expanded={this.state.currentStep === curStep}
+                                onCollapsedCardClicked={this.onCollapsedCardClicked}
+                                step={curStep}
+                                done={this.state.stepsDone[curStep - 1]}
                             />
+                        })()}
                     </div>
                     <div className="stage">
                         {

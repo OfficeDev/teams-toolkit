@@ -1,4 +1,7 @@
-﻿using Microsoft.Azure.WebJobs.Extensions.TeamsFx.Tests.Helper;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using Microsoft.Azure.WebJobs.Extensions.TeamsFx.Tests.Helper;
 using Microsoft.Azure.WebJobs.Extensions.TeamsFx.Tests.Models;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;

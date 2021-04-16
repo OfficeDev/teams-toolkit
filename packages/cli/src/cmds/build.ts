@@ -12,10 +12,10 @@ import { YargsCommand } from "../yargsCommand";
 import { getParamJson } from "../utils";
 
 export default class New extends YargsCommand {
-  public readonly commandHead = `publish`;
+  public readonly commandHead = `build`;
   public readonly command = `${this.commandHead} [options]`;
-  public readonly description = "A command to publish your Teams app";
-  public readonly paramPath = constants.publishParamPath;
+  public readonly description = "A command to build your Teams app";
+  public readonly paramPath = constants.buildParamPath;
 
   public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
 
@@ -38,37 +38,25 @@ export default class New extends YargsCommand {
       }
     }
 
-    const manifestFolderParamName = "manifest-folder";
-    let result;
-    // if input manifestFolderParam(actually also teams-app-id param),
-    // this call is from VS platform, since CLI hide these two param from users.
-    if (answers.has(manifestFolderParamName)) {
-      result = await activate();
-    } else {
-      const rootFolder = answers.getString("folder");
-      answers.delete("folder");
-      result = await activate(rootFolder);
-    }
-
+    const rootFolder = answers.getString("folder");
+    answers.delete("folder");
+    answers.set("platform", Platform.CLI);
+    const result = await activate(rootFolder);
     if (result.isErr()) {
       return err(result.error);
     }
-
     const core = result.value;
-    if (answers.has(manifestFolderParamName)) {
-      answers.set("platform", Platform.VS);
+    {
       const func: Func = {
         namespace: "fx-solution-azure",
-        method: "VSpublish"
+        method: "buildPackage"
       };
-      result = await core.executeUserTask!(func, answers);
-    } else {
-      answers.set("platform", Platform.CLI);
-      result = await core.publish(answers);
+      const result = await core.executeUserTask!(func, answers);
+      if (result.isErr()) {
+        return err(result.error);
+      }
     }
-    if (result.isErr()) {
-      return err(result.error);
-    }
+
     return ok(null);
   }
 }

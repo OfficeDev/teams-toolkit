@@ -6,6 +6,7 @@ export const backendStartCommand = "backend start";
 export const authStartCommand = "auth start";
 export const ngrokStartCommand = "ngrok start";
 export const botStartCommand = "bot start";
+export const openWenClientCommand = "launch Teams web client";
 
 export const frontendProblemMatcher = "$teamsfx-frontend-watch";
 export const backendProblemMatcher = "$teamsfx-backend-watch";

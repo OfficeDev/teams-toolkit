@@ -1,4 +1,7 @@
-﻿using Microsoft.Azure.WebJobs.Description;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using Microsoft.Azure.WebJobs.Description;
 using Microsoft.Azure.WebJobs.Host.Config;
 using Microsoft.Azure.WebJobs.Logging;
 using Microsoft.Extensions.Logging;

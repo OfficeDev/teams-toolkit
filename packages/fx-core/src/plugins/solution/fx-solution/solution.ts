@@ -863,6 +863,11 @@ export class TeamsAppSolution implements Solution {
         if (canProvision.isErr()) {
             return canProvision;
         }
+
+        const maybePermission = await this.getPermissionRequest(ctx);
+        if (maybePermission.isErr()) {
+            return maybePermission;
+        }
         
         try {
             // Just to trigger M365 login before the concurrent execution of provision. 
@@ -871,6 +876,7 @@ export class TeamsAppSolution implements Solution {
             await ctx.appStudioToken?.getAccessToken();
 
             this.runningState = SolutionRunningState.ProvisionInProgress;
+            ctx.config.get(GLOBAL_CONFIG)?.set(PERMISSION_REQUEST, JSON.stringify(maybePermission.value));
 
             const provisionResult = await this.doProvision(ctx);
             if (provisionResult.isOk()) {
@@ -889,6 +895,8 @@ export class TeamsAppSolution implements Solution {
             return provisionResult;
         } finally {
             this.runningState = SolutionRunningState.Idle;
+            // Remove permissionRequest to prevent its persistence in config.
+            ctx.config.get(GLOBAL_CONFIG)?.delete(PERMISSION_REQUEST);
         }
     }
 
@@ -920,53 +928,42 @@ export class TeamsAppSolution implements Solution {
             return res;
         }
 
-        const maybePermission = await this.getPermissionRequest(ctx);
-        if (maybePermission.isErr()) {
-            return maybePermission;
-        }
-        try {
-            ctx.config.get(GLOBAL_CONFIG)?.set(PERMISSION_REQUEST, JSON.stringify(maybePermission.value));
+        const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, selectedPlugins);
+        const preProvisionWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {
+            return [plugin?.preProvision?.bind(plugin), context, plugin.name];
+        });
+        const provisionWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {
+            return [plugin?.provision?.bind(plugin), context, plugin.name];
+        });
+        const postProvisionWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {
+            return [plugin?.postProvision?.bind(plugin), context, plugin.name];
+        });
 
-            const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, selectedPlugins);
-            const preProvisionWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {
-                return [plugin?.preProvision?.bind(plugin), context, plugin.name];
-            });
-            const provisionWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {
-                return [plugin?.provision?.bind(plugin), context, plugin.name];
-            });
-            const postProvisionWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {
-                return [plugin?.postProvision?.bind(plugin), context, plugin.name];
-            });
-
-            return executeLifecycles(
-                preProvisionWithCtx,
-                provisionWithCtx,
-                postProvisionWithCtx,
-                async () => {
-                    ctx.logProvider?.info("[Teams Toolkit]: Start provisioning. It could take several minutes.");
-                    return ok(undefined);
-                },
-                async () => {
-                    ctx.logProvider?.info("[Teams Toolkit]: provison finished!");
-                    if (selectedPlugins.some((plugin) => plugin.name === this.aadPlugin.name)) {
-                        const aadPlugin: AadAppForTeamsPlugin = this.aadPlugin as any;
-                        return aadPlugin.setApplicationInContext(
-                            getPluginContext(ctx, this.aadPlugin.name, this.manifest),
-                        );
-                        
-                    }
-                    return ok(undefined);
-                },
-                async () => {
-                    const result = this.createAndConfigTeamsManifest(ctx);
-                    ctx.logProvider?.info("[Teams Toolkit]: configuration finished!");
-                    return result;
-                },
-            );
-        } finally {
-            // Remove permissionRequest to prevent its persistence in config.
-            ctx.config.get(GLOBAL_CONFIG)?.delete(PERMISSION_REQUEST);
-        }
+        return executeLifecycles(
+            preProvisionWithCtx,
+            provisionWithCtx,
+            postProvisionWithCtx,
+            async () => {
+                ctx.logProvider?.info("[Teams Toolkit]: Start provisioning. It could take several minutes.");
+                return ok(undefined);
+            },
+            async () => {
+                ctx.logProvider?.info("[Teams Toolkit]: provison finished!");
+                if (selectedPlugins.some((plugin) => plugin.name === this.aadPlugin.name)) {
+                    const aadPlugin: AadAppForTeamsPlugin = this.aadPlugin as any;
+                    return aadPlugin.setApplicationInContext(
+                        getPluginContext(ctx, this.aadPlugin.name, this.manifest),
+                    );
+                    
+                }
+                return ok(undefined);
+            },
+            async () => {
+                const result = this.createAndConfigTeamsManifest(ctx);
+                ctx.logProvider?.info("[Teams Toolkit]: configuration finished!");
+                return result;
+            },
+        );
     }
 
     private canDeploy(ctx: SolutionContext): Result<Void, FxError> {

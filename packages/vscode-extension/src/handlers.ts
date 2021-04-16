@@ -472,7 +472,8 @@ export async function validateDependenciesHandler(): Promise<void> {
   const depsChecker = new DepsChecker([new NodeChecker(), new FuncToolChecker(), new DotnetChecker()]);
   const shouldContinue = await depsChecker.resolve();
   if (!shouldContinue) {
-    await debug.stopDebugging();
+    // TODO: better mechanism to stop the tasks and debug session.
+    throw new Error("debug stopped.");
   }
 }
 

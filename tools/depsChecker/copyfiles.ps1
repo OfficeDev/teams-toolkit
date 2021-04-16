@@ -10,6 +10,8 @@ Write-Host $ProjectRoot
 Copy-Item "$CheckerRoot/checker.ts" -Destination "$FunctionRoot/utils/depsChecker"
 Copy-Item "$CheckerRoot/errors.ts" -Destination "$FunctionRoot/utils/depsChecker"
 Copy-Item "$CheckerRoot/common.ts" -Destination "$FunctionRoot/utils/depsChecker"
+Copy-Item "$CheckerRoot/telemetry.ts" -Destination "$FunctionRoot/utils/depsChecker"
+Copy-Item "$CheckerRoot/backendExtensionsInstall.ts" -Destination "$FunctionRoot/utils/depsChecker"
 Copy-Item "$CheckerRoot/dotnetChecker.ts" -Destination "$FunctionRoot/utils/depsChecker"
 
 Copy-Item "$CheckerRoot/resource/dotnet-install.ps1" -Destination "$ProjectRoot/packages/fx-core/resource/plugins/resource/function"

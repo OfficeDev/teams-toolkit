@@ -452,7 +452,8 @@ export class FunctionPluginImpl {
         }
 
         // NOTE: make sure this step is before using `dotnet` command if you refactor this code.
-        await this.handleDotnetChecker();
+        // TODO: enable dotnet check/install after next release
+        // await this.handleDotnetChecker();
 
         await runWithErrorCatchAndThrow(new InstallTeamsfxBindingError(), async () =>
             await step(StepGroup.PreDeployStepGroup, PreDeploySteps.installTeamsfxBinding, async () =>

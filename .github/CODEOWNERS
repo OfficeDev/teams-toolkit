@@ -11,13 +11,13 @@
 
 /packages/vscode-extension @1openwindow @HuihuiWu-Microsoft @nliu-ms
 
-/packages/vscode-extension/src/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @xiaolang124 @dooriya
+/packages/vscode-extension/src/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @meifans @dooriya
 
-/packages/vscode-extension/src/debug @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @xiaolang124 @dooriya
+/packages/vscode-extension/src/debug @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @meifans @dooriya
 
 /packages/cli @chagong @Alive-Fish @jiayi-ruan
 
-/packages/cli/src/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @xiaolang124 @dooriya
+/packages/cli/src/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @meifans @dooriya
 
 /packages/api @jayzhang @1yefuwang1 @LongOddCode
 
@@ -28,23 +28,34 @@
 /packages/fx-core/src/plugins/solution/fx-solution @1yefuwang1 @jayzhang
 
 /packages/fx-core/src/plugins/resource/aad @KennethBWSong @adashen
+/packages/fx-core/tests/plugins/resource/aad @KennethBWSong @adashen
 
 /packages/fx-core/src/plugins/resource/apim @XiaofuHuang @dooriya
+/packages/fx-core/tests/plugins/resource/apim @XiaofuHuang @dooriya
 
 /packages/fx-core/src/plugins/resource/appstudio @nliu-ms @jayzhang
+/packages/fx-core/tests/plugins/resource/appstudio @nliu-ms @jayzhang
 
-/packages/fx-core/src/plugins/resource/spfx @jiayi-ruan @nliu-ms
+/packages/fx-core/src/plugins/resource/spfx @jiayi-ruan @nliu-ms @jayzhang
+/packages/fx-core/tests/plugins/resource/spfx @jiayi-ruan @nliu-ms @jayzhang
 
 /packages/fx-core/src/plugins/resource/bot @IvanJobs @eriolchan
+/packages/fx-core/tests/plugins/resource/bot @IvanJobs @eriolchan
 
 /packages/fx-core/src/plugins/resource/frontend @hund030 @eriolchan
+/packages/fx-core/tests/plugins/resource/frontend @hund030 @eriolchan
 
 /packages/fx-core/src/plugins/resource/function @henzhang-ms @eriolchan
+/packages/fx-core/tests/plugins/resource/function @henzhang-ms @eriolchan
 
 /packages/fx-core/src/plugins/resource/identity @xzf0587 @adashen
+/packages/fx-core/tests/plugins/resource/identity @xzf0587 @adashen
 
 /packages/fx-core/src/plugins/resource/sql @xzf0587 @adashen
+/packages/fx-core/tests/plugins/resource/sql @xzf0587 @adashen
 
 /packages/fx-core/src/plugins/resource/localdebug @swatDong @kuojianlu
+/packages/fx-core/tests/plugins/resource/localdebug @swatDong @kuojianlu
 
 /packages/fx-core/src/plugins/resource/simpleauth @KennethBWSong @adashen
+/packages/fx-core/tests/plugins/resource/simpleauth @KennethBWSong @adashen

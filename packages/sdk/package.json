@@ -33,7 +33,8 @@
     "test": "npm run build:test && npm run unit-test && npm run integration-test",
     "unit-test:browser": "karma start --single-run",
     "unit-test:node": "mocha dist-test/index.node.js --reporter ./tools/mocha-multi-reporter.js",
-    "unit-test": "npm run unit-test:node && npm run unit-test:browser"
+    "unit-test": "npm run unit-test:node && npm run unit-test:browser",
+    "e2e-test:node": "mocha --no-timeouts -r test/mocha.env.ts -r ts-node/register test/e2e/**/*.spec.ts --exit"
   },
   "files": [
     "dist/",
@@ -123,6 +124,7 @@
     "mocha-junit-reporter": "^1.18.0",
     "mocked-env": "^1.3.2",
     "nyc": "^14.0.0",
+    "playwright-chromium": "^1.10.0",
     "prettier": "^1.16.4",
     "puppeteer": "^1.11.0",
     "rimraf": "^3.0.0",

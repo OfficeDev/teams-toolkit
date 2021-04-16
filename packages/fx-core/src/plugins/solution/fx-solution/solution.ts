@@ -62,6 +62,7 @@ import {
     LOCAL_WEB_APPLICATION_INFO_SOURCE,
     PROVISION_MANIFEST,
     PROGRAMMING_LANGUAGE,
+    REMOTE_MANIFEST,
     CONFIGURABLE_TABS,
     STATIC_TABS
 } from "./constants";
@@ -340,12 +341,12 @@ export class TeamsAppSolution implements Solution {
         if (!this.spfxSelected(ctx)) {
             this.manifest = await AppStudio.createManifest(ctx.answers);
             if (this.manifest) Object.assign(ctx.app, this.manifest);
-            await fs.writeFile(`${ctx.root}/.${ConfigFolderName}/manifest.remote.json`, JSON.stringify(this.manifest, null, 4));
+            await fs.writeFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`, JSON.stringify(this.manifest, null, 4));
             await fs.writeJSON(`${ctx.root}/permissions.json`, DEFAULT_PERMISSION_REQUEST, { spaces: 4 });
             return this.updatePermissionRequest(ctx);
         } else {
             this.manifest = await ((this.spfxPlugin as unknown) as SpfxPlugin).getManifest();
-            await fs.writeFile(`${ctx.root}/.${ConfigFolderName}/manifest.remote.json`, JSON.stringify(this.manifest, null, 4));
+            await fs.writeFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`, JSON.stringify(this.manifest, null, 4));
             return ok(null);
         }
     }
@@ -358,7 +359,7 @@ export class TeamsAppSolution implements Solution {
         // read manifest
         if (!this.spfxSelected(ctx)) {
             try {
-                this.manifest = await fs.readJson(`${ctx.root}/.${ConfigFolderName}/manifest.remote.json`);
+                this.manifest = await fs.readJson(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`);
                 if (!this.manifest) {
                     return err(
                         returnSystemError(
@@ -981,20 +982,29 @@ export class TeamsAppSolution implements Solution {
         });
     }
 
-    private canPublish(ctx: SolutionContext, manifestTpl: string): Result<TeamsAppManifest, FxError> {
-        return this.checkWhetherSolutionIsIdle().andThen((_) => {
-            return this.checkWetherProvisionSucceeded(ctx.config)
-                ? ok(Void)
-                : err(
-                    returnUserError(
-                        new Error("Please provision before publishing"),
-                        "Solution",
-                        SolutionError.CannotPublishBeforeProvision,
-                    ),
-                );
-        }).andThen((_) => {
+    private async canPublish(ctx: SolutionContext, manifestTpl: string): Promise<Result<TeamsAppManifest, FxError>> {
+        const isIdle = this.checkWhetherSolutionIsIdle();
+        if (isIdle.isErr()) {
+            return err(isIdle.error);
+        }
+
+        const isProvisionSucceeded = this.checkWetherProvisionSucceeded(ctx.config);
+        if (!isProvisionSucceeded) {
+            return err(
+                returnUserError(
+                    new Error("Please provision before publishing"),
+                    "Solution",
+                    SolutionError.CannotPublishBeforeProvision,
+                ),
+            );
+        }
+
+        if (this.spfxSelected(ctx)) {
+            const manifestString = (await fs.readFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)).toString();
+            return JSON.parse(manifestString);
+        } else {
             return this.createManifestForRemote(ctx, manifestTpl).map((result) => result[1]);
-        });
+        }
     }
 
     async deploy(ctx: SolutionContext): Promise<Result<any, FxError>> {
@@ -1089,14 +1099,14 @@ export class TeamsAppSolution implements Solution {
         }
 
         const manifestTpl = (await fs.readFile(`${ctx.root}/.${ConfigFolderName}/manifest.remote.json`)).toString();
-        const maybeManifest = this.canPublish(ctx, manifestTpl);
+        const maybeManifest = await this.canPublish(ctx, manifestTpl);
         if (maybeManifest.isErr()) {
             return maybeManifest;
         }
         const manifest = maybeManifest.value;
         try {
             this.runningState = SolutionRunningState.PublishInProgress;
-            
+
             const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, [this.appStudioPlugin], manifest);
             const publishWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {
                 return [plugin?.publish?.bind(plugin), context, plugin.name];
@@ -1421,7 +1431,7 @@ export class TeamsAppSolution implements Solution {
             validDomains.push(localBotDomain);
         }
 
-        const manifestTpl = (await fs.readFile(`${ctx.root}/.${ConfigFolderName}/manifest.remote.json`)).toString();
+        const manifestTpl = (await fs.readFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)).toString();
         const [appDefinition, _updatedManifest] = AppStudio.getDevAppDefinition(
             manifestTpl,
             localAADId,

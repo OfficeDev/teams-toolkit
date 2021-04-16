@@ -53,7 +53,7 @@ export class FuncToolChecker implements IDepsChecker {
     const installed = true;
     const installedVersion = await getInstalledFuncToolsVersion();
 
-    DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.checkFunc);
+    DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.funcCheck);
     switch (installedVersion) {
       case FuncVersion.v1:
         // TODO: should send this event per user.

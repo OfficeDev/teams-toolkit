@@ -67,8 +67,12 @@ export class ManagementClient {
     }
 
     async createDatabase() {
+        const sku: SqlManagementModels.Sku = {
+            name: "Basic"
+        };
         const model: SqlManagementModels.Database = {
             location: this.config.location,
+            sku:sku
         };
         try {
             await this.client!.databases.createOrUpdate(this.config.resourceGroup, this.config.sqlServer, this.config.databaseName, model);

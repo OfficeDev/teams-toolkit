@@ -31,6 +31,7 @@ export class TestHelper {
     );
     static fakeSubscriptionId: string = faker.datatype.uuid();
     static tabScope: string[] = [TabScope.PersonalTab];
+    static tabLanguage = "javascript";
     static fakeClientId: string = faker.datatype.uuid();
 
     static fakeAzureAccountProvider: AzureAccountProvider = {
@@ -72,6 +73,7 @@ export class TestHelper {
         solutionConfig.set(DependentPluginInfo.ResourceNameSuffix, TestHelper.storageSuffix);
         solutionConfig.set(DependentPluginInfo.ResourceGroupName, TestHelper.rgName);
         solutionConfig.set(DependentPluginInfo.Location, TestHelper.location);
+        solutionConfig.set(DependentPluginInfo.ProgrammingLanguage, TestHelper.tabLanguage);
 
         const functionConfig = new Map();
         functionConfig.set(DependentPluginInfo.FunctionDefaultName, TestHelper.functionDefaultEntry);
@@ -94,6 +96,8 @@ export class TestHelper {
                 [DependentPluginInfo.SolutionPluginName, solutionConfig],
                 [DependentPluginInfo.FunctionPluginName, functionConfig],
                 [DependentPluginInfo.RuntimePluginName, runtimeConfig],
+                [DependentPluginInfo.AADPluginName, aadConfig],
+                [DependentPluginInfo.LocalDebugPluginName, localDebugConfig],
             ]),
             answers: new ConfigMap([[QuestionKey.TabScopes, TestHelper.tabScope]]),
             config: new ConfigMap(),

@@ -67,6 +67,24 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
           "manifestEditor"
         ),
         new TreeViewCommand(
+          "Validate App Manifest File",
+          "Validate App Manifest File",
+          "fx-extension.validateManifest",
+          vscode.TreeItemCollapsibleState.None,
+          undefined,
+          undefined,
+          "validatemanifest"
+        ),
+        new TreeViewCommand(
+          "Build Teams Package",
+          "Build Teams Package",
+          "fx-extension.build",
+          vscode.TreeItemCollapsibleState.None,
+          undefined,
+          undefined,
+          "build"
+        ),
+        new TreeViewCommand(
           "Provision in the Cloud",
           "Provision resources",
           "fx-extension.provision",

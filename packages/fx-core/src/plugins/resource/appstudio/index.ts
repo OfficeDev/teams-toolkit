@@ -1,9 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ConfigFolderName, FxError, NodeType, ok, Platform, Plugin, PluginContext, QTreeNode, Result, Stage } from "fx-api";
+import { ConfigFolderName, FxError, NodeType, ok, err, Platform, Plugin, PluginContext, QTreeNode, Result, Stage } from "fx-api";
 import { AppStudioPluginImpl } from "./plugin";
 import { Constants } from "./constants";
+import { AppStudioError } from "./errors";
+import { AppStudioResultFactory } from "./results";
 
 export class AppStudioPlugin implements Plugin {
     private appStudioPluginImpl = new AppStudioPluginImpl();
@@ -48,6 +50,9 @@ export class AppStudioPlugin implements Plugin {
      */
     public async validateManifest(ctx: PluginContext, manifestString: string): Promise<Result<string[], FxError>> {
         const validationResult = await this.appStudioPluginImpl.validateManifest(ctx, manifestString);
+        if (validationResult.length > 0) {
+            return err(AppStudioResultFactory.UserError(AppStudioError.ValidationFailedError.name, AppStudioError.ValidationFailedError.message(validationResult)));
+        }
         return ok(validationResult);
     }
 

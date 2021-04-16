@@ -55,6 +55,18 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(deployCmd);
 
+  const validateManifestCmd = vscode.commands.registerCommand(
+    "fx-extension.validateManifest",
+    handlers.validateManifestHandler
+  );
+  context.subscriptions.push(validateManifestCmd);
+
+  const buildPackageCmd = vscode.commands.registerCommand(
+    "fx-extension.build",
+    handlers.buildPackageHandler
+  );
+  context.subscriptions.push(buildPackageCmd);
+
   const publishCmd = vscode.commands.registerCommand(
     "fx-extension.publish",
     handlers.publishHandler

@@ -3,6 +3,7 @@
 
 "use strict";
 
+import colors from "colors";
 import { Argv } from "yargs";
 
 import { FxError, ok, Result } from "fx-api";
@@ -30,16 +31,23 @@ class LoginAccount extends YargsCommand {
     switch (args.platform) {
       case "azure": {
         const result = await AzureTokenProvider.getAccountCredentialAsync();
-        CLILogProvider.debug(
-          `[${constants.cliSource}] Azure Account Credential: ${JSON.stringify(result, null, 4)}`
-        );
+        if (result) {
+          console.log(colors.green(`[${constants.cliSource}] Sign in Azure successfully. Your account username is ${colors.yellow((result as any).username)}.`));
+          console.log(colors.green(`[${constants.cliSource}] Your subscriptons are:`));
+          const subscriptions = await AzureTokenProvider.getSubscriptionList(result);
+          console.log(subscriptions);
+        } else {
+          CLILogProvider.error(`[${constants.cliSource}] Sign in Azure failed.`);
+        }
         break;
       }
       case "m365": {
         const result = await AppStudioTokenProvider.getJsonObject();
-        CLILogProvider.debug(
-          `[${constants.cliSource}] M365 (App Studio) Token: ${JSON.stringify(result, null, 4)}`
-        );
+        if (result) {
+          console.log(colors.green(`[${constants.cliSource}] Sign in M365 successfully. Your account email is ${colors.yellow((result as any).upn)}.`));
+        } else {
+          CLILogProvider.error(`[${constants.cliSource}] Sign in M365 failed.`);
+        }
         break;
       }
     }
@@ -64,12 +72,20 @@ class LogoutAccount extends YargsCommand {
     switch (args.platform) {
       case "azure": {
         const result = await AzureTokenProvider.signout();
-        CLILogProvider.debug(`[${constants.cliSource}] Azure Account logout: ${result}`);
+        if (result) {
+          console.log(colors.green(`[${constants.cliSource}] Sign out Azure successfully.`));
+        } else {
+          CLILogProvider.error(`[${constants.cliSource}] Sign out Azure failed.`);
+        }
         break;
       }
       case "m365": {
         const result = await AppStudioTokenProvider.signout();
-        CLILogProvider.debug(`[${constants.cliSource}] M365 (App Studio) logout: ${result}`);
+        if (result) {
+          console.log(colors.green(`[${constants.cliSource}] Sign out M365 successfully.`));
+        } else {
+          CLILogProvider.error(`[${constants.cliSource}] Sign out M365 failed.`);
+        }
         break;
       }
     }
@@ -116,9 +132,9 @@ export default class Account extends YargsCommand {
 
   public builder(yargs: Argv): Argv<any> {
     yargs.options("action", {
-      description: "login|logout|set",
+      description: `${this.subCommands.map(cmd => cmd.commandHead).join("|")}`,
       type: "string",
-      choices: ["login", "logout", "set"]
+      choices: this.subCommands.map(cmd => cmd.commandHead)
     });
     this.subCommands.forEach((cmd) => {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));

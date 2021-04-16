@@ -30,7 +30,6 @@ describe("Provision", function() {
       context["fx-resource-simple-auth"]["skuName"] = "B1";
       context["fx-resource-aad-app-for-teams"]["endpoint"] = "https://dormainfortest.test";
       context["fx-resource-aad-app-for-teams"]["domain"] = "dormainfortest.test";
-      console.log(JSON.stringify(context));
       await fs.writeJSON(`${projectPath}/.fx/env.default.json`, context, { spaces: 4 });
     }
 

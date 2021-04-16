@@ -25,7 +25,7 @@ export class TestHelper {
     static localTabEndpoint: string = faker.internet.url();
     static startLoginPage = "auth-start.html";
     static fakeCredential: TokenCredentialsBase = new ApplicationTokenCredentials(
-        faker.random.uuid(),
+        faker.datatype.uuid(),
         faker.internet.url(),
         faker.internet.password(),
     );
@@ -99,6 +99,19 @@ export class TestHelper {
                 [DependentPluginInfo.AADPluginName, aadConfig],
                 [DependentPluginInfo.LocalDebugPluginName, localDebugConfig],
             ]),
+            projectSettings: {
+                appName: TestHelper.appName,
+                solutionSettings: {
+                    name: "",
+                    version: "",
+                    activeResourcePlugins: [
+                        DependentPluginInfo.AADPluginName,
+                        DependentPluginInfo.LocalDebugPluginName,
+                        DependentPluginInfo.FunctionPluginName,
+                        DependentPluginInfo.RuntimePluginName
+                    ]
+                }
+            },
             answers: new ConfigMap([[QuestionKey.TabScopes, TestHelper.tabScope]]),
             config: new ConfigMap(),
             app: {

@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import path from "path";
-import { PluginContext } from "fx-api";
+import { AzureSolutionSettings, PluginContext } from "fx-api";
 import { DependentPluginInfo, FrontendPathInfo } from "../constants";
 import { InvalidTabLanguageError } from "./errors";
 
@@ -31,8 +31,9 @@ export class TemplateInfo {
         const tabLanguage = solutionPlugin?.get(DependentPluginInfo.ProgrammingLanguage) as string ?? TabLanguage.JavaScript;
         this.language = this.validateTabLanguage(tabLanguage);
 
-        const functionPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.FunctionPluginName);
-        this.scenario = functionPlugin ? Scenario.WithFunction : Scenario.Default;
+        const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings).activeResourcePlugins;
+        const isFunctionPlugin = selectedPlugins.some((pluginName) => pluginName === DependentPluginInfo.FunctionPluginName);
+        this.scenario = isFunctionPlugin ? Scenario.WithFunction : Scenario.Default;
 
         const localTemplateFileName = [this.group, this.language, this.scenario].join(".") + FrontendPathInfo.TemplatePackageExt;
         this.localTemplatePath = path.join(FrontendPathInfo.TemplateDir, localTemplateFileName);

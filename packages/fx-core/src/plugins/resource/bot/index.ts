@@ -6,7 +6,7 @@ import { FxResult, FxBotPluginResultFactory as ResultFactory } from "./result";
 import { TeamsBotImpl } from "./plugin";
 import { ProgressBarFactory } from "./progressBars";
 import { ProgressBarConstants } from "./constants";
-import { ExceptionType, PluginException } from "./exceptions";
+import { ErrorType, PluginError } from "./errors";
 import { Logger } from "./logger";
 import { PluginBot } from "./resources/strings";
 import * as utils from "./utils/common";
@@ -122,8 +122,8 @@ export class TeamsBot implements Plugin {
                 return err(e);
             }
 
-            if (e instanceof PluginException) {
-                const result = (e.exceptionType === ExceptionType.System ?
+            if (e instanceof PluginError) {
+                const result = (e.exceptionType === ErrorType.System ?
                     ResultFactory.SystemError(e.name, e.genMessage(), undefined, e.innerError) :
                     ResultFactory.UserError(e.name, e.genMessage(), undefined, e.innerError));
                 return result;

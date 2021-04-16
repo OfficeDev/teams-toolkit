@@ -4,7 +4,7 @@
 import { DeployConfigs, TypeNames } from "./constants";
 import * as path from "path";
 import * as fs from "fs-extra";
-import { PreconditionException, SomethingMissingException } from "./exceptions";
+import { PreconditionError, SomethingMissingError } from "./errors";
 import { Logger } from "./logger";
 import { forEachFileAndDir } from "./utils/dir-walk";
 import { Messages } from "./resources/messages";
@@ -20,7 +20,7 @@ export class DeployMgr {
 
     public async init(): Promise<void> {
         if (!this.deploymentDir) {
-            throw new SomethingMissingException(DeployConfigs.DEPLOYMENT_FOLDER);
+            throw new SomethingMissingError(DeployConfigs.DEPLOYMENT_FOLDER);
         }
 
         await fs.ensureDir(this.deploymentDir);
@@ -43,7 +43,7 @@ export class DeployMgr {
     public async needsToRedeploy(): Promise<boolean> {
         // Iterate all source files and config files to determine if anything changed.
         if (!this.workingDir) {
-            throw new PreconditionException(Messages.WORKING_DIR_IS_MISSING, []);
+            throw new PreconditionError(Messages.WORKING_DIR_IS_MISSING, []);
         }
 
         const lastBotDeployTime = await this.getLastDeployTime();
@@ -73,7 +73,7 @@ export class DeployMgr {
 
     public async updateLastDeployTime(time: number): Promise<void> {
         if (!this.deploymentDir) {
-            throw new SomethingMissingException(DeployConfigs.DEPLOYMENT_FOLDER);
+            throw new SomethingMissingError(DeployConfigs.DEPLOYMENT_FOLDER);
         }
 
         const configFile = path.join(this.deploymentDir, DeployConfigs.DEPLOYMENT_CONFIG_FILE);
@@ -92,7 +92,7 @@ export class DeployMgr {
     public async getLastDeployTime(): Promise<number> {
 
         if (!this.deploymentDir) {
-            throw new SomethingMissingException(DeployConfigs.DEPLOYMENT_FOLDER);
+            throw new SomethingMissingError(DeployConfigs.DEPLOYMENT_FOLDER);
         }
 
         const configFile = path.join(this.deploymentDir, DeployConfigs.DEPLOYMENT_CONFIG_FILE);

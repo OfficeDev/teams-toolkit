@@ -1,30 +1,30 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ExceptionNames } from "./constants";
+import { ErrorNames } from "./constants";
 import { Messages } from "./resources/messages";
 import { CommonStrings } from "./resources/strings";
 
-export enum ExceptionType {
+export enum ErrorType {
     User,
     System
 }
 
-export class PluginException extends Error {
+export class PluginError extends Error {
     public name: string;
     public details: string;
     public suggestions: string[];
-    public exceptionType: ExceptionType;
+    public exceptionType: ErrorType;
     public innerError?: Error;
 
-    constructor(type: ExceptionType, name: string, details: string, suggestions: string[], innerError?: Error) {
+    constructor(type: ErrorType, name: string, details: string, suggestions: string[], innerError?: Error) {
         super(details);
         this.name = name;
         this.details = details;
         this.suggestions = suggestions;
         this.exceptionType = type;
         this.innerError = innerError;
-        Object.setPrototypeOf(this, PluginException.prototype);
+        Object.setPrototypeOf(this, PluginError.prototype);
     }
 
     genMessage(): string {
@@ -32,22 +32,22 @@ export class PluginException extends Error {
     }
 }
 
-export class PreconditionException extends PluginException {
+export class PreconditionError extends PluginError {
     constructor(message: string, suggestions: string[]) {
         super(
-            ExceptionType.System,
-            ExceptionNames.PRECONDITION_ERROR,
+            ErrorType.System,
+            ErrorNames.PRECONDITION_ERROR,
             message,
             suggestions
         );
     }
 }
 
-export class DeployWithoutProvisionException extends PluginException {
+export class DeployWithoutProvisionError extends PluginError {
     constructor() {
         super(
-            ExceptionType.User,
-            ExceptionNames.PRECONDITION_ERROR,
+            ErrorType.User,
+            ErrorNames.PRECONDITION_ERROR,
             Messages.DoSthBeforeSth("provision", "running deploy"),
             [
                 "Please run provision first",
@@ -56,7 +56,7 @@ export class DeployWithoutProvisionException extends PluginException {
     }
 }
 
-export class SomethingMissingException extends PreconditionException {
+export class SomethingMissingError extends PreconditionError {
     constructor(something: string) {
         super(
             Messages.SomethingIsMissing(something),
@@ -66,15 +66,15 @@ export class SomethingMissingException extends PreconditionException {
 }
 export function CheckThrowSomethingMissing(name: string, value: any): void {
     if (!value) {
-        throw new SomethingMissingException(name);
+        throw new SomethingMissingError(name);
     }
 }
 
-export class UserInputsException extends PluginException {
+export class UserInputsError extends PluginError {
     constructor(input: string, value: string) {
         super(
-            ExceptionType.User,
-            ExceptionNames.USER_INPUTS_ERROR,
+            ErrorType.User,
+            ErrorNames.USER_INPUTS_ERROR,
             Messages.SomethingIsInvalidWithValue(input, value),
             [
                 Messages.InputValidValueForSomething(input)
@@ -83,11 +83,11 @@ export class UserInputsException extends PluginException {
     }
 }
 
-export class CallAppStudioException extends PluginException {
+export class CallAppStudioError extends PluginError {
     constructor(apiName: string, innerError?: Error) {
         super(
-            ExceptionType.System,
-            ExceptionNames.CALL_APPSTUDIO_API_ERROR,
+            ErrorType.System,
+            ErrorNames.CALL_APPSTUDIO_API_ERROR,
             Messages.FailToCallAppStudio(apiName),
             [],
             innerError
@@ -95,11 +95,11 @@ export class CallAppStudioException extends PluginException {
     }
 }
 
-export class ClientCreationException extends PluginException {
+export class ClientCreationError extends PluginError {
     constructor(clientName: string, innerError?: Error) {
         super(
-            ExceptionType.System,
-            ExceptionNames.CLIENT_CREATION_ERROR,
+            ErrorType.System,
+            ErrorNames.CLIENT_CREATION_ERROR,
             Messages.FailToCreateSomeClient(clientName),
             [],
             innerError
@@ -107,11 +107,11 @@ export class ClientCreationException extends PluginException {
     }
 }
 
-export class ProvisionException extends PluginException {
+export class ProvisionError extends PluginError {
     constructor(resource: string, innerError?: Error) {
         super(
-            ExceptionType.System,
-            ExceptionNames.PROVISION_ERROR,
+            ErrorType.System,
+            ErrorNames.PROVISION_ERROR,
             Messages.FailToProvisionSomeResource(resource),
             [],
             innerError
@@ -119,11 +119,11 @@ export class ProvisionException extends PluginException {
     }
 }
 
-export class ConfigUpdatingException extends PluginException {
+export class ConfigUpdatingError extends PluginError {
     constructor(configName: string, innerError?: Error) {
         super(
-            ExceptionType.System,
-            ExceptionNames.CONFIG_UPDATING_ERROR,
+            ErrorType.System,
+            ErrorNames.CONFIG_UPDATING_ERROR,
             Messages.FailToUpdateConfigs(configName),
             [],
             innerError
@@ -131,33 +131,33 @@ export class ConfigUpdatingException extends PluginException {
     }
 }
 
-export class ValidationException extends PluginException {
+export class ValidationError extends PluginError {
     constructor(name: string, value: string) {
         super(
-            ExceptionType.System,
-            ExceptionNames.VALIDATION_ERROR,
+            ErrorType.System,
+            ErrorNames.VALIDATION_ERROR,
             Messages.SomethingIsInvalidWithValue(name, value),
             []
         );
     }
 }
 
-export class PackDirExistenceException extends PluginException {
+export class PackDirExistenceError extends PluginError {
     constructor() {
         super(
-            ExceptionType.User,
-            ExceptionNames.PACK_DIR_EXISTENCE_ERROR,
+            ErrorType.User,
+            ErrorNames.PACK_DIR_EXISTENCE_ERROR,
             Messages.SomethingIsNotExisting("pack directory"),
             []
         );
     }
 }
 
-export class ListPublishingCredentialsException extends PluginException {
+export class ListPublishingCredentialsError extends PluginError {
     constructor(innerError?: Error) {
         super(
-            ExceptionType.System,
-            ExceptionNames.LIST_PUBLISHING_CREDENTIALS_ERROR,
+            ErrorType.System,
+            ErrorNames.LIST_PUBLISHING_CREDENTIALS_ERROR,
             Messages.FailToListPublishingCredentials,
             [],
             innerError
@@ -165,11 +165,11 @@ export class ListPublishingCredentialsException extends PluginException {
     }
 }
 
-export class ZipDeployException extends PluginException {
+export class ZipDeployError extends PluginError {
     constructor(innerError?: Error) {
         super(
-            ExceptionType.System,
-            ExceptionNames.ZIP_DEPLOY_ERROR,
+            ErrorType.System,
+            ErrorNames.ZIP_DEPLOY_ERROR,
             Messages.FailToDoZipDeploy,
             [
                 "Please retry the deploy command."
@@ -179,11 +179,11 @@ export class ZipDeployException extends PluginException {
     }
 }
 
-export class MessageEndpointUpdatingException extends PluginException {
+export class MessageEndpointUpdatingError extends PluginError {
     constructor(endpoint: string, innerError?: Error) {
         super(
-            ExceptionType.System,
-            ExceptionNames.MSG_ENDPOINT_UPDATING_ERROR,
+            ErrorType.System,
+            ErrorNames.MSG_ENDPOINT_UPDATING_ERROR,
             Messages.FailToUpdateMessageEndpoint(endpoint),
             [],
             innerError
@@ -191,11 +191,11 @@ export class MessageEndpointUpdatingException extends PluginException {
     }
 }
 
-export class DownloadException extends PluginException {
+export class DownloadError extends PluginError {
     constructor(url: string, innerError?: Error) {
         super(
-            ExceptionType.System,
-            ExceptionNames.DOWNLOAD_ERROR,
+            ErrorType.System,
+            ErrorNames.DOWNLOAD_ERROR,
             Messages.FailToDownloadFrom(url),
             [
                 "Please check your network status and retry."
@@ -205,33 +205,33 @@ export class DownloadException extends PluginException {
     }
 }
 
-export class TplManifestFormatException extends PluginException {
+export class TplManifestFormatError extends PluginError {
     constructor() {
         super(
-            ExceptionType.System,
-            ExceptionNames.MANIFEST_FORMAT_ERROR,
+            ErrorType.System,
+            ErrorNames.MANIFEST_FORMAT_ERROR,
             Messages.SomethingIsInWrongFormat("Templates\" manifest.json"),
             []
         );
     }
 }
 
-export class TemplateProjectNotFoundException extends PluginException {
+export class TemplateProjectNotFoundError extends PluginError {
     constructor() {
         super(
-            ExceptionType.System,
-            ExceptionNames.TEMPLATE_PROJECT_NOT_FOUND_ERROR,
+            ErrorType.System,
+            ErrorNames.TEMPLATE_PROJECT_NOT_FOUND_ERROR,
             Messages.SomethingIsNotFound("Template project for scaffold"),
             []
         );
     }
 }
 
-export class CommandExecutionException extends PluginException {
+export class CommandExecutionError extends PluginError {
     constructor(cmd: string, message: string, innerError?: Error) {
         super(
-            ExceptionType.System,
-            ExceptionNames.COMMAND_EXECUTION_ERROR,
+            ErrorType.System,
+            ErrorNames.COMMAND_EXECUTION_ERROR,
             Messages.CommandFailWithMessage(cmd, message),
             [],
             innerError

@@ -3,6 +3,7 @@
 
 "use strict";
 
+import colors from "colors";
 import { Argv } from "yargs";
 
 import { FxError, ok, Result } from "fx-api";
@@ -31,10 +32,10 @@ class LoginAccount extends YargsCommand {
       case "azure": {
         const result = await AzureTokenProvider.getAccountCredentialAsync();
         if (result) {
-          CLILogProvider.info(`[${constants.cliSource}] Sign in Azure successfully. Your account username is ${(result as any).username}.`);
-          CLILogProvider.info(`[${constants.cliSource}] Now let us find all the subscriptions to which you have access...`);
+          console.log(`[${constants.cliSource}] Sign in Azure successfully. Your account username is ${colors.yellow((result as any).username)}.`);
+          console.log(`[${constants.cliSource}] Your subscriptons are:`);
           const subscriptions = await AzureTokenProvider.getSubscriptionList(result);
-          CLILogProvider.info(JSON.stringify(subscriptions, undefined, 4));
+          console.log(subscriptions);
         } else {
           CLILogProvider.error(`[${constants.cliSource}] Sign in Azure failed.`);
         }
@@ -43,7 +44,7 @@ class LoginAccount extends YargsCommand {
       case "m365": {
         const result = await AppStudioTokenProvider.getJsonObject();
         if (result) {
-          CLILogProvider.info(`[${constants.cliSource}] Sign in M365 successfully. Your account email is ${(result as any).upn}.`);
+          console.log(`[${constants.cliSource}] Sign in M365 successfully. Your account email is ${colors.yellow((result as any).upn)}.`);
         } else {
           CLILogProvider.error(`[${constants.cliSource}] Sign in M365 failed.`);
         }

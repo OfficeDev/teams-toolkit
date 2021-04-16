@@ -141,7 +141,7 @@ async function getInstalledFuncToolsVersion(): Promise<FuncVersion | null> {
   try {
     const output = await cpUtils.executeCommand(
       undefined,
-      undefined,
+      logger,
       undefined,
       "func",
       "--version"
@@ -154,7 +154,7 @@ async function getInstalledFuncToolsVersion(): Promise<FuncVersion | null> {
 
 async function hasNPM(): Promise<boolean> {
   try {
-    await cpUtils.executeCommand(undefined, undefined, undefined, "npm", "--version");
+    await cpUtils.executeCommand(undefined, logger, undefined, "npm", "--version");
     return true;
   } catch (error) {
     // an error indicates no npm
@@ -187,6 +187,7 @@ async function installFuncCoreToolsOnWindows(version: FuncVersion): Promise<void
   // https://github.com/npm/cli/issues/470
   const funcPSScript = await getFuncPSScriptPath();
   if (await fs.pathExists(funcPSScript)) {
+    logger.debug(`deleting func.ps1 from ${funcPSScript}`);
     await fs.remove(funcPSScript);
   }
 }
@@ -209,10 +210,9 @@ async function installFuncCoreToolsOnUnix(version: FuncVersion): Promise<void> {
   const command = `npm install -g ${funcPackageName}@${version} --unsafe-perm true`;
 
   if (tryInstallfailed && needAdminPermission && isMacOS()) {
-    await cpUtils.execSudo(command);
+    await cpUtils.execSudo(logger, command);
   } else if (tryInstallfailed) {
     const tryInstallCommand = `npm install -g ${funcPackageName}@${version}`;
-    logger.error(result.cmdOutputIncludingStderr);
     throw new Error(
       `Failed to run "${tryInstallCommand}" command. Check output window for more details.`
     );

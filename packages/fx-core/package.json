@@ -7,6 +7,7 @@
     "lint:staged": "lint-staged",
     "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
     "test": "echo 'to be implemented'",
+    "test:bot": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/plugins/resource/bot/**/*.test.ts",
     "test:actions": "echo 'to be implemented'",
     "clean": "rm -rf build",
     "build": "tsc -p ./",

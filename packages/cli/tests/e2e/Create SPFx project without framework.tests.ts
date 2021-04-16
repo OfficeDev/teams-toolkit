@@ -14,7 +14,7 @@ describe("Start a new project", function () {
   const type = "none";
 
   it("Create SPFx project without framework - Test Plan ID 9426251", async function () {
-    await execAsync(
+    const result = await execAsync(
       `${constants.cliName} new --app-name ${appName} --folder ${testFolder} --host-type SPFx --spfx-framework-type ${type} --spfx-webpart-name helloworld`,
       {
         cwd: process.cwd(),
@@ -48,6 +48,8 @@ describe("Start a new project", function () {
       const filePath = path.join(testFolder, appName, `SPFx`, file);
       expect(fs.existsSync(filePath), `${filePath} must exist.`).to.eq(true);
     }
+
+    expect(result.stderr).to.eq("");
   });
 
   this.afterAll(() => {

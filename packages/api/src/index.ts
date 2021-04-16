@@ -10,6 +10,7 @@ export * from "./teams/manifest";
 export * from "./utils";
 export * from "./error";
 export * from "./qm";
+export * from "./ci";
 export * from "./resourcePlugin";
 export * from "./solutionPlugin";
 export * from "neverthrow";

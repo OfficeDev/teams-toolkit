@@ -4,7 +4,7 @@
 
 import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks";
 import * as fs from "fs-extra";
-import { ConfigFolderName } from "fx-api";
+import { ConfigFolderName, Stage } from "fx-api";
 
 import { CoreContext } from "../context";
 import { LaunchConfig } from "../launch";
@@ -19,6 +19,9 @@ export const envMW: Middleware = async (
   for (const i in ctx.arguments) {
     if (ctx.arguments[i] instanceof CoreContext) {
       let coreCtx = ctx.arguments[i] as CoreContext;
+      if (coreCtx.stage === Stage.create) {
+        break;
+      }
 
       const laungh: LaunchConfig = await fs.readJson(
         `${coreCtx.root}/.${ConfigFolderName}/launch.json`,

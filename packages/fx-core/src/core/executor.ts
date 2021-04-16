@@ -35,6 +35,7 @@ import { readConfigMW, writeConfigMW } from "./middlewares/config";
 import { validationMW } from "./middlewares/validation";
 import { envMW } from "./middlewares/env";
 import { solutionMW } from "./middlewares/solution";
+import { LaunchConfig } from "./launch";
 
 export class Executor {
   @hooks([validationMW, envMW, solutionMW, readConfigMW, writeConfigMW])
@@ -277,6 +278,15 @@ export class Executor {
       await fs.writeFile(
         `${ctx.root}/.gitignore`,
         `node_modules\n/.${ConfigFolderName}/*.env\n/.${ConfigFolderName}/*.userdata\n.DS_Store`
+      );
+
+      // write launch.json
+      const launch: LaunchConfig = {
+        currentEnv: ctx.env,
+      };
+      await fs.writeJson(
+        `${ctx.root}/.${ConfigFolderName}/launch.json`,
+        JSON.stringify(launch, null, 4)
       );
     } catch (e) {
       return err(error.WriteFileError(e));

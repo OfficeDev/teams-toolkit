@@ -180,7 +180,7 @@ export class ResourceConfigureAAD extends YargsCommand {
 
     const core = result.value;
     const func: Func = {
-      namespace: "fx-solution-azure/teamsfx-plugin-aad-app-for-teams",
+      namespace: "fx-solution-azure/fx-resource-aad-app-for-teams",
       method: "aadUpdatePermission"
     };
     {

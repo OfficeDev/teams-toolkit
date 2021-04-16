@@ -66,6 +66,16 @@ cd /path/to/your/project
 teamsfx account set --subscription 1756abc0-3554-4341-8d6a-46674962ea19
 ```
 
+### Add capability to project
+
+```bash
+cd /path/to/your/project/
+# Add tab
+teamsfx capability add tab
+# Add bot
+teamsfx capability add bot
+```
+
 ### Add resource to project
 
 ```bash
@@ -133,8 +143,8 @@ You can follow `For developpers to build and run your local project` at the top 
 
 ### Run
 ```bash
-# get new/resource-add/provision stage parameters
-node .\lib\generators\ new resource-add provision
+# get new/resource-add/capability-add/provision stage parameters
+node .\lib\generators\ new resource-add capability-add provision
 ```
 
 ## Known issue

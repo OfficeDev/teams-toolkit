@@ -3,16 +3,13 @@
 "use strict";
 
 export * from "./constants";
-export * from "./context";
 export * from "./core";
-export * from "./config";
-export * from "./plugin";
-export * from "./solution";
-export * from "./vscode";
-export * from "./manifest";
+export * from "./types";
+export * from "./ui/ui";
+export * from "./teams/manifest";
 export * from "./utils";
 export * from "./error";
 export * from "./qm";
-export * from "./ci";
-
+export * from "./resourcePlugin";
+export * from "./solutionPlugin";
 export * from "neverthrow";

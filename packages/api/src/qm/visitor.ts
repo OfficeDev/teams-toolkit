@@ -16,8 +16,8 @@ import {
   NumberInputQuestion
 } from "./question";
 import { getValidationFunction, RemoteFuncExecutor, validate } from "./validation";
-import { ConfigMap, Inputs } from "../config";
-import { InputResult, InputResultType, UserInterface } from "./ui";
+import { ConfigMap, Inputs } from "../types";
+import { InputResult, InputResultType, UserInterface } from "../ui/ui";
 import { returnSystemError, returnUserError } from "../error";
 
 async function getRealValue(

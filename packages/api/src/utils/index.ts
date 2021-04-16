@@ -2,23 +2,22 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { Dialog } from "./dialog";
 import { LogProvider } from "./log";
 import { TokenProvider } from "./login";
 import { TelemetryReporter } from "./telemetry";
-import { TreeProvider } from "./tree";
+import { TreeProvider } from "../ui/tree";
+import { UserInterface } from "../ui";
 
 export * from "./login";
 export * from "./log";
 export * from "./telemetry";
-export * from "./dialog";
-export * from "./tree";
+export * from "../ui/tree";
 
-export interface ToolsProvider
+export interface Tools
 {
     logProvider: LogProvider;
     tokenProvider: TokenProvider;
     telemetryReporter: TelemetryReporter;
     treeProvider: TreeProvider;
-    dialog: Dialog;
+    ui: UserInterface;
 }

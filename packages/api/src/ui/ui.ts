@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { FxError } from "../error";
-import { AnswerValue, OptionItem, StaticOption } from "./question";
+import { AnswerValue, OptionItem, StaticOption } from "../qm/question";
 
  
 
@@ -124,11 +124,42 @@ export interface InputResult {
   error?: FxError;
 }
 
+
+export interface IProgressHandler {
+  /**
+   * Start this progress bar. After calling it, the progress bar will be seen to users with 
+   * ${currentStep} = 0 and ${detail} = detail.
+   * @param detail the detail message of the next work.
+   */
+  start: (detail?: string) => Promise<void>;
+  
+  /**
+   * Update the progress bar's message. After calling it, the progress bar will be seen to 
+   * users with ${currentStep}++ and ${detail} = detail.
+   * This func must be called after calling start().
+   * @param detail the detail message of the next work.
+   */
+  next: (detail?: string) => Promise<void>;
+  
+  /**
+   * End the progress bar. After calling it, the progress bar will disappear. This handler 
+   * can be reused after calling end().
+   */
+  end: () => Promise<void>;
+}
+
+export enum MsgLevel {
+  Info = "Info",
+  Warning = "Warning",
+  Error = "Error",
+}
+
 export interface UserInterface{
   showQuickPick: (option: FxQuickPickOption) => Promise<InputResult> 
   showInputBox: (option: FxInputBoxOption) => Promise<InputResult>;
   showOpenDialog: (option: FxOpenDialogOption) => Promise<InputResult>;
+  createProgressBar?: (title: string, totalSteps: number) => IProgressHandler;
+  openExternal?(link: string): Promise<boolean>;
+  showMessage?(level:MsgLevel, message: string, ...items: string[]): Promise<string | undefined>;
 }
-
-
    

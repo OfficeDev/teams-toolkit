@@ -15,14 +15,14 @@ import * as fs from "fs-extra";
 import * as jsonschema from "jsonschema"; 
 import { Result } from "neverthrow";
 import { FxError } from "../error";
-import { ConfigMap, Inputs } from "../config";
+import { Inputs } from "../types";
  
 
-export type RemoteFuncExecutor = (func:Func, answers: Inputs|ConfigMap) => Promise<Result<unknown, FxError>>; 
+export type RemoteFuncExecutor = (func:Func, answers: Inputs) => Promise<Result<unknown, FxError>>; 
 
 export function getValidationFunction(
   validation: Validation,
-  outputs: Inputs|ConfigMap,
+  outputs: Inputs,
   remoteFuncValidator?: RemoteFuncExecutor,
 ): (input: string | string[]) => Promise<string | undefined> {
   return async function(input: string | string[]): Promise<string | undefined> {
@@ -33,7 +33,7 @@ export function getValidationFunction(
 export async function validate(
   validation: Validation,
   valueToValidate: string | string[],
-  inputs: Inputs|ConfigMap,
+  inputs: Inputs,
   remoteFuncValidator?: RemoteFuncExecutor
 ): Promise<string | undefined> {
   //RemoteFuncValidation

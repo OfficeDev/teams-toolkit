@@ -5,7 +5,7 @@ import * as path from "path";
 import { Logger } from "../logger";
 import { DepsCheckerError } from "./errors";
 import { dotnetChecker, DotnetChecker } from "./dotnetChecker";
-import { ConfigMap, PluginContext, returnUserError } from "fx-api";
+import { ConfigMap, returnUserError, FxError } from "fx-api";
 import { Messages, dotnetHelpLink } from "./common";
 
 export { cpUtils } from "./cpUtils";
@@ -83,4 +83,33 @@ export function handleDotnetError(error: Error): void {
   } else {
     throw returnUserError(new Error(Messages.defaultErrorMessage), "function", "DepsCheckerError", dotnetHelpLink, error);
   }
+}
+
+export namespace ExtTelemetry {
+  export function sendTelemetryEvent(
+    eventName: string,
+    properties?: { [p: string]: string },
+    measurements?: { [p: string]: number }
+  ): void {
+  }
+
+  export function sendTelemetryErrorEvent(
+    eventName: string,
+    error: FxError,
+    properties?: { [p: string]: string },
+    measurements?: { [p: string]: number },
+    errorProps?: string[]
+  ): void {
+  }
+
+  export function sendTelemetryException(
+    error: Error,
+    properties?: { [p: string]: string },
+    measurements?: { [p: string]: number }
+  ): void {
+  }
+}
+
+export enum TelemetryProperty {
+  Component = "component",
 }

@@ -7,6 +7,8 @@ import * as path from "path";
 import os from "os";
 import fs from "fs-extra";
 import { chromium, ChromiumBrowser, Page } from "playwright-chromium";
+import { deleteAadApp } from "../../api/src/ci/aadValidate";
+import { MockAzureAccountProvider } from "../../api/src/ci/mockAzureAccountProvider";
 
 const execAsync = promisify(exec);
 export const TIMEOUT = 30000;
@@ -46,13 +48,14 @@ export async function createNewProject(name: string): Promise<string> {
   const projectFolder = path.join(folder, name);
   if (!(await callCli(`teamsfx new --app-name ${name} --folder ${folder} --interactive false`))) {
     if (await fs.pathExists(projectFolder)) {
-      await fs.emptyDir(projectFolder);
+      await fs.remove(projectFolder);
     }
     throw new Error(`Create project ${name} failed`);
   }
   if (
     !(await callCli(`teamsfx provision --folder ${projectFolder} --subscription ${subscription}`))
   ) {
+    await deleteProject(projectFolder);
     throw new Error(`Provision project ${name} failed`);
   }
   return projectFolder;
@@ -102,6 +105,17 @@ export async function getLoginEnvironment(): Promise<{
   return { browser, page };
 }
 
+/**
+ * Delete all project resources and local files.
+ *
+ * @param projectPath - folder path of project
+ */
+export async function deleteProject(projectPath: string): Promise<void> {
+  await deleteProjectAad(projectPath);
+  await deleteProjectResourceGroup(projectPath);
+  await fs.remove(projectPath);
+}
+
 async function loginTestUser(): Promise<void> {
   browser = await chromium.launch({ headless: false });
   const TEAMS_URL = `https://teams.microsoft.com`;
@@ -143,4 +157,20 @@ async function callCli(command: string): Promise<boolean> {
     timeout: 0
   });
   return result.stderr === "";
+}
+
+async function deleteProjectAad(projectPath: string) {
+  const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
+  await deleteAadApp(context);
+}
+
+async function deleteProjectResourceGroup(projectPath: string) {
+  const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
+  let resourceGroupName: string;
+  try {
+    resourceGroupName = context.solution.resourceGroupName;
+  } catch (e) {
+    return;
+  }
+  await MockAzureAccountProvider.getInstance().deleteResourceGroup(resourceGroupName);
 }

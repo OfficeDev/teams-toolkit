@@ -3,7 +3,14 @@
 
 import { assert, use as chaiUse } from "chai";
 import chaiPromises from "chai-as-promised";
-import { createNewProject, deployTab, getLoginEnvironment, getTeamsUrl, TIMEOUT } from "../helper";
+import {
+  createNewProject,
+  deleteProject,
+  deployTab,
+  getLoginEnvironment,
+  getTeamsUrl,
+  TIMEOUT
+} from "../helper";
 
 chaiUse(chaiPromises);
 
@@ -28,7 +35,7 @@ describe("End to End Test in Teams", () => {
     const frame = await (await page.waitForSelector(`iframe`)).contentFrame();
 
     // Check grant button
-    const grantButton = await frame.waitForSelector(selectors.grantButton);
+    await frame.waitForSelector(selectors.grantButton);
     await frame.click(selectors.grantButton, { delay: 2000 });
     const consentPage = await page.waitForEvent("popup");
     await consentPage.waitForSelector(selectors.accept, { state: "visible" });
@@ -40,7 +47,6 @@ describe("End to End Test in Teams", () => {
     assert.strictEqual(await upn.innerText(), "Object id: 2a61c4c3-ecf9-49eb-b717-6673fffd892d");
 
     await browser.close();
-
-    // TODO: delete resources
+    await deleteProject(project);
   });
 });

@@ -164,5 +164,6 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
     title: "Please select programming language for your project",
     type: NodeType.singleSelect,
     option: ["javascript"],
-    default: "javascript"
+    default: "javascript",
+    skipSingleOption: true
 };

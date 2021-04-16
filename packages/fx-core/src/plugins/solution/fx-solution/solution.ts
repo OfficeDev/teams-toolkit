@@ -343,12 +343,11 @@ export class TeamsAppSolution implements Solution {
             if (this.manifest) Object.assign(ctx.app, this.manifest);
             await fs.writeFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`, JSON.stringify(this.manifest, null, 4));
             await fs.writeJSON(`${ctx.root}/permissions.json`, DEFAULT_PERMISSION_REQUEST, { spaces: 4 });
-            return this.updatePermissionRequest(ctx);
         } else {
             this.manifest = await ((this.spfxPlugin as unknown) as SpfxPlugin).getManifest();
             await fs.writeFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`, JSON.stringify(this.manifest, null, 4));
-            return ok(null);
         }
+        return ok(Void);
     }
 
     async open(ctx: SolutionContext): Promise<Result<any, FxError>> {
@@ -656,9 +655,9 @@ export class TeamsAppSolution implements Solution {
      * @param rootPath root path of this project
      * @param config solution config
      */
-    private async updatePermissionRequest(
+    private async getPermissionRequest(
         ctx:SolutionContext
-    ): Promise<Result<SolutionConfig, FxError>> {
+    ): Promise<Result<string, FxError>> {
         if (this.spfxSelected(ctx)) {
             return err(
                 returnUserError(
@@ -678,9 +677,8 @@ export class TeamsAppSolution implements Solution {
                 ),
             );
         }
-        const permissionRequest = await fs.readJson(path);
-        ctx.config.get(GLOBAL_CONFIG)?.set(PERMISSION_REQUEST, JSON.stringify(permissionRequest));
-        return ok(ctx.config);
+        const permissionRequest = await fs.readJSON(path);
+        return ok(JSON.stringify(permissionRequest));
     }
 
     private createManifestForRemote(ctx: SolutionContext, manifestTpl: string): Result<[IAppDefinition, TeamsAppManifest], FxError> {
@@ -911,7 +909,7 @@ export class TeamsAppSolution implements Solution {
 
         //1. ask common questions for azure resources.
         const appName = this.manifest!.name.short;
-        let res = await fillInCommonQuestions(
+        const res = await fillInCommonQuestions(
             appName,
             ctx.config,
             ctx.dialog,
@@ -922,47 +920,53 @@ export class TeamsAppSolution implements Solution {
             return res;
         }
 
-        res = await this.updatePermissionRequest(ctx);
-        if (res.isErr()) {
-            return res;
+        const maybePermission = await this.getPermissionRequest(ctx);
+        if (maybePermission.isErr()) {
+            return maybePermission;
         }
+        try {
+            ctx.config.get(GLOBAL_CONFIG)?.set(PERMISSION_REQUEST, JSON.stringify(maybePermission.value));
 
-        const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, selectedPlugins);
-        const preProvisionWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {
-            return [plugin?.preProvision?.bind(plugin), context, plugin.name];
-        });
-        const provisionWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {
-            return [plugin?.provision?.bind(plugin), context, plugin.name];
-        });
-        const postProvisionWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {
-            return [plugin?.postProvision?.bind(plugin), context, plugin.name];
-        });
+            const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, selectedPlugins);
+            const preProvisionWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {
+                return [plugin?.preProvision?.bind(plugin), context, plugin.name];
+            });
+            const provisionWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {
+                return [plugin?.provision?.bind(plugin), context, plugin.name];
+            });
+            const postProvisionWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {
+                return [plugin?.postProvision?.bind(plugin), context, plugin.name];
+            });
 
-        return executeLifecycles(
-            preProvisionWithCtx,
-            provisionWithCtx,
-            postProvisionWithCtx,
-            async () => {
-                ctx.logProvider?.info("[Teams Toolkit]: Start provisioning. It could take several minutes.");
-                return ok(undefined);
-            },
-            async () => {
-                ctx.logProvider?.info("[Teams Toolkit]: provison finished!");
-                if (selectedPlugins.some((plugin) => plugin.name === this.aadPlugin.name)) {
-                    const aadPlugin: AadAppForTeamsPlugin = this.aadPlugin as any;
-                    return aadPlugin.setApplicationInContext(
-                        getPluginContext(ctx, this.aadPlugin.name, this.manifest),
-                    );
-                    
-                }
-                return ok(undefined);
-            },
-            async () => {
-                const result = this.createAndConfigTeamsManifest(ctx);
-                ctx.logProvider?.info("[Teams Toolkit]: configuration finished!");
-                return result;
-            },
-        );
+            return executeLifecycles(
+                preProvisionWithCtx,
+                provisionWithCtx,
+                postProvisionWithCtx,
+                async () => {
+                    ctx.logProvider?.info("[Teams Toolkit]: Start provisioning. It could take several minutes.");
+                    return ok(undefined);
+                },
+                async () => {
+                    ctx.logProvider?.info("[Teams Toolkit]: provison finished!");
+                    if (selectedPlugins.some((plugin) => plugin.name === this.aadPlugin.name)) {
+                        const aadPlugin: AadAppForTeamsPlugin = this.aadPlugin as any;
+                        return aadPlugin.setApplicationInContext(
+                            getPluginContext(ctx, this.aadPlugin.name, this.manifest),
+                        );
+                        
+                    }
+                    return ok(undefined);
+                },
+                async () => {
+                    const result = this.createAndConfigTeamsManifest(ctx);
+                    ctx.logProvider?.info("[Teams Toolkit]: configuration finished!");
+                    return result;
+                },
+            );
+        } finally {
+            // Remove permissionRequest to prevent its persistence in config.
+            ctx.config.get(GLOBAL_CONFIG)?.delete(PERMISSION_REQUEST);
+        }
     }
 
     private canDeploy(ctx: SolutionContext): Result<Void, FxError> {
@@ -1370,6 +1374,17 @@ export class TeamsAppSolution implements Solution {
     }
 
     async localDebug(ctx: SolutionContext): Promise<Result<any, FxError>> {
+        const maybePermission = await this.getPermissionRequest(ctx);
+        if (maybePermission.isErr()) {
+            return maybePermission;
+        }
+        ctx.config.get(GLOBAL_CONFIG)?.set(PERMISSION_REQUEST, JSON.stringify(maybePermission.value));
+        const result = this.doLocalDebug(ctx);
+        ctx.config.get(GLOBAL_CONFIG)?.delete(PERMISSION_REQUEST);
+        return result;
+    }
+
+    async doLocalDebug(ctx: SolutionContext): Promise<Result<any, FxError>> {
         const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
 
         if (maybeSelectedPlugins.isErr()) {
@@ -1606,12 +1621,16 @@ export class TeamsAppSolution implements Solution {
             if (plugin && plugin.callFunc) {
                 const pctx = getPluginContext(ctx, plugin.name, this.manifest);
                 if (func.method === "aadUpdatePermission") {
-                    const result = await this.updatePermissionRequest(ctx);
+                    const result = await this.getPermissionRequest(ctx);
                     if (result.isErr()) {
                         return result;
                     }
+                    ctx.config.get(GLOBAL_CONFIG)?.set(PERMISSION_REQUEST, JSON.stringify(result.value));
                 }
-                return await plugin.callFunc(func, pctx);
+                const result = await plugin.callFunc(func, pctx);
+                // Remove permissionRequest to prevent its persistence in config.
+                ctx.config.get(GLOBAL_CONFIG)?.delete(PERMISSION_REQUEST);
+                return result;
             }
         }
         else if(array.length === 1){
@@ -1956,12 +1975,16 @@ export class TeamsAppSolution implements Solution {
             if (plugin && plugin.executeUserTask) {
                 const pctx = getPluginContext(ctx, plugin.name, this.manifest);
                 if (func.method === "aadUpdatePermission") {
-                    const result = await this.updatePermissionRequest(ctx);
+                    const result = await this.getPermissionRequest(ctx);
                     if (result.isErr()) {
                         return result;
                     }
+                    ctx.config.get(GLOBAL_CONFIG)?.set(PERMISSION_REQUEST, JSON.stringify(result.value));
                 }
-                return await plugin.executeUserTask(func, pctx);
+                const result = await plugin.executeUserTask(func, pctx);
+                // Remove permissionRequest to prevent its persistence in config.
+                ctx.config.get(GLOBAL_CONFIG)?.delete(PERMISSION_REQUEST);
+                return result;
             }
         }
         return err(
@@ -2143,6 +2166,8 @@ export class TeamsAppSolution implements Solution {
             const launchSettingsJSON = Mustache.render(launchSettingsJSONTpl, { "teams-app-id": teamsAppId });
             await fs.writeFile(launchSettingsJSONPath, launchSettingsJSON);
         }
+        // Remove permissionRequest to prevent its persistence in config.
+        ctx.config.get(GLOBAL_CONFIG)?.delete(PERMISSION_REQUEST);
         return ok({
             teamsAppId: teamsAppId,
             clientId: configResult.value.aadId,

@@ -448,7 +448,7 @@ export async function updateAADHandler(): Promise<Result<null, FxError>> {
     [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
   });
   const func: Func = {
-    namespace: "fx-solution-azure/teamsfx-plugin-aad-app-for-teams",
+    namespace: "fx-solution-azure/fx-resource-aad-app-for-teams",
     method: "aadUpdatePermission"
   };
   return await runUserTask(func);

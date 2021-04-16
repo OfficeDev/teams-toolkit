@@ -60,7 +60,6 @@ import {
     REMOTE_CLIENT_SECRET,
     WEB_APPLICATION_INFO_SOURCE,
     LOCAL_WEB_APPLICATION_INFO_SOURCE,
-    PROVISION_MANIFEST,
     PROGRAMMING_LANGUAGE,
     REMOTE_MANIFEST,
     CONFIGURABLE_TABS,
@@ -783,7 +782,6 @@ export class TeamsAppSolution implements Solution {
             ctx.logProvider?.info(`Teams app created ${result.value}`);
             appDefinition.appId = result.value;
             ctx.config.get(GLOBAL_CONFIG)?.set(REMOTE_TEAMS_APP_ID, result.value);
-            ctx.config.get(GLOBAL_CONFIG)?.set(PROVISION_MANIFEST, JSON.stringify(updatedManifest));
             return ok(appDefinition);
         } else {
             ctx.logProvider?.info(`Teams app already created: ${teamsAppId}`);
@@ -798,7 +796,6 @@ export class TeamsAppSolution implements Solution {
             if (result.isErr()) {
                 return result.map((_) => appDefinition);
             }
-            ctx.config.get(GLOBAL_CONFIG)?.set(PROVISION_MANIFEST, JSON.stringify(updatedManifest));
             ctx.logProvider?.info(`Teams app updated ${JSON.stringify(updatedManifest)}`);
             return ok(appDefinition);
         }

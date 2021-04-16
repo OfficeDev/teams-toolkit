@@ -118,8 +118,6 @@ export const LOCAL_DEBUG_TEAMS_APP_ID = "localDebugTeamsAppId";
 // Teams App Id for remote
 export const REMOTE_TEAMS_APP_ID = "remoteTeamsAppId";
 
-export const PROVISION_MANIFEST = "provisionManifest";
-
 export const TEAMS_APP_MANIFEST_TEMPLATE = `{
     "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.7/MicrosoftTeams.schema.json",
     "manifestVersion": "1.7",

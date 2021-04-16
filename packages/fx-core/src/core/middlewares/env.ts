@@ -4,15 +4,13 @@
 
 import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks";
 import * as fs from "fs-extra";
-import * as path from "path";
-import { err, Stage, Platform, ConfigFolderName } from "fx-api";
+import { ConfigFolderName } from "fx-api";
 
-import { NotSupportedProjectType, InternalError } from "../error";
 import { CoreContext } from "../context";
+import { LaunchConfig } from "../launch";
 
 /**
- * this middleware will help to check if current folder is supported or not.
- * if not supported, return a NotSupportedProjectType
+ * this middleware will load env from launch.json which is critical for subsequence flow.
  */
 export const envMW: Middleware = async (
   ctx: HookContext,
@@ -20,8 +18,17 @@ export const envMW: Middleware = async (
 ) => {
   for (const i in ctx.arguments) {
     if (ctx.arguments[i] instanceof CoreContext) {
-      let coreCtx = ctx.arguments[i];
+      let coreCtx = ctx.arguments[i] as CoreContext;
+
+      const laungh: LaunchConfig = await fs.readJson(
+        `${coreCtx.root}/.${ConfigFolderName}/launch.json`,
+        { encoding: "utf-8" }
+      );
+      coreCtx.env = laungh.currentEnv;
+      ctx.arguments[i] = coreCtx;
+      break;
     }
   }
+
   await next();
 };

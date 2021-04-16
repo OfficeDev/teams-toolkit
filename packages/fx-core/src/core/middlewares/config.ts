@@ -15,8 +15,9 @@ import {
 } from "fx-api";
 import * as error from "../error";
 import * as tools from "../tools";
-import { InternalError } from "../error";
+import { InternalError, NotSupportedProjectType } from "../error";
 import { CoreContext } from "../context";
+import { LaunchConfig } from "../launch";
 
 /**
  * This middleware will help to load configs at beginning.
@@ -44,35 +45,40 @@ export const readConfigMW: Middleware = async (
     return;
   }
 
-  const configs: Map<string, SolutionConfig> = new Map();
-
-  let settings: ProjectSettings;
   try {
-    // load env
-    const reg = /env\.(\w+)\.json/;
-    for (const file of fs.readdirSync(`${coreCtx.root}/.${ConfigFolderName}`)) {
-      const slice = reg.exec(file);
-      if (!slice) {
-        continue;
-      }
-      const envName = slice[1];
-      const filePath = `${coreCtx.root}/.${ConfigFolderName}/${file}`;
-      const configJson: Json = await fs.readJson(filePath);
-      const localDataPath = `${coreCtx.root}/.${ConfigFolderName}/${envName}.userdata`;
-      let dict: Dict<string>;
-      if (await fs.pathExists(localDataPath)) {
-        dict = await fs.readJSON(localDataPath);
-      } else {
-        dict = {};
-      }
-      tools.mergeSerectData(dict, configJson);
-      const solutionConfig: SolutionConfig = tools.objectToMap(configJson);
-      configs.set(envName, solutionConfig);
+    // load config
+    let configJson: Json;
+    const configPath = `${coreCtx.root}/.${ConfigFolderName}/env.${coreCtx.env}.json`;
+    if (await fs.pathExists(configPath)) {
+      configJson = await fs.readJson(configPath);
+    } else {
+      ctx.result = err(NotSupportedProjectType);
+      return;
     }
+
+    const localDataPath = `${coreCtx.root}/.${ConfigFolderName}/${coreCtx.env}.userdata`;
+    let dict: Dict<string>;
+    if (await fs.pathExists(localDataPath)) {
+      dict = await fs.readJSON(localDataPath);
+    } else {
+      dict = {};
+    }
+    tools.mergeSerectData(dict, configJson);
+    const solutionConfig: SolutionConfig = tools.objectToMap(configJson);
+    coreCtx.config = solutionConfig;
 
     // read settings.json to set solution & env & global configs.
     const settingsFile = `${coreCtx.root}/.${ConfigFolderName}/settings.json`;
-    settings = await fs.readJSON(settingsFile);
+    const settings: ProjectSettings = await fs.readJSON(settingsFile);
+    coreCtx.projectSettings = settings;
+
+    // load selectedSolution
+    for (const entry of coreCtx.globalSolutions.entries()) {
+      if (entry[0] === settings.solutionSettings!.name) {
+        coreCtx.selectedSolution = entry[1];
+        break;
+      }
+    }
   } catch (e) {
     ctx.result = err(error.ReadFileError(e));
     return;
@@ -81,19 +87,8 @@ export const readConfigMW: Middleware = async (
   for (const i in ctx.arguments) {
     if (ctx.arguments[i] instanceof CoreContext) {
       const coreCtx = ctx.arguments[i] as CoreContext;
-      coreCtx.projectSettings = settings;
-      // TODO @long
-      // refactor this code when PM figure out the requirements of env
-      coreCtx.config = configs.get("default")!;
-
-      for (const entry of coreCtx.globalSolutions.entries()) {
-        if (entry[0] === settings.solutionSettings!.name) {
-          coreCtx.selectedSolution = entry[1];
-          break;
-        }
-      }
-
       ctx.arguments[i] = coreCtx;
+      break;
     }
   }
   await next();
@@ -125,19 +120,15 @@ export const writeConfigMW: Middleware = async (
 
   try {
     // write config
-    for (const entry of coreCtx.configs.entries()) {
-      const envName = entry[0];
-      const solutionConfig = entry[1];
-      const configJson = tools.mapToJson(solutionConfig);
-      const filePath = `${coreCtx.root}/.${ConfigFolderName}/env.${envName}.json`;
-      const localDataPath = `${coreCtx.root}/.${ConfigFolderName}/${envName}.userdata`;
-      const localData = tools.sperateSecretData(configJson);
-      const content = JSON.stringify(configJson, null, 4);
-      await fs.writeFile(filePath, content);
-      await fs.writeFile(localDataPath, JSON.stringify(localData, null, 4));
-    }
+    const configJson = tools.mapToJson(coreCtx.config);
+    const filePath = `${coreCtx.root}/.${ConfigFolderName}/env.${coreCtx.env}.json`;
+    const localDataPath = `${coreCtx.root}/.${ConfigFolderName}/${coreCtx.env}.userdata`;
+    const localData = tools.sperateSecretData(configJson);
+    const content = JSON.stringify(configJson, null, 4);
+    await fs.writeFile(filePath, content);
+    await fs.writeFile(localDataPath, JSON.stringify(localData, null, 4));
 
-    // write settings
+    // write settings.json
     await fs.writeFile(
       `${coreCtx.root}/.${ConfigFolderName}/settings.json`,
       JSON.stringify(coreCtx.projectSettings, null, 4)

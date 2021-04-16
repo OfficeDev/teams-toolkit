@@ -45,6 +45,7 @@ export const validationMW: Middleware = async (
     `${p}/package.json`,
     `${p}/.${ConfigFolderName}`,
     `${p}/.${ConfigFolderName}/settings.json`,
+    `${p}/.${ConfigFolderName}/launch.json`,
   ];
   for (const fp of checklist) {
     if (!(await fs.pathExists(path.resolve(fp)))) {

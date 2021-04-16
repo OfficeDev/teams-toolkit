@@ -4,15 +4,12 @@
 
 import {
   ConfigMap,
-  DialogMsg,
-  DialogType,
   err,
   Func,
   FxError,
   NodeType,
   ok,
   QTreeNode,
-  QuestionType,
   Result,
   Stage,
   returnUserError,
@@ -35,11 +32,12 @@ import {
 } from "./question";
 import { CoreContext } from "./context";
 import { readConfigMW, writeConfigMW } from "./middlewares/config";
-import { versionControlMW } from "./middlewares/versionControl";
+import { validationMW } from "./middlewares/validation";
+import { envMW } from "./middlewares/env";
 import { solutionMW } from "./middlewares/solution";
 
 export class Executor {
-  @hooks([versionControlMW, solutionMW, readConfigMW, writeConfigMW])
+  @hooks([validationMW, envMW, solutionMW, readConfigMW, writeConfigMW])
   static async localDebug(
     ctx: CoreContext,
     answers?: ConfigMap
@@ -47,7 +45,7 @@ export class Executor {
     return ctx.selectedSolution!.localDebug(ctx.toSolutionContext(answers));
   }
 
-  @hooks([versionControlMW, solutionMW, readConfigMW])
+  @hooks([validationMW, envMW, solutionMW, readConfigMW])
   static async getQuestions(
     ctx: CoreContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
@@ -95,7 +93,7 @@ export class Executor {
     return ok(node);
   }
 
-  @hooks([versionControlMW, solutionMW, readConfigMW])
+  @hooks([validationMW, envMW, solutionMW, readConfigMW])
   static async getQuestionsForUserTask(
     ctx: CoreContext,
     func: Func
@@ -119,7 +117,7 @@ export class Executor {
     );
   }
 
-  @hooks([versionControlMW, solutionMW, readConfigMW, writeConfigMW])
+  @hooks([validationMW, envMW, solutionMW, readConfigMW, writeConfigMW])
   static async executeUserTask(
     ctx: CoreContext,
     func: Func,
@@ -159,7 +157,7 @@ export class Executor {
     return ok(undefined);
   }
 
-  @hooks([versionControlMW, solutionMW, readConfigMW, writeConfigMW])
+  @hooks([validationMW, envMW, solutionMW, readConfigMW, writeConfigMW])
   static async callFunc(
     ctx: CoreContext,
     func: Func,
@@ -247,7 +245,6 @@ export class Executor {
 
     await fs.ensureDir(targetFolder);
     await fs.ensureDir(`${targetFolder}/.${ConfigFolderName}`);
-
     ctx.logProvider?.info(`[Core] create - call solution.create()`);
     const result = await ctx.selectedSolution!.create(
       ctx.toSolutionContext(answers)
@@ -268,7 +265,7 @@ export class Executor {
             description: "",
             author: "",
             scripts: {
-              test: "echo \"Error: no test specified\" && exit 1",
+              test: 'echo "Error: no test specified" && exit 1',
             },
             license: "MIT",
           },
@@ -295,12 +292,10 @@ export class Executor {
     ctx: CoreContext,
     answers?: ConfigMap
   ): Promise<Result<null, FxError>> {
-    return await ctx.selectedSolution!.scaffold(
-      ctx.toSolutionContext(answers)
-    );
+    return await ctx.selectedSolution!.scaffold(ctx.toSolutionContext(answers));
   }
 
-  @hooks([versionControlMW, solutionMW, readConfigMW, writeConfigMW])
+  @hooks([validationMW, envMW, solutionMW, readConfigMW, writeConfigMW])
   static async update(
     ctx: CoreContext,
     answers?: ConfigMap
@@ -308,7 +303,7 @@ export class Executor {
     return ctx.selectedSolution!.update(ctx.toSolutionContext(answers));
   }
 
-  @hooks([versionControlMW, solutionMW, readConfigMW, writeConfigMW])
+  @hooks([validationMW, envMW, solutionMW, readConfigMW, writeConfigMW])
   static async provision(
     ctx: CoreContext,
     answers?: ConfigMap
@@ -316,7 +311,7 @@ export class Executor {
     return ctx.selectedSolution!.provision(ctx.toSolutionContext(answers));
   }
 
-  @hooks([versionControlMW, solutionMW, readConfigMW, writeConfigMW])
+  @hooks([validationMW, envMW, solutionMW, readConfigMW, writeConfigMW])
   static async deploy(
     ctx: CoreContext,
     answers?: ConfigMap
@@ -324,7 +319,7 @@ export class Executor {
     return ctx.selectedSolution!.deploy(ctx.toSolutionContext(answers));
   }
 
-  @hooks([versionControlMW, solutionMW, readConfigMW, writeConfigMW])
+  @hooks([validationMW, envMW, solutionMW, readConfigMW, writeConfigMW])
   static async publish(
     ctx: CoreContext,
     answers?: ConfigMap
@@ -332,15 +327,17 @@ export class Executor {
     return ctx.selectedSolution!.publish(ctx.toSolutionContext(answers));
   }
 
-  @hooks([versionControlMW, solutionMW, readConfigMW, writeConfigMW])
+  @hooks([validationMW, envMW])
   static async createEnv(
     ctx: CoreContext,
     env: string
   ): Promise<Result<null, FxError>> {
+    ctx.env = env;
+    ctx.config = new Map();
     return ok(null);
   }
 
-  @hooks([versionControlMW, solutionMW, readConfigMW, writeConfigMW])
+  @hooks([validationMW, envMW])
   static async removeEnv(
     ctx: CoreContext,
     env: string
@@ -348,7 +345,7 @@ export class Executor {
     return ok(null);
   }
 
-  @hooks([versionControlMW, solutionMW, readConfigMW, writeConfigMW])
+  @hooks([validationMW, envMW])
   static async switchEnv(
     ctx: CoreContext,
     env: string
@@ -356,7 +353,7 @@ export class Executor {
     return ok(null);
   }
 
-  @hooks([versionControlMW, solutionMW, readConfigMW])
+  @hooks([validationMW, envMW])
   static async listEnvs(ctx: CoreContext): Promise<Result<string[], FxError>> {
     return ok([]);
   }

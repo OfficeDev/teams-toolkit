@@ -132,10 +132,6 @@ export interface FileValidation extends AnyValidation {
      * the file/folder must exist
      */
     exists?: boolean;
-    /**
-     * the file/folder must do not exist
-     */
-    notExist?: boolean;
 }
 
 /**
@@ -277,7 +273,7 @@ export interface MultiSelectQuestion extends BaseQuestion {
      * @items: current selected `OptionItem` array
      * @returns: the new selected `id` array
      */
-    onDidChangeSelection?: (items: OptionItem[]) => Promise<string[]>;
+    onDidChangeSelection?: (selectedItems: OptionItem[]) => Promise<string[]>;
 }
 
 export interface TextInputQuestion extends BaseQuestion {

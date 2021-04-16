@@ -34,7 +34,7 @@ export class SqlPlugin implements Plugin {
         try {
             return await fn();
         } catch (e) {
-            DialogUtils.progressBar?.end();
+            await DialogUtils.progressBar?.end();
 
             if (!(e instanceof Error || e instanceof SystemError || e instanceof UserError)) {
                 e = new Error(e.toString());

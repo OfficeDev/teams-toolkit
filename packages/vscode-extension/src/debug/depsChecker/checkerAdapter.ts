@@ -2,16 +2,75 @@
 // Licensed under the MIT license.
 
 import * as path from "path";
-import commonlibLogger from "../../commonlib/log";
-import { window, workspace, WorkspaceConfiguration, MessageItem } from "vscode";
+import * as fs from "fs";
+import * as os from "os";
+import * as util from "util";
+import commonlibLogger, { VsCodeLogProvider } from "../../commonlib/log";
+import { window, workspace, WorkspaceConfiguration, MessageItem, OutputChannel } from "vscode";
+import { LogLevel, ConfigFolderName } from "fx-api";
 import { Messages, openUrl } from "./common";
+const appendFile = util.promisify(fs.appendFile);
 
 export { cpUtils } from "../cpUtils";
 export { hasTeamsfxBackend } from "../commonUtils";
 export { ExtTelemetry } from "../../telemetry/extTelemetry";
 export { TelemetryProperty } from "../../telemetry/extTelemetryEvents";
 
-export const logger = commonlibLogger;
+export class CheckerLogger {
+  private static checkerLogFileName = "env-checker.log";
+  private static globalConfigFolder = path.join(os.homedir(), `.${ConfigFolderName}`);
+
+  public outputChannel: OutputChannel;
+  private logger: VsCodeLogProvider;
+
+  public constructor(logger: VsCodeLogProvider) {
+    this.outputChannel = logger.outputChannel;
+    this.logger = logger;
+
+    fs.mkdirSync(CheckerLogger.globalConfigFolder, { recursive: true });
+  }
+
+  async trace(message: string): Promise<boolean> {
+    await this.writeLog(LogLevel.Trace, message);
+    return true;
+  }
+
+  async debug(message: string): Promise<boolean> {
+    await this.writeLog(LogLevel.Debug, message);
+    return true;
+  }
+
+  async info(message: string): Promise<boolean> {
+    await this.writeLog(LogLevel.Info, message);
+    return await this.logger.info(message);
+  }
+
+  async warning(message: string): Promise<boolean> {
+    await this.writeLog(LogLevel.Warning, message);
+    return await this.logger.warning(message);
+  }
+
+  async error(message: string): Promise<boolean> {
+    await this.writeLog(LogLevel.Error, message);
+    return await this.logger.error(message);
+  }
+
+  async fatal(message: string): Promise<boolean> {
+    await this.writeLog(LogLevel.Fatal, message);
+    return await this.logger.fatal(message);
+  }
+
+  private async writeLog(level: LogLevel, message: string): Promise<void> {
+    const line = `${LogLevel[level]} ${new Date().toISOString()}: ${message}` + os.EOL;
+    const logFilePath = path.join(CheckerLogger.globalConfigFolder, CheckerLogger.checkerLogFileName);
+    await appendFile(logFilePath, line);
+  }
+}
+
+export const logger = new CheckerLogger(commonlibLogger);
+
+// uncomment this line if the extension implements log level
+// export const logger = commonlibLogger;
 
 const downloadIndicatorInterval = 1000; // same as vscode-dotnet-runtime
 const configurationPrefix = "fx-extension";

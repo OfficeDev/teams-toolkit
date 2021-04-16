@@ -11,13 +11,13 @@
 
 /packages/vscode-extension @1openwindow @HuihuiWu-Microsoft @nliu-ms
 
-/packages/vscode-extension/src/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @xiaolang124 @dooriya
+/packages/vscode-extension/src/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @meifans @dooriya
 
-/packages/vscode-extension/src/debug @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @xiaolang124 @dooriya
+/packages/vscode-extension/src/debug @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @meifans @dooriya
 
 /packages/cli @chagong @Alive-Fish @jiayi-ruan
 
-/packages/cli/src/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @xiaolang124 @dooriya
+/packages/cli/src/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @meifans @dooriya
 
 /packages/api @jayzhang @1yefuwang1 @LongOddCode
 

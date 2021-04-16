@@ -4,13 +4,13 @@
 
 import * as cp from "child_process";
 import * as os from "os";
-import { VsCodeLogProvider } from "../commonlib/log";
+import { CheckerLogger } from "./depsChecker/checkerAdapter";
 import * as sudo from "sudo-prompt";
 
 export namespace cpUtils {
   export async function executeCommand(
     workingDirectory: string | undefined,
-    logger: VsCodeLogProvider | undefined,
+    logger: CheckerLogger | undefined,
     options: cp.SpawnOptions | undefined,
     command: string,
     ...args: string[]
@@ -23,9 +23,10 @@ export namespace cpUtils {
       ...args
     );
     if (result.code !== 0) {
+      await logger?.debug(`Failed to run command: "${command} ${result.formattedArgs}", code: '${result.code}'`);
       throw new Error(`Failed to run "${command}" command. Check output window for more details.`);
     } else {
-      // await logger?.debug(`Finished running command: "${command} ${result.formattedArgs}".`);
+      await logger?.debug(`Finished running command: "${command} ${result.formattedArgs}".`);
     }
 
     return result.cmdOutput;
@@ -33,7 +34,7 @@ export namespace cpUtils {
 
   export async function tryExecuteCommand(
     workingDirectory: string | undefined,
-    logger: VsCodeLogProvider | undefined,
+    logger: CheckerLogger | undefined,
     additionalOptions: cp.SpawnOptions | undefined,
     command: string,
     ...args: string[]
@@ -52,7 +53,7 @@ export namespace cpUtils {
         Object.assign(options, additionalOptions);
 
         const childProc: cp.ChildProcess = cp.spawn(command, args, options);
-        // logger?.debug(`Running command: "${command} ${formattedArgs}"...`);
+        logger?.debug(`Running command: "${command} ${formattedArgs}"...`);
 
         childProc.stdout?.on("data", (data: string | Buffer) => {
           data = data.toString();
@@ -65,9 +66,12 @@ export namespace cpUtils {
           cmdOutputIncludingStderr = cmdOutputIncludingStderr.concat(data);
         });
 
-        childProc.on("error", reject);
+        childProc.on("error", (error) => {
+          logger?.debug(`Failed to run command '${command} ${formattedArgs}': '${cmdOutputIncludingStderr}'`);
+          reject(error);
+        });
         childProc.on("close", (code: number) => {
-          // logger?.debug(cmdOutputIncludingStderr);
+          logger?.debug(`Command finished with outputs, cmdOutputIncludingStderr: '${cmdOutputIncludingStderr}'`);
           resolve({
             code,
             cmdOutput,
@@ -98,10 +102,12 @@ export namespace cpUtils {
    * Run sudo command and return stdout content.
    * Note: the return value may contains EOL.
    */
-  export function execSudo(command: string): Promise<string> {
+  export function execSudo(logger: CheckerLogger, command: string): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       try {
         sudo.exec(command, { name: "TeamsFx Toolkit" }, (error, stdout, stderr) => {
+          logger.debug(`Running execSudo, command: '${command}', error: '${error}', stdout: '${stdout}', stderr: '${stderr}'`);
+
           if (error) {
             reject(error);
           }
@@ -113,6 +119,7 @@ export namespace cpUtils {
           }
         });
       } catch (error) {
+        logger.debug(`Failed to run execSudo, command: '${command}', error: '${error}'`);
         reject(error);
       }
     });

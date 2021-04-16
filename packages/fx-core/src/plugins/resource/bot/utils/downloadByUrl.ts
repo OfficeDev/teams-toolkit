@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { default as axios } from "axios";
-import { DownloadException } from "../exceptions";
+import { DownloadError } from "../errors";
 
 import * as utils from "./common";
 
@@ -12,11 +12,11 @@ export async function downloadByUrl(url: string): Promise<Buffer> {
             responseType: "arraybuffer",
         });
     } catch (e) {
-        throw new DownloadException(url, e);
+        throw new DownloadError(url, e);
     }
 
     if (!res || !utils.isHttpCodeOkOrCreated(res.status)) {
-        throw new DownloadException(url);
+        throw new DownloadError(url);
     }
 
     return res.data;

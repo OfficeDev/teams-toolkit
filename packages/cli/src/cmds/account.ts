@@ -73,7 +73,7 @@ class LogoutAccount extends YargsCommand {
       case "azure": {
         const result = await AzureTokenProvider.signout();
         if (result) {
-          CLILogProvider.info(`[${constants.cliSource}] Sign out Azure failed.`);
+          console.log(`[${constants.cliSource}] Sign out Azure successfully.`);
         } else {
           CLILogProvider.error(`[${constants.cliSource}] Sign out Azure failed.`);
         }
@@ -82,7 +82,7 @@ class LogoutAccount extends YargsCommand {
       case "m365": {
         const result = await AppStudioTokenProvider.signout();
         if (result) {
-          CLILogProvider.info(`[${constants.cliSource}] Sign out M365 failed.`);
+          console.log(`[${constants.cliSource}] Sign out M365 successfully.`);
         } else {
           CLILogProvider.error(`[${constants.cliSource}] Sign out M365 failed.`);
         }

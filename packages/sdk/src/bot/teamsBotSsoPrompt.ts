@@ -372,7 +372,7 @@ export class TeamsBotSsoPrompt extends Dialog {
               this.getTokenExchangeInvokeResponse(StatusCodes.OK, "", context.activity.value.id)
             );
 
-            const ssoTokenExpiration = (parseJwt(ssoToken) as SSOTokenInfoBase).exp;
+            const ssoTokenExpiration = parseJwt(ssoToken).exp;
             tokenResponse = {
               ssoToken: ssoToken,
               ssoTokenExpiration: new Date(ssoTokenExpiration * 1000).toISOString(),

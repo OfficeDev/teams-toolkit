@@ -5,8 +5,9 @@ import * as vscode from "vscode";
 
 import * as constants from "./constants";
 import * as commonUtils from "./commonUtils";
-import { ProductName } from "fx-api";
+import { ProductName, VsCodeEnv } from "fx-api";
 import { dotnetChecker } from "./depsChecker/dotnetChecker";
+import { detectVsCodeEnv } from "../handlers";
 
 export class TeamsfxTaskProvider implements vscode.TaskProvider {
   public static readonly type: string = ProductName;
@@ -47,6 +48,12 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
         tasks.push(await this.createNgrokStartTask(workspaceFolder, botRoot));
         tasks.push(await this.createBotStartTask(workspaceFolder, botRoot));
       }
+
+      const vscodeEnv = detectVsCodeEnv();
+      const isCodeSpaceEnv = (vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode);
+      if (isCodeSpaceEnv) {
+        tasks.push(await this.createOpenTeamsWebClientTask(workspaceFolder));
+      } 
     }
     return tasks;
   }
@@ -188,6 +195,27 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       constants.botProblemMatcher
     );
     task.isBackground = true;
+    return task;
+  }
+
+  private async createOpenTeamsWebClientTask(
+    workspaceFolder: vscode.WorkspaceFolder,
+    definition?: vscode.TaskDefinition
+  ): Promise<vscode.Task> {
+    const command: string = constants.openWenClientCommand;
+    definition = definition || { type: TeamsfxTaskProvider.type, command};
+
+    const localTeamsAppId: string | undefined = await commonUtils.getLocalDebugTeamsAppId(true);
+    const commandLine = `npx open-cli https://teams.microsoft.com/_#/l/app/${localTeamsAppId}?installAppPackage=true`;
+
+    const task = new vscode.Task(
+      definition,
+      workspaceFolder,
+      command,
+      TeamsfxTaskProvider.type,
+      new vscode.ShellExecution(commandLine)
+    );
+
     return task;
   }
 }

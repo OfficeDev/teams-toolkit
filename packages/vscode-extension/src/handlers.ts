@@ -56,6 +56,7 @@ import * as fs from "fs-extra";
 import * as vscode from "vscode";
 import { VsCodeUI, VS_CODE_UI } from "./qm/vsc_ui";
 import { DepsChecker } from "./debug/depsChecker/checker";
+import { logger as checkerLogger } from "./debug/depsChecker/checkerAdapter";
 import { FuncToolChecker } from "./debug/depsChecker/funcToolChecker";
 import { DotnetChecker, dotnetChecker } from "./debug/depsChecker/dotnetChecker";
 import { PanelType } from "./controls/PanelType";
@@ -496,7 +497,7 @@ export async function backendExtensionsInstallHandler(): Promise<void> {
     try {
       await cpUtils.executeCommand(
         backendRoot,
-        logger,
+        checkerLogger,
         { shell: false },
         dotnetExecPath,
         "build",

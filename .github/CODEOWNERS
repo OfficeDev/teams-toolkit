@@ -36,7 +36,8 @@
 /packages/fx-core/src/plugins/resource/appstudio @nliu-ms @jayzhang
 /packages/fx-core/tests/plugins/resource/appstudio @nliu-ms @jayzhang
 
-/packages/fx-core/src/plugins/resource/spfx @jiayi-ruan @nliu-ms
+/packages/fx-core/src/plugins/resource/spfx @jiayi-ruan @nliu-ms @jayzhang
+/packages/fx-core/tests/plugins/resource/spfx @jiayi-ruan @nliu-ms @jayzhang
 
 /packages/fx-core/src/plugins/resource/bot @IvanJobs @eriolchan
 /packages/fx-core/tests/plugins/resource/bot @IvanJobs @eriolchan

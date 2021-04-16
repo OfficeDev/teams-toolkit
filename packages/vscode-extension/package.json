@@ -303,7 +303,7 @@
     "lint:staged": "lint-staged",
     "vscode:prepublish": "rimraf out && npm run package",
     "copy-files": "copyfiles -u 1 src/**/*.html src/**/*.css src/**/*.ps1 src/**/*.sh out/src/",
-    "compile": "tsc -p ./ && yarn copy-files",
+    "compile": "tsc -p ./ && npm run copy-files",
     "build": "npm run compile",
     "watch": "webpack --watch --devtool nosources-source-map --info-verbosity verbose --config ./webpack.config.js",
     "package": "rimraf out && webpack --mode production --config ./webpack.config.js",
@@ -380,8 +380,7 @@
     "uuid": "^8.3.2",
     "webpack": "^4.44.1",
     "webpack-cli": "^3.3.12",
-    "winston": "^3.3.3",
-    "yarn": "^1.22.10"
+    "winston": "^3.3.3"
   },
   "dependencies": {
     "@azure/identity": "^1.2.1",

@@ -146,6 +146,7 @@ export const DeployPluginSelectQuestion: MultiSelectQuestion = {
     name: AzureSolutionQuestionNames.PluginSelectionDeploy,
     title: `Please select which resource(s) to deploy`,
     type: NodeType.multiSelect,
+    skipSingleOption: true,
     option: [],
     default: []
 };
@@ -163,5 +164,6 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
     title: "Please select programming language for your project",
     type: NodeType.singleSelect,
     option: ["javascript"],
-    default: "javascript"
+    default: "javascript",
+    skipSingleOption: true
 };

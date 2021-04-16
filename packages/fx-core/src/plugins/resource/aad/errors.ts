@@ -15,7 +15,7 @@ export interface AadError {
 export const GetAppError: AadError = {
   name: "AadGetAppError",
   message: (objectId: string) => `Failed to get app info with Object ID: ${objectId}. ` +
-    "Please make sure object id is valid" +
+    "Please make sure object id is valid, " +
     `or delete 'objectId' under ${Plugins.pluginNameComplex} in env.default.json and try again.`,
 };
 

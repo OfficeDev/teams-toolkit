@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
@@ -5,7 +6,7 @@ import * as path from "path";
 import { Logger } from "../logger";
 import { DepsCheckerError } from "./errors";
 import { dotnetChecker, DotnetChecker } from "./dotnetChecker";
-import { ConfigMap, returnUserError } from "fx-api";
+import { ConfigMap, returnUserError, FxError } from "fx-api";
 import { Messages, dotnetHelpLink } from "./common";
 
 export { cpUtils } from "./cpUtils";
@@ -15,7 +16,9 @@ const downloadIndicatorInterval = 1000; // same as vscode-dotnet-runtime
 let enabled = false;
 
 export function dotnetCheckerEnabled(): boolean {
-  return enabled;
+  // TODO: enable dotnet checker after all features are ready
+  // return enabled;
+  return false;
 }
 
 export async function runWithProgressIndicator(
@@ -81,4 +84,36 @@ export function handleDotnetError(error: Error): void {
   } else {
     throw returnUserError(new Error(Messages.defaultErrorMessage), "function", "DepsCheckerError", dotnetHelpLink, error);
   }
+}
+
+export namespace ExtTelemetry {
+  export function sendTelemetryEvent(
+    eventName: string,
+    properties?: { [p: string]: string },
+    measurements?: { [p: string]: number }
+  ): void {
+    // implement me
+  }
+
+  export function sendTelemetryErrorEvent(
+    eventName: string,
+    error: FxError,
+    properties?: { [p: string]: string },
+    measurements?: { [p: string]: number },
+    errorProps?: string[]
+  ): void {
+    // implement me
+  }
+
+  export function sendTelemetryException(
+    error: Error,
+    properties?: { [p: string]: string },
+    measurements?: { [p: string]: number }
+  ): void {
+    // implement me
+  }
+}
+
+export enum TelemetryProperty {
+  Component = "component",
 }

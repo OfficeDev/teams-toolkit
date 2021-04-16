@@ -4,12 +4,10 @@
 import path from "path";
 import { PluginContext } from "fx-api";
 import { DependentPluginInfo, FrontendPathInfo } from "../constants";
-import { QuestionKey } from "./questions";
-import { TSTemplateNotReadyError } from "./errors";
 
 export class TabLanguage {
-    static readonly JavaScript = "javascript";
-    static readonly TypeScript = "typescript";
+    static readonly JavaScript = "JavaScript";
+    static readonly TypeScript = "TypeScript";
 }
 
 export class Scenario {
@@ -26,23 +24,31 @@ export class TemplateInfo {
 
     constructor(ctx: PluginContext) {
         this.group = TemplateInfo.TemplateGroupName;
+        this.version = TemplateInfo.version;
 
         const solutionPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.SolutionPluginName);
-        this.language = solutionPlugin?.get(DependentPluginInfo.ProgrammingLanguage) as string ?? TabLanguage.JavaScript;
-        //TODO: Throw error until TS template ready
-        if (this.language === TabLanguage.TypeScript) {
-            throw new TSTemplateNotReadyError();
-        }
-        this.version = TemplateInfo.version;
+        const tabLanguage = solutionPlugin?.get(DependentPluginInfo.ProgrammingLanguage) as string ?? TabLanguage.JavaScript;
+        this.language = this.validateTabLanguage(tabLanguage);
 
         const functionPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.FunctionPluginName);
         this.scenario = functionPlugin ? Scenario.WithFunction : Scenario.Default;
 
-        // local template package only for default scenario
-        const localTemplateFileName = [this.group, this.language, Scenario.Default].join(".") + FrontendPathInfo.TemplatePackageExt;
+        const localTemplateFileName = [this.group, this.language, this.scenario].join(".") + FrontendPathInfo.TemplatePackageExt;
         this.localTemplatePath = path.join(FrontendPathInfo.TemplateDir, localTemplateFileName);
     }
 
+    private validateTabLanguage(language: string): string {
+        if (language.toLowerCase() === TabLanguage.JavaScript.toLowerCase()) {
+            return TabLanguage.JavaScript;
+        }
+
+        if (language.toLowerCase() === TabLanguage.TypeScript.toLowerCase()) {
+            return TabLanguage.TypeScript;
+        }
+
+        throw new Error();
+    }
+
     static readonly TemplateGroupName = "tab";
-    static readonly version = "0.2.x";
+    static readonly version = "0.3.x";
 }

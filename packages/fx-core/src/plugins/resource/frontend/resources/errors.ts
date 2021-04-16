@@ -209,12 +209,6 @@ export class NpmInstallError extends FrontendPluginError {
     }
 }
 
-export class TSTemplateNotReadyError extends FrontendPluginError {
-    constructor() {
-        super(ErrorType.System, "TSTemplateNotReadyError", "The TypeScript template for tab frontend isn't ready yet.", []);
-    }
-}
-
 export class InvalidTabScopeError extends FrontendPluginError {
     constructor() {
         super(ErrorType.User, "InvalidTabScopeError", "The Tab scope is invalid.", [tips.restoreEnvironment, tips.reScaffold]);

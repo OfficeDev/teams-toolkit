@@ -29,9 +29,12 @@ describe("Provision", function() {
       const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
       context["fx-resource-simple-auth"]["skuName"] = "B1";
       await fs.writeJSON(`${projectPath}/.fx/env.default.json`, context, { spaces: 4 });
+    }
 
+    {
       // update permission
-      context["solution"]["permissionRequest"] = "[{\"resource\":\"Microsoft Graph\",\"scopes\": [\"User.Read\",\"User.Read.All\"]}]";
+      const permission = "[{\"resource\":\"Microsoft Graph\",\"scopes\": [\"User.Read\",\"User.Read.All\"]}]";
+      await fs.writeJSON(`${projectPath}/permission.json`, permission, { spaces: 4 });
     }
 
     // provision

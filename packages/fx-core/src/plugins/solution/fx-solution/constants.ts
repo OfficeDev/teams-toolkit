@@ -94,7 +94,7 @@ export enum SolutionError {
     RegisterTeamsAppAndAadError = "RegisterTeamsAppAndAadError",
     UpdateManifestError = "UpdateManifestError",
     GetLocalDebugConfigError = "GetLocalDebugConfigError",
-    GetRemoteConfigError = "GetLocalDebugConfigError",
+    GetRemoteConfigError = "GetRemoteDebugConfigError",
     UnsupportedPlatform = "UnsupportedPlatform",
 }
 

@@ -64,8 +64,8 @@ export class FrontendPluginImpl {
         const progressHandler = await ProgressHelper.startScaffoldProgressHandler(ctx);
         await progressHandler?.next(ScaffoldSteps.Scaffold);
 
-        const templateInfo = new TemplateInfo(ctx);
         this.syncAnswerToContextConfig(ctx, FrontendQuestionsOnScaffold);
+        const templateInfo = new TemplateInfo(ctx);
 
         const zip = await runWithErrorCatchAndThrow(
             new GetTemplateError(),

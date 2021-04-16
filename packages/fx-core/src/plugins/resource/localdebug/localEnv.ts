@@ -15,8 +15,12 @@ export class LocalEnvProvider {
         this.localEnvFilePath = `${workspaceFolder}/.${ConfigFolderName}/local.env`;
     }
 
-    public async loadLocalEnv(): Promise<{ [name: string]: string }> {
-        return dotenv.parse(await fs.readFile(this.localEnvFilePath));
+    public async loadLocalEnv(includeFrontend: boolean, includeBackend: boolean, includeBot: boolean): Promise<{ [name: string]: string }> {
+        if (await fs.pathExists(this.localEnvFilePath)) {
+            return dotenv.parse(await fs.readFile(this.localEnvFilePath));
+        } else {
+            return this.initialLocalEnvs(includeFrontend, includeBackend, includeBot);
+        }
     }
 
     public async saveLocalEnv(envs: { [name: string]: string } | undefined): Promise<void> {

@@ -35,8 +35,8 @@ export async function backendExtensionsInstall(backendRoot: string, csprojPath: 
       logger,
       { shell: false },
       dotnetExecPath,
-      csprojPath,
       "build",
+      csprojPath,
       "-o",
       outputPath,
       );

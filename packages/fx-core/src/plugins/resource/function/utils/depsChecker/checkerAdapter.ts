@@ -17,8 +17,7 @@ let enabled = false;
 
 export function dotnetCheckerEnabled(): boolean {
   // TODO: enable dotnet checker after all features are ready
-  // return enabled;
-  return false;
+  return enabled;
 }
 
 export async function runWithProgressIndicator(
@@ -70,12 +69,6 @@ const answerKey = "function-dotnet-checker-enabled";
 
 export function setFeatureFlag(answers?: ConfigMap): void {
   enabled = answers?.getBoolean(answerKey) || false;
-}
-
-// get dotnet exec path and escape for shell execution
-export async function getDotnetForShell(): Promise<string> {
-  const execPath = await dotnetChecker.getDotnetExecPath();
-  return DotnetChecker.escapeFilePath(execPath);
 }
 
 export function handleDotnetError(error: Error): void {

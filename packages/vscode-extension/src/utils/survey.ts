@@ -144,7 +144,7 @@ export class ExtensionSurvey {
       title: ExtensionSurveyStrings.dontShowAgain.title,
       run: async (): Promise<void> => {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Survey, {
-          "message": ExtensionSurveyStrings.remindMeLater.message
+          "message": ExtensionSurveyStrings.dontShowAgain.message
         });
         await globalState.update(ExtensionSurveyStateKeys.DoNotShowAgain, true);
       },

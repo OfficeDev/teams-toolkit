@@ -32,8 +32,8 @@ class LoginAccount extends YargsCommand {
       case "azure": {
         const result = await AzureTokenProvider.getAccountCredentialAsync();
         if (result) {
-          console.log(`[${constants.cliSource}] Sign in Azure successfully. Your account username is ${colors.yellow((result as any).username)}.`);
-          console.log(`[${constants.cliSource}] Your subscriptons are:`);
+          console.log(colors.green(`[${constants.cliSource}] Sign in Azure successfully. Your account username is ${colors.yellow((result as any).username)}.`));
+          console.log(colors.green(`[${constants.cliSource}] Your subscriptons are:`));
           const subscriptions = await AzureTokenProvider.getSubscriptionList(result);
           console.log(subscriptions);
         } else {
@@ -44,7 +44,7 @@ class LoginAccount extends YargsCommand {
       case "m365": {
         const result = await AppStudioTokenProvider.getJsonObject();
         if (result) {
-          console.log(`[${constants.cliSource}] Sign in M365 successfully. Your account email is ${colors.yellow((result as any).upn)}.`);
+          console.log(colors.green(`[${constants.cliSource}] Sign in M365 successfully. Your account email is ${colors.yellow((result as any).upn)}.`));
         } else {
           CLILogProvider.error(`[${constants.cliSource}] Sign in M365 failed.`);
         }
@@ -73,7 +73,7 @@ class LogoutAccount extends YargsCommand {
       case "azure": {
         const result = await AzureTokenProvider.signout();
         if (result) {
-          console.log(`[${constants.cliSource}] Sign out Azure successfully.`);
+          console.log(colors.green(`[${constants.cliSource}] Sign out Azure successfully.`));
         } else {
           CLILogProvider.error(`[${constants.cliSource}] Sign out Azure failed.`);
         }
@@ -82,7 +82,7 @@ class LogoutAccount extends YargsCommand {
       case "m365": {
         const result = await AppStudioTokenProvider.signout();
         if (result) {
-          console.log(`[${constants.cliSource}] Sign out M365 successfully.`);
+          console.log(colors.green(`[${constants.cliSource}] Sign out M365 successfully.`));
         } else {
           CLILogProvider.error(`[${constants.cliSource}] Sign out M365 failed.`);
         }

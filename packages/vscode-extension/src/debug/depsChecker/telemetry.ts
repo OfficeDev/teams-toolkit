@@ -35,7 +35,7 @@ export enum TelemtryMessages {
 }
 
 enum TelemetryMessurement {
-  installFunc = "install-func"
+  completionTime = "completion-time"
 }
 
 export class DepsCheckerTelemetry {
@@ -48,7 +48,7 @@ export class DepsCheckerTelemetry {
 
     const measurements: { [p: string]: number } = {};
     if (timecost) {
-      measurements[TelemetryMessurement.installFunc] = timecost;
+      measurements[TelemetryMessurement.completionTime] = timecost;
     }
 
     ExtTelemetry.sendTelemetryEvent(eventName, properties, measurements);

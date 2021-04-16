@@ -876,7 +876,7 @@ export class TeamsAppSolution implements Solution {
             await ctx.appStudioToken?.getAccessToken();
 
             this.runningState = SolutionRunningState.ProvisionInProgress;
-            ctx.config.get(GLOBAL_CONFIG)?.set(PERMISSION_REQUEST, JSON.stringify(maybePermission.value));
+            ctx.config.get(GLOBAL_CONFIG)?.set(PERMISSION_REQUEST, maybePermission.value);
 
             const provisionResult = await this.doProvision(ctx);
             if (provisionResult.isOk()) {
@@ -1375,10 +1375,13 @@ export class TeamsAppSolution implements Solution {
         if (maybePermission.isErr()) {
             return maybePermission;
         }
-        ctx.config.get(GLOBAL_CONFIG)?.set(PERMISSION_REQUEST, JSON.stringify(maybePermission.value));
-        const result = this.doLocalDebug(ctx);
-        ctx.config.get(GLOBAL_CONFIG)?.delete(PERMISSION_REQUEST);
-        return result;
+        try {
+            ctx.config.get(GLOBAL_CONFIG)?.set(PERMISSION_REQUEST, maybePermission.value);
+            const result = this.doLocalDebug(ctx);
+            return result;
+        } finally {
+            ctx.config.get(GLOBAL_CONFIG)?.delete(PERMISSION_REQUEST);
+        }
     }
 
     async doLocalDebug(ctx: SolutionContext): Promise<Result<any, FxError>> {
@@ -1622,7 +1625,7 @@ export class TeamsAppSolution implements Solution {
                     if (result.isErr()) {
                         return result;
                     }
-                    ctx.config.get(GLOBAL_CONFIG)?.set(PERMISSION_REQUEST, JSON.stringify(result.value));
+                    ctx.config.get(GLOBAL_CONFIG)?.set(PERMISSION_REQUEST, result.value);
                 }
                 const result = await plugin.callFunc(func, pctx);
                 // Remove permissionRequest to prevent its persistence in config.
@@ -1976,7 +1979,7 @@ export class TeamsAppSolution implements Solution {
                     if (result.isErr()) {
                         return result;
                     }
-                    ctx.config.get(GLOBAL_CONFIG)?.set(PERMISSION_REQUEST, JSON.stringify(result.value));
+                    ctx.config.get(GLOBAL_CONFIG)?.set(PERMISSION_REQUEST, result.value);
                 }
                 const result = await plugin.executeUserTask(func, pctx);
                 // Remove permissionRequest to prevent its persistence in config.

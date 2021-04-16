@@ -13,6 +13,11 @@ import { UnknownError } from "./error";
 
 export abstract class YargsCommand {
   /**
+   * the yargs command head.
+   */
+  abstract readonly commandHead: string;
+
+  /**
    * the yargs command.
    */
   abstract readonly command: string;

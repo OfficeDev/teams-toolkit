@@ -1,4 +1,7 @@
-﻿using Microsoft.Azure.WebJobs.Hosting;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using Microsoft.Azure.WebJobs.Hosting;
 using Microsoft.Azure.WebJobs.Extensions.TeamsFx;
 
 [assembly: WebJobsStartup(typeof(TeamsFxBindingStartup))]

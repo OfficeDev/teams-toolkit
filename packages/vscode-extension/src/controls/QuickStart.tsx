@@ -74,18 +74,22 @@ export default class QuickStart extends React.Component<any, any>{
                             step={2}
                             done={this.state.stepsDone[1]} 
                             />
-                        <GetStartedAction
-                            title="3. Install Node.js"
-                            content={["The toolkit cannot find Node.js >10.x on your machine.", <br />, "As a fundamental runtime context for Teams app, Node.js 12.x is recommended. Please install the appropriate version to run the Microsoft Teams Toolkit.", <br />, "Read more about ", <a href="http://npm.github.io/installation-setup-docs/installing/using-a-node-version-manager.html">managing Node.js versions</a>, "."]}
-                            actionText="Download"
-                            onAction={this.downloadNode}
-                            secondaryActionText="Next"
-                            onSecondaryAction={() => { this.onNextStep(3); }}
-                            expanded={this.state.currentStep === 3}
-                            onCollapsedCardClicked={this.onCollapsedCardClicked}
-                            step={3}
-                            done={this.state.stepsDone[2]} 
-                            />
+                        {
+                            !isSupportedNode && (
+                                <GetStartedAction
+                                    title="3. Install Node.js"
+                                    content={["The toolkit cannot find Node.js >10.x on your machine.", <br />, "As a fundamental runtime context for Teams app, Node.js 12.x is recommended. Please install the appropriate version to run the Microsoft Teams Toolkit.", <br />, "Read more about ", <a href="http://npm.github.io/installation-setup-docs/installing/using-a-node-version-manager.html">managing Node.js versions</a>, "."]}
+                                    actionText="Download"
+                                    onAction={this.downloadNode}
+                                    secondaryActionText="Next"
+                                    onSecondaryAction={() => { this.onNextStep(3); }}
+                                    expanded={this.state.currentStep === 3}
+                                    onCollapsedCardClicked={this.onCollapsedCardClicked}
+                                    step={3}
+                                    done={this.state.stepsDone[2]}
+                                />
+                            )
+                        }
                         <GetStartedAction
                             title="4. Prepare M365 account"
                             content={m365AccountContent}

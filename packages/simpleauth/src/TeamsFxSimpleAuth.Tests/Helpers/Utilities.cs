@@ -88,12 +88,12 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.Helpers
             var requestUri = new Uri(QueryHelpers.AddQueryString(authorizeUrl, param));
             driver.Navigate().GoToUrl(requestUri);
 
-            IWebElement username = WaitUntilElementExists(driver, By.Name("loginfmt"));
+            IWebElement username = WaitUntilElementExists(driver, By.Name("loginfmt"), 100);
             username.SendKeys(testAccountUserName);
             // Click "Next"
             ClickElementWithRetry(driver, By.Id("idSIButton9"));
 
-            IWebElement password = WaitUntilElementExists(driver, By.Name("passwd"), 10);
+            IWebElement password = WaitUntilElementExists(driver, By.Name("passwd"), 100);
             password.SendKeys(testAccountPassword);
 
             // Click "Sign in"
@@ -122,7 +122,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.Helpers
                 settings.TestUsername, settings.TestPassword);
         }
 
-        public static async Task<string> GetAccessTokenUsingClientCredentialsFlow(string endpoint, string clientId, string clientSecret, string scope)
+        public static async Task<string> GetAccessTokenUsingClientCredentialsFlow(string oauthAuthority, string clientId, string clientSecret, string scope)
         {
             var content = new ClientCredentialRequestBody
             {
@@ -134,7 +134,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.Helpers
 
             using (var client = new HttpClient(new RetryHandler(new HttpClientHandler())))
             {
-                HttpRequestMessage tokenReq = new HttpRequestMessage(HttpMethod.Post, endpoint)
+                HttpRequestMessage tokenReq = new HttpRequestMessage(HttpMethod.Post, oauthAuthority.TrimEnd('/') + "/oauth2/v2.0/token")
                 {
                     Content = ToFormUrlEncodedContent(content)
                 };

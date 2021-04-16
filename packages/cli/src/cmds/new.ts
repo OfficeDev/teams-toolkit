@@ -5,7 +5,18 @@
 
 import { Argv, Options } from "yargs";
 
-import { FxError, err, ok, Result, Stage, Platform, ConfigMap, QTreeNode, NodeType, Question } from "fx-api";
+import {
+  FxError,
+  err,
+  ok,
+  Result,
+  Stage,
+  Platform,
+  ConfigMap,
+  QTreeNode,
+  NodeType,
+  Question
+} from "fx-api";
 
 import activate from "../activate";
 import * as constants from "../constants";
@@ -37,13 +48,15 @@ export default class New extends YargsCommand {
         const data = node.data as Question;
         this.params[data.name] = toYargsOptions(data);
       });
-      yargs.options({
-        "interactive": {
-          description: "Whether scaffold interactively",
-          boolean: true,
-          default: true
-        }
-      }).options(this.params);
+      yargs
+        .options({
+          interactive: {
+            description: "Whether scaffold interactively",
+            boolean: true,
+            default: true
+          }
+        })
+        .options(this.params);
     }
     return yargs.version(false);
   }

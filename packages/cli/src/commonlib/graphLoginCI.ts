@@ -87,7 +87,11 @@ export class GraphLogin extends login implements GraphTokenProvider {
   }
 
   async setStatusChangeCallback(
-    statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>
   ): Promise<boolean> {
     // GraphLogin.statusChange = statusChange;
     return new Promise((resolve) => {

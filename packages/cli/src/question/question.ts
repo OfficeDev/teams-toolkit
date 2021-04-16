@@ -37,7 +37,11 @@ export async function validateAndUpdateAnswers(
     }
 
     if ("validation" in node.data && node.data.validation) {
-      const validateFunc = getValidationFunction(node.data.validation, toConfigMap(answers), remoteFuncValidator);
+      const validateFunc = getValidationFunction(
+        node.data.validation,
+        toConfigMap(answers),
+        remoteFuncValidator
+      );
       const result = await validateFunc(ans);
       if (typeof result === "string") {
         throw NotValidInputValue(node.data.name, result);
@@ -84,10 +88,10 @@ export async function validateAndUpdateAnswers(
 
 export async function visitInteractively(
   node: QTreeNode,
-  answers?: { [_:string]: any },
+  answers?: { [_: string]: any },
   parentNodeAnswer?: any,
   remoteFuncValidator?: RemoteFuncExecutor
-): Promise<{ [_:string]: any }> {
+): Promise<{ [_: string]: any }> {
   if (!answers) {
     answers = {};
   }
@@ -124,7 +128,10 @@ export async function visitInteractively(
     }
 
     if ("containsAny" in node.condition && node.condition.containsAny) {
-      if (parentNodeAnswer instanceof Array && node.condition.containsAny.map(item => parentNodeAnswer.includes(item)).includes(true)) {
+      if (
+        parentNodeAnswer instanceof Array &&
+        node.condition.containsAny.map((item) => parentNodeAnswer.includes(item)).includes(true)
+      ) {
         shouldVisitChildren = true;
       } else {
         return answers;
@@ -140,7 +147,10 @@ export async function visitInteractively(
 
   let answer: any = undefined;
   if (node.data.type !== NodeType.group) {
-    answers = await inquirer.prompt([toInquirerQuestion(node.data, answers, remoteFuncValidator)], answers);
+    answers = await inquirer.prompt(
+      [toInquirerQuestion(node.data, answers, remoteFuncValidator)],
+      answers
+    );
     answer = answers[node.data.name];
   }
 
@@ -153,7 +163,11 @@ export async function visitInteractively(
   return answers!;
 }
 
-export function toInquirerQuestion(data: Question, answers: { [_:string]: any }, remoteFuncValidator?: RemoteFuncExecutor): DistinctQuestion {
+export function toInquirerQuestion(
+  data: Question,
+  answers: { [_: string]: any },
+  remoteFuncValidator?: RemoteFuncExecutor
+): DistinctQuestion {
   let type: "input" | "number" | "password" | "list" | "checkbox";
   let defaultValue = data.default;
   switch (data.type) {
@@ -187,7 +201,11 @@ export function toInquirerQuestion(data: Question, answers: { [_:string]: any },
     default: defaultValue,
     validate: async (input: any) => {
       if ("validation" in data && data.validation) {
-        const validateFunc = getValidationFunction(data.validation, toConfigMap(answers), remoteFuncValidator);
+        const validateFunc = getValidationFunction(
+          data.validation,
+          toConfigMap(answers),
+          remoteFuncValidator
+        );
         const result = await validateFunc(input);
         if (typeof result === "string") {
           return result;

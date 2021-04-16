@@ -43,7 +43,5 @@ export function register(yargs: yargs.Argv): void {
     .help()
     .strict()
     .alias("help", "h")
-    .epilogue(
-      "for more information, find our manual at https://github.com/OfficeDev/TeamsFx"
-    ).argv;
+    .epilogue("for more information, find our manual at https://github.com/OfficeDev/TeamsFx").argv;
 })();

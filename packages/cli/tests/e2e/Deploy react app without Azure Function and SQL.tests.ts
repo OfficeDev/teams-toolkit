@@ -17,11 +17,14 @@ describe("Deploy to Azure", function() {
 
   it(`Deploy react app without Azure Function and SQL - Test Plan ID 9454296`, async function() {
     // new a project
-    const newResult = await execAsync(`teamsfx new --app-name ${appName} --interactive false --verbose false`, {
-      cwd: testFolder,
-      env: process.env,
-      timeout: 0
-    });
+    const newResult = await execAsync(
+      `teamsfx new --app-name ${appName} --interactive false --verbose false`,
+      {
+        cwd: testFolder,
+        env: process.env,
+        timeout: 0
+      }
+    );
     expect(newResult.stdout).to.eq("");
     expect(newResult.stderr).to.eq("");
     console.log("new");

@@ -23,7 +23,7 @@ const execAsync = promisify(exec);
 
 const tmpFolder = path.resolve(os.homedir(), "test-folder");
 if (!fs.pathExistsSync(tmpFolder)) {
-    fs.mkdirSync(tmpFolder);
+  fs.mkdirSync(tmpFolder);
 }
 
 const appNameForResourceAdd = "tmpTeamsfxProj" + uuidv4().slice(0, 8);
@@ -34,7 +34,7 @@ const appNameForProvision = "tmpTeamsfxProj" + uuidv4().slice(0, 8);
 const projectPathForProvision = path.resolve(tmpFolder, appNameForProvision);
 const newCommandForProvision = `teamsfx new --app-name ${appNameForProvision} --azure-resources function sql --interactive false`;
 
-const argv = process.argv.slice(2).map(stage => stage.toLocaleLowerCase());
+const argv = process.argv.slice(2).map((stage) => stage.toLocaleLowerCase());
 const runNewGenerator = argv.includes("new");
 const runResourceAddGenerator = argv.includes("resource-add");
 const runProvisionGenerator = argv.includes("provision");
@@ -49,15 +49,19 @@ const runNewCommandForProvision = runProvisionGenerator;
   }
 
   if (runNewCommandForResourceAdd) {
-    CLILogProvider.info(`[ParamGenerator] Start to run '${newCommandForResourceAdd}' in ${tmpFolder}`);
+    CLILogProvider.info(
+      `[ParamGenerator] Start to run '${newCommandForResourceAdd}' in ${tmpFolder}`
+    );
     await execAsync(newCommandForResourceAdd, {
       cwd: tmpFolder,
       env: process.env,
       timeout: 0
     });
-    CLILogProvider.info(`[ParamGenerator] Finish to run '${newCommandForResourceAdd}' in ${tmpFolder}`);
+    CLILogProvider.info(
+      `[ParamGenerator] Finish to run '${newCommandForResourceAdd}' in ${tmpFolder}`
+    );
   }
-  
+
   if (runResourceAddGenerator) {
     const resourceAddFunctionGenerator = new ResourceAddFunctionGenerator();
     await resourceAddFunctionGenerator.run(projectPathFroResourceAdd);
@@ -67,13 +71,17 @@ const runNewCommandForProvision = runProvisionGenerator;
   }
 
   if (runNewCommandForProvision) {
-    CLILogProvider.info(`[ParamGenerator] Start to run '${newCommandForProvision}' in ${tmpFolder}`);
+    CLILogProvider.info(
+      `[ParamGenerator] Start to run '${newCommandForProvision}' in ${tmpFolder}`
+    );
     await execAsync(newCommandForProvision, {
       cwd: tmpFolder,
       env: process.env,
       timeout: 0
     });
-    CLILogProvider.info(`[ParamGenerator] Finish to run '${newCommandForProvision}' in ${tmpFolder}`);
+    CLILogProvider.info(
+      `[ParamGenerator] Finish to run '${newCommandForProvision}' in ${tmpFolder}`
+    );
   }
 
   if (runProvisionGenerator) {

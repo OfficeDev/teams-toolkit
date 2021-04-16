@@ -68,7 +68,7 @@ export function toYargsOptions(data: Question): Options {
   };
 }
 
-export function toConfigMap(anwsers: { [_:string]: any } ): ConfigMap {
+export function toConfigMap(anwsers: { [_: string]: any }): ConfigMap {
   const config = new ConfigMap();
   for (const name in anwsers) {
     config.set(name, anwsers[name]);

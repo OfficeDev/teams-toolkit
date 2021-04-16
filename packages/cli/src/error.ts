@@ -63,7 +63,11 @@ export function UnknownError(e: Error): SystemError {
 
 export function QTNConditionNotSupport(node: QTreeNode): SystemError {
   return returnSystemError(
-    new Error(`The condition of the question tree node is not supported. (${JSON.stringify(node.condition)})`),
+    new Error(
+      `The condition of the question tree node is not supported. (${JSON.stringify(
+        node.condition
+      )})`
+    ),
     constants.cliSource,
     "QTNConditionNotSupport"
   );
@@ -71,7 +75,9 @@ export function QTNConditionNotSupport(node: QTreeNode): SystemError {
 
 export function QTNQuestionTypeNotSupport(data: Question): SystemError {
   return returnSystemError(
-    new Error(`The condition of the question tree node is not supported. (${JSON.stringify(data)})`),
+    new Error(
+      `The condition of the question tree node is not supported. (${JSON.stringify(data)})`
+    ),
     constants.cliSource,
     "QTNQuestionTypeNotSupport"
   );

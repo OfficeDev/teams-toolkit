@@ -40,12 +40,11 @@ export default class New extends YargsCommand {
 
     const manifestFolderParamName = "manifest-folder";
     let result;
-    // if input manifestFolderParam(actually also teams-app-id param), 
+    // if input manifestFolderParam(actually also teams-app-id param),
     // this call is from VS platform, since CLI hide these two param from users.
     if (answers.has(manifestFolderParamName)) {
       result = await activate();
-    }
-    else {
+    } else {
       const rootFolder = answers.getString("folder");
       answers.delete("folder");
       result = await activate(rootFolder);
@@ -63,8 +62,7 @@ export default class New extends YargsCommand {
         method: "VSpublish"
       };
       result = await core.executeUserTask!(func, answers);
-    }
-    else {
+    } else {
       answers.set("platform", Platform.CLI);
       result = await core.publish(answers);
     }

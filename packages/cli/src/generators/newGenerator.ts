@@ -3,15 +3,7 @@
 
 "use strict";
 
-import {
-  Platform,
-  Stage,
-  QTreeNode,
-  FxError,
-  ok,
-  Result,
-  err
-} from "fx-api";
+import { Platform, Stage, QTreeNode, FxError, ok, Result, err } from "fx-api";
 
 import activate from "../activate";
 import * as constants from "../constants";
@@ -29,14 +21,14 @@ export class NewGenerator extends Generator {
     if (result.isErr()) {
       return err(result.error);
     }
-    
+
     const core = result.value;
     {
       const result = await core.getQuestions!(this.stage, Platform.VSCode);
       if (result.isErr()) {
         return err(result.error);
       }
-    
+
       const root = result.value!;
       return ok(root);
     }

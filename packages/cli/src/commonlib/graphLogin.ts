@@ -110,7 +110,11 @@ export class GraphLogin extends login implements GraphTokenProvider {
   }
 
   async setStatusChangeCallback(
-    statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>
   ): Promise<boolean> {
     GraphLogin.statusChange = statusChange;
     if (GraphLogin.codeFlowInstance.account) {
@@ -137,6 +141,9 @@ export class GraphLogin extends login implements GraphTokenProvider {
 import { MockGraphTokenProvider } from "fx-api";
 
 const ciEnabled = process.env.CI_ENABLED;
-const graphLogin = ciEnabled && ciEnabled === "true" ? MockGraphTokenProvider.getInstance() : GraphLogin.getInstance();
+const graphLogin =
+  ciEnabled && ciEnabled === "true"
+    ? MockGraphTokenProvider.getInstance()
+    : GraphLogin.getInstance();
 
 export default graphLogin;

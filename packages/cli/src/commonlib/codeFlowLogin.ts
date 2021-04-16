@@ -57,8 +57,12 @@ export class CodeFlowLogin {
   }
 
   async login(): Promise<string> {
-    const codeVerifier = CodeFlowLogin.toBase64UrlEncoding(crypto.randomBytes(32).toString("base64"));
-    const codeChallenge = CodeFlowLogin.toBase64UrlEncoding(await CodeFlowLogin.sha256(codeVerifier));
+    const codeVerifier = CodeFlowLogin.toBase64UrlEncoding(
+      crypto.randomBytes(32).toString("base64")
+    );
+    const codeChallenge = CodeFlowLogin.toBase64UrlEncoding(
+      await CodeFlowLogin.sha256(codeVerifier)
+    );
     let serverPort = this.port;
 
     // try get an unused port
@@ -222,10 +226,14 @@ export class CodeFlowLogin {
   }
 
   static sha256(s: string | Uint8Array): Promise<string> {
-    return new Promise(solve => solve(crypto
-      .createHash("sha256")
-      .update(s)
-      .digest("base64")));
+    return new Promise((solve) =>
+      solve(
+        crypto
+          .createHash("sha256")
+          .update(s)
+          .digest("base64")
+      )
+    );
   }
 }
 

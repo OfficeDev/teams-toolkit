@@ -214,7 +214,9 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
             _authority: env.activeDirectoryEndpointUrl + AzureAccountManager.domain
           }
         ],
-        function () { const _ = 1; }
+        function() {
+          const _ = 1;
+        }
       );
     }
   }
@@ -267,7 +269,11 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
    * Add update account info callback
    */
   async setStatusChangeCallback(
-    statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>
   ): Promise<boolean> {
     AzureAccountManager.statusChange = statusChange;
     await AzureAccountManager.codeFlowInstance.reloadCache();
@@ -322,7 +328,11 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       const credential = await this.doGetAccountCredentialAsync();
       const token = await credential?.getToken();
       const accountJson = await this.getJsonObject();
-      return Promise.resolve({ status: signedIn, token: token?.accessToken, accountInfo: accountJson });
+      return Promise.resolve({
+        status: signedIn,
+        token: token?.accessToken,
+        accountInfo: accountJson
+      });
     } else {
       return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });
     }
@@ -358,6 +368,9 @@ export type AzureSubscription = {
 import { MockAzureAccountProvider } from "fx-api";
 
 const ciEnabled = process.env.CI_ENABLED;
-const azureLogin = ciEnabled && ciEnabled === "true" ? MockAzureAccountProvider.getInstance() : AzureAccountManager.getInstance();
+const azureLogin =
+  ciEnabled && ciEnabled === "true"
+    ? MockAzureAccountProvider.getInstance()
+    : AzureAccountManager.getInstance();
 
 export default azureLogin;

@@ -114,7 +114,11 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
   }
 
   async setStatusChangeCallback(
-    statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>
   ): Promise<boolean> {
     AppStudioLogin.statusChange = statusChange;
     await AppStudioLogin.codeFlowInstance.reloadCache();
@@ -142,6 +146,9 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
 import { MockAppStudioTokenProvider } from "fx-api";
 
 const ciEnabled = process.env.CI_ENABLED;
-const appStudioLogin = ciEnabled && ciEnabled === "true" ? MockAppStudioTokenProvider.getInstance() : AppStudioLogin.getInstance();
+const appStudioLogin =
+  ciEnabled && ciEnabled === "true"
+    ? MockAppStudioTokenProvider.getInstance()
+    : AppStudioLogin.getInstance();
 
 export default appStudioLogin;

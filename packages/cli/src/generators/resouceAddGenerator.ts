@@ -19,7 +19,7 @@ import { Generator } from "./generator";
 
 abstract class ResourceAddGenerator extends Generator {
   abstract readonly resourceName: string;
-  
+
   public readonly stage = Stage.update;
 
   async generate(projectPath: string): Promise<Result<QTreeNode[], FxError>> {
@@ -32,7 +32,7 @@ abstract class ResourceAddGenerator extends Generator {
 
     // get add-azure-resources node
     const resourceParamName = "add-azure-resources";
-    const resourceNode = allNodes.filter(node => node.data.name === resourceParamName)[0];
+    const resourceNode = allNodes.filter((node) => node.data.name === resourceParamName)[0];
     if (!resourceNode) {
       throw Error(`${resourceParamName} is not found in the update stage's param list.`);
     }
@@ -50,7 +50,9 @@ abstract class ResourceAddGenerator extends Generator {
     // pick all related questions.
     /// TODO: this may cause problem.
     const resourceRelatedNodes = allNodes.filter(
-      node => node.data.name?.includes(this.resourceName) || node.data.description?.includes(this.resourceName)
+      (node) =>
+        node.data.name?.includes(this.resourceName) ||
+        node.data.description?.includes(this.resourceName)
     );
     return ok([newResourceNode, ...resourceRelatedNodes]);
   }

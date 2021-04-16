@@ -6,32 +6,31 @@ import { SystemError, UserError } from "fx-api";
 import { ExtTelemetry, TelemetryProperty } from "./checkerAdapter";
 
 export enum DepsCheckerEvent {
-  skipCheckFunc = "skip-check-func",
-  skipCheckDotnet = "skip-check-dotnet",
-  checkFunc = "check-func",
-
+  funcCheck = "func-check",
+  funcCheckSkipped = "func-check-skipped",
+  funcInstall = "func-install",
+  funcInstallCompleted = "func-install-completed",
+  funcValidation = "func-validation",
+  funcValidationCompleted = "func-validation-completed",
   funcV1Installed = "func-v1-installed",
   funcV2Installed = "func-v2-installed",
   funcV3Installed = "func-v3-installed",
 
-  installingFunc = "installing-func",
-  installedFunc = "installed-func",
-  installedValidFunc = "installed-func-with-validation",
+  dotnetCheckSkipped = "dotnet-check-skipped",
   dotnetAlreadyInstalled = "dotnet-already-installed",
   dotnetInstallCompleted = "dotnet-install-completed",
   dotnetInstallError = "dotnet-install-error",
   dotnetInstallScriptCompleted = "dotnet-install-script-completed",
   dotnetInstallScriptError = "dotnet-install-script-error",
-
-  validateDotnetError = "validate-dotnet-error",
-  validateFunc = "validate-func"
+  dotnetValidationError = "dotnet-validation-error"
 }
 
 export enum TelemtryMessages {
   failedToInstallFunc = "failed to install Func core tools.",
   funcV1Installed = "func v1 is installed by user.",
   NPMNotFound = "npm is not found.",
-  failedToExecDotnetScript = "failed to exec dotnet script."
+  failedToExecDotnetScript = "failed to exec dotnet script.",
+  failedToValidateDotnet = "failed to validate dotnet."
 }
 
 enum TelemetryMessurement {

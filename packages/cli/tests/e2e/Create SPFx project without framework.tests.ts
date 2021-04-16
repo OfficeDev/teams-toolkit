@@ -15,7 +15,7 @@ describe("Start a new project", function () {
 
   it("Create SPFx project without framework - Test Plan ID 9426251", async function () {
     const result = await execAsync(
-      `${constants.cliName} new --app-name ${appName} --folder ${testFolder} --host-type SPFx --spfx-framework-type ${type} --spfx-webpart-name helloworld`,
+      `${constants.cliName} new --app-name ${appName} --folder ${testFolder} --host-type SPFx --spfx-framework-type ${type} --spfx-webpart-name helloworld --interactive false`,
       {
         cwd: process.cwd(),
         env: process.env,

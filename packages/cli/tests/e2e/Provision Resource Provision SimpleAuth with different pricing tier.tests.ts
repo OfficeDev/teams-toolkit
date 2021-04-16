@@ -17,7 +17,7 @@ describe("Provision", function() {
 
   it(`Provision Resource: Provision SimpleAuth with different pricing tier - Test Plan ID 9576788`, async function() {
     // set env
-    process.env.SIMPLE_AUTH_SKU_NAME = "B1";
+    process.env.SIMPLE_AUTH_SKU_NAME = "D1";
 
     // new a project
     const newResult = await execAsync(`teamsfx new --app-name ${appName} --interactive false --verbose false`, {
@@ -51,8 +51,7 @@ describe("Provision", function() {
 
     // Validate Simple Auth
     const simpleAuth = SimpleAuthValidator.init(context);
-    await SimpleAuthValidator.validate(simpleAuth, aad);
-    console.log("validate");
+    await SimpleAuthValidator.validate(simpleAuth, aad, "D1");
 
     // deploy
     const deployResult = await execAsync(

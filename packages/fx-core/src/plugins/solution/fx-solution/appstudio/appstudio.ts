@@ -213,9 +213,11 @@ export namespace AppStudio {
     export function getDevAppDefinition(
         manifest: string,
         appId: string,
-        endpoint: string,
         domains: string[],
         webApplicationInfoResource: string,
+        staticTabs: string,
+        configurableTabs: string,
+        tabEndpoint?: string,
         appName?: string,
         version?: string,
         bots?: string,
@@ -227,7 +229,7 @@ export namespace AppStudio {
         if (version) {
             manifest = replaceConfigValue(manifest, "version", version);
         }
-        manifest = replaceConfigValue(manifest, "baseUrl", endpoint ? endpoint : "https://localhost:3000");
+        manifest = replaceConfigValue(manifest, "baseUrl", tabEndpoint ? tabEndpoint : "https://localhost:3000");
         manifest = replaceConfigValue(manifest, "appClientId", appId);
         manifest = replaceConfigValue(manifest, "appid", appId);
         manifest = replaceConfigValue(manifest, "webApplicationInfoResource", webApplicationInfoResource);
@@ -240,6 +242,14 @@ export namespace AppStudio {
 
         if (composeExtensions) {
             updatedManifest.composeExtensions = JSON.parse(composeExtensions) as IComposeExtension[];
+        }
+
+        if (staticTabs) {
+            updatedManifest.staticTabs = JSON.parse(staticTabs);
+        }
+
+        if (configurableTabs) {
+            updatedManifest.configurableTabs = JSON.parse(configurableTabs);
         }
 
         for (const domain of domains) {

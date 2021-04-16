@@ -15,7 +15,8 @@ import {
   ok,
   Result,
   FxError,
-  ConfigFolderName
+  ConfigFolderName,
+  ConfigMap
 } from "fx-api";
 import { ConfigNotFoundError, ReadFileError } from "./error";
 
@@ -34,34 +35,51 @@ export function getParamJson(jsonFilePath: string): { [_: string]: Options } {
     const params: { [_: string]: Options } = {};
     jsonContent.forEach((node) => {
       const data = node.data as Question;
-      const option = "option" in data ? data.option : undefined;
-
-      let choices: string[] | undefined;
-      if (option && option instanceof Array && option.length > 0) {
-        if (typeof option[0] === "string") {
-          choices = option as string[];
-        } else {
-          choices = (option as OptionItem[]).map((op) => op.id);
-        }
-      } else {
-        choices = undefined;
-      }
-
-      params[data.name] = {
-        array: data.type === NodeType.multiSelect,
-        description: data.description || data.title || "",
-        default: data.default,
-        choices: choices,
-        hidden: !!(data as any).hidden
-      };
+      params[data.name] = toYargsOptions(data);
     });
     return params;
   }
 }
 
+export function getChoicesFromQTNodeQuestion(data: Question): string[] | undefined {
+  const option = "option" in data ? data.option : undefined;
+  if (option && option instanceof Array && option.length > 0) {
+    if (typeof option[0] === "string") {
+      return option as string[];
+    } else {
+      return (option as OptionItem[]).map((op) => op.id);
+    }
+  } else {
+    return undefined;
+  }
+}
+
+export function toYargsOptions(data: Question): Options {
+  const choices = getChoicesFromQTNodeQuestion(data);
+  if (choices && choices.length > 0 && data.default === undefined) {
+    data.default = choices[0];
+  }
+  return {
+    array: data.type === NodeType.multiSelect,
+    description: data.description || data.title || "",
+    default: data.default,
+    choices: choices,
+    hidden: !!(data as any).hide
+  };
+}
+
+export function toConfigMap(anwsers: { [_:string]: any } ): ConfigMap {
+  const config = new ConfigMap();
+  for (const name in anwsers) {
+    config.set(name, anwsers[name]);
+  }
+  return config;
+}
+
 export function flattenNodes(root: QTreeNode): QTreeNode[] {
   const children = (root.children || []).concat([]);
-  root.children = undefined;
+  const rootCopy = Object.assign({}, root);
+  rootCopy.children = undefined;
   return children.concat(...children.map((node) => flattenNodes(node)));
 }
 
@@ -76,7 +94,7 @@ export function getActiveEnv(): string {
 
 export async function readConfigs(rootfolder: string): Promise<Result<any, FxError>> {
   // TODO: change the dirname to teamsFx for monorepo
-  const filePath = `${rootfolder}/${ConfigFolderName}/env.${getActiveEnv()}.json`;
+  const filePath = `${rootfolder}/.${ConfigFolderName}/env.${getActiveEnv()}.json`;
   if (!fs.existsSync(filePath)) {
     return err(ConfigNotFoundError(filePath));
   }

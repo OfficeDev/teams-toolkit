@@ -7,8 +7,11 @@ export enum TelemetryEvent {
   CreateProjectStart = "create-project-start",
   CreateProject = "create-project",
 
-  UpdateProjectStart = "update-project-start",
-  UpdateProject = "update-project",
+  UpdateProjectStart = "add-resource-start",
+  UpdateProject = "add-resource",
+
+  AddCapStart = "add-capability-start",
+  AddCap = "add-capability",
 
   OpenManifestEditor = "open-manifest-editor",
 
@@ -20,6 +23,8 @@ export enum TelemetryEvent {
 
   UpdateAadStart = "update-aad-start",
   UpdateAad = "update-aad",
+
+  PublishStart = "publish-start",
 
   F5Start = "f5-start",
   F5 = "f5"

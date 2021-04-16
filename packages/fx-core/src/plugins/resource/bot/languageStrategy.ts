@@ -3,7 +3,7 @@
 import * as utils from "./utils/common";
 import { ProgrammingLanguage } from "./enums/programmingLanguage";
 import { TemplateManifest } from "./utils/templateManifest";
-import { DeployConfigs, TemplateProjectsConstants } from "./constants";
+import { TemplateProjectsConstants } from "./constants";
 import { Commands } from "./resources/strings";
 
 import * as appService from "@azure/arm-appservice";
@@ -13,16 +13,19 @@ import { CommandExecutionException, SomethingMissingException } from "./exceptio
 import { downloadByUrl } from "./utils/downloadByUrl";
 import * as path from "path";
 import * as fs from "fs-extra";
+import { Logger } from "./logger";
 
 export class LanguageStrategy {
     public static async getTemplateProjectZip(programmingLanguage: ProgrammingLanguage, groupName: string): Promise<AdmZip> {
         try {
             const zipUrl = await LanguageStrategy.getTemplateProjectZipUrl(programmingLanguage, groupName);
+            Logger.debug(`Template project zip url: ${zipUrl}.`);
             const zipBuffer = await downloadByUrl(zipUrl);
             return new AdmZip(zipBuffer);
         } catch (e) {
             // ToDo: Add log for debug.
             const fallbackFilePath = await LanguageStrategy.generateLocalFallbackFilePath(programmingLanguage, groupName);
+            Logger.debug(`Scaffold fallback to use ${fallbackFilePath}.`);
             return new AdmZip(fallbackFilePath);
         }
     }
@@ -70,7 +73,7 @@ export class LanguageStrategy {
         return siteEnvelope;
     }
 
-    public static async buildAndZipPackage(programmingLanguage: ProgrammingLanguage, packDir: string, unPackFlag?: boolean): Promise<Buffer> {
+    public static async localBuild(programmingLanguage: ProgrammingLanguage, packDir: string, unPackFlag?: boolean): Promise<void> {
         if (programmingLanguage === ProgrammingLanguage.TypeScript) {
             //Typescript needs tsc build before deploy because of windows app server. other languages don"t need it.
             try {
@@ -82,20 +85,18 @@ export class LanguageStrategy {
         }
 
         if (programmingLanguage === ProgrammingLanguage.JavaScript) {
-            // Since teamfx package is in private registry, have to npm install to pack the node_modulre folder.
             try {
-                await utils.execute("npm install", packDir);
+                // fail to npm install teamsdev-client on azure web app, so pack it locally.
+                await utils.execute("npm install teamsdev-client", packDir);
             } catch (e) {
                 throw new CommandExecutionException(`${Commands.NPM_INSTALL}`, e.message, e);
             }
         }
-
-        return utils.zipAFolder(packDir, unPackFlag ? DeployConfigs.UN_PACK_DIRS : []);
     }
 
     private static async generateLocalFallbackFilePath(programmingLanguage: ProgrammingLanguage, groupName: string): Promise<string> {
         const fxCorePath = path.join(__dirname, "..", "..", "..", "..");
-        const targetFilePath = path.join(fxCorePath, "templates", "plugins", "resource", "bot", `${groupName}.${programmingLanguage}.${TemplateProjectsConstants.DEFAULT_SCENARIO_NAME}.zip`);
+        const targetFilePath = path.join(fxCorePath, "templates", "plugins", "resource", "bot", `${groupName.toLowerCase()}.${programmingLanguage.toLowerCase()}.${TemplateProjectsConstants.DEFAULT_SCENARIO_NAME.toLowerCase()}.zip`);
 
         const targetExisted = await fs.pathExists(targetFilePath);
         if (!targetExisted) {

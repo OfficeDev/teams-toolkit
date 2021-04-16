@@ -12,7 +12,7 @@ import * as execute from "../../../../../src/plugins/resource/function/utils/exe
 import { AzureClientFactory } from "../../../../../src/plugins/resource/function/utils/azure-client";
 import { DependentPluginInfo, FunctionPluginInfo } from "../../../../../src/plugins/resource/function/constants";
 import { FunctionDeploy } from "../../../../../src/plugins/resource/function/ops/deploy";
-import { FunctionLanguage } from "../../../../../src/plugins/resource/function/enums";
+import { FunctionLanguage, QuestionKey } from "../../../../../src/plugins/resource/function/enums";
 import { FunctionPlugin } from "../../../../../src/plugins/resource/function";
 
 const context: any = {
@@ -22,11 +22,13 @@ const context: any = {
             [DependentPluginInfo.subscriptionId, "ut"],
             [DependentPluginInfo.resourceNameSuffix, "ut"],
             [DependentPluginInfo.location, "ut"],
+            [DependentPluginInfo.programmingLanguage, "javascript"]
         ])],
         [DependentPluginInfo.aadPluginName, new Map<string, string>([
             [DependentPluginInfo.aadClientId, "ut"],
             [DependentPluginInfo.aadClientSecret, "ut"],
-            [DependentPluginInfo.aadOauthAuthority, "ut"],
+            [DependentPluginInfo.oauthHost, "ut"],
+            [DependentPluginInfo.tenantId, "ut"],
         ])],
         [DependentPluginInfo.frontendPluginName, new Map<string, string>([
             [DependentPluginInfo.frontendDomain, "ut"],
@@ -34,7 +36,8 @@ const context: any = {
         ])],
         [DependentPluginInfo.identityPluginName, new Map<string, string>([
             [DependentPluginInfo.identityId, "ut"],
-            [DependentPluginInfo.identityName, "ut"],
+            [DependentPluginInfo.oauthHost, "ut"],
+            [DependentPluginInfo.tenantId, "ut"],
         ])],
         [DependentPluginInfo.sqlPluginName, new Map<string, string>([
             [DependentPluginInfo.sqlPluginName, "ut"],
@@ -51,7 +54,6 @@ const context: any = {
         }
     },
     config: new Map<string, string>([
-        ["functionLanguage", FunctionLanguage.JavaScript],
         ["functionAppName", "ut"],
         ["scaffoldDone", "true"],
         ["provisionDone", "true"]

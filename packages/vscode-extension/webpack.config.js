@@ -6,6 +6,7 @@ const path = require("path");
 const HtmlWebPackPlugin = require("html-webpack-plugin");
 const webpack = require("webpack");
 const CopyPlugin = require('copy-webpack-plugin');
+const terserWebpackPlugin = require('terser-webpack-plugin');
 
 /**@type {import('webpack').Configuration}*/
 const config = {
@@ -30,11 +31,8 @@ const config = {
   devtool: "source-map",
   externals: {
     vscode: "commonjs vscode", // the vscode-module is created on-the-fly and must be excluded. Add other modules that cannot be webpack'ed, 📖 -> https://webpack.js.org/configuration/externals/
-    rimraf: "rimraf",
     keytar: "keytar",
-    "diagnostic-channel-publishers": "diagnostic-channel-publishers",
-    "applicationinsights-native-metrics": "applicationinsights-native-metrics",
-    "adm-zip": "adm-zip",
+    "fx-core": "fx-core",
   },
   resolve: {
     // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
@@ -61,7 +59,7 @@ const config = {
         ],
       },
       {
-        test: /\.(jpg|png|svg)$/,
+        test: /\.(jpg|png|svg|gif)$/,
         use: {
           loader: 'url-loader',
         },
@@ -69,14 +67,30 @@ const config = {
     ]
   },
   plugins: [
-    new HtmlWebPackPlugin({template: "./src/commonlib/codeFlowResult/index.html", filename: "../codeFlowResult/index.html" }),
+    new HtmlWebPackPlugin({template: "./src/commonlib/codeFlowResult/index.html", filename: "codeFlowResult/index.html" }),
     new webpack.ContextReplacementPlugin(/express[\/\\]lib/, false, /$^/),
+    new webpack.ContextReplacementPlugin(/applicationinsights[\/\\]out[\/\\]AutoCollection/, false, /$^/),
+    new webpack.ContextReplacementPlugin(/applicationinsights[\/\\]out[\/\\]Library/, false, /$^/),
+    new webpack.ContextReplacementPlugin(/ms-rest[\/\\]lib/, false, /$^/),
+    new webpack.IgnorePlugin({ resourceRegExp: /@opentelemetry\/tracing/ }),
+    new webpack.IgnorePlugin({ resourceRegExp: /applicationinsights-native-metrics/ }),
+    new webpack.IgnorePlugin({ resourceRegExp: /original-fs/ }),
     new CopyPlugin({
       patterns: [
-        { from: "./src/debug/dotnetSdk/resource/dotnet-install.sh", to: "debug/dotnetSdk/resource/dotnet-install.sh" },
-        { from: "./src/debug/dotnetSdk/resource/dotnet-install.ps1", to: "debug/dotnetSdk/resource/dotnet-install.ps1" },
+        { from: "./src/debug/depsChecker/resource/dotnet-install.sh", to: "resource/dotnet-install.sh" },
+        { from: "./src/debug/depsChecker/resource/dotnet-install.ps1", to: "resource/dotnet-install.ps1" },
       ],
     }),
   ],
+  optimization: {
+    minimizer: [
+        new terserWebpackPlugin({
+            terserOptions: {
+                mangle: false,
+                keep_fnames: true
+            }
+        })
+    ]
+}
 };
 module.exports = config;

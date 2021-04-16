@@ -1,4 +1,4 @@
-﻿namespace Microsoft.TeamsFxSimpleAuth.Components.Auth
+﻿namespace Microsoft.TeamsFx.SimpleAuth.Components.Auth
 {
     public class AadGrantType
     {

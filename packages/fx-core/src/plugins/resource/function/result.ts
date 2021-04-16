@@ -11,40 +11,31 @@ class FxResultFactory {
     static readonly defaultHelpLink = CommonConstants.emptyString;
     static readonly defaultIssueLink = CommonConstants.emptyString;
 
-    private static _FxError(errorMessage: string, innerError: any): FxError {
-        // TODO: These fields are unclear to me, it may be updated in the future.
-        return {
-            name: "FxError",
-            message: errorMessage,
-            source: this.source,
-            timestamp: new Date(),
-            innerError: innerError
-        };
+    public static UserError(
+        errorMessage: string,
+        name: string,
+        helpLink?: string,
+        innerError?: any,
+        stack?: string
+    ): FxResult {
+        return err(
+            new UserError(name, errorMessage, this.source, stack, helpLink ?? this.defaultHelpLink, innerError)
+        );
     }
 
-    public static FxError(errorMessage: string, innerError?: any): FxResult {
-        return err(this._FxError(errorMessage, innerError));
+    public static SystemError(
+        errorMessage: string,
+        name: string,
+        issueLink?: string,
+        innerError?: any,
+        stack?: string
+    ): FxResult {
+        return err(
+            new SystemError(name, errorMessage, this.source, stack, issueLink ?? this.defaultIssueLink, innerError)
+        );
     }
 
-    public static UserError(errorMessage: string, name: string, helpLink?: string, innerError?: any, stack?: string): FxResult {
-        return err({
-            ... this._FxError(errorMessage, innerError),
-            name: name,
-            helpLink: helpLink ?? this.defaultHelpLink,
-            stack: stack
-        } as UserError);
-    }
-
-    public static SystemError(errorMessage: string, name: string, issueLink?: string, innerError?: any, stack?: string): FxResult {
-        return err({
-            ...this._FxError(errorMessage, innerError),
-            name: name,
-            issueLink: issueLink ?? this.defaultIssueLink,
-            stack: stack
-        } as SystemError);
-    }
-
-    public static Success(result?: any): FxResult {
+    public static Success<T>(result?: T): FxResult {
         return ok(result);
     }
 }

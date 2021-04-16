@@ -30,6 +30,7 @@ export class Messages {
     static readonly EndPreDeploy = (name: string) => `Successfully pre-deploy ${name}.`;
     static readonly StartDeploy = (name: string) => `Start to deploy ${name}.`;
     static readonly EndDeploy = (name: string) => `Successfully deploy ${name}.`;
+    static readonly StartPostLocalDebug = (name: string) => `Start to post local debug ${name}.`;
     static readonly SkipBuild = () => "No changes detected since last building, skip building Tab Frontend project.";
     static readonly SkipDeploy = () =>
         "No changes detected since last deployment, skip deploying Tab Frontend project.";
@@ -42,6 +43,8 @@ export class Messages {
         `Start to create Azure Storage Account ${name} in the resource group ${resourceGroupName}.`;
     static readonly StartEnableStaticWebsite = (name: string) =>
         `Start to enable static website feature for Azure Storage Account ${name}.`;
+    static readonly SkipEnableStaticWebsite = (name: string) =>
+        `Static website feature has been enabled for Azure Storage Account ${name}, skip enabling.`;
     static readonly StartSyncLocalToStorage = (localPath: string, storageName: string) =>
         `Start to sync local path ${localPath} to Azure Storage Account ${storageName}.`;
     static readonly StartDeleteAllBlobs = (storageName: string, containerName: string) =>

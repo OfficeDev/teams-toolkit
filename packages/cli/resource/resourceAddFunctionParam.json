@@ -6,19 +6,19 @@
             "type": "multiSelect",
             "option": [
                 {
-                    "id": "sql",
-                    "label": "sql",
-                    "description": "Azure SQL Database"
-                },
-                {
                     "id": "function",
                     "label": "function",
                     "description": "New APIs from Azure Functions"
                 },
                 {
+                    "id": "sql",
+                    "label": "sql",
+                    "description": "Azure SQL Database"
+                },
+                {
                     "id": "apim",
                     "label": "apim",
-                    "description": "Publish APIs to API Management"
+                    "description": "New API in Azure API Management"
                 }
             ],
             "default": [
@@ -29,19 +29,14 @@
     },
     {
         "data": {
-            "type": "text",
-            "name": "subscription",
-            "description": "Please select a subscription"
-        }
-    },
-    {
-        "data": {
-            "name": "function-language",
-            "description": "Please choose a programming language for the Azure function app.",
+            "name": "node-version",
+            "description": "Please select a node version for the Azure function app.",
             "type": "singleSelect",
+            "default": "12",
             "option": [
-                "JavaScript",
-                "TypeScript"
+                "10",
+                "12",
+                "14"
             ]
         }
     },

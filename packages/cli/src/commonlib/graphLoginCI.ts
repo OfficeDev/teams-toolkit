@@ -7,6 +7,7 @@ import { GraphTokenProvider } from "fx-api";
 import { LogLevel, ConfidentialClientApplication } from "@azure/msal-node";
 
 import CLILogProvider from "./log";
+import { login, LoginStatus } from "./common/login";
 
 /**
  * help link
@@ -33,7 +34,7 @@ const clientCredentialRequest = {
   scopes: ["https://graph.microsoft.com/.default"] // replace with your resource
 };
 
-export class GraphLogin implements GraphTokenProvider {
+export class GraphLogin extends login implements GraphTokenProvider {
   private static instance: GraphLogin;
 
   private static accessToken: string | undefined;
@@ -92,6 +93,10 @@ export class GraphLogin implements GraphTokenProvider {
     return new Promise((resolve) => {
       resolve(true);
     });
+  }
+
+  getStatus(): Promise<LoginStatus> {
+    throw new Error("Method not implemented.");
   }
 }
 

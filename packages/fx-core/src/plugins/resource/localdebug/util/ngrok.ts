@@ -24,24 +24,26 @@ function delay(ms: number) {
 }
 
 export async function getNgrokHttpUrl(port: string | number): Promise<string | undefined> {
-    let numRetries = 10;
-    while (numRetries > 0) {
-        try {
-            const resp = await axios.get("http://localhost:4040/api/tunnels");
-            if (resp && resp.data) {
-                const tunnels = (<NgrokApiTunnelsResponse>resp.data).tunnels;
-                // tunnels will be empty if tunnel connection is not completed
-                for (const tunnel of tunnels) {
-                    if (tunnel.config.addr === `http://localhost:${port}` && tunnel.proto === "https") {
-                        return tunnel.public_url;
+    for (let ngrokWebInterfacePort = 4040; ngrokWebInterfacePort < 4050; ++ngrokWebInterfacePort) {
+        let numRetries = 10;
+        while (numRetries > 0) {
+            try {
+                const resp = await axios.get(`http://localhost:${ngrokWebInterfacePort}/api/tunnels`);
+                if (resp && resp.data) {
+                    const tunnels = (<NgrokApiTunnelsResponse>resp.data).tunnels;
+                    // tunnels will be empty if tunnel connection is not completed
+                    for (const tunnel of tunnels) {
+                        if (tunnel.config.addr === `http://localhost:${port}` && tunnel.proto === "https") {
+                            return tunnel.public_url;
+                        }
                     }
                 }
+            } catch (err) {
+                // ECONNREFUSED if ngrok is not started
             }
-        } catch (err) {
-            // ECONNREFUSED if ngrok is not started
+            await delay(2000);
+            --numRetries;
         }
-        await delay(5000);
-        --numRetries;
     }
     return undefined;
 }

@@ -33,6 +33,13 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(updateCmd);
 
+  // add capability
+  const addCapCmd = vscode.commands.registerCommand(
+    "fx-extension.addCapability",
+    handlers.addCapabilityHandler
+  );
+  context.subscriptions.push(addCapCmd);
+
   // 1.3 Register the provision command.
   const provisionCmd = vscode.commands.registerCommand(
     "fx-extension.provision",
@@ -46,6 +53,12 @@ export async function activate(context: vscode.ExtensionContext) {
     handlers.deployHandler
   );
   context.subscriptions.push(deployCmd);
+
+  const publishCmd = vscode.commands.registerCommand(
+    "fx-extension.publish",
+    handlers.publishHandler
+  );
+  context.subscriptions.push(publishCmd);
 
   // 1.6 update aad command
   const updateAadCmd = vscode.commands.registerCommand(
@@ -97,7 +110,13 @@ export async function activate(context: vscode.ExtensionContext) {
     "fx-extension.openWelcome",
     handlers.openWelcomeHandler
   );
-  context.subscriptions.push(provisionCmd);
+  context.subscriptions.push(openWelcomeCmd);
+
+  const openSamplesCmd = vscode.commands.registerCommand(
+    "fx-extension.openSamples",
+    handlers.openSamplesHandler
+  );
+  context.subscriptions.push(openSamplesCmd);
 
   const openDocumentCmd = vscode.commands.registerCommand(
     "fx-extension.openDocument",
@@ -109,8 +128,26 @@ export async function activate(context: vscode.ExtensionContext) {
     "fx-extension.openManifest",
     handlers.openManifestHandler
   );
-  context.subscriptions.push(provisionCmd);
+  context.subscriptions.push(openManifestCmd);
 
+  const openAppManagementCmd = vscode.commands.registerCommand(
+    "fx-extension.openAppManagement",
+    handlers.openAppManagement
+  );
+  context.subscriptions.push(openAppManagementCmd);
+
+  const openBotManagementCmd = vscode.commands.registerCommand(
+    "fx-extension.openBotManagement",
+    handlers.openBotManagement
+  );
+  context.subscriptions.push(openBotManagementCmd);
+
+  const openReportIssuesCmd = vscode.commands.registerCommand(
+    "fx-extension.openReportIssues",
+    handlers.openReportIssues
+  );
+  context.subscriptions.push(openReportIssuesCmd);
+  
   // Register debug configuration provider
   const debugProvider: TeamsfxDebugProvider = new TeamsfxDebugProvider();
   context.subscriptions.push(

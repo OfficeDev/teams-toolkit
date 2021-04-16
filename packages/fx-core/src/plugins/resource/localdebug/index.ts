@@ -3,7 +3,7 @@
 "use strict";
 
 import * as fs from "fs-extra";
-import { Func, FxError, Platform, Plugin, PluginContext, Result, err, ok } from "fx-api";
+import { Func, FxError, Platform, Plugin, PluginContext, Result, err, ok, VsCodeEnv, AzureSolutionSettings } from "fx-api";
 import * as os from "os";
 
 import { LocalCertificateManager } from "./certificate";
@@ -16,6 +16,7 @@ import { LocalEnvProvider } from "./localEnv";
 import { MissingStep, NgrokTunnelNotConnected } from "./util/error";
 import { prepareLocalAuthService } from "./util/localService";
 import { getNgrokHttpUrl } from "./util/ngrok";
+import { getCodespaceName, getCodespaceUrl } from "./util/codespace";
 
 export class LocalDebugPlugin implements Plugin {
 
@@ -23,8 +24,7 @@ export class LocalDebugPlugin implements Plugin {
         // scaffold for both vscode and cli
         if (ctx.platform === Platform.VSCode || ctx.platform === Platform.CLI)
         {
-            const solutionConfigs = ctx.configOfOtherPlugins.get(SolutionPlugin.Name);
-            const selectedPlugins = solutionConfigs?.get(SolutionPlugin.SelectedPlugins) as string[];
+            const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings).activeResourcePlugins;
 
             const isSpfx = selectedPlugins.some((pluginName) => pluginName === SpfxPlugin.Name);
 
@@ -110,16 +110,41 @@ export class LocalDebugPlugin implements Plugin {
         // TODO: dynamicly determine local ports
         if (ctx.platform === Platform.VSCode)
         {
+            const vscEnv = ctx.answers?.getString("vscenv");
+
+            let localTabEndpoint: string;
+            let localTabDomain: string;
+            let localAuthEndpoint: string;
+            let localFuncEndpoint: string;
+
+            if (vscEnv === VsCodeEnv.codespaceBrowser || vscEnv === VsCodeEnv.codespaceVsCode) {
+                const codespaceName = await getCodespaceName();
+
+                localTabEndpoint = getCodespaceUrl(codespaceName, 3000);
+                localTabDomain = (new URL(localTabEndpoint)).host;
+                localAuthEndpoint =  getCodespaceUrl(codespaceName, 5000);
+                localFuncEndpoint =  getCodespaceUrl(codespaceName, 7071);
+            } else {
+                localTabDomain = "localhost";
+                localTabEndpoint = "https://localhost:3000";
+                localAuthEndpoint = "http://localhost:5000";
+                localFuncEndpoint = "http://localhost:7071";
+            }
+
+            const includeFrontend = ctx.configOfOtherPlugins.has(FrontendHostingPlugin.Name);
             const includeBackend = ctx.configOfOtherPlugins.has(FunctionPlugin.Name);
             const includeBot = ctx.configOfOtherPlugins.has(BotPlugin.Name);
 
-            ctx.config.set(LocalDebugConfigKeys.LocalAuthEndpoint, "http://localhost:5000");
-            ctx.config.set(LocalDebugConfigKeys.LocalTabEndpoint, "https://localhost:3000");
-            ctx.config.set(LocalDebugConfigKeys.LocalTabDomain, "localhost");
+            ctx.config.set(LocalDebugConfigKeys.LocalAuthEndpoint, localAuthEndpoint);
+
+            if (includeFrontend) {
+                ctx.config.set(LocalDebugConfigKeys.LocalTabEndpoint, localTabEndpoint);
+                ctx.config.set(LocalDebugConfigKeys.LocalTabDomain, localTabDomain);
+            }
 
             if (includeBackend)
             {
-                ctx.config.set(LocalDebugConfigKeys.LocalFunctionEndpoint, "http://localhost:7071");
+                ctx.config.set(LocalDebugConfigKeys.LocalFunctionEndpoint, localFuncEndpoint);
             }
 
             if (includeBot) {
@@ -158,18 +183,21 @@ export class LocalDebugPlugin implements Plugin {
             const teamsWebAppId = aadConfigs?.get(AadPlugin.TeamsWebAppId) as string;
             const localAuthPackagePath = runtimeConnectorConfigs?.get(RuntimeConnectorPlugin.FilePath) as string;
 
-            // auth local envs
-            localEnvs[LocalEnvAuthKeys.ClientId] = clientId;
-            localEnvs[LocalEnvAuthKeys.ClientSecret] = clientSecret;
-            localEnvs[LocalEnvAuthKeys.IdentifierUri] = aadConfigs?.get(AadPlugin.LocalAppIdUri) as string;
-            localEnvs[LocalEnvAuthKeys.OauthTokenEndpoint] = `https://login.microsoftonline.com/${teamsAppTenantId}/oauth2/v2.0/token`;
-            localEnvs[LocalEnvAuthKeys.AllowedAppIds] = [teamsMobileDesktopAppId, teamsWebAppId].join(";");
-            localEnvs[LocalEnvAuthKeys.ServicePath] = await prepareLocalAuthService(localAuthPackagePath);
-
             if (includeFrontend) {
                 // frontend local envs
                 localEnvs[LocalEnvFrontendKeys.TeamsFxEndpoint] = localDebugConfigs.get(LocalDebugConfigKeys.LocalAuthEndpoint) as string;
                 localEnvs[LocalEnvFrontendKeys.LoginUrl] = `${localDebugConfigs.get(LocalDebugConfigKeys.LocalTabEndpoint) as string}/auth-start.html`;
+                localEnvs[LocalEnvFrontendKeys.ClientId] = clientId;
+
+                // auth local envs (auth is only required by frontend)
+                localEnvs[LocalEnvAuthKeys.ClientId] = clientId;
+                localEnvs[LocalEnvAuthKeys.ClientSecret] = clientSecret;
+                localEnvs[LocalEnvAuthKeys.IdentifierUri] = aadConfigs?.get(AadPlugin.LocalAppIdUri) as string;
+                localEnvs[LocalEnvAuthKeys.AadMetadataAddress] = `https://login.microsoftonline.com/${teamsAppTenantId}/v2.0/.well-known/openid-configuration`;
+                localEnvs[LocalEnvAuthKeys.OauthAuthority] = `https://login.microsoftonline.com/${teamsAppTenantId}`;
+                localEnvs[LocalEnvAuthKeys.TabEndpoint] = localDebugConfigs.get(LocalDebugConfigKeys.LocalTabEndpoint) as string;
+                localEnvs[LocalEnvAuthKeys.AllowedAppIds] = [teamsMobileDesktopAppId, teamsWebAppId].join(";");
+                localEnvs[LocalEnvAuthKeys.ServicePath] = await prepareLocalAuthService(localAuthPackagePath);
 
                 if (includeBackend) {
                     localEnvs[LocalEnvFrontendKeys.FuncEndpoint] = localDebugConfigs.get(LocalDebugConfigKeys.LocalFunctionEndpoint) as string;
@@ -178,11 +206,11 @@ export class LocalDebugPlugin implements Plugin {
                     // function local envs
                     localEnvs[LocalEnvBackendKeys.ClientId] = clientId;
                     localEnvs[LocalEnvBackendKeys.ClientSecret] = clientSecret;
-                    localEnvs[LocalEnvBackendKeys.OauthAuthority] = `https://login.microsoftonline.com/${teamsAppTenantId}`;
-                    localEnvs[LocalEnvBackendKeys.FuncEndpoint] = localDebugConfigs.get(LocalDebugConfigKeys.LocalFunctionEndpoint) as string;
+                    localEnvs[LocalEnvBackendKeys.AuthorityHost] = "https://login.microsoftonline.com";
+                    localEnvs[LocalEnvBackendKeys.TenantId] = teamsAppTenantId;
+                    localEnvs[LocalEnvBackendKeys.ApiEndpoint] = localDebugConfigs.get(LocalDebugConfigKeys.LocalFunctionEndpoint) as string;
+                    localEnvs[LocalEnvBackendKeys.ApplicationIdUri] = aadConfigs?.get(AadPlugin.LocalAppIdUri) as string;
                     localEnvs[LocalEnvBackendKeys.AllowedAppIds] = [teamsMobileDesktopAppId, teamsWebAppId].join(";");
-
-                    // TODO: SQL Local Debug
                 }
 
                 // local certificate
@@ -206,7 +234,7 @@ export class LocalDebugPlugin implements Plugin {
                 localEnvs[LocalEnvBotKeys.ClientId] = clientId;
                 localEnvs[LocalEnvBotKeys.ClientSecret] = clientSecret;
                 localEnvs[LocalEnvBotKeys.TenantID] = teamsAppTenantId;
-                localEnvs[LocalEnvBotKeys.OauthAuthority] = `https://login.microsoftonline.com/${teamsAppTenantId}/oauth2/v2.0/token`;
+                localEnvs[LocalEnvBotKeys.OauthAuthority] = "https://login.microsoftonline.com";
                 localEnvs[LocalEnvBotKeys.LoginUrl] = `${localDebugConfigs.get(LocalDebugConfigKeys.LocalBotEndpoint) as string}/auth-start.html`;
                 localEnvs[LocalEnvBotKeys.IdentifierUri] = aadConfigs?.get(AadPlugin.LocalAppIdUri) as string;
             }

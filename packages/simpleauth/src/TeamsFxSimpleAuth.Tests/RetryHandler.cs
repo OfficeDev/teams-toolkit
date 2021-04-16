@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 
-namespace Microsoft.TeamsFxSimpleAuth.Tests
+namespace Microsoft.TeamsFx.SimpleAuth.Tests
 {
     public class RetryHandler : DelegatingHandler
     {

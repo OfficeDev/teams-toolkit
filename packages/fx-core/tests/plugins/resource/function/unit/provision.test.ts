@@ -6,22 +6,25 @@ import * as sinon from "sinon";
 
 import { AzureClientFactory, AzureLib } from "../../../../../src/plugins/resource/function/utils/azure-client";
 import { DependentPluginInfo, FunctionPluginInfo } from "../../../../../src/plugins/resource/function/constants";
-import { FunctionLanguage } from "../../../../../src/plugins/resource/function/enums";
+import { FunctionLanguage, NodeVersion, QuestionKey } from "../../../../../src/plugins/resource/function/enums";
 import { FunctionPlugin } from "../../../../../src/plugins/resource/function";
 
 
 const context: any = {
-    configOfOtherPlugins: new Map<string, Map<string, string>>([
-        [DependentPluginInfo.solutionPluginName, new Map<string, string>([
+    configOfOtherPlugins: new Map<string, Map<string, string | string[]>>([
+        [DependentPluginInfo.solutionPluginName, new Map<string, string | string[]>([
             [DependentPluginInfo.resourceGroupName, "ut"],
             [DependentPluginInfo.subscriptionId, "ut"],
             [DependentPluginInfo.resourceNameSuffix, "ut"],
             [DependentPluginInfo.location, "ut"],
+            [DependentPluginInfo.programmingLanguage, "javascript"]
         ])],
         [DependentPluginInfo.aadPluginName, new Map<string, string>([
             [DependentPluginInfo.aadClientId, "ut"],
             [DependentPluginInfo.aadClientSecret, "ut"],
-            [DependentPluginInfo.aadOauthAuthority, "ut"],
+            [DependentPluginInfo.oauthHost, "ut"],
+            [DependentPluginInfo.tenantId, "ut"],
+            [DependentPluginInfo.applicationIdUris, "ut"],
         ])],
         [DependentPluginInfo.frontendPluginName, new Map<string, string>([
             [DependentPluginInfo.frontendDomain, "ut"],
@@ -46,9 +49,20 @@ const context: any = {
         }
     },
     config: new Map<string, string>([
-        ["functionLanguage", FunctionLanguage.JavaScript],
+        ["nodeVersion", NodeVersion.Version14],
         ["scaffoldDone", "true"]
     ]),
+    projectSettings: {
+        solutionSettings: {
+            activeResourcePlugins: [
+                DependentPluginInfo.aadPluginName,
+                DependentPluginInfo.frontendPluginName,
+                DependentPluginInfo.identityPluginName,
+                DependentPluginInfo.sqlPluginName,
+                DependentPluginInfo.apimPluginName
+            ]
+        }
+    },
     azureAccountProvider: {
         getAccountCredential: () => ({
             signRequest: () => {

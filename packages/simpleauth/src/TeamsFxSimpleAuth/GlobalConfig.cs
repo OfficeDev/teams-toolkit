@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace Microsoft.TeamsFxSimpleAuth
+namespace Microsoft.TeamsFx.SimpleAuth
 {
     public static class GlobalConfig
     {

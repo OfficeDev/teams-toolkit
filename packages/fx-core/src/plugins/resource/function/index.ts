@@ -10,6 +10,7 @@ import { FxResult, FunctionPluginResultFactory as ResultFactory } from "./result
 import { LifeCycle } from "./enums";
 import { Logger } from "./utils/logger";
 import { telemetryHelper } from "./utils/telemetry-helper";
+import { setFeatureFlag } from "./utils/depsChecker/checkerAdapter";
 
 // This layer tries to provide a uniform exception handling for function plugin.
 export class FunctionPlugin implements Plugin {
@@ -78,6 +79,7 @@ export class FunctionPlugin implements Plugin {
 
     public async preDeploy(ctx: PluginContext): Promise<FxResult> {
         Logger.setLogger(ctx.logProvider);
+        setFeatureFlag(ctx.answers);
         await StepHelperFactory.preDeployStepHelper.start(
             Object.entries(PreDeploySteps).length, ctx.dialog);
         const res = await this.runWithErrorWrapper(ctx, LifeCycle.preDeploy,
@@ -89,6 +91,7 @@ export class FunctionPlugin implements Plugin {
 
     public async deploy(ctx: PluginContext): Promise<FxResult> {
         Logger.setLogger(ctx.logProvider);
+        setFeatureFlag(ctx.answers);
         await StepHelperFactory.deployStepHelper.start(
             Object.entries(DeploySteps).length, ctx.dialog);
         const res = await this.runWithErrorWrapper(ctx, LifeCycle.deploy,

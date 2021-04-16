@@ -3,7 +3,7 @@
 import { RemoteFuncValidation, NodeType, QTreeNode } from "fx-api";
 
 import { DefaultValues, DependentPluginInfo, FunctionPluginInfo, QuestionValidationFunc } from "./constants";
-import { FunctionLanguage, QuestionKey } from "./enums";
+import { NodeVersion, QuestionKey } from "./enums";
 import { InfoMessages } from "./resources/message";
 
 export const functionNameQuestion = new QTreeNode({
@@ -17,12 +17,10 @@ export const functionNameQuestion = new QTreeNode({
     } as RemoteFuncValidation
 });
 
-export const functionLanguageQuestion = new QTreeNode({
-    name: QuestionKey.functionLanguage,
-    description: InfoMessages.askFunctionLanguage,
+export const nodeVersionQuestion = new QTreeNode({
+    name: QuestionKey.nodeVersion,
+    description: InfoMessages.askNodeVersion,
     type: NodeType.singleSelect,
-    option: [
-        FunctionLanguage.JavaScript,
-        FunctionLanguage.TypeScript
-    ]
+    default: NodeVersion.Version12,
+    option: Object.values(NodeVersion)
 });

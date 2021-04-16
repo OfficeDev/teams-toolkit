@@ -18,6 +18,7 @@ export class Constants {
     static FrontendSuffix = "fe";
 
     static EmptyString = "";
+    static EmptyListString = "[]";
 
     static DayInMS = 1000 * 60 * 60 * 24;
     static SasTokenLifetime = Constants.DayInMS * 3;
@@ -38,7 +39,7 @@ export class FrontendPluginInfo {
     static TemplateLanguage = "JavaScript";
     static TemplateDefaultScenario = "default";
     static TemplateWithFunctionScenario = "with-function";
-    static TemplateVersion = "0.2.x";
+    static TemplateVersion = "0.3.x";
 }
 
 export class Commands {
@@ -51,13 +52,14 @@ export class EnvironmentVariables {
     static FuncName = "REACT_APP_FUNC_NAME";
     static RuntimeEndpoint = "REACT_APP_TEAMSFX_ENDPOINT"; // TODO: renaming the env variables pending on runtime connector plugin
     static StartLoginPage = "REACT_APP_START_LOGIN_PAGE_URL";
+    static ClientID = "REACT_APP_CLIENT_ID";
 }
 
 export class FrontendPathInfo {
     static WorkingDir = "tabs";
     static TemplateDir = path.join("templates", "plugins", "resource", "frontend");
     static RootDir = path.join(__dirname, "..", "..", "..", "..");
-    static TemplateFileName = "0.2.0+tab.JavaScript.default.zip";
+    static TemplateFileName = "tab.JavaScript.default.zip";
     static TemplateFileExt = ".tpl";
     static BuildFolderName = "build";
     static BuildPath = `${FrontendPathInfo.BuildFolderName}${path.sep}`;
@@ -83,15 +85,24 @@ export class DependentPluginInfo {
     static readonly FunctionEndpoint = "functionEndpoint";
     static readonly FunctionDefaultName = "defaultFunctionName";
 
-    static readonly RuntimePluginName = "fx-resource-runtime-connector";
+    static readonly RuntimePluginName = "fx-resource-simple-auth";
     static readonly RuntimeEndpoint = "endpoint";
     static readonly StartLoginPageURL = "auth-start.html";
+
+    static readonly AADPluginName = "fx-resource-aad-app-for-teams";
+    static readonly ClientID = "clientId";
+
+    static readonly LocalDebugPluginName = "fx-resource-local-debug";
+    static readonly LocalTabEndpoint = "localTabEndpoint";
 }
 
 export class FrontendConfigInfo {
     static readonly StorageName = "storageName";
     static readonly Endpoint = "endpoint";
     static readonly Hostname = "domain";
+    static readonly StaticTab = "staticTabs";
+    static readonly ConfigurableTab = "configurableTabs";
+    static readonly TabScopes = "tabScopes";
 }
 
 export class TelemetryEvent {
@@ -105,6 +116,8 @@ export class TelemetryEvent {
 
     static readonly PreDeploy = "pre-deploy";
     static readonly Deploy = "deploy";
+
+    static readonly postLocalDebug = "post-local-debug";
 }
 
 export class TelemetryKey {
@@ -119,4 +132,17 @@ export class TelemetryValue {
     static readonly Fail = "no";
     static readonly UserError = "user";
     static readonly SystemError = "system";
+}
+
+export class QuestionKey {
+    static readonly TabScopes = "tab-scopes";
+}
+
+export class QuestionDescription {
+    static readonly TabScopes = "Select tab scopes";
+}
+
+export class TabScope {
+    static readonly PersonalTab = "personal";
+    static readonly GroupTab = "group";
 }

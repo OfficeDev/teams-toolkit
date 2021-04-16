@@ -18,6 +18,7 @@ import * as path from "path";
 import { SPFxPluginImpl } from "./plugin";
 import { TelemetryEvent } from "./utils/constants";
 import { telemetryHelper } from "./utils/telemetry-helper";
+import { ProgressHelper } from "./utils/progress-helper";
 export class SpfxConfig {
   webpartName = "my-SPFx-app";
   webpartDesc = "This is a SPFx app.";
@@ -110,7 +111,7 @@ export class SpfxPlugin implements Plugin {
   public async getManifest(): Promise<TeamsAppManifest> {
     const templateFolder = path.join(__dirname, "../../../../templates/plugins/resource/spfx");
     const manifestFile = path.resolve(templateFolder, "./solution/manifest.json");
-    const manifestString = fs.readFileSync(manifestFile).toString();
+    const manifestString = (await fs.readFile(manifestFile)).toString();
     const manifest: TeamsAppManifest = JSON.parse(manifestString);
     return manifest;
   }
@@ -126,6 +127,7 @@ export class SpfxPlugin implements Plugin {
       telemetryHelper.sendSuccessEvent(ctx, stage);
       return result;
     } catch (error) {
+      await ProgressHelper.endAllHandlers();
       telemetryHelper.sendErrorEvent(ctx, stage, error);
       return err(error);
     }

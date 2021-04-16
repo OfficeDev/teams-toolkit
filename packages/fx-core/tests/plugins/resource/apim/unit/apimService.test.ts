@@ -11,7 +11,6 @@ import md5 from "md5";
 import { MockAzureAccountProvider, skip_if } from "./testUtil";
 import { ApimService } from "../../../../../src/plugins/resource/apim/src/service/apimService";
 import { OpenApiSchemaVersion } from "../../../../../src/plugins/resource/apim/src/model/openApiDocument";
-import { Telemetry } from "../../../../../src/plugins/resource/apim/src/telemetry";
 import { assert } from "sinon";
 import { ApiManagementClient } from "@azure/arm-apimanagement";
 dotenv.config();
@@ -305,11 +304,10 @@ describe("ApimService", () => {
 });
 
 async function buildService(): Promise<{ apiManagementClient: ApiManagementClient; apimService: ApimService }> {
-    const mockTelemetry = new Telemetry();
     const mockAzureAccountProvider = new MockAzureAccountProvider();
     await mockAzureAccountProvider.login(testServicePrincipalClientId, testServicePrincipalClientSecret, testTenantId);
     const credential = await mockAzureAccountProvider.getAccountCredentialAsync();
     const apiManagementClient = new ApiManagementClient(credential!, testSubscriptionId);
-    const apimService = new ApimService(apiManagementClient, credential!, testSubscriptionId, mockTelemetry);
+    const apimService = new ApimService(apiManagementClient, credential!, testSubscriptionId);
     return { apiManagementClient, apimService };
 }

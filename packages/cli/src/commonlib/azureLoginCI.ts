@@ -10,15 +10,17 @@ import { SubscriptionClient } from "@azure/arm-subscriptions";
 import * as fs from "fs-extra";
 import * as path from "path";
 
-import { AzureAccountProvider, err, FxError, ok, Result } from "fx-api";
+import { AzureAccountProvider, ConfigFolderName, err, FxError, ok, Result } from "fx-api";
 
 import { NotSupportedProjectType, NotFoundSubscriptionId } from "../error";
+import { login, LoginStatus } from "./common/login";
+import { signedOut } from "./common/constant";
 
 const clientId = process.env.E2E_CLIENT_ID ?? "";
 const secret = process.env.E2E_SECRET ?? "";
 const tenantId = process.env.E2E_TENANT_ID ?? "";
 
-export class AzureAccountManager implements AzureAccountProvider {
+export class AzureAccountManager extends login implements AzureAccountProvider {
   static tokenCredentialsBase: TokenCredentialsBase;
 
   static tokenCredential: TokenCredential;
@@ -131,7 +133,7 @@ export class AzureAccountManager implements AzureAccountProvider {
     AzureAccountManager.subscriptionId = subscriptionId;
 
     /// TODO: use api's constant
-    const configPath = path.resolve(root_folder, `.fx/env.default.json`);
+    const configPath = path.resolve(root_folder, `.${ConfigFolderName}/env.default.json`);
     if (!(await fs.pathExists(configPath))) {
       return err(NotSupportedProjectType());
     }
@@ -140,6 +142,10 @@ export class AzureAccountManager implements AzureAccountProvider {
     await fs.writeFile(configPath, JSON.stringify(configJson, null, 4));
 
     return ok(null);
+  }
+
+  async getStatus(): Promise<LoginStatus> {
+    throw new Error("Method not implemented.");
   }
 }
 

@@ -6,7 +6,7 @@ import * as path from "path";
 import * as dotenv from "dotenv";
 import * as vscode from "vscode";
 import * as constants from "./constants";
-import { openUrl } from "./funcCoreTools/openUrl";
+import { openUrl } from "./depsChecker/common";
 import { ConfigFolderName } from "fx-api";
 
 export async function getProjectRoot(
@@ -85,20 +85,4 @@ export async function hasTeamsfxBackend(): Promise<boolean> {
   const backendRoot = await getProjectRoot(workspacePath, constants.backendFolderName);
 
   return backendRoot !== undefined;
-}
-
-export async function displayLearnMore(message: string, link: string): Promise<void> {
-  await displayWarningMessage(message, constants.Messages.learnMoreButtonText, () => openUrl(link));
-}
-
-export async function displayWarningMessage(
-  message: string,
-  buttonText: string,
-  action: () => Promise<void>
-): Promise<void> {
-  const button: vscode.MessageItem = { title: buttonText };
-  const input = await vscode.window.showWarningMessage(message, { modal: true }, button);
-  if (input === button) {
-    await action();
-  }
 }

@@ -12,9 +12,13 @@ import { AzureAccount } from "./azure-account.api";
 import { LoginFailureError } from "./codeFlowLogin";
 import * as vscode from "vscode";
 import * as identity from "@azure/identity";
+import { signedIn, signedOut } from "./common/constant";
+import { login, LoginStatus } from "./common/login";
 
-export class AzureAccountManager implements AzureAccountProvider {
+export class AzureAccountManager extends login implements AzureAccountProvider {
   private static instance: AzureAccountManager;
+  private static subscriptionId: string | undefined;
+  private static tenantId: string | undefined;
 
   private static statusChange?: (
     status: string,
@@ -22,7 +26,9 @@ export class AzureAccountManager implements AzureAccountProvider {
     accountInfo?: Record<string, unknown>
   ) => Promise<void>;
 
-  private constructor() {}
+  private constructor() {
+    super();
+  }
 
   /**
    * Gets instance
@@ -48,6 +54,14 @@ export class AzureAccountManager implements AzureAccountProvider {
     )!.exports;
     if (azureAccount.status === "LoggedIn") {
       if (azureAccount.subscriptions.length > 0) {
+        if (AzureAccountManager.tenantId) {
+          for (let i = 0; i < azureAccount.sessions.length; ++i) {
+            const item = azureAccount.sessions[i];
+            if (item.tenantId == AzureAccountManager.tenantId) {
+              return item.credentials2;
+            }
+          }
+        }
         return azureAccount.subscriptions[0].session.credentials2;
       } else if (azureAccount.sessions.length > 0) {
         return azureAccount.sessions[0].credentials2;
@@ -98,6 +112,7 @@ export class AzureAccountManager implements AzureAccountProvider {
       const accountJson = await this.getJsonObject();
       await AzureAccountManager.statusChange("SignedIn", accessToken?.accessToken, accountJson);
     }
+    await this.notifyStatus();
   }
 
   private isUserLogin(): boolean {
@@ -130,7 +145,18 @@ export class AzureAccountManager implements AzureAccountProvider {
       return new Promise(async (resolve, reject) => {
         await azureAccount.waitForSubscriptions();
         if (azureAccount.subscriptions.length > 0) {
-          resolve(azureAccount.subscriptions[0].session.credentials2);
+          let credential2 = azureAccount.subscriptions[0].session.credentials2;
+          if (AzureAccountManager.tenantId) {
+            for (let i = 0; i < azureAccount.sessions.length; ++i) {
+              const item = azureAccount.sessions[i];
+              if (item.tenantId == AzureAccountManager.tenantId) {
+                credential2 = item.credentials2;
+                break;
+              }
+            }
+          }
+          // TODO - If the correct process is always selecting subs before other calls, throw error if selected subs not exist.
+          resolve(credential2);
         } else if (azureAccount.sessions.length > 0) {
           resolve(azureAccount.sessions[0].credentials2);
         } else {
@@ -154,7 +180,7 @@ export class AzureAccountManager implements AzureAccountProvider {
   }
 
   private async doesUserConfirmLogin(): Promise<boolean> {
-    const warningMsg = "Please sign into your Azure account";
+    const warningMsg = "The Teams Toolkit requires an Azure account and subscription to deploy Azure resources for your application.";
     const confirm = "Confirm";
     const userSelected: string | undefined = await vscode.window.showWarningMessage(
       warningMsg,
@@ -188,6 +214,9 @@ export class AzureAccountManager implements AzureAccountProvider {
     if (AzureAccountManager.statusChange !== undefined) {
       await AzureAccountManager.statusChange("SignedOut", undefined, undefined);
     }
+    await this.notifyStatus();
+    AzureAccountManager.tenantId = undefined;
+    AzureAccountManager.subscriptionId = undefined;
     return new Promise((resolve) => {
       resolve(true);
     });
@@ -197,13 +226,78 @@ export class AzureAccountManager implements AzureAccountProvider {
    * Add update account info callback
    */
   async setStatusChangeCallback(
-    statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>
   ): Promise<boolean> {
     AzureAccountManager.statusChange = statusChange;
     return new Promise((resolve) => {
       resolve(true);
     });
   }
+
+  /**
+   * list all subscriptions
+   */
+  async listSubscriptions(): Promise<SubscriptionInfo[]> {
+    await this.getAccountCredentialAsync();
+    const azureAccount: AzureAccount = vscode.extensions.getExtension<AzureAccount>(
+      "ms-vscode.azure-account"
+    )!.exports;
+    const arr: SubscriptionInfo[] = [];
+    if (azureAccount.status === "LoggedIn") {
+      if (azureAccount.subscriptions.length > 0) {
+        for (let i = 0; i < azureAccount.subscriptions.length; ++i) {
+          const item = azureAccount.subscriptions[i];
+          arr.push({
+            subscriptionId: item.subscription.subscriptionId!,
+            subscriptionName: item.subscription.displayName!,
+            tenantId: item.session.tenantId!
+          });
+        }
+      }
+    }
+    return arr;
+  }
+
+  /**
+   * set tenantId and subscriptionId
+   */
+  async setTeanantAndSubscription(tenantId: string, subscriptionId: string): Promise<boolean> {
+    if (this.isUserLogin()) {
+      const azureAccount: AzureAccount = vscode.extensions.getExtension<AzureAccount>(
+        "ms-vscode.azure-account"
+      )!.exports;
+      for (let i = 0; i < azureAccount.subscriptions.length; ++i) {
+        const item = azureAccount.subscriptions[i];
+        if (item.session.tenantId == tenantId && item.subscription.subscriptionId == subscriptionId) {
+          AzureAccountManager.tenantId = tenantId;
+          AzureAccountManager.subscriptionId = subscriptionId;
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  async getStatus(): Promise<LoginStatus> {
+    if (this.isUserLogin()) {
+      const credential = await this.doGetAccountCredentialAsync();
+      const token = await credential?.getToken();
+      const accountJson = await this.getJsonObject();
+      return Promise.resolve({ status: signedIn, token: token?.accessToken, accountInfo: accountJson });
+    } else {
+      return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });
+    }
+  }
 }
+
+export type SubscriptionInfo = {
+  subscriptionName: string;
+  subscriptionId: string;
+  tenantId: string;
+};
 
 export default AzureAccountManager.getInstance();

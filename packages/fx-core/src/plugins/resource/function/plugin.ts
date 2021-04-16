@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import * as path from "path";
-import { Func, FxError, NodeType, PluginContext, QTreeNode, ReadonlyPluginConfig, Result, Stage } from "fx-api";
+import { AzureSolutionSettings, Func, FxError, NodeType, PluginContext, QTreeNode, ReadonlyPluginConfig, Result, Stage } from "fx-api";
 import { StorageManagementClient } from "@azure/arm-storage";
 import { StringDictionary } from "@azure/arm-appservice/esm/models";
 import { WebSiteManagementClient, WebSiteManagementModels } from "@azure/arm-appservice";
@@ -30,14 +30,19 @@ import {
 } from "./constants";
 import { DialogUtils } from "./utils/dialog";
 import { ErrorMessages, InfoMessages } from "./resources/message";
-import { FunctionConfigKey, FunctionLanguage, QuestionKey, ResourceType } from "./enums";
+import { FunctionConfigKey, FunctionLanguage, NodeVersion, QuestionKey, ResourceType } from "./enums";
 import { FunctionDeploy } from "./ops/deploy";
 import { FunctionNaming, FunctionProvision } from "./ops/provision";
 import { FunctionScaffold } from "./ops/scaffold";
 import { FxResult, FunctionPluginResultFactory as ResultFactory } from "./result";
 import { Logger } from "./utils/logger";
 import { PostProvisionSteps, PreDeploySteps, ProvisionSteps, StepGroup, step } from "./resources/steps";
-import { functionLanguageQuestion, functionNameQuestion } from "./questions";
+import { functionNameQuestion, nodeVersionQuestion } from "./questions";
+import { dotnetHelpLink, Messages } from "./utils/depsChecker/common";
+import { DotnetChecker } from "./utils/depsChecker/dotnetChecker";
+import { handleDotnetError } from "./utils/depsChecker/checkerAdapter";
+import { isLinux } from "./utils/depsChecker/common";
+import { DepsCheckerError } from "./utils/depsChecker/errors";
 
 type Site = WebSiteManagementModels.Site;
 type AppServicePlan = WebSiteManagementModels.AppServicePlan;
@@ -49,6 +54,7 @@ export interface FunctionConfig {
     subscriptionId?: string;
     resourceNameSuffix?: string;
     location?: string;
+    functionName?: string;
 
     /* Config exported by Function plugin */
     functionLanguage?: FunctionLanguage;
@@ -63,7 +69,7 @@ export interface FunctionConfig {
     provisionDone: boolean;
 
     /* Intermediate  */
-    functionName?: string;
+    nodeVersion?: NodeVersion;
     skipDeploy: boolean;
 }
 
@@ -82,7 +88,8 @@ export class FunctionPluginImpl {
         this.config.resourceGroupName = solutionConfig?.get(DependentPluginInfo.resourceGroupName) as string;
         this.config.subscriptionId = solutionConfig?.get(DependentPluginInfo.subscriptionId) as string;
         this.config.location = solutionConfig?.get(DependentPluginInfo.location) as string;
-        this.config.functionLanguage = ctx.config.get(FunctionConfigKey.functionLanguage) as FunctionLanguage;
+        this.config.functionLanguage = solutionConfig?.get(DependentPluginInfo.programmingLanguage) as FunctionLanguage;
+        this.config.nodeVersion = ctx.config.get(FunctionConfigKey.nodeVersion) as NodeVersion;
         this.config.defaultFunctionName = ctx.config.get(FunctionConfigKey.defaultFunctionName) as string;
         this.config.functionAppName = ctx.config.get(FunctionConfigKey.functionAppName) as string;
         this.config.storageAccountName = ctx.config.get(FunctionConfigKey.storageAccountName) as string;
@@ -106,8 +113,13 @@ export class FunctionPluginImpl {
 
     private validateConfig(): void {
         if (this.config.functionLanguage &&
-            !Object.values(FunctionLanguage).find((v: FunctionLanguage) => v === this.config.functionLanguage)) {
+            !Object.values(FunctionLanguage).includes(this.config.functionLanguage)) {
                 throw new ValidationError(FunctionConfigKey.functionLanguage);
+        }
+
+        if (this.config.nodeVersion &&
+            !Object.values(NodeVersion).includes(this.config.nodeVersion)) {
+                throw new ValidationError(FunctionConfigKey.nodeVersion);
         }
 
         if (this.config.resourceNameSuffix &&
@@ -149,8 +161,14 @@ export class FunctionPluginImpl {
                 return ResultFactory.Success();
             }
 
-            // TODO: DefaultValues.functionLanguage should be replaced once TS is ready.
-            if (await FunctionScaffold.doesFunctionPathExist(workingPath, DefaultValues.functionLanguage, name)) {
+            const language: FunctionLanguage =
+                ctx.answers?.get(QuestionKey.programmingLanguage) as FunctionLanguage ??
+                ctx.configOfOtherPlugins
+                   .get(DependentPluginInfo.solutionPluginName)
+                   ?.get(DependentPluginInfo.programmingLanguage) as FunctionLanguage;
+
+            // If language is unknown, skip checking and let scaffold handle the error.
+            if (language && await FunctionScaffold.doesFunctionPathExist(workingPath, language, name)) {
                 return ResultFactory.Success(ErrorMessages.functionAlreadyExists);
             }
         }
@@ -163,8 +181,8 @@ export class FunctionPluginImpl {
             type: NodeType.group
         });
 
-        if (stage === Stage.create || (stage === Stage.update && !ctx.config.get(FunctionConfigKey.functionLanguage))) {
-            res.addChild(functionLanguageQuestion);
+        if (stage === Stage.create || (stage === Stage.update && !ctx.config.get(FunctionConfigKey.nodeVersion))) {
+            res.addChild(nodeVersionQuestion);
         }
 
         if (stage === Stage.create || stage === Stage.update) {
@@ -177,8 +195,8 @@ export class FunctionPluginImpl {
     public async preScaffold(ctx: PluginContext): Promise<FxResult> {
         this.syncConfigFromContext(ctx);
 
-        if (!this.config.functionLanguage) {
-            this.config.functionLanguage = ctx.answers?.get(QuestionKey.functionLanguage) as FunctionLanguage;
+        if (!this.config.nodeVersion) {
+            this.config.nodeVersion = ctx.answers?.get(QuestionKey.nodeVersion) as NodeVersion;
         }
 
         // Always ask name in case user wants to add more functions.
@@ -224,8 +242,6 @@ export class FunctionPluginImpl {
             throw new NotScaffoldError();
         }
 
-        this.checkAndGet(this.config.functionLanguage, FunctionConfigKey.functionLanguage);
-
         if (!this.config.functionAppName || !this.config.storageAccountName || !this.config.appServicePlanName) {
             const teamsAppName: string = ctx.app.name.short;
             const suffix: string = this.config.resourceNameSuffix ?? uuid().substr(0, 6);
@@ -260,6 +276,7 @@ export class FunctionPluginImpl {
         const storageAccountName = this.checkAndGet(this.config.storageAccountName, FunctionConfigKey.storageAccountName);
         const functionAppName = this.checkAndGet(this.config.functionAppName, FunctionConfigKey.functionAppName);
         const functionLanguage = this.checkAndGet(this.config.functionLanguage, FunctionConfigKey.functionLanguage);
+        const nodeVersion = this.checkAndGet(this.config.nodeVersion, FunctionConfigKey.nodeVersion);
         const credential = this.checkAndGet(await ctx.azureAccountProvider?.getAccountCredentialAsync(), FunctionConfigKey.credential);
 
         const storageManagementClient: StorageManagementClient =
@@ -328,15 +345,19 @@ export class FunctionPluginImpl {
                         functionAppName,
                         functionLanguage,
                         appServicePlanId,
-                        storageConnectionString)
+                        storageConnectionString,
+                        nodeVersion)
                 )
             );
+
         if (!site.defaultHostName) {
             Logger.error(ErrorMessages.failToGetFunctionAppEndpoint);
             throw new ProvisionError(ResourceType.functionApp);
         }
 
-        this.config.functionEndpoint = `https://${site.defaultHostName}`;
+        if (!this.config.functionEndpoint) {
+            this.config.functionEndpoint = `https://${site.defaultHostName}`;
+        }
 
         this.syncConfigToContext(ctx);
         return ResultFactory.Success();
@@ -430,7 +451,8 @@ export class FunctionPluginImpl {
             return ResultFactory.Success();
         }
 
-        await FunctionDeploy.checkDotNetVersion(ctx, workingPath);
+        // NOTE: make sure this step is before using `dotnet` command if you refactor this code.
+        await this.handleDotnetChecker();
 
         await runWithErrorCatchAndThrow(new InstallTeamsfxBindingError(), async () =>
             await step(StepGroup.PreDeployStepGroup, PreDeploySteps.installTeamsfxBinding, async () =>
@@ -483,26 +505,37 @@ export class FunctionPluginImpl {
         throw new ValidationError(key);
     }
 
+    public isPluginEnabled(ctx: PluginContext, plugin: string): boolean {
+        const solutionConfig: ReadonlyPluginConfig | undefined =
+            ctx.configOfOtherPlugins.get(DependentPluginInfo.solutionPluginName);
+        const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings).activeResourcePlugins;
+        return selectedPlugins.includes(plugin);
+    }
+
     private collectFunctionAppSettings(ctx: PluginContext, site: Site): void {
         const functionEndpoint: string = this.checkAndGet(this.config.functionEndpoint, FunctionConfigKey.functionEndpoint);
         FunctionProvision.updateFunctionSettingsSelf(site, functionEndpoint);
 
         const aadConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(DependentPluginInfo.aadPluginName);
-        if (aadConfig) {
+        if (this.isPluginEnabled(ctx, DependentPluginInfo.aadPluginName) && aadConfig) {
             Logger.info(InfoMessages.dependPluginDetected(DependentPluginInfo.aadPluginName));
 
             const clientId: string =
                 this.checkAndGet(aadConfig.get(DependentPluginInfo.aadClientId) as string, "AAD client Id");
             const clientSecret: string =
                 this.checkAndGet(aadConfig.get(DependentPluginInfo.aadClientSecret) as string, "AAD secret");
-            const oauthAuthority: string =
-                this.checkAndGet(aadConfig.get(DependentPluginInfo.aadOauthAuthority) as string, "OAuth Authority");
+            const oauthHost: string =
+                this.checkAndGet(aadConfig.get(DependentPluginInfo.oauthHost) as string, "OAuth Host");
+            const tenantId: string =
+                this.checkAndGet(aadConfig.get(DependentPluginInfo.tenantId) as string, "Tenant Id");
+            const applicationIdUris: string =
+                this.checkAndGet(aadConfig.get(DependentPluginInfo.applicationIdUris) as string, "Application Id URI");
 
-            FunctionProvision.updateFunctionSettingsForAAD(site, clientId, clientSecret, oauthAuthority);
+            FunctionProvision.updateFunctionSettingsForAAD(site, clientId, clientSecret, oauthHost, tenantId, applicationIdUris);
         }
 
         const frontendConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(DependentPluginInfo.frontendPluginName);
-        if (frontendConfig) {
+        if (this.isPluginEnabled(ctx, DependentPluginInfo.frontendPluginName) && frontendConfig) {
             Logger.info(InfoMessages.dependPluginDetected(DependentPluginInfo.frontendPluginName));
 
             const frontendEndpoint: string =
@@ -513,24 +546,27 @@ export class FunctionPluginImpl {
 
         const sqlConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(DependentPluginInfo.sqlPluginName);
         const identityConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(DependentPluginInfo.identityPluginName);
-        if (sqlConfig && identityConfig) {
+        if (this.isPluginEnabled(ctx, DependentPluginInfo.sqlPluginName) &&
+            this.isPluginEnabled(ctx, DependentPluginInfo.identityPluginName) &&
+            sqlConfig && identityConfig) {
+
             Logger.info(InfoMessages.dependPluginDetected(DependentPluginInfo.sqlPluginName));
             Logger.info(InfoMessages.dependPluginDetected(DependentPluginInfo.identityPluginName));
 
             const identityId: string =
                 this.checkAndGet(identityConfig.get(DependentPluginInfo.identityId) as string, "identity Id");
-            const identityName: string =
-                this.checkAndGet(identityConfig.get(DependentPluginInfo.identityName) as string, "identity name");
             const databaseName: string =
                 this.checkAndGet(sqlConfig.get(DependentPluginInfo.databaseName) as string, "database name");
             const sqlEndpoint: string =
                 this.checkAndGet(sqlConfig.get(DependentPluginInfo.sqlEndpoint) as string, "sql endpoint");
+            const identityName: string =
+                this.checkAndGet(identityConfig.get(DependentPluginInfo.identityName) as string, "identity name");
 
             FunctionProvision.updateFunctionSettingsForSQL(site, identityId, databaseName, sqlEndpoint, identityName);
         }
 
         const apimConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(DependentPluginInfo.apimPluginName);
-        if (apimConfig) {
+        if (this.isPluginEnabled(ctx, DependentPluginInfo.apimPluginName) && apimConfig) {
             Logger.info(InfoMessages.dependPluginDetected(DependentPluginInfo.apimPluginName));
 
             const clientId: string =
@@ -544,19 +580,50 @@ export class FunctionPluginImpl {
         const aadConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(DependentPluginInfo.aadPluginName);
         const frontendConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(DependentPluginInfo.frontendPluginName);
 
-        if (aadConfig && frontendConfig) {
+        if (this.isPluginEnabled(ctx, DependentPluginInfo.aadPluginName) &&
+            this.isPluginEnabled(ctx, DependentPluginInfo.frontendPluginName) &&
+            aadConfig && frontendConfig) {
+
             const clientId: string =
                 this.checkAndGet(aadConfig.get(DependentPluginInfo.aadClientId) as string, "AAD client Id");
-            const oauthAuthority: string =
-                this.checkAndGet(aadConfig.get(DependentPluginInfo.aadOauthAuthority) as string, "OAuth Authority");
+            const oauthHost: string =
+                this.checkAndGet(aadConfig.get(DependentPluginInfo.oauthHost) as string, "OAuth Host");
+            const tenantId: string =
+                this.checkAndGet(aadConfig.get(DependentPluginInfo.tenantId) as string, "tenant Id");
             const frontendEndpoint: string =
                 this.checkAndGet(frontendConfig.get(DependentPluginInfo.frontendEndpoint) as string, "frontend endpoint");
             const frontendDomain: string =
                 this.checkAndGet(frontendConfig.get(DependentPluginInfo.frontendDomain) as string, "frontend domain");
 
-            return FunctionProvision.constructFunctionAuthSettings(clientId, frontendDomain, frontendEndpoint, oauthAuthority);
+            return FunctionProvision.constructFunctionAuthSettings(clientId, frontendDomain, frontendEndpoint, oauthHost, tenantId);
         }
 
         return undefined;
+    }
+
+    private async handleDotnetChecker(): Promise<void> {
+        await step(StepGroup.PreDeployStepGroup, PreDeploySteps.dotnetInstall, async () => {
+            const dotnetChecker = new DotnetChecker();
+            try {
+                if (await dotnetChecker.isInstalled()) {
+                    return;
+                }
+            } catch (error) {
+                handleDotnetError(error);
+                return;
+            }
+
+            if (isLinux()) {
+                // TODO: handle linux installation
+                handleDotnetError(new DepsCheckerError(Messages.defaultErrorMessage, dotnetHelpLink));
+                return;
+            }
+
+            try {
+                await dotnetChecker.install();
+            } catch (error) {
+                handleDotnetError(error);
+            }
+        });
     }
 }

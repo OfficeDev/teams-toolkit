@@ -38,15 +38,19 @@ export class AadAppClient {
       );
       let provisionAadResponse: IAADDefinition;
       if (TokenProvider.audience === TokenAudience.AppStudio) {
-        provisionAadResponse = await AppStudio.createAADAppV2(
-          TokenProvider.token as string,
-          provisionObject
-        );
+        provisionAadResponse = await this.retryHanlder(() =>
+          AppStudio.createAADAppV2(
+            TokenProvider.token as string,
+            provisionObject
+          )
+        ) as IAADDefinition;
       } else {
-        provisionAadResponse = await GraphClient.createAADApp(
-          TokenProvider.token as string,
-          provisionObject
-        );
+        provisionAadResponse = await this.retryHanlder(() =>
+          GraphClient.createAADApp(
+            TokenProvider.token as string,
+            provisionObject
+          )
+        ) as IAADDefinition;
       }
 
       config.clientId = provisionAadResponse.appId;
@@ -201,9 +205,13 @@ export class AadAppClient {
     let getAppObject: IAADDefinition;
     try {
       if (TokenProvider.audience === TokenAudience.AppStudio) {
-        getAppObject = await AppStudio.getAadApp(TokenProvider.token as string, objectId);
+        getAppObject = await this.retryHanlder(() =>
+          AppStudio.getAadApp(TokenProvider.token as string, objectId)
+        ) as IAADDefinition;
       } else {
-        getAppObject = await GraphClient.getAadApp(TokenProvider.token as string, objectId);
+        getAppObject = await this.retryHanlder(() =>
+          GraphClient.getAadApp(TokenProvider.token as string, objectId)
+        ) as IAADDefinition;
       }
     } catch (error) {
       throw ResultFactory.SystemError(
@@ -229,7 +237,7 @@ export class AadAppClient {
   }
 
   private static async retryHanlder(
-    fn: () => Promise<IAADPassword | void>
+    fn: () => Promise<IAADDefinition | IAADPassword | void>
   ): Promise<IAADDefinition | IAADPassword | undefined | void> {
     let retries = 10;
     let response;

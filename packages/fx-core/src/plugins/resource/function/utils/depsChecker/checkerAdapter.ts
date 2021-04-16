@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
@@ -91,6 +92,7 @@ export namespace ExtTelemetry {
     properties?: { [p: string]: string },
     measurements?: { [p: string]: number }
   ): void {
+    // implement me
   }
 
   export function sendTelemetryErrorEvent(
@@ -100,6 +102,7 @@ export namespace ExtTelemetry {
     measurements?: { [p: string]: number },
     errorProps?: string[]
   ): void {
+    // implement me
   }
 
   export function sendTelemetryException(
@@ -107,6 +110,7 @@ export namespace ExtTelemetry {
     properties?: { [p: string]: string },
     measurements?: { [p: string]: number }
   ): void {
+    // implement me
   }
 }
 

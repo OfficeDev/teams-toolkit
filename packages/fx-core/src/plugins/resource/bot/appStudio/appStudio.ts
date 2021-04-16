@@ -1,5 +1,6 @@
 import { IAADApplication, IAADPassword } from "./interfaces/IAADApplication";
 import { IBotRegistration } from "./interfaces/IBotRegistration";
+import { IAADDefinition } from "./interfaces/IAADDefinition";
 
 import { AxiosInstance, default as axios } from "axios";
 import { CallAppStudioError, ConfigUpdatingError, ProvisionError, SomethingMissingError } from "../errors";
@@ -26,6 +27,28 @@ function newAxiosInstance(accessToken: string): AxiosInstance {
     });
 }
 
+export async function createAADAppV2(accessToken: string, aadApp: IAADDefinition): Promise<IAADDefinition> {
+    const axiosInstance = newAxiosInstance(accessToken);
+
+    let response = undefined;
+    try {
+        response = await RetryHanlder(() => axiosInstance.post(`${baseUrl}/api/aadapp/v2`, aadApp));
+    } catch (e) {
+        throw new ProvisionError(CommonStrings.AAD_APP, e);
+    }
+
+    if (!response || !response.data) {
+        throw new ProvisionError(CommonStrings.AAD_APP);
+    }
+
+    const app = response.data as IAADDefinition;
+    if (!app || !app.id || !app.appId) {
+        throw new ProvisionError(CommonStrings.AAD_APP);
+    }
+
+    return app;
+}
+
 export async function createAADApp(accessToken: string, aadApp: IAADApplication): Promise<IAADApplication> {
     const axiosInstance = newAxiosInstance(accessToken);
 
@@ -48,7 +71,7 @@ export async function createAADApp(accessToken: string, aadApp: IAADApplication)
     return app;
 }
 
-export async function checkAADApp(accessToken: string, objectId: string): Promise<boolean> {
+export async function isAADAppExisting(accessToken: string, objectId: string): Promise<boolean> {
     const axiosInstance = newAxiosInstance(accessToken);
 
     let response = undefined;
@@ -62,8 +85,8 @@ export async function checkAADApp(accessToken: string, objectId: string): Promis
         return false;
     }
 
-    const app = response.data as IAADApplication;
-    if (!app || !app.id || !app.objectId) {
+    const app = response.data as IAADDefinition;
+    if (!app || !app.id || !app.appId) {
         return false;
     }
 

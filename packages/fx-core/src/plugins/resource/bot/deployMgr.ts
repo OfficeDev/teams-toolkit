@@ -54,7 +54,6 @@ export class DeployMgr {
                 const relativePath = path.relative(this.workingDir, itemPath);
 
                 if (relativePath && stats.mtime.getTime() > lastBotDeployTime) {
-                    Logger.debug(`relativePath: ${relativePath}, lastBotDeployTime: ${lastBotDeployTime}, stats.mtime: ${stats.mtime.getTime()}.`);
                     changed = true;
                     // Return true to stop walking.
                     return true;

@@ -678,7 +678,7 @@ export class TeamsBotImpl {
         const appStudioToken = await this.ctx?.appStudioToken?.getAccessToken();
         CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
 
-        if (this.config.localDebug.botRegistrationCreated() && (await AppStudio.checkAADApp(appStudioToken!, this.config.localDebug.localObjectId!))) {
+        if (this.config.localDebug.botRegistrationCreated() && (await AppStudio.isAADAppExisting(appStudioToken!, this.config.localDebug.localObjectId!))) {
             Logger.debug("Local bot has already been registered, just return.");
             return;
         }

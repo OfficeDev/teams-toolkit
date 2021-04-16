@@ -16,7 +16,7 @@ describe("Provision", function() {
 
   it(`Provision Resource: Update Permission for AAD - Test Plan Id 9729543`, async function() {
     // new a project
-    const newResult = await execAsync(`teamsfx new --app-name ${appName} --verbose false`, {
+    const newResult = await execAsync(`teamsfx new --app-name ${appName} --interactive false --verbose false`, {
       cwd: testFolder,
       env: process.env,
       timeout: 0

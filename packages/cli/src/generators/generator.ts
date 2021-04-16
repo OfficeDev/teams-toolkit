@@ -17,7 +17,8 @@ import {
   Platform,
   NodeType,
   ok,
-  StringArrayValidation
+  StringArrayValidation,
+  Func
 } from "fx-api";
 
 import CLILogProvider from "../commonlib/log";
@@ -31,7 +32,9 @@ export abstract class Generator {
 
   abstract readonly outputPath: string;
 
-  abstract readonly stage: Stage;
+  readonly doUserTask: boolean = false;
+  readonly func?: Func;
+  readonly stage?: Stage;
 
   async generate(projectPath?: string): Promise<Result<QTreeNode | QTreeNode[], FxError>> {
     const result = await activate(projectPath);
@@ -41,7 +44,10 @@ export abstract class Generator {
     
     const core = result.value;
     {
-      const result = await core.getQuestions!(this.stage, Platform.VSCode);
+      const result = this.doUserTask 
+        ? await core.getQuestionsForUserTask!(this.func!, Platform.VSCode)
+        : await core.getQuestions!(this.stage!, Platform.VSCode);
+        
       if (result.isErr()) {
         return err(result.error);
       }

@@ -13,6 +13,7 @@ import AppStudioTokenInstance from "../commonlib/appStudioLogin";
 import { runCommand } from "../handlers";
 import { Stage } from "fx-api";
 import { PanelType } from "./PanelType";
+import { execSync } from "child_process";
 
 export class WebviewPanel {
   private static readonly viewType = "react";
@@ -215,6 +216,7 @@ export class WebviewPanel {
             <script>
               const vscode = acquireVsCodeApi();
               const panelType = '${panelType}';
+              const isSupportedNode = ${this.isValidNode()};
               window.onload = function() {
                 console.log('Ready to accept data.');
               };
@@ -231,6 +233,24 @@ export class WebviewPanel {
       text += possible.charAt(Math.floor(Math.random() * possible.length));
     }
     return text;
+  }
+
+  isValidNode = () => {
+    const supportedVersions = ["10", "12", "14"];
+    const output = execSync("node --version");
+    const regex = /v(?<major_version>\d+)\.(?<minor_version>\d+)\.(?<patch_version>\d+)/gm;
+
+    const match = regex.exec(output.toString());
+    if (!match) {
+      return false;
+    }
+
+    const majorVersion = match.groups?.major_version;
+    if (!majorVersion) {
+      return false;
+    }
+
+    return supportedVersions.includes(majorVersion);
   }
 
   public static sendMessage(message: string, data?: any) {

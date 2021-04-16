@@ -38,7 +38,7 @@ export class SPFxPluginImpl {
     const componentId = uuid.v4();
     const componentClassName = `${componentName}WebPart`;
     const componentStrings = componentClassName + "Strings";
-    const libraryName = lodash.kebabCase(ctx.answers?.getString("app-name"));
+    const libraryName = lodash.kebabCase(ctx.projectSettings?.appName);
     let componentAlias = componentClassName;
     if (componentClassName.length > Constants.MAX_ALIAS_LENGTH) {
       componentAlias = componentClassName.substring(

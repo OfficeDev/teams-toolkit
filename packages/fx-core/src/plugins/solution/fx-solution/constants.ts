@@ -37,6 +37,7 @@ export const CONFIGURABLE_TABS = "configurableTabs";
 /**
  * Config keys that are useful for generating remote teams app manifest
  */
+export const REMOTE_MANIFEST = "manifest.remote.json";
 export const FRONTEND_ENDPOINT = "endpoint";
 export const FRONTEND_DOMAIN = "domain";
 export const BOTS = "bots";
@@ -94,7 +95,7 @@ export enum SolutionError {
     RegisterTeamsAppAndAadError = "RegisterTeamsAppAndAadError",
     UpdateManifestError = "UpdateManifestError",
     GetLocalDebugConfigError = "GetLocalDebugConfigError",
-    GetRemoteConfigError = "GetRemoteDebugConfigError",
+    GetRemoteConfigError = "GetRemoteConfigError",
     UnsupportedPlatform = "UnsupportedPlatform",
 }
 
@@ -116,8 +117,6 @@ export const REMOTE_CLIENT_SECRET = "clientSecret";
 export const LOCAL_DEBUG_TEAMS_APP_ID = "localDebugTeamsAppId";
 // Teams App Id for remote
 export const REMOTE_TEAMS_APP_ID = "remoteTeamsAppId";
-
-export const PROVISION_MANIFEST = "provisionManifest";
 
 export const TEAMS_APP_MANIFEST_TEMPLATE = `{
     "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.7/MicrosoftTeams.schema.json",

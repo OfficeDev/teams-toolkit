@@ -4,6 +4,7 @@
 import path from "path";
 import { PluginContext } from "fx-api";
 import { DependentPluginInfo, FrontendPathInfo } from "../constants";
+import { InvalidTabLanguageError } from "./errors";
 
 export class TabLanguage {
     static readonly JavaScript = "JavaScript";
@@ -46,7 +47,7 @@ export class TemplateInfo {
             return TabLanguage.TypeScript;
         }
 
-        throw new Error();
+        throw new InvalidTabLanguageError();
     }
 
     static readonly TemplateGroupName = "tab";

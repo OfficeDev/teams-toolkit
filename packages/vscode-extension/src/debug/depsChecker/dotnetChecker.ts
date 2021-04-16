@@ -152,6 +152,7 @@ export class DotnetChecker implements IDepsChecker {
       if (typeof config.dotnetExecutablePath === "string") {
         return config.dotnetExecutablePath;
       }
+      logger.debug(`invalid dotnet config file format, config: '${JSON.stringify(config)}' `);
     } catch (error) {
       logger.debug(`get dotnet path failed, error: ${error}`);
     }

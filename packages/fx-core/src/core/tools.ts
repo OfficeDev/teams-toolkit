@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { exec } from "child_process";
+import {exec} from "child_process";
 import * as fs from "fs-extra";
-import { ConfigMap, Dict, Json } from "fx-api";
-import { promisify } from "util";
+import {ConfigMap, Dict, Json} from "fx-api";
+import {promisify} from "util";
 
 const execAsync = promisify(exec);
 
@@ -80,9 +80,6 @@ export function objectToConfigMap(o?: Json): ConfigMap {
     return m;
 }
 
-
-
-
 const SecretDataMatchers = ["fx-resource-aad-app-for-teams.clientSecret",
     "fx-resource-aad-app-for-teams.local_clientSecret",
     "fx-resource-simple-auth.filePath",
@@ -92,26 +89,26 @@ const SecretDataMatchers = ["fx-resource-aad-app-for-teams.clientSecret",
     "fx-resource-teamsbot.localBotPassword",
     "fx-resource-apim.apimClientAADClientSecret"];
 
-export function sperateSecretData(configJson:Json): Dict<string>{
-    const res:Dict<string> = {};
-    for(const matcher of SecretDataMatchers ){
+export function sperateSecretData(configJson: Json): Dict<string> {
+    const res: Dict<string> = {};
+    for (const matcher of SecretDataMatchers) {
         const splits = matcher.split(".");
         const resourceId = splits[0];
         const item = splits[1];
-        const resourceConfig:any = configJson[resourceId];
-        if(!resourceConfig) continue;
-        if("*" !== item) {
+        const resourceConfig: any = configJson[resourceId];
+        if (!resourceConfig) continue;
+        if ("*" !== item) {
             const configValue = resourceConfig[item];
-            if(configValue){
+            if (configValue) {
                 const keyName = `${resourceId}.${item}`;
                 res[keyName] = configValue;
                 resourceConfig[item] = `{{${keyName}}}`;
             }
         }
         else {
-            for(const itemName of Object.keys(resourceConfig)){
+            for (const itemName of Object.keys(resourceConfig)) {
                 const configValue = resourceConfig[itemName];
-                if(configValue){
+                if (configValue) {
                     const keyName = `${resourceId}.${itemName}`;
                     res[keyName] = configValue;
                     resourceConfig[itemName] = `{{${keyName}}}`;
@@ -122,24 +119,24 @@ export function sperateSecretData(configJson:Json): Dict<string>{
     return res;
 }
 
-export function mergeSerectData(dict: Dict<string>, configJson:Json):void{
-    for(const matcher of SecretDataMatchers ){
+export function mergeSerectData(dict: Dict<string>, configJson: Json): void {
+    for (const matcher of SecretDataMatchers) {
         const splits = matcher.split(".");
         const resourceId = splits[0];
         const item = splits[1];
-        const resourceConfig:any = configJson[resourceId];
-        if(!resourceConfig) continue;
-        if("*" !== item) {
-            const originalItemValue:string|undefined = resourceConfig[item] as string|undefined;
-            if(originalItemValue && originalItemValue.startsWith("{{") && originalItemValue.endsWith("}}")){
+        const resourceConfig: any = configJson[resourceId];
+        if (!resourceConfig) continue;
+        if ("*" !== item) {
+            const originalItemValue: string | undefined = resourceConfig[item] as string | undefined;
+            if (originalItemValue && originalItemValue.startsWith("{{") && originalItemValue.endsWith("}}")) {
                 const keyName = `${resourceId}.${item}`;
                 resourceConfig[item] = dict[keyName];
             }
         }
         else {
-            for(const itemName of Object.keys(resourceConfig)){
+            for (const itemName of Object.keys(resourceConfig)) {
                 const originalItemValue = resourceConfig[itemName];
-                if(originalItemValue && originalItemValue.startsWith("{{") && originalItemValue.endsWith("}}")){
+                if (originalItemValue && originalItemValue.startsWith("{{") && originalItemValue.endsWith("}}")) {
                     const keyName = `${resourceId}.${itemName}`;
                     resourceConfig[itemName] = dict[keyName];
                 }
@@ -148,26 +145,71 @@ export function mergeSerectData(dict: Dict<string>, configJson:Json):void{
     }
 }
 
-export function serializeDict(dict: Dict<string>):string{
-    const array:string[] = [];
-    for(const key of Object.keys(dict)){
-       const value = dict[key];
-       array.push(`${key}=${value}`);
+export function serializeDict(dict: Dict<string>): string {
+    const array: string[] = [];
+    for (const key of Object.keys(dict)) {
+        const value = dict[key];
+        array.push(`${key}=${value}`);
     }
     return array.join("\n");
 }
 
-export function deserializeDict(data:string):Dict<string>{
+export function deserializeDict(data: string): Dict<string> {
     const lines = data.split("\n");
     const dict: Dict<string> = {};
-    for(const line of lines){
+    for (const line of lines) {
         const index = line.indexOf("=");
-        if(index > 0){
+        if (index > 0) {
             const key = line.substr(0, index);
-            const value = line.substr(index+1);
+            const value = line.substr(index + 1);
             dict[key] = value;
         }
-         
+
     }
     return dict;
 }
+
+export const deepCopy = <T>(target: T): T => {
+    if (target === null) {
+        return target;
+    }
+    if (target instanceof Date) {
+        return new Date(target.getTime()) as any;
+    }
+    if (target instanceof Array) {
+        const cp = [] as any[];
+        (target as any[]).forEach((v) => {
+            cp.push(v);
+        });
+        return cp.map((n: any) => deepCopy<any>(n)) as any;
+    }
+    if (typeof target === "object" && target !== {}) {
+        const cp = {...(target as {[key: string]: any;})} as {
+            [key: string]: any;
+        };
+        Object.keys(cp).forEach((k) => {
+            cp[k] = deepCopy<any>(cp[k]);
+        });
+        return cp as T;
+    }
+    return target;
+};
+
+export function mergeConfigMap(
+    source?: ConfigMap,
+    target?: ConfigMap
+): ConfigMap {
+    const map = new ConfigMap();
+    if (source) {
+        for (const entry of source) {
+            map.set(entry[0], entry[1]);
+        }
+    }
+    if (target) {
+        for (const entry of target) {
+            map.set(entry[0], entry[1]);
+        }
+    }
+    return map;
+}
+

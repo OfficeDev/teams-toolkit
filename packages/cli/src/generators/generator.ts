@@ -23,9 +23,10 @@ import {
 
 import CLILogProvider from "../commonlib/log";
 import * as constants from "../constants";
-import { UnknownError } from "../error";
-import activate from "../activate";
-import { flattenNodes } from "../utils";
+import {UnknownError} from "../error";
+import {flattenNodes} from "../utils";
+import {TeamsCore} from "../../../fx-core/build/core";
+import {ContextFactory} from "../context";
 
 export abstract class Generator {
   abstract readonly commandName: string;
@@ -37,21 +38,16 @@ export abstract class Generator {
   readonly stage?: Stage;
 
   async generate(projectPath?: string): Promise<Result<QTreeNode | QTreeNode[], FxError>> {
-    const result = await activate(projectPath);
-    if (result.isErr()) {
-      return err(result.error);
-    }
-    
-    const core = result.value;
+    const core = TeamsCore.getInstance();
     {
-      const result = this.doUserTask 
-        ? await core.getQuestionsForUserTask!(this.func!, Platform.VSCode)
-        : await core.getQuestions!(this.stage!, Platform.VSCode);
-        
+      const result = this.doUserTask
+        ? await core.getQuestionsForUserTask(ContextFactory.get(projectPath ?? './', Stage.userTask), this.func!)
+        : await core.getQuestions(ContextFactory.get(projectPath ?? './', Stage.userTask));
+
       if (result.isErr()) {
         return err(result.error);
       }
-    
+
       const root = result.value!;
       const allNodes = flattenNodes(root).filter(node => node.data.type !== NodeType.group);
       return ok(allNodes);
@@ -70,7 +66,7 @@ export abstract class Generator {
       CLILogProvider.info(this.toLogMsg(`Start to write '${this.commandName}' parameters`));
       await this.writeJSON(result.value);
       CLILogProvider.info(this.toLogMsg(`Finish to write '${this.commandName}' parameters to ${this.outputPath}`));
-    } catch(e) {
+    } catch (e) {
       const FxError: FxError =
         e instanceof UserError || e instanceof SystemError ? e : UnknownError(e);
       let errorMsg = `code:${FxError.source}.${FxError.name}\n\tmessage: ${FxError.message}`;
@@ -90,7 +86,7 @@ export abstract class Generator {
   public toLogMsg(body: string) {
     return `[ParamGenerator] ${body}`;
   }
-  
+
   public async writeJSON(params: any) {
     return fs.writeJSON(this.outputPath, params, {
       spaces: 4,

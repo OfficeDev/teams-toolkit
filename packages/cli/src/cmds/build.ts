@@ -3,13 +3,14 @@
 
 "use strict";
 
-import { Argv, Options } from "yargs";
+import {Argv, Options} from "yargs";
 import * as path from "path";
-import { FxError, err, ok, Result, ConfigMap, Platform, Func } from "fx-api";
-import activate from "../activate";
+import {FxError, err, ok, Result, ConfigMap, Platform, Func, Stage} from "fx-api";
 import * as constants from "../constants";
-import { YargsCommand } from "../yargsCommand";
-import { getParamJson } from "../utils";
+import {YargsCommand} from "../yargsCommand";
+import {getParamJson} from "../utils";
+import {TeamsCore} from "../../../fx-core/build/core";
+import {ContextFactory} from "../context";
 
 export default class New extends YargsCommand {
   public readonly commandHead = `build`;
@@ -17,7 +18,7 @@ export default class New extends YargsCommand {
   public readonly description = "A command to build your Teams app";
   public readonly paramPath = constants.buildParamPath;
 
-  public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
+  public readonly params: {[_: string]: Options;} = getParamJson(this.paramPath);
 
   public builder(yargs: Argv): Argv<any> {
     return yargs.version(false).options(this.params);
@@ -41,17 +42,14 @@ export default class New extends YargsCommand {
     const rootFolder = answers.getString("folder");
     answers.delete("folder");
     answers.set("platform", Platform.CLI);
-    const result = await activate(rootFolder);
-    if (result.isErr()) {
-      return err(result.error);
-    }
-    const core = result.value;
+    const core = TeamsCore.getInstance();
     {
       const func: Func = {
         namespace: "fx-solution-azure",
         method: "buildPackage"
       };
-      const result = await core.executeUserTask!(func, answers);
+      const result = await core.executeUserTask(ContextFactory.get(
+        rootFolder!, Stage.userTask), func, answers);
       if (result.isErr()) {
         return err(result.error);
       }

@@ -13,7 +13,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as child_process from "child_process";
 import * as util from "util";
-import { ConfigFolderName } from "fx-api";
+import {ConfigFolderName} from "fx-api";
 import {
   cpUtils,
   dotnetCheckerEnabled,
@@ -21,11 +21,11 @@ import {
   logger,
   runWithProgressIndicator
 } from "./checkerAdapter";
-import { DepsInfo, IDepsChecker } from "./checker";
-import { dotnetHelpLink, isLinux, isWindows, Messages } from "./common";
-import { DepsCheckerEvent, DepsCheckerTelemetry, TelemtryMessages } from "./telemetry";
-import { performance } from "perf_hooks";
-import { DepsCheckerError } from "./errors";
+import {DepsInfo, IDepsChecker} from "./checker";
+import {dotnetHelpLink, isLinux, isWindows, Messages} from "./common";
+import {DepsCheckerEvent, DepsCheckerTelemetry, TelemtryMessages} from "./telemetry";
+import {performance} from "perf_hooks";
+import {DepsCheckerError} from "./errors";
 
 const exec = util.promisify(child_process.exec);
 
@@ -35,7 +35,7 @@ export enum DotnetVersion {
 }
 
 export const DotnetCoreSDKName = ".NET Core SDK";
-export type DotnetSDK = { version: string; path: string };
+export type DotnetSDK = {version: string; path: string;};
 
 export const installVersion = DotnetVersion.v31;
 export const supportedVersions = [DotnetVersion.v31, DotnetVersion.v50];
@@ -187,7 +187,7 @@ export class DotnetChecker implements IDepsChecker {
     await fs.ensureFile(configPath);
     await fs.writeJson(
       configPath,
-      { dotnetExecutablePath: dotnetExecPath },
+      {dotnetExecutablePath: dotnetExecPath},
       {
         encoding: DotnetChecker.encoding,
         spaces: 4,
@@ -215,7 +215,7 @@ export class DotnetChecker implements IDepsChecker {
 
     try {
       const start = performance.now();
-      const { stdout, stderr } = await exec(isWindows() ? windowsFullCommand : installCommand, {
+      const {stdout, stderr} = await exec(isWindows() ? windowsFullCommand : installCommand, {
         cwd: process.cwd(),
         maxBuffer: DotnetChecker.maxBuffer,
         timeout: DotnetChecker.timeout,
@@ -230,8 +230,7 @@ export class DotnetChecker implements IDepsChecker {
           `stdout: ${stdout}, stderr: ${stderr}`
         );
         logger.error(
-          `${Messages.failToInstallDotnet.replace("@NameVersion", installedNameWithVersion)} ${
-            Messages.dotnetInstallStderr
+          `${Messages.failToInstallDotnet.replace("@NameVersion", installedNameWithVersion)} ${Messages.dotnetInstallStderr
           } stdout: '${stdout}', stderr: '${stderr}'`
         );
       } else {
@@ -245,8 +244,7 @@ export class DotnetChecker implements IDepsChecker {
       );
       // swallow the exception since later validate will find out the errors anyway
       logger.error(
-        `${Messages.failToInstallDotnet.replace("@NameVersion", installedNameWithVersion)} ${
-          Messages.dotnetInstallErrorCode
+        `${Messages.failToInstallDotnet.replace("@NameVersion", installedNameWithVersion)} ${Messages.dotnetInstallErrorCode
         } error: '${error}', stdout = '${error.stdout}', stderr = '${error.stderr}'`
       );
     }
@@ -305,7 +303,7 @@ export class DotnetChecker implements IDepsChecker {
       const dotnetListSdksOutput = await cpUtils.executeCommand(
         undefined,
         logger,
-        { shell: false },
+        {shell: false},
         dotnetExecPath,
         "--list-sdks"
       );
@@ -324,7 +322,7 @@ export class DotnetChecker implements IDepsChecker {
           const path = match.groups.installPath;
           const version = match.groups.version;
           if (DotnetChecker.isFullSdkVersion(version) && path) {
-            sdks.push({ version: version, path: path });
+            sdks.push({version: version, path: path});
           }
         }
       });

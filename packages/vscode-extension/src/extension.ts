@@ -4,13 +4,13 @@
 "use strict";
 
 import * as vscode from "vscode";
-import { initializeExtensionVariables } from "./extensionVariables";
+import {initializeExtensionVariables} from "./extensionVariables";
 import * as handlers from "./handlers";
-import { ExtTelemetry } from "./telemetry/extTelemetry";
-import { TelemetryEvent, TelemetryProperty } from "./telemetry/extTelemetryEvents";
-import { TeamsfxTaskProvider } from "./debug/teamsfxTaskProvider";
-import { TeamsfxDebugProvider } from "./debug/teamsfxDebugProvider";
-import { ExtensionSurvey } from "./utils/survey";
+import {ExtTelemetry} from "./telemetry/extTelemetry";
+import {TelemetryEvent, TelemetryProperty} from "./telemetry/extTelemetryEvents";
+import {TeamsfxTaskProvider} from "./debug/teamsfxTaskProvider";
+import {TeamsfxDebugProvider} from "./debug/teamsfxDebugProvider";
+import {ExtensionSurvey} from "./utils/survey";
 
 export async function activate(context: vscode.ExtensionContext) {
   console.log("Teams Toolkit v2 extension is now active!");
@@ -160,7 +160,7 @@ export async function activate(context: vscode.ExtensionContext) {
     handlers.openReportIssues
   );
   context.subscriptions.push(openReportIssuesCmd);
-  
+
   // Register debug configuration provider
   const debugProvider: TeamsfxDebugProvider = new TeamsfxDebugProvider();
   context.subscriptions.push(
@@ -177,8 +177,6 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   await handlers.cmdHdlLoadTreeView(context);
-  // 2. Call activate function of toolkit core.
-  await handlers.activate();
 
   // Trigger telemetry when start debug session
   const debug = vscode.debug.onDidStartDebugSession((e) => {

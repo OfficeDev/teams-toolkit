@@ -55,7 +55,7 @@ import {NodeChecker} from "./debug/depsChecker/nodeChecker";
 import {TeamsCore} from "fx-core";
 import {ContextFactory} from "./context";
 
-export let core = TeamsCore.getInstance();
+export const core = TeamsCore.getInstance();
 
 const runningTasks = new Set<string>(); // to control state of task execution
 

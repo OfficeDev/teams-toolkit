@@ -3,19 +3,20 @@
 
 "use strict";
 
-import { Argv, Options } from "yargs";
+import {Argv, Options} from "yargs";
 
-import { FxError, err, ok, Result, Func, ConfigMap, Platform } from "fx-api";
+import {FxError, err, ok, Result, Func, ConfigMap, Platform, Stage} from "fx-api";
 
-import { YargsCommand } from "../yargsCommand";
-import activate from "../activate";
+import {YargsCommand} from "../yargsCommand";
+import {TeamsCore} from "../../../fx-core/build/core";
+import {ContextFactory} from "../context";
 
 export default class Init extends YargsCommand {
   public readonly commandHead = `init`;
   public readonly command = `${this.commandHead} [options]`;
   public readonly description = "A command to register Teams app ID and AAD app";
 
-  public readonly params: { [_: string]: Options } = {
+  public readonly params: {[_: string]: Options;} = {
     "app-name": {
       type: "string",
       description: "the name of teams app",
@@ -58,12 +59,7 @@ export default class Init extends YargsCommand {
       answers.set(name, args[name] || this.params[name].default);
     }
 
-    const result = await activate();
-    if (result.isErr()) {
-      return err(result.error);
-    }
-
-    const core = result.value;
+    const core = TeamsCore.getInstance();
     {
       answers.set("platform", Platform.VS);
 
@@ -72,7 +68,7 @@ export default class Init extends YargsCommand {
         method: "registerTeamsAppAndAad"
       };
 
-      const result = await core.executeUserTask!(func, answers);
+      const result = await core.executeUserTask(ContextFactory.get(args["root-path"] as string, Stage.userTask), func, answers);
       if (result.isErr()) {
         return err(result.error);
       }

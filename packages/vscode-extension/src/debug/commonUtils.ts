@@ -6,9 +6,9 @@ import * as path from "path";
 import * as dotenv from "dotenv";
 import * as vscode from "vscode";
 import * as constants from "./constants";
-import { openUrl } from "./depsChecker/common";
-import { ConfigFolderName, Func } from "fx-api";
-import { core, showError } from "../handlers";
+import {ConfigFolderName, Func, Stage} from "fx-api";
+import {core, showError} from "../handlers";
+import {ContextFactory} from "../context";
 
 export async function getProjectRoot(
   folderPath: string,
@@ -19,7 +19,7 @@ export async function getProjectRoot(
   return projectExists ? projectRoot : undefined;
 }
 
-async function getLocalEnv(prefix = ""): Promise<{ [key: string]: string } | undefined> {
+async function getLocalEnv(prefix = ""): Promise<{[key: string]: string;} | undefined> {
   if (!vscode.workspace.workspaceFolders) {
     return undefined;
   }
@@ -37,7 +37,7 @@ async function getLocalEnv(prefix = ""): Promise<{ [key: string]: string } | und
   const contents = await fs.readFile(localEnvFilePath);
   const env: dotenv.DotenvParseOutput = dotenv.parse(contents);
 
-  const result: { [key: string]: string } = {};
+  const result: {[key: string]: string;} = {};
   for (const key of Object.keys(env)) {
     if (key.startsWith(prefix) && env[key]) {
       result[key.slice(prefix.length)] = env[key];
@@ -46,15 +46,15 @@ async function getLocalEnv(prefix = ""): Promise<{ [key: string]: string } | und
   return Object.keys(result).length > 0 ? result : undefined;
 }
 
-export async function getFrontendLocalEnv(): Promise<{ [key: string]: string } | undefined> {
+export async function getFrontendLocalEnv(): Promise<{[key: string]: string;} | undefined> {
   return getLocalEnv(constants.frontendLocalEnvPrefix);
 }
 
-export async function getBackendLocalEnv(): Promise<{ [key: string]: string } | undefined> {
+export async function getBackendLocalEnv(): Promise<{[key: string]: string;} | undefined> {
   return getLocalEnv(constants.backendLocalEnvPrefix);
 }
 
-export async function getAuthLocalEnv(): Promise<{ [key: string]: string } | undefined> {
+export async function getAuthLocalEnv(): Promise<{[key: string]: string;} | undefined> {
   // SERVICE_PATH will also be included, but it has no side effect
   return getLocalEnv(constants.authLocalEnvPrefix);
 }
@@ -64,7 +64,7 @@ export async function getAuthServicePath(): Promise<string | undefined> {
   return result ? result[constants.authServicePathEnvKey] : undefined;
 }
 
-export async function getBotLocalEnv(): Promise<{ [key: string]: string } | undefined> {
+export async function getBotLocalEnv(): Promise<{[key: string]: string;} | undefined> {
   return getLocalEnv(constants.botLocalEnvPrefix);
 }
 
@@ -88,19 +88,20 @@ export async function hasTeamsfxBackend(): Promise<boolean> {
   return backendRoot !== undefined;
 }
 
-export async function getLocalDebugTeamsAppId(isLocalSideloadingConfiguration: boolean): Promise<string|undefined> {
+export async function getLocalDebugTeamsAppId(isLocalSideloadingConfiguration: boolean): Promise<string | undefined> {
   const func: Func = {
     namespace: "fx-solution-azure/fx-resource-local-debug",
     method: "getLaunchInput",
     params: isLocalSideloadingConfiguration ? "local" : "remote"
   };
   try {
-    const result = await core.callFunc(func);
+    const ctx = await ContextFactory.get(Stage.debug);
+    const result = await core.callFunc(ctx, func);
     if (result.isErr()) {
       throw result.error;
     }
     return result.value as string;
   } catch (err) {
     await showError(err);
-  }   
+  }
 }

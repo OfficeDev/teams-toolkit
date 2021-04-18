@@ -3,17 +3,18 @@
 
 "use strict";
 
-import { Argv, Options } from "yargs";
+import {Argv, Options} from "yargs";
 import * as path from "path";
 
-import { FxError, err, ok, Result, ConfigMap, Stage, Platform } from "fx-api";
+import {FxError, err, ok, Result, ConfigMap, Stage, Platform} from "fx-api";
 
-import activate from "../activate";
 import AzureTokenProvider from "../commonlib/azureLogin";
 import * as constants from "../constants";
-import { validateAndUpdateAnswers } from "../question/question";
-import { getParamJson } from "../utils";
-import { YargsCommand } from "../yargsCommand";
+import {validateAndUpdateAnswers} from "../question/question";
+import {getParamJson} from "../utils";
+import {YargsCommand} from "../yargsCommand";
+import {TeamsCore} from "../../../fx-core/build/core";
+import {ContextFactory} from "../context";
 
 export default class Provision extends YargsCommand {
   public readonly commandHead = `provision`;
@@ -21,13 +22,13 @@ export default class Provision extends YargsCommand {
   public readonly description = "A command to provision the project in current working directory";
   public readonly paramPath = constants.provisionParamPath;
 
-  public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
+  public readonly params: {[_: string]: Options;} = getParamJson(this.paramPath);
 
   public builder(yargs: Argv): Argv<any> {
     return yargs.version(false).options(this.params);
   }
 
-  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+  public async runCommand(args: {[argName: string]: string;}): Promise<Result<null, FxError>> {
     const answers = new ConfigMap();
     for (const name in this.params) {
       answers.set(name, args[name] || this.params[name].default);
@@ -43,14 +44,9 @@ export default class Provision extends YargsCommand {
       }
     }
 
-    const result = await activate(rootFolder);
-    if (result.isErr()) {
-      return err(result.error);
-    }
-
-    const core = result.value;
+    const core = TeamsCore.getInstance();
     {
-      const result = await core.getQuestions!(Stage.provision, Platform.VSCode);
+      const result = await core.getQuestions(ContextFactory.get(rootFolder, Stage.provision));
       if (result.isErr()) {
         return err(result.error);
       }
@@ -58,7 +54,7 @@ export default class Provision extends YargsCommand {
     }
 
     {
-      const result = await core.provision(answers);
+      const result = await core.provision(ContextFactory.get(rootFolder, Stage.provision), answers);
       if (result.isErr()) {
         return err(result.error);
       }

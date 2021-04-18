@@ -26,6 +26,8 @@
     ]
   },
   "dependencies": {
+    "@feathersjs/hooks": "^0.6.3",
+    "proper-lockfile": "^4.1.2",
     "@apidevtools/swagger-parser": "^10.0.2",
     "@azure/arm-apimanagement": "^6.0.0",
     "@azure/arm-appservice": "^6.1.0",

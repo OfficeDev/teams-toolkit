@@ -3,15 +3,16 @@
 
 "use strict";
 
-import { Argv, Options } from "yargs";
+import {Argv, Options} from "yargs";
 
-import { FxError, err, ok, Result, Stage, Platform, ConfigMap, QTreeNode, NodeType, Question, isAutoSkipSelect, SingleSelectQuestion, MultiSelectQuestion } from "fx-api";
+import {FxError, err, ok, Result, Stage, Platform, ConfigMap, QTreeNode, NodeType, Question, isAutoSkipSelect, SingleSelectQuestion, MultiSelectQuestion} from "fx-api";
 
-import activate from "../activate";
 import * as constants from "../constants";
-import { validateAndUpdateAnswers, visitInteractively } from "../question/question";
-import { YargsCommand } from "../yargsCommand";
-import { flattenNodes, getJson, getSingleOptionString, toConfigMap, toYargsOptions } from "../utils";
+import {validateAndUpdateAnswers, visitInteractively} from "../question/question";
+import {YargsCommand} from "../yargsCommand";
+import {flattenNodes, getJson, toConfigMap, toYargsOptions} from "../utils";
+import {TeamsCore} from "../../../fx-core/build/core";
+import {ContextFactory} from "../context";
 
 export default class New extends YargsCommand {
   public readonly commandHead = `new`;
@@ -20,7 +21,7 @@ export default class New extends YargsCommand {
   public readonly paramPath = constants.newParamPath;
 
   public readonly root = getJson<QTreeNode>(this.paramPath);
-  public params: { [_: string]: Options } = {};
+  public params: {[_: string]: Options;} = {};
   public answers: ConfigMap = new ConfigMap();
 
   public builder(yargs: Argv): Argv<any> {
@@ -68,14 +69,9 @@ export default class New extends YargsCommand {
       }
     }
 
-    const result = await activate();
-    if (result.isErr()) {
-      return err(result.error);
-    }
-
-    const core = result.value;
+    const core = TeamsCore.getInstance();
     {
-      const result = await core.getQuestions!(Stage.create, Platform.VSCode);
+      const result = await core.getQuestions(ContextFactory.get("./", Stage.create));
       if (result.isErr()) {
         return err(result.error);
       }
@@ -83,7 +79,7 @@ export default class New extends YargsCommand {
     }
 
     {
-      const result = await core.create(this.answers);
+      const result = await core.create(ContextFactory.get("./", Stage.create), this.answers);
       if (result.isErr()) {
         return err(result.error);
       }

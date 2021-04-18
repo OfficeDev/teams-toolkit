@@ -4,7 +4,6 @@
 "use strict";
 
 import {
-  Platform,
   Stage,
   QTreeNode,
   FxError,
@@ -12,10 +11,11 @@ import {
   Result,
   err
 } from "fx-api";
+import {TeamsCore} from "../../../fx-core/build/core";
 
-import activate from "../activate";
 import * as constants from "../constants";
-import { Generator } from "./generator";
+import {ContextFactory} from "../context";
+import {Generator} from "./generator";
 
 export class NewGenerator extends Generator {
   public readonly commandName = "teamsfx new";
@@ -25,18 +25,13 @@ export class NewGenerator extends Generator {
   public readonly stage = Stage.create;
 
   async generate(): Promise<Result<QTreeNode, FxError>> {
-    const result = await activate();
-    if (result.isErr()) {
-      return err(result.error);
-    }
-    
-    const core = result.value;
+    const core = TeamsCore.getInstance();
     {
-      const result = await core.getQuestions!(this.stage, Platform.VSCode);
+      const result = await core.getQuestions(ContextFactory.get('./', this.stage));
       if (result.isErr()) {
         return err(result.error);
       }
-    
+
       const root = result.value!;
       return ok(root);
     }

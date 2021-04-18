@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 "use strict";
- 
+
 import {returnSystemError, returnUserError, SystemError, UserError} from "fx-api";
 
 export const CoreSource = "Core";
@@ -22,6 +22,8 @@ export enum CoreErrorNames {
     UncatchedError = "UncatchedError",
     NotSupportedProjectType = "NotSupportedProjectType",
     InitError = "InitError",
+    InProcessingError = "InProcessing",
+    InternalError = "InternalError",
 }
 
 export function InvalidContext(): UserError {
@@ -46,4 +48,28 @@ export function EnvNotExist(param: any): UserError {
 
 export function NotSupportedProjectType(): UserError {
     return returnUserError(new Error(`Project type not supported`), CoreSource, CoreErrorNames.NotSupportedProjectType);
+}
+
+export function UncatchedError(): SystemError {
+    return returnSystemError(
+        new Error(CoreErrorNames.UncatchedError),
+        CoreSource,
+        CoreErrorNames.UncatchedError
+    );
+}
+
+export function InProcessingError(): UserError {
+    return returnUserError(
+        new Error(CoreErrorNames.InProcessingError),
+        CoreSource,
+        CoreErrorNames.InProcessingError
+    );
+}
+
+export function InternalError(): SystemError {
+    return returnSystemError(
+        new Error(CoreErrorNames.InternalError),
+        CoreSource,
+        CoreErrorNames.InternalError
+    );
 }

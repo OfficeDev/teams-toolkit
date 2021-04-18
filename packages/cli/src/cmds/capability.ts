@@ -4,29 +4,30 @@
 "use strict";
 
 import * as path from "path";
-import { Argv, Options } from "yargs";
+import {Argv, Options} from "yargs";
 
-import { ConfigMap, err, FxError, ok, Platform, Result } from "fx-api";
+import {ConfigMap, err, FxError, ok, Platform, Result, Stage} from "fx-api";
 
-import activate from "../activate";
 import AzureTokenProvider from "../commonlib/azureLogin";
 import * as constants from "../constants";
-import { validateAndUpdateAnswers } from "../question/question";
-import { getParamJson } from "../utils";
-import { YargsCommand } from "../yargsCommand";
+import {validateAndUpdateAnswers} from "../question/question";
+import {getParamJson} from "../utils";
+import {YargsCommand} from "../yargsCommand";
+import {TeamsCore} from "../../../fx-core/build/core";
+import {ContextFactory} from "../context";
 
 export class CapabilityAddTab extends YargsCommand {
   public readonly commandHead = `tab`;
   public readonly command = `${this.commandHead} [options]`;
   public readonly description = "A command to add tab capability to the project.";
   public readonly paramPath = constants.capabilityAddTabParamPath;
-  public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
+  public readonly params: {[_: string]: Options;} = getParamJson(this.paramPath);
 
   public builder(yargs: Argv): Argv<any> {
     return yargs.options(this.params);
   }
 
-  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+  public async runCommand(args: {[argName: string]: string;}): Promise<Result<null, FxError>> {
     const answers = new ConfigMap();
     for (const name in this.params) {
       answers.set(name, args[name] || this.params[name].default);
@@ -35,19 +36,14 @@ export class CapabilityAddTab extends YargsCommand {
     const rootFolder = path.resolve(answers.getString("folder") || "./");
     answers.delete("folder");
 
-    const result = await activate(rootFolder);
-    if (result.isErr()) {
-      return err(result.error);
-    }
-
     const func = {
       namespace: "fx-solution-azure",
       method: "addCapability"
     };
 
-    const core = result.value;
+    const core = TeamsCore.getInstance();
     {
-      const result = await core.getQuestionsForUserTask!(func, Platform.VSCode);
+      const result = await core.getQuestionsForUserTask(ContextFactory.get(rootFolder, Stage.update), func);
       if (result.isErr()) {
         return err(result.error);
       }
@@ -55,7 +51,7 @@ export class CapabilityAddTab extends YargsCommand {
     }
 
     {
-      const result = await core.executeUserTask!(func, answers);
+      const result = await core.executeUserTask(ContextFactory.get(rootFolder, Stage.update), func, answers);
       if (result.isErr()) {
         return err(result.error);
       }
@@ -70,13 +66,13 @@ export class CapabilityAddBot extends YargsCommand {
   public readonly command = `${this.commandHead} [options]`;
   public readonly description = "A command to add bot capability to the project.";
   public readonly paramPath = constants.capabilityAddBotParamPath;
-  public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
+  public readonly params: {[_: string]: Options;} = getParamJson(this.paramPath);
 
   public builder(yargs: Argv): Argv<any> {
     return yargs.options(this.params);
   }
 
-  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+  public async runCommand(args: {[argName: string]: string;}): Promise<Result<null, FxError>> {
     const answers = new ConfigMap();
     for (const name in this.params) {
       answers.set(name, args[name] || this.params[name].default);
@@ -92,19 +88,14 @@ export class CapabilityAddBot extends YargsCommand {
       }
     }
 
-    const result = await activate(rootFolder);
-    if (result.isErr()) {
-      return err(result.error);
-    }
-
     const func = {
       namespace: "fx-solution-azure",
       method: "addCapability"
     };
 
-    const core = result.value;
+    const core = TeamsCore.getInstance();
     {
-      const result = await core.getQuestionsForUserTask!(func, Platform.VSCode);
+      const result = await core.getQuestionsForUserTask(ContextFactory.get(rootFolder, Stage.update), func);
       if (result.isErr()) {
         return err(result.error);
       }
@@ -112,7 +103,7 @@ export class CapabilityAddBot extends YargsCommand {
     }
 
     {
-      const result = await core.executeUserTask!(func, answers);
+      const result = await core.executeUserTask(ContextFactory.get(rootFolder, Stage.update), func, answers);
       if (result.isErr()) {
         return err(result.error);
       }
@@ -137,7 +128,7 @@ export class CapabilityAdd extends YargsCommand {
     return yargs;
   }
 
-  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+  public async runCommand(args: {[argName: string]: string;}): Promise<Result<null, FxError>> {
     return ok(null);
   }
 }
@@ -156,7 +147,7 @@ export default class Capability extends YargsCommand {
     return yargs.version(false);
   }
 
-  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+  public async runCommand(args: {[argName: string]: string;}): Promise<Result<null, FxError>> {
     return ok(null);
   }
 }

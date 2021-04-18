@@ -3,7 +3,11 @@
     "module": "commonjs",
     "target": "es2017",
     "outDir": "build",
-    "lib": ["es6", "dom.iterable", "dom"],
+    "lib": [
+      "es6",
+      "dom.iterable",
+      "dom"
+    ],
     "allowJs": true,
     "importHelpers": true,
     "skipLibCheck": true,
@@ -16,9 +20,12 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "jsx": "react",
-    "declaration": true
+    "declaration": true,
+    "experimentalDecorators": true
   },
-  "include": ["src"],
+  "include": [
+    "src"
+  ],
   "exclude": [
     "node_modules",
     "**/tests/*"

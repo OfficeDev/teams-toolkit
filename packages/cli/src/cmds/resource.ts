@@ -4,16 +4,17 @@
 "use strict";
 
 import * as path from "path";
-import { Argv, Options } from "yargs";
+import {Argv, Options} from "yargs";
 
-import { ConfigMap, err, Func, FxError, ok, Platform, Result, Stage } from "fx-api";
+import {ConfigMap, err, Func, FxError, ok, Platform, Result, Stage} from "fx-api";
 
-import activate from "../activate";
 import AzureTokenProvider from "../commonlib/azureLogin";
 import * as constants from "../constants";
-import { validateAndUpdateAnswers } from "../question/question";
-import { getParamJson, readConfigs } from "../utils";
-import { YargsCommand } from "../yargsCommand";
+import {validateAndUpdateAnswers} from "../question/question";
+import {getParamJson, readConfigs} from "../utils";
+import {YargsCommand} from "../yargsCommand";
+import {TeamsCore} from "../../../fx-core/build/core";
+import {ContextFactory} from "../context";
 
 export class ResourceAdd extends YargsCommand {
   public readonly commandHead = `add`;
@@ -31,7 +32,7 @@ export class ResourceAdd extends YargsCommand {
     return yargs;
   }
 
-  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+  public async runCommand(args: {[argName: string]: string;}): Promise<Result<null, FxError>> {
     return ok(null);
   }
 }
@@ -41,13 +42,13 @@ export class ResourceAddSql extends YargsCommand {
   public readonly command = `${this.commandHead} [options]`;
   public readonly description = "A command to add Azure SQL resource to the project.";
   public readonly paramPath = constants.resourceAddSqlParamPath;
-  public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
+  public readonly params: {[_: string]: Options;} = getParamJson(this.paramPath);
 
   public builder(yargs: Argv): Argv<any> {
     return yargs.options(this.params);
   }
 
-  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+  public async runCommand(args: {[argName: string]: string;}): Promise<Result<null, FxError>> {
     const answers = new ConfigMap();
     for (const name in this.params) {
       answers.set(name, args[name] || this.params[name].default);
@@ -56,14 +57,9 @@ export class ResourceAddSql extends YargsCommand {
     const rootFolder = path.resolve(answers.getString("folder") || "./");
     answers.delete("folder");
 
-    const result = await activate(rootFolder);
-    if (result.isErr()) {
-      return err(result.error);
-    }
-
-    const core = result.value;
+    const core = TeamsCore.getInstance();
     {
-      const result = await core.getQuestions!(Stage.update, Platform.VSCode);
+      const result = await core.getQuestions(ContextFactory.get(rootFolder, Stage.update));
       if (result.isErr()) {
         return err(result.error);
       }
@@ -71,7 +67,7 @@ export class ResourceAddSql extends YargsCommand {
     }
 
     {
-      const result = await core.update(answers);
+      const result = await core.update(ContextFactory.get(rootFolder, Stage.update), answers);
       if (result.isErr()) {
         return err(result.error);
       }
@@ -86,13 +82,13 @@ export class ResourceAddFunction extends YargsCommand {
   public readonly command = `${this.commandHead} [options]`;
   public readonly description = "A command to add Azure Function resource to the project.";
   public readonly paramPath = constants.resourceAddFunctionParamPath;
-  public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
+  public readonly params: {[_: string]: Options;} = getParamJson(this.paramPath);
 
   public builder(yargs: Argv): Argv<any> {
     return yargs.options(this.params);
   }
 
-  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+  public async runCommand(args: {[argName: string]: string;}): Promise<Result<null, FxError>> {
     const answers = new ConfigMap();
     for (const name in this.params) {
       answers.set(name, args[name] || this.params[name].default);
@@ -108,14 +104,9 @@ export class ResourceAddFunction extends YargsCommand {
       }
     }
 
-    const result = await activate(rootFolder);
-    if (result.isErr()) {
-      return err(result.error);
-    }
-
-    const core = result.value;
+    const core = TeamsCore.getInstance();
     {
-      const result = await core.getQuestions!(Stage.update, Platform.VSCode);
+      const result = await core.getQuestions(ContextFactory.get(rootFolder, Stage.update));
       if (result.isErr()) {
         return err(result.error);
       }
@@ -123,7 +114,7 @@ export class ResourceAddFunction extends YargsCommand {
     }
 
     {
-      const result = await core.update(answers);
+      const result = await core.update(ContextFactory.get(rootFolder, Stage.update), answers);
       if (result.isErr()) {
         return err(result.error);
       }
@@ -148,7 +139,7 @@ export class ResourceConfigure extends YargsCommand {
     return yargs;
   }
 
-  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+  public async runCommand(args: {[argName: string]: string;}): Promise<Result<null, FxError>> {
     return ok(null);
   }
 }
@@ -158,13 +149,13 @@ export class ResourceConfigureAAD extends YargsCommand {
   public readonly command = `${this.commandHead} [options]`;
   public readonly description = "A command to configure Azure AD.";
   public readonly paramPath = constants.resourceConfigureAadParamPath;
-  public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
+  public readonly params: {[_: string]: Options;} = getParamJson(this.paramPath);
 
   public builder(yargs: Argv): Argv<any> {
     return yargs.options(this.params);
   }
 
-  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+  public async runCommand(args: {[argName: string]: string;}): Promise<Result<null, FxError>> {
     const answers = new ConfigMap();
     for (const name in this.params) {
       answers.set(name, args[name] || this.params[name].default);
@@ -173,18 +164,13 @@ export class ResourceConfigureAAD extends YargsCommand {
     const rootFolder = path.resolve(answers.getString("folder") || "./");
     answers.delete("folder");
 
-    const result = await activate(rootFolder);
-    if (result.isErr()) {
-      return err(result.error);
-    }
-
-    const core = result.value;
+    const core = TeamsCore.getInstance();
     const func: Func = {
       namespace: "fx-solution-azure/fx-resource-aad-app-for-teams",
       method: "aadUpdatePermission"
     };
     {
-      const result = await core.executeUserTask!(func, answers);
+      const result = await core.executeUserTask(ContextFactory.get(rootFolder, Stage.update), func, answers);
       if (result.isErr()) {
         return err(result.error);
       }
@@ -209,7 +195,7 @@ export class ResourceShow extends YargsCommand {
     return yargs;
   }
 
-  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+  public async runCommand(args: {[argName: string]: string;}): Promise<Result<null, FxError>> {
     return ok(null);
   }
 }
@@ -219,13 +205,13 @@ export class ResourceShowFunction extends YargsCommand {
   public readonly command = `${this.commandHead} [options]`;
   public readonly description = "A command to show configuration details of Azure Function";
   public readonly paramPath = constants.resourceShowFunctionParamPath;
-  public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
+  public readonly params: {[_: string]: Options;} = getParamJson(this.paramPath);
 
   public builder(yargs: Argv): Argv<any> {
     return yargs.options(this.params);
   }
 
-  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+  public async runCommand(args: {[argName: string]: string;}): Promise<Result<null, FxError>> {
     const rootFolder = path.resolve(args["folder"] || "./");
     const result = await readConfigs(rootFolder);
     // TODO: should be generated by 'paramGenerator.ts'
@@ -246,13 +232,13 @@ export class ResourceShowSQL extends YargsCommand {
   public readonly command = `${this.commandHead} [options]`;
   public readonly description = "A command to show configuration details of SQL";
   public readonly paramPath = constants.resourceShowSQLParamPath;
-  public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
+  public readonly params: {[_: string]: Options;} = getParamJson(this.paramPath);
 
   public builder(yargs: Argv): Argv<any> {
     return yargs.options(this.params);
   }
 
-  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+  public async runCommand(args: {[argName: string]: string;}): Promise<Result<null, FxError>> {
     const rootFolder = path.resolve(args["folder"] || "./");
     const result = await readConfigs(rootFolder);
     // TODO: should be generated by 'paramGenerator.ts'
@@ -272,13 +258,13 @@ export class ResourceList extends YargsCommand {
   public readonly command = `${this.commandHead} [options]`;
   public readonly description = "A command to list all resources add to the application";
   public readonly paramPath = constants.resourceListParamPath;
-  public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
+  public readonly params: {[_: string]: Options;} = getParamJson(this.paramPath);
 
   public builder(yargs: Argv): Argv<any> {
     return yargs.options(this.params);
   }
 
-  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+  public async runCommand(args: {[argName: string]: string;}): Promise<Result<null, FxError>> {
     const rootFolder = path.resolve(args["folder"] || "./");
     const result = await readConfigs(rootFolder);
     const pluginNameMap: Map<string, string> = new Map();
@@ -317,7 +303,7 @@ export default class Resource extends YargsCommand {
     return yargs.version(false);
   }
 
-  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+  public async runCommand(args: {[argName: string]: string;}): Promise<Result<null, FxError>> {
     return ok(null);
   }
 }

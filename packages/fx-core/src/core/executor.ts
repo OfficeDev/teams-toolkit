@@ -19,7 +19,7 @@ import {
     ConfigFolderName,
 } from "fx-api";
 import * as path from "path";
-import { hooks } from "@feathersjs/hooks";
+import {hooks} from "@feathersjs/hooks";
 import * as fs from "fs-extra";
 import * as jsonschema from "jsonschema";
 
@@ -30,12 +30,12 @@ import {
     QuestionRootFolder,
     QuestionSelectSolution,
 } from "./question";
-import { CoreContext } from "./context";
-import { readConfigMW, writeConfigMW } from "./middlewares/config";
-import { validationMW } from "./middlewares/validation";
-import { envMW } from "./middlewares/env";
-import { solutionMW } from "./middlewares/solution";
-import { LaunchConfig } from "./launch";
+import {CoreContext} from "./context";
+import {readConfigMW, writeConfigMW} from "./middlewares/config";
+import {validationMW} from "./middlewares/validation";
+import {envMW} from "./middlewares/env";
+import {solutionMW} from "./middlewares/solution";
+import {LaunchConfig} from "./launch";
 
 export class Executor {
 
@@ -54,7 +54,7 @@ export class Executor {
         const answers = new ConfigMap();
         answers.set("stage", ctx.stage);
         answers.set("substage", "getQuestions");
-        const node = new QTreeNode({ type: NodeType.group });
+        const node = new QTreeNode({type: NodeType.group});
         if (ctx.stage === Stage.create) {
             node.addChild(new QTreeNode(QuestionAppName));
 
@@ -74,7 +74,7 @@ export class Executor {
                     if (res.isErr()) return res;
                     if (res.value) {
                         const solutionNode = res.value as QTreeNode;
-                        solutionNode.condition = { equals: k };
+                        solutionNode.condition = {equals: k};
                         if (solutionNode.data) select_solution.addChild(solutionNode);
                     }
                 }
@@ -270,7 +270,7 @@ export class Executor {
                         description: "",
                         author: "",
                         scripts: {
-                            test: 'echo "Error: no test specified" && exit 1',
+                            test: "echo \"Error: no test specified\" && exit 1",
                         },
                         license: "MIT",
                     },

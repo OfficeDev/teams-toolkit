@@ -25,6 +25,7 @@ export enum VsCodeEnv
 export enum Task
 {
     create = "create",
+    build = "build",
     provision = "provision",
     deploy = "deploy",
     publish = "publish"

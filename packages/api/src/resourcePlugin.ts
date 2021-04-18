@@ -35,9 +35,9 @@ export interface ResourceAllContext  extends ResourceContext {
 
     tokenProvider: TokenProvider;  
      
-    provisionConfigs: ResourceConfigs;
+    provisionConfig?: ResourceConfig;
 
-    deployConfigs: ResourceConfigs;
+    deployConfig?: ResourceConfig;
 }
  
 export interface ResourcePlugin {
@@ -85,18 +85,18 @@ export interface ResourcePlugin {
      * Declare what user input you need for each {@link task}. Questions are organized as a tree. Please check {@link QTreeNode}.
      * ctx only exist for non-create task
      */
-    getQuestionsForLifecycleTask?: (task: Task, inputs: Inputs, ctx?: ResourceAllContext) => Promise<Result<QTreeNode|undefined, FxError>>;
+    getQuestionsForLifecycleTask?: (ctx: ResourceEnvContext, task: Task, inputs: Inputs) => Promise<Result<QTreeNode|undefined, FxError>>;
 
     /**
      * get question model for lifecycle {@link Task} (create, provision, deploy, debug, publish), Questions are organized as a tree. Please check {@link QTreeNode}.
      */
-    getQuestionsForUserTask?: (router: FunctionRouter, userInputs: Inputs, ctx?: ResourceAllContext) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getQuestionsForUserTask?: (ctx: ResourceEnvContext, router: FunctionRouter, userInputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
 
     /**
      * execute user task in additional to normal lifecycle {@link Task}, for example `Add Resource`, `Add Capabilities`, `Update AAD Permission`, etc
      * `executeUserTask` will router the execute request and dispatch from core--->solution--->resource plugin according to `FunctionRouter`.
      */
-    executeUserTask?: (func:Func, userInputs: Inputs, ctx?: ResourceAllContext) => Promise<Result<unknown, FxError>>;
+    executeUserTask?: (ctx: ResourceEnvContext, func:Func, userInputs: Inputs) => Promise<Result<unknown, FxError>>;
     
     /**
      * There are three scenarios to use this API in question model:
@@ -105,5 +105,5 @@ export interface ResourcePlugin {
      * 3. validation for `TextInputQuestion`, core,solution plugin or resource plugin can define the validation function in `executeFuncQuestion`.
      * `executeFuncQuestion` will router the execute request from core--->solution--->resource plugin according to `FunctionRouter`.
      */
-    executeFuncQuestion?: (func:Func, userInputs: Inputs, ctx?: ResourceAllContext) => Promise<Result<unknown, FxError>>;
+    executeFuncQuestion?: (ctx: ResourceEnvContext, func:Func, userInputs: Inputs) => Promise<Result<unknown, FxError>>;
 }

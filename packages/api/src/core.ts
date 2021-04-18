@@ -20,10 +20,16 @@
  *  ----------------------
  */
  
-import { Result } from "neverthrow";  
-import { EnvMeta, Func, FunctionRouter, FxError, Inputs, QTreeNode, Task, Void } from "./index";
+import { err, ok, Result } from "neverthrow";  
+import { SystemError } from "./error";
+import { Context, EnvMeta, Func, FunctionRouter, FxError, Inputs, QTreeNode, Task, Tools, Void } from "./index";
+import { SolutionContext, SolutionPlugin } from "./solutionPlugin";
 
 export interface Core {
+
+    tools: Tools;
+
+    init: (userInputs: Inputs) => Promise<Result<Void, FxError>>;
 
     /**
      * create a project, return the project path

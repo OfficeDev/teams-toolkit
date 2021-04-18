@@ -36,21 +36,24 @@ export interface SolutionAllContext extends SolutionContext {
 
     tokenProvider: TokenProvider;
 
-    provisionConfigs: ResourceConfigs;
+    provisionConfigs?: ResourceConfigs;
 
-    deployConfigs: ResourceConfigs;
+    deployConfigs?: ResourceConfigs;
 }
 
 export interface SolutionPlugin {
     
-    shortName:string,
+    name:string,
 
+    version:string,
+    
     displayName:string,
+
  
     /**
      * scaffold a project and return solution config template
      */
-    scaffold: (ctx: SolutionContext, userInputs: Inputs) => Promise<Result<ResourceTemplates, FxError>>;
+    scaffold: (ctx: SolutionContext, userInputs: Inputs) => Promise<Result<{provisionTemplates:ResourceTemplates, deployTemplates: ResourceTemplates}, FxError>>;
 
     /**
      * build
@@ -77,19 +80,19 @@ export interface SolutionPlugin {
      * get question model for user task in additional to normal lifecycle {@link Task}, for example `Add Resource`, `Add Capabilities`, `Update AAD Permission`, etc
      * `getQuestionsForUserTask` will router the getQuestions request and dispatch from core--->solution--->resource plugin according to `FunctionRouter`.
      */
-    getQuestionsForLifecycleTask: (task: Task, userInputs: Inputs, ctx?: SolutionAllContext) => Promise<Result<QTreeNode|undefined, FxError>>;
+    getQuestionsForLifecycleTask: (ctx: SolutionAllContext, task: Task, userInputs: Inputs) => Promise<Result<QTreeNode|undefined, FxError>>;
 
     /**
      * get question model for user task in additional to normal lifecycle {@link Task}, for example `Add Resource`, `Add Capabilities`, `Update AAD Permission`, etc
      * `getQuestionsForUserTask` will router the getQuestions request and dispatch from core--->solution--->resource plugin according to `FunctionRouter`.
      */
-    getQuestionsForUserTask?: (router: FunctionRouter, userInputs: Inputs, ctx?: SolutionAllContext) => Promise<Result<QTreeNode|undefined, FxError>>;
+    getQuestionsForUserTask?: (ctx: SolutionAllContext, router: FunctionRouter, userInputs: Inputs) => Promise<Result<QTreeNode|undefined, FxError>>;
 
     /**
      * execute user task in additional to normal lifecycle {@link Task}, for example `Add Resource`, `Add Capabilities`, `Update AAD Permission`, etc
      * `executeUserTask` will router the execute request and dispatch from core--->solution--->resource plugin according to `FunctionRouter`.
      */
-    executeUserTask?: (func:Func, userInputs: Inputs, ctx?: SolutionAllContext) => Promise<Result<unknown, FxError>>;
+    executeUserTask?: (ctx: SolutionAllContext, func:Func, userInputs: Inputs) => Promise<Result<unknown, FxError>>;
 
     /**
      * There are three scenarios to use this API in question model:
@@ -98,5 +101,5 @@ export interface SolutionPlugin {
      * 3. validation for `TextInputQuestion`, core,solution plugin or resource plugin can define the validation function in `executeFuncQuestion`.
      * `executeFuncQuestion` will router the execute request from core--->solution--->resource plugin according to `FunctionRouter`.
      */
-     executeFuncQuestion?: (func:Func, previousAnswers: Inputs, ctx?: SolutionAllContext) => Promise<Result<unknown, FxError>>;
+     executeFuncQuestion?: (ctx: SolutionAllContext, func:Func, previousAnswers: Inputs) => Promise<Result<unknown, FxError>>;
 }

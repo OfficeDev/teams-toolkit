@@ -64,7 +64,7 @@ export interface ProjectSettings extends Dict<ConfigValue>{
     /**
      * display name
      */
-    displayName:string;
+    displayName?:string;
     
     /**
      * solution settings
@@ -86,7 +86,7 @@ export interface SolutionSettings extends Dict<ConfigValue>{
     /**
      * solution display name
      */
-    displayName: string;
+    displayName?: string;
     
     /**
      * version
@@ -123,7 +123,7 @@ export interface ProjectStates extends Dict<ConfigValue>{
 }
  
 export interface SolutionStates extends Dict<ConfigValue>{
-     resourceStates: {
+     resourceStates?: {
         [k:string]:ResourceStates
     }
 }
@@ -146,7 +146,7 @@ export interface Context {
     /**
      * project folder path, not persist
      */
-    path: string;
+     projectPath: string;
 
     /**
      * ui interface

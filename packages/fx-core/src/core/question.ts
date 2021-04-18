@@ -35,5 +35,4 @@ export const QuestionSelectSolution: SingleSelectQuestion = {
     name: CoreQuestionNames.Solution,
     title: "Select a solution",
     option: [],
-    skipSingleOption: true
 };

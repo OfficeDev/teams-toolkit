@@ -16,14 +16,14 @@ import {
   NumberInputQuestion
 } from "./question";
 import { getValidationFunction, RemoteFuncExecutor, validate } from "./validation";
-import { ConfigMap, Inputs } from "../types";
+import { Inputs } from "../types";
 import { InputResult, InputResultType, UserInterface } from "../ui/ui";
 import { returnSystemError, returnUserError } from "../error";
 
 async function getRealValue(
   parentValue: unknown,
   defaultValue: unknown,
-  inputs: Inputs | ConfigMap,
+  inputs: Inputs,
   remoteFuncExecutor?: RemoteFuncExecutor
 ): Promise<unknown> {
   let output: unknown = defaultValue;
@@ -67,7 +67,7 @@ type QuestionVistor = (
   parentValue: unknown,
   ui: UserInterface,
   backButton: boolean,
-  inputs: Inputs | ConfigMap,
+  inputs: Inputs,
   remoteFuncExecutor?: RemoteFuncExecutor
 ) => Promise<InputResult>;
 
@@ -82,7 +82,7 @@ const questionVisitor: QuestionVistor = async function (
   parentValue: unknown,
   ui: UserInterface,
   backButton: boolean,
-  inputs: Inputs | ConfigMap,
+  inputs: Inputs,
   remoteFuncExecutor?: RemoteFuncExecutor
 ): Promise<InputResult> {
   const type = question.type;
@@ -207,7 +207,7 @@ const questionVisitor: QuestionVistor = async function (
 
 export async function traverse(
   root: QTreeNode,
-  inputs: Inputs | ConfigMap,
+  inputs: Inputs,
   ui: UserInterface,
   remoteFuncExecutor?: RemoteFuncExecutor
 ): Promise<InputResult> {
@@ -284,13 +284,7 @@ export async function traverse(
         //success or pass
         question.value = inputResult.result;
         currValue = question.value;
-        if (inputs instanceof ConfigMap) {
-          (inputs as ConfigMap).set(question.name, question.value);
-        }
-        else {
-          (inputs as Inputs)[question.name] = question.value;
-        }
-
+        inputs[question.name] = question.value;
       }
     }
 

@@ -27,7 +27,7 @@ export  interface Dict<T> {
     [key: string]: T | undefined;
 }
 
-export type ResourceTemplate = Dict<ConfigValue>;
+export type ResourceTemplate = Dict<string>;
 
 export type ResourceTemplates = Dict<ResourceTemplate>;
 
@@ -51,7 +51,7 @@ export interface EnvMeta{
     sideloading:boolean
 }
 
-export type VariableDict = Dict<string>;
+export type VariableDict = Dict<ConfigValue>;
 
 /**
  * project static settings
@@ -70,6 +70,8 @@ export interface ProjectSettings extends Dict<ConfigValue>{
      * solution settings
      */
     solutionSettings?:SolutionSettings;
+
+    env : string;
 }
 
 
@@ -119,7 +121,7 @@ export interface AzureSolutionSettings extends SolutionSettings{
  * project dynamic states
  */
 export interface ProjectStates extends Dict<ConfigValue>{
-    solutionStates:SolutionStates;
+    solutionStates?:SolutionStates;
 }
  
 export interface SolutionStates extends Dict<ConfigValue>{
@@ -131,6 +133,7 @@ export interface SolutionStates extends Dict<ConfigValue>{
 export type ResourceStates = Dict<ConfigValue>;
 
 export interface Inputs extends Dict<AnswerValue>{
+    projectPath:string;
     platform: Platform;
     vscodeEnv?:VsCodeEnv;
 }    
@@ -146,7 +149,7 @@ export interface Context {
     /**
      * project folder path, not persist
      */
-     projectPath: string;
+    projectPath: string;
 
     /**
      * ui interface

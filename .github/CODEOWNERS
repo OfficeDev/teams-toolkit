@@ -40,7 +40,7 @@
 /packages/fx-core/tests/plugins/resource/spfx @jiayi-ruan @nliu-ms @jayzhang
 
 /packages/fx-core/src/plugins/resource/bot @IvanJobs @eriolchan @YitongFeng-git
-/packages/fx-core/tests/plugins/resource/bot @IvanJobs @eriolchan
+/packages/fx-core/tests/plugins/resource/bot @IvanJobs @eriolchan @YitongFeng-git
 
 /packages/fx-core/src/plugins/resource/frontend @hund030 @eriolchan
 /packages/fx-core/tests/plugins/resource/frontend @hund030 @eriolchan

@@ -2,4 +2,6 @@
 // Licensed under the MIT license.
 "use strict";
 
-export * from "./core";
+export interface LaunchConfig {
+  currentEnv: string;
+}

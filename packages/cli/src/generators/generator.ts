@@ -41,8 +41,8 @@ export abstract class Generator {
     const core = TeamsCore.getInstance();
     {
       const result = this.doUserTask
-        ? await core.getQuestionsForUserTask(ContextFactory.get(projectPath ?? './', Stage.userTask), this.func!)
-        : await core.getQuestions(ContextFactory.get(projectPath ?? './', Stage.userTask));
+        ? await core.getQuestionsForUserTask(ContextFactory.get(projectPath ?? "./", Stage.userTask), this.func!)
+        : await core.getQuestions(ContextFactory.get(projectPath ?? "./", Stage.userTask));
 
       if (result.isErr()) {
         return err(result.error);

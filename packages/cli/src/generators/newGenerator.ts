@@ -27,7 +27,7 @@ export class NewGenerator extends Generator {
   async generate(): Promise<Result<QTreeNode, FxError>> {
     const core = TeamsCore.getInstance();
     {
-      const result = await core.getQuestions(ContextFactory.get('./', this.stage));
+      const result = await core.getQuestions(ContextFactory.get("./", this.stage));
       if (result.isErr()) {
         return err(result.error);
       }

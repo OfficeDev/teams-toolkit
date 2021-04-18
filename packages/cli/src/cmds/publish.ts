@@ -40,8 +40,8 @@ export default class New extends YargsCommand {
         }
 
         const manifestFolderParamName = "manifest-folder";
-        let result;
-        let rootFolder: string = "./"
+        let result: Result<null, FxError> | Result<any, FxError>
+        let rootFolder: string = "./";
         // if input manifestFolderParam(actually also teams-app-id param),
         // this call is from VS platform, since CLI hide these two param from users.
         if (!answers.has(manifestFolderParamName)) {
@@ -49,8 +49,7 @@ export default class New extends YargsCommand {
             answers.delete("folder");
         }
 
-
-        const core = TeamsCore.getInstance()
+        const core = TeamsCore.getInstance();
         if (answers.has(manifestFolderParamName)) {
             answers.set("platform", Platform.VS);
             const func: Func = {

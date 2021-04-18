@@ -5,7 +5,7 @@
 
 import {Argv, Options} from "yargs";
 
-import {FxError, err, ok, Result, Stage, Platform, ConfigMap, QTreeNode, NodeType, Question} from "fx-api";
+import {FxError, err, ok, Result, Stage, Platform, ConfigMap, QTreeNode, NodeType, Question, QuestionType, DialogType, DialogMsg} from "fx-api";
 
 import * as constants from "../constants";
 import {validateAndUpdateAnswers, visitInteractively} from "../question/question";
@@ -65,8 +65,9 @@ export default class New extends YargsCommand {
     }
 
     const core = TeamsCore.getInstance();
+    const ctx = ContextFactory.get("./", Stage.create);
     {
-      const result = await core.getQuestions(ContextFactory.get("./", Stage.create));
+      const result = await core.getQuestions(ctx);
       if (result.isErr()) {
         return err(result.error);
       }
@@ -74,9 +75,16 @@ export default class New extends YargsCommand {
     }
 
     {
-      const result = await core.create(ContextFactory.get("./", Stage.create), this.answers);
+      const result = await core.create(ctx, this.answers);
       if (result.isErr()) {
         return err(result.error);
+      } else {
+        await ctx.dialog?.communicate(
+          new DialogMsg(DialogType.Ask, {
+            type: QuestionType.OpenFolder,
+            description: result.value,
+          }),
+        );
       }
     }
     return ok(null);

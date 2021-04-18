@@ -39,7 +39,7 @@ export default class New extends YargsCommand {
       }
     }
 
-    const rootFolder = answers.getString("folder") ?? './';
+    const rootFolder = answers.getString("folder") ?? "./";
     answers.delete("folder");
     answers.set("platform", Platform.CLI);
     const core = TeamsCore.getInstance();

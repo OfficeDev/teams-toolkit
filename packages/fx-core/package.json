@@ -22,7 +22,7 @@
   },
   "lint-staged": {
     "**/*.ts": [
-      "eslint"
+      "eslint --fix"
     ]
   },
   "dependencies": {

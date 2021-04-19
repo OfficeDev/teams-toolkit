@@ -596,7 +596,7 @@ export class FunctionPluginImpl {
             const frontendDomain: string =
                 this.checkAndGet(frontendConfig.get(DependentPluginInfo.frontendDomain) as string, "frontend domain");
 
-            return FunctionProvision.constructFunctionAuthSettings(clientId, frontendDomain, frontendEndpoint, oauthHost, tenantId);
+            return FunctionProvision.constructFunctionAuthSettings(clientId, frontendDomain, oauthHost, tenantId);
         }
 
         return undefined;

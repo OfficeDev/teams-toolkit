@@ -1988,25 +1988,24 @@ export class TeamsAppSolution implements Solution {
                         );
                     return err(manifest.error);
                 }
-            }
-        } else if (array.length == 2) {
-            const pluginName = array[1];
-            const plugin = this.pluginMap.get(pluginName);
-            if (plugin && plugin.executeUserTask) {
-                const pctx = getPluginContext(ctx, plugin.name, this.manifest);
-                if (func.method === "aadUpdatePermission") {
-                    const result = await this.getPermissionRequest(ctx);
+            } else if (method === "aadUpdatePermission" && array.length == 2) {
+                const pluginName = array[1];
+                const plugin = this.pluginMap.get(pluginName);
+                if (plugin && plugin.executeUserTask) {
+                    const pctx = getPluginContext(ctx, plugin.name, this.manifest);
+                    let result = await this.getPermissionRequest(ctx);
                     if (result.isErr()) {
                         return result;
                     }
                     ctx.config.get(GLOBAL_CONFIG)?.set(PERMISSION_REQUEST, result.value);
+                    result = await plugin.executeUserTask(func, pctx);
+                    // Remove permissionRequest to prevent its persistence in config.
+                    ctx.config.get(GLOBAL_CONFIG)?.delete(PERMISSION_REQUEST);
+                    return result;
                 }
-                const result = await plugin.executeUserTask(func, pctx);
-                // Remove permissionRequest to prevent its persistence in config.
-                ctx.config.get(GLOBAL_CONFIG)?.delete(PERMISSION_REQUEST);
-                return result;
             }
-        }
+        } 
+        
         return err(
             returnUserError(
                 new Error(`executeUserTaskRouteFailed:${JSON.stringify(func)}`),

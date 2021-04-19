@@ -2,9 +2,9 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks";
-import { err, ConfigFolderName } from "fx-api";
-import { InProcessingError } from "../error";
+import {HookContext, NextFunction, Middleware} from "@feathersjs/hooks";
+import {err, ConfigFolderName, Context} from "fx-api";
+import {InProcessingError, InternalError} from "../error";
 
 /* eslint-disable @typescript-eslint/no-var-requires */
 const lockfile = require("proper-lockfile");
@@ -15,20 +15,41 @@ const lockfile = require("proper-lockfile");
  * is called when another's in processing.
  */
 export const concurrentMW: Middleware = async (
-  ctx: HookContext,
-  next: NextFunction
+    ctx: HookContext,
+    next: NextFunction
 ) => {
-  console.log("in concurrentMW");
-  const lf = `${process.cwd()}/.${ConfigFolderName}`;
-  await lockfile
-    .lock(lf)
-    .then(async () => {
-      await next();
-      return lockfile.unlock(lf);
-    })
-    .catch((e: Error) => {
-      console.log(e);
-      ctx.result = err(InProcessingError());
-      return;
-    });
+    let coreCtx: Context;
+
+    for (const i in ctx.arguments) {
+        if (isContext(ctx.arguments[i])) {
+            coreCtx = ctx.arguments[i];
+            break;
+        }
+    }
+
+    if (coreCtx! === undefined) {
+        ctx.result = err(InternalError());
+        return;
+    }
+
+    const lf = `${coreCtx.root}/.${ConfigFolderName}`;
+    await lockfile
+        .lock(lf)
+        .then(async () => {
+            try {
+                await next();
+            } catch (e) {
+                return lockfile.unlock(lf);
+            }
+            return lockfile.unlock(lf);
+        })
+        .catch((e: Error) => {
+            console.log(e);
+            ctx.result = err(InProcessingError());
+            return;
+        });
 };
+
+function isContext(object: any): object is Context {
+    return 'root' in object;
+}

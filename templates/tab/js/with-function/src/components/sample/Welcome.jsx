@@ -7,7 +7,10 @@ import { AzureFunctions } from "./AzureFunctions";
 import { Graph } from "./Graph";
 import { CurrentUser } from "./CurrentUser";
 import { useTeamsFx } from "./lib/useTeamsFx";
-import { teamsfx } from "teamsdev-client";
+import {
+  TeamsUserCredential,
+} from "teamsdev-client"
+import { useData } from "./lib/useData";
 
 export function Welcome(props) {
   const { showFunction, environment } = {
@@ -28,7 +31,8 @@ export function Welcome(props) {
       published: 2,
     }[environment] || 0;
   const { isInTeams } = useTeamsFx();
-  const userName = isInTeams && teamsfx.getUserInfo();
+  const credential = new TeamsUserCredential();
+  const userName = isInTeams && useData(credential.getUserInfo).data;
   return (
     <div className="welcome page">
       <div className="narrow page-padding">
@@ -46,11 +50,11 @@ export function Welcome(props) {
         </Progress>
         <div className="sections">
           <EditCode showFunction={showFunction} />
-          {isInTeams && <CurrentUser userName={userName}/>}
+          {isInTeams && <CurrentUser userName={userName} />}
           <Graph />
           {showFunction && <AzureFunctions docsUrl={"https://TODO"} />}
         </div>
       </div>
-    </div>
+    </div >
   );
 }

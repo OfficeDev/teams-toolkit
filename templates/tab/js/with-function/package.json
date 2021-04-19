@@ -7,13 +7,14 @@
   },
   "dependencies": {
     "@microsoft/teams-js": "^1.6.0",
+    "axios": "^0.21.1",
     "classnames": "^2.3.1",
     "msteams-react-base-component": "^3.1.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-router-dom": "^5.1.2",
-    "react-scripts": "^3.4.3",
-    "teamsdev-client": "^0.1.0"
+    "react-scripts": "^4.0.3",
+    "teamsdev-client": "^1.1.0"
   },
   "scripts": {
     "start": "react-scripts start",

@@ -60,7 +60,7 @@ export namespace AppStudio {
         if (appDefinition && appStudioToken) {
             try {
                 const requester = createRequesterWithToken(appStudioToken);
-                const response = await requester.post(`/api/appdefinitions/${teamsAppId}`, appDefinition);
+                const response = await requester.post(`/api/appdefinitions/${teamsAppId}/overrride`, appDefinition);
                 if (response && response.data) {
                     const app = <IAppDefinition>response.data;
 

@@ -32,7 +32,7 @@
   },
   "devDependencies": {
     "@azure/arm-subscriptions": "^3.0.0",
-    "@shared/eslint-config": "file:../eslint-config",
+    "@shared/eslint-config": "^0.0.0",
     "@types/chai": "^4.2.14",
     "@types/chai-as-promised": "^7.1.3",
     "@types/chai-spies": "^1.0.3",

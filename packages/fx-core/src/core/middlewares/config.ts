@@ -17,7 +17,6 @@ import * as error from "../error";
 import * as tools from "../tools";
 import {InternalError, NotSupportedProjectType} from "../error";
 import {CoreContext} from "../context";
-import {LaunchConfig} from "../launch";
 
 /**
  * This middleware will help to load configs at beginning.

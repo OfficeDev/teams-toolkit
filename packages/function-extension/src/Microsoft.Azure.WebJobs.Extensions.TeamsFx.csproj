@@ -13,7 +13,7 @@
     <PackageProjectUrl>https://github.com/OfficeDev/TeamsFx/tree/main/packages/function-extension</PackageProjectUrl>
     <Description>This extension adds bindings to help build backend API for Teams app.</Description>
     <RepositoryUrl>https://github.com/OfficeDev/TeamsFx</RepositoryUrl>
-    <PackageTags>Teams Azure</PackageTags>
+    <PackageTags>teams;azure</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

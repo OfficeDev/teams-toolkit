@@ -29,7 +29,9 @@ jobs:
         sudo apt-get update && sudo apt-get install azure-functions-core-tools-3
     - name: Build
       run: 
-        dotnet build -c Release Microsoft.Azure.WebJobs.Extensions.TeamsFx.sln
+        dotnet build -c Release Microsoft.Azure.WebJobs.Extensions.TeamsFx.sln 
+    - name: Pack
+      run: 
         dotnet pack -c Release ./src/Microsoft.Azure.WebJobs.Extensions.TeamsFx.csproj
     - name: Test
       env: 

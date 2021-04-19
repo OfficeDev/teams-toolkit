@@ -9,14 +9,7 @@ import { OpenApiProcessor } from "./util/openApiProcessor";
 import { ApimManager } from "./manager/apimManager";
 import { AadManager } from "./manager/aadManager";
 import { IQuestionManager, VscQuestionManager } from "./manager/questionManager";
-import {
-    ApimServiceQuestion,
-    ApiPrefixQuestion,
-    ApiVersionQuestion,
-    ExistingOpenApiDocumentFunc,
-    NewApiVersionQuestion,
-    OpenApiDocumentQuestion,
-} from "./service/questionService";
+import { VSCode } from "./service/questionService";
 import { ApiManagementClient } from "@azure/arm-apimanagement";
 import { TeamsAppAadManager } from "./manager/teamsAppAadManager";
 import axios from "axios";
@@ -45,14 +38,13 @@ export class Factory {
             case Platform.VSCode:
                 // Lazy init apim service to get the latest subscription id in configuration
                 const lazyApimService = new Lazy<ApimService>(async () => await Factory.buildApimService(ctx.azureAccountProvider, solutionConfig, ctx.telemetryReporter, ctx.logProvider));
-                const dialog = AssertNotEmpty("ctx.dialog", ctx.dialog);
                 const openApiProcessor = new OpenApiProcessor(ctx.telemetryReporter, ctx.logProvider);
-                const apimServiceQuestion = new ApimServiceQuestion(lazyApimService, dialog, ctx.telemetryReporter, ctx.logProvider);
-                const openApiDocumentQuestion = new OpenApiDocumentQuestion(openApiProcessor, dialog, ctx.telemetryReporter, ctx.logProvider);
-                const existingOpenApiDocumentFunc = new ExistingOpenApiDocumentFunc(openApiProcessor, dialog, ctx.telemetryReporter, ctx.logProvider);
-                const apiPrefixQuestion = new ApiPrefixQuestion(dialog, ctx.telemetryReporter, ctx.logProvider);
-                const apiVersionQuestion = new ApiVersionQuestion(lazyApimService, dialog, ctx.telemetryReporter, ctx.logProvider);
-                const newApiVersionQuestion = new NewApiVersionQuestion(dialog, ctx.telemetryReporter, ctx.logProvider);
+                const apimServiceQuestion = new VSCode.ApimServiceQuestion(lazyApimService, ctx.telemetryReporter, ctx.logProvider);
+                const openApiDocumentQuestion = new VSCode.OpenApiDocumentQuestion(openApiProcessor, ctx.telemetryReporter, ctx.logProvider);
+                const existingOpenApiDocumentFunc = new VSCode.ExistingOpenApiDocumentFunc(openApiProcessor, ctx.telemetryReporter, ctx.logProvider);
+                const apiPrefixQuestion = new VSCode.ApiPrefixQuestion(ctx.telemetryReporter, ctx.logProvider);
+                const apiVersionQuestion = new VSCode.ApiVersionQuestion(lazyApimService, ctx.telemetryReporter, ctx.logProvider);
+                const newApiVersionQuestion = new VSCode.NewApiVersionQuestion(ctx.telemetryReporter, ctx.logProvider);
 
                 return new VscQuestionManager(
                     apimServiceQuestion,

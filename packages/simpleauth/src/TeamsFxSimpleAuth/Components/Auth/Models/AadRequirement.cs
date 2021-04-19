@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+using Microsoft.AspNetCore.Authorization;
 
 namespace Microsoft.TeamsFx.SimpleAuth.Components.Auth.Models
 {

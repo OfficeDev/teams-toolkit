@@ -1,4 +1,6 @@
-﻿using Microsoft.TeamsFx.SimpleAuth.Exceptions;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+using Microsoft.TeamsFx.SimpleAuth.Exceptions;
 using System.Net;
 
 namespace Microsoft.TeamsFx.SimpleAuth.Components.Auth.Exceptions

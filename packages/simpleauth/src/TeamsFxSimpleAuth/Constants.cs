@@ -1,4 +1,6 @@
-﻿namespace Microsoft.TeamsFx.SimpleAuth
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+namespace Microsoft.TeamsFx.SimpleAuth
 {
     public class ConfigurationName
     {

@@ -32,8 +32,8 @@ export function Welcome(props) {
     }[environment] || 0;
   const { isInTeams } = useTeamsFx();
   const credential = new TeamsUserCredential();
-  // TODO: There is still an issue for `getUserInfo`: Cannot read property 'getSSOToken' of undefined
-  const userName = isInTeams && useData(credential.getUserInfo).data;
+  const userProfile = isInTeams && useData(async () => credential.getUserInfo()).data;
+  const userName = userProfile ? userProfile.displayName : "";
   return (
     <div className="welcome page">
       <div className="narrow page-padding">

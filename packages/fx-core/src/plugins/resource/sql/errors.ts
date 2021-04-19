@@ -9,52 +9,52 @@ export class ErrorMessage {
 
     public static readonly SqlInputError = {
         name: "SqlInputError",
-        message: () => "sql admin name or password is empty"
+        message: () => "SQL admin name or password is empty"
     };
 
     public static readonly SqlEndpointError = {
         name: "SqlEndpointError",
-        message: (sqlName: string) => `SQL server ${sqlName} is invalid.`
+        message: (sqlName: string) => `SQL server '${sqlName}' is invalid.`
     };
 
     public static readonly SqlCreateError = {
         name: "SqlCreateError",
-        message: (sqlName: string) => `create SQL server ${sqlName} failed. ${ErrorMessage.ShowDetailMessage}`
+        message: (sqlName: string) => `Failed to create SQL server '${sqlName}'. ${ErrorMessage.ShowDetailMessage}`
     };
 
     public static readonly DatabaseCreateError = {
         name: "SqlDBCreateError",
-        message: (databaseName: string) => `create database ${databaseName} failed. ${ErrorMessage.ShowDetailMessage}`
+        message: (databaseName: string) => `Failed to create database '${databaseName}'. ${ErrorMessage.ShowDetailMessage}`
     };
 
     public static readonly DatabaseUserCreateError = {
         name: "DatabaseUserCreateError",
-        message: (sqlName: string, database: string, user: string) => `database ${sqlName}.${database} create user ${user} failed. ${ErrorMessage.ShowDetailMessage}`
+        message: (sqlName: string, database: string, user: string) => `Failed to create user '${user}' in database '${sqlName}.${database}'. ${ErrorMessage.ShowDetailMessage}`
     };
 
     public static readonly SqlAddAdminError = {
         name: "SqlAddAdminError",
-        message: (account: string) => `add aad admin ${account} into SQL failed. ${ErrorMessage.ShowDetailMessage}`
+        message: (account: string) => `Failed to add AAD admin '${account}'. ${ErrorMessage.ShowDetailMessage}`
     };
 
     public static readonly SqlAzureFirwallError = {
         name: "SqlAzureFirwallError",
-        message: (sqlName: string) => `${sqlName} add azure firewall failed. ${ErrorMessage.ShowDetailMessage}`
+        message: (sqlName: string) => `Failed to add Azure Firewall for '${sqlName}'. ${ErrorMessage.ShowDetailMessage}`
     };
 
     public static readonly SqlLocalFirwallError = {
         name: "SqlLocalFirwallError",
-        message: (sqlName: string) => `${sqlName} add local firewall failed. ${ErrorMessage.ShowDetailMessage}`
+        message: (sqlName: string) => `Failed to add local firewall for '${sqlName}'. ${ErrorMessage.ShowDetailMessage}`
     };
 
     public static readonly SqlDeleteLocalFirwallError = {
         name: "SqlDeleteLocalFirwallError",
-        message: (sqlName: string) => `${sqlName} delete local firewall failed. You can delete ${Constants.firewall.localRule} manually. ${ErrorMessage.ShowDetailMessage}`
+        message: (sqlName: string) => `Failed to delete local firewall for '${sqlName}'. Delete '${Constants.firewall.localRule}' manually. ${ErrorMessage.ShowDetailMessage}`
     };
 
     public static readonly SqlUserInfoError = {
         name: "SqlUserInfoError",
-        message: () => "get login user info failed."
+        message: () => "Failed to get login user info."
     };
 
     public static readonly SqlGetConfigError = {
@@ -64,22 +64,22 @@ export class ErrorMessage {
 
     public static readonly SqlCheckError = {
         name: "SqlCheckError",
-        message: (sqlName: string) => `check SQL server ${sqlName} failed. ${ErrorMessage.ShowDetailMessage}`
+        message: (sqlName: string) => `Failed to check SQL server '${sqlName}'. ${ErrorMessage.ShowDetailMessage}`
     };
 
     public static readonly SqlCheckDBError = {
         name: "SqlCheckDBError",
-        message: (databaseName: string) => `check database ${databaseName} failed. ${ErrorMessage.ShowDetailMessage}`
+        message: (databaseName: string) => `Failed to check database '${databaseName}'. ${ErrorMessage.ShowDetailMessage}`
     };
 
     public static readonly SqlCheckAdminError = {
         name: "SqlCheckAdminError",
-        message: (identity: string) => `check aad admin ${identity} failed. ${ErrorMessage.ShowDetailMessage}`
+        message: (identity: string) => `Failed to check AAD admin '${identity}'. ${ErrorMessage.ShowDetailMessage}`
     };
 
     public static readonly SqlCheckDBUserError = {
         name: "SqlCheckDBUserError",
-        message: (user: string) => `check database user ${user} failed. ${ErrorMessage.ShowDetailMessage}`
+        message: (user: string) => `Failed to check database user '${user}'. ${ErrorMessage.ShowDetailMessage}`
     };
 
     public static readonly UnhandledError = {

@@ -12,42 +12,42 @@ export interface AadError {
 
 export const CreateAppError: AadError = {
   name: "AadCreateAppError",
-  message: () => `Failed to create Azure AD app. ${referLogMessage}`,
+  message: () => `Failed to create an app in Azure Active Directory. ${referLogMessage}`,
 };
 
 export const CreateSecretError: AadError = {
   name: "AadCreateSecretError",
-  message: () => `Failed to create secret for Azure AD app. ${referLogMessage}`,
+  message: () => `Failed to create an application secret in Azure Active Directory. ${referLogMessage}`,
 };
 
 export const UpdateRedirectUriError: AadError = {
   name: "UpdateRedirectUriError",
   message: () =>
-    `Failed to update redriect uri for Azure AD app. ${referLogMessage}`,
+    `Failed to update application redirect URI in Azure Active Directory. ${referLogMessage}`,
 };
 
 export const UpdateAppIdUriError: AadError = {
   name: "UpdateAppIdUriError",
   message: () =>
-    `Failed to update application id uri for Azure AD app. ${referLogMessage} ${referHelpLink}`,
+    `Failed to update Application ID URI in Azure Active Directory. ${referLogMessage} ${referHelpLink}`,
   // TODO: add helplink
 };
 
 export const UpdatePermissionError: AadError = {
   name: "AadUpdatePermissionError",
   message: () =>
-    `Failed to update permission for Azure AD app. ${referLogMessage}`,
+    `Failed to update application permission in Azure Active Directory. ${referLogMessage}`,
 };
 
 export const AppIdUriInvalidError: AadError = {
   name: "AadAppIdUriInvalid",
   message: () =>
-    "Invalid application id uri. Please check whether frontend hosting or teams bot is provisioned.",
+    "Invalid Application ID URI. Provision your application before continuing.",
 };
 
 export const ParsePermissionError: AadError = {
   name: "ParsePermissionError",
-  message: () => "Failed to parse the permission request.",
+  message: () => "Failed to parse permission request.",
 };
 
 export const UnhandledError: AadError = {
@@ -57,34 +57,34 @@ export const UnhandledError: AadError = {
 
 export const UnknownPermissionName: AadError = {
   name: "UnknownPermissionName",
-  message: (name: string) => `Unknown resource name ${name}. ${referHelpLink}`,
+  message: (name: string) => `Failed to find resource: ${name}. ${referHelpLink}`,
   //TODO: add helplink
 };
 
 export const UnknownPermissionRole: AadError = {
   name: "UnknownPermissionRole",
   message: (roleName: string, resourceName: string) =>
-    `Unknown role name "${roleName}" for resource "${resourceName}". ${referHelpLink}`,
+    `Failed to find role "${roleName}" for resource "${resourceName}". ${referHelpLink}`,
   //TODO: add helplink
 };
 
 export const UnknownPermissionScope: AadError = {
   name: "UnknownPermissionScope",
   message: (scopeName: string, resourceName: string) =>
-    `Unknown scope name "${scopeName}" for resource "${resourceName}". ${referHelpLink}`,
+    `Failed to find scope "${scopeName}" for resource "${resourceName}". ${referHelpLink}`,
   //TODO: add helplink
 };
 
 export const GetTokenError: AadError = {
   name: "GetTokenError",
   message: (audience: string) =>
-    `Failed to get user login information of ${audience}.`,
+    `Failed to get user login information for ${audience}.`,
 };
 
 export const TenantNotExistError: AadError = {
   name: "TenantNotExistError",
   message: () =>
-    "Failed to get tenant information from user login information.",
+    "Failed to get tenant information from user login.",
 };
 
 export const GetConfigError: AadError = {
@@ -95,34 +95,34 @@ export const GetConfigError: AadError = {
 export class ConfigErrorMessages {
   static readonly GetDisplayNameError = "Failed to get display name.";
   static readonly GetConfigError = (configName: string, plugin: string) =>
-    `Failed to get config value of ${configName} from ${plugin}.`;
+    `Failed to get configuration value "${configName}" for ${plugin}.`;
   static readonly FormatError = (type: string, value: string) =>
     `Invalid format for ${type}. Value: ${value}.`;
 }
 
 export class AppStudioErrorMessage {
   static readonly CreateFailed =
-    "Create Azure AD app failed when calling App Studio Api.";
+    "Failed to create an app in Azure Active Directory.";
   static readonly UpdateFailed =
-    "Update Azure AD app failed when calling App Studio Api.";
+    "Failed to update app in Azure Active Directory.";
   static readonly CreateSecretFailed =
-    "Create secret for Azure AD app failed when calling App Studio Api.";
+    "Failed to create an application secret in Azure Active Directory.";
 
-  static readonly AppDefinitionIsNull = "App Definition is null.";
-  static readonly AppObjectIdIsNull = "Object Id is null.";
-  static readonly EmptyResponse = "Response is empty.";
-  static readonly ReachRetryLimit = "Reach retry limit..";
+  static readonly AppDefinitionIsNull = "Missing app definition.";
+  static readonly AppObjectIdIsNull = "Missing Object ID.";
+  static readonly EmptyResponse = "Missing response.";
+  static readonly ReachRetryLimit = "Exceeded retry limit.";
 }
 
 export class GraphClientErrorMessage {
   static readonly CreateFailed =
-    "Create Azure AD app failed when calling Graph Api.";
+    "Failed to create an app in Azure Active Directory.";
   static readonly UpdateFailed =
-    "Update Azure AD app failed when calling Graph Api.";
+    "Failed to update app in Azure Active Directory.";
   static readonly CreateSecretFailed =
-    "Create secret for Azure AD app failed when calling Graph Api.";
+    "Failed to create an application secret in Azure Active Directory.";
 
-  static readonly AppDefinitionIsNull = "App Definition is null.";
-  static readonly AppObjectIdIsNull = "Object Id is null.";
-  static readonly EmptyResponse = "Response is empty.";
+  static readonly AppDefinitionIsNull = "Missing app definition.";
+  static readonly AppObjectIdIsNull = "Missing Object ID.";
+  static readonly EmptyResponse = "Missing response.";
 }

@@ -5,21 +5,21 @@ import { MultiSelectQuestion, NodeType, OptionItem, SingleSelectQuestion } from 
 export const TabOptionItem: OptionItem = {
     id: "Tab",
     label: "Tab",
-    description: "Embeds a web-based app experience in a tab in a Teams chat, channel, or personal workspace.",
+    description: "Tabs embeds a web app experience in a tab in a Teams chat, channel, or personal workspace.",
 };
 
 export const BotOptionItem: OptionItem = {
     id: "Bot",
     label: "Bot",
     description:
-        "Bots allow you to interact with and obtain information from a software or website in a text/search/conversational manner.",
+        "Bots allow you to interact with and obtain information in a text/search/conversational manner.",
 };
 
 export const MessageExtensionItem: OptionItem = {
     id: "MessageExtension",
-    label: "MessageExtension",
+    label: "Messaging Extension",
     description:
-        "Messaging extensions allow users to interact with your web service through buttons and forms in the Microsoft Teams client.",
+        "Messaging Extensions allow users to interact with a web service through buttons and forms in the Microsoft Teams client.",
 };
 
 export enum AzureSolutionQuestionNames {
@@ -47,7 +47,7 @@ export const HostTypeOptionSPFx: OptionItem = {
 export const AzureResourceSQL: OptionItem = {
     id:"sql",
     label: "sql",
-    description: "Azure SQL Database",
+    description: "Azure SQL Database. Azure SQL depends on 'function'.",
 };
 
 export const AzureResourceFunction: OptionItem = {

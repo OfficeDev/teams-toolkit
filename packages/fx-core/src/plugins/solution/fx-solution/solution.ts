@@ -1374,7 +1374,7 @@ export class TeamsAppSolution implements Solution {
         }
         try {
             ctx.config.get(GLOBAL_CONFIG)?.set(PERMISSION_REQUEST, maybePermission.value);
-            const result = this.doLocalDebug(ctx);
+            const result = await this.doLocalDebug(ctx);
             return result;
         } finally {
             ctx.config.get(GLOBAL_CONFIG)?.delete(PERMISSION_REQUEST);

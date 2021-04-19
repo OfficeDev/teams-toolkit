@@ -3,7 +3,7 @@
 
 "use strict";
 
-import { commands, Uri, window, workspace, ExtensionContext, env, ViewColumn } from "vscode";
+import {commands, Uri, window, workspace, ExtensionContext, env, ViewColumn} from "vscode";
 import {
     Result,
     FxError,
@@ -32,9 +32,9 @@ import AzureAccountManager from "./commonlib/azureLogin";
 import AppStudioTokenInstance from "./commonlib/appStudioLogin";
 import AppStudioCodeSpaceTokenInstance from "./commonlib/appStudioCodeSpaceLogin";
 import VsCodeLogInstance from "./commonlib/log";
-import { CommandsTreeViewProvider, TreeViewCommand } from "./commandsTreeViewProvider";
-import { ext } from "./extensionVariables";
-import { ExtTelemetry } from "./telemetry/extTelemetry";
+import {CommandsTreeViewProvider, TreeViewCommand} from "./commandsTreeViewProvider";
+import {ext} from "./extensionVariables";
+import {ExtTelemetry} from "./telemetry/extTelemetry";
 import {
     TelemetryEvent,
     TelemetryProperty,
@@ -42,21 +42,21 @@ import {
     TelemetrySuccess
 } from "./telemetry/extTelemetryEvents";
 import * as commonUtils from "./debug/commonUtils";
-import { ExtensionErrors, ExtensionSource } from "./error";
-import { WebviewPanel } from "./controls/webviewPanel";
+import {ExtensionErrors, ExtensionSource} from "./error";
+import {WebviewPanel} from "./controls/webviewPanel";
 import * as constants from "./debug/constants";
-import { isFeatureFlag } from "./utils/commonUtils";
+import {isFeatureFlag} from "./utils/commonUtils";
 import * as fs from "fs-extra";
 import * as vscode from "vscode";
-import { VS_CODE_UI } from "./qm/vsc_ui";
-import { DepsChecker } from "./debug/depsChecker/checker";
-import { backendExtensionsInstall } from "./debug/depsChecker/backendExtensionsInstall";
-import { FuncToolChecker } from "./debug/depsChecker/funcToolChecker";
-import { DotnetChecker } from "./debug/depsChecker/dotnetChecker";
-import { PanelType } from "./controls/PanelType";
-import { NodeChecker } from "./debug/depsChecker/nodeChecker";
-import { TeamsCore } from "fx-core";
-import { ContextFactory } from "./context";
+import {VS_CODE_UI} from "./qm/vsc_ui";
+import {DepsChecker} from "./debug/depsChecker/checker";
+import {backendExtensionsInstall} from "./debug/depsChecker/backendExtensionsInstall";
+import {FuncToolChecker} from "./debug/depsChecker/funcToolChecker";
+import {DotnetChecker} from "./debug/depsChecker/dotnetChecker";
+import {PanelType} from "./controls/PanelType";
+import {NodeChecker} from "./debug/depsChecker/nodeChecker";
+import {TeamsCore} from "fx-core";
+import {ContextFactory} from "./context";
 
 export const core = TeamsCore.getInstance();
 
@@ -126,7 +126,7 @@ export async function publishHandler(): Promise<Result<null, FxError>> {
     return await runCommand(Stage.publish);
 }
 
-const coreExeceutor: RemoteFuncExecutor = async function(
+const coreExeceutor: RemoteFuncExecutor = async function (
     func: Func,
     answers: Inputs | ConfigMap
 ): Promise<Result<unknown, FxError>> {
@@ -203,21 +203,27 @@ export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
                     );
                     result = ok(null);
                 }
+                break;
             }
             case (Stage.update): {
                 result = await core.update(ctx, answers);
+                break;
             }
             case (Stage.provision): {
                 result = await core.provision(ctx, answers);
+                break;
             }
             case (Stage.deploy): {
                 result = await core.deploy(ctx, answers);
+                break;
             }
             case (Stage.debug): {
                 result = await core.localDebug(ctx, answers);
+                break;
             }
             case (Stage.publish): {
                 result = await core.publish(ctx, answers);
+                break;
             }
             default: {
                 throw new SystemError(

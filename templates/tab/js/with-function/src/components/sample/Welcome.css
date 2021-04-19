@@ -21,7 +21,10 @@
   margin: 4rem auto;
 }
 
-pre,
+pre {
+  overflow-x: scroll;
+}
+
 div.error {
   background-color: #e5e5e5;
   padding: 1rem;

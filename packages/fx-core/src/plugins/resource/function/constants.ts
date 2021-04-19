@@ -76,6 +76,8 @@ export class DefaultValues {
     public static readonly functionLanguage: FunctionLanguage = FunctionLanguage.JavaScript;
     public static readonly functionTriggerType: string = "HTTPTrigger";
     public static readonly maxTryCount: number = 3;
+    public static readonly scaffoldTimeoutInMs: number = 20 * 1000;
+    public static readonly deployTimeoutInMs: number = 10 * 60 * 1000;
 }
 
 export class DependentPluginInfo {

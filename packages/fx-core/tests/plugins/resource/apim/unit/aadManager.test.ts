@@ -7,8 +7,8 @@ import chaiAsPromised from "chai-as-promised";
 import sinon from "sinon";
 import dotenv from "dotenv";
 import { AadManager } from "../../../../../src/plugins/resource/apim/src/manager/aadManager";
-import uuid from "uuid";
-import { MockGraphTokenProvider, skip_if } from "./testUtil";
+import { v4 } from "uuid";
+import { AadHelper, MockGraphTokenProvider, it_if, after_if, before_if, EnvConfig } from "./testUtil";
 import { InvalidAadObjectId } from "../../../../../src/plugins/resource/apim/src/error";
 import { IRequiredResourceAccess } from "../../../../../src/plugins/resource/apim/src/model/aadResponse";
 import { AadService } from "../../../../../src/plugins/resource/apim/src/service/aadService";
@@ -18,30 +18,47 @@ import { Lazy } from "../../../../../src/plugins/resource/apim/src/util/lazy";
 dotenv.config();
 chai.use(chaiAsPromised);
 
-const enableTest: boolean = process.env.UT_TEST_AAD ? process.env.UT_TEST_AAD === "true" : false;
-const enableCreateTest: boolean = process.env.UT_TEST_CREATE ? process.env.UT_TEST_CREATE === "true" : false;
-const testTenantId: string = process.env.UT_TENANT_ID ?? "00000000-0000-4000-0000-000000000000";
-const testServicePrincipalClientId: string = process.env.UT_SERVICE_PRINCIPAL_CLIENT_ID ?? "00000000-0000-4000-0000-000000000000";
-const testServicePrincipalClientSecret: string = process.env.UT_SERVICE_PRINCIPAL_CLIENT_SECRET ?? "";
-
-const testObjectId: string = process.env.UT_AAD_OBJECT_ID ?? "00000000-0000-4000-0000-000000000000";
-const testSecret: string = process.env.UT_AAD_SECRET ?? "";
-const testClientId: string = process.env.UT_AAD_CLIENT_ID ?? "00000000-0000-4000-0000-000000000000";
-const testScopeClientId: string = process.env.UT_AAD_SCOPE_CLIENT_ID ?? "00000000-0000-4000-0000-000000000000";
+const UT_SUFFIX = v4().substring(0, 6);
+const UT_APP_NAME = `fx-apim-local-unit-test-aad-manager-${UT_SUFFIX}`;
 
 describe("AadManager", () => {
     let aadManager: AadManager;
     let aadService: AadService;
+    let aadHelper: AadHelper;
+
     before(async () => {
-        aadService = await buildAadService(enableTest);
-        aadManager = buildAadManager(aadService);
+        const result = await buildService(EnvConfig.enableTest);
+        aadService = result.aadService;
+        aadManager = result.aadManager;
+        aadHelper = result.aadHelper;
+    });
+
+    after_if(EnvConfig.enableTest, async () => {
+        await aadHelper.deleteAadByName(UT_APP_NAME);
+        await aadHelper.deleteAadByName(`${UT_APP_NAME}-client`);
     });
 
     describe("#provision()", () => {
-        skip_if(!enableTest || !enableCreateTest, "Create a new AAD", async () => {
-            const apimPluginConfig = buildApimPluginConfig();
-            await aadManager.provision(apimPluginConfig, "teamsfx-test");
+        let testObjectId = EnvConfig.defaultGuid;
+        let testSecret = "";
+        let testClientId = EnvConfig.defaultGuid;
 
+        before_if(EnvConfig.enableTest, async () => {
+            const aadInfo = await aadService.createAad(UT_APP_NAME);
+            testObjectId = aadInfo.id ?? "";
+            testClientId = aadInfo.appId ?? "";
+            const secretInfo = await aadService.addSecret(testObjectId, "test secret");
+            testSecret = secretInfo.secretText ?? "";
+        });
+
+        it_if(EnvConfig.enableTest, "Create a new AAD", async () => {
+            // Arrange
+            const apimPluginConfig = buildApimPluginConfig();
+
+            // Act
+            await aadManager.provision(apimPluginConfig, UT_APP_NAME);
+
+            // Assert
             chai.assert.isNotEmpty(apimPluginConfig.apimClientAADObjectId);
             chai.assert.isNotEmpty(apimPluginConfig.apimClientAADClientId);
             chai.assert.isNotEmpty(apimPluginConfig.apimClientAADClientSecret);
@@ -50,29 +67,37 @@ describe("AadManager", () => {
             chai.assert.isNotEmpty(queryResult);
         });
 
-        skip_if(!enableTest || !enableCreateTest, "Use an existing AAD failed because of error object id", async () => {
-            const apimPluginConfig = buildApimPluginConfig("00000000-0000-0000-0000-000000000000");
+        it_if(EnvConfig.enableTest, "Use an existing AAD failed because of error object id", async () => {
+            // Arrange
+            const apimPluginConfig = buildApimPluginConfig(EnvConfig.defaultGuid);
 
+            // Act & Assert
             await chai
-                .expect(aadManager.provision(apimPluginConfig, "teamsfx-test"))
-                .to.be.rejectedWith(InvalidAadObjectId.message("00000000-0000-0000-0000-000000000000"));
+                .expect(aadManager.provision(apimPluginConfig, UT_APP_NAME))
+                .to.be.rejectedWith(InvalidAadObjectId.message((EnvConfig.defaultGuid)));
         });
 
-        skip_if(!enableTest, "Use an existing AAD, using existing secret", async () => {
+        it_if(EnvConfig.enableTest, "Use an existing AAD, using existing secret", async () => {
+            // Arrange
             const apimPluginConfig = buildApimPluginConfig(testObjectId, testSecret);
 
-            await aadManager.provision(apimPluginConfig, "teamsfx-test");
+            // Act
+            await aadManager.provision(apimPluginConfig, UT_APP_NAME);
 
+            // Assert
             chai.assert.equal(testObjectId, apimPluginConfig.apimClientAADObjectId);
             chai.assert.equal(testClientId, apimPluginConfig.apimClientAADClientId);
             chai.assert.equal(testSecret, apimPluginConfig.apimClientAADClientSecret);
         });
 
-        skip_if(!enableTest || !enableCreateTest, "Use an existing AAD, create new secret", async () => {
+        it_if(EnvConfig.enableTest, "Use an existing AAD, create new secret", async () => {
+            // Arrange
             const apimPluginConfig = buildApimPluginConfig(testObjectId);
 
-            await aadManager.provision(apimPluginConfig, "teamsfx-test");
+            // Act
+            await aadManager.provision(apimPluginConfig, UT_APP_NAME);
 
+            // Assert
             chai.assert.equal(testObjectId, apimPluginConfig.apimClientAADObjectId);
             chai.assert.equal(testClientId, apimPluginConfig.apimClientAADClientId);
             chai.assert.notEqual(testSecret, apimPluginConfig.apimClientAADClientSecret);
@@ -80,31 +105,51 @@ describe("AadManager", () => {
     });
 
     describe("#postProvision()", () => {
-        skip_if(!enableTest, "Add a existing scope and add a new redirect url", async () => {
-            const apimPluginConfig = buildApimPluginConfig(testObjectId);
-            const existingScope = "00000000-0000-0000-0000-000000000000";
-            const aadPluginConfig = buildAadPluginConfig(testScopeClientId, existingScope);
-            const redirectUris = [`https://testredirect/${uuid.v4()}`];
+        let testObjectId = EnvConfig.defaultGuid;
+        let testScopeClientId = EnvConfig.defaultGuid;
+        let testNewScopeId = v4();
+        let testExistingScopeId = v4();
 
+        before_if(EnvConfig.enableTest, async () => {
+            const clientAadInfo = await aadService.createAad(UT_APP_NAME);
+            testScopeClientId = clientAadInfo.appId ?? "";
+
+            await updateAadScope(aadService, clientAadInfo.id ?? "", [testNewScopeId, testExistingScopeId]);
+
+            const aadInfo = await aadService.createAad(UT_APP_NAME);
+            testObjectId = aadInfo.id ?? "";
+            aadService.updateAad(testObjectId, { requiredResourceAccess: [{ resourceAppId: testScopeClientId, resourceAccess: [{ id: testExistingScopeId, type: "Scope" }] }] });
+        })
+
+        it_if(EnvConfig.enableTest, "Add a existing scope and add a new redirect url", async () => {
+            // Arrange
+            const apimPluginConfig = buildApimPluginConfig(testObjectId);
+            const aadPluginConfig = buildAadPluginConfig(testScopeClientId, testExistingScopeId);
+            const redirectUris = [`https://testredirect/${v4()}`];
+
+            // Act
             await aadManager.postProvision(apimPluginConfig, aadPluginConfig, redirectUris);
 
+            // Assert
             const updatedAad = await aadService.getAad(apimPluginConfig.apimClientAADObjectId!);
             chai.assert.isTrue(updatedAad?.web?.implicitGrantSettings?.enableIdTokenIssuance);
             chai.assert.exists(updatedAad?.web?.redirectUris);
             chai.assert.oneOf(redirectUris[0], updatedAad?.web?.redirectUris ?? []);
             const foundResourceAccess = updatedAad?.requiredResourceAccess?.find((x) => x.resourceAppId === testScopeClientId);
             chai.assert.exists(foundResourceAccess);
-            chai.assert.includeDeepMembers(foundResourceAccess?.resourceAccess ?? [], [{ id: existingScope, type: "Scope" }]);
+            chai.assert.includeDeepMembers(foundResourceAccess?.resourceAccess ?? [], [{ id: testExistingScopeId, type: "Scope" }]);
         });
 
-        skip_if(!enableTest, "Add a new scope and existing redirect url", async () => {
+        it_if(EnvConfig.enableTest, "Add a new scope and existing redirect url", async () => {
+            // Arrange
             const apimPluginConfig = buildApimPluginConfig(testObjectId);
-            const redirectUris = [`https://testredirect`, `https://testredirect/${uuid.v4()}`];
-            const newScope = uuid.v4();
-            const aadPluginConfig = buildAadPluginConfig(testScopeClientId, newScope);
+            const redirectUris = [`https://testredirect`, `https://testredirect/${v4()}`];
+            const aadPluginConfig = buildAadPluginConfig(testScopeClientId, testNewScopeId);
 
+            // Act
             await aadManager.postProvision(apimPluginConfig, aadPluginConfig, redirectUris);
 
+            // Assert
             const updatedAad = await aadService.getAad(testObjectId);
             chai.assert.isTrue(updatedAad?.web?.implicitGrantSettings?.enableIdTokenIssuance);
             chai.assert.exists(updatedAad?.web?.redirectUris);
@@ -112,23 +157,26 @@ describe("AadManager", () => {
             chai.assert.oneOf(redirectUris[1], updatedAad?.web?.redirectUris ?? []);
             const foundResourceAccess = updatedAad?.requiredResourceAccess?.find((x) => x.resourceAppId === testScopeClientId);
             chai.assert.exists(foundResourceAccess);
-            chai.assert.includeDeepMembers(foundResourceAccess?.resourceAccess ?? [], [{ id: newScope, type: "Scope" }]);
+            chai.assert.includeDeepMembers(foundResourceAccess?.resourceAccess ?? [], [{ id: testNewScopeId, type: "Scope" }]);
         });
 
-        skip_if(!enableTest, "Add existing scope and existing redirect url", async () => {
+        it_if(EnvConfig.enableTest, "Add existing scope and existing redirect url", async () => {
+            // Arrange
             const apimPluginConfig = buildApimPluginConfig(testObjectId);
             const redirectUris = [`https://testredirect`];
-            const existingScope = "00000000-0000-0000-0000-000000000000";
-            const aadPluginConfig = buildAadPluginConfig(testScopeClientId, existingScope);
+            const aadPluginConfig = buildAadPluginConfig(testScopeClientId, testExistingScopeId);
+
+            // Act
             await aadManager.postProvision(apimPluginConfig, aadPluginConfig, redirectUris);
 
+            // Assert
             const updatedAad = await aadService.getAad(testObjectId);
             chai.assert.isTrue(updatedAad?.web?.implicitGrantSettings?.enableIdTokenIssuance);
             chai.assert.exists(updatedAad?.web?.redirectUris);
             chai.assert.oneOf(redirectUris[0], updatedAad?.web?.redirectUris ?? []);
             const foundResourceAccess = updatedAad?.requiredResourceAccess?.find((x) => x.resourceAppId === testScopeClientId);
             chai.assert.exists(foundResourceAccess);
-            chai.assert.includeDeepMembers(foundResourceAccess?.resourceAccess ?? [], [{ id: existingScope, type: "Scope" }]);
+            chai.assert.includeDeepMembers(foundResourceAccess?.resourceAccess ?? [], [{ id: testExistingScopeId, type: "Scope" }]);
         });
     });
 
@@ -189,12 +237,17 @@ describe("AadManager", () => {
 
         testInput.forEach((input) => {
             it(input.message, async () => {
+                // Arrange
                 sinon.stub(aadService, "getAad").callsFake((objectId: string) => Promise.resolve({ requiredResourceAccess: input.source }));
                 const updateAadStub = sinon.stub(aadService, "updateAad").callsFake((objectId, data) => Promise.resolve());
                 const aadPluginConfig = buildAadPluginConfig("0", "0");
-                const apimPluginConfig = buildApimPluginConfig(testObjectId);
+                const apimPluginConfig = buildApimPluginConfig(EnvConfig.defaultGuid);
+
+                // Act
                 await aadManager.postProvision(apimPluginConfig, aadPluginConfig, []);
-                sinon.assert.calledWith(updateAadStub, testObjectId, sinon.match({ requiredResourceAccess: input.expected }));
+
+                // Assert
+                sinon.assert.calledWith(updateAadStub, EnvConfig.defaultGuid, sinon.match({ requiredResourceAccess: input.expected }));
             });
         });
     });
@@ -250,19 +303,24 @@ describe("AadManager", () => {
 
         testInput.forEach((input) => {
             it(input.message, async () => {
+                // Arrange
                 sinon.stub(aadService, "getAad").callsFake((objectId: string) => Promise.resolve({ web: { redirectUris: input.source } }));
                 const updateAadStub = sinon.stub(aadService, "updateAad").callsFake((objectId, data) => Promise.resolve());
                 const aadPluginConfig = buildAadPluginConfig("", "");
-                const apimPluginConfig = buildApimPluginConfig(testObjectId);
+                const apimPluginConfig = buildApimPluginConfig(EnvConfig.defaultGuid);
+
+                // Act
                 await aadManager.postProvision(apimPluginConfig, aadPluginConfig, input.added);
-                sinon.assert.calledWith(updateAadStub, testObjectId, sinon.match({ web: { redirectUris: input.expected } }));
+
+                // Assert
+                sinon.assert.calledWith(updateAadStub, EnvConfig.defaultGuid, sinon.match({ web: { redirectUris: input.expected } }));
             });
         });
     });
 });
 
-async function buildAadService(enableLogin: boolean): Promise<AadService> {
-    const mockGraphTokenProvider = new MockGraphTokenProvider(testTenantId, testServicePrincipalClientId, testServicePrincipalClientSecret);
+async function buildService(enableLogin: boolean): Promise<{ aadService: AadService, aadManager: AadManager, aadHelper: AadHelper }> {
+    const mockGraphTokenProvider = new MockGraphTokenProvider(EnvConfig.tenantId, EnvConfig.servicePrincipalClientId, EnvConfig.servicePrincipalClientSecret);
     const graphToken = enableLogin ? await mockGraphTokenProvider.getAccessToken() : "";
     const axiosInstance = axios.create({
         baseURL: AadDefaultValues.graphApiBasePath,
@@ -271,12 +329,11 @@ async function buildAadService(enableLogin: boolean): Promise<AadService> {
             "content-type": "application/json",
         },
     });
-    return new AadService(axiosInstance);
-}
-
-function buildAadManager(aadService: AadService): AadManager {
+    const aadService = new AadService(axiosInstance);
     const lazyAadService = new Lazy<AadService>(() => Promise.resolve(aadService));
-    return new AadManager(lazyAadService);
+    const aadManager = new AadManager(lazyAadService);
+    const aadHelper = new AadHelper(axiosInstance);
+    return { aadService: aadService, aadManager: aadManager, aadHelper: aadHelper };
 }
 
 function buildApimPluginConfig(objectId?: string, clientSecret?: string): IApimPluginConfig {
@@ -295,12 +352,21 @@ function buildAadPluginConfig(clientId: string, scopeId: string): IAadPluginConf
     };
 }
 
-function buildSolutionConfig(): ISolutionConfig {
-    return {
-        subscriptionId: "",
-        tenantId: "",
-        resourceGroupName: "",
-        location: "",
-        resourceNameSuffix: "new",
-    };
+async function updateAadScope(aadService: AadService, objectId: string, scopeIds: string[]) {
+    await aadService.updateAad(objectId, {
+        api: {
+            oauth2PermissionScopes: scopeIds.map(scope => {
+                return {
+                    adminConsentDescription: "Test consent description",
+                    adminConsentDisplayName: "Test display name",
+                    id: scope,
+                    isEnabled: true,
+                    type: "User",
+                    userConsentDescription: "Test consent description",
+                    userConsentDisplayName: "Test display name",
+                    value: `access_as_user_${scope.substring(0, 6)}`,
+                };
+            }),
+        }
+    });
 }

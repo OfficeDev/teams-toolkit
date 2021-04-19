@@ -38,7 +38,7 @@ export interface IAadInfo {
 }
 
 export interface IServicePrincipals {
-    value: IServicePrincipal[];
+    value?: IServicePrincipal[];
 }
 
 export interface IServicePrincipal {
@@ -48,4 +48,18 @@ export interface IServicePrincipal {
 
 export interface IApiApplication {
     knownClientApplications?: string[];
+    oauth2PermissionScopes?: IOAuth2PermissionScope[];
+}
+
+export interface IOAuth2PermissionScope {
+    adminConsentDescription?: string,
+    adminConsentDisplayName?: string,
+    id?: string,
+    isEnabled: boolean,
+    lang?: string,
+    origin?: string,
+    type?: string,
+    userConsentDescription?: string,
+    userConsentDisplayName?: string,
+    value?: string,
 }

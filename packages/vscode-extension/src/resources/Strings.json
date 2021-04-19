@@ -1,0 +1,23 @@
+{
+    "vsc": {
+        "extension": {
+            "activate": "Teams Toolkit v2 extension is now active!"
+        },
+        "userInterface": {
+            "noQuestionDescription": "No question description",
+            "notImplementQuestion": "Not implement this type to asking questions.",
+            "showSuccessfully": "Show Successfully"
+        },
+        "commandsTreeViewProvider": {
+            "getStartTips": "",
+            "quickStartTitle": "Quick Start",
+            "quickStartDescriptiono": "Quick Start"
+        }
+    },
+    "cli": {
+
+    },
+    "spfx": {
+
+    }
+}

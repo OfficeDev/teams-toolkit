@@ -212,11 +212,10 @@ export class DotnetChecker implements IDepsChecker {
   ): Promise<void> {
     const installCommand: string = await DotnetChecker.getInstallCommand(version, installDir);
     const windowsFullCommand = `powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "& { [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12 ; & ${installCommand} }`;
-    const unixFullCommand = `bash ${installCommand}`;
 
     try {
       const start = performance.now();
-      const { stdout, stderr } = await exec(isWindows() ? windowsFullCommand : unixFullCommand, {
+      const { stdout, stderr } = await exec(isWindows() ? windowsFullCommand : installCommand, {
         cwd: process.cwd(),
         maxBuffer: DotnetChecker.maxBuffer,
         timeout: DotnetChecker.timeout,

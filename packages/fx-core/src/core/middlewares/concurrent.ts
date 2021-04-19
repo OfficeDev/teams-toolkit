@@ -51,5 +51,5 @@ export const concurrentMW: Middleware = async (
 };
 
 function isContext(object: any): object is Context {
-    return 'root' in object;
+    return "root" in object;
 }

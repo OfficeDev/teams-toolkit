@@ -176,10 +176,6 @@ export class AzureInfo {
 export class Commands {
     public static readonly npmInstall: string = "npm install";
     public static readonly npmBuild: string = "npm run build";
-    public static readonly currentDotnetVersionQuery: string = "dotnet --version";
-    public static readonly functionExtensionsInstall = (csprojFilePath: string, outputFolderPath: string) =>
-        `dotnet build ${csprojFilePath}  -o "${outputFolderPath}"`;
-    public static readonly dotnetPublish: string = "dotnet publish --configuration Release";
 }
 
 export class QuestionValidationFunc {

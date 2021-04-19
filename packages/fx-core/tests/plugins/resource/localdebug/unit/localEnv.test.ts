@@ -28,7 +28,7 @@ describe("LocalEnvProvider", ()=> {
             fs.createFileSync(testFilePath);
             fs.writeFileSync(testFilePath, testContent);
 
-            const envs = await localEnvProvider.loadLocalEnv();
+            const envs = await localEnvProvider.loadLocalEnv(true, false, false);
 
             chai.assert.isDefined(envs);
             chai.assert.equal(Object.keys(envs).length, 2);
@@ -39,7 +39,7 @@ describe("LocalEnvProvider", ()=> {
         it("empty file", async () => {
             fs.createFileSync(testFilePath);
 
-            const envs = await localEnvProvider.loadLocalEnv();
+            const envs = await localEnvProvider.loadLocalEnv(true, false, false);
 
             chai.assert.isDefined(envs);
             chai.assert.equal(Object.keys(envs).length, 0);
@@ -52,9 +52,24 @@ describe("LocalEnvProvider", ()=> {
             };
             await localEnvProvider.saveLocalEnv(expectedEnvs);
 
-            const actualEnvs = await localEnvProvider.loadLocalEnv();
+            const actualEnvs = await localEnvProvider.loadLocalEnv(true, false, false);
 
             chai.assert.deepEqual(actualEnvs, expectedEnvs);
+        });
+
+        it("no env file", async () => {
+            const actualEnvs = await localEnvProvider.loadLocalEnv(true, true, true);
+
+            chai.assert.isDefined(actualEnvs);
+            const actualEntries = Object.entries(actualEnvs);
+            const expectedKeys = Object.values(LocalEnvFrontendKeys)
+                .concat(Object.values(LocalEnvAuthKeys)
+                .concat(Object.values(LocalEnvBackendKeys)))
+                .concat(Object.values(LocalEnvBotKeys));
+            chai.assert.equal(actualEntries.length, expectedKeys.length);
+            for (const key of expectedKeys) {
+                chai.assert.isDefined(actualEnvs[key]);
+            }
         });
     });
 

@@ -1,4 +1,6 @@
-﻿namespace Microsoft.TeamsFx.SimpleAuth.Tests.Models
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+namespace Microsoft.TeamsFx.SimpleAuth.Tests.Models
 {
     public class IntegrationTestSettings
     {

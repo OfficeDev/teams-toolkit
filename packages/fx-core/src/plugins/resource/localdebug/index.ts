@@ -169,7 +169,7 @@ export class LocalDebugPlugin implements Plugin {
             const includeBot = ctx.configOfOtherPlugins.has(BotPlugin.Name);
 
             const localEnvProvider = new LocalEnvProvider(ctx.root);
-            const localEnvs = await localEnvProvider.loadLocalEnv();
+            const localEnvs = await localEnvProvider.loadLocalEnv(includeFrontend, includeBackend, includeBot);
 
             // configs
             const localDebugConfigs = ctx.config;

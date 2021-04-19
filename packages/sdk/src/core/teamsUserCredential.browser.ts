@@ -291,7 +291,7 @@ export class TeamsUserCredential implements TokenCredential {
               return;
             }
 
-            const tokenObject = parseJwt(token) as SSOTokenInfoBase;
+            const tokenObject = parseJwt(token);
             if (tokenObject.ver !== "1.0" && tokenObject.ver !== "2.0") {
               const errorMsg = "SSO token is not valid with an unknown version: " + tokenObject.ver;
               internalLogger.error(errorMsg);
@@ -441,7 +441,7 @@ export class TeamsUserCredential implements TokenCredential {
    */
   private async getAccessTokenCacheKey(scopesStr: string): Promise<string> {
     const ssoToken = await this.getSSOToken();
-    const ssoTokenObj = parseJwt(ssoToken.token) as SSOTokenInfoBase;
+    const ssoTokenObj = parseJwt(ssoToken.token);
 
     const clientId = this.config.clientId;
     const userObjectId = ssoTokenObj.oid;

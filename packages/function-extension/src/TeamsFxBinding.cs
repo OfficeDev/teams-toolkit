@@ -1,4 +1,7 @@
-﻿using JWT;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using JWT;
 using JWT.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.WebJobs.Host.Bindings;

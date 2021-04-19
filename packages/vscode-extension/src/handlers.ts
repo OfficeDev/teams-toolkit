@@ -187,6 +187,29 @@ export async function updateProjectHandler(): Promise<Result<null, FxError>> {
   return await runCommand(Stage.update);
 }
 
+export async function validateManifestHandler(): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ValidateManifest, {
+    [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
+  });
+
+  const func: Func = {
+    namespace: "fx-solution-azure",
+    method: "validateManifest"
+  };
+  return await core.executeUserTask(func);
+}
+
+export async function buildPackageHandler(): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.BuildPackage, {
+    [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
+  });
+
+  const func: Func = {
+    namespace: "fx-solution-azure",
+    method: "buildPackage"
+  };
+  return await core.executeUserTask(func);
+}
 
 export async function provisionHandler(): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ProvisionStart, {
@@ -214,7 +237,6 @@ const coreExeceutor: RemoteFuncExecutor = async function (
   answers: Inputs | ConfigMap
 ): Promise<Result<unknown, FxError>> {
   return await core.callFunc(func, answers as ConfigMap);
-  throw new Error();
 };
 
 export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
@@ -447,7 +469,7 @@ export async function updateAADHandler(): Promise<Result<null, FxError>> {
     [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
   });
   const func: Func = {
-    namespace: "fx-solution-azure/teamsfx-plugin-aad-app-for-teams",
+    namespace: "fx-solution-azure/fx-resource-aad-app-for-teams",
     method: "aadUpdatePermission"
   };
   return await runUserTask(func);

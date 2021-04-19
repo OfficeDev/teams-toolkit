@@ -42,7 +42,8 @@ export function register(yargs: yargs.Argv): void {
     .scriptName(constants.cliName)
     .help()
     .strict()
-    .alias("help", "h")
+    .alias("h", "help")
+    .alias("v", "version")
     .epilogue(
       "for more information, find our manual at https://github.com/OfficeDev/TeamsFx"
     ).argv;

@@ -2,10 +2,9 @@
 // Licensed under the MIT license.
 import "mocha";
 import * as chai from "chai";
-import * as sinon from "sinon";
 
 import { registerAADAppAndGetSecretByGraph, registerAADAppAndGetSecretByAppStudio } from "../../../../../src/plugins/resource/bot/aadRegistration";
-import { PluginException } from "../../../../../src/plugins/resource/bot/exceptions";
+import { PluginError } from "../../../../../src/plugins/resource/bot/errors";
 
 describe("AAD Registration", () => {
     describe("registerAADAppAndGetSecretByGraph", () => {
@@ -18,7 +17,7 @@ describe("AAD Registration", () => {
             try {
                 await registerAADAppAndGetSecretByGraph(graphToken, displayName);
             } catch (e) {
-                chai.assert.isTrue(e instanceof PluginException);
+                chai.assert.isTrue(e instanceof PluginError);
                 return;
             }
 
@@ -37,7 +36,7 @@ describe("AAD Registration", () => {
             try {
                 await registerAADAppAndGetSecretByAppStudio(appStudioToken, displayName);
             } catch (e) {
-                chai.assert.isTrue(e instanceof PluginException);
+                chai.assert.isTrue(e instanceof PluginError);
                 return;
             }
 

@@ -12,7 +12,7 @@ import { AadHelper, MockGraphTokenProvider, it_if, after_if, before_if, EnvConfi
 import { InvalidAadObjectId } from "../../../../../src/plugins/resource/apim/src/error";
 import { IRequiredResourceAccess } from "../../../../../src/plugins/resource/apim/src/model/aadResponse";
 import { AadService } from "../../../../../src/plugins/resource/apim/src/service/aadService";
-import { IAadPluginConfig, IApimPluginConfig, ISolutionConfig } from "../../../../../src/plugins/resource/apim/src/model/config";
+import { IAadPluginConfig, IApimPluginConfig } from "../../../../../src/plugins/resource/apim/src/model/config";
 import { AadDefaultValues } from "../../../../../src/plugins/resource/apim/src/constants";
 import { Lazy } from "../../../../../src/plugins/resource/apim/src/util/lazy";
 dotenv.config();
@@ -63,7 +63,7 @@ describe("AadManager", () => {
             chai.assert.isNotEmpty(apimPluginConfig.apimClientAADClientId);
             chai.assert.isNotEmpty(apimPluginConfig.apimClientAADClientSecret);
 
-            const queryResult = await aadService.getAad(apimPluginConfig.apimClientAADObjectId!);
+            const queryResult = await aadService.getAad(apimPluginConfig.apimClientAADObjectId ?? "");
             chai.assert.isNotEmpty(queryResult);
         });
 
@@ -107,8 +107,8 @@ describe("AadManager", () => {
     describe("#postProvision()", () => {
         let testObjectId = EnvConfig.defaultGuid;
         let testScopeClientId = EnvConfig.defaultGuid;
-        let testNewScopeId = v4();
-        let testExistingScopeId = v4();
+        const testNewScopeId = v4();
+        const testExistingScopeId = v4();
 
         before_if(EnvConfig.enableTest, async () => {
             const clientAadInfo = await aadService.createAad(UT_APP_NAME);
@@ -119,7 +119,7 @@ describe("AadManager", () => {
             const aadInfo = await aadService.createAad(UT_APP_NAME);
             testObjectId = aadInfo.id ?? "";
             aadService.updateAad(testObjectId, { requiredResourceAccess: [{ resourceAppId: testScopeClientId, resourceAccess: [{ id: testExistingScopeId, type: "Scope" }] }] });
-        })
+        });
 
         it_if(EnvConfig.enableTest, "Add a existing scope and add a new redirect url", async () => {
             // Arrange

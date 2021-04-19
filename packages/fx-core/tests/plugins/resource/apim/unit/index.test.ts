@@ -58,7 +58,7 @@ describe("ApimPlugin", () => {
                     }
                 ],
             }
-        })
+        });
     });
 
     after_if(EnvConfig.enableTest, async () => {

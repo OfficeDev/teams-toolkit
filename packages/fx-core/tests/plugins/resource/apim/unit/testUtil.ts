@@ -270,11 +270,11 @@ export class ResourceGroupHelper {
 }
 
 export class EnvConfig {
-    static enableTest: boolean = process.env.UT_TEST_AAD ? process.env.UT_TEST_AAD === "true" : false;
+    static enableTest: boolean = process.env.UT_TEST ? process.env.UT_TEST === "true" : false;
     static subscriptionId: string = process.env.UT_SUBSCRIPTION_ID ?? "";
     static servicePrincipalClientId: string = process.env.UT_SERVICE_PRINCIPAL_CLIENT_ID ?? "";
     static servicePrincipalClientSecret: string = process.env.UT_SERVICE_PRINCIPAL_CLIENT_SECRET ?? "";
     static tenantId: string = process.env.UT_TENANT_ID ?? "";
     static defaultLocation: string = process.env.UT_DEFAULT_LOCATION ?? "eastus";
-    static defaultGuid: string = "00000000-0000-4000-0000-000000000000";
+    static defaultGuid = "00000000-0000-4000-0000-000000000000";
 }

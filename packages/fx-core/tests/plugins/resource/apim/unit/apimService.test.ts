@@ -277,7 +277,7 @@ describe("ApimService", () => {
 
         it_if(EnvConfig.enableTest, "skip to create an existing version set", async () => {
             // Arrange
-            const existingVersionSetId = md5(`${UT_API_NAME}-existing`)
+            const existingVersionSetId = md5(`${UT_API_NAME}-existing`);
             await apimService.createVersionSet(UT_RESOURCE_GROUP, UT_APIM_NAME, existingVersionSetId, UT_API_NAME);
             const spy = sandbox.spy(apimClient.apiVersionSet, "createOrUpdate");
 
@@ -431,8 +431,8 @@ describe("ApimService", () => {
 
     describe("#addApiToProduct()", () => {
         const sandbox = sinon.createSandbox();
-        const newApiName = `${UT_API_NAME}-add-api-2-product`
-        const newApiId = `${newApiName}-v1`
+        const newApiName = `${UT_API_NAME}-add-api-2-product`;
+        const newApiId = `${newApiName}-v1`;
 
         before_if(EnvConfig.enableTest, async () => {
             await apimService.createOrUpdateOAuthService(
@@ -499,7 +499,7 @@ describe("ApimService", () => {
                 await apimService.createVersionSet(UT_RESOURCE_GROUP, UT_APIM_NAME, md5(data.apiName));
                 for (const apiVersion of data.apiVersions) {
                     const spec = await loadSpec(data.apiName);
-                    const apiId = `${data.apiName}-${apiVersion}`
+                    const apiId = `${data.apiName}-${apiVersion}`;
                     await apimService.importApi(
                         UT_RESOURCE_GROUP,
                         UT_APIM_NAME,

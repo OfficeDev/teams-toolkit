@@ -29,7 +29,7 @@ describe("AadService", () => {
 
     after_if(EnvConfig.enableTest, async () => {
         await aadHelper.deleteAadByName(UT_AAD_NAME);
-    })
+    });
 
     describe("#createAad()", () => {
         it_if(EnvConfig.enableTest, "Create a new AAD", async () => {
@@ -38,7 +38,7 @@ describe("AadService", () => {
 
             // Assert
             chai.assert.isNotEmpty(aadInfo.id);
-            const queryResult = await aadService.getAad(aadInfo.id!);
+            const queryResult = await aadService.getAad(aadInfo.id ?? "");
             chai.assert.isNotEmpty(queryResult);
         });
     });

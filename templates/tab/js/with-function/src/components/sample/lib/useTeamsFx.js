@@ -37,6 +37,6 @@ export function useTeamsFx() {
       initialized = true;
     }
   });
-  const isInTeams = true;
+  const isInTeams = true; // TODO: return true until we find a proper approach to detect teams.
   return { error, loading, isInTeams, ...result };
 }

@@ -587,7 +587,7 @@ export class TeamsAppSolution implements Solution {
 
                 ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false); //if selected plugin changed, we need to re-do provision
             }
-            ctx.dialog?.communicate(
+            await ctx.dialog?.communicate(
                 new DialogMsg(DialogType.Show, {
                     description: `[Teams Toolkit] Resource "${addResourceItemsForNotification.join(
                         ",",
@@ -1770,7 +1770,14 @@ export class TeamsAppSolution implements Solution {
 
         const alreadyHaveBot = selectedPlugins.includes( this.botPlugin.name );
 
-        if(alreadyHaveBot && alreadyHaveTab){
+        if (alreadyHaveBot && alreadyHaveTab) {
+            const cannotAddCapWarnMsg = "Your App already has both Tab and Bot, can not Add Capability.";
+            await ctx.dialog?.communicate(
+                new DialogMsg(DialogType.Show, {
+                    description: cannotAddCapWarnMsg,
+                    level: MsgLevel.Warning,
+                }),
+            );
             return ok(undefined);
         }
         
@@ -1912,7 +1919,7 @@ export class TeamsAppSolution implements Solution {
                 ctx.logProvider?.info(`finish scaffolding Local Debug Configs!`);
                 ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false); //if selected plugin changed, we need to re-do provision
             }
-            ctx.dialog?.communicate(
+            await ctx.dialog?.communicate(
                 new DialogMsg(DialogType.Show, {
                     description: `[Teams Toolkit] Capability "${addCapabilityNotification.join(
                         ",",

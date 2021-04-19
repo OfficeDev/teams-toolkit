@@ -28,7 +28,7 @@ Since the current logged in account hasn't enough permission to add database use
 
   ![image](https://user-images.githubusercontent.com/16380704/114985949-fae52800-9ec5-11eb-9f07-b5f8abb02361.png)
 
-4. Create contained database users. Execute Transact-SQL "CREATE USER [{identity}] FROM EXTERNAL PROVIDER;"
+4. Create contained database users. Execute Transact-SQL `CREATE USER [{identity}] FROM EXTERNAL PROVIDER;`
 
   ![image](https://user-images.githubusercontent.com/16380704/114986232-57484780-9ec6-11eb-8757-5be3e45d1ac0.png)
 

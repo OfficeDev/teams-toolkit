@@ -30,6 +30,7 @@ jobs:
     - name: Build
       run: 
         dotnet build -c Release Microsoft.Azure.WebJobs.Extensions.TeamsFx.sln
+        dotnet pack -c Release ./src/Microsoft.Azure.WebJobs.Extensions.TeamsFx.csproj
     - name: Test
       env: 
         TeamsFx_BINDING_IntegrationTestSettings__ClientSecret: ${{secrets.FUNCTION_EXTENSION_CLIENT_SECRET}}

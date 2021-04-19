@@ -53,7 +53,7 @@ export namespace cpUtils {
         Object.assign(options, additionalOptions);
 
         const childProc: cp.ChildProcess = cp.spawn(command, args, options);
-        logger?.debug(`Running command: "${command} ${formattedArgs}"...`);
+        logger?.debug(`Running command: "${command} ${formattedArgs}", options = '${options}'`);
 
         childProc.stdout?.on("data", (data: string | Buffer) => {
           data = data.toString();

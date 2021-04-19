@@ -4,6 +4,7 @@
 
 import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks";
 import { err, ConfigFolderName } from "fx-api";
+import { CoreContext } from "../context";
 import { InProcessingError } from "../error";
 
 /* eslint-disable @typescript-eslint/no-var-requires */
@@ -18,13 +19,20 @@ export const concurrentMW: Middleware = async (
   ctx: HookContext,
   next: NextFunction
 ) => {
-  console.log("in concurrentMW");
-  const lf = `${process.cwd()}/.${ConfigFolderName}`;
+  const coreContext = ctx.arguments[0] as CoreContext;
+  const lf = `${coreContext.projectPath}\\.${ConfigFolderName}`;
   await lockfile
     .lock(lf)
     .then(async () => {
-      await next();
-      return lockfile.unlock(lf);
+      try{
+        await next();
+      }
+      catch(e){
+        ctx.result = err(e);
+      }
+      finally{
+        lockfile.unlock(lf);
+      }
     })
     .catch((e: Error) => {
       console.log(e);

@@ -1,17 +1,19 @@
-import { Context, EnvMeta,ResourceTemplates, SolutionPlugin, TokenProvider, VariableDict} from "fx-api";
+import { Context,ResourceTemplates, SolutionContext, SolutionPlugin, TokenProvider, VariableDict} from "fx-api";
 
 
 export interface CoreContext extends Context{
 
-    solution?:SolutionPlugin;
+    globalSolutions: Map<string, SolutionPlugin>;
 
-    env?:EnvMeta;
+    solution?:SolutionPlugin;
 
     provisionTemplates?:ResourceTemplates;
 
-    deployTemplates?: ResourceTemplates
+    deployTemplates?: ResourceTemplates;
 
     variableDict?: VariableDict;
 
-    tokenProvider?: TokenProvider;
+    tokenProvider: TokenProvider;
+
+    solutionContext?: SolutionContext;
 }

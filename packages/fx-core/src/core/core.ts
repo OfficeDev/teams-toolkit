@@ -24,7 +24,7 @@ import {
   ProjectStates,
   ResourceTemplates,
   ResourceTemplate,
-  VariableDict,
+  VariableDict
 } from "fx-api";
 import { hooks } from "@feathersjs/hooks";
 import { concurrentMW } from "./middlewares/concurrent";
@@ -36,7 +36,7 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import * as error from "./error";
 import * as jsonschema from "jsonschema";
-import { QuestionAppName } from "./question";
+import { CoreQuestionNames, QuestionAppName } from "./question";
 
 export class FxCore implements Core {
   
@@ -45,43 +45,67 @@ export class FxCore implements Core {
   /**
    * global solutions
    */
-  solutions: Map<string, SolutionPlugin> = new Map<string, SolutionPlugin>();
+  globalSolutions: Map<string, SolutionPlugin> = new Map<string, SolutionPlugin>();
 
   constructor(tools: Tools) {
     this.tools = tools;
   }
 
+  buildCleanCoreContext():CoreContext{
+    const coreContext:CoreContext = {
+      ...this.tools,
+      projectPath: "",
+      projectSettings:{
+        name: "myapp",
+        environments:
+        {
+          default: {name:"default", local:false, sideloading:false}
+        },
+        currentEnv: "default",
+        solutionSettings:{
+          name:"fx-solution-default",
+          version:"1.0.0",
+          resources:[],
+          resourceSettings:{}
+        }
+      },
+      projectStates: {
+          solutionStates:{resourceStates:{}}
+      },
+      globalSolutions: this.globalSolutions
+    };
+    return coreContext;
+  }
   async loadCoreContext(projectPath:string):Promise<CoreContext>{
     try{
-      const projectSettings:ProjectSettings = await fs.readJson(`${projectPath}/.${ConfigFolderName}/settings.json`);
-      const projectStates:ProjectStates = await fs.readJson(`${projectPath}/.${ConfigFolderName}/states.json`);
-      const env = projectSettings.env;
+      const projectSettings:ProjectSettings = await fs.readJson(`${projectPath}\\.${ConfigFolderName}\\settings.json`);
+      const projectStates:ProjectStates = await fs.readJson(`${projectPath}\\.${ConfigFolderName}\\states.json`);
+      const envName = projectSettings.currentEnv;
       const resources = projectSettings.solutionSettings?.resources;
       const privisionTemplates:ResourceTemplates = {};
       const deployTemplates:ResourceTemplates = {};
       if(resources){
         for(const resource of resources){
-          const provisionTempalte: ResourceTemplate = await fs.readJson(`${projectPath}/.${ConfigFolderName}/${env}.provision.tpl.json`);
-          const deployTempalte: ResourceTemplate = await fs.readJson(`${projectPath}/.${ConfigFolderName}/${env}.deploy.tpl.json`);
+          const provisionTempalte: ResourceTemplate = await fs.readJson(`${projectPath}\\.${ConfigFolderName}\\${envName}.${resource}.provision.tpl.json`);
+          const deployTempalte: ResourceTemplate = await fs.readJson(`${projectPath}\\.${ConfigFolderName}\\${envName}.${resource}.deploy.tpl.json`);
           privisionTemplates[resource] = provisionTempalte;
           deployTemplates[resource] = deployTempalte;
         }
       }
-      const varDict:VariableDict = await fs.readJson(`${projectPath}/.${ConfigFolderName}/${env}.userdata`);
-      const envMeta:EnvMeta = {
-        name: varDict.name as string,
-        local: varDict.local as boolean,
-        sideloading: varDict.sideloading as boolean
-      };
+      const userDataPath = `${projectPath}\\.${ConfigFolderName}\\${envName}.userdata`;
+      let varDict:VariableDict|undefined = undefined;
+      if(await fs.pathExists(userDataPath)){
+        varDict = await fs.readJson(userDataPath);
+      }
       const coreCtx: CoreContext = {
         projectPath: projectPath,
         projectSettings: projectSettings,
         projectStates:projectStates,
         solution: new DefaultSolution(),
-        env: envMeta,
         provisionTemplates: privisionTemplates,
         deployTemplates: deployTemplates,
         variableDict: varDict,
+        globalSolutions: this.globalSolutions,
         ... this.tools
       };
       return coreCtx;
@@ -98,14 +122,15 @@ export class FxCore implements Core {
   @hooks([errorHandlerMW])
   async init(inputs: Inputs):Promise<Result<Void, FxError>>{
     const defaultSolution = new DefaultSolution();
-    this.solutions.set(defaultSolution.name, defaultSolution);
+    this.globalSolutions.set(defaultSolution.name, defaultSolution);
     return ok(Void);  
   }
   
   @hooks([errorHandlerMW])
   public async create(inputs: Inputs): Promise<Result<string, FxError>> {
-    const appName = inputs.appName as string;
-    const folder = inputs.folder as string;
+    const coreContext = this.buildCleanCoreContext();
+    const appName = inputs[CoreQuestionNames.AppName] as string;
+    const folder = inputs[CoreQuestionNames.Foler] as string;
     const projectPath = path.resolve(`${folder}/${appName}`);
     const folderExist = await fs.pathExists(projectPath);
     if (folderExist) {
@@ -129,19 +154,8 @@ export class FxCore implements Core {
         )
       );
     }  
-    const coreContext:CoreContext = {
-      projectPath: projectPath,
-      ui: this.tools.ui,
-      logProvider: this.tools.logProvider,
-      telemetryReporter: this.tools.telemetryReporter,
-      projectSettings:{
-        name: appName,
-        env: "default"
-      },
-      projectStates: {
-          solutionStates:{}
-      }
-    };
+    coreContext.projectSettings.name = appName;
+    coreContext.projectPath = projectPath;
     return await Executor.create(coreContext, inputs);
   }
 
@@ -174,19 +188,19 @@ export class FxCore implements Core {
   @hooks([errorHandlerMW, concurrentMW])
   public async createEnv(env: EnvMeta, inputs: Inputs): Promise<Result<Void, FxError>> {
     const coreContext = await this.loadCoreContext(inputs.projectPath);
-    return await Executor.createEnv(coreContext, inputs);
+    return await Executor.createEnv(coreContext, env, inputs);
   }
 
   @hooks([errorHandlerMW, concurrentMW])
   public async removeEnv( env: string, inputs: Inputs ): Promise<Result<Void, FxError>> {
     const coreContext = await this.loadCoreContext(inputs.projectPath);
-    return await Executor.removeEnv(coreContext, inputs);
+    return await Executor.removeEnv(coreContext, env, inputs);
   }
 
   @hooks([errorHandlerMW, concurrentMW])
   public async switchEnv(env: string, inputs: Inputs): Promise<Result<Void, FxError>> {
     const coreContext = await this.loadCoreContext(inputs.projectPath);
-    return await Executor.switchEnv(coreContext, inputs);
+    return await Executor.switchEnv(coreContext, env, inputs);
   }
 
   @hooks([errorHandlerMW, concurrentMW])
@@ -197,7 +211,7 @@ export class FxCore implements Core {
 
   @hooks([errorHandlerMW])
   public async getQuestionsForLifecycleTask(task:Task, inputs: Inputs):Promise<Result<QTreeNode|undefined, FxError>> {
-    const coreContext = await this.loadCoreContext(inputs.projectPath);
+    const coreContext = task === Task.create ? this.buildCleanCoreContext() : await this.loadCoreContext(inputs.projectPath);
     return await Executor.getQuestionsForLifecycleTask(coreContext, task, inputs);
   }
 
@@ -208,11 +222,12 @@ export class FxCore implements Core {
   }
 
   @hooks([errorHandlerMW])
-  public async executeUserTask(func: Func, inputs: Inputs): Promise<Result<any, FxError>> {
+  public async executeUserTask(func: Func, inputs: Inputs): Promise<Result<unknown, FxError>> {
     const coreContext = await this.loadCoreContext(inputs.projectPath);
     return await Executor.executeUserTask(coreContext, func, inputs);
   }
 
+  @hooks([errorHandlerMW])
   public async executeQuestionFlowFunction(func:Func, inputs: Inputs) : Promise<Result<unknown, FxError>>{
     const coreContext = await this.loadCoreContext(inputs.projectPath);
     return await Executor.executeQuestionFlowFunction(coreContext, func, inputs);

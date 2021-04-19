@@ -14,6 +14,6 @@ export const solutionMW: Middleware = async (
   next: NextFunction
 ) => {
   const coreCtx = ctx.arguments[0] as CoreContext;
-  coreCtx.solution = new DefaultSolution;
+  coreCtx.solution = new DefaultSolution();
   await next();
 };

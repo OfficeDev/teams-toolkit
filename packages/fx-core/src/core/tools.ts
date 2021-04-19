@@ -33,13 +33,10 @@ export async function ensureUniqueFolder(folderPath: string): Promise<string> {
  
 export function replaceTemplateVariable(resourceTemplate:ResourceTemplate, dict?: VariableDict): void {
   if(!dict) return ;
+  Mustache.escape = function(text) {return text;};
   for (const key of Object.keys(resourceTemplate)) {
     const originalItemValue = resourceTemplate[key];
-    if (
-      originalItemValue &&
-      originalItemValue.startsWith("{{") &&
-      originalItemValue.endsWith("}}")
-    ) {
+    if (  originalItemValue ) {
       const replaced: string = Mustache.render(originalItemValue, dict);
       resourceTemplate[key] = replaced;
     }
@@ -107,4 +104,20 @@ export async function initFolder(projectPath:string, appName:string):Promise<Res
   } catch (e) {
     return err(error.WriteFileError(e));
   }
+}
+
+export function mergeDict(varDict1?:VariableDict, varDict2?:VariableDict):VariableDict{
+  if(!varDict1 && !varDict2) return {};
+  const res:VariableDict = {};
+  if(varDict1){
+    for(const k of Object.keys(varDict1)){
+      res[k] = varDict1[k];
+    }
+  }
+  if(varDict2){
+    for(const k of Object.keys(varDict2)){
+      res[k] = varDict2[k];
+    }
+  }
+  return res;
 }

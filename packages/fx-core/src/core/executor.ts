@@ -16,7 +16,6 @@ import {
   StringValidation,
   ConfigFolderName,
   Inputs,
-  Context,
   SystemError,
   SolutionContext,
   Void,
@@ -24,26 +23,22 @@ import {
   EnvMeta,
   SolutionEnvContext,
   ResourceConfigs,
+  Task,
+  SolutionAllContext,
+  FunctionRouter,
+  SolutionScaffoldResult,
 } from "fx-api";
-import * as path from "path";
 import { hooks } from "@feathersjs/hooks";
-import * as fs from "fs-extra";
-
-
-import * as error from "./error";
-import {
-  CoreQuestionNames,
-  QuestionAppName,
-  QuestionRootFolder,
-  QuestionSelectSolution,
-} from "./question";
-import { readConfigMW, writeConfigMW } from "./middlewares/config";
+import { writeConfigMW } from "./middlewares/config";
 import { projectTypeCheckerMW } from "./middlewares/validation";
-import { envMW } from "./middlewares/env";
-import { solutionMW } from "./middlewares/solution";
+import * as error from "./error";
 import { CoreContext } from "./context";
 import { DefaultSolution } from "../plugins/solution/default";
-import { initFolder, replaceTemplateVariable } from "./tools";
+import { initFolder, mergeDict, replaceTemplateVariable } from "./tools";
+import { CoreQuestionNames, QuestionAppName, QuestionRootFolder, QuestionSelectSolution } from "./question";
+import * as fs from "fs-extra";
+import * as path from "path";
+import { solutionMW } from "./middlewares/solution";
 
 
 export class Executor {
@@ -78,230 +73,294 @@ export class Executor {
     // scaffold
     const scaffoldRes = await ctx.solution.scaffold(solutionContext, inputs);
     if(scaffoldRes.isErr()) return err(scaffoldRes.error);
-
-    const templates = scaffoldRes.value;
+    const templates:SolutionScaffoldResult = scaffoldRes.value;
     ctx.deployTemplates = templates.deployTemplates;
     ctx.provisionTemplates = templates.provisionTemplates;
-    ctx.projectSettings.solutionSettings = solutionContext.solutionSettings;
-    ctx.projectStates.solutionStates = solutionContext.solutionStates;
- 
+    ctx.solutionContext = solutionContext;
     return ok(ctx.projectPath);
   }
 
-   
+  @hooks([projectTypeCheckerMW, writeConfigMW])
+  static async provision(ctx: CoreContext, inputs: Inputs): Promise<Result<Void, FxError>> {
+    const provisionConfigs = this.getProvisionConfigs(ctx);
+    const solutionContext:SolutionEnvContext = this.getSolutionEnvContext(ctx, provisionConfigs);
+    ctx.solutionContext = solutionContext;
+    const res = await ctx.solution!.provision(solutionContext, inputs);
+    if(res.isOk())
+      ctx.variableDict = mergeDict(ctx.variableDict, res.value);
+    else
+      ctx.variableDict = mergeDict(ctx.variableDict, res.error.result);
+    return res.isOk() ? ok(Void) : err(res.error);
+  }
+
+  
+  @hooks([projectTypeCheckerMW, writeConfigMW])
+  static async build(ctx: CoreContext, inputs: Inputs): Promise<Result<Void, FxError>> {
+    const solutionContext:SolutionContext = this.getSolutionContext(ctx);
+    ctx.solutionContext = solutionContext;
+    const res = await ctx.solution!.build(solutionContext, inputs);
+    if(res.isErr()) return err(res.error);
+    return ok(Void);
+  }
 
   @hooks([projectTypeCheckerMW, writeConfigMW])
-  static async provision(ctx: CoreContext, inputs: Inputs): Promise<Result<VariableDict, FxError>> {
-    const env = ctx.env;
+  static async deploy(ctx: CoreContext, inputs: Inputs): Promise<Result<VariableDict, FxError>> {
+    const deployConfigs = this.getDeployConfigs(ctx);
+    const solutionContext:SolutionEnvContext = this.getSolutionEnvContext(ctx, deployConfigs);
+    ctx.solutionContext = solutionContext;
+    const res = await ctx.solution!.deploy(solutionContext, inputs);
+    if(res.isOk())
+      ctx.variableDict = mergeDict(ctx.variableDict, res.value);
+    else 
+      ctx.variableDict = mergeDict(ctx.variableDict, res.error.result);
+    return res.isOk() ? ok(Void) : err(res.error);
+  }
+
+  @hooks([projectTypeCheckerMW, writeConfigMW])
+  static async publish(ctx: CoreContext, inputs: Inputs): Promise<Result<Void, FxError>> {
+    const provisionConfigs = this.getProvisionConfigs(ctx);
+    const solutionContext:SolutionEnvContext = this.getSolutionEnvContext(ctx, provisionConfigs);
+    ctx.solutionContext = solutionContext;
+    const res = await ctx.solution!.publish(solutionContext, inputs);
+    if(res.isOk())
+      ctx.variableDict = mergeDict(ctx.variableDict, res.value);
+    return res.isOk() ? ok(Void) : err(res.error);
+  }
+
+  @hooks([projectTypeCheckerMW])
+  static async getQuestionsForLifecycleTask( ctx: CoreContext, task:Task, inputs: Inputs): Promise<Result<QTreeNode | undefined, FxError>> {
+    const node = new QTreeNode({ type: NodeType.group });
+    const solutionContext = this.getSolutionAllContext(ctx);
+    if (task === Task.create) {
+      node.addChild(new QTreeNode(QuestionAppName));
+      //make sure that global solutions are loaded
+      const solutionNames: string[] = [];
+      for (const k of ctx.globalSolutions.keys()) {
+        solutionNames.push(k);
+      }
+      const selectSolution: SingleSelectQuestion = QuestionSelectSolution;
+      selectSolution.option = solutionNames;
+      const select_solution = new QTreeNode(selectSolution);
+      node.addChild(select_solution);
+      for (const [k, solution] of ctx.globalSolutions) {
+        if (solution.getQuestionsForLifecycleTask) {
+          const res = await solution.getQuestionsForLifecycleTask( solutionContext, task, inputs);
+          if (res.isErr()) return res;
+          if (res.value) {
+            const solutionNode = res.value as QTreeNode;
+            solutionNode.condition = { equals: k };
+            if (solutionNode.data) select_solution.addChild(solutionNode);
+          }
+        }
+      }
+      node.addChild(new QTreeNode(QuestionRootFolder));
+    } else if (ctx.solution) {
+      const res = await ctx.solution.getQuestionsForLifecycleTask(solutionContext, task, inputs);
+      if (res.isErr()) return res;
+      if (res.value) {
+        const child = res.value as QTreeNode;
+        if (child.data) node.addChild(child);
+      }
+    }
+    return ok(node);
+  }
+
+  @hooks([projectTypeCheckerMW])
+  static async getQuestionsForUserTask( ctx: CoreContext, router:FunctionRouter, inputs: Inputs): Promise<Result<QTreeNode | undefined, FxError>> {
+    const namespace = router.namespace;
+    const array = namespace ? namespace.split("/") : [];
+    if (namespace && "" !== namespace && array.length > 0) {
+      const solutionName = array[0];
+      const solution = ctx.globalSolutions.get(solutionName);
+      if (solution && solution.getQuestionsForUserTask) {
+        const solutionContext = this.getSolutionAllContext(ctx);
+        return await solution.getQuestionsForUserTask(solutionContext, router, inputs);
+      }
+    }
+    return err(
+      returnUserError(
+        new Error(`getQuestionsForUserTaskRouteFailed:${JSON.stringify(router)}`),
+        error.CoreSource,
+        error.CoreErrorNames.getQuestionsForUserTaskRouteFailed
+      )
+    );
+  }
+
+  @hooks([projectTypeCheckerMW, writeConfigMW])
+  static async executeUserTask( ctx: CoreContext,  func: Func, inputs: Inputs ): Promise<Result<unknown, FxError>> {
+    const namespace = func.namespace;
+    const array = namespace ? namespace.split("/") : [];
+    if ("" !== namespace && array.length > 0) {
+      const solutionName = array[0];
+      const solution = ctx.globalSolutions.get(solutionName);
+      if (solution && solution.executeUserTask) {
+        const solutionContext = this.getSolutionAllContext(ctx);
+        return await solution.executeUserTask(solutionContext, func, inputs);
+      }
+    }
+    return err(
+      returnUserError(
+        new Error(`executeUserTaskRouteFailed:${JSON.stringify(func)}`),
+        error.CoreSource,
+        error.CoreErrorNames.executeUserTaskRouteFailed
+      )
+    );
+  }
+
+  @hooks([projectTypeCheckerMW, writeConfigMW])
+  static async executeQuestionFlowFunction( ctx: CoreContext, func:Func, inputs: Inputs ): Promise<Result<unknown, FxError>> {
+    const namespace = func.namespace;
+    const array = namespace ? namespace.split("/") : [];
+    if (!namespace || "" === namespace || array.length === 0) {
+      if (func.method === "validateFolder") {
+        if (!func.params) return ok(undefined);
+        return await this.validateFolder(func.params as string, inputs);
+      }
+    } else {
+      const solutionName = array[0];
+      const solution = ctx.globalSolutions.get(solutionName);
+      if (solution && solution.executeQuestionFlowFunction) {
+        const solutionContext = this.getSolutionAllContext(ctx);
+        return await solution.executeQuestionFlowFunction(solutionContext, func, inputs);
+      }
+    }
+    return err(
+      returnUserError(
+        new Error(`CallFuncRouteFailed:${JSON.stringify(func)}`),
+        error.CoreSource,
+        error.CoreErrorNames.CallFuncRouteFailed
+      )
+    );
+  }
+  
+  @hooks([projectTypeCheckerMW, writeConfigMW])
+  static async createEnv(ctx: CoreContext, env: EnvMeta, inputs: Inputs): Promise<Result<Void, FxError>> {
+    const existing = ctx.projectSettings.environments[env.name];
+    if(!existing){
+      ctx.projectSettings.environments[env.name] = env;
+      return ok(Void);
+    }
+    return err(new UserError("EnvExist", "EnvExist", "core"));
+  }
+
+  @hooks([projectTypeCheckerMW, writeConfigMW])
+  static async removeEnv( ctx: CoreContext, env: string, inputs: Inputs): Promise<Result<Void, FxError>> {
+    const existing = ctx.projectSettings.environments[env];
+    if(existing){
+      delete ctx.projectSettings.environments[env];
+      return ok(Void);
+    }
+    return err(new UserError("EnvNotExist", "EnvNotExist", "core"));
+  }
+
+  @hooks([projectTypeCheckerMW, writeConfigMW])
+  static async switchEnv( ctx: CoreContext, env: string, inputs: Inputs): Promise<Result<Void, FxError>> {
+    const existing = ctx.projectSettings.environments[env];
+    if(existing){
+      ctx.projectSettings.currentEnv = env;
+      return ok(Void);
+    }
+    return err(new UserError("EnvNotExist", "EnvNotExist", "core"));
+  }
+
+  @hooks([projectTypeCheckerMW, writeConfigMW])
+  static async listEnvs(ctx: CoreContext, inputs: Inputs): Promise<Result<EnvMeta[], FxError>> {
+    const list:EnvMeta[] = [];
+    for(const k of Object.keys(ctx.projectSettings.environments)){
+      const envMeta = ctx.projectSettings.environments[k];
+      list.push(envMeta);
+    }
+    return ok(list);
+  }
+ 
+
+  static getProvisionConfigs(ctx: CoreContext):ResourceConfigs{
     const resources = ctx.projectSettings.solutionSettings?.resources;
-    const privisionConfigs: ResourceConfigs = {};
+    const provisionConfigs: ResourceConfigs = {};
     if(resources){
       for(const resource of resources){
         if(ctx.provisionTemplates){
           const resourceTemplate = ctx.provisionTemplates[resource];
           if(resourceTemplate){
             replaceTemplateVariable(resourceTemplate, ctx.variableDict);
-            privisionConfigs[resource] = resourceTemplate;
+            provisionConfigs[resource] = resourceTemplate;
           }
         }
       }
     }
-    if(!env) {
-      return err(new SystemError("EnvEmpty", "Env is empty", "core"));
+    return provisionConfigs;
+  }
+
+  static getDeployConfigs(ctx: CoreContext):ResourceConfigs{
+    const resources = ctx.projectSettings.solutionSettings?.resources;
+    const deployConfigs: ResourceConfigs = {};
+    if(resources){
+      for(const resource of resources){
+        if(ctx.deployTemplates){
+          const resourceTemplate = ctx.deployTemplates[resource];
+          if(resourceTemplate){
+            replaceTemplateVariable(resourceTemplate, ctx.variableDict);
+            deployConfigs[resource] = resourceTemplate;
+          }
+        }
+      }
     }
-    // build SolutionContext
-    const solutionContext:SolutionEnvContext = {
-      ...ctx,
-      env: env,
-      tokenProvider: ctx.tokenProvider!,
+    return deployConfigs;
+  }
+
+  static async validateFolder( folder: string,  inputs: Inputs
+    ): Promise<Result<unknown, FxError>> {
+    const appName = inputs[CoreQuestionNames.AppName] as string;
+    if (!appName) return ok(undefined);
+    const projectPath = path.resolve(folder, appName);
+    const exists = await fs.pathExists(projectPath);
+    if (exists)
+      return ok(
+        `Project folder already exists:${projectPath}, please change a different folder.`
+      );
+    return ok(undefined);
+  }
+
+  static getSolutionContext(ctx: CoreContext):SolutionContext{
+    const solutionContext:SolutionContext = {
+      projectPath: ctx.projectPath,
+      ui: ctx.ui,
+      logProvider: ctx.logProvider,
+      telemetryReporter: ctx.telemetryReporter,
+      projectSettings: ctx.projectSettings,
+      projectStates: ctx.projectStates,
       solutionSettings: ctx.projectSettings.solutionSettings,
-      solutionStates: ctx.projectStates.solutionStates,
-      resourceConfigs: privisionConfigs
+      solutionStates: ctx.projectStates.solutionStates
     };
-    const res = await ctx.solution!.provision(solutionContext, inputs);
-    if(res.isErr()) return err(res.error);
-    return ok(Void);
+    return solutionContext;
   }
 
+  static getSolutionEnvContext(ctx: CoreContext, resourceConfigs: ResourceConfigs):SolutionEnvContext{
+    const envMeta = ctx.projectSettings.environments[ctx.projectSettings.currentEnv];
+    const solutionContext:SolutionEnvContext = {
+      ...this.getSolutionContext(ctx),
+      env: envMeta,
+      tokenProvider: ctx.tokenProvider,
+      resourceConfigs: resourceConfigs
+    };
+    return solutionContext;
+  }
+
+  static getSolutionAllContext(ctx: CoreContext):SolutionAllContext{
+    // build SolutionAllContext
+    const provisionConfigs = this.getProvisionConfigs(ctx);
+    const deployConfigs = this.getDeployConfigs(ctx);
+    const envMeta = ctx.projectSettings.environments[ctx.projectSettings.currentEnv];
+    const solutionContext:SolutionAllContext = {
+      ...this.getSolutionContext(ctx),
+      env: envMeta,
+      tokenProvider: ctx.tokenProvider,
+      provisionConfigs: provisionConfigs,
+      deployConfigs: deployConfigs
+    };
+    return solutionContext;
+  }
   
-  @hooks([projectTypeCheckerMW, writeConfigMW])
-  static async build(ctx: CoreContext, inputs: Inputs): Promise<Result<VariableDict, FxError>> {
-    
-    throw new Error();
-  }
-
-  @hooks([projectTypeCheckerMW, writeConfigMW])
-  static async deploy(ctx: CoreContext, inputs: Inputs): Promise<Result<VariableDict, FxError>> {
-    throw new Error();
-  }
-
-  @hooks([projectTypeCheckerMW, writeConfigMW])
-  static async publish(ctx: CoreContext, inputs: Inputs): Promise<Result<Void, FxError>> {
-    throw new Error();
-  }
-
-  // @hooks([validationMW, envMW, solutionMW, readConfigMW])
-  // static async getQuestions(
-  //   ctx: CoreContext
-  // ): Promise<Result<QTreeNode | undefined, FxError>> {
-  //   const answers = new ConfigMap();
-  //   const node = new QTreeNode({ type: NodeType.group });
-  //   if (ctx.stage === Stage.create) {
-  //     node.addChild(new QTreeNode(QuestionAppName));
-
-  //     //make sure that global solutions are loaded
-  //     const solutionNames: string[] = [];
-  //     for (const k of ctx.globalSolutions.keys()) {
-  //       solutionNames.push(k);
-  //     }
-  //     const selectSolution: SingleSelectQuestion = QuestionSelectSolution;
-  //     selectSolution.option = solutionNames;
-  //     const select_solution = new QTreeNode(selectSolution);
-  //     node.addChild(select_solution);
-
-  //     for (const [k, v] of ctx.globalSolutions) {
-  //       if (v.getQuestions) {
-  //         const res = await v.getQuestions(
-  //           ctx.stage,
-  //           ctx.toSolutionContext(answers)
-  //         );
-  //         if (res.isErr()) return res;
-  //         if (res.value) {
-  //           const solutionNode = res.value as QTreeNode;
-  //           solutionNode.condition = { equals: k };
-  //           if (solutionNode.data) select_solution.addChild(solutionNode);
-  //         }
-  //       }
-  //     }
-  //     node.addChild(new QTreeNode(QuestionRootFolder));
-  //   } else if (ctx.selectedSolution) {
-  //     const res = await ctx.selectedSolution.getQuestions(
-  //       ctx.stage,
-  //       ctx.toSolutionContext(answers)
-  //     );
-  //     if (res.isErr()) return res;
-  //     if (res.value) {
-  //       const child = res.value as QTreeNode;
-  //       if (child.data) node.addChild(child);
-  //     }
-  //   }
-  //   return ok(node);
-  // }
-
-  // @hooks([validationMW, envMW, solutionMW, readConfigMW])
-  // static async getQuestionsForUserTask(
-  //   ctx: CoreContext,
-  //   func: Func
-  // ): Promise<Result<QTreeNode | undefined, FxError>> {
-  //   const namespace = func.namespace;
-  //   const array = namespace ? namespace.split("/") : [];
-  //   if (namespace && "" !== namespace && array.length > 0) {
-  //     const solutionName = array[0];
-  //     const solution = ctx.globalSolutions.get(solutionName);
-  //     if (solution && solution.getQuestionsForUserTask) {
-  //       const solutioContext = ctx.toSolutionContext();
-  //       return await solution.getQuestionsForUserTask(func, solutioContext);
-  //     }
-  //   }
-  //   return err(
-  //     returnUserError(
-  //       new Error(`getQuestionsForUserTaskRouteFailed:${JSON.stringify(func)}`),
-  //       error.CoreSource,
-  //       error.CoreErrorNames.getQuestionsForUserTaskRouteFailed
-  //     )
-  //   );
-  // }
-
-  // @hooks([validationMW, envMW, solutionMW, readConfigMW, writeConfigMW])
-  // static async executeUserTask(
-  //   ctx: CoreContext,
-  //   func: Func,
-  //   answer?: ConfigMap
-  // ): Promise<Result<any, FxError>> {
-  //   const namespace = func.namespace;
-  //   const array = namespace ? namespace.split("/") : [];
-  //   if ("" !== namespace && array.length > 0) {
-  //     const solutionName = array[0];
-  //     const solution = ctx.globalSolutions.get(solutionName);
-  //     if (solution && solution.executeUserTask) {
-  //       const solutioContext = ctx.toSolutionContext(answer);
-  //       return await solution.executeUserTask(func, solutioContext);
-  //     }
-  //   }
-  //   return err(
-  //     returnUserError(
-  //       new Error(`executeUserTaskRouteFailed:${JSON.stringify(func)}`),
-  //       error.CoreSource,
-  //       error.CoreErrorNames.executeUserTaskRouteFailed
-  //     )
-  //   );
-  // }
-
-  // private static async validateFolder(
-  //   folder: string,
-  //   answer?: ConfigMap
-  // ): Promise<Result<any, FxError>> {
-  //   const appName = answer?.getString(CoreQuestionNames.AppName);
-  //   if (!appName) return ok(undefined);
-  //   const projectPath = path.resolve(folder, appName);
-  //   const exists = await fs.pathExists(projectPath);
-  //   if (exists)
-  //     return ok(
-  //       `Project folder already exists:${projectPath}, please change a different folder.`
-  //     );
-  //   return ok(undefined);
-  // }
-
-  // @hooks([validationMW, envMW, solutionMW, readConfigMW, writeConfigMW])
-  // static async callFunc(
-  //   ctx: CoreContext,
-  //   func: Func,
-  //   answer?: ConfigMap
-  // ): Promise<Result<any, FxError>> {
-  //   const namespace = func.namespace;
-  //   const array = namespace ? namespace.split("/") : [];
-  //   if (!namespace || "" === namespace || array.length === 0) {
-  //     if (func.method === "validateFolder") {
-  //       if (!func.params) return ok(undefined);
-  //       return await this.validateFolder(func.params as string, answer);
-  //     }
-  //   } else {
-  //     const solutionName = array[0];
-  //     const solution = ctx.globalSolutions.get(solutionName);
-  //     if (solution && solution.callFunc) {
-  //       return await solution.callFunc(func, ctx.toSolutionContext(answer));
-  //     }
-  //   }
-  //   return err(
-  //     returnUserError(
-  //       new Error(`CallFuncRouteFailed:${JSON.stringify(func)}`),
-  //       error.CoreSource,
-  //       error.CoreErrorNames.CallFuncRouteFailed
-  //     )
-  //   );
-  // }
-
-  
-  
-  @hooks([projectTypeCheckerMW, envMW])
-  static async createEnv(ctx: CoreContext, env: EnvMeta, inputs: Inputs): Promise<Result<null, FxError>> {
-    throw new Error();
-  }
-
-  @hooks([projectTypeCheckerMW, envMW])
-  static async removeEnv( ctx: CoreContext, env: EnvMeta, inputs: Inputs): Promise<Result<null, FxError>> {
-    throw new Error();
-  }
-
-  @hooks([projectTypeCheckerMW, envMW])
-  static async switchEnv( ctx: CoreContext, env: EnvMeta, inputs: Inputs): Promise<Result<null, FxError>> {
-    throw new Error();
-  }
-
-  @hooks([projectTypeCheckerMW, envMW])
-  static async listEnvs(ctx: CoreContext, inputs: Inputs): Promise<Result<string[], FxError>> {
-    throw new Error();
-  }
 }
 
 

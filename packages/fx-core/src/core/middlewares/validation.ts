@@ -17,20 +17,21 @@ export const projectTypeCheckerMW: Middleware = async (
   ctx: HookContext,
   next: NextFunction
 ) => {
- 
-  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-  const projectPath = inputs.projectPath;
-  // some validation
-  const checklist: string[] = [
-    projectPath,
-    `${projectPath}/package.json`,
-    `${projectPath}/.${ConfigFolderName}`,
-    `${projectPath}/.${ConfigFolderName}/settings.json`
-  ];
-  for (const fp of checklist) {
-    if (!(await fs.pathExists(path.resolve(fp)))) {
-      ctx.result = err(NotSupportedProjectType());
-      return;
+  if(ctx.method !== "create" && !ctx.method?.startsWith("getQuestions")){
+    const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+    const projectPath = inputs.projectPath;
+    // some validation
+    const checklist: string[] = [
+      projectPath,
+      `${projectPath}/package.json`,
+      `${projectPath}/.${ConfigFolderName}`,
+      `${projectPath}/.${ConfigFolderName}/settings.json`
+    ];
+    for (const fp of checklist) {
+      if (!(await fs.pathExists(path.resolve(fp)))) {
+        ctx.result = err(NotSupportedProjectType());
+        return;
+      }
     }
   }
   await next();

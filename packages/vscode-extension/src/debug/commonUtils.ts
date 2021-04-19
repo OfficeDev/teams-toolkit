@@ -8,7 +8,7 @@ import * as vscode from "vscode";
 import * as constants from "./constants";
 import { openUrl } from "./depsChecker/common";
 import { ConfigFolderName, Func } from "fx-api";
-import { core, showError } from "../handlers";
+import { core, globalInputs, showError } from "../handlers";
 
 export async function getProjectRoot(
   folderPath: string,
@@ -95,7 +95,7 @@ export async function getLocalDebugTeamsAppId(isLocalSideloadingConfiguration: b
     params: isLocalSideloadingConfiguration ? "local" : "remote"
   };
   try {
-    const result = await core.callFunc(func);
+    const result = await core.executeQuestionFlowFunction(func, globalInputs);
     if (result.isErr()) {
       throw result.error;
     }

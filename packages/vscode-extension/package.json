@@ -38,7 +38,8 @@
   "activationEvents": [
     "*",
     "onCommand:fx-extension.create",
-    "onCommand:fx-extension.update",
+    "onCommand:fx-extension.build",
+    "onCommand:fx-extension.addResource",
     "onCommand:fx-extension.addCapability",
     "onCommand:fx-extension.provision",
     "onCommand:fx-extension.deploy",
@@ -97,7 +98,11 @@
         "title": "TeamsFx - Start A New Project"
       },
       {
-        "command": "fx-extension.update",
+        "command": "fx-extension.build",
+        "title": "TeamsFx - Build Artifacts"
+      },
+      {
+        "command": "fx-extension.addResource",
         "title": "TeamsFx - Add Resource"
       },
       {
@@ -389,8 +394,8 @@
     "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
-    "fx-api": "^1.0.1",
-    "fx-core": "^1.0.1",
+    "fx-api": "^2.0.0",
+    "fx-core": "^2.0.0",
     "jsonschema": "^1.4.0",
     "opn": "^6.0.0",
     "sudo-prompt": "^9.2.1",

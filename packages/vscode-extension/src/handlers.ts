@@ -9,7 +9,7 @@ import {
   FxError,
   err,
   ok,
-  Stage,
+  Task,
   Platform,
   Func,
   UserError,
@@ -20,13 +20,17 @@ import {
   traverse,
   RemoteFuncExecutor,
   Inputs,
-  ConfigMap,
   InputResult,
   InputResultType,
   VsCodeEnv,
-  AppStudioTokenProvider
+  AppStudioTokenProvider,
+  Tools,
+  DialogMsg,
+  DialogType,
+  QuestionType,
+  Void
 } from "fx-api";
-import { CoreProxy } from "fx-core";
+import { deepCopy, FxCore } from "fx-core";
 import DialogManagerInstance from "./userInterface";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -61,101 +65,40 @@ import { DotnetChecker, dotnetChecker } from "./debug/depsChecker/dotnetChecker"
 import { PanelType } from "./controls/PanelType";
 import { NodeChecker } from "./debug/depsChecker/nodeChecker";
 
-export let core: CoreProxy;
-const runningTasks = new Set<string>(); // to control state of task execution
+export let core: FxCore;
+export const globalInputs: Inputs = {platform:Platform.VSCode, projectPath:""};
+export const runningTasks = new Set<string>(); // to control state of task execution
 
-export async function activate(): Promise<Result<null, FxError>> {
-  const result: Result<null, FxError> = ok(null);
+export async function activate(): Promise<Result<Void, FxError>> {
+  let result: Result<Void, FxError> = ok(Void);
   try {
-    core = CoreProxy.getInstance();
-
-    {
-      const result = await core.withDialog(DialogManagerInstance);
-      if (result.isErr()) {
-        showError(result.error);
-        return err(result.error);
-      }
+    let appstudioLogin: AppStudioTokenProvider = AppStudioTokenInstance;
+    const vscodeEnv = detectVsCodeEnv();
+    if (vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode) {
+      appstudioLogin = AppStudioCodeSpaceTokenInstance;
     }
-
-    {
-      const result = await core.withGraphToken(GraphManagerInstance);
-      if (result.isErr()) {
-        showError(result.error);
-        return err(result.error);
-      }
-    }
-
-    {
-      const result = await core.withAzureAccount(AzureAccountManager);
-      if (result.isErr()) {
-        showError(result.error);
-        return err(result.error);
-      }
-    }
-
-    {
-      let appstudioLogin: AppStudioTokenProvider = AppStudioTokenInstance;
-      const vscodeEnv = detectVsCodeEnv();
-      if (vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode) {
-        appstudioLogin = AppStudioCodeSpaceTokenInstance;
-      }
-
-      const result = await core.withAppStudioToken(appstudioLogin);
-      if (result.isErr()) {
-        showError(result.error);
-        return err(result.error);
-      }
-    }
-
-    {
-      const telemetry = new VSCodeTelemetryReporter(
-        extensionPackage.aiKey,
-        extensionPackage.name,
-        extensionPackage.version
-      );
-      const result = await core.withTelemetry(telemetry);
-      if (result.isErr()) {
-        showError(result.error);
-        return err(result.error);
-      }
-    }
-
-    {
-      const result = await core.withLogger(VsCodeLogInstance);
-      if (result.isErr()) {
-        showError(result.error);
-        return err(result.error);
-      }
-    }
-
-    {
-      const result = await core.withTreeProvider(CommandsTreeViewProvider.getInstance());
-      if (result.isErr()) {
-        showError(result.error);
-        return err(result.error);
-      }
-    }
-
-    {
-      const globalConfig = new ConfigMap();
-      globalConfig.set("function-dotnet-checker-enabled", await dotnetChecker.isEnabled());
-      const result = await core.init(globalConfig);
-      if (result.isErr()) {
-        showError(result.error);
-        return err(result.error);
-      }
-    }
-
-    {
-      const workspacePath: string | undefined = workspace.workspaceFolders?.length
-        ? workspace.workspaceFolders[0].uri.fsPath
-        : undefined;
-      const result = await core.open(workspacePath);
-      if (result.isErr()) {
-        showError(result.error);
-        return err(result.error);
-      }
-    }
+    const telemetry = new VSCodeTelemetryReporter(
+      extensionPackage.aiKey,
+      extensionPackage.name,
+      extensionPackage.version
+    );
+    const tools:Tools = {
+      logProvider: VsCodeLogInstance,
+      tokenProvider: {
+        azure: AzureAccountManager,
+        graph: GraphManagerInstance,
+        appStudio: appstudioLogin
+      },
+      telemetryReporter: telemetry,
+      treeProvider:CommandsTreeViewProvider.getInstance(),
+      ui: VS_CODE_UI
+    };
+    core = new FxCore(tools); 
+    const workspacePath: string | undefined = workspace.workspaceFolders?.length? workspace.workspaceFolders[0].uri.fsPath : undefined;
+    globalInputs["function-dotnet-checker-enabled"] = await dotnetChecker.isEnabled();
+    if(workspacePath) globalInputs.projectPath = workspacePath;
+    globalInputs.vscodeEnv = detectVsCodeEnv();
+    result = await core.init(globalInputs);
   } catch (e) {
     const FxError: FxError = {
       name: e.name,
@@ -170,24 +113,28 @@ export async function activate(): Promise<Result<null, FxError>> {
   return result;
 }
 
-export async function createNewProjectHandler(args?: any[]): Promise<Result<null, FxError>> {
+export async function createNewProjectHandler(args?: any[]): Promise<Result<unknown, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, {
     [TelemetryProperty.TriggerFrom]:
       args && args[0] === CommandsTreeViewProvider.TreeViewFlag
         ? TelemetryTiggerFrom.TreeView
         : TelemetryTiggerFrom.CommandPalette
   });
-  return await runCommand(Stage.create);
+  return await runCommand(Task.create);
 }
 
-export async function updateProjectHandler(): Promise<Result<null, FxError>> {
+export async function addResourceProjectHandler(): Promise<Result<unknown, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.UpdateProjectStart, {
     [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
   });
-  return await runCommand(Stage.update);
+  const func: Func = {
+    namespace: "fx-solution-azure",
+    method: "addResource"
+  };
+  return await core.executeUserTask(func, globalInputs);
 }
 
-export async function validateManifestHandler(): Promise<Result<null, FxError>> {
+export async function validateManifestHandler(): Promise<Result<unknown, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ValidateManifest, {
     [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
   });
@@ -196,10 +143,10 @@ export async function validateManifestHandler(): Promise<Result<null, FxError>> 
     namespace: "fx-solution-azure",
     method: "validateManifest"
   };
-  return await core.executeUserTask(func);
+  return await core.executeUserTask(func, globalInputs);
 }
 
-export async function buildPackageHandler(): Promise<Result<null, FxError>> {
+export async function buildPackageHandler(): Promise<Result<unknown, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.BuildPackage, {
     [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
   });
@@ -208,44 +155,48 @@ export async function buildPackageHandler(): Promise<Result<null, FxError>> {
     namespace: "fx-solution-azure",
     method: "buildPackage"
   };
-  return await core.executeUserTask(func);
+  return await core.executeUserTask(func, globalInputs);
 }
 
-export async function provisionHandler(): Promise<Result<null, FxError>> {
+export async function provisionHandler(): Promise<Result<unknown, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ProvisionStart, {
     [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
   });
-  return await runCommand(Stage.provision);
+  return await runCommand(Task.provision);
 }
 
-export async function deployHandler(): Promise<Result<null, FxError>> {
+export async function buildHandler(): Promise<Result<unknown, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.BuildProjectStart, {
+    [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
+  });
+  return await runCommand(Task.build);
+}
+
+export async function deployHandler(): Promise<Result<unknown, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DeployStart, {
     [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
   });
-  return await runCommand(Stage.deploy);
+  return await runCommand(Task.deploy);
 }
 
-export async function publishHandler(): Promise<Result<null, FxError>> {
+export async function publishHandler(): Promise<Result<unknown, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.PublishStart, {
     [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
   });
-  return await runCommand(Stage.publish);
+  return await runCommand(Task.publish);
 }
 
-const coreExeceutor: RemoteFuncExecutor = async function (
-  func: Func,
-  answers: Inputs | ConfigMap
+const coreExeceutor: RemoteFuncExecutor = async function ( func: Func, answers: Inputs
 ): Promise<Result<unknown, FxError>> {
-  return await core.callFunc(func, answers as ConfigMap);
+  return await core.executeQuestionFlowFunction(func, answers);
 };
 
-export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
-  const eventName = ExtTelemetry.stageToEvent(stage);
-  let result: Result<null, FxError> = ok(null);
-
+export async function runCommand(task: Task): Promise<Result<unknown, FxError>> {
+  const eventName = ExtTelemetry.TaskToEvent(task);
+  let result: Result<unknown, FxError> = ok(Void);
   try {
     // 1. check concurrent lock
-    if (runningTasks.size > 0 && stage !== Stage.create) {
+    if (runningTasks.size > 0 && task !== Task.create) {
       result = err(
         new UserError(
           ExtensionErrors.ConcurrentTriggerTask,
@@ -258,33 +209,30 @@ export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
     }
 
     // 2. lock
-    runningTasks.add(stage);
+    runningTasks.add(task);
 
     // 3. check core not empty
     const checkCoreRes = checkCoreNotEmpty();
     if (checkCoreRes.isErr()) {
       throw checkCoreRes.error;
     }
-
-    const answers = new ConfigMap();
-    answers.set("stage", stage);
-    answers.set("platform", Platform.VSCode);
+ 
 
     // 4. getQuestions
-    const qres = await core.getQuestions(stage, Platform.VSCode);
+    const qres = await core.getQuestionsForLifecycleTask(task, globalInputs);
     if (qres.isErr()) {
       throw qres.error;
     }
 
-    const vscenv = detectVsCodeEnv();
-    answers.set("vscenv", vscenv);
-    VsCodeLogInstance.info(`VS Code Environment: ${vscenv}`);
+    
+    VsCodeLogInstance.info(`VS Code Environment: ${globalInputs.vscodeEnv}`);
 
     // 5. run question model
+    const inputs = deepCopy(globalInputs);
     const node = qres.value;
     if (node) {
       VsCodeLogInstance.info(`Question tree:${JSON.stringify(node, null, 4)}`);
-      const res: InputResult = await traverse(node, answers, VS_CODE_UI, coreExeceutor);
+      const res: InputResult = await traverse(node, inputs, VS_CODE_UI, coreExeceutor);
       VsCodeLogInstance.info(`User input:${JSON.stringify(res, null, 4)}`);
       if (res.type === InputResultType.error) {
         throw res.error!;
@@ -294,16 +242,28 @@ export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
     }
 
     // 6. run task
-    if (stage === Stage.create) result = await core.create(answers);
-    else if (stage === Stage.update) result = await core.update(answers);
-    else if (stage === Stage.provision) result = await core.provision(answers);
-    else if (stage === Stage.deploy) result = await core.deploy(answers);
-    else if (stage === Stage.debug) result = await core.localDebug(answers);
-    else if (stage === Stage.publish) result = await core.publish(answers);
+    if (task === Task.create){
+      const tmpResult = await core.create(inputs);
+      if (tmpResult.isErr()) {
+          result = err(tmpResult.error);
+      } else {
+          await DialogManagerInstance.communicate(
+              new DialogMsg(DialogType.Ask, {
+                  type: QuestionType.OpenFolder,
+                  description: tmpResult.value,
+              }),
+          );
+          result = ok(null);
+      }
+    } 
+    else if (task === Task.provision) result = await core.provision(inputs);
+    else if (task === Task.deploy) result = await core.deploy(inputs);
+    else if (task === Task.build) result = await core.build(inputs);
+    else if (task === Task.publish) result = await core.publish(inputs);
     else {
       throw new SystemError(
         ExtensionErrors.UnsupportedOperation,
-        `Operation not support:${stage}`,
+        `Operation not support:${Task}`,
         ExtensionSource
       );
     }
@@ -312,7 +272,7 @@ export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
   }
 
   // 7. unlock
-  runningTasks.delete(stage);
+  runningTasks.delete(task);
 
   // 8. send telemetry and show error
   await processResult(eventName, result);
@@ -338,9 +298,9 @@ export function detectVsCodeEnv(): VsCodeEnv {
     }
   }
 
-async function runUserTask(func: Func): Promise<Result<null, FxError>> {
+async function runUserTask(func: Func): Promise<Result<unknown, FxError>> {
   const eventName = func.method;
-  let result: Result<null, FxError> = ok(null);
+  let result: Result<unknown, FxError> = ok(Void);
 
   try {
     // 1. check concurrent lock
@@ -365,21 +325,18 @@ async function runUserTask(func: Func): Promise<Result<null, FxError>> {
       throw checkCoreRes.error;
     }
 
-    const answers = new ConfigMap();
-    answers.set("task", eventName);
-    answers.set("platform", Platform.VSCode);
-    
     // 4. getQuestions
-    const qres = await core.getQuestionsForUserTask(func, Platform.VSCode);
+    const qres = await core.getQuestionsForUserTask(func, globalInputs);
     if (qres.isErr()) {
       throw qres.error;
     }
 
     // 5. run question model
+    const inputs = deepCopy(globalInputs);
     const node = qres.value;
     if (node) {
       VsCodeLogInstance.info(`Question tree:${JSON.stringify(node, null, 4)}`);
-      const res: InputResult = await traverse(node, answers, VS_CODE_UI, coreExeceutor);
+      const res: InputResult = await traverse(node, inputs, VS_CODE_UI, coreExeceutor);
       VsCodeLogInstance.info(`User input:${JSON.stringify(res, null, 4)}`);
       if (res.type === InputResultType.error && res.error) {
         throw res.error;
@@ -389,7 +346,7 @@ async function runUserTask(func: Func): Promise<Result<null, FxError>> {
     }
 
     // 6. run task
-    result = await core.executeUserTask(func, answers);
+    result = await core.executeUserTask(func, inputs);
   } catch (e) {
     result = wrapError(e);
   }
@@ -415,7 +372,7 @@ function isLoginFaiureError(error: FxError): boolean {
   return !!error.message && error.message.includes("Cannot get user login information");
 }
 
-async function processResult(eventName: string, result: Result<null, FxError>) {
+async function processResult(eventName: string, result: Result<unknown, FxError>) {
   if (result.isErr()) {
     ExtTelemetry.sendTelemetryErrorEvent(eventName, result.error);
     const error = result.error;
@@ -464,7 +421,7 @@ function checkCoreNotEmpty(): Result<null, SystemError> {
 /**
  * manually added customized command
  */
-export async function updateAADHandler(): Promise<Result<null, FxError>> {
+export async function updateAADHandler(): Promise<Result<unknown, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.UpdateAadStart, {
     [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
   });
@@ -476,7 +433,7 @@ export async function updateAADHandler(): Promise<Result<null, FxError>> {
 }
 
 
-export async function addCapabilityHandler(): Promise<Result<null, FxError>> {
+export async function addCapabilityHandler(): Promise<Result<unknown, FxError>> {
   // ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddCapStart, {
   //   [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
   // });
@@ -520,16 +477,16 @@ export async function backendExtensionsInstallHandler(): Promise<void> {
  * call localDebug on core, then call customized function to return result
  */
 export async function preDebugCheckHandler(): Promise<void> {
-  let result: Result<any, FxError> = ok(null);
-  result = await runCommand(Stage.debug);
-  if (result.isErr()) {
-    throw result.error;
-  }
+  // let result: Result<any, FxError> = ok(null);
+  // result = await runCommand(Task.debug);
+  // if (result.isErr()) {
+  //   throw result.error;
+  // }
   // } catch (e) {
   //   result = wrapError(e);
-  //   const eventName = ExtTelemetry.stageToEvent(Stage.debug);
+  //   const eventName = ExtTelemetry.TaskToEvent(Task.debug);
   //   await processResult(eventName, result);
-  //   // If debug stage fails, throw error to terminate the debug process
+  //   // If debug Task fails, throw error to terminate the debug process
   //   throw result;
   // }
 }

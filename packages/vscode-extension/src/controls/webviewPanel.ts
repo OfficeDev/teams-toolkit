@@ -11,7 +11,7 @@ import * as fs from "fs-extra";
 import AzureAccountManager from "../commonlib/azureLogin";
 import AppStudioTokenInstance from "../commonlib/appStudioLogin";
 import { runCommand } from "../handlers";
-import { Stage } from "fx-api";
+import { Task } from "fx-api";
 import { PanelType } from "./PanelType";
 import { execSync } from "child_process";
 
@@ -107,7 +107,7 @@ export class WebviewPanel {
             await AzureAccountManager.getAccountCredentialAsync(false);
             break;
           case Commands.CreateNewProject:
-            await runCommand(Stage.create);
+            await runCommand(Task.create);
             break;
           case Commands.SwitchPanel:
             WebviewPanel.currentPanelType = msg.data;

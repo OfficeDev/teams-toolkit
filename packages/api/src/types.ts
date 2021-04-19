@@ -69,9 +69,19 @@ export interface ProjectSettings extends Dict<ConfigValue>{
     /**
      * solution settings
      */
-    solutionSettings?:SolutionSettings;
+    solutionSettings:SolutionSettings;
 
-    env : string;
+    /**
+     * environments
+     */
+    environments: {
+        [k : string] : EnvMeta;
+    };
+
+    /**
+     * current environment name
+     */
+    currentEnv: string;
 }
 
 
@@ -121,11 +131,11 @@ export interface AzureSolutionSettings extends SolutionSettings{
  * project dynamic states
  */
 export interface ProjectStates extends Dict<ConfigValue>{
-    solutionStates?:SolutionStates;
+    solutionStates:SolutionStates;
 }
  
 export interface SolutionStates extends Dict<ConfigValue>{
-     resourceStates?: {
+     resourceStates: {
         [k:string]:ResourceStates
     }
 }

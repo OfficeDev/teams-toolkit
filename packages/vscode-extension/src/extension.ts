@@ -29,10 +29,16 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // 1.2 Register the creating command.
   const updateCmd = vscode.commands.registerCommand(
-    "fx-extension.update",
-    handlers.updateProjectHandler
+    "fx-extension.addResource",
+    handlers.addResourceProjectHandler
   );
   context.subscriptions.push(updateCmd);
+
+  const buildCmd = vscode.commands.registerCommand(
+    "fx-extension.build",
+    handlers.buildHandler
+  );
+  context.subscriptions.push(buildCmd);
 
   // add capability
   const addCapCmd = vscode.commands.registerCommand(
@@ -61,11 +67,11 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(validateManifestCmd);
 
-  const buildPackageCmd = vscode.commands.registerCommand(
-    "fx-extension.build",
-    handlers.buildPackageHandler
-  );
-  context.subscriptions.push(buildPackageCmd);
+  // const buildPackageCmd = vscode.commands.registerCommand(
+  //   "fx-extension.build",
+  //   handlers.buildPackageHandler
+  // );
+  // context.subscriptions.push(buildPackageCmd);
 
   const publishCmd = vscode.commands.registerCommand(
     "fx-extension.publish",

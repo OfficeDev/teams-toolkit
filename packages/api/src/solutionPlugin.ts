@@ -8,49 +8,40 @@ import { Context, SolutionSettings, SolutionStates,VariableDict, EnvMeta, Func, 
 
 
 export interface SolutionContext extends Context{
-    solutionSettings?: SolutionSettings;
-    solutionStates?: SolutionStates;
+    solutionSettings: SolutionSettings;
+    solutionStates: SolutionStates;
 }
 
 
 export interface SolutionEnvContext  extends SolutionContext {
-    /**
-     * environment data
-     */
     env: EnvMeta;
-
-    /**
-     * token provider
-     */
     tokenProvider: TokenProvider;
-
-    /**
-     * this config can be provision config or deploy config
-     */
     resourceConfigs: ResourceConfigs;
 }
 
+export interface SolutionScaffoldResult{
+    provisionTemplates:ResourceTemplates;
+    deployTemplates: ResourceTemplates
+}
+ 
 export interface SolutionAllContext extends SolutionContext {
-
-    envMeta: EnvMeta;
-
+    env: EnvMeta;
     tokenProvider: TokenProvider;
-
     provisionConfigs?: ResourceConfigs;
-
     deployConfigs?: ResourceConfigs;
 }
+
 
 export interface SolutionPlugin {
     
     name:string,
+    
     displayName:string,
 
- 
     /**
      * scaffold a project and return solution config template
      */
-    scaffold: (ctx: SolutionContext, inputs: Inputs) => Promise<Result<{provisionTemplates:ResourceTemplates, deployTemplates: ResourceTemplates}, FxError>>;
+    scaffold: (ctx: SolutionContext, inputs: Inputs) => Promise<Result<SolutionScaffoldResult, FxError>>;
 
     /**
      * build
@@ -58,20 +49,19 @@ export interface SolutionPlugin {
     build: (ctx: SolutionContext, inputs: Inputs) => Promise<Result<Void, FxError>>;
 
     /**
-     * provision
+     * provision will output VariableDict even error happends
      */
-    provision: (ctx: SolutionEnvContext, inputs: Inputs) => Promise<Result<VariableDict, FxError>>;
+    provision: (ctx: SolutionEnvContext, inputs: Inputs) => Promise<Result<VariableDict, FxError & {result:VariableDict}>>;
 
-    
     /**
-     * deploy
+     * deploy will output VariableDict even error happends
      */
-    deploy: (ctx: SolutionEnvContext, inputs: Inputs) => Promise<Result<VariableDict, FxError>>;
+    deploy: (ctx: SolutionEnvContext, inputs: Inputs) => Promise<Result<VariableDict, FxError & {result:VariableDict}>>;
  
     /**
      * publish
      */
-    publish: (ctx: SolutionEnvContext, inputs: Inputs) => Promise<Result<Void, FxError>>;
+    publish: (ctx: SolutionEnvContext, inputs: Inputs) => Promise<Result<VariableDict, FxError>>;
 
     /**
      * get question model for user task in additional to normal lifecycle {@link Task}, for example `Add Resource`, `Add Capabilities`, `Update AAD Permission`, etc
@@ -98,5 +88,5 @@ export interface SolutionPlugin {
      * 3. validation for `TextInputQuestion`, core,solution plugin or resource plugin can define the validation function in `executeFuncQuestion`.
      * `executeQuestionFlowFunction` will router the execute request from core--->solution--->resource plugin according to `FunctionRouter`.
      */
-     executeQuestionFlowFunction?: (ctx: SolutionAllContext, func:Func, previousAnswers: Inputs) => Promise<Result<unknown, FxError>>;
+     executeQuestionFlowFunction?: (ctx: SolutionAllContext, func:Func, inputs: Inputs) => Promise<Result<unknown, FxError>>;
 }

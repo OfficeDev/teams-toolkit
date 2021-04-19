@@ -25,7 +25,7 @@ export const projectTypeCheckerMW: Middleware = async (
       projectPath,
       `${projectPath}/package.json`,
       `${projectPath}/.${ConfigFolderName}`,
-      `${projectPath}/.${ConfigFolderName}/settings.json`
+      `${projectPath}/.${ConfigFolderName}/setting.json`
     ];
     for (const fp of checklist) {
       if (!(await fs.pathExists(path.resolve(fp)))) {

@@ -56,7 +56,7 @@ export type VariableDict = Dict<ConfigValue>;
 /**
  * project static settings
  */
-export interface ProjectSettings extends Dict<ConfigValue>{
+export interface ProjectSetting extends Dict<ConfigValue>{
     /**
      * id name
      */
@@ -69,7 +69,7 @@ export interface ProjectSettings extends Dict<ConfigValue>{
     /**
      * solution settings
      */
-    solutionSettings:SolutionSettings;
+    solutionSetting:SolutionSetting;
 
     /**
      * environments
@@ -88,7 +88,7 @@ export interface ProjectSettings extends Dict<ConfigValue>{
 /**
  * solution settings
  */
-export interface SolutionSettings extends Dict<ConfigValue>{
+export interface SolutionSetting extends Dict<ConfigValue>{
     
     /**
      * solution name
@@ -114,14 +114,14 @@ export interface SolutionSettings extends Dict<ConfigValue>{
      * resource settings map,key is resource name, value is resource settings
      */
     resourceSettings: {
-        [k:string]:ResourceSettings
+        [k:string]:ResourceSetting
     }
 }
 
-export type ResourceSettings = Dict<ConfigValue>;
+export type ResourceSetting = Dict<ConfigValue>;
 
 
-export interface AzureSolutionSettings extends SolutionSettings{
+export interface AzureSolutionSetting extends SolutionSetting{
     capabilities:string[],
     hostType?:string,
     azureResources?:string[]
@@ -130,17 +130,17 @@ export interface AzureSolutionSettings extends SolutionSettings{
 /**
  * project dynamic states
  */
-export interface ProjectStates extends Dict<ConfigValue>{
-    solutionStates:SolutionStates;
+export interface ProjectState extends Dict<ConfigValue>{
+    solutionState:SolutionState;
 }
  
-export interface SolutionStates extends Dict<ConfigValue>{
+export interface SolutionState extends Dict<ConfigValue>{
      resourceStates: {
-        [k:string]:ResourceStates
+        [k:string]:ResourceState
     }
 }
 
-export type ResourceStates = Dict<ConfigValue>;
+export type ResourceState = Dict<ConfigValue>;
 
 export interface Inputs extends Dict<AnswerValue>{
     projectPath:string;
@@ -179,11 +179,11 @@ export interface Context {
     /**
      * Static settings
      */
-    projectSettings: ProjectSettings; 
+    projectSetting: ProjectSetting; 
 
     /**
      * Dynamic states
      */
-    projectStates: ProjectStates;
+    projectState: ProjectState;
 }
  

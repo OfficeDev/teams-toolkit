@@ -3,13 +3,13 @@
 "use strict";
 
 import { Result } from "neverthrow";  
-import { Context, SolutionSettings, SolutionStates,VariableDict, EnvMeta, Func, FunctionRouter, FxError, Inputs, QTreeNode, ResourceConfigs, ResourceTemplates, Task, TokenProvider, Void } from "./index";
+import { Context, SolutionSetting, SolutionState,VariableDict, EnvMeta, Func, FunctionRouter, FxError, Inputs, QTreeNode, ResourceConfigs, ResourceTemplates, Task, TokenProvider, Void } from "./index";
 
 
 
 export interface SolutionContext extends Context{
-    solutionSettings: SolutionSettings;
-    solutionStates: SolutionStates;
+    solutionSetting: SolutionSetting;
+    solutionState: SolutionState;
 }
 
 

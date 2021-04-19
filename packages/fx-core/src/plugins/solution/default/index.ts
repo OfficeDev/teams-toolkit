@@ -6,7 +6,7 @@ export class DefaultSolution implements  SolutionPlugin{
     displayName = "Default Solution";
     async scaffold (ctx: SolutionContext, inputs: Inputs) : Promise<Result<{provisionTemplates:ResourceTemplates, deployTemplates: ResourceTemplates}, FxError>>
     {
-        ctx.solutionSettings.resources = ["fx-resource-frontend"];
+        ctx.solutionSetting.resources = ["fx-resource-frontend"];
         return ok({
             provisionTemplates:{
                 "fx-resource-frontend":{
@@ -21,20 +21,23 @@ export class DefaultSolution implements  SolutionPlugin{
         });
     }
     async build(ctx: SolutionContext, inputs: Inputs) : Promise<Result<Void, FxError>>{
-        ctx.solutionStates.build = true;
+        ctx.solutionState.build = true;
         return ok(Void);
     }
     async provision(ctx: SolutionEnvContext, inputs: Inputs) : Promise<Result<VariableDict, FxError & {result:VariableDict}>>{
         return ok({
-            endpoint:"http://oowww.com"
+            endpoint:"http://oowww.com",
+            provision:true
         });
     }
     async deploy(ctx: SolutionEnvContext, inputs: Inputs) : Promise<Result<VariableDict, FxError & {result:VariableDict}>>{
         return ok({
-            storagename:"mystorage"
+            storagename:"mystorage",
+            deploy:true
         });
     }
     async publish (ctx: SolutionEnvContext, inputs: Inputs) : Promise<Result<Void, FxError>>{
+        ctx.solutionState.publish = true;
         return ok(Void);
     }
     async getQuestionsForLifecycleTask(ctx: SolutionAllContext, task: Task, inputs: Inputs) : Promise<Result<QTreeNode|undefined, FxError>>{

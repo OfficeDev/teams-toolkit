@@ -126,6 +126,18 @@
         "title": "TeamsFx - Update AAD Permission"
       },
       {
+        "command": "fx-extension.createEnv",
+        "title": "TeamsFx - Create Environment"
+      },
+      {
+        "command": "fx-extension.deleteEnv",
+        "title": "TeamsFx - Delete Environment"
+      },
+      {
+        "command": "fx-extension.switchEnv",
+        "title": "TeamsFx - Switch Environment"
+      },
+      {
         "command": "fx-extension.validate-dependencies",
         "title": "TeamsFx - Validate Dependencies",
         "enablement": "never"

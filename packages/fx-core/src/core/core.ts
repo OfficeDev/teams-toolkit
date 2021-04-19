@@ -19,9 +19,9 @@ import {
   UserError,
   err,
   StringValidation,
-  ProjectSettings,
+  ProjectSetting,
   ConfigFolderName,
-  ProjectStates,
+  ProjectState,
   ResourceTemplates,
   ResourceTemplate,
   VariableDict
@@ -55,22 +55,22 @@ export class FxCore implements Core {
     const coreContext:CoreContext = {
       ...this.tools,
       projectPath: "",
-      projectSettings:{
+      projectSetting:{
         name: "myapp",
         environments:
         {
           default: {name:"default", local:false, sideloading:false}
         },
         currentEnv: "default",
-        solutionSettings:{
+        solutionSetting:{
           name:"fx-solution-default",
           version:"1.0.0",
           resources:[],
           resourceSettings:{}
         }
       },
-      projectStates: {
-          solutionStates:{resourceStates:{}}
+      projectState: {
+          solutionState:{resourceStates:{}}
       },
       globalSolutions: this.globalSolutions
     };
@@ -78,10 +78,10 @@ export class FxCore implements Core {
   }
   async loadCoreContext(projectPath:string):Promise<CoreContext>{
     try{
-      const projectSettings:ProjectSettings = await fs.readJson(`${projectPath}\\.${ConfigFolderName}\\settings.json`);
-      const projectStates:ProjectStates = await fs.readJson(`${projectPath}\\.${ConfigFolderName}\\states.json`);
-      const envName = projectSettings.currentEnv;
-      const resources = projectSettings.solutionSettings?.resources;
+      const projectSetting:ProjectSetting = await fs.readJson(`${projectPath}\\.${ConfigFolderName}\\setting.json`);
+      const projectStates:ProjectState = await fs.readJson(`${projectPath}\\.${ConfigFolderName}\\state.json`);
+      const envName = projectSetting.currentEnv;
+      const resources = projectSetting.solutionSetting?.resources;
       const privisionTemplates:ResourceTemplates = {};
       const deployTemplates:ResourceTemplates = {};
       if(resources){
@@ -99,8 +99,8 @@ export class FxCore implements Core {
       }
       const coreCtx: CoreContext = {
         projectPath: projectPath,
-        projectSettings: projectSettings,
-        projectStates:projectStates,
+        projectSetting: projectSetting,
+        projectState:projectStates,
         solution: new DefaultSolution(),
         provisionTemplates: privisionTemplates,
         deployTemplates: deployTemplates,
@@ -154,7 +154,7 @@ export class FxCore implements Core {
         )
       );
     }  
-    coreContext.projectSettings.name = appName;
+    coreContext.projectSetting.name = appName;
     coreContext.projectPath = projectPath;
     return await Executor.create(coreContext, inputs);
   }

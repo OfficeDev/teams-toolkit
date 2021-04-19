@@ -21,7 +21,7 @@
  */
  
 import {  Result } from "neverthrow";  
-import { EnvMeta, Func, FunctionRouter, FxError,  Inputs,  ProjectSettings,  ProjectStates,  QTreeNode, ResourceTemplates, Task, Tools, VariableDict, Void} from "./index";
+import { EnvMeta, Func, FunctionRouter, FxError,  Inputs,  ProjectSetting,  ProjectState,  QTreeNode, ResourceTemplates, Task, Tools, VariableDict, Void} from "./index";
 
 
 

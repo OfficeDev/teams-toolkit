@@ -3,12 +3,12 @@
 "use strict";
   
 import { Result } from "neverthrow"; 
-import { ResourceConfigs, ResourceSettings, ResourceStates,Context, VariableDict, EnvMeta, Func, FunctionRouter, FxError, Inputs, QTreeNode, ReadonlyResourceConfig, ReadonlyResourceConfigs, ResourceConfig, ResourceTemplate, Task, TokenProvider, Void } from "./index";
+import { ResourceConfigs, ResourceSetting, ResourceState,Context, VariableDict, EnvMeta, Func, FunctionRouter, FxError, Inputs, QTreeNode, ReadonlyResourceConfig, ReadonlyResourceConfigs, ResourceConfig, ResourceTemplate, Task, TokenProvider, Void } from "./index";
 
 
 export interface ResourceContext extends Context {
-    resourceSettings: ResourceSettings;
-    resourceStates: ResourceStates;
+    resourceSettings: ResourceSetting;
+    resourceStates: ResourceState;
 }
 
 

@@ -24,21 +24,21 @@ export const writeConfigMW: Middleware = async (
       const coreCtx: CoreContext = ctx.arguments[0] as CoreContext;
 
       if(coreCtx.solutionContext){
-        coreCtx.projectSettings.solutionSettings = coreCtx.solutionContext.solutionSettings;
-        coreCtx.projectStates.solutionStates = coreCtx.solutionContext.solutionStates;
+        coreCtx.projectSetting.solutionSetting = coreCtx.solutionContext.solutionSetting;
+        coreCtx.projectState.solutionState = coreCtx.solutionContext.solutionState;
       }
      
       try { 
         const configFolder = `${coreCtx.projectPath}\\.${ConfigFolderName}`;
         
-        await fs.writeFile(  `${configFolder}\\settings.json`, JSON.stringify(coreCtx.projectSettings, null, 4)  );
+        await fs.writeFile(  `${configFolder}\\setting.json`, JSON.stringify(coreCtx.projectSetting, null, 4)  );
     
-        await fs.writeFile(  `${configFolder}\\states.json`, JSON.stringify(coreCtx.projectStates, null, 4)  );
+        await fs.writeFile(  `${configFolder}\\state.json`, JSON.stringify(coreCtx.projectState, null, 4)  );
     
-        const envName = coreCtx.projectSettings.currentEnv;
+        const envName = coreCtx.projectSetting.currentEnv;
   
         // provision,deploy template
-        const resources = coreCtx.projectSettings.solutionSettings?.resources;
+        const resources = coreCtx.projectSetting.solutionSetting?.resources;
   
         //only create project need to persist template files
         if(ctx.method === "create" && resources && resources.length > 0){

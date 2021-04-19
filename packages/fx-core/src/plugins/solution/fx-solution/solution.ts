@@ -1939,21 +1939,20 @@ export class TeamsAppSolution implements Solution {
                 const manifestTpl = (await fs.readFile(`${ctx.root}/.${ConfigFolderName}/manifest.remote.json`)).toString();
                 const manifest = this.createManifestForRemote(ctx, manifestTpl).map((result) => result[1]);
                 return appStudioPlugin.buildTeamsPackage(`${ctx.root}/.${ConfigFolderName}`, JSON.stringify(manifest));
-            }
-        } else if (array.length == 2) {
-            const pluginName = array[1];
-            const plugin = this.pluginMap.get(pluginName);
-            if (plugin && plugin.executeUserTask) {
-                const pctx = getPluginContext(ctx, plugin.name, this.manifest);
-                if (func.method === "aadUpdatePermission") {
+            } else if (method === "aadUpdatePermission" && array.length == 2) {
+                const pluginName = array[1];
+                const plugin = this.pluginMap.get(pluginName);
+                if (plugin && plugin.executeUserTask) {
+                    const pctx = getPluginContext(ctx, plugin.name, this.manifest);
                     const result = await this.updatePermissionRequest(ctx);
                     if (result.isErr()) {
                         return result;
                     }
+                    return await plugin.executeUserTask(func, pctx);
                 }
-                return await plugin.executeUserTask(func, pctx);
             }
-        }
+        } 
+
         return err(
             returnUserError(
                 new Error(`executeUserTaskRouteFailed:${JSON.stringify(func)}`),

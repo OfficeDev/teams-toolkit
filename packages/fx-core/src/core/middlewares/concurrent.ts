@@ -39,12 +39,12 @@ export const concurrentMW: Middleware = async (
             try {
                 await next();
             } catch (e) {
+                ctx.result = err(e);
                 return lockfile.unlock(lf);
             }
             return lockfile.unlock(lf);
         })
         .catch((e: Error) => {
-            console.log(e);
             ctx.result = err(InProcessingError());
             return;
         });

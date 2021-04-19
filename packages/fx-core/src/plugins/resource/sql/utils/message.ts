@@ -48,7 +48,7 @@ export class Message {
         "sqlPasswordLengthLessThan8": "SQL admin password must be at least 8 characters in length",
         "sqlPasswordLengthGreatThan128": "SQL admin password must be no more than 128 characters in length",
         "sqlPasswordMustContain3Categories": "Your password must contain characters from three of the following categories – English uppercase letters, English lowercase letters, numbers (0-9), and non-alphanumeric characters (!, $, #, %, etc.)",
-        "sqlPasswordCannotContainUserName": "Your password cannot contain all or part of the login name",
+        "sqlPasswordCannotContainUserName": "Your password cannot contain part or all of the user name",
         "sqlPasswordMustMatch": "Password and password confirmation must match",
     };
 }

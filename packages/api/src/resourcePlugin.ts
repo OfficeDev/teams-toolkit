@@ -13,13 +13,9 @@ export interface ResourceContext extends Context {
 
 
 export interface ResourceEnvContext  extends ResourceContext {
-
     envMeta: EnvMeta;
-
     tokenProvider: TokenProvider;  
-     
     commonConfig: ReadonlyResourceConfig;
- 
     selfConfig: ResourceConfig;
 }
 
@@ -30,13 +26,9 @@ export interface ResourceConfigureContext extends ResourceEnvContext
  
 
 export interface ResourceAllContext  extends ResourceContext {
-
     envMeta: EnvMeta;
-
     tokenProvider: TokenProvider;  
-     
     provisionConfig?: ResourceConfig;
-
     deployConfig?: ResourceConfig;
 }
  

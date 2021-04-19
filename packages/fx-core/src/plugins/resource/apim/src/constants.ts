@@ -91,9 +91,9 @@ export class QuestionConstants {
         };
 
         public static readonly ApiId = class {
-            // The api id is displayed as api name in the Azure pPortal
+            // The api id is displayed as api name in the Azure Portal
             public static readonly questionName: string = "api-name";
-            public static readonly description: string = "Input API name";
+            public static readonly description: string = "Input the API name. (Default value: {api-prefix}-{api-version})";
         };
 
         public static readonly ApiVersion = class {

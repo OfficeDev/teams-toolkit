@@ -8,8 +8,8 @@ import { AadService } from "./service/aadService";
 import { OpenApiProcessor } from "./util/openApiProcessor";
 import { ApimManager } from "./manager/apimManager";
 import { AadManager } from "./manager/aadManager";
-import { IQuestionManager, VscQuestionManager } from "./manager/questionManager";
-import { VSCode } from "./service/questionService";
+import { CliQuestionManager, IQuestionManager, VscQuestionManager } from "./manager/questionManager";
+import { CLI, VSCode } from "./service/questionService";
 import { ApiManagementClient } from "@azure/arm-apimanagement";
 import { TeamsAppAadManager } from "./manager/teamsAppAadManager";
 import axios from "axios";
@@ -53,6 +53,20 @@ export class Factory {
                     apiVersionQuestion,
                     newApiVersionQuestion,
                     existingOpenApiDocumentFunc
+                );
+            case Platform.CLI:
+                const cliApimServiceNameQuestion = new CLI.ApimServiceNameQuestion();
+                const cliApimResourceGroupQuestion = new CLI.ApimResourceGroupQuestion();
+                const cliOpenApiDocumentQuestion = new CLI.OpenApiDocumentQuestion();
+                const cliApiPrefixQuestion = new CLI.ApiPrefixQuestion();
+                const cliApiVersionQuestion = new CLI.ApiVersionQuestion();
+
+                return new CliQuestionManager(
+                    cliApimServiceNameQuestion,
+                    cliApimResourceGroupQuestion,
+                    cliOpenApiDocumentQuestion,
+                    cliApiPrefixQuestion,
+                    cliApiVersionQuestion,
                 );
             default:
                 throw BuildError(NotImplemented);

@@ -281,7 +281,11 @@ export class Executor {
 
             await fs.writeFile(
                 `${ctx.root}/.gitignore`,
-                `node_modules\n/.${ConfigFolderName}/*.env\n/.${ConfigFolderName}/*.userdata\n.DS_Store`
+                `node_modules
+.${ConfigFolderName}/*.env
+.${ConfigFolderName}/*.userdata
+.DS_Store
+`
             );
 
             // write launch.json

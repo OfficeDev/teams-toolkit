@@ -1957,30 +1957,10 @@ export class TeamsAppSolution implements Solution {
             } else if (method === "validateManifest") {
                 const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
                 const pluginCtx = getPluginContext(ctx, this.appStudioPlugin.name);
-                const manifestTpl = (await fs.readFile(`${ctx.root}/.${ConfigFolderName}/manifest.remote.json`)).toString();
+                const manifestTpl = (await fs.readFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)).toString();
                 const manifest = this.createManifestForRemote(ctx, manifestTpl).map((result) => result[1]);
                 if (manifest.isOk()) {
-                    const validationResult = await appStudioPlugin.validateManifest(pluginCtx, JSON.stringify(manifest.value));
-                    if (validationResult.isOk()) {
-                        const validationSuccess = "[Teams Toolkit] Manifest Validation succeed!";
-                        ctx.logProvider?.info(validationSuccess);
-                        await ctx.dialog?.communicate(
-                            new DialogMsg(DialogType.Show, {
-                                description: validationSuccess,
-                                level: MsgLevel.Info,
-                            }),
-                        );
-                    } else {
-                        ctx.logProvider?.error("[Teams Toolkit] Manifest Validation failed!");
-                        await ctx.dialog?.communicate(
-                            new DialogMsg(DialogType.Show, {
-                                description: validationResult.error.message,
-                                level: MsgLevel.Error,
-                            }),
-                        );
-                    }
-
-                    return validationResult;
+                    return await appStudioPlugin.validateManifest(pluginCtx, JSON.stringify(manifest.value));
                 } else {
                     ctx.logProvider?.error("[Teams Toolkit] Manifest Validation failed!");
                         await ctx.dialog?.communicate(
@@ -1993,21 +1973,11 @@ export class TeamsAppSolution implements Solution {
                 }
             } else if (method === "buildPackage") {
                 const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
-                const manifestTpl = (await fs.readFile(`${ctx.root}/.${ConfigFolderName}/manifest.remote.json`)).toString();
+                const pluginCtx = getPluginContext(ctx, this.appStudioPlugin.name);
+                const manifestTpl = (await fs.readFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)).toString();
                 const manifest = this.createManifestForRemote(ctx, manifestTpl).map((result) => result[1]);
                 if (manifest.isOk()) {
-                    const result = await appStudioPlugin.buildTeamsPackage(`${ctx.root}/.${ConfigFolderName}`, JSON.stringify(manifest.value));
-                    if (result.isOk()) {
-                        const builtSuccess = `[Teams Toolkit] Teams Package ${result.value} built successfully!`;
-                        ctx.logProvider?.info(builtSuccess);
-                        await ctx.dialog?.communicate(
-                            new DialogMsg(DialogType.Show, {
-                                description: builtSuccess,
-                                level: MsgLevel.Info,
-                            }),
-                        );
-                    }
-                    return result;
+                    return await appStudioPlugin.buildTeamsPackage(pluginCtx, `${ctx.root}/.${ConfigFolderName}`, JSON.stringify(manifest.value));
                 } else {
                     ctx.logProvider?.error("[Teams Toolkit] Teams Package built failed!");
                         await ctx.dialog?.communicate(

@@ -11,7 +11,7 @@ import {
   Result,
   err
 } from "fx-api";
-import {TeamsCore} from "../../../fx-core/build/core";
+import activate from "../activate";
 
 import * as constants from "../constants";
 import {ContextFactory} from "../context";
@@ -25,9 +25,9 @@ export class NewGenerator extends Generator {
   public readonly stage = Stage.create;
 
   async generate(): Promise<Result<QTreeNode, FxError>> {
-    const core = TeamsCore.getInstance();
+    const core = await activate();
     {
-      const result = await core.getQuestions(ContextFactory.get("./", this.stage));
+      const result = await core.getQuestions!(ContextFactory.get("./", this.stage));
       if (result.isErr()) {
         return err(result.error);
       }

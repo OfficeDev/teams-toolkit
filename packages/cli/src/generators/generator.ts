@@ -25,8 +25,8 @@ import CLILogProvider from "../commonlib/log";
 import * as constants from "../constants";
 import {UnknownError} from "../error";
 import {flattenNodes} from "../utils";
-import {TeamsCore} from "../../../fx-core/build/core";
 import {ContextFactory} from "../context";
+import activate from "../activate";
 
 export abstract class Generator {
   abstract readonly commandName: string;
@@ -38,11 +38,12 @@ export abstract class Generator {
   readonly stage?: Stage;
 
   async generate(projectPath?: string): Promise<Result<QTreeNode | QTreeNode[], FxError>> {
-    const core = TeamsCore.getInstance();
+    const core = await activate();
     {
+      const ctx = ContextFactory.get(projectPath ?? "./", Stage.userTask);
       const result = this.doUserTask
-        ? await core.getQuestionsForUserTask(ContextFactory.get(projectPath ?? "./", Stage.userTask), this.func!)
-        : await core.getQuestions(ContextFactory.get(projectPath ?? "./", Stage.userTask));
+        ? await core.getQuestionsForUserTask!(ctx, this.func!)
+        : await core.getQuestions!(ctx);
 
       if (result.isErr()) {
         return err(result.error);

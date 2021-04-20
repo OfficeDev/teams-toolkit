@@ -8,8 +8,8 @@ import {Argv, Options} from "yargs";
 import {FxError, err, ok, Result, Func, ConfigMap, Platform, Stage} from "fx-api";
 
 import {YargsCommand} from "../yargsCommand";
-import {TeamsCore} from "../../../fx-core/build/core";
 import {ContextFactory} from "../context";
+import activate from "../activate";
 
 export default class Init extends YargsCommand {
   public readonly commandHead = `init`;
@@ -59,7 +59,7 @@ export default class Init extends YargsCommand {
       answers.set(name, args[name] || this.params[name].default);
     }
 
-    const core = TeamsCore.getInstance();
+    const core = await activate();
     {
       answers.set("platform", Platform.VS);
 
@@ -68,7 +68,8 @@ export default class Init extends YargsCommand {
         method: "registerTeamsAppAndAad"
       };
 
-      const result = await core.executeUserTask(ContextFactory.get(args["root-path"] as string, Stage.userTask), func, answers);
+      const rootFolder = args["root-path"] as string ?? "./";
+      const result = await core.executeUserTask!(ContextFactory.get(rootFolder, Stage.userTask), func, answers);
       if (result.isErr()) {
         return err(result.error);
       }

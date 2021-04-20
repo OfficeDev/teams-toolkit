@@ -5,14 +5,18 @@
 
 import {Argv, Options} from "yargs";
 
+<<<<<<< HEAD
 import {FxError, err, ok, Result, Stage, Platform, ConfigMap, QTreeNode, NodeType, Question, isAutoSkipSelect, SingleSelectQuestion, MultiSelectQuestion} from "fx-api";
+=======
+import {FxError, err, ok, Result, Stage, ConfigMap, QTreeNode, NodeType, Question, QuestionType, DialogType, DialogMsg} from "fx-api";
+>>>>>>> 37e0d13... revert cli code
 
 import * as constants from "../constants";
 import {validateAndUpdateAnswers, visitInteractively} from "../question/question";
 import {YargsCommand} from "../yargsCommand";
 import {flattenNodes, getJson, toConfigMap, toYargsOptions} from "../utils";
-import {TeamsCore} from "../../../fx-core/build/core";
 import {ContextFactory} from "../context";
+import activate from "../activate";
 
 export default class New extends YargsCommand {
   public readonly commandHead = `new`;
@@ -69,10 +73,10 @@ export default class New extends YargsCommand {
       }
     }
 
-    const core = TeamsCore.getInstance();
+    const core = await activate();
     const ctx = ContextFactory.get("./", Stage.create);
     {
-      const result = await core.getQuestions(ctx);
+      const result = await core.getQuestions!(ctx);
       if (result.isErr()) {
         return err(result.error);
       }

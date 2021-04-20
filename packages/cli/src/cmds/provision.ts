@@ -6,15 +6,15 @@
 import {Argv, Options} from "yargs";
 import * as path from "path";
 
-import {FxError, err, ok, Result, ConfigMap, Stage, Platform} from "fx-api";
+import {FxError, err, ok, Result, ConfigMap, Stage} from "fx-api";
 
 import AzureTokenProvider from "../commonlib/azureLogin";
 import * as constants from "../constants";
 import {validateAndUpdateAnswers} from "../question/question";
 import {getParamJson} from "../utils";
 import {YargsCommand} from "../yargsCommand";
-import {TeamsCore} from "../../../fx-core/build/core";
 import {ContextFactory} from "../context";
+import activate from "../activate";
 
 export default class Provision extends YargsCommand {
   public readonly commandHead = `provision`;
@@ -44,9 +44,9 @@ export default class Provision extends YargsCommand {
       }
     }
 
-    const core = TeamsCore.getInstance();
+    const core = await activate();
     {
-      const result = await core.getQuestions(ContextFactory.get(rootFolder, Stage.provision));
+      const result = await core.getQuestions!(ContextFactory.get(rootFolder, Stage.provision));
       if (result.isErr()) {
         return err(result.error);
       }

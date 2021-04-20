@@ -9,8 +9,8 @@ import {FxError, err, ok, Result, ConfigMap, Platform, Func, Stage} from "fx-api
 import * as constants from "../constants";
 import {YargsCommand} from "../yargsCommand";
 import {getParamJson} from "../utils";
-import {TeamsCore} from "../../../fx-core/build/core";
 import {ContextFactory} from "../context";
+import activate from "../activate";
 
 export default class New extends YargsCommand {
     public readonly commandHead = `publish`;
@@ -49,14 +49,14 @@ export default class New extends YargsCommand {
             answers.delete("folder");
         }
 
-        const core = TeamsCore.getInstance();
+        const core = await activate();
         if (answers.has(manifestFolderParamName)) {
             answers.set("platform", Platform.VS);
             const func: Func = {
                 namespace: "fx-solution-azure",
                 method: "VSpublish"
             };
-            result = await core.executeUserTask(ContextFactory.get(rootFolder, Stage.publish), func, answers);
+            result = await core.executeUserTask!(ContextFactory.get(rootFolder, Stage.publish), func, answers);
         } else {
             answers.set("platform", Platform.CLI);
             result = await core.publish(ContextFactory.get(rootFolder, Stage.publish), answers);

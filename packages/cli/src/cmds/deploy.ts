@@ -12,8 +12,8 @@ import * as constants from "../constants";
 import {validateAndUpdateAnswers} from "../question/question";
 import {YargsCommand} from "../yargsCommand";
 import {getParamJson} from "../utils";
-import {TeamsCore} from "../../../fx-core/build/core";
 import {ContextFactory} from "../context";
+import activate from "../activate";
 
 export default class Deploy extends YargsCommand {
   public readonly commandHead = `deploy`;
@@ -36,9 +36,9 @@ export default class Deploy extends YargsCommand {
     const rootFolder = path.resolve(answers.getString("folder") || "./");
     answers.delete("folder");
 
-    const core = TeamsCore.getInstance();
+    const core = await activate();
     {
-      const result = await core.getQuestions(ContextFactory.get(rootFolder, Stage.deploy));
+      const result = await core.getQuestions!(ContextFactory.get(rootFolder, Stage.deploy));
       if (result.isErr()) {
         return err(result.error);
       }

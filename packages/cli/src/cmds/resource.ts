@@ -6,15 +6,15 @@
 import * as path from "path";
 import {Argv, Options} from "yargs";
 
-import {ConfigMap, err, Func, FxError, ok, Platform, Result, Stage} from "fx-api";
+import {ConfigMap, err, Func, FxError, ok, Result, Stage} from "fx-api";
 
 import AzureTokenProvider from "../commonlib/azureLogin";
 import * as constants from "../constants";
 import {validateAndUpdateAnswers} from "../question/question";
 import {getParamJson, readConfigs} from "../utils";
 import {YargsCommand} from "../yargsCommand";
-import {TeamsCore} from "../../../fx-core/build/core";
 import {ContextFactory} from "../context";
+import activate from "../activate";
 
 export class ResourceAdd extends YargsCommand {
   public readonly commandHead = `add`;
@@ -57,9 +57,9 @@ export class ResourceAddSql extends YargsCommand {
     const rootFolder = path.resolve(answers.getString("folder") || "./");
     answers.delete("folder");
 
-    const core = TeamsCore.getInstance();
+    const core = await activate();
     {
-      const result = await core.getQuestions(ContextFactory.get(rootFolder, Stage.update));
+      const result = await core.getQuestions!(ContextFactory.get(rootFolder, Stage.update));
       if (result.isErr()) {
         return err(result.error);
       }
@@ -104,9 +104,9 @@ export class ResourceAddFunction extends YargsCommand {
       }
     }
 
-    const core = TeamsCore.getInstance();
+    const core = await activate();
     {
-      const result = await core.getQuestions(ContextFactory.get(rootFolder, Stage.update));
+      const result = await core.getQuestions!(ContextFactory.get(rootFolder, Stage.update));
       if (result.isErr()) {
         return err(result.error);
       }
@@ -164,13 +164,13 @@ export class ResourceConfigureAAD extends YargsCommand {
     const rootFolder = path.resolve(answers.getString("folder") || "./");
     answers.delete("folder");
 
-    const core = TeamsCore.getInstance();
+    const core = await activate();
     const func: Func = {
       namespace: "fx-solution-azure/fx-resource-aad-app-for-teams",
       method: "aadUpdatePermission"
     };
     {
-      const result = await core.executeUserTask(ContextFactory.get(rootFolder, Stage.update), func, answers);
+      const result = await core.executeUserTask!(ContextFactory.get(rootFolder, Stage.update), func, answers);
       if (result.isErr()) {
         return err(result.error);
       }

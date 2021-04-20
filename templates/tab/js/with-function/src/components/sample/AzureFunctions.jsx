@@ -8,8 +8,9 @@ import {
   ResourceType,
 } from "teamsdev-client"
 
+var functionName = process.env.REACT_APP_FUNC_NAME || "myFunc";
+
 async function callFunction() {
-  var functionName = process.env.REACT_APP_FUNC_NAME || "myFunc";
   const credential = new TeamsUserCredential();
   const accessToken = await credential.getToken("");
   const apiConfig = getResourceConfiguration(ResourceType.API);
@@ -23,7 +24,7 @@ async function callFunction() {
 
 export function AzureFunctions(props) {
   const { codePath, docsUrl } = {
-    codePath: "api/index.js",
+    codePath: `api/${functionName}/index.js`,
     docsUrl: "",
     ...props,
   };

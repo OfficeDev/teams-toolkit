@@ -99,15 +99,15 @@ async function buildContext(resourceName: string, resourceNameSuffix: string, aa
         apiPrefix: "apim-plugin-test",
     };
     const answer = {
-        [QuestionConstants.VSC.Apim.questionName]: {
-            id: QuestionConstants.VSC.Apim.createNewApimOption,
-            label: QuestionConstants.VSC.Apim.createNewApimOption,
+        [QuestionConstants.VSCode.Apim.questionName]: {
+            id: QuestionConstants.VSCode.Apim.createNewApimOption,
+            label: QuestionConstants.VSCode.Apim.createNewApimOption,
         },
-        [QuestionConstants.VSC.ApiVersion.questionName]: {
-            id: QuestionConstants.VSC.ApiVersion.createNewApiVersionOption,
-            label: QuestionConstants.VSC.ApiVersion.createNewApiVersionOption,
+        [QuestionConstants.VSCode.ApiVersion.questionName]: {
+            id: QuestionConstants.VSCode.ApiVersion.createNewApiVersionOption,
+            label: QuestionConstants.VSCode.ApiVersion.createNewApiVersionOption,
         },
-        [QuestionConstants.VSC.NewApiVersion.questionName]: "v1",
+        [QuestionConstants.VSCode.NewApiVersion.questionName]: "v1",
     };
     const ctx = new MockPluginContext(
         resourceName,

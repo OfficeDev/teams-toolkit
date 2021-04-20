@@ -10,7 +10,7 @@ database <database> create user <user> failed.
 1. Open `.fx\env.default.json` file
 1. Set value of 'skipAddingUser' config of 'fx-resource-azure-sql' 
 
-   ![image](../../images/fx-core/sql/add-flag.png)
+   ![image](../images/fx-core/sql/add-flag.png)
 
 1. Run `Provision` command again
 
@@ -20,15 +20,15 @@ To make sure the identity user can access to database correctly, you should add 
 Since the current logged in account hasn't enough permission to add database user, you may get a user account have enough permission to access to database. 
 1. Find values of 'sqlEndpoint', 'databaseName' config of 'fx-resource-azure-sql' and value of 'identity' config of 'fx-resource-identity'
 
-   ![image](../../images/fx-core/sql/config.png)
+   ![image](../images/fx-core/sql/config.png)
 
 1. Provision aad admin in SQL Database. You can follow [set aad admin](https://docs.microsoft.com/en-us/azure/azure-sql/database/authentication-aad-configure?tabs=azure-powershell#provision-azure-ad-admin-sql-database) to set aad admin with enough permission for the {sqlEndpoint}.
 
 1. Login the SQL server from portal and select database to login
 
-  ![image](../../images/fx-core/sql/login-db.png)
+  ![image](../images/fx-core/sql/login-db.png)
 
 4. Create contained database users. Execute Transact-SQL `CREATE USER [{identity}] FROM EXTERNAL PROVIDER;`
 
-  ![image](../../images/fx-core/sql/add-database-user.png)
+  ![image](../images/fx-core/sql/add-database-user.png)
 

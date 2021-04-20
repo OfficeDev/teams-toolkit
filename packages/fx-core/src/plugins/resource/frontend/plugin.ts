@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { PluginContext, ok, Stage, NodeType, QTreeNode, FxError, Result } from "fx-api";
+import { PluginContext, ok, QTreeNode, NodeType, Stage, Result, FxError } from "fx-api";
 import path from "path";
 
 import { AzureStorageClient } from "./clients";
@@ -20,7 +20,6 @@ import {
     DependentPluginInfo,
     FrontendConfigInfo,
     FrontendPathInfo,
-    FrontendPluginInfo,
     FrontendPluginInfo as PluginInfo,
 } from "./constants";
 import { FrontendConfig } from "./configs";
@@ -28,9 +27,10 @@ import { FrontendDeployment } from "./ops/deploy";
 import { AADEnvironment, FrontendProvision, FunctionEnvironment, RuntimeEnvironment } from "./ops/provision";
 import { Logger } from "./utils/logger";
 import { Messages } from "./resources/messages";
-import { FrontendScaffold as Scaffold, TemplateInfo } from "./ops/scaffold";
+import { FrontendScaffold as Scaffold } from "./ops/scaffold";
 import { TeamsFxResult } from "./error-factory";
 import { PreDeploySteps, ProgressHelper, ProvisionSteps, ScaffoldSteps } from "./utils/progress-helper";
+import { TemplateInfo } from "./resources/templateInfo";
 import { FrontendQuestionsOnScaffold, FrontendQuestion } from "./resources/questions";
 import { ManifestVariables } from "./resources/tabScope";
 
@@ -65,12 +65,7 @@ export class FrontendPluginImpl {
         await progressHandler?.next(ScaffoldSteps.Scaffold);
 
         this.syncAnswerToContextConfig(ctx, FrontendQuestionsOnScaffold);
-
-        const templateInfo = new TemplateInfo();
-        const functionPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.FunctionPluginName);
-        if (functionPlugin) {
-            templateInfo.scenario = FrontendPluginInfo.TemplateWithFunctionScenario;
-        }
+        const templateInfo = new TemplateInfo(ctx);
 
         const zip = await runWithErrorCatchAndThrow(
             new GetTemplateError(),

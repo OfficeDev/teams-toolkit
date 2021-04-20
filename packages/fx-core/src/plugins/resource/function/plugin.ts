@@ -590,12 +590,10 @@ export class FunctionPluginImpl {
                 this.checkAndGet(aadConfig.get(DependentPluginInfo.oauthHost) as string, "OAuth Host");
             const tenantId: string =
                 this.checkAndGet(aadConfig.get(DependentPluginInfo.tenantId) as string, "tenant Id");
-            const frontendEndpoint: string =
-                this.checkAndGet(frontendConfig.get(DependentPluginInfo.frontendEndpoint) as string, "frontend endpoint");
-            const frontendDomain: string =
-                this.checkAndGet(frontendConfig.get(DependentPluginInfo.frontendDomain) as string, "frontend domain");
+            const applicationIdUri: string =
+                this.checkAndGet(aadConfig.get(DependentPluginInfo.applicationIdUris) as string, "Application Id URI");
 
-            return FunctionProvision.constructFunctionAuthSettings(clientId, frontendDomain, frontendEndpoint, oauthHost, tenantId);
+            return FunctionProvision.constructFunctionAuthSettings(clientId, applicationIdUri, oauthHost, tenantId);
         }
 
         return undefined;

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
@@ -5,7 +6,7 @@ import * as path from "path";
 import { Logger } from "../logger";
 import { DepsCheckerError } from "./errors";
 import { dotnetChecker, DotnetChecker } from "./dotnetChecker";
-import { ConfigMap, PluginContext, returnUserError } from "fx-api";
+import { ConfigMap, returnUserError, FxError } from "fx-api";
 import { Messages, dotnetHelpLink } from "./common";
 
 export { cpUtils } from "./cpUtils";
@@ -16,8 +17,7 @@ let enabled = false;
 
 export function dotnetCheckerEnabled(): boolean {
   // TODO: enable dotnet checker after all features are ready
-  // return enabled;
-  return false;
+  return enabled;
 }
 
 export async function runWithProgressIndicator(
@@ -71,16 +71,42 @@ export function setFeatureFlag(answers?: ConfigMap): void {
   enabled = answers?.getBoolean(answerKey) || false;
 }
 
-// get dotnet exec path and escape for shell execution
-export async function getDotnetForShell(): Promise<string> {
-  const execPath = await dotnetChecker.getDotnetExecPath();
-  return DotnetChecker.escapeFilePath(execPath);
-}
-
 export function handleDotnetError(error: Error): void {
   if (error instanceof DepsCheckerError) {
     throw returnUserError(error, "function", "DepsCheckerError", error.helpLink, error);
   } else {
     throw returnUserError(new Error(Messages.defaultErrorMessage), "function", "DepsCheckerError", dotnetHelpLink, error);
   }
+}
+
+export namespace ExtTelemetry {
+  export function sendTelemetryEvent(
+    eventName: string,
+    properties?: { [p: string]: string },
+    measurements?: { [p: string]: number }
+  ): void {
+    // implement me
+  }
+
+  export function sendTelemetryErrorEvent(
+    eventName: string,
+    error: FxError,
+    properties?: { [p: string]: string },
+    measurements?: { [p: string]: number },
+    errorProps?: string[]
+  ): void {
+    // implement me
+  }
+
+  export function sendTelemetryException(
+    error: Error,
+    properties?: { [p: string]: string },
+    measurements?: { [p: string]: number }
+  ): void {
+    // implement me
+  }
+}
+
+export enum TelemetryProperty {
+  Component = "component",
 }

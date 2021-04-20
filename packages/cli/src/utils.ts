@@ -76,11 +76,11 @@ export function toConfigMap(anwsers: { [_:string]: any } ): ConfigMap {
   return config;
 }
 
-export function flattenNodes(root: QTreeNode): QTreeNode[] {
-  const children = (root.children || []).concat([]);
-  const rootCopy = Object.assign({}, root);
-  rootCopy.children = undefined;
-  return children.concat(...children.map((node) => flattenNodes(node)));
+export function flattenNodes(node: QTreeNode): QTreeNode[] {
+  const nodeCopy = Object.assign({}, node);
+  const children = (nodeCopy.children || []).concat([]);
+  nodeCopy.children = undefined;
+  return [nodeCopy].concat(...children.map(nd => flattenNodes(nd)));
 }
 
 export async function sleep(ms: number): Promise<void> {

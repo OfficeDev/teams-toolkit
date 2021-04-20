@@ -1,4 +1,7 @@
-﻿using Microsoft.Azure.WebJobs.Host.Bindings;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using Microsoft.Azure.WebJobs.Host.Bindings;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 

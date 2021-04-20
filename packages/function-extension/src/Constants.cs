@@ -1,4 +1,7 @@
-﻿using System.Reflection;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using System.Reflection;
 
 namespace Microsoft.Azure.WebJobs.Extensions.TeamsFx
 {

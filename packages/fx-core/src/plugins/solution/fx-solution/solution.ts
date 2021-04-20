@@ -60,7 +60,6 @@ import {
     REMOTE_CLIENT_SECRET,
     WEB_APPLICATION_INFO_SOURCE,
     LOCAL_WEB_APPLICATION_INFO_SOURCE,
-    PROVISION_MANIFEST,
     PROGRAMMING_LANGUAGE,
     REMOTE_MANIFEST,
     CONFIGURABLE_TABS,
@@ -343,12 +342,11 @@ export class TeamsAppSolution implements Solution {
             if (this.manifest) Object.assign(ctx.app, this.manifest);
             await fs.writeFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`, JSON.stringify(this.manifest, null, 4));
             await fs.writeJSON(`${ctx.root}/permissions.json`, DEFAULT_PERMISSION_REQUEST, { spaces: 4 });
-            return this.updatePermissionRequest(ctx);
         } else {
             this.manifest = await ((this.spfxPlugin as unknown) as SpfxPlugin).getManifest();
             await fs.writeFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`, JSON.stringify(this.manifest, null, 4));
-            return ok(null);
         }
+        return ok(Void);
     }
 
     async open(ctx: SolutionContext): Promise<Result<any, FxError>> {
@@ -589,7 +587,7 @@ export class TeamsAppSolution implements Solution {
 
                 ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false); //if selected plugin changed, we need to re-do provision
             }
-            ctx.dialog?.communicate(
+            await ctx.dialog?.communicate(
                 new DialogMsg(DialogType.Show, {
                     description: `[Teams Toolkit] Resource "${addResourceItemsForNotification.join(
                         ",",
@@ -656,9 +654,9 @@ export class TeamsAppSolution implements Solution {
      * @param rootPath root path of this project
      * @param config solution config
      */
-    private async updatePermissionRequest(
+    private async getPermissionRequest(
         ctx:SolutionContext
-    ): Promise<Result<SolutionConfig, FxError>> {
+    ): Promise<Result<string, FxError>> {
         if (this.spfxSelected(ctx)) {
             return err(
                 returnUserError(
@@ -678,9 +676,8 @@ export class TeamsAppSolution implements Solution {
                 ),
             );
         }
-        const permissionRequest = await fs.readJson(path);
-        ctx.config.get(GLOBAL_CONFIG)?.set(PERMISSION_REQUEST, JSON.stringify(permissionRequest));
-        return ok(ctx.config);
+        const permissionRequest = await fs.readJSON(path);
+        return ok(JSON.stringify(permissionRequest));
     }
 
     private createManifestForRemote(ctx: SolutionContext, manifestTpl: string): Result<[IAppDefinition, TeamsAppManifest], FxError> {
@@ -785,7 +782,6 @@ export class TeamsAppSolution implements Solution {
             ctx.logProvider?.info(`Teams app created ${result.value}`);
             appDefinition.appId = result.value;
             ctx.config.get(GLOBAL_CONFIG)?.set(REMOTE_TEAMS_APP_ID, result.value);
-            ctx.config.get(GLOBAL_CONFIG)?.set(PROVISION_MANIFEST, JSON.stringify(updatedManifest));
             return ok(appDefinition);
         } else {
             ctx.logProvider?.info(`Teams app already created: ${teamsAppId}`);
@@ -800,7 +796,6 @@ export class TeamsAppSolution implements Solution {
             if (result.isErr()) {
                 return result.map((_) => appDefinition);
             }
-            ctx.config.get(GLOBAL_CONFIG)?.set(PROVISION_MANIFEST, JSON.stringify(updatedManifest));
             ctx.logProvider?.info(`Teams app updated ${JSON.stringify(updatedManifest)}`);
             return ok(appDefinition);
         }
@@ -865,6 +860,11 @@ export class TeamsAppSolution implements Solution {
         if (canProvision.isErr()) {
             return canProvision;
         }
+
+        const maybePermission = await this.getPermissionRequest(ctx);
+        if (maybePermission.isErr()) {
+            return maybePermission;
+        }
         
         try {
             // Just to trigger M365 login before the concurrent execution of provision. 
@@ -873,6 +873,7 @@ export class TeamsAppSolution implements Solution {
             await ctx.appStudioToken?.getAccessToken();
 
             this.runningState = SolutionRunningState.ProvisionInProgress;
+            ctx.config.get(GLOBAL_CONFIG)?.set(PERMISSION_REQUEST, maybePermission.value);
 
             const provisionResult = await this.doProvision(ctx);
             if (provisionResult.isOk()) {
@@ -891,6 +892,8 @@ export class TeamsAppSolution implements Solution {
             return provisionResult;
         } finally {
             this.runningState = SolutionRunningState.Idle;
+            // Remove permissionRequest to prevent its persistence in config.
+            ctx.config.get(GLOBAL_CONFIG)?.delete(PERMISSION_REQUEST);
         }
     }
 
@@ -911,18 +914,13 @@ export class TeamsAppSolution implements Solution {
 
         //1. ask common questions for azure resources.
         const appName = this.manifest!.name.short;
-        let res = await fillInCommonQuestions(
+        const res = await fillInCommonQuestions(
             appName,
             ctx.config,
             ctx.dialog,
             await ctx.azureAccountProvider?.getAccountCredentialAsync(),
             await ctx.appStudioToken?.getJsonObject(),
         );
-        if (res.isErr()) {
-            return res;
-        }
-
-        res = await this.updatePermissionRequest(ctx);
         if (res.isErr()) {
             return res;
         }
@@ -1370,6 +1368,20 @@ export class TeamsAppSolution implements Solution {
     }
 
     async localDebug(ctx: SolutionContext): Promise<Result<any, FxError>> {
+        const maybePermission = await this.getPermissionRequest(ctx);
+        if (maybePermission.isErr()) {
+            return maybePermission;
+        }
+        try {
+            ctx.config.get(GLOBAL_CONFIG)?.set(PERMISSION_REQUEST, maybePermission.value);
+            const result = await this.doLocalDebug(ctx);
+            return result;
+        } finally {
+            ctx.config.get(GLOBAL_CONFIG)?.delete(PERMISSION_REQUEST);
+        }
+    }
+
+    async doLocalDebug(ctx: SolutionContext): Promise<Result<any, FxError>> {
         const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
 
         if (maybeSelectedPlugins.isErr()) {
@@ -1606,12 +1618,16 @@ export class TeamsAppSolution implements Solution {
             if (plugin && plugin.callFunc) {
                 const pctx = getPluginContext(ctx, plugin.name, this.manifest);
                 if (func.method === "aadUpdatePermission") {
-                    const result = await this.updatePermissionRequest(ctx);
+                    const result = await this.getPermissionRequest(ctx);
                     if (result.isErr()) {
                         return result;
                     }
+                    ctx.config.get(GLOBAL_CONFIG)?.set(PERMISSION_REQUEST, result.value);
                 }
-                return await plugin.callFunc(func, pctx);
+                const result = await plugin.callFunc(func, pctx);
+                // Remove permissionRequest to prevent its persistence in config.
+                ctx.config.get(GLOBAL_CONFIG)?.delete(PERMISSION_REQUEST);
+                return result;
             }
         }
         else if(array.length === 1){
@@ -1754,7 +1770,14 @@ export class TeamsAppSolution implements Solution {
 
         const alreadyHaveBot = selectedPlugins.includes( this.botPlugin.name );
 
-        if(alreadyHaveBot && alreadyHaveTab){
+        if (alreadyHaveBot && alreadyHaveTab) {
+            const cannotAddCapWarnMsg = "Your App already has both Tab and Bot, can not Add Capability.";
+            await ctx.dialog?.communicate(
+                new DialogMsg(DialogType.Show, {
+                    description: cannotAddCapWarnMsg,
+                    level: MsgLevel.Warning,
+                }),
+            );
             return ok(undefined);
         }
         
@@ -1896,7 +1919,7 @@ export class TeamsAppSolution implements Solution {
                 ctx.logProvider?.info(`finish scaffolding Local Debug Configs!`);
                 ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false); //if selected plugin changed, we need to re-do provision
             }
-            ctx.dialog?.communicate(
+            await ctx.dialog?.communicate(
                 new DialogMsg(DialogType.Show, {
                     description: `[Teams Toolkit] Capability "${addCapabilityNotification.join(
                         ",",
@@ -1941,29 +1964,55 @@ export class TeamsAppSolution implements Solution {
             } else if (method === "validateManifest") {
                 const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
                 const pluginCtx = getPluginContext(ctx, this.appStudioPlugin.name);
-                const manifestTpl = (await fs.readFile(`${ctx.root}/.${ConfigFolderName}/manifest.remote.json`)).toString();
+                const manifestTpl = (await fs.readFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)).toString();
                 const manifest = this.createManifestForRemote(ctx, manifestTpl).map((result) => result[1]);
-                return appStudioPlugin.validateManifest(pluginCtx, JSON.stringify(manifest));
+                if (manifest.isOk()) {
+                    return await appStudioPlugin.validateManifest(pluginCtx, JSON.stringify(manifest.value));
+                } else {
+                    ctx.logProvider?.error("[Teams Toolkit] Manifest Validation failed!");
+                        await ctx.dialog?.communicate(
+                            new DialogMsg(DialogType.Show, {
+                                description: manifest.error.message,
+                                level: MsgLevel.Error,
+                            }),
+                        );
+                    return err(manifest.error);
+                }
             } else if (method === "buildPackage") {
                 const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
-                const manifestTpl = (await fs.readFile(`${ctx.root}/.${ConfigFolderName}/manifest.remote.json`)).toString();
+                const pluginCtx = getPluginContext(ctx, this.appStudioPlugin.name);
+                const manifestTpl = (await fs.readFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)).toString();
                 const manifest = this.createManifestForRemote(ctx, manifestTpl).map((result) => result[1]);
-                return appStudioPlugin.buildTeamsPackage(`${ctx.root}/.${ConfigFolderName}`, JSON.stringify(manifest));
-            }
-        } else if (array.length == 2) {
-            const pluginName = array[1];
-            const plugin = this.pluginMap.get(pluginName);
-            if (plugin && plugin.executeUserTask) {
-                const pctx = getPluginContext(ctx, plugin.name, this.manifest);
-                if (func.method === "aadUpdatePermission") {
-                    const result = await this.updatePermissionRequest(ctx);
+                if (manifest.isOk()) {
+                    return await appStudioPlugin.buildTeamsPackage(pluginCtx, `${ctx.root}/.${ConfigFolderName}`, JSON.stringify(manifest.value));
+                } else {
+                    ctx.logProvider?.error("[Teams Toolkit] Teams Package built failed!");
+                        await ctx.dialog?.communicate(
+                            new DialogMsg(DialogType.Show, {
+                                description: manifest.error.message,
+                                level: MsgLevel.Error,
+                            }),
+                        );
+                    return err(manifest.error);
+                }
+            } else if (method === "aadUpdatePermission" && array.length == 2) {
+                const pluginName = array[1];
+                const plugin = this.pluginMap.get(pluginName);
+                if (plugin && plugin.executeUserTask) {
+                    const pctx = getPluginContext(ctx, plugin.name, this.manifest);
+                    let result = await this.getPermissionRequest(ctx);
                     if (result.isErr()) {
                         return result;
                     }
+                    ctx.config.get(GLOBAL_CONFIG)?.set(PERMISSION_REQUEST, result.value);
+                    result = await plugin.executeUserTask(func, pctx);
+                    // Remove permissionRequest to prevent its persistence in config.
+                    ctx.config.get(GLOBAL_CONFIG)?.delete(PERMISSION_REQUEST);
+                    return result;
                 }
-                return await plugin.executeUserTask(func, pctx);
             }
-        }
+        } 
+        
         return err(
             returnUserError(
                 new Error(`executeUserTaskRouteFailed:${JSON.stringify(func)}`),
@@ -2143,6 +2192,8 @@ export class TeamsAppSolution implements Solution {
             const launchSettingsJSON = Mustache.render(launchSettingsJSONTpl, { "teams-app-id": teamsAppId });
             await fs.writeFile(launchSettingsJSONPath, launchSettingsJSON);
         }
+        // Remove permissionRequest to prevent its persistence in config.
+        ctx.config.get(GLOBAL_CONFIG)?.delete(PERMISSION_REQUEST);
         return ok({
             teamsAppId: teamsAppId,
             clientId: configResult.value.aadId,

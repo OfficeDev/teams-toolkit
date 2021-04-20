@@ -14,7 +14,8 @@
 			],
 			"resolveSourceMapLocations": [
 				"${workspaceFolder}/out/**/*.js",
-				"${workspaceFolder}/../fx-core/build/**/*.js"
+				"${workspaceFolder}/../fx-core/build/**/*.js",
+				"${workspaceFolder}/../api/build/**/*.js"
 			],
 			"preLaunchTask": "npm: build"
 		},

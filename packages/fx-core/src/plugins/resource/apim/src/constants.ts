@@ -50,55 +50,55 @@ export class QuestionConstants {
         public static readonly ApiPrefix = class {
             public static readonly questionName: string = "vsc-api-prefix";
             public static readonly funcName: string = "api-prefix-default-value";
-            public static readonly description: string = "Input API name prefix";
-            public static readonly prompt: string = "Input API name prefix";
+            public static readonly description: string = "Input the API name prefix. The unique name of the API will be '{api-prefix}-{resource-suffix}-{api-version}'.";
+            public static readonly prompt: string = "Input the API name prefix.";
         };
 
         public static readonly ApiVersion = class {
             public static readonly questionName: string = "vsc-api-version";
             public static readonly funcName: string = "api-version-option";
-            public static readonly description: string = "Select an API version";
+            public static readonly description: string = "Select an API version.";
             public static readonly createNewApiVersionOption: string = "+ Create a new API version";
         };
 
         public static readonly NewApiVersion = class {
             public static readonly questionName: string = "vsc-new-api-version";
             public static readonly funcName: string = "new-api-version-default-value";
-            public static readonly description: string = "Input API version";
-            public static readonly prompt: string = "Input API version";
+            public static readonly description: string = "Input the API version.";
+            public static readonly prompt: string = "Input the API version.";
         };
     };
 
     public static readonly CLI = class {
         public static readonly ApimResourceGroup = class {
             public static readonly questionName: string = "apim-resource-group";
-            public static readonly description: string = "Input API Management service resource group";
+            public static readonly description: string = "The name of resource group.";
         };
 
         public static readonly ApimServiceName = class {
             public static readonly questionName: string = "apim-service-name";
-            public static readonly description: string = "Input API Management service name";
+            public static readonly description: string = "The name of the API Management service instance.";
         };
 
         public static readonly OpenApiDocument = class {
             public static readonly questionName: string = "open-api-document";
-            public static readonly description: string = "Input Open API document file path";
+            public static readonly description: string = "The Open API document file path.";
         };
 
         public static readonly ApiPrefix = class {
             public static readonly questionName: string = "api-prefix";
-            public static readonly description: string = "Input API name prefix";
+            public static readonly description: string = "The API name prefix. The unique name of the API will be '{api-prefix}-{resource-suffix}-{api-version}'.";
         };
 
         public static readonly ApiId = class {
             // The api id is displayed as api name in the Azure Portal
             public static readonly questionName: string = "api-name";
-            public static readonly description: string = "Input the API name. (Default value: {api-prefix}-{api-version})";
+            public static readonly description: string = "Unique name of the api to be updated.";
         };
 
         public static readonly ApiVersion = class {
             public static readonly questionName: string = "api-version";
-            public static readonly description: string = "Input API version";
+            public static readonly description: string = "The API version.";
         };
     };
 

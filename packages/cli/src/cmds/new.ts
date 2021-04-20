@@ -5,16 +5,12 @@
 
 import {Argv, Options} from "yargs";
 
-<<<<<<< HEAD
-import {FxError, err, ok, Result, Stage, Platform, ConfigMap, QTreeNode, NodeType, Question, isAutoSkipSelect, SingleSelectQuestion, MultiSelectQuestion} from "fx-api";
-=======
-import {FxError, err, ok, Result, Stage, ConfigMap, QTreeNode, NodeType, Question, QuestionType, DialogType, DialogMsg} from "fx-api";
->>>>>>> 37e0d13... revert cli code
+import {FxError, err, ok, Result, Stage, Platform, ConfigMap, QTreeNode, NodeType, Question, isAutoSkipSelect, SingleSelectQuestion, MultiSelectQuestion, DialogMsg, DialogType, QuestionType} from "fx-api";
 
 import * as constants from "../constants";
 import {validateAndUpdateAnswers, visitInteractively} from "../question/question";
 import {YargsCommand} from "../yargsCommand";
-import {flattenNodes, getJson, toConfigMap, toYargsOptions} from "../utils";
+import {flattenNodes, getJson, getSingleOptionString, toConfigMap, toYargsOptions} from "../utils";
 import {ContextFactory} from "../context";
 import activate from "../activate";
 

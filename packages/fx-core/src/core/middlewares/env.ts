@@ -26,7 +26,7 @@ export const envMW: Middleware = async (
                 `${coreCtx.root}/.${ConfigFolderName}/settings.json`,
                 { encoding: "utf-8" }
             );
-            coreCtx.env = laungh.currentEnv
+            coreCtx.env = laungh.currentEnv;
             ctx.arguments[i] = coreCtx;
             break;
         }

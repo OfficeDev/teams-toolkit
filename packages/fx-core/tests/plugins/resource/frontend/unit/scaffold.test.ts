@@ -14,7 +14,7 @@ import fs from "fs-extra";
 
 import { FrontendPathInfo } from "../../../../../src/plugins/resource/frontend/constants";
 import { FrontendScaffold, TemplateVariable } from "../../../../../src/plugins/resource/frontend/ops/scaffold";
-import { TemplateInfo } from "../../../../../src/plugins/resource/frontend/ops/scaffold";
+import { TemplateInfo } from "../../../../../src/plugins/resource/frontend/resources/templateInfo";
 import { TestHelper } from "../helper";
 
 chai.use(chaiAsPromised);
@@ -66,7 +66,7 @@ describe("FrontendScaffold", () => {
         it("fallback", async () => {
             sinon.stub(FrontendScaffold, "getTemplateURL").rejects();
             const pluginContext: PluginContext = TestHelper.getFakePluginContext();
-            const templateInfo = new TemplateInfo();
+            const templateInfo = new TemplateInfo(pluginContext);
 
             const zip = await FrontendScaffold.getTemplateZip(pluginContext, templateInfo);
             chai.assert.exists(zip);

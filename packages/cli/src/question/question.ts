@@ -11,7 +11,11 @@ import {
   Question,
   ConfigMap,
   getValidationFunction,
-  RemoteFuncExecutor
+  RemoteFuncExecutor,
+  isAutoSkipSelect,
+  getSingleOption,
+  SingleSelectQuestion,
+  MultiSelectQuestion
 } from "fx-api";
 
 import CLILogProvider from "../commonlib/log";
@@ -57,7 +61,7 @@ export async function validateAndUpdateAnswers(
         if (ans instanceof Array) {
           const items: OptionItem[] = [];
           for (const one of ans) {
-            const item = (option as OptionItem[]).filter((op) => op.label === one)[0];
+            const item = (option as OptionItem[]).filter((op) => op.id === one)[0];
 
             if (item) {
               items.push(item);
@@ -69,7 +73,7 @@ export async function validateAndUpdateAnswers(
           }
           answers.set(node.data.name, items);
         } else {
-          const item = (option as OptionItem[]).filter((op) => op.label === ans)[0];
+          const item = (option as OptionItem[]).filter((op) => op.id === ans)[0];
           if (!item) {
             CLILogProvider.warning(
               `[${constants.cliSource}] No option for this question: ${ans} ${option}`
@@ -84,10 +88,10 @@ export async function validateAndUpdateAnswers(
 
 export async function visitInteractively(
   node: QTreeNode,
-  answers?: { [_:string]: any },
+  answers?: { [_: string]: any },
   parentNodeAnswer?: any,
   remoteFuncValidator?: RemoteFuncExecutor
-): Promise<{ [_:string]: any }> {
+): Promise<{ [_: string]: any }> {
   if (!answers) {
     answers = {};
   }
@@ -140,7 +144,12 @@ export async function visitInteractively(
 
   let answer: any = undefined;
   if (node.data.type !== NodeType.group) {
-    answers = await inquirer.prompt([toInquirerQuestion(node.data, answers, remoteFuncValidator)], answers);
+    if (!isAutoSkipSelect(node.data)) {
+      answers = await inquirer.prompt([toInquirerQuestion(node.data, answers, remoteFuncValidator)], answers);
+    }
+    else{
+      answers[node.data.name] = getSingleOption(node.data as (SingleSelectQuestion | MultiSelectQuestion));
+    }
     answer = answers[node.data.name];
   }
 
@@ -153,7 +162,7 @@ export async function visitInteractively(
   return answers!;
 }
 
-export function toInquirerQuestion(data: Question, answers: { [_:string]: any }, remoteFuncValidator?: RemoteFuncExecutor): DistinctQuestion {
+export function toInquirerQuestion(data: Question, answers: { [_: string]: any }, remoteFuncValidator?: RemoteFuncExecutor): DistinctQuestion {
   let type: "input" | "number" | "password" | "list" | "checkbox";
   let defaultValue = data.default;
   switch (data.type) {

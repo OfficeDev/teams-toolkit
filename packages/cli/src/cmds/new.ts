@@ -5,13 +5,13 @@
 
 import { Argv, Options } from "yargs";
 
-import { FxError, err, ok, Result, Stage, Platform, ConfigMap, QTreeNode, NodeType, Question } from "fx-api";
+import { FxError, err, ok, Result, Stage, Platform, ConfigMap, QTreeNode, NodeType, Question, isAutoSkipSelect, SingleSelectQuestion, MultiSelectQuestion } from "fx-api";
 
 import activate from "../activate";
 import * as constants from "../constants";
 import { validateAndUpdateAnswers, visitInteractively } from "../question/question";
 import { YargsCommand } from "../yargsCommand";
-import { flattenNodes, getJson, toConfigMap, toYargsOptions } from "../utils";
+import { flattenNodes, getJson, getSingleOptionString, toConfigMap, toYargsOptions } from "../utils";
 
 export default class New extends YargsCommand {
   public readonly commandHead = `new`;
@@ -35,6 +35,11 @@ export default class New extends YargsCommand {
       }
       nodesWithoutGroup.forEach((node) => {
         const data = node.data as Question;
+        if (isAutoSkipSelect(data)) {
+          // set the only option to default value so yargs will auto fill it.
+          data.default = getSingleOptionString(data as (SingleSelectQuestion | MultiSelectQuestion));
+          (data as any).hide = true;
+        }
         this.params[data.name] = toYargsOptions(data);
       });
       yargs.options({

@@ -153,9 +153,9 @@ namespace Microsoft.TeamsFx.SimpleAuth.Components.Auth
             {
                 var decodedToken1 = handler.ReadJwtToken(token1);
                 var decodedToken2 = handler.ReadJwtToken(token2);
-                string oid1 = decodedToken1.Claims.FirstOrDefault(claim => claim.Type == "oid").Value;
-                string oid2 = decodedToken2.Claims.FirstOrDefault(claim => claim.Type == "oid").Value;
-                if (!String.IsNullOrEmpty(oid1) && oid1 == oid2)
+                Claim oid1 = decodedToken1.Claims.FirstOrDefault(claim => claim.Type == "oid");
+                Claim oid2 = decodedToken2.Claims.FirstOrDefault(claim => claim.Type == "oid");
+                if (oid1 != null && oid2 != null && !String.IsNullOrEmpty(oid1.Value) && oid1.Value == oid2.Value)
                 {
                     return true;
                 }

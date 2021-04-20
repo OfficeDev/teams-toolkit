@@ -587,7 +587,7 @@ export class TeamsAppSolution implements Solution {
 
                 ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false); //if selected plugin changed, we need to re-do provision
             }
-            ctx.dialog?.communicate(
+            await ctx.dialog?.communicate(
                 new DialogMsg(DialogType.Show, {
                     description: `[Teams Toolkit] Resource "${addResourceItemsForNotification.join(
                         ",",
@@ -1374,7 +1374,7 @@ export class TeamsAppSolution implements Solution {
         }
         try {
             ctx.config.get(GLOBAL_CONFIG)?.set(PERMISSION_REQUEST, maybePermission.value);
-            const result = this.doLocalDebug(ctx);
+            const result = await this.doLocalDebug(ctx);
             return result;
         } finally {
             ctx.config.get(GLOBAL_CONFIG)?.delete(PERMISSION_REQUEST);
@@ -1770,7 +1770,14 @@ export class TeamsAppSolution implements Solution {
 
         const alreadyHaveBot = selectedPlugins.includes( this.botPlugin.name );
 
-        if(alreadyHaveBot && alreadyHaveTab){
+        if (alreadyHaveBot && alreadyHaveTab) {
+            const cannotAddCapWarnMsg = "Your App already has both Tab and Bot, can not Add Capability.";
+            await ctx.dialog?.communicate(
+                new DialogMsg(DialogType.Show, {
+                    description: cannotAddCapWarnMsg,
+                    level: MsgLevel.Warning,
+                }),
+            );
             return ok(undefined);
         }
         
@@ -1912,7 +1919,7 @@ export class TeamsAppSolution implements Solution {
                 ctx.logProvider?.info(`finish scaffolding Local Debug Configs!`);
                 ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false); //if selected plugin changed, we need to re-do provision
             }
-            ctx.dialog?.communicate(
+            await ctx.dialog?.communicate(
                 new DialogMsg(DialogType.Show, {
                     description: `[Teams Toolkit] Capability "${addCapabilityNotification.join(
                         ",",
@@ -1957,30 +1964,10 @@ export class TeamsAppSolution implements Solution {
             } else if (method === "validateManifest") {
                 const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
                 const pluginCtx = getPluginContext(ctx, this.appStudioPlugin.name);
-                const manifestTpl = (await fs.readFile(`${ctx.root}/.${ConfigFolderName}/manifest.remote.json`)).toString();
+                const manifestTpl = (await fs.readFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)).toString();
                 const manifest = this.createManifestForRemote(ctx, manifestTpl).map((result) => result[1]);
                 if (manifest.isOk()) {
-                    const validationResult = await appStudioPlugin.validateManifest(pluginCtx, JSON.stringify(manifest.value));
-                    if (validationResult.isOk()) {
-                        const validationSuccess = "[Teams Toolkit] Manifest Validation succeed!";
-                        ctx.logProvider?.info(validationSuccess);
-                        await ctx.dialog?.communicate(
-                            new DialogMsg(DialogType.Show, {
-                                description: validationSuccess,
-                                level: MsgLevel.Info,
-                            }),
-                        );
-                    } else {
-                        ctx.logProvider?.error("[Teams Toolkit] Manifest Validation failed!");
-                        await ctx.dialog?.communicate(
-                            new DialogMsg(DialogType.Show, {
-                                description: validationResult.error.message,
-                                level: MsgLevel.Error,
-                            }),
-                        );
-                    }
-
-                    return validationResult;
+                    return await appStudioPlugin.validateManifest(pluginCtx, JSON.stringify(manifest.value));
                 } else {
                     ctx.logProvider?.error("[Teams Toolkit] Manifest Validation failed!");
                         await ctx.dialog?.communicate(
@@ -1993,21 +1980,11 @@ export class TeamsAppSolution implements Solution {
                 }
             } else if (method === "buildPackage") {
                 const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
-                const manifestTpl = (await fs.readFile(`${ctx.root}/.${ConfigFolderName}/manifest.remote.json`)).toString();
+                const pluginCtx = getPluginContext(ctx, this.appStudioPlugin.name);
+                const manifestTpl = (await fs.readFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)).toString();
                 const manifest = this.createManifestForRemote(ctx, manifestTpl).map((result) => result[1]);
                 if (manifest.isOk()) {
-                    const result = await appStudioPlugin.buildTeamsPackage(`${ctx.root}/.${ConfigFolderName}`, JSON.stringify(manifest.value));
-                    if (result.isOk()) {
-                        const builtSuccess = `[Teams Toolkit] Teams Package ${result.value} built successfully!`;
-                        ctx.logProvider?.info(builtSuccess);
-                        await ctx.dialog?.communicate(
-                            new DialogMsg(DialogType.Show, {
-                                description: builtSuccess,
-                                level: MsgLevel.Info,
-                            }),
-                        );
-                    }
-                    return result;
+                    return await appStudioPlugin.buildTeamsPackage(pluginCtx, `${ctx.root}/.${ConfigFolderName}`, JSON.stringify(manifest.value));
                 } else {
                     ctx.logProvider?.error("[Teams Toolkit] Teams Package built failed!");
                         await ctx.dialog?.communicate(
@@ -2018,25 +1995,24 @@ export class TeamsAppSolution implements Solution {
                         );
                     return err(manifest.error);
                 }
-            }
-        } else if (array.length == 2) {
-            const pluginName = array[1];
-            const plugin = this.pluginMap.get(pluginName);
-            if (plugin && plugin.executeUserTask) {
-                const pctx = getPluginContext(ctx, plugin.name, this.manifest);
-                if (func.method === "aadUpdatePermission") {
-                    const result = await this.getPermissionRequest(ctx);
+            } else if (method === "aadUpdatePermission" && array.length == 2) {
+                const pluginName = array[1];
+                const plugin = this.pluginMap.get(pluginName);
+                if (plugin && plugin.executeUserTask) {
+                    const pctx = getPluginContext(ctx, plugin.name, this.manifest);
+                    let result = await this.getPermissionRequest(ctx);
                     if (result.isErr()) {
                         return result;
                     }
                     ctx.config.get(GLOBAL_CONFIG)?.set(PERMISSION_REQUEST, result.value);
+                    result = await plugin.executeUserTask(func, pctx);
+                    // Remove permissionRequest to prevent its persistence in config.
+                    ctx.config.get(GLOBAL_CONFIG)?.delete(PERMISSION_REQUEST);
+                    return result;
                 }
-                const result = await plugin.executeUserTask(func, pctx);
-                // Remove permissionRequest to prevent its persistence in config.
-                ctx.config.get(GLOBAL_CONFIG)?.delete(PERMISSION_REQUEST);
-                return result;
             }
-        }
+        } 
+        
         return err(
             returnUserError(
                 new Error(`executeUserTaskRouteFailed:${JSON.stringify(func)}`),

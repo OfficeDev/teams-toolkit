@@ -346,7 +346,7 @@ function validationErrorHandler(error: any): ErrorHandlerResult {
             if (error.body.details instanceof Array) {
                 for (const detailError of error.body.details) {
                     if (detailError.message) {
-                        error.message += `[Detail] ${detailError.message}.`;
+                        error.message += ` [Detail] ${detailError.message}`;
                     }
                 }
             }

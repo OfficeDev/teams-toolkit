@@ -71,6 +71,10 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
         if (includeBackend) {
             tasks.push(
                 {
+                    label: "Start Backend",
+                    dependsOn: `${ProductName}: backend start`,
+                },
+                {
                     label: "backend npm install",
                     type: "shell",
                     command: "npm install",
@@ -102,6 +106,10 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
                     "prepare dev env",
                 ],
                 dependsOrder: "sequence",
+            },
+            {
+                label: "Start Bot",
+                dependsOn: `${ProductName}: bot start`,
             },
             {
                 label: "dependency check",
@@ -156,6 +164,10 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
                 dependsOrder: "parallel",
             },
             {
+                label: "Start Bot",
+                dependsOn: `${ProductName}: bot start`,
+            },
+            {
                 label: "dependency check",
                 type: "shell",
                 command: "echo ${command:fx-extension.validate-dependencies}",
@@ -202,6 +214,10 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
 
         if (includeBackend) {
             tasks.push(
+                {
+                    label: "Start Backend",
+                    dependsOn: `${ProductName}: backend start`,
+                },
                 {
                     label: "backend npm install",
                     type: "shell",

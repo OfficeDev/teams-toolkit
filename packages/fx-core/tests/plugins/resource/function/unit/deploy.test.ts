@@ -7,6 +7,8 @@ import * as path from "path";
 import * as sinon from "sinon";
 import axios from "axios";
 
+import * as backendExtensionsInstall from "../../../../../src/plugins/resource/function/utils/depsChecker/backendExtensionsInstall";
+
 import * as dirWalk from "../../../../../src/plugins/resource/function/utils/dir-walk";
 import * as execute from "../../../../../src/plugins/resource/function/utils/execute";
 import { AzureClientFactory } from "../../../../../src/plugins/resource/function/utils/azure-client";
@@ -22,11 +24,13 @@ const context: any = {
             [DependentPluginInfo.subscriptionId, "ut"],
             [DependentPluginInfo.resourceNameSuffix, "ut"],
             [DependentPluginInfo.location, "ut"],
+            [DependentPluginInfo.programmingLanguage, "javascript"]
         ])],
         [DependentPluginInfo.aadPluginName, new Map<string, string>([
             [DependentPluginInfo.aadClientId, "ut"],
             [DependentPluginInfo.aadClientSecret, "ut"],
-            [DependentPluginInfo.aadOauthAuthority, "ut"],
+            [DependentPluginInfo.oauthHost, "ut"],
+            [DependentPluginInfo.tenantId, "ut"],
         ])],
         [DependentPluginInfo.frontendPluginName, new Map<string, string>([
             [DependentPluginInfo.frontendDomain, "ut"],
@@ -34,7 +38,8 @@ const context: any = {
         ])],
         [DependentPluginInfo.identityPluginName, new Map<string, string>([
             [DependentPluginInfo.identityId, "ut"],
-            [DependentPluginInfo.identityName, "ut"],
+            [DependentPluginInfo.oauthHost, "ut"],
+            [DependentPluginInfo.tenantId, "ut"],
         ])],
         [DependentPluginInfo.sqlPluginName, new Map<string, string>([
             [DependentPluginInfo.sqlPluginName, "ut"],
@@ -51,7 +56,6 @@ const context: any = {
         }
     },
     config: new Map<string, string>([
-        ["functionLanguage", FunctionLanguage.JavaScript],
         ["functionAppName", "ut"],
         ["scaffoldDone", "true"],
         ["provisionDone", "true"]
@@ -110,6 +114,7 @@ describe(FunctionPluginInfo.pluginName, () => {
             sinon.stub(axios, "post").resolves({ status: 200 });
             sinon.stub(execute, "execute").resolves("");
             sinon.stub(FunctionDeploy, "hasUpdatedContent").resolves(true);
+            sinon.stub(backendExtensionsInstall, "backendExtensionsInstall").resolves(undefined);
             const plugin: FunctionPlugin = new FunctionPlugin();
 
             // Act

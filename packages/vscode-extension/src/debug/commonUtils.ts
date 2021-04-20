@@ -6,8 +6,9 @@ import * as path from "path";
 import * as dotenv from "dotenv";
 import * as vscode from "vscode";
 import * as constants from "./constants";
-import { openUrl } from "./funcCoreTools/openUrl";
-import { ConfigFolderName } from "fx-api";
+import { openUrl } from "./depsChecker/common";
+import { ConfigFolderName, Func } from "fx-api";
+import { core, showError } from "../handlers";
 
 export async function getProjectRoot(
   folderPath: string,
@@ -87,18 +88,19 @@ export async function hasTeamsfxBackend(): Promise<boolean> {
   return backendRoot !== undefined;
 }
 
-export async function displayLearnMore(message: string, link: string): Promise<void> {
-  await displayWarningMessage(message, constants.Messages.learnMoreButtonText, () => openUrl(link));
-}
-
-export async function displayWarningMessage(
-  message: string,
-  buttonText: string,
-  action: () => Promise<void>
-): Promise<void> {
-  const button: vscode.MessageItem = { title: buttonText };
-  const input = await vscode.window.showWarningMessage(message, { modal: true }, button);
-  if (input === button) {
-    await action();
-  }
+export async function getLocalDebugTeamsAppId(isLocalSideloadingConfiguration: boolean): Promise<string|undefined> {
+  const func: Func = {
+    namespace: "fx-solution-azure/fx-resource-local-debug",
+    method: "getLaunchInput",
+    params: isLocalSideloadingConfiguration ? "local" : "remote"
+  };
+  try {
+    const result = await core.callFunc(func);
+    if (result.isErr()) {
+      throw result.error;
+    }
+    return result.value as string;
+  } catch (err) {
+    await showError(err);
+  }   
 }

@@ -1,4 +1,7 @@
-﻿namespace Microsoft.Azure.WebJobs.Extensions.TeamsFx.Tests.Models
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+namespace Microsoft.Azure.WebJobs.Extensions.TeamsFx.Tests.Models
 {
     public class IntegrationTestSettings
     {

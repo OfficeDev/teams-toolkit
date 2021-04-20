@@ -1,10 +1,12 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.AzureAppServices;
 
-namespace Microsoft.TeamsFxSimpleAuth
+namespace Microsoft.TeamsFx.SimpleAuth
 {
     public class Program
     {

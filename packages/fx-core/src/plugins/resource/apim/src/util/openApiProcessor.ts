@@ -8,19 +8,19 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import { ApimDefaultValues } from "../constants";
 import { Telemetry } from "../telemetry";
-import { LogProvider } from "fx-api";
+import { LogProvider, TelemetryReporter } from "fx-api";
 import { getFileExtension } from "../util";
 import { LogMessages } from "../log";
 import { OpenAPI, OpenAPIV2, OpenAPIV3 } from "openapi-types";
 
 export class OpenApiProcessor {
     private readonly logger?: LogProvider;
-    private readonly telemetry: Telemetry;
+    private readonly telemetryReporter?: TelemetryReporter;
     private readonly swaggerParser: SwaggerParser;
 
-    constructor(telemetry: Telemetry, logger?: LogProvider) {
+    constructor(telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
         this.logger = logger;
-        this.telemetry = telemetry;
+        this.telemetryReporter = telemetryReporter;
         this.swaggerParser = new SwaggerParser();
     }
 
@@ -53,7 +53,7 @@ export class OpenApiProcessor {
         for (const file of files) {
             try {
                 const openApi = await this.loadOpenApiDocument(file);
-                const relativePath = path.relative(dir, file);
+                const relativePath = path.relative(dir, file).replace("\\", "/");
                 fileName2OpenApi.set(relativePath, openApi);
             } catch (error) {
                 continue;
@@ -75,7 +75,7 @@ export class OpenApiProcessor {
         }
 
         const schemaVersion = this.getSchemaVersion(srcSpec, filepath);
-        this.telemetry.sendOpenApiDocumentEvent(getFileExtension(filepath), schemaVersion);
+        Telemetry.sendOpenApiDocumentEvent(this.telemetryReporter, getFileExtension(filepath), schemaVersion);
         return {
             schemaVersion: schemaVersion,
             spec: srcSpec,
@@ -88,13 +88,13 @@ export class OpenApiProcessor {
         parsedUrl.set("pathname", basePath);
         const scheme = this.getScheme(parsedUrl.protocol);
         switch (schemaVersion) {
-            case OpenApiSchemaVersion.v2:
+            case OpenApiSchemaVersion.V2:
                 spec = spec as OpenAPIV2.Document;
                 spec.schemes = [scheme];
                 spec.host = parsedUrl.hostname;
                 spec.basePath = parsedUrl.pathname;
                 break;
-            case OpenApiSchemaVersion.v3:
+            case OpenApiSchemaVersion.V3:
                 spec = spec as OpenAPIV3.Document;
                 spec.servers = [{ url: parsedUrl.toString() }];
                 break;
@@ -137,9 +137,9 @@ export class OpenApiProcessor {
 
     private getSchemaVersion(spec: OpenAPI.Document, filePath: string): OpenApiSchemaVersion {
         if ("swagger" in spec) {
-            return OpenApiSchemaVersion.v2;
+            return OpenApiSchemaVersion.V2;
         } else if ("openapi" in spec) {
-            return OpenApiSchemaVersion.v3;
+            return OpenApiSchemaVersion.V3;
         } else {
             throw BuildError(InvalidOpenApiDocument, filePath);
         }

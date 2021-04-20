@@ -1,4 +1,6 @@
-﻿namespace Microsoft.TeamsFxSimpleAuth.Tests
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+namespace Microsoft.TeamsFx.SimpleAuth.Tests
 {
     public class PostTokenGrantType
     {

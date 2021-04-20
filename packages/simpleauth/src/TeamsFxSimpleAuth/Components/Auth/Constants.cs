@@ -1,4 +1,6 @@
-﻿namespace Microsoft.TeamsFxSimpleAuth.Components.Auth
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+namespace Microsoft.TeamsFx.SimpleAuth.Components.Auth
 {
     public class AadGrantType
     {

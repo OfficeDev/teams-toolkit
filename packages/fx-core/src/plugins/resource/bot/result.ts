@@ -10,51 +10,34 @@ import { Links, Alias } from "./constants";
 
 export type FxResult = Result<any, FxError>;
 
-class FxResultFactory {
-    static readonly source: string = Alias.TEAMS_FX;
-    static readonly defaultHelpLink: string = "";
-    static readonly defaultIssueLink: string = "";
-
-    private static _FxError(errorMessage: string, innerError: any): FxError {
-        // TODO: These fields are unclear to me, it may be updated in the future.
-        return {
-            name: "TeamsfxError",
-            message: errorMessage,
-            source: this.source,
-            timestamp: new Date(),
-            innerError: innerError,
-        };
-    }
-
-    public static FxError(errorMessage: string, innerError?: any): FxResult {
-        return err(this._FxError(errorMessage, innerError));
-    }
+export class FxBotPluginResultFactory {
+    static readonly source: string = Alias.TEAMS_BOT_PLUGIN;
+    static readonly defaultHelpLink: string = Links.HELP_LINK;
+    static readonly defaultIssueLink: string = Links.ISSUE_LINK;
 
     public static UserError(errorName: string, errorMessage: string, helpLink?: string, innerError?: any): FxResult {
-        return err({
-            ...this._FxError(errorMessage, innerError),
-            name: errorName,
-            helpLink: helpLink ?? this.defaultHelpLink,
-            stack: innerError?.stack,
-        } as UserError);
+        return err(new UserError(
+            errorName,
+            errorMessage,
+            FxBotPluginResultFactory.source,
+            innerError?.stack,
+            FxBotPluginResultFactory.defaultHelpLink,
+            innerError
+        ));
     }
 
     public static SystemError(errorName: string, errorMessage: string, issueLink?: string, innerError?: any): FxResult {
-        return err({
-            ...this._FxError(errorMessage, innerError),
-            name: errorName,
-            issueLink: issueLink ?? this.defaultIssueLink,
-            stack: innerError?.stack,
-        } as SystemError);
+        return err(new SystemError(
+            errorName,
+            errorMessage,
+            FxBotPluginResultFactory.source,
+            innerError?.stack,
+            FxBotPluginResultFactory.defaultIssueLink,
+            innerError
+        ));
     }
 
     public static Success(result?: any): FxResult {
         return ok(result);
     }
-}
-
-export class FxBotPluginResultFactory extends FxResultFactory {
-    static readonly source: string = Alias.TEAMS_BOT_PLUGIN;
-    static readonly defaultHelpLink = Links.HELP_LINK;
-    static readonly defaultIssueLink = Links.ISSUE_LINK;
 }

@@ -1,8 +1,10 @@
-﻿using System.Collections;
-using Microsoft.TeamsFxSimpleAuth.Tests.Helpers;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+using System.Collections;
+using Microsoft.TeamsFx.SimpleAuth.Tests.Helpers;
 using NUnit.Framework;
 
-namespace Microsoft.TeamsFxSimpleAuth.Tests
+namespace Microsoft.TeamsFx.SimpleAuth.Tests
 {
     [SetUpFixture]
     public class AadInstanceSetUp

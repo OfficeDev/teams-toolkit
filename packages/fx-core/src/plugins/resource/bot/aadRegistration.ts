@@ -3,18 +3,13 @@
 import * as utils from "./utils/common";
 import { AxiosInstance, default as axios } from "axios";
 
-import { AADRegistrationConstants, Retry } from "./constants";
+import { AADRegistrationConstants } from "./constants";
 import { IAADApplication } from "./appStudio/interfaces/IAADApplication";
+import { IAADDefinition } from "./appStudio/interfaces/IAADDefinition";
 import * as AppStudio from "./appStudio/appStudio";
-import { ProvisionException } from "./exceptions";
+import { ProvisionError } from "./errors";
 import { CommonStrings } from "./resources/strings";
-import { Logger } from "./logger";
-
-export class BotAuthCredential {
-    public clientId?: string;
-    public objectId?: string;
-    public clientSecret?: string;
-}
+import { BotAuthCredential } from "./botAuthCredential";
 
 export async function registerAADAppAndGetSecretByGraph(graphToken: string, displayName: string): Promise<BotAuthCredential> {
     const axiosInstance: AxiosInstance = axios.create({
@@ -35,11 +30,11 @@ export async function registerAADAppAndGetSecretByGraph(graphToken: string, disp
             signInAudience: AADRegistrationConstants.AZURE_AD_MULTIPLE_ORGS
         });
     } catch (e) {
-        throw new ProvisionException(CommonStrings.AAD_APP, e);
+        throw new ProvisionError(CommonStrings.AAD_APP, e);
     }
 
     if (!regResponse || !utils.isHttpCodeOkOrCreated(regResponse.status)) {
-        throw new ProvisionException(CommonStrings.AAD_APP);
+        throw new ProvisionError(CommonStrings.AAD_APP);
     }
 
     result.clientId = regResponse.data.appId;
@@ -58,11 +53,11 @@ export async function registerAADAppAndGetSecretByGraph(graphToken: string, disp
             },
         );
     } catch (e) {
-        throw new ProvisionException(CommonStrings.AAD_CLIENT_SECRET, e);
+        throw new ProvisionError(CommonStrings.AAD_CLIENT_SECRET, e);
     }
 
     if (!genResponse || !genResponse.data) {
-        throw new ProvisionException(CommonStrings.AAD_CLIENT_SECRET);
+        throw new ProvisionError(CommonStrings.AAD_CLIENT_SECRET);
     }
 
     result.clientSecret = genResponse.data.secretText;
@@ -70,44 +65,23 @@ export async function registerAADAppAndGetSecretByGraph(graphToken: string, disp
 }
 
 export async function registerAADAppAndGetSecretByAppStudio(appStudioToken: string, displayName: string): Promise<BotAuthCredential> {
-
     const result = new BotAuthCredential();
 
-    await AppStudio.init(appStudioToken);
-
-    const appConfig: IAADApplication = {
+    const appConfig: IAADDefinition = {
         displayName: displayName
     };
 
-    const app = await AppStudio.createAADApp(appConfig);
-    result.clientId = app.id;
+    const app = await AppStudio.createAADAppV2(appStudioToken, appConfig);
+    result.clientId = app.appId;
+    result.objectId = app.id;
 
-    // Sync with toolkit"s implmentation to retry at most 5 times.
-    let retries = Retry.GENERATE_CLIENT_SECRET_TIMES;
-    while (retries > 0) {
-        let password = undefined;
-        try {
-            password = await AppStudio.createAADAppPassword(app.objectId);
-        } catch (e) {
-            Logger.debug(`createAADAppPassword exception: ${e}`);
-        }
+    const password = await AppStudio.createAADAppPassword(appStudioToken, result.objectId);
 
-        if (!password || !password.value) {
-
-            retries = retries - 1;
-            if (retries > 0) {
-                await new Promise((resolve) => setTimeout(resolve, Retry.GENERATE_CLIENT_SECRET_GAP_MS));
-            }
-            continue;
-        }
-
-        result.clientSecret = password.value;
-        break;
+    if (!password || !password.value) {
+        throw new ProvisionError(CommonStrings.AAD_CLIENT_SECRET);
     }
 
-    if (!result.clientSecret) {
-        throw new ProvisionException(CommonStrings.AAD_CLIENT_SECRET);
-    }
+    result.clientSecret = password.value;
 
     return result;
 }

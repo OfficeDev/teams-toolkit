@@ -3,20 +3,21 @@
 src/**
 .gitignore
 .yarnrc
-vsc-extension-quickstart.md
 **/tsconfig.json
 **/.eslintrc.json
 **/*.map
 **/*.ts
 test-folder/**
+test/**
+commitlint.config.js
+build/**
+.prettierrc.json
+.prettierignore
+webpack.config.js
+.github
+NOTICE.txt
 
-!node_modules\@microsoft\generator-sharepoint
-!node_modules\express
-!node_modules\keytar
-!node_modules\yeoman-environment
-!node_modules\diagnostic-channel-publishers
-!node_modules\applicationinsights-native-metrics
-!node_modules\adm-zip
-!node_modules\@azure-tools\azcopy-node
-!node_modules\rimraf 
-!node_modules\fx-core\templates
+#remove node modules after fx-core support webpack
+#node_modules/**
+
+!node_modules/fx-core

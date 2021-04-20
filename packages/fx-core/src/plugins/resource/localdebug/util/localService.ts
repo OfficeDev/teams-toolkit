@@ -10,7 +10,7 @@ import { ConfigFolderName } from "fx-api";
 export async function prepareLocalAuthService(zipPath: string): Promise<string> {
     const toolkitHome = `${os.homedir()}/.${ConfigFolderName}`;
     const authServiceFolder = `${toolkitHome}/localauth`;
-    const authServiceDll = `${authServiceFolder}/Microsoft.TeamsFxSimpleAuth.dll`;
+    const authServiceDll = `${authServiceFolder}/Microsoft.TeamsFx.SimpleAuth.dll`;
     if (!await fs.pathExists(authServiceDll))
     {
         const zip = new AdmZip(zipPath);

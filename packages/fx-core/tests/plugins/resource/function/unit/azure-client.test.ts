@@ -26,10 +26,11 @@ describe(FunctionPluginInfo.pluginName, async () => {
     describe("Azure Client Test", async () => {
         it("Test ensureAppServicePlans with existence", async () => {
             // Arrange
+            const item : any = { name: "ut" };
             const appServicePlanName = "ut";
             const client : any = {
                 appServicePlans: {
-                    listByResourceGroup: () => [{ name: "ut" }],
+                    listByResourceGroup: () => [item],
                     createOrUpdate: () => undefined
                 }
             };
@@ -38,7 +39,7 @@ describe(FunctionPluginInfo.pluginName, async () => {
             const res = await AzureLib.ensureAppServicePlans(client, resourceGroupName, appServicePlanName, {} as any);
 
             // Assert
-            chai.assert.notEqual(res, undefined);
+            chai.assert.equal(res, item);
         });
 
         it("Test ensureAppServicePlans", async () => {

@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { ConfigKeys, Plugins } from "./constants";
+
 const referLogMessage = "Please refer to the log for detailed information.";
 const referHelpLink = "Please refer to the help link for further steps.";
 
@@ -9,6 +11,26 @@ export interface AadError {
   message: (...args: string[]) => string;
   helpLink?: string;
 }
+
+export const GetAppError: AadError = {
+  name: "AadGetAppError",
+  message: (objectId: string) => `Failed to get app info with Object ID: ${objectId}. ` +
+    "Please make sure object id is valid, " +
+    `or delete 'objectId' under ${Plugins.pluginNameComplex} in env.default.json and try again.`,
+};
+
+export const GetAppConfigError: AadError = {
+  name: "AadGetAppConfigError",
+  message: (config: string) => `Failed to get ${config} from Azure AD app settings.` +
+    "Please make sure Azure AD app is correctly configured, " +
+    `or delete 'objectId' under ${Plugins.pluginNameComplex} in env.default.json and try again.`,
+};
+
+export const GetSkipAppConfigError: AadError = {
+  name: "AadGetSkipAppConfigError",
+  message: () => `Failed to get all necessary info. You need to set ${ConfigKeys.objectId}, ${ConfigKeys.clientId}, ${ConfigKeys.clientSecret}, ` +
+  `${ConfigKeys.oauth2PermissionScopeId} under ${Plugins.pluginNameComplex} in env.default.json.`
+};
 
 export const CreateAppError: AadError = {
   name: "AadCreateAppError",
@@ -107,6 +129,8 @@ export class AppStudioErrorMessage {
     "Failed to update app in Azure Active Directory.";
   static readonly CreateSecretFailed =
     "Failed to create an application secret in Azure Active Directory.";
+  static readonly GetFailed =
+    "Failed to retrieve Azure Active Directory application object.";
 
   static readonly AppDefinitionIsNull = "Missing app definition.";
   static readonly AppObjectIdIsNull = "Missing Object ID.";
@@ -121,6 +145,8 @@ export class GraphClientErrorMessage {
     "Failed to update app in Azure Active Directory.";
   static readonly CreateSecretFailed =
     "Failed to create an application secret in Azure Active Directory.";
+  static readonly GetFailed =
+    "Failed to retrieve Azure Active Directory application object.";
 
   static readonly AppDefinitionIsNull = "Missing app definition.";
   static readonly AppObjectIdIsNull = "Missing Object ID.";

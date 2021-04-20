@@ -2,7 +2,7 @@
   "name": "teamsfx-extension",
   "displayName": "Teams Toolkit V2",
   "description": "Create, debug, and deploy Teams apps directly from Teams Toolkit v2",
-  "version": "1.0.1",
+  "version": "2.0.0-alpha.1",
   "publisher": "Microsoft",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -39,6 +39,7 @@
     "*",
     "onCommand:fx-extension.create",
     "onCommand:fx-extension.update",
+    "onCommand:fx-extension.addCapability",
     "onCommand:fx-extension.provision",
     "onCommand:fx-extension.deploy",
     "onCommand:fx-extension.updateAad",
@@ -77,6 +78,12 @@
           "when": "view == teamsfx && viewItem == signedinAzure",
           "group": "inline"
         }
+      ],
+      "commandPalette": [
+        {
+          "command": "fx-extension.signOut",
+          "when": "false"
+        }
       ]
     },
     "commands": [
@@ -94,12 +101,20 @@
         "title": "TeamsFx - Add Resource"
       },
       {
+        "command": "fx-extension.addCapability",
+        "title": "TeamsFx - Add Capability"
+      },
+      {
         "command": "fx-extension.provision",
         "title": "TeamsFx - Provision Resource"
       },
       {
         "command": "fx-extension.deploy",
         "title": "TeamsFx - Deploy Package"
+      },
+      {
+        "command": "fx-extension.publish",
+        "title": "TeamsFx - Publish Teams App"
       },
       {
         "command": "fx-extension.updateAad",
@@ -172,7 +187,7 @@
         "applyTo": "allDocuments",
         "fileLocation": [
           "relative",
-          "${workspaceFolder}"
+          "${workspaceFolder}/api"
         ],
         "pattern": [
           {
@@ -233,7 +248,7 @@
         "background": {
           "activeOnStart": true,
           "beginsPattern": "Session Status\\s*connecting",
-          "endsPattern": "Session Status\\s*(online|unknown|reconnecting)"
+          "endsPattern": ".*"
         }
       },
       {
@@ -265,6 +280,11 @@
       {
         "title": "Teams Toolkit",
         "properties": {
+          "fx-extension.validateNode": {
+            "type": "boolean",
+            "description": "Validate the Node.js is installed before local debugging.",
+            "default": true
+          },
           "fx-extension.validateFuncCoreTools": {
             "type": "boolean",
             "description": "Validate the Azure Functions Core Tools is installed before local debugging.",
@@ -281,29 +301,30 @@
   },
   "scripts": {
     "lint:staged": "lint-staged",
-    "vscode:prepublish": "npm run build",
+    "vscode:prepublish": "rimraf out && npm run package",
     "copy-files": "copyfiles -u 1 src/**/*.html src/**/*.css src/**/*.ps1 src/**/*.sh out/src/",
-    "compile": "tsc -p ./ && yarn copy-files",
+    "compile": "tsc -p ./ && npm run copy-files",
     "build": "npm run compile",
-    "watch": "webpack --watch --devtool nosources-source-map --info-verbosity verbose --config ./build/node-extension.webpack.config.js",
-    "package": "webpack --mode production --config ./build/node-extension.webpack.config.js",
+    "watch": "webpack --watch --devtool nosources-source-map --info-verbosity verbose --config ./webpack.config.js",
+    "package": "rimraf out && webpack --mode production --config ./webpack.config.js",
     "test-compile": "tsc -p ./",
     "test-watch": "tsc -watch -p ./",
     "pretest": "npm run lint && npm run check-format && npm run test-compile",
     "test": "node ./out/test/runTest.js",
     "check-format": "prettier --list-different --config .prettierrc.json --ignore-path .prettierignore \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,json}\"",
     "format": "prettier --write --config .prettierrc.json --ignore-path .prettierignore \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,json}\"",
-    "lint:fix": "eslint --config .eslintrc.json package.json src test --ext .ts --fix --fix-type [problem,suggestion]",
+    "lint:fix": "eslint --config .eslintrc.js package.json src test --ext .ts --fix --fix-type [problem,suggestion]",
     "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
     "prepare": "npm run build"
   },
   "devDependencies": {
+    "@shared/eslint-config": "^0.0.0",
     "@azure/arm-subscriptions": "^3.0.0",
     "@azure/eslint-plugin-azure-sdk": "^2.0.1",
     "@commitlint/cli": "^12.0.1",
     "@commitlint/config-conventional": "^12.0.1",
     "@fluentui/react": "^8.5.1",
-    "@shared/eslint-config": "^0.0.0",
+    "@types/adm-zip": "^0.4.33",
     "@types/chai": "^4.2.14",
     "@types/chai-as-promised": "^7.1.3",
     "@types/chai-spies": "^1.0.3",
@@ -321,10 +342,11 @@
     "@types/vscode": "^1.51.0",
     "@typescript-eslint/eslint-plugin": "^4.19.0",
     "@typescript-eslint/parser": "^4.19.0",
+    "adm-zip": "^0.5.4",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chai-spies": "^1.0.0",
-    "copy-webpack-plugin": "^6.3.2",
+    "copy-webpack-plugin": "^6.4.1",
     "copyfiles": "^2.4.1",
     "css-loader": "^5.1.3",
     "eslint": "^7.22.0",
@@ -338,6 +360,7 @@
     "mocha-multi-reporters": "^1.5.1",
     "mock-require": "^3.0.3",
     "ms-rest": "^2.5.4",
+    "node-loader": "^2.0.0",
     "node-sass": "^5.0.0",
     "prettier": "^1.16.4",
     "react": "^17.0.2",
@@ -349,14 +372,15 @@
     "sass-loader": "^10.0.1",
     "sinon": "^9.2.2",
     "style-loader": "^2.0.0",
+    "terser-webpack-plugin": "^4.2.3",
     "ts-loader": "^8.0.3",
     "ts-node": "^9.0.0",
     "typescript": "^4.2.4",
+    "url-loader": "^4.1.1",
     "uuid": "^8.3.2",
     "webpack": "^4.44.1",
     "webpack-cli": "^3.3.12",
-    "winston": "^3.3.3",
-    "yarn": "^1.22.10"
+    "winston": "^3.3.3"
   },
   "dependencies": {
     "@azure/identity": "^1.2.1",
@@ -365,13 +389,14 @@
     "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "fx-api": "^1.0.1",
+    "fx-core": "^1.0.1",
     "jsonschema": "^1.4.0",
     "opn": "^6.0.0",
-    "vscode-test": "^1.5.2",
-    "vscode-extension-telemetry": "^0.1.6",
+    "sudo-prompt": "^9.2.1",
     "underscore": "^1.12.1",
-    "fx-api": "^1.0.1",
-    "fx-core": "^1.0.1"
+    "vscode-extension-telemetry": "^0.1.6",
+    "vscode-test": "^1.5.2"
   },
   "lint-staged": {
     "**/*.ts": [

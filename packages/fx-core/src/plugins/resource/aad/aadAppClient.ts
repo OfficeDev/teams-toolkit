@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { AppStudio } from "./appStudio";
-import { Constants } from "./constants";
+import { ConfigKeys, Constants } from "./constants";
 import {
   AppStudioErrorMessage,
   CreateSecretError,
@@ -10,6 +10,8 @@ import {
   UpdateAppIdUriError,
   UpdatePermissionError,
   UpdateRedirectUriError,
+  GetAppError,
+  GetAppConfigError
 } from "./errors";
 import { GraphClient } from "./graph";
 import { IAADPassword } from "./interfaces/IAADApplication";
@@ -36,15 +38,19 @@ export class AadAppClient {
       );
       let provisionAadResponse: IAADDefinition;
       if (TokenProvider.audience === TokenAudience.AppStudio) {
-        provisionAadResponse = await AppStudio.createAADAppV2(
-          TokenProvider.token as string,
-          provisionObject
-        );
+        provisionAadResponse = await this.retryHanlder(() =>
+          AppStudio.createAADAppV2(
+            TokenProvider.token as string,
+            provisionObject
+          )
+        ) as IAADDefinition;
       } else {
-        provisionAadResponse = await GraphClient.createAADApp(
-          TokenProvider.token as string,
-          provisionObject
-        );
+        provisionAadResponse = await this.retryHanlder(() =>
+          GraphClient.createAADApp(
+            TokenProvider.token as string,
+            provisionObject
+          )
+        ) as IAADDefinition;
       }
 
       config.clientId = provisionAadResponse.appId;
@@ -91,7 +97,7 @@ export class AadAppClient {
   public static async updateAadAppRedirectUri(
     objectId: string,
     redirectUris: string[]
-  ) {
+  ): Promise<void> {
     try {
       const updateRedirectUriObject = AadAppClient.getAadUrlObject(
         redirectUris
@@ -126,7 +132,7 @@ export class AadAppClient {
   public static async updateAadAppIdUri(
     objectId: string,
     applicationIdUri: string
-  ) {
+  ): Promise<void> {
     try {
       const updateAppIdObject = AadAppClient.getAadApplicationIdObject(
         applicationIdUri
@@ -191,8 +197,47 @@ export class AadAppClient {
     }
   }
 
+  public static async getAadApp(
+    objectId: string,
+    islocalDebug: boolean,
+    clientSecret: string | undefined
+  ): Promise<ProvisionConfig> {
+    let getAppObject: IAADDefinition;
+    try {
+      if (TokenProvider.audience === TokenAudience.AppStudio) {
+        getAppObject = await this.retryHanlder(() =>
+          AppStudio.getAadApp(TokenProvider.token as string, objectId)
+        ) as IAADDefinition;
+      } else {
+        getAppObject = await this.retryHanlder(() =>
+          GraphClient.getAadApp(TokenProvider.token as string, objectId)
+        ) as IAADDefinition;
+      }
+    } catch (error) {
+      throw ResultFactory.SystemError(
+        GetAppError.name,
+        GetAppError.message(objectId),
+        error
+      );
+    }
+
+    const config = new ProvisionConfig(islocalDebug);
+    if (getAppObject.api?.oauth2PermissionScopes && getAppObject.api?.oauth2PermissionScopes[0].id) {
+      config.oauth2PermissionScopeId = getAppObject.api?.oauth2PermissionScopes[0].id;
+    } else {
+      throw ResultFactory.UserError(
+        GetAppConfigError.name,
+        GetAppConfigError.message(ConfigKeys.oauth2PermissionScopeId)
+      );
+    }
+    config.objectId = objectId;
+    config.clientId = getAppObject.appId;
+    config.password = clientSecret;
+    return config;
+  }
+
   private static async retryHanlder(
-    fn: () => Promise<IAADPassword | void>
+    fn: () => Promise<IAADDefinition | IAADPassword | void>
   ): Promise<IAADDefinition | IAADPassword | undefined | void> {
     let retries = 10;
     let response;

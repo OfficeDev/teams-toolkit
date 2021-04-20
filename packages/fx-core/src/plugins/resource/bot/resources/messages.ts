@@ -28,4 +28,10 @@ export class Messages {
     public static readonly ReferToIssueLink = `Please refer to ${Links.ISSUE_LINK}.`;
     public static readonly ReferToHelpLink = `Please refer to ${Links.HELP_LINK}.`;
     public static readonly CommandFailWithMessage = (command: string, message: string): string => `Run '${command}' failed with message: ${message}`;
+    public static readonly DoSthBeforeSth = (sth: string, beforeSth: string): string => `Perform command '${sth}' before '${beforeSth}'.`;
+    public static readonly FailToCallAppStudio = (apiName: string) => `Failed to execute '${apiName}'.`;
+    public static readonly WORKING_DIR_IS_MISSING = "Working directory is missing.";
+    public static readonly FAIL_TO_GET_AZURE_CREDS = "Failed to retrieve Azure credentials.";
+    public static readonly TRY_LOGIN_AZURE = "Login to Azure.";
+    public static readonly SKIP_DEPLOY_NO_UPDATES = "Skipping deployment: no updates found.";
 }

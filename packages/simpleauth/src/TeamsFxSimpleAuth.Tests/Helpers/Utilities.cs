@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Net.Http;
@@ -7,14 +9,14 @@ using System.Web;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Graph;
-using Microsoft.TeamsFxSimpleAuth.Components.Auth;
-using Microsoft.TeamsFxSimpleAuth.Tests.Models;
+using Microsoft.TeamsFx.SimpleAuth.Components.Auth;
+using Microsoft.TeamsFx.SimpleAuth.Tests.Models;
 using Newtonsoft.Json;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
 
-namespace Microsoft.TeamsFxSimpleAuth.Tests.Helpers
+namespace Microsoft.TeamsFx.SimpleAuth.Tests.Helpers
 {
     public static class Utilities
     {
@@ -97,6 +99,11 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.Helpers
 
             string authorizationCode = HttpUtility.ParseQueryString(redirectedUrl.Query).Get("code");
 
+            if (string.IsNullOrEmpty(authorizationCode))
+            {
+                throw new Exception($"Failed to get authorization code from redirect url: {redirectedUrl.AbsoluteUri}");
+            }
+
             return authorizationCode;
         }
 
@@ -135,8 +142,9 @@ namespace Microsoft.TeamsFxSimpleAuth.Tests.Helpers
             }
         }
 
-        public static async Task<string> GetUserAccessToken(IntegrationTestSettings settings, string clientId, string clientSecret, string oauthTokenEndpoint, string scope = null)
+        public static async Task<string> GetUserAccessToken(IntegrationTestSettings settings, string clientId, string clientSecret, string oauthAuthority, string scope = null)
         {
+            var oauthTokenEndpoint = oauthAuthority.TrimEnd('/') + "/oauth2/v2.0/token";
             PasswordCredentialRequestBody content = new PasswordCredentialRequestBody
             {
                 Grant_type = AadGrantType.Password,

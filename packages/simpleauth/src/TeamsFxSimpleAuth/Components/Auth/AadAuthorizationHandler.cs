@@ -1,14 +1,16 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
-using Microsoft.TeamsFxSimpleAuth.Components.Auth.Exceptions;
-using Microsoft.TeamsFxSimpleAuth.Components.Auth.Models;
+using Microsoft.TeamsFx.SimpleAuth.Components.Auth.Exceptions;
+using Microsoft.TeamsFx.SimpleAuth.Components.Auth.Models;
 using Newtonsoft.Json;
 using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace Microsoft.TeamsFxSimpleAuth.Components.Auth
+namespace Microsoft.TeamsFx.SimpleAuth.Components.Auth
 {
     public abstract class AuthenticatedUserHandler<TRequirement> : AuthorizationHandler<TRequirement> where TRequirement : IAuthorizationRequirement
     {
@@ -57,12 +59,10 @@ namespace Microsoft.TeamsFxSimpleAuth.Components.Auth
                 appId = context.User.FindFirstValue(JWTClaims.AppId);
             }
 
-            if (allowedAppIds == null || !allowedAppIds.Contains(appId))
+            if (allowedAppIds != null && allowedAppIds.Contains(appId))
             {
-                throw new AuthorizationRequestDeniedException($"The App Id: {appId} is not allowed to call this API");
+                context.Succeed(requirement);
             }
-
-            context.Succeed(requirement);
 
             return Task.CompletedTask;
         }
@@ -80,12 +80,11 @@ namespace Microsoft.TeamsFxSimpleAuth.Components.Auth
             var idtype = context.User.FindFirstValue(JWTClaims.IdType);
             var identity = GetIdentityTypeFromIdType(idtype);
 
-            if(identity != requirement.identity)
+            if (identity == requirement.identity)
             {
-                throw new AuthorizationRequestDeniedException($"Token with idtyp {identity} mismatch requirement {requirement.identity}, is not accepted by this API");
+                context.Succeed(requirement);
             }
-
-            context.Succeed(requirement);
+            
             return Task.CompletedTask;
         }
 

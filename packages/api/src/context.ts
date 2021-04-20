@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { ConfigMap, PluginConfig, ReadonlySolutionConfig, SolutionConfig } from "./config";
+import { ConfigMap, PluginConfig, ProjectSettings, ReadonlySolutionConfig, SolutionConfig } from "./config";
  
 import { VsCode } from "./vscode";
 import { TeamsAppManifest } from "./manifest";
@@ -42,6 +42,8 @@ export interface Context {
     platform? : Platform;
 
     answers?: ConfigMap; // for question model
+
+    projectSettings?:ProjectSettings;
 }
 
 export interface SolutionContext extends Context {

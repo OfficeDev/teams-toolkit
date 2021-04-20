@@ -11,6 +11,12 @@ export class Constants {
         localRule: "AllowLocal"
     };
 
+    public static readonly jwtToken = {
+        ver1: "1.0",
+        ver2: "2.0",
+        userType: "0",
+    };
+
     public static readonly sqlAdministratorType: string = "ActiveDirectory";
 
     public static readonly echoIpAddress: string = "https://api.ipify.org";
@@ -69,6 +75,5 @@ export class Telemetry {
 }
 
 export class HelpLinks {
-    //TODO: update helplink
-    static readonly addDBUser = "";
+    static readonly addDBUser = "https://aka.ms/teamsfx-sql-help";
 }

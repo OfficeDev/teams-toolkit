@@ -10,6 +10,7 @@ import { ExtTelemetry } from "./telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "./telemetry/extTelemetryEvents";
 import { TeamsfxTaskProvider } from "./debug/teamsfxTaskProvider";
 import { TeamsfxDebugProvider } from "./debug/teamsfxDebugProvider";
+import { ExtensionSurvey } from "./utils/survey";
 
 export async function activate(context: vscode.ExtensionContext) {
   console.log("Teams Toolkit v2 extension is now active!");
@@ -33,6 +34,13 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(updateCmd);
 
+  // add capability
+  const addCapCmd = vscode.commands.registerCommand(
+    "fx-extension.addCapability",
+    handlers.addCapabilityHandler
+  );
+  context.subscriptions.push(addCapCmd);
+
   // 1.3 Register the provision command.
   const provisionCmd = vscode.commands.registerCommand(
     "fx-extension.provision",
@@ -46,6 +54,24 @@ export async function activate(context: vscode.ExtensionContext) {
     handlers.deployHandler
   );
   context.subscriptions.push(deployCmd);
+
+  const validateManifestCmd = vscode.commands.registerCommand(
+    "fx-extension.validateManifest",
+    handlers.validateManifestHandler
+  );
+  context.subscriptions.push(validateManifestCmd);
+
+  const buildPackageCmd = vscode.commands.registerCommand(
+    "fx-extension.build",
+    handlers.buildPackageHandler
+  );
+  context.subscriptions.push(buildPackageCmd);
+
+  const publishCmd = vscode.commands.registerCommand(
+    "fx-extension.publish",
+    handlers.publishHandler
+  );
+  context.subscriptions.push(publishCmd);
 
   // 1.6 update aad command
   const updateAadCmd = vscode.commands.registerCommand(
@@ -97,7 +123,13 @@ export async function activate(context: vscode.ExtensionContext) {
     "fx-extension.openWelcome",
     handlers.openWelcomeHandler
   );
-  context.subscriptions.push(provisionCmd);
+  context.subscriptions.push(openWelcomeCmd);
+
+  const openSamplesCmd = vscode.commands.registerCommand(
+    "fx-extension.openSamples",
+    handlers.openSamplesHandler
+  );
+  context.subscriptions.push(openSamplesCmd);
 
   const openDocumentCmd = vscode.commands.registerCommand(
     "fx-extension.openDocument",
@@ -109,8 +141,26 @@ export async function activate(context: vscode.ExtensionContext) {
     "fx-extension.openManifest",
     handlers.openManifestHandler
   );
-  context.subscriptions.push(provisionCmd);
+  context.subscriptions.push(openManifestCmd);
 
+  const openAppManagementCmd = vscode.commands.registerCommand(
+    "fx-extension.openAppManagement",
+    handlers.openAppManagement
+  );
+  context.subscriptions.push(openAppManagementCmd);
+
+  const openBotManagementCmd = vscode.commands.registerCommand(
+    "fx-extension.openBotManagement",
+    handlers.openBotManagement
+  );
+  context.subscriptions.push(openBotManagementCmd);
+
+  const openReportIssuesCmd = vscode.commands.registerCommand(
+    "fx-extension.openReportIssues",
+    handlers.openReportIssues
+  );
+  context.subscriptions.push(openReportIssuesCmd);
+  
   // Register debug configuration provider
   const debugProvider: TeamsfxDebugProvider = new TeamsfxDebugProvider();
   context.subscriptions.push(
@@ -137,6 +187,9 @@ export async function activate(context: vscode.ExtensionContext) {
     });
   });
   context.subscriptions.push(debug);
+
+  const survey = new ExtensionSurvey(context);
+  survey.activate();
 }
 
 // this method is called when your extension is deactivated

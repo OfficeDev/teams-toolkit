@@ -1,14 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Platform, PluginContext } from "fx-api";
+import { AzureAccountProvider, GraphTokenProvider, LogProvider, Platform, PluginContext, TelemetryReporter } from "fx-api";
 import { AssertNotEmpty, BuildError, NotImplemented } from "./error";
 import { ApimService } from "./service/apimService";
-import { SolutionConfig } from "./model/config";
+import { ISolutionConfig, SolutionConfig } from "./model/config";
 import { AadService } from "./service/aadService";
 import { OpenApiProcessor } from "./util/openApiProcessor";
 import { ApimManager } from "./manager/apimManager";
 import { AadManager } from "./manager/aadManager";
-import { Telemetry } from "./telemetry";
 import { IQuestionManager, VscQuestionManager } from "./manager/questionManager";
 import {
     ApimServiceQuestion,
@@ -22,40 +21,38 @@ import { ApiManagementClient } from "@azure/arm-apimanagement";
 import { TeamsAppAadManager } from "./manager/teamsAppAadManager";
 import axios from "axios";
 import { AadDefaultValues } from "./constants";
+import { Lazy } from "./util/lazy";
 
 export class Factory {
-    public static buildTelemetry(ctx: PluginContext) {
-        return new Telemetry(ctx.telemetryReporter);
+    public static async buildApimManager(ctx: PluginContext, solutionConfig: SolutionConfig): Promise<ApimManager> {
+        const openApiProcessor = new OpenApiProcessor(ctx.telemetryReporter, ctx.logProvider);
+        const lazyApimService = new Lazy<ApimService>(async () => await Factory.buildApimService(ctx.azureAccountProvider, solutionConfig, ctx.telemetryReporter, ctx.logProvider));
+        return new ApimManager(lazyApimService, openApiProcessor, ctx.telemetryReporter, ctx.logProvider);
     }
 
-    public static async buildApimManager(ctx: PluginContext, solutionConfig: SolutionConfig, telemetry: Telemetry): Promise<ApimManager> {
-        const apimService = await this.buildApimService(ctx, solutionConfig, telemetry);
-        const openApiProcessor = new OpenApiProcessor(telemetry, ctx.logProvider);
-        return new ApimManager(apimService, openApiProcessor, telemetry, ctx.logProvider);
+    public static async buildAadManager(ctx: PluginContext): Promise<AadManager> {
+        const lazyAadService = new Lazy(async () => await Factory.buildAadService(ctx.graphTokenProvider, ctx.telemetryReporter, ctx.logProvider));
+        return new AadManager(lazyAadService, ctx.telemetryReporter, ctx.logProvider);
     }
 
-    public static async buildAadManager(ctx: PluginContext, telemetry: Telemetry): Promise<AadManager> {
-        const aadService = await this.buildAadService(ctx, telemetry);
-        return new AadManager(aadService, telemetry, ctx.logProvider);
+    public static async buildTeamsAppAadManager(ctx: PluginContext): Promise<TeamsAppAadManager> {
+        const lazyAadService = new Lazy(async () => await Factory.buildAadService(ctx.graphTokenProvider, ctx.telemetryReporter, ctx.logProvider));
+        return new TeamsAppAadManager(lazyAadService, ctx.telemetryReporter, ctx.logProvider);
     }
 
-    public static async buildTeamsAppAadManager(ctx: PluginContext, telemetry: Telemetry): Promise<TeamsAppAadManager> {
-        const aadService = await this.buildAadService(ctx, telemetry);
-        return new TeamsAppAadManager(aadService, telemetry, ctx.logProvider);
-    }
-
-    public static async buildQuestionManager(ctx: PluginContext, solutionConfig: SolutionConfig, telemetry: Telemetry): Promise<IQuestionManager> {
+    public static async buildQuestionManager(ctx: PluginContext, solutionConfig: SolutionConfig): Promise<IQuestionManager> {
         switch (ctx.platform) {
             case Platform.VSCode:
+                // Lazy init apim service to get the latest subscription id in configuration
+                const lazyApimService = new Lazy<ApimService>(async () => await Factory.buildApimService(ctx.azureAccountProvider, solutionConfig, ctx.telemetryReporter, ctx.logProvider));
                 const dialog = AssertNotEmpty("ctx.dialog", ctx.dialog);
-                const apimService = await this.buildApimService(ctx, solutionConfig, telemetry);
-                const openApiProcessor = new OpenApiProcessor(telemetry, ctx.logProvider);
-                const apimServiceQuestion = new ApimServiceQuestion(apimService, dialog, telemetry, ctx.logProvider);
-                const openApiDocumentQuestion = new OpenApiDocumentQuestion(openApiProcessor, dialog, telemetry, ctx.logProvider);
-                const existingOpenApiDocumentFunc = new ExistingOpenApiDocumentFunc(openApiProcessor, dialog, telemetry, ctx.logProvider);
-                const apiPrefixQuestion = new ApiPrefixQuestion(dialog, telemetry, ctx.logProvider);
-                const apiVersionQuestion = new ApiVersionQuestion(apimService, dialog, telemetry, ctx.logProvider);
-                const newApiVersionQuestion = new NewApiVersionQuestion(dialog, telemetry, ctx.logProvider);
+                const openApiProcessor = new OpenApiProcessor(ctx.telemetryReporter, ctx.logProvider);
+                const apimServiceQuestion = new ApimServiceQuestion(lazyApimService, dialog, ctx.telemetryReporter, ctx.logProvider);
+                const openApiDocumentQuestion = new OpenApiDocumentQuestion(openApiProcessor, dialog, ctx.telemetryReporter, ctx.logProvider);
+                const existingOpenApiDocumentFunc = new ExistingOpenApiDocumentFunc(openApiProcessor, dialog, ctx.telemetryReporter, ctx.logProvider);
+                const apiPrefixQuestion = new ApiPrefixQuestion(dialog, ctx.telemetryReporter, ctx.logProvider);
+                const apiVersionQuestion = new ApiVersionQuestion(lazyApimService, dialog, ctx.telemetryReporter, ctx.logProvider);
+                const newApiVersionQuestion = new NewApiVersionQuestion(dialog, ctx.telemetryReporter, ctx.logProvider);
 
                 return new VscQuestionManager(
                     apimServiceQuestion,
@@ -70,14 +67,14 @@ export class Factory {
         }
     }
 
-    private static async buildApimService(ctx: PluginContext, solutionConfig: SolutionConfig, telemetry: Telemetry): Promise<ApimService> {
-        const credential = AssertNotEmpty("credential", await ctx.azureAccountProvider?.getAccountCredentialAsync());
+    public static async buildApimService(azureAccountProvider: AzureAccountProvider | undefined, solutionConfig: ISolutionConfig, telemetryReporter?: TelemetryReporter, logger?: LogProvider): Promise<ApimService> {
+        const credential = AssertNotEmpty("credential", await azureAccountProvider?.getAccountCredentialAsync());
         const apiManagementClient = new ApiManagementClient(credential, solutionConfig.subscriptionId);
-        return new ApimService(apiManagementClient, credential, solutionConfig.subscriptionId, telemetry, ctx.logProvider);
+        return new ApimService(apiManagementClient, credential, solutionConfig.subscriptionId, telemetryReporter, logger);
     }
 
-    private static async buildAadService(ctx: PluginContext, telemetry: Telemetry): Promise<AadService> {
-        const accessToken = AssertNotEmpty("accessToken", await ctx.graphTokenProvider?.getAccessToken());
+    public static async buildAadService(graphTokenProvider: GraphTokenProvider | undefined, telemetryReporter?: TelemetryReporter, logger?: LogProvider): Promise<AadService> {
+        const accessToken = AssertNotEmpty("accessToken", await graphTokenProvider?.getAccessToken());
         const axiosInstance = axios.create({
             baseURL: AadDefaultValues.graphApiBasePath,
             headers: {
@@ -85,6 +82,6 @@ export class Factory {
                 "content-type": "application/json",
             },
         });
-        return new AadService(axiosInstance, telemetry, ctx.logProvider);
+        return new AadService(axiosInstance, telemetryReporter, logger);
     }
 }

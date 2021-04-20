@@ -44,14 +44,27 @@ export interface AzureAccountProvider {
      * @param token SignedIn: access token string, SignedOut: undefined.
      * @param accountInfo SignedIn: access token json object, SignedOut: undefined.
      */
-    setStatusChangeCallback(statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>):  Promise<boolean>;
+    setStatusChangeCallback(statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean>;
+
+    /**
+     * Add update account info callback 
+     * @param name callback name
+     * @param statusChange callback method
+     */
+    setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean>;
+
+    /**
+     * Remove update account info callback 
+     * @param name callback name
+     */
+    removeStatusChangeMap(name: string): Promise<boolean>;
 }
 
 
 /**
  * Provide team accessToken
  */
- export interface AppStudioTokenProvider {
+export interface AppStudioTokenProvider {
 
     /**
      * Get team access token
@@ -79,14 +92,27 @@ export interface AzureAccountProvider {
      * @param token SignedIn: access token string, SignedOut: undefined.
      * @param accountInfo SignedIn: access token json object, SignedOut: undefined.
      */
-    setStatusChangeCallback(statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>):  Promise<boolean>;
+    setStatusChangeCallback(statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean>;
+
+    /**
+     * Add update account info callback 
+     * @param name callback name
+     * @param statusChange callback method
+     */
+    setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean>;
+
+    /**
+     * Remove update account info callback 
+     * @param name callback name
+     */
+    removeStatusChangeMap(name: string): Promise<boolean>;
 }
 
 
 /**
  * Provide graph accessToken and JSON object
  */
- export interface GraphTokenProvider {
+export interface GraphTokenProvider {
 
     /**
      * Get graph access token
@@ -114,7 +140,20 @@ export interface AzureAccountProvider {
      * @param token SignedIn: access token string, SignedOut: undefined.
      * @param accountInfo SignedIn: access token json object, SignedOut: undefined.
      */
-    setStatusChangeCallback(statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>):  Promise<boolean>;
+    setStatusChangeCallback(statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean>;
+
+    /**
+     * Add update account info callback 
+     * @param name callback name
+     * @param statusChange callback method
+     */
+    setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean>;
+
+    /**
+     * Remove update account info callback 
+     * @param name callback name
+     */
+    removeStatusChangeMap(name: string): Promise<boolean>;
 }
 
 

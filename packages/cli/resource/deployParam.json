@@ -1,0 +1,32 @@
+[
+    {
+        "data": {
+            "type": "folder",
+            "name": "folder",
+            "description": "Select root folder of the project",
+            "default": "./"
+        }
+    },
+    {
+        "data": {
+            "name": "deploy-plugin",
+            "title": "Please select which resource(s) to deploy",
+            "type": "multiSelect",
+            "option": [
+                {
+                    "id": "fx-resource-frontend-hosting",
+                    "label": "Tab Front-end"
+                },
+                {
+                    "id": "fx-resource-function",
+                    "label": "Azure Function"
+                },
+                {
+                    "id": "fx-resource-spfx",
+                    "label": "SharePoint Framework (SPFx)"
+                }
+            ],
+            "default": []
+        }
+    }
+]

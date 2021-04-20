@@ -11,6 +11,7 @@ import * as fetch from "../../../../../src/plugins/resource/function/utils/templ
 import { DependentPluginInfo, FunctionPluginInfo } from "../../../../../src/plugins/resource/function/constants";
 import { FunctionPlugin } from "../../../../../src/plugins/resource/function/index";
 import { FxResult } from "../../../../../src/plugins/resource/function/result";
+import { FunctionLanguage, QuestionKey } from "../../../../../src/plugins/resource/function/enums";
 
 const context: any = {
     configOfOtherPlugins: new Map<string, Map<string, string>>([
@@ -20,6 +21,7 @@ const context: any = {
                 [DependentPluginInfo.resourceGroupName, "ut"],
                 [DependentPluginInfo.subscriptionId, "ut"],
                 [DependentPluginInfo.resourceNameSuffix, "ut"],
+                [DependentPluginInfo.programmingLanguage, "javascript"]
             ]),
         ],
     ]),
@@ -55,8 +57,8 @@ describe(FunctionPluginInfo.pluginName, () => {
         it("Test scaffold", async () => {
             // Arrange
             context.answers = new Map<string, string>([
-                ["function-name", "httpTrigger"],
-                ["function-language", "JavaScript"],
+                [QuestionKey.functionName, "httpTrigger"],
+                [QuestionKey.programmingLanguage, FunctionLanguage.JavaScript],
             ]);
             const zip = new AdmZip();
             zip.addFile("test.js.tpl", Buffer.from("{{appName}} {{functionName}}"));
@@ -76,8 +78,8 @@ describe(FunctionPluginInfo.pluginName, () => {
         it("Test scaffold with additional function", async () => {
             // Arrange
             context.answers = new Map<string, string>([
-                ["function-name", "httpTrigger"],
-                ["function-language", "JavaScript"],
+                [QuestionKey.functionName, "httpTrigger"],
+                [QuestionKey.programmingLanguage, FunctionLanguage.JavaScript],
             ]);
             const zip = new AdmZip();
             zip.addFile("test.js.tpl", Buffer.from("{{appName}} {{functionName}}"));
@@ -97,8 +99,8 @@ describe(FunctionPluginInfo.pluginName, () => {
         it("Test scaffold with fallback", async () => {
             // Arrange
             context.answers = new Map<string, string>([
-                ["function-name", "httpTrigger"],
-                ["function-language", "JavaScript"],
+                [QuestionKey.functionName, "httpTrigger"],
+                [QuestionKey.programmingLanguage, FunctionLanguage.JavaScript],
             ]);
             const zip = new AdmZip();
             zip.addFile("test.js.tpl", Buffer.from("{{appName}} {{functionName}}"));

@@ -19,24 +19,12 @@ import { Messages } from "../resources/messages";
 import { PluginContext } from "fx-api";
 import { Utils } from "../utils";
 import { telemetryHelper } from "../utils/telemetry-helper";
+import { TemplateInfo } from "../resources/templateInfo";
 
 export interface TemplateVariable {
     AppId: string;
 }
 
-export class TemplateInfo {
-    group: string;
-    language: string;
-    scenario: string;
-    version: string;
-
-    constructor(language?: string, scenario?: string) {
-        this.group = PluginInfo.TemplateGroupName;
-        this.language = language ?? PluginInfo.TemplateLanguage;
-        this.scenario = scenario ?? PluginInfo.TemplateDefaultScenario;
-        this.version = PluginInfo.TemplateVersion;
-    }
-}
 
 export type Manifest = {
     [key: string]: {
@@ -101,8 +89,8 @@ export class FrontendScaffold {
         return new AdmZip(result.data);
     }
 
-    public static getTemplateZipFromLocal(rootDir: string): AdmZip {
-        const templatePath = path.resolve(rootDir, FrontendPathInfo.TemplateDir, FrontendPathInfo.TemplateFileName);
+    public static getTemplateZipFromLocal(templateInfo: TemplateInfo): AdmZip {
+        const templatePath = path.resolve(FrontendPathInfo.RootDir, templateInfo.localTemplatePath);
         return new AdmZip(templatePath);
     }
 
@@ -120,8 +108,7 @@ export class FrontendScaffold {
         } catch (e) {
             telemetryHelper.sendErrorEvent(ctx, Messages.FailedFetchTemplate(), e);
             Logger.warning(Messages.FailedFetchTemplate());
-            const rootDir = path.resolve(__dirname, "../../../../");
-            return FrontendScaffold.getTemplateZipFromLocal(rootDir);
+            return FrontendScaffold.getTemplateZipFromLocal(templateInfo);
         }
     }
 

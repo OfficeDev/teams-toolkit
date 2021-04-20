@@ -1,20 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ProgrammingLanguage } from "./enums/programmingLanguage";
 import { WayToRegisterBot } from "./enums/wayToRegisterBot";
 import { QuestionNames, RegularExprs, QuestionOptions } from "./constants";
 import { NodeType, QTreeNode } from "fx-api";
 
 const createQuestions = new QTreeNode({
     type: NodeType.group
-});
-
-const programmingLanguageQuestion = new QTreeNode({
-    name: QuestionNames.PROGRAMMING_LANGUAGE,
-    type: NodeType.singleSelect,
-    option: QuestionOptions.PROGRAMMING_LANGUAGE_OPTIONS,
-    title: "Language",
-    default: ProgrammingLanguage.TypeScript
 });
 
 const wayToRegisterBotQuestion = new QTreeNode({
@@ -72,7 +63,6 @@ reusingExistingBotGroup.condition = {
 
 wayToRegisterBotQuestion.addChild(reusingExistingBotGroup);
 
-createQuestions.addChild(programmingLanguageQuestion);
 createQuestions.addChild(wayToRegisterBotQuestion);
 
 export { createQuestions };

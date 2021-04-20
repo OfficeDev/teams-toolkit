@@ -18,7 +18,8 @@ import { Envs } from "../../../../../src/plugins/resource/aad/interfaces/models"
 import sinon from "sinon";
 import { AadAppClient } from "../../../../../src/plugins/resource/aad/aadAppClient";
 import { getAppStudioToken, getGraphToken } from "../tokenProvider";
-import { Constants } from "../../../../../src/plugins/resource/aad/constants";
+import { ConfigKeys, Constants } from "../../../../../src/plugins/resource/aad/constants";
+import { ProvisionConfig } from "../../../../../src/plugins/resource/aad/utils/configs";
 
 dotenv.config();
 const testWithAzure: boolean = process.env.UT_TEST_ON_AZURE ? true : false;
@@ -34,6 +35,7 @@ describe("AadAppForTeamsPlugin: CI", () => {
     sinon.stub(AadAppClient, "updateAadAppRedirectUri").resolves();
     sinon.stub(AadAppClient, "updateAadAppIdUri").resolves();
     sinon.stub(AadAppClient, "updateAadAppPermission").resolves();
+    sinon.stub(AadAppClient, "getAadApp").resolves(new ProvisionConfig());
   });
 
   afterEach(() => {
@@ -211,7 +213,7 @@ describe("AadAppForTeamsPlugin: Azure", () => {
     sinon.restore();
   });
 
-  it("azure: provision and error app id uri", async function () {
+  it("provision: tab and bot with context changes", async function () {
     context = await TestHelper.pluginContext(new Map(), true, true, false);
     context.appStudioToken = mockTokenProviderAzure(appStudioToken as string);
     context.graphTokenProvider = mockTokenProviderAzureGraph(
@@ -227,9 +229,35 @@ describe("AadAppForTeamsPlugin: Azure", () => {
     const postProvision = await plugin.postProvision(context);
     chai.assert.isTrue(postProvision.isOk());
 
-    // Commented since now errorAppIdUri can be set as app id uri
-    // context.config.set(ConfigKeys.applicationIdUri, "errorAppIdUri")
-    // const postProvisionError = await plugin.postProvision(context);
-    // chai.assert.isTrue(postProvisionError.isErr());
+    // Remove clientId and oauth2PermissionScopeId.
+    context.config.set(ConfigKeys.clientId, "");
+    context.config.set(ConfigKeys.oauth2PermissionScopeId, "");
+
+    const provisionSecond = await plugin.provision(context);
+    chai.assert.isTrue(provisionSecond.isOk());
+
+    const setAppIdSecond = plugin.setApplicationInContext(context);
+    chai.assert.isTrue(setAppIdSecond.isOk());
+
+    const postProvisionSecond = await plugin.postProvision(context);
+    chai.assert.isTrue(postProvisionSecond.isOk());
+
+    // Remove objectId.
+    // Create a new context with same context.config since error will occur with same endpoint and botId.
+    context.config.set(ConfigKeys.objectId, "");
+    context = await TestHelper.pluginContext(context.config, true, true);
+    context.appStudioToken = mockTokenProviderAzure(appStudioToken as string);
+    context.graphTokenProvider = mockTokenProviderAzureGraph(
+      graphToken as string
+    );
+
+    const provisionThird = await plugin.provision(context);
+    chai.assert.isTrue(provisionThird.isOk());
+
+    const setAppIdThird = plugin.setApplicationInContext(context);
+    chai.assert.isTrue(setAppIdThird.isOk());
+
+    const postProvisionThird = await plugin.postProvision(context);
+    chai.assert.isTrue(postProvisionThird.isOk());
   });
 });

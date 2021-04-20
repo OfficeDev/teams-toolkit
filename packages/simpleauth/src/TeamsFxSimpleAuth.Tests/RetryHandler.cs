@@ -1,13 +1,15 @@
-﻿using System.Net.Http;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 
-namespace Microsoft.TeamsFxSimpleAuth.Tests
+namespace Microsoft.TeamsFx.SimpleAuth.Tests
 {
     public class RetryHandler : DelegatingHandler
     {
-        private const int MaxRetries = 5;
+        private const int MaxRetries = 8;
 
         public RetryHandler(HttpMessageHandler innerHandler)
             : base(innerHandler)

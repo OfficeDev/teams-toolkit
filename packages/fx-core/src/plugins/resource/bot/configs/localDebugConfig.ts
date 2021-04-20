@@ -8,7 +8,16 @@ export class LocalDebugConfig {
     public localEndpoint?: string;
     public localBotId?: string;
     public localBotPassword?: string;
+    public localObjectId?: string;
     public localRedirectUri?: string;
+
+    public botRegistrationCreated(): boolean {
+        if (this.localBotId && this.localBotPassword && this.localObjectId) {
+            return true;
+        }
+
+        return false;
+    }
 
     public async restoreConfigFromContext(context: PluginContext): Promise<void> {
         const localBotEndpoint: ConfigValue | undefined = context.configOfOtherPlugins
@@ -29,6 +38,11 @@ export class LocalDebugConfig {
             this.localBotPassword = localBotPasswordValue as string;
         }
 
+        const localObjectIdValue: ConfigValue = context.config.get(PluginBot.LOCAL_OBJECT_ID);
+        if (localObjectIdValue) {
+            this.localObjectId = localObjectIdValue as string;
+        }
+
         const localRedirectUriValue: ConfigValue = context.config.get(PluginBot.LOCAL_REDIRECT_URI);
         if (localRedirectUriValue) {
             this.localRedirectUri = localRedirectUriValue as string;
@@ -38,6 +52,7 @@ export class LocalDebugConfig {
     public saveConfigIntoContext(context: PluginContext): void {
         utils.checkAndSaveConfig(context, PluginBot.LOCAL_BOT_ID, this.localBotId);
         utils.checkAndSaveConfig(context, PluginBot.LOCAL_BOT_PASSWORD, this.localBotPassword);
+        utils.checkAndSaveConfig(context, PluginBot.LOCAL_OBJECT_ID, this.localObjectId);
         utils.checkAndSaveConfig(context, PluginBot.LOCAL_REDIRECT_URI, this.localRedirectUri);
     }
 }

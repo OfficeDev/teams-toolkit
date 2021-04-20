@@ -32,10 +32,20 @@ describe(LocalDebugPluginInfo.pluginName, () => {
         it("happy path: tab with function", async () => {
             pluginContext.platform = Platform.VSCode;
             pluginContext.configOfOtherPlugins = new Map([
-                ["solution", new Map([
-                    ["selectedPlugins", ["fx-resource-aad-app-for-teams", "fx-resource-frontend-hosting", "fx-resource-function"]]
-                ])],
-                ["fx-resource-function", new Map()]]);
+                ["fx-resource-function", new Map()]
+            ]);
+            pluginContext.projectSettings = {
+                appName: "",
+                solutionSettings: {
+                    name: "",
+                    version: "",
+                    activeResourcePlugins: [
+                        "fx-resource-aad-app-for-teams",
+                        "fx-resource-frontend-hosting",
+                        "fx-resource-function",
+                    ],
+                },
+            };
             const result = await plugin.scaffold(pluginContext);
             chai.assert.isTrue(result.isOk());
 
@@ -60,15 +70,23 @@ describe(LocalDebugPluginInfo.pluginName, () => {
 
             //assert output local.env
             const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
-            chai.assert.equal(Object.keys(localEnvs).length, 23);
+            chai.assert.equal(Object.keys(localEnvs).length, 30);
         });
 
         it("happy path: tab without function", async () => {
             pluginContext.platform = Platform.VSCode;
-            pluginContext.configOfOtherPlugins = new Map([
-                ["solution", new Map([
-                    ["selectedPlugins", ["fx-resource-aad-app-for-teams", "fx-resource-frontend-hosting"]]
-                ])]]);
+            pluginContext.configOfOtherPlugins = new Map();
+            pluginContext.projectSettings = {
+                appName: "",
+                solutionSettings: {
+                    name: "",
+                    version: "",
+                    activeResourcePlugins: [
+                        "fx-resource-aad-app-for-teams",
+                        "fx-resource-frontend-hosting",
+                    ],
+                },
+            };
             const result = await plugin.scaffold(pluginContext);
             chai.assert.isTrue(result.isOk());
 
@@ -91,15 +109,23 @@ describe(LocalDebugPluginInfo.pluginName, () => {
 
             //assert output local.env
             const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
-            chai.assert.equal(Object.keys(localEnvs).length, 13);
+            chai.assert.equal(Object.keys(localEnvs).length, 16);
         });
 
         it("happy path: bot", async () => {
             pluginContext.platform = Platform.VSCode;
-            pluginContext.configOfOtherPlugins = new Map([
-                ["solution", new Map([
-                    ["selectedPlugins", ["fx-resource-aad-app-for-teams", "fx-resource-teamsbot"]]
-                ])]]);
+            pluginContext.configOfOtherPlugins = new Map();
+            pluginContext.projectSettings = {
+                appName: "",
+                solutionSettings: {
+                    name: "",
+                    version: "",
+                    activeResourcePlugins: [
+                        "fx-resource-aad-app-for-teams",
+                        "fx-resource-teamsbot",
+                    ],
+                },
+            };
             const result = await plugin.scaffold(pluginContext);
             chai.assert.isTrue(result.isOk());
 
@@ -122,15 +148,25 @@ describe(LocalDebugPluginInfo.pluginName, () => {
 
             //assert output local.env
             const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
-            chai.assert.equal(Object.keys(localEnvs).length, 15);
+            chai.assert.equal(Object.keys(localEnvs).length, 14);
         });
 
         it("happy path: tab with function and bot", async () => {
             pluginContext.platform = Platform.VSCode;
-            pluginContext.configOfOtherPlugins = new Map([
-                ["solution", new Map([
-                    ["selectedPlugins", ["fx-resource-aad-app-for-teams", "fx-resource-frontend-hosting", "fx-resource-function", "fx-resource-teamsbot"]]
-                ])]]);
+            pluginContext.configOfOtherPlugins = new Map();
+            pluginContext.projectSettings = {
+                appName: "",
+                solutionSettings: {
+                    name: "",
+                    version: "",
+                    activeResourcePlugins: [
+                        "fx-resource-aad-app-for-teams",
+                        "fx-resource-frontend-hosting",
+                        "fx-resource-function",
+                        "fx-resource-teamsbot",
+                    ],
+                },
+            };
             const result = await plugin.scaffold(pluginContext);
             chai.assert.isTrue(result.isOk());
 
@@ -155,15 +191,24 @@ describe(LocalDebugPluginInfo.pluginName, () => {
 
             //assert output local.env
             const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
-            chai.assert.equal(Object.keys(localEnvs).length, 31);
+            chai.assert.equal(Object.keys(localEnvs).length, 44);
         });
 
         it("happy path: tab without function and bot", async () => {
             pluginContext.platform = Platform.VSCode;
-            pluginContext.configOfOtherPlugins = new Map([
-                ["solution", new Map([
-                    ["selectedPlugins", ["fx-resource-aad-app-for-teams", "fx-resource-frontend-hosting", "fx-resource-teamsbot"]]
-                ])]]);
+            pluginContext.configOfOtherPlugins = new Map();
+            pluginContext.projectSettings = {
+                appName: "",
+                solutionSettings: {
+                    name: "",
+                    version: "",
+                    activeResourcePlugins: [
+                        "fx-resource-aad-app-for-teams",
+                        "fx-resource-frontend-hosting",
+                        "fx-resource-teamsbot",
+                    ],
+                },
+            };
             const result = await plugin.scaffold(pluginContext);
             chai.assert.isTrue(result.isOk());
 
@@ -186,22 +231,29 @@ describe(LocalDebugPluginInfo.pluginName, () => {
 
             //assert output local.env
             const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
-            chai.assert.equal(Object.keys(localEnvs).length, 21);
+            chai.assert.equal(Object.keys(localEnvs).length, 30);
         });
 
         it("spfx", async () => {
             pluginContext.platform = Platform.VSCode;
-            pluginContext.configOfOtherPlugins = new Map([
-                ["solution", new Map([
-                    ["selectedPlugins", ["fx-resource-spfx"]]
-                ])]]);
+            pluginContext.configOfOtherPlugins = new Map();
+            pluginContext.projectSettings = {
+                appName: "",
+                solutionSettings: {
+                    name: "",
+                    version: "",
+                    activeResourcePlugins: [
+                        "fx-resource-spfx",
+                    ],
+                },
+            };
             const result = await plugin.scaffold(pluginContext);
             chai.assert.isTrue(result.isOk());
 
             //assert output launch.json
             const launch = fs.readJSONSync(expectedLaunchFile);
             const configurations: [] = launch["configurations"];
-            chai.assert.equal(configurations.length, 2);
+            chai.assert.equal(configurations.length, 4);
 
             //assert output tasks.json
             const tasksAll = fs.readJSONSync(expectedTasksFile);
@@ -220,10 +272,19 @@ describe(LocalDebugPluginInfo.pluginName, () => {
         it("cli", async () => {
             pluginContext.platform = Platform.CLI;
             pluginContext.configOfOtherPlugins = new Map([
-                ["solution", new Map([
-                    ["selectedPlugins", ["fx-resource-aad-app-for-teams", "fx-resource-function"]]
-                ])],
-                ["fx-resource-function", new Map()]]);
+                ["fx-resource-function", new Map()]
+            ]);
+            pluginContext.projectSettings = {
+                appName: "",
+                solutionSettings: {
+                    name: "",
+                    version: "",
+                    activeResourcePlugins: [
+                        "fx-resource-aad-app-for-teams",
+                        "fx-resource-function",
+                    ],
+                },
+            };
             const result = await plugin.scaffold(pluginContext);
             chai.assert.isTrue(result.isOk());
 

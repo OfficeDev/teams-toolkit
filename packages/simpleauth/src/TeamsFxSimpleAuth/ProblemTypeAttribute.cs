@@ -1,6 +1,8 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+using System;
 
-namespace Microsoft.TeamsFxSimpleAuth
+namespace Microsoft.TeamsFx.SimpleAuth
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
     public class ProblemTypeAttribute : Attribute

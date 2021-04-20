@@ -18,7 +18,7 @@ import { OpenApiSchemaVersion } from "../model/openApiDocument";
 import { ErrorHandlerResult } from "../model/errorHandlerResult";
 import { Telemetry } from "../telemetry";
 import { AzureResource, IName, OperationStatus, Operation } from "../model/operation";
-import { LogProvider } from "fx-api";
+import { LogProvider, TelemetryReporter } from "fx-api";
 import { LogMessages } from "../log";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { OpenAPI } from "openapi-types";
@@ -26,7 +26,7 @@ import { OpenAPI } from "openapi-types";
 export class ApimService {
     private readonly subscriptionId: string;
     private readonly apimClient: ApiManagementClient;
-    private readonly telemetry: Telemetry;
+    private readonly telemetryReporter?: TelemetryReporter;
     private readonly logger?: LogProvider;
     private readonly credential: TokenCredentialsBase;
 
@@ -34,13 +34,13 @@ export class ApimService {
         apimClient: ApiManagementClient,
         credential: TokenCredentialsBase,
         subscriptionId: string,
-        telemetry: Telemetry,
+        telemetryReporter?: TelemetryReporter,
         logger?: LogProvider
     ) {
         this.credential = credential;
         this.subscriptionId = subscriptionId;
         this.apimClient = apimClient;
-        this.telemetry = telemetry;
+        this.telemetryReporter = telemetryReporter;
         this.logger = logger;
     }
 
@@ -214,7 +214,7 @@ export class ApimService {
             path: apiPath,
             apiVersion: version,
             apiVersionSetId: `/apiVersionSets/${versionSetId}`,
-            format: schemaVersion === OpenApiSchemaVersion.v2 ? "swagger-json" : "openapi+json",
+            format: schemaVersion === OpenApiSchemaVersion.V2 ? "swagger-json" : "openapi+json",
             value: JSON.stringify(spec),
             subscriptionRequired: false,
             protocols: ["https"],
@@ -284,15 +284,15 @@ export class ApimService {
     ) {
         try {
             this.logger?.info(LogMessages.operationStarts(operation, resourceType, resourceId));
-            this.telemetry.sendApimOperationEvent(operation, resourceType, OperationStatus.Started);
+            Telemetry.sendApimOperationEvent(this.telemetryReporter, operation, resourceType, OperationStatus.Started);
             const result = await fn();
             this.logger?.info(LogMessages.operationSuccess(operation, resourceType, resourceId));
-            this.telemetry.sendApimOperationEvent(operation, resourceType, OperationStatus.Succeeded);
+            Telemetry.sendApimOperationEvent(this.telemetryReporter, operation, resourceType, OperationStatus.Succeeded);
             return result;
         } catch (error) {
             if (!!errorHandler && errorHandler(error) === ErrorHandlerResult.Return) {
                 this.logger?.info(LogMessages.operationSuccess(operation, resourceType, resourceId));
-                this.telemetry.sendApimOperationEvent(operation, resourceType, OperationStatus.Succeeded);
+                Telemetry.sendApimOperationEvent(this.telemetryReporter, operation, resourceType, OperationStatus.Succeeded);
                 if (operation === Operation.Get) {
                     this.logger?.info(LogMessages.resourceNotFound(resourceType, resourceId));
                 }
@@ -300,7 +300,7 @@ export class ApimService {
             }
 
             this.logger?.info(LogMessages.operationFailed(operation, resourceType, resourceId));
-            this.telemetry.sendApimOperationEvent(operation, resourceType, OperationStatus.Failed);
+            Telemetry.sendApimOperationEvent(this.telemetryReporter, operation, resourceType, OperationStatus.Failed);
             throw BuildError(ApimOperationError, error, operation.displayName, resourceType.displayName);
         }
     }

@@ -7,53 +7,47 @@ import path from "path";
 import { OpenApiProcessor } from "../../../../../src/plugins/resource/apim/src/util/openApiProcessor";
 import { OpenApiSchemaVersion } from "../../../../../src/plugins/resource/apim/src/model/openApiDocument";
 import { InvalidFunctionEndpoint, InvalidOpenApiDocument } from "../../../../../src/plugins/resource/apim/src/error";
-import { Telemetry } from "../../../../../src/plugins/resource/apim/src/telemetry";
 chai.use(chaiAsPromised);
 
 describe("OpenApiProcessor", () => {
     describe("#loadOpenApiDocument()", () => {
-        let mockTelemetry: Telemetry;
-
-        before(async () => {
-            mockTelemetry = new Telemetry();
-        });
 
         const testInput: { message: string; filePath: string; schemaVersion: OpenApiSchemaVersion }[] = [
             {
                 message: "v3 json file",
                 filePath: "./tests/plugins/resource/apim/unit/data/openApiProcessor/openapi-user.json",
-                schemaVersion: OpenApiSchemaVersion.v3,
+                schemaVersion: OpenApiSchemaVersion.V3,
             },
             {
                 message: "v3 yaml file",
                 filePath: "./tests/plugins/resource/apim/unit/data/openApiProcessor/openapi-user.yaml",
-                schemaVersion: OpenApiSchemaVersion.v3,
+                schemaVersion: OpenApiSchemaVersion.V3,
             },
             {
                 message: "v2 json file",
                 filePath: "./tests/plugins/resource/apim/unit/data/openApiProcessor/swagger-user.json",
-                schemaVersion: OpenApiSchemaVersion.v2,
+                schemaVersion: OpenApiSchemaVersion.V2,
             },
             {
                 message: "v2 yaml file",
                 filePath: "./tests/plugins/resource/apim/unit/data/openApiProcessor/swagger-user.yaml",
-                schemaVersion: OpenApiSchemaVersion.v2,
+                schemaVersion: OpenApiSchemaVersion.V2,
             },
         ];
 
         testInput.forEach((input) => {
             it(input.message, async () => {
-                const openApiProcessor: OpenApiProcessor = new OpenApiProcessor(mockTelemetry);
+                const openApiProcessor: OpenApiProcessor = new OpenApiProcessor();
                 const result = await openApiProcessor.loadOpenApiDocument(input.filePath);
                 chai.assert.equal("user input swagger", result.spec.info.title);
                 chai.assert.equal("v1", result.spec.info.version);
                 switch (input.schemaVersion) {
-                    case OpenApiSchemaVersion.v2:
-                        chai.assert.equal(OpenApiSchemaVersion.v2, result.schemaVersion);
+                    case OpenApiSchemaVersion.V2:
+                        chai.assert.equal(OpenApiSchemaVersion.V2, result.schemaVersion);
                         chai.assert.hasAllKeys(result.spec, ["paths", "definitions", "info", "swagger"]);
                         break;
-                    case OpenApiSchemaVersion.v3:
-                        chai.assert.equal(OpenApiSchemaVersion.v3, result.schemaVersion);
+                    case OpenApiSchemaVersion.V3:
+                        chai.assert.equal(OpenApiSchemaVersion.V3, result.schemaVersion);
                         chai.assert.hasAllKeys(result.spec, ["paths", "components", "info", "openapi"]);
                         break;
                 }
@@ -104,19 +98,13 @@ describe("OpenApiProcessor", () => {
         ];
         errorInput.forEach((input) => {
             it(input.message, async () => {
-                const openApiProcessor: OpenApiProcessor = new OpenApiProcessor(mockTelemetry);
+                const openApiProcessor: OpenApiProcessor = new OpenApiProcessor();
                 await chai.expect(openApiProcessor.loadOpenApiDocument(input.filePath)).to.be.rejectedWith(input.error);
             });
         });
     });
 
     describe("#generateOpenApiDocument()", () => {
-        let mockTelemetry: Telemetry;
-
-        before(async () => {
-            mockTelemetry = new Telemetry();
-        });
-
         const testInput: {
             message: string;
             schemaVersion: OpenApiSchemaVersion;
@@ -126,7 +114,7 @@ describe("OpenApiProcessor", () => {
         }[] = [
                 {
                     message: "v2 https://test-host/",
-                    schemaVersion: OpenApiSchemaVersion.v2,
+                    schemaVersion: OpenApiSchemaVersion.V2,
                     endpoint: "https://test-host/",
                     expectedResult: {
                         schemes: ["https"],
@@ -136,7 +124,7 @@ describe("OpenApiProcessor", () => {
                 },
                 {
                     message: "v2 http://test-host",
-                    schemaVersion: OpenApiSchemaVersion.v2,
+                    schemaVersion: OpenApiSchemaVersion.V2,
                     endpoint: "http://test-host",
                     expectedResult: {
                         schemes: ["http"],
@@ -146,7 +134,7 @@ describe("OpenApiProcessor", () => {
                 },
                 {
                     message: "v2 http://test-host with base path '/basepath'",
-                    schemaVersion: OpenApiSchemaVersion.v2,
+                    schemaVersion: OpenApiSchemaVersion.V2,
                     endpoint: "http://test-host",
                     basePath: "/basepath",
                     expectedResult: {
@@ -157,7 +145,7 @@ describe("OpenApiProcessor", () => {
                 },
                 {
                     message: "v2 http://test-host with base path 'basepath'",
-                    schemaVersion: OpenApiSchemaVersion.v2,
+                    schemaVersion: OpenApiSchemaVersion.V2,
                     endpoint: "http://test-host",
                     basePath: "basepath",
                     expectedResult: {
@@ -168,26 +156,26 @@ describe("OpenApiProcessor", () => {
                 },
                 {
                     message: "v3 https://test-host",
-                    schemaVersion: OpenApiSchemaVersion.v3,
+                    schemaVersion: OpenApiSchemaVersion.V3,
                     endpoint: "https://test-host",
                     expectedResult: { servers: [{ url: "https://test-host/api" }] },
                 },
                 {
                     message: "v3 https://test-host/",
-                    schemaVersion: OpenApiSchemaVersion.v3,
+                    schemaVersion: OpenApiSchemaVersion.V3,
                     endpoint: "https://test-host/",
                     expectedResult: { servers: [{ url: "https://test-host/api" }] },
                 },
                 {
                     message: "v3 https://test-host/ with base path '/basepath'",
-                    schemaVersion: OpenApiSchemaVersion.v3,
+                    schemaVersion: OpenApiSchemaVersion.V3,
                     endpoint: "https://test-host/",
                     basePath: "/basepath",
                     expectedResult: { servers: [{ url: "https://test-host/basepath" }] },
                 },
                 {
                     message: "v3 https://test-host/ with base path 'basepath'",
-                    schemaVersion: OpenApiSchemaVersion.v3,
+                    schemaVersion: OpenApiSchemaVersion.V3,
                     endpoint: "https://test-host/",
                     basePath: "basepath",
                     expectedResult: { servers: [{ url: "https://test-host/basepath" }] },
@@ -196,9 +184,9 @@ describe("OpenApiProcessor", () => {
 
         testInput.forEach((input) => {
             it(`[valid endpoint] ${input.message}`, async () => {
-                const openApiProcessor: OpenApiProcessor = new OpenApiProcessor(mockTelemetry);
+                const openApiProcessor: OpenApiProcessor = new OpenApiProcessor();
                 const openApiFile =
-                    input.schemaVersion == OpenApiSchemaVersion.v2
+                    input.schemaVersion == OpenApiSchemaVersion.V2
                         ? "./tests/plugins/resource/apim/unit/data/openApiProcessor/swagger-user.json"
                         : "./tests/plugins/resource/apim/unit/data/openApiProcessor/openapi-user.json";
                 const openApiDocument = await openApiProcessor.loadOpenApiDocument(openApiFile);
@@ -222,25 +210,25 @@ describe("OpenApiProcessor", () => {
         }[] = [
                 {
                     message: "v2 test-host",
-                    schemaVersion: OpenApiSchemaVersion.v2,
+                    schemaVersion: OpenApiSchemaVersion.V2,
                     endpoint: "test-host",
                     error: InvalidFunctionEndpoint.message(),
                 },
                 {
                     message: "v3 test-host",
-                    schemaVersion: OpenApiSchemaVersion.v3,
+                    schemaVersion: OpenApiSchemaVersion.V3,
                     endpoint: "test-host",
                     error: InvalidFunctionEndpoint.message(),
                 },
                 {
                     message: "v2 ftp://test-host",
-                    schemaVersion: OpenApiSchemaVersion.v2,
+                    schemaVersion: OpenApiSchemaVersion.V2,
                     endpoint: "ftp://test-host",
                     error: InvalidFunctionEndpoint.message(),
                 },
                 {
                     message: "v3 ftp://test-host",
-                    schemaVersion: OpenApiSchemaVersion.v3,
+                    schemaVersion: OpenApiSchemaVersion.V3,
                     endpoint: "ftp://test-host",
                     error: InvalidFunctionEndpoint.message(),
                 },
@@ -248,9 +236,9 @@ describe("OpenApiProcessor", () => {
 
         invalidInput.forEach((input) => {
             it(`[invalid endpoint] ${input.message}`, async () => {
-                const openApiProcessor: OpenApiProcessor = new OpenApiProcessor(mockTelemetry);
+                const openApiProcessor: OpenApiProcessor = new OpenApiProcessor();
                 const openApiFile =
-                    input.schemaVersion == OpenApiSchemaVersion.v2
+                    input.schemaVersion == OpenApiSchemaVersion.V2
                         ? "./tests/plugins/resource/apim/unit/data/openApiProcessor/swagger-user.json"
                         : "./tests/plugins/resource/apim/unit/data/openApiProcessor/openapi-user.json";
                 const openApiDocument = await openApiProcessor.loadOpenApiDocument(openApiFile);
@@ -262,22 +250,17 @@ describe("OpenApiProcessor", () => {
     });
 
     describe("#loadOpenApiDocument()", () => {
-        let mockTelemetry: Telemetry;
-
-        before(async () => {
-            mockTelemetry = new Telemetry();
-        });
-
         it("Load valid swagger files", async () => {
-            const openApiProcessor: OpenApiProcessor = new OpenApiProcessor(mockTelemetry);
+            const openApiProcessor: OpenApiProcessor = new OpenApiProcessor();
             const result = await openApiProcessor.listOpenApiDocument(
                 "./tests/plugins/resource/apim/unit/data/openApiProcessor/loadOpenApiDocument",
                 ["exclude"],
                 ["json", "yaml"]
             );
+
             chai.assert.deepEqual(
                 [...result.keys()].sort(),
-                ["openapi.json", "include/openapi.yaml", "include/swagger.json", "swagger.yaml"].map((name) => path.normalize(name)).sort()
+                ["openapi.json", "include/openapi.yaml", "include/swagger.json", "swagger.yaml"].sort()
             );
         });
     });
@@ -285,7 +268,7 @@ describe("OpenApiProcessor", () => {
     describe("#listAllFiles()", () => {
         let openApiProcessor: OpenApiProcessor;
         before(async () => {
-            openApiProcessor = new OpenApiProcessor(new Telemetry());
+            openApiProcessor = new OpenApiProcessor();
         });
 
         const testInput: {

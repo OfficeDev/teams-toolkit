@@ -1,18 +1,13 @@
-﻿using Newtonsoft.Json;
-
-namespace Microsoft.TeamsFxSimpleAuth.Models
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+namespace Microsoft.TeamsFx.SimpleAuth.Models
 {
     public class PostTokenRequestBody
     {
-        [JsonProperty("redirect_uri")]
-        public string RedirectUri { get; set; }
-        [JsonProperty("code")]
-        public string Code { get; set; }
-        [JsonProperty("code_verifier")]
-        public string CodeVerifier { get; set; }
-        [JsonProperty("grant_type")]
-        public string GrantType { get; set; }
-        [JsonProperty("scope")]
-        public string Scope { get; set; }
+        public string redirect_uri { get; set; }
+        public string code { get; set; }
+        public string code_verifier { get; set; }
+        public string grant_type { get; set; }
+        public string scope { get; set; }
     }
 }

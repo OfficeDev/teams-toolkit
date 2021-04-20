@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using System;
 using Microsoft.Azure.WebJobs.Description;
 
 namespace Microsoft.Azure.WebJobs.Extensions.TeamsFx
@@ -11,12 +14,13 @@ namespace Microsoft.Azure.WebJobs.Extensions.TeamsFx
         {
             ClientId = Environment.GetEnvironmentVariable(ConfigurationNames.ClientId);
             ClientSecret = Environment.GetEnvironmentVariable(ConfigurationNames.ClientSecret);
-            OAuthAuthority = Environment.GetEnvironmentVariable(ConfigurationNames.OAuthAuthority);
             AllowedAppIds = Environment.GetEnvironmentVariable(ConfigurationNames.AllowedAppIds);
-            FunctionEndpoint = Environment.GetEnvironmentVariable(ConfigurationNames.FunctionEndpoint);
-            IdentityId = Environment.GetEnvironmentVariable(ConfigurationNames.IdentityId);
-            SqlEndpoint = Environment.GetEnvironmentVariable(ConfigurationNames.SqlEndpoint);
-            Database = Environment.GetEnvironmentVariable(ConfigurationNames.DatabaseName);
+            string authorityHost = Environment.GetEnvironmentVariable(ConfigurationNames.OAuthAuthorityHost);
+            string tenantId = Environment.GetEnvironmentVariable(ConfigurationNames.TenantId);
+            if (authorityHost != null && tenantId != null)
+            {
+                OAuthAuthority = authorityHost.TrimEnd('/') + '/' + tenantId;
+            }
 
             var TokenRefreshBufferMinutesConfig = Environment.GetEnvironmentVariable(ConfigurationNames.TokenRefreshBufferMinutes);
             if (int.TryParse(TokenRefreshBufferMinutesConfig, out int bufferMinutes))
@@ -33,10 +37,6 @@ namespace Microsoft.Azure.WebJobs.Extensions.TeamsFx
         public string ClientSecret { get; private set; }
         public string OAuthAuthority { get; set; }
         public string AllowedAppIds { get; set; }
-        public string FunctionEndpoint { get; set; }
-        public string IdentityId { get; set; }
-        public string SqlEndpoint { get; set; }
-        public string Database { get; set; }
 
         // Refresh token if token expires in TokenRefreshBufferMinutes minutes
         public int TokenRefreshBufferMinutes { get; private set; }

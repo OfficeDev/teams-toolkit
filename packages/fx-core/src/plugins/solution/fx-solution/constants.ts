@@ -14,7 +14,7 @@ export const Void = {};
  * The key of global config visible to all resource plugins.
  */
 export const GLOBAL_CONFIG = "solution";
-export const SELECTED_PLUGINS = "selectedPlugins";
+// export const SELECTED_PLUGINS = "selectedPlugins";
 
 /**
  * Used to track whether provision succeeded
@@ -28,11 +28,18 @@ export const SOLUTION_PROVISION_SUCCEEDED = "provisionSucceeded";
 export const PERMISSION_REQUEST = "permissionRequest";
 
 /**
+ * Config key whose value is either javascript, typescript or csharp.
+ */
+export const PROGRAMMING_LANGUAGE = "programmingLanguage";
+export const STATIC_TABS = "staticTabs";
+export const CONFIGURABLE_TABS = "configurableTabs";
+
+/**
  * Config keys that are useful for generating remote teams app manifest
  */
+export const REMOTE_MANIFEST = "manifest.remote.json";
 export const FRONTEND_ENDPOINT = "endpoint";
 export const FRONTEND_DOMAIN = "domain";
-export const AAD_REMOTE_CLIENT_ID = "clientId";
 export const BOTS = "bots";
 export const COMPOSE_EXTENSIONS = "composeExtensions";
 
@@ -70,6 +77,7 @@ export enum SolutionError {
     FailedToGetAppStudioToken = "FailedToGetAppStudioToken",
     FailedToLoadManifestFile = "FailedToLoadManifestFile",
     CannotRunProvisionInSPFxProject = "CannotRunProvisionInSPFxProject",
+    CannotRunThisTaskInSPFxProject = "CannotRunThisTaskInSPFxProject",
     FrontendEndpointAndDomainNotFound = "FrontendEndpointAndDomainNotFound",
     RemoteClientIdNotFound = "RemoteClientIdNotFound",
     AddResourceNotSupport = "AddResourceNotSupport",
@@ -78,6 +86,7 @@ export enum SolutionError {
     DeploymentInProgress = "DeploymentInProgress",
     UnknownSolutionRunningState = "UnknownSolutionRunningState",
     CannotDeployBeforeProvision = "CannotDeployBeforeProvision",
+    CannotPublishBeforeProvision = "CannotPublishBeforeProvision",
     NoSubscriptionFound = "NoSubscriptionFound",
     NoSubscriptionSelected = "NoSubscriptionSelected",
     FailedToGetParamForRegisterTeamsAppAndAad = "FailedToGetParamForRegisterTeamsAppAndAad",
@@ -85,6 +94,9 @@ export enum SolutionError {
     InternelError = "InternelError",
     RegisterTeamsAppAndAadError = "RegisterTeamsAppAndAadError",
     UpdateManifestError = "UpdateManifestError",
+    GetLocalDebugConfigError = "GetLocalDebugConfigError",
+    GetRemoteConfigError = "GetRemoteConfigError",
+    UnsupportedPlatform = "UnsupportedPlatform",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";

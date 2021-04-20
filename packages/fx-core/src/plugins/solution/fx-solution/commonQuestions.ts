@@ -148,9 +148,6 @@ export async function askSubscription(config: SolutionConfig, azureToken: TokenC
 /**
  * Asks common questions and puts the answers in the global namespace of SolutionConfig
  *
- * @todo(yefu): maybe let teams app developers to choose subscriptionId
- *
- * @param solutionConfig
  */
 async function askCommonQuestions(
     appName: string,
@@ -211,7 +208,7 @@ async function askCommonQuestions(
 
     commonQuestions.tenantId = parseTenantIdResult.value;
 
-    const resourceGroupName = `${appName}-rg`;
+    const resourceGroupName = `${appName.replace(" ", "_")}-rg`;
     const client = new ResourceManagementClient(azureToken, commonQuestions.subscriptionId);
     const response = await client.resourceGroups.createOrUpdate(resourceGroupName, {
         location: commonQuestions.location,

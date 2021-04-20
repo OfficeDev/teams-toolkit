@@ -12,6 +12,8 @@ import { CodeFlowLogin } from "./codeFlowLogin";
 import VsCodeLogInstance from "./log";
 import * as vscode from "vscode";
 import { getBeforeCacheAccess, getAfterCacheAccess } from "./cacheAccess";
+import { signedIn, signedOut } from "./common/constant";
+import { login, LoginStatus } from "./common/login";
 
 const accountName = "appStudio";
 const scopes = ["https://dev.teams.microsoft.com/AppDefinitions.ReadWrite"];
@@ -45,7 +47,7 @@ const config = {
   }
 };
 
-export class AppStudioLogin implements AppStudioTokenProvider {
+export class AppStudioLogin extends login implements AppStudioTokenProvider {
   private static instance: AppStudioLogin;
   private static codeFlowInstance: CodeFlowLogin;
 
@@ -56,6 +58,7 @@ export class AppStudioLogin implements AppStudioTokenProvider {
   ) => Promise<void>;
 
   private constructor() {
+    super();
     AppStudioLogin.codeFlowInstance = new CodeFlowLogin(scopes, config, SERVER_PORT, accountName);
   }
 
@@ -88,6 +91,7 @@ export class AppStudioLogin implements AppStudioTokenProvider {
         const tokenJson = await this.getJsonObject();
         await AppStudioLogin.statusChange("SignedIn", loginToken, tokenJson);
       }
+      await this.notifyStatus();
       return loginToken;
     }
 
@@ -115,19 +119,28 @@ export class AppStudioLogin implements AppStudioTokenProvider {
       await AppStudioLogin.statusChange("SignedOut", undefined, undefined);
     }
     AppStudioLogin.codeFlowInstance.logout();
+    await this.notifyStatus();
     return new Promise((resolve) => {
       resolve(true);
     });
   }
 
   private async doesUserConfirmLogin(): Promise<boolean> {
-    const warningMsg = "Please sign into your M365 account";
+    const warningMsg = "The Teams Toolkit requires a Microsoft 365 account. This is the account that you use to log in to Microsoft Teams. The Teams Toolkit will publish your application using this Microsoft 365 account.\nYou can quickly get started by using a developer account from the M365 Developer Program.";
     const confirm = "Confirm";
-    const userSelected: string | undefined = await vscode.window.showWarningMessage(
-      warningMsg,
-      { modal: true },
-      confirm
-    );
+    const learnMore = "Learn More";
+    let userSelected: string | undefined;
+    do {
+      userSelected = await vscode.window.showWarningMessage(
+        warningMsg,
+        { modal: true },
+        confirm,
+        learnMore
+      );
+      if (userSelected === learnMore) {
+        vscode.env.openExternal(vscode.Uri.parse("https://developer.microsoft.com/en-us/microsoft-365/dev-program"));
+      }
+    } while (userSelected === learnMore);
     return Promise.resolve(userSelected === confirm);
   }
 
@@ -144,6 +157,16 @@ export class AppStudioLogin implements AppStudioTokenProvider {
     return new Promise((resolve) => {
       resolve(true);
     });
+  }
+
+  async getStatus(): Promise<LoginStatus> {
+    if (AppStudioLogin.codeFlowInstance.account) {
+      const loginToken = await AppStudioLogin.codeFlowInstance.getToken();
+      const tokenJson = await this.getJsonObject();
+      return Promise.resolve({ status: signedIn, token: loginToken, accountInfo: tokenJson });
+    } else {
+      return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });
+    }
   }
 }
 

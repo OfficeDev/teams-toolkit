@@ -1,15 +1,13 @@
-﻿using Newtonsoft.Json;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 using System;
 
-namespace Microsoft.TeamsFxSimpleAuth.Models
+namespace Microsoft.TeamsFx.SimpleAuth.Models
 {
     public class PostTokenResponse
     {
-        [JsonProperty("scope")]
-        public string Scope { get; set; }
-        [JsonProperty("expires_on")]
-        public DateTimeOffset ExpiresOn { get; set; }
-        [JsonProperty("access_token")]
-        public string AccessToken { get; set; }
+        public string scope { get; set; }
+        public DateTimeOffset expires_on { get; set; }
+        public string access_token { get; set; }
     }
 }

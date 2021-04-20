@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+using Microsoft.AspNetCore.Authorization;
 
-namespace Microsoft.TeamsFxSimpleAuth.Components.Auth.Models
+namespace Microsoft.TeamsFx.SimpleAuth.Components.Auth.Models
 {
     public class AppIdRequirement : IAuthorizationRequirement
     {

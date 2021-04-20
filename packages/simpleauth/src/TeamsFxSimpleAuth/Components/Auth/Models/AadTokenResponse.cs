@@ -1,6 +1,8 @@
-﻿using Newtonsoft.Json;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+using Newtonsoft.Json;
 
-namespace Microsoft.TeamsFxSimpleAuth.Components.Auth.Models
+namespace Microsoft.TeamsFx.SimpleAuth.Components.Auth.Models
 {
     public class AadTokenResponse
     {

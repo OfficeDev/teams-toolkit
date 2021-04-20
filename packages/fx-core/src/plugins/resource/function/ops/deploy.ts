@@ -28,6 +28,7 @@ import { WebAppsListPublishingCredentialsResponse } from "@azure/arm-appservice/
 import { execute } from "../utils/execute";
 import { forEachFileAndDir } from "../utils/dir-walk";
 import { requestWithRetry } from "../utils/templates-fetch";
+import { backendExtensionsInstall } from "../utils/depsChecker/backendExtensionsInstall";
 
 export class FunctionDeploy {
 
@@ -43,14 +44,21 @@ export class FunctionDeploy {
 
         try {
             const lastFunctionDeployTime = await this.getLastDeploymentTime(componentPath);
-            const ig = ignore().add(FunctionPluginPathInfo.funcDeploymentFolderName);
+            // Always ignore node_modules folder and the file ignored both by git and func.
+            const defaultIgnore = ignore().add(FunctionPluginPathInfo.npmPackageFolderName);
+            const funcIgnore = await this.prepareIgnore(componentPath, FunctionPluginPathInfo.funcIgnoreFileName);
+            const gitIgnore = await this.prepareIgnore(componentPath, FunctionPluginPathInfo.gitIgnoreFileName);
 
             let changed = false;
             await forEachFileAndDir(componentPath,
                 (itemPath: string, stats: fs.Stats) => {
                     // Don't check the modification time of .deployment folder.
-                    const relativePath: string = path.relative(componentPath, itemPath);
-                    if (relativePath && ig.filter([relativePath]).length > 0 && lastFunctionDeployTime < stats.mtime) {
+                    const relativePath = path.relative(componentPath, itemPath);
+
+                    if (relativePath &&
+                        !defaultIgnore.test(relativePath).ignored &&
+                        !(funcIgnore.test(relativePath).ignored && gitIgnore.test(relativePath).ignored) &&
+                        lastFunctionDeployTime < stats.mtime) {
                         changed = true;
                         // Return true to stop walking.
                         return true;
@@ -62,22 +70,6 @@ export class FunctionDeploy {
             // Failed to check updated, but it doesn't block the deployment.
             return true;
         }
-    }
-
-    // We do not prevent deployment if the .Net Core version mismatch, we just alert user to take care.
-    public static async checkDotNetVersion(ctx: PluginContext, componentPath: string): Promise<void> {
-        await runWithErrorCatchAndThrow(new DotnetVersionError(), async () => {
-            const currentVersion =
-                await execute(Commands.currentDotnetVersionQuery, componentPath);
-            Logger.info(InfoMessages.dotnetVersion(currentVersion));
-
-            const isExpectedDotNetVersion = (version: string) => currentVersion.startsWith(version + CommonConstants.versionSep);
-            if (!FunctionPluginInfo.expectDotnetSDKs.find(isExpectedDotNetVersion)) {
-                const msg = InfoMessages.dotNetVersionUnexpected(currentVersion, FunctionPluginInfo.expectDotnetSDKs);
-                Logger.warning(msg);
-                DialogUtils.show(ctx, msg, MsgLevel.Warning);
-            }
-        });
     }
 
     public static async build(componentPath: string, language: FunctionLanguage): Promise<void> {
@@ -95,8 +87,8 @@ export class FunctionDeploy {
         }
 
         const binPath = path.join(componentPath, FunctionPluginPathInfo.functionExtensionsFolderName);
-        const command = Commands.functionExtensionsInstall(FunctionPluginPathInfo.functionExtensionsFileName, binPath);
-        await execute(command, componentPath);
+
+        await backendExtensionsInstall(componentPath, FunctionPluginPathInfo.functionExtensionsFileName, binPath);
     }
 
     public static async deployFunction(
@@ -245,7 +237,7 @@ export class FunctionDeploy {
         const normalizeTime = (t: number) => Math.floor(t / CommonConstants.zipTimeMSGranularity);
 
         const zip = (await this.loadLastDeploymentZipCache(componentPath)) || new AdmZip();
-        const ig = await this.prepareFuncIgnore(componentPath);
+        const ig = await this.prepareIgnore(componentPath, FunctionPluginPathInfo.funcIgnoreFileName);
         const tasks: Promise<void>[] = [];
         const zipFiles = new Set<string>();
 
@@ -292,15 +284,14 @@ export class FunctionDeploy {
         return zip;
     }
 
-    // If we can find a '.funcignore' file, parse it and use it for zip generation.
-    private static async prepareFuncIgnore(componentPath: string): Promise<Ignore> {
-        const funcIgnoreFileName = FunctionPluginPathInfo.funcIgnoreFileName;
-        const funcIgnoreFilePath = path.join(componentPath, funcIgnoreFileName);
-        const ig = ignore().add(funcIgnoreFileName).add(FunctionPluginPathInfo.funcDeploymentFolderName);
+    // If we can find an ignore file, parse it and use it for zip generation.
+    private static async prepareIgnore(componentPath: string, fileName: string): Promise<Ignore> {
+        const ignoreFilePath = path.join(componentPath, fileName);
+        const ig = ignore().add(FunctionPluginPathInfo.funcDeploymentFolderName);
 
-        if (await fs.pathExists(funcIgnoreFilePath)) {
-            const funcIgnoreFileContent = await fs.readFile(funcIgnoreFilePath);
-            funcIgnoreFileContent.toString()
+        if (await fs.pathExists(ignoreFilePath)) {
+            const ignoreFileContent = await fs.readFile(ignoreFilePath);
+            ignoreFileContent.toString()
                 .split("\n")
                 .forEach(line => ig.add(line.trim()));
         }

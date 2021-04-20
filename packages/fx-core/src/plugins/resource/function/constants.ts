@@ -22,7 +22,7 @@ export class FunctionPluginInfo {
     public static readonly expectDotnetSDKs: string[] = ["3.1", "5.0"];
 
     public static readonly FunctionPluginPersistentConfig: FunctionConfigKey[] = [
-        FunctionConfigKey.functionLanguage,
+        FunctionConfigKey.nodeVersion,
         FunctionConfigKey.defaultFunctionName,
         FunctionConfigKey.functionAppName,
         FunctionConfigKey.storageAccountName,
@@ -37,11 +37,12 @@ export class FunctionPluginInfo {
     public static readonly templateBaseGroupName: string = "function-base";
     public static readonly templateBaseScenarioName: string = "default";
     public static readonly templateTriggerGroupName: string = "function-triggers";
-    public static readonly templateVersion: string = "0.1.*";
+    public static readonly templateVersion: string = "0.2.*";
 }
 
 export class FunctionPluginPathInfo {
     public static readonly solutionFolderName: string = "api";
+    public static readonly rootPath: string = path.join(__dirname, "..", "..", "..", "..");
     public static readonly templateFolderPath: string = path.join("templates", "plugins", "resource", "function");
     public static readonly templateFileExt: string = ".tpl";
     public static readonly templateZipExt: string = ".zip";
@@ -52,6 +53,7 @@ export class FunctionPluginPathInfo {
     public static readonly funcDeploymentInfoFileName: string = "deployment.json";
     public static readonly funcDeploymentZipCacheFileName: string = "deployment.zip";
     public static readonly funcIgnoreFileName: string = ".funcignore";
+    public static readonly gitIgnoreFileName: string = ".gitignore";
     public static readonly npmPackageFolderName: string = "node_modules";
 }
 
@@ -83,11 +85,14 @@ export class DependentPluginInfo {
     public static readonly subscriptionId: string = "subscriptionId";
     public static readonly resourceNameSuffix: string = "resourceNameSuffix";
     public static readonly location: string = "location";
+    public static readonly programmingLanguage: string = "programmingLanguage";
 
     public static readonly aadPluginName: string = "fx-resource-aad-app-for-teams";
     public static readonly aadClientId: string = "clientId";
     public static readonly aadClientSecret: string = "clientSecret";
-    public static readonly aadOauthAuthority: string = "oauthAuthority";
+    public static readonly oauthHost: string = "oauthHost";
+    public static readonly tenantId: string = "tenantId";
+    public static readonly applicationIdUris: string = "applicationIdUris";
 
     public static readonly sqlPluginName: string = "fx-resource-azure-sql";
     public static readonly databaseName: string = "databaseName";
@@ -106,14 +111,16 @@ export class DependentPluginInfo {
 }
 
 export class FunctionAppSettingKeys {
-    public static readonly clientId: string = "CLIENT_ID";
-    public static readonly clientSecret: string = "CLIENT_SECRET";
-    public static readonly oauthAuthority: string = "OAUTH_AUTHORITY";
+    public static readonly clientId: string = "M365_CLIENT_ID";
+    public static readonly clientSecret: string = "M365_CLIENT_SECRET";
+    public static readonly oauthHost: string = "M365_AUTHORITY_HOST";
+    public static readonly tenantId: string = "M365_TENANT_ID";
     public static readonly identityId: string = "IDENTITY_ID";
-    public static readonly databaseName: string = "DATABASE_NAME";
+    public static readonly databaseName: string = "SQL_DATABASE_NAME";
     public static readonly sqlEndpoint: string = "SQL_ENDPOINT";
     public static readonly allowedAppIds: string = "ALLOWED_APP_IDS";
-    public static readonly functionEndpoint: string = "FUNCTION_ENDPOINT";
+    public static readonly functionEndpoint: string = "API_ENDPOINT";
+    public static readonly applicationIdUris: string = "M365_APPLICATION_ID_URI";
 }
 
 export class DefaultProvisionConfigs {
@@ -155,12 +162,6 @@ export class DefaultProvisionConfigs {
         location: location,
         clientAffinityEnabled: false,
     });
-
-    public static readonly functionAppCORSAllowedOrigins: string[] = [
-        "https://functions.azure.com",
-        "https://functions-staging.azure.com",
-        "https://functions-next.azure.com"
-    ]
 }
 
 export class AzureInfo {
@@ -175,10 +176,6 @@ export class AzureInfo {
 export class Commands {
     public static readonly npmInstall: string = "npm install";
     public static readonly npmBuild: string = "npm run build";
-    public static readonly currentDotnetVersionQuery: string = "dotnet --version";
-    public static readonly functionExtensionsInstall = (csprojFilePath: string, outputFolderPath: string) =>
-        `dotnet build ${csprojFilePath}  -o "${outputFolderPath}"`;
-    public static readonly dotnetPublish: string = "dotnet publish --configuration Release";
 }
 
 export class QuestionValidationFunc {

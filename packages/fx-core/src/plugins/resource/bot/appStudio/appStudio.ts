@@ -1,118 +1,150 @@
 import { IAADApplication, IAADPassword } from "./interfaces/IAADApplication";
 import { IBotRegistration } from "./interfaces/IBotRegistration";
+import { IAADDefinition } from "./interfaces/IAADDefinition";
 
 import { AxiosInstance, default as axios } from "axios";
-import { ConfigUpdatingException, ProvisionException } from "../exceptions";
+import { CallAppStudioError, ConfigUpdatingError, ProvisionError, SomethingMissingError } from "../errors";
 import { CommonStrings, ConfigNames } from "../resources/strings";
-
+import { LifecycleFuncNames } from "../constants";
+import { RetryHanlder } from "../utils/retryHandler";
 
 const baseUrl = "https://dev.teams.microsoft.com";
-let axiosInstance: AxiosInstance | undefined = undefined;
 
-export async function init(accessToken: string): Promise<boolean> {
-    if (axiosInstance) {
-        return true;
+function newAxiosInstance(accessToken: string): AxiosInstance {
+    if (!accessToken) {
+        throw new SomethingMissingError(ConfigNames.APPSTUDIO_TOKEN);
     }
 
-    if (accessToken) {
-        axiosInstance = axios.create({
-            headers: {
-                post: {
-                    "Authorization": `Bearer ${accessToken}`
-                }
+    return axios.create({
+        headers: {
+            post: {
+                "Authorization": `Bearer ${accessToken}`
+            },
+            get: {
+                "Authorization": `Bearer ${accessToken}`
             }
-        });
-        return true;
-    } else {
-        return false;
-    }
+        }
+    });
 }
 
-export async function createAADApp(aadApp: IAADApplication): Promise<IAADApplication> {
-    if (!aadApp || !axiosInstance) {
-        throw new ProvisionException(CommonStrings.AAD_APP);
-    }
+export async function createAADAppV2(accessToken: string, aadApp: IAADDefinition): Promise<IAADDefinition> {
+    const axiosInstance = newAxiosInstance(accessToken);
 
     let response = undefined;
     try {
-        response = await axiosInstance.post(`${baseUrl}/api/aadapp`, aadApp);
+        response = await RetryHanlder(() => axiosInstance.post(`${baseUrl}/api/aadapp/v2`, aadApp));
     } catch (e) {
-        throw new ProvisionException(CommonStrings.AAD_APP, e);
+        throw new ProvisionError(CommonStrings.AAD_APP, e);
     }
 
     if (!response || !response.data) {
-        throw new ProvisionException(CommonStrings.AAD_APP);
+        throw new ProvisionError(CommonStrings.AAD_APP);
+    }
+
+    const app = response.data as IAADDefinition;
+    if (!app || !app.id || !app.appId) {
+        throw new ProvisionError(CommonStrings.AAD_APP);
+    }
+
+    return app;
+}
+
+export async function createAADApp(accessToken: string, aadApp: IAADApplication): Promise<IAADApplication> {
+    const axiosInstance = newAxiosInstance(accessToken);
+
+    let response = undefined;
+    try {
+        response = await RetryHanlder(() => axiosInstance.post(`${baseUrl}/api/aadapp`, aadApp));
+    } catch (e) {
+        throw new ProvisionError(CommonStrings.AAD_APP, e);
+    }
+
+    if (!response || !response.data) {
+        throw new ProvisionError(CommonStrings.AAD_APP);
     }
 
     const app = response.data as IAADApplication;
     if (!app || !app.id || !app.objectId) {
-        throw new ProvisionException(CommonStrings.AAD_APP);
+        throw new ProvisionError(CommonStrings.AAD_APP);
     }
 
     return app;
 }
 
-export async function createAADAppPassword(aadAppObjectId?: string): Promise<IAADPassword> {
-    if (!aadAppObjectId || !axiosInstance) {
-        throw new ProvisionException(CommonStrings.AAD_CLIENT_SECRET);
-    }
+export async function isAADAppExisting(accessToken: string, objectId: string): Promise<boolean> {
+    const axiosInstance = newAxiosInstance(accessToken);
 
     let response = undefined;
     try {
-        response = await axiosInstance.post(`${baseUrl}/api/aadapp/${aadAppObjectId}/passwords`);
+        response = await RetryHanlder(() => axiosInstance.get(`${baseUrl}/api/aadapp/v2/${objectId}`));
     } catch (e) {
-        throw new ProvisionException(CommonStrings.AAD_CLIENT_SECRET, e);
+        throw new CallAppStudioError(LifecycleFuncNames.CHECK_AAD_APP, e);
     }
 
     if (!response || !response.data) {
-        throw new ProvisionException(CommonStrings.AAD_CLIENT_SECRET);
+        return false;
+    }
+
+    const app = response.data as IAADDefinition;
+    if (!app || !app.id || !app.appId) {
+        return false;
+    }
+
+    return true;
+}
+
+export async function createAADAppPassword(accessToken: string, aadAppObjectId?: string): Promise<IAADPassword> {
+    const axiosInstance = newAxiosInstance(accessToken);
+
+    let response = undefined;
+    try {
+        response = await RetryHanlder(() => axiosInstance.post(`${baseUrl}/api/aadapp/${aadAppObjectId}/passwords`));
+    } catch (e) {
+        throw new ProvisionError(CommonStrings.AAD_CLIENT_SECRET, e);
+    }
+
+    if (!response || !response.data) {
+        throw new ProvisionError(CommonStrings.AAD_CLIENT_SECRET);
     }
 
     const app = response.data as IAADPassword;
     if (!app) {
-        throw new ProvisionException(CommonStrings.AAD_CLIENT_SECRET);
+        throw new ProvisionError(CommonStrings.AAD_CLIENT_SECRET);
     }
 
     return app;
 }
 
-export async function createBotRegistration(registration: IBotRegistration): Promise<void> {
-
-    if (!registration || !axiosInstance) {
-        throw new ProvisionException(CommonStrings.APPSTUDIO_BOT_REGISTRATION);
-    }
+export async function createBotRegistration(accessToken: string, registration: IBotRegistration): Promise<void> {
+    const axiosInstance = newAxiosInstance(accessToken);
 
     let response = undefined;
     try {
-        response = await axiosInstance.post(`${baseUrl}/api/botframework`, registration);
+        response = await RetryHanlder(() => axiosInstance.post(`${baseUrl}/api/botframework`, registration));
     } catch (e) {
-        throw new ProvisionException(CommonStrings.APPSTUDIO_BOT_REGISTRATION, e);
+        throw new ProvisionError(CommonStrings.APPSTUDIO_BOT_REGISTRATION, e);
     }
 
     if (!response || !response.data) {
-        throw new ProvisionException(CommonStrings.APPSTUDIO_BOT_REGISTRATION);
+        throw new ProvisionError(CommonStrings.APPSTUDIO_BOT_REGISTRATION);
     }
 
     return;
 }
 
-export async function updateMessageEndpoint(botId: string, registration: IBotRegistration): Promise<void> {
-
-    if (!registration || !axiosInstance) {
-        throw new ConfigUpdatingException(ConfigNames.MESSAGE_ENDPOINT);
-    }
+export async function updateMessageEndpoint(accessToken: string, botId: string, registration: IBotRegistration): Promise<void> {
+    const axiosInstance = newAxiosInstance(accessToken);
 
     let response = undefined;
     try {
-        response = await axiosInstance.post(`${baseUrl}/api/botframework/${botId}`, registration);
+        response = await RetryHanlder(() => axiosInstance.post(`${baseUrl}/api/botframework/${botId}`, registration));
     } catch (e) {
-        throw new ConfigUpdatingException(ConfigNames.MESSAGE_ENDPOINT, e);
+        throw new ConfigUpdatingError(ConfigNames.MESSAGE_ENDPOINT, e);
     }
 
     if (!response || !response.data) {
-        throw new ConfigUpdatingException(ConfigNames.MESSAGE_ENDPOINT);
+        throw new ConfigUpdatingError(ConfigNames.MESSAGE_ENDPOINT);
     }
 
     return;
 }
-

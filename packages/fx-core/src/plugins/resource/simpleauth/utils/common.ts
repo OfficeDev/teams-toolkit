@@ -3,7 +3,7 @@
 import { ConfigValue, LogProvider, PluginContext } from "fx-api";
 import * as path from "path";
 import { Constants, Message } from "../constants";
-import { NoConfigError } from "../errors";
+import { EndpointInvalidError, NoConfigError } from "../errors";
 import { ResultFactory } from "../result";
 import { TelemetryUtils } from "./telemetry";
 
@@ -33,7 +33,7 @@ export class Utils {
             Constants.AadAppPlugin.configKeys.clientSecret,
             isLocalDebug,
         ) as string;
-        const oauthTokenEndpointBase = Utils.getConfigValueWithValidation(
+        const oauthAuthority = Utils.getConfigValueWithValidation(
             ctx,
             Constants.AadAppPlugin.id,
             Constants.AadAppPlugin.configKeys.oauthAuthority,
@@ -54,16 +54,30 @@ export class Utils {
             Constants.AadAppPlugin.id,
             Constants.AadAppPlugin.configKeys.teamsWebAppId,
         ) as string;
+        const endpoint = Utils.getConfigValueWithValidation(
+            ctx,
+            isLocalDebug ? Constants.LocalDebugPlugin.id : Constants.FrontendPlugin.id,
+            isLocalDebug ? Constants.LocalDebugPlugin.configKeys.endpoint: Constants.FrontendPlugin.configKeys.endpoint,
+        ) as string;
 
-        const oauthTokenEndpoint = `${oauthTokenEndpointBase}/oauth2/v2.0/token`;
         const allowedAppIds = [teamsMobileDesktopAppId, teamsWebAppId].join(";");
+        const aadMetadataAddress = `${oauthAuthority}/v2.0/.well-known/openid-configuration`;
+        let endpointUrl;
+        try {
+            endpointUrl = new URL(endpoint);
+        } catch (error) {
+            throw ResultFactory.SystemError(EndpointInvalidError.name, EndpointInvalidError.message(endpoint, error.message));
+        }
+        const tabAppEndpoint = endpointUrl.origin;
 
         return {
             [Constants.ApplicationSettingsKeys.clientId]: clientId,
             [Constants.ApplicationSettingsKeys.clientSecret]: clientSecret,
-            [Constants.ApplicationSettingsKeys.oauthTokenEndpoint]: oauthTokenEndpoint,
+            [Constants.ApplicationSettingsKeys.oauthAuthority]: oauthAuthority,
             [Constants.ApplicationSettingsKeys.applicationIdUris]: applicationIdUris,
             [Constants.ApplicationSettingsKeys.allowedAppIds]: allowedAppIds,
+            [Constants.ApplicationSettingsKeys.tabAppEndpoint]: tabAppEndpoint,
+            [Constants.ApplicationSettingsKeys.aadMetadataAddress]: aadMetadataAddress,
         };
     }
 

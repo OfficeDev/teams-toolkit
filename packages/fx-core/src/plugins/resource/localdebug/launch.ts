@@ -3,6 +3,7 @@
 "use strict";
 
 import { ProductName } from "fx-api";
+import * as os from "os";
 import { LaunchBrowser } from "./constants";
 
 export function generateConfigurations(includeFrontend: boolean, includeBackend: boolean, includeBot: boolean): Record<string, unknown>[] {
@@ -45,6 +46,13 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
         );
     }
     */
+
+    let edgeOrder = 2, chromeOrder = 1;
+    if (os.type() === "Windows_NT") {
+        edgeOrder = 1;
+        chromeOrder = 2;
+    }
+
     const launchConfigurations: Record<string, unknown>[] = [
         {
             name: "Launch Remote (Edge)",
@@ -53,7 +61,7 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
             url: "https://teams.microsoft.com/_#/l/app/${teamsAppId}?installAppPackage=true",
             presentation: {
                 group: "remote",
-                order: 1,
+                order: edgeOrder,
             },
         },
         {
@@ -63,7 +71,7 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
             url: "https://teams.microsoft.com/_#/l/app/${teamsAppId}?installAppPackage=true",
             presentation: {
                 group: "remote",
-                order: 2,
+                order: chromeOrder,
             },
         },
     ];
@@ -101,7 +109,7 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
                 },
                 {
                     name: "Start and Attach to Backend",
-                    type: "node",
+                    type: "pwa-node",
                     request: "attach",
                     port: 9229,
                     restart: true,
@@ -147,11 +155,10 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
     if (!includeFrontend && includeBot) {
         launchConfigurations.push(
             {
-                name: "Lauch Bot (Edge)",
+                name: "Launch Bot (Edge)",
                 type: LaunchBrowser.edge,
                 request: "launch",
                 url: "https://teams.microsoft.com/_#/l/app/${localTeamsAppId}?installAppPackage=true",
-                preLaunchTask: `${ProductName}: auth start`,
                 postDebugTask: "Stop All Services",
                 cascadeTerminateToConfigurations: ["Start and Attach to Bot"],
                 presentation: {
@@ -160,7 +167,7 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
                 },
             },
             {
-                name: "Lauch Bot (Chrome)",
+                name: "Launch Bot (Chrome)",
                 type: LaunchBrowser.chrome,
                 request: "launch",
                 url: "https://teams.microsoft.com/_#/l/app/${localTeamsAppId}?installAppPackage=true",
@@ -173,7 +180,7 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
             },
             {
                 name: "Start and Attach to Bot",
-                type: "node",
+                type: "pwa-node",
                 request: "attach",
                 port: 9239,
                 restart: true,
@@ -217,7 +224,7 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
             },
             {
                 name: "Start and Attach to Bot",
-                type: "node",
+                type: "pwa-node",
                 request: "attach",
                 port: 9239,
                 restart: true,
@@ -233,7 +240,7 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
             launchConfigurations.push(
                 {
                     name: "Start and Attach to Backend",
-                    type: "node",
+                    type: "pwa-node",
                     request: "attach",
                     port: 9229,
                     restart: true,
@@ -253,6 +260,11 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
 
 export function generateCompounds(includeFrontend: boolean, includeBackend: boolean, includeBot: boolean): Record<string, unknown>[] {
     const launchCompounds: Record<string, unknown>[] = [];
+    let edgeOrder = 2, chromeOrder = 1;
+    if (os.type() === "Windows_NT") {
+        edgeOrder = 1;
+        chromeOrder = 2;
+    }
 
     // Tab only
     if (includeFrontend && !includeBot) {
@@ -265,7 +277,7 @@ export function generateCompounds(includeFrontend: boolean, includeBackend: bool
                 preLaunchTask: "Pre Debug Check",
                 presentation: {
                     group: "all",
-                    order: 1,
+                    order: edgeOrder,
                 },
                 stopAll: true,
             },
@@ -277,7 +289,7 @@ export function generateCompounds(includeFrontend: boolean, includeBackend: bool
                 preLaunchTask: "Pre Debug Check",
                 presentation: {
                     group: "all",
-                    order: 2,
+                    order: chromeOrder,
                 },
                 stopAll: true,
             },
@@ -289,21 +301,21 @@ export function generateCompounds(includeFrontend: boolean, includeBackend: bool
         launchCompounds.push(
             {
                 name: "Debug (Edge)",
-                configurations: ["Lauch Bot (Edge)", "Start and Attach to Bot"],
+                configurations: ["Launch Bot (Edge)", "Start and Attach to Bot"],
                 preLaunchTask: "Pre Debug Check",
                 presentation: {
                     group: "all",
-                    order: 1,
+                    order: edgeOrder,
                 },
                 stopAll: true,
             },
             {
                 name: "Debug (Chrome)",
-                configurations: ["Lauch Bot (Chrome)", "Start and Attach to Bot"],
+                configurations: ["Launch Bot (Chrome)", "Start and Attach to Bot"],
                 preLaunchTask: "Pre Debug Check",
                 presentation: {
                     group: "all",
-                    order: 2,
+                    order: chromeOrder,
                 },
                 stopAll: true,
             },
@@ -319,7 +331,7 @@ export function generateCompounds(includeFrontend: boolean, includeBackend: bool
                 preLaunchTask: "Pre Debug Check",
                 presentation: {
                     group: "all",
-                    order: 1,
+                    order: edgeOrder,
                 },
                 stopAll: true,
             },
@@ -329,7 +341,7 @@ export function generateCompounds(includeFrontend: boolean, includeBackend: bool
                 preLaunchTask: "Pre Debug Check",
                 presentation: {
                     group: "all",
-                    order: 2,
+                    order: chromeOrder,
                 },
                 stopAll: true,
             },
@@ -371,10 +383,16 @@ export function generateCompounds(includeFrontend: boolean, includeBackend: bool
 }
 
 export function generateSpfxConfigurations(): Record<string, unknown>[] {
+    let edgeOrder = 2, chromeOrder = 1;
+    if (os.type() === "Windows_NT") {
+        edgeOrder = 1;
+        chromeOrder = 2;
+    }
+
     return [
         {
-            name: "Local workbench",
-            type: "pwa-chrome",
+            name: "Local workbench (Edge)",
+            type: LaunchBrowser.edge,
             request: "launch",
             url: "https://localhost:5432/workbench",
             webRoot: "${workspaceRoot}/SPFx",
@@ -388,10 +406,35 @@ export function generateSpfxConfigurations(): Record<string, unknown>[] {
             runtimeArgs: ["--remote-debugging-port=9222"],
             preLaunchTask: "gulp serve",
             postDebugTask: "Terminate All Tasks",
+            presentation: {
+                group: "all",
+                order: edgeOrder,
+            },
         },
         {
-            name: "Hosted workbench",
-            type: "pwa-chrome",
+            name: "Local workbench (Chrome)",
+            type: LaunchBrowser.chrome,
+            request: "launch",
+            url: "https://localhost:5432/workbench",
+            webRoot: "${workspaceRoot}/SPFx",
+            sourceMaps: true,
+            sourceMapPathOverrides: {
+                "webpack:///.././src/*": "${webRoot}/src/*",
+                "webpack:///../../../src/*": "${webRoot}/src/*",
+                "webpack:///../../../../src/*": "${webRoot}/src/*",
+                "webpack:///../../../../../src/*": "${webRoot}/src/*",
+            },
+            runtimeArgs: ["--remote-debugging-port=9222"],
+            preLaunchTask: "gulp serve",
+            postDebugTask: "Terminate All Tasks",
+            presentation: {
+                group: "all",
+                order: chromeOrder,
+            },
+        },
+        {
+            name: "Hosted workbench (Edge)",
+            type: LaunchBrowser.edge,
             request: "launch",
             url: "https://enter-your-SharePoint-site/_layouts/workbench.aspx",
             webRoot: "${workspaceRoot}/SPFx",
@@ -405,6 +448,31 @@ export function generateSpfxConfigurations(): Record<string, unknown>[] {
             runtimeArgs: ["--remote-debugging-port=9222", "-incognito"],
             preLaunchTask: "gulp serve",
             postDebugTask: "Terminate All Tasks",
+            presentation: {
+                group: "remote",
+                order: edgeOrder,
+            },
+        },
+        {
+            name: "Hosted workbench (Chrome)",
+            type: LaunchBrowser.chrome,
+            request: "launch",
+            url: "https://enter-your-SharePoint-site/_layouts/workbench.aspx",
+            webRoot: "${workspaceRoot}/SPFx",
+            sourceMaps: true,
+            sourceMapPathOverrides: {
+                "webpack:///.././src/*": "${webRoot}/src/*",
+                "webpack:///../../../src/*": "${webRoot}/src/*",
+                "webpack:///../../../../src/*": "${webRoot}/src/*",
+                "webpack:///../../../../../src/*": "${webRoot}/src/*",
+            },
+            runtimeArgs: ["--remote-debugging-port=9222", "-incognito"],
+            preLaunchTask: "gulp serve",
+            postDebugTask: "Terminate All Tasks",
+            presentation: {
+                group: "remote",
+                order: chromeOrder,
+            },
         },
     ];
 }

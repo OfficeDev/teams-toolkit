@@ -12,17 +12,18 @@ export enum ErrorType {
 
 const tips = {
     checkLog: "Check log for more information.",
-    doScaffold: `Run 'Start A New Project' again.`,
+    reScaffold: `Run 'Start A New Project' again.`,
     doProvision: `Run 'Provision Resource' before this command.`,
     doLogin: "Login to Azure.",
     reProvision: `Run 'Provision Resource' again.`,
-    doBuild: `Run 'npm install' and 'npm run build' in '${FrontendPathInfo.WorkingDir}' folder.`,
-    ensureBuildPath: `Ensure your built project in '${FrontendPathInfo.BuildPath}'.`,
+    doBuild: `Run 'npm install' and 'npm run build' in the folder: '${FrontendPathInfo.WorkingDir}'.`,
+    ensureBuildPath: `Ensure your built project exists: '${FrontendPathInfo.BuildPath}'.`,
     ensureAppNameValid:
-        "Ensure your app name only contains alphabetical and numeric characters, and does not contain a trademark or reserved word.",
+        "Ensure your app name only contains alphabetical and numeric characters, and does not contain trademark or reserved words.",
     checkNetwork: "Check your network connection.",
     checkFsPermissions: "Check if you have Read/Write permissions to your file system.",
-    checkStoragePermissions: "Check if you have full permissions to Azure Storage Account.",
+    checkStoragePermissions: "Check if you have permissions to your Azure Storage Account.",
+    restoreEnvironment: "Restore the 'env.default.json' file if you modified it.",
 };
 
 export class FrontendPluginError extends Error {
@@ -55,7 +56,7 @@ export class FrontendPluginError extends Error {
 
 export class NotScaffoldError extends FrontendPluginError {
     constructor() {
-        super(ErrorType.User, "NotScaffoldError", "Scaffold has not completed successfully.", [tips.doScaffold]);
+        super(ErrorType.User, "NotScaffoldError", "Scaffold has not completed successfully.", [tips.reScaffold]);
     }
 }
 
@@ -205,6 +206,18 @@ export class NpmInstallError extends FrontendPluginError {
             tips.doBuild,
             tips.checkNetwork,
         ]);
+    }
+}
+
+export class InvalidTabScopeError extends FrontendPluginError {
+    constructor() {
+        super(ErrorType.User, "InvalidTabScopeError", "The Tab scope is invalid.", [tips.restoreEnvironment, tips.reScaffold]);
+    }
+}
+
+export class InvalidTabLanguageError extends FrontendPluginError {
+    constructor() {
+        super(ErrorType.User, "InvalidTabLanguageError", "The selected programming language yet is not supported by Tab.", [tips.restoreEnvironment, tips.reScaffold]);
     }
 }
 

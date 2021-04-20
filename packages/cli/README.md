@@ -1,33 +1,161 @@
-# Project
+# teamsfx-cli
 
-> This repo has been populated by an initial template to help get you started. Please
-> make sure to update the content to build a great experience for community-building.
+## For developpers to build and run your local project
 
-As the maintainer of this project, please make a few updates:
+1. `git clone https://github.com/OfficeDev/TeamsFx.git`
+2. `cd TeamsFx`
+3. `npm install`
+4. `npm run bootstrap`
+5. `cd packages/cli`
+6. `npm link --force --production`
 
-- Improving this README.MD file to provide a great experience
-- Updating SUPPORT.MD with content about this project's support experience
-- Understanding the security reporting process in SECURITY.MD
-- Remove this section from the README
+If you meet the error showing that some package cannot install, you can delete this package's `package-lock.json` file and try `npm run bootstrap` again.
 
-## Contributing
+`npm link` will search `fx-api/fx-core` from npm registry (not link) and now they are in the private npm registry, so you should setup the private npm registry.
 
-This project welcomes contributions and suggestions.  Most contributions require you to agree to a
-Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
-the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
+`npm link --force --production` will break the links of `fx-api/fx-core` and download them from npm registry, so after running `npm link --force --production`, you should remove `packages/cli/node_modules/fx-api` and `packages/cli/node_modules/fx-core`, then run `npm run bootstrap` again.
 
-When you submit a pull request, a CLA bot will automatically determine whether you need to provide
-a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions
-provided by the bot. You will only need to do this once across all repos using our CLA.
+## For users to install the package
+1. Run: `npm install -g teamsfx-cli` (Pls check the version is the latest version)
+2. Now the package is installed in your global npm folder. You can type 'teamsfx --help' to see how to use the cli tool.
 
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
-For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
-contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+## Commands
 
-## Trademarks
+### Verbose or debug
 
-This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft 
-trademarks or logos is subject to and must follow 
-[Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general).
-Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship.
-Any use of third-party trademarks or logos are subject to those third-party's policies.
+We add two boolean options `verbose` and `debug`. By default, `verbose` is `true` and `debug` is `false`, so the log provider shows `info/warn/error` messages. When set `debug` as `true`, it will show all messages. When set `verbose` and `debug` as `false`, it only shows `error` messages. The priority of `debug` is higher than `verbose`.
+
+```bash
+# verbose is false and debug is false
+teamsfx xxx --verbose false
+# verbose is true and debug is false
+teamsfx xxx
+# debug is true
+teamsfx xxx --debug
+```
+
+### New commands
+
+```bash
+# create interactively.
+teamsfx new
+
+# non-interactively create a teams app which hosting on Azure (with sql).
+teamsfx new --interactive false --app-name azureApp --azure-resources sql
+
+# non-interactively create a teams app which hosting on Azure (with function).
+teamsfx new --interactive false --app-name azureApp --azure-resources function
+
+# non-interactively create a teams app which hosting on Azure (with sql and function).
+teamsfx new --interactive false --app-name azureApp --azure-resources function sql
+
+# non-interactively create a teams app which hosting on SPFx.
+teamsfx new --interactive false --app-name spfxApp --host-type SPFx
+```
+
+### Login && set subscription
+
+```bash
+# login azure
+teamsfx account login azure
+# login appStudio
+teamsfx account login m365
+
+# set azure subscription for an project
+cd /path/to/your/project
+teamsfx account set --subscription 1756abc0-3554-4341-8d6a-46674962ea19
+```
+
+### Add capability to project
+
+```bash
+cd /path/to/your/project/
+# Add tab
+teamsfx capability add tab
+# Add bot
+teamsfx capability add bot
+```
+
+### Add resource to project
+
+```bash
+cd /path/to/your/project/
+# Add Azure Function
+teamsfx resource add azure-function
+# Add Azure SQL
+teamsfx resource add azure-sql
+```
+
+### Show/List resource config of the project
+```bash
+teamsfx resource list
+teamsfx resource show azure-function
+```
+
+### Update AAD Permission
+```bash
+teamsfx resource configure aad --aad-env both
+```
+### Provision
+
+```bash
+# cd to your azure project with function/sql
+cd /path/to/your/azure/project/
+teamsfx provision --sql-admin-name Abc123321 --sql-password Cab232332 --sql-confirm-password Cab232332
+```
+
+### Deploy
+
+```bash
+teamsfx deploy --deploy-plugin fx-resource-frontend-hosting
+teamsfx deploy --deploy-plugin fx-resource-frontend-hosting fx-resource-function
+teamsfx deploy --deploy-plugin fx-resource-spfx
+```
+
+### publish
+
+```bash
+teamsfx publish
+```
+
+## How to run e2e-test locally
+
+### Setup repo
+You can follow `For developpers to build and run your local project` at the top of this readme.
+
+### Run
+`npm run e2e-test`
+
+### Setup environment variables (Optional)
+If you want to use the test account to run e2e test cases, you should set the following environment variables.
+
+1. TEST_USER_NAME="metadev@microsoft.com"
+2. TEST_USER_PASSWORD="<$PASSWORD>"
+3. Set environment variable `CI_ENABLED` to `true`.
+
+If you want to use the default way of signin/signout (not for CI/CD), please don't set `CI_ENABLED` or set it to `false`.
+You can ask `Long Hao` or `Zhiyu You` for `$PASSWORD`.
+
+## How to Generate Parameter Files (for Repo Contributors)
+
+### Setup repo
+You can follow `For developpers to build and run your local project` at the top of this readme.
+
+### Run
+```bash
+# get new/resource-add/capability-add/provision stage parameters
+node .\lib\generators\ new resource-add capability-add provision
+```
+
+## Known issue
+1. Currently SPFx support Node.JS V12.x
+2. teamsfx start
+
+## The rest of work
+
+### features for user:
+1. interact with user
+2. webpack
+3. double confirm
+
+### features for e2e test:

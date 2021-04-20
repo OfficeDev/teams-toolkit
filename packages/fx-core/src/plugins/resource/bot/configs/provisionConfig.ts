@@ -1,10 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { ConfigValue, PluginContext } from "fx-api";
-import { ServiceClientCredentials } from "@azure/ms-rest-js";
 
 import * as utils from "../utils/common";
-import { PluginSolution, PluginBot, CommonStrings } from "../resources/strings";
+import { PluginSolution, PluginBot, PluginSql, PluginIdentity, PluginFunction, CommonStrings } from "../resources/strings";
 
 export class ProvisionConfig {
     public subscriptionId?: string;
@@ -14,14 +13,19 @@ export class ProvisionConfig {
     public botChannelRegName?: string;
     public siteName?: string;
     public siteEndpoint?: string;
-    public redirectUri?: string;
-    public serviceClientCredentials?: ServiceClientCredentials;
+    public redirectUri?: string; // it's going to be useless, mark.
     public graphToken?: string;
+    // Configs from SQL and Function.
+    public sqlEndpoint?: string;
+    public sqlDatabaseName?: string;
+    public identityId?: string;
+    public sqlUserName?: string;
+    public sqlPassword?: string;
+    public functionEndpoint?: string;
+
     public provisioned = false;
 
     public async restoreConfigFromContext(context: PluginContext): Promise<void> {
-
-        this.serviceClientCredentials = await context.azureAccountProvider?.getAccountCredentialAsync();
 
         const subscriptionIdValue: ConfigValue = context.configOfOtherPlugins
             .get(PluginSolution.PLUGIN_NAME)
@@ -42,6 +46,48 @@ export class ProvisionConfig {
             ?.get(PluginSolution.LOCATION);
         if (locationValue) {
             this.location = locationValue as string;
+        }
+
+        const sqlEndpointValue: ConfigValue = context.configOfOtherPlugins
+            .get(PluginSql.PLUGIN_NAME)
+            ?.get(PluginSql.SQL_ENDPOINT);
+        if (sqlEndpointValue) {
+            this.sqlEndpoint = sqlEndpointValue as string;
+        }
+
+        const sqlDatabaseNameValue: ConfigValue = context.configOfOtherPlugins
+            .get(PluginSql.PLUGIN_NAME)
+            ?.get(PluginSql.SQL_DATABASE_NAME);
+        if (sqlDatabaseNameValue) {
+            this.sqlDatabaseName = sqlDatabaseNameValue as string;
+        }
+
+        const sqlUsernameValue: ConfigValue = context.configOfOtherPlugins
+            .get(PluginSql.PLUGIN_NAME)
+            ?.get(PluginSql.SQL_USERNAME);
+        if (sqlUsernameValue) {
+            this.sqlUserName = sqlUsernameValue as string;
+        }
+
+        const sqlPasswordValue: ConfigValue = context.configOfOtherPlugins
+            .get(PluginSql.PLUGIN_NAME)
+            ?.get(PluginSql.SQL_PASSWORD);
+        if (sqlPasswordValue) {
+            this.sqlPassword = sqlPasswordValue as string;
+        }
+
+        const identityValue: ConfigValue = context.configOfOtherPlugins
+            .get(PluginIdentity.PLUGIN_NAME)
+            ?.get(PluginIdentity.IDENTITY_ID);
+        if (identityValue) {
+            this.identityId = identityValue as string;
+        }
+
+        const functionEndpointValue: ConfigValue = context.configOfOtherPlugins
+            .get(PluginFunction.PLUGIN_NAME)
+            ?.get(PluginFunction.ENDPOINT);
+        if (functionEndpointValue) {
+            this.functionEndpoint = functionEndpointValue as string;
         }
 
         const appServicePlanValue: ConfigValue = context.config.get(PluginBot.APP_SERVICE_PLAN);

@@ -18,14 +18,29 @@ export function genUUID(): string {
     return Uuid.generate();
 }
 
-export function zipAFolder(sourceDir: string, notIncluded: string[]): Buffer {
+export function zipAFolder(sourceDir: string, notIncluded?: string[], mustIncluded?: string[]): Buffer {
     const zip = new AdmZip();
     zip.addLocalFolder(sourceDir, "", (filename: string) => {
-        const result = notIncluded.find((notIncludedItem) => {
-            return filename.startsWith(notIncludedItem);
-        });
 
-        return !result;
+        if (mustIncluded) {
+            const hit = mustIncluded.find((mustItem) => {
+                return filename.startsWith(mustItem);
+            });
+
+            if (hit) {
+                return true;
+            }
+        }
+
+        if (notIncluded) {
+            const hit = notIncluded.find((notIncludedItem) => {
+                return filename.startsWith(notIncludedItem);
+            });
+
+            return !hit;
+        }
+
+        return true;
     });
 
     return zip.toBuffer();
@@ -188,4 +203,8 @@ export function convertToLangKey(programmingLanguage: ProgrammingLanguage): stri
             return "JavaScript";
         }
     }
+}
+
+export function convertToTelemetryName(raw: string): string {
+    return raw.toLowerCase().replace(/ /g, "-");
 }

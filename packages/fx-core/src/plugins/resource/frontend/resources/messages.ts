@@ -32,7 +32,6 @@ export class Messages {
     static readonly EndDeploy = (name: string) => `Successfully deployed ${name}.`;
     static readonly SkipBuild = () => "Nothing to build; no changes detected since last build.";
     static readonly SkipDeploy = () => "Nothing to deploy; no changes detected since last deployment.";
-
     static readonly StartCheckResourceGroupExistence = (name: string) =>
         `Checking resource group '${name}'.`;
     static readonly StartCheckStaticWebsiteEnabled = (name: string) =>
@@ -41,6 +40,8 @@ export class Messages {
         `Creating Azure Storage account '${name}' in resource group '${resourceGroupName}'.`;
     static readonly StartEnableStaticWebsite = (name: string) =>
         `Enabling static website feature for Azure Storage account '${name}'.`;
+    static readonly SkipEnableStaticWebsite = (name: string) =>
+        `Static website feature is already enabled for Azure Storage account ${name}.`;
     static readonly StartSyncLocalToStorage = (localPath: string, storageName: string) =>
         `Uploading local path '${localPath}' to Azure Storage account '${storageName}'.`;
     static readonly StartDeleteAllBlobs = (storageName: string, containerName: string) =>

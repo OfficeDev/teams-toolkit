@@ -1,4 +1,7 @@
-﻿using Microsoft.Azure.WebJobs.Host.Bindings;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using Microsoft.Azure.WebJobs.Host.Bindings;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
@@ -19,7 +22,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.TeamsFx
             }
         }
 
-        public TeamsFxValueProvider(TeamsFxConfig config, ILogger logger)
+        public TeamsFxValueProvider(TeamsFxContext config, ILogger logger)
         {
             _logger = logger;
 

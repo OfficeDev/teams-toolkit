@@ -114,7 +114,7 @@ export interface IUserInput {
    */
   withProgress(
     options: ProgressOptions,
-    task: (progress: Progress<IProgressStatus>) => Promise<Result<null, FxError>>
+    task: (progress: Progress<IProgressStatus>, token: CancellationToken) => Promise<Result<null, FxError>>
   ): Promise<Result<null, FxError>>;
 }
 
@@ -165,7 +165,7 @@ export class UserInput implements IUserInput {
 
   public async withProgress(
     options: ProgressOptions,
-    task: (progress: Progress<IProgressStatus>) => Promise<Result<null, FxError>>
+    task: (progress: Progress<IProgressStatus>, token: CancellationToken) => Promise<Result<null, FxError>>
   ): Promise<Result<null, FxError>> {
     return await window.withProgress(options, task);
   }

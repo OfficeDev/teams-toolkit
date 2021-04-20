@@ -3,8 +3,8 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { IProgressStatus, ok } from "fx-api";
-import { ProgressLocation } from "vscode";
+import { IProgressStatus, ok, UserError } from "fx-api";
+import { CancellationToken, Disposable, ProgressLocation } from "vscode";
 import { ext } from "./extensionVariables";
 import { sleep } from "./utils/commonUtils";
 
@@ -16,6 +16,7 @@ export class ProgressHandler {
   private ended: boolean;
 
   private resolve?: any;
+  private reject?: any;
 
   constructor(title: string, totalSteps: number) {
     this.totalSteps = totalSteps;
@@ -33,21 +34,27 @@ export class ProgressHandler {
 
   public async start(detail?: string) {
     this.resolve = undefined;
+    this.reject = undefined;
     this.currentStep = 0;
     this.ended = false;
 
     this.detail = detail;
     const _this = this;
-    const promise = new Promise((resolve) => {
+    const promise = new Promise((resolve, reject) => {
       _this.resolve = resolve;
+      _this.reject = reject;
     });
 
     ext.ui.withProgress(
       {
         location: ProgressLocation.Notification,
-        cancellable: false
+        cancellable: true
       },
-      async (progress) => {
+      async (progress,token) => {
+        const listener: Disposable = token.onCancellationRequested(() => {
+          this.reject(new UserError("UserCancel", "UserCancel", "Extension"));
+          listener.dispose();
+        });
         await sleep(10);
         let resolve = _this.resolve;
         do {

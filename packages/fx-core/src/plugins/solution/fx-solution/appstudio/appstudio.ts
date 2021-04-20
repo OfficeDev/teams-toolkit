@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { IBotRegistration, IAADApplication, IAADPassword, IAppDefinition } from "./interface";
-import { TeamsAppManifest, ConfigMap, LogProvider } from "fx-api";
+import { IBotRegistration, IAADApplication, IAADPassword, IAppDefinition, IAppDefinitionBot, IAppManifestBot, IGroupChatCommand, IPersonalCommand, ITeamCommand, IMessagingExtension } from "./interface";
+import { TeamsAppManifest, ConfigMap, LogProvider, ICommand, ICommandList, IBot, IComposeExtension } from "fx-api";
 import { AzureSolutionQuestionNames, BotOptionItem, HostTypeOptionAzure, MessageExtensionItem, TabOptionItem } from "../question";
 import { TEAMS_APP_MANIFEST_TEMPLATE, CONFIGURABLE_TABS_TPL, STATIC_TABS_TPL, BOTS_TPL, COMPOSE_EXTENSIONS_TPL } from "../constants";
 import axios, { AxiosInstance } from "axios";
@@ -329,6 +329,7 @@ export namespace AppStudio {
             appName: appManifest.name.short,
             validDomains: appManifest.validDomains,
         };
+        appDefinition.appId = appManifest.id;
 
         appDefinition.appName = appManifest.name.short;
         appDefinition.shortName = appManifest.name.short;
@@ -347,8 +348,8 @@ export namespace AppStudio {
         appDefinition.staticTabs = appManifest.staticTabs;
         appDefinition.configurableTabs = appManifest.configurableTabs;
 
-        appDefinition.bots = appManifest.bots;
-        appDefinition.messagingExtensions = appManifest.composeExtensions;
+        appDefinition.bots = convertToAppDefinitionBots(appManifest);
+        appDefinition.messagingExtensions = convertToAppDefinitionMessagingExtensions(appManifest);
 
         if (appManifest.webApplicationInfo) {
             appDefinition.webApplicationInfoId = appManifest.webApplicationInfo.id;
@@ -365,4 +366,67 @@ export namespace AppStudio {
 
         return appDefinition;
     }
+
+    function convertToAppDefinitionMessagingExtensions(appManifest: TeamsAppManifest): IMessagingExtension[] {
+        let messagingExtensions: IMessagingExtension[] = [];
+
+        if (appManifest.composeExtensions) {
+            appManifest.composeExtensions.forEach((ext: IComposeExtension) => {
+                let me: IMessagingExtension = {
+                    botId: ext.botId,
+                    canUpdateConfiguration: true,
+                    commands: ext.commands,
+                    messageHandlers: []
+                };
+
+                messagingExtensions.push(me);
+            });
+        }
+
+        return messagingExtensions;
+    }
+
+    function convertToAppDefinitionBots(appManifest: TeamsAppManifest): IAppDefinitionBot[] {
+        let bots: IAppDefinitionBot[] = [];
+        if (appManifest.bots) {
+            appManifest.bots.forEach((manBot: IBot) => {
+            let teamCommands: ITeamCommand[] = [];
+            let groupCommands: IGroupChatCommand[] = [];
+            let personalCommands: IPersonalCommand[] = [];
+
+            manBot?.commandLists?.forEach((list: ICommandList) => {
+                list.commands.forEach((command: ICommand) => {
+                    teamCommands.push({
+                        title: command.title,
+                        description: command.description
+                    });
+
+                    groupCommands.push({
+                        title: command.title,
+                        description: command.description
+                    });
+
+                    personalCommands.push({
+                        title: command.title,
+                        description: command.description
+                    });
+                });
+            });
+
+            let bot: IAppDefinitionBot = {
+                botId: manBot.botId,
+                isNotificationOnly: manBot.isNotificationOnly ?? false,
+                supportsFiles: manBot.supportsFiles ?? false,
+                scopes: manBot.scopes,
+                teamCommands: teamCommands,
+                groupChatCommands: groupCommands,
+                personalCommands: personalCommands
+            }            
+
+            bots.push(bot);
+        });
+        }
+        return bots;
+    }
 }
+

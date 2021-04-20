@@ -6,7 +6,7 @@ import { AppStudioClient } from "./appStudio";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
 import { Constants } from "./constants";
-import { IAppDefinition } from "../../solution/fx-solution/appstudio/interface";
+import { AppStudio } from "../../solution/fx-solution/appstudio/appstudio";
 import { REMOTE_TEAMS_APP_ID } from "../../solution/fx-solution/constants";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
@@ -111,7 +111,7 @@ export class AppStudioPluginImpl {
             }
             await publishProgress?.next(`Updating app definition for app ${remoteTeamsAppId} in app studio`);
             const manifest: TeamsAppManifest = JSON.parse(manifestString!);
-            const appDefinition = this.convertToAppDefinition(manifest);
+            const appDefinition = AppStudio.convertToAppDefinition(manifest, ctx.platform === Platform.VS);
             let appStudioToken = await ctx?.appStudioToken?.getAccessToken();
             await AppStudioClient.updateTeamsApp(remoteTeamsAppId!, appDefinition, appStudioToken!);
 
@@ -164,41 +164,6 @@ export class AppStudioPluginImpl {
         } finally {
             await publishProgress?.end();
         }
-    }
-
-    private convertToAppDefinition(appManifest: TeamsAppManifest): IAppDefinition {
-        const appDefinition: IAppDefinition = {
-            appName: appManifest.name.short,
-            validDomains: appManifest.validDomains,
-        };
-
-        appDefinition.appId = appManifest.id;
-
-        appDefinition.appName = appManifest.name.short;
-        appDefinition.shortName = appManifest.name.short;
-        appDefinition.version = appManifest.version;
-
-        appDefinition.packageName = appManifest.packageName;
-        appDefinition.websiteUrl = appManifest.developer.websiteUrl;
-        appDefinition.privacyUrl = appManifest.developer.privacyUrl;
-        appDefinition.termsOfUseUrl = appManifest.developer.termsOfUseUrl;
-
-        appDefinition.shortDescription = appManifest.description.short;
-        appDefinition.longDescription = appManifest.description.full;
-
-        appDefinition.developerName = appManifest.developer.name;
-
-        appDefinition.staticTabs = appManifest.staticTabs;
-        appDefinition.configurableTabs = appManifest.configurableTabs;
-
-        appDefinition.bots = appManifest.bots;
-
-        if (appManifest.webApplicationInfo) {
-            appDefinition.webApplicationInfoId = appManifest.webApplicationInfo.id;
-            appDefinition.webApplicationInfoResource = appManifest.webApplicationInfo.resource;
-        }
-
-        return appDefinition;
     }
 
     private isSPFxProject(ctx: PluginContext): boolean {

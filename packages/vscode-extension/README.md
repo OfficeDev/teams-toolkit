@@ -12,21 +12,21 @@ The toolkit provides easier, faster and empowering user experience to build Team
 
 Teams apps are a combination of [capabilities](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/capabilities-overview) and [entry points](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/extensibility-points). For example, people can chat with your app's bot (capability) in a channel (entry point).
 
-<table style="border-collapse: collapse">
+<table>
     <tr>
         <td><img src="./media/landingPage_launchPage.png"></td>
         <td><img src="./media/landingPage_conversationalBot.png"></td>
         <td><img src="./media/landingPage_messagingExtension.png"></td>
     </tr>
     <tr>
-        <td style="border: none">Launch Pages</td>
-        <td style="border: none">Conversational Bots</td>
-        <td style="border: none">Messaging Extensions</td>
+        <td>Launch Pages</td>
+        <td>Conversational Bots</td>
+        <td>Messaging Extensions</td>
     </tr>
     <tr>
-        <td style="border: none" width="33%"><a href=https://docs.microsoft.com/en-us/microsoftteams/platform/tabs/what-are-tabs>Launch Pages</a> are Teams-aware webpages embedded in Microsoft Teams. They are simple HTML tags that point to domains declared in the app manifest and can be added as part of a channel inside a team, group chat, or personal app for an individual user.</td>
-        <td style="border: none; vertical-align: baseline" width="33%"><a href=https://docs.microsoft.com/en-us/microsoftteams/platform/bots/what-are-bots>Conversational bots</a> allow users to interact with your web service through text, interactive cards, and task modules.</td>
-        <td style="border: none; vertical-align: baseline" width="33%"><a href=https://docs.microsoft.com/en-us/microsoftteams/platform/messaging-extensions/what-are-messaging-extensions>Messaging extensions</a> allow users to interact with your web service through buttons and forms in the Microsoft Teams client.</td>
+        <td><a href=https://docs.microsoft.com/en-us/microsoftteams/platform/tabs/what-are-tabs>Launch Pages</a> are Teams-aware webpages embedded in Microsoft Teams. They are simple HTML tags that point to domains declared in the app manifest and can be added as part of a channel inside a team, group chat, or personal app for an individual user.</td>
+        <td><a href=https://docs.microsoft.com/en-us/microsoftteams/platform/bots/what-are-bots>Conversational bots</a> allow users to interact with your web service through text, interactive cards, and task modules.             &nbsp&nbsp</td>
+        <td><a href=https://docs.microsoft.com/en-us/microsoftteams/platform/messaging-extensions/what-are-messaging-extensions>Messaging extensions</a> allow users to interact with your web service through buttons and forms in the Microsoft Teams client.              &nbsp</td>
     </tr>
 </table>
 
@@ -34,21 +34,21 @@ Teams apps are a combination of [capabilities](https://docs.microsoft.com/en-us/
 
 Build a Teams app from the scratch or explore our [samples](www.baidu.com) to help you quickly get started with the basic Teams app concepts and code structures.
 
-<table style="border-collapse: collapse">
+<table>
     <tr>
         <td><img src="./media/landingPage_shareNow.png"></td>
         <td><img src="./media/landingPage_poll.png"></td>
         <td><img src="./media/landingPage_faq.png"></td>
     </tr>
     <tr>
-        <td style="border: none">Share Now</td>
-        <td style="border: none">Poll</td>
-        <td style="border: none">FAQ Plus</td>
+        <td>Share Now</td>
+        <td>Poll</td>
+        <td>FAQ Plus</td>
     </tr>
     <tr>
-        <td style="border: none" width="33%">The Share Now app promotes the positive exchange of information between colleagues by enabling your users to easily share content within the Teams environment.</td>
-        <td style="border: none; vertical-align: baseline" width="33%">Poll is a custom Microsoft Teams messaging extension app that enables you to quickly create and send polls in a chat or a channel to gather team opinions and preferences.</td>
-        <td style="border: none; vertical-align: baseline" width="33%">FAQ bot is a friendly Q&A bot that brings a human in the loop when it is unable to help. One can ask the bot a question and the bot responds with an answer if it is contained in the knowledge base.</td>
+        <td>The Share Now app promotes the positive exchange of information between colleagues by enabling your users to easily share content within the Teams environment.          </td>
+        <td>Poll is a custom Microsoft Teams messaging extension app that enables you to quickly create and send polls in a chat or a channel to gather team opinions and preferences.          </td>
+        <td>FAQ bot is a friendly Q&A bot that brings a human in the loop when it is unable to help. One can ask the bot a question and the bot responds with an answer if it is contained in the knowledge base.</td>
     </tr>
 </table>
 
@@ -56,14 +56,14 @@ Build a Teams app from the scratch or explore our [samples](www.baidu.com) to he
 
 >Don’t have a M365 to experience building Teams app? Sign up for [Microsoft Developer Program](https://developer.microsoft.com/en-us/microsoft-365/dev-program), which allows you to have a testing tenant with preconfigured permissions.
 
-<table style="border-collapse: collapse">
+<table>
     <tr>
         <td><img src="./media/landingPage_m365.png"></td>
         <td><h3>M365</h3>The Teams Toolkit requires a Microsoft 365 organizational account where Teams is running and has been registered.</td>
     </tr>
     <tr>
-        <td style="border: none"><img src="./media/landingPage_azure.png"></td>
-        <td style="border: none"><h3>Azure</h3> The Teams Toolkit may require an Azure account and subscription to deploy the Azure resources for your project.</td>
+        <td><img src="./media/landingPage_azure.png"></td>
+        <td><h3>Azure</h3> The Teams Toolkit may require an Azure account and subscription to deploy the Azure resources for your project.</td>
     </tr>
 </table>
 

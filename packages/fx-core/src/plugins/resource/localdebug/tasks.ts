@@ -88,6 +88,7 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
                             cwd: "${workspaceFolder}/api",
                         },
                         isBackground: true,
+                        // TODO: tell tsc which files to watch (depends on function's decision)
                         problemMatcher: "$tsc-watch",
                     },
                 );
@@ -257,6 +258,7 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
                             cwd: "${workspaceFolder}/api",
                         },
                         isBackground: true,
+                        // TODO: tell tsc which files to watch (depends on function's decision)
                         problemMatcher: "$tsc-watch",
                     },
                 );

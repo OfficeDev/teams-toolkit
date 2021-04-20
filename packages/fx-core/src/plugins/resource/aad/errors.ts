@@ -124,15 +124,15 @@ export class ConfigErrorMessages {
 
 export class AppStudioErrorMessage {
   static readonly CreateFailed =
-    "Failed to create an app in Azure Active Directory.";
+    "Failed to create an application registration in Azure Active Directory.";
   static readonly UpdateFailed =
-    "Failed to update app in Azure Active Directory.";
+    "Failed to update application registration in Azure Active Directory.";
   static readonly CreateSecretFailed =
     "Failed to create an application secret in Azure Active Directory.";
   static readonly GetFailed =
-    "Failed to retrieve Azure Active Directory application object.";
+    "Failed to retrieve Azure Active Directory application registration.";
 
-  static readonly AppDefinitionIsNull = "Missing app definition.";
+  static readonly AppDefinitionIsNull = "Missing application definition.";
   static readonly AppObjectIdIsNull = "Missing Object ID.";
   static readonly EmptyResponse = "Missing response.";
   static readonly ReachRetryLimit = "Exceeded retry limit.";
@@ -140,15 +140,15 @@ export class AppStudioErrorMessage {
 
 export class GraphClientErrorMessage {
   static readonly CreateFailed =
-    "Failed to create an app in Azure Active Directory.";
+    "Failed to create an application registration in Azure Active Directory.";
   static readonly UpdateFailed =
-    "Failed to update app in Azure Active Directory.";
+    "Failed to update application registration in Azure Active Directory.";
   static readonly CreateSecretFailed =
     "Failed to create an application secret in Azure Active Directory.";
   static readonly GetFailed =
-    "Failed to retrieve Azure Active Directory application object.";
+    "Failed to retrieve Azure Active Directory application registration.";
 
-  static readonly AppDefinitionIsNull = "Missing app definition.";
+  static readonly AppDefinitionIsNull = "Missing application definition.";
   static readonly AppObjectIdIsNull = "Missing Object ID.";
   static readonly EmptyResponse = "Missing response.";
 }

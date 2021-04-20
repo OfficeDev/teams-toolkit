@@ -19,7 +19,7 @@ import {
     ConfigFolderName,
 } from "fx-api";
 import * as path from "path";
-import {hooks} from "@feathersjs/hooks";
+import { hooks } from "@feathersjs/hooks";
 import * as fs from "fs-extra";
 import * as jsonschema from "jsonschema";
 
@@ -30,12 +30,11 @@ import {
     QuestionRootFolder,
     QuestionSelectSolution,
 } from "./question";
-import {CoreContext} from "./context";
-import {readConfigMW, writeConfigMW} from "./middlewares/config";
-import {validationMW} from "./middlewares/validation";
-import {envMW} from "./middlewares/env";
-import {solutionMW} from "./middlewares/solution";
-import {LaunchConfig} from "./launch";
+import { CoreContext } from "./context";
+import { readConfigMW, writeConfigMW } from "./middlewares/config";
+import { validationMW } from "./middlewares/validation";
+import { envMW } from "./middlewares/env";
+import { solutionMW } from "./middlewares/solution";
 
 export class Executor {
 
@@ -54,7 +53,7 @@ export class Executor {
         const answers = new ConfigMap();
         answers.set("stage", ctx.stage);
         answers.set("substage", "getQuestions");
-        const node = new QTreeNode({type: NodeType.group});
+        const node = new QTreeNode({ type: NodeType.group });
         if (ctx.stage === Stage.create) {
             node.addChild(new QTreeNode(QuestionAppName));
 
@@ -74,7 +73,7 @@ export class Executor {
                     if (res.isErr()) return res;
                     if (res.value) {
                         const solutionNode = res.value as QTreeNode;
-                        solutionNode.condition = {equals: k};
+                        solutionNode.condition = { equals: k };
                         if (solutionNode.data) select_solution.addChild(solutionNode);
                     }
                 }
@@ -239,6 +238,7 @@ export class Executor {
 
         ctx.projectSettings = {
             appName: appName!,
+            currentEnv: ctx.env,
             solutionSettings: {
                 name: ctx.selectedSolution!.name,
                 version: ctx.selectedSolution!.version,
@@ -286,15 +286,6 @@ export class Executor {
 .${ConfigFolderName}/*.userdata
 .DS_Store
 `
-            );
-
-            // write launch.json
-            const launch: LaunchConfig = {
-                currentEnv: ctx.env,
-            };
-            await fs.writeFile(
-                `${ctx.root}/.${ConfigFolderName}/launch.json`,
-                JSON.stringify(launch, null, 4)
             );
         } catch (e) {
             return err(error.WriteFileError(e));

@@ -2,9 +2,9 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { OptionItem } from "./qm";
-import { Platform, VsCodeEnv } from "./constants";
-import { AnswerValue } from "./qm";
+import {OptionItem} from "./qm";
+import {Platform, VsCodeEnv} from "./constants";
+import {AnswerValue} from "./qm";
 
 export type ConfigValue =
     | string
@@ -88,7 +88,7 @@ export class ConfigMap extends Map<string, ConfigValue> {
     //     super();
     //     Object.setPrototypeOf(this, ConfigMap.prototype);
     // }
-    constructor(entries?: readonly (readonly [string, ConfigValue])[] | null){
+    constructor(entries?: readonly (readonly [string, ConfigValue])[] | null) {
         super(entries);
         Object.setPrototypeOf(this, ConfigMap.prototype);
     }
@@ -100,14 +100,14 @@ export type Void = {};
 export const Void = {};
 
 
-export  interface Dict<T> {
+export interface Dict<T> {
     [key: string]: T | undefined;
 }
 
 export type ResourceTemplate = Dict<ConfigValue>;
 
 export type ResourceTemplates = {
-    [k:string]: ResourceTemplate|undefined;
+    [k: string]: ResourceTemplate | undefined;
 };
 
 export type ResourceConfig = ResourceTemplate;
@@ -117,17 +117,17 @@ export type ResourceConfigs = ResourceTemplates;
 export type ReadonlyResourceConfig = Readonly<ResourceConfig>;
 
 export type ReadonlyResourceConfigs = Readonly<{
-    [k:string]:ReadonlyResourceConfig|undefined;
+    [k: string]: ReadonlyResourceConfig | undefined;
 }>;
 
 
 /**
  * environment meta data
  */
-export interface EnvMeta{
-    name:string,
-    local:boolean,
-    sideloading:boolean
+export interface EnvMeta {
+    name: string,
+    local: boolean,
+    sideloading: boolean;
 }
 
 export type EnvConfig = Dict<string>;
@@ -136,45 +136,45 @@ export type EnvConfig = Dict<string>;
 /**
  * project static settings
  */
- export interface ProjectSettings{
-    appName:string,
-    solutionSettings?:SolutionSettings,
+export interface ProjectSettings {
+    appName: string,
+    currentEnv: string,
+    solutionSettings?: SolutionSettings,
 }
 
 /**
  * solution settings
  */
-export interface SolutionSettings extends Dict<ConfigValue>{
-    name:string;
-    version:string
+export interface SolutionSettings extends Dict<ConfigValue> {
+    name: string;
+    version: string;
 }
 
-export interface AzureSolutionSettings extends SolutionSettings{
-    capabilities:string[],
-    hostType?:string,
-    azureResources?:string[],
-    activeResourcePlugins:string[]
+export interface AzureSolutionSettings extends SolutionSettings {
+    capabilities: string[],
+    hostType?: string,
+    azureResources?: string[],
+    activeResourcePlugins: string[];
 }
 
 
 /**
  * project dynamic states
  */
-export interface ProjectStates
-{
-    solution:Dict<ConfigValue>,
-    resources: 
+export interface ProjectStates {
+    solution: Dict<ConfigValue>,
+    resources:
     {
-        [k:string]: Dict<ConfigValue>
-    }
+        [k: string]: Dict<ConfigValue>;
+    };
 }
- 
 
-export interface Inputs extends Dict<AnswerValue>{
+
+export interface Inputs extends Dict<AnswerValue> {
     platform: Platform;
-    vscodeEnv?:VsCodeEnv;
-}    
+    vscodeEnv?: VsCodeEnv;
+}
 
-export interface Json{
-    [k : string]:unknown;
+export interface Json {
+    [k: string]: unknown;
 }

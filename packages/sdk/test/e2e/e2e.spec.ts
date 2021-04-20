@@ -8,7 +8,7 @@ import {
   deleteProject,
   deployTab,
   getLoginEnvironment,
-  getTeamsUrl,
+  getTeamsTabRemoteUrl,
   TIMEOUT
 } from "../helper";
 
@@ -27,14 +27,15 @@ describe("End to End Test in Teams", () => {
       objectId: `div:below(b:text("UPN:"))`
     };
 
-    const appUrl = getTeamsUrl(project);
+    const appUrl = getTeamsTabRemoteUrl(project);
     await page.goto(appUrl, { timeout: TIMEOUT });
     await page.waitForSelector(selectors.addButton, { timeout: TIMEOUT });
     await page.click(selectors.addButton);
 
     const frame = await (await page.waitForSelector(`iframe`)).contentFrame();
 
-    // Check grant button
+    // Check grant button and consent in popup window.
+    // TODO: if it's reusable, move it to helper file.
     await frame.waitForSelector(selectors.grantButton);
     await frame.click(selectors.grantButton, { delay: 2000 });
     const consentPage = await page.waitForEvent("popup");

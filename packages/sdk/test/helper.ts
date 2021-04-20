@@ -82,7 +82,7 @@ export async function deployTab(projectPath: string, tabSrcFolder?: string): Pro
  * @param projectPath - folder path of project
  * @returns remote sideloading URL
  */
-export function getTeamsUrl(projectPath: string): string {
+export function getTeamsTabRemoteUrl(projectPath: string): string {
   const env = fs.readJsonSync(path.join(projectPath, ".fx/env.default.json"));
   return `https://teams.microsoft.com/_#/l/app/${env.solution.remoteTeamsAppId}?installAppPackage=true`;
 }

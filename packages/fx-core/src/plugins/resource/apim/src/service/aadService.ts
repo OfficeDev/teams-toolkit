@@ -10,7 +10,7 @@ import { LogMessages } from "../log";
 import { Telemetry } from "../telemetry";
 
 export class AadService {
-    private readonly MAX_RETRY_TIMES = 3;
+    private readonly MAX_RETRIES = 2;
     private readonly logger?: LogProvider;
     private readonly telemetryReporter?: TelemetryReporter;
     private readonly axios: AxiosInstance;
@@ -107,27 +107,27 @@ export class AadService {
         data?: any,
         errorHandler?: (error: any) => ErrorHandlerResult
     ) {
-        let retryNumber = 0;
+        let executionIndex = 0;
         let fxError: FxError | undefined;
 
-        while (retryNumber < this.MAX_RETRY_TIMES) {
+        while (executionIndex <= this.MAX_RETRIES) {
             try {
-                if (retryNumber > 0) {
+                if (executionIndex > 0) {
                     this.logger?.info(LogMessages.operationRetry(operation, resourceType, resourceId));
                 } else {
                     this.logger?.info(LogMessages.operationStarts(operation, resourceType, resourceId));
                 }
-                Telemetry.sendAadOperationEvent(this.telemetryReporter, operation, resourceType, OperationStatus.Started, retryNumber);
+                Telemetry.sendAadOperationEvent(this.telemetryReporter, operation, resourceType, OperationStatus.Started, executionIndex);
 
                 const result = await this.axios.request({ method: method, url: url, data: data });
 
                 this.logger?.info(LogMessages.operationSuccess(operation, resourceType, resourceId));
-                Telemetry.sendAadOperationEvent(this.telemetryReporter, operation, resourceType, OperationStatus.Succeeded, retryNumber);
+                Telemetry.sendAadOperationEvent(this.telemetryReporter, operation, resourceType, OperationStatus.Succeeded, executionIndex);
                 return result;
             } catch (error) {
                 if (!!errorHandler && errorHandler(error) === ErrorHandlerResult.Return) {
                     this.logger?.info(LogMessages.operationSuccess(operation, resourceType, resourceId));
-                    Telemetry.sendAadOperationEvent(this.telemetryReporter, operation, resourceType, OperationStatus.Succeeded, retryNumber);
+                    Telemetry.sendAadOperationEvent(this.telemetryReporter, operation, resourceType, OperationStatus.Succeeded, executionIndex);
                     if (operation === Operation.Get) {
                         this.logger?.info(LogMessages.resourceNotFound(resourceType, resourceId));
                     }
@@ -136,9 +136,9 @@ export class AadService {
 
                 error.message = `[Detail] ${error?.response?.data?.error?.message ?? error.message}`;
                 this.logger?.info(LogMessages.operationFailed(operation, resourceType, resourceId));
-                Telemetry.sendAadOperationEvent(this.telemetryReporter, operation, resourceType, OperationStatus.Failed, retryNumber);
+                Telemetry.sendAadOperationEvent(this.telemetryReporter, operation, resourceType, OperationStatus.Failed, executionIndex);
                 fxError = BuildError(AadOperationError, error, operation.displayName, resourceType.displayName);
-                ++retryNumber;
+                ++executionIndex;
             }
         }
 

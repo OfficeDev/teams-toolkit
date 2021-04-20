@@ -30,20 +30,20 @@ export class Telemetry {
         }
     }
 
-    public static sendAadOperationEvent(telemetryReporter: TelemetryReporter | undefined, operation: IName, resourceType: IName, status: OperationStatus, retryTimes: number): void {
+    public static sendAadOperationEvent(telemetryReporter: TelemetryReporter | undefined, operation: IName, resourceType: IName, status: OperationStatus, retries: number): void {
         if (status === OperationStatus.Failed) {
             telemetryReporter?.sendTelemetryErrorEvent(TelemetryEventNameConstants.aadOperation, {
                 operation: operation.shortName,
                 resource: resourceType.shortName,
                 status: status,
-                retryNumber: retryTimes.toString(),
+                retries: retries.toString(),
             });
         } else {
             telemetryReporter?.sendTelemetryEvent(TelemetryEventNameConstants.aadOperation, {
                 operation: operation.shortName,
                 resource: resourceType.shortName,
                 status: status,
-                retryNumber: retryTimes.toString(),
+                retries: retries.toString(),
             });
         }
     }

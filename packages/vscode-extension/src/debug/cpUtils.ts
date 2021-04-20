@@ -53,7 +53,7 @@ export namespace cpUtils {
         Object.assign(options, additionalOptions);
 
         const childProc: cp.ChildProcess = cp.spawn(command, args, options);
-        logger?.debug(`Running command: "${command} ${formattedArgs}"...`);
+        logger?.debug(`Running command: "${command} ${formattedArgs}", options = '${options}'`);
 
         childProc.stdout?.on("data", (data: string | Buffer) => {
           data = data.toString();
@@ -67,7 +67,7 @@ export namespace cpUtils {
         });
 
         childProc.on("error", (error) => {
-          logger?.debug(`Failed to run command '${command} ${formattedArgs}': '${cmdOutputIncludingStderr}'`);
+          logger?.debug(`Failed to run command '${command} ${formattedArgs}': cmdOutputIncludingStderr: '${cmdOutputIncludingStderr}', error: ${error}`);
           reject(error);
         });
         childProc.on("close", (code: number) => {

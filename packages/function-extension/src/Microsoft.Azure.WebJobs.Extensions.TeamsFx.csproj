@@ -4,8 +4,15 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AssemblyName>Microsoft.Azure.WebJobs.Extensions.TeamsFx</AssemblyName>
     <RootNamespace>Microsoft.Azure.WebJobs.Extensions.TeamsFx</RootNamespace>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Version>0.1.6</Version>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <Authors>Microsoft</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+    <PackageProjectUrl>https://github.com/OfficeDev/TeamsFx/tree/main/packages/function-extension</PackageProjectUrl>
+    <Description>This extension adds bindings to help build backend API for Teams app.</Description>
+    <RepositoryUrl>https://github.com/OfficeDev/TeamsFx</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>

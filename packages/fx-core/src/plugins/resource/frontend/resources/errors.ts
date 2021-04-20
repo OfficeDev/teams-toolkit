@@ -215,6 +215,12 @@ export class InvalidTabScopeError extends FrontendPluginError {
     }
 }
 
+export class InvalidTabLanguageError extends FrontendPluginError {
+    constructor() {
+        super(ErrorType.User, "InvalidTabLanguageError", "The selected programming language yet is not supported by Tab.", [tips.restoreEnvironment, tips.reScaffold]);
+    }
+}
+
 export const UnhandledErrorCode = "UnhandledError";
 export const UnhandledErrorMessage = "Got an unhandled error.";
 

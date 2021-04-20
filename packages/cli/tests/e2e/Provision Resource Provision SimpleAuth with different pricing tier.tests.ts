@@ -10,12 +10,15 @@ import { AadValidator, SimpleAuthValidator, deleteAadApp, MockAzureAccountProvid
 import { execAsync, getTestFolder, getUniqueAppName } from "./commonUtils";
 import AppStudioLogin from "../../src/commonlib/appStudioLogin";
 
-describe("Deploy to Azure", function() {
+describe("Provision", function() {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
 
-  it(`Deploy react app without Azure Function and SQL - Test Plan ID 9454296`, async function() {
+  it(`Provision Resource: Provision SimpleAuth with different pricing tier - Test Plan ID 9576788`, async function() {
+    // set env
+    process.env.SIMPLE_AUTH_SKU_NAME = "D1";
+
     // new a project
     const newResult = await execAsync(`teamsfx new --app-name ${appName} --interactive false --verbose false`, {
       cwd: testFolder,
@@ -25,13 +28,6 @@ describe("Deploy to Azure", function() {
     expect(newResult.stdout).to.eq("");
     expect(newResult.stderr).to.eq("");
     console.log("new");
-
-    {
-      // set fx-resource-simple-auth.skuName as B1
-      const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
-      context["fx-resource-simple-auth"]["skuName"] = "B1";
-      await fs.writeJSON(`${projectPath}/.fx/env.default.json`, context, { spaces: 4 });
-    }
 
     // provision
     const provisionResult = await execAsync(
@@ -55,7 +51,7 @@ describe("Deploy to Azure", function() {
 
     // Validate Simple Auth
     const simpleAuth = SimpleAuthValidator.init(context);
-    await SimpleAuthValidator.validate(simpleAuth, aad);
+    await SimpleAuthValidator.validate(simpleAuth, aad, "D1");
 
     // deploy
     const deployResult = await execAsync(

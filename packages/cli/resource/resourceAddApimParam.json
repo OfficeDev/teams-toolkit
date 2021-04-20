@@ -23,7 +23,7 @@
             ],
             "default": [
                 "function",
-                "sql"
+                "apim"
             ],
             "hide": true
         }
@@ -51,6 +51,28 @@
                 "namespace": "fx-solution-azure/fx-resource-function",
                 "method": "validateFunctionName"
             }
+        }
+    },
+    {
+        "data": {
+            "name": "subscription",
+            "title": "Please select a subscription",
+            "type": "func",
+            "namespace": "fx-solution-azure",
+            "method": "askSubscription"
+        }
+    },
+    {
+        "data": {
+            "type": "singleSelect",
+            "name": "apim-service",
+            "description": "Select API Management service",
+            "option": {
+                "namespace": "fx-solution-azure/fx-resource-apim",
+                "method": "apim-service-option"
+            },
+            "returnObject": true,
+            "skipSingleOption": false
         }
     }
 ]

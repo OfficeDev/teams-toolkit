@@ -9,12 +9,12 @@ import {
   ok,
   Result,
   err,
-  MultiSelectQuestion,
-  OptionItem,
-  Stage
+  Stage,
+  NodeType
 } from "fx-api";
 
 import * as constants from "../constants";
+import { flattenNodes } from "../utils";
 import { Generator } from "./generator";
 
 abstract class ResourceAddGenerator extends Generator {
@@ -27,31 +27,21 @@ abstract class ResourceAddGenerator extends Generator {
     if (result.isErr()) {
       return err(result.error);
     }
-    const allNodes = result.value as QTreeNode[];
+    const root = (result.value as QTreeNode).children![0];
 
-    // get add-azure-resources node
-    const resourceParamName = "add-azure-resources";
-    const resourceNode = allNodes.filter(node => node.data.name === resourceParamName)[0];
-    if (!resourceNode) {
-      throw Error(`${resourceParamName} is not found in the update stage's param list.`);
-    }
-    const option = (resourceNode.data as MultiSelectQuestion).option as OptionItem[];
-    const optionIds = option.map((op) => op.id);
-    if (!optionIds.includes(this.resourceName)) {
-      throw Error(`${optionIds} do not include ${this.resourceName}`);
-    }
+    const childrenNodes = (root.children || []).concat([]);
 
-    // create a new resource node and set default to resource name and hide it
-    const newResourceNode = new QTreeNode(Object.assign({}, resourceNode.data));
-    (newResourceNode.data as MultiSelectQuestion).default = [this.resourceName];
-    (newResourceNode.data as any).hide = true;
+    const functionNodes = flattenNodes(childrenNodes.filter(node => (node.condition as any).minItems === 1)[0]);
+    const resourcesNode = childrenNodes.filter(node => (node.condition as any).contains === this.resourceName)[0];
+    const resourceNodes = resourcesNode ? flattenNodes(resourcesNode) : [];
+
+    (root.data as any).default = this.resourceName !== "function" ? ["function", this.resourceName] : [this.resourceName];
+    (root.data as any).hide = true;
+    root.children = undefined;
 
     // pick all related questions.
-    /// TODO: this may cause problem.
-    const resourceRelatedNodes = allNodes.filter(
-      node => node.data.name?.includes(this.resourceName) || node.data.description?.includes(this.resourceName)
-    );
-    return ok([newResourceNode, ...resourceRelatedNodes]);
+    const allNodes = [root, ...functionNodes, ...resourceNodes].filter(node => node.data.type !== NodeType.group);
+    return ok(allNodes);
   }
 }
 
@@ -65,4 +55,10 @@ export class ResourceAddSqlGenerator extends ResourceAddGenerator {
   public readonly commandName = "teamsfx resource add azure-sql";
   public readonly resourceName = "sql";
   public readonly outputPath = constants.resourceAddSqlParamPath;
+}
+
+export class ResourceAddApimGenerator extends ResourceAddGenerator {
+  public readonly commandName = "teamsfx resource add apim";
+  public readonly resourceName = "apim";
+  public readonly outputPath = constants.resourceAddApimParamPath;
 }

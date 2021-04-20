@@ -36,16 +36,16 @@ async function callCli(command: string): Promise<boolean> {
  * Get Access Token from a specific AAD app client id.
  * @param clientId - remote or local AAD App id.
  * @param userName - Azure account login name.
- * @param passWord - Azure account login password.
- * @param hostName - AAD App scope host, such as "localhost" or "****.web.core.windows.net"
+ * @param password - Azure account login password.
  * @param tenantId - AAD App tenant id.
+ * @param scope - AAD App custom scopes to restrict access to data and functionality protected by the API.
  */
 export async function getAccessToken(
   clientId: string,
   userName: string,
-  passWord: string,
-  hostName: string,
-  tenantId: string
+  password: string,
+  tenantId: string,
+  scope: string = ""
 ): Promise<string> {
   const msalConfig = {
     auth: {
@@ -53,13 +53,18 @@ export async function getAccessToken(
       authority: `https://login.microsoftonline.com/${tenantId}`
     }
   };
+  let scopes: string[];
   // this scope is required.
-  const scopes = [`api://${hostName}/${clientId}/access_as_user`];
+  if (scope) {
+    scopes = [scope];
+  } else {
+    scopes = [`api://localhost/${clientId}/access_as_user`];
+  }
   const pca = new msal.PublicClientApplication(msalConfig);
   const usernamePasswordRequest = {
     scopes: scopes,
     username: userName,
-    password: passWord
+    password: password
   };
   const response = await pca.acquireTokenByUsernamePassword(usernamePasswordRequest);
   return response!.accessToken;

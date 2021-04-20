@@ -8,6 +8,7 @@ import { AzureResource, IName, OperationStatus, Operation } from "../model/opera
 import { FxError, LogProvider, TelemetryReporter } from "fx-api";
 import { LogMessages } from "../log";
 import { Telemetry } from "../telemetry";
+import { delay } from "../util";
 
 export class AadService {
     private readonly MAX_RETRIES = 2;
@@ -111,12 +112,13 @@ export class AadService {
         let fxError: FxError | undefined;
 
         while (executionIndex <= this.MAX_RETRIES) {
+            if (executionIndex > 0) {
+                this.logger?.info(LogMessages.operationRetry(operation, resourceType, resourceId));
+                await delay(executionIndex * 1000);
+            }
+
             try {
-                if (executionIndex > 0) {
-                    this.logger?.info(LogMessages.operationRetry(operation, resourceType, resourceId));
-                } else {
-                    this.logger?.info(LogMessages.operationStarts(operation, resourceType, resourceId));
-                }
+                this.logger?.info(LogMessages.operationStarts(operation, resourceType, resourceId));
                 Telemetry.sendAadOperationEvent(this.telemetryReporter, operation, resourceType, OperationStatus.Started, executionIndex);
 
                 const result = await this.axios.request({ method: method, url: url, data: data });
@@ -135,7 +137,7 @@ export class AadService {
                 }
 
                 error.message = `[Detail] ${error?.response?.data?.error?.message ?? error.message}`;
-                this.logger?.info(LogMessages.operationFailed(operation, resourceType, resourceId));
+                this.logger?.error(LogMessages.operationFailed(operation, resourceType, resourceId));
                 Telemetry.sendAadOperationEvent(this.telemetryReporter, operation, resourceType, OperationStatus.Failed, executionIndex);
                 fxError = BuildError(AadOperationError, error, operation.displayName, resourceType.displayName);
                 ++executionIndex;

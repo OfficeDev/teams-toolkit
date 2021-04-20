@@ -22,10 +22,11 @@ import {
   runWithProgressIndicator
 } from "./checkerAdapter";
 import { DepsInfo, IDepsChecker } from "./checker";
-import { dotnetHelpLink, isLinux, isWindows, Messages } from "./common";
+import { dotnetHelpLink, isLinux, isWindows } from "./common";
 import { DepsCheckerEvent, DepsCheckerTelemetry, TelemtryMessages } from "./telemetry";
 import { performance } from "perf_hooks";
 import { DepsCheckerError } from "./errors";
+import * as StringResources from "../../resources/Strings.json";
 
 const exec = util.promisify(child_process.exec);
 
@@ -82,7 +83,7 @@ export class DotnetChecker implements IDepsChecker {
     if ((await DotnetChecker.tryAcquireGlobalDotnetSdk()) && (await DotnetChecker.validate())) {
       DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.dotnetAlreadyInstalled);
       logger.info(
-        `${Messages.useGlobalDotnet} '${await DotnetChecker.getDotnetExecPathFromConfig()}'`
+        `${StringResources.vsc.debug.useGlobalDotnet} '${await DotnetChecker.getDotnetExecPathFromConfig()}'`
       );
       return true;
     }
@@ -96,11 +97,11 @@ export class DotnetChecker implements IDepsChecker {
     logger.debug(`[end] cleanup bin/dotnet and config`);
 
     logger.debug(`[start] install dotnet ${installVersion}`);
-    logger.info(Messages.downloadDotnet.replace("@NameVersion", installedNameWithVersion));
+    logger.info(StringResources.vsc.debug.downloadDotnet.replace("@NameVersion", installedNameWithVersion));
     await runWithProgressIndicator(async () => {
       await DotnetChecker.handleInstall(installVersion);
     });
-    logger.info(Messages.finishInstallDotnet.replace("@NameVersion", installedNameWithVersion));
+    logger.info(StringResources.vsc.debug.finishInstallDotnet.replace("@NameVersion", installedNameWithVersion));
     logger.debug(`[end] install dotnet ${installVersion}`);
 
     logger.debug(`[start] validate dotnet version`);
@@ -108,7 +109,7 @@ export class DotnetChecker implements IDepsChecker {
       await DotnetChecker.cleanup();
       DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.dotnetInstallError);
       throw new DepsCheckerError(
-        Messages.failToInstallDotnet.replace("@NameVersion", installedNameWithVersion),
+        StringResources.vsc.debug.failToInstallDotnet.replace("@NameVersion", installedNameWithVersion),
         dotnetHelpLink
       );
     }
@@ -174,7 +175,7 @@ export class DotnetChecker implements IDepsChecker {
       logger.debug(`[end] write dotnet path to config`);
     } catch (error) {
       logger.error(
-        `${Messages.failToInstallDotnet.replace(
+        `${StringResources.vsc.debug.failToInstallDotnet.replace(
           "@NameVersion",
           installedNameWithVersion
         )}, error = ${error}`
@@ -231,8 +232,8 @@ export class DotnetChecker implements IDepsChecker {
           `stdout: ${stdout}, stderr: ${stderr}`
         );
         logger.error(
-          `${Messages.failToInstallDotnet.replace("@NameVersion", installedNameWithVersion)} ${
-            Messages.dotnetInstallStderr
+          `${StringResources.vsc.debug.failToInstallDotnet.replace("@NameVersion", installedNameWithVersion)} ${
+            StringResources.vsc.debug.dotnetInstallStderr
           } stdout: '${stdout}', stderr: '${stderr}'`
         );
       } else {
@@ -246,8 +247,8 @@ export class DotnetChecker implements IDepsChecker {
       );
       // swallow the exception since later validate will find out the errors anyway
       logger.error(
-        `${Messages.failToInstallDotnet.replace("@NameVersion", installedNameWithVersion)} ${
-          Messages.dotnetInstallErrorCode
+        `${StringResources.vsc.debug.failToInstallDotnet.replace("@NameVersion", installedNameWithVersion)} ${
+          StringResources.vsc.debug.dotnetInstallErrorCode
         } error: '${error}', stdout = '${error.stdout}', stderr = '${error.stderr}'`
       );
     }

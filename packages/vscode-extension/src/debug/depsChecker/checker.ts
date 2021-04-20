@@ -14,8 +14,9 @@ import {
   displayWarningMessage,
   showOutputChannel
 } from "./checkerAdapter";
-import { isLinux, Messages, defaultHelpLink } from "./common";
+import { isLinux, defaultHelpLink } from "./common";
 import { DepsCheckerError, NodeNotFoundError, NotSupportedNodeError } from "./errors";
+import * as StringResources from "../../resources/Strings.json";
 
 export interface IDepsChecker {
   isEnabled(): Promise<boolean>;
@@ -111,7 +112,7 @@ export class DepsChecker {
 
     const installMessage = installPackages.join(" and ");
     const supportedMessage = supportedPackages.join(" and ");
-    return Messages.depsNotFound
+    return StringResources.vsc.debug.depsNotFound
       .replace("@InstallPackages", installMessage)
       .replace("@SupportedPackages", supportedMessage);
   }
@@ -127,7 +128,7 @@ export class DepsChecker {
     } else if (error instanceof DepsCheckerError) {
       return await displayLearnMore(error.message, (error as DepsCheckerError).helpLink);
     } else {
-      return await displayLearnMore(Messages.defaultErrorMessage, defaultHelpLink);
+      return await displayLearnMore(StringResources.vsc.debug.defaultErrorMessage, defaultHelpLink);
     }
   }
 }

@@ -72,7 +72,7 @@
             "learnMore": "Learn More"
         },
         "azureLogin": {
-            "warningMsg": "The Teams Toolkit requires an Azure account and subscription to deploy Azure resources for your application.",
+            "warningMsg": "The Teams Toolkit requires an Azure account and subscription to deploy Azure resources for your application."
         },
         "common": {
             "userCancel": "User Cancel",
@@ -83,6 +83,54 @@
             "writeTokenFail": "write token fail: ",
             "saveTokenFail": "save token fail: ",
             "saveHomeAccountIdFail": "save home account id fail: "
+        },
+        "codeFlowLogin": {
+            "resultFileNotFound": "Result file not found, return simple OK message.",
+            "silentAcquireToken": "silent acquire token :%s",
+            "loginFailureTitle": "LoginFailure",
+            "loginFailureDescription": "Cannot get user login information. Please login correct account via browser."
+        },
+        "graphLogin": {
+            "warningMsg": "Please sign into your Graph account"
+        },
+        "survey": {
+            "takeSurvey": {
+                "title": "Take Survey",
+                "message": "takeSurvey"
+              },
+              "remindMeLater": {
+                "title": "Remind Me Later",
+                "message": "remindMeLater"
+              },
+              "dontShowAgain": {
+                "title": "Don't Show Again",
+                "message": "dontShowAgain"
+              },
+              "banner": {
+                "title": "Can you please take 2 minutes to tell us how the TeamsFx extension is working for you?",
+                "message": "userAsked"
+              },
+              "cancelMessage": "userCancelled"
+        },
+        "debug": {
+            "learnMoreButtonText": "Learn more",
+            "continueButtonText": "Continue",
+            "defaultErrorMessage": "Please install the required dependencies manually.",
+            "startInstallFunctionCoreTool": "Downloading and installing @NameVersion.",
+            "finishInstallFunctionCoreTool": "Successfully installed @NameVersion.",
+            "needReplaceWithFuncCoreToolV3": "You must replace with @NameVersion to debug your local functions.",
+            "needInstallFuncCoreTool": "You must have @NameVersion installed to debug your local functions.",
+            "failToInstallFuncCoreTool": "@NameVersion installation has failed and will have to be installed manually.",
+            "failToValidateFuncCoreTool": "Failed to validate @NameVersion after its installation.",
+            "downloadDotnet": "Downloading and installing @NameVersion.",
+            "finishInstallDotnet": "Successfully installed @NameVersion.",
+            "useGlobalDotnet": "Use global dotnet from PATH.",
+            "dotnetInstallStderr": "dotnet-install command failed without error exit code but with non-empty standard error.",
+            "dotnetInstallErrorCode": "dotnet-install command failed.",
+            "failToInstallDotnet": "Failed to install @NameVersion.",
+            "nodeNotFound": "The toolkit cannot find Node.js on your machine. As a fundamental language runtime for Teams app, these dependencies are required. Node.js is required and the recommended version is v12. Click 'Learn more' to learn how to install the Node.js.",
+            "nodeNotSupported": "Current installed Node.js (@CurrentVersion) is not in the supported version list (@SupportedVersions), which might not work as expected for some functionalities. Click 'Learn more' to learn more about the supported Node.js versions. Click 'Continue' to continue local debugging.",
+            "depsNotFound": "The toolkit cannot find @SupportedPackages on your machine. As a fundamental runtime context for Teams app, these dependencies are required. Following steps will help you to install the appropriate version to run the Microsoft Teams Toolkit. Please notice that these dependencies only need to be installed once. Click 'Install' to install @InstallPackages."
         }
     }
 }

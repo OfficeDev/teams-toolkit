@@ -122,7 +122,7 @@ export class GraphLogin extends login implements GraphTokenProvider {
   }
 
   private async doesUserConfirmLogin(): Promise<boolean> {
-    const warningMsg = "Please sign into your Graph account";
+    const warningMsg = StringResources.vsc.graphLogin.warningMsg;
     const confirm = StringResources.vsc.common.confirm;
     const userSelected: string | undefined = await vscode.window.showWarningMessage(
       warningMsg,

@@ -26,7 +26,7 @@ export function buildAnswer(ctx: PluginContext): IAnswer {
         case Platform.VSCode:
             return new VSCodeAnswer(answers);
         case Platform.CLI:
-            return new CLIAnswer(answers)
+            return new CLIAnswer(answers);
         default:
             throw BuildError(NotImplemented);
     }

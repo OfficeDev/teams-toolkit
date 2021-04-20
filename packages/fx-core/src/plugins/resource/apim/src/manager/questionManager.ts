@@ -3,8 +3,9 @@
 import { Func, NodeType, PluginContext, QTreeNode } from "fx-api";
 import { BuildError, NotImplemented } from "../error";
 import { IApimPluginConfig } from "../model/config";
-import { CLI, IQuestionService } from "../service/questionService";
-import { VSCode } from "../service/questionService";
+import { IQuestionService } from "../question/question";
+import * as VSCode from "../question/vscodeQuestion";
+import * as CLI from "../question/cliQuestion";
 
 export interface IQuestionManager {
     callFunc(func: Func, ctx: PluginContext): Promise<any>;

@@ -8,7 +8,7 @@ import { HashRouter as Router, Redirect, Route } from "react-router-dom";
 import { useTeamsFx } from "./sample/lib/useTeamsFx";
 import Privacy from "./Privacy";
 import TermsOfUse from "./TermsOfUse";
-import Tab from "./Tab2";
+import Tab from "./Tab";
 import "./App.css";
 
 /**

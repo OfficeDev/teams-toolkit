@@ -51,7 +51,7 @@ async function getRealValue(
   return output;
 }
 
-function isAutoSkipSelect(q: Question): boolean {
+export function isAutoSkipSelect(q: Question): boolean {
   if (q.type === NodeType.singleSelect || q.type === NodeType.multiSelect) {
     const select = q as (SingleSelectQuestion | MultiSelectQuestion);
     const options = select.option as StaticOption;
@@ -60,6 +60,24 @@ function isAutoSkipSelect(q: Question): boolean {
     }
   }
   return false;
+}
+
+export function getSingleOption(q: SingleSelectQuestion | MultiSelectQuestion) : any{
+  const option = q.option as StaticOption;
+  const optionIsString = typeof option[0] === "string";
+  let returnResult;
+  if (q.returnObject) {
+    returnResult = optionIsString ? { id: option[0] } : option[0];
+  }
+  else {
+    returnResult = optionIsString ? option[0] : (option[0] as OptionItem).id;
+  }
+  if (q.type === NodeType.singleSelect) {
+    return returnResult;
+  }
+  else {
+    return [returnResult];
+  }
 }
 
 type QuestionVistor = (
@@ -151,26 +169,11 @@ const questionVisitor: QuestionVistor = async function (
 
       // Skip single/mulitple option select
       if (isAutoSkipSelect(selectQuestion)) {
-        const optionIsString = typeof option[0] === "string";
-        let returnResult;
-        if (selectQuestion.returnObject) {
-          returnResult = optionIsString ? { id: option[0] } : option[0];
-        }
-        else {
-          returnResult = optionIsString ? option[0] : (option[0] as OptionItem).id;
-        }
-        if (type === NodeType.singleSelect){
-          return {
-            type: InputResultType.pass,
-            result: returnResult
-          };
-        }
-        else{
-          return {
-            type: InputResultType.pass,
-            result: [returnResult]
-          };
-        }
+        const returnResult = getSingleOption(selectQuestion);
+        return {
+          type: InputResultType.pass,
+          result: returnResult
+        };
       }
       return await ui.showQuickPick({
         title: selectQuestion.title || selectQuestion.description || selectQuestion.name,

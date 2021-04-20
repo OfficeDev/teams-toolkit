@@ -10,8 +10,10 @@ const simpleAuthPluginName = "fx-resource-simple-auth";
 const solutionPluginName = "solution";
 const subscriptionKey = "subscriptionId";
 const rgKey = "resourceGroupName";
-const baseUrl = (subscriptionId: string, rg: string, name: string) => 
+const baseUrlAppSettings = (subscriptionId: string, rg: string, name: string) => 
     `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.Web/sites/${name}/config/appsettings/list?api-version=2019-08-01`;
+const baseUrlPlan = (subscriptionId: string, rg: string, name: string) =>
+    `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.Web/serverfarms/${name}?api-version=2019-08-01`;
 
 export class PropertiesKeys {
     static clientId = "CLIENT_ID";
@@ -52,13 +54,18 @@ export class SimpleAuthValidator {
         return simpleAuthObject;
     }
 
-    public static async validate(simpleAuthObject: ISimpleAuthObject, aadObject: IAadObject) {
+    public static async validate(simpleAuthObject: ISimpleAuthObject, aadObject: IAadObject, servicePlan = "B1") {
         console.log("Start to validate Simple Auth.");
 
         const resourceName: string = simpleAuthObject.endpoint.slice(8, -18);
         chai.assert.exists(resourceName);
 
-        const response = await this.getWebappConfigs(this.subscriptionId, this.rg, resourceName);
+        const tokenProvider: MockAzureAccountProvider = MockAzureAccountProvider.getInstance();
+        const tokenCredential = await tokenProvider.getAccountCredentialAsync();
+        const token = (await tokenCredential?.getToken())?.accessToken;
+
+        console.log("Validating app settings.");
+        const response = await this.getWebappConfigs(this.subscriptionId, this.rg, resourceName, token as string);
         chai.assert.exists(response);
         chai.assert.equal(aadObject.clientId, response[PropertiesKeys.clientId]);
         // chai.assert.equal(aadObject.clientSecret, response[PropertiesKeys.clientSecret]);
@@ -66,22 +73,37 @@ export class SimpleAuthValidator {
         chai.assert.equal(aadObject.oauthAuthority, response[PropertiesKeys.oauthAuthority]);
         chai.assert.equal(`${aadObject.oauthAuthority}/v2.0/.well-known/openid-configuration`, response[PropertiesKeys.aadMetadataAddreass]);
 
+        console.log("Validating app service plan.");
+        const serivcePlanResponse = await this.getWebappServicePlan(this.subscriptionId, this.rg, resourceName, token as string);
+        chai.assert(serivcePlanResponse, servicePlan);
+
         console.log("Successfully validate Simple Auth.");
     }
 
-    private static async getWebappConfigs(subscriptionId: string, rg: string, name: string) {
-        const tokenProvider: MockAzureAccountProvider = MockAzureAccountProvider.getInstance();
-        const tokenCredential = await tokenProvider.getAccountCredentialAsync();
-        const token = (await tokenCredential?.getToken())?.accessToken;
-    
+    private static async getWebappConfigs(subscriptionId: string, rg: string, name: string, token: string) {
         try {
             axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-            const simpleAuthGetResponse = await axios.post(baseUrl(subscriptionId, rg, name));
+            const simpleAuthGetResponse = await axios.post(baseUrlAppSettings(subscriptionId, rg, name));
             if (!simpleAuthGetResponse || !simpleAuthGetResponse.data || !simpleAuthGetResponse.data.properties) {
                 return undefined;
             }
             
             return simpleAuthGetResponse.data.properties;
+        } catch (error) {
+            console.log(error);
+            return undefined;
+        }
+    }
+
+    private static async getWebappServicePlan(subscriptionId: string, rg: string, name: string, token:string) {
+        try {
+            axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+            const simpleAuthPlanResponse = await axios.get(baseUrlPlan(subscriptionId, rg, name));
+            if (!simpleAuthPlanResponse || !simpleAuthPlanResponse.data || !simpleAuthPlanResponse.data.sku || !simpleAuthPlanResponse.data.sku.name) {
+                return undefined;
+            }
+
+            return simpleAuthPlanResponse.data.sku.name;
         } catch (error) {
             console.log(error);
             return undefined;

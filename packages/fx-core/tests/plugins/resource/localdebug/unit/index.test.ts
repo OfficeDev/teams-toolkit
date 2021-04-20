@@ -60,7 +60,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
             const tasksAll = fs.readJSONSync(expectedTasksFile);
             const tasks: [] = tasksAll["tasks"];
             const tasksInput: [] = tasksAll["inputs"];
-            chai.assert.equal(tasks.length, 9);
+            chai.assert.equal(tasks.length, 10);
             chai.assert.equal(tasksInput.length, 1);
 
             //assert output settings.json
@@ -140,7 +140,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
             const tasksAll = fs.readJSONSync(expectedTasksFile);
             const tasks: [] = tasksAll["tasks"];
             const tasksInput: [] = tasksAll["inputs"];
-            chai.assert.equal(tasks.length, 7);
+            chai.assert.equal(tasks.length, 8);
             chai.assert.equal(tasksInput.length, 1);
 
             //no settings.json
@@ -181,7 +181,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
             const tasksAll = fs.readJSONSync(expectedTasksFile);
             const tasks: [] = tasksAll["tasks"];
             const tasksInput: [] = tasksAll["inputs"];
-            chai.assert.equal(tasks.length, 11);
+            chai.assert.equal(tasks.length, 13);
             chai.assert.equal(tasksInput.length, 1);
 
             //assert output settings.json
@@ -223,7 +223,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
             const tasksAll = fs.readJSONSync(expectedTasksFile);
             const tasks: [] = tasksAll["tasks"];
             const tasksInput: [] = tasksAll["inputs"];
-            chai.assert.equal(tasks.length, 9);
+            chai.assert.equal(tasks.length, 10);
             chai.assert.equal(tasksInput.length, 1);
 
             //no settings.json

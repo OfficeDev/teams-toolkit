@@ -163,7 +163,7 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
     name: AzureSolutionQuestionNames.ProgrammingLanguage,
     title: "Please select programming language for your project",
     type: NodeType.singleSelect,
-    option: ["javascript"],
+    option: ["javascript", "typescript"],
     default: "javascript",
     skipSingleOption: true
 };

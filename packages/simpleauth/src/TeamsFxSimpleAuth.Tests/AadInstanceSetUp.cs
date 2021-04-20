@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+using System.Collections;
 using Microsoft.TeamsFx.SimpleAuth.Tests.Helpers;
 using NUnit.Framework;
 

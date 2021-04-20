@@ -452,8 +452,7 @@ export class FunctionPluginImpl {
         }
 
         // NOTE: make sure this step is before using `dotnet` command if you refactor this code.
-        // TODO: enable dotnet check/install after next release
-        // await this.handleDotnetChecker();
+        await this.handleDotnetChecker();
 
         await runWithErrorCatchAndThrow(new InstallTeamsfxBindingError(), async () =>
             await step(StepGroup.PreDeployStepGroup, PreDeploySteps.installTeamsfxBinding, async () =>
@@ -591,12 +590,10 @@ export class FunctionPluginImpl {
                 this.checkAndGet(aadConfig.get(DependentPluginInfo.oauthHost) as string, "OAuth Host");
             const tenantId: string =
                 this.checkAndGet(aadConfig.get(DependentPluginInfo.tenantId) as string, "tenant Id");
-            const frontendEndpoint: string =
-                this.checkAndGet(frontendConfig.get(DependentPluginInfo.frontendEndpoint) as string, "frontend endpoint");
-            const frontendDomain: string =
-                this.checkAndGet(frontendConfig.get(DependentPluginInfo.frontendDomain) as string, "frontend domain");
+            const applicationIdUri: string =
+                this.checkAndGet(aadConfig.get(DependentPluginInfo.applicationIdUris) as string, "Application Id URI");
 
-            return FunctionProvision.constructFunctionAuthSettings(clientId, frontendDomain, frontendEndpoint, oauthHost, tenantId);
+            return FunctionProvision.constructFunctionAuthSettings(clientId, applicationIdUri, oauthHost, tenantId);
         }
 
         return undefined;

@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import { AadOperationError, AssertNotEmpty, BuildError } from "../error";
 import { AxiosInstance, Method } from "axios";
-import { IAadInfo, IPasswordCredential, IServicePrincipals } from "../model/aadResponse";
+import { IAadInfo, IPasswordCredential, IServicePrincipal, IServicePrincipals } from "../model/aadResponse";
 import { ErrorHandlerResult } from "../model/errorHandlerResult";
 import { AzureResource, IName, OperationStatus, Operation } from "../model/operation";
 import { LogProvider, TelemetryReporter } from "fx-api";
@@ -66,7 +66,7 @@ export class AadService {
         await this.execute(Operation.Update, AzureResource.Aad, objectId, "patch", `/applications/${objectId}`, data);
     }
 
-    public async createServicePrincipalIfNotExists(appId: string): Promise<void> {
+    public async getServicePrincipals(appId: string): Promise<IServicePrincipal[]> {
         const response = await this.execute(
             Operation.Get,
             AzureResource.ServicePrincipal,
@@ -74,11 +74,22 @@ export class AadService {
             "get",
             `/servicePrincipals?$filter=appId eq '${appId}'`
         );
-        const existingServicePrincipals = response?.data as IServicePrincipals;
-        if (existingServicePrincipals.value.length > 0) {
+        const servicePrincipals = response?.data as IServicePrincipals;
+
+        const result = AssertNotEmpty("servicePrincipals.value", servicePrincipals?.value);
+
+        if (result.length === 0) {
+            this.logger?.info(LogMessages.resourceNotFound(AzureResource.ServicePrincipal, appId));
+        }
+
+        return result;
+    }
+
+    public async createServicePrincipalIfNotExists(appId: string): Promise<void> {
+        const existingServicePrincipals = await this.getServicePrincipals(appId);
+        if (existingServicePrincipals.length > 0) {
             return;
         }
-        this.logger?.info(LogMessages.resourceNotFound(AzureResource.ServicePrincipal, appId));
 
         const body = {
             appId: appId,

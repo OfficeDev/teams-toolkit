@@ -10,10 +10,10 @@ export function Graph() {
   const graph = useRef(null);
   const { loading, error, data, reload } = useData(
     async () => {
-      const credential = new TeamsUserCredential();
-      const scope = ["User.Read"];
-      await credential.login(scope);
       if (!graph.current) {
+        const credential = new TeamsUserCredential();
+        const scope = ["User.Read"];
+        await credential.login(scope);
         graph.current = await createMicrosoftGraphClient(credential, scope);
       }
       const profile = await graph.current.api("/me").get();

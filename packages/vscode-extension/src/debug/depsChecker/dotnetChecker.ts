@@ -154,7 +154,7 @@ export class DotnetChecker implements IDepsChecker {
       }
       logger.debug(`invalid dotnet config file format, config: '${JSON.stringify(config)}' `);
     } catch (error) {
-      logger.debug(`get dotnet path failed, error: ${error}`);
+      logger.debug(`get dotnet path failed, error: '${error}'`);
     }
     return null;
   }
@@ -177,7 +177,7 @@ export class DotnetChecker implements IDepsChecker {
         `${Messages.failToInstallDotnet.replace(
           "@NameVersion",
           installedNameWithVersion
-        )}, error = ${error}`
+        )}, error = '${error}'`
       );
     }
   }
@@ -213,26 +213,31 @@ export class DotnetChecker implements IDepsChecker {
     const installCommand: string = await DotnetChecker.getInstallCommand(version, installDir);
     const windowsFullCommand = `powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "& { [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12 ; & ${installCommand} }`;
 
+    const command = isWindows() ? windowsFullCommand : installCommand;
+    const options: child_process.ExecOptions = {
+      cwd: process.cwd(),
+      maxBuffer: DotnetChecker.maxBuffer,
+      timeout: DotnetChecker.timeout,
+      killSignal: "SIGKILL"
+    };
+
     try {
       const start = performance.now();
-      const { stdout, stderr } = await exec(isWindows() ? windowsFullCommand : installCommand, {
-        cwd: process.cwd(),
-        maxBuffer: DotnetChecker.maxBuffer,
-        timeout: DotnetChecker.timeout,
-        killSignal: "SIGKILL"
-      });
+      const { stdout, stderr } = await exec(command, options);
+      logger.debug(`Finished running dotnet-install script, command = '${command}', options = '${JSON.stringify(options)}', stdout = '${stdout}', stderr = '${stderr}'`);
+
       const timecost = Number(((performance.now() - start) / 1000).toFixed(2));
 
       if (stderr && stderr.length > 0) {
         DepsCheckerTelemetry.sendSystemErrorEvent(
           DepsCheckerEvent.dotnetInstallScriptError,
           TelemtryMessages.failedToExecDotnetScript,
-          `stdout: ${stdout}, stderr: ${stderr}`
+          `stdout = '${stdout}', stderr = '${stderr}'`
         );
         logger.error(
           `${Messages.failToInstallDotnet.replace("@NameVersion", installedNameWithVersion)} ${
             Messages.dotnetInstallStderr
-          } stdout: '${stdout}', stderr: '${stderr}'`
+          } stdout = '${stdout}', stderr = '${stderr}'`
         );
       } else {
         DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.dotnetInstallScriptCompleted, timecost);
@@ -247,7 +252,7 @@ export class DotnetChecker implements IDepsChecker {
       logger.error(
         `${Messages.failToInstallDotnet.replace("@NameVersion", installedNameWithVersion)} ${
           Messages.dotnetInstallErrorCode
-        } error: '${error}', stdout = '${error.stdout}', stderr = '${error.stderr}'`
+        }, command = '${command}', options = '${options}', error = '${error}', stdout = '${error.stdout}', stderr = '${error.stderr}'`
       );
     }
   }
@@ -260,9 +265,9 @@ export class DotnetChecker implements IDepsChecker {
         .map((sdk) => DotnetChecker.parseDotnetVersion(sdk.version))
         .filter((version) => version !== null) as string[];
       return DotnetChecker.isDotnetVersionsInstalled(installedVersions);
-    } catch (e) {
-      DepsCheckerTelemetry.sendSystemErrorEvent(DepsCheckerEvent.dotnetValidationError, TelemtryMessages.failedToValidateDotnet, e);
-      logger.debug(`validate private install failed, err = ${e}`);
+    } catch (error) {
+      DepsCheckerTelemetry.sendSystemErrorEvent(DepsCheckerEvent.dotnetValidationError, TelemtryMessages.failedToValidateDotnet, error);
+      logger.debug(`validate private install failed, error = '${error}'`);
       return false;
     }
   }
@@ -271,9 +276,9 @@ export class DotnetChecker implements IDepsChecker {
     try {
       const validVersions = DotnetChecker.arrayIntersection(installedVersions, supportedVersions);
       return validVersions.length > 0;
-    } catch (exception) {
+    } catch (error) {
       logger.error(
-        `failed to check .NET, installedVersions = ${installedVersions}, supportedVersions = ${supportedVersions}, exception = '${exception}'`
+        `failed to check .NET, installedVersions = '${installedVersions}', supportedVersions = '${supportedVersions}', error = '${error}'`
       );
       return false;
     }
@@ -328,8 +333,8 @@ export class DotnetChecker implements IDepsChecker {
           }
         }
       });
-    } catch (e) {
-      logger.debug(`Failed to search dotnet sdk by dotnetPath = ${dotnetExecPath}`);
+    } catch (error) {
+      logger.debug(`Failed to search dotnet sdk by dotnetPath = ${dotnetExecPath}, error = '${error}'`);
     }
     return sdks;
   }
@@ -390,8 +395,8 @@ export class DotnetChecker implements IDepsChecker {
       );
       await DotnetChecker.persistDotnetExecPath(dotnetExecPath);
       return true;
-    } catch (e) {
-      logger.debug(`Failed to acquire global dotnet sdk, err = ${e}`);
+    } catch (error) {
+      logger.debug(`Failed to acquire global dotnet sdk, error = '${error}'`);
       return false;
     }
   }

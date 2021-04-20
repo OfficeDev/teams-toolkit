@@ -1,16 +1,30 @@
 import React from "react";
 import { Button, Image, Loader } from "@fluentui/react-northstar";
 import { useData } from "./lib/useData";
-import { teamsfx } from "teamsdev-client";
+import * as axios from "axios";
+import {
+  TeamsUserCredential,
+  getResourceConfiguration,
+  ResourceType,
+} from "teamsdev-client"
 
-function callFunction() {
-  var functionName = process.env.REACT_APP_FUNC_NAME || "myFunc";
-  return teamsfx.callFunction(functionName, "post", "hello");
+var functionName = process.env.REACT_APP_FUNC_NAME || "myFunc";
+
+async function callFunction() {
+  const credential = new TeamsUserCredential();
+  const accessToken = await credential.getToken("");
+  const apiConfig = getResourceConfiguration(ResourceType.API);
+  const response = await axios.default.get(apiConfig.endpoint + "/api/" + functionName, {
+    headers: {
+      authorization: "Bearer " + accessToken.token
+    }
+  });
+  return response.data;
 }
 
 export function AzureFunctions(props) {
   const { codePath, docsUrl } = {
-    codePath: "api/index.js",
+    codePath: `api/${functionName}/index.js`,
     docsUrl: "",
     ...props,
   };

@@ -1,15 +1,20 @@
 import React, { useRef } from "react";
 import { Button, Avatar, Loader } from "@fluentui/react-northstar";
 import { useData } from "./lib/useData";
-import { teamsfx } from "teamsdev-client";
+import {
+  TeamsUserCredential,
+  createMicrosoftGraphClient,
+} from "teamsdev-client";
 
 export function Graph() {
   const graph = useRef(null);
   const { loading, error, data, reload } = useData(
     async () => {
-      await teamsfx.popupLoginPage();
       if (!graph.current) {
-        graph.current = await teamsfx.getMicrosoftGraphClient();
+        const credential = new TeamsUserCredential();
+        const scope = ["User.Read"];
+        await credential.login(scope);
+        graph.current = await createMicrosoftGraphClient(credential, scope);
       }
       const profile = await graph.current.api("/me").get();
       const photo = await graph.current.api("/me/photo/$value").get();

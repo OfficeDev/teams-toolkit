@@ -329,11 +329,11 @@ export class TeamsAppSolution implements Solution {
         if (!ctx.config.has(GLOBAL_CONFIG)) {
             ctx.config.set(GLOBAL_CONFIG, new ConfigMap());
         }
-        // SPFx defaults to TS
-        const hostType = ctx.answers?.getString(AzureSolutionQuestionNames.HostType);
-        if (hostType === HostTypeOptionAzure.id) {
-            const lang = ctx.answers?.getString(AzureSolutionQuestionNames.ProgrammingLanguage);
-            ctx.config.get(GLOBAL_CONFIG)?.set(PROGRAMMING_LANGUAGE, lang ?? "javascript");
+        
+        // Only non-SPFx project will ask this question.
+        const lang = ctx.answers?.getString(AzureSolutionQuestionNames.ProgrammingLanguage);
+        if (lang) {
+            ctx.config.get(GLOBAL_CONFIG)?.set(PROGRAMMING_LANGUAGE, lang);
         }
 
         const settingsRes = this.fillInSolutionSettings(ctx);

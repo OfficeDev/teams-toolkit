@@ -45,7 +45,7 @@ export async function getAccessToken(
   userName: string,
   password: string,
   tenantId: string,
-  scope: string = ""
+  scope?: string
 ): Promise<string> {
   const msalConfig = {
     auth: {

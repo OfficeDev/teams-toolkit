@@ -20,16 +20,17 @@ export class Messages {
     static readonly ProgressUpload = "Uploading Tab frontend to Azure Storage account.";
 
     // Logging messages
-    static readonly StartScaffold = (name: string) => `Scaffolding ${name}.`;
-    static readonly EndScaffold = (name: string) => `Successfully scaffolded ${name}.`;
-    static readonly StartPreProvision = (name: string) => `Pre-provisioning ${name}.`;
-    static readonly EndPreProvision = (name: string) => `Successfully pre-provisioned ${name}.`;
-    static readonly StartProvision = (name: string) => `Provisioning ${name}.`;
-    static readonly EndProvision = (name: string) => `Successfully provisioned ${name}.`;
-    static readonly StartPreDeploy = (name: string) => `Pre-deploying ${name}.`;
-    static readonly EndPreDeploy = (name: string) => `Pre-deployed ${name}.`;
-    static readonly StartDeploy = (name: string) => `Deploying ${name}.`;
-    static readonly EndDeploy = (name: string) => `Successfully deployed ${name}.`;
+    static readonly StartScaffold = (name: string) => `Scaffolding '${name}'.`;
+    static readonly EndScaffold = (name: string) => `Successfully scaffolded '${name}'.`;
+    static readonly StartPreProvision = (name: string) => `Pre-provisioning '${name}'.`;
+    static readonly EndPreProvision = (name: string) => `Successfully pre-provisioned '${name}'.`;
+    static readonly StartProvision = (name: string) => `Provisioning '${name}'.`;
+    static readonly EndProvision = (name: string) => `Successfully provisioned '${name}'.`;
+    static readonly StartPreDeploy = (name: string) => `Pre-deploying '${name}'.`;
+    static readonly EndPreDeploy = (name: string) => `Pre-deployed '${name}'.`;
+    static readonly StartDeploy = (name: string) => `Deploying '${name}'.`;
+    static readonly EndDeploy = (name: string) => `Successfully deployed '${name}'.`;
+    static readonly StartPostLocalDebug = (name: string) => `Starting local debug '${name}'.`;
     static readonly SkipBuild = () => "Nothing to build; no changes detected since last build.";
     static readonly SkipDeploy = () => "Nothing to deploy; no changes detected since last deployment.";
     static readonly StartCheckResourceGroupExistence = (name: string) =>

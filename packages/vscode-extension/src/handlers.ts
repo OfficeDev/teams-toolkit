@@ -477,9 +477,9 @@ export async function updateAADHandler(): Promise<Result<null, FxError>> {
 
 
 export async function addCapabilityHandler(): Promise<Result<null, FxError>> {
-  // ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddCapStart, {
-  //   [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
-  // });
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddCapStart, {
+    [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
+  });
   const func: Func = {
     namespace: "fx-solution-azure",
     method: "addCapability"

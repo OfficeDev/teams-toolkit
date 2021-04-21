@@ -349,3 +349,7 @@ MigrationBackup/
 packages/api/build/
 packages/fx-core/build/
 packages/vscode-extension/out/
+
+## tmp files
+.nyc_output
+coverage

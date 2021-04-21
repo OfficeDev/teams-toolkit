@@ -10,8 +10,8 @@ export enum TelemetryEvent {
   UpdateProjectStart = "add-resource-start",
   UpdateProject = "add-resource",
 
-  AddCapStart = "addCapability-start",
-  AddCap = "addCapability",
+  AddCapStart = "add-capability-start",
+  AddCap = "add-capability",
 
   OpenManifestEditor = "open-manifest-editor",
 

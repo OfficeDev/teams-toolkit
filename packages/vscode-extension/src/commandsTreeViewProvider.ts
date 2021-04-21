@@ -27,8 +27,8 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
       vscode.TreeItemCollapsibleState.Expanded,
       TreeCategory.GettingStarted,
       [
-        new TreeViewCommand(StringResources.vsc.commandsTreeViewProvider.quickStartTitle, StringResources.vsc.commandsTreeViewProvider.quickStartDescriptiono, "fx-extension.openWelcome", vscode.TreeItemCollapsibleState.None, TreeCategory.GettingStarted, undefined, "lightningBolt_16"),
-        new TreeViewCommand(StringResources.vsc.commandsTreeViewProvider.samplesTitle, StringResources.vsc.commandsTreeViewProvider.samplesDescriptiono, "fx-extension.openSamples", vscode.TreeItemCollapsibleState.None, TreeCategory.GettingStarted, undefined, "heart_16"),
+        new TreeViewCommand(StringResources.vsc.commandsTreeViewProvider.quickStartTitle, StringResources.vsc.commandsTreeViewProvider.quickStartDescription, "fx-extension.openWelcome", vscode.TreeItemCollapsibleState.None, TreeCategory.GettingStarted, undefined, "lightningBolt_16"),
+        new TreeViewCommand(StringResources.vsc.commandsTreeViewProvider.samplesTitle, StringResources.vsc.commandsTreeViewProvider.samplesDescription, "fx-extension.openSamples", vscode.TreeItemCollapsibleState.None, TreeCategory.GettingStarted, undefined, "heart_16"),
         new TreeViewCommand(StringResources.vsc.commandsTreeViewProvider.documentationTitle, StringResources.vsc.commandsTreeViewProvider.documentationDescription, "fx-extension.openDocument", vscode.TreeItemCollapsibleState.None, TreeCategory.GettingStarted, undefined, "book_16")
       ]
     );

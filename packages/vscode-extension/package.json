@@ -311,6 +311,8 @@
     "test-watch": "tsc -watch -p ./",
     "pretest": "npm run lint && npm run check-format && npm run test-compile",
     "test:unit": "node ./out/test/runTest.js",
+    "test:integration": "echo 'to be implementd'",
+    "test:e2e": "echo 'to be implementd'",
     "check-format": "prettier --list-different --config .prettierrc.json --ignore-path .prettierignore \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,json}\"",
     "format": "prettier --write --config .prettierrc.json --ignore-path .prettierignore \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,json}\"",
     "lint:fix": "eslint --config .eslintrc.js package.json src test --ext .ts --fix --fix-type [problem,suggestion]",

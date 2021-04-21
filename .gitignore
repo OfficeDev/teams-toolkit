@@ -353,3 +353,9 @@ packages/vscode-extension/out/
 ## tmp files
 .nyc_output
 coverage
+
+# vscode
+.vscode-test
+
+# test
+test-results.*

@@ -309,7 +309,7 @@ export class Executor {
         ctx: CoreContext,
         answers?: ConfigMap
     ): Promise<Result<null, FxError>> {
-        return ctx.selectedSolution!.update(ctx.toSolutionContext(answers));
+        return await ctx.selectedSolution!.update(ctx.toSolutionContext(answers));
     }
 
     @hooks([validationMW, envMW, solutionMW, readConfigMW, writeConfigMW])
@@ -317,7 +317,7 @@ export class Executor {
         ctx: CoreContext,
         answers?: ConfigMap
     ): Promise<Result<null, FxError>> {
-        return ctx.selectedSolution!.provision(ctx.toSolutionContext(answers));
+        return await ctx.selectedSolution!.provision(ctx.toSolutionContext(answers));
     }
 
     @hooks([validationMW, envMW, solutionMW, readConfigMW, writeConfigMW])
@@ -325,7 +325,7 @@ export class Executor {
         ctx: CoreContext,
         answers?: ConfigMap
     ): Promise<Result<null, FxError>> {
-        return ctx.selectedSolution!.deploy(ctx.toSolutionContext(answers));
+        return await ctx.selectedSolution!.deploy(ctx.toSolutionContext(answers));
     }
 
     @hooks([validationMW, envMW, solutionMW, readConfigMW, writeConfigMW])
@@ -333,7 +333,7 @@ export class Executor {
         ctx: CoreContext,
         answers?: ConfigMap
     ): Promise<Result<null, FxError>> {
-        return ctx.selectedSolution!.publish(ctx.toSolutionContext(answers));
+        return await ctx.selectedSolution!.publish(ctx.toSolutionContext(answers));
     }
 
     @hooks([validationMW, envMW])

@@ -133,7 +133,7 @@ export const writeConfigMW: Middleware = async (
       JSON.stringify(coreCtx.projectSettings, null, 4)
     );
   } catch (e) {
-    ctx.result = err(error.ReadFileError(e));
+    ctx.result = err(error.WriteFileError(e));
     return;
   }
 };

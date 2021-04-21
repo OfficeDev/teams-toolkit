@@ -23,12 +23,12 @@ const tips = {
     checkSubscriptionId: "Check whether you choose the correct Azure subscription.",
     checkCredit: "Check Azure subscription credit.",
     checkLog: "Read log for more information.",
-    recreateStorageAccount: "Remove your Azure storage account instance and re-run provision.",
+    recreateStorageAccount: "Remove your Azure Storage account instance and re-run provision.",
     dotnetVersionUpdate: "Install .Net Core 3.1 or 5.0.",
     checkPackageJson: "Check that package.json is valid.",
     checkCredential: "Check that you have logged in to Azure with the correct account.",
     doFullDeploy: `Remove ${FunctionPluginPathInfo.solutionFolderName}/${FunctionPluginPathInfo.funcDeploymentFolderName}.`,
-    doScaffold: "Run 'Start A New Project'.",
+    doScaffold: "Run 'Start a new project'.",
     doProvision: "Run 'Provision'."
 };
 
@@ -194,7 +194,7 @@ export class ProvisionError extends FunctionPluginError {
         super(
             ErrorType.User,
             "ProvisionError",
-            `Failed to check/create ${resource} for Azure function app.`,
+            `Failed to check/create ${resource} for Function App.`,
             [
                 tips.checkSubscriptionId,
                 tips.checkCredit,
@@ -210,7 +210,7 @@ export class GetConnectionStringError extends FunctionPluginError {
         super(
             ErrorType.System,
             "GetConnectionStringError",
-            "Failed to get connection string of Azure storage account.",
+            "Failed to get connection string of Azure Storage account.",
             [
                 tips.recreateStorageAccount,
                 tips.checkNetwork,
@@ -225,7 +225,7 @@ export class ConfigFunctionAppError extends FunctionPluginError {
         super(
             ErrorType.System,
             "ConfigFunctionAppError",
-            "Failed to find and config Azure function app settings.",
+            "Failed to retrieve Function App settings.",
             [
                 tips.checkSubscriptionId,
                 tips.checkNetwork,
@@ -241,7 +241,7 @@ export class FunctionAppOpError extends FunctionPluginError {
         super(
             ErrorType.System,
             "RestartFunctionAppError",
-            `Failed to execute '${op}' on the Azure function app.`,
+            `Failed to execute '${op}' on the Function App.`,
             [
                 tips.checkNetwork,
                 tips.retryRequest
@@ -268,7 +268,7 @@ export class InstallTeamsfxBindingError extends FunctionPluginError {
         super(
             ErrorType.User,
             "InstallTeamsfxBindingError",
-            "Failed to install Azure Function bindings.",
+            "Failed to install Azure Functions bindings.",
             [
                 tips.dotnetVersionUpdate
             ]

@@ -3,7 +3,7 @@
 import { FunctionPluginPathInfo as PathInfo, RegularExpr } from "../constants";
 
 export class InfoMessages {
-    public static readonly askNodeVersion: string = "Select Node version for the Azure Function app.";
+    public static readonly askNodeVersion: string = "Select Node version for the Function App.";
     public static readonly askFunctionName: string = "Provide a function name.";
 
     public static readonly checkDotNetVersion: string = "Check your .NET Core version.";
@@ -11,7 +11,7 @@ export class InfoMessages {
     public static readonly dotNetVersionUnexpected = (current: string, expected: string[]) =>
         `The installed .NET Core version is '${current}'. We recommend using version '${expected.join(", ")}'.`;
 
-    public static readonly installFunctionExtensions: string = "Installing Azure Function binding.";
+    public static readonly installFunctionExtensions: string = "Installing Azure Functions binding.";
     public static readonly skipDeployment: string = "Nothing to deploy; no changes detected since last deployment.";
 
     public static readonly getTemplateFrom = (url: string) => `Retrieving template from '${url}'.`;
@@ -20,16 +20,16 @@ export class InfoMessages {
     public static readonly functionScaffoldAt = (functionPath: string) => `Function scaffolded at '${functionPath}'.`;
     public static readonly generateStorageAccountName = (name: string) => `Using Azure Storage account name: ${name}.`;
     public static readonly generateAppServicePlanName = (name: string) => `Using Azure App Service plan name: ${name}.`;
-    public static readonly generateFunctionAppName = (name: string) => `Using Azure Cunction app name: ${name}.`;
+    public static readonly generateFunctionAppName = (name: string) => `Using Function App name: ${name}.`;
 
     public static readonly checkResource = (resourceType: string, resourceName: string, resourceGroup: string) =>
         `Check resource '${resourceType}' with name '${resourceName}' under resource group '${resourceGroup}'.`;
     public static readonly resourceCreating = "Resource does not exist. Creating...";
     public static readonly resourceExists = "Resource exists. Skipping...";
-    public static readonly functionAppConfigIsEmpty = "Azure Function app configuration is empty.";
-    public static readonly functionAppSettingsUpdated = "Azure Function app settings updated.";
-    public static readonly functionAppAuthSettingsUpdated = "Azure Function app auth settings updated.";
-    public static readonly dependPluginDetected = (name: string) => `Found dependent plugin '${name}'; updating Azure Function app settings.`;
+    public static readonly functionAppConfigIsEmpty = "Function App configuration is empty.";
+    public static readonly functionAppSettingsUpdated = "Function App settings updated.";
+    public static readonly functionAppAuthSettingsUpdated = "Function App auth settings updated.";
+    public static readonly dependPluginDetected = (name: string) => `Found dependent plugin '${name}'; updating Function App settings.`;
 
     public static readonly dotnetVersion = (version: string) => `Found .NET SDK version ${version}.`;
     public static readonly uploadZipSize = (size: number) => `Upload zip package (${size}B).`;
@@ -47,7 +47,7 @@ export class ErrorMessages {
     public static readonly noFunctionNameGiven: string = "No function name was specified.";
     public static readonly failToGetConnectionString: string = "Failed to retrieve Azure Storage account connection string.";
     public static readonly failToGetAppServicePlanId: string = "Failed to retrieve Azure App Service plan ID.";
-    public static readonly failToGetFunctionAppEndpoint: string = "Failed to retrieve Azure Function app endpoint.";
-    public static readonly failToFindFunctionApp = "Failed to find Azure Function app.";
+    public static readonly failToGetFunctionAppEndpoint: string = "Failed to retrieve Function App endpoint.";
+    public static readonly failToFindFunctionApp = "Failed to find Function App.";
     public static readonly failToQueryPublishCred: string = "Failed to find publish credential.";
 }

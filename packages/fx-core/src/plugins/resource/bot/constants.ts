@@ -54,7 +54,7 @@ export class ProgressBarConstants {
 
     public static readonly PROVISION_STEPS_NUM: number = 2;
 
-    public static readonly LOCAL_DEBUG_TITLE: string = "Local Debugging";
+    public static readonly LOCAL_DEBUG_TITLE: string = "Local debugging";
     public static readonly LOCAL_DEBUG_STEP_START = "Provisioning bot for local debug.";
     public static readonly LOCAL_DEBUG_STEP_BOT_REG = "Registering bot.";
 

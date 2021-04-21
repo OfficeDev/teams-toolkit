@@ -128,13 +128,13 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
     );
 
     const feedbackTreeViewCommand = new TreeViewCommand(
-      "FEEDBACK",
-      "Please send feedback to us if you meet any problems",
+      StringResources.vsc.commandsTreeViewProvider.feedbackTitle,
+      StringResources.vsc.commandsTreeViewProvider.feedbackDescription,
       undefined,
       vscode.TreeItemCollapsibleState.Expanded,
       TreeCategory.Feedback,
       [
-        new TreeViewCommand("Report issues", "Report issue to us", "fx-extension.openReportIssues", vscode.TreeItemCollapsibleState.None, TreeCategory.Feedback, undefined, "reportIssues"),
+        new TreeViewCommand(StringResources.vsc.commandsTreeViewProvider.reportIssuesTitle, StringResources.vsc.commandsTreeViewProvider.reportIssuesDescription, "fx-extension.openReportIssues", vscode.TreeItemCollapsibleState.None, TreeCategory.Feedback, undefined, "reportIssues"),
       ]
     );
 

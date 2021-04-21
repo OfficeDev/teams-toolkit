@@ -27,6 +27,14 @@ export function NotValidInputValue(inputName: string, msg: string): UserError {
   return returnUserError(Error(`${inputName} - ${msg}`), constants.cliSource, "NotValidInputValue");
 }
 
+export function NotFoundInputedFolder(folder: string): UserError {
+  return returnUserError(
+    new Error(`Inputed folder (${folder}) not found.`),
+    constants.cliSource,
+    "NotFoundInputFolder"
+  );
+}
+
 export function NotFoundSubscriptionId(): UserError {
   return returnUserError(
     new Error(`Inputed subscription not found in your tenant`),
@@ -50,6 +58,15 @@ export function ConfigNotFoundError(configpath: string): SystemError {
     new Error(`Config file ${configpath} does not exists`),
     constants.cliSource,
     "ConfigNotFound"
+  );
+}
+
+export function SampleAppClonedFailed(sampleAppUrl: string, e: Error): SystemError {
+  e.message = `Cannot clone this sample app from ${sampleAppUrl}. Error: ${e.message}`;
+  return returnSystemError(
+    e,
+    constants.cliSource,
+    "SampleAppClonedFailed"
   );
 }
 

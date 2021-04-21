@@ -45,7 +45,7 @@ export default async function run(
   req: HttpRequest,
   teamsfxContext: TeamsfxContext
 ): Promise<Response> {
-  context.log("TypeScript HTTP trigger function processed a request.");
+  context.log("HTTP trigger function processed a request.");
 
   // Initialize response.
   const res: Response = {
@@ -81,7 +81,7 @@ export default async function run(
   }
 
   // Construct credential.
-  let credential: OnBehalfOfUserCredential | undefined = undefined;
+  let credential: OnBehalfOfUserCredential;
   try {
     credential = new OnBehalfOfUserCredential(accessToken);
   } catch(e) {

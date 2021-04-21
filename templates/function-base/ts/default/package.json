@@ -1,13 +1,11 @@
 {
   "name": "teamsfx-template-api",
   "version": "1.0.0",
-  "description": "",
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
     "prestart": "npm run build",
-    "start": "func start",
-    "test": "echo \"No tests yet...\""
+    "start": "func start"
   },
   "dependencies": {
     "@azure/functions": "^1.2.2",

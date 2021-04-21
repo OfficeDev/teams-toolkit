@@ -1,8 +1,7 @@
 import { DepsInfo, IDepsChecker } from "./checker";
 import { cpUtils, nodeCheckerEnabled } from "./checkerAdapter";
-import { nodeHelpLink } from "./common";
+import { Messages, nodeHelpLink } from "./common";
 import { NodeNotFoundError, NotSupportedNodeError as NodeNotSupportedError } from "./errors";
-import * as StringResources from "../../resources/Strings.json";
 
 const SupportedNodeVersions = ["10", "12", "14"];
 const NodeName = "Node.js";
@@ -25,13 +24,13 @@ export class NodeChecker implements IDepsChecker {
   public async isInstalled(): Promise<boolean> {
     const currentVersion = await getInstalledNodeVersion();
     if (currentVersion === null) {
-      throw new NodeNotFoundError(StringResources.vsc.debug.nodeNotFound, nodeHelpLink);
+      throw new NodeNotFoundError(Messages.NodeNotFound, nodeHelpLink);
     }
 
     if (!currentVersion.isSupported) {
       const supportedVersions = SupportedNodeVersions.map((v) => "v" + v).join(" ,");
       throw new NodeNotSupportedError(
-        StringResources.vsc.debug.nodeNotSupported
+        Messages.NodeNotSupported
           .replace("@CurrentVersion", currentVersion.version)
           .replace("@SupportedVersions", supportedVersions),
         nodeHelpLink

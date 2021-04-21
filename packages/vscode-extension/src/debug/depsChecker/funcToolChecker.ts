@@ -12,9 +12,8 @@ import {
   runWithProgressIndicator
 } from "./checkerAdapter";
 import { DepsCheckerTelemetry, DepsCheckerEvent, TelemtryMessages } from "./telemetry";
-import { isWindows, isMacOS, functionCoreToolsHelpLink } from "./common";
+import { isWindows, isMacOS, Messages, functionCoreToolsHelpLink } from "./common";
 import { DepsCheckerError } from "./errors";
-import * as StringResources from "../../resources/Strings.json";
 
 export enum FuncVersion {
   v1 = "1",
@@ -64,7 +63,7 @@ export class FuncToolChecker implements IDepsChecker {
         //   TelemtryMessages.funcV1Installed
         // );
         throw new DepsCheckerError(
-          StringResources.vsc.debug.needReplaceWithFuncCoreToolV3.replace("@NameVersion", installedNameWithVersion),
+          Messages.needReplaceWithFuncCoreToolV3.replace("@NameVersion", installedNameWithVersion),
           functionCoreToolsHelpLink
         );
       case FuncVersion.v2:
@@ -88,13 +87,13 @@ export class FuncToolChecker implements IDepsChecker {
         TelemtryMessages.NPMNotFound
       );
       throw new DepsCheckerError(
-        StringResources.vsc.debug.needInstallFuncCoreTool.replace("@NameVersion", installedNameWithVersion),
+        Messages.needInstallFuncCoreTool.replace("@NameVersion", installedNameWithVersion),
         functionCoreToolsHelpLink
       );
     }
 
     logger.info(
-      StringResources.vsc.debug.startInstallFunctionCoreTool.replace("@NameVersion", installedNameWithVersion)
+      Messages.startInstallFunctionCoreTool.replace("@NameVersion", installedNameWithVersion)
     );
 
     try {
@@ -111,7 +110,7 @@ export class FuncToolChecker implements IDepsChecker {
       );
 
       throw new DepsCheckerError(
-        StringResources.vsc.debug.failToInstallFuncCoreTool.replace("@NameVersion", installedNameWithVersion),
+        Messages.failToInstallFuncCoreTool.replace("@NameVersion", installedNameWithVersion),
         functionCoreToolsHelpLink
       );
     }
@@ -122,18 +121,18 @@ export class FuncToolChecker implements IDepsChecker {
       DepsCheckerTelemetry.sendSystemErrorEvent(
         DepsCheckerEvent.funcValidation,
         TelemtryMessages.failedToInstallFunc,
-        StringResources.vsc.debug.failToValidateFuncCoreTool.replace("@NameVersion", installedNameWithVersion)
+        Messages.failToValidateFuncCoreTool.replace("@NameVersion", installedNameWithVersion)
       );
 
       throw new DepsCheckerError(
-        StringResources.vsc.debug.failToInstallFuncCoreTool.replace("@NameVersion", installedNameWithVersion),
+        Messages.failToInstallFuncCoreTool.replace("@NameVersion", installedNameWithVersion),
         functionCoreToolsHelpLink
       );
     }
 
     DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.funcValidationCompleted);
     logger.info(
-      StringResources.vsc.debug.finishInstallFunctionCoreTool.replace("@NameVersion", installedNameWithVersion)
+      Messages.finishInstallFunctionCoreTool.replace("@NameVersion", installedNameWithVersion)
     );
   }
 }

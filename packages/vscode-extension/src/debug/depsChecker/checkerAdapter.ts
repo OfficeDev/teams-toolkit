@@ -8,8 +8,7 @@ import * as util from "util";
 import commonlibLogger, { VsCodeLogProvider } from "../../commonlib/log";
 import { window, workspace, WorkspaceConfiguration, MessageItem, OutputChannel } from "vscode";
 import { LogLevel, ConfigFolderName } from "fx-api";
-import { openUrl } from "./common";
-import * as StringResources from "../../resources/Strings.json";
+import { Messages, openUrl } from "./common";
 const appendFile = util.promisify(fs.appendFile);
 
 export { cpUtils } from "../cpUtils";
@@ -105,8 +104,8 @@ export async function displayContinueWithLearnMore(
   message: string,
   link: string
 ): Promise<boolean> {
-  const learnMoreButton: MessageItem = { title: StringResources.vsc.debug.learnMoreButtonText };
-  const continueButton: MessageItem = { title: StringResources.vsc.debug.continueButtonText };
+  const learnMoreButton: MessageItem = { title: Messages.learnMoreButtonText };
+  const continueButton: MessageItem = { title: Messages.continueButtonText };
   const input = await window.showWarningMessage(
     message,
     { modal: true },
@@ -124,7 +123,7 @@ export async function displayContinueWithLearnMore(
 }
 
 export async function displayLearnMore(message: string, link: string): Promise<boolean> {
-  return await displayWarningMessage(message, StringResources.vsc.debug.learnMoreButtonText, async () => {
+  return await displayWarningMessage(message, Messages.learnMoreButtonText, async () => {
     await openUrl(link);
     return Promise.resolve(false);
   });

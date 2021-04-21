@@ -53,15 +53,21 @@ export const Messages = {
   failToInstallDotnet: `Failed to install @NameVersion. Please install @NameVersion manually and restart all your Visual Studio Code instances`,
 
   NodeNotFound: `The toolkit cannot find Node.js on your machine.
+
 As a fundamental language runtime for Teams app, these dependencies are required. Node.js is required and the recommended version is v12.
+
 Click "Learn more" to learn how to install the Node.js.`,
   NodeNotSupported: `Current installed Node.js (@CurrentVersion) is not in the supported version list (@SupportedVersions), which might not work as expected for some functionalities.
+
 Click "Learn more" to learn more about the supported Node.js versions.
 Click "Continue" to continue local debugging.`,
 
   depsNotFound: `The toolkit cannot find @SupportedPackages on your machine.
+
 As a fundamental runtime context for Teams app, these dependencies are required. Following steps will help you to install the appropriate version to run the Microsoft Teams Toolkit.
+
 Please notice that these dependencies only need to be installed once.
+
 Click "Install" to install @InstallPackages.`
 };
 

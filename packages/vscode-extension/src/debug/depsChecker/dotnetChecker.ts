@@ -237,7 +237,7 @@ export class DotnetChecker implements IDepsChecker {
         logger.error(
           `${Messages.failToInstallDotnet.replace("@NameVersion", installedNameWithVersion)} ${
             Messages.dotnetInstallStderr
-          } stdout: '${stdout}', stderr: '${stderr}'`
+          } stdout = '${stdout}', stderr = '${stderr}'`
         );
       } else {
         DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.dotnetInstallScriptCompleted, timecost);
@@ -252,7 +252,7 @@ export class DotnetChecker implements IDepsChecker {
       logger.error(
         `${Messages.failToInstallDotnet.replace("@NameVersion", installedNameWithVersion)} ${
           Messages.dotnetInstallErrorCode
-        } error: '${error}', stdout = '${error.stdout}', stderr = '${error.stderr}'`
+        }, command = '${command}', options = '${options}', error = '${error}', stdout = '${error.stdout}', stderr = '${error.stderr}'`
       );
     }
   }

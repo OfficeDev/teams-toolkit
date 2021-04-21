@@ -3,9 +3,34 @@
 import { ConfigMap, PluginContext } from "fx-api";
 import { ResourceGroups, ResourceManagementClientContext } from "@azure/arm-resources";
 import { ServiceClientCredentials } from "@azure/ms-rest-js";
+import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
+import { TokenResponse } from "adal-node";
 
 import * as utils from "../../../../../src/plugins/resource/bot/utils/common";
 import { PluginAAD, PluginSolution } from "../../../../../src/plugins/resource/bot/resources/strings";
+
+export function generateFakeServiceClientCredentials(): ServiceClientCredentials {
+    return {
+        signRequest: (anything) => {
+            return Promise.resolve(anything);
+        }
+    };
+}
+
+class FakeTokenCredentials extends TokenCredentialsBase {
+    public async getToken(): Promise<TokenResponse> {
+        return {
+            tokenType: "Bearer",
+            expiresIn: Date.now(),
+            expiresOn: new Date(),
+            resource: "anything",
+            accessToken: "anything",
+        };
+    }
+}
+export function generateFakeTokenCredentialsBase(): TokenCredentialsBase {
+    return new FakeTokenCredentials("anything", "anything");
+}
 
 export async function ensureResourceGroup(rgName: string, creds: ServiceClientCredentials, subs: string): Promise<void> {
     const client = new ResourceGroups(new ResourceManagementClientContext(creds, subs));
@@ -64,9 +89,39 @@ export function newPluginContext(): PluginContext {
             },
             accentColor: "",
         },
+        appStudioToken: {
+            getAccessToken: (showDialog?: boolean) => {
+                return Promise.resolve(undefined);
+            },
+            getJsonObject: (showDialog?: boolean) => {
+                return Promise.resolve(undefined);
+            },
+            signout: () => { return Promise.resolve(true); },
+            setStatusChangeCallback: (anything) => { return Promise.resolve(true); },
+            setStatusChangeMap: (name: string, anything) => {
+                return Promise.resolve(true);
+            },
+            removeStatusChangeMap: (name: string) => { return Promise.resolve(true); }
+        },
+        azureAccountProvider: {
+            getAccountCredential: (showDialog?: boolean) => { return undefined; },
+            getIdentityCredential: (showDialog?: boolean) => { return undefined; },
+            getAccountCredentialAsync: (showDialog?: boolean) => { return Promise.resolve(undefined); },
+            getIdentityCredentialAsync: (showDialog?: boolean) => { return Promise.resolve(undefined); },
+            signout: () => { return Promise.resolve(true); },
+            setStatusChangeCallback: (anything) => { return Promise.resolve(true); },
+            setStatusChangeMap: (name: string, anything) => {
+                return Promise.resolve(true);
+            },
+            removeStatusChangeMap: (name: string) => { return Promise.resolve(true); }
+        }
     };
 }
 
 export function genTomorrow(): number {
     return Date.now() + 24 * 60 * 60 * 1000;
+}
+
+export function genYesterday(): number {
+    return Date.now() - 24 * 60 * 60 * 1000;
 }

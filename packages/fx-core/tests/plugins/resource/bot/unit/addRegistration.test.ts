@@ -2,9 +2,11 @@
 // Licensed under the MIT license.
 import "mocha";
 import * as chai from "chai";
+import * as sinon from "sinon";
 
 import { registerAADAppAndGetSecretByGraph, registerAADAppAndGetSecretByAppStudio } from "../../../../../src/plugins/resource/bot/aadRegistration";
 import { PluginError } from "../../../../../src/plugins/resource/bot/errors";
+import { default as axios } from "axios";
 
 describe("AAD Registration", () => {
     describe("registerAADAppAndGetSecretByGraph", () => {
@@ -23,6 +25,31 @@ describe("AAD Registration", () => {
 
             chai.assert.isTrue(false);
 
+        });
+
+        it("Happy Path", async () => {
+            // Arrange
+            const graphToken = "anything";
+            const displayName = "any name";
+
+            const fakeAxiosInstance = axios.create();
+            sinon.stub(fakeAxiosInstance, "post").resolves({
+                status: 200,
+                data: {
+                    appId: "appId",
+                    id: "id",
+                    secretText: "secretText"
+                }
+            });
+            sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+            // Act
+            const result = await registerAADAppAndGetSecretByGraph(graphToken, displayName);
+
+            // Assert
+            chai.assert.isTrue(result.clientId === "appId");
+            chai.assert.isTrue(result.objectId === "id");
+            chai.assert.isTrue(result.clientSecret === "secretText");
         });
     });
 

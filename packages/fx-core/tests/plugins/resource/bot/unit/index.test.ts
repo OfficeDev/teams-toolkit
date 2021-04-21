@@ -19,6 +19,10 @@ import { FxBotPluginResultFactory as ResultFactory } from "../../../../../src/pl
 import { WayToRegisterBot } from "../../../../../src/plugins/resource/bot/enums/wayToRegisterBot";
 import * as testUtils from "./utils";
 import { PluginActRoles } from "../../../../../src/plugins/resource/bot/enums/pluginActRoles";
+import * as factory from "../../../../../src/plugins/resource/bot/clientFactory";
+import { ErrorType, PluginError } from "../../../../../src/plugins/resource/bot/errors";
+import { Messages } from "./messages";
+import { SystemError } from "fx-api";
 
 chai.use(chaiAsPromised);
 
@@ -155,6 +159,50 @@ describe("Teams Bot Resource Plugin", () => {
 
             // Act
             const result = await botPlugin.preProvision(testUtils.newPluginContext());
+
+            // Assert
+            chai.assert.isTrue(result.isErr());
+        });
+    });
+
+    describe("Test Provision", () => {
+        afterEach(() => {
+            sinon.restore();
+        });
+
+        let botPlugin: TeamsBot;
+        let botPluginImpl: TeamsBotImpl;
+
+        beforeEach(() => {
+            botPlugin = new TeamsBot();
+            botPluginImpl = new TeamsBotImpl();
+            botPlugin.teamsBotImpl = botPluginImpl;
+        });
+
+        it("Happy Path", async () => {
+            // Arrange
+            botPluginImpl.config.scaffold.wayToRegisterBot = WayToRegisterBot.ReuseExisting;
+            botPluginImpl.config.provision.subscriptionId = "anything";
+            const pluginContext = testUtils.newPluginContext();
+
+            sinon.stub(pluginContext.appStudioToken!, "getAccessToken").resolves("anything");
+            sinon.stub(botPluginImpl.config.scaffold, "botRegistrationCreated").returns(true);
+            const fakeCreds = testUtils.generateFakeTokenCredentialsBase();
+            sinon.stub(pluginContext.azureAccountProvider!, "getAccountCredentialAsync").resolves(fakeCreds);
+
+            const fakeBotClient = factory.createAzureBotServiceClient(testUtils.generateFakeServiceClientCredentials(), "anything");
+            sinon.stub(fakeBotClient.bots, "create").resolves({
+                status: 200
+            });
+            sinon.stub(fakeBotClient.channels, "create").resolves({
+                status: 200
+            });
+
+            sinon.stub(factory, "createAzureBotServiceClient").returns(fakeBotClient);
+
+
+            // Act
+            const result = await botPlugin.provision(pluginContext);
 
             // Assert
             chai.assert.isTrue(result.isErr());

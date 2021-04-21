@@ -72,22 +72,23 @@ export default class QuickStart extends React.Component<any, any>{
                             />
                         })()}
                         {(() => {
-                                const curStep = stepCount;
-                                stepCount++;
-                                return <GetStartedAction
-                                    title={`${curStep}. Explore Teams Toolkit commands`}
-                                    content="Open Command Palette (⇧⌘P) and type ‘Teamsfx’ to find all relevant commands. "
-                                    actionText="Display TeamsFx commands"
-                                    onAction={this.displayCliCommands}
-                                    secondaryActionText="Next"
-                                    onSecondaryAction={() => { this.onNextStep(curStep); }}
-                                    expanded={this.state.currentStep === curStep}
-                                    tip={["Tip: Use ", <a href="https://github.com/OfficeDev/TeamsFx/tree/main/packages/cli">Command Line Interface (CLI)</a>, " to increase productivity"]}
-                                    onCollapsedCardClicked={this.onCollapsedCardClicked}
-                                    step={curStep}
-                                    done={this.state.stepsDone[curStep - 1]}
+                            const shortcut = isMacPlatform ? '⇧⌘P': 'Ctrl+Shift+P';
+                            const curStep = stepCount;
+                            stepCount++;
+                            return <GetStartedAction
+                                title={`${curStep}. Explore Teams Toolkit commands`}
+                                content={`Open Command Palette (${shortcut}) and type ‘Teamsfx’ to find all relevant commands. `}
+                                actionText="Display TeamsFx commands"
+                                onAction={this.displayCliCommands}
+                                secondaryActionText="Next"
+                                onSecondaryAction={() => { this.onNextStep(curStep); }}
+                                expanded={this.state.currentStep === curStep}
+                                tip={["Tip: Use ", <a href="https://github.com/OfficeDev/TeamsFx/tree/main/packages/cli">Command Line Interface (CLI)</a>, " to increase productivity"]}
+                                onCollapsedCardClicked={this.onCollapsedCardClicked}
+                                step={curStep}
+                                done={this.state.stepsDone[curStep - 1]}
                                 />
-                            })()}
+                        })()}
                         {(() => {
                             if(!isSupportedNode){
                                 const curStep = stepCount;
@@ -312,8 +313,6 @@ export default class QuickStart extends React.Component<any, any>{
             command: Commands.SwitchPanel,
             data: PanelType.SampleGallery
         })
-        
-        this.props.history.push('/sample-gallery');
     }
 }
 

@@ -14,13 +14,14 @@ import { runCommand } from "../handlers";
 import { Stage } from "fx-api";
 import { PanelType } from "./PanelType";
 import { execSync } from "child_process";
+import { isMacOS } from '../utils/commonUtils'
 
 export class WebviewPanel {
   private static readonly viewType = "react";
-  public static currentPanel: WebviewPanel | undefined;
-  public static currentPanelType: PanelType =  PanelType.QuickStart;
+  public static currentPanels: WebviewPanel[] = new Array();
 
   private panel: vscode.WebviewPanel;
+  private panelType: PanelType = PanelType.QuickStart;
   private readonly extensionPath: string;
   private disposables: vscode.Disposable[] = [];
 
@@ -28,25 +29,21 @@ export class WebviewPanel {
     const column = vscode.window.activeTextEditor
       ? vscode.window.activeTextEditor.viewColumn
       : undefined;
-    if (WebviewPanel.currentPanel && WebviewPanel.currentPanelType == panelType) {
-      WebviewPanel.currentPanel.panel.reveal(column);
+    if (WebviewPanel.currentPanels && WebviewPanel.currentPanels.findIndex(panel => panel.panelType === panelType) > -1) {
+      WebviewPanel.currentPanels.find(panel => panel.panelType === panelType)!.panel.reveal(column);
     } else {
-      if (WebviewPanel.currentPanel) {
-        WebviewPanel.currentPanel.dispose();
-      }
-
-      WebviewPanel.currentPanel = new WebviewPanel(extensionPath, panelType, column || vscode.ViewColumn.One);
+      WebviewPanel.currentPanels.push(new WebviewPanel(extensionPath, panelType, column || vscode.ViewColumn.One));
     }
   }
 
   private constructor(extensionPath: string, panelType: PanelType, column: vscode.ViewColumn) {
     this.extensionPath = extensionPath;
-    WebviewPanel.currentPanelType = panelType;
+    this.panelType = panelType;
 
     // Create and show a new webview panel
     this.panel = vscode.window.createWebviewPanel(
       WebviewPanel.viewType,
-      "Teams Toolkit v2",
+      this.getWebpageTitle(panelType),
       column,
       {
         // Enable javascript in the webview
@@ -110,7 +107,7 @@ export class WebviewPanel {
             await runCommand(Stage.create);
             break;
           case Commands.SwitchPanel:
-            WebviewPanel.currentPanelType = msg.data;
+            WebviewPanel.createOrShow(this.extensionPath, msg.data);
             break;
           default:
             break;
@@ -157,6 +154,15 @@ export class WebviewPanel {
 
     // Set the webview's initial html content
     this.panel.webview.html = this.getHtmlForWebview(panelType);
+  }
+
+  private getWebpageTitle(panelType: PanelType){
+    switch(panelType){
+      case PanelType.QuickStart:
+        return "Quick Start";
+      case PanelType.SampleGallery:
+        return "Samples";
+    }
   }
 
   private async fetchCodeZip(url: string) {
@@ -217,6 +223,7 @@ export class WebviewPanel {
               const vscode = acquireVsCodeApi();
               const panelType = '${panelType}';
               const isSupportedNode = ${this.isValidNode()};
+              const isMacPlatform = ${isMacOS()};
               window.onload = function() {
                 console.log('Ready to accept data.');
               };
@@ -253,21 +260,8 @@ export class WebviewPanel {
     return supportedVersions.includes(majorVersion);
   }
 
-  public static sendMessage(message: string, data?: any) {
-    if (
-      WebviewPanel.currentPanel &&
-      WebviewPanel.currentPanel.panel &&
-      WebviewPanel.currentPanel.panel.webview
-    ) {
-      WebviewPanel.currentPanel.panel.webview.postMessage({
-        message: message,
-        data: data
-      });
-    }
-  }
-
   public dispose() {
-    WebviewPanel.currentPanel = undefined;
+    WebviewPanel.currentPanels.splice(WebviewPanel.currentPanels.indexOf(this), 1);
 
     AppStudioTokenInstance.removeStatusChangeMap("quick-start-webview");
 

@@ -20,9 +20,7 @@ import { WayToRegisterBot } from "../../../../../src/plugins/resource/bot/enums/
 import * as testUtils from "./utils";
 import { PluginActRoles } from "../../../../../src/plugins/resource/bot/enums/pluginActRoles";
 import * as factory from "../../../../../src/plugins/resource/bot/clientFactory";
-import { ErrorType, PluginError } from "../../../../../src/plugins/resource/bot/errors";
-import { Messages } from "./messages";
-import { SystemError } from "fx-api";
+import { CommonStrings } from "../../../../../src/plugins/resource/bot/resources/strings";
 
 chai.use(chaiAsPromised);
 
@@ -179,7 +177,7 @@ describe("Teams Bot Resource Plugin", () => {
             botPlugin.teamsBotImpl = botPluginImpl;
         });
 
-        it("Happy Path", async () => {
+        it("PreconditionError", async () => {
             // Arrange
             botPluginImpl.config.scaffold.wayToRegisterBot = WayToRegisterBot.ReuseExisting;
             botPluginImpl.config.provision.subscriptionId = "anything";
@@ -206,6 +204,81 @@ describe("Teams Bot Resource Plugin", () => {
 
             // Assert
             chai.assert.isTrue(result.isErr());
+        });
+    });
+
+    describe("Test postProvision", () => {
+        afterEach(() => {
+            sinon.restore();
+        });
+
+        let botPlugin: TeamsBot;
+        let botPluginImpl: TeamsBotImpl;
+
+        beforeEach(() => {
+            botPlugin = new TeamsBot();
+            botPluginImpl = new TeamsBotImpl();
+            botPlugin.teamsBotImpl = botPluginImpl;
+        });
+
+        it("ConfigUpdatingError", async () => {
+            // Arrange
+            botPluginImpl.config.scaffold.botId = "anything";
+            botPluginImpl.config.scaffold.botPassword = "anything";
+            botPluginImpl.config.teamsAppClientId = "anything";
+            botPluginImpl.config.teamsAppClientSecret = "anything";
+            botPluginImpl.config.teamsAppTenant = "anything";
+            botPluginImpl.config.applicationIdUris = "anything";
+            botPluginImpl.config.provision.siteEndpoint = "anything";
+
+            const pluginContext = testUtils.newPluginContext();
+
+            sinon.stub(pluginContext.appStudioToken!, "getAccessToken").resolves("anything");
+            sinon.stub(botPluginImpl.config.scaffold, "botRegistrationCreated").returns(true);
+            const fakeCreds = testUtils.generateFakeTokenCredentialsBase();
+            sinon.stub(pluginContext.azureAccountProvider!, "getAccountCredentialAsync").resolves(fakeCreds);
+
+            const fakeWebClient = factory.createWebSiteMgmtClient(testUtils.generateFakeServiceClientCredentials(), "anything");
+            sinon.stub(factory, "createWebSiteMgmtClient").returns(fakeWebClient);
+
+            // Act
+            const result = await botPlugin.postProvision(pluginContext);
+
+            // Assert
+            chai.assert.isTrue(result.isErr());
+        });
+    });
+
+    describe("Test preDeploy", () => {
+        afterEach(() => {
+            sinon.restore();
+        });
+
+        let botPlugin: TeamsBot;
+        let botPluginImpl: TeamsBotImpl;
+
+        beforeEach(() => {
+            botPlugin = new TeamsBot();
+            botPluginImpl = new TeamsBotImpl();
+            botPlugin.teamsBotImpl = botPluginImpl;
+        });
+
+        it("Happy Path", async () => {
+            // Arrange
+            const pluginContext = testUtils.newPluginContext();
+            botPluginImpl.config.provision.provisioned = true;
+            botPluginImpl.config.provision.siteEndpoint = "https://abc.azurewebsites.net";
+            botPluginImpl.config.scaffold.programmingLanguage = ProgrammingLanguage.JavaScript;
+            pluginContext.root = path.join(__dirname, utils.genUUID());
+            await fs.ensureDir(path.join(pluginContext.root, CommonStrings.BOT_WORKING_DIR_NAME));
+            botPluginImpl.config.provision.subscriptionId = "anything";
+            botPluginImpl.config.provision.resourceGroup = "anything";
+
+            // Act
+            const result = await botPlugin.preDeploy(pluginContext);
+
+            // Assert
+            chai.assert.isTrue(result.isOk());
         });
     });
 });

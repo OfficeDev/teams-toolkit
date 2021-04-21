@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ConfigMap, PluginContext } from "fx-api";
+import { ConfigMap, LogProvider, PluginContext, LogLevel } from "fx-api";
 import { ResourceGroups, ResourceManagementClientContext } from "@azure/arm-resources";
 import { ServiceClientCredentials } from "@azure/ms-rest-js";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
@@ -14,6 +14,32 @@ export function generateFakeServiceClientCredentials(): ServiceClientCredentials
         signRequest: (anything) => {
             return Promise.resolve(anything);
         }
+    };
+}
+
+export function generateFakeLogProvider(): LogProvider {
+    return {
+        info: (message: string) => {
+            return Promise.resolve(true);
+        },
+        log: (logLevel: LogLevel, message: string) => {
+            return Promise.resolve(true);
+        },
+        trace: (message: string) => {
+            return Promise.resolve(true);
+        },
+        debug: (message: string) => {
+            return Promise.resolve(true);
+        },
+        error: (message: string) => {
+            return Promise.resolve(true);
+        },
+        warning: (message: string) => {
+            return Promise.resolve(true);
+        },
+        fatal: (message: string) => {
+            return Promise.resolve(true);
+        },
     };
 }
 

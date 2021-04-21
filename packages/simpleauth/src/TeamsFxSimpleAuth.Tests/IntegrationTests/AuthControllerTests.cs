@@ -296,7 +296,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         }
 
         [Test, Category("P0")]
-        public async Task PostToken_NoAccessAsUserScope_Return400()
+        public async Task PostToken_NoAccessAsUserScopeInRequestHeaderSignature_Return400()
         {
             // Arrange
             var ssoToken = await Utilities.GetUserAccessToken(_settings, _configuration[ConfigurationName.ClientId], _configuration[ConfigurationName.ClientSecret],
@@ -307,7 +307,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
             // Act
             var requestBody = new PostTokenRequestBody
             {
-                scope = "wrong_scope",
+                scope = DefaultGraphScope,
                 grant_type = PostTokenGrantType.SsoToken,
             };
             var result = await PostToAuthTokenApi<ProblemDetails>(client, requestBody);

@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Identity.Web.Resource;
 
 namespace Microsoft.TeamsFx.SimpleAuth.Controllers
 {
@@ -21,6 +22,11 @@ namespace Microsoft.TeamsFx.SimpleAuth.Controllers
     public class AuthController : ControllerBase
     {
         #region Private Resources
+        /// <summary>
+        /// The web API will accept only tokens that have the `access_as_user` scope.
+        /// </summary>
+        static readonly string[] scopeRequiredByApi = new string[] { "access_as_user" };
+
         private class GrantType
         {
             public const string AuthorizationCode = "authorization_code";
@@ -30,7 +36,6 @@ namespace Microsoft.TeamsFx.SimpleAuth.Controllers
         private class CommonScope
         {
             public const string OfflineAccess = "offline_access";
-            public const string AccessAsUser = "access_as_user";
         }
 
         private readonly ILogger<AuthController> _logger;
@@ -55,11 +60,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Controllers
                 throw new InvalidModelException("scope is required in request body");
             }
 
-            var scopes = body.scope.Split(' ');
-            if (!scopes.Contains(CommonScope.AccessAsUser))
-            {
-                throw new InvalidModelException($"{CommonScope.AccessAsUser} is required in request body scope");
-            }
+            HttpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
 
             switch (body.grant_type)
             {

@@ -35,9 +35,9 @@ jobs:
 
       - name: Unit Test
         run: |
-          npx lerna run test:unit --since main
+          npx lerna run test:unit --since origin/main
 
       - name: Integration Test
         run: |
-          npx lerna run test:integration --since main
+          npx lerna run test:integration --since origin/main
 

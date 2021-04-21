@@ -1,11 +1,6 @@
-name: Build and Test SDK
+name: SDK CI
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - packages/sdk/**
   pull_request:
     branches:
       - main
@@ -13,45 +8,6 @@ on:
       - packages/sdk/**
 
 jobs:
-  build-and-test-on-lowest-version:
-    name: Test SDK on (${{ matrix.os }} with node ${{ matrix.node-version }})
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        node-version: [10]
-
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Setup node
-        uses: actions/setup-node@v2.1.2
-        with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: Install npm packages
-        run: |
-          npm install
-          npm run bootstrap
-
-      - name: Build
-        run: |
-          npm run build
-        working-directory: ./packages/sdk
-
-      - name: Check Format
-        run: |
-          npm run check-format
-        working-directory: ./packages/sdk
-
-      - name: Test
-        run: |
-          npm run test
-        working-directory: ./packages/sdk
-
   build-and-test-on-latest-version:
     name: Test SDK on (${{ matrix.os }} with node ${{ matrix.node-version }})
 
@@ -71,29 +27,22 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Install npm packages
-        run: |
-          npm install
-          npm run bootstrap
-
-      - name: Remove package-lock(Linux)
-        if: matrix.os != 'windows-latest'
-        run: |
-          rm packages/sdk/package-lock.json
-      
       - name: Remove package-lock(Windows)
         if: matrix.os == 'windows-latest'
         uses: JesseTG/rm@v1.0.0
         with:
           path: packages\sdk\package-lock.json
 
-      - name: Build
+      - name: Remove package-lock(Linux)
+        if: matrix.os != 'windows-latest'
         run: |
-          npm install
-          npm run build
-        working-directory: ./packages/sdk
+          rm packages/sdk/package-lock.json
+      
+      - name: Setup project
+        run: |
+          npm run setup
 
       - name: Test
         run: |
-          npm run test
+          npm run test:unit
         working-directory: ./packages/sdk

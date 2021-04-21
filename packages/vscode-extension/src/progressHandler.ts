@@ -28,7 +28,7 @@ export class ProgressHandler {
     const head = `[Teams Toolkit] ${this.title}`;
     const body = `: [${this.currentStep}/${this.totalSteps}]`;
     const tail = this.detail ? ` ${this.detail}` : " Prepare task.";
-    return `${head}${body}${tail}`;
+    return `${head}${body}${tail} (Notice:You can reload the window and retry if task spends too long time.)`;
   }
 
   public async start(detail?: string) {

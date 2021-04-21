@@ -292,7 +292,8 @@
                                 "option": [
                                     "javascript"
                                 ],
-                                "default": "javascript"
+                                "default": "javascript",
+                                "skipSingleOption": true
                             }
                         }
                     ],

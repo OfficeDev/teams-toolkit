@@ -50,7 +50,7 @@ export const Messages = {
   useGlobalDotnet: `Use global dotnet from PATH.`,
   dotnetInstallStderr: `dotnet-install command failed without error exit code but with non-empty standard error.`,
   dotnetInstallErrorCode: `dotnet-install command failed.`,
-  failToInstallDotnet: `Failed to install @NameVersion.`,
+  failToInstallDotnet: `Failed to install @NameVersion. Please install @NameVersion manually and restart all your Visual Studio Code instances`,
 
   NodeNotFound: `The toolkit cannot find Node.js on your machine.
 

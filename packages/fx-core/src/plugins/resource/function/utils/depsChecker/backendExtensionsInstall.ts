@@ -39,6 +39,7 @@ export async function backendExtensionsInstall(backendRoot: string, csprojPath: 
       csprojPath,
       "-o",
       outputPath,
+      "--ignore-failed-sources"
       );
   } catch (error) {
     logger.error(`Failed to run backend extension install: error = '${error}'`);

@@ -54,6 +54,22 @@ export const SubscriptionNode = new QTreeNode({
   description: "Please select a subscription"
 });
 
+export const templates: {
+  tags: string[],
+  title: string,
+  description: string,
+  sampleAppName: string,
+  sampleAppUrl: string
+}[] = [
+  {
+    tags: ["Launch Page", "TS"],
+    title: "To Do List (for test)",
+    description: "Sample app description goes here (for test)",
+    sampleAppName: "todolist",
+    sampleAppUrl: "https://github.com/HuihuiWu-Microsoft/Sample-app-graph/releases/download/v1.0/sample.app.graph.zip"
+  }
+];
+
 export enum CLILogLevel {
   error = 0,
   verbose,

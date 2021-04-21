@@ -9,7 +9,7 @@ import { MockAzureAccountProvider } from "fx-api";
 
 import { execAsync, getTestFolder, getUniqueAppName } from "./commonUtils";
 
-describe("Aad Failure Tests", function() {
+describe("Aad Error Tests", function() {
   let testFolder: string;
   let appName: string;
   let projectPath: string;

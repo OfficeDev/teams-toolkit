@@ -28,14 +28,14 @@ export default class QuickStart extends React.Component<any, any>{
     render() {
         let m365AccountContent: (string | JSX.Element)[] | string;
         if (this.state.m365Account === undefined) {
-            m365AccountContent = ["The Teams Toolkit requires a Microsoft 365 (Organizational Account) where Teams is running and has been registered.", <br />, "You can still experience making a Teams app by using a testing account from ", <a href="https://developer.microsoft.com/en-us/microsoft-365/dev-program">M365 Developer Program</a>, "."];
+            m365AccountContent = ["The Teams Toolkit requires a Microsoft 365 (Organizational Account) where Teams is running and has been registered.", <br />, <br />, "You can still experience making a Teams app by using a testing account from ", <a href="https://developer.microsoft.com/en-us/microsoft-365/dev-program">M365 Developer Program</a>, "."];
         } else {
             m365AccountContent = `You have successfully signed in with your M365 account (${this.state.m365Account}).`;
         }
 
         let azureAccountContent: (string | JSX.Element)[] | string;
         if (this.state.azureAccount === undefined) {
-            azureAccountContent = ["The Teams Toolkit requires an Azure account and subscription to deploy the Azure resources for your project.", <br />, "You will not be charged without your further confirmation."];
+            azureAccountContent = ["The Teams Toolkit requires an Azure account and subscription to deploy the Azure resources for your project.", <br />, <br />, "You will not be charged without your further confirmation."];
         } else {
             azureAccountContent = `You have successfully signed in with your Azure account (${this.state.azureAccount}).`;
         }
@@ -76,13 +76,13 @@ export default class QuickStart extends React.Component<any, any>{
                                 stepCount++;
                                 return <GetStartedAction
                                     title={`${curStep}. Explore Teams Toolkit commands`}
-                                    content="Open Command Palette (⇧⌘P) and type ‘Teamsfx’ to find all relevant commands or use Command Line Interface (CLI) to increase productivity. "
-                                    actionText="Display all CLI commands"
+                                    content="Open Command Palette (⇧⌘P) and type ‘Teamsfx’ to find all relevant commands. "
+                                    actionText="Display TeamsFx commands"
                                     onAction={this.displayCliCommands}
                                     secondaryActionText="Next"
                                     onSecondaryAction={() => { this.onNextStep(curStep); }}
                                     expanded={this.state.currentStep === curStep}
-                                    tip={["Tip: ", <a href="https://github.com/OfficeDev/TeamsFx/tree/main/packages/cli">Dowonload CLI reference</a>]}
+                                    tip={["Tip: Use ", <a href="https://github.com/OfficeDev/TeamsFx/tree/main/packages/cli">Command Line Interface (CLI)</a>, " to increase productivity"]}
                                     onCollapsedCardClicked={this.onCollapsedCardClicked}
                                     step={curStep}
                                     done={this.state.stepsDone[curStep - 1]}
@@ -143,7 +143,7 @@ export default class QuickStart extends React.Component<any, any>{
                             stepCount++;
                             return <GetStartedAction
                                 title={`${curStep}. Build your first Teams app from samples`}
-                                content={["Explore our sample apps to help you quickly get started with the Teams app concepts and code structures.", <br />, "Do you already have a clear idea of which Teams app to build? If so, create a new project from the scratch."]}
+                                content={["Explore our sample apps to help you quickly get started with the Teams app concepts and code structures.", <br />, <br />, "Do you already have a clear idea of which Teams app to build? If so, create a new project from the scratch."]}
                                 actionText="View all Samples"
                                 onAction={this.viewAllSamples}
                                 secondaryActionText="Create New Project"

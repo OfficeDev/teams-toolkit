@@ -565,7 +565,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
             var ssoTokenFromAnotherAuthorizedUser = await Utilities.GetUserAccessToken(_settings.TestUsername2, _settings.TestPassword2, clientId,
                 _configuration[ConfigurationName.ClientSecret], _configuration[ConfigurationName.OAuthAuthority], scope).ConfigureAwait(false);
             var client = _defaultFactory.CreateDefaultClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoTokenFromAnotherAuthorizedUser);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoTokenFromAnotherAuthorizedUser); // sso token belongs to authorized test user 2.
 
             // Act
             var requestBody = new PostTokenRequestBody
@@ -573,7 +573,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
                 scope = DefaultGraphScope,
                 redirect_uri = _settings.RedirectUri,
                 grant_type = AadGrantType.AuthorizationCode,
-                code = Utilities.GetAuthorizationCode(_settings, _configuration),
+                code = Utilities.GetAuthorizationCode(_settings, _configuration), // authorization code belongs to authorized test user 1.
                 code_verifier = _settings.CodeVerifier
             };
             var result = await PostToAuthTokenApi<ProblemDetails>(client, requestBody);

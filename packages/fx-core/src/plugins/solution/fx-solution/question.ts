@@ -49,19 +49,19 @@ export const HostTypeOptionSPFx: OptionItem = {
 export const AzureResourceSQL: OptionItem = {
     id:"sql",
     label: "sql",
-    description: "Azure SQL Database. Azure SQL depends on 'function'.",
+    description: "Azure SQL Database. Azure SQL Database depends on Azure Functions.",
 };
 
 export const AzureResourceFunction: OptionItem = {
     id:"function",
     label: "function",
-    description: "New APIs from Azure Functions",
+    description: "Azure Functions.",
 };
 
 export const AzureResourceApim: OptionItem = {
     id:"apim",
     label: "apim",
-    description: "New API in Azure API Management",
+    description: "Register APIs in Azure API Management",
 };
  
 export function createCapabilityQuestion(): MultiSelectQuestion {
@@ -77,7 +77,7 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
 
 export const FrontendHostTypeQuestion: SingleSelectQuestion = {
     name: AzureSolutionQuestionNames.HostType,
-    title: "Select front-end hosting type",
+    title: "Select hosting type",
     type: NodeType.singleSelect,
     option: [HostTypeOptionAzure, HostTypeOptionSPFx],
     default: HostTypeOptionAzure.id,
@@ -135,7 +135,7 @@ export function createAddCapabilityQuestion(alreadyHaveTab: boolean, alreadyHave
     if(!alreadyHaveBot) options.push(BotOptionItem);
     return {
         name: AzureSolutionQuestionNames.Capabilities,
-        title: "Select Capabilities to add",
+        title: "Select capabilities to add",
         type: NodeType.multiSelect,
         option: options,
         default: []
@@ -144,7 +144,7 @@ export function createAddCapabilityQuestion(alreadyHaveTab: boolean, alreadyHave
 
 export const DeployPluginSelectQuestion: MultiSelectQuestion = {
     name: AzureSolutionQuestionNames.PluginSelectionDeploy,
-    title: `Please select which resource(s) to deploy`,
+    title: `Select resource(s) to deploy`,
     type: NodeType.multiSelect,
     skipSingleOption: true,
     option: [],
@@ -161,7 +161,7 @@ export const AskSubscriptionQuestion: FuncQuestion = {
 
 export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
     name: AzureSolutionQuestionNames.ProgrammingLanguage,
-    title: "Please select programming language for your project",
+    title: "Select programming language for your project",
     type: NodeType.singleSelect,
     option: ["javascript", "typescript"],
     default: "javascript",

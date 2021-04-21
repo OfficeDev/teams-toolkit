@@ -89,7 +89,7 @@ export class StaticWebsiteDisabledError extends FrontendPluginError {
         super(
             ErrorType.User,
             "StaticWebsiteDisableError",
-            "Static website feature is disabled for Azure Storage Account.",
+            "Static website hosting feature is disabled for Azure Storage Account.",
             [tips.reProvision],
         );
     }

@@ -13,12 +13,12 @@ export class ErrorMessage {
 
     public static readonly SqlEndpointError = {
         name: "SqlEndpointError",
-        message: (sqlName: string) => `SQL server '${sqlName}' is invalid.`
+        message: (sqlName: string) => `SQL Server '${sqlName}' is invalid.`
     };
 
     public static readonly SqlCreateError = {
         name: "SqlCreateError",
-        message: (sqlName: string, detail = "") => `Failed to create SQL server '${sqlName}'. ${detail}`
+        message: (sqlName: string, detail = "") => `Failed to create SQL Server '${sqlName}'. ${detail}`
     };
 
     public static readonly DatabaseCreateError = {
@@ -63,7 +63,7 @@ export class ErrorMessage {
 
     public static readonly SqlCheckError = {
         name: "SqlCheckError",
-        message: (sqlName: string, detail = "") => `Failed to check SQL server '${sqlName}'. ${detail}`
+        message: (sqlName: string, detail = "") => `Failed to check SQL Server '${sqlName}'. ${detail}`
     };
 
     public static readonly SqlCheckDBError = {

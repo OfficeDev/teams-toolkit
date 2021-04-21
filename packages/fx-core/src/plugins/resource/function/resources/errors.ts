@@ -24,7 +24,7 @@ const tips = {
     checkCredit: "Check Azure subscription credit.",
     checkLog: "Read log for more information.",
     recreateStorageAccount: "Remove your Azure Storage account instance and re-run provision.",
-    dotnetVersionUpdate: "Install .Net Core 3.1 or 5.0.",
+    dotnetVersionUpdate: "Install .NET Core 3.1 or 5.0.",
     checkPackageJson: "Check that package.json is valid.",
     checkCredential: "Check that you have logged in to Azure with the correct account.",
     doFullDeploy: `Remove ${FunctionPluginPathInfo.solutionFolderName}/${FunctionPluginPathInfo.funcDeploymentFolderName}.`,
@@ -124,7 +124,7 @@ export class TemplateManifestNetworkError extends FunctionPluginError {
         super(
             ErrorType.User,
             "TemplateManifestNetworkError",
-            `Failed to fetch template package list from ${url}.`,
+            `Failed to retrieve template package list from ${url}.`,
             [
                 tips.checkNetwork,
                 tips.retryRequest
@@ -194,7 +194,7 @@ export class ProvisionError extends FunctionPluginError {
         super(
             ErrorType.User,
             "ProvisionError",
-            `Failed to check/create ${resource} for Function App.`,
+            `Failed to check/create '${resource}' for function app.`,
             [
                 tips.checkSubscriptionId,
                 tips.checkCredit,
@@ -225,7 +225,7 @@ export class ConfigFunctionAppError extends FunctionPluginError {
         super(
             ErrorType.System,
             "ConfigFunctionAppError",
-            "Failed to retrieve Function App settings.",
+            "Failed to retrieve function app settings.",
             [
                 tips.checkSubscriptionId,
                 tips.checkNetwork,
@@ -241,7 +241,7 @@ export class FunctionAppOpError extends FunctionPluginError {
         super(
             ErrorType.System,
             "RestartFunctionAppError",
-            `Failed to execute '${op}' on the Function App.`,
+            `Failed to execute '${op}' on the function app.`,
             [
                 tips.checkNetwork,
                 tips.retryRequest
@@ -255,7 +255,7 @@ export class DotnetVersionError extends FunctionPluginError {
         super(
             ErrorType.User,
             "DotnetVersionError",
-            "Failed to check .Net Core version.",
+            "Failed to check .NET Core version.",
             [
                 tips.dotnetVersionUpdate
             ]
@@ -281,7 +281,7 @@ export class InstallNpmPackageError extends FunctionPluginError {
         super(
             ErrorType.User,
             "InstallNpmPackageError",
-            "Failed to install npm packages.",
+            "Failed to install NPM packages.",
             [
                 tips.checkPackageJson
             ]
@@ -294,7 +294,7 @@ export class InitAzureSDKError extends FunctionPluginError {
         super(
             ErrorType.User,
             "InitAzureSDKError",
-            "Failed to init Azure SDK Client.",
+            "Failed to initialize Azure SDK Client.",
             [
                 tips.checkCredential,
                 tips.checkSubscriptionId
@@ -323,7 +323,7 @@ export class PublishCredentialError extends FunctionPluginError {
         super(
             ErrorType.User,
             "PublishCredentialError",
-            "Failed to get publish credential.",
+            "Failed to retrieve publish credential.",
             [
                 tips.checkCredential,
                 tips.checkSubscriptionId,

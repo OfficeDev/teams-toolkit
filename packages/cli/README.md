@@ -103,17 +103,26 @@ teamsfx resource configure aad --aad-env both
 cd /path/to/your/azure/project/
 teamsfx provision --sql-admin-name Abc123321 --sql-password Cab232332 --sql-confirm-password Cab232332
 ```
+### Test/Validate
+```bash
+teamsfx test
+```
 
 ### Deploy
 
 ```bash
 teamsfx deploy
-teamsfx deploy fx-resource-frontend-hosting
-teamsfx deploy fx-resource-frontend-hosting fx-resource-function
-teamsfx deploy fx-resource-spfx
+teamsfx deploy frontend-hosting
+teamsfx deploy "frontend-hosting function"
+teamsfx deploy spfx
 ```
 
-### publish
+### Build
+```bash
+teamsfx build
+```
+
+### Publish
 
 ```bash
 teamsfx publish

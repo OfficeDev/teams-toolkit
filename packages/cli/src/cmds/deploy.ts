@@ -37,13 +37,12 @@ export default class Deploy extends YargsCommand {
     const deployPluginOption = this.params[this.deployPluginNodeName];
     yargs.positional("components", {
       array: true,
-      choices: deployPluginOption.choices,
       description: deployPluginOption.description,
       default: deployPluginOption.default,
     });
     for (const name in this.params) {
       if (name !== this.deployPluginNodeName) {
-        yargs.options(name, this.params[name]); 
+        yargs.options(name, this.params[name]);
       }
     }
     return yargs.version(false);
@@ -65,16 +64,24 @@ export default class Deploy extends YargsCommand {
 
     const core = result.value;
     {
-      const result = await core.getQuestions!(Stage.deploy, Platform.VSCode);
+      const result = await core.getQuestions!(Stage.deploy, Platform.CLI);
       if (result.isErr()) {
         return err(result.error);
       }
       const rootNode = result.value!;
       const allNodes = flattenNodes(rootNode);
       const deployPluginNode = allNodes.find(node => node.data.name === this.deployPluginNodeName)!;
-      if ((args.components || []).length === 0) {
+      const components = args.components || [];
+      if (components.length === 0) {
         const option = (deployPluginNode.data as MultiSelectQuestion).option as OptionItem[];
         answers.set(this.deployPluginNodeName, option.map(op => op.id));
+      } else {
+        if (typeof components === "string") {
+          answers.set(this.deployPluginNodeName, components.split(" "));
+        }
+        else {
+          answers.set(this.deployPluginNodeName, components);
+        }
       }
       await validateAndUpdateAnswers(result.value!, answers);
     }

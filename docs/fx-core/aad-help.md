@@ -43,7 +43,7 @@ You can setup CDN as storage custom domain as mitigation following the instructi
 1. If you're using Azure Functions for backend api, remember to add your CDN endpoint to function's allowed origin list to enable CORS. [Learn More](https://docs.microsoft.com/en-us/azure/azure-functions/functions-how-to-use-azure-function-app-settings?tabs=portal#cors).
 
 
-## ParsePermissionError & UnknownPermissionName & UnknownPermissionRole & UnknownPermissionScope
+## PermissionRelatedErrors
 
 ### Error Message
 

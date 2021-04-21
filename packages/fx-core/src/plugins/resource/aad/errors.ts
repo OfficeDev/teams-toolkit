@@ -5,6 +5,8 @@ import { ConfigKeys, Plugins } from "./constants";
 
 const referLogMessage = "Please refer to the log for detailed information.";
 const referHelpLink = "Please refer to the help link for further steps.";
+const helpLinkPrefix = "https://aka.ms/teamsfx-aad-help";
+const permissionRelatedErrors = "permissionrelatederrors";
 
 export interface AadError {
   name: string;
@@ -29,7 +31,8 @@ export const GetAppConfigError: AadError = {
 export const GetSkipAppConfigError: AadError = {
   name: "AadGetSkipAppConfigError",
   message: () => `Failed to get all necessary info. You need to set ${ConfigKeys.objectId}, ${ConfigKeys.clientId}, ${ConfigKeys.clientSecret}, ` +
-  `${ConfigKeys.oauth2PermissionScopeId} under ${Plugins.pluginNameComplex} in env.default.json.`
+  `${ConfigKeys.oauth2PermissionScopeId} under ${Plugins.pluginNameComplex} in env.default.json.`,
+  helpLink: `${helpLinkPrefix}#aadgetskipappconfigerror`,
 };
 
 export const CreateAppError: AadError = {
@@ -52,7 +55,7 @@ export const UpdateAppIdUriError: AadError = {
   name: "UpdateAppIdUriError",
   message: () =>
     `Failed to update application id uri for Azure AD app. ${referLogMessage} ${referHelpLink}`,
-  // TODO: add helplink
+  helpLink: `${helpLinkPrefix}#updateappidurierror`,
 };
 
 export const UpdatePermissionError: AadError = {
@@ -70,6 +73,7 @@ export const AppIdUriInvalidError: AadError = {
 export const ParsePermissionError: AadError = {
   name: "ParsePermissionError",
   message: () => "Failed to parse the permission request.",
+  helpLink: `${helpLinkPrefix}#${permissionRelatedErrors}`,
 };
 
 export const UnhandledError: AadError = {
@@ -80,21 +84,21 @@ export const UnhandledError: AadError = {
 export const UnknownPermissionName: AadError = {
   name: "UnknownPermissionName",
   message: (name: string) => `Unknown resource name ${name}. ${referHelpLink}`,
-  //TODO: add helplink
+  helpLink: `${helpLinkPrefix}#${permissionRelatedErrors}`,
 };
 
 export const UnknownPermissionRole: AadError = {
   name: "UnknownPermissionRole",
   message: (roleName: string, resourceName: string) =>
     `Unknown role name "${roleName}" for resource "${resourceName}". ${referHelpLink}`,
-  //TODO: add helplink
+  helpLink: `${helpLinkPrefix}#${permissionRelatedErrors}`,
 };
 
 export const UnknownPermissionScope: AadError = {
   name: "UnknownPermissionScope",
   message: (scopeName: string, resourceName: string) =>
     `Unknown scope name "${scopeName}" for resource "${resourceName}". ${referHelpLink}`,
-  //TODO: add helplink
+  helpLink: `${helpLinkPrefix}#${permissionRelatedErrors}`,
 };
 
 export const GetTokenError: AadError = {

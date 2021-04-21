@@ -60,7 +60,7 @@ describe("frontendPlugin", () => {
             const result = await frontendPlugin.scaffold(pluginContext);
 
             chai.assert.isTrue(result.isOk());
-            chai.assert.equal(pluginContext.config.get(FrontendConfigInfo.TabScopes), TestHelper.tabScope);
+            chai.assert.deepEqual(pluginContext.config.get(FrontendConfigInfo.TabScopes), TestHelper.tabScope);
         });
     });
 
@@ -167,7 +167,7 @@ describe("frontendPlugin", () => {
 
             chai.assert.isTrue(result.isOk());
             chai.assert.include(pluginContext.config.get(FrontendConfigInfo.StaticTab), TestHelper.storageEndpoint);
-            chai.assert.equal(pluginContext.config.get(FrontendConfigInfo.ConfigurableTab), Constants.EmptyListString);
+            chai.assert.include(pluginContext.config.get(FrontendConfigInfo.ConfigurableTab), TestHelper.storageEndpoint);
         });
     });
 

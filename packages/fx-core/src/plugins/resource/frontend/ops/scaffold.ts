@@ -130,9 +130,9 @@ export class FrontendScaffold {
                 .getEntries()
                 .filter((entry) => !entry.isDirectory)
                 .map(async (entry) => {
-                    const data = dataReplaceFn
+                    const data: string | Buffer = dataReplaceFn
                         ? dataReplaceFn(entry.name, entry.getData())
-                        : entry.getData().toString();
+                        : entry.getData();
 
                     const filePath = path.join(
                         dstPath,

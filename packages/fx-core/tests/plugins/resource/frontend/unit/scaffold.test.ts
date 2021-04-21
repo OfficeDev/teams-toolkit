@@ -31,8 +31,8 @@ describe("FrontendScaffold", () => {
 
             const zip = new AdmZip();
             const entryName: string = faker.system.filePath();
-            const data: string = faker.lorem.text();
-            zip.addFile(entryName, Buffer.from(data));
+            const data = Buffer.from(faker.lorem.text());
+            zip.addFile(entryName, data);
 
             const pluginContext: PluginContext = TestHelper.getFakePluginContext();
             const dstPath: string = path.join(pluginContext.root, FrontendPathInfo.WorkingDir);

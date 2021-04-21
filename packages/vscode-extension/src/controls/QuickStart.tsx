@@ -94,8 +94,8 @@ export default class QuickStart extends React.Component<any, any>{
                                 stepCount++;
                                 return <GetStartedAction
                                     title={`${curStep}. Install Node.js`}
-                                    content={["The toolkit cannot find Node.js >10.x on your machine.", <br />, "As a fundamental runtime context for Teams app, Node.js 12.x is recommended. Please install the appropriate version to run the Microsoft Teams Toolkit.", <br />, "Read more about ", <a href="http://npm.github.io/installation-setup-docs/installing/using-a-node-version-manager.html">managing Node.js versions</a>, "."]}
-                                    actionText="Download"
+                                    content={["The toolkit cannot detect the right version of Node.js on your machine.", <br />, <br />, "As a fundamental runtime context for Teams app, Node.js v10.x, v12.x or v14.x is required (v.12.x is recommended). Please install the appropriate version to run the Microsoft Teams Toolkit. ", <br />, <br />, "Read more about ", <a href="http://npm.github.io/installation-setup-docs/installing/using-a-node-version-manager.html">managing Node.js versions</a>, "."]}
+                                    actionText="Download Node.js (v.12.x)"
                                     onAction={this.downloadNode}
                                     secondaryActionText="Next"
                                     onSecondaryAction={() => { this.onNextStep(curStep); }}
@@ -267,7 +267,7 @@ export default class QuickStart extends React.Component<any, any>{
     downloadNode = () => {
         vscode.postMessage({
             command: Commands.OpenExternalLink,
-            data: "https://nodejs.org/en/"
+            data: "https://nodejs.org/dist/latest-v12.x/"
         });
 
         let done = this.state.stepsDone;

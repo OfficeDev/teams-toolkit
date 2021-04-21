@@ -13,8 +13,8 @@ import chaiAsPromised from "chai-as-promised";
 import fs from "fs-extra";
 
 import { FrontendPathInfo } from "../../../../../src/plugins/resource/frontend/constants";
-import { FrontendScaffold, TemplateVariable } from "../../../../../src/plugins/resource/frontend/ops/scaffold";
-import { TemplateInfo } from "../../../../../src/plugins/resource/frontend/resources/templateInfo";
+import { FrontendScaffold } from "../../../../../src/plugins/resource/frontend/ops/scaffold";
+import { TemplateInfo, TemplateVariable } from "../../../../../src/plugins/resource/frontend/resources/templateInfo";
 import { TestHelper } from "../helper";
 
 chai.use(chaiAsPromised);
@@ -52,13 +52,13 @@ describe("FrontendScaffold", () => {
             const filePath = path.join(dstPath, entryName);
 
             const rowData: string = faker.lorem.text();
-            const data = rowData + "{{AppId}}";
+            const data = rowData + "{{showFunction}}";
             const variables: TemplateVariable = {
-                AppId: faker.random.uuid(),
+                showFunction: true
             };
 
-            const result: string = FrontendScaffold.fulfill(filePath, Buffer.from(data), variables);
-            chai.assert.equal(result, rowData + variables.AppId);
+            const result = FrontendScaffold.fulfill(filePath, Buffer.from(data), variables);
+            chai.assert.equal(result, rowData + variables.showFunction);
         });
     });
 

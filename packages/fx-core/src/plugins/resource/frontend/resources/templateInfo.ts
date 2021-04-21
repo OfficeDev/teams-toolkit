@@ -6,6 +6,10 @@ import { AzureSolutionSettings, PluginContext } from "fx-api";
 import { DependentPluginInfo, FrontendPathInfo } from "../constants";
 import { InvalidTabLanguageError } from "./errors";
 
+export interface TemplateVariable {
+    showFunction: boolean;
+}
+
 export class TabLanguage {
     static readonly JavaScript = "JavaScript";
     static readonly TypeScript = "TypeScript";
@@ -22,6 +26,7 @@ export class TemplateInfo {
     scenario: string;
     version: string;
     localTemplatePath: string;
+    variables: TemplateVariable;
 
     constructor(ctx: PluginContext) {
         this.group = TemplateInfo.TemplateGroupName;
@@ -33,7 +38,11 @@ export class TemplateInfo {
 
         const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings).activeResourcePlugins;
         const isFunctionPlugin = selectedPlugins.some((pluginName) => pluginName === DependentPluginInfo.FunctionPluginName);
-        this.scenario = isFunctionPlugin ? Scenario.WithFunction : Scenario.Default;
+        this.variables = {
+            showFunction: isFunctionPlugin
+        };
+
+        this.scenario = Scenario.Default;
 
         const localTemplateFileName = [this.group, this.language, this.scenario].join(".") + FrontendPathInfo.TemplatePackageExt;
         this.localTemplatePath = path.join(FrontendPathInfo.TemplateDir, localTemplateFileName);

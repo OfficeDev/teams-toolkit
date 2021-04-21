@@ -1,6 +1,6 @@
 {
   "name": "fx-core",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "main": "build/core/index.js",
   "types": "build/core/index.d.ts",
   "scripts": {
@@ -9,6 +9,7 @@
     "test": "echo 'to be implemented'",
     "test:bot": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/plugins/resource/bot/**/*.test.ts",
     "test:function": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/plugins/resource/function/**/*.test.ts",
+    "test:localdebug": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/plugins/resource/localdebug/**/*.test.ts",
     "test:actions": "echo 'to be implemented'",
     "clean": "rm -rf build",
     "build": "tsc -p ./",
@@ -45,7 +46,7 @@
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "fs-extra": "^9.1.0",
-    "fx-api": "^1.0.5",
+    "fx-api": "^1.0.8",
     "glob": "^7.1.6",
     "http-close": "^1.0.0",
     "ignore": "^5.1.8",

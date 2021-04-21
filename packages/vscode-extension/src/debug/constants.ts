@@ -26,3 +26,8 @@ export const backendLocalEnvPrefix = "BACKEND_";
 export const authLocalEnvPrefix = "AUTH_";
 export const authServicePathEnvKey = "AUTH_SERVICE_PATH";
 export const botLocalEnvPrefix = "BOT_";
+
+export enum ProgrammingLanguage {
+  javascript = "javascript",
+  typescript = "typescript"
+}

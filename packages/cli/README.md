@@ -107,9 +107,10 @@ teamsfx provision --sql-admin-name Abc123321 --sql-password Cab232332 --sql-conf
 ### Deploy
 
 ```bash
-teamsfx deploy --deploy-plugin fx-resource-frontend-hosting
-teamsfx deploy --deploy-plugin fx-resource-frontend-hosting fx-resource-function
-teamsfx deploy --deploy-plugin fx-resource-spfx
+teamsfx deploy
+teamsfx deploy fx-resource-frontend-hosting
+teamsfx deploy fx-resource-frontend-hosting fx-resource-function
+teamsfx deploy fx-resource-spfx
 ```
 
 ### publish

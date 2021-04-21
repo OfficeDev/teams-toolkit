@@ -96,17 +96,30 @@ describe(FunctionPluginInfo.pluginName, () => {
             chai.assert.isTrue(ret.isOk());
         });
 
-        it("Test scaffold with fallback", async () => {
+        it("Test scaffold with fallback in JS", async () => {
             // Arrange
             context.answers = new Map<string, string>([
                 [QuestionKey.functionName, "httpTrigger"],
                 [QuestionKey.programmingLanguage, FunctionLanguage.JavaScript],
             ]);
-            const zip = new AdmZip();
-            zip.addFile("test.js.tpl", Buffer.from("{{appName}} {{functionName}}"));
             sinon.stub(fetch, "getTemplateURL").rejects(new Error());
-            sinon.stub(fs, "readFile").resolves(zip.toBuffer());
+            const plugin: FunctionPlugin = new FunctionPlugin();
 
+            // Act
+            await plugin.preScaffold(context);
+            const ret: FxResult = await plugin.scaffold(context);
+
+            // Assert
+            chai.assert.isTrue(ret.isOk());
+        });
+
+        it("Test scaffold with fallback in TS", async () => {
+            // Arrange
+            context.answers = new Map<string, string>([
+                [QuestionKey.functionName, "httpTrigger"],
+                [QuestionKey.programmingLanguage, FunctionLanguage.TypeScript],
+            ]);
+            sinon.stub(fetch, "getTemplateURL").rejects(new Error());
             const plugin: FunctionPlugin = new FunctionPlugin();
 
             // Act

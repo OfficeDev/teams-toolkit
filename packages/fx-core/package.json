@@ -10,6 +10,7 @@
     "test:bot": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/plugins/resource/bot/**/*.test.ts",
     "test:function": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/plugins/resource/function/**/*.test.ts",
     "test:localdebug": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/plugins/resource/localdebug/**/*.test.ts",
+    "test:frontend": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/plugins/resource/frontend/**/*.test.ts",
     "test:actions": "echo 'to be implemented'",
     "clean": "rm -rf build",
     "build": "tsc -p ./",

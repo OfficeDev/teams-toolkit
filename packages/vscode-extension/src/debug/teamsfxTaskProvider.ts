@@ -46,14 +46,14 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       const botRoot = await commonUtils.getProjectRoot(workspacePath, constants.botFolderName);
       if (botRoot) {
         tasks.push(await this.createNgrokStartTask(workspaceFolder, botRoot));
-        tasks.push(await this.createBotStartTask(workspaceFolder, botRoot));
+        tasks.push(await this.createBotStartTask(workspaceFolder, botRoot, await commonUtils.getProgrammingLanguage()));
       }
 
       const vscodeEnv = detectVsCodeEnv();
       const isCodeSpaceEnv = (vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode);
       if (isCodeSpaceEnv) {
         tasks.push(await this.createOpenTeamsWebClientTask(workspaceFolder));
-      } 
+      }
     }
     return tasks;
   }
@@ -103,7 +103,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     definition = definition || { type: TeamsfxTaskProvider.type, command };
     // NOTE: properly handle quoting and escaping to work on windows (both powershell and cmd), linux and osx
     const commandLine =
-      "func start --javascript --language-worker=\"--inspect=9229\" --port \"7071\" --cors \"*\"";
+    "func start --javascript --language-worker=\"--inspect=9229\" --port \"7071\" --cors \"*\"";
     const env = await commonUtils.getBackendLocalEnv();
     const options: vscode.ShellExecutionOptions = {
       cwd: projectRoot,
@@ -176,11 +176,15 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
   private async createBotStartTask(
     workspaceFolder: vscode.WorkspaceFolder,
     projectRoot: string,
+    programmingLanguage: string | undefined,
     definition?: vscode.TaskDefinition
   ): Promise<vscode.Task> {
     const command: string = constants.botStartCommand;
     definition = definition || { type: TeamsfxTaskProvider.type, command };
-    const commandLine = "npx nodemon --inspect=9239 index.js";
+    // TODO: tell nodemon which files to watch (depends on bot's decision)
+    const commandLine = programmingLanguage === constants.ProgrammingLanguage.typescript
+        ? "npx nodemon --exec node --inspect=9239 -r ts-node/register index.ts"
+        : "npx nodemon --inspect=9239 index.js";
     const env = await commonUtils.getBotLocalEnv();
     const options: vscode.ShellExecutionOptions = {
       cwd: projectRoot,

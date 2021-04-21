@@ -63,7 +63,7 @@ export class ResourceAddSql extends YargsCommand {
 
     const core = result.value;
     {
-      const result = await core.getQuestions!(Stage.update, Platform.VSCode);
+      const result = await core.getQuestions!(Stage.update, Platform.CLI);
       if (result.isErr()) {
         return err(result.error);
       }
@@ -160,7 +160,7 @@ export class ResourceAddFunction extends YargsCommand {
 
     const core = result.value;
     {
-      const result = await core.getQuestions!(Stage.update, Platform.VSCode);
+      const result = await core.getQuestions!(Stage.update, Platform.CLI);
       if (result.isErr()) {
         return err(result.error);
       }

@@ -35,7 +35,7 @@ abstract class ResourceAddGenerator extends Generator {
     const resourcesNode = childrenNodes.filter(node => (node.condition as any).contains === this.resourceName)[0];
     const resourceNodes = resourcesNode ? flattenNodes(resourcesNode) : [];
 
-    (root.data as any).default = this.resourceName !== "function" ? ["function", this.resourceName] : [this.resourceName];
+    (root.data as any).default = [this.resourceName];
     (root.data as any).hide = true;
     root.children = undefined;
 

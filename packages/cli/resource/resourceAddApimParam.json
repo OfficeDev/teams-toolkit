@@ -22,7 +22,6 @@
                 }
             ],
             "default": [
-                "function",
                 "apim"
             ],
             "hide": true
@@ -64,15 +63,18 @@
     },
     {
         "data": {
-            "type": "singleSelect",
-            "name": "apim-service",
-            "description": "Select API Management service",
-            "option": {
-                "namespace": "fx-solution-azure/fx-resource-apim",
-                "method": "apim-service-option"
-            },
-            "returnObject": true,
-            "skipSingleOption": false
+            "type": "text",
+            "name": "apim-resource-group",
+            "description": "The name of the API Management service instance.",
+            "validation": {}
+        }
+    },
+    {
+        "data": {
+            "type": "text",
+            "name": "apim-service-name",
+            "description": "The name of the API Management service instance.",
+            "validation": {}
         }
     }
 ]

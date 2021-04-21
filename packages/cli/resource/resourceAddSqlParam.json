@@ -22,7 +22,6 @@
                 }
             ],
             "default": [
-                "function",
                 "sql"
             ],
             "hide": true

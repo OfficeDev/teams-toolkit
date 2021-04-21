@@ -42,8 +42,8 @@ export abstract class Generator {
     const core = result.value;
     {
       const result = this.doUserTask 
-        ? await core.getQuestionsForUserTask!(this.func!, Platform.VSCode)
-        : await core.getQuestions!(this.stage!, Platform.VSCode);
+        ? await core.getQuestionsForUserTask!(this.func!, Platform.CLI)
+        : await core.getQuestions!(this.stage!, Platform.CLI);
         
       if (result.isErr()) {
         return err(result.error);

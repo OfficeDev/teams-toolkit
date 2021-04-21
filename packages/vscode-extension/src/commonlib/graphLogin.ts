@@ -121,7 +121,7 @@ export class GraphLogin extends login implements GraphTokenProvider {
   }
 
   private async doesUserConfirmLogin(): Promise<boolean> {
-    const warningMsg = "Please sign into your Graph account";
+    const warningMsg = "The Teams Toolkit requires a Microsoft 365 account. This is the account that you use to log in to Microsoft Teams. The Teams Toolkit will use this account to manage applications and service principals.";
     const confirm = "Confirm";
     const userSelected: string | undefined = await vscode.window.showWarningMessage(
       warningMsg,

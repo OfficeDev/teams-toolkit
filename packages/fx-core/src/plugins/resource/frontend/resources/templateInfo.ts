@@ -61,5 +61,5 @@ export class TemplateInfo {
     }
 
     static readonly TemplateGroupName = "tab";
-    static readonly version = "0.3.x";
+    static readonly version = "0.4.x";
 }

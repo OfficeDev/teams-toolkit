@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { PluginContext, ok, QTreeNode, NodeType, Stage, Result, FxError } from "fx-api";
+import { PluginContext, ok, QTreeNode, NodeType, Stage, Result, FxError, DialogType, QuestionType, DialogMsg } from "fx-api";
 import path from "path";
 
 import { AzureStorageClient } from "./clients";
@@ -224,7 +224,16 @@ export class FrontendPluginImpl {
 
         const componentPath: string = path.join(ctx.root, FrontendPathInfo.WorkingDir);
 
-        await FrontendDeployment.doFrontendBuild(componentPath);
+        const msg:DialogMsg = new DialogMsg(DialogType.Ask,{
+                type: QuestionType.ExecuteCmd,
+                terminalName: "tab build",
+                terminalPath: componentPath,
+                description: "npm install ; npm run build ; exit"
+            }
+        );
+        await ctx.dialog?.communicate(msg);
+
+        // await FrontendDeployment.doFrontendBuild(componentPath);
         await FrontendDeployment.doFrontendDeployment(client, componentPath);
 
         await ProgressHelper.endDeployProgress();

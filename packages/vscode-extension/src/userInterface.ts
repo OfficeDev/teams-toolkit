@@ -21,9 +21,10 @@ import {
   IProgressHandler
 } from "fx-api";
 import { ProgressHandler } from "./progressHandler";
-import { sleep } from "./utils/commonUtils";
+import { isWindows, sleep } from "./utils/commonUtils";
 import VsCodeLogInstance from "./commonlib/log";
 import * as StringResources from "./resources/Strings.json";
+import { WindowContext } from "@fluentui/react-window-provider";
 
 export class DialogManager implements Dialog {
   private static instance: DialogManager;
@@ -216,9 +217,13 @@ export class DialogManager implements Dialog {
           (terminal) => terminal.name === terminalName
         );
         const terminal: Terminal =
-          terminals.length > 0 ? terminals[0] : window.createTerminal(terminalName);
+          terminals.length > 0 ? terminals[0] : window.createTerminal({name:terminalName,cwd:question.terminalPath});
         terminal.sendText(question.description || "");
         terminal.show();
+         
+        while(!terminal.exitStatus){
+          await sleep(1000);
+        }
         return undefined;
       }
       case QuestionType.OpenExternal: {

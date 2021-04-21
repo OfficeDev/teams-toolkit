@@ -95,6 +95,7 @@ export interface IQuestion {
     description: string;
     defaultAnswer?: string;
     options?: string[];
+    terminalPath?:string;
     terminalName?: string; // for 'ExecuteCmd', specify the terminal name or undefined.
     validateInput?: (value: string) => string | undefined | null | Promise<string | undefined | null>;
     multiSelect?: boolean;

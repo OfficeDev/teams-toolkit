@@ -9,7 +9,6 @@ using System.Web;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Graph;
-using Microsoft.TeamsFx.SimpleAuth.Components.Auth;
 using Microsoft.TeamsFx.SimpleAuth.Tests.Models;
 using Newtonsoft.Json;
 using OpenQA.Selenium;
@@ -20,6 +19,15 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.Helpers
 {
     public static class Utilities
     {
+
+        private class AadGrantType
+        {
+            public const string AuthorizationCode = "authorization_code";
+            public const string code = "code";
+            public const string ClientCredentials = "client_credentials";
+            public const string Password = "password";
+        }
+
         private static IWebElement WaitUntilElementExists(IWebDriver driver, By elementLocator, int timeout = 10)
         {
             try

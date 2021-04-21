@@ -30,6 +30,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Controllers
         private class CommonScope
         {
             public const string OfflineAccess = "offline_access";
+            public const string AccessAsUser = "access_as_user";
         }
 
         private readonly ILogger<AuthController> _logger;
@@ -52,6 +53,12 @@ namespace Microsoft.TeamsFx.SimpleAuth.Controllers
             if (string.IsNullOrEmpty(body.scope))
             {
                 throw new InvalidModelException("scope is required in request body");
+            }
+
+            var scopes = body.scope.Split(' ');
+            if (!scopes.Contains(CommonScope.AccessAsUser))
+            {
+                throw new InvalidModelException($"{CommonScope.AccessAsUser} is required in request body scope");
             }
 
             switch (body.grant_type)

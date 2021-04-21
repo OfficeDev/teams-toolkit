@@ -296,6 +296,31 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         }
 
         [Test, Category("P0")]
+        public async Task PostToken_NoAccessAsUserScope_Return400()
+        {
+            // Arrange
+            var ssoToken = await Utilities.GetUserAccessToken(_settings, _configuration[ConfigurationName.ClientId], _configuration[ConfigurationName.ClientSecret],
+                _configuration[ConfigurationName.OAuthAuthority]).ConfigureAwait(false);
+            var client = _defaultFactory.CreateDefaultClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
+
+            // Act
+            var requestBody = new PostTokenRequestBody
+            {
+                scope = "wrong_scope",
+                grant_type = PostTokenGrantType.SsoToken,
+            };
+            var result = await PostToAuthTokenApi<ProblemDetails>(client, requestBody);
+
+            // Assert
+            Assert.AreEqual(HttpStatusCode.BadRequest, result.Response.StatusCode);
+            Assert.AreEqual("application/problem+json; charset=utf-8", result.Response.Content.Headers.ContentType.ToString());
+            Assert.AreEqual(ExpectedProblemType.InvalidModelException, result.Body.Type);
+            Assert.AreEqual((int)HttpStatusCode.BadRequest, result.Body.Status);
+            Assert.AreEqual("access_as_user is required in request body scope", result.Body.Detail);
+        }
+
+        [Test, Category("P0")]
         public async Task PostToken_NoBody_Return415() // TODO: confirm the behavior
         {
             // Arrange
@@ -400,7 +425,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
             var requestBody = new PostTokenRequestBody
             {
                 redirect_uri = _settings.RedirectUri,
-                grant_type = AadGrantType.AuthorizationCode,
+                grant_type = PostTokenGrantType.AuthorizationCode,
                 code = Utilities.GetAuthorizationCode(_settings, _configuration),
                 code_verifier = _settings.CodeVerifier
             };
@@ -428,7 +453,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
             {
                 scope = "",
                 redirect_uri = _settings.RedirectUri,
-                grant_type = AadGrantType.AuthorizationCode,
+                grant_type = PostTokenGrantType.AuthorizationCode,
                 code = Utilities.GetAuthorizationCode(_settings, _configuration),
                 code_verifier = _settings.CodeVerifier
             };
@@ -457,7 +482,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
             {
                 scope = "https://storage.azure.com/.default",
                 redirect_uri = _settings.RedirectUri,
-                grant_type = AadGrantType.AuthorizationCode,
+                grant_type = PostTokenGrantType.AuthorizationCode,
                 code = Utilities.GetAuthorizationCode(_settings, _configuration),
                 code_verifier = _settings.CodeVerifier
             };
@@ -485,7 +510,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
             {
                 scope = DefaultGraphScope,
                 redirect_uri = _settings.RedirectUri + "incorrect_value",
-                grant_type = AadGrantType.AuthorizationCode,
+                grant_type = PostTokenGrantType.AuthorizationCode,
                 code = Utilities.GetAuthorizationCode(_settings, _configuration),
                 code_verifier = _settings.CodeVerifier
             };
@@ -514,7 +539,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
             {
                 scope = DefaultGraphScope,
                 redirect_uri = _settings.RedirectUri,
-                grant_type = AadGrantType.AuthorizationCode,
+                grant_type = PostTokenGrantType.AuthorizationCode,
                 code = Utilities.GetAuthorizationCode(_settings, _configuration) + "incorrect_value",
                 code_verifier = _settings.CodeVerifier
             };
@@ -542,7 +567,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
             {
                 scope = DefaultGraphScope,
                 redirect_uri = _settings.RedirectUri,
-                grant_type = AadGrantType.AuthorizationCode,
+                grant_type = PostTokenGrantType.AuthorizationCode,
                 code = Utilities.GetAuthorizationCode(_settings, _configuration),
                 code_verifier = _settings.CodeVerifier + "incorrect_value"
             };
@@ -576,7 +601,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
                 {
                     scope = DefaultGraphScope,
                     redirect_uri = _settings.RedirectUri,
-                    grant_type = AadGrantType.AuthorizationCode,
+                    grant_type = PostTokenGrantType.AuthorizationCode,
                     code = Utilities.GetAuthorizationCode(_settings, _configuration), // Reusing same auth code will result in error, so cannot use the retry handler
                     code_verifier = _settings.CodeVerifier
                 };
@@ -616,7 +641,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
                 {
                     ["scope"] = DefaultGraphScope,
                     ["redirect_uri"] = _settings.RedirectUri,
-                    ["grant_type"] = AadGrantType.AuthorizationCode,
+                    ["grant_type"] = PostTokenGrantType.AuthorizationCode,
                     ["code"] = Utilities.GetAuthorizationCode(_settings, _configuration),
                     ["code_verifier"] = _settings.CodeVerifier,
                     ["additional_property"] = "some_value"
@@ -656,7 +681,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
             {
                 scope = DefaultGraphScope,
                 redirect_uri = _settings.RedirectUri,
-                grant_type = AadGrantType.AuthorizationCode,
+                grant_type = PostTokenGrantType.AuthorizationCode,
                 code = Utilities.GetAuthorizationCode(_settings, _configuration),
                 code_verifier = _settings.CodeVerifier
             };

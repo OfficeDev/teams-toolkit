@@ -3,7 +3,11 @@ import { ActionButton, Icon, PrimaryButton, Image } from '@fluentui/react'
 import "./QuickStart.scss"
 import { Commands } from './Commands'
 import { PanelType } from './PanelType'
-import CLI from '../../media/teams.png'
+import CommandsIMG from '../../media/step_commands.svg'
+import NodeIMG from '../../media/step_nodejs.svg'
+import M365IMG from '../../media/step_m365.svg'
+import AzureIMG from '../../media/step_azure.svg'
+import BuildAppIMG from '../../media/step_buildapp.svg'
 
 export default class QuickStart extends React.Component<any, any>{
     constructor(props: any) {
@@ -162,35 +166,35 @@ export default class QuickStart extends React.Component<any, any>{
                         {
                             this.state.currentStep === 2 && (
                                 <Image
-                                    src={CLI}
+                                    src={CommandsIMG}
                                 />
                             )
                         }
                         {
-                            this.state.currentStep === 3 && (
+                            this.state.currentStep === 3 && !isSupportedNode && (
                                 <Image
-                                    src={CLI}
+                                    src={NodeIMG}
                                 />
                             )
                         }
                         {
-                            this.state.currentStep === 4 && (
+                            this.state.currentStep === (isSupportedNode? 3: 4) && (
                                 <Image
-                                    src={CLI}
+                                    src={M365IMG}
                                 />
                             )
                         }
                         {
-                            this.state.currentStep === 5 && (
+                            this.state.currentStep === (isSupportedNode ? 4 : 5) && (
                                 <Image
-                                    src={CLI}
+                                    src={AzureIMG}
                                 />
                             )
                         }
                         {
-                            this.state.currentStep === 6 && (
+                            this.state.currentStep === (isSupportedNode ? 5 : 6) && (
                                 <Image
-                                    src={CLI}
+                                    src={BuildAppIMG}
                                 />
                             )
                         }

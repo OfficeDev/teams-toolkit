@@ -50,8 +50,8 @@ export class QuestionConstants {
         public static readonly ApiPrefix = class {
             public static readonly questionName: string = "vsc-api-prefix";
             public static readonly funcName: string = "api-prefix-default-value";
-            public static readonly description: string = "Input the API name prefix. The unique name of the API will be '{api-prefix}-{resource-suffix}-{api-version}'.";
-            public static readonly prompt: string = "Input the API name prefix.";
+            public static readonly description: string = "Input the API name prefix.";
+            public static readonly prompt: string = "The unique name of the API will be '{api-prefix}-{resource-suffix}-{api-version}'.";
         };
 
         public static readonly ApiVersion = class {
@@ -65,7 +65,6 @@ export class QuestionConstants {
             public static readonly questionName: string = "vsc-new-api-version";
             public static readonly funcName: string = "new-api-version-default-value";
             public static readonly description: string = "Input the API version.";
-            public static readonly prompt: string = "Input the API version.";
         };
     };
 
@@ -87,13 +86,13 @@ export class QuestionConstants {
 
         public static readonly ApiPrefix = class {
             public static readonly questionName: string = "api-prefix";
-            public static readonly description: string = "The API name prefix. The unique name of the API will be '{api-prefix}-{resource-suffix}-{api-version}'.";
+            public static readonly description: string = "The API name prefix. The default unique name of the API will be '{api-prefix}-{resource-suffix}-{api-version}'.";
         };
 
         public static readonly ApiId = class {
             // The api id is displayed as api name in the Azure Portal
             public static readonly questionName: string = "api-name";
-            public static readonly description: string = "Unique name of the api to be updated.";
+            public static readonly description: string = "The unique name of the api to be updated.";
         };
 
         public static readonly ApiVersion = class {

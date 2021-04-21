@@ -142,6 +142,7 @@ export class ApiPrefixQuestion extends BaseQuestionService implements IQuestionS
             type: NodeType.text,
             name: QuestionConstants.VSCode.ApiPrefix.questionName,
             description: QuestionConstants.VSCode.ApiPrefix.description,
+            prompt: QuestionConstants.VSCode.ApiPrefix.prompt,
             default: {
                 namespace: QuestionConstants.namespace,
                 method: QuestionConstants.VSCode.ApiPrefix.funcName,

@@ -2,13 +2,14 @@
 // Licensed under the MIT license.
 import "mocha";
 import * as chai from "chai";
+import * as fs from "fs-extra";
+import * as path from "path";
 import * as sinon from "sinon";
 
 import { AzureClientFactory, AzureLib } from "../../../../../src/plugins/resource/function/utils/azure-client";
-import { DependentPluginInfo, FunctionPluginInfo } from "../../../../../src/plugins/resource/function/constants";
-import { FunctionLanguage, NodeVersion, QuestionKey } from "../../../../../src/plugins/resource/function/enums";
+import { DependentPluginInfo, FunctionPluginInfo, FunctionPluginPathInfo } from "../../../../../src/plugins/resource/function/constants";
+import { NodeVersion } from "../../../../../src/plugins/resource/function/enums";
 import { FunctionPlugin } from "../../../../../src/plugins/resource/function";
-
 
 const context: any = {
     configOfOtherPlugins: new Map<string, Map<string, string | string[]>>([
@@ -74,14 +75,23 @@ const context: any = {
                 return;
             }
         })
-    }
+    },
+    root: __dirname
 };
 
 describe(FunctionPluginInfo.pluginName, () => {
     describe("Function Provision Test", () => {
+        before(() => {
+            fs.mkdirSync(path.join(context.root, FunctionPluginPathInfo.solutionFolderName));
+        });
 
         afterEach(() => {
             sinon.restore();
+        });
+
+        after(() => {
+            fs.emptyDirSync(path.join(context.root, FunctionPluginPathInfo.solutionFolderName));
+            fs.rmdirSync(path.join(context.root, FunctionPluginPathInfo.solutionFolderName));
         });
 
         it("Test provision", async () => {

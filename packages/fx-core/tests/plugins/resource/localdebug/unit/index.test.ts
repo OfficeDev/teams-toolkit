@@ -32,7 +32,8 @@ describe(LocalDebugPluginInfo.pluginName, () => {
 
         beforeEach(() => {
             pluginContext = {
-                root: path.resolve(__dirname, "../data/")
+                root: path.resolve(__dirname, "../data/"),
+                config: new Map(),
             } as PluginContext;
             plugin = new LocalDebugPlugin();
             fs.emptyDirSync(pluginContext.root);

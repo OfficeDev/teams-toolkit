@@ -130,14 +130,6 @@ export class TelemetryValue {
     static readonly SystemError = "system";
 }
 
-export class QuestionKey {
-    static readonly TabScopes = "tab-scopes";
-}
-
-export class QuestionDescription {
-    static readonly TabScopes = "Select tab scopes";
-}
-
 export class TabScope {
     static readonly PersonalTab = "personal";
     static readonly GroupTab = "group";

@@ -54,7 +54,7 @@ export class FunctionPluginError extends Error {
     }
 }
 
-export class NoFunctionNameFromAnswer extends FunctionPluginError {
+export class NoFunctionNameFromAnswerError extends FunctionPluginError {
     constructor() {
         super(
             ErrorType.System,
@@ -63,6 +63,17 @@ export class NoFunctionNameFromAnswer extends FunctionPluginError {
             [
                 tips.reportIssue
             ]
+        );
+    }
+}
+
+export class FunctionNameConflictError extends FunctionPluginError {
+    constructor() {
+        super(
+            ErrorType.User,
+            "FunctionNameConflict",
+            "Function already exists, please choose another name.",
+            []
         );
     }
 }

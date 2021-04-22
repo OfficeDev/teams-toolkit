@@ -218,9 +218,8 @@ export class DialogManager implements Dialog {
         );
         const terminal: Terminal =
           terminals.length > 0 ? terminals[0] : window.createTerminal({name:terminalName,cwd:question.terminalPath});
-        terminal.sendText(question.description || "");
+        terminal.sendText((question.description || "") + " ; exit");
         terminal.show();
-         
         while(!terminal.exitStatus){
           await sleep(1000);
         }

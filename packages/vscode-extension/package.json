@@ -7,6 +7,7 @@
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
   "main": "./out/src/extension.js",
+  "private": true,
   "repository": {
     "type": "git",
     "url": "https://github.com/OfficeDev/TeamsFx"

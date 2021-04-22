@@ -50,7 +50,6 @@
   "keywords": [
     "typescript"
   ],
-  "author": "Microsoft Corporation",
   "license": "MIT",
   "homepage": "https://github.com/OfficeDev/TeamsFx",
   "sideEffects": false,

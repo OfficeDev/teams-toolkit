@@ -9,11 +9,6 @@
     ],
     "version": "independent",
     "publishConfig": {
-        "registry": "https://registry.npmjs.org/",
-        "ignore": [
-            "packages/eslint-config",
-            "packages/vscode-extension",
-            "packages/sdk"
-        ]
+        "registry": "https://registry.npmjs.org/"
     }
 }

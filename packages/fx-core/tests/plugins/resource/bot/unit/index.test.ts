@@ -352,7 +352,7 @@ describe("Teams Bot Resource Plugin", () => {
         it("Happy Path", async () => {
             // Arrange
             const pluginContext = testUtils.newPluginContext();
-            botPluginImpl.config.scaffold.workingDir = __dirname;
+            pluginContext.root = __dirname;
             botPluginImpl.config.provision.siteName = "anything";
             botPluginImpl.config.provision.subscriptionId = "anything";
             sinon.stub(LanguageStrategy, "localBuild").resolves();
@@ -367,7 +367,6 @@ describe("Teams Bot Resource Plugin", () => {
 
             // Act
             const result = await botPlugin.deploy(pluginContext);
-            console.log(result); // To be removed.
 
             // Assert
             chai.assert.isTrue(result.isOk());

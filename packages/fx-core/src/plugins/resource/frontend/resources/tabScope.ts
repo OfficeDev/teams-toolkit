@@ -6,6 +6,7 @@ import { InvalidTabScopeError } from "./errors";
 
 export interface ManifestVariables {
     baseUrl: string;
+    personalTabName?: string;
 }
 
 export class TabScopeManifest {
@@ -27,17 +28,17 @@ export class TabScopeManifest {
         throw new InvalidTabScopeError();
     }
 
-    public static getConfigurableTab(variables: ManifestVariables, tabScopes: string[]): string {
+    public static addNewToConfigurableTabs(originTabs: string[], variables: ManifestVariables, tabScopes: string[]): string[] {
         if (tabScopes.includes(TabScope.GroupTab)) {
-            return Mustache.render(TabScopeManifest.configurableTab, variables);
+            originTabs.push(Mustache.render(TabScopeManifest.configurableTab, variables));
         }
-        return Constants.EmptyListString;
+        return originTabs;
     }
 
-    public static getStaticTab(variables: ManifestVariables, tabScopes: string[]): string {
+    public static addNewToStaticTabs(originTabs: string[], variables: ManifestVariables, tabScopes: string[]): string[] {
         if (tabScopes.includes(TabScope.PersonalTab)) {
-            return Mustache.render(TabScopeManifest.staticTab, variables);
+            originTabs.push(Mustache.render(TabScopeManifest.staticTab, variables));
         }
-        return Constants.EmptyListString;
+        return originTabs;
     }
 }

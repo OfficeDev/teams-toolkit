@@ -1,7 +1,7 @@
 [
     {
         "entityId": "index",
-        "name": "Personal Tab",
+        "name": "{{{personalTabName}}}",
         "contentUrl": "{{{baseUrl}}}/index.html#/tab",
         "websiteUrl": "{{{baseUrl}}}/index.html#/tab",
         "scopes": [

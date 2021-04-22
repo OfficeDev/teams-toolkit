@@ -15,14 +15,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.1.8" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.1.6" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="3.1.7" />
-    <PackageReference Include="Microsoft.Identity.Client" Version="4.29.0" />
-    <PackageReference Include="Microsoft.Identity.Web" Version="1.9.1" />
+    <PackageReference Include="Microsoft.Identity.Client" Version="4.17.1" />
     <PackageReference Include="NSwag.AspNetCore" Version="13.10.9" />
   </ItemGroup>
 

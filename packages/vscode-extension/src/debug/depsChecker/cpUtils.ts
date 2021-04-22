@@ -4,13 +4,13 @@
 
 import * as cp from "child_process";
 import * as os from "os";
-import { CheckerLogger } from "./depsChecker/checkerAdapter";
 import * as sudo from "sudo-prompt";
+import { IDepsLogger } from "./checker";
 
 export namespace cpUtils {
   export async function executeCommand(
     workingDirectory: string | undefined,
-    logger: CheckerLogger | undefined,
+    logger: IDepsLogger | undefined,
     options: cp.SpawnOptions | undefined,
     command: string,
     ...args: string[]
@@ -34,7 +34,7 @@ export namespace cpUtils {
 
   export async function tryExecuteCommand(
     workingDirectory: string | undefined,
-    logger: CheckerLogger | undefined,
+    logger: IDepsLogger | undefined,
     additionalOptions: cp.SpawnOptions | undefined,
     command: string,
     ...args: string[]
@@ -102,7 +102,7 @@ export namespace cpUtils {
    * Run sudo command and return stdout content.
    * Note: the return value may contains EOL.
    */
-  export function execSudo(logger: CheckerLogger, command: string): Promise<string> {
+  export function execSudo(logger: IDepsLogger, command: string): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       try {
         sudo.exec(command, { name: "TeamsFx Toolkit" }, (error, stdout, stderr) => {

@@ -59,13 +59,28 @@ const graphClient = createMicrosoftGraphClient(credential);
 const profile = await graphClient.api("/users/{object_id_of_another_people}").get();
 ```
 
-## Key concepts
+## Core Concepts & Code Structure
 
 ### Credential
+There are 3 credential classes that are used to help simplifying authentication. They are located under [credential](src/credential) folder.
+Credential classes implements `TokenCredential` interface that is broadly used in Azure library APIs. They are designed to provide access token for specific scopes.
+The credential classes represents different identity under certain scenarios.
+
+`TeamsUserCredential` represents Teams current user's identity. Using this credential will request user consent at the first time.
+`M365TenantCredential` represents Microsoft 365 tenant identity. It is usually used when user is not involved like time-triggered automation job.
+`OnBehalfOfUserCredential` uses on-behalf-of flow. It needs an access token and you can get a new token for different scope. It's designed to be used in Azure Function or Bot scenarios.
+
+### Bot
+Bot related classes are stored under [bot](src/bot) folder.
+
+`TeamsBotSsoPrompt` has a good integration with Bot framework. It simplifies the authentication process when you develops bot application.
+
+### Helper Function
+TeamsFx SDK provides helper functions to ease the configuration for third-party libraries. They are located under [core](src/core) folder.
 
 ### Error Handling
 
-API will throw `CodedError` if error happens. Each `CodedError` contains error code and error message.
+API will throw `ErrorWithCode` if error happens. Each `ErrorWithCode` contains error code and error message.
 
 For example, to filter out all errors, you could use the following check:
 
@@ -76,8 +91,8 @@ try {
   const profile = await graphClient.api("/me").get();
 }
 catch (err) {
-  // Show login button when specific CodedError is caught.
-  if (err instanceof CodedError && err.code === ErrorCode.UserNotLogin) {
+  // Show login button when specific ErrorWithCode is caught.
+  if (err instanceof ErrorWithCode && err.code === ErrorCode.UiRequiredError) {
     this.setState({
       showLoginBtn: true
     });
@@ -85,15 +100,9 @@ catch (err) {
 }
 ```
 
-## Examples
-
-### Azure Function
-
-### Bot Application
-
 ## Troubleshooting
 
-### Configure logs
+### Configure log
 
 You can set custome log level and logger when using this library.
 The default log level is `info` and SDK will print log information to console.
@@ -120,15 +129,13 @@ setLogFunction((level: LogLevel, ...args: any[]) => {
 
 Set a custome logger instance:
 ```ts
-// context.lgo send messages to Application Insights in Azure Function
+// context.log send messages to Application Insights in Azure Function
 setLogger(context.log);
 ```
 
 ## Next steps
 
-Please take a look at the
-[samples]()
-directory for detailed examples on how to use this library.
+Please take a look at the [Samples](https://github.com/OfficeDev/TeamsFx-Samples) project for detailed examples on how to use this library.
 
 ## Contributing
 

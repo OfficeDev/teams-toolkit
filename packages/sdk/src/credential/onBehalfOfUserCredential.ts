@@ -7,7 +7,7 @@ import { config } from "../core/configurationProvider";
 import { UserInfo } from "../models/userinfo";
 import { internalLogger } from "../util/logger";
 import { formatString, getUserInfoFromSsoToken, parseJwt } from "../util/utils";
-import { ErrorWithCode, ErrorCode, ErrorMessage } from "./errors";
+import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 
 /**
  * Exchange access token using the OBO flow with SSO token.

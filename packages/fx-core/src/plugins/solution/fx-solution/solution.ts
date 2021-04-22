@@ -62,8 +62,6 @@ import {
     LOCAL_WEB_APPLICATION_INFO_SOURCE,
     PROGRAMMING_LANGUAGE,
     REMOTE_MANIFEST,
-    CONFIGURABLE_TABS,
-    STATIC_TABS
 } from "./constants";
 
 import { SpfxPlugin } from "../../resource/spfx";
@@ -734,7 +732,7 @@ export class TeamsAppSolution implements Solution {
             return err(maybeConfig.error);
         }
 
-        const {tabEndpoint, tabDomain, aadId, botDomain, bots, composeExtensions, webApplicationInfoResource, staticTabs, configurableTabs} = maybeConfig.value;
+        const {tabEndpoint, tabDomain, aadId, botDomain, bots, composeExtensions, webApplicationInfoResource} = maybeConfig.value;
 
         const validDomains: string[] = [];
 
@@ -751,8 +749,6 @@ export class TeamsAppSolution implements Solution {
             aadId,
             validDomains,
             webApplicationInfoResource,
-            staticTabs,
-            configurableTabs,
             false,
             tabEndpoint,
             manifest.name.short,
@@ -1471,7 +1467,7 @@ export class TeamsAppSolution implements Solution {
             return maybeConfig;
         }
 
-        const {localTabEndpoint, localTabDomain, localAADId, localBotDomain, bots, composeExtensions, webApplicationInfoResource, staticTabs, configurableTabs} = maybeConfig.value;
+        const {localTabEndpoint, localTabDomain, localAADId, localBotDomain, bots, composeExtensions, webApplicationInfoResource} = maybeConfig.value;
 
         const validDomains: string[] = [];
 
@@ -1489,8 +1485,6 @@ export class TeamsAppSolution implements Solution {
             localAADId,
             validDomains,
             webApplicationInfoResource,
-            staticTabs,
-            configurableTabs,
             false,
             localTabEndpoint,
             manifest.name.short,
@@ -1566,7 +1560,7 @@ export class TeamsAppSolution implements Solution {
         });
     }
 
-    private getConfigForCreatingManifest(config: SolutionConfig, localDebug: boolean): Result<{tabEndpoint?: string, tabDomain?:string, aadId: string, botDomain?: string, bots?: string, composeExtensions?: string, webApplicationInfoResource: string, staticTabs: string, configurableTabs: string}, FxError> {
+    private getConfigForCreatingManifest(config: SolutionConfig, localDebug: boolean): Result<{tabEndpoint?: string, tabDomain?:string, aadId: string, botDomain?: string, bots?: string, composeExtensions?: string, webApplicationInfoResource: string}, FxError> {
         const tabEndpoint = localDebug ? config.get(this.localDebugPlugin.name)?.getString(LOCAL_DEBUG_TAB_ENDPOINT) : config.get(this.fehostPlugin.name)?.getString(FRONTEND_ENDPOINT);
         const tabDomain = localDebug ? config.get(this.localDebugPlugin.name)?.getString(LOCAL_DEBUG_TAB_DOMAIN) : config.get(this.fehostPlugin.name)?.getString(FRONTEND_DOMAIN);
         const aadId = config.get(this.aadPlugin.name)?.getString(localDebug ? LOCAL_DEBUG_AAD_ID : REMOTE_AAD_ID);
@@ -1622,24 +1616,11 @@ export class TeamsAppSolution implements Solution {
             }
         }
 
-        // STATIC_TABS and CONFIGURABLE_TABS are only available after postProvision.
-        const staticTabs = config.get(this.fehostPlugin.name)?.getString(STATIC_TABS) ?? "[]";
-        const configurableTabs = config.get(this.fehostPlugin.name)?.getString(CONFIGURABLE_TABS) ?? "[]";
-        if (tabEndpoint) {
-            if (!staticTabs || !configurableTabs || 
-                    (staticTabs === "[]" && configurableTabs === "[]")) {
-                return err(returnSystemError(
-                    new Error(`Invalid frontend config: ${STATIC_TABS}: ${staticTabs} ${CONFIGURABLE_TABS}: ${configurableTabs}`),
-                    "Solution", 
-                    localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError));
-            }
-        }
         
-        return ok({tabEndpoint, tabDomain, aadId, botDomain, bots, composeExtensions, webApplicationInfoResource, staticTabs, configurableTabs});
-
+        return ok({tabEndpoint, tabDomain, aadId, botDomain, bots, composeExtensions, webApplicationInfoResource});
     }
 
-    private getLocalDebugConfig(config: SolutionConfig): Result<{localTabEndpoint?: string, localTabDomain?:string, localAADId: string, localBotDomain?: string, bots?: string, composeExtensions?: string, webApplicationInfoResource: string, staticTabs: string, configurableTabs: string}, FxError> {
+    private getLocalDebugConfig(config: SolutionConfig): Result<{localTabEndpoint?: string, localTabDomain?:string, localAADId: string, localBotDomain?: string, bots?: string, composeExtensions?: string, webApplicationInfoResource: string}, FxError> {
         return this.getConfigForCreatingManifest(config, true).map((conf) => {
             return {
                 localTabEndpoint: conf.tabEndpoint,
@@ -1649,8 +1630,6 @@ export class TeamsAppSolution implements Solution {
                 bots: conf.bots,
                 composeExtension: conf.composeExtensions,
                 webApplicationInfoResource: conf.webApplicationInfoResource,
-                staticTabs: conf.staticTabs,
-                configurableTabs: conf.configurableTabs
             };
         });
     }

@@ -12,6 +12,7 @@ chaiUse(chaiPromises);
 
 describe("SQL Connector Test: Node", () => {
   let connection: Connection;
+  console.log(process.env);
   // let sqlManagerClient: SqlManagementClient;
   // let resourceGroup: string | undefined;
   // let sqlName: string | undefined;

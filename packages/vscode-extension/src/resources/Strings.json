@@ -47,7 +47,7 @@
             "reportIssuesDescription": "Report issue to us"
         },
         "handlers": {
-            "concurrentTriggerTask": "task '%s' is still running, please wait!",
+            "concurrentTriggerTask": "task '%s' is still running, please wait! [Note:You may need to wait for a few minutes if you have cancelled the task by yourself]",
             "vsCodeEnvironment": "VS Code Environment: %s",
             "questionTree": "Question tree:%s",
             "userInput": "User input:%s",

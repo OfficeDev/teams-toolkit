@@ -89,6 +89,7 @@ export function toYargsOptions(data: Question): Options {
     default: data.default,
     choices: choices,
     hidden: !!(data as any).hide,
+    global: false
   };
 }
 

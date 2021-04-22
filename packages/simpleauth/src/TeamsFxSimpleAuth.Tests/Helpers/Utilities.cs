@@ -142,17 +142,17 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.Helpers
             }
         }
 
-        public static async Task<string> GetUserAccessToken(IntegrationTestSettings settings, string clientId, string clientSecret, string oauthAuthority, string scope = null)
+        public static async Task<string> GetUserAccessToken(string username, string password, string clientId, string clientSecret, string oauthAuthority, string scope)
         {
             var oauthTokenEndpoint = oauthAuthority.TrimEnd('/') + "/oauth2/v2.0/token";
             PasswordCredentialRequestBody content = new PasswordCredentialRequestBody
             {
                 Grant_type = AadGrantType.Password,
-                Username = settings.TestUsername,
-                Password = settings.TestPassword,
+                Username = username,
+                Password = password,
                 Client_id = clientId,
                 Client_secret = clientSecret,
-                Scope = scope == null ? $"{settings.ApiAppIdUri}/{clientId}/{settings.Scope}" : scope
+                Scope = scope
             };
             using (var client = new HttpClient(new RetryHandler(new HttpClientHandler())))
             {

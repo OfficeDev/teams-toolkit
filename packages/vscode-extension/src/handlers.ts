@@ -340,8 +340,7 @@ export function detectVsCodeEnv(): VsCodeEnv {
     }
   }
 
-async function runUserTask(func: Func): Promise<Result<null, FxError>> {
-  const eventName = func.method;
+async function runUserTask(func: Func, eventName:string): Promise<Result<null, FxError>> {
   let result: Result<null, FxError> = ok(null);
 
   try {
@@ -474,19 +473,19 @@ export async function updateAADHandler(): Promise<Result<null, FxError>> {
     namespace: "fx-solution-azure/fx-resource-aad-app-for-teams",
     method: "aadUpdatePermission"
   };
-  return await runUserTask(func);
+  return await runUserTask(func, TelemetryEvent.UpdateAad);
 }
 
 
 export async function addCapabilityHandler(): Promise<Result<null, FxError>> {
-  // ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddCapStart, {
-  //   [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
-  // });
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddCapStart, {
+    [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
+  });
   const func: Func = {
     namespace: "fx-solution-azure",
     method: "addCapability"
   };
-  return await runUserTask(func);
+  return await runUserTask(func, TelemetryEvent.AddCap);
 }
 
 /**

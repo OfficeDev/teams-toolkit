@@ -28,6 +28,8 @@ const installVersion = FuncVersion.v3;
 const supportedVersions = [FuncVersion.v2, FuncVersion.v3];
 const installedNameWithVersion = `${funcToolName} (v${FuncVersion.v3})`;
 
+const timeout = 3 * 60 * 1000;
+
 export class FuncToolChecker implements IDepsChecker {
   public getDepsInfo(): Promise<DepsInfo> {
     return Promise.resolve({
@@ -97,11 +99,14 @@ export class FuncToolChecker implements IDepsChecker {
     );
 
     try {
-      await DepsCheckerTelemetry.sendEventWithDuration(DepsCheckerEvent.funcInstallCompleted, async () => {
-        await runWithProgressIndicator(async () => {
-          await installFuncCoreTools(FuncVersion.v3);
-        });
-      });
+      await DepsCheckerTelemetry.sendEventWithDuration(
+        DepsCheckerEvent.funcInstallCompleted,
+        async () => {
+          await runWithProgressIndicator(async () => {
+            await installFuncCoreTools(FuncVersion.v3);
+          });
+        }
+      );
     } catch (error) {
       DepsCheckerTelemetry.sendSystemErrorEvent(
         DepsCheckerEvent.funcInstall,
@@ -139,13 +144,7 @@ export class FuncToolChecker implements IDepsChecker {
 
 async function getInstalledFuncToolsVersion(): Promise<FuncVersion | null> {
   try {
-    const output = await cpUtils.executeCommand(
-      undefined,
-      logger,
-      undefined,
-      "func",
-      "--version"
-    );
+    const output = await cpUtils.executeCommand(undefined, logger, undefined, "func", "--version");
     return getFuncToolsVersion(output);
   } catch (error) {
     return null;
@@ -175,7 +174,7 @@ async function installFuncCoreToolsOnWindows(version: FuncVersion): Promise<void
   await cpUtils.executeCommand(
     undefined,
     logger,
-    undefined,
+    { timeout: timeout },
     "npm",
     "install",
     "-g",
@@ -196,7 +195,7 @@ async function installFuncCoreToolsOnUnix(version: FuncVersion): Promise<void> {
   const result: cpUtils.ICommandResult = await cpUtils.tryExecuteCommand(
     undefined,
     logger,
-    undefined,
+    { timeout: timeout },
     "npm",
     "install",
     "-g",
@@ -210,7 +209,7 @@ async function installFuncCoreToolsOnUnix(version: FuncVersion): Promise<void> {
   const command = `npm install -g ${funcPackageName}@${version} --unsafe-perm true`;
 
   if (tryInstallfailed && needAdminPermission && isMacOS()) {
-    await cpUtils.execSudo(logger, command);
+    await cpUtils.withTimeout(timeout, cpUtils.execSudo(logger, command), "Install func timeout");
   } else if (tryInstallfailed) {
     const tryInstallCommand = `npm install -g ${funcPackageName}@${version}`;
     throw new Error(

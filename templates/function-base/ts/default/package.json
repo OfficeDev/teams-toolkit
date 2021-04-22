@@ -1,0 +1,19 @@
+{
+  "name": "teamsfx-template-api",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "prestart": "npm run build",
+    "start": "func start"
+  },
+  "dependencies": {
+    "@azure/functions": "^1.2.2",
+    "@microsoft/microsoft-graph-client": "^2.2.1",
+    "isomorphic-fetch": "^3.0.0",
+    "teamsdev-client": "^1.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^3.3.3"
+  }
+}

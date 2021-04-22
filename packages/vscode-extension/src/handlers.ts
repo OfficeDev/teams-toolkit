@@ -540,7 +540,7 @@ export async function mailtoHandler(): Promise<boolean> {
 }
 
 export async function openDocumentHandler(): Promise<boolean> {
-  return env.openExternal(Uri.parse("https://review.docs.microsoft.com/en-us/mods/build-your-first-app/build-first-app-overview?branch=main"));
+  return env.openExternal(Uri.parse("https://aka.ms/build-first-app"));
 }
 
 export async function devProgramHandler(): Promise<boolean> {

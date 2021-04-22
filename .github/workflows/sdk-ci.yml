@@ -47,9 +47,24 @@ jobs:
           npm run check-format
         working-directory: ./packages/sdk
 
-      - name: Test
+      - name: Unit Test
         run: |
-          npm run test
+          npm run build:test
+          npm run unit-test
+        working-directory: ./packages/sdk
+
+      - name: Integration Test
+        env:
+          SQL_ENDPOINT: ${{secrets.SDK_INTEGRATIONTEST_SQL_ENDPOINT}}
+          SQL_DATABASE_NAME: ${{secrets.SDK_INTEGRATIONTEST_SQL_DATABASE}}
+          SQL_USER_NAME: ${{secrets.SDK_INTEGRATIONTEST_SQL_USERNAME}}
+          SQL_PASSWORD: ${{secrets.SDK_INTEGRATIONTEST_SQL_PASSWORD}}
+          RESOURCE_GROUP_NAME: ${{secrets.SDK_INTEGRATIONTEST_GROUP_NAME}}
+          TEST_ACCOUNT_SUBSCRIPTION_ID: ${{secrets.SDK_INTEGRATIONTEST_SUBSCRIPTION_ID}}
+          TEST_ACCOUNT_NAME: ${{secrets.SDK_INTEGRATIONTEST_TEST_USERNAME}}
+          TEST_ACCOUNT_PASSWORD: ${{secrets.SDK_INTEGRATIONTEST_TEST_PASSWORD}}
+        run: |
+          npm run integration-test
         working-directory: ./packages/sdk
 
   build-and-test-on-latest-version:
@@ -93,7 +108,22 @@ jobs:
           npm run build
         working-directory: ./packages/sdk
 
-      - name: Test
+      - name: Unit Test
         run: |
-          npm run test
+          npm run build:test
+          npm run unit-test
+        working-directory: ./packages/sdk
+
+      - name: Integration Test
+        env:
+          SQL_ENDPOINT: ${{secrets.SDK_INTEGRATIONTEST_SQL_ENDPOINT}}
+          SQL_DATABASE_NAME: ${{secrets.SDK_INTEGRATIONTEST_SQL_DATABASE}}
+          SQL_USER_NAME: ${{secrets.SDK_INTEGRATIONTEST_SQL_USERNAME}}
+          SQL_PASSWORD: ${{secrets.SDK_INTEGRATIONTEST_SQL_PASSWORD}}
+          RESOURCE_GROUP_NAME: ${{secrets.SDK_INTEGRATIONTEST_GROUP_NAME}}
+          TEST_ACCOUNT_SUBSCRIPTION_ID: ${{secrets.SDK_INTEGRATIONTEST_SUBSCRIPTION_ID}}
+          TEST_ACCOUNT_NAME: ${{secrets.SDK_INTEGRATIONTEST_TEST_USERNAME}}
+          TEST_ACCOUNT_PASSWORD: ${{secrets.SDK_INTEGRATIONTEST_TEST_PASSWORD}}
+        run: |
+          npm run integration-test
         working-directory: ./packages/sdk

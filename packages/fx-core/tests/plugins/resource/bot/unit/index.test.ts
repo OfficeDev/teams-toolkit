@@ -367,6 +367,7 @@ describe("Teams Bot Resource Plugin", () => {
 
             // Act
             const result = await botPlugin.deploy(pluginContext);
+            console.log(result); // To be removed.
 
             // Assert
             chai.assert.isTrue(result.isOk());

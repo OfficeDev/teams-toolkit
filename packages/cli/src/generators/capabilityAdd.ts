@@ -11,10 +11,11 @@ import {
   err,
   MultiSelectQuestion,
   OptionItem,
-  Stage
+  NodeType
 } from "fx-api";
 
 import * as constants from "../constants";
+import { flattenNodes } from "../utils";
 import { Generator } from "./generator";
 
 abstract class CapabilityAddGenerator extends Generator {
@@ -31,7 +32,8 @@ abstract class CapabilityAddGenerator extends Generator {
     if (result.isErr()) {
       return err(result.error);
     }
-    const allNodes = result.value as QTreeNode[];
+    const root = result.value as QTreeNode;
+    const allNodes = flattenNodes(root).filter(node => node.data.type !== NodeType.group);
 
     // get capabilities node
     const capabilityParamName = "capabilities";

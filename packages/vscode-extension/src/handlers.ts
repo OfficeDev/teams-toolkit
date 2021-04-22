@@ -540,7 +540,7 @@ export async function mailtoHandler(): Promise<boolean> {
 }
 
 export async function openDocumentHandler(): Promise<boolean> {
-  return env.openExternal(Uri.parse("https://github.com/OfficeDev/teamsfx/"));
+  return env.openExternal(Uri.parse("https://aka.ms/build-first-app"));
 }
 
 export async function devProgramHandler(): Promise<boolean> {

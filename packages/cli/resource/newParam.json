@@ -129,33 +129,6 @@
                                                             "data": {
                                                                 "type": "group"
                                                             },
-                                                            "children": [
-                                                                {
-                                                                    "data": {
-                                                                        "name": "node-version",
-                                                                        "description": "Please select a node version for the Azure function app.",
-                                                                        "type": "singleSelect",
-                                                                        "default": "12",
-                                                                        "option": [
-                                                                            "10",
-                                                                            "12",
-                                                                            "14"
-                                                                        ]
-                                                                    }
-                                                                },
-                                                                {
-                                                                    "data": {
-                                                                        "name": "function-name",
-                                                                        "description": "Please provide function name.",
-                                                                        "type": "text",
-                                                                        "default": "myFunc",
-                                                                        "validation": {
-                                                                            "namespace": "fx-solution-azure/fx-resource-function",
-                                                                            "method": "validateFunctionName"
-                                                                        }
-                                                                    }
-                                                                }
-                                                            ],
                                                             "condition": {
                                                                 "minItems": 1
                                                             }

@@ -20,6 +20,7 @@ describe("OnBehalfOfUserCredential - node", () => {
   const clientId = "fake_client_id";
   const clientSecret = "fake_client_secret";
   const authorityHost = "fake_authority_host";
+  const tenantId = "fake_tenant_id";
   const accessToken = "fake_access_token";
   const accessTokenExpDate = new Date("2021-04-14T02:02:23.742Z");
   const accessTokenExpNumber = accessTokenExpDate.getTime();
@@ -92,7 +93,8 @@ describe("OnBehalfOfUserCredential - node", () => {
     mockedEnvRestore = mockedEnv(
       {
         M365_CLIENT_SECRET: clientSecret,
-        M365_AUTHORITY_HOST: authorityHost
+        M365_AUTHORITY_HOST: authorityHost,
+        M365_TENANT_ID: tenantId
       },
       { clear: true }
     );
@@ -109,7 +111,8 @@ describe("OnBehalfOfUserCredential - node", () => {
     mockedEnvRestore = mockedEnv(
       {
         M365_CLIENT_ID: clientId,
-        M365_CLIENT_SECRET: clientSecret
+        M365_CLIENT_SECRET: clientSecret,
+        M365_TENANT_ID: tenantId
       },
       { clear: true }
     );
@@ -126,7 +129,8 @@ describe("OnBehalfOfUserCredential - node", () => {
     mockedEnvRestore = mockedEnv(
       {
         M365_CLIENT_ID: clientId,
-        M365_AUTHORITY_HOST: authorityHost
+        M365_AUTHORITY_HOST: authorityHost,
+        M365_TENANT_ID: tenantId
       },
       { clear: true }
     );
@@ -139,7 +143,25 @@ describe("OnBehalfOfUserCredential - node", () => {
       .with.property("code", InvalidConfiguration);
   });
 
-  it("construct OnBehalfOfUserCredential should throw InvalidConfiguration Error when clientId, clientSecret, authorityHost not found", async function() {
+  it("construct OnBehalfOfUserCredential should throw InvalidConfiguration Error when tenantId not found", async function() {
+    mockedEnvRestore = mockedEnv(
+      {
+        M365_CLIENT_ID: clientId,
+        M365_CLIENT_SECRET: clientSecret,
+        M365_AUTHORITY_HOST: authorityHost
+      },
+      { clear: true }
+    );
+    loadConfiguration();
+
+    expect(() => {
+      new OnBehalfOfUserCredential(ssoToken);
+    })
+      .to.throw(ErrorWithCode, "tenantId in configuration is invalid: undefined")
+      .with.property("code", InvalidConfiguration);
+  });
+
+  it("construct OnBehalfOfUserCredential should throw InvalidConfiguration Error when clientId, clientSecret, authorityHost, tenantId not found", async function() {
     mockedEnvRestore = mockedEnv({}, { clear: true });
     loadConfiguration();
 
@@ -148,7 +170,7 @@ describe("OnBehalfOfUserCredential - node", () => {
     })
       .to.throw(
         ErrorWithCode,
-        "clientId, authorityHost, clientSecret in configuration is invalid: undefined"
+        "clientId, authorityHost, clientSecret, tenantId in configuration is invalid: undefined"
       )
       .with.property("code", InvalidConfiguration);
   });

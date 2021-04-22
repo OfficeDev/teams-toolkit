@@ -15,6 +15,7 @@ export const accountPath = os.homedir + `/.${ConfigFolderName}/account/homeId.ca
 export const homeAccountId = "home_account_id";
 export const UTF8 = "utf-8";
 const cachePathEnd = ".json";
+import * as StringResources from "../resources/Strings.json";
 
 export function getBeforeCacheAccess(accountName: string) {
   //@ts-ignore
@@ -30,7 +31,7 @@ export function getBeforeCacheAccess(accountName: string) {
             fs.writeFileSync(fileCachePath, "", UTF8);
           }
           if (err) {
-            VsCodeLogInstance.error("read token fail: " + err.message);
+            VsCodeLogInstance.error(StringResources.vsc.cacheAccess.readTokenFail + err.message);
             reject();
           } else {
             cacheContext.tokenCache.deserialize(data);
@@ -40,7 +41,7 @@ export function getBeforeCacheAccess(accountName: string) {
       } else {
         fs.writeFile(fileCachePath, cacheContext.tokenCache.serialize(), (err) => {
           if (err) {
-            VsCodeLogInstance.error("write token fail: " + err.message);
+            VsCodeLogInstance.error(StringResources.vsc.cacheAccess.writeTokenFail + err.message);
             reject();
           }
         });
@@ -59,7 +60,7 @@ export function getAfterCacheAccess(scopes: string[], accountName: string) {
       // save token
       fs.writeFile(fileCachePath, cacheContext.tokenCache.serialize(), (err) => {
         if (err) {
-          VsCodeLogInstance.error("save token fail: " + err.message);
+          VsCodeLogInstance.error(StringResources.vsc.cacheAccess.saveTokenFail + err.message);
         }
       });
 
@@ -69,7 +70,7 @@ export function getAfterCacheAccess(scopes: string[], accountName: string) {
         if (key.indexOf(scopes[0].toLowerCase()) != -1) {
           fs.writeFile(accountPath + accountName, data.AccessToken[key][homeAccountId], (err) => {
             if (err) {
-              VsCodeLogInstance.error("save home account id fail: " + err.message);
+              VsCodeLogInstance.error(StringResources.vsc.cacheAccess.saveHomeAccountIdFail + err.message);
             }
           });
         }

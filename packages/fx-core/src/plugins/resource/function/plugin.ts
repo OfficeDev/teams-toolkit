@@ -43,6 +43,7 @@ import { DotnetChecker } from "./utils/depsChecker/dotnetChecker";
 import { handleDotnetError } from "./utils/depsChecker/checkerAdapter";
 import { isLinux } from "./utils/depsChecker/common";
 import { DepsCheckerError } from "./utils/depsChecker/errors";
+import { getNodeVersion } from "./utils/node-version";
 
 type Site = WebSiteManagementModels.Site;
 type AppServicePlan = WebSiteManagementModels.AppServicePlan;
@@ -253,6 +254,12 @@ export class FunctionPluginImpl {
         return ResultFactory.Success();
     }
 
+    private async getValidNodeVersion(ctx: PluginContext): Promise<NodeVersion> {
+        const currentNodeVersion = await getNodeVersion(this.getFunctionProjectRootPath(ctx));
+        const candidateNodeVersions = Object.values(NodeVersion);
+        return candidateNodeVersions.find((v: NodeVersion) => v === currentNodeVersion) ?? DefaultValues.nodeVersion;
+    }
+
     public async provision(ctx: PluginContext): Promise<FxResult> {
         const resourceGroupName = this.checkAndGet(this.config.resourceGroupName, FunctionConfigKey.resourceGroupName);
         const subscriptionId = this.checkAndGet(this.config.subscriptionId, FunctionConfigKey.subscriptionId);
@@ -262,7 +269,7 @@ export class FunctionPluginImpl {
         const functionAppName = this.checkAndGet(this.config.functionAppName, FunctionConfigKey.functionAppName);
         const functionLanguage = this.checkAndGet(this.config.functionLanguage, FunctionConfigKey.functionLanguage);
         const credential = this.checkAndGet(await ctx.azureAccountProvider?.getAccountCredentialAsync(), FunctionConfigKey.credential);
-        const nodeVersion = DefaultValues.nodeVersion;
+        const nodeVersion = await this.getValidNodeVersion(ctx);
 
         const storageManagementClient: StorageManagementClient =
             await runWithErrorCatchAndThrow(new InitAzureSDKError(),

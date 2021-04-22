@@ -53,6 +53,7 @@ export class FrontendProvision {
         // Always overwrite these configs to support both local debug and remote debug
         ctx.config.set(FrontendConfigInfo.ConfigurableTab, JSON.stringify(configurableTabs));
 
+        //TODO: get latest content url and website url of static tab and don't overwrite them
         const staticTabs: any[] = [];
         ctx.app.staticTabs?.forEach((tab) => {
             variables.personalTabName = tab.name || DefaultValue.PersonalTabName;

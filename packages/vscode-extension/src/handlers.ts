@@ -55,13 +55,16 @@ import * as fs from "fs-extra";
 import * as vscode from "vscode";
 import { VsCodeUI, VS_CODE_UI } from "./qm/vsc_ui";
 import { DepsChecker } from "./debug/depsChecker/checker";
-import { backendExtensionsInstall } from "./debug/depsChecker/backendExtensionsInstall";
+import { BackendExtensionsInstaller } from "./debug/depsChecker/backendExtensionsInstall";
 import { FuncToolChecker } from "./debug/depsChecker/funcToolChecker";
-import { DotnetChecker, dotnetChecker } from "./debug/depsChecker/dotnetChecker";
-import { PanelType } from "./controls/PanelType";
+import { DotnetChecker } from "./debug/depsChecker/dotnetChecker";
 import { NodeChecker } from "./debug/depsChecker/nodeChecker";
 import * as util from "util";
 import * as StringResources from "./resources/Strings.json";
+import { vscodeAdapter } from "./debug/depsChecker/vscodeAdapter";
+import { vscodeLogger } from "./debug/depsChecker/vscodeLogger";
+import { vscodeTelemetry } from "./debug/depsChecker/vscodeTelemetry";
+import { PanelType } from "./controls/PanelType";
 
 export let core: CoreProxy;
 const runningTasks = new Set<string>(); // to control state of task execution
@@ -140,7 +143,7 @@ export async function activate(): Promise<Result<null, FxError>> {
 
     {
       const globalConfig = new ConfigMap();
-      globalConfig.set("function-dotnet-checker-enabled", await dotnetChecker.isEnabled());
+      globalConfig.set("function-dotnet-checker-enabled", vscodeAdapter.dotnetCheckerEnabled());
       const result = await core.init(globalConfig);
       if (result.isErr()) {
         showError(result.error);
@@ -492,7 +495,10 @@ export async function addCapabilityHandler(): Promise<Result<null, FxError>> {
  * check & install required dependencies during local debug.
  */
 export async function validateDependenciesHandler(): Promise<void> {
-  const depsChecker = new DepsChecker([new NodeChecker(), new FuncToolChecker(), new DotnetChecker()]);
+  const depsChecker = new DepsChecker(vscodeAdapter, [
+    new NodeChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry), 
+    new FuncToolChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry), 
+    new DotnetChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry)]);
   const shouldContinue = await depsChecker.resolve();
   if (!shouldContinue) {
     // TODO: better mechanism to stop the tasks and debug session.
@@ -512,7 +518,10 @@ export async function backendExtensionsInstallHandler(): Promise<void> {
     );
 
     if (backendRoot) {
-      await backendExtensionsInstall(backendRoot);
+      const dotnetChecker = new DotnetChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
+      const backendExtensionsInstaller = new BackendExtensionsInstaller(dotnetChecker, vscodeLogger);
+
+      await backendExtensionsInstaller.install(backendRoot);
     }
   }
 }

@@ -100,6 +100,10 @@ export class LocalDebugPlugin implements Plugin {
                             EOL: os.EOL
                         });
                 }
+
+                if (includeBot) {
+                    ctx.config.set(LocalDebugConfigKeys.SkipNgrok, false);
+                }
             }
         }
 

@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
+import * as StringResources from "../resources/Strings.json";
 
 const SURVEY_URL = "https://aka.ms/AAamyhp"; // To be updated
 
@@ -9,26 +10,6 @@ enum ExtensionSurveyStateKeys {
   RemindMeLater = "survey/remindMeLater",
   DisableSurveyForTime = "survey/disableSurveyForTime",
 }
-
-const ExtensionSurveyStrings = {
-  "takeSurvey": {
-      "title": "Take Survey",
-      "message": "takeSurvey"
-    },
-    "remindMeLater": {
-      "title": "Remind Me Later",
-      "message": "remindMeLater"
-    },
-    "dontShowAgain": {
-      "title": "Don't Show Again",
-      "message": "dontShowAgain"
-    },
-    "banner": {
-      "title": "Can you please take 2 minutes to tell us how the TeamsFx extension is working for you?",
-      "message": "userAsked"
-    },
-    "cancelMessage": "userCancelled"
-};
 
 const TIME_TO_DISABLE_SURVEY = 1000 * 60 * 60 * 24 * 7 * 12; // 4 weeks
 const TIME_TO_SHOW_SURVEY = 1000 * 60 * 60 * 1; // 1 hours
@@ -105,10 +86,10 @@ export class ExtensionSurvey {
 
     const extensionVersion = extension.packageJSON.version || "unknown";
     const take = {
-      title: ExtensionSurveyStrings.takeSurvey.title,
+      title: StringResources.vsc.survey.takeSurvey.title,
       run: async (): Promise<void> => {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Survey, {
-          "message": ExtensionSurveyStrings.takeSurvey.message
+          "message": StringResources.vsc.survey.takeSurvey.message
         });
         vscode.commands.executeCommand(
           "vscode.open",
@@ -127,10 +108,10 @@ export class ExtensionSurvey {
     };
 
     const remind = {
-      title: ExtensionSurveyStrings.remindMeLater.title,
+      title: StringResources.vsc.survey.remindMeLater.title,
       run: async (): Promise<void> => {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Survey, {
-          "message": ExtensionSurveyStrings.remindMeLater.message
+          "message": StringResources.vsc.survey.remindMeLater.message
         });
         const remindMeLaterTime = Date.now() + this.timeToShowSurvey;
         await globalState.update(
@@ -141,17 +122,17 @@ export class ExtensionSurvey {
     };
 
     const never = {
-      title: ExtensionSurveyStrings.dontShowAgain.title,
+      title: StringResources.vsc.survey.dontShowAgain.title,
       run: async (): Promise<void> => {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Survey, {
-          "message": ExtensionSurveyStrings.dontShowAgain.message
+          "message": StringResources.vsc.survey.dontShowAgain.message
         });
         await globalState.update(ExtensionSurveyStateKeys.DoNotShowAgain, true);
       },
     };
 
     const selection = await vscode.window.showInformationMessage(
-      ExtensionSurveyStrings.banner.title,
+      StringResources.vsc.survey.banner.title,
       take,
       remind,
       never
@@ -159,12 +140,12 @@ export class ExtensionSurvey {
 
     if (selection) {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Survey, {
-        "message": ExtensionSurveyStrings.banner.message
+        "message": StringResources.vsc.survey.banner.message
       });
       await selection.run();
     } else {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Survey, {
-        "message": ExtensionSurveyStrings.cancelMessage
+        "message": StringResources.vsc.survey.cancelMessage
       });
     }
   }

@@ -18,6 +18,11 @@ export class LocalDebugCertificate {
     public static readonly FriendlyName: string = "TeamsFx Development Certificate";
 }
 
+export enum ProgrammingLanguage {
+    javascript = "javascript",
+    typescript = "typescript",
+}
+
 /**
  * Config key contract that value is provided by local debug plugin and required by other plugins.
  */
@@ -62,6 +67,7 @@ export class SolutionPlugin {
     public static readonly LocalTeamsAppId: string = "localDebugTeamsAppId";
     public static readonly RemoteTeamsAppId: string = "remoteTeamsAppId";
     public static readonly TeamsAppTenantId: string = "teamsAppTenantId";
+    public static readonly ProgrammingLanguage: string = "programmingLanguage";
 }
 
 export class FrontendHostingPlugin {

@@ -112,6 +112,19 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
                 Body = responseBodyObject
             };
         }
+
+        private async Task<string> GetUserAccessToken(string scope = null)
+        {
+            string clientId = _configuration[ConfigurationName.ClientId];
+            if (scope == null)
+            {
+                scope = $"{_settings.ApiAppIdUri}/{clientId}/{_settings.Scope}";
+            }
+
+            return await Utilities.GetUserAccessToken(_settings.TestUsername, _settings.TestPassword, clientId,
+                _configuration[ConfigurationName.ClientSecret], _configuration[ConfigurationName.OAuthAuthority],
+                scope).ConfigureAwait(false);
+        }
         #endregion
 
         [Test, Category("P0")]
@@ -182,9 +195,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         public async Task PostToken_WithIncorrectAudience_Return401() // TODO: confirm the behavior
         {
             // Arrange
-            var ssoToken = await Utilities.GetUserAccessToken(_settings, _configuration[ConfigurationName.ClientId],
-                _configuration[ConfigurationName.ClientSecret], _configuration[ConfigurationName.OAuthAuthority],
-                DefaultGraphScope).ConfigureAwait(false);
+            var ssoToken = await GetUserAccessToken(DefaultGraphScope);
             var client = _defaultFactory.CreateDefaultClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
 
@@ -206,8 +217,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         public async Task PostToken_WithExpiredAuthorizationToken_Return401()
         {
             // Arrange
-            var ssoToken = await Utilities.GetUserAccessToken(_settings, _configuration[ConfigurationName.ClientId],
-                _configuration[ConfigurationName.ClientSecret], _configuration[ConfigurationName.OAuthAuthority]).ConfigureAwait(false);
+            var ssoToken = await GetUserAccessToken();
             var client = _defaultFactory.CreateDefaultClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
 
@@ -254,8 +264,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         public async Task PostToken_AuthorizationTokenClientNotAllowed_Return403()
         {
             // Arrange
-            var tokenFromUnauthorizedClient = await Utilities.GetUserAccessToken(_settings, _settings.AdminClientId, _settings.AdminClientSecret,
-                _configuration[ConfigurationName.OAuthAuthority]).ConfigureAwait(false);
+            var tokenFromUnauthorizedClient = await GetUserAccessToken();
             // Temporary workaround the consent for new AAD app in each test run
             // TODO: Add UI automation to grant consent for new AAD app in each test run
             var customizedAppConfiguration = new Dictionary<string, string>(_defaultConfigurations);
@@ -280,8 +289,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         public async Task PostToken_EmptyBody_Return400() // TODO: confirm the behavior
         {
             // Arrange
-            var ssoToken = await Utilities.GetUserAccessToken(_settings, _configuration[ConfigurationName.ClientId],
-                _configuration[ConfigurationName.ClientSecret], _configuration[ConfigurationName.OAuthAuthority]).ConfigureAwait(false);
+            var ssoToken = await GetUserAccessToken();
             var client = _defaultFactory.CreateDefaultClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
 
@@ -299,8 +307,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         public async Task PostToken_NoBody_Return415() // TODO: confirm the behavior
         {
             // Arrange
-            var ssoToken = await Utilities.GetUserAccessToken(_settings, _configuration[ConfigurationName.ClientId],
-                _configuration[ConfigurationName.ClientSecret], _configuration[ConfigurationName.OAuthAuthority]).ConfigureAwait(false);
+            var ssoToken = await GetUserAccessToken();
             var client = _defaultFactory.CreateDefaultClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
 
@@ -320,8 +327,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         public async Task PostToken_NotSupportedGrantTypeInBody_Return400()
         {
             // Arrange
-            var ssoToken = await Utilities.GetUserAccessToken(_settings, _configuration[ConfigurationName.ClientId],
-                _configuration[ConfigurationName.ClientSecret], _configuration[ConfigurationName.OAuthAuthority]).ConfigureAwait(false);
+            var ssoToken = await GetUserAccessToken();
             var client = _defaultFactory.CreateDefaultClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
 
@@ -344,8 +350,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         public async Task PostToken_GrantTypeNullInBody_Return400()
         {
             // Arrange
-            var ssoToken = await Utilities.GetUserAccessToken(_settings, _configuration[ConfigurationName.ClientId],
-                _configuration[ConfigurationName.ClientSecret], _configuration[ConfigurationName.OAuthAuthority]).ConfigureAwait(false);
+            var ssoToken = await GetUserAccessToken();
             var client = _defaultFactory.CreateDefaultClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
 
@@ -368,8 +373,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         public async Task PostToken_NoGrantTypeInBody_Return400()
         {
             // Arrange
-            var ssoToken = await Utilities.GetUserAccessToken(_settings, _configuration[ConfigurationName.ClientId],
-                _configuration[ConfigurationName.ClientSecret], _configuration[ConfigurationName.OAuthAuthority]).ConfigureAwait(false);
+            var ssoToken = await GetUserAccessToken();
             var client = _defaultFactory.CreateDefaultClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
 
@@ -391,8 +395,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         public async Task PostToken_AuthCodeGrantWithNoScopeInBody_Return400()
         {
             // Arrange
-            var ssoToken = await Utilities.GetUserAccessToken(_settings, _configuration[ConfigurationName.ClientId],
-                _configuration[ConfigurationName.ClientSecret], _configuration[ConfigurationName.OAuthAuthority]).ConfigureAwait(false);
+            var ssoToken = await GetUserAccessToken();
             var client = _defaultFactory.CreateDefaultClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
 
@@ -418,8 +421,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         public async Task PostToken_AuthCodeGrantWithEmptyScopeInBody_Return400()
         {
             // Arrange
-            var ssoToken = await Utilities.GetUserAccessToken(_settings, _configuration[ConfigurationName.ClientId],
-                _configuration[ConfigurationName.ClientSecret], _configuration[ConfigurationName.OAuthAuthority]).ConfigureAwait(false);
+            var ssoToken = await GetUserAccessToken();
             var client = _defaultFactory.CreateDefaultClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
 
@@ -446,8 +448,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         public async Task PostToken_AuthCodeGrantWithInvalidScope_Return400()
         {
             // Arrange
-            var ssoToken = await Utilities.GetUserAccessToken(_settings, _configuration[ConfigurationName.ClientId],
-                _configuration[ConfigurationName.ClientSecret], _configuration[ConfigurationName.OAuthAuthority]).ConfigureAwait(false);
+            var ssoToken = await GetUserAccessToken();
             var client = _defaultFactory.CreateDefaultClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
             var Code = Utilities.GetAuthorizationCode(_settings, _configuration);
@@ -475,8 +476,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         public async Task PostToken_AuthCodeGrantWithIncorrectRedirectUri_Return400()
         {
             // Arrange
-            var ssoToken = await Utilities.GetUserAccessToken(_settings, _configuration[ConfigurationName.ClientId],
-                _configuration[ConfigurationName.ClientSecret], _configuration[ConfigurationName.OAuthAuthority]).ConfigureAwait(false);
+            var ssoToken = await GetUserAccessToken();
             var client = _defaultFactory.CreateDefaultClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
 
@@ -504,8 +504,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         public async Task PostToken_AuthCodeGrantWithIncorrectAuthCode_Return400()
         {
             // Arrange
-            var ssoToken = await Utilities.GetUserAccessToken(_settings, _configuration[ConfigurationName.ClientId],
-                _configuration[ConfigurationName.ClientSecret], _configuration[ConfigurationName.OAuthAuthority]).ConfigureAwait(false);
+            var ssoToken = await GetUserAccessToken();
             var client = _defaultFactory.CreateDefaultClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
 
@@ -532,8 +531,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         public async Task PostToken_AuthCodeGrantWithIncorrectCodeVerifier_Return400()
         {
             // Arrange
-            var ssoToken = await Utilities.GetUserAccessToken(_settings, _configuration[ConfigurationName.ClientId],
-                _configuration[ConfigurationName.ClientSecret], _configuration[ConfigurationName.OAuthAuthority]).ConfigureAwait(false);
+            var ssoToken = await GetUserAccessToken();
             var client = _defaultFactory.CreateDefaultClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
 
@@ -559,11 +557,36 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         }
 
         [Test, Category("P0")]
+        public async Task PostToken_AuthCodeGrantWithAuthorizationCodeAndSsoTokenNotBelongsToSameUser_Return403()
+        {
+            // Arrange
+            var clientId = _configuration[ConfigurationName.ClientId];
+            var scope = $"{_settings.ApiAppIdUri}/{clientId}/{_settings.Scope}";
+            var ssoTokenFromAnotherAuthorizedUser = await Utilities.GetUserAccessToken(_settings.TestUsername2, _settings.TestPassword2, clientId,
+                _configuration[ConfigurationName.ClientSecret], _configuration[ConfigurationName.OAuthAuthority], scope).ConfigureAwait(false);
+            var client = _defaultFactory.CreateDefaultClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoTokenFromAnotherAuthorizedUser); // sso token belongs to authorized test user 2.
+
+            // Act
+            var requestBody = new PostTokenRequestBody
+            {
+                scope = DefaultGraphScope,
+                redirect_uri = _settings.RedirectUri,
+                grant_type = AadGrantType.AuthorizationCode,
+                code = Utilities.GetAuthorizationCode(_settings, _configuration), // authorization code belongs to authorized test user 1.
+                code_verifier = _settings.CodeVerifier
+            };
+            var result = await PostToAuthTokenApi<ProblemDetails>(client, requestBody);
+
+            // Assert
+            Assert.AreEqual(HttpStatusCode.Forbidden, result.Response.StatusCode);
+        }
+
+        [Test, Category("P0")]
         public async Task PostToken_AuthCodeGrantWithCorrectBody_Return200()
         {
             // Arrange
-            var ssoToken = await Utilities.GetUserAccessToken(_settings, _configuration[ConfigurationName.ClientId],
-                _configuration[ConfigurationName.ClientSecret], _configuration[ConfigurationName.OAuthAuthority]).ConfigureAwait(false);
+            var ssoToken = await GetUserAccessToken();
             var client = _defaultFactory.CreateDefaultClient(new RetryHandler(new HttpClientHandler()));
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
 
@@ -602,8 +625,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         public async Task PostToken_AuthCodeGrantWithAdditionalPropertyInBody_Return200()
         {
             // Arrange
-            var ssoToken = await Utilities.GetUserAccessToken(_settings, _configuration[ConfigurationName.ClientId],
-                _configuration[ConfigurationName.ClientSecret], _configuration[ConfigurationName.OAuthAuthority]).ConfigureAwait(false);
+            var ssoToken = await GetUserAccessToken();
             var client = _defaultFactory.CreateDefaultClient(new RetryHandler(new HttpClientHandler()));
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
 
@@ -643,8 +665,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         public async Task PostToken_AuthCodeGrantWithInvalidClientSecretInApiSetting_Return500()
         {
             // Arrange
-            var ssoToken = await Utilities.GetUserAccessToken(_settings, _configuration[ConfigurationName.ClientId],
-                _configuration[ConfigurationName.ClientSecret], _configuration[ConfigurationName.OAuthAuthority]).ConfigureAwait(false);
+            var ssoToken = await GetUserAccessToken();
             var customizedAppConfiguration = new Dictionary<string, string>(_defaultConfigurations);
             customizedAppConfiguration[ConfigurationName.ClientSecret] = Guid.NewGuid().ToString();
             var factory = _aadInstance.ConfigureWebApplicationFactory(customizedAppConfiguration);
@@ -674,8 +695,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         public async Task PostToken_SsoGrantWithNoScopeInBody_Return400()
         {
             // Arrange
-            var ssoToken = await Utilities.GetUserAccessToken(_settings, _configuration[ConfigurationName.ClientId],
-                _configuration[ConfigurationName.ClientSecret], _configuration[ConfigurationName.OAuthAuthority]).ConfigureAwait(false);
+            var ssoToken = await GetUserAccessToken();
             var client = _defaultFactory.CreateDefaultClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
 
@@ -698,8 +718,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         public async Task PostToken_SsoGrantWithEmptyScopeInBody_Return400()
         {
             // Arrange
-            var ssoToken = await Utilities.GetUserAccessToken(_settings, _configuration[ConfigurationName.ClientId],
-                _configuration[ConfigurationName.ClientSecret], _configuration[ConfigurationName.OAuthAuthority]).ConfigureAwait(false);
+            var ssoToken = await GetUserAccessToken();
             var client = _defaultFactory.CreateDefaultClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
 
@@ -723,8 +742,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         public async Task PostToken_SsoGrantWithInvalidScopeInBody_Return400() // TODO: Confirm the behavior
         {
             // Arrange
-            var ssoToken = await Utilities.GetUserAccessToken(_settings, _configuration[ConfigurationName.ClientId],
-                _configuration[ConfigurationName.ClientSecret], _configuration[ConfigurationName.OAuthAuthority]).ConfigureAwait(false);
+            var ssoToken = await GetUserAccessToken();
             var client = _defaultFactory.CreateDefaultClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
 
@@ -748,8 +766,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         public async Task PostToken_SsoGrantWhenUserNotGrant_Return400()
         {
             // Arrange
-            var ssoToken = await Utilities.GetUserAccessToken(_settings, _configuration[ConfigurationName.ClientId],
-                _configuration[ConfigurationName.ClientSecret], _configuration[ConfigurationName.OAuthAuthority]).ConfigureAwait(false);
+            var ssoToken = await GetUserAccessToken();
             var client = _defaultFactory.CreateDefaultClient();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
 
@@ -773,8 +790,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         public async Task PostToken_SsoGrantWithCorrectBody_Return200()
         {
             // Arrange
-            var ssoToken = await Utilities.GetUserAccessToken(_settings, _configuration[ConfigurationName.ClientId],
-                _configuration[ConfigurationName.ClientSecret], _configuration[ConfigurationName.OAuthAuthority]).ConfigureAwait(false);
+            var ssoToken = await GetUserAccessToken();
             var client = _defaultFactory.CreateDefaultClient(new RetryHandler(new HttpClientHandler()));
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
 
@@ -798,8 +814,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         public async Task PostToken_SsoGrantWithAdditionalPropertyInBody_Return200()
         {
             // Arrange
-            var ssoToken = await Utilities.GetUserAccessToken(_settings, _configuration[ConfigurationName.ClientId],
-                _configuration[ConfigurationName.ClientSecret], _configuration[ConfigurationName.OAuthAuthority]).ConfigureAwait(false);
+            var ssoToken = await GetUserAccessToken();
             var client = _defaultFactory.CreateDefaultClient(new RetryHandler(new HttpClientHandler()));
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
 
@@ -824,8 +839,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         public async Task PostToken_SsoGrantWithAnotherConsentedScope_Return200WithNewScopeInToken()
         {
             // Arrange
-            var ssoToken = await Utilities.GetUserAccessToken(_settings, _configuration[ConfigurationName.ClientId],
-                _configuration[ConfigurationName.ClientSecret], _configuration[ConfigurationName.OAuthAuthority]).ConfigureAwait(false);
+            var ssoToken = await GetUserAccessToken();
             var client = _defaultFactory.CreateDefaultClient(new RetryHandler(new HttpClientHandler()));
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
 
@@ -860,8 +874,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         public async Task PostToken_SsoGrantWithSameConsentedScope_Return200WithTokenFromCache()
         {
             // Arrange
-            var ssoToken = await Utilities.GetUserAccessToken(_settings, _configuration[ConfigurationName.ClientId],
-                _configuration[ConfigurationName.ClientSecret], _configuration[ConfigurationName.OAuthAuthority]).ConfigureAwait(false);
+            var ssoToken = await GetUserAccessToken();
             var client = _defaultFactory.CreateDefaultClient(new RetryHandler(new HttpClientHandler()));
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
 
@@ -891,9 +904,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         public async Task PostToken_SsoGrantWithSameConsentedScopeWhenTokenGoingToExpire_Return200WithRefreshedToken() // TODO: long run case, mark this test case as P2
         {
             // Arrange
-            var ssoToken = await Utilities.GetUserAccessToken(_settings, _configuration[ConfigurationName.ClientId],
-                _configuration[ConfigurationName.ClientSecret], _configuration[ConfigurationName.OAuthAuthority]).ConfigureAwait(false);
-
+            var ssoToken = await GetUserAccessToken();
             var customizedAppConfiguration = new Dictionary<string, string>(_defaultConfigurations);
             // Start a new instance so the cached token is guaranteed to expired after 10 minutes, otherwise it may expire after 1 hour according to test case executing scequence
             var factory = _aadInstance.ConfigureWebApplicationFactory(customizedAppConfiguration);
@@ -932,8 +943,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         public async Task PostToken_SsoGrantWithInvalidClientSecretInApiSetting_Return500()
         {
             // Arrange
-            var ssoToken = await Utilities.GetUserAccessToken(_settings, _configuration[ConfigurationName.ClientId],
-                _configuration[ConfigurationName.ClientSecret], _configuration[ConfigurationName.OAuthAuthority]).ConfigureAwait(false);
+            var ssoToken = await GetUserAccessToken();
             var customizedAppConfiguration = new Dictionary<string, string>(_defaultConfigurations);
             customizedAppConfiguration[ConfigurationName.ClientSecret] = Guid.NewGuid().ToString();
             var factory = _aadInstance.ConfigureWebApplicationFactory(customizedAppConfiguration);

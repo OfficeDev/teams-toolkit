@@ -3,57 +3,30 @@
 import { AssertConfigNotEmpty, BuildError, NoValidOpenApiDocument } from "../error";
 import {
     LogProvider,
-    Dialog,
     OptionItem,
     SingleSelectQuestion,
     NodeType,
-    Question,
     Validation,
     PluginContext,
     FuncQuestion,
     TextInputQuestion,
-    TelemetryReporter
+    TelemetryReporter,
 } from "fx-api";
 import { ApimDefaultValues, ApimPluginConfigKeys, QuestionConstants, TeamsToolkitComponent } from "../constants";
 import { ApimPluginConfig, SolutionConfig } from "../model/config";
-import { ApimService } from "./apimService";
+import { ApimService } from "../service/apimService";
 import { OpenApiProcessor } from "../util/openApiProcessor";
 import { buildAnswer } from "../model/answer";
 import { Lazy } from "../util/lazy";
 import { NamingRules } from "../util/namingRules";
-
-export interface IQuestionService {
-    // Control whether the question is displayed to the user.
-    condition?(parentAnswerPath: string): { target?: string; } & Validation;
-
-    // Define the method name
-    funcName: string;
-
-    // Generate the options / default value / answer of the question.
-    executeFunc(ctx: PluginContext): Promise<string | OptionItem | OptionItem[]>;
-
-    // Generate the question
-    getQuestion(): Question;
-}
-
-class BaseQuestionService {
-    protected readonly dialog: Dialog;
-    protected readonly logger?: LogProvider;
-    protected readonly telemetryReporter?: TelemetryReporter;
-
-    constructor(dialog: Dialog, telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
-        this.dialog = dialog;
-        this.telemetryReporter = telemetryReporter;
-        this.logger = logger;
-    }
-}
+import { BaseQuestionService, IQuestionService } from "./question";
 
 export class ApimServiceQuestion extends BaseQuestionService implements IQuestionService {
     private readonly lazyApimService: Lazy<ApimService>;
-    public readonly funcName = QuestionConstants.Apim.funcName;
+    public readonly funcName = QuestionConstants.VSCode.Apim.funcName;
 
-    constructor(lazyApimService: Lazy<ApimService>, dialog: Dialog, telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
-        super(dialog, telemetryReporter, logger);
+    constructor(lazyApimService: Lazy<ApimService>, telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
+        super(telemetryReporter, logger);
         this.lazyApimService = lazyApimService;
     }
 
@@ -63,18 +36,18 @@ export class ApimServiceQuestion extends BaseQuestionService implements IQuestio
         const existingOptions = apimServiceList.map((apimService) => {
             return { id: apimService.serviceName, label: apimService.serviceName, description: apimService.resourceGroupName, data: apimService };
         });
-        const newOption = { id: QuestionConstants.Apim.createNewApimOption, label: QuestionConstants.Apim.createNewApimOption };
+        const newOption = { id: QuestionConstants.VSCode.Apim.createNewApimOption, label: QuestionConstants.VSCode.Apim.createNewApimOption };
         return [newOption, ...existingOptions];
     }
 
     public getQuestion(): SingleSelectQuestion {
         return {
             type: NodeType.singleSelect,
-            name: QuestionConstants.Apim.questionName,
-            description: QuestionConstants.Apim.description,
+            name: QuestionConstants.VSCode.Apim.questionName,
+            description: QuestionConstants.VSCode.Apim.description,
             option: {
                 namespace: QuestionConstants.namespace,
-                method: QuestionConstants.Apim.funcName,
+                method: QuestionConstants.VSCode.Apim.funcName,
             },
             returnObject: true,
             skipSingleOption: false
@@ -84,18 +57,18 @@ export class ApimServiceQuestion extends BaseQuestionService implements IQuestio
 
 export class OpenApiDocumentQuestion extends BaseQuestionService implements IQuestionService {
     private readonly openApiProcessor: OpenApiProcessor;
-    public readonly funcName = QuestionConstants.OpenApiDocument.funcName;
+    public readonly funcName = QuestionConstants.VSCode.OpenApiDocument.funcName;
 
-    constructor(openApiProcessor: OpenApiProcessor, dialog: Dialog, telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
-        super(dialog, telemetryReporter, logger);
+    constructor(openApiProcessor: OpenApiProcessor, telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
+        super(telemetryReporter, logger);
         this.openApiProcessor = openApiProcessor;
     }
 
     public async executeFunc(ctx: PluginContext): Promise<OptionItem[]> {
         const filePath2OpenApiMap = await this.openApiProcessor.listOpenApiDocument(
             ctx.root,
-            QuestionConstants.OpenApiDocument.excludeFolders,
-            QuestionConstants.OpenApiDocument.openApiDocumentFileExtensions
+            QuestionConstants.VSCode.OpenApiDocument.excludeFolders,
+            QuestionConstants.VSCode.OpenApiDocument.openApiDocumentFileExtensions
         );
 
         if (filePath2OpenApiMap.size === 0) {
@@ -110,11 +83,11 @@ export class OpenApiDocumentQuestion extends BaseQuestionService implements IQue
     public getQuestion(): SingleSelectQuestion {
         return {
             type: NodeType.singleSelect,
-            name: QuestionConstants.OpenApiDocument.questionName,
-            description: QuestionConstants.OpenApiDocument.description,
+            name: QuestionConstants.VSCode.OpenApiDocument.questionName,
+            description: QuestionConstants.VSCode.OpenApiDocument.description,
             option: {
                 namespace: QuestionConstants.namespace,
-                method: QuestionConstants.OpenApiDocument.funcName,
+                method: QuestionConstants.VSCode.OpenApiDocument.funcName,
             },
             returnObject: true,
             skipSingleOption: false
@@ -124,10 +97,10 @@ export class OpenApiDocumentQuestion extends BaseQuestionService implements IQue
 
 export class ExistingOpenApiDocumentFunc extends BaseQuestionService implements IQuestionService {
     private readonly openApiProcessor: OpenApiProcessor;
-    public readonly funcName = QuestionConstants.ExistingOpenApiDocument.funcName;
+    public readonly funcName = QuestionConstants.VSCode.ExistingOpenApiDocument.funcName;
 
-    constructor(openApiProcessor: OpenApiProcessor, dialog: Dialog, telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
-        super(dialog, telemetryReporter, logger);
+    constructor(openApiProcessor: OpenApiProcessor, telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
+        super(telemetryReporter, logger);
         this.openApiProcessor = openApiProcessor;
     }
 
@@ -145,18 +118,18 @@ export class ExistingOpenApiDocumentFunc extends BaseQuestionService implements 
     public getQuestion(): FuncQuestion {
         return {
             type: NodeType.func,
-            name: QuestionConstants.ExistingOpenApiDocument.questionName,
+            name: QuestionConstants.VSCode.ExistingOpenApiDocument.questionName,
             namespace: QuestionConstants.namespace,
-            method: QuestionConstants.ExistingOpenApiDocument.funcName,
+            method: QuestionConstants.VSCode.ExistingOpenApiDocument.funcName,
         };
     }
 }
 
 export class ApiPrefixQuestion extends BaseQuestionService implements IQuestionService {
-    public readonly funcName = QuestionConstants.ApiPrefix.funcName;
+    public readonly funcName = QuestionConstants.VSCode.ApiPrefix.funcName;
 
-    constructor(dialog: Dialog, telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
-        super(dialog, telemetryReporter, logger);
+    constructor(telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
+        super(telemetryReporter, logger);
     }
 
     public async executeFunc(ctx: PluginContext): Promise<string> {
@@ -167,11 +140,12 @@ export class ApiPrefixQuestion extends BaseQuestionService implements IQuestionS
     public getQuestion(): TextInputQuestion {
         return {
             type: NodeType.text,
-            name: QuestionConstants.ApiPrefix.questionName,
-            description: QuestionConstants.ApiPrefix.description,
+            name: QuestionConstants.VSCode.ApiPrefix.questionName,
+            description: QuestionConstants.VSCode.ApiPrefix.description,
+            prompt: QuestionConstants.VSCode.ApiPrefix.prompt,
             default: {
                 namespace: QuestionConstants.namespace,
-                method: QuestionConstants.ApiPrefix.funcName,
+                method: QuestionConstants.VSCode.ApiPrefix.funcName,
             },
             validation: {
                 validFunc: (input: string): string | undefined => NamingRules.validate(input, NamingRules.apiPrefix)
@@ -182,10 +156,10 @@ export class ApiPrefixQuestion extends BaseQuestionService implements IQuestionS
 
 export class ApiVersionQuestion extends BaseQuestionService implements IQuestionService {
     private readonly lazyApimService: Lazy<ApimService>;
-    public readonly funcName = QuestionConstants.ApiVersion.funcName;
+    public readonly funcName = QuestionConstants.VSCode.ApiVersion.funcName;
 
-    constructor(lazyApimService: Lazy<ApimService>, dialog: Dialog, telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
-        super(dialog, telemetryReporter, logger);
+    constructor(lazyApimService: Lazy<ApimService>, telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
+        super(telemetryReporter, logger);
         this.lazyApimService = lazyApimService;
     }
 
@@ -206,18 +180,18 @@ export class ApiVersionQuestion extends BaseQuestionService implements IQuestion
             const result: OptionItem = { id: api.name ?? "", label: api.apiVersion ?? "", description: api.name, data: api };
             return result;
         });
-        const createNewApiVersionOption: OptionItem = { id: QuestionConstants.ApiVersion.createNewApiVersionOption, label: QuestionConstants.ApiVersion.createNewApiVersionOption };
+        const createNewApiVersionOption: OptionItem = { id: QuestionConstants.VSCode.ApiVersion.createNewApiVersionOption, label: QuestionConstants.VSCode.ApiVersion.createNewApiVersionOption };
         return [createNewApiVersionOption, ...existingApiVersionOptions];
     }
 
     public getQuestion(): SingleSelectQuestion {
         return {
             type: NodeType.singleSelect,
-            name: QuestionConstants.ApiVersion.questionName,
-            description: QuestionConstants.ApiVersion.description,
+            name: QuestionConstants.VSCode.ApiVersion.questionName,
+            description: QuestionConstants.VSCode.ApiVersion.description,
             option: {
                 namespace: QuestionConstants.namespace,
-                method: QuestionConstants.ApiVersion.funcName,
+                method: QuestionConstants.VSCode.ApiVersion.funcName,
             },
             returnObject: true,
             skipSingleOption: false
@@ -226,15 +200,15 @@ export class ApiVersionQuestion extends BaseQuestionService implements IQuestion
 }
 
 export class NewApiVersionQuestion extends BaseQuestionService implements IQuestionService {
-    public readonly funcName = QuestionConstants.NewApiVersion.funcName;
+    public readonly funcName = QuestionConstants.VSCode.NewApiVersion.funcName;
 
-    constructor(dialog: Dialog, telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
-        super(dialog, telemetryReporter, logger);
+    constructor(telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
+        super(telemetryReporter, logger);
     }
 
     public condition(): { target?: string; } & Validation {
         return {
-            equals: QuestionConstants.ApiVersion.createNewApiVersionOption,
+            equals: QuestionConstants.VSCode.ApiVersion.createNewApiVersionOption,
         };
     }
 
@@ -246,11 +220,11 @@ export class NewApiVersionQuestion extends BaseQuestionService implements IQuest
     public getQuestion(): TextInputQuestion {
         return {
             type: NodeType.text,
-            name: QuestionConstants.NewApiVersion.questionName,
-            description: QuestionConstants.NewApiVersion.description,
+            name: QuestionConstants.VSCode.NewApiVersion.questionName,
+            description: QuestionConstants.VSCode.NewApiVersion.description,
             default: {
                 namespace: QuestionConstants.namespace,
-                method: QuestionConstants.NewApiVersion.funcName,
+                method: QuestionConstants.VSCode.NewApiVersion.funcName,
             },
             validation: {
                 validFunc: (input: string): string | undefined => NamingRules.validate(input, NamingRules.versionIdentity)

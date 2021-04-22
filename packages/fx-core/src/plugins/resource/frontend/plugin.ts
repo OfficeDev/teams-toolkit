@@ -17,6 +17,7 @@ import {
     runWithErrorCatchAndThrow,
 } from "./resources/errors";
 import {
+    Constants,
     DependentPluginInfo,
     FrontendConfigInfo,
     FrontendPathInfo,
@@ -43,7 +44,7 @@ export class FrontendPluginImpl {
         ctx.config.set(key, value);
     }
 
-    public getQuestions(stage: Stage, ctx: PluginContext): Result<QTreeNode | undefined, FxError> {
+    public getQuestions(stage: Stage, _ctx: PluginContext): Result<QTreeNode | undefined, FxError> {
         const res = new QTreeNode({
             type: NodeType.group
         });
@@ -64,7 +65,9 @@ export class FrontendPluginImpl {
         );
         await runWithErrorCatchAndThrow(
             new UnzipTemplateError(),
-            async () => await Scaffold.scaffoldFromZip(zip, path.join(ctx.root, FrontendPathInfo.WorkingDir)),
+            async () => await Scaffold.scaffoldFromZip(zip, path.join(ctx.root, FrontendPathInfo.WorkingDir),
+                (filePath: string, data: Buffer) => filePath.replace(Constants.ReplaceTemplateExt, Constants.EmptyString),
+                (filePath: string, data: Buffer) => Scaffold.fulfill(filePath, data, templateInfo.variables))
         );
 
         await ProgressHelper.endScaffoldProgress();

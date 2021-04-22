@@ -44,11 +44,13 @@ namespace Microsoft.TeamsFx.SimpleAuth.Controllers
 
         [Authorize(Policy = "ValidateAppId")]
         [Authorize(Policy = "ValidateUserIdentity")]
+        [Authorize(Policy = "RequireAccessAsUserScope")]
         [HttpPost("token")]
         public async Task<IActionResult> PostToken([FromBody] PostTokenRequestBody body)
         {
             _logger.LogDebug($"New request to token endpoint. Simple Auth version:{GlobalConfig.SimpleAuthVersion}."
                 +$"Body:{JsonConvert.SerializeObject(body)}. Headers:{JsonConvert.SerializeObject(Request.Headers)}");
+
             if (string.IsNullOrEmpty(body.scope))
             {
                 throw new InvalidModelException("scope is required in request body");

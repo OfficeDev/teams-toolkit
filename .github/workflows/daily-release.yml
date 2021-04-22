@@ -63,7 +63,7 @@ jobs:
 
       - name: release npm packages to npmjs.org
         run: |
-          npx lerna publish --no-private --canary --yes 
+          npx lerna publish --no-private --yes prerelease
 
       - name: pack vsix
         working-directory: ./packages/vscode-extension

@@ -8,13 +8,7 @@
 // and run the scripts (tools/depsChecker/copyfiles.sh or tools/depsChecker/copyfiles.ps1 according to your OS)
 // to copy you changes to function plugin.
 
-import {
-  displayContinueWithLearnMore,
-  displayLearnMore,
-  displayWarningMessage,
-  showOutputChannel
-} from "./checkerAdapter";
-import { isLinux, Messages, defaultHelpLink } from "./common";
+import { isLinux, Messages, defaultHelpLink, DepsCheckerEvent } from "./common";
 import { DepsCheckerError, NodeNotFoundError, NotSupportedNodeError } from "./errors";
 
 export interface IDepsChecker {
@@ -22,6 +16,36 @@ export interface IDepsChecker {
   isInstalled(): Promise<boolean>;
   install(): Promise<void>;
   getDepsInfo(): Promise<DepsInfo>;
+}
+
+export interface IDepsAdapter {
+  displayContinueWithLearnMore: (message: string, link: string) => Promise<boolean>,
+  displayLearnMore: (message: string, link: string) => Promise<boolean>,
+  displayWarningMessage: (message: string, buttonText: string, action: () => Promise<boolean>) => Promise<boolean>,
+  showOutputChannel: () => void
+
+  hasTeamsfxBackend(): Promise<boolean>;
+  dotnetCheckerEnabled(): boolean;
+  funcToolCheckerEnabled(): boolean;
+  nodeCheckerEnabled(): boolean;
+  runWithProgressIndicator(callback: () => Promise<void>): Promise<void>;
+  getResourceDir(): string;
+}
+
+export interface IDepsLogger {
+  trace(message: string): Promise<boolean>;
+  debug(message: string): Promise<boolean>;
+  info(message: string): Promise<boolean>;
+  warning(message: string): Promise<boolean>;
+  error(message: string): Promise<boolean>;
+  fatal(message: string): Promise<boolean>;
+}
+
+export interface IDepsTelemetry {
+  sendEvent(eventName: DepsCheckerEvent, timecost?: number): void;
+  sendEventWithDuration(eventName: DepsCheckerEvent,action: () => Promise<void>): Promise<void>;
+  sendUserErrorEvent(eventName: DepsCheckerEvent, errorMessage: string): void;
+  sendSystemErrorEvent(eventName: DepsCheckerEvent,errorMessage: string,errorStack: string): void;
 }
 
 export interface DepsInfo {
@@ -32,9 +56,11 @@ export interface DepsInfo {
 }
 
 export class DepsChecker {
+  private readonly _adapter: IDepsAdapter;
   private readonly _checkers: Array<IDepsChecker>;
 
-  constructor(checkers: Array<IDepsChecker>) {
+  constructor(adapter: IDepsAdapter, checkers: Array<IDepsChecker>) {
+    this._adapter = adapter;
     this._checkers = checkers;
   }
 
@@ -61,8 +87,8 @@ export class DepsChecker {
 
     // TODO: add log and telemetry
     const confirmMessage = await this.generateMessage(validCheckers);
-    return await displayWarningMessage(confirmMessage, "Install", async () => {
-      showOutputChannel();
+    return await this._adapter.displayWarningMessage(confirmMessage, "Install", async () => {
+      this._adapter.showOutputChannel();
       for (const checker of validCheckers) {
         try {
           await checker.install();
@@ -118,16 +144,16 @@ export class DepsChecker {
 
   private async handleError(error: Error): Promise<boolean> {
     if (error instanceof NotSupportedNodeError) {
-      return await displayContinueWithLearnMore(
+      return await this._adapter.displayContinueWithLearnMore(
         error.message,
         (error as NotSupportedNodeError).helpLink
       );
     } else if (error instanceof NodeNotFoundError) {
-      return await displayLearnMore(error.message, (error as NodeNotFoundError).helpLink);
+      return await this._adapter.displayLearnMore(error.message, (error as NodeNotFoundError).helpLink);
     } else if (error instanceof DepsCheckerError) {
-      return await displayLearnMore(error.message, (error as DepsCheckerError).helpLink);
+      return await this._adapter.displayLearnMore(error.message, (error as DepsCheckerError).helpLink);
     } else {
-      return await displayLearnMore(Messages.defaultErrorMessage, defaultHelpLink);
+      return await this._adapter.displayLearnMore(Messages.defaultErrorMessage, defaultHelpLink);
     }
   }
 }

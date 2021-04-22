@@ -3,7 +3,7 @@
 import "mocha";
 import * as chai from "chai";
 
-import { createAADAppV2, createAADApp, isAADAppExisting, createBotRegistration, updateMessageEndpoint } from "../../../../../../src/plugins/resource/bot/appStudio/appStudio";
+import { AppStudio } from "../../../../../../src/plugins/resource/bot/appStudio/appStudio";
 import { RetryHandler } from "../../../../../../src/plugins/resource/bot/utils/retryHandler";
 import { Messages } from "../messages";
 import * as sinon from "sinon";
@@ -28,7 +28,7 @@ describe("Test AppStudio APIs", () => {
 
             // Act
 
-            const result = await createAADAppV2(accessToken, {
+            const result = await AppStudio.createAADAppV2(accessToken, {
                 displayName: "anything"
             });
 
@@ -44,7 +44,7 @@ describe("Test AppStudio APIs", () => {
 
             // Act
             try {
-                await createAADAppV2(accessToken, {
+                await AppStudio.createAADAppV2(accessToken, {
                     displayName: "anything"
                 });
             } catch (e) {
@@ -69,7 +69,7 @@ describe("Test AppStudio APIs", () => {
             });
 
             // Act
-            const result = await createAADApp(accessToken, {
+            const result = await AppStudio.createAADApp(accessToken, {
                 displayName: "anything"
             });
 
@@ -85,7 +85,7 @@ describe("Test AppStudio APIs", () => {
 
             // Act
             try {
-                await createAADApp(accessToken, {
+                await AppStudio.createAADApp(accessToken, {
                     displayName: "anything"
                 });
             } catch (e) {
@@ -111,7 +111,7 @@ describe("Test AppStudio APIs", () => {
             });
 
             // Act
-            const result = await isAADAppExisting(accessToken, "anything");
+            const result = await AppStudio.isAADAppExisting(accessToken, "anything");
 
             // Assert
             chai.assert.isTrue(result);
@@ -123,7 +123,7 @@ describe("Test AppStudio APIs", () => {
             sinon.stub(RetryHandler, "Retry").resolves({});
 
             // Act
-            const result = await isAADAppExisting(accessToken, "anything");
+            const result = await AppStudio.isAADAppExisting(accessToken, "anything");
 
             // Assert
             chai.assert.isFalse(result);
@@ -149,7 +149,7 @@ describe("Test AppStudio APIs", () => {
 
             // Act
             try {
-                await createBotRegistration(accessToken, botReg);
+                await AppStudio.createBotRegistration(accessToken, botReg);
             } catch {
                 chai.assert.fail(Messages.ShouldNotReachHere);
             }
@@ -171,7 +171,7 @@ describe("Test AppStudio APIs", () => {
 
             // Act
             try {
-                await createBotRegistration(accessToken, botReg);
+                await AppStudio.createBotRegistration(accessToken, botReg);
             } catch (e) {
                 chai.assert.isTrue(e instanceof PluginError);
                 return;
@@ -201,7 +201,7 @@ describe("Test AppStudio APIs", () => {
 
             // Act
             try {
-                await updateMessageEndpoint(accessToken, "anything", botReg);
+                await AppStudio.updateMessageEndpoint(accessToken, "anything", botReg);
             } catch {
                 chai.assert.fail(Messages.ShouldNotReachHere);
             }
@@ -223,7 +223,7 @@ describe("Test AppStudio APIs", () => {
 
             // Act
             try {
-                await updateMessageEndpoint(accessToken, "anything", botReg);
+                await AppStudio.updateMessageEndpoint(accessToken, "anything", botReg);
             } catch (e) {
                 chai.assert.isTrue(e instanceof PluginError);
                 return;
@@ -249,7 +249,7 @@ describe("Test AppStudio APIs", () => {
 
             // Act
             try {
-                await updateMessageEndpoint(accessToken, "anything", botReg);
+                await AppStudio.updateMessageEndpoint(accessToken, "anything", botReg);
             } catch (e) {
                 chai.assert.isTrue(e instanceof PluginError);
                 return;

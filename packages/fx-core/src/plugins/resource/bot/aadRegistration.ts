@@ -4,9 +4,8 @@ import * as utils from "./utils/common";
 import { AxiosInstance, default as axios } from "axios";
 
 import { AADRegistrationConstants } from "./constants";
-import { IAADApplication } from "./appStudio/interfaces/IAADApplication";
 import { IAADDefinition } from "./appStudio/interfaces/IAADDefinition";
-import * as AppStudio from "./appStudio/appStudio";
+import { AppStudio } from "./appStudio/appStudio";
 import { ProvisionError } from "./errors";
 import { CommonStrings } from "./resources/strings";
 import { BotAuthCredential } from "./botAuthCredential";

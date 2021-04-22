@@ -2,7 +2,7 @@
   "name": "teamsfx-extension",
   "displayName": "Teams Toolkit V2",
   "description": "Create, debug, and deploy Teams apps directly from Teams Toolkit v2",
-  "version": "2.0.0-alpha.1",
+  "version": "2.0.0-alpha.6",
   "publisher": "Microsoft",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -353,12 +353,12 @@
     "prepare": "npm run build"
   },
   "devDependencies": {
-    "@shared/eslint-config": "^0.0.0",
     "@azure/arm-subscriptions": "^3.0.0",
     "@azure/eslint-plugin-azure-sdk": "^2.0.1",
     "@commitlint/cli": "^12.0.1",
     "@commitlint/config-conventional": "^12.0.1",
     "@fluentui/react": "^8.5.1",
+    "@shared/eslint-config": "^0.0.0",
     "@types/adm-zip": "^0.4.33",
     "@types/chai": "^4.2.14",
     "@types/chai-as-promised": "^7.1.3",

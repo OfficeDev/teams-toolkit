@@ -17,7 +17,7 @@
     "format": "prettier --write \"./**/*.ts\" \"./**/*.json\" ",
     "eslint:fix": "eslint package.json tsconfig.json src test --ext .ts --fix",
     "prepare": "npm run build",
-    "prepublishOnly": "npm run test",
+    "prepublishOnly": "npm run test:unit",
     "preversion": "npm run lint",
     "version": "npm run format && git add -A src",
     "postversion": "git push && git push --tags"

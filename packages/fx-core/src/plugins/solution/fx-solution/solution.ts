@@ -1163,7 +1163,7 @@ export class TeamsAppSolution implements Solution {
         }
     }
 
-    async getTabScaffoldQuestions(ctx: SolutionContext, manifest: TeamsAppManifest):Promise<Result<QTreeNode | undefined, FxError>> {
+    async getTabScaffoldQuestions(ctx: SolutionContext):Promise<Result<QTreeNode | undefined, FxError>> {
         const tabNode = new QTreeNode({ type: NodeType.group });
        
         const frontendHostType = new QTreeNode(FrontendHostTypeQuestion);
@@ -1204,7 +1204,7 @@ export class TeamsAppSolution implements Solution {
 
         //Azure Function
         if (this.functionPlugin.getQuestions) {
-            const pluginCtx = getPluginContext(ctx, this.functionPlugin.name, manifest);
+            const pluginCtx = getPluginContext(ctx, this.functionPlugin.name);
             const res = await this.functionPlugin.getQuestions(Stage.create, pluginCtx);
             if (res.isErr()) return res;
             if (res.value) {
@@ -1216,7 +1216,7 @@ export class TeamsAppSolution implements Solution {
 
         //Azure SQL
         if (this.sqlPlugin.getQuestions) {
-            const pluginCtx = getPluginContext(ctx, this.sqlPlugin.name, manifest);
+            const pluginCtx = getPluginContext(ctx, this.sqlPlugin.name);
             const res = await this.sqlPlugin.getQuestions(Stage.create, pluginCtx);
             if (res.isErr()) return res;
             if (res.value) {
@@ -1235,12 +1235,15 @@ export class TeamsAppSolution implements Solution {
      */
     async getQuestions(stage: Stage, ctx: SolutionContext): Promise<Result<QTreeNode | undefined, FxError>> {
         const node = new QTreeNode({ type: NodeType.group });
-        const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx);
-        if (maybeManifest.isErr()) {
-            return err(maybeManifest.error);
+        let manifest: TeamsAppManifest | undefined = undefined;
+        if (stage !== Stage.create) {
+            const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx);
+            if (maybeManifest.isErr()) {
+                return err(maybeManifest.error);
+            }
+            manifest = maybeManifest.value;
         }
-        const manifest = maybeManifest.value;
-
+        
         if (stage === Stage.create) {
             const capQuestion = createCapabilityQuestion();
  
@@ -1249,7 +1252,7 @@ export class TeamsAppSolution implements Solution {
             node.addChild(capNode);
             
             /////Tab
-            const tabRes = await this.getTabScaffoldQuestions(ctx, manifest);
+            const tabRes = await this.getTabScaffoldQuestions(ctx);
             if (tabRes.isErr()) return tabRes;
             if (tabRes.value) {
                 const tabNode = tabRes.value;
@@ -1259,7 +1262,7 @@ export class TeamsAppSolution implements Solution {
 
             ////Bot
             if (this.botPlugin.getQuestions) {
-                const pluginCtx = getPluginContext(ctx, this.botPlugin.name, manifest);
+                const pluginCtx = getPluginContext(ctx, this.botPlugin.name);
                 const res = await this.botPlugin.getQuestions(stage, pluginCtx);
                 if (res.isErr()) return res;
                 if (res.value) {
@@ -1717,7 +1720,7 @@ export class TeamsAppSolution implements Solution {
         return ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
     }
 
-    async getQuestionsForAddResource(ctx: SolutionContext, manifest: TeamsAppManifest): Promise<Result<QTreeNode | undefined, FxError>>{
+    async getQuestionsForAddResource(ctx: SolutionContext, manifest?: TeamsAppManifest): Promise<Result<QTreeNode | undefined, FxError>>{
        
         const settings = this.getAzureSolutionSettings(ctx);
 
@@ -1839,7 +1842,7 @@ export class TeamsAppSolution implements Solution {
 
         //Tab sub tree
         if(!alreadyHaveTab){
-            const tabRes = await this.getTabScaffoldQuestions(ctx, manifest);
+            const tabRes = await this.getTabScaffoldQuestions(ctx);
             if (tabRes.isErr()) return tabRes;
             if (tabRes.value) {
                 const tabNode = tabRes.value;

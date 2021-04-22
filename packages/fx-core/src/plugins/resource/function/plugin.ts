@@ -14,12 +14,13 @@ import {
     InitAzureSDKError,
     InstallNpmPackageError,
     InstallTeamsfxBindingError,
-    NoFunctionNameFromAnswer,
+    NoFunctionNameFromAnswerError,
     NotProvisionError,
     NotScaffoldError,
     ProvisionError,
     ValidationError,
-    runWithErrorCatchAndThrow
+    runWithErrorCatchAndThrow,
+    FunctionNameConflictError
 } from "./resources/errors";
 import {
     DefaultProvisionConfigs, DefaultValues, DependentPluginInfo,
@@ -175,7 +176,7 @@ export class FunctionPluginImpl {
             type: NodeType.group
         });
 
-        if (stage === Stage.create || stage === Stage.update) {
+        if (stage === Stage.update) {
             res.addChild(functionNameQuestion);
         }
 
@@ -185,14 +186,16 @@ export class FunctionPluginImpl {
     public async preScaffold(ctx: PluginContext): Promise<FxResult> {
         this.syncConfigFromContext(ctx);
 
-        // Always ask name in case user wants to add more functions.
-        const name: string | undefined = ctx.answers?.get(QuestionKey.functionName) as string;
-        if (!name) {
-            Logger.error("Fail to fetch function name from question");
-            throw new NoFunctionNameFromAnswer();
-        }
-        this.config.functionName = name;
+        const workingPath: string = this.getFunctionProjectRootPath(ctx);
+        const functionLanguage: FunctionLanguage =
+            this.checkAndGet(this.config.functionLanguage, FunctionConfigKey.functionLanguage);
 
+        const name: string = ctx.answers?.get(QuestionKey.functionName) as string ?? DefaultValues.functionName;
+        if (await FunctionScaffold.doesFunctionPathExist(workingPath, functionLanguage, name)) {
+            throw new FunctionNameConflictError();
+        }
+
+        this.config.functionName = name;
         this.syncConfigToContext(ctx);
 
         return ResultFactory.Success();

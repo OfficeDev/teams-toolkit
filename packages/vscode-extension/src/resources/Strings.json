@@ -57,8 +57,8 @@
             "teamsToolkit": "Teams Toolkit",
             "fileNotFound": "%s not found, cannot open it.",
             "noOpenWorkspace": "No open workspace",
-            "signIn365": "Sign In M365...",
-            "signInAzure": "Sign In Azure...",
+            "signIn365": "Sign in to M365",
+            "signInAzure": "Sign in to Azure",
             "logErrorFormat": "code:${e.source}.${e.name}, message: ${e.message}, stack: ${e.stack}",
             "getHelp": "Get Help",
             "reportIssue": "Report Issue"

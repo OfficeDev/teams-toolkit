@@ -11,7 +11,7 @@ import { promisify } from "util";
 import { v4 as uuidv4 } from "uuid";
 
 import { NewGenerator } from "./newGenerator";
-import { ResourceAddFunctionGenerator, ResourceAddSqlGenerator } from "./resouceAddGenerator";
+import { ResourceAddApimGenerator, ResourceAddFunctionGenerator, ResourceAddSqlGenerator } from "./resouceAddGenerator";
 import { ProvisionGenerator } from "./provisionGenerator";
 import { DeployGenerator } from "./deployGenerator";
 import CLILogProvider from "../commonlib/log";
@@ -82,6 +82,9 @@ const RunCommand = async (command: string, folder: string) => {
 
     const resourceAddSqlGenerator = new ResourceAddSqlGenerator();
     await resourceAddSqlGenerator.run(projectPathForResourceAdd);
+
+    const resourceAddApimGenerator = new ResourceAddApimGenerator();
+    await resourceAddApimGenerator.run(projectPathForResourceAdd);
 
     await fs.remove(projectPathForResourceAdd);
   }

@@ -9,7 +9,6 @@ using System.Web;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Graph;
-using Microsoft.TeamsFx.SimpleAuth.Components.Auth;
 using Microsoft.TeamsFx.SimpleAuth.Tests.Models;
 using Newtonsoft.Json;
 using OpenQA.Selenium;
@@ -20,6 +19,15 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.Helpers
 {
     public static class Utilities
     {
+
+        private class AadGrantType
+        {
+            public const string AuthorizationCode = "authorization_code";
+            public const string code = "code";
+            public const string ClientCredentials = "client_credentials";
+            public const string Password = "password";
+        }
+
         private static IWebElement WaitUntilElementExists(IWebDriver driver, By elementLocator, int timeout = 10)
         {
             try
@@ -142,17 +150,17 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.Helpers
             }
         }
 
-        public static async Task<string> GetUserAccessToken(IntegrationTestSettings settings, string clientId, string clientSecret, string oauthAuthority, string scope = null)
+        public static async Task<string> GetUserAccessToken(string username, string password, string clientId, string clientSecret, string oauthAuthority, string scope)
         {
             var oauthTokenEndpoint = oauthAuthority.TrimEnd('/') + "/oauth2/v2.0/token";
             PasswordCredentialRequestBody content = new PasswordCredentialRequestBody
             {
                 Grant_type = AadGrantType.Password,
-                Username = settings.TestUsername,
-                Password = settings.TestPassword,
+                Username = username,
+                Password = password,
                 Client_id = clientId,
                 Client_secret = clientSecret,
-                Scope = scope == null ? $"{settings.ApiAppIdUri}/{clientId}/{settings.Scope}" : scope
+                Scope = scope
             };
             using (var client = new HttpClient(new RetryHandler(new HttpClientHandler())))
             {

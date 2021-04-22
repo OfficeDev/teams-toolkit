@@ -13,6 +13,7 @@ import VsCodeLogInstance from "./log";
 import * as vscode from "vscode";
 import { signedIn, signedOut } from "./common/constant";
 import { login, LoginStatus } from "./common/login";
+import * as StringResources from "../resources/Strings.json";
 
 const accountName = "graph";
 const scopes = ["Directory.AccessAsUser.All"];
@@ -79,7 +80,7 @@ export class GraphLogin extends login implements GraphTokenProvider {
         const userConfirmation: boolean = await this.doesUserConfirmLogin();
         if (!userConfirmation) {
           // throw user cancel error
-          throw new UserError(ExtensionErrors.UserCancel, "User Cancel", "Login");
+          throw new UserError(ExtensionErrors.UserCancel, StringResources.vsc.common.userCancel, "Login");
         }
       }
       const loginToken = await GraphLogin.codeFlowInstance.getToken();
@@ -121,8 +122,8 @@ export class GraphLogin extends login implements GraphTokenProvider {
   }
 
   private async doesUserConfirmLogin(): Promise<boolean> {
-    const warningMsg = "Please sign into your Graph account";
-    const confirm = "Confirm";
+    const warningMsg = StringResources.vsc.graphLogin.warningMsg;
+    const confirm = StringResources.vsc.common.confirm;
     const userSelected: string | undefined = await vscode.window.showWarningMessage(
       warningMsg,
       { modal: true },

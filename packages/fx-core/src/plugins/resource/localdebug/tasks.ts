@@ -3,8 +3,9 @@
 "use strict";
 
 import { ProductName } from "fx-api";
+import { ProgrammingLanguage } from "./constants";
 
-export function generateTasks(includeFrontend: boolean, includeBackend: boolean, includeBot: boolean): Record<string, unknown>[] {
+export function generateTasks(includeFrontend: boolean, includeBackend: boolean, includeBot: boolean, programmingLanguage: string): Record<string, unknown>[] {
     /**
      * Referenced by launch.json
      *   - Pre Debug Check
@@ -69,11 +70,40 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
             },
         );
         if (includeBackend) {
+            if (programmingLanguage === ProgrammingLanguage.typescript) {
+                tasks.push(
+                    {
+                        label: "Start Backend",
+                        dependsOn: [
+                            "backend tsc watch",
+                            `${ProductName}: backend start`,
+                        ],
+                        dependsOrder: "sequence",
+                    },
+                    {
+                        label: "backend tsc watch",
+                        type: "shell",
+                        command: "npx tsc --watch",
+                        options: {
+                            cwd: "${workspaceFolder}/api",
+                        },
+                        isBackground: true,
+                        // TODO: tell tsc which files to watch (depends on function's decision)
+                        problemMatcher: "$tsc-watch",
+                        presentation: {
+                            reveal: "silent",
+                        },
+                    },
+                );
+            } else {
+                tasks.push(
+                    {
+                        label: "Start Backend",
+                        dependsOn: `${ProductName}: backend start`,
+                    },
+                );
+            }
             tasks.push(
-                {
-                    label: "Start Backend",
-                    dependsOn: `${ProductName}: backend start`,
-                },
                 {
                     label: "backend npm install",
                     type: "shell",
@@ -213,11 +243,40 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
         );
 
         if (includeBackend) {
+            if (programmingLanguage === ProgrammingLanguage.typescript) {
+                tasks.push(
+                    {
+                        label: "Start Backend",
+                        dependsOn: [
+                            "backend tsc watch",
+                            `${ProductName}: backend start`,
+                        ],
+                        dependsOrder: "sequence",
+                    },
+                    {
+                        label: "backend tsc watch",
+                        type: "shell",
+                        command: "npx tsc --watch",
+                        options: {
+                            cwd: "${workspaceFolder}/api",
+                        },
+                        isBackground: true,
+                        // TODO: tell tsc which files to watch (depends on function's decision)
+                        problemMatcher: "$tsc-watch",
+                        presentation: {
+                            reveal: "silent",
+                        },
+                    },
+                );
+            } else {
+                tasks.push(
+                    {
+                        label: "Start Backend",
+                        dependsOn: `${ProductName}: backend start`,
+                    },
+                );
+            }
             tasks.push(
-                {
-                    label: "Start Backend",
-                    dependsOn: `${ProductName}: backend start`,
-                },
                 {
                     label: "backend npm install",
                     type: "shell",

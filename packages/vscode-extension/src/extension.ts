@@ -11,9 +11,11 @@ import { TelemetryEvent, TelemetryProperty } from "./telemetry/extTelemetryEvent
 import { TeamsfxTaskProvider } from "./debug/teamsfxTaskProvider";
 import { TeamsfxDebugProvider } from "./debug/teamsfxDebugProvider";
 import { ExtensionSurvey } from "./utils/survey";
+import VsCodeLogInstance from "./commonlib/log";
+import * as StringResources from "./resources/Strings.json";
 
 export async function activate(context: vscode.ExtensionContext) {
-  console.log("Teams Toolkit v2 extension is now active!");
+  VsCodeLogInstance.info(StringResources.vsc.extension.activate);
 
   // Init context
   initializeExtensionVariables(context);

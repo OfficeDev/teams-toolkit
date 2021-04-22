@@ -142,3 +142,7 @@ export class TabScope {
     static readonly PersonalTab = "personal";
     static readonly GroupTab = "group";
 }
+
+export class DefaultValue {
+    static readonly PersonalTabName = "Personal Tab";
+}

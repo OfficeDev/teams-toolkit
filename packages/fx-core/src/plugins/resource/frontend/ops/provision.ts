@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { EnvironmentUtils } from "../utils/environment-utils";
-import { EnvironmentVariables, FrontendConfigInfo } from "../constants";
+import { DefaultValue, EnvironmentVariables, FrontendConfigInfo } from "../constants";
 import { PluginContext } from "fx-api";
 import { ManifestVariables, TabScopeManifest } from "../resources/tabScope";
 
@@ -55,7 +55,7 @@ export class FrontendProvision {
 
         const staticTabs: any[] = [];
         ctx.app.staticTabs?.forEach((tab) => {
-            variables.personalTabName = tab.name || "Personal Tab";
+            variables.personalTabName = tab.name || DefaultValue.PersonalTabName;
             TabScopeManifest.addNewToStaticTabs(staticTabs, variables, validatedTabScopes);
         });
         ctx.config.set(FrontendConfigInfo.StaticTab, JSON.stringify(staticTabs));

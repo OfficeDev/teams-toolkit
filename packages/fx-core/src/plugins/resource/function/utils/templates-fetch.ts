@@ -32,7 +32,9 @@ export type Manifest = {
 async function fetchTemplateManifest(manifestUrl: string): Promise<Manifest> {
     return await runWithErrorCatchAndThrow(new TemplateManifestNetworkError(manifestUrl), async () => {
         const res: AxiosResponse<Manifest> = await requestWithRetry(DefaultValues.maxTryCount, async () =>
-            await axios.get(manifestUrl)
+            await axios.get(manifestUrl, {
+                timeout: DefaultValues.scaffoldTimeoutInMs
+            })
         );
         return res.data;
     });
@@ -60,7 +62,8 @@ export async function fetchZipFromURL(url: string): Promise<AdmZip> {
     return await runWithErrorCatchAndThrow(new TemplateZipNetworkError(url), async () => {
         const res: AxiosResponse<any> = await requestWithRetry(DefaultValues.maxTryCount, async () =>
             await axios.get(url, {
-                responseType: "arraybuffer"
+                responseType: "arraybuffer",
+                timeout: DefaultValues.scaffoldTimeoutInMs
             })
         );
 

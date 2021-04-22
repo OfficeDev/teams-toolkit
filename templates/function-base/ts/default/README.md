@@ -14,9 +14,11 @@ To start enjoying full functionalities to develop an API with Azure Functions fo
 By default, TeamsFX will provide template code for you to get started. The starter code handles calls from your Teams App client side, initializes the TeamsFX SDK to access current connected user information and prepares a pre-authenticated Microsoft Graph Client for you to access more user's data. You can modify the template code with your custom logic or add more functions with `HTTPTrigger`. Read [Azure Functions developer guide](https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference) for more development resources.
 
 ## Add More Functions (with TeamsFX Visual Studio Code Extension)
+
 - Run command `TeamsFx - Add Resource` and select `function`.
 
 ## Add More Functions (with TeamsFX CLI)
+
 - Run command `teamsfx resource add azure-function`.
 
 ## Deploy to Azure (with TeamsFX Visual Studio Code Extension)
@@ -43,6 +45,7 @@ By default, TeamsFX will provide template code for you to get started. The start
 ```
 
 ## Node version
+
 The runtime versions supported by Azure Functions are list [here](https://docs.microsoft.com/en-us/azure/azure-functions/functions-versions). By default, TeamsFX toolkit provisions an Azure function app with function runtime version 3, and node runtime version 12. You can change the node version through Azure Portal.
 
 - Sign in [Azure Portal](https://azure.microsoft.com/).

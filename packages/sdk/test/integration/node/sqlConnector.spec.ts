@@ -18,9 +18,9 @@ describe("SQL Connector Test: Node", () => {
   // let subscriptionId: string | undefined;
   before(async () => {
     loadConfiguration();
-    // resourceGroup = process.env.RESOURCE_GROUP_NAME;
-    // subscriptionId = process.env.TEST_ACCOUNT_SUBSCRIPTION_ID;
-    // const sqlEndpoint: string | undefined = process.env.SQL_ENDPOINT;
+    // resourceGroup = process.env.SDK_INTEGRATION_RESOURCE_GROUP_NAME;
+    // subscriptionId = process.env.SDK_INTEGRATION_TEST_ACCOUNT_SUBSCRIPTION_ID;
+    // const sqlEndpoint: string | undefined = process.env.SDK_INTEGRATION_SQL_ENDPOINT;
     // sqlName = sqlEndpoint!.slice(0, sqlEndpoint!.indexOf("."));
 
     // const tokenCredential = await getSQLManagerClient();
@@ -34,7 +34,7 @@ describe("SQL Connector Test: Node", () => {
     connection = await getSQLConnection();
     const query = "select system_user as u, sysdatetime() as t";
     const result = await execQuery(query, connection);
-    const userName = process.env.SQL_USER_NAME;
+    const userName = process.env.SDK_INTEGRATION_SQL_USER_NAME;
     assert.isNotNull(result);
     assert.isArray(result);
     assert.strictEqual(result![0]![0], userName);
@@ -47,8 +47,8 @@ const echoIpAddress = "https://api.ipify.org";
 const localRule = "FirewallAllowLocalIP";
 
 async function getSQLManagerClient(): Promise<msRestNodeAuth.UserTokenCredentials | undefined> {
-  const username: string | undefined = process.env.TEST_ACCOUNT_NAME;
-  const password: string | undefined = process.env.TEST_ACCOUNT_PASSWORD;
+  const username: string | undefined = process.env.SDK_INTEGRATION_TEST_ACCOUNT_NAME;
+  const password: string | undefined = process.env.SDK_INTEGRATION_TEST_ACCOUNT_PASSWORD;
   const authres = await msRestNodeAuth.loginWithUsernamePassword(username!, password!);
   return authres;
 }

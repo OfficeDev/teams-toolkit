@@ -28,16 +28,16 @@ export class TabScopeManifest {
         throw new InvalidTabScopeError();
     }
 
-    public static addNewToConfigurableTabs(originTabs: string[], variables: ManifestVariables, tabScopes: string[]): string[] {
+    public static addNewToConfigurableTabs(originTabs: any[], variables: ManifestVariables, tabScopes: string[]): any[] {
         if (tabScopes.includes(TabScope.GroupTab)) {
-            originTabs.push(Mustache.render(TabScopeManifest.configurableTab, variables));
+            originTabs.push(JSON.parse(Mustache.render(TabScopeManifest.configurableTab, variables)));
         }
         return originTabs;
     }
 
-    public static addNewToStaticTabs(originTabs: string[], variables: ManifestVariables, tabScopes: string[]): string[] {
+    public static addNewToStaticTabs(originTabs: any[], variables: ManifestVariables, tabScopes: string[]): any[] {
         if (tabScopes.includes(TabScope.PersonalTab)) {
-            originTabs.push(Mustache.render(TabScopeManifest.staticTab, variables));
+            originTabs.push(JSON.parse(Mustache.render(TabScopeManifest.staticTab, variables)));
         }
         return originTabs;
     }

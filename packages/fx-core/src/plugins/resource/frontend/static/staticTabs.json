@@ -1,11 +1,9 @@
-[
-    {
-        "entityId": "index",
-        "name": "{{{personalTabName}}}",
-        "contentUrl": "{{{baseUrl}}}/index.html#/tab",
-        "websiteUrl": "{{{baseUrl}}}/index.html#/tab",
-        "scopes": [
-            "personal"
-        ]
-    }
-]
+{
+    "entityId": "index",
+    "name": "{{{personalTabName}}}",
+    "contentUrl": "{{{baseUrl}}}/index.html#/tab",
+    "websiteUrl": "{{{baseUrl}}}/index.html#/tab",
+    "scopes": [
+        "personal"
+    ]
+}

@@ -48,12 +48,12 @@ export class FrontendProvision {
         const tabScopes = ctx.config.getStringArray(FrontendConfigInfo.TabScopes);
         const validatedTabScopes = TabScopeManifest.validateScopes(tabScopes);
 
-        const configurableTabs: string[] = [];
+        const configurableTabs: any[] = [];
         TabScopeManifest.addNewToConfigurableTabs(configurableTabs, variables, validatedTabScopes);
         // Always overwrite these configs to support both local debug and remote debug
         ctx.config.set(FrontendConfigInfo.ConfigurableTab, JSON.stringify(configurableTabs));
 
-        const staticTabs: string[] = [];
+        const staticTabs: any[] = [];
         ctx.app.staticTabs?.forEach((tab) => {
             variables.personalTabName = tab.name || "Personal Tab";
             TabScopeManifest.addNewToStaticTabs(staticTabs, variables, validatedTabScopes);

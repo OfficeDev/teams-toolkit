@@ -71,10 +71,12 @@ export class RegularExpr {
 export class DefaultValues {
     public static readonly helpLink: string = "";
     public static readonly issueLink: string = "https://github.com/OfficeDev/TeamsFx/issues/new";
-    public static readonly functionName: string = "myFunc";
+    public static readonly functionName: string = "getUserProfile";
     public static readonly functionLanguage: FunctionLanguage = FunctionLanguage.JavaScript;
     public static readonly functionTriggerType: string = "HTTPTrigger";
     public static readonly maxTryCount: number = 3;
+    public static readonly scaffoldTimeoutInMs: number = 20 * 1000;
+    public static readonly deployTimeoutInMs: number = 10 * 60 * 1000;
     public static readonly nodeVersion: NodeVersion = NodeVersion.Version12;
 }
 

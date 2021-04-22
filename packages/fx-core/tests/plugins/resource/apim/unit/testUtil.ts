@@ -10,6 +10,7 @@ import {
     TeamsAppManifest,
     OptionItem,
     Platform,
+    SubscriptionInfo,
 } from "fx-api";
 import { AadOperationError, BuildError, NotImplemented } from "../../../../../src/plugins/resource/apim/src/error";
 import { TokenCredential } from "@azure/core-auth";
@@ -92,6 +93,18 @@ export class MockAzureAccountProvider implements AzureAccountProvider {
     }
 
     getIdentityCredential(): TokenCredential | undefined {
+        throw BuildError(NotImplemented);
+    }
+
+    getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
+        throw BuildError(NotImplemented);
+    }
+
+    listSubscriptions(): Promise<SubscriptionInfo[]> {
+        throw BuildError(NotImplemented);
+    }
+
+    setSubscription(subscriptionId: string): Promise<void> {
         throw BuildError(NotImplemented);
     }
 }

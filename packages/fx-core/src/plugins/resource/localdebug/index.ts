@@ -102,7 +102,8 @@ export class LocalDebugPlugin implements Plugin {
                 }
 
                 if (includeBot) {
-                    ctx.config.set(LocalDebugConfigKeys.SkipNgrok, false);
+                    ctx.config.set(LocalDebugConfigKeys.SkipNgrok, "false");
+                    ctx.config.set(LocalDebugConfigKeys.LocalBotEndpoint, "");
                 }
             }
         }
@@ -153,8 +154,8 @@ export class LocalDebugPlugin implements Plugin {
             }
 
             if (includeBot) {
-                const skipNgrok = ctx.config.get(LocalDebugConfigKeys.SkipNgrok) as boolean;
-                if (skipNgrok) {
+                const skipNgrok = ctx.config.get(LocalDebugConfigKeys.SkipNgrok) as string;
+                if (skipNgrok === "true") {
                     const localBotEndpoint = ctx.config.get(LocalDebugConfigKeys.LocalBotEndpoint) as string;
                     if (localBotEndpoint === undefined) {
                         return err(LocalBotEndpointNotConfigured());

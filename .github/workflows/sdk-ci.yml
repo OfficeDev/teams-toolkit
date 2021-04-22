@@ -21,11 +21,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       - name: Setup node
         uses: actions/setup-node@v2.1.2
         with:
           node-version: ${{ matrix.node-version }}
+
+      - name: Setup project
+        run: |
+          npm run setup
 
       - name: Remove package-lock(Windows)
         if: matrix.os == 'windows-latest'
@@ -40,7 +46,7 @@ jobs:
       
       - name: Setup project
         run: |
-          npm run setup
+          npm run bootstrap
 
       - name: Test
         run: |

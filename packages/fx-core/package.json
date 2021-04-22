@@ -14,7 +14,6 @@
     "test:unit": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/**/*.test.ts",
     "clean": "rm -rf build",
     "build": "tsc -p ./",
-    "format": "prettier --write \"./**/*.ts\" \"./**/*.json\" ",
     "eslint:fix": "eslint package.json tsconfig.json src test --ext .ts --fix",
     "prepare": "npm run build",
     "prepublishOnly": "npm run test:unit",

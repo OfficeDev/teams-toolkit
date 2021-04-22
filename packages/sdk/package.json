@@ -4,6 +4,7 @@
   "description": "Microsoft Teams App Framework SDK for node.js and browser.",
   "main": "dist/index.js",
   "module": "dist-esm/src/index.js",
+  "private": true,
   "browser": {
     "./dist-esm/src/core/cache.js": "./dist-esm/src/core/cache.browser.js",
     "./dist-esm/src/core/onBehalfOfUserCredential.js": "./dist-esm/src/core/onBehalfOfUserCredential.browser.js",

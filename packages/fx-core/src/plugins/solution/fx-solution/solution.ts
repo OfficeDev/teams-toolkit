@@ -694,7 +694,7 @@ export class TeamsAppSolution implements Solution {
         if (selectedPlugins.some((plugin) => plugin.name === this.botPlugin.name)) {
             const capabilities = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings).capabilities;
             const hasBot = capabilities?.includes(BotOptionItem.label);
-            const hasMsgExt = capabilities?.includes(MessageExtensionItem.label);
+            const hasMsgExt = capabilities?.includes(MessageExtensionItem.id);
             if (!hasBot && !hasMsgExt) {
                 return err(
                     returnSystemError(
@@ -753,6 +753,7 @@ export class TeamsAppSolution implements Solution {
             webApplicationInfoResource,
             staticTabs,
             configurableTabs,
+            false,
             tabEndpoint,
             manifest.name.short,
             manifest.version,
@@ -783,6 +784,7 @@ export class TeamsAppSolution implements Solution {
                 "remote",
                 ctx.logProvider,
                 await ctx.appStudioToken?.getAccessToken(),
+                ctx.root,
             );
             if (result.isErr()) {
                 return result.map((_) => appDefinition);
@@ -795,12 +797,16 @@ export class TeamsAppSolution implements Solution {
         } else {
             ctx.logProvider?.info(`Teams app already created: ${teamsAppId}`);
             appDefinition.appId = teamsAppId;
+            const colorIconContent = appDefinition.colorIcon ? (await fs.readFile(`${ctx.root}/.${ConfigFolderName}/${appDefinition.colorIcon}`)).toString("base64") : undefined;
+            const outlineIconContent = appDefinition.outlineIcon ? (await fs.readFile(`${ctx.root}/.${ConfigFolderName}/${appDefinition.outlineIcon}`)).toString("base64") : undefined;
             const result = await this.updateApp(
                 teamsAppId,
                 appDefinition,
                 "remote",
                 ctx.logProvider,
                 await ctx.appStudioToken?.getAccessToken(),
+                colorIconContent,
+                outlineIconContent
             );
             if (result.isErr()) {
                 return result.map((_) => appDefinition);
@@ -1228,7 +1234,9 @@ export class TeamsAppSolution implements Solution {
 
             node.addChild(capNode);
             
-            node.addChild(new QTreeNode(ProgrammingLanguageQuestion));
+            if (!this.spfxSelected(ctx)) {
+                node.addChild(new QTreeNode(ProgrammingLanguageQuestion));
+            }
 
             /////Tab
             const tabRes = await this.getTabScaffoldQuestions(ctx, manifest);
@@ -1253,7 +1261,7 @@ export class TeamsAppSolution implements Solution {
         } else if (stage === Stage.update) {
             return await this.getQuestionsForAddResource(ctx, manifest);
         } else if (stage === Stage.provision) {
-            const checkRes = await this.checkWhetherSolutionIsIdle();
+            const checkRes = this.checkWhetherSolutionIsIdle();
             if (checkRes.isErr()) return err(checkRes.error);
 
             const res = this.getSelectedPlugins(ctx);
@@ -1329,6 +1337,8 @@ export class TeamsAppSolution implements Solution {
         type: "localDebug" | "remote",
         logProvider?: LogProvider,
         appStudioToken?: string,
+        colorIconContent?: string,
+        outlineIconContent?: string,
     ): Promise<Result<string, FxError>> {
         if (appStudioToken === undefined || appStudioToken.length === 0) {
             return err(
@@ -1340,7 +1350,7 @@ export class TeamsAppSolution implements Solution {
             );
         }
         appDefinition.appId = teamsAppId;
-        if (!(await AppStudio.updateApp(teamsAppId, appDefinition, appStudioToken, logProvider))) {
+        if (!(await AppStudio.updateApp(teamsAppId, appDefinition, appStudioToken, logProvider, colorIconContent, outlineIconContent))) {
             return err(
                 returnSystemError(
                     new Error(`Failed to update ${type} teams app manifest`),
@@ -1361,6 +1371,7 @@ export class TeamsAppSolution implements Solution {
         type: "localDebug" | "remote",
         logProvider?: LogProvider,
         appStudioToken?: string,
+        projectRoot?: string,
     ): Promise<Result<string, FxError>> {
         await logProvider?.debug(`${type} appDefinition: ${JSON.stringify(appDefinition)}`);
         if (appStudioToken === undefined || appStudioToken.length === 0) {
@@ -1372,7 +1383,9 @@ export class TeamsAppSolution implements Solution {
                 ),
             );
         }
-        const teamsAppId = await AppStudio.createApp(appDefinition, appStudioToken, logProvider);
+        const colorIconContent = (projectRoot && appDefinition.colorIcon) ? (await fs.readFile(`${projectRoot}/.${ConfigFolderName}/${appDefinition.colorIcon}`)).toString("base64") : undefined;
+        const outlineIconContent = (projectRoot && appDefinition.outlineIcon) ? (await fs.readFile(`${projectRoot}/.${ConfigFolderName}/${appDefinition.outlineIcon}`)).toString("base64") : undefined;
+        const teamsAppId = await AppStudio.createApp(appDefinition, appStudioToken, logProvider, colorIconContent, outlineIconContent);
         if (teamsAppId === undefined) {
             return err(
                 returnSystemError(
@@ -1384,7 +1397,8 @@ export class TeamsAppSolution implements Solution {
                 ),
             );
         }
-        return this.updateApp(teamsAppId, appDefinition, type, logProvider, appStudioToken);
+        // since icons are uploaded in createApp(), we leave icons undefiend here.
+        return this.updateApp(teamsAppId, appDefinition, type, logProvider, appStudioToken, undefined, undefined);
     }
 
     async localDebug(ctx: SolutionContext): Promise<Result<any, FxError>> {
@@ -1476,6 +1490,7 @@ export class TeamsAppSolution implements Solution {
             webApplicationInfoResource,
             staticTabs,
             configurableTabs,
+            false,
             localTabEndpoint,
             manifest.name.short,
             manifest.version,
@@ -1486,12 +1501,16 @@ export class TeamsAppSolution implements Solution {
         const localTeamsAppID = ctx.config.get(GLOBAL_CONFIG)?.getString(LOCAL_DEBUG_TEAMS_APP_ID);
         // If localTeamsAppID is present, we should reuse the teams app id.
         if (localTeamsAppID) {
+            const colorIconContent = appDefinition.colorIcon ? (await fs.readFile(`${ctx.root}/.${ConfigFolderName}/${appDefinition.colorIcon}`)).toString("base64") : undefined;
+            const outlineIconContent = appDefinition.outlineIcon ? (await fs.readFile(`${ctx.root}/.${ConfigFolderName}/${appDefinition.outlineIcon}`)).toString("base64") : undefined;
             const result = await this.updateApp(
                 localTeamsAppID, 
                 appDefinition, 
                 "localDebug", 
                 ctx.logProvider, 
-                await ctx.appStudioToken?.getAccessToken()
+                await ctx.appStudioToken?.getAccessToken(),
+                colorIconContent,
+                outlineIconContent
             );
             if (result.isErr()) {
                 return result;
@@ -1502,6 +1521,7 @@ export class TeamsAppSolution implements Solution {
                 "localDebug",
                 ctx.logProvider,
                 await ctx.appStudioToken?.getAccessToken(),
+                ctx.root,
             );
             if (maybeTeamsAppId.isErr()) {
                 return maybeTeamsAppId;
@@ -2183,8 +2203,8 @@ export class TeamsAppSolution implements Solution {
 
     /**
      * This function is only called by cli: teamsfx init. The context may be different from that of vsc: no .${ConfigFolderName} folder, no permissions.json
-     * In order to reuse aad plugin, we need to pretend we are still in vsc context.
-     *
+     * In order to reuse aad plugin, we need to pretend we are still in vsc context. Currently, we don't support icons, because icons are not included in the
+     * current contract.
      */
     private async registerTeamsAppAndAad(
         ctx: SolutionContext,
@@ -2231,7 +2251,7 @@ export class TeamsAppSolution implements Solution {
         });
         const manifest: TeamsAppManifest = JSON.parse(manifestStr);
         await fs.writeFile(manifestPath, manifestStr);
-        const appDefinition = AppStudio.convertToAppDefinition(manifest);
+        const appDefinition = AppStudio.convertToAppDefinition(manifest, true);
         const maybeTeamsAppId = await this.createAndUpdateApp(
             appDefinition,
             "remote",

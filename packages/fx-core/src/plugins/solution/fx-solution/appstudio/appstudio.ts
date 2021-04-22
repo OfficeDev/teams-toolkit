@@ -8,6 +8,12 @@ import { TEAMS_APP_MANIFEST_TEMPLATE } from "../constants";
 import axios, { AxiosInstance } from "axios";
 
 export namespace AppStudio {
+    type Icon = {
+        type: "color" | "outline" | "sharePointPreviewImage",
+        name: "color" | "outline" | "sharePointPreviewImage",
+        base64String: string
+    };
+
     const baseUrl = "https://dev.teams.microsoft.com";
 
     // Creates a new axios instance to call app studio to prevent setting the accessToken
@@ -25,11 +31,23 @@ export namespace AppStudio {
         appDefinition: IAppDefinition,
         appStudioToken: string,
         logProvider?: LogProvider,
+        colorIconContent?: string, // base64 encoded 
+        outlineIconContent?: string // base64 encoded
     ): Promise<string | undefined> {
         if (appDefinition && appStudioToken) {
             try {
                 const requester = createRequesterWithToken(appStudioToken);
-                const response = await requester.post(`/api/appdefinitions/import`, appDefinition);
+                const appDef = {
+                    ...appDefinition
+                };
+                // /api/appdefinitions/import accepts icons as Base64-encoded strings.
+                if (colorIconContent) {
+                    appDef.colorIcon = colorIconContent;
+                }
+                if (outlineIconContent) {
+                    appDef.outlineIcon = outlineIconContent;
+                }
+                const response = await requester.post(`/api/appdefinitions/import`, appDef);
                 if (response && response.data) {
                     const app = <IAppDefinition>response.data;
                     await logProvider?.debug(`recieved data from app studio ${JSON.stringify(app)}`);
@@ -50,16 +68,68 @@ export namespace AppStudio {
         return undefined;
     }
 
+    async function uploadIcon(
+        teamsAppId: string,
+        appStudioToken: string,
+        colorIconContent: string,
+        outlineIconContent: string,
+        requester: AxiosInstance,
+        logProvider?: LogProvider,
+    ): Promise<boolean> {
+        await logProvider?.info(`uploading icon for teams ${teamsAppId}`);
+        if (teamsAppId && appStudioToken) {
+            try {
+                const colorIcon: Icon = {
+                    name: "color",
+                    type: "color",
+                    base64String: colorIconContent
+                };
+                const outlineIcon: Icon = {
+                    name: "color",
+                    type: "color",
+                    base64String: outlineIconContent
+                };
+                const colorIconResult = requester.post(`/api/appdefinitions/${teamsAppId}/image`, colorIcon);
+                const outlineIconResult = requester.post(`/api/appdefinitions/${teamsAppId}/image`, outlineIcon);
+                const results = await Promise.all([colorIconResult, outlineIconResult]);
+                for (const result of results) {
+                    if (!result) {
+                        return false;
+                    }
+                    await logProvider?.info(`icon url: ${result.data}`);
+                }
+
+                await logProvider?.info(`successfully uploaded two icons`);
+                return true;
+            } catch (e) {
+                if (e instanceof Error) {
+                    await logProvider?.warning(`failed to create app due to ${e.name}: ${e.message}`);
+                }
+                return false;
+            }
+            
+        }
+        return false;
+    }
+
     // Updates an existing app if it exists with the configuration given.  Returns whether or not it was successful.
     export async function updateApp(
         teamsAppId: string,
         appDefinition: IAppDefinition,
         appStudioToken: string,
         logProvider?: LogProvider,
+        colorIconContent?: string,
+        outlineIconContent?: string,
     ): Promise<boolean> {
         if (appDefinition && appStudioToken) {
             try {
                 const requester = createRequesterWithToken(appStudioToken);
+                if (colorIconContent && outlineIconContent) {
+                    const succeeded = await uploadIcon(teamsAppId, appStudioToken, colorIconContent, outlineIconContent, requester, logProvider);
+                    if (!succeeded) {
+                        return false;
+                    }
+                }
                 const response = await requester.post(`/api/appdefinitions/${teamsAppId}/override`, appDefinition);
                 if (response && response.data) {
                     const app = <IAppDefinition>response.data;
@@ -72,7 +142,7 @@ export namespace AppStudio {
                 }
             } catch (e) {
                 if (e instanceof Error) {
-                    await logProvider?.warning(`failed to create app due to ${e.name}: ${e.message}`);
+                    await logProvider?.warning(`failed to update app due to ${e.name}: ${e.message}`);
                 }
                 return false;
             }
@@ -217,6 +287,7 @@ export namespace AppStudio {
         webApplicationInfoResource: string,
         staticTabs: string,
         configurableTabs: string,
+        ignoreIcon: boolean,
         tabEndpoint?: string,
         appName?: string,
         version?: string,
@@ -256,10 +327,10 @@ export namespace AppStudio {
             updatedManifest.validDomains?.push(domain);
         }
 
-        return [convertToAppDefinition(updatedManifest), updatedManifest];
+        return [convertToAppDefinition(updatedManifest, ignoreIcon), updatedManifest];
     }
 
-    export function convertToAppDefinition(appManifest: TeamsAppManifest): IAppDefinition {
+    export function convertToAppDefinition(appManifest: TeamsAppManifest, ignoreIcon: boolean): IAppDefinition {
         const appDefinition: IAppDefinition = {
             appName: appManifest.name.short,
             validDomains: appManifest.validDomains,
@@ -288,6 +359,14 @@ export namespace AppStudio {
         if (appManifest.webApplicationInfo) {
             appDefinition.webApplicationInfoId = appManifest.webApplicationInfo.id;
             appDefinition.webApplicationInfoResource = appManifest.webApplicationInfo.resource;
+        }
+
+        if (!ignoreIcon && appManifest.icons.color) {
+            appDefinition.colorIcon = appManifest.icons.color;
+        }
+
+        if (!ignoreIcon && appManifest.icons.outline) {
+            appDefinition.outlineIcon = appManifest.icons.outline;
         }
 
         return appDefinition;

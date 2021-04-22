@@ -145,7 +145,16 @@ export const TEAMS_APP_MANIFEST_TEMPLATE = `{
     "accentColor": "#FFFFFF",
     "bots": [],
     "composeExtensions": [],
-    "configurableTabs": [],
+    "configurableTabs": [
+        {
+            "configurationUrl": "{baseUrl}/index.html#/config",
+            "canUpdateConfiguration": true,
+            "scopes": [
+                "team",
+                "groupchat"
+            ]
+        }
+    ],
     "staticTabs": [
         {
             "entityId": "index",

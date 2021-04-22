@@ -17,7 +17,7 @@ export const BotOptionItem: OptionItem = {
 
 export const MessageExtensionItem: OptionItem = {
     id: "MessageExtension",
-    label: "MessageExtension",
+    label: "Message Extensions",
     description:
         "Messaging extensions allow users to interact with your web service through buttons and forms in the Microsoft Teams client.",
 };

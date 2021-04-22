@@ -54,6 +54,8 @@ export class Constants {
 
     static readonly ResourcesFolderName: string = path.join("templates", "plugins", "resource", "simpleauth");
     static readonly SimpleAuthFileName: string = "SimpleAuth.zip";
+    static readonly SimpleAuthZipName = (version: string): string  => `Microsoft.TeamsFx.SimpleAuth_${version}.zip`;
+    static readonly VersionFileName: string = "version.txt";
 
     static readonly ResourceNameMaxLength = 40;
     static readonly SimpleAuthSuffix = "sa";

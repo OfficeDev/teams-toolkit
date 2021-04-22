@@ -2,10 +2,12 @@
 // Licensed under the MIT license.
 import { ConfigValue, LogProvider, PluginContext } from "fx-api";
 import * as path from "path";
+import * as fs from "fs-extra";
 import { Constants, Message } from "../constants";
-import { EndpointInvalidError, NoConfigError } from "../errors";
+import { EndpointInvalidError, NoConfigError, VersionFileNotExist, ZipDownloadError } from "../errors";
 import { ResultFactory } from "../result";
 import { TelemetryUtils } from "./telemetry";
+import { BlobServiceClient } from "@azure/storage-blob";
 
 export class Utils {
     public static generateResourceName(appName: string, resourceNameSuffix: string): string {
@@ -18,6 +20,44 @@ export class Utils {
     public static getSimpleAuthFilePath(): string {
         const fxCoreDir: string = path.join(__dirname, "..", "..", "..", "..", "..");
         return path.join(fxCoreDir, Constants.ResourcesFolderName, Constants.SimpleAuthFileName);
+    }
+
+    public static async downloadZip(filePath: string): Promise<void> {
+        if (await Utils.checkFileExist(filePath)) {
+            return;
+        }
+
+        const versionFilePath = path.join(filePath, "..", Constants.VersionFileName);
+        if (!await Utils.checkFileExist(versionFilePath)) {
+            throw ResultFactory.SystemError(
+                VersionFileNotExist.name,
+                VersionFileNotExist.message(versionFilePath),
+            );
+        }
+
+        const version = await fs.readFile(versionFilePath, "utf-8");
+        const fileName = Constants.SimpleAuthZipName(version);
+        const sasToken = process.env.SIMPLE_AUTH_SAS;
+
+        try {
+            const blobClient = new BlobServiceClient(`https://teamsfxsimpleauthrelease.blob.core.windows.net/?${sasToken}`)
+                .getContainerClient("release")
+                .getBlobClient(fileName);
+            await blobClient.downloadToFile(filePath);
+        } catch (error) {
+            throw ResultFactory.SystemError(
+                ZipDownloadError.name,
+                ZipDownloadError.message(error?.message),
+                error,
+            );
+        }
+
+        if (!await Utils.checkFileExist(filePath)) {
+            throw ResultFactory.SystemError(
+                ZipDownloadError.name,
+                ZipDownloadError.message(),
+            );
+        }
     }
 
     public static getWebAppConfig(ctx: PluginContext, isLocalDebug: boolean): { [propertyName: string]: string } {
@@ -102,5 +142,14 @@ export class Utils {
             throw ResultFactory.SystemError(NoConfigError.name, NoConfigError.message(pluginId, key));
         }
         return configValue;
+    }
+
+    private static async checkFileExist(filePath: string): Promise<boolean> {
+        try {
+            await fs.stat(filePath);
+            return true;
+        } catch (error) {
+            return false;
+        }
     }
 }

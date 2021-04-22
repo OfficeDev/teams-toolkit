@@ -44,3 +44,13 @@ export const EndpointInvalidError: PluginError = {
     name: "EndpointInvalidError",
     message: (endpoint, message) => `Failed to verify endpoint: ${endpoint}. Reason: ${message}`,
 };
+
+export const ZipDownloadError: PluginError = {
+    name: "ZipDownloadError",
+    message: (message) => `Failed to do Zip Download: ${message}`,
+};
+
+export const VersionFileNotExist: PluginError = {
+    name: "VersionFileNotExist",
+    message: (filePath?) => `Failed to load version file from ${filePath ?? "File not exist."}`,
+};

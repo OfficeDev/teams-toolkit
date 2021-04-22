@@ -25,8 +25,8 @@ export class Messages {
     public static readonly FailToUpdateMessageEndpoint = (endpoint: string): string => `Failed to update message endpoint with '${endpoint}'.`;
     public static readonly FailToDownloadFrom = (url: string): string => `Failed to download from '${url}'.`;
     public static readonly FailToFindSomethingFor = (something: string, forsth: string): string => `Failed to retrieve '${something}' for '${forsth}'.`;
-    public static readonly ReferToIssueLink = `Please refer to ${Links.ISSUE_LINK}.`;
-    public static readonly ReferToHelpLink = `Please refer to ${Links.HELP_LINK}.`;
+    public static readonly ReferToIssueLink = `Refer to ${Links.ISSUE_LINK}.`;
+    public static readonly ReferToHelpLink = `Refer to ${Links.HELP_LINK}.`;
     public static readonly CommandFailWithMessage = (command: string, message: string): string => `Run '${command}' failed with message: ${message}`;
     public static readonly DoSthBeforeSth = (sth: string, beforeSth: string): string => `Perform command '${sth}' before '${beforeSth}'.`;
     public static readonly FailToCallAppStudio = (apiName: string) => `Failed to execute '${apiName}'.`;

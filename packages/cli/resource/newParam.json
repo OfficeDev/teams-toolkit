@@ -34,7 +34,7 @@
                             "data": {
                                 "name": "capabilities",
                                 "title": "Add capabilities",
-                                "prompt": "Choose the capabilities for your project setup",
+                                "prompt": "Select capabilities for your application",
                                 "type": "multiSelect",
                                 "option": [
                                     {
@@ -61,7 +61,7 @@
                                         {
                                             "data": {
                                                 "name": "host-type",
-                                                "title": "Select front-end hosting type",
+                                                "title": "Select frontend hosting type",
                                                 "type": "singleSelect",
                                                 "option": [
                                                     {
@@ -110,13 +110,13 @@
                                                         "option": [
                                                             {
                                                                 "id": "sql",
-                                                                "label": "sql",
-                                                                "description": "Azure SQL Database"
+                                                                "label": "Azure SQL Database",
+                                                                "description": "Azure SQL Database depends on Azure Functions."
                                                             },
                                                             {
                                                                 "id": "function",
-                                                                "label": "function",
-                                                                "description": "New APIs from Azure Functions"
+                                                                "label": "Azure Functions",
+                                                                "description": "Application backend."
                                                             }
                                                         ],
                                                         "default": []
@@ -146,7 +146,7 @@
                                                                 {
                                                                     "data": {
                                                                         "name": "function-name",
-                                                                        "description": "Please provide function name.",
+                                                                        "description": "Enter function name.",
                                                                         "type": "text",
                                                                         "default": "myFunc",
                                                                         "validation": {
@@ -179,7 +179,7 @@
                                                             "data": {
                                                                 "type": "singleSelect",
                                                                 "name": "spfx-framework-type",
-                                                                "title": "Which framework would you like to use?",
+                                                                "title": "Select framework",
                                                                 "option": [
                                                                     "none",
                                                                     "react"
@@ -237,10 +237,10 @@
                                                     },
                                                     {
                                                         "id": "reuse-existing",
-                                                        "label": "Reuse an existing bot registration"
+                                                        "label": "Use an existing bot registration"
                                                     }
                                                 ],
-                                                "title": "Select way to get bot registration",
+                                                "title": "Bot registration",
                                                 "default": "create-new"
                                             },
                                             "children": [
@@ -253,7 +253,7 @@
                                                             "data": {
                                                                 "name": "bot-id",
                                                                 "type": "text",
-                                                                "title": "Please enter bot id",
+                                                                "title": "Enter bot id",
                                                                 "default": "",
                                                                 "validation": {}
                                                             }
@@ -262,7 +262,7 @@
                                                             "data": {
                                                                 "name": "bot-password",
                                                                 "type": "password",
-                                                                "title": "Please enter bot password",
+                                                                "title": "Enter bot password",
                                                                 "default": "",
                                                                 "validation": {}
                                                             }
@@ -287,7 +287,7 @@
                         {
                             "data": {
                                 "name": "programming-language",
-                                "title": "Please select programming language for your project",
+                                "title": "Select programming language for your project",
                                 "type": "singleSelect",
                                 "option": [
                                     "javascript"

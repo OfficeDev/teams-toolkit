@@ -348,7 +348,7 @@ async function runUserTask(func: Func): Promise<Result<null, FxError>> {
       result = err(
         new UserError(
           ExtensionErrors.ConcurrentTriggerTask,
-          `task '${Array.from(runningTasks).join(",")}' is still running, please wait!`,
+          `Task '${Array.from(runningTasks).join(",")}' is still running.`,
           ExtensionSource
         )
       );
@@ -681,7 +681,7 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
           await CommandsTreeViewProvider.getInstance().refresh([
             {
               commandId: "fx-extension.signinM365",
-              label: "Sign In M365...",
+              label: "Sign in to M365...",
               contextValue: "signinM365"
             }
           ]);
@@ -694,7 +694,7 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
           await CommandsTreeViewProvider.getInstance().refresh([
             {
               commandId: "fx-extension.signinAzure",
-              label: "Sign In Azure...",
+              label: "Sign in to Azure...",
               contextValue: "signinAzure"
             }
           ]);

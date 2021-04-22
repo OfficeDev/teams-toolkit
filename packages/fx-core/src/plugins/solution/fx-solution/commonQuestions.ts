@@ -66,7 +66,7 @@ async function parseAzureTenantId(azureToken: TokenCredentialsBase): Promise<Res
     const array = token.split(".");
     if (array.length < 2) {
         return err(
-            returnSystemError(new Error("Invalid accessToken"), "Solution", SolutionError.FailedToParseAzureTenantId),
+            returnSystemError(new Error("Invalid access token"), "Solution", SolutionError.FailedToParseAzureTenantId),
         );
     }
     const buff = Buffer.from(array[1], "base64");
@@ -74,7 +74,7 @@ async function parseAzureTenantId(azureToken: TokenCredentialsBase): Promise<Res
     const tenantId = (obj as any)["tid"];
     if (tenantId === undefined || typeof tenantId !== "string") {
         return err(
-            returnSystemError(new Error("TenantId not found"), "Solution", SolutionError.FailedToParseAzureTenantId),
+            returnSystemError(new Error("Tenant id not found"), "Solution", SolutionError.FailedToParseAzureTenantId),
         );
     }
     return ok(tenantId);
@@ -107,7 +107,7 @@ export async function askSubscription(config: SolutionConfig, azureToken: TokenC
     if (subscriptions.length === 0) {
         return err(
             returnUserError(
-                new Error("No Subscription was found."),
+                new Error("Failed to find a subscription."),
                 "Solution",
                 SolutionError.NoSubscriptionFound
             ),
@@ -123,7 +123,7 @@ export async function askSubscription(config: SolutionConfig, azureToken: TokenC
             await dialog?.communicate(
                 new DialogMsg(DialogType.Ask, {
                     type: QuestionType.Radio,
-                    description: "Please select a subscription",
+                    description: "Select a subscription",
                     options: subscriptionNames,
                 }),
             )
@@ -164,7 +164,7 @@ async function askCommonQuestions(
     if (azureToken === undefined) {
         return err(
             returnUserError(
-                new Error("Please login to azure using Azure Account Extension"),
+                new Error("Login to Azure using the Azure Account extension"),
                 "Solution",
                 SolutionError.NotLoginToAzure,
             ),
@@ -183,7 +183,7 @@ async function askCommonQuestions(
     if (teamsAppTenantId === undefined || !(typeof teamsAppTenantId === "string") || teamsAppTenantId.length === 0) {
         return err(
             returnSystemError(
-                new Error("Cannot find teams app tenant id"),
+                new Error("Cannot find Teams app tenant id"),
                 "Solution",
                 SolutionError.NoTeamsAppTenantId,
             ),

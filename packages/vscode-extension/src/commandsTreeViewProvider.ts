@@ -121,8 +121,8 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
       vscode.TreeItemCollapsibleState.Expanded,
       undefined,
       [
-        new TreeViewCommand("App Management", "App Management", "fx-extension.openAppManagement", vscode.TreeItemCollapsibleState.None, undefined, undefined, "appManagement"),
-        new TreeViewCommand("Bot Management", "Bot Management", "fx-extension.openBotManagement", vscode.TreeItemCollapsibleState.None, undefined, undefined, "bot"),
+        new TreeViewCommand("Manage Teams Apps", "Manage Teams Apps", "fx-extension.openAppManagement", vscode.TreeItemCollapsibleState.None, undefined, undefined, "appManagement"),
+        new TreeViewCommand("Manage Teams Bots", "Manage Teams Bots", "fx-extension.openBotManagement", vscode.TreeItemCollapsibleState.None, undefined, undefined, "bot"),
       ]
     );
 
@@ -133,7 +133,7 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
       vscode.TreeItemCollapsibleState.Expanded,
       TreeCategory.Feedback,
       [
-        new TreeViewCommand("Report issues", "Report issue to us", "fx-extension.openReportIssues", vscode.TreeItemCollapsibleState.None, TreeCategory.Feedback, undefined, "reportIssues"),
+        new TreeViewCommand("Report issues", "Report issues", "fx-extension.openReportIssues", vscode.TreeItemCollapsibleState.None, TreeCategory.Feedback, undefined, "reportIssues"),
       ]
     );
 

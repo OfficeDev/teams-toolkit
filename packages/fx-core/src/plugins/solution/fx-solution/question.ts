@@ -48,14 +48,14 @@ export const HostTypeOptionSPFx: OptionItem = {
 
 export const AzureResourceSQL: OptionItem = {
     id:"sql",
-    label: "sql",
-    description: "Azure SQL Database. Azure SQL Database depends on Azure Functions.",
+    label: "Azure SQL Database",
+    description: "Azure SQL Database depends on Azure Functions.",
 };
 
 export const AzureResourceFunction: OptionItem = {
     id:"function",
-    label: "function",
-    description: "Azure Functions.",
+    label: "Azure Functions",
+    description: "Application backend.",
 };
 
 export const AzureResourceApim: OptionItem = {
@@ -68,7 +68,7 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
     return {
         name: AzureSolutionQuestionNames.Capabilities,
         title: "Add capabilities",
-        prompt: "Choose the capabilities for your project setup",
+        prompt: "Choose capabilities for your application",
         type: NodeType.multiSelect,
         option: [TabOptionItem, BotOptionItem],
         default: [TabOptionItem.id]
@@ -77,7 +77,7 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
 
 export const FrontendHostTypeQuestion: SingleSelectQuestion = {
     name: AzureSolutionQuestionNames.HostType,
-    title: "Select hosting type",
+    title: "Select frontend hosting type",
     type: NodeType.singleSelect,
     option: [HostTypeOptionAzure, HostTypeOptionSPFx],
     default: HostTypeOptionAzure.id,

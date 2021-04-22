@@ -585,7 +585,7 @@ class CoreImpl implements Core {
 
     public async readConfigs(): Promise<Result<null, FxError>> {
         if (!fs.existsSync(`${this.ctx.root}/.${ConfigFolderName}`)) {
-            this.ctx.logProvider?.warning(`[Core] readConfigs() silent pass, folder not exist:${this.ctx.root}/.${ConfigFolderName}`);
+            this.ctx.logProvider?.warning(`[Core] readConfigs() - folder does not exist: ${this.ctx.root}/.${ConfigFolderName}`);
             return ok(null);
         }
         try {
@@ -623,7 +623,7 @@ class CoreImpl implements Core {
 
     public async writeConfigs(): Promise<Result<null, FxError>> {
         if (!fs.existsSync(`${this.ctx.root}/.${ConfigFolderName}`)) {
-            this.ctx.logProvider?.warning(`[Core] writeConfigs() silent pass, folder not exist:${this.ctx.root}/.${ConfigFolderName}`);
+            this.ctx.logProvider?.warning(`[Core] writeConfigs() - folder does not exist:${this.ctx.root}/.${ConfigFolderName}`);
             return ok(null);
         }
         try {

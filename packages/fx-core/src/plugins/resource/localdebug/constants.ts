@@ -36,6 +36,7 @@ export class LocalDebugConfigKeys {
 
     public static readonly LocalBotEndpoint: string = "localBotEndpoint";
     public static readonly LocalBotDomain: string = "localBotDomain";
+    public static readonly SkipNgrok: string = "skipNgrok";
 }
 
 export class AadPlugin {

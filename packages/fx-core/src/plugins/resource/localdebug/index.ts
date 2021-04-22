@@ -13,7 +13,7 @@ import * as Launch from "./launch";
 import * as Settings from "./settings";
 import * as Tasks from "./tasks";
 import { LocalEnvProvider } from "./localEnv";
-import { MissingStep, NgrokTunnelNotConnected } from "./util/error";
+import { LocalBotEndpointNotConfigured, MissingStep, NgrokTunnelNotConnected, InvalidLocalBotEndpointFormat } from "./util/error";
 import { prepareLocalAuthService } from "./util/localService";
 import { getNgrokHttpUrl } from "./util/ngrok";
 import { getCodespaceName, getCodespaceUrl } from "./util/codespace";
@@ -149,12 +149,26 @@ export class LocalDebugPlugin implements Plugin {
             }
 
             if (includeBot) {
-                const ngrokHttpUrl = await getNgrokHttpUrl(3978);
-                if (!ngrokHttpUrl) {
-                    return err(NgrokTunnelNotConnected());
+                const skipNgrok = ctx.config.get(LocalDebugConfigKeys.SkipNgrok) as boolean;
+                if (skipNgrok) {
+                    const localBotEndpoint = ctx.config.get(LocalDebugConfigKeys.LocalBotEndpoint) as string;
+                    if (localBotEndpoint === undefined) {
+                        return err(LocalBotEndpointNotConfigured());
+                    }
+                    const botEndpointRegex = /https:\/\/.*(:\d+)?/g;
+                    if (!botEndpointRegex.test(localBotEndpoint)) {
+                        return err(InvalidLocalBotEndpointFormat(localBotEndpoint));
+                    }
+                    ctx.config.set(LocalDebugConfigKeys.LocalBotEndpoint, localBotEndpoint);
+                    ctx.config.set(LocalDebugConfigKeys.LocalBotDomain, localBotEndpoint.slice(8));
                 } else {
-                    ctx.config.set(LocalDebugConfigKeys.LocalBotEndpoint, ngrokHttpUrl);
-                    ctx.config.set(LocalDebugConfigKeys.LocalBotDomain, ngrokHttpUrl.slice(8));
+                    const ngrokHttpUrl = await getNgrokHttpUrl(3978);
+                    if (!ngrokHttpUrl) {
+                        return err(NgrokTunnelNotConnected());
+                    } else {
+                        ctx.config.set(LocalDebugConfigKeys.LocalBotEndpoint, ngrokHttpUrl);
+                        ctx.config.set(LocalDebugConfigKeys.LocalBotDomain, ngrokHttpUrl.slice(8));
+                    }
                 }
             }
         }

@@ -58,6 +58,26 @@ export interface AzureAccountProvider {
      * @param name callback name
      */
     removeStatusChangeMap(name: string): Promise<boolean>;
+
+    /**
+     * Get Azure token JSON object
+     * - tid : tenantId
+     * - unique_name : user name
+     * - ...
+     * @param showDialog Control whether the UI layer displays pop-up windows 
+     */
+    getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined>;
+
+    /**
+     * List subscription detail
+     */
+    listSubscriptions(): Promise<SubscriptionInfo[]>;
+
+    /**
+     * Set subscription id to memory
+     * @param subscriptionId user used subscription id
+     */
+    setSubscription(subscriptionId: string): Promise<boolean>;
 }
 
 
@@ -156,6 +176,11 @@ export interface GraphTokenProvider {
     removeStatusChangeMap(name: string): Promise<boolean>;
 }
 
+export type SubscriptionInfo = {
+    subscriptionName: string;
+    subscriptionId: string;
+    tenantId: string;
+};
 
 export type TokenProvider = {
     azure: AzureAccountProvider;

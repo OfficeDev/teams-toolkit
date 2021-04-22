@@ -327,7 +327,26 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });
     }
   }
+
+  setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  removeStatusChangeMap(name: string): Promise<boolean> {
+      throw new Error("Method not implemented.");
+  }
+  listSubscriptions(): Promise<SubscriptionInfo[]> {
+      throw new Error("Method not implemented.");
+  }
+  setSubscription(subscriptionId: string): Promise<boolean> {
+      throw new Error("Method not implemented.");
+  }
 }
+
+export type SubscriptionInfo = {
+  subscriptionName: string;
+  subscriptionId: string;
+  tenantId: string;
+};
 
 interface PartialList<T> extends Array<T> {
   nextLink?: string;

@@ -266,15 +266,15 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   /**
    * set tenantId and subscriptionId
    */
-  async setTeanantAndSubscription(tenantId: string, subscriptionId: string): Promise<boolean> {
+  async setSubscription(subscriptionId: string): Promise<boolean> {
     if (this.isUserLogin()) {
       const azureAccount: AzureAccount = vscode.extensions.getExtension<AzureAccount>(
         "ms-vscode.azure-account"
       )!.exports;
       for (let i = 0; i < azureAccount.subscriptions.length; ++i) {
         const item = azureAccount.subscriptions[i];
-        if (item.session.tenantId == tenantId && item.subscription.subscriptionId == subscriptionId) {
-          AzureAccountManager.tenantId = tenantId;
+        if (item.subscription.subscriptionId == subscriptionId) {
+          AzureAccountManager.tenantId = item.session.tenantId;
           AzureAccountManager.subscriptionId = subscriptionId;
           return true;
         }

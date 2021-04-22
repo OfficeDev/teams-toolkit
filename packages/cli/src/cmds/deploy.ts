@@ -6,24 +6,47 @@
 import { Argv, Options } from "yargs";
 import * as path from "path";
 
-import { FxError, err, ok, Result, ConfigMap, Stage, Platform } from "fx-api";
+import {
+  FxError,
+  err,
+  ok,
+  Result,
+  ConfigMap,
+  Stage,
+  Platform,
+  MultiSelectQuestion,
+  OptionItem
+} from "fx-api";
 
 import activate from "../activate";
 import * as constants from "../constants";
 import { validateAndUpdateAnswers } from "../question/question";
 import { YargsCommand } from "../yargsCommand";
-import { getParamJson } from "../utils";
+import { flattenNodes, getParamJson } from "../utils";
 
 export default class Deploy extends YargsCommand {
   public readonly commandHead = `deploy`;
-  public readonly command = `${this.commandHead} [options]`;
+  public readonly command = `${this.commandHead} [components] [options]`;
   public readonly description = "A command to deploy the project in current working directory";
   public readonly paramPath = constants.deployParamPath;
 
-  public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
+  public params: { [_: string]: Options } = getParamJson(this.paramPath);
+  public readonly deployPluginNodeName = "deploy-plugin";
 
   public builder(yargs: Argv): Argv<any> {
-    return yargs.version(false).options(this.params);
+    const deployPluginOption = this.params[this.deployPluginNodeName];
+    yargs.positional("components", {
+      array: true,
+      choices: deployPluginOption.choices,
+      description: deployPluginOption.description,
+      default: deployPluginOption.default,
+    });
+    for (const name in this.params) {
+      if (name !== this.deployPluginNodeName) {
+        yargs.options(name, this.params[name]); 
+      }
+    }
+    return yargs.version(false);
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
@@ -45,6 +68,13 @@ export default class Deploy extends YargsCommand {
       const result = await core.getQuestions!(Stage.deploy, Platform.VSCode);
       if (result.isErr()) {
         return err(result.error);
+      }
+      const rootNode = result.value!;
+      const allNodes = flattenNodes(rootNode);
+      const deployPluginNode = allNodes.find(node => node.data.name === this.deployPluginNodeName)!;
+      if ((args.components || []).length === 0) {
+        const option = (deployPluginNode.data as MultiSelectQuestion).option as OptionItem[];
+        answers.set(this.deployPluginNodeName, option.map(op => op.id));
       }
       await validateAndUpdateAnswers(result.value!, answers);
     }

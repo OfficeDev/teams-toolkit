@@ -15,7 +15,6 @@ build/**
 .prettierignore
 webpack.config.js
 .github
-NOTICE.txt
 
 #remove node modules after fx-core support webpack
 #node_modules/**

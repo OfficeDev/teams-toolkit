@@ -14,11 +14,11 @@ import { runCommand } from "../handlers";
 import { Stage } from "fx-api";
 import { PanelType } from "./PanelType";
 import { execSync } from "child_process";
-import { isMacOS } from '../utils/commonUtils'
+import { isMacOS } from "../utils/commonUtils";
 
 export class WebviewPanel {
   private static readonly viewType = "react";
-  public static currentPanels: WebviewPanel[] = new Array();
+  public static currentPanels: WebviewPanel[] = [];
 
   private panel: vscode.WebviewPanel;
   private panelType: PanelType = PanelType.QuickStart;

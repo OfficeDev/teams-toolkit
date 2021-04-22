@@ -1157,8 +1157,13 @@ export class TeamsAppSolution implements Solution {
     async getTabScaffoldQuestions(ctx: SolutionContext, manifest: TeamsAppManifest):Promise<Result<QTreeNode | undefined, FxError>> {
         const tabNode = new QTreeNode({ type: NodeType.group });
        
-        const frontend_host_type = new QTreeNode(FrontendHostTypeQuestion);
-        tabNode.addChild(frontend_host_type);
+        const frontendHostType = new QTreeNode(FrontendHostTypeQuestion);
+        tabNode.addChild(frontendHostType);
+
+        const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
+        // SPFx project does not ask users to choose programming language
+        programmingLanguage.condition = { equals: HostTypeOptionAzure.id };
+        frontendHostType.addChild(programmingLanguage);
 
         //Frontend plugin
         if (this.fehostPlugin.getQuestions) {
@@ -1168,13 +1173,13 @@ export class TeamsAppSolution implements Solution {
             if (res.value) {
                 const frontend = res.value as QTreeNode;
                 frontend.condition = { equals: HostTypeOptionAzure.label };
-                if (frontend.data) frontend_host_type.addChild(frontend);
+                if (frontend.data) frontendHostType.addChild(frontend);
             }
         }
 
         const azure_resources = new QTreeNode(AzureResourcesQuestion);
         azure_resources.condition = { equals: HostTypeOptionAzure.label };
-        frontend_host_type.addChild(azure_resources);
+        frontendHostType.addChild(azure_resources);
 
         //SPFX plugin
         if (this.spfxPlugin.getQuestions) {
@@ -1184,7 +1189,7 @@ export class TeamsAppSolution implements Solution {
             if (res.value) {
                 const spfx = res.value as QTreeNode;
                 spfx.condition = { equals: HostTypeOptionSPFx.label };
-                if (spfx.data) frontend_host_type.addChild(spfx);
+                if (spfx.data) frontendHostType.addChild(spfx);
             }
         }
 
@@ -1234,10 +1239,6 @@ export class TeamsAppSolution implements Solution {
 
             node.addChild(capNode);
             
-            if (!this.spfxSelected(ctx)) {
-                node.addChild(new QTreeNode(ProgrammingLanguageQuestion));
-            }
-
             /////Tab
             const tabRes = await this.getTabScaffoldQuestions(ctx, manifest);
             if (tabRes.isErr()) return tabRes;

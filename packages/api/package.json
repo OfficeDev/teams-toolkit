@@ -1,6 +1,6 @@
 {
   "name": "fx-api",
-  "version": "1.0.9",
+  "version": "1.1.0",
   "description": "teamsfx framework api",
   "main": "build/index.js",
   "types": "build/index.d.ts",

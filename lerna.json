@@ -7,5 +7,8 @@
         "packages/cli",
         "packages/vscode-extension"
     ],
-    "version": "independent"
+    "version": "independent",
+    "publishConfig": {
+        "registry": "https://registry.npmjs.org/"
+    }
 }

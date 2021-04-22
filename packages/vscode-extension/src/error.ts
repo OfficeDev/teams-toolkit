@@ -9,5 +9,6 @@ export enum ExtensionErrors {
   UserCancel = "UserCancel",
   ConcurrentTriggerTask = "ConcurrentTriggerTask",
   EmptySelectOption = "EmptySelectOption",
-  UnsupportedNodeType = "UnsupportedNodeType"
+  UnsupportedNodeType = "UnsupportedNodeType",
+  UnknownSubscription = "UnknownSubscription"
 }

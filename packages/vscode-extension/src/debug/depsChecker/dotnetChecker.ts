@@ -66,7 +66,7 @@ export class DotnetChecker implements IDepsChecker {
 
   public isEnabled(): Promise<boolean> {
     // TODO: should send this event per user
-    // DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.skipCheckDotnet);
+    // this._telemetry.sendEvent(DepsCheckerEvent.skipCheckDotnet);
     return Promise.resolve(this._adapter.dotnetCheckerEnabled());
   }
 
@@ -120,7 +120,7 @@ export class DotnetChecker implements IDepsChecker {
 
   public async getDotnetExecPath(): Promise<string> {
     const execPath = await this.getDotnetExecPathFromConfig();
-    return execPath !== null ? execPath : "dotnet";
+    return execPath || "dotnet";
   }
 
   public static escapeFilePath(path: string): string {

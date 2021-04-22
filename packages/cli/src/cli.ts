@@ -63,7 +63,7 @@ function getVersionString(): string {
     .scriptName(constants.cliName)
     .help()
     .strict()
-    .alias("h", "help")
+    .alias("help", "h")
     .alias("v", "version")
     .version(getVersionString())
     .epilogue(

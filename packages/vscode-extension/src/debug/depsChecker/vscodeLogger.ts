@@ -64,6 +64,3 @@ export class VSCodeLogger implements IDepsLogger {
 }
 
 export const vscodeLogger = new VSCodeLogger(commonlibLogger);
-
-// uncomment this line if the extension implements log level
-// export const logger = commonlibLogger;

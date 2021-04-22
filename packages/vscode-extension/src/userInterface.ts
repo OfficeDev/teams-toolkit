@@ -23,6 +23,7 @@ import {
 import { ProgressHandler } from "./progressHandler";
 import { sleep } from "./utils/commonUtils";
 import VsCodeLogInstance from "./commonlib/log";
+import * as StringResources from "./resources/Strings.json";
 
 export class DialogManager implements Dialog {
   private static instance: DialogManager;
@@ -76,7 +77,7 @@ export class DialogManager implements Dialog {
             break;
         }
         return new DialogMsg(DialogType.Show, {
-          description: result ? "Output Successfully" : "Output Failed",
+          description: "",
           level: result ? MsgLevel.Info : MsgLevel.Error
         });
       }
@@ -89,13 +90,13 @@ export class DialogManager implements Dialog {
           });
         }
         return new DialogMsg(DialogType.Show, {
-          description: "Show Progress Successfully",
+          description: "",
           level: MsgLevel.Info
         });
       }
       default: {
         return new DialogMsg(DialogType.Show, {
-          description: "Wrong Dialog Type",
+          description: "",
           level: MsgLevel.Error
         });
       }
@@ -136,7 +137,7 @@ export class DialogManager implements Dialog {
     if (msg.items) {
       return result;
     } else {
-      return Promise.resolve("Show Successfully");
+      return Promise.resolve(StringResources.vsc.userInterface.showSuccessfully);
     }
   }
 
@@ -181,7 +182,7 @@ export class DialogManager implements Dialog {
           return undefined;
         }
         return await ext.ui.showQuickPick(options, {
-          placeHolder: question.description || "No question description",
+          placeHolder: question.description || StringResources.vsc.userInterface.noQuestionDescription,
           ignoreFocusOut: true,
           canPickMany: question.multiSelect
         });
@@ -189,7 +190,7 @@ export class DialogManager implements Dialog {
       case QuestionType.Text: {
         return await ext.ui.showInputBox({
           value: question.defaultAnswer || "",
-          placeHolder: question.description || "No question description",
+          placeHolder: question.description || StringResources.vsc.userInterface.noQuestionDescription,
           ignoreFocusOut: true,
           validateInput: question.validateInput,
           password: question.password,
@@ -227,7 +228,7 @@ export class DialogManager implements Dialog {
       }
       default: {
         await this.showMessage({
-          description: "Not implement this type to asking questions.",
+          description: StringResources.vsc.userInterface.notImplementQuestion,
           level: MsgLevel.Error
         });
         return undefined;

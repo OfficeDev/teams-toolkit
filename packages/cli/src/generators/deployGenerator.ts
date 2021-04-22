@@ -3,9 +3,10 @@
 
 "use strict";
 
-import { err, FxError, ok, QTreeNode, Result, Stage } from "fx-api";
+import { err, FxError, NodeType, ok, QTreeNode, Result, Stage } from "fx-api";
 
 import * as constants from "../constants";
+import { flattenNodes } from "../utils";
 import { Generator } from "./generator";
 
 export class DeployGenerator extends Generator {
@@ -18,7 +19,8 @@ export class DeployGenerator extends Generator {
     if (result.isErr()) {
       return err(result.error);
     }
-    const allNodes = result.value as QTreeNode[];
+    const root = result.value as QTreeNode;
+    const allNodes = flattenNodes(root).filter(node => node.data.type !== NodeType.group);
     return ok([constants.RootFolderNode, ...allNodes]);
   }
 }

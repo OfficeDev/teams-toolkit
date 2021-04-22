@@ -37,10 +37,10 @@ export class Utils {
 
         const version = await fs.readFile(versionFilePath, "utf-8");
         const fileName = Constants.SimpleAuthZipName(version);
-        const sasToken = process.env.SIMPLE_AUTH_SAS;
+        const blobUrlWithCredential = process.env.SIMPLE_AUTH_URL as string;
 
         try {
-            const blobClient = new BlobServiceClient(`https://teamsfxsimpleauthrelease.blob.core.windows.net/?${sasToken}`)
+            const blobClient = new BlobServiceClient(blobUrlWithCredential)
                 .getContainerClient("release")
                 .getBlobClient(fileName);
             await blobClient.downloadToFile(filePath);

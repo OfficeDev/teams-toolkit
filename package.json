@@ -14,7 +14,8 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lerna run lint:staged --stream"
+      "pre-commit": "lerna run lint:staged --stream",
+      "commit-msg": "commitlint -e $HUSKY_GIT_PARAMS"
     }
   },
   "bin": {

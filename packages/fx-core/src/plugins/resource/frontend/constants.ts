@@ -35,11 +35,6 @@ export class FrontendPluginInfo {
     static HelpLink = ""; // TODO: default help link
     static readonly templateManifestURL =
         "https://github.com/henzhang-ms/Teams-Templates/releases/latest/download/manifest.json";
-    static TemplateGroupName = "tab";
-    static TemplateLanguage = "JavaScript";
-    static TemplateDefaultScenario = "default";
-    static TemplateWithFunctionScenario = "with-function";
-    static TemplateVersion = "0.3.x";
 }
 
 export class Commands {
@@ -50,7 +45,7 @@ export class Commands {
 export class EnvironmentVariables {
     static FuncEndpoint = "REACT_APP_FUNC_ENDPOINT";
     static FuncName = "REACT_APP_FUNC_NAME";
-    static RuntimeEndpoint = "REACT_APP_TEAMSFX_ENDPOINT"; // TODO: renaming the env variables pending on runtime connector plugin
+    static RuntimeEndpoint = "REACT_APP_TEAMSFX_ENDPOINT";
     static StartLoginPage = "REACT_APP_START_LOGIN_PAGE_URL";
     static ClientID = "REACT_APP_CLIENT_ID";
 }
@@ -59,8 +54,8 @@ export class FrontendPathInfo {
     static WorkingDir = "tabs";
     static TemplateDir = path.join("templates", "plugins", "resource", "frontend");
     static RootDir = path.join(__dirname, "..", "..", "..", "..");
-    static TemplateFileName = "tab.JavaScript.default.zip";
     static TemplateFileExt = ".tpl";
+    static TemplatePackageExt = ".zip";
     static BuildFolderName = "build";
     static BuildPath = `${FrontendPathInfo.BuildFolderName}${path.sep}`;
     static TabEnvironmentFilePath = ".env";
@@ -80,6 +75,7 @@ export class DependentPluginInfo {
     static readonly ResourceGroupName = "resourceGroupName";
     static readonly ResourceNameSuffix = "resourceNameSuffix";
     static readonly Location = "location";
+    static readonly ProgrammingLanguage = "programmingLanguage";
 
     static readonly FunctionPluginName = "fx-resource-function";
     static readonly FunctionEndpoint = "functionEndpoint";
@@ -132,14 +128,6 @@ export class TelemetryValue {
     static readonly Fail = "no";
     static readonly UserError = "user";
     static readonly SystemError = "system";
-}
-
-export class QuestionKey {
-    static readonly TabScopes = "tab-scopes";
-}
-
-export class QuestionDescription {
-    static readonly TabScopes = "Select tab scopes";
 }
 
 export class TabScope {

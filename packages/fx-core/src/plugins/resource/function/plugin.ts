@@ -37,12 +37,13 @@ import { FunctionScaffold } from "./ops/scaffold";
 import { FxResult, FunctionPluginResultFactory as ResultFactory } from "./result";
 import { Logger } from "./utils/logger";
 import { PostProvisionSteps, PreDeploySteps, ProvisionSteps, StepGroup, step } from "./resources/steps";
-import { functionNameQuestion, nodeVersionQuestion } from "./questions";
+import { functionNameQuestion } from "./questions";
 import { dotnetHelpLink, Messages } from "./utils/depsChecker/common";
 import { DotnetChecker } from "./utils/depsChecker/dotnetChecker";
 import { handleDotnetError } from "./utils/depsChecker/checkerAdapter";
 import { isLinux } from "./utils/depsChecker/common";
 import { DepsCheckerError } from "./utils/depsChecker/errors";
+import { getNodeVersion } from "./utils/node-version";
 
 type Site = WebSiteManagementModels.Site;
 type AppServicePlan = WebSiteManagementModels.AppServicePlan;
@@ -69,7 +70,6 @@ export interface FunctionConfig {
     provisionDone: boolean;
 
     /* Intermediate  */
-    nodeVersion?: NodeVersion;
     skipDeploy: boolean;
 }
 
@@ -89,7 +89,6 @@ export class FunctionPluginImpl {
         this.config.subscriptionId = solutionConfig?.get(DependentPluginInfo.subscriptionId) as string;
         this.config.location = solutionConfig?.get(DependentPluginInfo.location) as string;
         this.config.functionLanguage = solutionConfig?.get(DependentPluginInfo.programmingLanguage) as FunctionLanguage;
-        this.config.nodeVersion = ctx.config.get(FunctionConfigKey.nodeVersion) as NodeVersion;
         this.config.defaultFunctionName = ctx.config.get(FunctionConfigKey.defaultFunctionName) as string;
         this.config.functionAppName = ctx.config.get(FunctionConfigKey.functionAppName) as string;
         this.config.storageAccountName = ctx.config.get(FunctionConfigKey.storageAccountName) as string;
@@ -115,11 +114,6 @@ export class FunctionPluginImpl {
         if (this.config.functionLanguage &&
             !Object.values(FunctionLanguage).includes(this.config.functionLanguage)) {
                 throw new ValidationError(FunctionConfigKey.functionLanguage);
-        }
-
-        if (this.config.nodeVersion &&
-            !Object.values(NodeVersion).includes(this.config.nodeVersion)) {
-                throw new ValidationError(FunctionConfigKey.nodeVersion);
         }
 
         if (this.config.resourceNameSuffix &&
@@ -181,10 +175,6 @@ export class FunctionPluginImpl {
             type: NodeType.group
         });
 
-        if (stage === Stage.create || (stage === Stage.update && !ctx.config.get(FunctionConfigKey.nodeVersion))) {
-            res.addChild(nodeVersionQuestion);
-        }
-
         if (stage === Stage.create || stage === Stage.update) {
             res.addChild(functionNameQuestion);
         }
@@ -194,10 +184,6 @@ export class FunctionPluginImpl {
 
     public async preScaffold(ctx: PluginContext): Promise<FxResult> {
         this.syncConfigFromContext(ctx);
-
-        if (!this.config.nodeVersion) {
-            this.config.nodeVersion = ctx.answers?.get(QuestionKey.nodeVersion) as NodeVersion;
-        }
 
         // Always ask name in case user wants to add more functions.
         const name: string | undefined = ctx.answers?.get(QuestionKey.functionName) as string;
@@ -268,6 +254,12 @@ export class FunctionPluginImpl {
         return ResultFactory.Success();
     }
 
+    private async getValidNodeVersion(ctx: PluginContext): Promise<NodeVersion> {
+        const currentNodeVersion = await getNodeVersion(this.getFunctionProjectRootPath(ctx));
+        const candidateNodeVersions = Object.values(NodeVersion);
+        return candidateNodeVersions.find((v: NodeVersion) => v === currentNodeVersion) ?? DefaultValues.nodeVersion;
+    }
+
     public async provision(ctx: PluginContext): Promise<FxResult> {
         const resourceGroupName = this.checkAndGet(this.config.resourceGroupName, FunctionConfigKey.resourceGroupName);
         const subscriptionId = this.checkAndGet(this.config.subscriptionId, FunctionConfigKey.subscriptionId);
@@ -276,8 +268,8 @@ export class FunctionPluginImpl {
         const storageAccountName = this.checkAndGet(this.config.storageAccountName, FunctionConfigKey.storageAccountName);
         const functionAppName = this.checkAndGet(this.config.functionAppName, FunctionConfigKey.functionAppName);
         const functionLanguage = this.checkAndGet(this.config.functionLanguage, FunctionConfigKey.functionLanguage);
-        const nodeVersion = this.checkAndGet(this.config.nodeVersion, FunctionConfigKey.nodeVersion);
         const credential = this.checkAndGet(await ctx.azureAccountProvider?.getAccountCredentialAsync(), FunctionConfigKey.credential);
+        const nodeVersion = await this.getValidNodeVersion(ctx);
 
         const storageManagementClient: StorageManagementClient =
             await runWithErrorCatchAndThrow(new InitAzureSDKError(),
@@ -452,8 +444,7 @@ export class FunctionPluginImpl {
         }
 
         // NOTE: make sure this step is before using `dotnet` command if you refactor this code.
-        // TODO: enable dotnet check/install after next release
-        // await this.handleDotnetChecker();
+        await this.handleDotnetChecker();
 
         await runWithErrorCatchAndThrow(new InstallTeamsfxBindingError(), async () =>
             await step(StepGroup.PreDeployStepGroup, PreDeploySteps.installTeamsfxBinding, async () =>
@@ -591,12 +582,10 @@ export class FunctionPluginImpl {
                 this.checkAndGet(aadConfig.get(DependentPluginInfo.oauthHost) as string, "OAuth Host");
             const tenantId: string =
                 this.checkAndGet(aadConfig.get(DependentPluginInfo.tenantId) as string, "tenant Id");
-            const frontendEndpoint: string =
-                this.checkAndGet(frontendConfig.get(DependentPluginInfo.frontendEndpoint) as string, "frontend endpoint");
-            const frontendDomain: string =
-                this.checkAndGet(frontendConfig.get(DependentPluginInfo.frontendDomain) as string, "frontend domain");
+            const applicationIdUri: string =
+                this.checkAndGet(aadConfig.get(DependentPluginInfo.applicationIdUris) as string, "Application Id URI");
 
-            return FunctionProvision.constructFunctionAuthSettings(clientId, frontendDomain, frontendEndpoint, oauthHost, tenantId);
+            return FunctionProvision.constructFunctionAuthSettings(clientId, applicationIdUri, oauthHost, tenantId);
         }
 
         return undefined;

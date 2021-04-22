@@ -113,7 +113,7 @@ teamsfx test
 ```bash
 teamsfx deploy
 teamsfx deploy frontend-hosting
-teamsfx deploy "frontend-hosting function"
+teamsfx deploy frontend-hosting function
 teamsfx deploy spfx
 ```
 

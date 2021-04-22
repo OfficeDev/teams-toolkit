@@ -54,6 +54,10 @@ export interface OptionItem {
      * hidden data for this option item, not show
      */
     data?: unknown;
+    /**
+     * CLI diplay name, will use id instead if cliname not exist.
+     */
+    cliName?: string;
 }
 
 /**

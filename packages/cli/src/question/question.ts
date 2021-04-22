@@ -15,7 +15,8 @@ import {
   isAutoSkipSelect,
   getSingleOption,
   SingleSelectQuestion,
-  MultiSelectQuestion
+  MultiSelectQuestion,
+  StaticOption
 } from "fx-api";
 
 import CLILogProvider from "../commonlib/log";
@@ -48,23 +49,24 @@ export async function validateAndUpdateAnswers(
       }
     }
 
-    if ("returnObject" in node.data && !!node.data.returnObject) {
-      const option = node.data.option;
-
-      if (
-        ans !== undefined &&
-        option instanceof Array &&
-        option.length > 0 &&
-        typeof option[0] !== "string"
-      ) {
-        // adjust option is OptionItem[]
+    // if it is a select question
+    if (node.data.type === NodeType.multiSelect || node.data.type === NodeType.singleSelect) {
+      const question = node.data as SingleSelectQuestion | MultiSelectQuestion;
+      const option = question.option as StaticOption;
+      // if the option is the object, need to find the object first.
+      if (typeof option[0] !== "string") {
+        // for multi-select question
         if (ans instanceof Array) {
-          const items: OptionItem[] = [];
+          const items = [];
           for (const one of ans) {
-            const item = (option as OptionItem[]).filter((op) => op.id === one)[0];
-
+            const item = (option as OptionItem[]).filter((op) => (op.cliName ? op.cliName : op.id) === one)[0];
             if (item) {
-              items.push(item);
+              if (question.returnObject) {
+                items.push(item);
+              }
+              else {
+                items.push(item.id);
+              }
             } else {
               CLILogProvider.warning(
                 `[${constants.cliSource}] No option for this question: ${one} ${option}`
@@ -72,14 +74,21 @@ export async function validateAndUpdateAnswers(
             }
           }
           answers.set(node.data.name, items);
-        } else {
-          const item = (option as OptionItem[]).filter((op) => op.id === ans)[0];
+        }
+        // for single-select question
+        else {
+          const item = (option as OptionItem[]).filter((op) => (op.cliName ? op.cliName : op.id) === ans)[0];
           if (!item) {
             CLILogProvider.warning(
               `[${constants.cliSource}] No option for this question: ${ans} ${option}`
             );
           }
-          answers.set(node.data.name, item);
+          if (question.returnObject) {
+            answers.set(node.data.name, item);
+          }
+          else {
+            answers.set(node.data.name, item.id);
+          }
         }
       }
     }
@@ -147,7 +156,7 @@ export async function visitInteractively(
     if (!isAutoSkipSelect(node.data)) {
       answers = await inquirer.prompt([toInquirerQuestion(node.data, answers, remoteFuncValidator)], answers);
     }
-    else{
+    else {
       answers[node.data.name] = getSingleOption(node.data as (SingleSelectQuestion | MultiSelectQuestion));
     }
     answer = answers[node.data.name];

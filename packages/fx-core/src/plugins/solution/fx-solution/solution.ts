@@ -911,14 +911,6 @@ export class TeamsAppSolution implements Solution {
                         ue.helpLink = "https://github.com/OfficeDev/TeamsFx/wiki/Error-handling-for-provision-and-deployment-failure";
                     }
                 }
-                // await ctx.dialog?.communicate(
-                //     new DialogMsg(DialogType.Show, {
-                //         description: `[Teams Toolkit] Provision resources failed, subscription id: '${subscriptionId}', resource group: '${resourceGroupName}'.\n` +
-                //         `You can: 1) fix the problem manually and continue to provision; 2) delete the resoruce group in Azure potal and redo provision ` + 
-                //         `(help link: https://github.com/OfficeDev/TeamsFx/wiki/Error-handling-for-provision-and-deployment-failure)`,
-                //         level: MsgLevel.Error,
-                //     }),
-                // );
             }
             return provisionResult;
         } finally {

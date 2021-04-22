@@ -690,6 +690,7 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
         if (result) {
           await CommandsTreeViewProvider.getInstance().refresh([
             {
+              commandId: "fx-extension.signinM365",
               label: StringResources.vsc.handlers.signIn365,
               contextValue: "signinM365"
             }

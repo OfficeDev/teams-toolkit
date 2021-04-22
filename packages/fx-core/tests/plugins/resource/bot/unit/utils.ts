@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ConfigMap, LogProvider, PluginContext, LogLevel } from "fx-api";
+import { ConfigMap, LogProvider, PluginContext, LogLevel, Dialog, DialogMsg, DialogType } from "fx-api";
 import { ResourceGroups, ResourceManagementClientContext } from "@azure/arm-resources";
 import { ServiceClientCredentials } from "@azure/ms-rest-js";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
@@ -9,6 +9,23 @@ import { TokenResponse } from "adal-node";
 import * as utils from "../../../../../src/plugins/resource/bot/utils/common";
 import { PluginAAD, PluginSolution } from "../../../../../src/plugins/resource/bot/resources/strings";
 
+export function generateFakeDialog(): Dialog {
+    return {
+        communicate: (msg: DialogMsg) => {
+            return Promise.resolve(new DialogMsg(
+                DialogType.Answer,
+                "default"
+            ));
+        },
+        createProgressBar: (title: string, totalSteps: number) => {
+            return {
+                start: (details?: string) => { return Promise.resolve(); },
+                next: (details?: string) => { return Promise.resolve(); },
+                end: (details?: string) => { return Promise.resolve(); }
+            };
+        }
+    };
+}
 export function generateFakeServiceClientCredentials(): ServiceClientCredentials {
     return {
         signRequest: (anything) => {

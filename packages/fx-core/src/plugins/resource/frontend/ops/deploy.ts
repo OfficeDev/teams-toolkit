@@ -113,7 +113,8 @@ export class FrontendDeployment {
         await Utils.forEachFileAndDir(
             componentPath,
             (itemPath, stats) => {
-                if (referenceTime < stats.mtime) {
+                const relativePath = path.relative(componentPath, itemPath);
+                if (relativePath && referenceTime < stats.mtime) {
                     changed = true;
                     return true;
                 }

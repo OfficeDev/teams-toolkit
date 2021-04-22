@@ -33,7 +33,7 @@ export namespace AppStudio {
         logProvider?: LogProvider,
         colorIconContent?: string, // base64 encoded 
         outlineIconContent?: string // base64 encoded
-    ): Promise<string | undefined> {
+    ): Promise<IAppDefinition | undefined> {
         if (appDefinition && appStudioToken) {
             try {
                 const requester = createRequesterWithToken(appStudioToken);
@@ -52,8 +52,8 @@ export namespace AppStudio {
                     const app = <IAppDefinition>response.data;
                     await logProvider?.debug(`recieved data from app studio ${JSON.stringify(app)}`);
 
-                    if (app && app.teamsAppId) {
-                        return app.teamsAppId;
+                    if (app) {
+                        return app;
                     }
                 }
             } catch (e) {
@@ -75,7 +75,7 @@ export namespace AppStudio {
         outlineIconContent: string,
         requester: AxiosInstance,
         logProvider?: LogProvider,
-    ): Promise<boolean> {
+    ): Promise<{colorIconUrl: string, outlineIconUrl: string}> {
         await logProvider?.info(`uploading icon for teams ${teamsAppId}`);
         if (teamsAppId && appStudioToken) {
             try {
@@ -85,31 +85,24 @@ export namespace AppStudio {
                     base64String: colorIconContent
                 };
                 const outlineIcon: Icon = {
-                    name: "color",
-                    type: "color",
+                    name: "outline",
+                    type: "outline",
                     base64String: outlineIconContent
                 };
                 const colorIconResult = requester.post(`/api/appdefinitions/${teamsAppId}/image`, colorIcon);
                 const outlineIconResult = requester.post(`/api/appdefinitions/${teamsAppId}/image`, outlineIcon);
                 const results = await Promise.all([colorIconResult, outlineIconResult]);
-                for (const result of results) {
-                    if (!result) {
-                        return false;
-                    }
-                    await logProvider?.info(`icon url: ${result.data}`);
-                }
-
                 await logProvider?.info(`successfully uploaded two icons`);
-                return true;
+                return {colorIconUrl: results[0].data, outlineIconUrl: results[1].data};
             } catch (e) {
                 if (e instanceof Error) {
-                    await logProvider?.warning(`failed to create app due to ${e.name}: ${e.message}`);
+                    await logProvider?.warning(`failed to upload icon due to ${e.name}: ${e.message}`);
                 }
-                return false;
+                throw e;
             }
             
         }
-        return false;
+        throw new Error(`teamsAppId or appStudioToken is invalid`);
     }
 
     // Updates an existing app if it exists with the configuration given.  Returns whether or not it was successful.
@@ -120,22 +113,26 @@ export namespace AppStudio {
         logProvider?: LogProvider,
         colorIconContent?: string,
         outlineIconContent?: string,
-    ): Promise<boolean> {
+    ): Promise<IAppDefinition> {
         if (appDefinition && appStudioToken) {
             try {
                 const requester = createRequesterWithToken(appStudioToken);
+                let result: {colorIconUrl: string, outlineIconUrl: string} | undefined;
                 if (colorIconContent && outlineIconContent) {
-                    const succeeded = await uploadIcon(teamsAppId, appStudioToken, colorIconContent, outlineIconContent, requester, logProvider);
-                    if (!succeeded) {
-                        return false;
+                    result = await uploadIcon(teamsAppId, appStudioToken, colorIconContent, outlineIconContent, requester, logProvider);
+                    if (!result) {
+                        await logProvider?.error(`failed to upload color icon for: ${teamsAppId}`);
+                        throw new Error(`failed to upload icons for ${teamsAppId}`);
                     }
+                    appDefinition.colorIcon = result.colorIconUrl;
+                    appDefinition.outlineIcon = result.outlineIconUrl;
                 }
                 const response = await requester.post(`/api/appdefinitions/${teamsAppId}/override`, appDefinition);
                 if (response && response.data) {
                     const app = <IAppDefinition>response.data;
 
                     if (app && app.teamsAppId && app.teamsAppId === teamsAppId) {
-                        return true;
+                        return app;
                     } else {
                         await logProvider?.error(`teamsAppId mismatch. Input: ${teamsAppId}. Got: ${app.teamsAppId}`);
                     }
@@ -144,11 +141,11 @@ export namespace AppStudio {
                 if (e instanceof Error) {
                     await logProvider?.warning(`failed to update app due to ${e.name}: ${e.message}`);
                 }
-                return false;
+                throw new Error(`failed to update app due to ${e.name}: ${e.message}`);
             }
         }
 
-        return false;
+        throw new Error(`invalid appDefinition[${appDefinition}] or appStudioToken[${appStudioToken}]`);
     }
 
     export async function createBotRegistration(

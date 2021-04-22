@@ -10,10 +10,13 @@ Use the library to:
 [Source code](https://github.com/OfficeDev/TeamsFx/tree/main/packages/sdk) |
 [Package (NPM)](https://www.npmjs.com/package/@microsoft/teamsfx) |
 [API reference documentation]() |
-[Product documentation]() |
+[Product documentation](https://review.docs.microsoft.com/en-us/mods/overview?branch=main) |
 [Samples](https://github.com/OfficeDev/TeamsFx-Samples)
 
 ## Getting started
+
+TeamsFx SDK is pre-configured in scaffolded project using TeamsFx toolkit or cli.
+Please check the [wiki page](https://review.docs.microsoft.com/en-us/mods/build-your-first-app/build-first-app-overview?branch=main) to see how to create a Teams App project.
 
 ### Currently supported environments
 
@@ -99,6 +102,78 @@ catch (err) {
   }
 }
 ```
+
+## Examples
+
+The following sections provide several code snippets covering some of the most common scenarios, including:
+* [Use Graph API in tab app](#user-graph-api-in-tab-app)
+* [Call Azure Function in tab app](#call-azure-function-in-tap-app)
+* [Access SQL database in Azure Function](#access-sql-database-in-azure-function)
+* [Use Graph API in Bot application](#use-graph-api-in-bot-application)
+
+### Use Graph API in tab app
+
+Use `TeamsUserCredential` and `createMicrosoftGraphClient`.
+
+```ts
+loadDefaultConfig();
+const credential: any = new TeamsUserCredential();
+const graphClient = createMicrosoftGraphClient(credential, ["User.Read"]);
+const profile = await graphClient.api("/me").get();
+```
+
+### Call Azure Function in tab app
+
+Use `axios` library to make HTTP request to Azure Function.
+
+```ts
+loadDefaultConfig();
+const credential: any = new TeamsUserCredential();
+const token = credential.getToken(""); // Get SSO token for the user
+// Call API hosted in Azure Functions on behalf of user
+const apiConfig = getResourceConfiguration(ResourceType.API);
+const response = await axios.default.get(apiConfig.endpoint + "api/httptrigger1", {
+  headers: {
+    authorization: "Bearer " + token
+  }
+});
+```
+
+### Access SQL database in Azure Function
+
+Use `tedious` library to access SQL and leverage `DefaultTediousConnectionConfiguration` that manages authentication.
+
+```ts
+loadConfiguration();
+const sqlConnectConfig = new DefaultTediousConnectionConfiguration();
+const config = await sqlConnectConfig.getConfig();
+const connection = new Connection(config);
+connection.on("connect", (error) => {
+  if (error) {
+    console.log(error);
+  }
+});
+```
+
+### Use Graph API in Bot application
+
+Add `TeamsBotSsoPrompt` to dialog set.
+
+```ts
+// Create a DialogState property, DialogSet and TeamsBotSsoPrompt
+const dialogState: StatePropertyAccessor<DialogState> = convoState.createProperty(
+  "dialogState"
+);
+const dialogs: DialogSet = new DialogSet(dialogState);
+const settings: TeamsBotSsoPromptSettings = {
+  scopes: ["User.Read"]
+};
+
+loadConfiguration(config);
+
+dialogs.add(new TeamsBotSsoPrompt("TEAMS_BOT_SSO_PROMPT", settings));
+```
+
 
 ## Troubleshooting
 

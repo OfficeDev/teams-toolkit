@@ -17,6 +17,10 @@ describe("SQL Connector Test: Node", () => {
   // let sqlName: string | undefined;
   // let subscriptionId: string | undefined;
   before(async () => {
+    process.env.SQL_ENDPOINT = process.env.SDK_INTEGRATION_SQL_ENDPOINT;
+    process.env.SQL_USER_NAME = process.env.SDK_INTEGRATION_SQL_USER_NAME;
+    process.env.SQL_PASSWORD = process.env.SDK_INTEGRATION_SQL_PASSWORD;
+    process.env.SQL_DATABASE_NAME = process.env.SDK_INTEGRATION_SQL_DATABASE_NAME;
     loadConfiguration();
     // resourceGroup = process.env.SDK_INTEGRATION_RESOURCE_GROUP_NAME;
     // subscriptionId = process.env.SDK_INTEGRATION_TEST_ACCOUNT_SUBSCRIPTION_ID;

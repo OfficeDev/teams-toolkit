@@ -3,7 +3,11 @@
 
 import { AzureBotService } from "@azure/arm-botservice";
 import * as appService from "@azure/arm-appservice";
-import { ProvisionError, ConfigUpdatingError, ListPublishingCredentialsError, ZipDeployError } from "./errors";
+import {
+    ProvisionError, ConfigUpdatingError,
+    ListPublishingCredentialsError, ZipDeployError,
+    MessageEndpointUpdatingError
+} from "./errors";
 import { CommonStrings, ConfigNames } from "./resources/strings";
 import * as utils from "./utils/common";
 import { default as axios } from "axios";
@@ -31,6 +35,30 @@ export class AzureOperations {
 
         if (!botResponse || !utils.isHttpCodeOkOrCreated(botResponse._response.status)) {
             throw new ProvisionError(CommonStrings.BOT_CHANNEL_REGISTRATION);
+        }
+    }
+
+    public static async UpdateBotChannelRegistration(botClient: AzureBotService, resourceGroup: string,
+        botChannelRegistrationName: string, msaAppId: string, endpoint: string): Promise<void> {
+        let botResponse = undefined;
+        try {
+            botResponse = await botClient.bots.update(
+                resourceGroup,
+                botChannelRegistrationName,
+                {
+                    properties: {
+                        displayName: botChannelRegistrationName,
+                        endpoint: endpoint,
+                        msaAppId: msaAppId,
+                    },
+                },
+            );
+        } catch (e) {
+            throw new MessageEndpointUpdatingError(endpoint, e);
+        }
+
+        if (!botResponse || !utils.isHttpCodeOkOrCreated(botResponse._response.status)) {
+            throw new MessageEndpointUpdatingError(endpoint);
         }
     }
 

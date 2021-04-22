@@ -7,6 +7,7 @@ import * as sinon from "sinon";
 import { default as chaiAsPromised } from "chai-as-promised";
 import AdmZip from "adm-zip";
 import path from "path";
+import { Stage } from "fx-api";
 
 import { TeamsBot } from "../../../../../src/plugins/resource/bot/index";
 import { TeamsBotImpl } from "../../../../../src/plugins/resource/bot/plugin";
@@ -21,10 +22,47 @@ import * as testUtils from "./utils";
 import { PluginActRoles } from "../../../../../src/plugins/resource/bot/enums/pluginActRoles";
 import * as factory from "../../../../../src/plugins/resource/bot/clientFactory";
 import { CommonStrings } from "../../../../../src/plugins/resource/bot/resources/strings";
+import { AzureOperations } from "../../../../../src/plugins/resource/bot/azureOps";
+import { AADRegistration } from "../../../../../src/plugins/resource/bot/aadRegistration";
+import { BotAuthCredential } from "../../../../../src/plugins/resource/bot/botAuthCredential";
+import { AppStudio } from "../../../../../src/plugins/resource/bot/appStudio/appStudio";
+import { LanguageStrategy } from "../../../../../src/plugins/resource/bot/languageStrategy";
 
 chai.use(chaiAsPromised);
 
 describe("Teams Bot Resource Plugin", () => {
+    describe("Test getQuestions", () => {
+        afterEach(() => {
+            sinon.restore();
+        });
+
+        let botPlugin: TeamsBot;
+        let botPluginImpl: TeamsBotImpl;
+
+        beforeEach(() => {
+            botPlugin = new TeamsBot();
+            botPluginImpl = new TeamsBotImpl();
+            botPlugin.teamsBotImpl = botPluginImpl;
+        });
+
+        it("Stage.debug", async () => {
+            // Arrange
+            // Act
+            const result = await botPlugin.getQuestions(Stage.debug, testUtils.newPluginContext());
+
+            // Assert
+            chai.assert.isTrue(result.isOk());
+        });
+
+        it("Stage.create", async () => {
+            // Arrange
+            // Act
+            const result = await botPlugin.getQuestions(Stage.create, testUtils.newPluginContext());
+
+            // Assert
+            chai.assert.isTrue(result.isOk());
+        });
+    });
     describe("Test preScaffold", () => {
         afterEach(() => {
             sinon.restore();
@@ -148,18 +186,23 @@ describe("Teams Bot Resource Plugin", () => {
             botPlugin.teamsBotImpl = botPluginImpl;
         });
 
-        it("Precondition checking failed", async () => {
+        it("Happy Path", async () => {
             // Arrange
             botPluginImpl.config.scaffold.botId = utils.genUUID();
             botPluginImpl.config.scaffold.botPassword = utils.genUUID();
+            botPluginImpl.config.scaffold.programmingLanguage = ProgrammingLanguage.JavaScript;
+            botPluginImpl.config.provision.subscriptionId = utils.genUUID();
+            botPluginImpl.config.provision.resourceGroup = "anything";
+            botPluginImpl.config.provision.location = "global";
 
-            // Missing ProgrammingLanguage and others.
+            const pluginContext = testUtils.newPluginContext();
+            pluginContext.app.name.short = "anything";
 
             // Act
-            const result = await botPlugin.preProvision(testUtils.newPluginContext());
+            const result = await botPlugin.preProvision(pluginContext);
 
             // Assert
-            chai.assert.isTrue(result.isErr());
+            chai.assert.isTrue(result.isOk());
         });
     });
 
@@ -177,11 +220,13 @@ describe("Teams Bot Resource Plugin", () => {
             botPlugin.teamsBotImpl = botPluginImpl;
         });
 
-        it("PreconditionError", async () => {
+        it("Happy Path", async () => {
             // Arrange
-            botPluginImpl.config.scaffold.wayToRegisterBot = WayToRegisterBot.ReuseExisting;
+            botPluginImpl.config.scaffold.wayToRegisterBot = WayToRegisterBot.CreateNew;
             botPluginImpl.config.provision.subscriptionId = "anything";
+            botPluginImpl.config.provision.resourceGroup = "anything";
             const pluginContext = testUtils.newPluginContext();
+            pluginContext.app.name.short = "anything";
 
             sinon.stub(pluginContext.appStudioToken!, "getAccessToken").resolves("anything");
             sinon.stub(botPluginImpl.config.scaffold, "botRegistrationCreated").returns(true);
@@ -197,13 +242,18 @@ describe("Teams Bot Resource Plugin", () => {
             });
 
             sinon.stub(factory, "createAzureBotServiceClient").returns(fakeBotClient);
-
+            sinon.stub(AzureOperations, "CreateOrUpdateAzureWebApp").resolves({
+                defaultHostName: "abc.azurewebsites.net"
+            });
+            sinon.stub(AzureOperations, "CreateOrUpdateAppServicePlan").resolves();
+            sinon.stub(AzureOperations, "CreateBotChannelRegistration").resolves();
+            sinon.stub(AzureOperations, "LinkTeamsChannel").resolves();
 
             // Act
             const result = await botPlugin.provision(pluginContext);
 
             // Assert
-            chai.assert.isTrue(result.isErr());
+            chai.assert.isTrue(result.isOk());
         });
     });
 
@@ -221,7 +271,7 @@ describe("Teams Bot Resource Plugin", () => {
             botPlugin.teamsBotImpl = botPluginImpl;
         });
 
-        it("ConfigUpdatingError", async () => {
+        it("Happy Path", async () => {
             // Arrange
             botPluginImpl.config.scaffold.botId = "anything";
             botPluginImpl.config.scaffold.botPassword = "anything";
@@ -241,11 +291,14 @@ describe("Teams Bot Resource Plugin", () => {
             const fakeWebClient = factory.createWebSiteMgmtClient(testUtils.generateFakeServiceClientCredentials(), "anything");
             sinon.stub(factory, "createWebSiteMgmtClient").returns(fakeWebClient);
 
+            sinon.stub(AzureOperations, "CreateOrUpdateAzureWebApp").resolves();
+            sinon.stub(AzureOperations, "UpdateBotChannelRegistration").resolves();
+
             // Act
             const result = await botPlugin.postProvision(pluginContext);
 
             // Assert
-            chai.assert.isTrue(result.isErr());
+            chai.assert.isTrue(result.isOk());
         });
     });
 
@@ -276,6 +329,113 @@ describe("Teams Bot Resource Plugin", () => {
 
             // Act
             const result = await botPlugin.preDeploy(pluginContext);
+
+            // Assert
+            chai.assert.isTrue(result.isOk());
+        });
+    });
+
+    describe("Test deploy", () => {
+        afterEach(() => {
+            sinon.restore();
+        });
+
+        let botPlugin: TeamsBot;
+        let botPluginImpl: TeamsBotImpl;
+
+        beforeEach(() => {
+            botPlugin = new TeamsBot();
+            botPluginImpl = new TeamsBotImpl();
+            botPlugin.teamsBotImpl = botPluginImpl;
+        });
+
+        it("Happy Path", async () => {
+            // Arrange
+            const pluginContext = testUtils.newPluginContext();
+            botPluginImpl.config.scaffold.workingDir = __dirname;
+            botPluginImpl.config.provision.siteName = "anything";
+            botPluginImpl.config.provision.subscriptionId = "anything";
+            sinon.stub(LanguageStrategy, "localBuild").resolves();
+            sinon.stub(utils, "zipAFolder").returns((new AdmZip()).toBuffer());
+            const fakeCreds = testUtils.generateFakeTokenCredentialsBase();
+            sinon.stub(pluginContext.azureAccountProvider!, "getAccountCredentialAsync").resolves(fakeCreds);
+            sinon.stub(AzureOperations, "ListPublishingCredentials").resolves({
+                publishingUserName: "anything",
+                publishingPassword: "anything"
+            });
+            sinon.stub(AzureOperations, "ZipDeployPackage").resolves();
+
+            // Act
+            const result = await botPlugin.deploy(pluginContext);
+
+            // Assert
+            chai.assert.isTrue(result.isOk());
+        });
+    });
+
+
+    describe("Test localDebug", () => {
+        afterEach(() => {
+            sinon.restore();
+        });
+
+        let botPlugin: TeamsBot;
+        let botPluginImpl: TeamsBotImpl;
+
+        beforeEach(() => {
+            botPlugin = new TeamsBot();
+            botPluginImpl = new TeamsBotImpl();
+            botPlugin.teamsBotImpl = botPluginImpl;
+        });
+
+        it("Happy Path", async () => {
+            // Arrange
+            const pluginContext = testUtils.newPluginContext();
+            pluginContext.app.name.short = "anything";
+            botPluginImpl.config.scaffold.wayToRegisterBot = WayToRegisterBot.CreateNew;
+            sinon.stub(pluginContext.appStudioToken!, "getAccessToken").resolves("anything");
+            sinon.stub(botPluginImpl.config.localDebug, "botRegistrationCreated").returns(false);
+            const botAuthCreds = new BotAuthCredential();
+            botAuthCreds.clientId = "anything";
+            botAuthCreds.clientSecret = "anything";
+            botAuthCreds.objectId = "anything";
+            sinon.stub(AADRegistration, "registerAADAppAndGetSecretByAppStudio").resolves(botAuthCreds);
+            sinon.stub(AppStudio, "createBotRegistration").resolves();
+
+            // Act
+            const result = await botPlugin.localDebug(pluginContext);
+
+            // Assert
+            chai.assert.isTrue(result.isOk());
+        });
+    });
+
+    describe("Test postLocalDebug", () => {
+        afterEach(() => {
+            sinon.restore();
+        });
+
+        let botPlugin: TeamsBot;
+        let botPluginImpl: TeamsBotImpl;
+
+        beforeEach(() => {
+            botPlugin = new TeamsBot();
+            botPluginImpl = new TeamsBotImpl();
+            botPlugin.teamsBotImpl = botPluginImpl;
+        });
+
+        it("Happy Path", async () => {
+            // Arrange
+            const pluginContext = testUtils.newPluginContext();
+            pluginContext.app.name.short = "anything";
+            botPluginImpl.config.localDebug.localEndpoint = "anything";
+            botPluginImpl.config.localDebug.localBotId = "anything";
+            botPluginImpl.config.scaffold.wayToRegisterBot = WayToRegisterBot.CreateNew;
+            sinon.stub(pluginContext.appStudioToken!, "getAccessToken").resolves("anything");
+            sinon.stub(AppStudio, "updateMessageEndpoint").resolves();
+
+            // Act
+            const result = await botPlugin.postLocalDebug(pluginContext);
 
             // Assert
             chai.assert.isTrue(result.isOk());

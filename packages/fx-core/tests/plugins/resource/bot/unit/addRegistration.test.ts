@@ -4,7 +4,7 @@ import "mocha";
 import * as chai from "chai";
 import * as sinon from "sinon";
 
-import { registerAADAppAndGetSecretByGraph, registerAADAppAndGetSecretByAppStudio } from "../../../../../src/plugins/resource/bot/aadRegistration";
+import { AADRegistration } from "../../../../../src/plugins/resource/bot/aadRegistration";
 import { PluginError } from "../../../../../src/plugins/resource/bot/errors";
 import { default as axios } from "axios";
 
@@ -17,7 +17,7 @@ describe("AAD Registration", () => {
 
             // Act
             try {
-                await registerAADAppAndGetSecretByGraph(graphToken, displayName);
+                await AADRegistration.registerAADAppAndGetSecretByGraph(graphToken, displayName);
             } catch (e) {
                 chai.assert.isTrue(e instanceof PluginError);
                 return;
@@ -44,7 +44,7 @@ describe("AAD Registration", () => {
             sinon.stub(axios, "create").returns(fakeAxiosInstance);
 
             // Act
-            const result = await registerAADAppAndGetSecretByGraph(graphToken, displayName);
+            const result = await AADRegistration.registerAADAppAndGetSecretByGraph(graphToken, displayName);
 
             // Assert
             chai.assert.isTrue(result.clientId === "appId");
@@ -61,7 +61,7 @@ describe("AAD Registration", () => {
 
             // Act
             try {
-                await registerAADAppAndGetSecretByAppStudio(appStudioToken, displayName);
+                await AADRegistration.registerAADAppAndGetSecretByAppStudio(appStudioToken, displayName);
             } catch (e) {
                 chai.assert.isTrue(e instanceof PluginError);
                 return;

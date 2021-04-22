@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import { PluginContext, Result, Stage, QTreeNode, NodeType, FxError } from "fx-api";
 
-import * as aadReg from "./aadRegistration";
+import { AADRegistration } from "./aadRegistration";
 import * as factory from "./clientFactory";
 import * as utils from "./utils/common";
 import { createQuestions } from "./questions";
@@ -19,9 +19,9 @@ import { CommonStrings, PluginBot, ConfigNames } from "./resources/strings";
 import { DialogUtils } from "./utils/dialog";
 import {
     CheckThrowSomethingMissing, DeployWithoutProvisionError,
-    MessageEndpointUpdatingError, PackDirExistenceError,
+    PackDirExistenceError,
     PreconditionError, SomethingMissingError, UserInputsError,
-    ValidationError, ZipDeployError
+    ValidationError
 } from "./errors";
 import { TeamsBotConfig } from "./configs/teamsBotConfig";
 import { default as axios } from "axios";
@@ -536,29 +536,8 @@ export class TeamsBotImpl {
             throw new SomethingMissingError(CommonStrings.BOT_CHANNEL_REGISTRATION);
         }
         const botChannelRegistrationName = this.config.provision.botChannelRegName;
-
-        let botResponse = undefined;
-        try {
-            botResponse = await botClient.bots.update(
-                this.config.provision.resourceGroup!,
-                botChannelRegistrationName,
-                {
-                    properties: {
-                        displayName: botChannelRegistrationName,
-                        endpoint: endpoint,
-                        msaAppId: this.config.scaffold.botId!,
-                    },
-                },
-            );
-        } catch (e) {
-            throw new MessageEndpointUpdatingError(endpoint, e);
-        }
-
-        this.logRestResponse(botResponse);
-
-        if (!botResponse || !utils.isHttpCodeOkOrCreated(botResponse._response.status)) {
-            throw new MessageEndpointUpdatingError(endpoint);
-        }
+        await AzureOperations.UpdateBotChannelRegistration(botClient, this.config.provision.resourceGroup!,
+            botChannelRegistrationName, this.config.scaffold.botId!, endpoint);
 
         this.telemetryStepOutSuccess(LifecycleFuncNames.UPDATE_MESSAGE_ENDPOINT_AZURE);
     }
@@ -604,7 +583,7 @@ export class TeamsBotImpl {
         // 1. Create a new AAD App Registraion with client secret.
         const aadDisplayName = ResourceNameFactory.createCommonName(this.ctx?.app.name.short);
 
-        const botAuthCreds = await aadReg.registerAADAppAndGetSecretByAppStudio(
+        const botAuthCreds = await AADRegistration.registerAADAppAndGetSecretByAppStudio(
             appStudioToken!,
             aadDisplayName
         );
@@ -653,7 +632,7 @@ export class TeamsBotImpl {
 
         if (!this.config.scaffold.botRegistrationCreated()) {
             const aadDisplayName = ResourceNameFactory.createCommonName(this.ctx?.app.name.short);
-            botAuthCreds = await aadReg.registerAADAppAndGetSecretByAppStudio(
+            botAuthCreds = await AADRegistration.registerAADAppAndGetSecretByAppStudio(
                 appStudioToken!,
                 aadDisplayName
             );

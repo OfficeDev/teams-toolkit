@@ -37,7 +37,7 @@ import { FunctionScaffold } from "./ops/scaffold";
 import { FxResult, FunctionPluginResultFactory as ResultFactory } from "./result";
 import { Logger } from "./utils/logger";
 import { PostProvisionSteps, PreDeploySteps, ProvisionSteps, StepGroup, step } from "./resources/steps";
-import { functionNameQuestion, nodeVersionQuestion } from "./questions";
+import { functionNameQuestion } from "./questions";
 import { dotnetHelpLink, Messages } from "./utils/depsChecker/common";
 import { DotnetChecker } from "./utils/depsChecker/dotnetChecker";
 import { handleDotnetError } from "./utils/depsChecker/checkerAdapter";
@@ -69,7 +69,6 @@ export interface FunctionConfig {
     provisionDone: boolean;
 
     /* Intermediate  */
-    nodeVersion?: NodeVersion;
     skipDeploy: boolean;
 }
 
@@ -89,7 +88,6 @@ export class FunctionPluginImpl {
         this.config.subscriptionId = solutionConfig?.get(DependentPluginInfo.subscriptionId) as string;
         this.config.location = solutionConfig?.get(DependentPluginInfo.location) as string;
         this.config.functionLanguage = solutionConfig?.get(DependentPluginInfo.programmingLanguage) as FunctionLanguage;
-        this.config.nodeVersion = ctx.config.get(FunctionConfigKey.nodeVersion) as NodeVersion;
         this.config.defaultFunctionName = ctx.config.get(FunctionConfigKey.defaultFunctionName) as string;
         this.config.functionAppName = ctx.config.get(FunctionConfigKey.functionAppName) as string;
         this.config.storageAccountName = ctx.config.get(FunctionConfigKey.storageAccountName) as string;
@@ -115,11 +113,6 @@ export class FunctionPluginImpl {
         if (this.config.functionLanguage &&
             !Object.values(FunctionLanguage).includes(this.config.functionLanguage)) {
                 throw new ValidationError(FunctionConfigKey.functionLanguage);
-        }
-
-        if (this.config.nodeVersion &&
-            !Object.values(NodeVersion).includes(this.config.nodeVersion)) {
-                throw new ValidationError(FunctionConfigKey.nodeVersion);
         }
 
         if (this.config.resourceNameSuffix &&
@@ -181,10 +174,6 @@ export class FunctionPluginImpl {
             type: NodeType.group
         });
 
-        if (stage === Stage.create || (stage === Stage.update && !ctx.config.get(FunctionConfigKey.nodeVersion))) {
-            res.addChild(nodeVersionQuestion);
-        }
-
         if (stage === Stage.create || stage === Stage.update) {
             res.addChild(functionNameQuestion);
         }
@@ -194,10 +183,6 @@ export class FunctionPluginImpl {
 
     public async preScaffold(ctx: PluginContext): Promise<FxResult> {
         this.syncConfigFromContext(ctx);
-
-        if (!this.config.nodeVersion) {
-            this.config.nodeVersion = ctx.answers?.get(QuestionKey.nodeVersion) as NodeVersion;
-        }
 
         // Always ask name in case user wants to add more functions.
         const name: string | undefined = ctx.answers?.get(QuestionKey.functionName) as string;
@@ -276,8 +261,8 @@ export class FunctionPluginImpl {
         const storageAccountName = this.checkAndGet(this.config.storageAccountName, FunctionConfigKey.storageAccountName);
         const functionAppName = this.checkAndGet(this.config.functionAppName, FunctionConfigKey.functionAppName);
         const functionLanguage = this.checkAndGet(this.config.functionLanguage, FunctionConfigKey.functionLanguage);
-        const nodeVersion = this.checkAndGet(this.config.nodeVersion, FunctionConfigKey.nodeVersion);
         const credential = this.checkAndGet(await ctx.azureAccountProvider?.getAccountCredentialAsync(), FunctionConfigKey.credential);
+        const nodeVersion = DefaultValues.nodeVersion;
 
         const storageManagementClient: StorageManagementClient =
             await runWithErrorCatchAndThrow(new InitAzureSDKError(),

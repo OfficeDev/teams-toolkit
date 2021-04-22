@@ -15,6 +15,9 @@ import VsCodeLogInstance from "./log";
 import * as crypto from "crypto";
 import { AddressInfo } from "net";
 import { accountPath, UTF8 } from "./cacheAccess";
+import * as stringUtil from "util";
+import * as StringResources from "../resources/Strings.json";
+import { util } from "chai";
 
 class ErrorMessage {
   static readonly loginError: string = "LoginError";
@@ -107,7 +110,7 @@ export class CodeFlowLogin {
                 );
               } else {
                 // do not break if result file has issue
-                VsCodeLogInstance.error("[Login] Result file not found, return simple OK message.");
+                VsCodeLogInstance.error("[Login] " + StringResources.vsc.codeFlowLogin.resultFileNotFound);
                 res.sendStatus(200);
               }
             }
@@ -183,7 +186,7 @@ export class CodeFlowLogin {
             }
           })
           .catch(async (error) => {
-            VsCodeLogInstance.error("[Login] silent acquire token : " + error.message);
+            VsCodeLogInstance.error("[Login] " + stringUtil.format(StringResources.vsc.codeFlowLogin.silentAcquireToken, error.message));
             const accessToken = await this.login();
             return accessToken;
           });
@@ -252,8 +255,8 @@ function sendFile(res: http.ServerResponse, filepath: string, contentType: strin
 
 export function LoginFailureError(innerError?: any): UserError {
   return new UserError(
-    "LoginFailure",
-    "Cannot get user login information. Please login correct account via browser.",
+    StringResources.vsc.codeFlowLogin.loginFailureTitle,
+    StringResources.vsc.codeFlowLogin.loginFailureDescription,
     "Login",
     new Error().stack,
     undefined,

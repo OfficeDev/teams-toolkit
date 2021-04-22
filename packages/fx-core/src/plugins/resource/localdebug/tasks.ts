@@ -90,6 +90,9 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
                         isBackground: true,
                         // TODO: tell tsc which files to watch (depends on function's decision)
                         problemMatcher: "$tsc-watch",
+                        presentation: {
+                            reveal: "silent",
+                        },
                     },
                 );
             } else {
@@ -260,6 +263,9 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
                         isBackground: true,
                         // TODO: tell tsc which files to watch (depends on function's decision)
                         problemMatcher: "$tsc-watch",
+                        presentation: {
+                            reveal: "silent",
+                        },
                     },
                 );
             } else {

@@ -1,6 +1,6 @@
 {
   "name": "fx-api",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "teamsfx framework api",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -20,7 +20,7 @@
     "prepare": "npm run build",
     "lint:fix": "eslint \"src/**/*.ts\" \"tests/**/*.ts\" --fix",
     "doc": "typedoc",
-    "test": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/**/*.ts"
+    "test:unit": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/**/*.ts"
   },
   "devDependencies": {
     "@shared/eslint-config": "^0.0.0",

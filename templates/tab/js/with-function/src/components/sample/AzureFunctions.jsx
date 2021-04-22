@@ -25,7 +25,7 @@ async function callFunction() {
 export function AzureFunctions(props) {
   const { codePath, docsUrl } = {
     codePath: `api/${functionName}/index.js`,
-    docsUrl: "",
+    docsUrl: "https://aka.ms/teamsfx-azure-functions",
     ...props,
   };
   const { loading, data, error, reload } = useData(callFunction, {

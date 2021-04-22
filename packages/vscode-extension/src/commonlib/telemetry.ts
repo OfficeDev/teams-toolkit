@@ -4,7 +4,6 @@ import * as vscode from "vscode";
 import Reporter from "vscode-extension-telemetry";
 import { TelemetryReporter } from "fx-api";
 import { getPackageVersion } from "../utils/commonUtils";
-import logger from "./log";
 
 /**
  *  VSCode telemetry reporter used by fx-core.
@@ -31,11 +30,7 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
     measurements?: { [p: string]: number },
     errorProps?: string[]
   ): void {
-    if (this.extVersion === "rc" || this.extVersion === "formal") {
-      this.reporter.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
-    } else {
-      logger.info(`Error Event: ${eventName}\nProperties:\n${JSON.stringify(properties)}`);
-    }
+    this.reporter.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
   }
 
   sendTelemetryEvent(
@@ -43,11 +38,7 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
     properties?: { [p: string]: string },
     measurements?: { [p: string]: number }
   ): void {
-    if (this.extVersion === "rc" || this.extVersion === "formal") {
-      this.reporter.sendTelemetryEvent(eventName, properties, measurements);
-    } else {
-      logger.info(`Event: ${eventName}\nProperties:\n${JSON.stringify(properties)}`);
-    }
+    this.reporter.sendTelemetryEvent(eventName, properties, measurements);
   }
 
   sendTelemetryException(
@@ -55,10 +46,6 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
     properties?: { [p: string]: string },
     measurements?: { [p: string]: number }
   ): void {
-    if (this.extVersion === "rc" || this.extVersion === "formal") {
-      this.reporter.sendTelemetryException(error, properties, measurements);
-    } else {
-      logger.info(`Error: ${error}\nProperties:\n${JSON.stringify(properties)}`);
-    }
+    this.reporter.sendTelemetryException(error, properties, measurements);
   }
 }

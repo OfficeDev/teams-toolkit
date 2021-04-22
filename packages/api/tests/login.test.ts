@@ -2,10 +2,11 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { AzureAccountProvider, GraphTokenProvider } from "../src/utils/login";
-import { assert } from "chai";
-import { TokenCredential } from "@azure/core-auth";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
+import "mocha";
+import {AzureAccountProvider, GraphTokenProvider} from "../src/utils/login";
+import {assert} from "chai";
+import {TokenCredential} from "@azure/core-auth";
+import {TokenCredentialsBase} from "@azure/ms-rest-nodeauth";
 
 class TestAzureAccountProvider implements AzureAccountProvider {
     getAccountCredentialAsync(): Promise<TokenCredentialsBase | undefined> {
@@ -113,10 +114,10 @@ describe("graphLogin", function () {
             assert.exists(await graph.getAccessToken());
             assert.exists(await graph.getJsonObject());
         }),
-        it("return undefined path", async () => {
-            const graph2 = new GraphProvider2();
-            assert.notExists(await graph2.getAccessToken());
-            assert.notExists(await graph2.getJsonObject());
-        });
+            it("return undefined path", async () => {
+                const graph2 = new GraphProvider2();
+                assert.notExists(await graph2.getAccessToken());
+                assert.notExists(await graph2.getJsonObject());
+            });
     });
 });

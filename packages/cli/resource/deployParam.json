@@ -15,15 +15,18 @@
             "option": [
                 {
                     "id": "fx-resource-frontend-hosting",
-                    "label": "Tab Front-end"
+                    "label": "Tab Front-end",
+                    "cliName": "frontend-hosting"
                 },
                 {
                     "id": "fx-resource-function",
-                    "label": "Azure Function"
+                    "label": "Azure Function",
+                    "cliName": "function"
                 },
                 {
                     "id": "fx-resource-spfx",
-                    "label": "SharePoint Framework (SPFx)"
+                    "label": "SharePoint Framework (SPFx)",
+                    "cliName": "spfx"
                 }
             ],
             "default": []

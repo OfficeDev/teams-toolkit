@@ -21,8 +21,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
 
       - name: Setup node
         uses: actions/setup-node@v2.1.2
@@ -64,5 +62,5 @@ jobs:
           TEST_ACCOUNT_NAME: ${{secrets.SDK_INTEGRATIONTEST_TEST_USERNAME}}
           TEST_ACCOUNT_PASSWORD: ${{secrets.SDK_INTEGRATIONTEST_TEST_PASSWORD}}
         run: |
-          npm run integration-test
+          npm run test:integration
         working-directory: ./packages/sdk

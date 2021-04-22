@@ -91,7 +91,7 @@
             "loginFailureDescription": "Cannot get user login information. Please login correct account via browser."
         },
         "graphLogin": {
-            "warningMsg": "Please sign into your Graph account"
+            "warningMsg": "The Teams Toolkit requires a Microsoft 365 account. This is the account that you use to log in to Microsoft Teams. The Teams Toolkit will use this account to manage applications and service principals."
         },
         "survey": {
             "takeSurvey": {

@@ -2,7 +2,7 @@
   "name": "teamsfx-extension",
   "displayName": "Teams Toolkit V2",
   "description": "Create, debug, and deploy Teams apps directly from Teams Toolkit v2",
-  "version": "1.0.5",
+  "version": "2.0.0-alpha.1",
   "publisher": "Microsoft",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -93,32 +93,64 @@
         "icon": "$(sign-out)"
       },
       {
+        "command": "fx-extension.openWelcome",
+        "title": "Teamsfx: Quick Start"
+      },
+      {
+        "command": "fx-extension.openSamples",
+        "title": "Teamsfx: Samples"
+      },
+      {
+        "command": "fx-extension.openDocument",
+        "title": "Teamsfx: Documentation"
+      },
+      {
         "command": "fx-extension.create",
-        "title": "TeamsFx - Start A New Project"
+        "title": "Teamsfx: Create New Project "
       },
       {
         "command": "fx-extension.update",
-        "title": "TeamsFx - Add Resource"
+        "title": "Teamsfx: Add Resources"
       },
       {
         "command": "fx-extension.addCapability",
-        "title": "TeamsFx - Add Capability"
+        "title": "Teamsfx: Add Capability"
+      },
+      {
+        "command": "fx-extension.openManifest",
+        "title": "Teamsfx: Manifest Editor"
+      },
+      {
+        "command": "fx-extension.validateManifest",
+        "title": "Teamsfx: Validate App Manifest File"
+      },
+      {
+        "command": "fx-extension.build",
+        "title": "Teamsfx: Build Teams Package"
       },
       {
         "command": "fx-extension.provision",
-        "title": "TeamsFx - Provision Resource"
+        "title": "Teamsfx: Provision in the Cloud"
       },
       {
         "command": "fx-extension.deploy",
-        "title": "TeamsFx - Deploy Package"
+        "title": "Teamsfx: Deploy to the Cloud"
       },
       {
         "command": "fx-extension.publish",
-        "title": "TeamsFx - Publish Teams App"
+        "title": "Teamsfx: Publish to Teams"
       },
       {
-        "command": "fx-extension.updateAad",
-        "title": "TeamsFx - Update AAD Permission"
+        "command": "fx-extension.openAppManagement",
+        "title": "Teamsfx: App Management"
+      },
+      {
+        "command": "fx-extension.openBotManagement",
+        "title": "Teamsfx: Bot Management"
+      },
+      {
+        "command": "fx-extension.openReportIssues",
+        "title": "Teamsfx: Report issues"
       },
       {
         "command": "fx-extension.validate-dependencies",
@@ -303,14 +335,16 @@
     "lint:staged": "lint-staged",
     "vscode:prepublish": "rimraf out && npm run package",
     "copy-files": "copyfiles -u 1 src/**/*.html src/**/*.css src/**/*.ps1 src/**/*.sh out/src/",
-    "compile": "tsc -p ./ && yarn copy-files",
+    "compile": "tsc -p ./ && npm run copy-files",
     "build": "npm run compile",
     "watch": "webpack --watch --devtool nosources-source-map --info-verbosity verbose --config ./webpack.config.js",
     "package": "rimraf out && webpack --mode production --config ./webpack.config.js",
     "test-compile": "tsc -p ./",
     "test-watch": "tsc -watch -p ./",
     "pretest": "npm run lint && npm run check-format && npm run test-compile",
-    "test": "node ./out/test/runTest.js",
+    "test:unit": "echo 'to be implementd'",
+    "test:integration": "echo 'to be implementd'",
+    "test:e2e": "echo 'to be implementd'",
     "check-format": "prettier --list-different --config .prettierrc.json --ignore-path .prettierignore \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,json}\"",
     "format": "prettier --write --config .prettierrc.json --ignore-path .prettierignore \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,json}\"",
     "lint:fix": "eslint --config .eslintrc.js package.json src test --ext .ts --fix --fix-type [problem,suggestion]",
@@ -380,8 +414,7 @@
     "uuid": "^8.3.2",
     "webpack": "^4.44.1",
     "webpack-cli": "^3.3.12",
-    "winston": "^3.3.3",
-    "yarn": "^1.22.10"
+    "winston": "^3.3.3"
   },
   "dependencies": {
     "@azure/identity": "^1.2.1",

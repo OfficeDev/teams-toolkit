@@ -7,7 +7,7 @@ import { v4 as uuid } from "uuid";
 
 import { AxiosResponse } from "axios";
 import { AzureStorageClient } from "../../../../src/plugins/resource/frontend/clients";
-import { DependentPluginInfo, QuestionKey, TabScope } from "../../../../src/plugins/resource/frontend/constants";
+import { DependentPluginInfo, TabScope } from "../../../../src/plugins/resource/frontend/constants";
 import { FrontendConfig } from "../../../../src/plugins/resource/frontend/configs";
 import { FrontendPlugin } from "../../../../src/plugins/resource/frontend";
 import { Manifest } from "../../../../src/plugins/resource/frontend/ops/scaffold";
@@ -25,12 +25,13 @@ export class TestHelper {
     static localTabEndpoint: string = faker.internet.url();
     static startLoginPage = "auth-start.html";
     static fakeCredential: TokenCredentialsBase = new ApplicationTokenCredentials(
-        faker.random.uuid(),
+        faker.datatype.uuid(),
         faker.internet.url(),
         faker.internet.password(),
     );
     static fakeSubscriptionId: string = faker.datatype.uuid();
-    static tabScope: string[] = [TabScope.PersonalTab];
+    static tabScope: string[] = [TabScope.PersonalTab, TabScope.GroupTab];
+    static tabLanguage = "javascript";
     static fakeClientId: string = faker.datatype.uuid();
 
     static fakeAzureAccountProvider: AzureAccountProvider = {
@@ -72,6 +73,7 @@ export class TestHelper {
         solutionConfig.set(DependentPluginInfo.ResourceNameSuffix, TestHelper.storageSuffix);
         solutionConfig.set(DependentPluginInfo.ResourceGroupName, TestHelper.rgName);
         solutionConfig.set(DependentPluginInfo.Location, TestHelper.location);
+        solutionConfig.set(DependentPluginInfo.ProgrammingLanguage, TestHelper.tabLanguage);
 
         const functionConfig = new Map();
         functionConfig.set(DependentPluginInfo.FunctionDefaultName, TestHelper.functionDefaultEntry);
@@ -94,8 +96,22 @@ export class TestHelper {
                 [DependentPluginInfo.SolutionPluginName, solutionConfig],
                 [DependentPluginInfo.FunctionPluginName, functionConfig],
                 [DependentPluginInfo.RuntimePluginName, runtimeConfig],
+                [DependentPluginInfo.AADPluginName, aadConfig],
+                [DependentPluginInfo.LocalDebugPluginName, localDebugConfig],
             ]),
-            answers: new ConfigMap([[QuestionKey.TabScopes, TestHelper.tabScope]]),
+            projectSettings: {
+                appName: TestHelper.appName,
+                solutionSettings: {
+                    name: "",
+                    version: "",
+                    activeResourcePlugins: [
+                        DependentPluginInfo.AADPluginName,
+                        DependentPluginInfo.LocalDebugPluginName,
+                        DependentPluginInfo.FunctionPluginName,
+                        DependentPluginInfo.RuntimePluginName
+                    ]
+                }
+            },
             config: new ConfigMap(),
             app: {
                 name: {

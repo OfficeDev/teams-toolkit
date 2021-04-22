@@ -50,7 +50,7 @@ export const Messages = {
   useGlobalDotnet: `Use global dotnet from PATH.`,
   dotnetInstallStderr: `dotnet-install command failed without error exit code but with non-empty standard error.`,
   dotnetInstallErrorCode: `dotnet-install command failed.`,
-  failToInstallDotnet: `Failed to install @NameVersion.`,
+  failToInstallDotnet: `Failed to install @NameVersion. Please install @NameVersion manually and restart all your Visual Studio Code instances`,
 
   NodeNotFound: `The toolkit cannot find Node.js on your machine.
 
@@ -71,7 +71,8 @@ Please notice that these dependencies only need to be installed once.
 Click "Install" to install @InstallPackages.`
 };
 
-export const defaultHelpLink = "https://review.docs.microsoft.com/en-us/mods/?branch=main";
-export const functionCoreToolsHelpLink = "https://review.docs.microsoft.com/en-us/mods/?branch=main";
-export const dotnetHelpLink = "https://review.docs.microsoft.com/en-us/mods/?branch=main";
-export const nodeHelpLink = "https://review.docs.microsoft.com/en-us/mods/?branch=main";
+export const defaultHelpLink = "https://aka.ms/AAby4tx";
+export const functionCoreToolsHelpLink = "https://aka.ms/AAby4tx";
+export const dotnetHelpLink = "https://aka.ms/AAby4tx";
+export const nodeHelpLink = "https://aka.ms/AAby4tx";
+export const backendExtensionsInstallHelpLink = "https://aka.ms/AAby4tx";

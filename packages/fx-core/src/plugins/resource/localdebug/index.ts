@@ -59,11 +59,12 @@ export class LocalDebugPlugin implements Plugin {
                 const includeFrontend = selectedPlugins.some((pluginName) => pluginName === FrontendHostingPlugin.Name);
                 const includeBackend = selectedPlugins.some((pluginName) => pluginName === FunctionPlugin.Name);
                 const includeBot = selectedPlugins.some((pluginName) => pluginName === BotPlugin.Name);
+                const programmingLanguage: string = ctx.configOfOtherPlugins.get(SolutionPlugin.Name)?.get(SolutionPlugin.ProgrammingLanguage) as string;
 
                 const launchConfigurations = Launch.generateConfigurations(includeFrontend, includeBackend, includeBot);
                 const launchCompounds = Launch.generateCompounds(includeFrontend, includeBackend, includeBot);
 
-                const tasks = Tasks.generateTasks(includeFrontend, includeBackend, includeBot);
+                const tasks = Tasks.generateTasks(includeFrontend, includeBackend, includeBot, programmingLanguage);
                 const tasksInputs = Tasks.generateInputs();
 
                 const localEnvProvider = new LocalEnvProvider(ctx.root);
@@ -169,7 +170,7 @@ export class LocalDebugPlugin implements Plugin {
             const includeBot = ctx.configOfOtherPlugins.has(BotPlugin.Name);
 
             const localEnvProvider = new LocalEnvProvider(ctx.root);
-            const localEnvs = await localEnvProvider.loadLocalEnv();
+            const localEnvs = await localEnvProvider.loadLocalEnv(includeFrontend, includeBackend, includeBot);
 
             // configs
             const localDebugConfigs = ctx.config;
@@ -235,8 +236,12 @@ export class LocalDebugPlugin implements Plugin {
                 localEnvs[LocalEnvBotKeys.ClientSecret] = clientSecret;
                 localEnvs[LocalEnvBotKeys.TenantID] = teamsAppTenantId;
                 localEnvs[LocalEnvBotKeys.OauthAuthority] = "https://login.microsoftonline.com";
-                localEnvs[LocalEnvBotKeys.LoginUrl] = `${localDebugConfigs.get(LocalDebugConfigKeys.LocalBotEndpoint) as string}/auth-start.html`;
-                localEnvs[LocalEnvBotKeys.IdentifierUri] = aadConfigs?.get(AadPlugin.LocalAppIdUri) as string;
+                localEnvs[LocalEnvBotKeys.LoginEndpoint] = `${localDebugConfigs.get(LocalDebugConfigKeys.LocalBotEndpoint) as string}/auth-start.html`;
+                localEnvs[LocalEnvBotKeys.ApplicationIdUri] = aadConfigs?.get(AadPlugin.LocalAppIdUri) as string;
+
+                if (includeBackend) {
+                    localEnvs[LocalEnvBackendKeys.ApiEndpoint] = localDebugConfigs.get(LocalDebugConfigKeys.LocalFunctionEndpoint) as string;
+                }
             }
 
             await localEnvProvider.saveLocalEnv(localEnvs);
@@ -262,6 +267,9 @@ export class LocalDebugPlugin implements Plugin {
                 // return local teams app id
                 return ok(solutionConfigs?.get(SolutionPlugin.LocalTeamsAppId) as string);
             }
+        } else if (func.method === "getProgrammingLanguage") {
+            const solutionConfigs = ctx.configOfOtherPlugins.get(SolutionPlugin.Name);
+            return ok(solutionConfigs?.get(SolutionPlugin.ProgrammingLanguage) as string);
         }
 
         return ok(undefined);

@@ -19,24 +19,8 @@ import { Messages } from "../resources/messages";
 import { PluginContext } from "fx-api";
 import { Utils } from "../utils";
 import { telemetryHelper } from "../utils/telemetry-helper";
+import { TemplateInfo, TemplateVariable } from "../resources/templateInfo";
 
-export interface TemplateVariable {
-    AppId: string;
-}
-
-export class TemplateInfo {
-    group: string;
-    language: string;
-    scenario: string;
-    version: string;
-
-    constructor(language?: string, scenario?: string) {
-        this.group = PluginInfo.TemplateGroupName;
-        this.language = language ?? PluginInfo.TemplateLanguage;
-        this.scenario = scenario ?? PluginInfo.TemplateDefaultScenario;
-        this.version = PluginInfo.TemplateVersion;
-    }
-}
 
 export type Manifest = {
     [key: string]: {
@@ -101,8 +85,8 @@ export class FrontendScaffold {
         return new AdmZip(result.data);
     }
 
-    public static getTemplateZipFromLocal(rootDir: string): AdmZip {
-        const templatePath = path.resolve(rootDir, FrontendPathInfo.TemplateDir, FrontendPathInfo.TemplateFileName);
+    public static getTemplateZipFromLocal(templateInfo: TemplateInfo): AdmZip {
+        const templatePath = path.resolve(FrontendPathInfo.RootDir, templateInfo.localTemplatePath);
         return new AdmZip(templatePath);
     }
 
@@ -120,31 +104,31 @@ export class FrontendScaffold {
         } catch (e) {
             telemetryHelper.sendErrorEvent(ctx, Messages.FailedFetchTemplate(), e);
             Logger.warning(Messages.FailedFetchTemplate());
-            return FrontendScaffold.getTemplateZipFromLocal(FrontendPathInfo.RootDir);
+            return FrontendScaffold.getTemplateZipFromLocal(templateInfo);
         }
     }
 
-    public static fulfill(filePath: string, data: Buffer, variables: TemplateVariable): string {
+    public static fulfill(filePath: string, data: Buffer, variables: TemplateVariable): string | Buffer {
         if (path.extname(filePath) === FrontendPathInfo.TemplateFileExt) {
             return Mustache.render(data.toString(), variables);
         }
-        return data.toString();
+        return data;
     }
 
     public static async scaffoldFromZip(
         zip: AdmZip,
         dstPath: string,
         nameReplaceFn?: (filePath: string, data: Buffer) => string,
-        dataReplaceFn?: (filePath: string, data: Buffer) => string,
+        dataReplaceFn?: (filePath: string, data: Buffer) => string | Buffer,
     ): Promise<void> {
         await Promise.all(
             zip
                 .getEntries()
                 .filter((entry) => !entry.isDirectory)
                 .map(async (entry) => {
-                    const data = dataReplaceFn
+                    const data: string | Buffer = dataReplaceFn
                         ? dataReplaceFn(entry.name, entry.getData())
-                        : entry.getData().toString();
+                        : entry.getData();
 
                     const filePath = path.join(
                         dstPath,

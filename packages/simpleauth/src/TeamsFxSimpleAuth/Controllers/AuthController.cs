@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -42,11 +44,13 @@ namespace Microsoft.TeamsFx.SimpleAuth.Controllers
 
         [Authorize(Policy = "ValidateAppId")]
         [Authorize(Policy = "ValidateUserIdentity")]
+        [Authorize(Policy = "RequireAccessAsUserScope")]
         [HttpPost("token")]
         public async Task<IActionResult> PostToken([FromBody] PostTokenRequestBody body)
         {
             _logger.LogDebug($"New request to token endpoint. Simple Auth version:{GlobalConfig.SimpleAuthVersion}."
                 +$"Body:{JsonConvert.SerializeObject(body)}. Headers:{JsonConvert.SerializeObject(Request.Headers)}");
+
             if (string.IsNullOrEmpty(body.scope))
             {
                 throw new InvalidModelException("scope is required in request body");

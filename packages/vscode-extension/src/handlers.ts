@@ -50,16 +50,18 @@ import { WebviewPanel } from "./controls/webviewPanel";
 import * as constants from "./debug/constants";
 import logger from "./commonlib/log";
 import { isFeatureFlag } from "./utils/commonUtils";
-import { cpUtils } from "./debug/cpUtils";
 import * as path from "path";
 import * as fs from "fs-extra";
 import * as vscode from "vscode";
 import { VsCodeUI, VS_CODE_UI } from "./qm/vsc_ui";
 import { DepsChecker } from "./debug/depsChecker/checker";
+import { backendExtensionsInstall } from "./debug/depsChecker/backendExtensionsInstall";
 import { FuncToolChecker } from "./debug/depsChecker/funcToolChecker";
 import { DotnetChecker, dotnetChecker } from "./debug/depsChecker/dotnetChecker";
 import { PanelType } from "./controls/PanelType";
 import { NodeChecker } from "./debug/depsChecker/nodeChecker";
+import * as util from "util";
+import * as StringResources from "./resources/Strings.json";
 
 export let core: CoreProxy;
 const runningTasks = new Set<string>(); // to control state of task execution
@@ -187,6 +189,29 @@ export async function updateProjectHandler(): Promise<Result<null, FxError>> {
   return await runCommand(Stage.update);
 }
 
+export async function validateManifestHandler(): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ValidateManifest, {
+    [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
+  });
+
+  const func: Func = {
+    namespace: "fx-solution-azure",
+    method: "validateManifest"
+  };
+  return await core.executeUserTask(func);
+}
+
+export async function buildPackageHandler(): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.BuildPackage, {
+    [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
+  });
+
+  const func: Func = {
+    namespace: "fx-solution-azure",
+    method: "buildPackage"
+  };
+  return await core.executeUserTask(func);
+}
 
 export async function provisionHandler(): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ProvisionStart, {
@@ -214,7 +239,6 @@ const coreExeceutor: RemoteFuncExecutor = async function (
   answers: Inputs | ConfigMap
 ): Promise<Result<unknown, FxError>> {
   return await core.callFunc(func, answers as ConfigMap);
-  throw new Error();
 };
 
 export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
@@ -227,7 +251,7 @@ export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
       result = err(
         new UserError(
           ExtensionErrors.ConcurrentTriggerTask,
-          `task '${Array.from(runningTasks).join(",")}' is still running, please wait!`,
+          util.format(StringResources.vsc.handlers.concurrentTriggerTask, Array.from(runningTasks).join(",")),
           ExtensionSource
         )
       );
@@ -256,18 +280,18 @@ export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
 
     const vscenv = detectVsCodeEnv();
     answers.set("vscenv", vscenv);
-    VsCodeLogInstance.info(`VS Code Environment: ${vscenv}`);
+    VsCodeLogInstance.info(util.format(StringResources.vsc.handlers.vsCodeEnvironment, vscenv));
 
     // 5. run question model
     const node = qres.value;
     if (node) {
-      VsCodeLogInstance.info(`Question tree:${JSON.stringify(node, null, 4)}`);
+      VsCodeLogInstance.info(util.format(StringResources.vsc.handlers.questionTree, JSON.stringify(node, null, 4)));
       const res: InputResult = await traverse(node, answers, VS_CODE_UI, coreExeceutor);
-      VsCodeLogInstance.info(`User input:${JSON.stringify(res, null, 4)}`);
+      VsCodeLogInstance.info(util.format(StringResources.vsc.handlers.userInput, JSON.stringify(res, null, 4)));
       if (res.type === InputResultType.error) {
         throw res.error!;
       } else if (res.type === InputResultType.cancel) {
-        throw new UserError(ExtensionErrors.UserCancel, "User Cancel", ExtensionSource);
+        throw new UserError(ExtensionErrors.UserCancel, StringResources.vsc.common.userCancel, ExtensionSource);
       }
     }
 
@@ -281,7 +305,7 @@ export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
     else {
       throw new SystemError(
         ExtensionErrors.UnsupportedOperation,
-        `Operation not support:${stage}`,
+        util.format(StringResources.vsc.handlers.operationNotSupport, stage),
         ExtensionSource
       );
     }
@@ -298,7 +322,7 @@ export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
   return result;
 }
 
-function detectVsCodeEnv(): VsCodeEnv {
+export function detectVsCodeEnv(): VsCodeEnv {
     // extensionKind returns ExtensionKind.UI when running locally, so use this to detect remote
     const extension = vscode.extensions.getExtension("Microsoft.teamsfx-extension");
 
@@ -316,8 +340,7 @@ function detectVsCodeEnv(): VsCodeEnv {
     }
   }
 
-async function runUserTask(func: Func): Promise<Result<null, FxError>> {
-  const eventName = func.method;
+async function runUserTask(func: Func, eventName:string): Promise<Result<null, FxError>> {
   let result: Result<null, FxError> = ok(null);
 
   try {
@@ -326,7 +349,7 @@ async function runUserTask(func: Func): Promise<Result<null, FxError>> {
       result = err(
         new UserError(
           ExtensionErrors.ConcurrentTriggerTask,
-          `task '${Array.from(runningTasks).join(",")}' is still running, please wait!`,
+          util.format(StringResources.vsc.handlers.concurrentTriggerTask, Array.from(runningTasks).join(",")),
           ExtensionSource
         )
       );
@@ -356,13 +379,13 @@ async function runUserTask(func: Func): Promise<Result<null, FxError>> {
     // 5. run question model
     const node = qres.value;
     if (node) {
-      VsCodeLogInstance.info(`Question tree:${JSON.stringify(node, null, 4)}`);
+      VsCodeLogInstance.info(util.format(StringResources.vsc.handlers.questionTree, JSON.stringify(node, null, 4)));
       const res: InputResult = await traverse(node, answers, VS_CODE_UI, coreExeceutor);
-      VsCodeLogInstance.info(`User input:${JSON.stringify(res, null, 4)}`);
+      VsCodeLogInstance.info(util.format(StringResources.vsc.handlers.userInput, JSON.stringify(res, null, 4)));
       if (res.type === InputResultType.error && res.error) {
         throw res.error;
       } else if (res.type === InputResultType.cancel) {
-        throw new UserError(ExtensionErrors.UserCancel, "User Cancel", ExtensionSource);
+        throw new UserError(ExtensionErrors.UserCancel, StringResources.vsc.common.userCancel, ExtensionSource);
       }
     }
 
@@ -402,7 +425,7 @@ async function processResult(eventName: string, result: Result<null, FxError>) {
       return;
     }
     if (isLoginFaiureError(error)) {
-      window.showErrorMessage(`Login failed, the operation is terminated.`);
+      window.showErrorMessage(StringResources.vsc.handlers.loginFailed);
       return;
     }
     showError(error);
@@ -430,7 +453,7 @@ function checkCoreNotEmpty(): Result<null, SystemError> {
   if (!core) {
     return err(
       returnSystemError(
-        new Error("Core module is not ready!\n Can't do other actions!"),
+        new Error(StringResources.vsc.handlers.coreNotReady),
         ExtensionSource,
         ExtensionErrors.UnsupportedOperation
       )
@@ -447,22 +470,22 @@ export async function updateAADHandler(): Promise<Result<null, FxError>> {
     [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
   });
   const func: Func = {
-    namespace: "fx-solution-azure/teamsfx-plugin-aad-app-for-teams",
+    namespace: "fx-solution-azure/fx-resource-aad-app-for-teams",
     method: "aadUpdatePermission"
   };
-  return await runUserTask(func);
+  return await runUserTask(func, TelemetryEvent.UpdateAad);
 }
 
 
 export async function addCapabilityHandler(): Promise<Result<null, FxError>> {
-  // ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddCapStart, {
-  //   [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
-  // });
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddCapStart, {
+    [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
+  });
   const func: Func = {
     namespace: "fx-solution-azure",
     method: "addCapability"
   };
-  return await runUserTask(func);
+  return await runUserTask(func, TelemetryEvent.AddCap);
 }
 
 /**
@@ -472,7 +495,8 @@ export async function validateDependenciesHandler(): Promise<void> {
   const depsChecker = new DepsChecker([new NodeChecker(), new FuncToolChecker(), new DotnetChecker()]);
   const shouldContinue = await depsChecker.resolve();
   if (!shouldContinue) {
-    await debug.stopDebugging();
+    // TODO: better mechanism to stop the tasks and debug session.
+    throw new Error("debug stopped.");
   }
 }
 
@@ -480,12 +504,6 @@ export async function validateDependenciesHandler(): Promise<void> {
  * install functions binding before launch local debug
  */
 export async function backendExtensionsInstallHandler(): Promise<void> {
-  const dotnetExecPath = await dotnetChecker.getDotnetExecPath();
-
-  if (dotnetExecPath === "") {
-    throw new Error("Failed to run backend extension install, .NET SDK executable not found");
-  }
-
   if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     const workspaceFolder = workspace.workspaceFolders[0];
     const backendRoot = await commonUtils.getProjectRoot(
@@ -493,18 +511,8 @@ export async function backendExtensionsInstallHandler(): Promise<void> {
       constants.backendFolderName
     );
 
-    try {
-      await cpUtils.executeCommand(
-        backendRoot,
-        logger,
-        { shell: false },
-        dotnetExecPath,
-        "build",
-        "-o",
-        "bin"
-      );
-    } catch (error) {
-      throw new Error(`Failed to run backend extension install: error = '${error}'`);
+    if (backendRoot) {
+      await backendExtensionsInstall(backendRoot);
     }
   }
 }
@@ -532,7 +540,7 @@ export async function mailtoHandler(): Promise<boolean> {
 }
 
 export async function openDocumentHandler(): Promise<boolean> {
-  return env.openExternal(Uri.parse("https://github.com/OfficeDev/teamsfx/"));
+  return env.openExternal(Uri.parse("https://aka.ms/build-first-app"));
 }
 
 export async function devProgramHandler(): Promise<boolean> {
@@ -543,7 +551,7 @@ export async function openWelcomeHandler() {
   if (isFeatureFlag()) {
     WebviewPanel.createOrShow(ext.context.extensionPath, PanelType.QuickStart);
   } else {
-    const welcomePanel = window.createWebviewPanel("react", "Teams Toolkit", ViewColumn.One, {
+    const welcomePanel = window.createWebviewPanel("react", StringResources.vsc.handlers.teamsToolkit, ViewColumn.One, {
       enableScripts: true,
       retainContextWhenHidden: true
     });
@@ -587,7 +595,7 @@ export async function openManifestHandler(): Promise<Result<null, FxError>> {
       const FxError: FxError = {
         name: "FileNotFound",
         source: ExtensionSource,
-        message: `${manifestFile} not found, cannot open it.`,
+        message: util.format(StringResources.vsc.handlers.fileNotFound, manifestFile),
         timestamp: new Date()
       };
       showError(FxError);
@@ -597,7 +605,7 @@ export async function openManifestHandler(): Promise<Result<null, FxError>> {
     const FxError: FxError = {
       name: "NoWorkspace",
       source: ExtensionSource,
-      message: `No open workspace`,
+      message: StringResources.vsc.handlers.noOpenWorkspace,
       timestamp: new Date()
     };
     showError(FxError);
@@ -674,7 +682,7 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
           await CommandsTreeViewProvider.getInstance().refresh([
             {
               commandId: "fx-extension.signinM365",
-              label: "Sign In M365...",
+              label: StringResources.vsc.handlers.signIn365,
               contextValue: "signinM365"
             }
           ]);
@@ -687,7 +695,7 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
           await CommandsTreeViewProvider.getInstance().refresh([
             {
               commandId: "fx-extension.signinAzure",
-              label: "Sign In Azure...",
+              label: StringResources.vsc.handlers.signInAzure,
               contextValue: "signinAzure"
             }
           ]);
@@ -715,7 +723,7 @@ export async function showError(e: FxError) {
   const errorCode = `${e.source}.${e.name}`;
   if (e instanceof UserError && e.helpLink && typeof e.helpLink != "undefined") {
     const help = {
-      title: "Get Help",
+      title: StringResources.vsc.handlers.getHelp,
       run: async (): Promise<void> => {
         commands.executeCommand("vscode.open", Uri.parse(`${e.helpLink}#${errorCode}`));
       }
@@ -727,7 +735,7 @@ export async function showError(e: FxError) {
     const path = e.issueLink.replace(/\/$/, "") + "?";
     const param = `title=new+bug+report: ${errorCode}&body=${e.message}\n\n${e.stack}`;
     const issue = {
-      title: "Report Issue",
+      title: StringResources.vsc.handlers.reportIssue,
       run: async (): Promise<void> => {
         commands.executeCommand("vscode.open", Uri.parse(`${path}${param}`));
       }

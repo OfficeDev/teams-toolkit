@@ -6,7 +6,7 @@ import semver from "semver";
 
 import { ProgrammingLanguage } from "../enums/programmingLanguage";
 import { TemplateProjectsConstants } from "../constants";
-import { DownloadException, TemplateProjectNotFoundException, TplManifestFormatException } from "../exceptions";
+import { DownloadError, TemplateProjectNotFoundError, TplManifestFormatError } from "../errors";
 import { Logger } from "../logger";
 import * as utils from "../utils/common";
 
@@ -32,11 +32,11 @@ export class TemplateManifest {
         try {
             res = await axios.get(url);
         } catch (e) {
-            throw new DownloadException(url, e);
+            throw new DownloadError(url, e);
         }
 
         if (!res || res.status !== 200) {
-            throw new DownloadException(url);
+            throw new DownloadError(url);
         }
 
         // Validate res.data by json schema.
@@ -75,7 +75,7 @@ export class TemplateManifest {
         const validate = ajv.compile(schema);
 
         if (!validate(res.data)) {
-            throw new TplManifestFormatException();
+            throw new TplManifestFormatError();
         }
 
         ret.manifest = res.data;
@@ -93,7 +93,7 @@ export class TemplateManifest {
         const langKey = utils.convertToLangKey(lang);
 
         if (!this.manifest[group_name]?.[langKey]?.[scenario]) {
-            throw new TemplateProjectNotFoundException();
+            throw new TemplateProjectNotFoundError();
         }
 
         const scenarioTemplates = this.manifest[group_name][langKey][scenario].filter((x) =>
@@ -101,7 +101,7 @@ export class TemplateManifest {
         );
 
         if (scenarioTemplates.length <= 0) {
-            throw new TemplateProjectNotFoundException();
+            throw new TemplateProjectNotFoundError();
         }
 
         const sortedTemplates = scenarioTemplates.sort((a, b) => -semver.compare(a.version, b.version));

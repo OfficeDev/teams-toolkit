@@ -1,9 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ConfigFolderName, FxError, NodeType, ok, Platform, Plugin, PluginContext, QTreeNode, Result, Stage } from "fx-api";
+import {
+    ConfigFolderName, FxError, NodeType, ok, err, Platform, Plugin, PluginContext, QTreeNode, Result, Stage,
+    DialogMsg, DialogType, MsgLevel
+} from "fx-api";
 import { AppStudioPluginImpl } from "./plugin";
 import { Constants } from "./constants";
+import { AppStudioError } from "./errors";
+import { AppStudioResultFactory } from "./results";
 
 export class AppStudioPlugin implements Plugin {
     private appStudioPluginImpl = new AppStudioPluginImpl();
@@ -48,6 +53,25 @@ export class AppStudioPlugin implements Plugin {
      */
     public async validateManifest(ctx: PluginContext, manifestString: string): Promise<Result<string[], FxError>> {
         const validationResult = await this.appStudioPluginImpl.validateManifest(ctx, manifestString);
+        if (validationResult.length > 0) {
+            const errMessage = AppStudioError.ValidationFailedError.message(validationResult);
+            ctx.logProvider?.error("[Teams Toolkit] Manifest Validation failed!");
+            await ctx.dialog?.communicate(
+                new DialogMsg(DialogType.Show, {
+                    description: errMessage,
+                    level: MsgLevel.Error,
+                }),
+            );
+            return err(AppStudioResultFactory.UserError(AppStudioError.ValidationFailedError.name, errMessage));
+        }
+        const validationSuccess = "[Teams Toolkit] Manifest Validation succeed!";
+        ctx.logProvider?.info(validationSuccess);
+        await ctx.dialog?.communicate(
+            new DialogMsg(DialogType.Show, {
+                description: validationSuccess,
+                level: MsgLevel.Info,
+            }),
+        );
         return ok(validationResult);
     }
 
@@ -56,9 +80,28 @@ export class AppStudioPlugin implements Plugin {
      * @param {string} appDirectory - The directory contains manifest.remote.json and two images
      * @returns {string} - Path of built appPackage.zip
      */
-    public async buildTeamsPackage(appDirectory: string, manifestString: string): Promise<Result<string, FxError>> {
-        const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(appDirectory, manifestString);
-        return ok(appPackagePath);
+    public async buildTeamsPackage(ctx: PluginContext, appDirectory: string, manifestString: string): Promise<Result<string, FxError>> {
+        try {
+            const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, appDirectory, manifestString);
+            const builtSuccess = `[Teams Toolkit] Teams Package ${appPackagePath} built successfully!`;
+            ctx.logProvider?.info(builtSuccess);
+            await ctx.dialog?.communicate(
+                new DialogMsg(DialogType.Show, {
+                    description: builtSuccess,
+                    level: MsgLevel.Info,
+                }),
+            );
+            return ok(appPackagePath);
+        } catch (error) {
+            ctx.logProvider?.error("[Teams Toolkit] Teams Package built failed!");
+            await ctx.dialog?.communicate(
+                new DialogMsg(DialogType.Show, {
+                    description: error.message,
+                    level: MsgLevel.Error,
+                }),
+            );
+            return err(error);
+        }
     }
 
     /**

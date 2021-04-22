@@ -56,7 +56,6 @@ describe("Deploy to Azure", function() {
     // Validate Simple Auth
     const simpleAuth = SimpleAuthValidator.init(context);
     await SimpleAuthValidator.validate(simpleAuth, aad);
-    console.log("validate");
 
     // deploy
     const deployResult = await execAsync(

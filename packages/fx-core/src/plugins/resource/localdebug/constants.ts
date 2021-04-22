@@ -18,6 +18,11 @@ export class LocalDebugCertificate {
     public static readonly FriendlyName: string = "TeamsFx Development Certificate";
 }
 
+export enum ProgrammingLanguage {
+    javascript = "javascript",
+    typescript = "typescript",
+}
+
 /**
  * Config key contract that value is provided by local debug plugin and required by other plugins.
  */
@@ -62,6 +67,7 @@ export class SolutionPlugin {
     public static readonly LocalTeamsAppId: string = "localDebugTeamsAppId";
     public static readonly RemoteTeamsAppId: string = "remoteTeamsAppId";
     public static readonly TeamsAppTenantId: string = "teamsAppTenantId";
+    public static readonly ProgrammingLanguage: string = "programmingLanguage";
 }
 
 export class FrontendHostingPlugin {
@@ -125,6 +131,12 @@ export const LocalEnvBotKeys = Object.freeze({
     ClientSecret: "BOT_M365_CLIENT_SECRET",
     TenantID: "BOT_M365_TENANT_ID",
     OauthAuthority: "BOT_M365_AUTHORITY_HOST",
-    LoginUrl: "BOT_INITIATE_LOGIN_ENDPOINT",
-    IdentifierUri: "BOT_M365_APPLICATION_ID_URI",
+    LoginEndpoint: "BOT_INITIATE_LOGIN_ENDPOINT",
+    SqlEndpoint: "BOT_SQL_ENDPOINT",
+    SqlDbName: "BOT_SQL_DATABASE_NAME",
+    SqlUserName: "BOT_SQL_USER_NAME",
+    SqlPassword: "BOT_SQL_PASSWORD",
+    IdentityId: "BOT_IDENTITY_ID",
+    ApiEndpoint: "BOT_API_ENDPOINT",
+    ApplicationIdUri: "BOT_M365_APPLICATION_ID_URI",
 });

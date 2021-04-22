@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { ProductName } from "fx-api";
 import * as os from "os";
 import { LaunchBrowser } from "./constants";
 
@@ -113,7 +112,7 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
                     request: "attach",
                     port: 9229,
                     restart: true,
-                    preLaunchTask: `${ProductName}: backend start`,
+                    preLaunchTask: "Start Backend",
                     presentation: {
                         group: "all",
                         hidden: true,
@@ -184,7 +183,7 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
                 request: "attach",
                 port: 9239,
                 restart: true,
-                preLaunchTask: `${ProductName}: bot start`,
+                preLaunchTask: "Start Bot",
                 presentation: {
                     group: "all",
                     hidden: true,
@@ -228,7 +227,7 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
                 request: "attach",
                 port: 9239,
                 restart: true,
-                preLaunchTask: `${ProductName}: bot start`,
+                preLaunchTask: "Start Bot",
                 presentation: {
                     group: "all",
                     hidden: true,
@@ -244,7 +243,7 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
                     request: "attach",
                     port: 9229,
                     restart: true,
-                    preLaunchTask: `${ProductName}: backend start`,
+                    preLaunchTask: "Start Backend",
                     presentation: {
                         group: "all",
                         hidden: true,
@@ -410,10 +409,6 @@ export function generateSpfxConfigurations(): Record<string, unknown>[] {
                 group: "all",
                 order: edgeOrder,
             },
-            resolveSourceMapLocations: [
-                "${workspaceFolder}/SPFx/**",
-                "!SPFx/node_modules/**"
-            ],
         },
         {
             name: "Local workbench (Chrome)",
@@ -435,10 +430,6 @@ export function generateSpfxConfigurations(): Record<string, unknown>[] {
                 group: "all",
                 order: chromeOrder,
             },
-            resolveSourceMapLocations: [
-                "${workspaceFolder}/SPFx/**",
-                "!SPFx/node_modules/**"
-            ],
         },
         {
             name: "Hosted workbench (Edge)",
@@ -460,10 +451,6 @@ export function generateSpfxConfigurations(): Record<string, unknown>[] {
                 group: "remote",
                 order: edgeOrder,
             },
-            resolveSourceMapLocations: [
-                "${workspaceFolder}/SPFx/**",
-                "!SPFx/node_modules/**"
-            ],
         },
         {
             name: "Hosted workbench (Chrome)",
@@ -485,10 +472,6 @@ export function generateSpfxConfigurations(): Record<string, unknown>[] {
                 group: "remote",
                 order: chromeOrder,
             },
-            resolveSourceMapLocations: [
-                "${workspaceFolder}/SPFx/**",
-                "!SPFx/node_modules/**"
-            ],
         },
     ];
 }

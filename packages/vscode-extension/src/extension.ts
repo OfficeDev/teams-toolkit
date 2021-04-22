@@ -10,9 +10,12 @@ import { ExtTelemetry } from "./telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "./telemetry/extTelemetryEvents";
 import { TeamsfxTaskProvider } from "./debug/teamsfxTaskProvider";
 import { TeamsfxDebugProvider } from "./debug/teamsfxDebugProvider";
+import { ExtensionSurvey } from "./utils/survey";
+import VsCodeLogInstance from "./commonlib/log";
+import * as StringResources from "./resources/Strings.json";
 
 export async function activate(context: vscode.ExtensionContext) {
-  console.log("Teams Toolkit v2 extension is now active!");
+  VsCodeLogInstance.info(StringResources.vsc.extension.activate);
 
   // Init context
   initializeExtensionVariables(context);
@@ -53,6 +56,18 @@ export async function activate(context: vscode.ExtensionContext) {
     handlers.deployHandler
   );
   context.subscriptions.push(deployCmd);
+
+  const validateManifestCmd = vscode.commands.registerCommand(
+    "fx-extension.validateManifest",
+    handlers.validateManifestHandler
+  );
+  context.subscriptions.push(validateManifestCmd);
+
+  const buildPackageCmd = vscode.commands.registerCommand(
+    "fx-extension.build",
+    handlers.buildPackageHandler
+  );
+  context.subscriptions.push(buildPackageCmd);
 
   const publishCmd = vscode.commands.registerCommand(
     "fx-extension.publish",
@@ -174,6 +189,9 @@ export async function activate(context: vscode.ExtensionContext) {
     });
   });
   context.subscriptions.push(debug);
+
+  const survey = new ExtensionSurvey(context);
+  survey.activate();
 }
 
 // this method is called when your extension is deactivated

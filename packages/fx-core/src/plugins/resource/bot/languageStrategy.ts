@@ -9,7 +9,7 @@ import { Commands } from "./resources/strings";
 import * as appService from "@azure/arm-appservice";
 import { NameValuePair } from "@azure/arm-appservice/esm/models";
 import AdmZip from "adm-zip";
-import { CommandExecutionException, SomethingMissingException } from "./exceptions";
+import { CommandExecutionError, SomethingMissingError } from "./errors";
 import { downloadByUrl } from "./utils/downloadByUrl";
 import * as path from "path";
 import * as fs from "fs-extra";
@@ -80,7 +80,7 @@ export class LanguageStrategy {
                 await utils.execute("npm install", packDir);
                 await utils.execute("npm run build", packDir);
             } catch (e) {
-                throw new CommandExecutionException(`${Commands.NPM_INSTALL},${Commands.NPM_BUILD}`, e.message, e);
+                throw new CommandExecutionError(`${Commands.NPM_INSTALL},${Commands.NPM_BUILD}`, e.message, e);
             }
         }
 
@@ -89,7 +89,7 @@ export class LanguageStrategy {
                 // fail to npm install teamsdev-client on azure web app, so pack it locally.
                 await utils.execute("npm install teamsdev-client", packDir);
             } catch (e) {
-                throw new CommandExecutionException(`${Commands.NPM_INSTALL}`, e.message, e);
+                throw new CommandExecutionError(`${Commands.NPM_INSTALL}`, e.message, e);
             }
         }
     }
@@ -100,7 +100,7 @@ export class LanguageStrategy {
 
         const targetExisted = await fs.pathExists(targetFilePath);
         if (!targetExisted) {
-            throw new SomethingMissingException(targetFilePath);
+            throw new SomethingMissingError(targetFilePath);
         }
 
         return targetFilePath;

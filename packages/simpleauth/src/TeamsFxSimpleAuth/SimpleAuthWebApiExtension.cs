@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -66,6 +68,11 @@ namespace Microsoft.TeamsFx.SimpleAuth
                 options.AddPolicy("ValidateUserIdentity", policy =>
                 {
                     policy.Requirements.Add(new IdentityRequirement(JWTIdentityType.UserIdentity));
+                });
+
+                options.AddPolicy("RequireAccessAsUserScope", policy =>
+                {
+                    policy.RequireClaim(JWTClaims.Scope, new string[] { "access_as_user" });
                 });
             });
 

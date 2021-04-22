@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Client;
 using Microsoft.TeamsFx.SimpleAuth.Components.Auth.Exceptions;
@@ -11,6 +13,8 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 
 namespace Microsoft.TeamsFx.SimpleAuth.Components.Auth
 {
@@ -48,8 +52,16 @@ namespace Microsoft.TeamsFx.SimpleAuth.Components.Auth
             };
             _logger.LogDebug($"Acquiring token via auth code flow. Scopes: {requestBody.scope}. RedirectUri: {requestBody.redirect_uri}. ClientId: {requestBody.client_id}.");
             var response = await _httpClient.PostAsync(_oauthTokenEndpoint, new FormUrlEncodedContent(requestBody.ToDictionary())).ConfigureAwait(false);
+            var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             if (response.IsSuccessStatusCode)
             {
+                // ensure ssoToken and authorizationCode belongs to the same user
+                var accessToken = JsonConvert.DeserializeObject<AadTokenResponse>(responseBody).AccessToken;
+                if (!JwtHaveSameObjectId(accessToken, ssoToken))
+                {
+                    throw new AuthorizationRequestDeniedException("authorization code and sso token in header have different object id.");
+                }
+
                 try
                 {
                     _logger.LogDebug("Acquiring token via OBO flow again to ensure cache.");
@@ -68,7 +80,6 @@ namespace Microsoft.TeamsFx.SimpleAuth.Components.Auth
             }
             else
             {
-                var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 throw generateAadException(responseBody, response.StatusCode);
             }
         }
@@ -130,6 +141,30 @@ namespace Microsoft.TeamsFx.SimpleAuth.Components.Auth
             {
                 throw new AuthInternalServerException(ex.Message, ex);
             }
+        }
+
+        /// <summary>
+        /// Verify if two jwt tokens have the same oid claim.
+        /// </summary>
+        private bool JwtHaveSameObjectId(string token1, string token2)
+        {
+            var handler = new JwtSecurityTokenHandler();
+            try
+            {
+                var decodedToken1 = handler.ReadJwtToken(token1);
+                var decodedToken2 = handler.ReadJwtToken(token2);
+                Claim oid1 = decodedToken1.Claims.FirstOrDefault(claim => claim.Type == "oid");
+                Claim oid2 = decodedToken2.Claims.FirstOrDefault(claim => claim.Type == "oid");
+                if (oid1 != null && oid2 != null && !String.IsNullOrEmpty(oid1.Value) && oid1.Value == oid2.Value)
+                {
+                    return true;
+                }
+            } catch (Exception err)
+            {
+                _logger.LogError(err.Message);
+                throw;
+            }
+            return false;
         }
 
         // This function assumes the AAD request is failed

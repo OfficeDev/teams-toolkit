@@ -6,6 +6,7 @@ export const backendStartCommand = "backend start";
 export const authStartCommand = "auth start";
 export const ngrokStartCommand = "ngrok start";
 export const botStartCommand = "bot start";
+export const openWenClientCommand = "launch Teams web client";
 
 export const frontendProblemMatcher = "$teamsfx-frontend-watch";
 export const backendProblemMatcher = "$teamsfx-backend-watch";
@@ -25,3 +26,8 @@ export const backendLocalEnvPrefix = "BACKEND_";
 export const authLocalEnvPrefix = "AUTH_";
 export const authServicePathEnvKey = "AUTH_SERVICE_PATH";
 export const botLocalEnvPrefix = "BOT_";
+
+export enum ProgrammingLanguage {
+  javascript = "javascript",
+  typescript = "typescript"
+}

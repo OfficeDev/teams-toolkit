@@ -66,6 +66,16 @@ cd /path/to/your/project
 teamsfx account set --subscription 1756abc0-3554-4341-8d6a-46674962ea19
 ```
 
+### Add capability to project
+
+```bash
+cd /path/to/your/project/
+# Add tab
+teamsfx capability add tab
+# Add bot
+teamsfx capability add bot
+```
+
 ### Add resource to project
 
 ```bash
@@ -93,16 +103,26 @@ teamsfx resource configure aad --aad-env both
 cd /path/to/your/azure/project/
 teamsfx provision --sql-admin-name Abc123321 --sql-password Cab232332 --sql-confirm-password Cab232332
 ```
+### Test/Validate
+```bash
+teamsfx test
+```
 
 ### Deploy
 
 ```bash
-teamsfx deploy --deploy-plugin fx-resource-frontend-hosting
-teamsfx deploy --deploy-plugin fx-resource-frontend-hosting fx-resource-function
-teamsfx deploy --deploy-plugin fx-resource-spfx
+teamsfx deploy
+teamsfx deploy frontend-hosting
+teamsfx deploy frontend-hosting function
+teamsfx deploy spfx
 ```
 
-### publish
+### Build
+```bash
+teamsfx build
+```
+
+### Publish
 
 ```bash
 teamsfx publish
@@ -133,8 +153,8 @@ You can follow `For developpers to build and run your local project` at the top 
 
 ### Run
 ```bash
-# get new/resource-add/provision stage parameters
-node .\lib\generators\ new resource-add provision
+# get new/resource-add/capability-add/provision stage parameters
+node .\lib\generators\ new resource-add capability-add provision
 ```
 
 ## Known issue

@@ -30,7 +30,7 @@ export enum AzureSolutionQuestionNames {
     PluginSelectionDeploy = "deploy-plugin",
     AddResources = "add-azure-resources",
     AppName = "app-name",
-    AskSub = "ask-subscription",
+    AskSub = "subscription",
     ProgrammingLanguage = "programming-language",
 }
 
@@ -146,6 +146,7 @@ export const DeployPluginSelectQuestion: MultiSelectQuestion = {
     name: AzureSolutionQuestionNames.PluginSelectionDeploy,
     title: `Please select which resource(s) to deploy`,
     type: NodeType.multiSelect,
+    skipSingleOption: true,
     option: [],
     default: []
 };
@@ -153,6 +154,7 @@ export const DeployPluginSelectQuestion: MultiSelectQuestion = {
 
 export const AskSubscriptionQuestion: FuncQuestion = {
     name: AzureSolutionQuestionNames.AskSub,
+    title: "Please select a subscription",
     type: NodeType.func,
     namespace: "fx-solution-azure",
     method: "askSubscription"
@@ -162,6 +164,7 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
     name: AzureSolutionQuestionNames.ProgrammingLanguage,
     title: "Please select programming language for your project",
     type: NodeType.singleSelect,
-    option: ["javascript"],
-    default: "javascript"
+    option: ["javascript", "typescript"],
+    default: "javascript",
+    skipSingleOption: true
 };

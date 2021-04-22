@@ -14,6 +14,7 @@ import * as vscode from "vscode";
 import * as identity from "@azure/identity";
 import { signedIn, signedOut } from "./common/constant";
 import { login, LoginStatus } from "./common/login";
+import * as StringResources from "../resources/Strings.json";
 
 export class AzureAccountManager extends login implements AzureAccountProvider {
   private static instance: AzureAccountManager;
@@ -127,7 +128,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       const userConfirmation: boolean = await this.doesUserConfirmLogin();
       if (!userConfirmation) {
         // throw user cancel error
-        throw new UserError(ExtensionErrors.UserCancel, "User Cancel", "Login");
+        throw new UserError(ExtensionErrors.UserCancel, StringResources.vsc.common.userCancel, "Login");
       }
     }
     await vscode.commands.executeCommand("azure-account.login");
@@ -180,8 +181,8 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   private async doesUserConfirmLogin(): Promise<boolean> {
-    const warningMsg = "The Teams Toolkit requires an Azure account and subscription to deploy Azure resources for your application.";
-    const confirm = "Confirm";
+    const warningMsg = StringResources.vsc.azureLogin.warningMsg;
+    const confirm = StringResources.vsc.common.confirm;
     const userSelected: string | undefined = await vscode.window.showWarningMessage(
       warningMsg,
       { modal: true },
@@ -265,21 +266,21 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   /**
    * set tenantId and subscriptionId
    */
-  async setTeanantAndSubscription(tenantId: string, subscriptionId: string): Promise<boolean> {
+  async setSubscription(subscriptionId: string): Promise<void> {
     if (this.isUserLogin()) {
       const azureAccount: AzureAccount = vscode.extensions.getExtension<AzureAccount>(
         "ms-vscode.azure-account"
       )!.exports;
       for (let i = 0; i < azureAccount.subscriptions.length; ++i) {
         const item = azureAccount.subscriptions[i];
-        if (item.session.tenantId == tenantId && item.subscription.subscriptionId == subscriptionId) {
-          AzureAccountManager.tenantId = tenantId;
+        if (item.subscription.subscriptionId == subscriptionId) {
+          AzureAccountManager.tenantId = item.session.tenantId;
           AzureAccountManager.subscriptionId = subscriptionId;
-          return true;
+          return;
         }
       }
     }
-    return false;
+    throw new UserError(ExtensionErrors.UnknownSubscription, StringResources.vsc.azureLogin.unkownSubscription, "Login");
   }
 
   async getStatus(): Promise<LoginStatus> {
@@ -294,6 +295,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 }
 
+// TODO: remove after api update
 export type SubscriptionInfo = {
   subscriptionName: string;
   subscriptionId: string;

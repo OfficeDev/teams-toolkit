@@ -53,7 +53,7 @@ export class FuncToolChecker implements IDepsChecker {
     const installed = true;
     const installedVersion = await getInstalledFuncToolsVersion();
 
-    DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.checkFunc);
+    DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.funcCheck);
     switch (installedVersion) {
       case FuncVersion.v1:
         // TODO: should send this event per user.
@@ -83,7 +83,7 @@ export class FuncToolChecker implements IDepsChecker {
     if (!(await hasNPM())) {
       // provided with Learn More link if npm doesn't exist.
       DepsCheckerTelemetry.sendUserErrorEvent(
-        DepsCheckerEvent.installingFunc,
+        DepsCheckerEvent.funcInstall,
         TelemtryMessages.NPMNotFound
       );
       throw new DepsCheckerError(
@@ -97,14 +97,14 @@ export class FuncToolChecker implements IDepsChecker {
     );
 
     try {
-      await DepsCheckerTelemetry.sendEventWithDuration(DepsCheckerEvent.installedFunc, async () => {
+      await DepsCheckerTelemetry.sendEventWithDuration(DepsCheckerEvent.funcInstallCompleted, async () => {
         await runWithProgressIndicator(async () => {
           await installFuncCoreTools(FuncVersion.v3);
         });
       });
     } catch (error) {
       DepsCheckerTelemetry.sendSystemErrorEvent(
-        DepsCheckerEvent.installingFunc,
+        DepsCheckerEvent.funcInstall,
         TelemtryMessages.failedToInstallFunc,
         error
       );
@@ -119,7 +119,7 @@ export class FuncToolChecker implements IDepsChecker {
     const isInstalled = await this.isInstalled();
     if (!isInstalled) {
       DepsCheckerTelemetry.sendSystemErrorEvent(
-        DepsCheckerEvent.validateFunc,
+        DepsCheckerEvent.funcValidation,
         TelemtryMessages.failedToInstallFunc,
         Messages.failToValidateFuncCoreTool.replace("@NameVersion", installedNameWithVersion)
       );
@@ -130,7 +130,7 @@ export class FuncToolChecker implements IDepsChecker {
       );
     }
 
-    DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.installedValidFunc);
+    DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.funcValidationCompleted);
     logger.info(
       Messages.finishInstallFunctionCoreTool.replace("@NameVersion", installedNameWithVersion)
     );
@@ -141,7 +141,7 @@ async function getInstalledFuncToolsVersion(): Promise<FuncVersion | null> {
   try {
     const output = await cpUtils.executeCommand(
       undefined,
-      undefined,
+      logger,
       undefined,
       "func",
       "--version"
@@ -154,7 +154,7 @@ async function getInstalledFuncToolsVersion(): Promise<FuncVersion | null> {
 
 async function hasNPM(): Promise<boolean> {
   try {
-    await cpUtils.executeCommand(undefined, undefined, undefined, "npm", "--version");
+    await cpUtils.executeCommand(undefined, logger, undefined, "npm", "--version");
     return true;
   } catch (error) {
     // an error indicates no npm
@@ -187,6 +187,7 @@ async function installFuncCoreToolsOnWindows(version: FuncVersion): Promise<void
   // https://github.com/npm/cli/issues/470
   const funcPSScript = await getFuncPSScriptPath();
   if (await fs.pathExists(funcPSScript)) {
+    logger.debug(`deleting func.ps1 from ${funcPSScript}`);
     await fs.remove(funcPSScript);
   }
 }
@@ -209,10 +210,9 @@ async function installFuncCoreToolsOnUnix(version: FuncVersion): Promise<void> {
   const command = `npm install -g ${funcPackageName}@${version} --unsafe-perm true`;
 
   if (tryInstallfailed && needAdminPermission && isMacOS()) {
-    await cpUtils.execSudo(command);
+    await cpUtils.execSudo(logger, command);
   } else if (tryInstallfailed) {
     const tryInstallCommand = `npm install -g ${funcPackageName}@${version}`;
-    logger.error(result.cmdOutputIncludingStderr);
     throw new Error(
       `Failed to run "${tryInstallCommand}" command. Check output window for more details.`
     );

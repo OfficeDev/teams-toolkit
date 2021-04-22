@@ -110,7 +110,7 @@ export class Retry {
     public static readonly BACKOFF_TIME_MS = 5000;
 }
 
-export class ExceptionNames {
+export class ErrorNames {
     // System Exceptions
     public static readonly PRECONDITION_ERROR = "PreconditionError";
     public static readonly CLIENT_CREATION_ERROR = "ClientCreationError";

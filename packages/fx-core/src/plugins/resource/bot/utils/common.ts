@@ -9,7 +9,6 @@ import AdmZip from "adm-zip";
 import { ConfigValue, PluginContext, IBot, IComposeExtension } from "fx-api";
 import { RegularExprs, WebAppConstants } from "../constants";
 import { ProgrammingLanguage } from "../enums/programmingLanguage";
-import { Logger } from "../logger";
 
 export function toBase64(source: string): string {
     return Base64.encode(source);
@@ -20,8 +19,6 @@ export function genUUID(): string {
 }
 
 export function zipAFolder(sourceDir: string, notIncluded?: string[], mustIncluded?: string[]): Buffer {
-    Logger.debug(`notInluded: ${JSON.stringify(notIncluded)}`);
-    Logger.debug(`mustIncluded: ${JSON.stringify(mustIncluded)}`);
     const zip = new AdmZip();
     zip.addLocalFolder(sourceDir, "", (filename: string) => {
 
@@ -31,7 +28,6 @@ export function zipAFolder(sourceDir: string, notIncluded?: string[], mustInclud
             });
 
             if (hit) {
-                Logger.debug(`zip add ${filename}`);
                 return true;
             }
         }
@@ -41,13 +37,9 @@ export function zipAFolder(sourceDir: string, notIncluded?: string[], mustInclud
                 return filename.startsWith(notIncludedItem);
             });
 
-            if (!hit) {
-                Logger.debug(`zip add ${filename}`);
-            }
             return !hit;
         }
 
-        Logger.debug(`zip add ${filename}`);
         return true;
     });
 

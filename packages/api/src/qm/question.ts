@@ -54,6 +54,10 @@ export interface OptionItem {
      * hidden data for this option item, not show
      */
     data?: unknown;
+    /**
+     * CLI diplay name, will use id instead if cliname not exist.
+     */
+    cliName?: string;
 }
 
 /**
@@ -132,10 +136,6 @@ export interface FileValidation extends AnyValidation {
      * the file/folder must exist
      */
     exists?: boolean;
-    /**
-     * the file/folder must do not exist
-     */
-    notExist?: boolean;
 }
 
 /**
@@ -266,11 +266,18 @@ export interface MultiSelectQuestion extends BaseQuestion {
     returnObject?: boolean;
 
     /**
+     * whether to skip the single option select question
+     * if true: single select question will be automtically answered with the single option;
+     * if false: use still need to do the selection manually even there is no secon choice
+     */
+    skipSingleOption?:boolean;
+
+    /**
      * a callback function when the select changes
      * @items: current selected `OptionItem` array
      * @returns: the new selected `id` array
      */
-    onDidChangeSelection?: (items: OptionItem[]) => Promise<string[]>;
+    onDidChangeSelection?: (selectedItems: OptionItem[]) => Promise<string[]>;
 }
 
 export interface TextInputQuestion extends BaseQuestion {

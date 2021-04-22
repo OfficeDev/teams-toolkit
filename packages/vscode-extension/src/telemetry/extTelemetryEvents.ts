@@ -15,6 +15,9 @@ export enum TelemetryEvent {
 
   OpenManifestEditor = "open-manifest-editor",
 
+  ValidateManifest = "validate-manifest",
+  BuildPackage = "build-package",
+
   ProvisionStart = "provision-start",
   Provision = "provision",
 
@@ -27,7 +30,9 @@ export enum TelemetryEvent {
   PublishStart = "publish-start",
 
   F5Start = "f5-start",
-  F5 = "f5"
+  F5 = "f5",
+
+  Survey = "survey"
 }
 
 export enum TelemetryProperty {

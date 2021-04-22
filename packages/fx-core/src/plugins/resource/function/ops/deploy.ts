@@ -28,6 +28,7 @@ import { WebAppsListPublishingCredentialsResponse } from "@azure/arm-appservice/
 import { execute } from "../utils/execute";
 import { forEachFileAndDir } from "../utils/dir-walk";
 import { requestWithRetry } from "../utils/templates-fetch";
+import { backendExtensionsInstall } from "../utils/depsChecker/backendExtensionsInstall";
 
 export class FunctionDeploy {
 
@@ -71,22 +72,6 @@ export class FunctionDeploy {
         }
     }
 
-    // We do not prevent deployment if the .Net Core version mismatch, we just alert user to take care.
-    public static async checkDotNetVersion(ctx: PluginContext, componentPath: string): Promise<void> {
-        await runWithErrorCatchAndThrow(new DotnetVersionError(), async () => {
-            const currentVersion =
-                await execute(Commands.currentDotnetVersionQuery, componentPath);
-            Logger.info(InfoMessages.dotnetVersion(currentVersion));
-
-            const isExpectedDotNetVersion = (version: string) => currentVersion.startsWith(version + CommonConstants.versionSep);
-            if (!FunctionPluginInfo.expectDotnetSDKs.find(isExpectedDotNetVersion)) {
-                const msg = InfoMessages.dotNetVersionUnexpected(currentVersion, FunctionPluginInfo.expectDotnetSDKs);
-                Logger.warning(msg);
-                DialogUtils.show(ctx, msg, MsgLevel.Warning);
-            }
-        });
-    }
-
     public static async build(componentPath: string, language: FunctionLanguage): Promise<void> {
         for (const commandItem of LanguageStrategyFactory.getStrategy(language).buildCommands) {
             const command: string = commandItem.command;
@@ -102,8 +87,8 @@ export class FunctionDeploy {
         }
 
         const binPath = path.join(componentPath, FunctionPluginPathInfo.functionExtensionsFolderName);
-        const command = Commands.functionExtensionsInstall(FunctionPluginPathInfo.functionExtensionsFileName, binPath);
-        await execute(command, componentPath);
+
+        await backendExtensionsInstall(componentPath, FunctionPluginPathInfo.functionExtensionsFileName, binPath);
     }
 
     public static async deployFunction(
@@ -163,7 +148,8 @@ export class FunctionDeploy {
                                 "password": password
                             },
                             maxContentLength: Infinity,
-                            maxBodyLength: Infinity
+                            maxBodyLength: Infinity,
+                            timeout: DefaultValues.deployTimeoutInMs
                         }
                     )
                 )

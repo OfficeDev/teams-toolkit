@@ -14,6 +14,7 @@ import * as vscode from "vscode";
 import { getBeforeCacheAccess, getAfterCacheAccess } from "./cacheAccess";
 import { signedIn, signedOut } from "./common/constant";
 import { login, LoginStatus } from "./common/login";
+import * as StringResources from "../resources/Strings.json";
 
 const accountName = "appStudio";
 const scopes = ["https://dev.teams.microsoft.com/AppDefinitions.ReadWrite"];
@@ -83,7 +84,7 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
         const userConfirmation: boolean = await this.doesUserConfirmLogin();
         if (!userConfirmation) {
           // throw user cancel error
-          throw new UserError(ExtensionErrors.UserCancel, "User Cancel", "Login");
+          throw new UserError(ExtensionErrors.UserCancel, StringResources.vsc.common.userCancel, "Login");
         }
       }
       const loginToken = await AppStudioLogin.codeFlowInstance.getToken();
@@ -126,23 +127,20 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
   }
 
   private async doesUserConfirmLogin(): Promise<boolean> {
-    const warningMsg = "The Teams Toolkit requires a Microsoft 365 account. This is the account that you use to log in to Microsoft Teams. The Teams Toolkit will publish your application using this Microsoft 365 account.\nYou can quickly get started by using a developer account from the M365 Developer Program.";
-    const confirm = "Confirm";
-    const learnMore = "Learn More";
-    let userSelected: string | undefined = await vscode.window.showWarningMessage(
-      warningMsg,
-      { modal: true },
-      confirm,
-      learnMore
-    );
+    const warningMsg = StringResources.vsc.appStudioLogin.warningMsg;
+    const confirm = StringResources.vsc.common.confirm;
+    const learnMore = StringResources.vsc.appStudioLogin.learnMore;
+    let userSelected: string | undefined;
     do {
-      vscode.env.openExternal(vscode.Uri.parse("https://developer.microsoft.com/en-us/microsoft-365/dev-program"));
       userSelected = await vscode.window.showWarningMessage(
         warningMsg,
         { modal: true },
         confirm,
         learnMore
       );
+      if (userSelected === learnMore) {
+        vscode.env.openExternal(vscode.Uri.parse("https://developer.microsoft.com/en-us/microsoft-365/dev-program"));
+      }
     } while (userSelected === learnMore);
     return Promise.resolve(userSelected === confirm);
   }

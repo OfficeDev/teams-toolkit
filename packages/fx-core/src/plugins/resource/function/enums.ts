@@ -2,8 +2,8 @@
 // Licensed under the MIT license.
 export enum FunctionLanguage {
     JavaScript = "javascript",
-    TypeScript = "typescript",
-    CSharp = "csharp"
+    TypeScript = "typescript"
+    // CSharp = "csharp"
 }
 
 export enum NodeVersion {
@@ -21,7 +21,6 @@ export enum FunctionConfigKey {
     functionLanguage = "programmingLanguage",
 
     /* Config exported by Function plugin */
-    nodeVersion = "nodeVersion",
     functionAppName = "functionAppName",
     defaultFunctionName = "defaultFunctionName",
     storageAccountName = "storageAccountName",

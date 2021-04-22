@@ -1,4 +1,6 @@
-﻿namespace Microsoft.TeamsFx.SimpleAuth
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+namespace Microsoft.TeamsFx.SimpleAuth
 {
     public class ConfigurationName
     {
@@ -17,8 +19,9 @@
         public const string Version = "ver";
         public const string AZP = "azp";
         public const string AppId = "appid";
+        public const string Scope = "scp";
     }
-    
+
     public class JWTIdentityScope
     {
         public const string AppIdentityValue = "app";

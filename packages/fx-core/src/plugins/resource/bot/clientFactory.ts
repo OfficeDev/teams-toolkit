@@ -3,14 +3,14 @@
 import * as appService from "@azure/arm-appservice";
 import * as msRest from "@azure/ms-rest-js";
 import { AzureBotService } from "@azure/arm-botservice";
-import { ClientCreationException } from "./exceptions";
+import { ClientCreationError } from "./errors";
 import { ClientNames } from "./resources/strings";
 
 export function createAzureBotServiceClient(creds: msRest.ServiceClientCredentials, subs: string): AzureBotService {
     try {
         return new AzureBotService(creds, subs);
     } catch (e) {
-        throw new ClientCreationException(ClientNames.BOT_SERVICE_CLIENT, e);
+        throw new ClientCreationError(ClientNames.BOT_SERVICE_CLIENT, e);
     }
 }
 
@@ -21,6 +21,6 @@ export function createWebSiteMgmtClient(
     try {
         return new appService.WebSiteManagementClient(creds, subs);
     } catch (e) {
-        throw new ClientCreationException(ClientNames.WEB_SITE_MGMT_CLIENT, e);
+        throw new ClientCreationError(ClientNames.WEB_SITE_MGMT_CLIENT, e);
     }
 }

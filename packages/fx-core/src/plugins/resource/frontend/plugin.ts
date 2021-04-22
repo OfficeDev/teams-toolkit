@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { PluginContext, ok, Stage, NodeType, QTreeNode, FxError, Result } from "fx-api";
+import { PluginContext, ok, QTreeNode, NodeType, Stage, Result, FxError } from "fx-api";
 import path from "path";
 
 import { AzureStorageClient } from "./clients";
@@ -17,21 +17,22 @@ import {
     runWithErrorCatchAndThrow,
 } from "./resources/errors";
 import {
+    Constants,
     DependentPluginInfo,
     FrontendConfigInfo,
     FrontendPathInfo,
-    FrontendPluginInfo,
     FrontendPluginInfo as PluginInfo,
+    TabScope,
 } from "./constants";
 import { FrontendConfig } from "./configs";
 import { FrontendDeployment } from "./ops/deploy";
 import { AADEnvironment, FrontendProvision, FunctionEnvironment, RuntimeEnvironment } from "./ops/provision";
 import { Logger } from "./utils/logger";
 import { Messages } from "./resources/messages";
-import { FrontendScaffold as Scaffold, TemplateInfo } from "./ops/scaffold";
+import { FrontendScaffold as Scaffold } from "./ops/scaffold";
 import { TeamsFxResult } from "./error-factory";
 import { PreDeploySteps, ProgressHelper, ProvisionSteps, ScaffoldSteps } from "./utils/progress-helper";
-import { FrontendQuestionsOnScaffold, FrontendQuestion } from "./resources/questions";
+import { TemplateInfo } from "./resources/templateInfo";
 import { ManifestVariables } from "./resources/tabScope";
 
 export class FrontendPluginImpl {
@@ -45,16 +46,10 @@ export class FrontendPluginImpl {
         ctx.config.set(key, value);
     }
 
-    public getQuestions(stage: Stage, ctx: PluginContext): Result<QTreeNode | undefined, FxError> {
+    public getQuestions(stage: Stage, _ctx: PluginContext): Result<QTreeNode | undefined, FxError> {
         const res = new QTreeNode({
             type: NodeType.group
         });
-
-        if (stage === Stage.create) {
-            FrontendQuestionsOnScaffold.forEach((item) => {
-                res.addChild(item.questionNode);
-            });
-        }
 
         return ok(res);
     }
@@ -64,13 +59,7 @@ export class FrontendPluginImpl {
         const progressHandler = await ProgressHelper.startScaffoldProgressHandler(ctx);
         await progressHandler?.next(ScaffoldSteps.Scaffold);
 
-        this.syncAnswerToContextConfig(ctx, FrontendQuestionsOnScaffold);
-
-        const templateInfo = new TemplateInfo();
-        const functionPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.FunctionPluginName);
-        if (functionPlugin) {
-            templateInfo.scenario = FrontendPluginInfo.TemplateWithFunctionScenario;
-        }
+        const templateInfo = new TemplateInfo(ctx);
 
         const zip = await runWithErrorCatchAndThrow(
             new GetTemplateError(),
@@ -78,19 +67,15 @@ export class FrontendPluginImpl {
         );
         await runWithErrorCatchAndThrow(
             new UnzipTemplateError(),
-            async () => await Scaffold.scaffoldFromZip(zip, path.join(ctx.root, FrontendPathInfo.WorkingDir)),
+            async () => await Scaffold.scaffoldFromZip(zip, path.join(ctx.root, FrontendPathInfo.WorkingDir),
+                (filePath: string, data: Buffer) => filePath.replace(Constants.ReplaceTemplateExt, Constants.EmptyString),
+                (filePath: string, data: Buffer) => Scaffold.fulfill(filePath, data, templateInfo.variables))
         );
 
+        this.setConfigIfNotExists(ctx, FrontendConfigInfo.TabScopes, [TabScope.PersonalTab, TabScope.GroupTab]);
         await ProgressHelper.endScaffoldProgress();
         Logger.info(Messages.EndScaffold(PluginInfo.DisplayName));
         return ok(undefined);
-    }
-
-    private syncAnswerToContextConfig(ctx: PluginContext, questions: FrontendQuestion[]): void {
-        questions.forEach((item) => {
-            const answer = ctx.answers?.get(item.questionKey) ?? item.defaultValue;
-            this.setConfigIfNotExists(ctx, item.configKey, answer);
-        });
     }
 
     public async preProvision(ctx: PluginContext): Promise<TeamsFxResult> {

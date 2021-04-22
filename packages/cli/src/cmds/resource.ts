@@ -21,7 +21,7 @@ export class ResourceAdd extends YargsCommand {
   public readonly description =
     "A command to add a resource to the project in current working directory";
 
-  public readonly subCommands: YargsCommand[] = [new ResourceAddSql(), new ResourceAddFunction()];
+  public readonly subCommands: YargsCommand[] = [new ResourceAddSql(), new ResourceAddApim(), new ResourceAddFunction()];
 
   public builder(yargs: Argv): Argv<any> {
     this.subCommands.forEach((cmd) => {
@@ -63,7 +63,59 @@ export class ResourceAddSql extends YargsCommand {
 
     const core = result.value;
     {
-      const result = await core.getQuestions!(Stage.update, Platform.VSCode);
+      const result = await core.getQuestions!(Stage.update, Platform.CLI);
+      if (result.isErr()) {
+        return err(result.error);
+      }
+      await validateAndUpdateAnswers(result.value!, answers);
+    }
+
+    {
+      const result = await core.update(answers);
+      if (result.isErr()) {
+        return err(result.error);
+      }
+    }
+
+    return ok(null);
+  }
+}
+
+export class ResourceAddApim extends YargsCommand {
+  public readonly commandHead = `apim`;
+  public readonly command = `${this.commandHead} [options]`;
+  public readonly description = "A command to add apim resource to the project.";
+  public readonly paramPath = constants.resourceAddApimParamPath;
+  public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
+
+  public builder(yargs: Argv): Argv<any> {
+    return yargs.options(this.params);
+  }
+
+  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+    const answers = new ConfigMap();
+    for (const name in this.params) {
+      answers.set(name, args[name] || this.params[name].default);
+    }
+
+    const rootFolder = path.resolve(answers.getString("folder") || "./");
+    answers.delete("folder");
+
+    if ("subscription" in args && !!args.subscription) {
+      const result = await AzureTokenProvider.setSubscriptionId(args.subscription, rootFolder);
+      if (result.isErr()) {
+        return result;
+      }
+    }
+
+    const result = await activate(rootFolder);
+    if (result.isErr()) {
+      return err(result.error);
+    }
+
+    const core = result.value;
+    {
+      const result = await core.getQuestions!(Stage.update, Platform.CLI);
       if (result.isErr()) {
         return err(result.error);
       }
@@ -101,13 +153,6 @@ export class ResourceAddFunction extends YargsCommand {
     const rootFolder = path.resolve(answers.getString("folder") || "./");
     answers.delete("folder");
 
-    if ("subscription" in args && !!args.subscription) {
-      const result = await AzureTokenProvider.setSubscriptionId(args.subscription, rootFolder);
-      if (result.isErr()) {
-        return result;
-      }
-    }
-
     const result = await activate(rootFolder);
     if (result.isErr()) {
       return err(result.error);
@@ -115,7 +160,7 @@ export class ResourceAddFunction extends YargsCommand {
 
     const core = result.value;
     {
-      const result = await core.getQuestions!(Stage.update, Platform.VSCode);
+      const result = await core.getQuestions!(Stage.update, Platform.CLI);
       if (result.isErr()) {
         return err(result.error);
       }
@@ -180,7 +225,7 @@ export class ResourceConfigureAAD extends YargsCommand {
 
     const core = result.value;
     const func: Func = {
-      namespace: "fx-solution-azure/teamsfx-plugin-aad-app-for-teams",
+      namespace: "fx-solution-azure/fx-resource-aad-app-for-teams",
       method: "aadUpdatePermission"
     };
     {

@@ -1112,21 +1112,7 @@ export class TeamsAppSolution implements Solution {
 
             ctx.logProvider?.info(`[Solution] publish start!`);
 
-            const result = await executeConcurrently("", publishWithCtx);
-
-            if (result.isOk()) {
-                ctx.logProvider?.info(`[Teams Toolkit] publish success!`);
-                await ctx.dialog?.communicate(
-                    new DialogMsg(DialogType.Show, {
-                        description: `[Teams Toolkit]: ${ctx.app.name.short} successfully published to the admin portal. Once approved, your app will be available for your organization.`,
-                        level: MsgLevel.Info,
-                    }),
-                );
-            } else {
-                ctx.logProvider?.error(`[Teams Toolkit] publish failed!`);
-            }
-
-            return result;
+            return await executeConcurrently("", publishWithCtx);
         } finally {
             this.runningState = SolutionRunningState.Idle;
         }

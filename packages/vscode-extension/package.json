@@ -93,32 +93,64 @@
         "icon": "$(sign-out)"
       },
       {
+        "command": "fx-extension.openWelcome",
+        "title": "Teamsfx: Quick Start"
+      },
+      {
+        "command": "fx-extension.openSamples",
+        "title": "Teamsfx: Samples"
+      },
+      {
+        "command": "fx-extension.openDocument",
+        "title": "Teamsfx: Documentation"
+      },
+      {
         "command": "fx-extension.create",
-        "title": "TeamsFx - Start A New Project"
+        "title": "Teamsfx: Create New Project "
       },
       {
         "command": "fx-extension.update",
-        "title": "TeamsFx - Add Resource"
+        "title": "Teamsfx: Add Resources"
       },
       {
         "command": "fx-extension.addCapability",
-        "title": "TeamsFx - Add Capability"
+        "title": "Teamsfx: Add Capability"
+      },
+      {
+        "command": "fx-extension.openManifest",
+        "title": "Teamsfx: Manifest Editor"
+      },
+      {
+        "command": "fx-extension.validateManifest",
+        "title": "Teamsfx: Validate App Manifest File"
+      },
+      {
+        "command": "fx-extension.build",
+        "title": "Teamsfx: Build Teams Package"
       },
       {
         "command": "fx-extension.provision",
-        "title": "TeamsFx - Provision Resource"
+        "title": "Teamsfx: Provision in the Cloud"
       },
       {
         "command": "fx-extension.deploy",
-        "title": "TeamsFx - Deploy Package"
+        "title": "Teamsfx: Deploy to the Cloud"
       },
       {
         "command": "fx-extension.publish",
-        "title": "TeamsFx - Publish Teams App"
+        "title": "Teamsfx: Publish to Teams"
       },
       {
-        "command": "fx-extension.updateAad",
-        "title": "TeamsFx - Update AAD Permission"
+        "command": "fx-extension.openAppManagement",
+        "title": "Teamsfx: App Management"
+      },
+      {
+        "command": "fx-extension.openBotManagement",
+        "title": "Teamsfx: Bot Management"
+      },
+      {
+        "command": "fx-extension.openReportIssues",
+        "title": "Teamsfx: Report issues"
       },
       {
         "command": "fx-extension.validate-dependencies",

@@ -3,7 +3,7 @@
 "use strict";
 
 import "mocha";
-import {AzureAccountProvider, GraphTokenProvider} from "../src/utils/login";
+import {AzureAccountProvider, GraphTokenProvider, SubscriptionInfo} from "../src/utils/login";
 import {assert} from "chai";
 import {TokenCredential} from "@azure/core-auth";
 import {TokenCredentialsBase} from "@azure/ms-rest-nodeauth";
@@ -31,6 +31,15 @@ class TestAzureAccountProvider implements AzureAccountProvider {
         throw new Error("Method not implemented.");
     }
     removeStatusChangeMap(name: string): Promise<boolean> {
+        throw new Error("Method not implemented.");
+    }
+    getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
+        throw new Error("Method not implemented.");
+    }
+    listSubscriptions(): Promise<SubscriptionInfo[]> {
+        throw new Error("Method not implemented.");
+    }
+    setSubscription(subscriptionId: string): Promise<void> {
         throw new Error("Method not implemented.");
     }
 }

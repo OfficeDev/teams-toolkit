@@ -337,11 +337,12 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   listSubscriptions(): Promise<SubscriptionInfo[]> {
       throw new Error("Method not implemented.");
   }
-  setSubscription(subscriptionId: string): Promise<boolean> {
+  setSubscription(subscriptionId: string): Promise<void> {
       throw new Error("Method not implemented.");
   }
 }
 
+// TODO: remove after api update
 export type SubscriptionInfo = {
   subscriptionName: string;
   subscriptionId: string;

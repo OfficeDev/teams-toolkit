@@ -266,7 +266,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   /**
    * set tenantId and subscriptionId
    */
-  async setSubscription(subscriptionId: string): Promise<boolean> {
+  async setSubscription(subscriptionId: string): Promise<void> {
     if (this.isUserLogin()) {
       const azureAccount: AzureAccount = vscode.extensions.getExtension<AzureAccount>(
         "ms-vscode.azure-account"
@@ -276,11 +276,11 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         if (item.subscription.subscriptionId == subscriptionId) {
           AzureAccountManager.tenantId = item.session.tenantId;
           AzureAccountManager.subscriptionId = subscriptionId;
-          return true;
+          return;
         }
       }
     }
-    return false;
+    throw new UserError(ExtensionErrors.UnknownSubscription, StringResources.vsc.azureLogin.unkownSubscription, "Login");
   }
 
   async getStatus(): Promise<LoginStatus> {
@@ -295,6 +295,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 }
 
+// TODO: remove after api update
 export type SubscriptionInfo = {
   subscriptionName: string;
   subscriptionId: string;

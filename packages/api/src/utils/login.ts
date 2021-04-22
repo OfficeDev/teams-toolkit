@@ -77,7 +77,7 @@ export interface AzureAccountProvider {
      * Set subscription id to memory
      * @param subscriptionId user used subscription id
      */
-    setSubscription(subscriptionId: string): Promise<boolean>;
+    setSubscription(subscriptionId: string): Promise<void>;
 }
 
 

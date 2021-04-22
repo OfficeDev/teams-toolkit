@@ -12,6 +12,17 @@
 	  <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
 	  <LangVersion>8.0</LangVersion>
 	  <Version>0.1.1</Version>
+	  <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+	  <Authors>Microsoft</Authors>
+	  <PackageLicenseExpression>MIT</PackageLicenseExpression>
+	  <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+	  <PackageProjectUrl>https://github.com/OfficeDev/TeamsFx/tree/main/packages/simpleauth</PackageProjectUrl>
+	  <RepositoryUrl>https://github.com/OfficeDev/TeamsFx</RepositoryUrl>
+	  <Description>This package provides ASP.NET Core controller that simplifies authentication for Teams tab app.</Description>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <WarningLevel>5</WarningLevel>
   </PropertyGroup>
 
   <ItemGroup>

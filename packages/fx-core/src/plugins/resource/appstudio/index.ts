@@ -82,7 +82,7 @@ export class AppStudioPlugin implements Plugin {
      */
     public async buildTeamsPackage(ctx: PluginContext, appDirectory: string, manifestString: string): Promise<Result<string, FxError>> {
         try {
-            const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(appDirectory, manifestString);
+            const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, appDirectory, manifestString);
             const builtSuccess = `[Teams Toolkit] Teams Package ${appPackagePath} built successfully!`;
             ctx.logProvider?.info(builtSuccess);
             await ctx.dialog?.communicate(

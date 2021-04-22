@@ -70,7 +70,7 @@ namespace Microsoft.TeamsFx.SimpleAuth
                     policy.Requirements.Add(new IdentityRequirement(JWTIdentityType.UserIdentity));
                 });
 
-                options.AddPolicy("RequiredAccessAsUserScope", policy =>
+                options.AddPolicy("RequireAccessAsUserScope", policy =>
                 {
                     policy.RequireClaim(JWTClaims.Scope, new string[] { "access_as_user" });
                 });

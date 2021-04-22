@@ -44,7 +44,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Controllers
 
         [Authorize(Policy = "ValidateAppId")]
         [Authorize(Policy = "ValidateUserIdentity")]
-        [Authorize(Policy = "RequiredAccessAsUserScope")]
+        [Authorize(Policy = "RequireAccessAsUserScope")]
         [HttpPost("token")]
         public async Task<IActionResult> PostToken([FromBody] PostTokenRequestBody body)
         {

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ConfigFolderName, PluginContext, TeamsAppManifest, Platform } from "fx-api";
+import { AzureSolutionSettings, ConfigFolderName, PluginContext, TeamsAppManifest, Platform } from "fx-api";
 import { AppStudioClient } from "./appStudio";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
@@ -18,13 +18,13 @@ export class AppStudioPluginImpl {
         return await AppStudioClient.validateManifest(manifestString, appStudioToken!);
     }
 
-    public async buildTeamsAppPackage(appDirectory: string, manifestString: string): Promise<string> {
+    public async buildTeamsAppPackage(ctx: PluginContext, appDirectory: string, manifestString: string): Promise<string> {
         const status = await fs.lstat(appDirectory);
         if (!status.isDirectory()) {
             throw AppStudioResultFactory.UserError(AppStudioError.NotADirectoryError.name, AppStudioError.NotADirectoryError.message(appDirectory));
         }
         const manifest: TeamsAppManifest = JSON.parse(manifestString);
-        const colorFile = `${appDirectory}/${manifest.icons.color}`;
+        const colorFile = this.isSPFxProject(ctx) ? `${ctx.root}/SPFx/teams/${manifest.icons.color}` : `${appDirectory}/${manifest.icons.color}`;
         
         try {
             const colorFileState = await fs.stat(colorFile);
@@ -35,7 +35,7 @@ export class AppStudioPluginImpl {
             throw AppStudioResultFactory.UserError(AppStudioError.FileNotFoundError.name, AppStudioError.FileNotFoundError.message(colorFile));
         }
         
-        const outlineFile = `${appDirectory}/${manifest.icons.outline}`;
+        const outlineFile = this.isSPFxProject(ctx) ? `${ctx.root}/SPFx/teams/${manifest.icons.outline}` : `${appDirectory}/${manifest.icons.outline}`;
         try {
             const outlineFileState = await fs.stat(outlineFile);
             if (!outlineFileState.isFile()) {
@@ -52,6 +52,11 @@ export class AppStudioPluginImpl {
         
         const zipFileName = `${appDirectory}/appPackage.zip`;
         zip.writeZip(zipFileName);
+
+        if (this.isSPFxProject(ctx)) {
+            await fs.copyFile(zipFileName, `${ctx.root}/SPFx/teams/TeamsSPFxApp.zip`);
+        }
+
         return zipFileName;
     }
 
@@ -112,7 +117,7 @@ export class AppStudioPluginImpl {
 
             // Build Teams App package
             await publishProgress?.next(`Building Teams app package in ${appDirectory}.`);
-            const appPackage = await this.buildTeamsAppPackage(appDirectory, manifestString!);
+            const appPackage = await this.buildTeamsAppPackage(ctx, appDirectory, manifestString!);
 
             // Publish Teams App
             await publishProgress?.next(`Publishing ${manifest.name.short}`);
@@ -158,5 +163,10 @@ export class AppStudioPluginImpl {
         }
 
         return appDefinition;
+    }
+
+    private isSPFxProject(ctx: PluginContext): boolean {
+        const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings).activeResourcePlugins;
+        return selectedPlugins.indexOf("fx-resource-spfx") !== -1;
     }
 }

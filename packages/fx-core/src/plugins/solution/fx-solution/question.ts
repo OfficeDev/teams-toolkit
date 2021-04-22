@@ -30,7 +30,7 @@ export enum AzureSolutionQuestionNames {
     PluginSelectionDeploy = "deploy-plugin",
     AddResources = "add-azure-resources",
     AppName = "app-name",
-    AskSub = "ask-subscription",
+    AskSub = "subscription",
     ProgrammingLanguage = "programming-language",
 }
 
@@ -154,6 +154,7 @@ export const DeployPluginSelectQuestion: MultiSelectQuestion = {
 
 export const AskSubscriptionQuestion: FuncQuestion = {
     name: AzureSolutionQuestionNames.AskSub,
+    title: "Please select a subscription",
     type: NodeType.func,
     namespace: "fx-solution-azure",
     method: "askSubscription"

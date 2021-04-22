@@ -42,7 +42,7 @@ export class InfoMessages {
 }
 
 export class ErrorMessages {
-    public static readonly invalidFunctionName: string = `Invalid function name. Function names can only contain alphanumerical characters.`;
+    public static readonly invalidFunctionName: string = `Invalid function name. Function names can only contain alphanumerical characters. The max length is 127 characters.`;
     public static readonly functionAlreadyExists: string = "Function already exists.";
     public static readonly noFunctionNameGiven: string = "No function name was specified.";
     public static readonly failToGetConnectionString: string = "Failed to retrieve Azure Storage account connection string.";

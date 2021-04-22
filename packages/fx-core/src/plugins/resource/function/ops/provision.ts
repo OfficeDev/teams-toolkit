@@ -143,8 +143,7 @@ export class FunctionProvision {
 
     public static constructFunctionAuthSettings(
         clientId: string,
-        frontendDomain: string,
-        frontendEndpoint: string,
+        applicationIdUri: string,
         oauthHost: string,
         tenantId: string
     ): SiteAuthSettings {
@@ -154,8 +153,8 @@ export class FunctionProvision {
             clientId: clientId,
             issuer: `${oauthHost}/${tenantId}/v2.0`,
             allowedAudiences: [
-                frontendEndpoint,
-                `api://${frontendDomain}/${clientId}`
+                clientId,
+                applicationIdUri
             ],
         };
     }

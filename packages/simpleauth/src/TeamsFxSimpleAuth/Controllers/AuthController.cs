@@ -11,7 +11,6 @@ using Newtonsoft.Json;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Identity.Web.Resource;
 
 namespace Microsoft.TeamsFx.SimpleAuth.Controllers
 {
@@ -22,11 +21,6 @@ namespace Microsoft.TeamsFx.SimpleAuth.Controllers
     public class AuthController : ControllerBase
     {
         #region Private Resources
-        /// <summary>
-        /// The web API will accept only tokens that have the `access_as_user` scope.
-        /// </summary>
-        static readonly string[] scopeRequiredByApi = new string[] { "access_as_user" };
-
         private class GrantType
         {
             public const string AuthorizationCode = "authorization_code";
@@ -50,17 +44,17 @@ namespace Microsoft.TeamsFx.SimpleAuth.Controllers
 
         [Authorize(Policy = "ValidateAppId")]
         [Authorize(Policy = "ValidateUserIdentity")]
+        [Authorize(Policy = "RequiredAccessAsUserScope")]
         [HttpPost("token")]
         public async Task<IActionResult> PostToken([FromBody] PostTokenRequestBody body)
         {
             _logger.LogDebug($"New request to token endpoint. Simple Auth version:{GlobalConfig.SimpleAuthVersion}."
                 +$"Body:{JsonConvert.SerializeObject(body)}. Headers:{JsonConvert.SerializeObject(Request.Headers)}");
+
             if (string.IsNullOrEmpty(body.scope))
             {
                 throw new InvalidModelException("scope is required in request body");
             }
-
-            HttpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
 
             switch (body.grant_type)
             {

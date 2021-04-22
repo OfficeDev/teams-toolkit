@@ -104,7 +104,6 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
                 + $"Status code:{response.StatusCode}\n"
                 + $"Headers:{JsonConvert.SerializeObject(response.Headers)}\n"
                 + $"Body:{responseBody}");
-
             var responseBodyObject = JsonConvert.DeserializeObject<T>(responseBody);
             return new HttpResponseWithBody<T>()
             {
@@ -261,6 +260,27 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         }
 
         [Test, Category("P0")]
+        public async Task PostToken_NoAccessAsUserScope_Return403()
+        {
+            // Arrange
+            var scope = $"{_settings.ApiAppIdUri}/{_configuration[ConfigurationName.ClientId]}/another_scope";
+            var ssoToken = await GetUserAccessToken(scope);
+            var client = _defaultFactory.CreateDefaultClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
+
+            // Act
+            var requestBody = new PostTokenRequestBody
+            {
+                scope = DefaultGraphScope,
+                grant_type = PostTokenGrantType.SsoToken,
+            };
+            var result = await PostToAuthTokenApi<string>(client, requestBody);
+
+            // Assert
+            Assert.AreEqual(HttpStatusCode.Forbidden, result.Response.StatusCode);
+        }
+
+        [Test, Category("P0")]
         public async Task PostToken_AuthorizationTokenClientNotAllowed_Return403()
         {
             // Arrange
@@ -301,31 +321,6 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
             Assert.AreEqual(HttpStatusCode.BadRequest, result.Response.StatusCode);
             Assert.AreEqual("One or more validation errors occurred.", result.Body.Title);
             Assert.AreEqual((int)HttpStatusCode.BadRequest, result.Body.Status);
-        }
-
-        [Test, Category("P0")]
-        public async Task PostToken_NoAccessAsUserScopeInRequestHeaderSignature_Return400()
-        {
-            // Arrange
-            var ssoToken = await Utilities.GetUserAccessToken(_settings, _configuration[ConfigurationName.ClientId], _configuration[ConfigurationName.ClientSecret],
-                _configuration[ConfigurationName.OAuthAuthority]).ConfigureAwait(false);
-            var client = _defaultFactory.CreateDefaultClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
-
-            // Act
-            var requestBody = new PostTokenRequestBody
-            {
-                scope = DefaultGraphScope,
-                grant_type = PostTokenGrantType.SsoToken,
-            };
-            var result = await PostToAuthTokenApi<ProblemDetails>(client, requestBody);
-
-            // Assert
-            Assert.AreEqual(HttpStatusCode.BadRequest, result.Response.StatusCode);
-            Assert.AreEqual("application/problem+json; charset=utf-8", result.Response.Content.Headers.ContentType.ToString());
-            Assert.AreEqual(ExpectedProblemType.InvalidModelException, result.Body.Type);
-            Assert.AreEqual((int)HttpStatusCode.BadRequest, result.Body.Status);
-            Assert.AreEqual("access_as_user is required in request body scope", result.Body.Detail);
         }
 
         [Test, Category("P0")]

@@ -1145,15 +1145,8 @@ export class TeamsAppSolution implements Solution {
     }
 
     async getTabScaffoldQuestions(ctx: SolutionContext):Promise<Result<QTreeNode | undefined, FxError>> {
-        const tabNode = new QTreeNode({ type: NodeType.group });
-       
+        
         const frontendHostType = new QTreeNode(FrontendHostTypeQuestion);
-        tabNode.addChild(frontendHostType);
-
-        const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
-        // SPFx project does not ask users to choose programming language
-        programmingLanguage.condition = { equals: HostTypeOptionAzure.id };
-        frontendHostType.addChild(programmingLanguage);
 
         //Frontend plugin
         if (this.fehostPlugin.getQuestions) {
@@ -1162,13 +1155,13 @@ export class TeamsAppSolution implements Solution {
             if (res.isErr()) return res;
             if (res.value) {
                 const frontend = res.value as QTreeNode;
-                frontend.condition = { equals: HostTypeOptionAzure.label };
+                frontend.condition = { equals: HostTypeOptionAzure.id };
                 if (frontend.data) frontendHostType.addChild(frontend);
             }
         }
 
         const azure_resources = new QTreeNode(AzureResourcesQuestion);
-        azure_resources.condition = { equals: HostTypeOptionAzure.label };
+        azure_resources.condition = { equals: HostTypeOptionAzure.id };
         frontendHostType.addChild(azure_resources);
 
         //SPFX plugin
@@ -1178,7 +1171,7 @@ export class TeamsAppSolution implements Solution {
             if (res.isErr()) return res;
             if (res.value) {
                 const spfx = res.value as QTreeNode;
-                spfx.condition = { equals: HostTypeOptionSPFx.label };
+                spfx.condition = { equals: HostTypeOptionSPFx.id };
                 if (spfx.data) frontendHostType.addChild(spfx);
             }
         }
@@ -1207,7 +1200,7 @@ export class TeamsAppSolution implements Solution {
             }
         }
 
-        return ok(tabNode);
+        return ok(frontendHostType);
     }
 
     /**
@@ -1252,6 +1245,11 @@ export class TeamsAppSolution implements Solution {
                     capNode.addChild(botGroup);
                 }
             }
+
+            //// programming languate
+            const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
+            programmingLanguage.condition = { namespace: "fx-solution-azure", method: "whetherToAskProgrammingLanguageQuestion" }; //dynamic condition
+            capNode.addChild(programmingLanguage);
         } else if (stage === Stage.update) {
             return await this.getQuestionsForAddResource(ctx, manifest);
         } else if (stage === Stage.provision) {
@@ -1693,6 +1691,15 @@ export class TeamsAppSolution implements Solution {
                     ctx.config.get(GLOBAL_CONFIG)?.set("subscriptionId", result.value);
                 }
                 return ok(null);
+            }
+            else if (func.method === "whetherToAskProgrammingLanguageQuestion") {
+                const capabilities = ctx.answers?.getStringArray(AzureSolutionQuestionNames.Capabilities);
+                const hostType = ctx.answers?.getString(AzureSolutionQuestionNames.HostType);
+                if(capabilities?.includes(BotOptionItem.id) || capabilities?.includes(MessageExtensionItem.id) 
+                    || (capabilities?.includes(TabOptionItem.id) && HostTypeOptionAzure.id === hostType) )
+                    return ok(undefined);
+                else 
+                    return ok(`SPFx don't need to ask programming languate question!`);
             }
         }
         return err(

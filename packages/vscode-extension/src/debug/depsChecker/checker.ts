@@ -33,12 +33,10 @@ export interface IDepsAdapter {
 }
 
 export interface IDepsLogger {
-  trace(message: string): Promise<boolean>;
   debug(message: string): Promise<boolean>;
   info(message: string): Promise<boolean>;
   warning(message: string): Promise<boolean>;
   error(message: string): Promise<boolean>;
-  fatal(message: string): Promise<boolean>;
 }
 
 export interface IDepsTelemetry {

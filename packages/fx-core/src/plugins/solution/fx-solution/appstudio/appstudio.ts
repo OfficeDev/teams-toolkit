@@ -3,8 +3,8 @@
 // Licensed under the MIT license.
 import { IBotRegistration, IAADApplication, IAADPassword, IAppDefinition } from "./interface";
 import { TeamsAppManifest, ConfigMap, LogProvider, IBot, IComposeExtension } from "fx-api";
-import { AzureSolutionQuestionNames, BotOptionItem, HostTypeOptionAzure, MessageExtensionItem } from "../question";
-import { TEAMS_APP_MANIFEST_TEMPLATE } from "../constants";
+import { AzureSolutionQuestionNames, BotOptionItem, HostTypeOptionAzure, MessageExtensionItem, TabOptionItem } from "../question";
+import { TEAMS_APP_MANIFEST_TEMPLATE, CONFIGURABLE_TABS_TPL, STATIC_TABS_TPL, BOTS_TPL, COMPOSE_EXTENSIONS_TPL } from "../constants";
 import axios, { AxiosInstance } from "axios";
 
 export namespace AppStudio {
@@ -240,11 +240,14 @@ export namespace AppStudio {
     export async function createManifest(answers?: ConfigMap): Promise<TeamsAppManifest | undefined> {
         const type = answers?.getString(AzureSolutionQuestionNames.HostType);
         const capabilities = answers?.getStringArray(AzureSolutionQuestionNames.Capabilities);
+        if (!capabilities || (!capabilities.includes(BotOptionItem.id) && !capabilities.includes(MessageExtensionItem.id) && !capabilities.includes(TabOptionItem.id))) {
+            throw new Error(`Invalid capability: ${capabilities}`);
+        }
 
         if (
-            HostTypeOptionAzure.label === type ||
-            capabilities?.includes(BotOptionItem.label) ||
-            capabilities?.includes(MessageExtensionItem.label)
+            HostTypeOptionAzure.id === type ||
+            capabilities.includes(BotOptionItem.id) ||
+            capabilities.includes(MessageExtensionItem.id)
         ) {
             let manifestString = TEAMS_APP_MANIFEST_TEMPLATE;
             const appName = answers?.getString(AzureSolutionQuestionNames.AppName);
@@ -253,6 +256,16 @@ export namespace AppStudio {
             }
             manifestString = replaceConfigValue(manifestString, "version", "1.0.0");
             const manifest: TeamsAppManifest = JSON.parse(manifestString);
+            if (capabilities.includes(TabOptionItem.id)) {
+                manifest.staticTabs = STATIC_TABS_TPL;
+                manifest.configurableTabs = CONFIGURABLE_TABS_TPL;
+            }
+            if (capabilities.includes(BotOptionItem.id)) {
+                manifest.bots = BOTS_TPL;
+            }
+            if (capabilities.includes(MessageExtensionItem.id)) {
+                manifest.composeExtensions = COMPOSE_EXTENSIONS_TPL;
+            }
             return manifest;
         }
 
@@ -286,8 +299,7 @@ export namespace AppStudio {
         tabEndpoint?: string,
         appName?: string,
         version?: string,
-        bots?: string,
-        composeExtensions?: string,
+        botId?: string,
     ): [IAppDefinition, TeamsAppManifest] {
         if (appName) {
             manifest = replaceConfigValue(manifest, "appName", appName);
@@ -295,20 +307,15 @@ export namespace AppStudio {
         if (version) {
             manifest = replaceConfigValue(manifest, "version", version);
         }
+        if (botId) {
+            manifest = replaceConfigValue(manifest, "botId", botId);
+        }
         manifest = replaceConfigValue(manifest, "baseUrl", tabEndpoint ? tabEndpoint : "https://localhost:3000");
         manifest = replaceConfigValue(manifest, "appClientId", appId);
         manifest = replaceConfigValue(manifest, "appid", appId);
         manifest = replaceConfigValue(manifest, "webApplicationInfoResource", webApplicationInfoResource);
 
         const updatedManifest = JSON.parse(manifest) as TeamsAppManifest;
-
-        if (bots) {
-            updatedManifest.bots = JSON.parse(bots) as IBot[];
-        }
-
-        if (composeExtensions) {
-            updatedManifest.composeExtensions = JSON.parse(composeExtensions) as IComposeExtension[];
-        }
 
         for (const domain of domains) {
             updatedManifest.validDomains?.push(domain);

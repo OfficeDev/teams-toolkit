@@ -7,7 +7,7 @@ import axios, { AxiosRequestConfig } from "axios";
 import dotenv from "dotenv";
 import qs from "querystring";
 
-import * as azureConfig from "./conf/azure.json";
+import * as azureConfig from "./conf/azure";
 import { AppStudioTokenProvider } from "../utils/login";
 
 dotenv.config();

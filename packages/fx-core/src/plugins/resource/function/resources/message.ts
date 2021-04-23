@@ -44,7 +44,8 @@ export class InfoMessages {
 }
 
 export class ErrorMessages {
-    public static readonly invalidFunctionName: string = `Invalid function name, should match ${RegularExpr.validFunctionNamePattern}.`;
+    public static readonly invalidFunctionName: string =
+        `Invalid function name, it should start with a letter and only contain letters and numbers. The max length is 127.`;
     public static readonly functionAlreadyExists: string = "This function already exists.";
     public static readonly noFunctionNameGiven: string = "No function name was given by user, scaffold is cancelled.";
     public static readonly failToGetConnectionString: string = "Fail to get storage account connection string.";

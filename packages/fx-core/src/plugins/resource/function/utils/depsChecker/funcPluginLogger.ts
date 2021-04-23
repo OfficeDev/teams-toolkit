@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { IDepsLogger } from "./checker";
 import { Logger } from "../logger";
 

@@ -24,7 +24,7 @@ export async function getFuncCoreToolsVersion(): Promise<string | null> {
         }
 
     } catch (error) {
-        console.log(`Failed to run 'func --version', error = '${error}'`);
+        console.debug(`Failed to run 'func --version', error = '${error}'`);
         return null;
     }
 }

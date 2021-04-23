@@ -22,7 +22,7 @@ suite("DotnetChecker E2E Test", async () => {
     }
   });
 
-  test("Dotnet SDK is installed globally", async function(this: Mocha.Context) {
+  test("Dotnet SDK supported version is installed globally", async function(this: Mocha.Context) {
     if (await dotnetCheckerUtils.getDotnetExecPathFromConfig(dotnetConfigPath) !== null) {
       this.skip();
     }

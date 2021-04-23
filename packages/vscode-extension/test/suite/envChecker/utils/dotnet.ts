@@ -12,17 +12,12 @@ export async function getDotnetExecPathFromConfig(dotnetConfigPath: string): Pro
             return config.dotnetExecutablePath;
         }
     } catch (error) {
-        console.error(`Failed to getDotnetConfig, error = '${error}'`);
+        console.debug(`Failed to getDotnetConfig, error = '${error}'`);
     }
     return null;
 }
 
 export async function hasDotnetVersion(dotnetExecPath: string, versionString: string): Promise<boolean> {
-    try {
-        const output = await cpUtils.executeCommand(undefined, undefined, undefined, dotnetExecPath, "--list-sdks");
-        return output.split(/\r?\n/).some((line: string) => line.startsWith(versionString));
-    } catch (error) {
-        console.error(`Failed to run '${dotnetExecPath} --version', error = '${error}'`);
-        return false;
-    }
+    const output = await cpUtils.executeCommand(undefined, undefined, undefined, dotnetExecPath, "--list-sdks");
+    return output.split(/\r?\n/).some((line: string) => line.startsWith(versionString));
 }

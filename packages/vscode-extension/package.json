@@ -4,7 +4,6 @@
   "description": "Create, debug, and deploy Teams apps directly from Teams Toolkit v2",
   "version": "2.0.0-alpha.8",
   "publisher": "Microsoft",
-  "private": true,
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
   "main": "./out/src/extension.js",

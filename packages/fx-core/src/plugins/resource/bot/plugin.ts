@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { PluginContext, Result, Stage, QTreeNode, NodeType, FxError, ReadonlyPluginConfig } from "fx-api";
+import { PluginContext, Result, Stage, QTreeNode, NodeType, FxError } from "fx-api";
 
-import * as aadReg from "./aadRegistration";
+import { AADRegistration } from "./aadRegistration";
 import * as factory from "./clientFactory";
 import * as utils from "./utils/common";
 import { createQuestions } from "./questions";
@@ -18,10 +18,10 @@ import * as fs from "fs-extra";
 import { CommonStrings, PluginBot, ConfigNames } from "./resources/strings";
 import { DialogUtils } from "./utils/dialog";
 import {
-    CheckThrowSomethingMissing, ConfigUpdatingError, DeployWithoutProvisionError,
-    ListPublishingCredentialsError, MessageEndpointUpdatingError, PackDirExistenceError,
-    PreconditionError, ProvisionError, SomethingMissingError, UserInputsError,
-    ValidationError, ZipDeployError
+    CheckThrowSomethingMissing, DeployWithoutProvisionError,
+    PackDirExistenceError,
+    PreconditionError, SomethingMissingError, UserInputsError,
+    ValidationError
 } from "./errors";
 import { TeamsBotConfig } from "./configs/teamsBotConfig";
 import { default as axios } from "axios";
@@ -29,12 +29,12 @@ import AdmZip from "adm-zip";
 import { ProgressBarFactory } from "./progressBars";
 import { PluginActRoles } from "./enums/pluginActRoles";
 import { ResourceNameFactory } from "./utils/resourceNameFactory";
-import * as AppStudio from "./appStudio/appStudio";
+import { AppStudio } from "./appStudio/appStudio";
 import { IBotRegistration } from "./appStudio/interfaces/IBotRegistration";
 import { Logger } from "./logger";
-import { Retry } from "./constants";
 import { DeployMgr } from "./deployMgr";
 import { BotAuthCredential } from "./botAuthCredential";
+import { AzureOperations } from "./azureOps";
 
 export class TeamsBotImpl {
     // Made config plubic, because expect the upper layer to fill inputs.
@@ -211,59 +211,17 @@ export class TeamsBotImpl {
         );
 
         // 1. Provsion app service plan.
-        const appServicePlan: appService.WebSiteManagementModels.AppServicePlan = {
-            location: this.config.provision.location!,
-            kind: "app",
-            sku: {
-                name: "F1",
-                tier: "Free",
-                size: "F1",
-            },
-        };
-
         const appServicePlanName = this.config.provision.appServicePlan ? this.config.provision.appServicePlan : ResourceNameFactory.createCommonName(this.ctx?.app.name.short);
-
-        let planResponse = undefined;
-        try {
-            planResponse = await webSiteMgmtClient.appServicePlans.createOrUpdate(
-                this.config.provision.resourceGroup!,
-                appServicePlanName,
-                appServicePlan,
-            );
-        } catch (e) {
-            throw new ProvisionError(CommonStrings.APP_SERVICE_PLAN, e);
-        }
-
-        this.logRestResponse(planResponse);
-
-        if (!planResponse || !utils.isHttpCodeOkOrCreated(planResponse._response.status)) {
-            throw new ProvisionError(CommonStrings.APP_SERVICE_PLAN);
-        }
+        await AzureOperations.CreateOrUpdateAppServicePlan(webSiteMgmtClient, this.config.provision.resourceGroup!, appServicePlanName, this.config.provision.location!);
 
         // 2. Provision web app.
-
         const siteEnvelope: appService.WebSiteManagementModels.Site = LanguageStrategy.getSiteEnvelope(
             this.config.scaffold.programmingLanguage!,
             appServicePlanName,
             this.config.provision.location!
         );
 
-        let webappResponse = undefined;
-        try {
-            webappResponse = await webSiteMgmtClient.webApps.createOrUpdate(
-                this.config.provision.resourceGroup!,
-                this.config.provision.siteName!,
-                siteEnvelope,
-            );
-        } catch (e) {
-            throw new ProvisionError(CommonStrings.AZURE_WEB_APP, e);
-        }
-
-        this.logRestResponse(webappResponse);
-
-        if (!webappResponse || !utils.isHttpCodeOkOrCreated(webappResponse._response.status)) {
-            throw new ProvisionError(CommonStrings.AZURE_WEB_APP);
-        }
+        const webappResponse = await AzureOperations.CreateOrUpdateAzureWebApp(webSiteMgmtClient, this.config.provision.resourceGroup!, this.config.provision.siteName!, siteEnvelope);
 
         if (!this.config.provision.siteEndpoint) {
             this.config.provision.siteEndpoint = `${CommonStrings.HTTPS_PREFIX}${webappResponse.defaultHostName}`;
@@ -354,24 +312,7 @@ export class TeamsBotImpl {
             this.config.provision.location!,
             appSettings
         );
-
-        let res = undefined;
-
-        try {
-            res = await webSiteMgmtClient.webApps.createOrUpdate(
-                this.config.provision.resourceGroup!,
-                this.config.provision.siteName!,
-                siteEnvelope,
-            );
-        } catch (e) {
-            throw new ConfigUpdatingError(ConfigNames.AZURE_WEB_APP_AUTH_CONFIGS, e);
-        }
-
-        this.logRestResponse(res);
-
-        if (!res || !utils.isHttpCodeOkOrCreated(res._response.status)) {
-            throw new ConfigUpdatingError(ConfigNames.AZURE_WEB_APP_AUTH_CONFIGS);
-        }
+        await AzureOperations.CreateOrUpdateAzureWebApp(webSiteMgmtClient, this.config.provision.resourceGroup!, this.config.provision.siteName!, siteEnvelope, true);
 
         // 3. Update message endpoint for bot registration.
         switch (this.config.scaffold.wayToRegisterBot) {
@@ -475,22 +416,7 @@ export class TeamsBotImpl {
             serviceClientCredentials,
             this.config.provision.subscriptionId!,
         );
-
-        let listResponse = undefined;
-        try {
-            listResponse = await webSiteMgmtClient.webApps.listPublishingCredentials(
-                this.config.provision.resourceGroup!,
-                this.config.provision.siteName!,
-            );
-        } catch (e) {
-            throw new ListPublishingCredentialsError(e);
-        }
-
-        this.logRestResponse(listResponse);
-
-        if (!listResponse || !utils.isHttpCodeOkOrCreated(listResponse._response.status)) {
-            throw new ListPublishingCredentialsError();
-        }
+        const listResponse = await AzureOperations.ListPublishingCredentials(webSiteMgmtClient, this.config.provision.resourceGroup!, this.config.provision.siteName!);
 
         publishingUserName = listResponse.publishingUserName;
         publishingPassword = listResponse.publishingPassword;
@@ -506,21 +432,8 @@ export class TeamsBotImpl {
         };
 
         const zipDeployEndpoint: string = getZipDeployEndpoint(this.config.provision.siteName!);
-
         await handler?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_DEPLOY);
-
-        let res = undefined;
-        try {
-            res = await axios.post(zipDeployEndpoint, zipBuffer, config);
-        } catch (e) {
-            throw new ZipDeployError(e);
-        }
-
-        this.logRestResponse(res);
-
-        if (!res || !utils.isHttpCodeOkOrCreated(res.status)) {
-            throw new ZipDeployError();
-        }
+        await AzureOperations.ZipDeployPackage(zipDeployEndpoint, zipBuffer, config);
 
         await deployMgr.updateLastDeployTime(deployTimeCandidate);
         this.config.saveConfigIntoContext(context);
@@ -623,29 +536,8 @@ export class TeamsBotImpl {
             throw new SomethingMissingError(CommonStrings.BOT_CHANNEL_REGISTRATION);
         }
         const botChannelRegistrationName = this.config.provision.botChannelRegName;
-
-        let botResponse = undefined;
-        try {
-            botResponse = await botClient.bots.update(
-                this.config.provision.resourceGroup!,
-                botChannelRegistrationName,
-                {
-                    properties: {
-                        displayName: botChannelRegistrationName,
-                        endpoint: endpoint,
-                        msaAppId: this.config.scaffold.botId!,
-                    },
-                },
-            );
-        } catch (e) {
-            throw new MessageEndpointUpdatingError(endpoint, e);
-        }
-
-        this.logRestResponse(botResponse);
-
-        if (!botResponse || !utils.isHttpCodeOkOrCreated(botResponse._response.status)) {
-            throw new MessageEndpointUpdatingError(endpoint);
-        }
+        await AzureOperations.UpdateBotChannelRegistration(botClient, this.config.provision.resourceGroup!,
+            botChannelRegistrationName, this.config.scaffold.botId!, endpoint);
 
         this.telemetryStepOutSuccess(LifecycleFuncNames.UPDATE_MESSAGE_ENDPOINT_AZURE);
     }
@@ -691,7 +583,7 @@ export class TeamsBotImpl {
         // 1. Create a new AAD App Registraion with client secret.
         const aadDisplayName = ResourceNameFactory.createCommonName(this.ctx?.app.name.short);
 
-        const botAuthCreds = await aadReg.registerAADAppAndGetSecretByAppStudio(
+        const botAuthCreds = await AADRegistration.registerAADAppAndGetSecretByAppStudio(
             appStudioToken!,
             aadDisplayName
         );
@@ -740,7 +632,7 @@ export class TeamsBotImpl {
 
         if (!this.config.scaffold.botRegistrationCreated()) {
             const aadDisplayName = ResourceNameFactory.createCommonName(this.ctx?.app.name.short);
-            botAuthCreds = await aadReg.registerAADAppAndGetSecretByAppStudio(
+            botAuthCreds = await AADRegistration.registerAADAppAndGetSecretByAppStudio(
                 appStudioToken!,
                 aadDisplayName
             );
@@ -764,60 +656,10 @@ export class TeamsBotImpl {
         const botChannelRegistrationName = this.config.provision.botChannelRegName ?
             this.config.provision.botChannelRegName : ResourceNameFactory.createCommonName(this.ctx?.app.name.short);
 
-        let botResponse = undefined;
-        try {
-            botResponse = await botClient.bots.create(
-                this.config.provision.resourceGroup!,
-                botChannelRegistrationName,
-                {
-                    location: "global",
-                    kind: "bot",
-                    properties: {
-                        displayName: botChannelRegistrationName,
-                        endpoint: "",
-                        msaAppId: botAuthCreds.clientId!,
-                    },
-                },
-            );
-        } catch (e) {
-            throw new ProvisionError(CommonStrings.BOT_CHANNEL_REGISTRATION, e);
-        }
-
-        this.logRestResponse(botResponse);
-
-        if (!botResponse || !utils.isHttpCodeOkOrCreated(botResponse._response.status)) {
-            throw new ProvisionError(CommonStrings.BOT_CHANNEL_REGISTRATION);
-        }
+        await AzureOperations.CreateBotChannelRegistration(botClient, this.config.provision.resourceGroup!, botChannelRegistrationName, botAuthCreds.clientId!);
 
         // 3. Add Teams Client as a channel to the resource above.
-        let channelResponse = undefined;
-
-        try {
-            channelResponse = await botClient.channels.create(
-                this.config.provision.resourceGroup!,
-                botChannelRegistrationName,
-                "MsTeamsChannel",
-                {
-                    location: "global",
-                    kind: "bot",
-                    properties: {
-                        channelName: "MsTeamsChannel",
-                        properties: {
-                            isEnabled: true,
-                        },
-                    },
-                },
-            );
-        } catch (e) {
-            throw new ProvisionError(CommonStrings.MS_TEAMS_CHANNEL, e);
-        }
-
-        this.logRestResponse(channelResponse);
-
-        if (!channelResponse || !utils.isHttpCodeOkOrCreated(channelResponse._response.status)) {
-
-            throw new ProvisionError(CommonStrings.MS_TEAMS_CHANNEL);
-        }
+        await AzureOperations.LinkTeamsChannel(botClient, this.config.provision.resourceGroup!, botChannelRegistrationName);
 
         if (!this.config.scaffold.botId) {
             this.config.scaffold.botId = botAuthCreds.clientId;

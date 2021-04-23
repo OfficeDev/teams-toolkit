@@ -23,7 +23,7 @@
     "test:unit": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/**/*.ts"
   },
   "devDependencies": {
-    "@shared/eslint-config": "^0.0.0",
+    "@shared/eslint-config": "file:../eslint-config",
     "@types/chai": "^4.2.14",
     "@types/chai-as-promised": "^7.1.3",
     "@types/chai-spies": "^1.0.3",

@@ -52,6 +52,7 @@
     "@types/fs-extra": "^9.0.10",
     "axios": "^0.21.1",
     "azure-arm-resource": "^3.1.1-preview",
+    "build": "^0.1.4",
     "chai": "^4.3.4",
     "dotenv": "^8.2.0",
     "jsonschema": "^1.4.0",

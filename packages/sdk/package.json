@@ -1,9 +1,10 @@
 {
   "name": "@microsoft/teamsfx",
-  "version": "0.0.5",
+  "version": "0.0.6-alpha.1",
   "description": "Microsoft Teams App Framework SDK for node.js and browser.",
   "main": "dist/index.js",
   "module": "dist-esm/src/index.js",
+  "private": true,
   "browser": {
     "./dist-esm/src/core/cache.js": "./dist-esm/src/core/cache.browser.js",
     "./dist-esm/src/core/onBehalfOfUserCredential.js": "./dist-esm/src/core/onBehalfOfUserCredential.browser.js",
@@ -64,6 +65,7 @@
     "axios": "^0.21.1",
     "botbuilder-core": ">=4.9.3",
     "botbuilder-dialogs": ">=4.9.3",
+    "build": "^0.1.4",
     "events": "^3.0.0",
     "jwt-decode": "^3.1.2",
     "memory-cache": "^0.2.0",
@@ -83,7 +85,7 @@
     "@rollup/plugin-multi-entry": "^3.0.0",
     "@rollup/plugin-node-resolve": "^8.0.0",
     "@rollup/plugin-replace": "^2.2.0",
-    "@shared/eslint-config": "^0.0.0",
+    "@shared/eslint-config": "file:../eslint-config",
     "@types/atob": "^2.1.2",
     "@types/babel__core": "^7.1.12",
     "@types/chai": "^4.1.6",
@@ -147,5 +149,6 @@
     "**/*.ts": [
       "eslint"
     ]
-  }
+  },
+  "gitHead": "7d60c0765c0ea8c023a26c10d1c93001c597afbb"
 }

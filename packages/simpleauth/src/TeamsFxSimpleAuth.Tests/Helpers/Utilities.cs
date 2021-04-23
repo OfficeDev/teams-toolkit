@@ -122,7 +122,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.Helpers
                 settings.TestUsername, settings.TestPassword);
         }
 
-        public static async Task<string> GetAccessTokenUsingClientCredentialsFlow(string endpoint, string clientId, string clientSecret, string scope)
+        public static async Task<string> GetAccessTokenUsingClientCredentialsFlow(string oauthAuthority, string clientId, string clientSecret, string scope)
         {
             var content = new ClientCredentialRequestBody
             {
@@ -134,7 +134,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.Helpers
 
             using (var client = new HttpClient(new RetryHandler(new HttpClientHandler())))
             {
-                HttpRequestMessage tokenReq = new HttpRequestMessage(HttpMethod.Post, endpoint)
+                HttpRequestMessage tokenReq = new HttpRequestMessage(HttpMethod.Post, oauthAuthority.TrimEnd('/') + "/oauth2/v2.0/token")
                 {
                     Content = ToFormUrlEncodedContent(content)
                 };

@@ -1294,8 +1294,10 @@ export class TeamsAppSolution implements Solution {
                 const item: OptionItem = { id: plugin.name, label: plugin.displayName, cliName: plugin.name.replace(pluginPrefix, "") };
                 return item;
             });
+            
             const selectQuestion = DeployPluginSelectQuestion;
             selectQuestion.option = options;
+            selectQuestion.default = options.map(i=>i.id);
             const pluginSelection = new QTreeNode(selectQuestion);
             node.addChild(pluginSelection);
 

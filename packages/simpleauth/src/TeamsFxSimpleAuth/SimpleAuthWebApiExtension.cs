@@ -72,7 +72,13 @@ namespace Microsoft.TeamsFx.SimpleAuth
 
                 options.AddPolicy("RequireAccessAsUserScope", policy =>
                 {
-                    policy.RequireClaim(JWTClaims.Scope, new string[] { "access_as_user" });
+                    var scope = "access_as_user";
+                    policy.RequireAssertion(
+                        context => context.User.HasClaim(
+                            claim => (claim.Type == JWTClaims.Scope && claim.Value.Split(' ').Contains(RequiredScope.AccessAsUser)) ||
+                            (claim.Type == JWTClaims.Scp && claim.Value.Split(' ').Contains(RequiredScope.AccessAsUser))
+                        )
+                    );
                 });
             });
 

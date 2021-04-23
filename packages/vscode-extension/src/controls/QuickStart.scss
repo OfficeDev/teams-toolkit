@@ -23,30 +23,30 @@
         width: 28px;
         height: 28px;
         font-size: 28px;
-        color: #3794FF;
+        color: var(--vscode-list-highlightForeground);
     }
 
     .title{
     width: auto;
     margin-left: 12px;
 
-    h2{
-        font-size: 26px;
-        line-height: 30px;
-        color: #CCCCCC;
-        margin-top: 0px;
-        margin-bottom: 0px;
-        font-weight: normal;
-    }
+        h2{
+            font-size: 26px;
+            line-height: 30px;
+            margin-top: 0px;
+            margin-bottom: 0px;
+            font-weight: normal;
+            color: var(--vscode-titleBar-activeForeground);
+        }
 
-    h3{
-        font-size: 12px;
-        line-height: 14px;
-        color: #CCCCCC;
-        margin-top: 0px;
-        margin-bottom: 0px;
-        font-weight: normal;
-    }
+        h3{
+            font-size: 12px;
+            line-height: 14px;
+            margin-top: 0px;
+            margin-bottom: 0px;
+            font-weight: normal;
+            color: var(--vscode-titleBar-activeForeground);
+        }
     }
 
     .stage{
@@ -55,10 +55,16 @@
     }
 
     .action-card{
-    background-color: #252526;
     border-radius: 4px;
     padding: 12px 12px 12px 12px;
     margin-bottom: 12px;
+    color: var(--vscode-editorWidget-background);
+
+        .action-title{
+        font-size: 13px;
+        line-height: 15px;
+        color: var(--vscode-badge-foreground);
+        }
     }
 
     .collapse-action-card{
@@ -75,18 +81,19 @@
     .action-title{
     font-size: 13px;
     line-height: 15px;
+    color: var(--vscode-menu-foreground);
     }
 
     .action-content{
         font-size: 12px;
-        color: #BBBBBB;
+        color: var(--vscode-menu-separatorBackground);
     }
 
     .left{
     float: left;
 
     button{
-        background-color: #0E639C;
+        background-color: var(--vscode-button-background);
     }
 
     span{
@@ -99,15 +106,15 @@
     }
 
     .right{
-    float: right;
+        float: right;
 
-    span{
-        font-size: 13px;
-        line-height: 15px;
-        align-items: center;
-        text-align: center;
-        color: #3794FF;
-    }
+        span{
+            font-size: 13px;
+            line-height: 15px;
+            align-items: center;
+            text-align: center;
+            color: var(--vscode-textLink-foreground);
+        }
     }
 
     .tip{

@@ -349,7 +349,7 @@ class GetStartedAction extends React.Component<any, any>{
                                 <Image src={this.getStepIcon()} className="action-icon" />
                             )
                         }
-                        <div className="action-title" style={{ color: "#FFFFFF" }}>{this.props.title}</div>
+                        <div className="action-title">{this.props.title}</div>
                     </div>
                     <div className="card-line action-content">{this.props.content}</div>
                     <div className="left-right-align">
@@ -390,7 +390,7 @@ class GetStartedAction extends React.Component<any, any>{
                                 <Image src={this.getStepIcon()} className="action-icon" />
                             )
                         }
-                        <div className="action-title" style={{ color: "#CCCCCC" }}>{this.props.title}</div>
+                        <div className="action-title">{this.props.title}</div>
                     </div>
                 </div>
             )

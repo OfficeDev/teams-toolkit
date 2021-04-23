@@ -18,7 +18,7 @@
     "watch": "tsc -w -p ./ && npm run copy-files",
     "test:e2e": "mocha --no-timeouts --require ts-node/register tests/e2e/**/*.tests.ts",
     "test:unit": "echo 'to be implementd'",
-    "test:integration": "echo 'to be implementd'",
+    "test:integration": "mocha --parallel --no-timeouts --require ts-node/register tests/e2e/smoke/**/*.tests.ts",
     "check-format": "prettier --list-different --config .prettierrc.json --ignore-path .prettierignore \"{src,tests}/**/*.ts\" \"*.{js,json}\"",
     "format": "prettier --write --config .prettierrc.json --ignore-path .prettierignore \"{src,tests}/**/*.ts\" \"*.{js,json}\"",
     "lint:fix": "eslint \"src/**/*.ts\" \"tests/**/*.ts\" --fix",

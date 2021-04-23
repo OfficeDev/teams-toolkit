@@ -36,11 +36,11 @@ describe("onBehalfOfUserCredential Test: Node", () => {
 
   it("Test onBehalfOfUserCredential get SSO token success", async function () {
     const credential = new OnBehalfOfUserCredential(ssoToken);
-    let ssoTokenFromCredential: AccessToken = await credential.getToken([]);
-    assert.strictEqual(ssoTokenFromCredential.token, ssoToken);
+    let ssoTokenFromCredential = await credential.getToken([]);
+    assert.strictEqual(ssoTokenFromCredential!.token, ssoToken);
 
     ssoTokenFromCredential = await credential.getToken("");
-    assert.strictEqual(ssoTokenFromCredential.token, ssoToken);
+    assert.strictEqual(ssoTokenFromCredential!.token, ssoToken);
   });
 
   it("Test onBehalfOfUserCredential get user info success", async function () {
@@ -51,8 +51,8 @@ describe("onBehalfOfUserCredential Test: Node", () => {
 
   it("Test onBehalfOfUserCredential get access token success", async function () {
     const credential = new OnBehalfOfUserCredential(ssoToken);
-    const graphToken: AccessToken = await credential.getToken("https://graph.microsoft.com/User.Read");
-    const tokenObject = parseJwt(graphToken.token);
+    const graphToken = await credential.getToken("https://graph.microsoft.com/User.Read");
+    const tokenObject = parseJwt(graphToken!.token);
     const userInfo = await credential.getUserInfo();
     assert.strictEqual(tokenObject.oid, userInfo.objectId);
   });

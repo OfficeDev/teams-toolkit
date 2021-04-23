@@ -88,12 +88,12 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.Helpers
             var requestUri = new Uri(QueryHelpers.AddQueryString(authorizeUrl, param));
             driver.Navigate().GoToUrl(requestUri);
 
-            IWebElement username = WaitUntilElementExists(driver, By.Name("loginfmt"), 100);
+            IWebElement username = WaitUntilElementExists(driver, By.Name("loginfmt"));
             username.SendKeys(testAccountUserName);
             // Click "Next"
             ClickElementWithRetry(driver, By.Id("idSIButton9"));
 
-            IWebElement password = WaitUntilElementExists(driver, By.Name("passwd"), 100);
+            IWebElement password = WaitUntilElementExists(driver, By.Name("passwd"), 10);
             password.SendKeys(testAccountPassword);
 
             // Click "Sign in"

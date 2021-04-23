@@ -877,7 +877,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
             // Consent another permission
             Utilities.ConsentAndGetAuthorizationCode(_settings.AuthorizeUrl, _teamsAadInfo.AppId, _settings.RedirectUri,
                 "https://graph.microsoft.com/User.ReadBasic.All", _settings.CodeChallenge, _settings.TestUsername, _settings.TestPassword);
-
+            await Task.Delay(2000);
             var secondRequestBody = new PostTokenRequestBody
             {
                 scope = "https://graph.microsoft.com/User.Read User.ReadBasic.All",

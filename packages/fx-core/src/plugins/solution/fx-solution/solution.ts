@@ -2021,25 +2021,30 @@ export class TeamsAppSolution implements Solution {
                 const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
                 const pluginCtx = getPluginContext(ctx, this.appStudioPlugin.name);
 
-                const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx);
-                if (maybeManifest.isErr()) {
-                    return maybeManifest;
-                }
-                const manifestTpl = maybeManifest.value;
-                const manifest = this.createManifestForRemote(ctx, manifestTpl).map((result) => result[1]);
-
-                if (manifest.isOk()) {
-                    return await appStudioPlugin.validateManifest(pluginCtx, JSON.stringify(manifest.value));
+                let manifestString: string | undefined = undefined;
+                if (this.spfxSelected(ctx)) {
+                    manifestString = (await fs.readFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)).toString();
                 } else {
-                    ctx.logProvider?.error("[Teams Toolkit] Manifest Validation failed!");
+                    const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx);
+                    if (maybeManifest.isErr()) {
+                        return maybeManifest;
+                    }
+                    const manifestTpl = maybeManifest.value;
+                    const manifest = this.createManifestForRemote(ctx, manifestTpl).map((result) => result[1]);
+                    if (manifest.isOk()) {
+                        manifestString = JSON.stringify(manifest.value);
+                    } else {
+                        ctx.logProvider?.error("[Teams Toolkit] Manifest Validation failed!");
                         await ctx.dialog?.communicate(
                             new DialogMsg(DialogType.Show, {
                                 description: manifest.error.message,
                                 level: MsgLevel.Error,
                             }),
                         );
-                    return err(manifest.error);
+                        return err(manifest.error);
+                    }
                 }
+                return await appStudioPlugin.validateManifest(pluginCtx, manifestString);
             } else if (method === "buildPackage") {
                 const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
                 const pluginCtx = getPluginContext(ctx, this.appStudioPlugin.name);

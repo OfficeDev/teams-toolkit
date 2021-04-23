@@ -19,7 +19,7 @@ namespace Microsoft.TeamsFx.SimpleAuth
         public const string Version = "ver";
         public const string AZP = "azp";
         public const string AppId = "appid";
-        public const string Scope = "scp";
+        public const string Scope = "http://schemas.microsoft.com/identity/claims/scope";
     }
 
     public class JWTIdentityScope

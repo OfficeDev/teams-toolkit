@@ -156,7 +156,10 @@ export function newPluginContext(): PluginContext {
             setStatusChangeMap: (name: string, anything) => {
                 return Promise.resolve(true);
             },
-            removeStatusChangeMap: (name: string) => { return Promise.resolve(true); }
+            removeStatusChangeMap: (name: string) => { return Promise.resolve(true); },
+            getJsonObject: (showDialog?: boolean) => { return Promise.resolve(undefined); },
+            setSubscription: (subsId: string) => { return Promise.resolve(); },
+            listSubscriptions: () => { return Promise.resolve([]); }
         }
     };
 }

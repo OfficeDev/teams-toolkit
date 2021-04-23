@@ -34,9 +34,6 @@ import {
         loadConfiguration();
     });
   
-    afterEach(function() {
-    });
-  
     it("create M365TenantCredential with valid configuration", function() {
       const credential: any = new M365TenantCredential();
   
@@ -54,9 +51,9 @@ import {
       const token = await credential.getToken(defaultGraphScope);
       
       const decodedToken = jwtDecode<AADJwtPayLoad>(token!.token);
-      assert.strictEqual(decodedToken.aud, 'https://graph.microsoft.com');
+      assert.strictEqual(decodedToken.aud, "https://graph.microsoft.com");
       assert.strictEqual(decodedToken.appid, process.env.M365_CLIENT_ID);
-      assert.strictEqual(decodedToken.idtyp, 'app');
+      assert.strictEqual(decodedToken.idtyp, "app");
     });
   
     it("get access token with authentication error", async function() {

@@ -1,6 +1,6 @@
-import { DepsInfo, IDepsChecker } from "./checker";
-import { cpUtils, nodeCheckerEnabled } from "./checkerAdapter";
+import { DepsInfo, IDepsAdapter, IDepsChecker, IDepsLogger, IDepsTelemetry } from "./checker";
 import { Messages, nodeHelpLink } from "./common";
+import { cpUtils } from "./cpUtils";
 import { NodeNotFoundError, NotSupportedNodeError as NodeNotSupportedError } from "./errors";
 
 const SupportedNodeVersions = ["10", "12", "14"];
@@ -17,8 +17,18 @@ class NodeVersion {
 }
 
 export class NodeChecker implements IDepsChecker {
+  private readonly _adapter: IDepsAdapter;
+  private readonly _logger: IDepsLogger;
+  private readonly _telemetry: IDepsTelemetry;
+
+  constructor(adapter: IDepsAdapter, logger: IDepsLogger, telemetry: IDepsTelemetry) {
+    this._adapter = adapter;
+    this._logger = logger;
+    this._telemetry = telemetry;
+  }
+
   public isEnabled(): Promise<boolean> {
-    return Promise.resolve(nodeCheckerEnabled());
+    return Promise.resolve(this._adapter.nodeCheckerEnabled());
   }
 
   public async isInstalled(): Promise<boolean> {

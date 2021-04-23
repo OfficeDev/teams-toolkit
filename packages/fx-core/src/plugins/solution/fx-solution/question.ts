@@ -5,12 +5,14 @@ import { FuncQuestion, MultiSelectQuestion, NodeType, OptionItem, SingleSelectQu
 export const TabOptionItem: OptionItem = {
     id: "Tab",
     label: "Tab",
+    cliName: "tab",
     description: "Tabs embeds a web app experience in a tab in a Teams chat, channel, or personal workspace.",
 };
 
 export const BotOptionItem: OptionItem = {
     id: "Bot",
     label: "Bot",
+    cliName: "bot",
     description:
         "Bots allow you to interact with and obtain information in a text/search/conversational manner.",
 };
@@ -37,12 +39,14 @@ export enum AzureSolutionQuestionNames {
 export const HostTypeOptionAzure: OptionItem = {
     id:"Azure",
     label: "Azure",
+    cliName: "azure",
     description: "Azure Cloud",
 };
 
 export const HostTypeOptionSPFx: OptionItem = {
     id:"SPFx",
     label: "SPFx",
+    cliName: "spfx",
     description: "SharePoint Framework",
 };
 

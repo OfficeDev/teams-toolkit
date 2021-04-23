@@ -8,11 +8,12 @@
                 {
                     "id": "Bot",
                     "label": "Bot",
+                    "cliName": "bot",
                     "description": "Bots allow you to interact with and obtain information from a software or website in a text/search/conversational manner."
                 }
             ],
             "default": [
-                "Bot"
+                "bot"
             ],
             "hide": true
         }

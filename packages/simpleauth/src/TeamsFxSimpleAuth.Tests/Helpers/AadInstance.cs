@@ -177,6 +177,18 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.Helpers
                             IsEnabled = true,
                             UserConsentDescription = "Enable Test app to call this app’s APIs with the same rights that you have",
                             UserConsentDisplayName = "Test app can access your user profile and make requests on your behalf"
+                        },
+
+                        new PermissionScope
+                        {
+                            Id = Guid.NewGuid(),
+                            Type = "User",
+                            Value = "another_scope",
+                            AdminConsentDisplayName = "Another scope for test app",
+                            AdminConsentDescription = "Another scope for test app.",
+                            IsEnabled = true,
+                            UserConsentDescription = "Another scope for test app",
+                            UserConsentDisplayName = "Another scope for test app."
                         }
                     }
                 },

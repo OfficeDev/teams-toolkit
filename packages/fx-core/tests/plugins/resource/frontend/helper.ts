@@ -7,7 +7,7 @@ import { v4 as uuid } from "uuid";
 
 import { AxiosResponse } from "axios";
 import { AzureStorageClient } from "../../../../src/plugins/resource/frontend/clients";
-import { DependentPluginInfo, TabScope } from "../../../../src/plugins/resource/frontend/constants";
+import { DependentPluginInfo } from "../../../../src/plugins/resource/frontend/constants";
 import { FrontendConfig } from "../../../../src/plugins/resource/frontend/configs";
 import { FrontendPlugin } from "../../../../src/plugins/resource/frontend";
 import { Manifest } from "../../../../src/plugins/resource/frontend/ops/scaffold";
@@ -30,7 +30,6 @@ export class TestHelper {
         faker.internet.password(),
     );
     static fakeSubscriptionId: string = faker.datatype.uuid();
-    static tabScope: string[] = [TabScope.PersonalTab, TabScope.GroupTab];
     static tabLanguage = "javascript";
     static fakeClientId: string = faker.datatype.uuid();
 

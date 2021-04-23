@@ -27,7 +27,7 @@ export const CreateWebAppError: PluginError = {
 
 export const ZipDeployError: PluginError = {
     name: "ZipDeployError",
-    message: (message) => `Failed to do Zip Deployment: ${message}`,
+    message: (message) => `Failed to deploy Simple Auth bits: ${message}`,
 };
 
 export const UpdateApplicationSettingsError: PluginError = {
@@ -47,7 +47,7 @@ export const EndpointInvalidError: PluginError = {
 
 export const ZipDownloadError: PluginError = {
     name: "ZipDownloadError",
-    message: (message) => `Failed to do Zip Download: ${message}`,
+    message: (message) => `Failed to download Simple Auth bits: ${message}`,
 };
 
 export const VersionFileNotExist: PluginError = {

@@ -1,5 +1,5 @@
 import { IDepsAdapter } from "../../../../src/debug/depsChecker/checker";
-import { vscodeAdapter } from "../../../../src/debug/depsChecker/vscodeAdapter";
+import * as path from "path";
 
 export class TestAdapter implements IDepsAdapter {
     private readonly _hasTeamsfxBackend: boolean;
@@ -11,10 +11,10 @@ export class TestAdapter implements IDepsAdapter {
 
     constructor(
         hasTeamsfxBackend: boolean,
-        clickCancelOrLearnMoreButton: boolean = false,
-        dotnetCheckerEnabled: boolean = true,
-        funcToolCheckerEnabled: boolean = true,
-        nodeCheckerEnabled: boolean = true) {
+        clickCancelOrLearnMoreButton = false,
+        dotnetCheckerEnabled = true,
+        funcToolCheckerEnabled = true,
+        nodeCheckerEnabled = true) {
         this._hasTeamsfxBackend = hasTeamsfxBackend;
         this._clickCancelOrLearnMoreButton = clickCancelOrLearnMoreButton;
         this._dotnetCheckerEnabled = dotnetCheckerEnabled;
@@ -42,7 +42,9 @@ export class TestAdapter implements IDepsAdapter {
         }
     }
 
-    showOutputChannel() { }
+    showOutputChannel() { 
+        // empty method
+    }
 
     hasTeamsfxBackend(): Promise<boolean> {
         return Promise.resolve(this._hasTeamsfxBackend);
@@ -66,6 +68,6 @@ export class TestAdapter implements IDepsAdapter {
 
     getResourceDir(): string {
         // use the same resources under vscode-extension/src/debug/depsChecker/resource
-        return vscodeAdapter.getResourceDir();
+        return path.resolve(__dirname, "../../../../src/debug/depsChecker/resource");
     }
 }

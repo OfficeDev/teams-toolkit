@@ -1,11 +1,6 @@
-name: Build and Test SDK
+name: SDK CI
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - packages/sdk/**
   pull_request:
     branches:
       - main
@@ -13,60 +8,6 @@ on:
       - packages/sdk/**
 
 jobs:
-  build-and-test-on-lowest-version:
-    name: Test SDK on (${{ matrix.os }} with node ${{ matrix.node-version }})
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        node-version: [10]
-
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Setup node
-        uses: actions/setup-node@v2.1.2
-        with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: Install npm packages
-        run: |
-          npm install
-          npm run bootstrap
-
-      - name: Build
-        run: |
-          npm run build
-        working-directory: ./packages/sdk
-
-      - name: Check Format
-        run: |
-          npm run check-format
-        working-directory: ./packages/sdk
-
-      - name: Unit Test
-        run: |
-          npm run build:test
-          npm run unit-test
-        working-directory: ./packages/sdk
-
-      - name: Integration Test
-        env:
-          SQL_ENDPOINT: ${{secrets.SDK_INTEGRATIONTEST_SQL_ENDPOINT}}
-          SQL_DATABASE_NAME: ${{secrets.SDK_INTEGRATIONTEST_SQL_DATABASE}}
-          SQL_USER_NAME: ${{secrets.SDK_INTEGRATIONTEST_SQL_USERNAME}}
-          SQL_PASSWORD: ${{secrets.SDK_INTEGRATIONTEST_SQL_PASSWORD}}
-          RESOURCE_GROUP_NAME: ${{secrets.SDK_INTEGRATIONTEST_GROUP_NAME}}
-          TEST_ACCOUNT_SUBSCRIPTION_ID: ${{secrets.SDK_INTEGRATIONTEST_SUBSCRIPTION_ID}}
-          TEST_ACCOUNT_NAME: ${{secrets.SDK_INTEGRATIONTEST_TEST_USERNAME}}
-          TEST_ACCOUNT_PASSWORD: ${{secrets.SDK_INTEGRATIONTEST_TEST_PASSWORD}}
-        run: |
-          npm run integration-test
-        working-directory: ./packages/sdk
-
   build-and-test-on-latest-version:
     name: Test SDK on (${{ matrix.os }} with node ${{ matrix.node-version }})
 
@@ -86,44 +27,26 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Install npm packages
+      - name: Setup project
         run: |
-          npm install
-          npm run bootstrap
+          npm run setup
 
-      - name: Remove package-lock(Linux)
-        if: matrix.os != 'windows-latest'
-        run: |
-          rm packages/sdk/package-lock.json
-      
       - name: Remove package-lock(Windows)
         if: matrix.os == 'windows-latest'
         uses: JesseTG/rm@v1.0.0
         with:
           path: packages\sdk\package-lock.json
 
-      - name: Build
+      - name: Remove package-lock(Linux)
+        if: matrix.os != 'windows-latest'
         run: |
-          npm install
-          npm run build
-        working-directory: ./packages/sdk
+          rm packages/sdk/package-lock.json
+
+      - name: Setup project
+        run: |
+          npm run bootstrap
 
       - name: Unit Test
         run: |
-          npm run build:test
-          npm run unit-test
-        working-directory: ./packages/sdk
-
-      - name: Integration Test
-        env:
-          SQL_ENDPOINT: ${{secrets.SDK_INTEGRATIONTEST_SQL_ENDPOINT}}
-          SQL_DATABASE_NAME: ${{secrets.SDK_INTEGRATIONTEST_SQL_DATABASE}}
-          SQL_USER_NAME: ${{secrets.SDK_INTEGRATIONTEST_SQL_USERNAME}}
-          SQL_PASSWORD: ${{secrets.SDK_INTEGRATIONTEST_SQL_PASSWORD}}
-          RESOURCE_GROUP_NAME: ${{secrets.SDK_INTEGRATIONTEST_GROUP_NAME}}
-          TEST_ACCOUNT_SUBSCRIPTION_ID: ${{secrets.SDK_INTEGRATIONTEST_SUBSCRIPTION_ID}}
-          TEST_ACCOUNT_NAME: ${{secrets.SDK_INTEGRATIONTEST_TEST_USERNAME}}
-          TEST_ACCOUNT_PASSWORD: ${{secrets.SDK_INTEGRATIONTEST_TEST_PASSWORD}}
-        run: |
-          npm run integration-test
+          npm run test:unit
         working-directory: ./packages/sdk

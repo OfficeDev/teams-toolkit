@@ -18,7 +18,7 @@ describe("Azure App Happy Path", function() {
   it(`Tab + Bot (Create New) + Function + SQL + Apim`, async function() {
     // new a project ( tab + function + sql )
     await execAsync(
-      `teamsfx new --interactive false --app-name ${appName} --capabilities Tab --azure-resources function sql`,
+      `teamsfx new --interactive false --app-name ${appName} --capabilities tab --azure-resources function sql`,
       {
         cwd: testFolder,
         env: process.env,

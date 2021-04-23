@@ -7,3 +7,4 @@ declare module "*.gif";
 declare const vscode: vscode;
 declare const panelType: string;
 declare const isSupportedNode: boolean;
+declare const isMacPlatform: boolean;

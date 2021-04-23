@@ -148,7 +148,8 @@ export class FunctionDeploy {
                                 "password": password
                             },
                             maxContentLength: Infinity,
-                            maxBodyLength: Infinity
+                            maxBodyLength: Infinity,
+                            timeout: DefaultValues.deployTimeoutInMs
                         }
                     )
                 )

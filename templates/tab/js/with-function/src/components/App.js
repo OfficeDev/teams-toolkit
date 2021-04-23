@@ -1,34 +1,41 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-import React from 'react';
-import './App.css';
-import * as microsoftTeams from '@microsoft/teams-js';
-import { HashRouter as Router, Route } from 'react-router-dom';
-
-import Privacy from './about/Privacy';
-import TermsOfUse from './about/TermsOfUse';
-import Tab from './Tab';
+import React from "react";
+// https://fluentsite.z22.web.core.windows.net/quick-start
+import { Provider, teamsTheme, Loader } from "@fluentui/react-northstar";
+import { HashRouter as Router, Redirect, Route } from "react-router-dom";
+import { useTeamsFx } from "./sample/lib/useTeamsFx";
+import Privacy from "./Privacy";
+import TermsOfUse from "./TermsOfUse";
+import Tab from "./Tab2";
+import "./App.css";
 
 /**
  * The main app which handles the initialization and routing
  * of the app.
  */
-function App() {
-  // Check for the Microsoft Teams SDK object.
-  if (microsoftTeams) {
-    return (
+export default function App() {
+  const { theme, loading } = useTeamsFx();
+  return (
+    <Provider
+      theme={theme || teamsTheme}
+      styles={{ backgroundColor: "#eeeeee" }}
+    >
       <Router>
-        <Route exact path='/privacy' component={Privacy} />
-        <Route exact path='/termsofuse' component={TermsOfUse} />
-        <Route exact path='/tab' component={Tab} />
+        <Route exact path="/">
+          <Redirect to="/tab" />
+        </Route>
+        {loading ? (
+          <Loader style={{ margin: 100 }} />
+        ) : (
+          <>
+            <Route exact path="/privacy" component={Privacy} />
+            <Route exact path="/termsofuse" component={TermsOfUse} />
+            <Route exact path="/tab" component={Tab} />
+          </>
+        )}
       </Router>
-    );
-  } else {
-    return (
-      <h3>Microsoft Teams SDK not found.</h3>
-    );
-  }
+    </Provider>
+  );
 }
-
-export default App;

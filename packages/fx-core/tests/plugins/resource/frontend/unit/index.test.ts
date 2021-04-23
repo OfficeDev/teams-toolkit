@@ -15,7 +15,6 @@ import {
     BuildError,
     CreateStorageAccountError,
     EnableStaticWebsiteError,
-    InvalidTabScopeError,
     NoResourceGroupError,
     NoStorageError,
     NotProvisionError,
@@ -60,7 +59,6 @@ describe("frontendPlugin", () => {
             const result = await frontendPlugin.scaffold(pluginContext);
 
             chai.assert.isTrue(result.isOk());
-            chai.assert.equal(pluginContext.config.get(FrontendConfigInfo.TabScopes), TestHelper.tabScope);
         });
     });
 
@@ -151,7 +149,6 @@ describe("frontendPlugin", () => {
 
         beforeEach(async () => {
             pluginContext = TestHelper.getFakePluginContext();
-            pluginContext.config.set(FrontendConfigInfo.TabScopes, TestHelper.tabScope);
             pluginContext.config.set(FrontendConfigInfo.Endpoint, TestHelper.storageEndpoint);
             frontendPlugin = await TestHelper.initializedFrontendPlugin(new FrontendPlugin(), pluginContext);
         });
@@ -166,8 +163,6 @@ describe("frontendPlugin", () => {
             const result = await frontendPlugin.postProvision(pluginContext);
 
             chai.assert.isTrue(result.isOk());
-            chai.assert.include(pluginContext.config.get(FrontendConfigInfo.StaticTab), TestHelper.storageEndpoint);
-            chai.assert.equal(pluginContext.config.get(FrontendConfigInfo.ConfigurableTab), Constants.EmptyListString);
         });
     });
 
@@ -259,23 +254,6 @@ describe("frontendPlugin", () => {
             const result = await frontendPlugin.deploy(pluginContext);
 
             assertError(result, new BuildError().code);
-        });
-    });
-
-    describe("post-debug", () => {
-        let frontendPlugin: FrontendPlugin;
-        let pluginContext: PluginContext;
-
-        beforeEach(async () => {
-            frontendPlugin = new FrontendPlugin();
-            pluginContext = TestHelper.getFakePluginContext();
-            frontendPlugin = await TestHelper.initializedFrontendPlugin(frontendPlugin, pluginContext);
-        });
-
-        it("Empty tab scope", async () => {
-            const result = await frontendPlugin.postLocalDebug(pluginContext);
-
-            assertError(result, new InvalidTabScopeError().code);
         });
     });
 });

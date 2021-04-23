@@ -6,8 +6,11 @@ import * as vscode from "vscode";
 import * as constants from "./constants";
 import * as commonUtils from "./commonUtils";
 import { ProductName, VsCodeEnv } from "fx-api";
-import { dotnetChecker } from "./depsChecker/dotnetChecker";
+import { DotnetChecker } from "./depsChecker/dotnetChecker";
 import { detectVsCodeEnv } from "../handlers";
+import { vscodeAdapter } from "./depsChecker/vscodeAdapter";
+import { vscodeLogger } from "./depsChecker/vscodeLogger";
+import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
 
 export class TeamsfxTaskProvider implements vscode.TaskProvider {
   public static readonly type: string = ProductName;
@@ -35,7 +38,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
         constants.backendFolderName
       );
       if (backendRoot) {
-        tasks.push(await this.createBackendStartTask(workspaceFolder, backendRoot));
+        tasks.push(await this.createBackendStartTask(workspaceFolder, backendRoot, await commonUtils.getProgrammingLanguage()));
       }
 
       const authRoot = await commonUtils.getAuthServicePath();
@@ -96,14 +99,16 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
   private async createBackendStartTask(
     workspaceFolder: vscode.WorkspaceFolder,
     projectRoot: string,
+    programmingLanguage: string | undefined,
     definition?: vscode.TaskDefinition,
     problemMatchers?: string | string[]
   ): Promise<vscode.Task> {
     const command: string = constants.backendStartCommand;
     definition = definition || { type: TeamsfxTaskProvider.type, command };
     // NOTE: properly handle quoting and escaping to work on windows (both powershell and cmd), linux and osx
-    const commandLine =
-    "func start --javascript --language-worker=\"--inspect=9229\" --port \"7071\" --cors \"*\"";
+    const commandLine = programmingLanguage === constants.ProgrammingLanguage.typescript
+        ? "func start --typescript --language-worker=\"--inspect=9229\" --port \"7071\" --cors \"*\""
+        : "func start --javascript --language-worker=\"--inspect=9229\" --port \"7071\" --cors \"*\"";
     const env = await commonUtils.getBackendLocalEnv();
     const options: vscode.ShellExecutionOptions = {
       cwd: projectRoot,
@@ -119,6 +124,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       problemMatchers
     );
     task.isBackground = true;
+    task.presentationOptions.reveal = vscode.TaskRevealKind.Silent;
     return task;
   }
 
@@ -130,6 +136,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     const command: string = constants.authStartCommand;
     definition = definition || { type: TeamsfxTaskProvider.type, command };
 
+    const dotnetChecker = new DotnetChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
     const dotnetPath = await dotnetChecker.getDotnetExecPath();
 
     const env = await commonUtils.getAuthLocalEnv();

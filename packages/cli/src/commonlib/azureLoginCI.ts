@@ -147,7 +147,24 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   async getStatus(): Promise<LoginStatus> {
     throw new Error("Method not implemented.");
   }
+
+  getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined> {
+    throw new Error("Method not implemented.");
+  }
+  listSubscriptions(): Promise<SubscriptionInfo[]> {
+    throw new Error("Method not implemented.");
+  }
+  setSubscription(subscriptionId: string): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
 }
+
+// TODO: remove after api update
+export type SubscriptionInfo = {
+  subscriptionName: string;
+  subscriptionId: string;
+  tenantId: string;
+};
 
 interface PartialList<T> extends Array<T> {
   nextLink?: string;

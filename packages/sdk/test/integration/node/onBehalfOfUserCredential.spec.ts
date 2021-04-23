@@ -18,6 +18,8 @@ chaiUse(chaiPromises);
 
 let ssoToken: string;
 describe("onBehalfOfUserCredential Test: Node", () => {
+  console.log(process.env);
+  assert.strictEqual(process.env.SDK_INTEGRATION_TEST_AAD_CLIENTID_SSO!, "b0c47f29-3c57-4042-933f-a7d546bae387")
   before(async () => {
     process.env.M365_CLIENT_ID = process.env.SDK_INTEGRATION_TEST_AAD_CLIENTID_REMOTE;
     process.env.M365_CLIENT_SECRET = process.env.SDK_INTEGRATION_TEST_APP_CLIENT_SECRET_REMOTE;

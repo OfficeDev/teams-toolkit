@@ -1289,6 +1289,11 @@ export class TeamsAppSolution implements Solution {
                 );
             }
             const pluginsToDeploy = res.value.filter((plugin) => !!plugin.deploy);
+            if(pluginsToDeploy.length === 0){
+                return err(
+                    returnUserError(new Error("No resource to deploy"), "Solution", SolutionError.NoResourceToDeploy),
+                );
+            }
             const pluginPrefix = "fx-resource-";
             const options: OptionItem[] = pluginsToDeploy.map((plugin) => {
                 const item: OptionItem = { id: plugin.name, label: plugin.displayName, cliName: plugin.name.replace(pluginPrefix, "") };

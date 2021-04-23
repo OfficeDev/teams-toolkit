@@ -19,18 +19,18 @@ chaiUse(chaiPromises);
 let ssoToken: string;
 describe("onBehalfOfUserCredential Test: Node", () => {
   before(async () => {
-    process.env.M365_CLIENT_ID = process.env.SDK_INTEGRATIONTEST_AAD_CLIENTID_REMOTE;
-    process.env.M365_CLIENT_SECRET = process.env.SDK_INTEGRATIONTEST_APP_CLIENT_SECRET_REMOTE;
-    process.env.M365_TENANT_ID = process.env.SDK_INTEGRATIONTEST_AAD_TENANTID;
-    process.env.M365_AUTHORITY_HOST = process.env.SDK_INTEGRATIONTEST_AAD_AUTHORITY_HOST;
+    process.env.M365_CLIENT_ID = process.env.SDK_INTEGRATION_TEST_AAD_CLIENTID_REMOTE;
+    process.env.M365_CLIENT_SECRET = process.env.SDK_INTEGRATION_TEST_APP_CLIENT_SECRET_REMOTE;
+    process.env.M365_TENANT_ID = process.env.SDK_INTEGRATION_TEST_AAD_TENANTID;
+    process.env.M365_AUTHORITY_HOST = process.env.SDK_INTEGRATION_TEST_AAD_AUTHORITY_HOST;
     loadConfiguration();
 
     ssoToken = await getAccessToken(
-      process.env.SDK_INTEGRATIONTEST_AAD_CLIENTID_SSO!,
-      process.env.SDK_INTEGRATIONTEST_TEST_USERNAME!,
-      process.env.SDK_INTEGRATIONTEST_TEST_PASSWORD!,
-      process.env.SDK_INTEGRATIONTEST_AAD_TENANTID!,
-      process.env.SDK_INTEGRATIONTEST_SCOPES_SSO!
+      process.env.SDK_INTEGRATION_TEST_AAD_CLIENTID_SSO!,
+      process.env.SDK_INTEGRATION_TEST_ACCOUNT_NAME!,
+      process.env.SDK_INTEGRATION_TEST_ACCOUNT_PASSWORD!,
+      process.env.SDK_INTEGRATION_TEST_AAD_TENANTID!,
+      process.env.SDK_INTEGRATION_TEST_SCOPES_SSO!
     );
   });
 
@@ -46,7 +46,7 @@ describe("onBehalfOfUserCredential Test: Node", () => {
   it("Test onBehalfOfUserCredential get user info success", async function () {
     const credential = new OnBehalfOfUserCredential(ssoToken);
     const userInfo = await credential.getUserInfo();
-    assert.strictEqual(userInfo.preferredUserName, process.env.SDK_INTEGRATIONTEST_TEST_USERNAME!);
+    assert.strictEqual(userInfo.preferredUserName, process.env.SDK_INTEGRATION_TEST_ACCOUNT_NAME!);
   });
 
   it("Test onBehalfOfUserCredential get access token success", async function () {

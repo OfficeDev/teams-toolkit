@@ -19,10 +19,6 @@ export class DeployMgr {
     }
 
     public async init(): Promise<void> {
-        if (!this.deploymentDir) {
-            throw new SomethingMissingError(DeployConfigs.DEPLOYMENT_FOLDER);
-        }
-
         await fs.ensureDir(this.deploymentDir);
 
         const configFile = path.join(this.deploymentDir, DeployConfigs.DEPLOYMENT_CONFIG_FILE);

@@ -5,7 +5,14 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import { cpUtils } from "./cpUtils";
 import { IDepsChecker, DepsInfo, IDepsAdapter, IDepsLogger, IDepsTelemetry } from "./checker";
-import { isWindows, isMacOS, Messages, functionCoreToolsHelpLink, DepsCheckerEvent, TelemtryMessages } from "./common";
+import {
+  isWindows,
+  isMacOS,
+  Messages,
+  functionCoreToolsHelpLink,
+  DepsCheckerEvent,
+  TelemtryMessages
+} from "./common";
 import { DepsCheckerError } from "./errors";
 
 export enum FuncVersion {
@@ -20,6 +27,8 @@ const funcToolName = "Azure Function Core Tool";
 const installVersion = FuncVersion.v3;
 const supportedVersions = [FuncVersion.v2, FuncVersion.v3];
 const installedNameWithVersion = `${funcToolName} (v${FuncVersion.v3})`;
+
+const timeout = 3 * 60 * 1000;
 
 export class FuncToolChecker implements IDepsChecker {
   private readonly _adapter: IDepsAdapter;
@@ -100,11 +109,14 @@ export class FuncToolChecker implements IDepsChecker {
     );
 
     try {
-      await this._telemetry.sendEventWithDuration(DepsCheckerEvent.funcInstallCompleted, async () => {
-        await this._adapter.runWithProgressIndicator(async () => {
-          await this.installFuncCoreTools(FuncVersion.v3);
-        });
-      });
+      await this._telemetry.sendEventWithDuration(
+        DepsCheckerEvent.funcInstallCompleted,
+        async () => {
+          await this._adapter.runWithProgressIndicator(async () => {
+            await this.installFuncCoreTools(FuncVersion.v3);
+          });
+        }
+      );
     } catch (error) {
       this._telemetry.sendSystemErrorEvent(
         DepsCheckerEvent.funcInstall,
@@ -138,7 +150,6 @@ export class FuncToolChecker implements IDepsChecker {
       Messages.finishInstallFunctionCoreTool.replace("@NameVersion", installedNameWithVersion)
     );
   }
-
 
   private async getInstalledFuncToolsVersion(): Promise<FuncVersion | null> {
     try {
@@ -178,7 +189,7 @@ export class FuncToolChecker implements IDepsChecker {
     await cpUtils.executeCommand(
       undefined,
       this._logger,
-      undefined,
+      { timeout: timeout },
       "npm",
       "install",
       "-g",
@@ -199,7 +210,7 @@ export class FuncToolChecker implements IDepsChecker {
     const result: cpUtils.ICommandResult = await cpUtils.tryExecuteCommand(
       undefined,
       this._logger,
-      undefined,
+      { timeout: timeout },
       "npm",
       "install",
       "-g",
@@ -213,7 +224,11 @@ export class FuncToolChecker implements IDepsChecker {
     const command = `npm install -g ${funcPackageName}@${version} --unsafe-perm true`;
 
     if (tryInstallfailed && needAdminPermission && isMacOS()) {
-      await cpUtils.execSudo(this._logger, command);
+      await cpUtils.withTimeout(
+        timeout,
+        cpUtils.execSudo(this._logger, command),
+        "Install func timeout"
+      );
     } else if (tryInstallfailed) {
       const tryInstallCommand = `npm install -g ${funcPackageName}@${version}`;
       throw new Error(

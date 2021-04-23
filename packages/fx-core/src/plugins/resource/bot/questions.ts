@@ -3,6 +3,7 @@
 import { WayToRegisterBot } from "./enums/wayToRegisterBot";
 import { QuestionNames, RegularExprs, QuestionOptions } from "./constants";
 import { NodeType, QTreeNode } from "fx-api";
+import isUUID from "validator/lib/isUUID";
 
 const createQuestions = new QTreeNode({
     type: NodeType.group
@@ -24,8 +25,8 @@ const botIdQuestion = new QTreeNode({
     validation: {
         validFunc: async (botId: string) => {
 
-            if (!RegularExprs.BOT_ID.test(botId)) {
-                return `Invalid bot id: must be a valid GUID.`;
+            if (!botId || !isUUID(botId)) {
+                return "Invalid bot id: must be a valid GUID.";
             }
 
             return undefined;
@@ -41,8 +42,8 @@ const botPasswordQuestion = new QTreeNode({
     validation: {
         validFunc: async (botPassword: string) => {
 
-            if (!RegularExprs.BOT_PASSWORD.test(botPassword)) {
-                return `Invalid bot password. Password must be alphanumeric and may contain the following: '.', '_', '-', and '~'.`;
+            if (!botPassword) {
+                return "Invalid bot password. Password is empty.";
             }
 
             return undefined;

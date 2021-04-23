@@ -4,9 +4,8 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import { expect } from "chai";
-import * as constants from "../../src/constants";
-import { execAsync, getTestFolder, getUniqueAppName } from "./commonUtils";
-
+import * as constants from "../../../src/constants";
+import { execAsync, getTestFolder, getUniqueAppName } from "../commonUtils";
 
 describe("Start a new project", function () {
   const testFolder = getTestFolder();
@@ -14,10 +13,8 @@ describe("Start a new project", function () {
   const type = "react";
 
   it("Create SPFx project with React framework - Test Plan ID 9426243", async function () {
-    console.log(`${constants.cliName} new --app-name ${appName} --folder ${testFolder} 
-    --host-type SPFx --spfx-framework-type ${type} --spfx-webpart-name helloworld`);
     const result = await execAsync(
-      `${constants.cliName} new --app-name ${appName} --folder ${testFolder} --host-type SPFx --spfx-framework-type ${type} --spfx-webpart-name helloworld`,
+      `${constants.cliName} new --app-name ${appName} --interactive false --folder ${testFolder} --host-type SPFx --spfx-framework-type ${type} --spfx-webpart-name helloworld`,
       {
         cwd: process.cwd(),
         env: process.env,

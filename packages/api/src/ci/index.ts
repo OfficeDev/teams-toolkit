@@ -3,6 +3,7 @@
 
 "use strict";
 
+export * as AzureConfig from "./conf/azure";
 export * from "./mockAppStudioTokenProvider";
 export * from "./mockAzureAccountProvider";
 export * from "./mockGraphTokenProvider";

@@ -125,15 +125,6 @@ export class AppStudioPluginImpl {
                     executePublishUpdate = true;
                 } else {
                     executePublishUpdate = (await ctx.dialog?.communicate(new DialogMsg(
-                        // DialogType.Show,
-                        // {
-                        //     description: `The app ${existApp.displayName} has been submitted to tenant App Catalog.\n
-                        //                 Status: ${existApp.publishingState}\n
-                        //                 Last Modified: ${existApp.lastModifiedDateTime?.toString()}.\n
-                        //                 Do you want to submit the update?`,
-                        //     items: ["Confirm", "Cancel"],
-                        //     level: MsgLevel.Warning
-                        // }
                         DialogType.Ask,
                         {
                             description: `The app ${existApp.displayName} has already been submitted to tenant App Catalog.\nStatus: ${existApp.publishingState}\n`+

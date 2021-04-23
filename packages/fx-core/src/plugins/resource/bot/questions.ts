@@ -26,7 +26,7 @@ const botIdQuestion = new QTreeNode({
     validation: {
         validFunc: async (botId: string) => {
 
-            if (!botId || isUUID(botId)) {
+            if (!botId || !isUUID(botId)) {
                 return "Invalid bot id: must be a valid GUID.";
             }
 

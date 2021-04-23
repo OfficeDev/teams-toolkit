@@ -218,6 +218,7 @@ export class DotnetChecker implements IDepsChecker {
 
     try {
       const start = performance.now();
+      await fs.chmodSync(this.getDotnetInstallScriptPath(), "755");
       const { stdout, stderr } = await exec(command, options);
       this._logger.debug(`Finished running dotnet-install script, command = '${command}', options = '${JSON.stringify(options)}', stdout = '${stdout}', stderr = '${stderr}'`);
 

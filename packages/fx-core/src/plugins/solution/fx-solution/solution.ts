@@ -773,11 +773,20 @@ export class TeamsAppSolution implements Solution {
             return err(maybeManifest.error);
         }
         const manifest = maybeManifest.value;
-        const result = this.createManifestForRemote(ctx, manifest);
-        if (result.isErr()) {
-            return err(result.error);
+        
+        let appDefinition: IAppDefinition;
+        let updatedManifest: TeamsAppManifest;
+        if (this.spfxSelected(ctx)) {
+            appDefinition = AppStudio.convertToAppDefinition(manifest, false);
+            updatedManifest = manifest;
+        } else {
+            const result = this.createManifestForRemote(ctx, manifest);
+            if (result.isErr()) {
+                return err(result.error);
+            }
+            [appDefinition, updatedManifest] = result.value;
         }
-        const [appDefinition, updatedManifest] = result.value;
+        
         const teamsAppId = ctx.config.get(GLOBAL_CONFIG)?.getString(REMOTE_TEAMS_APP_ID);
         if (!teamsAppId) {
             ctx.logProvider?.info(`Teams app not created`);
@@ -860,24 +869,10 @@ export class TeamsAppSolution implements Solution {
      *
      */
     async provision(ctx: SolutionContext): Promise<Result<any, FxError>> {
-        if (this.spfxSelected(ctx)) {
-            return err(
-                returnUserError(
-                    new Error("SPFx project has no provision task, you can directly deploy it."),
-                    "Solution",
-                    SolutionError.CannotRunProvisionInSPFxProject,
-                ),
-            );
-        }
 
         const canProvision = this.checkWhetherSolutionIsIdle();
         if (canProvision.isErr()) {
             return canProvision;
-        }
-
-        const maybePermission = await this.getPermissionRequest(ctx);
-        if (maybePermission.isErr()) {
-            return maybePermission;
         }
         
         try {
@@ -887,7 +882,13 @@ export class TeamsAppSolution implements Solution {
             await ctx.appStudioToken?.getAccessToken();
 
             this.runningState = SolutionRunningState.ProvisionInProgress;
-            ctx.config.get(GLOBAL_CONFIG)?.set(PERMISSION_REQUEST, maybePermission.value);
+            if (!this.spfxSelected(ctx)) {
+                const maybePermission = await this.getPermissionRequest(ctx);
+                if (maybePermission.isErr()) {
+                    return maybePermission;
+                }
+                ctx.config.get(GLOBAL_CONFIG)?.set(PERMISSION_REQUEST, maybePermission.value);
+            }   
 
             const provisionResult = await this.doProvision(ctx);
             if (provisionResult.isOk()) {
@@ -937,18 +938,20 @@ export class TeamsAppSolution implements Solution {
         }
         const manifest = maybeManifest.value;
 
-        //1. ask common questions for azure resources.
-        const appName = manifest.name.short;
-        const res = await fillInCommonQuestions(
-            ctx,
-            appName,
-            ctx.config,
-            ctx.dialog,
-            await ctx.azureAccountProvider?.getAccountCredentialAsync(),
-            await ctx.appStudioToken?.getJsonObject(),
-        );
-        if (res.isErr()) {
-            return res;
+        if (!this.spfxSelected(ctx)) {
+            //1. ask common questions for azure resources.
+            const appName = manifest.name.short;
+            const res = await fillInCommonQuestions(
+                ctx,
+                appName,
+                ctx.config,
+                ctx.dialog,
+                await ctx.azureAccountProvider?.getAccountCredentialAsync(),
+                await ctx.appStudioToken?.getJsonObject(),
+            );
+            if (res.isErr()) {
+                return res;
+            }
         }
 
         const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, selectedPlugins, manifest);
@@ -1025,7 +1028,7 @@ export class TeamsAppSolution implements Solution {
 
         if (this.spfxSelected(ctx)) {
             const manifestString = (await fs.readFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)).toString();
-            return JSON.parse(manifestString);
+            return ok(JSON.parse(manifestString));
         } else {
             return this.createManifestForRemote(ctx, manifestTpl).map((result) => result[1]);
         }
@@ -1113,15 +1116,6 @@ export class TeamsAppSolution implements Solution {
     }
 
     async publish(ctx: SolutionContext): Promise<Result<any, FxError>> {
-        if (this.spfxSelected(ctx)) {
-            return err(
-                returnUserError(
-                    new Error("Cannot publish for SPFx projects"),
-                    "Solution",
-                    SolutionError.CannotRunThisTaskInSPFxProject,
-                ),
-            );
-        }
 
         const maybeManifestTpl = await this.reloadManifestAndCheckRequiredFields(ctx);
         if (maybeManifestTpl.isErr()) {
@@ -1645,7 +1639,7 @@ export class TeamsAppSolution implements Solution {
                 localAADId: conf.aadId,
                 localBotDomain: conf.botDomain,
                 bots: conf.bots,
-                composeExtension: conf.composeExtensions,
+                composeExtensions: conf.composeExtensions,
                 webApplicationInfoResource: conf.webApplicationInfoResource,
             };
         });

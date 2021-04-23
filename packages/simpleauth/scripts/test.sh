@@ -4,7 +4,7 @@ DIR="$(cd `dirname $0`; pwd)"
 pushd "$DIR"
 
 # Install chrome driver
-apt-get update && apt-get install -y chromium-chromedriver=87.0.4280.8800
+apt-get update && apt-get install -y chromium-chromedriver
 
 cd ..
 dotnet test Microsoft.TeamsFx.SimpleAuth.sln --filter TestCategory="P0"

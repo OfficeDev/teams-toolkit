@@ -29,7 +29,9 @@ import {
     MsgLevel,
     ConfigFolderName,
     AzureSolutionSettings,
-    Err
+    Err,
+    UserError,
+    SystemError
 } from "fx-api";
 import { askSubscription, fillInCommonQuestions } from "./commonQuestions";
 import { executeLifecycles, executeConcurrently, LifecyclesWithContext } from "./executor";
@@ -98,6 +100,9 @@ import {
 import Mustache from "mustache";
 import path from "path";
 import { AppStudioPlugin } from "../../resource/appstudio";
+import { ErrorResponse } from "@azure/arm-resources/esm/models/mappers";
+import * as strings from "../../../resources/strings.json";
+import * as util from "util";
 
 type LoadedPlugin = Plugin & { name: string; displayName: string; };
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -886,17 +891,27 @@ export class TeamsAppSolution implements Solution {
 
             const provisionResult = await this.doProvision(ctx);
             if (provisionResult.isOk()) {
-                ctx.logProvider?.info(`[Teams Toolkit] configuration success!`);
+                ctx.logProvider?.info(`[Teams Toolkit] provision success!`);
                 await ctx.dialog?.communicate(
                     new DialogMsg(DialogType.Show, {
-                        description: "[Teams Toolkit] provision finished successfully!",
+                        description: "[Teams Toolkit] provision success!",
                         level: MsgLevel.Info,
                     }),
                 );
                 ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
             } else {
-                ctx.logProvider?.error(`[Teams Toolkit] configuration failed!`);
+                ctx.logProvider?.error(`[Teams Toolkit] provision failed!`);
                 ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false);
+                const resourceGroupName = ctx.config.get(GLOBAL_CONFIG)?.getString("resourceGroupName");
+                const subscriptionId = ctx.config.get(GLOBAL_CONFIG)?.getString("subscriptionId");
+                const error = provisionResult.error;
+                error.message += " " + util.format(strings.solution.ProvisionFailNotice, subscriptionId, resourceGroupName);
+                if(error instanceof UserError){
+                    const ue = error as UserError;
+                    if(!ue.helpLink){
+                        ue.helpLink = "https://aka.ms/teamsfx-solution-help";
+                    }
+                }
             }
             return provisionResult;
         } finally {
@@ -925,6 +940,7 @@ export class TeamsAppSolution implements Solution {
         //1. ask common questions for azure resources.
         const appName = manifest.name.short;
         const res = await fillInCommonQuestions(
+            ctx,
             appName,
             ctx.config,
             ctx.dialog,

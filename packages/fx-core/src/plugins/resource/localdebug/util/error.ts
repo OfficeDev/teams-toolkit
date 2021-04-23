@@ -19,3 +19,11 @@ export function MissingStep(operation: string, requiredStep: string): UserError 
 export function NgrokTunnelNotConnected(): UserError {
     return returnUserError(new Error("Ngrok tunnel is not successfully connected. Please check your network and try again."), "localdebug-plugin", "NgrokTunnelNotConnected");
 }
+
+export function LocalBotEndpointNotConfigured(): UserError {
+    return returnUserError(new Error("Local bot endpoint is not configured. Please set the value of \"fx-resource-local-debug.localBotEndpoint\" in .fx/default.user.data and try again."), "localdebug-plugin", "LocalBotEndpointNotConfigured");
+}
+
+export function InvalidLocalBotEndpointFormat(localBotEndpoint: string): UserError {
+    return returnUserError(new Error(`Local bot endpoint format is invalid: ${localBotEndpoint}. Please check it and try again.`), "localdebug-plugin", "InvalidLocalBotEndpointFormat");
+}

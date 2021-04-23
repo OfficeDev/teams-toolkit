@@ -126,7 +126,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         }
         #endregion
 
-        [Test, Category("P0")]
+        [Test, Category("P0"), Parallelizable]
         public async Task PostToken_WithNoAuhotirzationToken_Return401()
         {
             // Arrange
@@ -146,7 +146,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
             Assert.AreEqual("Bearer", result.Response.Headers.GetValues("WWW-Authenticate").FirstOrDefault());
         }
 
-        [Test, Category("P0")]
+        [Test, Category("P0"), Parallelizable]
         public async Task PostToken_WithNonBearerToken_Return401()
         {
             // Arrange
@@ -168,7 +168,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
             Assert.AreEqual("Bearer", result.Response.Headers.GetValues("WWW-Authenticate").FirstOrDefault());
         }
 
-        [Test, Category("P0")]
+        [Test, Category("P0"), Parallelizable]
         public async Task PostToken_WithIncorrectAuthorizationToken_Return401()
         {
             // Arrange
@@ -190,7 +190,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
             Assert.AreEqual("Bearer error=\"invalid_token\"", result.Response.Headers.GetValues("WWW-Authenticate").FirstOrDefault());
         }
 
-        [Test, Category("P0")]
+        [Test, Category("P0"), Parallelizable]
         public async Task PostToken_WithIncorrectAudience_Return401() // TODO: confirm the behavior
         {
             // Arrange
@@ -237,7 +237,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
             Assert.IsTrue(result.Response.Headers.GetValues("WWW-Authenticate").FirstOrDefault().Contains("The token expired"));
         }
 
-        [Test, Category("P0")]
+        [Test, Category("P0"), Parallelizable]
         public async Task PostToken_WithApplicationToken_Return403()
         {
             // Arrange
@@ -259,7 +259,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
             Assert.AreEqual(HttpStatusCode.Forbidden, result.Response.StatusCode);
         }
 
-        [Test, Category("P0")]
+        [Test, Category("P0"), Parallelizable]
         public async Task PostToken_NoAccessAsUserScope_Return403()
         {
             // Arrange
@@ -280,11 +280,13 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
             Assert.AreEqual(HttpStatusCode.Forbidden, result.Response.StatusCode);
         }
 
-        [Test, Category("P0")]
+        [Test, Category("P0"), Parallelizable]
         public async Task PostToken_AuthorizationTokenClientNotAllowed_Return403()
         {
+            var scope = $"{_settings.ApiAppIdUri}/{_settings.AdminClientId}/{_settings.Scope}";
             // Arrange
-            var tokenFromUnauthorizedClient = await GetUserAccessToken();
+            var tokenFromUnauthorizedClient = await Utilities.GetUserAccessToken(_settings.TestUsername, _settings.TestPassword, _settings.AdminClientId, _settings.AdminClientSecret,
+                _configuration[ConfigurationName.OAuthAuthority], scope).ConfigureAwait(false);
             // Temporary workaround the consent for new AAD app in each test run
             // TODO: Add UI automation to grant consent for new AAD app in each test run
             var customizedAppConfiguration = new Dictionary<string, string>(_defaultConfigurations);
@@ -299,13 +301,13 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
                 scope = DefaultGraphScope,
                 grant_type = PostTokenGrantType.SsoToken,
             };
-            var result = await PostToAuthTokenApi<string>(client, requestBody);
+            var result = await PostToAuthTokenApi<ProblemDetails>(client, requestBody);
 
             // Assert
             Assert.AreEqual(HttpStatusCode.Forbidden, result.Response.StatusCode);
         }
 
-        [Test, Category("P0")]
+        [Test, Category("P0"), Parallelizable]
         public async Task PostToken_EmptyBody_Return400() // TODO: confirm the behavior
         {
             // Arrange
@@ -323,7 +325,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
             Assert.AreEqual((int)HttpStatusCode.BadRequest, result.Body.Status);
         }
 
-        [Test, Category("P0")]
+        [Test, Category("P0"), Parallelizable]
         public async Task PostToken_NoBody_Return415() // TODO: confirm the behavior
         {
             // Arrange
@@ -343,7 +345,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
             Assert.AreEqual((int)HttpStatusCode.UnsupportedMediaType, problemDetails.Status);
         }
 
-        [Test, Category("P0")]
+        [Test, Category("P0"), Parallelizable]
         public async Task PostToken_NotSupportedGrantTypeInBody_Return400()
         {
             // Arrange
@@ -366,7 +368,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
             Assert.AreEqual("grant_type not_supported_grant_type is not supported", result.Body.Detail);
         }
 
-        [Test, Category("P0")]
+        [Test, Category("P0"), Parallelizable]
         public async Task PostToken_GrantTypeNullInBody_Return400()
         {
             // Arrange
@@ -389,7 +391,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
             Assert.AreEqual("grant_type is required in request body", result.Body.Detail);
         }
 
-        [Test, Category("P0")]
+        [Test, Category("P0"), Parallelizable]
         public async Task PostToken_NoGrantTypeInBody_Return400()
         {
             // Arrange
@@ -711,7 +713,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
             Assert.AreEqual("The AAD configuration in server is invalid.", result.Body.Detail);
         }
 
-        [Test, Category("P0")]
+        [Test, Category("P0"), Parallelizable]
         public async Task PostToken_SsoGrantWithNoScopeInBody_Return400()
         {
             // Arrange
@@ -734,7 +736,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
             Assert.AreEqual("scope is required in request body", result.Body.Detail);
         }
 
-        [Test, Category("P0")]
+        [Test, Category("P0"), Parallelizable]
         public async Task PostToken_SsoGrantWithEmptyScopeInBody_Return400()
         {
             // Arrange
@@ -758,7 +760,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
             Assert.AreEqual("scope is required in request body", result.Body.Detail);
         }
 
-        [Test, Category("P0")]
+        [Test, Category("P0"), Parallelizable]
         public async Task PostToken_SsoGrantWithInvalidScopeInBody_Return400() // TODO: Confirm the behavior
         {
             // Arrange
@@ -782,7 +784,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
             Assert.IsTrue(result.Body.Detail.Contains("AADSTS65001"));
         }
 
-        [Test, Category("P0")]
+        [Test, Category("P0"), Parallelizable]
         public async Task PostToken_SsoGrantWhenUserNotGrant_Return400()
         {
             // Arrange
@@ -806,7 +808,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
             Assert.IsTrue(result.Body.Detail.Contains("AADSTS65001"));
         }
 
-        [Test, Category("P0")]
+        [Test, Category("P0"), Parallelizable]
         public async Task PostToken_SsoGrantWithCorrectBody_Return200()
         {
             // Arrange
@@ -830,7 +832,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
             Assert.AreNotEqual(DateTimeOffset.MinValue, result.Body.expires_on);
         }
 
-        [Test, Category("P0")]
+        [Test, Category("P0"), Parallelizable]
         public async Task PostToken_SsoGrantWithAdditionalPropertyInBody_Return200()
         {
             // Arrange
@@ -855,7 +857,8 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
             Assert.AreNotEqual(DateTimeOffset.MinValue, result.Body.expires_on);
         }
 
-        [Test, Category("P0")]
+        [Test, Category("P0"), Parallelizable]
+        [Ignore("Does not apply since we disables cache temporary")]
         public async Task PostToken_SsoGrantWithAnotherConsentedScope_Return200WithNewScopeInToken()
         {
             // Arrange
@@ -890,7 +893,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
             Assert.IsTrue(secondResult.Body.scope.ToLowerInvariant().Contains("https://graph.microsoft.com/user.readbasic.all"));
         }
 
-        [Test, Category("P0")]
+        [Test, Category("P0"), Parallelizable]
         public async Task PostToken_SsoGrantWithSameConsentedScope_Return200WithTokenFromCache()
         {
             // Arrange
@@ -919,7 +922,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
             Assert.AreEqual(firstResult.Body.access_token, secondResult.Body.access_token);
         }
 
-        [Test, Category("P0")]
+        [Test, Category("P0"), Parallelizable]
         [Ignore("Does not apply since we disables cache temporary")]
         public async Task PostToken_SsoGrantWithSameConsentedScopeWhenTokenGoingToExpire_Return200WithRefreshedToken() // TODO: long run case, mark this test case as P2
         {
@@ -959,7 +962,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
             Assert.IsTrue((secondResult.Body.expires_on - DateTimeOffset.UtcNow).TotalSeconds > 5 * 60); // Token lifetime is refreshed
         }
 
-        [Test, Category("P0")]
+        [Test, Category("P0"), Parallelizable]
         public async Task PostToken_SsoGrantWithInvalidClientSecretInApiSetting_Return500()
         {
             // Arrange

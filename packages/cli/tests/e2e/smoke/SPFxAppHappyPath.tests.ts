@@ -13,8 +13,9 @@ describe("Start a new project", function () {
   const type = "react";
 
   it("Create SPFx project with React framework - Test Plan ID 9426243", async function () {
+    const command = `${constants.cliName} new --app-name ${appName} --folder ${testFolder} --host-type spfx --spfx-framework-type ${type} --spfx-webpart-name helloworld --interactive false`;
     const result = await execAsync(
-      `${constants.cliName} new --app-name ${appName} --interactive false --folder ${testFolder} --host-type SPFx --spfx-framework-type ${type} --spfx-webpart-name helloworld`,
+      command,
       {
         cwd: process.cwd(),
         env: process.env,

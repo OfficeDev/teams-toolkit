@@ -18,6 +18,11 @@ export async function getDotnetExecPathFromConfig(dotnetConfigPath: string): Pro
 }
 
 export async function hasDotnetVersion(dotnetExecPath: string, versionString: string): Promise<boolean> {
-    const output = await cpUtils.executeCommand(undefined, undefined, undefined, dotnetExecPath, "--list-sdks");
-    return output.split(/\r?\n/).some((line: string) => line.startsWith(versionString));
+    try {
+        const output = await cpUtils.executeCommand(undefined, undefined, undefined, dotnetExecPath, "--list-sdks");
+        return output.split(/\r?\n/).some((line: string) => line.startsWith(versionString));
+    } catch (error) {
+        console.error(`Failed to run '${dotnetExecPath} --version', error = '${error}'`);
+        return false;
+    }
 }

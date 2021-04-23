@@ -10,7 +10,7 @@ import { loadConfiguration, DefaultTediousConnectionConfiguration } from "../../
 
 chaiUse(chaiPromises);
 
-describe("SQL Connector Test: Node", () => {
+describe("SQL Connector Test - node", () => {
   let connection: Connection;
   // let sqlManagerClient: SqlManagementClient;
   // let resourceGroup: string | undefined;

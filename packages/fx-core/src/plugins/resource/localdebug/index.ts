@@ -155,7 +155,7 @@ export class LocalDebugPlugin implements Plugin {
 
             if (includeBot) {
                 const skipNgrok = ctx.config.get(LocalDebugConfigKeys.SkipNgrok) as string;
-                if (skipNgrok.trim().toLowerCase() === "true") {
+                if (skipNgrok?.trim().toLowerCase() === "true") {
                     const localBotEndpoint = ctx.config.get(LocalDebugConfigKeys.LocalBotEndpoint) as string;
                     if (localBotEndpoint === undefined) {
                         return err(LocalBotEndpointNotConfigured());

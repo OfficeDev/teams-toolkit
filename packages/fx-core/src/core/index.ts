@@ -240,10 +240,19 @@ class CoreImpl implements Core {
         this.target.ctx.answers = answers;
 
         const appName = answers?.getString(QuestionAppName.name);
+        if(undefined === appName)
+            return err(
+                new UserError(
+                    error.CoreErrorNames.InvalidInput,
+                    `App Name is empty`,
+                    error.CoreSource,
+                ),
+            );
+            
         const validateResult = jsonschema.validate(appName, {
             pattern: (QuestionAppName.validation as StringValidation).pattern,
         });
-        if (!appName || validateResult.errors && validateResult.errors.length > 0) {
+        if (validateResult.errors && validateResult.errors.length > 0) {
             return err(
                 new UserError(
                     error.CoreErrorNames.InvalidInput,

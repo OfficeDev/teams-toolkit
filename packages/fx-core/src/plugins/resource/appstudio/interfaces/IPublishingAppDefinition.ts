@@ -10,7 +10,8 @@ export interface IPublishingAppDenition {
     /**
      * Teams app id in tenant App Catalog
      */
-    teamsAppId: string
+    teamsAppId: string,
+    displayName: string
 }
 
 export enum PublishingState {

@@ -144,7 +144,7 @@ function newSpfxPlugin(): LoadedPlugin {
 function newBotPlugin(): LoadedPlugin {
     const plugin: Plugin = new TeamsBot();
     const pluginWithMeta: LoadedPlugin = plugin as LoadedPlugin;
-    pluginWithMeta.name = "fx-resource-teamsbot";
+    pluginWithMeta.name = "fx-resource-bot";
     pluginWithMeta.displayName = "Bot";
     return pluginWithMeta;
 }

@@ -75,7 +75,7 @@ export class FrontendHostingPlugin {
 }
 
 export class BotPlugin {
-    public static readonly Name: string = "fx-resource-teamsbot";
+    public static readonly Name: string = "fx-resource-bot";
     public static readonly LocalBotId: string = "localBotId";
     public static readonly LocalBotPassword: string = "localBotPassword";
 }

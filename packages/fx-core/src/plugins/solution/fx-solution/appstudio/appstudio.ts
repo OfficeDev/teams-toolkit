@@ -242,9 +242,9 @@ export namespace AppStudio {
         const capabilities = answers?.getStringArray(AzureSolutionQuestionNames.Capabilities);
 
         if (
-            HostTypeOptionAzure.label === type ||
-            capabilities?.includes(BotOptionItem.label) ||
-            capabilities?.includes(MessageExtensionItem.label)
+            HostTypeOptionAzure.id === type ||
+            capabilities?.includes(BotOptionItem.id) ||
+            capabilities?.includes(MessageExtensionItem.id)
         ) {
             let manifestString = TEAMS_APP_MANIFEST_TEMPLATE;
             const appName = answers?.getString(AzureSolutionQuestionNames.AppName);

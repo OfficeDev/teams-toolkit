@@ -1647,7 +1647,7 @@ export class TeamsAppSolution implements Solution {
                 localAADId: conf.aadId,
                 localBotDomain: conf.botDomain,
                 bots: conf.bots,
-                composeExtension: conf.composeExtensions,
+                composeExtensions: conf.composeExtensions,
                 webApplicationInfoResource: conf.webApplicationInfoResource,
             };
         });

@@ -64,14 +64,15 @@ jobs:
       - name: release npm packages to npmjs.org
         run: |
           npx lerna publish --no-private --yes prerelease
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: pack vsix
         working-directory: ./packages/vscode-extension
         run: |
-          npm install -g vsce
-          npm install --production
+          npm install
           npm run build
-          vsce package
+          npx vsce package
 
       - name: release VSCode extension to github
         uses: marvinpinto/action-automatic-releases@latest

@@ -7,6 +7,10 @@ import { ClientCreationError } from "./errors";
 import { ClientNames } from "./resources/strings";
 
 export function createAzureBotServiceClient(creds: msRest.ServiceClientCredentials, subs: string): AzureBotService {
+    if (!subs) {
+        throw new ClientCreationError(ClientNames.BOT_SERVICE_CLIENT);
+    }
+
     try {
         return new AzureBotService(creds, subs);
     } catch (e) {
@@ -18,6 +22,10 @@ export function createWebSiteMgmtClient(
     creds: msRest.ServiceClientCredentials,
     subs: string,
 ): appService.WebSiteManagementClient {
+    if (!subs) {
+        throw new ClientCreationError(ClientNames.BOT_SERVICE_CLIENT);
+    }
+
     try {
         return new appService.WebSiteManagementClient(creds, subs);
     } catch (e) {

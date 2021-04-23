@@ -406,15 +406,6 @@ class CoreImpl implements Core {
                     });
                 }
 
-                this.ctx.treeProvider?.refresh([
-                    {
-                        commandId: "fx-extension.selectSubscription",
-                        label: subscriptionName,
-                        callback: selectSubscriptionCallback,
-                        parent: "fx-extension.signinAzure",
-                    },
-                ]);
-
                 const subscription = subscriptions.find((subscription) => subscription.displayName === subscriptionName);
 
                 if(subscription){
@@ -437,6 +428,14 @@ class CoreImpl implements Core {
                     {
                         this.configs.get(this.env!)!.get("solution")!.set("subscriptionId", subscription.subscriptionId);
                         this.writeConfigs();
+                        this.ctx.treeProvider?.refresh([
+                            {
+                                commandId: "fx-extension.selectSubscription",
+                                label: subscriptionName,
+                                callback: selectSubscriptionCallback,
+                                parent: "fx-extension.signinAzure",
+                            },
+                        ]);
                     }
                 }
 

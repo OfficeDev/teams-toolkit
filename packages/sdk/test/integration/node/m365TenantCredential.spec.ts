@@ -53,8 +53,7 @@ import {
       const credential = new M365TenantCredential();
       const token = await credential.getToken(defaultGraphScope);
       
-      assert.isNotNull(token);
-      const decodedToken = jwtDecode<AADJwtPayLoad>(token.token);
+      const decodedToken = jwtDecode<AADJwtPayLoad>(token!.token);
       assert.strictEqual(decodedToken.aud, 'https://graph.microsoft.com');
       assert.strictEqual(decodedToken.appid, process.env.M365_CLIENT_ID);
       assert.strictEqual(decodedToken.idtyp, 'app');

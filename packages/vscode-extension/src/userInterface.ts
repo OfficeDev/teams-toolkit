@@ -226,6 +226,9 @@ export class DialogManager implements Dialog {
         ext.ui.openExternal(uri);
         return undefined;
       }
+      case QuestionType.Confirm: {
+        return await window.showWarningMessage(question.description, {modal: true}, ...(question.options?question.options:[]));
+      }
       default: {
         await this.showMessage({
           description: StringResources.vsc.userInterface.notImplementQuestion,

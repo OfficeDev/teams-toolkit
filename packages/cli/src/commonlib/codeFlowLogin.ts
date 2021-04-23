@@ -13,6 +13,7 @@ import * as crypto from "crypto";
 import { AddressInfo } from "net";
 import { accountPath, UTF8 } from "./cacheAccess";
 import open from "open";
+import { env } from "./common/constant";
 
 class ErrorMessage {
   static readonly loginError: string = "LoginError";
@@ -183,6 +184,34 @@ export class CodeFlowLogin {
       }
     } catch (error) {
       CliCodeLogInstance.error("[Login] " + error.message);
+      throw LoginFailureError(error);
+    }
+  }
+
+  async getTenatToken(tenantId: string): Promise<string | undefined> {
+    try {
+      if (!this.account) {
+        await this.reloadCache();
+      }
+      if (this.account) {
+        return this.pca!.acquireTokenSilent({
+          authority: env.activeDirectoryEndpointUrl + tenantId,
+          account: this.account,
+          scopes: this.scopes!,
+          forceRefresh: true
+        })
+        .then((response) => {
+          if (response) {
+            return response.accessToken;
+          } else {
+            return undefined;
+          }
+        });
+      } else {
+        return undefined;
+      }
+    } catch (error) {
+      CliCodeLogInstance.error("[Login] getTenatToken : " + error.message);
       throw LoginFailureError(error);
     }
   }

@@ -15,29 +15,9 @@ import { LogLevel } from "@azure/msal-node";
 import { NotFoundSubscriptionId, NotSupportedProjectType } from "../error";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { signedIn, signedOut } from "./common/constant";
+import { env, signedIn, signedOut, unknownSubscription } from "./common/constant";
 import { login, LoginStatus } from "./common/login";
-
-const env = {
-  name: "AzureCloud",
-  portalUrl: "https://portal.azure.com",
-  publishingProfileUrl: "https://go.microsoft.com/fwlink/?LinkId=254432",
-  managementEndpointUrl: "https://management.core.windows.net",
-  resourceManagerEndpointUrl: "https://management.azure.com/",
-  sqlManagementEndpointUrl: "https://management.core.windows.net:8443/",
-  sqlServerHostnameSuffix: ".database.windows.net",
-  galleryEndpointUrl: "https://gallery.azure.com/",
-  activeDirectoryEndpointUrl: "https://login.microsoftonline.com/",
-  activeDirectoryResourceId: "https://management.core.windows.net/",
-  activeDirectoryGraphResourceId: "https://graph.windows.net/",
-  batchResourceId: "https://batch.core.windows.net/",
-  activeDirectoryGraphApiVersion: "2013-04-05",
-  storageEndpointSuffix: "core.windows.net",
-  keyVaultDnsSuffix: ".vault.azure.net",
-  azureDataLakeStoreFileSystemEndpointSuffix: "azuredatalakestore.net",
-  azureDataLakeAnalyticsCatalogAndJobEndpointSuffix: "azuredatalakeanalytics.net",
-  validateAuthority: true
-};
+import { UserError } from "fx-api";
 
 const accountName = "azure";
 const scopes = ["https://management.core.windows.net/user_impersonation"];
@@ -77,8 +57,12 @@ const memory = new MemoryCache();
 export class AzureAccountManager extends login implements AzureAccountProvider {
   private static instance: AzureAccountManager;
   private static codeFlowInstance: CodeFlowLogin;
+  // default tenantId
   private static domain: string | undefined;
   private static username: string | undefined;
+  private static subscriptionId: string | undefined;
+  //user set tenantId
+  private static tenantId: string | undefined;
 
   private static statusChange?: (
     status: string,
@@ -115,19 +99,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
    * @returns the instance of TokenCredentialsBase
    */
   getAccountCredential(showDialog = true): TokenCredentialsBase | undefined {
-    if (AzureAccountManager.codeFlowInstance.account && memory.size() > 0) {
-      const credential = new DeviceTokenCredentials(
-        config.auth.clientId,
-        AzureAccountManager.domain,
-        AzureAccountManager.username,
-        undefined,
-        env,
-        memory
-      );
-      return credential;
-    }
-
-    return undefined;
+    throw new Error("Method not implemented.");
   }
 
   /**
@@ -151,16 +123,31 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     }
     if (AzureAccountManager.codeFlowInstance.account) {
       return new Promise(async (resolve) => {
-        const tokenJson = await this.getJsonObject();
-        const credential = new DeviceTokenCredentials(
-          config.auth.clientId,
-          (tokenJson as any).tid,
-          (tokenJson as any).upn,
-          undefined,
-          env,
-          memory
-        );
-        resolve(credential);
+        if (!AzureAccountManager.tenantId) {
+          const tokenJson = await this.getJsonObject();
+          const credential = new DeviceTokenCredentials(
+            config.auth.clientId,
+            (tokenJson as any).tid,
+            (tokenJson as any).unique_name,
+            undefined,
+            env,
+            memory
+          );
+          resolve(credential);
+        } else if (AzureAccountManager.tenantId!=AzureAccountManager.domain) {
+          const token = await AzureAccountManager.codeFlowInstance.getTenatToken(AzureAccountManager.tenantId);
+          const tokenJson = ConvertTokenToJson(token!);
+          this.setMemoryCache(token, tokenJson);
+          const credential = new DeviceTokenCredentials(
+            config.auth.clientId,
+            (tokenJson as any).tid,
+            (tokenJson as any).unique_name,
+            undefined,
+            env,
+            memory
+          );
+          resolve(credential);
+        }
       });
     }
     await this.login(showDialog);
@@ -196,8 +183,10 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
 
   private setMemoryCache(accessToken: string | undefined, tokenJson: any) {
     if (accessToken) {
-      AzureAccountManager.domain = (tokenJson as any).tid;
-      AzureAccountManager.username = (tokenJson as any).upn;
+      if (AzureAccountManager.domain) {
+        AzureAccountManager.domain = (tokenJson as any).tid;
+      }
+      AzureAccountManager.username = (tokenJson as any).unique_name;
       tokenJson = ConvertTokenToJson(accessToken);
       const tokenExpiresIn =
         Math.round(new Date().getTime() / 1000) - ((tokenJson as any).iat as number);
@@ -209,9 +198,9 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
             expiresOn: {},
             resource: env.activeDirectoryResourceId,
             accessToken: accessToken,
-            userId: AzureAccountManager.username,
+            userId: (tokenJson as any).unique_name,
             _clientId: config.auth.clientId,
-            _authority: env.activeDirectoryEndpointUrl + AzureAccountManager.domain
+            _authority: env.activeDirectoryEndpointUrl + (tokenJson as any).tid
           }
         ],
         function () { const _ = 1; }
@@ -332,13 +321,53 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     throw new Error("Method not implemented.");
   }
   removeStatusChangeMap(name: string): Promise<boolean> {
-      throw new Error("Method not implemented.");
+    throw new Error("Method not implemented.");
   }
-  listSubscriptions(): Promise<SubscriptionInfo[]> {
-      throw new Error("Method not implemented.");
+
+  async listSubscriptions(): Promise<SubscriptionInfo[]> {
+    const credential = await this.getAccountCredentialAsync();
+    const arr: SubscriptionInfo[] = [];
+    if (credential) {
+      const subscriptionClient = new SubscriptionClient(credential);
+      const tenants = await listAll(subscriptionClient.tenants, subscriptionClient.tenants.list());
+      for (let i=0;i<tenants.length;++i) {
+        const token = await AzureAccountManager.codeFlowInstance.getTenatToken(tenants[i].tenantId!);
+        const tokenJson = ConvertTokenToJson(token!);
+        this.setMemoryCache(token, tokenJson);
+        const tenantCredential = new DeviceTokenCredentials(
+          config.auth.clientId,
+          (tokenJson as any).tid,
+          (tokenJson as any).unique_name,
+          undefined,
+          env,
+          memory
+        );
+        const tenantClient = new SubscriptionClient(tenantCredential);
+        const subscriptions = await listAll(tenantClient.subscriptions, tenantClient.subscriptions.list());
+        for(let j=0;j<subscriptions.length;++j) {
+          const item = subscriptions[i];
+          arr.push({
+            subscriptionId: item.subscriptionId!,
+            subscriptionName: item.displayName!,
+            tenantId: tenants[i].tenantId!
+          });
+        }
+      }
+    }
+    return arr;
   }
-  setSubscription(subscriptionId: string): Promise<void> {
-      throw new Error("Method not implemented.");
+
+  async setSubscription(subscriptionId: string): Promise<void> {
+    const list = await this.listSubscriptions();
+    for (let i=0;i<list.length;++i) {
+      const item = list[i];
+      if (item.subscriptionId==subscriptionId) {
+        AzureAccountManager.tenantId = item.tenantId;
+        AzureAccountManager.subscriptionId = item.subscriptionId;
+        return;
+      }
+    }
+    throw new UserError(unknownSubscription, unknownSubscription, "Login");
   }
 }
 

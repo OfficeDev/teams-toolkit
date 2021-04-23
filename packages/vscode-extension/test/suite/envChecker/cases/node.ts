@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import * as nodeUtils from "../utils/node";
 
 suite("NodeChecker E2E Test", async () => {

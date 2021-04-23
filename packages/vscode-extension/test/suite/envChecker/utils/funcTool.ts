@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { cpUtils } from "../../../../src/debug/depsChecker/cpUtils";
 
 export async function getFuncCoreToolsVersion(): Promise<string | null> {

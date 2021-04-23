@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AssemblyName>Microsoft.TeamsFx.SimpleAuth</AssemblyName>
     <RootNamespace>Microsoft.TeamsFx.SimpleAuth</RootNamespace>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <PropertyGroup>

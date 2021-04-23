@@ -4,6 +4,8 @@
 
 import * as fs from "fs-extra";
 import * as os from "os";
+import * as strings from "../resources/strings.json";
+import * as util from "util";
 import {
     AzureAccountProvider,
     ConfigMap,
@@ -44,6 +46,7 @@ import {
     Dict,
     AzureSolutionSettings,
     ProjectSettings,
+    MsgLevel,
 } from "fx-api";
 import * as path from "path";
 // import * as Bundles from '../resource/bundles.json';
@@ -403,21 +406,37 @@ class CoreImpl implements Core {
                     });
                 }
 
-                this.ctx.treeProvider?.refresh([
-                    {
-                        commandId: "fx-extension.selectSubscription",
-                        label: subscriptionName,
-                        callback: selectSubscriptionCallback,
-                        parent: "fx-extension.signinAzure",
-                    },
-                ]);
-
                 const subscription = subscriptions.find((subscription) => subscription.displayName === subscriptionName);
 
                 if(subscription){
                     this.readConfigs();
-                    this.configs.get(this.env!)!.get("solution")!.set("subscriptionId", subscription!.subscriptionId!);
-                    this.writeConfigs();
+                    let change = true;
+                    const subscriptionId = this.configs.get(this.env!)!.get("solution")!.getString("subscriptionId");
+                    if(subscriptionId){
+                        const confirm  = (await this.ctx.dialog?.communicate(
+                            new DialogMsg(DialogType.Show, {
+                                description: util.format(strings.core.SwitchSubNotice, subscriptionId),
+                                level: MsgLevel.Warning,
+                                items: ["Confirm"]
+                            }),
+                        ))?.getAnswer() === "Confirm";
+                        if(!confirm){
+                            change = false;
+                        } 
+                    }
+                    if(change)
+                    {
+                        this.configs.get(this.env!)!.get("solution")!.set("subscriptionId", subscription.subscriptionId);
+                        this.writeConfigs();
+                        this.ctx.treeProvider?.refresh([
+                            {
+                                commandId: "fx-extension.selectSubscription",
+                                label: subscriptionName,
+                                callback: selectSubscriptionCallback,
+                                parent: "fx-extension.signinAzure",
+                            },
+                        ]);
+                    }
                 }
 
                 return ok(null);

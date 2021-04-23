@@ -5,25 +5,47 @@ When building a Teams application, TeamsFX provides an option for you to add a b
 ## Prerequisites
 
 To start enjoying full functionalities to develop an API with Azure Functions for your Teams Application, you need to:
+- Install TeamsFX extension from the Visual Studio Code extensions marketplace, read more [here](aka.ms/teamsfx).
 - Install [Azure Functions Core Tools](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local?tabs=windows%2Ccsharp%2Cbash).
 - Add an API during project creation or using command, see [TeamsFX User Manual]().
 
 ## Develop
 
-By default, TeamsFX will provide template code for you to get started. The starter code handles calls from your Teams App client side, initializes the TeamsFX server SDK to access current connected user information and prepares a pre-authenticated Microsoft Graph Client for you to access more user's data. You can modify the template code with your custom logics or add more functions with `HTTPTrigger` by running command `TeamsFx - Add Resource` and select `function`. Read on [Azure Functions developer guide](https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference) for more development resources.
+By default, TeamsFX will provide template code for you to get started. The starter code handles calls from your Teams App client side, initializes the TeamsFX SDK to access current connected user information and prepares a pre-authenticated Microsoft Graph Client for you to access more user's data. You can modify the template code with your custom logic or add more functions with `HTTPTrigger`. Read [Azure Functions developer guide](https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference) for more development resources.
 
-## Trigger Function
+## Add More Functions (with TeamsFX Visual Studio Code Extension)
 
-- Invoking TeamsFX client SDK API `callFunction()` from Tabs.
-- Sending an HTTP request to the service. However, TeamsFX binding always checks the SSO token of
-  received HTTP request before function handles the request. Thus, requests without a valid SSO token would cause function responses HTTP error 500.
+- Run command `TeamsFx - Add Resource` and select `function`.
 
-## Deploy to Azure
+## Add More Functions (with TeamsFX CLI)
+
+- Run command `teamsfx resource add azure-function`.
+
+## Deploy to Azure (with TeamsFX Visual Studio Code Extension)
 
 - Provision Azure environment by running command `TeamsFx - Provision Resource`.
 - Deploy your project to the Azure function app by running command - `TeamsFx - Deploy Package` and select `Azure Function`.
 
+## Deploy to Azure (with TeamsFX CLI)
+
+- Provision Azure environment by running command `teamsfx provision --subscription $subscriptionId`.
+- Deploy your project to the Azure function app by running command `teamsfx deploy --deploy-plugin fx-resource-function`.
+
+## Trigger Function
+
+- Send an HTTP request to the service with an SSO token in the authorization header. The token can be queried from TeamsFX SDK in Teams App client side, here is a sample.
+```
+  var credential = new TeamsUserCredential();
+  var accessToken = await credential.getToken('');
+  var response = await axios.default.get(functionEndpoint + '/api/' + functionName, {
+    headers: {
+      authorization: "Bearer " + accessToken.token
+    }
+  });
+```
+
 ## Node version
+
 The runtime versions supported by Azure Functions are list [here](https://docs.microsoft.com/en-us/azure/azure-functions/functions-versions). By default, TeamsFX toolkit provisions an Azure function app with function runtime version 3, and node runtime version 12. You can change the node version through Azure Portal.
 
 - Sign in [Azure Portal](https://azure.microsoft.com/).

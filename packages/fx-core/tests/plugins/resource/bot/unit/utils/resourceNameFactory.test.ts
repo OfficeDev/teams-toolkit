@@ -4,8 +4,8 @@ import "mocha";
 import * as chai from "chai";
 import * as sinon from "sinon";
 
-import { ResourceNameFactory } from "../../../../../src/plugins/resource/bot/utils/resourceNameFactory";
-import * as utils from "../../../../../src/plugins/resource/bot/utils/common";
+import { ResourceNameFactory } from "../../../../../../src/plugins/resource/bot/utils/resourceNameFactory";
+import * as utils from "../../../../../../src/plugins/resource/bot/utils/common";
 
 describe("Resource Name Factory", () => {
     describe("createCommonName", () => {

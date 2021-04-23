@@ -30,7 +30,9 @@ export namespace cpUtils {
       ...args
     );
     if (result.code !== 0) {
-      await logger?.debug(`Failed to run command: "${command} ${result.formattedArgs}", code: '${result.code}'`);
+      await logger?.debug(
+        `Failed to run command: "${command} ${result.formattedArgs}", code: '${result.code}'`
+      );
       throw new Error(`Failed to run "${command}" command. Check output window for more details.`);
     } else {
       await logger?.debug(`Finished running command: "${command} ${result.formattedArgs}".`);
@@ -60,6 +62,20 @@ export namespace cpUtils {
         Object.assign(options, additionalOptions);
 
         const childProc: cp.ChildProcess = cp.spawn(command, args, options);
+        if (options.timeout && options.timeout > 0) {
+          // timeout only exists for exec not spawn
+          setTimeout(() => {
+            childProc.kill();
+            logger?.debug(
+              `Stop exec due to timeout, command: "${command} ${formattedArgs}", options = '${options}'`
+            );
+            reject(
+              new Error(
+                `Exec command: "${command} ${formattedArgs}" timeout, ${options.timeout} ms`
+              )
+            );
+          }, options.timeout);
+        }
         logger?.debug(`Running command: "${command} ${formattedArgs}", options = '${options}'`);
 
         childProc.stdout?.on("data", (data: string | Buffer) => {
@@ -74,11 +90,15 @@ export namespace cpUtils {
         });
 
         childProc.on("error", (error) => {
-          logger?.debug(`Failed to run command '${command} ${formattedArgs}': cmdOutputIncludingStderr: '${cmdOutputIncludingStderr}', error: ${error}`);
+          logger?.debug(
+            `Failed to run command '${command} ${formattedArgs}': cmdOutputIncludingStderr: '${cmdOutputIncludingStderr}', error: ${error}`
+          );
           reject(error);
         });
         childProc.on("close", (code: number) => {
-          logger?.debug(`Command finished with outputs, cmdOutputIncludingStderr: '${cmdOutputIncludingStderr}'`);
+          logger?.debug(
+            `Command finished with outputs, cmdOutputIncludingStderr: '${cmdOutputIncludingStderr}'`
+          );
           resolve({
             code,
             cmdOutput,
@@ -113,7 +133,9 @@ export namespace cpUtils {
     return new Promise<string>((resolve, reject) => {
       try {
         sudo.exec(command, { name: "TeamsFx Toolkit" }, (error, stdout, stderr) => {
-          logger.debug(`Running execSudo, command: '${command}', error: '${error}', stdout: '${stdout}', stderr: '${stderr}'`);
+          logger.debug(
+            `Running execSudo, command: '${command}', error: '${error}', stdout: '${stdout}', stderr: '${stderr}'`
+          );
 
           if (error) {
             reject(error);
@@ -130,5 +152,15 @@ export namespace cpUtils {
         reject(error);
       }
     });
+  }
+
+  /**
+   * timeout with millisecond
+   */
+  export function withTimeout(millis: number, promise: Promise<any>, msg: string): Promise<any> {
+    return Promise.race([
+      promise,
+      new Promise((resolve, reject) => setTimeout(() => reject(new Error(`${msg}, ${millis} ms`)), millis))
+    ]);
   }
 }

@@ -1,5 +1,5 @@
 import * as fs from "fs-extra";
-import { cpUtils } from "../../../../src/debug/cpUtils";
+import { cpUtils } from "../../../../src/debug/depsChecker/cpUtils";
 
 
 export async function getDotnetExecPathFromConfig(dotnetConfigPath: string): Promise<string | null> {

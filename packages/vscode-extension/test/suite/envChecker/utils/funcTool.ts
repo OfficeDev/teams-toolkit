@@ -1,4 +1,4 @@
-import { cpUtils } from "../../../../src/debug/cpUtils";
+import { cpUtils } from "../../../../src/debug/depsChecker/cpUtils";
 
 export async function getFuncCoreToolsVersion(): Promise<string | null> {
     try {

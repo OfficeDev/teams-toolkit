@@ -9,6 +9,7 @@ import { AppStudioPluginImpl } from "./plugin";
 import { Constants } from "./constants";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
+import { manuallySubmitOption, autoPublishOption } from "./questions";
 
 export class AppStudioPlugin implements Plugin {
     private appStudioPluginImpl = new AppStudioPluginImpl();
@@ -40,6 +41,15 @@ export class AppStudioPlugin implements Plugin {
                     title: "Please input the teams app id in App Studio"
                 });
                 appStudioQuestions.addChild(remoteTeamsAppId);
+            } else {
+                const buildOrPublish = new QTreeNode({
+                    name: Constants.BUILD_OR_PUBLISH_QUESTION,
+                    type: NodeType.singleSelect,
+                    option: [manuallySubmitOption, autoPublishOption],
+                    title: "Teams Toolkit: Publish to Teams",
+                    default: autoPublishOption.id
+                });
+                appStudioQuestions.addChild(buildOrPublish);
             }
         }
 
@@ -110,6 +120,15 @@ export class AppStudioPlugin implements Plugin {
      * @returns {string[]} - Teams App ID in Teams app catalog
      */
     public async publish(ctx: PluginContext): Promise<Result<string, FxError>> {
+        if (ctx.platform !== Platform.VS) {
+            const answer = ctx.answers?.get(Constants.BUILD_OR_PUBLISH_QUESTION);
+            if (answer === manuallySubmitOption.id) {
+                const appDirectory = `${ctx.root}/.${ConfigFolderName}`;
+                const manifestString = JSON.stringify(ctx.app);
+                return this.buildTeamsPackage(ctx, appDirectory, manifestString);
+            }
+        }
+
         try {
             const teamsAppId = await this.appStudioPluginImpl.publish(ctx);
             ctx.logProvider?.info(`[Teams Toolkit] publish success!`);

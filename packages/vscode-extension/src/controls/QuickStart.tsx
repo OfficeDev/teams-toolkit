@@ -3,7 +3,24 @@ import { ActionButton, Icon, PrimaryButton, Image } from '@fluentui/react'
 import "./QuickStart.scss"
 import { Commands } from './Commands'
 import { PanelType } from './PanelType'
-import CLI from '../../media/teams.png'
+import CommandsIMG from '../../media/step_commands.svg'
+import NodeIMG from '../../media/step_nodejs.svg'
+import M365IMG from '../../media/step_m365.svg'
+import AzureIMG from '../../media/step_azure.svg'
+import BuildAppIMG from '../../media/step_buildapp.svg'
+import Step_Done from '../../media/Done.svg'
+import Step_Active_0 from '../../media/active-0.svg'
+import Step_Active_1 from '../../media/active-1.svg'
+import Step_Active_2 from '../../media/active-2.svg'
+import Step_Active_3 from '../../media/active-3.svg'
+import Step_Active_4 from '../../media/active-4.svg'
+import Step_Active_5 from '../../media/active-5.svg'
+import Step_Inactive_0 from '../../media/inactive-0.svg'
+import Step_Inactive_1 from '../../media/inactive-1.svg'
+import Step_Inactive_2 from '../../media/inactive-2.svg'
+import Step_Inactive_3 from '../../media/inactive-3.svg'
+import Step_Inactive_4 from '../../media/inactive-4.svg'
+import Step_Inactive_5 from '../../media/inactive-5.svg'
 
 export default class QuickStart extends React.Component<any, any>{
     constructor(props: any) {
@@ -24,14 +41,14 @@ export default class QuickStart extends React.Component<any, any>{
     render() {
         let m365AccountContent: (string | JSX.Element)[] | string;
         if (this.state.m365Account === undefined) {
-            m365AccountContent = ["The Teams Toolkit requires a Microsoft 365 (Organizational Account) where Teams is running and has been registered.", <br />, "You can still experience making a Teams app by using a testing account from ", <a href="https://developer.microsoft.com/en-us/microsoft-365/dev-program">M365 Developer Program</a>, "."];
+            m365AccountContent = ["The Teams Toolkit requires a Microsoft 365 (Organizational Account) where Teams is running and has been registered.", <br />, <br />, "You can still experience making a Teams app by using a testing account from ", <a href="https://developer.microsoft.com/en-us/microsoft-365/dev-program">M365 Developer Program</a>, "."];
         } else {
             m365AccountContent = `You have successfully signed in with your M365 account (${this.state.m365Account}).`;
         }
 
         let azureAccountContent: (string | JSX.Element)[] | string;
         if (this.state.azureAccount === undefined) {
-            azureAccountContent = ["The Teams Toolkit requires an Azure account and subscription to deploy the Azure resources for your project.", <br />, "You will not be charged without your further confirmation."];
+            azureAccountContent = ["The Teams Toolkit requires an Azure account and subscription to deploy the Azure resources for your project.", <br />, <br />, "You will not be charged without your further confirmation."];
         } else {
             azureAccountContent = `You have successfully signed in with your Azure account (${this.state.azureAccount}).`;
         }
@@ -55,7 +72,7 @@ export default class QuickStart extends React.Component<any, any>{
                             const curStep = stepCount;
                             stepCount++;
                             return <GetStartedAction
-                                title={`${curStep}. What are Teams app "Capabilities"?`}
+                                title={`What are Teams app "Capabilities"?`}
                                 content={[<a href="https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/capabilities-overview">Capabilities</a>, " are the extension points for building apps on the Microsoft Teams platform."]}
                                 actionText="Watch Video (1 min)"
                                 onAction={this.onWatchVideo}
@@ -68,30 +85,31 @@ export default class QuickStart extends React.Component<any, any>{
                             />
                         })()}
                         {(() => {
-                                const curStep = stepCount;
-                                stepCount++;
-                                return <GetStartedAction
-                                    title={`${curStep}. Explore Teams Toolkit commands`}
-                                    content="Open Command Palette (⇧⌘P) and type ‘Teamsfx’ to find all relevant commands or use Command Line Interface (CLI) to increase productivity. "
-                                    actionText="Display all CLI commands"
-                                    onAction={this.displayCliCommands}
-                                    secondaryActionText="Next"
-                                    onSecondaryAction={() => { this.onNextStep(curStep); }}
-                                    expanded={this.state.currentStep === curStep}
-                                    tip={["Tip: ", <a href="https://github.com/OfficeDev/TeamsFx/tree/main/packages/cli">Dowonload CLI reference</a>]}
-                                    onCollapsedCardClicked={this.onCollapsedCardClicked}
-                                    step={curStep}
-                                    done={this.state.stepsDone[curStep - 1]}
+                            const shortcut = isMacPlatform ? '⇧⌘P': 'Ctrl+Shift+P';
+                            const curStep = stepCount;
+                            stepCount++;
+                            return <GetStartedAction
+                                title={`Explore Teams Toolkit commands`}
+                                content={`Open Command Palette (${shortcut}) and type ‘Teamsfx’ to find all relevant commands. `}
+                                actionText="Display TeamsFx commands"
+                                onAction={this.displayCliCommands}
+                                secondaryActionText="Next"
+                                onSecondaryAction={() => { this.onNextStep(curStep); }}
+                                expanded={this.state.currentStep === curStep}
+                                tip={["Tip: Use ", <a href="https://github.com/OfficeDev/TeamsFx/tree/main/packages/cli">Command Line Interface (CLI)</a>, " to increase productivity"]}
+                                onCollapsedCardClicked={this.onCollapsedCardClicked}
+                                step={curStep}
+                                done={this.state.stepsDone[curStep - 1]}
                                 />
-                            })()}
+                        })()}
                         {(() => {
                             if(!isSupportedNode){
                                 const curStep = stepCount;
                                 stepCount++;
                                 return <GetStartedAction
-                                    title={`${curStep}. Install Node.js`}
-                                    content={["The toolkit cannot find Node.js >10.x on your machine.", <br />, "As a fundamental runtime context for Teams app, Node.js 12.x is recommended. Please install the appropriate version to run the Microsoft Teams Toolkit.", <br />, "Read more about ", <a href="http://npm.github.io/installation-setup-docs/installing/using-a-node-version-manager.html">managing Node.js versions</a>, "."]}
-                                    actionText="Download"
+                                    title={`Install Node.js`}
+                                    content={["The toolkit cannot detect the right version of Node.js on your machine.", <br />, <br />, "As a fundamental runtime context for Teams app, Node.js v10.x, v12.x or v14.x is required (v.12.x is recommended). Please install the appropriate version to run the Microsoft Teams Toolkit. ", <br />, <br />, "Read more about ", <a href="http://npm.github.io/installation-setup-docs/installing/using-a-node-version-manager.html">managing Node.js versions</a>, "."]}
+                                    actionText="Download Node.js (v.12.x)"
                                     onAction={this.downloadNode}
                                     secondaryActionText="Next"
                                     onSecondaryAction={() => { this.onNextStep(curStep); }}
@@ -106,7 +124,7 @@ export default class QuickStart extends React.Component<any, any>{
                             const curStep = stepCount;
                             stepCount++;
                             return <GetStartedAction
-                                title={`${curStep}. Prepare M365 account`}
+                                title={`Prepare M365 account`}
                                 content={m365AccountContent}
                                 actionText={this.state.m365Account === undefined ? "Sign in to M365" : undefined}
                                 onAction={this.signinM365}
@@ -122,7 +140,7 @@ export default class QuickStart extends React.Component<any, any>{
                             const curStep = stepCount;
                             stepCount++;
                             return <GetStartedAction
-                                title={`${curStep}. Prepare Azure account`}
+                                title={`Prepare Azure account`}
                                 content={azureAccountContent}
                                 actionText={this.state.azureAccount === undefined ? "Sign in to Azure" : undefined}
                                 onAction={this.signinAzure}
@@ -138,8 +156,8 @@ export default class QuickStart extends React.Component<any, any>{
                             const curStep = stepCount;
                             stepCount++;
                             return <GetStartedAction
-                                title={`${curStep}. Build your first Teams app from samples`}
-                                content={["Explore our sample apps to help you quickly get started with the Teams app concepts and code structures.", <br />, "Do you already have a clear idea of which Teams app to build? If so, create a new project from the scratch."]}
+                                title={`Build your first Teams app from samples`}
+                                content={["Explore our sample apps to help you quickly get started with the Teams app concepts and code structures.", <br />, <br />, "Do you already have a clear idea of which Teams app to build? If so, create a new project from the scratch."]}
                                 actionText="View all Samples"
                                 onAction={this.viewAllSamples}
                                 secondaryActionText="Create New Project"
@@ -162,35 +180,35 @@ export default class QuickStart extends React.Component<any, any>{
                         {
                             this.state.currentStep === 2 && (
                                 <Image
-                                    src={CLI}
+                                    src={CommandsIMG}
                                 />
                             )
                         }
                         {
-                            this.state.currentStep === 3 && (
+                            this.state.currentStep === 3 && !isSupportedNode && (
                                 <Image
-                                    src={CLI}
+                                    src={NodeIMG}
                                 />
                             )
                         }
                         {
-                            this.state.currentStep === 4 && (
+                            this.state.currentStep === (isSupportedNode? 3: 4) && (
                                 <Image
-                                    src={CLI}
+                                    src={M365IMG}
                                 />
                             )
                         }
                         {
-                            this.state.currentStep === 5 && (
+                            this.state.currentStep === (isSupportedNode ? 4 : 5) && (
                                 <Image
-                                    src={CLI}
+                                    src={AzureIMG}
                                 />
                             )
                         }
                         {
-                            this.state.currentStep === 6 && (
+                            this.state.currentStep === (isSupportedNode ? 5 : 6) && (
                                 <Image
-                                    src={CLI}
+                                    src={BuildAppIMG}
                                 />
                             )
                         }
@@ -263,7 +281,7 @@ export default class QuickStart extends React.Component<any, any>{
     downloadNode = () => {
         vscode.postMessage({
             command: Commands.OpenExternalLink,
-            data: "https://nodejs.org/en/"
+            data: "https://nodejs.org/dist/latest-v12.x/"
         });
 
         let done = this.state.stepsDone;
@@ -308,8 +326,6 @@ export default class QuickStart extends React.Component<any, any>{
             command: Commands.SwitchPanel,
             data: PanelType.SampleGallery
         })
-        
-        this.props.history.push('/sample-gallery');
     }
 }
 
@@ -325,12 +341,12 @@ class GetStartedAction extends React.Component<any, any>{
                     <div className="flex-section card-line">
                         {
                             this.props.done && (
-                                <Icon style={{ color: "#0097FB" }} iconName="SkypeCircleCheck" className="action-icon" />
+                                <Image src={Step_Done} className="action-icon" />
                             )
                         }
                         {
                             !this.props.done && (
-                                <Icon style={{ color: "#3794FF" }} iconName="CircleRing" className="action-icon" />
+                                <Image src={this.getStepIcon()} className="action-icon" />
                             )
                         }
                         <div className="action-title" style={{ color: "#FFFFFF" }}>{this.props.title}</div>
@@ -366,12 +382,12 @@ class GetStartedAction extends React.Component<any, any>{
                     <div className="flex-section">
                         {
                             this.props.done && (
-                                <Icon style={{ color: "#0097FB" }} iconName="SkypeCircleCheck" className="action-icon" />
+                                <Image src={Step_Done} className="action-icon" />
                             )
                         }
                         {
                             !this.props.done && (
-                                <Icon style={{ color: "#606060" }} iconName="CircleRing" className="action-icon" />
+                                <Image src={this.getStepIcon()} className="action-icon" />
                             )
                         }
                         <div className="action-title" style={{ color: "#CCCCCC" }}>{this.props.title}</div>
@@ -383,6 +399,28 @@ class GetStartedAction extends React.Component<any, any>{
 
     onCollapseClicked = () => {
         this.props.onCollapsedCardClicked(this.props.step);
+    }
+
+    getStepIcon = () =>{
+        if(this.props.expanded){
+            switch (this.props.step - 1) {
+                case 0: return Step_Active_0;
+                case 1: return Step_Active_1;
+                case 2: return Step_Active_2;
+                case 3: return Step_Active_3;
+                case 4: return Step_Active_4;
+                case 5: return Step_Active_5;
+            }
+        } else{
+            switch (this.props.step - 1) {
+                case 0: return Step_Inactive_0;
+                case 1: return Step_Inactive_1;
+                case 2: return Step_Inactive_2;
+                case 3: return Step_Inactive_3;
+                case 4: return Step_Inactive_4;
+                case 5: return Step_Inactive_5;
+            }
+        }
     }
 }
 

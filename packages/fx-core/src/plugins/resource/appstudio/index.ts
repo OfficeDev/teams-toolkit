@@ -82,7 +82,7 @@ export class AppStudioPlugin implements Plugin {
      */
     public async buildTeamsPackage(ctx: PluginContext, appDirectory: string, manifestString: string): Promise<Result<string, FxError>> {
         try {
-            const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(appDirectory, manifestString);
+            const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, appDirectory, manifestString);
             const builtSuccess = `[Teams Toolkit] Teams Package ${appPackagePath} built successfully!`;
             ctx.logProvider?.info(builtSuccess);
             await ctx.dialog?.communicate(
@@ -110,7 +110,24 @@ export class AppStudioPlugin implements Plugin {
      * @returns {string[]} - Teams App ID in Teams app catalog
      */
     public async publish(ctx: PluginContext): Promise<Result<string, FxError>> {
-        const teamsAppId = await this.appStudioPluginImpl.publish(ctx);
-        return ok(teamsAppId);
+        try {
+            const teamsAppId = await this.appStudioPluginImpl.publish(ctx);
+            ctx.logProvider?.info(`[Teams Toolkit] publish success!`);
+            await ctx.dialog?.communicate(
+                new DialogMsg(DialogType.Show, {
+                    description: `[Teams Toolkit]: ${ctx.app.name.short} successfully published to the admin portal. Once approved, your app will be available for your organization.`,
+                    level: MsgLevel.Info,
+                }),
+            );
+            return ok(teamsAppId);
+        } catch (error) {
+            await ctx.dialog?.communicate(
+                new DialogMsg(DialogType.Show, {
+                    description: `[Teams Toolkit]: ${error.message}`,
+                    level: MsgLevel.Warning
+                }),
+            );
+            return err(error);
+        }
     }
 }

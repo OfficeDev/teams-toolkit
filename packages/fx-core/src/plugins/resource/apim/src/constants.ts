@@ -25,47 +25,82 @@ export class AadDefaultValues {
 
 export class QuestionConstants {
     public static readonly namespace: string = "fx-solution-azure/fx-resource-apim";
+    public static readonly VSCode = class {
+        public static readonly Apim = class {
+            public static readonly questionName: string = "vsc-apim-service";
+            public static readonly funcName: string = "apim-service-option";
+            public static readonly description: string = "Select API Management service";
+            public static readonly createNewApimOption: string = "+ Create a new API Management service";
+        };
 
-    public static readonly Apim = class {
-        public static readonly questionName: string = "apim-service";
-        public static readonly funcName: string = "apim-service-option";
-        public static readonly description: string = "Select API Management service";
-        public static readonly createNewApimOption: string = "+ Create a new API Management service";
+        public static readonly OpenApiDocument = class {
+            public static readonly questionName: string = "vsc-open-api-document";
+            public static readonly funcName: string = "open-api-document-option";
+            public static readonly description: string = "Select Open API document";
+            public static readonly excludeFolders: string[] = ["node_modules"];
+            public static readonly openApiDocumentFileExtensions: string[] = ["json", "yaml"];
+        };
+
+        public static readonly ExistingOpenApiDocument = class {
+            // Same to OpenApiDocument.questionName
+            public static readonly questionName: string = "vsc-open-api-document";
+            public static readonly funcName: string = "existing-open-api-document-option";
+        };
+
+        public static readonly ApiPrefix = class {
+            public static readonly questionName: string = "vsc-api-prefix";
+            public static readonly funcName: string = "api-prefix-default-value";
+            public static readonly description: string = "Input the API name prefix.";
+            public static readonly prompt: string = "The unique name of the API will be '{api-prefix}-{resource-suffix}-{api-version}'.";
+        };
+
+        public static readonly ApiVersion = class {
+            public static readonly questionName: string = "vsc-api-version";
+            public static readonly funcName: string = "api-version-option";
+            public static readonly description: string = "Select an API version.";
+            public static readonly createNewApiVersionOption: string = "+ Create a new API version";
+        };
+
+        public static readonly NewApiVersion = class {
+            public static readonly questionName: string = "vsc-new-api-version";
+            public static readonly funcName: string = "new-api-version-default-value";
+            public static readonly description: string = "Input the API version.";
+        };
     };
 
-    public static readonly OpenApiDocument = class {
-        public static readonly questionName: string = "open-api-document";
-        public static readonly funcName: string = "open-api-document-option";
-        public static readonly description: string = "Select Open API document";
-        public static readonly excludeFolders: string[] = ["node_modules"];
-        public static readonly openApiDocumentFileExtensions: string[] = ["json", "yaml"];
+    public static readonly CLI = class {
+        public static readonly ApimResourceGroup = class {
+            public static readonly questionName: string = "apim-resource-group";
+            public static readonly description: string = "The name of resource group.";
+        };
+
+        public static readonly ApimServiceName = class {
+            public static readonly questionName: string = "apim-service-name";
+            public static readonly description: string = "The name of the API Management service instance.";
+        };
+
+        public static readonly OpenApiDocument = class {
+            public static readonly questionName: string = "open-api-document";
+            public static readonly description: string = "The Open API document file path.";
+        };
+
+        public static readonly ApiPrefix = class {
+            public static readonly questionName: string = "api-prefix";
+            public static readonly description: string = "The API name prefix. The default unique name of the API will be '{api-prefix}-{resource-suffix}-{api-version}'.";
+        };
+
+        public static readonly ApiId = class {
+            // The api id is displayed as api name in the Azure Portal
+            public static readonly questionName: string = "api-name";
+            public static readonly description: string = "The unique name of the api to be updated.";
+        };
+
+        public static readonly ApiVersion = class {
+            public static readonly questionName: string = "api-version";
+            public static readonly description: string = "The API version.";
+        };
     };
 
-    public static readonly ExistingOpenApiDocument = class {
-        public static readonly questionName: string = QuestionConstants.OpenApiDocument.questionName;
-        public static readonly funcName: string = "existing-open-api-document-option";
-    };
-
-    public static readonly ApiPrefix = class {
-        public static readonly questionName: string = "api-prefix";
-        public static readonly funcName: string = "api-prefix-default-value";
-        public static readonly description: string = "Input API name prefix";
-        public static readonly prompt: string = "Input API name prefix";
-    };
-
-    public static readonly ApiVersion = class {
-        public static readonly questionName: string = "api-version";
-        public static readonly funcName: string = "api-version-option";
-        public static readonly description: string = "Select an API version";
-        public static readonly createNewApiVersionOption: string = "+ Create a new API version";
-    };
-
-    public static readonly NewApiVersion = class {
-        public static readonly questionName: string = "new-api-version";
-        public static readonly funcName: string = "new-api-version-default-value";
-        public static readonly description: string = "Input API version";
-        public static readonly prompt: string = "Input API version";
-    };
 }
 
 export class ValidationConstants {

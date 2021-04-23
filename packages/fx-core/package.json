@@ -1,15 +1,17 @@
 {
   "name": "fx-core",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "main": "build/core/index.js",
   "types": "build/core/index.d.ts",
   "scripts": {
     "lint:staged": "lint-staged",
     "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
-    "test": "echo 'to be implemented'",
     "test:bot": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/plugins/resource/bot/**/*.test.ts",
     "test:function": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/plugins/resource/function/**/*.test.ts",
+    "test:localdebug": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/plugins/resource/localdebug/**/*.test.ts",
+    "test:frontend": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/plugins/resource/frontend/**/*.test.ts",
     "test:actions": "echo 'to be implemented'",
+    "test:unit": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/**/*.test.ts",
     "clean": "rm -rf build",
     "build": "tsc -p ./",
     "format": "prettier --write \"./**/*.ts\" \"./**/*.json\" ",
@@ -45,7 +47,7 @@
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "fs-extra": "^9.1.0",
-    "fx-api": "^1.0.5",
+    "fx-api": "^1.0.8",
     "glob": "^7.1.6",
     "http-close": "^1.0.0",
     "ignore": "^5.1.8",
@@ -69,7 +71,8 @@
     "tslib": "^2.1.0",
     "url-parse": "^1.5.1",
     "uuid": "^8.3.2",
-    "zip-a-folder": "0.0.12"
+    "zip-a-folder": "0.0.12",
+    "validator": "^13.1.1"
   },
   "devDependencies": {
     "@azure/arm-appservice": "^7.0.0",
@@ -101,6 +104,7 @@
     "@types/uuid": "^8.3.0",
     "@typescript-eslint/eslint-plugin": "^4.19.0",
     "@typescript-eslint/parser": "^4.19.0",
+    "@types/validator": "^13.1.1",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "dotenv": "^8.2.0",

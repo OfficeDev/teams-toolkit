@@ -17,6 +17,7 @@ import {
     runWithErrorCatchAndThrow,
 } from "./resources/errors";
 import {
+    Constants,
     DependentPluginInfo,
     FrontendConfigInfo,
     FrontendPathInfo,
@@ -31,8 +32,6 @@ import { FrontendScaffold as Scaffold } from "./ops/scaffold";
 import { TeamsFxResult } from "./error-factory";
 import { PreDeploySteps, ProgressHelper, ProvisionSteps, ScaffoldSteps } from "./utils/progress-helper";
 import { TemplateInfo } from "./resources/templateInfo";
-import { FrontendQuestionsOnScaffold, FrontendQuestion } from "./resources/questions";
-import { ManifestVariables } from "./resources/tabScope";
 
 export class FrontendPluginImpl {
     config?: FrontendConfig;
@@ -45,16 +44,10 @@ export class FrontendPluginImpl {
         ctx.config.set(key, value);
     }
 
-    public getQuestions(stage: Stage, ctx: PluginContext): Result<QTreeNode | undefined, FxError> {
+    public getQuestions(stage: Stage, _ctx: PluginContext): Result<QTreeNode | undefined, FxError> {
         const res = new QTreeNode({
             type: NodeType.group
         });
-
-        if (stage === Stage.create) {
-            FrontendQuestionsOnScaffold.forEach((item) => {
-                res.addChild(item.questionNode);
-            });
-        }
 
         return ok(res);
     }
@@ -64,7 +57,6 @@ export class FrontendPluginImpl {
         const progressHandler = await ProgressHelper.startScaffoldProgressHandler(ctx);
         await progressHandler?.next(ScaffoldSteps.Scaffold);
 
-        this.syncAnswerToContextConfig(ctx, FrontendQuestionsOnScaffold);
         const templateInfo = new TemplateInfo(ctx);
 
         const zip = await runWithErrorCatchAndThrow(
@@ -73,19 +65,14 @@ export class FrontendPluginImpl {
         );
         await runWithErrorCatchAndThrow(
             new UnzipTemplateError(),
-            async () => await Scaffold.scaffoldFromZip(zip, path.join(ctx.root, FrontendPathInfo.WorkingDir)),
+            async () => await Scaffold.scaffoldFromZip(zip, path.join(ctx.root, FrontendPathInfo.WorkingDir),
+                (filePath: string, data: Buffer) => filePath.replace(Constants.ReplaceTemplateExt, Constants.EmptyString),
+                (filePath: string, data: Buffer) => Scaffold.fulfill(filePath, data, templateInfo.variables))
         );
 
         await ProgressHelper.endScaffoldProgress();
         Logger.info(Messages.EndScaffold(PluginInfo.DisplayName));
         return ok(undefined);
-    }
-
-    private syncAnswerToContextConfig(ctx: PluginContext, questions: FrontendQuestion[]): void {
-        questions.forEach((item) => {
-            const answer = ctx.answers?.get(item.questionKey) ?? item.defaultValue;
-            this.setConfigIfNotExists(ctx, item.configKey, answer);
-        });
     }
 
     public async preProvision(ctx: PluginContext): Promise<TeamsFxResult> {
@@ -172,12 +159,6 @@ export class FrontendPluginImpl {
             );
         }
 
-        const variables: ManifestVariables = {
-            baseUrl: ctx.config.get(FrontendConfigInfo.Endpoint) as string
-        };
-
-        FrontendProvision.setTabScope(ctx, variables);
-
         return ok(this.config);
     }
 
@@ -226,21 +207,6 @@ export class FrontendPluginImpl {
 
         await ProgressHelper.endDeployProgress();
         Logger.info(Messages.EndDeploy(PluginInfo.DisplayName));
-        return ok(this.config);
-    }
-
-    public async postLocalDebug(ctx: PluginContext): Promise<TeamsFxResult> {
-        Logger.info(Messages.StartPostLocalDebug(PluginInfo.DisplayName));
-
-        const localDebugPlugin = ctx.configOfOtherPlugins.get(DependentPluginInfo.LocalDebugPluginName);
-        const localTabEndpoint = localDebugPlugin?.get(DependentPluginInfo.LocalTabEndpoint) as string;
-
-        const variables: ManifestVariables = {
-            baseUrl: localTabEndpoint
-        };
-
-        FrontendProvision.setTabScope(ctx, variables);
-
         return ok(this.config);
     }
 }

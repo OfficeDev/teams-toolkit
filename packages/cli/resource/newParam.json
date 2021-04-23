@@ -290,9 +290,11 @@
                                 "title": "Please select programming language for your project",
                                 "type": "singleSelect",
                                 "option": [
-                                    "javascript"
+                                    "javascript",
+                                    "typescript"
                                 ],
-                                "default": "javascript"
+                                "default": "javascript",
+                                "skipSingleOption": true
                             }
                         }
                     ],

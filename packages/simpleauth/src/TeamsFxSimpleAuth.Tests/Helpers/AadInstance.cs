@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Graph;
@@ -61,6 +60,9 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.Helpers
                 Utilities.ConsentAndGetAuthorizationCode(IntegrationTestSettings.AuthorizeUrl, TeamsAadInfo.AppId,
                     IntegrationTestSettings.RedirectUri, "https://graph.microsoft.com/User.Read", IntegrationTestSettings.CodeChallenge,
                     IntegrationTestSettings.TestUsername, IntegrationTestSettings.TestPassword); // Just consent the default permission
+                Utilities.ConsentAndGetAuthorizationCode(IntegrationTestSettings.AuthorizeUrl, TeamsAadInfo.AppId,
+                    IntegrationTestSettings.RedirectUri, "https://graph.microsoft.com/User.Read", IntegrationTestSettings.CodeChallenge,
+                    IntegrationTestSettings.TestUsername2, IntegrationTestSettings.TestPassword2); // Just consent the default permission
                 // Use User.Read scope instead of .default scope to avoid intermittent error caused by AAD permission list sync issue
             }
             catch (Exception ex)
@@ -175,6 +177,18 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.Helpers
                             IsEnabled = true,
                             UserConsentDescription = "Enable Test app to call this app’s APIs with the same rights that you have",
                             UserConsentDisplayName = "Test app can access your user profile and make requests on your behalf"
+                        },
+
+                        new PermissionScope
+                        {
+                            Id = Guid.NewGuid(),
+                            Type = "User",
+                            Value = "another_scope",
+                            AdminConsentDisplayName = "Another scope for test app",
+                            AdminConsentDescription = "Another scope for test app.",
+                            IsEnabled = true,
+                            UserConsentDescription = "Another scope for test app",
+                            UserConsentDisplayName = "Another scope for test app."
                         }
                     }
                 },

@@ -30,6 +30,11 @@
                     "cliName": "apim"
                 },
                 {
+                    "id": "fx-resource-teamsbot",
+                    "label": "Bot",
+                    "cliName": "teamsbot"
+                },
+                {
                     "id": "fx-resource-spfx",
                     "label": "SharePoint Framework (SPFx)",
                     "cliName": "spfx"

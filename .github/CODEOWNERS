@@ -14,6 +14,7 @@
 /packages/vscode-extension/src/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @meifans @dooriya
 
 /packages/vscode-extension/src/debug @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @meifans @dooriya
+/packages/vscode-extension/test/suite/envChecker @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @meifans @dooriya
 
 /packages/cli @chagong @Alive-Fish @jiayi-ruan
 
@@ -21,11 +22,13 @@
 
 /packages/api @jayzhang @1yefuwang1 @LongOddCode
 
+/packages/api/src/qm @jayzhang @1yefuwang1 @LongOddCode @jiayi-ruan
+
 /packages/sdk @tecton @blackchoey @SLdragon @dilin-MS @wenytang-ms
 
-/packages/fx-core/src/core @jayzhang @LongOddCode
+/packages/fx-core/src/core @jayzhang @LongOddCode @1yefuwang1
 
-/packages/fx-core/src/plugins/solution/fx-solution @1yefuwang1 @jayzhang
+/packages/fx-core/src/plugins/solution/fx-solution @1yefuwang1 @jayzhang @LongOddCode
 
 /packages/fx-core/src/plugins/resource/aad @KennethBWSong @adashen
 /packages/fx-core/tests/plugins/resource/aad @KennethBWSong @adashen

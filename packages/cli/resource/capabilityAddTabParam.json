@@ -8,11 +8,12 @@
                 {
                     "id": "Tab",
                     "label": "Tab",
+                    "cliName": "tab",
                     "description": "Embeds a web-based app experience in a tab in a Teams chat, channel, or personal workspace."
                 }
             ],
             "default": [
-                "Tab"
+                "tab"
             ],
             "hide": true
         }
@@ -26,11 +27,13 @@
                 {
                     "id": "Azure",
                     "label": "Azure",
+                    "cliName": "azure",
                     "description": "Azure Cloud"
                 },
                 {
                     "id": "SPFx",
                     "label": "SPFx",
+                    "cliName": "spfx",
                     "description": "SharePoint Framework"
                 }
             ],
@@ -39,16 +42,18 @@
     },
     {
         "data": {
-            "name": "tab-scopes",
-            "description": "Select tab scopes",
-            "type": "multiSelect",
+            "name": "programming-language",
+            "title": "Please select programming language for your project",
+            "type": "singleSelect",
             "option": [
-                "personal",
-                "group"
+                "javascript",
+                "typescript"
             ],
-            "default": [
-                "personal"
-            ]
+            "default": "javascript",
+            "skipSingleOption": true
+        },
+        "condition": {
+            "equals": "Azure"
         }
     },
     {
@@ -72,31 +77,6 @@
         },
         "condition": {
             "equals": "Azure"
-        }
-    },
-    {
-        "data": {
-            "name": "node-version",
-            "description": "Please select a node version for the Azure function app.",
-            "type": "singleSelect",
-            "default": "12",
-            "option": [
-                "10",
-                "12",
-                "14"
-            ]
-        }
-    },
-    {
-        "data": {
-            "name": "function-name",
-            "description": "Please provide function name.",
-            "type": "text",
-            "default": "myFunc",
-            "validation": {
-                "namespace": "fx-solution-azure/fx-resource-function",
-                "method": "validateFunctionName"
-            }
         }
     },
     {

@@ -42,7 +42,7 @@ abstract class CapabilityAddGenerator extends Generator {
       throw Error(`${capabilityParamName} is not found in the capability add's param list.`);
     }
     const option = (capabilityNode.data as MultiSelectQuestion).option as OptionItem[];
-    const optionIds = option.map((op) => op.id);
+    const optionIds = option.map((op) => op.cliName ? op.cliName : op.id);
     if (!optionIds.includes(this.capabilityName)) {
       throw Error(`${optionIds} do not include ${this.capabilityName}`);
     }
@@ -55,12 +55,12 @@ abstract class CapabilityAddGenerator extends Generator {
 
 export class CapabilityAddTabGenerator extends CapabilityAddGenerator {
   public readonly commandName = "teamsfx capability add tab";
-  public readonly capabilityName = "Tab";
+  public readonly capabilityName = "tab";
   public readonly outputPath = constants.capabilityAddTabParamPath;
 }
 
 export class CapabilityAddBotGenerator extends CapabilityAddGenerator {
   public readonly commandName = "teamsfx capability add bot";
-  public readonly capabilityName = "Bot";
+  public readonly capabilityName = "bot";
   public readonly outputPath = constants.capabilityAddBotParamPath;
 }

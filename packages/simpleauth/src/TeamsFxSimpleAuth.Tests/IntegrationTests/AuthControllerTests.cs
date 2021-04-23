@@ -284,7 +284,9 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         public async Task PostToken_AuthorizationTokenClientNotAllowed_Return403()
         {
             // Arrange
-            var tokenFromUnauthorizedClient = await GetUserAccessToken();
+            var scope = $"{_settings.ApiAppIdUri}/{_settings.AdminClientId}/{_settings.Scope}";
+            var tokenFromUnauthorizedClient = await Utilities.GetUserAccessToken(_settings.TestUsername, _settings.TestPassword,
+                _settings.AdminClientId, _settings.AdminClientSecret, _configuration[ConfigurationName.OAuthAuthority], scope).ConfigureAwait(false);
             // Temporary workaround the consent for new AAD app in each test run
             // TODO: Add UI automation to grant consent for new AAD app in each test run
             var customizedAppConfiguration = new Dictionary<string, string>(_defaultConfigurations);

@@ -604,7 +604,7 @@ export class FunctionPluginImpl {
                     return;
                 }
             } catch (error) {
-              funcPluginAdapter.handleDotnetError(error);
+                funcPluginAdapter.handleDotnetError(error);
                 return;
             }
 

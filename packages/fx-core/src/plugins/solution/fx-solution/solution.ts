@@ -101,6 +101,8 @@ import Mustache from "mustache";
 import path from "path";
 import { AppStudioPlugin } from "../../resource/appstudio";
 import { ErrorResponse } from "@azure/arm-resources/esm/models/mappers";
+import * as strings from "../../../resources/strings.json";
+import * as util from "util";
 
 type LoadedPlugin = Plugin & { name: string; displayName: string; };
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -903,12 +905,11 @@ export class TeamsAppSolution implements Solution {
                 const resourceGroupName = ctx.config.get(GLOBAL_CONFIG)?.getString("resourceGroupName");
                 const subscriptionId = ctx.config.get(GLOBAL_CONFIG)?.getString("subscriptionId");
                 const error = provisionResult.error;
-                error.message += ` Provision resources failed, subscription id: '${subscriptionId}', resource group: '${resourceGroupName}'.` +
-                `You can choose to rollback to delete the resoruce group and redo provision , help link: https://github.com/OfficeDev/TeamsFx/wiki/Error-handling-for-provision-and-deployment-failure)`;
+                error.message += " " + util.format(strings.solution.ProvisionFailNotice, subscriptionId, resourceGroupName);
                 if(error instanceof UserError){
                     const ue = error as UserError;
                     if(!ue.helpLink){
-                        ue.helpLink = "https://github.com/OfficeDev/TeamsFx/wiki/Error-handling-for-provision-and-deployment-failure";
+                        ue.helpLink = "https://aka.ms/teamsfx-solution-help";
                     }
                 }
             }

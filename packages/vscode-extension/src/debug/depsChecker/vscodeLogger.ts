@@ -26,11 +26,6 @@ export class VSCodeLogger implements IDepsLogger {
     fs.mkdirSync(VSCodeLogger.globalConfigFolder, { recursive: true });
   }
 
-  async trace(message: string): Promise<boolean> {
-    await this.writeLog(LogLevel.Trace, message);
-    return true;
-  }
-
   async debug(message: string): Promise<boolean> {
     await this.writeLog(LogLevel.Debug, message);
     return true;
@@ -49,11 +44,6 @@ export class VSCodeLogger implements IDepsLogger {
   async error(message: string): Promise<boolean> {
     await this.writeLog(LogLevel.Error, message);
     return await this.logger.error(message);
-  }
-
-  async fatal(message: string): Promise<boolean> {
-    await this.writeLog(LogLevel.Fatal, message);
-    return await this.logger.fatal(message);
   }
 
   private async writeLog(level: LogLevel, message: string): Promise<void> {

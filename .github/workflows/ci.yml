@@ -49,6 +49,11 @@ jobs:
           SDK_INTEGRATION_TEST_ACCOUNT_SUBSCRIPTION_ID: ${{secrets.SDK_INTEGRATIONTEST_SUBSCRIPTION_ID}}
           SDK_INTEGRATION_TEST_ACCOUNT_NAME: ${{secrets.SDK_INTEGRATIONTEST_TEST_USERNAME}}
           SDK_INTEGRATION_TEST_ACCOUNT_PASSWORD: ${{secrets.SDK_INTEGRATIONTEST_TEST_PASSWORD}}
+          TEST_USER_NAME: ${{ secrets.TEST_USER_NAME }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+          TEST_SUBSCRIPTION_ID: ${{ secrets.TEST_SUBSCRIPTION_ID }}
+          CI_ENABLED: "true"
         run: |
+          npm link
           npx lerna run test:integration --since origin/main
 

@@ -34,7 +34,7 @@
     "unit-test:browser": "karma start --single-run",
     "unit-test:node": "mocha dist-test/index.node.js --reporter ./tools/mocha-multi-reporter.js",
     "test:unit": "npm run build:test && npm run unit-test:node && npm run unit-test:browser",
-    "e2e-test:node": "mocha --no-timeouts -r test/mocha.env.ts -r ts-node/register test/e2e/**/*.spec.ts --exit"
+    "e2e-test": "mocha --no-timeouts -r test/mocha.env.ts -r ts-node/register test/e2e/**/*.spec.ts --exit"
   },
   "files": [
     "dist/",

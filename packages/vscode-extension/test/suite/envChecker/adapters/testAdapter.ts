@@ -7,23 +7,23 @@ export class TestAdapter implements IDepsAdapter {
     private readonly _funcToolCheckerEnabled: boolean;
     private readonly _nodeCheckerEnabled: boolean;
 
-    private readonly _clickCancelOrLearnMoreButton: boolean;
+    private readonly _clickCancel: boolean;
 
     constructor(
         hasTeamsfxBackend: boolean,
-        clickCancelOrLearnMoreButton = false,
+        clickCancel = false,
         dotnetCheckerEnabled = true,
         funcToolCheckerEnabled = true,
         nodeCheckerEnabled = true) {
         this._hasTeamsfxBackend = hasTeamsfxBackend;
-        this._clickCancelOrLearnMoreButton = clickCancelOrLearnMoreButton;
+        this._clickCancel = clickCancel;
         this._dotnetCheckerEnabled = dotnetCheckerEnabled;
         this._funcToolCheckerEnabled = funcToolCheckerEnabled;
         this._nodeCheckerEnabled = nodeCheckerEnabled;
     }
 
     displayContinueWithLearnMore(message: string, link: string): Promise<boolean> {
-        if (this._clickCancelOrLearnMoreButton) {
+        if (this._clickCancel) {
             return Promise.resolve(false);
         } else {
             return Promise.resolve(true);
@@ -35,7 +35,7 @@ export class TestAdapter implements IDepsAdapter {
     }
 
     displayWarningMessage(message: string, buttonText: string, action: () => Promise<boolean>): Promise<boolean> {
-        if (this._clickCancelOrLearnMoreButton) {
+        if (this._clickCancel) {
             return Promise.resolve(false);
         } else {
             return Promise.resolve(true);

@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { OptionItem } from "fx-api";
 
 export const manuallySubmitOption: OptionItem = {

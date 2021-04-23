@@ -9,8 +9,9 @@ import {
   deployTab,
   getLoginEnvironment,
   getTeamsTabRemoteUrl,
-  TIMEOUT
+  E2E_TIMEOUT
 } from "../helper";
+import { TEST_USER_OBJECT_ID } from "./data";
 
 chaiUse(chaiPromises);
 
@@ -28,8 +29,8 @@ describe("End to End Test in Teams", () => {
     };
 
     const appUrl = getTeamsTabRemoteUrl(project);
-    await page.goto(appUrl, { timeout: TIMEOUT });
-    await page.waitForSelector(selectors.addButton, { timeout: TIMEOUT });
+    await page.goto(appUrl, { timeout: E2E_TIMEOUT });
+    await page.waitForSelector(selectors.addButton, { timeout: E2E_TIMEOUT });
     await page.click(selectors.addButton);
 
     const frame = await (await page.waitForSelector(`iframe`)).contentFrame();
@@ -45,7 +46,7 @@ describe("End to End Test in Teams", () => {
 
     // Check data from Graph API
     const upn = await frame.waitForSelector(selectors.objectId);
-    assert.strictEqual(await upn.innerText(), "Object id: 2a61c4c3-ecf9-49eb-b717-6673fffd892d");
+    assert.strictEqual(await upn.innerText(), `Object id: ${TEST_USER_OBJECT_ID}`);
 
     await browser.close();
     await deleteProject(project);

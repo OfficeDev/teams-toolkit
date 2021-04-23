@@ -4,22 +4,27 @@
 import { exec } from "child_process";
 import { promisify } from "util";
 import * as path from "path";
-import os from "os";
 import fs from "fs-extra";
+import * as msal from "@azure/msal-node";
 import { chromium, ChromiumBrowser, Page } from "playwright-chromium";
 import { deleteAadApp } from "../../api/src/ci/aadValidate";
 import { MockAzureAccountProvider } from "../../api/src/ci/mockAzureAccountProvider";
-import * as msal from "@azure/msal-node";
+import {
+  TEST_USER_NAME,
+  TEST_USER_PASSWORD,
+  TEST_SUBSCRIPTION_ID
+} from "../../api/src/ci/conf/secrets";
 
 const execAsync = promisify(exec);
-export const TIMEOUT = 30000;
-const username = process.env.TEST_USER_NAME;
-const password = process.env.TEST_USER_PASSWORD;
 const testProjectFolder = "testProjects";
-const subscription = "1756abc0-3554-4341-8d6a-46674962ea19";
+
+/**
+ * Timeout value used in e2e test, 30 seconds
+ */
+export const E2E_TIMEOUT = 30000;
 
 function getTestFolder(): string {
-  const folder = path.join(os.homedir(), testProjectFolder);
+  const folder = path.join(process.cwd(), testProjectFolder);
   fs.ensureDirSync(folder);
   return folder;
 }
@@ -35,6 +40,7 @@ export async function deployFunction(
   functionSrcFolder: string
 ): Promise<void> {
   fs.copySync(functionSrcFolder, path.join(projectPath, "api"), { overwrite: true });
+  console.log(`Deploying function of project ${projectPath}...`);
   await callCli(`teamsfx deploy --folder ${projectPath} --deploy-plugin fx-resource-function`);
 }
 
@@ -53,8 +59,11 @@ export async function createNewProject(name: string): Promise<string> {
     }
     throw new Error(`Create project ${name} failed`);
   }
+  console.log(`Provisioning project ${name}...`);
   if (
-    !(await callCli(`teamsfx provision --folder ${projectFolder} --subscription ${subscription}`))
+    !(await callCli(
+      `teamsfx provision --folder ${projectFolder} --subscription ${TEST_SUBSCRIPTION_ID}`
+    ))
   ) {
     await deleteProject(projectFolder);
     throw new Error(`Provision project ${name} failed`);
@@ -72,6 +81,7 @@ export async function deployTab(projectPath: string, tabSrcFolder?: string): Pro
   if (tabSrcFolder) {
     fs.copySync(tabSrcFolder, path.join(projectPath, "tabs"), { overwrite: true });
   }
+  console.log(`Deploying tab of project ${projectPath}...`);
   await callCli(
     `teamsfx deploy --folder ${projectPath} --deploy-plugin fx-resource-frontend-hosting`
   );
@@ -118,7 +128,8 @@ export async function deleteProject(projectPath: string): Promise<void> {
 }
 
 async function loginTestUser(): Promise<void> {
-  browser = await chromium.launch({ headless: false });
+  console.log("logging test user...");
+  browser = await chromium.launch({ headless: true });
   const TEAMS_URL = `https://teams.microsoft.com`;
   const selectors = {
     username: `input[name=loginfmt]`,
@@ -131,24 +142,24 @@ async function loginTestUser(): Promise<void> {
 
   const context = await browser.newContext();
   page = await context.newPage();
-  await page.goto(TEAMS_URL, { timeout: TIMEOUT });
-  await page.waitForSelector(selectors.username, { timeout: TIMEOUT });
+  await page.goto(TEAMS_URL, { timeout: E2E_TIMEOUT });
+  await page.waitForSelector(selectors.username, { timeout: E2E_TIMEOUT });
   await page.click(selectors.username);
-  await page.type(selectors.username, username);
+  await page.type(selectors.username, TEST_USER_NAME);
   await page.press(selectors.username, "Enter");
-  await page.waitForSelector(selectors.passwordOption2, { timeout: TIMEOUT, state: "visible" });
+  await page.waitForSelector(selectors.passwordOption2, { timeout: E2E_TIMEOUT, state: "visible" });
   try {
     // Click password option is not stable, try twice here
     await page.click(selectors.passwordOption, { delay: 5000, timeout: 10000 });
     await page.click(selectors.passwordOption2, { delay: 5000, timeout: 10000 });
   } catch (e) {}
-  await page.waitForSelector(selectors.password, { timeout: TIMEOUT });
+  await page.waitForSelector(selectors.password, { timeout: E2E_TIMEOUT });
   await page.click(selectors.password);
-  await page.type(selectors.password, password);
+  await page.type(selectors.password, TEST_USER_PASSWORD);
   await page.press(selectors.password, "Enter");
   await page.waitForSelector(selectors.submit);
   await page.click(selectors.submit);
-  await page.waitForSelector(selectors.title, { timeout: TIMEOUT });
+  await page.waitForSelector(selectors.title, { timeout: E2E_TIMEOUT });
 }
 
 async function callCli(command: string): Promise<boolean> {
@@ -161,16 +172,19 @@ async function callCli(command: string): Promise<boolean> {
 }
 
 async function deleteProjectAad(projectPath: string) {
+  console.log(`Deleting AAD app of project ${projectPath}`);
   const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
   await deleteAadApp(context);
 }
 
 async function deleteProjectResourceGroup(projectPath: string) {
+  console.log(`Deleting resources of project ${projectPath}`);
   const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
   let resourceGroupName: string;
   try {
     resourceGroupName = context.solution.resourceGroupName;
   } catch (e) {
+    console.warn("No resource group name found in env.default.json");
     return;
   }
   await MockAzureAccountProvider.getInstance().deleteResourceGroup(resourceGroupName);

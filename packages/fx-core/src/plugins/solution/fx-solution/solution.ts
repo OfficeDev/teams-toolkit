@@ -29,7 +29,9 @@ import {
     MsgLevel,
     ConfigFolderName,
     AzureSolutionSettings,
-    Err
+    Err,
+    UserError,
+    SystemError
 } from "fx-api";
 import { askSubscription, fillInCommonQuestions } from "./commonQuestions";
 import { executeLifecycles, executeConcurrently, LifecyclesWithContext } from "./executor";
@@ -98,6 +100,9 @@ import {
 import Mustache from "mustache";
 import path from "path";
 import { AppStudioPlugin } from "../../resource/appstudio";
+import { ErrorResponse } from "@azure/arm-resources/esm/models/mappers";
+import * as strings from "../../../resources/strings.json";
+import * as util from "util";
 
 type LoadedPlugin = Plugin & { name: string; displayName: string; };
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -144,7 +149,7 @@ function newSpfxPlugin(): LoadedPlugin {
 function newBotPlugin(): LoadedPlugin {
     const plugin: Plugin = new TeamsBot();
     const pluginWithMeta: LoadedPlugin = plugin as LoadedPlugin;
-    pluginWithMeta.name = "fx-resource-teamsbot";
+    pluginWithMeta.name = "fx-resource-bot";
     pluginWithMeta.displayName = "Bot";
     return pluginWithMeta;
 }
@@ -886,17 +891,27 @@ export class TeamsAppSolution implements Solution {
 
             const provisionResult = await this.doProvision(ctx);
             if (provisionResult.isOk()) {
-                ctx.logProvider?.info(`[Teams Toolkit] configuration success!`);
+                ctx.logProvider?.info(`[Teams Toolkit] provision success!`);
                 await ctx.dialog?.communicate(
                     new DialogMsg(DialogType.Show, {
-                        description: "[Teams Toolkit] provision finished successfully!",
+                        description: "[Teams Toolkit] provision success!",
                         level: MsgLevel.Info,
                     }),
                 );
                 ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
             } else {
-                ctx.logProvider?.error(`[Teams Toolkit] configuration failed!`);
+                ctx.logProvider?.error(`[Teams Toolkit] provision failed!`);
                 ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false);
+                const resourceGroupName = ctx.config.get(GLOBAL_CONFIG)?.getString("resourceGroupName");
+                const subscriptionId = ctx.config.get(GLOBAL_CONFIG)?.getString("subscriptionId");
+                const error = provisionResult.error;
+                error.message += " " + util.format(strings.solution.ProvisionFailNotice, subscriptionId, resourceGroupName);
+                if(error instanceof UserError){
+                    const ue = error as UserError;
+                    if(!ue.helpLink){
+                        ue.helpLink = "https://aka.ms/teamsfx-solution-help";
+                    }
+                }
             }
             return provisionResult;
         } finally {
@@ -925,6 +940,7 @@ export class TeamsAppSolution implements Solution {
         //1. ask common questions for azure resources.
         const appName = manifest.name.short;
         const res = await fillInCommonQuestions(
+            ctx,
             appName,
             ctx.config,
             ctx.dialog,
@@ -1128,21 +1144,7 @@ export class TeamsAppSolution implements Solution {
 
             ctx.logProvider?.info(`[Solution] publish start!`);
 
-            const result = await executeConcurrently("", publishWithCtx);
-
-            if (result.isOk()) {
-                ctx.logProvider?.info(`[Teams Toolkit] publish success!`);
-                await ctx.dialog?.communicate(
-                    new DialogMsg(DialogType.Show, {
-                        description: `[Teams Toolkit]: ${ctx.app.name.short} successfully published to the admin portal. Once approved, your app will be available for your organization.`,
-                        level: MsgLevel.Info,
-                    }),
-                );
-            } else {
-                ctx.logProvider?.error(`[Teams Toolkit] publish failed!`);
-            }
-
-            return result;
+            return await executeConcurrently("", publishWithCtx);
         } finally {
             this.runningState = SolutionRunningState.Idle;
         }
@@ -1289,13 +1291,20 @@ export class TeamsAppSolution implements Solution {
                 );
             }
             const pluginsToDeploy = res.value.filter((plugin) => !!plugin.deploy);
+            if(pluginsToDeploy.length === 0){
+                return err(
+                    returnUserError(new Error("No resource to deploy"), "Solution", SolutionError.NoResourceToDeploy),
+                );
+            }
             const pluginPrefix = "fx-resource-";
             const options: OptionItem[] = pluginsToDeploy.map((plugin) => {
                 const item: OptionItem = { id: plugin.name, label: plugin.displayName, cliName: plugin.name.replace(pluginPrefix, "") };
                 return item;
             });
+            
             const selectQuestion = DeployPluginSelectQuestion;
             selectQuestion.option = options;
+            selectQuestion.default = options.map(i=>i.id);
             const pluginSelection = new QTreeNode(selectQuestion);
             node.addChild(pluginSelection);
 
@@ -2021,25 +2030,30 @@ export class TeamsAppSolution implements Solution {
                 const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
                 const pluginCtx = getPluginContext(ctx, this.appStudioPlugin.name);
 
-                const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx);
-                if (maybeManifest.isErr()) {
-                    return maybeManifest;
-                }
-                const manifestTpl = maybeManifest.value;
-                const manifest = this.createManifestForRemote(ctx, manifestTpl).map((result) => result[1]);
-
-                if (manifest.isOk()) {
-                    return await appStudioPlugin.validateManifest(pluginCtx, JSON.stringify(manifest.value));
+                let manifestString: string | undefined = undefined;
+                if (this.spfxSelected(ctx)) {
+                    manifestString = (await fs.readFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)).toString();
                 } else {
-                    ctx.logProvider?.error("[Teams Toolkit] Manifest Validation failed!");
+                    const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx);
+                    if (maybeManifest.isErr()) {
+                        return maybeManifest;
+                    }
+                    const manifestTpl = maybeManifest.value;
+                    const manifest = this.createManifestForRemote(ctx, manifestTpl).map((result) => result[1]);
+                    if (manifest.isOk()) {
+                        manifestString = JSON.stringify(manifest.value);
+                    } else {
+                        ctx.logProvider?.error("[Teams Toolkit] Manifest Validation failed!");
                         await ctx.dialog?.communicate(
                             new DialogMsg(DialogType.Show, {
                                 description: manifest.error.message,
                                 level: MsgLevel.Error,
                             }),
                         );
-                    return err(manifest.error);
+                        return err(manifest.error);
+                    }
                 }
+                return await appStudioPlugin.validateManifest(pluginCtx, manifestString);
             } else if (method === "buildPackage") {
                 const appStudioPlugin: AppStudioPlugin = this.appStudioPlugin as any;
                 const pluginCtx = getPluginContext(ctx, this.appStudioPlugin.name);

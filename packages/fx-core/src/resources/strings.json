@@ -1,0 +1,11 @@
+{
+    "core":{
+        "SwitchSubNotice":"Please make sure that you don't forget cleaning up the resources in existing subscription: '%s' in Azure portal: https://ms.portal.azure.com/"
+    },
+    "solution":{
+        "ProvisionFailNotice": "Provision resources failed, subscription id: '%s', resource group: '%s'. You can choose to rollback to delete the resoruce group and redo provision, help link: https://aka.ms/teamsfx-solution-help"
+    },
+    "plugins":{
+
+    }
+}

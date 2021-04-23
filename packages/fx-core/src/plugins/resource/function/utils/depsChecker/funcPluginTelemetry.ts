@@ -7,6 +7,7 @@ import { FxError, SystemError, UserError } from "fx-api";
 import { IDepsTelemetry } from "./checker";
 import { DepsCheckerEvent, TelemetryMessurement } from "./common";
 
+// TODO: remove ExtTelemetry as it's no longer needed.
 namespace ExtTelemetry {
   export function sendTelemetryEvent(
     eventName: string,

@@ -15,9 +15,7 @@ import {
   err,
   Stage,
   Platform,
-  NodeType,
   ok,
-  StringArrayValidation,
   Func
 } from "fx-api";
 
@@ -25,7 +23,6 @@ import CLILogProvider from "../commonlib/log";
 import * as constants from "../constants";
 import { UnknownError } from "../error";
 import activate from "../activate";
-import { flattenNodes } from "../utils";
 
 export abstract class Generator {
   abstract readonly commandName: string;
@@ -45,16 +42,15 @@ export abstract class Generator {
     const core = result.value;
     {
       const result = this.doUserTask 
-        ? await core.getQuestionsForUserTask!(this.func!, Platform.VSCode)
-        : await core.getQuestions!(this.stage!, Platform.VSCode);
+        ? await core.getQuestionsForUserTask!(this.func!, Platform.CLI)
+        : await core.getQuestions!(this.stage!, Platform.CLI);
         
       if (result.isErr()) {
         return err(result.error);
       }
     
       const root = result.value!;
-      const allNodes = flattenNodes(root).filter(node => node.data.type !== NodeType.group);
-      return ok(allNodes);
+      return ok(root);
     }
   }
 

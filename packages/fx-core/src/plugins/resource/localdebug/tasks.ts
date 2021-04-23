@@ -19,7 +19,7 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
      *   - backend npm install
      *   - backend extensions install
      */
-     const tasks: Record<string, unknown>[] = [
+    const tasks: Record<string, unknown>[] = [
         {
             label: "Stop All Services",
             type: "shell",
@@ -328,6 +328,16 @@ export function generateSpfxTasks(): Record<string, unknown>[] {
             },
         },
         {
+            label: "gulp trust-dev-cert",
+            type: "process",
+            command: "node",
+            args: ["${workspaceFolder}/SPFx/node_modules/gulp/bin/gulp.js", "trust-dev-cert"],
+            options: {
+                cwd: "${workspaceFolder}/SPFx",
+            },
+            dependsOn: "npm install",
+        },
+        {
             label: "gulp serve",
             type: "process",
             command: "node",
@@ -353,7 +363,7 @@ export function generateSpfxTasks(): Record<string, unknown>[] {
             options: {
                 cwd: "${workspaceFolder}/SPFx",
             },
-            dependsOn: "npm install",
+            dependsOn: "gulp trust-dev-cert",
         },
         {
             label: "Terminate All Tasks",

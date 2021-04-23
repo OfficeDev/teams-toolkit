@@ -1,0 +1,80 @@
+[
+    {
+        "data": {
+            "name": "add-azure-resources",
+            "title": "Select Azure resources to add",
+            "type": "multiSelect",
+            "option": [
+                {
+                    "id": "function",
+                    "label": "function",
+                    "description": "New APIs from Azure Functions"
+                },
+                {
+                    "id": "sql",
+                    "label": "sql",
+                    "description": "Azure SQL Database"
+                },
+                {
+                    "id": "apim",
+                    "label": "apim",
+                    "description": "New API in Azure API Management"
+                }
+            ],
+            "default": [
+                "apim"
+            ],
+            "hide": true
+        }
+    },
+    {
+        "data": {
+            "name": "node-version",
+            "description": "Please select a node version for the Azure function app.",
+            "type": "singleSelect",
+            "default": "12",
+            "option": [
+                "10",
+                "12",
+                "14"
+            ]
+        }
+    },
+    {
+        "data": {
+            "name": "function-name",
+            "description": "Please provide function name.",
+            "type": "text",
+            "default": "myFunc",
+            "validation": {
+                "namespace": "fx-solution-azure/fx-resource-function",
+                "method": "validateFunctionName"
+            }
+        }
+    },
+    {
+        "data": {
+            "name": "subscription",
+            "title": "Please select a subscription",
+            "type": "func",
+            "namespace": "fx-solution-azure",
+            "method": "askSubscription"
+        }
+    },
+    {
+        "data": {
+            "type": "text",
+            "name": "apim-resource-group",
+            "description": "The name of the API Management service instance.",
+            "validation": {}
+        }
+    },
+    {
+        "data": {
+            "type": "text",
+            "name": "apim-service-name",
+            "description": "The name of the API Management service instance.",
+            "validation": {}
+        }
+    }
+]

@@ -17,7 +17,7 @@ export const BotOptionItem: OptionItem = {
 
 export const MessageExtensionItem: OptionItem = {
     id: "MessageExtension",
-    label: "MessageExtension",
+    label: "Message Extensions",
     description:
         "Messaging extensions allow users to interact with your web service through buttons and forms in the Microsoft Teams client.",
 };
@@ -30,7 +30,7 @@ export enum AzureSolutionQuestionNames {
     PluginSelectionDeploy = "deploy-plugin",
     AddResources = "add-azure-resources",
     AppName = "app-name",
-    AskSub = "ask-subscription",
+    AskSub = "subscription",
     ProgrammingLanguage = "programming-language",
 }
 
@@ -154,6 +154,7 @@ export const DeployPluginSelectQuestion: MultiSelectQuestion = {
 
 export const AskSubscriptionQuestion: FuncQuestion = {
     name: AzureSolutionQuestionNames.AskSub,
+    title: "Please select a subscription",
     type: NodeType.func,
     namespace: "fx-solution-azure",
     method: "askSubscription"

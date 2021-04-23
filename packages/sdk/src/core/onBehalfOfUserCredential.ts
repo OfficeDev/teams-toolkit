@@ -43,6 +43,10 @@ export class OnBehalfOfUserCredential implements TokenCredential {
       missingConfigurations.push("clientSecret");
     }
 
+    if (!config?.authentication?.tenantId) {
+      missingConfigurations.push("tenantId");
+    }
+
     if (missingConfigurations.length != 0) {
       const errorMsg = formatString(
         ErrorMessage.InvalidConfiguration,

@@ -51,7 +51,7 @@ describe(FunctionPluginInfo.pluginName, () => {
             const ret: FxResult = await plugin.preScaffold(context);
 
             // Assert
-            chai.assert.isTrue(ret.isErr());
+            chai.assert.isTrue(ret.isOk());
         });
 
         it("Test scaffold", async () => {

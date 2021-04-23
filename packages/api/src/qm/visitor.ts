@@ -126,7 +126,7 @@ const questionVisitor: QuestionVistor = async function (
       return await ui.showInputBox({
         title: inputQuestion.title || inputQuestion.description || inputQuestion.name,
         password: !!(type === NodeType.password),
-        defaultValue: defaultValue as string,
+        defaultValue: inputQuestion.value as string || defaultValue as string,
         placeholder: inputQuestion.placeholder,
         prompt: inputQuestion.prompt || inputQuestion.description,
         validation: validationFunc,
@@ -180,7 +180,7 @@ const questionVisitor: QuestionVistor = async function (
         items: option,
         canSelectMany: !!(type === NodeType.multiSelect),
         returnObject: selectQuestion.returnObject,
-        defaultValue: defaultValue as string | string[] | undefined,
+        defaultValue: selectQuestion.value as (string | string[])|| defaultValue as (string | string[]),
         placeholder: selectQuestion.placeholder,
         backButton: backButton,
         onDidChangeSelection: type === NodeType.multiSelect ? (selectQuestion as MultiSelectQuestion).onDidChangeSelection : undefined

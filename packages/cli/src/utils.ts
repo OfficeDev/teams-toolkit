@@ -83,6 +83,13 @@ export function toYargsOptions(data: Question): Options {
   if (choices && choices.length > 0 && data.default === undefined) {
     data.default = choices[0];
   }
+  const defaultValue = data.default;
+  if (defaultValue && defaultValue instanceof Array && defaultValue.length > 0) {
+    data.default = defaultValue.map((item) => item.toLocaleLowerCase());
+  }
+  else if (defaultValue && typeof defaultValue === "string"){
+    data.default = defaultValue.toLocaleLowerCase();
+  }
   return {
     array: data.type === NodeType.multiSelect,
     description: data.description || data.title || "",

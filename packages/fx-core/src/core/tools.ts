@@ -111,7 +111,7 @@ export function sperateSecretData(configJson:Json): Dict<string>{
         else {
             for(const itemName of Object.keys(resourceConfig)){
                 const configValue = resourceConfig[itemName];
-                if(configValue){
+                if(configValue !== undefined){
                     const keyName = `${resourceId}.${itemName}`;
                     res[keyName] = configValue;
                     resourceConfig[itemName] = `{{${keyName}}}`;

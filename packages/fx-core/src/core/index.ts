@@ -113,8 +113,8 @@ class CoreImpl implements Core {
         answers.set("substage", "getQuestions");
         const node = new QTreeNode({ type: NodeType.group });
         if (stage === Stage.create) {
+            node.addChild(new QTreeNode(QuestionRootFolder));
             node.addChild(new QTreeNode(QuestionAppName));
-
             //make sure that global solutions are loaded
             const solutionNames: string[] = [];
             for (const k of this.globalSolutions.keys()) {
@@ -136,7 +136,7 @@ class CoreImpl implements Core {
                     }
                 }
             }
-            node.addChild(new QTreeNode(QuestionRootFolder));
+            
         } else if (this.selectedSolution) {
             const res = await this.selectedSolution.getQuestions(stage, this.solutionContext(answers));
             if (res.isErr()) return res;
@@ -188,12 +188,19 @@ class CoreImpl implements Core {
         );
     }
 
-    async validateFolder(folder: string, answer?: ConfigMap): Promise<Result<any, FxError>> {
-        const appName = answer?.getString(CoreQuestionNames.AppName);
-        if (!appName) return ok(undefined);
+    async validateAppName(appName: string, answer?: ConfigMap): Promise<Result<any, FxError>> {
+        const folder = answer?.getString(CoreQuestionNames.Foler);
+        if(!folder) return ok(undefined);
+        const schema = {
+            pattern: "^[\\da-zA-Z]+$",
+        };
+        const validateResult = jsonschema.validate(appName, schema);
+        if (validateResult.errors && validateResult.errors.length > 0) {
+            return ok(`app name doesn't match pattern: ${schema.pattern}`);
+        }
         const projectPath = path.resolve(folder, appName);
         const exists = await fs.pathExists(projectPath);
-        if (exists) return ok(`Project folder already exists:${projectPath}, please change a different folder.`);
+        if (exists) return ok(`Project path already exists:${projectPath}, please change a different app name.`);
         return ok(undefined);
     }
 
@@ -201,9 +208,9 @@ class CoreImpl implements Core {
         const namespace = func.namespace;
         const array = namespace?namespace.split("/"):[];
         if (!namespace || "" === namespace || array.length === 0) {
-            if (func.method === "validateFolder") {
+            if (func.method === "validateAppName") {
                 if (!func.params) return ok(undefined);
-                return await this.validateFolder(func.params as string, answer);
+                return await this.validateAppName(func.params as string, answer);
             }
         } else {
             const solutionName = array[0];
@@ -250,7 +257,7 @@ class CoreImpl implements Core {
             );
             
         const validateResult = jsonschema.validate(appName, {
-            pattern: (QuestionAppName.validation as StringValidation).pattern,
+            pattern: "^[\\da-zA-Z]+$",
         });
         if (validateResult.errors && validateResult.errors.length > 0) {
             return err(

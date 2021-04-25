@@ -1,8 +1,6 @@
 name: Environment Checker Integration Test
 
 on:
-  push:
-    branchs: aochengwang/ci
   pull_request:
     branches:
       - main

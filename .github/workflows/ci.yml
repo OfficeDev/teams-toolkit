@@ -30,7 +30,7 @@ jobs:
       - name: Setup project
         run: |
           npm install
-          npx lerna exec -- npm install --ignore-scripts build
+          npx lerna exec -- npm install --ignore-scripts --legacy-peer-deps
           npx lerna bootstrap
 
       - name: Lint code

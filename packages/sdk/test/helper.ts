@@ -52,7 +52,7 @@ export async function getAccessToken(
   const msalConfig = {
     auth: {
       clientId: clientId,
-      authority: defaultAuthorityHost.concat("/", tenantId)
+      authority: defaultAuthorityHost!.concat("/", tenantId!)
     }
   };
   let scopes: string[];
@@ -60,7 +60,7 @@ export async function getAccessToken(
   if (scope) {
     scopes = [scope];
   } else {
-    const defaultScope = process.env.SDK_INTEGRATION_TEST_TEAMS_SCOPES_SSO;
+    const defaultScope = process.env.SDK_INTEGRATION_TEST_TEAMS_ACCESS_AS_USER_SCOPE;
     scopes = [defaultScope!];
   }
   const pca = new msal.PublicClientApplication(msalConfig);

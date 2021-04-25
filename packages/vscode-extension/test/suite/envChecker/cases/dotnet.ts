@@ -5,7 +5,6 @@ import * as os from "os";
 import * as path from "path";
 import * as chai from "chai";
 import * as fs from "fs-extra";
-import * as chaiAsPromised from "chai-as-promised";
 
 import * as dotnetCheckerUtils from "../utils/dotnet";
 import { isLinux } from "../../../../src/debug/depsChecker/common";
@@ -15,7 +14,6 @@ import { TestAdapter } from "../adapters/testAdapter";
 import { TestLogger } from "../adapters/testLogger";
 import { TestTelemetry } from "../adapters/testTelemetry";
 import { ConfigFolderName } from "fx-api";
-chai.use(chaiAsPromised);
 
 const dotnetConfigPath = path.join(os.homedir(), "." + ConfigFolderName, "dotnet.json");
 

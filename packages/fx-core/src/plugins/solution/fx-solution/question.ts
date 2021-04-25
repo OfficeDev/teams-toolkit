@@ -74,7 +74,7 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
         title: "Add capabilities",
         prompt: "Choose the capabilities for your project setup",
         type: NodeType.multiSelect,
-        option: [TabOptionItem, BotOptionItem],
+        option: [TabOptionItem, BotOptionItem, MessageExtensionItem],
         default: [TabOptionItem.id]
     };
 }

@@ -18,8 +18,8 @@
         "full": "<%= componentNameCamelCase %>"
     },
     "icons": {
-        "outline": "<%= componentId %>_outline.png",
-        "color": "<%= componentId %>_color.png"
+        "outline": "outline.png",
+        "color": "color.png"
     },
     "accentColor": "#004578",
     "staticTabs": [

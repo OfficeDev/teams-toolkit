@@ -369,11 +369,10 @@ export class QTreeNode {
         if (!this.children) {
             this.children = [];
         }
-        this.children.push(node);
-        if (this.validate()) {
-            return this;
+        if (node.validate()) {
+            this.children.push(node);
         }
-        throw new Error("validation failed");
+        return this;
     }
     validate(): boolean {
         //1. validate the cycle depedency

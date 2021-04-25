@@ -4,7 +4,6 @@
 import { assert, expect, use as chaiUse } from "chai";
 
 import chaiPromises from "chai-as-promised";
-import mockedEnv from "mocked-env";
 
 import {
   ErrorCode,
@@ -13,28 +12,21 @@ import {
   OnBehalfOfUserCredential
 } from "../../../src";
 import { parseJwt } from "../../../src/util/utils";
-import { getAccessToken } from "../../helper";
+import { getAccessToken, MockEnvironmentVariable, RestoreEnvironmentVariable } from "../../helper";
 
 chaiUse(chaiPromises);
-let mockedEnvRestore: () => void;
 
 let ssoToken: string;
 describe("onBehalfOfUserCredential Test: Node", () => {
   before(async () => {
-    mockedEnvRestore = mockedEnv({
-      M365_CLIENT_ID: process.env.SDK_INTEGRATION_TEST_AAD_CLIENTID_REMOTE,
-      M365_CLIENT_SECRET: process.env.SDK_INTEGRATION_TEST_APP_CLIENT_SECRET_REMOTE,
-      M365_TENANT_ID: process.env.SDK_INTEGRATION_TEST_AAD_TENANTID,
-      M365_AUTHORITY_HOST: process.env.SDK_INTEGRATION_TEST_AAD_AUTHORITY_HOST
-    });
-
+    MockEnvironmentVariable();
     loadConfiguration();
 
     ssoToken = await getAccessToken(
-      process.env.SDK_INTEGRATION_TEST_AAD_CLIENTID_SSO!,
+      process.env.SDK_INTEGRATION_TEST_AAD_CLIENT_ID_SSO!,
       process.env.SDK_INTEGRATION_TEST_ACCOUNT_NAME!,
       process.env.SDK_INTEGRATION_TEST_ACCOUNT_PASSWORD!,
-      process.env.SDK_INTEGRATION_TEST_AAD_TENANTID!,
+      process.env.SDK_INTEGRATION_TEST_AAD_TENANT_ID!,
       process.env.SDK_INTEGRATION_TEST_SCOPES_SSO!
     );
   });
@@ -70,6 +62,6 @@ describe("onBehalfOfUserCredential Test: Node", () => {
   });
 
   after(async () => {
-    mockedEnvRestore();
+    RestoreEnvironmentVariable();
   })
 });

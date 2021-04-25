@@ -6,9 +6,10 @@ import { promisify } from "util";
 import * as path from "path";
 import fs from "fs-extra";
 import * as msal from "@azure/msal-node";
+import mockedEnv from "mocked-env";
 
 const execAsync = promisify(exec);
-
+let restore: () => void;
 /**
  * Copy function folder to the api folder under project and deploy.
  *
@@ -68,4 +69,22 @@ export async function getAccessToken(
   };
   const response = await pca.acquireTokenByUsernamePassword(usernamePasswordRequest);
   return response!.accessToken;
+}
+
+export function MockEnvironmentVariable() {
+  restore = mockedEnv({
+    M365_CLIENT_ID : process.env.SDK_INTEGRATION_TEST_AAD_CLIENTID_REMOTE,
+    M365_CLIENT_SECRET : process.env.SDK_INTEGRATION_TEST_APP_CLIENT_SECRET_REMOTE,
+    M365_TENANT_ID : process.env.SDK_INTEGRATION_TEST_AAD_TENANTID,
+    M365_AUTHORITY_HOST : process.env.SDK_INTEGRATION_TEST_AAD_AUTHORITY_HOST,
+
+    SQL_ENDPOINT: process.env.SDK_INTEGRATION_SQL_ENDPOINT,
+    SQL_DATABASE: process.env.SDK_INTEGRATION_SQL_DATABASE_NAME,
+    SQL_USER_NAME: process.env.SDK_INTEGRATION_SQL_USER_NAME,
+    SQL_PASSWORD: process.env.SDK_INTEGRATION_SQL_PASSWORD
+  });
+}
+
+export function RestoreEnvironmentVariable() {
+  restore();
 }

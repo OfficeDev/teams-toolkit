@@ -65,7 +65,6 @@
     "axios": "^0.21.1",
     "botbuilder-core": ">=4.9.3",
     "botbuilder-dialogs": ">=4.9.3",
-    "build": "^0.1.4",
     "events": "^3.0.0",
     "memory-cache": "^0.2.0",
     "tedious": "^9.2.1",

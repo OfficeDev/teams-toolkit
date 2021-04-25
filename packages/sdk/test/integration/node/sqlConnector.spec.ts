@@ -7,6 +7,7 @@ import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import chaiPromises from "chai-as-promised";
 import { Connection, Request } from "tedious";
 import { loadConfiguration, DefaultTediousConnectionConfiguration } from "../../../src";
+import {MockEnvironmentVariable, RestoreEnvironmentVariable} from "../../helper";
 
 chaiUse(chaiPromises);
 
@@ -17,10 +18,7 @@ describe("SQL Connector Test - node", () => {
   // let sqlName: string | undefined;
   // let subscriptionId: string | undefined;
   before(async () => {
-    process.env.SQL_ENDPOINT = process.env.SDK_INTEGRATION_SQL_ENDPOINT;
-    process.env.SQL_USER_NAME = process.env.SDK_INTEGRATION_SQL_USER_NAME;
-    process.env.SQL_PASSWORD = process.env.SDK_INTEGRATION_SQL_PASSWORD;
-    process.env.SQL_DATABASE_NAME = process.env.SDK_INTEGRATION_SQL_DATABASE_NAME;
+    MockEnvironmentVariable();
     loadConfiguration();
     // resourceGroup = process.env.SDK_INTEGRATION_RESOURCE_GROUP_NAME;
     // subscriptionId = process.env.SDK_INTEGRATION_TEST_ACCOUNT_SUBSCRIPTION_ID;
@@ -32,6 +30,7 @@ describe("SQL Connector Test - node", () => {
     // await addLocalFirewall(sqlManagerClient, resourceGroup!, sqlName!);
   });
   after(async () => {
+    RestoreEnvironmentVariable();
     // await clearUpLocalFirewall(sqlManagerClient, resourceGroup!, sqlName!);
   });
   it("Test SQL local connect success", async function() {

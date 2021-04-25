@@ -9,7 +9,7 @@ Use the library to:
 
 [Source code](https://github.com/OfficeDev/TeamsFx/tree/main/packages/sdk) |
 [Package (NPM)](https://www.npmjs.com/package/@microsoft/teamsfx) |
-[API reference documentation]() |
+[API reference documentation](https://aka.ms/teamsfx-sdk-help) |
 [Product documentation](https://review.docs.microsoft.com/en-us/mods/overview?branch=main) |
 [Samples](https://github.com/OfficeDev/TeamsFx-Samples)
 
@@ -65,6 +65,7 @@ const profile = await graphClient.api("/users/{object_id_of_another_people}").ge
 ## Core Concepts & Code Structure
 
 ### Credential
+
 There are 3 credential classes that are used to help simplifying authentication. They are located under [credential](src/credential) folder.
 Credential classes implements `TokenCredential` interface that is broadly used in Azure library APIs. They are designed to provide access token for specific scopes.
 The credential classes represents different identity under certain scenarios.
@@ -74,11 +75,13 @@ The credential classes represents different identity under certain scenarios.
 `OnBehalfOfUserCredential` uses on-behalf-of flow. It needs an access token and you can get a new token for different scope. It's designed to be used in Azure Function or Bot scenarios.
 
 ### Bot
+
 Bot related classes are stored under [bot](src/bot) folder.
 
 `TeamsBotSsoPrompt` has a good integration with Bot framework. It simplifies the authentication process when you develops bot application.
 
 ### Helper Function
+
 TeamsFx SDK provides helper functions to ease the configuration for third-party libraries. They are located under [core](src/core) folder.
 
 ### Error Handling
@@ -92,8 +95,7 @@ try {
   const credential = new TeamsUserCredential();
   const graphClient = createMicrosoftGraphClient(credential, ["User.Read"]); // Initializes MS Graph SDK using our MsGraphAuthProvider
   const profile = await graphClient.api("/me").get();
-}
-catch (err) {
+} catch (err) {
   // Show login button when specific ErrorWithCode is caught.
   if (err instanceof ErrorWithCode && err.code === ErrorCode.UiRequiredError) {
     this.setState({
@@ -106,10 +108,11 @@ catch (err) {
 ## Examples
 
 The following sections provide several code snippets covering some of the most common scenarios, including:
-* [Use Graph API in tab app](#user-graph-api-in-tab-app)
-* [Call Azure Function in tab app](#call-azure-function-in-tap-app)
-* [Access SQL database in Azure Function](#access-sql-database-in-azure-function)
-* [Use Graph API in Bot application](#use-graph-api-in-bot-application)
+
+- [Use Graph API in tab app](#user-graph-api-in-tab-app)
+- [Call Azure Function in tab app](#call-azure-function-in-tap-app)
+- [Access SQL database in Azure Function](#access-sql-database-in-azure-function)
+- [Use Graph API in Bot application](#use-graph-api-in-bot-application)
 
 ### Use Graph API in tab app
 
@@ -161,9 +164,7 @@ Add `TeamsBotSsoPrompt` to dialog set.
 
 ```ts
 // Create a DialogState property, DialogSet and TeamsBotSsoPrompt
-const dialogState: StatePropertyAccessor<DialogState> = convoState.createProperty(
-  "dialogState"
-);
+const dialogState: StatePropertyAccessor<DialogState> = convoState.createProperty("dialogState");
 const dialogs: DialogSet = new DialogSet(dialogState);
 const settings: TeamsBotSsoPromptSettings = {
   scopes: ["User.Read"]
@@ -174,7 +175,6 @@ loadConfiguration(config);
 dialogs.add(new TeamsBotSsoPrompt("TEAMS_BOT_SSO_PROMPT", settings));
 ```
 
-
 ## Troubleshooting
 
 ### Configure log
@@ -183,12 +183,14 @@ You can set custome log level and logger when using this library.
 The default log level is `info` and SDK will print log information to console.
 
 Set log level using the snippet below:
+
 ```ts
 // Only need the warning and error messages.
 setLogLevel(LogLevel.Warn);
 ```
 
 Set a custome log function if you want to redirect output:
+
 ```ts
 // Only log error message to Application Insights in bot application.
 setLogFunction((level: LogLevel, ...args: any[]) => {
@@ -203,6 +205,7 @@ setLogFunction((level: LogLevel, ...args: any[]) => {
 ```
 
 Set a custome logger instance:
+
 ```ts
 // context.log send messages to Application Insights in Azure Function
 setLogger(context.log);
@@ -230,7 +233,7 @@ If you'd like to contribute to this library, please read the [contribution guide
 
 ## Reporting security issues and bugs
 
-Security issues and bugs should be reported privately, via email, to the Microsoft Security Response Center (MSRC)  secure@microsoft.com. You should receive a response within 24 hours. If for some reason you do not, please follow up via email to ensure we received your original message. Further information, including the MSRC PGP key, can be found in the [Security TechCenter](https://technet.microsoft.com/en-us/security/ff852094.aspx).
+Security issues and bugs should be reported privately, via email, to the Microsoft Security Response Center (MSRC) secure@microsoft.com. You should receive a response within 24 hours. If for some reason you do not, please follow up via email to ensure we received your original message. Further information, including the MSRC PGP key, can be found in the [Security TechCenter](https://technet.microsoft.com/en-us/security/ff852094.aspx).
 
 ## Related projects
 

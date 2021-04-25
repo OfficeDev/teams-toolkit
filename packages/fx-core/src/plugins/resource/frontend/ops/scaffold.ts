@@ -19,11 +19,7 @@ import { Messages } from "../resources/messages";
 import { PluginContext } from "fx-api";
 import { Utils } from "../utils";
 import { telemetryHelper } from "../utils/telemetry-helper";
-import { TemplateInfo } from "../resources/templateInfo";
-
-export interface TemplateVariable {
-    AppId: string;
-}
+import { TemplateInfo, TemplateVariable } from "../resources/templateInfo";
 
 
 export type Manifest = {
@@ -112,27 +108,27 @@ export class FrontendScaffold {
         }
     }
 
-    public static fulfill(filePath: string, data: Buffer, variables: TemplateVariable): string {
+    public static fulfill(filePath: string, data: Buffer, variables: TemplateVariable): string | Buffer {
         if (path.extname(filePath) === FrontendPathInfo.TemplateFileExt) {
             return Mustache.render(data.toString(), variables);
         }
-        return data.toString();
+        return data;
     }
 
     public static async scaffoldFromZip(
         zip: AdmZip,
         dstPath: string,
         nameReplaceFn?: (filePath: string, data: Buffer) => string,
-        dataReplaceFn?: (filePath: string, data: Buffer) => string,
+        dataReplaceFn?: (filePath: string, data: Buffer) => string | Buffer,
     ): Promise<void> {
         await Promise.all(
             zip
                 .getEntries()
                 .filter((entry) => !entry.isDirectory)
                 .map(async (entry) => {
-                    const data = dataReplaceFn
+                    const data: string | Buffer = dataReplaceFn
                         ? dataReplaceFn(entry.name, entry.getData())
-                        : entry.getData().toString();
+                        : entry.getData();
 
                     const filePath = path.join(
                         dstPath,

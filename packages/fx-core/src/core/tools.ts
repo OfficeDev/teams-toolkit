@@ -88,8 +88,8 @@ const SecretDataMatchers = ["fx-resource-aad-app-for-teams.clientSecret",
     "fx-resource-simple-auth.filePath",
     "fx-resource-simple-auth.environmentVariableParams",
     "fx-resource-local-debug.*",
-    "fx-resource-teamsbot.botPassword",
-    "fx-resource-teamsbot.localBotPassword",
+    "fx-resource-bot.botPassword",
+    "fx-resource-bot.localBotPassword",
     "fx-resource-apim.apimClientAADClientSecret"];
 
 export function sperateSecretData(configJson:Json): Dict<string>{
@@ -111,7 +111,7 @@ export function sperateSecretData(configJson:Json): Dict<string>{
         else {
             for(const itemName of Object.keys(resourceConfig)){
                 const configValue = resourceConfig[itemName];
-                if(configValue){
+                if(configValue !== undefined){
                     const keyName = `${resourceId}.${itemName}`;
                     res[keyName] = configValue;
                     resourceConfig[itemName] = `{{${keyName}}}`;

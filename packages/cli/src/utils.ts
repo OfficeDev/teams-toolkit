@@ -56,7 +56,7 @@ export function getChoicesFromQTNodeQuestion(data: Question): string[] | undefin
     if (typeof option[0] === "string") {
       return option as string[];
     } else {
-      return (option as OptionItem[]).map((op) => op.id);
+      return (option as OptionItem[]).map((op) => op.cliName ? op.cliName : op.id);
     }
   } else {
     return undefined;
@@ -83,12 +83,20 @@ export function toYargsOptions(data: Question): Options {
   if (choices && choices.length > 0 && data.default === undefined) {
     data.default = choices[0];
   }
+  const defaultValue = data.default;
+  if (defaultValue && defaultValue instanceof Array && defaultValue.length > 0) {
+    data.default = defaultValue.map((item) => item.toLocaleLowerCase());
+  }
+  else if (defaultValue && typeof defaultValue === "string"){
+    data.default = defaultValue.toLocaleLowerCase();
+  }
   return {
     array: data.type === NodeType.multiSelect,
     description: data.description || data.title || "",
     default: data.default,
     choices: choices,
     hidden: !!(data as any).hide,
+    global: false
   };
 }
 

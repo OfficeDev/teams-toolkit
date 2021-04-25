@@ -26,5 +26,17 @@
             ],
             "hide": true
         }
+    },
+    {
+        "data": {
+            "name": "function-name",
+            "description": "Please provide function name.",
+            "type": "text",
+            "default": "getUserProfile",
+            "validation": {
+                "namespace": "fx-solution-azure/fx-resource-function",
+                "method": "validateFunctionName"
+            }
+        }
     }
 ]

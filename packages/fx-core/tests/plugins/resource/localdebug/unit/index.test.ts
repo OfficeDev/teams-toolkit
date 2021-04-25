@@ -11,6 +11,15 @@ import { LocalDebugPlugin } from "../../../../../src/plugins/resource/localdebug
 
 chai.use(chaiAsPromised);
 
+interface TestParameter {
+    programmingLanguage: string;
+    numConfigurations: number;
+    numCompounds: number;
+    numTasks: number;
+    numTaskInputs: number;
+    numLocalEnvs: number;
+}
+
 describe(LocalDebugPluginInfo.pluginName, () => {
     const expectedLaunchFile = path.resolve(__dirname, "../data/.vscode/launch.json");
     const expectedLocalEnvFile = path.resolve(__dirname, `../data/.${ConfigFolderName}/local.env`);
@@ -23,215 +32,324 @@ describe(LocalDebugPluginInfo.pluginName, () => {
 
         beforeEach(() => {
             pluginContext = {
-                root: path.resolve(__dirname, "../data/")
+                root: path.resolve(__dirname, "../data/"),
+                config: new Map(),
             } as PluginContext;
             plugin = new LocalDebugPlugin();
             fs.emptyDirSync(pluginContext.root);
         });
 
-        it("happy path: tab with function", async () => {
-            pluginContext.platform = Platform.VSCode;
-            pluginContext.configOfOtherPlugins = new Map([
-                ["fx-resource-function", new Map()]
-            ]);
-            pluginContext.projectSettings = {
-                appName: "",
-                solutionSettings: {
-                    name: "",
-                    version: "",
-                    activeResourcePlugins: [
-                        "fx-resource-aad-app-for-teams",
-                        "fx-resource-frontend-hosting",
-                        "fx-resource-function",
-                    ],
-                },
-            };
-            const result = await plugin.scaffold(pluginContext);
-            chai.assert.isTrue(result.isOk());
+        const parameters1: TestParameter[] = [
+            {
+                programmingLanguage: "javascript",
+                numConfigurations: 5,
+                numCompounds: 2,
+                numTasks: 10,
+                numTaskInputs: 1,
+                numLocalEnvs: 30,
+            },
+            {
+                programmingLanguage: "typescript",
+                numConfigurations: 5,
+                numCompounds: 2,
+                numTasks: 11,
+                numTaskInputs: 1,
+                numLocalEnvs: 30,
+            }
+        ];
+        parameters1.forEach((parameter: TestParameter) => {
+            it(`happy path: tab with function (${parameter.programmingLanguage})`, async () => {
+                pluginContext.platform = Platform.VSCode;
+                pluginContext.configOfOtherPlugins = new Map([
+                    ["solution", new Map([["programmingLanguage", parameter.programmingLanguage]])]
+                ]);
+                pluginContext.projectSettings = {
+                    appName: "",
+                    solutionSettings: {
+                        name: "",
+                        version: "",
+                        activeResourcePlugins: [
+                            "fx-resource-aad-app-for-teams",
+                            "fx-resource-frontend-hosting",
+                            "fx-resource-function",
+                        ],
+                    },
+                };
+                const result = await plugin.scaffold(pluginContext);
+                chai.assert.isTrue(result.isOk());
 
-            //assert output launch.json
-            const launch = fs.readJSONSync(expectedLaunchFile);
-            const configurations: [] = launch["configurations"];
-            const compounds: [] = launch["compounds"];
-            chai.assert.equal(configurations.length, 5);
-            chai.assert.equal(compounds.length, 2);
+                //assert output launch.json
+                const launch = fs.readJSONSync(expectedLaunchFile);
+                const configurations: [] = launch["configurations"];
+                const compounds: [] = launch["compounds"];
+                chai.assert.equal(configurations.length, parameter.numConfigurations);
+                chai.assert.equal(compounds.length, parameter.numCompounds);
 
-            //assert output tasks.json
-            const tasksAll = fs.readJSONSync(expectedTasksFile);
-            const tasks: [] = tasksAll["tasks"];
-            const tasksInput: [] = tasksAll["inputs"];
-            chai.assert.equal(tasks.length, 10);
-            chai.assert.equal(tasksInput.length, 1);
+                //assert output tasks.json
+                const tasksAll = fs.readJSONSync(expectedTasksFile);
+                const tasks: [] = tasksAll["tasks"];
+                const tasksInput: [] = tasksAll["inputs"];
+                chai.assert.equal(tasks.length, parameter.numTasks);
+                chai.assert.equal(tasksInput.length, parameter.numTaskInputs);
 
-            //assert output settings.json
-            const settings = fs.readJSONSync(expectedSettingsFile);
-            chai.assert.isTrue(Object.keys(settings).some(key => key === "azureFunctions.stopFuncTaskPostDebug"));
-            chai.assert.equal(settings["azureFunctions.stopFuncTaskPostDebug"], false);
+                //assert output settings.json
+                const settings = fs.readJSONSync(expectedSettingsFile);
+                chai.assert.isTrue(Object.keys(settings).some(key => key === "azureFunctions.stopFuncTaskPostDebug"));
+                chai.assert.equal(settings["azureFunctions.stopFuncTaskPostDebug"], false);
 
-            //assert output local.env
-            const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
-            chai.assert.equal(Object.keys(localEnvs).length, 30);
+                //assert output local.env
+                const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
+                chai.assert.equal(Object.keys(localEnvs).length, parameter.numLocalEnvs);
+            });
         });
 
-        it("happy path: tab without function", async () => {
-            pluginContext.platform = Platform.VSCode;
-            pluginContext.configOfOtherPlugins = new Map();
-            pluginContext.projectSettings = {
-                appName: "",
-                solutionSettings: {
-                    name: "",
-                    version: "",
-                    activeResourcePlugins: [
-                        "fx-resource-aad-app-for-teams",
-                        "fx-resource-frontend-hosting",
-                    ],
-                },
-            };
-            const result = await plugin.scaffold(pluginContext);
-            chai.assert.isTrue(result.isOk());
+        const parameters2: TestParameter[] = [
+            {
+                programmingLanguage: "javascript",
+                numConfigurations: 4,
+                numCompounds: 2,
+                numTasks: 7,
+                numTaskInputs: 1,
+                numLocalEnvs: 16,
+            },
+            {
+                programmingLanguage: "typescript",
+                numConfigurations: 4,
+                numCompounds: 2,
+                numTasks: 7,
+                numTaskInputs: 1,
+                numLocalEnvs: 16,
+            }
+        ];
+        parameters2.forEach((parameter) => {
+            it(`happy path: tab without function (${parameter.programmingLanguage})`, async () => {
+                pluginContext.platform = Platform.VSCode;
+                pluginContext.configOfOtherPlugins = new Map([
+                    ["solution", new Map([["programmingLanguage", parameter.programmingLanguage]])]
+                ]);
+                pluginContext.projectSettings = {
+                    appName: "",
+                    solutionSettings: {
+                        name: "",
+                        version: "",
+                        activeResourcePlugins: [
+                            "fx-resource-aad-app-for-teams",
+                            "fx-resource-frontend-hosting",
+                        ],
+                    },
+                };
+                const result = await plugin.scaffold(pluginContext);
+                chai.assert.isTrue(result.isOk());
 
-            //assert output launch.json
-            const launch = fs.readJSONSync(expectedLaunchFile);
-            const configurations: [] = launch["configurations"];
-            const compounds: [] = launch["compounds"];
-            chai.assert.equal(configurations.length, 4);
-            chai.assert.equal(compounds.length, 2);
+                //assert output launch.json
+                const launch = fs.readJSONSync(expectedLaunchFile);
+                const configurations: [] = launch["configurations"];
+                const compounds: [] = launch["compounds"];
+                chai.assert.equal(configurations.length, parameter.numConfigurations);
+                chai.assert.equal(compounds.length, parameter.numCompounds);
 
-            //assert output tasks.json
-            const tasksAll = fs.readJSONSync(expectedTasksFile);
-            const tasks: [] = tasksAll["tasks"];
-            const tasksInput: [] = tasksAll["inputs"];
-            chai.assert.equal(tasks.length, 7);
-            chai.assert.equal(tasksInput.length, 1);
+                //assert output tasks.json
+                const tasksAll = fs.readJSONSync(expectedTasksFile);
+                const tasks: [] = tasksAll["tasks"];
+                const tasksInput: [] = tasksAll["inputs"];
+                chai.assert.equal(tasks.length, parameter.numTasks);
+                chai.assert.equal(tasksInput.length, parameter.numTaskInputs);
 
-            //no settings.json
-            chai.assert.isFalse(fs.existsSync(expectedSettingsFile));
+                //no settings.json
+                chai.assert.isFalse(fs.existsSync(expectedSettingsFile));
 
-            //assert output local.env
-            const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
-            chai.assert.equal(Object.keys(localEnvs).length, 16);
+                //assert output local.env
+                const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
+                chai.assert.equal(Object.keys(localEnvs).length, parameter.numLocalEnvs);
+            });
         });
 
-        it("happy path: bot", async () => {
-            pluginContext.platform = Platform.VSCode;
-            pluginContext.configOfOtherPlugins = new Map();
-            pluginContext.projectSettings = {
-                appName: "",
-                solutionSettings: {
-                    name: "",
-                    version: "",
-                    activeResourcePlugins: [
-                        "fx-resource-aad-app-for-teams",
-                        "fx-resource-teamsbot",
-                    ],
-                },
-            };
-            const result = await plugin.scaffold(pluginContext);
-            chai.assert.isTrue(result.isOk());
+        const parameters3: TestParameter[] = [
+            {
+                programmingLanguage: "javascript",
+                numConfigurations: 5,
+                numCompounds: 2,
+                numTasks: 8,
+                numTaskInputs: 1,
+                numLocalEnvs: 14,
+            },
+            {
+                programmingLanguage: "typescript",
+                numConfigurations: 5,
+                numCompounds: 2,
+                numTasks: 8,
+                numTaskInputs: 1,
+                numLocalEnvs: 14,
+            }
+        ];
+        parameters3.forEach((parameter) => {
+            it(`happy path: bot (${parameter.programmingLanguage})`, async () => {
+                pluginContext.platform = Platform.VSCode;
+                pluginContext.configOfOtherPlugins = new Map([
+                    ["solution", new Map([["programmingLanguage", parameter.programmingLanguage]])]
+                ]);
+                pluginContext.projectSettings = {
+                    appName: "",
+                    solutionSettings: {
+                        name: "",
+                        version: "",
+                        activeResourcePlugins: [
+                            "fx-resource-aad-app-for-teams",
+                            "fx-resource-bot",
+                        ],
+                    },
+                };
+                const result = await plugin.scaffold(pluginContext);
+                chai.assert.isTrue(result.isOk());
 
-            //assert output launch.json
-            const launch = fs.readJSONSync(expectedLaunchFile);
-            const configurations: [] = launch["configurations"];
-            const compounds: [] = launch["compounds"];
-            chai.assert.equal(configurations.length, 5);
-            chai.assert.equal(compounds.length, 2);
+                //assert output launch.json
+                const launch = fs.readJSONSync(expectedLaunchFile);
+                const configurations: [] = launch["configurations"];
+                const compounds: [] = launch["compounds"];
+                chai.assert.equal(configurations.length, parameter.numConfigurations);
+                chai.assert.equal(compounds.length, parameter.numCompounds);
 
-            //assert output tasks.json
-            const tasksAll = fs.readJSONSync(expectedTasksFile);
-            const tasks: [] = tasksAll["tasks"];
-            const tasksInput: [] = tasksAll["inputs"];
-            chai.assert.equal(tasks.length, 8);
-            chai.assert.equal(tasksInput.length, 1);
+                //assert output tasks.json
+                const tasksAll = fs.readJSONSync(expectedTasksFile);
+                const tasks: [] = tasksAll["tasks"];
+                const tasksInput: [] = tasksAll["inputs"];
+                chai.assert.equal(tasks.length, parameter.numTasks);
+                chai.assert.equal(tasksInput.length, parameter.numTaskInputs);
 
-            //no settings.json
-            chai.assert.isFalse(fs.existsSync(expectedSettingsFile));
+                //no settings.json
+                chai.assert.isFalse(fs.existsSync(expectedSettingsFile));
 
-            //assert output local.env
-            const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
-            chai.assert.equal(Object.keys(localEnvs).length, 14);
+                //assert output local.env
+                const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
+                chai.assert.equal(Object.keys(localEnvs).length, parameter.numLocalEnvs);
+            });
         });
 
-        it("happy path: tab with function and bot", async () => {
-            pluginContext.platform = Platform.VSCode;
-            pluginContext.configOfOtherPlugins = new Map();
-            pluginContext.projectSettings = {
-                appName: "",
-                solutionSettings: {
-                    name: "",
-                    version: "",
-                    activeResourcePlugins: [
-                        "fx-resource-aad-app-for-teams",
-                        "fx-resource-frontend-hosting",
-                        "fx-resource-function",
-                        "fx-resource-teamsbot",
-                    ],
-                },
-            };
-            const result = await plugin.scaffold(pluginContext);
-            chai.assert.isTrue(result.isOk());
+        const parameters4: TestParameter[] = [
+            {
+                programmingLanguage: "javascript",
+                numConfigurations: 6,
+                numCompounds: 2,
+                numTasks: 13,
+                numTaskInputs: 1,
+                numLocalEnvs: 44,
+            },
+            {
+                programmingLanguage: "typescript",
+                numConfigurations: 6,
+                numCompounds: 2,
+                numTasks: 14,
+                numTaskInputs: 1,
+                numLocalEnvs: 44,
+            }
+        ];
+        parameters4.forEach((parameter) => {
+            it(`happy path: tab with function and bot (${parameter.programmingLanguage})`, async () => {
+                pluginContext.platform = Platform.VSCode;
+                pluginContext.configOfOtherPlugins = new Map([
+                    ["solution", new Map([["programmingLanguage", parameter.programmingLanguage]])]
+                ]);
+                pluginContext.projectSettings = {
+                    appName: "",
+                    solutionSettings: {
+                        name: "",
+                        version: "",
+                        activeResourcePlugins: [
+                            "fx-resource-aad-app-for-teams",
+                            "fx-resource-frontend-hosting",
+                            "fx-resource-function",
+                            "fx-resource-bot",
+                        ],
+                    },
+                };
+                const result = await plugin.scaffold(pluginContext);
+                chai.assert.isTrue(result.isOk());
 
-            //assert output launch.json
-            const launch = fs.readJSONSync(expectedLaunchFile);
-            const configurations: [] = launch["configurations"];
-            const compounds: [] = launch["compounds"];
-            chai.assert.equal(configurations.length, 6);
-            chai.assert.equal(compounds.length, 2);
+                //assert output launch.json
+                const launch = fs.readJSONSync(expectedLaunchFile);
+                const configurations: [] = launch["configurations"];
+                const compounds: [] = launch["compounds"];
+                chai.assert.equal(configurations.length, parameter.numConfigurations);
+                chai.assert.equal(compounds.length, parameter.numCompounds);
 
-            //assert output tasks.json
-            const tasksAll = fs.readJSONSync(expectedTasksFile);
-            const tasks: [] = tasksAll["tasks"];
-            const tasksInput: [] = tasksAll["inputs"];
-            chai.assert.equal(tasks.length, 13);
-            chai.assert.equal(tasksInput.length, 1);
+                //assert output tasks.json
+                const tasksAll = fs.readJSONSync(expectedTasksFile);
+                const tasks: [] = tasksAll["tasks"];
+                const tasksInput: [] = tasksAll["inputs"];
+                chai.assert.equal(tasks.length, parameter.numTasks);
+                chai.assert.equal(tasksInput.length, parameter.numTaskInputs);
 
-            //assert output settings.json
-            const settings = fs.readJSONSync(expectedSettingsFile);
-            chai.assert.isTrue(Object.keys(settings).some(key => key === "azureFunctions.stopFuncTaskPostDebug"));
-            chai.assert.equal(settings["azureFunctions.stopFuncTaskPostDebug"], false);
+                //assert output settings.json
+                const settings = fs.readJSONSync(expectedSettingsFile);
+                chai.assert.isTrue(Object.keys(settings).some(key => key === "azureFunctions.stopFuncTaskPostDebug"));
+                chai.assert.equal(settings["azureFunctions.stopFuncTaskPostDebug"], false);
 
-            //assert output local.env
-            const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
-            chai.assert.equal(Object.keys(localEnvs).length, 44);
+                //assert output local.env
+                const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
+                chai.assert.equal(Object.keys(localEnvs).length, parameter.numLocalEnvs);
+            });
         });
 
-        it("happy path: tab without function and bot", async () => {
-            pluginContext.platform = Platform.VSCode;
-            pluginContext.configOfOtherPlugins = new Map();
-            pluginContext.projectSettings = {
-                appName: "",
-                solutionSettings: {
-                    name: "",
-                    version: "",
-                    activeResourcePlugins: [
-                        "fx-resource-aad-app-for-teams",
-                        "fx-resource-frontend-hosting",
-                        "fx-resource-teamsbot",
-                    ],
-                },
-            };
-            const result = await plugin.scaffold(pluginContext);
-            chai.assert.isTrue(result.isOk());
+        const parameters5: TestParameter[] = [
+            {
+                programmingLanguage: "javascript",
+                numConfigurations: 5,
+                numCompounds: 2,
+                numTasks: 10,
+                numTaskInputs: 1,
+                numLocalEnvs: 30,
+            },
+            {
+                programmingLanguage: "typescript",
+                numConfigurations: 5,
+                numCompounds: 2,
+                numTasks: 10,
+                numTaskInputs: 1,
+                numLocalEnvs: 30,
+            }
+        ];
+        parameters5.forEach((parameter) => {
+            it(`happy path: tab without function and bot (${parameter.programmingLanguage})`, async () => {
+                pluginContext.platform = Platform.VSCode;
+                pluginContext.configOfOtherPlugins = new Map([
+                    ["solution", new Map([["programmingLanguage", parameter.programmingLanguage]])]
+                ]);
+                pluginContext.projectSettings = {
+                    appName: "",
+                    solutionSettings: {
+                        name: "",
+                        version: "",
+                        activeResourcePlugins: [
+                            "fx-resource-aad-app-for-teams",
+                            "fx-resource-frontend-hosting",
+                            "fx-resource-bot",
+                        ],
+                    },
+                };
+                const result = await plugin.scaffold(pluginContext);
+                chai.assert.isTrue(result.isOk());
 
-            //assert output launch.json
-            const launch = fs.readJSONSync(expectedLaunchFile);
-            const configurations: [] = launch["configurations"];
-            const compounds: [] = launch["compounds"];
-            chai.assert.equal(configurations.length, 5);
-            chai.assert.equal(compounds.length, 2);
+                //assert output launch.json
+                const launch = fs.readJSONSync(expectedLaunchFile);
+                const configurations: [] = launch["configurations"];
+                const compounds: [] = launch["compounds"];
+                chai.assert.equal(configurations.length, parameter.numConfigurations);
+                chai.assert.equal(compounds.length, parameter.numCompounds);
 
-            //assert output tasks.json
-            const tasksAll = fs.readJSONSync(expectedTasksFile);
-            const tasks: [] = tasksAll["tasks"];
-            const tasksInput: [] = tasksAll["inputs"];
-            chai.assert.equal(tasks.length, 10);
-            chai.assert.equal(tasksInput.length, 1);
+                //assert output tasks.json
+                const tasksAll = fs.readJSONSync(expectedTasksFile);
+                const tasks: [] = tasksAll["tasks"];
+                const tasksInput: [] = tasksAll["inputs"];
+                chai.assert.equal(tasks.length, parameter.numTasks);
+                chai.assert.equal(tasksInput.length, parameter.numTaskInputs);
 
-            //no settings.json
-            chai.assert.isFalse(fs.existsSync(expectedSettingsFile));
+                //no settings.json
+                chai.assert.isFalse(fs.existsSync(expectedSettingsFile));
 
-            //assert output local.env
-            const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
-            chai.assert.equal(Object.keys(localEnvs).length, 30);
+                //assert output local.env
+                const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
+                chai.assert.equal(Object.keys(localEnvs).length, parameter.numLocalEnvs);
+            });
         });
 
         it("spfx", async () => {
@@ -259,7 +377,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
             const tasksAll = fs.readJSONSync(expectedTasksFile);
             const tasks: [] = tasksAll["tasks"];
             const tasksInput: [] = tasksAll["inputs"];
-            chai.assert.equal(tasks.length, 3);
+            chai.assert.equal(tasks.length, 4);
             chai.assert.equal(tasksInput.length, 1);
 
             //no settings.json

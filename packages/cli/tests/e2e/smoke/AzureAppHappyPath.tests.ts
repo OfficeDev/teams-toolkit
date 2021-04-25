@@ -4,9 +4,16 @@
 import fs from "fs-extra";
 import path from "path";
 
-import { AadValidator, SimpleAuthValidator, deleteAadApp, MockAzureAccountProvider } from "fx-api";
+import { AadValidator, SimpleAuthValidator } from "fx-api";
 
-import { execAsync, getSubscriptionId, getTestFolder, getUniqueAppName } from "../commonUtils";
+import {
+  execAsync,
+  getSubscriptionId,
+  getTestFolder,
+  getUniqueAppName,
+  setSimpleAuthSkuNameToB1,
+  cleanUp,
+} from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 
 describe("Azure App Happy Path", function() {
@@ -25,6 +32,9 @@ describe("Azure App Happy Path", function() {
         timeout: 0
       }
     );
+    console.log(`[Successfully] scaffold to ${projectPath}`);
+
+    await setSimpleAuthSkuNameToB1(projectPath);
 
     // capability add bot
     await execAsync(
@@ -141,15 +151,8 @@ describe("Azure App Happy Path", function() {
     }
   });
 
-  this.afterAll(async () => {
-    // delete aad app
-    const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
-    await deleteAadApp(context, AppStudioLogin);
-
-    // remove resouce
-    await MockAzureAccountProvider.getInstance().deleteResourceGroup(`${appName}-rg`);
-
-    // remove project
-    await fs.remove(projectPath);
+  after(async () => {
+    // clean up
+    await cleanUp(appName, projectPath, true, true, true);
   });
 });

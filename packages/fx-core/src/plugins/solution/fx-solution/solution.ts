@@ -336,6 +336,7 @@ export class TeamsAppSolution implements Solution {
         const settingsRes = this.fillInSolutionSettings(ctx);
         if(settingsRes.isErr()) 
             return settingsRes;
+        const settings = this.getAzureSolutionSettings(ctx);
 
         //Reload plugins according to user answers
         this.reloadPlugins(ctx);
@@ -344,7 +345,7 @@ export class TeamsAppSolution implements Solution {
         await fs.copy(defaultIconPath, `${ctx.root}/.${ConfigFolderName}/color.png`);
         await fs.copy(defaultIconPath, `${ctx.root}/.${ConfigFolderName}/outline.png`);
         if (this.isAzureProject(ctx)) {
-            const manifest = await AppStudio.createManifest(ctx.answers);
+            const manifest = await AppStudio.createManifest(ctx.projectSettings!);
             if (manifest) Object.assign(ctx.app, manifest);
             await fs.writeFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`, JSON.stringify(manifest, null, 4));
             await fs.writeJSON(`${ctx.root}/permissions.json`, DEFAULT_PERMISSION_REQUEST, { spaces: 4 });
@@ -2015,6 +2016,16 @@ export class TeamsAppSolution implements Solution {
                 }
                 ctx.logProvider?.info(`finish scaffolding Local Debug Configs!`);
                 ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false); //if selected plugin changed, we need to re-do provision
+
+                if (this.isAzureProject(ctx)) {
+                    const manifest = await AppStudio.createManifest(ctx.projectSettings!);
+                    if (manifest) Object.assign(ctx.app, manifest);
+                    await fs.writeFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`, JSON.stringify(manifest, null, 4));
+                    await fs.writeJSON(`${ctx.root}/permissions.json`, DEFAULT_PERMISSION_REQUEST, { spaces: 4 });
+                } else {
+                    const manifest = await ((this.spfxPlugin as unknown) as SpfxPlugin).getManifest();
+                    await fs.writeFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`, JSON.stringify(manifest, null, 4));
+                }
             }
             await ctx.dialog?.communicate(
                 new DialogMsg(DialogType.Show, {

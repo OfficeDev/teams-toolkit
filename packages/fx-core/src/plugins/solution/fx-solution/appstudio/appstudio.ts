@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { IBotRegistration, IAADApplication, IAADPassword, IAppDefinition } from "./interface";
-import { TeamsAppManifest, ConfigMap, LogProvider, IBot, IComposeExtension } from "fx-api";
+import { TeamsAppManifest, ConfigMap, LogProvider, IBot, IComposeExtension, ProjectSettings, SolutionSettings, AzureSolutionSettings } from "fx-api";
 import { AzureSolutionQuestionNames, BotOptionItem, HostTypeOptionAzure, MessageExtensionItem } from "../question";
 import { TEAMS_APP_MANIFEST_TEMPLATE } from "../constants";
 import axios, { AxiosInstance } from "axios";
@@ -237,20 +237,15 @@ export namespace AppStudio {
     /**
      * ask app common questions to generate app manifest
      */
-    export async function createManifest(answers?: ConfigMap): Promise<TeamsAppManifest | undefined> {
-        const type = answers?.getString(AzureSolutionQuestionNames.HostType);
-        const capabilities = answers?.getStringArray(AzureSolutionQuestionNames.Capabilities);
-
+    export async function createManifest(settings: ProjectSettings): Promise<TeamsAppManifest | undefined> {
+        const solutionSettings: AzureSolutionSettings = settings.solutionSettings as AzureSolutionSettings;
         if (
-            HostTypeOptionAzure.id === type ||
-            capabilities?.includes(BotOptionItem.id) ||
-            capabilities?.includes(MessageExtensionItem.id)
+            HostTypeOptionAzure.id === solutionSettings.hostType ||
+            solutionSettings.capabilities.includes(BotOptionItem.id) ||
+            solutionSettings.capabilities.includes(MessageExtensionItem.id)
         ) {
             let manifestString = TEAMS_APP_MANIFEST_TEMPLATE;
-            const appName = answers?.getString(AzureSolutionQuestionNames.AppName);
-            if (appName) {
-                manifestString = replaceConfigValue(manifestString, "appName", appName);
-            }
+            manifestString = replaceConfigValue(manifestString, "appName", settings.appName);
             manifestString = replaceConfigValue(manifestString, "version", "1.0.0");
             const manifest: TeamsAppManifest = JSON.parse(manifestString);
             return manifest;

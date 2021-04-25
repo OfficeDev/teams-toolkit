@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { IBotRegistration, IAADApplication, IAADPassword, IAppDefinition } from "./interface";
-import { TeamsAppManifest, ConfigMap, LogProvider, IBot, IComposeExtension, ProjectSettings, SolutionSettings, AzureSolutionSettings } from "fx-api";
-import { AzureSolutionQuestionNames, BotOptionItem, HostTypeOptionAzure, MessageExtensionItem } from "../question";
-import { TEAMS_APP_MANIFEST_TEMPLATE } from "../constants";
+import { IBotRegistration, IAADApplication, IAADPassword, IAppDefinition, IAppDefinitionBot, IAppManifestBot, IGroupChatCommand, IPersonalCommand, ITeamCommand, IMessagingExtension } from "./interface";
+import { TeamsAppManifest, ConfigMap, LogProvider, ICommand, ICommandList, IBot, IComposeExtension, AzureSolutionSettings, ProjectSettings } from "fx-api";
+import { AzureSolutionQuestionNames, BotOptionItem, HostTypeOptionAzure, MessageExtensionItem, TabOptionItem } from "../question";
+import { TEAMS_APP_MANIFEST_TEMPLATE, CONFIGURABLE_TABS_TPL, STATIC_TABS_TPL, BOTS_TPL, COMPOSE_EXTENSIONS_TPL } from "../constants";
 import axios, { AxiosInstance } from "axios";
 
 export namespace AppStudio {
@@ -239,6 +239,9 @@ export namespace AppStudio {
      */
     export async function createManifest(settings: ProjectSettings): Promise<TeamsAppManifest | undefined> {
         const solutionSettings: AzureSolutionSettings = settings.solutionSettings as AzureSolutionSettings;
+        if (!solutionSettings.capabilities || (!solutionSettings.capabilities.includes(BotOptionItem.id) && !solutionSettings.capabilities.includes(MessageExtensionItem.id) && !solutionSettings.capabilities.includes(TabOptionItem.id))) {
+            throw new Error(`Invalid capability: ${solutionSettings.capabilities}`);
+        }
         if (
             HostTypeOptionAzure.id === solutionSettings.hostType ||
             solutionSettings.capabilities.includes(BotOptionItem.id) ||
@@ -248,6 +251,16 @@ export namespace AppStudio {
             manifestString = replaceConfigValue(manifestString, "appName", settings.appName);
             manifestString = replaceConfigValue(manifestString, "version", "1.0.0");
             const manifest: TeamsAppManifest = JSON.parse(manifestString);
+            if (solutionSettings.capabilities.includes(TabOptionItem.id)) {
+                manifest.staticTabs = STATIC_TABS_TPL;
+                manifest.configurableTabs = CONFIGURABLE_TABS_TPL;
+            }
+            if (solutionSettings.capabilities.includes(BotOptionItem.id)) {
+                manifest.bots = BOTS_TPL;
+            }
+            if (solutionSettings.capabilities.includes(MessageExtensionItem.id)) {
+                manifest.composeExtensions = COMPOSE_EXTENSIONS_TPL;
+            }
             return manifest;
         }
 
@@ -281,8 +294,7 @@ export namespace AppStudio {
         tabEndpoint?: string,
         appName?: string,
         version?: string,
-        bots?: string,
-        composeExtensions?: string,
+        botId?: string,
     ): [IAppDefinition, TeamsAppManifest] {
         if (appName) {
             manifest = replaceConfigValue(manifest, "appName", appName);
@@ -290,20 +302,15 @@ export namespace AppStudio {
         if (version) {
             manifest = replaceConfigValue(manifest, "version", version);
         }
+        if (botId) {
+            manifest = replaceConfigValue(manifest, "botId", botId);
+        }
         manifest = replaceConfigValue(manifest, "baseUrl", tabEndpoint ? tabEndpoint : "https://localhost:3000");
         manifest = replaceConfigValue(manifest, "appClientId", appId);
         manifest = replaceConfigValue(manifest, "appid", appId);
         manifest = replaceConfigValue(manifest, "webApplicationInfoResource", webApplicationInfoResource);
 
         const updatedManifest = JSON.parse(manifest) as TeamsAppManifest;
-
-        if (bots) {
-            updatedManifest.bots = JSON.parse(bots) as IBot[];
-        }
-
-        if (composeExtensions) {
-            updatedManifest.composeExtensions = JSON.parse(composeExtensions) as IComposeExtension[];
-        }
 
         for (const domain of domains) {
             updatedManifest.validDomains?.push(domain);
@@ -317,6 +324,7 @@ export namespace AppStudio {
             appName: appManifest.name.short,
             validDomains: appManifest.validDomains,
         };
+        appDefinition.appId = appManifest.id;
 
         appDefinition.appName = appManifest.name.short;
         appDefinition.shortName = appManifest.name.short;
@@ -335,8 +343,8 @@ export namespace AppStudio {
         appDefinition.staticTabs = appManifest.staticTabs;
         appDefinition.configurableTabs = appManifest.configurableTabs;
 
-        appDefinition.bots = appManifest.bots;
-        appDefinition.messagingExtensions = appManifest.composeExtensions;
+        appDefinition.bots = convertToAppDefinitionBots(appManifest);
+        appDefinition.messagingExtensions = convertToAppDefinitionMessagingExtensions(appManifest);
 
         if (appManifest.webApplicationInfo) {
             appDefinition.webApplicationInfoId = appManifest.webApplicationInfo.id;
@@ -353,4 +361,67 @@ export namespace AppStudio {
 
         return appDefinition;
     }
+
+    function convertToAppDefinitionMessagingExtensions(appManifest: TeamsAppManifest): IMessagingExtension[] {
+        const messagingExtensions: IMessagingExtension[] = [];
+
+        if (appManifest.composeExtensions) {
+            appManifest.composeExtensions.forEach((ext: IComposeExtension) => {
+                const me: IMessagingExtension = {
+                    botId: ext.botId,
+                    canUpdateConfiguration: true,
+                    commands: ext.commands,
+                    messageHandlers: []
+                };
+
+                messagingExtensions.push(me);
+            });
+        }
+
+        return messagingExtensions;
+    }
+
+    function convertToAppDefinitionBots(appManifest: TeamsAppManifest): IAppDefinitionBot[] {
+        const bots: IAppDefinitionBot[] = [];
+        if (appManifest.bots) {
+            appManifest.bots.forEach((manBot: IBot) => {
+            const teamCommands: ITeamCommand[] = [];
+            const groupCommands: IGroupChatCommand[] = [];
+            const personalCommands: IPersonalCommand[] = [];
+
+            manBot?.commandLists?.forEach((list: ICommandList) => {
+                list.commands.forEach((command: ICommand) => {
+                    teamCommands.push({
+                        title: command.title,
+                        description: command.description
+                    });
+
+                    groupCommands.push({
+                        title: command.title,
+                        description: command.description
+                    });
+
+                    personalCommands.push({
+                        title: command.title,
+                        description: command.description
+                    });
+                });
+            });
+
+            const bot: IAppDefinitionBot = {
+                botId: manBot.botId,
+                isNotificationOnly: manBot.isNotificationOnly ?? false,
+                supportsFiles: manBot.supportsFiles ?? false,
+                scopes: manBot.scopes,
+                teamCommands: teamCommands,
+                groupChatCommands: groupCommands,
+                personalCommands: personalCommands
+            };            
+
+            bots.push(bot);
+        });
+        }
+        return bots;
+    }
 }
+

@@ -36,6 +36,7 @@ export class LocalDebugConfigKeys {
 
     public static readonly LocalBotEndpoint: string = "localBotEndpoint";
     public static readonly LocalBotDomain: string = "localBotDomain";
+    public static readonly SkipNgrok: string = "skipNgrok";
 }
 
 export class AadPlugin {
@@ -75,7 +76,7 @@ export class FrontendHostingPlugin {
 }
 
 export class BotPlugin {
-    public static readonly Name: string = "fx-resource-teamsbot";
+    public static readonly Name: string = "fx-resource-bot";
     public static readonly LocalBotId: string = "localBotId";
     public static readonly LocalBotPassword: string = "localBotPassword";
 }

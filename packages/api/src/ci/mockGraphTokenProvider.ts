@@ -6,7 +6,7 @@
 import dotenv from "dotenv";
 import * as msal from "@azure/msal-node";
 
-import * as azureConfig from "./conf/azure.json";
+import * as azureConfig from "./conf/azure";
 import { GraphTokenProvider } from "../utils/login";
 
 dotenv.config();

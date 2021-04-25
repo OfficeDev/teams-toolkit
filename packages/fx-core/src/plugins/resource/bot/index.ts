@@ -104,7 +104,6 @@ export class TeamsBot implements Plugin {
         Logger.setLogger(context.logProvider);
 
         return await this.runWithExceptionCatching(() => this.teamsBotImpl.postLocalDebug(context));
-
     }
 
     private async runWithExceptionCatching(fn: () => Promise<FxResult>): Promise<FxResult> {
@@ -123,7 +122,7 @@ export class TeamsBot implements Plugin {
             }
 
             if (e instanceof PluginError) {
-                const result = (e.exceptionType === ErrorType.System ?
+                const result = (e.errorType === ErrorType.System ?
                     ResultFactory.SystemError(e.name, e.genMessage(), undefined, e.innerError) :
                     ResultFactory.UserError(e.name, e.genMessage(), undefined, e.innerError));
                 return result;

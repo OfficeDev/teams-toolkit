@@ -11,7 +11,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [windows-latest, macos-latest]
+        os: [windows-latest]
         node-version: [14]
 
     runs-on: ${{ matrix.os }}
@@ -29,7 +29,9 @@ jobs:
 
       - name: Setup project
         run: |
-          npm run setup
+          npm install
+          npx lerna exec -- npm install --ignore-scripts build
+          npx lerna bootstrap
 
       - name: Lint code
         run: |

@@ -15,7 +15,8 @@ export const QuestionAppName: TextInputQuestion = {
     name: CoreQuestionNames.AppName,
     title: "App Name",
     validation: {
-        pattern: "^[\\da-zA-Z]+$",
+        namespace: "",
+        method: "validateAppName",
     },
     default: "myapp",
 };
@@ -23,11 +24,7 @@ export const QuestionAppName: TextInputQuestion = {
 export const QuestionRootFolder: FileQuestion = {
     type: NodeType.folder,
     name: CoreQuestionNames.Foler,
-    title: "Select root folder of the project",
-    validation: {
-        namespace: "",
-        method: "validateFolder",
-    },
+    title: "Select root folder of the project"
 };
 
 export const QuestionSelectSolution: SingleSelectQuestion = {

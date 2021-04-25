@@ -1,6 +1,6 @@
-# TeamsFx Core Pack
+# TeamsFx API Pack
 
-TeamsFx Core Pack implements the core capabilities for TeamsFx Extension/CLI under TeamsFx API contracts.
+TeamsFx API Pack is a collection of API contracts between TeamsFx Extension/CLI and TeamsFx core module. It defines the interfaces for 3rd party developer to write plugins to extending the toolkit capabilities.
 
 ## Data Collection. 
 

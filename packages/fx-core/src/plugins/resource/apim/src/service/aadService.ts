@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { AadOperationError, AssertNotEmpty, BuildError } from "../error";
-import { AxiosInstance, Method } from "axios";
+import { AxiosInstance, AxiosResponse, Method } from "axios";
 import { IAadInfo, IPasswordCredential, IServicePrincipal, IServicePrincipals } from "../model/aadResponse";
 import { ErrorHandlerResult } from "../model/errorHandlerResult";
 import { AzureResource, IName, OperationStatus, Operation } from "../model/operation";
-import { FxError, LogProvider, TelemetryReporter } from "fx-api";
+import { LogProvider, TelemetryReporter } from "fx-api";
 import { LogMessages } from "../log";
 import { Telemetry } from "../telemetry";
 import { RetryHandler } from "../util/retryHandler";
@@ -106,8 +106,8 @@ export class AadService {
         url: string,
         data?: any,
         errorHandler?: (error: any) => ErrorHandlerResult
-    ) {
-        RetryHandler.Retry(async (executionIndex) => {
+    ): Promise<AxiosResponse<any> | undefined> {
+        return await RetryHandler.Retry(async (executionIndex) => {
             try {
                 this.logger?.info(
                     executionIndex === 0

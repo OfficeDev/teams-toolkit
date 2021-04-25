@@ -326,8 +326,12 @@ export class TeamsAppSolution implements Solution {
         if (!ctx.config.has(GLOBAL_CONFIG)) {
             ctx.config.set(GLOBAL_CONFIG, new ConfigMap());
         }
+        
+        // Only non-SPFx project will ask this question.
         const lang = ctx.answers?.getString(AzureSolutionQuestionNames.ProgrammingLanguage);
-        ctx.config.get(GLOBAL_CONFIG)?.set(PROGRAMMING_LANGUAGE, lang ?? "javascript");
+        if (lang) {
+            ctx.config.get(GLOBAL_CONFIG)?.set(PROGRAMMING_LANGUAGE, lang);
+        }
 
         const settingsRes = this.fillInSolutionSettings(ctx);
         if(settingsRes.isErr()) 
@@ -339,7 +343,7 @@ export class TeamsAppSolution implements Solution {
         const defaultIconPath = path.join(__dirname, "../../../../templates/plugins/solution/defaultIcon.png");
         await fs.copy(defaultIconPath, `${ctx.root}/.${ConfigFolderName}/color.png`);
         await fs.copy(defaultIconPath, `${ctx.root}/.${ConfigFolderName}/outline.png`);
-        if (!this.spfxSelected(ctx)) {
+        if (this.isAzureProject(ctx)) {
             const manifest = await AppStudio.createManifest(ctx.answers);
             if (manifest) Object.assign(ctx.app, manifest);
             await fs.writeFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`, JSON.stringify(manifest, null, 4));
@@ -448,6 +452,14 @@ export class TeamsAppSolution implements Solution {
         // Generally, if SPFx is selected, there should be no other plugins. But we don't check this invariant here.
         const spfxExists = this.getAzureSolutionSettings(ctx).activeResourcePlugins.some((pluginName) => pluginName === this.spfxPlugin.name);
         return spfxExists === undefined ? false : spfxExists;
+    }
+
+    private isAzureProject(ctx: SolutionContext): boolean{
+        const settings = this.getAzureSolutionSettings(ctx);
+        if(settings.capabilities.includes(BotOptionItem.id) || settings.capabilities.includes(MessageExtensionItem.id) 
+                    || (settings.capabilities.includes(TabOptionItem.id) && HostTypeOptionAzure.id === settings.hostType) )
+            return true;
+        return false;
     }
 
     async scaffoldOne(plugin: LoadedPlugin, ctx: SolutionContext): Promise<Result<any, FxError>> {
@@ -666,7 +678,7 @@ export class TeamsAppSolution implements Solution {
     private async getPermissionRequest(
         ctx:SolutionContext
     ): Promise<Result<string, FxError>> {
-        if (this.spfxSelected(ctx)) {
+        if (!this.isAzureProject(ctx)) {
             return err(
                 returnUserError(
                     new Error("Cannot update permission for SPFx project"),
@@ -882,7 +894,7 @@ export class TeamsAppSolution implements Solution {
             await ctx.appStudioToken?.getAccessToken();
 
             this.runningState = SolutionRunningState.ProvisionInProgress;
-            if (!this.spfxSelected(ctx)) {
+            if (this.isAzureProject(ctx)) {
                 const maybePermission = await this.getPermissionRequest(ctx);
                 if (maybePermission.isErr()) {
                     return maybePermission;
@@ -938,7 +950,7 @@ export class TeamsAppSolution implements Solution {
         }
         const manifest = maybeManifest.value;
 
-        if (!this.spfxSelected(ctx)) {
+        if (this.isAzureProject(ctx)) {
             //1. ask common questions for azure resources.
             const appName = manifest.name.short;
             const res = await fillInCommonQuestions(
@@ -993,7 +1005,7 @@ export class TeamsAppSolution implements Solution {
     }
 
     private canDeploy(ctx: SolutionContext): Result<Void, FxError> {
-        if (this.spfxSelected(ctx)) {
+        if (!this.isAzureProject(ctx)) {
             return ok(Void);
         }
         return this.checkWhetherSolutionIsIdle().andThen((_) => {
@@ -1040,7 +1052,7 @@ export class TeamsAppSolution implements Solution {
             return canDeploy;
         }
         try {
-            if (!this.spfxSelected(ctx)) {
+            if (this.isAzureProject(ctx)) {
                 // Just to trigger M365 login before the concurrent execution of deploy. 
                 // Because concurrent exectution of deploy may getAccessToken() concurrently, which
                 // causes 2 M365 logins before the token caching in common lib takes effect.
@@ -1924,6 +1936,12 @@ export class TeamsAppSolution implements Solution {
             );
         }
 
+        // add programming language config if exits
+        const lang = ctx.answers.getString(AzureSolutionQuestionNames.ProgrammingLanguage);
+        if (lang) {
+            ctx.config.get(GLOBAL_CONFIG)?.set(PROGRAMMING_LANGUAGE, lang);
+        }
+
         const capabilitiesAnswer = ctx.answers.getStringArray(AzureSolutionQuestionNames.Capabilities);
 
         if(!capabilitiesAnswer || capabilitiesAnswer.length === 0){
@@ -1933,11 +1951,11 @@ export class TeamsAppSolution implements Solution {
         const settings = this.getAzureSolutionSettings(ctx);
 
         let reload = false;
-        const oldCapSet = new Set<string>();
-        for(const i of settings.capabilities) oldCapSet.add(i);
+        const oldCapabilities:string[] = [];
+        for(const i of settings.capabilities) oldCapabilities.push(i);
         for(const cap of capabilitiesAnswer!){
-            if(!oldCapSet.has(cap)){
-                oldCapSet.add(cap);
+            if(!settings.capabilities.includes(cap)){
+                settings.capabilities.push(cap);
                 reload = true;
             }
         }
@@ -1952,6 +1970,7 @@ export class TeamsAppSolution implements Solution {
                 const scaffoldRes = await this.scaffoldOne(this.fehostPlugin, ctx);
                 if (scaffoldRes.isErr()) {
                     ctx.logProvider?.info(`failed to scaffold Azure Tab Frontend!`);
+                    settings.capabilities = oldCapabilities; //rollback
                     return err(scaffoldRes.error);
                 }
                 ctx.logProvider?.info(`finish scaffolding Azure Tab Frontend!`);
@@ -1962,6 +1981,7 @@ export class TeamsAppSolution implements Solution {
                 const scaffoldRes = await this.scaffoldOne(this.spfxPlugin, ctx);
                 if (scaffoldRes.isErr()) {
                     ctx.logProvider?.info(`failed to scaffold SPFx Tab Frontend!`);
+                    settings.capabilities = oldCapabilities; //rollback
                     return err(scaffoldRes.error);
                 }
                 ctx.logProvider?.info(`finish scaffolding SPFx Tab Frontend!`);
@@ -1971,10 +1991,11 @@ export class TeamsAppSolution implements Solution {
 
         if(capabilitiesAnswer?.includes(BotOptionItem.id) || capabilitiesAnswer?.includes(MessageExtensionItem.id)){
             ctx.logProvider?.info(`start scaffolding Bot.....`);
-            ctx.answers.set(AzureSolutionQuestionNames.Capabilities, Array.from(oldCapSet));
+            ctx.answers.set(AzureSolutionQuestionNames.Capabilities, settings.capabilities);
             const scaffoldRes = await this.scaffoldOne(this.botPlugin, ctx);
             if (scaffoldRes.isErr()) {
                 ctx.logProvider?.info(`failed to scaffold Bot!`);
+                settings.capabilities = oldCapabilities; //rollback
                 return err(scaffoldRes.error);
             }
             ctx.logProvider?.info(`finish scaffolding Bot!`);
@@ -1984,12 +2005,12 @@ export class TeamsAppSolution implements Solution {
         if(addCapabilityNotification.length > 0){
             // finally add capabilities array and reload plugins
             if(reload){
-                settings.capabilities = Array.from(oldCapSet);
                 this.reloadPlugins(ctx);
                 ctx.logProvider?.info(`start scaffolding Local Debug Configs.....`);
                 const scaffoldRes = await this.scaffoldOne(this.localDebugPlugin, ctx);
                 if (scaffoldRes.isErr()) {
                     ctx.logProvider?.info(`failed to scaffold Debug Configs!`);
+                    settings.capabilities = oldCapabilities; //rollback
                     return err(scaffoldRes.error);
                 }
                 ctx.logProvider?.info(`finish scaffolding Local Debug Configs!`);

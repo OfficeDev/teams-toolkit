@@ -188,7 +188,7 @@ export class CodeFlowLogin {
     }
   }
 
-  async getTenatToken(tenantId: string): Promise<string | undefined> {
+  async getTenantToken(tenantId: string): Promise<string | undefined> {
     try {
       if (!this.account) {
         await this.reloadCache();

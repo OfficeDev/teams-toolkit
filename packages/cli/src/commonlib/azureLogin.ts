@@ -123,7 +123,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     }
     if (AzureAccountManager.codeFlowInstance.account) {
       return new Promise(async (resolve) => {
-        if (!AzureAccountManager.tenantId || AzureAccountManager.tenantId==AzureAccountManager.domain) {
+        if (!AzureAccountManager.tenantId || AzureAccountManager.tenantId===AzureAccountManager.domain) {
           const tokenJson = await this.getJsonObject();
           const credential = new DeviceTokenCredentials(
             config.auth.clientId,
@@ -135,7 +135,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
           );
           resolve(credential);
         } else {
-          const token = await AzureAccountManager.codeFlowInstance.getTenatToken(AzureAccountManager.tenantId);
+          const token = await AzureAccountManager.codeFlowInstance.getTenantToken(AzureAccountManager.tenantId);
           const tokenJson = ConvertTokenToJson(token!);
           this.setMemoryCache(token, tokenJson);
           const credential = new DeviceTokenCredentials(
@@ -331,7 +331,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       const subscriptionClient = new SubscriptionClient(credential);
       const tenants = await listAll(subscriptionClient.tenants, subscriptionClient.tenants.list());
       for (let i=0;i<tenants.length;++i) {
-        const token = await AzureAccountManager.codeFlowInstance.getTenatToken(tenants[i].tenantId!);
+        const token = await AzureAccountManager.codeFlowInstance.getTenantToken(tenants[i].tenantId!);
         const tokenJson = ConvertTokenToJson(token!);
         this.setMemoryCache(token, tokenJson);
         const tenantCredential = new DeviceTokenCredentials(

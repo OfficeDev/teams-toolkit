@@ -6,6 +6,7 @@ import * as path from "path";
 import * as chai from "chai";
 
 import * as dotnetCheckerUtils from "../utils/dotnet";
+import { isLinux } from "../../../../src/debug/depsChecker/common";
 import { DepsChecker } from "../../../../src/debug/depsChecker/checker";
 import { DotnetChecker } from "../../../../src/debug/depsChecker/dotnetChecker";
 import { TestAdapter } from "../adapters/testAdapter";
@@ -41,12 +42,21 @@ suite("DotnetChecker E2E Test", async () => {
     }
 
     const checker = createTestChecker(true);
-    await checker.resolve();
 
-    const dotnetExecPath = await dotnetCheckerUtils.getDotnetExecPathFromConfig(dotnetConfigPath);
-    chai.assert.isNotNull(dotnetExecPath);
+    let shouldContinue: boolean = false;
+    chai.assert.doesNotThrow(async () => {
+      shouldContinue = await checker.resolve();
+    })
 
-    chai.assert.isTrue(await dotnetCheckerUtils.hasDotnetVersion(dotnetExecPath!, "3.1"));
+    if (isLinux()) {
+      chai.assert.isFalse(shouldContinue);
+    } else {
+      chai.assert.isTrue(shouldContinue);
+
+      const dotnetExecPath = await dotnetCheckerUtils.getDotnetExecPathFromConfig(dotnetConfigPath);
+      chai.assert.isNotNull(dotnetExecPath);
+      chai.assert.isTrue(await dotnetCheckerUtils.hasDotnetVersion(dotnetExecPath!, "3.1"));
+    }
   });
 
   test("Dotnet SDK supported version is installed globally", async function(this: Mocha.Context) {

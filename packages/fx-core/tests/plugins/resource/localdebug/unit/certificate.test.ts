@@ -41,7 +41,18 @@ describe("certificate", () => {
         });
 
         it("happy path", async () => {
-            await certManager.setupCertificate();
+            await certManager.setupCertificate(true);
+
+            chai.assert.isTrue(fs.pathExistsSync(expectedCertFile));
+            const certContent = fs.readFileSync(expectedCertFile, {encoding: "utf8"});
+            chai.assert.isTrue(/-----BEGIN CERTIFICATE-----.*-----END CERTIFICATE-----/sg.test(certContent));
+            chai.assert.isTrue(fs.pathExistsSync(expectedKeyFile));
+            const keyContent = fs.readFileSync(expectedKeyFile, {encoding: "utf8"});
+            chai.assert.isTrue(/-----BEGIN RSA PRIVATE KEY-----.*-----END RSA PRIVATE KEY-----/sg.test(keyContent));
+        });
+
+        it("skip trust", async () => {
+            await certManager.setupCertificate(false);
 
             chai.assert.isTrue(fs.pathExistsSync(expectedCertFile));
             const certContent = fs.readFileSync(expectedCertFile, {encoding: "utf8"});
@@ -52,11 +63,11 @@ describe("certificate", () => {
         });
 
         it("existing verified cert", async () => {
-            await certManager.setupCertificate();
+            await certManager.setupCertificate(true);
             const certContent1 = fs.readFileSync(expectedCertFile, {encoding: "utf8"});
             const thumbprint1 = getCertThumbprint(certContent1);
 
-            await certManager.setupCertificate();
+            await certManager.setupCertificate(true);
             chai.assert.isTrue(fs.pathExistsSync(expectedCertFile));
             chai.assert.isTrue(fs.pathExistsSync(expectedKeyFile));
             const certContent2 = fs.readFileSync(expectedCertFile, {encoding: "utf8"});

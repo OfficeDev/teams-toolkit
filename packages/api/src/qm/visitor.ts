@@ -222,14 +222,31 @@ export async function traverse(
   const parentMap = new Map<QTreeNode, QTreeNode>();
 
   while (stack.length > 0) {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const curr: QTreeNode = stack.pop()!;
-    let currValue: unknown = undefined;
+    const curr = stack.pop();
+    if(!curr) continue;
+
+    const parent = parentMap.get(curr);
+    let parentValue = parent && parent.data.type !== NodeType.group ? parent.data.value : undefined;
+    if (curr.condition) {
+      /// if parent node is single select node and return OptionItem as value, then the parentValue is it's id
+      if (parent && parent.data.type === NodeType.singleSelect) {
+        const sq:SingleSelectQuestion = parent.data;
+        if (sq.returnObject) {
+          parentValue = (sq.value as OptionItem).id;
+        }
+      }
+      const valueToValidate = curr.condition.target ? await getRealValue(parentValue, curr.condition.target, inputs, remoteFuncExecutor) : parentValue;
+      if (valueToValidate) {
+        const validRes = await validate(curr.condition, valueToValidate as string | string[], inputs, remoteFuncExecutor);
+        if (validRes !== undefined) {
+          continue;
+        }
+      }
+    }
+
     //visit
     if (curr.data.type !== NodeType.group) {
       const question = curr.data as Question;
-      const parent = parentMap.get(curr);
-      const parentValue = parent && parent.data.type !== NodeType.group ? parent.data.value : undefined;
       if (!firstQuestion) firstQuestion = question;
       const inputResult = await questionVisitor(question, parentValue, ui, question !== firstQuestion, inputs, remoteFuncExecutor);
       if (inputResult.type === InputResultType.back) {
@@ -286,44 +303,22 @@ export async function traverse(
       else {
         //success or pass
         question.value = inputResult.result;
-        currValue = question.value;
         if (inputs instanceof ConfigMap) {
           (inputs as ConfigMap).set(question.name, question.value);
         }
         else {
           (inputs as Inputs)[question.name] = question.value;
         }
-
       }
     }
 
     history.push(curr);
 
     if (curr.children) {
-
-      /// if current node is single select node and return OptionItem as value, then the currnetValue is it's label
-      if (curr.data.type === NodeType.singleSelect) {
-        const sq: SingleSelectQuestion = curr.data;
-        if (sq.returnObject) {
-          currValue = (sq.value as OptionItem).id;
-        }
-      }
-
       for (let i = curr.children.length - 1; i >= 0; --i) {
         const child = curr.children[i];
         if (!child) continue;
         parentMap.set(child, curr);
-        if (child.condition) {
-          const realValue = child.condition.target
-            ? await getRealValue(currValue, child.condition.target, inputs, remoteFuncExecutor)
-            : currValue;
-          if (realValue) {
-            const validRes = await validate(child.condition, realValue as string | string[], inputs, remoteFuncExecutor);
-            if (validRes !== undefined) {
-              continue;
-            }
-          }
-        }
         stack.push(child);
       }
     }

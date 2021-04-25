@@ -9,6 +9,7 @@ import AdmZip from "adm-zip";
 import { ConfigValue, PluginContext, IBot, IComposeExtension } from "fx-api";
 import { RegularExprs, WebAppConstants } from "../constants";
 import { ProgrammingLanguage } from "../enums/programmingLanguage";
+import * as appService from "@azure/arm-appservice";
 
 export function toBase64(source: string): string {
     return Base64.encode(source);
@@ -207,4 +208,14 @@ export function convertToLangKey(programmingLanguage: ProgrammingLanguage): stri
 
 export function convertToTelemetryName(raw: string): string {
     return raw.toLowerCase().replace(/ /g, "-");
+}
+
+export function generateAppServicePlanConfig(location: string, skuName: string): appService.WebSiteManagementModels.AppServicePlan {
+    return {
+        location: location,
+        kind: "app",
+        sku: {
+            name: skuName,
+        },
+    };
 }

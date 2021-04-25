@@ -23,7 +23,7 @@
         width: 28px;
         height: 28px;
         font-size: 28px;
-        color: var(--vscode-list-highlightForeground);
+        color: var(--vscode-textLink-foreground);
     }
 
     .title{
@@ -86,7 +86,7 @@
 
     .action-content{
         font-size: 12px;
-        color: var(--vscode-menu-separatorBackground);
+        color: var(--vscode-sideBarTitle-foreground);
     }
 
     .left{

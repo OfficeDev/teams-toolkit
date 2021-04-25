@@ -7,6 +7,7 @@ import * as path from "path";
 import fs from "fs-extra";
 import * as msal from "@azure/msal-node";
 import mockedEnv from "mocked-env";
+import urljoin from "url-join";
 
 const execAsync = promisify(exec);
 let restore: () => void;
@@ -52,7 +53,7 @@ export async function getAccessToken(
   const msalConfig = {
     auth: {
       clientId: clientId,
-      authority: defaultAuthorityHost!.concat("/", tenantId!)
+      authority: urljoin(defaultAuthorityHost!, tenantId!)
     }
   };
   let scopes: string[];
@@ -81,7 +82,7 @@ export function MockEnvironmentVariable() {
   restore = mockedEnv({
     M365_CLIENT_ID : process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
     M365_CLIENT_SECRET : process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_SECRET,
-    M365_TENANT_ID : process.env.SDK_INTEGRATION_TEST_AAD_TENANTID,
+    M365_TENANT_ID : process.env.SDK_INTEGRATION_TEST_AAD_TENANT_ID,
     M365_AUTHORITY_HOST : process.env.SDK_INTEGRATION_TEST_AAD_AUTHORITY_HOST,
 
     SQL_ENDPOINT: process.env.SDK_INTEGRATION_SQL_ENDPOINT,

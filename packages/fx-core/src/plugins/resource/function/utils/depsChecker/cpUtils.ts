@@ -153,14 +153,4 @@ export namespace cpUtils {
       }
     });
   }
-
-  /**
-   * timeout with millisecond
-   */
-  export function withTimeout(millis: number, promise: Promise<any>, msg: string): Promise<any> {
-    return Promise.race([
-      promise,
-      new Promise((resolve, reject) => setTimeout(() => reject(new Error(`${msg}, ${millis} ms`)), millis))
-    ]);
-  }
 }

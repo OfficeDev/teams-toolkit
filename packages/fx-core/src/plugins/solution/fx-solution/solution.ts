@@ -1863,6 +1863,13 @@ export class TeamsAppSolution implements Solution {
             }
         }
 
+        //// programming languate
+        const programmingLanguageInConfig = ctx.config.get(GLOBAL_CONFIG)?.getString(PROGRAMMING_LANGUAGE);
+        if(!programmingLanguageInConfig){// add capability to SPFx project, only bot/me will be the options
+            const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
+            programmingLanguage.condition = { namespace: "fx-solution-azure", method: "whetherToAskProgrammingLanguageQuestion" }; //dynamic condition
+            addCapNode.addChild(programmingLanguage);
+        }
         return ok(addCapNode);
     }
 
@@ -1926,9 +1933,11 @@ export class TeamsAppSolution implements Solution {
         const settings = this.getAzureSolutionSettings(ctx);
 
         let reload = false;
+        const oldCapSet = new Set<string>();
+        for(const i of settings.capabilities) oldCapSet.add(i);
         for(const cap of capabilitiesAnswer!){
-            if(!settings.capabilities?.includes(cap)){
-                settings.capabilities?.push(cap);
+            if(!oldCapSet.has(cap)){
+                oldCapSet.add(cap);
                 reload = true;
             }
         }
@@ -1960,21 +1969,22 @@ export class TeamsAppSolution implements Solution {
             }
         }
 
-        if(capabilitiesAnswer?.includes(BotOptionItem.id)){
+        if(capabilitiesAnswer?.includes(BotOptionItem.id) || capabilitiesAnswer?.includes(MessageExtensionItem.id)){
             ctx.logProvider?.info(`start scaffolding Bot.....`);
-            ctx.answers.set(AzureSolutionQuestionNames.Capabilities, settings.capabilities);
+            ctx.answers.set(AzureSolutionQuestionNames.Capabilities, Array.from(oldCapSet));
             const scaffoldRes = await this.scaffoldOne(this.botPlugin, ctx);
             if (scaffoldRes.isErr()) {
                 ctx.logProvider?.info(`failed to scaffold Bot!`);
                 return err(scaffoldRes.error);
             }
             ctx.logProvider?.info(`finish scaffolding Bot!`);
-            addCapabilityNotification.push("Bot");
+            addCapabilityNotification.push("Bot/MessageExtension");
         }
 
         if(addCapabilityNotification.length > 0){
             // finally add capabilities array and reload plugins
             if(reload){
+                settings.capabilities = Array.from(oldCapSet);
                 this.reloadPlugins(ctx);
                 ctx.logProvider?.info(`start scaffolding Local Debug Configs.....`);
                 const scaffoldRes = await this.scaffoldOne(this.localDebugPlugin, ctx);

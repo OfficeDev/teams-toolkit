@@ -111,7 +111,7 @@ export class AppStudioPluginImpl {
             }
             await publishProgress?.next(`Updating app definition for app ${remoteTeamsAppId} in app studio`);
             const manifest: TeamsAppManifest = JSON.parse(manifestString!);
-            const appDefinition = AppStudio.convertToAppDefinition(manifest, ctx.platform === Platform.VS);
+            const appDefinition = AppStudio.convertToAppDefinition(manifest, true);
             let appStudioToken = await ctx?.appStudioToken?.getAccessToken();
             await AppStudioClient.updateTeamsApp(remoteTeamsAppId!, appDefinition, appStudioToken!);
 

@@ -65,7 +65,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     task: vscode.Task,
     token?: vscode.CancellationToken | undefined
   ): Promise<vscode.Task | undefined> {
-    // Return undefined since all other tasks are provided and fully resolved
+    // Return undefined since all tasks are provided and fully resolved
     return undefined;
   }
 

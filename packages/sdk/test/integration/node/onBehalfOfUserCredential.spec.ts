@@ -11,6 +11,7 @@ import {
   loadConfiguration,
   OnBehalfOfUserCredential
 } from "../../../src";
+import { SSOTokenV2Info } from "../../../src/models/ssoTokenInfo";
 import { parseJwt } from "../../../src/util/utils";
 import { getAccessToken, MockEnvironmentVariable, RestoreEnvironmentVariable } from "../../helper";
 
@@ -43,8 +44,8 @@ describe("onBehalfOfUserCredential Test: Node", () => {
   it("Test onBehalfOfUserCredential get user info success", async function () {
     const credential = new OnBehalfOfUserCredential(ssoToken);
     const userInfo = await credential.getUserInfo();
-    const tokenObject = parseJwt(ssoToken);
-    assert.strictEqual(userInfo.preferredUserName, process.env.SDK_INTEGRATION_TEST_ACCOUNT_NAME!);
+    const tokenObject = parseJwt(ssoToken) as SSOTokenV2Info;
+    assert.strictEqual(userInfo.preferredUserName, tokenObject.preferred_username);
     assert.strictEqual(userInfo.objectId, tokenObject.oid);
     assert.strictEqual(userInfo.displayName, tokenObject.name);
   });

@@ -4,7 +4,7 @@
 import { ProjectConstants } from "../constants";
 
 export class RetryHandler {
-    public static async Retry<T>(
+    public static async retry<T>(
         fn: (retries : number) => Promise<T>
     ): Promise<T> {
         let executionIndex: number = 0;
@@ -26,7 +26,7 @@ export class RetryHandler {
 
 export function delay(ms: number): Promise<void> {
     if (ms <= 0) {
-        return new Promise(() => { });
+        return Promise.resolve();
     }
     // tslint:disable-next-line no-string-based-set-timeout
     return new Promise((resolve) => setTimeout(resolve, ms));

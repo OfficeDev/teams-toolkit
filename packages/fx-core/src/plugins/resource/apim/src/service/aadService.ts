@@ -107,7 +107,7 @@ export class AadService {
         data?: any,
         errorHandler?: (error: any) => ErrorHandlerResult
     ): Promise<AxiosResponse<any> | undefined> {
-        return await RetryHandler.Retry(async (executionIndex) => {
+        return await RetryHandler.retry(async (executionIndex) => {
             try {
                 this.logger?.info(
                     executionIndex === 0

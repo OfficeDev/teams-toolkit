@@ -91,17 +91,7 @@ export class AzureOperations {
 
     public static async CreateOrUpdateAppServicePlan(webSiteMgmtClient: appService.WebSiteManagementClient,
         resourceGroup: string, appServicePlanName: string,
-        location: string): Promise<void> {
-
-        const appServicePlan: appService.WebSiteManagementModels.AppServicePlan = {
-            location: location,
-            kind: "app",
-            sku: {
-                name: "F1",
-                tier: "Free",
-                size: "F1",
-            },
-        };
+        appServicePlan: appService.WebSiteManagementModels.AppServicePlan): Promise<void> {
 
         let planResponse = undefined;
         try {

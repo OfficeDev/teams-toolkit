@@ -22,7 +22,7 @@ export class TestLogger implements IDepsLogger {
         return Promise.resolve(true);
     }
 
-    private async writeLog(level: LogLevel, message: string): Promise<void> {
+    private writeLog(level: LogLevel, message: string) {
         const line = `${LogLevel[level]} ${new Date().toISOString()}: ${message}`;
         if (level >= LogLevel.Error) {
             console.error(line);

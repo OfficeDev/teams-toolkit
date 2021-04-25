@@ -8,9 +8,11 @@ import mockedEnv from "mocked-env";
 import { loadConfiguration, M365TenantCredential } from "../../../src";
 import { ErrorCode, ErrorWithCode } from "../../../src/core/errors";
 import jwtDecode, {JwtPayload} from "jwt-decode";
+import { MockEnvironmentVariable, RestoreEnvironmentVariable } from "../../helper";
 
 chaiUse(chaiPromises);
-let mockedEnvRestore: () => void;
+let restore: () => void;
+// let mockedEnvRestore: () => void;
 interface AADJwtPayLoad extends JwtPayload {
     aud?: string;
     appid?: string;
@@ -21,13 +23,14 @@ describe("m365TenantCredential - node", () => {
   const defaultGraphScope = ["https://graph.microsoft.com/.default"];
 
   beforeEach(function() {
-      process.env.M365_CLIENT_ID = process.env.SDK_INTEGRATIONTEST_AAD_CLIENTID_LOCAL;
-      process.env.M365_CLIENT_SECRET = process.env.SDK_INTEGRATIONTEST_AAD_CLIENT_SECRET_LOCAL;
-      process.env.M365_TENANT_ID = process.env.SDK_INTEGRATIONTEST_AAD_TENANTID;
-      process.env.M365_AUTHORITY_HOST = process.env.SDK_INTEGRATIONTEST_AAD_AUTHORITY_HOST;
+    restore = MockEnvironmentVariable();
       loadConfiguration();
   });
 
+  afterEach(() => {
+    RestoreEnvironmentVariable(restore);
+  })
+  
   it("create M365TenantCredential with valid configuration", function() {
     const credential: any = new M365TenantCredential();
 
@@ -55,7 +58,7 @@ describe("m365TenantCredential - node", () => {
   });
 
   it("get access token with authentication error", async function() {
-      mockedEnvRestore = mockedEnv({
+      restore = mockedEnv({
       M365_CLIENT_SECRET: fake_client_secret,
       });        
       loadConfiguration();
@@ -66,7 +69,5 @@ describe("m365TenantCredential - node", () => {
     );
     assert.strictEqual(errorResult.code, ErrorCode.ServiceError);
     assert.include(errorResult.message, "Get M365 tenant credential with authentication error: status code 401");
-
-    mockedEnvRestore();
   });
 });

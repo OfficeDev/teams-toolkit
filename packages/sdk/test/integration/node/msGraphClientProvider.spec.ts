@@ -10,24 +10,26 @@ import {
   OnBehalfOfUserCredential,
   M365TenantCredential
 } from "../../../src";
-import { getAccessToken } from "../../helper";
+import { getAccessToken, MockEnvironmentVariable, RestoreEnvironmentVariable } from "../../helper";
 
 chaiUse(chaiPromises);
+let restore: () => void;
 
 describe("msGraphClientProvider - node", () => {
   let ssoToken = "";
   beforeEach(async function() {
-    process.env.M365_CLIENT_ID = process.env.SDK_INTEGRATIONTEST_AAD_CLIENTID_LOCAL;
-    process.env.M365_CLIENT_SECRET = process.env.SDK_INTEGRATIONTEST_AAD_CLIENT_SECRET_LOCAL;
-    process.env.M365_TENANT_ID = process.env.SDK_INTEGRATIONTEST_AAD_TENANTID;
-    process.env.M365_AUTHORITY_HOST = process.env.SDK_INTEGRATIONTEST_AAD_AUTHORITY_HOST;
+    restore = MockEnvironmentVariable();
     loadConfiguration();
 
-    ssoToken = await getAccessToken(process.env.SDK_INTEGRATIONTEST_AAD_CLIENTID_LOCAL!,
+    ssoToken = await getAccessToken(process.env.M365_CLIENT_ID!,
       process.env.SDK_INTEGRATION_TEST_ACCOUNT_NAME!,
       process.env.SDK_INTEGRATION_TEST_ACCOUNT_PASSWORD!,
-      process.env.SDK_INTEGRATIONTEST_AAD_TENANTID!);
+      process.env.SDK_INTEGRATION_TEST_AAD_TENANT_ID!);
   });
+
+  afterEach(() => {
+    RestoreEnvironmentVariable(restore);
+  })
 
   it("create graph client with OnBehalfOfUserCredential", async function() {
     const scopes = ["User.Read"];

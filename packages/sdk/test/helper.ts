@@ -10,7 +10,6 @@ import mockedEnv from "mocked-env";
 import urljoin from "url-join";
 
 const execAsync = promisify(exec);
-let restore: () => void;
 /**
  * Copy function folder to the api folder under project and deploy.
  *
@@ -79,7 +78,7 @@ export async function getAccessToken(
  * Once invoke MockEnvironmentVariables, mock the variables in it with another value, it will take effect immediately.
  */
 export function MockEnvironmentVariable() {
-  restore = mockedEnv({
+  return mockedEnv({
     M365_CLIENT_ID : process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
     M365_CLIENT_SECRET : process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_SECRET,
     M365_TENANT_ID : process.env.SDK_INTEGRATION_TEST_AAD_TENANT_ID,
@@ -96,6 +95,6 @@ export function MockEnvironmentVariable() {
  * restore the mapping process environment variables.
  * once invoke this method, all mock environment above will be restored.
  */
-export function RestoreEnvironmentVariable() {
+export function RestoreEnvironmentVariable(restore: () => void) {
   restore();
 }

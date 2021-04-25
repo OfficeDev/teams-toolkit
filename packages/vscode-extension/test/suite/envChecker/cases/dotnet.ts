@@ -4,6 +4,8 @@
 import * as os from "os";
 import * as path from "path";
 import * as chai from "chai";
+import * as fs from "fs-extra";
+import * as chaiAsPromised from "chai-as-promised";
 
 import * as dotnetCheckerUtils from "../utils/dotnet";
 import { isLinux } from "../../../../src/debug/depsChecker/common";
@@ -13,6 +15,7 @@ import { TestAdapter } from "../adapters/testAdapter";
 import { TestLogger } from "../adapters/testLogger";
 import { TestTelemetry } from "../adapters/testTelemetry";
 import { ConfigFolderName } from "fx-api";
+chai.use(chaiAsPromised);
 
 const dotnetConfigPath = path.join(os.homedir(), "." + ConfigFolderName, "dotnet.json");
 
@@ -29,7 +32,17 @@ function createTestChecker(
   return depsChecker;
 }
 
-suite("DotnetChecker E2E Test", async () => {
+async function removeDotnetConfig() {
+    // fs-extra.remove() does nothing if the file does not exist.
+    await fs.remove(path.resolve(os.homedir(), "." + ConfigFolderName, "dotnet.json"));
+}
+
+suite("DotnetChecker E2E Test - first run", async () => {
+  setup(async function(this: Mocha.Context) {
+    await removeDotnetConfig();
+    // cleanup to make sure the environment is clean before test
+  });
+
   test("Dotnet SDK is not installed, whether globally or in home dir", async function(this: Mocha.Context) {
     if (await dotnetCheckerUtils.getDotnetExecPathFromConfig(dotnetConfigPath) !== null) {
       this.skip();
@@ -43,17 +56,14 @@ suite("DotnetChecker E2E Test", async () => {
 
     const checker = createTestChecker(true);
 
-    let shouldContinue: boolean = false;
-    chai.assert.doesNotThrow(async () => {
-      shouldContinue = await checker.resolve();
-    })
+    const shouldContinue = await checker.resolve();
+    const dotnetExecPath = await dotnetCheckerUtils.getDotnetExecPathFromConfig(dotnetConfigPath);
 
     if (isLinux()) {
       chai.assert.isFalse(shouldContinue);
+      chai.assert.isNull(dotnetExecPath);
     } else {
       chai.assert.isTrue(shouldContinue);
-
-      const dotnetExecPath = await dotnetCheckerUtils.getDotnetExecPathFromConfig(dotnetConfigPath);
       chai.assert.isNotNull(dotnetExecPath);
       chai.assert.isTrue(await dotnetCheckerUtils.hasDotnetVersion(dotnetExecPath!, "3.1"));
     }
@@ -66,5 +76,10 @@ suite("DotnetChecker E2E Test", async () => {
     if (!(await dotnetCheckerUtils.hasDotnetVersion("dotnet", "3.1") || await dotnetCheckerUtils.hasDotnetVersion("dotnet", "5.0"))) {
       this.skip();
     }
+  });
+
+  teardown(async function(this: Mocha.Context) {
+    // cleanup to make sure the environment is clean
+    await removeDotnetConfig();
   });
 });

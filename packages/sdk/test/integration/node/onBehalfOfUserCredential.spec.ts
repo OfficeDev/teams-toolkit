@@ -43,7 +43,10 @@ describe("onBehalfOfUserCredential Test: Node", () => {
   it("Test onBehalfOfUserCredential get user info success", async function () {
     const credential = new OnBehalfOfUserCredential(ssoToken);
     const userInfo = await credential.getUserInfo();
+    const tokenObject = parseJwt(ssoToken);
     assert.strictEqual(userInfo.preferredUserName, process.env.SDK_INTEGRATION_TEST_ACCOUNT_NAME!);
+    assert.strictEqual(userInfo.objectId, tokenObject.oid);
+    assert.strictEqual(userInfo.displayName, tokenObject.name);
   });
 
   it("Test onBehalfOfUserCredential get access token success", async function () {
@@ -52,6 +55,8 @@ describe("onBehalfOfUserCredential Test: Node", () => {
     const tokenObject = parseJwt(graphToken!.token);
     const userInfo = await credential.getUserInfo();
     assert.strictEqual(tokenObject.oid, userInfo.objectId);
+    assert.strictEqual(tokenObject.aud, "https://graph.microsoft.com");
+    assert.include(tokenObject.scp, "User.Read");
   });
 
   it("Test onBehalfOfUserCredential get access token without permission", async function () {

@@ -12,7 +12,6 @@ import { MockEnvironmentVariable, RestoreEnvironmentVariable } from "../../helpe
 
 chaiUse(chaiPromises);
 let restore: () => void;
-// let mockedEnvRestore: () => void;
 interface AADJwtPayLoad extends JwtPayload {
     aud?: string;
     appid?: string;

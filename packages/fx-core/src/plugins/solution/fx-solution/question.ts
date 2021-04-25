@@ -5,19 +5,21 @@ import { FuncQuestion, MultiSelectQuestion, NodeType, OptionItem, SingleSelectQu
 export const TabOptionItem: OptionItem = {
     id: "Tab",
     label: "Tab",
+    cliName: "tab",
     description: "Embeds a web-based app experience in a tab in a Teams chat, channel, or personal workspace.",
 };
 
 export const BotOptionItem: OptionItem = {
     id: "Bot",
     label: "Bot",
+    cliName: "bot",
     description:
         "Bots allow you to interact with and obtain information from a software or website in a text/search/conversational manner.",
 };
 
 export const MessageExtensionItem: OptionItem = {
     id: "MessageExtension",
-    label: "MessageExtension",
+    label: "Message Extensions",
     description:
         "Messaging extensions allow users to interact with your web service through buttons and forms in the Microsoft Teams client.",
 };
@@ -30,19 +32,21 @@ export enum AzureSolutionQuestionNames {
     PluginSelectionDeploy = "deploy-plugin",
     AddResources = "add-azure-resources",
     AppName = "app-name",
-    AskSub = "ask-subscription",
+    AskSub = "subscription",
     ProgrammingLanguage = "programming-language",
 }
 
 export const HostTypeOptionAzure: OptionItem = {
     id:"Azure",
     label: "Azure",
+    cliName: "azure",
     description: "Azure Cloud",
 };
 
 export const HostTypeOptionSPFx: OptionItem = {
     id:"SPFx",
     label: "SPFx",
+    cliName: "spfx",
     description: "SharePoint Framework",
 };
 
@@ -154,6 +158,7 @@ export const DeployPluginSelectQuestion: MultiSelectQuestion = {
 
 export const AskSubscriptionQuestion: FuncQuestion = {
     name: AzureSolutionQuestionNames.AskSub,
+    title: "Please select a subscription",
     type: NodeType.func,
     namespace: "fx-solution-azure",
     method: "askSubscription"

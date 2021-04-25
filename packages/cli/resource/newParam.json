@@ -40,11 +40,13 @@
                                     {
                                         "id": "Tab",
                                         "label": "Tab",
+                                        "cliName": "tab",
                                         "description": "Embeds a web-based app experience in a tab in a Teams chat, channel, or personal workspace."
                                     },
                                     {
                                         "id": "Bot",
                                         "label": "Bot",
+                                        "cliName": "bot",
                                         "description": "Bots allow you to interact with and obtain information from a software or website in a text/search/conversational manner."
                                     }
                                 ],
@@ -67,11 +69,13 @@
                                                     {
                                                         "id": "Azure",
                                                         "label": "Azure",
+                                                        "cliName": "azure",
                                                         "description": "Azure Cloud"
                                                     },
                                                     {
                                                         "id": "SPFx",
                                                         "label": "SPFx",
+                                                        "cliName": "spfx",
                                                         "description": "SharePoint Framework"
                                                     }
                                                 ],
@@ -80,24 +84,24 @@
                                             "children": [
                                                 {
                                                     "data": {
+                                                        "name": "programming-language",
+                                                        "title": "Please select programming language for your project",
+                                                        "type": "singleSelect",
+                                                        "option": [
+                                                            "javascript",
+                                                            "typescript"
+                                                        ],
+                                                        "default": "javascript",
+                                                        "skipSingleOption": true
+                                                    },
+                                                    "condition": {
+                                                        "equals": "Azure"
+                                                    }
+                                                },
+                                                {
+                                                    "data": {
                                                         "type": "group"
                                                     },
-                                                    "children": [
-                                                        {
-                                                            "data": {
-                                                                "name": "tab-scopes",
-                                                                "description": "Select tab scopes",
-                                                                "type": "multiSelect",
-                                                                "option": [
-                                                                    "personal",
-                                                                    "group"
-                                                                ],
-                                                                "default": [
-                                                                    "personal"
-                                                                ]
-                                                            }
-                                                        }
-                                                    ],
                                                     "condition": {
                                                         "equals": "Azure"
                                                     }
@@ -129,33 +133,6 @@
                                                             "data": {
                                                                 "type": "group"
                                                             },
-                                                            "children": [
-                                                                {
-                                                                    "data": {
-                                                                        "name": "node-version",
-                                                                        "description": "Please select a node version for the Azure function app.",
-                                                                        "type": "singleSelect",
-                                                                        "default": "12",
-                                                                        "option": [
-                                                                            "10",
-                                                                            "12",
-                                                                            "14"
-                                                                        ]
-                                                                    }
-                                                                },
-                                                                {
-                                                                    "data": {
-                                                                        "name": "function-name",
-                                                                        "description": "Please provide function name.",
-                                                                        "type": "text",
-                                                                        "default": "myFunc",
-                                                                        "validation": {
-                                                                            "namespace": "fx-solution-azure/fx-resource-function",
-                                                                            "method": "validateFunctionName"
-                                                                        }
-                                                                    }
-                                                                }
-                                                            ],
                                                             "condition": {
                                                                 "minItems": 1
                                                             }
@@ -283,17 +260,6 @@
                                     }
                                 }
                             ]
-                        },
-                        {
-                            "data": {
-                                "name": "programming-language",
-                                "title": "Please select programming language for your project",
-                                "type": "singleSelect",
-                                "option": [
-                                    "javascript"
-                                ],
-                                "default": "javascript"
-                            }
                         }
                     ],
                     "condition": {

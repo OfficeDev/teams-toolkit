@@ -12,21 +12,60 @@
             "name": "deploy-plugin",
             "title": "Please select which resource(s) to deploy",
             "type": "multiSelect",
+            "skipSingleOption": true,
             "option": [
                 {
                     "id": "fx-resource-frontend-hosting",
-                    "label": "Tab Front-end"
+                    "label": "Tab Front-end",
+                    "cliName": "frontend-hosting"
                 },
                 {
                     "id": "fx-resource-function",
-                    "label": "Azure Function"
+                    "label": "Azure Function",
+                    "cliName": "function"
+                },
+                {
+                    "id": "fx-resource-apim",
+                    "label": "API Management",
+                    "cliName": "apim"
+                },
+                {
+                    "id": "fx-resource-teamsbot",
+                    "label": "Bot",
+                    "cliName": "teamsbot"
                 },
                 {
                     "id": "fx-resource-spfx",
-                    "label": "SharePoint Framework (SPFx)"
+                    "label": "SharePoint Framework (SPFx)",
+                    "cliName": "spfx"
                 }
             ],
             "default": []
+        }
+    },
+    {
+        "data": {
+            "type": "text",
+            "name": "open-api-document",
+            "description": "The Open API document file path."
+        }
+    },
+    {
+        "data": {
+            "type": "text",
+            "name": "api-prefix",
+            "description": "The API name prefix. The default unique name of the API will be '{api-prefix}-{resource-suffix}-{api-version}'.",
+            "validation": {}
+        }
+    },
+    {
+        "data": {
+            "type": "text",
+            "name": "api-version",
+            "description": "The API version.",
+            "validation": {
+                "required": true
+            }
         }
     }
 ]

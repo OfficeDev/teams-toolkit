@@ -8,40 +8,52 @@
 // and run the scripts (tools/depsChecker/copyfiles.sh or tools/depsChecker/copyfiles.ps1 according to your OS)
 // to copy you changes to function plugin.
 
-import { logger, cpUtils } from "./checkerAdapter";
 import { backendExtensionsInstallHelpLink } from "./common";
-import { dotnetChecker } from "./dotnetChecker";
+import { DotnetChecker } from "./dotnetChecker";
 import { BackendExtensionsInstallError } from "./errors";
+import { cpUtils } from "./cpUtils";
+import { IDepsLogger } from "./checker";
 
 // NOTE: change these constants if function plugin scaffold changes
 const defaultOutputPath = "bin";
 const defaultCsprojPath = "extensions.csproj";
 
-export async function backendExtensionsInstall(backendRoot: string, csprojPath: string = defaultCsprojPath, outputPath: string = defaultOutputPath): Promise<void> {
-  if (!outputPath) {
-    outputPath = defaultOutputPath;
+export class BackendExtensionsInstaller {
+  private readonly _dotnetChecker: DotnetChecker;
+  private readonly _logger: IDepsLogger;
+
+  constructor(dotnetChecker: DotnetChecker, logger: IDepsLogger) {
+    this._dotnetChecker = dotnetChecker;
+    this._logger = logger;
   }
 
-  const dotnetExecPath = await dotnetChecker.getDotnetExecPath();
+  public async install(backendRoot: string, csprojPath: string = defaultCsprojPath, outputPath: string = defaultOutputPath): Promise<void> {
+    if (!outputPath) {
+      outputPath = defaultOutputPath;
+    }
 
-  if (dotnetExecPath === "") {
-    logger.error(`Failed to run backend extension install, .NET SDK executable not found`);
-    throw new BackendExtensionsInstallError("Failed to run backend extension install, .NET SDK executable not found", backendExtensionsInstallHelpLink);
-  }
+    const dotnetExecPath = await this._dotnetChecker.getDotnetExecPath();
 
-  try {
-    await cpUtils.executeCommand(
-      backendRoot,
-      logger,
-      { shell: false },
-      dotnetExecPath,
-      "build",
-      csprojPath,
-      "-o",
-      outputPath,
+    if (dotnetExecPath === "") {
+      this._logger.error(`Failed to run backend extension install, .NET SDK executable not found`);
+      throw new BackendExtensionsInstallError("Failed to run backend extension install, .NET SDK executable not found", backendExtensionsInstallHelpLink);
+    }
+
+    try {
+      await cpUtils.executeCommand(
+        backendRoot,
+        this._logger,
+        { shell: false },
+        dotnetExecPath,
+        "build",
+        csprojPath,
+        "-o",
+        outputPath,
+        "--ignore-failed-sources"
       );
-  } catch (error) {
-    logger.error(`Failed to run backend extension install: error = '${error}'`);
-    throw new BackendExtensionsInstallError(`Failed to run backend extension install: error = '${error}'`, backendExtensionsInstallHelpLink);
+    } catch (error) {
+      this._logger.error(`Failed to run backend extension install: error = '${error}'`);
+      throw new BackendExtensionsInstallError(`Failed to run backend extension install: error = '${error}'`, backendExtensionsInstallHelpLink);
+    }
   }
 }

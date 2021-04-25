@@ -47,6 +47,9 @@ export namespace AppStudioClient {
         }
     }
 
+    /**
+        * Update App Definition in App Studio
+    */
     export async function updateTeamsApp(teamsAppId: string, appDefinition: IAppDefinition, appStudioToken: string): Promise<boolean> {
         try {
             const requester = createRequesterWithToken(appStudioToken);
@@ -73,7 +76,47 @@ export namespace AppStudioClient {
         return false;
     }
 
+    /**
+        * Publish Teams app to Teams App Catalog
+    */
     export async function publishTeamsApp(teamsAppId: string, file: Buffer, appStudioToken: string): Promise<string> {
+        try {
+            const requester = createRequesterWithToken(appStudioToken);
+            const response = await requester.post("/api/publishing", file,  {headers: {"Content-Type": "application/zip"}});
+            
+            if (response && response.data) {
+                if (response.data.error) {
+                    throw AppStudioResultFactory.SystemError(
+                        AppStudioError.TeamsAppPublishFailedError.name,
+                        AppStudioError.TeamsAppPublishFailedError.message(teamsAppId),
+                        response.data.error.message
+                    );
+                } else {
+                    return response.data.id;
+                }
+            } else {
+                throw AppStudioResultFactory.SystemError(
+                    AppStudioError.TeamsAppPublishFailedError.name,
+                    AppStudioError.TeamsAppPublishFailedError.message(teamsAppId)
+                );
+            }
+        } catch (error) {
+            if (error instanceof SystemError) {
+                throw error;
+            } else {
+                throw AppStudioResultFactory.SystemError(
+                    AppStudioError.TeamsAppPublishFailedError.name,
+                    AppStudioError.TeamsAppPublishFailedError.message(teamsAppId),
+                    error
+                );
+            }
+        }
+    }
+
+    /**
+        * Update existed publish request
+    */
+    export async function publishTeamsAppUpdate(teamsAppId: string, file: Buffer, appStudioToken: string): Promise<string> {
         try {
             // Get App Definition from Teams App Catalog
             const appDefinition = await getAppByTeamsAppId(teamsAppId, appStudioToken);
@@ -84,8 +127,10 @@ export namespace AppStudioClient {
                 // update the existing app
                 response = await requester.post(`/api/publishing/${appDefinition.teamsAppId}/appdefinitions`, file, {headers: {"Content-Type": "application/zip"}});
             } else {
-                // publish a new app to Teams App Catalog               
-                response = await requester.post("/api/publishing", file,  {headers: {"Content-Type": "application/zip"}});
+                throw AppStudioResultFactory.SystemError(
+                    AppStudioError.TeamsAppPublishFailedError.name,
+                    AppStudioError.TeamsAppPublishFailedError.message(teamsAppId)
+                );
             }
             
             if (response && response.data) {
@@ -124,9 +169,10 @@ export namespace AppStudioClient {
             const appdefinitions: IPublishingAppDenition[] = response.data.value[0].appDefinitions
             .map((item: any) => {
                 return {
-                    lastModifiedDateTime: item.lastModifiedDateTime ? Date.parse(item.lastModifiedDateTime): null,
+                    lastModifiedDateTime: item.lastModifiedDateTime ? new Date(item.lastModifiedDateTime): null,
                     publishingState: item.publishingState,
-                    teamsAppId: item.teamsAppId
+                    teamsAppId: item.teamsAppId,
+                    displayName: item.displayName
                 };
             });
             return appdefinitions[appdefinitions.length - 1];

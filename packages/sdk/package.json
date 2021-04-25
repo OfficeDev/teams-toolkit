@@ -1,9 +1,10 @@
 {
   "name": "@microsoft/teamsfx",
-  "version": "0.0.5",
+  "version": "0.0.6-alpha.1",
   "description": "Microsoft Teams App Framework SDK for node.js and browser.",
   "main": "dist/index.js",
   "module": "dist-esm/src/index.js",
+  "private": true,
   "browser": {
     "./dist-esm/src/core/cache.js": "./dist-esm/src/core/cache.browser.js",
     "./dist-esm/src/core/onBehalfOfUserCredential.js": "./dist-esm/src/core/onBehalfOfUserCredential.browser.js",
@@ -23,17 +24,17 @@
     "clean": "rimraf dist dist-* temp types *.tgz *.log",
     "format": "prettier --write --config ./.prettierrc.json --ignore-path ./.prettierignore \"src/**/*.ts\" \"test/**/*.ts\" \"samples/**/*.ts\" \"*.{js,json}\"",
     "integration-test:browser": "echo skipped",
-    "integration-test:node": "mocha -r test/mocha.env.ts -r ts-node/register \"./test/integration/*.spec.ts\" --timeout 100000",
-    "integration-test": "npm run integration-test:node && npm run integration-test:browser",
+    "integration-test:node": "mocha -r test/mocha.env.ts -r ts-node/register \"./test/integration/node/*.spec.ts\" --timeout 100000 --exit --reporter ./tools/mocha-multi-reporter.js",
+    "test:integration": "npm run integration-test:node && npm run integration-test:browser",
     "lint:staged": "lint-staged",
     "lint": "eslint \"**/*.ts\"",
     "prebuild": "npm run clean",
     "test:browser": "npm run build:test && npm run unit-test:browser && npm run integration-test:browser",
     "test:node": "npm run build:test && npm run unit-test:node && npm run integration-test:node",
-    "test": "npm run build:test && npm run unit-test && npm run integration-test",
+    "test": "npm run test:unit && npm run test:integration",
     "unit-test:browser": "karma start --single-run",
     "unit-test:node": "mocha dist-test/index.node.js --reporter ./tools/mocha-multi-reporter.js",
-    "unit-test": "npm run unit-test:node && npm run unit-test:browser"
+    "test:unit": "npm run build:test && npm run unit-test:node && npm run unit-test:browser"
   },
   "files": [
     "dist/",
@@ -64,6 +65,7 @@
     "axios": "^0.21.1",
     "botbuilder-core": ">=4.9.3",
     "botbuilder-dialogs": ">=4.9.3",
+    "build": "^0.1.4",
     "events": "^3.0.0",
     "jwt-decode": "^3.1.2",
     "memory-cache": "^0.2.0",
@@ -72,6 +74,8 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
+    "@azure/arm-sql": "^7.0.2",
+    "@azure/ms-rest-nodeauth": "^3.0.6",
     "@commitlint/cli": "^12.0.1",
     "@commitlint/config-conventional": "^12.0.1",
     "@microsoft/api-documenter": "^7.12.4",
@@ -81,7 +85,7 @@
     "@rollup/plugin-multi-entry": "^3.0.0",
     "@rollup/plugin-node-resolve": "^8.0.0",
     "@rollup/plugin-replace": "^2.2.0",
-    "@shared/eslint-config": "^0.0.0",
+    "@shared/eslint-config": "file:../eslint-config",
     "@types/atob": "^2.1.2",
     "@types/babel__core": "^7.1.12",
     "@types/chai": "^4.1.6",
@@ -145,5 +149,6 @@
     "**/*.ts": [
       "eslint"
     ]
-  }
+  },
+  "gitHead": "7d60c0765c0ea8c023a26c10d1c93001c597afbb"
 }

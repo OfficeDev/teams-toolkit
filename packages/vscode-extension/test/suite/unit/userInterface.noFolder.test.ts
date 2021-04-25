@@ -131,7 +131,7 @@ suite("UI Unit Tests", async () => {
           })
         ),
         new DialogMsg(DialogType.Show, {
-          description: "Output Successfully",
+          description: "",
           level: MsgLevel.Info
         })
       );
@@ -239,7 +239,7 @@ suite("UI Unit Tests", async () => {
       chai.assert.deepEqual(
         await DialogManagerInstance.communicate(new DialogMsg(DialogType.Answer, "abc")),
         new DialogMsg(DialogType.Show, {
-          description: "Wrong Dialog Type",
+          description: "",
           level: MsgLevel.Error
         })
       );

@@ -18,6 +18,11 @@ export class LocalDebugCertificate {
     public static readonly FriendlyName: string = "TeamsFx Development Certificate";
 }
 
+export enum ProgrammingLanguage {
+    javascript = "javascript",
+    typescript = "typescript",
+}
+
 /**
  * Config key contract that value is provided by local debug plugin and required by other plugins.
  */
@@ -31,6 +36,7 @@ export class LocalDebugConfigKeys {
 
     public static readonly LocalBotEndpoint: string = "localBotEndpoint";
     public static readonly LocalBotDomain: string = "localBotDomain";
+    public static readonly SkipNgrok: string = "skipNgrok";
 }
 
 export class AadPlugin {
@@ -62,6 +68,7 @@ export class SolutionPlugin {
     public static readonly LocalTeamsAppId: string = "localDebugTeamsAppId";
     public static readonly RemoteTeamsAppId: string = "remoteTeamsAppId";
     public static readonly TeamsAppTenantId: string = "teamsAppTenantId";
+    public static readonly ProgrammingLanguage: string = "programmingLanguage";
 }
 
 export class FrontendHostingPlugin {
@@ -69,7 +76,7 @@ export class FrontendHostingPlugin {
 }
 
 export class BotPlugin {
-    public static readonly Name: string = "fx-resource-teamsbot";
+    public static readonly Name: string = "fx-resource-bot";
     public static readonly LocalBotId: string = "localBotId";
     public static readonly LocalBotPassword: string = "localBotPassword";
 }

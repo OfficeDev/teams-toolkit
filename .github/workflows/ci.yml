@@ -11,7 +11,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [windows-latest, macos-latest]
+        os: [windows-latest]
         node-version: [14]
 
     runs-on: ${{ matrix.os }}
@@ -31,10 +31,6 @@ jobs:
         run: |
           npm run setup
 
-      - name: Lint code
-        run: |
-          npm run lint
-
       - name: Unit Test
         run: |
           npx lerna run test:unit --since origin/main
@@ -49,6 +45,17 @@ jobs:
           SDK_INTEGRATION_TEST_ACCOUNT_SUBSCRIPTION_ID: ${{secrets.SDK_INTEGRATIONTEST_SUBSCRIPTION_ID}}
           SDK_INTEGRATION_TEST_ACCOUNT_NAME: ${{secrets.SDK_INTEGRATIONTEST_TEST_USERNAME}}
           SDK_INTEGRATION_TEST_ACCOUNT_PASSWORD: ${{secrets.SDK_INTEGRATIONTEST_TEST_PASSWORD}}
+          SDK_INTEGRATION_TEST_AAD_CLIENT_ID_SSO: ${{secrets.SDK_INTEGRATIONTEST_AAD_CLIENTID_SSO}}
+          SDK_INTEGRATION_TEST_AAD_CLIENT_ID_REMOTE: ${{secrets.SDK_INTEGRATIONTEST_AAD_CLIENTID_REMOTE}}
+          SDK_INTEGRATION_TEST_AAD_CLIENT_SECRET_REMOTE: ${{secrets.SDK_INTEGRATIONTEST_APP_CLIENT_SECRET_REMOTE}}
+          SDK_INTEGRATION_TEST_AAD_TENANT_ID: ${{secrets.SDK_INTEGRATIONTEST_AAD_TENANTID}}
+          SDK_INTEGRATION_TEST_AAD_AUTHORITY_HOST: ${{secrets.SDK_INTEGRATIONTEST_AAD_AUTHORITY_HOST}}
+          SDK_INTEGRATION_TEST_SCOPES_SSO: ${{secrets.SDK_INTEGRATIONTEST_SCOPES_SSO}}
+          TEST_USER_NAME: ${{ secrets.TEST_USER_NAME }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+          TEST_SUBSCRIPTION_ID: ${{ secrets.TEST_SUBSCRIPTION_ID }}
+          CI_ENABLED: "true"
         run: |
+          npm link
           npx lerna run test:integration --since origin/main
 

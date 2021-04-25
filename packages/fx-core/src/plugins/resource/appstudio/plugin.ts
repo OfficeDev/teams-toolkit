@@ -24,7 +24,7 @@ export class AppStudioPluginImpl {
             throw AppStudioResultFactory.UserError(AppStudioError.NotADirectoryError.name, AppStudioError.NotADirectoryError.message(appDirectory));
         }
         const manifest: TeamsAppManifest = JSON.parse(manifestString);
-        const colorFile = this.isSPFxProject(ctx) ? `${ctx.root}/SPFx/teams/${manifest.icons.color}` : `${appDirectory}/${manifest.icons.color}`;
+        const colorFile = `${appDirectory}/${manifest.icons.color}`;
         
         try {
             const colorFileState = await fs.stat(colorFile);
@@ -35,7 +35,7 @@ export class AppStudioPluginImpl {
             throw AppStudioResultFactory.UserError(AppStudioError.FileNotFoundError.name, AppStudioError.FileNotFoundError.message(colorFile));
         }
         
-        const outlineFile = this.isSPFxProject(ctx) ? `${ctx.root}/SPFx/teams/${manifest.icons.outline}` : `${appDirectory}/${manifest.icons.outline}`;
+        const outlineFile = `${appDirectory}/${manifest.icons.outline}`;
         try {
             const outlineFileState = await fs.stat(outlineFile);
             if (!outlineFileState.isFile()) {

@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AssemblyName>Microsoft.TeamsFx.SimpleAuth</AssemblyName>
     <RootNamespace>Microsoft.TeamsFx.SimpleAuth</RootNamespace>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -12,6 +13,13 @@
 	  <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
 	  <LangVersion>8.0</LangVersion>
 	  <Version>0.1.1</Version>
+	  <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+	  <Authors>Microsoft</Authors>
+	  <PackageLicenseExpression>MIT</PackageLicenseExpression>
+	  <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+	  <PackageProjectUrl>https://github.com/OfficeDev/TeamsFx/tree/main/packages/simpleauth</PackageProjectUrl>
+	  <RepositoryUrl>https://github.com/OfficeDev/TeamsFx</RepositoryUrl>
+	  <Description>This package provides ASP.NET Core controller that simplifies authentication for Teams tab app.</Description>
   </PropertyGroup>
 
   <ItemGroup>

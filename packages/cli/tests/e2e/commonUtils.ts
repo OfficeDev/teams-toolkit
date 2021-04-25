@@ -8,6 +8,8 @@ import path from "path";
 import { promisify } from "util";
 import { v4 as uuidv4 } from "uuid";
 
+import { AzureConfig } from "fx-api";
+
 export const execAsync = promisify(exec);
 
 const testFolder = path.resolve(os.homedir(), "test-folder");
@@ -21,4 +23,8 @@ export function getTestFolder() {
 
 export function getUniqueAppName() {
     return "teamsfxE2E" + uuidv4().slice(0, 8);
+}
+
+export function getSubscriptionId() {
+    return AzureConfig.subscription.id;
 }

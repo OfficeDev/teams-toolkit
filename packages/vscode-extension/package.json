@@ -2,7 +2,7 @@
   "name": "teamsfx-extension",
   "displayName": "Teams Toolkit V2",
   "description": "Create, debug, and deploy Teams apps directly from Teams Toolkit v2",
-  "version": "2.0.0-alpha.1",
+  "version": "2.0.0-alpha.11",
   "publisher": "Microsoft",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -35,6 +35,9 @@
   ],
   "aiKey": "AIF-d9b70cd4-b9f9-4d70-929b-a071c400b217",
   "featureFlag": "true",
+  "files": [
+    "out/**/*"
+  ],
   "activationEvents": [
     "*",
     "onCommand:fx-extension.create",
@@ -345,6 +348,7 @@
     "test:unit": "echo 'to be implementd'",
     "test:integration": "echo 'to be implementd'",
     "test:e2e": "echo 'to be implementd'",
+    "test:env-checker": "npm run compile && npx mocha --ui tdd \"./out/test/suite/envChecker/cases/**/*.js\" --timeout 180000",
     "check-format": "prettier --list-different --config .prettierrc.json --ignore-path .prettierignore \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,json}\"",
     "format": "prettier --write --config .prettierrc.json --ignore-path .prettierignore \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,json}\"",
     "lint:fix": "eslint --config .eslintrc.js package.json src test --ext .ts --fix --fix-type [problem,suggestion]",
@@ -352,12 +356,12 @@
     "prepare": "npm run build"
   },
   "devDependencies": {
-    "@shared/eslint-config": "^0.0.0",
     "@azure/arm-subscriptions": "^3.0.0",
     "@azure/eslint-plugin-azure-sdk": "^2.0.1",
     "@commitlint/cli": "^12.0.1",
     "@commitlint/config-conventional": "^12.0.1",
     "@fluentui/react": "^8.5.1",
+    "@shared/eslint-config": "file:../eslint-config",
     "@types/adm-zip": "^0.4.33",
     "@types/chai": "^4.2.14",
     "@types/chai-as-promised": "^7.1.3",
@@ -412,6 +416,7 @@
     "typescript": "^4.2.4",
     "url-loader": "^4.1.1",
     "uuid": "^8.3.2",
+    "vsce": "^1.87.1",
     "webpack": "^4.44.1",
     "webpack-cli": "^3.3.12",
     "winston": "^3.3.3"
@@ -423,8 +428,8 @@
     "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
-    "fx-api": "^1.0.1",
-    "fx-core": "^1.0.1",
+    "fx-api": "^1.1.1-alpha.4",
+    "fx-core": "^1.1.1-alpha.4",
     "jsonschema": "^1.4.0",
     "opn": "^6.0.0",
     "sudo-prompt": "^9.2.1",
@@ -444,5 +449,6 @@
     "hooks": {
       "commit-msg": "commitlint -e $HUSKY_GIT_PARAMS"
     }
-  }
+  },
+  "gitHead": "7d60c0765c0ea8c023a26c10d1c93001c597afbb"
 }

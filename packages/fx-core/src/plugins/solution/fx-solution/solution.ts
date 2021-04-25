@@ -29,7 +29,9 @@ import {
     MsgLevel,
     ConfigFolderName,
     AzureSolutionSettings,
-    Err
+    Err,
+    UserError,
+    SystemError
 } from "fx-api";
 import { askSubscription, fillInCommonQuestions } from "./commonQuestions";
 import { executeLifecycles, executeConcurrently, LifecyclesWithContext } from "./executor";
@@ -98,6 +100,9 @@ import {
 import Mustache from "mustache";
 import path from "path";
 import { AppStudioPlugin } from "../../resource/appstudio";
+import { ErrorResponse } from "@azure/arm-resources/esm/models/mappers";
+import * as strings from "../../../resources/strings.json";
+import * as util from "util";
 
 type LoadedPlugin = Plugin & { name: string; displayName: string; };
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -768,11 +773,20 @@ export class TeamsAppSolution implements Solution {
             return err(maybeManifest.error);
         }
         const manifest = maybeManifest.value;
-        const result = this.createManifestForRemote(ctx, manifest);
-        if (result.isErr()) {
-            return err(result.error);
+        
+        let appDefinition: IAppDefinition;
+        let updatedManifest: TeamsAppManifest;
+        if (this.spfxSelected(ctx)) {
+            appDefinition = AppStudio.convertToAppDefinition(manifest, false);
+            updatedManifest = manifest;
+        } else {
+            const result = this.createManifestForRemote(ctx, manifest);
+            if (result.isErr()) {
+                return err(result.error);
+            }
+            [appDefinition, updatedManifest] = result.value;
         }
-        const [appDefinition, updatedManifest] = result.value;
+        
         const teamsAppId = ctx.config.get(GLOBAL_CONFIG)?.getString(REMOTE_TEAMS_APP_ID);
         if (!teamsAppId) {
             ctx.logProvider?.info(`Teams app not created`);
@@ -855,24 +869,10 @@ export class TeamsAppSolution implements Solution {
      *
      */
     async provision(ctx: SolutionContext): Promise<Result<any, FxError>> {
-        if (this.spfxSelected(ctx)) {
-            return err(
-                returnUserError(
-                    new Error("SPFx project has no provision task, you can directly deploy it."),
-                    "Solution",
-                    SolutionError.CannotRunProvisionInSPFxProject,
-                ),
-            );
-        }
 
         const canProvision = this.checkWhetherSolutionIsIdle();
         if (canProvision.isErr()) {
             return canProvision;
-        }
-
-        const maybePermission = await this.getPermissionRequest(ctx);
-        if (maybePermission.isErr()) {
-            return maybePermission;
         }
         
         try {
@@ -882,21 +882,37 @@ export class TeamsAppSolution implements Solution {
             await ctx.appStudioToken?.getAccessToken();
 
             this.runningState = SolutionRunningState.ProvisionInProgress;
-            ctx.config.get(GLOBAL_CONFIG)?.set(PERMISSION_REQUEST, maybePermission.value);
+            if (!this.spfxSelected(ctx)) {
+                const maybePermission = await this.getPermissionRequest(ctx);
+                if (maybePermission.isErr()) {
+                    return maybePermission;
+                }
+                ctx.config.get(GLOBAL_CONFIG)?.set(PERMISSION_REQUEST, maybePermission.value);
+            }   
 
             const provisionResult = await this.doProvision(ctx);
             if (provisionResult.isOk()) {
-                ctx.logProvider?.info(`[Teams Toolkit] configuration success!`);
+                ctx.logProvider?.info(`[Teams Toolkit] provision success!`);
                 await ctx.dialog?.communicate(
                     new DialogMsg(DialogType.Show, {
-                        description: "[Teams Toolkit] provision finished successfully!",
+                        description: "[Teams Toolkit] provision success!",
                         level: MsgLevel.Info,
                     }),
                 );
                 ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
             } else {
-                ctx.logProvider?.error(`[Teams Toolkit] configuration failed!`);
+                ctx.logProvider?.error(`[Teams Toolkit] provision failed!`);
                 ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false);
+                const resourceGroupName = ctx.config.get(GLOBAL_CONFIG)?.getString("resourceGroupName");
+                const subscriptionId = ctx.config.get(GLOBAL_CONFIG)?.getString("subscriptionId");
+                const error = provisionResult.error;
+                error.message += " " + util.format(strings.solution.ProvisionFailNotice, subscriptionId, resourceGroupName);
+                if(error instanceof UserError){
+                    const ue = error as UserError;
+                    if(!ue.helpLink){
+                        ue.helpLink = "https://aka.ms/teamsfx-solution-help";
+                    }
+                }
             }
             return provisionResult;
         } finally {
@@ -922,17 +938,20 @@ export class TeamsAppSolution implements Solution {
         }
         const manifest = maybeManifest.value;
 
-        //1. ask common questions for azure resources.
-        const appName = manifest.name.short;
-        const res = await fillInCommonQuestions(
-            appName,
-            ctx.config,
-            ctx.dialog,
-            await ctx.azureAccountProvider?.getAccountCredentialAsync(),
-            await ctx.appStudioToken?.getJsonObject(),
-        );
-        if (res.isErr()) {
-            return res;
+        if (!this.spfxSelected(ctx)) {
+            //1. ask common questions for azure resources.
+            const appName = manifest.name.short;
+            const res = await fillInCommonQuestions(
+                ctx,
+                appName,
+                ctx.config,
+                ctx.dialog,
+                await ctx.azureAccountProvider?.getAccountCredentialAsync(),
+                await ctx.appStudioToken?.getJsonObject(),
+            );
+            if (res.isErr()) {
+                return res;
+            }
         }
 
         const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, selectedPlugins, manifest);
@@ -1009,7 +1028,7 @@ export class TeamsAppSolution implements Solution {
 
         if (this.spfxSelected(ctx)) {
             const manifestString = (await fs.readFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`)).toString();
-            return JSON.parse(manifestString);
+            return ok(JSON.parse(manifestString));
         } else {
             return this.createManifestForRemote(ctx, manifestTpl).map((result) => result[1]);
         }
@@ -1097,15 +1116,6 @@ export class TeamsAppSolution implements Solution {
     }
 
     async publish(ctx: SolutionContext): Promise<Result<any, FxError>> {
-        if (this.spfxSelected(ctx)) {
-            return err(
-                returnUserError(
-                    new Error("Cannot publish for SPFx projects"),
-                    "Solution",
-                    SolutionError.CannotRunThisTaskInSPFxProject,
-                ),
-            );
-        }
 
         const maybeManifestTpl = await this.reloadManifestAndCheckRequiredFields(ctx);
         if (maybeManifestTpl.isErr()) {
@@ -1128,36 +1138,15 @@ export class TeamsAppSolution implements Solution {
 
             ctx.logProvider?.info(`[Solution] publish start!`);
 
-            const result = await executeConcurrently("", publishWithCtx);
-
-            if (result.isOk()) {
-                ctx.logProvider?.info(`[Teams Toolkit] publish success!`);
-                await ctx.dialog?.communicate(
-                    new DialogMsg(DialogType.Show, {
-                        description: `[Teams Toolkit]: ${ctx.app.name.short} successfully published to the admin portal. Once approved, your app will be available for your organization.`,
-                        level: MsgLevel.Info,
-                    }),
-                );
-            } else {
-                ctx.logProvider?.error(`[Teams Toolkit] publish failed!`);
-            }
-
-            return result;
+            return await executeConcurrently("", publishWithCtx);
         } finally {
             this.runningState = SolutionRunningState.Idle;
         }
     }
 
     async getTabScaffoldQuestions(ctx: SolutionContext):Promise<Result<QTreeNode | undefined, FxError>> {
-        const tabNode = new QTreeNode({ type: NodeType.group });
-       
+        
         const frontendHostType = new QTreeNode(FrontendHostTypeQuestion);
-        tabNode.addChild(frontendHostType);
-
-        const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
-        // SPFx project does not ask users to choose programming language
-        programmingLanguage.condition = { equals: HostTypeOptionAzure.id };
-        frontendHostType.addChild(programmingLanguage);
 
         //Frontend plugin
         if (this.fehostPlugin.getQuestions) {
@@ -1166,13 +1155,13 @@ export class TeamsAppSolution implements Solution {
             if (res.isErr()) return res;
             if (res.value) {
                 const frontend = res.value as QTreeNode;
-                frontend.condition = { equals: HostTypeOptionAzure.label };
+                frontend.condition = { equals: HostTypeOptionAzure.id };
                 if (frontend.data) frontendHostType.addChild(frontend);
             }
         }
 
         const azure_resources = new QTreeNode(AzureResourcesQuestion);
-        azure_resources.condition = { equals: HostTypeOptionAzure.label };
+        azure_resources.condition = { equals: HostTypeOptionAzure.id };
         frontendHostType.addChild(azure_resources);
 
         //SPFX plugin
@@ -1182,7 +1171,7 @@ export class TeamsAppSolution implements Solution {
             if (res.isErr()) return res;
             if (res.value) {
                 const spfx = res.value as QTreeNode;
-                spfx.condition = { equals: HostTypeOptionSPFx.label };
+                spfx.condition = { equals: HostTypeOptionSPFx.id };
                 if (spfx.data) frontendHostType.addChild(spfx);
             }
         }
@@ -1211,7 +1200,7 @@ export class TeamsAppSolution implements Solution {
             }
         }
 
-        return ok(tabNode);
+        return ok(frontendHostType);
     }
 
     /**
@@ -1256,6 +1245,11 @@ export class TeamsAppSolution implements Solution {
                     capNode.addChild(botGroup);
                 }
             }
+
+            //// programming languate
+            const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
+            programmingLanguage.condition = { namespace: "fx-solution-azure", method: "whetherToAskProgrammingLanguageQuestion" }; //dynamic condition
+            capNode.addChild(programmingLanguage);
         } else if (stage === Stage.update) {
             return await this.getQuestionsForAddResource(ctx, manifest);
         } else if (stage === Stage.provision) {
@@ -1645,7 +1639,7 @@ export class TeamsAppSolution implements Solution {
                 localAADId: conf.aadId,
                 localBotDomain: conf.botDomain,
                 bots: conf.bots,
-                composeExtension: conf.composeExtensions,
+                composeExtensions: conf.composeExtensions,
                 webApplicationInfoResource: conf.webApplicationInfoResource,
             };
         });
@@ -1697,6 +1691,15 @@ export class TeamsAppSolution implements Solution {
                     ctx.config.get(GLOBAL_CONFIG)?.set("subscriptionId", result.value);
                 }
                 return ok(null);
+            }
+            else if (func.method === "whetherToAskProgrammingLanguageQuestion") {
+                const capabilities = ctx.answers?.getStringArray(AzureSolutionQuestionNames.Capabilities);
+                const hostType = ctx.answers?.getString(AzureSolutionQuestionNames.HostType);
+                if(capabilities?.includes(BotOptionItem.id) || capabilities?.includes(MessageExtensionItem.id) 
+                    || (capabilities?.includes(TabOptionItem.id) && HostTypeOptionAzure.id === hostType) )
+                    return ok(undefined);
+                else 
+                    return ok(`SPFx don't need to ask programming languate question!`);
             }
         }
         return err(

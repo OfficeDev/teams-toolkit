@@ -31,6 +31,7 @@ export class LocalDebugConfigKeys {
 
     public static readonly LocalTabEndpoint: string = "localTabEndpoint";
     public static readonly LocalTabDomain: string = "localTabDomain";
+    public static readonly TrustDevelopmentCertificate: string = "trustDevCert"
 
     public static readonly LocalFunctionEndpoint: string = "localFunctionEndpoint";
 

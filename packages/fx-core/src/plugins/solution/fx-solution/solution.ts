@@ -52,8 +52,6 @@ import {
     REMOTE_TEAMS_APP_ID,
     Void,
     SOLUTION_PROVISION_SUCCEEDED,
-    BOTS,
-    COMPOSE_EXTENSIONS,
     BOT_DOMAIN,
     LOCAL_APPLICATION_ID_URIS,
     LOCAL_CLIENT_SECRET,
@@ -65,6 +63,11 @@ import {
     LOCAL_WEB_APPLICATION_INFO_SOURCE,
     PROGRAMMING_LANGUAGE,
     REMOTE_MANIFEST,
+    BOT_ID,
+    LOCAL_BOT_ID,
+    STATIC_TABS_TPL,
+    CONFIGURABLE_TABS_TPL,
+    BOTS_TPL,
 } from "./constants";
 
 import { SpfxPlugin } from "../../resource/spfx";
@@ -326,8 +329,12 @@ export class TeamsAppSolution implements Solution {
         if (!ctx.config.has(GLOBAL_CONFIG)) {
             ctx.config.set(GLOBAL_CONFIG, new ConfigMap());
         }
+        
+        // Only non-SPFx project will ask this question.
         const lang = ctx.answers?.getString(AzureSolutionQuestionNames.ProgrammingLanguage);
-        ctx.config.get(GLOBAL_CONFIG)?.set(PROGRAMMING_LANGUAGE, lang ?? "javascript");
+        if (lang) {
+            ctx.config.get(GLOBAL_CONFIG)?.set(PROGRAMMING_LANGUAGE, lang);
+        }
 
         const settingsRes = this.fillInSolutionSettings(ctx);
         if(settingsRes.isErr()) 
@@ -637,7 +644,6 @@ export class TeamsAppSolution implements Solution {
         }
         const selectedPlugins = maybeSelectedPlugins.value;
 
-
         const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx);
         if (maybeManifest.isErr()) {
             return maybeManifest;
@@ -708,37 +714,13 @@ export class TeamsAppSolution implements Solution {
                     ),
                 );
             }
-            if (hasBot) {
-                const bots = ctx.config.get(this.botPlugin.name)?.getString(BOTS);
-                if (!bots) {
-                    return err(
-                        returnSystemError(
-                            new Error(`key "${BOTS}" not found in bot plugin's conifg`),
-                            "Solution",
-                            SolutionError.BotInternalError,
-                        ),
-                    );
-                }
-            }
-            if (hasMsgExt) {
-                const composeExtensions = ctx.config.get(this.botPlugin.name)?.getString(COMPOSE_EXTENSIONS);
-                if (!composeExtensions) {
-                    return err(
-                        returnSystemError(
-                            new Error(`key "${COMPOSE_EXTENSIONS}" not found in bot plugin's conifg`),
-                            "Solution",
-                            SolutionError.BotInternalError,
-                        ),
-                    );
-                }
-            }
         }
         const maybeConfig = this.getConfigForCreatingManifest(ctx.config, false);
         if (maybeConfig.isErr()) {
             return err(maybeConfig.error);
         }
 
-        const {tabEndpoint, tabDomain, aadId, botDomain, bots, composeExtensions, webApplicationInfoResource} = maybeConfig.value;
+        const {tabEndpoint, tabDomain, aadId, botDomain, botId, webApplicationInfoResource} = maybeConfig.value;
 
         const validDomains: string[] = [];
 
@@ -759,8 +741,7 @@ export class TeamsAppSolution implements Solution {
             tabEndpoint,
             manifest.name.short,
             manifest.version,
-            bots,
-            composeExtensions
+            botId,
         ));
     }
 
@@ -1481,7 +1462,7 @@ export class TeamsAppSolution implements Solution {
             return maybeConfig;
         }
 
-        const {localTabEndpoint, localTabDomain, localAADId, localBotDomain, bots, composeExtensions, webApplicationInfoResource} = maybeConfig.value;
+        const {localTabEndpoint, localTabDomain, localAADId, localBotDomain, botId, webApplicationInfoResource} = maybeConfig.value;
 
         const validDomains: string[] = [];
 
@@ -1503,8 +1484,7 @@ export class TeamsAppSolution implements Solution {
             localTabEndpoint,
             manifest.name.short,
             manifest.version,
-            bots,
-            composeExtensions
+            botId,
         );
 
         const localTeamsAppID = ctx.config.get(GLOBAL_CONFIG)?.getString(LOCAL_DEBUG_TEAMS_APP_ID);
@@ -1571,13 +1551,12 @@ export class TeamsAppSolution implements Solution {
         });
     }
 
-    private getConfigForCreatingManifest(config: SolutionConfig, localDebug: boolean): Result<{tabEndpoint?: string, tabDomain?:string, aadId: string, botDomain?: string, bots?: string, composeExtensions?: string, webApplicationInfoResource: string}, FxError> {
+    private getConfigForCreatingManifest(config: SolutionConfig, localDebug: boolean): Result<{tabEndpoint?: string, tabDomain?:string, aadId: string, botDomain?: string, botId?: string, webApplicationInfoResource: string}, FxError> {
         const tabEndpoint = localDebug ? config.get(this.localDebugPlugin.name)?.getString(LOCAL_DEBUG_TAB_ENDPOINT) : config.get(this.fehostPlugin.name)?.getString(FRONTEND_ENDPOINT);
         const tabDomain = localDebug ? config.get(this.localDebugPlugin.name)?.getString(LOCAL_DEBUG_TAB_DOMAIN) : config.get(this.fehostPlugin.name)?.getString(FRONTEND_DOMAIN);
         const aadId = config.get(this.aadPlugin.name)?.getString(localDebug ? LOCAL_DEBUG_AAD_ID : REMOTE_AAD_ID);
+        const botId = config.get(this.botPlugin.name)?.getString(localDebug ? LOCAL_BOT_ID : BOT_ID);
         const botDomain = localDebug ? config.get(this.localDebugPlugin.name)?.getString(LOCAL_DEBUG_BOT_DOMAIN) : config.get(this.botPlugin.name)?.getString(BOT_DOMAIN);
-        const bots = config.get(this.botPlugin.name)?.getString(BOTS);
-        const composeExtensions = config.get(this.botPlugin.name)?.getString(COMPOSE_EXTENSIONS);
         // This config value is set by aadPlugin.setApplicationInContext. so aadPlugin.setApplicationInContext needs to run first.
         const webApplicationInfoResource = config.get(this.aadPlugin.name)?.getString(localDebug ? LOCAL_WEB_APPLICATION_INFO_SOURCE : WEB_APPLICATION_INFO_SOURCE);
         if (!webApplicationInfoResource) {
@@ -1597,10 +1576,10 @@ export class TeamsAppSolution implements Solution {
             );
         }
         // localTabEndpoint, bots and composeExtensions can't all be undefined
-        if (!tabEndpoint && !bots && !composeExtensions) {
+        if (!tabEndpoint && !botId) {
             return err(
                 returnSystemError(
-                    new Error(`${LOCAL_DEBUG_TAB_ENDPOINT}, ${BOTS}, ${COMPOSE_EXTENSIONS} are all missing`),
+                    new Error(`${localDebug ? LOCAL_DEBUG_TAB_ENDPOINT : FRONTEND_ENDPOINT}, ${localDebug ? LOCAL_BOT_ID : BOT_ID}  are all missing`),
                     "Solution",
                     localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError,
                 ),
@@ -1609,17 +1588,17 @@ export class TeamsAppSolution implements Solution {
         if ((tabEndpoint && !tabDomain) || (!tabEndpoint && tabDomain)) {
             return err(
                 returnSystemError(
-                    new Error(`Invalid config for tab: ${LOCAL_DEBUG_TAB_ENDPOINT}=${tabEndpoint} ${LOCAL_DEBUG_TAB_DOMAIN}=${tabDomain}`),
+                    new Error(`Invalid config for tab: ${localDebug ? LOCAL_DEBUG_TAB_ENDPOINT : FRONTEND_ENDPOINT}=${tabEndpoint} ${localDebug ? LOCAL_DEBUG_TAB_DOMAIN : FRONTEND_DOMAIN}=${tabDomain}`),
                     "Solution",
                     localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError,
                 ),
             );
         }
-        if (bots || composeExtensions) {
+        if (botId) {
             if (!botDomain) {
                 return err(
                     returnSystemError(
-                        new Error(`${LOCAL_DEBUG_BOT_DOMAIN} is undefined`),
+                        new Error(`${localDebug ? LOCAL_DEBUG_BOT_DOMAIN : BOT_DOMAIN} is undefined`),
                         "Solution",
                         localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError,
                     )
@@ -1628,18 +1607,17 @@ export class TeamsAppSolution implements Solution {
         }
 
         
-        return ok({tabEndpoint, tabDomain, aadId, botDomain, bots, composeExtensions, webApplicationInfoResource});
+        return ok({tabEndpoint, tabDomain, aadId, botDomain, botId, webApplicationInfoResource});
     }
 
-    private getLocalDebugConfig(config: SolutionConfig): Result<{localTabEndpoint?: string, localTabDomain?:string, localAADId: string, localBotDomain?: string, bots?: string, composeExtensions?: string, webApplicationInfoResource: string}, FxError> {
+    private getLocalDebugConfig(config: SolutionConfig): Result<{localTabEndpoint?: string, localTabDomain?:string, localAADId: string, localBotDomain?: string, botId?: string, webApplicationInfoResource: string}, FxError> {
         return this.getConfigForCreatingManifest(config, true).map((conf) => {
             return {
                 localTabEndpoint: conf.tabEndpoint,
                 localTabDomain: conf.tabDomain,
                 localAADId: conf.aadId,
                 localBotDomain: conf.botDomain,
-                bots: conf.bots,
-                composeExtensions: conf.composeExtensions,
+                botId: conf.botId,
                 webApplicationInfoResource: conf.webApplicationInfoResource,
             };
         });
@@ -1934,6 +1912,11 @@ export class TeamsAppSolution implements Solution {
         }
 
         const addCapabilityNotification:string[]  = [];
+        const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx);
+        if (maybeManifest.isErr()) {
+            return maybeManifest;
+        }
+        const manifest = maybeManifest.value;
 
         if(capabilitiesAnswer?.includes(TabOptionItem.id)){
             const hostType = ctx.answers?.getString(AzureSolutionQuestionNames.HostType);
@@ -1947,8 +1930,9 @@ export class TeamsAppSolution implements Solution {
                 }
                 ctx.logProvider?.info(`finish scaffolding Azure Tab Frontend!`);
                 addCapabilityNotification.push("Azure Tab Frontend");
-            }
-            else if(hostType === HostTypeOptionSPFx.id){
+                manifest.staticTabs = STATIC_TABS_TPL;
+                manifest.configurableTabs = CONFIGURABLE_TABS_TPL;
+            } else if(hostType === HostTypeOptionSPFx.id){
                 ctx.logProvider?.info(`start scaffolding SPFx Tab Frontend.....`);
                 const scaffoldRes = await this.scaffoldOne(this.spfxPlugin, ctx);
                 if (scaffoldRes.isErr()) {
@@ -1970,6 +1954,7 @@ export class TeamsAppSolution implements Solution {
             }
             ctx.logProvider?.info(`finish scaffolding Bot!`);
             addCapabilityNotification.push("Bot");
+            manifest.bots = BOTS_TPL;
         }
 
         if(addCapabilityNotification.length > 0){
@@ -1994,7 +1979,8 @@ export class TeamsAppSolution implements Solution {
                 }),
             );
         }
-
+        // Need to persist updated manifest with just added bot or tab fields.
+        await fs.writeFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`, JSON.stringify(manifest, null, 4));
         return ok({});
     }
     /**

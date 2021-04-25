@@ -34,11 +34,11 @@ export class TestAdapter implements IDepsAdapter {
         return Promise.resolve(false);
     }
 
-    displayWarningMessage(message: string, buttonText: string, action: () => Promise<boolean>): Promise<boolean> {
+    async displayWarningMessage(message: string, buttonText: string, action: () => Promise<boolean>): Promise<boolean> {
         if (this._clickCancel) {
-            return Promise.resolve(false);
+            return false;
         } else {
-            return Promise.resolve(true);
+            return await action();
         }
     }
 

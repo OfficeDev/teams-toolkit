@@ -15,6 +15,7 @@
   },
   "types": "types/teamsfx.d.ts",
   "scripts": {
+    "precommit": "lint-staged",
     "build:browser": "tsc -p . && cross-env ONLY_BROWSER=true rollup -c 2>&1",
     "build:node": "tsc -p . && cross-env ONLY_NODE=true rollup -c 2>&1",
     "build:test": "tsc -p . && rollup -c rollup.test.config.js 2>&1",
@@ -26,8 +27,6 @@
     "integration-test:browser": "echo skipped",
     "integration-test:node": "mocha -r test/mocha.env.ts -r ts-node/register \"./test/integration/node/*.spec.ts\" --timeout 100000 --exit --reporter ./tools/mocha-multi-reporter.js",
     "test:integration": "npm run integration-test:node && npm run integration-test:browser",
-    "lint:staged": "lint-staged",
-    "lint": "eslint \"**/*.ts\"",
     "prebuild": "npm run clean",
     "test:browser": "npm run build:test && npm run unit-test:browser && npm run integration-test:browser",
     "test:node": "npm run build:test && npm run unit-test:node && npm run integration-test:node",
@@ -85,6 +84,7 @@
     "@rollup/plugin-node-resolve": "^8.0.0",
     "@rollup/plugin-replace": "^2.2.0",
     "@shared/eslint-config": "file:../eslint-config",
+    "@shared/prettier-config": "file:../prettier-config",
     "@types/atob": "^2.1.2",
     "@types/babel__core": "^7.1.12",
     "@types/chai": "^4.1.6",
@@ -138,15 +138,12 @@
     "typescript": "^4.1.2",
     "util": "^0.12.1"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged",
-      "commit-msg": "commitlint -e $HUSKY_GIT_PARAMS"
-    }
-  },
   "lint-staged": {
-    "**/*.ts": [
-      "eslint"
+    "*.{js,jsx,css,ts,tsx}": [
+      "eslint --cache --fix"
+    ],
+    "*": [
+      "prettier --config .prettierrc.js --ignore-unknown --write --ignore-path .prettierignore "
     ]
   },
   "gitHead": "7d60c0765c0ea8c023a26c10d1c93001c597afbb"

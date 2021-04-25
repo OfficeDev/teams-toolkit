@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflow/env-checker-ci.yml'
       - 'packages/vscode-extension/src/debug/depsChecker/**'
+      - 'packages/vscode-extension/test/suite/envChecker/**'
   schedule:
     # Runs everyday 00:00 UTC
     - cron:  '0 0 * * *'

@@ -152,6 +152,7 @@ export class TeamsBotImpl {
         CheckThrowSomethingMissing(ConfigNames.SUBSCRIPTION_ID, this.config.provision.subscriptionId);
         CheckThrowSomethingMissing(ConfigNames.RESOURCE_GROUP, this.config.provision.resourceGroup);
         CheckThrowSomethingMissing(ConfigNames.LOCATION, this.config.provision.location);
+        CheckThrowSomethingMissing(ConfigNames.SKU_NAME, this.config.provision.skuName);
 
         this.config.provision.siteName = ResourceNameFactory.createCommonName(this.ctx?.app.name.short);
         Logger.debug(`Site name generated to use is ${this.config.provision.siteName}.`);
@@ -212,7 +213,8 @@ export class TeamsBotImpl {
 
         // 1. Provsion app service plan.
         const appServicePlanName = this.config.provision.appServicePlan ? this.config.provision.appServicePlan : ResourceNameFactory.createCommonName(this.ctx?.app.name.short);
-        await AzureOperations.CreateOrUpdateAppServicePlan(webSiteMgmtClient, this.config.provision.resourceGroup!, appServicePlanName, this.config.provision.location!);
+        await AzureOperations.CreateOrUpdateAppServicePlan(webSiteMgmtClient, this.config.provision.resourceGroup!,
+            appServicePlanName, utils.generateAppServicePlanConfig(this.config.provision.location!, this.config.provision.skuName!));
 
         // 2. Provision web app.
         const siteEnvelope: appService.WebSiteManagementModels.Site = LanguageStrategy.getSiteEnvelope(

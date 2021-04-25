@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AccessToken } from "@azure/identity";
 import { assert, expect, use as chaiUse } from "chai";
 
 import chaiPromises from "chai-as-promised";
+import mockedEnv from "mocked-env";
+
 import {
   ErrorCode,
   ErrorWithCode,
@@ -15,14 +16,18 @@ import { parseJwt } from "../../../src/util/utils";
 import { getAccessToken } from "../../helper";
 
 chaiUse(chaiPromises);
+let mockedEnvRestore: () => void;
 
 let ssoToken: string;
 describe("onBehalfOfUserCredential Test: Node", () => {
   before(async () => {
-    process.env.M365_CLIENT_ID = process.env.SDK_INTEGRATION_TEST_AAD_CLIENTID_REMOTE;
-    process.env.M365_CLIENT_SECRET = process.env.SDK_INTEGRATION_TEST_APP_CLIENT_SECRET_REMOTE;
-    process.env.M365_TENANT_ID = process.env.SDK_INTEGRATION_TEST_AAD_TENANTID;
-    process.env.M365_AUTHORITY_HOST = process.env.SDK_INTEGRATION_TEST_AAD_AUTHORITY_HOST;
+    mockedEnvRestore = mockedEnv({
+      M365_CLIENT_ID: process.env.SDK_INTEGRATION_TEST_AAD_CLIENTID_REMOTE,
+      M365_CLIENT_SECRET: process.env.SDK_INTEGRATION_TEST_APP_CLIENT_SECRET_REMOTE,
+      M365_TENANT_ID: process.env.SDK_INTEGRATION_TEST_AAD_TENANTID,
+      M365_AUTHORITY_HOST: process.env.SDK_INTEGRATION_TEST_AAD_AUTHORITY_HOST
+    });
+
     loadConfiguration();
 
     ssoToken = await getAccessToken(
@@ -63,4 +68,8 @@ describe("onBehalfOfUserCredential Test: Node", () => {
       .to.eventually.be.rejectedWith(ErrorWithCode)
       .and.property("code", ErrorCode.InternalError);
   });
+
+  after(async () => {
+    mockedEnvRestore();
+  })
 });

@@ -32,7 +32,7 @@ function createTestChecker(
 
 async function removeDotnetConfig() {
     // fs-extra.remove() does nothing if the file does not exist.
-    await fs.remove(path.resolve(os.homedir(), "." + ConfigFolderName, "dotnet.json"));
+    await fs.remove(dotnetConfigPath);
 }
 
 suite("DotnetChecker E2E Test - first run", async () => {

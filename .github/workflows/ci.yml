@@ -11,7 +11,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [windows-latest, macos-latest]
+        os: [windows-latest]
         node-version: [14]
 
     runs-on: ${{ matrix.os }}
@@ -29,7 +29,9 @@ jobs:
 
       - name: Setup project
         run: |
-          npm run setup
+          npm install
+          npx lerna exec -- npm install --ignore-scripts build
+          npx lerna bootstrap
 
       - name: Lint code
         run: |
@@ -40,6 +42,20 @@ jobs:
           npx lerna run test:unit --since origin/main
 
       - name: Integration Test
+        env:
+          SDK_INTEGRATION_SQL_ENDPOINT: ${{secrets.SDK_INTEGRATIONTEST_SQL_ENDPOINT}}
+          SDK_INTEGRATION_SQL_DATABASE_NAME: ${{secrets.SDK_INTEGRATIONTEST_SQL_DATABASE}}
+          SDK_INTEGRATION_SQL_USER_NAME: ${{secrets.SDK_INTEGRATIONTEST_SQL_USERNAME}}
+          SDK_INTEGRATION_SQL_PASSWORD: ${{secrets.SDK_INTEGRATIONTEST_SQL_PASSWORD}}
+          SDK_INTEGRATION_RESOURCE_GROUP_NAME: ${{secrets.SDK_INTEGRATIONTEST_GROUP_NAME}}
+          SDK_INTEGRATION_TEST_ACCOUNT_SUBSCRIPTION_ID: ${{secrets.SDK_INTEGRATIONTEST_SUBSCRIPTION_ID}}
+          SDK_INTEGRATION_TEST_ACCOUNT_NAME: ${{secrets.SDK_INTEGRATIONTEST_TEST_USERNAME}}
+          SDK_INTEGRATION_TEST_ACCOUNT_PASSWORD: ${{secrets.SDK_INTEGRATIONTEST_TEST_PASSWORD}}
+          TEST_USER_NAME: ${{ secrets.TEST_USER_NAME }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+          TEST_SUBSCRIPTION_ID: ${{ secrets.TEST_SUBSCRIPTION_ID }}
+          CI_ENABLED: "true"
         run: |
+          npm link
           npx lerna run test:integration --since origin/main
 

@@ -17,7 +17,7 @@ import path from "path";
 import { Result, err, ok } from "neverthrow";
 import { FxError, returnUserError } from "../error";
 import { AzureAccountProvider, SubscriptionInfo } from "../utils/login";
-import * as azureConfig from "./conf/azure.json";
+import * as azureConfig from "./conf/azure";
 import { ConfigFolderName } from "../constants";
 
 dotenv.config();

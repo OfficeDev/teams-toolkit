@@ -32,10 +32,10 @@ const newCommandForResourceAdd = `teamsfx new --app-name ${appNameForResourceAdd
 const projectPathForResourceAdd = path.resolve(tmpFolder, appNameForResourceAdd);
 
 const appNameForCapabilityAddTab = "tmpTeamsfxProj" + uuidv4().slice(0, 8);
-const newCommandForCapabilityAddTab = `teamsfx new --app-name ${appNameForCapabilityAddTab} --capabilities Bot --interactive false`;
+const newCommandForCapabilityAddTab = `teamsfx new --app-name ${appNameForCapabilityAddTab} --capabilities bot --interactive false`;
 const projectPathForCapabilityAddTab = path.resolve(tmpFolder, appNameForCapabilityAddTab);
 const appNameForCapabilityAddBot = "tmpTeamsfxProj" + uuidv4().slice(0, 8);
-const newCommandForCapabilityAddBot = `teamsfx new --app-name ${appNameForCapabilityAddBot} --capabilities Tab --interactive false`;
+const newCommandForCapabilityAddBot = `teamsfx new --app-name ${appNameForCapabilityAddBot} --capabilities tab --interactive false`;
 const projectPathForCapabilityAddBot = path.resolve(tmpFolder, appNameForCapabilityAddBot);
 
 const appNameForProvision = "tmpTeamsfxProj" + uuidv4().slice(0, 8);

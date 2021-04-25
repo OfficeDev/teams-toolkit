@@ -4,16 +4,10 @@
 
 1. `git clone https://github.com/OfficeDev/TeamsFx.git`
 2. `cd TeamsFx`
-3. `npm install`
-4. `npm run bootstrap`
-5. `cd packages/cli`
-6. `npm link --force --production`
+3. `npm run setup`
+4. `npm link`
 
-If you meet the error showing that some package cannot install, you can delete this package's `package-lock.json` file and try `npm run bootstrap` again.
-
-`npm link` will search `fx-api/fx-core` from npm registry (not link) and now they are in the private npm registry, so you should setup the private npm registry.
-
-`npm link --force --production` will break the links of `fx-api/fx-core` and download them from npm registry, so after running `npm link --force --production`, you should remove `packages/cli/node_modules/fx-api` and `packages/cli/node_modules/fx-core`, then run `npm run bootstrap` again.
+If you meet the error showing that some package cannot install, you can delete this package's `package-lock.json` file and try `npm run bootstrap` under `TeamsFx` folder again.
 
 ## For users to install the package
 1. Run: `npm install -g teamsfx-cli` (Pls check the version is the latest version)

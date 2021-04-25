@@ -32,7 +32,8 @@ describe(LocalDebugPluginInfo.pluginName, () => {
 
         beforeEach(() => {
             pluginContext = {
-                root: path.resolve(__dirname, "../data/")
+                root: path.resolve(__dirname, "../data/"),
+                config: new Map(),
             } as PluginContext;
             plugin = new LocalDebugPlugin();
             fs.emptyDirSync(pluginContext.root);
@@ -76,26 +77,26 @@ describe(LocalDebugPluginInfo.pluginName, () => {
                 };
                 const result = await plugin.scaffold(pluginContext);
                 chai.assert.isTrue(result.isOk());
-    
+
                 //assert output launch.json
                 const launch = fs.readJSONSync(expectedLaunchFile);
                 const configurations: [] = launch["configurations"];
                 const compounds: [] = launch["compounds"];
                 chai.assert.equal(configurations.length, parameter.numConfigurations);
                 chai.assert.equal(compounds.length, parameter.numCompounds);
-    
+
                 //assert output tasks.json
                 const tasksAll = fs.readJSONSync(expectedTasksFile);
                 const tasks: [] = tasksAll["tasks"];
                 const tasksInput: [] = tasksAll["inputs"];
                 chai.assert.equal(tasks.length, parameter.numTasks);
                 chai.assert.equal(tasksInput.length, parameter.numTaskInputs);
-    
+
                 //assert output settings.json
                 const settings = fs.readJSONSync(expectedSettingsFile);
                 chai.assert.isTrue(Object.keys(settings).some(key => key === "azureFunctions.stopFuncTaskPostDebug"));
                 chai.assert.equal(settings["azureFunctions.stopFuncTaskPostDebug"], false);
-    
+
                 //assert output local.env
                 const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
                 chai.assert.equal(Object.keys(localEnvs).length, parameter.numLocalEnvs);
@@ -139,24 +140,24 @@ describe(LocalDebugPluginInfo.pluginName, () => {
                 };
                 const result = await plugin.scaffold(pluginContext);
                 chai.assert.isTrue(result.isOk());
-    
+
                 //assert output launch.json
                 const launch = fs.readJSONSync(expectedLaunchFile);
                 const configurations: [] = launch["configurations"];
                 const compounds: [] = launch["compounds"];
                 chai.assert.equal(configurations.length, parameter.numConfigurations);
                 chai.assert.equal(compounds.length, parameter.numCompounds);
-    
+
                 //assert output tasks.json
                 const tasksAll = fs.readJSONSync(expectedTasksFile);
                 const tasks: [] = tasksAll["tasks"];
                 const tasksInput: [] = tasksAll["inputs"];
                 chai.assert.equal(tasks.length, parameter.numTasks);
                 chai.assert.equal(tasksInput.length, parameter.numTaskInputs);
-    
+
                 //no settings.json
                 chai.assert.isFalse(fs.existsSync(expectedSettingsFile));
-    
+
                 //assert output local.env
                 const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
                 chai.assert.equal(Object.keys(localEnvs).length, parameter.numLocalEnvs);
@@ -194,30 +195,30 @@ describe(LocalDebugPluginInfo.pluginName, () => {
                         version: "",
                         activeResourcePlugins: [
                             "fx-resource-aad-app-for-teams",
-                            "fx-resource-teamsbot",
+                            "fx-resource-bot",
                         ],
                     },
                 };
                 const result = await plugin.scaffold(pluginContext);
                 chai.assert.isTrue(result.isOk());
-    
+
                 //assert output launch.json
                 const launch = fs.readJSONSync(expectedLaunchFile);
                 const configurations: [] = launch["configurations"];
                 const compounds: [] = launch["compounds"];
                 chai.assert.equal(configurations.length, parameter.numConfigurations);
                 chai.assert.equal(compounds.length, parameter.numCompounds);
-    
+
                 //assert output tasks.json
                 const tasksAll = fs.readJSONSync(expectedTasksFile);
                 const tasks: [] = tasksAll["tasks"];
                 const tasksInput: [] = tasksAll["inputs"];
                 chai.assert.equal(tasks.length, parameter.numTasks);
                 chai.assert.equal(tasksInput.length, parameter.numTaskInputs);
-    
+
                 //no settings.json
                 chai.assert.isFalse(fs.existsSync(expectedSettingsFile));
-    
+
                 //assert output local.env
                 const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
                 chai.assert.equal(Object.keys(localEnvs).length, parameter.numLocalEnvs);
@@ -257,32 +258,32 @@ describe(LocalDebugPluginInfo.pluginName, () => {
                             "fx-resource-aad-app-for-teams",
                             "fx-resource-frontend-hosting",
                             "fx-resource-function",
-                            "fx-resource-teamsbot",
+                            "fx-resource-bot",
                         ],
                     },
                 };
                 const result = await plugin.scaffold(pluginContext);
                 chai.assert.isTrue(result.isOk());
-    
+
                 //assert output launch.json
                 const launch = fs.readJSONSync(expectedLaunchFile);
                 const configurations: [] = launch["configurations"];
                 const compounds: [] = launch["compounds"];
                 chai.assert.equal(configurations.length, parameter.numConfigurations);
                 chai.assert.equal(compounds.length, parameter.numCompounds);
-    
+
                 //assert output tasks.json
                 const tasksAll = fs.readJSONSync(expectedTasksFile);
                 const tasks: [] = tasksAll["tasks"];
                 const tasksInput: [] = tasksAll["inputs"];
                 chai.assert.equal(tasks.length, parameter.numTasks);
                 chai.assert.equal(tasksInput.length, parameter.numTaskInputs);
-    
+
                 //assert output settings.json
                 const settings = fs.readJSONSync(expectedSettingsFile);
                 chai.assert.isTrue(Object.keys(settings).some(key => key === "azureFunctions.stopFuncTaskPostDebug"));
                 chai.assert.equal(settings["azureFunctions.stopFuncTaskPostDebug"], false);
-    
+
                 //assert output local.env
                 const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
                 chai.assert.equal(Object.keys(localEnvs).length, parameter.numLocalEnvs);
@@ -321,30 +322,30 @@ describe(LocalDebugPluginInfo.pluginName, () => {
                         activeResourcePlugins: [
                             "fx-resource-aad-app-for-teams",
                             "fx-resource-frontend-hosting",
-                            "fx-resource-teamsbot",
+                            "fx-resource-bot",
                         ],
                     },
                 };
                 const result = await plugin.scaffold(pluginContext);
                 chai.assert.isTrue(result.isOk());
-    
+
                 //assert output launch.json
                 const launch = fs.readJSONSync(expectedLaunchFile);
                 const configurations: [] = launch["configurations"];
                 const compounds: [] = launch["compounds"];
                 chai.assert.equal(configurations.length, parameter.numConfigurations);
                 chai.assert.equal(compounds.length, parameter.numCompounds);
-    
+
                 //assert output tasks.json
                 const tasksAll = fs.readJSONSync(expectedTasksFile);
                 const tasks: [] = tasksAll["tasks"];
                 const tasksInput: [] = tasksAll["inputs"];
                 chai.assert.equal(tasks.length, parameter.numTasks);
                 chai.assert.equal(tasksInput.length, parameter.numTaskInputs);
-    
+
                 //no settings.json
                 chai.assert.isFalse(fs.existsSync(expectedSettingsFile));
-    
+
                 //assert output local.env
                 const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
                 chai.assert.equal(Object.keys(localEnvs).length, parameter.numLocalEnvs);
@@ -376,7 +377,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
             const tasksAll = fs.readJSONSync(expectedTasksFile);
             const tasks: [] = tasksAll["tasks"];
             const tasksInput: [] = tasksAll["inputs"];
-            chai.assert.equal(tasks.length, 3);
+            chai.assert.equal(tasks.length, 4);
             chai.assert.equal(tasksInput.length, 1);
 
             //no settings.json

@@ -19,8 +19,3 @@ export function capitalizeFirstLetter(str: string): string {
     const nextLetters = str.length > 1 ? str.slice(1) : "";
     return firstLetter + nextLetters;
 }
-
-export function delay(ms: number) {
-    // tslint:disable-next-line no-string-based-set-timeout
-    return new Promise((resolve) => setTimeout(resolve, ms));
-}

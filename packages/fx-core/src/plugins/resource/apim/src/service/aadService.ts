@@ -8,10 +8,9 @@ import { AzureResource, IName, OperationStatus, Operation } from "../model/opera
 import { FxError, LogProvider, TelemetryReporter } from "fx-api";
 import { LogMessages } from "../log";
 import { Telemetry } from "../telemetry";
-import { delay } from "../util";
+import { RetryHandler } from "../util/retryHandler";
 
 export class AadService {
-    private readonly MAX_RETRIES = 2;
     private readonly logger?: LogProvider;
     private readonly telemetryReporter?: TelemetryReporter;
     private readonly axios: AxiosInstance;
@@ -108,17 +107,12 @@ export class AadService {
         data?: any,
         errorHandler?: (error: any) => ErrorHandlerResult
     ) {
-        let executionIndex = 0;
-        let fxError: FxError | undefined;
-
-        while (executionIndex <= this.MAX_RETRIES) {
-            if (executionIndex > 0) {
-                this.logger?.info(LogMessages.operationRetry(operation, resourceType, resourceId));
-                await delay(executionIndex * 1000);
-            }
-
+        RetryHandler.Retry(async (executionIndex) => {
             try {
-                this.logger?.info(LogMessages.operationStarts(operation, resourceType, resourceId));
+                this.logger?.info(
+                    executionIndex === 0
+                        ? LogMessages.operationStarts(operation, resourceType, resourceId)
+                        : LogMessages.operationRetry(operation, resourceType, resourceId));
                 Telemetry.sendAadOperationEvent(this.telemetryReporter, operation, resourceType, OperationStatus.Started, executionIndex);
 
                 const result = await this.axios.request({ method: method, url: url, data: data });
@@ -139,12 +133,9 @@ export class AadService {
                 error.message = `[Detail] ${error?.response?.data?.error?.message ?? error.message}`;
                 this.logger?.error(LogMessages.operationFailed(operation, resourceType, resourceId));
                 Telemetry.sendAadOperationEvent(this.telemetryReporter, operation, resourceType, OperationStatus.Failed, executionIndex);
-                fxError = BuildError(AadOperationError, error, operation.displayName, resourceType.displayName);
-                ++executionIndex;
+                throw BuildError(AadOperationError, error, operation.displayName, resourceType.displayName);
             }
-        }
-
-        throw fxError;
+        });
     }
 
     private _resourceNotFoundErrorHandler(error: any): ErrorHandlerResult {

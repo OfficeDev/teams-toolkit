@@ -5,7 +5,8 @@ on:
     branches:
       - main
     paths:
-      - '.github/workflow/env-checker-ci.yml'
+      - '.github/workflows/env-checker-ci.yml'
+      - '.github/env-checker'
       - 'packages/vscode-extension/src/debug/depsChecker/**'
       - 'packages/vscode-extension/test/suite/envChecker/**'
   schedule:
@@ -20,9 +21,9 @@ jobs:
     strategy:
       matrix: # TODO: add more versions and cases where Node.js do not exist
         os: [windows-latest, macos-latest, ubuntu-latest]
-        node-version: [10, 12, 14]
-        func-version: [none, 2, 3]
-        dotnet-version: [none, 3.1.x, 5.0.x]
+        node-version: [14]
+        func-version: [none, 3]
+        dotnet-version: [none, 3.1.x]
 
     runs-on: ${{ matrix.os }}
 
@@ -31,6 +32,16 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
+
+      - name: Uninstalling .NET on Windows
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: |
+          powershell -NoProfile -Command ./.github/env-checker/uninstall-dotnet.ps1
+
+      - name: Uninstalling .NET on macOS or Ubuntu
+        if: ${{ matrix.os == 'macos-latest' || matrix.os == 'ubuntu-latest' }}
+        run: |
+          ./.github/env-checker/uninstall-dotnet.sh
 
       - name: Setup Node.js
         uses: actions/setup-node@v2.1.2

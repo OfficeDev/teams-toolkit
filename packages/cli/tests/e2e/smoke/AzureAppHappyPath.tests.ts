@@ -12,6 +12,7 @@ import {
   getTestFolder,
   getUniqueAppName,
   setSimpleAuthSkuNameToB1,
+  setBotSkuNameToB1,
   cleanUp,
 } from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
@@ -45,6 +46,8 @@ describe("Azure App Happy Path", function() {
         timeout: 0
       }
     );
+
+    await setBotSkuNameToB1(projectPath);
 
     // set subscription
     await execAsync(

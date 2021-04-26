@@ -40,6 +40,13 @@ export async function setSimpleAuthSkuNameToB1(projectPath: string) {
     await fs.writeJSON(envFilePath, context, { spaces: 4 });
 }
 
+export async function setBotSkuNameToB1(projectPath: string) {
+    const envFilePath = path.resolve(projectPath, envFilePathSuffix);
+    const context = await fs.readJSON(envFilePath);
+    context["fx-resource-bot"]["skuName"] = "B1";
+    await fs.writeJSON(envFilePath, context, { spaces: 4 });
+}
+
 export async function cleanUpAadApp(
     projectPath: string,
     hasAadPlugin?: boolean,

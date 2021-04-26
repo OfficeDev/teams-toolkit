@@ -1604,15 +1604,6 @@ export class TeamsAppSolution implements Solution {
                 }
                 return ok(null);
             }
-            else if (func.method === "whetherToAskProgrammingLanguageQuestion") {
-                const capabilities = ctx.answers?.getStringArray(AzureSolutionQuestionNames.Capabilities);
-                const hostType = ctx.answers?.getString(AzureSolutionQuestionNames.HostType);
-                if(capabilities?.includes(BotOptionItem.id) || capabilities?.includes(MessageExtensionItem.id) 
-                    || (capabilities?.includes(TabOptionItem.id) && HostTypeOptionAzure.id === hostType) )
-                    return ok(undefined);
-                else 
-                    return ok(`SPFx don't need to ask programming languate question!`);
-            }
         }
         return err(
             returnUserError(

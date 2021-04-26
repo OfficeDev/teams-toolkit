@@ -21,6 +21,7 @@ jobs:
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIAL }}
+          enable-AzPSSession: true
 
       - name: Checkout
         uses: actions/checkout@v2
@@ -39,13 +40,14 @@ jobs:
       - name: Download Simple Auth bits
         env:
           SIMPLE_AUTH_CONNECTION_STRING: ${{secrets.SIMPLE_AUTH_CONNECTION_STRING}}
-        uses: azure/CLI@v1
+        uses: azure/powershell@v1
         with:
           azcliversion: 2.0.72
           inlineScript: |
             version=`cat packages/fx-core/templates/plugins/resource/simpleauth/version.txt`
             fileName="Microsoft.TeamsFx.SimpleAuth_$version.zip"
-            az storage blob download --container-name release --name $fileName --file packages/fx-core/templates/plugins/resource/simpleauth/SimpleAuth.zip --connection-string "$SIMPLE_AUTH_CONNECTION_STRING"
+            storage_account = New-AzureStorageContext -ConnectionString "$SIMPLE_AUTH_CONNECTION_STRING"
+            Get-AzureStorageBlobContent -Container "release" --name $fileName Destination packages/fx-core/templates/plugins/resource/simpleauth/SimpleAuth.zip -Context $storage_account
 
       - name: Unit Test
         run: |

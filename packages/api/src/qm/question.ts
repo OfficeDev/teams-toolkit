@@ -277,7 +277,7 @@ export interface MultiSelectQuestion extends BaseQuestion {
      * @items: current selected `OptionItem` array
      * @returns: the new selected `id` array
      */
-    onDidChangeSelection?: (currentSelectedItems: OptionItem[], previousSelectedItems: OptionItem[]) => Promise<string[]>;
+    onDidChangeSelection?: (selectedItems: OptionItem[]) => Promise<string[]>;
 }
 
 export interface TextInputQuestion extends BaseQuestion {
@@ -369,7 +369,9 @@ export class QTreeNode {
         if (!this.children) {
             this.children = [];
         }
-        this.children.push(node);
+        if (node.validate()) {
+            this.children.push(node);
+        }
         return this;
     }
     validate(): boolean {

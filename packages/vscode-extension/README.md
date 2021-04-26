@@ -107,7 +107,7 @@ Please read our [CONTRIBUTING.md](CONTRIBUTING.md) which outlines all of our pol
 
 ## Extensibility Model
 
-TeamsFx CLI is built on [Fx Core](packages/fx-core) and [Fx API](packages/api) packages which locate in the same repo. [Fx Core](packages/fx-core) is designed to support extensibility model to extend TeamsFx tooling functionalities. Please check [Fx Core](packages/fx-core) and [Fx API](packages/api) for details.
+TeamsFx VS Code Extension is built on [Fx Core](packages/fx-core) and [Fx API](packages/api) packages which locate in the same repo. [Fx Core](packages/fx-core) is designed to support extensibility model to extend TeamsFx tooling functionalities. Please check [Fx Core](packages/fx-core) and [Fx API](packages/api) for details.
 
 ## Code of Conduct
 

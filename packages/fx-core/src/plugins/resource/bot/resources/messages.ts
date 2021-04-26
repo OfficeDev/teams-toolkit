@@ -3,14 +3,6 @@
 import { Links } from "../constants";
 
 export class Messages {
-    public static readonly EnterFunc = (funcName: string, joinedParams?: string): string => {
-        if (joinedParams) {
-            return `Enter function ${funcName} with params: ${joinedParams}.`;
-        } else {
-            return `Enter function ${funcName}.`;
-        }
-    };
-
     public static readonly SomethingIsInvalidWithValue = (something: string, value: string): string => `'${something}' is invalid with '${value}'.`;
     public static readonly InputValidValueForSomething = (something: string): string => `Please select valid values for '${something}'.`;
     public static readonly SomethingIsMissing = (something: string): string => `'${something}' is missing.`;

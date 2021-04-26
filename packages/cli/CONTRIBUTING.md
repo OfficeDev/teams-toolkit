@@ -59,7 +59,7 @@ Please include the following with each issue:
 
 ## Contributing Fixes
 
-If you are interested in writing code to fix issues, please see [How to Contribute](/docs/contributing/how-to-contribute.md).
+If you are interested in writing code to fix issues, please see [How to Contribute](/docs/cli/contributing/how-to-contribute.md).
 
 # Thank You!
 

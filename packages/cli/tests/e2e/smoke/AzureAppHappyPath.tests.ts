@@ -97,15 +97,15 @@ describe("Azure App Happy Path", function() {
       await SimpleAuthValidator.validate(simpleAuth, aad);
     }
 
-    // deploy
-    await execAsync(
-      `teamsfx deploy --open-api-document openapi/openapi.json --api-prefix qwed --api-version 1`,
-      {
-        cwd: projectPath,
-        env: process.env,
-        timeout: 0
-      }
-    );
+    // // deploy
+    // await execAsync(
+    //   `teamsfx deploy --open-api-document openapi/openapi.json --api-prefix qwed --api-version 1`,
+    //   {
+    //     cwd: projectPath,
+    //     env: process.env,
+    //     timeout: 0
+    //   }
+    // );
 
     {
       /// TODO: add check for deploy

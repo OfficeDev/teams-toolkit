@@ -46,7 +46,7 @@ jobs:
             fileName="Microsoft.TeamsFx.SimpleAuth_$version.zip"
             echo "$fileName"
             connectionString=${{secrets.SIMPLE_AUTH_CONNECTION_STRING}}
-            az storage blob download --container-name release --name $fileName --file packages/fx-core/templates/plugins/resource/simpleauth/SimpleAuth.zip --connection-string $connectionString
+            az storage blob download --container-name release --name $fileName --file packages/fx-core/templates/plugins/resource/simpleauth/SimpleAuth.zip --connection-string "$connectionString"
 
       - name: Unit Test
         run: |

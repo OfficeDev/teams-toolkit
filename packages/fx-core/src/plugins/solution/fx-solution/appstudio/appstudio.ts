@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { IBotRegistration, IAADApplication, IAADPassword, IAppDefinition, IAppDefinitionBot, IAppManifestBot, IGroupChatCommand, IPersonalCommand, ITeamCommand, IMessagingExtension } from "./interface";
-import { TeamsAppManifest, ConfigMap, LogProvider, ICommand, ICommandList, IBot, IComposeExtension } from "fx-api";
+import { TeamsAppManifest, ConfigMap, LogProvider, ICommand, ICommandList, IBot, IComposeExtension, AzureSolutionSettings, ProjectSettings } from "fx-api";
 import { AzureSolutionQuestionNames, BotOptionItem, HostTypeOptionAzure, MessageExtensionItem, TabOptionItem } from "../question";
 import { TEAMS_APP_MANIFEST_TEMPLATE, CONFIGURABLE_TABS_TPL, STATIC_TABS_TPL, BOTS_TPL, COMPOSE_EXTENSIONS_TPL } from "../constants";
 import axios, { AxiosInstance } from "axios";
@@ -237,33 +237,28 @@ export namespace AppStudio {
     /**
      * ask app common questions to generate app manifest
      */
-    export async function createManifest(answers?: ConfigMap): Promise<TeamsAppManifest | undefined> {
-        const type = answers?.getString(AzureSolutionQuestionNames.HostType);
-        const capabilities = answers?.getStringArray(AzureSolutionQuestionNames.Capabilities);
-        if (!capabilities || (!capabilities.includes(BotOptionItem.id) && !capabilities.includes(MessageExtensionItem.id) && !capabilities.includes(TabOptionItem.id))) {
-            throw new Error(`Invalid capability: ${capabilities}`);
+    export async function createManifest(settings: ProjectSettings): Promise<TeamsAppManifest | undefined> {
+        const solutionSettings: AzureSolutionSettings = settings.solutionSettings as AzureSolutionSettings;
+        if (!solutionSettings.capabilities || (!solutionSettings.capabilities.includes(BotOptionItem.id) && !solutionSettings.capabilities.includes(MessageExtensionItem.id) && !solutionSettings.capabilities.includes(TabOptionItem.id))) {
+            throw new Error(`Invalid capability: ${solutionSettings.capabilities}`);
         }
-
         if (
-            HostTypeOptionAzure.id === type ||
-            capabilities.includes(BotOptionItem.id) ||
-            capabilities.includes(MessageExtensionItem.id)
+            HostTypeOptionAzure.id === solutionSettings.hostType ||
+            solutionSettings.capabilities.includes(BotOptionItem.id) ||
+            solutionSettings.capabilities.includes(MessageExtensionItem.id)
         ) {
             let manifestString = TEAMS_APP_MANIFEST_TEMPLATE;
-            const appName = answers?.getString(AzureSolutionQuestionNames.AppName);
-            if (appName) {
-                manifestString = replaceConfigValue(manifestString, "appName", appName);
-            }
+            manifestString = replaceConfigValue(manifestString, "appName", settings.appName);
             manifestString = replaceConfigValue(manifestString, "version", "1.0.0");
             const manifest: TeamsAppManifest = JSON.parse(manifestString);
-            if (capabilities.includes(TabOptionItem.id)) {
+            if (solutionSettings.capabilities.includes(TabOptionItem.id)) {
                 manifest.staticTabs = STATIC_TABS_TPL;
                 manifest.configurableTabs = CONFIGURABLE_TABS_TPL;
             }
-            if (capabilities.includes(BotOptionItem.id)) {
+            if (solutionSettings.capabilities.includes(BotOptionItem.id)) {
                 manifest.bots = BOTS_TPL;
             }
-            if (capabilities.includes(MessageExtensionItem.id)) {
+            if (solutionSettings.capabilities.includes(MessageExtensionItem.id)) {
                 manifest.composeExtensions = COMPOSE_EXTENSIONS_TPL;
             }
             return manifest;
@@ -421,7 +416,7 @@ export namespace AppStudio {
                 teamCommands: teamCommands,
                 groupChatCommands: groupCommands,
                 personalCommands: personalCommands
-            }            
+            };            
 
             bots.push(bot);
         });

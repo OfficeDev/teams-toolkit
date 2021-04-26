@@ -17,12 +17,10 @@
 
 /packages/cli @chagong @Alive-Fish @jiayi-ruan
 /packages/cli/src/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @meifans @dooriya
-
 /packages/cli/tests/e2e/aad @KennethBWSong @adashen
-
 /packages/cli/tests/e2e/simpleauth @KennethBWSong @adashen
-
 /packages/cli/tests/e2e/sql @xzf0587 @adashen
+/packages/cli/tests/e2e/apim @XiaofuHuang @dooriya
 
 /packages/api @jayzhang @1yefuwang1 @LongOddCode
 /packages/api/src/qm @jayzhang @1yefuwang1 @LongOddCode @jiayi-ruan

@@ -10,27 +10,18 @@ This package [teamsfx-cli](packages/cli) is where we develop the TeamsFx Command
 
 TeamsFx CLI a text-based command line interface that can operate TeamsFx funcitionalities. The Teams App developers who prefer keyboard centric experience can use TeamsFx CLI to develop Teams Apps. It also enables CI/CD scenario where CLI can be easily integrated.
 
+## TeamsFx CLI User Manual
+
+Please refer to [TeamsFx CLI User Manual](docs/cli/user-manual.md).
+
 ## Contributing
 
 There are many ways in which you can participate in the project, for example:
 
 * [Submit bugs and feature requests](https://github.com/OfficeDev/TeamsFx/issues), and help us verify as they are checked in
 * Review [source code changes](https://github.com/OfficeDev/TeamsFx/pulls)
-* Review the [wiki](https://github.com/OfficeDev/TeamsFx/wiki) and make pull requests for anything from typos to new content
 
-If you are interested in fixing issues and contributing directly to the code base,
-please see the document [How to Contribute](https://github.com/OfficeDev/TeamsFx/wiki/How-to-Contribute), which covers the following:
-
-* [How to build and run from source]()
-* [The development workflow, including debugging and running tests]()
-* [Coding guidelines]()
-* [Submitting pull requests]()
-* [Finding an issue to work on]()
-
-## Feedback
-
-* [Request a new feature](CONTRIBUTING.md)
-* [File an issue](https://github.com/OfficeDev/TeamsFx/issues)
+If you are interested in fixing issues and contributing directly to the code base, please see the [Contributing Guide](CONTRIBUTING.md).
 
 ## Extensibility Model
 

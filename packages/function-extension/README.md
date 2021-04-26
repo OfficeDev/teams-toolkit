@@ -2,13 +2,15 @@
 
 ## Introduction
 
-`TeamsFx` input binding:
-1. Gets environment variables from `local.settings.json` and environment configuration and provides `TeamsFxConfig` as input variable which can be used by TeamsFx SDK.
+`TeamsFx` function extension does the following binding work for Teams app developers:
 1. Do authorization for http trigger: Http request must have Authorization header with access token, the client id of which should be in the list of `ALLOWED_APP_IDS` or equals to `CLIENT_ID` setting. 
-1. Refresh user access token if it's about to expire.
-
+1. Refresh user access token in request header if it's about to expire.
+1. Provide user access token in `TeamsFxContext` as Azure Functions input binding.
 
 ## Usage
+
+### How to get the package
+The package is published to [nuget.org](https://www.nuget.org/) with package id `Microsoft.Azure.WebJobs.Extensions.TeamsFx`. You can use your favorite tool to install the package to your project.
 
 ### JavaScript
 
@@ -73,14 +75,11 @@
 
     | Variable | Description |
     |-|-|
-    | CLIENT_ID | Your AAD App client id. |
-    | CLIENT_SECRET | Your AAD App client secret. |
+    | M365_CLIENT_ID | Your AAD App client id. |
+    | M365_CLIENT_SECRET | Your AAD App client secret. |
+    | M365_AUTHORITY_HOST | Authority host for your AAD tenant. |
+    | M365_TENANT_ID | Tenant id for your AAD tenant. |
     | ALLOWED_APP_IDS | List of client ids which are allowed to call the function app. Split by semicolon ';'  |
-    | OAUTH_AUTHORITY | The authority is a URL that indicates a directory that MSAL can request tokens from. `https://login.microsoftonline.com/<tenant>/` |
-    | FUNCTION_ENDPOINT | Your function app endpoint. |
-    | SQL_ENDPOINT | Your SQL server endpoint. Add this config only when you are using SQL. |
-    | DATABASE_NAME | Your database name. Add this config only when you are using database. |
-    | IDENTITY_ID | Your identity id. Add this config only when have one. |
 
     Note: After you deploy the function app to azure portal, you can also override these settings in Azure Functions configuration.
 
@@ -128,6 +127,17 @@ Sample C# Function: [FunctionAppCSharp](tests\TestAssets\FunctionAppCSharp)
 ## Contributing
 
 Please read our [CONTRIBUTING.md](CONTRIBUTING.md) which outlines all of our policies, procedures, and requirements for contributing to this project.
+
+## Code of Conduct
+This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
+For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
+contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+
+## Reporting security issues and bugs
+Security issues and bugs should be reported privately, via email, to the Microsoft Security Response Center (MSRC) secure@microsoft.com. You should receive a response within 24 hours. If for some reason you do not, please follow up via email to ensure we received your original message. Further information, including the MSRC PGP key, can be found in the [Security TechCenter](https://www.microsoft.com/en-us/msrc/faqs-report-an-issue?rtc=1).
+
+## Trademarks
+This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft trademarks or logos is subject to and must follow [Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general). Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship. Any use of third-party trademarks or logos are subject to those third-party's policies.
 
 ## FAQ
 

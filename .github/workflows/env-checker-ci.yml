@@ -21,9 +21,9 @@ jobs:
     strategy:
       matrix: # TODO: add more versions and cases where Node.js do not exist
         os: [windows-latest, macos-latest, ubuntu-latest]
-        node-version: [10, 12, 14]
-        func-version: [none, 2, 3]
-        dotnet-version: [none, 3.1.x, 5.0.x]
+        node-version: [14]
+        func-version: [none, 3]
+        dotnet-version: [none, 3.1.x]
 
     runs-on: ${{ matrix.os }}
 

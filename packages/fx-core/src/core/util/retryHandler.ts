@@ -1,15 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ProjectConstants } from "../constants";
-
 export class RetryHandler {
+    public static readonly defaultMaxRetries = 3;
     public static async retry<T>(
-        fn: (retries : number) => Promise<T>
+        fn: (retries: number) => Promise<T>,
+        maxRetries?: number
     ): Promise<T> {
-        let executionIndex: number = 0;
+        let executionIndex = 0;
         let error = undefined;
-        while (executionIndex <= ProjectConstants.maxRetries) {
+        while (executionIndex <= (maxRetries ?? this.defaultMaxRetries)) {
             await delay(executionIndex * 1000);
 
             try {

@@ -4,7 +4,7 @@
 
 ## The Package
 
-This package [teamsfx-cli](packages/cli) is where we develop the TeamsFx Command Line Tool with the community. 
+This package [teamsfx-cli](/packages/cli) is where we develop the TeamsFx Command Line Tool with the community. 
 
 ## TeamsFx CLI
 
@@ -12,7 +12,7 @@ TeamsFx CLI a text-based command line interface that can operate TeamsFx funciti
 
 ## TeamsFx CLI User Manual
 
-Please refer to [TeamsFx CLI User Manual](docs/cli/user-manual.md).
+Please refer to [TeamsFx CLI User Manual](/docs/cli/user-manual.md).
 
 ## Contributing
 
@@ -21,11 +21,11 @@ There are many ways in which you can participate in the project, for example:
 * [Submit bugs and feature requests](https://github.com/OfficeDev/TeamsFx/issues), and help us verify as they are checked in
 * Review [source code changes](https://github.com/OfficeDev/TeamsFx/pulls)
 
-If you are interested in fixing issues and contributing directly to the code base, please see the [Contributing Guide](CONTRIBUTING.md).
+If you are interested in fixing issues and contributing directly to the code base, please see the [Contributing Guide](./CONTRIBUTING.md).
 
 ## Extensibility Model
 
-TeamsFx CLI is built on [Fx Core](packages/fx-core) and [Fx API](packages/api) packages which locate in the same repo. [Fx Core](packages/fx-core) is designed to support extensibility model to extend TeamsFx tooling functionalities. Please check [Fx Core](packages/fx-core) and [Fx API](packages/api) for details.
+TeamsFx CLI is built on [Fx Core](/packages/fx-core) and [Fx API](/packages/api) packages which locate in the same repo. [Fx Core](/packages/fx-core) is designed to support extensibility model to extend TeamsFx tooling functionalities. Please check [Fx Core](/packages/fx-core) and [Fx API](/packages/api) for details.
 
 ## Code of Conduct
 

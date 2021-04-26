@@ -8,6 +8,7 @@ import fs from "fs-extra";
 import * as msal from "@azure/msal-node";
 import mockedEnv from "mocked-env";
 import urljoin from "url-join";
+import {JwtPayload} from "jwt-decode";
 
 const execAsync = promisify(exec);
 /**
@@ -135,4 +136,10 @@ export function MockEnvironmentVariable() {
  */
 export function RestoreEnvironmentVariable(restore: () => void) {
   restore();
+}
+export interface AADJwtPayLoad extends JwtPayload {
+    appid?: string;
+    idtyp?: string;
+    scp?: string;
+    upn?: string;
 }

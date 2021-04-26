@@ -10,7 +10,11 @@ import {
   OnBehalfOfUserCredential,
   M365TenantCredential
 } from "../../../src";
-import { getSsoTokenFromTeams, MockEnvironmentVariable, RestoreEnvironmentVariable } from "../../helper";
+import {
+  getSsoTokenFromTeams,
+  MockEnvironmentVariable,
+  RestoreEnvironmentVariable
+} from "../../helper";
 
 chaiUse(chaiPromises);
 let restore: () => void;
@@ -26,7 +30,7 @@ describe("msGraphClientProvider - node", () => {
 
   afterEach(() => {
     RestoreEnvironmentVariable(restore);
-  })
+  });
 
   it("create graph client with OnBehalfOfUserCredential", async function() {
     const scopes = ["User.Read"];
@@ -40,9 +44,11 @@ describe("msGraphClientProvider - node", () => {
     const scopes = ["https://graph.microsoft.com/.default"];
     const m356Credential = new M365TenantCredential();
     const graphClient: any = createMicrosoftGraphClient(m356Credential, scopes);
-    
+
     // Current test user does not have admin permission so application credential can not perform any request successfully.
-    const errorResult = await expect(graphClient.api("/users").get()).to.eventually.be.rejectedWith(Error);
+    const errorResult = await expect(graphClient.api("/users").get()).to.eventually.be.rejectedWith(
+      Error
+    );
     assert.include(errorResult.message, "Insufficient privileges to complete the operation.");
   });
 });

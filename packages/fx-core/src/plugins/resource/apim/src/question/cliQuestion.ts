@@ -37,7 +37,7 @@ export class ApimResourceGroupQuestion extends BaseQuestionService implements IQ
         return {
             type: NodeType.text,
             name: QuestionConstants.CLI.ApimResourceGroup.questionName,
-            description: QuestionConstants.CLI.ApimServiceName.description,
+            description: QuestionConstants.CLI.ApimResourceGroup.description,
             validation: {
                 validFunc: (input: string): string | undefined => NamingRules.validate(input, NamingRules.resourceGroupName)
             }

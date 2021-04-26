@@ -42,7 +42,7 @@ jobs:
           SIMPLE_AUTH_CONNECTION_STRING: ${{secrets.SIMPLE_AUTH_CONNECTION_STRING}}
         uses: azure/powershell@v1
         with:
-          azcliversion: 2.0.72
+          azPSVersion: "latest"
           inlineScript: |
             version=`cat packages/fx-core/templates/plugins/resource/simpleauth/version.txt`
             fileName="Microsoft.TeamsFx.SimpleAuth_$version.zip"

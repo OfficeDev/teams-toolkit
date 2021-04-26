@@ -80,12 +80,14 @@ export async function cleanUpAadApp(
 export async function cleanUpResourceGroup(appName: string) {
     const manager = await ResourceGroupManager.init();
     if (appName) {
-        try {
-            await manager.deleteResourceGroup(`${appName}-rg`);
-            console.log(`[Successfully] clean up the Azure resource group with name: ${appName}-rg.`);
-        } catch (e) {
-            console.error(`[Faild] clean up the Azure resource group with name: ${appName}-rg.`);
-            console.error(e);
+        const name = `${appName}-rg`;
+        if (await manager.hasResourceGroup(name)) {
+            const result = await manager.deleteResourceGroup(name);
+            if (result) {
+                console.log(`[Successfully] clean up the Azure resource group with name: ${name}.`);
+            } else {
+                console.error(`[Faild] clean up the Azure resource group with name: ${name}.`);
+            }
         }
     }
 }

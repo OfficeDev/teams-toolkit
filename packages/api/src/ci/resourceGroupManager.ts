@@ -35,6 +35,24 @@ export class ResourceGroupManager {
         return Promise.resolve(ResourceGroupManager.instance);
     }
 
+    public async getResourceGroup(name: string) {
+        return ResourceGroupManager.client!.resourceGroups.get(name);
+    }
+
+    public async hasResourceGroup(name: string) {
+        try {
+            await this.getResourceGroup(name);
+            return Promise.resolve(true);
+        } catch {
+            return Promise.resolve(false);
+        }
+    }
+
+    public async searchResourceGroups(contain: string) {
+        const groups = await ResourceGroupManager.client!.resourceGroups.list();
+        return groups.filter(group => group.name?.includes(contain));
+    }
+
     public async deleteResourceGroup(name: string): Promise<boolean> {
         for (let i = 0; i < 5; ++i) {
             try {
@@ -48,10 +66,5 @@ export class ResourceGroupManager {
             }
         }
         return Promise.resolve(false);
-    }
-
-    public async searchResourceGroups(contain: string) {
-        const groups = await ResourceGroupManager.client!.resourceGroups.list();
-        return groups.filter(group => group.name?.includes(contain));
     }
 }

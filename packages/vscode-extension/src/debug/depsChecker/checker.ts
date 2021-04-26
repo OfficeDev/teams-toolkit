@@ -19,10 +19,14 @@ export interface IDepsChecker {
 }
 
 export interface IDepsAdapter {
-  displayContinueWithLearnMore: (message: string, link: string) => Promise<boolean>,
-  displayLearnMore: (message: string, link: string) => Promise<boolean>,
-  displayWarningMessage: (message: string, buttonText: string, action: () => Promise<boolean>) => Promise<boolean>,
-  showOutputChannel: () => void
+  displayContinueWithLearnMore: (message: string, link: string) => Promise<boolean>;
+  displayLearnMore: (message: string, link: string) => Promise<boolean>;
+  displayWarningMessage: (
+    message: string,
+    buttonText: string,
+    action: () => Promise<boolean>
+  ) => Promise<boolean>;
+  showOutputChannel: () => void;
 
   hasTeamsfxBackend(): Promise<boolean>;
   dotnetCheckerEnabled(): boolean;
@@ -41,9 +45,9 @@ export interface IDepsLogger {
 
 export interface IDepsTelemetry {
   sendEvent(eventName: DepsCheckerEvent, timecost?: number): void;
-  sendEventWithDuration(eventName: DepsCheckerEvent,action: () => Promise<void>): Promise<void>;
+  sendEventWithDuration(eventName: DepsCheckerEvent, action: () => Promise<void>): Promise<void>;
   sendUserErrorEvent(eventName: DepsCheckerEvent, errorMessage: string): void;
-  sendSystemErrorEvent(eventName: DepsCheckerEvent,errorMessage: string,errorStack: string): void;
+  sendSystemErrorEvent(eventName: DepsCheckerEvent, errorMessage: string, errorStack: string): void;
 }
 
 export interface DepsInfo {
@@ -79,12 +83,12 @@ export class DepsChecker {
     }
 
     if (isLinux()) {
-      // TODO: provide with unsupported message
-      return !shouldContinue;
+      const confirmMessage = await this.generateUninstallMsg(validCheckers);
+      return await this._adapter.displayContinueWithLearnMore(confirmMessage, defaultHelpLink);
     }
 
     // TODO: add log and telemetry
-    const confirmMessage = await this.generateMessage(validCheckers);
+    const confirmMessage = await this.generateInstallMsg(validCheckers);
     return await this._adapter.displayWarningMessage(confirmMessage, "Install", async () => {
       this._adapter.showOutputChannel();
       for (const checker of validCheckers) {
@@ -120,7 +124,24 @@ export class DepsChecker {
     return validCheckers;
   }
 
-  private async generateMessage(checkers: Array<IDepsChecker>): Promise<string> {
+  private async generateInstallMsg(checkers: Array<IDepsChecker>): Promise<string> {
+    return this.generateMessage(checkers, (install, support) =>
+      Messages.depsNotFound
+        .replace("@InstallPackages", install)
+        .replace("@SupportedPackages", support)
+    );
+  }
+
+  private async generateUninstallMsg(checkers: Array<IDepsChecker>): Promise<string> {
+    return this.generateMessage(checkers, (install, support) =>
+      Messages.linuxDepsNotFound.replace("@SupportedPackages", support)
+    );
+  }
+
+  private async generateMessage(
+    checkers: Array<IDepsChecker>,
+    template: (install: string, supported: string) => string
+  ): Promise<string> {
     const installPackages = [];
     const supportedPackages = [];
     for (const checker of checkers) {
@@ -135,9 +156,7 @@ export class DepsChecker {
 
     const installMessage = installPackages.join(" and ");
     const supportedMessage = supportedPackages.join(" and ");
-    return Messages.depsNotFound
-      .replace("@InstallPackages", installMessage)
-      .replace("@SupportedPackages", supportedMessage);
+    return template(installMessage, supportedMessage);
   }
 
   private async handleError(error: Error): Promise<boolean> {
@@ -147,9 +166,15 @@ export class DepsChecker {
         (error as NotSupportedNodeError).helpLink
       );
     } else if (error instanceof NodeNotFoundError) {
-      return await this._adapter.displayLearnMore(error.message, (error as NodeNotFoundError).helpLink);
+      return await this._adapter.displayLearnMore(
+        error.message,
+        (error as NodeNotFoundError).helpLink
+      );
     } else if (error instanceof DepsCheckerError) {
-      return await this._adapter.displayLearnMore(error.message, (error as DepsCheckerError).helpLink);
+      return await this._adapter.displayLearnMore(
+        error.message,
+        (error as DepsCheckerError).helpLink
+      );
     } else {
       return await this._adapter.displayLearnMore(Messages.defaultErrorMessage, defaultHelpLink);
     }

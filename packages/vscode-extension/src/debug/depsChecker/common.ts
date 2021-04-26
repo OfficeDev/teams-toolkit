@@ -68,7 +68,15 @@ As a fundamental runtime context for Teams app, these dependencies are required.
 
 Please notice that these dependencies only need to be installed once.
 
-Click "Install" to install @InstallPackages.`
+Click "Install" to install @InstallPackages.`,
+
+  linuxDepsNotFound: `The toolkit cannot find @SupportedPackages on your machine.
+
+As a fundamental runtime context for Teams app, these dependencies are required. 
+
+Please install the required dependencies manually.
+
+Click "Continue" to continue.`
 };
 
 export const defaultHelpLink = "https://aka.ms/AAby4tx";

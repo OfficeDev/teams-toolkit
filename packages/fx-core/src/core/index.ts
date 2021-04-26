@@ -145,7 +145,7 @@ class CoreImpl implements Core {
                 if (child.data) node.addChild(child);
             }
         }
-        return ok(node);
+        return ok(node.trim());
     }
 
     async getQuestionsForUserTask(func: Func, platform: Platform): Promise<Result<QTreeNode | undefined, FxError>> {
@@ -157,7 +157,14 @@ class CoreImpl implements Core {
             const solution = this.globalSolutions.get(solutionName);
             if (solution && solution.getQuestionsForUserTask) {
                 const solutioContext = this.solutionContext();
-                return await solution.getQuestionsForUserTask(func, solutioContext);
+                const res = await solution.getQuestionsForUserTask(func, solutioContext);
+                if(res.isOk()){
+                    if(res.value) {
+                        const node = res.value.trim();
+                        return ok(node);
+                    }
+                }
+                return res;
             }
         }
         return err(
@@ -620,7 +627,7 @@ class CoreImpl implements Core {
 
     public async readConfigs(): Promise<Result<null, FxError>> {
         if (!fs.existsSync(`${this.ctx.root}/.${ConfigFolderName}`)) {
-            this.ctx.logProvider?.warning(`[Core] readConfigs() silent pass, folder not exist:${this.ctx.root}/.${ConfigFolderName}`);
+            this.ctx.logProvider?.warning(`[Core] readConfigs() - folder does not exist: ${this.ctx.root}/.${ConfigFolderName}`);
             return ok(null);
         }
         try {
@@ -658,7 +665,7 @@ class CoreImpl implements Core {
 
     public async writeConfigs(): Promise<Result<null, FxError>> {
         if (!fs.existsSync(`${this.ctx.root}/.${ConfigFolderName}`)) {
-            this.ctx.logProvider?.warning(`[Core] writeConfigs() silent pass, folder not exist:${this.ctx.root}/.${ConfigFolderName}`);
+            this.ctx.logProvider?.warning(`[Core] writeConfigs() - folder does not exist:${this.ctx.root}/.${ConfigFolderName}`);
             return ok(null);
         }
         try {

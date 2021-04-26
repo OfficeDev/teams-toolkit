@@ -172,7 +172,7 @@ export default class QuickStart extends React.Component<any, any>{
                     <div className="stage">
                         {
                             this.state.currentStep === 1 && (
-                                <video id="capabilitiesVideo">
+                                <video id="capabilitiesVideo" className="player" controls disablePictureInPicture>
                                     <source src="https://s3.amazonaws.com/codecademy-content/courses/React/react_video-fast.mp4"></source>
                                 </video>
                             )

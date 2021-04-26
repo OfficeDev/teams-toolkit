@@ -81,6 +81,7 @@ export enum SolutionError {
     FrontendEndpointAndDomainNotFound = "FrontendEndpointAndDomainNotFound",
     RemoteClientIdNotFound = "RemoteClientIdNotFound",
     AddResourceNotSupport = "AddResourceNotSupport",
+    FailedToAddCapability = "FailedToAddCapability",
     NoResourceToDeploy = "NoResourceToDeploy",
     ProvisionInProgress = "ProvisionInProgress",
     DeploymentInProgress = "DeploymentInProgress",
@@ -139,7 +140,7 @@ export const TEAMS_APP_MANIFEST_TEMPLATE = `{
         "full": "This field is not used"
     },
     "description": {
-        "short": "Short description for {appName}.",
+        "short": "Short description of {appName}.",
         "full": "Full description of {appName}."
     },
     "accentColor": "#FFFFFF",

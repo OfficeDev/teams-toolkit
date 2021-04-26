@@ -40,7 +40,7 @@ jobs:
         uses: azure/CLI@v1
         with:
           azcliversion: 2.0.72
-          inlineScripts: |
+          inlineScript: |
             version=`cat packages/fx-core/templates/plugins/resource/simpleauth/version.txt`
             echo "$version"
             fileName="Microsoft.TeamsFx.SimpleAuth_$version.zip"

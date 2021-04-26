@@ -27,6 +27,7 @@ export class ApimValidator {
             },
         });
     }
+
     public static async prepareApiManagementService(resourceGroupName: string, serviceName: string): Promise<void> {
         await this.resourceGroupClient?.resourceGroups.createOrUpdate(resourceGroupName, {location: "eastus"});
         await this.apimClient?.apiManagementService.createOrUpdate(resourceGroupName, serviceName, {

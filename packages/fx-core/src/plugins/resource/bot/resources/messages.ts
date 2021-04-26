@@ -3,14 +3,6 @@
 import { Links } from "../constants";
 
 export class Messages {
-    public static readonly EnterFunc = (funcName: string, joinedParams?: string): string => {
-        if (joinedParams) {
-            return `Enter function ${funcName} with params: ${joinedParams}.`;
-        } else {
-            return `Enter function ${funcName}.`;
-        }
-    };
-
     public static readonly SomethingIsInvalidWithValue = (something: string, value: string): string => `'${something}' is invalid with '${value}'.`;
     public static readonly InputValidValueForSomething = (something: string): string => `Please select valid values for '${something}'.`;
     public static readonly SomethingIsMissing = (something: string): string => `'${something}' is missing.`;
@@ -29,9 +21,48 @@ export class Messages {
     public static readonly ReferToHelpLink = `Refer to ${Links.HELP_LINK}.`;
     public static readonly CommandFailWithMessage = (command: string, message: string): string => `Run '${command}' failed with message: ${message}`;
     public static readonly DoSthBeforeSth = (sth: string, beforeSth: string): string => `Perform command '${sth}' before '${beforeSth}'.`;
-    public static readonly FailToCallAppStudio = (apiName: string) => `Failed to execute '${apiName}'.`;
-    public static readonly WORKING_DIR_IS_MISSING = "Working directory is missing.";
-    public static readonly FAIL_TO_GET_AZURE_CREDS = "Failed to retrieve Azure credentials.";
-    public static readonly TRY_LOGIN_AZURE = "Login to Azure.";
-    public static readonly SKIP_DEPLOY_NO_UPDATES = "Skipping deployment: no updates found.";
+    public static readonly FailToCallAppStudio = (apiName: string): string => `Failed to execute '${apiName}'.`;
+    public static readonly SuccessfullyRetrievedTemplateZip = (zipUrl: string): string => `Successfully retrieved zip package from ${zipUrl}.`;
+    public static readonly FallingBackToUseLocalTemplateZip = "Falling back to use local template zip.";
+
+    public static readonly WorkingDirIsMissing = "Working directory is missing.";
+    public static readonly FailToGetAzureCreds = "Failed to retrieve Azure credentials.";
+    public static readonly TryLoginAzure = "Login to Azure.";
+    public static readonly SkipDeployNoUpdates = "Skipping deployment: no updates found.";
+
+    public static readonly PreScaffoldingBot = "Pre-scaffolding bot.";
+    public static readonly ScaffoldingBot = "Scaffolding bot.";
+    public static readonly SuccessfullyScaffoldedBot = "Successfully scaffolded bot.";
+
+    public static readonly PreProvisioningBot = "Pre-provisioning bot.";
+    public static readonly ProvisioningBot = "Provisioning bot.";
+    public static readonly SuccessfullyProvisionedBot = "Successfully provisioned bot.";
+
+    public static readonly PreDeployingBot = "Pre-deploying bot.";
+    public static readonly DeployingBot = "Deploying bot.";
+    public static readonly SuccessfullyDeployedBot = "Successfully deployed bot.";
+
+    public static readonly ProvisioningAzureBotChannelRegistration = "Provisioning azure bot channel registration.";
+    public static readonly SuccessfullyProvisionedAzureBotChannelRegistration = "Successfully provisioned azure bot channel registration.";
+
+    public static readonly ProvisioningMsTeamsChannel = "Provisioning microsoft teams channel.";
+    public static readonly SuccessfullyProvisionedMsTeamsChannel = "Successfully provisioned microsoft teams channel.";
+
+    public static readonly ProvisioningAzureAppServicePlan = "Provisioning azure app service plan.";
+    public static readonly SuccessfullyProvisionedAzureAppServicePlan = "Successfully provisioned azure app service plan.";
+
+    public static readonly ProvisioningAzureWebApp = "Provisioning azure web app.";
+    public static readonly SuccessfullyProvisionedAzureWebApp = "Successfully provisioned azure web app.";
+
+    public static readonly UpdatingAzureWebAppSettings = "Updating azure web app's app settings.";
+    public static readonly SuccessfullyUpdatedAzureWebAppSettings = "Successfully updated azure web app's app settings.";
+
+    public static readonly UpdatingBotMessageEndpoint = "Updating bot's message endpoint.";
+    public static readonly SuccessfullyUpdatedBotMessageEndpoint = "Successfully updated bot's message endpoint";
+
+    public static readonly ProvisioningAADApp = "Provisioning aad app.";
+    public static readonly SuccessfullyProvisionedAADApp = "Successfully provisioned aad app.";
+
+    public static readonly ProvisioningBotRegistration = "Provisioning bot registration.";
+    public static readonly SuccessfullyProvisionedBotRegistration = "Successfully provisioned bot registration.";
 }

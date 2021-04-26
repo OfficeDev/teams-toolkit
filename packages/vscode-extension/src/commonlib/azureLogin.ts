@@ -12,7 +12,7 @@ import { AzureAccount } from "./azure-account.api";
 import { LoginFailureError } from "./codeFlowLogin";
 import * as vscode from "vscode";
 import * as identity from "@azure/identity";
-import { signedIn, signedOut } from "./common/constant";
+import { loggedIn, loggedOut, signedIn, signedOut } from "./common/constant";
 import { login, LoginStatus } from "./common/login";
 import * as StringResources from "../resources/Strings.json";
 
@@ -29,6 +29,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
 
   private constructor() {
     super();
+    this.addStatusChangeEvent();
   }
 
   /**
@@ -39,7 +40,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     if (!AzureAccountManager.instance) {
       AzureAccountManager.instance = new AzureAccountManager();
     }
-
+    
     return AzureAccountManager.instance;
   }
 
@@ -91,7 +92,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       return this.doGetAccountCredentialAsync();
     }
     await this.login(showDialog);
-    await this.updateLoginStatus();
     return this.doGetAccountCredentialAsync();
   }
 
@@ -212,10 +212,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
    */
   async signout(): Promise<boolean> {
     await vscode.commands.executeCommand("azure-account.logout");
-    if (AzureAccountManager.statusChange !== undefined) {
-      await AzureAccountManager.statusChange("SignedOut", undefined, undefined);
-    }
-    await this.notifyStatus();
     AzureAccountManager.tenantId = undefined;
     AzureAccountManager.subscriptionId = undefined;
     return new Promise((resolve) => {
@@ -292,6 +288,23 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     } else {
       return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });
     }
+  }
+
+  async addStatusChangeEvent() {
+    const azureAccount: AzureAccount = vscode.extensions.getExtension<AzureAccount>(
+      "ms-vscode.azure-account"
+    )!.exports;
+    azureAccount.onStatusChanged(async (event) => {
+      if (event === loggedOut) {
+        if (AzureAccountManager.statusChange !== undefined) {
+          await AzureAccountManager.statusChange(signedOut, undefined, undefined);
+        }
+        await this.notifyStatus();
+      } else if (event === loggedIn) {
+        await this.updateLoginStatus();
+        await this.notifyStatus();
+      }
+    });
   }
 }
 

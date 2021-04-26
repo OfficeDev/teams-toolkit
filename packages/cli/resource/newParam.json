@@ -34,17 +34,19 @@
                             "data": {
                                 "name": "capabilities",
                                 "title": "Add capabilities",
-                                "prompt": "Choose the capabilities for your project setup",
+                                "prompt": "Select capabilities for your application",
                                 "type": "multiSelect",
                                 "option": [
                                     {
                                         "id": "Tab",
                                         "label": "Tab",
+                                        "cliName": "tab",
                                         "description": "Embeds a web-based app experience in a tab in a Teams chat, channel, or personal workspace."
                                     },
                                     {
                                         "id": "Bot",
                                         "label": "Bot",
+                                        "cliName": "bot",
                                         "description": "Bots allow you to interact with and obtain information from a software or website in a text/search/conversational manner."
                                     }
                                 ],
@@ -61,17 +63,19 @@
                                         {
                                             "data": {
                                                 "name": "host-type",
-                                                "title": "Select front-end hosting type",
+                                                "title": "Select frontend hosting type",
                                                 "type": "singleSelect",
                                                 "option": [
                                                     {
                                                         "id": "Azure",
                                                         "label": "Azure",
+                                                        "cliName": "azure",
                                                         "description": "Azure Cloud"
                                                     },
                                                     {
                                                         "id": "SPFx",
                                                         "label": "SPFx",
+                                                        "cliName": "spfx",
                                                         "description": "SharePoint Framework"
                                                     }
                                                 ],
@@ -80,24 +84,24 @@
                                             "children": [
                                                 {
                                                     "data": {
+                                                        "name": "programming-language",
+                                                        "title": "Please select programming language for your project",
+                                                        "type": "singleSelect",
+                                                        "option": [
+                                                            "javascript",
+                                                            "typescript"
+                                                        ],
+                                                        "default": "javascript",
+                                                        "skipSingleOption": true
+                                                    },
+                                                    "condition": {
+                                                        "equals": "Azure"
+                                                    }
+                                                },
+                                                {
+                                                    "data": {
                                                         "type": "group"
                                                     },
-                                                    "children": [
-                                                        {
-                                                            "data": {
-                                                                "name": "tab-scopes",
-                                                                "description": "Select tab scopes",
-                                                                "type": "multiSelect",
-                                                                "option": [
-                                                                    "personal",
-                                                                    "group"
-                                                                ],
-                                                                "default": [
-                                                                    "personal"
-                                                                ]
-                                                            }
-                                                        }
-                                                    ],
                                                     "condition": {
                                                         "equals": "Azure"
                                                     }
@@ -110,13 +114,13 @@
                                                         "option": [
                                                             {
                                                                 "id": "sql",
-                                                                "label": "sql",
-                                                                "description": "Azure SQL Database"
+                                                                "label": "Azure SQL Database",
+                                                                "description": "Azure SQL Database depends on Azure Functions."
                                                             },
                                                             {
                                                                 "id": "function",
-                                                                "label": "function",
-                                                                "description": "New APIs from Azure Functions"
+                                                                "label": "Azure Functions",
+                                                                "description": "Application backend."
                                                             }
                                                         ],
                                                         "default": []
@@ -129,33 +133,6 @@
                                                             "data": {
                                                                 "type": "group"
                                                             },
-                                                            "children": [
-                                                                {
-                                                                    "data": {
-                                                                        "name": "node-version",
-                                                                        "description": "Please select a node version for the Azure function app.",
-                                                                        "type": "singleSelect",
-                                                                        "default": "12",
-                                                                        "option": [
-                                                                            "10",
-                                                                            "12",
-                                                                            "14"
-                                                                        ]
-                                                                    }
-                                                                },
-                                                                {
-                                                                    "data": {
-                                                                        "name": "function-name",
-                                                                        "description": "Please provide function name.",
-                                                                        "type": "text",
-                                                                        "default": "myFunc",
-                                                                        "validation": {
-                                                                            "namespace": "fx-solution-azure/fx-resource-function",
-                                                                            "method": "validateFunctionName"
-                                                                        }
-                                                                    }
-                                                                }
-                                                            ],
                                                             "condition": {
                                                                 "minItems": 1
                                                             }
@@ -179,7 +156,7 @@
                                                             "data": {
                                                                 "type": "singleSelect",
                                                                 "name": "spfx-framework-type",
-                                                                "title": "Which framework would you like to use?",
+                                                                "title": "Select framework",
                                                                 "option": [
                                                                     "none",
                                                                     "react"
@@ -237,10 +214,10 @@
                                                     },
                                                     {
                                                         "id": "reuse-existing",
-                                                        "label": "Reuse an existing bot registration"
+                                                        "label": "Use an existing bot registration"
                                                     }
                                                 ],
-                                                "title": "Select way to get bot registration",
+                                                "title": "Bot registration",
                                                 "default": "create-new"
                                             },
                                             "children": [
@@ -253,7 +230,7 @@
                                                             "data": {
                                                                 "name": "bot-id",
                                                                 "type": "text",
-                                                                "title": "Please enter bot id",
+                                                                "title": "Enter bot id",
                                                                 "default": "",
                                                                 "validation": {}
                                                             }
@@ -262,7 +239,7 @@
                                                             "data": {
                                                                 "name": "bot-password",
                                                                 "type": "password",
-                                                                "title": "Please enter bot password",
+                                                                "title": "Enter bot password",
                                                                 "default": "",
                                                                 "validation": {}
                                                             }
@@ -283,19 +260,6 @@
                                     }
                                 }
                             ]
-                        },
-                        {
-                            "data": {
-                                "name": "programming-language",
-                                "title": "Please select programming language for your project",
-                                "type": "singleSelect",
-                                "option": [
-                                    "javascript",
-                                    "typescript"
-                                ],
-                                "default": "javascript",
-                                "skipSingleOption": true
-                            }
                         }
                     ],
                     "condition": {

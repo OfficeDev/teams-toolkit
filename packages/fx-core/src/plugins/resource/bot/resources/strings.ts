@@ -4,14 +4,14 @@ export class CommonStrings {
     public static readonly BOT_WORKING_DIR_NAME = "bot";
     public static readonly DEFAULT_FILE_ENCODING = "utf-8";
 
-    public static readonly APP_SERVICE_PLAN = "app service plan";
-    public static readonly AZURE_WEB_APP = "azure web app";
-    public static readonly BOT_CHANNEL_REGISTRATION = "azure bot channel registration";
-    public static readonly MS_TEAMS_CHANNEL = "ms teams channel";
-    public static readonly AAD_APP = "aad app";
-    public static readonly AAD_CLIENT_SECRET = "add client secret";
-    public static readonly APPSTUDIO_BOT_REGISTRATION = "app studio bot registration";
-    public static readonly APPSTUDIO_MSG_ENDPOINT = "app studio message endpoint";
+    public static readonly APP_SERVICE_PLAN = "App Service plan";
+    public static readonly AZURE_WEB_APP = "Azure Web App";
+    public static readonly BOT_CHANNEL_REGISTRATION = "Azure Bot Service channel registration";
+    public static readonly MS_TEAMS_CHANNEL = "Teams channel";
+    public static readonly AAD_APP = "AAD app";
+    public static readonly AAD_CLIENT_SECRET = "AAD client secret";
+    public static readonly APPSTUDIO_BOT_REGISTRATION = "App Studio bot registration";
+    public static readonly APPSTUDIO_MSG_ENDPOINT = "App Studio message endpoint";
     public static readonly CONFIG_ITEM = "config item";
     public static readonly SHORT_APP_NAME = "short app name";
     public static readonly AUTH_REDIRECT_URI_SUFFIX = "/public";
@@ -72,6 +72,7 @@ export class PluginBot {
     public static readonly SCAFFOLDED = "scaffolded";
     public static readonly APP_SERVICE_PLAN = "appServicePlan";
     public static readonly SITE_NAME = "siteName";
+    public static readonly SKU_NAME = "skuName";
     public static readonly SITE_ENDPOINT = "siteEndpoint";
     public static readonly VALID_DOMAIN = "validDomain";
     public static readonly PROVISIONED = "provisioned";
@@ -95,6 +96,7 @@ export class ConfigNames {
     public static readonly SUBSCRIPTION_ID = "subscription id";
     public static readonly SERVICE_CLIENT_CREDENTIALS = "service client credentials";
     public static readonly LOCATION = "location";
+    public static readonly SKU_NAME = "sku name";
     public static readonly RESOURCE_GROUP = "resource group";
     public static readonly LOCAL_ENDPOINT = "local endpoint";
 

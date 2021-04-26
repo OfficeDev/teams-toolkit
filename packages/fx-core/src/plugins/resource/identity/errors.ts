@@ -1,11 +1,11 @@
 export class ErrorMessage {
     public static readonly IdentityLoadFileError = {
         name: "IdentityLoadFileError",
-        message: () => "load arm template files failed"
+        message: () => "Failed to load Azure Resource Manager template files."
     };
 
     public static readonly IdentityProvisionError = {
         name: "IdentityProvisionError",
-        message: (identity: string) => `provision identity ${identity} failed`
+        message: (identity: string) => `Failed to provision identity '${identity}'.`
     };
 }

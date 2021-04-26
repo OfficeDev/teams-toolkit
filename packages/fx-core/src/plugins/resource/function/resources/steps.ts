@@ -4,44 +4,44 @@
 import { StepHelper } from "../utils/step-helper";
 
 export enum ScaffoldSteps {
-    ensureFunctionAppProject = "Check/Scaffold api project base",
-    scaffoldFunction = "Scaffold function"
+    ensureFunctionAppProject = "Setting up project",
+    scaffoldFunction = "Scaffolding function"
 }
 
 export enum ProvisionSteps {
-    ensureStorageAccount = "Check/Create storage account for Azure function app.",
-    getConnectionString = "Query connection string for Azure function app.",
-    ensureAppServicePlans = "Check/Create app services plan for Azure function app.",
-    ensureFunctionApp = "Check/Create Azure function app."
+    ensureStorageAccount = "Setting up storage account.",
+    getConnectionString = "Retrieving connection string.",
+    ensureAppServicePlans = "Setting up Azure App Services plan.",
+    ensureFunctionApp = "Setting up function app."
 }
 
 export enum PostProvisionSteps {
-    findFunctionApp = "Query Azure function app settings.",
-    updateFunctionSettings = "Update Azure function app settings.",
-    updateFunctionAuthSettings = "Update Azure function app auth settings."
+    findFunctionApp = "Retrieving settings.",
+    updateFunctionSettings = "Updating settings.",
+    updateFunctionAuthSettings = "Updating auth settings."
 }
 
 export enum PreDeploySteps {
-    dotnetInstall = "Install .NET Core SDK if needed.",
-    installTeamsfxBinding = "Install TeamsFX Binding.",
-    npmPrepare = "Install/Build js files."
+    dotnetInstall = "Installing .NET Core SDK if needed.",
+    installTeamsfxBinding = "Installing TeamsFX Binding.",
+    npmPrepare = "Preparing JS files."
 }
 
 export enum DeploySteps {
-    generateZip = "Generate zip package.",
-    fetchCredential = "Fetch deploy credential.",
-    checkFuncAppSettings = "Check Azure function app deploy settings.",
-    deploy = "Upload zip package.",
-    restart = "Restart Azure function app.",
-    syncTrigger = "Sync Triggers for Azure function app."
+    generateZip = "Generating zip package.",
+    fetchCredential = "Retrieving deploy credentials.",
+    checkFuncAppSettings = "Checking deploy settings.",
+    deploy = "Uploading zip package.",
+    restart = "Restarting function app.",
+    syncTrigger = "Syncing triggers."
 }
 
 export enum StepGroup {
-    ScaffoldStepGroup = "Scaffold Backend API",
-    ProvisionStepGroup = "Create Azure Functions resources",
-    PostProvisionStepGroup = "Configure Azure function app",
-    PreDeployStepGroup = "Prepare local files for deployment",
-    DeployStepGroup = "Deploy to Azure function app"
+    ScaffoldStepGroup = "Scaffolding function app",
+    ProvisionStepGroup = "Provisioning function app",
+    PostProvisionStepGroup = "Configuring function app",
+    PreDeployStepGroup = "Preparing function app for deployment",
+    DeployStepGroup = "Deploying function app"
 }
 
 export class StepHelperFactory {

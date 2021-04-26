@@ -76,10 +76,10 @@ export class Constants {
     static readonly ProgressBar = {
         start: "Starting",
         provision: {
-            title: "Creating Simple Auth",
-            createAppServicePlan: "Creating App Service Plan",
+            title: "Provisioning Simple Auth",
+            createAppServicePlan: "Creating Azure App Service plan",
             createWebApp: "Creating Azure Web App",
-            zipDeploy: "Doing Zip Deployment",
+            zipDeploy: "Deploying Simply Auth",
         },
         postProvision: {
             title: "Configuring Simple Auth",
@@ -88,9 +88,9 @@ export class Constants {
     };
 
     static readonly FreeServerFarmsQuotaErrorFromAzure =
-        "The maximum number of Free ServerFarms allowed in a Subscription is 10";
+        "The maximum number of free ServerFarms in an Azure subscription is 10";
     static readonly FreeServerFarmsQuotaErrorToUser =
-        "The maximum number of Free App Service Plan allowed in a Subscription is 10. Please delete other Free App Service Plan and try provision again.";
+        "The maximum number of free App Service plans in an Azure subscription is 10. Delete a free App Service plan and try again.";
     static readonly FreeServerFarmsQuotaErrorHelpLink = "https://aka.ms/teamsfx-sa-help#freeserverfarmsquotaerror";
 }
 
@@ -104,35 +104,35 @@ export class Messages {
     private static readonly getEventName = (eventName: string) => `${Constants.SimpleAuthPlugin.id}/${eventName}`;
 
     static readonly StartLocalDebug: Message = {
-        log: Messages.getLog("Start to local-debug"),
+        log: Messages.getLog("Starting local-debug"),
         telemetry: Messages.getEventName("local-debug-start"),
     };
     static readonly EndLocalDebug: Message = {
-        log: Messages.getLog("Successfully local-debug"),
+        log: Messages.getLog("Successfully started local-debug"),
         telemetry: Messages.getEventName("local-debug"),
     };
     static readonly StartPostLocalDebug: Message = {
-        log: Messages.getLog("Start to post-local-debug"),
+        log: Messages.getLog("Starting post-local-debug"),
         telemetry: Messages.getEventName("post-local-debug-start"),
     };
     static readonly EndPostLocalDebug: Message = {
-        log: Messages.getLog("Successfully post-local-debug"),
+        log: Messages.getLog("Successfully started post-local-debug"),
         telemetry: Messages.getEventName("post-local-debug"),
     };
     static readonly StartProvision: Message = {
-        log: Messages.getLog("Start to provision"),
+        log: Messages.getLog("Provisioning"),
         telemetry: Messages.getEventName("provision-start"),
     };
     static readonly EndProvision: Message = {
-        log: Messages.getLog("Successfully provision"),
+        log: Messages.getLog("Successfully provisioned"),
         telemetry: Messages.getEventName("provision"),
     };
     static readonly StartPostProvision: Message = {
-        log: Messages.getLog("Start to post-provision"),
+        log: Messages.getLog("Post-provisioning"),
         telemetry: Messages.getEventName("post-provision-start"),
     };
     static readonly EndPostProvision: Message = {
-        log: Messages.getLog("Successfully post-provision"),
+        log: Messages.getLog("Successfully post-provisioned"),
         telemetry: Messages.getEventName("post-provision"),
     };
 }

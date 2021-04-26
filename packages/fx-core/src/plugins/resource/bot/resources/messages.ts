@@ -21,9 +21,23 @@ export class Messages {
     public static readonly ReferToHelpLink = `Refer to ${Links.HELP_LINK}.`;
     public static readonly CommandFailWithMessage = (command: string, message: string): string => `Run '${command}' failed with message: ${message}`;
     public static readonly DoSthBeforeSth = (sth: string, beforeSth: string): string => `Perform command '${sth}' before '${beforeSth}'.`;
-    public static readonly FailToCallAppStudio = (apiName: string) => `Failed to execute '${apiName}'.`;
+    public static readonly FailToCallAppStudio = (apiName: string): string => `Failed to execute '${apiName}'.`;
+    public static readonly SuccessfullyRetrievedTemplateZip = (zipUrl: string): string => `Successfully retrieved zip package from ${zipUrl}.`;
+
     public static readonly WORKING_DIR_IS_MISSING = "Working directory is missing.";
     public static readonly FAIL_TO_GET_AZURE_CREDS = "Failed to retrieve Azure credentials.";
     public static readonly TRY_LOGIN_AZURE = "Login to Azure.";
     public static readonly SKIP_DEPLOY_NO_UPDATES = "Skipping deployment: no updates found.";
+
+    public static readonly PRE_SCAFFOLDING_BOT = "Pre-scaffolding bot.";
+    public static readonly SCAFFOLDING_BOT = "Scaffolding bot.";
+    public static readonly SUCCESSFULLY_SCAFFOLDED_BOT = "Successfully scaffolded bot.";
+
+    public static readonly PRE_PROVISIONING_BOT = "Pre-provisioning bot.";
+    public static readonly PROVISIONING_BOT = "Provisioning bot.";
+    public static readonly SUCCESSFULLY_PROVISIONED_BOT = "Successfully provisioned bot.";
+
+    public static readonly PRE_DEPLOYING_BOT = "Pre-deploying bot.";
+    public static readonly DEPLOYING_BOT = "Deploying bot.";
+    public static readonly SUCCESSFULLY_DEPLOYED_BOT = "Successfully deployed bot.";
 }

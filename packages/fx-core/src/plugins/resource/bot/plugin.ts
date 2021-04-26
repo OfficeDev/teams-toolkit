@@ -24,7 +24,6 @@ import {
     ValidationError
 } from "./errors";
 import { TeamsBotConfig } from "./configs/teamsBotConfig";
-import { default as axios } from "axios";
 import AdmZip from "adm-zip";
 import { ProgressBarFactory } from "./progressBars";
 import { PluginActRoles } from "./enums/pluginActRoles";
@@ -57,6 +56,7 @@ export class TeamsBotImpl {
         this.ctx = context;
         await this.config.restoreConfigFromContext(context);
         this.telemetryStepIn(LifecycleFuncNames.PRE_SCAFFOLD);
+        Logger.info(Messages.PRE_SCAFFOLDING_BOT);
 
         const rawWay = this.ctx.answers?.get(QuestionNames.WAY_TO_REGISTER_BOT);
 
@@ -96,6 +96,7 @@ export class TeamsBotImpl {
         this.ctx = context;
         await this.config.restoreConfigFromContext(context);
         this.telemetryStepIn(LifecycleFuncNames.SCAFFOLD);
+        Logger.info(Messages.SCAFFOLDING_BOT);
 
         const handler = await ProgressBarFactory.newProgressBar(ProgressBarConstants.SCAFFOLD_TITLE, ProgressBarConstants.SCAFFOLD_STEPS_NUM, this.ctx);
         await handler?.start(ProgressBarConstants.SCAFFOLD_STEP_START);
@@ -125,6 +126,7 @@ export class TeamsBotImpl {
 
         this.config.saveConfigIntoContext(context);
         this.telemetryStepOutSuccess(LifecycleFuncNames.SCAFFOLD);
+        Logger.info(Messages.SUCCESSFULLY_SCAFFOLDED_BOT);
 
         return ResultFactory.Success();
     }
@@ -133,6 +135,7 @@ export class TeamsBotImpl {
         this.ctx = context;
         await this.config.restoreConfigFromContext(context);
         this.telemetryStepIn(LifecycleFuncNames.PRE_PROVISION);
+        Logger.info(Messages.PRE_PROVISIONING_BOT);
 
         // Preconditions checking.
         CheckThrowSomethingMissing(ConfigNames.PROGRAMMING_LANGUAGE, this.config.scaffold.programmingLanguage);
@@ -155,6 +158,7 @@ export class TeamsBotImpl {
         this.ctx = context;
         await this.config.restoreConfigFromContext(context);
         this.telemetryStepIn(LifecycleFuncNames.PROVISION);
+        Logger.info(Messages.PROVISIONING_BOT);
 
         // Create and register progress bar for cleanup.
         const handler = await ProgressBarFactory.newProgressBar(ProgressBarConstants.PROVISION_TITLE, ProgressBarConstants.PROVISION_STEPS_NUM, this.ctx);
@@ -175,6 +179,7 @@ export class TeamsBotImpl {
 
         this.config.saveConfigIntoContext(context);
         this.telemetryStepOutSuccess(LifecycleFuncNames.PROVISION);
+        Logger.info(Messages.SUCCESSFULLY_PROVISIONED_BOT);
 
         return ResultFactory.Success();
     }
@@ -323,6 +328,7 @@ export class TeamsBotImpl {
         this.ctx = context;
         await this.config.restoreConfigFromContext(context);
         this.telemetryStepIn(LifecycleFuncNames.PRE_DEPLOY);
+        Logger.info(Messages.PRE_DEPLOYING_BOT);
 
         if (!this.config.provision.provisioned) {
             throw new DeployWithoutProvisionError();
@@ -355,6 +361,7 @@ export class TeamsBotImpl {
         this.ctx = context;
         await this.config.restoreConfigFromContext(context);
         this.telemetryStepIn(LifecycleFuncNames.DEPLOY);
+        Logger.info(Messages.DEPLOYING_BOT);
 
         if (!this.config.scaffold.workingDir) {
             throw new PreconditionError(Messages.WORKING_DIR_IS_MISSING, []);
@@ -418,6 +425,7 @@ export class TeamsBotImpl {
 
         this.config.saveConfigIntoContext(context);
         this.telemetryStepOutSuccess(LifecycleFuncNames.DEPLOY);
+        Logger.info(Messages.SUCCESSFULLY_DEPLOYED_BOT);
 
         return ResultFactory.Success();
     }

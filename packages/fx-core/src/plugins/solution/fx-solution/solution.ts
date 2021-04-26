@@ -1134,16 +1134,12 @@ export class TeamsAppSolution implements Solution {
             azureNode.condition = {equals: HostTypeOptionAzure.id};
             hostTypeNode.addChild(azureNode);
 
-            // 1.2.1 programming languate
-            const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
-            azureNode.addChild(programmingLanguage);
-
-            // 1.2.2 capabilities
+            // 1.2.1 capabilities
             const capQuestion = createCapabilityQuestion();
             const capNode = new QTreeNode(capQuestion); 
             azureNode.addChild(capNode);
 
-            // 1.2.2.1 capabilities has Tab
+            // 1.2.1.1 capabilities has Tab
             const tabRes = await this.getTabScaffoldQuestions(ctx, true);
             if (tabRes.isErr()) return tabRes;
             if (tabRes.value) {
@@ -1152,7 +1148,7 @@ export class TeamsAppSolution implements Solution {
                 capNode.addChild(tabNode);
             }
 
-            // 1.2.2.2 capabilities has Bot/Me
+            // 1.2.1.2 capabilities has Bot/Me
             if (this.botPlugin.getQuestions) {
                 const pluginCtx = getPluginContext(ctx, this.botPlugin.name);
                 const res = await this.botPlugin.getQuestions(stage, pluginCtx);
@@ -1163,6 +1159,12 @@ export class TeamsAppSolution implements Solution {
                     capNode.addChild(botGroup);
                 }
             }
+
+            // 1.2.2 programming languate
+            const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
+            programmingLanguage.condition = {minItems:1};
+            capNode.addChild(programmingLanguage);
+
         } else if (stage === Stage.update) {
             return await this.getQuestionsForAddResource(ctx, manifest);
         } else if (stage === Stage.provision) {

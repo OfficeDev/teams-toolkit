@@ -7,7 +7,7 @@ The Microsoft Teams App Framework (TeamsFx) is a set of solution to help everyon
 The TeamsFx contains the following packages, check 'packages' folder for more information.
 | Package | Description | 
 | ----------- | ----------- |
-| VS Code Extension | The [Microsoft Teams Toolkit](https://github.com/OfficeDev/TeamsFx/tree/main/packages/vscode-extension) enables you to create custom Teams apps directly within the Visual Studio Code environment. The toolkit guides you through the process and provides everything you need to build, debug, and launch your Teams app. |
+| [VS Code Extension](https://github.com/OfficeDev/TeamsFx/tree/main/packages/vscode-extension) | The [Microsoft Teams Toolkit](market extension link placeholder) enables you to create custom Teams apps directly within the Visual Studio Code environment. The toolkit guides you through the process and provides everything you need to build, debug, and launch your Teams app. |
 | [CLI](https://github.com/OfficeDev/TeamsFx/tree/main/packages/cli) | A set of CLI tools in TeamsFx which provide same functionalities as VS Code extension for develoeprs who prefer keyboard-centric experience for Teams app building  |
 | [SDK](https://github.com/OfficeDev/TeamsFx/tree/main/packages/sdk) | TeamsFx provides SDK to reduce develoeprs' programming work when dealing with Microsoft or Azure component and simplifies the autentication work for developers.  |
 | [API](https://github.com/OfficeDev/TeamsFx/tree/main/packages/api) | TeamsFx API Pack is a collection of API contracts between TeamsFx Extension/CLI and TeamsFx core module. It defines the interfaces for 3rd party developer to write plugins to extend the toolkit capabilities. |
@@ -18,7 +18,7 @@ The TeamsFx contains the following packages, check 'packages' folder for more in
 <br>
 
 ## Get Start
-To start trying TeamsFx, check [Prerequest and Getting Start guidence]() first.
+To start trying TeamsFx, check [Prerequest and Getting Start guidence](doc placeholder) first.
 
 ## Contributing
 

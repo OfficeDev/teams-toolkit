@@ -64,7 +64,7 @@ jobs:
 
       - name: release npm packages to npmjs.org
         run: |
-          git config --global user.name 'yiz'
+          git config --global user.name 'MSFT-yiz'
           git config --global user.email 'yiz@microsoft.com'
           npx lerna publish --no-private --yes prerelease
 

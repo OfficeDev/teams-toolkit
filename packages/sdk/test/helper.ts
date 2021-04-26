@@ -74,6 +74,44 @@ export async function getAccessToken(
 }
 
 /**
+ * process.env.SDK_INTEGRATION_TEST_TEAMS_AAD_CLIENT_ID is the Test AAD app mocking Teams first party app.
+ * This function mocks the sso token get from Teams
+ * @returns sso token got from mocked Teams
+ */
+export async function getSsoTokenFromTeams() {
+  const missingConfigurations: string[] = [];
+  if (!process.env.SDK_INTEGRATION_TEST_TEAMS_AAD_CLIENT_ID) {
+    missingConfigurations.push("SDK_INTEGRATION_TEST_TEAMS_AAD_CLIENT_ID");
+  }
+  if (!process.env.SDK_INTEGRATION_TEST_ACCOUNT_NAME) {
+    missingConfigurations.push("SDK_INTEGRATION_TEST_ACCOUNT_NAME");
+  }
+  if (!process.env.SDK_INTEGRATION_TEST_ACCOUNT_NAME) {
+    missingConfigurations.push("SDK_INTEGRATION_TEST_ACCOUNT_NAME");
+  }
+  if (!process.env.SDK_INTEGRATION_TEST_ACCOUNT_PASSWORD) {
+    missingConfigurations.push("SDK_INTEGRATION_TEST_ACCOUNT_PASSWORD");
+  }
+  if (!process.env.SDK_INTEGRATION_TEST_AAD_TENANT_ID) {
+    missingConfigurations.push("SDK_INTEGRATION_TEST_AAD_TENANT_ID");
+  }
+  if (!process.env.SDK_INTEGRATION_TEST_TEAMS_ACCESS_AS_USER_SCOPE) {
+    missingConfigurations.push("SDK_INTEGRATION_TEST_TEAMS_ACCESS_AS_USER_SCOPE");
+  }
+
+  if (missingConfigurations.length != 0) {
+    throw new Error("Environment variables are missing: " +  missingConfigurations.join(", "));
+  }
+  return await getAccessToken(
+    process.env.SDK_INTEGRATION_TEST_TEAMS_AAD_CLIENT_ID,
+    process.env.SDK_INTEGRATION_TEST_ACCOUNT_NAME,
+    process.env.SDK_INTEGRATION_TEST_ACCOUNT_PASSWORD,
+    process.env.SDK_INTEGRATION_TEST_AAD_TENANT_ID,
+    process.env.SDK_INTEGRATION_TEST_TEAMS_ACCESS_AS_USER_SCOPE
+  );
+}
+
+/**
  * Mapping environment variables from CI process to current environment for demo.
  * Once invoke MockEnvironmentVariables, mock the variables in it with another value, it will take effect immediately.
  */

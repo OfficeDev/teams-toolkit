@@ -13,7 +13,7 @@ import {
 } from "../../../src";
 import { SSOTokenV2Info } from "../../../src/models/ssoTokenInfo";
 import { parseJwt } from "../../../src/util/utils";
-import { getAccessToken, MockEnvironmentVariable, RestoreEnvironmentVariable } from "../../helper";
+import { getSsoTokenFromTeams, MockEnvironmentVariable, RestoreEnvironmentVariable } from "../../helper";
 
 chaiUse(chaiPromises);
 let restore: () => void;
@@ -24,13 +24,7 @@ describe("onBehalfOfUserCredential Test: Node", () => {
     restore = MockEnvironmentVariable();
     loadConfiguration();
 
-    ssoToken = await getAccessToken(
-      process.env.SDK_INTEGRATION_TEST_TEAMS_AAD_CLIENT_ID!,
-      process.env.SDK_INTEGRATION_TEST_ACCOUNT_NAME!,
-      process.env.SDK_INTEGRATION_TEST_ACCOUNT_PASSWORD!,
-      process.env.SDK_INTEGRATION_TEST_AAD_TENANT_ID!,
-      process.env.SDK_INTEGRATION_TEST_TEAMS_ACCESS_AS_USER_SCOPE!
-    );
+    ssoToken = await getSsoTokenFromTeams();
   });
 
   it("Test onBehalfOfUserCredential get SSO token success", async function () {

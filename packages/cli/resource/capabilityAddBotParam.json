@@ -29,10 +29,10 @@
                 },
                 {
                     "id": "reuse-existing",
-                    "label": "Reuse an existing bot registration"
+                    "label": "Use an existing bot registration"
                 }
             ],
-            "title": "Select way to get bot registration",
+            "title": "Bot registration",
             "default": "create-new"
         }
     },
@@ -40,7 +40,7 @@
         "data": {
             "name": "bot-id",
             "type": "text",
-            "title": "Please enter bot id",
+            "title": "Enter bot id",
             "default": "",
             "validation": {}
         }
@@ -49,7 +49,7 @@
         "data": {
             "name": "bot-password",
             "type": "password",
-            "title": "Please enter bot password",
+            "title": "Enter bot password",
             "default": "",
             "validation": {}
         }

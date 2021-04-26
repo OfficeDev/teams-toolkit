@@ -10,3 +10,4 @@ export * from "./mockGraphTokenProvider";
 export * from "./aadValidate";
 export * from "./simpleAuthValidator";
 export * from "./sqlValidate";
+export * from "./apimValidator";

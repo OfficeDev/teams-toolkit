@@ -52,7 +52,7 @@
         "data": {
             "type": "text",
             "name": "apim-resource-group",
-            "description": "The name of the API Management service instance.",
+            "description": "The name of the API Management service resource group.",
             "validation": {}
         }
     },

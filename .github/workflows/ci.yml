@@ -17,6 +17,11 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIAL }}
+
       - name: Checkout
         uses: actions/checkout@v2
         with:
@@ -30,6 +35,18 @@ jobs:
       - name: Setup project
         run: |
           npm run setup
+      
+      - name: Download Simple Auth bits
+        uses: actions/CLI@v1
+        with:
+          azcliversion: 2.0.72
+          inlineScripts: |
+            version=`cat packages/fx-core/templates/plugins/resource/simpleauth/version.txt`
+            echo "$version"
+            fileName="Microsoft.TeamsFx.SimpleAuth_$version.zip"
+            echo "$fileName"
+            connectionString=${{secrets.SIMPLE_AUTH_CONNECTION_STRING}}
+            az storage blob download --container-name release --file
 
       - name: Unit Test
         run: |

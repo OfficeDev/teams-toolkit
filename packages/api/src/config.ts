@@ -7,16 +7,16 @@ import { Platform, VsCodeEnv } from "./constants";
 import { AnswerValue } from "./qm";
 
 export type ConfigValue =
-    | string
-    | string[]
-    | number
-    | number[]
-    | boolean
-    | boolean[]
-    | OptionItem[]
-    | OptionItem
-    | undefined
-    | unknown;
+  | string
+  | string[]
+  | number
+  | number[]
+  | boolean
+  | boolean[]
+  | OptionItem[]
+  | OptionItem
+  | undefined
+  | unknown;
 
 export type PluginIdentity = string;
 
@@ -27,87 +27,85 @@ export type SolutionConfig = Map<PluginIdentity, PluginConfig>;
 export type ReadonlySolutionConfig = ReadonlyMap<PluginIdentity, ReadonlyPluginConfig>;
 
 export class ConfigMap extends Map<string, ConfigValue> {
-    getString(k: string, defaultValue?: string): string | undefined {
-        const v = super.get(k);
-        if (!v) return defaultValue;
-        return String(v);
-    }
-    getBoolean(k: string, defaultValue?: boolean): boolean | undefined {
-        const v = super.get(k);
-        if (!v) return defaultValue;
-        return Boolean(v);
-    }
-    getNumber(k: string, defaultValue?: number): number | undefined {
-        const v = super.get(k);
-        if (!v) return defaultValue;
-        return Number(v);
-    }
-    getStringArray(k: string, defaultValue?: string[]): string[] | undefined {
-        const v = super.get(k);
-        if (!v) return defaultValue;
-        return v as string[];
-    }
-    getNumberArray(k: string, defaultValue?: number[]): number[] | undefined {
-        const v = super.get(k);
-        if (!v) return defaultValue;
-        return v as number[];
-    }
-    getBooleanArray(k: string, defaultValue?: boolean[]): boolean[] | undefined {
-        const v = super.get(k);
-        if (!v) return defaultValue;
-        return v as boolean[];
-    }
-    getOptionItem(k: string, defaultValue?: OptionItem): OptionItem | undefined {
-        const v = super.get(k);
-        if (!v) return defaultValue;
-        return v as OptionItem;
-    }
-    getOptionItemArray(k: string, defaultValue?: OptionItem[]): OptionItem[] | undefined {
-        const v = super.get(k);
-        if (!v) return defaultValue;
-        return v as OptionItem[];
-    }
+  getString(k: string, defaultValue?: string): string | undefined {
+    const v = super.get(k);
+    if (!v) return defaultValue;
+    return String(v);
+  }
+  getBoolean(k: string, defaultValue?: boolean): boolean | undefined {
+    const v = super.get(k);
+    if (!v) return defaultValue;
+    return Boolean(v);
+  }
+  getNumber(k: string, defaultValue?: number): number | undefined {
+    const v = super.get(k);
+    if (!v) return defaultValue;
+    return Number(v);
+  }
+  getStringArray(k: string, defaultValue?: string[]): string[] | undefined {
+    const v = super.get(k);
+    if (!v) return defaultValue;
+    return v as string[];
+  }
+  getNumberArray(k: string, defaultValue?: number[]): number[] | undefined {
+    const v = super.get(k);
+    if (!v) return defaultValue;
+    return v as number[];
+  }
+  getBooleanArray(k: string, defaultValue?: boolean[]): boolean[] | undefined {
+    const v = super.get(k);
+    if (!v) return defaultValue;
+    return v as boolean[];
+  }
+  getOptionItem(k: string, defaultValue?: OptionItem): OptionItem | undefined {
+    const v = super.get(k);
+    if (!v) return defaultValue;
+    return v as OptionItem;
+  }
+  getOptionItemArray(k: string, defaultValue?: OptionItem[]): OptionItem[] | undefined {
+    const v = super.get(k);
+    if (!v) return defaultValue;
+    return v as OptionItem[];
+  }
 
-    toJSON(): Dict<unknown> {
-        const out: Dict<unknown> = {};
-        for (const entry of super.entries()) {
-            out[entry[0]] = entry[1];
-        }
-        return out;
+  toJSON(): Dict<unknown> {
+    const out: Dict<unknown> = {};
+    for (const entry of super.entries()) {
+      out[entry[0]] = entry[1];
     }
+    return out;
+  }
 
-    public static fromJSON(obj?: Dict<unknown>): ConfigMap | undefined {
-        if (!obj) return undefined;
-        const map = new ConfigMap();
-        for (const entry of Object.entries(obj)) {
-            map.set(entry[0], entry[1]);
-        }
-        return map;
+  public static fromJSON(obj?: Dict<unknown>): ConfigMap | undefined {
+    if (!obj) return undefined;
+    const map = new ConfigMap();
+    for (const entry of Object.entries(obj)) {
+      map.set(entry[0], entry[1]);
     }
-    // constructor(){
-    //     super();
-    //     Object.setPrototypeOf(this, ConfigMap.prototype);
-    // }
-    constructor(entries?: readonly (readonly [string, ConfigValue])[] | null){
-        super(entries);
-        Object.setPrototypeOf(this, ConfigMap.prototype);
-    }
+    return map;
+  }
+  // constructor(){
+  //     super();
+  //     Object.setPrototypeOf(this, ConfigMap.prototype);
+  // }
+  constructor(entries?: readonly (readonly [string, ConfigValue])[] | null) {
+    super(entries);
+    Object.setPrototypeOf(this, ConfigMap.prototype);
+  }
 }
-
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type Void = {};
 export const Void = {};
 
-
-export  interface Dict<T> {
-    [key: string]: T | undefined;
+export interface Dict<T> {
+  [key: string]: T | undefined;
 }
 
 export type ResourceTemplate = Dict<ConfigValue>;
 
 export type ResourceTemplates = {
-    [k:string]: ResourceTemplate|undefined;
+  [k: string]: ResourceTemplate | undefined;
 };
 
 export type ResourceConfig = ResourceTemplate;
@@ -117,64 +115,58 @@ export type ResourceConfigs = ResourceTemplates;
 export type ReadonlyResourceConfig = Readonly<ResourceConfig>;
 
 export type ReadonlyResourceConfigs = Readonly<{
-    [k:string]:ReadonlyResourceConfig|undefined;
+  [k: string]: ReadonlyResourceConfig | undefined;
 }>;
-
 
 /**
  * environment meta data
  */
-export interface EnvMeta{
-    name:string,
-    local:boolean,
-    sideloading:boolean
+export interface EnvMeta {
+  name: string;
+  local: boolean;
+  sideloading: boolean;
 }
 
 export type EnvConfig = Dict<string>;
 
-
 /**
  * project static settings
  */
- export interface ProjectSettings{
-    appName:string,
-    solutionSettings?:SolutionSettings,
+export interface ProjectSettings {
+  appName: string;
+  solutionSettings?: SolutionSettings;
 }
 
 /**
  * solution settings
  */
-export interface SolutionSettings extends Dict<ConfigValue>{
-    name:string;
-    version:string
+export interface SolutionSettings extends Dict<ConfigValue> {
+  name: string;
+  version: string;
 }
 
-export interface AzureSolutionSettings extends SolutionSettings{
-    capabilities:string[],
-    hostType?:string,
-    azureResources?:string[],
-    activeResourcePlugins:string[]
+export interface AzureSolutionSettings extends SolutionSettings {
+  capabilities: string[];
+  hostType?: string;
+  azureResources?: string[];
+  activeResourcePlugins: string[];
 }
-
 
 /**
  * project dynamic states
  */
-export interface ProjectStates
-{
-    solution:Dict<ConfigValue>,
-    resources: 
-    {
-        [k:string]: Dict<ConfigValue>
-    }
+export interface ProjectStates {
+  solution: Dict<ConfigValue>;
+  resources: {
+    [k: string]: Dict<ConfigValue>;
+  };
 }
- 
 
-export interface Inputs extends Dict<AnswerValue>{
-    platform: Platform;
-    vscodeEnv?:VsCodeEnv;
-}    
+export interface Inputs extends Dict<AnswerValue> {
+  platform: Platform;
+  vscodeEnv?: VsCodeEnv;
+}
 
-export interface Json{
-    [k : string]:unknown;
+export interface Json {
+  [k: string]: unknown;
 }

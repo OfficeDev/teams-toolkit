@@ -56,7 +56,7 @@ export class TeamsBotImpl {
         this.ctx = context;
         await this.config.restoreConfigFromContext(context);
         this.telemetryStepIn(LifecycleFuncNames.PRE_SCAFFOLD);
-        Logger.info(Messages.PRE_SCAFFOLDING_BOT);
+        Logger.info(Messages.PreScaffoldingBot);
 
         const rawWay = this.ctx.answers?.get(QuestionNames.WAY_TO_REGISTER_BOT);
 
@@ -96,7 +96,7 @@ export class TeamsBotImpl {
         this.ctx = context;
         await this.config.restoreConfigFromContext(context);
         this.telemetryStepIn(LifecycleFuncNames.SCAFFOLD);
-        Logger.info(Messages.SCAFFOLDING_BOT);
+        Logger.info(Messages.ScaffoldingBot);
 
         const handler = await ProgressBarFactory.newProgressBar(ProgressBarConstants.SCAFFOLD_TITLE, ProgressBarConstants.SCAFFOLD_STEPS_NUM, this.ctx);
         await handler?.start(ProgressBarConstants.SCAFFOLD_STEP_START);
@@ -126,7 +126,7 @@ export class TeamsBotImpl {
 
         this.config.saveConfigIntoContext(context);
         this.telemetryStepOutSuccess(LifecycleFuncNames.SCAFFOLD);
-        Logger.info(Messages.SUCCESSFULLY_SCAFFOLDED_BOT);
+        Logger.info(Messages.SuccessfullyScaffoldedBot);
 
         return ResultFactory.Success();
     }
@@ -135,7 +135,7 @@ export class TeamsBotImpl {
         this.ctx = context;
         await this.config.restoreConfigFromContext(context);
         this.telemetryStepIn(LifecycleFuncNames.PRE_PROVISION);
-        Logger.info(Messages.PRE_PROVISIONING_BOT);
+        Logger.info(Messages.PreProvisioningBot);
 
         // Preconditions checking.
         CheckThrowSomethingMissing(ConfigNames.PROGRAMMING_LANGUAGE, this.config.scaffold.programmingLanguage);
@@ -158,7 +158,7 @@ export class TeamsBotImpl {
         this.ctx = context;
         await this.config.restoreConfigFromContext(context);
         this.telemetryStepIn(LifecycleFuncNames.PROVISION);
-        Logger.info(Messages.PROVISIONING_BOT);
+        Logger.info(Messages.ProvisioningBot);
 
         // Create and register progress bar for cleanup.
         const handler = await ProgressBarFactory.newProgressBar(ProgressBarConstants.PROVISION_TITLE, ProgressBarConstants.PROVISION_STEPS_NUM, this.ctx);
@@ -179,7 +179,7 @@ export class TeamsBotImpl {
 
         this.config.saveConfigIntoContext(context);
         this.telemetryStepOutSuccess(LifecycleFuncNames.PROVISION);
-        Logger.info(Messages.SUCCESSFULLY_PROVISIONED_BOT);
+        Logger.info(Messages.SuccessfullyProvisionedBot);
 
         return ResultFactory.Success();
     }
@@ -190,7 +190,7 @@ export class TeamsBotImpl {
 
         const serviceClientCredentials = await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
         if (!serviceClientCredentials) {
-            throw new PreconditionError(Messages.FAIL_TO_GET_AZURE_CREDS, [Messages.TRY_LOGIN_AZURE]);
+            throw new PreconditionError(Messages.FailToGetAzureCreds, [Messages.TryLoginAzure]);
         }
 
         // Suppose we get creds and subs from context.
@@ -256,7 +256,7 @@ export class TeamsBotImpl {
 
         const serviceClientCredentials = await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
         if (!serviceClientCredentials) {
-            throw new PreconditionError(Messages.FAIL_TO_GET_AZURE_CREDS, [Messages.TRY_LOGIN_AZURE]);
+            throw new PreconditionError(Messages.FailToGetAzureCreds, [Messages.TryLoginAzure]);
         }
 
         const webSiteMgmtClient = factory.createWebSiteMgmtClient(
@@ -328,7 +328,7 @@ export class TeamsBotImpl {
         this.ctx = context;
         await this.config.restoreConfigFromContext(context);
         this.telemetryStepIn(LifecycleFuncNames.PRE_DEPLOY);
-        Logger.info(Messages.PRE_DEPLOYING_BOT);
+        Logger.info(Messages.PreDeployingBot);
 
         if (!this.config.provision.provisioned) {
             throw new DeployWithoutProvisionError();
@@ -361,10 +361,10 @@ export class TeamsBotImpl {
         this.ctx = context;
         await this.config.restoreConfigFromContext(context);
         this.telemetryStepIn(LifecycleFuncNames.DEPLOY);
-        Logger.info(Messages.DEPLOYING_BOT);
+        Logger.info(Messages.DeployingBot);
 
         if (!this.config.scaffold.workingDir) {
-            throw new PreconditionError(Messages.WORKING_DIR_IS_MISSING, []);
+            throw new PreconditionError(Messages.WorkingDirIsMissing, []);
         }
 
         const deployTimeCandidate = Date.now();
@@ -372,7 +372,7 @@ export class TeamsBotImpl {
         await deployMgr.init();
         const needsRedeploy = await deployMgr.needsToRedeploy();
         if (!needsRedeploy) {
-            Logger.debug(Messages.SKIP_DEPLOY_NO_UPDATES);
+            Logger.debug(Messages.SkipDeployNoUpdates);
             return ResultFactory.Success();
         }
 
@@ -395,7 +395,7 @@ export class TeamsBotImpl {
 
         const serviceClientCredentials = await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
         if (!serviceClientCredentials) {
-            throw new PreconditionError(Messages.FAIL_TO_GET_AZURE_CREDS, [Messages.TRY_LOGIN_AZURE]);
+            throw new PreconditionError(Messages.FailToGetAzureCreds, [Messages.TryLoginAzure]);
         }
 
         const webSiteMgmtClient = new appService.WebSiteManagementClient(
@@ -425,7 +425,7 @@ export class TeamsBotImpl {
 
         this.config.saveConfigIntoContext(context);
         this.telemetryStepOutSuccess(LifecycleFuncNames.DEPLOY);
-        Logger.info(Messages.SUCCESSFULLY_DEPLOYED_BOT);
+        Logger.info(Messages.SuccessfullyDeployedBot);
 
         return ResultFactory.Success();
     }
@@ -504,7 +504,7 @@ export class TeamsBotImpl {
 
         const serviceClientCredentials = await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
         if (!serviceClientCredentials) {
-            throw new PreconditionError(Messages.FAIL_TO_GET_AZURE_CREDS, [Messages.TRY_LOGIN_AZURE]);
+            throw new PreconditionError(Messages.FailToGetAzureCreds, [Messages.TryLoginAzure]);
         }
 
         const botClient = factory.createAzureBotServiceClient(
@@ -619,7 +619,7 @@ export class TeamsBotImpl {
 
         const serviceClientCredentials = await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
         if (!serviceClientCredentials) {
-            throw new PreconditionError(Messages.FAIL_TO_GET_AZURE_CREDS, [Messages.TRY_LOGIN_AZURE]);
+            throw new PreconditionError(Messages.FailToGetAzureCreds, [Messages.TryLoginAzure]);
         }
 
         // 2. Provision a bot channel registration resource on azure.

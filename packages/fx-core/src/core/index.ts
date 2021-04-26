@@ -145,7 +145,7 @@ class CoreImpl implements Core {
                 if (child.data) node.addChild(child);
             }
         }
-        return ok(node);
+        return ok(node.trim());
     }
 
     async getQuestionsForUserTask(func: Func, platform: Platform): Promise<Result<QTreeNode | undefined, FxError>> {
@@ -157,7 +157,14 @@ class CoreImpl implements Core {
             const solution = this.globalSolutions.get(solutionName);
             if (solution && solution.getQuestionsForUserTask) {
                 const solutioContext = this.solutionContext();
-                return await solution.getQuestionsForUserTask(func, solutioContext);
+                const res = await solution.getQuestionsForUserTask(func, solutioContext);
+                if(res.isOk()){
+                    if(res.value) {
+                        const node = res.value.trim();
+                        return ok(node);
+                    }
+                }
+                return res;
             }
         }
         return err(

@@ -8,7 +8,7 @@ import fs from "fs-extra";
 import * as msal from "@azure/msal-node";
 import mockedEnv from "mocked-env";
 import urljoin from "url-join";
-import {JwtPayload} from "jwt-decode";
+import { JwtPayload } from "jwt-decode";
 
 const execAsync = promisify(exec);
 /**
@@ -79,7 +79,7 @@ export async function getAccessToken(
  * This function mocks the sso token get from Teams
  * @returns sso token got from mocked Teams
  */
-export async function getSsoTokenFromTeams() {
+export async function getSsoTokenFromTeams(): Promise<string> {
   const missingConfigurations: string[] = [];
   if (!process.env.SDK_INTEGRATION_TEST_TEAMS_AAD_CLIENT_ID) {
     missingConfigurations.push("SDK_INTEGRATION_TEST_TEAMS_AAD_CLIENT_ID");
@@ -101,7 +101,7 @@ export async function getSsoTokenFromTeams() {
   }
 
   if (missingConfigurations.length != 0) {
-    throw new Error("Environment variables are missing: " +  missingConfigurations.join(", "));
+    throw new Error("Environment variables are missing: " + missingConfigurations.join(", "));
   }
   return await getAccessToken(
     process.env.SDK_INTEGRATION_TEST_TEAMS_AAD_CLIENT_ID!,
@@ -116,12 +116,12 @@ export async function getSsoTokenFromTeams() {
  * Mapping environment variables from CI process to current environment for demo.
  * Once invoke MockEnvironmentVariables, mock the variables in it with another value, it will take effect immediately.
  */
-export function MockEnvironmentVariable() {
+export function MockEnvironmentVariable(): () => void {
   return mockedEnv({
-    M365_CLIENT_ID : process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
-    M365_CLIENT_SECRET : process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_SECRET,
-    M365_TENANT_ID : process.env.SDK_INTEGRATION_TEST_AAD_TENANT_ID,
-    M365_AUTHORITY_HOST : process.env.SDK_INTEGRATION_TEST_AAD_AUTHORITY_HOST,
+    M365_CLIENT_ID: process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
+    M365_CLIENT_SECRET: process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_SECRET,
+    M365_TENANT_ID: process.env.SDK_INTEGRATION_TEST_AAD_TENANT_ID,
+    M365_AUTHORITY_HOST: process.env.SDK_INTEGRATION_TEST_AAD_AUTHORITY_HOST,
 
     SQL_ENDPOINT: process.env.SDK_INTEGRATION_SQL_ENDPOINT,
     SQL_DATABASE: process.env.SDK_INTEGRATION_SQL_DATABASE_NAME,
@@ -134,12 +134,12 @@ export function MockEnvironmentVariable() {
  * restore the mapping process environment variables.
  * once invoke this method, all mock environment above will be restored.
  */
-export function RestoreEnvironmentVariable(restore: () => void) {
+export function RestoreEnvironmentVariable(restore: () => void): void {
   restore();
 }
 export interface AADJwtPayLoad extends JwtPayload {
-    appid?: string;
-    idtyp?: string;
-    scp?: string;
-    upn?: string;
+  appid?: string;
+  idtyp?: string;
+  scp?: string;
+  upn?: string;
 }

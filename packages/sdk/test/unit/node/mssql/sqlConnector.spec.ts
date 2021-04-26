@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AccessToken, ManagedIdentityCredential, GetTokenOptions } from "@azure/identity";
+import { AccessToken, ManagedIdentityCredential } from "@azure/identity";
 import { assert, use as chaiUse, expect } from "chai";
 import chaiPromises from "chai-as-promised";
 import sinon from "sinon";
@@ -9,7 +9,6 @@ import mockedEnv from "mocked-env";
 import {
   loadConfiguration,
   DefaultTediousConnectionConfiguration,
-  ErrorCode,
   ErrorWithCode,
   setLogLevel,
   LogLevel
@@ -71,16 +70,14 @@ describe("TediousSQLConectConfig - node", () => {
     loadConfiguration();
 
     const identityManager_GetToken = sinon.stub(ManagedIdentityCredential.prototype, "getToken");
-    identityManager_GetToken.callsFake(
-      async (scopes: string | string[], options?: GetTokenOptions) => {
-        return new Promise<AccessToken>((resolve) => {
-          resolve({
-            token: fakeToken,
-            expiresOnTimestamp: 12345678
-          });
+    identityManager_GetToken.callsFake(async () => {
+      return new Promise<AccessToken>((resolve) => {
+        resolve({
+          token: fakeToken,
+          expiresOnTimestamp: 12345678
         });
-      }
-    );
+      });
+    });
 
     const sqlConnector = new DefaultTediousConnectionConfiguration();
     const tediousConnectConfig = await sqlConnector.getConfig();

@@ -12,6 +12,7 @@ export class RegularExprs {
 
 export class WebAppConstants {
     public static readonly WEB_APP_SITE_DOMAIN: string = "azurewebsites.net";
+    public static readonly APP_SERVICE_PLAN_DEFAULT_SKU_NAME = "F1";
 }
 
 export class AADRegistrationConstants {

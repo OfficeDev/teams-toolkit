@@ -2,7 +2,7 @@
 
 ## Introduction
 
-`TeamsFx` input binding:
+`TeamsFx` function extension does the following binding work for Teams app developers:
 1. Do authorization for http trigger: Http request must have Authorization header with access token, the client id of which should be in the list of `ALLOWED_APP_IDS` or equals to `CLIENT_ID` setting. 
 1. Refresh user access token in request header if it's about to expire.
 1. Provide user access token in `TeamsFxContext` as Azure Functions input binding.

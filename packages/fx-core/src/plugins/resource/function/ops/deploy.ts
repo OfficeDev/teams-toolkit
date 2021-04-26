@@ -28,7 +28,11 @@ import { WebAppsListPublishingCredentialsResponse } from "@azure/arm-appservice/
 import { execute } from "../utils/execute";
 import { forEachFileAndDir } from "../utils/dir-walk";
 import { requestWithRetry } from "../utils/templates-fetch";
-import { backendExtensionsInstall } from "../utils/depsChecker/backendExtensionsInstall";
+import { BackendExtensionsInstaller } from "../utils/depsChecker/backendExtensionsInstall";
+import { DotnetChecker } from "../utils/depsChecker/dotnetChecker";
+import { funcPluginAdapter } from "../utils/depsChecker/funcPluginAdapter";
+import { funcPluginLogger } from "../utils/depsChecker/funcPluginLogger";
+import { funcPluginTelemetry } from "../utils/depsChecker/funcPluginTelemetry";
 
 export class FunctionDeploy {
 
@@ -87,8 +91,9 @@ export class FunctionDeploy {
         }
 
         const binPath = path.join(componentPath, FunctionPluginPathInfo.functionExtensionsFolderName);
-
-        await backendExtensionsInstall(componentPath, FunctionPluginPathInfo.functionExtensionsFileName, binPath);
+        const dotnetChecker = new DotnetChecker(funcPluginAdapter, funcPluginLogger, funcPluginTelemetry);
+        const backendExtensionsInstaller = new BackendExtensionsInstaller(dotnetChecker, funcPluginLogger);
+        await backendExtensionsInstaller.install(componentPath, FunctionPluginPathInfo.functionExtensionsFileName, binPath);
     }
 
     public static async deployFunction(

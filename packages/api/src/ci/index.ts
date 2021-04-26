@@ -12,3 +12,4 @@ export * from "./simpleAuthValidator";
 export * from "./sqlValidate";
 export * from "./aadManager";
 export * from "./resourceGroupManager";
+export * from "./apimValidator";

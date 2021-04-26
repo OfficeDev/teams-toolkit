@@ -37,6 +37,10 @@ export function getSubscriptionId() {
 
 const envFilePathSuffix = path.join(".fx", "env.default.json");
 
+export function getConfigFileName(appName: string): string {
+    return path.resolve(testFolder, appName, envFilePathSuffix);
+}
+
 const aadPluginName = "fx-resource-aad-app-for-teams";
 const simpleAuthPluginName = "fx-resource-simple-auth";
 const botPluginName = "fx-resource-bot";

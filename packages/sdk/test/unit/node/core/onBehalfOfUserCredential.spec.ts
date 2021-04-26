@@ -64,7 +64,7 @@ describe("OnBehalfOfUserCredential - node", () => {
 
     // Mock ConfidentialClientApplication implementation
     sandbox.stub(ConfidentialClientApplication.prototype, "acquireTokenOnBehalfOf").callsFake(
-      (request: OnBehalfOfRequest): Promise<AuthenticationResult | null> => {
+      (): Promise<AuthenticationResult | null> => {
         const authResult: AuthenticationResult = {
           authority: "fake_authority",
           uniqueId: "fake_uniqueId",
@@ -231,7 +231,7 @@ describe("OnBehalfOfUserCredential - node", () => {
     // Mock AAD outage
     sandbox.restore();
     sandbox.stub(ConfidentialClientApplication.prototype, "acquireTokenOnBehalfOf").callsFake(
-      (request: OnBehalfOfRequest): Promise<AuthenticationResult | null> => {
+      (): Promise<AuthenticationResult | null> => {
         return new Promise<AuthenticationResult>(() => {
           throw new Error("AAD outage");
         });

@@ -28,4 +28,5 @@ dotnet build Microsoft.Azure.WebJobs.Extensions.TeamsFx.sln
     ```
 
 ## How to Run Test Cases on Windows
+You can use [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/) to execute the test scripts.
 <!-- TODO: Replace start_js_function.sh and start_js_function.cmd to powershell core script so we can enable test running in Windows. -->

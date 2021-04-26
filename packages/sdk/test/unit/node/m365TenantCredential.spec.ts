@@ -1,12 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  AccessToken,
-  AuthenticationError,
-  ClientSecretCredential,
-  GetTokenOptions
-} from "@azure/identity";
+import { AccessToken, AuthenticationError, ClientSecretCredential } from "@azure/identity";
 import { assert, expect, use as chaiUse } from "chai";
 import chaiPromises from "chai-as-promised";
 import sinon from "sinon";
@@ -89,12 +84,12 @@ describe("m365TenantCredential - node", () => {
 
   it("get access token", async function() {
     sinon.stub(ClientSecretCredential.prototype, "getToken").callsFake(
-      (scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null> => {
+      (): Promise<AccessToken | null> => {
         const token: AccessToken = {
           token: fakeToken,
           expiresOnTimestamp: Date.now() + 10 * 1000 * 60
         };
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
           resolve(token);
         });
       }
@@ -112,7 +107,7 @@ describe("m365TenantCredential - node", () => {
 
   it("get access token with authentication error", async function() {
     sinon.stub(ClientSecretCredential.prototype, "getToken").callsFake(
-      (scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null> => {
+      (): Promise<AccessToken | null> => {
         throw new AuthenticationError(401, "Authentication failed");
       }
     );
@@ -131,7 +126,7 @@ describe("m365TenantCredential - node", () => {
   });
   it("get access token with normal error", async function() {
     sinon.stub(ClientSecretCredential.prototype, "getToken").callsFake(
-      (scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null> => {
+      (): Promise<AccessToken | null> => {
         throw new Error("Unknown error");
       }
     );
@@ -149,8 +144,8 @@ describe("m365TenantCredential - node", () => {
   });
   it("get access token failed with empty access token", async function() {
     sinon.stub(ClientSecretCredential.prototype, "getToken").callsFake(
-      (scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null> => {
-        return new Promise((resolve, reject) => {
+      (): Promise<AccessToken | null> => {
+        return new Promise((resolve) => {
           resolve(null);
         });
       }

@@ -360,3 +360,6 @@ coverage
 
 # test
 test-results.*
+
+# eslint
+.eslintcache

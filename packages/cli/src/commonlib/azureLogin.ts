@@ -52,7 +52,7 @@ const config = {
 
 // eslint-disable-next-line
 // @ts-ignore
-const memory = new MemoryCache();
+const memoryDictionary: {[tenantId: string] : MemoryCache;} = {};
 
 export class AzureAccountManager extends login implements AzureAccountProvider {
   private static instance: AzureAccountManager;
@@ -131,7 +131,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
             (tokenJson as any).upn ?? (tokenJson as any).unique_name,
             undefined,
             env,
-            memory
+            memoryDictionary[AzureAccountManager.domain!]
           );
           resolve(credential);
         } else {
@@ -144,7 +144,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
             (tokenJson as any).upn ?? (tokenJson as any).unique_name,
             undefined,
             env,
-            memory
+            memoryDictionary[AzureAccountManager.tenantId]
           );
           resolve(credential);
         }
@@ -190,7 +190,13 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       tokenJson = ConvertTokenToJson(accessToken);
       const tokenExpiresIn =
         Math.round(new Date().getTime() / 1000) - ((tokenJson as any).iat as number);
-      memory.add(
+      if (!memoryDictionary[(tokenJson as any).tid]) {
+        // eslint-disable-next-line
+        // @ts-ignore
+        memoryDictionary[(tokenJson as any).tid] = new MemoryCache();
+      }
+      
+      memoryDictionary[(tokenJson as any).tid].add(
         [
           {
             tokenType: "Bearer",
@@ -211,13 +217,14 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   private async doGetAccountCredentialAsync(): Promise<TokenCredentialsBase | undefined> {
     if (AzureAccountManager.codeFlowInstance.account) {
       const dataJson = await this.getJsonObject();
+      const checkDefaultTenant = !AzureAccountManager.tenantId || AzureAccountManager.tenantId===AzureAccountManager.domain;
       const credential = new DeviceTokenCredentials(
         config.auth.clientId,
         (dataJson as any).tid,
         (dataJson as any).upn ?? (dataJson as any).unique_name,
         undefined,
         env,
-        memory
+        checkDefaultTenant ? memoryDictionary[AzureAccountManager.domain!] : memoryDictionary[AzureAccountManager.tenantId!]
       );
       return Promise.resolve(credential);
     }
@@ -340,12 +347,12 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
           (tokenJson as any).upn ?? (tokenJson as any).unique_name,
           undefined,
           env,
-          memory
+          memoryDictionary[(tokenJson as any).tid]
         );
         const tenantClient = new SubscriptionClient(tenantCredential);
         const subscriptions = await listAll(tenantClient.subscriptions, tenantClient.subscriptions.list());
         for(let j=0;j<subscriptions.length;++j) {
-          const item = subscriptions[i];
+          const item = subscriptions[j];
           arr.push({
             subscriptionId: item.subscriptionId!,
             subscriptionName: item.displayName!,

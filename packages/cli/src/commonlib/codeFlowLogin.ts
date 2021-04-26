@@ -206,12 +206,30 @@ export class CodeFlowLogin {
           } else {
             return undefined;
           }
+        })
+        .catch(async (error) => {
+          CliCodeLogInstance.error("[Login] getTenantToken acquireTokenSilent : " + error.message);
+          const accountList = await this.msalTokenCache?.getAllAccounts();
+          for (let i=0;i<accountList!.length;++i) {
+            this.msalTokenCache?.removeAccount(accountList![i]);
+          }
+          const accessToken = await this.login();
+          if (accessToken) {
+            const res = await this.pca!.acquireTokenSilent({
+              authority: env.activeDirectoryEndpointUrl + tenantId,
+              account: this.account!,
+              scopes: this.scopes!,
+              forceRefresh: true
+            });
+            return res?.accessToken;
+          }
+          return undefined;
         });
       } else {
         return undefined;
       }
     } catch (error) {
-      CliCodeLogInstance.error("[Login] getTenatToken : " + error.message);
+      CliCodeLogInstance.error("[Login] getTenantToken : " + error.message);
       throw LoginFailureError(error);
     }
   }

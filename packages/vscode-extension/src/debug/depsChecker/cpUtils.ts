@@ -94,14 +94,18 @@ export namespace cpUtils {
           logger?.debug(
             `Failed to run command '${command} ${formattedArgs}': cmdOutputIncludingStderr: '${cmdOutputIncludingStderr}', error: ${error}`
           );
-          clearTimeout(timer);
+          if (timer) {
+            clearTimeout(timer);
+          }
           reject(error);
         });
         childProc.on("close", (code: number) => {
           logger?.debug(
             `Command finished with outputs, cmdOutputIncludingStderr: '${cmdOutputIncludingStderr}'`
           );
-          clearTimeout(timer);
+          if (timer) {
+            clearTimeout(timer);
+          }
           resolve({
             code,
             cmdOutput,

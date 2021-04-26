@@ -81,6 +81,7 @@ export enum SolutionError {
     FrontendEndpointAndDomainNotFound = "FrontendEndpointAndDomainNotFound",
     RemoteClientIdNotFound = "RemoteClientIdNotFound",
     AddResourceNotSupport = "AddResourceNotSupport",
+    FailedToAddCapability = "FailedToAddCapability",
     NoResourceToDeploy = "NoResourceToDeploy",
     ProvisionInProgress = "ProvisionInProgress",
     DeploymentInProgress = "DeploymentInProgress",

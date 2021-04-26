@@ -28,3 +28,7 @@ export function getUniqueAppName() {
 export function getSubscriptionId() {
     return AzureConfig.subscription.id;
 }
+
+export function getConfigFileName(appName: string): string {
+    return path.resolve(testFolder, appName, ".fx/env.default.json");
+}

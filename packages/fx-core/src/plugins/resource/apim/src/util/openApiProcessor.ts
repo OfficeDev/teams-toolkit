@@ -65,7 +65,7 @@ export class OpenApiProcessor {
 
     public async loadOpenApiDocument(fileName: string, dir?: string): Promise<IOpenApiDocument> {
         let srcSpec: OpenAPI.Document;
-        const filepath = !dir ? fileName : path.join(dir, fileName);
+        const filepath = path.isAbsolute(fileName) || !dir ? fileName : path.join(dir, fileName);
         try {
             srcSpec = await this.swaggerParser.parse(filepath, {
                 parse: { json: { allowEmpty: false }, yaml: { allowEmpty: false } },

@@ -9,19 +9,18 @@ const createQuestions = new QTreeNode({
     type: NodeType.group
 });
 
-
 const wayToRegisterBotQuestion = new QTreeNode({
     name: QuestionNames.WAY_TO_REGISTER_BOT,
     type: NodeType.singleSelect,
     option: QuestionOptions.WAY_TO_REGISTER_BOT_OPTIONS,
-    title: "Select way to get bot registration",
+    title: "Bot registration",
     default: WayToRegisterBot.CreateNew
 });
 
 const botIdQuestion = new QTreeNode({
     name: QuestionNames.GET_BOT_ID,
     type: NodeType.text,
-    title: "Please enter bot id",
+    title: "Enter bot id",
     default: "",
     validation: {
         validFunc: async (botId: string) => {
@@ -38,13 +37,13 @@ const botIdQuestion = new QTreeNode({
 const botPasswordQuestion = new QTreeNode({
     name: QuestionNames.GET_BOT_PASSWORD,
     type: NodeType.password,
-    title: "Please enter bot password",
+    title: "Enter bot password",
     default: "",
     validation: {
         validFunc: async (botPassword: string) => {
 
             if (!botPassword) {
-                return "Invalid bot password. Password must be non-empty.";
+                return "Invalid bot password. Password is empty.";
             }
 
             return undefined;

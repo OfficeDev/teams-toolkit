@@ -6,7 +6,7 @@ export const TabOptionItem: OptionItem = {
     id: "Tab",
     label: "Tab",
     cliName: "tab",
-    description: "Embeds a web-based app experience in a tab in a Teams chat, channel, or personal workspace.",
+    description: "Tabs embeds a web app experience in a tab in a Teams chat, channel, or personal workspace.",
 };
 
 export const BotOptionItem: OptionItem = {
@@ -14,14 +14,14 @@ export const BotOptionItem: OptionItem = {
     label: "Bot",
     cliName: "bot",
     description:
-        "Bots allow you to interact with and obtain information from a software or website in a text/search/conversational manner.",
+        "Bots allow you to interact with and obtain information in a text/search/conversational manner.",
 };
 
 export const MessageExtensionItem: OptionItem = {
     id: "MessageExtension",
-    label: "Message Extensions",
+    label: "Messaging Extension",
     description:
-        "Messaging extensions allow users to interact with your web service through buttons and forms in the Microsoft Teams client.",
+        "Messaging Extensions allow users to interact with a web service through buttons and forms in the Microsoft Teams client.",
 };
 
 export enum AzureSolutionQuestionNames {
@@ -52,27 +52,27 @@ export const HostTypeOptionSPFx: OptionItem = {
 
 export const AzureResourceSQL: OptionItem = {
     id:"sql",
-    label: "sql",
-    description: "Azure SQL Database",
+    label: "Azure SQL Database",
+    description: "Azure SQL Database depends on Azure Functions.",
 };
 
 export const AzureResourceFunction: OptionItem = {
     id:"function",
-    label: "function",
-    description: "New APIs from Azure Functions",
+    label: "Azure Functions",
+    description: "Application backend.",
 };
 
 export const AzureResourceApim: OptionItem = {
     id:"apim",
     label: "apim",
-    description: "New API in Azure API Management",
+    description: "Register APIs in Azure API Management",
 };
  
 export function createCapabilityQuestion(): MultiSelectQuestion {
     return {
         name: AzureSolutionQuestionNames.Capabilities,
         title: "Add capabilities",
-        prompt: "Choose the capabilities for your project setup",
+        prompt: "Choose capabilities for your application",
         type: NodeType.multiSelect,
         option: [TabOptionItem, BotOptionItem, MessageExtensionItem],
         default: [TabOptionItem.id]
@@ -81,7 +81,7 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
 
 export const FrontendHostTypeQuestion: SingleSelectQuestion = {
     name: AzureSolutionQuestionNames.HostType,
-    title: "Select front-end hosting type",
+    title: "Select frontend hosting type",
     type: NodeType.singleSelect,
     option: [HostTypeOptionAzure, HostTypeOptionSPFx],
     default: HostTypeOptionAzure.id,
@@ -139,7 +139,7 @@ export function createAddCapabilityQuestion(alreadyHaveTab: boolean, alreadyHave
     if(!alreadyHaveBot) options.push(BotOptionItem);
     return {
         name: AzureSolutionQuestionNames.Capabilities,
-        title: "Select Capabilities to add",
+        title: "Select capabilities to add",
         type: NodeType.multiSelect,
         option: options,
         default: []
@@ -148,7 +148,7 @@ export function createAddCapabilityQuestion(alreadyHaveTab: boolean, alreadyHave
 
 export const DeployPluginSelectQuestion: MultiSelectQuestion = {
     name: AzureSolutionQuestionNames.PluginSelectionDeploy,
-    title: `Please select which resource(s) to deploy`,
+    title: `Select resource(s) to deploy`,
     type: NodeType.multiSelect,
     skipSingleOption: true,
     option: [],
@@ -166,7 +166,7 @@ export const AskSubscriptionQuestion: FuncQuestion = {
 
 export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
     name: AzureSolutionQuestionNames.ProgrammingLanguage,
-    title: "Please select programming language for your project",
+    title: "Select programming language for your project",
     type: NodeType.singleSelect,
     option: ["javascript", "typescript"],
     default: "javascript",

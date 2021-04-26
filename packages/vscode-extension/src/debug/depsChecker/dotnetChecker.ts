@@ -389,12 +389,58 @@ export class DotnetChecker implements IDepsChecker {
   }
 
   private async validate(): Promise<boolean> {
-    // TODO: validate with dotnet hello world
-    const isInstallationValid = await this.isDotnetInstalledCorrectly();
+    const isInstallationValid =
+      (await this.isDotnetInstalledCorrectly()) && (await this.validateWithHelloWorld());
     if (!isInstallationValid) {
       this._telemetry.sendEvent(DepsCheckerEvent.dotnetValidationError);
     }
     return isInstallationValid;
+  }
+
+  private async validateWithHelloWorld(): Promise<boolean> {
+    const dotnetPath = await this.getDotnetExecPathFromConfig();
+    if (!dotnetPath) {
+      return false;
+    }
+
+    const samplePath = path.join(os.homedir(), `.${ConfigFolderName}`, "dotnetSample");
+    const expected: string = "Hello World";
+    let actual: string = "";
+    try {
+      await fs.removeSync(samplePath);
+
+      await cpUtils.executeCommand(
+        undefined,
+        this._logger,
+        { shell: false },
+        dotnetPath,
+        "new",
+        "console",
+        "--output",
+        `${samplePath}`
+      );
+      actual = await cpUtils.executeCommand(
+        undefined,
+        this._logger,
+        { shell: false },
+        dotnetPath,
+        "run",
+        "--project",
+        `${samplePath}`
+      );
+
+      if (actual.includes(expected)) {
+        return true;
+      }
+    } catch (error) {
+      this._logger.debug(
+        `Failed to run hello world, dotnetPath = ${dotnetPath}, expected output = ${expected}, actual output = ${actual}, error = ${error}`
+      );
+    } finally {
+      await fs.removeSync(samplePath);
+    }
+
+    return false;
   }
 
   private async tryAcquireGlobalDotnetSdk(): Promise<boolean> {

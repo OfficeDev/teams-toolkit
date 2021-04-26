@@ -369,9 +369,7 @@ export class QTreeNode {
         if (!this.children) {
             this.children = [];
         }
-        if (node.validate()) {
-            this.children.push(node);
-        }
+        this.children.push(node);
         return this;
     }
     validate(): boolean {

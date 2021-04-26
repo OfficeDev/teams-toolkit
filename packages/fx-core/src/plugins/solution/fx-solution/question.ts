@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { FuncQuestion, MultiSelectQuestion, NodeType, OptionItem, SingleSelectQuestion } from "fx-api";
+import * as strings from "../../../resources/strings.json";
 
 export const TabOptionItem: OptionItem = {
     id: "Tab",
@@ -71,8 +72,8 @@ export const AzureResourceApim: OptionItem = {
 export function createCapabilityQuestion(): MultiSelectQuestion {
     return {
         name: AzureSolutionQuestionNames.Capabilities,
-        title: "Add capabilities",
-        prompt: "Choose the capabilities for your project setup",
+        title: strings.solution.addCapability.title,
+        prompt: strings.solution.addCapability.prompt,
         type: NodeType.multiSelect,
         option: [TabOptionItem, BotOptionItem, MessageExtensionItem],
         default: [TabOptionItem.id],
@@ -92,7 +93,7 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
 
 export const FrontendHostTypeQuestion: SingleSelectQuestion = {
     name: AzureSolutionQuestionNames.HostType,
-    title: "Select front-end hosting type",
+    title: strings.solution.hostType.title,
     type: NodeType.singleSelect,
     option: [HostTypeOptionAzure, HostTypeOptionSPFx],
     default: HostTypeOptionAzure.id,
@@ -100,10 +101,11 @@ export const FrontendHostTypeQuestion: SingleSelectQuestion = {
 
 export const AzureResourcesQuestion: MultiSelectQuestion = {
     name: AzureSolutionQuestionNames.AzureResources,
-    title: "Additional cloud resources",
+    title: strings.solution.azureResource.title,
     type: NodeType.multiSelect,
     option: [AzureResourceSQL, AzureResourceFunction],
     default: [],
+    prompt: strings.solution.azureResource.prompt,
     onDidChangeSelection:async function(selectedItems: OptionItem[], previousSelectedItems: OptionItem[]) : Promise<string[]>{
         const hasSQL = selectedItems.some(i=>i.id === AzureResourceSQL.id);
         if(hasSQL){
@@ -119,10 +121,11 @@ export function createAddAzureResourceQuestion(alreadyHaveFunction: boolean, alr
     if(!alreadyHaveAPIM) options.push(AzureResourceApim);
     return {
         name: AzureSolutionQuestionNames.AddResources,
-        title: "Select Azure resources to add",
+        title: strings.solution.addResource.title,
         type: NodeType.multiSelect,
         option: options,
         default: [],
+        prompt: strings.solution.addResource.prompt,
         onDidChangeSelection:async function(currentSelectedItems: OptionItem[], previousSelectedItems: OptionItem[]) : Promise<string[]>{
             const hasSQL = currentSelectedItems.some(i=>i.id === AzureResourceSQL.id);
             const hasAPIM = currentSelectedItems.some(i=>i.id === AzureResourceApim.id);
@@ -145,10 +148,11 @@ export function createAddCapabilityQuestion(alreadyHaveTab: boolean, alreadyHave
     } 
     return {
         name: AzureSolutionQuestionNames.Capabilities,
-        title: "Select Capabilities to add",
+        title: strings.solution.addCapability.title,
         type: NodeType.multiSelect,
         option: options,
         default: [],
+        prompt: strings.solution.addCapability.prompt,
         onDidChangeSelection:async function(currentSelectedItems: OptionItem[], previousSelectedItems: OptionItem[]) : Promise<string[]>{
             const currentIds = new Set<string>();
             for(const i of currentSelectedItems) currentIds.add(i.id);

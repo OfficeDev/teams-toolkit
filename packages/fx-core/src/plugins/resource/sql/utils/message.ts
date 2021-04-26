@@ -35,20 +35,20 @@ export class Message {
 
     public static readonly addDatabaseUser = (name: string) => `[${Constants.pluginName}] add database user ${name}`;
 
-    public static readonly adminName = (name: string) => `[${Constants.pluginName}] aad admin name is ${name}`;
+    public static readonly adminName = (name: string) => `[${Constants.pluginName}] AAD admin name is ${name}`;
 
     public static readonly endpoint = (endpoint: string) => `[${Constants.pluginName}] SQL endpoint is ${endpoint}`;
 
     public static readonly inputCheck = {
         "sqlUserNameEmpty": "SQL admin user name cannot be empty",
-        "sqlUserNameContainsSqlIdentifier": "SQL admin user name must not contain a SQL Identifier or a typical system name (like admin, administrator, sa, root, dbmanager, loginmanager, etc.) or a built-in database user or role (like dbo, guest, public, etc.)",
-        "sqlUserNameContainsNonAlphanumeric": "SQL admin user name must not include non-alphanumeric characters",
-        "sqlUserNameStartWithNumber": "SQL admin user name must not start with numbers",
+        "sqlUserNameContainsSqlIdentifier": "SQL admin user name cannot contain a SQL Identifier or a typical system name (like admin, administrator, sa, root, dbmanager, loginmanager, etc.) or a built-in database user or role (like dbo, guest, public, etc.)",
+        "sqlUserNameContainsNonAlphanumeric": "SQL admin user name cannot include non-alphanumeric characters",
+        "sqlUserNameStartWithNumber": "SQL admin user name cannot start with a number",
         "sqlPasswordEmpty": "SQL admin password cannot be empty",
         "sqlPasswordLengthLessThan8": "SQL admin password must be at least 8 characters in length",
         "sqlPasswordLengthGreatThan128": "SQL admin password must be no more than 128 characters in length",
         "sqlPasswordMustContain3Categories": "Your password must contain characters from three of the following categories – English uppercase letters, English lowercase letters, numbers (0-9), and non-alphanumeric characters (!, $, #, %, etc.)",
-        "sqlPasswordCannotContainUserName": "Your password cannot contain all or part of the login name",
-        "sqlPasswordMustMatch": "Password and confirm password must match",
+        "sqlPasswordCannotContainUserName": "Your password cannot contain part or all of the user name",
+        "sqlPasswordMustMatch": "Password and password confirmation must match",
     };
 }

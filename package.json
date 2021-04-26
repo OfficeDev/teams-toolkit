@@ -4,19 +4,14 @@
     "setup": "npm install && npm run bootstrap",
     "bootstrap": "lerna bootstrap",
     "lint:staged": "lerna run lint:staged --stream",
-    "lint": "lerna run lint --stream"
+    "lint": "lerna run lint --stream",
+    "prepare": "husky install"
   },
   "devDependencies": {
     "@commitlint/cli": "^12.0.1",
     "@commitlint/config-conventional": "^12.0.1",
-    "husky": "^4.3.8",
+    "husky": "^6.0.0",
     "lerna": "^4.0.0"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lerna run --concurrency 1 --stream precommit --since HEAD --exclude-dependents",
-      "commit-msg": "commitlint -e $HUSKY_GIT_PARAMS"
-    }
   },
   "bin": {
     "teamsfx": "./packages/cli/lib/cli.js"

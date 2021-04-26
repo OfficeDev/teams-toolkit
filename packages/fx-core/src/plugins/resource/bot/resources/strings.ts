@@ -115,7 +115,6 @@ export class ConfigNames {
 
     public static readonly AZURE_WEB_APP_AUTH_CONFIGS = "azure web app's auth configs";
     public static readonly MESSAGE_ENDPOINT = "message endpoint";
-
 }
 
 export class Commands {

@@ -12,7 +12,7 @@ If you meet the error showing that some package cannot install, you can delete t
 ## How to Generate Parameter Files (for Repo Contributors)
 
 ### Setup repo
-You can follow `For developpers to build and run your local project` at the top of this readme.
+You can follow [Build and Run Locally](#build-and-run-locally) of this readme.
 
 ### Run
 ```bash

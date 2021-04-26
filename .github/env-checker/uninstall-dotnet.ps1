@@ -13,3 +13,4 @@ Move-Item -Path $(Join-Path -Path $env:ProgramFiles -ChildPath 'dotnet') -Destin
 Write-Host "Cleaning up registry"
 Remove-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Run" -Name "DOTNETUSERPATH"
 
+Get-Command dotnet

@@ -10,9 +10,9 @@ dotnet --list-sdks
 
 if [[ $(uname -s) == "Linux" ]]; then
   rm -rf /usr/share/dotnet
-  rm -rf /usr/local/bin/dotnet
 fi
 
 rm -rf ${HOME}/.dotnet
+rm -rf /usr/local/bin/dotnet
 
 which dotnet || true

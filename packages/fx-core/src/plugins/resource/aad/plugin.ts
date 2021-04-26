@@ -126,7 +126,10 @@ export class AadAppForTeamsImpl {
       } else {
         throw ResultFactory.UserError(
           GetSkipAppConfigError.name,
-          GetSkipAppConfigError.message()
+          GetSkipAppConfigError.message(),
+          undefined,
+          undefined,
+          GetSkipAppConfigError.helpLink,
         );
       }
     }
@@ -394,7 +397,9 @@ export class AadAppForTeamsImpl {
       throw ResultFactory.UserError(
         ParsePermissionError.name,
         ParsePermissionError.message(),
-        error
+        error,
+        undefined,
+        ParsePermissionError.helpLink,
       );
     }
 
@@ -404,7 +409,10 @@ export class AadAppForTeamsImpl {
     if (!permissions) {
       throw ResultFactory.UserError(
         ParsePermissionError.name,
-        ParsePermissionError.message()
+        ParsePermissionError.message(),
+        undefined,
+        undefined,
+        ParsePermissionError.helpLink,
       );
     }
 
@@ -432,7 +440,10 @@ export class AadAppForTeamsImpl {
         if (!res) {
           throw ResultFactory.UserError(
             UnknownPermissionName.name,
-            UnknownPermissionName.message(resourceIdOrName)
+            UnknownPermissionName.message(resourceIdOrName),
+            undefined,
+            undefined,
+            UnknownPermissionName.helpLink,
           );
         }
 
@@ -440,7 +451,10 @@ export class AadAppForTeamsImpl {
         if (!id) {
           throw ResultFactory.UserError(
             UnknownPermissionName.name,
-            UnknownPermissionName.message(resourceIdOrName)
+            UnknownPermissionName.message(resourceIdOrName),
+            undefined,
+            undefined,
+            UnknownPermissionName.helpLink,
           );
         }
         resourceId = id;
@@ -460,7 +474,10 @@ export class AadAppForTeamsImpl {
           if (!roleId) {
             throw ResultFactory.UserError(
               UnknownPermissionRole.name,
-              UnknownPermissionRole.message(roleName, permission.resource)
+              UnknownPermissionRole.message(roleName, permission.resource),
+              undefined,
+              undefined,
+              UnknownPermissionRole.helpLink,
             );
           }
           resourceAccess.id = roleId;
@@ -480,7 +497,10 @@ export class AadAppForTeamsImpl {
           if (!scopeId) {
             throw ResultFactory.UserError(
               UnknownPermissionScope.name,
-              UnknownPermissionScope.message(scopeName, permission.resource)
+              UnknownPermissionScope.message(scopeName, permission.resource),
+              undefined,
+              undefined,
+              UnknownPermissionScope.helpLink,
             );
           }
           resourceAccess.id = map[resourceId].scopes[scopeName];

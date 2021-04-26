@@ -47,8 +47,10 @@ You only need to take following steps once.
         "RedirectUri": "https://localhost",
         "CodeChallenge": "_r67lcj4MoDNBAkhxS7ke_YKhKCBAiM0SgzNCagbCxo",
         "CodeVerifier": "1qaz2wsx3edc4rfv5tgb6yhn1234567890qwertyuiop",
-        "TestUsername": "<your-test-user-account>",
-        "TestPassword": "<your-test-user-password>",
+        "TestUsername": "<your-authorized-test-user-account>",
+        "TestPassword": "<password-for-authorized-test-user-account>",
+        "TestUsername2": "<your-another-authorized-test-user-account>",
+        "TestPassword2": "<password-for-another-authorized-test-user-account>",
         "Scope": "access_as_user"
     }
     ```

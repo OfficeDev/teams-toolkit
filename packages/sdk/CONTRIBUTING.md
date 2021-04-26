@@ -20,14 +20,15 @@ In configurationProvider.ts, `loadConfiguration` has little difference and can d
 ## Before Creating a Pull Request
 1. Use eslint plugin to check whether there is any error or warning that breaks the rule. (`npm run lint`)
 2. Make sure modified functions are covered by tests. (`npm run test`)
-3. Add comment for public class/method and update API doc. (`npm run build:api-markdown`)
+3. Add comment for public class/method.
 
 ## Add Tests
 Add tests under test/ folder. The filename should end with .spec.ts. 
 * test/unit/: unit tests for both browser and NodeJS. 
 * test/unit/browser/: unit tests for browser only. 
 * test/unit/node/: unit tests for NodeJS only. 
-* test/integration/: integration tests.
+* test/integration/browser/: integration tests for browser only.
+* test/integration/node/: integration tests for NodeJS only.
 * test/e2e/: end to end tests.
 
 ## Local Debug
@@ -38,3 +39,4 @@ npm link                     # create global link
 cd ../test-project-using-sdk # go into some other package directory.
 npm link @microsoft/teamsfx  # link-install the package
 ```
+Run `npm build` under `packages/sdk` after any updates of SDK.

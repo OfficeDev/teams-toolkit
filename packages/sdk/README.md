@@ -119,7 +119,13 @@ The following sections provide several code snippets covering some of the most c
 Use `TeamsUserCredential` and `createMicrosoftGraphClient`.
 
 ```ts
-loadDefaultConfig();
+loadConfiguration({
+  authentication: {
+    initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
+    simpleAuthEndpoint: process.env.REACT_APP_TEAMSFX_ENDPOINT,
+    clientId: process.env.REACT_APP_CLIENT_ID,
+  }
+});
 const credential: any = new TeamsUserCredential();
 const graphClient = createMicrosoftGraphClient(credential, ["User.Read"]);
 const profile = await graphClient.api("/me").get();
@@ -130,7 +136,13 @@ const profile = await graphClient.api("/me").get();
 Use `axios` library to make HTTP request to Azure Function.
 
 ```ts
-loadDefaultConfig();
+loadConfiguration({
+  authentication: {
+    initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
+    simpleAuthEndpoint: process.env.REACT_APP_TEAMSFX_ENDPOINT,
+    clientId: process.env.REACT_APP_CLIENT_ID,
+  }
+});
 const credential: any = new TeamsUserCredential();
 const token = credential.getToken(""); // Get SSO token for the user
 // Call API hosted in Azure Functions on behalf of user
@@ -145,6 +157,7 @@ const response = await axios.default.get(apiConfig.endpoint + "api/httptrigger1"
 ### Access SQL database in Azure Function
 
 Use `tedious` library to access SQL and leverage `DefaultTediousConnectionConfiguration` that manages authentication.
+Apart from `tedious`, you can also compose connection config of other SQL libraries based on the result of `sqlConnectionConfig.getConfig()`.
 
 ```ts
 loadConfiguration();

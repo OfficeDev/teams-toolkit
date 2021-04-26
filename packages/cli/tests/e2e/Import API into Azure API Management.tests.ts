@@ -10,7 +10,7 @@ import AppStudioLogin from "../../src/commonlib/appStudioLogin";
 import AzureLogin from "../../src/commonlib/azureLogin";
 import GraphLogin from "../../src/commonlib/graphLogin";
 
-describe("Input API into API Management", function () {
+describe("Import API into API Management", function () {
   const subscriptionId = getSubscriptionId();
 
   const testFolder = getTestFolder();
@@ -72,7 +72,6 @@ describe("Input API into API Management", function () {
       }
     );
 
-    expect(deployResult.stdout).to.eq("");
     expect(deployResult.stderr).to.eq("");
     const deployContext = await fs.readJSON(getConfigFileName(appName));
     await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v2")
@@ -89,7 +88,6 @@ describe("Input API into API Management", function () {
       }
     );
 
-    expect(deployResult.stdout).to.eq("");
     expect(deployResult.stderr).to.eq("");
     const deployContext = await fs.readJSON(getConfigFileName(appName));
     await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v1")

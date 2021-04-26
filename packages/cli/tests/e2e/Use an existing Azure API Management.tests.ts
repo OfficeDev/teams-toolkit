@@ -42,7 +42,6 @@ describe("Use an existing API Management Service", function () {
       }
     );
 
-    expect(updateResult.stdout).to.eq("");
     expect(updateResult.stderr).to.eq("");
 
     await ApimValidator.init(subscriptionId, AzureLogin, GraphLogin);
@@ -57,7 +56,6 @@ describe("Use an existing API Management Service", function () {
       }
     );
 
-    expect(provisionResult.stdout).to.eq("");
     expect(provisionResult.stderr).to.eq("");
 
     const provisionContext = await fs.readJSON(getConfigFileName(appName));
@@ -72,7 +70,6 @@ describe("Use an existing API Management Service", function () {
       }
     );
 
-    expect(deployResult.stdout).to.eq("");
     expect(deployResult.stderr).to.eq("");
 
     const deployContext = await fs.readJSON(getConfigFileName(appName));

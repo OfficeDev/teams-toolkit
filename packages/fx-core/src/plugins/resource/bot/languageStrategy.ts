@@ -14,18 +14,18 @@ import { downloadByUrl } from "./utils/downloadByUrl";
 import * as path from "path";
 import * as fs from "fs-extra";
 import { Logger } from "./logger";
+import { Messages } from "./resources/messages";
 
 export class LanguageStrategy {
     public static async getTemplateProjectZip(programmingLanguage: ProgrammingLanguage, groupName: string): Promise<AdmZip> {
         try {
             const zipUrl = await LanguageStrategy.getTemplateProjectZipUrl(programmingLanguage, groupName);
-            Logger.debug(`Template project zip url: ${zipUrl}.`);
             const zipBuffer = await downloadByUrl(zipUrl);
+            Logger.info(Messages.SuccessfullyRetrievedTemplateZip(zipUrl));
             return new AdmZip(zipBuffer);
         } catch (e) {
-            // ToDo: Add log for debug.
             const fallbackFilePath = await LanguageStrategy.generateLocalFallbackFilePath(programmingLanguage, groupName);
-            Logger.debug(`Scaffold fallback to use ${fallbackFilePath}.`);
+            Logger.info(Messages.FallingBackToUseLocalTemplateZip);
             return new AdmZip(fallbackFilePath);
         }
     }

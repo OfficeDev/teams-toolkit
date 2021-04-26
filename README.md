@@ -11,9 +11,9 @@ The TeamsFx contains the following packages, check 'packages' folder for more in
 | [CLI](https://github.com/OfficeDev/TeamsFx/tree/main/packages/cli) | A set of CLI tools in TeamsFx which provide same functionalities as VS Code extension for develoeprs who prefer keyboard-centric experience for Teams app building  |
 | [SDK](https://github.com/OfficeDev/TeamsFx/tree/main/packages/sdk) | TeamsFx provides SDK to reduce develoeprs' programming work when dealing with Microsoft or Azure component and simplifies the autentication work for developers.  |
 | [API](https://github.com/OfficeDev/TeamsFx/tree/main/packages/api) | TeamsFx API Pack is a collection of API contracts between TeamsFx Extension/CLI and TeamsFx core module. It defines the interfaces for 3rd party developer to write plugins to extend the toolkit capabilities. |
-| TeamsFx Core | TeamsFx Core package implements the core capabilities for VS Code Extension/CLI under TeamsFx API contracts. |
-| Function Extension | TeamsFx help developers build backend servers on hosted on [Azure Function](https://docs.microsoft.com/en-us/azure/azure-functions/). This extension adds bindings to help build backend API for Teams app. |
-| Simple Auth | The Simple Auth is a backend service helping Teams tab app access first/third party services from client side.|
+| [TeamsFx Core] (https://github.com/OfficeDev/TeamsFx/tree/main/packages/fx-core) | TeamsFx Core package implements the core capabilities for VS Code Extension/CLI under TeamsFx API contracts. |
+| [Function Extension] (https://github.com/OfficeDev/TeamsFx/tree/main/packages/function-extension) | TeamsFx help developers build backend servers on hosted on [Azure Function](https://docs.microsoft.com/en-us/azure/azure-functions/). This extension adds bindings to help build backend API for Teams app. |
+| [Simple Auth](https://github.com/OfficeDev/TeamsFx/tree/main/packages/simpleauth) | The Simple Auth is a backend service helping Teams tab app access first/third party services from client side.|
 
 <br>
 

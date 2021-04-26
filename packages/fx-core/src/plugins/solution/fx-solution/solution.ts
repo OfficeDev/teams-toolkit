@@ -431,7 +431,7 @@ export class TeamsAppSolution implements Solution {
         }
         else {
             const cap = solutionSettings.capabilities!;
-            if (cap.includes(TabOptionItem.label)) {
+            if (cap.includes(TabOptionItem.id)) {
                 pluginNameSet.add(this.fehostPlugin.name);
                 const azureResources = solutionSettings.azureResources? solutionSettings.azureResources:[];
                 if (azureResources.includes(AzureResourceSQL.id)) {
@@ -629,7 +629,7 @@ export class TeamsAppSolution implements Solution {
         const selectedPlugins = maybeSelectedPlugins.value;
         if (selectedPlugins.some((plugin) => plugin.name === this.botPlugin.name)) {
             const capabilities = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings).capabilities;
-            const hasBot = capabilities?.includes(BotOptionItem.label);
+            const hasBot = capabilities?.includes(BotOptionItem.id);
             const hasMsgExt = capabilities?.includes(MessageExtensionItem.id);
             if (!hasBot && !hasMsgExt) {
                 return err(
@@ -1089,7 +1089,7 @@ export class TeamsAppSolution implements Solution {
                 if (res.isErr()) return res;
                 if (res.value) {
                     const azure_sql = res.value as QTreeNode;
-                    azure_sql.condition = { contains: AzureResourceSQL.label };
+                    azure_sql.condition = { contains: AzureResourceSQL.id };
                     if (azure_sql.data) azureResourceNode.addChild(azure_sql);
                 }
             }
@@ -1845,21 +1845,21 @@ export class TeamsAppSolution implements Solution {
 
         const addResourcesInQuestion = ctx.answers?.get(AzureSolutionQuestionNames.AddResources) as string[];
 
-        const addSQL = addResourcesInQuestion.includes(AzureResourceSQL.label);
-        const addFunc = addResourcesInQuestion.includes(AzureResourceFunction.label);
-        const addApim = addResourcesInQuestion.includes(AzureResourceApim.label);
+        const addSQL = addResourcesInQuestion.includes(AzureResourceSQL.id);
+        const addFunc = addResourcesInQuestion.includes(AzureResourceFunction.id);
+        const addApim = addResourcesInQuestion.includes(AzureResourceApim.id);
 
         const addResourceForPlugin: string[] = [];
         const addResourceItemsForNotification: string[] = [];
         if ((addFunc || addSQL || addApim) && !alreadyHaveFunction) {
-            addResourceForPlugin.push(AzureResourceFunction.label);
+            addResourceForPlugin.push(AzureResourceFunction.id);
         }
         if (addSQL && !alreadyHaveSql) {
-            addResourceForPlugin.push(AzureResourceSQL.label);
+            addResourceForPlugin.push(AzureResourceSQL.id);
             addResourceItemsForNotification.push(AzureResourceSQL.description!);
         }
         if (addApim && !alreadyHaveApim) {
-            addResourceForPlugin.push(AzureResourceApim.label);
+            addResourceForPlugin.push(AzureResourceApim.id);
             addResourceItemsForNotification.push(AzureResourceApim.description!);
         }
 

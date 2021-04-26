@@ -2,6 +2,8 @@
 // Licensed under the MIT license.
 
 "use strict";
+import dotenv from "dotenv";
+dotenv.config();
 
 export const client_id = "7ea7c24c-b1f6-4a20-9d11-9ae12e9e7ac0";
 export const tenant = {

@@ -5,14 +5,13 @@ import fs from "fs-extra";
 import path from "path";
 import { expect } from "chai";
 import { deleteAadApp, ApimValidator, deleteApimAadApp, MockAzureAccountProvider } from "fx-api";
-import { execAsync, getTestFolder, getUniqueAppName } from "./commonUtils";
+import { execAsync, getConfigFileName, getSubscriptionId, getTestFolder, getUniqueAppName } from "./commonUtils";
 import AppStudioLogin from "../../src/commonlib/appStudioLogin";
 import AzureLogin from "../../src/commonlib/azureLogin";
 import GraphLogin from "../../src/commonlib/graphLogin";
 
-describe("Import API into an existing API Management Service", function () {
-  // TODO: Move subscriptionId to env
-  const subscriptionId = "1756abc0-3554-4341-8d6a-46674962ea19";
+describe("Use an existing API Management Service", function () {
+  const subscriptionId = getSubscriptionId();
 
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
@@ -30,9 +29,9 @@ describe("Import API into an existing API Management Service", function () {
     expect(newResult.stderr).to.eq("");
 
     // set fx-resource-simple-auth.skuName as B1
-    const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
+    const context = await fs.readJSON(getConfigFileName(appName));
     context["fx-resource-simple-auth"]["skuName"] = "B1";
-    await fs.writeJSON(`${projectPath}/.fx/env.default.json`, context, { spaces: 4 });
+    await fs.writeJSON(getConfigFileName(appName), context, { spaces: 4 });
 
     const updateResult = await execAsync(
       `teamsfx resource add apim --subscription ${subscriptionId} --apim-resource-group ${existingApimResourceGroupName} --apim-service-name ${appName}-existing-apim`,
@@ -43,7 +42,9 @@ describe("Import API into an existing API Management Service", function () {
       }
     );
 
-    const initContext = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
+    expect(updateResult.stdout).to.eq("");
+    expect(updateResult.stderr).to.eq("");
+
     await ApimValidator.init(subscriptionId, AzureLogin, GraphLogin);
     await ApimValidator.prepareApiManagementService(existingApimResourceGroupName, `${appName}-existing-apim`);
 
@@ -56,7 +57,10 @@ describe("Import API into an existing API Management Service", function () {
       }
     );
 
-    const provisionContext = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
+    expect(provisionResult.stdout).to.eq("");
+    expect(provisionResult.stderr).to.eq("");
+
+    const provisionContext = await fs.readJSON(getConfigFileName(appName));
     await ApimValidator.validateProvision(provisionContext, appName, existingApimResourceGroupName, `${appName}-existing-apim`);
 
     const deployResult = await execAsync(
@@ -68,13 +72,16 @@ describe("Import API into an existing API Management Service", function () {
       }
     );
 
-    const deployContext = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
+    expect(deployResult.stdout).to.eq("");
+    expect(deployResult.stderr).to.eq("");
+
+    const deployContext = await fs.readJSON(getConfigFileName(appName));
     await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v1");
   });
 
   this.afterAll(async () => {
     // delete aad app
-    const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
+    const context = await fs.readJSON(getConfigFileName(appName));
     await deleteAadApp(context, AppStudioLogin);
     await deleteApimAadApp(context, GraphLogin);
 

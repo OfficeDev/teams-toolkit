@@ -371,7 +371,7 @@ export namespace AppStudio {
                     botId: ext.botId,
                     canUpdateConfiguration: true,
                     commands: ext.commands,
-                    messageHandlers: []
+                    messageHandlers: ext.messageHandlers ?? []
                 };
 
                 messagingExtensions.push(me);

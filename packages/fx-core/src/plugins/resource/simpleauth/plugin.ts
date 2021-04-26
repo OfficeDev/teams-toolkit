@@ -16,7 +16,9 @@ export class SimpleAuthPluginImpl {
         TelemetryUtils.init(ctx);
         Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartLocalDebug);
 
-        ctx.config.set(Constants.SimpleAuthPlugin.configKeys.filePath, Utils.getSimpleAuthFilePath());
+        const simpleAuthFilePath = Utils.getSimpleAuthFilePath();
+        ctx.config.set(Constants.SimpleAuthPlugin.configKeys.filePath, simpleAuthFilePath);
+        await Utils.downloadZip(simpleAuthFilePath);
 
         Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndLocalDebug);
         return ResultFactory.Success();
@@ -89,7 +91,9 @@ export class SimpleAuthPluginImpl {
         const endpoint = await this.webAppClient.createWebApp();
 
         DialogUtils.progressBar?.next(Constants.ProgressBar.provision.zipDeploy);
-        await this.webAppClient.zipDeploy(Utils.getSimpleAuthFilePath());
+        const simpleAuthFilePath = Utils.getSimpleAuthFilePath();
+        await Utils.downloadZip(simpleAuthFilePath);
+        await this.webAppClient.zipDeploy(simpleAuthFilePath);
 
         ctx.config.set(Constants.SimpleAuthPlugin.configKeys.endpoint, endpoint);
 

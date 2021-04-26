@@ -201,8 +201,10 @@ export class TeamsBotImpl {
 
         // 1. Provsion app service plan.
         const appServicePlanName = this.config.provision.appServicePlan ? this.config.provision.appServicePlan : ResourceNameFactory.createCommonName(this.ctx?.app.name.short);
+        Logger.info(Messages.ProvisioningAzureAppServicePlan);
         await AzureOperations.CreateOrUpdateAppServicePlan(webSiteMgmtClient, this.config.provision.resourceGroup!,
             appServicePlanName, utils.generateAppServicePlanConfig(this.config.provision.location!, this.config.provision.skuName!));
+        Logger.info(Messages.SuccessfullyProvisionedAzureAppServicePlan);
 
         // 2. Provision web app.
         const siteEnvelope: appService.WebSiteManagementModels.Site = LanguageStrategy.getSiteEnvelope(
@@ -211,7 +213,9 @@ export class TeamsBotImpl {
             this.config.provision.location!
         );
 
+        Logger.info(Messages.ProvisioningAzureWebApp);
         const webappResponse = await AzureOperations.CreateOrUpdateAzureWebApp(webSiteMgmtClient, this.config.provision.resourceGroup!, this.config.provision.siteName!, siteEnvelope);
+        Logger.info(Messages.SuccessfullyProvisionedAzureWebApp);
 
         if (!this.config.provision.siteEndpoint) {
             this.config.provision.siteEndpoint = `${CommonStrings.HTTPS_PREFIX}${webappResponse.defaultHostName}`;
@@ -300,7 +304,10 @@ export class TeamsBotImpl {
             this.config.provision.location!,
             appSettings
         );
+
+        Logger.info(Messages.UpdatingAzureWebAppSettings);
         await AzureOperations.CreateOrUpdateAzureWebApp(webSiteMgmtClient, this.config.provision.resourceGroup!, this.config.provision.siteName!, siteEnvelope, true);
+        Logger.info(Messages.SuccessfullyUpdatedAzureWebAppSettings);
 
         // 3. Update message endpoint for bot registration.
         switch (this.config.scaffold.wayToRegisterBot) {
@@ -516,8 +523,10 @@ export class TeamsBotImpl {
             throw new SomethingMissingError(CommonStrings.BOT_CHANNEL_REGISTRATION);
         }
         const botChannelRegistrationName = this.config.provision.botChannelRegName;
+        Logger.info(Messages.UpdatingBotMessageEndpoint);
         await AzureOperations.UpdateBotChannelRegistration(botClient, this.config.provision.resourceGroup!,
             botChannelRegistrationName, this.config.scaffold.botId!, endpoint);
+        Logger.info(Messages.SuccessfullyUpdatedBotMessageEndpoint);
 
         this.telemetryStepOutSuccess(LifecycleFuncNames.UPDATE_MESSAGE_ENDPOINT_AZURE);
     }
@@ -547,7 +556,6 @@ export class TeamsBotImpl {
 
     private async createNewBotRegistrationOnAppStudio() {
         this.telemetryStepIn(LifecycleFuncNames.CREATE_NEW_BOT_REG_APPSTUDIO);
-        Logger.debug("Start to create new bot registration on app studio.");
 
         const appStudioToken = await this.ctx?.appStudioToken?.getAccessToken();
         CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
@@ -560,10 +568,12 @@ export class TeamsBotImpl {
         // 1. Create a new AAD App Registraion with client secret.
         const aadDisplayName = ResourceNameFactory.createCommonName(this.ctx?.app.name.short);
 
+        Logger.info(Messages.ProvisioningBotRegistration);
         const botAuthCreds = await AADRegistration.registerAADAppAndGetSecretByAppStudio(
             appStudioToken!,
             aadDisplayName
         );
+        Logger.info(Messages.SuccessfullyProvisionedBotRegistration);
 
         // 2. Register bot by app studio.
         const botReg: IBotRegistration = {
@@ -575,9 +585,9 @@ export class TeamsBotImpl {
             callingEndpoint: ""
         };
 
-        Logger.debug(`Start to create bot registration by ${JSON.stringify(botReg)}`);
-
+        Logger.info(Messages.ProvisioningBotRegistration);
         await AppStudio.createBotRegistration(appStudioToken!, botReg);
+        Logger.info(Messages.SuccessfullyProvisionedBotRegistration);
 
         if (!this.config.localDebug.localBotId) {
             this.config.localDebug.localBotId = botAuthCreds.clientId;
@@ -631,10 +641,14 @@ export class TeamsBotImpl {
         const botChannelRegistrationName = this.config.provision.botChannelRegName ?
             this.config.provision.botChannelRegName : ResourceNameFactory.createCommonName(this.ctx?.app.name.short);
 
+        Logger.info(Messages.ProvisioningAzureBotChannelRegistration);
         await AzureOperations.CreateBotChannelRegistration(botClient, this.config.provision.resourceGroup!, botChannelRegistrationName, botAuthCreds.clientId!);
+        Logger.info(Messages.SuccessfullyProvisionedAzureBotChannelRegistration);
 
         // 3. Add Teams Client as a channel to the resource above.
+        Logger.info(Messages.ProvisioningMsTeamsChannel);
         await AzureOperations.LinkTeamsChannel(botClient, this.config.provision.resourceGroup!, botChannelRegistrationName);
+        Logger.info(Messages.SuccessfullyProvisionedMsTeamsChannel);
 
         if (!this.config.scaffold.botId) {
             this.config.scaffold.botId = botAuthCreds.clientId;

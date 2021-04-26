@@ -41,4 +41,28 @@ export class Messages {
     public static readonly PreDeployingBot = "Pre-deploying bot.";
     public static readonly DeployingBot = "Deploying bot.";
     public static readonly SuccessfullyDeployedBot = "Successfully deployed bot.";
+
+    public static readonly ProvisioningAzureBotChannelRegistration = "Provisioning azure bot channel registration.";
+    public static readonly SuccessfullyProvisionedAzureBotChannelRegistration = "Successfully provisioned azure bot channel registration.";
+
+    public static readonly ProvisioningMsTeamsChannel = "Provisioning microsoft teams channel.";
+    public static readonly SuccessfullyProvisionedMsTeamsChannel = "Successfully provisioned microsoft teams channel.";
+
+    public static readonly ProvisioningAzureAppServicePlan = "Provisioning azure app service plan.";
+    public static readonly SuccessfullyProvisionedAzureAppServicePlan = "Successfully provisioned azure app service plan.";
+
+    public static readonly ProvisioningAzureWebApp = "Provisioning azure web app.";
+    public static readonly SuccessfullyProvisionedAzureWebApp = "Successfully provisioned azure web app.";
+
+    public static readonly UpdatingAzureWebAppSettings = "Updating azure web app's app settings.";
+    public static readonly SuccessfullyUpdatedAzureWebAppSettings = "Successfully updated azure web app's app settings.";
+
+    public static readonly UpdatingBotMessageEndpoint = "Updating bot's message endpoint.";
+    public static readonly SuccessfullyUpdatedBotMessageEndpoint = "Successfully updated bot's message endpoint";
+
+    public static readonly ProvisioningAADApp = "Provisioning aad app.";
+    public static readonly SuccessfullyProvisionedAADApp = "Successfully provisioned aad app.";
+
+    public static readonly ProvisioningBotRegistration = "Provisioning bot registration.";
+    public static readonly SuccessfullyProvisionedBotRegistration = "Successfully provisioned bot registration.";
 }

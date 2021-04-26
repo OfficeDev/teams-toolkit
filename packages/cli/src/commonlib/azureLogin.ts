@@ -183,7 +183,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
 
   private setMemoryCache(accessToken: string | undefined, tokenJson: any) {
     if (accessToken) {
-      if (AzureAccountManager.domain) {
+      if (!AzureAccountManager.domain) {
         AzureAccountManager.domain = (tokenJson as any).tid;
       }
       AzureAccountManager.username = (tokenJson as any).upn ?? (tokenJson as any).unique_name;

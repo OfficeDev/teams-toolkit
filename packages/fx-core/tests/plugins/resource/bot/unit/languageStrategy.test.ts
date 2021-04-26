@@ -7,6 +7,8 @@ import * as sinon from "sinon";
 import { LanguageStrategy } from "../../../../../src/plugins/resource/bot/languageStrategy";
 import { ProgrammingLanguage } from "../../../../../src/plugins/resource/bot/enums/programmingLanguage";
 import { TemplateProjectsConstants } from "../../../../../src/plugins/resource/bot/constants";
+import { Messages } from "./messages";
+import { PluginError } from "../../../../../src/plugins/resource/bot/errors";
 
 describe("Language Strategy", () => {
     describe("getTemplateProjectZip", () => {
@@ -33,6 +35,42 @@ describe("Language Strategy", () => {
 
             // Assert
             chai.assert.isNotNull(zip);
+        });
+    });
+
+    describe("localBuild", () => {
+        it("TypeScript Invalid PackDir", async () => {
+            // Arrange
+            const lang = ProgrammingLanguage.TypeScript;
+            const packDir = "anything";
+
+            // Act
+            try {
+                await LanguageStrategy.localBuild(lang, packDir);
+            } catch (e) {
+                chai.assert.isTrue(e instanceof PluginError);
+                return;
+            }
+
+            // Assert
+            chai.assert.fail(Messages.ShouldNotReachHere);
+        });
+
+        it("JavaScript Invalid PackDir", async () => {
+            // Arrange
+            const lang = ProgrammingLanguage.JavaScript;
+            const packDir = "anything";
+
+            // Act
+            try {
+                await LanguageStrategy.localBuild(lang, packDir);
+            } catch (e) {
+                chai.assert.isTrue(e instanceof PluginError);
+                return;
+            }
+
+            // Assert
+            chai.assert.fail(Messages.ShouldNotReachHere);
         });
     });
 });

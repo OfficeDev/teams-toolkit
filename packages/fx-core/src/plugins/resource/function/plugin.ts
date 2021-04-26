@@ -41,10 +41,12 @@ import { PostProvisionSteps, PreDeploySteps, ProvisionSteps, StepGroup, step } f
 import { functionNameQuestion } from "./questions";
 import { dotnetHelpLink, Messages } from "./utils/depsChecker/common";
 import { DotnetChecker } from "./utils/depsChecker/dotnetChecker";
-import { handleDotnetError } from "./utils/depsChecker/checkerAdapter";
 import { isLinux } from "./utils/depsChecker/common";
 import { DepsCheckerError } from "./utils/depsChecker/errors";
 import { getNodeVersion } from "./utils/node-version";
+import { funcPluginAdapter } from "./utils/depsChecker/funcPluginAdapter";
+import { funcPluginLogger } from "./utils/depsChecker/funcPluginLogger";
+import { funcPluginTelemetry } from "./utils/depsChecker/funcPluginTelemetry";
 
 type Site = WebSiteManagementModels.Site;
 type AppServicePlan = WebSiteManagementModels.AppServicePlan;
@@ -596,26 +598,26 @@ export class FunctionPluginImpl {
 
     private async handleDotnetChecker(): Promise<void> {
         await step(StepGroup.PreDeployStepGroup, PreDeploySteps.dotnetInstall, async () => {
-            const dotnetChecker = new DotnetChecker();
+            const dotnetChecker = new DotnetChecker(funcPluginAdapter, funcPluginLogger, funcPluginTelemetry);
             try {
                 if (await dotnetChecker.isInstalled()) {
                     return;
                 }
             } catch (error) {
-                handleDotnetError(error);
+                funcPluginAdapter.handleDotnetError(error);
                 return;
             }
 
             if (isLinux()) {
                 // TODO: handle linux installation
-                handleDotnetError(new DepsCheckerError(Messages.defaultErrorMessage, dotnetHelpLink));
+                funcPluginAdapter.handleDotnetError(new DepsCheckerError(Messages.defaultErrorMessage, dotnetHelpLink));
                 return;
             }
 
             try {
                 await dotnetChecker.install();
             } catch (error) {
-                handleDotnetError(error);
+                funcPluginAdapter.handleDotnetError(error);
             }
         });
     }

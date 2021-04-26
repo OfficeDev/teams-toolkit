@@ -88,6 +88,7 @@ export enum QuestionType {
     OpenFolder = "OpenFolder",
     ExecuteCmd = "ExecuteCmd",
     OpenExternal = "OpenExternal",
+    Confirm = "Confirm",
 }
 
 export interface IQuestion {

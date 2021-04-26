@@ -7,7 +7,7 @@ import * as path from "path";
 import * as sinon from "sinon";
 import axios from "axios";
 
-import * as backendExtensionsInstall from "../../../../../src/plugins/resource/function/utils/depsChecker/backendExtensionsInstall";
+import { BackendExtensionsInstaller } from "../../../../../src/plugins/resource/function/utils/depsChecker/backendExtensionsInstall";
 
 import * as dirWalk from "../../../../../src/plugins/resource/function/utils/dir-walk";
 import * as execute from "../../../../../src/plugins/resource/function/utils/execute";
@@ -114,7 +114,7 @@ describe(FunctionPluginInfo.pluginName, () => {
             sinon.stub(axios, "post").resolves({ status: 200 });
             sinon.stub(execute, "execute").resolves("");
             sinon.stub(FunctionDeploy, "hasUpdatedContent").resolves(true);
-            sinon.stub(backendExtensionsInstall, "backendExtensionsInstall").resolves(undefined);
+            sinon.stub(BackendExtensionsInstaller.prototype, "install").resolves(undefined);
             const plugin: FunctionPlugin = new FunctionPlugin();
 
             // Act

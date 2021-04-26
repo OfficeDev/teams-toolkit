@@ -4,6 +4,8 @@
 
 import * as fs from "fs-extra";
 import * as os from "os";
+import * as strings from "../resources/strings.json";
+import * as util from "util";
 import {
     AzureAccountProvider,
     ConfigMap,
@@ -44,6 +46,7 @@ import {
     Dict,
     AzureSolutionSettings,
     ProjectSettings,
+    MsgLevel,
 } from "fx-api";
 import * as path from "path";
 // import * as Bundles from '../resource/bundles.json';
@@ -110,8 +113,8 @@ class CoreImpl implements Core {
         answers.set("substage", "getQuestions");
         const node = new QTreeNode({ type: NodeType.group });
         if (stage === Stage.create) {
+            node.addChild(new QTreeNode(QuestionRootFolder));
             node.addChild(new QTreeNode(QuestionAppName));
-
             //make sure that global solutions are loaded
             const solutionNames: string[] = [];
             for (const k of this.globalSolutions.keys()) {
@@ -133,7 +136,7 @@ class CoreImpl implements Core {
                     }
                 }
             }
-            node.addChild(new QTreeNode(QuestionRootFolder));
+            
         } else if (this.selectedSolution) {
             const res = await this.selectedSolution.getQuestions(stage, this.solutionContext(answers));
             if (res.isErr()) return res;
@@ -185,12 +188,19 @@ class CoreImpl implements Core {
         );
     }
 
-    async validateFolder(folder: string, answer?: ConfigMap): Promise<Result<any, FxError>> {
-        const appName = answer?.getString(CoreQuestionNames.AppName);
-        if (!appName) return ok(undefined);
+    async validateAppName(appName: string, answer?: ConfigMap): Promise<Result<any, FxError>> {
+        const folder = answer?.getString(CoreQuestionNames.Foler);
+        if(!folder) return ok(undefined);
+        const schema = {
+            pattern: "^[\\da-zA-Z]+$",
+        };
+        const validateResult = jsonschema.validate(appName, schema);
+        if (validateResult.errors && validateResult.errors.length > 0) {
+            return ok(`app name doesn't match pattern: ${schema.pattern}`);
+        }
         const projectPath = path.resolve(folder, appName);
         const exists = await fs.pathExists(projectPath);
-        if (exists) return ok(`Project folder already exists:${projectPath}, please change a different folder.`);
+        if (exists) return ok(`Project path already exists:${projectPath}, please change a different app name.`);
         return ok(undefined);
     }
 
@@ -198,9 +208,9 @@ class CoreImpl implements Core {
         const namespace = func.namespace;
         const array = namespace?namespace.split("/"):[];
         if (!namespace || "" === namespace || array.length === 0) {
-            if (func.method === "validateFolder") {
+            if (func.method === "validateAppName") {
                 if (!func.params) return ok(undefined);
-                return await this.validateFolder(func.params as string, answer);
+                return await this.validateAppName(func.params as string, answer);
             }
         } else {
             const solutionName = array[0];
@@ -237,10 +247,19 @@ class CoreImpl implements Core {
         this.target.ctx.answers = answers;
 
         const appName = answers?.getString(QuestionAppName.name);
+        if(undefined === appName)
+            return err(
+                new UserError(
+                    error.CoreErrorNames.InvalidInput,
+                    `App Name is empty`,
+                    error.CoreSource,
+                ),
+            );
+            
         const validateResult = jsonschema.validate(appName, {
-            pattern: (QuestionAppName.validation as StringValidation).pattern,
+            pattern: "^[\\da-zA-Z]+$",
         });
-        if (!appName || validateResult.errors && validateResult.errors.length > 0) {
+        if (validateResult.errors && validateResult.errors.length > 0) {
             return err(
                 new UserError(
                     error.CoreErrorNames.InvalidInput,
@@ -403,21 +422,37 @@ class CoreImpl implements Core {
                     });
                 }
 
-                this.ctx.treeProvider?.refresh([
-                    {
-                        commandId: "fx-extension.selectSubscription",
-                        label: subscriptionName,
-                        callback: selectSubscriptionCallback,
-                        parent: "fx-extension.signinAzure",
-                    },
-                ]);
-
                 const subscription = subscriptions.find((subscription) => subscription.displayName === subscriptionName);
 
                 if(subscription){
                     this.readConfigs();
-                    this.configs.get(this.env!)!.get("solution")!.set("subscriptionId", subscription!.subscriptionId!);
-                    this.writeConfigs();
+                    let change = true;
+                    const subscriptionId = this.configs.get(this.env!)!.get("solution")!.getString("subscriptionId");
+                    if(subscriptionId){
+                        const confirm  = (await this.ctx.dialog?.communicate(
+                            new DialogMsg(DialogType.Show, {
+                                description: util.format(strings.core.SwitchSubNotice, subscriptionId),
+                                level: MsgLevel.Warning,
+                                items: ["Confirm"]
+                            }),
+                        ))?.getAnswer() === "Confirm";
+                        if(!confirm){
+                            change = false;
+                        } 
+                    }
+                    if(change)
+                    {
+                        this.configs.get(this.env!)!.get("solution")!.set("subscriptionId", subscription.subscriptionId);
+                        this.writeConfigs();
+                        this.ctx.treeProvider?.refresh([
+                            {
+                                commandId: "fx-extension.selectSubscription",
+                                label: subscriptionName,
+                                callback: selectSubscriptionCallback,
+                                parent: "fx-extension.signinAzure",
+                            },
+                        ]);
+                    }
                 }
 
                 return ok(null);

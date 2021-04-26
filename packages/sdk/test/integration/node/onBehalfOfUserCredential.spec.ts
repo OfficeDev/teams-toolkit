@@ -13,7 +13,11 @@ import {
 } from "../../../src";
 import { SSOTokenV2Info } from "../../../src/models/ssoTokenInfo";
 import { parseJwt } from "../../../src/util/utils";
-import { getSsoTokenFromTeams, MockEnvironmentVariable, RestoreEnvironmentVariable } from "../../helper";
+import {
+  getSsoTokenFromTeams,
+  MockEnvironmentVariable,
+  RestoreEnvironmentVariable
+} from "../../helper";
 
 chaiUse(chaiPromises);
 let restore: () => void;
@@ -27,7 +31,7 @@ describe("onBehalfOfUserCredential Test: Node", () => {
     ssoToken = await getSsoTokenFromTeams();
   });
 
-  it("Test onBehalfOfUserCredential get SSO token success", async function () {
+  it("Test onBehalfOfUserCredential get SSO token success", async function() {
     const credential = new OnBehalfOfUserCredential(ssoToken);
     let ssoTokenFromCredential = await credential.getToken([]);
     assert.strictEqual(ssoTokenFromCredential!.token, ssoToken);
@@ -36,7 +40,7 @@ describe("onBehalfOfUserCredential Test: Node", () => {
     assert.strictEqual(ssoTokenFromCredential!.token, ssoToken);
   });
 
-  it("Test onBehalfOfUserCredential get user info success", async function () {
+  it("Test onBehalfOfUserCredential get user info success", async function() {
     const credential = new OnBehalfOfUserCredential(ssoToken);
     const userInfo = await credential.getUserInfo();
     const tokenObject = parseJwt(ssoToken) as SSOTokenV2Info;
@@ -45,7 +49,7 @@ describe("onBehalfOfUserCredential Test: Node", () => {
     assert.strictEqual(userInfo.displayName, tokenObject.name);
   });
 
-  it("Test onBehalfOfUserCredential get access token success", async function () {
+  it("Test onBehalfOfUserCredential get access token success", async function() {
     const credential = new OnBehalfOfUserCredential(ssoToken);
     const graphToken = await credential.getToken("https://graph.microsoft.com/User.Read");
     const tokenObject = parseJwt(graphToken!.token);
@@ -55,7 +59,7 @@ describe("onBehalfOfUserCredential Test: Node", () => {
     assert.include(tokenObject.scp, "User.Read");
   });
 
-  it("Test onBehalfOfUserCredential get access token without permission", async function () {
+  it("Test onBehalfOfUserCredential get access token without permission", async function() {
     const credential = new OnBehalfOfUserCredential(ssoToken);
     await expect(credential.getToken("https://graph.microsoft.com/Calendars.Read"))
       .to.eventually.be.rejectedWith(ErrorWithCode)
@@ -64,5 +68,5 @@ describe("onBehalfOfUserCredential Test: Node", () => {
 
   afterEach(() => {
     RestoreEnvironmentVariable(restore);
-  })
+  });
 });

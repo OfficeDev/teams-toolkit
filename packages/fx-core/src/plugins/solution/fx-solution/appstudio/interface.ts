@@ -167,7 +167,7 @@ export interface IAppDefinition {
     isFullScreen?: boolean;
     hasPreviewFeature?: boolean;
     localizationInfo?: ILocalizationInfo;
-};
+}
 
 export interface IAppDefinitionBot {
     objectId?: string;
@@ -188,5 +188,13 @@ export interface IMessagingExtension {
     botId: string;
     canUpdateConfiguration: boolean;
     commands: IMessagingExtensionCommand[];
-    messageHandlers: any[];
+    messageHandlers: {
+        type: "link";
+        value: {
+            /**
+             * A list of domains that the link message handler can register for, and when they are matched the app will be invoked
+             */
+            domains?: string[];
+        }
+    }[];
 }

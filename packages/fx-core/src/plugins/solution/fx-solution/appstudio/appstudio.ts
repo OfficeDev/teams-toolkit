@@ -368,15 +368,15 @@ export namespace AppStudio {
     }
 
     function convertToAppDefinitionMessagingExtensions(appManifest: TeamsAppManifest): IMessagingExtension[] {
-        let messagingExtensions: IMessagingExtension[] = [];
+        const messagingExtensions: IMessagingExtension[] = [];
 
         if (appManifest.composeExtensions) {
             appManifest.composeExtensions.forEach((ext: IComposeExtension) => {
-                let me: IMessagingExtension = {
+                const me: IMessagingExtension = {
                     botId: ext.botId,
                     canUpdateConfiguration: true,
                     commands: ext.commands,
-                    messageHandlers: []
+                    messageHandlers: ext.messageHandlers ?? []
                 };
 
                 messagingExtensions.push(me);
@@ -387,12 +387,12 @@ export namespace AppStudio {
     }
 
     function convertToAppDefinitionBots(appManifest: TeamsAppManifest): IAppDefinitionBot[] {
-        let bots: IAppDefinitionBot[] = [];
+        const bots: IAppDefinitionBot[] = [];
         if (appManifest.bots) {
             appManifest.bots.forEach((manBot: IBot) => {
-            let teamCommands: ITeamCommand[] = [];
-            let groupCommands: IGroupChatCommand[] = [];
-            let personalCommands: IPersonalCommand[] = [];
+            const teamCommands: ITeamCommand[] = [];
+            const groupCommands: IGroupChatCommand[] = [];
+            const personalCommands: IPersonalCommand[] = [];
 
             manBot?.commandLists?.forEach((list: ICommandList) => {
                 list.commands.forEach((command: ICommand) => {
@@ -413,7 +413,7 @@ export namespace AppStudio {
                 });
             });
 
-            let bot: IAppDefinitionBot = {
+            const bot: IAppDefinitionBot = {
                 botId: manBot.botId,
                 isNotificationOnly: manBot.isNotificationOnly ?? false,
                 supportsFiles: manBot.supportsFiles ?? false,

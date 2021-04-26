@@ -27,7 +27,7 @@ export const CreateWebAppError: PluginError = {
 
 export const ZipDeployError: PluginError = {
     name: "ZipDeployError",
-    message: (message) => `Failed to deploy file: ${message}`,
+    message: (message) => `Failed to deploy Simple Auth bits: ${message}`,
 };
 
 export const UpdateApplicationSettingsError: PluginError = {
@@ -43,4 +43,14 @@ export const UnhandledError: PluginError = {
 export const EndpointInvalidError: PluginError = {
     name: "EndpointInvalidError",
     message: (endpoint, message) => `Failed to verify endpoint: ${endpoint}. Reason: ${message}`,
+};
+
+export const ZipDownloadError: PluginError = {
+    name: "ZipDownloadError",
+    message: (message) => `Failed to download Simple Auth bits: ${message}`,
+};
+
+export const VersionFileNotExist: PluginError = {
+    name: "VersionFileNotExist",
+    message: (filePath?) => `Failed to load version file from ${filePath ?? "File not exist."}`,
 };

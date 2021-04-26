@@ -3,14 +3,16 @@
 
 export class RetryHandler {
     public static readonly defaultMaxRetries = 3;
+    public static readonly defaultDelayTimeSpan = 1000;
     public static async retry<T>(
         fn: (retries: number) => Promise<T>,
-        maxRetries?: number
+        maxRetries?: number,
+        delayTimeSpan?: number,
     ): Promise<T> {
         let executionIndex = 0;
         let error = undefined;
         while (executionIndex <= (maxRetries ?? this.defaultMaxRetries)) {
-            await delay(executionIndex * 1000);
+            await delay(executionIndex * (delayTimeSpan ?? this.defaultDelayTimeSpan));
 
             try {
                 const response = await fn(executionIndex);

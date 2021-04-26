@@ -4,7 +4,7 @@
 import fs from "fs-extra";
 import path from "path";
 
-import { AadValidator, deleteAadApp, MockAzureAccountProvider } from "fx-api";
+import { AadValidator } from "fx-api";
 
 import {
   execAsync,

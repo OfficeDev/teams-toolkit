@@ -16,11 +16,12 @@ import { parseJwt } from "../../../src/util/utils";
 import { getAccessToken, MockEnvironmentVariable, RestoreEnvironmentVariable } from "../../helper";
 
 chaiUse(chaiPromises);
+let restore: () => void;
 
 let ssoToken: string;
 describe("onBehalfOfUserCredential Test: Node", () => {
   before(async () => {
-    MockEnvironmentVariable();
+    restore = MockEnvironmentVariable();
     loadConfiguration();
 
     ssoToken = await getAccessToken(
@@ -67,7 +68,7 @@ describe("onBehalfOfUserCredential Test: Node", () => {
       .and.property("code", ErrorCode.InternalError);
   });
 
-  after(async () => {
-    RestoreEnvironmentVariable();
+  afterEach(() => {
+    RestoreEnvironmentVariable(restore);
   })
 });

@@ -93,6 +93,10 @@ export class LocalDebugPlugin implements Plugin {
 
                 await localEnvProvider.saveLocalEnv(localEnvProvider.initialLocalEnvs(includeFrontend, includeBackend, includeBot));
 
+                if (includeFrontend) {
+                    ctx.config.set(LocalDebugConfigKeys.TrustDevelopmentCertificate, "true");
+                }
+
                 if (includeBackend) {
                     await fs.writeJSON(
                         `${ctx.root}/.vscode/settings.json`, Settings.generateSettings(), {
@@ -235,9 +239,11 @@ export class LocalDebugPlugin implements Plugin {
 
                 // local certificate
                 try {
+                    const trustDevCert = ctx.config.get(LocalDebugConfigKeys.TrustDevelopmentCertificate) as string;
+                    const needTrust = (trustDevCert === undefined) || (trustDevCert.trim().toLowerCase() === "true");
                     const certManager = new LocalCertificateManager(ctx);
-                    const localCert = await certManager.setupCertificate();
-                    if (localCert && localCert.isTrusted) {
+                    const localCert = await certManager.setupCertificate(needTrust);
+                    if (localCert) {
                         localEnvs[LocalEnvCertKeys.SslCrtFile] = localCert.certPath;
                         localEnvs[LocalEnvCertKeys.SslKeyFile] = localCert.keyPath;
                     }

@@ -10,15 +10,16 @@ import { loadConfiguration, DefaultTediousConnectionConfiguration } from "../../
 import {MockEnvironmentVariable, RestoreEnvironmentVariable} from "../../helper";
 
 chaiUse(chaiPromises);
+let restore: () => void;
 
-describe("SQL Connector Test: Node", () => {
+describe("SQL Connector Test - node", () => {
   let connection: Connection;
   // let sqlManagerClient: SqlManagementClient;
   // let resourceGroup: string | undefined;
   // let sqlName: string | undefined;
   // let subscriptionId: string | undefined;
   before(async () => {
-    MockEnvironmentVariable();
+    restore = MockEnvironmentVariable();
     loadConfiguration();
     // resourceGroup = process.env.SDK_INTEGRATION_RESOURCE_GROUP_NAME;
     // subscriptionId = process.env.SDK_INTEGRATION_TEST_ACCOUNT_SUBSCRIPTION_ID;
@@ -30,7 +31,7 @@ describe("SQL Connector Test: Node", () => {
     // await addLocalFirewall(sqlManagerClient, resourceGroup!, sqlName!);
   });
   after(async () => {
-    RestoreEnvironmentVariable();
+    RestoreEnvironmentVariable(restore);
     // await clearUpLocalFirewall(sqlManagerClient, resourceGroup!, sqlName!);
   });
   it("Test SQL local connect success", async function() {

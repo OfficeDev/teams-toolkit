@@ -119,3 +119,28 @@ export async function getProgrammingLanguage(): Promise<string | undefined> {
     await showError(err);
   }
 }
+
+async function getLocalDebugConfig(key: string): Promise<string | undefined> {
+  if (!vscode.workspace.workspaceFolders) {
+    return undefined;
+  }
+
+  const workspacePath: string = vscode.workspace.workspaceFolders[0].uri.fsPath;
+  const userDataFilePath: string = path.join(
+    workspacePath,
+    `.${ConfigFolderName}`,
+    constants.userDataFileName
+  );
+  if (!(await fs.pathExists(userDataFilePath))) {
+    return undefined;
+  }
+
+  const contents = await fs.readFile(userDataFilePath);
+  const configs: dotenv.DotenvParseOutput = dotenv.parse(contents);
+
+  return configs[key];
+}
+
+export async function getSkipNgrokConfig(): Promise<string | undefined> {
+  return getLocalDebugConfig(constants.skipNgrokConfigKey);
+}

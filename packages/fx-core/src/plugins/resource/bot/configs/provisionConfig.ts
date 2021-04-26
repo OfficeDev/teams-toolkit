@@ -4,6 +4,7 @@ import { ConfigValue, PluginContext } from "fx-api";
 
 import * as utils from "../utils/common";
 import { PluginSolution, PluginBot, PluginSql, PluginIdentity, PluginFunction, CommonStrings } from "../resources/strings";
+import { WebAppConstants } from "../constants";
 
 export class ProvisionConfig {
     public subscriptionId?: string;
@@ -12,6 +13,7 @@ export class ProvisionConfig {
     public appServicePlan?: string;
     public botChannelRegName?: string;
     public siteName?: string;
+    public skuName?: string;
     public siteEndpoint?: string;
     public redirectUri?: string; // it's going to be useless, mark.
     public graphToken?: string;
@@ -100,6 +102,13 @@ export class ProvisionConfig {
             this.siteName = siteNameValue as string;
         }
 
+        const skuNameValue: ConfigValue = context.config.get(PluginBot.SKU_NAME);
+        if (skuNameValue) {
+            this.skuName = skuNameValue as string;
+        } else {
+            this.skuName = WebAppConstants.APP_SERVICE_PLAN_DEFAULT_SKU_NAME;
+        }
+
         const siteEndpointValue: ConfigValue = context.config.get(PluginBot.SITE_ENDPOINT);
         if (siteEndpointValue) {
             this.siteEndpoint = siteEndpointValue as string;
@@ -124,5 +133,6 @@ export class ProvisionConfig {
         utils.checkAndSaveConfig(context, PluginBot.SITE_ENDPOINT, this.siteEndpoint);
         utils.checkAndSaveConfig(context, PluginBot.PROVISIONED, this.provisioned ? "true" : "false");
         utils.checkAndSaveConfig(context, PluginBot.REDIRECT_URI, this.redirectUri);
+        utils.checkAndSaveConfig(context, PluginBot.SKU_NAME, this.skuName);
     }
 }

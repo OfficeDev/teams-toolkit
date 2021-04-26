@@ -59,7 +59,7 @@ export async function validateAndUpdateAnswers(
         if (ans instanceof Array) {
           const items = [];
           for (const one of ans) {
-            const item = (option as OptionItem[]).filter((op) => (op.cliName ? op.cliName : op.id) === one)[0];
+            const item = (option as OptionItem[]).filter(op => op.cliName === one || op.id === one)[0];
             if (item) {
               if (question.returnObject) {
                 items.push(item);
@@ -77,7 +77,7 @@ export async function validateAndUpdateAnswers(
         }
         // for single-select question
         else {
-          const item = (option as OptionItem[]).filter((op) => (op.cliName ? op.cliName : op.id) === ans)[0];
+          const item = (option as OptionItem[]).filter(op => op.cliName === ans || op.id === ans)[0];
           if (!item) {
             CLILogProvider.warning(
               `[${constants.cliSource}] No option for this question: ${ans} ${option}`
@@ -201,7 +201,7 @@ export function toInquirerQuestion(data: Question, answers: { [_: string]: any }
     type,
     name: data.name,
     message: data.description || data.title || "",
-    choices: getChoicesFromQTNodeQuestion(data),
+    choices: getChoicesFromQTNodeQuestion(data, true),
     default: defaultValue,
     validate: async (input: any) => {
       if ("validation" in data && data.validation) {

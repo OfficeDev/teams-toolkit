@@ -21,7 +21,6 @@ describe("msGraphClientProvider - node", () => {
   const clientSecret = "fake_client_secret";
   const tenantId = "fake_tenant";
   const authorityHost = "https://fake_authority_host";
-  const initiateLoginEndpoint = "fake_initiate_login_endpoint";
 
   /**
    * {
@@ -47,7 +46,6 @@ describe("msGraphClientProvider - node", () => {
 
   beforeEach(function() {
     mockedEnvRestore = mockedEnv({
-      INITIATE_LOGIN_ENDPOINT: initiateLoginEndpoint,
       M365_CLIENT_ID: clientId,
       M365_CLIENT_SECRET: clientSecret,
       M365_TENANT_ID: tenantId,

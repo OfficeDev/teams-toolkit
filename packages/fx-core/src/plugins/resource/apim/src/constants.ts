@@ -6,6 +6,7 @@ export class ProjectConstants {
     public static readonly configFilePath: string = "env.default.json";
     public static readonly workingDir: string = "openapi";
     public static readonly openApiDocumentFileName: string = "openapi.json";
+    public static readonly maxRetries: number = 3;
 }
 
 export class ApimDefaultValues {

@@ -13,14 +13,18 @@ export class LogMessages {
     public static readonly operationSuccess = (operation: IName, resourceType: IName, resourceId?: string): string =>
         !resourceId
             ? `[${ProjectConstants.pluginDisplayName}] ${capitalizeFirstLetter(operation.displayName)} ${resourceType.displayName} successfully.`
-            : `[${ProjectConstants.pluginDisplayName}] ${capitalizeFirstLetter(operation.displayName)} ${
-                  resourceType.displayName
-              } '${resourceId}' successfully.`;
+            : `[${ProjectConstants.pluginDisplayName}] ${capitalizeFirstLetter(operation.displayName)} ${resourceType.displayName
+            } '${resourceId}' successfully.`;
 
     public static readonly operationFailed = (operation: IName, resourceType: IName, resourceId?: string): string =>
         !resourceId
             ? `[${ProjectConstants.pluginDisplayName}] Failed to ${operation.displayName} ${resourceType.displayName}`
             : `[${ProjectConstants.pluginDisplayName}] Failed to ${operation.displayName} ${resourceType.displayName} '${resourceId}'.`;
+
+    public static readonly operationRetry = (operation: IName, resourceType: IName, resourceId?: string): string =>
+        !resourceId
+            ? `[${ProjectConstants.pluginDisplayName}] Retry to ${operation.displayName} ${resourceType.displayName}.`
+            : `[${ProjectConstants.pluginDisplayName}] Retry to ${operation.displayName} ${resourceType.displayName} '${resourceId}'.`;
 
     public static readonly resourceNotFound = (resourceType: IName, resourceId?: string): string =>
         !resourceId

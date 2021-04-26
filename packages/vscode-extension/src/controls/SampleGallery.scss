@@ -10,7 +10,7 @@
         width: 28px;
         height: 28px;
         font-size: 28px;
-        color: #3794FF;
+        color: var(--vscode-textLink-foreground);
     }
 
     .title{
@@ -20,7 +20,7 @@
         h2{
             font-size: 26px;
             line-height: 30px;
-            color: #CCCCCC;
+            color: var(--vscode-badge-foreground);
             margin-top: 0px;
             margin-bottom: 0px;
             font-weight: normal;
@@ -29,7 +29,7 @@
         h3{
             font-size: 12px;
             line-height: 14px;
-            color: #CCCCCC;
+            color: var(--vscode-titleBar-activeForeground);
             margin-top: 0px;
             margin-bottom: 0px;
             font-weight: normal;
@@ -37,7 +37,7 @@
     }
 
     .sample-app-card{
-        background-color: #262626;
+        background-color: var(--vscode-editorWidget-background);
         border-radius: 2px;
         width: 278px;
 
@@ -47,7 +47,7 @@
         }
 
         .tag{
-            background-color: #333333;
+            background-color: var(--vscode-editor-inactiveSelectionBackground);
             border-radius: 20px;
             width: fit-content;
             padding: 3px 8px 3px 8px;
@@ -55,14 +55,14 @@
             line-height: 11px;
             align-items: center;
             text-align: center;
-            color: #CCCCCC;
+            color: var(--vscode-titleBar-activeForeground);
             margin: 8px 0px 0px 8px;
         }
 
         h2{
             font-size: 12px;
             text-align: center;
-            color: #CCCCCC;
+            color: var(--vscode-titleBar-activeForeground);
             font-weight: normal;
             text-align: left;
             margin: 12px 12px 0px 12px;
@@ -70,18 +70,18 @@
 
         h3{
             font-size: 12px;
-            color: #CCCCCC;
+            color: var(--vscode-titleBar-activeForeground);
             opacity: 50%;
             font-weight: normal;
             text-align: left;
             margin: 8px 12px 0px 12px;
+            opacity: 50%;
         }
 
         button{
             font-size: 13px;
             text-align: center;
-            color: #FFFFFF;
-            background-color: #0E639C;
+            background-color: var(--vscode-button-background);
         }
 
         span{

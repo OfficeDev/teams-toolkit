@@ -18,7 +18,7 @@ The TeamsFx contains the following packages, check 'packages' folder for more in
 <br>
 
 ## Get Start
-To start trying TeamsFx, check [Prerequest and Getting Start guidence](https://review.docs.microsoft.com/en-us/mods/get-started/prerequisites?branch=adhal-build-docs&tabs=vscode) first.
+To start trying TeamsFx, check [Prerequest and Getting Start guidence]() first.
 
 ## Contributing
 

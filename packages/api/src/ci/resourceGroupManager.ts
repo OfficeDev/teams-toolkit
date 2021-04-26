@@ -53,18 +53,20 @@ export class ResourceGroupManager {
         return groups.filter(group => group.name?.includes(contain));
     }
 
-    public async deleteResourceGroup(name: string): Promise<boolean> {
-        for (let i = 0; i < 5; ++i) {
-            try {
-                await ResourceGroupManager.client!.resourceGroups.deleteMethod(name);
-                return Promise.resolve(true);
-            } catch (e) {
-                await delay(2000);
-                if (i < 4) {
-                    console.warn(`[Retry] clean up the Azure resoure group failed with name: ${name}`);
+    public async deleteResourceGroup(name: string, retryTimes = 5): Promise<boolean> {
+        return new Promise<boolean>(async resolve => {
+            for (let i = 0; i < retryTimes; ++i) {
+                try {
+                    await ResourceGroupManager.client!.resourceGroups.deleteMethod(name);
+                    return resolve(true);
+                } catch (e) {
+                    await delay(2000);
+                    if (i < retryTimes - 1) {
+                        console.warn(`[Retry] clean up the Azure resoure group failed with name: ${name}`);
+                    }
                 }
             }
-        }
-        return Promise.resolve(false);
+            return resolve(false);
+        })
     }
 }

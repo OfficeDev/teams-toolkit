@@ -4,9 +4,8 @@
 "use strict";
 
 import yargs, { Argv } from "yargs";
-import { AadManager, ResourceGroupManager } from "fx-api";
 
-import GraphTokenProvider from "../../src/commonlib/graphLogin";
+import { cleanUpResourcesCreatedHoursAgo } from "./commonUtils";
 
 yargs
   .command(
@@ -33,31 +32,7 @@ yargs
       const type = args.type;
       const contains = args.contains;
       const hours = args.hours;
-
-      if (type === "aad") {
-        const aadManager = await AadManager.init(GraphTokenProvider);
-        await aadManager.deleteAadApps(contains, hours);
-      } else {
-        const rgManager = await ResourceGroupManager.init();
-        const groups = await rgManager.searchResourceGroups(contains);
-        const filteredGroups = hours && hours > 0
-          ? groups.filter(group => {
-              const name = group.name!;
-              const startPos = name.indexOf(contains) + contains.length;
-              const createdTime = Number(name.slice(startPos, startPos + 13));
-              return Date.now() - createdTime > hours * 3600 * 1000;
-            })
-          : groups;
-
-        for (const rg of filteredGroups) {
-          const result = await rgManager.deleteResourceGroup(rg.name!);
-          if (result) {
-            console.log(`[Successfully] clean up the Azure resource group with name: ${rg.name}.`);
-          } else {
-            console.error(`[Faild] clean up the Azure resource group with name: ${rg.name}.`);
-          }
-        }
-      }
+      await cleanUpResourcesCreatedHoursAgo(type, contains, hours, 2);
     }
   )
   .demandCommand()

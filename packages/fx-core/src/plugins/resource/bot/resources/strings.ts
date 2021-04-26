@@ -72,6 +72,7 @@ export class PluginBot {
     public static readonly SCAFFOLDED = "scaffolded";
     public static readonly APP_SERVICE_PLAN = "appServicePlan";
     public static readonly SITE_NAME = "siteName";
+    public static readonly SKU_NAME = "skuName";
     public static readonly SITE_ENDPOINT = "siteEndpoint";
     public static readonly VALID_DOMAIN = "validDomain";
     public static readonly PROVISIONED = "provisioned";
@@ -95,6 +96,7 @@ export class ConfigNames {
     public static readonly SUBSCRIPTION_ID = "subscription id";
     public static readonly SERVICE_CLIENT_CREDENTIALS = "service client credentials";
     public static readonly LOCATION = "location";
+    public static readonly SKU_NAME = "sku name";
     public static readonly RESOURCE_GROUP = "resource group";
     public static readonly LOCAL_ENDPOINT = "local endpoint";
 

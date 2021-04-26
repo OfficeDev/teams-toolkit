@@ -4,7 +4,6 @@
 import { AccessToken, TokenCredential, GetTokenOptions } from "@azure/identity";
 import { UserInfo } from "../models/userinfo";
 import { ErrorCode, ErrorMessage, ErrorWithCode } from "./errors";
-import { SSOTokenInfoBase } from "../models/ssoTokenInfo";
 import { Cache } from "./cache.browser";
 import * as microsoftTeams from "@microsoft/teams-js";
 import { getAuthenticationConfiguration } from "./configurationProvider";
@@ -86,9 +85,8 @@ export class TeamsUserCredential implements TokenCredential {
     return new Promise<void>((resolve, reject) => {
       microsoftTeams.initialize(() => {
         microsoftTeams.authentication.authenticate({
-          url: `${this.config.initiateLoginEndpoint}?clientId=${
-            this.config.clientId
-          }&scope=${encodeURI(scopesStr)}`,
+          url: `${this.config.initiateLoginEndpoint}?clientId=${this.config.clientId
+            }&scope=${encodeURI(scopesStr)}`,
           width: loginPageWidth,
           height: loginPageHeight,
           successCallback: async (result?: string) => {
@@ -105,7 +103,7 @@ export class TeamsUserCredential implements TokenCredential {
               await this.exchangeAccessTokenFromSimpleAuthServer(scopesStr, authCodeResult);
               resolve();
             } catch (err) {
-              this.generateAuthServerError(err);
+              reject(this.generateAuthServerError(err));
             }
           },
           failureCallback: (reason?: string) => {
@@ -261,7 +259,7 @@ export class TeamsUserCredential implements TokenCredential {
       this.setTokenCache(cacheKey, accessToken);
       return accessToken;
     } catch (err) {
-      this.generateAuthServerError(err);
+      throw this.generateAuthServerError(err);
     }
   }
 
@@ -465,7 +463,7 @@ export class TeamsUserCredential implements TokenCredential {
     return true;
   }
 
-  private generateAuthServerError(err: any): never {
+  private generateAuthServerError(err: any): Error {
     let errorMessage = err.message;
     if (err.response?.data?.type) {
       errorMessage = err.response.data.detail;
@@ -474,17 +472,17 @@ export class TeamsUserCredential implements TokenCredential {
           "Failed to get access token from authentication server, please login first: " +
           errorMessage;
         internalLogger.error(fullErrorMsg);
-        throw new ErrorWithCode(fullErrorMsg, ErrorCode.UiRequiredError);
+        return new ErrorWithCode(fullErrorMsg, ErrorCode.UiRequiredError);
       } else {
         const fullErrorMsg =
           "Failed to get access token from authentication server: " + errorMessage;
         internalLogger.error(fullErrorMsg);
-        throw new ErrorWithCode(fullErrorMsg, ErrorCode.ServiceError);
+        return new ErrorWithCode(fullErrorMsg, ErrorCode.ServiceError);
       }
     }
 
     const fullErrorMsg = "Failed to get access token with error: " + errorMessage;
-    throw new ErrorWithCode(fullErrorMsg, ErrorCode.InternalError);
+    return new ErrorWithCode(fullErrorMsg, ErrorCode.InternalError);
   }
 
   private sleep(ms: number): Promise<void> {

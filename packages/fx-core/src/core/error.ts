@@ -37,11 +37,11 @@ export function ReadFileError(e: Error): SystemError {
 }
 
 export function EnvAlreadyExist(param: any): UserError {
-    return returnUserError(new Error(`Env already exist: ${param}`), CoreSource, CoreErrorNames.EnvAlreadyExist);
+    return returnUserError(new Error(`Environment already exists: ${param}`), CoreSource, CoreErrorNames.EnvAlreadyExist);
 }
 
 export function EnvNotExist(param: any): UserError {
-    return returnUserError(new Error(`Env not exist: ${param}`), CoreSource, CoreErrorNames.EnvNotExist);
+    return returnUserError(new Error(`Environment does not exist: ${param}`), CoreSource, CoreErrorNames.EnvNotExist);
 }
 
 export function NotSupportedProjectType(): UserError {

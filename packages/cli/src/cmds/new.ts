@@ -50,7 +50,7 @@ export default class New extends YargsCommand {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     });
     if (this.root) {
-      const nodes = flattenNodes(this.root);
+      const nodes = flattenNodes(JSON.parse(JSON.stringify(this.root)));
       const nodesWithoutGroup = nodes.filter((node) => node.data.type !== NodeType.group);
       for (const node of nodesWithoutGroup) {
         if (node.data.name === "folder") {

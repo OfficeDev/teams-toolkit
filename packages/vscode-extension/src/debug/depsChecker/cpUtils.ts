@@ -124,7 +124,7 @@ export namespace cpUtils {
     formattedArgs: string;
   }
 
-  const quotationMark: string = process.platform === "win32" ? '"' : "'";
+  const quotationMark: string = process.platform === "win32" ? "\"" : "'";
   /**
    * Ensures spaces and special characters (most notably $) are preserved
    */

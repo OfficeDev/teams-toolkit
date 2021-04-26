@@ -3,7 +3,7 @@
 ## How to run e2e-test locally
 
 ### Setup repo
-You can follow [Build and Run Locally](./development-guide.md).
+You can follow [Build and Run Locally](./development-guide.md#build-and-run-locally).
 
 ### Run
 `npm run e2e-test`

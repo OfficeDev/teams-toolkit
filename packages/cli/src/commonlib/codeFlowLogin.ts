@@ -213,17 +213,10 @@ export class CodeFlowLogin {
           for (let i=0;i<accountList!.length;++i) {
             this.msalTokenCache?.removeAccount(accountList![i]);
           }
+          this.config!.auth.authority = env.activeDirectoryEndpointUrl + tenantId;
+          this.pca = new PublicClientApplication(this.config!);
           const accessToken = await this.login();
-          if (accessToken) {
-            const res = await this.pca!.acquireTokenSilent({
-              authority: env.activeDirectoryEndpointUrl + tenantId,
-              account: this.account!,
-              scopes: this.scopes!,
-              forceRefresh: true
-            });
-            return res?.accessToken;
-          }
-          return undefined;
+          return accessToken;
         });
       } else {
         return undefined;

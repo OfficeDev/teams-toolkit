@@ -5,10 +5,10 @@
     "solution":{
         "ProvisionFailNotice": "Provision resources failed, subscription id: '%s', resource group: '%s'. You can choose to rollback to delete the resoruce group and redo provision, help link: https://aka.ms/teamsfx-solution-help",
         "hostType":{
-            "title":"Select front-end hosting type"
+            "title":"Select frontend hosting type"
         },
         "addCapability":{
-            "title":"Select Capabilities to add",
+            "title":"Select capabilities to add",
             "prompt": "Bot and Message Extension are exclusive, you can not select both."
         },
         "azureResource":{

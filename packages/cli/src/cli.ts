@@ -33,7 +33,7 @@ function getVersionString(): string {
   version += json.version;
   version += "\n";
 
-  version += "build with ";
+  version += "built with ";
   const dirs = readdirSync(path.join(__dirname + "/../node_modules"));
   const api = dirs.find((dir) => dir === "fx-api");
   json = JSON.parse(readFileSync(path.join(__dirname, "/../node_modules/" + api + "/package.json"), "utf8"));

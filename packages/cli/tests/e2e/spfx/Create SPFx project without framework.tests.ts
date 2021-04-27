@@ -4,21 +4,26 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import { expect } from "chai";
-import * as constants from "../../src/constants";
-import { execAsync, getTestFolder, getUniqueAppName } from "./commonUtils";
 
+import {
+  cleanUpLocalProject,
+  execAsync,
+  getTestFolder,
+  getUniqueAppName
+} from "../commonUtils";
 
 describe("Start a new project", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
+  const projectPath = path.resolve(testFolder, appName);
   const type = "none";
 
   it("Create SPFx project without framework - Test Plan ID 9426251", async function () {
-    const command =  `${constants.cliName} new --app-name ${appName} --folder ${testFolder} --host-type spfx --spfx-framework-type ${type} --spfx-webpart-name helloworld --interactive false`;
+    const command = `teamsfx new --interactive false --app-name ${appName} --host-type spfx --spfx-framework-type ${type} --spfx-webpart-name helloworld`;
     const result = await execAsync(
       command,
       {
-        cwd: process.cwd(),
+        cwd: testFolder,
         env: process.env,
         timeout: 0
       }
@@ -53,7 +58,8 @@ describe("Start a new project", function () {
     expect(result.stderr).to.eq("");
   });
 
-  this.afterAll(() => {
-    fs.removeSync(path.resolve(testFolder, appName));
+  after(async () => {
+    // clean up
+    await cleanUpLocalProject(projectPath);
   });
 });

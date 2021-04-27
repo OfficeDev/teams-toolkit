@@ -1923,6 +1923,50 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 ---------------------------------------------------------
 
+charenc 0.0.2 - BSD-3-Clause
+https://github.com/pvorb/node-charenc#readme
+
+Copyright (c) 2009, Jeff Mott.
+Copyright (c) 2011, Paul Vorbach.
+
+Copyright (c) <year> <owner> . All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+   1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+
+   2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+   3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+---------------------------------------------------------
+
+---------------------------------------------------------
+
+crypt 0.0.2 - BSD-3-Clause
+https://github.com/pvorb/node-crypt#readme
+
+Copyright (c) 2009, Jeff Mott.
+Copyright (c) 2011, Paul Vorbach.
+
+Copyright (c) <year> <owner> . All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+   1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+
+   2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+   3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+---------------------------------------------------------
+
+---------------------------------------------------------
+
 ieee754 1.2.1 - BSD-3-Clause
 https://github.com/feross/ieee754#readme
 
@@ -1940,6 +1984,46 @@ Redistribution and use in source and binary forms, with or without modification,
 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+---------------------------------------------------------
+
+---------------------------------------------------------
+
+md5 2.3.0 - BSD-3-Clause
+https://github.com/pvorb/node-md5#readme
+
+Copyright (c) 2009, Jeff Mott.
+Copyright (c) 2011-2012, Paul Vorbach.
+Copyright (c) 2011-2015, Paul Vorbach.
+
+Copyright © 2011-2012, Paul Vorbach.
+Copyright © 2009, Jeff Mott.
+
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+* Redistributions of source code must retain the above copyright notice, this
+  list of conditions and the following disclaimer.
+* Redistributions in binary form must reproduce the above copyright notice, this
+  list of conditions and the following disclaimer in the documentation and/or
+  other materials provided with the distribution.
+* Neither the name Crypto-JS nor the names of its contributors may be used to
+  endorse or promote products derived from this software without specific prior
+  written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 ---------------------------------------------------------
@@ -2644,6 +2728,70 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
+@azure/arm-apimanagement 6.0.0 - MIT
+https://github.com/Azure/azure-sdk-for-js/tree/master/sdk/apimanagement/arm-apimanagement
+
+Copyright (c) Microsoft Corporation.
+
+The MIT License (MIT)
+
+Copyright (c) 2020 Microsoft
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+---------------------------------------------------------
+
+---------------------------------------------------------
+
+@azure/arm-resources 4.0.0 - MIT
+https://github.com/Azure/azure-sdk-for-js/tree/master/sdk/resources/arm-resources
+
+Copyright (c) Microsoft Corporation.
+
+The MIT License (MIT)
+
+Copyright (c) 2020 Microsoft
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+---------------------------------------------------------
+
+---------------------------------------------------------
+
 @azure/arm-sql 7.0.2 - MIT
 https://github.com/Azure/azure-sdk-for-js/tree/master/sdk/sql/arm-sql
 
@@ -2903,7 +3051,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-@azure/msal-common 4.1.1 - MIT
+@azure/msal-common 4.2.1 - MIT
 https://github.com/AzureAD/microsoft-authentication-library-for-js#readme
 
 Copyright (c) Microsoft Corporation.
@@ -2962,38 +3110,6 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
-
----------------------------------------------------------
-
----------------------------------------------------------
-
-@azure/ms-rest-azure-env 1.1.2 - MIT
-https://github.com/Azure/ms-rest-azure-env
-
-Copyright (c) Microsoft Corporation.
-
-    MIT License
-
-    Copyright (c) Microsoft Corporation. All rights reserved.
-
-    Permission is hereby granted, free of charge, to any person obtaining a copy
-    of this software and associated documentation files (the "Software"), to deal
-    in the Software without restriction, including without limitation the rights
-    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-    copies of the Software, and to permit persons to whom the Software is
-    furnished to do so, subject to the following conditions:
-
-    The above copyright notice and this permission notice shall be included in all
-    copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-    SOFTWARE
 
 
 ---------------------------------------------------------
@@ -3065,77 +3181,12 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-@azure/ms-rest-js 1.11.2 - MIT
-https://github.com/Azure/ms-rest-js
-
-Copyright (c) Microsoft Corporation.
-Copyright (c) 2010-2016 Robert Kieffer and other contributors
-
-    MIT License
-
-    Copyright (c) Microsoft Corporation. All rights reserved.
-
-    Permission is hereby granted, free of charge, to any person obtaining a copy
-    of this software and associated documentation files (the "Software"), to deal
-    in the Software without restriction, including without limitation the rights
-    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-    copies of the Software, and to permit persons to whom the Software is
-    furnished to do so, subject to the following conditions:
-
-    The above copyright notice and this permission notice shall be included in all
-    copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-    SOFTWARE
-
-
----------------------------------------------------------
-
----------------------------------------------------------
-
-@azure/ms-rest-js 2.3.0 - MIT
+@azure/ms-rest-js 2.4.0 - MIT
 https://github.com/Azure/ms-rest-js
 
 copyright 2015 Toru Nagashima.
 Copyright (c) Microsoft Corporation.
 Copyright (c) 2010-2016 Robert Kieffer and other contributors
-
-    MIT License
-
-    Copyright (c) Microsoft Corporation. All rights reserved.
-
-    Permission is hereby granted, free of charge, to any person obtaining a copy
-    of this software and associated documentation files (the "Software"), to deal
-    in the Software without restriction, including without limitation the rights
-    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-    copies of the Software, and to permit persons to whom the Software is
-    furnished to do so, subject to the following conditions:
-
-    The above copyright notice and this permission notice shall be included in all
-    copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-    SOFTWARE
-
-
----------------------------------------------------------
-
----------------------------------------------------------
-
-@azure/ms-rest-nodeauth 2.0.2 - MIT
-https://github.com/Azure/ms-rest-nodeauth
-
-Copyright (c) Microsoft Corporation.
 
     MIT License
 
@@ -3196,26 +3247,7 @@ Copyright (c) Microsoft Corporation.
 
 ---------------------------------------------------------
 
-@types/fs-extra 9.0.10 - MIT
-
-
-Copyright (c) Microsoft Corporation.
-
-MIT License
-
-Copyright (c) <year> <copyright holders>
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
----------------------------------------------------------
-
----------------------------------------------------------
-
-@types/node 14.14.37 - MIT
+@types/fs-extra 9.0.11 - MIT
 
 
 Copyright (c) Microsoft Corporation.
@@ -3235,6 +3267,25 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 ---------------------------------------------------------
 
 @types/node 8.10.66 - MIT
+
+
+Copyright (c) Microsoft Corporation.
+
+MIT License
+
+Copyright (c) <year> <copyright holders>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+---------------------------------------------------------
+
+---------------------------------------------------------
+
+@types/node 14.14.41 - MIT
 
 
 Copyright (c) Microsoft Corporation.
@@ -4750,7 +4801,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ---------------------------------------------------------
 
-follow-redirects 1.13.3 - MIT
+follow-redirects 1.14.0 - MIT
 https://github.com/follow-redirects/follow-redirects
 
 Copyright 2014-present Olivier Lalonde <olalonde@gmail.com> , James Talmage <james@talmage.io> , Ruben Verborgh
@@ -4927,6 +4978,226 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
+
+---------------------------------------------------------
+
+---------------------------------------------------------
+
+fx-api 1.1.1-alpha.5 - MIT
+
+
+(c) Sindre Sorhus
+Copyright (c) 2015
+Copyright (c) 2016
+Copyright (c) 2017
+Copyright (c) 2018
+Copyright Isaac Z.
+(c) 2011 Gary Court.
+Copyright 2012 - 2017
+Copyright Joyent, Inc.
+(c) 2011 by Jerry Sievert
+Copyright (c) 2005 Tom Wu
+Copyright 2016 Trent Mick
+Copyright (c) 2012 Raynos.
+Copyright (c) 2013 Raynos.
+Copyright 2011 Gary Court.
+Copyright 2016, Joyent Inc
+Copyright 2019, OpenCensus
+Copyright (c) 2015 Rod Vagg
+Copyright 2012 Joyent, Inc.
+Copyright 2015 Joyent, Inc.
+Copyright 2016 Joyent, Inc.
+Copyright 2017 Joyent, Inc.
+Copyright 2018 Joyent, Inc.
+Copyright (c) 2013 Braveg1rl
+Copyright (c) 2015 Microsoft
+Copyright (c) 2017 Braveg1rl
+Copyright (c) 2017 Microsoft
+Copyright (c) 2019 Microsoft
+Copyright 2012 Twitter, Inc.
+Copyright 2013 Twitter, Inc.
+Copyright 2016, Joyent, Inc.
+Copyright 2017 Lovell Fuller
+Copyright Isaac Z. Schlueter
+Copyright (c) 2016 Zeit, Inc.
+Copyright (c) 2003-2005 Tom Wu
+Copyright (c) 2005-2009 Tom Wu
+Copyright (c) 2011 Mark Cavage
+Copyright (c) 2012 Mark Cavage
+Copyright (c) 2013 GitHub Inc.
+Copyright (c) 2013 Joyent Inc.
+Copyright (c) 2013 Trent Mick.
+Copyright (c) 2016 Alex Indigo
+Copyright (c) 2016 David Frank
+Copyright 2015 D2L Corporation
+copyright 2015 Toru Nagashima.
+Copyright (c) 2011 Dominic Tarr
+Copyright (c) 2011 Joyent, Inc.
+Copyright (c) 2014 Jonathan Ong
+Copyright (c) 2014 Mathias Buus
+Copyright (c) 2015 Mathias Buus
+Copyright (c) 2015, Scott Motte
+Copyright (c) 2016 Lukas Geiger
+Copyright (c) 2018 Mathias Buus
+Copyright (c) 2012, Joyent, Inc.
+Copyright (c) 2012, Mark Cavage.
+Copyright (c) 2013 Ozgur Ozcitak
+Copyright (c) 2013, Dominic Tarr
+Copyright (c) 2014 Stefan Thomas
+Copyright (c) 2016, Joyent, Inc.
+Copyright (c) Isaac Z. Schlueter
+Copyright (c) 2013 James Halliday
+Copyright (c) 2014 Jameson Little
+Copyright (c) 2014 Jeremie Miller
+Copyright (c) 2015 Calvin Metcalf
+Copyright (c) 2015 Toru Nagashima
+Copyright (c) 2016 Jordan Harband
+Copyright (c) 2017 Toru Nagashima
+Copyright (c) 2019 Jordan Harband
+Copyright (c) Feross Aboukhadijeh
+Copyright 2010, 2011, 2012, 2013.
+Copyright 2010-2012 Mikeal Rogers
+Copyright (c) 2015, Rebecca Turner
+Copyright (c) 2017 Anna Henningsen
+Copyright (c) 2019 Giorgio Delgado
+Copyright (c) 2012 Koichi Kobayashi
+Copyright (c) 2013 Brian J. Brennan
+Copyright (c) 2013 Thiago de Arruda
+Copyright (c) 2018 Lars-Magnus Skog
+Copyright 2008 Fair Oaks Labs, Inc.
+Copyright (c) 2017 Evgeny Poberezkin
+Copyright (c) Microsoft Corporation.
+(c) 2005, 2013 jQuery Foundation, Inc.
+Copyright (c) 2010-2017 Caolan McMahon
+Copyright (c) 2010-2018 Caolan McMahon
+Copyright (c) 2011 Alexander Shtuchkin
+Copyright (c) 2010-2018 Mike D Pilsbury
+Copyright (c) 2013-2018 bl contributors
+Copyright (c) 2013-2019 bl contributors
+Copyright (c) 2008, Fair Oaks Labs, Inc.
+Copyright (c) 2013-2015 Brian J. Brennan
+Copyright (c) 2015, Salesforce.com, Inc.
+Copyright (c) 2018, Salesforce.com, Inc.
+Copyright (c) 2014-present Matt Zabriskie
+Copyright (c) 2015-2017 Evgeny Poberezkin
+Copyright (c) Microsoft and contributors.
+Copyright (c) 2014-present, Facebook, Inc.
+(c) Sindre Sorhus (http://sindresorhus.com)
+(c) Sindre Sorhus (https://sindresorhus.com)
+Copyright (c) 2013-2018 Viacheslav Lotsmanov
+Copyright (c) 2017 Chai.js Assertion Library
+Copyright (c) 2013-2018, Viacheslav Lotsmanov
+Copyright (c) 2015 Douglas Christopher Wilson
+Copyright 2019 - present Christopher J. Brody
+Copyright 2010 LearnBoost <dev@learnboost.com>
+Copyright 2011 Mark Cavage <mcavage@gmail.com>
+Copyright (c) Microsoft Open Technologies, Inc.
+(c) 2013 GoInstant Inc., a salesforce.com company
+Copyright (c) 2013 Jake Luer <jake@qualiancy.com>
+Copyright (c) 2013 Ted Unangst <tedu@openbsd.org>
+Copyright (c) Isaac Z. Schlueter and Contributors
+Copyright (c) 2014 Jonathan Ong me@jongleberry.com
+Copyright (c) 2014-2018 Douglas Christopher Wilson
+Copyright (c) JS Foundation and other contributors
+Copyright Joyent, Inc. and other Node contributors.
+Copyright (c) 2014 Jonathan Ong <me@jongleberry.com>
+Copyright (c) 2014, Rebecca Turner <me@re-becca.org>
+Copyright (c) 2015, Rebecca Turner <me@re-becca.org>
+Copyright 2006, Kevin Krammer <kevin.krammer@gmx.at>
+Copyright 2011, Sebastian Tschan https://blueimp.net
+Copyright Mathias Bynens <https://mathiasbynens.be/>
+Copyright (c) 2007 Kris Zyp SitePen (www.sitepen.com)
+Copyright (c) 2012-2015 Tom de Grunt <tom@degrunt.nl>
+Copyright (c) 2012-2019 Tom de Grunt <tom@degrunt.nl>
+Copyright (c) 2017 Lupo Montero lupomontero@gmail.com
+Copyright (c) Microsoft Corporation. V1 OpenTelemetry
+Copyright 2006, Jeremy White <jwhite@codeweavers.com>
+Copyright (c) 2013 Roman Shtylman <shtylman@gmail.com>
+Copyright (c) 2014 TJ Holowaychuk <tj@vision-media.ca>
+Copyright (c) 2015 TJ Holowaychuk <tj@vision-media.ca>
+Copyright (c) Feross Aboukhadijeh (http://feross.org).
+Copyright (c) 2011 Jake Luer <jake@alogicalparadox.com>
+Copyright (c) 2013 Jake Luer <jake@alogicalparadox.com>
+Copyright (c) 2017 Copyright (c) Microsoft Corporation.
+Copyright (c) 2017 Lupo Montero <lupomontero@gmail.com>
+Copyright (c) 2018 Ahmad Nassri <ahmad@ahmadnassri.com>
+Copyright 2013 Michael Hart (michael.hart.au@gmail.com)
+copyright (c) 2016, Philipp Thurwachter, Pattrick Huper
+Copyright (c) 2015, Ahmad Nassri <ahmad@ahmadnassri.com>
+Copyright (c) 2016, Philipp Thurwachter & Pattrick Huper
+Copyright (c) 2017, Ryan Zimmerman <opensrc@ryanzim.com>
+Copyright (c) 2018 Nikita Skovoroda <chalkerx@gmail.com>
+Copyright 2009-2010, Fathi Boudra <fabo@freedesktop.org>
+copyright (c) 2016, Philipp Thurwachter & Pattrick Huper
+copyright ahmadnassri.com (https://www.ahmadnassri.com/)
+Copyright (c) 2011-2013 Jake Luer jake@alogicalparadox.com
+Copyright (c) 2013 Julian Gruber <julian@juliangruber.com>
+Copyright (c) 2014 Nathan Rajlich <nathan@tootallnate.net>
+Copyright (c) 2017 Hunter Loftis <hunter@hunterloftis.com>
+Copyright (c) Feross Aboukhadijeh, and other contributors.
+Copyright (c) 2014-2017 TJ Holowaychuk <tj@vision-media.ca>
+Copyright 1997 Niels Provos <provos@physnet.uni-hamburg.de>
+Copyright 2009-2010, Rex Dieter <rdieter@fedoraproject.org>
+Copyright (c) 2011 Debuggable Limited <felix@debuggable.com>
+Copyright (c) 2011-2014 Jake Luer <jake@alogicalparadox.com>
+Copyright (c) 2011-2016 Jake Luer <jake@alogicalparadox.com>
+Copyright (c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
+Copyright (c) 2012-2016 Jake Luer <jake@alogicalparadox.com>
+Copyright (c) 2013, GoInstant Inc., a salesforce.com company
+Copyright (c) 2014 Nathan LaFreniere and other contributors.
+Copyright (c) 2010-2016 Robert Kieffer and other contributors
+Copyright (c) 2015 Rod Vagg rvagg (https://twitter.com/rvagg)
+Copyright (c) 2013 Copyright (c) 2017 Chai.js Assertion Library
+Copyright (c) 2007-present, Alexandru Marasteanu <hello@alexei.ro>
+Copyright 2012-2016 The Dojo Foundation <http://dojofoundation.org/>
+Copyright (c) 2015 Auth0, Inc. <support@auth0.com> (http://auth0.com)
+Copyright (c) 2015 Douglas Christopher Wilson <doug@somethingdoug.com>
+Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)
+Copyright (c) 2013 Jake Luer <jake@qualiancy.com> (http://qualiancy.com)
+Copyright jQuery Foundation and other contributors <https://jquery.org/>
+Copyright OpenJS Foundation and other contributors <https://openjsf.org/>
+Copyright (c) 2013 Copyright (c) 2013 Jake Luer <jake@alogicalparadox.com>
+copyright (c) 2007-present, Stephen Colebourne & Michael Nascimento Santos
+https://github.com/xmldom/xmldom/graphs/contributors Copyright 2012 - 2017
+Copyright (c) 2012 Felix Geisendorfer (felix@debuggable.com) and contributors
+Copyright (c) 2012-2015 Sakthipriyan Vairamani <thechargingvolcano@gmail.com>
+Copyright (c) Feross Aboukhadijeh (http://feross.org), and other contributors.
+Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
+Copyright (c) 2013 Jake Luer <jake@alogicalparadox.com> (http://alogicalparadox.com)
+copyright (c) 2015-present, Philipp Thurwachter, Pattrick Huper & js-joda contributors
+copyright (c) 2016-present, Philipp Thurwachter & Pattrick Huper & js-joda contributors
+Copyright 2009-2016 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+Copyright (c) Microsoft Corporation. const DefaultAuthorityHost https://login.microsoftonline.com
+Copyright 2019 - present Christopher J. Brody https://github.com/xmldom/xmldom/graphs/contributors
+Copyright (c) Paul Johnston 1999 - 2009 Other contributors Greg Holt, Andrew Kepert, Ydnar, Lostinet
+Copyright (c) 2013 Copyright (c) 2013 Jake Luer <jake@alogicalparadox.com> (http://alogicalparadox.com)
+copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors <http://underscorejs.org/>
+Copyright (c) 2014, Nathan LaFreniere and other contributors (https://github.com/ljharb/qs/graphs/contributors)
+Copyright 2014-present Olivier Lalonde <olalonde@gmail.com> , James Talmage <james@talmage.io> , Ruben Verborgh
+copyright 2009-2016 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors <http://underscorejs.org/>
+
+Copyright (c) Microsoft Corporation.
+
+MIT License
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 ---------------------------------------------------------
 
@@ -6387,7 +6658,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-msal 1.4.9 - MIT
+msal 1.4.10 - MIT
 https://github.com/AzureAD/microsoft-authentication-library-for-js#readme
 
 Copyright (c) Microsoft Corporation.
@@ -6620,9 +6891,10 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-node-abi 2.21.0 - MIT
+node-abi 2.26.0 - MIT
 https://github.com/lgeiger/node-abi#readme
 
+Copyright (c) 2016 Lukas Geiger
 
 MIT License
 
@@ -6792,7 +7064,7 @@ THE SOFTWARE.
 
 ---------------------------------------------------------
 
-object-inspect 1.9.0 - MIT
+object-inspect 1.10.2 - MIT
 https://github.com/inspect-js/object-inspect
 
 Copyright (c) 2013 James Halliday
@@ -6894,7 +7166,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ---------------------------------------------------------
 
-prebuild-install 6.1.1 - MIT
+prebuild-install 6.1.2 - MIT
 https://github.com/prebuild/prebuild-install
 
 Copyright (c) 2015 Mathias Buus
@@ -7667,7 +7939,7 @@ THE SOFTWARE.
 
 ---------------------------------------------------------
 
-tedious 9.2.1 - MIT
+tedious 9.2.3 - MIT
 https://github.com/tediousjs/tedious
 
 Copyright (c) 2010-2018 Mike D Pilsbury
@@ -7829,7 +8101,7 @@ THE SOFTWARE.
 
 ---------------------------------------------------------
 
-underscore 1.13.0 - MIT
+underscore 1.13.1 - MIT
 https://underscorejs.org/
 
 
@@ -8074,7 +8346,7 @@ THE SOFTWARE.
 
 ---------------------------------------------------------
 
-xmldom 0.5.0 - MIT
+xmldom 0.6.0 - MIT
 https://github.com/xmldom/xmldom
 
 Copyright 2019 - present Christopher J. Brody

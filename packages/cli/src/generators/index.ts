@@ -16,7 +16,7 @@ import { ProvisionGenerator } from "./provisionGenerator";
 import { DeployGenerator } from "./deployGenerator";
 import CLILogProvider from "../commonlib/log";
 import * as constants from "../constants";
-import { CapabilityAddBotGenerator, CapabilityAddTabGenerator } from "./capabilityAdd";
+import { CapabilityAddBotGenerator, CapabilityAddTabGenerator, CapabilityAddMessageExtensionGenerator } from "./capabilityAdd";
 
 CLILogProvider.setLogLevel(constants.CLILogLevel.debug);
 
@@ -37,6 +37,9 @@ const projectPathForCapabilityAddTab = path.resolve(tmpFolder, appNameForCapabil
 const appNameForCapabilityAddBot = "tmpTeamsfxProj" + uuidv4().slice(0, 8);
 const newCommandForCapabilityAddBot = `teamsfx new --app-name ${appNameForCapabilityAddBot} --capabilities tab --interactive false`;
 const projectPathForCapabilityAddBot = path.resolve(tmpFolder, appNameForCapabilityAddBot);
+const appNameForCapabilityAddMessageExtension = "tmpTeamsfxProj" + uuidv4().slice(0, 8);
+const newCommandForCapabilityAddMessageExtension = `teamsfx new --app-name ${appNameForCapabilityAddMessageExtension} --capabilities tab --interactive false`;
+const projectPathForCapabilityAddMessageExtension = path.resolve(tmpFolder, appNameForCapabilityAddMessageExtension);
 
 const appNameForProvision = "tmpTeamsfxProj" + uuidv4().slice(0, 8);
 const projectPathForProvision = path.resolve(tmpFolder, appNameForProvision);
@@ -92,6 +95,7 @@ const RunCommand = async (command: string, folder: string) => {
   if (runNewCommandForCapabilityAdd) {
     await RunCommand(newCommandForCapabilityAddTab, tmpFolder);
     await RunCommand(newCommandForCapabilityAddBot, tmpFolder);
+    await RunCommand(newCommandForCapabilityAddMessageExtension, tmpFolder);
   }
 
   if (runCapabilityAddGenerator) {
@@ -102,6 +106,10 @@ const RunCommand = async (command: string, folder: string) => {
     const capabilityAddBotGenerator = new CapabilityAddBotGenerator();
     await capabilityAddBotGenerator.run(projectPathForCapabilityAddBot);
     await fs.remove(projectPathForCapabilityAddBot);
+
+    const capabilityAddMessageExtensionGenerator = new CapabilityAddMessageExtensionGenerator();
+    await capabilityAddMessageExtensionGenerator.run(projectPathForCapabilityAddMessageExtension);
+    await fs.remove(projectPathForCapabilityAddMessageExtension);
   }
 
   if (runNewCommandForProvision) {

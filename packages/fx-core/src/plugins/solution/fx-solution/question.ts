@@ -21,6 +21,7 @@ export const BotOptionItem: OptionItem = {
 export const MessageExtensionItem: OptionItem = {
     id: "MessageExtension",
     label: "Messaging Extension",
+    cliName: "message-extension",
     description:
         "Messaging Extensions allow users to interact with a web service through buttons and forms in the Microsoft Teams client.",
 };
@@ -65,7 +66,7 @@ export const AzureResourceFunction: OptionItem = {
 
 export const AzureResourceApim: OptionItem = {
     id:"apim",
-    label: "apim",
+    label: "Azure API Management",
     description: "Register APIs in Azure API Management",
 };
  

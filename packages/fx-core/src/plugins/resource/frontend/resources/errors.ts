@@ -24,6 +24,7 @@ const tips = {
     checkFsPermissions: "Check if you have Read/Write permissions to your file system.",
     checkStoragePermissions: "Check if you have permissions to your Azure Storage Account.",
     restoreEnvironment: "Restore the 'env.default.json' file if you modified it.",
+    checkSystemTime: "Ensure your system time is correct."
 };
 
 export class FrontendPluginError extends Error {
@@ -118,7 +119,7 @@ export class EnableStaticWebsiteError extends FrontendPluginError {
             ErrorType.System,
             "EnableStaticWebsiteError",
             "Failed to enable static website feature for Azure Storage Account.",
-            [tips.checkStoragePermissions, tips.checkNetwork],
+            [tips.checkStoragePermissions, tips.checkSystemTime, tips.checkNetwork],
         );
     }
 }
@@ -149,7 +150,7 @@ export class GetContainerError extends FrontendPluginError {
             ErrorType.System,
             "GetContainerError",
             `Failed to get container '${Constants.AzureStorageWebContainer}' from Azure Storage Account.`,
-            [tips.checkStoragePermissions, tips.checkNetwork],
+            [tips.checkStoragePermissions, tips.checkSystemTime, tips.checkNetwork],
         );
     }
 }

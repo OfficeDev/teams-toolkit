@@ -7,8 +7,8 @@ if (!process.env.ONLY_BROWSER) {
 }
 
 if (!process.env.ONLY_NODE) {
-  inputs.push(base.browserConfig(true, false));
-  inputs.push(base.browserConfig(false, true));
+  inputs.push(base.browserConfig("unit"));
+  inputs.push(base.browserConfig("integration"));
 }
 
 export default inputs;

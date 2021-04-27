@@ -66,7 +66,7 @@ export function nodeConfig(test = false) {
   return baseConfig;
 }
 
-export function browserConfig(unit = false, integration = false) {
+export function browserConfig(testType) {
   let baseConfig = {
     input: input,
     output: {
@@ -94,53 +94,34 @@ export function browserConfig(unit = false, integration = false) {
       cjs()
     ]
   };
-
-  if (unit) {
-    // Entry points - test files under the `test` folder(common for both browser and node), browser specific test files
+  
+  if (testType === "unit") {
     baseConfig.input = ["dist-esm/test/unit/*.spec.js", "dist-esm/test/unit/browser/*.spec.js"];
-    baseConfig.plugins.unshift(multiEntry({ exports: false }));
     baseConfig.output.file = "dist-test/index.unit.browser.js";
-
-    baseConfig.onwarn = (warning) => {
-      if (
-        warning.code === "CIRCULAR_DEPENDENCY" &&
-        warning.importer.indexOf(normalize("node_modules/chai/lib") === 0)
-      ) {
-        // Chai contains circular references, but they are not fatal and can be ignored.
-        return;
-      }
-
-      console.error(`(!) ${warning.message}`);
-    };
-
-    // Disable tree-shaking of test code.  In rollup-plugin-node-resolve@5.0.0, rollup started respecting
-    // the "sideEffects" field in package.json.  Since our package.json sets "sideEffects=false", this also
-    // applies to test code, which causes all tests to be removed by tree-shaking.
-    baseConfig.treeshake = false;
-  }
-  else if(integration) {
-    // Entry points - test files under the `test` folder(common for both browser and node), browser specific test files
+  } else if (testType === 'integration') {
     baseConfig.input = ["dist-esm/test/integration/*.spec.js", "dist-esm/test/integration/browser/*.spec.js"];
-    baseConfig.plugins.unshift(multiEntry({ exports: false }));
     baseConfig.output.file = "dist-test/index.integration.browser.js";
-
-    baseConfig.onwarn = (warning) => {
-      if (
-        warning.code === "CIRCULAR_DEPENDENCY" &&
-        warning.importer.indexOf(normalize("node_modules/chai/lib") === 0)
-      ) {
-        // Chai contains circular references, but they are not fatal and can be ignored.
-        return;
-      }
-
-      console.error(`(!) ${warning.message}`);
-    };
-
-    // Disable tree-shaking of test code.  In rollup-plugin-node-resolve@5.0.0, rollup started respecting
-    // the "sideEffects" field in package.json.  Since our package.json sets "sideEffects=false", this also
-    // applies to test code, which causes all tests to be removed by tree-shaking.
-    baseConfig.treeshake = false;
+  } else {
+    return baseConfig;
   }
+  
+  baseConfig.plugins.unshift(multiEntry({ exports: false }));
+  baseConfig.onwarn = (warning) => {
+    if (
+      warning.code === "CIRCULAR_DEPENDENCY" &&
+      warning.importer.indexOf(normalize("node_modules/chai/lib") === 0)
+    ) {
+      // Chai contains circular references, but they are not fatal and can be ignored.
+      return;
+    }
+
+    console.error(`(!) ${warning.message}`);
+  };
+
+  // Disable tree-shaking of test code.  In rollup-plugin-node-resolve@5.0.0, rollup started respecting
+  // the "sideEffects" field in package.json.  Since our package.json sets "sideEffects=false", this also
+  // applies to test code, which causes all tests to be removed by tree-shaking.
+  baseConfig.treeshake = false;
 
   return baseConfig;
 }

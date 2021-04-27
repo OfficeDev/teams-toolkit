@@ -48,7 +48,7 @@ suite("DotnetChecker E2E Test - first run", async () => {
     // cleanup to make sure the environment is clean before test
   });
 
-  test("Dotnet SDK is not installed, whether globally or in home dir", async function(this: Mocha.Context) {
+  test(".NET SDK is not installed, whether globally or in home dir", async function(this: Mocha.Context) {
     if (await commandExistsInPath(dotnetCommand)) {
       this.skip();
     }
@@ -70,7 +70,7 @@ suite("DotnetChecker E2E Test - first run", async () => {
 
   });
 
-  test("Dotnet SDK supported version is installed globally", async function(this: Mocha.Context) {
+  test(".NET SDK supported version is installed globally", async function(this: Mocha.Context) {
     if (!await dotnetCheckerUtils.hasAnyDotnetVersions(dotnetCommand, dotnetSupportedVersions)) {
       this.skip();
     }
@@ -93,7 +93,7 @@ suite("DotnetChecker E2E Test - first run", async () => {
     chai.assert.equal(dotnetExecPathFromConfig, dotnetExecPath);
   });
 
-  test("Dotnet SDK is too old", async function(this: Mocha.Context) {
+  test(".NET SDK is too old", async function(this: Mocha.Context) {
     const has21 = await dotnetCheckerUtils.hasDotnetVersion(dotnetCommand, dotnetOldVersion);
     const hasSupported = await dotnetCheckerUtils.hasAnyDotnetVersions(dotnetCommand, dotnetSupportedVersions);
     if (!(has21 && !hasSupported)) {
@@ -117,7 +117,7 @@ suite("DotnetChecker E2E Test - first run", async () => {
     }
   });
 
-  test(".NET not installed, for frontend-only projects", async function(this: Mocha.Context) {
+  test(".NET SDK not installed, for frontend-only projects", async function(this: Mocha.Context) {
     if (await commandExistsInPath(dotnetCommand)) {
       this.skip();
     }

@@ -61,7 +61,9 @@
             "signInAzure": "Sign in to Azure",
             "logErrorFormat": "code:${e.source}.${e.name}, message: ${e.message}, stack: ${e.stack}",
             "getHelp": "Get Help",
-            "reportIssue": "Report Issue"
+            "reportIssue": "Report Issue",
+            "azureSignIn": "Azure account is successfully signed in.",
+            "m365SignIn": "M365 account is successfully signed in."
         },
         "progressHandler": {
             "teamsToolkitComponent": "[Teams Toolkit]",

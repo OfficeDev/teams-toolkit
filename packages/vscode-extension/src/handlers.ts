@@ -91,6 +91,12 @@ export async function activate(): Promise<Result<null, FxError>> {
     }
 
     {
+      AzureAccountManager.setStatusChangeMap("successfully-sign-in-azure", (status, token, accountInfo) => {
+        if (status === "SignedIn") {
+          window.showInformationMessage(StringResources.vsc.handlers.azureSignIn);
+        }
+        return Promise.resolve();
+      });
       const result = await core.withAzureAccount(AzureAccountManager);
       if (result.isErr()) {
         showError(result.error);
@@ -104,6 +110,13 @@ export async function activate(): Promise<Result<null, FxError>> {
       if (vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode) {
         appstudioLogin = AppStudioCodeSpaceTokenInstance;
       }
+
+      appstudioLogin.setStatusChangeMap("successfully-sign-in-m365", (status, token, accountInfo) => {
+        if (status === "SignedIn") {
+          window.showInformationMessage(StringResources.vsc.handlers.m365SignIn);
+        }
+        return Promise.resolve();
+      });
 
       const result = await core.withAppStudioToken(appstudioLogin);
       if (result.isErr()) {

@@ -150,8 +150,8 @@ export interface SolutionSettings extends Dict<ConfigValue>{
 }
 
 export interface AzureSolutionSettings extends SolutionSettings{
-    capabilities:string[],
-    hostType?:string,
+    hostType:string,
+    capabilities?:string[],
     azureResources?:string[],
     activeResourcePlugins:string[]
 }

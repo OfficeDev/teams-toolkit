@@ -72,7 +72,6 @@ const runningTasks = new Set<string>(); // to control state of task execution
 export async function activate(): Promise<Result<null, FxError>> {
   const result: Result<null, FxError> = ok(null);
   try {
-    const t0 = new Date().getTime();
     core = CoreProxy.getInstance();
 
     {
@@ -141,7 +140,7 @@ export async function activate(): Promise<Result<null, FxError>> {
         return err(result.error);
       }
     }
-    const t1 = new Date().getTime();
+
     {
       const globalConfig = new ConfigMap();
       globalConfig.set("function-dotnet-checker-enabled", vscodeAdapter.dotnetCheckerEnabled());
@@ -151,7 +150,7 @@ export async function activate(): Promise<Result<null, FxError>> {
         return err(result.error);
       }
     }
-    const t2 = new Date().getTime();
+
     {
       const workspacePath: string | undefined = workspace.workspaceFolders?.length
         ? workspace.workspaceFolders[0].uri.fsPath
@@ -162,8 +161,6 @@ export async function activate(): Promise<Result<null, FxError>> {
         return err(result.error);
       }
     }
-    const t3 = new Date().getTime();
-    VsCodeLogInstance.debug(`total:${t3-t0}, construct:${t1-t0} init: ${t2-t1}, open: ${t3-t2}`);
   } catch (e) {
     const FxError: FxError = {
       name: e.name,

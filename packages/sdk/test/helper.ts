@@ -256,6 +256,7 @@ export async function getSsoTokenFromTeams(): Promise<string> {
  * Once invoke MockEnvironmentVariables, mock the variables in it with another value, it will take effect immediately.
  */
 export function MockEnvironmentVariable(): () => void {
+  require('dotenv').config();
   return mockedEnv({
     M365_CLIENT_ID: process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
     M365_CLIENT_SECRET: process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_SECRET,

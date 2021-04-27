@@ -27,7 +27,7 @@ import { flattenNodes, getParamJson } from "../utils";
 export default class Deploy extends YargsCommand {
   public readonly commandHead = `deploy`;
   public readonly command = `${this.commandHead} [components...]`;
-  public readonly description = "A command to deploy the project in current working directory";
+  public readonly description = "Deploy the current application.";
   public readonly paramPath = constants.deployParamPath;
 
   public params: { [_: string]: Options } = getParamJson(this.paramPath);

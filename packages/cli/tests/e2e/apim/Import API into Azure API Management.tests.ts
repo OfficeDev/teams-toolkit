@@ -27,7 +27,7 @@ describe("Import API into API Management", function () {
   this.beforeAll(async () => {
     // new a project
     await execAsync(
-      `teamsfx new --app-name ${appName} --azure-resources function --interactive false`,
+      `teamsfx new --app-name ${appName} --interactive false`,
       {
         cwd: testFolder,
         env: process.env,

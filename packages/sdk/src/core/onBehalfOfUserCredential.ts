@@ -4,6 +4,7 @@
 import { AccessToken, GetTokenOptions, TokenCredential } from "@azure/identity";
 import { AuthenticationResult, ConfidentialClientApplication } from "@azure/msal-node";
 import { config } from "../core/configurationProvider";
+import { SSOTokenInfoBase } from "../models/ssoTokenInfo";
 import { UserInfo } from "../models/userinfo";
 import { internalLogger } from "../util/logger";
 import { formatString, getUserInfoFromSsoToken, parseJwt } from "../util/utils";
@@ -104,11 +105,15 @@ export class OnBehalfOfUserCredential implements TokenCredential {
     let result: AccessToken | null;
     if (!scopesArray.length) {
       internalLogger.info("Get SSO token.");
-      // TODO: handles situation when SSO token is expired.
-
+      const decodedSsoToken: SSOTokenInfoBase = parseJwt(this.ssoToken);
+      if (Math.floor(Date.now() / 1000) > decodedSsoToken.exp) {
+        const errorMsg = "Sso token has already expired.";
+        internalLogger.error(errorMsg);
+        throw new ErrorWithCode(errorMsg, ErrorCode.AssertionExpiredError);
+      }
       result = {
         token: this.ssoToken,
-        expiresOnTimestamp: parseJwt(this.ssoToken).exp
+        expiresOnTimestamp: decodedSsoToken.exp
       };
     } else {
       internalLogger.info("Get access token with scopes: " + scopesArray.join(" "));
@@ -120,10 +125,7 @@ export class OnBehalfOfUserCredential implements TokenCredential {
           scopes: scopesArray
         });
       } catch (error) {
-        const errorMsg = formatString(ErrorMessage.FailToAcquireTokenOnBehalfOfUser, error.message);
-        internalLogger.error(errorMsg);
-        // TODO: based on error message, use different ErrorCode
-        throw new ErrorWithCode(errorMsg, ErrorCode.InternalError);
+        throw this.generateAuthServerError(error);
       }
 
       if (!authenticationResult) {
@@ -161,5 +163,24 @@ export class OnBehalfOfUserCredential implements TokenCredential {
     return new Promise<UserInfo>((resolve) => {
       resolve(userInfo);
     });
+  }
+
+  private generateAuthServerError(err: any): Error {
+    let errorMessage = err.errorMessage;
+    if (err.name === "InteractionRequiredAuthError") {
+      const fullErrorMsg =
+        "Failed to get access token from AAD server, interaction required: " + errorMessage;
+      internalLogger.error(fullErrorMsg);
+      return new ErrorWithCode(fullErrorMsg, ErrorCode.UiRequiredError);
+    } else if (errorMessage.indexOf("AADSTS500133") >= 0) {
+      const fullErrorMsg =
+        "Failed to get access token from AAD server, sso token expired: " + errorMessage;
+      internalLogger.error(fullErrorMsg);
+      return new ErrorWithCode(fullErrorMsg, ErrorCode.AssertionExpiredError);
+    } else {
+      const fullErrorMsg = formatString(ErrorMessage.FailToAcquireTokenOnBehalfOfUser, errorMessage);
+      internalLogger.error(fullErrorMsg);
+      return new ErrorWithCode(fullErrorMsg, ErrorCode.ServiceError);
+    }
   }
 }

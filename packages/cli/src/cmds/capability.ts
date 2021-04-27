@@ -9,7 +9,6 @@ import { Argv, Options } from "yargs";
 import { ConfigMap, err, FxError, ok, Platform, Result } from "fx-api";
 
 import activate from "../activate";
-import AzureTokenProvider from "../commonlib/azureLogin";
 import * as constants from "../constants";
 import { validateAndUpdateAnswers } from "../question/question";
 import { getParamJson } from "../utils";
@@ -47,7 +46,7 @@ export class CapabilityAddTab extends YargsCommand {
 
     const core = result.value;
     {
-      const result = await core.getQuestionsForUserTask!(func, Platform.VSCode);
+      const result = await core.getQuestionsForUserTask!(func, Platform.CLI);
       if (result.isErr()) {
         return err(result.error);
       }
@@ -85,13 +84,6 @@ export class CapabilityAddBot extends YargsCommand {
     const rootFolder = path.resolve(answers.getString("folder") || "./");
     answers.delete("folder");
 
-    if ("subscription" in args && !!args.subscription) {
-      const result = await AzureTokenProvider.setSubscriptionId(args.subscription, rootFolder);
-      if (result.isErr()) {
-        return result;
-      }
-    }
-
     const result = await activate(rootFolder);
     if (result.isErr()) {
       return err(result.error);
@@ -104,7 +96,7 @@ export class CapabilityAddBot extends YargsCommand {
 
     const core = result.value;
     {
-      const result = await core.getQuestionsForUserTask!(func, Platform.VSCode);
+      const result = await core.getQuestionsForUserTask!(func, Platform.CLI);
       if (result.isErr()) {
         return err(result.error);
       }
@@ -122,13 +114,64 @@ export class CapabilityAddBot extends YargsCommand {
   }
 }
 
+export class CapabilityAddMessageExtension extends YargsCommand {
+  public readonly commandHead = `message-extension`;
+  public readonly command = `${this.commandHead}`;
+  public readonly description = "A command to add message-extension capability to the project.";
+  public readonly paramPath = constants.capabilityAddMessageExtensionParamPath;
+  public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
+
+  public builder(yargs: Argv): Argv<any> {
+    return yargs.options(this.params);
+  }
+
+  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+    const answers = new ConfigMap();
+    for (const name in this.params) {
+      answers.set(name, args[name] || this.params[name].default);
+    }
+
+    const rootFolder = path.resolve(answers.getString("folder") || "./");
+    answers.delete("folder");
+
+    const result = await activate(rootFolder);
+    if (result.isErr()) {
+      return err(result.error);
+    }
+
+    const func = {
+      namespace: "fx-solution-azure",
+      method: "addCapability"
+    };
+
+    const core = result.value;
+    {
+      const result = await core.getQuestionsForUserTask!(func, Platform.CLI);
+      if (result.isErr()) {
+        return err(result.error);
+      }
+      await validateAndUpdateAnswers(result.value!, answers);
+    }
+
+    {
+      const result = await core.executeUserTask!(func, answers);
+      if (result.isErr()) {
+        return err(result.error);
+      }
+    }
+
+    return ok(null);
+  }
+}
+
+
 export class CapabilityAdd extends YargsCommand {
   public readonly commandHead = `add`;
   public readonly command = `${this.commandHead} <capability>`;
   public readonly description =
     "A command to add a capability to the project in current working directory";
 
-  public readonly subCommands: YargsCommand[] = [new CapabilityAddTab(), new CapabilityAddBot()];
+  public readonly subCommands: YargsCommand[] = [new CapabilityAddTab(), new CapabilityAddBot(), new CapabilityAddMessageExtension()];
 
   public builder(yargs: Argv): Argv<any> {
     this.subCommands.forEach((cmd) => {

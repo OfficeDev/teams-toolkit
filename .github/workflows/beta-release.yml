@@ -1,8 +1,9 @@
-name: Daily release
+name: Beta release
 
 on:
-  schedule:
-    - cron: "0 20 * * *"
+  push:
+    branches:
+      - release
 
 jobs:
   release-npm:
@@ -14,7 +15,6 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.CD_PAT }}
-          ref: main
 
       - name: Setup node
         uses: actions/setup-node@v2.1.2
@@ -45,7 +45,7 @@ jobs:
         run: |
           git config --global user.name 'MSFT-yiz'
           git config --global user.email 'yiz@microsoft.com'
-          npx lerna publish --no-private --yes prerelease
+          npx lerna publish --no-private --preid beta prerelease --yes
 
   release-vsix:
     needs: release-npm
@@ -57,7 +57,6 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.CD_PAT }}
-          ref: main
 
       - name: Setup node
         uses: actions/setup-node@v2.1.2
@@ -78,7 +77,7 @@ jobs:
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: "${{ secrets.CD_PAT }}"
-          automatic_release_tag: "daily"
+          automatic_release_tag: "beta"
           prerelease: false
           files: |
             ./packages/**/*.vsix

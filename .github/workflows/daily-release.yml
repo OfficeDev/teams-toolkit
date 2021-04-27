@@ -40,7 +40,7 @@ jobs:
         run: |
           echo "to be enabled."
 
-  daily-release:
+  release-npm:
     needs: pre-tests
     runs-on: ubuntu-latest
 
@@ -70,6 +70,27 @@ jobs:
           git config --global user.name 'MSFT-yiz'
           git config --global user.email 'yiz@microsoft.com'
           npx lerna publish --no-private --yes prerelease
+
+  release-vsix:
+    needs: release-npm
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.CD_PAT }}
+          ref: main
+
+      - name: Setup node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Setup npm registry
+        run: |
+          echo "${{ secrets.NPMRC }}" > ~/.npmrc
 
       - name: pack vsix
         working-directory: ./packages/vscode-extension

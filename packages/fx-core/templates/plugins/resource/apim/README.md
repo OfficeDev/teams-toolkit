@@ -15,7 +15,7 @@ You can enable Azure API Management by following steps:
   - After you signed in, select a subscription under your account. 
   - Open command palette, select `Teamsfx – Add Resources` and select `Azure API Management` in next step. 
   - Choose to create a new API Management instance or use an existing API Management instance.
-- Use TeamsFx Cli
+- Use TeamsFx CLI
   - Run command `teamsfx account login azure`.
   - Run command `teamsfx account set --subscription $subscriptionId`.
   - Create a new API Management instance or use an existing API Management instance
@@ -42,7 +42,7 @@ You can do this by following steps:
     - Select an OpenAPI document. (default: `openapi/openapi.json`)
     - Input the API name prefix. 
     - Select an existing API version or input a new API version
-- Use TeamsFx Cli
+- Use TeamsFx CLI
   - Run command `teamsfx account login azure`.
   - Run command `teamsfx account set --subscription $subscriptionId`. 
   - Run command `teamsfx account login m365`.
@@ -54,15 +54,14 @@ In the deployment step, there will be some inputs needed:
 - Input API prefix. The API Path will be `$apiPrefix-$resourceSuffix`. The API Name will be `$apiPrefix-$resourceSuffix-$apiVersion`
 - Enter new API Version or use an existing version. 
 
-
 ## Write OpenAPI Document
 Update the Open API document under the `openapi` folder. We support both yaml and json format for the Open API document. You need to author the Open API document and ensure the API schema is aligned with the function implementation. For how to generate the Open API document, we have the following recommendations.
+
 ### Recommended way 1: Using npm package swagger-jsdoc 
 - Run command: `npm install -g swagger-jsdoc`. 
 - Annotating source code. [[Detail]](https://github.com/Surnet/swagger-jsdoc/)
 - Edit the title and version in `openapi/openapi.json`.
 - Run command: swagger-jsdoc -d `./openapi/openapi.json **/*.ts`
-
 
 ### Recommended way 2: OpenAPI (Swagger) Editor in VS Code.
 Below is a sample swagger file for the default http trigger function. You can just copy the content into your swagger json file you've just created. 

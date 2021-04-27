@@ -39,7 +39,7 @@ describe("Use an existing API Management Service", function () {
     await setSimpleAuthSkuNameToB1(projectPath);
 
     await execAsync(
-      `teamsfx resource add apim --subscription ${subscriptionId} --apim-resource-group ${existingApimResourceGroupName} --apim-service-name ${appName}-existing-apim`,
+      `teamsfx resource add azure-apim --subscription ${subscriptionId} --apim-resource-group ${existingApimResourceGroupName} --apim-service-name ${appName}-existing-apim`,
       {
         cwd: projectPath,
         env: process.env,

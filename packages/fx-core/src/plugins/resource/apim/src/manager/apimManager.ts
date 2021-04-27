@@ -23,12 +23,7 @@ export class ApimManager {
         this.logger = logger;
         this.telemetryReporter = telemetryReporter;
     }
-
-    public async scaffold(appName: string, projectRootPath: string): Promise<void> {
-        const openApiFileName = path.join(projectRootPath, ProjectConstants.workingDir, ProjectConstants.openApiDocumentFileName);
-        await this.openApiProcessor.generateDefaultOpenApi(openApiFileName, appName, ApimDefaultValues.apiVersion);
-    }
-
+    
     public async provision(apimConfig: IApimPluginConfig, solutionConfig: ISolutionConfig, appName: string): Promise<void> {
         const apimService: ApimService = await this.lazyApimService.getValue();
         const resourceGroupName = apimConfig.resourceGroupName ?? solutionConfig.resourceGroupName;

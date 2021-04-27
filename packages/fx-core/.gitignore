@@ -6,4 +6,3 @@ coverage
 .env
 .prettierignore
 .prettierrc.json
-templates/plugins/simpleauth/SimpleAuth.zip

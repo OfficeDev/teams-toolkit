@@ -8,9 +8,9 @@
 ## Building SDK
 
 1. Clone this repo locally. (`git clone https://github.com/OfficeDev/TeamsFx.git`)
-2. Open a terminal and move into your local copy (`cd TeamsFx`)
-3. Install all dependencies using lerna (`npm run setup`)
-4. Build the SDK package afterwards (`npm run build` under packages/sdk folder)
+2. Open a terminal and move into your local copy. (`cd TeamsFx`)
+3. Because the monorepo is managed by Lerna, you need to bootstrap at the first time. (`npm run setup` or `npm install && npm run bootstrap`) All dependencies will be installed.
+4. Build the SDK package. (`cd packages/sdk && npm run build`)
 
 ## Supporting Browser and NodeJS
 

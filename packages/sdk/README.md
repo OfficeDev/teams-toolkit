@@ -10,13 +10,13 @@ Use the library to:
 [Source code](https://github.com/OfficeDev/TeamsFx/tree/main/packages/sdk) |
 [Package (NPM)](https://www.npmjs.com/package/@microsoft/teamsfx) |
 [API reference documentation](https://aka.ms/teamsfx-sdk-help) |
-[Product documentation](https://review.docs.microsoft.com/en-us/mods/overview?branch=main) |
+[Product documentation]() |
 [Samples](https://github.com/OfficeDev/TeamsFx-Samples)
 
 ## Getting started
 
 TeamsFx SDK is pre-configured in scaffolded project using TeamsFx toolkit or cli.
-Please check the [wiki page](https://review.docs.microsoft.com/en-us/mods/build-your-first-app/build-first-app-overview?branch=main) to see how to create a Teams App project.
+Please check the [wiki page]() to see how to create a Teams App project.
 
 ### Currently supported environments
 
@@ -123,7 +123,7 @@ loadConfiguration({
   authentication: {
     initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
     simpleAuthEndpoint: process.env.REACT_APP_TEAMSFX_ENDPOINT,
-    clientId: process.env.REACT_APP_CLIENT_ID,
+    clientId: process.env.REACT_APP_CLIENT_ID
   }
 });
 const credential: any = new TeamsUserCredential();
@@ -140,7 +140,7 @@ loadConfiguration({
   authentication: {
     initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
     simpleAuthEndpoint: process.env.REACT_APP_TEAMSFX_ENDPOINT,
-    clientId: process.env.REACT_APP_CLIENT_ID,
+    clientId: process.env.REACT_APP_CLIENT_ID
   }
 });
 const credential: any = new TeamsUserCredential();

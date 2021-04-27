@@ -16,6 +16,7 @@ import { TeamsAppAadManager } from "./manager/teamsAppAadManager";
 import axios from "axios";
 import { AadDefaultValues } from "./constants";
 import { Lazy } from "./util/lazy";
+import { FileManager } from "./manager/fileManager";
 
 export class Factory {
     public static async buildApimManager(ctx: PluginContext, solutionConfig: SolutionConfig): Promise<ApimManager> {
@@ -32,6 +33,11 @@ export class Factory {
     public static async buildTeamsAppAadManager(ctx: PluginContext): Promise<TeamsAppAadManager> {
         const lazyAadService = new Lazy(async () => await Factory.buildAadService(ctx.graphTokenProvider, ctx.telemetryReporter, ctx.logProvider));
         return new TeamsAppAadManager(lazyAadService, ctx.telemetryReporter, ctx.logProvider);
+    }
+
+    public static async buildFileManager(ctx: PluginContext, solutionConfig: SolutionConfig): Promise<FileManager> {
+        const openApiProcessor = new OpenApiProcessor(ctx.telemetryReporter, ctx.logProvider);
+        return new FileManager(openApiProcessor, ctx.telemetryReporter, ctx.logProvider);
     }
 
     public static async buildQuestionManager(ctx: PluginContext, solutionConfig: SolutionConfig): Promise<IQuestionManager> {

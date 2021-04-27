@@ -6,14 +6,11 @@ import chaiPromises from "chai-as-promised";
 import { ErrorWithCode, loadConfiguration, OnBehalfOfUserCredential } from "../../../../src";
 import sinon from "sinon";
 import mockedEnv from "mocked-env";
-import {
-  AuthenticationResult,
-  ConfidentialClientApplication,
-  OnBehalfOfRequest
-} from "@azure/msal-node";
+import { AuthenticationResult, ConfidentialClientApplication } from "@azure/msal-node";
 
 chaiUse(chaiPromises);
 let mockedEnvRestore: () => void;
+const jwtBuilder = require("jwt-builder");
 
 describe("OnBehalfOfUserCredential - node", () => {
   const scope = "fake_scope";
@@ -28,29 +25,30 @@ describe("OnBehalfOfUserCredential - node", () => {
   // Error code
   const InvalidConfiguration = "InvalidConfiguration";
   const InternalError = "InternalError";
+  const ServiceError = "ServiceError";
 
-  /**
-   * {
-   * "aud": "test_audience",
-   * "iss": "https://login.microsoftonline.com/test_aad_id/v2.0",
-   * "iat": 1537231048,
-   * "nbf": 1537231048,
-   * "exp": 1537234948,
-   * "aio": "test_aio",
-   * "name": "Teams App Framework SDK Unit Test",
-   * "oid": "11111111-2222-3333-4444-555555555555",
-   * "preferred_username": "test@microsoft.com",
-   * "rh": "test_rh",
-   * "scp": "access_as_user",
-   * "sub": "test_sub",
-   * "tid": "test_tenant_id",
-   * "uti": "test_uti",
-   * "ver": "2.0"
-   * }
-   */
-  const ssoToken =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJ0ZXN0X2F1ZGllbmNlIiwiaXNzIjoiaHR0cHM6Ly9sb2dpbi5taWNyb3NvZnRvbmxpbmUuY29tL3Rlc3RfYWFkX2lkL3YyLjAiLCJpYXQiOjE1MzcyMzEwNDgsIm5iZiI6MTUzNzIzMTA0OCwiZXhwIjoxNTM3MjM0OTQ4LCJhaW8iOiJ0ZXN0X2FpbyIsIm5hbWUiOiJNT0RTIFRvb2xraXQgU0RLIFVuaXQgVGVzdCIsIm9pZCI6IjExMTExMTExLTIyMjItMzMzMy00NDQ0LTU1NTU1NTU1NTU1NSIsInByZWZlcnJlZF91c2VybmFtZSI6InRlc3RAbWljcm9zb2Z0LmNvbSIsInJoIjoidGVzdF9yaCIsInNjcCI6ImFjY2Vzc19hc191c2VyIiwic3ViIjoidGVzdF9zdWIiLCJ0aWQiOiJ0ZXN0X3RlbmFudF9pZCIsInV0aSI6InRlc3RfdXRpIiwidmVyIjoiMi4wIn0.SshbL1xuE1aNZD5swrWOQYgTR9QCNXkZqUebautBvKM";
-  const ssoTokenExp = 1537234948;
+  const now = Math.floor(Date.now() / 1000);
+  const timeInterval = 4000;
+  const ssoTokenExp = now+timeInterval;
+  const ssoToken = jwtBuilder({
+    algorithm: 'HS256',
+    secret: 'super-secret',
+    aud: "test_audience",
+    iss: "https://login.microsoftonline.com/test_aad_id/v2.0",
+    iat: now,
+    nbf: now,
+    exp: timeInterval,
+    aio: "test_aio",
+    name: "Teams App Framework SDK Unit Test",
+    oid: "11111111-2222-3333-4444-555555555555",
+    preferred_username: "test@microsoft.com",
+    rh: "test_rh",
+    scp: "access_as_user",
+    sub: "test_sub",
+    tid: "test_tenant_id",
+    uti: "test_uti",
+    ver: "2.0"
+  });
 
   const sandbox = sinon.createSandbox();
 
@@ -239,11 +237,12 @@ describe("OnBehalfOfUserCredential - node", () => {
     loadConfiguration();
     const oboCredential = new OnBehalfOfUserCredential(ssoToken);
 
-    await expect(oboCredential.getToken(scope))
-      .to.eventually.be.rejectedWith(ErrorWithCode)
-      .and.property("code", InternalError);
-    await expect(oboCredential.getToken(scope))
-      .to.eventually.be.rejectedWith(ErrorWithCode)
-      .and.property("message", "Failed to acquire access token on behalf of user: AAD outage");
+    const errorResult = await expect(oboCredential.getToken(scope)).to.eventually.be.rejectedWith(
+      ErrorWithCode
+    );
+    assert.strictEqual(errorResult.code, ServiceError);
+    assert.isTrue(
+      errorResult.message!.indexOf("Failed to acquire access token on behalf of user: ") >= 0
+    );
   });
 });

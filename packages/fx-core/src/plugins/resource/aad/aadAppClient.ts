@@ -155,10 +155,12 @@ export class AadAppClient {
         );
       }
     } catch (error) {
-      throw ResultFactory.SystemError(
+      throw ResultFactory.UserError(
         UpdateAppIdUriError.name,
         UpdateAppIdUriError.message(),
-        error
+        error,
+        undefined,
+        UpdateAppIdUriError.helpLink,
       );
     }
   }

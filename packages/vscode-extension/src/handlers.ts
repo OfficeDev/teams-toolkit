@@ -497,7 +497,6 @@ export async function addCapabilityHandler(): Promise<Result<null, FxError>> {
 export async function validateDependenciesHandler(): Promise<void> {
   const depsChecker = new DepsChecker(vscodeAdapter, [
     new NodeChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry), 
-    new FuncToolChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry), 
     new DotnetChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry)]);
   const shouldContinue = await depsChecker.resolve();
   if (!shouldContinue) {

@@ -33,19 +33,17 @@ export interface IDepsAdapter {
 }
 
 export interface IDepsLogger {
-  trace(message: string): Promise<boolean>;
   debug(message: string): Promise<boolean>;
   info(message: string): Promise<boolean>;
   warning(message: string): Promise<boolean>;
   error(message: string): Promise<boolean>;
-  fatal(message: string): Promise<boolean>;
 }
 
 export interface IDepsTelemetry {
   sendEvent(eventName: DepsCheckerEvent, timecost?: number): void;
-  sendEventWithDuration(eventName: DepsCheckerEvent,action: () => Promise<void>): Promise<void>;
+  sendEventWithDuration(eventName: DepsCheckerEvent, action: () => Promise<void>): Promise<void>;
   sendUserErrorEvent(eventName: DepsCheckerEvent, errorMessage: string): void;
-  sendSystemErrorEvent(eventName: DepsCheckerEvent,errorMessage: string,errorStack: string): void;
+  sendSystemErrorEvent(eventName: DepsCheckerEvent, errorMessage: string, errorStack: string): void;
 }
 
 export interface DepsInfo {
@@ -85,23 +83,19 @@ export class DepsChecker {
       return !shouldContinue;
     }
 
-    // TODO: add log and telemetry
-    const confirmMessage = await this.generateMessage(validCheckers);
-    return await this._adapter.displayWarningMessage(confirmMessage, "Install", async () => {
-      this._adapter.showOutputChannel();
-      for (const checker of validCheckers) {
-        try {
-          await checker.install();
-        } catch (error) {
-          const continueNext = await this.handleError(error);
-          if (!continueNext) {
-            return !shouldContinue;
-          }
+    this._adapter.showOutputChannel();
+    for (const checker of validCheckers) {
+      try {
+        await checker.install();
+      } catch (error) {
+        const continueNext = await this.handleError(error);
+        if (!continueNext) {
+          return !shouldContinue;
         }
       }
+    }
 
-      return shouldContinue;
-    });
+    return shouldContinue;
   }
 
   private async check(): Promise<Array<IDepsChecker> | null> {

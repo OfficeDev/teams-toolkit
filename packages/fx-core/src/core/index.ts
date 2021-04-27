@@ -59,6 +59,7 @@ import { CoreQuestionNames, QuestionAppName, QuestionRootFolder, QuestionSelectS
 import * as jsonschema from "jsonschema";
 import { FxBotPluginResultFactory } from "../plugins/resource/bot/result";
 import { AzureSubscription, getSubscriptionList } from "./loginUtils";
+import { sleep } from "../plugins/resource/spfx/utils/utils";
 
 class CoreImpl implements Core {
     private target?: CoreImpl;
@@ -113,8 +114,8 @@ class CoreImpl implements Core {
         answers.set("substage", "getQuestions");
         const node = new QTreeNode({ type: NodeType.group });
         if (stage === Stage.create) {
+            node.addChild(new QTreeNode(QuestionRootFolder));
             node.addChild(new QTreeNode(QuestionAppName));
-
             //make sure that global solutions are loaded
             const solutionNames: string[] = [];
             for (const k of this.globalSolutions.keys()) {
@@ -136,7 +137,7 @@ class CoreImpl implements Core {
                     }
                 }
             }
-            node.addChild(new QTreeNode(QuestionRootFolder));
+            
         } else if (this.selectedSolution) {
             const res = await this.selectedSolution.getQuestions(stage, this.solutionContext(answers));
             if (res.isErr()) return res;
@@ -145,7 +146,7 @@ class CoreImpl implements Core {
                 if (child.data) node.addChild(child);
             }
         }
-        return ok(node);
+        return ok(node.trim());
     }
 
     async getQuestionsForUserTask(func: Func, platform: Platform): Promise<Result<QTreeNode | undefined, FxError>> {
@@ -157,7 +158,14 @@ class CoreImpl implements Core {
             const solution = this.globalSolutions.get(solutionName);
             if (solution && solution.getQuestionsForUserTask) {
                 const solutioContext = this.solutionContext();
-                return await solution.getQuestionsForUserTask(func, solutioContext);
+                const res = await solution.getQuestionsForUserTask(func, solutioContext);
+                if(res.isOk()){
+                    if(res.value) {
+                        const node = res.value.trim();
+                        return ok(node);
+                    }
+                }
+                return res;
             }
         }
         return err(
@@ -188,12 +196,19 @@ class CoreImpl implements Core {
         );
     }
 
-    async validateFolder(folder: string, answer?: ConfigMap): Promise<Result<any, FxError>> {
-        const appName = answer?.getString(CoreQuestionNames.AppName);
-        if (!appName) return ok(undefined);
+    async validateAppName(appName: string, answer?: ConfigMap): Promise<Result<any, FxError>> {
+        const folder = answer?.getString(CoreQuestionNames.Foler);
+        if(!folder) return ok(undefined);
+        const schema = {
+            pattern: "^[\\da-zA-Z]+$",
+        };
+        const validateResult = jsonschema.validate(appName, schema);
+        if (validateResult.errors && validateResult.errors.length > 0) {
+            return ok(`app name doesn't match pattern: ${schema.pattern}`);
+        }
         const projectPath = path.resolve(folder, appName);
         const exists = await fs.pathExists(projectPath);
-        if (exists) return ok(`Project folder already exists:${projectPath}, please change a different folder.`);
+        if (exists) return ok(`Project path already exists:${projectPath}, please change a different app name.`);
         return ok(undefined);
     }
 
@@ -201,9 +216,9 @@ class CoreImpl implements Core {
         const namespace = func.namespace;
         const array = namespace?namespace.split("/"):[];
         if (!namespace || "" === namespace || array.length === 0) {
-            if (func.method === "validateFolder") {
+            if (func.method === "validateAppName") {
                 if (!func.params) return ok(undefined);
-                return await this.validateFolder(func.params as string, answer);
+                return await this.validateAppName(func.params as string, answer);
             }
         } else {
             const solutionName = array[0];
@@ -240,10 +255,19 @@ class CoreImpl implements Core {
         this.target.ctx.answers = answers;
 
         const appName = answers?.getString(QuestionAppName.name);
+        if(undefined === appName)
+            return err(
+                new UserError(
+                    error.CoreErrorNames.InvalidInput,
+                    `App Name is empty`,
+                    error.CoreSource,
+                ),
+            );
+            
         const validateResult = jsonschema.validate(appName, {
-            pattern: (QuestionAppName.validation as StringValidation).pattern,
+            pattern: "^[\\da-zA-Z]+$",
         });
-        if (!appName || validateResult.errors && validateResult.errors.length > 0) {
+        if (validateResult.errors && validateResult.errors.length > 0) {
             return err(
                 new UserError(
                     error.CoreErrorNames.InvalidInput,
@@ -351,6 +375,7 @@ class CoreImpl implements Core {
      * open an existing project
      */
     public async open(workspace?: string): Promise<Result<null, FxError>> {
+        const t1 = new Date().getTime();
         let supported = true;
         if (!workspace) {
             supported = false;
@@ -361,7 +386,7 @@ class CoreImpl implements Core {
                 this.ctx.logProvider?.warning(`non Teams project:${workspace}`);
             }
         }
-
+        const t2 = new Date().getTime();
         let getSelectSubItem: undefined | ((token: any) => Promise<TreeItem>) = undefined;
         if (this.ctx.treeProvider) {
             getSelectSubItem = async (token: any): Promise<TreeItem> => {
@@ -542,41 +567,31 @@ class CoreImpl implements Core {
                     icon: "azure",
                 },
             ]);
+
+            if (token !== undefined && getSelectSubItem !== undefined) {
+                const subItem = await getSelectSubItem(token);
+                this.ctx.treeProvider?.add([subItem]);
+            }
         }
 
         if (!supported) return ok(null);
 
-         
-        // read configs
-        const readRes = await this.readConfigs();
-        if (readRes.isErr()) {
-            return readRes;
-        }
-
-        if (!this.ctx.projectSettings || !this.ctx.projectSettings?.solutionSettings) {
-            return err(error.InvalidContext());
-        }
-
+        const t3 = new Date().getTime();
         for (const entry of this.globalSolutions.entries()) {
-            if (entry[0] === this.ctx.projectSettings.solutionSettings.name) {
-                this.selectedSolution = entry[1];
-                break;
-            }
+            this.selectedSolution = entry[1];
+            break;
         }
 
         if (this.selectedSolution === undefined) {
-            return ok(null);
+            return err(new UserError(error.CoreErrorNames.LoadSolutionFailed, "No Solution", error.CoreSource));
         }
 
         this.env = "default";
-
-        const token = this.ctx.azureAccountProvider?.getAccountCredential();
-        if (token !== undefined && getSelectSubItem !== undefined) {
-            const subItem = await getSelectSubItem(token);
-            this.ctx.treeProvider?.add([subItem]);
-        }
-
-        return await this.selectedSolution.open(this.solutionContext());
+         
+        const res = await this.selectedSolution.open(this.solutionContext());
+        const t4 = new Date().getTime();
+        this.ctx.logProvider?.debug(`core.open() time  ----- t2-t1:${t2-t1}, t3-t2:${t3-t2}, t4-t3:${t4-t3}`);
+        return res;
     }
 
     public async isSupported(workspace?: string): Promise<boolean> {
@@ -586,9 +601,6 @@ class CoreImpl implements Core {
         }
         // some validation
         const checklist: string[] = [
-            p,
-            `${p}/package.json`,
-            `${p}/.${ConfigFolderName}`,
             `${p}/.${ConfigFolderName}/settings.json`,
             `${p}/.${ConfigFolderName}/env.default.json`,
         ];
@@ -604,45 +616,51 @@ class CoreImpl implements Core {
 
     public async readConfigs(): Promise<Result<null, FxError>> {
         if (!fs.existsSync(`${this.ctx.root}/.${ConfigFolderName}`)) {
-            this.ctx.logProvider?.warning(`[Core] readConfigs() silent pass, folder not exist:${this.ctx.root}/.${ConfigFolderName}`);
+            this.ctx.logProvider?.warning(`[Core] readConfigs() - folder does not exist: ${this.ctx.root}/.${ConfigFolderName}`);
             return ok(null);
         }
-        try {
-            // load env
-            const reg = /env\.(\w+)\.json/;
-            for (const file of fs.readdirSync(`${this.ctx.root}/.${ConfigFolderName}`)) {
-                const slice = reg.exec(file);
-                if (!slice) {
-                    continue;
+        let res:Result<null, FxError> = ok(null);
+        for(let i = 0 ; i < 5; ++ i){
+            try {
+                // load env
+                const reg = /env\.(\w+)\.json/;
+                for (const file of fs.readdirSync(`${this.ctx.root}/.${ConfigFolderName}`)) {
+                    const slice = reg.exec(file);
+                    if (!slice) {
+                        continue;
+                    }
+                    const envName = slice[1];
+                    const filePath = `${this.ctx.root}/.${ConfigFolderName}/${file}`;
+                    const configJson: Json = await fs.readJson(filePath);
+                    const localDataPath = `${this.ctx.root}/.${ConfigFolderName}/${envName}.userdata`;
+                    let dict:Dict<string>;
+                    if(await fs.pathExists(localDataPath)){
+                        const dictContent = await fs.readFile(localDataPath, "UTF-8");
+                        dict = deserializeDict(dictContent);
+                    }
+                    else{
+                        dict = {};
+                    } 
+                    mergeSerectData(dict, configJson);
+                    const solutionConfig: SolutionConfig = objectToMap(configJson);
+                    this.configs.set(envName, solutionConfig);
                 }
-                const envName = slice[1];
-                const filePath = `${this.ctx.root}/.${ConfigFolderName}/${file}`;
-                const configJson: Json = await fs.readJson(filePath);
-                const localDataPath = `${this.ctx.root}/.${ConfigFolderName}/${envName}.userdata`;
-                let dict:Dict<string>;
-                if(await fs.pathExists(localDataPath)){
-                    const dictContent = await fs.readFile(localDataPath, "UTF-8");
-                    dict = deserializeDict(dictContent);
-                }
-                else{
-                    dict = {};
-                } 
-                mergeSerectData(dict, configJson);
-                const solutionConfig: SolutionConfig = objectToMap(configJson);
-                this.configs.set(envName, solutionConfig);
+    
+                // read projectSettings
+                this.ctx.projectSettings = await this.readSettings(this.ctx.root);
+                res = ok(null);
+                break;
+            } catch (e) {
+                res = err(error.ReadFileError(e));
+                sleep(10);
             }
-
-            // read projectSettings
-            this.ctx.projectSettings = await this.readSettings(this.ctx.root);
-        } catch (e) {
-            return err(error.ReadFileError(e));
         }
-        return ok(null);
+        return res;
     }
 
     public async writeConfigs(): Promise<Result<null, FxError>> {
         if (!fs.existsSync(`${this.ctx.root}/.${ConfigFolderName}`)) {
-            this.ctx.logProvider?.warning(`[Core] writeConfigs() silent pass, folder not exist:${this.ctx.root}/.${ConfigFolderName}`);
+            this.ctx.logProvider?.warning(`[Core] writeConfigs() - folder does not exist:${this.ctx.root}/.${ConfigFolderName}`);
             return ok(null);
         }
         try {

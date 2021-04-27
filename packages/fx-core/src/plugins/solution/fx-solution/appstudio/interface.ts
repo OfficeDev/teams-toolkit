@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { IBot, IComposeExtension, IConfigurableTab, IStaticTab } from "fx-api";
+import { IComposeExtension, IConfigurableTab, IMessagingExtensionCommand, IStaticTab } from "fx-api";
 
 export interface IUserList {
     tenantId: string;
@@ -28,48 +28,6 @@ export interface IGroupChatCommand {
 export interface ILocalizationInfo {
     defaultLanguageTag?: any;
     languages: any[];
-}
-
-export interface IAppDefinition {
-    teamsAppId?: string;
-    tenantId?: string;
-    ownerAadId?: string;
-    userList?: IUserList[];
-    environments?: any[];
-    createdAt?: Date;
-    updatedAt?: Date;
-    appId?: string;
-    appName: string;
-    appStudioVersion?: string;
-    version?: string;
-    packageName?: string;
-    shortName?: string;
-    longName?: string;
-    developerName?: string;
-    websiteUrl?: string;
-    privacyUrl?: string;
-    termsOfUseUrl?: string;
-    mpnId?: string;
-    shortDescription?: string;
-    longDescription?: string;
-    colorIcon?: string;
-    outlineIcon?: string;
-    accentColor?: string;
-    configurableTabs?: IConfigurableTab[];
-    staticTabs?: IStaticTab[];
-    bots?: IBot[];
-    connectors?: any[];
-    messagingExtensions?: IComposeExtension[];
-    validDomains?: string[];
-    appStudioChecklistChecked?: any[];
-    webApplicationInfoId?: string;
-    webApplicationInfoResource?: string;
-    devicePermissions?: any[];
-    applicationPermissions?: any[];
-    showLoadingIndicator?: boolean;
-    isFullScreen?: boolean;
-    hasPreviewFeature?: boolean;
-    localizationInfo?: ILocalizationInfo;
 }
 
 export interface IAADPassword {
@@ -144,18 +102,6 @@ export interface IParameter {
     choices?: any[];
 }
 
-export interface IMessagingExtensionCommand {
-    id: string;
-    type: string;
-    title: string;
-    description: string;
-    initialRun?: boolean;
-    fetchTask?: boolean;
-    context: string[];
-    parameters: IParameter[];
-    taskInfo?: any;
-}
-
 export interface IWebApplicationInfo {
     id: string;
     resource: string;
@@ -179,4 +125,76 @@ export interface IAppManifest {
     permissions: string[];
     validDomains: string[];
     webApplicationInfo: IWebApplicationInfo;
+}
+
+export interface IAppDefinition {
+    teamsAppId?: string;
+    tenantId?: string;
+    ownerAadId?: string;
+    userList?: IUserList[];
+    environments?: any[];
+    createdAt?: Date;
+    updatedAt?: Date;
+    appId?: string;
+    appName: string;
+    appStudioVersion?: string;
+    version?: string;
+    packageName?: string;
+    shortName?: string;
+    longName?: string;
+    developerName?: string;
+    websiteUrl?: string;
+    privacyUrl?: string;
+    termsOfUseUrl?: string;
+    mpnId?: string;
+    shortDescription?: string;
+    longDescription?: string;
+    colorIcon?: string;
+    outlineIcon?: string;
+    accentColor?: string;
+    configurableTabs?: IConfigurableTab[];
+    staticTabs?: IStaticTab[];
+    bots?: IAppDefinitionBot[];
+    connectors?: any[];
+    messagingExtensions?: IMessagingExtension[];
+    validDomains?: string[];
+    appStudioChecklistChecked?: any[];
+    webApplicationInfoId?: string;
+    webApplicationInfoResource?: string;
+    devicePermissions?: any[];
+    applicationPermissions?: any[];
+    showLoadingIndicator?: boolean;
+    isFullScreen?: boolean;
+    hasPreviewFeature?: boolean;
+    localizationInfo?: ILocalizationInfo;
+}
+
+export interface IAppDefinitionBot {
+    objectId?: string;
+    botId: string;
+    needsChannelSelector?: boolean;
+    isNotificationOnly: boolean;
+    supportsFiles: boolean;
+    isAudioCallingBot?: boolean;
+    isVideoCallingBot?: boolean;
+    scopes: string[];
+    teamCommands?: ITeamCommand[];
+    personalCommands?: IPersonalCommand[];
+    groupChatCommands?: IGroupChatCommand[];
+}
+
+export interface IMessagingExtension {
+    objectId?: string;
+    botId: string;
+    canUpdateConfiguration: boolean;
+    commands: IMessagingExtensionCommand[];
+    messageHandlers: {
+        type: "link";
+        value: {
+            /**
+             * A list of domains that the link message handler can register for, and when they are matched the app will be invoked
+             */
+            domains?: string[];
+        }
+    }[];
 }

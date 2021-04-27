@@ -14,9 +14,9 @@ Teams apps are a combination of [capabilities](https://docs.microsoft.com/en-us/
 
 <table>
     <tr>
-        <td><img src="./media/landingPage_launchPage.png"></td>
-        <td><img src="./media/landingPage_conversationalBot.png"></td>
-        <td><img src="./media/landingPage_messagingExtension.png"></td>
+        <td><img src="https://raw.githubusercontent.com/HuihuiWu-Microsoft/Teams-Toolkit-V2/main/landingPage_launchPage.png"></td>
+        <td><img src="https://raw.githubusercontent.com/HuihuiWu-Microsoft/Teams-Toolkit-V2/main/landingPage_conversationalBot.png"></td>
+        <td><img src="https://raw.githubusercontent.com/HuihuiWu-Microsoft/Teams-Toolkit-V2/main/landingPage_messagingExtension.png"></td>
     </tr>
     <tr>
         <td>Launch Pages</td>
@@ -36,9 +36,9 @@ Build a Teams app from the scratch or explore our [samples](www.baidu.com) to he
 
 <table>
     <tr>
-        <td><img src="./media/landingPage_shareNow.png"></td>
-        <td><img src="./media/landingPage_poll.png"></td>
-        <td><img src="./media/landingPage_faq.png"></td>
+        <td><img src="https://raw.githubusercontent.com/HuihuiWu-Microsoft/Teams-Toolkit-V2/main/landingPage_shareNow.png"></td>
+        <td><img src="https://raw.githubusercontent.com/HuihuiWu-Microsoft/Teams-Toolkit-V2/main/landingPage_poll.png"></td>
+        <td><img src="https://raw.githubusercontent.com/HuihuiWu-Microsoft/Teams-Toolkit-V2/main/landingPage_faq.png"></td>
     </tr>
     <tr>
         <td>Share Now</td>
@@ -58,11 +58,11 @@ Build a Teams app from the scratch or explore our [samples](www.baidu.com) to he
 
 <table>
     <tr>
-        <td><img src="./media/landingPage_m365.png"></td>
+        <td><img src="https://raw.githubusercontent.com/HuihuiWu-Microsoft/Teams-Toolkit-V2/main/landingPage_m365.png"></td>
         <td><h3>M365</h3>The Teams Toolkit requires a Microsoft 365 organizational account where Teams is running and has been registered.</td>
     </tr>
     <tr>
-        <td><img src="./media/landingPage_azure.png"></td>
+        <td><img src="https://raw.githubusercontent.com/HuihuiWu-Microsoft/Teams-Toolkit-V2/main/landingPage_azure.png"></td>
         <td><h3>Azure</h3> The Teams Toolkit may require an Azure account and subscription to deploy the Azure resources for your project.</td>
     </tr>
 </table>

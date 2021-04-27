@@ -79,7 +79,6 @@ describe("Print function - node", () => {
       getResourceConfiguration(ResourceType.API);
     } catch (err) {
       expect(err).to.be.instanceOf(ErrorWithCode);
-      // todo: define expected value in test case, instead of using enum from SDK.
       expect(err.code).to.eql(ErrorCode.InvalidConfiguration);
     }
   });

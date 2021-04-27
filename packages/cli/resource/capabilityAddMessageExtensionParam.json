@@ -1,0 +1,72 @@
+[
+    {
+        "data": {
+            "type": "folder",
+            "name": "folder",
+            "description": "Select root folder of the project",
+            "default": "./"
+        }
+    },
+    {
+        "data": {
+            "name": "capabilities",
+            "title": "Select capabilities to add",
+            "type": "multiSelect",
+            "option": [
+                {
+                    "id": "Bot",
+                    "label": "Bot",
+                    "cliName": "bot",
+                    "description": "Bots allow you to interact with and obtain information in a text/search/conversational manner."
+                },
+                {
+                    "id": "MessageExtension",
+                    "label": "Messaging Extension",
+                    "cliName": "message-extension",
+                    "description": "Messaging Extensions allow users to interact with a web service through buttons and forms in the Microsoft Teams client."
+                }
+            ],
+            "default": [
+                "message-extension"
+            ],
+            "prompt": "Bot and Message Extension are exclusive, you can not select both.",
+            "hide": true
+        }
+    },
+    {
+        "data": {
+            "name": "way-to-register-bot",
+            "type": "singleSelect",
+            "option": [
+                {
+                    "id": "create-new",
+                    "label": "Create a new bot registration"
+                },
+                {
+                    "id": "reuse-existing",
+                    "label": "Use an existing bot registration"
+                }
+            ],
+            "title": "Bot registration",
+            "default": "create-new"
+        }
+    },
+    {
+        "data": {
+            "name": "bot-id",
+            "type": "text",
+            "title": "Enter bot id",
+            "default": "",
+            "validation": {}
+        }
+    },
+    {
+        "data": {
+            "name": "bot-password",
+            "type": "password",
+            "title": "Enter bot password",
+            "default": "",
+            "validation": {}
+        }
+    }
+]

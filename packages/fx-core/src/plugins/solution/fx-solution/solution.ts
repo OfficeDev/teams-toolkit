@@ -321,6 +321,15 @@ export class TeamsAppSolution implements Solution {
                 }
                 else azureResources = [];
             }
+            if(capabilities.includes(BotOptionItem.id) && capabilities.includes(MessageExtensionItem.id)){
+                return err(
+                    returnUserError(
+                        new Error("One project can only have one Bot/Me"),
+                        "Solution",
+                        SolutionError.FailedToAddCapability,
+                    ),
+                );
+            }
         }
         const solutionSettings:AzureSolutionSettings = {
             name: projectSettings.solutionSettings.name,
@@ -1849,6 +1858,16 @@ export class TeamsAppSolution implements Solution {
         const addFunc = addResourcesInQuestion.includes(AzureResourceFunction.id);
         const addApim = addResourcesInQuestion.includes(AzureResourceApim.id);
 
+        if( (alreadyHaveSql && addSQL) || (alreadyHaveApim && addApim) ){
+            return err(
+                returnUserError(
+                    new Error("SQL/APIM is already added."),
+                    "Solution",
+                    SolutionError.AddResourceNotSupport,
+                ),
+            );
+        }
+
         const addResourceForPlugin: string[] = [];
         const addResourceItemsForNotification: string[] = [];
         if ((addFunc || addSQL || addApim) && !alreadyHaveFunction) {
@@ -1935,7 +1954,7 @@ export class TeamsAppSolution implements Solution {
                 returnUserError(
                     new Error("Add capability is not supported for SPFx project"),
                     "Solution",
-                    SolutionError.AddResourceNotSupport,
+                    SolutionError.FailedToAddCapability,
                 ),
             );
         }
@@ -1943,6 +1962,27 @@ export class TeamsAppSolution implements Solution {
         const capabilitiesAnswer = ctx.answers.getStringArray(AzureSolutionQuestionNames.Capabilities);
         if(!capabilitiesAnswer || capabilitiesAnswer.length === 0){
             return ok(Void);
+        }
+
+        if( capabilitiesAnswer.includes(BotOptionItem.id) && capabilitiesAnswer.includes(MessageExtensionItem.id) ){
+            return err(
+                returnUserError(
+                    new Error("Bot and Me are exclusive"),
+                    "Solution",
+                    SolutionError.FailedToAddCapability,
+                ),
+            );
+        }
+
+        if( ( settings.capabilities?.includes(BotOptionItem.id) || settings.capabilities?.includes(MessageExtensionItem.id) ) 
+            && ( capabilitiesAnswer.includes(BotOptionItem.id) || capabilitiesAnswer.includes(MessageExtensionItem.id) ) ){
+            return err(
+                returnUserError(
+                    new Error("One project can only have one Bot/Me"),
+                    "Solution",
+                    SolutionError.FailedToAddCapability,
+                ),
+            );
         }
 
         const azureResources = ctx.answers.getStringArray(AzureSolutionQuestionNames.AzureResources);

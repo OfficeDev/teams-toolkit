@@ -19,8 +19,8 @@ You can enable Azure API Management by following steps:
   - Run command `teamsfx account login azure`.
   - Run command `teamsfx account set --subscription $subscriptionId`.
   - Create a new API Management instance or use an existing API Management instance
-    - [New] Run command `teamsfx resource add apim`.
-    - [Existing] Run command `teamsfx resource add apim --apim-resource-group $resourceGroupName --apim-service-name $serviceName`.
+    - [New] Run command `teamsfx resource add azure-apim`.
+    - [Existing] Run command `teamsfx resource add azure-apim --apim-resource-group $resourceGroupName --apim-service-name $serviceName`.
 
 Note: during the steps, we need your Azure account and subscription information so you can specify whether to use an existing or new APIM instance. 
 

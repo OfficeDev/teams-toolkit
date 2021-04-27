@@ -2,7 +2,7 @@ name: Daily release
 
 on:
   schedule:
-    - cron: "0 20 * * *"
+    - cron: "0 5 * * *"
 
 jobs:
   pre-tests:
@@ -20,6 +20,8 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
+          token: ${{ secrets.CD_PAT }}
+          ref: main
 
       - name: Setup node
         uses: actions/setup-node@v2.1.2
@@ -60,6 +62,7 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.CD_PAT }}
+          ref: main
 
       - name: Setup node
         uses: actions/setup-node@v2.1.2
@@ -88,8 +91,8 @@ jobs:
 
       - name: release npm packages to npmjs.org
         run: |
-          git config --global user.name 'LongOddCode'
-          git config --global user.email 'haolong@microsoft.com'
+          git config --global user.name 'MSFT-yiz'
+          git config --global user.email 'yiz@microsoft.com'
           npx lerna publish --no-private --yes prerelease
 
       - name: pack vsix
@@ -101,7 +104,7 @@ jobs:
       - name: release VSCode extension to github
         uses: marvinpinto/action-automatic-releases@latest
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          repo_token: "${{ secrets.CD_PAT }}"
           automatic_release_tag: "latest"
           prerelease: false
           files: |

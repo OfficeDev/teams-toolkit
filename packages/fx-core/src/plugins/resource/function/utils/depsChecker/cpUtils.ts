@@ -30,10 +30,16 @@ export namespace cpUtils {
       ...args
     );
     if (result.code !== 0) {
-      await logger?.debug(`Failed to run command: "${command} ${result.formattedArgs}", code: '${result.code}'`);
-      throw new Error(`Failed to run "${command}" command. Check output window for more details.`);
+      await logger?.debug(
+        `Failed to run command: "${command} ${result.formattedArgs}", code: '${result.code}'`
+      );
+      throw new Error(
+        `Failed to run "${command}" command. Check output window for more details.`
+      );
     } else {
-      await logger?.debug(`Finished running command: "${command} ${result.formattedArgs}".`);
+      await logger?.debug(
+        `Finished running command: "${command} ${result.formattedArgs}".`
+      );
     }
 
     return result.cmdOutput;
@@ -47,7 +53,10 @@ export namespace cpUtils {
     ...args: string[]
   ): Promise<ICommandResult> {
     return await new Promise(
-      (resolve: (res: ICommandResult) => void, reject: (e: Error) => void): void => {
+      (
+        resolve: (res: ICommandResult) => void,
+        reject: (e: Error) => void
+      ): void => {
         let cmdOutput = "";
         let cmdOutputIncludingStderr = "";
         const formattedArgs: string = args.join(" ");
@@ -60,7 +69,24 @@ export namespace cpUtils {
         Object.assign(options, additionalOptions);
 
         const childProc: cp.ChildProcess = cp.spawn(command, args, options);
-        logger?.debug(`Running command: "${command} ${formattedArgs}", options = '${options}'`);
+        let timer: NodeJS.Timeout;
+        if (options.timeout && options.timeout > 0) {
+          // timeout only exists for exec not spawn
+          timer = setTimeout(() => {
+            childProc.kill();
+            logger?.debug(
+              `Stop exec due to timeout, command: "${command} ${formattedArgs}", options = '${options}'`
+            );
+            reject(
+              new Error(
+                `Exec command: "${command} ${formattedArgs}" timeout, ${options.timeout} ms`
+              )
+            );
+          }, options.timeout);
+        }
+        logger?.debug(
+          `Running command: "${command} ${formattedArgs}", options = '${options}'`
+        );
 
         childProc.stdout?.on("data", (data: string | Buffer) => {
           data = data.toString();
@@ -73,12 +99,22 @@ export namespace cpUtils {
           cmdOutputIncludingStderr = cmdOutputIncludingStderr.concat(data);
         });
 
-        childProc.on("error", (error) => {
-          logger?.debug(`Failed to run command '${command} ${formattedArgs}': cmdOutputIncludingStderr: '${cmdOutputIncludingStderr}', error: ${error}`);
+        childProc.on("error", error => {
+          logger?.debug(
+            `Failed to run command '${command} ${formattedArgs}': cmdOutputIncludingStderr: '${cmdOutputIncludingStderr}', error: ${error}`
+          );
+          if (timer) {
+            clearTimeout(timer);
+          }
           reject(error);
         });
         childProc.on("close", (code: number) => {
-          logger?.debug(`Command finished with outputs, cmdOutputIncludingStderr: '${cmdOutputIncludingStderr}'`);
+          logger?.debug(
+            `Command finished with outputs, cmdOutputIncludingStderr: '${cmdOutputIncludingStderr}'`
+          );
+          if (timer) {
+            clearTimeout(timer);
+          }
           resolve({
             code,
             cmdOutput,
@@ -109,24 +145,35 @@ export namespace cpUtils {
    * Run sudo command and return stdout content.
    * Note: the return value may contains EOL.
    */
-  export function execSudo(logger: IDepsLogger, command: string): Promise<string> {
+  export function execSudo(
+    logger: IDepsLogger,
+    command: string
+  ): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       try {
-        sudo.exec(command, { name: "TeamsFx Toolkit" }, (error, stdout, stderr) => {
-          logger.debug(`Running execSudo, command: '${command}', error: '${error}', stdout: '${stdout}', stderr: '${stderr}'`);
+        sudo.exec(
+          command,
+          { name: "TeamsFx Toolkit" },
+          (error, stdout, stderr) => {
+            logger.debug(
+              `Running execSudo, command: '${command}', error: '${error}', stdout: '${stdout}', stderr: '${stderr}'`
+            );
 
-          if (error) {
-            reject(error);
-          }
+            if (error) {
+              reject(error);
+            }
 
-          if (stdout) {
-            resolve(stdout.toString());
-          } else {
-            resolve("");
+            if (stdout) {
+              resolve(stdout.toString());
+            } else {
+              resolve("");
+            }
           }
-        });
+        );
       } catch (error) {
-        logger.debug(`Failed to run execSudo, command: '${command}', error: '${error}'`);
+        logger.debug(
+          `Failed to run execSudo, command: '${command}', error: '${error}'`
+        );
         reject(error);
       }
     });

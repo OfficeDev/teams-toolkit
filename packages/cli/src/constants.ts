@@ -22,7 +22,7 @@ export const resourceAddApimParamPath = path.resolve(paramFolder, "resourceAddAp
 
 export const capabilityAddTabParamPath = path.resolve(paramFolder, "capabilityAddTabParam.json");
 export const capabilityAddBotParamPath = path.resolve(paramFolder, "capabilityAddBotParam.json");
-
+export const capabilityAddMessageExtensionParamPath = path.resolve(paramFolder, "capabilityAddMessageExtensionParam.json");
 export const resourceListParamPath = path.resolve(paramFolder, "resourceListParam.json");
 export const resourceShowFunctionParamPath = path.resolve(
   paramFolder,

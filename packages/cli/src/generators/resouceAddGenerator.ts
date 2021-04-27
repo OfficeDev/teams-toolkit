@@ -41,7 +41,7 @@ abstract class ResourceAddGenerator extends Generator {
 
     // pick all related questions.
     const allNodes = [root, ...functionNodes, ...resourceNodes].filter(node => node.data.type !== NodeType.group);
-    return ok(allNodes);
+    return ok([constants.RootFolderNode, ...allNodes]);
   }
 }
 

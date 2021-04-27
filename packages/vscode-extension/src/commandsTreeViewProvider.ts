@@ -186,6 +186,9 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
         originalCommand.label = treeItem.label;
         originalCommand.tooltip = treeItem.label;
         originalCommand.contextValue = treeItem.contextValue;
+        if (treeItem.icon) {
+          originalCommand.iconPath = path.join(ext.context.extensionPath, "media", `${treeItem.icon}.svg`);
+        }
       }
     }
     this._onDidChangeTreeData.fire();

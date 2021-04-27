@@ -93,7 +93,7 @@
     "@types/fs-extra": "^9.0.11",
     "@types/memory-cache": "^0.2.1",
     "@types/mocha": "^7.0.2",
-    "@types/node": "^8.0.0",
+    "@types/node": "^12.11.7",
     "@types/sinon": "^9.0.10",
     "@types/tedious": "^4.0.3",
     "@types/url-join": "^4.0.0",

@@ -5,28 +5,35 @@ import fs from "fs-extra";
 import path from "path";
 import { expect } from "chai";
 
-import { MockAzureAccountProvider } from "fx-api";
-
-import { execAsync, getTestFolder, getUniqueAppName } from "./commonUtils";
+import {
+  execAsync,
+  getSubscriptionId,
+  getTestFolder,
+  getUniqueAppName,
+  cleanUp,
+} from "../commonUtils";
 
 describe("Aad Error Tests", function() {
   let testFolder: string;
   let appName: string;
+  let subscription: string;
   let projectPath: string;
 
-  this.beforeEach(async () => {
+  beforeEach(async () => {
     testFolder = getTestFolder();
     appName = getUniqueAppName();
+    subscription = getSubscriptionId();
     projectPath = path.resolve(testFolder, appName);
 
     // new a project
-    const newResult = await execAsync(`teamsfx new --app-name ${appName} --interactive false --verbose false`, {
+    await execAsync(`teamsfx new --interactive false --app-name ${appName}`,
+      {
         cwd: testFolder,
         env: process.env,
         timeout: 0
-    });
-    expect(newResult.stdout).to.eq("");
-    expect(newResult.stderr).to.eq("");
+      }
+    );
+    console.log(`[Successfully] scaffold to ${projectPath}`);
   });
 
   it(`AAD: AadGetAppError`, async function() {
@@ -40,16 +47,16 @@ describe("Aad Error Tests", function() {
 
     // provision
     try {
-        const provisionResult = await execAsync(
-            `teamsfx provision --subscription 1756abc0-3554-4341-8d6a-46674962ea19 --verbose false`,
-            {
-              cwd: projectPath,
-              env: process.env,
-              timeout: 0
-            }
-        );
+      await execAsync(
+        `teamsfx provision --subscription ${subscription}`,
+        {
+          cwd: projectPath,
+          env: process.env,
+          timeout: 0
+        }
+      );
     } catch (error) {
-        expect(error.toString()).to.contains("AadGetAppError");
+      expect(error.toString()).to.contains("AadGetAppError");
     }
   });
 
@@ -64,16 +71,16 @@ describe("Aad Error Tests", function() {
 
     // provision
     try {
-        const provisionResult = await execAsync(
-            `teamsfx provision --subscription 1756abc0-3554-4341-8d6a-46674962ea19 --verbose false`,
-            {
-              cwd: projectPath,
-              env: process.env,
-              timeout: 0
-            }
-        );
+      await execAsync(
+        `teamsfx provision --subscription ${subscription}`,
+        {
+          cwd: projectPath,
+          env: process.env,
+          timeout: 0
+        }
+      );
     } catch (error) {
-        expect(error.toString()).to.contains("GetSkipAppConfigError");
+      expect(error.toString()).to.contains("GetSkipAppConfigError");
     }
   });
 
@@ -92,16 +99,16 @@ describe("Aad Error Tests", function() {
 
     // provision
     try {
-      const provisionResult = await execAsync(
-          `teamsfx provision --subscription 1756abc0-3554-4341-8d6a-46674962ea19 --verbose false`,
-          {
-            cwd: projectPath,
-            env: process.env,
-            timeout: 0
-          }
+      await execAsync(
+        `teamsfx provision --subscription ${subscription}`,
+        {
+          cwd: projectPath,
+          env: process.env,
+          timeout: 0
+        }
       );
     } catch (error) {
-        expect(error.toString()).to.contains("UnknownPermissionScope");
+      expect(error.toString()).to.contains("UnknownPermissionScope");
     }
   });
 
@@ -120,16 +127,16 @@ describe("Aad Error Tests", function() {
 
     // provision
     try {
-      const provisionResult = await execAsync(
-          `teamsfx provision --subscription 1756abc0-3554-4341-8d6a-46674962ea19 --verbose false`,
-          {
-            cwd: projectPath,
-            env: process.env,
-            timeout: 0
-          }
+      await execAsync(
+        `teamsfx provision --subscription ${subscription}`,
+        {
+          cwd: projectPath,
+          env: process.env,
+          timeout: 0
+        }
       );
     } catch (error) {
-        expect(error.toString()).to.contains("UnknownPermissionRole");
+      expect(error.toString()).to.contains("UnknownPermissionRole");
     }
   });
 
@@ -148,24 +155,21 @@ describe("Aad Error Tests", function() {
 
     // provision
     try {
-      const provisionResult = await execAsync(
-          `teamsfx provision --subscription 1756abc0-3554-4341-8d6a-46674962ea19 --verbose false`,
-          {
-            cwd: projectPath,
-            env: process.env,
-            timeout: 0
-          }
+      await execAsync(
+        `teamsfx provision --subscription ${subscription}`,
+        {
+          cwd: projectPath,
+          env: process.env,
+          timeout: 0
+        }
       );
     } catch (error) {
-        expect(error.toString()).to.contains("ParsePermissionError");
+      expect(error.toString()).to.contains("ParsePermissionError");
     }
   });
 
-  this.afterEach(async () => {
-    // remove resouce
-    await MockAzureAccountProvider.getInstance().deleteResourceGroup(`${appName}-rg`);
-
-    // remove project
-    await fs.remove(projectPath);
+  afterEach(async () => {
+    // clean up
+    await cleanUp(appName, projectPath, true, false, false);
   });
 });

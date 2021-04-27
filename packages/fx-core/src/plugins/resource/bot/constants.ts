@@ -12,6 +12,7 @@ export class RegularExprs {
 
 export class WebAppConstants {
     public static readonly WEB_APP_SITE_DOMAIN: string = "azurewebsites.net";
+    public static readonly APP_SERVICE_PLAN_DEFAULT_SKU_NAME = "F1";
 }
 
 export class AADRegistrationConstants {
@@ -38,31 +39,31 @@ export class TemplateProjectsConstants {
 }
 
 export class ProgressBarConstants {
-    public static readonly SCAFFOLD_TITLE: string = "Scaffolding Bot";
-    public static readonly SCAFFOLD_STEP_START = "Start to do scaffolding.";
-    public static readonly SCAFFOLD_STEP_FETCH_ZIP = "Start to fetch the template zip.";
-    public static readonly SCAFFOLD_STEP_UNZIP = "Start to extract template zip to target folder.";
+    public static readonly SCAFFOLD_TITLE: string = "Scaffolding bot";
+    public static readonly SCAFFOLD_STEP_START = "Scaffolding bot.";
+    public static readonly SCAFFOLD_STEP_FETCH_ZIP = "Retrieving templates.";
+    public static readonly SCAFFOLD_STEP_UNZIP = "Extracting templates target folder.";
 
     public static readonly SCAFFOLD_STEPS_NUM: number = 2;
 
-    public static readonly PROVISION_TITLE: string = "Provisioning Bot";
-    public static readonly PROVISION_STEP_START = "Provisioning azure resources.";
+    public static readonly PROVISION_TITLE: string = "Provisioning bot";
+    public static readonly PROVISION_STEP_START = "Provisioning bot.";
     public static readonly PROVISION_STEP_BOT_REG = "Registering bot.";
-    public static readonly PROVISION_STEP_WEB_APP = "Provisioning azure web app.";
+    public static readonly PROVISION_STEP_WEB_APP = "Provisioning Azure Web App.";
 
     public static readonly PROVISION_STEPS_NUM: number = 2;
 
-    public static readonly LOCAL_DEBUG_TITLE: string = "Local Debug Provisioning Bot";
-    public static readonly LOCAL_DEBUG_STEP_START = "Provisioning local debug.";
+    public static readonly LOCAL_DEBUG_TITLE: string = "Local debugging";
+    public static readonly LOCAL_DEBUG_STEP_START = "Provisioning bot for local debug.";
     public static readonly LOCAL_DEBUG_STEP_BOT_REG = "Registering bot.";
 
     public static readonly LOCAL_DEBUG_STEPS_NUM: number = 1;
 
-    public static readonly DEPLOY_TITLE: string = "Deploying Bot";
-    public static readonly DEPLOY_STEP_START = "Start to deploy.";
-    public static readonly DEPLOY_STEP_NPM_INSTALL = "Running npm install.";
-    public static readonly DEPLOY_STEP_ZIP_FOLDER = "Zipping package folder."
-    public static readonly DEPLOY_STEP_ZIP_DEPLOY = "Uploading package.";
+    public static readonly DEPLOY_TITLE: string = "Deploying bot";
+    public static readonly DEPLOY_STEP_START = "Deploying bot.";
+    public static readonly DEPLOY_STEP_NPM_INSTALL = "Installing dependencies.";
+    public static readonly DEPLOY_STEP_ZIP_FOLDER = "Creating application package."
+    public static readonly DEPLOY_STEP_ZIP_DEPLOY = "Uploading application package.";
 
     public static readonly DEPLOY_STEPS_NUM: number = 3;
 
@@ -148,7 +149,7 @@ export class QuestionOptions {
         },
         {
             id: WayToRegisterBot.ReuseExisting,
-            label: "Reuse an existing bot registration"
+            label: "Use an existing bot registration"
         }
     ];
 

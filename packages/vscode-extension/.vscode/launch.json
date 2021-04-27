@@ -45,6 +45,24 @@
 				"${workspaceFolder}/out/test/**/*.js"
 			],
 			"preLaunchTask": "npm: test-watch"
-		}
+		},
+		{
+			"name": "Environment Checker Tests",
+			"type": "node",
+			"request": "launch",
+			"program": "${workspaceFolder}/node_modules/mocha/bin/mocha",
+			"args": [
+				"--ui",
+				"tdd",
+				"./out/test/suite/envChecker/cases/**/*.js",
+				"--timeout",
+				"180000"
+			],
+			"outFiles": [
+				"${workspaceFolder}/out/src/**/*.js",
+				"${workspaceFolder}/out/test/**/*.js"
+			],
+			"preLaunchTask": "npm: test-watch"
+		},
 	]
 }

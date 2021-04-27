@@ -39,7 +39,7 @@ export class DeployMgr {
     public async needsToRedeploy(): Promise<boolean> {
         // Iterate all source files and config files to determine if anything changed.
         if (!this.workingDir) {
-            throw new PreconditionError(Messages.WORKING_DIR_IS_MISSING, []);
+            throw new PreconditionError(Messages.WorkingDirIsMissing, []);
         }
 
         const lastBotDeployTime = await this.getLastDeployTime();

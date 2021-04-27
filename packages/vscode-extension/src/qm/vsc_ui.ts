@@ -25,7 +25,7 @@ export class VsCodeUI implements UserInterface{
       quickPick.matchOnDescription = true;
       quickPick.matchOnDetail = true;
       quickPick.canSelectMany = option.canSelectMany;
-  
+      let previousSelectedItems:FxQuickPickItem[] = [];
       return await new Promise<InputResult>(
         async (resolve): Promise<void> => {
           disposables.push(
@@ -108,6 +108,7 @@ export class VsCodeUI implements UserInterface{
               if (option.canSelectMany) {
                 const ids = option.defaultValue as string[];
                 quickPick.selectedItems = ids.map(id=>optionMap.get(id)!);
+                previousSelectedItems = ids.map(id=>optionMap.get(id)!);
               } else {
                 const defaultStringValue = option.defaultValue as string;
                 const newitems = items.filter((i) => i.id !== defaultStringValue);
@@ -135,7 +136,8 @@ export class VsCodeUI implements UserInterface{
                 });
                 const oldIds = quickPick.selectedItems.map(i=>{return (i as FxQuickPickItem).id;}).sort();
                 if(option.onDidChangeSelection){
-                  const newIds:string[] = (await option.onDidChangeSelection(optionItems)).sort();
+                  const newIds:string[] = (await option.onDidChangeSelection(optionItems, previousSelectedItems)).sort();
+                  previousSelectedItems = newIds.map(id=>optionMap.get(id)!);
                   if(oldIds.join(",") !== newIds.join(",")){
                     quickPick.selectedItems = newIds.map(id=>optionMap.get(id)!);
                   }

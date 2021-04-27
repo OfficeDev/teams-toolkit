@@ -20,6 +20,7 @@ export const botFolderName = "bot";
 
 export const localEnvFileName = "local.env";
 export const manifestFileName = "manifest.remote.json";
+export const userDataFileName = "default.userdata"; // TODO: different file name for different environment
 
 export const frontendLocalEnvPrefix = "FRONTEND_";
 export const backendLocalEnvPrefix = "BACKEND_";
@@ -31,3 +32,5 @@ export enum ProgrammingLanguage {
   javascript = "javascript",
   typescript = "typescript"
 }
+
+export const skipNgrokConfigKey = "fx-resource-local-debug.skipNgrok";

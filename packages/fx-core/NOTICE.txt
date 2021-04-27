@@ -2544,11 +2544,10 @@ https://github.com/kemitchell/validate-npm-package-license.js#readme
 
 ---------------------------------------------------------
 
-npm 7.9.0 - Artistic-2.0
+npm 7.11.1 - Artistic-2.0
 https://docs.npmjs.com/
 
 (c) Sindre Sorhus
-Copyright Isaac Z
 Copyright (c) 2014
 Copyright (c) 2015
 Copyright (c) 2016
@@ -2564,6 +2563,7 @@ Copyright (c) 2012 - 2015
 Copyright (c) GitHub Inc.
 Copyright 2016 Trent Mick
 Copyright (c) 2013 Raynos.
+Copyright (c) GitHub, Inc.
 Copyright 2011 Gary Court.
 Copyright 2013 Google Inc.
 Copyright 2014 Google Inc.
@@ -5398,6 +5398,23 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 The ISC License
 
+Copyright (c) GitHub Inc.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
+IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+
+The ISC License
+
 Copyright (c) npm Inc.
 
 Permission to use, copy, modify, and/or distribute this software for any
@@ -6269,6 +6286,23 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+The ISC License
+
+Copyright (c) GitHub, Inc.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
+IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
 
 # Copyright (c) 2015 Calvin Metcalf
 
@@ -9301,7 +9335,7 @@ Creative Commons may be contacted at http://creativecommons.org/.
 
 ---------------------------------------------------------
 
-@npmcli/arborist 2.3.0 - ISC
+@npmcli/arborist 2.4.0 - ISC
 https://github.com/npm/arborist#readme
 
 Copyright npm, Inc.
@@ -9360,7 +9394,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ---------------------------------------------------------
 
-@npmcli/config 2.1.0 - ISC
+@npmcli/config 2.2.0 - ISC
 https://github.com/npm/config#readme
 
 
@@ -9410,7 +9444,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ---------------------------------------------------------
 
-@npmcli/git 2.0.6 - ISC
+@npmcli/git 2.0.8 - ISC
 https://github.com/npm/git#readme
 
 Copyright (c) npm, Inc.
@@ -9584,9 +9618,10 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-@npmcli/run-script 1.8.4 - ISC
+@npmcli/run-script 1.8.5 - ISC
 https://github.com/npm/run-script#readme
 
+Copyright (c) npm, Inc.
 
 The ISC License
 
@@ -10324,7 +10359,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ---------------------------------------------------------
 
-init-package-json 2.0.2 - ISC
+init-package-json 2.0.3 - ISC
 https://github.com/npm/init-package-json#readme
 
 Copyright (c) Isaac Z. Schlueter
@@ -10427,7 +10462,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ---------------------------------------------------------
 
-libnpmaccess 4.0.1 - ISC
+libnpmaccess 4.0.2 - ISC
 https://npmjs.com/package/libnpmaccess
 
 Copyright npm, Inc
@@ -10476,6 +10511,32 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ---------------------------------------------------------
 
+libnpmexec 1.0.1 - ISC
+https://github.com/npm/libnpmexec#readme
+
+Copyright (c) GitHub Inc.
+
+The ISC License
+
+Copyright (c) GitHub Inc.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
+IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+
+---------------------------------------------------------
+
+---------------------------------------------------------
+
 libnpmfund 1.0.2 - ISC
 https://github.com/npm/libnpmfund#readme
 
@@ -10502,9 +10563,10 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ---------------------------------------------------------
 
-libnpmhook 6.0.1 - ISC
+libnpmhook 6.0.2 - ISC
 https://github.com/npm/libnpmhook#readme
 
+Copyright (c) npm, Inc.
 
 ISC License
 
@@ -10528,7 +10590,7 @@ USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ---------------------------------------------------------
 
-libnpmorg 2.0.1 - ISC
+libnpmorg 2.0.2 - ISC
 https://npmjs.com/package/libnpmorg
 
 Copyright npm, Inc
@@ -10576,7 +10638,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ---------------------------------------------------------
 
-libnpmpublish 4.0.0 - ISC
+libnpmpublish 4.0.1 - ISC
 https://npmjs.com/package/libnpmpublish
 
 Copyright npm, Inc
@@ -10600,7 +10662,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ---------------------------------------------------------
 
-libnpmsearch 3.1.0 - ISC
+libnpmsearch 3.1.1 - ISC
 https://npmjs.com/package/libnpmsearch
 
 Copyright npm, Inc
@@ -10624,7 +10686,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ---------------------------------------------------------
 
-libnpmteam 2.0.2 - ISC
+libnpmteam 2.0.3 - ISC
 https://npmjs.com/package/libnpmteam
 
 
@@ -10647,7 +10709,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ---------------------------------------------------------
 
-libnpmversion 1.1.0 - ISC
+libnpmversion 1.2.0 - ISC
 https://github.com/npm/libnpmversion#readme
 
 Copyright (c) Isaac Z. Schlueter
@@ -10988,7 +11050,7 @@ USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ---------------------------------------------------------
 
-npm-bundled 1.1.1 - ISC
+npm-bundled 1.1.2 - ISC
 https://github.com/npm/npm-bundled#readme
 
 Copyright (c) npm, Inc. and Contributors
@@ -11144,7 +11206,7 @@ USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ---------------------------------------------------------
 
-npm-profile 5.0.2 - ISC
+npm-profile 5.0.3 - ISC
 https://github.com/npm/npm-profile#readme
 
 Copyright npm, Inc
@@ -11170,7 +11232,7 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ---------------------------------------------------------
 
-npm-registry-fetch 9.0.0 - ISC
+npm-registry-fetch 10.1.1 - ISC
 https://github.com/npm/npm-registry-fetch#readme
 
 Copyright (c) npm, Inc.
@@ -11223,9 +11285,10 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ---------------------------------------------------------
 
-pacote 11.3.1 - ISC
+pacote 11.3.3 - ISC
 https://github.com/npm/pacote#readme
 
+Copyright (c) Isaac Z. Schlueter, Kat Marchan, npm, Inc., and Contributors
 
 The ISC License
 
@@ -11256,6 +11319,32 @@ Copyright (c) npm, Inc. and Contributors
 The ISC License
 
 Copyright (c) npm, Inc. and Contributors
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
+IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+
+---------------------------------------------------------
+
+---------------------------------------------------------
+
+proc-log 1.0.0 - ISC
+https://github.com/npm/proc-log#readme
+
+Copyright (c) GitHub, Inc.
+
+The ISC License
+
+Copyright (c) GitHub, Inc.
 
 Permission to use, copy, modify, and/or distribute this software for any
 purpose with or without fee is hereby granted, provided that the above
@@ -12214,14 +12303,13 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-@azure/arm-appservice 6.1.0 - MIT
+@azure/arm-appservice 7.0.0 - MIT
 https://github.com/Azure/azure-sdk-for-js/tree/master/sdk/appservice/arm-appservice
 
-Copyright (c) Microsoft Corporation.
 
 The MIT License (MIT)
 
-Copyright (c) 2020 Microsoft
+Copyright (c) 2021 Microsoft
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -12504,11 +12592,9 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-@azure/core-lro 1.0.4 - MIT
+@azure/core-lro 1.0.5 - MIT
 https://github.com/Azure/azure-sdk-for-js/blob/master/sdk/core/core-lro/README.md
 
-Copyright (c) Microsoft Corporation.
-Copyright (c) Microsoft and contributors.
 
 The MIT License (MIT)
 
@@ -12667,7 +12753,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-@azure/msal-common 4.1.1 - MIT
+@azure/msal-common 4.2.1 - MIT
 https://github.com/AzureAD/microsoft-authentication-library-for-js#readme
 
 Copyright (c) Microsoft Corporation.
@@ -12699,9 +12785,10 @@ SOFTWARE
 
 ---------------------------------------------------------
 
-@azure/msal-node 1.0.1 - MIT
+@azure/msal-node 1.0.3 - MIT
 https://github.com/AzureAD/microsoft-authentication-library-for-js#readme
 
+Copyright (c) Microsoft Corporation.
 
 MIT License
 
@@ -12795,7 +12882,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-@azure/ms-rest-js 2.3.0 - MIT
+@azure/ms-rest-js 2.4.0 - MIT
 https://github.com/Azure/ms-rest-js
 
 copyright 2015 Toru Nagashima.
@@ -13067,7 +13154,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ---------------------------------------------------------
 
-@types/node 14.14.37 - MIT
+@types/node 8.10.66 - MIT
 
 
 Copyright (c) Microsoft Corporation.
@@ -13086,7 +13173,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ---------------------------------------------------------
 
-@types/node 8.10.66 - MIT
+@types/node 14.14.41 - MIT
 
 
 Copyright (c) Microsoft Corporation.
@@ -13993,38 +14080,6 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-balanced-match 1.0.0 - MIT
-https://github.com/juliangruber/balanced-match
-
-Copyright (c) 2013 Julian Gruber <julian@juliangruber.com>
-
-(MIT)
-
-Copyright (c) 2013 Julian Gruber &lt;julian@juliangruber.com&gt;
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
-of the Software, and to permit persons to whom the Software is furnished to do
-so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-
----------------------------------------------------------
-
----------------------------------------------------------
-
 base64-js 1.5.1 - MIT
 https://github.com/beatgammit/base64-js
 
@@ -14389,7 +14444,7 @@ SOFTWARE.
 
 ---------------------------------------------------------
 
-chalk 4.1.0 - MIT
+chalk 4.1.1 - MIT
 https://github.com/chalk/chalk#readme
 
 Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)
@@ -16200,7 +16255,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ---------------------------------------------------------
 
-follow-redirects 1.13.3 - MIT
+follow-redirects 1.14.0 - MIT
 https://github.com/follow-redirects/follow-redirects
 
 Copyright 2014-present Olivier Lalonde <olalonde@gmail.com> , James Talmage <james@talmage.io> , Ruben Verborgh
@@ -16476,6 +16531,415 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 
+
+---------------------------------------------------------
+
+---------------------------------------------------------
+
+fx-core 1.1.1-alpha.5 - MIT
+
+
+(c) Sindre Sorhus
+Copyright (c) 2014
+Copyright (c) 2015
+Copyright (c) 2016
+Copyright (c) 2017
+Copyright Isaac Z.
+Create (c), Update
+Copyright 2009-2014
+Copyright npm, Inc.
+(c) 2011 Gary Court.
+(c) 2010 Jan Lehnardt
+Copyright 2012 - 2017
+Copyright (c) npm Inc.
+Copyright Joyent, Inc.
+Copyright (c) 2011-2017
+Copyright (c) npm, Inc.
+Copyright (c) Meryn Stol
+(c) 2011 by Jerry Sievert
+Copyright (c) 2005 Tom Wu
+Copyright (c) 2012 - 2015
+Copyright (c) GitHub Inc.
+Copyright 2016 Trent Mick
+Copyright (c) 2013 Raynos.
+Copyright 2011 Gary Court.
+Copyright 2013 Google Inc.
+Copyright 2014 Google Inc.
+Copyright 2016, Joyent Inc
+Copyright 2017 Kat Marchan
+Copyright 2019, OpenCensus
+Copyright (c) 2015 Rod Vagg
+Copyright (c) Marak Squires
+Copyright 2012 Joyent, Inc.
+Copyright 2015 Joyent, Inc.
+Copyright 2016 Joyent, Inc.
+Copyright 2017 Joyent, Inc.
+Copyright 2018 Joyent, Inc.
+Copyright (c) 2013 Braveg1rl
+Copyright (c) 2013 Tim Oxley
+Copyright (c) 2015, Wes Todd
+Copyright (c) 2015, npm, Inc
+Copyright (c) 2017 Braveg1rl
+Copyright (c) 2019 Microsoft
+Copyright 2012 Twitter, Inc.
+Copyright 2013 Twitter, Inc.
+Copyright 2016, Joyent, Inc.
+Copyright Isaac Z. Schlueter
+Copyright (c) 2011 LearnBoost
+Copyright (c) 2013 Meryn Stol
+Copyright (c) 2014, Dan Kogai
+Copyright (c) 2015 Jed Watson
+Copyright (c) 2016 Zeit, Inc.
+Copyright (c) Robert Kowalski
+Copyright (c) 2003-2005 Tom Wu
+Copyright (c) 2005-2009 Tom Wu
+Copyright (c) 2009 Google Inc.
+Copyright (c) 2009, Jeff Mott.
+Copyright (c) 2010 Sencha Inc.
+Copyright (c) 2011 Google Inc.
+Copyright (c) 2011 Mark Cavage
+Copyright (c) 2012 Google Inc.
+Copyright (c) 2012 Mark Cavage
+Copyright (c) 2012 Tim Caswell
+Copyright (c) 2013 Google Inc.
+Copyright (c) 2013 Joyent Inc.
+Copyright (c) 2013 Trent Mick.
+Copyright (c) 2014 Google Inc.
+Copyright (c) 2016 Alex Indigo
+Copyright (c) 2016 David Frank
+Copyright (c) 2017 Joseph Wynn
+Copyright (c) 2019 David Piper
+Copyright 2014 Alex Gorbatchev
+Copyright 2015 D2L Corporation
+Copyright Fedor Indutny, 2012.
+copyright 2015 Toru Nagashima.
+Copyright (c) 2010 Jan Lehnardt
+Copyright (c) 2011 Dominic Tarr
+Copyright (c) 2011 Joyent, Inc.
+Copyright (c) 2013 Jonathan Ong
+Copyright (c) 2014 Dave Justice
+Copyright (c) 2014 IndigoUnited
+Copyright (c) 2014 Jonathan Ong
+Copyright (c) 2014 Mathias Buus
+Copyright (c) 2015 Elijah Insua
+Copyright (c) 2015, Scott Motte
+Copyright (c) 2018 Mathias Buus
+Copyright 2013 Thorsten Lorenz.
+Copyright (c) 2012 by Jun Woong.
+Copyright (c) 2012, Joyent, Inc.
+Copyright (c) 2012, Mark Cavage.
+Copyright (c) 2013 Ozgur Ozcitak
+Copyright (c) 2014 Stefan Thomas
+Copyright (c) 2015 Andreas Lubbe
+Copyright (c) 2015 Dmitry Ivanov
+Copyright (c) 2015 Eric McCarthy
+Copyright (c) 2015 Javier Blanco
+Copyright (c) 2016, Joyent, Inc.
+Copyright (c) Isaac Z. Schlueter
+Copyright (c) 2009 Kazuhiko Arase
+Copyright (c) 2011 TJ Holowaychuk
+Copyright (c) 2011, Paul Vorbach.
+Copyright (c) 2012 James Halliday
+Copyright (c) 2012 Kenji Urushima
+Copyright (c) 2012 TJ Holowaychuk
+Copyright (c) 2013 James Halliday
+Copyright (c) 2013 Roman Shtylman
+Copyright (c) 2014 Jameson Little
+Copyright (c) 2014 Jeremie Miller
+Copyright (c) 2015 Calvin Metcalf
+Copyright (c) 2015 Toru Nagashima
+Copyright (c) 2017 Toru Nagashima
+Copyright (c) Feross Aboukhadijeh
+Copyright 2010, 2011, 2012, 2013.
+Copyright 2010-2012 Mikeal Rogers
+Copyright 2017 - Refael Ackermann
+(c) 2016 Copyright (c) 2005 Tom Wu
+Copyright (c) 2009 Chris Wanstrath
+Copyright (c) 2012 Federico Romero
+Copyright (c) 2013 Josh Glazebrook
+Copyright (c) 2014 Alex Gorbatchev
+Copyright (c) 2014 Federico Romero
+Copyright (c) 2015 James Messinger
+Copyright (c) 2015, Rebecca Turner
+Copyright (c) 2017 Anna Henningsen
+Copyright (c) 2018 Nicolas Pearson
+Copyright (c) 2019 James Messinger
+Copyright (c) 2011-2012 Tim Caswell
+Copyright (c) 2012 Koichi Kobayashi
+Copyright (c) 2012 by Vitaly Puzrin
+Copyright (c) 2013 Brian J. Brennan
+Copyright (c) 2013 Thiago de Arruda
+Copyright (c) 2015 Joran Dirk Greef
+Copyright (c) 2015 Kyle E. Mitchell
+Copyright (c) 2018 Kogo Softare LLC
+Copyright 2008 Fair Oaks Labs, Inc.
+Copyright 2016-2018 Kornel Lesinski
+Copyright (c) 2010-2014 Jan Lehnardt
+Copyright (c) 2013-2014 Jonathan Ong
+Copyright (c) 2013-2017 Jared Hanson
+Copyright (c) 2015 Chris Talkington.
+Copyright (c) 2017 Evgeny Poberezkin
+Copyright (c) 2018 Kogo Software LLC
+Copyright (c) Microsoft Corporation.
+Copyright 2013 The Chromium Authors.
+Copyright (c) 2010-2012 Mikeal Rogers
+Copyright (c) 2011-2017 JP Richardson
+Copyright (c) 2012 Isaac Z. Schlueter
+Copyright (c) 2015-2016 JP Richardson
+(c) 2005, 2013 jQuery Foundation, Inc.
+Copyright (c) 2009-2013 TJ Holowaychuk
+Copyright (c) 2010-2018 Caolan McMahon
+Copyright (c) 2011 Alexander Shtuchkin
+Copyright (c) 2011-2012, Paul Vorbach.
+Copyright (c) 2011-2015, Paul Vorbach.
+Copyright (c) 2012-2013 TJ Holowaychuk
+Copyright (c) 2012-2014 Andris Reinman
+Copyright (c) 2012-2014 Roman Shtylman
+Copyright (c) 2012-2014 TJ Holowaychuk
+Copyright (c) 2013-2014 TJ Holowaychuk
+Copyright (c) 2010-2018 Mike D Pilsbury
+Copyright (c) 2012-2014 Federico Romero
+Copyright (c) 2013 Digital Bazaar, Inc.
+Copyright (c) 2013-2017 Josh Glazebrook
+Copyright (c) 2013-2018 bl contributors
+Copyright (c) 2013-2019 bl contributors
+Copyright (c) 2014 Digital Bazaar, Inc.
+Copyright (c) 2015 Tiancheng Timothy Gu
+Copyright (c) 2019 Digital Bazaar, Inc.
+Copyright 2009-2014 Copyright npm, Inc.
+Copyright (c) 1999-2001 Gregory P. Ward.
+Copyright (c) 2008, Fair Oaks Labs, Inc.
+Copyright (c) 2010, Digital Bazaar, Inc.
+Copyright (c) 2011-2015 by Vitaly Puzrin
+Copyright (c) 2012 The Chromium Authors.
+Copyright (c) 2013-2015 Brian J. Brennan
+Copyright (c) 2014-2018, Jon Schlinkert.
+Copyright (c) 2015, Salesforce.com, Inc.
+Copyright (c) 2018, Salesforce.com, Inc.
+Copyright (c) npm, Inc. and Contributors
+Copyright 2008-2013 Digital Bazaar, Inc.
+Copyright 2011-2016 Digital Bazaar, Inc.
+Copyright 2011-2017 Digital Bazaar, Inc.
+Copyright (c) 2014-present Matt Zabriskie
+Copyright (c) 2015-2017 Evgeny Poberezkin
+Copyright (c) Microsoft and contributors.
+Copyright (c) 2012-2014 Isaac Z. Schlueter
+Copyright (c) 2013 Gary Court, Jens Taylor
+(c) Javier Blanco (http://jbgutierrez.info)
+(c) Sindre Sorhus (http://sindresorhus.com)
+Copyright (c) 2016-2017 Thomas Watson Steen
+copyrighted by the Free Software Foundation
+(c) Sindre Sorhus (https://sindresorhus.com)
+Copyright (c) 2008-2013 Digital Bazaar, Inc.
+Copyright (c) 2009-2012 Digital Bazaar, Inc.
+Copyright (c) 2009-2013 Digital Bazaar, Inc.
+Copyright (c) 2009-2014 Digital Bazaar, Inc.
+Copyright (c) 2009-2015 Digital Bazaar, Inc.
+Copyright (c) 2010-2012 Digital Bazaar, Inc.
+Copyright (c) 2010-2013 Digital Bazaar, Inc.
+Copyright (c) 2010-2014 Digital Bazaar, Inc.
+Copyright (c) 2010-2015 Digital Bazaar, Inc.
+Copyright (c) 2010-2018 Digital Bazaar, Inc.
+Copyright (c) 2011-2014 Digital Bazaar, Inc.
+Copyright (c) 2012-2014 Digital Bazaar, Inc.
+Copyright (c) 2012-2015 Digital Bazaar, Inc.
+Copyright (c) 2013-2014 Digital Bazaar, Inc.
+Copyright (c) 2014-2015 Digital Bazaar, Inc.
+Copyright (c) 2017-2019 Digital Bazaar, Inc.
+Copyright (c) 2000-2006, The Perl Foundation.
+Copyright (c) 2007-2014, Alexandru Marasteanu
+Copyright (c) 2014 Douglas Christopher Wilson
+Copyright (c) 2015 Douglas Christopher Wilson
+Copyright (c) 2016 Douglas Christopher Wilson
+Copyright 2019 - present Christopher J. Brody
+Copyright Isaac Z. Schlueter and Contributors
+(c) silverwind (https://github.com/silverwind)
+Copyright (c) 2015 Unshift.io, Arnout Kazemier
+Copyright 2010 LearnBoost <dev@learnboost.com>
+Copyright 2011 Mark Cavage <mcavage@gmail.com>
+Copyright (c) .NET Foundation and contributors.
+Copyright (c) Microsoft Open Technologies, Inc.
+Copyright (c) 2004 Sam Hocevar <sam@hocevar.net>
+Copyright (c) 2013 J. Pommerening, contributors.
+(c) 2013 GoInstant Inc., a salesforce.com company
+Copyright (c) 2010-2015 The mustache.js community
+Copyright (c) 2012 LearnBoost <tj@learnboost.com>
+Copyright (c) 2013 Ted Unangst <tedu@openbsd.org>
+Copyright (c) 2015 Jed Watson <jed.watson@me.com>
+Copyright (c) Isaac Z. Schlueter and Contributors
+Copyright 2010 James Halliday (mail@substack.net)
+Copyright (c) 2010 Benjamin Thomas, Robert Kieffer
+Copyright (c) 2010 LearnBoost <dev@learnboost.com>
+Copyright (c) 2014 Chris Talkington, contributors.
+Copyright (c) 2014 Jonathan Ong me@jongleberry.com
+Copyright (c) 2014-2015 Douglas Christopher Wilson
+Copyright (c) 2014-2016 Douglas Christopher Wilson
+Copyright (c) 2014-2017 Douglas Christopher Wilson
+Copyright (c) 2014-2018 Douglas Christopher Wilson
+Copyright (c) 2015-2016 Douglas Christopher Wilson
+Copyright (c) 2016-2017 Douglas Christopher Wilson
+Copyright (c) JS Foundation and other contributors
+Copyright (c) Mathias Pettersson and Brian Hammond
+Copyright (c) node-modules and other contributors.
+Copyright 2012 Stefan Siegl <stesie@brokenpipe.de>
+copyright (c) 2014 Chris Talkington, contributors.
+Copyright (c) 2012 - 2015 Copyright (c) GitHub Inc.
+Copyright Joyent, Inc. and other Node contributors.
+Copyright (c) 2002, 2003 Python Software Foundation.
+Copyright (c) 2011-2015 Paul Vorbach <paul@vorba.ch>
+Copyright (c) 2013 Jonathan Ong <me@jongleberry.com>
+Copyright (c) 2014 Jonathan Ong <me@jongleberry.com>
+Copyright (c) 2014, Rebecca Turner <me@re-becca.org>
+Copyright (c) 2015 Benjamin Newman <ben@benjamn.com>
+Copyright (c) 2015, Rebecca Turner <me@re-becca.org>
+Copyright (c) 2017, Rebecca Turner <me@re-becca.org>
+Copyright (c) 2018 Chris O'Hara <cohara87@gmail.com>
+Copyright (c) Robert Kowalski and Isaac Z. Schlueter
+Copyright 2006, Kevin Krammer <kevin.krammer@gmx.at>
+Copyright 2011, Sebastian Tschan https://blueimp.net
+Copyright Mathias Bynens <https://mathiasbynens.be/>
+Copyright (c) 2007 Kris Zyp SitePen (www.sitepen.com)
+Copyright (c) 2012-2015 Tom de Grunt <tom@degrunt.nl>
+Copyright (c) 2012-2019 Tom de Grunt <tom@degrunt.nl>
+Copyright (c) 2016 Ben Noordhuis <info@bnoordhuis.nl>
+Copyright (c) 2017 Lupo Montero lupomontero@gmail.com
+Copyright (c) Microsoft Corporation. V1 OpenTelemetry
+Copyright 2006, Jeremy White <jwhite@codeweavers.com>
+Copyright (c) 2011 TJ Holowaychuk <tj@vision-media.ca>
+Copyright (c) 2012 Stefan Siegl <stesie@brokenpipe.de>
+Copyright (c) 2012 TJ Holowaychuk <tj@vision-media.ca>
+Copyright (c) 2013 Roman Shtylman <shtylman@gmail.com>
+Copyright (c) 2014 TJ Holowaychuk <tj@vision-media.ca>
+Copyright (c) 2015 TJ Holowaychuk <tj@vision-media.ca>
+Copyright (c) Christian Tellnes <christian@tellnes.no>
+Copyright (c) David Piper (https://github.com/dbpiper)
+Copyright (c) Feross Aboukhadijeh (http://feross.org).
+(c) Vsevolod Strukchinsky (http://github.com/floatdrop)
+Copyright (c) 1989, 1991 Free Software Foundation, Inc.
+Copyright (c) 1995-2003 by Internet Software Consortium
+Copyright (c) 2011-2016, Heather Arthur and Josh Junon.
+Copyright (c) 2012-2014 Chris Talkington, contributors.
+Copyright (c) 2014 Blake Embrey (hello@blakeembrey.com)
+Copyright (c) 2017 Copyright (c) Microsoft Corporation.
+Copyright (c) 2017 Lupo Montero <lupomontero@gmail.com>
+Copyright (c) 2018 Ahmad Nassri <ahmad@ahmadnassri.com>
+Copyright (c) Ellis Pritchard, Guardian Unlimited 2003.
+Copyright 2013 Michael Hart (michael.hart.au@gmail.com)
+copyright (c) 2012-2014 Chris Talkington, contributors.
+copyright (c) 2016, Philipp Thurwachter, Pattrick Huper
+Copyright (c) 2015, Ahmad Nassri <ahmad@ahmadnassri.com>
+Copyright (c) 2016, Philipp Thurwachter & Pattrick Huper
+Copyright (c) 2017, Ryan Zimmerman <opensrc@ryanzim.com>
+Copyright (c) 2018 Nikita Skovoroda <chalkerx@gmail.com>
+Copyright 2009-2010, Fathi Boudra <fabo@freedesktop.org>
+copyright (c) 2016, Philipp Thurwachter & Pattrick Huper
+copyright ahmadnassri.com (https://www.ahmadnassri.com/)
+Copyright (c) 2013-2014 Jonathan Ong <me@jongleberry.com>
+Copyright (c) Vsevolod Strukchinsky <floatdrop@gmail.com>
+Copyright (c) 2009-2015, Kevin Decker <kpdecker@gmail.com>
+Copyright (c) 2012 Nathan Rajlich <nathan@tootallnate.net>
+Copyright (c) 2013 Julian Gruber <julian@juliangruber.com>
+Copyright (c) 2013 Nathan Rajlich <nathan@tootallnate.net>
+Copyright (c) 2014 Nathan Rajlich <nathan@tootallnate.net>
+Copyright (c) 2015 Julian Gruber <julian@juliangruber.com>
+Copyright (c) Feross Aboukhadijeh, and other contributors.
+Copyright (c) 2009-2014 TJ Holowaychuk <tj@vision-media.ca>
+Copyright (c) 2012-2014 Roman Shtylman <shtylman@gmail.com>
+Copyright (c) 2012-2014 TJ Holowaychuk <tj@vision-media.ca>
+Copyright (c) 2013-2014 TJ Holowaychuk <tj@vision-media.ca>
+Copyright (c) 2014-2016 TJ Holowaychuk <tj@vision-media.ca>
+Copyright (c) 2014-2017 TJ Holowaychuk <tj@vision-media.ca>
+Copyright 1997 Niels Provos <provos@physnet.uni-hamburg.de>
+Copyright 2009-2010, Rex Dieter <rdieter@fedoraproject.org>
+Copyright 2012-2016, JP Richardson <jprichardson@gmail.com>
+Copyright (c) 2004-2010 by Internet Systems Consortium, Inc.
+Copyright (c) 2011 Debuggable Limited <felix@debuggable.com>
+Copyright (c) 2013, GoInstant Inc., a salesforce.com company
+Copyright (c) 2014 Nathan LaFreniere and other contributors.
+Copyright (c) 2010-2016 Robert Kieffer and other contributors
+Copyright (c) 2011-2016 Heather Arthur <fayearthur@gmail.com>
+Copyright (c) 2012 Vitaly Puzrin (https://github.com/puzrin).
+Copyright (c) 2015 Rod Vagg rvagg (https://twitter.com/rvagg)
+Copyright (c) Tjarda Koster, https://jelloween.deviantart.com
+Copyright (c) 2010-2015 Linux Foundation and its Contributors.
+Copyright (c) 2014 Lautaro Cozzani <lautaro.cozzani@scytl.com>
+Copyright (c) 2012-2015, JP Richardson <jprichardson@gmail.com>
+(c) Shannon Moeller <me@shannonmoeller.com> (shannonmoeller.com)
+Copyright (c) 2014 James Talmage <james.talmage@jrtechnical.com>
+Copyright (c) Isaac Z. Schlueter, Ben Noordhuis, and Contributors
+Copyright 2004-2012 1&1 Internet AG, Germany, http://www.1und1.de
+Copyright (c) 2007-present, Alexandru Marasteanu <hello@alexei.ro>
+Copyright (c) 2015 JP Richardson (https://github.com/jprichardson)
+Copyright (c) 1991 - 1995, Stichting Mathematisch Centrum Amsterdam
+Copyright (c) 2012 Another-D-Mention Software and other contributors
+Copyright (c) 2016 Douglas Christopher Wilson doug@somethingdoug.com
+Copyright 2012-2016 The Dojo Foundation <http://dojofoundation.org/>
+Copyright (c) 1995-2001 Corporation for National Research Initiatives
+Copyright (c) 2013-2014 Roman Shtylman <shtylman+expressjs@gmail.com>
+Copyright (c) 2015 Auth0, Inc. <support@auth0.com> (http://auth0.com)
+Copyright JS Foundation and other contributors, https://js.foundation
+Copyright (c) 2014 Douglas Christopher Wilson <doug@somethingdoug.com>
+Copyright (c) 2015 Douglas Christopher Wilson <doug@somethingdoug.com>
+Copyright (c) 2016 Douglas Christopher Wilson <doug@somethingdoug.com>
+Copyright (c) 2018, Jon Schlinkert (https://github.com/jonschlinkert).
+Copyright (c) 2011-2017 JP Richardson (https://github.com/jprichardson)
+Copyright (c) 2013 Kael Zhang <i@kael.me> , contributors http://kael.me
+Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)
+Copyright JS Foundation and other contributors <https://js.foundation/>
+Copyright (c) 2014-2016 Jonathan Ong me@jongleberry.com and Contributors
+Copyright jQuery Foundation and other contributors <https://jquery.org/>
+Copyright (c) 2015-2016 Douglas Christopher Wilson doug@somethingdoug.com
+Copyright OpenJS Foundation and other contributors <https://openjsf.org/>
+Copyright (c) Isaac Z. Schlueter, Kat Marchan, npm, Inc., and Contributors
+Copyright (c) Shannon Moeller <me@shannonmoeller.com> (shannonmoeller.com)
+copyright (c) 2007-present, Stephen Colebourne & Michael Nascimento Santos
+https://github.com/xmldom/xmldom/graphs/contributors Copyright 2012 - 2017
+Copyright (c) 2014-2015 Douglas Christopher Wilson <doug@somethingdoug.com>
+Copyright (c) 2014-2017 Douglas Christopher Wilson <doug@somethingdoug.com>
+Copyright (c) 2015-2016 Douglas Christopher Wilson <doug@somethingdoug.com>
+Copyright (c) 2016-2017 Douglas Christopher Wilson <doug@somethingdoug.com>
+Copyright (c) 2012 - 2015 Copyright (c) node-modules and other contributors.
+Copyright (c) 2012 Felix Geisendorfer (felix@debuggable.com) and contributors
+Copyright (c) Feross Aboukhadijeh (http://feross.org), and other contributors.
+Copyright James Halliday (mail@substack.net) and Isaac Z. Schlueter (i@izs.me)
+Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
+copyright (c) 2015-present, Philipp Thurwachter, Pattrick Huper & js-joda contributors
+copyright (c) 2016-present, Philipp Thurwachter & Pattrick Huper & js-joda contributors
+Copyright 2009-2016 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+Copyright (c) 2013-2017 Jared Hanson < http://jaredhanson.net/ (http://jaredhanson.net/)>
+Copyright (c) 2011 Tim Koschutzki (tim@debuggable.com) Felix Geisendorfer (felix@debuggable.com)
+Copyright 2019 - present Christopher J. Brody https://github.com/xmldom/xmldom/graphs/contributors
+Copyright (c) Paul Johnston 1999 - 2009 Other contributors Greg Holt, Andrew Kepert, Ydnar, Lostinet
+copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors <http://underscorejs.org/>
+Copyright (c) 2014 Martin Zagora and other contributors https://github.com/zaggino/z-schema/graphs/contributors
+Copyright 2014-present Olivier Lalonde <olalonde@gmail.com> , James Talmage <james@talmage.io> , Ruben Verborgh
+copyright 2009-2016 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors <http://underscorejs.org/>
+Copyright (c) 2019 Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com), Paul Miller (https://paulmillr.com)
+Copyright (c) 2011-2015 Paul Vorbach (http://paul.vorba.ch/) and contributors (https://github.com/pvorb/node-clone/graphs/contributors).
+Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020 Python Software Foundation
+
+Copyright (c) Microsoft Corporation.
+
+MIT License
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 ---------------------------------------------------------
 
@@ -17126,6 +17590,36 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ---------------------------------------------------------
 
+is-core-module 2.3.0 - MIT
+https://github.com/inspect-js/is-core-module
+
+Copyright (c) 2014 Dave Justice
+
+The MIT License (MIT)
+
+Copyright (c) 2014 Dave Justice
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+---------------------------------------------------------
+
+---------------------------------------------------------
+
 is-fullwidth-code-point 2.0.0 - MIT
 https://github.com/sindresorhus/is-fullwidth-code-point#readme
 
@@ -17640,7 +18134,7 @@ THE SOFTWARE
 
 ---------------------------------------------------------
 
-js-yaml 4.0.0 - MIT
+js-yaml 4.1.0 - MIT
 https://github.com/nodeca/js-yaml#readme
 
 Copyright (c) 2011-2015 by Vitaly Puzrin
@@ -17704,7 +18198,7 @@ THE SOFTWARE.
 
 ---------------------------------------------------------
 
-just-diff 3.0.2 - MIT
+just-diff 3.1.1 - MIT
 https://github.com/angus-c/just#readme
 
 Copyright (c) 2016
@@ -18876,40 +19370,6 @@ THE SOFTWARE.
 
 ---------------------------------------------------------
 
-mime-db 1.46.0 - MIT
-https://github.com/jshttp/mime-db#readme
-
-Copyright (c) 2014 Jonathan Ong
-Copyright (c) 2014 Jonathan Ong me@jongleberry.com
-
-
-The MIT License (MIT)
-
-Copyright (c) 2014 Jonathan Ong me@jongleberry.com
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-
-
----------------------------------------------------------
-
----------------------------------------------------------
-
 mime-db 1.47.0 - MIT
 https://github.com/jshttp/mime-db#readme
 
@@ -18945,43 +19405,6 @@ THE SOFTWARE.
 ---------------------------------------------------------
 
 mime-types 2.1.30 - MIT
-https://github.com/jshttp/mime-types#readme
-
-Copyright (c) 2014 Jonathan Ong
-Copyright (c) 2015 Douglas Christopher Wilson
-Copyright (c) 2014 Jonathan Ong <me@jongleberry.com>
-Copyright (c) 2015 Douglas Christopher Wilson <doug@somethingdoug.com>
-
-(The MIT License)
-
-Copyright (c) 2014 Jonathan Ong <me@jongleberry.com>
-Copyright (c) 2015 Douglas Christopher Wilson <doug@somethingdoug.com>
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-'Software'), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-
----------------------------------------------------------
-
----------------------------------------------------------
-
-mime-types 2.1.29 - MIT
 https://github.com/jshttp/mime-types#readme
 
 Copyright (c) 2014 Jonathan Ong
@@ -20689,9 +21112,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ---------------------------------------------------------
 
-socks 2.6.0 - MIT
+socks 2.6.1 - MIT
 https://github.com/JoshGlazebrook/socks/
 
+Copyright (c) 2013 Josh Glazebrook
 
 The MIT License (MIT)
 
@@ -21437,7 +21861,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ---------------------------------------------------------
 
-underscore 1.13.0 - MIT
+underscore 1.13.1 - MIT
 https://underscorejs.org/
 
 
@@ -21751,6 +22175,36 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ---------------------------------------------------------
 
+validator 13.6.0 - MIT
+https://github.com/validatorjs/validator.js
+
+
+Copyright (c) 2018 Chris O'Hara <cohara87@gmail.com>
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+---------------------------------------------------------
+
+---------------------------------------------------------
+
 vary 1.1.2 - MIT
 https://github.com/jshttp/vary#readme
 
@@ -21917,7 +22371,7 @@ THE SOFTWARE.
 
 ---------------------------------------------------------
 
-xmldom 0.5.0 - MIT
+xmldom 0.6.0 - MIT
 https://github.com/xmldom/xmldom
 
 Copyright 2019 - present Christopher J. Brody

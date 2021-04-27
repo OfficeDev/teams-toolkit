@@ -25,7 +25,7 @@
     "format": "prettier --write --config ./.prettierrc.json --ignore-path ./.prettierignore \"src/**/*.ts\" \"test/**/*.ts\" \"samples/**/*.ts\" \"*.{js,json}\"",
     "integration-test:browser": "echo skipped",
     "integration-test:node": "mocha -r test/mocha.env.ts -r ts-node/register \"./test/integration/node/*.spec.ts\" --timeout 100000 --exit --reporter ./tools/mocha-multi-reporter.js",
-    "test:integration": "npm run integration-test:node && npm run integration-test:browser",
+    "test:integration": "echo skipped",
     "lint:staged": "lint-staged",
     "lint": "eslint \"**/*.ts\"",
     "prebuild": "npm run clean",
@@ -96,6 +96,7 @@
     "@types/node": "^8.0.0",
     "@types/sinon": "^9.0.10",
     "@types/tedious": "^4.0.3",
+    "@types/url-join": "^4.0.0",
     "@types/uuid": "^8.3.0",
     "@typescript-eslint/eslint-plugin": "^4.14.0",
     "@typescript-eslint/parser": "^4.13.0",
@@ -138,6 +139,7 @@
     "ts-node": "^8.3.0",
     "typedoc": "0.15.0",
     "typescript": "^4.1.2",
+    "url-join": "^4.0.1",
     "util": "^0.12.1"
   },
   "husky": {

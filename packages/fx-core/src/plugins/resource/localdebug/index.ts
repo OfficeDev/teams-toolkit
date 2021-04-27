@@ -22,12 +22,12 @@ import { TelemetryUtils, TelemetryEventName } from "./util/telemetry";
 export class LocalDebugPlugin implements Plugin {
 
     public async scaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
-        const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings).activeResourcePlugins;
-        const isSpfx = selectedPlugins.some((pluginName) => pluginName === SpfxPlugin.Name);
-        const includeFrontend = selectedPlugins.some((pluginName) => pluginName === FrontendHostingPlugin.Name);
-        const includeBackend = selectedPlugins.some((pluginName) => pluginName === FunctionPlugin.Name);
-        const includeBot = selectedPlugins.some((pluginName) => pluginName === BotPlugin.Name);
-        const programmingLanguage: string = ctx.configOfOtherPlugins.get(SolutionPlugin.Name)?.get(SolutionPlugin.ProgrammingLanguage) as string;
+        const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)?.activeResourcePlugins;
+        const isSpfx = selectedPlugins?.some((pluginName) => pluginName === SpfxPlugin.Name);
+        const includeFrontend = selectedPlugins?.some((pluginName) => pluginName === FrontendHostingPlugin.Name);
+        const includeBackend = selectedPlugins?.some((pluginName) => pluginName === FunctionPlugin.Name);
+        const includeBot = selectedPlugins?.some((pluginName) => pluginName === BotPlugin.Name);
+        const programmingLanguage: string = ctx.configOfOtherPlugins?.get(SolutionPlugin.Name)?.get(SolutionPlugin.ProgrammingLanguage) as string;
 
         const telemetryProperties = {
             platform: ctx.platform as string,
@@ -128,10 +128,10 @@ export class LocalDebugPlugin implements Plugin {
 
     public async localDebug(ctx: PluginContext): Promise<Result<any, FxError>> {
         const vscEnv = ctx.answers?.getString("vscenv");
-        const includeFrontend = ctx.configOfOtherPlugins.has(FrontendHostingPlugin.Name);
-        const includeBackend = ctx.configOfOtherPlugins.has(FunctionPlugin.Name);
-        const includeBot = ctx.configOfOtherPlugins.has(BotPlugin.Name);
-        const skipNgrok = ctx.config.get(LocalDebugConfigKeys.SkipNgrok) as string;
+        const includeFrontend = ctx.configOfOtherPlugins?.has(FrontendHostingPlugin.Name);
+        const includeBackend = ctx.configOfOtherPlugins?.has(FunctionPlugin.Name);
+        const includeBot = ctx.configOfOtherPlugins?.has(BotPlugin.Name);
+        const skipNgrok = ctx.config?.get(LocalDebugConfigKeys.SkipNgrok) as string;
 
         const telemetryProperties = {
             platform: ctx.platform as string,
@@ -214,10 +214,10 @@ export class LocalDebugPlugin implements Plugin {
     }
 
     public async postLocalDebug(ctx: PluginContext): Promise<Result<any, FxError>> {
-        const includeFrontend = ctx.configOfOtherPlugins.has(FrontendHostingPlugin.Name);
-        const includeBackend = ctx.configOfOtherPlugins.has(FunctionPlugin.Name);
-        const includeBot = ctx.configOfOtherPlugins.has(BotPlugin.Name);
-        const trustDevCert = ctx.config.get(LocalDebugConfigKeys.TrustDevelopmentCertificate) as string;
+        const includeFrontend = ctx.configOfOtherPlugins?.has(FrontendHostingPlugin.Name);
+        const includeBackend = ctx.configOfOtherPlugins?.has(FunctionPlugin.Name);
+        const includeBot = ctx.configOfOtherPlugins?.has(BotPlugin.Name);
+        const trustDevCert = ctx.config?.get(LocalDebugConfigKeys.TrustDevelopmentCertificate) as string;
 
         const telemetryProperties = {
             platform: ctx.platform as string,

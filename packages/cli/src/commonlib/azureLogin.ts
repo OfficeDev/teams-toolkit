@@ -54,7 +54,7 @@ const cachePlugin = {
 const config = {
   auth: {
     clientId: "7ea7c24c-b1f6-4a20-9d11-9ae12e9e7ac0",
-    authority: "https://login.microsoftonline.com/common"
+    authority: "https://login.microsoftonline.com/organizations"
   },
   system: {
     loggerOptions: {
@@ -155,7 +155,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         const credential = new DeviceTokenCredentials(
           config.auth.clientId,
           (tokenJson as any).tid,
-          (tokenJson as any).upn,
+          (tokenJson as any).upn ?? (tokenJson as any).unique_name,
           undefined,
           env,
           memory
@@ -197,7 +197,8 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   private setMemoryCache(accessToken: string | undefined, tokenJson: any) {
     if (accessToken) {
       AzureAccountManager.domain = (tokenJson as any).tid;
-      AzureAccountManager.username = (tokenJson as any).upn;
+      AzureAccountManager.username = (tokenJson as any).upn ?? (tokenJson as any).unique_name;
+
       tokenJson = ConvertTokenToJson(accessToken);
       const tokenExpiresIn =
         Math.round(new Date().getTime() / 1000) - ((tokenJson as any).iat as number);
@@ -225,7 +226,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       const credential = new DeviceTokenCredentials(
         config.auth.clientId,
         (dataJson as any).tid,
-        (dataJson as any).upn,
+        (dataJson as any).upn ?? (dataJson as any).unique_name,
         undefined,
         env,
         memory
@@ -327,7 +328,27 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });
     }
   }
+
+  setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  removeStatusChangeMap(name: string): Promise<boolean> {
+      throw new Error("Method not implemented.");
+  }
+  listSubscriptions(): Promise<SubscriptionInfo[]> {
+      throw new Error("Method not implemented.");
+  }
+  setSubscription(subscriptionId: string): Promise<void> {
+      throw new Error("Method not implemented.");
+  }
 }
+
+// TODO: remove after api update
+export type SubscriptionInfo = {
+  subscriptionName: string;
+  subscriptionId: string;
+  tenantId: string;
+};
 
 interface PartialList<T> extends Array<T> {
   nextLink?: string;

@@ -5,7 +5,7 @@ import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import sinon from "sinon";
 import dotenv from "dotenv";
-import { MockGraphTokenProvider, skip_if } from "./testUtil";
+import { MockGraphTokenProvider, it_if, before_if, after_if, AadHelper, EnvConfig } from "./testUtil";
 import { AadService } from "../../../../../src/plugins/resource/apim/src/service/aadService";
 import { IAadPluginConfig } from "../../../../../src/plugins/resource/apim/src/model/config";
 import { TeamsAppAadManager } from "../../../../../src/plugins/resource/apim/src/manager/teamsAppAadManager";
@@ -13,85 +13,76 @@ import axios, { AxiosInstance } from "axios";
 import { AadDefaultValues } from "../../../../../src/plugins/resource/apim/src/constants";
 import { assert } from "sinon";
 import { Lazy } from "../../../../../src/plugins/resource/apim/src/util/lazy";
+import { v4 } from "uuid";
 dotenv.config();
 chai.use(chaiAsPromised);
 
-const enableTest: boolean = process.env.UT_TEST_AAD ? process.env.UT_TEST_AAD === "true" : false;
-const enableCreateTest: boolean = process.env.UT_TEST_CREATE ? process.env.UT_TEST_CREATE === "true" : false;
-const testTenantId: string = process.env.UT_TENANT_ID ?? "";
-const testClientId: string = process.env.UT_AAD_CLIENT_ID ?? "";
-
-const testServicePrincipalClientId: string = process.env.UT_SERVICE_PRINCIPAL_CLIENT_ID ?? "";
-const testServicePrincipalClientSecret: string = process.env.UT_SERVICE_PRINCIPAL_CLIENT_SECRET ?? "";
-const testScopeObjectId: string = process.env.UT_AAD_SCOPE_OBJECT_ID ?? "";
-const testScopeClientId: string = process.env.UT_AAD_SCOPE_CLIENT_ID ?? "";
+const UT_SUFFIX = v4().substring(0, 6);
+const UT_AAD_NAME = `fx-apim-local-unit-test-aad-${UT_SUFFIX}`;
 
 describe("TeamsAppAadManager", () => {
     let teamsAppAadManager: TeamsAppAadManager;
     let aadService: AadService;
     let axios: AxiosInstance;
+    let aadHelper: AadHelper;
     before(async () => {
-        const result = await buildService(enableTest);
+        const result = await buildService(EnvConfig.enableTest);
         axios = result.axiosInstance;
         aadService = result.aadService;
+        aadHelper = result.aadHelper;
         teamsAppAadManager = result.teamsAppAadManager;
     });
 
     describe("#postProvision()", () => {
         const sandbox = sinon.createSandbox();
+        let testObjectId = "";
+        let testClientId = "";
+
+        before_if(EnvConfig.enableTest, async () => {
+            const aadInfo = await aadService.createAad(UT_AAD_NAME);
+            testObjectId = aadInfo.id ?? "";
+            testClientId = aadInfo.appId ?? "";
+        });
+
+        after_if(EnvConfig.enableTest, async () => {
+            await aadHelper.deleteAadByName(UT_AAD_NAME);
+        });
 
         afterEach(function () {
             sandbox.restore();
         });
 
-        skip_if(!enableTest || !enableCreateTest, "Create a new service principal.", async () => {
-            const aadInfo = await aadService.createAad("test-service-principal");
-            chai.assert.isNotEmpty(aadInfo.appId);
-
+        it_if(EnvConfig.enableTest, "Create a new service principal.", async () => {
+            // Arrange
             const spy = sandbox.spy(axios, "request");
-            const aadConfig = buildAadPluginConfig(aadInfo.id!, aadInfo.appId!);
+            const aadConfig = buildAadPluginConfig(testObjectId, testClientId);
+
+            // Act
             await teamsAppAadManager.postProvision(aadConfig, { apimClientAADClientId: testClientId });
+
+            // Assert
             assert.calledThrice(spy);
             assert.calledWithMatch(spy, {
                 method: "get",
-                url: `/servicePrincipals?$filter=appId eq '${aadInfo.appId!}'`,
+                url: `/servicePrincipals?$filter=appId eq '${testClientId}'`,
                 data: undefined,
             });
             assert.calledWithMatch(spy, {
                 method: "post",
                 url: `/servicePrincipals`,
-                data: { appId: aadInfo.appId! },
+                data: { appId: testClientId },
             });
             assert.calledWithMatch(spy, {
                 method: "patch",
-                url: `/applications/${aadInfo.id!}`,
-                data: { api: { knownClientApplications: [testClientId] } },
-            });
-        });
-
-        skip_if(!enableTest, "Skip to create an existing service principal.", async () => {
-            const spy = sandbox.spy(axios, "request");
-            const aadConfig = buildAadPluginConfig(testScopeObjectId, testScopeClientId);
-            await teamsAppAadManager.postProvision(aadConfig, { apimClientAADClientId: testClientId });
-            assert.calledTwice(spy);
-            assert.calledWithMatch(spy, {
-                method: "get",
-                url: `/servicePrisncipals?$filter=appId eq '${testScopeClientId}'`,
-                data: undefined,
-            });
-            assert.calledWithMatch(spy, {
-                method: "patch",
-                url: `/applications/${testScopeObjectId}`,
+                url: `/applications/${testObjectId}`,
                 data: { api: { knownClientApplications: [testClientId] } },
             });
         });
     });
 });
 
-async function buildService(
-    enableLogin: boolean
-): Promise<{ axiosInstance: AxiosInstance; aadService: AadService; teamsAppAadManager: TeamsAppAadManager }> {
-    const mockGraphTokenProvider = new MockGraphTokenProvider(testTenantId, testServicePrincipalClientId, testServicePrincipalClientSecret);
+async function buildService(enableLogin: boolean): Promise<{ axiosInstance: AxiosInstance; aadService: AadService; teamsAppAadManager: TeamsAppAadManager, aadHelper: AadHelper }> {
+    const mockGraphTokenProvider = new MockGraphTokenProvider(EnvConfig.tenantId, EnvConfig.servicePrincipalClientId, EnvConfig.servicePrincipalClientSecret);
     const graphToken = enableLogin ? await mockGraphTokenProvider.getAccessToken() : "";
     const axiosInstance = axios.create({
         baseURL: AadDefaultValues.graphApiBasePath,
@@ -103,7 +94,9 @@ async function buildService(
     const aadService = new AadService(axiosInstance);
     const lazyAadService = new Lazy<AadService>(() => Promise.resolve(aadService));
     const teamsAppAadManager = new TeamsAppAadManager(lazyAadService);
-    return { axiosInstance, aadService, teamsAppAadManager };
+    const aadHelper = new AadHelper(axiosInstance);
+
+    return { axiosInstance, aadService, teamsAppAadManager, aadHelper };
 }
 
 function buildAadPluginConfig(objectId: string, clientId: string): IAadPluginConfig {

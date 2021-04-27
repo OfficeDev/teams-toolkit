@@ -14,18 +14,18 @@ import * as path from "path";
 import * as child_process from "child_process";
 import * as util from "util";
 import { ConfigFolderName } from "fx-api";
+import { DepsInfo, IDepsAdapter, IDepsChecker, IDepsLogger, IDepsTelemetry } from "./checker";
 import {
-  cpUtils,
-  dotnetCheckerEnabled,
-  getResourceDir,
-  logger,
-  runWithProgressIndicator
-} from "./checkerAdapter";
-import { DepsInfo, IDepsChecker } from "./checker";
-import { dotnetHelpLink, isLinux, isWindows, Messages } from "./common";
-import { DepsCheckerEvent, DepsCheckerTelemetry, TelemtryMessages } from "./telemetry";
+  DepsCheckerEvent,
+  dotnetHelpLink,
+  isLinux,
+  isWindows,
+  Messages,
+  TelemtryMessages
+} from "./common";
 import { performance } from "perf_hooks";
 import { DepsCheckerError } from "./errors";
+import { cpUtils } from "./cpUtils";
 
 const exec = util.promisify(child_process.exec);
 
@@ -46,9 +46,19 @@ export class DotnetChecker implements IDepsChecker {
   private static timeout = 3 * 60 * 1000; // same as vscode-dotnet-runtime
   private static maxBuffer = 500 * 1024;
 
+  private readonly _adapter: IDepsAdapter;
+  private readonly _logger: IDepsLogger;
+  private readonly _telemetry: IDepsTelemetry;
+
+  constructor(adapter: IDepsAdapter, logger: IDepsLogger, telemetry: IDepsTelemetry) {
+    this._adapter = adapter;
+    this._logger = logger;
+    this._telemetry = telemetry;
+  }
+
   public async getDepsInfo(): Promise<DepsInfo> {
     const map = new Map<string, string>();
-    const execPath = await DotnetChecker.getDotnetExecPathFromConfig();
+    const execPath = await this.getDotnetExecPathFromConfig();
     if (execPath) {
       map.set("execPath", execPath);
     }
@@ -63,26 +73,26 @@ export class DotnetChecker implements IDepsChecker {
 
   public isEnabled(): Promise<boolean> {
     // TODO: should send this event per user
-    // DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.skipCheckDotnet);
-    return Promise.resolve(dotnetCheckerEnabled());
+    // this._telemetry.sendEvent(DepsCheckerEvent.skipCheckDotnet);
+    return Promise.resolve(this._adapter.dotnetCheckerEnabled());
   }
 
   public async isInstalled(): Promise<boolean> {
     const configPath = DotnetChecker.getDotnetConfigPath();
-    logger.debug(`[start] read dotnet path from '${configPath}'`);
-    const dotnetPath = await DotnetChecker.getDotnetExecPathFromConfig();
-    logger.debug(`[end] read dotnet path from '${configPath}', dotnetPath = '${dotnetPath}'`);
+    this._logger.debug(`[start] read dotnet path from '${configPath}'`);
+    const dotnetPath = await this.getDotnetExecPathFromConfig();
+    this._logger.debug(`[end] read dotnet path from '${configPath}', dotnetPath = '${dotnetPath}'`);
 
-    logger.debug(`[start] check dotnet version`);
-    if (dotnetPath !== null && (await DotnetChecker.isDotnetInstalledCorrectly())) {
+    this._logger.debug(`[start] check dotnet version`);
+    if (dotnetPath !== null && (await this.isDotnetInstalledCorrectly())) {
       return true;
     }
-    logger.debug(`[end] check dotnet version`);
+    this._logger.debug(`[end] check dotnet version`);
 
-    if ((await DotnetChecker.tryAcquireGlobalDotnetSdk()) && (await DotnetChecker.validate())) {
-      DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.dotnetAlreadyInstalled);
-      logger.info(
-        `${Messages.useGlobalDotnet} '${await DotnetChecker.getDotnetExecPathFromConfig()}'`
+    if ((await this.tryAcquireGlobalDotnetSdk()) && (await this.validate())) {
+      this._telemetry.sendEvent(DepsCheckerEvent.dotnetAlreadyInstalled);
+      this._logger.info(
+        `${Messages.useGlobalDotnet} '${await this.getDotnetExecPathFromConfig()}'`
       );
       return true;
     }
@@ -91,41 +101,35 @@ export class DotnetChecker implements IDepsChecker {
   }
 
   public async install(): Promise<void> {
-    logger.debug(`[start] cleanup bin/dotnet and config`);
+    this._logger.debug(`[start] cleanup bin/dotnet and config`);
     await DotnetChecker.cleanup();
-    logger.debug(`[end] cleanup bin/dotnet and config`);
+    this._logger.debug(`[end] cleanup bin/dotnet and config`);
 
-    logger.debug(`[start] install dotnet ${installVersion}`);
-    logger.info(Messages.downloadDotnet.replace("@NameVersion", installedNameWithVersion));
-    await runWithProgressIndicator(async () => {
-      await DotnetChecker.handleInstall(installVersion);
+    this._logger.debug(`[start] install dotnet ${installVersion}`);
+    this._logger.info(Messages.downloadDotnet.replace("@NameVersion", installedNameWithVersion));
+    await this._adapter.runWithProgressIndicator(async () => {
+      await this.handleInstall(installVersion);
     });
-    logger.info(Messages.finishInstallDotnet.replace("@NameVersion", installedNameWithVersion));
-    logger.debug(`[end] install dotnet ${installVersion}`);
+    this._logger.info(
+      Messages.finishInstallDotnet.replace("@NameVersion", installedNameWithVersion)
+    );
+    this._logger.debug(`[end] install dotnet ${installVersion}`);
 
-    logger.debug(`[start] validate dotnet version`);
-    if (!(await DotnetChecker.validate())) {
+    this._logger.debug(`[start] validate dotnet version`);
+    if (!(await this.validate())) {
       await DotnetChecker.cleanup();
-      DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.dotnetInstallError);
+      this._telemetry.sendEvent(DepsCheckerEvent.dotnetInstallError);
       throw new DepsCheckerError(
-        Messages.failToInstallDotnet.replace("@NameVersion", installedNameWithVersion),
+        Messages.failToInstallDotnet.split("@NameVersion").join(installedNameWithVersion),
         dotnetHelpLink
       );
     }
-    DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.dotnetInstallCompleted);
+    this._telemetry.sendEvent(DepsCheckerEvent.dotnetInstallCompleted);
   }
 
   public async getDotnetExecPath(): Promise<string> {
-    let dotnetExecPath = "";
-    if (await this.isEnabled()) {
-      const execPath = await DotnetChecker.getDotnetExecPathFromConfig();
-      if (execPath !== null) {
-        dotnetExecPath = execPath;
-      }
-    } else {
-      dotnetExecPath = "dotnet";
-    }
-    return dotnetExecPath;
+    const execPath = await this.getDotnetExecPathFromConfig();
+    return execPath || "dotnet";
   }
 
   public static escapeFilePath(path: string): string {
@@ -144,7 +148,7 @@ export class DotnetChecker implements IDepsChecker {
     return path.join(os.homedir(), `.${ConfigFolderName}`, "dotnet.json");
   }
 
-  private static async getDotnetExecPathFromConfig(): Promise<string | null> {
+  private async getDotnetExecPathFromConfig(): Promise<string | null> {
     try {
       const config = await fs.readJson(DotnetChecker.getDotnetConfigPath(), {
         encoding: DotnetChecker.encoding
@@ -152,32 +156,31 @@ export class DotnetChecker implements IDepsChecker {
       if (typeof config.dotnetExecutablePath === "string") {
         return config.dotnetExecutablePath;
       }
-      logger.debug(`invalid dotnet config file format, config: '${JSON.stringify(config)}' `);
+      this._logger.debug(`invalid dotnet config file format, config: '${JSON.stringify(config)}' `);
     } catch (error) {
-      logger.debug(`get dotnet path failed, error: '${error}'`);
+      this._logger.debug(`get dotnet path failed, error: '${error}'`);
     }
     return null;
   }
 
-  private static async handleInstall(version: DotnetVersion): Promise<void> {
+  private async handleInstall(version: DotnetVersion): Promise<void> {
     try {
       if (isLinux()) {
         await this.handleLinuxDependency();
       }
       const installDir = DotnetChecker.getDefaultInstallPath();
       // NOTE: we don't need to handle directory creation since dotnet-install script will handle it.
-      await DotnetChecker.runDotnetInstallScript(version, installDir);
+      await this.runDotnetInstallScript(version, installDir);
 
-      logger.debug(`[start] write dotnet path to config`);
+      this._logger.debug(`[start] write dotnet path to config`);
       const dotnetExecPath = DotnetChecker.getDotnetExecPathFromDotnetInstallationDir(installDir);
       await DotnetChecker.persistDotnetExecPath(dotnetExecPath);
-      logger.debug(`[end] write dotnet path to config`);
+      this._logger.debug(`[end] write dotnet path to config`);
     } catch (error) {
-      logger.error(
-        `${Messages.failToInstallDotnet.replace(
-          "@NameVersion",
-          installedNameWithVersion
-        )}, error = '${error}'`
+      this._logger.error(
+        `${Messages.failToInstallDotnet
+          .split("@NameVersion")
+          .join(installedNameWithVersion)}, error = '${error}'`
       );
     }
   }
@@ -196,7 +199,7 @@ export class DotnetChecker implements IDepsChecker {
     );
   }
 
-  private static async handleLinuxDependency(): Promise<void> {
+  private async handleLinuxDependency(): Promise<void> {
     // do nothing
   }
 
@@ -206,11 +209,8 @@ export class DotnetChecker implements IDepsChecker {
   }
 
   // from: https://github.com/dotnet/vscode-dotnet-runtime/blob/main/vscode-dotnet-runtime-library/src/Acquisition/AcquisitionInvoker.ts
-  private static async runDotnetInstallScript(
-    version: DotnetVersion,
-    installDir: string
-  ): Promise<void> {
-    const installCommand: string = await DotnetChecker.getInstallCommand(version, installDir);
+  private async runDotnetInstallScript(version: DotnetVersion, installDir: string): Promise<void> {
+    const installCommand: string = await this.getInstallCommand(version, installDir);
     const windowsFullCommand = `powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "& { [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12 ; & ${installCommand} }`;
 
     const command = isWindows() ? windowsFullCommand : installCommand;
@@ -223,61 +223,72 @@ export class DotnetChecker implements IDepsChecker {
 
     try {
       const start = performance.now();
+      await fs.chmodSync(this.getDotnetInstallScriptPath(), "755");
       const { stdout, stderr } = await exec(command, options);
-      logger.debug(`Finished running dotnet-install script, command = '${command}', options = '${JSON.stringify(options)}', stdout = '${stdout}', stderr = '${stderr}'`);
+      this._logger.debug(
+        `Finished running dotnet-install script, command = '${command}', options = '${JSON.stringify(
+          options
+        )}', stdout = '${stdout}', stderr = '${stderr}'`
+      );
 
       const timecost = Number(((performance.now() - start) / 1000).toFixed(2));
 
       if (stderr && stderr.length > 0) {
-        DepsCheckerTelemetry.sendSystemErrorEvent(
+        this._telemetry.sendSystemErrorEvent(
           DepsCheckerEvent.dotnetInstallScriptError,
           TelemtryMessages.failedToExecDotnetScript,
           `stdout = '${stdout}', stderr = '${stderr}'`
         );
-        logger.error(
-          `${Messages.failToInstallDotnet.replace("@NameVersion", installedNameWithVersion)} ${
+        this._logger.error(
+          `${Messages.failToInstallDotnet.split("@NameVersion").join(installedNameWithVersion)} ${
             Messages.dotnetInstallStderr
           } stdout = '${stdout}', stderr = '${stderr}'`
         );
       } else {
-        DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.dotnetInstallScriptCompleted, timecost);
+        this._telemetry.sendEvent(DepsCheckerEvent.dotnetInstallScriptCompleted, timecost);
       }
     } catch (error) {
-      DepsCheckerTelemetry.sendSystemErrorEvent(
+      this._telemetry.sendSystemErrorEvent(
         DepsCheckerEvent.dotnetInstallScriptError,
         TelemtryMessages.failedToExecDotnetScript,
         error
       );
       // swallow the exception since later validate will find out the errors anyway
-      logger.error(
-        `${Messages.failToInstallDotnet.replace("@NameVersion", installedNameWithVersion)} ${
+      this._logger.error(
+        `${Messages.failToInstallDotnet.split("@NameVersion").join(installedNameWithVersion)} ${
           Messages.dotnetInstallErrorCode
-        }, command = '${command}', options = '${options}', error = '${error}', stdout = '${error.stdout}', stderr = '${error.stderr}'`
+        }, command = '${command}', options = '${options}', error = '${error}', stdout = '${
+          error.stdout
+        }', stderr = '${error.stderr}'`
       );
     }
   }
 
-  private static async isDotnetInstalledCorrectly(): Promise<boolean> {
+  private async isDotnetInstalledCorrectly(): Promise<boolean> {
     try {
-      const dotnetExecPath = await DotnetChecker.getDotnetExecPathFromConfig();
-      const dotnetSdks: DotnetSDK[] = await DotnetChecker.searchDotnetSdks(dotnetExecPath);
+      const dotnetExecPath = await this.getDotnetExecPathFromConfig();
+      const dotnetSdks: DotnetSDK[] = await this.searchDotnetSdks(dotnetExecPath);
       const installedVersions = dotnetSdks
         .map((sdk) => DotnetChecker.parseDotnetVersion(sdk.version))
         .filter((version) => version !== null) as string[];
-      return DotnetChecker.isDotnetVersionsInstalled(installedVersions);
+      return this.isDotnetVersionsInstalled(installedVersions);
     } catch (error) {
-      DepsCheckerTelemetry.sendSystemErrorEvent(DepsCheckerEvent.dotnetValidationError, TelemtryMessages.failedToValidateDotnet, error);
-      logger.debug(`validate private install failed, error = '${error}'`);
+      this._telemetry.sendSystemErrorEvent(
+        DepsCheckerEvent.dotnetValidationError,
+        TelemtryMessages.failedToValidateDotnet,
+        error
+      );
+      this._logger.debug(`validate private install failed, error = '${error}'`);
       return false;
     }
   }
 
-  private static async isDotnetVersionsInstalled(installedVersions: string[]): Promise<boolean> {
+  private async isDotnetVersionsInstalled(installedVersions: string[]): Promise<boolean> {
     try {
       const validVersions = DotnetChecker.arrayIntersection(installedVersions, supportedVersions);
       return validVersions.length > 0;
     } catch (error) {
-      logger.error(
+      this._logger.error(
         `failed to check .NET, installedVersions = '${installedVersions}', supportedVersions = '${supportedVersions}', error = '${error}'`
       );
       return false;
@@ -295,12 +306,12 @@ export class DotnetChecker implements IDepsChecker {
     return path.dirname(privateInstallPath) == path.dirname(sdk.path) && sdk.version !== null;
   }
 
-  private static async getGlobalDotnetSdks(): Promise<DotnetSDK[]> {
-    const globalSdks: DotnetSDK[] = await DotnetChecker.searchDotnetSdks("dotnet");
+  private async getGlobalDotnetSdks(): Promise<DotnetSDK[]> {
+    const globalSdks: DotnetSDK[] = await this.searchDotnetSdks("dotnet");
     return globalSdks.filter((sdk) => !DotnetChecker.isPrivateInstall(sdk));
   }
 
-  private static async searchDotnetSdks(dotnetExecPath: string | null): Promise<DotnetSDK[]> {
+  private async searchDotnetSdks(dotnetExecPath: string | null): Promise<DotnetSDK[]> {
     if (!dotnetExecPath) {
       return [];
     }
@@ -309,7 +320,7 @@ export class DotnetChecker implements IDepsChecker {
       // shell = false to prevent shell escape issues in dotnetExecPath
       const dotnetListSdksOutput = await cpUtils.executeCommand(
         undefined,
-        logger,
+        this._logger,
         { shell: false },
         dotnetExecPath,
         "--list-sdks"
@@ -334,7 +345,9 @@ export class DotnetChecker implements IDepsChecker {
         }
       });
     } catch (error) {
-      logger.debug(`Failed to search dotnet sdk by dotnetPath = ${dotnetExecPath}, error = '${error}'`);
+      this._logger.debug(
+        `Failed to search dotnet sdk by dotnetPath = ${dotnetExecPath}, error = '${error}'`
+      );
     }
     return sdks;
   }
@@ -349,15 +362,18 @@ export class DotnetChecker implements IDepsChecker {
     return path.join(installDir, isWindows() ? "dotnet.exe" : "dotnet");
   }
 
-  private static getDotnetInstallScriptPath(): string {
-    return path.join(getResourceDir(), isWindows() ? "dotnet-install.ps1" : "dotnet-install.sh");
+  private getDotnetInstallScriptPath(): string {
+    return path.join(
+      this._adapter.getResourceDir(),
+      isWindows() ? "dotnet-install.ps1" : "dotnet-install.sh"
+    );
   }
 
   private static getDefaultInstallPath(): string {
     return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "dotnet");
   }
 
-  private static async getInstallCommand(
+  private async getInstallCommand(
     version: DotnetVersion,
     dotnetInstallDir: string
   ): Promise<string> {
@@ -368,22 +384,65 @@ export class DotnetChecker implements IDepsChecker {
       version
     ];
 
-    const scriptPath = DotnetChecker.getDotnetInstallScriptPath();
+    const scriptPath = this.getDotnetInstallScriptPath();
     return `${DotnetChecker.escapeFilePath(scriptPath)} ${args.join(" ")}`;
   }
 
-  private static async validate(): Promise<boolean> {
-    // TODO: validate with dotnet hello world
-    const isInstallationValid = await DotnetChecker.isDotnetInstalledCorrectly();
+  private async validate(): Promise<boolean> {
+    const isInstallationValid =
+      (await this.isDotnetInstalledCorrectly()) && (await this.validateWithHelloWorld());
     if (!isInstallationValid) {
-      DepsCheckerTelemetry.sendEvent(DepsCheckerEvent.dotnetValidationError);
+      this._telemetry.sendEvent(DepsCheckerEvent.dotnetValidationError);
     }
     return isInstallationValid;
   }
 
-  private static async tryAcquireGlobalDotnetSdk(): Promise<boolean> {
+  private async validateWithHelloWorld(): Promise<boolean> {
+    const dotnetPath = await this.getDotnetExecPathFromConfig();
+    if (!dotnetPath) {
+      return false;
+    }
+
+    const samplePath = path.join(os.homedir(), `.${ConfigFolderName}`, "dotnetSample");
+    const expected: string = "Hello World";
+    let actual: string = "";
     try {
-      const sdks: DotnetSDK[] = await DotnetChecker.getGlobalDotnetSdks();
+      await fs.remove(samplePath);
+
+      await cpUtils.executeCommand(
+        undefined,
+        this._logger,
+        { shell: false },
+        dotnetPath,
+        "new",
+        "console",
+        "--output",
+        `${samplePath}`
+      );
+      actual = await cpUtils.executeCommand(
+        undefined,
+        this._logger,
+        { shell: false },
+        dotnetPath,
+        "run",
+        "--project",
+        `${samplePath}`
+      );
+      return actual.includes(expected);
+    } catch (error) {
+      this._logger.debug(
+        `Failed to run hello world, dotnetPath = ${dotnetPath}, expected output = ${expected}, actual output = ${actual}, error = ${error}`
+      );
+    } finally {
+      await fs.remove(samplePath);
+    }
+
+    return false;
+  }
+
+  private async tryAcquireGlobalDotnetSdk(): Promise<boolean> {
+    try {
+      const sdks: DotnetSDK[] = await this.getGlobalDotnetSdks();
       if (!sdks || sdks.length == 0) {
         return false;
       }
@@ -396,7 +455,7 @@ export class DotnetChecker implements IDepsChecker {
       await DotnetChecker.persistDotnetExecPath(dotnetExecPath);
       return true;
     } catch (error) {
-      logger.debug(`Failed to acquire global dotnet sdk, error = '${error}'`);
+      this._logger.debug(`Failed to acquire global dotnet sdk, error = '${error}'`);
       return false;
     }
   }
@@ -410,5 +469,3 @@ export class DotnetChecker implements IDepsChecker {
     return match.groups?.major_version + "." + match.groups?.minor_version;
   }
 }
-
-export const dotnetChecker = new DotnetChecker();

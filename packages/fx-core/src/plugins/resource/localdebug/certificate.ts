@@ -36,7 +36,7 @@ export class LocalCertificateManager {
      * - Check cert store if trusted (thumbprint, expiration)
      * - Add to cert store if not trusted (friendly name as well)
      */
-    public async setupCertificate(): Promise<LocalCertificate> {
+    public async setupCertificate(needTrust: boolean): Promise<LocalCertificate> {
         const certFilePath = `${this.certFolder}/${LocalDebugCertificate.CertFileName}`;
         const keyFilePath = `${this.certFolder}/${LocalDebugCertificate.KeyFileName}`;
         const localCert: LocalCertificate = {
@@ -45,7 +45,6 @@ export class LocalCertificateManager {
             isTrusted: false,
         };
         let certThumbprint: string | undefined = undefined;
-        let needTrust = true;
         await fs.ensureDir(this.certFolder);
 
         this.logger?.info("Detecting/Verifying local certificate.");
@@ -56,18 +55,18 @@ export class LocalCertificateManager {
             certThumbprint = this.verifyCertificateContent(certContent, keyContent);
         }
 
-        if (certThumbprint) {
-            // verified existing cert
-            needTrust = !await this.verifyCertificateInStore(certThumbprint);
-            localCert.isTrusted = !needTrust;
-        } else {
+        if (!certThumbprint) {
             // generate cert and key
             await this.generateCertificate(certFilePath, keyFilePath);
         }
 
-        // trust cert
         if (needTrust) {
-            localCert.isTrusted = await this.trustCertificate(certFilePath, LocalDebugCertificate.FriendlyName);
+            if (certThumbprint && await this.verifyCertificateInStore(certThumbprint)) {
+                // already trusted
+                localCert.isTrusted = true;
+            } else {
+                localCert.isTrusted = await this.trustCertificate(certFilePath, LocalDebugCertificate.FriendlyName);
+            }
         }
 
         return localCert;

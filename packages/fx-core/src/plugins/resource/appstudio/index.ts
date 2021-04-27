@@ -9,6 +9,7 @@ import { AppStudioPluginImpl } from "./plugin";
 import { Constants } from "./constants";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
+import { manuallySubmitOption, autoPublishOption } from "./questions";
 
 export class AppStudioPlugin implements Plugin {
     private appStudioPluginImpl = new AppStudioPluginImpl();
@@ -40,6 +41,15 @@ export class AppStudioPlugin implements Plugin {
                     title: "Please input the teams app id in App Studio"
                 });
                 appStudioQuestions.addChild(remoteTeamsAppId);
+            } else {
+                const buildOrPublish = new QTreeNode({
+                    name: Constants.BUILD_OR_PUBLISH_QUESTION,
+                    type: NodeType.singleSelect,
+                    option: [manuallySubmitOption, autoPublishOption],
+                    title: "Teams Toolkit: Publish to Teams",
+                    default: autoPublishOption.id
+                });
+                appStudioQuestions.addChild(buildOrPublish);
             }
         }
 
@@ -82,7 +92,7 @@ export class AppStudioPlugin implements Plugin {
      */
     public async buildTeamsPackage(ctx: PluginContext, appDirectory: string, manifestString: string): Promise<Result<string, FxError>> {
         try {
-            const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(appDirectory, manifestString);
+            const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, appDirectory, manifestString);
             const builtSuccess = `[Teams Toolkit] Teams Package ${appPackagePath} built successfully!`;
             ctx.logProvider?.info(builtSuccess);
             await ctx.dialog?.communicate(
@@ -110,7 +120,33 @@ export class AppStudioPlugin implements Plugin {
      * @returns {string[]} - Teams App ID in Teams app catalog
      */
     public async publish(ctx: PluginContext): Promise<Result<string, FxError>> {
-        const teamsAppId = await this.appStudioPluginImpl.publish(ctx);
-        return ok(teamsAppId);
+        if (ctx.platform !== Platform.VS) {
+            const answer = ctx.answers?.get(Constants.BUILD_OR_PUBLISH_QUESTION);
+            if (answer === manuallySubmitOption.id) {
+                const appDirectory = `${ctx.root}/.${ConfigFolderName}`;
+                const manifestString = JSON.stringify(ctx.app);
+                return this.buildTeamsPackage(ctx, appDirectory, manifestString);
+            }
+        }
+
+        try {
+            const teamsAppId = await this.appStudioPluginImpl.publish(ctx);
+            ctx.logProvider?.info(`[Teams Toolkit] publish success!`);
+            await ctx.dialog?.communicate(
+                new DialogMsg(DialogType.Show, {
+                    description: `[Teams Toolkit]: ${ctx.app.name.short} successfully published to the admin portal. Once approved, your app will be available for your organization.`,
+                    level: MsgLevel.Info,
+                }),
+            );
+            return ok(teamsAppId);
+        } catch (error) {
+            await ctx.dialog?.communicate(
+                new DialogMsg(DialogType.Show, {
+                    description: `[Teams Toolkit]: ${error.message}`,
+                    level: MsgLevel.Warning
+                }),
+            );
+            return err(error);
+        }
     }
 }

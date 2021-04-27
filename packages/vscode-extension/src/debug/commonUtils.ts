@@ -6,7 +6,6 @@ import * as path from "path";
 import * as dotenv from "dotenv";
 import * as vscode from "vscode";
 import * as constants from "./constants";
-import { openUrl } from "./depsChecker/common";
 import { ConfigFolderName, Func } from "fx-api";
 import { core, showError } from "../handlers";
 
@@ -102,5 +101,46 @@ export async function getLocalDebugTeamsAppId(isLocalSideloadingConfiguration: b
     return result.value as string;
   } catch (err) {
     await showError(err);
-  }   
+  }
+}
+
+export async function getProgrammingLanguage(): Promise<string | undefined> {
+  const func: Func = {
+    namespace: "fx-solution-azure/fx-resource-local-debug",
+    method: "getProgrammingLanguage"
+  };
+  try {
+    const result = await core.callFunc(func);
+    if (result.isErr()) {
+      throw result.error;
+    }
+    return result.value as string;
+  } catch (err) {
+    await showError(err);
+  }
+}
+
+async function getLocalDebugConfig(key: string): Promise<string | undefined> {
+  if (!vscode.workspace.workspaceFolders) {
+    return undefined;
+  }
+
+  const workspacePath: string = vscode.workspace.workspaceFolders[0].uri.fsPath;
+  const userDataFilePath: string = path.join(
+    workspacePath,
+    `.${ConfigFolderName}`,
+    constants.userDataFileName
+  );
+  if (!(await fs.pathExists(userDataFilePath))) {
+    return undefined;
+  }
+
+  const contents = await fs.readFile(userDataFilePath);
+  const configs: dotenv.DotenvParseOutput = dotenv.parse(contents);
+
+  return configs[key];
+}
+
+export async function getSkipNgrokConfig(): Promise<string | undefined> {
+  return getLocalDebugConfig(constants.skipNgrokConfigKey);
 }

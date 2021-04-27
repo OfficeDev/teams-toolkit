@@ -5,6 +5,7 @@ import axios, { AxiosInstance } from "axios";
 import { SystemError } from "fx-api";
 import { IAppDefinition } from "../../solution/fx-solution/appstudio/interface";
 import { AppStudioError } from "./errors";
+import { IPublishingAppDenition } from "./interfaces/IPublishingAppDefinition";
 import { AppStudioResultFactory } from "./results";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -46,6 +47,9 @@ export namespace AppStudioClient {
         }
     }
 
+    /**
+        * Update App Definition in App Studio
+    */
     export async function updateTeamsApp(teamsAppId: string, appDefinition: IAppDefinition, appStudioToken: string): Promise<boolean> {
         try {
             const requester = createRequesterWithToken(appStudioToken);
@@ -72,36 +76,21 @@ export namespace AppStudioClient {
         return false;
     }
 
+    /**
+        * Publish Teams app to Teams App Catalog
+    */
     export async function publishTeamsApp(teamsAppId: string, file: Buffer, appStudioToken: string): Promise<string> {
         try {
-            // Check if the app exists in Teams App Catalog
-            const appCatalogAppId = await getAppByTeamsAppId(teamsAppId, appStudioToken);
-
             const requester = createRequesterWithToken(appStudioToken);
-            let response = null;
-            if (appCatalogAppId) {
-                // update the existing app
-                response = await requester.post(`/api/publishing/${teamsAppId}/appdefinitions`, file, {headers: {"Content-Type": "application/zip"}});
-            } else {
-                // publish a new app to Teams App Catalog               
-                response = await requester.post("/api/publishing", file,  {headers: {"Content-Type": "application/zip"}});
-            }
+            const response = await requester.post("/api/publishing", file,  {headers: {"Content-Type": "application/zip"}});
             
             if (response && response.data) {
                 if (response.data.error) {
-                    if (response.data.error.code === "Conflict") {
-                        throw AppStudioResultFactory.SystemError(
-                            AppStudioError.TeamsAppPublishConflictError.name,
-                            AppStudioError.TeamsAppPublishConflictError.message(teamsAppId),
-                            response.data.error.message
-                        );
-                    } else {
-                        throw AppStudioResultFactory.SystemError(
-                            AppStudioError.TeamsAppPublishFailedError.name,
-                            AppStudioError.TeamsAppPublishFailedError.message(teamsAppId),
-                            response.data.error.message
-                        );
-                    }
+                    throw AppStudioResultFactory.SystemError(
+                        AppStudioError.TeamsAppPublishFailedError.name,
+                        AppStudioError.TeamsAppPublishFailedError.message(teamsAppId),
+                        response.data.error.message
+                    );
                 } else {
                     return response.data.id;
                 }
@@ -124,11 +113,69 @@ export namespace AppStudioClient {
         }
     }
 
-    async function getAppByTeamsAppId(teamsAppId: string, appStudioToken: string): Promise<string | undefined> {
+    /**
+        * Update existed publish request
+    */
+    export async function publishTeamsAppUpdate(teamsAppId: string, file: Buffer, appStudioToken: string): Promise<string> {
+        try {
+            // Get App Definition from Teams App Catalog
+            const appDefinition = await getAppByTeamsAppId(teamsAppId, appStudioToken);
+
+            const requester = createRequesterWithToken(appStudioToken);
+            let response = null;
+            if (appDefinition) {
+                // update the existing app
+                response = await requester.post(`/api/publishing/${appDefinition.teamsAppId}/appdefinitions`, file, {headers: {"Content-Type": "application/zip"}});
+            } else {
+                throw AppStudioResultFactory.SystemError(
+                    AppStudioError.TeamsAppPublishFailedError.name,
+                    AppStudioError.TeamsAppPublishFailedError.message(teamsAppId)
+                );
+            }
+            
+            if (response && response.data) {
+                if (response.data.error) {
+                    throw AppStudioResultFactory.SystemError(
+                        AppStudioError.TeamsAppPublishFailedError.name,
+                        AppStudioError.TeamsAppPublishFailedError.message(teamsAppId),
+                        response.data.error.message
+                    );
+                } else {
+                    return response.data.id;
+                }
+            } else {
+                throw AppStudioResultFactory.SystemError(
+                    AppStudioError.TeamsAppPublishFailedError.name,
+                    AppStudioError.TeamsAppPublishFailedError.message(teamsAppId)
+                );
+            }
+        } catch (error) {
+            if (error instanceof SystemError) {
+                throw error;
+            } else {
+                throw AppStudioResultFactory.SystemError(
+                    AppStudioError.TeamsAppPublishFailedError.name,
+                    AppStudioError.TeamsAppPublishFailedError.message(teamsAppId),
+                    error
+                );
+            }
+        }
+    }
+
+    export async function getAppByTeamsAppId(teamsAppId: string, appStudioToken: string): Promise<IPublishingAppDenition | undefined> {
         const requester = createRequesterWithToken(appStudioToken);
         const response = await requester.get(`/api/publishing/${teamsAppId}`);
         if (response && response.data && response.data.value && response.data.value.length > 0) {
-            return response.data.value[0].id;
+            const appdefinitions: IPublishingAppDenition[] = response.data.value[0].appDefinitions
+            .map((item: any) => {
+                return {
+                    lastModifiedDateTime: item.lastModifiedDateTime ? new Date(item.lastModifiedDateTime): null,
+                    publishingState: item.publishingState,
+                    teamsAppId: item.teamsAppId,
+                    displayName: item.displayName
+                };
+            });
+            return appdefinitions[appdefinitions.length - 1];
         } else {
             return undefined;
         }

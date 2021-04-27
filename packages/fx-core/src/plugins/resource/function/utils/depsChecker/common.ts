@@ -50,7 +50,7 @@ export const Messages = {
   useGlobalDotnet: `Use global dotnet from PATH.`,
   dotnetInstallStderr: `dotnet-install command failed without error exit code but with non-empty standard error.`,
   dotnetInstallErrorCode: `dotnet-install command failed.`,
-  failToInstallDotnet: `Failed to install @NameVersion.`,
+  failToInstallDotnet: `Failed to install @NameVersion. Please install @NameVersion manually and restart all your Visual Studio Code instances`,
 
   NodeNotFound: `The toolkit cannot find Node.js on your machine.
 
@@ -76,3 +76,35 @@ export const functionCoreToolsHelpLink = "https://aka.ms/AAby4tx";
 export const dotnetHelpLink = "https://aka.ms/AAby4tx";
 export const nodeHelpLink = "https://aka.ms/AAby4tx";
 export const backendExtensionsInstallHelpLink = "https://aka.ms/AAby4tx";
+
+export enum DepsCheckerEvent {
+  funcCheck = "func-check",
+  funcCheckSkipped = "func-check-skipped",
+  funcInstall = "func-install",
+  funcInstallCompleted = "func-install-completed",
+  funcValidation = "func-validation",
+  funcValidationCompleted = "func-validation-completed",
+  funcV1Installed = "func-v1-installed",
+  funcV2Installed = "func-v2-installed",
+  funcV3Installed = "func-v3-installed",
+
+  dotnetCheckSkipped = "dotnet-check-skipped",
+  dotnetAlreadyInstalled = "dotnet-already-installed",
+  dotnetInstallCompleted = "dotnet-install-completed",
+  dotnetInstallError = "dotnet-install-error",
+  dotnetInstallScriptCompleted = "dotnet-install-script-completed",
+  dotnetInstallScriptError = "dotnet-install-script-error",
+  dotnetValidationError = "dotnet-validation-error"
+}
+
+export enum TelemtryMessages {
+  failedToInstallFunc = "failed to install Func core tools.",
+  funcV1Installed = "func v1 is installed by user.",
+  NPMNotFound = "npm is not found.",
+  failedToExecDotnetScript = "failed to exec dotnet script.",
+  failedToValidateDotnet = "failed to validate dotnet."
+}
+
+export enum TelemetryMessurement {
+  completionTime = "completion-time"
+}

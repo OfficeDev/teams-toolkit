@@ -1,0 +1,68 @@
+[
+    {
+        "data": {
+            "name": "add-azure-resources",
+            "title": "Select Azure resources to add",
+            "type": "multiSelect",
+            "option": [
+                {
+                    "id": "function",
+                    "label": "Azure Functions",
+                    "description": "Application backend."
+                },
+                {
+                    "id": "sql",
+                    "label": "Azure SQL Database",
+                    "description": "Azure SQL Database depends on Azure Functions."
+                },
+                {
+                    "id": "apim",
+                    "label": "apim",
+                    "description": "Register APIs in Azure API Management"
+                }
+            ],
+            "default": [
+                "apim"
+            ],
+            "prompt": "If you already have function, add function means adding a new function API; If you don't have function, adding SQL or APIM will create a function by default.",
+            "hide": true
+        }
+    },
+    {
+        "data": {
+            "name": "function-name",
+            "description": "Provide a function name.",
+            "type": "text",
+            "default": "getUserProfile",
+            "validation": {
+                "namespace": "fx-solution-azure/fx-resource-function",
+                "method": "validateFunctionName"
+            }
+        }
+    },
+    {
+        "data": {
+            "name": "subscription",
+            "title": "Please select a subscription",
+            "type": "func",
+            "namespace": "fx-solution-azure",
+            "method": "askSubscription"
+        }
+    },
+    {
+        "data": {
+            "type": "text",
+            "name": "apim-resource-group",
+            "description": "The name of resource group.",
+            "validation": {}
+        }
+    },
+    {
+        "data": {
+            "type": "text",
+            "name": "apim-service-name",
+            "description": "The name of the API Management service instance.",
+            "validation": {}
+        }
+    }
+]

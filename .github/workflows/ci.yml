@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    name: Build and Test (${{ matrix.os }} node ${{ matrix.node-version }})
+
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+        node-version: [14]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setup node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Setup project
+        run: |
+          npm run setup
+
+      - name: Unit Test
+        run: |
+          npx lerna run test:unit --since origin/main
+
+      - name: Integration Test
+        env:
+          SDK_INTEGRATION_SQL_ENDPOINT: ${{secrets.SDK_INTEGRATIONTEST_SQL_ENDPOINT}}
+          SDK_INTEGRATION_SQL_DATABASE_NAME: ${{secrets.SDK_INTEGRATIONTEST_SQL_DATABASE}}
+          SDK_INTEGRATION_SQL_USER_NAME: ${{secrets.SDK_INTEGRATIONTEST_SQL_USERNAME}}
+          SDK_INTEGRATION_SQL_PASSWORD: ${{secrets.SDK_INTEGRATIONTEST_SQL_PASSWORD}}
+          SDK_INTEGRATION_RESOURCE_GROUP_NAME: ${{secrets.SDK_INTEGRATIONTEST_GROUP_NAME}}
+          SDK_INTEGRATION_TEST_ACCOUNT_SUBSCRIPTION_ID: ${{secrets.SDK_INTEGRATIONTEST_SUBSCRIPTION_ID}}
+          SDK_INTEGRATION_TEST_ACCOUNT_NAME: ${{secrets.SDK_INTEGRATIONTEST_TEST_USERNAME}}
+          SDK_INTEGRATION_TEST_ACCOUNT_PASSWORD: ${{secrets.SDK_INTEGRATIONTEST_TEST_PASSWORD}}
+          SDK_INTEGRATION_TEST_TEAMS_AAD_CLIENT_ID: ${{secrets.SDK_INTEGRATIONTEST_TEAMS_AAD_CLIENT_ID}}
+          SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID: ${{secrets.SDK_INTEGRATIONTEST_M365_AAD_CLIENT_ID}}
+          SDK_INTEGRATION_TEST_M365_AAD_CLIENT_SECRET: ${{secrets.SDK_INTEGRATIONTEST_M365_AAD_CLIENT_SECRET}}
+          SDK_INTEGRATION_TEST_AAD_TENANT_ID: ${{secrets.SDK_INTEGRATIONTEST_AAD_TENANTID}}
+          SDK_INTEGRATION_TEST_AAD_AUTHORITY_HOST: ${{secrets.SDK_INTEGRATIONTEST_AAD_AUTHORITY_HOST}}
+          SDK_INTEGRATION_TEST_TEAMS_ACCESS_AS_USER_SCOPE: ${{secrets.SDK_INTEGRATIONTEST_TEAMS_SCOPES_SSO}}
+          TEST_USER_NAME: ${{ secrets.TEST_USER_NAME }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+          TEST_SUBSCRIPTION_ID: ${{ secrets.TEST_SUBSCRIPTION_ID }}
+          CI_ENABLED: "true"
+        run: |
+          npm link
+          npx lerna run test:integration --since origin/main
+

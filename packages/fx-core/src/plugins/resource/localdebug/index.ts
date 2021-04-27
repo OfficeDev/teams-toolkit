@@ -13,7 +13,7 @@ import * as Launch from "./launch";
 import * as Settings from "./settings";
 import * as Tasks from "./tasks";
 import { LocalEnvProvider } from "./localEnv";
-import { MissingStep, NgrokTunnelNotConnected } from "./util/error";
+import { LocalBotEndpointNotConfigured, MissingStep, NgrokTunnelNotConnected, InvalidLocalBotEndpointFormat } from "./util/error";
 import { prepareLocalAuthService } from "./util/localService";
 import { getNgrokHttpUrl } from "./util/ngrok";
 import { getCodespaceName, getCodespaceUrl } from "./util/codespace";
@@ -59,11 +59,12 @@ export class LocalDebugPlugin implements Plugin {
                 const includeFrontend = selectedPlugins.some((pluginName) => pluginName === FrontendHostingPlugin.Name);
                 const includeBackend = selectedPlugins.some((pluginName) => pluginName === FunctionPlugin.Name);
                 const includeBot = selectedPlugins.some((pluginName) => pluginName === BotPlugin.Name);
+                const programmingLanguage: string = ctx.configOfOtherPlugins.get(SolutionPlugin.Name)?.get(SolutionPlugin.ProgrammingLanguage) as string;
 
                 const launchConfigurations = Launch.generateConfigurations(includeFrontend, includeBackend, includeBot);
                 const launchCompounds = Launch.generateCompounds(includeFrontend, includeBackend, includeBot);
 
-                const tasks = Tasks.generateTasks(includeFrontend, includeBackend, includeBot);
+                const tasks = Tasks.generateTasks(includeFrontend, includeBackend, includeBot, programmingLanguage);
                 const tasksInputs = Tasks.generateInputs();
 
                 const localEnvProvider = new LocalEnvProvider(ctx.root);
@@ -92,12 +93,21 @@ export class LocalDebugPlugin implements Plugin {
 
                 await localEnvProvider.saveLocalEnv(localEnvProvider.initialLocalEnvs(includeFrontend, includeBackend, includeBot));
 
+                if (includeFrontend) {
+                    ctx.config.set(LocalDebugConfigKeys.TrustDevelopmentCertificate, "true");
+                }
+
                 if (includeBackend) {
                     await fs.writeJSON(
                         `${ctx.root}/.vscode/settings.json`, Settings.generateSettings(), {
                             spaces: 4,
                             EOL: os.EOL
                         });
+                }
+
+                if (includeBot) {
+                    ctx.config.set(LocalDebugConfigKeys.SkipNgrok, "false");
+                    ctx.config.set(LocalDebugConfigKeys.LocalBotEndpoint, "");
                 }
             }
         }
@@ -148,12 +158,26 @@ export class LocalDebugPlugin implements Plugin {
             }
 
             if (includeBot) {
-                const ngrokHttpUrl = await getNgrokHttpUrl(3978);
-                if (!ngrokHttpUrl) {
-                    return err(NgrokTunnelNotConnected());
+                const skipNgrok = ctx.config.get(LocalDebugConfigKeys.SkipNgrok) as string;
+                if (skipNgrok?.trim().toLowerCase() === "true") {
+                    const localBotEndpoint = ctx.config.get(LocalDebugConfigKeys.LocalBotEndpoint) as string;
+                    if (localBotEndpoint === undefined) {
+                        return err(LocalBotEndpointNotConfigured());
+                    }
+                    const botEndpointRegex = /https:\/\/.*(:\d+)?/g;
+                    if (!botEndpointRegex.test(localBotEndpoint)) {
+                        return err(InvalidLocalBotEndpointFormat(localBotEndpoint));
+                    }
+                    ctx.config.set(LocalDebugConfigKeys.LocalBotEndpoint, localBotEndpoint);
+                    ctx.config.set(LocalDebugConfigKeys.LocalBotDomain, localBotEndpoint.slice(8));
                 } else {
-                    ctx.config.set(LocalDebugConfigKeys.LocalBotEndpoint, ngrokHttpUrl);
-                    ctx.config.set(LocalDebugConfigKeys.LocalBotDomain, ngrokHttpUrl.slice(8));
+                    const ngrokHttpUrl = await getNgrokHttpUrl(3978);
+                    if (!ngrokHttpUrl) {
+                        return err(NgrokTunnelNotConnected());
+                    } else {
+                        ctx.config.set(LocalDebugConfigKeys.LocalBotEndpoint, ngrokHttpUrl);
+                        ctx.config.set(LocalDebugConfigKeys.LocalBotDomain, ngrokHttpUrl.slice(8));
+                    }
                 }
             }
         }
@@ -215,9 +239,11 @@ export class LocalDebugPlugin implements Plugin {
 
                 // local certificate
                 try {
+                    const trustDevCert = ctx.config.get(LocalDebugConfigKeys.TrustDevelopmentCertificate) as string;
+                    const needTrust = (trustDevCert === undefined) || (trustDevCert.trim().toLowerCase() === "true");
                     const certManager = new LocalCertificateManager(ctx);
-                    const localCert = await certManager.setupCertificate();
-                    if (localCert && localCert.isTrusted) {
+                    const localCert = await certManager.setupCertificate(needTrust);
+                    if (localCert) {
                         localEnvs[LocalEnvCertKeys.SslCrtFile] = localCert.certPath;
                         localEnvs[LocalEnvCertKeys.SslKeyFile] = localCert.keyPath;
                     }
@@ -266,6 +292,9 @@ export class LocalDebugPlugin implements Plugin {
                 // return local teams app id
                 return ok(solutionConfigs?.get(SolutionPlugin.LocalTeamsAppId) as string);
             }
+        } else if (func.method === "getProgrammingLanguage") {
+            const solutionConfigs = ctx.configOfOtherPlugins.get(SolutionPlugin.Name);
+            return ok(solutionConfigs?.get(SolutionPlugin.ProgrammingLanguage) as string);
         }
 
         return ok(undefined);

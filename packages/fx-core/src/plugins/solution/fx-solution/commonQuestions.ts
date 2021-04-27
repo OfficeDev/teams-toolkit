@@ -14,6 +14,7 @@ import {
     Result,
     SolutionConfig,
     SystemError,
+    SolutionContext,
 } from "fx-api";
 import { GLOBAL_CONFIG, SolutionError } from "./constants";
 import { v4 as uuidv4 } from "uuid";
@@ -66,7 +67,7 @@ async function parseAzureTenantId(azureToken: TokenCredentialsBase): Promise<Res
     const array = token.split(".");
     if (array.length < 2) {
         return err(
-            returnSystemError(new Error("Invalid accessToken"), "Solution", SolutionError.FailedToParseAzureTenantId),
+            returnSystemError(new Error("Invalid access token"), "Solution", SolutionError.FailedToParseAzureTenantId),
         );
     }
     const buff = Buffer.from(array[1], "base64");
@@ -74,7 +75,7 @@ async function parseAzureTenantId(azureToken: TokenCredentialsBase): Promise<Res
     const tenantId = (obj as any)["tid"];
     if (tenantId === undefined || typeof tenantId !== "string") {
         return err(
-            returnSystemError(new Error("TenantId not found"), "Solution", SolutionError.FailedToParseAzureTenantId),
+            returnSystemError(new Error("Tenant id not found"), "Solution", SolutionError.FailedToParseAzureTenantId),
         );
     }
     return ok(tenantId);
@@ -107,7 +108,7 @@ export async function askSubscription(config: SolutionConfig, azureToken: TokenC
     if (subscriptions.length === 0) {
         return err(
             returnUserError(
-                new Error("No Subscription was found."),
+                new Error("Failed to find a subscription."),
                 "Solution",
                 SolutionError.NoSubscriptionFound
             ),
@@ -123,7 +124,7 @@ export async function askSubscription(config: SolutionConfig, azureToken: TokenC
             await dialog?.communicate(
                 new DialogMsg(DialogType.Ask, {
                     type: QuestionType.Radio,
-                    description: "Please select a subscription",
+                    description: "Select a subscription",
                     options: subscriptionNames,
                 }),
             )
@@ -150,6 +151,7 @@ export async function askSubscription(config: SolutionConfig, azureToken: TokenC
  *
  */
 async function askCommonQuestions(
+    ctx: SolutionContext,
     appName: string,
     config: SolutionConfig,
     dialog?: Dialog,
@@ -164,26 +166,63 @@ async function askCommonQuestions(
     if (azureToken === undefined) {
         return err(
             returnUserError(
-                new Error("Please login to azure using Azure Account Extension"),
+                new Error("Login to Azure using the Azure Account extension"),
                 "Solution",
                 SolutionError.NotLoginToAzure,
             ),
         );
     }
+    
+    const commonQuestions = new CommonQuestions(); 
 
-    const exisitingAnswers = getExistingAnswers(config);
-    if (exisitingAnswers) {
-        // early return if all answers are already there.
-        return ok(exisitingAnswers);
+    //1. check subscriptionId
+    const subscriptionResult = await askSubscription(config, azureToken, dialog);
+    if (subscriptionResult.isErr()){
+        return err(subscriptionResult.error);
     }
+    const subscriptionId = subscriptionResult.value;
+    commonQuestions.subscriptionId = subscriptionId;
+    ctx.logProvider?.info(`[Solution] askCommonQuestions, step 1 - check subscriptionId pass!`);
+    
+    //2. check resource group
+    const rmClient = new ResourceManagementClient(azureToken, subscriptionId);
+    let resourceGroupName = config.get(GLOBAL_CONFIG)?.getString("resourceGroupName");
+    let needCreateResourceGroup = false;
+    if(resourceGroupName){
+        const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupName);
+        if(!checkRes.body){
+            needCreateResourceGroup = true;
+        }
+    }
+    else {
+        resourceGroupName = `${appName.replace(" ", "_")}-rg`;
+        needCreateResourceGroup = true;
+    }
+    if(needCreateResourceGroup){
+        const response = await rmClient.resourceGroups.createOrUpdate(resourceGroupName, {
+            location: commonQuestions.location,
+        });
+        if (response.name === undefined) {
+            return err(
+                returnSystemError(
+                    new Error(`Failed to create resource group ${resourceGroupName}`),
+                    "Solution",
+                    SolutionError.FailedToCreateResourceGroup,
+                ),
+            );
+        }
+        resourceGroupName = response.name;
+        ctx.logProvider?.info(`[Solution] askCommonQuestions - resource group:'${resourceGroupName}' created!`);
+    }
+    commonQuestions.resourceGroupName = resourceGroupName;
+    ctx.logProvider?.info(`[Solution] askCommonQuestions, step 2 - check resource group pass!`);
 
-    const commonQuestions = new CommonQuestions();
-
+    // teamsAppTenantId
     const teamsAppTenantId = (appstudioTokenJson as any).tid;
     if (teamsAppTenantId === undefined || !(typeof teamsAppTenantId === "string") || teamsAppTenantId.length === 0) {
         return err(
             returnSystemError(
-                new Error("Cannot find teams app tenant id"),
+                new Error("Cannot find Teams app tenant id"),
                 "Solution",
                 SolutionError.NoTeamsAppTenantId,
             ),
@@ -191,38 +230,23 @@ async function askCommonQuestions(
     } else {
         commonQuestions.teamsAppTenantId = teamsAppTenantId;
     }
+    ctx.logProvider?.info(`[Solution] askCommonQuestions, step 3 - check teamsAppTenantId pass!`);
 
-    commonQuestions.resourceNameSuffix = uuidv4().substr(0, 6);
+    //resourceNameSuffix
+    const resourceNameSuffix = config.get(GLOBAL_CONFIG)?.getString("resourceNameSuffix");
+    if(!resourceNameSuffix)
+        commonQuestions.resourceNameSuffix = uuidv4().substr(0, 6);
+    else 
+        commonQuestions.resourceNameSuffix = resourceNameSuffix;
+    ctx.logProvider?.info(`[Solution] askCommonQuestions, step 4 - check resourceNameSuffix pass!`);
 
-    const subscriptionResult = await askSubscription(config, azureToken, dialog);
-    if (subscriptionResult.isErr()){
-        return err(subscriptionResult.error);
-    }
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    commonQuestions.subscriptionId = subscriptionResult.value!;
-
+    //tenantId
     const parseTenantIdResult = await parseAzureTenantId(azureToken);
     if (parseTenantIdResult.isErr()) {
         return err(parseTenantIdResult.error);
     }
-
     commonQuestions.tenantId = parseTenantIdResult.value;
-
-    const resourceGroupName = `${appName.replace(" ", "_")}-rg`;
-    const client = new ResourceManagementClient(azureToken, commonQuestions.subscriptionId);
-    const response = await client.resourceGroups.createOrUpdate(resourceGroupName, {
-        location: commonQuestions.location,
-    });
-    if (response.name === undefined) {
-        return err(
-            returnSystemError(
-                new Error(`Failed to create resource group ${resourceGroupName}`),
-                "Solution",
-                SolutionError.FailedToCreateResourceGroup,
-            ),
-        );
-    }
-    commonQuestions.resourceGroupName = response.name;
+    ctx.logProvider?.info(`[Solution] askCommonQuestions, step 5 - check tenantId pass!`);
 
     return ok(commonQuestions);
 }
@@ -234,6 +258,7 @@ async function askCommonQuestions(
  * @param dialog communication channel to Core Module
  */
 export async function fillInCommonQuestions(
+    ctx: SolutionContext,
     appName: string,
     config: SolutionConfig,
     dialog?: Dialog,
@@ -241,7 +266,7 @@ export async function fillInCommonQuestions(
     // eslint-disable-next-line @typescript-eslint/ban-types
     appStudioJson?: object,
 ): Promise<Result<SolutionConfig, FxError>> {
-    const result = await askCommonQuestions(appName, config, dialog, azureToken, appStudioJson);
+    const result = await askCommonQuestions(ctx, appName, config, dialog, azureToken, appStudioJson);
     if (result.isOk()) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const globalConfig = config.get(GLOBAL_CONFIG)!;

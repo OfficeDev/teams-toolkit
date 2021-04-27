@@ -69,6 +69,16 @@ namespace Microsoft.TeamsFx.SimpleAuth
                 {
                     policy.Requirements.Add(new IdentityRequirement(JWTIdentityType.UserIdentity));
                 });
+
+                options.AddPolicy("RequireAccessAsUserScope", policy =>
+                {
+                    policy.RequireAssertion(
+                        context => context.User.HasClaim(
+                            claim => (claim.Type == JWTClaims.Scope && claim.Value.Split(' ').Contains(RequiredScope.AccessAsUser)) ||
+                            (claim.Type == JWTClaims.Scp && claim.Value.Split(' ').Contains(RequiredScope.AccessAsUser))
+                        )
+                    );
+                });
             });
 
             // DI for IConfidentialClientApplication

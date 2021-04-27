@@ -7,6 +7,7 @@ import { IProgressStatus, ok } from "fx-api";
 import { ProgressLocation } from "vscode";
 import { ext } from "./extensionVariables";
 import { sleep } from "./utils/commonUtils";
+import * as StringResources from "./resources/Strings.json";
 
 export class ProgressHandler {
   private totalSteps: number;
@@ -25,10 +26,10 @@ export class ProgressHandler {
   }
 
   private generateWholeMessage(): string {
-    const head = `[Teams Toolkit] ${this.title}`;
+    const head = `${StringResources.vsc.progressHandler.teamsToolkitComponent} ${this.title}`;
     const body = `: [${this.currentStep}/${this.totalSteps}]`;
-    const tail = this.detail ? ` ${this.detail}` : " Prepare task.";
-    return `${head}${body}${tail}`;
+    const tail = this.detail ? ` ${this.detail}` : StringResources.vsc.progressHandler.prepareTask;
+    return `${head}${body}${tail} (Notice:You can reload the window and retry if task spends too long time.)`;
   }
 
   public async start(detail?: string) {

@@ -3,7 +3,6 @@
 
 import { ErrorNames } from "./constants";
 import { Messages } from "./resources/messages";
-import { CommonStrings } from "./resources/strings";
 
 export enum ErrorType {
     User,
@@ -14,7 +13,7 @@ export class PluginError extends Error {
     public name: string;
     public details: string;
     public suggestions: string[];
-    public exceptionType: ErrorType;
+    public errorType: ErrorType;
     public innerError?: Error;
 
     constructor(type: ErrorType, name: string, details: string, suggestions: string[], innerError?: Error) {
@@ -22,7 +21,7 @@ export class PluginError extends Error {
         this.name = name;
         this.details = details;
         this.suggestions = suggestions;
-        this.exceptionType = type;
+        this.errorType = type;
         this.innerError = innerError;
         Object.setPrototypeOf(this, PluginError.prototype);
     }

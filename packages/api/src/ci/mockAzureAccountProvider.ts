@@ -16,8 +16,8 @@ import path from "path";
 
 import { Result, err, ok } from "neverthrow";
 import { FxError, returnUserError } from "../error";
-import { AzureAccountProvider } from "../utils/login";
-import * as azureConfig from "./conf/azure.json";
+import { AzureAccountProvider, SubscriptionInfo } from "../utils/login";
+import * as azureConfig from "./conf/azure";
 import { ConfigFolderName } from "../constants";
 
 dotenv.config();
@@ -164,6 +164,15 @@ export class MockAzureAccountProvider implements AzureAccountProvider {
         throw new Error("Method not implemented.");
     }
     removeStatusChangeMap(name: string): Promise<boolean> {
+        throw new Error("Method not implemented.");
+    }
+    getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined> {
+        throw new Error("Method not implemented.");
+    }
+    listSubscriptions(): Promise<SubscriptionInfo[]> {
+        throw new Error("Method not implemented.");
+    }
+    setSubscription(subscriptionId: string): Promise<void> {
         throw new Error("Method not implemented.");
     }
 }

@@ -3,8 +3,9 @@
 "use strict";
 
 import { ProductName } from "fx-api";
+import { ProgrammingLanguage } from "./constants";
 
-export function generateTasks(includeFrontend: boolean, includeBackend: boolean, includeBot: boolean): Record<string, unknown>[] {
+export function generateTasks(includeFrontend: boolean, includeBackend: boolean, includeBot: boolean, programmingLanguage: string): Record<string, unknown>[] {
     /**
      * Referenced by launch.json
      *   - Pre Debug Check
@@ -18,7 +19,7 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
      *   - backend npm install
      *   - backend extensions install
      */
-     const tasks: Record<string, unknown>[] = [
+    const tasks: Record<string, unknown>[] = [
         {
             label: "Stop All Services",
             type: "shell",
@@ -69,6 +70,39 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
             },
         );
         if (includeBackend) {
+            if (programmingLanguage === ProgrammingLanguage.typescript) {
+                tasks.push(
+                    {
+                        label: "Start Backend",
+                        dependsOn: [
+                            "backend tsc watch",
+                            `${ProductName}: backend start`,
+                        ],
+                        dependsOrder: "sequence",
+                    },
+                    {
+                        label: "backend tsc watch",
+                        type: "shell",
+                        command: "npx tsc --watch",
+                        options: {
+                            cwd: "${workspaceFolder}/api",
+                        },
+                        isBackground: true,
+                        // TODO: tell tsc which files to watch (depends on function's decision)
+                        problemMatcher: "$tsc-watch",
+                        presentation: {
+                            reveal: "silent",
+                        },
+                    },
+                );
+            } else {
+                tasks.push(
+                    {
+                        label: "Start Backend",
+                        dependsOn: `${ProductName}: backend start`,
+                    },
+                );
+            }
             tasks.push(
                 {
                     label: "backend npm install",
@@ -104,6 +138,10 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
                 dependsOrder: "sequence",
             },
             {
+                label: "Start Bot",
+                dependsOn: `${ProductName}: bot start`,
+            },
+            {
                 label: "dependency check",
                 type: "shell",
                 command: "echo ${command:fx-extension.validate-dependencies}",
@@ -120,7 +158,11 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
             },
             {
                 label: "prepare dev env",
-                dependsOn: ["prepare local environment"],
+                dependsOn: [
+                    "prepare local environment",
+                    "bot npm install",
+                ],
+                dependsOrder: "parallel",
             },
             {
                 label: "bot npm install",
@@ -156,6 +198,10 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
                 dependsOrder: "parallel",
             },
             {
+                label: "Start Bot",
+                dependsOn: `${ProductName}: bot start`,
+            },
+            {
                 label: "dependency check",
                 type: "shell",
                 command: "echo ${command:fx-extension.validate-dependencies}",
@@ -173,8 +219,8 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
             {
                 label: "prepare dev env",
                 dependsOn: includeBackend
-                    ? ["prepare local environment", "backend npm install", "frontend npm install"]
-                    : ["prepare local environment", "frontend npm install"],
+                    ? ["prepare local environment", "backend npm install", "frontend npm install", "bot npm install"]
+                    : ["prepare local environment", "frontend npm install", "bot npm install"],
                 dependsOrder: "parallel",
             },
             {
@@ -201,6 +247,39 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
         );
 
         if (includeBackend) {
+            if (programmingLanguage === ProgrammingLanguage.typescript) {
+                tasks.push(
+                    {
+                        label: "Start Backend",
+                        dependsOn: [
+                            "backend tsc watch",
+                            `${ProductName}: backend start`,
+                        ],
+                        dependsOrder: "sequence",
+                    },
+                    {
+                        label: "backend tsc watch",
+                        type: "shell",
+                        command: "npx tsc --watch",
+                        options: {
+                            cwd: "${workspaceFolder}/api",
+                        },
+                        isBackground: true,
+                        // TODO: tell tsc which files to watch (depends on function's decision)
+                        problemMatcher: "$tsc-watch",
+                        presentation: {
+                            reveal: "silent",
+                        },
+                    },
+                );
+            } else {
+                tasks.push(
+                    {
+                        label: "Start Backend",
+                        dependsOn: `${ProductName}: backend start`,
+                    },
+                );
+            }
             tasks.push(
                 {
                     label: "backend npm install",
@@ -249,6 +328,16 @@ export function generateSpfxTasks(): Record<string, unknown>[] {
             },
         },
         {
+            label: "gulp trust-dev-cert",
+            type: "process",
+            command: "node",
+            args: ["${workspaceFolder}/SPFx/node_modules/gulp/bin/gulp.js", "trust-dev-cert"],
+            options: {
+                cwd: "${workspaceFolder}/SPFx",
+            },
+            dependsOn: "npm install",
+        },
+        {
             label: "gulp serve",
             type: "process",
             command: "node",
@@ -274,7 +363,7 @@ export function generateSpfxTasks(): Record<string, unknown>[] {
             options: {
                 cwd: "${workspaceFolder}/SPFx",
             },
-            dependsOn: "npm install",
+            dependsOn: "gulp trust-dev-cert",
         },
         {
             label: "Terminate All Tasks",

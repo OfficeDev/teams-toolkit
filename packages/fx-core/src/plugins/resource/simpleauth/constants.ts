@@ -54,6 +54,8 @@ export class Constants {
 
     static readonly ResourcesFolderName: string = path.join("templates", "plugins", "resource", "simpleauth");
     static readonly SimpleAuthFileName: string = "SimpleAuth.zip";
+    static readonly SimpleAuthZipName = (version: string): string  => `Microsoft.TeamsFx.SimpleAuth_${version}.zip`;
+    static readonly VersionFileName: string = "version.txt";
 
     static readonly ResourceNameMaxLength = 40;
     static readonly SimpleAuthSuffix = "sa";
@@ -89,7 +91,7 @@ export class Constants {
         "The maximum number of Free ServerFarms allowed in a Subscription is 10";
     static readonly FreeServerFarmsQuotaErrorToUser =
         "The maximum number of Free App Service Plan allowed in a Subscription is 10. Please delete other Free App Service Plan and try provision again.";
-    static readonly FreeServerFarmsQuotaErrorHelpLink = "https://aka.ms/rc-free-tier-limit";
+    static readonly FreeServerFarmsQuotaErrorHelpLink = "https://aka.ms/teamsfx-sa-help#freeserverfarmsquotaerror";
 }
 
 export interface Message {

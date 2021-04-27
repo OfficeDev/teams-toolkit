@@ -164,7 +164,12 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
   ): Promise<vscode.Task> {
     const command: string = constants.ngrokStartCommand;
     definition = definition || { type: TeamsfxTaskProvider.type, command };
-    const commandLine = "npx ngrok http 3978";
+    let commandLine = "npx ngrok http 3978";
+    const skipNgrokConfig = await commonUtils.getSkipNgrokConfig();
+    const skipNgrok = skipNgrokConfig && skipNgrokConfig.trim().toLocaleLowerCase() === "true";
+    if (skipNgrok) {
+      commandLine = "echo 'Do not start ngrok, but use predefined bot endpoint.'";
+    }
     const options: vscode.ShellExecutionOptions = {
       cwd: projectRoot,
     };
@@ -176,7 +181,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       new vscode.ShellExecution(commandLine, options),
       constants.ngrokProblemMatcher
     );
-    task.isBackground = true;
+    task.isBackground = !skipNgrok;
     return task;
   }
 

@@ -58,11 +58,12 @@ suite("DotnetChecker E2E Test - first run", async () => {
     const shouldContinue = await checker.resolve();
     const dotnetExecPath = await dotnetCheckerUtils.getDotnetExecPathFromConfig(dotnetConfigPath);
 
+    // should continue because this is the case where use clicks continue
+      chai.assert.isTrue(shouldContinue);
+
     if (isLinux()) {
-      chai.assert.isFalse(shouldContinue);
       chai.assert.isNull(dotnetExecPath);
     } else {
-      chai.assert.isTrue(shouldContinue);
       chai.assert.isNotNull(dotnetExecPath);
       chai.assert.isTrue(await dotnetCheckerUtils.hasDotnetVersion(dotnetExecPath!, dotnetInstallVersion));
     }
@@ -126,11 +127,11 @@ suite("DotnetChecker E2E Test - first run", async () => {
     const shouldContinue = await checker.resolve();
     const dotnetExecPath = await dotnetCheckerUtils.getDotnetExecPathFromConfig(dotnetConfigPath);
 
+    chai.assert.isTrue(shouldContinue);
+
     if (isLinux()) {
-      chai.assert.isFalse(shouldContinue);
       chai.assert.isNull(dotnetExecPath);
     } else {
-      chai.assert.isTrue(shouldContinue);
       chai.assert.isNotNull(dotnetExecPath);
       chai.assert.isTrue(await dotnetCheckerUtils.hasDotnetVersion(dotnetExecPath!, dotnetInstallVersion));
     }

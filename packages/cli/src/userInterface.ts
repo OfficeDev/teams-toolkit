@@ -113,7 +113,7 @@ export class DialogManager implements Dialog {
   private askQuestion(question: IQuestion): string | undefined {
     if (question.description.includes("subscription")) {
       CLILogProvider.error(
-        `Please set azure subscription firstly. You can use 'teamsfx account set --subscription <SUBSCRIPTION>' to set it.`
+        `Azure subscription required. Use 'teamsfx account set --subscription <SUBSCRIPTION>' to select your Azure subscription.`
       );
       return undefined;
     }

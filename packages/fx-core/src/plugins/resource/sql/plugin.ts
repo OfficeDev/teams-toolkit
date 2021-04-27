@@ -4,12 +4,12 @@ import {
     PluginContext,
     FxError,
     Result,
-    MsgLevel,
     ok,
     Stage,
     QTreeNode,
     NodeType,
     Func,
+    Platform,
 } from "fx-api";
 import { ManagementClient } from "./managementClient";
 import { ErrorMessage } from "./errors";
@@ -22,7 +22,7 @@ import { formatEndpoint, parseToken, UserType } from "./utils/commonUtils";
 import { Constants, HelpLinks, Telemetry } from "./constants";
 import { Message } from "./utils/message";
 import { TelemetryUtils } from "./utils/telemetryUtils";
-import { adminNameQuestion, adminPasswordQuestion, confirmPasswordQuestion } from "./questions";
+import { adminNameQuestion, adminPasswordQuestion, confirmPasswordQuestion, skipAddingUserQuestion } from "./questions";
 import { sqlConfirmPasswordValidatorGenerator, sqlPasswordValidatorGenerator, sqlUserNameValidator } from "./utils/checkInput";
 
 export class SqlPluginImpl {
@@ -65,6 +65,10 @@ export class SqlPluginImpl {
                 sqlNode.addChild(adminPasswordQuestion);
                 sqlNode.addChild(confirmPasswordQuestion);
             }
+
+            if (ctx.platform === Platform.CLI) {
+                sqlNode.addChild(skipAddingUserQuestion);
+            }
         }
         ctx.logProvider?.info(Message.endGetQuestions);
         return ok(sqlNode);
@@ -97,6 +101,14 @@ export class SqlPluginImpl {
         DialogUtils.init(ctx);
 
         this.config.skipAddingUser = ctx.config.get(Constants.skipAddingUser) as boolean;
+        if (ctx.platform === Platform.CLI) {
+            if (ctx.answers?.get(Constants.questionKey.skipAddingUser) as string === "true") {
+                this.config.skipAddingUser = true;
+            } else {
+                this.config.skipAddingUser = false;
+            }
+            ctx.config.set(Constants.skipAddingUser, this.config.skipAddingUser);
+        }
         // sql server name
         ctx.logProvider?.debug(Message.endpoint(this.config.sqlEndpoint));
 
@@ -223,10 +235,10 @@ export class SqlPluginImpl {
                 }
             } else {
                 const message = ErrorMessage.ServicePrincipalWarning(this.config.identity, this.config.databaseName);
-                DialogUtils.show(`[${Constants.pluginName}] ${message}. You can follow ${HelpLinks.addDBUser} to handle it`, MsgLevel.Warning);
+                ctx.logProvider?.warning(`[${Constants.pluginName}] ${message}. You can follow ${HelpLinks.addDBUser} to add database user ${this.config.identity}`);
             }
         } else {
-            ctx.logProvider?.info(Message.skipAddUser);
+            ctx.logProvider?.warning(`[${Constants.pluginName}] Skip adding database user. You can follow ${HelpLinks.addDBUser} to add database user ${this.config.identity}`);
         }
 
         await managementClient.deleteLocalFirewallRule();

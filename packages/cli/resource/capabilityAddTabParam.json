@@ -1,8 +1,16 @@
 [
     {
         "data": {
+            "type": "folder",
+            "name": "folder",
+            "description": "Select root folder of the project",
+            "default": "./"
+        }
+    },
+    {
+        "data": {
             "name": "capabilities",
-            "title": "Select Capabilities to add",
+            "title": "Select capabilities to add",
             "type": "multiSelect",
             "option": [
                 {

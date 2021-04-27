@@ -105,10 +105,14 @@ export class DotnetChecker implements IDepsChecker {
     await DotnetChecker.cleanup();
     this._logger.debug(`[end] cleanup bin/dotnet and config`);
 
+    const installDir = DotnetChecker.getDefaultInstallPath();
     this._logger.debug(`[start] install dotnet ${installVersion}`);
-    this._logger.info(Messages.downloadDotnet.replace("@NameVersion", installedNameWithVersion));
+    this._logger.info(Messages.dotnetNotFound.replace("@NameVersion", installedNameWithVersion));
+    this._logger.info(Messages.downloadDotnet
+      .replace("@NameVersion", installedNameWithVersion)
+      .replace("@InstallDir", installDir));
     await this._adapter.runWithProgressIndicator(async () => {
-      await this.handleInstall(installVersion);
+      await this.handleInstall(installVersion, installDir);
     });
     this._logger.info(
       Messages.finishInstallDotnet.replace("@NameVersion", installedNameWithVersion)
@@ -163,12 +167,11 @@ export class DotnetChecker implements IDepsChecker {
     return null;
   }
 
-  private async handleInstall(version: DotnetVersion): Promise<void> {
+  private async handleInstall(version: DotnetVersion, installDir: string): Promise<void> {
     try {
       if (isLinux()) {
         await this.handleLinuxDependency();
       }
-      const installDir = DotnetChecker.getDefaultInstallPath();
       // NOTE: we don't need to handle directory creation since dotnet-install script will handle it.
       await this.runDotnetInstallScript(version, installDir);
 

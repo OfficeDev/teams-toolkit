@@ -11,9 +11,9 @@ import * as constants from "../constants";
 import { YargsCommand } from "../yargsCommand";
 import { getParamJson } from "../utils";
 
-export default class New extends YargsCommand {
+export default class Build extends YargsCommand {
   public readonly commandHead = `build`;
-  public readonly command = `${this.commandHead} [options]`;
+  public readonly command = `${this.commandHead}`;
   public readonly description = "A command to build your Teams app";
   public readonly paramPath = constants.buildParamPath;
 

@@ -1,116 +1,30 @@
 [
     {
         "data": {
+            "type": "folder",
+            "name": "folder",
+            "description": "Select root folder of the project",
+            "default": "./"
+        }
+    },
+    {
+        "data": {
             "name": "capabilities",
-            "title": "Select Capabilities to add",
+            "title": "Select capabilities to add",
             "type": "multiSelect",
             "option": [
                 {
                     "id": "Tab",
                     "label": "Tab",
                     "cliName": "tab",
-                    "description": "Embeds a web-based app experience in a tab in a Teams chat, channel, or personal workspace."
+                    "description": "Tabs embeds a web app experience in a tab in a Teams chat, channel, or personal workspace."
                 }
             ],
             "default": [
                 "tab"
             ],
+            "prompt": "Bot and Message Extension are exclusive, you can not select both.",
             "hide": true
-        }
-    },
-    {
-        "data": {
-            "name": "host-type",
-            "title": "Select front-end hosting type",
-            "type": "singleSelect",
-            "option": [
-                {
-                    "id": "Azure",
-                    "label": "Azure",
-                    "cliName": "azure",
-                    "description": "Azure Cloud"
-                },
-                {
-                    "id": "SPFx",
-                    "label": "SPFx",
-                    "cliName": "spfx",
-                    "description": "SharePoint Framework"
-                }
-            ],
-            "default": "Azure"
-        }
-    },
-    {
-        "data": {
-            "name": "programming-language",
-            "title": "Please select programming language for your project",
-            "type": "singleSelect",
-            "option": [
-                "javascript",
-                "typescript"
-            ],
-            "default": "javascript",
-            "skipSingleOption": true
-        },
-        "condition": {
-            "equals": "Azure"
-        }
-    },
-    {
-        "data": {
-            "name": "azure-resources",
-            "title": "Additional cloud resources",
-            "type": "multiSelect",
-            "option": [
-                {
-                    "id": "sql",
-                    "label": "sql",
-                    "description": "Azure SQL Database"
-                },
-                {
-                    "id": "function",
-                    "label": "function",
-                    "description": "New APIs from Azure Functions"
-                }
-            ],
-            "default": []
-        },
-        "condition": {
-            "equals": "Azure"
-        }
-    },
-    {
-        "data": {
-            "type": "singleSelect",
-            "name": "spfx-framework-type",
-            "title": "Which framework would you like to use?",
-            "option": [
-                "none",
-                "react"
-            ],
-            "default": "none"
-        }
-    },
-    {
-        "data": {
-            "type": "text",
-            "name": "spfx-webpart-name",
-            "title": "Webpart Name",
-            "default": "helloworld",
-            "validation": {
-                "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$"
-            }
-        }
-    },
-    {
-        "data": {
-            "type": "text",
-            "name": "spfx-webpart-desp",
-            "title": "Webpart Description",
-            "default": "helloworld description",
-            "validation": {
-                "required": true
-            }
         }
     }
 ]

@@ -17,7 +17,7 @@ import { YargsCommand } from "../yargsCommand";
 
 export default class Provision extends YargsCommand {
   public readonly commandHead = `provision`;
-  public readonly command = `${this.commandHead} [options]`;
+  public readonly command = `${this.commandHead}`;
   public readonly description = "A command to provision the project in current working directory";
   public readonly paramPath = constants.provisionParamPath;
 
@@ -50,11 +50,11 @@ export default class Provision extends YargsCommand {
 
     const core = result.value;
     {
-      const result = await core.getQuestions!(Stage.provision, Platform.VSCode);
+      const result = await core.getQuestions!(Stage.provision, Platform.CLI);
       if (result.isErr()) {
         return err(result.error);
       }
-      await validateAndUpdateAnswers(result.value!, answers);
+      await validateAndUpdateAnswers(result.value, answers);
     }
 
     {

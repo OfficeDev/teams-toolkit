@@ -54,7 +54,6 @@ describe("TeamsBotSsoPrompt - node", () => {
   const id = "fake_id";
   const exchangeToken = "fake_exchange_token";
 
-  // TODO: Store this ssoToken variable in a central place since it appears in multiple unit test files.
   /**
    * {
    * "aud": "test_audience",

@@ -2,7 +2,7 @@ name: Daily release
 
 on:
   schedule:
-    - cron: "0 20 * * *"
+    - cron: "0 5 * * *"
 
 jobs:
   pre-tests:
@@ -20,6 +20,8 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
+          token: ${{ secrets.CD_PAT }}
+          ref: main
 
       - name: Setup node
         uses: actions/setup-node@v2.1.2
@@ -33,6 +35,18 @@ jobs:
       - name: Setup project
         run: |
           npm run setup
+
+      - name: Download Simple Auth bits
+        env:
+          SIMPLE_AUTH_SAS_TOKEN: ${{secrets.SIMPLE_AUTH_SAS_TOKEN}}
+          SIMPLE_AUTH_ENDPOINT: ${{secrets.SIMPLE_AUTH_ENDPOINT}}
+        run: |
+            $version=Get-Content packages/fx-core/templates/plugins/resource/simpleauth/version.txt
+            $fileName="Microsoft.TeamsFx.SimpleAuth_$version.zip"
+            echo $SIMPLE_AUTH_ENDPOINT
+            $url=$env:SIMPLE_AUTH_ENDPOINT+'/'+$fileName+'?'+$env:SIMPLE_AUTH_SAS_TOKEN
+            Invoke-WebRequest $url -OutFile packages/fx-core/templates/plugins/resource/simpleauth/SimpleAuth.zip
+        shell: pwsh
 
       - name: E2E Test
         run: |
@@ -48,6 +62,7 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.CD_PAT }}
+          ref: main
 
       - name: Setup node
         uses: actions/setup-node@v2.1.2
@@ -61,6 +76,18 @@ jobs:
       - name: Setup project
         run: |
           npm run setup
+
+      - name: Download Simple Auth bits
+        env:
+          SIMPLE_AUTH_SAS_TOKEN: ${{secrets.SIMPLE_AUTH_SAS_TOKEN}}
+          SIMPLE_AUTH_ENDPOINT: ${{secrets.SIMPLE_AUTH_ENDPOINT}}
+        run: |
+            $version=Get-Content packages/fx-core/templates/plugins/resource/simpleauth/version.txt
+            $fileName="Microsoft.TeamsFx.SimpleAuth_$version.zip"
+            echo $SIMPLE_AUTH_ENDPOINT
+            $url=$env:SIMPLE_AUTH_ENDPOINT+'/'+$fileName+'?'+$env:SIMPLE_AUTH_SAS_TOKEN
+            Invoke-WebRequest $url -OutFile packages/fx-core/templates/plugins/resource/simpleauth/SimpleAuth.zip
+        shell: pwsh
 
       - name: release npm packages to npmjs.org
         run: |
@@ -77,7 +104,7 @@ jobs:
       - name: release VSCode extension to github
         uses: marvinpinto/action-automatic-releases@latest
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          repo_token: "${{ secrets.CD_PAT }}"
           automatic_release_tag: "latest"
           prerelease: false
           files: |

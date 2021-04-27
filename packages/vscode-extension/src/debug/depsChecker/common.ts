@@ -45,7 +45,7 @@ export const Messages = {
   failToInstallFuncCoreTool: `@NameVersion installation has failed and will have to be installed manually.`,
   failToValidateFuncCoreTool: `Failed to validate @NameVersion after its installation.`,
 
-  downloadDotnet: `Downloading and installing @NameVersion.`,
+  downloadDotnet: `Downloading and installing the portable version of @NameVersion, which will be installed to @InstallDir and won't affect the development environment.`,
   finishInstallDotnet: `Successfully installed @NameVersion.`,
   useGlobalDotnet: `Use global dotnet from PATH.`,
   dotnetInstallStderr: `dotnet-install command failed without error exit code but with non-empty standard error.`,
@@ -62,6 +62,7 @@ Click "Learn more" to learn how to install the Node.js.`,
 Click "Learn more" to learn more about the supported Node.js versions.
 Click "Continue" to continue local debugging.`,
 
+  dotnetNotFound: `The toolkit cannot find @NameVersion on your machine. As a fundamental runtime context for Teams app, it's required.`,
   depsNotFound: `The toolkit cannot find @SupportedPackages on your machine.
 
 As a fundamental runtime context for Teams app, these dependencies are required. Following steps will help you to install the appropriate version to run the Microsoft Teams Toolkit.

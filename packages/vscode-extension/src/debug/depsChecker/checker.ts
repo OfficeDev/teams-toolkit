@@ -83,27 +83,23 @@ export class DepsChecker {
     }
 
     if (isLinux()) {
-      const confirmMessage = await this.generateUninstallMsg(validCheckers);
+      const confirmMessage = await this.generateMsg(validCheckers);
       return await this._adapter.displayContinueWithLearnMore(confirmMessage, defaultHelpLink);
     }
 
-    // TODO: add log and telemetry
-    const confirmMessage = await this.generateInstallMsg(validCheckers);
-    return await this._adapter.displayWarningMessage(confirmMessage, "Install", async () => {
-      this._adapter.showOutputChannel();
-      for (const checker of validCheckers) {
-        try {
-          await checker.install();
-        } catch (error) {
-          const continueNext = await this.handleError(error);
-          if (!continueNext) {
-            return !shouldContinue;
-          }
+    this._adapter.showOutputChannel();
+    for (const checker of validCheckers) {
+      try {
+        await checker.install();
+      } catch (error) {
+        const continueNext = await this.handleError(error);
+        if (!continueNext) {
+          return !shouldContinue;
         }
       }
+    }
 
-      return shouldContinue;
-    });
+    return shouldContinue;
   }
 
   private async check(): Promise<Array<IDepsChecker> | null> {
@@ -120,43 +116,19 @@ export class DepsChecker {
         }
       }
     }
-
     return validCheckers;
   }
 
-  private async generateInstallMsg(checkers: Array<IDepsChecker>): Promise<string> {
-    return this.generateMessage(checkers, (install, support) =>
-      Messages.depsNotFound
-        .replace("@InstallPackages", install)
-        .replace("@SupportedPackages", support)
-    );
-  }
-
-  private async generateUninstallMsg(checkers: Array<IDepsChecker>): Promise<string> {
-    return this.generateMessage(checkers, (install, support) =>
-      Messages.linuxDepsNotFound.replace("@SupportedPackages", support)
-    );
-  }
-
-  private async generateMessage(
-    checkers: Array<IDepsChecker>,
-    template: (install: string, supported: string) => string
-  ): Promise<string> {
-    const installPackages = [];
+  private async generateMsg(checkers: Array<IDepsChecker>): Promise<string> {
     const supportedPackages = [];
     for (const checker of checkers) {
       const info = await checker.getDepsInfo();
-      if (info.installVersion) {
-        installPackages.push(`${info.name} (v${info.installVersion})`);
-      }
       const supportedVersions = info.supportedVersions.map((version) => "v" + version).join(" or ");
       const supportedPackage = `${info.name} (${supportedVersions})`;
       supportedPackages.push(supportedPackage);
     }
-
-    const installMessage = installPackages.join(" and ");
     const supportedMessage = supportedPackages.join(" and ");
-    return template(installMessage, supportedMessage);
+    return Messages.linuxDepsNotFound.replace("@SupportedPackages", supportedMessage);
   }
 
   private async handleError(error: Error): Promise<boolean> {

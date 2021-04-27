@@ -6,7 +6,7 @@ import { LogProvider, TelemetryReporter } from "fx-api";
 import * as path from "path";
 import * as fs from "fs-extra";
 
-export class FileManager {
+export class ScaffoldManager {
     private readonly logger?: LogProvider;
     private readonly telemetryReporter?: TelemetryReporter;
     private readonly openApiProcessor: OpenApiProcessor;

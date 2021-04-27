@@ -90,11 +90,11 @@ async function _scaffold(ctx: PluginContext, progressBar: ProgressBar): Promise<
     const solutionConfig = new SolutionConfig(ctx.configOfOtherPlugins);
     const apimConfig = new ApimPluginConfig(ctx.config);
     const answer = buildAnswer(ctx);
-    const fileManager = await Factory.buildFileManager(ctx, solutionConfig);
+    const scaffoldManager = await Factory.buildScaffoldManager(ctx, solutionConfig);
     answer.save(Stage.update, apimConfig);
 
     await progressBar.next(ProgressStep.Scaffold, ProgressMessages[ProgressStep.Scaffold].Scaffold);
-    await fileManager.scaffold(ctx.app.name.short, ctx.root);
+    await scaffoldManager.scaffold(ctx.app.name.short, ctx.root);
 }
 
 async function _provision(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {

@@ -18,12 +18,9 @@ Use the library to:
 TeamsFx SDK is pre-configured in scaffolded project using TeamsFx toolkit or cli.
 Please check the [wiki page]() to see how to create a Teams App project.
 
-### Currently supported environments
-
-- Node.js version 10.x.x or higher
-
 ### Prerequisites
 
+- Node.js version 10.x.x or higher
 - A project created by TeamsFx toolkit VS Code extension or Cli tool.
 - If your project has installed `botbuilder-core` and `botbuilder-dialogs` packages as dependencies, ensure they have version `>= 4.9.3`.
 
@@ -39,6 +36,26 @@ npm install @microsoft/teamsfx
 
 To create a graph client object to access the Microsoft Graph API, you will need the credential to do authentication. The SDK provides several credential classes to choose that meets various requirements.
 
+Please note that you need to load configuration before using any credentials.
+
+- In browser environment, you need to explicitly pass in the config parameters. The scaffolded React project has provided environment variables to use.
+
+```ts
+loadConfiguration({
+  authentication: {
+    initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
+    simpleAuthEndpoint: process.env.REACT_APP_TEAMSFX_ENDPOINT,
+    clientId: process.env.REACT_APP_CLIENT_ID
+  }
+});
+```
+
+- In NodeJS environment like Azure Function, you can just call `loadConfiguration`. It will load from environment variables by default.
+
+```ts
+loadConfiguration();
+```
+
 #### Using Teams App User Credential
 
 Use the snippet below:
@@ -46,6 +63,13 @@ Use the snippet below:
 **Note:** You can only use this credential class in browser application like Teams Tab App.
 
 ```ts
+loadConfiguration({
+  authentication: {
+    initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
+    simpleAuthEndpoint: process.env.REACT_APP_TEAMSFX_ENDPOINT,
+    clientId: process.env.REACT_APP_CLIENT_ID
+  }
+});
 const credential = new TeamsUserCredential();
 const graphClient = createMicrosoftGraphClient(credential, ["User.Read"]); // Initializes MS Graph SDK using our MsGraphAuthProvider
 const profile = await graphClient.api("/me").get();
@@ -57,6 +81,7 @@ It doesn't require the interaction with Teams App user. You can call Microsoft G
 Use the snippet below:
 
 ```ts
+loadConfiguration();
 const credential = new M365TenantCredential();
 const graphClient = createMicrosoftGraphClient(credential);
 const profile = await graphClient.api("/users/{object_id_of_another_people}").get();

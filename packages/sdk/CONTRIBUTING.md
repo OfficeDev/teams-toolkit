@@ -56,7 +56,7 @@ E.g. In [configurationProvider.ts](src/core/configurationProvider.ts), logic of 
 
 1. Use eslint plugin to check whether there is any error or warning that breaks the rule. (`npm run lint`)
 2. Make sure modified functions are covered by tests. (`npm run test`)
-3. Add comment for public class/method.
+3. Add comment for public class/method. Please check [comment template](API_COMMENT.md) for details.
 
 ## Add Tests
 

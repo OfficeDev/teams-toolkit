@@ -80,7 +80,7 @@ jobs:
       - name: release VSCode extension to github
         uses: marvinpinto/action-automatic-releases@latest
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          repo_token: "${{ secrets.CD_PAT }}"
           automatic_release_tag: "latest"
           prerelease: false
           files: |

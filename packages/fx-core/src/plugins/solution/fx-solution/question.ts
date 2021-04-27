@@ -66,7 +66,7 @@ export const AzureResourceFunction: OptionItem = {
 
 export const AzureResourceApim: OptionItem = {
     id:"apim",
-    label: "apim",
+    label: "Azure API Management",
     description: "Register APIs in Azure API Management",
 };
  

@@ -63,7 +63,9 @@
             "getHelp": "Get Help",
             "reportIssue": "Report Issue",
             "azureSignIn": "Azure account is successfully signed in.",
-            "m365SignIn": "M365 account is successfully signed in."
+            "azureSignOut": "Azure account is successfully signed out.",
+            "m365SignIn": "M365 account is successfully signed in.",
+            "m365SignOut": "M365 account is successfully signed out."
         },
         "progressHandler": {
             "teamsToolkitComponent": "[Teams Toolkit]",

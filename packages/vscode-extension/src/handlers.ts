@@ -65,6 +65,7 @@ import { vscodeAdapter } from "./debug/depsChecker/vscodeAdapter";
 import { vscodeLogger } from "./debug/depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "./debug/depsChecker/vscodeTelemetry";
 import { PanelType } from "./controls/PanelType";
+import { signedIn, signedOut } from "./commonlib/common/constant";
 
 export let core: CoreProxy;
 const runningTasks = new Set<string>(); // to control state of task execution
@@ -92,8 +93,10 @@ export async function activate(): Promise<Result<null, FxError>> {
 
     {
       AzureAccountManager.setStatusChangeMap("successfully-sign-in-azure", (status, token, accountInfo) => {
-        if (status === "SignedIn") {
+        if (status === signedIn) {
           window.showInformationMessage(StringResources.vsc.handlers.azureSignIn);
+        } else if (status === signedOut) {
+          window.showInformationMessage(StringResources.vsc.handlers.azureSignOut);
         }
         return Promise.resolve();
       });
@@ -112,8 +115,10 @@ export async function activate(): Promise<Result<null, FxError>> {
       }
 
       appstudioLogin.setStatusChangeMap("successfully-sign-in-m365", (status, token, accountInfo) => {
-        if (status === "SignedIn") {
+        if (status === signedIn) {
           window.showInformationMessage(StringResources.vsc.handlers.m365SignIn);
+        } else if (status === signedOut) {
+          window.showInformationMessage(StringResources.vsc.handlers.m365SignOut);
         }
         return Promise.resolve();
       });

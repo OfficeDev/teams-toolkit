@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { FuncQuestion, MultiSelectQuestion, NodeType, OptionItem, SingleSelectQuestion } from "fx-api";
+import * as strings from "../../../resources/strings.json";
 
 export const TabOptionItem: OptionItem = {
     id: "Tab",
@@ -71,17 +72,28 @@ export const AzureResourceApim: OptionItem = {
 export function createCapabilityQuestion(): MultiSelectQuestion {
     return {
         name: AzureSolutionQuestionNames.Capabilities,
-        title: "Add capabilities",
-        prompt: "Choose capabilities for your application",
+        title: strings.solution.addCapability.title,
+        prompt: strings.solution.addCapability.prompt,
         type: NodeType.multiSelect,
         option: [TabOptionItem, BotOptionItem, MessageExtensionItem],
-        default: [TabOptionItem.id]
+        default: [TabOptionItem.id],
+        onDidChangeSelection:async function(currentSelectedItems: OptionItem[], previousSelectedItems: OptionItem[]) : Promise<string[]>{
+            const currentIds = new Set<string>();
+            for(const i of currentSelectedItems) currentIds.add(i.id);
+            if(currentSelectedItems.some(i=>i.id === BotOptionItem.id) && !previousSelectedItems.some(i=>i.id === BotOptionItem.id)){
+                currentIds.delete(MessageExtensionItem.id);
+            }
+            if(currentSelectedItems.some(i=>i.id === MessageExtensionItem.id) && !previousSelectedItems.some(i=>i.id === MessageExtensionItem.id)){
+                currentIds.delete(BotOptionItem.id);
+            }
+            return Array.from(currentIds);
+        }
     };
 }
 
 export const FrontendHostTypeQuestion: SingleSelectQuestion = {
     name: AzureSolutionQuestionNames.HostType,
-    title: "Select frontend hosting type",
+    title: strings.solution.hostType.title,
     type: NodeType.singleSelect,
     option: [HostTypeOptionAzure, HostTypeOptionSPFx],
     default: HostTypeOptionAzure.id,
@@ -89,11 +101,12 @@ export const FrontendHostTypeQuestion: SingleSelectQuestion = {
 
 export const AzureResourcesQuestion: MultiSelectQuestion = {
     name: AzureSolutionQuestionNames.AzureResources,
-    title: "Additional cloud resources",
+    title: strings.solution.azureResource.title,
     type: NodeType.multiSelect,
     option: [AzureResourceSQL, AzureResourceFunction],
     default: [],
-    onDidChangeSelection:async function(selectedItems: OptionItem[]) : Promise<string[]>{
+    prompt: strings.solution.azureResource.prompt,
+    onDidChangeSelection:async function(selectedItems: OptionItem[], previousSelectedItems: OptionItem[]) : Promise<string[]>{
         const hasSQL = selectedItems.some(i=>i.id === AzureResourceSQL.id);
         if(hasSQL){
             return [AzureResourceSQL.id, AzureResourceFunction.id];
@@ -102,28 +115,21 @@ export const AzureResourcesQuestion: MultiSelectQuestion = {
     }
 };
 
-// export const AddAzureResourceQuestion: MultiSelectQuestion = {
-//     name: AzureSolutionQuestionNames.AddResources,
-//     title: 'Select Azure resources to add',
-//     type: NodeType.multiSelect,
-//     option: [AzureResourceSQL, AzureResourceFunction, AzureResourceApim],
-//     default: [],
-// };
-
 export function createAddAzureResourceQuestion(alreadyHaveFunction: boolean, alreadhHaveSQL: boolean, alreadyHaveAPIM: boolean): MultiSelectQuestion {
     const options:OptionItem[] = [AzureResourceFunction];
     if(!alreadhHaveSQL) options.push(AzureResourceSQL);
     if(!alreadyHaveAPIM) options.push(AzureResourceApim);
     return {
         name: AzureSolutionQuestionNames.AddResources,
-        title: "Select Azure resources to add",
+        title: strings.solution.addResource.title,
         type: NodeType.multiSelect,
         option: options,
         default: [],
-        onDidChangeSelection:async function(selectedItems: OptionItem[]) : Promise<string[]>{
-            const hasSQL = selectedItems.some(i=>i.id === AzureResourceSQL.id);
-            const hasAPIM = selectedItems.some(i=>i.id === AzureResourceApim.id);
-            const ids = selectedItems.map(i=>i.id);
+        prompt: strings.solution.addResource.prompt,
+        onDidChangeSelection:async function(currentSelectedItems: OptionItem[], previousSelectedItems: OptionItem[]) : Promise<string[]>{
+            const hasSQL = currentSelectedItems.some(i=>i.id === AzureResourceSQL.id);
+            const hasAPIM = currentSelectedItems.some(i=>i.id === AzureResourceApim.id);
+            const ids = currentSelectedItems.map(i=>i.id);
             /// when SQL or APIM is selected and function is not selected, then function must be selected
             if( (hasSQL||hasAPIM) && !alreadyHaveFunction && !ids.includes(AzureResourceFunction.id)){
                 ids.push(AzureResourceFunction.id);
@@ -136,13 +142,28 @@ export function createAddAzureResourceQuestion(alreadyHaveFunction: boolean, alr
 export function createAddCapabilityQuestion(alreadyHaveTab: boolean, alreadyHaveBot: boolean): MultiSelectQuestion {
     const options:OptionItem[] = [];
     if(!alreadyHaveTab) options.push(TabOptionItem);
-    if(!alreadyHaveBot) options.push(BotOptionItem);
+    if(!alreadyHaveBot){
+        options.push(BotOptionItem);
+        options.push(MessageExtensionItem);
+    } 
     return {
         name: AzureSolutionQuestionNames.Capabilities,
-        title: "Select capabilities to add",
+        title: strings.solution.addCapability.title,
         type: NodeType.multiSelect,
         option: options,
-        default: []
+        default: [],
+        prompt: strings.solution.addCapability.prompt,
+        onDidChangeSelection:async function(currentSelectedItems: OptionItem[], previousSelectedItems: OptionItem[]) : Promise<string[]>{
+            const currentIds = new Set<string>();
+            for(const i of currentSelectedItems) currentIds.add(i.id);
+            if(currentSelectedItems.some(i=>i.id === BotOptionItem.id) && !previousSelectedItems.some(i=>i.id === BotOptionItem.id)){
+                currentIds.delete(MessageExtensionItem.id);
+            }
+            if(currentSelectedItems.some(i=>i.id === MessageExtensionItem.id) && !previousSelectedItems.some(i=>i.id === MessageExtensionItem.id)){
+                currentIds.delete(BotOptionItem.id);
+            }
+            return Array.from(currentIds);
+        }
     };
 }
 

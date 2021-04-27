@@ -59,6 +59,7 @@ import { CoreQuestionNames, QuestionAppName, QuestionRootFolder, QuestionSelectS
 import * as jsonschema from "jsonschema";
 import { FxBotPluginResultFactory } from "../plugins/resource/bot/result";
 import { AzureSubscription, getSubscriptionList } from "./loginUtils";
+import { sleep } from "../plugins/resource/spfx/utils/utils";
 
 class CoreImpl implements Core {
     private target?: CoreImpl;
@@ -145,7 +146,7 @@ class CoreImpl implements Core {
                 if (child.data) node.addChild(child);
             }
         }
-        return ok(node);
+        return ok(node.trim());
     }
 
     async getQuestionsForUserTask(func: Func, platform: Platform): Promise<Result<QTreeNode | undefined, FxError>> {
@@ -157,7 +158,14 @@ class CoreImpl implements Core {
             const solution = this.globalSolutions.get(solutionName);
             if (solution && solution.getQuestionsForUserTask) {
                 const solutioContext = this.solutionContext();
-                return await solution.getQuestionsForUserTask(func, solutioContext);
+                const res = await solution.getQuestionsForUserTask(func, solutioContext);
+                if(res.isOk()){
+                    if(res.value) {
+                        const node = res.value.trim();
+                        return ok(node);
+                    }
+                }
+                return res;
             }
         }
         return err(
@@ -623,37 +631,43 @@ class CoreImpl implements Core {
             this.ctx.logProvider?.warning(`[Core] readConfigs() - folder does not exist: ${this.ctx.root}/.${ConfigFolderName}`);
             return ok(null);
         }
-        try {
-            // load env
-            const reg = /env\.(\w+)\.json/;
-            for (const file of fs.readdirSync(`${this.ctx.root}/.${ConfigFolderName}`)) {
-                const slice = reg.exec(file);
-                if (!slice) {
-                    continue;
+        let res:Result<null, FxError> = ok(null);
+        for(let i = 0 ; i < 5; ++ i){
+            try {
+                // load env
+                const reg = /env\.(\w+)\.json/;
+                for (const file of fs.readdirSync(`${this.ctx.root}/.${ConfigFolderName}`)) {
+                    const slice = reg.exec(file);
+                    if (!slice) {
+                        continue;
+                    }
+                    const envName = slice[1];
+                    const filePath = `${this.ctx.root}/.${ConfigFolderName}/${file}`;
+                    const configJson: Json = await fs.readJson(filePath);
+                    const localDataPath = `${this.ctx.root}/.${ConfigFolderName}/${envName}.userdata`;
+                    let dict:Dict<string>;
+                    if(await fs.pathExists(localDataPath)){
+                        const dictContent = await fs.readFile(localDataPath, "UTF-8");
+                        dict = deserializeDict(dictContent);
+                    }
+                    else{
+                        dict = {};
+                    } 
+                    mergeSerectData(dict, configJson);
+                    const solutionConfig: SolutionConfig = objectToMap(configJson);
+                    this.configs.set(envName, solutionConfig);
                 }
-                const envName = slice[1];
-                const filePath = `${this.ctx.root}/.${ConfigFolderName}/${file}`;
-                const configJson: Json = await fs.readJson(filePath);
-                const localDataPath = `${this.ctx.root}/.${ConfigFolderName}/${envName}.userdata`;
-                let dict:Dict<string>;
-                if(await fs.pathExists(localDataPath)){
-                    const dictContent = await fs.readFile(localDataPath, "UTF-8");
-                    dict = deserializeDict(dictContent);
-                }
-                else{
-                    dict = {};
-                } 
-                mergeSerectData(dict, configJson);
-                const solutionConfig: SolutionConfig = objectToMap(configJson);
-                this.configs.set(envName, solutionConfig);
+    
+                // read projectSettings
+                this.ctx.projectSettings = await this.readSettings(this.ctx.root);
+                res = ok(null);
+                break;
+            } catch (e) {
+                res = err(error.ReadFileError(e));
+                sleep(10);
             }
-
-            // read projectSettings
-            this.ctx.projectSettings = await this.readSettings(this.ctx.root);
-        } catch (e) {
-            return err(error.ReadFileError(e));
         }
-        return ok(null);
+        return res;
     }
 
     public async writeConfigs(): Promise<Result<null, FxError>> {

@@ -27,7 +27,7 @@
                 }
             ],
             "default": [
-                "bot"
+                "message-extension"
             ],
             "prompt": "Bot and Message Extension are exclusive, you can not select both.",
             "hide": true

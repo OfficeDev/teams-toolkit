@@ -2,7 +2,7 @@ name: Daily release
 
 on:
   schedule:
-    - cron: "0 5 * * *"
+    - cron: "0 20 * * *"
 
 jobs:
   pre-tests:

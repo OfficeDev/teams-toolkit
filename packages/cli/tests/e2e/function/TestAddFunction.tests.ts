@@ -12,21 +12,19 @@ import {
   getTestFolder,
   getUniqueAppName,
   setSimpleAuthSkuNameToB1,
-  setBotSkuNameToB1,
   cleanUp,
 } from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 
-describe("Azure App Happy Path", function() {
+describe("Test Add Function", function() {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
 
-  it(`Tab + Bot (Create New) + Function + SQL + Apim`, async function() {
-    // new a project ( tab + function + sql )
+  it(`Create Tab Then Add Function`, async function() {
     await execAsync(
-      `teamsfx new --interactive false --app-name ${appName} --capabilities tab --azure-resources function sql`,
+      `teamsfx new --interactive false --app-name ${appName} --capabilities tab`,
       {
         cwd: testFolder,
         env: process.env,
@@ -37,9 +35,8 @@ describe("Azure App Happy Path", function() {
 
     await setSimpleAuthSkuNameToB1(projectPath);
 
-    // capability add bot
     await execAsync(
-      `teamsfx capability add bot`,
+      `teamsfx resource add azure-function --function-name func1`,
       {
         cwd: projectPath,
         env: process.env,
@@ -47,7 +44,16 @@ describe("Azure App Happy Path", function() {
       }
     );
 
-    await setBotSkuNameToB1(projectPath);
+    await execAsync(
+      `teamsfx resource add azure-function --function-name func2`,
+      {
+        cwd: projectPath,
+        env: process.env,
+        timeout: 0
+      }
+    );
+
+    console.log(`[Successfully] add function to ${projectPath}`);
 
     // set subscription
     await execAsync(
@@ -59,61 +65,60 @@ describe("Azure App Happy Path", function() {
       }
     );
 
-    // resource add apim
-    await execAsync(
-      `teamsfx resource add azure-apim --function-name testApim`,
-      {
-        cwd: projectPath,
-        env: process.env,
-        timeout: 0
-      }
-    );
-
-    {
-      /// TODO: add check for scaffold
-    }
+    console.log(`[Successfully] set subscription for ${projectPath}`);
 
     // provision
     await execAsync(
-      `teamsfx provision --sql-admin-name Abc123321 --sql-password Cab232332 --sql-confirm-password Cab232332`,
+      `teamsfx provision`,
       {
         cwd: projectPath,
         env: process.env,
         timeout: 0
       }
     );
+
+    console.log(`[Successfully] provision for ${projectPath}`);
 
     {
       // Validate provision
       // Get context
       const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
-  
+
       // Validate Aad App
       const aad = AadValidator.init(context, false, AppStudioLogin);
       await AadValidator.validate(aad);
-  
+
       // Validate Simple Auth
       const simpleAuth = SimpleAuthValidator.init(context);
       await SimpleAuthValidator.validate(simpleAuth, aad);
 
       // Validate Function App
       const func = FunctionValidator.init(context);
-      await FunctionValidator.validateProvision(func);
+      await FunctionValidator.validateProvision(func, false);
     }
 
-    // // deploy
-    // await execAsync(
-    //   `teamsfx deploy --open-api-document openapi/openapi.json --api-prefix qwed --api-version 1`,
-    //   {
-    //     cwd: projectPath,
-    //     env: process.env,
-    //     timeout: 0
-    //   }
-    // );
+    // deploy
+    await execAsync(
+      `teamsfx deploy function`,
+      {
+        cwd: projectPath,
+        env: process.env,
+        timeout: 0
+      }
+    );
+    console.log(`[Successfully] deploy for ${projectPath}`);
 
     {
-      /// TODO: add check for deploy
+      // Validate deployment
+
+      // Get context
+      const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
+
+      // Validate Function App
+      const func = FunctionValidator.init(context);
+      await FunctionValidator.validateDeploy(func, ['func1', 'func2']);
     }
+
 
     // test (validate)
     await execAsync(
@@ -152,7 +157,7 @@ describe("Azure App Happy Path", function() {
         timeout: 0
       }
     );
-    
+
     {
       /// TODO: add check for publish
     }
@@ -160,6 +165,7 @@ describe("Azure App Happy Path", function() {
 
   after(async () => {
     // clean up
-    await cleanUp(appName, projectPath, true, true, true);
+    console.log(`[Successfully] start to clean up for ${projectPath}`);
+    await cleanUp(appName, projectPath);
   });
 });

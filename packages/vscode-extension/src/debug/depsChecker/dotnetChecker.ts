@@ -105,10 +105,14 @@ export class DotnetChecker implements IDepsChecker {
     await DotnetChecker.cleanup();
     this._logger.debug(`[end] cleanup bin/dotnet and config`);
 
+    const installDir = DotnetChecker.getDefaultInstallPath();
     this._logger.debug(`[start] install dotnet ${installVersion}`);
-    this._logger.info(Messages.downloadDotnet.replace("@NameVersion", installedNameWithVersion));
+    this._logger.info(Messages.dotnetNotFound.replace("@NameVersion", installedNameWithVersion));
+    this._logger.info(Messages.downloadDotnet
+      .replace("@NameVersion", installedNameWithVersion)
+      .replace("@InstallDir", installDir));
     await this._adapter.runWithProgressIndicator(async () => {
-      await this.handleInstall(installVersion);
+      await this.handleInstall(installVersion, installDir);
     });
     this._logger.info(
       Messages.finishInstallDotnet.replace("@NameVersion", installedNameWithVersion)
@@ -163,12 +167,11 @@ export class DotnetChecker implements IDepsChecker {
     return null;
   }
 
-  private async handleInstall(version: DotnetVersion): Promise<void> {
+  private async handleInstall(version: DotnetVersion, installDir: string): Promise<void> {
     try {
       if (isLinux()) {
         await this.handleLinuxDependency();
       }
-      const installDir = DotnetChecker.getDefaultInstallPath();
       // NOTE: we don't need to handle directory creation since dotnet-install script will handle it.
       await this.runDotnetInstallScript(version, installDir);
 
@@ -389,12 +392,55 @@ export class DotnetChecker implements IDepsChecker {
   }
 
   private async validate(): Promise<boolean> {
-    // TODO: validate with dotnet hello world
-    const isInstallationValid = await this.isDotnetInstalledCorrectly();
+    const isInstallationValid =
+      (await this.isDotnetInstalledCorrectly()) && (await this.validateWithHelloWorld());
     if (!isInstallationValid) {
       this._telemetry.sendEvent(DepsCheckerEvent.dotnetValidationError);
     }
     return isInstallationValid;
+  }
+
+  private async validateWithHelloWorld(): Promise<boolean> {
+    const dotnetPath = await this.getDotnetExecPathFromConfig();
+    if (!dotnetPath) {
+      return false;
+    }
+
+    const samplePath = path.join(os.homedir(), `.${ConfigFolderName}`, "dotnetSample");
+    const expected: string = "Hello World";
+    let actual: string = "";
+    try {
+      await fs.remove(samplePath);
+
+      await cpUtils.executeCommand(
+        undefined,
+        this._logger,
+        { shell: false },
+        dotnetPath,
+        "new",
+        "console",
+        "--output",
+        `${samplePath}`
+      );
+      actual = await cpUtils.executeCommand(
+        undefined,
+        this._logger,
+        { shell: false },
+        dotnetPath,
+        "run",
+        "--project",
+        `${samplePath}`
+      );
+      return actual.includes(expected);
+    } catch (error) {
+      this._logger.debug(
+        `Failed to run hello world, dotnetPath = ${dotnetPath}, expected output = ${expected}, actual output = ${actual}, error = ${error}`
+      );
+    } finally {
+      await fs.remove(samplePath);
+    }
+
+    return false;
   }
 
   private async tryAcquireGlobalDotnetSdk(): Promise<boolean> {

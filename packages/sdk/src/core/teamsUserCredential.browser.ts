@@ -147,7 +147,6 @@ export class TeamsUserCredential implements TokenCredential {
     scopes: string | string[],
     options?: GetTokenOptions
   ): Promise<AccessToken | null> {
-    // TODO apply get token options
     const ssoToken = await this.getSSOToken();
 
     const scopeStr = typeof scopes === "string" ? scopes : scopes.join(" ");

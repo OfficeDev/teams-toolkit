@@ -32,10 +32,6 @@ jobs:
         run: |
           echo "${{ secrets.NPMRC }}" > ~/.npmrc
 
-      - name: Setup project
-        run: |
-          npm run setup
-
       - name: Download Simple Auth bits
         env:
           SIMPLE_AUTH_SAS_TOKEN: ${{secrets.SIMPLE_AUTH_SAS_TOKEN}}
@@ -48,6 +44,16 @@ jobs:
             Invoke-WebRequest $url -OutFile packages/fx-core/templates/plugins/resource/simpleauth/SimpleAuth.zip
         shell: pwsh
 
+      - name: Setup project
+        run: |
+          npm run setup
+          npm link
+
       - name: E2E Test
+        env:
+          TEST_USER_NAME: ${{ secrets.TEST_USER_NAME }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+          TEST_SUBSCRIPTION_ID: ${{ secrets.TEST_SUBSCRIPTION_ID }}
+          CI_ENABLED: "true"
         run: |
           npx lerna run test:e2e

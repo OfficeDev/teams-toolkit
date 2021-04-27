@@ -25,10 +25,6 @@ jobs:
         run: |
           echo "${{ secrets.NPMRC }}" > ~/.npmrc
 
-      - name: Setup project
-        run: |
-          npm run setup
-
       - name: Download Simple Auth bits
         env:
           SIMPLE_AUTH_SAS_TOKEN: ${{secrets.SIMPLE_AUTH_SAS_TOKEN}}
@@ -40,6 +36,10 @@ jobs:
             $url=$env:SIMPLE_AUTH_ENDPOINT+'/'+$fileName+'?'+$env:SIMPLE_AUTH_SAS_TOKEN
             Invoke-WebRequest $url -OutFile packages/fx-core/templates/plugins/resource/simpleauth/SimpleAuth.zip
         shell: pwsh
+
+      - name: Setup project
+        run: |
+          npm run setup
 
       - name: release npm packages to npmjs.org
         run: |

@@ -407,7 +407,7 @@ export class DotnetChecker implements IDepsChecker {
     const expected: string = "Hello World";
     let actual: string = "";
     try {
-      await fs.removeSync(samplePath);
+      await fs.remove(samplePath);
 
       await cpUtils.executeCommand(
         undefined,
@@ -428,16 +428,13 @@ export class DotnetChecker implements IDepsChecker {
         "--project",
         `${samplePath}`
       );
-
-      if (actual.includes(expected)) {
-        return true;
-      }
+      return actual.includes(expected);
     } catch (error) {
       this._logger.debug(
         `Failed to run hello world, dotnetPath = ${dotnetPath}, expected output = ${expected}, actual output = ${actual}, error = ${error}`
       );
     } finally {
-      await fs.removeSync(samplePath);
+      await fs.remove(samplePath);
     }
 
     return false;

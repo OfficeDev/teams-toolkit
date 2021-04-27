@@ -16,7 +16,7 @@ import * as constants from "../constants";
 
 class LoginAccount extends YargsCommand {
   public readonly commandHead = `login`;
-  public readonly command = `${this.commandHead} <platform> [options]`;
+  public readonly command = `${this.commandHead} <platform>`;
   public readonly description = "A command to login some platform";
 
   public builder(yargs: Argv): Argv<any> {
@@ -95,7 +95,7 @@ class LogoutAccount extends YargsCommand {
 
 class SetAccount extends YargsCommand {
   public readonly commandHead = `set`;
-  public readonly command = `${this.commandHead} [options]`;
+  public readonly command = `${this.commandHead}`;
   public readonly description = "A command to set account settings such as 'set subscription id'.";
 
   public builder(yargs: Argv): Argv<any> {
@@ -107,7 +107,8 @@ class SetAccount extends YargsCommand {
       })
       .options("subscription", {
         description: "subscription id",
-        type: "string"
+        type: "string",
+        demandOption: true,
       });
   }
 
@@ -121,7 +122,7 @@ class SetAccount extends YargsCommand {
 
 export default class Account extends YargsCommand {
   public readonly commandHead = `account`;
-  public readonly command = `${this.commandHead} <action> [options]`;
+  public readonly command = `${this.commandHead} <action>`;
   public readonly description = "login/logout some platform || set some account setting";
 
   public readonly subCommands: YargsCommand[] = [

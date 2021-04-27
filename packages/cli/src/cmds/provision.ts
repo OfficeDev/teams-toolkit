@@ -17,7 +17,7 @@ import { YargsCommand } from "../yargsCommand";
 
 export default class Provision extends YargsCommand {
   public readonly commandHead = `provision`;
-  public readonly command = `${this.commandHead} [options]`;
+  public readonly command = `${this.commandHead}`;
   public readonly description = "A command to provision the project in current working directory";
   public readonly paramPath = constants.provisionParamPath;
 

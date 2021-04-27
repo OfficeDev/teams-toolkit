@@ -40,7 +40,7 @@ describe("Create a new API Management Service", function () {
     await ApimValidator.init(subscriptionId, AzureLogin, GraphLogin);
 
     await execAsync(
-      `teamsfx resource add apim --subscription ${subscriptionId}`,
+      `teamsfx resource add azure-apim --subscription ${subscriptionId}`,
       {
         cwd: projectPath,
         env: process.env,

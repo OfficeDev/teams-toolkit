@@ -430,191 +430,199 @@ class CoreImpl implements Core {
         }
         const t2 = new Date().getTime();
         let getSelectSubItem: undefined | ((token: any) => Promise<TreeItem>) = undefined;
-        // if (this.ctx.treeProvider) {
-        //     getSelectSubItem = async (token: any): Promise<TreeItem> => {
-        //         let selectSubLabel = "";
-        //         const subscriptions = await getSubscriptionList(token);
-        //         const activeSubscriptionId = this.configs.get(this.env!)!.get("solution")?.getString("subscriptionId");
-        //         const activeSubscription = subscriptions.find(
-        //             (subscription) => subscription.subscriptionId === activeSubscriptionId,
-        //         );
-        //         if (activeSubscriptionId === undefined || activeSubscription === undefined) {
-        //             selectSubLabel = `${subscriptions.length} subscriptions discovered`;
-        //         } else {
-        //             selectSubLabel = activeSubscription.displayName;
-        //         }
-        //         return {
-        //             commandId: "fx-extension.selectSubscription",
-        //             label: selectSubLabel,
-        //             callback: selectSubscriptionCallback,
-        //             parent: "fx-extension.signinAzure",
-        //         };
-        //     };
+        if (this.ctx.treeProvider) {
+            getSelectSubItem = async (token: any): Promise<TreeItem> => {
+                let selectSubLabel = "";
+                const subscriptions = await getSubscriptionList(token);
+                const activeSubscriptionId = this.configs.get(this.env!)!.get("solution")?.getString("subscriptionId");
+                const activeSubscription = subscriptions.find(
+                    (subscription) => subscription.subscriptionId === activeSubscriptionId,
+                );
 
-        //     const selectSubscriptionCallback = async (): Promise<Result<null, FxError>> => {
-        //         const azureToken = await this.ctx.azureAccountProvider?.getAccountCredentialAsync();
-        //         const subscriptions: AzureSubscription[] = await getSubscriptionList(azureToken!);
-        //         const subscriptionNames: string[] = subscriptions.map((subscription) => subscription.displayName);
-        //         const subscriptionName = (
-        //             await this.ctx.dialog?.communicate(
-        //                 new DialogMsg(DialogType.Ask, {
-        //                     type: QuestionType.Radio,
-        //                     description: "Please select a subscription",
-        //                     options: subscriptionNames,
-        //                 }),
-        //             )
-        //         )?.getAnswer();
-        //         if (subscriptionName === undefined || subscriptionName == "unknown") {
-        //             return err({
-        //                 name: "emptySubscription",
-        //                 message: "No subscription selected",
-        //                 source: __filename,
-        //                 timestamp: new Date(),
-        //             });
-        //         }
+                let icon = "";
+                if (activeSubscriptionId === undefined || activeSubscription === undefined) {
+                    selectSubLabel = `${subscriptions.length} subscriptions discovered`;
+                    icon = "subscriptions";
+                } else {
+                    selectSubLabel = activeSubscription.displayName;
+                    icon = "subcriptionSelected";
+                }
+                return {
+                    commandId: "fx-extension.selectSubscription",
+                    label: selectSubLabel,
+                    callback: selectSubscriptionCallback,
+                    parent: "fx-extension.signinAzure",
+                    contextValue: "selectSubscription",
+                    icon: icon
+                };
+            };
 
-        //         const subscription = subscriptions.find((subscription) => subscription.displayName === subscriptionName);
+            const selectSubscriptionCallback = async (): Promise<Result<null, FxError>> => {
+                const azureToken = await this.ctx.azureAccountProvider?.getAccountCredentialAsync();
+                const subscriptions: AzureSubscription[] = await getSubscriptionList(azureToken!);
+                const subscriptionNames: string[] = subscriptions.map((subscription) => subscription.displayName);
+                const subscriptionName = (
+                    await this.ctx.dialog?.communicate(
+                        new DialogMsg(DialogType.Ask, {
+                            type: QuestionType.Radio,
+                            description: "Please select a subscription",
+                            options: subscriptionNames,
+                        }),
+                    )
+                )?.getAnswer();
+                if (subscriptionName === undefined || subscriptionName == "unknown") {
+                    return err({
+                        name: "emptySubscription",
+                        message: "No subscription selected",
+                        source: __filename,
+                        timestamp: new Date(),
+                    });
+                }
 
-        //         if(subscription){
-        //             this.readConfigs();
-        //             let change = true;
-        //             const subscriptionId = this.configs.get(this.env!)!.get("solution")!.getString("subscriptionId");
-        //             if(subscriptionId){
-        //                 const confirm  = (await this.ctx.dialog?.communicate(
-        //                     new DialogMsg(DialogType.Show, {
-        //                         description: util.format(strings.core.SwitchSubNotice, subscriptionId),
-        //                         level: MsgLevel.Warning,
-        //                         items: ["Confirm"]
-        //                     }),
-        //                 ))?.getAnswer() === "Confirm";
-        //                 if(!confirm){
-        //                     change = false;
-        //                 } 
-        //             }
-        //             if(change)
-        //             {
-        //                 this.configs.get(this.env!)!.get("solution")!.set("subscriptionId", subscription.subscriptionId);
-        //                 this.writeConfigs();
-        //                 this.ctx.treeProvider?.refresh([
-        //                     {
-        //                         commandId: "fx-extension.selectSubscription",
-        //                         label: subscriptionName,
-        //                         callback: selectSubscriptionCallback,
-        //                         parent: "fx-extension.signinAzure",
-        //                     },
-        //                 ]);
-        //             }
-        //         }
+                const subscription = subscriptions.find((subscription) => subscription.displayName === subscriptionName);
 
-        //         return ok(null);
-        //     };
+                if(subscription){
+                    this.readConfigs();
+                    let change = true;
+                    const subscriptionId = this.configs.get(this.env!)!.get("solution")!.getString("subscriptionId");
+                    if(subscriptionId){
+                        const confirm  = (await this.ctx.dialog?.communicate(
+                            new DialogMsg(DialogType.Show, {
+                                description: util.format(strings.core.SwitchSubNotice, subscriptionId),
+                                level: MsgLevel.Warning,
+                                items: ["Confirm"]
+                            }),
+                        ))?.getAnswer() === "Confirm";
+                        if(!confirm){
+                            change = false;
+                        } 
+                    }
+                    if(change)
+                    {
+                        this.configs.get(this.env!)!.get("solution")!.set("subscriptionId", subscription.subscriptionId);
+                        this.writeConfigs();
+                        this.ctx.treeProvider?.refresh([
+                            {
+                                commandId: "fx-extension.selectSubscription",
+                                label: subscriptionName,
+                                callback: selectSubscriptionCallback,
+                                parent: "fx-extension.signinAzure",
+                                contextValue: "selectSubscription",
+                                icon: "subscriptionSelected"
+                            },
+                        ]);
+                    }
+                }
 
-        //     const signinM365Callback = async (): Promise<Result<null, FxError>> => {
-        //         const token = await this.ctx.appStudioToken?.getJsonObject(false);
-        //         if (token !== undefined) {
-        //             this.ctx.treeProvider?.refresh([
-        //                 {
-        //                     commandId: "fx-extension.signinM365",
-        //                     label: (token as any).upn ? (token as any).upn : "",
-        //                     callback: signinM365Callback,
-        //                     parent: TreeCategory.Account,
-        //                     contextValue: "signedinM365",
-        //                 },
-        //             ]);
-        //         }
+                return ok(null);
+            };
 
-        //         return ok(null);
-        //     };
+            const signinM365Callback = async (): Promise<Result<null, FxError>> => {
+                const token = await this.ctx.appStudioToken?.getJsonObject(false);
+                if (token !== undefined) {
+                    this.ctx.treeProvider?.refresh([
+                        {
+                            commandId: "fx-extension.signinM365",
+                            label: (token as any).upn ? (token as any).upn : "",
+                            callback: signinM365Callback,
+                            parent: TreeCategory.Account,
+                            contextValue: "signedinM365",
+                        },
+                    ]);
+                }
 
-        //     const signinAzureCallback = async (validFxProject: boolean): Promise<Result<null, FxError>> => {
-        //         const token = await this.ctx.azureAccountProvider?.getAccountCredentialAsync(false);
-        //         if (token !== undefined) {
-        //             this.ctx.treeProvider?.refresh([
-        //                 {
-        //                     commandId: "fx-extension.signinAzure",
-        //                     label: (token as any).username ? (token as any).username : "",
-        //                     callback: signinAzureCallback,
-        //                     parent: TreeCategory.Account,
-        //                     contextValue: "signedinAzure",
-        //                 },
-        //             ]);
+                return ok(null);
+            };
 
-        //             if (validFxProject) {
-        //                 const subItem = await getSelectSubItem!(token);
-        //                 this.ctx.treeProvider?.add([subItem]);
-        //             }
-        //         }
+            const signinAzureCallback = async (validFxProject: boolean): Promise<Result<null, FxError>> => {
+                const token = await this.ctx.azureAccountProvider?.getAccountCredentialAsync(false);
+                if (token !== undefined) {
+                    this.ctx.treeProvider?.refresh([
+                        {
+                            commandId: "fx-extension.signinAzure",
+                            label: (token as any).username ? (token as any).username : "",
+                            callback: signinAzureCallback,
+                            parent: TreeCategory.Account,
+                            contextValue: "signedinAzure",
+                        },
+                    ]);
 
-        //         return ok(null);
-        //     };
+                    if (validFxProject) {
+                        const subItem = await getSelectSubItem!(token);
+                        this.ctx.treeProvider?.add([subItem]);
+                    }
+                }
 
-        //     let azureAccountLabel = "Sign In Azure...";
-        //     let azureAccountContextValue = "signinAzure";
-        //     const token = this.ctx.azureAccountProvider?.getAccountCredential();
-        //     if (token !== undefined) {
-        //         azureAccountLabel = (token as any).username ? (token as any).username : "";
-        //         azureAccountContextValue = "signedinAzure";
-        //     }
+                return ok(null);
+            };
 
-        //     this.ctx.appStudioToken?.setStatusChangeCallback(
-        //         (status: string, token?: string | undefined, accountInfo?: Record<string, unknown> | undefined) => {
-        //             if (status === "SignedIn") {
-        //                 signinM365Callback();
-        //             }
-        //             return Promise.resolve();
-        //         },
-        //     );
-        //     this.ctx.azureAccountProvider?.setStatusChangeCallback(
-        //         async (status: string, token?: string | undefined, accountInfo?: Record<string, unknown> | undefined) => {
-        //             if (status === "SignedIn") {
-        //                 const token = this.ctx.azureAccountProvider?.getAccountCredential();
-        //                 if (token !== undefined) {
-        //                     this.ctx.treeProvider?.refresh([
-        //                         {
-        //                             commandId: "fx-extension.signinAzure",
-        //                             label: (token as any).username ? (token as any).username : "",
-        //                             callback: signinAzureCallback,
-        //                             parent: TreeCategory.Account,
-        //                             contextValue: "signedinAzure",
-        //                         },
-        //                     ]);
-        //                     if (supported) {
-        //                         const subItem = await getSelectSubItem!(token);
-        //                         this.ctx.treeProvider?.add([subItem]);
-        //                     }
-        //                 }
-        //             }
-        //             return Promise.resolve();
-        //         },
-        //     );
+            let azureAccountLabel = "Sign In Azure...";
+            let azureAccountContextValue = "signinAzure";
+            const token = this.ctx.azureAccountProvider?.getAccountCredential();
+            if (token !== undefined) {
+                azureAccountLabel = (token as any).username ? (token as any).username : "";
+                azureAccountContextValue = "signedinAzure";
+            }
 
-        //     this.ctx.treeProvider.add([
-        //         {
-        //             commandId: "fx-extension.signinM365",
-        //             label: "Sign In M365...",
-        //             callback: signinM365Callback,
-        //             parent: TreeCategory.Account,
-        //             contextValue: "signinM365",
-        //             icon: "M365",
-        //         },
-        //         {
-        //             commandId: "fx-extension.signinAzure",
-        //             label: azureAccountLabel,
-        //             callback: async () => {
-        //                 return signinAzureCallback(supported);
-        //             },
-        //             parent: TreeCategory.Account,
-        //             contextValue: azureAccountContextValue,
-        //             subTreeItems: [],
-        //             icon: "azure",
-        //         },
-        //     ]);
+            this.ctx.appStudioToken?.setStatusChangeCallback(
+                (status: string, token?: string | undefined, accountInfo?: Record<string, unknown> | undefined) => {
+                    if (status === "SignedIn") {
+                        signinM365Callback();
+                    }
+                    return Promise.resolve();
+                },
+            );
+            this.ctx.azureAccountProvider?.setStatusChangeCallback(
+                async (status: string, token?: string | undefined, accountInfo?: Record<string, unknown> | undefined) => {
+                    if (status === "SignedIn") {
+                        const token = this.ctx.azureAccountProvider?.getAccountCredential();
+                        if (token !== undefined) {
+                            this.ctx.treeProvider?.refresh([
+                                {
+                                    commandId: "fx-extension.signinAzure",
+                                    label: (token as any).username ? (token as any).username : "",
+                                    callback: signinAzureCallback,
+                                    parent: TreeCategory.Account,
+                                    contextValue: "signedinAzure",
+                                },
+                            ]);
+                            if (supported) {
+                                const subItem = await getSelectSubItem!(token);
+                                this.ctx.treeProvider?.add([subItem]);
+                            }
+                        }
+                    }
+                    return Promise.resolve();
+                },
+            );
 
-        //     if (token !== undefined && getSelectSubItem !== undefined) {
-        //         const subItem = await getSelectSubItem(token);
-        //         this.ctx.treeProvider?.add([subItem]);
-        //     }
-        // }
+            this.ctx.treeProvider.add([
+                {
+                    commandId: "fx-extension.signinM365",
+                    label: "Sign In M365...",
+                    callback: signinM365Callback,
+                    parent: TreeCategory.Account,
+                    contextValue: "signinM365",
+                    icon: "M365",
+                },
+                {
+                    commandId: "fx-extension.signinAzure",
+                    label: azureAccountLabel,
+                    callback: async () => {
+                        return signinAzureCallback(supported);
+                    },
+                    parent: TreeCategory.Account,
+                    contextValue: azureAccountContextValue,
+                    subTreeItems: [],
+                    icon: "azure",
+                },
+            ]);
+
+            if (token !== undefined && getSelectSubItem !== undefined) {
+                const subItem = await getSelectSubItem(token);
+                this.ctx.treeProvider?.add([subItem]);
+            }
+        }
 
         if (!supported) return ok(null);
 

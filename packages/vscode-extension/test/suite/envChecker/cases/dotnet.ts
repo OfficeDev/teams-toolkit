@@ -58,8 +58,8 @@ suite("DotnetChecker E2E Test - first run", async () => {
     const shouldContinue = await checker.resolve();
     const dotnetExecPath = await dotnetCheckerUtils.getDotnetExecPathFromConfig(dotnetConfigPath);
 
-    // should continue because this is the case where use clicks continue
-      chai.assert.isTrue(shouldContinue);
+    // should continue because this is the case where the user clicks continue
+    chai.assert.isTrue(shouldContinue);
 
     if (isLinux()) {
       chai.assert.isNull(dotnetExecPath);

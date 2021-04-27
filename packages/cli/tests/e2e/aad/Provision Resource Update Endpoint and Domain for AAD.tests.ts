@@ -3,26 +3,33 @@
 
 import fs from "fs-extra";
 import path from "path";
-import { expect } from "chai";
 
-import { AadValidator, deleteAadApp, MockAzureAccountProvider } from "fx-api";
+import { AadValidator } from "fx-api";
 
-import { execAsync, getTestFolder, getUniqueAppName } from "./commonUtils";
+import {
+  execAsync,
+  getSubscriptionId,
+  getTestFolder,
+  getUniqueAppName,
+  cleanUp,
+} from "../commonUtils";
 
 describe("Provision", function() {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
+  const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
 
   it(`Provision Resource: Update Domain and Endpoint for AAD - Test Plan Id 9576711`, async function() {
     // new a project
-    const newResult = await execAsync(`teamsfx new --app-name ${appName} --interactive false --verbose false`, {
-      cwd: testFolder,
-      env: process.env,
-      timeout: 0
-    });
-    expect(newResult.stdout).to.eq("");
-    expect(newResult.stderr).to.eq("");
+    await execAsync(`teamsfx new --interactive false --app-name ${appName}`,
+      {
+        cwd: testFolder,
+        env: process.env,
+        timeout: 0
+      }
+    );
+    console.log(`[Successfully] scaffold to ${projectPath}`);
 
     {
       // set fx-resource-simple-auth.skuName as B1
@@ -34,16 +41,14 @@ describe("Provision", function() {
     }
 
     // provision
-    const provisionResult = await execAsync(
-      `teamsfx provision --subscription 1756abc0-3554-4341-8d6a-46674962ea19 --verbose false`,
+    await execAsync(
+      `teamsfx provision --subscription ${subscription}`,
       {
         cwd: projectPath,
         env: process.env,
         timeout: 0
       }
     );
-    expect(provisionResult.stdout).to.eq("");
-    expect(provisionResult.stderr).to.eq("");
 
     // Get context
     const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
@@ -53,15 +58,8 @@ describe("Provision", function() {
     await AadValidator.validate(aad);
   });
 
-  this.afterAll(async () => {
-    // delete aad app
-    const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
-    await deleteAadApp(context);
-
-    // remove resouce
-    await MockAzureAccountProvider.getInstance().deleteResourceGroup(`${appName}-rg`);
-
-    // remove project
-    await fs.remove(projectPath);
+  after(async () => {
+    // clean up
+    await cleanUp(appName, projectPath, true, false, false);
   });
 });

@@ -39,7 +39,7 @@ jobs:
             $version=Get-Content packages/fx-core/templates/plugins/resource/simpleauth/version.txt
             $fileName="Microsoft.TeamsFx.SimpleAuth_$version.zip"
             echo $SIMPLE_AUTH_ENDPOINT
-            $url=$SIMPLE_AUTH_ENDPOINT+'/'+$fileName+'?'+$SIMPLE_AUTH_SAS_TOKEN
+            $url=$env:SIMPLE_AUTH_ENDPOINT+'/'+$fileName+'?'+$env:SIMPLE_AUTH_SAS_TOKEN
             Invoke-WebRequest $url -OutFile packages/fx-core/templates/plugins/resource/simpleauth/SimpleAuth.zip
         shell: pwsh
 

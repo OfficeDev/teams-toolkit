@@ -1,8 +1,7 @@
 // Copyright (c) Microsoft Corporation.
-
+// Licensed under the MIT license.
 import path from "path";
 
-// Licensed under the MIT license.
 export class ProjectConstants {
     public static readonly pluginShortName: string = "APIM";
     public static readonly pluginDisplayName: string = "API Management";

@@ -6,7 +6,6 @@ import { LogProvider, TelemetryReporter } from "fx-api";
 import * as path from "path";
 import * as fs from "fs-extra";
 
-
 export class FileManager {
     private readonly logger?: LogProvider;
     private readonly telemetryReporter?: TelemetryReporter;

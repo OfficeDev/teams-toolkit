@@ -3,7 +3,6 @@
 
 import { ErrorNames } from "./constants";
 import { Messages } from "./resources/messages";
-import { CommonStrings } from "./resources/strings";
 
 export enum ErrorType {
     User,

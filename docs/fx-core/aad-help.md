@@ -4,11 +4,24 @@
 
 Failed to update redriect uri for Azure AD app. Please refer to the log for detailed information.
 
-### Mitigation
+### Address the Error
 
-Root cause of this error is that **Storage Endpoint Host Name** cannot be set to **Application ID URI** of Azure AD App.
-You can setup CDN as storage custom domain as mitigation following the instruction.
+This error contains two kind of scenario, and please follow this instruction to address the detailed error.
 
+1. Open `.fx\env.default.json` file
+2. Find `fx-resource-aad-app-for-teams`. Note value of key *applicationIdUri*
+3. Go to Azure Portal, select "Azure Active Directory"
+4. Select "App Registrations" and select you Azure AD app.
+5. Go to *Expose an API*, and set the value of *applicationIdUri* noted before.
+6. Find the error message show on portal, and find error in the table below.
+
+Error Message | Reason | Mitigation
+------|------|------
+Failed to update application property. Error detail: Another object with the same value for property identifierUris already exists. | The same *applicationIdUri* has already been set to another Azure AD app. This probably because you are using an exising bot in a bot only project. | Please delete the Azure AD app with the same *applicationIdUri* and try again. Or you can try to provision a new bot.
+Failed to update application property. Error detail: The host name should not be based on already owned domain paramName. | **Storage Endpoint Host Name** cannot be set to **Application ID URI** of Azure AD App. | [Scenario One: Setup CDN as storage custom domain](#scenario-one-setup-cdn-as-storage-custom-domain).
+
+
+### Scenario One: Setup CDN as storage custom domain
 #### Step #1 Note Frontend Info
 1. Open `.fx\env.default.json` file
 2. Note the resource group name, fronend storage name.

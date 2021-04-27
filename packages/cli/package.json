@@ -15,7 +15,7 @@
     "copy-files": "copyfiles -u 1 src/**/*.html src/**/*.css lib/",
     "build": "tsc -p ./ && npm run copy-files",
     "watch": "tsc -w -p ./ && npm run copy-files",
-    "test:e2e": "mocha --no-timeouts --require ts-node/register tests/e2e/**/*.tests.ts",
+    "test:e2e": "mocha --parallel --no-timeouts --require ts-node/register tests/e2e/**/*.tests.ts",
     "test:unit": "echo 'to be implementd'",
     "test:integration": "echo 'to be implementd'",
     "check-format": "prettier --list-different --config .prettierrc.json --ignore-path .prettierignore \"{src,tests}/**/*.ts\" \"*.{js,json}\"",

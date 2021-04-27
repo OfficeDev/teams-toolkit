@@ -7,30 +7,31 @@
             "option": [
                 {
                     "id": "function",
-                    "label": "function",
-                    "description": "New APIs from Azure Functions"
+                    "label": "Azure Functions",
+                    "description": "Application backend."
                 },
                 {
                     "id": "sql",
-                    "label": "sql",
-                    "description": "Azure SQL Database"
+                    "label": "Azure SQL Database",
+                    "description": "Azure SQL Database depends on Azure Functions."
                 },
                 {
                     "id": "apim",
                     "label": "apim",
-                    "description": "New API in Azure API Management"
+                    "description": "Register APIs in Azure API Management"
                 }
             ],
             "default": [
                 "apim"
             ],
+            "prompt": "If you already have function, add function means adding a new function API; If you don't have function, adding SQL or APIM will create a function by default.",
             "hide": true
         }
     },
     {
         "data": {
             "name": "function-name",
-            "description": "Please provide function name.",
+            "description": "Provide a function name.",
             "type": "text",
             "default": "getUserProfile",
             "validation": {
@@ -52,7 +53,7 @@
         "data": {
             "type": "text",
             "name": "apim-resource-group",
-            "description": "The name of the API Management service resource group.",
+            "description": "The name of resource group.",
             "validation": {}
         }
     },

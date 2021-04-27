@@ -66,7 +66,7 @@ export function nodeConfig(test = false) {
   return baseConfig;
 }
 
-export function browserConfig(test = false, integration = false) {
+export function browserConfig(unit = false, integration = false) {
   let baseConfig = {
     input: input,
     output: {
@@ -99,7 +99,7 @@ export function browserConfig(test = false, integration = false) {
     // Entry points - test files under the `test` folder(common for both browser and node), browser specific test files
     baseConfig.input = ["dist-esm/test/unit/*.spec.js", "dist-esm/test/unit/browser/*.spec.js"];
     baseConfig.plugins.unshift(multiEntry({ exports: false }));
-    baseConfig.output.file = "dist-test/index.browser.js";
+    baseConfig.output.file = "dist-test/index.unit.browser.js";
 
     baseConfig.onwarn = (warning) => {
       if (

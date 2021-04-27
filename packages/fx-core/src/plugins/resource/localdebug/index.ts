@@ -17,17 +17,32 @@ import { LocalBotEndpointNotConfigured, MissingStep, NgrokTunnelNotConnected, In
 import { prepareLocalAuthService } from "./util/localService";
 import { getNgrokHttpUrl } from "./util/ngrok";
 import { getCodespaceName, getCodespaceUrl } from "./util/codespace";
+import { TelemetryUtils, TelemetryEventName } from "./util/telemetry";
 
 export class LocalDebugPlugin implements Plugin {
 
     public async scaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
+        const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings).activeResourcePlugins;
+        const isSpfx = selectedPlugins.some((pluginName) => pluginName === SpfxPlugin.Name);
+        const includeFrontend = selectedPlugins.some((pluginName) => pluginName === FrontendHostingPlugin.Name);
+        const includeBackend = selectedPlugins.some((pluginName) => pluginName === FunctionPlugin.Name);
+        const includeBot = selectedPlugins.some((pluginName) => pluginName === BotPlugin.Name);
+        const programmingLanguage: string = ctx.configOfOtherPlugins.get(SolutionPlugin.Name)?.get(SolutionPlugin.ProgrammingLanguage) as string;
+
+        const telemetryProperties = {
+            platform: ctx.platform as string,
+            spfx: isSpfx ? "true" : "false",
+            frontend: includeFrontend ? "true" : "false",
+            function: includeBackend ? "true" : "false",
+            bot: includeBot ? "true" : "false",
+            "programming-language": programmingLanguage,
+        }
+        TelemetryUtils.init(ctx);
+        TelemetryUtils.sendStartEvent(TelemetryEventName.scaffold, telemetryProperties);
+
         // scaffold for both vscode and cli
         if (ctx.platform === Platform.VSCode || ctx.platform === Platform.CLI)
         {
-            const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings).activeResourcePlugins;
-
-            const isSpfx = selectedPlugins.some((pluginName) => pluginName === SpfxPlugin.Name);
-
             if (isSpfx) {
                 // Only generate launch.json and tasks.json for SPFX
                 const launchConfigurations = Launch.generateSpfxConfigurations();
@@ -56,11 +71,6 @@ export class LocalDebugPlugin implements Plugin {
                     });
 
             } else {
-                const includeFrontend = selectedPlugins.some((pluginName) => pluginName === FrontendHostingPlugin.Name);
-                const includeBackend = selectedPlugins.some((pluginName) => pluginName === FunctionPlugin.Name);
-                const includeBot = selectedPlugins.some((pluginName) => pluginName === BotPlugin.Name);
-                const programmingLanguage: string = ctx.configOfOtherPlugins.get(SolutionPlugin.Name)?.get(SolutionPlugin.ProgrammingLanguage) as string;
-
                 const launchConfigurations = Launch.generateConfigurations(includeFrontend, includeBackend, includeBot);
                 const launchCompounds = Launch.generateCompounds(includeFrontend, includeBackend, includeBot);
 
@@ -112,16 +122,32 @@ export class LocalDebugPlugin implements Plugin {
             }
         }
 
+        TelemetryUtils.sendSuccessEvent(TelemetryEventName.scaffold, telemetryProperties);
         return ok(undefined);
     }
 
     public async localDebug(ctx: PluginContext): Promise<Result<any, FxError>> {
+        const vscEnv = ctx.answers?.getString("vscenv");
+        const includeFrontend = ctx.configOfOtherPlugins.has(FrontendHostingPlugin.Name);
+        const includeBackend = ctx.configOfOtherPlugins.has(FunctionPlugin.Name);
+        const includeBot = ctx.configOfOtherPlugins.has(BotPlugin.Name);
+        const skipNgrok = ctx.config.get(LocalDebugConfigKeys.SkipNgrok) as string;
+
+        const telemetryProperties = {
+            platform: ctx.platform as string,
+            vscenv: vscEnv as string,
+            frontend: includeFrontend ? "true" : "false",
+            function: includeBackend ? "true" : "false",
+            bot: includeBot ? "true" : "false",
+            "skip-ngrok": skipNgrok,
+        }
+        TelemetryUtils.init(ctx);
+        TelemetryUtils.sendStartEvent(TelemetryEventName.localDebug, telemetryProperties);
+
         // setup configs used by other plugins
         // TODO: dynamicly determine local ports
         if (ctx.platform === Platform.VSCode)
         {
-            const vscEnv = ctx.answers?.getString("vscenv");
-
             let localTabEndpoint: string;
             let localTabDomain: string;
             let localAuthEndpoint: string;
@@ -141,10 +167,6 @@ export class LocalDebugPlugin implements Plugin {
                 localFuncEndpoint = "http://localhost:7071";
             }
 
-            const includeFrontend = ctx.configOfOtherPlugins.has(FrontendHostingPlugin.Name);
-            const includeBackend = ctx.configOfOtherPlugins.has(FunctionPlugin.Name);
-            const includeBot = ctx.configOfOtherPlugins.has(BotPlugin.Name);
-
             ctx.config.set(LocalDebugConfigKeys.LocalAuthEndpoint, localAuthEndpoint);
 
             if (includeFrontend) {
@@ -158,22 +180,27 @@ export class LocalDebugPlugin implements Plugin {
             }
 
             if (includeBot) {
-                const skipNgrok = ctx.config.get(LocalDebugConfigKeys.SkipNgrok) as string;
                 if (skipNgrok?.trim().toLowerCase() === "true") {
                     const localBotEndpoint = ctx.config.get(LocalDebugConfigKeys.LocalBotEndpoint) as string;
                     if (localBotEndpoint === undefined) {
-                        return err(LocalBotEndpointNotConfigured());
+                        const error = LocalBotEndpointNotConfigured();
+                        TelemetryUtils.sendErrorEvent(TelemetryEventName.localDebug, error);
+                        return err(error);
                     }
                     const botEndpointRegex = /https:\/\/.*(:\d+)?/g;
                     if (!botEndpointRegex.test(localBotEndpoint)) {
-                        return err(InvalidLocalBotEndpointFormat(localBotEndpoint));
+                        const error = InvalidLocalBotEndpointFormat(localBotEndpoint);
+                        TelemetryUtils.sendErrorEvent(TelemetryEventName.localDebug, error);
+                        return err(error);
                     }
                     ctx.config.set(LocalDebugConfigKeys.LocalBotEndpoint, localBotEndpoint);
                     ctx.config.set(LocalDebugConfigKeys.LocalBotDomain, localBotEndpoint.slice(8));
                 } else {
                     const ngrokHttpUrl = await getNgrokHttpUrl(3978);
                     if (!ngrokHttpUrl) {
-                        return err(NgrokTunnelNotConnected());
+                        const error = NgrokTunnelNotConnected();
+                        TelemetryUtils.sendErrorEvent(TelemetryEventName.localDebug, error);
+                        return err(error);
                     } else {
                         ctx.config.set(LocalDebugConfigKeys.LocalBotEndpoint, ngrokHttpUrl);
                         ctx.config.set(LocalDebugConfigKeys.LocalBotDomain, ngrokHttpUrl.slice(8));
@@ -182,10 +209,26 @@ export class LocalDebugPlugin implements Plugin {
             }
         }
 
+        TelemetryUtils.sendSuccessEvent(TelemetryEventName.localDebug, telemetryProperties);
         return ok(undefined);
     }
 
     public async postLocalDebug(ctx: PluginContext): Promise<Result<any, FxError>> {
+        const includeFrontend = ctx.configOfOtherPlugins.has(FrontendHostingPlugin.Name);
+        const includeBackend = ctx.configOfOtherPlugins.has(FunctionPlugin.Name);
+        const includeBot = ctx.configOfOtherPlugins.has(BotPlugin.Name);
+        const trustDevCert = ctx.config.get(LocalDebugConfigKeys.TrustDevelopmentCertificate) as string;
+
+        const telemetryProperties = {
+            platform: ctx.platform as string,
+            frontend: includeFrontend ? "true" : "false",
+            function: includeBackend ? "true" : "false",
+            bot: includeBot ? "true" : "false",
+            "trust-development-certificate": trustDevCert,
+        }
+        TelemetryUtils.init(ctx);
+        TelemetryUtils.sendStartEvent(TelemetryEventName.postLocalDebug, telemetryProperties);
+
         if (ctx.platform === Platform.VSCode)
         {
             const includeFrontend = ctx.configOfOtherPlugins.has(FrontendHostingPlugin.Name);
@@ -239,7 +282,6 @@ export class LocalDebugPlugin implements Plugin {
 
                 // local certificate
                 try {
-                    const trustDevCert = ctx.config.get(LocalDebugConfigKeys.TrustDevelopmentCertificate) as string;
                     const needTrust = (trustDevCert === undefined) || (trustDevCert.trim().toLowerCase() === "true");
                     const certManager = new LocalCertificateManager(ctx);
                     const localCert = await certManager.setupCertificate(needTrust);
@@ -272,6 +314,7 @@ export class LocalDebugPlugin implements Plugin {
             await localEnvProvider.saveLocalEnv(localEnvs);
         }
 
+        TelemetryUtils.sendSuccessEvent(TelemetryEventName.postLocalDebug, telemetryProperties);
         return ok(undefined);
     }
 

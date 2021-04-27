@@ -58,7 +58,7 @@ suite("DotnetChecker E2E Test - first run", async () => {
     const dotnetExecPath = await dotnetCheckerUtils.getDotnetExecPathFromConfig(dotnetConfigPath);
 
     if (isLinux()) {
-      chai.assert.isFalse(shouldContinue);
+      chai.assert.isTrue(shouldContinue);
       chai.assert.isNull(dotnetExecPath);
     } else {
       chai.assert.isTrue(shouldContinue);

@@ -2,7 +2,7 @@
   "name": "teamsfx-extension",
   "displayName": "Teams Toolkit V2",
   "description": "Create, debug, and deploy Teams apps directly from Teams Toolkit v2",
-  "version": "2.0.0-alpha.12",
+  "version": "2.0.0-alpha.13",
   "publisher": "Microsoft",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -64,8 +64,24 @@
     "views": {
       "teamsfx": [
         {
-          "id": "teamsfx",
-          "name": "Commands"
+          "id": "teamsfx-getting-started",
+          "name": "Getting Started"
+        },
+        {
+          "id": "teamsfx-accounts",
+          "name": "Accounts"
+        },
+        {
+          "id": "teamsfx-project",
+          "name": "Project"
+        },
+        {
+          "id": "teamsfx-teams-dev-center",
+          "name": "Teams Dev Center"
+        },
+        {
+          "id": "teamsfx-feedback",
+          "name": "Feedback"
         }
       ]
     },
@@ -73,12 +89,12 @@
       "view/item/context": [
         {
           "command": "fx-extension.signOut",
-          "when": "view == teamsfx && viewItem == signedinM365",
+          "when": "view == teamsfx-accounts && viewItem == signedinM365",
           "group": "inline"
         },
         {
           "command": "fx-extension.signOut",
-          "when": "view == teamsfx && viewItem == signedinAzure",
+          "when": "view == teamsfx-accounts && viewItem == signedinAzure",
           "group": "inline"
         }
       ],
@@ -428,8 +444,8 @@
     "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
-    "fx-api": "^1.1.1-alpha.5",
-    "fx-core": "^1.1.1-alpha.5",
+    "fx-api": "^1.1.1-alpha.6",
+    "fx-core": "^1.1.1-alpha.6",
     "jsonschema": "^1.4.0",
     "opn": "^6.0.0",
     "sudo-prompt": "^9.2.1",

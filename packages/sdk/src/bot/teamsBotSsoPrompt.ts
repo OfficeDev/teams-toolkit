@@ -26,12 +26,11 @@ import {
 } from "botbuilder-dialogs";
 import { TeamsBotSsoPromptTokenResponse } from "./teamsBotSsoPromptTokenResponse";
 import { config } from "../core/configurationProvider";
-import { OnBehalfOfUserCredential } from "../core/onBehalfOfUserCredential";
+import { OnBehalfOfUserCredential } from "../credential/onBehalfOfUserCredential";
 import { v4 as uuidv4 } from "uuid";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 import { internalLogger } from "../util/logger";
 import { formatString, parseJwt } from "../util/utils";
-import { SSOTokenInfoBase } from "../models/ssoTokenInfo";
 
 const invokeResponseType = "invokeResponse";
 /**

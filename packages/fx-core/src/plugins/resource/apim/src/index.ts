@@ -4,7 +4,7 @@ import { Plugin, FxError, PluginContext, SystemError, UserError, Result, err, ok
 import { BuildError, UnhandledError } from "./error";
 import { Telemetry } from "./telemetry";
 import { AadPluginConfig, ApimPluginConfig, FunctionPluginConfig, SolutionConfig } from "./model/config";
-import { AadDefaultValues, ProgressMessages, ProgressStep } from "./constants";
+import { AadDefaultValues, ProgressMessages, ProgressStep, ProjectConstants } from "./constants";
 import { Factory } from "./factory";
 import { ProgressBar } from "./util/progressBar";
 import { buildAnswer } from "./model/answer";
@@ -57,7 +57,7 @@ export class ApimPlugin implements Plugin {
             }
 
             // TODO: According to solution plugin's design to decide whether we need to keep the log and telemetry here.
-            ctx.logProvider?.error(error.message);
+            ctx.logProvider?.error(`[${ProjectConstants.pluginDisplayName}] ${error.message}`);
             Telemetry.sendErrorEvent(ctx.telemetryReporter, packagedError);
             return err(packagedError);
         } finally {
@@ -90,11 +90,11 @@ async function _scaffold(ctx: PluginContext, progressBar: ProgressBar): Promise<
     const solutionConfig = new SolutionConfig(ctx.configOfOtherPlugins);
     const apimConfig = new ApimPluginConfig(ctx.config);
     const answer = buildAnswer(ctx);
-    const apimManager = await Factory.buildApimManager(ctx, solutionConfig);
+    const scaffoldManager = await Factory.buildScaffoldManager(ctx, solutionConfig);
     answer.save(Stage.update, apimConfig);
 
     await progressBar.next(ProgressStep.Scaffold, ProgressMessages[ProgressStep.Scaffold].Scaffold);
-    await apimManager.scaffold(ctx.app.name.short, ctx.root);
+    await scaffoldManager.scaffold(ctx.app.name.short, ctx.root);
 }
 
 async function _provision(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {

@@ -38,17 +38,17 @@ export abstract class Generator {
     if (result.isErr()) {
       return err(result.error);
     }
-    
+
     const core = result.value;
     {
-      const result = this.doUserTask 
+      const result = this.doUserTask
         ? await core.getQuestionsForUserTask!(this.func!, Platform.CLI)
         : await core.getQuestions!(this.stage!, Platform.CLI);
-        
+
       if (result.isErr()) {
         return err(result.error);
       }
-    
+
       const root = result.value!;
       return ok(root);
     }
@@ -66,7 +66,7 @@ export abstract class Generator {
       CLILogProvider.info(this.toLogMsg(`Start to write '${this.commandName}' parameters`));
       await this.writeJSON(result.value);
       CLILogProvider.info(this.toLogMsg(`Finish to write '${this.commandName}' parameters to ${this.outputPath}`));
-    } catch(e) {
+    } catch (e) {
       const FxError: FxError =
         e instanceof UserError || e instanceof SystemError ? e : UnknownError(e);
       let errorMsg = `code:${FxError.source}.${FxError.name}\n\tmessage: ${FxError.message}`;
@@ -86,7 +86,7 @@ export abstract class Generator {
   public toLogMsg(body: string) {
     return `[ParamGenerator] ${body}`;
   }
-  
+
   public async writeJSON(params: any) {
     return fs.writeJSON(this.outputPath, params, {
       spaces: 4,

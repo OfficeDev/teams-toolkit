@@ -1,20 +1,35 @@
 [
     {
         "data": {
+            "type": "folder",
+            "name": "folder",
+            "description": "Select root folder of the project",
+            "default": "./"
+        }
+    },
+    {
+        "data": {
             "name": "capabilities",
-            "title": "Select Capabilities to add",
+            "title": "Select capabilities to add",
             "type": "multiSelect",
             "option": [
                 {
                     "id": "Bot",
                     "label": "Bot",
                     "cliName": "bot",
-                    "description": "Bots allow you to interact with and obtain information from a software or website in a text/search/conversational manner."
+                    "description": "Bots allow you to interact with and obtain information in a text/search/conversational manner."
+                },
+                {
+                    "id": "MessageExtension",
+                    "label": "Messaging Extension",
+                    "cliName": "message-extension",
+                    "description": "Messaging Extensions allow users to interact with a web service through buttons and forms in the Microsoft Teams client."
                 }
             ],
             "default": [
                 "bot"
             ],
+            "prompt": "Bot and Message Extension are exclusive, you can not select both.",
             "hide": true
         }
     },

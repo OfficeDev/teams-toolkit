@@ -6,10 +6,5 @@
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.19.0",
     "@typescript-eslint/parser": "^4.19.0"
-  },
-  "dependencies": {
-    "build": "^0.1.4",
-    "js-yaml": "^4.1.0",
-    "uglify-js": "^3.13.4"
   }
 }

@@ -49,7 +49,7 @@ abstract class CapabilityAddGenerator extends Generator {
     (capabilityNode.data as any).default = [this.capabilityName];
     (capabilityNode.data as any).hide = true;
 
-    return ok(allNodes);
+    return ok([constants.RootFolderNode, ...allNodes]);
   }
 }
 
@@ -63,4 +63,10 @@ export class CapabilityAddBotGenerator extends CapabilityAddGenerator {
   public readonly commandName = "teamsfx capability add bot";
   public readonly capabilityName = "bot";
   public readonly outputPath = constants.capabilityAddBotParamPath;
+}
+
+export class CapabilityAddMessageExtensionGenerator extends CapabilityAddGenerator {
+  public readonly commandName = "teamsfx capability add message-extension";
+  public readonly capabilityName = "message-extension";
+  public readonly outputPath = constants.capabilityAddMessageExtensionParamPath;
 }

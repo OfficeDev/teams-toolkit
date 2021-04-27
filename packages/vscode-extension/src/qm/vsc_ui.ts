@@ -1,82 +1,96 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
  
-import { Disposable, InputBox, QuickInputButtons, QuickPick, QuickPickItem, Uri, window } from "vscode";
+import { Disposable, InputBox, QuickInputButton, QuickInputButtons, QuickPick, QuickPickItem, Uri, window } from "vscode";
 import { FxInputBoxOption, FxOpenDialogOption, FxQuickPickOption, InputResult, InputResultType, OptionItem, returnSystemError, UserInterface } from "fx-api";
 import { ExtensionErrors, ExtensionSource } from "../error";
- 
+import { ext } from "../extensionVariables";
 
- 
 export interface FxQuickPickItem extends QuickPickItem {
   id: string;
   data?: unknown;
 }
 
 export class VsCodeUI implements UserInterface{
+  
   async showQuickPick (option: FxQuickPickOption) : Promise<InputResult>{
+    const okButton : QuickInputButton = { 
+      iconPath: Uri.file(ext.context.asAbsolutePath("media/ok.svg")),
+      tooltip:"ok"
+    };  
     const disposables: Disposable[] = [];
     try {
       const quickPick: QuickPick<QuickPickItem> = window.createQuickPick();
       disposables.push(quickPick);
       quickPick.title = option.title;
-      if (option.backButton) quickPick.buttons = [QuickInputButtons.Back];
+      if(option.canSelectMany){
+        if (option.backButton) quickPick.buttons = [QuickInputButtons.Back, okButton];
+        else quickPick.buttons = [okButton];
+      }
+      else {
+        if (option.backButton) quickPick.buttons = [QuickInputButtons.Back];
+      }
       quickPick.placeholder = option.placeholder;
       quickPick.ignoreFocusOut = true;
       quickPick.matchOnDescription = true;
       quickPick.matchOnDetail = true;
       quickPick.canSelectMany = option.canSelectMany;
+      quickPick.step = option.step;
+      quickPick.totalSteps = option.totalSteps;
       let previousSelectedItems:FxQuickPickItem[] = [];
       return await new Promise<InputResult>(
         async (resolve): Promise<void> => {
-          disposables.push(
-            quickPick.onDidAccept(async () => {
-              const selectedItems = quickPick.selectedItems as FxQuickPickItem[];
-              if (option.canSelectMany) {
-                const strArray = Array.from(selectedItems.map((i) => i.id));
-                let result: OptionItem[] | string[] = strArray;
-                if (option.returnObject) {
-                  result = selectedItems.map((i) => {
-                    const item: OptionItem = {
-                      id: i.id,
-                      label: i.label,
-                      description: i.description,
-                      detail: i.detail,
-                      data: i.data
-                    };
-                    return item;
-                  });
-                }
-                resolve({
-                  type: InputResultType.sucess,
-                  result: result
-                });
-              } else {
-                const item: FxQuickPickItem = quickPick.selectedItems[0] as FxQuickPickItem;
-                let result: string | OptionItem = item.id;
-                if (option.returnObject) {
-                  result = {
-                    id: item.id,
-                    label: item.label,
-                    description: item.description,
-                    detail: item.detail,
-                    data: item.data
+          const onDidAccept = async () => {
+            const selectedItems = quickPick.selectedItems as FxQuickPickItem[];
+            if (option.canSelectMany) {
+              const strArray = Array.from(selectedItems.map((i) => i.id));
+              let result: OptionItem[] | string[] = strArray;
+              if (option.returnObject) {
+                result = selectedItems.map((i) => {
+                  const item: OptionItem = {
+                    id: i.id,
+                    label: i.label,
+                    description: i.description,
+                    detail: i.detail,
+                    data: i.data
                   };
-                }
-                resolve({ type: InputResultType.sucess, result: result });
+                  return item;
+                });
               }
-            }),
+              resolve({
+                type: InputResultType.sucess,
+                result: result
+              });
+            } else {
+              const item: FxQuickPickItem = quickPick.selectedItems[0] as FxQuickPickItem;
+              let result: string | OptionItem = item.id;
+              if (option.returnObject) {
+                result = {
+                  id: item.id,
+                  label: item.label,
+                  description: item.description,
+                  detail: item.detail,
+                  data: item.data
+                };
+              }
+              resolve({ type: InputResultType.sucess, result: result });
+            }
+          };
+
+          disposables.push(
+            quickPick.onDidAccept(onDidAccept),
             quickPick.onDidHide(() => {
-              resolve({ type: InputResultType.cancel });
+              resolve({ type: InputResultType.cancel});
             })
           );
-          if(option.backButton) {
-            disposables.push(
-              quickPick.onDidTriggerButton((button) => {
+          disposables.push(
+            quickPick.onDidTriggerButton((button) => { 
+              if (button === QuickInputButtons.Back)
                 resolve({ type: InputResultType.back });
-              })
-            );
-          }
-          
+              else
+                onDidAccept();
+            })
+          );
           try {
             const optionIsString = !!(typeof option.items[0] === "string");
             /// set items
@@ -166,17 +180,24 @@ export class VsCodeUI implements UserInterface{
 
 
   async showInputBox(option: FxInputBoxOption) : Promise<InputResult>{
+    const okButton : QuickInputButton = { 
+      iconPath: Uri.file(ext.context.asAbsolutePath("media/ok.svg")),
+      tooltip:"ok"
+    };  
     const disposables: Disposable[] = [];
     try {
       const inputBox: InputBox = window.createInputBox();
       disposables.push(inputBox);
       inputBox.title = option.title;
-      if (option.backButton) inputBox.buttons = [QuickInputButtons.Back];
+      if (option.backButton) inputBox.buttons = [QuickInputButtons.Back, okButton];
+      else inputBox.buttons = [okButton];
       inputBox.value = option.defaultValue || "";
       inputBox.ignoreFocusOut = true;
       inputBox.password = option.password;
       inputBox.placeholder = option.placeholder;
       inputBox.prompt = option.prompt;
+      inputBox.step = option.step;
+      inputBox.totalSteps = option.totalSteps;
       if(option.number){
         const numberValidation = async function(input:string):Promise<string|undefined>{
           if(!input || input.trim() === "" ||isNaN(Number(input))) return `'${input}' is not a valid number`;
@@ -191,6 +212,14 @@ export class VsCodeUI implements UserInterface{
         option.validation = newValidation;
       }
       return await new Promise<InputResult>((resolve): void => {
+        const onDidAccept = async () => {
+          const validationRes = option.validation ? await option.validation(inputBox.value) : undefined;
+          if (!validationRes) {
+            resolve({ type: InputResultType.sucess, result: inputBox.value });
+          } else {
+            inputBox.validationMessage = validationRes;
+          }
+        };
         disposables.push(
           inputBox.onDidChangeValue(async (text) => {
             if (option.validation) {
@@ -203,25 +232,19 @@ export class VsCodeUI implements UserInterface{
               }
             }
           }),
-          inputBox.onDidAccept(async () => {
-            const validationRes = option.validation ? await option.validation(inputBox.value) : undefined;
-            if (!validationRes) {
-              resolve({ type: InputResultType.sucess, result: inputBox.value });
-            } else {
-              inputBox.validationMessage = validationRes;
-            }
-          }),
+          inputBox.onDidAccept(onDidAccept),
           inputBox.onDidHide(() => {
             resolve({ type: InputResultType.cancel });
           })
         );
-        if (option.backButton) {
-          disposables.push(
-            inputBox.onDidTriggerButton((button) => {
+        disposables.push(
+          inputBox.onDidTriggerButton((button) => { 
+            if (button === QuickInputButtons.Back)
               resolve({ type: InputResultType.back });
-            })
-          );
-        }
+            else
+              onDidAccept();
+          })
+        );
         inputBox.show();
       });
     } finally {

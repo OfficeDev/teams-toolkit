@@ -144,9 +144,11 @@ export class TeamsBotImpl {
         CheckThrowSomethingMissing(ConfigNames.RESOURCE_GROUP, this.config.provision.resourceGroup);
         CheckThrowSomethingMissing(ConfigNames.LOCATION, this.config.provision.location);
         CheckThrowSomethingMissing(ConfigNames.SKU_NAME, this.config.provision.skuName);
-
-        this.config.provision.siteName = ResourceNameFactory.createCommonName(this.ctx?.app.name.short);
-        Logger.debug(`Site name generated to use is ${this.config.provision.siteName}.`);
+        
+        if (!this.config.provision.siteName) {
+            this.config.provision.siteName = ResourceNameFactory.createCommonName(this.ctx?.app.name.short);
+            Logger.debug(`Site name generated to use is ${this.config.provision.siteName}.`);
+        }
 
         this.config.saveConfigIntoContext(context);
         this.telemetryStepOutSuccess(LifecycleFuncNames.PRE_PROVISION);

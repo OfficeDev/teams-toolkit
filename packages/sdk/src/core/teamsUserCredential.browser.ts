@@ -19,7 +19,7 @@ import { internalLogger } from "../util/logger";
 const accessTokenCacheKeyPrefix = "accessToken";
 const separator = "-";
 const tokenRefreshTimeSpanInMillisecond = 5 * 60 * 1000;
-const getSSOTokenTimeoutInMillisecond = 5000;
+const getSSOTokenTimeoutInMillisecond = 8000;
 const loginPageWidth = 600;
 const loginPageHeight = 535;
 const maxRetryCount = 3;

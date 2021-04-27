@@ -41,6 +41,7 @@ jobs:
             fileName="Microsoft.TeamsFx.SimpleAuth_$version.zip"
             echo $fileName
             Invoke-WebRequest "$SIMPLE_AUTH_ENDPOINT/$fileName?$SIMPLE_AUTH_SAS_TOKEN" -OutputFile packages/fx-core/templates/plugins/resource/simpleauth/SimpleAuth.zip
+        shell: powershell
 
       - name: Unit Test
         run: |

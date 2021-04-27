@@ -28,10 +28,6 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Setup npm registry
-        run: |
-          echo "${{ secrets.NPMRC }}" > ~/.npmrc
-
       - name: Download Simple Auth bits
         env:
           SIMPLE_AUTH_SAS_TOKEN: ${{secrets.SIMPLE_AUTH_SAS_TOKEN}}

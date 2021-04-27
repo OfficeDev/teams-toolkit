@@ -17,6 +17,7 @@ import { ConfigFolderName } from "fx-api";
 import { commandExistsInPath } from "../utils/common";
 
 const dotnetConfigPath = path.join(os.homedir(), "." + ConfigFolderName, "dotnet.json");
+const dotnetPrivateInstallPath = path.join(os.homedir(), "." + ConfigFolderName, "bin", "dotnet");
 const dotnetCommand = "dotnet";
 const dotnetOldVersion = "2.1";
 const dotnetInstallVersion = "3.1";
@@ -37,14 +38,15 @@ function createTestChecker(
   return [depsChecker, dotnetChecker];
 }
 
-async function removeDotnetConfig() {
+async function cleanup() {
     // fs-extra.remove() does nothing if the file does not exist.
     await fs.remove(dotnetConfigPath);
+    await fs.remove(dotnetPrivateInstallPath);
 }
 
 suite("DotnetChecker E2E Test - first run", async () => {
   setup(async function(this: Mocha.Context) {
-    await removeDotnetConfig();
+    await cleanup();
     // cleanup to make sure the environment is clean before test
   });
 
@@ -156,13 +158,13 @@ suite("DotnetChecker E2E Test - first run", async () => {
 
   teardown(async function(this: Mocha.Context) {
     // cleanup to make sure the environment is clean
-    await removeDotnetConfig();
+    await cleanup();
   });
 });
 
 suite("DotnetChecker E2E Test - second run", () => {
   setup(async function(this: Mocha.Context) {
-    await removeDotnetConfig();
+    await cleanup();
     // cleanup to make sure the environment is clean before test
   });
 
@@ -176,6 +178,6 @@ suite("DotnetChecker E2E Test - second run", () => {
 
   teardown(async function(this: Mocha.Context) {
     // cleanup to make sure the environment is clean
-    await removeDotnetConfig();
+    await cleanup();
   });
 });

@@ -1,9 +1,10 @@
 name: Beta release
 
 on:
-  push:
+  pull_request:
     branches:
       - release
+    types: [closed]
 
 jobs:
   release-npm:

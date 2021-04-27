@@ -232,19 +232,3 @@ class Config {
     get apiPath() { return this.config[this.apimPlugin]["apiPath"]; }
     get apiDocumentPath() { return this.config[this.apimPlugin]["apiDocumentPath"]; }
 }
-
-export async function deleteApimAadApp(ctx: any, graphTokenProvider: GraphTokenProvider): Promise<void> {
-    const config = new Config(ctx);
-    const graphToken = await graphTokenProvider.getAccessToken();
-    const axiosInstance = axios.create({
-        baseURL: "https://graph.microsoft.com/v1.0",
-        headers: {
-            authorization: `Bearer ${graphToken}`,
-            "content-type": "application/json",
-        },
-    });
-    const objectId = config.apimClientAADObjectId;
-    if (objectId) {
-        await axiosInstance.delete(`/applications/${objectId}`);
-    }
-}

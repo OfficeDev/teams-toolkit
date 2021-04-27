@@ -117,8 +117,9 @@ describe("Teams Bot Resource Plugin", () => {
             await fs.ensureDir(scaffoldDir);
         });
 
-        afterEach(() => {
+        afterEach(async () => {
             sinon.restore();
+            await fs.remove(scaffoldDir);
         });
 
         it("happy path typescript", async () => {
@@ -303,17 +304,23 @@ describe("Teams Bot Resource Plugin", () => {
     });
 
     describe("Test preDeploy", () => {
-        afterEach(() => {
-            sinon.restore();
-        });
-
         let botPlugin: TeamsBot;
         let botPluginImpl: TeamsBotImpl;
+        let rootDir: string;
+        let botWorkingDir: string;
 
-        beforeEach(() => {
+        beforeEach(async () => {
             botPlugin = new TeamsBot();
             botPluginImpl = new TeamsBotImpl();
             botPlugin.teamsBotImpl = botPluginImpl;
+            rootDir = path.join(__dirname, utils.genUUID());
+            botWorkingDir = path.join(rootDir, CommonStrings.BOT_WORKING_DIR_NAME)
+            await fs.ensureDir(botWorkingDir);
+        });
+
+        afterEach(async () => {
+            sinon.restore();
+            await fs.remove(rootDir);
         });
 
         it("Happy Path", async () => {
@@ -322,8 +329,7 @@ describe("Teams Bot Resource Plugin", () => {
             botPluginImpl.config.provision.provisioned = true;
             botPluginImpl.config.provision.siteEndpoint = "https://abc.azurewebsites.net";
             botPluginImpl.config.scaffold.programmingLanguage = ProgrammingLanguage.JavaScript;
-            pluginContext.root = path.join(__dirname, utils.genUUID());
-            await fs.ensureDir(path.join(pluginContext.root, CommonStrings.BOT_WORKING_DIR_NAME));
+            pluginContext.root = rootDir;
             botPluginImpl.config.provision.subscriptionId = "anything";
             botPluginImpl.config.provision.resourceGroup = "anything";
 
@@ -336,23 +342,26 @@ describe("Teams Bot Resource Plugin", () => {
     });
 
     describe("Test deploy", () => {
-        afterEach(() => {
-            sinon.restore();
-        });
-
         let botPlugin: TeamsBot;
         let botPluginImpl: TeamsBotImpl;
+        let rootDir: string;
 
         beforeEach(() => {
             botPlugin = new TeamsBot();
             botPluginImpl = new TeamsBotImpl();
             botPlugin.teamsBotImpl = botPluginImpl;
+            rootDir = path.join(__dirname, utils.genUUID());
+        });
+
+        afterEach(async () => {
+            sinon.restore();
+            await fs.remove(rootDir);
         });
 
         it("Happy Path", async () => {
             // Arrange
             const pluginContext = testUtils.newPluginContext();
-            pluginContext.root = __dirname;
+            pluginContext.root = rootDir;
             botPluginImpl.config.provision.siteName = "anything";
             botPluginImpl.config.provision.subscriptionId = "anything";
             sinon.stub(LanguageStrategy, "localBuild").resolves();

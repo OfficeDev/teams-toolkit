@@ -1,0 +1,42 @@
+name: Hourly Run CLI E2E Tests (Test)
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    name: Build and Test (${{ matrix.os }} node ${{ matrix.node-version }})
+
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+        node-version: [14]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setup node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Setup project
+        run: |
+          npm run setup
+
+      - name: Integration Test
+        env:
+          TEST_USER_NAME: ${{ secrets.TEST_USER_NAME }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+          TEST_SUBSCRIPTION_ID: ${{ secrets.TEST_SUBSCRIPTION_ID }}
+          CI_ENABLED: "true"
+        run: |
+          npm link
+          npx lerna run test:hourly --since origin/main

@@ -4,7 +4,7 @@
 import { cleanUpResourcesCreatedHoursAgo, getAppNamePrefix } from "./commonUtils";
 
 const hours = 2;
-const retryTimes = 2;
+const retryTimes = 5;
 
 before(async () => {
     const promise1 = cleanUpResourcesCreatedHoursAgo("aad", getAppNamePrefix(), hours, retryTimes);

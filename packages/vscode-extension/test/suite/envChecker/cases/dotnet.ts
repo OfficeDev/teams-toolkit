@@ -30,8 +30,9 @@ function createTestChecker(
   nodeCheckerEnabled = true): [DepsChecker, DotnetChecker] {
 
   const testAdapter = new TestAdapter(hasTeamsfxBackend, clickCancel, dotnetCheckerEnabled, funcToolCheckerEnabled, nodeCheckerEnabled);
-  const dotnetChecker = new DotnetChecker(testAdapter, new TestLogger(), new TestTelemetry());
-  const depsChecker = new DepsChecker(testAdapter, [dotnetChecker]);
+  const logger = new TestLogger();
+  const dotnetChecker = new DotnetChecker(testAdapter, logger, new TestTelemetry());
+  const depsChecker = new DepsChecker(logger, testAdapter, [dotnetChecker]);
 
   return [depsChecker, dotnetChecker];
 }

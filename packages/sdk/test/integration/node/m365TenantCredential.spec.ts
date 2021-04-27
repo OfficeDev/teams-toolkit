@@ -7,7 +7,7 @@ import mockedEnv from "mocked-env";
 import { loadConfiguration, M365TenantCredential } from "../../../src";
 import { ErrorCode, ErrorWithCode } from "../../../src/core/errors";
 import jwtDecode from "jwt-decode";
-import { MockEnvironmentVariable, RestoreEnvironmentVariable, AADJwtPayLoad } from "../../helper";
+import { MockEnvironmentVariable, RestoreEnvironmentVariable, AADJwtPayLoad } from "../helper";
 
 chaiUse(chaiPromises);
 let restore: () => void;

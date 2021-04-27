@@ -5,7 +5,7 @@
 
 import yargs, { Argv } from "yargs";
 
-import { cleanUpResourcesCreatedHoursAgo } from "./commonUtils";
+import { cleanUpResourcesCreatedHoursAgo, getAppNamePrefix } from "./commonUtils";
 
 yargs
   .command(
@@ -20,7 +20,7 @@ yargs
         })
         .options("contains", {
           description: "which string do your resource names have?",
-          default: "teamsfxE2E",
+          default: getAppNamePrefix(),
           type: "string"
         })
         .options("hours", {

@@ -24,7 +24,7 @@ export function getTestFolder() {
 }
 
 export function getAppNamePrefix() {
-    return "teamsfxE2ETest";
+    return "fxE2E";
 }
 
 export function getUniqueAppName() {

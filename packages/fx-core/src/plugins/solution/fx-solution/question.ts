@@ -5,25 +5,25 @@ import * as strings from "../../../resources/strings.json";
 
 export const TabOptionItem: OptionItem = {
     id: "Tab",
-    label: "Launch Page",
+    label: "Tab",
     cliName: "tab",
     description: "UI-based app",
-    detail: "Launch Pages are a simple way to surface content in your app by essentially embedding a webpage in Teams."
+    detail: "Tabs are a simple way to surface content in your app by essentially embedding a webpage in Teams."
 };
 
 export const BotOptionItem: OptionItem = {
     id: "Bot",
-    label: "Conversational Bot",
+    label: "Bot",
     cliName: "bot",
     description: "Conversational Agent",
-    detail:"Conversational bots allow users to interfact with your web service through text, interactive cards, and task modules.",
+    detail:"Bots allow users to interfact with your web service through text, interactive cards, and task modules.",
 };
 
 export const MessageExtensionItem: OptionItem = {
     id: "MessageExtension",
-    label: "Messaging-based app with UI components",
+    label: "Message Extension",
     description: "Custome UI when users compose messages in Teams",
-    detail:"Messaging extensions allow users to interact with your web service through buttons and forms in the Microsoft Teams client."
+    detail:"Messaging Extensions allow users to interact with your web service through buttons and forms in the Microsoft Teams client."
 };
 
 export enum AzureSolutionQuestionNames {

@@ -30,8 +30,8 @@ export class VsCodeUI implements UserInterface{
       quickPick.matchOnDescription = true;
       quickPick.matchOnDetail = true;
       quickPick.canSelectMany = option.canSelectMany;
-      quickPick.step = option.step;
-      quickPick.totalSteps = option.totalSteps;
+      // quickPick.step = option.step;
+      // quickPick.totalSteps = option.totalSteps;
       let previousSelectedItems:FxQuickPickItem[] = [];
       return await new Promise<InputResult>(
         async (resolve): Promise<void> => {
@@ -192,8 +192,8 @@ export class VsCodeUI implements UserInterface{
       inputBox.password = option.password;
       inputBox.placeholder = option.placeholder;
       inputBox.prompt = option.prompt;
-      inputBox.step = option.step;
-      inputBox.totalSteps = option.totalSteps;
+      // inputBox.step = option.step;
+      // inputBox.totalSteps = option.totalSteps;
       if(option.number){
         const numberValidation = async function(input:string):Promise<string|undefined>{
           if(!input || input.trim() === "" ||isNaN(Number(input))) return `'${input}' is not a valid number`;
@@ -267,8 +267,8 @@ export class VsCodeUI implements UserInterface{
       quickPick.matchOnDescription = false;
       quickPick.matchOnDetail = false;
       quickPick.canSelectMany = false;
-      quickPick.step = option.step;
-      quickPick.totalSteps = option.totalSteps;
+      // quickPick.step = option.step;
+      // quickPick.totalSteps = option.totalSteps;
       return await new Promise<InputResult>(
         async (resolve): Promise<void> => {
           const onDidAccept = async () => {
@@ -313,8 +313,8 @@ export class VsCodeUI implements UserInterface{
               const res = uri && uri.length > 0 ? uri[0].fsPath : undefined;
               if (res) {
                 quickPick.items = [{label: "path", detail: res}];
+                resolve({ type: InputResultType.sucess, result: res });
               }
-              
             };
             disposables.push(
               quickPick.onDidChangeSelection(onDidChangeSelection)

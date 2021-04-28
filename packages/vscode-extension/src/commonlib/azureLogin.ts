@@ -114,7 +114,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       const accountJson = await this.getJsonObject();
       await AzureAccountManager.statusChange("SignedIn", accessToken?.accessToken, accountJson);
     }
-    await this.notifyStatus();
   }
 
   private isUserLogin(): boolean {

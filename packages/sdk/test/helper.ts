@@ -287,7 +287,10 @@ export function MockEnvironmentVariable(): () => void {
     SQL_ENDPOINT: process.env.SDK_INTEGRATION_SQL_ENDPOINT,
     SQL_DATABASE: process.env.SDK_INTEGRATION_SQL_DATABASE_NAME,
     SQL_USER_NAME: process.env.SDK_INTEGRATION_SQL_USER_NAME,
-    SQL_PASSWORD: process.env.SDK_INTEGRATION_SQL_PASSWORD
+    SQL_PASSWORD: process.env.SDK_INTEGRATION_SQL_PASSWORD,
+
+    INITIATE_LOGIN_ENDPOINT: "fake_initiate_login_endpoint",
+    M365_APPLICATION_ID_URI: process.env.SDK_INTEGRATION_TEST_M365_APPLICATION_ID_URI
   });
 }
 

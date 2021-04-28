@@ -14,7 +14,7 @@ import { getParamJson } from "../utils";
 export default class Test extends YargsCommand {
   public readonly commandHead = `test`;
   public readonly command = `${this.commandHead}`;
-  public readonly description = "A command to test/validate your Teams app";
+  public readonly description = "Validate manifest file";
   public readonly paramPath = constants.testParamPath;
 
   public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);

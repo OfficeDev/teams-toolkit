@@ -13,7 +13,7 @@ import activate from "../activate";
 export default class Init extends YargsCommand {
   public readonly commandHead = `init`;
   public readonly command = `${this.commandHead}`;
-  public readonly description = "A command to register Teams app ID and AAD app";
+  public readonly description = "Initialize an existing app";
 
   public readonly params: { [_: string]: Options } = {
     "app-name": {

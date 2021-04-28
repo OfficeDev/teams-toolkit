@@ -188,7 +188,7 @@ export class CapabilityAdd extends YargsCommand {
 export default class Capability extends YargsCommand {
   public readonly commandHead = `capability`;
   public readonly command = `${this.commandHead} <action>`;
-  public readonly description = "Operate the capability";
+  public readonly description = "Manage app capabilities";
 
   public readonly subCommands: YargsCommand[] = [new CapabilityAdd()];
 

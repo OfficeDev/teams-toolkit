@@ -50,12 +50,12 @@ function getVersionString(): string {
   register(yargs);
   yargs
     .options("verbose", {
-      description: "Prints all necessary information.",
+      description: "Print verbose logging",
       boolean: true,
-      default: true
+      default: false
     })
     .options("debug", {
-      description: "Prints more information for debugging purposes.",
+      description: "Print debug logging",
       boolean: true,
       default: false
     })
@@ -67,6 +67,6 @@ function getVersionString(): string {
     .alias("v", "version")
     .version(getVersionString())
     .epilogue(
-      "for more information, find our manual at https://github.com/OfficeDev/TeamsFx"
+      "For more information, documentation is available at http://aka.ms/teamsfx-docs"
     ).argv;
 })();

@@ -119,7 +119,7 @@ class SetAccount extends YargsCommand {
 export default class Account extends YargsCommand {
   public readonly commandHead = `account`;
   public readonly command = `${this.commandHead} <action>`;
-  public readonly description = "login/logout some platform || set some account setting";
+  public readonly description = "Manage connected accounts";
 
   public readonly subCommands: YargsCommand[] = [
     new LoginAccount(),

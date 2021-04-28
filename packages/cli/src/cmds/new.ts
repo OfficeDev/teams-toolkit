@@ -36,7 +36,7 @@ import { flattenNodes, getJson, getSingleOptionString, toConfigMap, toYargsOptio
 export default class New extends YargsCommand {
   public readonly commandHead = `new`;
   public readonly command = `${this.commandHead}`;
-  public readonly description = "Create a new Teams app project interactively or not";
+  public readonly description = "Create a new app";
   public readonly paramPath = constants.newParamPath;
 
   public readonly root = getJson<QTreeNode>(this.paramPath);

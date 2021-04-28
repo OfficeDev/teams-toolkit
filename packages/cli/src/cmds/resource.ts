@@ -346,7 +346,7 @@ export class ResourceList extends YargsCommand {
 export default class Resource extends YargsCommand {
   public readonly commandHead = `resource`;
   public readonly command = `${this.commandHead} <action>`;
-  public readonly description = "Operate the resource";
+  public readonly description = "Manage backend resources";
 
   public readonly subCommands: YargsCommand[] = [
     new ResourceAdd(),

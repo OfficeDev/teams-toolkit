@@ -35,7 +35,7 @@ import { flattenNodes, getJson, getSingleOptionString, toConfigMap, toYargsOptio
 
 export default class New extends YargsCommand {
   public readonly commandHead = `new`;
-  public readonly command = `${this.commandHead} [options]`;
+  public readonly command = `${this.commandHead}`;
   public readonly description = "Create a new Teams app project interactively or not";
   public readonly paramPath = constants.newParamPath;
 
@@ -120,7 +120,7 @@ export default class New extends YargsCommand {
 
 class NewTemplete extends YargsCommand {
   public readonly commandHead = `template`;
-  public readonly command = `${this.commandHead} <template-name> [options]`;
+  public readonly command = `${this.commandHead} <template-name>`;
   public readonly description = "Create an app from template or list all Teams app templates";
 
   public readonly subCommands: YargsCommand[] = [new NewTempleteList()];

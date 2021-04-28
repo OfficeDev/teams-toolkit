@@ -7,10 +7,10 @@
   "private": true,
   "browser": {
     "./dist-esm/src/core/cache.js": "./dist-esm/src/core/cache.browser.js",
-    "./dist-esm/src/core/onBehalfOfUserCredential.js": "./dist-esm/src/core/onBehalfOfUserCredential.browser.js",
+    "./dist-esm/src/credential/onBehalfOfUserCredential.js": "./dist-esm/src/credential/onBehalfOfUserCredential.browser.js",
     "./dist-esm/src/core/sqlConnector.js": "./dist-esm/src/core/sqlConnector.browser.js",
-    "./dist-esm/src/core/teamsUserCredential.js": "./dist-esm/src/core/teamsUserCredential.browser.js",
-    "./dist-esm/src/core/m365TenantCredential.js": "./dist-esm/src/core/m365TenantCredential.browser.js",
+    "./dist-esm/src/credential/teamsUserCredential.js": "./dist-esm/src/credential/teamsUserCredential.browser.js",
+    "./dist-esm/src/credential/m365TenantCredential.js": "./dist-esm/src/credential/m365TenantCredential.browser.js",
     "./dist-esm/src/bot/teamsBotSsoPrompt.js": "./dist-esm/src/bot/teamsBotSsoPrompt.browser.js"
   },
   "types": "types/teamsfx.d.ts",
@@ -34,7 +34,8 @@
     "test": "npm run test:unit && npm run test:integration",
     "unit-test:browser": "karma start --single-run",
     "unit-test:node": "mocha dist-test/index.node.js --reporter ./tools/mocha-multi-reporter.js",
-    "test:unit": "npm run build:test && npm run unit-test:node && npm run unit-test:browser"
+    "test:unit": "npm run build:test && npm run unit-test:node && npm run unit-test:browser",
+    "e2e-test": "mocha --no-timeouts -r test/mocha.env.ts -r ts-node/register test/e2e/**/*.spec.ts --exit"
   },
   "files": [
     "dist/",
@@ -127,6 +128,7 @@
     "mocha-junit-reporter": "^1.18.0",
     "mocked-env": "^1.3.2",
     "nyc": "^14.0.0",
+    "playwright-chromium": "^1.10.0",
     "prettier": "^1.16.4",
     "puppeteer": "^1.11.0",
     "rimraf": "^3.0.0",

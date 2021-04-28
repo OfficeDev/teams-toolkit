@@ -375,6 +375,7 @@ class CoreImpl implements Core {
      * open an existing project
      */
     public async open(workspace?: string): Promise<Result<null, FxError>> {
+        const t1 = new Date().getTime();
         let supported = true;
         if (!workspace) {
             supported = false;
@@ -385,7 +386,7 @@ class CoreImpl implements Core {
                 this.ctx.logProvider?.warning(`non Teams project:${workspace}`);
             }
         }
-
+        const t2 = new Date().getTime();
         let getSelectSubItem: undefined | ((token: any) => Promise<TreeItem>) = undefined;
         if (this.ctx.treeProvider) {
             getSelectSubItem = async (token: any): Promise<TreeItem> => {
@@ -395,16 +396,22 @@ class CoreImpl implements Core {
                 const activeSubscription = subscriptions.find(
                     (subscription) => subscription.subscriptionId === activeSubscriptionId,
                 );
+
+                let icon = "";
                 if (activeSubscriptionId === undefined || activeSubscription === undefined) {
                     selectSubLabel = `${subscriptions.length} subscriptions discovered`;
+                    icon = "subscriptions";
                 } else {
                     selectSubLabel = activeSubscription.displayName;
+                    icon = "subcriptionSelected";
                 }
                 return {
                     commandId: "fx-extension.selectSubscription",
                     label: selectSubLabel,
                     callback: selectSubscriptionCallback,
                     parent: "fx-extension.signinAzure",
+                    contextValue: "selectSubscription",
+                    icon: icon
                 };
             };
 
@@ -458,6 +465,8 @@ class CoreImpl implements Core {
                                 label: subscriptionName,
                                 callback: selectSubscriptionCallback,
                                 parent: "fx-extension.signinAzure",
+                                contextValue: "selectSubscription",
+                                icon: "subscriptionSelected"
                             },
                         ]);
                     }
@@ -566,41 +575,31 @@ class CoreImpl implements Core {
                     icon: "azure",
                 },
             ]);
+
+            if (token !== undefined && getSelectSubItem !== undefined) {
+                const subItem = await getSelectSubItem(token);
+                this.ctx.treeProvider?.add([subItem]);
+            }
         }
 
         if (!supported) return ok(null);
 
-         
-        // read configs
-        const readRes = await this.readConfigs();
-        if (readRes.isErr()) {
-            return readRes;
-        }
-
-        if (!this.ctx.projectSettings || !this.ctx.projectSettings?.solutionSettings) {
-            return err(error.InvalidContext());
-        }
-
+        const t3 = new Date().getTime();
         for (const entry of this.globalSolutions.entries()) {
-            if (entry[0] === this.ctx.projectSettings.solutionSettings.name) {
-                this.selectedSolution = entry[1];
-                break;
-            }
+            this.selectedSolution = entry[1];
+            break;
         }
 
         if (this.selectedSolution === undefined) {
-            return ok(null);
+            return err(new UserError(error.CoreErrorNames.LoadSolutionFailed, "No Solution", error.CoreSource));
         }
 
         this.env = "default";
-
-        const token = this.ctx.azureAccountProvider?.getAccountCredential();
-        if (token !== undefined && getSelectSubItem !== undefined) {
-            const subItem = await getSelectSubItem(token);
-            this.ctx.treeProvider?.add([subItem]);
-        }
-
-        return await this.selectedSolution.open(this.solutionContext());
+         
+        const res = await this.selectedSolution.open(this.solutionContext());
+        const t4 = new Date().getTime();
+        this.ctx.logProvider?.debug(`core.open() time  ----- t2-t1:${t2-t1}, t3-t2:${t3-t2}, t4-t3:${t4-t3}`);
+        return res;
     }
 
     public async isSupported(workspace?: string): Promise<boolean> {
@@ -610,9 +609,6 @@ class CoreImpl implements Core {
         }
         // some validation
         const checklist: string[] = [
-            p,
-            `${p}/package.json`,
-            `${p}/.${ConfigFolderName}`,
             `${p}/.${ConfigFolderName}/settings.json`,
             `${p}/.${ConfigFolderName}/env.default.json`,
         ];

@@ -1,8 +1,16 @@
 [
     {
         "data": {
+            "type": "folder",
+            "name": "folder",
+            "description": "Select root folder of the project",
+            "default": "./"
+        }
+    },
+    {
+        "data": {
             "name": "capabilities",
-            "title": "Select Capabilities to add",
+            "title": "Select capabilities to add",
             "type": "multiSelect",
             "option": [
                 {
@@ -14,6 +22,7 @@
                 {
                     "id": "MessageExtension",
                     "label": "Messaging Extension",
+                    "cliName": "message-extension",
                     "description": "Messaging Extensions allow users to interact with a web service through buttons and forms in the Microsoft Teams client."
                 }
             ],

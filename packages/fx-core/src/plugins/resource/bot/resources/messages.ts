@@ -65,4 +65,6 @@ export class Messages {
 
     public static readonly ProvisioningBotRegistration = "Provisioning bot registration.";
     public static readonly SuccessfullyProvisionedBotRegistration = "Successfully provisioned bot registration.";
+    
+    public static readonly RetryTheCurrentStep = "Please retry the current step.";
 }

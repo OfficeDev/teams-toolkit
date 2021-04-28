@@ -1939,7 +1939,7 @@ export class TeamsAppSolution implements Solution {
             && ( capabilitiesAnswer.includes(BotOptionItem.id) || capabilitiesAnswer.includes(MessageExtensionItem.id) ) ){
             return err(
                 returnUserError(
-                    new Error("One project already have Bot/ME"),
+                    new Error("Application already contains a Bot and/or Message Extension"),
                     "Solution",
                     SolutionError.FailedToAddCapability,
                 ),

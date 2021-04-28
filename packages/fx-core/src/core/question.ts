@@ -38,20 +38,20 @@ export const QuestionSelectSolution: SingleSelectQuestion = {
 
 export const ScratchOptionYes:OptionItem = {
     id:"yes",
-    label: "$(file) Build your own Teams app from scratch",
-    detail: "Define your own Teams app."
+    label: "$(file) Create a new Teams app",
+    detail: "Use the Teams Toolkit to create a new application."
 };
 
 export const ScratchOptionNo:OptionItem = {
     id:"no",
-    label: "$(search) Choose from Samples",
-    detail: "Quickly get started with the basic Teams app concepts and code structures."
+    label: "$(search) Start from a sample",
+    detail: "Use an existing sample as a starting point for your new application."
 };
 
 export const ScratchOrSampleSelect: SingleSelectQuestion = {
     type: NodeType.singleSelect,
     name: CoreQuestionNames.CreateFromScratch,
-    title: "Teams Toolkit: Create New Project",
+    title: "Teams Toolkit: Create a new Teams app",
     option: [ScratchOptionYes,ScratchOptionNo],
     default: ScratchOptionYes.id,
     skipSingleOption: true
@@ -60,7 +60,7 @@ export const ScratchOrSampleSelect: SingleSelectQuestion = {
 export const SampleSelect: SingleSelectQuestion = {
     type: NodeType.singleSelect,
     name: CoreQuestionNames.Samples,
-    title: "Choose sample",
+    title: "Start from a sample",
     option: [{
         id:"to-do-list",
         label: "To Do List",

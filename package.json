@@ -5,8 +5,7 @@
     "bootstrap": "lerna bootstrap",
     "lint:staged": "lerna run lint:staged --stream",
     "lint": "lerna run lint --stream",
-    "version": "lerna clean --yes && lerna bootstrap --ignore-scripts -- --package-lock-only --no-audit && git add packages/*/package-lock.json",
-    "release:beta": "lerna publish --preid beta prerelease --yes"
+    "version": "lerna clean --yes && lerna bootstrap --ignore-scripts -- --package-lock-only --no-audit && git add packages/*/package-lock.json"
   },
   "devDependencies": {
     "@commitlint/cli": "^12.0.1",

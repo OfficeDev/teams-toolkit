@@ -15,6 +15,7 @@ import { getBeforeCacheAccess, getAfterCacheAccess } from "./cacheAccess";
 import { signedIn, signedOut } from "./common/constant";
 import { login, LoginStatus } from "./common/login";
 import * as StringResources from "../resources/Strings.json";
+import * as util from "util";
 
 const accountName = "appStudio";
 const scopes = ["https://dev.teams.microsoft.com/AppDefinitions.ReadWrite"];
@@ -115,6 +116,10 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
   }
 
   async signout(): Promise<boolean> {
+    const userConfirmation = await this.doesUserConfirmSignout();
+    if (!userConfirmation) {
+      throw new UserError(ExtensionErrors.UserCancel, StringResources.vsc.common.userCancel, "SignOut");
+    }
     AppStudioLogin.codeFlowInstance.account = undefined;
     if (AppStudioLogin.statusChange !== undefined) {
       await AppStudioLogin.statusChange("SignedOut", undefined, undefined);
@@ -142,6 +147,18 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
         vscode.env.openExternal(vscode.Uri.parse("https://developer.microsoft.com/en-us/microsoft-365/dev-program"));
       }
     } while (userSelected === learnMore);
+    return Promise.resolve(userSelected === confirm);
+  }
+
+  private async doesUserConfirmSignout(): Promise<boolean> {
+    const accountInfo = AppStudioLogin.codeFlowInstance.account;
+    const email = (accountInfo as any).upn ? (accountInfo as any).upn : undefined;
+    const confirm = StringResources.vsc.common.signout;
+    const userSelected = await vscode.window.showWarningMessage(
+      util.format(StringResources.vsc.common.signOutOf, email),
+      confirm,
+      StringResources.vsc.common.cancel
+    );
     return Promise.resolve(userSelected === confirm);
   }
 

@@ -22,10 +22,10 @@ function createTestChecker(
 
   const testAdapter = new TestAdapter(hasTeamsfxBackend, clickCancel, dotnetCheckerEnabled, funcToolCheckerEnabled, nodeCheckerEnabled);
   const logger = new TestLogger();
-  const dotnetChecker = new NodeChecker(testAdapter, logger, new TestTelemetry());
-  const depsChecker = new DepsChecker(logger, testAdapter, [dotnetChecker]);
+  const nodeChecker = new NodeChecker(testAdapter, logger, new TestTelemetry());
+  const depsChecker = new DepsChecker(logger, testAdapter, [nodeChecker]);
 
-  return [depsChecker, dotnetChecker];
+  return [depsChecker, nodeChecker];
 }
 
 suite("NodeChecker E2E Test", async () => {

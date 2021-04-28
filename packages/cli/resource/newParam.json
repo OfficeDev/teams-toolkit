@@ -1,267 +1,305 @@
 {
     "data": {
-        "type": "group"
+        "type": "singleSelect",
+        "name": "scratch",
+        "title": "Teams Toolkit: Create New Project",
+        "option": [
+            {
+                "id": "yes",
+                "label": "Build your own Teams app from scratch",
+                "detail": "Define your own Teams app."
+            },
+            {
+                "id": "no",
+                "label": "Choose from Samples",
+                "detail": "Quickly get started with the basic Teams app concepts and code structures."
+            }
+        ],
+        "default": "yes",
+        "skipSingleOption": true
     },
     "children": [
         {
             "data": {
-                "type": "folder",
-                "name": "folder",
-                "title": "Select root folder of the project"
-            }
-        },
-        {
-            "data": {
-                "type": "text",
-                "name": "app-name",
-                "title": "App Name",
-                "validation": {
-                    "namespace": "",
-                    "method": "validateAppName"
-                },
-                "default": "myapp"
-            }
-        },
-        {
-            "data": {
-                "type": "singleSelect",
-                "name": "solution",
-                "title": "Select a solution",
-                "option": [
-                    "fx-solution-azure"
-                ],
-                "skipSingleOption": true
+                "type": "group"
+            },
+            "condition": {
+                "equals": "yes"
             },
             "children": [
                 {
                     "data": {
-                        "type": "group"
+                        "type": "singleSelect",
+                        "name": "solution",
+                        "title": "Select a solution",
+                        "option": [
+                            "fx-solution-azure"
+                        ],
+                        "skipSingleOption": true
                     },
                     "children": [
                         {
                             "data": {
-                                "name": "host-type",
-                                "title": "Select frontend hosting type",
-                                "type": "singleSelect",
+                                "name": "capabilities",
+                                "title": "Choose capabilities",
+                                "type": "multiSelect",
                                 "option": [
                                     {
-                                        "id": "Azure",
-                                        "label": "Azure",
-                                        "cliName": "azure",
-                                        "description": "Azure Cloud"
+                                        "id": "Tab",
+                                        "label": "Tab",
+                                        "cliName": "tab",
+                                        "description": "UI-based app",
+                                        "detail": "Tabs are a simple way to surface content in your app by essentially embedding a webpage in Teams."
                                     },
                                     {
-                                        "id": "SPFx",
-                                        "label": "SPFx",
-                                        "cliName": "spfx",
-                                        "description": "SharePoint Framework"
+                                        "id": "Bot",
+                                        "label": "Bot",
+                                        "cliName": "bot",
+                                        "description": "Conversational Agent",
+                                        "detail": "Bots allow users to interfact with your web service through text, interactive cards, and task modules."
+                                    },
+                                    {
+                                        "id": "MessageExtension",
+                                        "label": "Message Extension",
+                                        "cliName": "message-extension",
+                                        "description": "Custome UI when users compose messages in Teams",
+                                        "detail": "Messaging Extensions allow users to interact with your web service through buttons and forms in the Microsoft Teams client."
                                     }
                                 ],
-                                "default": "Azure"
+                                "default": [
+                                    "Tab"
+                                ]
                             },
                             "children": [
                                 {
                                     "data": {
-                                        "type": "group"
+                                        "name": "host-type",
+                                        "title": "Frontend hosting type",
+                                        "type": "singleSelect",
+                                        "option": [
+                                            {
+                                                "id": "Azure",
+                                                "label": "Azure",
+                                                "cliName": "azure"
+                                            },
+                                            {
+                                                "id": "SPFx",
+                                                "label": "SharePoint Framework (SPFx)",
+                                                "cliName": "spfx"
+                                            }
+                                        ],
+                                        "default": "Azure",
+                                        "skipSingleOption": true
+                                    },
+                                    "condition": {
+                                        "contains": "Tab"
                                     },
                                     "children": [
                                         {
                                             "data": {
-                                                "type": "singleSelect",
-                                                "name": "spfx-framework-type",
-                                                "title": "Select framework",
-                                                "option": [
-                                                    "none",
-                                                    "react"
-                                                ],
-                                                "default": "none"
-                                            }
-                                        },
-                                        {
-                                            "data": {
-                                                "type": "text",
-                                                "name": "spfx-webpart-name",
-                                                "title": "Webpart Name",
-                                                "default": "helloworld",
-                                                "validation": {
-                                                    "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$"
-                                                }
-                                            }
-                                        },
-                                        {
-                                            "data": {
-                                                "type": "text",
-                                                "name": "spfx-webpart-desp",
-                                                "title": "Webpart Description",
-                                                "default": "helloworld description",
-                                                "validation": {
-                                                    "required": true
-                                                }
-                                            }
-                                        }
-                                    ],
-                                    "condition": {
-                                        "equals": "SPFx"
-                                    }
-                                },
-                                {
-                                    "data": {
-                                        "type": "group",
-                                        "name": "azure-node"
-                                    },
-                                    "condition": {
-                                        "equals": "Azure"
-                                    },
-                                    "children": [
-                                        {
-                                            "data": {
-                                                "name": "capabilities",
-                                                "title": "Select capabilities to add",
-                                                "prompt": "Bot and Message Extension are exclusive, you can not select both.",
-                                                "type": "multiSelect",
-                                                "option": [
-                                                    {
-                                                        "id": "Tab",
-                                                        "label": "Tab",
-                                                        "cliName": "tab",
-                                                        "description": "Tabs embeds a web app experience in a tab in a Teams chat, channel, or personal workspace."
-                                                    },
-                                                    {
-                                                        "id": "Bot",
-                                                        "label": "Bot",
-                                                        "cliName": "bot",
-                                                        "description": "Bots allow you to interact with and obtain information in a text/search/conversational manner."
-                                                    },
-                                                    {
-                                                        "id": "MessageExtension",
-                                                        "label": "Messaging Extension",
-                                                        "cliName": "message-extension",
-                                                        "description": "Messaging Extensions allow users to interact with a web service through buttons and forms in the Microsoft Teams client."
-                                                    }
-                                                ],
-                                                "default": [
-                                                    "Tab"
-                                                ]
+                                                "type": "group"
                                             },
                                             "children": [
                                                 {
                                                     "data": {
-                                                        "type": "group"
-                                                    },
-                                                    "children": [
-                                                        {
-                                                            "data": {
-                                                                "name": "azure-resources",
-                                                                "title": "Select Azure resources to add",
-                                                                "type": "multiSelect",
-                                                                "option": [
-                                                                    {
-                                                                        "id": "sql",
-                                                                        "label": "Azure SQL Database",
-                                                                        "description": "Azure SQL Database depends on Azure Functions."
-                                                                    },
-                                                                    {
-                                                                        "id": "function",
-                                                                        "label": "Azure Functions",
-                                                                        "description": "Application backend."
-                                                                    }
-                                                                ],
-                                                                "default": [],
-                                                                "prompt": "SQL must have Azure Function as Backend"
-                                                            },
-                                                            "children": []
-                                                        }
-                                                    ],
-                                                    "condition": {
-                                                        "contains": "Tab"
-                                                    }
-                                                },
-                                                {
-                                                    "data": {
-                                                        "type": "group"
-                                                    },
-                                                    "children": [
-                                                        {
-                                                            "data": {
-                                                                "name": "way-to-register-bot",
-                                                                "type": "singleSelect",
-                                                                "option": [
-                                                                    {
-                                                                        "id": "create-new",
-                                                                        "label": "Create a new bot registration"
-                                                                    },
-                                                                    {
-                                                                        "id": "reuse-existing",
-                                                                        "label": "Use an existing bot registration"
-                                                                    }
-                                                                ],
-                                                                "title": "Bot registration",
-                                                                "default": "create-new"
-                                                            },
-                                                            "children": [
-                                                                {
-                                                                    "data": {
-                                                                        "type": "group"
-                                                                    },
-                                                                    "children": [
-                                                                        {
-                                                                            "data": {
-                                                                                "name": "bot-id",
-                                                                                "type": "text",
-                                                                                "title": "Enter bot id",
-                                                                                "default": "",
-                                                                                "validation": {}
-                                                                            }
-                                                                        },
-                                                                        {
-                                                                            "data": {
-                                                                                "name": "bot-password",
-                                                                                "type": "password",
-                                                                                "title": "Enter bot password",
-                                                                                "default": "",
-                                                                                "validation": {}
-                                                                            }
-                                                                        }
-                                                                    ],
-                                                                    "condition": {
-                                                                        "equals": "reuse-existing"
-                                                                    }
-                                                                }
-                                                            ]
-                                                        }
-                                                    ],
-                                                    "condition": {
-                                                        "containsAny": [
-                                                            "Bot",
-                                                            "MessageExtension"
-                                                        ]
-                                                    }
-                                                },
-                                                {
-                                                    "data": {
-                                                        "name": "programming-language",
-                                                        "title": "Select programming language for your project",
                                                         "type": "singleSelect",
+                                                        "name": "spfx-framework-type",
+                                                        "title": "Framework",
                                                         "option": [
-                                                            "javascript",
-                                                            "typescript"
+                                                            {
+                                                                "id": "none",
+                                                                "label": "None"
+                                                            },
+                                                            {
+                                                                "id": "react",
+                                                                "label": "React"
+                                                            }
                                                         ],
-                                                        "default": "javascript",
-                                                        "skipSingleOption": true
-                                                    },
-                                                    "condition": {
-                                                        "minItems": 1
+                                                        "default": "none"
+                                                    }
+                                                },
+                                                {
+                                                    "data": {
+                                                        "type": "text",
+                                                        "name": "spfx-webpart-name",
+                                                        "title": "Webpart Name",
+                                                        "default": "helloworld",
+                                                        "validation": {
+                                                            "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$"
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "data": {
+                                                        "type": "text",
+                                                        "name": "spfx-webpart-desp",
+                                                        "title": "Webpart Description",
+                                                        "default": "helloworld description",
+                                                        "validation": {
+                                                            "required": true
+                                                        }
                                                     }
                                                 }
-                                            ]
+                                            ],
+                                            "condition": {
+                                                "equals": "SPFx"
+                                            }
+                                        },
+                                        {
+                                            "data": {
+                                                "name": "azure-resources",
+                                                "title": "Cloud resources",
+                                                "type": "multiSelect",
+                                                "option": [
+                                                    {
+                                                        "id": "sql",
+                                                        "label": "Azure SQL Database"
+                                                    },
+                                                    {
+                                                        "id": "function",
+                                                        "label": "New APIs from Azure Functions"
+                                                    }
+                                                ],
+                                                "default": []
+                                            },
+                                            "children": [],
+                                            "condition": {
+                                                "equals": "Azure"
+                                            }
                                         }
                                     ]
+                                },
+                                {
+                                    "data": {
+                                        "name": "way-to-register-bot",
+                                        "type": "singleSelect",
+                                        "option": [
+                                            {
+                                                "id": "create-new",
+                                                "label": "Create a new bot registration"
+                                            },
+                                            {
+                                                "id": "reuse-existing",
+                                                "label": "Use an existing bot registration"
+                                            }
+                                        ],
+                                        "title": "Bot registration",
+                                        "default": "create-new"
+                                    },
+                                    "children": [
+                                        {
+                                            "data": {
+                                                "type": "group"
+                                            },
+                                            "children": [
+                                                {
+                                                    "data": {
+                                                        "name": "bot-id",
+                                                        "type": "text",
+                                                        "title": "Enter bot id",
+                                                        "default": "",
+                                                        "validation": {}
+                                                    }
+                                                },
+                                                {
+                                                    "data": {
+                                                        "name": "bot-password",
+                                                        "type": "password",
+                                                        "title": "Enter bot password",
+                                                        "default": "",
+                                                        "validation": {}
+                                                    }
+                                                }
+                                            ],
+                                            "condition": {
+                                                "equals": "reuse-existing"
+                                            }
+                                        }
+                                    ],
+                                    "condition": {
+                                        "containsAny": [
+                                            "Bot",
+                                            "MessageExtension"
+                                        ]
+                                    }
+                                },
+                                {
+                                    "data": {
+                                        "name": "programming-language",
+                                        "title": "Programming Language",
+                                        "type": "singleSelect",
+                                        "option": [
+                                            {
+                                                "id": "javascript",
+                                                "label": "JavaScript"
+                                            },
+                                            {
+                                                "id": "typescript",
+                                                "label": "TypeScript"
+                                            }
+                                        ],
+                                        "default": "javascript",
+                                        "skipSingleOption": true
+                                    }
                                 }
-                            ]
+                            ],
+                            "condition": {
+                                "equals": "fx-solution-azure"
+                            }
                         }
-                    ],
-                    "condition": {
-                        "equals": "fx-solution-azure"
+                    ]
+                },
+                {
+                    "data": {
+                        "type": "folder",
+                        "name": "folder",
+                        "title": "Workspace folder"
+                    }
+                },
+                {
+                    "data": {
+                        "type": "text",
+                        "name": "app-name",
+                        "title": "Project name",
+                        "validation": {
+                            "namespace": "",
+                            "method": "validateAppName"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "data": {
+                "type": "singleSelect",
+                "name": "samples",
+                "title": "Choose sample",
+                "option": [
+                    {
+                        "id": "to-do-list",
+                        "label": "To Do List",
+                        "detail": "Sample app description goes here",
+                        "data": "https://github.com/HuihuiWu-Microsoft/Sample-app-graph/releases/download/v1.0/sample.app.graph.zip"
+                    },
+                    {
+                        "id": "to-do-list2",
+                        "label": "To Do List2",
+                        "detail": "Sample app description goes here",
+                        "data": "https://github.com/HuihuiWu-Microsoft/Sample-app-graph/releases/download/v1.0/sample.app.graph.zip"
+                    }
+                ],
+                "default": "to-do-list",
+                "returnObject": true
+            },
+            "condition": {
+                "equals": "no"
+            },
+            "children": [
+                {
+                    "data": {
+                        "type": "folder",
+                        "name": "folder",
+                        "title": "Workspace folder"
                     }
                 }
             ]

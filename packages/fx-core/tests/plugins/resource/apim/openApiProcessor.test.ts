@@ -4,12 +4,12 @@ import "mocha";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import path from "path";
-import { OpenApiProcessor } from "../../../../../src/plugins/resource/apim/src/util/openApiProcessor";
-import { OpenApiSchemaVersion } from "../../../../../src/plugins/resource/apim/src/model/openApiDocument";
-import { InvalidFunctionEndpoint, InvalidOpenApiDocument } from "../../../../../src/plugins/resource/apim/src/error";
+import { OpenApiProcessor } from "../../../../src/plugins/resource/apim/src/util/openApiProcessor";
+import { OpenApiSchemaVersion } from "../../../../src/plugins/resource/apim/src/model/openApiDocument";
+import { InvalidFunctionEndpoint, InvalidOpenApiDocument } from "../../../../src/plugins/resource/apim/src/error";
 chai.use(chaiAsPromised);
 
-const testDataBaseFolder = "./tests/plugins/resource/apim/unit/data/openApiProcessor";
+const testDataBaseFolder = "./tests/plugins/resource/apim/data/openApiProcessor";
 describe("OpenApiProcessor", () => {
     describe("#loadOpenApiDocument()", () => {
         const testInput: { message: string; filePath: string; schemaVersion: OpenApiSchemaVersion }[] = [
@@ -249,18 +249,18 @@ describe("OpenApiProcessor", () => {
         });
     });
 
-    describe("#loadOpenApiDocument()", () => {
+    describe("#listOpenApiDocument()", () => {
         it("Load valid swagger files", async () => {
             const openApiProcessor: OpenApiProcessor = new OpenApiProcessor();
             const result = await openApiProcessor.listOpenApiDocument(
-                `${testDataBaseFolder}/loadOpenApiDocument`,
+                `${testDataBaseFolder}/listOpenApiDocument`,
                 ["exclude"],
                 ["json", "yaml"]
             );
 
             chai.assert.deepEqual(
                 [...result.keys()].sort(),
-                ["openapi.json", "include/openapi.yaml", "include/swagger.json", "swagger.yaml"].sort()
+                ["openapi.json", "include/openapi.yaml", "include/swagger.json", "swagger.yaml", "include/deep/swagger.json"].sort()
             );
         });
     });

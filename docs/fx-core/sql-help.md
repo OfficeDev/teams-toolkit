@@ -28,7 +28,15 @@ Since the current logged in account hasn't enough permission to add database use
 
   ![image](../images/fx-core/sql/login-db.png)
 
-4. Create contained database users. Execute Transact-SQL `CREATE USER [{identity}] FROM EXTERNAL PROVIDER;`
+4. Create contained database users. Execute Transact-SQL 
+```
+go
+CREATE USER [{identity}] FROM EXTERNAL PROVIDER;
+go
+sp_addrolemember  'db_datareader',  '{identity}';
+go
+sp_addrolemember  'db_datawriter',  '{identity}';
+```
 
   ![image](../images/fx-core/sql/add-database-user.png)
 

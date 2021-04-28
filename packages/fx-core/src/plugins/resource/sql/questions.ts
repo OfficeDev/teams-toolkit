@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { RemoteFuncValidation, NodeType, QTreeNode } from "fx-api";
+import { RemoteFuncValidation, NodeType, QTreeNode, StringValidation } from "fx-api";
 import { Constants } from "./constants";
 
 export const adminNameQuestion = new QTreeNode({
@@ -31,4 +31,12 @@ export const confirmPasswordQuestion = new QTreeNode({
         namespace: `${Constants.solutionPluginFullName}/${Constants.pluginFullName}`,
         method: Constants.questionKey.confirmPassword
     } as RemoteFuncValidation
+});
+
+export const skipAddingUserQuestion = new QTreeNode({
+    name: Constants.questionKey.skipAddingUser,
+    description: Constants.userQuestion.confirmPassword,
+    type: NodeType.singleSelect,
+    option: ["true", "false"],
+    default: "false"
 });

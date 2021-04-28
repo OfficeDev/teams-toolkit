@@ -13,28 +13,28 @@ import activate from "../activate";
 export default class Init extends YargsCommand {
   public readonly commandHead = `init`;
   public readonly command = `${this.commandHead}`;
-  public readonly description = "Add Teams support to an existing Blazor application;
+  public readonly description = "Add Teams support to an existing Blazor application.";
 
   public readonly params: { [_: string]: Options } = {
     "app-name": {
       type: "string",
-      description: "Application name",
+      description: "Application name.",
       default: "TeamsBlazorApp"
     },
     environment: {
       type: "string",
-      description: "Environment: 'local' or 'remote'",
+      description: "Environment: 'local' or 'remote'.",
       choices: ["local", "remote"],
       default: "local"
     },
     endpoint: {
       type: "string",
-      description: "Teams app endpoint",
+      description: "Teams app endpoint.",
       default: "https://localhost:44357"
     },
     "root-path": {
       type: "string",
-      description: "Path to the setting files",
+      description: "Path to the setting files.",
       default: "./"
     }
   };

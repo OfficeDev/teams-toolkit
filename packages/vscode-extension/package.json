@@ -90,12 +90,22 @@
         {
           "command": "fx-extension.signOut",
           "when": "view == teamsfx-accounts && viewItem == signedinM365",
-          "group": "inline"
+          "group": "inline@1"
         },
         {
           "command": "fx-extension.signOut",
           "when": "view == teamsfx-accounts && viewItem == signedinAzure",
-          "group": "inline"
+          "group": "inline@1"
+        },
+        {
+          "command": "fx-extension.m365AccountSettings",
+          "when": "view == teamsfx-accounts && viewItem == signedinM365",
+          "group": "inline@2"
+        },
+        {
+          "command": "fx-extension.azureAccountSettings",
+          "when": "view == teamsfx-accounts && viewItem == signedinAzure",
+          "group": "inline@2"
         }
       ],
       "commandPalette": [
@@ -110,6 +120,16 @@
         "command": "fx-extension.signOut",
         "title": "Sign Out",
         "icon": "$(sign-out)"
+      },
+      {
+        "command": "fx-extension.m365AccountSettings",
+        "title": "M365 portal",
+        "icon": "$(settings-gear)"
+      },
+      {
+        "command": "fx-extension.azureAccountSettings",
+        "title": "Azure portal",
+        "icon": "$(settings-gear)"
       },
       {
         "command": "fx-extension.openWelcome",

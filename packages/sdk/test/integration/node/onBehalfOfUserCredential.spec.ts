@@ -17,7 +17,7 @@ import {
   getSsoTokenFromTeams,
   MockEnvironmentVariable,
   RestoreEnvironmentVariable
-} from "../../helper";
+} from "../helper";
 
 chaiUse(chaiPromises);
 let restore: () => void;

@@ -52,14 +52,15 @@ import * as path from "path";
 // import * as Bundles from '../resource/bundles.json';
 import * as error from "./error";
 import { Loader, Meta } from "./loader";
-import { deserializeDict, mapToJson, mergeSerectData, objectToConfigMap, objectToMap, serializeDict, sperateSecretData } from "./tools";
+import { deserializeDict, fetchCodeZip, mapToJson, mergeSerectData, objectToConfigMap, objectToMap, saveFilesRecursively, serializeDict, sperateSecretData } from "./tools";
 import { VscodeManager } from "./vscodeManager";
 import { Settings } from "./settings";
-import { CoreQuestionNames, QuestionAppName, QuestionRootFolder, QuestionSelectSolution } from "./question";
+import { CoreQuestionNames, QuestionAppName, QuestionRootFolder, QuestionSelectSolution, SampleSelect, ScratchOptionNo, ScratchOptionYes, ScratchOrSampleSelect } from "./question";
 import * as jsonschema from "jsonschema";
 import { FxBotPluginResultFactory } from "../plugins/resource/bot/result";
 import { AzureSubscription, getSubscriptionList } from "./loginUtils";
 import { sleep } from "../plugins/resource/spfx/utils/utils";
+import AdmZip from "adm-zip";
 
 class CoreImpl implements Core {
     private target?: CoreImpl;
@@ -114,8 +115,17 @@ class CoreImpl implements Core {
         answers.set("substage", "getQuestions");
         const node = new QTreeNode({ type: NodeType.group });
         if (stage === Stage.create) {
-            node.addChild(new QTreeNode(QuestionRootFolder));
-            node.addChild(new QTreeNode(QuestionAppName));
+            const scratchSelectNode = new QTreeNode(ScratchOrSampleSelect);
+            node.addChild(scratchSelectNode);
+            
+            const scratchNode = new QTreeNode({type:NodeType.group});
+            scratchNode.condition = {equals: ScratchOptionYes.id};
+            scratchSelectNode.addChild(scratchNode);
+            
+            const sampleNode = new QTreeNode(SampleSelect);
+            sampleNode.condition = {equals: ScratchOptionNo.id};
+            scratchSelectNode.addChild(sampleNode);
+
             //make sure that global solutions are loaded
             const solutionNames: string[] = [];
             for (const k of this.globalSolutions.keys()) {
@@ -123,9 +133,8 @@ class CoreImpl implements Core {
             }
             const selectSolution: SingleSelectQuestion = QuestionSelectSolution;
             selectSolution.option = solutionNames;
-            const select_solution = new QTreeNode(selectSolution);
-            node.addChild(select_solution);
-
+            const solutionSelectNode = new QTreeNode(selectSolution);
+            scratchNode.addChild(solutionSelectNode);
             for (const [k, v] of this.globalSolutions) {
                 if (v.getQuestions) {
                     const res = await v.getQuestions(stage, this.solutionContext(answers));
@@ -133,11 +142,15 @@ class CoreImpl implements Core {
                     if(res.value){
                         const solutionNode = res.value as QTreeNode;
                         solutionNode.condition = { equals: k };
-                        if (solutionNode.data) select_solution.addChild(solutionNode);
+                        if (solutionNode.data) solutionSelectNode.addChild(solutionNode);
                     }
                 }
             }
-            
+
+            scratchNode.addChild(new QTreeNode(QuestionRootFolder));
+            scratchNode.addChild(new QTreeNode(QuestionAppName));
+            sampleNode.addChild(new QTreeNode(QuestionRootFolder));
+
         } else if (this.selectedSolution) {
             const res = await this.selectedSolution.getQuestions(stage, this.solutionContext(answers));
             if (res.isErr()) return res;
@@ -204,11 +217,11 @@ class CoreImpl implements Core {
         };
         const validateResult = jsonschema.validate(appName, schema);
         if (validateResult.errors && validateResult.errors.length > 0) {
-            return ok(`app name doesn't match pattern: ${schema.pattern}`);
+            return ok(`project name doesn't match pattern: ${schema.pattern}`);
         }
         const projectPath = path.resolve(folder, appName);
         const exists = await fs.pathExists(projectPath);
-        if (exists) return ok(`Project path already exists:${projectPath}, please change a different app name.`);
+        if (exists) return ok(`Project path already exists:${projectPath}, please change a different project name.`);
         return ok(undefined);
     }
 
@@ -217,7 +230,6 @@ class CoreImpl implements Core {
         const array = namespace?namespace.split("/"):[];
         if (!namespace || "" === namespace || array.length === 0) {
             if (func.method === "validateAppName") {
-                if (!func.params) return ok(undefined);
                 return await this.validateAppName(func.params as string, answer);
             }
         } else {
@@ -244,6 +256,38 @@ class CoreImpl implements Core {
         if (!this.ctx.dialog) {
             return err(error.InvalidContext());
         }
+
+        const folder = answers?.getString(QuestionRootFolder.name);
+
+        const scratch = answers?.getString(CoreQuestionNames.CreateFromScratch);
+        if(scratch === ScratchOptionNo.id){
+            const samples = answers?.getOptionItem(CoreQuestionNames.Samples);
+            const url = samples!.data! as string;
+            const progress = this.ctx.dialog.createProgressBar("Fetch sample app", 2);
+            progress.start();
+            const fetchRes = await fetchCodeZip(url);
+            progress.next("unzip app package")
+            if (fetchRes !== undefined) {
+                await saveFilesRecursively(new AdmZip(fetchRes.data), folder!);
+                progress.next("open folder");
+                progress.end();
+                await this.ctx.dialog?.communicate(
+                    new DialogMsg(DialogType.Ask, {
+                        type: QuestionType.OpenFolder,
+                        description: folder!,
+                    }),
+                );
+                return ok(null);
+            }
+            progress.end();
+            return err(new UserError(
+                error.CoreErrorNames.InvalidInput,
+                `App Name is empty`,
+                error.CoreSource,
+                )
+            );
+        }
+
         this.ctx.logProvider?.info(`[Core] create - create target object`);
         this.target = new CoreImpl();
         this.target.ctx.dialog = this.ctx.dialog;
@@ -276,8 +320,6 @@ class CoreImpl implements Core {
                 ),
             );
         }
-        
-        const folder = answers?.getString(QuestionRootFolder.name);
 
         const projFolder = path.resolve(`${folder}/${appName}`);
         const folderExist = await fs.pathExists(projFolder);

@@ -35,7 +35,7 @@
     "./samples/**/*.ts",
     "resources",
     "test/*.ts",
-    "test/integration",
+    "test/integration/node",
     "test/e2e/"
   ]
 }

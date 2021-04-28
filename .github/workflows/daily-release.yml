@@ -79,7 +79,7 @@ jobs:
         with:
           repo_token: "${{ secrets.CD_PAT }}"
           automatic_release_tag: "daily"
-          prerelease: false
+          prerelease: true
           files: |
             ./packages/**/*.vsix
 

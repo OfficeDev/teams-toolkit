@@ -5,7 +5,7 @@ var functionName = process.env.REACT_APP_FUNC_NAME || "myFunc";
 export function EditCode(props) {
   const { showFunction, tabCodeEntry, functionCodePath } = {
     showFunction: true,
-    tabCodeEntry: "tabs/src/index.js",
+    tabCodeEntry: "tabs/src/index.jsx",
     functionCodePath: `api/${functionName}/index.js`,
     ...props,
   };
@@ -13,7 +13,9 @@ export function EditCode(props) {
     <div>
       <h2>Change this code</h2>
       <p>
-        The front end is a <code>create-react-app</code>. The entry point is <code>{tabCodeEntry}</code>. Just save any file and this page will reload automatically.
+        The front end is a <code>create-react-app</code>. The entry point is{" "}
+        <code>{tabCodeEntry}</code>. Just save any file and this page will
+        reload automatically.
       </p>
       {showFunction && (
         <p>

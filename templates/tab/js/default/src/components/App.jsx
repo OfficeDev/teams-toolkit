@@ -8,8 +8,9 @@ import { HashRouter as Router, Redirect, Route } from "react-router-dom";
 import { useTeamsFx } from "./sample/lib/useTeamsFx";
 import Privacy from "./Privacy";
 import TermsOfUse from "./TermsOfUse";
-import Tab from "./Tab2";
+import Tab from "./Tab";
 import "./App.css";
+import TabConfig from "./TabConfig";
 
 /**
  * The main app which handles the initialization and routing
@@ -33,6 +34,7 @@ export default function App() {
             <Route exact path="/privacy" component={Privacy} />
             <Route exact path="/termsofuse" component={TermsOfUse} />
             <Route exact path="/tab" component={Tab} />
+            <Route exact path="/config" component={TabConfig} />
           </>
         )}
       </Router>

@@ -1,8 +1,4 @@
-import React from "react";
-import {
-  loadConfiguration,
-  ResourceType,
-} from "teamsdev-client";
+import { loadConfiguration, ResourceType } from "teamsdev-client";
 import { useData } from "./useData";
 import { useTeams } from "msteams-react-base-component";
 
@@ -19,24 +15,24 @@ export function useTeamsFx() {
   const { error, loading } = useData(async () => {
     if (!initialized) {
       loadConfiguration({
-      authentication: {
-        initiateLoginEndpoint: startLoginPageUrl,
-        simpleAuthEndpoint: teamsfxEndpoint,
-        clientId: clientId,
-      },
-      resources: [
-        {
-          type: ResourceType.API,
-          name: "default",
-          properties: {
-            endpoint: functionEndpoint,
-          }
-        }
-      ]
-    });
+        authentication: {
+          initiateLoginEndpoint: startLoginPageUrl,
+          simpleAuthEndpoint: teamsfxEndpoint,
+          clientId: clientId,
+        },
+        resources: [
+          {
+            type: ResourceType.API,
+            name: "default",
+            properties: {
+              endpoint: functionEndpoint,
+            },
+          },
+        ],
+      });
       initialized = true;
     }
   });
-  const isInTeams = true; // TODO: return true until we find a proper approach to detect teams.
+  const isInTeams = true;
   return { error, loading, isInTeams, ...result };
 }

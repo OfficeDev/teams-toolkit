@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer } from "react";
+import { useEffect, useReducer } from "react";
 
 export function useData(asyncFn, options) {
   const { auto } = { auto: true, ...options };
@@ -22,9 +22,7 @@ export function useData(asyncFn, options) {
     }
     asyncFn()
       .then((data) => dispatch({ type: "result", data }))
-      .catch((error) =>
-        dispatch({ type: "error", error })
-      );
+      .catch((error) => dispatch({ type: "error", error }));
   }
   useEffect(() => {
     if (auto) reload();

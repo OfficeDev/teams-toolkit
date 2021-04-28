@@ -64,7 +64,7 @@ Update the Open API document under the `openapi` folder. We support both yaml an
 - Run command: swagger-jsdoc -d `./openapi/openapi.json **/*.ts`
 
 ### Recommended way 2: OpenAPI (Swagger) Editor in VS Code.
-Below is a sample swagger file for the default http trigger function. You can just copy the content into your swagger json file you've just created. 
+Below is a sample swagger file for the default http trigger function. You can copy the content into `./openapi/openapi.json`, follow the [OpenAPI Specification](https://swagger.io/resources/open-api/), and change the content according to your modification (E.g. `/getUserProfile` -> `/$yourFunctionName` ).
 
 ```
 { 

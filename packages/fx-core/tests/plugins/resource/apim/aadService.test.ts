@@ -7,9 +7,9 @@ import chaiAsPromised from "chai-as-promised";
 import sinon from "sinon";
 import { v4 } from "uuid";
 import { AadHelper, MockGraphTokenProvider, it_if, before_if, after_if, EnvConfig } from "./testUtil";
-import { AadService } from "../../../../../src/plugins/resource/apim/src/service/aadService";
-import { AadDefaultValues } from "../../../../../src/plugins/resource/apim/src/constants";
-import { IAadInfo } from "../../../../../src/plugins/resource/apim/src/model/aadResponse";
+import { AadService } from "../../../../src/plugins/resource/apim/src/service/aadService";
+import { AadDefaultValues } from "../../../../src/plugins/resource/apim/src/constants";
+import { IAadInfo } from "../../../../src/plugins/resource/apim/src/model/aadResponse";
 chai.use(chaiAsPromised);
 
 const UT_SUFFIX = v4().substring(0, 6);

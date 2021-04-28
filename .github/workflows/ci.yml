@@ -11,7 +11,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
+        os: [windows-latest, ubuntu-latest]
         node-version: [14]
 
     runs-on: ${{ matrix.os }}
@@ -26,6 +26,18 @@ jobs:
         uses: actions/setup-node@v2.1.2
         with:
           node-version: ${{ matrix.node-version }}
+
+      - name: Download Simple Auth bits
+        env:
+          SIMPLE_AUTH_SAS_TOKEN: ${{secrets.SIMPLE_AUTH_SAS_TOKEN}}
+          SIMPLE_AUTH_ENDPOINT: ${{secrets.SIMPLE_AUTH_ENDPOINT}}
+        run: |
+            $version=Get-Content packages/fx-core/templates/plugins/resource/simpleauth/version.txt
+            $fileName="Microsoft.TeamsFx.SimpleAuth_$version.zip"
+            echo $SIMPLE_AUTH_ENDPOINT
+            $url=$env:SIMPLE_AUTH_ENDPOINT+'/'+$fileName+'?'+$env:SIMPLE_AUTH_SAS_TOKEN
+            Invoke-WebRequest $url -OutFile packages/fx-core/templates/plugins/resource/simpleauth/SimpleAuth.zip
+        shell: pwsh
 
       - name: Setup project
         run: |

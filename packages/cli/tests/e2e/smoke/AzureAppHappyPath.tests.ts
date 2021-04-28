@@ -4,9 +4,17 @@
 import fs from "fs-extra";
 import path from "path";
 
-import { AadValidator, SimpleAuthValidator, deleteAadApp, MockAzureAccountProvider } from "fx-api";
+import { AadValidator, SimpleAuthValidator } from "fx-api";
 
-import { execAsync, getSubscriptionId, getTestFolder, getUniqueAppName } from "../commonUtils";
+import {
+  execAsync,
+  getSubscriptionId,
+  getTestFolder,
+  getUniqueAppName,
+  setSimpleAuthSkuNameToB1,
+  setBotSkuNameToB1,
+  cleanUp,
+} from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 
 describe("Azure App Happy Path", function() {
@@ -25,6 +33,9 @@ describe("Azure App Happy Path", function() {
         timeout: 0
       }
     );
+    console.log(`[Successfully] scaffold to ${projectPath}`);
+
+    await setSimpleAuthSkuNameToB1(projectPath);
 
     // capability add bot
     await execAsync(
@@ -35,6 +46,8 @@ describe("Azure App Happy Path", function() {
         timeout: 0
       }
     );
+
+    await setBotSkuNameToB1(projectPath);
 
     // set subscription
     await execAsync(
@@ -48,7 +61,7 @@ describe("Azure App Happy Path", function() {
 
     // resource add apim
     await execAsync(
-      `teamsfx resource add apim`,
+      `teamsfx resource add azure-apim --function-name testApim`,
       {
         cwd: projectPath,
         env: process.env,
@@ -84,15 +97,15 @@ describe("Azure App Happy Path", function() {
       await SimpleAuthValidator.validate(simpleAuth, aad);
     }
 
-    // deploy
-    await execAsync(
-      `teamsfx deploy --open-api-document openapi/openapi.json --api-prefix qwed --api-version 1`,
-      {
-        cwd: projectPath,
-        env: process.env,
-        timeout: 0
-      }
-    );
+    // // deploy
+    // await execAsync(
+    //   `teamsfx deploy --open-api-document openapi/openapi.json --api-prefix qwed --api-version 1`,
+    //   {
+    //     cwd: projectPath,
+    //     env: process.env,
+    //     timeout: 0
+    //   }
+    // );
 
     {
       /// TODO: add check for deploy
@@ -141,15 +154,8 @@ describe("Azure App Happy Path", function() {
     }
   });
 
-  this.afterAll(async () => {
-    // delete aad app
-    const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
-    await deleteAadApp(context, AppStudioLogin);
-
-    // remove resouce
-    await MockAzureAccountProvider.getInstance().deleteResourceGroup(`${appName}-rg`);
-
-    // remove project
-    await fs.remove(projectPath);
+  after(async () => {
+    // clean up
+    await cleanUp(appName, projectPath, true, true, true);
   });
 });

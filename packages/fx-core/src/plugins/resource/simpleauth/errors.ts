@@ -17,7 +17,7 @@ export const UnauthenticatedError: PluginError = {
 
 export const CreateAppServicePlanError: PluginError = {
     name: "CreateAppServicePlanError",
-    message: (message) => `Failed to create App Service Plan: ${message}`,
+    message: (message) => `Failed to create App Service plan: ${message}`,
 };
 
 export const CreateWebAppError: PluginError = {
@@ -27,20 +27,30 @@ export const CreateWebAppError: PluginError = {
 
 export const ZipDeployError: PluginError = {
     name: "ZipDeployError",
-    message: (message) => `Failed to do Zip Deployment: ${message}`,
+    message: (message) => `Failed to deploy Simple Auth bits: ${message}`,
 };
 
 export const UpdateApplicationSettingsError: PluginError = {
     name: "UpdateApplicationSettingsError",
-    message: (message) => `Failed to update Application Settings: ${message}`,
+    message: (message) => `Failed to update application settings: ${message}`,
 };
 
 export const UnhandledError: PluginError = {
     name: "UnhandledError",
-    message: (message) => `Unhandled Error: ${message}`,
+    message: (message) => `Unhandled error: ${message}`,
 };
 
 export const EndpointInvalidError: PluginError = {
     name: "EndpointInvalidError",
     message: (endpoint, message) => `Failed to verify endpoint: ${endpoint}. Reason: ${message}`,
+};
+
+export const ZipDownloadError: PluginError = {
+    name: "ZipDownloadError",
+    message: (message) => `Failed to download Simple Auth bits: ${message}`,
+};
+
+export const VersionFileNotExist: PluginError = {
+    name: "VersionFileNotExist",
+    message: (filePath?) => `Failed to load version file from ${filePath ?? "File not exist."}`,
 };

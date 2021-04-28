@@ -64,7 +64,7 @@ describe("OnBehalfOfUserCredential - node", () => {
 
     // Mock ConfidentialClientApplication implementation
     sandbox.stub(ConfidentialClientApplication.prototype, "acquireTokenOnBehalfOf").callsFake(
-      (request: OnBehalfOfRequest): Promise<AuthenticationResult | null> => {
+      (): Promise<AuthenticationResult | null> => {
         const authResult: AuthenticationResult = {
           authority: "fake_authority",
           uniqueId: "fake_uniqueId",
@@ -226,12 +226,11 @@ describe("OnBehalfOfUserCredential - node", () => {
       );
   });
 
-  // TODO: in the future, OnBehalfOfUserCredential will return different errors based on MSAL response. (instead of returning internalError)
   it("should throw InternalError when fail to get access token due to AAD outage", async function() {
     // Mock AAD outage
     sandbox.restore();
     sandbox.stub(ConfidentialClientApplication.prototype, "acquireTokenOnBehalfOf").callsFake(
-      (request: OnBehalfOfRequest): Promise<AuthenticationResult | null> => {
+      (): Promise<AuthenticationResult | null> => {
         return new Promise<AuthenticationResult>(() => {
           throw new Error("AAD outage");
         });

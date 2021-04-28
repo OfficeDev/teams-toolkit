@@ -1,11 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import path from "path";
+
 export class ProjectConstants {
     public static readonly pluginShortName: string = "APIM";
     public static readonly pluginDisplayName: string = "API Management";
     public static readonly configFilePath: string = "env.default.json";
     public static readonly workingDir: string = "openapi";
     public static readonly openApiDocumentFileName: string = "openapi.json";
+    public static readonly readMeFileName: string = "README.md";
+    public static readonly maxRetries: number = 3;
+    public static readonly resourceDir: string = path.join(__dirname, "..", "..", "..", "..", "..", "templates", "plugins", "resource", "apim");
 }
 
 export class ApimDefaultValues {

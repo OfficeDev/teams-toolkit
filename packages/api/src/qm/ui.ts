@@ -47,7 +47,7 @@ export interface FxQuickPickOption {
    * @items: current selected `OptionItem` array
    * @returns: the new selected `id` array
    */
-  onDidChangeSelection?: (selectedItems: OptionItem[]) => Promise<string[]>;
+  onDidChangeSelection?: (currentSelectedItems: OptionItem[], previousSelectedItems: OptionItem[]) => Promise<string[]>;
 }
 
 export interface FxInputBoxOption {

@@ -14,9 +14,9 @@ Teams apps are a combination of [capabilities](https://docs.microsoft.com/en-us/
 
 <table>
     <tr>
-        <td><img src="./media/landingPage_launchPage.png"></td>
-        <td><img src="./media/landingPage_conversationalBot.png"></td>
-        <td><img src="./media/landingPage_messagingExtension.png"></td>
+        <td><img src="https://raw.githubusercontent.com/HuihuiWu-Microsoft/Teams-Toolkit-V2/main/landingPage_launchPage.png"></td>
+        <td><img src="https://raw.githubusercontent.com/HuihuiWu-Microsoft/Teams-Toolkit-V2/main/landingPage_conversationalBot.png"></td>
+        <td><img src="https://raw.githubusercontent.com/HuihuiWu-Microsoft/Teams-Toolkit-V2/main/landingPage_messagingExtension.png"></td>
     </tr>
     <tr>
         <td>Launch Pages</td>
@@ -36,9 +36,9 @@ Build a Teams app from the scratch or explore our [samples](www.baidu.com) to he
 
 <table>
     <tr>
-        <td><img src="./media/landingPage_shareNow.png"></td>
-        <td><img src="./media/landingPage_poll.png"></td>
-        <td><img src="./media/landingPage_faq.png"></td>
+        <td><img src="https://raw.githubusercontent.com/HuihuiWu-Microsoft/Teams-Toolkit-V2/main/landingPage_shareNow.png"></td>
+        <td><img src="https://raw.githubusercontent.com/HuihuiWu-Microsoft/Teams-Toolkit-V2/main/landingPage_poll.png"></td>
+        <td><img src="https://raw.githubusercontent.com/HuihuiWu-Microsoft/Teams-Toolkit-V2/main/landingPage_faq.png"></td>
     </tr>
     <tr>
         <td>Share Now</td>
@@ -58,11 +58,11 @@ Build a Teams app from the scratch or explore our [samples](www.baidu.com) to he
 
 <table>
     <tr>
-        <td><img src="./media/landingPage_m365.png"></td>
+        <td><img src="https://raw.githubusercontent.com/HuihuiWu-Microsoft/Teams-Toolkit-V2/main/landingPage_m365.png"></td>
         <td><h3>M365</h3>The Teams Toolkit requires a Microsoft 365 organizational account where Teams is running and has been registered.</td>
     </tr>
     <tr>
-        <td><img src="./media/landingPage_azure.png"></td>
+        <td><img src="https://raw.githubusercontent.com/HuihuiWu-Microsoft/Teams-Toolkit-V2/main/landingPage_azure.png"></td>
         <td><h3>Azure</h3> The Teams Toolkit may require an Azure account and subscription to deploy the Azure resources for your project.</td>
     </tr>
 </table>
@@ -96,3 +96,25 @@ Simply press F5 to run your first Teams or navigate to the Debug tab in the acti
 ## Preview your app with backend running in the cloud
 
 If you want to have a better estimation of how the app will behave in the cloud environment, you can deploy your resources to the cloud and preview your app with the backend running in the cloud (remote).
+
+## Contributing
+
+Please read our [CONTRIBUTING.md](CONTRIBUTING.md) which outlines all of our policies, procedures, and requirements for contributing to this project.
+
+## Feedback
+
+* [File an issue](https://github.com/OfficeDev/TeamsFx/issues)
+
+## Extensibility Model
+
+TeamsFx VS Code Extension is built on [Fx Core](packages/fx-core) and [Fx API](packages/api) packages which locate in the same repo. [Fx Core](packages/fx-core) is designed to support extensibility model to extend TeamsFx tooling functionalities. Please check [Fx Core](packages/fx-core) and [Fx API](packages/api) for details.
+
+## Code of Conduct
+
+This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+
+## License
+
+Copyright (c) Microsoft Corporation. All rights reserved.
+
+Licensed under the [MIT](LICENSE) license.

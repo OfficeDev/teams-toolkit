@@ -50,6 +50,7 @@ export enum ErrorCode {
     InvalidParameter = "InvalidParameter",
     RuntimeNotSupported = "RuntimeNotSupported",
     ServiceError = "ServiceError",
+    TokenExpiredError = "TokenExpiredError",
     UiRequiredError = "UiRequiredError"
 }
 

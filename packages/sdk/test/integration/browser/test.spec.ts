@@ -8,7 +8,6 @@ let restore:()=>void;
 const env = (window as any).__env__;
 // just a sample.
 describe("Create instance", () => {
-    console.log("=========== hello", env.SDK_INTEGRATION_SQL_ENDPOINT);
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   it("Get graphClient", async function() {});
 });

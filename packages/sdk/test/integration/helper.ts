@@ -7,6 +7,7 @@ import * as msal from "@azure/msal-node";
 import mockedEnv from "mocked-env";
 import urljoin from "url-join";
 import { JwtPayload } from "jwt-decode";
+import * as dotenv from "dotenv";
 
 const execAsync = promisify(exec);
 
@@ -65,9 +66,6 @@ export async function getSsoTokenFromTeams(): Promise<string> {
   if (!process.env.SDK_INTEGRATION_TEST_ACCOUNT_NAME) {
     missingConfigurations.push("SDK_INTEGRATION_TEST_ACCOUNT_NAME");
   }
-  if (!process.env.SDK_INTEGRATION_TEST_ACCOUNT_NAME) {
-    missingConfigurations.push("SDK_INTEGRATION_TEST_ACCOUNT_NAME");
-  }
   if (!process.env.SDK_INTEGRATION_TEST_ACCOUNT_PASSWORD) {
     missingConfigurations.push("SDK_INTEGRATION_TEST_ACCOUNT_PASSWORD");
   }
@@ -95,7 +93,7 @@ export async function getSsoTokenFromTeams(): Promise<string> {
  * Once invoke MockEnvironmentVariables, mock the variables in it with another value, it will take effect immediately.
  */
 export function MockEnvironmentVariable(): () => void {
-  require('dotenv').config();
+  dotenv.config();
   return mockedEnv({
     M365_CLIENT_ID: process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
     M365_CLIENT_SECRET: process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_SECRET,

@@ -110,10 +110,13 @@ suite("All checkers E2E test", async () => {
             this.skip();
         }
 
-        const [checker, _1, _2] = createTestChecker(true, false, false, false, false);
+        const [checker, _, dotnetChecker] = createTestChecker(true, false, false, false, false);
 
         const shouldContinue = await checker.resolve();
         chai.assert.isTrue(shouldContinue);
+        const dotnetExecPath = await dotnetChecker.getDotnetExecPath();
+        chai.assert.isNotNull(dotnetExecPath);
+        chai.assert.equal(dotnetExecPath!, dotnetUtils.dotnetCommand);
     });
 
     teardown(async function (this: Mocha.Context) {

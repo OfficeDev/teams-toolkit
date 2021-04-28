@@ -4,7 +4,7 @@ import "mocha";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import dotenv from "dotenv";
-import { ApimPlugin } from "../../../../../src/plugins/resource/apim/src/index";
+import { ApimPlugin } from "../../../../src/plugins/resource/apim/src/index";
 import { v4 } from "uuid";
 import { AadHelper, after_if, before_if, EnvConfig, it_if, MockAzureAccountProvider, MockGraphTokenProvider, MockPluginContext, ResourceGroupHelper } from "./testUtil";
 import {
@@ -12,14 +12,14 @@ import {
     IApimPluginConfig,
     IFunctionPluginConfig,
     ISolutionConfig,
-} from "../../../../../src/plugins/resource/apim/src/model/config";
+} from "../../../../src/plugins/resource/apim/src/model/config";
 import { PluginContext } from "fx-api";
-import { AadDefaultValues, QuestionConstants } from "../../../../../src/plugins/resource/apim/src/constants";
-import { AadService } from "../../../../../src/plugins/resource/apim/src/service/aadService";
+import { AadDefaultValues, QuestionConstants } from "../../../../src/plugins/resource/apim/src/constants";
+import { AadService } from "../../../../src/plugins/resource/apim/src/service/aadService";
 import axios from "axios";
-import { AssertNotEmpty } from "../../../../../src/plugins/resource/apim/src/error";
+import { AssertNotEmpty } from "../../../../src/plugins/resource/apim/src/error";
 import { ApiManagementClient } from "@azure/arm-apimanagement";
-import { ApimService } from "../../../../../src/plugins/resource/apim/src/service/apimService";
+import { ApimService } from "../../../../src/plugins/resource/apim/src/service/apimService";
 dotenv.config();
 chai.use(chaiAsPromised);
 

@@ -388,14 +388,18 @@ export class QTreeNode {
             const newChildren:QTreeNode[] = [];
             for(const node of this.children){
                 const trimed = node.trim();
-                if(trimed){
-                    newChildren.push(node);
-                }
+                if(trimed) 
+                    newChildren.push(trimed);
             }
             this.children = newChildren;
         }
-        if (this.data.type === NodeType.group && (!this.children || this.children.length === 0)) {
-            return undefined;
+        if (this.data.type === NodeType.group) {
+            if( !this.children || this.children.length === 0)
+                return undefined;
+            if( this.children.length === 1){
+                this.children[0].condition = this.condition;
+                return this.children[0];
+            }
         }
         return this;
     }

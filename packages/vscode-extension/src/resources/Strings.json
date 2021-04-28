@@ -77,7 +77,10 @@
         },
         "common": {
             "userCancel": "User Cancel",
-            "confirm": "Confirm"
+            "confirm": "Confirm",
+            "signout": "Sign out",
+            "signOutOf": "Sign out of '%s'?",
+            "cancel": "Cancel"
         },
         "cacheAccess": {
             "readTokenFail": "read token fail: ",

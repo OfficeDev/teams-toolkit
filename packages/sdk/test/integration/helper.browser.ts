@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import axios from 'axios';
-/* ... */
+/**
+ * Get SSO Token from a specific AAD app client id.
+ */
 export async function getSSOToken(): Promise<string>  {
     const env = (window as any).__env__;
     let details = {

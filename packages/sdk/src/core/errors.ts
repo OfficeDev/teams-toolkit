@@ -42,9 +42,9 @@ export enum ErrorCode {
   UiRequiredError = "UiRequiredError",
 
   /**
-   * Assertion is not within its valid time range.
+   * Token is not within its valid time range.
    */
-  AssertionExpiredError = "AssertionExpiredError",
+  TokenExpiredError = "TokenExpiredError",
 
   /**
    * Call service (AAD or simple authentication server) failed

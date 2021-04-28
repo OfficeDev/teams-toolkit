@@ -43,13 +43,13 @@ describe("onBehalfOfUserCredential Test: Node", () => {
     assert.strictEqual(ssoTokenFromCredential!.token, ssoToken);
   });
 
-  it("onBehalfOfUserCredential get SSO token with sso token expired should throw AssertionExpiredError", async function() {
+  it("Test onBehalfOfUserCredential get SSO token with sso token expired should throw TokenExpiredError", async function() {
     const credential = new OnBehalfOfUserCredential(expiredSsoToken);
     let err = await expect(credential.getToken([])).to.eventually.be.rejectedWith(ErrorWithCode);
-    assert.strictEqual(err.code, ErrorCode.AssertionExpiredError);
+    assert.strictEqual(err.code, ErrorCode.TokenExpiredError);
 
     err = await expect(credential.getToken("")).to.eventually.be.rejectedWith(ErrorWithCode);
-    assert.strictEqual(err.code, ErrorCode.AssertionExpiredError);
+    assert.strictEqual(err.code, ErrorCode.TokenExpiredError);
   });
 
   it("Test onBehalfOfUserCredential get user info success", async function() {
@@ -78,13 +78,13 @@ describe("onBehalfOfUserCredential Test: Node", () => {
       .and.property("code", ErrorCode.UiRequiredError);
   });
 
-  it("onBehalfOfUserCredential get access token with expired sso token should throw AssertionExpiredError", async function() {
+  it("onBehalfOfUserCredential get access token with expired sso token should throw TokenExpiredError", async function() {
     const credential = new OnBehalfOfUserCredential(expiredSsoToken);
     const err = await expect(credential.getToken(defaultScope)).to.eventually.be.rejectedWith(
       ErrorWithCode
     );
 
-    assert.strictEqual(err.code, ErrorCode.AssertionExpiredError);
+    assert.strictEqual(err.code, ErrorCode.TokenExpiredError);
   });
 
   afterEach(() => {

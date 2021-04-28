@@ -3,7 +3,7 @@
 
 import { assert, expect, use as chaiUse } from "chai";
 import chaiPromises from "chai-as-promised";
-import { ErrorWithCode, loadConfiguration, OnBehalfOfUserCredential } from "../../../../src";
+import { ErrorCode, ErrorWithCode, loadConfiguration, OnBehalfOfUserCredential } from "../../../../src";
 import sinon from "sinon";
 import mockedEnv from "mocked-env";
 import { AuthenticationResult, ConfidentialClientApplication } from "@azure/msal-node";
@@ -29,10 +29,10 @@ describe("OnBehalfOfUserCredential - node", () => {
 
   const now = Math.floor(Date.now() / 1000);
   const timeInterval = 4000;
-  const ssoTokenExp = now+timeInterval;
+  const ssoTokenExp = now + timeInterval;
   const ssoToken = jwtBuilder({
-    algorithm: 'HS256',
-    secret: 'super-secret',
+    algorithm: "HS256",
+    secret: "super-secret",
     aud: "test_audience",
     iss: "https://login.microsoftonline.com/test_aad_id/v2.0",
     iat: now,
@@ -174,6 +174,17 @@ describe("OnBehalfOfUserCredential - node", () => {
       .with.property("code", InvalidConfiguration);
   });
 
+  it("construct OnBehalfOfUserCredential should throw InternalError with invalid sso token", async function() {
+    loadConfiguration();
+    const invalidSsoToken = "invalid_sso_token";
+
+    expect(() => {
+      new OnBehalfOfUserCredential(invalidSsoToken);
+    })
+      .to.throw(ErrorWithCode, "Parse jwt token failed in node env with error: ")
+      .with.property("code", InternalError);
+  });
+
   it("should get sso token when scopes is empty string", async function() {
     loadConfiguration();
     const oboCredential = new OnBehalfOfUserCredential(ssoToken);
@@ -207,24 +218,18 @@ describe("OnBehalfOfUserCredential - node", () => {
     assert.strictEqual(token!.expiresOnTimestamp, accessTokenExpNumber);
   });
 
-  it("should throw InternalError with invalid SSO token when get sso token", async function() {
-    loadConfiguration();
-    const invalidSsoToken = "invalid_sso_token";
-    const oboCredential = new OnBehalfOfUserCredential(invalidSsoToken);
+  it("should throw TokenExpiredError when get SSO token with sso token expired", async function() {
+    const expiredSsoToken =
+      "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Im5PbzNaRHJPRFhFSzFqS1doWHNsSFJfS1hFZyJ9.eyJhdWQiOiJjZWVkYTJjNi00MDBmLTQyYjMtYjE4ZC1jY2NmYzk5NjM4NmYiLCJpc3MiOiJodHRwczovL2xvZ2luLm1pY3Jvc29mdG9ubGluZS5jb20vNzJmOTg4YmYtODZmMS00MWFmLTkxYWItMmQ3Y2QwMTFkYjQ3L3YyLjAiLCJpYXQiOjE2MTk0OTI3MzEsIm5iZiI6MTYxOTQ5MjczMSwiZXhwIjoxNjE5NDk2NjMxLCJhaW8iOiJBVFFBeS84VEFBQUFFWDZLU0prRjlOaEFDL1NXV1hWTXFPVDNnNGZXR2dqS0ZEWjRramlEb25OVlY2cDlZTVFMaTFqVXdHWEZaclpaIiwiYXpwIjoiYjBjNDdmMjktM2M1Ny00MDQyLTkzM2YtYTdkNTQ2YmFlMzg3IiwiYXpwYWNyIjoiMCIsIm5hbWUiOiJNZXRhIE9TIHNlcnZpY2UgYWNjb3VudCBmb3IgZGV2ZWxvcG1lbnQiLCJvaWQiOiIyYTYxYzRjMy1lY2Y5LTQ5ZWItYjcxNy02NjczZmZmZDg5MmQiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJtZXRhZGV2QG1pY3Jvc29mdC5jb20iLCJyaCI6IjAuQVFFQXY0ajVjdkdHcjBHUnF5MTgwQkhiUnlsX3hMQlhQRUpBa3otbjFVYTY0NGNhQUpRLiIsInNjcCI6ImFjY2Vzc19hc191c2VyIiwic3ViIjoiNEhUVXFCbWVBQVFWa2ZrbU0wcFRtVHh3QjRkcDdITGtxSjRSYXFvb3dUTSIsInRpZCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsInV0aSI6ImFVQkxZSENBWmsyZE9LNW1wR2ctQUEiLCJ2ZXIiOiIyLjAifQ.QCkyqat72TS85vQ6h-jqAj-pnAOOkeOy3-WxgEQ1DJbW6fsoXmVGgso-ncMmeiYIoA1r9jy1cBfnEMBI1tBKcq4TOHseyde2uM-pxCGHNhFC_WiWy9KXKiou5bvgXdVqqCT7CQejpiNdm3wL-EFhXWBRj6OlLMLcUtnlcnKfOSmx8IIOuQrCjWtuE_wjpfo2AwkguuJ5defyOkYqlCfcJ9FyUrqhqsONMdh0lJiVY94PZ00UTjH3zPaC2tnKrGeXn-qrr9dccEUx2HqyAfdzPwymBLWMCrirVRKCZV3DtfKuozKkIxIPZz0891QZcFO8VgfBJaLmr6J7EL8lPtFKnw";
+    const credential = new OnBehalfOfUserCredential(expiredSsoToken);
+    let err = await expect(credential.getToken([])).to.eventually.be.rejectedWith(ErrorWithCode);
+    assert.strictEqual(err.code, ErrorCode.TokenExpiredError);
 
-    await expect(oboCredential.getToken([]))
-      .to.eventually.be.rejectedWith(ErrorWithCode)
-      .and.property("code", InternalError);
-    await expect(oboCredential.getToken([]))
-      .to.eventually.be.rejectedWith(ErrorWithCode)
-      .and.property("message")
-      .to.be.a("string")
-      .and.satisfy((msg: string) =>
-        msg.startsWith("Parse jwt token failed in node env with error: ")
-      );
+    err = await expect(credential.getToken("")).to.eventually.be.rejectedWith(ErrorWithCode);
+    assert.strictEqual(err.code, ErrorCode.TokenExpiredError);
   });
 
-  it("should throw InternalError when fail to get access token due to AAD outage", async function() {
+  it("should throw ServiceError when fail to get access token due to AAD outage", async function() {
     // Mock AAD outage
     sandbox.restore();
     sandbox.stub(ConfidentialClientApplication.prototype, "acquireTokenOnBehalfOf").callsFake(

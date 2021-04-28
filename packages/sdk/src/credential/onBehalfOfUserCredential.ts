@@ -21,6 +21,7 @@ import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 export class OnBehalfOfUserCredential implements TokenCredential {
   private msalClient: ConfidentialClientApplication;
   private ssoToken: string;
+  private decodedSsoToken: SSOTokenInfoBase;
   /**
    * Constructor of OnBehalfOfUserCredential
    *
@@ -69,6 +70,7 @@ export class OnBehalfOfUserCredential implements TokenCredential {
     });
 
     this.ssoToken = ssoToken;
+    this.decodedSsoToken = parseJwt(this.ssoToken);
   }
 
   /**
@@ -105,15 +107,14 @@ export class OnBehalfOfUserCredential implements TokenCredential {
     let result: AccessToken | null;
     if (!scopesArray.length) {
       internalLogger.info("Get SSO token.");
-      const decodedSsoToken: SSOTokenInfoBase = parseJwt(this.ssoToken);
-      if (Math.floor(Date.now() / 1000) > decodedSsoToken.exp) {
+      if (Math.floor(Date.now() / 1000) > this.decodedSsoToken.exp) {
         const errorMsg = "Sso token has already expired.";
         internalLogger.error(errorMsg);
-        throw new ErrorWithCode(errorMsg, ErrorCode.AssertionExpiredError);
+        throw new ErrorWithCode(errorMsg, ErrorCode.TokenExpiredError);
       }
       result = {
         token: this.ssoToken,
-        expiresOnTimestamp: decodedSsoToken.exp
+        expiresOnTimestamp: this.decodedSsoToken.exp
       };
     } else {
       internalLogger.info("Get access token with scopes: " + scopesArray.join(" "));
@@ -176,9 +177,12 @@ export class OnBehalfOfUserCredential implements TokenCredential {
       const fullErrorMsg =
         "Failed to get access token from AAD server, sso token expired: " + errorMessage;
       internalLogger.error(fullErrorMsg);
-      return new ErrorWithCode(fullErrorMsg, ErrorCode.AssertionExpiredError);
+      return new ErrorWithCode(fullErrorMsg, ErrorCode.TokenExpiredError);
     } else {
-      const fullErrorMsg = formatString(ErrorMessage.FailToAcquireTokenOnBehalfOfUser, errorMessage);
+      const fullErrorMsg = formatString(
+        ErrorMessage.FailToAcquireTokenOnBehalfOfUser,
+        errorMessage
+      );
       internalLogger.error(fullErrorMsg);
       return new ErrorWithCode(fullErrorMsg, ErrorCode.ServiceError);
     }

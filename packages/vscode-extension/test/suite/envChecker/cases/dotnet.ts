@@ -13,14 +13,21 @@ import { TestLogger } from "../adapters/testLogger";
 import { TestTelemetry } from "../adapters/testTelemetry";
 import { commandExistsInPath } from "../utils/common";
 
+
 function createTestChecker(
   hasTeamsfxBackend: boolean,
   clickCancel = false,
   dotnetCheckerEnabled = true,
   funcToolCheckerEnabled = true,
-  nodeCheckerEnabled = true): [DepsChecker, DotnetChecker] {
-
-  const testAdapter = new TestAdapter(hasTeamsfxBackend, clickCancel, dotnetCheckerEnabled, funcToolCheckerEnabled, nodeCheckerEnabled);
+  nodeCheckerEnabled = true
+): [DepsChecker, DotnetChecker] {
+  const testAdapter = new TestAdapter(
+    hasTeamsfxBackend,
+    clickCancel,
+    dotnetCheckerEnabled,
+    funcToolCheckerEnabled,
+    nodeCheckerEnabled
+  );
   const logger = new TestLogger();
   const dotnetChecker = new DotnetChecker(testAdapter, logger, new TestTelemetry());
   const depsChecker = new DepsChecker(logger, testAdapter, [dotnetChecker]);
@@ -53,7 +60,6 @@ suite("DotnetChecker E2E Test - first run", async () => {
       chai.assert.isNotNull(dotnetExecPath);
       chai.assert.isTrue(await dotnetUtils.hasDotnetVersion(dotnetExecPath!, dotnetUtils.dotnetInstallVersion));
     }
-
   });
 
   test(".NET SDK supported version is installed globally", async function(this: Mocha.Context) {
@@ -71,7 +77,6 @@ suite("DotnetChecker E2E Test - first run", async () => {
 
     const dotnetExecPathFromConfig = await dotnetUtils.getDotnetExecPathFromConfig(dotnetUtils.dotnetConfigPath);
     chai.assert.isNotNull(dotnetExecPathFromConfig);
-
     chai.assert.isTrue(await dotnetUtils.hasAnyDotnetVersions(dotnetExecPathFromConfig!, dotnetUtils.dotnetSupportedVersions));
 
     // test dotnet executable is from config file.
@@ -128,7 +133,6 @@ suite("DotnetChecker E2E Test - first run", async () => {
 
     const shouldContinue = await checker.resolve();
     chai.assert.isTrue(shouldContinue);
-
     const dotnetExecPathFromConfig = await dotnetUtils.getDotnetExecPathFromConfig(dotnetUtils.dotnetConfigPath);
     chai.assert.isNull(dotnetExecPathFromConfig);
 
@@ -152,9 +156,7 @@ suite("DotnetChecker E2E Test - second run", () => {
     // cleanup to make sure the environment is clean before test
   });
 
-  test("Valid dotnet.json file", async function(this: Mocha.Context) {
-
-  });
+  test("Valid dotnet.json file", async function(this: Mocha.Context) {});
 
   test("Invalid dotnet.json file", async function(this: Mocha.Context) {
     // TODO: implement me

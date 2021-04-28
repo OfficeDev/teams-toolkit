@@ -52,7 +52,7 @@ import * as path from "path";
 // import * as Bundles from '../resource/bundles.json';
 import * as error from "./error";
 import { Loader, Meta } from "./loader";
-import { deserializeDict, fetchCodeZip, mapToJson, mergeSerectData, objectToConfigMap, objectToMap, saveFilesRecursively, serializeDict, sperateSecretData } from "./tools";
+import { deserializeDict, fetchCodeZip, mapToJson, mergeSerectData, objectToConfigMap, objectToMap, saveFilesRecursively, serializeDict, sperateSecretData } from "../common/tools";
 import { VscodeManager } from "./vscodeManager";
 import { Settings } from "./settings";
 import { CoreQuestionNames, QuestionAppName, QuestionRootFolder, QuestionSelectSolution, SampleSelect, ScratchOptionNo, ScratchOptionYes, ScratchOrSampleSelect } from "./question";

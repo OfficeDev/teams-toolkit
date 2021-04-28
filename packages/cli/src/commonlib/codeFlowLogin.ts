@@ -13,6 +13,7 @@ import * as crypto from "crypto";
 import { AddressInfo } from "net";
 import { accountPath, UTF8 } from "./cacheAccess";
 import open from "open";
+import { env } from "./common/constant";
 
 class ErrorMessage {
   static readonly loginError: string = "LoginError";
@@ -183,6 +184,45 @@ export class CodeFlowLogin {
       }
     } catch (error) {
       CliCodeLogInstance.error("[Login] " + error.message);
+      throw LoginFailureError(error);
+    }
+  }
+
+  async getTenantToken(tenantId: string): Promise<string | undefined> {
+    try {
+      if (!this.account) {
+        await this.reloadCache();
+      }
+      if (this.account) {
+        return this.pca!.acquireTokenSilent({
+          authority: env.activeDirectoryEndpointUrl + tenantId,
+          account: this.account,
+          scopes: this.scopes!,
+          forceRefresh: true
+        })
+        .then((response) => {
+          if (response) {
+            return response.accessToken;
+          } else {
+            return undefined;
+          }
+        })
+        .catch(async (error) => {
+          CliCodeLogInstance.error("[Login] getTenantToken acquireTokenSilent : " + error.message);
+          const accountList = await this.msalTokenCache?.getAllAccounts();
+          for (let i=0;i<accountList!.length;++i) {
+            this.msalTokenCache?.removeAccount(accountList![i]);
+          }
+          this.config!.auth.authority = env.activeDirectoryEndpointUrl + tenantId;
+          this.pca = new PublicClientApplication(this.config!);
+          const accessToken = await this.login();
+          return accessToken;
+        });
+      } else {
+        return undefined;
+      }
+    } catch (error) {
+      CliCodeLogInstance.error("[Login] getTenantToken : " + error.message);
       throw LoginFailureError(error);
     }
   }

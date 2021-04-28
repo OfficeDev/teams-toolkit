@@ -52,7 +52,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
                 programmingLanguage: "typescript",
                 numConfigurations: 5,
                 numCompounds: 2,
-                numTasks: 11,
+                numTasks: 10,
                 numTaskInputs: 1,
                 numLocalEnvs: 30,
             }
@@ -238,7 +238,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
                 programmingLanguage: "typescript",
                 numConfigurations: 6,
                 numCompounds: 2,
-                numTasks: 14,
+                numTasks: 13,
                 numTaskInputs: 1,
                 numLocalEnvs: 44,
             }

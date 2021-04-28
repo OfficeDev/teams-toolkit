@@ -59,9 +59,11 @@ export interface DepsInfo {
 
 export class DepsChecker {
   private readonly _adapter: IDepsAdapter;
+  private readonly _logger: IDepsLogger;
   private readonly _checkers: Array<IDepsChecker>;
 
-  constructor(adapter: IDepsAdapter, checkers: Array<IDepsChecker>) {
+  constructor(logger: IDepsLogger, adapter: IDepsAdapter, checkers: Array<IDepsChecker>) {
+    this._logger = logger;
     this._adapter = adapter;
     this._checkers = checkers;
   }
@@ -92,6 +94,7 @@ export class DepsChecker {
       try {
         await checker.install();
       } catch (error) {
+        await this._logger.debug(`Failed to install '${checker.constructor.name}', error = '${error}'`)
         const continueNext = await this.handleError(error);
         if (!continueNext) {
           return !shouldContinue;
@@ -110,6 +113,7 @@ export class DepsChecker {
           validCheckers.push(checker);
         }
       } catch (error) {
+        await this._logger.debug(`Failed to check '${checker.constructor.name}', error = '${error}'`)
         const continueNext = await this.handleError(error);
         if (!continueNext) {
           return null;

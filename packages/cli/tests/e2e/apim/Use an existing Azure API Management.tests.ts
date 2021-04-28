@@ -14,6 +14,7 @@ import {
   setSimpleAuthSkuNameToB1,
   getConfigFileName,
   cleanUp,
+  cleanUpResourceGroup,
 } from "../commonUtils";
 import AzureLogin from "../../../src/commonlib/azureLogin";
 import GraphLogin from "../../../src/commonlib/graphLogin";
@@ -23,7 +24,8 @@ describe("Use an existing API Management Service", function () {
   const appName = getUniqueAppName();
   const subscriptionId = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
-  const existingApimResourceGroupName = `${appName}existing`
+  const existingRGName = `${appName}existing`;
+  const existingRGNameExtend = `${existingRGName}-rg`;
 
   it(`Import API into an existing API Management Service`, async function () {
     // new a project
@@ -39,7 +41,7 @@ describe("Use an existing API Management Service", function () {
     await setSimpleAuthSkuNameToB1(projectPath);
 
     await execAsync(
-      `teamsfx resource add azure-apim --subscription ${subscriptionId} --apim-resource-group ${existingApimResourceGroupName} --apim-service-name ${appName}-existing-apim`,
+      `teamsfx resource add apim --subscription ${subscriptionId} --apim-resource-group ${existingRGNameExtend} --apim-service-name ${appName}-existing-apim`,
       {
         cwd: projectPath,
         env: process.env,
@@ -48,7 +50,7 @@ describe("Use an existing API Management Service", function () {
     );
 
     await ApimValidator.init(subscriptionId, AzureLogin, GraphLogin);
-    await ApimValidator.prepareApiManagementService(existingApimResourceGroupName, `${appName}-existing-apim`);
+    await ApimValidator.prepareApiManagementService(existingRGNameExtend, `${appName}-existing-apim`);
 
     await execAsync(
       `teamsfx provision`,
@@ -60,7 +62,7 @@ describe("Use an existing API Management Service", function () {
     );
 
     const provisionContext = await fs.readJSON(getConfigFileName(appName));
-    await ApimValidator.validateProvision(provisionContext, appName, existingApimResourceGroupName, `${appName}-existing-apim`);
+    await ApimValidator.validateProvision(provisionContext, appName, existingRGNameExtend, `${appName}-existing-apim`);
 
     await execAsync(
       `teamsfx deploy apim --open-api-document openapi/openapi.json --api-prefix ${appName} --api-version v1`,
@@ -75,8 +77,12 @@ describe("Use an existing API Management Service", function () {
     await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v1");
   });
 
-  this.afterAll(async () => {
-    // clean up
-    await cleanUp(appName, projectPath, true, false, true);
+  after(async () => {
+    await Promise.all([
+      // clean up another resource group
+      cleanUpResourceGroup(existingRGName),
+      // clean up other resources
+      cleanUp(appName, projectPath, true, false, true)
+    ]);
   });
 });

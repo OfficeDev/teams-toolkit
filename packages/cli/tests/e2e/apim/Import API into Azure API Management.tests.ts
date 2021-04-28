@@ -24,7 +24,7 @@ describe("Import API into API Management", function () {
   const subscriptionId = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
 
-  this.beforeAll(async () => {
+  before(async () => {
     // new a project
     await execAsync(
       `teamsfx new --app-name ${appName} --interactive false`,
@@ -95,7 +95,7 @@ describe("Import API into API Management", function () {
     await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v1")
   });
 
-  this.afterAll(async () => {
+  after(async () => {
     // clean up
     await cleanUp(appName, projectPath, true, false, true);
   });

@@ -33,8 +33,8 @@ chaiUse(chaiPromises);
 let restore: () => void;
 
 describe("TeamsBotSsoPrompt - node", () => {
-  let clientId: string;
-  let tenantId: string;
+  let clientId: string = process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID;
+  let tenantId: string = process.env.SDK_INTEGRATION_TEST_AAD_TENANT_ID;
   const initiateLoginEndpoint = "fake_initiate_login_endpoint";
 
   const TeamsBotSsoPromptId = "TEAMS_BOT_SSO_PROMPT";
@@ -49,14 +49,12 @@ describe("TeamsBotSsoPrompt - node", () => {
   }
   const sandbox = sinon.createSandbox();
 
-  beforeEach(async function () {
-    clientId = process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID;
-    tenantId = process.env.SDK_INTEGRATION_TEST_AAD_TENANT_ID;
+  before(async function () {
     restore = MockEnvironmentVariable();
     ssoToken = await getSsoTokenFromTeams();
   });
 
-  afterEach(function () {
+  after(function () {
     sandbox.restore();
     RestoreEnvironmentVariable(restore);
   });
@@ -65,7 +63,7 @@ describe("TeamsBotSsoPrompt - node", () => {
     this.timeout(5000);
 
     const notConsentScopes = ["Calendars.Read"];
-    const adapter: TestAdapter = await initializeTestEnv(undefined, undefined, undefined, undefined, notConsentScopes);
+    const adapter: TestAdapter = await initializeTestEnv(notConsentScopes);
 
     await adapter
       .send("Hello")
@@ -117,25 +115,8 @@ describe("TeamsBotSsoPrompt - node", () => {
       });
   });
 
-  it("should end on invalid message when endOnInvalidMessage default to true", async function () {
-    const adapter: TestAdapter = await initializeTestEnv(undefined);
-
-    await adapter
-      .send("Hello")
-      .assertReply((activity) => {
-        // Assert bot send out OAuthCard
-        assertTeamsSsoOauthCardActivity(activity);
-
-        // Mock User send invalid message
-        const messageActivity = createReply(ActivityTypes.Message, activity);
-        messageActivity.text = "user sends invalid message during auth flow";
-        adapter.send(messageActivity);
-      })
-      .assertReply(SsoLogInResult.Fail);
-  });
-
   it("should not end on invalid message when endOnInvalidMessage set to false", async function () {
-    const adapter: TestAdapter = await initializeTestEnv(undefined, false);
+    const adapter: TestAdapter = await initializeTestEnv(undefined, undefined, false);
 
     await adapter
       .send("Hello")
@@ -227,11 +208,11 @@ describe("TeamsBotSsoPrompt - node", () => {
    * @param channelId value set to dialog context activity channel. Defaults to `Channels.MSteams`.
    */
   async function initializeTestEnv(
+    scopes?: string[],
     timeout_value?: number,
     endOnInvalidMessage?: boolean,
     channelId?: Channels,
     config?: Configuration,
-    scopes?: string[]
   ): Promise<TestAdapter> {
     // Create new ConversationState with MemoryStorage
     const convoState: ConversationState = new ConversationState(new MemoryStorage());

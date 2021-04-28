@@ -98,6 +98,7 @@ export enum SolutionError {
     GetLocalDebugConfigError = "GetLocalDebugConfigError",
     GetRemoteConfigError = "GetRemoteConfigError",
     UnsupportedPlatform = "UnsupportedPlatform",
+    InvalidInput = "InvalidInput"
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";

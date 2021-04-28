@@ -72,6 +72,5 @@ export const SampleSelect: SingleSelectQuestion = {
         detail: "Sample app description goes here",
         data: "https://github.com/HuihuiWu-Microsoft/Sample-app-graph/releases/download/v1.0/sample.app.graph.zip"
     }],
-    default: ScratchOptionYes.id,
     returnObject:true
 };

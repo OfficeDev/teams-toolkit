@@ -32,6 +32,11 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 3.1.x
+
       - name: Download Simple Auth bits
         env:
           SIMPLE_AUTH_SAS_TOKEN: ${{secrets.SIMPLE_AUTH_SAS_TOKEN}}

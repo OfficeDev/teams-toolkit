@@ -9,7 +9,7 @@ export async function getSSOToken(): Promise<string>  {
     let details = {
         username: env.SDK_INTEGRATION_TEST_ACCOUNT_NAME,
         password: env.SDK_INTEGRATION_TEST_ACCOUNT_PASSWORD,
-        client_id: env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
+        client_id: env.SDK_INTEGRATION_TEST_TEAMS_AAD_CLIENT_ID,
         scope: env.SDK_INTEGRATION_TEST_TEAMS_ACCESS_AS_USER_SCOPE,
         grant_type: 'password'
     };

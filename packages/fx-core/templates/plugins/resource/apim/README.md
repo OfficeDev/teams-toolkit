@@ -73,48 +73,36 @@ Below is a sample swagger file for the default http trigger function. You can ju
         "title": "{appName}", 
         "version": "v1" 
     }, 
-    "components": { 
-        "schemas": { 
-            "get-user-profile-response-body": { 
-                "type": "object", 
-                "properties": { 
-                    "receivedHTTPRequestBody": { 
-                        "type": "object" 
-                    }, 
-                    "userInfoMessage": { 
-                        "type": "string" 
-                    }, 
-                    "graphClientMessage": { 
-                        "type": "string" 
-                    } 
-                } 
-            } 
-        }, 
-        "responses": { 
-            "get-user-profile-200": { 
-                "description": "200 response", 
-                "content": { 
-                    "application/json": { 
-                        "schema": { 
-                            "$ref": "#/components/schemas/get-user-profile-response-body" 
-                        } 
-                    } 
-                } 
-            } 
-        } 
-    }, 
-    "paths": { 
-        "/getUserProfile": { 
-            "get": { 
-                "summary": "Get User Profile", 
-                "operationId": "get-user-profile", 
-                "responses": { 
-                    "200": { 
-                        "$ref": "#/components/responses/get-user-profile-200" 
-                    } 
-                } 
-            } 
-        } 
+    "paths": {
+        "/getUserProfile": {
+            "get": {
+                "summary": "Get User Profile",
+                "operationId": "get-user-profile",
+                "responses": {
+                    "200": {
+                        "description": "200 response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "receivedHTTPRequestBody": {
+                                            "type": "string"
+                                        },
+                                        "userInfoMessage": {
+                                            "type": "string"
+                                        },
+                                        "graphClientMessage": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     } 
 } 
 ```

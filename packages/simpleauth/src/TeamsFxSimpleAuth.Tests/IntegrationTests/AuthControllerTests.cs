@@ -215,26 +215,26 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         [Test, Category("P1")]
         public async Task PostToken_WithExpiredAuthorizationToken_Return401()
         {
-            // Arrange
-            var ssoToken = await GetUserAccessToken();
-            var client = _defaultFactory.CreateDefaultClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
+           // Arrange
+           var ssoToken = await GetUserAccessToken();
+           var client = _defaultFactory.CreateDefaultClient();
+           client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
 
-            // Act
-            await Task.Delay(TimeSpan.FromSeconds(15 * 60 + 20)).ConfigureAwait(false);
-            var requestBody = new PostTokenRequestBody
-            {
-                scope = DefaultGraphScope,
-                grant_type = PostTokenGrantType.SsoToken,
-            };
-            var result = await PostToAuthTokenApi<string>(client, requestBody);
+           // Act
+           await Task.Delay(TimeSpan.FromSeconds(15 * 60 + 20)).ConfigureAwait(false);
+           var requestBody = new PostTokenRequestBody
+           {
+               scope = DefaultGraphScope,
+               grant_type = PostTokenGrantType.SsoToken,
+           };
+           var result = await PostToAuthTokenApi<string>(client, requestBody);
 
-            // Assert
-            Assert.AreEqual(HttpStatusCode.Unauthorized, result.Response.StatusCode);
-            Assert.IsNull(result.Body);
-            Assert.IsTrue(result.Response.Headers.GetValues("WWW-Authenticate").FirstOrDefault().Contains("Bearer"));
-            Assert.IsTrue(result.Response.Headers.GetValues("WWW-Authenticate").FirstOrDefault().Contains("error=\"invalid_token\""));
-            Assert.IsTrue(result.Response.Headers.GetValues("WWW-Authenticate").FirstOrDefault().Contains("The token expired"));
+           // Assert
+           Assert.AreEqual(HttpStatusCode.Unauthorized, result.Response.StatusCode);
+           Assert.IsNull(result.Body);
+           Assert.IsTrue(result.Response.Headers.GetValues("WWW-Authenticate").FirstOrDefault().Contains("Bearer"));
+           Assert.IsTrue(result.Response.Headers.GetValues("WWW-Authenticate").FirstOrDefault().Contains("error=\"invalid_token\""));
+           Assert.IsTrue(result.Response.Headers.GetValues("WWW-Authenticate").FirstOrDefault().Contains("The token expired"));
         }
 
         [Test, Category("P0"), Parallelizable]
@@ -545,8 +545,8 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
             Assert.AreEqual(HttpStatusCode.BadRequest, result.Response.StatusCode);
             Assert.AreEqual("application/problem+json; charset=utf-8", result.Response.Content.Headers.ContentType.ToString());
             Assert.AreEqual((int)HttpStatusCode.BadRequest, result.Body.Status);
-            Assert.AreEqual(ExpectedProblemType.AadClientException, result.Body.Type);
-            Assert.IsTrue(result.Body.Detail.Contains("invalid_grant"));
+            Assert.AreEqual(ExpectedProblemType.AadUiRequiredException, result.Body.Type);
+            Assert.IsTrue(result.Body.Detail.Contains("Invalid request"));
         }
 
         [Test, Category("P0")]
@@ -572,10 +572,8 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
             Assert.AreEqual(HttpStatusCode.BadRequest, result.Response.StatusCode);
             Assert.AreEqual("application/problem+json; charset=utf-8", result.Response.Content.Headers.ContentType.ToString());
             Assert.AreEqual((int)HttpStatusCode.BadRequest, result.Body.Status);
-            Assert.AreEqual(ExpectedProblemType.AadClientException, result.Body.Type);
-            var detail = JsonConvert.DeserializeObject<Dictionary<string, object>>(result.Body.Detail);
-            Assert.AreEqual("invalid_grant", detail["error"]);
-            Assert.IsTrue(detail["error_description"].ToString().Contains("The Code_Verifier does not match the code_challenge supplied in the authorization request"));
+            Assert.AreEqual(ExpectedProblemType.AadUiRequiredException, result.Body.Type);
+            Assert.IsTrue(result.Body.Detail.Contains("The Code_Verifier does not match the code_challenge supplied in the authorization request"));
         }
 
         [Test, Category("P0")]
@@ -891,75 +889,6 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
             Assert.IsTrue(firstResult.Body.scope.ToLowerInvariant().Contains("https://graph.microsoft.com/user.read"));
             Assert.IsFalse(firstResult.Body.scope.ToLowerInvariant().Contains("https://graph.microsoft.com/user.readbasic.all"));
             Assert.IsTrue(secondResult.Body.scope.ToLowerInvariant().Contains("https://graph.microsoft.com/user.readbasic.all"));
-        }
-
-        [Test, Category("P0"), Parallelizable]
-        public async Task PostToken_SsoGrantWithSameConsentedScope_Return200WithTokenFromCache()
-        {
-            // Arrange
-            var ssoToken = await GetUserAccessToken();
-            var client = _defaultFactory.CreateDefaultClient(new RetryHandler(new HttpClientHandler()));
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
-
-            // Act
-            var firstRequestBody = new PostTokenRequestBody
-            {
-                scope = DefaultGraphScope,
-                grant_type = PostTokenGrantType.SsoToken
-            };
-            var firstResult = await PostToAuthTokenApi<PostTokenResponse>(client, firstRequestBody);
-            Assert.AreEqual(HttpStatusCode.OK, firstResult.Response.StatusCode);
-
-            var secondRequestBody = new PostTokenRequestBody
-            {
-                scope = DefaultGraphScope,
-                grant_type = PostTokenGrantType.SsoToken
-            };
-            var secondResult = await PostToAuthTokenApi<PostTokenResponse>(client, secondRequestBody);
-            Assert.AreEqual(HttpStatusCode.OK, secondResult.Response.StatusCode);
-
-            // Assert
-            Assert.AreEqual(firstResult.Body.access_token, secondResult.Body.access_token);
-        }
-
-        [Test, Category("P0"), Parallelizable]
-        [Ignore("Does not apply since we disables cache temporary")]
-        public async Task PostToken_SsoGrantWithSameConsentedScopeWhenTokenGoingToExpire_Return200WithRefreshedToken() // TODO: long run case, mark this test case as P2
-        {
-            // Arrange
-            var ssoToken = await GetUserAccessToken();
-            var customizedAppConfiguration = new Dictionary<string, string>(_defaultConfigurations);
-            // Start a new instance so the cached token is guaranteed to expired after 10 minutes, otherwise it may expire after 1 hour according to test case executing scequence
-            var factory = _aadInstance.ConfigureWebApplicationFactory(customizedAppConfiguration);
-            var client = factory.CreateDefaultClient(new RetryHandler(new HttpClientHandler()));
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
-
-            // Act
-            var firstRequestBody = new PostTokenRequestBody
-            {
-                scope = DefaultGraphScope,
-                grant_type = PostTokenGrantType.SsoToken
-            };
-            var firstResult = await PostToAuthTokenApi<PostTokenResponse>(client, firstRequestBody);
-            Assert.AreEqual(HttpStatusCode.OK, firstResult.Response.StatusCode);
-
-            var secondsToWait = (firstResult.Body.expires_on - DateTimeOffset.UtcNow).TotalSeconds - 4 * 60;
-            if (secondsToWait > 0)
-            {
-                await Task.Delay(TimeSpan.FromSeconds(secondsToWait)).ConfigureAwait(false); // Wait until 4 minutes before token expire, MSAL will refresh token 5 minutes before expire
-            }
-
-            var secondRequestBody = new PostTokenRequestBody
-            {
-                scope = DefaultGraphScope,
-                grant_type = PostTokenGrantType.SsoToken
-            };
-            var secondResult = await PostToAuthTokenApi<PostTokenResponse>(client, secondRequestBody);
-            Assert.AreEqual(HttpStatusCode.OK, secondResult.Response.StatusCode);
-
-            // Assert
-            Assert.AreNotEqual(firstResult.Body.access_token, secondResult.Body.access_token);
-            Assert.IsTrue((secondResult.Body.expires_on - DateTimeOffset.UtcNow).TotalSeconds > 5 * 60); // Token lifetime is refreshed
         }
 
         [Test, Category("P0"), Parallelizable]

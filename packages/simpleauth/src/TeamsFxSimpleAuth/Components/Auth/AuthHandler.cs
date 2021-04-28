@@ -4,13 +4,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Client;
 using Microsoft.TeamsFx.SimpleAuth.Components.Auth.Exceptions;
-using Microsoft.TeamsFx.SimpleAuth.Components.Auth.Models;
 using Microsoft.TeamsFx.SimpleAuth.Exceptions;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.IdentityModel.Tokens.Jwt;
@@ -20,67 +18,48 @@ namespace Microsoft.TeamsFx.SimpleAuth.Components.Auth
 {
     public class AuthHandler
     {
-        private static HttpClient _httpClient = new HttpClient();
         private string _clientId;
         private string _clientSecret;
-        private string _oauthTokenEndpoint;
-        private IConfidentialClientApplication _confidentialClientApplication;
+        private string _oauthAuthority;
         private ILogger<AuthHandler> _logger;
 
-        public AuthHandler(IConfiguration configuration, IConfidentialClientApplication confidentialClientApplication, ILogger<AuthHandler> logger)
+        public AuthHandler(IConfiguration configuration, ILogger<AuthHandler> logger)
         {
             _logger = logger;
             _clientId = configuration[ConfigurationName.ClientId];
             _clientSecret = configuration[ConfigurationName.ClientSecret];
-            _oauthTokenEndpoint = configuration[ConfigurationName.OAuthAuthority].TrimEnd('/') + "/oauth2/v2.0/token";
-            _confidentialClientApplication = confidentialClientApplication;
+            _oauthAuthority = configuration[ConfigurationName.OAuthAuthority];
         }
 
         public async Task<AuthenticationResult> AcquireTokenByAuthorizationCode(string[] scopes, string redirectUri, string authorizationCode, string codeVerifier, string ssoToken)
         {
-            // MSAL confidential client does not support PKCE, compose the request by ourselves
-            // Issue: https://github.com/AzureAD/microsoft-authentication-library-for-dotnet/issues/1473
-            var requestBody = new AadTokenRequstBody()
+            _logger.LogDebug($"Acquiring token via auth code flow. Scopes: {string.Join(' ', scopes)}. RedirectUri: {redirectUri}. ClientId: {_clientId}.");
+
+            try
             {
-                client_id = _clientId,
-                scope = string.Join(' ', scopes),
-                redirect_uri = redirectUri,
-                grant_type = AadGrantType.AuthorizationCode,
-                client_secret = _clientSecret,
-                code = authorizationCode,
-                code_verifier = codeVerifier
-            };
-            _logger.LogDebug($"Acquiring token via auth code flow. Scopes: {requestBody.scope}. RedirectUri: {requestBody.redirect_uri}. ClientId: {requestBody.client_id}.");
-            var response = await _httpClient.PostAsync(_oauthTokenEndpoint, new FormUrlEncodedContent(requestBody.ToDictionary())).ConfigureAwait(false);
-            var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            if (response.IsSuccessStatusCode)
-            {
+                var app = BuildConfidentialClientApplication(redirectUri);
+                var result = await app.AcquireTokenByAuthorizationCode(scopes, authorizationCode)
+                    .WithPkceCodeVerifier(codeVerifier).ExecuteAsync().ConfigureAwait(false);
+
                 // ensure ssoToken and authorizationCode belongs to the same user
-                var accessToken = JsonConvert.DeserializeObject<AadTokenResponse>(responseBody).AccessToken;
-                if (!JwtHaveSameObjectId(accessToken, ssoToken))
+                if (!JwtHaveSameObjectId(result.AccessToken, ssoToken))
                 {
                     throw new AuthorizationRequestDeniedException("authorization code and sso token in header have different object id.");
                 }
 
-                try
-                {
-                    _logger.LogDebug("Acquiring token via OBO flow again to ensure cache.");
-                    var userAssertion = new UserAssertion(ssoToken);
-                    var result = await _confidentialClientApplication.AcquireTokenOnBehalfOf(scopes, userAssertion).ExecuteAsync().ConfigureAwait(false);
-                    return result;
-                }
-                catch (MsalServiceException ex) // Errors that returned from AAD service
-                {
-                    throw generateAadException(ex.ResponseBody, (HttpStatusCode)ex.StatusCode, ex);
-                }
-                catch (MsalClientException ex) // Exceptions that are local to the MSAL library
-                {
-                    throw new AuthInternalServerException(ex.Message, ex);
-                }
+                return result;
             }
-            else
+            catch (MsalUiRequiredException ex) // Need user interaction
             {
-                throw generateAadException(responseBody, response.StatusCode);
+                throw new AadUiRequiredException(ex.Message, ex);
+            }
+            catch (MsalServiceException ex) // Errors that returned from AAD service
+            {
+                throw generateAadException(ex.ResponseBody, (HttpStatusCode)ex.StatusCode, ex);
+            }
+            catch (MsalClientException ex) // Exceptions that are local to the MSAL library
+            {
+                throw new AuthInternalServerException(ex.Message, ex);
             }
         }
 
@@ -93,7 +72,8 @@ namespace Microsoft.TeamsFx.SimpleAuth.Components.Auth
                 if (String.Equals(JWTVersion.Ver2, version))
                 {
                     loginHint = user.FindFirstValue("preferred_username");
-                } else if (String.Equals(JWTVersion.Ver1, version))
+                }
+                else if (String.Equals(JWTVersion.Ver1, version))
                 {
                     loginHint = user.FindFirstValue(ClaimTypes.Upn);
                 }
@@ -103,7 +83,8 @@ namespace Microsoft.TeamsFx.SimpleAuth.Components.Auth
                     throw new InvalidClaimException("loginHint is not found in SSO token");
                 }
                 _logger.LogDebug($"Getting token for {loginHint} with scope {JsonConvert.SerializeObject(scopes)}");
-                var result = await _confidentialClientApplication.AcquireTokenSilent(scopes, loginHint)
+                var app = BuildConfidentialClientApplication();
+                var result = await app.AcquireTokenSilent(scopes, loginHint)
                                             .ExecuteAsync()
                                             .ConfigureAwait(false);
 
@@ -123,7 +104,8 @@ namespace Microsoft.TeamsFx.SimpleAuth.Components.Auth
             {
                 _logger.LogDebug("Acquiring token via OBO flow.");
                 var userAssertion = new UserAssertion(ssoToken);
-                var result = await _confidentialClientApplication.AcquireTokenOnBehalfOf(scopes, userAssertion)
+                var app = BuildConfidentialClientApplication();
+                var result = await app.AcquireTokenOnBehalfOf(scopes, userAssertion)
                                                         .ExecuteAsync()
                                                         .ConfigureAwait(false);
 
@@ -159,7 +141,8 @@ namespace Microsoft.TeamsFx.SimpleAuth.Components.Auth
                 {
                     return true;
                 }
-            } catch (Exception err)
+            }
+            catch (Exception err)
             {
                 _logger.LogError(err.Message);
                 throw;
@@ -199,6 +182,20 @@ namespace Microsoft.TeamsFx.SimpleAuth.Components.Auth
                 }
                 return new AadClientException(responseBody, exception, statusCode);
             }
+        }
+
+        // Remember to reuse the instance if a request need to use IConfidentialClientApplication multiple times
+        private IConfidentialClientApplication BuildConfidentialClientApplication(string redirectUri = null)
+        {
+            var builder = ConfidentialClientApplicationBuilder.Create(_clientId)
+                    .WithClientSecret(_clientSecret)
+                    .WithAuthority(_oauthAuthority);
+            if (!string.IsNullOrEmpty(redirectUri))
+            {
+                builder = builder.WithRedirectUri(redirectUri);
+            }
+
+            return builder.Build();
         }
     }
 }

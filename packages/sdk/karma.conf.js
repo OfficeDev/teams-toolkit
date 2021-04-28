@@ -26,8 +26,9 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      "dist-test/index.browser.js",
-      { pattern: "dist-test/index.browser.js.map", type: "html", included: false, served: true }
+      // "dist-test/index.browser.js",
+      config.glob,
+      { pattern: `${config.glob}.map`, type: "html", included: false, served: true }
     ],
 
     // list of files / patterns to exclude

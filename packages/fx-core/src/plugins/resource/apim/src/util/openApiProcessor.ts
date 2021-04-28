@@ -53,7 +53,7 @@ export class OpenApiProcessor {
         for (const file of files) {
             try {
                 const openApi = await this.loadOpenApiDocument(file);
-                const relativePath = path.relative(dir, file).replace("\\", "/");
+                const relativePath = path.relative(dir, file).replace(/\\/g, "/");
                 fileName2OpenApi.set(relativePath, openApi);
             } catch (error) {
                 continue;

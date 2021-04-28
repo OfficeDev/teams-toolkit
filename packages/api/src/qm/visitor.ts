@@ -211,14 +211,17 @@ const questionVisitor: QuestionVistor = async function (
       const fileQuestion: FileQuestion = question as FileQuestion;
       const validationFunc = fileQuestion.validation ? getValidationFunction(fileQuestion.validation, inputs, remoteFuncExecutor) : undefined;
       let title = (fileQuestion.title || fileQuestion.description || fileQuestion.name);
-      title += `(${step}/${totalSteps})`;
+      // title += `(${step}/${totalSteps})`;
       return await ui.showOpenDialog({
         defaultUri: defaultValue as string | undefined,
         canSelectFiles: false,
         canSelectFolders: true,
         canSelectMany: false,
         title: title,
-        validation: validationFunc
+        validation: validationFunc,
+        backButton: backButton,
+        step: step,
+        totalSteps: totalSteps
       });
     }
   }

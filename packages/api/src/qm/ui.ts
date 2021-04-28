@@ -113,6 +113,10 @@ export interface FxOpenDialogOption{
     title?: string;
 
     validation?: (input: string) => Promise<string | undefined>;
+
+    backButton?: boolean;
+    step?: number;
+    totalSteps?: number;
 }
 
 export enum InputResultType {

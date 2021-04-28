@@ -23,13 +23,8 @@ export class VsCodeUI implements UserInterface{
       const quickPick: QuickPick<QuickPickItem> = window.createQuickPick();
       disposables.push(quickPick);
       quickPick.title = option.title;
-      if(option.canSelectMany){
-        if (option.backButton) quickPick.buttons = [QuickInputButtons.Back, okButton];
-        else quickPick.buttons = [okButton];
-      }
-      else {
-        if (option.backButton) quickPick.buttons = [QuickInputButtons.Back];
-      }
+      if (option.backButton) quickPick.buttons = [QuickInputButtons.Back, okButton];
+      else quickPick.buttons = [okButton];
       quickPick.placeholder = option.placeholder;
       quickPick.ignoreFocusOut = true;
       quickPick.matchOnDescription = true;
@@ -41,7 +36,7 @@ export class VsCodeUI implements UserInterface{
       return await new Promise<InputResult>(
         async (resolve): Promise<void> => {
           const onDidAccept = async () => {
-            const selectedItems = quickPick.selectedItems as FxQuickPickItem[];
+            let selectedItems = quickPick.selectedItems as FxQuickPickItem[];
             if (option.canSelectMany) {
               const strArray = Array.from(selectedItems.map((i) => i.id));
               let result: OptionItem[] | string[] = strArray;
@@ -62,7 +57,8 @@ export class VsCodeUI implements UserInterface{
                 result: result
               });
             } else {
-              const item: FxQuickPickItem = quickPick.selectedItems[0] as FxQuickPickItem;
+              if(!selectedItems || selectedItems.length === 0) selectedItems = [quickPick.items[0] as FxQuickPickItem];
+              const item: FxQuickPickItem = selectedItems[0] as FxQuickPickItem;
               let result: string | OptionItem = item.id;
               if (option.returnObject) {
                 result = {
@@ -255,29 +251,115 @@ export class VsCodeUI implements UserInterface{
   }
 
   async showOpenDialog (option: FxOpenDialogOption):Promise<InputResult>{
-    while (true) {
-      const uri = await window.showOpenDialog({
-        defaultUri: option.defaultUri ? Uri.file(option.defaultUri) : undefined,
-        canSelectFiles: false,
-        canSelectFolders: true,
-        canSelectMany: false,
-        title: option.title
+
+    const okButton : QuickInputButton = { 
+      iconPath: Uri.file(ext.context.asAbsolutePath("media/ok.svg")),
+      tooltip:"ok"
+    };  
+    const disposables: Disposable[] = [];
+    try {
+      const quickPick: QuickPick<QuickPickItem> = window.createQuickPick();
+      disposables.push(quickPick);
+      quickPick.title = option.title;
+      if (option.backButton) quickPick.buttons = [QuickInputButtons.Back, okButton];
+      else quickPick.buttons = [okButton];
+      quickPick.ignoreFocusOut = true;
+      quickPick.matchOnDescription = false;
+      quickPick.matchOnDetail = false;
+      quickPick.canSelectMany = false;
+      quickPick.step = option.step;
+      quickPick.totalSteps = option.totalSteps;
+      return await new Promise<InputResult>(
+        async (resolve): Promise<void> => {
+          const onDidAccept = async () => {
+            let result = quickPick.items[0].detail;
+            if(result && result.length > 0)
+              resolve({ type: InputResultType.sucess, result: result });
+          };
+
+          disposables.push(
+            // quickPick.onDidAccept(onDidAccept),
+            quickPick.onDidHide(() => {
+              resolve({ type: InputResultType.cancel});
+            })
+          );
+          disposables.push(
+            quickPick.onDidTriggerButton((button) => { 
+              if (button === QuickInputButtons.Back)
+                resolve({ type: InputResultType.back });
+              else
+                onDidAccept();
+            })
+          );
+          try {
+             
+            /// set items
+            quickPick.items = [{label: "path", detail: option.defaultUri}];
+            
+            const items = quickPick.items as FxQuickPickItem[];
+            const optionMap = new Map<string, FxQuickPickItem>();
+            for(const item of items){
+              optionMap.set(item.id, item);
+            }
+            const onDidChangeSelection = async function(items:QuickPickItem[]):Promise<any>{
+              const defaultUrl = items[0].detail;
+              const uri = await window.showOpenDialog({
+                defaultUri: defaultUrl ? Uri.file(defaultUrl) : undefined,
+                canSelectFiles: false,
+                canSelectFolders: true,
+                canSelectMany: false,
+                title: option.title
+              });
+              const res = uri && uri.length > 0 ? uri[0].fsPath : undefined;
+              if (res) {
+                quickPick.items = [{label: "path", detail: res}];
+              }
+              
+            };
+            disposables.push(
+              quickPick.onDidChangeSelection(onDidChangeSelection)
+            );
+           
+
+            quickPick.show();
+          } catch (err) {
+            resolve({
+              type: InputResultType.error,
+              error: returnSystemError(err, ExtensionSource, ExtensionErrors.UnknwonError)
+            });
+          }
+        }
+      );
+    } finally {
+      disposables.forEach((d) => {
+        d.dispose();
       });
-      const res = uri && uri.length > 0 ? uri[0].fsPath : undefined;
-      if (!res) {
-        return { type: InputResultType.cancel };
-      }
-      if(!option.validation){
-        return { type: InputResultType.sucess, result: res };
-      }
-      const validationRes = await option.validation(res);
-      if (!validationRes) {
-        return { type: InputResultType.sucess, result: res };
-      }
-      else {
-        await window.showErrorMessage(validationRes);
-      }
     }
+
+
+    // while (true) {
+    //   const uri = await window.showOpenDialog({
+    //     defaultUri: option.defaultUri ? Uri.file(option.defaultUri) : undefined,
+    //     canSelectFiles: false,
+    //     canSelectFolders: true,
+    //     canSelectMany: false,
+    //     title: option.title
+    //   });
+    //   const res = uri && uri.length > 0 ? uri[0].fsPath : undefined;
+    //   if (!res) {
+    //     return { type: InputResultType.cancel };
+    //   }
+    //   if(!option.validation){
+    //     return { type: InputResultType.sucess, result: res };
+    //   }
+    //   const validationRes = await option.validation(res);
+    //   if (!validationRes) {
+    //     return { type: InputResultType.sucess, result: res };
+    //   }
+    //   else {
+    //     await window.showErrorMessage(validationRes);
+    //   }
+    // }
   }
 }
 

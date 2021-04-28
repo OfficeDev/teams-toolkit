@@ -259,8 +259,12 @@ export const BOTS_TPL: IBot[] = [
                 ],
                 "commands": [
                     {
-                        "title": "bot command title",
-                        "description": "bot command description"
+                        "title": "intro",
+                        "description": "Send introduction card of this Bot"
+                    },
+                    {
+                        "title": "show",
+                        "description": "Show user profile by calling Microsoft Graph API with SSO"
                     }
                 ]
             }

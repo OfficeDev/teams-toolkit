@@ -3,10 +3,10 @@
 
 import { AccessToken, TokenCredential, GetTokenOptions } from "@azure/identity";
 import { UserInfo } from "../models/userinfo";
-import { ErrorCode, ErrorMessage, ErrorWithCode } from "./errors";
-import { Cache } from "./cache.browser";
+import { ErrorCode, ErrorMessage, ErrorWithCode } from "../core/errors";
+import { Cache } from "../core/cache.browser";
 import * as microsoftTeams from "@microsoft/teams-js";
-import { getAuthenticationConfiguration } from "./configurationProvider";
+import { getAuthenticationConfiguration } from "../core/configurationProvider";
 import { AuthenticationConfiguration } from "../models/configuration";
 import { AuthCodeResult } from "../models/authCodeResult";
 import axios, { AxiosInstance } from "axios";
@@ -85,8 +85,9 @@ export class TeamsUserCredential implements TokenCredential {
     return new Promise<void>((resolve, reject) => {
       microsoftTeams.initialize(() => {
         microsoftTeams.authentication.authenticate({
-          url: `${this.config.initiateLoginEndpoint}?clientId=${this.config.clientId
-            }&scope=${encodeURI(scopesStr)}`,
+          url: `${this.config.initiateLoginEndpoint}?clientId=${
+            this.config.clientId
+          }&scope=${encodeURI(scopesStr)}`,
           width: loginPageWidth,
           height: loginPageHeight,
           successCallback: async (result?: string) => {
@@ -147,7 +148,6 @@ export class TeamsUserCredential implements TokenCredential {
     scopes: string | string[],
     options?: GetTokenOptions
   ): Promise<AccessToken | null> {
-    // TODO apply get token options
     const ssoToken = await this.getSSOToken();
 
     const scopeStr = typeof scopes === "string" ? scopes : scopes.join(" ");

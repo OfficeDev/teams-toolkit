@@ -2,9 +2,9 @@
 // Licensed under the MIT license.
 
 export { ErrorWithCode, ErrorCode } from "./core/errors";
-export { M365TenantCredential } from "./core/m365TenantCredential";
-export { OnBehalfOfUserCredential } from "./core/onBehalfOfUserCredential";
-export { TeamsUserCredential } from "./core/teamsUserCredential";
+export { M365TenantCredential } from "./credential/m365TenantCredential";
+export { OnBehalfOfUserCredential } from "./credential/onBehalfOfUserCredential";
+export { TeamsUserCredential } from "./credential/teamsUserCredential";
 export { MsGraphAuthProvider } from "./core/msGraphAuthProvider";
 export { UserInfo } from "./models/userinfo";
 export { TeamsBotSsoPrompt, TeamsBotSsoPromptSettings } from "./bot/teamsBotSsoPrompt";

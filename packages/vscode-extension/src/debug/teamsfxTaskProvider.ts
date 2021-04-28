@@ -195,8 +195,8 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     definition = definition || { type: TeamsfxTaskProvider.type, command };
     // TODO: tell nodemon which files to watch (depends on bot's decision)
     const commandLine = programmingLanguage === constants.ProgrammingLanguage.typescript
-        ? "npx nodemon --exec node --inspect=9239 -r ts-node/register index.ts"
-        : "npx nodemon --inspect=9239 index.js";
+        ? "npx nodemon --exec node --inspect=9239 --signal SIGINT -r ts-node/register index.ts"
+        : "npx nodemon --inspect=9239 --signal SIGINT index.js";
     const env = await commonUtils.getBotLocalEnv();
     const options: vscode.ShellExecutionOptions = {
       cwd: projectRoot,

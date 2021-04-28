@@ -345,6 +345,11 @@
             "type": "boolean",
             "description": "Validate the .NET SDK is installed before using it.",
             "default": true
+          },
+          "fx-extension.stopTeamsfxTasksPostDebug": {
+            "type": "boolean",
+            "description": "Automatically stop all teamsfx tasks when debug session ends.",
+            "default": true
           }
         }
       }

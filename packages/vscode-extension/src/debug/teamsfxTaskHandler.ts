@@ -15,9 +15,9 @@ interface IRunningTeamsfxTask {
 const allRunningTeamsfxTasks: Map<IRunningTeamsfxTask, number> = new Map<IRunningTeamsfxTask, number>();
 
 function isTeamsfxTask(task: vscode.Task): boolean {
-    // teamsfx: xxx start
+    // teamsfx: xxx start / xxx watch
     if (task) {
-        if (task.source === ProductName && task.name.trim().toLocaleLowerCase().endsWith("start")) {
+        if (task.source === ProductName && (task.name.trim().toLocaleLowerCase().endsWith("start") || task.name.trim().toLocaleLowerCase().endsWith("watch"))) {
             // provided by toolkit
             return true;
         }
@@ -25,7 +25,7 @@ function isTeamsfxTask(task: vscode.Task): boolean {
         if (task.definition && task.definition.type === ProductName) {
             // defined by launch.json
             const command = task.definition.command as string;
-            return command !== undefined && command.trim().toLocaleLowerCase().endsWith("start");
+            return command !== undefined && (command.trim().toLocaleLowerCase().endsWith("start") || command.trim().toLocaleLowerCase().endsWith("watch"));
         }
     }
 

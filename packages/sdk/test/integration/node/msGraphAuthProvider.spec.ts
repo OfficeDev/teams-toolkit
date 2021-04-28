@@ -14,7 +14,7 @@ import {
   MockEnvironmentVariable,
   RestoreEnvironmentVariable,
   AADJwtPayLoad
-} from "../../helper";
+} from "../helper";
 import jwtDecode from "jwt-decode";
 
 chaiUse(chaiPromises);

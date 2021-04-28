@@ -10,29 +10,25 @@
     {
         "data": {
             "name": "add-azure-resources",
-            "title": "Select Azure resources to add",
+            "title": "Cloud resources",
             "type": "multiSelect",
             "option": [
                 {
                     "id": "function",
-                    "label": "Azure Functions",
-                    "description": "Application backend."
+                    "label": "New APIs from Azure Functions"
                 },
                 {
                     "id": "sql",
-                    "label": "Azure SQL Database",
-                    "description": "Azure SQL Database depends on Azure Functions."
+                    "label": "Azure SQL Database"
                 },
                 {
                     "id": "apim",
-                    "label": "apim",
-                    "description": "Register APIs in Azure API Management"
+                    "label": "Register APIs in Azure API Management"
                 }
             ],
             "default": [
                 "apim"
             ],
-            "prompt": "If you already have function, add function means adding a new function API; If you don't have function, adding SQL or APIM will create a function by default.",
             "hide": true
         }
     },
@@ -46,12 +42,15 @@
                 "namespace": "fx-solution-azure/fx-resource-function",
                 "method": "validateFunctionName"
             }
+        },
+        "condition": {
+            "minItems": 1
         }
     },
     {
         "data": {
             "name": "subscription",
-            "title": "Please select a subscription",
+            "title": "Select a subscription",
             "type": "func",
             "namespace": "fx-solution-azure",
             "method": "askSubscription"

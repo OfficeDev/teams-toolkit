@@ -94,7 +94,6 @@ suite("All checkers E2E test", async () => {
         const dotnetExecPath = await dotnetUtils.getDotnetExecPathFromConfig(dotnetUtils.dotnetConfigPath);
         if (isLinux()) {
             chai.assert.isNull(dotnetExecPath);
-            chai.assert.isFalse(await dotnetUtils.hasAnyDotnetVersions(dotnetExecPath!, dotnetUtils.dotnetSupportedVersions));
         } else {
             chai.assert.isNotNull(dotnetExecPath);
             chai.assert.isTrue(await dotnetUtils.hasAnyDotnetVersions(dotnetExecPath!, dotnetUtils.dotnetSupportedVersions));

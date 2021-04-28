@@ -75,24 +75,10 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
                     {
                         label: "Start Backend",
                         dependsOn: [
-                            "backend tsc watch",
+                            `${ProductName}: backend watch`,
                             `${ProductName}: backend start`,
                         ],
                         dependsOrder: "sequence",
-                    },
-                    {
-                        label: "backend tsc watch",
-                        type: "shell",
-                        command: "npx tsc --watch",
-                        options: {
-                            cwd: "${workspaceFolder}/api",
-                        },
-                        isBackground: true,
-                        // TODO: tell tsc which files to watch (depends on function's decision)
-                        problemMatcher: "$tsc-watch",
-                        presentation: {
-                            reveal: "silent",
-                        },
                     },
                 );
             } else {
@@ -252,24 +238,10 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
                     {
                         label: "Start Backend",
                         dependsOn: [
-                            "backend tsc watch",
+                            `${ProductName}: backend watch`,
                             `${ProductName}: backend start`,
                         ],
                         dependsOrder: "sequence",
-                    },
-                    {
-                        label: "backend tsc watch",
-                        type: "shell",
-                        command: "npx tsc --watch",
-                        options: {
-                            cwd: "${workspaceFolder}/api",
-                        },
-                        isBackground: true,
-                        // TODO: tell tsc which files to watch (depends on function's decision)
-                        problemMatcher: "$tsc-watch",
-                        presentation: {
-                            reveal: "silent",
-                        },
                     },
                 );
             } else {

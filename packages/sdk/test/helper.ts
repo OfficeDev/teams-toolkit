@@ -8,8 +8,6 @@ import fs from "fs-extra";
 import * as msal from "@azure/msal-node";
 import mockedEnv from "mocked-env";
 import { chromium, ChromiumBrowser, Page } from "playwright-chromium";
-import { deleteAadApp } from "../../api/src/ci/aadValidate";
-import { MockAzureAccountProvider } from "../../api/src/ci/mockAzureAccountProvider";
 import {
   TEST_USER_NAME,
   TEST_USER_PASSWORD,
@@ -17,6 +15,7 @@ import {
 } from "../../api/src/ci/conf/secrets";
 import urljoin from "url-join";
 import { JwtPayload } from "jwt-decode";
+import { cleanUp } from "../../cli/tests/e2e/commonUtils";
 
 const execAsync = promisify(exec);
 const testProjectFolder = "testProjects";
@@ -70,7 +69,7 @@ export async function createNewProject(name: string): Promise<string> {
       `teamsfx provision --folder ${projectFolder} --subscription ${TEST_SUBSCRIPTION_ID}`
     ))
   ) {
-    await deleteProject(projectFolder);
+    await deleteProject(name, projectFolder);
     throw new Error(`Provision project ${name} failed`);
   }
   return projectFolder;
@@ -122,14 +121,12 @@ export async function getLoginEnvironment(): Promise<{
 }
 
 /**
- * Delete all project resources and local files.
+ * A wrapper to delete all project resources and local files.
  *
  * @param projectPath - folder path of project
  */
-export async function deleteProject(projectPath: string): Promise<void> {
-  await deleteProjectAad(projectPath);
-  await deleteProjectResourceGroup(projectPath);
-  await fs.remove(projectPath);
+export async function deleteProject(appName: string, projectPath: string): Promise<void> {
+  await cleanUp(appName, projectPath, true, false, false);
 }
 
 async function loginTestUser(): Promise<void> {
@@ -174,25 +171,6 @@ async function callCli(command: string): Promise<boolean> {
     timeout: 0
   });
   return result.stderr === "";
-}
-
-async function deleteProjectAad(projectPath: string) {
-  console.log(`Deleting AAD app of project ${projectPath}`);
-  const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
-  await deleteAadApp(context);
-}
-
-async function deleteProjectResourceGroup(projectPath: string) {
-  console.log(`Deleting resources of project ${projectPath}`);
-  const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
-  let resourceGroupName: string;
-  try {
-    resourceGroupName = context.solution.resourceGroupName;
-  } catch (e) {
-    console.warn("No resource group name found in env.default.json");
-    return;
-  }
-  await MockAzureAccountProvider.getInstance().deleteResourceGroup(resourceGroupName);
 }
 
 /**
@@ -278,6 +256,7 @@ export async function getSsoTokenFromTeams(): Promise<string> {
  * Once invoke MockEnvironmentVariables, mock the variables in it with another value, it will take effect immediately.
  */
 export function MockEnvironmentVariable(): () => void {
+  require('dotenv').config();
   return mockedEnv({
     M365_CLIENT_ID: process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
     M365_CLIENT_SECRET: process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_SECRET,

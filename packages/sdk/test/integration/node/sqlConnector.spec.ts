@@ -7,7 +7,7 @@ import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import chaiPromises from "chai-as-promised";
 import { Connection, Request } from "tedious";
 import { loadConfiguration, DefaultTediousConnectionConfiguration } from "../../../src";
-import { MockEnvironmentVariable, RestoreEnvironmentVariable } from "../../helper";
+import { MockEnvironmentVariable, RestoreEnvironmentVariable } from "../helper";
 
 chaiUse(chaiPromises);
 let restore: () => void;

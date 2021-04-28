@@ -63,7 +63,7 @@ describe("TeamsBotSsoPrompt - node", () => {
     this.timeout(5000);
 
     const notConsentScopes = ["Calendars.Read"];
-    const adapter: TestAdapter = await initializeTestEnv(notConsentScopes);
+    const adapter: TestAdapter = await initializeTestEnv({ scopes: notConsentScopes });
 
     await adapter
       .send("Hello")
@@ -88,7 +88,7 @@ describe("TeamsBotSsoPrompt - node", () => {
   it("should be able to sign user in and get exchange tokens", async function () {
     this.timeout(5000);
 
-    const adapter: TestAdapter = await initializeTestEnv();
+    const adapter: TestAdapter = await initializeTestEnv({});
 
     await adapter
       .send("Hello")
@@ -116,7 +116,7 @@ describe("TeamsBotSsoPrompt - node", () => {
   });
 
   it("should not end on invalid message when endOnInvalidMessage set to false", async function () {
-    const adapter: TestAdapter = await initializeTestEnv(undefined, undefined, false);
+    const adapter: TestAdapter = await initializeTestEnv({ endOnInvalidMessage: false });
 
     await adapter
       .send("Hello")
@@ -208,11 +208,7 @@ describe("TeamsBotSsoPrompt - node", () => {
    * @param channelId value set to dialog context activity channel. Defaults to `Channels.MSteams`.
    */
   async function initializeTestEnv(
-    scopes?: string[],
-    timeout_value?: number,
-    endOnInvalidMessage?: boolean,
-    channelId?: Channels,
-    config?: Configuration,
+    param: InitializeParams
   ): Promise<TestAdapter> {
     // Create new ConversationState with MemoryStorage
     const convoState: ConversationState = new ConversationState(new MemoryStorage());
@@ -223,25 +219,25 @@ describe("TeamsBotSsoPrompt - node", () => {
     );
     const dialogs: DialogSet = new DialogSet(dialogState);
 
-    let botScopes = scopes;
+    let botScopes = param.scopes;
     if (!botScopes) {
       botScopes = requiredScopes;
     }
 
     const settings: TeamsBotSsoPromptSettings = {
       scopes: botScopes,
-      timeout: timeout_value,
-      endOnInvalidMessage: endOnInvalidMessage
+      timeout: param.timeout_value,
+      endOnInvalidMessage: param.endOnInvalidMessage
     };
 
-    loadConfiguration(config);
+    loadConfiguration(param.config);
 
     dialogs.add(new TeamsBotSsoPrompt(TeamsBotSsoPromptId, settings));
 
     // Initialize TestAdapter.
     const adapter: TestAdapter = new TestAdapter(async (turnContext) => {
       const dc = await dialogs.createContext(turnContext);
-      dc.context.activity.channelId = channelId === undefined ? Channels.Msteams : channelId;
+      dc.context.activity.channelId = param.channelId === undefined ? Channels.Msteams : param.channelId;
 
       const results = await dc.continueDialog();
       if (results.status === DialogTurnStatus.empty) {
@@ -260,3 +256,11 @@ describe("TeamsBotSsoPrompt - node", () => {
     return adapter;
   }
 });
+
+interface InitializeParams {
+  scopes?: string[],
+  timeout_value?: number,
+  endOnInvalidMessage?: boolean,
+  channelId?: Channels,
+  config?: Configuration,
+}

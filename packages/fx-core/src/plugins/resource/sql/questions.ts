@@ -36,9 +36,7 @@ export const confirmPasswordQuestion = new QTreeNode({
 export const skipAddingUserQuestion = new QTreeNode({
     name: Constants.questionKey.skipAddingUser,
     description: Constants.userQuestion.confirmPassword,
-    type: NodeType.text,
-    default: "false",
-    validation: {
-        enum:["true", "false"]
-    } as StringValidation
+    type: NodeType.singleSelect,
+    option: ["true", "false"],
+    default: "false"
 });

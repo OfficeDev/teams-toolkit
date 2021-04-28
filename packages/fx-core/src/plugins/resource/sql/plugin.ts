@@ -102,12 +102,11 @@ export class SqlPluginImpl {
 
         this.config.skipAddingUser = ctx.config.get(Constants.skipAddingUser) as boolean;
         if (ctx.platform === Platform.CLI) {
-            if (ctx.answers?.get(Constants.questionKey.skipAddingUser) as string === "true") {
-                this.config.skipAddingUser = true;
-            } else {
-                this.config.skipAddingUser = false;
+            const skipAddingUser = ctx.answers?.get(Constants.questionKey.skipAddingUser) as string
+            if (skipAddingUser) {
+                this.config.skipAddingUser = skipAddingUser === "true" ? true : false
+                ctx.config.set(Constants.skipAddingUser, this.config.skipAddingUser);
             }
-            ctx.config.set(Constants.skipAddingUser, this.config.skipAddingUser);
         }
         // sql server name
         ctx.logProvider?.debug(Message.endpoint(this.config.sqlEndpoint));

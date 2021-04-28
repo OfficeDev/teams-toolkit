@@ -45,7 +45,7 @@ export class Constants {
         adminName: "Admin name of SQL",
         adminPassword: "Admin password of SQL",
         confirmPassword: "Confirm admin password of SQL",
-        skipAddingUser: "skip adding database user",
+        skipAddingUser: "Skip adding database user",
     };
 
     public static readonly questionKey = {

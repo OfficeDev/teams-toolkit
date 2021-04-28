@@ -46,5 +46,17 @@
                 "method": "sql-confirm-password"
             }
         }
+    },
+    {
+        "data": {
+            "name": "sql-skip-adding-user",
+            "description": "Skip adding database user",
+            "type": "singleSelect",
+            "option": [
+                "true",
+                "false"
+            ],
+            "default": "false"
+        }
     }
 ]

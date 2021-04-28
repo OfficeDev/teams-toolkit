@@ -3,7 +3,9 @@
         "SwitchSubNotice":"Please make sure that you don't forget cleaning up the resources in existing subscription: '%s' in Azure portal: https://ms.portal.azure.com/"
     },
     "solution":{
-        "ProvisionFailNotice": "Provision resources failed, subscription id: '%s', resource group: '%s'. You can choose to rollback to delete the resource group and redo provision, help link: https://aka.ms/teamsfx-solution-help"
+        "ProvisionFailNotice": "Provision resources failed, subscription id: '%s', resource group: '%s'. You can choose to rollback to delete the resource group and redo provision, help link: https://aka.ms/teamsfx-solution-help",
+        "AddResourceNotice":"[Teams Toolkit] Resource \"%s\" have been successfully configured for your project, trigger 'TeamsFx - Provision in the Cloud' will create the resource(s) in your Azure subscription.",
+        "AddCapabilityNotice":"[Teams Toolkit] Capability \"%s\" have been successfully configured for your project, trigger 'TeamsFx - Provision in the Cloud' will create the resource(s) in your Azure subscription.",
     },
     "plugins":{
 

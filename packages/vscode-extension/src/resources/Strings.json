@@ -1,7 +1,7 @@
 {
     "vsc": {
         "extension": {
-            "activate": "Teams Toolkit v2 extension is now active!"
+            "activate": "Teams Toolkit extension is now active!"
         },
         "userInterface": {
             "noQuestionDescription": "No question description",

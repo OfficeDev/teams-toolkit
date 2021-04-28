@@ -1,8 +1,6 @@
-name: Daily release
+name: Beta release
 
 on:
-  schedule:
-    - cron: "0 20 * * *"
   workflow_dispatch:
 
 jobs:
@@ -45,7 +43,7 @@ jobs:
         run: |
           git config --global user.name 'MSFT-yiz'
           git config --global user.email 'yiz@microsoft.com'
-          npx lerna publish --no-private --preid alpha --yes prerelease
+          npx lerna publish --no-private --preid beta prerelease --yes --force-publish
 
   release-vsix:
     needs: release-npm
@@ -77,7 +75,7 @@ jobs:
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: "${{ secrets.CD_PAT }}"
-          automatic_release_tag: "daily"
+          automatic_release_tag: "beta"
           prerelease: true
           files: |
             ./packages/**/*.vsix

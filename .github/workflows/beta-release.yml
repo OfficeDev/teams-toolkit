@@ -43,7 +43,7 @@ jobs:
         run: |
           git config --global user.name 'MSFT-yiz'
           git config --global user.email 'yiz@microsoft.com'
-          npx lerna publish --no-private --preid beta prerelease --yes
+          npx lerna publish --no-private --preid beta prerelease --yes --force-publish
 
   release-vsix:
     needs: release-npm

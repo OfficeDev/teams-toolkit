@@ -4,7 +4,6 @@
 import { AccessToken, GetTokenOptions, TokenCredential } from "@azure/identity";
 import { AuthenticationResult, ConfidentialClientApplication } from "@azure/msal-node";
 import { config } from "../core/configurationProvider";
-import { SSOTokenInfoBase } from "../models/ssoTokenInfo";
 import { UserInfo } from "../models/userinfo";
 import { internalLogger } from "../util/logger";
 import { formatString, getUserInfoFromSsoToken, parseJwt } from "../util/utils";
@@ -20,8 +19,8 @@ import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
  */
 export class OnBehalfOfUserCredential implements TokenCredential {
   private msalClient: ConfidentialClientApplication;
-  private ssoToken: string;
-  private decodedSsoToken: SSOTokenInfoBase;
+  private ssoToken: AccessToken;
+
   /**
    * Constructor of OnBehalfOfUserCredential
    *
@@ -69,8 +68,11 @@ export class OnBehalfOfUserCredential implements TokenCredential {
       }
     });
 
-    this.ssoToken = ssoToken;
-    this.decodedSsoToken = parseJwt(this.ssoToken);
+    const decodedSsoToken = parseJwt(ssoToken);
+    this.ssoToken = {
+      token: ssoToken,
+      expiresOnTimestamp: decodedSsoToken.exp
+    };
   }
 
   /**
@@ -107,22 +109,19 @@ export class OnBehalfOfUserCredential implements TokenCredential {
     let result: AccessToken | null;
     if (!scopesArray.length) {
       internalLogger.info("Get SSO token.");
-      if (Math.floor(Date.now() / 1000) > this.decodedSsoToken.exp) {
+      if (Math.floor(Date.now() / 1000) > this.ssoToken.expiresOnTimestamp) {
         const errorMsg = "Sso token has already expired.";
         internalLogger.error(errorMsg);
         throw new ErrorWithCode(errorMsg, ErrorCode.TokenExpiredError);
       }
-      result = {
-        token: this.ssoToken,
-        expiresOnTimestamp: this.decodedSsoToken.exp
-      };
+      result = this.ssoToken;
     } else {
       internalLogger.info("Get access token with scopes: " + scopesArray.join(" "));
 
       let authenticationResult: AuthenticationResult | null;
       try {
         authenticationResult = await this.msalClient.acquireTokenOnBehalfOf({
-          oboAssertion: this.ssoToken,
+          oboAssertion: this.ssoToken.token,
           scopes: scopesArray
         });
       } catch (error) {
@@ -160,7 +159,7 @@ export class OnBehalfOfUserCredential implements TokenCredential {
    */
   public getUserInfo(): Promise<UserInfo> {
     internalLogger.info("Get basic user info from SSO token");
-    const userInfo = getUserInfoFromSsoToken(this.ssoToken);
+    const userInfo = getUserInfoFromSsoToken(this.ssoToken.token);
     return new Promise<UserInfo>((resolve) => {
       resolve(userInfo);
     });

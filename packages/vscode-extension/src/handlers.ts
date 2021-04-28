@@ -35,6 +35,7 @@ import AppStudioCodeSpaceTokenInstance from "./commonlib/appStudioCodeSpaceLogin
 import VsCodeLogInstance from "./commonlib/log";
 import { VSCodeTelemetryReporter } from "./commonlib/telemetry";
 import { CommandsTreeViewProvider, TreeViewCommand } from "./commandsTreeViewProvider";
+import TreeViewManagerInstance from './commandsTreeViewProvider'
 import * as extensionPackage from "./../package.json";
 import { ext } from "./extensionVariables";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
@@ -134,7 +135,7 @@ export async function activate(): Promise<Result<null, FxError>> {
     }
 
     {
-      const result = await core.withTreeProvider(CommandsTreeViewProvider.getInstance());
+      const result = await core.withTreeProvider(TreeViewManagerInstance.getTreeView('teamsfx-accounts')!);
       if (result.isErr()) {
         showError(result.error);
         return err(result.error);
@@ -495,9 +496,8 @@ export async function addCapabilityHandler(): Promise<Result<null, FxError>> {
  * check & install required dependencies during local debug.
  */
 export async function validateDependenciesHandler(): Promise<void> {
-  const depsChecker = new DepsChecker(vscodeAdapter, [
+  const depsChecker = new DepsChecker(vscodeLogger, vscodeAdapter, [
     new NodeChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry), 
-    new FuncToolChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry), 
     new DotnetChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry)]);
   const shouldContinue = await depsChecker.resolve();
   if (!shouldContinue) {
@@ -673,9 +673,8 @@ function getHtmlForWebview() {
 }
 
 export async function cmdHdlLoadTreeView(context: ExtensionContext) {
-  const treeViewProvider = CommandsTreeViewProvider.getInstance();
-  const provider = window.registerTreeDataProvider("teamsfx", treeViewProvider);
-  context.subscriptions.push(provider);
+  const disposables = TreeViewManagerInstance.registerTreeViews();
+  context.subscriptions.push(...disposables);
 
   // Register SignOut tree view command
   commands.registerCommand("fx-extension.signOut", async (node: TreeViewCommand) => {
@@ -688,7 +687,7 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
         }
         const result = await appstudioLogin.signout();
         if (result) {
-          await CommandsTreeViewProvider.getInstance().refresh([
+          await TreeViewManagerInstance.getTreeView('teamsfx-accounts')!.refresh([
             {
               commandId: "fx-extension.signinM365",
               label: StringResources.vsc.handlers.signIn365,
@@ -701,14 +700,14 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
       case "signedinAzure": {
         const result = await AzureAccountManager.signout();
         if (result) {
-          await CommandsTreeViewProvider.getInstance().refresh([
+          await TreeViewManagerInstance.getTreeView('teamsfx-accounts')!.refresh([
             {
               commandId: "fx-extension.signinAzure",
               label: StringResources.vsc.handlers.signInAzure,
               contextValue: "signinAzure"
             }
           ]);
-          await CommandsTreeViewProvider.getInstance().remove([
+          await TreeViewManagerInstance.getTreeView('teamsfx-accounts')!.remove([
             {
               commandId: "fx-extension.selectSubscription",
               label: "",
@@ -723,7 +722,7 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
 }
 
 export function cmdHdlDisposeTreeView() {
-  CommandsTreeViewProvider.getInstance().dispose();
+  TreeViewManagerInstance.dispose();
 }
 
 export async function showError(e: FxError) {

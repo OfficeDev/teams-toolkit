@@ -104,7 +104,7 @@ export class FuncToolChecker implements IDepsChecker {
       );
     }
 
-    this._logger.info(
+    await this._logger.info(
       Messages.startInstallFunctionCoreTool.replace("@NameVersion", installedNameWithVersion)
     );
 
@@ -146,7 +146,7 @@ export class FuncToolChecker implements IDepsChecker {
     }
 
     this._telemetry.sendEvent(DepsCheckerEvent.funcValidationCompleted);
-    this._logger.info(
+    await this._logger.info(
       Messages.finishInstallFunctionCoreTool.replace("@NameVersion", installedNameWithVersion)
     );
   }
@@ -201,7 +201,7 @@ export class FuncToolChecker implements IDepsChecker {
     // https://github.com/npm/cli/issues/470
     const funcPSScript = await this.getFuncPSScriptPath();
     if (await fs.pathExists(funcPSScript)) {
-      this._logger.debug(`deleting func.ps1 from ${funcPSScript}`);
+      await this._logger.debug(`deleting func.ps1 from ${funcPSScript}`);
       await fs.remove(funcPSScript);
     }
   }

@@ -7,12 +7,14 @@ export const authStartCommand = "auth start";
 export const ngrokStartCommand = "ngrok start";
 export const botStartCommand = "bot start";
 export const openWenClientCommand = "launch Teams web client";
+export const backendWatchCommand = "backend watch";
 
 export const frontendProblemMatcher = "$teamsfx-frontend-watch";
 export const backendProblemMatcher = "$teamsfx-backend-watch";
 export const authProblemMatcher = "$teamsfx-auth-watch";
 export const ngrokProblemMatcher = "$teamsfx-ngrok-watch";
 export const botProblemMatcher = "$teamsfx-bot-watch";
+export const tscWatchProblemMatcher = "$tsc-watch";
 
 export const frontendFolderName = "tabs";
 export const backendFolderName = "api";

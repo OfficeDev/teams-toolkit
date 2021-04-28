@@ -7,7 +7,7 @@ import { config } from "../core/configurationProvider";
 import { UserInfo } from "../models/userinfo";
 import { internalLogger } from "../util/logger";
 import { formatString, getUserInfoFromSsoToken, parseJwt } from "../util/utils";
-import { ErrorWithCode, ErrorCode, ErrorMessage } from "./errors";
+import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 
 /**
  * Exchange access token using the OBO flow with SSO token.
@@ -104,7 +104,6 @@ export class OnBehalfOfUserCredential implements TokenCredential {
     let result: AccessToken | null;
     if (!scopesArray.length) {
       internalLogger.info("Get SSO token.");
-      // TODO: handles situation when SSO token is expired.
 
       result = {
         token: this.ssoToken,
@@ -122,7 +121,6 @@ export class OnBehalfOfUserCredential implements TokenCredential {
       } catch (error) {
         const errorMsg = formatString(ErrorMessage.FailToAcquireTokenOnBehalfOfUser, error.message);
         internalLogger.error(errorMsg);
-        // TODO: based on error message, use different ErrorCode
         throw new ErrorWithCode(errorMsg, ErrorCode.InternalError);
       }
 

@@ -360,3 +360,6 @@ coverage
 
 # test
 test-results.*
+
+# simple auth
+SimpleAuth.zip

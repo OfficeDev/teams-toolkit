@@ -33,6 +33,9 @@
     "dist-samples",
     "dist-esm",
     "./samples/**/*.ts",
-    "resources"
+    "resources",
+    "test/*.ts",
+    "test/integration/node",
+    "test/e2e/"
   ]
 }

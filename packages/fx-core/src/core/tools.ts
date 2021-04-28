@@ -4,6 +4,9 @@ import { exec } from "child_process";
 import * as fs from "fs-extra";
 import { ConfigMap, Dict, Json } from "fx-api";
 import { promisify } from "util";
+import axios from "axios";
+import AdmZip from "adm-zip";
+import * as path from "path";
 
 const execAsync = promisify(exec);
 
@@ -170,4 +173,39 @@ export function deserializeDict(data:string):Dict<string>{
          
     }
     return dict;
+}
+
+
+export async function fetchCodeZip(url: string) {
+    let retries = 3;
+    let result = undefined;
+    while (retries > 0) {
+        retries--;
+        try {
+        result = await axios.get(url, {
+            responseType: "arraybuffer"
+        });
+        if (result.status === 200 || result.status === 201) {
+            return result;
+        }
+        } catch (e) {
+        await new Promise<void>((resolve: () => void): NodeJS.Timer => setTimeout(resolve, 10000));
+        }
+    }
+    return result;
+}
+
+export async function saveFilesRecursively(zip: AdmZip, dstPath: string): Promise<void> {
+    await Promise.all(
+        zip
+        .getEntries()
+        .filter((entry) => !entry.isDirectory)
+        .map(async (entry) => {
+            const data = entry.getData().toString();
+
+            const filePath = path.join(dstPath, entry.entryName);
+            await fs.ensureDir(path.dirname(filePath));
+            await fs.writeFile(filePath, data);
+        })
+    );
 }

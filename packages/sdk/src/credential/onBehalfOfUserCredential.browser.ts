@@ -4,7 +4,7 @@
 import { AccessToken, GetTokenOptions, TokenCredential } from "@azure/identity";
 import { UserInfo } from "../models/userinfo";
 import { formatString } from "../util/utils";
-import { ErrorWithCode, ErrorCode, ErrorMessage } from "./errors";
+import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 
 /**
  * Exchange access token using the OBO flow with SSO token.

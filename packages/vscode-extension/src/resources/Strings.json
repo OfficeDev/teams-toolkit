@@ -78,7 +78,7 @@
         "common": {
             "userCancel": "User Cancel",
             "confirm": "Confirm",
-            "signout": "Sign Out",
+            "signout": "Sign out",
             "signOutOf": "Sign out of '%s'?",
             "cancel": "Cancel"
         },

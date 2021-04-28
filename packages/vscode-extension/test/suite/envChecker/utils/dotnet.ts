@@ -2,9 +2,18 @@
 // Licensed under the MIT license.
 
 import * as fs from "fs-extra";
+import * as path from "path";
+import * as os from "os";
+import { ConfigFolderName } from "fx-api";
 import { cpUtils } from "../../../../src/debug/depsChecker/cpUtils";
 import { logger } from "../adapters/testLogger";
 
+export const dotnetConfigPath = path.join(os.homedir(), "." + ConfigFolderName, "dotnet.json");
+export const dotnetPrivateInstallPath = path.join(os.homedir(), "." + ConfigFolderName, "bin", "dotnet");
+export const dotnetCommand = "dotnet";
+export const dotnetOldVersion = "2.1";
+export const dotnetInstallVersion = "3.1";
+export const dotnetSupportedVersions = ["3.1", "5.0"];
 
 export async function getDotnetExecPathFromConfig(dotnetConfigPath: string): Promise<string | null> {
     try {
@@ -32,4 +41,10 @@ export async function hasAnyDotnetVersions(dotnetExecPath: string, versionString
         console.debug(`Failed to run "${dotnetExecPath} --list-sdks", error = '${error}'`);
         return false;
     }
+}
+
+export async function cleanup() {
+    // fs-extra.remove() does nothing if the file does not exist.
+    await fs.remove(dotnetConfigPath);
+    await fs.remove(dotnetPrivateInstallPath);
 }

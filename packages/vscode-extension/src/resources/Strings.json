@@ -62,10 +62,10 @@
             "logErrorFormat": "code:${e.source}.${e.name}, message: ${e.message}, stack: ${e.stack}",
             "getHelp": "Get Help",
             "reportIssue": "Report Issue",
-            "azureSignIn": "Azure account is successfully signed in.",
-            "azureSignOut": "Azure account is successfully signed out.",
-            "m365SignIn": "M365 account is successfully signed in.",
-            "m365SignOut": "M365 account is successfully signed out."
+            "azureSignIn": "Successfully signed in to Azure account.",
+            "azureSignOut": "Successfully signed out of Azure account.",
+            "m365SignIn": "Successfully signed in to M365 account.",
+            "m365SignOut": "Successfully signed out of M365 account."
         },
         "progressHandler": {
             "teamsToolkitComponent": "[Teams Toolkit]",

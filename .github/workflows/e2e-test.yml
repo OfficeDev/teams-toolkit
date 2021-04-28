@@ -1,0 +1,55 @@
+name: E2E test
+
+on:
+  schedule:
+    - cron: "0 2,4,6,8,10 * * *"
+
+jobs:
+  e2e-tests:
+    name: run e2e test on (${{ matrix.os }} node ${{ matrix.node-version }}) with source code
+
+    strategy:
+      matrix:
+        os: [windows-latest]
+        node-version: [14]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.CD_PAT }}
+          ref: main
+
+      - name: Setup node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Download Simple Auth bits
+        env:
+          SIMPLE_AUTH_SAS_TOKEN: ${{secrets.SIMPLE_AUTH_SAS_TOKEN}}
+          SIMPLE_AUTH_ENDPOINT: ${{secrets.SIMPLE_AUTH_ENDPOINT}}
+        run: |
+            $version=Get-Content packages/fx-core/templates/plugins/resource/simpleauth/version.txt
+            $fileName="Microsoft.TeamsFx.SimpleAuth_$version.zip"
+            echo $SIMPLE_AUTH_ENDPOINT
+            $url=$env:SIMPLE_AUTH_ENDPOINT+'/'+$fileName+'?'+$env:SIMPLE_AUTH_SAS_TOKEN
+            Invoke-WebRequest $url -OutFile packages/fx-core/templates/plugins/resource/simpleauth/SimpleAuth.zip
+        shell: pwsh
+
+      - name: Setup project
+        run: |
+          npm run setup
+          npm link
+
+      - name: E2E Test
+        env:
+          TEST_USER_NAME: ${{ secrets.TEST_USER_NAME }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+          TEST_SUBSCRIPTION_ID: ${{ secrets.TEST_SUBSCRIPTION_ID }}
+          CI_ENABLED: "true"
+        run: |
+          npx lerna run test:e2e

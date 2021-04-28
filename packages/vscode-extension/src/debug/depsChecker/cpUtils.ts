@@ -68,7 +68,7 @@ export namespace cpUtils {
           timer = setTimeout(() => {
             childProc.kill();
             logger?.debug(
-              `Stop exec due to timeout, command: "${command} ${formattedArgs}", options = '${options}'`
+              `Stop exec due to timeout, command: "${command} ${formattedArgs}", options = '${JSON.stringify(options)}'`
             );
             reject(
               new Error(
@@ -77,7 +77,7 @@ export namespace cpUtils {
             );
           }, options.timeout);
         }
-        logger?.debug(`Running command: "${command} ${formattedArgs}", options = '${options}'`);
+        logger?.debug(`Running command: "${command} ${formattedArgs}", options = '${JSON.stringify(options)}'`);
 
         childProc.stdout?.on("data", (data: string | Buffer) => {
           data = data.toString();

@@ -396,16 +396,22 @@ class CoreImpl implements Core {
                 const activeSubscription = subscriptions.find(
                     (subscription) => subscription.subscriptionId === activeSubscriptionId,
                 );
+
+                let icon = "";
                 if (activeSubscriptionId === undefined || activeSubscription === undefined) {
                     selectSubLabel = `${subscriptions.length} subscriptions discovered`;
+                    icon = "subscriptions";
                 } else {
                     selectSubLabel = activeSubscription.displayName;
+                    icon = "subcriptionSelected";
                 }
                 return {
                     commandId: "fx-extension.selectSubscription",
                     label: selectSubLabel,
                     callback: selectSubscriptionCallback,
                     parent: "fx-extension.signinAzure",
+                    contextValue: "selectSubscription",
+                    icon: icon
                 };
             };
 
@@ -459,6 +465,8 @@ class CoreImpl implements Core {
                                 label: subscriptionName,
                                 callback: selectSubscriptionCallback,
                                 parent: "fx-extension.signinAzure",
+                                contextValue: "selectSubscription",
+                                icon: "subscriptionSelected"
                             },
                         ]);
                     }

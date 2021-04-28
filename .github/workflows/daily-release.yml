@@ -3,6 +3,7 @@ name: Daily release
 on:
   schedule:
     - cron: "0 20 * * *"
+  workflow_dispatch:
 
 jobs:
   release-npm:
@@ -14,7 +15,6 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.CD_PAT }}
-          ref: main
 
       - name: Setup node
         uses: actions/setup-node@v2.1.2
@@ -57,7 +57,6 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.CD_PAT }}
-          ref: main
 
       - name: Setup node
         uses: actions/setup-node@v2.1.2

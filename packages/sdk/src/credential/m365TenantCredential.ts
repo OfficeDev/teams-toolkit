@@ -12,8 +12,8 @@ import {
 import { AuthenticationConfiguration } from "../models/configuration";
 import { internalLogger } from "../util/logger";
 import { formatString } from "../util/utils";
-import { getAuthenticationConfiguration } from "./configurationProvider";
-import { ErrorCode, ErrorMessage, ErrorWithCode } from "./errors";
+import { getAuthenticationConfiguration } from "../core/configurationProvider";
+import { ErrorCode, ErrorMessage, ErrorWithCode } from "../core/errors";
 
 /**
  * Used when user is not involved.

@@ -38,7 +38,7 @@ describe("Import API into API Management", function () {
     await setSimpleAuthSkuNameToB1(projectPath);
 
     await execAsync(
-      `teamsfx resource add apim --subscription ${subscriptionId}`,
+      `teamsfx resource add azure-apim --subscription ${subscriptionId}`,
       {
         cwd: projectPath,
         env: process.env,

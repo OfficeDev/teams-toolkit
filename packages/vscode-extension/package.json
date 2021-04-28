@@ -2,7 +2,7 @@
   "name": "teamsfx-extension",
   "displayName": "Teams Toolkit V2",
   "description": "Create, debug, and deploy Teams apps directly from Teams Toolkit v2",
-  "version": "2.0.0-alpha.13",
+  "version": "2.0.0-alpha.14",
   "publisher": "Microsoft",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -64,8 +64,24 @@
     "views": {
       "teamsfx": [
         {
-          "id": "teamsfx",
-          "name": "Commands"
+          "id": "teamsfx-getting-started",
+          "name": "Getting Started"
+        },
+        {
+          "id": "teamsfx-accounts",
+          "name": "Accounts"
+        },
+        {
+          "id": "teamsfx-project",
+          "name": "Project"
+        },
+        {
+          "id": "teamsfx-teams-dev-center",
+          "name": "Teams Dev Center"
+        },
+        {
+          "id": "teamsfx-feedback",
+          "name": "Feedback"
         }
       ]
     },
@@ -73,12 +89,12 @@
       "view/item/context": [
         {
           "command": "fx-extension.signOut",
-          "when": "view == teamsfx && viewItem == signedinM365",
+          "when": "view == teamsfx-accounts && viewItem == signedinM365",
           "group": "inline"
         },
         {
           "command": "fx-extension.signOut",
-          "when": "view == teamsfx && viewItem == signedinAzure",
+          "when": "view == teamsfx-accounts && viewItem == signedinAzure",
           "group": "inline"
         }
       ],
@@ -348,7 +364,7 @@
     "test:unit": "echo 'to be implementd'",
     "test:integration": "echo 'to be implementd'",
     "test:e2e": "echo 'to be implementd'",
-    "test:env-checker": "npm run compile && npx mocha --ui tdd \"./out/test/suite/envChecker/cases/**/*.js\" --timeout 180000",
+    "test:env-checker": "npm run compile && npx mocha --require source-map-support/register --ui tdd \"./out/test/suite/envChecker/cases/**/*.js\" --timeout 180000",
     "check-format": "prettier --list-different --config .prettierrc.json --ignore-path .prettierignore \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,json}\"",
     "format": "prettier --write --config .prettierrc.json --ignore-path .prettierignore \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,json}\"",
     "lint:fix": "eslint --config .eslintrc.js package.json src test --ext .ts --fix --fix-type [problem,suggestion]",
@@ -409,6 +425,7 @@
     "sass": "^1.32.8",
     "sass-loader": "^10.0.1",
     "sinon": "^9.2.2",
+    "source-map-support": "^0.5.19",
     "style-loader": "^2.0.0",
     "terser-webpack-plugin": "^4.2.3",
     "ts-loader": "^8.0.3",
@@ -428,8 +445,8 @@
     "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
-    "fx-api": "^1.1.1-alpha.6",
-    "fx-core": "^1.1.1-alpha.6",
+    "fx-api": "^1.1.1-alpha.7",
+    "fx-core": "^1.1.1-alpha.7",
     "jsonschema": "^1.4.0",
     "opn": "^6.0.0",
     "sudo-prompt": "^9.2.1",

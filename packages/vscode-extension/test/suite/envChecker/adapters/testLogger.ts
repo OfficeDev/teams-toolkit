@@ -31,3 +31,5 @@ export class TestLogger implements IDepsLogger {
         }
     }
 }
+
+export const logger = new TestLogger();

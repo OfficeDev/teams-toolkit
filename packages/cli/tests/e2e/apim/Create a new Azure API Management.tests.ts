@@ -73,7 +73,7 @@ describe("Create a new API Management Service", function () {
     await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v1");
   });
 
-  this.afterAll(async () => {
+  after(async () => {
     // clean up
     await cleanUp(appName, projectPath, true, false, true);
   });

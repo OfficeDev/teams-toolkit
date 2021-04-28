@@ -49,6 +49,6 @@ describe("End to End Test in Teams", () => {
     assert.strictEqual(await upn.innerText(), `Object id: ${TEST_USER_OBJECT_ID}`);
 
     await browser.close();
-    await deleteProject(project);
+    await deleteProject("sdkTabGraphE2E", project);
   });
 });

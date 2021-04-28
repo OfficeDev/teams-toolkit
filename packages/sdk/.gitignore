@@ -7,3 +7,4 @@ temp/
 types/
 coverage-browser/
 test-results*.xml
+.env

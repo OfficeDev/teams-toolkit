@@ -121,7 +121,6 @@ export class DotnetChecker implements IDepsChecker {
 
     await this._logger.debug(`[start] validate dotnet version`);
     if (!(await this.validate())) {
-      await DotnetChecker.cleanup();
       this._telemetry.sendEvent(DepsCheckerEvent.dotnetInstallError);
       throw new DepsCheckerError(
         Messages.failToInstallDotnet.split("@NameVersion").join(installedNameWithVersion),
@@ -396,6 +395,7 @@ export class DotnetChecker implements IDepsChecker {
       (await this.isDotnetInstalledCorrectly()) && (await this.validateWithHelloWorld());
     if (!isInstallationValid) {
       this._telemetry.sendEvent(DepsCheckerEvent.dotnetValidationError);
+      await DotnetChecker.cleanup();
     }
     return isInstallationValid;
   }

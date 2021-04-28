@@ -42,8 +42,10 @@ MemoryCache.prototype.add = function(entries: any, callback: (arg0: null, arg1: 
   underscore.each(this._entries, function(element) {
     underscore.each(entries, function(addElement, index) {
       if (
-        underscore.isEqual(element, addElement) ||
-        element.accessToken == addElement.accessToken
+        addElement &&
+        ( underscore.isEqual(element, addElement) ||
+        element.accessToken == addElement.accessToken ||
+        element._authority == addElement._authority )
       ) {
         entries[index] = null;
       }

@@ -4,7 +4,7 @@
 import fs from "fs-extra";
 import path from "path";
 
-import { AadValidator, SimpleAuthValidator } from "fx-api";
+import { AadValidator, FunctionValidator, SimpleAuthValidator } from "fx-api";
 
 import {
   execAsync,
@@ -95,6 +95,10 @@ describe("Azure App Happy Path", function() {
       // Validate Simple Auth
       const simpleAuth = SimpleAuthValidator.init(context);
       await SimpleAuthValidator.validate(simpleAuth, aad);
+
+      // Validate Function App
+      const func = FunctionValidator.init(context);
+      await FunctionValidator.validateProvision(func);
     }
 
     // // deploy

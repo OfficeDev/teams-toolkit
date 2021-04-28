@@ -295,7 +295,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         }
       }
     }
-    throw new UserError(ExtensionErrors.UnknownSubscription, StringResources.vsc.azureLogin.unkownSubscription, "Login");
+    throw new UserError(ExtensionErrors.UnknownSubscription, StringResources.vsc.azureLogin.unknownSubscription, "Login");
   }
 
   async getStatus(): Promise<LoginStatus> {

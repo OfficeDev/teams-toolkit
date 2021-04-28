@@ -8,7 +8,7 @@ export const TabOptionItem: OptionItem = {
     label: "Tab",
     cliName: "tab",
     description: "UI-based app",
-    detail: "Tabs are a simple way to surface content in your app by essentially embedding a webpage in Teams."
+    detail: "Tabs are Teams-aware webpages embedded in Microsoft Teams."
 };
 
 export const BotOptionItem: OptionItem = {
@@ -23,7 +23,7 @@ export const MessageExtensionItem: OptionItem = {
     id: "MessageExtension",
     label: "Message Extension",
     cliName: "message-extension",
-    description: "Custome UI when users compose messages in Teams",
+    description: "Custom UI when users compose messages in Teams",
     detail:"Messaging Extensions allow users to interact with your web service through buttons and forms in the Microsoft Teams client."
 };
 
@@ -58,7 +58,7 @@ export const AzureResourceSQL: OptionItem = {
 
 export const AzureResourceFunction: OptionItem = {
     id:"function",
-    label: "New APIs from Azure Functions"
+    label: "Azure Function App"
 };
 
 export const AzureResourceApim: OptionItem = {
@@ -69,7 +69,7 @@ export const AzureResourceApim: OptionItem = {
 export function createCapabilityQuestion(): MultiSelectQuestion {
     return {
         name: AzureSolutionQuestionNames.Capabilities,
-        title: "Choose capabilities",
+        title: "Select capabilities",
         type: NodeType.multiSelect,
         option: [TabOptionItem, BotOptionItem, MessageExtensionItem],
         default: [TabOptionItem.id]
@@ -140,7 +140,7 @@ export function createAddCapabilityQuestion(alreadyHaveTab: boolean, alreadyHave
 
 export const DeployPluginSelectQuestion: MultiSelectQuestion = {
     name: AzureSolutionQuestionNames.PluginSelectionDeploy,
-    title: `Choose resources`,
+    title: `Select resources`,
     type: NodeType.multiSelect,
     skipSingleOption: true,
     option: [],

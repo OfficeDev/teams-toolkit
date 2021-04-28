@@ -10,26 +10,27 @@
     {
         "data": {
             "name": "capabilities",
-            "title": "Select capabilities to add",
+            "title": "Choose capabilities",
             "type": "multiSelect",
             "option": [
                 {
                     "id": "Bot",
                     "label": "Bot",
                     "cliName": "bot",
-                    "description": "Bots allow you to interact with and obtain information in a text/search/conversational manner."
+                    "description": "Conversational Agent",
+                    "detail": "Bots allow users to interfact with your web service through text, interactive cards, and task modules."
                 },
                 {
                     "id": "MessageExtension",
-                    "label": "Messaging Extension",
+                    "label": "Message Extension",
                     "cliName": "message-extension",
-                    "description": "Messaging Extensions allow users to interact with a web service through buttons and forms in the Microsoft Teams client."
+                    "description": "Custome UI when users compose messages in Teams",
+                    "detail": "Messaging Extensions allow users to interact with your web service through buttons and forms in the Microsoft Teams client."
                 }
             ],
             "default": [
                 "message-extension"
             ],
-            "prompt": "Bot and Message Extension are exclusive, you can not select both.",
             "hide": true
         }
     },
@@ -49,6 +50,9 @@
             ],
             "title": "Bot registration",
             "default": "create-new"
+        },
+        "condition": {
+            "contains": "Bot"
         }
     },
     {

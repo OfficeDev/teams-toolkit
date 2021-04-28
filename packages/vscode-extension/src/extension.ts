@@ -8,6 +8,7 @@ import { initializeExtensionVariables } from "./extensionVariables";
 import * as handlers from "./handlers";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "./telemetry/extTelemetryEvents";
+import { registerTeamsfxTaskEvents } from "./debug/teamsfxTaskHandler";
 import { TeamsfxTaskProvider } from "./debug/teamsfxTaskProvider";
 import { TeamsfxDebugProvider } from "./debug/teamsfxDebugProvider";
 import { ExtensionSurvey } from "./utils/survey";
@@ -177,6 +178,9 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.debug.registerDebugConfigurationProvider("msedge", debugProvider)
   );
+
+  // Register debug task event handlers
+  registerTeamsfxTaskEvents();
 
   await handlers.cmdHdlLoadTreeView(context);
   // 2. Call activate function of toolkit core.

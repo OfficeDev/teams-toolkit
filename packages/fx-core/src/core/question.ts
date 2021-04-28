@@ -38,13 +38,13 @@ export const QuestionSelectSolution: SingleSelectQuestion = {
 
 export const ScratchOptionYes:OptionItem = {
     id:"yes",
-    label: "Build your own Teams app from scratch",
+    label: "$(file) Build your own Teams app from scratch",
     detail: "Define your own Teams app."
 };
 
 export const ScratchOptionNo:OptionItem = {
     id:"no",
-    label: "Choose from Samples",
+    label: "$(search) Choose from Samples",
     detail: "Quickly get started with the basic Teams app concepts and code structures."
 };
 
@@ -72,6 +72,5 @@ export const SampleSelect: SingleSelectQuestion = {
         detail: "Sample app description goes here",
         data: "https://github.com/HuihuiWu-Microsoft/Sample-app-graph/releases/download/v1.0/sample.app.graph.zip"
     }],
-    default: ScratchOptionYes.id,
     returnObject:true
 };

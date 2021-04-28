@@ -65,7 +65,6 @@ export class LocalDebugPlugin implements Plugin {
                 const launchCompounds = Launch.generateCompounds(includeFrontend, includeBackend, includeBot);
 
                 const tasks = Tasks.generateTasks(includeFrontend, includeBackend, includeBot, programmingLanguage);
-                const tasksInputs = Tasks.generateInputs();
 
                 const localEnvProvider = new LocalEnvProvider(ctx.root);
 
@@ -84,8 +83,7 @@ export class LocalDebugPlugin implements Plugin {
                 await fs.writeJSON(
                     `${ctx.root}/.vscode/tasks.json`, {
                         version: "2.0.0",
-                        tasks: tasks,
-                        inputs: tasksInputs
+                        tasks: tasks
                     }, {
                         spaces: 4,
                         EOL: os.EOL

@@ -16,7 +16,6 @@ interface TestParameter {
     numConfigurations: number;
     numCompounds: number;
     numTasks: number;
-    numTaskInputs: number;
     numLocalEnvs: number;
 }
 
@@ -44,16 +43,14 @@ describe(LocalDebugPluginInfo.pluginName, () => {
                 programmingLanguage: "javascript",
                 numConfigurations: 5,
                 numCompounds: 2,
-                numTasks: 10,
-                numTaskInputs: 1,
+                numTasks: 9,
                 numLocalEnvs: 30,
             },
             {
                 programmingLanguage: "typescript",
                 numConfigurations: 5,
                 numCompounds: 2,
-                numTasks: 11,
-                numTaskInputs: 1,
+                numTasks: 9,
                 numLocalEnvs: 30,
             }
         ];
@@ -88,9 +85,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
                 //assert output tasks.json
                 const tasksAll = fs.readJSONSync(expectedTasksFile);
                 const tasks: [] = tasksAll["tasks"];
-                const tasksInput: [] = tasksAll["inputs"];
                 chai.assert.equal(tasks.length, parameter.numTasks);
-                chai.assert.equal(tasksInput.length, parameter.numTaskInputs);
 
                 //assert output settings.json
                 const settings = fs.readJSONSync(expectedSettingsFile);
@@ -108,16 +103,14 @@ describe(LocalDebugPluginInfo.pluginName, () => {
                 programmingLanguage: "javascript",
                 numConfigurations: 4,
                 numCompounds: 2,
-                numTasks: 7,
-                numTaskInputs: 1,
+                numTasks: 6,
                 numLocalEnvs: 16,
             },
             {
                 programmingLanguage: "typescript",
                 numConfigurations: 4,
                 numCompounds: 2,
-                numTasks: 7,
-                numTaskInputs: 1,
+                numTasks: 6,
                 numLocalEnvs: 16,
             }
         ];
@@ -151,9 +144,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
                 //assert output tasks.json
                 const tasksAll = fs.readJSONSync(expectedTasksFile);
                 const tasks: [] = tasksAll["tasks"];
-                const tasksInput: [] = tasksAll["inputs"];
                 chai.assert.equal(tasks.length, parameter.numTasks);
-                chai.assert.equal(tasksInput.length, parameter.numTaskInputs);
 
                 //no settings.json
                 chai.assert.isFalse(fs.existsSync(expectedSettingsFile));
@@ -169,16 +160,14 @@ describe(LocalDebugPluginInfo.pluginName, () => {
                 programmingLanguage: "javascript",
                 numConfigurations: 5,
                 numCompounds: 2,
-                numTasks: 8,
-                numTaskInputs: 1,
+                numTasks: 7,
                 numLocalEnvs: 14,
             },
             {
                 programmingLanguage: "typescript",
                 numConfigurations: 5,
                 numCompounds: 2,
-                numTasks: 8,
-                numTaskInputs: 1,
+                numTasks: 7,
                 numLocalEnvs: 14,
             }
         ];
@@ -212,9 +201,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
                 //assert output tasks.json
                 const tasksAll = fs.readJSONSync(expectedTasksFile);
                 const tasks: [] = tasksAll["tasks"];
-                const tasksInput: [] = tasksAll["inputs"];
                 chai.assert.equal(tasks.length, parameter.numTasks);
-                chai.assert.equal(tasksInput.length, parameter.numTaskInputs);
 
                 //no settings.json
                 chai.assert.isFalse(fs.existsSync(expectedSettingsFile));
@@ -230,16 +217,14 @@ describe(LocalDebugPluginInfo.pluginName, () => {
                 programmingLanguage: "javascript",
                 numConfigurations: 6,
                 numCompounds: 2,
-                numTasks: 13,
-                numTaskInputs: 1,
+                numTasks: 12,
                 numLocalEnvs: 44,
             },
             {
                 programmingLanguage: "typescript",
                 numConfigurations: 6,
                 numCompounds: 2,
-                numTasks: 14,
-                numTaskInputs: 1,
+                numTasks: 12,
                 numLocalEnvs: 44,
             }
         ];
@@ -275,9 +260,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
                 //assert output tasks.json
                 const tasksAll = fs.readJSONSync(expectedTasksFile);
                 const tasks: [] = tasksAll["tasks"];
-                const tasksInput: [] = tasksAll["inputs"];
                 chai.assert.equal(tasks.length, parameter.numTasks);
-                chai.assert.equal(tasksInput.length, parameter.numTaskInputs);
 
                 //assert output settings.json
                 const settings = fs.readJSONSync(expectedSettingsFile);
@@ -295,16 +278,14 @@ describe(LocalDebugPluginInfo.pluginName, () => {
                 programmingLanguage: "javascript",
                 numConfigurations: 5,
                 numCompounds: 2,
-                numTasks: 10,
-                numTaskInputs: 1,
+                numTasks: 9,
                 numLocalEnvs: 30,
             },
             {
                 programmingLanguage: "typescript",
                 numConfigurations: 5,
                 numCompounds: 2,
-                numTasks: 10,
-                numTaskInputs: 1,
+                numTasks: 9,
                 numLocalEnvs: 30,
             }
         ];
@@ -339,9 +320,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
                 //assert output tasks.json
                 const tasksAll = fs.readJSONSync(expectedTasksFile);
                 const tasks: [] = tasksAll["tasks"];
-                const tasksInput: [] = tasksAll["inputs"];
                 chai.assert.equal(tasks.length, parameter.numTasks);
-                chai.assert.equal(tasksInput.length, parameter.numTaskInputs);
 
                 //no settings.json
                 chai.assert.isFalse(fs.existsSync(expectedSettingsFile));

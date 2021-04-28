@@ -19,10 +19,14 @@ export interface IDepsChecker {
 }
 
 export interface IDepsAdapter {
-  displayContinueWithLearnMore: (message: string, link: string) => Promise<boolean>,
-  displayLearnMore: (message: string, link: string) => Promise<boolean>,
-  displayWarningMessage: (message: string, buttonText: string, action: () => Promise<boolean>) => Promise<boolean>,
-  showOutputChannel: () => void
+  displayContinueWithLearnMore: (message: string, link: string) => Promise<boolean>;
+  displayLearnMore: (message: string, link: string) => Promise<boolean>;
+  displayWarningMessage: (
+    message: string,
+    buttonText: string,
+    action: () => Promise<boolean>
+  ) => Promise<boolean>;
+  showOutputChannel: () => void;
 
   hasTeamsfxBackend(): Promise<boolean>;
   dotnetCheckerEnabled(): boolean;
@@ -79,8 +83,8 @@ export class DepsChecker {
     }
 
     if (isLinux()) {
-      // TODO: provide with unsupported message
-      return !shouldContinue;
+      const confirmMessage = await this.generateMsg(validCheckers);
+      return await this._adapter.displayContinueWithLearnMore(confirmMessage, defaultHelpLink);
     }
 
     this._adapter.showOutputChannel();
@@ -112,28 +116,19 @@ export class DepsChecker {
         }
       }
     }
-
     return validCheckers;
   }
 
-  private async generateMessage(checkers: Array<IDepsChecker>): Promise<string> {
-    const installPackages = [];
+  private async generateMsg(checkers: Array<IDepsChecker>): Promise<string> {
     const supportedPackages = [];
     for (const checker of checkers) {
       const info = await checker.getDepsInfo();
-      if (info.installVersion) {
-        installPackages.push(`${info.name} (v${info.installVersion})`);
-      }
       const supportedVersions = info.supportedVersions.map((version) => "v" + version).join(" or ");
       const supportedPackage = `${info.name} (${supportedVersions})`;
       supportedPackages.push(supportedPackage);
     }
-
-    const installMessage = installPackages.join(" and ");
     const supportedMessage = supportedPackages.join(" and ");
-    return Messages.depsNotFound
-      .replace("@InstallPackages", installMessage)
-      .replace("@SupportedPackages", supportedMessage);
+    return Messages.linuxDepsNotFound.replace("@SupportedPackages", supportedMessage);
   }
 
   private async handleError(error: Error): Promise<boolean> {
@@ -143,9 +138,15 @@ export class DepsChecker {
         (error as NotSupportedNodeError).helpLink
       );
     } else if (error instanceof NodeNotFoundError) {
-      return await this._adapter.displayLearnMore(error.message, (error as NodeNotFoundError).helpLink);
+      return await this._adapter.displayLearnMore(
+        error.message,
+        (error as NodeNotFoundError).helpLink
+      );
     } else if (error instanceof DepsCheckerError) {
-      return await this._adapter.displayLearnMore(error.message, (error as DepsCheckerError).helpLink);
+      return await this._adapter.displayLearnMore(
+        error.message,
+        (error as DepsCheckerError).helpLink
+      );
     } else {
       return await this._adapter.displayLearnMore(Messages.defaultErrorMessage, defaultHelpLink);
     }

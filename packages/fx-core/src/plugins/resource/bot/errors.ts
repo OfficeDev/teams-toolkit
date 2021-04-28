@@ -59,7 +59,10 @@ export class SomethingMissingError extends PreconditionError {
     constructor(something: string) {
         super(
             Messages.SomethingIsMissing(something),
-            []
+            [
+                Messages.ReferToHelpLink,
+                Messages.RetryTheCurrentStep
+            ]
         );
     }
 }
@@ -88,7 +91,9 @@ export class CallAppStudioError extends PluginError {
             ErrorType.System,
             ErrorNames.CALL_APPSTUDIO_API_ERROR,
             Messages.FailToCallAppStudio(apiName),
-            [],
+            [
+                Messages.RetryTheCurrentStep
+            ],
             innerError
         );
     }
@@ -100,7 +105,9 @@ export class ClientCreationError extends PluginError {
             ErrorType.System,
             ErrorNames.CLIENT_CREATION_ERROR,
             Messages.FailToCreateSomeClient(clientName),
-            [],
+            [
+                Messages.RetryTheCurrentStep
+            ],
             innerError
         );
     }
@@ -112,7 +119,9 @@ export class ProvisionError extends PluginError {
             ErrorType.System,
             ErrorNames.PROVISION_ERROR,
             Messages.FailToProvisionSomeResource(resource),
-            [],
+            [
+                Messages.RetryTheCurrentStep
+            ],
             innerError
         );
     }
@@ -124,7 +133,9 @@ export class ConfigUpdatingError extends PluginError {
             ErrorType.System,
             ErrorNames.CONFIG_UPDATING_ERROR,
             Messages.FailToUpdateConfigs(configName),
-            [],
+            [
+                Messages.RetryTheCurrentStep
+            ],
             innerError
         );
     }
@@ -136,7 +147,9 @@ export class ValidationError extends PluginError {
             ErrorType.System,
             ErrorNames.VALIDATION_ERROR,
             Messages.SomethingIsInvalidWithValue(name, value),
-            []
+            [
+                Messages.ReferToHelpLink
+            ]
         );
     }
 }
@@ -147,7 +160,9 @@ export class PackDirExistenceError extends PluginError {
             ErrorType.User,
             ErrorNames.PACK_DIR_EXISTENCE_ERROR,
             Messages.SomethingIsNotExisting("pack directory"),
-            []
+            [
+                Messages.ReferToHelpLink
+            ]
         );
     }
 }
@@ -158,7 +173,9 @@ export class ListPublishingCredentialsError extends PluginError {
             ErrorType.System,
             ErrorNames.LIST_PUBLISHING_CREDENTIALS_ERROR,
             Messages.FailToListPublishingCredentials,
-            [],
+            [
+                Messages.RetryTheCurrentStep
+            ],
             innerError
         );
     }
@@ -184,7 +201,9 @@ export class MessageEndpointUpdatingError extends PluginError {
             ErrorType.System,
             ErrorNames.MSG_ENDPOINT_UPDATING_ERROR,
             Messages.FailToUpdateMessageEndpoint(endpoint),
-            [],
+            [
+                Messages.RetryTheCurrentStep
+            ],
             innerError
         );
     }
@@ -210,7 +229,9 @@ export class TplManifestFormatError extends PluginError {
             ErrorType.System,
             ErrorNames.MANIFEST_FORMAT_ERROR,
             Messages.SomethingIsInWrongFormat("Templates\" manifest.json"),
-            []
+            [
+                Messages.ReferToHelpLink
+            ]
         );
     }
 }
@@ -221,7 +242,9 @@ export class TemplateProjectNotFoundError extends PluginError {
             ErrorType.System,
             ErrorNames.TEMPLATE_PROJECT_NOT_FOUND_ERROR,
             Messages.SomethingIsNotFound("Template project for scaffold"),
-            []
+            [
+                Messages.ReferToHelpLink
+            ]
         );
     }
 }
@@ -232,7 +255,9 @@ export class CommandExecutionError extends PluginError {
             ErrorType.System,
             ErrorNames.COMMAND_EXECUTION_ERROR,
             Messages.CommandFailWithMessage(cmd, message),
-            [],
+            [
+                Messages.RetryTheCurrentStep
+            ],
             innerError
         );
     }

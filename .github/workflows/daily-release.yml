@@ -2,46 +2,10 @@ name: Daily release
 
 on:
   schedule:
-    - cron: "0 5 * * *"
+    - cron: "0 20 * * *"
 
 jobs:
-  pre-tests:
-    name: run e2e test on (${{ matrix.os }} node ${{ matrix.node-version }}) with source code
-
-    strategy:
-      matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
-        node-version: [14]
-
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.CD_PAT }}
-          ref: main
-
-      - name: Setup node
-        uses: actions/setup-node@v2.1.2
-        with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: Setup npm registry
-        run: |
-          echo "${{ secrets.NPMRC }}" > ~/.npmrc
-
-      - name: Setup project
-        run: |
-          npm run setup
-
-      - name: E2E Test
-        run: |
-          echo "to be enabled."
-
-  daily-release:
-    needs: pre-tests
+  release-npm:
     runs-on: ubuntu-latest
 
     steps:
@@ -61,6 +25,18 @@ jobs:
         run: |
           echo "${{ secrets.NPMRC }}" > ~/.npmrc
 
+      - name: Download Simple Auth bits
+        env:
+          SIMPLE_AUTH_SAS_TOKEN: ${{secrets.SIMPLE_AUTH_SAS_TOKEN}}
+          SIMPLE_AUTH_ENDPOINT: ${{secrets.SIMPLE_AUTH_ENDPOINT}}
+        run: |
+            $version=Get-Content packages/fx-core/templates/plugins/resource/simpleauth/version.txt
+            $fileName="Microsoft.TeamsFx.SimpleAuth_$version.zip"
+            echo $SIMPLE_AUTH_ENDPOINT
+            $url=$env:SIMPLE_AUTH_ENDPOINT+'/'+$fileName+'?'+$env:SIMPLE_AUTH_SAS_TOKEN
+            Invoke-WebRequest $url -OutFile packages/fx-core/templates/plugins/resource/simpleauth/SimpleAuth.zip
+        shell: pwsh
+
       - name: Setup project
         run: |
           npm run setup
@@ -70,6 +46,27 @@ jobs:
           git config --global user.name 'MSFT-yiz'
           git config --global user.email 'yiz@microsoft.com'
           npx lerna publish --no-private --yes prerelease
+
+  release-vsix:
+    needs: release-npm
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.CD_PAT }}
+          ref: main
+
+      - name: Setup node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Setup npm registry
+        run: |
+          echo "${{ secrets.NPMRC }}" > ~/.npmrc
 
       - name: pack vsix
         working-directory: ./packages/vscode-extension

@@ -1,6 +1,14 @@
 [
     {
         "data": {
+            "type": "folder",
+            "name": "folder",
+            "description": "Select root folder of the project",
+            "default": "./"
+        }
+    },
+    {
+        "data": {
             "name": "add-azure-resources",
             "title": "Select Azure resources to add",
             "type": "multiSelect",

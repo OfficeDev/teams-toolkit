@@ -2,10 +2,13 @@
   "name": "teamsfx-template-api",
   "version": "1.0.0",
   "scripts": {
-    "start": "func start"
+    "start": "npx func start"
   },
   "dependencies": {
     "teamsdev-client": "^1.1.0",
     "isomorphic-fetch": "^3.0.0"
+  },
+  "devDependencies": {
+    "azure-functions-core-tools": "^3.0.0"
   }
 }

@@ -20,7 +20,7 @@ import {
   IProgressHandler,
   ConfigMap
 } from "fx-api";
-
+import inquirer from "inquirer";
 import CLILogProvider from "./commonlib/log";
 import { ProgressHandler } from "./progressHandler";
 import { NotSupportedQuestionType } from "./error";
@@ -51,7 +51,7 @@ export class DialogManager implements Dialog {
   public async communicate(msg: DialogMsg): Promise<DialogMsg> {
     switch (msg.dialogType) {
       case DialogType.Ask: {
-        const answer: string | undefined = this.askQuestion(msg.content as IQuestion);
+        const answer: string | undefined = await this.askQuestion(msg.content as IQuestion);
         return new DialogMsg(DialogType.Answer, answer);
       }
       case DialogType.Show: {
@@ -110,7 +110,7 @@ export class DialogManager implements Dialog {
     return currentStatus.value;
   }
 
-  private askQuestion(question: IQuestion): string | undefined {
+  private async askQuestion(question: IQuestion): Promise<string | undefined> {
     if (question.description.includes("subscription")) {
       CLILogProvider.error(
         `Please set azure subscription firstly. You can use 'teamsfx account set --subscription <SUBSCRIPTION>' to set it.`
@@ -118,6 +118,22 @@ export class DialogManager implements Dialog {
       return undefined;
     }
     switch (question.type) {
+      case QuestionType.Confirm:
+        if (question.options && question.options.length === 1) {
+          const answers = await inquirer.prompt([{
+            name: QuestionType.Confirm,
+            type: "confirm",
+            message: question.description,
+          }]);
+          const confirmOption = question.options[0];
+          if (answers[QuestionType.Confirm]) {
+            return confirmOption;
+          }
+          else {
+            return undefined;
+          }
+        }
+        break;
       case QuestionType.OpenExternal:
         open(question.description);
         return undefined;

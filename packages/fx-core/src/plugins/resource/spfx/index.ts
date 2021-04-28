@@ -48,8 +48,8 @@ export class SpfxPlugin implements Plugin {
       const spfx_framework_type = new QTreeNode({
         type: NodeType.singleSelect,
         name: SPFXQuestionNames.framework_type,
-        title: "Select framework",
-        option: ["none", "react"],
+        title: "Framework",
+        option: [{id:"none", label:"None"}, {id:"react", label:"React"}],
         default: "none"
       });
       spfx_frontend_host.addChild(spfx_framework_type);

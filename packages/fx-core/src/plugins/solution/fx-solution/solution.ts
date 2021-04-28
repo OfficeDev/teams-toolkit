@@ -279,7 +279,6 @@ export class TeamsAppSolution implements Solution {
                 ),
             );
         }
-
         if(!projectSettings.solutionSettings){
             return err(
                 returnSystemError(
@@ -289,7 +288,19 @@ export class TeamsAppSolution implements Solution {
                 ),
             );
         }
-        const hostType = answers.getString(AzureSolutionQuestionNames.HostType);
+        let capabilities = answers.getStringArray(AzureSolutionQuestionNames.Capabilities);
+        if(!capabilities || capabilities.length === 0){
+            return err(
+                returnSystemError(
+                    new Error("capabilities is empty"),
+                    "Solution",
+                    SolutionError.InternelError,
+                ),
+            );
+        }
+        let hostType = answers.getString(AzureSolutionQuestionNames.HostType);
+        if(capabilities.includes(BotOptionItem.id) || capabilities.includes(MessageExtensionItem.id))
+            hostType = HostTypeOptionAzure.id;
         if(!hostType){
             return err(
                 returnSystemError(
@@ -299,44 +310,22 @@ export class TeamsAppSolution implements Solution {
                 ),
             );
         }
-        let capabilities:string[]|undefined;
         let azureResources:string[]|undefined;
-        if(hostType === HostTypeOptionAzure.id){
-            capabilities = answers.getStringArray(AzureSolutionQuestionNames.Capabilities);
-            if(!capabilities || capabilities.length === 0){
-                return err(
-                    returnSystemError(
-                        new Error("capabilities is empty"),
-                        "Solution",
-                        SolutionError.InternelError,
-                    ),
-                );
-            }
-            if(capabilities.includes(TabOptionItem.id)){
-                azureResources = answers.getStringArray(AzureSolutionQuestionNames.AzureResources);
-                if(azureResources){
-                    if( (azureResources.includes(AzureResourceSQL.id) || azureResources.includes(AzureResourceApim.id)) && !azureResources.includes(AzureResourceFunction.id)){
-                        azureResources.push(AzureResourceFunction.id);
-                    }
+        if(hostType === HostTypeOptionAzure.id && capabilities.includes(TabOptionItem.id)){
+            azureResources = answers.getStringArray(AzureSolutionQuestionNames.AzureResources);
+            if(azureResources){
+                if( (azureResources.includes(AzureResourceSQL.id) || azureResources.includes(AzureResourceApim.id)) && !azureResources.includes(AzureResourceFunction.id)){
+                    azureResources.push(AzureResourceFunction.id);
                 }
-                else azureResources = [];
             }
-            if(capabilities.includes(BotOptionItem.id) && capabilities.includes(MessageExtensionItem.id)){
-                return err(
-                    returnUserError(
-                        new Error("One project can only have one Bot/Me"),
-                        "Solution",
-                        SolutionError.FailedToAddCapability,
-                    ),
-                );
-            }
+            else azureResources = [];
         }
         const solutionSettings:AzureSolutionSettings = {
             name: projectSettings.solutionSettings.name,
             version: projectSettings.solutionSettings.version,
             hostType: hostType,
-            capabilities : capabilities,
-            azureResources: azureResources,
+            capabilities : capabilities!,
+            azureResources: azureResources!,
             activeResourcePlugins:[]
         }; 
         projectSettings.solutionSettings = solutionSettings;
@@ -1122,11 +1111,17 @@ export class TeamsAppSolution implements Solution {
         }
         
         if (stage === Stage.create) {
-            // 1. hostType
-            const hostTypeNode = new QTreeNode(FrontendHostTypeQuestion);
-            node.addChild(hostTypeNode);
+            // 1. capabilities
+            const capQuestion = createCapabilityQuestion();
+            const capNode = new QTreeNode(capQuestion); 
+            node.addChild(capNode);
 
-            // 1.1 SPFX Node
+            // 1.1 hostType
+            const hostTypeNode = new QTreeNode(FrontendHostTypeQuestion);
+            hostTypeNode.condition = {contains:TabOptionItem.id};
+            capNode.addChild(hostTypeNode);
+
+            // 1.1.1 SPFX Tab
             if (this.spfxPlugin.getQuestions) {
                 const pluginCtx = getPluginContext(ctx, this.spfxPlugin.name);
                 const res = await this.spfxPlugin.getQuestions(Stage.create, pluginCtx);
@@ -1138,26 +1133,16 @@ export class TeamsAppSolution implements Solution {
                 }
             }
 
-            // 1.2 Azure Node
-            const azureNode = new QTreeNode({type:NodeType.group, name:"azure-node"});
-            azureNode.condition = {equals: HostTypeOptionAzure.id};
-            hostTypeNode.addChild(azureNode);
-
-            // 1.2.1 capabilities
-            const capQuestion = createCapabilityQuestion();
-            const capNode = new QTreeNode(capQuestion); 
-            azureNode.addChild(capNode);
-
-            // 1.2.1.1 capabilities has Tab
+            // 1.1.2 Azure Tab
             const tabRes = await this.getTabScaffoldQuestions(ctx, true);
             if (tabRes.isErr()) return tabRes;
             if (tabRes.value) {
                 const tabNode = tabRes.value;
-                tabNode.condition = { contains: TabOptionItem.id };
-                capNode.addChild(tabNode);
+                tabNode.condition = { equals: HostTypeOptionAzure.id };
+                hostTypeNode.addChild(tabNode);
             }
 
-            // 1.2.1.2 capabilities has Bot/Me
+            // 1.2 Bot
             if (this.botPlugin.getQuestions) {
                 const pluginCtx = getPluginContext(ctx, this.botPlugin.name);
                 const res = await this.botPlugin.getQuestions(stage, pluginCtx);
@@ -1169,9 +1154,8 @@ export class TeamsAppSolution implements Solution {
                 }
             }
 
-            // 1.2.2 programming languate
+            // 1.3 Language
             const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
-            programmingLanguage.condition = {minItems:1};
             capNode.addChild(programmingLanguage);
 
         } else if (stage === Stage.update) {
@@ -1570,10 +1554,7 @@ export class TeamsAppSolution implements Solution {
         const namespace = func.namespace;
         const array = namespace.split("/");
         const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx);
-        if (maybeManifest.isErr()) {
-            return err(maybeManifest.error);
-        }
-        const manifest = maybeManifest.value;
+        const manifest = maybeManifest.isOk() ? maybeManifest.value : undefined;
         if (array.length === 2) {
             const pluginName = array[1];
             const plugin = this.pluginMap.get(pluginName);
@@ -1612,6 +1593,28 @@ export class TeamsAppSolution implements Solution {
                     ctx.config.get(GLOBAL_CONFIG)?.set("subscriptionId", result.value);
                 }
                 return ok(null);
+            }
+            else if(func.method === "listLanguageOptions"){
+                const hostType = ctx.answers?.getString(AzureSolutionQuestionNames.HostType);
+                if(HostTypeOptionSPFx.id === hostType) return ok([{id:"typescript", label:"TypeScript"}]);
+                return ok([{id:"javascript", label: "JavaScript"}, {id:"typescript", label:"TypeScript"}]);
+            }
+            else if(func.method === "listHostTypeOptions"){
+                const cap = ctx.answers?.getStringArray(AzureSolutionQuestionNames.Capabilities);
+                if(cap) {
+                    if(cap.includes(BotOptionItem.id) || cap.includes(MessageExtensionItem.id))
+                        return ok([HostTypeOptionAzure]);
+                    if(cap.includes(TabOptionItem.id))
+                        return ok([HostTypeOptionAzure, HostTypeOptionSPFx]);
+                    return ok([]);
+                }
+                return err(
+                    returnSystemError(
+                        new Error("Capabilities is undefined"),
+                        "Solution",
+                        SolutionError.InternelError,
+                    ),
+                );
             }
         }
         return err(
@@ -1964,34 +1967,16 @@ export class TeamsAppSolution implements Solution {
             return ok(Void);
         }
 
-        if( capabilitiesAnswer.includes(BotOptionItem.id) && capabilitiesAnswer.includes(MessageExtensionItem.id) ){
-            return err(
-                returnUserError(
-                    new Error("Bot and Me are exclusive"),
-                    "Solution",
-                    SolutionError.FailedToAddCapability,
-                ),
-            );
-        }
-
         if( ( settings.capabilities?.includes(BotOptionItem.id) || settings.capabilities?.includes(MessageExtensionItem.id) ) 
             && ( capabilitiesAnswer.includes(BotOptionItem.id) || capabilitiesAnswer.includes(MessageExtensionItem.id) ) ){
             return err(
                 returnUserError(
-                    new Error("One project can only have one Bot/Me"),
+                    new Error("One project already have Bot/ME"),
                     "Solution",
                     SolutionError.FailedToAddCapability,
                 ),
             );
         }
-
-        const azureResources = ctx.answers.getStringArray(AzureSolutionQuestionNames.AzureResources);
-        if(azureResources) {
-            if( (azureResources.includes(AzureResourceSQL.id) || azureResources.includes(AzureResourceApim.id)) && !azureResources.includes(AzureResourceFunction.id)){
-                azureResources.push(AzureResourceFunction.id);
-            }
-        }
-        settings.azureResources = azureResources? azureResources:[];
 
         if(!settings.capabilities) settings.capabilities = [];
         let reload = false;
@@ -2040,7 +2025,7 @@ export class TeamsAppSolution implements Solution {
                 new DialogMsg(DialogType.Show, {
                     description: `[Teams Toolkit] Capability "${addCapabilityNotification.join(
                         ",",
-                    )}" have been successfully configured for your project, trigger 'TeamsFx - Provision Resource' will create the resource(s) in your Azure subscription.`,
+                    )}" have been successfully configured for your project, trigger 'TeamsFx - Provision in the Cloud' will create the resource(s) in your Azure subscription.`,
                     level: MsgLevel.Info,
                 }),
             );

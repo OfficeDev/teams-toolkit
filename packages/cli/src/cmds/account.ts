@@ -6,17 +6,18 @@
 import colors from "colors";
 import { Argv } from "yargs";
 
-import { FxError, ok, Result } from "fx-api";
+import { FxError, ok, Question, Result } from "fx-api";
 
 import { YargsCommand } from "../yargsCommand";
 import AppStudioTokenProvider from "../commonlib/appStudioLogin";
 import AzureTokenProvider from "../commonlib/azureLogin";
 import CLILogProvider from "../commonlib/log";
 import * as constants from "../constants";
+import { toYargsOptions } from "../utils";
 
 class LoginAccount extends YargsCommand {
   public readonly commandHead = `login`;
-  public readonly command = `${this.commandHead} <platform> [options]`;
+  public readonly command = `${this.commandHead} <platform>`;
   public readonly description = "A command to login some platform";
 
   public builder(yargs: Argv): Argv<any> {
@@ -95,20 +96,16 @@ class LogoutAccount extends YargsCommand {
 
 class SetAccount extends YargsCommand {
   public readonly commandHead = `set`;
-  public readonly command = `${this.commandHead} [options]`;
+  public readonly command = `${this.commandHead}`;
   public readonly description = "A command to set account settings such as 'set subscription id'.";
 
   public builder(yargs: Argv): Argv<any> {
+    const folderOption = toYargsOptions(constants.RootFolderNode.data as Question);
+    const subsOption = toYargsOptions(constants.SubscriptionNode.data as Question);
     return yargs
-      .options("folder", {
-        description: "Select root folder of the project",
-        type: "string",
-        default: "./"
-      })
-      .options("subscription", {
-        description: "subscription id",
-        type: "string"
-      });
+      .options("folder", folderOption)
+      .options("subscription", subsOption)
+      .demandOption("subscription");
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
@@ -121,7 +118,7 @@ class SetAccount extends YargsCommand {
 
 export default class Account extends YargsCommand {
   public readonly commandHead = `account`;
-  public readonly command = `${this.commandHead} <action> [options]`;
+  public readonly command = `${this.commandHead} <action>`;
   public readonly description = "login/logout some platform || set some account setting";
 
   public readonly subCommands: YargsCommand[] = [

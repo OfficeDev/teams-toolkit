@@ -107,8 +107,8 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     definition = definition || { type: TeamsfxTaskProvider.type, command };
     // NOTE: properly handle quoting and escaping to work on windows (both powershell and cmd), linux and osx
     const commandLine = programmingLanguage === constants.ProgrammingLanguage.typescript
-        ? "func start --typescript --language-worker=\"--inspect=9229\" --port \"7071\" --cors \"*\""
-        : "func start --javascript --language-worker=\"--inspect=9229\" --port \"7071\" --cors \"*\"";
+        ? "npx func start --typescript --language-worker=\"--inspect=9229\" --port \"7071\" --cors \"*\""
+        : "npx func start --javascript --language-worker=\"--inspect=9229\" --port \"7071\" --cors \"*\"";
     const env = await commonUtils.getBackendLocalEnv();
     const options: vscode.ShellExecutionOptions = {
       cwd: projectRoot,
@@ -164,7 +164,12 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
   ): Promise<vscode.Task> {
     const command: string = constants.ngrokStartCommand;
     definition = definition || { type: TeamsfxTaskProvider.type, command };
-    const commandLine = "npx ngrok http 3978";
+    let commandLine = "npx ngrok http 3978";
+    const skipNgrokConfig = await commonUtils.getSkipNgrokConfig();
+    const skipNgrok = skipNgrokConfig && skipNgrokConfig.trim().toLocaleLowerCase() === "true";
+    if (skipNgrok) {
+      commandLine = "echo 'Do not start ngrok, but use predefined bot endpoint.'";
+    }
     const options: vscode.ShellExecutionOptions = {
       cwd: projectRoot,
     };
@@ -176,7 +181,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       new vscode.ShellExecution(commandLine, options),
       constants.ngrokProblemMatcher
     );
-    task.isBackground = true;
+    task.isBackground = !skipNgrok;
     return task;
   }
 

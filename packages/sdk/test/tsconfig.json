@@ -1,19 +1,20 @@
 {
-    "compilerOptions": {
-      "declaration": true,
-      "target": "es6",
-      "module": "commonjs",
-      "moduleResolution": "node",
-      "importHelpers": true,
-      "noImplicitAny": true,
-      "esModuleInterop": true,
-      "allowSyntheticDefaultImports": true,
-      "preserveConstEnums": true,
-      "removeComments": false,
-      "sourceMap": true,
-      "newLine": "LF",
-      "composite": true,
-      "noUnusedLocals": false, // TODO: temporarily disabled
-      "experimentalDecorators": true
-    }
+  "compilerOptions": {
+    "declaration": true,
+    "target": "es6",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "importHelpers": true,
+    "noImplicitAny": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "preserveConstEnums": true,
+    "removeComments": false,
+    "sourceMap": true,
+    "newLine": "LF",
+    "composite": true,
+    "noUnusedLocals": false, // TODO: temporarily disabled
+    "experimentalDecorators": true,
+    "resolveJsonModule": true
   }
+}

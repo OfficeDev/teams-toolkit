@@ -18,7 +18,6 @@ import {
 } from "botbuilder-core";
 import { DialogSet, DialogState, DialogTurnStatus } from "botbuilder-dialogs";
 import {
-  GetTokenOptions,
   TeamsBotSsoPrompt,
   TeamsBotSsoPromptTokenResponse,
   OnBehalfOfUserCredential,
@@ -55,7 +54,6 @@ describe("TeamsBotSsoPrompt - node", () => {
   const id = "fake_id";
   const exchangeToken = "fake_exchange_token";
 
-  // TODO: Store this ssoToken variable in a central place since it appears in multiple unit test files.
   /**
    * {
    * "aud": "test_audience",
@@ -101,24 +99,20 @@ describe("TeamsBotSsoPrompt - node", () => {
       OnBehalfOfUserCredential.prototype,
       "getToken"
     );
-    onBehalfOfUserCredentialStub_GetToken
-      .onCall(0)
-      .callsFake(async (scopes: string | string[], options?: GetTokenOptions) => {
-        throw new ErrorWithCode(
-          "The user or administrator has not consented to use the application\nFail to get access token because user has not consent scope.",
-          ErrorCode.UiRequiredError
-        );
-      });
-    onBehalfOfUserCredentialStub_GetToken
-      .onCall(1)
-      .callsFake(async (scopes: string | string[], options?: GetTokenOptions) => {
-        return new Promise<AccessToken>((resolve) => {
-          resolve({
-            token: exchangeToken,
-            expiresOnTimestamp: expiresOnTimestamp
-          });
+    onBehalfOfUserCredentialStub_GetToken.onCall(0).callsFake(async () => {
+      throw new ErrorWithCode(
+        "The user or administrator has not consented to use the application\nFail to get access token because user has not consent scope.",
+        ErrorCode.UiRequiredError
+      );
+    });
+    onBehalfOfUserCredentialStub_GetToken.onCall(1).callsFake(async () => {
+      return new Promise<AccessToken>((resolve) => {
+        resolve({
+          token: exchangeToken,
+          expiresOnTimestamp: expiresOnTimestamp
         });
       });
+    });
   });
 
   afterEach(function() {

@@ -1,13 +1,6 @@
-name: Environment Checker Integration Test
+name: Environment Checker Integration Test Schedule Run
 
 on:
-  pull_request:
-    branches:
-      - main
-    paths:
-      - '.github/workflow/env-checker-ci.yml'
-      - 'packages/vscode-extension/src/debug/depsChecker/**'
-      - 'packages/vscode-extension/test/suite/envChecker/**'
   schedule:
     # Runs everyday 00:00 UTC
     - cron:  '0 0 * * *'
@@ -18,10 +11,16 @@ jobs:
     name: Build and Test OS "${{ matrix.os }}", Node.js "${{ matrix.node-version }}", Azure Functions Core Tools "${{ matrix.func-version }}", .NET SDK "${{ matrix.dotnet-version }}"
 
     strategy:
+      ## Only test basic cases on PR trigger, because the `cb() never called` issue happens too often, blocking our PRs.
+      ## Our original test matrix is quite big, and every case will run `npm install` once, so it is more likely for us to encounter this issue.
+      ## Cut the number of test cases to minimize impact.
+      ##
+      ## Details about this issue: https://github.com/npm/cli/wiki/%22cb()-never-called%3F--I'm-having-the-same-problem!%22
+      ### tl;dr: This error is not one thing, but a category of errors. It means "something broke and we didn't have a way to catch it". We will always need a lot of detail to reproduce an error like this, or we cannot ever fix it. Every instance is unique, and your cb() never called is nothing like any other.
       matrix: # TODO: add more versions and cases where Node.js do not exist
         os: [windows-latest, macos-latest, ubuntu-latest]
         node-version: [10, 12, 14]
-        func-version: [none, 2, 3]
+        func-version: [none]
         dotnet-version: [none, 3.1.x, 5.0.x]
 
     runs-on: ${{ matrix.os }}
@@ -31,6 +30,16 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
+
+      - name: Uninstalling .NET on Windows
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: |
+          powershell -NoProfile -Command ./.github/env-checker/uninstall-dotnet.ps1
+
+      - name: Uninstalling .NET on macOS or Ubuntu
+        if: ${{ matrix.os == 'macos-latest' || matrix.os == 'ubuntu-latest' }}
+        run: |
+          ./.github/env-checker/uninstall-dotnet.sh
 
       - name: Setup Node.js
         uses: actions/setup-node@v2.1.2

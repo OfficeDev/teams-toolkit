@@ -19,7 +19,7 @@ import { internalLogger } from "../util/logger";
 const accessTokenCacheKeyPrefix = "accessToken";
 const separator = "-";
 const tokenRefreshTimeSpanInMillisecond = 5 * 60 * 1000;
-const getSSOTokenTimeoutInMillisecond = 5000;
+const initializeTeamsSdkTimeoutInMillisecond = 5000;
 const loginPageWidth = 600;
 const loginPageHeight = 535;
 const maxRetryCount = 3;
@@ -85,9 +85,8 @@ export class TeamsUserCredential implements TokenCredential {
     return new Promise<void>((resolve, reject) => {
       microsoftTeams.initialize(() => {
         microsoftTeams.authentication.authenticate({
-          url: `${this.config.initiateLoginEndpoint}?clientId=${
-            this.config.clientId
-          }&scope=${encodeURI(scopesStr)}`,
+          url: `${this.config.initiateLoginEndpoint}?clientId=${this.config.clientId
+            }&scope=${encodeURI(scopesStr)}`,
           width: loginPageWidth,
           height: loginPageHeight,
           successCallback: async (result?: string) => {
@@ -322,7 +321,7 @@ export class TeamsUserCredential implements TokenCredential {
           internalLogger.error(errorMsg);
           reject(new ErrorWithCode(errorMsg, ErrorCode.InternalError));
         }
-      }, getSSOTokenTimeoutInMillisecond);
+      }, initializeTeamsSdkTimeoutInMillisecond);
     });
   }
 

@@ -1,4 +1,4 @@
-* { 
+* {
   box-sizing: border-box;
   /* outline: 1px dashed #f00; */
 }
@@ -12,4 +12,3 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background-color: #eeeeee;
 }
-

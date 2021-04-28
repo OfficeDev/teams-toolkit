@@ -28,6 +28,7 @@ import chaiPromises from "chai-as-promised";
 import sinon from "sinon";
 import { getSsoTokenFromTeams, MockEnvironmentVariable, RestoreEnvironmentVariable } from "../../helper";
 import { parseJwt } from "../../../src/util/utils";
+import { afterEach, beforeEach } from "mocha";
 
 chaiUse(chaiPromises);
 let restore: () => void;
@@ -49,12 +50,12 @@ describe("TeamsBotSsoPrompt - node", () => {
   }
   const sandbox = sinon.createSandbox();
 
-  before(async function () {
+  beforeEach(async function () {
     restore = MockEnvironmentVariable();
     ssoToken = await getSsoTokenFromTeams();
   });
 
-  after(function () {
+  afterEach(function () {
     sandbox.restore();
     RestoreEnvironmentVariable(restore);
   });

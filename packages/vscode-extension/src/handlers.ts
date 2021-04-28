@@ -691,7 +691,11 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
             {
               commandId: "fx-extension.signinM365",
               label: StringResources.vsc.handlers.signIn365,
-              contextValue: "signinM365"
+              contextValue: "signinM365",
+              tooltip: {
+                isMarkdown: true,
+                value: StringResources.vsc.handlers.m365SigninTooltip
+              }
             }
           ]);
         }
@@ -704,7 +708,11 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
             {
               commandId: "fx-extension.signinAzure",
               label: StringResources.vsc.handlers.signInAzure,
-              contextValue: "signinAzure"
+              contextValue: "signinAzure",
+              tooltip: {
+                isMarkdown: true,
+                value: StringResources.vsc.handlers.azureSigninTooltip
+              }
             }
           ]);
           await TreeViewManagerInstance.getTreeView('teamsfx-accounts')!.remove([
@@ -716,6 +724,18 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
           ]);
         }
         break;
+      }
+    }
+  });
+
+  commands.registerCommand("fx-extension.signInGuideline", async (node: TreeViewCommand) => {
+    // TODO: update the link when documentation is ready
+    switch (node.contextValue) {
+      case "signinM365": {
+        await env.openExternal(Uri.parse("https://www.office.com/"));
+      }
+      case "signinAzure": {
+        await env.openExternal(Uri.parse("https://ms.portal.azure.com/"));
       }
     }
   });

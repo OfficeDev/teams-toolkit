@@ -556,7 +556,7 @@ class CoreImpl implements Core {
                 return ok(null);
             };
 
-            let azureAccountLabel = "Sign In Azure...";
+            let azureAccountLabel = "Sign in to Azure";
             let azureAccountContextValue = "signinAzure";
             const token = this.ctx.azureAccountProvider?.getAccountCredential();
             if (token !== undefined) {
@@ -596,14 +596,26 @@ class CoreImpl implements Core {
                 },
             );
 
+            let azureTooltip = undefined;
+            if (azureAccountContextValue === "signinAzure") {
+                azureTooltip = {
+                    isMarkdown: true,
+                    value: "AZURE ACCOUNT  \nThe Teams Toolkit may require an Azure subscription to deploy the Azure resources for your project."
+                };
+            }
+
             this.ctx.treeProvider.add([
                 {
                     commandId: "fx-extension.signinM365",
-                    label: "Sign In M365...",
+                    label: "Sign in to M365",
                     callback: signinM365Callback,
                     parent: TreeCategory.Account,
                     contextValue: "signinM365",
                     icon: "M365",
+                    tooltip: {
+                        isMarkdown: true,
+                        value: "M365 ACCOUNT  \nThe Teams Toolkit requires an Microsoft 365 organizational account where Teams is running and has been registered."
+                    }
                 },
                 {
                     commandId: "fx-extension.signinAzure",
@@ -615,6 +627,7 @@ class CoreImpl implements Core {
                     contextValue: azureAccountContextValue,
                     subTreeItems: [],
                     icon: "azure",
+                    tooltip: azureTooltip
                 },
             ]);
 

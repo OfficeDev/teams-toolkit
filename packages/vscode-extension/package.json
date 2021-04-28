@@ -96,6 +96,16 @@
           "command": "fx-extension.signOut",
           "when": "view == teamsfx-accounts && viewItem == signedinAzure",
           "group": "inline"
+        },
+        {
+          "command": "fx-extension.signInGuideline",
+          "when": "view == teamsfx-accounts && viewItem == signinM365",
+          "group": "inline"
+        },
+        {
+          "command": "fx-extension.signInGuideline",
+          "when": "view == teamsfx-accounts && viewItem == signinAzure",
+          "group": "inline"
         }
       ],
       "commandPalette": [
@@ -110,6 +120,11 @@
         "command": "fx-extension.signOut",
         "title": "Sign Out",
         "icon": "$(sign-out)"
+      },
+      {
+        "command": "fx-extension.signInGuideline",
+        "title": "Navigate to documentation",
+        "icon": "$(info)"
       },
       {
         "command": "fx-extension.openWelcome",

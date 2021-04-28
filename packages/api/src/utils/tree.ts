@@ -1,7 +1,7 @@
 import {Result} from "neverthrow"; 
 import { FxError } from "../error";
 
-export interface TreeItem{
+export interface TreeItem {
     commandId: string;
     label: string;
     callback?: (args: any) => Promise<Result<null, FxError>>;
@@ -9,6 +9,10 @@ export interface TreeItem{
     contextValue?: string;
     icon?: string;
     subTreeItems?: TreeItem[];
+    tooltip?: {
+        value: string,
+        isMarkdown: boolean
+    };
 }
 
 export interface TreeProvider{

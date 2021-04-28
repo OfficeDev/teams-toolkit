@@ -61,7 +61,9 @@
             "signInAzure": "Sign in to Azure",
             "logErrorFormat": "code:${e.source}.${e.name}, message: ${e.message}, stack: ${e.stack}",
             "getHelp": "Get Help",
-            "reportIssue": "Report Issue"
+            "reportIssue": "Report Issue",
+            "m365SigninTooltip": "M365 ACCOUNT  \nThe Teams Toolkit requires an Microsoft 365 organizational account where Teams is running and has been registered.",
+            "azureSigninTooltip": "AZURE ACCOUNT  \nThe Teams Toolkit may require an Azure subscription to deploy the Azure resources for your project."
         },
         "progressHandler": {
             "teamsToolkitComponent": "[Teams Toolkit]",

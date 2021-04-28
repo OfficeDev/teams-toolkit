@@ -16,6 +16,8 @@ import { TestTelemetry } from "../adapters/testTelemetry";
 import { ConfigFolderName } from "fx-api";
 import { commandExistsInPath } from "../utils/common";
 
+const find = require("find-process");
+
 const dotnetConfigPath = path.join(os.homedir(), "." + ConfigFolderName, "dotnet.json");
 const dotnetPrivateInstallPath = path.join(os.homedir(), "." + ConfigFolderName, "bin", "dotnet");
 const dotnetCommand = "dotnet";
@@ -28,9 +30,15 @@ function createTestChecker(
   clickCancel = false,
   dotnetCheckerEnabled = true,
   funcToolCheckerEnabled = true,
-  nodeCheckerEnabled = true): [DepsChecker, DotnetChecker] {
-
-  const testAdapter = new TestAdapter(hasTeamsfxBackend, clickCancel, dotnetCheckerEnabled, funcToolCheckerEnabled, nodeCheckerEnabled);
+  nodeCheckerEnabled = true
+): [DepsChecker, DotnetChecker] {
+  const testAdapter = new TestAdapter(
+    hasTeamsfxBackend,
+    clickCancel,
+    dotnetCheckerEnabled,
+    funcToolCheckerEnabled,
+    nodeCheckerEnabled
+  );
   const logger = new TestLogger();
   const dotnetChecker = new DotnetChecker(testAdapter, logger, new TestTelemetry());
   const depsChecker = new DepsChecker(logger, testAdapter, [dotnetChecker]);
@@ -39,9 +47,13 @@ function createTestChecker(
 }
 
 async function cleanup() {
-    // fs-extra.remove() does nothing if the file does not exist.
-    await fs.remove(dotnetConfigPath);
-    await fs.remove(dotnetPrivateInstallPath);
+  // fs-extra.remove() does nothing if the file does not exist.
+  await fs.remove(dotnetConfigPath);
+  const processes = await find("name", "dotnet", true);
+  processes.forEach((p: { pid: number }, index: number, array: any) =>
+    process.kill(p.pid, "SIGKILL")
+  );
+  await fs.remove(dotnetPrivateInstallPath);
 }
 
 suite("DotnetChecker E2E Test - first run", async () => {
@@ -67,13 +79,14 @@ suite("DotnetChecker E2E Test - first run", async () => {
       chai.assert.isNull(dotnetExecPath);
     } else {
       chai.assert.isNotNull(dotnetExecPath);
-      chai.assert.isTrue(await dotnetCheckerUtils.hasDotnetVersion(dotnetExecPath!, dotnetInstallVersion));
+      chai.assert.isTrue(
+        await dotnetCheckerUtils.hasDotnetVersion(dotnetExecPath!, dotnetInstallVersion)
+      );
     }
-
   });
 
   test(".NET SDK supported version is installed globally", async function(this: Mocha.Context) {
-    if (!await dotnetCheckerUtils.hasAnyDotnetVersions(dotnetCommand, dotnetSupportedVersions)) {
+    if (!(await dotnetCheckerUtils.hasAnyDotnetVersions(dotnetCommand, dotnetSupportedVersions))) {
       this.skip();
     }
 
@@ -85,10 +98,17 @@ suite("DotnetChecker E2E Test - first run", async () => {
     const shouldContinue = await checker.resolve();
     chai.assert.isTrue(shouldContinue);
 
-    const dotnetExecPathFromConfig = await dotnetCheckerUtils.getDotnetExecPathFromConfig(dotnetConfigPath);
+    const dotnetExecPathFromConfig = await dotnetCheckerUtils.getDotnetExecPathFromConfig(
+      dotnetConfigPath
+    );
     chai.assert.isNotNull(dotnetExecPathFromConfig);
 
-    chai.assert.isTrue(await dotnetCheckerUtils.hasAnyDotnetVersions(dotnetExecPathFromConfig!, dotnetSupportedVersions));
+    chai.assert.isTrue(
+      await dotnetCheckerUtils.hasAnyDotnetVersions(
+        dotnetExecPathFromConfig!,
+        dotnetSupportedVersions
+      )
+    );
 
     // test dotnet executable is from config file.
     const dotnetExecPath = await dotnetChecker.getDotnetExecPath();
@@ -97,7 +117,10 @@ suite("DotnetChecker E2E Test - first run", async () => {
 
   test(".NET SDK is too old", async function(this: Mocha.Context) {
     const has21 = await dotnetCheckerUtils.hasDotnetVersion(dotnetCommand, dotnetOldVersion);
-    const hasSupported = await dotnetCheckerUtils.hasAnyDotnetVersions(dotnetCommand, dotnetSupportedVersions);
+    const hasSupported = await dotnetCheckerUtils.hasAnyDotnetVersions(
+      dotnetCommand,
+      dotnetSupportedVersions
+    );
     if (!(has21 && !hasSupported)) {
       this.skip();
     }
@@ -115,7 +138,9 @@ suite("DotnetChecker E2E Test - first run", async () => {
     } else {
       chai.assert.isTrue(shouldContinue);
       chai.assert.isNotNull(dotnetExecPath);
-      chai.assert.isTrue(await dotnetCheckerUtils.hasDotnetVersion(dotnetExecPath!, dotnetInstallVersion));
+      chai.assert.isTrue(
+        await dotnetCheckerUtils.hasDotnetVersion(dotnetExecPath!, dotnetInstallVersion)
+      );
     }
   });
 
@@ -135,7 +160,9 @@ suite("DotnetChecker E2E Test - first run", async () => {
       chai.assert.isNull(dotnetExecPath);
     } else {
       chai.assert.isNotNull(dotnetExecPath);
-      chai.assert.isTrue(await dotnetCheckerUtils.hasDotnetVersion(dotnetExecPath!, dotnetInstallVersion));
+      chai.assert.isTrue(
+        await dotnetCheckerUtils.hasDotnetVersion(dotnetExecPath!, dotnetInstallVersion)
+      );
     }
   });
 
@@ -145,7 +172,9 @@ suite("DotnetChecker E2E Test - first run", async () => {
     const shouldContinue = await checker.resolve();
     chai.assert.isTrue(shouldContinue);
 
-    const dotnetExecPathFromConfig = await dotnetCheckerUtils.getDotnetExecPathFromConfig(dotnetConfigPath);
+    const dotnetExecPathFromConfig = await dotnetCheckerUtils.getDotnetExecPathFromConfig(
+      dotnetConfigPath
+    );
     chai.assert.isNull(dotnetExecPathFromConfig);
 
     const dotnetExecPath = await dotnetChecker.getDotnetExecPath();
@@ -168,9 +197,7 @@ suite("DotnetChecker E2E Test - second run", () => {
     // cleanup to make sure the environment is clean before test
   });
 
-  test("Valid dotnet.json file", async function(this: Mocha.Context) {
-
-  });
+  test("Valid dotnet.json file", async function(this: Mocha.Context) {});
 
   test("Invalid dotnet.json file", async function(this: Mocha.Context) {
     // TODO: implement me

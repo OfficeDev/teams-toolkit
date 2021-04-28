@@ -314,15 +314,16 @@ export class TeamsUserCredential implements TokenCredential {
           },
           resources: []
         });
-
-        setTimeout(() => {
-          if (!alreadyProcessed) {
-            const errorMsg = "Get SSO token timeout, maybe the code is not running inside Teams";
-            internalLogger.error(errorMsg);
-            reject(new ErrorWithCode(errorMsg, ErrorCode.InternalError));
-          }
-        }, getSSOTokenTimeoutInMillisecond);
       });
+
+      // If the code not running in Teams, the initialize callback function would never trigger
+      setTimeout(() => {
+        if (!alreadyProcessed) {
+          const errorMsg = "Get SSO token timeout, maybe the code is not running inside Teams";
+          internalLogger.error(errorMsg);
+          reject(new ErrorWithCode(errorMsg, ErrorCode.InternalError));
+        }
+      }, getSSOTokenTimeoutInMillisecond);
     });
   }
 

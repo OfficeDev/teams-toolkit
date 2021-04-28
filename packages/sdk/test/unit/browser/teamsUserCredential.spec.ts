@@ -80,7 +80,7 @@ describe("TeamsUserCredential - browser", () => {
     assert.strictEqual(errorResult.code, ErrorCode.InternalError);
     assert.include(
       errorResult.message,
-      "Get SSO token timeout, maybe the code is not running inside Teams"
+      "Initialize teams sdk timeout, maybe the code is not running inside Teams"
     );
   });
 

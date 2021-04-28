@@ -50,12 +50,12 @@ function getVersionString(): string {
   register(yargs);
   yargs
     .options("verbose", {
-      description: "Prints all necessary information.",
+      description: "Print additional information.",
       boolean: true,
       default: true
     })
     .options("debug", {
-      description: "Prints more information for debugging purposes.",
+      description: "Print diagnostic information.",
       boolean: true,
       default: false
     })

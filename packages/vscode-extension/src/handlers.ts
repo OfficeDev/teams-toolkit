@@ -496,7 +496,7 @@ export async function addCapabilityHandler(): Promise<Result<null, FxError>> {
  * check & install required dependencies during local debug.
  */
 export async function validateDependenciesHandler(): Promise<void> {
-  const depsChecker = new DepsChecker(vscodeAdapter, [
+  const depsChecker = new DepsChecker(vscodeLogger, vscodeAdapter, [
     new NodeChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry), 
     new DotnetChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry)]);
   const shouldContinue = await depsChecker.resolve();

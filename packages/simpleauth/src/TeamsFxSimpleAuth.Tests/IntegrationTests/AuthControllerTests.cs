@@ -215,26 +215,26 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.IntegrationTests
         [Test, Category("P1")]
         public async Task PostToken_WithExpiredAuthorizationToken_Return401()
         {
-           // Arrange
-           var ssoToken = await GetUserAccessToken();
-           var client = _defaultFactory.CreateDefaultClient();
-           client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
+            // Arrange
+            var ssoToken = await GetUserAccessToken();
+            var client = _defaultFactory.CreateDefaultClient();
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ssoToken);
 
-           // Act
-           await Task.Delay(TimeSpan.FromSeconds(15 * 60 + 20)).ConfigureAwait(false);
-           var requestBody = new PostTokenRequestBody
-           {
-               scope = DefaultGraphScope,
-               grant_type = PostTokenGrantType.SsoToken,
-           };
-           var result = await PostToAuthTokenApi<string>(client, requestBody);
+            // Act
+            await Task.Delay(TimeSpan.FromSeconds(15 * 60 + 20)).ConfigureAwait(false);
+            var requestBody = new PostTokenRequestBody
+            {
+                scope = DefaultGraphScope,
+                grant_type = PostTokenGrantType.SsoToken,
+            };
+            var result = await PostToAuthTokenApi<string>(client, requestBody);
 
-           // Assert
-           Assert.AreEqual(HttpStatusCode.Unauthorized, result.Response.StatusCode);
-           Assert.IsNull(result.Body);
-           Assert.IsTrue(result.Response.Headers.GetValues("WWW-Authenticate").FirstOrDefault().Contains("Bearer"));
-           Assert.IsTrue(result.Response.Headers.GetValues("WWW-Authenticate").FirstOrDefault().Contains("error=\"invalid_token\""));
-           Assert.IsTrue(result.Response.Headers.GetValues("WWW-Authenticate").FirstOrDefault().Contains("The token expired"));
+            // Assert
+            Assert.AreEqual(HttpStatusCode.Unauthorized, result.Response.StatusCode);
+            Assert.IsNull(result.Body);
+            Assert.IsTrue(result.Response.Headers.GetValues("WWW-Authenticate").FirstOrDefault().Contains("Bearer"));
+            Assert.IsTrue(result.Response.Headers.GetValues("WWW-Authenticate").FirstOrDefault().Contains("error=\"invalid_token\""));
+            Assert.IsTrue(result.Response.Headers.GetValues("WWW-Authenticate").FirstOrDefault().Contains("The token expired"));
         }
 
         [Test, Category("P0"), Parallelizable]

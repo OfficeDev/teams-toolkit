@@ -8,6 +8,8 @@ import { ConfigFolderName } from "fx-api";
 import { cpUtils } from "../../../../src/debug/depsChecker/cpUtils";
 import { logger } from "../adapters/testLogger";
 
+const find = require("find-process");
+
 export const dotnetConfigPath = path.join(os.homedir(), "." + ConfigFolderName, "dotnet.json");
 export const dotnetPrivateInstallPath = path.join(os.homedir(), "." + ConfigFolderName, "bin", "dotnet");
 export const dotnetCommand = "dotnet";
@@ -46,5 +48,9 @@ export async function hasAnyDotnetVersions(dotnetExecPath: string, versionString
 export async function cleanup() {
     // fs-extra.remove() does nothing if the file does not exist.
     await fs.remove(dotnetConfigPath);
+    const processes = await find("name", "dotnet", true);
+    processes.forEach((p: { pid: number }, index: number, array: any) =>
+        process.kill(p.pid, "SIGKILL")
+    );
     await fs.remove(dotnetPrivateInstallPath);
 }

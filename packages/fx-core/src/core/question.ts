@@ -38,13 +38,13 @@ export const QuestionSelectSolution: SingleSelectQuestion = {
 
 export const ScratchOptionYes:OptionItem = {
     id:"yes",
-    label: '$(file) Build your own Teams app from scratch',
+    label: "$(file) Build your own Teams app from scratch",
     detail: "Define your own Teams app."
 };
 
 export const ScratchOptionNo:OptionItem = {
     id:"no",
-    label: '$(search) Choose from Samples',
+    label: "$(search) Choose from Samples",
     detail: "Quickly get started with the basic Teams app concepts and code structures."
 };
 

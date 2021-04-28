@@ -1,14 +1,14 @@
 name: Environment Checker Integration Test PR Runs
 
 on:
-  #pull_request:
-  #  branches:
-  #    - main
-  #  paths:
-  #    - '.github/workflows/env-checker-ci-pr.yml'
-  #    - '.github/env-checker'
-  #    - 'packages/vscode-extension/src/debug/depsChecker/**'
-  #    - 'packages/vscode-extension/test/suite/envChecker/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/env-checker-ci-pr.yml'
+      - '.github/env-checker'
+      - 'packages/vscode-extension/src/debug/depsChecker/**'
+      - 'packages/vscode-extension/test/suite/envChecker/**'
   workflow_dispatch: # Manual trigger
 
 jobs:

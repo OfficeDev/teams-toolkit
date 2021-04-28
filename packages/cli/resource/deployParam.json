@@ -10,7 +10,7 @@
     {
         "data": {
             "name": "deploy-plugin",
-            "title": "Please select which resource(s) to deploy",
+            "title": "Select resource(s) to deploy",
             "type": "multiSelect",
             "skipSingleOption": true,
             "option": [

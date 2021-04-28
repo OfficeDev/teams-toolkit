@@ -82,9 +82,9 @@ export class ResourceAddSql extends YargsCommand {
 }
 
 export class ResourceAddApim extends YargsCommand {
-  public readonly commandHead = `apim`;
+  public readonly commandHead = `azure-apim`;
   public readonly command = `${this.commandHead}`;
-  public readonly description = "A command to add apim resource to the project.";
+  public readonly description = "A command to add Azure API Managment resource to the project.";
   public readonly paramPath = constants.resourceAddApimParamPath;
   public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
 

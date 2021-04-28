@@ -123,9 +123,10 @@ export async function cleanUpResourceGroup(appName: string) {
     });
 }
 
-export async function cleanUpLocalProject(projectPath: string) {
+export async function cleanUpLocalProject(projectPath: string, necessary?: Promise<any>) {
     return new Promise<boolean>(async resolve => {
         try {
+            await necessary;
             await fs.remove(projectPath);
             console.log(`[Successfully] clean up the local folder: ${projectPath}.`);
             return resolve(true);
@@ -143,14 +144,15 @@ export async function cleanUp(
     hasBotPlugin = false,
     hasApimPlugin = false
 ) {
+    const cleanUpAadAppPromise = cleanUpAadApp(projectPath, hasAadPlugin, hasBotPlugin, hasApimPlugin);
     return Promise.all(
         [
             // delete aad app
-            cleanUpAadApp(projectPath, hasAadPlugin, hasBotPlugin, hasApimPlugin),
+            cleanUpAadAppPromise,
             // remove resouce group
             cleanUpResourceGroup(appName),
             // remove project
-            cleanUpLocalProject(projectPath)
+            cleanUpLocalProject(projectPath, cleanUpAadAppPromise)
         ]
     );
 }

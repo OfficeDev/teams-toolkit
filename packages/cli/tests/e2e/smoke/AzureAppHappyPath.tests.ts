@@ -61,7 +61,7 @@ describe("Azure App Happy Path", function() {
 
     // resource add apim
     await execAsync(
-      `teamsfx resource add apim --function-name testApim`,
+      `teamsfx resource add azure-apim --function-name testApim`,
       {
         cwd: projectPath,
         env: process.env,

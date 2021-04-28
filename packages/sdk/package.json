@@ -7,10 +7,10 @@
   "private": true,
   "browser": {
     "./dist-esm/src/core/cache.js": "./dist-esm/src/core/cache.browser.js",
-    "./dist-esm/src/core/onBehalfOfUserCredential.js": "./dist-esm/src/core/onBehalfOfUserCredential.browser.js",
+    "./dist-esm/src/credential/onBehalfOfUserCredential.js": "./dist-esm/src/credential/onBehalfOfUserCredential.browser.js",
     "./dist-esm/src/core/sqlConnector.js": "./dist-esm/src/core/sqlConnector.browser.js",
-    "./dist-esm/src/core/teamsUserCredential.js": "./dist-esm/src/core/teamsUserCredential.browser.js",
-    "./dist-esm/src/core/m365TenantCredential.js": "./dist-esm/src/core/m365TenantCredential.browser.js",
+    "./dist-esm/src/credential/teamsUserCredential.js": "./dist-esm/src/credential/teamsUserCredential.browser.js",
+    "./dist-esm/src/credential/m365TenantCredential.js": "./dist-esm/src/credential/m365TenantCredential.browser.js",
     "./dist-esm/src/bot/teamsBotSsoPrompt.js": "./dist-esm/src/bot/teamsBotSsoPrompt.browser.js"
   },
   "types": "types/teamsfx.d.ts",

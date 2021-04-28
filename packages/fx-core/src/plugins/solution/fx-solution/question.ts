@@ -68,27 +68,16 @@ export const AzureResourceApim: OptionItem = {
 export function createCapabilityQuestion(): MultiSelectQuestion {
     return {
         name: AzureSolutionQuestionNames.Capabilities,
-        title: strings.solution.addCapability.title,
+        title: "Choose capabilities",
         type: NodeType.multiSelect,
         option: [TabOptionItem, BotOptionItem, MessageExtensionItem],
-        default: [TabOptionItem.id],
-        // onDidChangeSelection:async function(currentSelectedItems: OptionItem[], previousSelectedItems: OptionItem[]) : Promise<string[]>{
-        //     const currentIds = new Set<string>();
-        //     for(const i of currentSelectedItems) currentIds.add(i.id);
-        //     if(currentSelectedItems.some(i=>i.id === BotOptionItem.id) && !previousSelectedItems.some(i=>i.id === BotOptionItem.id)){
-        //         currentIds.delete(MessageExtensionItem.id);
-        //     }
-        //     if(currentSelectedItems.some(i=>i.id === MessageExtensionItem.id) && !previousSelectedItems.some(i=>i.id === MessageExtensionItem.id)){
-        //         currentIds.delete(BotOptionItem.id);
-        //     }
-        //     return Array.from(currentIds);
-        // }
+        default: [TabOptionItem.id]
     };
 }
 
 export const FrontendHostTypeQuestion: SingleSelectQuestion = {
     name: AzureSolutionQuestionNames.HostType,
-    title: strings.solution.hostType.title,
+    title: "Frontend hosting type",
     type: NodeType.singleSelect,
     option: {namespace: "fx-solution-azure", method : "listHostTypeOptions"},
     default: HostTypeOptionAzure.id,
@@ -120,12 +109,10 @@ export function createAddAzureResourceQuestion(alreadyHaveFunction: boolean, alr
         type: NodeType.multiSelect,
         option: options,
         default: [],
-        prompt: strings.solution.addResource.prompt,
         onDidChangeSelection:async function(currentSelectedItems: OptionItem[], previousSelectedItems: OptionItem[]) : Promise<string[]>{
             const hasSQL = currentSelectedItems.some(i=>i.id === AzureResourceSQL.id);
             const hasAPIM = currentSelectedItems.some(i=>i.id === AzureResourceApim.id);
             const ids = currentSelectedItems.map(i=>i.id);
-            /// when SQL or APIM is selected and function is not selected, then function must be selected
             if( (hasSQL||hasAPIM) && !alreadyHaveFunction && !ids.includes(AzureResourceFunction.id)){
                 ids.push(AzureResourceFunction.id);
             }
@@ -143,27 +130,16 @@ export function createAddCapabilityQuestion(alreadyHaveTab: boolean, alreadyHave
     } 
     return {
         name: AzureSolutionQuestionNames.Capabilities,
-        title: strings.solution.addCapability.title,
+        title: "Choose capabilities",
         type: NodeType.multiSelect,
         option: options,
-        default: [],
-        // onDidChangeSelection:async function(currentSelectedItems: OptionItem[], previousSelectedItems: OptionItem[]) : Promise<string[]>{
-        //     const currentIds = new Set<string>();
-        //     for(const i of currentSelectedItems) currentIds.add(i.id);
-        //     if(currentSelectedItems.some(i=>i.id === BotOptionItem.id) && !previousSelectedItems.some(i=>i.id === BotOptionItem.id)){
-        //         currentIds.delete(MessageExtensionItem.id);
-        //     }
-        //     if(currentSelectedItems.some(i=>i.id === MessageExtensionItem.id) && !previousSelectedItems.some(i=>i.id === MessageExtensionItem.id)){
-        //         currentIds.delete(BotOptionItem.id);
-        //     }
-        //     return Array.from(currentIds);
-        // }
+        default: []
     };
 }
 
 export const DeployPluginSelectQuestion: MultiSelectQuestion = {
     name: AzureSolutionQuestionNames.PluginSelectionDeploy,
-    title: `Select resource(s) to deploy`,
+    title: `Choose resources`,
     type: NodeType.multiSelect,
     skipSingleOption: true,
     option: [],
@@ -173,7 +149,7 @@ export const DeployPluginSelectQuestion: MultiSelectQuestion = {
 
 export const AskSubscriptionQuestion: FuncQuestion = {
     name: AzureSolutionQuestionNames.AskSub,
-    title: "Please select a subscription",
+    title: "Select a subscription",
     type: NodeType.func,
     namespace: "fx-solution-azure",
     method: "askSubscription"

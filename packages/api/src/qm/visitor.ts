@@ -168,8 +168,8 @@ const questionVisitor: QuestionVistor = async function (
         validation: validationFunc,
         backButton: backButton,
         number: !!(type === NodeType.number),
-        step: step,
-        totalSteps: totalSteps
+        // step: step,
+        // totalSteps: totalSteps
       });
     } else if (type === NodeType.singleSelect || type === NodeType.multiSelect) {
       const selectQuestion: SingleSelectQuestion | MultiSelectQuestion = question as
@@ -204,24 +204,23 @@ const questionVisitor: QuestionVistor = async function (
         placeholder: selectQuestion.placeholder,
         backButton: backButton,
         onDidChangeSelection: type === NodeType.multiSelect ? (selectQuestion as MultiSelectQuestion).onDidChangeSelection : undefined,
-        step: step,
-        totalSteps: totalSteps
+        // step: step,
+        // totalSteps: totalSteps
       });
     } else if (type === NodeType.folder) {
       const fileQuestion: FileQuestion = question as FileQuestion;
       const validationFunc = fileQuestion.validation ? getValidationFunction(fileQuestion.validation, inputs, remoteFuncExecutor) : undefined;
       let title = (fileQuestion.title || fileQuestion.description || fileQuestion.name);
-      // title += `(${step}/${totalSteps})`;
       return await ui.showOpenDialog({
-        defaultUri: defaultValue as string | undefined,
+        defaultUri: fileQuestion.value || defaultValue as string | undefined,
         canSelectFiles: false,
         canSelectFolders: true,
         canSelectMany: false,
         title: title,
         validation: validationFunc,
         backButton: backButton,
-        step: step,
-        totalSteps: totalSteps
+        // step: step,
+        // totalSteps: totalSteps
       });
     }
   }

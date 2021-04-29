@@ -21,7 +21,7 @@ export class FxBotPluginResultFactory {
             errorMessage,
             FxBotPluginResultFactory.source,
             innerError?.stack,
-            FxBotPluginResultFactory.defaultHelpLink,
+            helpLink ? helpLink : FxBotPluginResultFactory.defaultHelpLink,
             innerError
         ));
     }
@@ -32,7 +32,7 @@ export class FxBotPluginResultFactory {
             errorMessage,
             FxBotPluginResultFactory.source,
             innerError?.stack,
-            FxBotPluginResultFactory.defaultIssueLink,
+            issueLink ? issueLink : FxBotPluginResultFactory.defaultIssueLink,
             innerError
         ));
     }

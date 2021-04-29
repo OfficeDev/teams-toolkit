@@ -70,5 +70,5 @@ export class Messages {
 
     // Suggestions
     public static readonly RetryTheCurrentStep = "Please retry the current step.";
-    public static readonly HowToRegisterSubs = "See https://aka.ms/rps-not-found for how to register subscriptions.";
+    public static readonly RegisterYouSubsToUseBot = "Please register your subscription to use namespace 'Microsoft.BotService'.";
 }

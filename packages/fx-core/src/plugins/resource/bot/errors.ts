@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ErrorNames } from "./constants";
+import { ErrorNames, Links } from "./constants";
 import { Messages } from "./resources/messages";
 
 export enum ErrorType {
@@ -15,14 +15,19 @@ export class PluginError extends Error {
     public suggestions: string[];
     public errorType: ErrorType;
     public innerError?: Error;
+    public helpLink?: string;
+    public issueLink?: string;
 
-    constructor(type: ErrorType, name: string, details: string, suggestions: string[], innerError?: Error) {
+    constructor(type: ErrorType, name: string, details: string, suggestions: string[],
+        innerError?: Error, helpLink?: string, issueLink?: string) {
         super(details);
         this.name = name;
         this.details = details;
         this.suggestions = suggestions;
         this.errorType = type;
         this.innerError = innerError;
+        this.helpLink = helpLink;
+        this.issueLink = issueLink;
         Object.setPrototypeOf(this, PluginError.prototype);
     }
 
@@ -134,8 +139,10 @@ export class MissingSubscriptionRegistrationError extends PluginError {
             ErrorNames.MISSING_SUBSCRIPTION_REGISTRATION_ERROR,
             Messages.TheSubsNotRegisterToUseBotService,
             [
-                Messages.HowToRegisterSubs
-            ]
+                Messages.RegisterYouSubsToUseBot
+            ],
+            undefined,
+            Links.RPS_NOT_FOUND
         );
     }
 }

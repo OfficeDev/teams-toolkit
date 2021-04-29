@@ -1957,7 +1957,7 @@ export class TeamsAppSolution implements Solution {
                     notifications.push("Azure Tab Frontend");
                     pluginsToScaffold.push(this.fehostPlugin);
                 }
-                else if(cap === BotOptionItem.id || cap === MessageExtensionItem.id){
+                else if((cap === BotOptionItem.id || cap === MessageExtensionItem.id) && !pluginsToScaffold.includes(this.botPlugin)){
                     notifications.push("Bot/MessageExtension");
                     pluginsToScaffold.push(this.botPlugin);
                 }

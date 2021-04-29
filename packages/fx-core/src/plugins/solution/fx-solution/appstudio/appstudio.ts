@@ -105,6 +105,27 @@ export namespace AppStudio {
         throw new Error(`teamsAppId or appStudioToken is invalid`);
     }
 
+    async function getApp(teamsAppId: string, appStudioToken: string, logProvider?: LogProvider): Promise<IAppDefinition> {
+        const requester = createRequesterWithToken(appStudioToken);
+        try {
+            const response = await requester.get(`/api/appdefinitions/${teamsAppId}`);
+            if (response && response.data) {
+                const app = <IAppDefinition>response.data;
+                if (app && app.teamsAppId && app.teamsAppId === teamsAppId) {
+                    return app;
+                } else {
+                    await logProvider?.error(`teamsAppId mismatch. Input: ${teamsAppId}. Got: ${app.teamsAppId}`);
+                }
+            }
+        } catch (e) {
+            if (e instanceof Error) {
+                await logProvider?.warning(`failed to update app due to ${e.name}: ${e.message}`);
+            }
+            throw new Error(`failed to update app due to ${e.name}: ${e.message}`);
+        }
+        throw new Error(`Cannot get the app definition with app ID ${teamsAppId}`);
+    }
+
     // Updates an existing app if it exists with the configuration given.  Returns whether or not it was successful.
     export async function updateApp(
         teamsAppId: string,
@@ -117,6 +138,12 @@ export namespace AppStudio {
         if (appDefinition && appStudioToken) {
             try {
                 const requester = createRequesterWithToken(appStudioToken);
+
+                // Get userlist from existing app
+                const existingAppDefinition = await getApp(teamsAppId, appStudioToken, logProvider);
+                const userlist = existingAppDefinition.userList;
+                appDefinition.userList = userlist;
+
                 let result: {colorIconUrl: string, outlineIconUrl: string} | undefined;
                 if (colorIconContent && outlineIconContent) {
                     result = await uploadIcon(teamsAppId, appStudioToken, colorIconContent, outlineIconContent, requester, logProvider);

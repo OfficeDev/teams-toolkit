@@ -11,7 +11,7 @@ import { DotnetChecker, DotnetVersion } from "../../../../src/debug/depsChecker/
 import { CustomDotnetInstallScript, TestAdapter } from "../adapters/testAdapter";
 import { TestLogger } from "../adapters/testLogger";
 import { TestTelemetry } from "../adapters/testTelemetry";
-import { commandExistsInPath } from "../utils/common";
+import { assertPathEqual, commandExistsInPath } from "../utils/common";
 
 function createTestChecker(
   hasTeamsfxBackend: boolean,
@@ -98,7 +98,7 @@ suite("DotnetChecker E2E Test - first run", async () => {
 
     // test dotnet executable is from config file.
     const dotnetExecPath = await dotnetChecker.getDotnetExecPath();
-    chai.assert.equal(dotnetExecPathFromConfig, dotnetExecPath);
+    assertPathEqual(dotnetExecPathFromConfig!, dotnetExecPath);
   });
 
   test(".NET SDK is too old", async function(this: Mocha.Context) {
@@ -229,7 +229,7 @@ suite("DotnetChecker E2E Test - first run", async () => {
         const dotnetExecPath = await dotnetChecker.getDotnetExecPath();
 
         chai.assert.isTrue(shouldContinue);
-        chai.assert.equal(dotnetExecPath, installedDotnetExecPath);
+        assertPathEqual(dotnetExecPath, installedDotnetExecPath);
 
         chai.assert.isTrue(
           await dotnetUtils.hasDotnetVersion(dotnetExecPath, dotnetUtils.dotnetInstallVersion)

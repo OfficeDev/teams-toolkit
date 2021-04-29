@@ -52,7 +52,7 @@ function getVersionString(): string {
     .options("verbose", {
       description: "Print additional information.",
       boolean: true,
-      default: true
+      default: false
     })
     .options("debug", {
       description: "Print diagnostic information.",

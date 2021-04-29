@@ -36,7 +36,7 @@ import { flattenNodes, getJson, getSingleOptionString, toConfigMap, toYargsOptio
 export default class New extends YargsCommand {
   public readonly commandHead = `new`;
   public readonly command = `${this.commandHead}`;
-  public readonly description = "Create a new Teams app project interactively or not";
+  public readonly description = "Create a new Teams application.";
   public readonly paramPath = constants.newParamPath;
 
   public readonly root = getJson<QTreeNode>(this.paramPath);
@@ -69,7 +69,7 @@ export default class New extends YargsCommand {
       });
       yargs.options({
         "interactive": {
-          description: "Whether scaffold interactively",
+          description: "Select the options interactively",
           boolean: true,
           default: true,
           global: false
@@ -121,7 +121,7 @@ export default class New extends YargsCommand {
 class NewTemplete extends YargsCommand {
   public readonly commandHead = `template`;
   public readonly command = `${this.commandHead} <template-name>`;
-  public readonly description = "Create an app from template or list all Teams app templates";
+  public readonly description = "Create an app from an existing template.";
 
   public readonly subCommands: YargsCommand[] = [new NewTempleteList()];
 
@@ -134,7 +134,7 @@ class NewTemplete extends YargsCommand {
     yargs
       .positional(
         "template-name", {
-          description: "Please input the template name",
+          description: "Enter the template name",
           type: "string",
           choices: templatesNames,
           default: templatesNames[0]
@@ -162,7 +162,7 @@ class NewTemplete extends YargsCommand {
     await this.saveFilesRecursively(new AdmZip(result.data), folder);
     console.log(
       colors.green(
-        `[${constants.cliSource}] Have cloned ${colors.yellow(template.sampleAppUrl)} to ${colors.yellow(folder)}`
+        `Cloned '${colors.yellow(template.sampleAppUrl)}' to '${colors.yellow(folder)}'`
       )
     );
     return ok(null);
@@ -201,7 +201,7 @@ class NewTemplete extends YargsCommand {
 class NewTempleteList extends YargsCommand {
   public readonly commandHead = `list`;
   public readonly command = `${this.commandHead}`;
-  public readonly description = "List all Teams app templates";
+  public readonly description = "List all templates";
 
   public builder(yargs: Argv): Argv<any> {
     return yargs.hide("template-name");
@@ -210,11 +210,11 @@ class NewTempleteList extends YargsCommand {
   public async runCommand(args: {
     [argName: string]: string | string[];
   }): Promise<Result<null, FxError>> {
-    console.log(colors.green(`[${constants.cliSource}] The following are sample apps:`));
+    console.log(colors.green(`The following are sample apps:`));
     console.log(constants.templates);
     console.log(
       colors.green(
-        `[${constants.cliSource}] You can use ${colors.yellow("teamsfx new template <sampleAppName>")} to clone the sample app.`
+        `Use the command ${colors.yellow("teamsfx new template <sampleAppName>")} to create an application from the sample app.`
       )
     );
     return ok(null);

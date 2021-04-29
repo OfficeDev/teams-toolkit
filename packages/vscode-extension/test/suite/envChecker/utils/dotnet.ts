@@ -79,19 +79,23 @@ export async function cleanup() {
   await fs.remove(dotnetPrivateInstallPath);
 }
 
-export async function withDotnet(dotnetChecker: DotnetChecker, version: DotnetVersion, callback: (dotnetExecPath: string) => Promise<void>): Promise<void> {
+export async function withDotnet(
+  dotnetChecker: DotnetChecker,
+  version: DotnetVersion,
+  callback: (dotnetExecPath: string) => Promise<void>
+): Promise<void> {
   const withDotnetAsync = async (installDir: string) => {
-        // use private method as a helper method in test only
-        await dotnetChecker['runDotnetInstallScript'](version, installDir);
-        const dotnetExecPath = DotnetChecker['getDotnetExecPathFromDotnetInstallationDir'](installDir);
-        await callback(dotnetExecPath);
+    // use private method as a helper method in test only
+    await dotnetChecker["runDotnetInstallScript"](version, installDir);
+    const dotnetExecPath = DotnetChecker["getDotnetExecPathFromDotnetInstallationDir"](installDir);
+    await callback(dotnetExecPath);
   };
 
   return new Promise((resolve, reject) => {
     // unsafeCleanup: recursively removes the created temporary directory, even when it's not empty.
-    tmp.dir({unsafeCleanup: true}, function(err, path, cleanupCallback) {
+    tmp.dir({ unsafeCleanup: true }, function(err, path, cleanupCallback) {
       if (err) {
-        reject(new Error(`Failed to create tmpdir, error = '${err}'`))
+        reject(new Error(`Failed to create tmpdir, error = '${err}'`));
         return;
       }
 

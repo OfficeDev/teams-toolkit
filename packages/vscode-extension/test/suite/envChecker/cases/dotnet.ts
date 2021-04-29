@@ -13,7 +13,6 @@ import { TestLogger } from "../adapters/testLogger";
 import { TestTelemetry } from "../adapters/testTelemetry";
 import { commandExistsInPath } from "../utils/common";
 
-
 function createTestChecker(
   hasTeamsfxBackend: boolean,
   clickCancel = false,
@@ -174,13 +173,25 @@ suite("DotnetChecker E2E Test - first run", async () => {
     chai.assert.equal(dotnetExecPath, dotnetUtils.dotnetCommand);
   });
 
-  test(".NET SDK installation failure and manually install", async function (this: Mocha.Context) {
+  test(".NET SDK installation failure and manually install", async function(this: Mocha.Context) {
     if (await commandExistsInPath(dotnetUtils.dotnetCommand)) {
       this.skip();
     }
 
     // DotnetChecker with mock dotnet-install script
-    const [mockChecker, mockDotnetChecker] = createTestChecker(true, false, true, true, true, new CustomDotnetInstallScript(true, 1, "mock dotnet installing", "mock dotnet install failure"));
+    const [mockChecker, mockDotnetChecker] = createTestChecker(
+      true,
+      false,
+      true,
+      true,
+      true,
+      new CustomDotnetInstallScript(
+        true,
+        1,
+        "mock dotnet installing",
+        "mock dotnet install failure"
+      )
+    );
 
     const shouldContinue = await mockChecker.resolve();
     const dotnetExecPathFromConfig = await dotnetUtils.getDotnetExecPathFromConfig(
@@ -197,24 +208,34 @@ suite("DotnetChecker E2E Test - first run", async () => {
     const [checker, dotnetChecker] = createTestChecker(true);
 
     // user manually install
-    await dotnetUtils.withDotnet(dotnetChecker, DotnetVersion.v31, async (installedDotnetExecPath: string) => {
-      process.env.PATH = path.resolve(installedDotnetExecPath, "..") + (isWindows() ? ';' : ':') + process.env.PATH;
+    await dotnetUtils.withDotnet(
+      dotnetChecker,
+      DotnetVersion.v31,
+      async (installedDotnetExecPath: string) => {
+        process.env.PATH =
+          path.resolve(installedDotnetExecPath, "..") +
+          (isWindows() ? ";" : ":") +
+          process.env.PATH;
 
-      // pre-check installed dotnet works
-      chai.assert.isTrue(
-        await dotnetUtils.hasDotnetVersion(installedDotnetExecPath, dotnetUtils.dotnetInstallVersion)
-      );
-      
-      const shouldContinue = await checker.resolve();
-      const dotnetExecPath = await dotnetChecker.getDotnetExecPath();
+        // pre-check installed dotnet works
+        chai.assert.isTrue(
+          await dotnetUtils.hasDotnetVersion(
+            installedDotnetExecPath,
+            dotnetUtils.dotnetInstallVersion
+          )
+        );
 
-      chai.assert.isTrue(shouldContinue);
-      chai.assert.equal(dotnetExecPath, installedDotnetExecPath);
+        const shouldContinue = await checker.resolve();
+        const dotnetExecPath = await dotnetChecker.getDotnetExecPath();
 
-      chai.assert.isTrue(
-        await dotnetUtils.hasDotnetVersion(dotnetExecPath, dotnetUtils.dotnetInstallVersion)
-      );
-    })
+        chai.assert.isTrue(shouldContinue);
+        chai.assert.equal(dotnetExecPath, installedDotnetExecPath);
+
+        chai.assert.isTrue(
+          await dotnetUtils.hasDotnetVersion(dotnetExecPath, dotnetUtils.dotnetInstallVersion)
+        );
+      }
+    );
   });
 
   teardown(async function(this: Mocha.Context) {

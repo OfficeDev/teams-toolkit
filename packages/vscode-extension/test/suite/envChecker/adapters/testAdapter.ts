@@ -7,17 +7,11 @@ export class CustomDotnetInstallScript {
   private readonly _scriptExitCode: number;
   private readonly _scriptStdout: string;
   private readonly _scriptStderr: string;
-  constructor(
-    useCustomScript = false,
-    scriptExitCode = 0,
-    scriptStdout = "",
-    scriptStderr = ""
-  ) {
+  constructor(useCustomScript = false, scriptExitCode = 0, scriptStdout = "", scriptStderr = "") {
     this._useCustomScript = useCustomScript;
     this._scriptExitCode = scriptExitCode;
     this._scriptStdout = scriptStdout;
     this._scriptStderr = scriptStderr;
-
   }
 
   public getScriptPath(): string {

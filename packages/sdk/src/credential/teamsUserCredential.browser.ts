@@ -65,7 +65,6 @@ export class TeamsUserCredential implements TokenCredential {
    * Popup login page to get user's access token, will throw {@link ErrorWithCode} if failed.
    *
    * @remarks Only works in Teams client app. User will be redirected to the authorization page to login and consent.
-   * The access token would be managed by the SDK and cached in the localStorage.
    *
    * @example
    * ```typescript

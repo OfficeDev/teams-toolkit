@@ -615,7 +615,7 @@ export async function openManifestHandler(): Promise<Result<null, FxError>> {
 }
 
 export async function openM365AccountHandler() {
-  return env.openExternal(Uri.parse("https://www.office.com/"));
+  return env.openExternal(Uri.parse("https://admin.microsoft.com/Adminportal/"));
 }
 
 export async function openAzureAccountHandler() {

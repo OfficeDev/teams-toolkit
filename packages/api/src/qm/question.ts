@@ -201,17 +201,12 @@ export interface SingleSelectQuestion extends BaseQuestion {
     /**
      * The default selected `id` value of the option item
      */
-    default?: string;
+    default?: string | Func;
     
     /**
      * placeholder text
      */
-    placeholder?: string;
-    
-    /**
-     * prompt text
-     */
-    prompt?: string;
+    placeholder?: string | Func;
     
     /**
      * whether the answer return the original `OptionItem` object.
@@ -245,17 +240,12 @@ export interface MultiSelectQuestion extends BaseQuestion {
     /**
      * The default selected `id` array of the option item
      */
-    default?: string[];
+    default?: string[] | Func;
 
     /**
      * placeholder text
      */
     placeholder?: string;
-
-    /**
-     * prompt text
-     */
-    prompt?: string;
 
     /**
      * whether the answer return the original `OptionItem` object array.
@@ -293,12 +283,12 @@ export interface TextInputQuestion extends BaseQuestion {
     /**
      * placeholder text
      */
-    placeholder?: string;
+    placeholder?: string | Func;
 
     /**
      * prompt text
      */
-    prompt?: string;
+    prompt?: string | Func;
 
     /**
      * validation property:

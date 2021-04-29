@@ -154,7 +154,7 @@ async function loginTestUser(): Promise<void> {
     // Click password option is not stable, try twice here
     await page.click(selectors.passwordOption, { delay: 5000, timeout: 10000 });
     await page.click(selectors.passwordOption2, { delay: 5000, timeout: 10000 });
-  } catch (e) {}
+  } catch (e) { }
   await page.waitForSelector(selectors.password, { timeout: E2E_TIMEOUT });
   await page.click(selectors.password);
   await page.type(selectors.password, TEST_USER_PASSWORD);
@@ -269,7 +269,7 @@ export function MockEnvironmentVariable(): () => void {
     SQL_PASSWORD: process.env.SDK_INTEGRATION_SQL_PASSWORD,
 
     INITIATE_LOGIN_ENDPOINT: "fake_initiate_login_endpoint",
-    M365_APPLICATION_ID_URI: process.env.SDK_INTEGRATION_TEST_M365_APPLICATION_ID_URI
+    M365_APPLICATION_ID_URI: "api://localhost/9009f2e6-ddea-47e1-994c-0a4023249345"
   });
 }
 

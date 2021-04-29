@@ -46,12 +46,11 @@ export class SqlPluginImpl {
     }
 
     async getQuestions(stage: Stage, ctx: PluginContext): Promise<Result<QTreeNode | undefined, FxError>> {
-        ctx.logProvider?.info(Message.startGetQuestions);
-        const sqlNode = new QTreeNode({
-            type: NodeType.group,
-        });
-
         if (stage === Stage.provision) {
+            ctx.logProvider?.info(Message.startGetQuestions);
+            const sqlNode = new QTreeNode({
+                type: NodeType.group,
+            });
             this.init(ctx);
             if (this.config.azureSubscriptionId) {
                 ctx.logProvider?.info(Message.checkSql);
@@ -69,9 +68,10 @@ export class SqlPluginImpl {
             if (ctx.platform === Platform.CLI) {
                 sqlNode.addChild(skipAddingUserQuestion);
             }
+            ctx.logProvider?.info(Message.endGetQuestions);
+            return ok(sqlNode);
         }
-        ctx.logProvider?.info(Message.endGetQuestions);
-        return ok(sqlNode);
+        return ok(undefined);
     }
 
     public async callFunc(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {

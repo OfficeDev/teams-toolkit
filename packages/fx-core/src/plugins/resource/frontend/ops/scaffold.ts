@@ -13,11 +13,7 @@ import {
     InvalidTemplateManifestError,
     runWithErrorCatchAndThrow,
 } from "../resources/errors";
-import {
-    Constants,
-    FrontendPathInfo,
-    FrontendPluginInfo as PluginInfo,
-} from "../constants";
+import { Constants, FrontendPathInfo, FrontendPluginInfo as PluginInfo } from "../constants";
 import { Logger } from "../utils/logger";
 import { Messages } from "../resources/messages";
 import { PluginContext } from "fx-api";
@@ -60,9 +56,7 @@ export class FrontendScaffold {
     ): Promise<string> {
         const manifest: Manifest = await this.fetchTemplateManifest(manifestUrl);
         return runWithErrorCatchAndThrow(new InvalidTemplateManifestError(), () => {
-            const urls: { version: string; url: string }[] = manifest[group][
-                language
-            ][scenario]
+            const urls: { version: string; url: string }[] = manifest[group][language][scenario]
                 .filter((x) => semver.satisfies(x.version, version))
                 .sort((a, b) => -semver.compare(a.version, b.version));
             return urls[0].url;
@@ -88,17 +82,11 @@ export class FrontendScaffold {
     }
 
     public static getTemplateZipFromLocal(templateInfo: TemplateInfo): AdmZip {
-        const templatePath = path.resolve(
-            FrontendPathInfo.RootDir,
-            templateInfo.localTemplatePath
-        );
+        const templatePath = path.resolve(FrontendPathInfo.RootDir, templateInfo.localTemplatePath);
         return new AdmZip(templatePath);
     }
 
-    public static async getTemplateZip(
-        ctx: PluginContext,
-        templateInfo: TemplateInfo
-    ): Promise<AdmZip> {
+    public static async getTemplateZip(ctx: PluginContext, templateInfo: TemplateInfo): Promise<AdmZip> {
         try {
             // Temporarily hard code template language as JavaScript
             const templateUrl = await FrontendScaffold.getTemplateURL(
@@ -116,11 +104,7 @@ export class FrontendScaffold {
         }
     }
 
-    public static fulfill(
-        filePath: string,
-        data: Buffer,
-        variables: TemplateVariable
-    ): string | Buffer {
+    public static fulfill(filePath: string, data: Buffer, variables: TemplateVariable): string | Buffer {
         if (path.extname(filePath) === FrontendPathInfo.TemplateFileExt) {
             return Mustache.render(data.toString(), variables);
         }
@@ -138,15 +122,11 @@ export class FrontendScaffold {
                 .getEntries()
                 .filter((entry) => !entry.isDirectory)
                 .map(async (entry) => {
-                    const data: string | Buffer = dataReplaceFn
-                        ? dataReplaceFn(entry.name, entry.getData())
-                        : entry.getData();
+                    const data: string | Buffer = dataReplaceFn ? dataReplaceFn(entry.name, entry.getData()) : entry.getData();
 
                     const filePath = path.join(
                         dstPath,
-                        nameReplaceFn
-                            ? nameReplaceFn(entry.entryName, entry.getData())
-                            : entry.entryName
+                        nameReplaceFn ? nameReplaceFn(entry.entryName, entry.getData()) : entry.entryName
                     );
                     await fs.ensureDir(path.dirname(filePath));
                     await fs.writeFile(filePath, data);

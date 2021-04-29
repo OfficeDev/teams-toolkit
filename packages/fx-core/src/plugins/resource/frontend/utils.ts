@@ -12,26 +12,15 @@ import klaw from "klaw";
 
 export class Utils {
     static async delays(millisecond: number): Promise<void> {
-        return await new Promise<void>(
-            (resolve: () => void): NodeJS.Timer => setTimeout(resolve, millisecond)
-        );
+        return await new Promise<void>((resolve: () => void): NodeJS.Timer => setTimeout(resolve, millisecond));
     }
 
-    static generateStorageAccountName(
-        appName: string,
-        resourceNameSuffix: string,
-        suffix: string
-    ): string {
-        const paddingLength: number =
-            Constants.AzureStorageAccountNameLenMax -
-            resourceNameSuffix.length -
-            suffix.length;
+    static generateStorageAccountName(appName: string, resourceNameSuffix: string, suffix: string): string {
+        const paddingLength: number = Constants.AzureStorageAccountNameLenMax - resourceNameSuffix.length - suffix.length;
         const normalizedAppName: string = appName
             .replace(Constants.FrontendAppNamePattern, Constants.EmptyString)
             .toLowerCase();
-        return (
-            normalizedAppName.substr(0, paddingLength) + suffix + resourceNameSuffix
-        );
+        return normalizedAppName.substr(0, paddingLength) + suffix + resourceNameSuffix;
     }
 
     static async requestWithRetry(
@@ -65,11 +54,7 @@ export class Utils {
         throw error;
     }
 
-    static async execute(
-        command: string,
-        workingDir?: string,
-        ignoreError = false
-    ): Promise<string> {
+    static async execute(command: string, workingDir?: string, ignoreError = false): Promise<string> {
         return new Promise((resolve, reject) => {
             Logger.info(`Start to run command: "${command}".`);
 
@@ -88,14 +73,9 @@ export class Utils {
         });
     }
 
-    public static async listFilePaths(
-        directoryPath: string,
-        ignorePattern?: string
-    ): Promise<string[]> {
+    public static async listFilePaths(directoryPath: string, ignorePattern?: string): Promise<string[]> {
         return new Promise<string[]>((resolve, reject) => {
-            const ignore: string = ignorePattern
-                ? path.join(directoryPath, ignorePattern)
-                : "";
+            const ignore: string = ignorePattern ? path.join(directoryPath, ignorePattern) : "";
             glob(
                 path.join(directoryPath, "**"),
                 {

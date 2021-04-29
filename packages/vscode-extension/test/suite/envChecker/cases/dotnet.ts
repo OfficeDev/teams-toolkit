@@ -174,7 +174,7 @@ suite("DotnetChecker E2E Test - first run", async () => {
   });
 
   test(".NET SDK installation failure and manually install", async function(this: Mocha.Context) {
-    if (await commandExistsInPath(dotnetUtils.dotnetCommand)) {
+    if ((isLinux()) || await commandExistsInPath(dotnetUtils.dotnetCommand)) {
       this.skip();
     }
 

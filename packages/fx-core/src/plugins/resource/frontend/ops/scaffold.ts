@@ -38,7 +38,9 @@ export class FrontendScaffold {
             new FetchTemplatePackageError(),
             () =>
                 Utils.requestWithRetry(async () => {
-                    return axios.get(url);
+                    return axios.get(url, {
+                        timeout: Constants.RequestTimeoutInMS,
+                    });
                 })
         );
         if (!result) {

@@ -54,7 +54,8 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       const botRoot = await commonUtils.getProjectRoot(workspacePath, constants.botFolderName);
       if (botRoot) {
         tasks.push(await this.createNgrokStartTask(workspaceFolder, botRoot));
-        tasks.push(await this.createBotStartTask(workspaceFolder, botRoot, programmingLanguage));
+        const silent: boolean = frontendRoot !== undefined;
+        tasks.push(await this.createBotStartTask(workspaceFolder, botRoot, programmingLanguage, silent));
       }
 
       const vscodeEnv = detectVsCodeEnv();
@@ -194,6 +195,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     workspaceFolder: vscode.WorkspaceFolder,
     projectRoot: string,
     programmingLanguage: string | undefined,
+    silent: boolean,
     definition?: vscode.TaskDefinition
   ): Promise<vscode.Task> {
     const command: string = constants.botStartCommand;
@@ -216,6 +218,9 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       constants.botProblemMatcher
     );
     task.isBackground = true;
+    if (silent) {
+      task.presentationOptions.reveal = vscode.TaskRevealKind.Silent;
+    }
     return task;
   }
 

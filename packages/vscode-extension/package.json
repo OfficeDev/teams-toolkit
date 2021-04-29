@@ -106,6 +106,16 @@
           "command": "fx-extension.azureAccountSettings",
           "when": "view == teamsfx-accounts && viewItem == signedinAzure",
           "group": "inline@2"
+        },
+        {
+          "command": "fx-extension.signInGuideline",
+          "when": "view == teamsfx-accounts && viewItem == signinM365",
+          "group": "inline"
+        },
+        {
+          "command": "fx-extension.signInGuideline",
+          "when": "view == teamsfx-accounts && viewItem == signinAzure",
+          "group": "inline"
         }
       ],
       "commandPalette": [
@@ -120,6 +130,11 @@
         "command": "fx-extension.signOut",
         "title": "Sign Out",
         "icon": "$(sign-out)"
+      },
+      {
+        "command": "fx-extension.signInGuideline",
+        "title": "Learn more about Teams development accounts",
+        "icon": "$(info)"
       },
       {
         "command": "fx-extension.m365AccountSettings",

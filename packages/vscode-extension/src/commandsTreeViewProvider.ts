@@ -184,7 +184,14 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
       const originalCommand = this.findCommand(treeItem.commandId);
       if (originalCommand !== undefined) {
         originalCommand.label = treeItem.label;
-        originalCommand.tooltip = treeItem.label;
+        if (treeItem.tooltip) {
+          if (treeItem.tooltip.isMarkdown) {
+            const markdown = new vscode.MarkdownString(treeItem.tooltip.value);
+            originalCommand.tooltip = markdown;
+          } else {
+            originalCommand.tooltip = treeItem.tooltip.value;
+          }
+        }
         originalCommand.contextValue = treeItem.contextValue;
         if (treeItem.icon) {
           originalCommand.iconPath = path.join(ext.context.extensionPath, "media", `${treeItem.icon}.svg`);
@@ -204,9 +211,19 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
       const disposable = vscode.commands.registerCommand(treeItem.commandId, treeItem.callback!);
       this.disposableMap.set(treeItem.commandId, disposable);
 
+      let tooltip: string | vscode.MarkdownString = treeItem.label;
+      if (treeItem.tooltip) {
+        if (treeItem.tooltip.isMarkdown) {
+          const markdown = new vscode.MarkdownString(treeItem.tooltip.value);
+          tooltip = markdown;
+        } else {
+          tooltip = treeItem.tooltip.value;
+        }
+      }
+
       const command = new TreeViewCommand(
         treeItem.label,
-        treeItem.label,
+        tooltip,
         treeItem.commandId,
         treeItem.subTreeItems && treeItem.subTreeItems.length > 0
           ? vscode.TreeItemCollapsibleState.Expanded
@@ -318,7 +335,7 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
 export class TreeViewCommand extends vscode.TreeItem {
   constructor(
     public label: string,
-    public tooltip: string,
+    public tooltip: string | vscode.MarkdownString,
     public commandId?: string,
     public collapsibleState?: vscode.TreeItemCollapsibleState,
     public category?: TreeCategory,

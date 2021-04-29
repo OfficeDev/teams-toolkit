@@ -149,6 +149,15 @@ export async function readConfigs(rootfolder: string): Promise<Result<any, FxErr
   }
 }
 
+export async function getSubscriptionIdFromEnvFile(rootfolder: string) {
+  const result = await readConfigs(rootfolder);
+  if (result.isErr()) {
+    throw result.error;
+  }
+  const configJson = result.value;
+  return configJson["solution"].subscriptionId as string | undefined;
+}
+
 export async function setSubscriptionId(
   subscriptionId?: string,
   rootFolder = "./"

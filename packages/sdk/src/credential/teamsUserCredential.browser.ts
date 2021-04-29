@@ -19,7 +19,7 @@ import { internalLogger } from "../util/logger";
 const accessTokenCacheKeyPrefix = "accessToken";
 const separator = "-";
 const tokenRefreshTimeSpanInMillisecond = 5 * 60 * 1000;
-const getSSOTokenTimeoutInMillisecond = 5000;
+const initializeTeamsSdkTimeoutInMillisecond = 5000;
 const loginPageWidth = 600;
 const loginPageHeight = 535;
 const maxRetryCount = 3;
@@ -85,9 +85,8 @@ export class TeamsUserCredential implements TokenCredential {
     return new Promise<void>((resolve, reject) => {
       microsoftTeams.initialize(() => {
         microsoftTeams.authentication.authenticate({
-          url: `${this.config.initiateLoginEndpoint}?clientId=${
-            this.config.clientId
-          }&scope=${encodeURI(scopesStr)}`,
+          url: `${this.config.initiateLoginEndpoint}?clientId=${this.config.clientId
+            }&scope=${encodeURI(scopesStr)}`,
           width: loginPageWidth,
           height: loginPageHeight,
           successCallback: async (result?: string) => {
@@ -278,8 +277,9 @@ export class TeamsUserCredential implements TokenCredential {
         }
       }
 
-      let alreadyProcessed = false;
+      let initialized = false;
       microsoftTeams.initialize(() => {
+        initialized = true;
         microsoftTeams.authentication.getAuthToken({
           successCallback: (token: string) => {
             if (!token) {
@@ -303,26 +303,25 @@ export class TeamsUserCredential implements TokenCredential {
             };
 
             this.ssoToken = ssoToken;
-            alreadyProcessed = true;
             resolve(ssoToken);
           },
           failureCallback: (errMessage: string) => {
-            alreadyProcessed = true;
             const errorMsg = "Get SSO token failed with error: " + errMessage;
             internalLogger.error(errorMsg);
             reject(new ErrorWithCode(errorMsg, ErrorCode.InternalError));
           },
           resources: []
         });
-
-        setTimeout(() => {
-          if (!alreadyProcessed) {
-            const errorMsg = "Get SSO token timeout, maybe the code is not running inside Teams";
-            internalLogger.error(errorMsg);
-            reject(new ErrorWithCode(errorMsg, ErrorCode.InternalError));
-          }
-        }, getSSOTokenTimeoutInMillisecond);
       });
+
+      // If the code not running in Teams, the initialize callback function would never trigger
+      setTimeout(() => {
+        if (!initialized) {
+          const errorMsg = "Initialize teams sdk timeout, maybe the code is not running inside Teams";
+          internalLogger.error(errorMsg);
+          reject(new ErrorWithCode(errorMsg, ErrorCode.InternalError));
+        }
+      }, initializeTeamsSdkTimeoutInMillisecond);
     });
   }
 

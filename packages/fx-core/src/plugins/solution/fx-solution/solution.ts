@@ -1600,6 +1600,11 @@ export class TeamsAppSolution implements Solution {
                 if(HostTypeOptionSPFx.id === hostType) return ok([{id:"typescript", label:"TypeScript"}]);
                 return ok([{id:"javascript", label: "JavaScript"}, {id:"typescript", label:"TypeScript"}]);
             }
+            else if(func.method === "getLanguagePlaceholder"){
+                const hostType = ctx.answers?.getString(AzureSolutionQuestionNames.HostType);
+                if(HostTypeOptionSPFx.id === hostType) return ok("SPFx is currently supporting TypeScript only.");
+                return ok(undefined);
+            }
             else if(func.method === "listHostTypeOptions"){
                 const cap = ctx.answers?.getStringArray(AzureSolutionQuestionNames.Capabilities);
                 if(cap) {

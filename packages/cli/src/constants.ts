@@ -30,11 +30,6 @@ export const resourceShowFunctionParamPath = path.resolve(
 );
 export const resourceShowSQLParamPath = path.resolve(paramFolder, "resourceShowSQLParam.json");
 
-export const resourceConfigureAadParamPath = path.resolve(
-  paramFolder,
-  "resourceConfigureAadParam.json"
-);
-
 export const provisionParamPath = path.resolve(paramFolder, "provisionParam.json");
 export const deployParamPath = path.resolve(paramFolder, "deployParam.json");
 export const publishParamPath = path.resolve(paramFolder, "publishParam.json");
@@ -51,7 +46,7 @@ export const RootFolderNode = new QTreeNode({
 export const SubscriptionNode = new QTreeNode({
   type: NodeType.text,
   name: "subscription",
-  description: "Please select a subscription"
+  description: "Select a subscription"
 });
 
 export const templates: {

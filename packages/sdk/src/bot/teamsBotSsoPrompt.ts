@@ -102,12 +102,12 @@ export interface TeamsBotSsoPromptSettings {
  *
  * loadConfiguration();
  * dialogs.add(new TeamsBotSsoPrompt('TeamsBotSsoPrompt', {
- *    scopes: '["User.Read"]',
+ *    scopes: ["User.Read"],
  * }));
  *
  * dialogs.add(new WaterfallDialog('taskNeedingLogin', [
  *      async (step) => {
- *          return await step.beginDialog('loginPrompt');
+ *          return await step.beginDialog('TeamsBotSsoPrompt');
  *      },
  *      async (step) => {
  *          const token = step.result;

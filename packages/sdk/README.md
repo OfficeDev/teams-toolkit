@@ -22,7 +22,7 @@ Please check the [wiki page]() to see how to create a Teams App project.
 
 - Node.js version 10.x.x or higher
 - A project created by TeamsFx toolkit VS Code extension or Cli tool.
-- If your project has installed `botbuilder-core` and `botbuilder-dialogs` packages as dependencies, ensure they have version `>= 4.9.3`.
+- If your project has installed `botbuilder` related [packages](https://github.com/Microsoft/botbuilder-js#packages) as dependencies, ensure they are of the same version and the version `>= 4.9.3`. ([Issue - all of the BOTBUILDER packages should be the same version](https://github.com/BotBuilderCommunity/botbuilder-community-js/issues/57#issuecomment-508538548))
 
 ### Install the `@microsoft/teamsfx` package
 
@@ -201,16 +201,35 @@ connection.on("connect", (error) => {
 Add `TeamsBotSsoPrompt` to dialog set.
 
 ```ts
-// Create a DialogState property, DialogSet and TeamsBotSsoPrompt
-const dialogState: StatePropertyAccessor<DialogState> = convoState.createProperty("dialogState");
-const dialogs: DialogSet = new DialogSet(dialogState);
-const settings: TeamsBotSsoPromptSettings = {
-  scopes: ["User.Read"]
-};
+const { ConversationState, MemoryStorage } = require('botbuilder');
+const { DialogSet, WaterfallDialog } = require('botbuilder-dialogs');
+const { TeamsBotSsoPrompt } = require('@microsoft/teamsfx');
 
-loadConfiguration(config);
+const convoState = new ConversationState(new MemoryStorage());
+const dialogState = convoState.createProperty('dialogState');
+const dialogs = new DialogSet(dialogState);
 
-dialogs.add(new TeamsBotSsoPrompt("TEAMS_BOT_SSO_PROMPT", settings));
+loadConfiguration();
+dialogs.add(new TeamsBotSsoPrompt('TeamsBotSsoPrompt', {
+   scopes: ["User.Read"],
+}));
+
+dialogs.add(new WaterfallDialog('taskNeedingLogin', [
+     async (step) => {
+         return await step.beginDialog('TeamsBotSsoPrompt');
+     },
+     async (step) => {
+         const token = step.result;
+         if (token) {
+
+             // ... continue with task needing access token ...
+
+         } else {
+             await step.context.sendActivity(`Sorry... We couldn't log you in. Try again later.`);
+             return await step.endDialog();
+         }
+     }
+]));
 ```
 
 ## Troubleshooting

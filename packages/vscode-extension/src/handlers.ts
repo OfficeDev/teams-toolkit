@@ -562,16 +562,8 @@ export async function preDebugCheckHandler(): Promise<void> {
   // }
 }
 
-export async function mailtoHandler(): Promise<boolean> {
-  return env.openExternal(Uri.parse("https://github.com/OfficeDev/teamsfx/issues/new"));
-}
-
 export async function openDocumentHandler(): Promise<boolean> {
   return env.openExternal(Uri.parse("https://aka.ms/build-first-app"));
-}
-
-export async function devProgramHandler(): Promise<boolean> {
-  return env.openExternal(Uri.parse("https://developer.microsoft.com/en-us/microsoft-365/dev-program"));
 }
 
 export async function openWelcomeHandler() {
@@ -638,6 +630,14 @@ export async function openManifestHandler(): Promise<Result<null, FxError>> {
     showError(FxError);
     return err(FxError);
   }
+}
+
+export async function openM365AccountHandler() {
+  return env.openExternal(Uri.parse("https://admin.microsoft.com/Adminportal/"));
+}
+
+export async function openAzureAccountHandler() {
+  return env.openExternal(Uri.parse("https://ms.portal.azure.com/"));
 }
 
 // TODO: remove this once welcome page is ready

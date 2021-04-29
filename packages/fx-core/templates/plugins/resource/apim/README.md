@@ -64,7 +64,7 @@ Update the Open API document under the `openapi` folder. We support both yaml an
 - Run command: swagger-jsdoc -d `./openapi/openapi.json **/*.ts`
 
 ### Recommended way 2: OpenAPI (Swagger) Editor in VS Code.
-Below is a sample swagger file for the default http trigger function. You can just copy the content into your swagger json file you've just created. 
+Below is a sample swagger file for the default http trigger function. You can copy the content into `./openapi/openapi.json`, follow the [OpenAPI Specification](https://swagger.io/resources/open-api/), and change the content according to your modification (E.g. `/getUserProfile` -> `/$yourFunctionName` ).
 
 ```
 { 
@@ -73,48 +73,36 @@ Below is a sample swagger file for the default http trigger function. You can ju
         "title": "{appName}", 
         "version": "v1" 
     }, 
-    "components": { 
-        "schemas": { 
-            "get-user-profile-response-body": { 
-                "type": "object", 
-                "properties": { 
-                    "receivedHTTPRequestBody": { 
-                        "type": "object" 
-                    }, 
-                    "userInfoMessage": { 
-                        "type": "string" 
-                    }, 
-                    "graphClientMessage": { 
-                        "type": "string" 
-                    } 
-                } 
-            } 
-        }, 
-        "responses": { 
-            "get-user-profile-200": { 
-                "description": "200 response", 
-                "content": { 
-                    "application/json": { 
-                        "schema": { 
-                            "$ref": "#/components/schemas/get-user-profile-response-body" 
-                        } 
-                    } 
-                } 
-            } 
-        } 
-    }, 
-    "paths": { 
-        "/getUserProfile": { 
-            "get": { 
-                "summary": "Get User Profile", 
-                "operationId": "get-user-profile", 
-                "responses": { 
-                    "200": { 
-                        "$ref": "#/components/responses/get-user-profile-200" 
-                    } 
-                } 
-            } 
-        } 
+    "paths": {
+        "/getUserProfile": {
+            "get": {
+                "summary": "Get User Profile",
+                "operationId": "get-user-profile",
+                "responses": {
+                    "200": {
+                        "description": "200 response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "receivedHTTPRequestBody": {
+                                            "type": "string"
+                                        },
+                                        "userInfoMessage": {
+                                            "type": "string"
+                                        },
+                                        "graphClientMessage": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     } 
 } 
 ```

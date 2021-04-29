@@ -3,10 +3,10 @@
 
 export class Messages {
     // Progress bar messages
-    static readonly ScaffoldProgressTitle = "Tab frontend scaffolding";
-    static readonly ProvisionProgressTitle = "Tab frontend provision";
-    static readonly PreDeployProgressTitle = "Tab frontend building";
-    static readonly DeployProgressTitle = "Tab frontend deployment";
+    static readonly ScaffoldProgressTitle = "Scaffolding Tab";
+    static readonly ProvisionProgressTitle = "Provisioning Tab";
+    static readonly PreDeployProgressTitle = "Building Tab";
+    static readonly DeployProgressTitle = "Deploying Tab";
 
     static readonly ProgressStart = "Preparing.";
     static readonly ProgressScaffold = "Scaffolding Tab frontend project.";

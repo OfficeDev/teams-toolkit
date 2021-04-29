@@ -73,7 +73,7 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
         type: NodeType.multiSelect,
         option: [TabOptionItem, BotOptionItem, MessageExtensionItem],
         default: [TabOptionItem.id],
-        placeholder: "Select minimum 1 capability to start with."
+        placeholder: "Select at least 1 capability"
     };
 }
 
@@ -83,7 +83,7 @@ export const FrontendHostTypeQuestion: SingleSelectQuestion = {
     type: NodeType.singleSelect,
     option: {namespace: "fx-solution-azure", method : "listHostTypeOptions"},
     default: HostTypeOptionAzure.id,
-    placeholder: "Select front-end hosting type.",
+    placeholder: "Select a hosting type",
     skipSingleOption: true
 };
 
@@ -100,7 +100,7 @@ export const AzureResourcesQuestion: MultiSelectQuestion = {
         }
         return selectedItems.map(i=>i.id);
     },
-    placeholder: "Select cloud resources (optional)."
+    placeholder: "Select a resource (optional)"
 };
 
 export function createAddAzureResourceQuestion(alreadyHaveFunction: boolean, alreadhHaveSQL: boolean, alreadyHaveAPIM: boolean): MultiSelectQuestion {

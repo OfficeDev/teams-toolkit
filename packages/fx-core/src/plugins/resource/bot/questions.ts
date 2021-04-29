@@ -15,7 +15,7 @@ const wayToRegisterBotQuestion = new QTreeNode({
     option: QuestionOptions.WAY_TO_REGISTER_BOT_OPTIONS,
     title: "Bot registration",
     default: WayToRegisterBot.CreateNew,
-    placeholder: "Create a new bot or use an existing one."
+    placeholder: "Select an option"
 });
 
 const botIdQuestion = new QTreeNode({

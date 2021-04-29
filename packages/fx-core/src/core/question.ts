@@ -20,7 +20,7 @@ export const QuestionAppName: TextInputQuestion = {
         namespace: "",
         method: "validateAppName",
     },
-    placeholder: "Enter the project name."
+    placeholder: "Application name"
 };
 
 export const QuestionRootFolder: FileQuestion = {
@@ -55,7 +55,7 @@ export const ScratchOrSampleSelect: SingleSelectQuestion = {
     title: "Teams Toolkit: Create a new Teams app",
     option: [ScratchOptionYes,ScratchOptionNo],
     default: ScratchOptionYes.id,
-    placeholder: "Create new project from scratch or samples",
+    placeholder: "Select an option",
     skipSingleOption: true
 };
 
@@ -74,6 +74,6 @@ export const SampleSelect: SingleSelectQuestion = {
         detail: "Sample app description goes here",
         data: "https://github.com/HuihuiWu-Microsoft/Sample-app-graph/releases/download/v1.0/sample.app.graph.zip"
     }],
-    placeholder: "Select a sample to jumpstart your project.",
+    placeholder: "Select a sample",
     returnObject:true
 };

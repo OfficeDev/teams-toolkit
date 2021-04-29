@@ -8,14 +8,14 @@ describe("ErrorWithCode Tests", () => {
   const errorMessage = "error message";
   const code = ErrorCode.InvalidParameter;
 
-  it("ErrorWithCode: Create with ErrorCode", () => {
+  it("create ErrorCode should success with ErrorCode", () => {
     const error = new ErrorWithCode(errorMessage, code);
 
     assert.strictEqual(error.code, code);
     assert.strictEqual(error.message, `${errorMessage}`);
   });
 
-  it("ErrorWithCode: Create without ErrorCode", () => {
+  it("create ErrorCode should success without ErrorCode", () => {
     const error = new ErrorWithCode(errorMessage);
 
     assert.strictEqual(error.code, undefined);

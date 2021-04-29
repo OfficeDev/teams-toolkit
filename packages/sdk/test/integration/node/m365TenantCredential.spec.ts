@@ -24,7 +24,7 @@ describe("M365TenantCredential Tests - Node", () => {
     RestoreEnvironmentVariable(restore);
   });
 
-  it("M365TenantCredential: Create M365TenantCredential with valid configuration", function () {
+  it("create M365TenantCredential instance should success with valid configuration", function () {
     const credential: any = new M365TenantCredential();
 
     assert.strictEqual(credential.clientSecretCredential.clientId, process.env.M365_CLIENT_ID);
@@ -39,7 +39,7 @@ describe("M365TenantCredential Tests - Node", () => {
     );
   });
 
-  it("M365TenantCredential: Get access token", async function () {
+  it("getToken should success with default scope", async function () {
     const credential = new M365TenantCredential();
     const token = await credential.getToken(defaultGraphScope);
     const tokenFromCache = await credential.getToken(defaultGraphScope);
@@ -50,7 +50,7 @@ describe("M365TenantCredential Tests - Node", () => {
     assert.strictEqual(decodedToken.idtyp, "app");
   });
 
-  it("M365TenantCredential: Get access token with authentication error", async function () {
+  it("getToken should throw ServiceError with invalid secret", async function () {
     restore = mockedEnv({
       M365_CLIENT_SECRET: fake_client_secret
     });

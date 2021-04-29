@@ -33,7 +33,7 @@ describe("MsGraphAuthProvider Tests - Node", () => {
     RestoreEnvironmentVariable(restore);
   });
 
-  it("MsGraphAuthProvider: Created with OnBehalfOfUserCredential can get correct access token", async function () {
+  it("getAccessToken should success with OnBehalfOfUserCredential", async function () {
     const scopes = "User.Read";
     const oboCredential = new OnBehalfOfUserCredential(ssoToken);
     const authProvider: MsGraphAuthProvider = new MsGraphAuthProvider(oboCredential, scopes);
@@ -47,7 +47,7 @@ describe("MsGraphAuthProvider Tests - Node", () => {
     assert.isTrue(decodedToken.scp!.indexOf(scopes) >= 0);
   });
 
-  it("MsGraphAuthProvider: Created with M365TenantCredential can get correct access token", async function () {
+  it("getAccessToken should success with M365TenantCredential", async function () {
     const scopes = ["https://graph.microsoft.com/.default"];
     const m356Credential = new M365TenantCredential();
     const authProvider: MsGraphAuthProvider = new MsGraphAuthProvider(m356Credential, scopes);

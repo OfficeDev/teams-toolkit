@@ -42,13 +42,13 @@ describe("Logger Tests", () => {
     setLogLevel(LogLevel.Info);
   });
 
-  it("updates log level", () => {
+  it("setLogLevel should success with Error level", () => {
     setLogLevel(LogLevel.Error);
 
     expect(getLogLevel()).to.equal(LogLevel.Error);
   });
 
-  it("print all log when level is verbose", () => {
+  it("all log should be displayed when level is verbose", () => {
     setLogLevel(LogLevel.Verbose);
 
     internalLogger.error("test");
@@ -61,7 +61,7 @@ describe("Logger Tests", () => {
     assert.isTrue(verboseStub.calledOnce);
   });
 
-  it("print error log only when level is error", () => {
+  it("only error log should be printed when level is error", () => {
     setLogLevel(LogLevel.Error);
 
     internalLogger.error("test");

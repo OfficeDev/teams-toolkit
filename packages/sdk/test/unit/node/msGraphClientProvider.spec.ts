@@ -58,13 +58,13 @@ describe("MsGraphClientProvider Tests - node", () => {
     mockedEnvRestore();
   });
 
-  it("MsGraphClientProvider: Create graph client with OnBehalfOfUserCredential", async function () {
+  it("createMicrosoftGraphClient should success with OnBehalfOfUserCredential", async function () {
     const oboCredential = new OnBehalfOfUserCredential(ssoToken);
     const graphClient: any = createMicrosoftGraphClient(oboCredential, scopes);
     expect(graphClient.config.authProvider.credential).to.be.instanceOf(OnBehalfOfUserCredential);
   });
 
-  it("MsGraphClientProvider: Create graph client with M365TenantCredential", async function () {
+  it("createMicrosoftGraphClient should success with M365TenantCredential", async function () {
     const m356Credential = new M365TenantCredential();
     const graphClient: any = createMicrosoftGraphClient(m356Credential, scopes);
     expect(graphClient.config.authProvider.credential).to.be.instanceOf(M365TenantCredential);

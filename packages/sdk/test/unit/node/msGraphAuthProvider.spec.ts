@@ -59,13 +59,13 @@ describe("MsGraphAuthProvider Tests - Node", () => {
     mockedEnvRestore();
   });
 
-  it("MsGraphAuthProvider: Create msGraphAuthProvider with OnBehalfOfUserCredential", function () {
+  it("create msGraphAuthProvider instance should success with OnBehalfOfUserCredential", function () {
     const oboCredential = new OnBehalfOfUserCredential(ssoToken);
     const authProvider: any = new MsGraphAuthProvider(oboCredential, scopes);
     expect(authProvider.credential).to.be.instanceOf(OnBehalfOfUserCredential);
   });
 
-  it("MsGraphAuthProvider: Create msGraphAuthProvider with M365TenantCredential", function () {
+  it("create msGraphAuthProvider instance should success with M365TenantCredential", function () {
     const m356Credential = new M365TenantCredential();
     const authProvider: any = new MsGraphAuthProvider(m356Credential, scopes);
     expect(authProvider.credential).to.be.instanceOf(M365TenantCredential);

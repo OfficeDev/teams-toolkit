@@ -59,7 +59,7 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
     RestoreEnvironmentVariable(restore);
   });
 
-  it("TeamsBotSsoPrompt: Should not be able to sign user in and get exchange tokens due to not consent", async function () {
+  it("teams bot sso prompt should not be able to sign user in and get exchange tokens when not consent", async function () {
     this.timeout(5000);
 
     const notConsentScopes = ["Calendars.Read"];
@@ -85,7 +85,7 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
       });
   });
 
-  it("TeamsBotSsoPrompt: Should be able to sign user in and get exchange tokens", async function () {
+  it("teams bot sso prompt should be able to sign user in and get exchange tokens when consent", async function () {
     this.timeout(5000);
 
     const adapter: TestAdapter = await initializeTestEnv({});
@@ -115,7 +115,7 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
       });
   });
 
-  it("TeamsBotSsoPrompt: Should not end on invalid message when endOnInvalidMessage set to false", async function () {
+  it("teams bot sso prompt should not end on invalid message when endOnInvalidMessage set to false", async function () {
     const adapter: TestAdapter = await initializeTestEnv({ endOnInvalidMessage: false });
 
     await adapter

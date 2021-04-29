@@ -41,7 +41,7 @@ describe("SqlConnector Tests - Node", () => {
     restore();
   });
 
-  it("SqlConnector: Get config success with username and password", async function () {
+  it("getConfig should success with username and password", async function () {
     restore = mockedEnv({
       SQL_ENDPOINT: fakeSQLServerEndpoint,
       SQL_DATABASE: fakeSQLDataName,
@@ -61,7 +61,7 @@ describe("SqlConnector Tests - Node", () => {
     assert.strictEqual(tediousConnectConfig.authentication!.options.password, fakeSQLPassword);
   });
 
-  it("SqlConnector: Get config success with access token", async function () {
+  it("getConfig should success with access token", async function () {
     restore = mockedEnv({
       SQL_ENDPOINT: fakeSQLServerEndpoint,
       SQL_DATABASE: fakeSQLDataName,
@@ -91,7 +91,7 @@ describe("SqlConnector Tests - Node", () => {
     sinon.restore();
   });
 
-  it("SqlConnector: Get config failed without host name", async function () {
+  it("getConfig should throw InvalidConfiguration error without host name", async function () {
     restore = mockedEnv({
       SQL_DATABASE: fakeSQLDataName,
       SQL_USER_NAME: fakeSQLUserName,
@@ -105,7 +105,7 @@ describe("SqlConnector Tests - Node", () => {
       .and.property("code", INVALID_CONFIGURATION);
   });
 
-  it("SqlConnector: Get config fail without username, password or identity id", async function () {
+  it("getConfig should throw InvalidConfiguration error without username, password or identity id", async function () {
     restore = mockedEnv({
       SQL_ENDPOINT: fakeSQLServerEndpoint,
       SQL_DATABASE: fakeSQLDataName

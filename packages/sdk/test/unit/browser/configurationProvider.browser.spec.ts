@@ -17,7 +17,7 @@ describe("ConfigurationProvider Tests - Browser", () => {
   const loginUrl = "fake_login_url";
   const authEndpoint = "fake_auth_endpoint";
 
-  it("ConfigurationProvider: Get authentication configuration from local object", () => {
+  it("getAuthenticationConfiguration should success with local object", () => {
     loadConfiguration({
       authentication: {
         initiateLoginEndpoint: loginUrl,
@@ -36,7 +36,7 @@ describe("ConfigurationProvider Tests - Browser", () => {
     }
   });
 
-  it("ConfigurationProvider: Load configuration should throw exception if no config passed in browser environment", () => {
+  it("loadConfiguration should throw InvalidParameter when no config passed in browser environment", () => {
     expect(() => {
       loadConfiguration();
     })
@@ -45,7 +45,7 @@ describe("ConfigurationProvider Tests - Browser", () => {
       .equal(ErrorCode.InvalidParameter);
   });
 
-  it("ConfigurationProvider: Get authentication configuration should get undefined result if loadConfiguration without parameter", () => {
+  it("getAuthenticationConfiguration should get undefined result when loadConfiguration without parameter", () => {
     loadConfiguration({});
     const authConfig = getAuthenticationConfiguration();
     assert.isUndefined(authConfig);

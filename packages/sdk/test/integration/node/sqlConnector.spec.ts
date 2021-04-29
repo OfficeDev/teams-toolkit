@@ -34,7 +34,7 @@ describe("SqlConnector Tests - Node", () => {
     RestoreEnvironmentVariable(restore);
     // await clearUpLocalFirewall(sqlManagerClient, resourceGroup!, sqlName!);
   });
-  it("SqlConnector: Local connect success", async function () {
+  it("execQuery should success with valid config", async function () {
     connection = await getSQLConnection();
     const query = "select system_user as u, sysdatetime() as t";
     const result = await execQuery(query, connection);

@@ -27,7 +27,7 @@ describe("ConfigurationProvider Tests - Node", () => {
   const clientSecret = "fake_client_secret";
   const authorityHost = "https://fake_authority_host";
 
-  it("ConfigurationProvider: Get resource configuration success", () => {
+  it("getResourceConfiguration should success with valid config", () => {
     loadConfiguration({
       authentication: {},
       resources: [
@@ -59,7 +59,7 @@ describe("ConfigurationProvider Tests - Node", () => {
     assert.strictEqual(result!.sqlDatabaseName, fakeSQLDataName);
   });
 
-  it("ConfigurationProvider: Get resource configuration throw error with incorrect type", () => {
+  it("getResourceConfiguration should throw InvalidConfiguration error with incorrect type", () => {
     loadConfiguration({
       authentication: {},
       resources: [
@@ -83,7 +83,7 @@ describe("ConfigurationProvider Tests - Node", () => {
     }
   });
 
-  it("ConfigurationProvider: Get resource configuration throw error without name exist", () => {
+  it("getResourceConfiguration should throw InvalidConfiguration error without name exist", () => {
     loadConfiguration({
       authentication: {},
       resources: [
@@ -107,7 +107,7 @@ describe("ConfigurationProvider Tests - Node", () => {
     }
   });
 
-  it("ConfigurationProvider: Get authentication configuration from environment variables", () => {
+  it("getResourceConfiguration should success with valid environment variables", () => {
     process.env.M365_CLIENT_ID = clientId;
     process.env.M365_TENANT_ID = tenantId;
     process.env.M365_CLIENT_SECRET = clientSecret;
@@ -126,7 +126,7 @@ describe("ConfigurationProvider Tests - Node", () => {
     }
   });
 
-  it("ConfigurationProvider: Get authentication configuration should override environment variables with local config object", () => {
+  it("getResourceConfiguration should override environment variables with local config object", () => {
     process.env.M365_CLIENT_ID = clientId;
     process.env.M365_TENANT_ID = tenantId;
     process.env.M365_CLIENT_SECRET = clientSecret;
@@ -149,7 +149,7 @@ describe("ConfigurationProvider Tests - Node", () => {
     }
   });
 
-  it("ConfigurationProvider: get authentication configuration should get undefined result if there is no environment variable", () => {
+  it("getResourceConfiguration should get undefined result when there is no environment variable", () => {
     delete process.env.M365_CLIENT_ID;
     delete process.env.M365_TENANT_ID;
     delete process.env.M365_CLIENT_SECRET;

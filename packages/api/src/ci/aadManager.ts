@@ -52,15 +52,17 @@ export class AadManager {
         return Promise.resolve(AadManager.instance);
     }
 
-    public async searchAliveAadApps(contain: string, offsetHour = 0): Promise<IAadAppInfo[]> {
-        const result = await AadManager.axios!.get(`applications?$search="displayName:${contain}"&$count=true`);
+    public async searchAliveAadApps(prefix: string, offsetHour = 0): Promise<IAadAppInfo[]> {
+        const result = await AadManager.axios!.get(
+            `applications?$filter=startswith(displayName, '${prefix}')&$count=true&$top=100&$orderby=displayName`
+        );
         const apps = result.data.value as IAadAppInfo[];
         return Promise.resolve(apps.filter(app => Date.now() - new Date(app.createdDateTime).getTime() > offsetHour * 3600 * 1000));
     }
     
-    public async searchDeletedAadApps(contain: string, offsetHour = 0): Promise<IAadAppInfo[]> {
+    public async searchDeletedAadApps(prefix: string, offsetHour = 0): Promise<IAadAppInfo[]> {
         const result = await AadManager.axios!.get(
-            `directory/deleteditems/microsoft.graph.application?$search="displayName:${contain}"&$count=true`
+            `directory/deleteditems/microsoft.graph.application?$filter=startswith(displayName, '${prefix}')&$count=true&$top=100&$orderby=displayName`
         );
         const apps = result.data.value as IAadAppInfo[];
         return Promise.resolve(apps.filter(app => Date.now() - new Date(app.createdDateTime).getTime() > offsetHour * 3600 * 1000));

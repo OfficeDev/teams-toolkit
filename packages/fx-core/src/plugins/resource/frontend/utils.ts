@@ -60,7 +60,6 @@ export class Utils {
         if (!canTry(e.response.status)) {
           break;
         }
-        await Utils.delays(Constants.RequestRetryInterval);
       }
     }
     throw error;

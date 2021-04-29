@@ -27,7 +27,9 @@ abstract class ResourceAddGenerator extends Generator {
     if (result.isErr()) {
       return err(result.error);
     }
-    const root = (result.value as QTreeNode).children![0];
+
+    /// TODO: This is also a hard code
+    const root = result.value as QTreeNode;
 
     const childrenNodes = (root.children || []).concat([]);
 
@@ -40,7 +42,7 @@ abstract class ResourceAddGenerator extends Generator {
     root.children = undefined;
 
     // pick all related questions.
-    const allNodes = [root, ...functionNodes, ...resourceNodes].filter(node => node.data.type !== NodeType.group);
+    const allNodes = [root, ...functionNodes, ...resourceNodes].filter(node => node.data && node.data.type !== NodeType.group);
     return ok([constants.RootFolderNode, ...allNodes]);
   }
 }

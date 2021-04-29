@@ -18,9 +18,15 @@ function createTestChecker(
   clickCancel = false,
   dotnetCheckerEnabled = true,
   funcToolCheckerEnabled = true,
-  nodeCheckerEnabled = true): [DepsChecker, NodeChecker] {
-
-  const testAdapter = new TestAdapter(hasTeamsfxBackend, clickCancel, dotnetCheckerEnabled, funcToolCheckerEnabled, nodeCheckerEnabled);
+  nodeCheckerEnabled = true
+): [DepsChecker, NodeChecker] {
+  const testAdapter = new TestAdapter(
+    hasTeamsfxBackend,
+    clickCancel,
+    dotnetCheckerEnabled,
+    funcToolCheckerEnabled,
+    nodeCheckerEnabled
+  );
   const logger = new TestLogger();
   const nodeChecker = new NodeChecker(testAdapter, logger, new TestTelemetry());
   const depsChecker = new DepsChecker(logger, testAdapter, [nodeChecker]);
@@ -29,11 +35,10 @@ function createTestChecker(
 }
 
 suite("NodeChecker E2E Test", async () => {
-
   test("Node supported version is installed", async function(this: Mocha.Context) {
     const nodeVersion = await nodeUtils.getNodeVersion();
     if (!(nodeVersion != null && supportedVersions.includes(nodeVersion))) {
-        this.skip();
+      this.skip();
     }
 
     const [checker, _] = createTestChecker(true);
@@ -43,8 +48,8 @@ suite("NodeChecker E2E Test", async () => {
   });
 
   test("Node is not installed", async function(this: Mocha.Context) {
-    if (await nodeUtils.getNodeVersion() !== null) {
-        this.skip();
+    if ((await nodeUtils.getNodeVersion()) !== null) {
+      this.skip();
     }
 
     const [checker, _] = createTestChecker(true, true);
@@ -56,7 +61,7 @@ suite("NodeChecker E2E Test", async () => {
   test("Node unsupported version is installed, and the user clicks continue", async function(this: Mocha.Context) {
     const nodeVersion = await nodeUtils.getNodeVersion();
     if (!(nodeVersion != null && !supportedVersions.includes(nodeVersion))) {
-        this.skip();
+      this.skip();
     }
 
     const [checker, _] = createTestChecker(true);
@@ -68,7 +73,7 @@ suite("NodeChecker E2E Test", async () => {
   test("Node unsupported version is installed, and the user clicks cancel", async function(this: Mocha.Context) {
     const nodeVersion = await nodeUtils.getNodeVersion();
     if (!(nodeVersion != null && !supportedVersions.includes(nodeVersion))) {
-        this.skip();
+      this.skip();
     }
 
     const [checker, _] = createTestChecker(true, true);
@@ -78,8 +83,8 @@ suite("NodeChecker E2E Test", async () => {
   });
 
   test("Node is not installed, and feature flag disabled", async function(this: Mocha.Context) {
-    if (await nodeUtils.getNodeVersion() !== null) {
-        this.skip();
+    if ((await nodeUtils.getNodeVersion()) !== null) {
+      this.skip();
     }
 
     const [checker, _] = createTestChecker(true, false, false, false, false);

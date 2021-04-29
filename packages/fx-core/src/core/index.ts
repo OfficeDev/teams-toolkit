@@ -429,9 +429,9 @@ class CoreImpl implements Core {
             }
         }
         const t2 = new Date().getTime();
-        let getSelectSubItem: undefined | ((token: any) => Promise<TreeItem>) = undefined;
+        let getSelectSubItem: undefined | ((token: any) => Promise<[TreeItem, boolean]>) = undefined;
         if (this.ctx.treeProvider) {
-            getSelectSubItem = async (token: any): Promise<TreeItem> => {
+            getSelectSubItem = async (token: any): Promise<[TreeItem, boolean]> => {
                 let selectSubLabel = "";
                 const subscriptions = await getSubscriptionList(token);
                 const activeSubscriptionId = this.configs.get(this.env!)!.get("solution")?.getString("subscriptionId");
@@ -447,14 +447,14 @@ class CoreImpl implements Core {
                     selectSubLabel = activeSubscription.displayName;
                     icon = "subcriptionSelected";
                 }
-                return {
+                return ([{
                     commandId: "fx-extension.selectSubscription",
                     label: selectSubLabel,
                     callback: selectSubscriptionCallback,
                     parent: "fx-extension.signinAzure",
                     contextValue: "selectSubscription",
                     icon: icon
-                };
+                }, !(activeSubscriptionId === undefined || activeSubscription === undefined)]);
             };
 
             const selectSubscriptionCallback = async (): Promise<Result<null, FxError>> => {
@@ -482,7 +482,7 @@ class CoreImpl implements Core {
                 const subscription = subscriptions.find((subscription) => subscription.displayName === subscriptionName);
 
                 if(subscription){
-                    this.readConfigs();
+                    await this.readConfigs();
                     let change = true;
                     const subscriptionId = this.configs.get(this.env!)!.get("solution")!.getString("subscriptionId");
                     if(subscriptionId){
@@ -549,7 +549,7 @@ class CoreImpl implements Core {
 
                     if (validFxProject) {
                         const subItem = await getSelectSubItem!(token);
-                        this.ctx.treeProvider?.add([subItem]);
+                        this.ctx.treeProvider?.add([subItem[0]]);
                     }
                 }
 
@@ -564,7 +564,7 @@ class CoreImpl implements Core {
                 azureAccountContextValue = "signedinAzure";
             }
 
-            this.ctx.appStudioToken?.setStatusChangeCallback(
+            this.ctx.appStudioToken?.setStatusChangeMap('tree-view', 
                 (status: string, token?: string | undefined, accountInfo?: Record<string, unknown> | undefined) => {
                     if (status === "SignedIn") {
                         signinM365Callback();
@@ -572,7 +572,7 @@ class CoreImpl implements Core {
                     return Promise.resolve();
                 },
             );
-            this.ctx.azureAccountProvider?.setStatusChangeCallback(
+            this.ctx.azureAccountProvider?.setStatusChangeMap( 'tree-view', 
                 async (status: string, token?: string | undefined, accountInfo?: Record<string, unknown> | undefined) => {
                     if (status === "SignedIn") {
                         const token = this.ctx.azureAccountProvider?.getAccountCredential();
@@ -588,7 +588,11 @@ class CoreImpl implements Core {
                             ]);
                             if (supported) {
                                 const subItem = await getSelectSubItem!(token);
-                                this.ctx.treeProvider?.add([subItem]);
+                                this.ctx.treeProvider?.add([subItem[0]]);
+
+                                if(!subItem[1]){
+                                    await selectSubscriptionCallback();
+                                }
                             }
                         }
                     }
@@ -630,11 +634,6 @@ class CoreImpl implements Core {
                     tooltip: azureTooltip
                 },
             ]);
-
-            if (token !== undefined && getSelectSubItem !== undefined) {
-                const subItem = await getSelectSubItem(token);
-                this.ctx.treeProvider?.add([subItem]);
-            }
         }
 
         if (!supported) return ok(null);

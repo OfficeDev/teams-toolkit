@@ -114,7 +114,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       const accountJson = await this.getJsonObject();
       await AzureAccountManager.statusChange("SignedIn", accessToken?.accessToken, accountJson);
     }
-    await this.notifyStatus();
   }
 
   private isUserLogin(): boolean {
@@ -295,7 +294,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         }
       }
     }
-    throw new UserError(ExtensionErrors.UnknownSubscription, StringResources.vsc.azureLogin.unkownSubscription, "Login");
+    throw new UserError(ExtensionErrors.UnknownSubscription, StringResources.vsc.azureLogin.unknownSubscription, "Login");
   }
 
   async getStatus(): Promise<LoginStatus> {

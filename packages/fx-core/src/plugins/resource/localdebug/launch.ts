@@ -86,7 +86,6 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
                     request: "launch",
                     url: "https://teams.microsoft.com/_#/l/app/${localTeamsAppId}?installAppPackage=true",
                     preLaunchTask: "Start Frontend",
-                    postDebugTask: "Stop All Services",
                     cascadeTerminateToConfigurations: ["Start and Attach to Backend"],
                     presentation: {
                         group: "all",
@@ -99,7 +98,6 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
                     request: "launch",
                     url: "https://teams.microsoft.com/_#/l/app/${localTeamsAppId}?installAppPackage=true",
                     preLaunchTask: "Start Frontend",
-                    postDebugTask: "Stop All Services",
                     cascadeTerminateToConfigurations: ["Start and Attach to Backend"],
                     presentation: {
                         group: "all",
@@ -128,7 +126,6 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
                     request: "launch",
                     url: "https://teams.microsoft.com/_#/l/app/${localTeamsAppId}?installAppPackage=true",
                     preLaunchTask: "Start Frontend",
-                    postDebugTask: "Stop All Services",
                     presentation: {
                         group: "all",
                         hidden: true,
@@ -140,7 +137,6 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
                     request: "launch",
                     url: "https://teams.microsoft.com/_#/l/app/${localTeamsAppId}?installAppPackage=true",
                     preLaunchTask: "Start Frontend",
-                    postDebugTask: "Stop All Services",
                     presentation: {
                         group: "all",
                         hidden: true,
@@ -158,7 +154,6 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
                 type: LaunchBrowser.edge,
                 request: "launch",
                 url: "https://teams.microsoft.com/_#/l/app/${localTeamsAppId}?installAppPackage=true",
-                postDebugTask: "Stop All Services",
                 cascadeTerminateToConfigurations: ["Start and Attach to Bot"],
                 presentation: {
                     group: "all",
@@ -170,7 +165,6 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
                 type: LaunchBrowser.chrome,
                 request: "launch",
                 url: "https://teams.microsoft.com/_#/l/app/${localTeamsAppId}?installAppPackage=true",
-                postDebugTask: "Stop All Services",
                 cascadeTerminateToConfigurations: ["Start and Attach to Bot"],
                 presentation: {
                     group: "all",
@@ -201,7 +195,6 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
                 request: "launch",
                 url: "https://teams.microsoft.com/_#/l/app/${localTeamsAppId}?installAppPackage=true",
                 preLaunchTask: "Start Frontend",
-                postDebugTask: "Stop All Services",
                 cascadeTerminateToConfigurations: includeBackend ? ["Start and Attach to Bot", "Start and Attach to Backend"]: ["Start and Attach to Bot"],
                 presentation: {
                     group: "all",
@@ -214,7 +207,6 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
                 request: "launch",
                 url: "https://teams.microsoft.com/_#/l/app/${localTeamsAppId}?installAppPackage=true",
                 preLaunchTask: "Start Frontend",
-                postDebugTask: "Stop All Services",
                 cascadeTerminateToConfigurations: includeBackend ? ["Start and Attach to Bot", "Start and Attach to Backend"]: ["Start and Attach to Bot"],
                 presentation: {
                     group: "all",

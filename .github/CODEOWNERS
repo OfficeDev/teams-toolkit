@@ -22,10 +22,11 @@
 /packages/cli/tests/e2e/simpleauth @KennethBWSong @adashen
 /packages/cli/tests/e2e/sql @xzf0587 @adashen
 /packages/cli/tests/e2e/apim @XiaofuHuang @dooriya
+/packages/cli/tests/e2e/function @henzhang-ms @eriolchan @hund030
 
 /packages/api @jayzhang @1yefuwang1 @LongOddCode
 /packages/api/src/qm @jayzhang @1yefuwang1 @LongOddCode @jiayi-ruan
-/packages/api/src/ci @jayzhang @1yefuwang1 @LongOddCode @Alive-Fish @KennethBWSong @XiaofuHuang
+/packages/api/src/ci @jayzhang @1yefuwang1 @LongOddCode @Alive-Fish @KennethBWSong @XiaofuHuang @henzhang-ms @eriolchan
 
 /packages/sdk @tecton @blackchoey @SLdragon @dilin-MS @wenytang-ms
 

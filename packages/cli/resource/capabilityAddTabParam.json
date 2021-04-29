@@ -10,20 +10,20 @@
     {
         "data": {
             "name": "capabilities",
-            "title": "Select capabilities to add",
+            "title": "Choose capabilities",
             "type": "multiSelect",
             "option": [
                 {
                     "id": "Tab",
                     "label": "Tab",
                     "cliName": "tab",
-                    "description": "Tabs embeds a web app experience in a tab in a Teams chat, channel, or personal workspace."
+                    "description": "UI-based app",
+                    "detail": "Tabs are a simple way to surface content in your app by essentially embedding a webpage in Teams."
                 }
             ],
             "default": [
                 "tab"
             ],
-            "prompt": "Bot and Message Extension are exclusive, you can not select both.",
             "hide": true
         }
     }

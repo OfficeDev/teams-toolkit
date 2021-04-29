@@ -133,21 +133,22 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
 
   private async doesUserConfirmLogin(): Promise<boolean> {
     const warningMsg = StringResources.vsc.appStudioLogin.warningMsg;
-    const confirm = StringResources.vsc.common.confirm;
-    const learnMore = StringResources.vsc.appStudioLogin.learnMore;
+    const signin = StringResources.vsc.common.signin;
+    const readMore = StringResources.vsc.common.readMore;
+    const cancel = StringResources.vsc.common.cancel;
     let userSelected: string | undefined;
     do {
-      userSelected = await vscode.window.showWarningMessage(
+      userSelected = await vscode.window.showInformationMessage(
         warningMsg,
-        { modal: true },
-        confirm,
-        learnMore
+        signin,
+        readMore,
+        cancel
       );
-      if (userSelected === learnMore) {
+      if (userSelected === readMore) {
         vscode.env.openExternal(vscode.Uri.parse("https://developer.microsoft.com/en-us/microsoft-365/dev-program"));
       }
-    } while (userSelected === learnMore);
-    return Promise.resolve(userSelected === confirm);
+    } while (userSelected === readMore);
+    return Promise.resolve(userSelected === signin);
   }
 
   private async doesUserConfirmSignout(): Promise<boolean> {

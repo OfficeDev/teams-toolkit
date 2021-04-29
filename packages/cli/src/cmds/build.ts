@@ -14,7 +14,7 @@ import { getParamJson } from "../utils";
 export default class Build extends YargsCommand {
   public readonly commandHead = `build`;
   public readonly command = `${this.commandHead}`;
-  public readonly description = "A command to build your Teams app";
+  public readonly description = "Build the current application.";
   public readonly paramPath = constants.buildParamPath;
 
   public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);

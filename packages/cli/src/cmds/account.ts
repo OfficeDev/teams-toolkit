@@ -17,12 +17,12 @@ import { toYargsOptions } from "../utils";
 
 class LoginAccount extends YargsCommand {
   public readonly commandHead = `login`;
-  public readonly command = `${this.commandHead} <platform>`;
-  public readonly description = "A command to login some platform";
+  public readonly command = `${this.commandHead} <service>`;
+  public readonly description = "Log in to the selected cloud service.";
 
   public builder(yargs: Argv): Argv<any> {
-    return yargs.positional("platform", {
-      description: "Azure|M365",
+    return yargs.positional("service", {
+      description: "Azure or M365",
       type: "string",
       choices: ["azure", "m365"]
     });
@@ -33,21 +33,21 @@ class LoginAccount extends YargsCommand {
       case "azure": {
         const result = await AzureTokenProvider.getAccountCredentialAsync();
         if (result) {
-          console.log(colors.green(`[${constants.cliSource}] Sign in Azure successfully. Your account username is ${colors.yellow((result as any).username)}.`));
+          console.log(colors.green(`[${constants.cliSource}] Successfully signed in to Azure. Your username is ${colors.yellow((result as any).username)}.`));
           console.log(colors.green(`[${constants.cliSource}] Your subscriptons are:`));
           const subscriptions = await AzureTokenProvider.getSubscriptionList(result);
           console.log(subscriptions);
         } else {
-          CLILogProvider.error(`[${constants.cliSource}] Sign in Azure failed.`);
+          CLILogProvider.error(`[${constants.cliSource}] Failed to sign in to Azure.`);
         }
         break;
       }
       case "m365": {
         const result = await AppStudioTokenProvider.getJsonObject();
         if (result) {
-          console.log(colors.green(`[${constants.cliSource}] Sign in M365 successfully. Your account email is ${colors.yellow((result as any).upn)}.`));
+          console.log(colors.green(`[${constants.cliSource}] Successfully signed in to M365. Your account email is ${colors.yellow((result as any).upn)}.`));
         } else {
-          CLILogProvider.error(`[${constants.cliSource}] Sign in M365 failed.`);
+          CLILogProvider.error(`[${constants.cliSource}] Failed to sign in to M365.`);
         }
         break;
       }
@@ -58,12 +58,12 @@ class LoginAccount extends YargsCommand {
 
 class LogoutAccount extends YargsCommand {
   public readonly commandHead = `logout`;
-  public readonly command = `${this.commandHead} <platform>`;
-  public readonly description = "A command to logout some platform";
+  public readonly command = `${this.commandHead} <service>`;
+  public readonly description = "Log out of the selected cloud service.";
 
   public builder(yargs: Argv): Argv<any> {
-    return yargs.positional("platform", {
-      description: "Azure|M365",
+    return yargs.positional("service", {
+      description: "Azure or M365",
       type: "string",
       choices: ["azure", "m365"]
     });
@@ -74,18 +74,18 @@ class LogoutAccount extends YargsCommand {
       case "azure": {
         const result = await AzureTokenProvider.signout();
         if (result) {
-          console.log(colors.green(`[${constants.cliSource}] Sign out Azure successfully.`));
+          console.log(colors.green(`[${constants.cliSource}] Successfully signed out of Azure.`));
         } else {
-          CLILogProvider.error(`[${constants.cliSource}] Sign out Azure failed.`);
+          CLILogProvider.error(`[${constants.cliSource}] Failed to sign out of Azure.`);
         }
         break;
       }
       case "m365": {
         const result = await AppStudioTokenProvider.signout();
         if (result) {
-          console.log(colors.green(`[${constants.cliSource}] Sign out M365 successfully.`));
+          console.log(colors.green(`[${constants.cliSource}] Successfully signed out of M365.`));
         } else {
-          CLILogProvider.error(`[${constants.cliSource}] Sign out M365 failed.`);
+          CLILogProvider.error(`[${constants.cliSource}] Failed to sign out of M365.`);
         }
         break;
       }
@@ -97,7 +97,7 @@ class LogoutAccount extends YargsCommand {
 class SetAccount extends YargsCommand {
   public readonly commandHead = `set`;
   public readonly command = `${this.commandHead}`;
-  public readonly description = "A command to set account settings such as 'set subscription id'.";
+  public readonly description = "Update account settings.";
 
   public builder(yargs: Argv): Argv<any> {
     const folderOption = toYargsOptions(constants.RootFolderNode.data as Question);
@@ -119,7 +119,7 @@ class SetAccount extends YargsCommand {
 export default class Account extends YargsCommand {
   public readonly commandHead = `account`;
   public readonly command = `${this.commandHead} <action>`;
-  public readonly description = "login/logout some platform || set some account setting";
+  public readonly description = "Manage cloud service accounts. The supported cloud services are 'Azure' and 'M365'.";
 
   public readonly subCommands: YargsCommand[] = [
     new LoginAccount(),

@@ -51,7 +51,7 @@ export const RootFolderNode = new QTreeNode({
 export const SubscriptionNode = new QTreeNode({
   type: NodeType.text,
   name: "subscription",
-  description: "Please select a subscription"
+  description: "Select a subscription"
 });
 
 export const templates: {

@@ -166,5 +166,5 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
     option: {namespace:"fx-solution-azure", method: "listLanguageOptions"},
     default: "javascript",
     skipSingleOption: true,
-	placeholder: "Select a programming language."
+    placeholder: "Select a programming language."
 };

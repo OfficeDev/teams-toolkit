@@ -76,7 +76,7 @@
             "learnMore": "Learn More"
         },
         "azureLogin": {
-            "warningMsg": "The Teams Toolkit requires an Azure account and subscription to deploy the Azure resources for your project. \nYou will not be charged without your further confirmation.",
+            "warningMsg": "The Teams Toolkit requires an Azure account and subscription to deploy the Azure resources for your project. You will not be charged without your further confirmation.",
             "unknownSubscription": "Cannot set subscription. Select a subscription that you have access to."
         },
         "common": {

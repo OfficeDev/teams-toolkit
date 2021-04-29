@@ -30,6 +30,7 @@ import { cpUtils } from "./cpUtils";
 const exec = util.promisify(child_process.exec);
 
 export enum DotnetVersion {
+  v21 = "2.1",
   v31 = "3.1",
   v50 = "5.0"
 }

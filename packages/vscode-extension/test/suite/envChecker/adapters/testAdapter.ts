@@ -1,5 +1,30 @@
 import { IDepsAdapter } from "../../../../src/debug/depsChecker/checker";
+import * as process from "process";
 import * as path from "path";
+
+export class CustomDotnetInstallScript {
+  private readonly _useCustomScript: boolean;
+  private readonly _scriptExitCode: number;
+  private readonly _scriptStdout: string;
+  private readonly _scriptStderr: string;
+  constructor(useCustomScript = false, scriptExitCode = 0, scriptStdout = "", scriptStderr = "") {
+    this._useCustomScript = useCustomScript;
+    this._scriptExitCode = scriptExitCode;
+    this._scriptStdout = scriptStdout;
+    this._scriptStderr = scriptStderr;
+  }
+
+  public getScriptPath(): string {
+    if (this._useCustomScript) {
+      process.env["ENV_CHECKER_CUSTOM_SCRIPT_STDOUT"] = this._scriptStdout;
+      process.env["ENV_CHECKER_CUSTOM_SCRIPT_STDERR"] = this._scriptStderr;
+      process.env["ENV_CHECKER_CUSTOM_SCRIPT_EXITCODE"] = this._scriptExitCode.toString();
+      return path.resolve(__dirname, "../resource");
+    } else {
+      return path.resolve(__dirname, "../../../../src/debug/depsChecker/resource");
+    }
+  }
+}
 
 export class TestAdapter implements IDepsAdapter {
   private readonly _hasTeamsfxBackend: boolean;
@@ -9,18 +34,22 @@ export class TestAdapter implements IDepsAdapter {
 
   private readonly _clickCancel: boolean;
 
+  private readonly _customScript: CustomDotnetInstallScript;
+
   constructor(
     hasTeamsfxBackend: boolean,
     clickCancel = false,
     dotnetCheckerEnabled = true,
     funcToolCheckerEnabled = true,
-    nodeCheckerEnabled = true
+    nodeCheckerEnabled = true,
+    customScript = new CustomDotnetInstallScript()
   ) {
     this._hasTeamsfxBackend = hasTeamsfxBackend;
     this._clickCancel = clickCancel;
     this._dotnetCheckerEnabled = dotnetCheckerEnabled;
     this._funcToolCheckerEnabled = funcToolCheckerEnabled;
     this._nodeCheckerEnabled = nodeCheckerEnabled;
+    this._customScript = customScript;
   }
 
   displayContinueWithLearnMore(message: string, link: string): Promise<boolean> {
@@ -73,6 +102,6 @@ export class TestAdapter implements IDepsAdapter {
 
   getResourceDir(): string {
     // use the same resources under vscode-extension/src/debug/depsChecker/resource
-    return path.resolve(__dirname, "../../../../src/debug/depsChecker/resource");
+    return this._customScript.getScriptPath();
   }
 }

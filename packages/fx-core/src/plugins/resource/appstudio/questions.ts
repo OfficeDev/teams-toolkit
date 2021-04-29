@@ -5,8 +5,8 @@ import { OptionItem } from "fx-api";
 
 export const manuallySubmitOption: OptionItem = {
     id: "ManuallySubmit",
-    label: "Manually submit Teams packge file",
-    detail: "Build Teams package file and manually send it to your amin to check"
+    label: "Manually submit Teams package file",
+    detail: "Build Teams package file and manually send it to your admin to check"
 };
 
 export const autoPublishOption: OptionItem = {

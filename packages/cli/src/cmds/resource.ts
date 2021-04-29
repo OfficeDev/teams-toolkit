@@ -9,10 +9,9 @@ import { Argv, Options } from "yargs";
 import { ConfigMap, err, FxError, ok, Platform, Result, Stage } from "fx-api";
 
 import activate from "../activate";
-import AzureTokenProvider from "../commonlib/azureLogin";
 import * as constants from "../constants";
 import { validateAndUpdateAnswers } from "../question/question";
-import { getParamJson, readConfigs } from "../utils";
+import { getParamJson, readConfigs, setSubscriptionId } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 
 export class ResourceAdd extends YargsCommand {
@@ -100,8 +99,8 @@ export class ResourceAddApim extends YargsCommand {
     const rootFolder = path.resolve(answers.getString("folder") || "./");
     answers.delete("folder");
 
-    if ("subscription" in args && !!args.subscription) {
-      const result = await AzureTokenProvider.setSubscriptionId(args.subscription, rootFolder);
+    {
+      const result = await setSubscriptionId(args.subscription, rootFolder);
       if (result.isErr()) {
         return result;
       }

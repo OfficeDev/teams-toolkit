@@ -6,6 +6,7 @@
 import fs from "fs-extra";
 import path from "path";
 import { Options } from "yargs";
+
 import {
   NodeType,
   QTreeNode,
@@ -22,7 +23,9 @@ import {
   SingleSelectQuestion,
   MultiSelectQuestion,
 } from "fx-api";
+
 import { ConfigNotFoundError, ReadFileError } from "./error";
+import AzureAccountManager from "./commonlib/azureLogin";
 
 export function getJson<T>(jsonFilePath: string): T | undefined {
   if (jsonFilePath && fs.existsSync(jsonFilePath)) {
@@ -128,9 +131,13 @@ export function getActiveEnv(): string {
   return "default";
 }
 
+export function getConfigPath(rootfolder: string) {
+  return `${rootfolder}/.${ConfigFolderName}/env.${getActiveEnv()}.json`;
+}
+
 export async function readConfigs(rootfolder: string): Promise<Result<any, FxError>> {
   // TODO: change the dirname to teamsFx for monorepo
-  const filePath = `${rootfolder}/.${ConfigFolderName}/env.${getActiveEnv()}.json`;
+  const filePath = getConfigPath(rootfolder);
   if (!fs.existsSync(filePath)) {
     return err(ConfigNotFoundError(filePath));
   }
@@ -140,4 +147,32 @@ export async function readConfigs(rootfolder: string): Promise<Result<any, FxErr
   } catch (e) {
     return err(ReadFileError(e));
   }
+}
+
+export async function getSubscriptionIdFromEnvFile(rootfolder: string) {
+  const result = await readConfigs(rootfolder);
+  if (result.isErr()) {
+    throw result.error;
+  }
+  const configJson = result.value;
+  return configJson["solution"].subscriptionId as string | undefined;
+}
+
+export async function setSubscriptionId(
+  subscriptionId?: string,
+  rootFolder = "./"
+): Promise<Result<null, FxError>> {
+  if (subscriptionId) {
+    const result = await readConfigs(rootFolder);
+    if (result.isErr()) {
+      return err(result.error);
+    }
+
+    await AzureAccountManager.setSubscription(subscriptionId);
+
+    const configJson = result.value;
+    configJson["solution"].subscriptionId = subscriptionId;
+    await fs.writeFile(getConfigPath(rootFolder), JSON.stringify(configJson, null, 4));
+  }
+  return ok(null);
 }

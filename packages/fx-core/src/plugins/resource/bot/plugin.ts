@@ -78,9 +78,6 @@ export class TeamsBotImpl {
             this.config.scaffold.botId = botRegistration.botId;
             this.config.scaffold.botPassword = botRegistration.botPassword;
 
-            this.config.localDebug.localBotId = botRegistration.botId;
-            this.config.localDebug.localBotPassword = botRegistration.botPassword;
-
             this.updateManifest(this.config.scaffold.botId);
         }
 
@@ -144,9 +141,11 @@ export class TeamsBotImpl {
         CheckThrowSomethingMissing(ConfigNames.RESOURCE_GROUP, this.config.provision.resourceGroup);
         CheckThrowSomethingMissing(ConfigNames.LOCATION, this.config.provision.location);
         CheckThrowSomethingMissing(ConfigNames.SKU_NAME, this.config.provision.skuName);
-
-        this.config.provision.siteName = ResourceNameFactory.createCommonName(this.ctx?.app.name.short);
-        Logger.debug(`Site name generated to use is ${this.config.provision.siteName}.`);
+        
+        if (!this.config.provision.siteName) {
+            this.config.provision.siteName = ResourceNameFactory.createCommonName(this.ctx?.app.name.short);
+            Logger.debug(`Site name generated to use is ${this.config.provision.siteName}.`);
+        }
 
         this.config.saveConfigIntoContext(context);
         this.telemetryStepOutSuccess(LifecycleFuncNames.PRE_PROVISION);
@@ -446,11 +445,9 @@ export class TeamsBotImpl {
 
         await handler?.start(ProgressBarConstants.LOCAL_DEBUG_STEP_START);
 
-        if (this.config.scaffold.wayToRegisterBot === WayToRegisterBot.CreateNew) {
-            await handler?.next(ProgressBarConstants.LOCAL_DEBUG_STEP_BOT_REG);
-            await this.createNewBotRegistrationOnAppStudio();
-        }
-
+        await handler?.next(ProgressBarConstants.LOCAL_DEBUG_STEP_BOT_REG);
+        await this.createNewBotRegistrationOnAppStudio();
+        
         this.config.saveConfigIntoContext(context);
         this.telemetryStepOutSuccess(LifecycleFuncNames.LOCAL_DEBUG);
 
@@ -464,21 +461,8 @@ export class TeamsBotImpl {
 
         CheckThrowSomethingMissing(ConfigNames.LOCAL_ENDPOINT, this.config.localDebug.localEndpoint);
 
-        switch (this.config.scaffold.wayToRegisterBot) {
-            case WayToRegisterBot.CreateNew: {
-                await this.updateMessageEndpointOnAppStudio(`${this.config.localDebug.localEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`);
-                break;
-            }
-            case WayToRegisterBot.ReuseExisting: {
-                // Remind end developers to update message endpoint manually.
-                await DialogUtils.show(
-                    context,
-                    `Please update bot's message endpoint manually using ${this.config.localDebug.localEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX} before you run this bot.`,
-                );
-                break;
-            }
-        }
-
+        await this.updateMessageEndpointOnAppStudio(`${this.config.localDebug.localEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`);
+                    
         this.config.saveConfigIntoContext(context);
         this.telemetryStepOutSuccess(LifecycleFuncNames.POST_LOCAL_DEBUG);
 

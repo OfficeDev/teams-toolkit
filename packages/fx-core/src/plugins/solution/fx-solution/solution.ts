@@ -106,6 +106,7 @@ import { AppStudioPlugin } from "../../resource/appstudio";
 import { ErrorResponse } from "@azure/arm-resources/esm/models/mappers";
 import * as strings from "../../../resources/strings.json";
 import * as util from "util";
+import { deepCopy } from "../../../common/tools";
 
 type LoadedPlugin = Plugin & { name: string; displayName: string; };
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -258,7 +259,7 @@ export class TeamsAppSolution implements Solution {
         return ok({});
     }
 
-    fillInSolutionSettings(ctx: SolutionContext): Result<any, FxError> {
+    fillInSolutionSettings(ctx: SolutionContext): Result<AzureSolutionSettings, FxError> {
         const answers = ctx.answers;
         if(!answers) {
             return err(
@@ -279,7 +280,6 @@ export class TeamsAppSolution implements Solution {
                 ),
             );
         }
-
         if(!projectSettings.solutionSettings){
             return err(
                 returnSystemError(
@@ -289,36 +289,48 @@ export class TeamsAppSolution implements Solution {
                 ),
             );
         }
-
-        const capabilities = answers.getStringArray(AzureSolutionQuestionNames.Capabilities);
-        if(!capabilities){
+        let capabilities = answers.getStringArray(AzureSolutionQuestionNames.Capabilities);
+        if(!capabilities || capabilities.length === 0){
             return err(
                 returnSystemError(
-                    new Error("capabilities is undefined"),
+                    new Error("capabilities is empty"),
                     "Solution",
                     SolutionError.InternelError,
                 ),
             );
         }
-        const hostType = answers.getString(AzureSolutionQuestionNames.HostType);
-        const azureResources = answers.getStringArray(AzureSolutionQuestionNames.AzureResources);
-
-        if(azureResources){
-            if( (azureResources.includes(AzureResourceSQL.id) || azureResources.includes(AzureResourceApim.id)) && !azureResources.includes(AzureResourceFunction.id)){
-                azureResources.push(AzureResourceFunction.id);
-            }
+        let hostType = answers.getString(AzureSolutionQuestionNames.HostType);
+        if(capabilities.includes(BotOptionItem.id) || capabilities.includes(MessageExtensionItem.id))
+            hostType = HostTypeOptionAzure.id;
+        if(!hostType){
+            return err(
+                returnSystemError(
+                    new Error("hostType is undefined"),
+                    "Solution",
+                    SolutionError.InternelError,
+                ),
+            );
         }
-
+        let azureResources:string[]|undefined;
+        if(hostType === HostTypeOptionAzure.id && capabilities.includes(TabOptionItem.id)){
+            azureResources = answers.getStringArray(AzureSolutionQuestionNames.AzureResources);
+            if(azureResources){
+                if( (azureResources.includes(AzureResourceSQL.id) || azureResources.includes(AzureResourceApim.id)) && !azureResources.includes(AzureResourceFunction.id)){
+                    azureResources.push(AzureResourceFunction.id);
+                }
+            }
+            else azureResources = [];
+        }
         const solutionSettings:AzureSolutionSettings = {
             name: projectSettings.solutionSettings.name,
             version: projectSettings.solutionSettings.version,
-            capabilities : capabilities,
             hostType: hostType,
-            azureResources: azureResources,
+            capabilities : capabilities!,
+            azureResources: azureResources!,
             activeResourcePlugins:[]
         }; 
         projectSettings.solutionSettings = solutionSettings;
-        return ok({});
+        return ok(solutionSettings);
     }
 
     /**
@@ -338,16 +350,18 @@ export class TeamsAppSolution implements Solution {
 
         const settingsRes = this.fillInSolutionSettings(ctx);
         if(settingsRes.isErr()) 
-            return settingsRes;
+            return err(settingsRes.error);
+
+        const solutionSettings = settingsRes.value;
 
         //Reload plugins according to user answers
-        this.reloadPlugins(ctx);
+        this.reloadPlugins(solutionSettings);
 
         const defaultIconPath = path.join(__dirname, "../../../../templates/plugins/solution/defaultIcon.png");
         await fs.copy(defaultIconPath, `${ctx.root}/.${ConfigFolderName}/color.png`);
         await fs.copy(defaultIconPath, `${ctx.root}/.${ConfigFolderName}/outline.png`);
-        if (!this.spfxSelected(ctx)) {
-            const manifest = await AppStudio.createManifest(ctx.answers);
+        if (this.isAzureProject(ctx)) {
+            const manifest = await AppStudio.createManifest(ctx.projectSettings!);
             if (manifest) Object.assign(ctx.app, manifest);
             await fs.writeFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`, JSON.stringify(manifest, null, 4));
             await fs.writeJSON(`${ctx.root}/permissions.json`, DEFAULT_PERMISSION_REQUEST, { spaces: 4 });
@@ -407,18 +421,16 @@ export class TeamsAppSolution implements Solution {
         });
     }
 
-    reloadPlugins(ctx: SolutionContext): void {
-        
-        const solutionSettings: AzureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
-
-        const cap = solutionSettings.capabilities;
-
+    reloadPlugins(solutionSettings: AzureSolutionSettings): void {
         const pluginNameSet = new Set<string>();
         pluginNameSet.add(this.localDebugPlugin.name);
 
-        if (cap.includes(TabOptionItem.label)) {
-            const frontendHostType = solutionSettings.hostType;
-            if (HostTypeOptionAzure.label === frontendHostType) {
+        if(solutionSettings.hostType === HostTypeOptionSPFx.id){
+            pluginNameSet.add(this.spfxPlugin.name);
+        }
+        else {
+            const cap = solutionSettings.capabilities!;
+            if (cap.includes(TabOptionItem.id)) {
                 pluginNameSet.add(this.fehostPlugin.name);
                 const azureResources = solutionSettings.azureResources? solutionSettings.azureResources:[];
                 if (azureResources.includes(AzureResourceSQL.id)) {
@@ -436,18 +448,14 @@ export class TeamsAppSolution implements Solution {
                 // AAD, LocalDebug and runtimeConnector are enabled for azure by default
                 pluginNameSet.add(this.aadPlugin.name);
                 pluginNameSet.add(this.simpleAuthPlugin.name);
-            } else if (HostTypeOptionSPFx.label === frontendHostType) {
-                pluginNameSet.add(this.spfxPlugin.name);
+            }
+            if (cap.includes(BotOptionItem.id) || cap.includes(MessageExtensionItem.id)) {
+                // Bot/Message extension plugin depend on aad plugin.
+                // Currently, Bot and Message Extension features are both implemented in botPlugin
+                pluginNameSet.add(this.botPlugin.name);
+                pluginNameSet.add(this.aadPlugin.name);
             }
         }
-
-        if (cap.includes(BotOptionItem.id) || cap.includes(MessageExtensionItem.id)) {
-            // Bot/Message extension plugin depend on aad plugin.
-            // Currently, Bot and Message Extension features are both implemented in botPlugin
-            pluginNameSet.add(this.botPlugin.name);
-            pluginNameSet.add(this.aadPlugin.name);
-        }
-
         solutionSettings.activeResourcePlugins = Array.from(pluginNameSet);
     }
 
@@ -455,6 +463,11 @@ export class TeamsAppSolution implements Solution {
         // Generally, if SPFx is selected, there should be no other plugins. But we don't check this invariant here.
         const spfxExists = this.getAzureSolutionSettings(ctx).activeResourcePlugins.some((pluginName) => pluginName === this.spfxPlugin.name);
         return spfxExists === undefined ? false : spfxExists;
+    }
+
+    private isAzureProject(ctx: SolutionContext): boolean{
+        const settings = this.getAzureSolutionSettings(ctx);
+        return HostTypeOptionAzure.id === settings.hostType;
     }
 
     async scaffoldOne(plugin: LoadedPlugin, ctx: SolutionContext): Promise<Result<any, FxError>> {
@@ -518,99 +531,7 @@ export class TeamsAppSolution implements Solution {
      * update
      */
     async update(ctx: SolutionContext): Promise<Result<any, FxError>> {
-        const settings = this.getAzureSolutionSettings(ctx);
-        const selectedPlugins = settings.activeResourcePlugins;
-        const isSPFx = selectedPlugins?.includes(this.spfxPlugin.name);
-        if (isSPFx) {
-            return err(
-                returnUserError(
-                    new Error("Cannot add resource for SPFx project."),
-                    "Solution",
-                    SolutionError.CannotAddResourceForSPFx,
-                ),
-            );
-        }
-
-        const alreadyHaveFunction = selectedPlugins?.includes(this.functionPlugin.name);
-        const alreadyHaveSql = selectedPlugins?.includes(this.sqlPlugin.name);
-        const alreadyHaveApim = selectedPlugins?.includes(this.apimPlugin.name);
-
-        const addResourcesInQuestion = ctx.answers?.get(AzureSolutionQuestionNames.AddResources) as string[];
-
-        const addSQL = addResourcesInQuestion.includes(AzureResourceSQL.label);
-        const addFunc = addResourcesInQuestion.includes(AzureResourceFunction.label);
-        const addApim = addResourcesInQuestion.includes(AzureResourceApim.label);
-
-        const addResourceForPlugin: string[] = [];
-        const addResourceItemsForNotification: string[] = [];
-        if ((addFunc || addSQL || addApim) && !alreadyHaveFunction) {
-            addResourceForPlugin.push(AzureResourceFunction.label);
-        }
-        if (addSQL && !alreadyHaveSql) {
-            addResourceForPlugin.push(AzureResourceSQL.label);
-            addResourceItemsForNotification.push(AzureResourceSQL.description!);
-        }
-        if (addApim && !alreadyHaveApim) {
-            addResourceForPlugin.push(AzureResourceApim.label);
-            addResourceItemsForNotification.push(AzureResourceApim.description!);
-        }
-
-       
-        if (addFunc || ((addSQL || addApim) && !alreadyHaveFunction)) {
-            ctx.logProvider?.info(`start scaffolding Azure Function .....`);
-            const result1 = await this.scaffoldOne(this.functionPlugin, ctx);
-            if (result1.isErr()) {
-                ctx.logProvider?.info(`failed to scaffold Azure Function!`);
-                return err(result1.error);
-            }
-            ctx.logProvider?.info(`finish scaffolding Azure Function!`);
-            addResourceItemsForNotification.push(AzureResourceFunction.description!);
-        }
-
-        if (!alreadyHaveApim && addApim) {
-
-            // Scaffold apim
-            ctx.logProvider?.info(`start scaffolding API Management .....`);
-            const result = await this.scaffoldOne(this.apimPlugin, ctx);
-            if (result.isErr()) {
-                ctx.logProvider?.info(`failed to scaffold API Management!`);
-                return err(result.error);
-            }
-            ctx.logProvider?.info(`finish scaffolding API Management!`);
-            addResourceItemsForNotification.push(AzureResourceApim.description!);
-        }
-
-        if (addResourceItemsForNotification.length > 0) {
-            // add azureResources and reload plugins
-            let reloadPlugin = false;
-            for (const item of addResourceForPlugin) {
-                if (!settings.azureResources?.includes(item)) {
-                    settings.azureResources?.push(item);
-                    reloadPlugin = true;
-                }
-            }
-            if (reloadPlugin) {
-                this.reloadPlugins(ctx);
-                ctx.logProvider?.info(`start scaffolding Local Debug Configs.....`);
-                const scaffoldRes = await this.scaffoldOne(this.localDebugPlugin, ctx);
-                if (scaffoldRes.isErr()) {
-                    ctx.logProvider?.info(`failed to scaffold Debug Configs!`);
-                    return err(scaffoldRes.error);
-                }
-                ctx.logProvider?.info(`finish scaffolding Local Debug Configs!`);
-
-                ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false); //if selected plugin changed, we need to re-do provision
-            }
-            await ctx.dialog?.communicate(
-                new DialogMsg(DialogType.Show, {
-                    description: `[Teams Toolkit] Resource "${addResourceItemsForNotification.join(
-                        ",",
-                    )}" have been successfully configured for your project, trigger 'TeamsFx - Provision Resource' will create the resource(s) in your Azure subscription.`,
-                    level: MsgLevel.Info,
-                }),
-            );
-        }
-        return ok(Void);
+        return await this.executeAddResource(ctx);
     }
 
 
@@ -643,7 +564,10 @@ export class TeamsAppSolution implements Solution {
             return maybeSelectedPlugins;
         }
         const selectedPlugins = maybeSelectedPlugins.value;
+        return await this.doScaffold(ctx, selectedPlugins);
+    }
 
+    async doScaffold(ctx: SolutionContext, selectedPlugins:LoadedPlugin[]): Promise<Result<any, FxError>> {
         const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx);
         if (maybeManifest.isErr()) {
             return maybeManifest;
@@ -661,7 +585,8 @@ export class TeamsAppSolution implements Solution {
             return [plugin?.postScaffold?.bind(plugin), context, plugin.name];
         });
 
-        return executeLifecycles(preScaffoldWithCtx, scaffoldWithCtx, postScaffoldWithCtx);
+        const res = await executeLifecycles(preScaffoldWithCtx, scaffoldWithCtx, postScaffoldWithCtx);
+        return res;
     }
 
     /**
@@ -672,7 +597,7 @@ export class TeamsAppSolution implements Solution {
     private async getPermissionRequest(
         ctx:SolutionContext
     ): Promise<Result<string, FxError>> {
-        if (this.spfxSelected(ctx)) {
+        if (!this.isAzureProject(ctx)) {
             return err(
                 returnUserError(
                     new Error("Cannot update permission for SPFx project"),
@@ -703,7 +628,7 @@ export class TeamsAppSolution implements Solution {
         const selectedPlugins = maybeSelectedPlugins.value;
         if (selectedPlugins.some((plugin) => plugin.name === this.botPlugin.name)) {
             const capabilities = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings).capabilities;
-            const hasBot = capabilities?.includes(BotOptionItem.label);
+            const hasBot = capabilities?.includes(BotOptionItem.id);
             const hasMsgExt = capabilities?.includes(MessageExtensionItem.id);
             if (!hasBot && !hasMsgExt) {
                 return err(
@@ -863,7 +788,7 @@ export class TeamsAppSolution implements Solution {
             await ctx.appStudioToken?.getAccessToken();
 
             this.runningState = SolutionRunningState.ProvisionInProgress;
-            if (!this.spfxSelected(ctx)) {
+            if (this.isAzureProject(ctx)) {
                 const maybePermission = await this.getPermissionRequest(ctx);
                 if (maybePermission.isErr()) {
                     return maybePermission;
@@ -919,7 +844,7 @@ export class TeamsAppSolution implements Solution {
         }
         const manifest = maybeManifest.value;
 
-        if (!this.spfxSelected(ctx)) {
+        if (this.isAzureProject(ctx)) {
             //1. ask common questions for azure resources.
             const appName = manifest.name.short;
             const res = await fillInCommonQuestions(
@@ -974,7 +899,7 @@ export class TeamsAppSolution implements Solution {
     }
 
     private canDeploy(ctx: SolutionContext): Result<Void, FxError> {
-        if (this.spfxSelected(ctx)) {
+        if (!this.isAzureProject(ctx)) {
             return ok(Void);
         }
         return this.checkWhetherSolutionIsIdle().andThen((_) => {
@@ -1021,7 +946,7 @@ export class TeamsAppSolution implements Solution {
             return canDeploy;
         }
         try {
-            if (!this.spfxSelected(ctx)) {
+            if (this.isAzureProject(ctx)) {
                 // Just to trigger M365 login before the concurrent execution of deploy. 
                 // Because concurrent exectution of deploy may getAccessToken() concurrently, which
                 // causes 2 M365 logins before the token caching in common lib takes effect.
@@ -1125,9 +1050,9 @@ export class TeamsAppSolution implements Solution {
         }
     }
 
-    async getTabScaffoldQuestions(ctx: SolutionContext):Promise<Result<QTreeNode | undefined, FxError>> {
+    async getTabScaffoldQuestions(ctx: SolutionContext, addAzureResource: boolean):Promise<Result<QTreeNode | undefined, FxError>> {
         
-        const frontendHostType = new QTreeNode(FrontendHostTypeQuestion);
+        const tabNode = new QTreeNode({type:NodeType.group});
 
         //Frontend plugin
         if (this.fehostPlugin.getQuestions) {
@@ -1135,53 +1060,40 @@ export class TeamsAppSolution implements Solution {
             const res = await this.fehostPlugin.getQuestions(Stage.create, pluginCtx);
             if (res.isErr()) return res;
             if (res.value) {
-                const frontend = res.value as QTreeNode;
-                frontend.condition = { equals: HostTypeOptionAzure.id };
-                if (frontend.data) frontendHostType.addChild(frontend);
+                const frontendNode = res.value as QTreeNode;
+                if (frontendNode.data) tabNode.addChild(frontendNode);
             }
         }
 
-        const azure_resources = new QTreeNode(AzureResourcesQuestion);
-        azure_resources.condition = { equals: HostTypeOptionAzure.id };
-        frontendHostType.addChild(azure_resources);
-
-        //SPFX plugin
-        if (this.spfxPlugin.getQuestions) {
-            const pluginCtx = getPluginContext(ctx, this.spfxPlugin.name);
-            const res = await this.spfxPlugin.getQuestions(Stage.create, pluginCtx);
-            if (res.isErr()) return res;
-            if (res.value) {
-                const spfx = res.value as QTreeNode;
-                spfx.condition = { equals: HostTypeOptionSPFx.id };
-                if (spfx.data) frontendHostType.addChild(spfx);
+        if(addAzureResource){
+            const azureResourceNode = new QTreeNode(AzureResourcesQuestion);
+            tabNode.addChild(azureResourceNode);
+    
+            //Azure Function
+            if (this.functionPlugin.getQuestions) {
+                const pluginCtx = getPluginContext(ctx, this.functionPlugin.name);
+                const res = await this.functionPlugin.getQuestions(Stage.create, pluginCtx);
+                if (res.isErr()) return res;
+                if (res.value) {
+                    const azure_function = res.value as QTreeNode;
+                    azure_function.condition = { minItems: 1 };
+                    if (azure_function.data) azureResourceNode.addChild(azure_function);
+                }
+            }
+    
+            //Azure SQL
+            if (this.sqlPlugin.getQuestions) {
+                const pluginCtx = getPluginContext(ctx, this.sqlPlugin.name);
+                const res = await this.sqlPlugin.getQuestions(Stage.create, pluginCtx);
+                if (res.isErr()) return res;
+                if (res.value) {
+                    const azure_sql = res.value as QTreeNode;
+                    azure_sql.condition = { contains: AzureResourceSQL.id };
+                    if (azure_sql.data) azureResourceNode.addChild(azure_sql);
+                }
             }
         }
-
-        //Azure Function
-        if (this.functionPlugin.getQuestions) {
-            const pluginCtx = getPluginContext(ctx, this.functionPlugin.name);
-            const res = await this.functionPlugin.getQuestions(Stage.create, pluginCtx);
-            if (res.isErr()) return res;
-            if (res.value) {
-                const azure_function = res.value as QTreeNode;
-                azure_function.condition = { minItems: 1 };
-                if (azure_function.data) azure_resources.addChild(azure_function);
-            }
-        }
-
-        //Azure SQL
-        if (this.sqlPlugin.getQuestions) {
-            const pluginCtx = getPluginContext(ctx, this.sqlPlugin.name);
-            const res = await this.sqlPlugin.getQuestions(Stage.create, pluginCtx);
-            if (res.isErr()) return res;
-            if (res.value) {
-                const azure_sql = res.value as QTreeNode;
-                azure_sql.condition = { contains: AzureResourceSQL.label };
-                if (azure_sql.data) azure_resources.addChild(azure_sql);
-            }
-        }
-
-        return ok(frontendHostType);
+        return ok(tabNode);
     }
 
     /**
@@ -1200,22 +1112,38 @@ export class TeamsAppSolution implements Solution {
         }
         
         if (stage === Stage.create) {
+            // 1. capabilities
             const capQuestion = createCapabilityQuestion();
- 
             const capNode = new QTreeNode(capQuestion); 
-
             node.addChild(capNode);
-            
-            /////Tab
-            const tabRes = await this.getTabScaffoldQuestions(ctx);
+
+            // 1.1 hostType
+            const hostTypeNode = new QTreeNode(FrontendHostTypeQuestion);
+            hostTypeNode.condition = {contains:TabOptionItem.id};
+            capNode.addChild(hostTypeNode);
+
+            // 1.1.1 SPFX Tab
+            if (this.spfxPlugin.getQuestions) {
+                const pluginCtx = getPluginContext(ctx, this.spfxPlugin.name);
+                const res = await this.spfxPlugin.getQuestions(Stage.create, pluginCtx);
+                if (res.isErr()) return res;
+                if (res.value) {
+                    const spfxNode = res.value as QTreeNode;
+                    spfxNode.condition = { equals: HostTypeOptionSPFx.id };
+                    if (spfxNode.data) hostTypeNode.addChild(spfxNode);
+                }
+            }
+
+            // 1.1.2 Azure Tab
+            const tabRes = await this.getTabScaffoldQuestions(ctx, true);
             if (tabRes.isErr()) return tabRes;
             if (tabRes.value) {
                 const tabNode = tabRes.value;
-                tabNode.condition = { contains: TabOptionItem.id };
-                capNode.addChild(tabNode);
+                tabNode.condition = { equals: HostTypeOptionAzure.id };
+                hostTypeNode.addChild(tabNode);
             }
 
-            ////Bot
+            // 1.2 Bot
             if (this.botPlugin.getQuestions) {
                 const pluginCtx = getPluginContext(ctx, this.botPlugin.name);
                 const res = await this.botPlugin.getQuestions(stage, pluginCtx);
@@ -1227,10 +1155,10 @@ export class TeamsAppSolution implements Solution {
                 }
             }
 
-            //// programming languate
+            // 1.3 Language
             const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
-            programmingLanguage.condition = { namespace: "fx-solution-azure", method: "whetherToAskProgrammingLanguageQuestion" }; //dynamic condition
             capNode.addChild(programmingLanguage);
+
         } else if (stage === Stage.update) {
             return await this.getQuestionsForAddResource(ctx, manifest);
         } else if (stage === Stage.provision) {
@@ -1627,10 +1555,7 @@ export class TeamsAppSolution implements Solution {
         const namespace = func.namespace;
         const array = namespace.split("/");
         const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx);
-        if (maybeManifest.isErr()) {
-            return err(maybeManifest.error);
-        }
-        const manifest = maybeManifest.value;
+        const manifest = maybeManifest.isOk() ? maybeManifest.value : undefined;
         if (array.length === 2) {
             const pluginName = array[1];
             const plugin = this.pluginMap.get(pluginName);
@@ -1670,14 +1595,27 @@ export class TeamsAppSolution implements Solution {
                 }
                 return ok(null);
             }
-            else if (func.method === "whetherToAskProgrammingLanguageQuestion") {
-                const capabilities = ctx.answers?.getStringArray(AzureSolutionQuestionNames.Capabilities);
+            else if(func.method === "listLanguageOptions"){
                 const hostType = ctx.answers?.getString(AzureSolutionQuestionNames.HostType);
-                if(capabilities?.includes(BotOptionItem.id) || capabilities?.includes(MessageExtensionItem.id) 
-                    || (capabilities?.includes(TabOptionItem.id) && HostTypeOptionAzure.id === hostType) )
-                    return ok(undefined);
-                else 
-                    return ok(`SPFx don't need to ask programming languate question!`);
+                if(HostTypeOptionSPFx.id === hostType) return ok([{id:"typescript", label:"TypeScript"}]);
+                return ok([{id:"javascript", label: "JavaScript"}, {id:"typescript", label:"TypeScript"}]);
+            }
+            else if(func.method === "listHostTypeOptions"){
+                const cap = ctx.answers?.getStringArray(AzureSolutionQuestionNames.Capabilities);
+                if(cap) {
+                    if(cap.includes(BotOptionItem.id) || cap.includes(MessageExtensionItem.id))
+                        return ok([HostTypeOptionAzure]);
+                    if(cap.includes(TabOptionItem.id))
+                        return ok([HostTypeOptionAzure, HostTypeOptionSPFx]);
+                    return ok([]);
+                }
+                return err(
+                    returnSystemError(
+                        new Error("Capabilities is undefined"),
+                        "Solution",
+                        SolutionError.InternelError,
+                    ),
+                );
             }
         }
         return err(
@@ -1697,6 +1635,16 @@ export class TeamsAppSolution implements Solution {
        
         const settings = this.getAzureSolutionSettings(ctx);
 
+        if(!(settings.hostType === HostTypeOptionAzure.id && settings.capabilities && settings.capabilities.includes(TabOptionItem.id))){
+            return err(
+                returnUserError(
+                    new Error("Add resource is only supported for Tab app hosted in Azure."),
+                    "Solution",
+                    SolutionError.AddResourceNotSupport,
+                ),
+            );
+        }
+
         const selectedPlugins = settings.activeResourcePlugins;
         
         if(!selectedPlugins) {
@@ -1708,19 +1656,7 @@ export class TeamsAppSolution implements Solution {
                 ),
             );
         }
-
-        const haveAzureFrontend = selectedPlugins.some(i=> (i === this.fehostPlugin.name));
-
-        if(!haveAzureFrontend){
-            return err(
-                returnUserError(
-                    new Error("Add resource is only supported for Tab app hosted in Azure."),
-                    "Solution",
-                    SolutionError.AddResourceNotSupport,
-                ),
-            );
-        }
-
+ 
         const alreadyHaveFunction = selectedPlugins.includes(this.functionPlugin.name);
         const alreadyHaveSQL = selectedPlugins.includes(this.sqlPlugin.name);
         const alreadyHaveAPIM = selectedPlugins.includes(this.apimPlugin.name);
@@ -1783,23 +1719,33 @@ export class TeamsAppSolution implements Solution {
         
         const settings = this.getAzureSolutionSettings(ctx);
 
-        const selectedPlugins = settings.activeResourcePlugins;
-
-        if(!selectedPlugins) {
+        if(!(settings.hostType === HostTypeOptionAzure.id)){
             return err(
                 returnUserError(
-                    new Error("selectedPlugins is empty"),
+                    new Error("Add capability is not supported for SPFx project"),
+                    "Solution",
+                    SolutionError.AddResourceNotSupport,
+                ),
+            );
+        }
+
+        const capabilities = settings.capabilities;
+
+        if(!capabilities) {
+            return err(
+                returnUserError(
+                    new Error("capabilities is empty"),
                     "Solution",
                     SolutionError.InternelError,
                 ),
             );
         }
-        const alreadyHaveTab = selectedPlugins.some(i=>i === this.fehostPlugin.name || i === this.spfxPlugin.name);
+        const alreadyHaveTab = capabilities.includes(TabOptionItem.id);
 
-        const alreadyHaveBot = selectedPlugins.includes( this.botPlugin.name );
+        const alreadyHaveBotOrMe = capabilities.includes(BotOptionItem.id) || capabilities.includes(MessageExtensionItem.id);
 
-        if (alreadyHaveBot && alreadyHaveTab) {
-            const cannotAddCapWarnMsg = "Your App already has both Tab and Bot, can not Add Capability.";
+        if (alreadyHaveBotOrMe && alreadyHaveTab) {
+            const cannotAddCapWarnMsg = "Your App already has both Tab and Bot/Me, can not Add Capability.";
             await ctx.dialog?.communicate(
                 new DialogMsg(DialogType.Show, {
                     description: cannotAddCapWarnMsg,
@@ -1809,13 +1755,13 @@ export class TeamsAppSolution implements Solution {
             return ok(undefined);
         }
         
-        const addCapQuestion = createAddCapabilityQuestion(alreadyHaveTab, alreadyHaveBot);
+        const addCapQuestion = createAddCapabilityQuestion(alreadyHaveTab, alreadyHaveBotOrMe);
 
         const addCapNode = new QTreeNode(addCapQuestion);
 
         //Tab sub tree
         if(!alreadyHaveTab){
-            const tabRes = await this.getTabScaffoldQuestions(ctx);
+            const tabRes = await this.getTabScaffoldQuestions(ctx, false);
             if (tabRes.isErr()) return tabRes;
             if (tabRes.value) {
                 const tabNode = tabRes.value;
@@ -1825,18 +1771,14 @@ export class TeamsAppSolution implements Solution {
         }
 
         //Bot sub tree
-        if(!alreadyHaveBot && this.botPlugin.getQuestions){
+        if(!alreadyHaveBotOrMe && this.botPlugin.getQuestions){
             const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx);
-            if (maybeManifest.isErr()) {
-                return err(maybeManifest.error);
-            }
-            const manifest = maybeManifest.value;
-            const pluginCtx = getPluginContext(ctx, this.botPlugin.name, manifest);
+            const pluginCtx = getPluginContext(ctx, this.botPlugin.name, maybeManifest.isOk() ? maybeManifest.value :undefined);
             const res = await this.botPlugin.getQuestions(Stage.create, pluginCtx);
             if (res.isErr()) return res;
             if (res.value) {
                 const child = res.value as QTreeNode;
-                child.condition = { contains: BotOptionItem.id };
+                child.condition = { containsAny: [BotOptionItem.id, MessageExtensionItem.id] };
                 if (child.data) addCapNode.addChild(child);
             }
         }
@@ -1884,6 +1826,88 @@ export class TeamsAppSolution implements Solution {
             ),
         );
     }
+    async executeAddResource(ctx: SolutionContext): Promise<Result<any, FxError>> {
+        if(!ctx.answers){
+            return err(
+                returnUserError(
+                    new Error(`answer is emtry!`),
+                    "Solution",
+                    SolutionError.InternelError,
+                )
+            );
+        }
+        const settings = this.getAzureSolutionSettings(ctx);
+        const originalSettings = deepCopy(settings);
+        if(!(settings.hostType === HostTypeOptionAzure.id && settings.capabilities && settings.capabilities.includes(TabOptionItem.id))){
+            return err(
+                returnUserError(
+                    new Error("Add resource is only supported for Tab app hosted in Azure."),
+                    "Solution",
+                    SolutionError.AddResourceNotSupport,
+                ),
+            );
+        }
+        const selectedPlugins = settings.activeResourcePlugins;
+       
+        const alreadyHaveFunction = selectedPlugins?.includes(this.functionPlugin.name);
+        const alreadyHaveSql = selectedPlugins?.includes(this.sqlPlugin.name);
+        const alreadyHaveApim = selectedPlugins?.includes(this.apimPlugin.name);
+
+        const addResourcesAnswer = ctx.answers?.get(AzureSolutionQuestionNames.AddResources) as string[];
+
+        const addSQL = addResourcesAnswer.includes(AzureResourceSQL.id);
+        const addFunc = addResourcesAnswer.includes(AzureResourceFunction.id);
+        const addApim = addResourcesAnswer.includes(AzureResourceApim.id);
+
+        if( (alreadyHaveSql && addSQL) || (alreadyHaveApim && addApim) ){
+            return err(
+                returnUserError(
+                    new Error("SQL/APIM is already added."),
+                    "Solution",
+                    SolutionError.AddResourceNotSupport,
+                ),
+            );
+        }
+
+        const notifications: string[] = [];
+        const pluginsToScaffold:LoadedPlugin[] = [this.localDebugPlugin];
+        const azureResource = settings.azureResources;
+        if ( addFunc || ((addSQL || addApim) && !alreadyHaveFunction)) {
+            pluginsToScaffold.push(this.functionPlugin);
+            azureResource.push(AzureResourceFunction.id);
+            notifications.push(AzureResourceFunction.label);
+        }
+        if (addSQL && !alreadyHaveSql) {
+            pluginsToScaffold.push(this.sqlPlugin);
+            azureResource.push(AzureResourceSQL.id);
+            notifications.push(AzureResourceSQL.label);
+        }
+        if (addApim && !alreadyHaveApim) {
+            pluginsToScaffold.push(this.apimPlugin);
+            azureResource.push(AzureResourceApim.id);
+            notifications.push(AzureResourceApim.label);
+        }
+        
+        if (notifications.length > 0) {
+            this.reloadPlugins(settings);
+            ctx.logProvider?.info(`start scaffolding ${notifications.join(",")}.....`);
+            const scaffoldRes = await this.doScaffold(ctx, pluginsToScaffold);
+            if (scaffoldRes.isErr()) {
+                ctx.logProvider?.info(`failed to scaffold ${notifications.join(",")}!`);
+                ctx.projectSettings!.solutionSettings = originalSettings;
+                return err(scaffoldRes.error);
+            }
+            ctx.logProvider?.info(`finish scaffolding ${notifications.join(",")}!`);
+            ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false); //if selected plugin changed, we need to re-do provision
+            await ctx.dialog?.communicate(
+                new DialogMsg(DialogType.Show, {
+                    description: util.format(strings.solution.AddResourceNotice, notifications.join(",")),
+                    level: MsgLevel.Info,
+                }),
+            );
+        }
+        return ok(Void);
+    }
     async executeAddCapability(func: Func, ctx: SolutionContext): Promise<Result<any, FxError>> {
         if(!ctx.answers){
             return err(
@@ -1894,93 +1918,87 @@ export class TeamsAppSolution implements Solution {
                 )
             );
         }
+        const settings = this.getAzureSolutionSettings(ctx);
+        const originalSettings = deepCopy(settings);
+        if(!(settings.hostType === HostTypeOptionAzure.id)){
+            return err(
+                returnUserError(
+                    new Error("Add capability is not supported for SPFx project"),
+                    "Solution",
+                    SolutionError.FailedToAddCapability,
+                ),
+            );
+        }
 
         const capabilitiesAnswer = ctx.answers.getStringArray(AzureSolutionQuestionNames.Capabilities);
-
         if(!capabilitiesAnswer || capabilitiesAnswer.length === 0){
             return ok(Void);
         }
-        
-        const settings = this.getAzureSolutionSettings(ctx);
 
-        let reload = false;
+        if( ( settings.capabilities?.includes(BotOptionItem.id) || settings.capabilities?.includes(MessageExtensionItem.id) ) 
+            && ( capabilitiesAnswer.includes(BotOptionItem.id) || capabilitiesAnswer.includes(MessageExtensionItem.id) ) ){
+            return err(
+                returnUserError(
+                    new Error("Application already contains a Bot and/or Message Extension"),
+                    "Solution",
+                    SolutionError.FailedToAddCapability,
+                ),
+            );
+        }
+
+        let change = false;
+        const notifications:string[]  = [];
+        const pluginsToScaffold:LoadedPlugin[] = [this.localDebugPlugin];
         for(const cap of capabilitiesAnswer!){
-            if(!settings.capabilities?.includes(cap)){
-                settings.capabilities?.push(cap);
-                reload = true;
+            if(!settings.capabilities.includes(cap)){
+                settings.capabilities.push(cap);
+                change = true;
+                if(cap === TabOptionItem.id){
+                    notifications.push("Azure Tab Frontend");
+                    pluginsToScaffold.push(this.fehostPlugin);
+                }
+                else if(cap === BotOptionItem.id || cap === MessageExtensionItem.id){
+                    notifications.push("Bot/MessageExtension");
+                    pluginsToScaffold.push(this.botPlugin);
+                }
             }
         }
 
-        const addCapabilityNotification:string[]  = [];
-        const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx);
-        if (maybeManifest.isErr()) {
-            return maybeManifest;
-        }
-        const manifest = maybeManifest.value;
-
-        if(capabilitiesAnswer?.includes(TabOptionItem.id)){
-            const hostType = ctx.answers?.getString(AzureSolutionQuestionNames.HostType);
-            settings.hostType = hostType;
-            if(hostType === HostTypeOptionAzure.id){
-                ctx.logProvider?.info(`start scaffolding Azure Tab Frontend .....`);
-                const scaffoldRes = await this.scaffoldOne(this.fehostPlugin, ctx);
-                if (scaffoldRes.isErr()) {
-                    ctx.logProvider?.info(`failed to scaffold Azure Tab Frontend!`);
-                    return err(scaffoldRes.error);
-                }
-                ctx.logProvider?.info(`finish scaffolding Azure Tab Frontend!`);
-                addCapabilityNotification.push("Azure Tab Frontend");
-                manifest.staticTabs = STATIC_TABS_TPL;
-                manifest.configurableTabs = CONFIGURABLE_TABS_TPL;
-            } else if(hostType === HostTypeOptionSPFx.id){
-                ctx.logProvider?.info(`start scaffolding SPFx Tab Frontend.....`);
-                const scaffoldRes = await this.scaffoldOne(this.spfxPlugin, ctx);
-                if (scaffoldRes.isErr()) {
-                    ctx.logProvider?.info(`failed to scaffold SPFx Tab Frontend!`);
-                    return err(scaffoldRes.error);
-                }
-                ctx.logProvider?.info(`finish scaffolding SPFx Tab Frontend!`);
-                addCapabilityNotification.push("SPFx Tab Frontend");
+        if(change){
+            this.reloadPlugins(settings);
+            if (this.isAzureProject(ctx)) {
+                const manifest = await AppStudio.createManifest(ctx.projectSettings!);
+                if (manifest) Object.assign(ctx.app, manifest);
+                await fs.writeFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`, JSON.stringify(manifest, null, 4));
+                await fs.writeJSON(`${ctx.root}/permissions.json`, DEFAULT_PERMISSION_REQUEST, { spaces: 4 });
+            } else {
+                const manifest = await ((this.spfxPlugin as unknown) as SpfxPlugin).getManifest();
+                await fs.writeFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`, JSON.stringify(manifest, null, 4));
             }
-        }
-
-        if(capabilitiesAnswer?.includes(BotOptionItem.id)){
-            ctx.logProvider?.info(`start scaffolding Bot.....`);
-            ctx.answers.set(AzureSolutionQuestionNames.Capabilities, settings.capabilities);
-            const scaffoldRes = await this.scaffoldOne(this.botPlugin, ctx);
+            ctx.logProvider?.info(`start scaffolding ${notifications.join(",")}.....`);
+            const scaffoldRes = await this.doScaffold(ctx, pluginsToScaffold);
             if (scaffoldRes.isErr()) {
-                ctx.logProvider?.info(`failed to scaffold Bot!`);
+                ctx.logProvider?.info(`failed to scaffold ${notifications.join(",")}!`);
+                ctx.projectSettings!.solutionSettings = originalSettings;
                 return err(scaffoldRes.error);
             }
-            ctx.logProvider?.info(`finish scaffolding Bot!`);
-            addCapabilityNotification.push("Bot");
-            manifest.bots = BOTS_TPL;
-        }
-
-        if(addCapabilityNotification.length > 0){
-            // finally add capabilities array and reload plugins
-            if(reload){
-                this.reloadPlugins(ctx);
-                ctx.logProvider?.info(`start scaffolding Local Debug Configs.....`);
-                const scaffoldRes = await this.scaffoldOne(this.localDebugPlugin, ctx);
-                if (scaffoldRes.isErr()) {
-                    ctx.logProvider?.info(`failed to scaffold Debug Configs!`);
-                    return err(scaffoldRes.error);
-                }
-                ctx.logProvider?.info(`finish scaffolding Local Debug Configs!`);
-                ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false); //if selected plugin changed, we need to re-do provision
-            }
+            ctx.logProvider?.info(`finish scaffolding ${notifications.join(",")}!`);
+            ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false); 
             await ctx.dialog?.communicate(
                 new DialogMsg(DialogType.Show, {
-                    description: `[Teams Toolkit] Capability "${addCapabilityNotification.join(
-                        ",",
-                    )}" have been successfully configured for your project, trigger 'TeamsFx - Provision Resource' will create the resource(s) in your Azure subscription.`,
+                    description: util.format(strings.solution.AddCapabilityNotice, notifications.join(",")),
                     level: MsgLevel.Info,
                 }),
             );
+            return ok({});
         }
-        // Need to persist updated manifest with just added bot or tab fields.
-        await fs.writeFile(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`, JSON.stringify(manifest, null, 4));
+        const cannotAddCapWarnMsg = "Add nothing";
+        await ctx.dialog?.communicate(
+            new DialogMsg(DialogType.Show, {
+                description: cannotAddCapWarnMsg,
+                level: MsgLevel.Warning,
+            }),
+        );
         return ok({});
     }
     /**

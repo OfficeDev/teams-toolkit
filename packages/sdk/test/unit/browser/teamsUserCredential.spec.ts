@@ -71,7 +71,20 @@ describe("TeamsUserCredential - browser", () => {
     });
   }
 
-  it("token cache save and read cache", async function() {
+  it("get SSO token would failed if not running inside Teams", async function () {
+    this.timeout(10000);
+    loadDefaultConfig();
+    const credential = new TeamsUserCredential();
+    const errorResult = await expect(credential.getToken([]))
+      .to.eventually.be.rejectedWith(ErrorWithCode);
+    assert.strictEqual(errorResult.code, ErrorCode.InternalError);
+    assert.include(
+      errorResult.message,
+      "Initialize teams sdk timeout, maybe the code is not running inside Teams"
+    );
+  });
+
+  it("token cache save and read cache", async function () {
     const expiresOnTimestamp: number = Date.now() + 10 * 60 * 1000;
     const accessToken: AccessToken = {
       token,
@@ -92,7 +105,7 @@ describe("TeamsUserCredential - browser", () => {
     }
   });
 
-  it("token cache read expired cache", async function() {
+  it("token cache read expired cache", async function () {
     const expiresOnTimestamp: number = Date.now();
     const accessToken: AccessToken = {
       token,
@@ -117,7 +130,7 @@ describe("TeamsUserCredential - browser", () => {
     }
   });
 
-  it("getUserInfo should throw exception when get SSO token failed", async function() {
+  it("getUserInfo should throw exception when get SSO token failed", async function () {
     sinon.stub(TeamsUserCredential.prototype, <any>"getSSOToken").callsFake(
       (): Promise<AccessToken | null> => {
         throw new ErrorWithCode(
@@ -137,7 +150,7 @@ describe("TeamsUserCredential - browser", () => {
     sinon.restore();
   });
 
-  it("getUserInfo should throw exception when get empty SSO token", async function() {
+  it("getUserInfo should throw exception when get empty SSO token", async function () {
     sinon.stub(TeamsUserCredential.prototype, <any>"getSSOToken").callsFake(
       (): Promise<AccessToken | null> => {
         throw new ErrorWithCode("SSO token is empty", ErrorCode.InternalError);
@@ -154,7 +167,7 @@ describe("TeamsUserCredential - browser", () => {
     sinon.restore();
   });
 
-  it("getUserInfo should throw exception when get invalid sso token", async function() {
+  it("getUserInfo should throw exception when get invalid sso token", async function () {
     sinon.stub(TeamsUserCredential.prototype, <any>"getSSOToken").callsFake(
       (): Promise<AccessToken | null> => {
         return new Promise((resolve) => {
@@ -176,7 +189,7 @@ describe("TeamsUserCredential - browser", () => {
     sinon.restore();
   });
 
-  it("get user information", async function() {
+  it("get user information", async function () {
     const TeamsUserCredentialStub_GetToken = sinon.stub(
       TeamsUserCredential.prototype,
       <any>"getSSOToken"
@@ -222,7 +235,7 @@ describe("TeamsUserCredential - browser", () => {
     sinon.restore();
   });
 
-  it("should throw error when configuration is not valid", async function() {
+  it("should throw error when configuration is not valid", async function () {
     loadConfiguration({
       authentication: undefined
     });
@@ -261,7 +274,7 @@ describe("TeamsUserCredential - browser", () => {
       .with.property("code", ErrorCode.InvalidConfiguration);
   });
 
-  it("get SSO token", async function() {
+  it("get SSO token", async function () {
     sinon.stub(TeamsUserCredential.prototype, <any>"getSSOToken").callsFake(
       (): Promise<AccessToken | null> => {
         const token: AccessToken = {
@@ -285,7 +298,7 @@ describe("TeamsUserCredential - browser", () => {
     sinon.restore();
   });
 
-  it("get access token cache from local", async function() {
+  it("get access token cache from local", async function () {
     sinon.stub(TeamsUserCredential.prototype, <any>"getSSOToken").callsFake(
       (): Promise<AccessToken | null> => {
         const token: AccessToken = {
@@ -324,7 +337,7 @@ describe("TeamsUserCredential - browser", () => {
     sinon.restore();
   });
 
-  it("get access token cache from remote server", async function() {
+  it("get access token cache from remote server", async function () {
     sinon.stub(TeamsUserCredential.prototype, <any>"getSSOToken").callsFake(
       (): Promise<AccessToken | null> => {
         const token: AccessToken = {
@@ -363,7 +376,7 @@ describe("TeamsUserCredential - browser", () => {
     sinon.restore();
   });
 
-  it("should failed when get access token without login", async function() {
+  it("should failed when get access token without login", async function () {
     sinon.stub(TeamsUserCredential.prototype, <any>"getSSOToken").callsFake(
       (): Promise<AccessToken | null> => {
         const token: AccessToken = {
@@ -397,7 +410,7 @@ describe("TeamsUserCredential - browser", () => {
     sinon.restore();
   });
 
-  it("get access token after login", async function() {
+  it("get access token after login", async function () {
     sinon.stub(TeamsUserCredential.prototype, <any>"getSSOToken").callsFake(
       (): Promise<AccessToken | null> => {
         const token: AccessToken = {

@@ -1,0 +1,86 @@
+name: Environment Checker Integration Test PR Runs
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/env-checker-ci-pr.yml'
+      - '.github/env-checker'
+      - 'packages/vscode-extension/src/debug/depsChecker/**'
+      - 'packages/vscode-extension/test/suite/envChecker/**'
+  push:
+    branches:
+      - main
+      - release
+    paths:
+      - '.github/workflows/env-checker-ci-pr.yml'
+      - '.github/env-checker'
+      - 'packages/vscode-extension/src/debug/depsChecker/**'
+      - 'packages/vscode-extension/test/suite/envChecker/**'
+  workflow_dispatch: # Manual trigger
+
+jobs:
+  build-and-test:
+    name: Build and Test OS "${{ matrix.os }}", Node.js "${{ matrix.node-version }}", Azure Functions Core Tools "${{ matrix.func-version }}", .NET SDK "${{ matrix.dotnet-version }}"
+
+    strategy:
+      ## Only test basic cases on PR trigger, because the `cb() never called` issue happens too often, blocking our PRs.
+      ## Our original test matrix is quite big, and every case will run `npm install` once, so it is more likely for us to encounter this issue.
+      ## Cut the number of test cases to minimize impact.
+      ##
+      ## Details about this issue: https://github.com/npm/cli/wiki/%22cb()-never-called%3F--I'm-having-the-same-problem!%22
+      ### tl;dr: This error is not one thing, but a category of errors. It means "something broke and we didn't have a way to catch it". We will always need a lot of detail to reproduce an error like this, or we cannot ever fix it. Every instance is unique, and your cb() never called is nothing like any other.
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+        node-version: [14]
+        func-version: [none]
+        dotnet-version: [none]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Uninstalling .NET on Windows
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: |
+          powershell -NoProfile -Command ./.github/env-checker/uninstall-dotnet.ps1
+
+      - name: Uninstalling .NET on macOS or Ubuntu
+        if: ${{ matrix.os == 'macos-latest' || matrix.os == 'ubuntu-latest' }}
+        run: |
+          ./.github/env-checker/uninstall-dotnet.sh
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Setup Azure Functions Core Tools For Linux
+        if: ${{ matrix.os == 'ubuntu-latest' && matrix.func-version != 'none' }}
+        run: |
+          sudo npm install --unsafe-perm -g azure-functions-core-tools@${{ matrix.func-version }}
+
+      - name: Setup Azure Functions Core Tools For Windows and macOS
+        if: ${{ matrix.os != 'ubuntu-latest' && matrix.func-version != 'none' }}
+        run: |
+          npm install -g azure-functions-core-tools@${{ matrix.func-version }}
+
+      - name: Setup .NET SDK
+        if: ${{ matrix.dotnet-version != 'none' }}
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+
+      - name: Setup project
+        run: |
+          npm run setup
+
+      - name: Integration Test
+        working-directory: ./packages/vscode-extension
+        run: |
+          npm run test:env-checker

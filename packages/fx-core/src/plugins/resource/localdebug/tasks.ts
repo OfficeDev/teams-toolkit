@@ -10,7 +10,6 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
      * Referenced by launch.json
      *   - Pre Debug Check
      *   - Start Frontend
-     *   - Stop All Services
      *
      * Referenced inside tasks.json
      *   - prepare dev env
@@ -19,13 +18,7 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
      *   - backend npm install
      *   - backend extensions install
      */
-    const tasks: Record<string, unknown>[] = [
-        {
-            label: "Stop All Services",
-            type: "shell",
-            command: "echo ${input:terminate}",
-        },
-    ];
+    const tasks: Record<string, unknown>[] = [];
 
     // Tab only
     if (includeFrontend && !includeBot) {
@@ -75,24 +68,10 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
                     {
                         label: "Start Backend",
                         dependsOn: [
-                            "backend tsc watch",
+                            `${ProductName}: backend watch`,
                             `${ProductName}: backend start`,
                         ],
                         dependsOrder: "sequence",
-                    },
-                    {
-                        label: "backend tsc watch",
-                        type: "shell",
-                        command: "npx tsc --watch",
-                        options: {
-                            cwd: "${workspaceFolder}/api",
-                        },
-                        isBackground: true,
-                        // TODO: tell tsc which files to watch (depends on function's decision)
-                        problemMatcher: "$tsc-watch",
-                        presentation: {
-                            reveal: "silent",
-                        },
                     },
                 );
             } else {
@@ -252,24 +231,10 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
                     {
                         label: "Start Backend",
                         dependsOn: [
-                            "backend tsc watch",
+                            `${ProductName}: backend watch`,
                             `${ProductName}: backend start`,
                         ],
                         dependsOrder: "sequence",
-                    },
-                    {
-                        label: "backend tsc watch",
-                        type: "shell",
-                        command: "npx tsc --watch",
-                        options: {
-                            cwd: "${workspaceFolder}/api",
-                        },
-                        isBackground: true,
-                        // TODO: tell tsc which files to watch (depends on function's decision)
-                        problemMatcher: "$tsc-watch",
-                        presentation: {
-                            reveal: "silent",
-                        },
                     },
                 );
             } else {

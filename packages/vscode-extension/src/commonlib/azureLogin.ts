@@ -15,6 +15,7 @@ import * as identity from "@azure/identity";
 import { loggedIn, loggedOut, signedIn, signedOut } from "./common/constant";
 import { login, LoginStatus } from "./common/login";
 import * as StringResources from "../resources/Strings.json";
+import * as util from "util";
 
 export class AzureAccountManager extends login implements AzureAccountProvider {
   private static instance: AzureAccountManager;
@@ -113,7 +114,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       const accountJson = await this.getJsonObject();
       await AzureAccountManager.statusChange("SignedIn", accessToken?.accessToken, accountJson);
     }
-    await this.notifyStatus();
   }
 
   private isUserLogin(): boolean {
@@ -191,6 +191,19 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     return Promise.resolve(userSelected === confirm);
   }
 
+  private async doesUserConfirmSignout(): Promise<boolean> {
+    const accountInfo = (await this.getStatus()).accountInfo;
+    const email = (accountInfo as any).upn ? (accountInfo as any).upn : undefined;
+    const confirm = StringResources.vsc.common.signout;
+    const userSelected: string | undefined = await vscode.window.showWarningMessage(
+      util.format(StringResources.vsc.common.signOutOf, email),
+      { modal: false },
+      confirm,
+      StringResources.vsc.common.cancel
+    );
+    return Promise.resolve(userSelected === confirm);
+  }
+
   async getJsonObject(showDialog = true): Promise<Record<string, unknown> | undefined> {
     const credential = await this.getAccountCredentialAsync(showDialog);
     const token = await credential?.getToken();
@@ -208,9 +221,14 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   /**
-   * singnout from Azure
+   * signout from Azure
    */
   async signout(): Promise<boolean> {
+    const userConfirmation: boolean = await this.doesUserConfirmSignout();
+    if (!userConfirmation) {
+      // throw user cancel error
+      throw new UserError(ExtensionErrors.UserCancel, StringResources.vsc.common.userCancel, "SignOut");
+    }
     await vscode.commands.executeCommand("azure-account.logout");
     AzureAccountManager.tenantId = undefined;
     AzureAccountManager.subscriptionId = undefined;
@@ -276,7 +294,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         }
       }
     }
-    throw new UserError(ExtensionErrors.UnknownSubscription, StringResources.vsc.azureLogin.unkownSubscription, "Login");
+    throw new UserError(ExtensionErrors.UnknownSubscription, StringResources.vsc.azureLogin.unknownSubscription, "Login");
   }
 
   async getStatus(): Promise<LoginStatus> {

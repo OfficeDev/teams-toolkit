@@ -7,7 +7,7 @@ import mockedEnv from "mocked-env";
 import { loadConfiguration, M365TenantCredential } from "../../../src";
 import { ErrorCode, ErrorWithCode } from "../../../src/core/errors";
 import jwtDecode from "jwt-decode";
-import { MockEnvironmentVariable, RestoreEnvironmentVariable, AADJwtPayLoad } from "../../helper";
+import { MockEnvironmentVariable, RestoreEnvironmentVariable, AADJwtPayLoad } from "../helper";
 
 chaiUse(chaiPromises);
 let restore: () => void;
@@ -48,9 +48,6 @@ describe("m365TenantCredential - node", () => {
     assert.strictEqual(decodedToken.aud, "https://graph.microsoft.com");
     assert.strictEqual(decodedToken.appid, process.env.M365_CLIENT_ID);
     assert.strictEqual(decodedToken.idtyp, "app");
-
-    // TODO: Verify token is cached
-    // assert.strictEqual(token, tokenFromCache);
   });
 
   it("get access token with authentication error", async function() {

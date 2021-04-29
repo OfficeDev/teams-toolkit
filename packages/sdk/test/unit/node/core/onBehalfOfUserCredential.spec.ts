@@ -3,17 +3,14 @@
 
 import { assert, expect, use as chaiUse } from "chai";
 import chaiPromises from "chai-as-promised";
-import { ErrorWithCode, loadConfiguration, OnBehalfOfUserCredential } from "../../../../src";
+import { ErrorCode, ErrorWithCode, loadConfiguration, OnBehalfOfUserCredential } from "../../../../src";
 import sinon from "sinon";
 import mockedEnv from "mocked-env";
-import {
-  AuthenticationResult,
-  ConfidentialClientApplication,
-  OnBehalfOfRequest
-} from "@azure/msal-node";
+import { AuthenticationResult, ConfidentialClientApplication } from "@azure/msal-node";
 
 chaiUse(chaiPromises);
 let mockedEnvRestore: () => void;
+const jwtBuilder = require("jwt-builder");
 
 describe("OnBehalfOfUserCredential - node", () => {
   const scope = "fake_scope";
@@ -28,29 +25,30 @@ describe("OnBehalfOfUserCredential - node", () => {
   // Error code
   const InvalidConfiguration = "InvalidConfiguration";
   const InternalError = "InternalError";
+  const ServiceError = "ServiceError";
 
-  /**
-   * {
-   * "aud": "test_audience",
-   * "iss": "https://login.microsoftonline.com/test_aad_id/v2.0",
-   * "iat": 1537231048,
-   * "nbf": 1537231048,
-   * "exp": 1537234948,
-   * "aio": "test_aio",
-   * "name": "Teams App Framework SDK Unit Test",
-   * "oid": "11111111-2222-3333-4444-555555555555",
-   * "preferred_username": "test@microsoft.com",
-   * "rh": "test_rh",
-   * "scp": "access_as_user",
-   * "sub": "test_sub",
-   * "tid": "test_tenant_id",
-   * "uti": "test_uti",
-   * "ver": "2.0"
-   * }
-   */
-  const ssoToken =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJ0ZXN0X2F1ZGllbmNlIiwiaXNzIjoiaHR0cHM6Ly9sb2dpbi5taWNyb3NvZnRvbmxpbmUuY29tL3Rlc3RfYWFkX2lkL3YyLjAiLCJpYXQiOjE1MzcyMzEwNDgsIm5iZiI6MTUzNzIzMTA0OCwiZXhwIjoxNTM3MjM0OTQ4LCJhaW8iOiJ0ZXN0X2FpbyIsIm5hbWUiOiJNT0RTIFRvb2xraXQgU0RLIFVuaXQgVGVzdCIsIm9pZCI6IjExMTExMTExLTIyMjItMzMzMy00NDQ0LTU1NTU1NTU1NTU1NSIsInByZWZlcnJlZF91c2VybmFtZSI6InRlc3RAbWljcm9zb2Z0LmNvbSIsInJoIjoidGVzdF9yaCIsInNjcCI6ImFjY2Vzc19hc191c2VyIiwic3ViIjoidGVzdF9zdWIiLCJ0aWQiOiJ0ZXN0X3RlbmFudF9pZCIsInV0aSI6InRlc3RfdXRpIiwidmVyIjoiMi4wIn0.SshbL1xuE1aNZD5swrWOQYgTR9QCNXkZqUebautBvKM";
-  const ssoTokenExp = 1537234948;
+  const now = Math.floor(Date.now() / 1000);
+  const timeInterval = 4000;
+  const ssoTokenExp = now + timeInterval;
+  const ssoToken = jwtBuilder({
+    algorithm: "HS256",
+    secret: "super-secret",
+    aud: "test_audience",
+    iss: "https://login.microsoftonline.com/test_aad_id/v2.0",
+    iat: now,
+    nbf: now,
+    exp: timeInterval,
+    aio: "test_aio",
+    name: "Teams App Framework SDK Unit Test",
+    oid: "11111111-2222-3333-4444-555555555555",
+    preferred_username: "test@microsoft.com",
+    rh: "test_rh",
+    scp: "access_as_user",
+    sub: "test_sub",
+    tid: "test_tenant_id",
+    uti: "test_uti",
+    ver: "2.0"
+  });
 
   const sandbox = sinon.createSandbox();
 
@@ -176,6 +174,17 @@ describe("OnBehalfOfUserCredential - node", () => {
       .with.property("code", InvalidConfiguration);
   });
 
+  it("construct OnBehalfOfUserCredential should throw InternalError with invalid sso token", async function() {
+    loadConfiguration();
+    const invalidSsoToken = "invalid_sso_token";
+
+    expect(() => {
+      new OnBehalfOfUserCredential(invalidSsoToken);
+    })
+      .to.throw(ErrorWithCode, "Parse jwt token failed in node env with error: ")
+      .with.property("code", InternalError);
+  });
+
   it("should get sso token when scopes is empty string", async function() {
     loadConfiguration();
     const oboCredential = new OnBehalfOfUserCredential(ssoToken);
@@ -209,25 +218,18 @@ describe("OnBehalfOfUserCredential - node", () => {
     assert.strictEqual(token!.expiresOnTimestamp, accessTokenExpNumber);
   });
 
-  it("should throw InternalError with invalid SSO token when get sso token", async function() {
-    loadConfiguration();
-    const invalidSsoToken = "invalid_sso_token";
-    const oboCredential = new OnBehalfOfUserCredential(invalidSsoToken);
+  it("should throw TokenExpiredError when get SSO token with sso token expired", async function() {
+    const expiredSsoToken =
+      "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Im5PbzNaRHJPRFhFSzFqS1doWHNsSFJfS1hFZyJ9.eyJhdWQiOiJjZWVkYTJjNi00MDBmLTQyYjMtYjE4ZC1jY2NmYzk5NjM4NmYiLCJpc3MiOiJodHRwczovL2xvZ2luLm1pY3Jvc29mdG9ubGluZS5jb20vNzJmOTg4YmYtODZmMS00MWFmLTkxYWItMmQ3Y2QwMTFkYjQ3L3YyLjAiLCJpYXQiOjE2MTk0OTI3MzEsIm5iZiI6MTYxOTQ5MjczMSwiZXhwIjoxNjE5NDk2NjMxLCJhaW8iOiJBVFFBeS84VEFBQUFFWDZLU0prRjlOaEFDL1NXV1hWTXFPVDNnNGZXR2dqS0ZEWjRramlEb25OVlY2cDlZTVFMaTFqVXdHWEZaclpaIiwiYXpwIjoiYjBjNDdmMjktM2M1Ny00MDQyLTkzM2YtYTdkNTQ2YmFlMzg3IiwiYXpwYWNyIjoiMCIsIm5hbWUiOiJNZXRhIE9TIHNlcnZpY2UgYWNjb3VudCBmb3IgZGV2ZWxvcG1lbnQiLCJvaWQiOiIyYTYxYzRjMy1lY2Y5LTQ5ZWItYjcxNy02NjczZmZmZDg5MmQiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJtZXRhZGV2QG1pY3Jvc29mdC5jb20iLCJyaCI6IjAuQVFFQXY0ajVjdkdHcjBHUnF5MTgwQkhiUnlsX3hMQlhQRUpBa3otbjFVYTY0NGNhQUpRLiIsInNjcCI6ImFjY2Vzc19hc191c2VyIiwic3ViIjoiNEhUVXFCbWVBQVFWa2ZrbU0wcFRtVHh3QjRkcDdITGtxSjRSYXFvb3dUTSIsInRpZCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsInV0aSI6ImFVQkxZSENBWmsyZE9LNW1wR2ctQUEiLCJ2ZXIiOiIyLjAifQ.QCkyqat72TS85vQ6h-jqAj-pnAOOkeOy3-WxgEQ1DJbW6fsoXmVGgso-ncMmeiYIoA1r9jy1cBfnEMBI1tBKcq4TOHseyde2uM-pxCGHNhFC_WiWy9KXKiou5bvgXdVqqCT7CQejpiNdm3wL-EFhXWBRj6OlLMLcUtnlcnKfOSmx8IIOuQrCjWtuE_wjpfo2AwkguuJ5defyOkYqlCfcJ9FyUrqhqsONMdh0lJiVY94PZ00UTjH3zPaC2tnKrGeXn-qrr9dccEUx2HqyAfdzPwymBLWMCrirVRKCZV3DtfKuozKkIxIPZz0891QZcFO8VgfBJaLmr6J7EL8lPtFKnw";
+    const credential = new OnBehalfOfUserCredential(expiredSsoToken);
+    let err = await expect(credential.getToken([])).to.eventually.be.rejectedWith(ErrorWithCode);
+    assert.strictEqual(err.code, ErrorCode.TokenExpiredError);
 
-    await expect(oboCredential.getToken([]))
-      .to.eventually.be.rejectedWith(ErrorWithCode)
-      .and.property("code", InternalError);
-    await expect(oboCredential.getToken([]))
-      .to.eventually.be.rejectedWith(ErrorWithCode)
-      .and.property("message")
-      .to.be.a("string")
-      .and.satisfy((msg: string) =>
-        msg.startsWith("Parse jwt token failed in node env with error: ")
-      );
+    err = await expect(credential.getToken("")).to.eventually.be.rejectedWith(ErrorWithCode);
+    assert.strictEqual(err.code, ErrorCode.TokenExpiredError);
   });
 
-  // TODO: in the future, OnBehalfOfUserCredential will return different errors based on MSAL response. (instead of returning internalError)
-  it("should throw InternalError when fail to get access token due to AAD outage", async function() {
+  it("should throw ServiceError when fail to get access token due to AAD outage", async function() {
     // Mock AAD outage
     sandbox.restore();
     sandbox.stub(ConfidentialClientApplication.prototype, "acquireTokenOnBehalfOf").callsFake(
@@ -240,11 +242,12 @@ describe("OnBehalfOfUserCredential - node", () => {
     loadConfiguration();
     const oboCredential = new OnBehalfOfUserCredential(ssoToken);
 
-    await expect(oboCredential.getToken(scope))
-      .to.eventually.be.rejectedWith(ErrorWithCode)
-      .and.property("code", InternalError);
-    await expect(oboCredential.getToken(scope))
-      .to.eventually.be.rejectedWith(ErrorWithCode)
-      .and.property("message", "Failed to acquire access token on behalf of user: AAD outage");
+    const errorResult = await expect(oboCredential.getToken(scope)).to.eventually.be.rejectedWith(
+      ErrorWithCode
+    );
+    assert.strictEqual(errorResult.code, ServiceError);
+    assert.isTrue(
+      errorResult.message!.indexOf("Failed to acquire access token on behalf of user: ") >= 0
+    );
   });
 });

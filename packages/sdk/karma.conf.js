@@ -2,7 +2,7 @@
 process.env.CHROME_BIN = require("puppeteer").executablePath();
 require("dotenv").config();
 
-module.exports = function(config) {
+module.exports = function (config) {
   config.set({
     // base path that will be used to resolve all patterns (eg. files, exclude)
     basePath: "./",
@@ -20,14 +20,14 @@ module.exports = function(config) {
       "karma-ie-launcher",
       "karma-env-preprocessor",
       "karma-coverage",
-      "karma-remap-istanbul",
       "karma-junit-reporter"
     ],
 
     // list of files / patterns to load in the browser
     files: [
-      "dist-test/index.browser.js",
-      { pattern: "dist-test/index.browser.js.map", type: "html", included: false, served: true }
+      // "dist-test/index.browser.js",
+      config.glob,
+      { pattern: `${config.glob}.map`, type: "html", included: false, served: true }
     ],
 
     // list of files / patterns to exclude
@@ -49,13 +49,27 @@ module.exports = function(config) {
       "API_KEY_ALT",
       "AZURE_CLIENT_ID",
       "AZURE_CLIENT_SECRET",
-      "AZURE_TENANT_ID"
+      "AZURE_TENANT_ID",
+      "SDK_INTEGRATION_SQL_ENDPOINT",
+      "SDK_INTEGRATION_SQL_DATABASE_NAME",
+      "SDK_INTEGRATION_SQL_USER_NAME",
+      "SDK_INTEGRATION_SQL_PASSWORD",
+      "SDK_INTEGRATION_RESOURCE_GROUP_NAME",
+      "SDK_INTEGRATION_TEST_ACCOUNT_SUBSCRIPTION_ID",
+      "SDK_INTEGRATION_TEST_ACCOUNT_NAME",
+      "SDK_INTEGRATION_TEST_ACCOUNT_PASSWORD",
+      "SDK_INTEGRATION_TEST_TEAMS_AAD_CLIENT_ID",
+      "SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID",
+      "SDK_INTEGRATION_TEST_M365_AAD_CLIENT_SECRET",
+      "SDK_INTEGRATION_TEST_AAD_TENANT_ID",
+      "SDK_INTEGRATION_TEST_AAD_AUTHORITY_HOST",
+      "SDK_INTEGRATION_TEST_TEAMS_ACCESS_AS_USER_SCOPE",
     ],
 
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-    reporters: ["mocha", "coverage", "karma-remap-istanbul", "junit"],
+    reporters: ["mocha", "coverage", "junit"],
 
     coverageReporter: {
       // specify a common output directory

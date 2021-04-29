@@ -277,7 +277,7 @@ export interface MultiSelectQuestion extends BaseQuestion {
      * @items: current selected `OptionItem` array
      * @returns: the new selected `id` array
      */
-    onDidChangeSelection?: (selectedItems: OptionItem[]) => Promise<string[]>;
+    onDidChangeSelection?: (currentSelectedItems: OptionItem[], previousSelectedItems: OptionItem[]) => Promise<string[]>;
 }
 
 export interface TextInputQuestion extends BaseQuestion {
@@ -369,17 +369,39 @@ export class QTreeNode {
         if (!this.children) {
             this.children = [];
         }
-        if (node.validate()) {
-            this.children.push(node);
-        }
+        this.children.push(node);
         return this;
     }
     validate(): boolean {
         //1. validate the cycle depedency
         //2. validate the name uniqueness
         //3. validate the params of RPC
-        if (this.data.type === NodeType.group && (!this.children || this.children.length === 0)) return false;
+        // if (this.data.type === NodeType.group && (!this.children || this.children.length === 0)) return false;
         return true;
+    }
+
+    /**
+     * trim the tree
+     */
+    trim():QTreeNode|undefined{
+        if(this.children){
+            const newChildren:QTreeNode[] = [];
+            for(const node of this.children){
+                const trimed = node.trim();
+                if(trimed) 
+                    newChildren.push(trimed);
+            }
+            this.children = newChildren;
+        }
+        if (this.data.type === NodeType.group) {
+            if( !this.children || this.children.length === 0)
+                return undefined;
+            if( this.children.length === 1){
+                this.children[0].condition = this.condition;
+                return this.children[0];
+            }
+        }
+        return this;
     }
     constructor(data: Question | Group) {
         this.data = data;

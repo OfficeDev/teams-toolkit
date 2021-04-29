@@ -22,6 +22,7 @@ const botIdQuestion = new QTreeNode({
     type: NodeType.text,
     title: "Enter bot id",
     default: "",
+    placeholder: "00000000-0000-0000-0000-00000000000",
     validation: {
         validFunc: async (botId: string) => {
 

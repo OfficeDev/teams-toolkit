@@ -19,10 +19,14 @@ export interface IDepsChecker {
 }
 
 export interface IDepsAdapter {
-  displayContinueWithLearnMore: (message: string, link: string) => Promise<boolean>,
-  displayLearnMore: (message: string, link: string) => Promise<boolean>,
-  displayWarningMessage: (message: string, buttonText: string, action: () => Promise<boolean>) => Promise<boolean>,
-  showOutputChannel: () => void
+  displayContinueWithLearnMore: (message: string, link: string) => Promise<boolean>;
+  displayLearnMore: (message: string, link: string) => Promise<boolean>;
+  displayWarningMessage: (
+    message: string,
+    buttonText: string,
+    action: () => Promise<boolean>
+  ) => Promise<boolean>;
+  showOutputChannel: () => void;
 
   hasTeamsfxBackend(): Promise<boolean>;
   dotnetCheckerEnabled(): boolean;
@@ -41,9 +45,9 @@ export interface IDepsLogger {
 
 export interface IDepsTelemetry {
   sendEvent(eventName: DepsCheckerEvent, timecost?: number): void;
-  sendEventWithDuration(eventName: DepsCheckerEvent,action: () => Promise<void>): Promise<void>;
+  sendEventWithDuration(eventName: DepsCheckerEvent, action: () => Promise<void>): Promise<void>;
   sendUserErrorEvent(eventName: DepsCheckerEvent, errorMessage: string): void;
-  sendSystemErrorEvent(eventName: DepsCheckerEvent,errorMessage: string,errorStack: string): void;
+  sendSystemErrorEvent(eventName: DepsCheckerEvent, errorMessage: string, errorStack: string): void;
 }
 
 export interface DepsInfo {
@@ -55,9 +59,11 @@ export interface DepsInfo {
 
 export class DepsChecker {
   private readonly _adapter: IDepsAdapter;
+  private readonly _logger: IDepsLogger;
   private readonly _checkers: Array<IDepsChecker>;
 
-  constructor(adapter: IDepsAdapter, checkers: Array<IDepsChecker>) {
+  constructor(logger: IDepsLogger, adapter: IDepsAdapter, checkers: Array<IDepsChecker>) {
+    this._logger = logger;
     this._adapter = adapter;
     this._checkers = checkers;
   }
@@ -79,27 +85,24 @@ export class DepsChecker {
     }
 
     if (isLinux()) {
-      // TODO: provide with unsupported message
-      return !shouldContinue;
+      const confirmMessage = await this.generateMsg(validCheckers);
+      return await this._adapter.displayContinueWithLearnMore(confirmMessage, defaultHelpLink);
     }
 
-    // TODO: add log and telemetry
-    const confirmMessage = await this.generateMessage(validCheckers);
-    return await this._adapter.displayWarningMessage(confirmMessage, "Install", async () => {
-      this._adapter.showOutputChannel();
-      for (const checker of validCheckers) {
-        try {
-          await checker.install();
-        } catch (error) {
-          const continueNext = await this.handleError(error);
-          if (!continueNext) {
-            return !shouldContinue;
-          }
+    this._adapter.showOutputChannel();
+    for (const checker of validCheckers) {
+      try {
+        await checker.install();
+      } catch (error) {
+        await this._logger.debug(`Failed to install '${checker.constructor.name}', error = '${error}'`)
+        const continueNext = await this.handleError(error);
+        if (!continueNext) {
+          return !shouldContinue;
         }
       }
+    }
 
-      return shouldContinue;
-    });
+    return shouldContinue;
   }
 
   private async check(): Promise<Array<IDepsChecker> | null> {
@@ -110,34 +113,26 @@ export class DepsChecker {
           validCheckers.push(checker);
         }
       } catch (error) {
+        await this._logger.debug(`Failed to check '${checker.constructor.name}', error = '${error}'`)
         const continueNext = await this.handleError(error);
         if (!continueNext) {
           return null;
         }
       }
     }
-
     return validCheckers;
   }
 
-  private async generateMessage(checkers: Array<IDepsChecker>): Promise<string> {
-    const installPackages = [];
+  private async generateMsg(checkers: Array<IDepsChecker>): Promise<string> {
     const supportedPackages = [];
     for (const checker of checkers) {
       const info = await checker.getDepsInfo();
-      if (info.installVersion) {
-        installPackages.push(`${info.name} (v${info.installVersion})`);
-      }
       const supportedVersions = info.supportedVersions.map((version) => "v" + version).join(" or ");
       const supportedPackage = `${info.name} (${supportedVersions})`;
       supportedPackages.push(supportedPackage);
     }
-
-    const installMessage = installPackages.join(" and ");
     const supportedMessage = supportedPackages.join(" and ");
-    return Messages.depsNotFound
-      .replace("@InstallPackages", installMessage)
-      .replace("@SupportedPackages", supportedMessage);
+    return Messages.linuxDepsNotFound.replace("@SupportedPackages", supportedMessage);
   }
 
   private async handleError(error: Error): Promise<boolean> {
@@ -147,9 +142,15 @@ export class DepsChecker {
         (error as NotSupportedNodeError).helpLink
       );
     } else if (error instanceof NodeNotFoundError) {
-      return await this._adapter.displayLearnMore(error.message, (error as NodeNotFoundError).helpLink);
+      return await this._adapter.displayLearnMore(
+        error.message,
+        (error as NodeNotFoundError).helpLink
+      );
     } else if (error instanceof DepsCheckerError) {
-      return await this._adapter.displayLearnMore(error.message, (error as DepsCheckerError).helpLink);
+      return await this._adapter.displayLearnMore(
+        error.message,
+        (error as DepsCheckerError).helpLink
+      );
     } else {
       return await this._adapter.displayLearnMore(Messages.defaultErrorMessage, defaultHelpLink);
     }

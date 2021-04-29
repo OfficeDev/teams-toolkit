@@ -81,6 +81,7 @@ export enum SolutionError {
     FrontendEndpointAndDomainNotFound = "FrontendEndpointAndDomainNotFound",
     RemoteClientIdNotFound = "RemoteClientIdNotFound",
     AddResourceNotSupport = "AddResourceNotSupport",
+    FailedToAddCapability = "FailedToAddCapability",
     NoResourceToDeploy = "NoResourceToDeploy",
     ProvisionInProgress = "ProvisionInProgress",
     DeploymentInProgress = "DeploymentInProgress",
@@ -97,6 +98,7 @@ export enum SolutionError {
     GetLocalDebugConfigError = "GetLocalDebugConfigError",
     GetRemoteConfigError = "GetRemoteConfigError",
     UnsupportedPlatform = "UnsupportedPlatform",
+    InvalidInput = "InvalidInput"
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";
@@ -258,8 +260,12 @@ export const BOTS_TPL: IBot[] = [
                 ],
                 "commands": [
                     {
-                        "title": "bot command title",
-                        "description": "bot command description"
+                        "title": "intro",
+                        "description": "Send introduction card of this Bot"
+                    },
+                    {
+                        "title": "show",
+                        "description": "Show user profile by calling Microsoft Graph API with SSO"
                     }
                 ]
             }

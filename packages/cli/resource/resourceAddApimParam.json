@@ -1,24 +1,29 @@
 [
     {
         "data": {
+            "type": "folder",
+            "name": "folder",
+            "description": "Select root folder of the project",
+            "default": "./"
+        }
+    },
+    {
+        "data": {
             "name": "add-azure-resources",
-            "title": "Select Azure resources to add",
+            "title": "Cloud resources",
             "type": "multiSelect",
             "option": [
                 {
                     "id": "function",
-                    "label": "function",
-                    "description": "New APIs from Azure Functions"
+                    "label": "New APIs from Azure Functions"
                 },
                 {
                     "id": "sql",
-                    "label": "sql",
-                    "description": "Azure SQL Database"
+                    "label": "Azure SQL Database"
                 },
                 {
                     "id": "apim",
-                    "label": "apim",
-                    "description": "New API in Azure API Management"
+                    "label": "Register APIs in Azure API Management"
                 }
             ],
             "default": [
@@ -30,19 +35,22 @@
     {
         "data": {
             "name": "function-name",
-            "description": "Please provide function name.",
+            "description": "Provide a function name.",
             "type": "text",
             "default": "getUserProfile",
             "validation": {
                 "namespace": "fx-solution-azure/fx-resource-function",
                 "method": "validateFunctionName"
             }
+        },
+        "condition": {
+            "minItems": 1
         }
     },
     {
         "data": {
             "name": "subscription",
-            "title": "Please select a subscription",
+            "title": "Select a subscription",
             "type": "func",
             "namespace": "fx-solution-azure",
             "method": "askSubscription"
@@ -52,7 +60,7 @@
         "data": {
             "type": "text",
             "name": "apim-resource-group",
-            "description": "The name of the API Management service resource group.",
+            "description": "The name of resource group.",
             "validation": {}
         }
     },

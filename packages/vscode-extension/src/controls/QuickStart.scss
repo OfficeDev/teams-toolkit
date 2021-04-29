@@ -1,22 +1,22 @@
 .quick-start-page{
-  margin: 100px 100px 100px 100px;
+    margin: 100px 100px 100px 100px;
 
-  a{
-      text-decoration: none;
-  }
-
+    a{
+        text-decoration: none;
+    }
+  
     .section{
         display: flex;
         margin-bottom: 36px;
     }
 
     .flex-section{
-    display: flex;
+        display: flex;
     }
 
     .table-of-contents{
-    width: 50%;
-    margin-right: 90px;
+        width: 50%;
+        margin-right: 90px;
     }
 
     .logo{
@@ -27,8 +27,8 @@
     }
 
     .title{
-    width: auto;
-    margin-left: 12px;
+        width: auto;
+        margin-left: 12px;
 
         h2{
             font-size: 26px;
@@ -50,38 +50,44 @@
     }
 
     .stage{
-    width: 50%;
-    overflow: hidden;
+        width: 50%;
+        overflow: hidden;
+
+        .player{
+            width: 100%;
+            height: auto;
+        }
     }
 
     .action-card{
-    border-radius: 4px;
-    padding: 12px 12px 12px 12px;
-    margin-bottom: 12px;
-    background-color: var(--vscode-editorWidget-background);
+        border-radius: 4px;
+        padding: 12px 12px 12px 12px;
+        margin-bottom: 12px;
+        background-color: var(--vscode-editorWidget-background);
 
         .action-title{
-        font-size: 13px;
-        line-height: 15px;
-        color: var(--vscode-badge-foreground);
+            font-size: 13px;
+            line-height: 15px;
+            color: var(--vscode-badge-foreground);
         }
     }
 
     .collapse-action-card{
-    padding: 12px 12px 12px 12px;
-    margin-bottom: 12px;
+        padding: 12px 12px 12px 12px;
+        margin-bottom: 12px;
+        cursor: pointer;
     }
 
     .action-icon{
-    min-width: 16px;
-    margin-right: 8px;
-    font-size: 16px;
+        min-width: 16px;
+        margin-right: 8px;
+        font-size: 16px;
     }
 
     .action-title{
-    font-size: 13px;
-    line-height: 15px;
-    color: var(--vscode-menu-foreground);
+        font-size: 13px;
+        line-height: 15px;
+        color: var(--vscode-menu-foreground);
     }
 
     .action-content{
@@ -90,19 +96,19 @@
     }
 
     .left{
-    float: left;
+        float: left;
 
-    button{
-        background-color: var(--vscode-button-background);
-    }
+        button{
+            background-color: var(--vscode-button-background);
+        }
 
-    span{
-        font-size: 13px;
-        line-height: 15px;
-        align-items: center;
-        text-align: center;
-        font-weight: normal;
-    }
+        span{
+            font-size: 13px;
+            line-height: 15px;
+            align-items: center;
+            text-align: center;
+            font-weight: normal;
+        }
     }
 
     .right{
@@ -118,18 +124,18 @@
     }
 
     .tip{
-    color: #808080;
-    font-size: 11px;
-    line-height: 16px;
-    align-items: center;
+        color: #808080;
+        font-size: 11px;
+        line-height: 16px;
+        align-items: center;
     }
 
     .card-line{
-    margin-bottom: 8px;
+        margin-bottom: 8px;
     }
 
     .left-right-align{
-    overflow: hidden;
+        overflow: hidden;
     }
 }
 

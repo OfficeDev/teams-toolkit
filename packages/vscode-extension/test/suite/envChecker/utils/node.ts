@@ -4,13 +4,23 @@
 import { cpUtils } from "../../../../src/debug/depsChecker/cpUtils";
 
 export async function getNodeVersion(): Promise<string | null> {
-    try {
-        const output = await cpUtils.executeCommand(undefined, undefined, undefined, "node", "--version");
-        // "node --version" outputs "v14.2.3"
-        // remove leading "v"
-        return output.trim().slice(1);
-    } catch (error) {
-        console.debug(`Failed to run 'node --version', error = '${error}'`);
-        return null;
+  const nodeVersionRegex = /v(?<major_version>\d+)\.(?<minor_version>\d+)\.(?<patch_version>\d+)/gm;
+  try {
+    const output = await cpUtils.executeCommand(
+      undefined,
+      undefined,
+      undefined,
+      "node",
+      "--version"
+    );
+    const match = nodeVersionRegex.exec(output);
+    if (match && match.groups?.major_version) {
+      return match.groups.major_version;
+    } else {
+      return null;
     }
+  } catch (error) {
+    console.debug(`Failed to run 'node --version', error = '${error}'`);
+    return null;
+  }
 }

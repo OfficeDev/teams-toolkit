@@ -26,10 +26,14 @@ import { flattenNodes, getChoicesFromQTNodeQuestion, toConfigMap } from "../util
 import { QTNConditionNotSupport, QTNQuestionTypeNotSupport, NotValidInputValue } from "../error";
 
 export async function validateAndUpdateAnswers(
-  root: QTreeNode,
+  root: QTreeNode | undefined,
   answers: ConfigMap,
   remoteFuncValidator?: RemoteFuncExecutor
 ): Promise<void> {
+  if (!root) {
+    return;
+  }
+  
   const nodes = flattenNodes(root);
   for (const node of nodes) {
     if (node.data.type === NodeType.group) {
@@ -52,7 +56,37 @@ export async function validateAndUpdateAnswers(
     // if it is a select question
     if (node.data.type === NodeType.multiSelect || node.data.type === NodeType.singleSelect) {
       const question = node.data as SingleSelectQuestion | MultiSelectQuestion;
-      const option = question.option as StaticOption;
+      let option = question.option;
+
+      /// TODO: skip remote func
+      if ("method" in option) {
+        if (option.method === "listHostTypeOptions") {
+          option = [
+            {
+              id: "Azure",
+              label: "Azure",
+              cliName: "azure"
+            },
+            {
+              id: "SPFx",
+              label: "SharePoint Framework (SPFx)",
+              cliName: "spfx"
+            }
+          ];
+        } else {
+          option = [
+            {
+              id: "javascript",
+              label: "JavaScript"
+            },
+            {
+              id: "typescript",
+              label: "TypeScript"
+            }
+          ];
+        }
+      }
+      
       // if the option is the object, need to find the object first.
       if (typeof option[0] !== "string") {
         // for multi-select question

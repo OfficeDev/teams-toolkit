@@ -38,7 +38,7 @@ export class ResourceAdd extends YargsCommand {
 
 export class ResourceAddSql extends YargsCommand {
   public readonly commandHead = `azure-sql`;
-  public readonly command = `${this.commandHead} [options]`;
+  public readonly command = `${this.commandHead}`;
   public readonly description = "A command to add Azure SQL resource to the project.";
   public readonly paramPath = constants.resourceAddSqlParamPath;
   public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
@@ -82,9 +82,9 @@ export class ResourceAddSql extends YargsCommand {
 }
 
 export class ResourceAddApim extends YargsCommand {
-  public readonly commandHead = `apim`;
-  public readonly command = `${this.commandHead} [options]`;
-  public readonly description = "A command to add apim resource to the project.";
+  public readonly commandHead = `azure-apim`;
+  public readonly command = `${this.commandHead}`;
+  public readonly description = "A command to add Azure API Managment resource to the project.";
   public readonly paramPath = constants.resourceAddApimParamPath;
   public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
 
@@ -135,7 +135,7 @@ export class ResourceAddApim extends YargsCommand {
 
 export class ResourceAddFunction extends YargsCommand {
   public readonly commandHead = `azure-function`;
-  public readonly command = `${this.commandHead} [options]`;
+  public readonly command = `${this.commandHead}`;
   public readonly description = "A command to add Azure Function resource to the project.";
   public readonly paramPath = constants.resourceAddFunctionParamPath;
   public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
@@ -180,7 +180,7 @@ export class ResourceAddFunction extends YargsCommand {
 
 export class ResourceConfigure extends YargsCommand {
   public readonly commandHead = `configure`;
-  public readonly command = `${this.commandHead} <resource-type> [options]`;
+  public readonly command = `${this.commandHead} <resource-type>`;
   public readonly description = "A command to configure a resource";
 
   public readonly subCommands: YargsCommand[] = [new ResourceConfigureAAD()];
@@ -200,7 +200,7 @@ export class ResourceConfigure extends YargsCommand {
 
 export class ResourceConfigureAAD extends YargsCommand {
   public readonly commandHead = `aad`;
-  public readonly command = `${this.commandHead} [options]`;
+  public readonly command = `${this.commandHead}`;
   public readonly description = "A command to configure Azure AD.";
   public readonly paramPath = constants.resourceConfigureAadParamPath;
   public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
@@ -241,7 +241,7 @@ export class ResourceConfigureAAD extends YargsCommand {
 
 export class ResourceShow extends YargsCommand {
   public readonly commandHead = `show`;
-  public readonly command = `${this.commandHead} <resource-type> [options]`;
+  public readonly command = `${this.commandHead} <resource-type>`;
   public readonly description = "A command to show configuration details of a given resource";
 
   public readonly subCommands: YargsCommand[] = [new ResourceShowFunction(), new ResourceShowSQL()];
@@ -261,7 +261,7 @@ export class ResourceShow extends YargsCommand {
 
 export class ResourceShowFunction extends YargsCommand {
   public readonly commandHead = `azure-function`;
-  public readonly command = `${this.commandHead} [options]`;
+  public readonly command = `${this.commandHead}`;
   public readonly description = "A command to show configuration details of Azure Function";
   public readonly paramPath = constants.resourceShowFunctionParamPath;
   public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
@@ -288,7 +288,7 @@ export class ResourceShowFunction extends YargsCommand {
 
 export class ResourceShowSQL extends YargsCommand {
   public readonly commandHead = `azure-sql`;
-  public readonly command = `${this.commandHead} [options]`;
+  public readonly command = `${this.commandHead}`;
   public readonly description = "A command to show configuration details of SQL";
   public readonly paramPath = constants.resourceShowSQLParamPath;
   public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
@@ -314,7 +314,7 @@ export class ResourceShowSQL extends YargsCommand {
 }
 export class ResourceList extends YargsCommand {
   public readonly commandHead = `list`;
-  public readonly command = `${this.commandHead} [options]`;
+  public readonly command = `${this.commandHead}`;
   public readonly description = "A command to list all resources add to the application";
   public readonly paramPath = constants.resourceListParamPath;
   public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
@@ -345,7 +345,7 @@ export class ResourceList extends YargsCommand {
 
 export default class Resource extends YargsCommand {
   public readonly commandHead = `resource`;
-  public readonly command = `${this.commandHead} <action> [options]`;
+  public readonly command = `${this.commandHead} <action>`;
   public readonly description = "Operate the resource";
 
   public readonly subCommands: YargsCommand[] = [

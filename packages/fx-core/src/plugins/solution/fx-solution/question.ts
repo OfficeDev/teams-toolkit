@@ -1,27 +1,30 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { FuncQuestion, MultiSelectQuestion, NodeType, OptionItem, SingleSelectQuestion } from "fx-api";
+import * as strings from "../../../resources/strings.json";
 
 export const TabOptionItem: OptionItem = {
     id: "Tab",
     label: "Tab",
     cliName: "tab",
-    description: "Tabs embeds a web app experience in a tab in a Teams chat, channel, or personal workspace.",
+    description: "UI-based app",
+    detail: "Tabs are Teams-aware webpages embedded in Microsoft Teams."
 };
 
 export const BotOptionItem: OptionItem = {
     id: "Bot",
     label: "Bot",
     cliName: "bot",
-    description:
-        "Bots allow you to interact with and obtain information in a text/search/conversational manner.",
+    description: "Conversational Agent",
+    detail:"Bots allow users to interfact with your web service through text, interactive cards, and task modules.",
 };
 
 export const MessageExtensionItem: OptionItem = {
     id: "MessageExtension",
-    label: "Messaging Extension",
-    description:
-        "Messaging Extensions allow users to interact with a web service through buttons and forms in the Microsoft Teams client.",
+    label: "Message Extension",
+    cliName: "message-extension",
+    description: "Custom UI when users compose messages in Teams",
+    detail:"Messaging Extensions allow users to interact with your web service through buttons and forms in the Microsoft Teams client."
 };
 
 export enum AzureSolutionQuestionNames {
@@ -39,40 +42,34 @@ export enum AzureSolutionQuestionNames {
 export const HostTypeOptionAzure: OptionItem = {
     id:"Azure",
     label: "Azure",
-    cliName: "azure",
-    description: "Azure Cloud",
+    cliName: "azure"
 };
 
 export const HostTypeOptionSPFx: OptionItem = {
     id:"SPFx",
-    label: "SPFx",
-    cliName: "spfx",
-    description: "SharePoint Framework",
+    label: "SharePoint Framework (SPFx)",
+    cliName: "spfx"
 };
 
 export const AzureResourceSQL: OptionItem = {
     id:"sql",
-    label: "Azure SQL Database",
-    description: "Azure SQL Database depends on Azure Functions.",
+    label: "Azure SQL Database"
 };
 
 export const AzureResourceFunction: OptionItem = {
     id:"function",
-    label: "Azure Functions",
-    description: "Application backend.",
+    label: "Azure Function App"
 };
 
 export const AzureResourceApim: OptionItem = {
     id:"apim",
-    label: "apim",
-    description: "Register APIs in Azure API Management",
+    label: "Register APIs in Azure API Management"
 };
  
 export function createCapabilityQuestion(): MultiSelectQuestion {
     return {
         name: AzureSolutionQuestionNames.Capabilities,
-        title: "Add capabilities",
-        prompt: "Choose capabilities for your application",
+        title: "Select capabilities",
         type: NodeType.multiSelect,
         option: [TabOptionItem, BotOptionItem, MessageExtensionItem],
         default: [TabOptionItem.id]
@@ -81,19 +78,20 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
 
 export const FrontendHostTypeQuestion: SingleSelectQuestion = {
     name: AzureSolutionQuestionNames.HostType,
-    title: "Select frontend hosting type",
+    title: "Frontend hosting type",
     type: NodeType.singleSelect,
-    option: [HostTypeOptionAzure, HostTypeOptionSPFx],
+    option: {namespace: "fx-solution-azure", method : "listHostTypeOptions"},
     default: HostTypeOptionAzure.id,
+    skipSingleOption: true
 };
 
 export const AzureResourcesQuestion: MultiSelectQuestion = {
     name: AzureSolutionQuestionNames.AzureResources,
-    title: "Additional cloud resources",
+    title: "Cloud resources",
     type: NodeType.multiSelect,
     option: [AzureResourceSQL, AzureResourceFunction],
     default: [],
-    onDidChangeSelection:async function(selectedItems: OptionItem[]) : Promise<string[]>{
+    onDidChangeSelection:async function(selectedItems: OptionItem[], previousSelectedItems: OptionItem[]) : Promise<string[]>{
         const hasSQL = selectedItems.some(i=>i.id === AzureResourceSQL.id);
         if(hasSQL){
             return [AzureResourceSQL.id, AzureResourceFunction.id];
@@ -102,29 +100,20 @@ export const AzureResourcesQuestion: MultiSelectQuestion = {
     }
 };
 
-// export const AddAzureResourceQuestion: MultiSelectQuestion = {
-//     name: AzureSolutionQuestionNames.AddResources,
-//     title: 'Select Azure resources to add',
-//     type: NodeType.multiSelect,
-//     option: [AzureResourceSQL, AzureResourceFunction, AzureResourceApim],
-//     default: [],
-// };
-
 export function createAddAzureResourceQuestion(alreadyHaveFunction: boolean, alreadhHaveSQL: boolean, alreadyHaveAPIM: boolean): MultiSelectQuestion {
     const options:OptionItem[] = [AzureResourceFunction];
     if(!alreadhHaveSQL) options.push(AzureResourceSQL);
     if(!alreadyHaveAPIM) options.push(AzureResourceApim);
     return {
         name: AzureSolutionQuestionNames.AddResources,
-        title: "Select Azure resources to add",
+        title: "Cloud resources",
         type: NodeType.multiSelect,
         option: options,
         default: [],
-        onDidChangeSelection:async function(selectedItems: OptionItem[]) : Promise<string[]>{
-            const hasSQL = selectedItems.some(i=>i.id === AzureResourceSQL.id);
-            const hasAPIM = selectedItems.some(i=>i.id === AzureResourceApim.id);
-            const ids = selectedItems.map(i=>i.id);
-            /// when SQL or APIM is selected and function is not selected, then function must be selected
+        onDidChangeSelection:async function(currentSelectedItems: OptionItem[], previousSelectedItems: OptionItem[]) : Promise<string[]>{
+            const hasSQL = currentSelectedItems.some(i=>i.id === AzureResourceSQL.id);
+            const hasAPIM = currentSelectedItems.some(i=>i.id === AzureResourceApim.id);
+            const ids = currentSelectedItems.map(i=>i.id);
             if( (hasSQL||hasAPIM) && !alreadyHaveFunction && !ids.includes(AzureResourceFunction.id)){
                 ids.push(AzureResourceFunction.id);
             }
@@ -136,10 +125,13 @@ export function createAddAzureResourceQuestion(alreadyHaveFunction: boolean, alr
 export function createAddCapabilityQuestion(alreadyHaveTab: boolean, alreadyHaveBot: boolean): MultiSelectQuestion {
     const options:OptionItem[] = [];
     if(!alreadyHaveTab) options.push(TabOptionItem);
-    if(!alreadyHaveBot) options.push(BotOptionItem);
+    if(!alreadyHaveBot){
+        options.push(BotOptionItem);
+        options.push(MessageExtensionItem);
+    } 
     return {
         name: AzureSolutionQuestionNames.Capabilities,
-        title: "Select capabilities to add",
+        title: "Choose capabilities",
         type: NodeType.multiSelect,
         option: options,
         default: []
@@ -148,7 +140,7 @@ export function createAddCapabilityQuestion(alreadyHaveTab: boolean, alreadyHave
 
 export const DeployPluginSelectQuestion: MultiSelectQuestion = {
     name: AzureSolutionQuestionNames.PluginSelectionDeploy,
-    title: `Select resource(s) to deploy`,
+    title: `Select resources`,
     type: NodeType.multiSelect,
     skipSingleOption: true,
     option: [],
@@ -158,7 +150,7 @@ export const DeployPluginSelectQuestion: MultiSelectQuestion = {
 
 export const AskSubscriptionQuestion: FuncQuestion = {
     name: AzureSolutionQuestionNames.AskSub,
-    title: "Please select a subscription",
+    title: "Select a subscription",
     type: NodeType.func,
     namespace: "fx-solution-azure",
     method: "askSubscription"
@@ -166,9 +158,9 @@ export const AskSubscriptionQuestion: FuncQuestion = {
 
 export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
     name: AzureSolutionQuestionNames.ProgrammingLanguage,
-    title: "Select programming language for your project",
+    title: "Programming Language",
     type: NodeType.singleSelect,
-    option: ["javascript", "typescript"],
+    option: {namespace:"fx-solution-azure", method: "listLanguageOptions"},
     default: "javascript",
     skipSingleOption: true
 };

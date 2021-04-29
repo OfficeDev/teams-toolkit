@@ -47,7 +47,10 @@ export interface FxQuickPickOption {
    * @items: current selected `OptionItem` array
    * @returns: the new selected `id` array
    */
-  onDidChangeSelection?: (selectedItems: OptionItem[]) => Promise<string[]>;
+  onDidChangeSelection?: (currentSelectedItems: OptionItem[], previousSelectedItems: OptionItem[]) => Promise<string[]>;
+
+  step?: number;
+  totalSteps?: number;
 }
 
 export interface FxInputBoxOption {
@@ -59,6 +62,8 @@ export interface FxInputBoxOption {
   validation?: (input: string) => Promise<string | undefined>;
   backButton?: boolean;
   number?:boolean;
+  step?: number;
+  totalSteps?: number;
 }
 
 export interface FxOpenDialogOption{
@@ -108,6 +113,10 @@ export interface FxOpenDialogOption{
     title?: string;
 
     validation?: (input: string) => Promise<string | undefined>;
+
+    backButton?: boolean;
+    step?: number;
+    totalSteps?: number;
 }
 
 export enum InputResultType {

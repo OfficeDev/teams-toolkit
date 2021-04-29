@@ -52,13 +52,15 @@ import * as path from "path";
 // import * as Bundles from '../resource/bundles.json';
 import * as error from "./error";
 import { Loader, Meta } from "./loader";
-import { deserializeDict, mapToJson, mergeSerectData, objectToConfigMap, objectToMap, serializeDict, sperateSecretData } from "./tools";
+import { deserializeDict, fetchCodeZip, mapToJson, mergeSerectData, objectToConfigMap, objectToMap, saveFilesRecursively, serializeDict, sperateSecretData } from "../common/tools";
 import { VscodeManager } from "./vscodeManager";
 import { Settings } from "./settings";
-import { CoreQuestionNames, QuestionAppName, QuestionRootFolder, QuestionSelectSolution } from "./question";
+import { CoreQuestionNames, QuestionAppName, QuestionRootFolder, QuestionSelectSolution, SampleSelect, ScratchOptionNo, ScratchOptionYes, ScratchOrSampleSelect } from "./question";
 import * as jsonschema from "jsonschema";
 import { FxBotPluginResultFactory } from "../plugins/resource/bot/result";
 import { AzureSubscription, getSubscriptionList } from "./loginUtils";
+import { sleep } from "../plugins/resource/spfx/utils/utils";
+import AdmZip from "adm-zip";
 
 class CoreImpl implements Core {
     private target?: CoreImpl;
@@ -113,8 +115,17 @@ class CoreImpl implements Core {
         answers.set("substage", "getQuestions");
         const node = new QTreeNode({ type: NodeType.group });
         if (stage === Stage.create) {
-            node.addChild(new QTreeNode(QuestionRootFolder));
-            node.addChild(new QTreeNode(QuestionAppName));
+            const scratchSelectNode = new QTreeNode(ScratchOrSampleSelect);
+            node.addChild(scratchSelectNode);
+            
+            const scratchNode = new QTreeNode({type:NodeType.group});
+            scratchNode.condition = {equals: ScratchOptionYes.id};
+            scratchSelectNode.addChild(scratchNode);
+            
+            const sampleNode = new QTreeNode(SampleSelect);
+            sampleNode.condition = {equals: ScratchOptionNo.id};
+            scratchSelectNode.addChild(sampleNode);
+
             //make sure that global solutions are loaded
             const solutionNames: string[] = [];
             for (const k of this.globalSolutions.keys()) {
@@ -122,9 +133,8 @@ class CoreImpl implements Core {
             }
             const selectSolution: SingleSelectQuestion = QuestionSelectSolution;
             selectSolution.option = solutionNames;
-            const select_solution = new QTreeNode(selectSolution);
-            node.addChild(select_solution);
-
+            const solutionSelectNode = new QTreeNode(selectSolution);
+            scratchNode.addChild(solutionSelectNode);
             for (const [k, v] of this.globalSolutions) {
                 if (v.getQuestions) {
                     const res = await v.getQuestions(stage, this.solutionContext(answers));
@@ -132,11 +142,15 @@ class CoreImpl implements Core {
                     if(res.value){
                         const solutionNode = res.value as QTreeNode;
                         solutionNode.condition = { equals: k };
-                        if (solutionNode.data) select_solution.addChild(solutionNode);
+                        if (solutionNode.data) solutionSelectNode.addChild(solutionNode);
                     }
                 }
             }
-            
+
+            scratchNode.addChild(new QTreeNode(QuestionRootFolder));
+            scratchNode.addChild(new QTreeNode(QuestionAppName));
+            sampleNode.addChild(new QTreeNode(QuestionRootFolder));
+
         } else if (this.selectedSolution) {
             const res = await this.selectedSolution.getQuestions(stage, this.solutionContext(answers));
             if (res.isErr()) return res;
@@ -145,7 +159,7 @@ class CoreImpl implements Core {
                 if (child.data) node.addChild(child);
             }
         }
-        return ok(node);
+        return ok(node.trim());
     }
 
     async getQuestionsForUserTask(func: Func, platform: Platform): Promise<Result<QTreeNode | undefined, FxError>> {
@@ -157,7 +171,14 @@ class CoreImpl implements Core {
             const solution = this.globalSolutions.get(solutionName);
             if (solution && solution.getQuestionsForUserTask) {
                 const solutioContext = this.solutionContext();
-                return await solution.getQuestionsForUserTask(func, solutioContext);
+                const res = await solution.getQuestionsForUserTask(func, solutioContext);
+                if(res.isOk()){
+                    if(res.value) {
+                        const node = res.value.trim();
+                        return ok(node);
+                    }
+                }
+                return res;
             }
         }
         return err(
@@ -196,11 +217,11 @@ class CoreImpl implements Core {
         };
         const validateResult = jsonschema.validate(appName, schema);
         if (validateResult.errors && validateResult.errors.length > 0) {
-            return ok(`app name doesn't match pattern: ${schema.pattern}`);
+            return ok(`project name doesn't match pattern: ${schema.pattern}`);
         }
         const projectPath = path.resolve(folder, appName);
         const exists = await fs.pathExists(projectPath);
-        if (exists) return ok(`Project path already exists:${projectPath}, please change a different app name.`);
+        if (exists) return ok(`Project path already exists:${projectPath}, please change a different project name.`);
         return ok(undefined);
     }
 
@@ -209,7 +230,6 @@ class CoreImpl implements Core {
         const array = namespace?namespace.split("/"):[];
         if (!namespace || "" === namespace || array.length === 0) {
             if (func.method === "validateAppName") {
-                if (!func.params) return ok(undefined);
                 return await this.validateAppName(func.params as string, answer);
             }
         } else {
@@ -236,6 +256,38 @@ class CoreImpl implements Core {
         if (!this.ctx.dialog) {
             return err(error.InvalidContext());
         }
+
+        const folder = answers?.getString(QuestionRootFolder.name);
+
+        const scratch = answers?.getString(CoreQuestionNames.CreateFromScratch);
+        if(scratch === ScratchOptionNo.id){
+            const samples = answers?.getOptionItem(CoreQuestionNames.Samples);
+            const url = samples!.data! as string;
+            const progress = this.ctx.dialog.createProgressBar("Fetch sample app", 2);
+            progress.start();
+            const fetchRes = await fetchCodeZip(url);
+            progress.next("unzip app package")
+            if (fetchRes !== undefined) {
+                await saveFilesRecursively(new AdmZip(fetchRes.data), folder!);
+                progress.next("open folder");
+                progress.end();
+                await this.ctx.dialog?.communicate(
+                    new DialogMsg(DialogType.Ask, {
+                        type: QuestionType.OpenFolder,
+                        description: folder!,
+                    }),
+                );
+                return ok(null);
+            }
+            progress.end();
+            return err(new UserError(
+                error.CoreErrorNames.InvalidInput,
+                `App Name is empty`,
+                error.CoreSource,
+                )
+            );
+        }
+
         this.ctx.logProvider?.info(`[Core] create - create target object`);
         this.target = new CoreImpl();
         this.target.ctx.dialog = this.ctx.dialog;
@@ -268,8 +320,6 @@ class CoreImpl implements Core {
                 ),
             );
         }
-        
-        const folder = answers?.getString(QuestionRootFolder.name);
 
         const projFolder = path.resolve(`${folder}/${appName}`);
         const folderExist = await fs.pathExists(projFolder);
@@ -367,6 +417,7 @@ class CoreImpl implements Core {
      * open an existing project
      */
     public async open(workspace?: string): Promise<Result<null, FxError>> {
+        const t1 = new Date().getTime();
         let supported = true;
         if (!workspace) {
             supported = false;
@@ -377,27 +428,33 @@ class CoreImpl implements Core {
                 this.ctx.logProvider?.warning(`non Teams project:${workspace}`);
             }
         }
-
-        let getSelectSubItem: undefined | ((token: any) => Promise<TreeItem>) = undefined;
+        const t2 = new Date().getTime();
+        let getSelectSubItem: undefined | ((token: any) => Promise<[TreeItem, boolean]>) = undefined;
         if (this.ctx.treeProvider) {
-            getSelectSubItem = async (token: any): Promise<TreeItem> => {
+            getSelectSubItem = async (token: any): Promise<[TreeItem, boolean]> => {
                 let selectSubLabel = "";
                 const subscriptions = await getSubscriptionList(token);
                 const activeSubscriptionId = this.configs.get(this.env!)!.get("solution")?.getString("subscriptionId");
                 const activeSubscription = subscriptions.find(
                     (subscription) => subscription.subscriptionId === activeSubscriptionId,
                 );
+
+                let icon = "";
                 if (activeSubscriptionId === undefined || activeSubscription === undefined) {
                     selectSubLabel = `${subscriptions.length} subscriptions discovered`;
+                    icon = "subscriptions";
                 } else {
                     selectSubLabel = activeSubscription.displayName;
+                    icon = "subcriptionSelected";
                 }
-                return {
+                return ([{
                     commandId: "fx-extension.selectSubscription",
                     label: selectSubLabel,
                     callback: selectSubscriptionCallback,
                     parent: "fx-extension.signinAzure",
-                };
+                    contextValue: "selectSubscription",
+                    icon: icon
+                }, !(activeSubscriptionId === undefined || activeSubscription === undefined)]);
             };
 
             const selectSubscriptionCallback = async (): Promise<Result<null, FxError>> => {
@@ -425,7 +482,7 @@ class CoreImpl implements Core {
                 const subscription = subscriptions.find((subscription) => subscription.displayName === subscriptionName);
 
                 if(subscription){
-                    this.readConfigs();
+                    await this.readConfigs();
                     let change = true;
                     const subscriptionId = this.configs.get(this.env!)!.get("solution")!.getString("subscriptionId");
                     if(subscriptionId){
@@ -450,6 +507,8 @@ class CoreImpl implements Core {
                                 label: subscriptionName,
                                 callback: selectSubscriptionCallback,
                                 parent: "fx-extension.signinAzure",
+                                contextValue: "selectSubscription",
+                                icon: "subscriptionSelected"
                             },
                         ]);
                     }
@@ -490,7 +549,7 @@ class CoreImpl implements Core {
 
                     if (validFxProject) {
                         const subItem = await getSelectSubItem!(token);
-                        this.ctx.treeProvider?.add([subItem]);
+                        this.ctx.treeProvider?.add([subItem[0]]);
                     }
                 }
 
@@ -505,7 +564,7 @@ class CoreImpl implements Core {
                 azureAccountContextValue = "signedinAzure";
             }
 
-            this.ctx.appStudioToken?.setStatusChangeCallback(
+            this.ctx.appStudioToken?.setStatusChangeMap('tree-view', 
                 (status: string, token?: string | undefined, accountInfo?: Record<string, unknown> | undefined) => {
                     if (status === "SignedIn") {
                         signinM365Callback();
@@ -513,7 +572,7 @@ class CoreImpl implements Core {
                     return Promise.resolve();
                 },
             );
-            this.ctx.azureAccountProvider?.setStatusChangeCallback(
+            this.ctx.azureAccountProvider?.setStatusChangeMap( 'tree-view', 
                 async (status: string, token?: string | undefined, accountInfo?: Record<string, unknown> | undefined) => {
                     if (status === "SignedIn") {
                         const token = this.ctx.azureAccountProvider?.getAccountCredential();
@@ -529,7 +588,11 @@ class CoreImpl implements Core {
                             ]);
                             if (supported) {
                                 const subItem = await getSelectSubItem!(token);
-                                this.ctx.treeProvider?.add([subItem]);
+                                this.ctx.treeProvider?.add([subItem[0]]);
+
+                                if(!subItem[1]){
+                                    await selectSubscriptionCallback();
+                                }
                             }
                         }
                     }
@@ -562,37 +625,22 @@ class CoreImpl implements Core {
 
         if (!supported) return ok(null);
 
-         
-        // read configs
-        const readRes = await this.readConfigs();
-        if (readRes.isErr()) {
-            return readRes;
-        }
-
-        if (!this.ctx.projectSettings || !this.ctx.projectSettings?.solutionSettings) {
-            return err(error.InvalidContext());
-        }
-
+        const t3 = new Date().getTime();
         for (const entry of this.globalSolutions.entries()) {
-            if (entry[0] === this.ctx.projectSettings.solutionSettings.name) {
-                this.selectedSolution = entry[1];
-                break;
-            }
+            this.selectedSolution = entry[1];
+            break;
         }
 
         if (this.selectedSolution === undefined) {
-            return ok(null);
+            return err(new UserError(error.CoreErrorNames.LoadSolutionFailed, "No Solution", error.CoreSource));
         }
 
         this.env = "default";
-
-        const token = this.ctx.azureAccountProvider?.getAccountCredential();
-        if (token !== undefined && getSelectSubItem !== undefined) {
-            const subItem = await getSelectSubItem(token);
-            this.ctx.treeProvider?.add([subItem]);
-        }
-
-        return await this.selectedSolution.open(this.solutionContext());
+         
+        const res = await this.selectedSolution.open(this.solutionContext());
+        const t4 = new Date().getTime();
+        this.ctx.logProvider?.debug(`core.open() time  ----- t2-t1:${t2-t1}, t3-t2:${t3-t2}, t4-t3:${t4-t3}`);
+        return res;
     }
 
     public async isSupported(workspace?: string): Promise<boolean> {
@@ -602,9 +650,6 @@ class CoreImpl implements Core {
         }
         // some validation
         const checklist: string[] = [
-            p,
-            `${p}/package.json`,
-            `${p}/.${ConfigFolderName}`,
             `${p}/.${ConfigFolderName}/settings.json`,
             `${p}/.${ConfigFolderName}/env.default.json`,
         ];
@@ -623,37 +668,43 @@ class CoreImpl implements Core {
             this.ctx.logProvider?.warning(`[Core] readConfigs() - folder does not exist: ${this.ctx.root}/.${ConfigFolderName}`);
             return ok(null);
         }
-        try {
-            // load env
-            const reg = /env\.(\w+)\.json/;
-            for (const file of fs.readdirSync(`${this.ctx.root}/.${ConfigFolderName}`)) {
-                const slice = reg.exec(file);
-                if (!slice) {
-                    continue;
+        let res:Result<null, FxError> = ok(null);
+        for(let i = 0 ; i < 5; ++ i){
+            try {
+                // load env
+                const reg = /env\.(\w+)\.json/;
+                for (const file of fs.readdirSync(`${this.ctx.root}/.${ConfigFolderName}`)) {
+                    const slice = reg.exec(file);
+                    if (!slice) {
+                        continue;
+                    }
+                    const envName = slice[1];
+                    const filePath = `${this.ctx.root}/.${ConfigFolderName}/${file}`;
+                    const configJson: Json = await fs.readJson(filePath);
+                    const localDataPath = `${this.ctx.root}/.${ConfigFolderName}/${envName}.userdata`;
+                    let dict:Dict<string>;
+                    if(await fs.pathExists(localDataPath)){
+                        const dictContent = await fs.readFile(localDataPath, "UTF-8");
+                        dict = deserializeDict(dictContent);
+                    }
+                    else{
+                        dict = {};
+                    } 
+                    mergeSerectData(dict, configJson);
+                    const solutionConfig: SolutionConfig = objectToMap(configJson);
+                    this.configs.set(envName, solutionConfig);
                 }
-                const envName = slice[1];
-                const filePath = `${this.ctx.root}/.${ConfigFolderName}/${file}`;
-                const configJson: Json = await fs.readJson(filePath);
-                const localDataPath = `${this.ctx.root}/.${ConfigFolderName}/${envName}.userdata`;
-                let dict:Dict<string>;
-                if(await fs.pathExists(localDataPath)){
-                    const dictContent = await fs.readFile(localDataPath, "UTF-8");
-                    dict = deserializeDict(dictContent);
-                }
-                else{
-                    dict = {};
-                } 
-                mergeSerectData(dict, configJson);
-                const solutionConfig: SolutionConfig = objectToMap(configJson);
-                this.configs.set(envName, solutionConfig);
+    
+                // read projectSettings
+                this.ctx.projectSettings = await this.readSettings(this.ctx.root);
+                res = ok(null);
+                break;
+            } catch (e) {
+                res = err(error.ReadFileError(e));
+                sleep(10);
             }
-
-            // read projectSettings
-            this.ctx.projectSettings = await this.readSettings(this.ctx.root);
-        } catch (e) {
-            return err(error.ReadFileError(e));
         }
-        return ok(null);
+        return res;
     }
 
     public async writeConfigs(): Promise<Result<null, FxError>> {

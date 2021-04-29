@@ -61,7 +61,11 @@
             "signInAzure": "Sign in to Azure",
             "logErrorFormat": "code:${e.source}.${e.name}, message: ${e.message}, stack: ${e.stack}",
             "getHelp": "Get Help",
-            "reportIssue": "Report Issue"
+            "reportIssue": "Report Issue",
+            "azureSignIn": "Successfully signed in to Azure account.",
+            "azureSignOut": "Successfully signed out of Azure account.",
+            "m365SignIn": "Successfully signed in to M365 account.",
+            "m365SignOut": "Successfully signed out of M365 account."
         },
         "progressHandler": {
             "teamsToolkitComponent": "[Teams Toolkit]",
@@ -73,11 +77,14 @@
         },
         "azureLogin": {
             "warningMsg": "The Teams Toolkit requires an Azure account and subscription to deploy Azure resources for your application.",
-            "unkownSubscription": "Cannot set subscription. Please choose a correct subscription."
+            "unknownSubscription": "Cannot set subscription. Select a subscription that you have access to."
         },
         "common": {
             "userCancel": "User Cancel",
-            "confirm": "Confirm"
+            "confirm": "Confirm",
+            "signout": "Sign out",
+            "signOutOf": "Sign out of '%s'?",
+            "cancel": "Cancel"
         },
         "cacheAccess": {
             "readTokenFail": "read token fail: ",

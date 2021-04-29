@@ -83,7 +83,7 @@ export const FrontendHostTypeQuestion: SingleSelectQuestion = {
     type: NodeType.singleSelect,
     option: {namespace: "fx-solution-azure", method : "listHostTypeOptions"},
     default: HostTypeOptionAzure.id,
-    placeholder: "Select front-end hostying type.",
+    placeholder: "Select front-end hosting type.",
     skipSingleOption: true
 };
 

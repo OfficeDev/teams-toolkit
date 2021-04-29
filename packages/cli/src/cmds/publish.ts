@@ -14,7 +14,7 @@ import { getParamJson } from "../utils";
 export default class Publish extends YargsCommand {
   public readonly commandHead = `publish`;
   public readonly command = `${this.commandHead}`;
-  public readonly description = "A command to publish your Teams app";
+  public readonly description = "Publish the app to Teams.";
   public readonly paramPath = constants.publishParamPath;
 
   public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);

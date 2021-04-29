@@ -1,54 +1,60 @@
-# Build Conversational Bots for Teams
+## Bot Hello World App
 
 A bot also referred to as a chatbot or conversational bot is an app that runs simple and repetitive automated tasks performed by the users, such as customer service or support staff. Examples of bots in everyday use include, bots that provide information about the weather, make dinner reservations, or provide travel information. A bot interaction can be a quick question and answer, or it can be a complex conversation that provides access to services.
 
-This is a simple hello world chatbot application with built-in Single Sign-on features using [TeamsFx SDK](https://github.com/OfficeDev/TeamsFx/tree/main/packages/sdk) that can respond to a simple `hello` message.
+This is a simple hello world chatbot application with built-in Single Sign-on features using TeamsFx SDK that can respond to a simple `hello` message.
 
 ## Prerequisites
-**Dependencies**
--  [NodeJS](https://nodejs.org/en/)
--  [M365 developer account](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant) or access to a Teams account with the appropriate permissions to install an app.
+-	[NodeJS](https://nodejs.org/en/)
+-	An M365 account, if you do not have M365 account, apply one from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
+-	Teams Toolkit or TeamsFx CLI
 
 ## Create an application
-You can create a new bot application using the [Teams Toolkit V2 In Visual Studio Code](https://msazure.visualstudio.com/Microsoft%20Teams%20Extensibility/_wiki/wikis/Microsoft-Teams-Extensibility.wiki/150250/Public-Preview). From the toolkit, press `ctrl+shift+p` to open command palette and select `TeamsFx - Start a new project`. Follow these steps to finish project creation:
-- Enter your App name.
-- Select Bot.
-- Select bot registrarion (Choose one of the following)
-  - Create a new bot registration (This will create a new bot registration)
-  - Reuse an existing bot registration (You can manually input the bot id and password to reuse a bot registration)
-- Select a project location.
+-	From Visual Studio Code, open command palette and select `Teamsfx - Start a new project` to create a new conversational bot.
+-	From TeamsFx CLI, run command `teamsfx new` to create a new conversational bot.
 
-## Run the application locally
-Start debugging the project by hitting the `F5` key or click the debug icon in Visual Studio Code and click the `Debug (Edge)` or `Debug (Chrome)` green arrow button. The Teams Toolkit will automatically start the tunelling and npm tasks for you. A browser will open up with Teams web client and let you install the bot.
+## Build
+-	From Teams Toolkit: In the project directory, execute “Teamsfx - Build Teams Package”.
+-	From TeamsFx CLI: In the project directory, run command “teamsfx build”.
 
-Next, you interact with the bot application by sending a `hello` to it or type `login` / `logout` to test the SSO feature comes with this app. Setting break points to debug the application is also available.
+## Validate Manifest
+-	From Teams Toolkit: To check that your manifest is valid, from command palette select: “Teamsfx - Validate App Manifest File”.
+-	From TeamsFx CLI: run command `teamsfx test`
 
-## Deploy the application to Azure
-Once you have seen the application successfully run locally, you can use the Teams Toolkit V2 to prepare cloud resources and deploy to Azure. Follow these steps:
-- From Teams Toolkit V2, open command palette and select `TeamsFx - Provision Resource` (This requires you have an active Azure subscription) and this will:
-  - Create a resource group under your subscription.
-  - Create Azure Web App to host the chatbot.
-  - Create AAD App registration for SSO.
-- After resource provisioned successfully, select `TeamsFx - Deploy` and select `Bot` in next step. This will deploy your application package to the Azure Web App created earlier.
+## Debug
+Start debugging the project by hitting the `F5` key. Alternatively use the `Run Panel` in Visual Studio Code and click the `Start Debugging` green arrow button.
 
-Once all steps completed, you chatbot is now running in the cloud.
+## Deploy to Azure
+Deploy your project to Azure when it’s ready by following these steps:
+-	Log in to your Azure account
+-	Select an active subscription
+-	Provision your application resources in the cloud
+-	Deploy your application to the cloud
 
-## Run the application hosted in Azure
-After your application successfully deployed in Azure, you can interact with your chatbot hosted in the cloud. From the Visual Studio Code debug meun, select `Launch Remote (Edge) ` or `Launch Remote (Chrome)`.
 
-## Publish to Teams Tenant Catalog
-You can publish your chatbot when it's ready for entire organization to use. Simply open command palette and select `TeamsFx - Publish Teams App` and it will submit your Teams application to tenant app catalog. This may require tenant admin to approve before it's available to your organization.
+You can do this using the Teams Toolkit in Visual Studio Code or using the TeamsFx CLI:
+| Using Teams Toolkit |	Using TeamsFx CLI |
+|-----------------------------|------------------------------|
+| Open Teams Toolkit, and sign into Azure by clicking the `Sign to Azure` under the ACCOUNT section from sidebar. |	Run command `teamsfx account login azure`.|
+| Once signed in, select a subscription under your account. | Run command `teamsfx account set --subscription $scriptionid` | 
+| Open command palette, select: `Teamsfx - Provision in the Cloud`. | Run command `teamsfx provision`. | 
+| Open command palette, select: `Teamsfx - Deploy to the Cloud`. | Run command: `teamsfx deploy`. |
+<br>
+> Note: This may incur costs in your Azure Subscription.
+
+## Publish to Teams
+Once deployed, you may want to submit your application to your organization's internal app store. Your app will be submitted for admin approval.
+-	With Teams Toolkit: open command palette, select: “Teamsfx - Publish to Teams”.
+-	With TeamsFx CLI: run command “teamsfx publish”.
+
 
 ## Further reading
-- [Bot Framework Documentation](https://docs.botframework.com)
-- [Bot Basics](https://docs.microsoft.com/azure/bot-service/bot-builder-basics?view=azure-bot-service-4.0)
-- [Azure Portal](https://portal.azure.com)
-- [Activity processing](https://docs.microsoft.com/en-us/azure/bot-service/bot-builder-concept-activity-processing?view=azure-bot-service-4.0)
-- [Azure Bot Service Introduction](https://docs.microsoft.com/azure/bot-service/bot-service-overview-introduction?view=azure-bot-service-4.0)
-- [Azure Bot Service Documentation](https://docs.microsoft.com/azure/bot-service/?view=azure-bot-service-4.0)
-- [.NET Core CLI tools](https://docs.microsoft.com/en-us/dotnet/core/tools/?tabs=netcore2x)
-- [Azure CLI](https://docs.microsoft.com/cli/azure/?view=azure-cli-latest)
-- [Azure Portal](https://portal.azure.com)
-- [Language Understanding using LUIS](https://docs.microsoft.com/en-us/azure/cognitive-services/luis/)
-- [Channels and Bot Connector Service](https://docs.microsoft.com/en-us/azure/bot-service/bot-concepts?view=azure-bot-service-4.0)
-- [Microsoft Teams Developer Platform](https://docs.microsoft.com/en-us/microsoftteams/platform/)
+-	[Bot Basics](https://docs.microsoft.com/azure/bot-service/bot-builder-basics?view=azure-bot-service-4.0)
+-	[Bot Framework Documentation](https://docs.botframework.com/)
+-	[Azure Bot Service Introduction](https://docs.microsoft.com/azure/bot-service/bot-service-overview-introduction?view=azure-bot-service-4.0)
+
+
+## Code of Conduct
+This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
+For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
+contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.

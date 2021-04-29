@@ -139,7 +139,6 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
                 label: "prepare dev env",
                 dependsOn: [
                     "prepare local environment",
-                    "bot npm install",
                 ],
                 dependsOrder: "parallel",
             },
@@ -198,8 +197,8 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
             {
                 label: "prepare dev env",
                 dependsOn: includeBackend
-                    ? ["prepare local environment", "backend npm install", "frontend npm install", "bot npm install"]
-                    : ["prepare local environment", "frontend npm install", "bot npm install"],
+                    ? ["prepare local environment", "backend npm install", "frontend npm install"]
+                    : ["prepare local environment", "frontend npm install"],
                 dependsOrder: "parallel",
             },
             {

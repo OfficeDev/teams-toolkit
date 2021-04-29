@@ -197,7 +197,7 @@ const questionVisitor: QuestionVistor = async function (
       const placeholder = await getCallFuncValue(inputs, false, selectQuestion.placeholder, remoteFuncExecutor) as string;
       const defaultValue = selectQuestion.value? selectQuestion.value : await getRealValue(parentValue, selectQuestion.default, inputs, remoteFuncExecutor);
       return await ui.showQuickPick({
-        title: selectQuestion.title || selectQuestion.description || inputQuestion.name,
+        title: selectQuestion.title || selectQuestion.description || selectQuestion.name,
         items: res.options,
         canSelectMany: !!(type === NodeType.multiSelect),
         returnObject: selectQuestion.returnObject,
@@ -217,7 +217,7 @@ const questionVisitor: QuestionVistor = async function (
         canSelectFiles: false,
         canSelectFolders: true,
         canSelectMany: false,
-        title: fileQuestion.title  || fileQuestion.description || inputQuestion.name,
+        title: fileQuestion.title  || fileQuestion.description || fileQuestion.name,
         validation: validationFunc,
         backButton: backButton,
         // step: step,

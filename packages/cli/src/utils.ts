@@ -57,7 +57,7 @@ export function getChoicesFromQTNodeQuestion(data: Question, interactive = false
       return option as string[];
     } else {
       if (interactive) {
-        return (option as OptionItem[]).map(op => op.id);
+        return (option as OptionItem[]).map(op => op.label);
       } else {
         return (option as OptionItem[]).map(op => op.cliName ? op.cliName : op.id);
       }

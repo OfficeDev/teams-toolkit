@@ -440,9 +440,14 @@ class CoreImpl implements Core {
                 );
 
                 let icon = "";
+                let contextValue = "selectSubscription";
                 if (activeSubscriptionId === undefined || activeSubscription === undefined) {
                     selectSubLabel = `${subscriptions.length} subscriptions discovered`;
                     icon = "subscriptions";
+
+                    if(subscriptions.length === 0){
+                        contextValue = "emptySubscription";
+                    }
                 } else {
                     selectSubLabel = activeSubscription.displayName;
                     icon = "subcriptionSelected";
@@ -450,9 +455,9 @@ class CoreImpl implements Core {
                 return ([{
                     commandId: "fx-extension.selectSubscription",
                     label: selectSubLabel,
-                    callback: selectSubscriptionCallback,
+                    callback: ()=>{return Promise.resolve(ok(null));},
                     parent: "fx-extension.signinAzure",
-                    contextValue: "selectSubscription",
+                    contextValue: contextValue,
                     icon: icon
                 }, !(activeSubscriptionId === undefined || activeSubscription === undefined)]);
             };
@@ -505,7 +510,7 @@ class CoreImpl implements Core {
                             {
                                 commandId: "fx-extension.selectSubscription",
                                 label: subscriptionName,
-                                callback: selectSubscriptionCallback,
+                                callback: () => { return Promise.resolve(ok(null)); },
                                 parent: "fx-extension.signinAzure",
                                 contextValue: "selectSubscription",
                                 icon: "subscriptionSelected"
@@ -620,6 +625,12 @@ class CoreImpl implements Core {
                     subTreeItems: [],
                     icon: "azure",
                 },
+                {
+                    commandId: "fx-extension.specifySubscription",
+                    label: "Specify subscription",
+                    callback: selectSubscriptionCallback,
+                    parent: undefined,
+                }
             ]);
         }
 

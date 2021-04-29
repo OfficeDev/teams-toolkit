@@ -46,7 +46,7 @@ export class Utils {
                 }
             } catch (e) {
                 error = e;
-                if (!canTry(e.response.status)) {
+                if (!canTry(e.response?.status)) {
                     break;
                 }
             }

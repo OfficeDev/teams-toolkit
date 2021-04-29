@@ -108,6 +108,11 @@
           "group": "inline@2"
         },
         {
+          "command": "fx-extension.specifySubscription",
+          "when": "view == teamsfx-accounts && viewItem == selectSubscription",
+          "group": "inline"
+        },
+        {
           "command": "fx-extension.signInGuideline",
           "when": "view == teamsfx-accounts && viewItem == signinM365",
           "group": "inline"
@@ -145,6 +150,11 @@
         "command": "fx-extension.azureAccountSettings",
         "title": "Azure portal",
         "icon": "$(settings-gear)"
+      },
+      {
+        "command": "fx-extension.specifySubscription",
+        "title": "Specify subscription",
+        "icon": "$(list-selection)"
       },
       {
         "command": "fx-extension.openWelcome",

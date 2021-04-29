@@ -13,7 +13,7 @@ import {
 import sinon from "sinon";
 
 chaiUse(chaiPromises);
-describe("msGraphAuthProvider - browser", () => {
+describe("MsGraphAuthProvider Tests - Browser", () => {
   const clientId = "fake_client_id";
   const loginUrl = "fake_login_url";
   const authEndpoint = "fake_auth_endpoint";
@@ -32,29 +32,29 @@ describe("msGraphAuthProvider - browser", () => {
     });
   }
 
-  beforeEach(function() {
+  beforeEach(function () {
     loadDefaultConfig();
   });
 
-  it("create MsGraphAuthProvider with given scopes", async function() {
+  it("MsGraphAuthProvider: Create MsGraphAuthProvider with given scopes", async function () {
     const credential = new TeamsUserCredential();
     const authProvider: any = new MsGraphAuthProvider(credential, scopes);
     assert.strictEqual(authProvider.scopes, scopes);
   });
 
-  it("create MsGraphAuthProvider with empty scope", async function() {
+  it("MsGraphAuthProvider: Create MsGraphAuthProvider with empty scope", async function () {
     const credential = new TeamsUserCredential();
     const authProvider: any = new MsGraphAuthProvider(credential, emptyScope);
     assert.strictEqual(authProvider.scopes, defaultScope);
   });
 
-  it("create MsGraphAuthProvider without providing scope", async function() {
+  it("MsGraphAuthProvider: Create MsGraphAuthProvider without providing scope", async function () {
     const credential = new TeamsUserCredential();
     const authProvider: any = new MsGraphAuthProvider(credential);
     assert.strictEqual(authProvider.scopes, defaultScope);
   });
 
-  it("get access token from MsGraphAuthProvider", async function() {
+  it("MsGraphAuthProvider: Get access token from MsGraphAuthProvider", async function () {
     sinon.stub(TeamsUserCredential.prototype, "getToken").callsFake(
       (scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null> => {
         const token: AccessToken = {

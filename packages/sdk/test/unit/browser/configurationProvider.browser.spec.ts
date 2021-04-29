@@ -12,12 +12,12 @@ import {
 
 chaiUse(chaiPromises);
 
-describe("configurationProvider - browser", () => {
+describe("ConfigurationProvider Tests - Browser", () => {
   const clientId = "fake_client_id";
   const loginUrl = "fake_login_url";
   const authEndpoint = "fake_auth_endpoint";
 
-  it("getAuthenticationConfiguration from local object", () => {
+  it("ConfigurationProvider: Get authentication configuration from local object", () => {
     loadConfiguration({
       authentication: {
         initiateLoginEndpoint: loginUrl,
@@ -36,7 +36,7 @@ describe("configurationProvider - browser", () => {
     }
   });
 
-  it("loadConfiguration should throw exception if no config passed in browser environment", () => {
+  it("ConfigurationProvider: Load configuration should throw exception if no config passed in browser environment", () => {
     expect(() => {
       loadConfiguration();
     })
@@ -45,7 +45,7 @@ describe("configurationProvider - browser", () => {
       .equal(ErrorCode.InvalidParameter);
   });
 
-  it("getAuthenticationConfiguration should get undefined result if loadConfiguration without parameter", () => {
+  it("ConfigurationProvider: Get authentication configuration should get undefined result if loadConfiguration without parameter", () => {
     loadConfiguration({});
     const authConfig = getAuthenticationConfiguration();
     assert.isUndefined(authConfig);

@@ -12,7 +12,7 @@ import {
   Logger
 } from "../../src/util/logger";
 
-describe("Print function - node", () => {
+describe("Logger Tests", () => {
   let errorStub: sinon.SinonStub<any[], void>;
   let warnStub: sinon.SinonStub<any[], void>;
   let infoStub: sinon.SinonStub<any[], void>;

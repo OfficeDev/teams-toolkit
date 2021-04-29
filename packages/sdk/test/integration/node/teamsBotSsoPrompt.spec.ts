@@ -28,12 +28,11 @@ import chaiPromises from "chai-as-promised";
 import sinon from "sinon";
 import { getSsoTokenFromTeams, MockEnvironmentVariable, RestoreEnvironmentVariable } from "../../helper";
 import { parseJwt } from "../../../src/util/utils";
-import { afterEach, beforeEach } from "mocha";
 
 chaiUse(chaiPromises);
 let restore: () => void;
 
-describe("TeamsBotSsoPrompt - node", () => {
+describe("TeamsBotSsoPrompt Tests - Node", () => {
   let clientId: string = process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID;
   let tenantId: string = process.env.SDK_INTEGRATION_TEST_AAD_TENANT_ID;
   const initiateLoginEndpoint = "fake_initiate_login_endpoint";
@@ -60,7 +59,7 @@ describe("TeamsBotSsoPrompt - node", () => {
     RestoreEnvironmentVariable(restore);
   });
 
-  it("should not be able to sign user in and get exchange tokens due to not consent", async function () {
+  it("TeamsBotSsoPrompt: Should not be able to sign user in and get exchange tokens due to not consent", async function () {
     this.timeout(5000);
 
     const notConsentScopes = ["Calendars.Read"];
@@ -86,7 +85,7 @@ describe("TeamsBotSsoPrompt - node", () => {
       });
   });
 
-  it("should be able to sign user in and get exchange tokens", async function () {
+  it("TeamsBotSsoPrompt: Should be able to sign user in and get exchange tokens", async function () {
     this.timeout(5000);
 
     const adapter: TestAdapter = await initializeTestEnv({});
@@ -116,7 +115,7 @@ describe("TeamsBotSsoPrompt - node", () => {
       });
   });
 
-  it("should not end on invalid message when endOnInvalidMessage set to false", async function () {
+  it("TeamsBotSsoPrompt: Should not end on invalid message when endOnInvalidMessage set to false", async function () {
     const adapter: TestAdapter = await initializeTestEnv({ endOnInvalidMessage: false });
 
     await adapter

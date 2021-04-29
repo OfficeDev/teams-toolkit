@@ -11,11 +11,11 @@ import { MockEnvironmentVariable, RestoreEnvironmentVariable, AADJwtPayLoad } fr
 
 chaiUse(chaiPromises);
 let restore: () => void;
-describe("m365TenantCredential - node", () => {
+describe("M365TenantCredential Tests - Node", () => {
   const fake_client_secret = "fake_client_secret";
   const defaultGraphScope = ["https://graph.microsoft.com/.default"];
 
-  beforeEach(function() {
+  beforeEach(function () {
     restore = MockEnvironmentVariable();
     loadConfiguration();
   });
@@ -24,7 +24,7 @@ describe("m365TenantCredential - node", () => {
     RestoreEnvironmentVariable(restore);
   });
 
-  it("create M365TenantCredential with valid configuration", function() {
+  it("M365TenantCredential: Create M365TenantCredential with valid configuration", function () {
     const credential: any = new M365TenantCredential();
 
     assert.strictEqual(credential.clientSecretCredential.clientId, process.env.M365_CLIENT_ID);
@@ -39,7 +39,7 @@ describe("m365TenantCredential - node", () => {
     );
   });
 
-  it("get access token", async function() {
+  it("M365TenantCredential: Get access token", async function () {
     const credential = new M365TenantCredential();
     const token = await credential.getToken(defaultGraphScope);
     const tokenFromCache = await credential.getToken(defaultGraphScope);
@@ -50,7 +50,7 @@ describe("m365TenantCredential - node", () => {
     assert.strictEqual(decodedToken.idtyp, "app");
   });
 
-  it("get access token with authentication error", async function() {
+  it("M365TenantCredential: Get access token with authentication error", async function () {
     restore = mockedEnv({
       M365_CLIENT_SECRET: fake_client_secret
     });

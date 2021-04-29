@@ -19,9 +19,9 @@ import {
 chaiUse(chaiPromises);
 let restore: () => void;
 
-describe("msGraphClientProvider - node", () => {
+describe("MsGraphClientProvider Tests - Node", () => {
   let ssoToken = "";
-  beforeEach(async function() {
+  beforeEach(async function () {
     restore = MockEnvironmentVariable();
     loadConfiguration();
 
@@ -32,7 +32,7 @@ describe("msGraphClientProvider - node", () => {
     RestoreEnvironmentVariable(restore);
   });
 
-  it("create graph client with OnBehalfOfUserCredential", async function() {
+  it("MsGraphClientProvider: Create graph client with OnBehalfOfUserCredential", async function () {
     const scopes = ["User.Read"];
     const oboCredential = new OnBehalfOfUserCredential(ssoToken);
     const graphClient: any = createMicrosoftGraphClient(oboCredential, scopes);
@@ -40,7 +40,7 @@ describe("msGraphClientProvider - node", () => {
     assert.strictEqual(profile.userPrincipalName, process.env.SDK_INTEGRATION_TEST_ACCOUNT_NAME);
   });
 
-  it("create graph client with M365TenantCredential", async function() {
+  it("MsGraphClientProvider: Create graph client with M365TenantCredential", async function () {
     const scopes = ["https://graph.microsoft.com/.default"];
     const m356Credential = new M365TenantCredential();
     const graphClient: any = createMicrosoftGraphClient(m356Credential, scopes);

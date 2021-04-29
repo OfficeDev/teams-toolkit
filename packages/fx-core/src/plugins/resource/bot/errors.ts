@@ -127,6 +127,19 @@ export class ProvisionError extends PluginError {
     }
 }
 
+export class MissingSubscriptionRegistrationError extends PluginError {
+    constructor() {
+        super(
+            ErrorType.User,
+            ErrorNames.MISSING_SUBSCRIPTION_REGISTRATION_ERROR,
+            Messages.TheSubsNotRegisterToUseBotService,
+            [
+                Messages.HowToRegisterSubs
+            ]
+        );
+    }
+}
+
 export class ConfigUpdatingError extends PluginError {
     constructor(configName: string, innerError?: Error) {
         super(

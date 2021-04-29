@@ -65,6 +65,10 @@ export class Messages {
 
     public static readonly ProvisioningBotRegistration = "Provisioning bot registration.";
     public static readonly SuccessfullyProvisionedBotRegistration = "Successfully provisioned bot registration.";
-    
+
+    public static readonly TheSubsNotRegisterToUseBotService = "The subscription didn't register to use namespace 'Microsoft.BotService'.";
+
+    // Suggestions
     public static readonly RetryTheCurrentStep = "Please retry the current step.";
+    public static readonly HowToRegisterSubs = "See https://aka.ms/rps-not-found for how to register subscriptions.";
 }

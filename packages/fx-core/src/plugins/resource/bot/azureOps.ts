@@ -6,7 +6,7 @@ import * as appService from "@azure/arm-appservice";
 import {
     ProvisionError, ConfigUpdatingError,
     ListPublishingCredentialsError, ZipDeployError,
-    MessageEndpointUpdatingError
+    MessageEndpointUpdatingError, MissingSubscriptionRegistrationError
 } from "./errors";
 import { CommonStrings, ConfigNames } from "./resources/strings";
 import * as utils from "./utils/common";
@@ -30,7 +30,11 @@ export class AzureOperations {
                 },
             );
         } catch (e) {
-            throw new ProvisionError(CommonStrings.BOT_CHANNEL_REGISTRATION, e);
+            if (e.code === "MissingSubscriptionRegistration") {
+                throw new MissingSubscriptionRegistrationError();
+            } else {
+                throw new ProvisionError(CommonStrings.BOT_CHANNEL_REGISTRATION, e);
+            }
         }
 
         if (!botResponse || !utils.isHttpCodeOkOrCreated(botResponse._response.status)) {

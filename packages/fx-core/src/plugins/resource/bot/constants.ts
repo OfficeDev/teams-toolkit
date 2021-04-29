@@ -129,6 +129,7 @@ export class ErrorNames {
     // User Exceptions
     public static readonly USER_INPUTS_ERROR = "UserInputsError";
     public static readonly PACK_DIR_EXISTENCE_ERROR = "PackDirectoryExistenceError";
+    public static readonly MISSING_SUBSCRIPTION_REGISTRATION_ERROR = "MissingSubscriptionRegistrationError";
 }
 
 export class Links {

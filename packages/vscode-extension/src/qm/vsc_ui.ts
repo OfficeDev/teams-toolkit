@@ -26,7 +26,7 @@ export class VsCodeUI implements UserInterface{
       if (option.backButton) quickPick.buttons = [QuickInputButtons.Back, okButton];
       else quickPick.buttons = [okButton];
       quickPick.placeholder = option.placeholder;
-      quickPick.ignoreFocusOut = true;
+      quickPick.ignoreFocusOut = false;
       quickPick.matchOnDescription = true;
       quickPick.matchOnDetail = true;
       quickPick.canSelectMany = option.canSelectMany;

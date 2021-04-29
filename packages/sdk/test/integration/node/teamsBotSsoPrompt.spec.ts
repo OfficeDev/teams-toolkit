@@ -50,12 +50,12 @@ describe("TeamsBotSsoPrompt - node", () => {
   }
   const sandbox = sinon.createSandbox();
 
-  beforeEach(async function () {
+  before(async function () {
     restore = MockEnvironmentVariable();
     ssoToken = await getSsoTokenFromTeams();
   });
 
-  afterEach(function () {
+  after(function () {
     sandbox.restore();
     RestoreEnvironmentVariable(restore);
   });

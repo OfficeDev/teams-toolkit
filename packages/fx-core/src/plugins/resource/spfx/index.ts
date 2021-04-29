@@ -50,6 +50,7 @@ export class SpfxPlugin implements Plugin {
         name: SPFXQuestionNames.framework_type,
         title: "Framework",
         option: [{id:"none", label:"None"}, {id:"react", label:"React"}],
+        placeholder: "Select framework.",
         default: "none"
       });
       spfx_frontend_host.addChild(spfx_framework_type);

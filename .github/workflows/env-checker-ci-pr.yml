@@ -78,7 +78,8 @@ jobs:
 
       - name: Setup project
         run: |
-          npm run setup
+          npm install
+          npx lerna bootstrap --concurrency 1
 
       - name: Integration Test
         working-directory: ./packages/vscode-extension

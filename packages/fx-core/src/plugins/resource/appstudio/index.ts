@@ -87,7 +87,7 @@ export class AppStudioPlugin implements Plugin {
 
     /**
      * Build Teams Package
-     * @param {string} appDirectory - The directory contains manifest.remote.json and two images
+     * @param {string} appDirectory - The directory contains manifest.source.json and two images
      * @returns {string} - Path of built appPackage.zip
      */
     public async buildTeamsPackage(ctx: PluginContext, appDirectory: string, manifestString: string): Promise<Result<string, FxError>> {

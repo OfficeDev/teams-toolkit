@@ -14,6 +14,8 @@ import AzureTokenProvider from "../commonlib/azureLogin";
 import CLILogProvider from "../commonlib/log";
 import * as constants from "../constants";
 import { setSubscriptionId, toYargsOptions } from "../utils";
+import CliTelemetry from "../telemetry/cliTelemetry";
+import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
 
 class LoginAccount extends YargsCommand {
   public readonly commandHead = `login`;
@@ -29,6 +31,9 @@ class LoginAccount extends YargsCommand {
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLoginStart, {
+      [TelemetryProperty.AccountType]: args.platform
+    });
     switch (args.platform) {
       case "azure": {
         const result = await AzureTokenProvider.getAccountCredentialAsync();
@@ -40,6 +45,10 @@ class LoginAccount extends YargsCommand {
         } else {
           CLILogProvider.error(`[${constants.cliSource}] Failed to sign in to Azure.`);
         }
+        CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLogin, {
+          [TelemetryProperty.AccountType]: args.platform,
+          [TelemetryProperty.Success]: result? TelemetrySuccess.Yes : TelemetrySuccess.No
+        });
         break;
       }
       case "m365": {
@@ -49,6 +58,10 @@ class LoginAccount extends YargsCommand {
         } else {
           CLILogProvider.error(`[${constants.cliSource}] Failed to sign in to M365.`);
         }
+        CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLogin, {
+          [TelemetryProperty.AccountType]: args.platform,
+          [TelemetryProperty.Success]: result? TelemetrySuccess.Yes : TelemetrySuccess.No
+        });
         break;
       }
     }

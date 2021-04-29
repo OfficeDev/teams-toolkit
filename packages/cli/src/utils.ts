@@ -131,7 +131,7 @@ export function getActiveEnv(): string {
   return "default";
 }
 
-export function getConfigPath(rootfolder: string) {
+export function getConfigPath(rootfolder: string): string {
   return `${rootfolder}/.${ConfigFolderName}/env.${getActiveEnv()}.json`;
 }
 
@@ -149,7 +149,7 @@ export async function readConfigs(rootfolder: string): Promise<Result<any, FxErr
   }
 }
 
-export async function getSubscriptionIdFromEnvFile(rootfolder: string) {
+export async function getSubscriptionIdFromEnvFile(rootfolder: string): Promise<string | undefined> {
   const result = await readConfigs(rootfolder);
   if (result.isErr()) {
     throw result.error;
@@ -175,4 +175,37 @@ export async function setSubscriptionId(
     await fs.writeFile(getConfigPath(rootFolder), JSON.stringify(configJson, null, 4));
   }
   return ok(null);
+}
+export function isWorkspaceSupported(workspace: string): boolean {
+  const p = workspace;
+
+  const checklist: string[] = [
+    p,
+    `${p}/package.json`,
+    `${p}/.${ConfigFolderName}`,
+    `${p}/.${ConfigFolderName}/settings.json`,
+    `${p}/.${ConfigFolderName}/env.${getActiveEnv()}.json`
+  ];
+
+  for (const fp of checklist) {
+    if (!fs.pathExistsSync(path.resolve(fp))) {
+      return false;
+    }
+  }
+  return true;
+}
+
+export function getTeamsAppId(rootfolder: string | undefined): any {
+  if (!rootfolder) {
+    return undefined;
+  }
+
+  if (isWorkspaceSupported(rootfolder)) {
+    const env = getActiveEnv();
+    const envJsonPath = path.join(rootfolder, `.${ConfigFolderName}/env.${env}.json`);
+    const envJson = JSON.parse(fs.readFileSync(envJsonPath, "utf8"));
+    return envJson.solution.remoteTeamsAppId;
+  }
+
+  return undefined;
 }

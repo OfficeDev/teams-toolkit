@@ -168,11 +168,11 @@ export async function setSubscriptionId(
       return err(result.error);
     }
 
+    await AzureAccountManager.setSubscription(subscriptionId);
+
     const configJson = result.value;
     configJson["solution"].subscriptionId = subscriptionId;
     await fs.writeFile(getConfigPath(rootFolder), JSON.stringify(configJson, null, 4));
-
-    await AzureAccountManager.setSubscription(subscriptionId);
   }
   return ok(null);
 }

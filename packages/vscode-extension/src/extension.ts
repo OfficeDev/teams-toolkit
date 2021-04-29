@@ -110,18 +110,6 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.tasks.registerTaskProvider(TeamsfxTaskProvider.type, taskProvider)
   );
 
-  const mailtoCmd = vscode.commands.registerCommand(
-    "fx-extension.mailto",
-    handlers.mailtoHandler
-  );
-  context.subscriptions.push(mailtoCmd);
-
-  const devProgramCmd = vscode.commands.registerCommand(
-    "fx-extension.devProgram",
-    handlers.devProgramHandler
-  );
-  context.subscriptions.push(devProgramCmd);
-
   const openWelcomeCmd = vscode.commands.registerCommand(
     "fx-extension.openWelcome",
     handlers.openWelcomeHandler
@@ -163,6 +151,18 @@ export async function activate(context: vscode.ExtensionContext) {
     handlers.openReportIssues
   );
   context.subscriptions.push(openReportIssuesCmd);
+
+  const m365AccountSettingsCmd = vscode.commands.registerCommand(
+    "fx-extension.m365AccountSettings",
+    handlers.openM365AccountHandler
+  );
+  context.subscriptions.push(m365AccountSettingsCmd);
+
+  const azureAccountSettingsCmd = vscode.commands.registerCommand(
+    "fx-extension.azureAccountSettings",
+    handlers.openAzureAccountHandler
+  );
+  context.subscriptions.push(azureAccountSettingsCmd);
   
   // Register debug configuration provider
   const debugProvider: TeamsfxDebugProvider = new TeamsfxDebugProvider();

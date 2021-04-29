@@ -4,7 +4,6 @@ When building a Teams application, you can optionally add backend API(s) to deve
 
 ## Prerequisites
 
-* [Azure Functions Core Tools](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local?tabs=windows%2Ccsharp%2Cbash).
 * Teams Toolkit or TeamsFx CLI.
 
 ## Develop

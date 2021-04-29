@@ -21,7 +21,7 @@ export const backendFolderName = "api";
 export const botFolderName = "bot";
 
 export const localEnvFileName = "local.env";
-export const manifestFileName = "manifest.remote.json";
+export const manifestFileName = "manifest.source.json";
 export const userDataFileName = "default.userdata"; // TODO: different file name for different environment
 
 export const frontendLocalEnvPrefix = "FRONTEND_";

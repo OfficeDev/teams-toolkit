@@ -28,6 +28,8 @@ import { AuthCode } from "./authCode";
 import * as util from "util";
 import { BuildSPPackageError, DeploySPPackageError, EmptyAccessTokenError, EnsureAppCatalogFailedError, MultiSPPackageError, NoAppCatalogError, NoSPPackageError, SPFxDeployError, UploadSPPackageError } from "./error";
 import { ProgressHelper } from "./utils/progress-helper";
+import { REMOTE_MANIFEST } from "../../solution/fx-solution/constants";
+
 export class SPFxPluginImpl {
   public async scaffold(
     ctx: PluginContext,
@@ -210,7 +212,7 @@ export class SPFxPluginImpl {
     );
 
     await configure(outputFolderPath, replaceMap);
-    await configure(`${ctx.root}/.${ConfigFolderName}/manifest.remote.json`, replaceMap);
+    await configure(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`, replaceMap);
     return ok(undefined);
   }
 

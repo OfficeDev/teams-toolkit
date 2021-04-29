@@ -1830,7 +1830,7 @@ export class TeamsAppSolution implements Solution {
         if(!ctx.answers){
             return err(
                 returnUserError(
-                    new Error(`answer is emtry!`),
+                    new Error(`answer is empty!`),
                     "Solution",
                     SolutionError.InternelError,
                 )

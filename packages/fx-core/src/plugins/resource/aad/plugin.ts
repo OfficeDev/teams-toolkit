@@ -478,6 +478,10 @@ export class AadAppForTeamsImpl {
       permission.application = permission.application?.filter((roleName, i) => i === permission.application?.indexOf(roleName));
 
       permission.application?.forEach((roleName) => {
+        if (!roleName) {
+          return;
+        }
+
         const resourceAccess: ResourceAccess = {
           id: roleName,
           type: "Role",
@@ -501,6 +505,10 @@ export class AadAppForTeamsImpl {
       });
 
       permission.delegated?.forEach((scopeName) => {
+        if (!scopeName) {
+          return;
+        }
+
         const resourceAccess: ResourceAccess = {
           id: scopeName,
           type: "Scope",

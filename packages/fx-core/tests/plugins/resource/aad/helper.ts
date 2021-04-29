@@ -18,9 +18,9 @@ import { ConfigKeys, ConfigKeysOfOtherPlugin, Plugins } from "../../../../src/pl
 import jwt_decode from "jwt-decode";
 import { Utils } from "../../../../src/plugins/resource/aad/utils/common";
 
-const permissions = "[{\"resource\": \"Microsoft Graph\",\"scopes\": [\"User.Read\"]}]";
+const permissions = "[{\"resource\": \"Microsoft Graph\",\"delegated\": [\"User.Read\"]}]";
 const permissionsWrong =
-  "[{\"resource\": \"Microsoft Graph\",\"scopes\": [\"User.ReadData\"]}]";
+  "[{\"resource\": \"Microsoft Graph\",\"delegated\": [\"User.ReadData\"]}]";
 
 const mockLogProvider: LogProvider = {
   async log(logLevel: LogLevel, message: string): Promise<boolean> {

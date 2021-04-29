@@ -29,7 +29,7 @@ export function NotValidInputValue(inputName: string, msg: string): UserError {
 
 export function NotFoundInputedFolder(folder: string): UserError {
   return returnUserError(
-    new Error(`Inputed folder (${folder}) not found.`),
+    new Error(`Cannot find folder (${folder}).`),
     constants.cliSource,
     "NotFoundInputFolder"
   );
@@ -37,7 +37,7 @@ export function NotFoundInputedFolder(folder: string): UserError {
 
 export function NotFoundSubscriptionId(): UserError {
   return returnUserError(
-    new Error(`Inputed subscription not found in your tenant`),
+    new Error(`Cannot find selected subscription in your tenant`),
     constants.cliSource,
     "NotFoundSubscriptionId"
   );

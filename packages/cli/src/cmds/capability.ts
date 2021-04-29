@@ -17,7 +17,7 @@ import { YargsCommand } from "../yargsCommand";
 export class CapabilityAddTab extends YargsCommand {
   public readonly commandHead = `tab`;
   public readonly command = `${this.commandHead}`;
-  public readonly description = "A command to add tab capability to the project.";
+  public readonly description = "Add a tab.";
   public readonly paramPath = constants.capabilityAddTabParamPath;
   public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
 
@@ -67,7 +67,7 @@ export class CapabilityAddTab extends YargsCommand {
 export class CapabilityAddBot extends YargsCommand {
   public readonly commandHead = `bot`;
   public readonly command = `${this.commandHead}`;
-  public readonly description = "A command to add bot capability to the project.";
+  public readonly description = "Add a bot.";
   public readonly paramPath = constants.capabilityAddBotParamPath;
   public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
 
@@ -117,7 +117,7 @@ export class CapabilityAddBot extends YargsCommand {
 export class CapabilityAddMessageExtension extends YargsCommand {
   public readonly commandHead = `message-extension`;
   public readonly command = `${this.commandHead}`;
-  public readonly description = "A command to add message-extension capability to the project.";
+  public readonly description = "Add Messaging Extensions.";
   public readonly paramPath = constants.capabilityAddMessageExtensionParamPath;
   public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
 
@@ -168,8 +168,7 @@ export class CapabilityAddMessageExtension extends YargsCommand {
 export class CapabilityAdd extends YargsCommand {
   public readonly commandHead = `add`;
   public readonly command = `${this.commandHead} <capability>`;
-  public readonly description =
-    "A command to add a capability to the project in current working directory";
+  public readonly description = "Add new capabilities to the current application";
 
   public readonly subCommands: YargsCommand[] = [new CapabilityAddTab(), new CapabilityAddBot(), new CapabilityAddMessageExtension()];
 
@@ -188,7 +187,7 @@ export class CapabilityAdd extends YargsCommand {
 export default class Capability extends YargsCommand {
   public readonly commandHead = `capability`;
   public readonly command = `${this.commandHead} <action>`;
-  public readonly description = "Operate the capability";
+  public readonly description = "Add new capabilities to the current application.";
 
   public readonly subCommands: YargsCommand[] = [new CapabilityAdd()];
 

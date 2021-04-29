@@ -113,7 +113,11 @@ export class AppStudioPluginImpl {
             const manifest: TeamsAppManifest = JSON.parse(manifestString!);
             const appDefinition = AppStudio.convertToAppDefinition(manifest, true);
             let appStudioToken = await ctx?.appStudioToken?.getAccessToken();
-            await AppStudioClient.updateTeamsApp(remoteTeamsAppId!, appDefinition, appStudioToken!);
+            const colorIconContent = (manifest.icons.color && !manifest.icons.color.startsWith("https://")) ?
+                (await fs.readFile(`${appDirectory}/${manifest.icons.color}`)).toString("base64") : undefined;
+            const outlineIconContent = (manifest.icons.outline && !manifest.icons.outline.startsWith("https://")) ?
+                (await fs.readFile(`${appDirectory}/${manifest.icons.outline}`)).toString("base64") : undefined;
+            await AppStudio.updateApp(remoteTeamsAppId!, appDefinition, appStudioToken!, undefined, colorIconContent, outlineIconContent);
 
             // manifest.id === externalID
             const existApp = await AppStudioClient.getAppByTeamsAppId(manifest.id, appStudioToken!);

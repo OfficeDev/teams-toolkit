@@ -737,6 +737,18 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
       }
     }
   });
+
+  commands.registerCommand("fx-extension.signInGuideline", async (node: TreeViewCommand) => {
+    // TODO: update the link when documentation is ready
+    switch (node.contextValue) {
+      case "signinM365": {
+        await env.openExternal(Uri.parse("https://www.office.com/"));
+      }
+      case "signinAzure": {
+        await env.openExternal(Uri.parse("https://ms.portal.azure.com/"));
+      }
+    }
+  });
 }
 
 export function cmdHdlDisposeTreeView() {

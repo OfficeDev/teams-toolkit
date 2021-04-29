@@ -3,13 +3,21 @@
 "use strict";
 
 import * as fs from "fs-extra";
-import { Dialog, LogProvider, PluginContext, ConfigFolderName } from "fx-api";
+import { ConfigFolderName, Dialog, DialogMsg, DialogType, LogProvider, PluginContext, QuestionType } from "fx-api";
 import { asn1, md, pki } from "node-forge";
 import * as os from "os";
 import { v4 as uuidv4 } from "uuid";
 
 import { LocalDebugCertificate } from "./constants";
 import * as ps from "./util/process";
+
+const continueText: string = "Continue";
+const learnMoreText: string = "Learn More";
+const learnMoreUrl: string = "https://aka.ms/teamsfx-ca-certificate";
+const confirmMessage: string = "To debug applications in Teams, your localhost server must be on HTTPS.\
+ For Teams to trust the self-signed SSL certificate used by the toolkit, a CA certificate can be added to your certificate store.\
+ You may skip this step, but you'll have to manually trust the secure connection in a new browser window when debugging your apps in Teams.\
+ For more information \"https://aka.ms/teamsfx-ca-certificate\". You may be asked for your account credentials if you continue to install the certificate.";
 
 export interface LocalCertificate {
     certPath: string,
@@ -226,13 +234,11 @@ export class LocalCertificateManager {
     private async trustCertificate(certPath: string, friendlyName: string): Promise<boolean> {
         let progress = undefined;
         try {
-            if (this.dialog) {
-                progress = this.dialog.createProgressBar("Trust Local Certificate", 1);
-            }
-
             if (os.type() === "Windows_NT") {
-                progress?.start("Tooklit is going to add local certificate to your trusted root certificate store. Please confirm in popup window to continue.");
-
+                if (!await this.waitForUserConfirm()) {
+                    return false;
+                }
+                
                 const installCertCommand = `(Import-Certificate -FilePath '${certPath}' -CertStoreLocation Cert:\\CurrentUser\\Root)[0].Thumbprint`;
                 const thumbprint = (await ps.execPowerShell(installCertCommand)).trim();
 
@@ -241,7 +247,9 @@ export class LocalCertificateManager {
 
                 return true;
             } else if (os.type() === "Darwin") {
-                progress?.start("Tooklit is going to add local certificate to your system key chain. Please enter your password in popup window to continue.");
+                if (!await this.waitForUserConfirm()) {
+                    return false;
+                }
 
                 await ps.execSudo(`security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain ${certPath}`);
 
@@ -255,11 +263,35 @@ export class LocalCertificateManager {
             // treat any error as install failure, to not block the main progress
             this.logger?.warning(`Failed to install certificate. Error: ${error}`);
             return false;
-        } finally {
-            if (progress) {
-                progress.end();
-            }
         }
     }
 
+    private async waitForUserConfirm(): Promise<boolean> {
+        if (this.dialog) {
+            let userSelected: string | undefined;
+            do {
+                userSelected = (await this.dialog.communicate(new DialogMsg(
+                    DialogType.Ask,
+                    {
+                        description: confirmMessage,
+                        type: QuestionType.Confirm,
+                        options: [learnMoreText, continueText], // Cancel is added by default
+                    },
+                ))).getAnswer();
+                if (userSelected === learnMoreText) {
+                    await this.dialog.communicate(new DialogMsg(
+                        DialogType.Ask,
+                        {
+                            type: QuestionType.OpenExternal,
+                            description: learnMoreUrl,
+                        },
+                    ));
+                }
+            } while (userSelected === learnMoreText);
+            return userSelected === continueText;
+        }
+
+        // No dialog, always return true;
+        return true;
+    }
 }

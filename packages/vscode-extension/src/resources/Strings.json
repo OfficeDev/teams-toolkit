@@ -62,8 +62,6 @@
             "logErrorFormat": "code:${e.source}.${e.name}, message: ${e.message}, stack: ${e.stack}",
             "getHelp": "Get Help",
             "reportIssue": "Report Issue",
-            "m365SigninTooltip": "M365 ACCOUNT  \nThe Teams Toolkit requires an Microsoft 365 organizational account where Teams is running and has been registered.",
-            "azureSigninTooltip": "AZURE ACCOUNT  \nThe Teams Toolkit may require an Azure subscription to deploy the Azure resources for your project.",
             "azureSignIn": "Successfully signed in to Azure account.",
             "azureSignOut": "Successfully signed out of Azure account.",
             "m365SignIn": "Successfully signed in to M365 account.",

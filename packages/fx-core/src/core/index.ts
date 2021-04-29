@@ -600,14 +600,6 @@ class CoreImpl implements Core {
                 },
             );
 
-            let azureTooltip = undefined;
-            if (azureAccountContextValue === "signinAzure") {
-                azureTooltip = {
-                    isMarkdown: true,
-                    value: "AZURE ACCOUNT  \nThe Teams Toolkit may require an Azure subscription to deploy the Azure resources for your project."
-                };
-            }
-
             this.ctx.treeProvider.add([
                 {
                     commandId: "fx-extension.signinM365",
@@ -631,7 +623,10 @@ class CoreImpl implements Core {
                     contextValue: azureAccountContextValue,
                     subTreeItems: [],
                     icon: "azure",
-                    tooltip: azureTooltip
+                    tooltip: {
+                        isMarkdown: true,
+                        value: "AZURE ACCOUNT  \nThe Teams Toolkit may require an Azure subscription to deploy the Azure resources for your project."
+                    }
                 },
             ]);
         }

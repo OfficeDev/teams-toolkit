@@ -709,11 +709,7 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
             {
               commandId: "fx-extension.signinM365",
               label: StringResources.vsc.handlers.signIn365,
-              contextValue: "signinM365",
-              tooltip: {
-                isMarkdown: true,
-                value: StringResources.vsc.handlers.m365SigninTooltip
-              }
+              contextValue: "signinM365"
             }
           ]);
         }
@@ -726,11 +722,7 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
             {
               commandId: "fx-extension.signinAzure",
               label: StringResources.vsc.handlers.signInAzure,
-              contextValue: "signinAzure",
-              tooltip: {
-                isMarkdown: true,
-                value: StringResources.vsc.handlers.azureSigninTooltip
-              }
+              contextValue: "signinAzure"
             }
           ]);
           await TreeViewManagerInstance.getTreeView('teamsfx-accounts')!.remove([

@@ -294,7 +294,7 @@ export class VsCodeUI implements UserInterface{
           try {
              
             /// set items
-            quickPick.items = [{label: "path", detail: option.defaultUri}];
+            quickPick.items = [{label: "Select the workspace folder", detail: option.defaultUri}];
             
             const items = quickPick.items as FxQuickPickItem[];
             const optionMap = new Map<string, FxQuickPickItem>();
@@ -312,7 +312,7 @@ export class VsCodeUI implements UserInterface{
               });
               const res = uri && uri.length > 0 ? uri[0].fsPath : undefined;
               if (res) {
-                quickPick.items = [{label: "path", detail: res}];
+                quickPick.items = [{label: "Select the workspace folder", detail: res}];
                 resolve({ type: InputResultType.sucess, result: res });
               }
             };

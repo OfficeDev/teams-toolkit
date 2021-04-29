@@ -47,6 +47,7 @@ export const DEFAULT_PERMISSION_REQUEST = [
     {
         resource: "Microsoft Graph",
         delegated: ["User.Read"],
+        application: [],
     },
 ];
 

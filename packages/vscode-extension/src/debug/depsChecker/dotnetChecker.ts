@@ -228,7 +228,8 @@ export class DotnetChecker implements IDepsChecker {
       cwd: process.cwd(),
       maxBuffer: DotnetChecker.maxBuffer,
       timeout: DotnetChecker.timeout,
-      killSignal: "SIGKILL"
+      killSignal: "SIGKILL",
+      shell: false
     };
 
     try {

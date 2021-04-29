@@ -72,11 +72,11 @@
             "prepareTask": " Prepare task."
         },
         "appStudioLogin": {
-            "warningMsg": "The Teams Toolkit requires a Microsoft 365 account. This is the account that you use to log in to Microsoft Teams. The Teams Toolkit will publish your application using this Microsoft 365 account.\nYou can quickly get started by using a developer account from the M365 Developer Program.",
+            "warningMsg": "The Teams Toolkit requires a Microsoft 365 organizational account where Teams is running and has been registered. You can still experience making a Teams app by using a testing account from [M365 Developer Program](https://developer.microsoft.com/en-us/microsoft-365/dev-program).",
             "learnMore": "Learn More"
         },
         "azureLogin": {
-            "warningMsg": "The Teams Toolkit requires an Azure account and subscription to deploy Azure resources for your application.",
+            "warningMsg": "The Teams Toolkit requires an Azure account and subscription to deploy the Azure resources for your project. You will not be charged without your further confirmation.",
             "unknownSubscription": "Cannot set subscription. Select a subscription that you have access to."
         },
         "common": {
@@ -84,7 +84,9 @@
             "confirm": "Confirm",
             "signout": "Sign out",
             "signOutOf": "Sign out of '%s'?",
-            "cancel": "Cancel"
+            "cancel": "Cancel",
+            "signin": "Sign in",
+            "readMore": "Read more"
         },
         "cacheAccess": {
             "readTokenFail": "read token fail: ",

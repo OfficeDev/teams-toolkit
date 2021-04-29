@@ -182,13 +182,23 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
 
   private async doesUserConfirmLogin(): Promise<boolean> {
     const warningMsg = StringResources.vsc.azureLogin.warningMsg;
-    const confirm = StringResources.vsc.common.confirm;
-    const userSelected: string | undefined = await vscode.window.showWarningMessage(
-      warningMsg,
-      { modal: true },
-      confirm
-    );
-    return Promise.resolve(userSelected === confirm);
+    const signin = StringResources.vsc.common.signin;
+    const readMore = StringResources.vsc.common.readMore;
+    const cancel = StringResources.vsc.common.cancel;
+    let userSelected: string | undefined;
+    do {
+      userSelected = await vscode.window.showInformationMessage(
+        warningMsg,
+        signin,
+        readMore,
+        cancel
+      );
+      if (userSelected === readMore) {
+        vscode.env.openExternal(vscode.Uri.parse("https://docs.microsoft.com/en-us/azure/cost-management-billing/manage/create-subscription"));
+      }
+    } while (userSelected === readMore);
+
+    return Promise.resolve(userSelected === signin);
   }
 
   private async doesUserConfirmSignout(): Promise<boolean> {

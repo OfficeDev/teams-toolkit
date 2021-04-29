@@ -518,7 +518,7 @@ class CoreImpl implements Core {
             };
 
             const signinM365Callback = async (): Promise<Result<null, FxError>> => {
-                const token = await this.ctx.appStudioToken?.getJsonObject(false);
+                const token = await this.ctx.appStudioToken?.getJsonObject(true);
                 if (token !== undefined) {
                     this.ctx.treeProvider?.refresh([
                         {
@@ -535,7 +535,7 @@ class CoreImpl implements Core {
             };
 
             const signinAzureCallback = async (validFxProject: boolean): Promise<Result<null, FxError>> => {
-                const token = await this.ctx.azureAccountProvider?.getAccountCredentialAsync(false);
+                const token = await this.ctx.azureAccountProvider?.getAccountCredentialAsync(true);
                 if (token !== undefined) {
                     this.ctx.treeProvider?.refresh([
                         {

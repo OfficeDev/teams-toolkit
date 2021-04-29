@@ -2,6 +2,8 @@
 // Licensed under the MIT license.
 "use strict";
 
+import { deprecate } from "node:util";
+
 /**
  * reference:
  * https://www.w3schools.com/html/html_form_input_types.asp
@@ -170,10 +172,12 @@ export interface BaseQuestion {
      * question title
      */
     title?: string;
+
     /**
      * @deprecated use `title` instead
      */
     description?: string;
+    
     /**
      * question answer value
      */
@@ -307,15 +311,15 @@ export interface NumberInputQuestion extends BaseQuestion {
     type: NodeType.number;
     value?: number;
     default?: number | Func;
-    placeholder?: string;
-    prompt?: string;
+    placeholder?: string | Func;
+    prompt?: string | Func;
     validation?: NumberValidation | RemoteFuncValidation | LocalFuncValidation;
 }
 
 export interface FileQuestion extends BaseQuestion {
     type: NodeType.file | NodeType.folder;
     value?: string;
-    default?: string;
+    default?: string | Func;
     validation?: FileValidation | StringValidation | RemoteFuncValidation | LocalFuncValidation;
 }
 

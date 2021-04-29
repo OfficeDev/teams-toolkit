@@ -106,7 +106,7 @@ type QuestionVistor = (
 ) => Promise<InputResult>;
  
 
-async function getCallFuncValue(inputs: Inputs | ConfigMap, throwError: boolean,  raw?: string | string[] | Func, remoteFuncExecutor?: RemoteFuncExecutor):Promise<unknown>{
+async function getCallFuncValue(inputs: Inputs | ConfigMap, throwError: boolean,  raw?: string | string[] | number | Func, remoteFuncExecutor?: RemoteFuncExecutor):Promise<unknown>{
   if(raw){
     if((raw as Func).method) {
       if(remoteFuncExecutor){
@@ -197,7 +197,7 @@ const questionVisitor: QuestionVistor = async function (
       const placeholder = await getCallFuncValue(inputs, false, selectQuestion.placeholder, remoteFuncExecutor) as string;
       const defaultValue = selectQuestion.value? selectQuestion.value : await getRealValue(parentValue, selectQuestion.default, inputs, remoteFuncExecutor);
       return await ui.showQuickPick({
-        title: selectQuestion.title!,
+        title: selectQuestion.title || selectQuestion.description || inputQuestion.name,
         items: res.options,
         canSelectMany: !!(type === NodeType.multiSelect),
         returnObject: selectQuestion.returnObject,
@@ -217,7 +217,7 @@ const questionVisitor: QuestionVistor = async function (
         canSelectFiles: false,
         canSelectFolders: true,
         canSelectMany: false,
-        title: fileQuestion.title!,
+        title: fileQuestion.title  || fileQuestion.description || inputQuestion.name,
         validation: validationFunc,
         backButton: backButton,
         // step: step,

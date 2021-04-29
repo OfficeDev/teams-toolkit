@@ -13,18 +13,21 @@ import {
   OptionItem,
   MultiSelectQuestion,
   FileQuestion,
-  NumberInputQuestion
+  NumberInputQuestion,
+  DynamicValue,
+  AnswerValue
 } from "./question";
 import { getValidationFunction, RemoteFuncExecutor, validate } from "./validation";
 import { ConfigMap, Inputs } from "../config";
 import { InputResult, InputResultType, UserInterface } from "./ui";
 import { returnSystemError, returnUserError } from "../error";
 import { operationOptionsToRequestOptionsBase } from "@azure/core-http";
+import { QuestionType } from "../utils";
 
 async function getRealValue(
   parentValue: unknown,
   defaultValue: unknown,
-  inputs: Inputs | ConfigMap,
+  inputs: ConfigMap,
   remoteFuncExecutor?: RemoteFuncExecutor
 ): Promise<unknown> {
   let output: unknown = defaultValue;
@@ -54,7 +57,7 @@ export function isAutoSkipSelect(q: Question): boolean {
   return false;
 }
 
-export async function loadOptions(q: Question, inputs: Inputs | ConfigMap, remoteFuncExecutor?: RemoteFuncExecutor): Promise<{autoSkip:boolean, options?: StaticOption}> {
+export async function loadOptions(q: Question, inputs: ConfigMap, remoteFuncExecutor?: RemoteFuncExecutor): Promise<{autoSkip:boolean, options?: StaticOption}> {
   if (q.type === NodeType.singleSelect || q.type === NodeType.multiSelect) {
     const selectQuestion = q as (SingleSelectQuestion | MultiSelectQuestion);
     let option: Option = [];
@@ -99,14 +102,14 @@ type QuestionVistor = (
   parentValue: unknown,
   ui: UserInterface,
   backButton: boolean,
-  inputs: Inputs | ConfigMap,
+  inputs: ConfigMap,
   remoteFuncExecutor?: RemoteFuncExecutor,
   step?: number,
   totalSteps?: number,
 ) => Promise<InputResult>;
  
 
-async function getCallFuncValue(inputs: Inputs | ConfigMap, throwError: boolean,  raw?: string | string[] | number | Func, remoteFuncExecutor?: RemoteFuncExecutor):Promise<unknown>{
+async function getCallFuncValue(inputs: ConfigMap, throwError: boolean,  raw?: string | string[] | number | DynamicValue<AnswerValue>, remoteFuncExecutor?: RemoteFuncExecutor):Promise<unknown>{
   if(raw){
     if((raw as Func).method) {
       if(remoteFuncExecutor){
@@ -118,6 +121,9 @@ async function getCallFuncValue(inputs: Inputs | ConfigMap, throwError: boolean,
           throw res.error;
         }
       }
+    }
+    else if(typeof raw === "function"){
+      return await raw(undefined, inputs);
     }
   }
   return raw;
@@ -134,14 +140,13 @@ const questionVisitor: QuestionVistor = async function (
   parentValue: unknown,
   ui: UserInterface,
   backButton: boolean,
-  inputs: Inputs | ConfigMap,
+  inputs: ConfigMap,
   remoteFuncExecutor?: RemoteFuncExecutor,
   step?: number,
   totalSteps?: number,
 ): Promise<InputResult> {
-  const type = question.type;
   //FunctionCallQuestion
-  if (type === NodeType.func) {
+  if (question.type === NodeType.func) {
     if (remoteFuncExecutor) {
       const res = await remoteFuncExecutor(question as Func, inputs);
       if (res.isOk()) {
@@ -151,26 +156,32 @@ const questionVisitor: QuestionVistor = async function (
         return { type: InputResultType.error, error: res.error };
       }
     }
-  } else {
-    if (type === NodeType.text || type === NodeType.password || type === NodeType.number) {
+  } 
+  else if(question.type === NodeType.localFunc){
+    const res = await question.func(undefined, inputs);
+    return { type: InputResultType.sucess, result: res };
+  }
+  else{
+    const title = await getCallFuncValue(inputs, false, question.title, remoteFuncExecutor) as string;
+    const defaultValue = question.value? question.value : await getRealValue(parentValue, question.default, inputs, remoteFuncExecutor);
+    if (question.type === NodeType.text || question.type === NodeType.password || question.type === NodeType.number) {
       const inputQuestion: TextInputQuestion | NumberInputQuestion = question as (TextInputQuestion | NumberInputQuestion);
       const validationFunc = inputQuestion.validation ? getValidationFunction(inputQuestion.validation, inputs, remoteFuncExecutor) : undefined;
       const placeholder = await getCallFuncValue(inputs, false, inputQuestion.placeholder, remoteFuncExecutor) as string;
       const prompt = await getCallFuncValue(inputs, false, inputQuestion.prompt, remoteFuncExecutor) as string;
-      const defaultValue = inputQuestion.value? inputQuestion.value : await getRealValue(parentValue, question.default, inputs, remoteFuncExecutor);
       return await ui.showInputBox({
-        title: inputQuestion.title || inputQuestion.description || inputQuestion.name,
-        password: !!(type === NodeType.password),
+        title: title,
+        password: !!(question.type === NodeType.password),
         defaultValue: defaultValue as string,
         placeholder: placeholder,
         prompt: prompt,
         validation: validationFunc,
         backButton: backButton,
-        number: !!(type === NodeType.number),
+        number: !!(question.type === NodeType.number),
         // step: step,
         // totalSteps: totalSteps
       });
-    } else if (type === NodeType.singleSelect || type === NodeType.multiSelect) {
+    } else if (question.type === NodeType.singleSelect || question.type === NodeType.multiSelect) {
       const selectQuestion: SingleSelectQuestion | MultiSelectQuestion = question as
         | SingleSelectQuestion
         | MultiSelectQuestion;
@@ -185,7 +196,6 @@ const questionVisitor: QuestionVistor = async function (
           )
         };
       }
-
       // Skip single/mulitple option select
       if (res.autoSkip === true) {
         const returnResult = getSingleOption(selectQuestion, res.options);
@@ -195,29 +205,30 @@ const questionVisitor: QuestionVistor = async function (
         };
       }
       const placeholder = await getCallFuncValue(inputs, false, selectQuestion.placeholder, remoteFuncExecutor) as string;
-      const defaultValue = selectQuestion.value? selectQuestion.value : await getRealValue(parentValue, selectQuestion.default, inputs, remoteFuncExecutor);
+      const mq = (selectQuestion as MultiSelectQuestion);
+      const validationFunc = mq.validation ? getValidationFunction( mq.validation, inputs, remoteFuncExecutor) : undefined;
       return await ui.showQuickPick({
-        title: selectQuestion.title || selectQuestion.description || selectQuestion.name,
+        title: title,
         items: res.options,
-        canSelectMany: !!(type === NodeType.multiSelect),
+        canSelectMany: !!(question.type === NodeType.multiSelect),
         returnObject: selectQuestion.returnObject,
         defaultValue: defaultValue as (string | string[]),
         placeholder: placeholder,
         backButton: backButton,
-        onDidChangeSelection: type === NodeType.multiSelect ? (selectQuestion as MultiSelectQuestion).onDidChangeSelection : undefined,
+        onDidChangeSelection: question.type === NodeType.multiSelect ? mq.onDidChangeSelection : undefined,
+        validation: validationFunc,
         // step: step,
         // totalSteps: totalSteps
       });
-    } else if (type === NodeType.folder) {
+    } else if (question.type === NodeType.folder) {
       const fileQuestion: FileQuestion = question as FileQuestion;
       const validationFunc = fileQuestion.validation ? getValidationFunction(fileQuestion.validation, inputs, remoteFuncExecutor) : undefined;
-      const defaultValue = fileQuestion.value? fileQuestion.value : await getRealValue(parentValue, fileQuestion.default, inputs, remoteFuncExecutor);
       return await ui.showOpenDialog({
-        defaultUri: fileQuestion.value || defaultValue as string | undefined,
+        defaultUri: defaultValue as string,
         canSelectFiles: false,
         canSelectFolders: true,
         canSelectMany: false,
-        title: fileQuestion.title  || fileQuestion.description || fileQuestion.name,
+        title: title,
         validation: validationFunc,
         backButton: backButton,
         // step: step,
@@ -237,7 +248,7 @@ const questionVisitor: QuestionVistor = async function (
 
 export async function traverse(
   root: QTreeNode,
-  inputs: Inputs | ConfigMap,
+  inputs: ConfigMap,
   ui: UserInterface,
   remoteFuncExecutor?: RemoteFuncExecutor
 ): Promise<InputResult> {

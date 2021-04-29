@@ -3,6 +3,7 @@
 "use strict";
 
 import { deprecate } from "node:util";
+import { ConfigMap, Inputs } from "../config";
 
 /**
  * reference:
@@ -19,9 +20,12 @@ export enum NodeType {
     folder = "folder",
     group = "group",
     func = "func",
+    localFunc = "localFunc",
 }
 
 export type AnswerValue = string | string[] | number | OptionItem | OptionItem[] | undefined | unknown;
+
+export type KnownAnswerValue = string | string[] | number | OptionItem | OptionItem[] | undefined;
 
 export interface FunctionRouter{
     namespace:string,
@@ -34,6 +38,10 @@ export interface Func extends FunctionRouter{
      */
     params?: unknown;
 }
+
+export type LocalFunc<T> = (currentInput?: string, previousAnswers?: ConfigMap) => T | Promise< T >;
+
+export type DynamicValue<T> = Func | LocalFunc<T>;
 
 export interface OptionItem {
     /**
@@ -72,7 +80,7 @@ export type StaticOption = string[] | OptionItem[];
 /**
  * dynamic option is defined by a remote function call
  */
-export type DymanicOption = Func;
+export type DymanicOption = DynamicValue<StaticOption>;
 
 
 /**
@@ -143,13 +151,15 @@ export interface FileValidation extends AnyValidation {
 /**
  * The validation is checked in a remote function call
  */
-export interface RemoteFuncValidation extends Func, AnyValidation {}
+export interface RemoteFuncValidation extends Func, AnyValidation{
+
+}
 
 /**
  * The validation is checked by a validFunc provided by user
  */
-export interface LocalFuncValidation extends AnyValidation {
-    validFunc?: (input: string) => string | undefined | Promise<string | undefined>;
+export interface LocalFuncValidation extends AnyValidation{
+    validFunc?: (input:string)=>string|undefined|Promise<string|undefined>;
 }
 
 export type Validation =
@@ -168,24 +178,20 @@ export interface BaseQuestion {
      * question identifier
      */
     name: string;
+
+    value?: AnswerValue;
+
+    title?: string | DynamicValue<string| undefined>;
+
     /**
-     * question title
+     * default value for question
      */
-    title?: string;
+    default?: string | string[] | number | DynamicValue<string | string[] | number | undefined>;
 
     /**
      * @deprecated use `title` instead
      */
-    description?: string;
-    
-    /**
-     * question answer value
-     */
-    value?: AnswerValue;
-    /**
-     * default value for question
-     */
-    default?: string | string[] | number | Func;
+     description?: string;
 }
 
 export interface SingleSelectQuestion extends BaseQuestion {
@@ -205,12 +211,12 @@ export interface SingleSelectQuestion extends BaseQuestion {
     /**
      * The default selected `id` value of the option item
      */
-    default?: string | Func;
+    default?: string | DynamicValue<string|undefined>;
     
     /**
      * placeholder text
      */
-    placeholder?: string | Func;
+    placeholder?: string | DynamicValue<string|undefined>;
     
     /**
      * whether the answer return the original `OptionItem` object.
@@ -244,12 +250,12 @@ export interface MultiSelectQuestion extends BaseQuestion {
     /**
      * The default selected `id` array of the option item
      */
-    default?: string[] | Func;
+    default?: string[] | DynamicValue<string|undefined>;
 
     /**
      * placeholder text
      */
-    placeholder?: string;
+    placeholder?: string | DynamicValue<string|undefined>;
 
     /**
      * whether the answer return the original `OptionItem` object array.
@@ -272,6 +278,8 @@ export interface MultiSelectQuestion extends BaseQuestion {
      * @returns: the new selected `id` array
      */
     onDidChangeSelection?: (currentSelectedItems: OptionItem[], previousSelectedItems: OptionItem[]) => Promise<string[]>;
+
+    validation?: StringArrayValidation | RemoteFuncValidation | LocalFuncValidation;
 }
 
 export interface TextInputQuestion extends BaseQuestion {
@@ -282,17 +290,17 @@ export interface TextInputQuestion extends BaseQuestion {
     /**
      * default value can be static string or dynamic string returned by function call
      */
-    default?: string | Func;
+    default?: string | DynamicValue<string|undefined>;
 
     /**
      * placeholder text
      */
-    placeholder?: string | Func;
+    placeholder?: string | DynamicValue<string|undefined>;
 
     /**
      * prompt text
      */
-    prompt?: string | Func;
+    prompt?: string | DynamicValue<string|undefined>;
 
     /**
      * validation property:
@@ -310,16 +318,16 @@ export interface TextInputQuestion extends BaseQuestion {
 export interface NumberInputQuestion extends BaseQuestion {
     type: NodeType.number;
     value?: number;
-    default?: number | Func;
-    placeholder?: string | Func;
-    prompt?: string | Func;
+    default?: number | DynamicValue<number|undefined>;
+    placeholder?: string | DynamicValue<string|undefined>;
+    prompt?: string | DynamicValue<string|undefined>;
     validation?: NumberValidation | RemoteFuncValidation | LocalFuncValidation;
 }
 
 export interface FileQuestion extends BaseQuestion {
     type: NodeType.file | NodeType.folder;
     value?: string;
-    default?: string | Func;
+    default?: string | DynamicValue<string|undefined>;
     validation?: FileValidation | StringValidation | RemoteFuncValidation | LocalFuncValidation;
 }
 
@@ -328,14 +336,18 @@ export interface FileQuestion extends BaseQuestion {
  * `FuncQuestion` will not show any UI, but load some dynamic data in the question flow；
  * The dynamic data can be refered by the child question in condition check or default value.
  */
-export interface FuncQuestion extends BaseQuestion, Func {
+export interface FuncQuestion extends Func, BaseQuestion {
     type: NodeType.func;
+}
+
+export interface LocalFuncQuestion extends BaseQuestion{
+    type: NodeType.localFunc;
+    func: LocalFunc<AnswerValue>;
 }
 
 export interface Group {
     type: NodeType.group;
     name?: string; //group name
-    description?: string; // description
 }
 
 export type Question =
@@ -344,6 +356,7 @@ export type Question =
     | TextInputQuestion
     | NumberInputQuestion
     | FuncQuestion
+    | LocalFuncQuestion
     | FileQuestion;
 
 

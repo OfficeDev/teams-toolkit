@@ -88,7 +88,7 @@ export async function validateAndUpdateAnswers(
       }
       
       // if the option is the object, need to find the object first.
-      if (typeof option[0] !== "string") {
+      if (typeof option !== "function" && typeof option[0] !== "string") {
         // for multi-select question
         if (ans instanceof Array) {
           const items = [];
@@ -218,7 +218,7 @@ export async function visitInteractively(
 }
 
 export function toInquirerQuestion(data: Question, answers: { [_: string]: any }, remoteFuncValidator?: RemoteFuncExecutor): DistinctQuestion {
-  let type: "input" | "number" | "password" | "list" | "checkbox";
+  let type: "input" | "number" | "password" | "list" | "checkbox" = "input";
   let defaultValue = data.default;
   switch (data.type) {
     case NodeType.file:
@@ -246,7 +246,7 @@ export function toInquirerQuestion(data: Question, answers: { [_: string]: any }
   return {
     type,
     name: data.name,
-    message: data.description || data.title || "",
+    message: data.description || data.title as string || "",
     choices: getChoicesFromQTNodeQuestion(data, true),
     default: defaultValue,
     validate: async (input: any) => {

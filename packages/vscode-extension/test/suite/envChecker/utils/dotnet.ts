@@ -4,11 +4,16 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as os from "os";
+import * as tmp from "tmp";
+
 import { ConfigFolderName } from "fx-api";
 import { cpUtils } from "../../../../src/debug/depsChecker/cpUtils";
 import { logger } from "../adapters/testLogger";
+import { DotnetChecker, DotnetVersion } from "../../../../src/debug/depsChecker/dotnetChecker";
 
 const find = require("find-process");
+
+tmp.setGracefulCleanup();
 
 export const dotnetConfigPath = path.join(os.homedir(), "." + ConfigFolderName, "dotnet.json");
 export const dotnetPrivateInstallPath = path.join(
@@ -18,9 +23,9 @@ export const dotnetPrivateInstallPath = path.join(
   "dotnet"
 );
 export const dotnetCommand = "dotnet";
-export const dotnetOldVersion = "2.1";
-export const dotnetInstallVersion = "3.1";
-export const dotnetSupportedVersions = ["3.1", "5.0"];
+export const dotnetOldVersion = DotnetVersion.v21;
+export const dotnetInstallVersion = DotnetVersion.v31;
+export const dotnetSupportedVersions = [DotnetVersion.v31, DotnetVersion.v50];
 
 export async function getDotnetExecPathFromConfig(
   dotnetConfigPath: string
@@ -72,4 +77,28 @@ export async function cleanup() {
     process.kill(p.pid, "SIGKILL")
   );
   await fs.remove(dotnetPrivateInstallPath);
+}
+
+export async function withDotnet(dotnetChecker: DotnetChecker, version: DotnetVersion, callback: (dotnetExecPath: string) => Promise<void>): Promise<void> {
+  const withDotnetAsync = async (installDir: string) => {
+        // use private method as a helper method in test only
+        await dotnetChecker['runDotnetInstallScript'](version, installDir);
+        const dotnetExecPath = DotnetChecker['getDotnetExecPathFromDotnetInstallationDir'](installDir);
+        await callback(dotnetExecPath);
+  };
+
+  return new Promise((resolve, reject) => {
+    // unsafeCleanup: recursively removes the created temporary directory, even when it's not empty.
+    tmp.dir({unsafeCleanup: true}, function(err, path, cleanupCallback) {
+      if (err) {
+        reject(new Error(`Failed to create tmpdir, error = '${err}'`))
+        return;
+      }
+
+      withDotnetAsync(path)
+        .then(() => resolve())
+        .catch((error) => reject(error))
+        .finally(() => cleanupCallback());
+    });
+  });
 }

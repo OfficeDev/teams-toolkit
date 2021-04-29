@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import * as chai from "chai";
-import * as fs from "fs-extra";
+import * as path from "path";
 
 import * as dotnetUtils from "../utils/dotnet";
 import { isWindows, isLinux } from "../../../../src/debug/depsChecker/common";
@@ -175,36 +175,36 @@ suite("DotnetChecker E2E Test - first run", async () => {
   });
 
   test(".NET SDK installation failure and manually install", async function (this: Mocha.Context) {
-    if (isLinux() || await commandExistsInPath(dotnetUtils.dotnetCommand)) {
+    if (await commandExistsInPath(dotnetUtils.dotnetCommand)) {
       this.skip();
     }
 
-    const [checker, dotnetChecker] = createTestChecker(true, false, true, true, true, new CustomDotnetInstallScript(true, 1));
+    // DotnetChecker with mock dotnet-install script
+    const [mockChecker, mockDotnetChecker] = createTestChecker(true, false, true, true, true, new CustomDotnetInstallScript(true, 1, "mock dotnet installing", "mock dotnet install failure"));
 
-    const shouldContinue = await checker.resolve();
+    const shouldContinue = await mockChecker.resolve();
     const dotnetExecPathFromConfig = await dotnetUtils.getDotnetExecPathFromConfig(
       dotnetUtils.dotnetConfigPath
     );
 
-    const dotnetExecPath = await dotnetChecker.getDotnetExecPath();
+    const dotnetExecPath = await mockDotnetChecker.getDotnetExecPath();
 
     chai.assert.isFalse(shouldContinue);
     chai.assert.isNull(dotnetExecPathFromConfig);
     chai.assert.equal(dotnetExecPath, dotnetUtils.dotnetCommand);
 
+    // DotnetChecker with correct dotnet-install script
+    const [checker, dotnetChecker] = createTestChecker(true);
+
     // user manually install
     await dotnetUtils.withDotnet(dotnetChecker, DotnetVersion.v31, async (installedDotnetExecPath: string) => {
-      // TODO: maybe manipulate current process PATH to test the case that user installs globally.
-      // But changing process.env.PATH does not work. DotnetChecker still cannot run `dotnet` command.
-      // So write `dotnetExecPath` to the config file currently.
-      fs.writeJson(dotnetUtils.dotnetConfigPath, JSON.stringify({dotnetExecutablePath: installedDotnetExecPath}));
+      process.env.PATH = path.resolve(installedDotnetExecPath, "..") + (isWindows() ? ';' : ':') + process.env.PATH;
 
       // pre-check installed dotnet works
       chai.assert.isTrue(
         await dotnetUtils.hasDotnetVersion(installedDotnetExecPath, dotnetUtils.dotnetInstallVersion)
       );
       
-      const [checker, dotnetChecker] = createTestChecker(true);
       const shouldContinue = await checker.resolve();
       const dotnetExecPath = await dotnetChecker.getDotnetExecPath();
 

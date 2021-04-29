@@ -25,7 +25,7 @@ export class CustomDotnetInstallScript {
       process.env["ENV_CHECKER_CUSTOM_SCRIPT_STDOUT"] = this._scriptStdout;
       process.env["ENV_CHECKER_CUSTOM_SCRIPT_STDERR"] = this._scriptStderr;
       process.env["ENV_CHECKER_CUSTOM_SCRIPT_EXITCODE"] = this._scriptExitCode.toString();
-      return path.resolve(__dirname, "../scripts");
+      return path.resolve(__dirname, "../resource");
     } else {
       return path.resolve(__dirname, "../../../../src/debug/depsChecker/resource");
     }

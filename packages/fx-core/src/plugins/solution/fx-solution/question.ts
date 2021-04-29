@@ -72,7 +72,8 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
         title: "Select capabilities",
         type: NodeType.multiSelect,
         option: [TabOptionItem, BotOptionItem, MessageExtensionItem],
-        default: [TabOptionItem.id]
+        default: [TabOptionItem.id],
+        placeholder: "Select minimum 1 capability to start with."
     };
 }
 
@@ -82,6 +83,7 @@ export const FrontendHostTypeQuestion: SingleSelectQuestion = {
     type: NodeType.singleSelect,
     option: {namespace: "fx-solution-azure", method : "listHostTypeOptions"},
     default: HostTypeOptionAzure.id,
+    placeholder: "Select front-end hostying type.",
     skipSingleOption: true
 };
 
@@ -97,7 +99,8 @@ export const AzureResourcesQuestion: MultiSelectQuestion = {
             return [AzureResourceSQL.id, AzureResourceFunction.id];
         }
         return selectedItems.map(i=>i.id);
-    }
+    },
+    placeholder: "Select cloud resources (optional)."
 };
 
 export function createAddAzureResourceQuestion(alreadyHaveFunction: boolean, alreadhHaveSQL: boolean, alreadyHaveAPIM: boolean): MultiSelectQuestion {
@@ -162,5 +165,6 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
     type: NodeType.singleSelect,
     option: {namespace:"fx-solution-azure", method: "listLanguageOptions"},
     default: "javascript",
-    skipSingleOption: true
+    skipSingleOption: true,
+	placeholder: "Select a programming language."
 };

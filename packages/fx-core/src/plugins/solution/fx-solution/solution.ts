@@ -1489,7 +1489,7 @@ export class TeamsAppSolution implements Solution {
         const webApplicationInfoResource = config.get(this.aadPlugin.name)?.getString(localDebug ? LOCAL_WEB_APPLICATION_INFO_SOURCE : WEB_APPLICATION_INFO_SOURCE);
         if (!webApplicationInfoResource) {
             return err(returnSystemError(
-                new Error("Failed to get webApplicationInfoResource"), 
+                new Error("Failed to get webApplicationInfoResource, make sure you do the provision first."), 
                 "Solution", 
                 localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError));
         }

@@ -188,7 +188,7 @@ export class VsCodeUI implements UserInterface{
       if (option.backButton) inputBox.buttons = [QuickInputButtons.Back, okButton];
       else inputBox.buttons = [okButton];
       inputBox.value = option.defaultValue || "";
-      inputBox.ignoreFocusOut = true;
+      inputBox.ignoreFocusOut = false;
       inputBox.password = option.password;
       inputBox.placeholder = option.placeholder;
       inputBox.prompt = option.prompt;

@@ -10,15 +10,11 @@ import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import * as arm from "azure-arm-resource";
 import dotenv from "dotenv";
-import fs from "fs-extra";
 import * as msRestAzure from "ms-rest-azure";
-import path from "path";
 
-import { Result, err, ok } from "neverthrow";
-import { FxError, returnUserError } from "../error";
+import { returnUserError } from "../error";
 import { AzureAccountProvider, SubscriptionInfo } from "../utils/login";
 import * as azureConfig from "./conf/azure";
-import { ConfigFolderName } from "../constants";
 
 dotenv.config();
 
@@ -116,50 +112,6 @@ export class MockAzureAccountProvider implements AzureAccountProvider {
         });
     }
 
-    async getSubscriptionList(azureToken: TokenCredentialsBase): Promise<AzureSubscription[]> {
-        const client = new SubscriptionClient(azureToken);
-        const subscriptions = await listAll(client.subscriptions, client.subscriptions.list());
-        const subs: Partial<AzureSubscription>[] = subscriptions.map((sub) => {
-            return { displayName: sub.displayName, subscriptionId: sub.subscriptionId };
-        });
-        const filteredSubs = subs.filter(
-            (sub) => sub.displayName !== undefined && sub.subscriptionId !== undefined
-        );
-        return filteredSubs.map((sub) => {
-            return { displayName: sub.displayName!, subscriptionId: sub.subscriptionId! };
-        });
-    }
-  
-    public async setSubscriptionId(
-      subscriptionId: string,
-      root_folder = "./"
-    ): Promise<Result<null, FxError>> {
-        const token = await this.getAccountCredentialAsync();
-        const subscriptions = await this.getSubscriptionList(token!);
-    
-        if (subscriptions.findIndex((sub) => sub.subscriptionId === subscriptionId) < 0) {
-            return err(returnUserError(
-                new Error(`Inputed subscription not found in your tenant`),
-                "CI",
-                "NotFoundSubscriptionId"
-            ));
-        }
-    
-        const configPath = path.resolve(root_folder, `.${ConfigFolderName}/env.default.json`);
-        if (!(await fs.pathExists(configPath))) {
-            return err(returnUserError(
-                new Error(`Project type not supported`),
-                "CI",
-                "NotSupportedProjectType"
-            ));
-        }
-        const configJson = await fs.readJson(configPath);
-        configJson["solution"].subscriptionId = subscriptionId;
-        await fs.writeFile(configPath, JSON.stringify(configJson, null, 4));
-    
-        return ok(null);
-    }
-
     setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean> {
         throw new Error("Method not implemented.");
     }
@@ -169,11 +121,35 @@ export class MockAzureAccountProvider implements AzureAccountProvider {
     getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined> {
         throw new Error("Method not implemented.");
     }
-    listSubscriptions(): Promise<SubscriptionInfo[]> {
-        throw new Error("Method not implemented.");
+
+    async listSubscriptions(): Promise<SubscriptionInfo[]> {
+        const credential = await this.getAccountCredentialAsync();
+        if (credential) {
+            const client = new SubscriptionClient(credential);
+            const subscriptions = await listAll(client.subscriptions, client.subscriptions.list());
+            const filteredsubs = subscriptions.filter(
+                sub => !!sub.displayName && !!sub.subscriptionId
+            )
+            return filteredsubs.map(sub => {
+                return { subscriptionName: sub.displayName!, subscriptionId: sub.subscriptionId!, tenantId: "undefined" };
+            });
+        }
+        return [];
     }
-    setSubscription(subscriptionId: string): Promise<void> {
-        throw new Error("Method not implemented.");
+    
+    async setSubscription(subscriptionId: string): Promise<void> {
+        const list = await this.listSubscriptions();
+        for (let i=0;i<list.length;++i) {
+            const item = list[i];
+            if (item.subscriptionId==subscriptionId) {
+                return;
+            }
+        }
+        throw returnUserError(
+            new Error(`Inputed subscription not found in your tenant`),
+            "CI",
+            "NotFoundSubscriptionId"
+        );
     }
 }
   

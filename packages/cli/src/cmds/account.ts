@@ -13,7 +13,7 @@ import AppStudioTokenProvider from "../commonlib/appStudioLogin";
 import AzureTokenProvider from "../commonlib/azureLogin";
 import CLILogProvider from "../commonlib/log";
 import * as constants from "../constants";
-import { toYargsOptions } from "../utils";
+import { setSubscriptionId, toYargsOptions } from "../utils";
 
 class LoginAccount extends YargsCommand {
   public readonly commandHead = `login`;
@@ -35,7 +35,7 @@ class LoginAccount extends YargsCommand {
         if (result) {
           console.log(colors.green(`[${constants.cliSource}] Sign in Azure successfully. Your account username is ${colors.yellow((result as any).username)}.`));
           console.log(colors.green(`[${constants.cliSource}] Your subscriptons are:`));
-          const subscriptions = await AzureTokenProvider.getSubscriptionList(result);
+          const subscriptions = await AzureTokenProvider.listSubscriptions();
           console.log(subscriptions);
         } else {
           CLILogProvider.error(`[${constants.cliSource}] Sign in Azure failed.`);
@@ -109,10 +109,7 @@ class SetAccount extends YargsCommand {
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    if ("subscription" in args && !!args.subscription) {
-      return AzureTokenProvider.setSubscriptionId(args.subscription, args.folder);
-    }
-    return ok(null);
+    return setSubscriptionId(args.subscription, args.folder);
   }
 }
 

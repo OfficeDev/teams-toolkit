@@ -220,7 +220,7 @@ export class DotnetChecker implements IDepsChecker {
       '-ExecutionPolicy',
       'unrestricted',
       '-Command',
-      '& { [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12 ; & ${installCommand} }'
+      '"& { [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12 ; & ${installCommand} }'
     ];
 
     const command = isWindows() ? windowsFullCommand : installCommand;

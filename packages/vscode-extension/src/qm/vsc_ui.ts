@@ -319,9 +319,21 @@ export class VsCodeUI implements UserInterface{
             disposables.push(
               quickPick.onDidChangeSelection(onDidChangeSelection)
             );
-           
-
             quickPick.show();
+
+            const defaultUrl = items[0].detail;
+            const uri = await window.showOpenDialog({
+              defaultUri: defaultUrl ? Uri.file(defaultUrl) : undefined,
+              canSelectFiles: false,
+              canSelectFolders: true,
+              canSelectMany: false,
+              title: option.title
+            });
+            const res = uri && uri.length > 0 ? uri[0].fsPath : undefined;
+            if (res) {
+              quickPick.items = [{label: "path", detail: res}];
+              resolve({ type: InputResultType.sucess, result: res });
+            }
           } catch (err) {
             resolve({
               type: InputResultType.error,

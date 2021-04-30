@@ -58,7 +58,7 @@ export class SpfxPlugin implements Plugin {
       const spfx_webpart_name = new QTreeNode({
         type: NodeType.text,
         name: SPFXQuestionNames.webpart_name,
-        title: "Webpart Name",
+        title: "Web Part Name",
         default: "helloworld",
         validation: {
           pattern: "^[a-zA-Z_][a-zA-Z0-9_]*$",
@@ -69,7 +69,7 @@ export class SpfxPlugin implements Plugin {
       const spfx_webpart_desp = new QTreeNode({
         type: NodeType.text,
         name: SPFXQuestionNames.webpart_desp,
-        title: "Webpart Description",
+        title: "Web Part Description",
         default: "helloworld description",
         validation: {
           required: true,

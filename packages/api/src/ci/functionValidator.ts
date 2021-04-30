@@ -7,10 +7,12 @@ import { MockAzureAccountProvider } from "./mockAzureAccountProvider";
 
 const baseUrlAppSettings = (subscriptionId: string, rg: string, name: string) =>
     `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.Web/sites/${name}/config/appsettings/list?api-version=2019-08-01`;
-const baseUrlFunctionList = (subscriptionId: string, rg: string, name: string) =>
-    `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.Web/sites/${name}/functions?api-version=2019-08-01`;
 const baseUrlPlan = (subscriptionId: string, rg: string, name: string) =>
     `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.Web/serverfarms/${name}?api-version=2019-08-01`;
+const baseUrlListDeployments = (subscriptionId: string, rg: string, name: string) =>
+    `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.Web/sites/${name}/deployments?api-version=2019-08-01`;
+const baseUrlListDeploymentLogs = (subscriptionId: string, rg: string, name: string, id: string) =>
+    `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.Web/sites/${name}/deployments/${id}/log?api-version=2019-08-01`;
 
 enum BaseConfig {
     M365_CLIENT_ID = "M365_CLIENT_ID",
@@ -93,7 +95,7 @@ export class FunctionValidator {
         return functionObject;
     }
 
-    public static async validateProvision(functionObject: IFunctionObject, sqlEnabled: boolean = true) {
+    public static async validateProvision(functionObject: IFunctionObject, sqlEnabled = true) {
         console.log("Start to validate Function Provision.");
 
         const tokenProvider: MockAzureAccountProvider = MockAzureAccountProvider.getInstance();
@@ -143,28 +145,37 @@ export class FunctionValidator {
         console.log("Successfully validate Function Provision.");
     }
 
-    public static async validateDeploy(functionObject: IFunctionObject, list: string[]) {
+    public static async validateDeploy(functionObject: IFunctionObject) {
         console.log("Start to validate Function Deployment.");
 
         const tokenProvider: MockAzureAccountProvider = MockAzureAccountProvider.getInstance();
         const tokenCredential = await tokenProvider.getAccountCredentialAsync();
         const token = (await tokenCredential?.getToken())?.accessToken;
 
-        console.log("Validating function list.");
+        const deployments = await this.getDeployments(this.subscriptionId, this.rg, functionObject.functionAppName, token as string);
+        const deploymentId = deployments?.[0]?.properties?.id;
+        const deploymentLog = await this.getDeploymentLog(this.subscriptionId, this.rg, functionObject.functionAppName, token as string, deploymentId!);
 
-        // TODO: the validation is not stable, it may return undefined if function has no enough time to refresh.
-        const response = await this.getFunctionList(this.subscriptionId, this.rg, functionObject.functionAppName, token as string);
-        list.forEach((v: string) => {
-            // chai.assert.exists(response.find((fv: any) => fv.name === functionObject.functionAppName + '/' + v));
-        });
-
+        chai.assert.exists(deploymentLog?.find((item: any) => item.properties.message === "Deployment successful."));
         console.log("Successfully validate Function Deployment.");
     }
 
-    private static async getFunctionList(subscriptionId: string, rg: string, name: string, token: string) {
+    private static async getDeployments(subscriptionId: string, rg: string, name: string, token: string) {
         try {
             axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-            const functionGetResponse = await axios.get(baseUrlFunctionList(subscriptionId, rg, name));
+            const functionGetResponse = await axios.get(baseUrlListDeployments(subscriptionId, rg, name));
+
+            return functionGetResponse?.data?.value;
+        } catch (error) {
+            console.log(error);
+            return undefined;
+        }
+    }
+
+    private static async getDeploymentLog(subscriptionId: string, rg: string, name: string, token: string, id: string) {
+        try {
+            axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+            const functionGetResponse = await axios.get(baseUrlListDeploymentLogs(subscriptionId, rg, name, id));
 
             return functionGetResponse?.data?.value;
         } catch (error) {

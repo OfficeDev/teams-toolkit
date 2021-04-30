@@ -3,6 +3,8 @@
 
 import * as chai from "chai";
 import * as path from "path";
+import * as fs from "fs-extra";
+import * as os from "os";
 
 import * as dotnetUtils from "../utils/dotnet";
 import { isWindows, isLinux } from "../../../../src/debug/depsChecker/common";
@@ -65,6 +67,24 @@ suite("DotnetChecker E2E Test - first run", async () => {
         await dotnetUtils.hasDotnetVersion(dotnetExecPath!, dotnetUtils.dotnetInstallVersion)
       );
     }
+  });
+
+  test(".NET SDK is not installed and the user clicks cancel on Linux", async function(this: Mocha.Context) {
+    if (!(isLinux() && !(await commandExistsInPath(dotnetUtils.dotnetCommand)))) {
+      this.skip();
+    }
+
+    const [checker, dotnetChecker] = createTestChecker(true, true);
+
+    const shouldContinue = await checker.resolve();
+    const dotnetExecPathFromConfig = await dotnetUtils.getDotnetExecPathFromConfig(
+      dotnetUtils.dotnetConfigPath
+    );
+    const dotnetExecPath = await dotnetChecker.getDotnetExecPath();
+
+    chai.assert.isFalse(shouldContinue);
+    chai.assert.isNull(dotnetExecPathFromConfig);
+    chai.assert.equal(dotnetExecPath, dotnetUtils.dotnetCommand);
   });
 
   test(".NET SDK supported version is installed globally", async function(this: Mocha.Context) {
@@ -174,7 +194,7 @@ suite("DotnetChecker E2E Test - first run", async () => {
   });
 
   test(".NET SDK installation failure and manually install", async function(this: Mocha.Context) {
-    if ((isLinux()) || await commandExistsInPath(dotnetUtils.dotnetCommand)) {
+    if (isLinux() || (await commandExistsInPath(dotnetUtils.dotnetCommand))) {
       this.skip();
     }
 
@@ -211,12 +231,8 @@ suite("DotnetChecker E2E Test - first run", async () => {
     await dotnetUtils.withDotnet(
       dotnetChecker,
       DotnetVersion.v31,
+      true,
       async (installedDotnetExecPath: string) => {
-        process.env.PATH =
-          path.resolve(installedDotnetExecPath, "..") +
-          (isWindows() ? ";" : ":") +
-          process.env.PATH;
-
         // pre-check installed dotnet works
         chai.assert.isTrue(
           await dotnetUtils.hasDotnetVersion(
@@ -250,10 +266,122 @@ suite("DotnetChecker E2E Test - second run", () => {
     // cleanup to make sure the environment is clean before test
   });
 
-  test("Valid dotnet.json file", async function(this: Mocha.Context) {});
+  test("Valid dotnet.json file", async function(this: Mocha.Context) {
+    if (await commandExistsInPath(dotnetUtils.dotnetCommand)) {
+      this.skip();
+    }
 
-  test("Invalid dotnet.json file", async function(this: Mocha.Context) {
-    // TODO: implement me
+    const [checker, dotnetChecker] = createTestChecker(true);
+    await dotnetUtils.withDotnet(
+      dotnetChecker,
+      DotnetVersion.v31,
+      false,
+      async (installedDotnetExecPath: string) => {
+        // pre-check installed dotnet works
+        chai.assert.isTrue(
+          await dotnetUtils.hasDotnetVersion(
+            installedDotnetExecPath,
+            dotnetUtils.dotnetInstallVersion
+          )
+        );
+
+        // setup config file
+        await fs.writeJson(
+          dotnetUtils.dotnetConfigPath,
+          { dotnetExecutablePath: installedDotnetExecPath },
+          {
+            encoding: "utf-8",
+            spaces: 4,
+            EOL: os.EOL
+          }
+        );
+
+        const shouldContinue = await checker.resolve();
+        const dotnetExecPath = await dotnetChecker.getDotnetExecPath();
+
+        chai.assert.isTrue(shouldContinue);
+        assertPathEqual(dotnetExecPath, installedDotnetExecPath);
+
+        chai.assert.isTrue(
+          await dotnetUtils.hasDotnetVersion(dotnetExecPath, dotnetUtils.dotnetInstallVersion)
+        );
+      }
+    );
+  });
+
+  test("Invalid dotnet.json file and .NET SDK not installed", async function(this: Mocha.Context) {
+    if (await commandExistsInPath(dotnetUtils.dotnetCommand)) {
+      this.skip();
+    }
+
+    const invalidPath = "/this/path/does/not/exist";
+
+    // setup config file
+    await fs.writeJson(
+      dotnetUtils.dotnetConfigPath,
+      { dotnetExecutablePath: invalidPath },
+      {
+        encoding: "utf-8",
+        spaces: 4,
+        EOL: os.EOL
+      }
+    );
+
+    const [checker, dotnetChecker] = createTestChecker(true);
+    const shouldContinue = await checker.resolve();
+    const dotnetExecPath = await dotnetChecker.getDotnetExecPath();
+
+    chai.assert.isTrue(shouldContinue);
+    if (isLinux()) {
+      // Don't use assertPathEqual because this path does not exist
+      chai.assert.equal(dotnetExecPath, invalidPath);
+    } else {
+      chai.assert.isNotNull(dotnetExecPath);
+      chai.assert.isTrue(
+        await dotnetUtils.hasDotnetVersion(dotnetExecPath, dotnetUtils.dotnetInstallVersion)
+      );
+    }
+  });
+
+  test("Invalid dotnet.json file and .NET SDK installed", async function(this: Mocha.Context) {
+    if (await commandExistsInPath(dotnetUtils.dotnetCommand)) {
+      this.skip();
+    }
+
+    const [checker, dotnetChecker] = createTestChecker(true);
+
+    await dotnetUtils.withDotnet(
+      dotnetChecker,
+      DotnetVersion.v31,
+      true,
+      async (installedDotnetExecPath: string) => {
+        const invalidPath = "/this/path/does/not/exist";
+        // setup config file
+        await fs.writeJson(
+          dotnetUtils.dotnetConfigPath,
+          { dotnetExecutablePath: invalidPath },
+          {
+            encoding: "utf-8",
+            spaces: 4,
+            EOL: os.EOL
+          }
+        );
+
+        const shouldContinue = await checker.resolve();
+        const dotnetExecPath = await dotnetChecker.getDotnetExecPath();
+        const dotnetExecPathFromConfig = await dotnetUtils.getDotnetExecPathFromConfig(
+          dotnetUtils.dotnetConfigPath
+        );
+
+        chai.assert.isTrue(shouldContinue);
+        assertPathEqual(dotnetExecPath, installedDotnetExecPath);
+        chai.assert.isNotNull(dotnetExecPathFromConfig);
+        assertPathEqual(dotnetExecPath, dotnetExecPathFromConfig!);
+        chai.assert.isTrue(
+          await dotnetUtils.hasDotnetVersion(dotnetExecPath, dotnetUtils.dotnetInstallVersion)
+        );
+      }
+    );
   });
 
   teardown(async function(this: Mocha.Context) {

@@ -1,17 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-
-import { exec } from "child_process";
-import { promisify } from "util";
 import * as msal from "@azure/msal-node";
 import mockedEnv from "mocked-env";
 import urljoin from "url-join";
 import { JwtPayload } from "jwt-decode";
 import * as dotenv from "dotenv";
 
-const execAsync = promisify(exec);
-
-let restore: () => void;
 
 /**
  * Get Access Token from a specific AAD app client id.

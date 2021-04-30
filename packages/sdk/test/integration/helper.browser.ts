@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import axios from 'axios';
+import { JwtPayload } from "jwt-decode";
+
 /**
  * Get SSO Token from a specific AAD app client id.
  */
@@ -28,3 +30,10 @@ export async function getSSOToken(): Promise<string>  {
     });
     return (response.data as any)["access_token"];
 }
+
+export interface AADJwtPayLoad extends JwtPayload {
+    appid?: string;
+    idtyp?: string;
+    scp?: string;
+    upn?: string;
+  }

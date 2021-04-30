@@ -12,23 +12,8 @@ chaiUse(chaiPromises);
 const env = (window as any).__env__;
 
 describe("msGraphClientProvider - browser", () => {
-  const loginUrl = "fake_login_url";
-  const emptyScope = "";
-  const defaultScope = "https://graph.microsoft.com/.default";
-  let ssoToken: string;
-
-  function loadDefaultConfig() {
-    loadConfiguration({
-      authentication: {
-        initiateLoginEndpoint: loginUrl,
-        simpleAuthEndpoint: "https://localhost:5001",
-        clientId: env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID
-      }
-    });
-  }
-
   beforeEach(async function() {
-    ssoToken = await getSSOToken();
+    const ssoToken = await getSSOToken();
     // mock getting sso token.
     sinon.stub(TeamsUserCredential.prototype, <any>"getSSOToken").callsFake(
       (): Promise<AccessToken | null> => {
@@ -41,7 +26,13 @@ describe("msGraphClientProvider - browser", () => {
       }
     );
 
-    loadDefaultConfig();
+    loadConfiguration({
+      authentication: {
+        initiateLoginEndpoint: "fake_login_url",
+        simpleAuthEndpoint: "https://localhost:5001",
+        clientId: env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID
+      }
+    });
   });
 
   afterEach(() => {
@@ -50,7 +41,6 @@ describe("msGraphClientProvider - browser", () => {
 
   it("create graph client with user.read scope should be able to get user profile", async function() {
     const scopes = ["User.Read"];
-
     const credential = new TeamsUserCredential();
     const graphClient: any = createMicrosoftGraphClient(credential, scopes);
     const profile = await graphClient.api("/me").get();
@@ -58,6 +48,7 @@ describe("msGraphClientProvider - browser", () => {
   });
 
   it("create graph client with empty scope should have the default scope", async function() {
+    const emptyScope = "";
     const credential = new TeamsUserCredential();
     const graphClient: any = createMicrosoftGraphClient(credential, emptyScope);
 
@@ -68,15 +59,16 @@ describe("msGraphClientProvider - browser", () => {
     assert.include(errorResult.message, "Insufficient privileges to complete the operation.");
   });
 
-    it("create graph client without providing scope should have the default scope", async function() {
-      const credential = new TeamsUserCredential();
-      const graphClient: any = createMicrosoftGraphClient(credential);
-      assert.strictEqual(graphClient.config.authProvider.scopes, defaultScope);
+  it("create graph client without providing scope should have the default scope", async function() {
+    const defaultScope = "https://graph.microsoft.com/.default";
+    const credential = new TeamsUserCredential();
+    const graphClient: any = createMicrosoftGraphClient(credential);
+    assert.strictEqual(graphClient.config.authProvider.scopes, defaultScope);
 
-      // Current test user does not have admin permission so application credential can not perform any request successfully.
-      const errorResult = await expect(graphClient.api("/users").get()).to.eventually.be.rejectedWith(
-        Error
-      );
-      assert.include(errorResult.message, "Insufficient privileges to complete the operation.");
-    });
+    // Current test user does not have admin permission so application credential can not perform any request successfully.
+    const errorResult = await expect(graphClient.api("/users").get()).to.eventually.be.rejectedWith(
+      Error
+    );
+    assert.include(errorResult.message, "Insufficient privileges to complete the operation.");
+  });
 });

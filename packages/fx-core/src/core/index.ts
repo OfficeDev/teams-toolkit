@@ -213,7 +213,7 @@ class CoreImpl implements Core {
         const folder = answer?.getString(CoreQuestionNames.Foler);
         if(!folder) return ok(undefined);
         const schema = {
-            pattern: "^[\\da-zA-Z]+$",
+            pattern: "^[a-zA-Z][\\da-zA-Z]+$",
         };
         const validateResult = jsonschema.validate(appName, schema);
         if (validateResult.errors && validateResult.errors.length > 0) {

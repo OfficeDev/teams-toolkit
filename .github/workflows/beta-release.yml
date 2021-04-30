@@ -44,7 +44,7 @@ jobs:
         run: |
           git config --global user.name 'MSFT-yiz'
           git config --global user.email 'yiz@microsoft.com'
-          npx lerna publish --no-private --preid beta prerelease --yes --force-publish
+          npx lerna publish --no-private --preid beta prerelease --yes
 
   release-vsix:
     needs: release-npm
@@ -70,6 +70,7 @@ jobs:
       - name: pack vsix
         working-directory: ./packages/vscode-extension
         run: |
+          rm package-lock.json
           npm install
           npx vsce package
 

@@ -1,6 +1,11 @@
 const { spawn } = require('child_process');
+const admZip = require('adm-zip');
 const path = require('path');
-const simpleAuthDir = path.resolve(__dirname, "../../../../simpleauth/src/TeamsFxSimpleAuth");
+let simpleAuthDir = path.resolve(__dirname, "../../../../fx-core/templates/plugins/resource/simpleauth");
+var zip = new admZip(`${simpleAuthDir}/SimpleAuth.zip`);
+zip.extractAllTo(`${simpleAuthDir}/SimpleAuth`, true);
+simpleAuthDir = path.resolve(simpleAuthDir, "SimpleAuth");
+console.log()
 require('dotenv').config();
 process.env.CLIENT_ID= process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID;
 process.env.CLIENT_SECRET=process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_SECRET;

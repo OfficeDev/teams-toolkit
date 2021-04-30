@@ -45,7 +45,7 @@ export const ScratchOptionYes:OptionItem = {
 
 export const ScratchOptionNo:OptionItem = {
     id:"no",
-    label: "$(getting-started-setup) Start from a sample",
+    label: "$(heart) Start from a sample",
     detail: "Use an existing sample as a starting point for your new application."
 };
 

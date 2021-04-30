@@ -26,7 +26,7 @@ async function callFunction() {
     return response.data;
   } catch (err) {
     let funcErrorMsg = "";
-    if (err?.response?.status === 404) {
+    if (err.response && err.response.status && err.response.status === 404) {
       funcErrorMsg = `There may be a problem with the deployment of Azure Function App, please deploy Azure Function (Run command palette "TeamsFx - Deploy Package") first before running this App`;
     } else if (err.message === "Network Error") {
       funcErrorMsg =
@@ -37,7 +37,7 @@ async function callFunction() {
         funcErrorMsg += `make sure to provision and deploy Azure Function (Run command palette "TeamsFx - Provision Resource" and "TeamsFx - Deploy Package") first before running this App`;
       }
     } else {
-      funcErrorMsg = err.toString();
+      funcErrorMsg = err.message;
       if (err.response?.data?.error) {
         funcErrorMsg += ": " + err.response.data.error;
       }
@@ -68,14 +68,19 @@ export function AzureFunctions(props: { codePath?: string; docsUrl?: string }) {
         disabled={loading}
         onClick={reload}
       />
-      {loading && <Loader />}
+      {loading && (
+        <pre className="fixed">
+          {" "}
+          <Loader />{" "}
+        </pre>
+      )}
       {!loading && !!data && !error && (
-        <pre>{JSON.stringify(data, null, 2)}</pre>
+        <pre className="fixed">{JSON.stringify(data, null, 2)}</pre>
       )}
-      {!loading && !data && !error && (
-        <pre>Function response will be displayed here</pre>
+      {!loading && !data && !error && <pre className="fixed"></pre>}
+      {!loading && !!error && (
+        <div className="error fixed">{error.toString()}</div>
       )}
-      {!loading && !!error && <div className="error">{error.toString()}</div>}
       <h4>How to edit the Azure Function</h4>
       <p>
         See the code in <code>{codePath}</code> to add your business logic.

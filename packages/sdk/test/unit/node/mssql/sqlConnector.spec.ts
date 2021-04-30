@@ -17,7 +17,7 @@ import {
 chaiUse(chaiPromises);
 let restore: () => void;
 
-describe("SqlConnector Tests - Node", () => {
+describe("DefaultTediousConnection Tests - Node", () => {
   // fake configuration for sql.
   const fakeSQLServerEndpoint = "xxx.database.windows.net";
   const fakeSQLUserName = "fake_name";

@@ -19,7 +19,7 @@ import {
 chaiUse(chaiPromises);
 let restore: () => void;
 
-describe("MsGraphClientProvider Tests - Node", () => {
+describe("createMicrosoftGraphClient Tests - Node", () => {
   let ssoToken = "";
   beforeEach(async function () {
     restore = MockEnvironmentVariable();
@@ -32,7 +32,7 @@ describe("MsGraphClientProvider Tests - Node", () => {
     RestoreEnvironmentVariable(restore);
   });
 
-  it("call graph api should success with OnBehalfOfUserCredential", async function () {
+  it("call graph API should success with OnBehalfOfUserCredential", async function () {
     const scopes = ["User.Read"];
     const oboCredential = new OnBehalfOfUserCredential(ssoToken);
     const graphClient: any = createMicrosoftGraphClient(oboCredential, scopes);
@@ -40,7 +40,7 @@ describe("MsGraphClientProvider Tests - Node", () => {
     assert.strictEqual(profile.userPrincipalName, process.env.SDK_INTEGRATION_TEST_ACCOUNT_NAME);
   });
 
-  it("call graph api should success with M365TenantCredential", async function () {
+  it("call graph API should failed when M365TenantCredential credential do not have admin permission", async function () {
     const scopes = ["https://graph.microsoft.com/.default"];
     const m356Credential = new M365TenantCredential();
     const graphClient: any = createMicrosoftGraphClient(m356Credential, scopes);

@@ -15,7 +15,7 @@ import {
 chaiUse(chaiPromises);
 let mockedEnvRestore: () => void;
 
-describe("MsGraphClientProvider Tests - node", () => {
+describe("createMicrosoftGraphClient Tests - node", () => {
   const scopes = "fake_scope";
   const clientId = "fake_client_id";
   const clientSecret = "fake_client_secret";

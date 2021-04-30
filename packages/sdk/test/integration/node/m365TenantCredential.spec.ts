@@ -39,7 +39,7 @@ describe("M365TenantCredential Tests - Node", () => {
     );
   });
 
-  it("getToken should success with default scope", async function () {
+  it("getToken should success with .default scope", async function () {
     const credential = new M365TenantCredential();
     const token = await credential.getToken(defaultGraphScope);
     const tokenFromCache = await credential.getToken(defaultGraphScope);

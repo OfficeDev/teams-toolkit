@@ -43,7 +43,7 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
     assert.strictEqual(ssoTokenFromCredential!.token, ssoToken);
   });
 
-  it("get sso token should throw TokenExpiredError when sso token is nearly expired", async function () {
+  it("get sso token should throw TokenExpiredError when sso token is expired", async function () {
     const credential = new OnBehalfOfUserCredential(expiredSsoToken);
     let err = await expect(credential.getToken([])).to.eventually.be.rejectedWith(ErrorWithCode);
     assert.strictEqual(err.code, ErrorCode.TokenExpiredError);
@@ -78,7 +78,7 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
       .and.property("code", ErrorCode.UiRequiredError);
   });
 
-  it("get graph access token should throw TokenExpiredError when sso token is nearly expired", async function () {
+  it("get graph access token should throw TokenExpiredError when sso token is expired", async function () {
     const credential = new OnBehalfOfUserCredential(expiredSsoToken);
     const err = await expect(credential.getToken(defaultScope)).to.eventually.be.rejectedWith(
       ErrorWithCode

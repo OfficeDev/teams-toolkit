@@ -69,7 +69,7 @@ Action command allow users to interact with a pop-up dialog, which is called a t
 Learn more information [here](https://docs.microsoft.com/en-us/microsoftteams/platform/messaging-extensions/how-to/action-commands/define-action-command)
 
 ### Link Unfurling
-Link unfurling functions interpret an URL into a card that can provide additional information, image or actions. You can register your message extension to receive an invoke activity when a full URL is pasted into composing area, and respond with a card of text information, images or even actions.
+Link unfurling functions interpret an URL into a card that can provide additional information, image or actions. You can register your message extension to receive an invoke activity when a full URL is pasted into composing area, and respond with a card of text information, images or even actions. You can config in the manifest file to specify which domain you want to unfurling the link, in this sample the domian is *.botframework.com*. Try to paste a URL in *.botframework.com* domian and you will see what the message extension can do.
 
  Learn more information [here](https://docs.microsoft.com/en-us/microsoftteams/platform/messaging-extensions/how-to/link-unfurling?tabs=dotnet)
 

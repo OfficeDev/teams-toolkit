@@ -15,13 +15,13 @@ Teams Toolkit and TeamsFx CLI can provide template code for you to get started. 
 A common use case to call the function is sending an HTTP request to the service with an SSO token in the authorization header. The token can be retrieved from TeamsFx SDK from your app's client side. Here is an example code snippet:
 
 ``` JavaScript
-  var credential = new TeamsUserCredential(); 
-  var accessToken = await credential.getToken(''); 
-  var response = await axios.default.get(functionEndpoint + '/api/' + functionName, { 
-    headers: { 
-      authorization: "Bearer " + accessToken.token 
-    } 
-  }); 
+  var credential = new TeamsUserCredential();
+  var accessToken = await credential.getToken('');
+  var response = await axios.default.get(functionEndpoint + '/api/' + functionName, {
+    headers: {
+      authorization: "Bearer " + accessToken.token
+    }
+  });
 ```
 
 ### Add More Functions

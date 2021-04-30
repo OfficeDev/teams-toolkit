@@ -51,6 +51,8 @@ export interface FxQuickPickOption {
    */
   onDidChangeSelection?: (currentSelectedItems: OptionItem[], previousSelectedItems: OptionItem[]) => Promise<string[]>;
 
+  validation?: (input: string|string[]) => Promise<string | undefined>;
+
   step?: number;
   totalSteps?: number;
 }

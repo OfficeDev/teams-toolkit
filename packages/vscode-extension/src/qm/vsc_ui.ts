@@ -42,6 +42,12 @@ export class VsCodeUI implements UserInterface{
             let selectedItems = quickPick.selectedItems as FxQuickPickItem[];
             if (option.canSelectMany) {
               const strArray = Array.from(selectedItems.map((i) => i.id));
+              if(option.validation){
+                const validateRes = await option.validation(strArray);
+                if(validateRes){
+                  return ;
+                }
+              }
               let result: OptionItem[] | string[] = strArray;
               if (option.returnObject) {
                 result = selectedItems.map((i) => {

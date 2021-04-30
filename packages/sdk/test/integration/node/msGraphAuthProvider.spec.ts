@@ -20,9 +20,9 @@ import jwtDecode from "jwt-decode";
 chaiUse(chaiPromises);
 let restore: () => void;
 
-describe("msGraphAuthProvider - node", () => {
+describe("MsGraphAuthProvider Tests - Node", () => {
   let ssoToken = "";
-  beforeEach(async function() {
+  beforeEach(async function () {
     restore = MockEnvironmentVariable();
     loadConfiguration();
 
@@ -33,7 +33,7 @@ describe("msGraphAuthProvider - node", () => {
     RestoreEnvironmentVariable(restore);
   });
 
-  it("msGraphAuthProvider created with OnBehalfOfUserCredential can get correct access token", async function() {
+  it("getAccessToken should success with OnBehalfOfUserCredential", async function () {
     const scopes = "User.Read";
     const oboCredential = new OnBehalfOfUserCredential(ssoToken);
     const authProvider: MsGraphAuthProvider = new MsGraphAuthProvider(oboCredential, scopes);
@@ -47,7 +47,7 @@ describe("msGraphAuthProvider - node", () => {
     assert.isTrue(decodedToken.scp!.indexOf(scopes) >= 0);
   });
 
-  it("msGraphAuthProvider created with M365TenantCredential can get correct access token", async function() {
+  it("getAccessToken should success with M365TenantCredential", async function () {
     const scopes = ["https://graph.microsoft.com/.default"];
     const m356Credential = new M365TenantCredential();
     const authProvider: MsGraphAuthProvider = new MsGraphAuthProvider(m356Credential, scopes);

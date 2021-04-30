@@ -2,7 +2,7 @@
   "name": "teamsfx-extension",
   "displayName": "Teams Toolkit",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "2.0.0-alpha.15",
+  "version": "2.0.0-alpha.16",
   "publisher": "Microsoft",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -343,8 +343,8 @@
         ],
         "background": {
           "activeOnStart": true,
-          "beginsPattern": "Session Status\\s*connecting",
-          "endsPattern": ".*"
+          "beginsPattern": "starting web service",
+          "endsPattern": "started tunnel|failed to reconnect session"
         }
       },
       {
@@ -499,8 +499,8 @@
     "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
-    "fx-api": "^1.1.1-alpha.8",
-    "fx-core": "^1.1.1-alpha.8",
+    "fx-api": "^1.1.1-alpha.9",
+    "fx-core": "^1.1.1-alpha.9",
     "jsonschema": "^1.4.0",
     "opn": "^6.0.0",
     "sudo-prompt": "^9.2.1",

@@ -67,6 +67,6 @@ function getVersionString(): string {
     .alias("v", "version")
     .version(getVersionString())
     .epilogue(
-      "for more information, find our manual at https://github.com/OfficeDev/TeamsFx"
+      "For more information about the Teams Toolkit - https://aka.ms/teamsfx-learn."
     ).argv;
 })();

@@ -130,9 +130,6 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
                 type: ProductName,
                 command: "ngrok start",
                 isBackground: true,
-                presentation: {
-                    panel: "new",
-                },
                 dependsOn: ["bot npm install"],
             },
             {
@@ -189,9 +186,6 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
                 type: ProductName,
                 command: "ngrok start",
                 isBackground: true,
-                presentation: {
-                    panel: "new",
-                },
                 dependsOn: ["bot npm install"],
             },
             {

@@ -27,9 +27,10 @@ import { performance } from "perf_hooks";
 import { DepsCheckerError } from "./errors";
 import { cpUtils } from "./cpUtils";
 
-const exec = util.promisify(child_process.exec);
+const execFile = util.promisify(child_process.execFile);
 
 export enum DotnetVersion {
+  v21 = "2.1",
   v31 = "3.1",
   v50 = "5.0"
 }
@@ -212,21 +213,21 @@ export class DotnetChecker implements IDepsChecker {
 
   // from: https://github.com/dotnet/vscode-dotnet-runtime/blob/main/vscode-dotnet-runtime-library/src/Acquisition/AcquisitionInvoker.ts
   private async runDotnetInstallScript(version: DotnetVersion, installDir: string): Promise<void> {
-    const installCommand: string = await this.getInstallCommand(version, installDir);
-    const windowsFullCommand = `powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "& { [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12 ; & ${installCommand} }`;
+    const command = await this.getInstallCommand(version, installDir);
+    const cwd = this._adapter.getResourceDir();
 
-    const command = isWindows() ? windowsFullCommand : installCommand;
-    const options: child_process.ExecOptions = {
-      cwd: process.cwd(),
+    const options: child_process.ExecFileOptions = {
+      cwd: cwd,
       maxBuffer: DotnetChecker.maxBuffer,
       timeout: DotnetChecker.timeout,
-      killSignal: "SIGKILL"
+      killSignal: "SIGKILL",
+      shell: false
     };
 
     try {
       const start = performance.now();
-      await fs.chmodSync(this.getDotnetInstallScriptPath(), "755");
-      const { stdout, stderr } = await exec(command, options);
+      fs.chmodSync(this.getDotnetInstallScriptPath(), "755");
+      const { stdout, stderr } = await execFile(command[0], command.splice(1), options);
       await this._logger.debug(
         `Finished running dotnet-install script, command = '${command}', options = '${JSON.stringify(
           options
@@ -367,8 +368,12 @@ export class DotnetChecker implements IDepsChecker {
   private getDotnetInstallScriptPath(): string {
     return path.join(
       this._adapter.getResourceDir(),
-      isWindows() ? "dotnet-install.ps1" : "dotnet-install.sh"
+      this.getDotnetInstallScriptName(),
     );
+  }
+
+  private getDotnetInstallScriptName(): string {
+      return isWindows() ? "dotnet-install.ps1" : "dotnet-install.sh";
   }
 
   private static getDefaultInstallPath(): string {
@@ -378,16 +383,28 @@ export class DotnetChecker implements IDepsChecker {
   private async getInstallCommand(
     version: DotnetVersion,
     dotnetInstallDir: string
-  ): Promise<string> {
-    const args = [
+  ): Promise<string[]> {
+    const command = [
+      // path.join does not prepend '.'
+      [".", this.getDotnetInstallScriptName()].join(path.sep),
       "-InstallDir",
-      DotnetChecker.escapeFilePath(dotnetInstallDir),
+      isWindows() ? DotnetChecker.escapeFilePath(dotnetInstallDir) : dotnetInstallDir,
       "-Channel",
       version
     ];
 
-    const scriptPath = this.getDotnetInstallScriptPath();
-    return `${DotnetChecker.escapeFilePath(scriptPath)} ${args.join(" ")}`;
+    if (isWindows()) {
+      return [
+        'powershell.exe',
+        '-NoProfile',
+        '-ExecutionPolicy',
+        'unrestricted',
+        '-Command',
+        `& { [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12 ; & ${command.join(' ')} }`
+      ];
+    } else {
+      return command;
+    }
   }
 
   private async validate(): Promise<boolean> {

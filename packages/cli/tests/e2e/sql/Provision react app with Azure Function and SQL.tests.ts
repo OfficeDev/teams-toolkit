@@ -37,7 +37,7 @@ describe("Provision to Azure with SQL", function () {
 
     // provision
     await execAsync(
-      `teamsfx provision --subscription ${subscription} --sql-admin-name Abc123321 --sql-password Cab232332 --sql-confirm-password Cab232332`,
+      `teamsfx provision --subscription ${subscription} --sql-admin-name Abc123321 --sql-password Cab232332 --sql-confirm-password Cab232332 --sql-skip-adding-user false`,
       {
         cwd: projectPath,
         env: process.env,

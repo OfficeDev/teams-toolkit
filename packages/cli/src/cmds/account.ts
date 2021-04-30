@@ -13,7 +13,9 @@ import AppStudioTokenProvider from "../commonlib/appStudioLogin";
 import AzureTokenProvider from "../commonlib/azureLogin";
 import CLILogProvider from "../commonlib/log";
 import * as constants from "../constants";
-import { toYargsOptions } from "../utils";
+import { setSubscriptionId, toYargsOptions } from "../utils";
+import CliTelemetry from "../telemetry/cliTelemetry";
+import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
 
 class LoginAccount extends YargsCommand {
   public readonly commandHead = `login`;
@@ -29,17 +31,24 @@ class LoginAccount extends YargsCommand {
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLoginStart, {
+      [TelemetryProperty.AccountType]: args.platform
+    });
     switch (args.platform) {
       case "azure": {
         const result = await AzureTokenProvider.getAccountCredentialAsync();
         if (result) {
           console.log(colors.green(`[${constants.cliSource}] Successfully signed in to Azure. Your username is ${colors.yellow((result as any).username)}.`));
           console.log(colors.green(`[${constants.cliSource}] Your subscriptons are:`));
-          const subscriptions = await AzureTokenProvider.getSubscriptionList(result);
+          const subscriptions = await AzureTokenProvider.listSubscriptions();
           console.log(subscriptions);
         } else {
           CLILogProvider.error(`[${constants.cliSource}] Failed to sign in to Azure.`);
         }
+        CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLogin, {
+          [TelemetryProperty.AccountType]: args.platform,
+          [TelemetryProperty.Success]: result? TelemetrySuccess.Yes : TelemetrySuccess.No
+        });
         break;
       }
       case "m365": {
@@ -49,6 +58,10 @@ class LoginAccount extends YargsCommand {
         } else {
           CLILogProvider.error(`[${constants.cliSource}] Failed to sign in to M365.`);
         }
+        CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLogin, {
+          [TelemetryProperty.AccountType]: args.platform,
+          [TelemetryProperty.Success]: result? TelemetrySuccess.Yes : TelemetrySuccess.No
+        });
         break;
       }
     }
@@ -109,10 +122,7 @@ class SetAccount extends YargsCommand {
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    if ("subscription" in args && !!args.subscription) {
-      return AzureTokenProvider.setSubscriptionId(args.subscription, args.folder);
-    }
-    return ok(null);
+    return setSubscriptionId(args.subscription, args.folder);
   }
 }
 

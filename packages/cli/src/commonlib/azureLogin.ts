@@ -276,43 +276,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     return Promise.resolve(true);
   }
 
-  async getSubscriptionList(azureToken: TokenCredentialsBase): Promise<AzureSubscription[]> {
-    const client = new SubscriptionClient(azureToken);
-    const subscriptions = await listAll(client.subscriptions, client.subscriptions.list());
-    const subs: Partial<AzureSubscription>[] = subscriptions.map((sub) => {
-      return { displayName: sub.displayName, subscriptionId: sub.subscriptionId };
-    });
-    const filteredSubs = subs.filter(
-      (sub) => sub.displayName !== undefined && sub.subscriptionId !== undefined
-    );
-    return filteredSubs.map((sub) => {
-      return { displayName: sub.displayName!, subscriptionId: sub.subscriptionId! };
-    });
-  }
-
-  public async setSubscriptionId(
-    subscriptionId: string,
-    root_folder = "./"
-  ): Promise<Result<null, FxError>> {
-    const token = await this.getAccountCredentialAsync();
-    const subscriptions = await this.getSubscriptionList(token!);
-
-    if (subscriptions.findIndex((sub) => sub.subscriptionId === subscriptionId) < 0) {
-      return err(NotFoundSubscriptionId());
-    }
-
-    /// TODO: use api's constant
-    const configPath = path.resolve(root_folder, `.${ConfigFolderName}/env.default.json`);
-    if (!(await fs.pathExists(configPath))) {
-      return err(NotSupportedProjectType());
-    }
-    const configJson = await fs.readJson(configPath);
-    configJson["solution"].subscriptionId = subscriptionId;
-    await fs.writeFile(configPath, JSON.stringify(configJson, null, 4));
-
-    return ok(null);
-  }
-
   async getStatus(): Promise<LoginStatus> {
     if (AzureAccountManager.codeFlowInstance.account) {
       const credential = await this.doGetAccountCredentialAsync();
@@ -374,7 +337,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         return;
       }
     }
-    throw new UserError(unknownSubscription, unknownSubscription, "Login");
+    throw NotFoundSubscriptionId();
   }
 }
 
@@ -405,11 +368,6 @@ async function listAll<T>(
   }
   return all;
 }
-
-export type AzureSubscription = {
-  displayName: string;
-  subscriptionId: string;
-};
 
 import { MockAzureAccountProvider } from "fx-api";
 

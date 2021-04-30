@@ -12,7 +12,7 @@ import {
   Logger
 } from "../../src/util/logger";
 
-describe("Print function - node", () => {
+describe("Logger Tests", () => {
   let errorStub: sinon.SinonStub<any[], void>;
   let warnStub: sinon.SinonStub<any[], void>;
   let infoStub: sinon.SinonStub<any[], void>;
@@ -42,13 +42,13 @@ describe("Print function - node", () => {
     setLogLevel(LogLevel.Info);
   });
 
-  it("updates log level", () => {
+  it("setLogLevel should success with Error level", () => {
     setLogLevel(LogLevel.Error);
 
     expect(getLogLevel()).to.equal(LogLevel.Error);
   });
 
-  it("print all log when level is verbose", () => {
+  it("all log should be displayed when level is verbose", () => {
     setLogLevel(LogLevel.Verbose);
 
     internalLogger.error("test");
@@ -61,7 +61,7 @@ describe("Print function - node", () => {
     assert.isTrue(verboseStub.calledOnce);
   });
 
-  it("print error log only when level is error", () => {
+  it("only error log should be printed when level is error", () => {
     setLogLevel(LogLevel.Error);
 
     internalLogger.error("test");

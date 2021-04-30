@@ -225,7 +225,7 @@ export class DotnetChecker implements IDepsChecker {
 
     const command = isWindows() ? windowsFullCommand : installCommand;
     const options: child_process.ExecFileOptions = {
-      cwd: process.cwd(),
+      cwd: this._adapter.getResourceDir(),
       maxBuffer: DotnetChecker.maxBuffer,
       timeout: DotnetChecker.timeout,
       killSignal: "SIGKILL",
@@ -376,8 +376,12 @@ export class DotnetChecker implements IDepsChecker {
   private getDotnetInstallScriptPath(): string {
     return path.join(
       this._adapter.getResourceDir(),
-      isWindows() ? "dotnet-install.ps1" : "dotnet-install.sh"
+      this.getDotnetInstallScriptName(),
     );
+  }
+
+  private getDotnetInstallScriptName(): string {
+      return isWindows() ? "dotnet-install.ps1" : "dotnet-install.sh";
   }
 
   private static getDefaultInstallPath(): string {
@@ -389,7 +393,8 @@ export class DotnetChecker implements IDepsChecker {
     dotnetInstallDir: string
   ): Promise<string[]> {
     return [
-      this.getDotnetInstallScriptPath(),
+      // path.join does not prepend '.'
+      "./" + this.getDotnetInstallScriptName(),
       "-InstallDir",
       DotnetChecker.escapeFilePath(dotnetInstallDir),
       "-Channel",

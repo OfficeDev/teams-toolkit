@@ -220,7 +220,7 @@ export class DotnetChecker implements IDepsChecker {
       '-ExecutionPolicy',
       'unrestricted',
       '-Command',
-      '"& { [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12 ; & ${installCommand} }'
+      `"& { [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12 ; & ${installCommand} }`
     ];
 
     const command = isWindows() ? windowsFullCommand : installCommand;
@@ -394,7 +394,7 @@ export class DotnetChecker implements IDepsChecker {
   ): Promise<string[]> {
     return [
       // path.join does not prepend '.'
-      "./" + this.getDotnetInstallScriptName(),
+      [".", this.getDotnetInstallScriptName()].join(path.sep),
       "-InstallDir",
       DotnetChecker.escapeFilePath(dotnetInstallDir),
       "-Channel",

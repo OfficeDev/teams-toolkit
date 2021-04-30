@@ -31,6 +31,7 @@
   "bin": {
     "teamsfx": "./lib/cli.js"
   },
+  "aiKey": "40c18f0c-6122-4b5e-8080-77441873036e",
   "devDependencies": {
     "@azure/arm-subscriptions": "^3.0.0",
     "@shared/eslint-config": "file:../eslint-config",
@@ -68,6 +69,7 @@
     "@azure/identity": "^1.2.3",
     "@azure/ms-rest-nodeauth": "^3.0.7",
     "adm-zip": "^0.5.5",
+    "applicationinsights": "^1.8.10",
     "async-mutex": "^0.3.1",
     "axios": "^0.21.1",
     "colors": "^1.4.0",
@@ -76,6 +78,7 @@
     "fx-api": "^1.1.1-alpha.9",
     "fx-core": "^1.1.1-alpha.9",
     "inquirer": "^8.0.0",
+    "node-machine-id": "^1.1.12",
     "open": "^7.3.1",
     "underscore": "^1.12.1",
     "yargs": "^16.2.0"

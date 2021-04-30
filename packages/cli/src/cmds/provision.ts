@@ -13,6 +13,8 @@ import * as constants from "../constants";
 import { validateAndUpdateAnswers } from "../question/question";
 import { getParamJson, setSubscriptionId } from "../utils";
 import { YargsCommand } from "../yargsCommand";
+import CliTelemetry from "../telemetry/cliTelemetry";
+import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
 
 export default class Provision extends YargsCommand {
   public readonly commandHead = `provision`;
@@ -34,16 +36,19 @@ export default class Provision extends YargsCommand {
 
     const rootFolder = path.resolve(answers.getString("folder") || "./");
     answers.delete("folder");
+    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.ProvisionStart);
 
     {
       const result = await setSubscriptionId(args.subscription, rootFolder);
       if (result.isErr()) {
+        CliTelemetry.withRootFolder(rootFolder).sendTelemetryErrorEvent(TelemetryEvent.Provision, result.error);
         return result;
       }
     }
 
     const result = await activate(rootFolder);
     if (result.isErr()) {
+      CliTelemetry.withRootFolder(rootFolder).sendTelemetryErrorEvent(TelemetryEvent.Provision, result.error);
       return err(result.error);
     }
 
@@ -51,6 +56,7 @@ export default class Provision extends YargsCommand {
     {
       const result = await core.getQuestions!(Stage.provision, Platform.CLI);
       if (result.isErr()) {
+        CliTelemetry.withRootFolder(rootFolder).sendTelemetryErrorEvent(TelemetryEvent.Provision, result.error);
         return err(result.error);
       }
       await validateAndUpdateAnswers(result.value, answers);
@@ -59,9 +65,14 @@ export default class Provision extends YargsCommand {
     {
       const result = await core.provision(answers);
       if (result.isErr()) {
+        CliTelemetry.withRootFolder(rootFolder).sendTelemetryErrorEvent(TelemetryEvent.Provision, result.error);
         return err(result.error);
       }
     }
+
+    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.Provision, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes
+    });
     return ok(null);
   }
 }

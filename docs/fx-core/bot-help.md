@@ -14,7 +14,7 @@ There are two methods to mitigate this issue:
 
 #### Method #2
 1. Open `.fx\env.default.json` file
-2. Set value of 'skuName' config of 'fx-resource-bot' 
+2. Set value of 'skuName' config of 'fx-resource-bot' to, for example, B1.
 3. Run `Provision` command again
 
 ## MissingSubscriptionRegistrationError

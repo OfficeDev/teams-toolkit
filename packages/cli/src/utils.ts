@@ -99,7 +99,7 @@ export function toYargsOptions(data: Question): Options {
   }
   return {
     array: data.type === NodeType.multiSelect,
-    description: data.description || data.title as string || "",
+    description: data.description || data.title || "",
     default: data.default,
     choices: choices,
     hidden: !!(data as any).hide,

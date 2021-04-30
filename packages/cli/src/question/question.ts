@@ -189,6 +189,18 @@ export async function visitInteractively(
   if (node.data.type !== NodeType.group) {
     if (!isAutoSkipSelect(node.data)) {
       answers = await inquirer.prompt([toInquirerQuestion(node.data, answers, remoteFuncValidator)], answers);
+      // convert the option.label to option.id
+      if ("option" in node.data) {
+        const option = node.data.option;
+        if (option instanceof Array && option.length > 0 && typeof option[0] !== "string") {
+          const tmpAns = answers[node.data.name];
+          if (tmpAns instanceof Array) {
+            answers[node.data.name] = tmpAns.map(label => (option as OptionItem[]).find(op => label === op.label)?.id);
+          } else {
+            answers[node.data.name] = (option as OptionItem[]).find(op => tmpAns === op.label)?.id;
+          }
+        }
+      }
     }
     else {
       answers[node.data.name] = getSingleOption(node.data as (SingleSelectQuestion | MultiSelectQuestion));

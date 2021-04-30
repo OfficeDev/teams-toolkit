@@ -168,7 +168,7 @@ export class AadPluginConfigKeys {
 export class SolutionConfigKeys {
     public static readonly subscriptionId: string = "subscriptionId";
     public static readonly resourceNameSuffix: string = "resourceNameSuffix";
-    public static readonly tenantId: string = "tenantId";
+    public static readonly teamsAppTenantId: string = "teamsAppTenantId";
     public static readonly resourceGroupName: string = "resourceGroupName";
     public static readonly location: string = "location";
 }
@@ -216,7 +216,7 @@ export const ConfigRetryLifeCycle: { [key in TeamsToolkitComponent]: { [key: str
     [TeamsToolkitComponent.Solution]: {
         [SolutionConfigKeys.resourceNameSuffix]: LifeCycle.Create,
         [SolutionConfigKeys.subscriptionId]: LifeCycle.Login,
-        [SolutionConfigKeys.tenantId]: LifeCycle.Provision,
+        [SolutionConfigKeys.teamsAppTenantId]: LifeCycle.Provision,
         [SolutionConfigKeys.resourceGroupName]: LifeCycle.Provision,
         [SolutionConfigKeys.location]: LifeCycle.Provision,
     },

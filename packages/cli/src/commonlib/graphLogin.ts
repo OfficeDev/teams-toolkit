@@ -26,7 +26,7 @@ const config = {
         CLILogProvider.log(4 - loglevel, message);
       },
       piiLoggingEnabled: false,
-      logLevel: LogLevel.Verbose
+      logLevel: LogLevel.Error
     }
   }
   // TODO: add this back after graph change to 7ea7c24c-b1f6-4a20-9d11-9ae12e9e7ac0 first party app

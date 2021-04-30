@@ -42,7 +42,7 @@ You can do this using the Teams Toolkit in Visual Studio Code or using the Teams
 
 | Using Teams Toolkit| Using TeamsFx CLI|
 | :------------------| :----------------|
-| <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign to Azure` under the `ACCOUNT`section from sidebar.</li> <li>After you signed in, select a subscription under your account.</li><li>Open the command palette and select: `Teamsfx - Provision in the Cloud`.</li><li>Open the command palette and select: `Teamsfx -Deploy to the Cloud`.</li></ul>  | <ul> <li>Run command `teamsfx account login azure`.</li> <li>Run command `teamsfx account set --subscription $scriptionid`.</li> <li> Run command `teamsfx provision`.</li> <li>Run command: `teamsfx deploy`. </li></ul>|
+| <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign to Azure` under the `ACCOUNT` section from sidebar.</li> <li>After you signed in, select a subscription under your account.</li><li>Open the command palette and select: `Teamsfx - Provision in the Cloud`.</li><li>Open the command palette and select: `Teamsfx -Deploy to the Cloud`.</li></ul>  | <ul> <li>Run command `teamsfx account login azure`.</li> <li>Run command `teamsfx account set --subscription $scriptionid`.</li> <li> Run command `teamsfx provision`.</li> <li>Run command: `teamsfx deploy`. </li></ul>|
 
 **Note: This may incur costs in your Azure Subscription.**
 
@@ -57,3 +57,9 @@ By default, Teams Toolkit and TeamsFx CLI will provision an Azure function app w
 * After Click `OK` button, don't forget to click `Save` button on the top of the page.
 
 Then following requests sent to the Azure function app will be handled by new node runtime version.
+
+## Code of Conduct
+
+This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
+
+For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.

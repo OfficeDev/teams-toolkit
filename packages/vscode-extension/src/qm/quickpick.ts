@@ -48,7 +48,7 @@ export class FxMultiQuickPickItem implements FxQuickPickItem {
 
     click(){
         this.picked = !this.picked;
-        this.label = (this.picked === true ? "$(check " : " ") + this.rawLabel; 
+        this.label = (this.picked === true ? "$(check) " : " ") + this.rawLabel; 
     }
 
     check(){
@@ -86,7 +86,7 @@ export async function multiQuickPick(option: FxQuickPickOption) : Promise<InputR
         let selectNum = option.defaultValue? (option.defaultValue).length : 0;
         const firstItem =  new FxMultiQuickPickItem({
             description: "",
-            detail: "Press <Enter> to continue.",
+            detail: `${option.prompt?(option.prompt+", p"):"P"}ress <Enter> to continue, press <Alt+LeftArrow> to go back. `,
             id: "",
             label: `$(checklist) Selected ${selectNum} item${selectNum > 1 ? 's':''}`,
         });
@@ -97,6 +97,13 @@ export async function multiQuickPick(option: FxQuickPickOption) : Promise<InputR
                 const item = quickPick.selectedItems[0];
                 if(item === undefined || item === firstItem){
                     const selectedItems = quickPick.items.filter(i=>i.picked);
+                    const strArray = Array.from(selectedItems.map((i) => i.id));
+                    if(option.validation){
+                        const validateRes = await option.validation(strArray);
+                        if(validateRes){
+                            return ;
+                        }
+                    }
                     if(option.returnObject) resolve({ type: InputResultType.sucess, result: selectedItems.map(i=>i.getOptionItem())});
                     else resolve({ type: InputResultType.sucess, result: selectedItems.map(i=>i.id)});
                 }

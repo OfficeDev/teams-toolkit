@@ -207,6 +207,7 @@ const questionVisitor: QuestionVistor = async function (
       const placeholder = await getCallFuncValue(inputs, false, selectQuestion.placeholder, remoteFuncExecutor) as string;
       const mq = (selectQuestion as MultiSelectQuestion);
       const validationFunc = mq.validation ? getValidationFunction( mq.validation, inputs, remoteFuncExecutor) : undefined;
+      const prompt = await getCallFuncValue(inputs, false, mq.prompt, remoteFuncExecutor) as string;
       return await ui.showQuickPick({
         title: title,
         items: res.options,
@@ -217,6 +218,7 @@ const questionVisitor: QuestionVistor = async function (
         backButton: backButton,
         onDidChangeSelection: question.type === NodeType.multiSelect ? mq.onDidChangeSelection : undefined,
         validation: validationFunc,
+        prompt: prompt
         // step: step,
         // totalSteps: totalSteps
       });

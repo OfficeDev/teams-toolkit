@@ -180,8 +180,7 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
     option: (previousAnswers?: ConfigMap) : StaticOption => {  
         const hostType = previousAnswers?.getString(AzureSolutionQuestionNames.HostType);
         if(HostTypeOptionSPFx.id === hostType) return [{id:"typescript", label:"TypeScript"}];
-        else if(HostTypeOptionAzure.id === hostType) return [{id:"javascript", label: "JavaScript"}, {id:"typescript", label:"TypeScript"}];
-        return [];
+        return [{id:"javascript", label: "JavaScript"}, {id:"typescript", label:"TypeScript"}];
     },
     default: "javascript",
     placeholder: (previousAnswers?: ConfigMap) : string|undefined => {  

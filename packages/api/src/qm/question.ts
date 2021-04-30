@@ -258,6 +258,11 @@ export interface MultiSelectQuestion extends BaseQuestion {
     placeholder?: string | DynamicValue<string|undefined>;
 
     /**
+     * prompt text
+     */
+    prompt?: string | DynamicValue<string|undefined>;
+
+    /**
      * whether the answer return the original `OptionItem` object array.
      * if true: the answer is the original `OptionItem` object array; 
      * if false: the answer is the `id` array of the `OptionItem`

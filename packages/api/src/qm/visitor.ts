@@ -109,7 +109,7 @@ type QuestionVistor = (
 ) => Promise<InputResult>;
  
 
-async function getCallFuncValue(inputs: ConfigMap, throwError: boolean,  raw?: string | string[] | number | DynamicValue<AnswerValue>, remoteFuncExecutor?: RemoteFuncExecutor):Promise<unknown>{
+export async function getCallFuncValue(inputs: ConfigMap, throwError: boolean,  raw?: string | string[] | number | DynamicValue<AnswerValue>, remoteFuncExecutor?: RemoteFuncExecutor):Promise<unknown>{
   if(raw){
     if((raw as Func).method) {
       if(remoteFuncExecutor){

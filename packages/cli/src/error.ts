@@ -10,7 +10,11 @@ import {
   returnSystemError,
   returnUserError,
   SystemError,
-  UserError
+  UserError,
+  OptionItem,
+  MultiSelectQuestion,
+  SingleSelectQuestion,
+  StaticOption
 } from "fx-api";
 
 import * as constants from "./constants";
@@ -21,6 +25,13 @@ export function NotSupportedProjectType(): UserError {
     constants.cliSource,
     "NotSupportedProjectType"
   );
+}
+
+export function NotValidOptionValue(question:MultiSelectQuestion | SingleSelectQuestion, options: StaticOption): UserError {
+  if(options instanceof Array && options.length > 0 && typeof options[0] !== "string"){
+    options = (options as OptionItem[]).map(op => op.id);
+  }
+  throw NotValidInputValue(question.name, `This question only supports [${options}] options`);
 }
 
 export function NotValidInputValue(inputName: string, msg: string): UserError {

@@ -2,6 +2,11 @@ name: Beta release
 
 on:
   workflow_dispatch:
+    inputs:
+      force:
+        description: 'force release even if no update'     
+        required: false
+        default: '--force-publish'
 
 jobs:
   release-npm:
@@ -44,7 +49,7 @@ jobs:
         run: |
           git config --global user.name 'MSFT-yiz'
           git config --global user.email 'yiz@microsoft.com'
-          npx lerna publish --no-private --preid beta prerelease --yes
+          npx lerna publish --no-private --preid beta prerelease --yes ${{ github.event.inputs.force }}
 
   release-vsix:
     needs: release-npm
@@ -70,7 +75,6 @@ jobs:
       - name: pack vsix
         working-directory: ./packages/vscode-extension
         run: |
-          rm package-lock.json
           npm install
           npx vsce package
 

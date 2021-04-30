@@ -286,6 +286,7 @@ suite("DotnetChecker E2E Test - second run", () => {
         );
 
         // setup config file
+        await fs.mkdirp(path.resolve(dotnetUtils.dotnetConfigPath, ".."));
         await fs.writeJson(
           dotnetUtils.dotnetConfigPath,
           { dotnetExecutablePath: installedDotnetExecPath },
@@ -317,6 +318,7 @@ suite("DotnetChecker E2E Test - second run", () => {
     const invalidPath = "/this/path/does/not/exist";
 
     // setup config file
+    await fs.mkdirp(path.resolve(dotnetUtils.dotnetConfigPath, ".."));
     await fs.writeJson(
       dotnetUtils.dotnetConfigPath,
       { dotnetExecutablePath: invalidPath },
@@ -357,6 +359,7 @@ suite("DotnetChecker E2E Test - second run", () => {
       async (installedDotnetExecPath: string) => {
         const invalidPath = "/this/path/does/not/exist";
         // setup config file
+        await fs.mkdirp(path.resolve(dotnetUtils.dotnetConfigPath, ".."));
         await fs.writeJson(
           dotnetUtils.dotnetConfigPath,
           { dotnetExecutablePath: invalidPath },

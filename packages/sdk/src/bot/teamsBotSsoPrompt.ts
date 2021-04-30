@@ -30,7 +30,7 @@ import { OnBehalfOfUserCredential } from "../credential/onBehalfOfUserCredential
 import { v4 as uuidv4 } from "uuid";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 import { internalLogger } from "../util/logger";
-import { formatString, parseJwt } from "../util/utils";
+import { ensureScopesTypeIsValid, formatString, parseJwt } from "../util/utils";
 
 const invokeResponseType = "invokeResponse";
 /**
@@ -136,6 +136,7 @@ export class TeamsBotSsoPrompt extends Dialog {
    */
   constructor(dialogId: string, private settings: TeamsBotSsoPromptSettings) {
     super(dialogId);
+    ensureScopesTypeIsValid(settings.scopes);
     internalLogger.info("Create a new Teams Bot SSO Prompt");
   }
 

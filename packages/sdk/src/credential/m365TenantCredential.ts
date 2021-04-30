@@ -11,7 +11,7 @@ import {
 } from "@azure/identity";
 import { AuthenticationConfiguration } from "../models/configuration";
 import { internalLogger } from "../util/logger";
-import { formatString } from "../util/utils";
+import { ensureScopesTypeIsValid, formatString } from "../util/utils";
 import { getAuthenticationConfiguration } from "../core/configurationProvider";
 import { ErrorCode, ErrorMessage, ErrorWithCode } from "../core/errors";
 
@@ -61,6 +61,7 @@ export class M365TenantCredential implements TokenCredential {
     options?: GetTokenOptions
   ): Promise<AccessToken | null> {
     let accessToken;
+    ensureScopesTypeIsValid(scopes);
     const scopesStr = typeof scopes === "string" ? scopes : scopes.join(" ");
     internalLogger.info("Get access token with scopes: " + scopesStr);
 

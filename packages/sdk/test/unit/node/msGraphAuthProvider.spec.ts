@@ -8,7 +8,9 @@ import {
   loadConfiguration,
   OnBehalfOfUserCredential,
   M365TenantCredential,
-  MsGraphAuthProvider
+  MsGraphAuthProvider,
+  ErrorWithCode,
+  ErrorCode
 } from "../../../src";
 
 chaiUse(chaiPromises);
@@ -57,6 +59,16 @@ describe("MsGraphAuthProvider Tests - Node", () => {
 
   afterEach(function () {
     mockedEnvRestore();
+  });
+
+  it("create MsGraphAuthProvider instance should throw InvalidParameter error with invalid scopes", function () {
+    const oboCredential = new OnBehalfOfUserCredential(ssoToken);
+    const invalidScopes: any = [10, 20];
+    expect(() => {
+      new MsGraphAuthProvider(oboCredential, invalidScopes);
+    })
+      .to.throw(ErrorWithCode, "The type of scopes is not valid, it must be string or string array")
+      .with.property("code", ErrorCode.InvalidParameter);
   });
 
   it("create msGraphAuthProvider instance should success with OnBehalfOfUserCredential", function () {

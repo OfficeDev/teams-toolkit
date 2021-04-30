@@ -34,6 +34,15 @@ describe("M365TenantCredential Tests - Node", () => {
     mockedEnvRestore();
   });
 
+  it("getToken should throw InvalidParameter error with invalid scopes", async function () {
+    const invalidScopes: any = [new Error()];
+    const credential = new M365TenantCredential();
+    const errorResult = await expect(credential.getToken(invalidScopes))
+      .to.eventually.be.rejectedWith(ErrorWithCode);
+    assert.strictEqual(errorResult.code, ErrorCode.InvalidParameter);
+    assert.strictEqual(errorResult.message, "The type of scopes is not valid, it must be string or string array");
+  });
+
   it("create M365TenantCredential instance should success with valid config", function () {
     const credential: any = new M365TenantCredential();
 

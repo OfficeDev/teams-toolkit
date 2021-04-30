@@ -2,13 +2,15 @@
 // Licensed under the MIT license.
 
 import { AccessToken } from "@azure/core-auth";
-import { assert, use as chaiUse } from "chai";
+import { assert, expect, use as chaiUse } from "chai";
 import chaiPromises from "chai-as-promised";
 import {
   MsGraphAuthProvider,
   loadConfiguration,
   TeamsUserCredential,
-  GetTokenOptions
+  GetTokenOptions,
+  ErrorWithCode,
+  ErrorCode
 } from "../../../src";
 import sinon from "sinon";
 
@@ -34,6 +36,16 @@ describe("MsGraphAuthProvider Tests - Browser", () => {
 
   beforeEach(function () {
     loadDefaultConfig();
+  });
+
+  it("create MsGraphAuthProvider instance should throw InvalidParameter error with invalid scope", function () {
+    const credential = new TeamsUserCredential();
+    const invalidScopes: any = [10, 20];
+    expect(() => {
+      new MsGraphAuthProvider(credential, invalidScopes);
+    })
+      .to.throw(ErrorWithCode, "The type of scopes is not valid, it must be string or string array")
+      .with.property("code", ErrorCode.InvalidParameter);
   });
 
   it("create MsGraphAuthProvider instance should success with given scopes", async function () {

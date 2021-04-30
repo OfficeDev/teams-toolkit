@@ -5,6 +5,7 @@ import { AuthenticationProvider } from "@microsoft/microsoft-graph-client";
 import { TokenCredential } from "@azure/identity";
 import { ErrorWithCode, ErrorCode } from "./errors";
 import { internalLogger } from "../util/logger";
+import { ensureScopesTypeIsValid } from "../util/utils";
 
 const defaultScope = "https://graph.microsoft.com/.default";
 
@@ -32,6 +33,7 @@ export class MsGraphAuthProvider implements AuthenticationProvider {
 
     let scopesStr = defaultScope;
     if (scopes) {
+      ensureScopesTypeIsValid(scopes);
       scopesStr = typeof scopes === "string" ? scopes : scopes.join(" ");
       if (scopesStr === "") {
         scopesStr = defaultScope;

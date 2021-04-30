@@ -17,7 +17,7 @@ import {
 chaiUse(chaiPromises);
 let restore: () => void;
 
-describe("TediousSQLConectConfig - node", () => {
+describe("DefaultTediousConnection Tests - Node", () => {
   // fake configuration for sql.
   const fakeSQLServerEndpoint = "xxx.database.windows.net";
   const fakeSQLUserName = "fake_name";
@@ -37,11 +37,11 @@ describe("TediousSQLConectConfig - node", () => {
   after(() => {
     setLogLevel(LogLevel.Info);
   });
-  afterEach(function() {
+  afterEach(function () {
     restore();
   });
 
-  it("getConfig success with username and password", async function() {
+  it("getConfig should success with username and password", async function () {
     restore = mockedEnv({
       SQL_ENDPOINT: fakeSQLServerEndpoint,
       SQL_DATABASE: fakeSQLDataName,
@@ -61,7 +61,7 @@ describe("TediousSQLConectConfig - node", () => {
     assert.strictEqual(tediousConnectConfig.authentication!.options.password, fakeSQLPassword);
   });
 
-  it("getConfig success with access token", async function() {
+  it("getConfig should success with access token", async function () {
     restore = mockedEnv({
       SQL_ENDPOINT: fakeSQLServerEndpoint,
       SQL_DATABASE: fakeSQLDataName,
@@ -91,7 +91,7 @@ describe("TediousSQLConectConfig - node", () => {
     sinon.restore();
   });
 
-  it("getConfig failed without host name", async function() {
+  it("getConfig should throw InvalidConfiguration error without host name", async function () {
     restore = mockedEnv({
       SQL_DATABASE: fakeSQLDataName,
       SQL_USER_NAME: fakeSQLUserName,
@@ -105,7 +105,7 @@ describe("TediousSQLConectConfig - node", () => {
       .and.property("code", INVALID_CONFIGURATION);
   });
 
-  it("getConfig fail without username, password or identity id", async function() {
+  it("getConfig should throw InvalidConfiguration error without username, password or identity id", async function () {
     restore = mockedEnv({
       SQL_ENDPOINT: fakeSQLServerEndpoint,
       SQL_DATABASE: fakeSQLDataName

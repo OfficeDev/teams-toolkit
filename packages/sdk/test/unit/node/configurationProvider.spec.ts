@@ -14,7 +14,7 @@ import {
 
 chaiUse(chaiPromises);
 
-describe("Print function - node", () => {
+describe("ConfigurationProvider Tests - Node", () => {
   const fakeSQLEndpoint = "xxx.database.windows.net";
   const fakeSQLUserName = "fake_name";
   const fakeSQLPassword = "fake_password";
@@ -27,7 +27,7 @@ describe("Print function - node", () => {
   const clientSecret = "fake_client_secret";
   const authorityHost = "https://fake_authority_host";
 
-  it("getResourceConfiguration success", () => {
+  it("getResourceConfiguration should success with valid config", () => {
     loadConfiguration({
       authentication: {},
       resources: [
@@ -59,7 +59,7 @@ describe("Print function - node", () => {
     assert.strictEqual(result!.sqlDatabaseName, fakeSQLDataName);
   });
 
-  it("getResourceConfiguration throw error with incorrect type", () => {
+  it("getResourceConfiguration should throw InvalidConfiguration error with incorrect type", () => {
     loadConfiguration({
       authentication: {},
       resources: [
@@ -83,7 +83,7 @@ describe("Print function - node", () => {
     }
   });
 
-  it("getResourceConfiguration throw error without name exist", () => {
+  it("getResourceConfiguration should throw InvalidConfiguration error without name exist", () => {
     loadConfiguration({
       authentication: {},
       resources: [
@@ -107,7 +107,7 @@ describe("Print function - node", () => {
     }
   });
 
-  it("getAuthenticationConfiguration from environment variables", () => {
+  it("getResourceConfiguration should success with valid environment variables", () => {
     process.env.M365_CLIENT_ID = clientId;
     process.env.M365_TENANT_ID = tenantId;
     process.env.M365_CLIENT_SECRET = clientSecret;
@@ -126,7 +126,7 @@ describe("Print function - node", () => {
     }
   });
 
-  it("getAuthenticationConfiguration should override environment variables with local config object", () => {
+  it("getResourceConfiguration should override environment variables with local config object", () => {
     process.env.M365_CLIENT_ID = clientId;
     process.env.M365_TENANT_ID = tenantId;
     process.env.M365_CLIENT_SECRET = clientSecret;
@@ -149,7 +149,7 @@ describe("Print function - node", () => {
     }
   });
 
-  it("getAuthenticationConfiguration should get undefined result if there is no environment variable", () => {
+  it("getResourceConfiguration should get undefined result when there is no environment variable", () => {
     delete process.env.M365_CLIENT_ID;
     delete process.env.M365_TENANT_ID;
     delete process.env.M365_CLIENT_SECRET;

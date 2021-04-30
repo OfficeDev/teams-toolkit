@@ -37,7 +37,7 @@ import { promisify } from "util";
 chaiUse(chaiPromises);
 let mockedEnvRestore: () => void;
 
-describe("TeamsBotSsoPrompt - node", () => {
+describe("TeamsBotSsoPrompt Tests - Node", () => {
   const sleep = promisify(setTimeout);
 
   const clientId = "fake_client_id";
@@ -84,7 +84,7 @@ describe("TeamsBotSsoPrompt - node", () => {
   }
   const sandbox = sinon.createSandbox();
 
-  beforeEach(function() {
+  beforeEach(function () {
     mockedEnvRestore = mockedEnv({
       INITIATE_LOGIN_ENDPOINT: initiateLoginEndpoint,
       M365_CLIENT_ID: clientId,
@@ -115,12 +115,12 @@ describe("TeamsBotSsoPrompt - node", () => {
     });
   });
 
-  afterEach(function() {
+  afterEach(function () {
     sandbox.restore();
     mockedEnvRestore();
   });
 
-  it("should be able to sign user in and get exchange tokens", async function() {
+  it("teams bot sso prompt should be able to sign user in and get exchange tokens when consent", async function () {
     this.timeout(500);
 
     const adapter: TestAdapter = await initializeTestEnv();
@@ -176,7 +176,7 @@ describe("TeamsBotSsoPrompt - node", () => {
       });
   });
 
-  it("should timeout with teams verification invoke activity", async function() {
+  it("teams bot sso prompt should timeout with teams verification invoke activity when wait a long time", async function () {
     const adapter: TestAdapter = await initializeTestEnv(timeoutValue);
 
     await adapter
@@ -207,7 +207,7 @@ describe("TeamsBotSsoPrompt - node", () => {
       .assertReply(SsoLogInResult.Fail);
   });
 
-  it("should timeout with token exchange activity", async function() {
+  it("teams bot sso prompt should timeout with token exchange activity when wait a long time", async function () {
     const adapter: TestAdapter = await initializeTestEnv(timeoutValue);
 
     await adapter
@@ -224,7 +224,7 @@ describe("TeamsBotSsoPrompt - node", () => {
       .assertReply(SsoLogInResult.Fail);
   });
 
-  it("should timeout with message activity", async function() {
+  it("teams bot sso prompt should timeout with message activity when wait a long time", async function () {
     const adapter: TestAdapter = await initializeTestEnv(timeoutValue);
 
     await adapter
@@ -243,7 +243,7 @@ describe("TeamsBotSsoPrompt - node", () => {
       .assertReply(SsoLogInResult.Fail);
   });
 
-  it("should end on invalid message when endOnInvalidMessage default to true", async function() {
+  it("teams bot sso prompt should end on invalid message when endOnInvalidMessage default to true", async function () {
     const adapter: TestAdapter = await initializeTestEnv(undefined);
 
     await adapter
@@ -260,7 +260,7 @@ describe("TeamsBotSsoPrompt - node", () => {
       .assertReply(SsoLogInResult.Fail);
   });
 
-  it("should not end on invalid message when endOnInvalidMessage set to false", async function() {
+  it("teams bot sso prompt should not end on invalid message when endOnInvalidMessage set to false", async function () {
     const adapter: TestAdapter = await initializeTestEnv(undefined, false);
 
     await adapter
@@ -319,7 +319,7 @@ describe("TeamsBotSsoPrompt - node", () => {
       });
   });
 
-  it("should only work in MS Teams Channel", async function() {
+  it("teams bot sso prompt should only work in MS Teams Channel", async function () {
     const adapter: TestAdapter = await initializeTestEnv(undefined, undefined, Channels.Test);
 
     await adapter.send("Hello").catch((error) => {
@@ -330,7 +330,7 @@ describe("TeamsBotSsoPrompt - node", () => {
     });
   });
 
-  it("scopes should have string | string[] type", async function() {
+  it("teams bot sso prompt should throw error with invalid scopes types", async function () {
     // TODO
   });
 

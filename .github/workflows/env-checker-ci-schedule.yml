@@ -21,7 +21,7 @@ jobs:
         os: [windows-latest, macos-latest, ubuntu-latest]
         node-version: [10, 12, 14]
         func-version: [none]
-        dotnet-version: [none, 2.1.x, 3.1.x, 5.0.x]
+        dotnet-version: [none, 3.1.x, 5.0.x]
 
     runs-on: ${{ matrix.os }}
 

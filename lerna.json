@@ -6,7 +6,8 @@
         "packages/fx-core",
         "packages/sdk",
         "packages/cli",
-        "packages/vscode-extension"
+        "packages/vscode-extension",
+        "packages/react"
     ],
     "command": {
         "version": {

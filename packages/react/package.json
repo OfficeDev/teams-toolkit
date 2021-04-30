@@ -1,0 +1,39 @@
+{
+  "name": "@microsoft/teamsfx-react",
+  "version": "0.0.1",
+  "description": "React helper components for Microsoft TeamsFx",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "license": "MIT",
+  "keywords": [
+    "teamsfx",
+    "react"
+  ],
+  "repository": "https://github.com/OfficeDev/TeamsFx",
+  "author": "Microsoft Corporation",
+  "files": [
+    "build/**/*"
+  ],
+  "scripts": {
+    "lint:staged": "lint-staged",
+    "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "build": "tsc -p ./",
+    "prepare": "npm run build",
+    "lint:fix": "eslint \"src/**/*.ts\" \"tests/**/*.ts\" --fix",
+    "test:unit": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/**/*.ts"
+  },
+  "devDependencies": {
+    "@shared/eslint-config": "file:../eslint-config",
+    "@types/react": "^17.0.4"
+  },
+  "dependencies": {
+    "@microsoft/teamsfx": "^0.0.6-alpha.1",
+    "react": "^16.13.1"
+  },
+  "lint-staged": {
+    "**/*.ts": [
+      "eslint"
+    ]
+  },
+  "gitHead": "7d60c0765c0ea8c023a26c10d1c93001c597afbb"
+}

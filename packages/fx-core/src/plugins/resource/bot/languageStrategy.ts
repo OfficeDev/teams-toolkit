@@ -3,7 +3,7 @@
 import * as utils from "./utils/common";
 import { ProgrammingLanguage } from "./enums/programmingLanguage";
 import { TemplateManifest } from "./utils/templateManifest";
-import { TemplateProjectsConstants } from "./constants";
+import { DownloadConstants, TemplateProjectsConstants } from "./constants";
 import { Commands } from "./resources/strings";
 
 import * as appService from "@azure/arm-appservice";
@@ -20,7 +20,7 @@ export class LanguageStrategy {
     public static async getTemplateProjectZip(programmingLanguage: ProgrammingLanguage, groupName: string): Promise<AdmZip> {
         try {
             const zipUrl = await LanguageStrategy.getTemplateProjectZipUrl(programmingLanguage, groupName);
-            const zipBuffer = await downloadByUrl(zipUrl);
+            const zipBuffer = await downloadByUrl(zipUrl, DownloadConstants.TEMPLATES_TIMEOUT_MS);
             Logger.info(Messages.SuccessfullyRetrievedTemplateZip(zipUrl));
             return new AdmZip(zipBuffer);
         } catch (e) {

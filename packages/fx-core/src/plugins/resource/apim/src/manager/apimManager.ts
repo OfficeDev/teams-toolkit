@@ -63,7 +63,7 @@ export class ApimManager {
             resourceGroupName,
             apimServiceName,
             oAuthServerId,
-            solutionConfig.tenantId,
+            solutionConfig.teamsAppTenantId,
             clientId,
             clientSecret,
             scopeName

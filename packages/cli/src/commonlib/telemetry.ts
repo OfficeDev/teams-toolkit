@@ -1,5 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+"use strict";
+
 import Reporter from "../telemetry/telemetryReporter";
 import { TelemetryReporter } from "fx-api";
 

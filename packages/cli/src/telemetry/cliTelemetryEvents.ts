@@ -1,5 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+"use strict";
+
 export enum TelemetryEvent {
   //TODO: define CLI telemetry event
   AccountLoginStart = "login-start",
@@ -13,7 +15,7 @@ export enum TelemetryEvent {
 
 export enum TelemetryProperty {
   Component = "component",
-  AapId = "appid",
+  AppId = "appid",
   UserId = "hashed-userid",
   AccountType = "account-type",
   Success = "success",

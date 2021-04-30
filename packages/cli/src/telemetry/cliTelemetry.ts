@@ -1,5 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+"use strict";
+
 import { CliTelemetryReporter } from "../commonlib/telemetry";
 import {
   TelemetryProperty,
@@ -50,7 +52,7 @@ export class CliTelemetry {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
     }
 
-    properties[TelemetryProperty.AapId] = getTeamsAppId(CliTelemetry.rootFolder);
+    properties[TelemetryProperty.AppId] = getTeamsAppId(CliTelemetry.rootFolder);
 
     CliTelemetry.reporter.withRootFolder(CliTelemetry.rootFolder).sendTelemetryEvent(eventName, properties, measurements);
   }
@@ -70,7 +72,7 @@ export class CliTelemetry {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
     }
 
-    properties[TelemetryProperty.AapId] = getTeamsAppId(CliTelemetry.rootFolder);
+    properties[TelemetryProperty.AppId] = getTeamsAppId(CliTelemetry.rootFolder);
 
     properties[TelemetryProperty.Success] = TelemetrySuccess.No;
     if (error instanceof UserError) {
@@ -98,7 +100,7 @@ export class CliTelemetry {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
     }
 
-    properties[TelemetryProperty.AapId] = getTeamsAppId(CliTelemetry.rootFolder);
+    properties[TelemetryProperty.AppId] = getTeamsAppId(CliTelemetry.rootFolder);
 
     CliTelemetry.reporter.withRootFolder(CliTelemetry.rootFolder).sendTelemetryException(error, properties, measurements);
   }

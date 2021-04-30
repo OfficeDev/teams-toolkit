@@ -170,7 +170,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
   ): Promise<vscode.Task> {
     const command: string = constants.ngrokStartCommand;
     definition = definition || { type: TeamsfxTaskProvider.type, command };
-    let commandLine = "npx ngrok http 3978";
+    let commandLine = "npx ngrok http 3978 --log=stdout";
     const skipNgrokConfig = await commonUtils.getSkipNgrokConfig();
     const skipNgrok = skipNgrokConfig && skipNgrokConfig.trim().toLocaleLowerCase() === "true";
     if (skipNgrok) {

@@ -45,7 +45,7 @@ export function Welcome(props: {
   const credential = new TeamsUserCredential();
   const userProfile = useData(async () =>
     isInTeams ? await credential.getUserInfo() : undefined
-  ).data;
+  )?.data;
   const userName = userProfile ? userProfile.displayName : "";
   return (
     <div className="welcome page">

@@ -246,7 +246,7 @@ export function toInquirerQuestion(data: Question, answers: { [_: string]: any }
   return {
     type,
     name: data.name,
-    message: data.description || data.title as string || "",
+    message: data.description || data.title || "",
     choices: getChoicesFromQTNodeQuestion(data, true),
     default: defaultValue,
     validate: async (input: any) => {

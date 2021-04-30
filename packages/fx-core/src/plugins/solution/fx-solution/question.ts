@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { FuncQuestion, MultiSelectQuestion, NodeType, OptionItem, SingleSelectQuestion } from "fx-api";
-import * as strings from "../../../resources/strings.json";
+import { ConfigMap, FuncQuestion, Inputs, MultiSelectQuestion, NodeType, OptionItem, returnSystemError, SingleSelectQuestion, StaticOption } from "fx-api";
+import { SolutionError } from "./constants";
 
 export const TabOptionItem: OptionItem = {
     id: "Tab",
@@ -73,7 +73,8 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
         type: NodeType.multiSelect,
         option: [TabOptionItem, BotOptionItem, MessageExtensionItem],
         default: [TabOptionItem.id],
-        placeholder: "Select at least 1 capability"
+        placeholder: "Select at least 1 capability",
+        validation: {minItems:1}
     };
 }
 
@@ -81,7 +82,21 @@ export const FrontendHostTypeQuestion: SingleSelectQuestion = {
     name: AzureSolutionQuestionNames.HostType,
     title: "Frontend hosting type",
     type: NodeType.singleSelect,
-    option: {namespace: "fx-solution-azure", method : "listHostTypeOptions"},
+    option: (previousAnswers?: ConfigMap) : StaticOption => {  
+        const cap = previousAnswers?.getStringArray(AzureSolutionQuestionNames.Capabilities);
+        if(cap) {
+            if(cap.includes(BotOptionItem.id) || cap.includes(MessageExtensionItem.id))
+                return [HostTypeOptionAzure];
+            if(cap.includes(TabOptionItem.id))
+                return [HostTypeOptionAzure, HostTypeOptionSPFx];
+            return [];
+        }
+        throw returnSystemError(
+                new Error("Capabilities is undefined"),
+                "Solution",
+                SolutionError.InternelError,
+            ) ;
+    },
     default: HostTypeOptionAzure.id,
     placeholder: "Select a hosting type",
     skipSingleOption: true
@@ -125,7 +140,7 @@ export function createAddAzureResourceQuestion(alreadyHaveFunction: boolean, alr
     };
 }
 
-export function createAddCapabilityQuestion(alreadyHaveTab: boolean, alreadyHaveBot: boolean): MultiSelectQuestion {
+export function addCapabilityQuestion(alreadyHaveTab: boolean, alreadyHaveBot: boolean): MultiSelectQuestion {
     const options:OptionItem[] = [];
     if(!alreadyHaveTab) options.push(TabOptionItem);
     if(!alreadyHaveBot){
@@ -153,7 +168,6 @@ export const DeployPluginSelectQuestion: MultiSelectQuestion = {
 
 export const AskSubscriptionQuestion: FuncQuestion = {
     name: AzureSolutionQuestionNames.AskSub,
-    title: "Select a subscription",
     type: NodeType.func,
     namespace: "fx-solution-azure",
     method: "askSubscription"
@@ -163,7 +177,16 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
     name: AzureSolutionQuestionNames.ProgrammingLanguage,
     title: "Programming Language",
     type: NodeType.singleSelect,
-    option: {namespace:"fx-solution-azure", method: "listLanguageOptions"},
+    option: (previousAnswers?: ConfigMap) : StaticOption => {  
+        const hostType = previousAnswers?.getString(AzureSolutionQuestionNames.HostType);
+        if(HostTypeOptionSPFx.id === hostType) return [{id:"typescript", label:"TypeScript"}];
+        else if(HostTypeOptionAzure.id === hostType) return [{id:"javascript", label: "JavaScript"}, {id:"typescript", label:"TypeScript"}];
+        return [];
+    },
     default: "javascript",
-    placeholder: "Select a programming language."
+    placeholder: (previousAnswers?: ConfigMap) : string|undefined => {  
+        const hostType = previousAnswers?.getString(AzureSolutionQuestionNames.HostType);
+        if(HostTypeOptionSPFx.id === hostType) return "SPFx is currently supporting TypeScript only.";
+        return undefined;
+    }
 };

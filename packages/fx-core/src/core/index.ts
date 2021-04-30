@@ -229,9 +229,7 @@ class CoreImpl implements Core {
         const namespace = func.namespace;
         const array = namespace?namespace.split("/"):[];
         if (!namespace || "" === namespace || array.length === 0) {
-            if (func.method === "validateAppName") {
-                return await this.validateAppName(func.params as string, answer);
-            }
+            
         } else {
             const solutionName = array[0];
             const solution = this.globalSolutions.get(solutionName);

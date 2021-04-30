@@ -26,7 +26,7 @@ async function callFunction() {
     return response.data;
   } catch (err) {
     let funcErrorMsg = "";
-    if (err.response && err.response.status && err.response.status === 404) {
+    if (err?.response?.status === 404) {
       funcErrorMsg = `There may be a problem with the deployment of Azure Function App, please deploy Azure Function (Run command palette "TeamsFx - Deploy Package") first before running this App`;
     } else if (err.message === "Network Error") {
       funcErrorMsg =

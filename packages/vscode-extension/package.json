@@ -127,6 +127,22 @@
         {
           "command": "fx-extension.signOut",
           "when": "false"
+        },
+        {
+          "command": "fx-extension.signInGuideline",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.m365AccountSettings",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.azureAccountSettings",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.specifySubscription",
+          "when": "false"
         }
       ]
     },

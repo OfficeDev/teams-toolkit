@@ -47,6 +47,24 @@ class TreeViewManager{
         "createProject"
       ),
       new TreeViewCommand(
+        StringResources.vsc.commandsTreeViewProvider.addCapabilitiesTitle,
+        StringResources.vsc.commandsTreeViewProvider.addCapabilitiesDescription,
+        "fx-extension.addCapability",
+        vscode.TreeItemCollapsibleState.None,
+        undefined,
+        undefined,
+        "addCapability"
+      ),
+      new TreeViewCommand(
+        StringResources.vsc.commandsTreeViewProvider.addResourcesTitle,
+        StringResources.vsc.commandsTreeViewProvider.addResourcesDescription,
+        "fx-extension.update",
+        vscode.TreeItemCollapsibleState.None,
+        undefined,
+        undefined,
+        "addResources"
+      ),
+      new TreeViewCommand(
         StringResources.vsc.commandsTreeViewProvider.manifestEditorTitle,
         StringResources.vsc.commandsTreeViewProvider.manifestEditorDescription,
         "fx-extension.openManifest",

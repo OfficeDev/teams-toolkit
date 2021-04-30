@@ -213,19 +213,11 @@ export class DotnetChecker implements IDepsChecker {
 
   // from: https://github.com/dotnet/vscode-dotnet-runtime/blob/main/vscode-dotnet-runtime-library/src/Acquisition/AcquisitionInvoker.ts
   private async runDotnetInstallScript(version: DotnetVersion, installDir: string): Promise<void> {
-    const installCommand = await this.getInstallCommand(version, installDir);
-    const windowsFullCommand = [
-      'powershell.exe',
-      '-NoProfile',
-      '-ExecutionPolicy',
-      'unrestricted',
-      '-Command',
-      `"& { [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12 ; & ${installCommand} }`
-    ];
+    const command = await this.getInstallCommand(version, installDir);
+    const cwd = this._adapter.getResourceDir();
 
-    const command = isWindows() ? windowsFullCommand : installCommand;
     const options: child_process.ExecFileOptions = {
-      cwd: this._adapter.getResourceDir(),
+      cwd: cwd,
       maxBuffer: DotnetChecker.maxBuffer,
       timeout: DotnetChecker.timeout,
       killSignal: "SIGKILL",
@@ -392,14 +384,27 @@ export class DotnetChecker implements IDepsChecker {
     version: DotnetVersion,
     dotnetInstallDir: string
   ): Promise<string[]> {
-    return [
+    const command = [
       // path.join does not prepend '.'
       [".", this.getDotnetInstallScriptName()].join(path.sep),
       "-InstallDir",
-      DotnetChecker.escapeFilePath(dotnetInstallDir),
+      isWindows() ? DotnetChecker.escapeFilePath(dotnetInstallDir) : dotnetInstallDir,
       "-Channel",
       version
     ];
+
+    if (isWindows()) {
+      return [
+        'powershell.exe',
+        '-NoProfile',
+        '-ExecutionPolicy',
+        'unrestricted',
+        '-Command',
+        `"& { [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12 ; & ${command.join(' ')} }`
+      ];
+    } else {
+      return command;
+    }
   }
 
   private async validate(): Promise<boolean> {

@@ -220,15 +220,16 @@ export class DotnetChecker implements IDepsChecker {
       '-ExecutionPolicy',
       'unrestricted',
       '-Command',
-      '& { [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12 ; & ${installCommand} }'
+      `"& { [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12 ; & ${installCommand} }`
     ];
 
     const command = isWindows() ? windowsFullCommand : installCommand;
     const options: child_process.ExecFileOptions = {
-      cwd: process.cwd(),
+      cwd: this._adapter.getResourceDir(),
       maxBuffer: DotnetChecker.maxBuffer,
       timeout: DotnetChecker.timeout,
-      killSignal: "SIGKILL"
+      killSignal: "SIGKILL",
+      shell: false
     };
 
     try {
@@ -375,8 +376,12 @@ export class DotnetChecker implements IDepsChecker {
   private getDotnetInstallScriptPath(): string {
     return path.join(
       this._adapter.getResourceDir(),
-      isWindows() ? "dotnet-install.ps1" : "dotnet-install.sh"
+      this.getDotnetInstallScriptName(),
     );
+  }
+
+  private getDotnetInstallScriptName(): string {
+      return isWindows() ? "dotnet-install.ps1" : "dotnet-install.sh";
   }
 
   private static getDefaultInstallPath(): string {
@@ -388,7 +393,8 @@ export class DotnetChecker implements IDepsChecker {
     dotnetInstallDir: string
   ): Promise<string[]> {
     return [
-      this.getDotnetInstallScriptPath(),
+      // path.join does not prepend '.'
+      [".", this.getDotnetInstallScriptName()].join(path.sep),
       "-InstallDir",
       DotnetChecker.escapeFilePath(dotnetInstallDir),
       "-Channel",

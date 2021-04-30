@@ -22,7 +22,7 @@ describe("config", () => {
 
         it("Undefined property", () => {
             chai.expect(() => solutionConfig.teamsAppTenantId).to.throw(
-                "Project configuration 'tenantId' of solution is missing in 'env.default.json'. Please retry to provision resource or set the value manually."
+                "Project configuration 'teamsAppTenantId' of solution is missing in 'env.default.json'. Please retry to provision resource or set the value manually."
             );
         });
         it("Error type property", () => {

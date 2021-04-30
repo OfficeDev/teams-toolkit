@@ -4,7 +4,7 @@ import { assert, expect, use as chaiUse } from "chai";
 import chaiPromises from "chai-as-promised";
 import { AccessToken, GetTokenOptions } from "@azure/core-auth";
 import sinon from "sinon";
-import { loadConfiguration, TeamsUserCredential } from "../../../src";
+import { loadConfiguration, TeamsUserCredential, ErrorWithCode, ErrorCode } from "../../../src";
 import { getSSOToken } from "../helper.browser";
 
 chaiUse(chaiPromises);
@@ -14,7 +14,6 @@ describe("TeamsUserCredential Integration Test - browser", () => {
     const fakeLoginEndpoint:string =  "FakeLoginEndpoint";
     before(async () => {
         ssoToken = await getSSOToken();
-        // restore = MockEnvironmentVariable
         loadConfiguration({
             authentication: {
                 initiateLoginEndpoint: fakeLoginEndpoint,
@@ -37,18 +36,19 @@ describe("TeamsUserCredential Integration Test - browser", () => {
         sinon.restore();
     })
     
-    it("GetUserInfo local Success", async function () {
+    it("GetUserInfo should success with SSOToken", async function () {
         const credential: TeamsUserCredential = new TeamsUserCredential();
         const info = await credential.getUserInfo();
         assert.strictEqual(info.preferredUserName, env.SDK_INTEGRATION_TEST_ACCOUNT_NAME);
     });
 
-    it("GetToken with consent scope success", async function(){
+    it("GetToken should success with consent scope", async function(){
         const credential: TeamsUserCredential = new TeamsUserCredential();
         await expect(credential.getToken(["User.Read"])).to.be.eventually.have.property('token');
     });
-    it("GetToken with unconsent scope failed", async function() {
+
+    it("GetToken should throw UiRequiredError with unconsent scope", async function() {
         const credential: TeamsUserCredential = new TeamsUserCredential();
-        await expect(credential.getToken(["Calendars.Read"])).to.eventually.be.rejected;
+        await expect(credential.getToken(["Calendars.Read"])).to.eventually.be.rejectedWith(ErrorWithCode).and.property("code", ErrorCode.UiRequiredError);;
     })
 });

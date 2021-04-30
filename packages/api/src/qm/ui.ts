@@ -29,6 +29,8 @@ export interface FxQuickPickOption {
    */
   placeholder?: string;
 
+  prompt?:string;
+
   /**
    * whether enable `go back` button
    */

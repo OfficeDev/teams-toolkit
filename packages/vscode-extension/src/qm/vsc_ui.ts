@@ -5,6 +5,7 @@ import { Disposable, InputBox, QuickInputButton, QuickInputButtons, QuickPick, Q
 import { FxInputBoxOption, FxOpenDialogOption, FxQuickPickOption, InputResult, InputResultType, OptionItem, returnSystemError, UserInterface } from "fx-api";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { ext } from "../extensionVariables";
+import { multiQuickPick } from "./quickpick";
 
 export interface FxQuickPickItem extends QuickPickItem {
   id: string;
@@ -14,6 +15,8 @@ export interface FxQuickPickItem extends QuickPickItem {
 export class VsCodeUI implements UserInterface{
   
   async showQuickPick (option: FxQuickPickOption) : Promise<InputResult>{
+    if(option.canSelectMany) return await multiQuickPick(option);
+
     const okButton : QuickInputButton = { 
       iconPath: Uri.file(ext.context.asAbsolutePath("media/ok.svg")),
       tooltip:"ok"
@@ -377,4 +380,5 @@ export class VsCodeUI implements UserInterface{
 
 
 export const VS_CODE_UI = new VsCodeUI();
-  
+   
+

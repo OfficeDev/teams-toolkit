@@ -123,7 +123,7 @@ async function getCallFuncValue(inputs: ConfigMap, throwError: boolean,  raw?: s
       }
     }
     else if(typeof raw === "function"){
-      return await raw(undefined, inputs);
+      return await raw(inputs);
     }
   }
   return raw;
@@ -158,7 +158,7 @@ const questionVisitor: QuestionVistor = async function (
     }
   } 
   else if(question.type === NodeType.localFunc){
-    const res = await question.func(undefined, inputs);
+    const res = await question.func(inputs);
     return { type: InputResultType.sucess, result: res };
   }
   else{

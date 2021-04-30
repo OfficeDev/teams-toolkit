@@ -82,7 +82,7 @@ export const FrontendHostTypeQuestion: SingleSelectQuestion = {
     name: AzureSolutionQuestionNames.HostType,
     title: "Frontend hosting type",
     type: NodeType.singleSelect,
-    option: (currentInput?: string, previousAnswers?: ConfigMap) : StaticOption => {  
+    option: (previousAnswers?: ConfigMap) : StaticOption => {  
         const cap = previousAnswers?.getStringArray(AzureSolutionQuestionNames.Capabilities);
         if(cap) {
             if(cap.includes(BotOptionItem.id) || cap.includes(MessageExtensionItem.id))
@@ -177,13 +177,13 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
     name: AzureSolutionQuestionNames.ProgrammingLanguage,
     title: "Programming Language",
     type: NodeType.singleSelect,
-    option: (currentInput?: string, previousAnswers?: ConfigMap) : StaticOption => {  
+    option: (previousAnswers?: ConfigMap) : StaticOption => {  
         const hostType = previousAnswers?.getString(AzureSolutionQuestionNames.HostType);
         if(HostTypeOptionSPFx.id === hostType) return [{id:"typescript", label:"TypeScript"}];
         return [{id:"javascript", label: "JavaScript"}, {id:"typescript", label:"TypeScript"}];
     },
     default: "javascript",
-    placeholder: (currentInput?: string, previousAnswers?: ConfigMap) : string|undefined => {  
+    placeholder: (previousAnswers?: ConfigMap) : string|undefined => {  
         const hostType = previousAnswers?.getString(AzureSolutionQuestionNames.HostType);
         if(HostTypeOptionSPFx.id === hostType) return "SPFx is currently supporting TypeScript only.";
         return undefined;

@@ -181,7 +181,7 @@ export interface BaseQuestion {
 
     value?: AnswerValue;
 
-    title?: string | DynamicValue<string| undefined>;
+    title?: string;
 
     /**
      * default value for question

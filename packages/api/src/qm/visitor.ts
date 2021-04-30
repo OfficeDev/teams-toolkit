@@ -162,7 +162,7 @@ const questionVisitor: QuestionVistor = async function (
     return { type: InputResultType.sucess, result: res };
   }
   else{
-    const title = await getCallFuncValue(inputs, false, question.title, remoteFuncExecutor) as string;
+    const title = question.title as string || question.name;
     const defaultValue = question.value? question.value : await getRealValue(parentValue, question.default, inputs, remoteFuncExecutor);
     if (question.type === NodeType.text || question.type === NodeType.password || question.type === NodeType.number) {
       const inputQuestion: TextInputQuestion | NumberInputQuestion = question as (TextInputQuestion | NumberInputQuestion);

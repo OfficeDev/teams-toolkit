@@ -32,9 +32,9 @@ class LoginAccount extends YargsCommand {
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLoginStart, {
-      [TelemetryProperty.AccountType]: args.platform
+      [TelemetryProperty.AccountType]: args.service
     });
-    switch (args.platform) {
+    switch (args.service) {
       case "azure": {
         const result = await AzureTokenProvider.getAccountCredentialAsync();
         if (result) {
@@ -46,7 +46,7 @@ class LoginAccount extends YargsCommand {
           CLILogProvider.error(`[${constants.cliSource}] Failed to sign in to Azure.`);
         }
         CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLogin, {
-          [TelemetryProperty.AccountType]: args.platform,
+          [TelemetryProperty.AccountType]: args.service,
           [TelemetryProperty.Success]: result? TelemetrySuccess.Yes : TelemetrySuccess.No
         });
         break;
@@ -59,7 +59,7 @@ class LoginAccount extends YargsCommand {
           CLILogProvider.error(`[${constants.cliSource}] Failed to sign in to M365.`);
         }
         CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLogin, {
-          [TelemetryProperty.AccountType]: args.platform,
+          [TelemetryProperty.AccountType]: args.service,
           [TelemetryProperty.Success]: result? TelemetrySuccess.Yes : TelemetrySuccess.No
         });
         break;
@@ -83,7 +83,7 @@ class LogoutAccount extends YargsCommand {
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    switch (args.platform) {
+    switch (args.service) {
       case "azure": {
         const result = await AzureTokenProvider.signout();
         if (result) {

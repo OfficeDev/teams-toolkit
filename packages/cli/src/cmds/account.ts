@@ -29,7 +29,7 @@ class LoginAccount extends YargsCommand {
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    switch (args.platform) {
+    switch (args.service) {
       case "azure": {
         const result = await AzureTokenProvider.getAccountCredentialAsync();
         if (result) {
@@ -70,7 +70,7 @@ class LogoutAccount extends YargsCommand {
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    switch (args.platform) {
+    switch (args.service) {
       case "azure": {
         const result = await AzureTokenProvider.signout();
         if (result) {

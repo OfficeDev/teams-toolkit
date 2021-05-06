@@ -1,6 +1,6 @@
 # Env Checker FAQ
 
-## 1. The toolkit cannot find Node.js on your machine
+## The toolkit cannot find Node.js on your machine
 
 As the TeamsFx project is implemented by `Node.js`, it's required to install the npm pacakges and run the project in local. Please refer to [nodejs.org](https://nodejs.org/) to install the right version: Currently only LTS versions (v10, v12 and v14) are supported by TeamsFx, and `Node v14` would be recommended to be installed.
 
@@ -8,19 +8,19 @@ As the TeamsFx project is implemented by `Node.js`, it's required to install the
 * There are known issues with using `npm@7`, packaged with `Node v15` and later. If you have problems running npm install, it would be recommended to use `Node v14 (LTS)` instead.
 * Please restart all your Visual Studio Code instances after the installation is finished.
 
-## 2. Current installed Node.js is not in the supported version list
+## Current installed Node.js is not in the supported version list (Azure hosting)
 
-Currently only LTS versions (v10, v12 and v14) of Node.js are supported by TeamsFx, please make sure the installed Node.js meets this requirement. In addition, **Node v14 (LTS)** would be recommended to be installed.
+ When `Azure` is selected as the hosting type, only LTS versions (v10, v12 and v14) of Node.js are supported by TeamsFx currently, please make sure the installed Node.js meets this requirement. In addition, **Node v14 (LTS)** would be recommended to be installed.
 
 **NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
 
-## 3. Why .NET SDK is needed?
+## Why .NET SDK is needed?
 
 The `.NET SDK` is used to
 * install customized bindings for Azure Functions app during local debugging and its deployments. 
 * start the simpleAuth service during local debugging.
 
-## 4. Failed to install .NET Core SDK (v3.1)
+## Failed to install .NET Core SDK (v3.1)
 
 ### Possible reasons
 * Timeout(longer than 3 minutes) to install it caused by poor network.
@@ -32,7 +32,7 @@ The `.NET SDK` is used to
 
 **NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
 
-## 5. (Linux only) The toolkit cannot find `.NET 5` or `.NET Core 3.1` on your machine. Please install it manually.
+## (Linux only) The toolkit cannot find `.NET 5` or `.NET Core 3.1` on your machine. Please install it manually.
 
 Install the `.NET SDK` manually: please refer to the official documentation to check how to install it: https://docs.microsoft.com/en-us/dotnet/core/install/linux.
 

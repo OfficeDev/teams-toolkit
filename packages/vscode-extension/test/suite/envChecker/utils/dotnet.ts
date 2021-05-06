@@ -8,6 +8,7 @@ import * as tmp from "tmp";
 
 import { ConfigFolderName } from "fx-api";
 import { cpUtils } from "../../../../src/debug/depsChecker/cpUtils";
+import { isWindows } from "../../../../src/debug/depsChecker/common";
 import { logger } from "../adapters/testLogger";
 import { DotnetChecker, DotnetVersion } from "../../../../src/debug/depsChecker/dotnetChecker";
 
@@ -82,13 +83,27 @@ export async function cleanup() {
 export async function withDotnet(
   dotnetChecker: DotnetChecker,
   version: DotnetVersion,
+  addToPath: boolean,
   callback: (dotnetExecPath: string) => Promise<void>
 ): Promise<void> {
   const withDotnetAsync = async (installDir: string) => {
     // use private method as a helper method in test only
     await dotnetChecker["runDotnetInstallScript"](version, installDir);
     const dotnetExecPath = DotnetChecker["getDotnetExecPathFromDotnetInstallationDir"](installDir);
-    await callback(dotnetExecPath);
+
+    const backupPath = process.env.PATH;
+    try {
+      if (addToPath) {
+        process.env.PATH =
+          path.resolve(dotnetExecPath, "..") + (isWindows() ? ";" : ":") + process.env.PATH;
+      }
+
+      await callback(dotnetExecPath);
+    } finally {
+      if (addToPath) {
+        process.env.PATH = backupPath;
+      }
+    }
   };
 
   return new Promise((resolve, reject) => {

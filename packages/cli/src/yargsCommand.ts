@@ -10,6 +10,10 @@ import { FxError, Result, SystemError, UserError } from "fx-api";
 import CLILogProvider from "./commonlib/log";
 import * as constants from "./constants";
 import { UnknownError } from "./error";
+import { CliTelemetry } from "./telemetry/cliTelemetry";
+import { CliTelemetryReporter } from "./commonlib/telemetry";
+import { readFileSync } from "fs";
+import path from "path";
 
 export abstract class YargsCommand {
   /**
@@ -55,6 +59,11 @@ export abstract class YargsCommand {
     if ("debug" in args && args.debug) {
       CLILogProvider.setLogLevel(constants.CLILogLevel.debug);
     }
+
+    const cliPackage = JSON.parse(readFileSync(path.join(__dirname, "/../package.json"), "utf8"));
+    const reporter = new CliTelemetryReporter(cliPackage.aiKey, cliPackage.name, cliPackage.version);
+    CliTelemetry.setReporter(reporter);
+
     try {
       const result = await this.runCommand(args as { [argName: string]: string | string[] });
       if (result.isErr()) {

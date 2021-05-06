@@ -21,8 +21,8 @@ describe("config", () => {
         const solutionConfig = new SolutionConfig(configContent);
 
         it("Undefined property", () => {
-            chai.expect(() => solutionConfig.tenantId).to.throw(
-                "Project configuration 'tenantId' of solution is missing in 'env.default.json'. Please retry to provision resource or set the value manually."
+            chai.expect(() => solutionConfig.teamsAppTenantId).to.throw(
+                "Project configuration 'teamsAppTenantId' of solution is missing in 'env.default.json'. Please retry to provision resource or set the value manually."
             );
         });
         it("Error type property", () => {

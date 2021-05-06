@@ -42,7 +42,7 @@ const config = {
         CLILogProvider.log(4 - loglevel, message);
       },
       piiLoggingEnabled: false,
-      logLevel: LogLevel.Verbose
+      logLevel: LogLevel.Error
     }
   },
   cache: {

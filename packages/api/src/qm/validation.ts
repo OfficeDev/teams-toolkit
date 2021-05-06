@@ -18,11 +18,11 @@ import { FxError } from "../error";
 import { ConfigMap, Inputs } from "../config";
  
 
-export type RemoteFuncExecutor = (func:Func, answers: Inputs|ConfigMap) => Promise<Result<unknown, FxError>>; 
+export type RemoteFuncExecutor = (func:Func, answers: ConfigMap) => Promise<Result<unknown, FxError>>; 
 
 export function getValidationFunction(
   validation: Validation,
-  outputs: Inputs|ConfigMap,
+  outputs: ConfigMap,
   remoteFuncValidator?: RemoteFuncExecutor,
 ): (input: string | string[]) => Promise<string | undefined> {
   return async function(input: string | string[]): Promise<string | undefined> {
@@ -33,7 +33,7 @@ export function getValidationFunction(
 export async function validate(
   validation: Validation,
   valueToValidate: string | string[],
-  inputs: Inputs|ConfigMap,
+  inputs: ConfigMap,
   remoteFuncValidator?: RemoteFuncExecutor
 ): Promise<string | undefined> {
   //RemoteFuncValidation
@@ -54,7 +54,7 @@ export async function validate(
     //LocalFuncValidation
     const localFuncValidation: LocalFuncValidation = validation as LocalFuncValidation;
     if (localFuncValidation.validFunc) {
-      const res = await localFuncValidation.validFunc(valueToValidate as string);
+      const res = await localFuncValidation.validFunc(valueToValidate as string, inputs);
       return res as string;
     }
   }

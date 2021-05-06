@@ -56,7 +56,7 @@
             "args": [
                 "account",
                 "login",
-                "app-studio"
+                "azure"
             ],
             "outFiles": [
                 "${workspaceFolder}/lib/**/*.js"
@@ -183,6 +183,25 @@
             "program": "${workspaceFolder}/lib/cli.js",
             "args": [
                 "publish",
+                "--folder", "./test-folder/azureApp"
+            ],
+            "outFiles": [
+                "${workspaceFolder}/lib/**/*.js"
+            ],
+            "resolveSourceMapLocations": [
+                "${workspaceFolder}/lib/**/*.js"
+            ]
+        },
+        {
+            "type": "pwa-node",
+            "request": "launch",
+            "name": "Launch provision command",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/lib/cli.js",
+            "args": [
+                "provision",
                 "--folder", "./test-folder/azureApp"
             ],
             "outFiles": [

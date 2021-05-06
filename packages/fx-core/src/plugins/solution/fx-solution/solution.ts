@@ -97,7 +97,7 @@ import {
     createCapabilityQuestion,
     createAddAzureResourceQuestion,
     AskSubscriptionQuestion,
-    createAddCapabilityQuestion,
+    addCapabilityQuestion,
     ProgrammingLanguageQuestion,
 } from "./question";
 import Mustache from "mustache";
@@ -289,7 +289,7 @@ export class TeamsAppSolution implements Solution {
                 ),
             );
         }
-        let capabilities = answers.getStringArray(AzureSolutionQuestionNames.Capabilities);
+        let capabilities = answers.getStringArray(AzureSolutionQuestionNames.Capabilities) || [];
         if(!capabilities || capabilities.length === 0){
             return err(
                 returnSystemError(
@@ -1157,6 +1157,7 @@ export class TeamsAppSolution implements Solution {
 
             // 1.3 Language
             const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
+            programmingLanguage.condition = { minItems: 1 };
             capNode.addChild(programmingLanguage);
 
         } else if (stage === Stage.update) {
@@ -1595,28 +1596,6 @@ export class TeamsAppSolution implements Solution {
                 }
                 return ok(null);
             }
-            else if(func.method === "listLanguageOptions"){
-                const hostType = ctx.answers?.getString(AzureSolutionQuestionNames.HostType);
-                if(HostTypeOptionSPFx.id === hostType) return ok([{id:"typescript", label:"TypeScript"}]);
-                return ok([{id:"javascript", label: "JavaScript"}, {id:"typescript", label:"TypeScript"}]);
-            }
-            else if(func.method === "listHostTypeOptions"){
-                const cap = ctx.answers?.getStringArray(AzureSolutionQuestionNames.Capabilities);
-                if(cap) {
-                    if(cap.includes(BotOptionItem.id) || cap.includes(MessageExtensionItem.id))
-                        return ok([HostTypeOptionAzure]);
-                    if(cap.includes(TabOptionItem.id))
-                        return ok([HostTypeOptionAzure, HostTypeOptionSPFx]);
-                    return ok([]);
-                }
-                return err(
-                    returnSystemError(
-                        new Error("Capabilities is undefined"),
-                        "Solution",
-                        SolutionError.InternelError,
-                    ),
-                );
-            }
         }
         return err(
             returnUserError(
@@ -1755,7 +1734,7 @@ export class TeamsAppSolution implements Solution {
             return ok(undefined);
         }
         
-        const addCapQuestion = createAddCapabilityQuestion(alreadyHaveTab, alreadyHaveBotOrMe);
+        const addCapQuestion = addCapabilityQuestion(alreadyHaveTab, alreadyHaveBotOrMe);
 
         const addCapNode = new QTreeNode(addCapQuestion);
 

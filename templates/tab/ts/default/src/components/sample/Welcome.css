@@ -14,9 +14,10 @@
 }
 
 .welcome.page>.narrow>ul {
-  width: 75%;
+  width: 80%;
   justify-content: space-between;
   margin: 4rem auto;
+  border-bottom: none;
 }
 
 .welcome.page>.narrow>ul>li {
@@ -25,8 +26,8 @@
 }
 
 .welcome.page>.narrow>ul>li>a {
-  font-size: 16px;
-  height: 32px;
+  font-size: 14px;
+  min-height: 32px;
   border-bottom-color: rgb(98, 100, 167);
 }
 
@@ -38,11 +39,6 @@
   margin: 4rem auto;
 }
 
-pre {
-  overflow-x: scroll;
-  overflow-y: scroll;
-}
-
 pre,
 div.error {
   background-color: #e5e5e5;
@@ -51,6 +47,13 @@ div.error {
   border-radius: 3px;
   margin: 1rem 0;
   max-height: 200px;
+  overflow-x: scroll;
+  overflow-y: scroll;
+}
+
+pre.fixed,
+div.error.fixed {
+  height: 200px;
 }
 
 code {

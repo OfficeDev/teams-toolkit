@@ -25,9 +25,9 @@ export function Welcome(props) {
 
   const steps = ["local", "azure", "publish"];
   const friendlyStepsName = {
-    local: "Build your app locally",
-    azure: "Deploy to the Cloud",
-    publish: "Publish to Teams",
+    local: "1. Build your app locally",
+    azure: "2. Provision and Deploy to the Cloud",
+    publish: "3. Publish to Teams",
   };
   const [selectedMenuItem, setSelectedMenuItem] = useState("local");
   const items = steps.map((step) => {
@@ -40,7 +40,9 @@ export function Welcome(props) {
 
   const { isInTeams } = useTeamsFx();
   const credential = new TeamsUserCredential();
-  const userProfile = isInTeams && useData(() => credential.getUserInfo()).data;
+  const userProfile = useData(async () =>
+    isInTeams ? await credential.getUserInfo() : undefined
+  )?.data;
   const userName = userProfile ? userProfile.displayName : "";
   return (
     <div className="welcome page">
@@ -59,11 +61,7 @@ export function Welcome(props) {
               <EditCode showFunction={showFunction} />
               {isInTeams && <CurrentUser userName={userName} />}
               <Graph />
-              {showFunction && (
-                <AzureFunctions
-                  docsUrl={"https://aka.ms/teamsfx-azure-functions"}
-                />
-              )}
+              {showFunction && <AzureFunctions />}
             </div>
           )}
           {selectedMenuItem === "azure" && (

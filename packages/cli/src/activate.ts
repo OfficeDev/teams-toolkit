@@ -12,6 +12,7 @@ import CLILogProvider from "./commonlib/log";
 import { UnknownError } from "./error";
 import DialogManagerInstance from "./userInterface";
 import { getSubscriptionIdFromEnvFile } from "./utils";
+import { CliTelemetry } from "./telemetry/cliTelemetry";
 
 const coreAsync: Promise<Core> = new Promise(async (resolve) => {
   const corePkg = await import("fx-core");
@@ -51,6 +52,16 @@ export default async function activate(rootPath?: string): Promise<Result<Core, 
 
     {
       const result = await core.withGraphToken(GraphTokenProvider);
+      if (result.isErr()) {
+        return err(result.error);
+      }
+    }
+
+    {
+      if (rootPath) {
+        CliTelemetry.setReporter(CliTelemetry.getReporter().withRootFolder(rootPath));
+      }
+      const result = await core.withTelemetry(CliTelemetry.getReporter());
       if (result.isErr()) {
         return err(result.error);
       }

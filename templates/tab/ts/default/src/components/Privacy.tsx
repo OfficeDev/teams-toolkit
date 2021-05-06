@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 /**
  * This component is used to display the required
  * privacy statement which can be found in a link in the

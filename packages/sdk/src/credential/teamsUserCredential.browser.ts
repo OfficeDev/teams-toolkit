@@ -12,7 +12,7 @@ import { AuthCodeResult } from "../models/authCodeResult";
 import axios, { AxiosInstance } from "axios";
 import { GrantType } from "../models/grantType";
 import { AccessTokenResult } from "../models/accessTokenResult";
-import { ensureScopesTypeIsValid, getUserInfoFromSsoToken, parseJwt } from "../util/utils";
+import { validateScopesType, getUserInfoFromSsoToken, parseJwt } from "../util/utils";
 import { formatString } from "../util/utils";
 import { internalLogger } from "../util/logger";
 
@@ -77,7 +77,7 @@ export class TeamsUserCredential implements TokenCredential {
    * @throws {ConsentFailed}
    */
   public async login(scopes: string | string[]): Promise<void> {
-    ensureScopesTypeIsValid(scopes);
+    validateScopesType(scopes);
     const scopesStr = typeof scopes === "string" ? scopes : scopes.join(" ");
 
     internalLogger.info(`Popup login page to get user's access token with scopes: ${scopesStr}`);
@@ -147,7 +147,7 @@ export class TeamsUserCredential implements TokenCredential {
     scopes: string | string[],
     options?: GetTokenOptions
   ): Promise<AccessToken | null> {
-    ensureScopesTypeIsValid(scopes);
+    validateScopesType(scopes);
     const ssoToken = await this.getSSOToken();
 
     const scopeStr = typeof scopes === "string" ? scopes : scopes.join(" ");

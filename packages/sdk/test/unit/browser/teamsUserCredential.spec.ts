@@ -73,19 +73,14 @@ describe("TeamsUserCredential Tests - Browser", () => {
 
   it("getToken and login should throw InvalidParameter error with invalid scope", async function () {
     loadDefaultConfig();
-    const invalidScopes1: any = [new Error()];
+    const invalidScopes: any = [1];
     const credential = new TeamsUserCredential();
-    const errorResult1 = await expect(credential.login(invalidScopes1))
-      .to.eventually.be.rejectedWith(ErrorWithCode);
-    const invalidScopes2: any = new Promise((resolve) => { resolve(true); });
 
-    const errorResult2 = await expect(credential.getToken(invalidScopes2))
+    const errorResult = await expect(credential.getToken(invalidScopes))
       .to.eventually.be.rejectedWith(ErrorWithCode);
 
-    assert.strictEqual(errorResult1.message, errorResult2.message);
-    assert.strictEqual(errorResult1.code, errorResult2.code);
-    assert.strictEqual(errorResult1.code, ErrorCode.InvalidParameter);
-    assert.strictEqual(errorResult1.message, "The type of scopes is not valid, it must be string or string array");
+    assert.strictEqual(errorResult.message, "The type of scopes is not valid, it must be string or string array");
+    assert.strictEqual(errorResult.code, ErrorCode.InvalidParameter);
   });
 
   it("getToken should failed when not running inside Teams", async function () {

@@ -72,20 +72,20 @@ export function formatString(str: string, ...replacements: string[]): string {
   });
 }
 
-export function ensureScopesTypeIsValid(value: any): boolean {
+export function validateScopesType(value: any): void {
   // string
   if (typeof value === "string" || value instanceof String) {
-    return true;
+    return;
   }
 
   // empty array
   if (Array.isArray(value) && value.length === 0) {
-    return true;
+    return;
   }
 
   // string array
   if (Array.isArray(value) && value.length > 0 && value.every(item => typeof item === "string")) {
-    return true;
+    return;
   }
 
   const errorMsg = "The type of scopes is not valid, it must be string or string array";

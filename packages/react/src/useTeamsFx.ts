@@ -88,10 +88,7 @@ export function useTeamsFx<T>(handler: CredentialHandler, scopes: string[] = [".
             await credential.login(scopes);
             dispatch({ type: 'login success' });
         } catch (e) {
-            alert(e.error);
-            alert(e.code);
             if (e.code === ErrorCode.UiRequiredError) {
-                alert(e);
                 dispatch({ type: 'require permission', error: e });
             }
             else {
@@ -105,10 +102,7 @@ export function useTeamsFx<T>(handler: CredentialHandler, scopes: string[] = [".
             const result = await handler(credential);
             dispatch({ type: 'data update', data: result });
         } catch (e) {
-            alert(e.error);
-            alert(e.code);
             if (e.code === ErrorCode.UiRequiredError) {
-                alert(e);
                 dispatch({ type: 'require permission', error: e });
             }
             else {

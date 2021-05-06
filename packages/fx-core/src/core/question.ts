@@ -15,7 +15,7 @@ export enum CoreQuestionNames {
     SubStage = "substage",
 }
 
-export const ProjectNamePattern:string = "^[a-zA-Z]][\\da-zA-Z]+$";
+export const ProjectNamePattern:string = "^[a-zA-Z][\\da-zA-Z]+$";
 
 export const QuestionAppName: TextInputQuestion = {
     type: NodeType.text,

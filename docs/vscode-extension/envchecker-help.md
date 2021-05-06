@@ -32,11 +32,12 @@ The `.NET SDK` is used to
 
 **NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
 
-### Report issues
-Please click [here](https://github.com/OfficeDev/TeamsFx/issues/new) to submit an issue on GitHub and attach the log file named `env-checker.log` under `%userprofile%/.fx/` (on Windows) or `~/.fx/` (on macOS/Linux).
-
 ## 5. (Linux only) The toolkit cannot find `.NET 5` or .NET `Core 3.1` on your machine. Please install it manually.
 
 Install the `.NET SDK` manually: please refer to the official documentation to check how to install it: https://docs.microsoft.com/en-us/dotnet/core/install/linux.
 
 **NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
+
+## Report issues if above FAQ can't solve your problems
+
+Please click [here](https://github.com/OfficeDev/TeamsFx/issues/new) to submit an issue on GitHub and attach the log file named `env-checker.log` under `%userprofile%/.fx/` (on Windows) or `~/.fx/` (on macOS/Linux).

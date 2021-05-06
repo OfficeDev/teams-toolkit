@@ -486,35 +486,18 @@ class CoreImpl implements Core {
 
                 if(subscription){
                     await this.readConfigs();
-                    let change = true;
-                    const subscriptionId = this.configs.get(this.env!)!.get("solution")!.getString("subscriptionId");
-                    if(subscriptionId){
-                        const confirm  = (await this.ctx.dialog?.communicate(
-                            new DialogMsg(DialogType.Show, {
-                                description: util.format(strings.core.SwitchSubNotice, subscriptionId),
-                                level: MsgLevel.Warning,
-                                items: ["Confirm"]
-                            }),
-                        ))?.getAnswer() === "Confirm";
-                        if(!confirm){
-                            change = false;
-                        } 
-                    }
-                    if(change)
-                    {
-                        this.configs.get(this.env!)!.get("solution")!.set("subscriptionId", subscription.subscriptionId);
-                        this.writeConfigs();
-                        this.ctx.treeProvider?.refresh([
-                            {
-                                commandId: "fx-extension.selectSubscription",
-                                label: subscriptionName,
-                                callback: () => { return Promise.resolve(ok(null)); },
-                                parent: "fx-extension.signinAzure",
-                                contextValue: "selectSubscription",
-                                icon: "subscriptionSelected"
-                            },
-                        ]);
-                    }
+                    this.configs.get(this.env!)!.get("solution")!.set("subscriptionId", subscription.subscriptionId);
+                    this.writeConfigs();
+                    this.ctx.treeProvider?.refresh([
+                        {
+                            commandId: "fx-extension.selectSubscription",
+                            label: subscriptionName,
+                            callback: () => { return Promise.resolve(ok(null)); },
+                            parent: "fx-extension.signinAzure",
+                            contextValue: "selectSubscription",
+                            icon: "subscriptionSelected"
+                        },
+                    ]);
                 }
 
                 return ok(null);

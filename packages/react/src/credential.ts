@@ -1,9 +1,20 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import {
     loadConfiguration,
     ResourceType,
     TeamsUserCredential,
 } from "@microsoft/teamsfx";
 
+/**
+ * Load configuration using React environment variables and return a new TeamsUserCredential instance.
+ * 
+ * @param scopes - The array of Microsoft Token scope of access. Default value is  `[.default]`. Scopes provide a way to manage permissions to protected resources.
+ * @returns a TeamsUserCredential instance.
+ * 
+ * @internal
+ */
 export function getCredential(scopes: string[] = [".default"]): TeamsUserCredential {
     const teamsfxEndpoint = process.env.REACT_APP_TEAMSFX_ENDPOINT;
     const startLoginPageUrl = process.env.REACT_APP_START_LOGIN_PAGE_URL;
@@ -26,6 +37,5 @@ export function getCredential(scopes: string[] = [".default"]): TeamsUserCredent
         ]
     });
     const credential = new TeamsUserCredential();
-    credential.login(scopes);
     return credential;
 }

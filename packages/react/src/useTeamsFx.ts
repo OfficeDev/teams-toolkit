@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { useEffect, useReducer } from "react";
 import {
     TeamsUserCredential,
@@ -8,13 +11,33 @@ import { getCredential } from "./credential";
 type CredentialHandler = (credential: TeamsUserCredential) => Promise<any>;
 
 interface TeamsFxState<T> {
+    /**
+     * User need to login and consent if it's true.
+     */
     requirePermission: boolean;
+    /**
+     * The instance of TeamsUserCredential
+     */
     credential?: TeamsUserCredential;
+    /**
+     * Data returned from custom handler.
+     */
     data?: T;
+    /**
+     * Error instance.
+     */
     error?: Error;
 }
 
+/**
+ * Interface of returned data from useTeamsFx.
+ * 
+ * @beta
+ */
 export interface TeamsFxData<T> extends TeamsFxState<T> {
+    /**
+     * Call this function if error code is 'ErrorCode.UiRequiredError'
+     */
     login: () => Promise<void>;
 }
 
@@ -25,6 +48,15 @@ type Action<T> =
     | { type: 'login error'; error: Error }
     | { type: 'user error'; error: Error };
 
+/**
+ * A custom React hook that shows status and allow developer invoke login function.
+ * 
+ * @param handler - Custom async function to handle the credential.
+ * @param scopes - The array of Microsoft Token scope of access. Default value is  `[.default]`. Scopes provide a way to manage permissions to protected resources.
+ * @returns TeamsFxData including credential, data, error etc.
+ * 
+ * @beta
+ */
 export function useTeamsFx<T>(handler: CredentialHandler, scopes: string[] = [".default"]): TeamsFxData<T> {
     const reducer = (state: TeamsFxState<T>, action: Action<T>): TeamsFxState<T> => {
         switch (action.type) {

@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 import axios from "axios";
 import { JwtPayload } from "jwt-decode";
-
 /**
  * Get SSO Token from a specific AAD app client id.
  */
@@ -42,3 +41,11 @@ export interface AADJwtPayLoad extends JwtPayload {
   scp?: string;
   upn?: string;
 }
+
+export interface AADJwtPayLoad extends JwtPayload {
+    appid?: string;
+    idtyp?: string;
+    scp?: string;
+    upn?: string;
+  }
+  

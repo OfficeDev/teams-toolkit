@@ -12,6 +12,8 @@ import {
   ErrorWithCode,
   ErrorCode
 } from "../../../src";
+import sinon from "sinon";
+import { AccessToken } from "@azure/core-http";
 
 chaiUse(chaiPromises);
 let mockedEnvRestore: () => void;
@@ -81,5 +83,23 @@ describe("MsGraphAuthProvider Tests - Node", () => {
     const m356Credential = new M365TenantCredential();
     const authProvider: any = new MsGraphAuthProvider(m356Credential, scopes);
     expect(authProvider.credential).to.be.instanceOf(M365TenantCredential);
+  });
+
+  it("create msGraphAuthProvider instance should throw UiRequiredError with unconsent scope with OnBehalfOfUserCredential", async function() {
+    sinon.stub(OnBehalfOfUserCredential.prototype, "getToken").callsFake(
+      (): Promise<AccessToken | null> => {
+        throw new ErrorWithCode(
+          "Failed to get access token from authentication server, please login first.",
+          ErrorCode.UiRequiredError
+        );
+      }
+    );
+    const unconsentScopes = "unconsent_scope";
+    const oboCredential = new OnBehalfOfUserCredential(ssoToken);
+    const authProvider = new MsGraphAuthProvider(oboCredential, unconsentScopes);
+    await expect(authProvider.getAccessToken())
+      .to.eventually.be.rejectedWith(ErrorWithCode)
+      .and.property("code", ErrorCode.UiRequiredError);
+    sinon.restore();
   });
 });

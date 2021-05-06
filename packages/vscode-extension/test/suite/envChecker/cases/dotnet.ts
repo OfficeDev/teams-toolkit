@@ -11,9 +11,10 @@ import { isWindows, isLinux } from "../../../../src/debug/depsChecker/common";
 import { DepsChecker } from "../../../../src/debug/depsChecker/checker";
 import { DotnetChecker, DotnetVersion } from "../../../../src/debug/depsChecker/dotnetChecker";
 import { CustomDotnetInstallScript, TestAdapter } from "../adapters/testAdapter";
-import { TestLogger } from "../adapters/testLogger";
+import { logger } from "../adapters/testLogger";
 import { TestTelemetry } from "../adapters/testTelemetry";
 import { assertPathEqual, commandExistsInPath } from "../utils/common";
+import { cpUtils } from "../../../../src/debug/depsChecker/cpUtils";
 
 function createTestChecker(
   hasTeamsfxBackend: boolean,
@@ -31,7 +32,6 @@ function createTestChecker(
     nodeCheckerEnabled,
     customDotnetInstallScript
   );
-  const logger = new TestLogger();
   const dotnetChecker = new DotnetChecker(testAdapter, logger, new TestTelemetry());
   const depsChecker = new DepsChecker(logger, testAdapter, [dotnetChecker]);
 
@@ -253,6 +253,42 @@ suite("DotnetChecker E2E Test - first run", async () => {
       }
     );
   });
+
+  suite("PowerShell ExecutionPolicy is default on Windows", async () => {
+    if (!isWindows()) {
+      return;
+    }
+
+    let originalExecutionPolicy = "Unrestricted";
+    setup(async function (this: Mocha.Context) {
+      originalExecutionPolicy = await cpUtils.executeCommand(undefined, logger, { shell: 'powershell.exe' }, "Get-ExecutionPolicy", "-Scope", "CurrentUser");
+      cpUtils.executeCommand(undefined, logger, { shell: 'powershell.exe' }, "Set-ExecutionPolicy", "-Scope", "CurrentUser", "Restricted");
+    });
+
+    test(".NET SDK not installed and PowerShell ExecutionPolicy is default (Restricted) on Windows", async function (this: Mocha.Context) {
+      if (await commandExistsInPath(dotnetUtils.dotnetCommand)) {
+        this.skip();
+      }
+
+      const [checker, _] = createTestChecker(false);
+
+      const shouldContinue = await checker.resolve();
+      const dotnetExecPath = await dotnetUtils.getDotnetExecPathFromConfig(
+        dotnetUtils.dotnetConfigPath
+      );
+
+      chai.assert.isTrue(shouldContinue);
+      chai.assert.isNotNull(dotnetExecPath);
+      chai.assert.isTrue(
+        await dotnetUtils.hasDotnetVersion(dotnetExecPath!, dotnetUtils.dotnetInstallVersion)
+      );
+    });
+
+    teardown(async function (this: Mocha.Context) {
+      cpUtils.executeCommand(undefined, logger, { shell: 'powershell.exe' }, "Set-ExecutionPolicy", "-Scope", "CurrentUser", originalExecutionPolicy);
+    });
+  });
+
 
   teardown(async function(this: Mocha.Context) {
     // cleanup to make sure the environment is clean

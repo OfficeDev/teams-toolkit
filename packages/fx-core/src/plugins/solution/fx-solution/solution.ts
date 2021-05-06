@@ -325,8 +325,8 @@ export class TeamsAppSolution implements Solution {
             name: projectSettings.solutionSettings.name,
             version: projectSettings.solutionSettings.version,
             hostType: hostType,
-            capabilities : capabilities!,
-            azureResources: azureResources!,
+            capabilities : capabilities,
+            azureResources: azureResources || [],
             activeResourcePlugins:[]
         }; 
         projectSettings.solutionSettings = solutionSettings;
@@ -1850,7 +1850,7 @@ export class TeamsAppSolution implements Solution {
 
         const notifications: string[] = [];
         const pluginsToScaffold:LoadedPlugin[] = [this.localDebugPlugin];
-        const azureResource = settings.azureResources;
+        const azureResource = settings.azureResources || [];
         if ( addFunc || ((addSQL || addApim) && !alreadyHaveFunction)) {
             pluginsToScaffold.push(this.functionPlugin);
             azureResource.push(AzureResourceFunction.id);

@@ -121,7 +121,7 @@
                 "message": "dontShowAgain"
               },
               "banner": {
-                "title": "Can you please take 2 minutes to tell us how the TeamsFx extension is working for you?",
+                "title": "Do you have any feedback on the Teams Toolkit extension?",
                 "message": "userAsked"
               },
               "cancelMessage": "userCancelled"

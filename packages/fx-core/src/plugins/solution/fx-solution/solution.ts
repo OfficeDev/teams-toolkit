@@ -799,21 +799,23 @@ export class TeamsAppSolution implements Solution {
 
             const provisionResult = await this.doProvision(ctx);
             if (provisionResult.isOk()) {
-                ctx.logProvider?.info(`[Teams Toolkit] provision success!`);
+                const msg = util.format(strings.solution.ProvisionSuccessNotice, ctx.projectSettings?.appName);
+                ctx.logProvider?.info(msg);
                 await ctx.dialog?.communicate(
                     new DialogMsg(DialogType.Show, {
-                        description: "[Teams Toolkit] provision success!",
+                        description: msg,
                         level: MsgLevel.Info,
                     }),
                 );
                 ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
             } else {
-                ctx.logProvider?.error(`[Teams Toolkit] provision failed!`);
+                const msg = util.format(strings.solution.ProvisionFailNotice, ctx.projectSettings?.appName);
+                ctx.logProvider?.error(msg);
                 ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false);
                 const resourceGroupName = ctx.config.get(GLOBAL_CONFIG)?.getString("resourceGroupName");
                 const subscriptionId = ctx.config.get(GLOBAL_CONFIG)?.getString("subscriptionId");
                 const error = provisionResult.error;
-                error.message += " " + util.format(strings.solution.ProvisionFailNotice, subscriptionId, resourceGroupName);
+                error.message += " " + util.format(strings.solution.ProvisionFailGuide, subscriptionId, resourceGroupName);
                 if(error instanceof UserError){
                     const ue = error as UserError;
                     if(!ue.helpLink){
@@ -942,9 +944,20 @@ export class TeamsAppSolution implements Solution {
     }
 
     async deploy(ctx: SolutionContext): Promise<Result<any, FxError>> {
-        const canDeploy = this.canDeploy(ctx);
-        if (canDeploy.isErr()) {
-            return canDeploy;
+        const isAzureProject = this.isAzureProject(ctx);
+        const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
+        if(isAzureProject && !provisioned){
+            // const confirm  = (await ctx.dialog?.communicate(
+            //     new DialogMsg(DialogType.Show, {
+            //         description: util.format(strings.core.SwitchSubNotice, subscriptionId),
+            //         level: MsgLevel.Warning,
+            //         items: ["Provision", "Cancel"]
+            //     }),
+            // ))?.getAnswer() === "Confirm";
+            // if(!confirm){
+                 
+            // } 
+
         }
         try {
             if (this.isAzureProject(ctx)) {
@@ -957,15 +970,17 @@ export class TeamsAppSolution implements Solution {
             this.runningState = SolutionRunningState.DeployInProgress;
             const result = await this.doDeploy(ctx);
             if (result.isOk()) {
-                ctx.logProvider?.info(`[Teams Toolkit] deploy success!`);
+                const msg = util.format(strings.solution.DeploySuccessNotice, ctx.projectSettings?.appName);
+                ctx.logProvider?.info(msg);
                 await ctx.dialog?.communicate(
                     new DialogMsg(DialogType.Show, {
-                        description: "[Teams Toolkit]: deploy finished successfully!",
+                        description: msg,
                         level: MsgLevel.Info,
                     }),
                 );
             } else {
-                ctx.logProvider?.error(`[Teams Toolkit] deploy failed!`);
+                const msg = util.format(strings.solution.DeployFailNotice, ctx.projectSettings?.appName);
+                ctx.logProvider?.info(msg);
             }
 
             return result;

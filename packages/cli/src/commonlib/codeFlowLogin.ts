@@ -13,7 +13,7 @@ import * as crypto from "crypto";
 import { AddressInfo } from "net";
 import { accountPath, UTF8 } from "./cacheAccess";
 import open from "open";
-import { env } from "./common/constant";
+import { azureLoginMessage, env, m365LoginMessage } from "./common/constant";
 
 class ErrorMessage {
   static readonly loginError: string = "LoginError";
@@ -133,6 +133,12 @@ export class CodeFlowLogin {
     try {
       await this.startServer(server, serverPort!);
       this.pca!.getAuthCodeUrl(authCodeUrlParameters).then(async (response: string) => {
+        // TODO change console.log to logProvider, for now, logProvider may be hidden
+        if (this.accountName == "azure") {
+          console.log(azureLoginMessage);
+        } else {
+          console.log(m365LoginMessage);
+        }
         open(response);
       });
 

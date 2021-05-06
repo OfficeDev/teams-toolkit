@@ -1,5 +1,5 @@
 # Microsoft Teams App Framework (TeamsFx)
-
+> *Please be noted that this repo is currently in **Public Preview** stage. It is under progressive and incremental building and improvements. Try with our latest release and help us grow.*  
 
 The Microsoft Teams App Framework (TeamsFx) is a set of solution to help everyone and every organization to build their own Teams app quickly and easily. The TeamsFx mainly contains a VS Code Extension named Microsoft Teams Toolkit, CLI tool, and SDK which help developers to deal with common tasks in Team app building.
 

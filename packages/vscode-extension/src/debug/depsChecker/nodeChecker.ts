@@ -1,5 +1,5 @@
 import { DepsInfo, IDepsAdapter, IDepsChecker, IDepsLogger, IDepsTelemetry } from "./checker";
-import { Messages, nodeHelpLink } from "./common";
+import { Messages, nodeNotFoundHelpLink, nodeNotSupportedHelpLink } from "./common";
 import { cpUtils } from "./cpUtils";
 import { NodeNotFoundError, NotSupportedNodeError as NodeNotSupportedError } from "./errors";
 
@@ -38,7 +38,7 @@ export class NodeChecker implements IDepsChecker {
 
     const currentVersion = await getInstalledNodeVersion();
     if (currentVersion === null) {
-      throw new NodeNotFoundError(Messages.NodeNotFound, nodeHelpLink);
+      throw new NodeNotFoundError(Messages.NodeNotFound, nodeNotFoundHelpLink);
     }
 
     if (!NodeChecker.isVersionSupported(this._supportedVersions, currentVersion)) {
@@ -47,7 +47,7 @@ export class NodeChecker implements IDepsChecker {
         Messages.NodeNotSupported
           .replace("@CurrentVersion", currentVersion.version)
           .replace("@SupportedVersions", supportedVersions),
-        nodeHelpLink
+        nodeNotSupportedHelpLink
       );
     }
 

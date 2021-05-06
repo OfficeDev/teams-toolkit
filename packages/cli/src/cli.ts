@@ -10,8 +10,6 @@ import yargs from "yargs";
 
 import { commands } from "./cmds";
 import * as constants from "./constants";
-import path from "path";
-import fs from "fs";
 
 /**
  * registers cli and partner commands with yargs.

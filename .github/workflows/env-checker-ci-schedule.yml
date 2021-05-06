@@ -62,10 +62,17 @@ jobs:
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
 
-      - name: Setup project
-        run: |
-          npm install
-          npx lerna bootstrap --concurrency 1
+      # https://github.com/marketplace/actions/retry-step
+      - name: Setup project with Retry
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 5
+          max_attempts: 3
+          retry_wait_seconds: 3
+          on_retry_command: git clean -fXd .
+          command: |
+            npm install
+            npx lerna bootstrap --concurrency 1
 
       - name: Integration Test
         working-directory: ./packages/vscode-extension

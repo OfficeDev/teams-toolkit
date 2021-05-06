@@ -3,7 +3,7 @@
 ## Introduction
 
 `TeamsFx` function extension does the following binding work for Teams app developers:
-1. Do authorization for http trigger: Http request must have Authorization header with access token, the client id of which should be in the list of `ALLOWED_APP_IDS` or equals to `CLIENT_ID` setting. 
+1. Do authorization for http trigger: Http request must have Authorization header with access token, the client id of which should be in the list of `ALLOWED_APP_IDS` or equals to `M365_CLIENT_ID` setting. 
 1. Refresh user access token in request header if it's about to expire.
 1. Provide user access token in `TeamsFxContext` as Azure Functions input binding.
 
@@ -91,15 +91,20 @@ func host start
 
 You will find your function app listening at `http://localhost:7071/api/MyHttpTrigger`.
 
-Use postman to send GET http request to `http://localhost:7071/api/MyHttpTrigger` with Header: `Authorization: Bearer <access-token>`.
+Use postman to send GET http request to `http://localhost:7071/api/MyHttpTrigger` with Header: `Authorization: Bearer <access-token>`. The `azp` or `appid` claim (which means client id) of access token should be same with the `M365_CLIENT_ID` configuration, or in the list of `ALLOWED_APP_IDS` configuration.
+You can refer [OAuth 2.0 auth code grant](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow) to get an appropriate access token manually using your AAD app.
 
 #### Deploy your function app to Azure Portal
 
+You can refer deployment guidance in `Deploy functions` section of [Azure Functions](https://docs.microsoft.com/en-us/azure/azure-functions/) document.
+
 ### C#
 
-Sample C# Function: [FunctionAppCSharp](tests\TestAssets\FunctionAppCSharp)
+You can use `TeamsFx` attribute in your function to use this binding. Configurations listed in JavaScript tutorial above are also required in C# functions.
+Here is the sample C# function you can refer: [FunctionAppCSharp](tests\TestAssets\FunctionAppCSharp).
 
 ## Change Logger Level
+The binding will log information to help you troubleshoot. You can adjust the log level based on your requirement.
 
 - Change logger level when debug locally
 

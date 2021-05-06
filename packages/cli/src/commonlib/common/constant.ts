@@ -29,3 +29,6 @@ export const env = {
 
 export const unknownSubscription = "UnknownSubscription";
 export const unknownSubscriptionDesc = "Cannot set subscription. Please choose a correct subscription.";
+
+export const azureLoginMessage = "Log in to your Azure account - the default web browser has been opened at https://login.microsoftonline.com/organizations/oauth2/v2.0/authorize.";
+export const m365LoginMessage = "Log in to your M365 account - the default web browser has been opened at https://login.microsoftonline.com/common/oauth2/v2.0/authorize.";

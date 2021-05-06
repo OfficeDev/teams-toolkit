@@ -36,12 +36,11 @@ export class FrontendScaffold {
     public static async fetchTemplateManifest(url: string): Promise<Manifest> {
         const result = await runWithErrorCatchAndThrow(
             new FetchTemplatePackageError(),
-            () =>
-                Utils.requestWithRetry(async () => {
-                    return axios.get(url, {
-                        timeout: Constants.RequestTimeoutInMS,
-                    });
-                }, Constants.ScaffoldRetryCounts)
+            async () => await Utils.requestWithRetry(async () => {
+                return axios.get(url, {
+                    timeout: Constants.RequestTimeoutInMS,
+                });
+            }, Constants.ScaffoldRetryCounts)
         );
         if (!result) {
             throw new FetchTemplatePackageError();
@@ -68,13 +67,12 @@ export class FrontendScaffold {
     public static async fetchZipFromUrl(url: string): Promise<AdmZip> {
         const result = await runWithErrorCatchAndThrow(
             new FetchTemplateManifestError(),
-            () =>
-                Utils.requestWithRetry(async () => {
-                    return axios.get(url, {
-                        responseType: "arraybuffer",
-                        timeout: Constants.RequestTimeoutInMS,
-                    });
-                }, Constants.ScaffoldRetryCounts)
+            async () => await Utils.requestWithRetry(async () => {
+                return axios.get(url, {
+                    responseType: "arraybuffer",
+                    timeout: Constants.RequestTimeoutInMS,
+                });
+            }, Constants.ScaffoldRetryCounts)
         );
 
         if (!result) {

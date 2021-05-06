@@ -2,9 +2,9 @@
 // Licensed under the MIT license.
 import { assert, expect, use as chaiUse } from "chai";
 import chaiPromises from "chai-as-promised";
-import { AccessToken, GetTokenOptions } from "@azure/core-auth";
+import { AccessToken } from "@azure/core-auth";
 import sinon from "sinon";
-import { loadConfiguration, TeamsUserCredential, ErrorWithCode, ErrorCode } from "../../../src";
+import { loadConfiguration, TeamsUserCredential, ErrorWithCode } from "../../../src";
 import { getSSOToken, AADJwtPayLoad, SSOToken } from "../helper.browser";
 import jwtDecode from "jwt-decode";
 
@@ -26,8 +26,8 @@ describe("TeamsUserCredential Tests - Browser", () => {
       }
     });
     sinon.stub(TeamsUserCredential.prototype, <any>"getSSOToken").callsFake(
-      (scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null> => {
-        return new Promise((resolve, reject) => {
+      (): Promise<AccessToken | null> => {
+        return new Promise((resolve) => {
           resolve({
             token: ssoToken.token!,
             expiresOnTimestamp: ssoToken.expire_time!

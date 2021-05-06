@@ -59,7 +59,7 @@ import { DepsChecker } from "./debug/depsChecker/checker";
 import { BackendExtensionsInstaller } from "./debug/depsChecker/backendExtensionsInstall";
 import { FuncToolChecker } from "./debug/depsChecker/funcToolChecker";
 import { DotnetChecker } from "./debug/depsChecker/dotnetChecker";
-import { NodeChecker } from "./debug/depsChecker/nodeChecker";
+import { NodeChecker, AzureSupportedNodeVersions } from "./debug/depsChecker/nodeChecker";
 import * as util from "util";
 import * as StringResources from "./resources/Strings.json";
 import { vscodeAdapter } from "./debug/depsChecker/vscodeAdapter";
@@ -515,7 +515,7 @@ export async function addCapabilityHandler(): Promise<Result<null, FxError>> {
  */
 export async function validateDependenciesHandler(): Promise<void> {
   const depsChecker = new DepsChecker(vscodeLogger, vscodeAdapter, [
-    new NodeChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry), 
+    new NodeChecker(AzureSupportedNodeVersions, vscodeAdapter, vscodeLogger, vscodeTelemetry), 
     new DotnetChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry)]);
   const shouldContinue = await depsChecker.resolve();
   if (!shouldContinue) {

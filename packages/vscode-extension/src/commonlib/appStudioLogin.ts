@@ -179,6 +179,7 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
   }
 
   async getStatus(): Promise<LoginStatus> {
+    await AppStudioLogin.codeFlowInstance.reloadCache();
     if (AppStudioLogin.codeFlowInstance.account) {
       const loginToken = await AppStudioLogin.codeFlowInstance.getToken();
       const tokenJson = await this.getJsonObject();

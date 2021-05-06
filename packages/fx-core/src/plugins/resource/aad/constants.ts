@@ -50,7 +50,7 @@ export class Constants {
 }
 
 export class Plugins {
-  static pluginName = "Aad App for Teams App";
+  static pluginName = "AAD App Registration";
   static pluginNameComplex = "fx-resource-aad-app-for-teams";
   static pluginNameShort = "aad";
   static frontendHosting = "fx-resource-frontend-hosting";

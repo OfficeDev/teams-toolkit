@@ -46,7 +46,8 @@ export const LOCAL_BOT_ID = "localBotId";
 export const DEFAULT_PERMISSION_REQUEST = [
     {
         resource: "Microsoft Graph",
-        scopes: ["User.Read"],
+        delegated: ["User.Read"],
+        application: [],
     },
 ];
 

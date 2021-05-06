@@ -648,7 +648,7 @@ export async function openM365AccountHandler() {
 }
 
 export async function openAzureAccountHandler() {
-  return env.openExternal(Uri.parse("https://ms.portal.azure.com/"));
+  return env.openExternal(Uri.parse("https://portal.azure.com/"));
 }
 
 // TODO: remove this once welcome page is ready

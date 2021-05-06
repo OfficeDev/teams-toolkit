@@ -9,7 +9,7 @@ Multiple developers can collaborate on a single TeamsFx project. As the person c
 ## Add collaborators to application registration
 1. [Creator] Go to the [Azure Portal](https://portal.azure.com) and select "Azure Active Directory".
 2. [Creator] Select "App Registrations" and select your Azure AD app.
-3. [Creator] Select "Owners" and click "Add Owners" to add each collaborator as a owner.
+3. [Creator] Select "Owners" and click "Add Owners" to add each collaborator as a owner with an administrator role.
 
 ## Add collaborators as owner of teams app
 1. [Creator] Go to the [Teams Developer Portal](https://dev.teams.microsoft.com/apps/) and select your teams app.

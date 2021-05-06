@@ -6,19 +6,19 @@ import { JwtPayload } from "jwt-decode";
 /**
  * Get SSO Token from a specific AAD app client id.
  */
-export async function getSSOToken(): Promise<string>  {
+export async function getSSOToken(): Promise<[string, number]>  {
     const env = (window as any).__env__;
-    let details = {
+    const details = {
         username: env.SDK_INTEGRATION_TEST_ACCOUNT_NAME,
         password: env.SDK_INTEGRATION_TEST_ACCOUNT_PASSWORD,
         client_id: env.SDK_INTEGRATION_TEST_TEAMS_AAD_CLIENT_ID,
         scope: env.SDK_INTEGRATION_TEST_TEAMS_ACCESS_AS_USER_SCOPE,
-        grant_type: 'password'
+        grant_type: "password"
     };
-    let formBody = [];
-    for (let [key ,value] of Object.entries(details)) {
-        let encodedKey = encodeURIComponent(key);
-        let encodedValue = encodeURIComponent(value);
+    const formBody = [];
+    for (const [key ,value] of Object.entries(details)) {
+        const encodedKey = encodeURIComponent(key);
+        const encodedValue = encodeURIComponent(value);
         formBody.push(encodedKey + "=" + encodedValue);
     }
     const body = formBody.join("&");
@@ -28,7 +28,9 @@ export async function getSSOToken(): Promise<string>  {
                 "Content-Type": "application/x-www-form-urlencoded"
             }
     });
-    return (response.data as any)["access_token"];
+    const token = (response.data as any)["access_token"];
+    const expiresTime = (response.data as any)["expires_in"];
+    return [token, expiresTime];
 }
 
 export interface AADJwtPayLoad extends JwtPayload {

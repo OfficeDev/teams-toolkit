@@ -6,7 +6,7 @@ const path = require('path');
 let simpleAuthDir = path.resolve(__dirname, "../../../../fx-core/templates/plugins/resource/simpleauth");
 let simpleAuthZip = `${simpleAuthDir}/SimpleAuth.zip`;
 if(!fs.existsSync(simpleAuthZip)) {
-    spawnSync("powershell.exe",[path.resolve(__dirname, "./download.ps1")]);
+    spawnSync("powershell.exe",[path.resolve(__dirname, "./downloadSimpleAuth.ps1.ps1")]);
 }
 simpleAuthZip = new admZip(`${simpleAuthZip}`);
 simpleAuthZip.extractAllTo(`${simpleAuthDir}/SimpleAuthUnzipOutput`, true);

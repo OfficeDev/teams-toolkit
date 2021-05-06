@@ -13,7 +13,7 @@ import { DotnetChecker, DotnetVersion } from "../../../../src/debug/depsChecker/
 import { CustomDotnetInstallScript, TestAdapter } from "../adapters/testAdapter";
 import { logger } from "../adapters/testLogger";
 import { TestTelemetry } from "../adapters/testTelemetry";
-import { assertPathEqual, commandExistsInPath } from "../utils/common";
+import { assertPathEqual, commandExistsInPath, getExecutionPolicyForCurrentUser, setExecutionPolicyForCurrentUser } from "../utils/common";
 import { cpUtils } from "../../../../src/debug/depsChecker/cpUtils";
 
 function createTestChecker(
@@ -261,8 +261,8 @@ suite("DotnetChecker E2E Test - first run", async () => {
 
     let originalExecutionPolicy = "Unrestricted";
     setup(async function (this: Mocha.Context) {
-      originalExecutionPolicy = await cpUtils.executeCommand(undefined, logger, { shell: 'powershell.exe' }, "Get-ExecutionPolicy", "-Scope", "CurrentUser");
-      cpUtils.executeCommand(undefined, logger, { shell: 'powershell.exe' }, "Set-ExecutionPolicy", "-Scope", "CurrentUser", "Restricted");
+      originalExecutionPolicy = await getExecutionPolicyForCurrentUser();
+      await setExecutionPolicyForCurrentUser("Restricted");
     });
 
     test(".NET SDK not installed and PowerShell ExecutionPolicy is default (Restricted) on Windows", async function (this: Mocha.Context) {
@@ -285,7 +285,7 @@ suite("DotnetChecker E2E Test - first run", async () => {
     });
 
     teardown(async function (this: Mocha.Context) {
-      cpUtils.executeCommand(undefined, logger, { shell: 'powershell.exe' }, "Set-ExecutionPolicy", "-Scope", "CurrentUser", originalExecutionPolicy);
+      await setExecutionPolicyForCurrentUser(originalExecutionPolicy);
     });
   });
 

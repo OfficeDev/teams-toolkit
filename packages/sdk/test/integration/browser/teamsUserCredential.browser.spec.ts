@@ -5,21 +5,19 @@ import chaiPromises from "chai-as-promised";
 import { AccessToken, GetTokenOptions } from "@azure/core-auth";
 import sinon from "sinon";
 import { loadConfiguration, TeamsUserCredential, ErrorWithCode, ErrorCode } from "../../../src";
-import { getSSOToken, AADJwtPayLoad } from "../helper.browser";
+import { getSSOToken, AADJwtPayLoad, SSOToken } from "../helper.browser";
 import jwtDecode from "jwt-decode";
 
 chaiUse(chaiPromises);
 const env = (window as any).__env__;
 
-const FAKE_LOGIN_ENDPOINT = "FakeLoginEndpoint";
-const UIREQUIREDERROR = "UiRequiredError";
-
 describe("TeamsUserCredential Tests - Browser", () => {
     const TEST_USER_OBJECT_ID = env.SDK_INTEGRATION_TEST_USER_OBJECT_ID;
-    let ssoToken: string;
-    let expire_time: number;
+    const UIREQUIREDERROR = "UiRequiredError";
+    const FAKE_LOGIN_ENDPOINT = "FakeLoginEndpoint";
+    let ssoToken : SSOToken;
     before(async () => {
-        [ssoToken, expire_time] = await getSSOToken();
+        ssoToken = await getSSOToken();
         loadConfiguration({
             authentication: {
                 initiateLoginEndpoint: FAKE_LOGIN_ENDPOINT,
@@ -31,8 +29,8 @@ describe("TeamsUserCredential Tests - Browser", () => {
             (scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null> => {
                 return new Promise((resolve, reject) => {
                     resolve({
-                        token: ssoToken!,
-                        expiresOnTimestamp: expire_time!
+                        token: ssoToken.token!,
+                        expiresOnTimestamp: ssoToken.expire_time!
                     });
                 });
             }

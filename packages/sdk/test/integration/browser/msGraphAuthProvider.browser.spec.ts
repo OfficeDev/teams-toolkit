@@ -6,25 +6,25 @@ import { assert, use as chaiUse } from "chai";
 import chaiPromises from "chai-as-promised";
 import { MsGraphAuthProvider, loadConfiguration, TeamsUserCredential } from "../../../src";
 import sinon from "sinon";
-import { getSSOToken, AADJwtPayLoad } from "../helper.browser";
+import { getSSOToken, AADJwtPayLoad, SSOToken } from "../helper.browser";
 import jwtDecode from "jwt-decode";
 
 chaiUse(chaiPromises);
 const env = (window as any).__env__;
 
 describe("MsGraphAuthProvider Tests - Browser", () => {
-  let ssoToken: string;
-  let expire_time: number;
+  let ssoToken: SSOToken;
+
   beforeEach(async function() {
-    [ssoToken, expire_time] = await getSSOToken();
+    ssoToken = await getSSOToken();
 
     // mock getting sso token.
     sinon.stub(TeamsUserCredential.prototype, <any>"getSSOToken").callsFake(
       (): Promise<AccessToken | null> => {
         return new Promise((resolve) => {
           resolve({
-            token: ssoToken!,
-            expiresOnTimestamp: expire_time
+            token: ssoToken.token!,
+            expiresOnTimestamp: ssoToken.expire_time!
           });
         });
       }

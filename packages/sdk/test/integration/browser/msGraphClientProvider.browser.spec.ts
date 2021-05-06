@@ -4,7 +4,7 @@
 import { assert, expect, use as chaiUse } from "chai";
 import chaiPromises from "chai-as-promised";
 import { createMicrosoftGraphClient, loadConfiguration, TeamsUserCredential } from "../../../src";
-import { getSSOToken } from "../helper.browser";
+import { getSSOToken, SSOToken } from "../helper.browser";
 import sinon from "sinon";
 import { AccessToken } from "@azure/core-auth";
 
@@ -12,18 +12,18 @@ chaiUse(chaiPromises);
 const env = (window as any).__env__;
 
 describe("MsGraphClientProvider Tests - Browser", () => {
-  let ssoToken: string;
-  let expire_time: number;
+  let ssoToken: SSOToken;
+
   beforeEach(async function() {
-    [ssoToken, expire_time] = await getSSOToken();
+    ssoToken = await getSSOToken();
 
     // mock getting sso token.
     sinon.stub(TeamsUserCredential.prototype, <any>"getSSOToken").callsFake(
       (): Promise<AccessToken | null> => {
         return new Promise((resolve) => {
           resolve({
-            token: ssoToken!,
-            expiresOnTimestamp: expire_time
+            token: ssoToken.token!,
+            expiresOnTimestamp: ssoToken.expire_time!
           });
         });
       }
@@ -55,7 +55,10 @@ describe("MsGraphClientProvider Tests - Browser", () => {
     const credential = new TeamsUserCredential();
     const graphClient: any = createMicrosoftGraphClient(credential, emptyScope);
     const userList = await graphClient.api("/users").get();
-    assert.strictEqual(userList["@odata.context"], "https://graph.microsoft.com/v1.0/$metadata#users");
+    assert.strictEqual(
+      userList["@odata.context"],
+      "https://graph.microsoft.com/v1.0/$metadata#users"
+    );
   });
 
   it("create graph client without providing scope should have the default scope", async function() {
@@ -64,6 +67,9 @@ describe("MsGraphClientProvider Tests - Browser", () => {
     const graphClient: any = createMicrosoftGraphClient(credential);
     assert.strictEqual(graphClient.config.authProvider.scopes, defaultScope);
     const userList = await graphClient.api("/users").get();
-    assert.strictEqual(userList["@odata.context"], "https://graph.microsoft.com/v1.0/$metadata#users");
+    assert.strictEqual(
+      userList["@odata.context"],
+      "https://graph.microsoft.com/v1.0/$metadata#users"
+    );
   });
 });

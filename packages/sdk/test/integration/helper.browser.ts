@@ -5,7 +5,7 @@ import { JwtPayload } from "jwt-decode";
 /**
  * Get SSO Token from a specific AAD app client id.
  */
-export async function getSSOToken(): Promise<[string, number]> {
+export async function getSSOToken(): Promise<SSOToken> {
   const env = (window as any).__env__;
   const details = {
     username: env.SDK_INTEGRATION_TEST_ACCOUNT_NAME,
@@ -30,9 +30,11 @@ export async function getSSOToken(): Promise<[string, number]> {
       }
     }
   );
-  const token = (response.data as any)["access_token"];
-  const expiresTime = (response.data as any)["expires_in"];
-  return [token, expiresTime];
+  const SSOToken = {
+    token: (response.data as any)["access_token"],
+    expire_time: (response.data as any)["expires_in"]
+  };
+  return SSOToken;
 }
 
 export interface AADJwtPayLoad extends JwtPayload {
@@ -42,10 +44,7 @@ export interface AADJwtPayLoad extends JwtPayload {
   upn?: string;
 }
 
-export interface AADJwtPayLoad extends JwtPayload {
-    appid?: string;
-    idtyp?: string;
-    scp?: string;
-    upn?: string;
-  }
-  
+export interface SSOToken {
+  token: string;
+  expire_time: number;
+}

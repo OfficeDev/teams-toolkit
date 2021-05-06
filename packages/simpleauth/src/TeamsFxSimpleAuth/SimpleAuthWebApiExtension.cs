@@ -81,13 +81,6 @@ namespace Microsoft.TeamsFx.SimpleAuth
                 });
             });
 
-            // DI for IConfidentialClientApplication
-            services.AddSingleton(x =>
-                 ConfidentialClientApplicationBuilder.Create(configuration[ConfigurationName.ClientId])
-                    .WithClientSecret(configuration[ConfigurationName.ClientSecret])
-                    .WithAuthority(configuration[ConfigurationName.OAuthAuthority])
-                    .Build());
-
             // DI for AuthHandler
             services.AddScoped<AuthHandler>();
             services.AddScoped<SimpleAuthExceptionFilter>();

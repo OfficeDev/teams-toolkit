@@ -12,7 +12,7 @@ import { MockEnvironmentVariable, RestoreEnvironmentVariable } from "../helper";
 chaiUse(chaiPromises);
 let restore: () => void;
 
-describe("SQL Connector Test - node", () => {
+describe("DefaultTediousConnection Tests - Node", () => {
   let connection: Connection;
   // let sqlManagerClient: SqlManagementClient;
   // let resourceGroup: string | undefined;
@@ -34,7 +34,7 @@ describe("SQL Connector Test - node", () => {
     RestoreEnvironmentVariable(restore);
     // await clearUpLocalFirewall(sqlManagerClient, resourceGroup!, sqlName!);
   });
-  it("Test SQL local connect success", async function() {
+  it("execQuery should success with username and password", async function () {
     connection = await getSQLConnection();
     const query = "select system_user as u, sysdatetime() as t";
     const result = await execQuery(query, connection);

@@ -5,6 +5,7 @@ import { Disposable, InputBox, QuickInputButton, QuickInputButtons, QuickPick, Q
 import { FxInputBoxOption, FxOpenDialogOption, FxQuickPickOption, InputResult, InputResultType, OptionItem, returnSystemError, UserInterface } from "fx-api";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { ext } from "../extensionVariables";
+import { multiQuickPick } from "./quickpick";
 
 export interface FxQuickPickItem extends QuickPickItem {
   id: string;
@@ -14,6 +15,8 @@ export interface FxQuickPickItem extends QuickPickItem {
 export class VsCodeUI implements UserInterface{
   
   async showQuickPick (option: FxQuickPickOption) : Promise<InputResult>{
+    if(option.canSelectMany) return await multiQuickPick(option);
+
     const okButton : QuickInputButton = { 
       iconPath: Uri.file(ext.context.asAbsolutePath("media/ok.svg")),
       tooltip:"ok"
@@ -26,7 +29,7 @@ export class VsCodeUI implements UserInterface{
       if (option.backButton) quickPick.buttons = [QuickInputButtons.Back, okButton];
       else quickPick.buttons = [okButton];
       quickPick.placeholder = option.placeholder;
-      quickPick.ignoreFocusOut = true;
+      quickPick.ignoreFocusOut = false;
       quickPick.matchOnDescription = true;
       quickPick.matchOnDetail = true;
       quickPick.canSelectMany = option.canSelectMany;
@@ -39,6 +42,12 @@ export class VsCodeUI implements UserInterface{
             let selectedItems = quickPick.selectedItems as FxQuickPickItem[];
             if (option.canSelectMany) {
               const strArray = Array.from(selectedItems.map((i) => i.id));
+              if(option.validation){
+                const validateRes = await option.validation(strArray);
+                if(validateRes){
+                  return ;
+                }
+              }
               let result: OptionItem[] | string[] = strArray;
               if (option.returnObject) {
                 result = selectedItems.map((i) => {
@@ -188,7 +197,7 @@ export class VsCodeUI implements UserInterface{
       if (option.backButton) inputBox.buttons = [QuickInputButtons.Back, okButton];
       else inputBox.buttons = [okButton];
       inputBox.value = option.defaultValue || "";
-      inputBox.ignoreFocusOut = true;
+      inputBox.ignoreFocusOut = false;
       inputBox.password = option.password;
       inputBox.placeholder = option.placeholder;
       inputBox.prompt = option.prompt;
@@ -377,4 +386,5 @@ export class VsCodeUI implements UserInterface{
 
 
 export const VS_CODE_UI = new VsCodeUI();
-  
+   
+

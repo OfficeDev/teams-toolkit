@@ -155,7 +155,7 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
     const accountInfo = AppStudioLogin.codeFlowInstance.account;
     const email = (accountInfo as any).upn ? (accountInfo as any).upn : undefined;
     const confirm = StringResources.vsc.common.signout;
-    const userSelected = await vscode.window.showWarningMessage(
+    const userSelected = await vscode.window.showInformationMessage(
       util.format(StringResources.vsc.common.signOutOf, email),
       confirm,
       StringResources.vsc.common.cancel
@@ -179,6 +179,7 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
   }
 
   async getStatus(): Promise<LoginStatus> {
+    await AppStudioLogin.codeFlowInstance.reloadCache();
     if (AppStudioLogin.codeFlowInstance.account) {
       const loginToken = await AppStudioLogin.codeFlowInstance.getToken();
       const tokenJson = await this.getJsonObject();

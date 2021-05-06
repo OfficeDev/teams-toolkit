@@ -29,6 +29,8 @@ export interface FxQuickPickOption {
    */
   placeholder?: string;
 
+  prompt?:string;
+
   /**
    * whether enable `go back` button
    */
@@ -48,6 +50,8 @@ export interface FxQuickPickOption {
    * @returns: the new selected `id` array
    */
   onDidChangeSelection?: (currentSelectedItems: OptionItem[], previousSelectedItems: OptionItem[]) => Promise<string[]>;
+
+  validation?: (input: string|string[]) => Promise<string | undefined>;
 
   step?: number;
   totalSteps?: number;

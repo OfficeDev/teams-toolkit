@@ -213,7 +213,7 @@ class CoreImpl implements Core {
         const folder = answer?.getString(CoreQuestionNames.Foler);
         if(!folder) return ok(undefined);
         const schema = {
-            pattern: "^[\\da-zA-Z]+$",
+            pattern: "^[a-zA-Z][\\da-zA-Z]+$",
         };
         const validateResult = jsonschema.validate(appName, schema);
         if (validateResult.errors && validateResult.errors.length > 0) {
@@ -229,9 +229,7 @@ class CoreImpl implements Core {
         const namespace = func.namespace;
         const array = namespace?namespace.split("/"):[];
         if (!namespace || "" === namespace || array.length === 0) {
-            if (func.method === "validateAppName") {
-                return await this.validateAppName(func.params as string, answer);
-            }
+            
         } else {
             const solutionName = array[0];
             const solution = this.globalSolutions.get(solutionName);

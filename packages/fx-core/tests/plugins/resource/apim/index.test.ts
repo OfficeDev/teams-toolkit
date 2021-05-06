@@ -126,7 +126,7 @@ function buildSolutionConfig(resourceNameSuffix: string): ISolutionConfig {
         subscriptionId: EnvConfig.subscriptionId,
         resourceNameSuffix: resourceNameSuffix,
         resourceGroupName: UT_RESOURCE_GROUP,
-        tenantId: EnvConfig.tenantId,
+        teamsAppTenantId: EnvConfig.tenantId,
         location: EnvConfig.defaultLocation,
     };
 }

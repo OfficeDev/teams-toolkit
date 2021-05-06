@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { FileQuestion, NodeType, OptionItem, Question, SingleSelectQuestion, TextInputQuestion } from "fx-api";
+import { ConfigMap, FileQuestion, NodeType, OptionItem, Question, SingleSelectQuestion, TextInputQuestion } from "fx-api";
+import * as jsonschema from "jsonschema";
+import * as path from "path";
+import * as fs from "fs-extra";
 
 export enum CoreQuestionNames {
     AppName = "app-name",
@@ -17,8 +20,21 @@ export const QuestionAppName: TextInputQuestion = {
     name: CoreQuestionNames.AppName,
     title: "Project name",
     validation: {
-        namespace: "",
-        method: "validateAppName",
+        validFunc: async (appName: string, answer?: ConfigMap): Promise<string|undefined> => {
+            const folder = answer?.getString(CoreQuestionNames.Foler);
+            if(!folder) return undefined;
+            const schema = {
+                pattern: "^[\\da-zA-Z]+$",
+            };
+            const validateResult = jsonschema.validate(appName, schema);
+            if (validateResult.errors && validateResult.errors.length > 0) {
+                return `project name doesn't match pattern: ${schema.pattern}`;
+            }
+            const projectPath = path.resolve(folder, appName);
+            const exists = await fs.pathExists(projectPath);
+            if (exists) return `Project path already exists:${projectPath}, please change a different project name.`;
+            return undefined;
+        }
     },
     placeholder: "Application name"
 };
@@ -39,13 +55,13 @@ export const QuestionSelectSolution: SingleSelectQuestion = {
 
 export const ScratchOptionYes:OptionItem = {
     id:"yes",
-    label: "$(file) Create a new Teams app",
+    label: "$(new-folder) Create a new Teams app",
     detail: "Use the Teams Toolkit to create a new application."
 };
 
 export const ScratchOptionNo:OptionItem = {
     id:"no",
-    label: "$(search) Start from a sample",
+    label: "$(heart) Start from a sample",
     detail: "Use an existing sample as a starting point for your new application."
 };
 

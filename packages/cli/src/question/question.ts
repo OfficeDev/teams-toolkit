@@ -16,14 +16,16 @@ import {
   getSingleOption,
   SingleSelectQuestion,
   MultiSelectQuestion,
-  StaticOption
+  getCallFuncValue,
+  StaticOption,
+  DymanicOption
 } from "fx-api";
 
 import CLILogProvider from "../commonlib/log";
 import * as constants from "../constants";
 import { flattenNodes, getChoicesFromQTNodeQuestion, toConfigMap } from "../utils";
 
-import { QTNConditionNotSupport, QTNQuestionTypeNotSupport, NotValidInputValue } from "../error";
+import { QTNConditionNotSupport, QTNQuestionTypeNotSupport, NotValidInputValue, NotValidOptionValue } from "../error";
 
 export async function validateAndUpdateAnswers(
   root: QTreeNode | undefined,
@@ -33,7 +35,7 @@ export async function validateAndUpdateAnswers(
   if (!root) {
     return;
   }
-  
+
   const nodes = flattenNodes(root);
   for (const node of nodes) {
     if (node.data.type === NodeType.group) {
@@ -58,35 +60,9 @@ export async function validateAndUpdateAnswers(
       const question = node.data as SingleSelectQuestion | MultiSelectQuestion;
       let option = question.option;
 
-      /// TODO: skip remote func
-      if ("method" in option) {
-        if (option.method === "listHostTypeOptions") {
-          option = [
-            {
-              id: "Azure",
-              label: "Azure",
-              cliName: "azure"
-            },
-            {
-              id: "SPFx",
-              label: "SharePoint Framework (SPFx)",
-              cliName: "spfx"
-            }
-          ];
-        } else {
-          option = [
-            {
-              id: "javascript",
-              label: "JavaScript"
-            },
-            {
-              id: "typescript",
-              label: "TypeScript"
-            }
-          ];
-        }
+      if (!(option instanceof Array)) {
+        option = await getCallFuncValue(answers, false, node.data.option as DymanicOption) as StaticOption;
       }
-      
       // if the option is the object, need to find the object first.
       if (typeof option[0] !== "string") {
         // for multi-select question
@@ -102,9 +78,7 @@ export async function validateAndUpdateAnswers(
                 items.push(item.id);
               }
             } else {
-              CLILogProvider.warning(
-                `[${constants.cliSource}] No option for this question: ${one} ${option}`
-              );
+              throw NotValidOptionValue(question, option);
             }
           }
           answers.set(node.data.name, items);
@@ -113,9 +87,7 @@ export async function validateAndUpdateAnswers(
         else {
           const item = (option as OptionItem[]).filter(op => op.cliName === ans || op.id === ans)[0];
           if (!item) {
-            CLILogProvider.warning(
-              `[${constants.cliSource}] No option for this question: ${ans} ${option}`
-            );
+            throw NotValidOptionValue(question, option);
           }
           if (question.returnObject) {
             answers.set(node.data.name, item);
@@ -131,7 +103,7 @@ export async function validateAndUpdateAnswers(
 
 export async function visitInteractively(
   node: QTreeNode,
-  answers?: { [_: string]: any },
+  answers?: any,
   parentNodeAnswer?: any,
   remoteFuncValidator?: RemoteFuncExecutor
 ): Promise<{ [_: string]: any }> {
@@ -187,8 +159,24 @@ export async function visitInteractively(
 
   let answer: any = undefined;
   if (node.data.type !== NodeType.group) {
-    if (!isAutoSkipSelect(node.data)) {
+    if (node.data.type === NodeType.localFunc) {
+      const res = await node.data.func(answers);
+      answers[node.data.name] = res;
+    }
+    else if (!isAutoSkipSelect(node.data)) {
       answers = await inquirer.prompt([toInquirerQuestion(node.data, answers, remoteFuncValidator)], answers);
+      // convert the option.label to option.id
+      if ("option" in node.data) {
+        const option = node.data.option;
+        if (option instanceof Array && option.length > 0 && typeof option[0] !== "string") {
+          const tmpAns = answers[node.data.name];
+          if (tmpAns instanceof Array) {
+            answers[node.data.name] = tmpAns.map(label => (option as OptionItem[]).find(op => label === op.label)?.id);
+          } else {
+            answers[node.data.name] = (option as OptionItem[]).find(op => tmpAns === op.label)?.id;
+          }
+        }
+      }
     }
     else {
       answers[node.data.name] = getSingleOption(node.data as (SingleSelectQuestion | MultiSelectQuestion));
@@ -228,9 +216,9 @@ export function toInquirerQuestion(data: Question, answers: { [_: string]: any }
       type = "checkbox";
       break;
     case NodeType.func:
+    case NodeType.localFunc:
       throw QTNQuestionTypeNotSupport(data);
   }
-
   return {
     type,
     name: data.name,

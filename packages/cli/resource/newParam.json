@@ -6,13 +6,13 @@
         "option": [
             {
                 "id": "yes",
-                "label": "Build your own Teams app from scratch",
-                "detail": "Define your own Teams app."
+                "label": "Create a new Teams app",
+                "detail": "Create a new Teams app"
             },
             {
                 "id": "no",
-                "label": "Choose from Samples",
-                "detail": "Quickly get started with the basic Teams app concepts and code structures."
+                "label": "Start from a sample",
+                "detail": "Use an existing sample as a starting point for your new application."
             }
         ],
         "default": "yes",
@@ -122,7 +122,7 @@
                                                     "data": {
                                                         "type": "text",
                                                         "name": "spfx-webpart-name",
-                                                        "title": "Webpart Name",
+                                                        "title": "Web Part Name",
                                                         "default": "helloworld",
                                                         "validation": {
                                                             "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$"
@@ -133,7 +133,7 @@
                                                     "data": {
                                                         "type": "text",
                                                         "name": "spfx-webpart-desp",
-                                                        "title": "Webpart Description",
+                                                        "title": "Webo Part Description",
                                                         "default": "helloworld description",
                                                         "validation": {
                                                             "required": true

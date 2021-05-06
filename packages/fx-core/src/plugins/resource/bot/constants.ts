@@ -133,7 +133,7 @@ export class ErrorNames {
 
 export class Links {
     public static readonly ISSUE_LINK = "https://github.com/OfficeDev/TeamsFx/issues/new";
-    public static readonly HELP_LINK = "https://github.com/OfficeDev/TeamsFx/wiki";
+    public static readonly HELP_LINK = "https://github.com/OfficeDev/TeamsFx/blob/main/docs/fx-core/bot-help.md";
 }
 
 export class Alias {

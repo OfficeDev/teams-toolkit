@@ -89,11 +89,44 @@ export class AppStudioPluginImpl {
         }
 
         const manifest = JSON.parse(manifestString);
+
+        // manifest.id === externalID
+        const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
+        const existApp = await AppStudioClient.getAppByTeamsAppId(manifest.id, appStudioToken!);
+        if (existApp) {
+            // For VS Code/CLI platform, let the user confirm before publish
+            // For VS platform, do not enable confirm
+            let executePublishUpdate = false;
+            if (ctx.platform === Platform.VS) {
+                executePublishUpdate = true;
+            } else {
+                executePublishUpdate = (await ctx.dialog?.communicate(new DialogMsg(
+                    DialogType.Ask,
+                    {
+                        description: `The app ${existApp.displayName} has already been submitted to tenant App Catalog.\nStatus: ${existApp.publishingState}\n`+
+                                    `Last Modified: ${existApp.lastModifiedDateTime?.toString()}.\nDo you want to submit a new update?`,
+                        type: QuestionType.Confirm,
+                        options: ["Confirm"]
+                    }
+                )))?.getAnswer() === "Confirm";
+            }
+            
+            if (executePublishUpdate) {
+                return await this.beforePublish(ctx, appDirectory, manifestString, true);
+            } else {
+                throw AppStudioResultFactory.SystemError(AppStudioError.TeamsAppPublishCancelError.name, AppStudioError.TeamsAppPublishCancelError.message(manifest.name.short));
+            }
+        } else {
+            return await this.beforePublish(ctx, appDirectory, manifestString, false);
+        }
+    }
+
+    private async beforePublish(ctx: PluginContext, appDirectory: string, manifestString: string, update: boolean): Promise<string> {
+        const manifest: TeamsAppManifest = JSON.parse(manifestString);
         const publishProgress = ctx.dialog?.createProgressBar(
             `Publishing ${manifest.name.short}`,
             3,
         );
-        
         try {
             // Validate manifest
             await publishProgress?.start("Validating manifest file");
@@ -110,7 +143,6 @@ export class AppStudioPluginImpl {
                 remoteTeamsAppId = ctx.configOfOtherPlugins.get("solution")?.get(REMOTE_TEAMS_APP_ID) as string;
             }
             await publishProgress?.next(`Updating app definition for app ${remoteTeamsAppId} in app studio`);
-            const manifest: TeamsAppManifest = JSON.parse(manifestString!);
             const appDefinition = AppStudio.convertToAppDefinition(manifest, true);
             let appStudioToken = await ctx?.appStudioToken?.getAccessToken();
             const colorIconContent = (manifest.icons.color && !manifest.icons.color.startsWith("https://")) ?
@@ -119,51 +151,19 @@ export class AppStudioPluginImpl {
                 (await fs.readFile(`${appDirectory}/${manifest.icons.outline}`)).toString("base64") : undefined;
             await AppStudio.updateApp(remoteTeamsAppId!, appDefinition, appStudioToken!, undefined, colorIconContent, outlineIconContent);
 
-            // manifest.id === externalID
-            const existApp = await AppStudioClient.getAppByTeamsAppId(manifest.id, appStudioToken!);
-            if (existApp) {
-                // For VS Code/CLI platform, let the user confirm before publish
-                // For VS platform, do not enable confirm
-                let executePublishUpdate = false;
-                if (ctx.platform === Platform.VS) {
-                    executePublishUpdate = true;
-                } else {
-                    executePublishUpdate = (await ctx.dialog?.communicate(new DialogMsg(
-                        DialogType.Ask,
-                        {
-                            description: `The app ${existApp.displayName} has already been submitted to tenant App Catalog.\nStatus: ${existApp.publishingState}\n`+
-                                        `Last Modified: ${existApp.lastModifiedDateTime?.toString()}.\nDo you want to submit a new update?`,
-                            type: QuestionType.Confirm,
-                            options: ["Confirm"]
-                        }
-                    )))?.getAnswer() === "Confirm";
-                }
-                
-                if (executePublishUpdate) {
-                    // Build Teams App package
-                    await publishProgress?.next(`Building Teams app package in ${appDirectory}.`);
-                    const appPackage = await this.buildTeamsAppPackage(ctx, appDirectory, manifestString!);
+            // Build Teams App package
+            await publishProgress?.next(`Building Teams app package in ${appDirectory}.`);
+            const appPackage = await this.buildTeamsAppPackage(ctx, appDirectory, manifestString!);
 
-                    // Update existing app in App Catalog
-                    await publishProgress?.next(`Publishing ${manifest.name.short}`);
-                    appStudioToken = await ctx.appStudioToken?.getAccessToken();
-                    const appContent = await fs.readFile(appPackage);
-                    const appIdInAppCatalog = await AppStudioClient.publishTeamsAppUpdate(manifest.id, appContent, appStudioToken!);
-                    return appIdInAppCatalog;
-                } else {
-                    throw AppStudioResultFactory.SystemError(AppStudioError.TeamsAppPublishCancelError.name, AppStudioError.TeamsAppPublishCancelError.message(manifest.name.short));
-                }
+            const appContent = await fs.readFile(appPackage);
+            appStudioToken = await ctx.appStudioToken?.getAccessToken();
+            await publishProgress?.next(`Publishing ${manifest.name.short}`);
+            if (update) {
+                // Update existing app in App Catalog
+                return await AppStudioClient.publishTeamsAppUpdate(manifest.id, appContent, appStudioToken!);
             } else {
-                // Build Teams App package
-                await publishProgress?.next(`Building Teams app package in ${appDirectory}.`);
-                const appPackage = await this.buildTeamsAppPackage(ctx, appDirectory, manifestString!);
-
                 // Publish Teams App
-                await publishProgress?.next(`Publishing ${manifest.name.short}`);
-                appStudioToken = await ctx.appStudioToken?.getAccessToken();
-                const appContent = await fs.readFile(appPackage);
-                const appIdInAppCatalog = await AppStudioClient.publishTeamsApp(manifest.id, appContent, appStudioToken!);
-                return appIdInAppCatalog;
+                return await AppStudioClient.publishTeamsApp(manifest.id, appContent, appStudioToken!);
             }
         } finally {
             await publishProgress?.end();

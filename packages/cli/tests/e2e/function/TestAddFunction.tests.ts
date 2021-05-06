@@ -116,7 +116,7 @@ describe("Test Add Function", function() {
 
       // Validate Function App
       const func = FunctionValidator.init(context);
-      await FunctionValidator.validateDeploy(func, ['func1', 'func2']);
+      await FunctionValidator.validateDeploy(func);
     }
 
 

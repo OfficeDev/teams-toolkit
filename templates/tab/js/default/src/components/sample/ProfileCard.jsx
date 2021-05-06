@@ -6,12 +6,12 @@ export const ProfileCard = (loading, data) => (
     aria-roledescription="card avatar"
     elevated
     inverted
-    styles={{ height: "max-content", margin: "1em 0" }}
+    styles={{ height: "max-content", margin: "0.5em 0" }}
   >
-    <Card.Header>
+    <Card.Header styles={{"margin-bottom": "0"}}>
       {loading && (
         <Skeleton animation="wave">
-          <Flex gap="gap.small">
+          <Flex gap="gap.medium">
             <Skeleton.Avatar size={"larger"} />
             <div>
               <Skeleton.Line width="100px" />
@@ -21,9 +21,9 @@ export const ProfileCard = (loading, data) => (
         </Skeleton>
       )}
       {!loading && data && (
-        <Flex gap="gap.small">
+        <Flex gap="gap.medium" >
           <Avatar
-            size={"larger"}
+            size="larger"
             image={URL.createObjectURL(data.photo)}
             name={data.profile.displayName}
           />{" "}

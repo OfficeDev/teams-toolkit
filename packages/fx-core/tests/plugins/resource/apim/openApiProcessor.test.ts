@@ -4,9 +4,9 @@ import "mocha";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import path from "path";
-import { OpenApiProcessor } from "../../../../src/plugins/resource/apim/src/util/openApiProcessor";
-import { OpenApiSchemaVersion } from "../../../../src/plugins/resource/apim/src/model/openApiDocument";
-import { InvalidFunctionEndpoint, InvalidOpenApiDocument } from "../../../../src/plugins/resource/apim/src/error";
+import { OpenApiProcessor } from "../../../../src/plugins/resource/apim/util/openApiProcessor";
+import { OpenApiSchemaVersion } from "../../../../src/plugins/resource/apim/model/openApiDocument";
+import { InvalidFunctionEndpoint, InvalidOpenApiDocument } from "../../../../src/plugins/resource/apim/error";
 chai.use(chaiAsPromised);
 
 const testDataBaseFolder = "./tests/plugins/resource/apim/data/openApiProcessor";

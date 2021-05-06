@@ -12,21 +12,21 @@ import {
     Platform,
     SubscriptionInfo,
 } from "fx-api";
-import { AadOperationError, BuildError, NotImplemented } from "../../../../src/plugins/resource/apim/src/error";
+import { AadOperationError, BuildError, NotImplemented } from "../../../../src/plugins/resource/apim/error";
 import { TokenCredential } from "@azure/core-auth";
 import { AsyncFunc, Func } from "mocha";
 import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import { ConfidentialClientApplication } from "@azure/msal-node";
-import { AssertNotEmpty } from "../../../../src/plugins/resource/apim/src/error";
+import { AssertNotEmpty } from "../../../../src/plugins/resource/apim/error";
 import {
     IAadPluginConfig,
     IApimPluginConfig,
     IFunctionPluginConfig,
     ISolutionConfig,
-} from "../../../../src/plugins/resource/apim/src/model/config";
-import { TeamsToolkitComponent } from "../../../../src/plugins/resource/apim/src/constants";
+} from "../../../../src/plugins/resource/apim/model/config";
+import { TeamsToolkitComponent } from "../../../../src/plugins/resource/apim/constants";
 import { AxiosInstance, Method } from "axios";
-import { IAadInfo } from "../../../../src/plugins/resource/apim/src/model/aadResponse";
+import { IAadInfo } from "../../../../src/plugins/resource/apim/model/aadResponse";
 import { ApiManagementClient } from "@azure/arm-apimanagement";
 import dotenv from "dotenv";
 

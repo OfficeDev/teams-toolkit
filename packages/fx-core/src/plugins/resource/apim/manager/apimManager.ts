@@ -1,13 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ApimDefaultValues, ApimPluginConfigKeys, TeamsToolkitComponent, ProjectConstants } from "../constants";
+import { ApimDefaultValues, ApimPluginConfigKeys, TeamsToolkitComponent } from "../constants";
 import { AssertConfigNotEmpty, AssertNotEmpty } from "../error";
 import { IAadPluginConfig, IApimPluginConfig, IFunctionPluginConfig, ISolutionConfig } from "../model/config";
 import { ApimService } from "../service/apimService";
 import { OpenApiProcessor } from "../util/openApiProcessor";
 import { IAnswer } from "../model/answer";
 import { LogProvider, TelemetryReporter } from "fx-api";
-import * as path from "path";
 import { Lazy } from "../util/lazy";
 import { NamingRules } from "../util/namingRules";
 

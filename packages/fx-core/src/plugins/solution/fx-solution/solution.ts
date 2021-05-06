@@ -947,17 +947,17 @@ export class TeamsAppSolution implements Solution {
         const isAzureProject = this.isAzureProject(ctx);
         const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
         if(isAzureProject && !provisioned){
-            // const confirm  = (await ctx.dialog?.communicate(
-            //     new DialogMsg(DialogType.Show, {
-            //         description: util.format(strings.core.SwitchSubNotice, subscriptionId),
-            //         level: MsgLevel.Warning,
-            //         items: ["Provision", "Cancel"]
-            //     }),
-            // ))?.getAnswer() === "Confirm";
-            // if(!confirm){
-                 
-            // } 
-
+            const res  = (await ctx.dialog?.communicate(
+                new DialogMsg(DialogType.Show, {
+                    description: strings.solution.AskProvisionBeforeDeploy,
+                    level: MsgLevel.Warning,
+                    items: ["Provision", "Cancel"]
+                }),
+            ))?.getAnswer();
+            if(res === "Provision"){
+                return await this.provision(ctx);
+            }
+            return ok(Void);
         }
         try {
             if (this.isAzureProject(ctx)) {

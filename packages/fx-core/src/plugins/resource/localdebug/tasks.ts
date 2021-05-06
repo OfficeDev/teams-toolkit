@@ -278,12 +278,18 @@ export function generateInputs(): Record<string, unknown>[] {
 export function generateSpfxTasks(): Record<string, unknown>[] {
     return [
         {
+            label: "dependency check",
+            type: "shell",
+            command: "echo ${command:fx-extension.validate-spfx-dependencies}",
+        },
+        {
             label: "npm install",
             type: "shell",
             command: "npm install",
             options: {
                 cwd: "${workspaceFolder}/SPFx",
             },
+            dependsOn: "dependency check",
         },
         {
             label: "gulp trust-dev-cert",

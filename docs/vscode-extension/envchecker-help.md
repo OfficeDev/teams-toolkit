@@ -32,7 +32,7 @@ The `.NET SDK` is used to
 
 **NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
 
-## 5. (Linux only) The toolkit cannot find `.NET 5` or .NET `Core 3.1` on your machine. Please install it manually.
+## 5. (Linux only) The toolkit cannot find `.NET 5` or `.NET Core 3.1` on your machine. Please install it manually.
 
 Install the `.NET SDK` manually: please refer to the official documentation to check how to install it: https://docs.microsoft.com/en-us/dotnet/core/install/linux.
 

@@ -6,7 +6,6 @@ import urljoin from "url-join";
 import { JwtPayload } from "jwt-decode";
 import * as dotenv from "dotenv";
 
-
 /**
  * Get Access Token from a specific AAD app client id.
  * @param clientId - remote or local AAD App id.

@@ -11,16 +11,19 @@ import { AccessToken } from "@azure/core-auth";
 chaiUse(chaiPromises);
 const env = (window as any).__env__;
 
-describe("msGraphClientProvider - browser", () => {
+describe("MsGraphClientProvider Tests - Browser", () => {
+  let ssoToken: string;
+  let expire_time: number;
   beforeEach(async function() {
-    const ssoToken = await getSSOToken();
+    [ssoToken, expire_time] = await getSSOToken();
+
     // mock getting sso token.
     sinon.stub(TeamsUserCredential.prototype, <any>"getSSOToken").callsFake(
       (): Promise<AccessToken | null> => {
         return new Promise((resolve) => {
           resolve({
             token: ssoToken!,
-            expiresOnTimestamp: Date.now() + 10 * 60 * 1000
+            expiresOnTimestamp: expire_time
           });
         });
       }
@@ -51,12 +54,8 @@ describe("msGraphClientProvider - browser", () => {
     const emptyScope = "";
     const credential = new TeamsUserCredential();
     const graphClient: any = createMicrosoftGraphClient(credential, emptyScope);
-
-    // Current test user does not have admin permission so application credential can not perform any request successfully.
-    const errorResult = await expect(graphClient.api("/users").get()).to.eventually.be.rejectedWith(
-      Error
-    );
-    assert.include(errorResult.message, "Insufficient privileges to complete the operation.");
+    const userList = await graphClient.api("/users").get();
+    assert.strictEqual(userList["@odata.context"], "https://graph.microsoft.com/v1.0/$metadata#users");
   });
 
   it("create graph client without providing scope should have the default scope", async function() {
@@ -64,11 +63,7 @@ describe("msGraphClientProvider - browser", () => {
     const credential = new TeamsUserCredential();
     const graphClient: any = createMicrosoftGraphClient(credential);
     assert.strictEqual(graphClient.config.authProvider.scopes, defaultScope);
-
-    // Current test user does not have admin permission so application credential can not perform any request successfully.
-    const errorResult = await expect(graphClient.api("/users").get()).to.eventually.be.rejectedWith(
-      Error
-    );
-    assert.include(errorResult.message, "Insufficient privileges to complete the operation.");
+    const userList = await graphClient.api("/users").get();
+    assert.strictEqual(userList["@odata.context"], "https://graph.microsoft.com/v1.0/$metadata#users");
   });
 });

@@ -84,8 +84,9 @@ export class TeamsUserCredential implements TokenCredential {
     return new Promise<void>((resolve, reject) => {
       microsoftTeams.initialize(() => {
         microsoftTeams.authentication.authenticate({
-          url: `${this.config.initiateLoginEndpoint}?clientId=${this.config.clientId
-            }&scope=${encodeURI(scopesStr)}`,
+          url: `${this.config.initiateLoginEndpoint}?clientId=${
+            this.config.clientId
+          }&scope=${encodeURI(scopesStr)}`,
           width: loginPageWidth,
           height: loginPageHeight,
           successCallback: async (result?: string) => {
@@ -316,7 +317,8 @@ export class TeamsUserCredential implements TokenCredential {
       // If the code not running in Teams, the initialize callback function would never trigger
       setTimeout(() => {
         if (!initialized) {
-          const errorMsg = "Initialize teams sdk timeout, maybe the code is not running inside Teams";
+          const errorMsg =
+            "Initialize teams sdk timeout, maybe the code is not running inside Teams";
           internalLogger.error(errorMsg);
           reject(new ErrorWithCode(errorMsg, ErrorCode.InternalError));
         }

@@ -35,12 +35,12 @@ export function isLinux(): boolean {
 // help links
 export const defaultHelpLink = "https://aka.ms/teamsfx-envchecker-help";
 
-export const nodeNotFoundHelpLink = `${defaultHelpLink}#1-the-toolkit-cannot-find-nodejs-on-your-machine`;
-export const nodeNotSupportedHelpLink = `${defaultHelpLink}#2-current-installed-nodejs-is-not-in-the-supported-version-list`;
+export const nodeNotFoundHelpLink = `${defaultHelpLink}#the-toolkit-cannot-find-nodejs-on-your-machine`;
+export const nodeNotSupportedHelpLink = `${defaultHelpLink}#current-installed-nodejs-is-not-in-the-supported-version-list`;
 
-export const dotnetExplanationHelpLink = `${defaultHelpLink}#3-why-net-sdk-is-needed`;
-export const dotnetFailToInstallHelpLink = `${defaultHelpLink}#4-failed-to-install-net-core-sdk-v31`;
-export const dotnetManualInstallHelpLink = `${defaultHelpLink}#5-linux-only-the-toolkit-cannot-find-net-5-or-net-core-31-on-your-machine-please-install-it-manually`;
+export const dotnetExplanationHelpLink = `${defaultHelpLink}#why-net-sdk-is-needed`;
+export const dotnetFailToInstallHelpLink = `${defaultHelpLink}#failed-to-install-net-core-sdk-v31`;
+export const dotnetManualInstallHelpLink = `${defaultHelpLink}#linux-only-the-toolkit-cannot-find-net-5-or-net-core-31-on-your-machine-please-install-it-manually`;
 
 export const Messages = {
   learnMoreButtonText: "Learn more",

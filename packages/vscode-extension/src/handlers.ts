@@ -524,6 +524,17 @@ export async function validateDependenciesHandler(): Promise<void> {
   }
 }
 
+const spfxNodeSupportVersion = ["10", "12", "14"];
+export async function validateSpfxDependenciesHandler(): Promise<void> {
+  const depsChecker = new DepsChecker(vscodeLogger, vscodeAdapter, [
+    new NodeChecker(spfxNodeSupportVersion, vscodeAdapter, vscodeLogger, vscodeTelemetry)]);
+  const shouldContinue = await depsChecker.resolve();
+  if (!shouldContinue) {
+    // TODO: better mechanism to stop the tasks and debug session.
+    throw new Error("debug stopped.");
+  }
+}
+
 /**
  * install functions binding before launch local debug
  */

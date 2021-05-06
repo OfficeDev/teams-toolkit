@@ -238,6 +238,11 @@
         "enablement": "never"
       },
       {
+        "command": "fx-extension.validate-spfx-dependencies",
+        "title": "Teams - Validate SPFx Dependencies",
+        "enablement": "never"
+      },
+      {
         "command": "fx-extension.pre-debug-check",
         "title": "Teams - Pre Debug Check",
         "enablement": "never"

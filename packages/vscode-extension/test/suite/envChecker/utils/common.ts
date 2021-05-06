@@ -28,3 +28,11 @@ export async function commandExistsInPath(command: string): Promise<boolean> {
 export function assertPathEqual(actual: string, expected: string) {
   chai.assert.equal(fs.realpathSync(actual), fs.realpathSync(expected));
 }
+
+export async function getExecutionPolicyForCurrentUser(): Promise<string> {
+  return cpUtils.executeCommand(undefined, logger, { shell: 'powershell.exe' }, "Get-ExecutionPolicy", "-Scope", "CurrentUser");
+}
+
+export async function setExecutionPolicyForCurrentUser(policy: string) {
+  cpUtils.executeCommand(undefined, logger, { shell: 'powershell.exe' }, "Set-ExecutionPolicy", "-Scope", "CurrentUser", policy);
+}

@@ -1,0 +1,42 @@
+# Env Checker FAQ
+
+## 1. The toolkit cannot find Node.js on your machine
+
+As the TeamsFx project is implemented by `Node.js`, it's required to install the npm pacakges and run the project in local. Please refer to [nodejs.org](https://nodejs.org/) to install the right version: Currently only LTS versions (v10, v12 and v14) are supported by TeamsFx, and `Node v14` would be recommended to be installed.
+
+**NOTE**
+* There are known issues with using `npm@7`, packaged with `Node v15` and later. If you have problems running npm install, it would be recommended to use `Node v14 (LTS)` instead.
+* Please restart all your Visual Studio Code instances after the installation is finished.
+
+## 2. Current installed Node.js is not in the supported version list
+
+Currently only LTS versions (v10, v12 and v14) of Node.js are supported by TeamsFx, please make sure the installed Node.js meets this requirement. In addition, **Node v14 (LTS)** would be recommended to be installed.
+
+**NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
+
+## 3. Why .NET SDK is needed?
+
+The `.NET SDK` is used to
+* install customized bindings for Azure Functions app during local debugging and its deployments. 
+* start the simpleAuth service during local debugging.
+
+## 4. Failed to install .NET Core SDK (v3.1)
+
+### Possible reasons
+* Timeout(longer than 3 minutes) to install it caused by poor network.
+* The process to install `.NET Core SDK` is killed by mistake.
+
+### Workaround solutions
+* Retry it (Type `F5` again).
+* Install the `.NET SDK` manually: please go to https://dotnet.microsoft.com/download, and install it on your platform. Both `.NET 5.0 SDK` and `.NET Core 3.1 SDK` are supported.
+
+**NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
+
+### Report issues
+Please click [here](https://github.com/OfficeDev/TeamsFx/issues/new) to submit an issue on GitHub and attach the log file named `env-checker.log` under `%userprofile%/.fx/` (on Windows) or `~/.fx/` (on macOS/Linux).
+
+## 5. (Linux only) The toolkit cannot find `.NET 5` or .NET `Core 3.1` on your machine. Please install it manually.
+
+Install the `.NET SDK` manually: please refer to the official documentation to check how to install it: https://docs.microsoft.com/en-us/dotnet/core/install/linux.
+
+**NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.

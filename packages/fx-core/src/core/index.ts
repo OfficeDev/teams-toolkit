@@ -55,7 +55,7 @@ import { Loader, Meta } from "./loader";
 import { deserializeDict, fetchCodeZip, mapToJson, mergeSerectData, objectToConfigMap, objectToMap, saveFilesRecursively, serializeDict, sperateSecretData } from "../common/tools";
 import { VscodeManager } from "./vscodeManager";
 import { Settings } from "./settings";
-import { CoreQuestionNames, QuestionAppName, QuestionRootFolder, QuestionSelectSolution, SampleSelect, ScratchOptionNo, ScratchOptionYes, ScratchOrSampleSelect } from "./question";
+import { CoreQuestionNames, ProjectNamePattern, QuestionAppName, QuestionRootFolder, QuestionSelectSolution, SampleSelect, ScratchOptionNo, ScratchOptionYes, ScratchOrSampleSelect } from "./question";
 import * as jsonschema from "jsonschema";
 import { FxBotPluginResultFactory } from "../plugins/resource/bot/result";
 import { AzureSubscription, getSubscriptionList } from "./loginUtils";
@@ -307,7 +307,7 @@ class CoreImpl implements Core {
             );
             
         const validateResult = jsonschema.validate(appName, {
-            pattern: "^[\\da-zA-Z]+$",
+            pattern: ProjectNamePattern,
         });
         if (validateResult.errors && validateResult.errors.length > 0) {
             return err(
@@ -1017,6 +1017,9 @@ export class CoreProxy implements Core {
                 this.coreImpl.ctx.logProvider?.info(`[Core] run task ${name} finish, isOk: ${res.isOk()}!`);
             return res;
         } catch (e) {
+            this.coreImpl.ctx.logProvider?.error(
+                `[Core] run task ${name} finish, isOk: false, throw error:${JSON.stringify(e)}`,
+            );
             if (
                 e instanceof UserError ||
                 e instanceof SystemError ||

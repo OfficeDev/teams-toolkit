@@ -15,6 +15,8 @@ export enum CoreQuestionNames {
     SubStage = "substage",
 }
 
+export const ProjectNamePattern:string = "^[a-zA-Z]][\\da-zA-Z]+$";
+
 export const QuestionAppName: TextInputQuestion = {
     type: NodeType.text,
     name: CoreQuestionNames.AppName,
@@ -24,7 +26,7 @@ export const QuestionAppName: TextInputQuestion = {
             const folder = answer?.getString(CoreQuestionNames.Foler);
             if(!folder) return undefined;
             const schema = {
-                pattern: "^[\\da-zA-Z]+$",
+                pattern: ProjectNamePattern,
             };
             const validateResult = jsonschema.validate(appName, schema);
             if (validateResult.errors && validateResult.errors.length > 0) {

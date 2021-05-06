@@ -356,7 +356,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
             const tasksAll = fs.readJSONSync(expectedTasksFile);
             const tasks: [] = tasksAll["tasks"];
             const tasksInput: [] = tasksAll["inputs"];
-            chai.assert.equal(tasks.length, 4);
+            chai.assert.equal(tasks.length, 5);
             chai.assert.equal(tasksInput.length, 1);
 
             //no settings.json

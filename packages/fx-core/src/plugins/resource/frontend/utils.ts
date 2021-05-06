@@ -25,7 +25,7 @@ export class Utils {
 
     static async requestWithRetry(
         request: () => Promise<AxiosResponse<any>>,
-        maxTryCount = Constants.RequestRetryTimes
+        maxTryCount = Constants.RequestRetryCounts
     ): Promise<AxiosResponse<any> | undefined> {
         // !status means network error, see https://github.com/axios/axios/issues/383
         const canTry = (status: number | undefined) =>

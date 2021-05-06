@@ -23,8 +23,9 @@ export class Constants {
     static DayInMS = 1000 * 60 * 60 * 24;
     static SasTokenLifetime = Constants.DayInMS * 3;
 
-    static RequestRetryTimes = 3;
-    static RequestTimeoutInMS = 20 * 1000;
+    static RequestRetryCounts = 3;
+    static RequestTimeoutInMS = 10 * 1000;
+    static ScaffoldRetryCounts = 1;
 }
 
 export class FrontendPluginInfo {

@@ -92,7 +92,7 @@ export default class QuickStart extends React.Component<any, any>{
                                 title={`Explore Teams Toolkit commands`}
                                 content={`Open Command Palette (${shortcut}) and type ‘Teamsfx’ to find all relevant commands. `}
                                 actionText="Display TeamsFx commands"
-                                onAction={this.displayCliCommands}
+                                onAction={this.displayCommands}
                                 secondaryActionText="Next"
                                 onSecondaryAction={() => { this.onNextStep(curStep); }}
                                 expanded={this.state.currentStep === curStep}
@@ -265,10 +265,10 @@ export default class QuickStart extends React.Component<any, any>{
         });
     }
 
-    displayCliCommands = () => {
+    displayCommands = () => {
         vscode.postMessage({
-            command: Commands.DisplayCliCommands,
-            data: "teamsfx --help"
+            command: Commands.DisplayCommands,
+            data: "Teams"
         });
 
         let done = this.state.stepsDone;

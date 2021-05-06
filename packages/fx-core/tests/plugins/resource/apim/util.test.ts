@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import "mocha";
 import chai from "chai";
-import { capitalizeFirstLetter, getFileExtension } from "../../../../src/plugins/resource/apim/src/util";
+import { capitalizeFirstLetter, getFileExtension } from "../../../../src/plugins/resource/apim/util";
 
 describe("Util", () => {
     describe("#getFileExtension()", () => {

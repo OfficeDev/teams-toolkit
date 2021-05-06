@@ -79,7 +79,7 @@ import { AadAppForTeamsPlugin } from "../../resource/aad";
 import { FunctionPlugin } from "../../resource/function";
 import { SimpleAuthPlugin } from "../../resource/simpleauth";
 import { LocalDebugPlugin } from "../../resource/localdebug";
-import { ApimPlugin } from "../../resource/apim/src";
+import { ApimPlugin } from "../../resource/apim";
 import { IAppDefinition } from "./appstudio/interface";
 import {
     AzureResourceFunction,

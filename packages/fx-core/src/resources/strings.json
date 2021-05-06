@@ -8,6 +8,8 @@
         "AddCapabilityNotice":"[Teams Toolkit] Capability \"%s\" have been successfully configured for your project, trigger 'TeamsFx - Provision in the Cloud' will create the resource(s) in your Azure subscription.",
     },
     "plugins":{
-
+        "SPFx": {
+            "deployNotice": "[Teams Toolkit] Please go to SharePoint tenant App Catalog site at https://{your SharePoint App Catalog site}/AppCatalog/Forms/AllItems.aspx to deploy your package. You can find your SharePoint package at %s. Read more about how to deploy your SharePoint package from https://docs.microsoft.com/en-us/sharepoint/dev/spfx/web-parts/get-started/using-web-part-as-ms-teams-tab."
+        }
     }
 }

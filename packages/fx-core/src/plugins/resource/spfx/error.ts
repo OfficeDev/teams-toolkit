@@ -40,7 +40,7 @@ export function NoAppCatalogError(tenant: string): UserError {
 
 export function NoSPPackageError(distFolder: string): UserError {
     return returnUserError(new Error(util.format(
-        "Cannot find SharePoint package(file with .sppkg extension) under %s",
+        "Cannot find SharePoint package %s",
         distFolder
     )), Constants.PLUGIN_NAME, "NoSharePointPackage");
 }

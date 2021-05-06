@@ -45,7 +45,7 @@ You only need to take following steps once.
         "AuthorizeUrl": "https://login.microsoftonline.com/<your-M365-tenant-id>/oauth2/v2.0/authorize",
         "ApiAppIdUri": "api://localhost",
         "RedirectUri": "https://localhost",
-        "CodeVerifier": "CodeVerifier_for_SimpleAuth_Integration_testp",
+        "CodeVerifier": "CodeVerifier_for_SimpleAuth_Integration_test",
         "TestUsername": "<your-authorized-test-user-account>",
         "TestPassword": "<password-for-authorized-test-user-account>",
         "TestUsername2": "<your-another-authorized-test-user-account>",

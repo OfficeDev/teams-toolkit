@@ -397,11 +397,6 @@
             "description": "Ensure Node.js is installed.",
             "default": true
           },
-          "fx-extension.validateFuncCoreTools": {
-            "type": "boolean",
-            "description": "Ensure Azure Functions Core Tools is installed.",
-            "default": true
-          },
           "fx-extension.validateDotnetSdk": {
             "type": "boolean",
             "description": "Ensure .NET SDK is installed.",

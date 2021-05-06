@@ -1,10 +1,15 @@
-const { spawn } = require('child_process');
+const { spawn, spawnSync } = require('child_process');
+const fs = require('fs');
 require("dotenv").config();
 const admZip = require('adm-zip');
 const path = require('path');
 let simpleAuthDir = path.resolve(__dirname, "../../../../fx-core/templates/plugins/resource/simpleauth");
-var zip = new admZip(`${simpleAuthDir}/SimpleAuth.zip`);
-zip.extractAllTo(`${simpleAuthDir}/SimpleAuth`, true);
+let simpleAuthZip = `${simpleAuthDir}/SimpleAuth.zip`;
+if(!fs.existsSync(simpleAuthZip)) {
+    spawnSync("powershell.exe",[path.resolve(__dirname, "./download.ps1")]);
+}
+simpleAuthZip = new admZip(`${simpleAuthZip}`);
+simpleAuthZip.extractAllTo(`${simpleAuthDir}/SimpleAuth`, true);
 simpleAuthDir = path.resolve(simpleAuthDir, "SimpleAuth");
 process.env.CLIENT_ID= process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID;
 process.env.CLIENT_SECRET=process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_SECRET;

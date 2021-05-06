@@ -41,7 +41,7 @@ class LoginAccount extends YargsCommand {
           console.log(colors.green(`[${constants.cliSource}] Successfully signed in to Azure. Your username is ${colors.yellow((result as any).username)}.`));
           console.log(colors.green(`[${constants.cliSource}] Your subscriptons are:`));
           const subscriptions = await AzureTokenProvider.listSubscriptions();
-          console.log(subscriptions);
+          console.log(JSON.stringify(subscriptions, null, 2));
         } else {
           CLILogProvider.error(`[${constants.cliSource}] Failed to sign in to Azure.`);
         }

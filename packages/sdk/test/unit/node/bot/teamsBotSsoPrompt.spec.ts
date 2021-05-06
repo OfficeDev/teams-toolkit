@@ -27,7 +27,7 @@ import {
   loadConfiguration,
   Configuration
 } from "../../../../src";
-import { assert, use as chaiUse } from "chai";
+import { assert, expect, use as chaiUse } from "chai";
 import chaiPromises from "chai-as-promised";
 import sinon from "sinon";
 import mockedEnv from "mocked-env";
@@ -330,8 +330,18 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
     });
   });
 
-  it("teams bot sso prompt should throw error with invalid scopes types", async function () {
-    // TODO
+  it("create TeamsBotSsoPrompt instance should throw InvalidParameter error with invalid scopes", async function () {
+    const invalidScopes = [1, 2];
+    const settings: any = {
+      scopes: invalidScopes
+    };
+
+    loadConfiguration();
+    expect(() => {
+      new TeamsBotSsoPrompt(TeamsBotSsoPromptId, settings);
+    })
+      .to.throw(ErrorWithCode, "The type of scopes is not valid, it must be string or string array")
+      .with.property("code", ErrorCode.InvalidParameter);
   });
 
   function createReply(type: ActivityTypes, activity: Partial<Activity>): Partial<Activity> {

@@ -6,7 +6,7 @@ import { AuthenticationResult, ConfidentialClientApplication } from "@azure/msal
 import { config } from "../core/configurationProvider";
 import { UserInfo } from "../models/userinfo";
 import { internalLogger } from "../util/logger";
-import { formatString, getUserInfoFromSsoToken, parseJwt } from "../util/utils";
+import { formatString, getUserInfoFromSsoToken, parseJwt, validateScopesType } from "../util/utils";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 
 /**
@@ -103,6 +103,8 @@ export class OnBehalfOfUserCredential implements TokenCredential {
     scopes: string | string[],
     options?: GetTokenOptions
   ): Promise<AccessToken | null> {
+    validateScopesType(scopes);
+
     let scopesArray: string[] = typeof scopes === "string" ? scopes.split(" ") : scopes;
     scopesArray = scopesArray.filter((x) => x !== null && x !== "");
 
@@ -166,7 +168,7 @@ export class OnBehalfOfUserCredential implements TokenCredential {
   }
 
   private generateAuthServerError(err: any): Error {
-    let errorMessage = err.errorMessage;
+    const errorMessage = err.errorMessage;
     if (err.name === "InteractionRequiredAuthError") {
       const fullErrorMsg =
         "Failed to get access token from AAD server, interaction required: " + errorMessage;

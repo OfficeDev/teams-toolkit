@@ -7,7 +7,7 @@ The Microsoft Teams App Framework (TeamsFx) is a set of solution to help everyon
 The TeamsFx contains the following packages, check 'packages' folder for more information.
 | Package | Description | 
 | ----------- | ----------- |
-| [VS Code Extension](https://github.com/OfficeDev/TeamsFx/tree/main/packages/vscode-extension) | The [Microsoft Teams Toolkit](market extension link placeholder) enables you to create custom Teams apps directly within the Visual Studio Code environment. The toolkit guides you through the process and provides everything you need to build, debug, and launch your Teams app. |
+| [VS Code Extension](https://github.com/OfficeDev/TeamsFx/tree/main/packages/vscode-extension) | The Microsoft Teams Toolkit enables you to create custom Teams apps directly within the Visual Studio Code environment. The toolkit guides you through the process and provides everything you need to build, debug, and launch your Teams app. |
 | [CLI](https://github.com/OfficeDev/TeamsFx/tree/main/packages/cli) | A set of CLI tools in TeamsFx which provide same functionalities as VS Code extension for develoeprs who prefer keyboard-centric experience for Teams app building  |
 | [SDK](https://github.com/OfficeDev/TeamsFx/tree/main/packages/sdk) | TeamsFx provides SDK to reduce develoeprs' programming work when dealing with Microsoft or Azure component and simplifies the autentication work for developers.  |
 | [API](https://github.com/OfficeDev/TeamsFx/tree/main/packages/api) | TeamsFx API Pack is a collection of API contracts between TeamsFx Extension/CLI and TeamsFx core module. It defines the interfaces for 3rd party developer to write plugins to extend the toolkit capabilities. |
@@ -31,7 +31,7 @@ a CLA and decorate the PR appropriately (e.g., status check, comment). Simply fo
 provided by the bot. You will only need to do this once across all repos using our CLA.
 
 - Download our latest daily Builds [here](https://github.com/OfficeDev/TeamsFx/releases)
-- Check out the [Contributing]() page to see the best places to log issues and start discussions.
+- Check out the [Contributing](https://github.com/OfficeDev/TeamsFx/blob/main/CONTRIBUTING.md) page to see the best places to log issues and start discussions.
 
 ## Data/Telemetry
 VS Code collects usage data and sends it to Microsoft to help improve our products and services. Read our [Privacy Statement](https://privacy.microsoft.com/en-us/privacystatement) and [Data Collection Notice](https://docs.opensource.microsoft.com/content/releasing/telemetry.html) to learn more. If you don't wish to send usage data to Microsoft, you can set the `telemetry.enableTelemetry` setting to false. Learn more in our [FAQ](https://code.visualstudio.com/docs/supporting/faq#_how-to-disable-telemetry-reporting).

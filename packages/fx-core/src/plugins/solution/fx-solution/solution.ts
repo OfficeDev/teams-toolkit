@@ -947,16 +947,6 @@ export class TeamsAppSolution implements Solution {
         const isAzureProject = this.isAzureProject(ctx);
         const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
         if(isAzureProject && !provisioned){
-            const res  = (await ctx.dialog?.communicate(
-                new DialogMsg(DialogType.Show, {
-                    description: strings.solution.AskProvisionBeforeDeploy,
-                    level: MsgLevel.Warning,
-                    items: ["Provision", "Cancel"]
-                }),
-            ))?.getAnswer();
-            if(res === "Provision"){
-                return await this.provision(ctx);
-            }
             return ok(Void);
         }
         try {
@@ -1038,6 +1028,11 @@ export class TeamsAppSolution implements Solution {
     }
 
     async publish(ctx: SolutionContext): Promise<Result<any, FxError>> {
+        const isAzureProject = this.isAzureProject(ctx);
+        const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
+        if(isAzureProject && !provisioned){
+            return ok(Void);
+        }
 
         const maybeManifestTpl = await this.reloadManifestAndCheckRequiredFields(ctx);
         if (maybeManifestTpl.isErr()) {
@@ -1060,7 +1055,23 @@ export class TeamsAppSolution implements Solution {
 
             ctx.logProvider?.info(`[Solution] publish start!`);
 
-            return await executeConcurrently("", publishWithCtx);
+            const result = await executeConcurrently("", publishWithCtx);
+
+            if (result.isOk()) {
+                const msg = util.format(strings.solution.PublishSuccessNotice, ctx.projectSettings?.appName);
+                ctx.logProvider?.info(msg);
+                await ctx.dialog?.communicate(
+                    new DialogMsg(DialogType.Show, {
+                        description: msg,
+                        level: MsgLevel.Info,
+                    }),
+                );
+            } else {
+                const msg = util.format(strings.solution.PublishFailNotice, ctx.projectSettings?.appName);
+                ctx.logProvider?.info(msg);
+            }
+            
+            return result;
         } finally {
             this.runningState = SolutionRunningState.Idle;
         }
@@ -1120,6 +1131,9 @@ export class TeamsAppSolution implements Solution {
         const node = new QTreeNode({ type: NodeType.group });
         let manifest: TeamsAppManifest | undefined = undefined;
         if (stage !== Stage.create) {
+            const checkRes = this.checkWhetherSolutionIsIdle();
+            if (checkRes.isErr()) return err(checkRes.error);
+
             const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx);
             if (maybeManifest.isErr()) {
                 return err(maybeManifest.error);
@@ -1179,9 +1193,6 @@ export class TeamsAppSolution implements Solution {
         } else if (stage === Stage.update) {
             return await this.getQuestionsForAddResource(ctx, manifest);
         } else if (stage === Stage.provision) {
-            const checkRes = this.checkWhetherSolutionIsIdle();
-            if (checkRes.isErr()) return err(checkRes.error);
-
             const res = this.getSelectedPlugins(ctx);
             if (res.isErr()) {
                 return err(res.error);
@@ -1198,9 +1209,25 @@ export class TeamsAppSolution implements Solution {
                 }
             }
         } else if (stage === Stage.deploy) {
-            const canDeploy = this.canDeploy(ctx);
-            if (canDeploy.isErr()) {
-                return err(canDeploy.error);
+            const isAzureProject = this.isAzureProject(ctx);
+            const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
+            if(isAzureProject && !provisioned){
+                const res  = (await ctx.dialog?.communicate(
+                    new DialogMsg(DialogType.Show, {
+                        description: strings.solution.AskProvisionBeforeDeployOrPublish,
+                        level: MsgLevel.Warning,
+                        items: ["Provision", "Cancel"]
+                    }),
+                ))?.getAnswer();
+                if(res === "Provision"){
+                    const provisionRes = await this.provision(ctx);
+                    if(provisionRes.isErr()){
+                        return err(provisionRes.error);
+                    }
+                }
+                else if(res === "Cancel"){
+                    return ok(undefined);
+                }
             }
             const res = this.getSelectedPlugins(ctx);
             if (res.isErr()) {
@@ -1239,6 +1266,26 @@ export class TeamsAppSolution implements Solution {
                 }
             }
         } else if (stage === Stage.publish) {
+            const isAzureProject = this.isAzureProject(ctx);
+            const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
+            if(isAzureProject && !provisioned){
+                const res  = (await ctx.dialog?.communicate(
+                    new DialogMsg(DialogType.Show, {
+                        description: strings.solution.AskProvisionBeforeDeployOrPublish,
+                        level: MsgLevel.Warning,
+                        items: ["Provision", "Cancel"]
+                    }),
+                ))?.getAnswer();
+                if(res === "Provision"){
+                    const provisionRes = await this.provision(ctx);
+                    if(provisionRes.isErr()){
+                        return err(provisionRes.error);
+                    }
+                }
+                else if(res === "Cancel"){
+                    return ok(undefined);
+                }
+            }
             const pluginsToPublish = [this.appStudioPlugin];
             for (const plugin of pluginsToPublish) {
                 const pluginCtx = getPluginContext(ctx, plugin.name, manifest);

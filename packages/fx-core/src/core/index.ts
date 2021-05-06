@@ -209,22 +209,6 @@ class CoreImpl implements Core {
         );
     }
 
-    async validateAppName(appName: string, answer?: ConfigMap): Promise<Result<any, FxError>> {
-        const folder = answer?.getString(CoreQuestionNames.Foler);
-        if(!folder) return ok(undefined);
-        const schema = {
-            pattern: "^[a-zA-Z][\\da-zA-Z]+$",
-        };
-        const validateResult = jsonschema.validate(appName, schema);
-        if (validateResult.errors && validateResult.errors.length > 0) {
-            return ok(`project name doesn't match pattern: ${schema.pattern}`);
-        }
-        const projectPath = path.resolve(folder, appName);
-        const exists = await fs.pathExists(projectPath);
-        if (exists) return ok(`Project path already exists:${projectPath}, please change a different project name.`);
-        return ok(undefined);
-    }
-
     async callFunc(func: Func, answer?: ConfigMap): Promise<Result<any, FxError>> {
         const namespace = func.namespace;
         const array = namespace?namespace.split("/"):[];

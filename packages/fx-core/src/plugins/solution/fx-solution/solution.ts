@@ -634,7 +634,7 @@ export class TeamsAppSolution implements Solution {
             if (!hasBot && !hasMsgExt) {
                 return err(
                     returnSystemError(
-                        new Error("One of bot and Message Extension is expected to be selected"),
+                        new Error("Select either Bot or Messaging Extension"),
                         "Solution",
                         SolutionError.InternelError,
                     ),
@@ -1919,7 +1919,7 @@ export class TeamsAppSolution implements Solution {
             && ( capabilitiesAnswer.includes(BotOptionItem.id) || capabilitiesAnswer.includes(MessageExtensionItem.id) ) ){
             return err(
                 returnUserError(
-                    new Error("Application already contains a Bot and/or Message Extension"),
+                    new Error("Application already contains a Bot and/or Messaging Extension"),
                     "Solution",
                     SolutionError.FailedToAddCapability,
                 ),

@@ -6,11 +6,11 @@ const path = require('path');
 let simpleAuthDir = path.resolve(__dirname, "../../../../fx-core/templates/plugins/resource/simpleauth");
 let simpleAuthZip = `${simpleAuthDir}/SimpleAuth.zip`;
 if(!fs.existsSync(simpleAuthZip)) {
-    spawnSync("powershell.exe",[path.resolve(__dirname, "./download.ps1")]);
+    spawnSync("powershell.exe",[path.resolve(__dirname, "./downloadSimpleAuth.ps1.ps1")]);
 }
 simpleAuthZip = new admZip(`${simpleAuthZip}`);
-simpleAuthZip.extractAllTo(`${simpleAuthDir}/SimpleAuth`, true);
-simpleAuthDir = path.resolve(simpleAuthDir, "SimpleAuth");
+simpleAuthZip.extractAllTo(`${simpleAuthDir}/SimpleAuthUnzipOutput`, true);
+simpleAuthDir = path.resolve(simpleAuthDir, "SimpleAuthUnzipOutput");
 process.env.CLIENT_ID= process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID;
 process.env.CLIENT_SECRET=process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_SECRET;
 process.env.IDENTIFIER_URI=`api://localhost/${process.env.CLIENT_ID}`;

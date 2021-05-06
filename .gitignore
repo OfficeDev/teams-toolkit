@@ -363,3 +363,4 @@ test-results.*
 
 # simple auth
 SimpleAuth.zip
+SimpleAuthUnzipOutput

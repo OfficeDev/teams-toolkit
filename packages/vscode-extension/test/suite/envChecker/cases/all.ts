@@ -13,7 +13,7 @@ import { TestTelemetry } from "../adapters/testTelemetry";
 import { commandExistsInPath } from "../utils/common";
 import { isLinux } from "../../../../src/debug/depsChecker/common";
 
-const supportedVersions = ["10", "12", "14"];
+const azureSupportedNodeVersions = ["10", "12", "14"];
 
 function createTestChecker(
   hasTeamsfxBackend: boolean,
@@ -31,7 +31,7 @@ function createTestChecker(
   );
   const logger = new TestLogger();
   const telemetry = new TestTelemetry();
-  const nodeChecker = new NodeChecker(testAdapter, logger, telemetry);
+  const nodeChecker = new NodeChecker(azureSupportedNodeVersions, testAdapter, logger, telemetry);
   const dotnetChecker = new DotnetChecker(testAdapter, logger, telemetry);
   const depsChecker = new DepsChecker(logger, testAdapter, [dotnetChecker]);
 
@@ -45,7 +45,7 @@ suite("All checkers E2E test", async () => {
 
   test("All installed", async function(this: Mocha.Context) {
     const nodeVersion = await nodeUtils.getNodeVersion();
-    if (!(nodeVersion != null && supportedVersions.includes(nodeVersion))) {
+    if (!(nodeVersion != null && azureSupportedNodeVersions.includes(nodeVersion))) {
       this.skip();
     }
     if (
@@ -102,7 +102,7 @@ suite("All checkers E2E test", async () => {
 
   test("Node.js is installed, but .NET SDK is not", async function(this: Mocha.Context) {
     const nodeVersion = await nodeUtils.getNodeVersion();
-    if (!(nodeVersion != null && supportedVersions.includes(nodeVersion))) {
+    if (!(nodeVersion != null && azureSupportedNodeVersions.includes(nodeVersion))) {
       this.skip();
     }
     if (await commandExistsInPath(dotnetUtils.dotnetCommand)) {

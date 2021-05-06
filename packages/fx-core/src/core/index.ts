@@ -1017,9 +1017,6 @@ export class CoreProxy implements Core {
                 this.coreImpl.ctx.logProvider?.info(`[Core] run task ${name} finish, isOk: ${res.isOk()}!`);
             return res;
         } catch (e) {
-            this.coreImpl.ctx.logProvider?.error(
-                `[Core] run task ${name} finish, isOk: false, throw error:${JSON.stringify(e)}`,
-            );
             if (
                 e instanceof UserError ||
                 e instanceof SystemError ||

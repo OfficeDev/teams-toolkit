@@ -175,10 +175,6 @@ export class SPFxPluginImpl {
       `${outputFolderPath}/README.md`
     );
     await fs.copyFile(
-      path.resolve(templateFolder, "./solution/_editorconfig"),
-      `${outputFolderPath}/.editorconfig`
-    );
-    await fs.copyFile(
       path.resolve(templateFolder, "./solution/_gitignore"),
       `${outputFolderPath}/.gitignore`
     );

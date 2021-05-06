@@ -64,6 +64,7 @@ module.exports = function (config) {
       "SDK_INTEGRATION_TEST_AAD_TENANT_ID",
       "SDK_INTEGRATION_TEST_AAD_AUTHORITY_HOST",
       "SDK_INTEGRATION_TEST_TEAMS_ACCESS_AS_USER_SCOPE",
+      "SDK_INTEGRATION_TEST_USER_OBJECT_ID",
     ],
 
     // test results reporter to use

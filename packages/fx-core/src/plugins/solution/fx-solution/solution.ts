@@ -1477,6 +1477,7 @@ export class TeamsAppSolution implements Solution {
             manifest.name.short,
             manifest.version,
             botId,
+            "-local-debug"
         );
 
         const localTeamsAppID = ctx.config.get(GLOBAL_CONFIG)?.getString(LOCAL_DEBUG_TEAMS_APP_ID);

@@ -129,6 +129,7 @@ export class ErrorNames {
     // User Exceptions
     public static readonly USER_INPUTS_ERROR = "UserInputsError";
     public static readonly PACK_DIR_EXISTENCE_ERROR = "PackDirectoryExistenceError";
+    public static readonly FREE_SERVER_FARMS_QUOTA_ERROR = "FreeServerFarmsQuotaError";
 }
 
 export class Links {
@@ -209,4 +210,9 @@ export class MaxLengths {
     public static readonly WEB_APP_SITE_NAME = 60;
     public static readonly APP_SERVICE_PLAN_NAME = 40;
     public static readonly AAD_DISPLAY_NAME = 120;
+}
+
+export class ErrorMessagesForChecking {
+    static readonly FreeServerFarmsQuotaErrorFromAzure =
+        "The maximum number of Free ServerFarms allowed in a Subscription is 10";
 }

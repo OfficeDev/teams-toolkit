@@ -13,7 +13,6 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using System.Data;
 
 namespace Microsoft.Azure.WebJobs.Extensions.TeamsFx.Tests.IntegrationTests
 {

@@ -69,10 +69,9 @@ describe("Create single tab", function () {
             const simpleAuth = SimpleAuthValidator.init(context);
             await SimpleAuthValidator.validate(simpleAuth, aad);
 
-            // Validate Frontend
+            // Validate Tab Frontend
             const frontend = FrontendValidator.init(context);
             await FrontendValidator.validateProvision(frontend);
-
         }
 
         // deploy
@@ -90,7 +89,7 @@ describe("Create single tab", function () {
             // Get context
             const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
 
-            // Validate Frontend
+            // Validate Tab Frontend
             const frontend = FrontendValidator.init(context);
             await FrontendValidator.validateDeploy(frontend);
         }

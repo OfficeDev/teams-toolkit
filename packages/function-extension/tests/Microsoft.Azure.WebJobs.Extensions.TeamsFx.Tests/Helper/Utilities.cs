@@ -9,7 +9,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.TeamsFx.Tests.Helper
 {
     public class Utilities
     {
-        public static async Task<string> GetApplicationAccessTokenAsync(string clientId, string clientSecret, string oAuthAuthority)
+        public static async Task<string> GetApplicationAccessTokenAsync(string clientId, string clientSecret, string authorityHost, string tenantId)
         {
             if (String.IsNullOrEmpty(clientId))
             {
@@ -19,11 +19,16 @@ namespace Microsoft.Azure.WebJobs.Extensions.TeamsFx.Tests.Helper
             {
                 throw new ArgumentException(nameof(clientSecret));
             }
-            if (String.IsNullOrEmpty(oAuthAuthority))
+            if (String.IsNullOrEmpty(authorityHost))
             {
-                throw new ArgumentException(nameof(oAuthAuthority));
+                throw new ArgumentException(nameof(authorityHost));
+            }
+            if (String.IsNullOrEmpty(tenantId))
+            {
+                throw new ArgumentException(nameof(tenantId));
             }
 
+            var oAuthAuthority = authorityHost.TrimEnd('/') + '/' + tenantId;
             IConfidentialClientApplication confidentialClientApplication = ConfidentialClientApplicationBuilder
                 .Create(clientId)
                 .WithAuthority(oAuthAuthority)

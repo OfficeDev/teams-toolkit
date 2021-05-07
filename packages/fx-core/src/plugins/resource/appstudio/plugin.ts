@@ -25,23 +25,15 @@ export class AppStudioPluginImpl {
         }
         const manifest: TeamsAppManifest = JSON.parse(manifestString);
         const colorFile = `${appDirectory}/${manifest.icons.color}`;
-        
-        try {
-            const colorFileState = await fs.stat(colorFile);
-            if (!colorFileState.isFile()) {
-                throw AppStudioResultFactory.UserError(AppStudioError.FileNotFoundError.name, AppStudioError.FileNotFoundError.message(colorFile));
-            }
-        } catch (error) {
+
+        let fileExists = await this.checkFileExist(colorFile);
+        if (!fileExists) {
             throw AppStudioResultFactory.UserError(AppStudioError.FileNotFoundError.name, AppStudioError.FileNotFoundError.message(colorFile));
         }
         
         const outlineFile = `${appDirectory}/${manifest.icons.outline}`;
-        try {
-            const outlineFileState = await fs.stat(outlineFile);
-            if (!outlineFileState.isFile()) {
-                throw AppStudioResultFactory.UserError(AppStudioError.FileNotFoundError.name, AppStudioError.FileNotFoundError.message(outlineFile));
-            }
-        } catch (error) {
+        fileExists = await this.checkFileExist(outlineFile);
+        if (!fileExists) {
             throw AppStudioResultFactory.UserError(AppStudioError.FileNotFoundError.name, AppStudioError.FileNotFoundError.message(outlineFile));
         }
         
@@ -173,5 +165,14 @@ export class AppStudioPluginImpl {
     private isSPFxProject(ctx: PluginContext): boolean {
         const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings).activeResourcePlugins;
         return selectedPlugins.indexOf("fx-resource-spfx") !== -1;
+    }
+
+    private async checkFileExist(filePath: string): Promise<boolean> {
+        try {
+            await fs.stat(filePath);
+            return true;
+        } catch (error) {
+            return false;
+        }
     }
 }

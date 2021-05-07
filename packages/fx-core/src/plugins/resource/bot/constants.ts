@@ -136,7 +136,6 @@ export class ErrorNames {
 export class Links {
     public static readonly ISSUE_LINK = "https://github.com/OfficeDev/TeamsFx/issues/new";
     public static readonly HELP_LINK = "https://github.com/OfficeDev/TeamsFx/blob/main/docs/fx-core/bot-help.md";
-    public static readonly RPS_NOT_FOUND = "https://aka.ms/rps-not-found";
 }
 
 export class Alias {

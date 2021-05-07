@@ -106,7 +106,7 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
     if (AppStudioLogin.statusChange !== undefined) {
       await AppStudioLogin.statusChange("SignedOut", undefined, undefined);
     }
-    AppStudioLogin.codeFlowInstance.logout();
+    await AppStudioLogin.codeFlowInstance.logout();
     await this.notifyStatus();
     return new Promise((resolve) => {
       resolve(true);

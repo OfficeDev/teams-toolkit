@@ -48,4 +48,4 @@ The project already enabled StyleCop. Please fix the style warnings before commi
 
 1. Check out a new branch from `main` branch.
 1. Make sure all the checks in pull request are passed.
-1. At least one approver from [CODEOWNER](.github/CODEOWNERS) is required.
+1. At least one approver from [CODEOWNER](../../.github/CODEOWNERS) is required.

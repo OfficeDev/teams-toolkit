@@ -9,6 +9,7 @@ import {
   DialogMsg,
   DialogType,
   MsgLevel,
+  Platform,
 } from "fx-api";
 import * as uuid from "uuid";
 import lodash from "lodash";
@@ -273,7 +274,9 @@ export class SPFxPluginImpl {
     
     const guidance = util.format(strings.plugins.SPFx.deployNotice, sharepointPackage);
     ctx.logProvider?.info(guidance);
-    (ctx.logProvider as any).outputChannel.show();
+    if (ctx.platform === Platform.VSCode) {
+      (ctx.logProvider as any).outputChannel.show();
+    }
     return ok(undefined);
   }
 

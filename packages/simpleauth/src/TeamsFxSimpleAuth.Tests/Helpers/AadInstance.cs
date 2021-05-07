@@ -6,7 +6,6 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using IdentityModel;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
@@ -14,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Graph;
 using Microsoft.Graph.Auth;
 using Microsoft.Identity.Client;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.TeamsFx.SimpleAuth.Tests.Models;
 
 namespace Microsoft.TeamsFx.SimpleAuth.Tests.Helpers
@@ -63,7 +63,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.Helpers
                 using (var sha256 = SHA256.Create())
                 {
                     var challengeBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(IntegrationTestSettings.CodeVerifier));
-                    IntegrationTestSettings.CodeChallenge = Base64Url.Encode(challengeBytes);
+                    IntegrationTestSettings.CodeChallenge = Base64UrlEncoder.Encode(challengeBytes);
                 }
 
                 Utilities.ConsentAndGetAuthorizationCode(IntegrationTestSettings.AuthorizeUrl, TeamsAadInfo.AppId,

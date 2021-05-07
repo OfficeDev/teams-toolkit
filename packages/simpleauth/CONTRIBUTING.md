@@ -24,7 +24,7 @@ Build in Visual Studio directly, or use `dotnet build` command under root folder
 ### Prepare test resources
 
 You only need to take following steps once.
-1. Register your M365 subscription at https://developer.microsoft.com/en-us/microsoft-365/profile. Record the username, password for your admin account, and tenant id for your M365 tenant.
+1. Register your M365 subscription at https://developer.microsoft.com/en-us/microsoft-365. Record the username, password for your admin account, and tenant id for your M365 tenant.
 2. Create an AAD app registration named `teamsfx-integration-test-main-app` using admin account from step 1. Record the client id of this app.
 3. Configure the AAD app registration created in step 2:
     1. Add redirect uri: https://localhost. The redirect uri does not need to be valid. The test framework will parse the AAD response from redirect uri.
@@ -73,6 +73,6 @@ The project already enabled StyleCop. Please fix the style warnings before commi
 
 ## Pull Request Process
 
-1. Create a pull request with your changes to `develop` branch.
+1. Create a pull request with your changes.
 1. Make sure all the checks in pull request are passed.
 1. At least one approve from other developers is required.

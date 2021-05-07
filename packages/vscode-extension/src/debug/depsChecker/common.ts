@@ -36,7 +36,8 @@ export function isLinux(): boolean {
 export const defaultHelpLink = "https://aka.ms/teamsfx-envchecker-help";
 
 export const nodeNotFoundHelpLink = `${defaultHelpLink}#the-toolkit-cannot-find-nodejs-on-your-machine`;
-export const nodeNotSupportedHelpLink = `${defaultHelpLink}#current-installed-nodejs-is-not-in-the-supported-version-list`;
+export const nodeNotSupportedForAzureHelpLink = `${defaultHelpLink}#current-installed-nodejs-is-not-in-the-supported-version-list-azure-hosting`;
+export const nodeNotSupportedForSPFxHelpLink = `${defaultHelpLink}#current-installed-nodejs-is-not-in-the-supported-version-list-spfx-hosting`;
 
 export const dotnetExplanationHelpLink = `${defaultHelpLink}#why-net-sdk-is-needed`;
 export const dotnetFailToInstallHelpLink = `${defaultHelpLink}#failed-to-install-net-core-sdk-v31`;

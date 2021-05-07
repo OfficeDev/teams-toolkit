@@ -14,6 +14,12 @@ As the TeamsFx project is implemented by `Node.js`, it's required to install the
 
 **NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
 
+## Current installed Node.js is not in the supported version list (SPFx hosting)
+
+ When `SPFx` is selected as the hosting type, only LTS versions (v10, v12 and v14) of Node.js are supported by TeamsFx currently, please make sure the installed Node.js meets this requirement. In addition, **Node v14 (LTS)** would be recommended to be installed.
+
+**NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
+
 ## Why .NET SDK is needed?
 
 The `.NET SDK` is used to

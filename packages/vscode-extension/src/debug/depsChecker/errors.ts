@@ -27,11 +27,11 @@ export class NodeNotFoundError extends DepsCheckerError {
   }
 }
 
-export class NotSupportedNodeError extends DepsCheckerError {
+export class NodeNotSupportedError extends DepsCheckerError {
   constructor(message: string, helpLink: string) {
     super(message, helpLink);
 
-    Object.setPrototypeOf(this, NotSupportedNodeError.prototype);
+    Object.setPrototypeOf(this, NodeNotSupportedError.prototype);
   }
 }
 

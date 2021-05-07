@@ -1,9 +1,7 @@
 import { DepsInfo, IDepsAdapter, IDepsChecker, IDepsLogger, IDepsTelemetry } from "./checker";
-import { Messages, nodeNotFoundHelpLink, nodeNotSupportedHelpLink } from "./common";
+import { Messages } from "./common";
 import { cpUtils } from "./cpUtils";
-import { NodeNotFoundError, NotSupportedNodeError as NodeNotSupportedError } from "./errors";
-
-export const AzureSupportedNodeVersions = ["10", "12", "14"];
+import { NodeNotFoundError, NodeNotSupportedError } from "./errors";
 const NodeName = "Node.js";
 
 class NodeVersion {
@@ -16,14 +14,16 @@ class NodeVersion {
   }
 }
 
-export class NodeChecker implements IDepsChecker {
-  private readonly _supportedVersions: string[];
+export abstract class NodeChecker implements IDepsChecker {
+  protected readonly abstract _supportedVersions: string[];
+  protected readonly abstract _nodeNotSupportedHelpLink: string;
+  protected readonly abstract _nodeNotFoundHelpLink: string;
+
   private readonly _adapter: IDepsAdapter;
   private readonly _logger: IDepsLogger;
   private readonly _telemetry: IDepsTelemetry;
 
-  constructor(supportedVersions: string[], adapter: IDepsAdapter, logger: IDepsLogger, telemetry: IDepsTelemetry) {
-    this._supportedVersions = supportedVersions;
+  constructor(adapter: IDepsAdapter, logger: IDepsLogger, telemetry: IDepsTelemetry) {
     this._adapter = adapter;
     this._logger = logger;
     this._telemetry = telemetry;
@@ -38,7 +38,7 @@ export class NodeChecker implements IDepsChecker {
 
     const currentVersion = await getInstalledNodeVersion();
     if (currentVersion === null) {
-      throw new NodeNotFoundError(Messages.NodeNotFound, nodeNotFoundHelpLink);
+      throw new NodeNotFoundError(Messages.NodeNotFound, this._nodeNotFoundHelpLink);
     }
 
     if (!NodeChecker.isVersionSupported(this._supportedVersions, currentVersion)) {
@@ -47,7 +47,7 @@ export class NodeChecker implements IDepsChecker {
         Messages.NodeNotSupported
           .replace("@CurrentVersion", currentVersion.version)
           .replace("@SupportedVersions", supportedVersions),
-        nodeNotSupportedHelpLink
+        this._nodeNotSupportedHelpLink
       );
     }
 

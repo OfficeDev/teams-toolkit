@@ -6,7 +6,7 @@
 You can follow [Build and Run Locally](./development-guide.md#build-and-run-locally).
 
 ### Run
-`npm run e2e-test`
+`npm run test:e2e`
 
 ### Setup environment variables (Optional)
 If you want to use the test account to run e2e test cases, you should set the following environment variables.

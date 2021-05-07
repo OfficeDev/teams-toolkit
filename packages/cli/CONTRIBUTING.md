@@ -4,62 +4,66 @@ Welcome, and thank you for your interest in contributing to TeamsFx CLI!
 
 There are many ways in which you can contribute, beyond writing code. The goal of this document is to provide a high-level overview of how you can get involved.
 
-## Asking Questions
+## Setup Development Environment
 
-<!---Have a question? Rather than opening an issue, please ask away on [Stack Overflow](https://stackoverflow.com/questions/tagged/teamsfx) using the tag `teamsfx`.
+1. Install Node v12
+2. Install NPM v6 or later
 
-The active community will be eager to assist you. Your well-worded question will serve as a resource to others searching for help.--->
+## Build the whole monorepo
+1. `git clone https://github.com/OfficeDev/TeamsFx.git`
+2. `cd TeamsFx`
+3. `npm run setup`
 
-## Providing Feedback
+This will run "lerna bootstrap" to link packages in monorepo locally. 
 
-See the [Feedback Channels](https://github.com/OfficeDev/TeamsFx/wiki/cli/Feedback-Channels) wiki page for details on how to share your thoughts.
+## Build CLI package alone
+1. `cd packages/cli/`
+2. `npm run build`
 
-## Reporting Issues
+This will build CLI package alone and install the dependent packages from public registry.
 
-Find a reproducible problem for TeamsFx CLI? Have a feature request for TeamsFx CLI? We want to hear about it! Here's how you can make reporting your issue as effective as possible.
+**_NOTE:_** If you meet the error showing that some package cannot install, you can delete this package's `package-lock.json` file and try `npm run bootstrap` under `TeamsFx` folder again.
 
-### Look For an Existing Issue
+## Run your local project
+1. `cd TeamsFx`
+2. `npm run setup`
+3. `npm link`
 
-Before you create a new issue, please do a search in [open issues](https://github.com/OfficeDev/TeamsFx/issues) to see if the issue or feature request has already been filed.
+## Debug inside VSCode
+1. `cd TeamsFx/packages/cli`
+2. `code .`
+3. In the debug Treeview choose debugging profile
+4. Hit 'F5' or click start debugging button
 
-Be sure to scan through the [most popular](https://github.com/OfficeDev/TeamsFx/issues?q=is%3Aopen+is%3Aissue+label%3Afeature-request+sort%3Areactions-%2B1-desc) feature requests.
+## Install the published package
+1. Run: `npm install -g teamsfx-cli` (Pls check the version is the latest version)
+2. Now the package is installed in your global npm folder. You can type 'teamsfx -h' to see how to use the cli tool.
 
-If you find your issue already exists, make relevant comments and add your [reaction](https://github.com/blog/2119-add-reactions-to-pull-requests-issues-and-comments). Use a reaction in place of a "+1" comment:
+## Run Unit test
 
-* 👍 - upvote
-* 👎 - downvote
+1. `cd TeamsFx/packages/cli`
+2. `npm run test:unit`
 
-If you cannot find an existing issue that describes your bug or feature, create a new issue using the guidelines below.
+## Run E2E test
 
-### Writing Good Bug Reports and Feature Requests
+1. `cd TeamsFx/packages/cli`
+2. `npm run test:e2e`
 
-File a single issue per problem and feature request. Do not enumerate multiple bugs or feature requests in the same issue.
+## Coding Style
 
-Do not add your issue as a comment to an existing issue unless it's for the identical input. Many issues look similar, but have different causes.
+The project setup ESLINT and prettier for coding style and formating, please follow the commands below
 
-The more information you can provide, the more likely someone will be successful at reproducing the issue and finding a fix.
+### Lint project
+`npm run lint`
 
-Please include the following with each issue:
+### Fix lint error
+`npm run lint:fix`
 
-* Version of TeamsFx CLI
+### Check code format before commit
+`npm run check-format`
 
-* Your operating system
-
-* Reproducible steps (1... 2... 3...) that cause the issue
-
-* What you expected to see, versus what you actually saw
-
-* Screenshots, animations, or a link to a video showing the issue occurring
-
-* A code snippet that demonstrates the issue or a link to a code repository the developers can easily pull down to recreate the issue locally
-
-  * **Note:** Because the developers need to copy and paste the code snippet, including a code snippet as a media file (i.e. .gif) is not sufficient.
-
-* Errors from the Dev Tools Console (open from the menu: Help > Toggle Developer Tools)
-
-## Contributing Fixes
-
-If you are interested in writing code to fix issues, please see [How to Contribute](/docs/cli/contributing/how-to-contribute.md).
+### Format the code
+`npm run format`
 
 # Thank You!
 

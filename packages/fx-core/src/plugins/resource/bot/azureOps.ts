@@ -7,10 +7,12 @@ import {
     ProvisionError, ConfigUpdatingError,
     ListPublishingCredentialsError, ZipDeployError,
     MessageEndpointUpdatingError, MissingSubscriptionRegistrationError
+    FreeServerFarmsQuotaError
 } from "./errors";
 import { CommonStrings, ConfigNames } from "./resources/strings";
 import * as utils from "./utils/common";
 import { default as axios } from "axios";
+import { ErrorMessagesForChecking } from "./constants";
 
 export class AzureOperations {
     public static async CreateBotChannelRegistration(botClient: AzureBotService, resourceGroup: string, botChannelRegistrationName: string, msaAppId: string): Promise<void> {
@@ -105,7 +107,11 @@ export class AzureOperations {
                 appServicePlan,
             );
         } catch (e) {
-            throw new ProvisionError(CommonStrings.APP_SERVICE_PLAN, e);
+            if (e.message?.includes(ErrorMessagesForChecking.FreeServerFarmsQuotaErrorFromAzure)) {
+                throw new FreeServerFarmsQuotaError(e);
+            } else {
+                throw new ProvisionError(CommonStrings.APP_SERVICE_PLAN, e);
+            }
         }
 
         if (!planResponse || !utils.isHttpCodeOkOrCreated(planResponse._response.status)) {

@@ -130,6 +130,7 @@ export class ErrorNames {
     public static readonly USER_INPUTS_ERROR = "UserInputsError";
     public static readonly PACK_DIR_EXISTENCE_ERROR = "PackDirectoryExistenceError";
     public static readonly MISSING_SUBSCRIPTION_REGISTRATION_ERROR = "MissingSubscriptionRegistrationError";
+    public static readonly FREE_SERVER_FARMS_QUOTA_ERROR = "FreeServerFarmsQuotaError";
 }
 
 export class Links {
@@ -203,4 +204,17 @@ export class TypeNames {
 export class DownloadConstants {
     public static readonly DEFAULT_TIMEOUT_MS = 1000 * 20;
     public static readonly TEMPLATES_TIMEOUT_MS = 1000 * 20;
+}
+
+export class MaxLengths {
+    // get/verified on azure portal.
+    public static readonly BOT_CHANNEL_REG_NAME = 42;
+    public static readonly WEB_APP_SITE_NAME = 60;
+    public static readonly APP_SERVICE_PLAN_NAME = 40;
+    public static readonly AAD_DISPLAY_NAME = 120;
+}
+
+export class ErrorMessagesForChecking {
+    static readonly FreeServerFarmsQuotaErrorFromAzure =
+        "The maximum number of Free ServerFarms allowed in a Subscription is 10";
 }

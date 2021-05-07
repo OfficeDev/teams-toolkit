@@ -282,3 +282,18 @@ export class CommandExecutionError extends PluginError {
         );
     }
 }
+
+export class FreeServerFarmsQuotaError extends PluginError {
+    constructor(innerError?: Error) {
+        super(
+            ErrorType.User,
+            ErrorNames.FREE_SERVER_FARMS_QUOTA_ERROR,
+            Messages.MaxFreeAppServicePlanIsTen,
+            [
+                Messages.DeleteFreeAppServicePlan,
+                Messages.ChangeAppServicePlanSku,
+                Messages.RetryTheCurrentStep
+            ]
+        );
+    }
+}

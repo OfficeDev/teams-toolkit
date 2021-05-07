@@ -12,10 +12,11 @@ namespace Microsoft.Azure.WebJobs.Extensions.TeamsFx.Tests.Models
         public string NullPropertiesTestFunctionPort { get; set; }
         public string ClientId { get; set; }
         public string ClientSecret { get; set; }
-        public string OAuthAuthority { get; set; }
         public string UnauthorizedAadAppClientId { get; set; }
         public string UnauthorizedAadAppClientSecret { get; set; }
         public string AllowedAppClientId { get; set; }
         public string AllowedAppClientSecret { get; set; }
+        public string AuthorityHost { get; set; }
+        public string TenantId { get; set; }
     }
 }

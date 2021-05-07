@@ -51,21 +51,21 @@ Version|Date|Comments
 
     It will provision an app in Teams App Studio. You may need to login with your M365 tenant admin account.
 
-4. Build your SharePoint Package. 
-    - Open one terminal and cd to SPFx under your project path.
-    - Run cmd: npm install
-    - Run cmd: ./node_modules/.bin/gulp.cmd bundle --ship
-    - Run cmd: ./node_modules/.bin/gulp.cmd package-solution --ship
-    - And you will find you SharePoint package(.sppkg) generated under sharepoint/solution folder. 
-5. Deploy it to your SharePoint site, Pls refer to the instruction: [Deploy the HelloWorld package to app catalog](https://docs.microsoft.com/en-us/sharepoint/dev/spfx/web-parts/get-started/serve-your-web-part-in-a-sharepoint-page#deploy-the-helloworld-package-to-app-catalog)
-6. Go back to Teams Toolkit V2, and in the sidebar, click `Publish to Teams`. 
+4. Build and Deploy your SharePoint Package.
+    - Click `Deploy to the Cloud` in Teams Toolkit V2 sidebar, or run `Teams: Deploy to the Cloud` from command palette. This will generate a SharePoint package(*.sppkg) under sharepoint/solution folder.
+  
+    Or you can use TeamsFx CLI with running this cmd under your project path:
+        `teamsfx deploy`
+
+    - Upload or drag and drop the *.sppkg to the SharePoint App Catalog site, please follow the instruction: [Deploy the HelloWorld package to App Catalog](https://docs.microsoft.com/en-us/sharepoint/dev/spfx/web-parts/get-started/serve-your-web-part-in-a-sharepoint-page#deploy-the-helloworld-package-to-app-catalog)
+5. Go back to Teams Toolkit V2, and in the sidebar, click `Publish to Teams`. 
 
     Or you can use TeamsFx CLI with running this cmd under your project path:
         `teamsfx publish`
 
 You will find your app in [Microsoft Teams admin center](https://admin.teams.microsoft.com/policies/manage-apps). Enter your app name in the search box.
 Click the item and select `Publish` in the Publishing status.
-7. You may need to wait for a few minutes after publishing your teams app.And then login to Teams , and you will find your app in the `Apps - Built for {your-tenant-name}` catagory.
+6. You may need to wait for a few minutes after publishing your teams app.And then login to Teams, and you will find your app in the `Apps - Built for {your-tenant-name}` category.
 
 ## Features
 

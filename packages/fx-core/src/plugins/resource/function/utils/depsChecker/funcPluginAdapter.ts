@@ -5,9 +5,9 @@
 import * as path from "path";
 import { funcPluginLogger as logger } from "./funcPluginLogger";
 import { DepsCheckerError } from "./errors";
-import { ConfigMap, returnUserError } from "fx-api";
-import { Messages, dotnetHelpLink } from "./common";
-import { IDepsAdapter } from "./checker";
+import { ConfigMap, DialogMsg, DialogType, PluginContext, QuestionType, returnUserError } from "fx-api";
+import { Messages, dotnetHelpLink, dotnetManualInstallHelpLink } from "./common";
+import { IDepsAdapter, IDepsChecker } from "./checker";
 
 class FuncPluginAdapter implements IDepsAdapter {
   private readonly downloadIndicatorInterval = 1000; // same as vscode-dotnet-runtime
@@ -84,6 +84,52 @@ class FuncPluginAdapter implements IDepsAdapter {
     } else {
       throw returnUserError(new Error(Messages.defaultErrorMessage), "function", "DepsCheckerError", dotnetHelpLink, error);
     }
+  }
+
+  public async handleDotnetForLinux(ctx: PluginContext, checker: IDepsChecker): Promise<boolean> {
+    const confirmMessage = await this.generateMsg([checker]);
+    return this.displayContinueWithLearnMoreLink(ctx, confirmMessage, dotnetManualInstallHelpLink);
+  }
+
+  public async displayContinueWithLearnMoreLink(ctx: PluginContext, message: string, link: string): Promise<boolean> {
+    if(!ctx.dialog) {
+      // no dialog, always continue
+      return true;
+    }
+
+    let userSelected: string | undefined;
+    userSelected = (await ctx.dialog.communicate(new DialogMsg(
+      DialogType.Ask,
+      {
+        description: message,
+        type: QuestionType.Confirm,
+        options: [Messages.learnMoreButtonText, Messages.continueButtonText], // Cancel is added by default
+      },
+    ))).getAnswer();
+
+    if (userSelected === Messages.learnMoreButtonText) {
+      await ctx.dialog.communicate(new DialogMsg(
+        DialogType.Ask,
+        {
+          type: QuestionType.OpenExternal,
+          description: link,
+        },
+      ));
+    }
+
+    return userSelected === Messages.continueButtonText;
+  }
+
+  private async generateMsg(checkers: Array<IDepsChecker>): Promise<string> {
+    const supportedPackages = [];
+    for (const checker of checkers) {
+      const info = await checker.getDepsInfo();
+      const supportedVersions = info.supportedVersions.map((version) => "v" + version).join(" or ");
+      const supportedPackage = `${info.name} (${supportedVersions})`;
+      supportedPackages.push(supportedPackage);
+    }
+    const supportedMessage = supportedPackages.join(" and ");
+    return Messages.linuxDepsNotFound.replace("@SupportedPackages", supportedMessage);
   }
 }
 

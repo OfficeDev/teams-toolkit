@@ -32,6 +32,9 @@ export function isLinux(): boolean {
   return os.type() === "Linux";
 }
 
+
+
+
 export const Messages = {
   learnMoreButtonText: "Learn more",
   continueButtonText: "Continue",
@@ -73,7 +76,7 @@ Click "Install" to install @InstallPackages.`,
 
   linuxDepsNotFound: `The toolkit cannot find @SupportedPackages on your machine.
 
-As a fundamental runtime context for Teams app, these dependencies are required. 
+As a fundamental runtime context for Teams app, these dependencies are required.
 
 Please install the required dependencies manually.
 
@@ -85,6 +88,7 @@ export const functionCoreToolsHelpLink = "https://aka.ms/AAby4tx";
 export const dotnetHelpLink = "https://aka.ms/AAby4tx";
 export const nodeHelpLink = "https://aka.ms/AAby4tx";
 export const backendExtensionsInstallHelpLink = "https://aka.ms/AAby4tx";
+export const dotnetManualInstallHelpLink = `${defaultHelpLink}#linux-only-the-toolkit-cannot-find-net-5-or-net-core-31-on-your-machine-please-install-it-manually`;
 
 export enum DepsCheckerEvent {
   funcCheck = "func-check",

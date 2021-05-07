@@ -14,9 +14,6 @@ import {
     InitAzureSDKError,
     InstallNpmPackageError,
     InstallTeamsfxBindingError,
-    NoFunctionNameFromAnswerError,
-    NotProvisionError,
-    NotScaffoldError,
     ProvisionError,
     ValidationError,
     runWithErrorCatchAndThrow,
@@ -96,8 +93,6 @@ export class FunctionPluginImpl {
         this.config.functionAppName = ctx.config.get(FunctionConfigKey.functionAppName) as string;
         this.config.storageAccountName = ctx.config.get(FunctionConfigKey.storageAccountName) as string;
         this.config.appServicePlanName = ctx.config.get(FunctionConfigKey.appServicePlanName) as string;
-        this.config.scaffoldDone = ctx.config.get(FunctionConfigKey.scaffoldDone) === true.toString();
-        this.config.provisionDone = ctx.config.get(FunctionConfigKey.provisionDone) === true.toString();
 
         /* Always validate after sync for safety and security. */
         this.validateConfig();
@@ -228,10 +223,6 @@ export class FunctionPluginImpl {
 
     public async preProvision(ctx: PluginContext): Promise<FxResult> {
         this.syncConfigFromContext(ctx);
-
-        if (!this.config.scaffoldDone) {
-            throw new NotScaffoldError();
-        }
 
         if (!this.config.functionAppName || !this.config.storageAccountName || !this.config.appServicePlanName) {
             const teamsAppName: string = ctx.app.name.short;
@@ -428,14 +419,6 @@ export class FunctionPluginImpl {
 
     public async preDeploy(ctx: PluginContext): Promise<FxResult> {
         this.syncConfigFromContext(ctx);
-
-        if (!this.config.scaffoldDone) {
-            throw new NotScaffoldError();
-        }
-
-        if (!this.config.provisionDone) {
-            throw new NotProvisionError();
-        }
 
         const workingPath: string = this.getFunctionProjectRootPath(ctx);
         const functionLanguage: FunctionLanguage = this.checkAndGet(this.config.functionLanguage, FunctionConfigKey.functionLanguage);

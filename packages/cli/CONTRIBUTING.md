@@ -2,7 +2,8 @@
 
 Welcome, and thank you for your interest in contributing to TeamsFx CLI!
 
-There are many ways in which you can contribute, beyond writing code. The goal of this document is to provide a high-level overview of how you can get involved.
+Please review this document for setting up your development environment, debugging and run TeamsFx CLI. If you have any questions, please raise your issue on github.
+
 
 ## Setup Development Environment
 

@@ -13,7 +13,7 @@ The Teams Developer Platform offers a collection of solutions for Teams develope
 - IDE extensions for Visual Studio and Visual Studio Code named "Teams Toolkit"
 - Docs, samples
 - Code libraries including Teams Framework `teamsfx` and the Teams Client Library `teams-js`
-- A command line tool `teamsfx` for automation and CI
+- A command line tool `teamsfx` for terminal users, automation, and CI
 
 This repository contains the following packages:
 | Package | Description | 

@@ -55,7 +55,7 @@ export interface AuthenticationConfiguration {
   readonly clientSecret?: string;
 
   /**
-   * Endpoint of auth service provisioned by Teams App Framework toolkit. Default value comes from SIMPLE_AUTH_ENDPOINT environment variable.
+   * Endpoint of auth service provisioned by Teams Framework. Default value comes from SIMPLE_AUTH_ENDPOINT environment variable.
    *
    * @readonly
    */

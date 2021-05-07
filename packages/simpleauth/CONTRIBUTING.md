@@ -73,6 +73,6 @@ The project already enabled StyleCop. Please fix the style warnings before commi
 
 ## Pull Request Process
 
-1. create as a pull request with your changes to `develop` branch.
+1. Create a pull request with your changes to `develop` branch.
 1. Make sure all the checks in pull request are passed.
 1. At least one approve from other developers is required.

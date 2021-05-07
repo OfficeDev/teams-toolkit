@@ -33,7 +33,7 @@ Verify you have the right prerequisites for building Teams apps and install some
 1. Build the vsix package. (`cd packages/vscode-extension && npm run build`)
 
 ### Debug the project
-1. Open project in VS Code (`cd packages/vscode-extension && npm run build`) 
+1. Open project in VS Code (`cd packages/vscode-extension && code .`) 
 1. Press `F5` in VS Code.
 
 ## Test the project

@@ -53,20 +53,25 @@ jobs:
           git config --global user.email 'yiz@microsoft.com'
 
       - name: release npm packages to npmjs.org
-        if: ${{ github.event.inputs.bump }} == 'false'
+        if: ${{ github.event.inputs.bump == 'false' }}
         run: |
           npx lerna publish --no-private --preid=alpha --dist-tag=alpha --yes prerelease
 
       - name: bump patch version and release npm packages to npmjs.org
-        if: ${{ github.event.inputs.bump }} == 'true'
+        if: ${{ github.event.inputs.bump == 'true' }}
         run: |
-          npx lerna publish --no-private --preid=alpha --dist-tag=alpha --yes prepatch
+          npx lerna publish --no-private --preid=alpha --dist-tag=alpha --yes prepatch --force-publish
 
       - name: pack vsix
-        working-directory: ./packages/vscode-extension
-        run: |
-          npm install
-          npx vsce package
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 5
+          retry_on: error
+          command: |
+            cd ./packages/vscode-extension
+            npm install
+            npx vsce package
 
       - name: release VSCode extension to github
         uses: marvinpinto/action-automatic-releases@latest

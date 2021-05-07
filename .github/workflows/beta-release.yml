@@ -55,23 +55,28 @@ jobs:
           git config --global user.email 'yiz@microsoft.com'
 
       - name: release beta npm packages to npmjs.org
-        if: ${{ github.event.inputs.stable }} == 'false'
+        if: ${{ github.event.inputs.stable == 'false' }}
         run: |
           npx lerna publish --no-private --preid=beta --dist-tag=beta prerelease --yes ${{ github.event.inputs.force }}
 
       - name: release stable npm packages to npmjs.org
-        if: ${{ github.event.inputs.stable }} == 'true'
+        if: ${{ github.event.inputs.stable == 'true' }}
         run: |
           npx lerna publish --no-private --dist-tag=stable patch --yes ${{ github.event.inputs.force }}
 
       - name: pack vsix
-        working-directory: ./packages/vscode-extension
-        run: |
-          npm install
-          npx vsce package
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 5
+          retry_on: error
+          command: |
+            cd ./packages/vscode-extension
+            npm install
+            npx vsce package
 
       - name: release beta VSCode extension to github
-        if: ${{ github.event.inputs.stable }} == 'false'
+        if: ${{ github.event.inputs.stable == 'false' }}
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: "${{ secrets.CD_PAT }}"
@@ -81,7 +86,7 @@ jobs:
             ./packages/**/*.vsix
 
       - name: release stable VSCode extension to github
-        if: ${{ github.event.inputs.stable }} == 'true'
+        if: ${{ github.event.inputs.stable == 'true' }}
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: "${{ secrets.CD_PAT }}"

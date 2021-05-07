@@ -1,5 +1,8 @@
 # Microsoft Teams App Framework (TeamsFx)
-
+![example workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/ci.yml/badge.svg)
+![example workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/e2e-test.yml/badge.svg)
+![example workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/simpleauthCI.yml/badge.svg)
+![example workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/FunctionExtensionCI.yml/badge.svg)
 
 The Microsoft Teams App Framework (TeamsFx) is a set of solution to help everyone and every organization to build their own Teams app quickly and easily. The TeamsFx mainly contains a VS Code Extension named Microsoft Teams Toolkit, CLI tool, and SDK which help developers to deal with common tasks in Team app building.
 

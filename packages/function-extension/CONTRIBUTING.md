@@ -45,4 +45,4 @@ dotnet build Microsoft.Azure.WebJobs.Extensions.TeamsFx.sln
     ```
 
 ### Run Test Cases on Windows
-You can use [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/) to run the test cases by following the Linux instructions
+You can use [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/) to checkout the repo with correct line ending and run the test cases by following the Linux instructions.

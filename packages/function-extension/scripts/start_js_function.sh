@@ -72,7 +72,7 @@ func host start --port 7072 &
 
 cd $test_space_emptyClientId
 func extensions install --package Microsoft.Azure.WebJobs.Extensions.TeamsFx --version $nuget_package_version --source $local_nuget_path
-func host start --port 7074 &
+func host start --port 7073 &
 
 
 popd

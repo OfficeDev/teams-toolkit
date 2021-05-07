@@ -2,15 +2,12 @@
 // Licensed under the MIT license.
 
 import * as path from "path";
-import * as fs from "fs";
+import * as fs from "fs-extra";
 import * as os from "os";
-import * as util from "util";
 import commonlibLogger, { VsCodeLogProvider } from "../../commonlib/log";
 import { OutputChannel } from "vscode";
 import { LogLevel, ConfigFolderName } from "fx-api";
 import { IDepsLogger } from "./checker";
-
-const appendFile = util.promisify(fs.appendFile);
 
 export class VSCodeLogger implements IDepsLogger {
   private static checkerLogFileName = "env-checker.log";
@@ -49,7 +46,7 @@ export class VSCodeLogger implements IDepsLogger {
   private async writeLog(level: LogLevel, message: string): Promise<void> {
     const line = `${LogLevel[level]} ${new Date().toISOString()}: ${message}` + os.EOL;
     const logFilePath = path.join(VSCodeLogger.globalConfigFolder, VSCodeLogger.checkerLogFileName);
-    await appendFile(logFilePath, line);
+    await fs.appendFile(logFilePath, line);
   }
 }
 

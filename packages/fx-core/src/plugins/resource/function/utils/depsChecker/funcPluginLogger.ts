@@ -6,10 +6,7 @@ import { Logger } from "../logger";
 import { ConfigFolderName, LogLevel } from "fx-api";
 import * as path from "path";
 import * as os from "os";
-import * as fs from "fs";
-import * as util from "util";
-
-const appendFile = util.promisify(fs.appendFile);
+import * as fs from "fs-extra";
 
 class FuncPluginLogger implements IDepsLogger {
   private static logFileName = "env-checker.log";
@@ -45,7 +42,7 @@ class FuncPluginLogger implements IDepsLogger {
   private async writeLog(level: LogLevel, message: string): Promise<void> {
     const line = `${LogLevel[level]} ${new Date().toISOString()}: ${message}` + os.EOL;
     const logFilePath = path.join(FuncPluginLogger.globalConfigFolder, FuncPluginLogger.logFileName);
-    await appendFile(logFilePath, line);
+    await fs.appendFile(logFilePath, line);
   }
 }
 

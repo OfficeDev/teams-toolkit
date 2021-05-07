@@ -202,3 +202,11 @@ export class DownloadConstants {
     public static readonly DEFAULT_TIMEOUT_MS = 1000 * 20;
     public static readonly TEMPLATES_TIMEOUT_MS = 1000 * 20;
 }
+
+export class MaxLengths {
+    // get/verified on azure portal.
+    public static readonly BOT_CHANNEL_REG_NAME = 42;
+    public static readonly WEB_APP_SITE_NAME = 60;
+    public static readonly APP_SERVICE_PLAN_NAME = 40;
+    public static readonly AAD_DISPLAY_NAME = 120;
+}

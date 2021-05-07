@@ -32,7 +32,7 @@ describe("MsGraphClientProvider Tests - Browser", () => {
     loadConfiguration({
       authentication: {
         initiateLoginEndpoint: "fake_login_url",
-        simpleAuthEndpoint: "https://localhost:5001",
+        simpleAuthEndpoint: "http://localhost:5000",
         clientId: env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID
       }
     });

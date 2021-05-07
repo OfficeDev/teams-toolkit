@@ -30,6 +30,8 @@ export class TestLogger implements IDepsLogger {
       console.log(line);
     }
   }
+
+  public async printCachedMessagesAsError(): Promise<void> { }
 }
 
 export const logger = new TestLogger();

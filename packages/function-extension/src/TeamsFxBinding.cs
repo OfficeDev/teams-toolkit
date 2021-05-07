@@ -9,7 +9,6 @@ using Microsoft.Azure.WebJobs.Host.Protocols;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Client;
 using Microsoft.Net.Http.Headers;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,7 +37,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.TeamsFx
             catch (Exception ex)
             {
                 _logger.LogError("Fail to get custom TeamsFx attribute. Error message: " + ex.Message);
-                throw ex;
+                throw;
             }
         }
 
@@ -69,7 +68,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.TeamsFx
                 if (string.IsNullOrEmpty(accessToken))
                 {
                     var responseBody = "No authorization header in http request.";
-                    await ModifyHttpResponse(httpRequest.HttpContext.Response, 401, responseBody);
+                    await ModifyHttpResponse(httpRequest.HttpContext.Response, 401, responseBody).ConfigureAwait(false);
                     _logger.LogDebug(responseBody);
                     throw new Exception(responseBody);
                 }
@@ -82,7 +81,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.TeamsFx
                 }
                 catch (AuthorizationException e)
                 {
-                    await ModifyHttpResponse(httpRequest.HttpContext.Response, 403, e.Message);
+                    await ModifyHttpResponse(httpRequest.HttpContext.Response, 403, e.Message).ConfigureAwait(false);
                     _logger.LogDebug("Authorization exception while validating client id. Error message: " + e.Message);
                     throw;
                 }
@@ -102,7 +101,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.TeamsFx
                     _logger.LogDebug("exp: " + exp);
                     if (exp < UnixEpoch.GetSecondsSince(DateTimeOffset.UtcNow.AddMinutes(_bindingAttribute.TokenRefreshBufferMinutes))) // Refresh if token will expire in given time
                     {
-                        accessToken = await GetRefreshedToken(accessToken, claim);
+                        accessToken = await GetRefreshedToken(accessToken, claim).ConfigureAwait(false);
                     }
                 }
             }
@@ -148,9 +147,9 @@ namespace Microsoft.Azure.WebJobs.Extensions.TeamsFx
                 var userAssertion = new UserAssertion(accessToken.Substring(Constants.BearerScheme.Length + 1));
                 var accessAsUserScope = new string[] { _bindingAttribute.ClientId + "/" + Constants.AccessAsUserScope };
                 var loginHint = GetUserLoginHint(claim);
-                await confidentialApp.AcquireTokenOnBehalfOf(accessAsUserScope, userAssertion).ExecuteAsync(); // Get the refresh token
+                await confidentialApp.AcquireTokenOnBehalfOf(accessAsUserScope, userAssertion).ExecuteAsync().ConfigureAwait(false); // Get the refresh token
                 var refreshedToken = await confidentialApp.AcquireTokenSilent(accessAsUserScope, loginHint)
-                                                            .WithForceRefresh(true).ExecuteAsync();
+                                                            .WithForceRefresh(true).ExecuteAsync().ConfigureAwait(false);
                 return refreshedToken.AccessToken;
             }
             catch (Exception ex)
@@ -167,8 +166,8 @@ namespace Microsoft.Azure.WebJobs.Extensions.TeamsFx
             response.StatusCode = statusCode;
             response.ContentType = AuthorizationErrorContentType;
             response.ContentLength = body.Length;
-            await response.WriteAsync(body, Encoding.UTF8);
-            await response.Body.FlushAsync();
+            await response.WriteAsync(body, Encoding.UTF8).ConfigureAwait(false);
+            await response.Body.FlushAsync().ConfigureAwait(false);
         }
 
         private string GetUserLoginHint(Dictionary<string, object> claim)

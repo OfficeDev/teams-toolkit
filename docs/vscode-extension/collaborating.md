@@ -1,6 +1,6 @@
 # Collaborating 
 
-Multiple developers collaborating on a Teams application should set up their own environments for development including unique M365 Developer Tenants and application registrations in Azure Active Directory. This way each developer runs their code under a different application identity. If an identity is to be shared between multiple developers (such as in a staging or integration environment) there are two points of registration which need to be configured to allow multiple developers to run the same app.
+Multiple developers collaborating on a Teams application should set up their own environments for development including unique M365 Developer Tenants and application registrations in Azure Active Directory. This way each developer runs their code under a different application identity. If an identity is to be shared between multiple developers (such as in a staging or integration environment) there are two points of registration which need to be configured to allow multiple developers to run the same app. Azure Active Directory and Teams Developer Portal
 
 As the person creating the project (creator), follow these steps to allow others on your team (collaborators) to collaborate on your application.
 

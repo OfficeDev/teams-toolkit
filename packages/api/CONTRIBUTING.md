@@ -27,6 +27,8 @@ You can add your tests code under tests/ folder. The filename should end with .t
 1. `cd TeamsFx/packages/api`
 2. `npm run test:unit`
 
+## Style Guidelines
+
 ## Pull Request Process
 
 1. Checkout your local branch from the latest `main` branch and make your changes to your local branch.

@@ -25,6 +25,8 @@ Add tests under tests/ folder. The filename should end with .test.ts.
 Because other packages depends on `fx-core`, the change may break functionalities of other packages.
 Please also run `npx lerna run test:unit --since origin/main` in the root folder of TeamsFx project, it will run all unit tests.
 
+## Style Guidelines
+
 ## Pull Request Process
 
 1. Checkout your local branch from the latest `main` branch and make your changes to your local branch.

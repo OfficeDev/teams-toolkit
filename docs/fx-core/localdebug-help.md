@@ -34,7 +34,7 @@ $ kill <process id>
 ## What to do if teams shows "App not found" when sideloading?
 This issue may look like:
 
-![App Not Found](../imaages/../images/fx-core/localdebug/app-not-found.png)
+![App Not Found](../images/fx-core/localdebug/app-not-found.png)
 
 This is mainly because the teams account you logged in when sideloading is different from the M365 account you logged in when developing the teams app. Please make sure you use the same M365 account. You can see which M365 account you logged in via teams toolkit, like:
 

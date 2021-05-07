@@ -57,7 +57,7 @@ export class FrontendDeployment {
         await runWithErrorCatchAndThrow(new BuildError(), async () => {
             await Utils.execute(Commands.BuildFrontend, componentPath);
         });
-        await FrontendDeployment.saveDeploymentInfo(componentPath, { lastBuildTime: new Date().toString() });
+        await FrontendDeployment.saveDeploymentInfo(componentPath, { lastBuildTime: new Date().toISOString() });
     }
 
     public static async skipBuild(): Promise<void> {
@@ -100,7 +100,7 @@ export class FrontendDeployment {
             await client.uploadFiles(container, builtPath);
         });
 
-        await FrontendDeployment.saveDeploymentInfo(componentPath, { lastDeployTime: new Date().toString() });
+        await FrontendDeployment.saveDeploymentInfo(componentPath, { lastDeployTime: new Date().toISOString() });
     }
 
     public static async skipDeployment(): Promise<void> {
@@ -131,28 +131,26 @@ export class FrontendDeployment {
         return changed;
     }
 
-    private static async getLastBuildTime(componentPath: string): Promise<Date | undefined> {
+    private static async getDeploymentInfo(componentPath: string): Promise<DeploymentInfo | undefined> {
+
         const deploymentDir = path.join(componentPath, FrontendPathInfo.TabDeploymentFolderName);
         const deploymentInfoPath = path.join(deploymentDir, FrontendPathInfo.TabDeploymentInfoFileName);
 
         try {
-            const deploymentInfoJson = await fs.readJSON(deploymentInfoPath);
-            return new Date(deploymentInfoJson.lastBuildTime);
+            return await fs.readJSON(deploymentInfoPath);
         } catch {
             return undefined;
         }
     }
 
-    private static async getLastDeploymentTime(componentPath: string): Promise<Date | undefined> {
-        const deploymentDir = path.join(componentPath, FrontendPathInfo.TabDeploymentFolderName);
-        const deploymentInfoPath = path.join(deploymentDir, FrontendPathInfo.TabDeploymentInfoFileName);
+    private static async getLastBuildTime(componentPath: string): Promise<Date | undefined> {
+        const deploymentInfoJson = await FrontendDeployment.getDeploymentInfo(componentPath);
+        return deploymentInfoJson?.lastBuildTime ? new Date(deploymentInfoJson.lastBuildTime) : undefined;
+    }
 
-        try {
-            const deploymentInfoJson = await fs.readJSON(deploymentInfoPath);
-            return new Date(deploymentInfoJson.lastDeployTime);
-        } catch {
-            return undefined;
-        }
+    private static async getLastDeploymentTime(componentPath: string): Promise<Date | undefined> {
+        const deploymentInfoJson = await FrontendDeployment.getDeploymentInfo(componentPath);
+        return deploymentInfoJson?.lastDeployTime ? new Date(deploymentInfoJson.lastDeployTime) : undefined;
     }
 
     private static async saveDeploymentInfo(componentPath: string, deploymentInfo: DeploymentInfo): Promise<void> {

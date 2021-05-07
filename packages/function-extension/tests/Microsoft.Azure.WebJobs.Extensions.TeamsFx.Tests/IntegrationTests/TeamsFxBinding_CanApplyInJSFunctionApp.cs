@@ -38,7 +38,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.TeamsFx.Tests.IntegrationTests
 
             try
             {
-                _defaultAccessToken = await Utilities.GetApplicationAccessTokenAsync(_integrationTestings.ClientId, _integrationTestings.ClientSecret, _integrationTestings.OAuthAuthority);
+                _defaultAccessToken = await Utilities.GetApplicationAccessTokenAsync(_integrationTestings.ClientId, _integrationTestings.ClientSecret, _integrationTestings.AuthorityHost, _integrationTestings.TenantId);
             }
             catch (Exception ex)
             {
@@ -80,7 +80,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.TeamsFx.Tests.IntegrationTests
         public async Task Authorization_WithTokenOfAllowedAppIdsInRequest_Return200WithCorrectAccessToken()
         {
             // Arrange
-            string accessTokenOfAllowedApp = await Utilities.GetApplicationAccessTokenAsync(_integrationTestings.AllowedAppClientId, _integrationTestings.AllowedAppClientSecret, _integrationTestings.OAuthAuthority);
+            string accessTokenOfAllowedApp = await Utilities.GetApplicationAccessTokenAsync(_integrationTestings.AllowedAppClientId, _integrationTestings.AllowedAppClientSecret, _integrationTestings.AuthorityHost, _integrationTestings.TenantId);
 
             // Action
             HttpResponseMessage response = await invokeFunctionHostTriggerWithTokenAsync(_integrationTestings.MainTestFunctionPort, accessTokenOfAllowedApp);
@@ -96,7 +96,7 @@ namespace Microsoft.Azure.WebJobs.Extensions.TeamsFx.Tests.IntegrationTests
         public async Task Authorization_WithTokenOfUnauthorizedAppIdsInRequest_Return403()
         {
             // Arrange
-            string accessTokenOfUnauthorizedApp = await Utilities.GetApplicationAccessTokenAsync(_integrationTestings.UnauthorizedAadAppClientId, _integrationTestings.UnauthorizedAadAppClientSecret, _integrationTestings.OAuthAuthority);
+            string accessTokenOfUnauthorizedApp = await Utilities.GetApplicationAccessTokenAsync(_integrationTestings.UnauthorizedAadAppClientId, _integrationTestings.UnauthorizedAadAppClientSecret, _integrationTestings.AuthorityHost, _integrationTestings.TenantId);
 
             // Action
             HttpResponseMessage response = await invokeFunctionHostTriggerWithTokenAsync(_integrationTestings.MainTestFunctionPort, accessTokenOfUnauthorizedApp);

@@ -19,13 +19,13 @@ import {
   Result,
   SingleSelectQuestion,
   traverse,
-  UserInterface
+  UserInterface,
+  ConfigMap
 } from "../src/index";
 import * as chai from "chai";
 import {RemoteFuncExecutor} from "../src/qm/validation";
-
-/* TODO fix this test
-const mockRemoteFuncExecutor: RemoteFuncExecutor = async function (func: Func, answers: Inputs): Promise<Result<string | undefined, FxError>> {
+ 
+const mockRemoteFuncExecutor: RemoteFuncExecutor = async function (func: Func, answers: ConfigMap): Promise<Result<string | undefined, FxError>> {
   if (func.method === "mockValidator") {
     const input = func.params as string;
     if (input.length > 5) return ok("input too long");
@@ -105,7 +105,7 @@ describe("Question Model - Traverse Test", () => {
     n122.condition = {equals: "1-2-2"};
     n12.addChild(n122);
 
-    const inputs: UserInputs = {platform: Platform.VSCode};
+    const inputs = new ConfigMap();
     const res = await traverse(n1, inputs, mockUi);
     chai.assert.isTrue(res.type === InputResultType.sucess);
     chai.assert.isTrue(titleTrace.length === 3);
@@ -115,4 +115,4 @@ describe("Question Model - Traverse Test", () => {
     }
   });
 });
-*/
+ 

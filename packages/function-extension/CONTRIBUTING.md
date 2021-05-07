@@ -6,9 +6,9 @@ Welcome and thank you for your interest in contributing to **Microsoft.Azure.Web
 
 1. Install .NET core SDK 3.1. [[REF](https://dotnet.microsoft.com/download/dotnet-core/3.1)]
 
-1. Install Function Core Tools v3 [[REF](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local?tabs=linux%2Ccsharp%2Cbash#install-the-azure-functions-core-tools)]
+2. Install Function Core Tools v3 [[REF](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local?tabs=linux%2Ccsharp%2Cbash#install-the-azure-functions-core-tools)]
 
-1. Install Node v12
+3. Install Node v12
 
 ## How to Build
 

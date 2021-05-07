@@ -634,7 +634,7 @@ export class TeamsAppSolution implements Solution {
             if (!hasBot && !hasMsgExt) {
                 return err(
                     returnSystemError(
-                        new Error("One of bot and Message Extension is expected to be selected"),
+                        new Error("Select either Bot or Messaging Extension"),
                         "Solution",
                         SolutionError.InternelError,
                     ),
@@ -1477,6 +1477,7 @@ export class TeamsAppSolution implements Solution {
             manifest.name.short,
             manifest.version,
             botId,
+            "-local-debug"
         );
 
         const localTeamsAppID = ctx.config.get(GLOBAL_CONFIG)?.getString(LOCAL_DEBUG_TEAMS_APP_ID);
@@ -1981,7 +1982,7 @@ export class TeamsAppSolution implements Solution {
             && ( capabilitiesAnswer.includes(BotOptionItem.id) || capabilitiesAnswer.includes(MessageExtensionItem.id) ) ){
             return err(
                 returnUserError(
-                    new Error("Application already contains a Bot and/or Message Extension"),
+                    new Error("Application already contains a Bot and/or Messaging Extension"),
                     "Solution",
                     SolutionError.FailedToAddCapability,
                 ),

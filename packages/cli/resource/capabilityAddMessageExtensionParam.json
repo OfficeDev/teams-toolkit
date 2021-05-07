@@ -22,14 +22,14 @@
                 },
                 {
                     "id": "MessageExtension",
-                    "label": "Message Extension",
-                    "cliName": "message-extension",
-                    "description": "Custome UI when users compose messages in Teams",
+                    "label": "Messaging Extension",
+                    "cliName": "messaging-extension",
+                    "description": "Custom UI when users compose messages in Teams",
                     "detail": "Messaging Extensions allow users to interact with your web service through buttons and forms in the Microsoft Teams client."
                 }
             ],
             "default": [
-                "message-extension"
+                "messaging-extension"
             ],
             "hide": true
         }

@@ -108,6 +108,7 @@ class SampleAppCard extends React.Component<any, any>{
                         className="right-aligned"
                         onClick={() =>{this.cloneSampleApp(this.props.sampleAppName, this.props.sampleAppUrl)}}/>
                     <PrimaryButton
+                        style={{display: "none"}}
                         text="Preview" />
                 </div>
             </div>

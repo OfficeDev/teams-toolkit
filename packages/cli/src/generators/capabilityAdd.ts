@@ -66,7 +66,7 @@ export class CapabilityAddBotGenerator extends CapabilityAddGenerator {
 }
 
 export class CapabilityAddMessageExtensionGenerator extends CapabilityAddGenerator {
-  public readonly commandName = "teamsfx capability add message-extension";
-  public readonly capabilityName = "message-extension";
+  public readonly commandName = "teamsfx capability add messaging-extension";
+  public readonly capabilityName = "messaging-extension";
   public readonly outputPath = constants.capabilityAddMessageExtensionParamPath;
 }

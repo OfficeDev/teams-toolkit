@@ -46,3 +46,16 @@ dotnet build Microsoft.Azure.WebJobs.Extensions.TeamsFx.sln
 
 ### Run Test Cases on Windows
 You can use [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/) to checkout the repo with correct line ending and run the test cases by following the Linux instructions.
+
+## Style Guidelines
+
+This project uses FxCop to check code style. You can find style warnings in Visual Studio or build logs.
+
+## Pull Request Process
+
+1. Check out a new branch from "main".
+2. Add your features and commit to the new branch.
+3. Make sure your changes are covered by tests. [How to Run Test Cases](#how-to-run-test-cases)
+4. Ensure code style check has no warning or error. [Style Guidelines](#style-guidelines)
+5. Create a pull request to merge your changes to "main" branch.
+6. At least one approve from code owners is required.

@@ -65,3 +65,7 @@
 
 /packages/fx-core/src/plugins/resource/simpleauth @KennethBWSong @adashen
 /packages/fx-core/tests/plugins/resource/simpleauth @KennethBWSong @adashen
+
+/packages/simpleauth @adashen @blackchoey @wenytang-ms
+
+/packages/function-extension @adashen @blackchoey @dilin-MS

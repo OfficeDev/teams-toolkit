@@ -27,6 +27,11 @@ Please also run `npx lerna run test:unit --since origin/main` in the root folder
 
 ## Style Guidelines
 
+After running `npm run setup` in the root folder of the monorepo, a [Precommit Git Hook](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks) will be added by [Husky](https://github.com/typicode/husky), which will run
+
+1. [ESLint](https://github.com/eslint/eslint): Please fix ESLint errors & warning before committing your code.
+2. [Prettier](https://github.com/prettier/prettier): Your code will be formatted automatically.
+
 ## Pull Request Process
 
 1. Checkout your local branch from the latest `main` branch and make your changes to your local branch.
@@ -37,5 +42,3 @@ Please also run `npx lerna run test:unit --since origin/main` in the root folder
 3. Push your local branch and create the pull request.
 4. Make sure all the checks in pull request are passed.
 5. At least one approve from each code owner is required.
-
-## Publish core package

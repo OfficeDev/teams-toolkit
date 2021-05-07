@@ -3,23 +3,49 @@
 
 import { IDepsLogger } from "./checker";
 import { Logger } from "../logger";
+import { ConfigFolderName, LogLevel } from "fx-api";
+import * as path from "path";
+import * as os from "os";
+import * as fs from "fs";
+import * as util from "util";
+
+const appendFile = util.promisify(fs.appendFile);
 
 class FuncPluginLogger implements IDepsLogger {
-  public debug(message: string): Promise<boolean> {
-    Logger.debug(message);
-    return Promise.resolve(true);
+  private static logFileName = "env-checker.log";
+  private static globalConfigFolder = path.join(os.homedir(), `.${ConfigFolderName}`);
+
+  constructor() {
+    fs.mkdirSync(FuncPluginLogger.globalConfigFolder, { recursive: true });
   }
-  public info(message: string): Promise<boolean> {
+
+  async debug(message: string): Promise<boolean> {
+    await this.writeLog(LogLevel.Debug, message);
+    return true;
+  }
+
+  async info(message: string): Promise<boolean> {
+    await this.writeLog(LogLevel.Info, message);
     Logger.info(message);
-    return Promise.resolve(true);
+    return true;
   }
-  public warning(message: string): Promise<boolean> {
+
+  async warning(message: string): Promise<boolean> {
+    await this.writeLog(LogLevel.Warning, message);
     Logger.warning(message);
-    return Promise.resolve(true);
+    return true;
   }
-  public error(message: string): Promise<boolean> {
+
+  async error(message: string): Promise<boolean> {
+    await this.writeLog(LogLevel.Error, message);
     Logger.error(message);
-    return Promise.resolve(true);
+    return true;
+  }
+
+  private async writeLog(level: LogLevel, message: string): Promise<void> {
+    const line = `${LogLevel[level]} ${new Date().toISOString()}: ${message}` + os.EOL;
+    const logFilePath = path.join(FuncPluginLogger.globalConfigFolder, FuncPluginLogger.logFileName);
+    await appendFile(logFilePath, line);
   }
 }
 

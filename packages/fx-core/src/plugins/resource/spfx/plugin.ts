@@ -22,12 +22,11 @@ import {
   normalizeComponentName,
 } from "./utils/utils";
 import { Constants, PlaceHolders, PreDeployProgressMessage } from "./utils/constants";
-import { BuildSPPackageError, EmptyAccessTokenError, NoSPPackageError} from "./error";
+import { BuildSPPackageError, NoSPPackageError} from "./error";
 import * as util from "util";
 import * as strings from "../../../resources/strings.json";
 import { ProgressHelper } from "./utils/progress-helper";
 import { REMOTE_MANIFEST } from "../../solution/fx-solution/constants";
-import { FxBotPluginResultFactory } from "../bot/result";
 
 export class SPFxPluginImpl {
   public async scaffold(
@@ -276,21 +275,6 @@ export class SPFxPluginImpl {
     ctx.logProvider?.info(guidance);
     (ctx.logProvider as any).outputChannel.show();
     return ok(undefined);
-  }
-
-  private async getSPTenant(ctx: PluginContext): Promise<string> {
-    const accessToken = await ctx.graphTokenProvider?.getAccessToken();
-    const GRAPH_TENANT_ENDPT =
-      "https://graph.microsoft.com/v1.0/sites/root?$select=webUrl";
-
-    if (accessToken && accessToken.length > 0) {
-      const axiosInstance = createAxiosInstanceWithToken(accessToken);
-      ctx.logProvider?.info("======Get SharePoint Tenant======");
-      const response = await axiosInstance.get(GRAPH_TENANT_ENDPT);
-      return response.data.webUrl;
-    } else {
-      throw EmptyAccessTokenError();
-    }
   }
 
   private async checkFileExist(filePath: string): Promise<boolean> {

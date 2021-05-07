@@ -8,7 +8,7 @@
 // and run the scripts (tools/depsChecker/copyfiles.sh or tools/depsChecker/copyfiles.ps1 according to your OS)
 // to copy you changes to function plugin.
 
-import { backendExtensionsInstallHelpLink } from "./common";
+import { defaultHelpLink } from "./common";
 import { DotnetChecker } from "./dotnetChecker";
 import { BackendExtensionsInstallError } from "./errors";
 import { cpUtils } from "./cpUtils";
@@ -36,7 +36,7 @@ export class BackendExtensionsInstaller {
 
     if (dotnetExecPath === "") {
       await this._logger.error(`Failed to run backend extension install, .NET SDK executable not found`);
-      throw new BackendExtensionsInstallError("Failed to run backend extension install, .NET SDK executable not found", backendExtensionsInstallHelpLink);
+      throw new BackendExtensionsInstallError("Failed to run backend extension install, .NET SDK executable not found", defaultHelpLink);
     }
 
     try {
@@ -53,7 +53,7 @@ export class BackendExtensionsInstaller {
       );
     } catch (error) {
       await this._logger.error(`Failed to run backend extension install: error = '${error}'`);
-      throw new BackendExtensionsInstallError(`Failed to run backend extension install: error = '${error}'`, backendExtensionsInstallHelpLink);
+      throw new BackendExtensionsInstallError(`Failed to run backend extension install: error = '${error}'`, defaultHelpLink);
     }
   }
 }

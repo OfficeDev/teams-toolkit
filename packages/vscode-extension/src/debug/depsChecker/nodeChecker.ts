@@ -1,27 +1,29 @@
 import { DepsInfo, IDepsAdapter, IDepsChecker, IDepsLogger, IDepsTelemetry } from "./checker";
-import { Messages, nodeHelpLink } from "./common";
+import { Messages, nodeNotFoundHelpLink, nodeNotSupportedHelpLink } from "./common";
 import { cpUtils } from "./cpUtils";
 import { NodeNotFoundError, NotSupportedNodeError as NodeNotSupportedError } from "./errors";
 
-const SupportedNodeVersions = ["10", "12", "14"];
+export const AzureSupportedNodeVersions = ["10", "12", "14"];
 const NodeName = "Node.js";
 
 class NodeVersion {
   public readonly version: string;
-  public readonly isSupported: boolean;
+  public readonly majorVersion: string;
 
   constructor(version: string, majorVersion: string) {
     this.version = version;
-    this.isSupported = SupportedNodeVersions.includes(majorVersion);
+    this.majorVersion = majorVersion;
   }
 }
 
 export class NodeChecker implements IDepsChecker {
+  private readonly _supportedVersions: string[];
   private readonly _adapter: IDepsAdapter;
   private readonly _logger: IDepsLogger;
   private readonly _telemetry: IDepsTelemetry;
 
-  constructor(adapter: IDepsAdapter, logger: IDepsLogger, telemetry: IDepsTelemetry) {
+  constructor(supportedVersions: string[], adapter: IDepsAdapter, logger: IDepsLogger, telemetry: IDepsTelemetry) {
+    this._supportedVersions = supportedVersions;
     this._adapter = adapter;
     this._logger = logger;
     this._telemetry = telemetry;
@@ -32,18 +34,20 @@ export class NodeChecker implements IDepsChecker {
   }
 
   public async isInstalled(): Promise<boolean> {
+    this._logger.debug(`NodeChecker checking for supported versions: '${JSON.stringify(this._supportedVersions)}'`);
+
     const currentVersion = await getInstalledNodeVersion();
     if (currentVersion === null) {
-      throw new NodeNotFoundError(Messages.NodeNotFound, nodeHelpLink);
+      throw new NodeNotFoundError(Messages.NodeNotFound, nodeNotFoundHelpLink);
     }
 
-    if (!currentVersion.isSupported) {
-      const supportedVersions = SupportedNodeVersions.map((v) => "v" + v).join(" ,");
+    if (!NodeChecker.isVersionSupported(this._supportedVersions, currentVersion)) {
+      const supportedVersions = this._supportedVersions.map((v) => "v" + v).join(" ,");
       throw new NodeNotSupportedError(
         Messages.NodeNotSupported
           .replace("@CurrentVersion", currentVersion.version)
           .replace("@SupportedVersions", supportedVersions),
-        nodeHelpLink
+        nodeNotSupportedHelpLink
       );
     }
 
@@ -57,9 +61,13 @@ export class NodeChecker implements IDepsChecker {
   public async getDepsInfo(): Promise<DepsInfo> {
     return {
       name: NodeName,
-      supportedVersions: SupportedNodeVersions,
+      supportedVersions: this._supportedVersions,
       details: new Map<string, string>()
     };
+  }
+
+  private static isVersionSupported(supportedVersion: string[], version: NodeVersion): boolean {
+    return supportedVersion.includes(version.majorVersion);
   }
 }
 

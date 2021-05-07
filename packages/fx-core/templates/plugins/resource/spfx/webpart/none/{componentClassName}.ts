@@ -1,3 +1,4 @@
+import { Version } from '@microsoft/sp-core-library';
 import {
   IPropertyPaneConfiguration,
   PropertyPaneTextField
@@ -30,6 +31,10 @@ export default class <%= componentClassName %> extends BaseClientSideWebPart<I<%
           </div>
         </div>
       </div>`;
+  }
+
+  protected get dataVersion(): Version {
+    return Version.parse('1.0');
   }
 
   protected getPropertyPaneConfiguration(): IPropertyPaneConfiguration {

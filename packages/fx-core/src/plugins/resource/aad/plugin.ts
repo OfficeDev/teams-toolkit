@@ -463,7 +463,25 @@ export class AadAppForTeamsImpl {
       requiredResourceAccess.resourceAppId = resourceId;
       requiredResourceAccess.resourceAccess = [];
 
-      permission.roles?.forEach((roleName) => {
+      if (!permission.delegated) {
+        permission.delegated = [];
+      }
+
+      if (!permission.application) {
+        permission.application = [];
+      }
+
+      permission.delegated = permission.delegated?.concat(permission.scopes);
+      permission.delegated = permission.delegated?.filter((scopeName, i) => i === permission.delegated?.indexOf(scopeName));
+
+      permission.application = permission.application?.concat(permission.roles);
+      permission.application = permission.application?.filter((roleName, i) => i === permission.application?.indexOf(roleName));
+
+      permission.application?.forEach((roleName) => {
+        if (!roleName) {
+          return;
+        }
+
         const resourceAccess: ResourceAccess = {
           id: roleName,
           type: "Role",
@@ -486,7 +504,11 @@ export class AadAppForTeamsImpl {
         requiredResourceAccess.resourceAccess!.push(resourceAccess);
       });
 
-      permission.scopes?.forEach((scopeName) => {
+      permission.delegated?.forEach((scopeName) => {
+        if (!scopeName) {
+          return;
+        }
+
         const resourceAccess: ResourceAccess = {
           id: scopeName,
           type: "Scope",

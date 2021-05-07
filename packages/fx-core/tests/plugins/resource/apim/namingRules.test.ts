@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import "mocha";
 import chai from "chai";
-import { NamingRules } from "../../../../src/plugins/resource/apim/src/util/namingRules";
+import { NamingRules } from "../../../../src/plugins/resource/apim/util/namingRules";
 
 describe("NamingRules", () => {
     describe("#sanitizeId()", () => {

@@ -197,3 +197,8 @@ export class FolderNames {
 export class TypeNames {
     public static readonly NUMBER = "number";
 }
+
+export class DownloadConstants {
+    public static readonly DEFAULT_TIMEOUT_MS = 1000 * 20;
+    public static readonly TEMPLATES_TIMEOUT_MS = 1000 * 20;
+}

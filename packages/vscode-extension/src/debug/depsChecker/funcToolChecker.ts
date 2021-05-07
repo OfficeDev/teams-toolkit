@@ -9,7 +9,7 @@ import {
   isWindows,
   isMacOS,
   Messages,
-  functionCoreToolsHelpLink,
+  defaultHelpLink,
   DepsCheckerEvent,
   TelemtryMessages
 } from "./common";
@@ -76,7 +76,7 @@ export class FuncToolChecker implements IDepsChecker {
         // );
         throw new DepsCheckerError(
           Messages.needReplaceWithFuncCoreToolV3.replace("@NameVersion", installedNameWithVersion),
-          functionCoreToolsHelpLink
+          defaultHelpLink
         );
       case FuncVersion.v2:
         // TODO: should send this event per user.
@@ -100,7 +100,7 @@ export class FuncToolChecker implements IDepsChecker {
       );
       throw new DepsCheckerError(
         Messages.needInstallFuncCoreTool.replace("@NameVersion", installedNameWithVersion),
-        functionCoreToolsHelpLink
+        defaultHelpLink
       );
     }
 
@@ -126,7 +126,7 @@ export class FuncToolChecker implements IDepsChecker {
 
       throw new DepsCheckerError(
         Messages.failToInstallFuncCoreTool.replace("@NameVersion", installedNameWithVersion),
-        functionCoreToolsHelpLink
+        defaultHelpLink
       );
     }
 
@@ -141,7 +141,7 @@ export class FuncToolChecker implements IDepsChecker {
 
       throw new DepsCheckerError(
         Messages.failToInstallFuncCoreTool.replace("@NameVersion", installedNameWithVersion),
-        functionCoreToolsHelpLink
+        defaultHelpLink
       );
     }
 

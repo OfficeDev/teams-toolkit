@@ -2,8 +2,8 @@
 // Licensed under the MIT license.
 import "mocha";
 import chai from "chai";
-import { ApimPluginConfigKeys, TeamsToolkitComponent, SolutionConfigKeys } from "../../../../src/plugins/resource/apim/src/constants";
-import { ApimPluginConfig, SolutionConfig } from "../../../../src/plugins/resource/apim/src/model/config";
+import { ApimPluginConfigKeys, TeamsToolkitComponent, SolutionConfigKeys } from "../../../../src/plugins/resource/apim/constants";
+import { ApimPluginConfig, SolutionConfig } from "../../../../src/plugins/resource/apim/model/config";
 import { ConfigValue, PluginIdentity, ReadonlyPluginConfig } from "fx-api";
 
 describe("config", () => {

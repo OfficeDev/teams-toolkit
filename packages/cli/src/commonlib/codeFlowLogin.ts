@@ -13,7 +13,9 @@ import * as crypto from "crypto";
 import { AddressInfo } from "net";
 import { accountPath, UTF8 } from "./cacheAccess";
 import open from "open";
-import { env } from "./common/constant";
+import { azureLoginMessage, env, m365LoginMessage } from "./common/constant";
+import colors from "colors";
+import * as constants from "../constants";
 
 class ErrorMessage {
   static readonly loginError: string = "LoginError";
@@ -123,7 +125,7 @@ export class CodeFlowLogin {
           ErrorMessage.loginError
         )
       );
-    }, 60 * 1000);
+    }, 5 * 60 * 1000);
 
     function cancelCodeTimer() {
       clearTimeout(codeTimer);
@@ -133,6 +135,12 @@ export class CodeFlowLogin {
     try {
       await this.startServer(server, serverPort!);
       this.pca!.getAuthCodeUrl(authCodeUrlParameters).then(async (response: string) => {
+        // TODO change console.log to logProvider, for now, logProvider may be hidden
+        if (this.accountName == "azure") {
+          console.log(colors.green(`[${constants.cliSource}] ${azureLoginMessage}`));
+        } else {
+          console.log(colors.green(`[${constants.cliSource}] ${m365LoginMessage}`));
+        }
         open(response);
       });
 

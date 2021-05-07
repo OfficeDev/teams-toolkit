@@ -78,14 +78,14 @@ A correct permission file should be formated as an JSON array as following:
 
 For `resource`, please fill in "Microsoft Graph".
 
-For the difference of `scopes` and `roles`, please refer to [this link](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-permissions-and-consent#permission-types).
+For the difference of `delegated` and `application`, please refer to [this link](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-permissions-and-consent#permission-types).
 
-All allowed scopes can be found by running 
+All allowed delegated permissions can be found by running 
 ```
 az ad sp show --id 00000003-0000-0000-c000-000000000000 --query "oauth2Permissions[].value"
 ```
 
-All allowed roles can be found by running 
+All allowed application permissions can be found by running 
 ```
 az ad sp show --id 00000003-0000-0000-c000-000000000000 --query "appRoles[].value"
 ```

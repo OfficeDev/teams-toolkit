@@ -2,8 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { deprecate } from "node:util";
-import { ConfigMap, Inputs } from "../config";
+import { ConfigMap } from "../config";
 
 /**
  * reference:

@@ -74,11 +74,11 @@ export class SPFxPluginImpl {
     await fs.mkdir(teamsDir);
     await fs.copyFile(
       path.resolve(templateFolder, "./webpart/base/images/color.png"),
-      `${teamsDir}/color.png`
+      `${teamsDir}/${componentId}_color.png`
     );
     await fs.copyFile(
       path.resolve(templateFolder, "./webpart/base/images/outline.png"),
-      `${teamsDir}/outline.png`
+      `${teamsDir}/${componentId}_outline.png`
     );
 
     // src folder
@@ -173,10 +173,6 @@ export class SPFxPluginImpl {
     await fs.copyFile(
       path.resolve(templateFolder, "./solution/README.md"),
       `${outputFolderPath}/README.md`
-    );
-    await fs.copyFile(
-      path.resolve(templateFolder, "./solution/_editorconfig"),
-      `${outputFolderPath}/.editorconfig`
     );
     await fs.copyFile(
       path.resolve(templateFolder, "./solution/_gitignore"),

@@ -203,11 +203,9 @@ export namespace AppStudio {
                 const requester = createRequesterWithToken(appStudioToken);
                 const response = await requester.post(`/api/botframework/${registration.botId}`, registration);
                 if (response && response.data) {
-                    console.log(`Bot update succeed: ${response.data}`);
                     return true;
                 }
             } catch (e) {
-                console.log(`Bot update failed: ${e}`);
                 return false;
             }
         }

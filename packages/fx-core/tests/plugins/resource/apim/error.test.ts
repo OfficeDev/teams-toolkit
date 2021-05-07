@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import "mocha";
 import chai from "chai";
-import { AadOperationError, AssertNotEmpty, BuildError, EmptyChoice, UnhandledError } from "../../../../src/plugins/resource/apim/src/error";
+import { AadOperationError, AssertNotEmpty, BuildError, EmptyChoice, UnhandledError } from "../../../../src/plugins/resource/apim/error";
 
 describe("Error", () => {
     describe("#AssertNotEmpty()", () => {

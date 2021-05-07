@@ -16,8 +16,7 @@ export class Utils {
     }
 
     static generateStorageAccountName(appName: string, resourceNameSuffix: string, suffix: string): string {
-        const paddingLength: number =
-            Constants.AzureStorageAccountNameLenMax - resourceNameSuffix.length - suffix.length;
+        const paddingLength: number = Constants.AzureStorageAccountNameLenMax - resourceNameSuffix.length - suffix.length;
         const normalizedAppName: string = appName
             .replace(Constants.FrontendAppNamePattern, Constants.EmptyString)
             .toLowerCase();
@@ -26,21 +25,30 @@ export class Utils {
 
     static async requestWithRetry(
         request: () => Promise<AxiosResponse<any>>,
-        errorHandler: (error?: Error) => Error,
+        maxTryCount = Constants.RequestRetryCounts
     ): Promise<AxiosResponse<any> | undefined> {
-        let retries = Constants.RequestRetryTimes;
-        let error = new Error();
-        while (retries > 0) {
-            retries--;
+        // !status means network error, see https://github.com/axios/axios/issues/383
+        const canTry = (status: number | undefined) =>
+            !status || (status >= 500 && status < 600);
+
+        let tryCount = 0;
+        let error: Error = new Error();
+        while (tryCount++ < maxTryCount) {
             try {
                 const result = await request();
                 if (result.status === 200 || result.status === 201) {
                     return result;
                 }
-                error = errorHandler();
+
+                error = new Error(`HTTP Request failed: ${JSON.stringify(result)}`);
+                if (!canTry(result.status)) {
+                    break;
+                }
             } catch (e) {
-                error = errorHandler(e);
-                await Utils.delays(Constants.RequestRetryInterval);
+                error = e;
+                if (!canTry(e.response?.status)) {
+                    break;
+                }
             }
         }
         throw error;
@@ -81,7 +89,7 @@ export class Utils {
                     } else {
                         resolve(filePaths);
                     }
-                },
+                }
             );
         });
     }
@@ -89,7 +97,7 @@ export class Utils {
     public static async forEachFileAndDir(
         root: string,
         callback: (itemPath: string, stats: fs.Stats) => boolean | void,
-        filter?: (itemPath: string) => boolean,
+        filter?: (itemPath: string) => boolean
     ): Promise<void> {
         await new Promise((resolve, reject) => {
             const stream: klaw.Walker = klaw(root, { filter: filter });

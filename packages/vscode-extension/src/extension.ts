@@ -90,6 +90,12 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(validateDependenciesCmd);
 
+  const validateSpfxDependenciesCmd = vscode.commands.registerCommand(
+    "fx-extension.validate-spfx-dependencies",
+    handlers.validateSpfxDependenciesHandler
+  );
+  context.subscriptions.push(validateSpfxDependenciesCmd);
+
   // 1.8 pre debug check command (hide from UI)
   const preDebugCheckCmd = vscode.commands.registerCommand(
     "fx-extension.pre-debug-check",

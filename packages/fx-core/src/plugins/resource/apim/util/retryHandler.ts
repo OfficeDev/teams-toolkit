@@ -7,7 +7,7 @@ export class RetryHandler {
     public static async retry<T>(
         fn: (retries : number) => Promise<T>
     ): Promise<T> {
-        let executionIndex: number = 0;
+        let executionIndex = 0;
         let error = undefined;
         while (executionIndex <= ProjectConstants.maxRetries) {
             await delay(executionIndex * 1000);

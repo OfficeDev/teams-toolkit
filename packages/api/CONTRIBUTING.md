@@ -9,15 +9,23 @@ Welcome and thank you for your interest in contributing to **fx-api**! Before co
 3. Because the monorepo is managed by Lerna, you need to bootstrap at the first time. (`npm run setup` or `npm install && npm run bootstrap`) All dependencies will be installed.
 4. Build the `fx-api` package. (`cd packages/api && npm run build`)
 
-## Before Creating a Pull Request
+## Test
 
-1. Use eslint plugin to check whether there is any error or warning that breaks the rule. (`npm run lint`)
-2. Make sure modified functions are covered by tests. (`npm run test`)
-3. Better to add comment for public class/method.
+Add your tests code under tests/ folder. The filename should end with .test.ts.
+### Run Unit test
 
-## Add Tests
+1. `cd TeamsFx/packages/api`
+2. `npm run test:unit`
 
-Add tests under tests/ folder. The filename should end with .test.ts.
+## Pull Request Process
 
-Because other packages depends on `fx-api`, the change may break functionalities of other packages.
-Please also run `npx lerna run test:unit --since origin/main` in the root folder of TeamsFx project, it will run all unit tests.
+1. Checkout your local branch from the latest `main` branch and make your changes to your local branch.
+2. Before creating a pull request, make sure:
+    - Use eslint plugin to check whether there is any error or warning that breaks the rule. (`npm run lint`)
+    - Make sure modified functions are covered by unit tests. (`npm run test:unit`)
+    - Better to add comment for public class/method.
+3. Push your local branch and create the pull request.
+4. Make sure all the checks in pull request are passed.
+5. At least one approve from each code owner is required.
+
+## Publish api package to npm registry

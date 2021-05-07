@@ -129,7 +129,7 @@ export class MockAzureAccountProvider implements AzureAccountProvider {
             const subscriptions = await listAll(client.subscriptions, client.subscriptions.list());
             const filteredsubs = subscriptions.filter(
                 sub => !!sub.displayName && !!sub.subscriptionId
-            )
+            );
             return filteredsubs.map(sub => {
                 return { subscriptionName: sub.displayName!, subscriptionId: sub.subscriptionId!, tenantId: "undefined" };
             });

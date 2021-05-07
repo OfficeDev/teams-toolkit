@@ -49,12 +49,7 @@ async function outputM365Info(commandType: "login" | "show"): Promise<boolean> {
 async function outputAzureInfo(commandType: "login" | "show"): Promise<boolean> {
   const result = await AzureTokenProvider.getAccountCredentialAsync();
   if (result) {
-    if (commandType === "login") {
-    } else {
-    }
-
     const subscriptions = await AzureTokenProvider.listSubscriptions();
-
     if (commandType === "login") {
       consoleGreen(
         `[${constants.cliSource}] Successfully signed in to Azure. Your username is ${colors.yellow((result as any).username)}.`

@@ -1,4 +1,4 @@
-## FreeServerFarmsQuotaError
+## BT.FreeServerFarmsQuotaError
 
 ### Error Message
 
@@ -17,7 +17,7 @@ There are two methods to mitigate this issue:
 2. Set value of 'skuName' config of 'fx-resource-bot' to, for example, B1.
 3. Run `Provision` command again
 
-## MissingSubscriptionRegistrationError
+## BT.MissingSubscriptionRegistrationError
 
 ### Eror Message
 

@@ -140,7 +140,7 @@ export class MissingSubscriptionRegistrationError extends PluginError {
                 Messages.RegisterYouSubsToUseBot
             ],
             undefined,
-            `${Links.HELP_LINK}#MissingSubscriptionRegistrationError`
+            Links.HELP_LINK
         );
     }
 }
@@ -291,7 +291,7 @@ export class FreeServerFarmsQuotaError extends PluginError {
                 Messages.DeleteFreeAppServicePlanOrChangeSku
             ],
             innerError,
-            `${Links.HELP_LINK}#FreeServerFarmsQuotaError`
+            Links.HELP_LINK
         );
     }
 }

@@ -22,7 +22,7 @@ export const BotOptionItem: OptionItem = {
 export const MessageExtensionItem: OptionItem = {
     id: "MessageExtension",
     label: "Messaging Extension",
-    cliName: "message-extension",
+    cliName: "messaging-extension",
     description: "Custom UI when users compose messages in Teams",
     detail:"Messaging Extensions allow users to interact with your web service through buttons and forms in the Microsoft Teams client."
 };

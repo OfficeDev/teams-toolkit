@@ -22,5 +22,5 @@ Authentication configuration from global configuration instance, the value may b
 
 ## Exceptions
 
-[ErrorCode.InvalidConfiguration](./teamsfx.errorcode.invalidconfiguration.md) when global configuration does not exist
+[InvalidConfiguration](./teamsfx.errorcode.md) when global configuration does not exist
 

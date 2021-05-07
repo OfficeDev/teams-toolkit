@@ -17,9 +17,9 @@ constructor();
 
 ## Exceptions
 
-[ErrorCode.InvalidConfiguration](./teamsfx.errorcode.invalidconfiguration.md) when client id, initiate login endpoint or simple auth endpoint is not found in config.
+[InvalidConfiguration](./teamsfx.errorcode.md) when client id, initiate login endpoint or simple auth endpoint is not found in config.
 
-[ErrorCode.RuntimeNotSupported](./teamsfx.errorcode.runtimenotsupported.md) when runtime is nodeJS.
+[RuntimeNotSupported](./teamsfx.errorcode.md) when runtime is nodeJS.
 
 ## Example
 

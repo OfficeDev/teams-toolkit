@@ -32,8 +32,8 @@ export class TeamsUserCredential implements TokenCredential {
      const credential = new TeamsUserCredential(["https://graph.microsoft.com/User.Read"]);
    * ```
    *
-   * @throws {@link ErrorCode.InvalidConfiguration} when client id, initiate login endpoint or simple auth endpoint is not found in config.
-   * @throws {@link ErrorCode.RuntimeNotSupported} when runtime is nodeJS.
+   * @throws {@link ErrorCode|InvalidConfiguration} when client id, initiate login endpoint or simple auth endpoint is not found in config.
+   * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
    * 
    * @beta
    */
@@ -59,11 +59,11 @@ export class TeamsUserCredential implements TokenCredential {
    * ```
    * @param scopes - The list of scopes for which the token will have access.
    *
-   * @throws {@link ErrorCode.InternalError} when failed to login with unknown error.
-   * @throws {@link ErrorCode.ServiceError} when simple auth server failed to exchange access token.
-   * @throws {@link ErrorCode.ConsentFailed} when user canceled or failed to consent.
-   * @throws {@link ErrorCode.InvalidParameter} when scopes is not a valid string or string array.
-   * @throws {@link ErrorCode.RuntimeNotSupported} when runtime is nodeJS.
+   * @throws {@link ErrorCode|InternalError} when failed to login with unknown error.
+   * @throws {@link ErrorCode|ServiceError} when simple auth server failed to exchange access token.
+   * @throws {@link ErrorCode|ConsentFailed} when user canceled or failed to consent.
+   * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
+   * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
    * 
    * @beta
    */
@@ -94,11 +94,11 @@ export class TeamsUserCredential implements TokenCredential {
    * @param {string | string[]} scopes - The list of scopes for which the token will have access.
    * @param {GetTokenOptions} options - The options used to configure any requests this TokenCredential implementation might make.
    *
-   * @throws {@link ErrorCode.InternalError} when failed to get access token with unknown error.
-   * @throws {@link ErrorCode.UiRequiredError} when need user consent to get access token.
-   * @throws {@link ErrorCode.ServiceError} when failed to get access token from simple auth server.
-   * @throws {@link ErrorCode.InvalidParameter} when scopes is not a valid string or string array.
-   * @throws {@link ErrorCode.RuntimeNotSupported} when runtime is nodeJS.
+   * @throws {@link ErrorCode|InternalError} when failed to get access token with unknown error.
+   * @throws {@link ErrorCode|UiRequiredError} when need user consent to get access token.
+   * @throws {@link ErrorCode|ServiceError} when failed to get access token from simple auth server.
+   * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
+   * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
    *
    * @returns User access token of defined scopes.
    * If scopes is empty string or array, it returns SSO token.
@@ -125,9 +125,9 @@ export class TeamsUserCredential implements TokenCredential {
    * const currentUser = await credential.getUserInfo();
    * ```
    * 
-   * @throws {@link ErrorCode.InternalError} when SSO token from Teams client is not valid.
-   * @throws {@link ErrorCode.InvalidParameter} when SSO token from Teams client is empty.
-   * @throws {@link ErrorCode.RuntimeNotSupported} when runtime is nodeJS.
+   * @throws {@link ErrorCode|InternalError} when SSO token from Teams client is not valid.
+   * @throws {@link ErrorCode|InvalidParameter} when SSO token from Teams client is empty.
+   * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
    *
    * @returns Basic user info with user displayName, objectId and preferredUserName.
    * 

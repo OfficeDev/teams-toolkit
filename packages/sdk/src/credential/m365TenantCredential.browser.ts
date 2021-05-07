@@ -26,8 +26,8 @@ export class M365TenantCredential implements TokenCredential {
    * @remarks
    * Can only be used in server side code.
    * 
-   * @throws {@link ErrorCode.InvalidConfiguration} when client id, client secret or tenant id is not found in config.
-   * @throws {@link ErrorCode.RuntimeNotSupported} when runtime is nodeJS.
+   * @throws {@link ErrorCode|InvalidConfiguration} when client id, client secret or tenant id is not found in config.
+   * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
    * 
    * @beta
    */
@@ -54,10 +54,10 @@ export class M365TenantCredential implements TokenCredential {
    * @param {string | string[]} scopes - The list of scopes for which the token will have access.
    * @param {GetTokenOptions} options - The options used to configure any requests this TokenCredential implementation might make.
    *
-   * @throws {@link ErrorCode.ServiceError} when get access token with authentication error.
-   * @throws {@link ErrorCode.InternalError} when get access token with unknown error.
-   * @throws {@link ErrorCode.InvalidParameter} when scopes is not a valid string or string array.
-   * @throws {@link ErrorCode.RuntimeNotSupported} when runtime is nodeJS.
+   * @throws {@link ErrorCode|ServiceError} when get access token with authentication error.
+   * @throws {@link ErrorCode|InternalError} when get access token with unknown error.
+   * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
+   * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
    * 
    * @returns Access token with expected scopes.
    * Throw error if get access token failed.

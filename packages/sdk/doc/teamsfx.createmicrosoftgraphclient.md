@@ -30,7 +30,7 @@ Graph client with specified scopes.
 
 ## Exceptions
 
-[ErrorCode.InvalidParameter](./teamsfx.errorcode.invalidparameter.md) when scopes is not a valid string or string array.
+[InvalidParameter](./teamsfx.errorcode.md) when scopes is not a valid string or string array.
 
 ## Example
 

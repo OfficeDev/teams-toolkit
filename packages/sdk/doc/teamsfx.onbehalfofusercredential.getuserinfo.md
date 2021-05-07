@@ -22,9 +22,9 @@ Basic user info with user displayName, objectId and preferredUserName.
 
 ## Exceptions
 
-[ErrorCode.InternalError](./teamsfx.errorcode.internalerror.md) when SSO token is not valid.
+[InternalError](./teamsfx.errorcode.md) when SSO token is not valid.
 
-[ErrorCode.RuntimeNotSupported](./teamsfx.errorcode.runtimenotsupported.md) when runtime is browser.
+[RuntimeNotSupported](./teamsfx.errorcode.md) when runtime is browser.
 
 ## Example
 

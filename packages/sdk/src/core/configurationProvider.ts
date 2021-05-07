@@ -23,7 +23,7 @@ export let config: Configuration;
  * 
  * @param {Configuration} configuration - Optional configuration that overrides the default configuration values. The override depth is 1.
  * 
- * @throws {@link ErrorCode.InvalidParameter} when configuration is not passed in when in browser environment
+ * @throws {@link ErrorCode|InvalidParameter} when configuration is not passed in when in browser environment
  * 
  * @beta
  */
@@ -100,7 +100,7 @@ export function loadConfiguration(configuration?: Configuration): void {
  *
  * @returns Resource configuration for target resource from global configuration instance.
  * 
- * @throws {@link ErrorCode.InvalidConfiguration} when resource configuration with the specific type and name is not found
+ * @throws {@link ErrorCode|InvalidConfiguration} when resource configuration with the specific type and name is not found
  * 
  * @beta
  */
@@ -132,7 +132,7 @@ export function getResourceConfiguration(
  * 
  * @returns Authentication configuration from global configuration instance, the value may be undefined if no authentication config exists in current environment.
  * 
- * @throws {@link ErrorCode.InvalidConfiguration} when global configuration does not exist
+ * @throws {@link ErrorCode|InvalidConfiguration} when global configuration does not exist
  * 
  * @beta
  */

@@ -27,15 +27,15 @@ Promise&lt;void&gt;
 
 ## Exceptions
 
-[ErrorCode.InternalError](./teamsfx.errorcode.internalerror.md) when failed to login with unknown error.
+[InternalError](./teamsfx.errorcode.md) when failed to login with unknown error.
 
-[ErrorCode.ServiceError](./teamsfx.errorcode.serviceerror.md) when simple auth server failed to exchange access token.
+[ServiceError](./teamsfx.errorcode.md) when simple auth server failed to exchange access token.
 
-[ErrorCode.ConsentFailed](./teamsfx.errorcode.consentfailed.md) when user canceled or failed to consent.
+[ConsentFailed](./teamsfx.errorcode.md) when user canceled or failed to consent.
 
-[ErrorCode.InvalidParameter](./teamsfx.errorcode.invalidparameter.md) when scopes is not a valid string or string array.
+[InvalidParameter](./teamsfx.errorcode.md) when scopes is not a valid string or string array.
 
-[ErrorCode.RuntimeNotSupported](./teamsfx.errorcode.runtimenotsupported.md) when runtime is nodeJS.
+[RuntimeNotSupported](./teamsfx.errorcode.md) when runtime is nodeJS.
 
 ## Remarks
 

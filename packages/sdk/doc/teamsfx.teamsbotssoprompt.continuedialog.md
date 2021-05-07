@@ -29,9 +29,9 @@ A `Promise` representing the asynchronous operation.
 
 ## Exceptions
 
-[ErrorCode.ChannelNotSupported](./teamsfx.errorcode.channelnotsupported.md) when bot channel is not MS Teams.
+[ChannelNotSupported](./teamsfx.errorcode.md) when bot channel is not MS Teams.
 
-[ErrorCode.RuntimeNotSupported](./teamsfx.errorcode.runtimenotsupported.md) when runtime is browser.
+[RuntimeNotSupported](./teamsfx.errorcode.md) when runtime is browser.
 
 ## Remarks
 

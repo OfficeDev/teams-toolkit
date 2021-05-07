@@ -51,7 +51,7 @@ import { internalLogger } from "../util/logger";
  * @param {TokenCredential} credential - token credential instance.
  * @param scopes - The array of Microsoft Token scope of access. Default value is `[.default]`.
  *
- * @throws {@link ErrorCode.InvalidParameter} when scopes is not a valid string or string array.
+ * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
  * 
  * @returns Graph client with specified scopes.
  *

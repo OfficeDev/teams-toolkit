@@ -24,7 +24,7 @@ constructor(dialogId: string, settings: TeamsBotSsoPromptSettings);
 
 ## Exceptions
 
-[ErrorCode.InvalidParameter](./teamsfx.errorcode.invalidparameter.md) when scopes is not a valid string or string array.
+[InvalidParameter](./teamsfx.errorcode.md) when scopes is not a valid string or string array.
 
-[ErrorCode.RuntimeNotSupported](./teamsfx.errorcode.runtimenotsupported.md) when runtime is browser.
+[RuntimeNotSupported](./teamsfx.errorcode.md) when runtime is browser.
 

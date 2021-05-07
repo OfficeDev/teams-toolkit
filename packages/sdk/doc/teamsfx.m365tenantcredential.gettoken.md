@@ -30,13 +30,13 @@ Access token with expected scopes. Throw error if get access token failed.
 
 ## Exceptions
 
-[ErrorCode.ServiceError](./teamsfx.errorcode.serviceerror.md) when get access token with authentication error.
+[ServiceError](./teamsfx.errorcode.md) when get access token with authentication error.
 
-[ErrorCode.InternalError](./teamsfx.errorcode.internalerror.md) when get access token with unknown error.
+[InternalError](./teamsfx.errorcode.md) when get access token with unknown error.
 
-[ErrorCode.InvalidParameter](./teamsfx.errorcode.invalidparameter.md) when scopes is not a valid string or string array.
+[InvalidParameter](./teamsfx.errorcode.md) when scopes is not a valid string or string array.
 
-[ErrorCode.RuntimeNotSupported](./teamsfx.errorcode.runtimenotsupported.md) when runtime is nodeJS.
+[RuntimeNotSupported](./teamsfx.errorcode.md) when runtime is nodeJS.
 
 ## Example
 

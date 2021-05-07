@@ -89,8 +89,8 @@ export class TeamsBotSsoPrompt {
    * @param dialogId Unique ID of the dialog within its parent `DialogSet` or `ComponentDialog`.
    * @param settings Settings used to configure the prompt.
    *
-   * @throws {@link ErrorCode.InvalidParameter} when scopes is not a valid string or string array.
-   * @throws {@link ErrorCode.RuntimeNotSupported} when runtime is browser.
+   * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
+   * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
    * 
    * @beta
    */
@@ -109,9 +109,9 @@ export class TeamsBotSsoPrompt {
    * 
    * @param dc The DialogContext for the current turn of the conversation.
    * 
-   * @throws {@link ErrorCode.InvalidParameter} when timeout property in teams bot sso prompt settings is not number or is not positive.
-   * @throws {@link ErrorCode.ChannelNotSupported} when bot channel is not MS Teams.
-   * @throws {@link ErrorCode.RuntimeNotSupported} when runtime is browser.
+   * @throws {@link ErrorCode|InvalidParameter} when timeout property in teams bot sso prompt settings is not number or is not positive.
+   * @throws {@link ErrorCode|ChannelNotSupported} when bot channel is not MS Teams.
+   * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
    * 
    * @returns A `Promise` representing the asynchronous operation.
    *
@@ -137,8 +137,8 @@ export class TeamsBotSsoPrompt {
    * 
    * @returns A `Promise` representing the asynchronous operation.
    * 
-   * @throws {@link ErrorCode.ChannelNotSupported} when bot channel is not MS Teams.
-   * @throws {@link ErrorCode.RuntimeNotSupported} when runtime is browser.
+   * @throws {@link ErrorCode|ChannelNotSupported} when bot channel is not MS Teams.
+   * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
    * 
    * @beta
    */

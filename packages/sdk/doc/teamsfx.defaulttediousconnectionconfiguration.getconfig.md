@@ -22,9 +22,9 @@ Configuration items to the user for tedious to connection to the SQL.
 
 ## Exceptions
 
-[ErrorCode.InvalidConfiguration](./teamsfx.errorcode.invalidconfiguration.md) when sql config resource configuration is invalid.
+[InvalidConfiguration](./teamsfx.errorcode.md) when sql config resource configuration is invalid.
 
-[ErrorCode.InternalError](./teamsfx.errorcode.internalerror.md) when get user MSI token failed or MSI token is invalid.
+[InternalError](./teamsfx.errorcode.md) when get user MSI token failed or MSI token is invalid.
 
-[ErrorCode.RuntimeNotSupported](./teamsfx.errorcode.runtimenotsupported.md) when runtime is browser.
+[RuntimeNotSupported](./teamsfx.errorcode.md) when runtime is browser.
 

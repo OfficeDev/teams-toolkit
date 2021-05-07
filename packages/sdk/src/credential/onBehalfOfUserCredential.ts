@@ -35,9 +35,9 @@ export class OnBehalfOfUserCredential implements TokenCredential {
    * 
    * @param {string} ssoToken - User token provided by Teams SSO feature.
    * 
-   * @throws {@link ErrorCode.InvalidConfiguration} when client id, client secret, authority host or tenant id is not found in config.
-   * @throws {@link ErrorCode.InternalError} when SSO token is not valid.
-   * @throws {@link ErrorCode.RuntimeNotSupported} when runtime is browser.
+   * @throws {@link ErrorCode|InvalidConfiguration} when client id, client secret, authority host or tenant id is not found in config.
+   * @throws {@link ErrorCode|InternalError} when SSO token is not valid.
+   * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
    *
    * @beta
    */
@@ -108,12 +108,12 @@ export class OnBehalfOfUserCredential implements TokenCredential {
    * @param {string | string[]} scopes - The list of scopes for which the token will have access.
    * @param {GetTokenOptions} options - The options used to configure any requests this TokenCredential implementation might make.
    * 
-   * @throws {@link ErrorCode.InternalError} when failed to acquire access token on behalf of user with unknown error.
-   * @throws {@link ErrorCode.TokenExpiredError} when SSO token has already expired.
-   * @throws {@link ErrorCode.UiRequiredError} when need user consent to get access token.
-   * @throws {@link ErrorCode.ServiceError} when failed to get access token from simple auth server.
-   * @throws {@link ErrorCode.InvalidParameter} when scopes is not a valid string or string array.
-   * @throws {@link ErrorCode.RuntimeNotSupported} when runtime is browser.
+   * @throws {@link ErrorCode|InternalError} when failed to acquire access token on behalf of user with unknown error.
+   * @throws {@link ErrorCode|TokenExpiredError} when SSO token has already expired.
+   * @throws {@link ErrorCode|UiRequiredError} when need user consent to get access token.
+   * @throws {@link ErrorCode|ServiceError} when failed to get access token from simple auth server.
+   * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
+   * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
    * 
    * @returns Access token with expected scopes.
    * If scopes is empty string or array, it returns SSO token.
@@ -179,8 +179,8 @@ export class OnBehalfOfUserCredential implements TokenCredential {
    * const currentUser = await credential.getUserInfo();
    * ```
    * 
-   * @throws {@link ErrorCode.InternalError} when SSO token is not valid.
-   * @throws {@link ErrorCode.RuntimeNotSupported} when runtime is browser.
+   * @throws {@link ErrorCode|InternalError} when SSO token is not valid.
+   * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
    * 
    * @returns Basic user info with user displayName, objectId and preferredUserName.
    * 

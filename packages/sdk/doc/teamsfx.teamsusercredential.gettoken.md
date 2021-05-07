@@ -30,15 +30,15 @@ User access token of defined scopes. If scopes is empty string or array, it retu
 
 ## Exceptions
 
-[ErrorCode.InternalError](./teamsfx.errorcode.internalerror.md) when failed to get access token with unknown error.
+[InternalError](./teamsfx.errorcode.md) when failed to get access token with unknown error.
 
-[ErrorCode.UiRequiredError](./teamsfx.errorcode.uirequirederror.md) when need user consent to get access token.
+[UiRequiredError](./teamsfx.errorcode.md) when need user consent to get access token.
 
-[ErrorCode.ServiceError](./teamsfx.errorcode.serviceerror.md) when failed to get access token from simple auth server.
+[ServiceError](./teamsfx.errorcode.md) when failed to get access token from simple auth server.
 
-[ErrorCode.InvalidParameter](./teamsfx.errorcode.invalidparameter.md) when scopes is not a valid string or string array.
+[InvalidParameter](./teamsfx.errorcode.md) when scopes is not a valid string or string array.
 
-[ErrorCode.RuntimeNotSupported](./teamsfx.errorcode.runtimenotsupported.md) when runtime is nodeJS.
+[RuntimeNotSupported](./teamsfx.errorcode.md) when runtime is nodeJS.
 
 ## Example
 

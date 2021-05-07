@@ -29,11 +29,11 @@ A `Promise` representing the asynchronous operation.
 
 ## Exceptions
 
-[ErrorCode.InvalidParameter](./teamsfx.errorcode.invalidparameter.md) when timeout property in teams bot sso prompt settings is not number or is not positive.
+[InvalidParameter](./teamsfx.errorcode.md) when timeout property in teams bot sso prompt settings is not number or is not positive.
 
-[ErrorCode.ChannelNotSupported](./teamsfx.errorcode.channelnotsupported.md) when bot channel is not MS Teams.
+[ChannelNotSupported](./teamsfx.errorcode.md) when bot channel is not MS Teams.
 
-[ErrorCode.RuntimeNotSupported](./teamsfx.errorcode.runtimenotsupported.md) when runtime is browser.
+[RuntimeNotSupported](./teamsfx.errorcode.md) when runtime is browser.
 
 ## Remarks
 

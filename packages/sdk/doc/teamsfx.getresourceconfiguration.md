@@ -32,5 +32,5 @@ Resource configuration for target resource from global configuration instance.
 
 ## Exceptions
 
-[ErrorCode.InvalidConfiguration](./teamsfx.errorcode.invalidconfiguration.md) when resource configuration with the specific type and name is not found
+[InvalidConfiguration](./teamsfx.errorcode.md) when resource configuration with the specific type and name is not found
 

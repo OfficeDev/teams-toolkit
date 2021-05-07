@@ -22,13 +22,13 @@ Access token from the credential.
 
 ## Exceptions
 
-[ErrorCode.InternalError](./teamsfx.errorcode.internalerror.md) when access token is empty or failed to get access token with unknown error.
+[InternalError](./teamsfx.errorcode.md) when access token is empty or failed to get access token with unknown error.
 
-[ErrorCode.TokenExpiredError](./teamsfx.errorcode.tokenexpirederror.md) when SSO token has already expired.
+[TokenExpiredError](./teamsfx.errorcode.md) when SSO token has already expired.
 
-[ErrorCode.UiRequiredError](./teamsfx.errorcode.uirequirederror.md) when need user consent to get access token.
+[UiRequiredError](./teamsfx.errorcode.md) when need user consent to get access token.
 
-[ErrorCode.ServiceError](./teamsfx.errorcode.serviceerror.md) when failed to get access token from simple auth server.
+[ServiceError](./teamsfx.errorcode.md) when failed to get access token from simple auth server.
 
-[ErrorCode.InvalidParameter](./teamsfx.errorcode.invalidparameter.md) when scopes is not a valid string or string array.
+[InvalidParameter](./teamsfx.errorcode.md) when scopes is not a valid string or string array.
 

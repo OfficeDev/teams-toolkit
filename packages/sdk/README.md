@@ -10,13 +10,12 @@ Use the library to:
 [Source code](https://github.com/OfficeDev/TeamsFx/tree/main/packages/sdk) |
 [Package (NPM)](https://www.npmjs.com/package/@microsoft/teamsfx) |
 [API reference documentation](https://aka.ms/teamsfx-sdk-help) |
-[Product documentation]() |
 [Samples](https://github.com/OfficeDev/TeamsFx-Samples)
 
 ## Getting started
 
 TeamsFx SDK is pre-configured in scaffolded project using TeamsFx toolkit or cli.
-Please check the [wiki page]() to see how to create a Teams App project.
+Please check the [README](https://github.com/OfficeDev/TeamsFx/blob/main/packages/vscode-extension/README.md) to see how to create a Teams App project.
 
 ### Prerequisites
 
@@ -134,8 +133,8 @@ try {
 
 The following sections provide several code snippets covering some of the most common scenarios, including:
 
-- [Use Graph API in tab app](#user-graph-api-in-tab-app)
-- [Call Azure Function in tab app](#call-azure-function-in-tap-app)
+- [Use Graph API in tab app](#use-graph-api-in-tab-app)
+- [Call Azure Function in tab app](#call-azure-function-in-tab-app)
 - [Access SQL database in Azure Function](#access-sql-database-in-azure-function)
 - [Use Graph API in Bot application](#use-graph-api-in-bot-application)
 

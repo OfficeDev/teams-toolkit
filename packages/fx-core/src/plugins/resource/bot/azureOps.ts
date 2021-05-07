@@ -6,7 +6,7 @@ import * as appService from "@azure/arm-appservice";
 import {
     ProvisionError, ConfigUpdatingError,
     ListPublishingCredentialsError, ZipDeployError,
-    MessageEndpointUpdatingError, MissingSubscriptionRegistrationError
+    MessageEndpointUpdatingError, MissingSubscriptionRegistrationError,
     FreeServerFarmsQuotaError
 } from "./errors";
 import { CommonStrings, ConfigNames } from "./resources/strings";

@@ -290,9 +290,7 @@ export class FreeServerFarmsQuotaError extends PluginError {
             ErrorNames.FREE_SERVER_FARMS_QUOTA_ERROR,
             Messages.MaxFreeAppServicePlanIsTen,
             [
-                Messages.DeleteFreeAppServicePlan,
-                Messages.ChangeAppServicePlanSku,
-                Messages.RetryTheCurrentStep
+                Messages.DeleteFreeAppServicePlanOrChangeSku
             ]
         );
     }

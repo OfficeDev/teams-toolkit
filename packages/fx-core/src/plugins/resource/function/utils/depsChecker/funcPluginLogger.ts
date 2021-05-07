@@ -11,9 +11,16 @@ import * as fs from "fs-extra";
 class FuncPluginLogger implements IDepsLogger {
   private static logFileName = "env-checker.log";
   private static globalConfigFolder = path.join(os.homedir(), `.${ConfigFolderName}`);
+  private logFileCreated: boolean;
 
   constructor() {
-    fs.mkdirSync(FuncPluginLogger.globalConfigFolder, { recursive: true });
+    try {
+      fs.mkdirSync(FuncPluginLogger.globalConfigFolder, { recursive: true });
+      this.logFileCreated = true;
+    } catch (error) {
+      Logger.error(`Failed to create env checker log file, error = '${error}'`)
+      this.logFileCreated = false;
+    }
   }
 
   async debug(message: string): Promise<boolean> {
@@ -40,9 +47,17 @@ class FuncPluginLogger implements IDepsLogger {
   }
 
   private async writeLog(level: LogLevel, message: string): Promise<void> {
-    const line = `${LogLevel[level]} ${new Date().toISOString()}: ${message}` + os.EOL;
+    if (!this.logFileCreated) {
+      return;
+    }
+
     const logFilePath = path.join(FuncPluginLogger.globalConfigFolder, FuncPluginLogger.logFileName);
-    await fs.appendFile(logFilePath, line);
+    try {
+      const line = `${LogLevel[level]} ${new Date().toISOString()}: ${message}` + os.EOL;
+      await fs.appendFile(logFilePath, line);
+    } catch (error) {
+      Logger.debug(`Failed to write to log file '${logFilePath}', error = '${error}'`)
+    }
   }
 }
 

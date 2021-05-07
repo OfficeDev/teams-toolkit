@@ -15,12 +15,19 @@ export class VSCodeLogger implements IDepsLogger {
 
   public outputChannel: OutputChannel;
   private logger: VsCodeLogProvider;
+  private logFileCreated: boolean;
 
   public constructor(logger: VsCodeLogProvider) {
     this.outputChannel = logger.outputChannel;
     this.logger = logger;
 
-    fs.mkdirSync(VSCodeLogger.globalConfigFolder, { recursive: true });
+    try {
+      fs.mkdirSync(VSCodeLogger.globalConfigFolder, { recursive: true });
+      this.logFileCreated = true;
+    } catch (error) {
+      this.logger.error(`Failed to create env checker log file, error = '${error}'`)
+      this.logFileCreated = false;
+    }
   }
 
   async debug(message: string): Promise<boolean> {
@@ -44,9 +51,17 @@ export class VSCodeLogger implements IDepsLogger {
   }
 
   private async writeLog(level: LogLevel, message: string): Promise<void> {
-    const line = `${LogLevel[level]} ${new Date().toISOString()}: ${message}` + os.EOL;
+    if (!this.logFileCreated) {
+      return;
+    }
+
     const logFilePath = path.join(VSCodeLogger.globalConfigFolder, VSCodeLogger.checkerLogFileName);
-    await fs.appendFile(logFilePath, line);
+    try {
+      const line = `${LogLevel[level]} ${new Date().toISOString()}: ${message}` + os.EOL;
+      await fs.appendFile(logFilePath, line);
+    } catch (error) {
+      this.logger.debug(`Failed to write to log file '${logFilePath}', error = '${error}'`)
+    }
   }
 }
 

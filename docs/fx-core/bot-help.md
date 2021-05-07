@@ -38,7 +38,7 @@ Don't forget to add microsoft teams as a featured channel when registering bot o
 ![image](../images/fx-core/bot/dont-forget-add-teams-channel.png)
 
 ### Choose `using an existing bot registration`.
-![image](../images/fx-core/bot/enter-bot-id.png)
+![image](../images/fx-core/bot/way-to-register-bot.png)
 
 ### Enter bot id.
 ![image](../images/fx-core/bot/enter-bot-id.png)

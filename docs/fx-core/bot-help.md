@@ -31,7 +31,11 @@ Please refer to this [link](https://aka.ms/rps-not-found) to register your subsc
 
 Suppose an existing bot has been registered by [azure bot channel registration](https://docs.microsoft.com/en-us/azure/bot-service/bot-service-quickstart-registration?view=azure-bot-service-4.0) or [bot framework's legacy portal](https://dev.botframework.com/bots/new), you can follow this guide to reuse the existing bot registration in Toolkit v2.
 
-No matter registering bot by azure bot channel registration or bot framework's legacy portal, a pair of bot id and bot password will be generated. please copy/paste them after choosing reusing existing bot in Toolkit v2 as shown in the screenshots below:
+No matter registering bot by azure bot channel registration or bot framework's legacy portal, a pair of bot id and bot password will be generated. please copy/paste them after choosing reusing existing bot in Toolkit v2.
+
+### Pay attention!!!
+Don't forget to add microsoft teams as a featured channel when registering bot on azure.
+![image](../images/fx-core/bot/dont-forget-add-teams-channel.png)
 
 ### Choose `using an existing bot registration`.
 ![image](../images/fx-core/bot/enter-bot-id.png)

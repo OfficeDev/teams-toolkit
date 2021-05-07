@@ -115,7 +115,7 @@ export class CapabilityAddBot extends YargsCommand {
 }
 
 export class CapabilityAddMessageExtension extends YargsCommand {
-  public readonly commandHead = `message-extension`;
+  public readonly commandHead = `messaging-extension`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Add Messaging Extensions.";
   public readonly paramPath = constants.capabilityAddMessageExtensionParamPath;

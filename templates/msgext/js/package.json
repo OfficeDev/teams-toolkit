@@ -1,5 +1,5 @@
 {
-  "name": "teams-message-extension",
+  "name": "teams-messaging-extension",
   "version": "1.0.0",
   "msteams": {
     "teamsAppId": null

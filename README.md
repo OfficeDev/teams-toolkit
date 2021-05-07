@@ -1,6 +1,7 @@
 # Microsoft Teams App Framework (TeamsFx)
 ![example workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/ci.yml/badge.svg)
 ![example workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/e2e-test.yml/badge.svg)
+![example workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/sdk-ci.yml/badge.svg)
 ![example workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/simpleauthCI.yml/badge.svg)
 ![example workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/FunctionExtensionCI.yml/badge.svg)
 

@@ -254,7 +254,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     if (AzureAccountManager.statusChange !== undefined) {
       await AzureAccountManager.statusChange("SignedOut", undefined, undefined);
     }
-    AzureAccountManager.codeFlowInstance.logout();
+    await AzureAccountManager.codeFlowInstance.logout();
     await this.notifyStatus();
     return Promise.resolve(true);
   }

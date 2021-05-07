@@ -156,7 +156,9 @@ export class CodeFlowLogin {
   async logout(): Promise<boolean> {
     const accountCache = String(fs.readFileSync(accountPath + this.accountName, UTF8));
     const dataCache = await this.msalTokenCache!.getAccountByHomeId(accountCache);
-    this.msalTokenCache?.removeAccount(dataCache!);
+    if (dataCache) {
+      this.msalTokenCache?.removeAccount(dataCache!);
+    }
     if (fs.existsSync(accountPath + this.accountName)) {
       fs.writeFileSync(accountPath + this.accountName, "", UTF8);
     }

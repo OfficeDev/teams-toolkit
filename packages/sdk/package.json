@@ -77,6 +77,7 @@
   "devDependencies": {
     "@azure/arm-sql": "^7.0.2",
     "@azure/ms-rest-nodeauth": "^3.0.6",
+    "@azure/storage-blob": "^12.3.0",
     "@commitlint/cli": "^12.0.1",
     "@commitlint/config-conventional": "^12.0.1",
     "@microsoft/api-documenter": "^7.12.4",

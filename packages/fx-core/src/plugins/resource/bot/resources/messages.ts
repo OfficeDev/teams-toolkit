@@ -72,5 +72,5 @@ export class Messages {
     // Suggestions
     public static readonly RetryTheCurrentStep = "Please retry the current step.";
     public static readonly RegisterYouSubsToUseBot = "Please register your subscription to use namespace 'Microsoft.BotService'.";
-    public static readonly DeleteFreeAppServicePlanOrChangeSku = "Delete a free app service plan or change app service plan's sku in config file.";
+    public static readonly DeleteFreeAppServicePlanOrChangeSku = "Delete a free app service plan or change app service plan's sku in config file and retry.";
 }

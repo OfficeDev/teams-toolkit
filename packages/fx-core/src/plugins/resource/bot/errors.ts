@@ -16,10 +16,9 @@ export class PluginError extends Error {
     public errorType: ErrorType;
     public innerError?: Error;
     public helpLink?: string;
-    public issueLink?: string;
 
     constructor(type: ErrorType, name: string, details: string, suggestions: string[],
-        innerError?: Error, helpLink?: string, issueLink?: string) {
+        innerError?: Error, helpLink?: string) {
         super(details);
         this.name = name;
         this.details = details;
@@ -27,7 +26,6 @@ export class PluginError extends Error {
         this.errorType = type;
         this.innerError = innerError;
         this.helpLink = helpLink;
-        this.issueLink = issueLink;
         Object.setPrototypeOf(this, PluginError.prototype);
     }
 
@@ -142,7 +140,7 @@ export class MissingSubscriptionRegistrationError extends PluginError {
                 Messages.RegisterYouSubsToUseBot
             ],
             undefined,
-            Links.RPS_NOT_FOUND
+            `${Links.HELP_LINK}#MissingSubscriptionRegistrationError`
         );
     }
 }
@@ -291,7 +289,9 @@ export class FreeServerFarmsQuotaError extends PluginError {
             Messages.MaxFreeAppServicePlanIsTen,
             [
                 Messages.DeleteFreeAppServicePlanOrChangeSku
-            ]
+            ],
+            innerError,
+            `${Links.HELP_LINK}#FreeServerFarmsQuotaError`
         );
     }
 }

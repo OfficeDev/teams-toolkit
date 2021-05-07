@@ -21,18 +21,18 @@ export class FxBotPluginResultFactory {
             errorMessage,
             FxBotPluginResultFactory.source,
             innerError?.stack,
-            helpLink ? helpLink : FxBotPluginResultFactory.defaultHelpLink,
+            helpLink,
             innerError
         ));
     }
 
-    public static SystemError(errorName: string, errorMessage: string, issueLink?: string, innerError?: any): FxResult {
+    public static SystemError(errorName: string, errorMessage: string, innerError?: any): FxResult {
         return err(new SystemError(
             errorName,
             errorMessage,
             FxBotPluginResultFactory.source,
             innerError?.stack,
-            issueLink ? issueLink : FxBotPluginResultFactory.defaultIssueLink,
+            FxBotPluginResultFactory.defaultIssueLink,
             innerError
         ));
     }

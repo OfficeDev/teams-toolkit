@@ -7,7 +7,7 @@
 > This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
 > 
 
-Constructor of TeamsUserCredential. Developer need to call loadConfiguration(config) before using this class.
+Constructor of TeamsUserCredential.
 
 <b>Signature:</b>
 
@@ -21,6 +21,10 @@ constructor();
 
 [RuntimeNotSupported](./teamsfx.errorcode.md) when runtime is nodeJS.
 
+## Remarks
+
+Developer need to call `loadConfiguration(config)` before using this class.
+
 ## Example
 
 
@@ -32,8 +36,8 @@ const config = {
    clientId: "xxx"
   }
 }
-       loadConfiguration(config); // No default config from environment variables, developers must provide the config object.
-       const credential = new TeamsUserCredential(["https://graph.microsoft.com/User.Read"]);
+loadConfiguration(config); // No default config from environment variables, developers must provide the config object.
+const credential = new TeamsUserCredential(["https://graph.microsoft.com/User.Read"]);
 
 ```
 

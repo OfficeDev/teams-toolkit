@@ -17,7 +17,9 @@ import { formatString } from "../util/utils";
 export class TeamsUserCredential implements TokenCredential {
   /**
    * Constructor of TeamsUserCredential.
-   * Developer need to call loadConfiguration(config) before using this class.
+   * 
+   * @remarks
+   * Developer need to call `loadConfiguration(config)` before using this class.
    * 
    * @example
    * ```typescript
@@ -28,8 +30,8 @@ export class TeamsUserCredential implements TokenCredential {
    *    clientId: "xxx"
    *   }
    * }
-     loadConfiguration(config); // No default config from environment variables, developers must provide the config object.
-     const credential = new TeamsUserCredential(["https://graph.microsoft.com/User.Read"]);
+   * loadConfiguration(config); // No default config from environment variables, developers must provide the config object.
+   * const credential = new TeamsUserCredential(["https://graph.microsoft.com/User.Read"]);
    * ```
    *
    * @throws {@link ErrorCode|InvalidConfiguration} when client id, initiate login endpoint or simple auth endpoint is not found in config.

@@ -20,7 +20,7 @@ export declare class MsGraphAuthProvider implements AuthenticationProvider
 
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
-|  [(constructor)(credential, scopes)](./teamsfx.msgraphauthprovider._constructor_.md) |  | <b><i>(BETA)</i></b> Constructor of MsGraphAuthProvider |
+|  [(constructor)(credential, scopes)](./teamsfx.msgraphauthprovider._constructor_.md) |  | <b><i>(BETA)</i></b> Constructor of MsGraphAuthProvider. |
 
 ## Methods
 

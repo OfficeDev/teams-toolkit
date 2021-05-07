@@ -24,9 +24,9 @@ export class DefaultTediousConnectionConfiguration {
   /**
    * Generate connection configuration consumed by tedious.
    * 
-   * @returns Configuration items to the user for tedious to connection to the SQL.
+   * @returns Connection configuration of tedious for the SQL.
    * 
-   * @throws {@link ErrorCode|InvalidConfiguration} when sql config resource configuration is invalid.
+   * @throws {@link ErrorCode|InvalidConfiguration} when SQL config resource configuration is invalid.
    * @throws {@link ErrorCode|InternalError} when get user MSI token failed or MSI token is invalid.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
    * 
@@ -86,7 +86,7 @@ export class DefaultTediousConnectionConfiguration {
    * check configuration is an available configurations.
    * @param { SqlConfiguration } sqlConfig
    *
-   * @returns true - sql configuration has a valid SQL endpoints, SQL username with password or identity ID.
+   * @returns true - SQL configuration has a valid SQL endpoints, SQL username with password or identity ID.
    *          false - configuration is not valid.
    * @internal
    */
@@ -112,7 +112,7 @@ export class DefaultTediousConnectionConfiguration {
   /**
    * Generate tedious connection configuration with default authentication type.
    *
-   * @param { SqlConfiguration } sqlConfig sql configuration with username and password.
+   * @param { SqlConfiguration } sqlConfig SQL configuration with username and password.
    *
    * @returns Tedious connection configuration with username and password.
    * @internal
@@ -142,7 +142,7 @@ export class DefaultTediousConnectionConfiguration {
   /**
    * Generate tedious connection configuration with azure-active-directory-access-token authentication type.
    *
-   * @param { SqlConfiguration } sqlConfig sql configuration with AAD access token.
+   * @param { SqlConfiguration } sqlConfig SQL configuration with AAD access token.
    *
    * @returns Tedious connection configuration with access token.
    * @internal

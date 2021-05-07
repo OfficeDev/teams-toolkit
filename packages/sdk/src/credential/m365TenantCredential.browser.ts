@@ -15,7 +15,7 @@ import { ErrorCode, ErrorMessage, ErrorWithCode } from "../core/errors";
  * ```
  * 
  * @remarks
- * Can only be used in server side code.
+ * Only works in in server side.
  *
  * @beta
  */
@@ -24,7 +24,7 @@ export class M365TenantCredential implements TokenCredential {
    * Constructor of M365TenantCredential.
    * 
    * @remarks
-   * Can only be used in server side code.
+   * Only works in in server side.
    * 
    * @throws {@link ErrorCode|InvalidConfiguration} when client id, client secret or tenant id is not found in config.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.

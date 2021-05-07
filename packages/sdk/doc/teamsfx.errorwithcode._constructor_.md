@@ -7,7 +7,7 @@
 > This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
 > 
 
-Constructor of ErrorWithCode
+Constructor of ErrorWithCode.
 
 <b>Signature:</b>
 
@@ -19,6 +19,6 @@ constructor(message?: string, code?: ErrorCode);
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  message | string | error message |
-|  code | [ErrorCode](./teamsfx.errorcode.md) | error code |
+|  message | string | error message. |
+|  code | [ErrorCode](./teamsfx.errorcode.md) | error code. |
 

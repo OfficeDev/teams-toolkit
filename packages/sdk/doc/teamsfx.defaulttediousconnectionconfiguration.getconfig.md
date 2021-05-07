@@ -18,11 +18,11 @@ getConfig(): Promise<ConnectionConfig>;
 
 Promise&lt;ConnectionConfig&gt;
 
-Configuration items to the user for tedious to connection to the SQL.
+Connection configuration of tedious for the SQL.
 
 ## Exceptions
 
-[InvalidConfiguration](./teamsfx.errorcode.md) when sql config resource configuration is invalid.
+[InvalidConfiguration](./teamsfx.errorcode.md) when SQL config resource configuration is invalid.
 
 [InternalError](./teamsfx.errorcode.md) when get user MSI token failed or MSI token is invalid.
 

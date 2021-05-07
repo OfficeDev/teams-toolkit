@@ -52,7 +52,7 @@ export enum ErrorCode {
   ServiceError = "ServiceError",
 
   /**
-   * operation failed error.
+   * Operation failed error.
    */
   FailedOperation = "FailedOperation"
 }
@@ -83,23 +83,23 @@ export class ErrorMessage {
 }
 
 /**
- * Error class with code and message thrown by the SDK library.
+ * Error class with code and message thrown by the SDK.
  *
  * @beta
  */
 export class ErrorWithCode extends Error {
   /**
-   * error code
+   * Error code
    *
    * @readonly
    */
   code: string | undefined;
 
   /**
-   * Constructor of ErrorWithCode
+   * Constructor of ErrorWithCode.
    *
-   * @param {string} message - error message
-   * @param {ErrorCode} code - error code
+   * @param {string} message - error message.
+   * @param {ErrorCode} code - error code.
    * 
    * @beta
    */

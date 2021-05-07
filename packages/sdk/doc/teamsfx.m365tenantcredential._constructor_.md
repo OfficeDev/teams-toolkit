@@ -23,5 +23,5 @@ constructor();
 
 ## Remarks
 
-Can only be used in server side code.
+Only works in in server side.
 

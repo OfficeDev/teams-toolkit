@@ -65,7 +65,7 @@ export function loadConfiguration(configuration?: Configuration): void {
   } else {
     newResources = [
       {
-        // sql resource
+        // SQL resource
         type: ResourceType.SQL,
         name: defaultResourceName,
         properties: {

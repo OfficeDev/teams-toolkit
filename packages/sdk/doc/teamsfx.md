@@ -9,7 +9,7 @@
 |  Class | Description |
 |  --- | --- |
 |  [DefaultTediousConnectionConfiguration](./teamsfx.defaulttediousconnectionconfiguration.md) | <b><i>(BETA)</i></b> SQL connection configuration instance. |
-|  [ErrorWithCode](./teamsfx.errorwithcode.md) | <b><i>(BETA)</i></b> Error class with code and message thrown by the SDK library. |
+|  [ErrorWithCode](./teamsfx.errorwithcode.md) | <b><i>(BETA)</i></b> Error class with code and message thrown by the SDK. |
 |  [M365TenantCredential](./teamsfx.m365tenantcredential.md) | <b><i>(BETA)</i></b> Represent Microsoft 365 tenant identity, and it is usually used when user is not involved like time-triggered automation job. |
 |  [MsGraphAuthProvider](./teamsfx.msgraphauthprovider.md) | <b><i>(BETA)</i></b> Microsoft Graph auth provider. |
 |  [OnBehalfOfUserCredential](./teamsfx.onbehalfofusercredential.md) | <b><i>(BETA)</i></b> Represent on-behalf-of flow to get user identity, and it is designed to be used in Azure Function or Bot scenarios. |

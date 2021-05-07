@@ -9,7 +9,7 @@ import { formatString } from "../util/utils";
  * 
  * @returns Configuration items to the user for tedious to connection to the SQL.
  * 
- * @throws {@link ErrorCode|InvalidConfiguration} when sql config resource configuration is invalid.
+ * @throws {@link ErrorCode|InvalidConfiguration} when SQL config resource configuration is invalid.
  * @throws {@link ErrorCode|InternalError} when get user MSI token failed or MSI token is invalid.
  * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
  * 

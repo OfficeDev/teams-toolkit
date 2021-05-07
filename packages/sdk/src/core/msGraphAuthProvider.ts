@@ -19,7 +19,7 @@ export class MsGraphAuthProvider implements AuthenticationProvider {
   private scopes: string | string[];
 
   /**
-   * Constructor of MsGraphAuthProvider
+   * Constructor of MsGraphAuthProvider.
    *
    * @param {TokenCredential} credential - Credential used to invoke Microsoft Graph APIs.
    * @param {string | string[]} scopes - The list of scopes for which the token will have access.

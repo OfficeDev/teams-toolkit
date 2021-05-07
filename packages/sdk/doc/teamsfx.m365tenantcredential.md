@@ -18,7 +18,7 @@ export declare class M365TenantCredential implements TokenCredential
 
 ## Remarks
 
-Can only be used in server side code.
+Only works in in server side.
 
 ## Example
 

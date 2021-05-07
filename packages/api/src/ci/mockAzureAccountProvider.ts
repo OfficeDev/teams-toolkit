@@ -21,6 +21,12 @@ dotenv.config();
 const user = process.env.TEST_USER_NAME ?? "";
 const password = process.env.TEST_USER_PASSWORD ?? "";
 
+type LoginStatus = {
+    status: string;
+    token?: string;
+    accountInfo?: Record<string, unknown>;
+};
+
 export class MockAzureAccountProvider implements AzureAccountProvider {
     static tokenCredentialsBase: TokenCredentialsBase;
 
@@ -96,6 +102,14 @@ export class MockAzureAccountProvider implements AzureAccountProvider {
         return new Promise((resolve) => {
             resolve(true);
         });
+    }
+
+    public async getStatus(): Promise<LoginStatus> {
+        return Promise.resolve(
+            {
+                status: "SignedIn"
+            }
+        );
     }
 
     public async deleteResourceGroup(rg: string): Promise<void> {

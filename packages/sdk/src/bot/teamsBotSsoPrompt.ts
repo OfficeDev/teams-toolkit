@@ -39,7 +39,14 @@ const invokeResponseType = "invokeResponse";
  * @beta
  */
 class TokenExchangeInvokeResponse {
+  /**
+   * Response id
+   */
   id: string;
+
+  /**
+   * Detailed error message
+   */
   failureDetail: string;
 
   constructor(id: string, failureDetail: string) {
@@ -76,7 +83,7 @@ export interface TeamsBotSsoPromptSettings {
 
 /**
  * Creates a new prompt that leverage Teams Single Sign On (SSO) support for bot to automatically sign in user and
- * help rechieve oauth token, asks the user to consent if needed.
+ * help receive oauth token, asks the user to consent if needed.
  *
  * @remarks
  * The prompt will attempt to retrieve the users current token of the desired scopes and store it in
@@ -88,7 +95,7 @@ export interface TeamsBotSsoPromptSettings {
  * @example
  * When used with your bots `DialogSet` you can simply add a new instance of the prompt as a named
  * dialog using `DialogSet.add()`. You can then start the prompt from a waterfall step using either
- * `DialogContext.beginDialog()` or `DialogContext.prompt()`. The user will be prompted to signin as
+ * `DialogContext.beginDialog()` or `DialogContext.prompt()`. The user will be prompted to sign in as
  * needed and their access token will be passed as an argument to the callers next waterfall step:
  *
  * ```JavaScript
@@ -127,11 +134,14 @@ export interface TeamsBotSsoPromptSettings {
  */
 export class TeamsBotSsoPrompt extends Dialog {
   /**
-   * Create a new TeamsBotSsoPrompt instance.
+   * Constructor of TeamsBotSsoPrompt.
    *
    * @param dialogId Unique ID of the dialog within its parent `DialogSet` or `ComponentDialog`.
    * @param settings Settings used to configure the prompt.
    *
+   * @throws {@link ErrorCode.InvalidParameter} when scopes is not a valid string or string array.
+   * @throws {@link ErrorCode.RuntimeNotSupported} when runtime is browser.
+   * 
    * @beta
    */
   constructor(dialogId: string, private settings: TeamsBotSsoPromptSettings) {
@@ -142,15 +152,17 @@ export class TeamsBotSsoPrompt extends Dialog {
 
   /**
    * Called when a prompt dialog is pushed onto the dialog stack and is being activated.
-   *
-   * @param dc The DialogContext for the current turn of the conversation.
-   * @returns A `Promise` representing the asynchronous operation.
-   * @throws {InvalidParameter} if timeout property in teams bot sso prompt settings is not number or is not positive.
-   * @throws {ChannelNotSupported} if bot channel is not MS Teams
-   *
    * @remarks
    * If the task is successful, the result indicates whether the prompt is still
    * active after the turn has been processed by the prompt.
+   * 
+   * @param dc The DialogContext for the current turn of the conversation.
+   * 
+   * @throws {@link ErrorCode.InvalidParameter} when timeout property in teams bot sso prompt settings is not number or is not positive.
+   * @throws {@link ErrorCode.ChannelNotSupported} when bot channel is not MS Teams.
+   * @throws {@link ErrorCode.RuntimeNotSupported} when runtime is browser.
+   * 
+   * @returns A `Promise` representing the asynchronous operation.
    *
    * @beta
    */
@@ -191,16 +203,20 @@ export class TeamsBotSsoPrompt extends Dialog {
 
   /**
    * Called when a prompt dialog is the active dialog and the user replied with a new activity.
-   * @param dc The DialogContext for the current turn of the conversation.
-   * @returns A `Promise` representing the asynchronous operation.
-   * @throws {ChannelNotSupported} if bot channel is not MS Teams
-   *
+   * 
    * @remarks
    * If the task is successful, the result indicates whether the dialog is still
    * active after the turn has been processed by the dialog.
    * The prompt generally continues to receive the user's replies until it accepts the
    * user's reply as valid input for the prompt.
-   *
+   * 
+   * @param dc The DialogContext for the current turn of the conversation.
+   * 
+   * @returns A `Promise` representing the asynchronous operation.
+   * 
+   * @throws {@link ErrorCode.ChannelNotSupported} when bot channel is not MS Teams.
+   * @throws {@link ErrorCode.RuntimeNotSupported} when runtime is browser.
+   * 
    * @beta
    */
   public async continueDialog(dc: DialogContext): Promise<DialogTurnResult> {
@@ -246,7 +262,7 @@ export class TeamsBotSsoPrompt extends Dialog {
   /**
    * Ensure bot is running in MS Teams since TeamsBotSsoPrompt is only supported in MS Teams channel.
    * @param dc dialog context
-   * @throws {ChannelNotSupported} if bot channel is not MS Teams
+   * @throws {@link ErrorCode.ChannelNotSupported} if bot channel is not MS Teams
    * @internal
    */
   private ensureMsTeamsChannel(dc: DialogContext) {
@@ -287,7 +303,7 @@ export class TeamsBotSsoPrompt extends Dialog {
   /**
    * Get sign in resource.
    *
-   * @throws {InvalidConfiguration} if client id, tenant id or initiate login endpoint is not found in config.
+   * @throws {@link ErrorCode.InvalidConfiguration} if client id, tenant id or initiate login endpoint is not found in config.
    *
    * @internal
    */

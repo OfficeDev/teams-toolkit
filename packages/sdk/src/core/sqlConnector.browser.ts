@@ -5,10 +5,14 @@ import { ConnectionConfig } from "tedious";
 import { formatString } from "../util/utils";
 
 /**
- * SQL connection configuration instance.
- *
- * @throws {RuntimeNotSupported} if runtime is browser
- *
+ * Generate connection configuration consumed by tedious.
+ * 
+ * @returns Configuration items to the user for tedious to connection to the SQL.
+ * 
+ * @throws {@link ErrorCode.InvalidConfiguration} when sql config resource configuration is invalid.
+ * @throws {@link ErrorCode.InternalError} when get user MSI token failed or MSI token is invalid.
+ * @throws {@link ErrorCode.RuntimeNotSupported} when runtime is browser.
+ * 
  * @beta
  */
 export class DefaultTediousConnectionConfiguration {
@@ -25,8 +29,8 @@ export class DefaultTediousConnectionConfiguration {
   /**
    * Generate connection configuration consumed by tedious.
    *
-   * @returns return configuration items to the user for tedious to connection to the SQL.
-   * @throws {RuntimeNotSupported} if runtime is browser
+   * @returns Configuration items to the user for tedious to connection to the SQL.
+   * @throws {@link ErrorCode.RuntimeNotSupported} if runtime is browser
    *
    * @beta
    */

@@ -19,10 +19,12 @@ export class MsGraphAuthProvider implements AuthenticationProvider {
   private scopes: string | string[];
 
   /**
-   * Constructor
+   * Constructor of MsGraphAuthProvider
    *
    * @param {TokenCredential} credential - Credential used to invoke Microsoft Graph APIs.
-   * @param {string | string[]} scopes - Required scope in token when invoking Microsoft Graph APIs.
+   * @param {string | string[]} scopes - The list of scopes for which the token will have access.
+   * 
+   * @throws {@link ErrorCode.InvalidParameter} when scopes is not a valid string or string array.
    *
    * @returns An instance of MsGraphAuthProvider.
    *
@@ -48,9 +50,15 @@ export class MsGraphAuthProvider implements AuthenticationProvider {
   }
 
   /**
-   * Get access token for Microsoft Graph API requests
+   * Get access token for Microsoft Graph API requests.
    *
-   * @returns access token from the credential
+   * @throws {@link ErrorCode.InternalError} when access token is empty or failed to get access token with unknown error.
+   * @throws {@link ErrorCode.TokenExpiredError} when SSO token has already expired.
+   * @throws {@link ErrorCode.UiRequiredError} when need user consent to get access token.
+   * @throws {@link ErrorCode.ServiceError} when failed to get access token from simple auth server.
+   * @throws {@link ErrorCode.InvalidParameter} when scopes is not a valid string or string array.
+   * 
+   * @returns Access token from the credential.
    *
    */
   public async getAccessToken(): Promise<string> {

@@ -22,7 +22,7 @@ export enum ErrorCode {
   InternalError = "InternalError",
 
   /**
-   * Channel is not supported error.
+   * Channel is not supported.
    */
   ChannelNotSupported = "ChannelNotSupported",
 
@@ -57,6 +57,9 @@ export enum ErrorCode {
   FailedOperation = "FailedOperation"
 }
 
+/**
+ * @internal
+ */
 export class ErrorMessage {
   // InvalidConfiguration Error
   static readonly InvalidConfiguration = "{0} in configuration is invalid: {1}.";
@@ -97,6 +100,8 @@ export class ErrorWithCode extends Error {
    *
    * @param {string} message - error message
    * @param {ErrorCode} code - error code
+   * 
+   * @beta
    */
   constructor(message?: string, code?: ErrorCode) {
     if (!code) {

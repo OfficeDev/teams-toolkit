@@ -14,7 +14,7 @@ export function useGraph(asyncFunc, options) {
       const graph = await createMicrosoftGraphClient(credential.current, scope);
       return await asyncFunc(graph);
     } catch (err) {
-      if (err.code === "ErrorWithCode.UiRequiredError") {
+      if (err.code.includes("UiRequiredError")) {
         // Silently fail for user didn't login error
       } else {
         throw err;

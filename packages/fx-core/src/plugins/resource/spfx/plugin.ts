@@ -9,7 +9,7 @@ import {
   DialogMsg,
   DialogType,
   MsgLevel,
-  QuestionType,
+  Platform,
 } from "fx-api";
 import * as uuid from "uuid";
 import lodash from "lodash";
@@ -21,12 +21,11 @@ import {
   createAxiosInstanceWithToken,
   execute,
   normalizeComponentName,
-  sleep,
 } from "./utils/utils";
-import { Constants, DeployProgressMessage, PlaceHolders, PreDeployProgressMessage } from "./utils/constants";
-import { AuthCode } from "./authCode";
+import { Constants, PlaceHolders, PreDeployProgressMessage } from "./utils/constants";
+import { BuildSPPackageError, NoSPPackageError} from "./error";
 import * as util from "util";
-import { BuildSPPackageError, DeploySPPackageError, EmptyAccessTokenError, EnsureAppCatalogFailedError, MultiSPPackageError, NoAppCatalogError, NoSPPackageError, SPFxDeployError, UploadSPPackageError } from "./error";
+import * as strings from "../../../resources/strings.json";
 import { ProgressHelper } from "./utils/progress-helper";
 import { REMOTE_MANIFEST } from "../../solution/fx-solution/constants";
 
@@ -74,11 +73,11 @@ export class SPFxPluginImpl {
     await fs.mkdir(teamsDir);
     await fs.copyFile(
       path.resolve(templateFolder, "./webpart/base/images/color.png"),
-      `${teamsDir}/color.png`
+      `${teamsDir}/${componentId}_color.png`
     );
     await fs.copyFile(
       path.resolve(templateFolder, "./webpart/base/images/outline.png"),
-      `${teamsDir}/outline.png`
+      `${teamsDir}/${componentId}_outline.png`
     );
 
     // src folder
@@ -175,10 +174,6 @@ export class SPFxPluginImpl {
       `${outputFolderPath}/README.md`
     );
     await fs.copyFile(
-      path.resolve(templateFolder, "./solution/_editorconfig"),
-      `${outputFolderPath}/.editorconfig`
-    );
-    await fs.copyFile(
       path.resolve(templateFolder, "./solution/_gitignore"),
       `${outputFolderPath}/.gitignore`
     );
@@ -223,21 +218,6 @@ export class SPFxPluginImpl {
         level: MsgLevel.Info,
       })
     );
-    if (!AuthCode.account) {
-      await AuthCode.login(ctx);
-    }
-    const tenant = await this.getSPTenant(ctx);
-    // Ensure Tenant App catalog and create one if no existing one.
-    ctx.logProvider?.info("======Ensure SharePoint App Catatlog======");
-    const accessToken = await AuthCode.getToken(ctx, [`${tenant}/.default`]);
-    const axiosInstance = createAxiosInstanceWithToken(accessToken);
-    try {
-      await axiosInstance.post(
-        `${tenant}/_api/web/EnsureTenantAppCatalog(callerId='${Constants.CALLED_ID}')`
-      );
-    } catch (error) {
-      throw EnsureAppCatalogFailedError(error);
-    }
 
     const progressHandler = await ProgressHelper.startPreDeployProgressHandler(ctx);
     try {
@@ -282,113 +262,30 @@ export class SPFxPluginImpl {
   }
 
   public async deploy(ctx: PluginContext): Promise<Result<any, FxError>> {
-    try {
-      const workspace = `${ctx.root}/SPFx`;
-      const progressHandler = await ProgressHelper.startDeployProgressHandler(ctx);
-      const tenant = await this.getSPTenant(ctx);
+    const solutionConfig = await fs.readJson(
+      `${ctx.root}/SPFx/config/package-solution.json`
+    );
+    const sharepointPackage = `${ctx.root}/SPFx/sharepoint/${solutionConfig.paths.zippedPackage}`;
 
-      const accessToken = await AuthCode.getToken(ctx, [`${tenant}/.default`]);
-      const axiosInstance = createAxiosInstanceWithToken(accessToken);
-
-      await progressHandler?.next(DeployProgressMessage.GetSPAppCatalog);
-      const SHAREPOINT_APP_CATALOG = `${tenant}/_api/SP_TenantSettings_Current`;
-      const response = await axiosInstance.get(SHAREPOINT_APP_CATALOG);
-      let appCatalogSite = response.data.CorporateCatalogUrl;
-      let refreshTime = 0;
-      while (appCatalogSite == null) {
-        await sleep(Constants.APP_CATALOG_REFRESH_TIME);
-        const response = await axiosInstance.get(SHAREPOINT_APP_CATALOG);
-        appCatalogSite = response.data.CorporateCatalogUrl;
-        refreshTime += 1;
-        if (refreshTime > Constants.APP_CATALOG_MAX_TIMES) {
-          throw NoAppCatalogError(tenant);
-        }
-      }
-
-      const distFolder = `${workspace}/sharepoint/solution`;
-      const distFiles = await fs.readdir(distFolder);
-      const files = distFiles.filter((x) => x.endsWith(".sppkg"));
-      const solutionConfig = await fs.readJson(
-        `${workspace}/config/package-solution.json`
-      );
-      const appID = solutionConfig["solution"]["id"];
-      switch (files.length) {
-        case 0:
-          throw NoSPPackageError(distFolder);
-        case 1:
-          const file = await fs.readFile(`${distFolder}/${files[0]}`);
-          try {
-            // Upload SPFx Package.
-            await progressHandler?.next(DeployProgressMessage.UploadAndDeploy);
-            await axiosInstance.post(
-              `${appCatalogSite}/_api/web/tenantappcatalog/Add(overwrite=true, url='${files[0]}')`,
-              file
-            );
-          }
-          catch (error) {
-            throw UploadSPPackageError(error);
-          }
-
-          try {
-            // Deploy SPFx App.
-            const deploySetting = { skipFeatureDeployment: true };
-            await axiosInstance.post(
-              `${appCatalogSite}/_api/web/tenantappcatalog/AvailableApps/GetById('${appID}')/Deploy`,
-              deploySetting
-            );
-          }
-          catch (error) {
-            throw DeploySPPackageError(error);
-          }
-
-          await ProgressHelper.endDeployProgress();
-          const appCatalogButton = "Go to SharePoint App Catalog";
-          ctx.dialog
-            ?.communicate(
-              new DialogMsg(DialogType.Show, {
-                description: util.format(
-                  "[SPFx] %s has been deployed to %s",
-                  files[0],
-                  appCatalogSite,
-                ),
-                level: MsgLevel.Info,
-                items: [appCatalogButton],
-              }),
-            )
-            .then(async (selected) => {
-              if (selected?.content === appCatalogButton) {
-                await ctx.dialog?.communicate(
-                  new DialogMsg(DialogType.Ask, {
-                    description: appCatalogSite,
-                    type: QuestionType.OpenExternal,
-                  }),
-                );
-              }
-            });
-          return ok(undefined);
-        default:
-          throw MultiSPPackageError(distFolder);
-      }
+    const fileExists = await this.checkFileExist(sharepointPackage);
+    if (!fileExists) {
+      throw NoSPPackageError(sharepointPackage);
     }
-    catch (error) {
-      await ProgressHelper.endDeployProgress();
-      throw SPFxDeployError(error);
+    
+    const guidance = util.format(strings.plugins.SPFx.deployNotice, sharepointPackage);
+    ctx.logProvider?.info(guidance);
+    if (ctx.platform === Platform.VSCode) {
+      (ctx.logProvider as any).outputChannel.show();
     }
-
+    return ok(undefined);
   }
 
-  private async getSPTenant(ctx: PluginContext): Promise<string> {
-    const accessToken = await AuthCode.getToken(ctx, ["User.Read"]);
-    const GRAPH_TENANT_ENDPT =
-      "https://graph.microsoft.com/v1.0/sites/root?$select=webUrl";
-
-    if (accessToken && accessToken.length > 0) {
-      const axiosInstance = createAxiosInstanceWithToken(accessToken);
-      ctx.logProvider?.info("======Get SharePoint Tenant======");
-      const response = await axiosInstance.get(GRAPH_TENANT_ENDPT);
-      return response.data.webUrl;
-    } else {
-      throw EmptyAccessTokenError();
+  private async checkFileExist(filePath: string): Promise<boolean> {
+    try {
+      await fs.stat(filePath);
+      return true;
+    } catch (error) {
+      return false;
     }
   }
 

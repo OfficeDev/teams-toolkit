@@ -2,64 +2,100 @@
 
 Welcome, and thank you for your interest in contributing to TeamsFx CLI!
 
-There are many ways in which you can contribute, beyond writing code. The goal of this document is to provide a high-level overview of how you can get involved.
+Please review this document for setting up your development environment, debugging and run TeamsFx CLI. If you have any questions, please raise your issue on github.
 
-## Asking Questions
+## Prerequisites
+---
 
-<!---Have a question? Rather than opening an issue, please ask away on [Stack Overflow](https://stackoverflow.com/questions/tagged/teamsfx) using the tag `teamsfx`.
+Verify you have the right prerequisites for building Teams apps:
 
-The active community will be eager to assist you. Your well-worded question will serve as a resource to others searching for help.--->
+### M365 account
 
-## Providing Feedback
+The TeamsFx CLI requires a Microsoft 365 organizationl account where Teams is running and has been registered.
 
-See the [Feedback Channels](https://github.com/OfficeDev/TeamsFx/wiki/cli/Feedback-Channels) wiki page for details on how to share your thoughts.
+### Azure account
+The TeamsFx CLI may require an Azure account and subscription to deploy the Azure resources for your project.
 
-## Reporting Issues
+**_NOTE:_** Don't have a M365 to experience building Teams app? Sign up for [M365 Developer Program](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant), which allows you to have a testing tenant with preconfigured permissions.
 
-Find a reproducible problem for TeamsFx CLI? Have a feature request for TeamsFx CLI? We want to hear about it! Here's how you can make reporting your issue as effective as possible.
+## Setup Development Environment
+---
 
-### Look For an Existing Issue
+1. Install Node v12
+2. Install NPM v6 or later
 
-Before you create a new issue, please do a search in [open issues](https://github.com/OfficeDev/TeamsFx/issues) to see if the issue or feature request has already been filed.
+## Build the project
+---
 
-Be sure to scan through the [most popular](https://github.com/OfficeDev/TeamsFx/issues?q=is%3Aopen+is%3Aissue+label%3Afeature-request+sort%3Areactions-%2B1-desc) feature requests.
+### Build the whole monorepo
+1. `git clone https://github.com/OfficeDev/TeamsFx.git`
+2. `cd TeamsFx`
+3. `npm run setup`
 
-If you find your issue already exists, make relevant comments and add your [reaction](https://github.com/blog/2119-add-reactions-to-pull-requests-issues-and-comments). Use a reaction in place of a "+1" comment:
+This will run "lerna bootstrap" to link packages in monorepo locally. 
 
-* 👍 - upvote
-* 👎 - downvote
+### Build CLI package alone
+1. `cd packages/cli/`
+2. `npm install`
+2. `npm run build`
 
-If you cannot find an existing issue that describes your bug or feature, create a new issue using the guidelines below.
+This will install the dependent packages from public registry and build CLI package alone.
 
-### Writing Good Bug Reports and Feature Requests
+**_NOTE:_** If you meet the error showing that some package cannot install, you can delete this package's `package-lock.json` file and try `npm run bootstrap` under `TeamsFx` folder again.
 
-File a single issue per problem and feature request. Do not enumerate multiple bugs or feature requests in the same issue.
+## Debug the project
+---
 
-Do not add your issue as a comment to an existing issue unless it's for the identical input. Many issues look similar, but have different causes.
+### Run your local project
+1. `cd TeamsFx`
+2. `npm run setup`
+3. `npm link`
 
-The more information you can provide, the more likely someone will be successful at reproducing the issue and finding a fix.
+### Debug inside VSCode
+1. `cd TeamsFx/packages/cli`
+2. `code .`
+3. In the debug Treeview choose debugging profile
+4. Hit 'F5' or click start debugging button
 
-Please include the following with each issue:
+### Install the published package
+1. Run: `npm install -g teamsfx-cli` (Pls check the version is the latest version)
+2. Now the package is installed in your global npm folder. You can type 'teamsfx -h' to see how to use the cli tool.
 
-* Version of TeamsFx CLI
+## Test the proejct
+---
 
-* Your operating system
+### Run Unit test
 
-* Reproducible steps (1... 2... 3...) that cause the issue
+1. `cd TeamsFx/packages/cli`
+2. `npm run test:unit`
 
-* What you expected to see, versus what you actually saw
+### Run E2E test
 
-* Screenshots, animations, or a link to a video showing the issue occurring
+1. `cd TeamsFx/packages/cli`
+2. `npm run test:e2e`
 
-* A code snippet that demonstrates the issue or a link to a code repository the developers can easily pull down to recreate the issue locally
+**_NOTE:_** When run E2E tests it may pop up windows to ask you to login your Azure account or M365 account, please login your accout to continue the test.
 
-  * **Note:** Because the developers need to copy and paste the code snippet, including a code snippet as a media file (i.e. .gif) is not sufficient.
+## Coding Style
+---
 
-* Errors from the Dev Tools Console (open from the menu: Help > Toggle Developer Tools)
+The project setup ESLINT and prettier for coding style and formating, please follow the commands below
 
-## Contributing Fixes
+### Lint project
+`npm run lint`
 
-If you are interested in writing code to fix issues, please see [How to Contribute](/docs/cli/contributing/how-to-contribute.md).
+### Fix lint error
+`npm run lint:fix`
+
+### Check code format before commit
+`npm run check-format`
+
+### Format the code
+`npm run format`
+
+## Opening PR and PR review
+---
+
 
 # Thank You!
 

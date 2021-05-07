@@ -11,7 +11,7 @@ import { TestTelemetry } from "../adapters/testTelemetry";
 import { ConfigFolderName } from "fx-api";
 import { isLinux } from "../../../../src/utils/commonUtils";
 
-const supportedVersions = ["10", "12", "14"];
+const azureSupportedNodeVersions = ["10", "12", "14"];
 
 function createTestChecker(
   hasTeamsfxBackend: boolean,
@@ -28,7 +28,7 @@ function createTestChecker(
     nodeCheckerEnabled
   );
   const logger = new TestLogger();
-  const nodeChecker = new NodeChecker(testAdapter, logger, new TestTelemetry());
+  const nodeChecker = new NodeChecker(azureSupportedNodeVersions, testAdapter, logger, new TestTelemetry());
   const depsChecker = new DepsChecker(logger, testAdapter, [nodeChecker]);
 
   return [depsChecker, nodeChecker];
@@ -37,7 +37,7 @@ function createTestChecker(
 suite("NodeChecker E2E Test", async () => {
   test("Node supported version is installed", async function(this: Mocha.Context) {
     const nodeVersion = await nodeUtils.getNodeVersion();
-    if (!(nodeVersion != null && supportedVersions.includes(nodeVersion))) {
+    if (!(nodeVersion != null && azureSupportedNodeVersions.includes(nodeVersion))) {
       this.skip();
     }
 
@@ -60,7 +60,7 @@ suite("NodeChecker E2E Test", async () => {
 
   test("Node unsupported version is installed, and the user clicks continue", async function(this: Mocha.Context) {
     const nodeVersion = await nodeUtils.getNodeVersion();
-    if (!(nodeVersion != null && !supportedVersions.includes(nodeVersion))) {
+    if (!(nodeVersion != null && !azureSupportedNodeVersions.includes(nodeVersion))) {
       this.skip();
     }
 
@@ -72,7 +72,7 @@ suite("NodeChecker E2E Test", async () => {
 
   test("Node unsupported version is installed, and the user clicks cancel", async function(this: Mocha.Context) {
     const nodeVersion = await nodeUtils.getNodeVersion();
-    if (!(nodeVersion != null && !supportedVersions.includes(nodeVersion))) {
+    if (!(nodeVersion != null && !azureSupportedNodeVersions.includes(nodeVersion))) {
       this.skip();
     }
 

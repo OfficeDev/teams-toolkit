@@ -59,7 +59,7 @@ import { DepsChecker } from "./debug/depsChecker/checker";
 import { BackendExtensionsInstaller } from "./debug/depsChecker/backendExtensionsInstall";
 import { FuncToolChecker } from "./debug/depsChecker/funcToolChecker";
 import { DotnetChecker } from "./debug/depsChecker/dotnetChecker";
-import { NodeChecker } from "./debug/depsChecker/nodeChecker";
+import { NodeChecker, AzureSupportedNodeVersions } from "./debug/depsChecker/nodeChecker";
 import * as util from "util";
 import * as StringResources from "./resources/Strings.json";
 import { vscodeAdapter } from "./debug/depsChecker/vscodeAdapter";
@@ -515,8 +515,19 @@ export async function addCapabilityHandler(): Promise<Result<null, FxError>> {
  */
 export async function validateDependenciesHandler(): Promise<void> {
   const depsChecker = new DepsChecker(vscodeLogger, vscodeAdapter, [
-    new NodeChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry), 
+    new NodeChecker(AzureSupportedNodeVersions, vscodeAdapter, vscodeLogger, vscodeTelemetry), 
     new DotnetChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry)]);
+  const shouldContinue = await depsChecker.resolve();
+  if (!shouldContinue) {
+    // TODO: better mechanism to stop the tasks and debug session.
+    throw new Error("debug stopped.");
+  }
+}
+
+const spfxNodeSupportVersion = ["10", "12", "14"];
+export async function validateSpfxDependenciesHandler(): Promise<void> {
+  const depsChecker = new DepsChecker(vscodeLogger, vscodeAdapter, [
+    new NodeChecker(spfxNodeSupportVersion, vscodeAdapter, vscodeLogger, vscodeTelemetry)]);
   const shouldContinue = await depsChecker.resolve();
   if (!shouldContinue) {
     // TODO: better mechanism to stop the tasks and debug session.
@@ -637,7 +648,7 @@ export async function openM365AccountHandler() {
 }
 
 export async function openAzureAccountHandler() {
-  return env.openExternal(Uri.parse("https://ms.portal.azure.com/"));
+  return env.openExternal(Uri.parse("https://portal.azure.com/"));
 }
 
 // TODO: remove this once welcome page is ready
@@ -696,45 +707,50 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
 
   // Register SignOut tree view command
   commands.registerCommand("fx-extension.signOut", async (node: TreeViewCommand) => {
-    switch (node.contextValue) {
-      case "signedinM365": {
-        let appstudioLogin: AppStudioTokenProvider = AppStudioTokenInstance;
-        const vscodeEnv = detectVsCodeEnv();
-        if (vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode) {
-          appstudioLogin = AppStudioCodeSpaceTokenInstance;
+    try {
+      switch (node.contextValue) {
+        case "signedinM365": {
+          let appstudioLogin: AppStudioTokenProvider = AppStudioTokenInstance;
+          const vscodeEnv = detectVsCodeEnv();
+          if (vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode) {
+            appstudioLogin = AppStudioCodeSpaceTokenInstance;
+          }
+          const result = await appstudioLogin.signout();
+          if (result) {
+            await TreeViewManagerInstance.getTreeView('teamsfx-accounts')!.refresh([
+              {
+                commandId: "fx-extension.signinM365",
+                label: StringResources.vsc.handlers.signIn365,
+                contextValue: "signinM365"
+              }
+            ]);
+          }
+          break;
         }
-        const result = await appstudioLogin.signout();
-        if (result) {
-          await TreeViewManagerInstance.getTreeView('teamsfx-accounts')!.refresh([
-            {
-              commandId: "fx-extension.signinM365",
-              label: StringResources.vsc.handlers.signIn365,
-              contextValue: "signinM365"
-            }
-          ]);
+        case "signedinAzure": {
+          const result = await AzureAccountManager.signout();
+          if (result) {
+            await TreeViewManagerInstance.getTreeView('teamsfx-accounts')!.refresh([
+              {
+                commandId: "fx-extension.signinAzure",
+                label: StringResources.vsc.handlers.signInAzure,
+                contextValue: "signinAzure"
+              }
+            ]);
+            await TreeViewManagerInstance.getTreeView('teamsfx-accounts')!.remove([
+              {
+                commandId: "fx-extension.selectSubscription",
+                label: "",
+                parent: "fx-extension.signinAzure"
+              }
+            ]);
+          }
+          break;
         }
-        break;
       }
-      case "signedinAzure": {
-        const result = await AzureAccountManager.signout();
-        if (result) {
-          await TreeViewManagerInstance.getTreeView('teamsfx-accounts')!.refresh([
-            {
-              commandId: "fx-extension.signinAzure",
-              label: StringResources.vsc.handlers.signInAzure,
-              contextValue: "signinAzure"
-            }
-          ]);
-          await TreeViewManagerInstance.getTreeView('teamsfx-accounts')!.remove([
-            {
-              commandId: "fx-extension.selectSubscription",
-              label: "",
-              parent: "fx-extension.signinAzure"
-            }
-          ]);
-        }
-        break;
-      }
+    }
+    catch (e) {
+      showError(e);
     }
   });
 
@@ -759,7 +775,9 @@ export async function showError(e: FxError) {
   VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}, stack: ${e.stack}`);
 
   const errorCode = `${e.source}.${e.name}`;
-  if (e instanceof UserError && e.helpLink && typeof e.helpLink != "undefined") {
+  if(isCancelWarning(e)){
+    return;
+  } else if (e instanceof UserError && e.helpLink && typeof e.helpLink != "undefined") {
     const help = {
       title: StringResources.vsc.handlers.getHelp,
       run: async (): Promise<void> => {

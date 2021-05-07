@@ -79,7 +79,7 @@ import { AadAppForTeamsPlugin } from "../../resource/aad";
 import { FunctionPlugin } from "../../resource/function";
 import { SimpleAuthPlugin } from "../../resource/simpleauth";
 import { LocalDebugPlugin } from "../../resource/localdebug";
-import { ApimPlugin } from "../../resource/apim/src";
+import { ApimPlugin } from "../../resource/apim";
 import { IAppDefinition } from "./appstudio/interface";
 import {
     AzureResourceFunction,
@@ -325,8 +325,8 @@ export class TeamsAppSolution implements Solution {
             name: projectSettings.solutionSettings.name,
             version: projectSettings.solutionSettings.version,
             hostType: hostType,
-            capabilities : capabilities!,
-            azureResources: azureResources!,
+            capabilities : capabilities,
+            azureResources: azureResources || [],
             activeResourcePlugins:[]
         }; 
         projectSettings.solutionSettings = solutionSettings;
@@ -357,9 +357,10 @@ export class TeamsAppSolution implements Solution {
         //Reload plugins according to user answers
         this.reloadPlugins(solutionSettings);
 
-        const defaultIconPath = path.join(__dirname, "../../../../templates/plugins/solution/defaultIcon.png");
-        await fs.copy(defaultIconPath, `${ctx.root}/.${ConfigFolderName}/color.png`);
-        await fs.copy(defaultIconPath, `${ctx.root}/.${ConfigFolderName}/outline.png`);
+        const defaultColorPath = path.join(__dirname, "../../../../templates/plugins/solution/defaultIcon.png");
+        const defaultOutlinePath = path.join(__dirname, "../../../../templates/plugins/solution/defaultIcon.png");
+        await fs.copy(defaultColorPath, `${ctx.root}/.${ConfigFolderName}/color.png`);
+        await fs.copy(defaultOutlinePath, `${ctx.root}/.${ConfigFolderName}/outline.png`);
         if (this.isAzureProject(ctx)) {
             const manifest = await AppStudio.createManifest(ctx.projectSettings!);
             if (manifest) Object.assign(ctx.app, manifest);
@@ -798,21 +799,23 @@ export class TeamsAppSolution implements Solution {
 
             const provisionResult = await this.doProvision(ctx);
             if (provisionResult.isOk()) {
-                ctx.logProvider?.info(`[Teams Toolkit] provision success!`);
+                const msg = util.format(strings.solution.ProvisionSuccessNotice, ctx.projectSettings?.appName);
+                ctx.logProvider?.info(msg);
                 await ctx.dialog?.communicate(
                     new DialogMsg(DialogType.Show, {
-                        description: "[Teams Toolkit] provision success!",
+                        description: msg,
                         level: MsgLevel.Info,
                     }),
                 );
                 ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
             } else {
-                ctx.logProvider?.error(`[Teams Toolkit] provision failed!`);
+                const msg = util.format(strings.solution.ProvisionFailNotice, ctx.projectSettings?.appName);
+                ctx.logProvider?.error(msg);
                 ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false);
                 const resourceGroupName = ctx.config.get(GLOBAL_CONFIG)?.getString("resourceGroupName");
                 const subscriptionId = ctx.config.get(GLOBAL_CONFIG)?.getString("subscriptionId");
                 const error = provisionResult.error;
-                error.message += " " + util.format(strings.solution.ProvisionFailNotice, subscriptionId, resourceGroupName);
+                error.message += " " + util.format(strings.solution.ProvisionFailGuide, subscriptionId, resourceGroupName);
                 if(error instanceof UserError){
                     const ue = error as UserError;
                     if(!ue.helpLink){
@@ -941,9 +944,10 @@ export class TeamsAppSolution implements Solution {
     }
 
     async deploy(ctx: SolutionContext): Promise<Result<any, FxError>> {
-        const canDeploy = this.canDeploy(ctx);
-        if (canDeploy.isErr()) {
-            return canDeploy;
+        const isAzureProject = this.isAzureProject(ctx);
+        const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
+        if(isAzureProject && !provisioned){
+            return ok(Void);
         }
         try {
             if (this.isAzureProject(ctx)) {
@@ -956,15 +960,17 @@ export class TeamsAppSolution implements Solution {
             this.runningState = SolutionRunningState.DeployInProgress;
             const result = await this.doDeploy(ctx);
             if (result.isOk()) {
-                ctx.logProvider?.info(`[Teams Toolkit] deploy success!`);
+                const msg = util.format(strings.solution.DeploySuccessNotice, ctx.projectSettings?.appName);
+                ctx.logProvider?.info(msg);
                 await ctx.dialog?.communicate(
                     new DialogMsg(DialogType.Show, {
-                        description: "[Teams Toolkit]: deploy finished successfully!",
+                        description: msg,
                         level: MsgLevel.Info,
                     }),
                 );
             } else {
-                ctx.logProvider?.error(`[Teams Toolkit] deploy failed!`);
+                const msg = util.format(strings.solution.DeployFailNotice, ctx.projectSettings?.appName);
+                ctx.logProvider?.info(msg);
             }
 
             return result;
@@ -1022,6 +1028,11 @@ export class TeamsAppSolution implements Solution {
     }
 
     async publish(ctx: SolutionContext): Promise<Result<any, FxError>> {
+        const isAzureProject = this.isAzureProject(ctx);
+        const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
+        if(isAzureProject && !provisioned){
+            return ok(Void);
+        }
 
         const maybeManifestTpl = await this.reloadManifestAndCheckRequiredFields(ctx);
         if (maybeManifestTpl.isErr()) {
@@ -1044,7 +1055,23 @@ export class TeamsAppSolution implements Solution {
 
             ctx.logProvider?.info(`[Solution] publish start!`);
 
-            return await executeConcurrently("", publishWithCtx);
+            const result = await executeConcurrently("", publishWithCtx);
+
+            if (result.isOk()) {
+                const msg = util.format(strings.solution.PublishSuccessNotice, ctx.projectSettings?.appName);
+                ctx.logProvider?.info(msg);
+                await ctx.dialog?.communicate(
+                    new DialogMsg(DialogType.Show, {
+                        description: msg,
+                        level: MsgLevel.Info,
+                    }),
+                );
+            } else {
+                const msg = util.format(strings.solution.PublishFailNotice, ctx.projectSettings?.appName);
+                ctx.logProvider?.info(msg);
+            }
+            
+            return result;
         } finally {
             this.runningState = SolutionRunningState.Idle;
         }
@@ -1104,6 +1131,9 @@ export class TeamsAppSolution implements Solution {
         const node = new QTreeNode({ type: NodeType.group });
         let manifest: TeamsAppManifest | undefined = undefined;
         if (stage !== Stage.create) {
+            const checkRes = this.checkWhetherSolutionIsIdle();
+            if (checkRes.isErr()) return err(checkRes.error);
+
             const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx);
             if (maybeManifest.isErr()) {
                 return err(maybeManifest.error);
@@ -1163,9 +1193,6 @@ export class TeamsAppSolution implements Solution {
         } else if (stage === Stage.update) {
             return await this.getQuestionsForAddResource(ctx, manifest);
         } else if (stage === Stage.provision) {
-            const checkRes = this.checkWhetherSolutionIsIdle();
-            if (checkRes.isErr()) return err(checkRes.error);
-
             const res = this.getSelectedPlugins(ctx);
             if (res.isErr()) {
                 return err(res.error);
@@ -1182,9 +1209,25 @@ export class TeamsAppSolution implements Solution {
                 }
             }
         } else if (stage === Stage.deploy) {
-            const canDeploy = this.canDeploy(ctx);
-            if (canDeploy.isErr()) {
-                return err(canDeploy.error);
+            const isAzureProject = this.isAzureProject(ctx);
+            const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
+            if(isAzureProject && !provisioned){
+                const res  = (await ctx.dialog?.communicate(
+                    new DialogMsg(DialogType.Show, {
+                        description: strings.solution.AskProvisionBeforeDeployOrPublish,
+                        level: MsgLevel.Warning,
+                        items: ["Provision", "Cancel"]
+                    }),
+                ))?.getAnswer();
+                if(res === "Provision"){
+                    const provisionRes = await this.provision(ctx);
+                    if(provisionRes.isErr()){
+                        return err(provisionRes.error);
+                    }
+                }
+                else if(res === "Cancel"){
+                    return ok(undefined);
+                }
             }
             const res = this.getSelectedPlugins(ctx);
             if (res.isErr()) {
@@ -1223,6 +1266,26 @@ export class TeamsAppSolution implements Solution {
                 }
             }
         } else if (stage === Stage.publish) {
+            const isAzureProject = this.isAzureProject(ctx);
+            const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
+            if(isAzureProject && !provisioned){
+                const res  = (await ctx.dialog?.communicate(
+                    new DialogMsg(DialogType.Show, {
+                        description: strings.solution.AskProvisionBeforeDeployOrPublish,
+                        level: MsgLevel.Warning,
+                        items: ["Provision", "Cancel"]
+                    }),
+                ))?.getAnswer();
+                if(res === "Provision"){
+                    const provisionRes = await this.provision(ctx);
+                    if(provisionRes.isErr()){
+                        return err(provisionRes.error);
+                    }
+                }
+                else if(res === "Cancel"){
+                    return ok(undefined);
+                }
+            }
             const pluginsToPublish = [this.appStudioPlugin];
             for (const plugin of pluginsToPublish) {
                 const pluginCtx = getPluginContext(ctx, plugin.name, manifest);
@@ -1850,7 +1913,7 @@ export class TeamsAppSolution implements Solution {
 
         const notifications: string[] = [];
         const pluginsToScaffold:LoadedPlugin[] = [this.localDebugPlugin];
-        const azureResource = settings.azureResources;
+        const azureResource = settings.azureResources || [];
         if ( addFunc || ((addSQL || addApim) && !alreadyHaveFunction)) {
             pluginsToScaffold.push(this.functionPlugin);
             azureResource.push(AzureResourceFunction.id);

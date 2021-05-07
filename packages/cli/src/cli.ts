@@ -10,7 +10,6 @@ import yargs from "yargs";
 
 import { commands } from "./cmds";
 import * as constants from "./constants";
-import path from "path";
 
 /**
  * registers cli and partner commands with yargs.
@@ -25,25 +24,6 @@ export function register(yargs: yargs.Argv): void {
       command.handler.bind(command)
     );
   });
-}
-
-function getVersionString(): string {
-  let version = "teamsfx-cli: ";
-  let json = JSON.parse(readFileSync(path.join(__dirname, "/../package.json"), "utf8"));
-  version += json.version;
-  version += "\n";
-
-  version += "built with ";
-  const dirs = readdirSync(path.join(__dirname + "/../node_modules"));
-  const api = dirs.find((dir) => dir === "fx-api");
-  json = JSON.parse(readFileSync(path.join(__dirname, "/../node_modules/" + api + "/package.json"), "utf8"));
-  version += api + ": " + json.version + ", ";
-
-  const core = dirs.find((dir) => dir === "fx-core");
-  json = JSON.parse(readFileSync(path.join(__dirname, "/../node_modules/" + core + "/package.json"), "utf8"));
-  version += core + ": " + json.version;
-
-  return version;
 }
 
 (async () => {
@@ -65,7 +45,7 @@ function getVersionString(): string {
     .strict()
     .alias("help", "h")
     .alias("v", "version")
-    .version(getVersionString())
+    .version()
     .epilogue(
       "For more information about the Teams Toolkit - https://aka.ms/teamsfx-learn."
     ).argv;

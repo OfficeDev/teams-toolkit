@@ -13,14 +13,13 @@ import {
     InvalidTemplateManifestError,
     runWithErrorCatchAndThrow,
 } from "../resources/errors";
-import { FrontendPathInfo, FrontendPluginInfo as PluginInfo } from "../constants";
+import { Constants, FrontendPathInfo, FrontendPluginInfo as PluginInfo } from "../constants";
 import { Logger } from "../utils/logger";
 import { Messages } from "../resources/messages";
 import { PluginContext } from "fx-api";
 import { Utils } from "../utils";
 import { telemetryHelper } from "../utils/telemetry-helper";
 import { TemplateInfo, TemplateVariable } from "../resources/templateInfo";
-
 
 export type Manifest = {
     [key: string]: {
@@ -35,14 +34,13 @@ export type Manifest = {
 
 export class FrontendScaffold {
     public static async fetchTemplateManifest(url: string): Promise<Manifest> {
-        const result = await Utils.requestWithRetry(
-            async () => {
-                return axios.get(url);
-            },
-            (error) => {
-                Logger.warning(Messages.FailedFetchManifest(url));
-                throw new FetchTemplateManifestError();
-            },
+        const result = await runWithErrorCatchAndThrow(
+            new FetchTemplatePackageError(),
+            async () => await Utils.requestWithRetry(async () => {
+                return axios.get(url, {
+                    timeout: Constants.RequestTimeoutInMS,
+                });
+            }, Constants.ScaffoldRetryCounts)
         );
         if (!result) {
             throw new FetchTemplatePackageError();
@@ -55,7 +53,7 @@ export class FrontendScaffold {
         group: string,
         language: string,
         scenario: string,
-        version: string,
+        version: string
     ): Promise<string> {
         const manifest: Manifest = await this.fetchTemplateManifest(manifestUrl);
         return runWithErrorCatchAndThrow(new InvalidTemplateManifestError(), () => {
@@ -67,16 +65,14 @@ export class FrontendScaffold {
     }
 
     public static async fetchZipFromUrl(url: string): Promise<AdmZip> {
-        const result = await Utils.requestWithRetry(
-            async () => {
+        const result = await runWithErrorCatchAndThrow(
+            new FetchTemplateManifestError(),
+            async () => await Utils.requestWithRetry(async () => {
                 return axios.get(url, {
                     responseType: "arraybuffer",
+                    timeout: Constants.RequestTimeoutInMS,
                 });
-            },
-            (error) => {
-                Logger.warning(Messages.FailedFetchZip(url));
-                throw new FetchTemplatePackageError();
-            },
+            }, Constants.ScaffoldRetryCounts)
         );
 
         if (!result) {
@@ -98,7 +94,7 @@ export class FrontendScaffold {
                 templateInfo.group,
                 templateInfo.language,
                 templateInfo.scenario,
-                templateInfo.version,
+                templateInfo.version
             );
             return await FrontendScaffold.fetchZipFromUrl(templateUrl);
         } catch (e) {
@@ -119,24 +115,22 @@ export class FrontendScaffold {
         zip: AdmZip,
         dstPath: string,
         nameReplaceFn?: (filePath: string, data: Buffer) => string,
-        dataReplaceFn?: (filePath: string, data: Buffer) => string | Buffer,
+        dataReplaceFn?: (filePath: string, data: Buffer) => string | Buffer
     ): Promise<void> {
         await Promise.all(
             zip
                 .getEntries()
                 .filter((entry) => !entry.isDirectory)
                 .map(async (entry) => {
-                    const data: string | Buffer = dataReplaceFn
-                        ? dataReplaceFn(entry.name, entry.getData())
-                        : entry.getData();
+                    const data: string | Buffer = dataReplaceFn ? dataReplaceFn(entry.name, entry.getData()) : entry.getData();
 
                     const filePath = path.join(
                         dstPath,
-                        nameReplaceFn ? nameReplaceFn(entry.entryName, entry.getData()) : entry.entryName,
+                        nameReplaceFn ? nameReplaceFn(entry.entryName, entry.getData()) : entry.entryName
                     );
                     await fs.ensureDir(path.dirname(filePath));
                     await fs.writeFile(filePath, data);
-                }),
+                })
         );
     }
 }

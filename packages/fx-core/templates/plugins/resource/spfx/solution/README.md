@@ -8,7 +8,7 @@ Short summary on functionality and used technologies.
 
 ## Used SharePoint Framework Version
 
-![version](https://img.shields.io/badge/version-1.11-green.svg)
+![version](https://img.shields.io/badge/version-1.12.1-green.svg)
 
 ## Applies to
 
@@ -42,15 +42,30 @@ Version|Date|Comments
 
 ## Minimal Path to Awesome
 
-1. Install the latest version of [Node.js LTS 12.x](https://nodejs.org/en/download/releases/)(Note: SFPx v1.12 support Node.js v10 and Node.js v12)
-2. Download [Visual Studio Code](https://code.visualstudio.com) and install Microsoft TeamsFx Toolkit extension.
-3. Open the project with VS Code.
-4. Run `npm install` in the terminal to install the dependency package.
-5. Open command palette(ctrl+shift+p) and type `TeamsFx - Deploy SPFx package` in TeamsFx Toolkit. If you haven't built the package yet, it will automatically trigger the build command, and then upload your package to SharePoint App Catalog.
-6. Go to SharePoint App Catalog. Select your solution and Click `Deploy`, select `Make this solution available to all sites in the organization` and click `Deploy`.
-7. Go to Sharepoint App Catalog. Select your solution and Click `Sync to Teams`. Confirm that you can see the status message `Successfully synced teams solution` on the top-right corner.
-8. Login to Teams , and then you will find your app in the `Apps - Built for {your-tenant-name}` catagory.
+1. <b>Install the latest version of [Node.js LTS 14.x]</b>(https://nodejs.org/en/download/releases/)(Note: SPFx v1.12.1 support Node.js v10/12/14)
+2. You can either download [Visual Studio Code](https://code.visualstudio.com) and install Teams Toolkit V2 or download TeamsFx CLI.
+3. Open the project with VSCode and in the Teams Toolkit V2 sidebar, click `Provision in the Cloud` under PROJECT.
 
+    Or you can use TeamsFx CLI with running this cmd under your project path:
+    `teamsfx provision`
+
+    It will provision an app in Teams App Studio. You may need to login with your M365 tenant admin account.
+
+4. Build and Deploy your SharePoint Package.
+    - Click `Deploy to the Cloud` in Teams Toolkit V2 sidebar, or run `Teams: Deploy to the Cloud` from command palette. This will generate a SharePoint package(*.sppkg) under sharepoint/solution folder.
+  
+    Or you can use TeamsFx CLI with running this cmd under your project path:
+        `teamsfx deploy`
+
+    - Upload or drag and drop the *.sppkg to the SharePoint App Catalog site, please follow the instruction: [Deploy the HelloWorld package to App Catalog](https://docs.microsoft.com/en-us/sharepoint/dev/spfx/web-parts/get-started/serve-your-web-part-in-a-sharepoint-page#deploy-the-helloworld-package-to-app-catalog)
+5. Go back to Teams Toolkit V2, and in the sidebar, click `Publish to Teams`. 
+
+    Or you can use TeamsFx CLI with running this cmd under your project path:
+        `teamsfx publish`
+
+You will find your app in [Microsoft Teams admin center](https://admin.teams.microsoft.com/policies/manage-apps). Enter your app name in the search box.
+Click the item and select `Publish` in the Publishing status.
+6. You may need to wait for a few minutes after publishing your teams app.And then login to Teams, and you will find your app in the `Apps - Built for {your-tenant-name}` category.
 
 ## Features
 

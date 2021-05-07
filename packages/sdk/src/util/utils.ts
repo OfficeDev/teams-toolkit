@@ -67,7 +67,28 @@ export function getUserInfoFromSsoToken(ssoToken: string): UserInfo {
  */
 export function formatString(str: string, ...replacements: string[]): string {
   const args = replacements;
-  return str.replace(/{(\d+)}/g, function(match, number) {
+  return str.replace(/{(\d+)}/g, function (match, number) {
     return typeof args[number] != "undefined" ? args[number] : match;
   });
+}
+
+export function validateScopesType(value: any): void {
+  // string
+  if (typeof value === "string" || value instanceof String) {
+    return;
+  }
+
+  // empty array
+  if (Array.isArray(value) && value.length === 0) {
+    return;
+  }
+
+  // string array
+  if (Array.isArray(value) && value.length > 0 && value.every(item => typeof item === "string")) {
+    return;
+  }
+
+  const errorMsg = "The type of scopes is not valid, it must be string or string array";
+  internalLogger.error(errorMsg);
+  throw new ErrorWithCode(errorMsg, ErrorCode.InvalidParameter);
 }

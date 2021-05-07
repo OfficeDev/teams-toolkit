@@ -9,7 +9,9 @@ import {
   createMicrosoftGraphClient,
   loadConfiguration,
   OnBehalfOfUserCredential,
-  M365TenantCredential
+  M365TenantCredential,
+  ErrorWithCode,
+  ErrorCode
 } from "../../../src";
 
 chaiUse(chaiPromises);
@@ -56,6 +58,16 @@ describe("createMicrosoftGraphClient Tests - node", () => {
 
   afterEach(function () {
     mockedEnvRestore();
+  });
+
+  it("createMicrosoftGraphClient should throw InvalidParameter error with invalid scope", function () {
+    const oboCredential = new OnBehalfOfUserCredential(ssoToken);
+    const invalidScopes: any = [10, 20];
+    expect(() => {
+      createMicrosoftGraphClient(oboCredential, invalidScopes);
+    })
+      .to.throw(ErrorWithCode, "The type of scopes is not valid, it must be string or string array")
+      .with.property("code", ErrorCode.InvalidParameter);
   });
 
   it("createMicrosoftGraphClient should success with OnBehalfOfUserCredential", async function () {

@@ -3,7 +3,7 @@
 
 import { assert, expect, use as chaiUse } from "chai";
 import chaiPromises from "chai-as-promised";
-import { createMicrosoftGraphClient, loadConfiguration, TeamsUserCredential } from "../../../src";
+import { createMicrosoftGraphClient, ErrorCode, ErrorWithCode, loadConfiguration, TeamsUserCredential } from "../../../src";
 
 chaiUse(chaiPromises);
 describe("MsGraphClientProvider Tests - Browser", () => {
@@ -26,6 +26,16 @@ describe("MsGraphClientProvider Tests - Browser", () => {
 
   beforeEach(function () {
     loadDefaultConfig();
+  });
+
+  it("createMicrosoftGraphClient should throw InvalidParameter error with invalid scope", function () {
+    const credential = new TeamsUserCredential();
+    const invalidScopes: any = [10, 20];
+    expect(() => {
+      createMicrosoftGraphClient(credential, invalidScopes);
+    })
+      .to.throw(ErrorWithCode, "The type of scopes is not valid, it must be string or string array")
+      .with.property("code", ErrorCode.InvalidParameter);
   });
 
   it("createMicrosoftGraphClient should success with given scopes", function () {

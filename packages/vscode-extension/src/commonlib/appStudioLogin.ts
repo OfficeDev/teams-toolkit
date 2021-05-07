@@ -159,7 +159,7 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
 
   private async doesUserConfirmSignout(): Promise<boolean> {
     const accountInfo = AppStudioLogin.codeFlowInstance.account;
-    const email = (accountInfo as any).upn ? (accountInfo as any).upn : undefined;
+    const email = accountInfo?.username;
     const confirm = StringResources.vsc.common.signout;
     const userSelected = await vscode.window.showInformationMessage(
       util.format(StringResources.vsc.common.signOutOf, email),

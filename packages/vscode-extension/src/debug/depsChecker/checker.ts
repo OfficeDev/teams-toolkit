@@ -8,7 +8,7 @@
 // and run the scripts (tools/depsChecker/copyfiles.sh or tools/depsChecker/copyfiles.ps1 according to your OS)
 // to copy you changes to function plugin.
 
-import { isLinux, Messages, defaultHelpLink, DepsCheckerEvent } from "./common";
+import { isLinux, Messages, defaultHelpLink, DepsCheckerEvent, dotnetManualInstallHelpLink } from "./common";
 import { DepsCheckerError, NodeNotFoundError, NotSupportedNodeError } from "./errors";
 
 export interface IDepsChecker {
@@ -86,7 +86,7 @@ export class DepsChecker {
 
     if (isLinux()) {
       const confirmMessage = await this.generateMsg(validCheckers);
-      return await this._adapter.displayContinueWithLearnMore(confirmMessage, defaultHelpLink);
+      return await this._adapter.displayContinueWithLearnMore(confirmMessage, dotnetManualInstallHelpLink);
     }
 
     this._adapter.showOutputChannel();

@@ -58,10 +58,13 @@ Use `npm run format` to fix format issues and `npm run lint` to check lint issue
 
 # Pull Request Process
 
+1. Check out a new branch from "main".
 1. Update code in correct place. [Supporting Browser and NodeJS](#supporting-browser-and-nodejs)
 2. Make sure modified codes are covered by unit tests. [Running test cases](#running-test-cases)
 3. Ensure code style check has no error. [Style Guidelines](#style-guidelines)
 4. Add comment for public class/method. Please check [comment template](API_COMMENT.md) for details.
+5. Merge your changes to "main" branch.
+6. At least one approve from code owners is required.
 
 ## Supporting Browser and NodeJS
 

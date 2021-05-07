@@ -20,7 +20,7 @@ dotnet build Microsoft.Azure.WebJobs.Extensions.TeamsFx.sln
 
 ### Setup Test Environment
 1. Follow [quickstart-register-app](https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app) to create 3 AAD apps (referenced as AAD app 1/2/3 below) and generate client secrets for them. You do not need to add redirect URI for the AAD apps. Record the client id and client secrets somewhere, they're required in next steps.
-1. Set following environment variables on your dev machine
+2. Set following environment variables on your dev machine
     | Variable | Expected Value |
     |-|-|
     | TeamsFx_BINDING_IntegrationTestSettings__ClientId | Client Id of AAD app 1 |
@@ -39,7 +39,7 @@ dotnet build Microsoft.Azure.WebJobs.Extensions.TeamsFx.sln
     dotnet build -c Release Microsoft.Azure.WebJobs.Extensions.TeamsFx.sln
     dotnet pack -c Release ./src/Microsoft.Azure.WebJobs.Extensions.TeamsFx.csproj
     ```
-1. Run test cases
+2. Run test cases
     ```shell
     ./script/test.sh
     ```

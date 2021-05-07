@@ -2,11 +2,11 @@ name: Daily release
 
 on:
   schedule:
-    - cron: "0 20 * * *"
+    - cron: "30 9 * * *"
   workflow_dispatch:
     inputs:
       bump:
-        description: 'bump patch version'
+        description: 'bump patch version(true or false)'
         required: false
         default: 'false'
 
@@ -47,11 +47,20 @@ jobs:
         run: |
           npm run setup
 
-      - name: release npm packages to npmjs.org
+      - name: Setup git
         run: |
           git config --global user.name 'MSFT-yiz'
           git config --global user.email 'yiz@microsoft.com'
+
+      - name: release npm packages to npmjs.org
+        if: ${{ github.event.inputs.bump }} == 'false'
+        run: |
           npx lerna publish --no-private --preid=alpha --dist-tag=alpha --yes prerelease
+
+      - name: bump patch version and release npm packages to npmjs.org
+        if: ${{ github.event.inputs.bump }} == 'true'
+        run: |
+          npx lerna publish --no-private --preid=alpha --dist-tag=alpha --yes prepatch
 
       - name: pack vsix
         working-directory: ./packages/vscode-extension
@@ -67,4 +76,3 @@ jobs:
           prerelease: true
           files: |
             ./packages/**/*.vsix
-

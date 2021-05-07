@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       force:
-        description: 'force release even if no update(true or false)'
+        description: 'force release even if no update(set empty if not)'
         required: false
-        default: 'false'
+        default: '--force-publish'
       stable:
         description: 'promote to stable version(true or false)'
         required: false
@@ -62,7 +62,7 @@ jobs:
       - name: release stable npm packages to npmjs.org
         if: ${{ github.event.inputs.stable }} == 'true'
         run: |
-          npx lerna publish --no-private --dist-tag=stable patch --yes
+          npx lerna publish --no-private --dist-tag=stable patch --yes ${{ github.event.inputs.force }}
 
       - name: pack vsix
         working-directory: ./packages/vscode-extension
@@ -70,7 +70,8 @@ jobs:
           npm install
           npx vsce package
 
-      - name: release VSCode extension to github
+      - name: release beta VSCode extension to github
+        if: ${{ github.event.inputs.stable }} == 'false'
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: "${{ secrets.CD_PAT }}"
@@ -79,3 +80,12 @@ jobs:
           files: |
             ./packages/**/*.vsix
 
+      - name: release stable VSCode extension to github
+        if: ${{ github.event.inputs.stable }} == 'true'
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: "${{ secrets.CD_PAT }}"
+          automatic_release_tag: "latest"
+          prerelease: false
+          files: |
+            ./packages/**/*.vsix

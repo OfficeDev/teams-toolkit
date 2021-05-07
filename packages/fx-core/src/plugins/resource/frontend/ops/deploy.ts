@@ -18,6 +18,11 @@ import { Utils } from "../utils";
 import fs from "fs-extra";
 import path from "path";
 
+interface DeploymentInfo {
+    lastBuildTime?: string,
+    lastDeployTime?: string,
+}
+
 export class FrontendDeployment {
     public static async needBuild(componentPath: string): Promise<boolean> {
         const lastBuildTime = await FrontendDeployment.getLastBuildTime(componentPath);
@@ -52,6 +57,7 @@ export class FrontendDeployment {
         await runWithErrorCatchAndThrow(new BuildError(), async () => {
             await Utils.execute(Commands.BuildFrontend, componentPath);
         });
+        await FrontendDeployment.saveDeploymentInfo(componentPath, { lastBuildTime: new Date().toString() });
     }
 
     public static async skipBuild(): Promise<void> {
@@ -94,7 +100,7 @@ export class FrontendDeployment {
             await client.uploadFiles(container, builtPath);
         });
 
-        await FrontendDeployment.saveDeploymentInfo(componentPath, new Date());
+        await FrontendDeployment.saveDeploymentInfo(componentPath, { lastDeployTime: new Date().toString() });
     }
 
     public static async skipDeployment(): Promise<void> {
@@ -126,8 +132,12 @@ export class FrontendDeployment {
     }
 
     private static async getLastBuildTime(componentPath: string): Promise<Date | undefined> {
+        const deploymentDir = path.join(componentPath, FrontendPathInfo.TabDeploymentFolderName);
+        const deploymentInfoPath = path.join(deploymentDir, FrontendPathInfo.TabDeploymentInfoFileName);
+
         try {
-            return (await fs.stat(path.join(componentPath, FrontendPathInfo.BuildFolderName))).mtime;
+            const deploymentInfoJson = await fs.readJSON(deploymentInfoPath);
+            return new Date(deploymentInfoJson.lastBuildTime);
         } catch {
             return undefined;
         }
@@ -138,29 +148,30 @@ export class FrontendDeployment {
         const deploymentInfoPath = path.join(deploymentDir, FrontendPathInfo.TabDeploymentInfoFileName);
 
         try {
-            const lastDeployJson = await fs.readJSON(deploymentInfoPath);
-            return new Date(lastDeployJson.time);
+            const deploymentInfoJson = await fs.readJSON(deploymentInfoPath);
+            return new Date(deploymentInfoJson.lastDeployTime);
         } catch {
             return undefined;
         }
     }
 
-    private static async saveDeploymentInfo(componentPath: string, deployTime: Date): Promise<void> {
+    private static async saveDeploymentInfo(componentPath: string, deploymentInfo: DeploymentInfo): Promise<void> {
         const deploymentDir = path.join(componentPath, FrontendPathInfo.TabDeploymentFolderName);
         const deploymentInfoPath = path.join(deploymentDir, FrontendPathInfo.TabDeploymentInfoFileName);
 
         await fs.ensureDir(deploymentDir);
-        let lastDeployJson: any = {};
+        let deploymentInfoJson: any = {};
         try {
-            lastDeployJson = await fs.readJSON(deploymentInfoPath);
+            deploymentInfoJson = await fs.readJSON(deploymentInfoPath);
         } catch {
             // Failed to read info file, which doesn't block deployment
         }
 
-        lastDeployJson.time = deployTime;
+        deploymentInfoJson.lastBuildTime = deploymentInfo.lastBuildTime ?? deploymentInfoJson.lastBuildTime;
+        deploymentInfoJson.lastDeployTime = deploymentInfo.lastDeployTime ?? deploymentInfoJson.lastDeployTime;
 
         try {
-            await fs.writeJSON(deploymentInfoPath, lastDeployJson);
+            await fs.writeJSON(deploymentInfoPath, deploymentInfoJson);
         } catch {
             // Failed to write deployment info, which doesn't block deployment
         }

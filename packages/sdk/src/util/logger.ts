@@ -34,7 +34,7 @@ export interface Logger {
 export type LogFunction = (level: LogLevel, message: string) => void;
 
 /**
- * logging level.
+ * Log level.
  *
  * @beta
  */

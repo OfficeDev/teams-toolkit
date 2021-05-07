@@ -94,7 +94,7 @@ export function loadConfiguration(configuration?: Configuration): void {
 }
 
 /**
- * Gets configuration for a specific resource.
+ * Get configuration for a specific resource.
  * @param {ResourceType} resourceType - The type of resource
  * @param {string} resourceName - The name of resource, default value is "default".
  *
@@ -128,7 +128,7 @@ export function getResourceConfiguration(
 }
 
 /**
- * Gets configuration for authentication.
+ * Get configuration for authentication.
  * 
  * @returns Authentication configuration from global configuration instance, the value may be undefined if no authentication config exists in current environment.
  * 

@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 /**
- * configuration for current environment.
+ * Configuration for current environment.
  * @beta
  */
 export interface Configuration {

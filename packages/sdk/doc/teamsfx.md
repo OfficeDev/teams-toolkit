@@ -21,7 +21,7 @@
 |  Enumeration | Description |
 |  --- | --- |
 |  [ErrorCode](./teamsfx.errorcode.md) | <b><i>(BETA)</i></b> Error code to help debugging. |
-|  [LogLevel](./teamsfx.loglevel.md) | <b><i>(BETA)</i></b> logging level. |
+|  [LogLevel](./teamsfx.loglevel.md) | <b><i>(BETA)</i></b> Log level. |
 |  [ResourceType](./teamsfx.resourcetype.md) | <b><i>(BETA)</i></b> Available resource type. |
 
 ## Functions
@@ -29,9 +29,9 @@
 |  Function | Description |
 |  --- | --- |
 |  [createMicrosoftGraphClient(credential, scopes)](./teamsfx.createmicrosoftgraphclient.md) | <b><i>(BETA)</i></b> Get Microsoft graph client. |
-|  [getAuthenticationConfiguration()](./teamsfx.getauthenticationconfiguration.md) | <b><i>(BETA)</i></b> Gets configuration for authentication. |
+|  [getAuthenticationConfiguration()](./teamsfx.getauthenticationconfiguration.md) | <b><i>(BETA)</i></b> Get configuration for authentication. |
 |  [getLogLevel()](./teamsfx.getloglevel.md) | <b><i>(BETA)</i></b> Get log level. |
-|  [getResourceConfiguration(resourceType, resourceName)](./teamsfx.getresourceconfiguration.md) | <b><i>(BETA)</i></b> Gets configuration for a specific resource. |
+|  [getResourceConfiguration(resourceType, resourceName)](./teamsfx.getresourceconfiguration.md) | <b><i>(BETA)</i></b> Get configuration for a specific resource. |
 |  [loadConfiguration(configuration)](./teamsfx.loadconfiguration.md) | <b><i>(BETA)</i></b> Initialize configuration from environment variables or configuration object and set the global instance |
 |  [setLogFunction(logFunction)](./teamsfx.setlogfunction.md) | <b><i>(BETA)</i></b> Set custom log function. Use the function if it's set. Priority is lower than setLogger. |
 |  [setLogger(logger)](./teamsfx.setlogger.md) | <b><i>(BETA)</i></b> Set custom logger. Use the output function if it's set. Priority is higher than setLogFunction. |
@@ -42,7 +42,7 @@
 |  Interface | Description |
 |  --- | --- |
 |  [AuthenticationConfiguration](./teamsfx.authenticationconfiguration.md) | <b><i>(BETA)</i></b> Authentication related configuration. |
-|  [Configuration](./teamsfx.configuration.md) | <b><i>(BETA)</i></b> configuration for current environment. |
+|  [Configuration](./teamsfx.configuration.md) | <b><i>(BETA)</i></b> Configuration for current environment. |
 |  [Logger](./teamsfx.logger.md) | <b><i>(BETA)</i></b> Interface for customized logger. |
 |  [ResourceConfiguration](./teamsfx.resourceconfiguration.md) | <b><i>(BETA)</i></b> Configuration for resources. |
 |  [TeamsBotSsoPromptSettings](./teamsfx.teamsbotssopromptsettings.md) | <b><i>(BETA)</i></b> Settings used to configure an TeamsBotSsoPrompt instance. |

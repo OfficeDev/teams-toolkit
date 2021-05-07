@@ -56,9 +56,7 @@ const context: any = {
         }
     },
     config: new Map<string, string>([
-        ["functionAppName", "ut"],
-        ["scaffoldDone", "true"],
-        ["provisionDone", "true"]
+        ["functionAppName", "ut"]
     ]),
     azureAccountProvider: {
         getAccountCredential: () => ({

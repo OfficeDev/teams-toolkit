@@ -65,18 +65,12 @@ export interface FunctionConfig {
     appServicePlanName?: string;
     functionEndpoint?: string;
 
-    /* States */
-    scaffoldDone: boolean;
-    provisionDone: boolean;
-
     /* Intermediate  */
     skipDeploy: boolean;
 }
 
 export class FunctionPluginImpl {
     config: FunctionConfig = {
-        scaffoldDone: false,
-        provisionDone: false,
         skipDeploy: false
     };
 
@@ -215,7 +209,6 @@ export class FunctionPluginImpl {
             this.config.defaultFunctionName = this.config.functionName;
         }
 
-        this.config.scaffoldDone = true;
         this.syncConfigToContext(ctx);
 
         return ResultFactory.Success();
@@ -411,7 +404,6 @@ export class FunctionPluginImpl {
         }
         Logger.info(InfoMessages.functionAppAuthSettingsUpdated);
 
-        this.config.provisionDone = true;
         this.syncConfigToContext(ctx);
 
         return ResultFactory.Success();

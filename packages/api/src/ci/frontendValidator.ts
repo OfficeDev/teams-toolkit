@@ -3,7 +3,6 @@
 
 import axios from "axios";
 import * as chai from "chai";
-import { subscription } from "./conf/azure";
 import { MockAzureAccountProvider } from "./mockAzureAccountProvider";
 
 const baseUrlContainer = (
@@ -14,8 +13,11 @@ const baseUrlContainer = (
 ) =>
     `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Storage/storageAccounts/${storageName}/blobServices/default/containers/${containerName}?api-version=2021-01-01`;
 
-const baseUrlBlob = (storageName: string, containerName: string) =>
-    `https://${storageName}.blob.core.windows.net/${containerName}?restype=container&comp=list`;
+const baseUrlBlob = (storageName: string, containerName: string, sasToken: string) =>
+    `https://${storageName}.blob.core.windows.net/${containerName}?restype=container&comp=list&${sasToken}`;
+
+const baseUrlSasToken = (subscriptionId: string, resourceGroupName: string, storageName: string) =>
+    `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}/providers/Microsoft.Storage/storageAccounts/${storageName}/ListAccountSas?api-version=2021-01-01`;
 
 
 class DependentPluginInfo {
@@ -95,8 +97,11 @@ export class FrontendValidator {
         const token = (await tokenCredential?.getToken())?.accessToken;
         chai.assert.exists(token);
 
+        const sasToken = await this.getSasToken(this.subscriptionId, this.resourceGroupName, frontendObject.storageName, token as string);
+        chai.assert.exists(sasToken);
+
         console.log("Validating Storage blobs.");
-        const response = await this.getBlobs(frontendObject.storageName, frontendObject.containerName, token as string);
+        const response = await this.getBlobs(frontendObject.storageName, frontendObject.containerName, sasToken as string);
         chai.assert.exists(response);
 
         console.log("Successfully validate Frontend Deploy.");
@@ -120,11 +125,33 @@ export class FrontendValidator {
         }
     }
 
-    private static async getBlobs(storageName: string, containerName: string, token: string) {
+    private static async getBlobs(storageName: string, containerName: string, sasToken: string) {
         try {
+            const frontendBlobResponse = await axios.get(baseUrlBlob(storageName, containerName, sasToken), {
+                transformRequest: (data, headers) => {
+                    delete headers.common["Authorization"];
+                }
+            });
+            return frontendBlobResponse?.data;
+        } catch (error) {
+            console.log(error);
+            return undefined;
+        }
+    }
+
+    private static async getSasToken(subscriptionId: string, resourceGroupName: string, storageName: string, token: string) {
+        try {
+            const expiredDate = new Date();
+            expiredDate.setDate(new Date().getDate() + 3);
+
             axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-            const frontendBlobResponse = await axios.get(baseUrlBlob(storageName, containerName));
-            return frontendBlobResponse;
+            const sasTokenResponse = await axios.post(baseUrlSasToken(subscriptionId, resourceGroupName, storageName), {
+                signedExpiry: expiredDate.toISOString(),
+                signedPermission: "rl",
+                signedResourceTypes: "sco",
+                signedServices: "bf"
+            });
+            return sasTokenResponse?.data?.accountSasToken;
         } catch (error) {
             console.log(error);
             return undefined;

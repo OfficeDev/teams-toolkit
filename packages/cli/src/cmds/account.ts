@@ -40,7 +40,7 @@ async function outputM365Info(commandType: "login" | "show"): Promise<boolean> {
     }
   } else {
     if (commandType === "login") {
-      CLILogProvider.error(`[${constants.cliSource}] Failed to sign in to Azure.`);
+      CLILogProvider.error(`[${constants.cliSource}] Failed to sign in to M365.`);
     }
   }
   return Promise.resolve(result !== undefined);
@@ -90,7 +90,7 @@ async function outputAzureInfo(commandType: "login" | "show"): Promise<boolean> 
     }
   } else {
     if (commandType === "login") {
-      CLILogProvider.error(`[${constants.cliSource}] Failed to sign in to M365.`);
+      CLILogProvider.error(`[${constants.cliSource}] Failed to sign in to Azure.`);
     }
   }
   return Promise.resolve(result !== undefined);

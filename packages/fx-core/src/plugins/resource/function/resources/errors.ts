@@ -52,19 +52,6 @@ export class FunctionPluginError extends Error {
     }
 }
 
-export class NoFunctionNameFromAnswerError extends FunctionPluginError {
-    constructor() {
-        super(
-            ErrorType.System,
-            "NoFunctionNameFromAnswer",
-            "Failed to find function name.",
-            [
-                tips.reportIssue
-            ]
-        );
-    }
-}
-
 export class FunctionNameConflictError extends FunctionPluginError {
     constructor() {
         super(
@@ -72,32 +59,6 @@ export class FunctionNameConflictError extends FunctionPluginError {
             "FunctionNameConflict",
             "Function already exists, please choose another name.",
             []
-        );
-    }
-}
-
-export class NotScaffoldError extends FunctionPluginError {
-    constructor() {
-        super(
-            ErrorType.User,
-            "NotScaffoldError",
-            "Scaffold has not completed successfully.",
-            [
-                tips.doScaffold
-            ]
-        );
-    }
-}
-
-export class NotProvisionError extends FunctionPluginError {
-    constructor() {
-        super(
-            ErrorType.User,
-            "NotProvisionError",
-            "Provision has not completed successfully.",
-            [
-                tips.doProvision
-            ]
         );
     }
 }

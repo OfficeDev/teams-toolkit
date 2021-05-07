@@ -20,7 +20,8 @@ async function downloadSimpleAuth() {
     const versionFilePath = path.join(__dirname, "../../../../fx-core/templates/plugins/resource/simpleauth/version.txt");
     const version = fs.readFileSync(versionFilePath, "utf-8");
     const fileName = `Microsoft.TeamsFx.SimpleAuth_${version}.zip`;
-    const endpoint = process.env.SIMPLE_AUTH_ENDPOINT.slice(0, -8);
+    let endpoint = process.env.SIMPLE_AUTH_ENDPOINT;
+    endpoint = endpoint.slice(0, -8);
     const blobUrlWithCredential = `${endpoint}?${process.env.SIMPLE_AUTH_SAS_TOKEN}`;
     try {
         const blobClient = new BlobServiceClient(blobUrlWithCredential).getContainerClient("release").getBlobClient(fileName);
@@ -45,6 +46,4 @@ async function startSimpleAuth() {
     spawn('dotnet', [`${__dirname}/SimpleAuthUnzipOutput/Microsoft.TeamsFx.SimpleAuth.dll`]);
 }
 
-(async () => {
-    await startSimpleAuth();
-})();
+startSimpleAuth();

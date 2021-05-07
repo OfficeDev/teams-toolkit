@@ -15,8 +15,16 @@ As the TeamsFx project is implemented by `Node.js`, it's required to install the
 **NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
 
 ## Current installed Node.js is not in the supported version list (SPFx hosting)
+  
+ The SharePoint Framework v1.12.1 is supported on the following Node.js versions:
 
- When `SPFx` is selected as the hosting type, only LTS versions (v10, v12 and v14) of Node.js are supported by TeamsFx currently, please make sure the installed Node.js meets this requirement. In addition, **Node v14 (LTS)** would be recommended to be installed.
+ - Node.js v10.13.0+ (Dubnium)
+ - Node.js v12.13.0+ (Erbium)
+ - Node.js v14.15.0+ (Fermium) 
+ 
+ And **the latest version of Node.js LTS v14** would be recommended to be installed.
+ 
+ Details can see: https://docs.microsoft.com/en-us/sharepoint/dev/spfx/set-up-your-development-environment#install-nodejs
 
 **NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
 

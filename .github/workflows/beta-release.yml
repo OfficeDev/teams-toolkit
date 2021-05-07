@@ -2,6 +2,15 @@ name: Beta release
 
 on:
   workflow_dispatch:
+    inputs:
+      force:
+        description: 'force release even if no update(true or false)'
+        required: false
+        default: 'false'
+      stable:
+        description: 'promote to stable version(true or false)'
+        required: false
+        default: 'false'
 
 jobs:
   release-npm:
@@ -40,32 +49,20 @@ jobs:
         run: |
           npm run setup
 
-      - name: release npm packages to npmjs.org
+      - name: Setup git
         run: |
           git config --global user.name 'MSFT-yiz'
           git config --global user.email 'yiz@microsoft.com'
-          npx lerna publish --no-private --preid beta prerelease --yes --force-publish
 
-  release-vsix:
-    needs: release-npm
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.CD_PAT }}
-          ref: ${{ github.ref }}
-
-      - name: Setup node
-        uses: actions/setup-node@v2.1.2
-        with:
-          node-version: 14
-
-      - name: Setup npm registry
+      - name: release beta npm packages to npmjs.org
+        if: ${{ github.event.inputs.stable }} == 'false'
         run: |
-          echo "${{ secrets.NPMRC }}" > ~/.npmrc
+          npx lerna publish --no-private --preid=beta --dist-tag=beta prerelease --yes ${{ github.event.inputs.force }}
+
+      - name: release stable npm packages to npmjs.org
+        if: ${{ github.event.inputs.stable }} == 'true'
+        run: |
+          npx lerna publish --no-private --dist-tag=stable patch --yes
 
       - name: pack vsix
         working-directory: ./packages/vscode-extension

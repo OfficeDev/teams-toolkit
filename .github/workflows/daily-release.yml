@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: "0 20 * * *"
   workflow_dispatch:
+    inputs:
+      bump:
+        description: 'bump patch version'
+        required: false
+        default: 'false'
 
 jobs:
   release-npm:
@@ -46,28 +51,7 @@ jobs:
         run: |
           git config --global user.name 'MSFT-yiz'
           git config --global user.email 'yiz@microsoft.com'
-          npx lerna publish --no-private --preid alpha --yes prerelease
-
-  release-vsix:
-    needs: release-npm
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.CD_PAT }}
-          ref: main
-
-      - name: Setup node
-        uses: actions/setup-node@v2.1.2
-        with:
-          node-version: 14
-
-      - name: Setup npm registry
-        run: |
-          echo "${{ secrets.NPMRC }}" > ~/.npmrc
+          npx lerna publish --no-private --preid=alpha --dist-tag=alpha --yes prerelease
 
       - name: pack vsix
         working-directory: ./packages/vscode-extension

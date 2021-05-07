@@ -2,8 +2,13 @@ name: Daily release
 
 on:
   schedule:
-    - cron: "0 20 * * *"
+    - cron: "30 9 * * *"
   workflow_dispatch:
+    inputs:
+      bump:
+        description: 'bump patch version(true or false)'
+        required: false
+        default: 'false'
 
 jobs:
   release-npm:
@@ -42,38 +47,31 @@ jobs:
         run: |
           npm run setup
 
-      - name: release npm packages to npmjs.org
+      - name: Setup git
         run: |
           git config --global user.name 'MSFT-yiz'
           git config --global user.email 'yiz@microsoft.com'
-          npx lerna publish --no-private --preid alpha --yes prerelease
 
-  release-vsix:
-    needs: release-npm
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.CD_PAT }}
-          ref: main
-
-      - name: Setup node
-        uses: actions/setup-node@v2.1.2
-        with:
-          node-version: 14
-
-      - name: Setup npm registry
+      - name: release npm packages to npmjs.org
+        if: ${{ github.event.inputs.bump == 'false' }}
         run: |
-          echo "${{ secrets.NPMRC }}" > ~/.npmrc
+          npx lerna publish --no-private --preid=alpha --dist-tag=alpha --yes prerelease
+
+      - name: bump patch version and release npm packages to npmjs.org
+        if: ${{ github.event.inputs.bump == 'true' }}
+        run: |
+          npx lerna publish --no-private --preid=alpha --dist-tag=alpha --yes prepatch --force-publish
 
       - name: pack vsix
-        working-directory: ./packages/vscode-extension
-        run: |
-          npm install
-          npx vsce package
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 5
+          retry_on: error
+          command: |
+            cd ./packages/vscode-extension
+            npm install
+            npx vsce package
 
       - name: release VSCode extension to github
         uses: marvinpinto/action-automatic-releases@latest
@@ -83,4 +81,3 @@ jobs:
           prerelease: true
           files: |
             ./packages/**/*.vsix
-

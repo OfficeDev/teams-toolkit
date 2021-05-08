@@ -619,7 +619,7 @@ class CoreImpl implements Core {
          
         const res = await this.selectedSolution.open(this.solutionContext());
         const t4 = new Date().getTime();
-        this.ctx.logProvider?.debug(`core.open() time  ----- t2-t1:${t2-t1}, t3-t2:${t3-t2}, t4-t3:${t4-t3}`);
+        //this.ctx.logProvider?.debug(`core.open() time  ----- t2-t1:${t2-t1}, t3-t2:${t3-t2}, t4-t3:${t4-t3}`);
         return res;
     }
 

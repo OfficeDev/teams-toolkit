@@ -37,9 +37,8 @@ import { FxResult, FunctionPluginResultFactory as ResultFactory } from "./result
 import { Logger } from "./utils/logger";
 import { PostProvisionSteps, PreDeploySteps, ProvisionSteps, StepGroup, step } from "./resources/steps";
 import { functionNameQuestion } from "./questions";
-import { dotnetHelpLink, Messages } from "./utils/depsChecker/common";
 import { DotnetChecker } from "./utils/depsChecker/dotnetChecker";
-import { isLinux } from "./utils/depsChecker/common";
+import { Messages, isLinux, dotnetManualInstallHelpLink } from "./utils/depsChecker/common";
 import { DepsCheckerError } from "./utils/depsChecker/errors";
 import { getNodeVersion } from "./utils/node-version";
 import { funcPluginAdapter } from "./utils/depsChecker/funcPluginAdapter";
@@ -573,28 +572,35 @@ export class FunctionPluginImpl {
     }
 
     private async handleDotnetChecker(): Promise<void> {
-        await step(StepGroup.PreDeployStepGroup, PreDeploySteps.dotnetInstall, async () => {
-            const dotnetChecker = new DotnetChecker(funcPluginAdapter, funcPluginLogger, funcPluginTelemetry);
-            try {
-                if (await dotnetChecker.isInstalled()) {
+        try {
+            await step(StepGroup.PreDeployStepGroup, PreDeploySteps.dotnetInstall, async () => {
+                const dotnetChecker = new DotnetChecker(funcPluginAdapter, funcPluginLogger, funcPluginTelemetry);
+                try {
+                    if (await dotnetChecker.isInstalled()) {
+                        return;
+                    }
+                } catch (error) {
+                    funcPluginLogger.debug(InfoMessages.failedToCheckDotnet(error));
+                    funcPluginAdapter.handleDotnetError(error);
                     return;
                 }
-            } catch (error) {
-                funcPluginAdapter.handleDotnetError(error);
-                return;
-            }
 
-            if (isLinux()) {
-                // TODO: handle linux installation
-                funcPluginAdapter.handleDotnetError(new DepsCheckerError(Messages.defaultErrorMessage, dotnetHelpLink));
-                return;
-            }
+                if (isLinux()) {
+                    // TODO: handle linux installation
+                    funcPluginAdapter.handleDotnetError(new DepsCheckerError(Messages.defaultErrorMessage, dotnetManualInstallHelpLink));
+                    return;
+                }
 
-            try {
-                await dotnetChecker.install();
-            } catch (error) {
-                funcPluginAdapter.handleDotnetError(error);
-            }
-        });
+                try {
+                    await dotnetChecker.install();
+                } catch (error) {
+                    await funcPluginLogger.printDetailLog();
+                    funcPluginLogger.error(InfoMessages.failedToInstallDotnet(error));
+                    funcPluginAdapter.handleDotnetError(error);
+                }
+            });
+        } finally {
+            funcPluginLogger.cleanup();
+        }
     }
 }

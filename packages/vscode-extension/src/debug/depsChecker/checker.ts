@@ -84,11 +84,13 @@ export class DepsChecker {
 
     // go to next step when no need to check.
     if (validCheckers.length === 0) {
+      this._logger.cleanup();
       return shouldContinue;
     }
 
     if (isLinux()) {
       const confirmMessage = await this.generateMsg(validCheckers);
+      this._logger.cleanup();
       return await this._adapter.displayContinueWithLearnMore(confirmMessage, dotnetManualInstallHelpLink);
     }
 

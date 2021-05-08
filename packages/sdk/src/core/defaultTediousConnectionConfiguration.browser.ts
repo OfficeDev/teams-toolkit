@@ -6,13 +6,8 @@ import { formatString } from "../util/utils";
 
 /**
  * Generate connection configuration consumed by tedious.
- * 
- * @returns Configuration items to the user for tedious to connection to the SQL.
- * 
- * @throws {@link ErrorCode|InvalidConfiguration} when SQL config resource configuration is invalid.
- * @throws {@link ErrorCode|InternalError} when get user MSI token failed or MSI token is invalid.
- * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
- * 
+ * @remarks
+ * Only works in in server side.
  * @beta
  */
 export class DefaultTediousConnectionConfiguration {
@@ -28,10 +23,8 @@ export class DefaultTediousConnectionConfiguration {
 
   /**
    * Generate connection configuration consumed by tedious.
-   *
-   * @returns Configuration items to the user for tedious to connection to the SQL.
-   * @throws {@link ErrorCode|RuntimeNotSupported} if runtime is browser
-   *
+   * @remarks
+   * Only works in in server side.
    * @beta
    */
   public async getConfig(): Promise<ConnectionConfig> {

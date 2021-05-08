@@ -18,21 +18,7 @@ getUserInfo(): Promise<UserInfo>;
 
 Promise&lt;[UserInfo](./teamsfx.userinfo.md)<!-- -->&gt;
 
-Basic user info with user displayName, objectId and preferredUserName.
+## Remarks
 
-## Exceptions
-
-[InternalError](./teamsfx.errorcode.md) when SSO token from Teams client is not valid.
-
-[InvalidParameter](./teamsfx.errorcode.md) when SSO token from Teams client is empty.
-
-[RuntimeNotSupported](./teamsfx.errorcode.md) when runtime is nodeJS.
-
-## Example
-
-
-```typescript
-const currentUser = await credential.getUserInfo();
-
-```
+Can only be used within Teams.
 

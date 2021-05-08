@@ -10,6 +10,8 @@ import { internalLogger } from "../util/logger";
 
 /**
  * SQL connection configuration instance.
+ * @remarks
+ * Only works in in server side.
  *
  * @beta
  *

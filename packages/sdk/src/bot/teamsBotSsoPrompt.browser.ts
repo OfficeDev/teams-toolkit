@@ -7,6 +7,9 @@ import { formatString } from "../util/utils";
 
 /**
  * Settings used to configure an TeamsBotSsoPrompt instance.
+ * 
+ * @remarks
+ * Only works in in server side.
  *
  * @beta
  */

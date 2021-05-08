@@ -19,41 +19,14 @@ getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessTo
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  scopes | string \| string\[\] | The list of scopes for which the token will have access. |
-|  options | GetTokenOptions | The options used to configure any requests this TokenCredential implementation might make. |
+|  scopes | string \| string\[\] |  |
+|  options | GetTokenOptions |  |
 
 <b>Returns:</b>
 
 Promise&lt;AccessToken \| null&gt;
 
-User access token of defined scopes. If scopes is empty string or array, it returns SSO token. If scopes is non-empty, it returns access token for target scope. Throw error if get access token failed.
+## Remarks
 
-## Exceptions
-
-[InternalError](./teamsfx.errorcode.md) when failed to get access token with unknown error.
-
-[UiRequiredError](./teamsfx.errorcode.md) when need user consent to get access token.
-
-[ServiceError](./teamsfx.errorcode.md) when failed to get access token from simple auth server.
-
-[InvalidParameter](./teamsfx.errorcode.md) when scopes is not a valid string or string array.
-
-[RuntimeNotSupported](./teamsfx.errorcode.md) when runtime is nodeJS.
-
-## Example
-
-
-```typescript
-await credential.getToken([]) // Get SSO token using empty string array
-await credential.getToken("") // Get SSO token using empty string
-await credential.getToken([".default"]) // Get Graph access token with default scope using string array
-await credential.getToken(".default") // Get Graph access token with default scope using string
-await credential.getToken(["User.Read"]) // Get Graph access token for single scope using string array
-await credential.getToken("User.Read") // Get Graph access token for single scope using string
-await credential.getToken(["User.Read", "Application.Read.All"]) // Get Graph access token for multiple scopes using string array
-await credential.getToken("User.Read Application.Read.All") // Get Graph access token for multiple scopes using space-separated string
-await credential.getToken("https://graph.microsoft.com/User.Read") // Get Graph access token with full resource URI
-await credential.getToken(["https://outlook.office.com/Mail.Read"]) // Get Outlook access token
-
-```
+Can only be used within Teams.
 

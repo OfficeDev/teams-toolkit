@@ -15,29 +15,7 @@ Constructor of TeamsUserCredential.
 constructor();
 ```
 
-## Exceptions
-
-[InvalidConfiguration](./teamsfx.errorcode.md) when client id, initiate login endpoint or simple auth endpoint is not found in config.
-
-[RuntimeNotSupported](./teamsfx.errorcode.md) when runtime is nodeJS.
-
 ## Remarks
 
-Developer need to call `loadConfiguration(config)` before using this class.
-
-## Example
-
-
-```typescript
-const config = {
- authentication: {
-   runtimeConnectorEndpoint: "https://xxx.xxx.com",
-   initiateLoginEndpoint: "auth-start.html",
-   clientId: "xxx"
-  }
-}
-loadConfiguration(config); // No default config from environment variables, developers must provide the config object.
-const credential = new TeamsUserCredential(["https://graph.microsoft.com/User.Read"]);
-
-```
+Can only be used within Teams.
 

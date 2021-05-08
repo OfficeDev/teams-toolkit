@@ -15,6 +15,10 @@ SQL connection configuration instance.
 export declare class DefaultTediousConnectionConfiguration 
 ```
 
+## Remarks
+
+Only works in in server side.
+
 ## Methods
 
 |  Method | Modifiers | Description |

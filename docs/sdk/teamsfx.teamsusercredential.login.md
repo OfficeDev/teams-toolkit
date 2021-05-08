@@ -19,36 +19,13 @@ login(scopes: string | string[]): Promise<void>;
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  scopes | string \| string\[\] | The list of scopes for which the token will have access. |
+|  scopes | string \| string\[\] |  |
 
 <b>Returns:</b>
 
 Promise&lt;void&gt;
 
-## Exceptions
-
-[InternalError](./teamsfx.errorcode.md) when failed to login with unknown error.
-
-[ServiceError](./teamsfx.errorcode.md) when simple auth server failed to exchange access token.
-
-[ConsentFailed](./teamsfx.errorcode.md) when user canceled or failed to consent.
-
-[InvalidParameter](./teamsfx.errorcode.md) when scopes is not a valid string or string array.
-
-[RuntimeNotSupported](./teamsfx.errorcode.md) when runtime is nodeJS.
-
 ## Remarks
 
-Only works in Teams client APP. User will be redirected to the authorization page to login and consent.
-
-## Example
-
-
-```typescript
-await credential.login(["https://graph.microsoft.com/User.Read"]); // single scope using string array
-await credential.login("https://graph.microsoft.com/User.Read"); // single scopes using string
-await credential.login(["https://graph.microsoft.com/User.Read", "Calendars.Read"]); // multiple scopes using string array
-await credential.login("https://graph.microsoft.com/User.Read Calendars.Read"); // multiple scopes using string
-
-```
+Can only be used within Teams.
 

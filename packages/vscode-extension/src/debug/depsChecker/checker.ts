@@ -106,7 +106,7 @@ export class DepsChecker {
         }
       }
     }
-    await this._logger.cleanup();
+    this._logger.cleanup();
 
     return shouldContinue;
   }

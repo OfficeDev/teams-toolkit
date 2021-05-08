@@ -25,8 +25,6 @@ export class ProvisionConfig {
     public sqlPassword?: string;
     public functionEndpoint?: string;
 
-    public provisioned = false;
-
     public async restoreConfigFromContext(context: PluginContext): Promise<void> {
 
         const subscriptionIdValue: ConfigValue = context.configOfOtherPlugins
@@ -115,11 +113,6 @@ export class ProvisionConfig {
             this.redirectUri = `${siteEndpointValue}${CommonStrings.AUTH_REDIRECT_URI_SUFFIX}`;
         }
 
-        const provisionedValue: ConfigValue = context.config.get(PluginBot.PROVISIONED);
-        if (provisionedValue) {
-            this.provisioned = (provisionedValue as string) === "true";
-        }
-
         const botChannelRegNameValue: ConfigValue = context.config.get(PluginBot.BOT_CHANNEL_REGISTRATION);
         if (botChannelRegNameValue) {
             this.botChannelRegName = botChannelRegNameValue as string;
@@ -131,7 +124,6 @@ export class ProvisionConfig {
         utils.checkAndSaveConfig(context, PluginBot.BOT_CHANNEL_REGISTRATION, this.botChannelRegName);
         utils.checkAndSaveConfig(context, PluginBot.SITE_NAME, this.siteName);
         utils.checkAndSaveConfig(context, PluginBot.SITE_ENDPOINT, this.siteEndpoint);
-        utils.checkAndSaveConfig(context, PluginBot.PROVISIONED, this.provisioned ? "true" : "false");
         utils.checkAndSaveConfig(context, PluginBot.REDIRECT_URI, this.redirectUri);
         utils.checkAndSaveConfig(context, PluginBot.SKU_NAME, this.skuName);
     }

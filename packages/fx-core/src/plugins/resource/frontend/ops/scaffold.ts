@@ -40,7 +40,7 @@ export class FrontendScaffold {
                 return axios.get(url, {
                     timeout: Constants.RequestTimeoutInMS,
                 });
-            }, Constants.ScaffoldRetryCounts)
+            }, Constants.ScaffoldTryCounts)
         );
         if (!result) {
             throw new FetchTemplatePackageError();
@@ -72,7 +72,7 @@ export class FrontendScaffold {
                     responseType: "arraybuffer",
                     timeout: Constants.RequestTimeoutInMS,
                 });
-            }, Constants.ScaffoldRetryCounts)
+            }, Constants.ScaffoldTryCounts)
         );
 
         if (!result) {

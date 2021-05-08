@@ -61,10 +61,7 @@ export class FrontendValidator {
         chai.assert.exists(frontendObject);
         frontendObject.containerName = "$web";
 
-        this.subscriptionId =
-            ctx[DependentPluginInfo.solutionPluginName][
-            DependentPluginInfo.subscriptionId
-            ];
+        this.subscriptionId = ctx[DependentPluginInfo.solutionPluginName][DependentPluginInfo.subscriptionId];
         chai.assert.exists(this.subscriptionId);
 
         this.resourceGroupName = ctx[DependentPluginInfo.solutionPluginName][DependentPluginInfo.resourceGroupName];

@@ -35,7 +35,7 @@ import {
 } from "fx-api";
 import { askSubscription, fillInCommonQuestions } from "./commonQuestions";
 import { executeLifecycles, executeConcurrently, LifecyclesWithContext } from "./executor";
-import { getPluginContext } from "./util";
+import { getPluginContext, getSubsriptionDisplayName } from "./util";
 import { AppStudio } from "./appstudio/appstudio";
 import * as fs from "fs-extra";
 import {
@@ -107,6 +107,7 @@ import { ErrorResponse } from "@azure/arm-resources/esm/models/mappers";
 import * as strings from "../../../resources/strings.json";
 import * as util from "util";
 import { deepCopy } from "../../../common/tools";
+import { subscription } from "fx-api/build/ci/conf/azure";
 
 type LoadedPlugin = Plugin & { name: string; displayName: string; };
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -852,16 +853,38 @@ export class TeamsAppSolution implements Solution {
         if (this.isAzureProject(ctx)) {
             //1. ask common questions for azure resources.
             const appName = manifest.name.short;
+            const azureToken = await ctx.azureAccountProvider?.getAccountCredentialAsync()
             const res = await fillInCommonQuestions(
                 ctx,
                 appName,
                 ctx.config,
                 ctx.dialog,
-                await ctx.azureAccountProvider?.getAccountCredentialAsync(),
+                azureToken,
                 await ctx.appStudioToken?.getJsonObject(),
             );
             if (res.isErr()) {
                 return res;
+            }
+
+            // Only Azure project requires this confirm dialog
+            const username = (azureToken as any).username ? (azureToken as any).username : "";
+            const subscriptionId = ctx.config.get(GLOBAL_CONFIG)?.getString("subscriptionId");
+            const subscriptionName = await getSubsriptionDisplayName(azureToken!, subscriptionId!);
+
+            const confirm  = (await ctx.dialog?.communicate(
+                new DialogMsg(DialogType.Show, {
+                    description: util.format(strings.solution.ProvisionConfirmNotice, username, subscriptionName ? subscriptionName:subscriptionId),
+                    level: MsgLevel.Warning,
+                    items: ["Provision", "Cancel"]
+                }),
+            ))?.getAnswer();
+            
+            if (confirm === "Cancel"){
+                return err(returnUserError(
+                    new Error(SolutionError.CancelProvision),
+                    "Solution",
+                    SolutionError.CancelProvision,
+                ));
             }
         }
 
@@ -1223,7 +1246,10 @@ export class TeamsAppSolution implements Solution {
                 ))?.getAnswer();
                 if(res === "Provision"){
                     const provisionRes = await this.provision(ctx);
-                    if(provisionRes.isErr()){
+                    if (provisionRes.isErr()) {
+                        if (provisionRes.error.message.startsWith(SolutionError.CancelProvision)) {
+                            return ok(undefined);
+                        }
                         return err(provisionRes.error);
                     }
                 }
@@ -1280,7 +1306,10 @@ export class TeamsAppSolution implements Solution {
                 ))?.getAnswer();
                 if(res === "Provision"){
                     const provisionRes = await this.provision(ctx);
-                    if(provisionRes.isErr()){
+                    if (provisionRes.isErr()) {
+                        if (provisionRes.error.message.startsWith(SolutionError.CancelProvision)) {
+                            return ok(undefined);
+                        }
                         return err(provisionRes.error);
                     }
                 }

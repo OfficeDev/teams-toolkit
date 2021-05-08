@@ -17,7 +17,7 @@ Please Note:
 
 ## How to install Node.js?
 
-Please refer to [nodejs.org](https://nodejs.org/) to install the supported version:
+Please refer to [nodejs.org](https://nodejs.org/) to download and install the supported versions:
 
 - For `Azure` hosting, please refer to the supported versions [here](#nodenotsupportedazure-hosting).
 - For `SPFx` hosting, please refer to the supported versions [here](#nodenotsupportedspfx-hosting).
@@ -26,12 +26,7 @@ Please refer to [nodejs.org](https://nodejs.org/) to install the supported versi
 
 ## How to install .NET SDK?
 
-- For Windows/macOS:
-  Please refer to the official documentation: https://dotnet.microsoft.com/download.
-- For Linux:
-  Please refer to the official documentation: https://docs.microsoft.com/en-us/dotnet/core/install/linux.
-
-Both `.NET 5.0 SDK` and `.NET Core 3.1 SDK` are supported.
+Please refer to [the official website](https://dotnet.microsoft.com/download) to download and install the supported versions: `.NET 5.0 SDK` and `.NET Core 3.1 SDK`.
 
 **NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
 

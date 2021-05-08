@@ -33,7 +33,7 @@ export class RootDialog extends ComponentDialog {
       case "show": {
         if (innerDc.context.activity.conversation.isGroup) {
           await innerDc.context.sendActivity(
-            'Sorry, currently TeamsFX SDK hasn\'t support Group/Team/Meeting Bot SSO. To try this command please install this app as Personal Bot and send "show".'
+            `Sorry, currently TeamsFX SDK doesn't support Group/Team/Meeting Bot SSO. To try this command please install this app as Personal Bot and send "show".`
           );
           return await innerDc.cancelAllDialogs();
         }

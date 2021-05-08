@@ -26,7 +26,7 @@ A common use case to call the function is sending an HTTP request to the service
 
 ### Add More Functions
 
-* From Visual Studio Code: open the command palette, select `TeamsFx - Add Resource` and select `Azure Function App`.
+* From Visual Studio Code: open the command palette, select `Teams: Add Resources` and select `Azure Function App`.
 * From TeamsFx CLI: run command `teamsfx resource add azure-function` in your project directory.
 
 ## Deploy to Azure
@@ -42,7 +42,7 @@ You can do this using the Teams Toolkit in Visual Studio Code or using the Teams
 
 | Using Teams Toolkit| Using TeamsFx CLI|
 | :------------------| :----------------|
-| <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign to Azure` under the `ACCOUNT` section from sidebar.</li> <li>After you signed in, select a subscription under your account.</li><li>Open the command palette and select: `Teamsfx - Provision in the Cloud`.</li><li>Open the command palette and select: `Teamsfx -Deploy to the Cloud`.</li></ul>  | <ul> <li>Run command `teamsfx account login azure`.</li> <li>Run command `teamsfx account set --subscription $scriptionid`.</li> <li> Run command `teamsfx provision`.</li> <li>Run command: `teamsfx deploy`. </li></ul>|
+| <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign in to Azure` under the `ACCOUNT` section from sidebar.</li> <li>After you signed in, select a subscription under your account.</li><li>Open the command palette and select: `Teams: Provision in the Cloud`.</li><li>Open the command palette and select: `Teams: Deploy to the Cloud`.</li></ul>  | <ul> <li>Run command `teamsfx account login azure`.</li> <li>Run command `teamsfx account set --subscription $scriptionid`.</li> <li> Run command `teamsfx provision`.</li> <li>Run command: `teamsfx deploy`. </li></ul>|
 
 **Note: This may incur costs in your Azure Subscription.**
 

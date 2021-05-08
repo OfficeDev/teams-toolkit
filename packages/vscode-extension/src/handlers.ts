@@ -777,14 +777,14 @@ export function cmdHdlDisposeTreeView() {
 export async function showError(e: FxError) {
   VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}, stack: ${e.stack}`);
 
-  const errorCode = `${e.source}${e.name}`;
+  const errorCode = `${e.source}.${e.name}`;
   if(isCancelWarning(e)){
     return;
   } else if (e instanceof UserError && e.helpLink && typeof e.helpLink != "undefined") {
     const help = {
       title: StringResources.vsc.handlers.getHelp,
       run: async (): Promise<void> => {
-        commands.executeCommand("vscode.open", Uri.parse(`${e.helpLink}#${errorCode}`));
+        commands.executeCommand("vscode.open", Uri.parse(`${e.helpLink}#${e.source}${e.name}`));
       }
     };
 

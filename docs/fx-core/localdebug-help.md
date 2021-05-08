@@ -72,4 +72,4 @@ If so, an error will show in the Tab page of your app, look like:
 
 To resolve this issue, open a new tab in the same browser, go to https://localhost:3000/index.html#/tab, click the "Advanced" button and then select "Proceed to localhost (unsafe)". After doing this, refresh the Teams web client.
 
-![Continue-To-Localhost](../iamages/../images/fx-core/localdebug/continue-to-localhost.png)
+![Continue-To-Localhost](../images/fx-core/localdebug/continue-to-localhost.png)

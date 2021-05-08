@@ -90,7 +90,7 @@ Since Teams requires https Tab hosting endpoint, a localhost development certifi
 ![Install-Certificate-Confirmation](../images/fx-core/localdebug/install-certificate-confirmation.png)
 
 ### Mitigation
-We strongly recommend you to install the development certificate. However, if you do not want to install the development certificate, you can follow the script bellow to disable the confirmation window.
+We recommend you to install the development certificate. However, if you do not want to install the development certificate and do not want the confirmation window to pop up every time during debugging, you can follow the script bellow to disable the development certificate.
 
 Set the following configuration in *.fx/default.userdata* under the project root, then start debugging, like:
 ```

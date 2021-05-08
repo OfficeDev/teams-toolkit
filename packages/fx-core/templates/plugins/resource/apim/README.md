@@ -48,35 +48,35 @@ Update the Open API document under the `openapi` folder. We support both yaml an
     ```js
     /**
      * @openapi
-    * /getUserProfile:
-    *  get:
-    *    summary: Get User Profile
-    *    operationId: get-user-profile
-    *    responses:
-    *      '200':
-    *        $ref: "#/components/responses/getUserProfileResponse"
-    */
+     * /getUserProfile:
+     *   get:
+     *     summary: Get User Profile
+     *     operationId: get-user-profile
+     *     responses:
+     *       '200':
+     *         $ref: "#/components/responses/getUserProfileResponse"
+     */
     ```
   - Response schema annotation
     ```js
     /**
      * @openapi
-    * components:
-    *   responses:
-    *     getUserProfileResponse:
-    *       description: 200 response
-    *       content:
-    *         application/json:
-    *           schema:
-    *             type: object
-    *             properties:
-    *               receivedHTTPRequestBody:
-    *                 type: string
-    *               userInfoMessage:
-    *                 type: string
-    *               graphClientMessage:
-    *                 type: object
-    */
+     * components:
+     *   responses:
+     *     getUserProfileResponse:
+     *       description: 200 response
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               receivedHTTPRequestBody:
+     *                 type: string
+     *               userInfoMessage:
+     *                 type: string
+     *               graphClientMessage:
+     *                 type: object
+     */
     ```
 - Create an OpenAPI definition file `openapi/openapi.definition.json` and input the title and version. Below is a sample definition file.
     ```json

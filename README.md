@@ -1,9 +1,9 @@
 # Microsoft Teams Framework (TeamsFx)
-![CI workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/ci.yml/badge.svg)
-![E2E Test workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/e2e-test.yml/badge.svg)
-![SDK CI workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/sdk-ci.yml/badge.svg)
-![SimpleAuth CI workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/simpleauthCI.yml/badge.svg)
-![Function Extension CI workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/FunctionExtensionCI.yml/badge.svg)
+[![CI workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/ci.yml/badge.svg)](https://github.com/OfficeDev/TeamsFx/actions/workflows/ci.yml)
+[![E2E Test workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/e2e-test.yml/badge.svg)](https://github.com/OfficeDev/TeamsFx/actions/workflows/e2e-test.yml)
+[![SDK CI workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/sdk-ci.yml/badge.svg)](https://github.com/OfficeDev/TeamsFx/actions/workflows/sdk-ci.yml)
+[![SimpleAuth CI workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/simpleauthCI.yml/badge.svg)](https://github.com/OfficeDev/TeamsFx/actions/workflows/simpleauthCI.yml)
+[![Function Extension CI workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/FunctionExtensionCI.yml/badge.svg)](https://github.com/OfficeDev/TeamsFx/actions/workflows/FunctionExtensionCI.yml)
 
 > Please be advised that this project is currently in **Public Preview**, with a lot of bugs, and work left to do before it's ready for production. **Please expect breaking changes** as we continue to iterate. We really appreciate your [feedback](https://aka.ms/teamsfx-feedback), and [recordings](https://aka.ms/teamsfx-record), they really make the product better. Thank you!
 

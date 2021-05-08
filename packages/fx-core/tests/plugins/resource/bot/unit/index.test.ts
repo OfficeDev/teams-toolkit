@@ -326,7 +326,6 @@ describe("Teams Bot Resource Plugin", () => {
         it("Happy Path", async () => {
             // Arrange
             const pluginContext = testUtils.newPluginContext();
-            botPluginImpl.config.provision.provisioned = true;
             botPluginImpl.config.provision.siteEndpoint = "https://abc.azurewebsites.net";
             botPluginImpl.config.scaffold.programmingLanguage = ProgrammingLanguage.JavaScript;
             pluginContext.root = rootDir;

@@ -32,6 +32,7 @@ export class TestLogger implements IDepsLogger {
   }
 
   public async printCachedMessagesAsError(): Promise<void> { }
+  public async cleanupCache(): Promise<void> { }
 }
 
 export const logger = new TestLogger();

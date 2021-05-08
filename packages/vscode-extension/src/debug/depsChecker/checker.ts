@@ -43,6 +43,7 @@ export interface IDepsLogger {
   error(message: string): Promise<boolean>;
 
   printCachedMessagesAsError(): Promise<void>;
+  cleanupCache(): Promise<void>;
 }
 
 export interface IDepsTelemetry {
@@ -86,10 +87,10 @@ export class DepsChecker {
       return shouldContinue;
     }
 
-    if (isLinux()) {
-      const confirmMessage = await this.generateMsg(validCheckers);
-      return await this._adapter.displayContinueWithLearnMore(confirmMessage, dotnetManualInstallHelpLink);
-    }
+    // if (isLinux()) {
+    //   const confirmMessage = await this.generateMsg(validCheckers);
+    //   return await this._adapter.displayContinueWithLearnMore(confirmMessage, dotnetManualInstallHelpLink);
+    // }
 
     this._adapter.showOutputChannel();
     for (const checker of validCheckers) {
@@ -97,13 +98,15 @@ export class DepsChecker {
         await checker.install();
       } catch (error) {
         await this._logger.printCachedMessagesAsError();
-        await this._logger.debug(`Failed to install '${checker.constructor.name}', error = '${error}'`)
+        await this._logger.cleanupCache();
+        await this._logger.error(`Failed to install '${checker.constructor.name}', error = '${error}'`)
         const continueNext = await this.handleError(error);
         if (!continueNext) {
           return !shouldContinue;
         }
       }
     }
+    await this._logger.cleanupCache();
 
     return shouldContinue;
   }

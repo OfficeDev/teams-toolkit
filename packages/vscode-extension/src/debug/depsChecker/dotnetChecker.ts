@@ -107,7 +107,7 @@ export class DotnetChecker implements IDepsChecker {
     await this._logger.debug(`[end] cleanup bin/dotnet and config`);
 
     const installDir = DotnetChecker.getDefaultInstallPath();
-    await this._logger.debug(`[start] install dotnet ${installVersion}`);
+    await this._logger.debug(`[start] run dotnet-install script ${installVersion}`);
     await this._logger.info(Messages.dotnetNotFound.replace("@NameVersion", installedNameWithVersion));
     await this._logger.info(Messages.downloadDotnet
       .replace("@NameVersion", installedNameWithVersion)
@@ -115,10 +115,7 @@ export class DotnetChecker implements IDepsChecker {
     await this._adapter.runWithProgressIndicator(async () => {
       await this.handleInstall(installVersion, installDir);
     });
-    await this._logger.info(
-      Messages.finishInstallDotnet.replace("@NameVersion", installedNameWithVersion)
-    );
-    await this._logger.debug(`[end] install dotnet ${installVersion}`);
+    await this._logger.debug(`[end] run dotnet-install script ${installVersion}`);
 
     await this._logger.debug(`[start] validate dotnet version`);
     if (!(await this.validate())) {
@@ -128,6 +125,9 @@ export class DotnetChecker implements IDepsChecker {
         dotnetFailToInstallHelpLink
       );
     }
+    await this._logger.info(
+      Messages.finishInstallDotnet.replace("@NameVersion", installedNameWithVersion)
+    );
     this._telemetry.sendEvent(DepsCheckerEvent.dotnetInstallCompleted);
   }
 

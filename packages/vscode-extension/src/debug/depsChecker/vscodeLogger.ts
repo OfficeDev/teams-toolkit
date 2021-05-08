@@ -34,14 +34,17 @@ export class VSCodeLogger implements IDepsLogger {
     return await this.logger.error(message);
   }
 
+  public async printCachedMessagesAsError(): Promise<void> {
+      await this.logger.error(this.cachedLogLines.join(os.EOL));
+  }
+
+  public async cleanupCache(): Promise<void> {
+      this.cachedLogLines = [];
+  }
+
   private async writeCachedLog(level: LogLevel, message: string): Promise<void> {
     const line = `${LogLevel[level]} ${new Date().toISOString()}: ${message}`;
     this.cachedLogLines.push(line);
-  }
-
-  public async printCachedMessagesAsError(): Promise<void> {
-      await this.logger.error(this.cachedLogLines.join(os.EOL));
-      this.cachedLogLines = [];
   }
 }
 

@@ -6,10 +6,10 @@ While debugging the TeamsFx project in local (type `F5`), `Env Checker` will hel
 
 Current required dependencies for local debugging:
 
-Dependencies | Usage
-- | -
-Node.js | - restore the npm packages.<br>- start the app for local debugging.
-.NET SDK | - start simpleAuth service for local debugging.<br> - install the customized function binding extension.
+| Dependencies | Usage |
+| - | - |
+| Node.js | - restore the npm packages.<br>- start the app for local debugging.|
+| .NET SDK | - start simpleAuth service for local debugging.<br> - install the customized function binding extension.|
 
 Please Note:
 - For `Node.js`, `Env Checker` only checks its existence, and won't install it for users.
@@ -59,7 +59,7 @@ Please refer to [nodejs.org](https://nodejs.org/) to install the right version.
 ### Notification Message
 > Failed to install .NET Core SDK (v3.1), please install it manually and restart all your Visual Studio Code instances.
 
-### Possible reasons
+It might be caused by:
 * Timeout(longer than 3 minutes) to install it caused by poor network.
 * The process to install `.NET Core SDK` is killed by mistake.
 

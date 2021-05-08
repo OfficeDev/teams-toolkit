@@ -67,12 +67,10 @@ Please refer to [the guide](#how-to-install-nodejs) to install `Node.js`.
 ### Notification Message
 > Failed to install .NET Core SDK (v3.1), please install it manually and restart all your Visual Studio Code instances.
 
-It might be caused by:
-* Timeout (longer than 3 minutes) to install it caused by poor network.
-* The process to install `.NET Core SDK` is killed by mistake.
+It might be caused by timeout issue (longer than 3 minutes), the process to install `.NET SDK` is killed, or other unknown issues.
 
 ### Mitigation
-* Retry it (Type `F5` again).
+* Retry the operation (local debugging or Function app deployment).
 * Please refer to [the guide](#how-to-install-net-sdk) to install `.NET SDK` manually.
 
 ## DotnetNotFound 

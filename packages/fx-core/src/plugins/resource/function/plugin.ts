@@ -571,35 +571,35 @@ export class FunctionPluginImpl {
     }
 
     private async handleDotnetChecker(): Promise<void> {
-        await step(StepGroup.PreDeployStepGroup, PreDeploySteps.dotnetInstall, async () => {
-            const dotnetChecker = new DotnetChecker(funcPluginAdapter, funcPluginLogger, funcPluginTelemetry);
-            try {
-                if (await dotnetChecker.isInstalled()) {
-                    funcPluginLogger.cleanup();
+        try {
+            await step(StepGroup.PreDeployStepGroup, PreDeploySteps.dotnetInstall, async () => {
+                const dotnetChecker = new DotnetChecker(funcPluginAdapter, funcPluginLogger, funcPluginTelemetry);
+                try {
+                    if (await dotnetChecker.isInstalled()) {
+                        return;
+                    }
+                } catch (error) {
+                    funcPluginLogger.debug(InfoMessages.failedToCheckDotnet(error));
+                    funcPluginAdapter.handleDotnetError(error);
                     return;
                 }
-            } catch (error) {
-                funcPluginLogger.debug(`Failed to checker for .NET SDK, error = '${error}'`);
-                funcPluginAdapter.handleDotnetError(error);
-                return;
-            }
 
-            if (isLinux()) {
-                // TODO: handle linux installation
-                funcPluginAdapter.handleDotnetError(new DepsCheckerError(Messages.defaultErrorMessage, dotnetManualInstallHelpLink));
-                funcPluginLogger.cleanup();
-                return;
-            }
+                if (isLinux()) {
+                    // TODO: handle linux installation
+                    funcPluginAdapter.handleDotnetError(new DepsCheckerError(Messages.defaultErrorMessage, dotnetManualInstallHelpLink));
+                    return;
+                }
 
-            try {
-                await dotnetChecker.install();
-            } catch (error) {
-                await funcPluginLogger.printDetailLog();
-                funcPluginLogger.error(`Failed to install .NET SDK, error = '${error}'`);
-                funcPluginAdapter.handleDotnetError(error);
-            } finally {
-                funcPluginLogger.cleanup();
-            }
-        });
+                try {
+                    await dotnetChecker.install();
+                } catch (error) {
+                    await funcPluginLogger.printDetailLog();
+                    funcPluginLogger.error(InfoMessages.failedToInstallDotnet(error));
+                    funcPluginAdapter.handleDotnetError(error);
+                }
+            });
+        } finally {
+            funcPluginLogger.cleanup();
+        }
     }
 }

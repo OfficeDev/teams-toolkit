@@ -3,19 +3,19 @@
 
 // index.js is used to setup and configure your bot
 
-const path = require('path');
-const express = require('express');
+const path = require("path");
+const express = require("express");
 
 // See https://aka.ms/bot-services to learn more about the different parts of a bot.
-const { BotFrameworkAdapter } = require('botbuilder');
+const { BotFrameworkAdapter } = require("botbuilder");
 
-const { MessageExtensionBot } = require('./messageExtensionBot.js');
+const { MessageExtensionBot } = require("./messageExtensionBot.js");
 
 // Create adapter.
 // See https://aka.ms/about-bot-adapter to learn more about adapters.
 const adapter = new BotFrameworkAdapter({
     appId: process.env.BOT_ID,
-    appPassword: process.env.BOT_PASSWORD
+    appPassword: process.env.BOT_PASSWORD,
 });
 
 adapter.onTurnError = async (context, error) => {
@@ -26,15 +26,17 @@ adapter.onTurnError = async (context, error) => {
 
     // Send a trace activity, which will be displayed in Bot Framework Emulator
     await context.sendTraceActivity(
-        'OnTurnError Trace',
+        "OnTurnError Trace",
         `${error}`,
-        'https://www.botframework.com/schemas/error',
-        'TurnError'
+        "https://www.botframework.com/schemas/error",
+        "TurnError"
     );
 
     // Send a message to the user
-    await context.sendActivity('The bot encountered an error or bug.');
-    await context.sendActivity('To continue to run this bot, please fix the bot source code.');
+    await context.sendActivity("The bot encountered an error or bug.");
+    await context.sendActivity(
+        "To continue to run this bot, please fix the bot source code."
+    );
 };
 
 // Create bot handlers
@@ -48,7 +50,7 @@ server.listen(port, () =>
 );
 
 // Listen for incoming requests.
-server.post('/api/messages', (req, res) => {
+server.post("/api/messages", (req, res) => {
     adapter.processActivity(req, res, async (context) => {
         // Process bot activity
         await messageExtensionBot.run(context);

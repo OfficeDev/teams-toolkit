@@ -16,12 +16,6 @@ export interface IApimPluginError {
 }
 
 // User error
-export const EmptyChoice: IApimPluginError = {
-    type: ErrorType.User,
-    code: "EmptyChoice",
-    message: (question: string) => `No option in question '${question}' is selected, please choose one.`,
-};
-
 export const NoValidOpenApiDocument: IApimPluginError = {
     type: ErrorType.User,
     code: "NoValidOpenApiDocument",
@@ -60,6 +54,20 @@ export const InvalidConfigValue: IApimPluginError = {
     type: ErrorType.User,
     code: "InvalidConfigValue",
     message: (component: string, name: string, message: string) => `Project configuration '${name}' of ${component} is invalid. ${message}`,
+};
+
+export const ApimOperationError: IApimPluginError = {
+    type: ErrorType.User,
+    code: "ApimOperationError",
+    message: (operation: string, resourceType: string) => `Failed to ${operation} ${resourceType}.`,
+    helpLink: "https://aka.ms/teamsfx-apim-help#apimoperationerror",
+};
+
+export const AadOperationError: IApimPluginError = {
+    type: ErrorType.User,
+    code: "AadOperationError",
+    message: (operation: string, resourceType: string) => `Failed to ${operation} ${resourceType}.`,
+    helpLink: "https://aka.ms/teamsfx-apim-help#aadoperationerror",
 };
 
 // System error
@@ -103,20 +111,6 @@ export const ShortenToEmpty: IApimPluginError = {
     type: ErrorType.System,
     code: "ShortenToEmpty",
     message: (value: string) => `The value '${value}' cannot be shorten to empty.`,
-};
-
-export const ApimOperationError: IApimPluginError = {
-    type: ErrorType.System,
-    code: "ApimOperationError",
-    message: (operation: string, resourceType: string) => `Failed to ${operation} ${resourceType}.`,
-    helpLink: "https://aka.ms/teamsfx-apim-help#apimoperationerror",
-};
-
-export const AadOperationError: IApimPluginError = {
-    type: ErrorType.System,
-    code: "AadOperationError",
-    message: (operation: string, resourceType: string) => `Failed to ${operation} ${resourceType}.`,
-    helpLink: "https://aka.ms/teamsfx-apim-help#aadoperationerror",
 };
 
 export const UnhandledError: IApimPluginError = {

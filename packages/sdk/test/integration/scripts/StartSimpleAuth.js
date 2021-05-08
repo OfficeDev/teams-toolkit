@@ -35,6 +35,7 @@ async function startSimpleAuth() {
     let simpleAuthZip = `${__dirname}/SimpleAuth.zip`;
     setupEnv();
     if (!fs.existsSync(simpleAuthZip)) {
+        console.log("file not exist");
         try {
             await downloadSimpleAuth();
         } catch (err) {
@@ -42,8 +43,12 @@ async function startSimpleAuth() {
         }
     }
     simpleAuthZip = new admZip(`${simpleAuthZip}`);
+    console.log("====== 1");
     simpleAuthZip.extractAllTo(`${__dirname}/SimpleAuthUnzipOutput`, true);
+    console.log("====== 2");
     spawn('dotnet', [`${__dirname}/SimpleAuthUnzipOutput/Microsoft.TeamsFx.SimpleAuth.dll`]);
 }
 
-startSimpleAuth();
+(async()=>{
+    await startSimpleAuth();
+})();

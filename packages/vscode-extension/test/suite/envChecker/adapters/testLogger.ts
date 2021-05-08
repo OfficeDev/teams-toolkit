@@ -22,6 +22,9 @@ export class TestLogger implements IDepsLogger {
     return Promise.resolve(true);
   }
 
+  public async printDetailLog(): Promise<void> { }
+  public cleanup(): void { }
+
   private writeLog(level: LogLevel, message: string) {
     const line = `${LogLevel[level]} ${new Date().toISOString()}: ${message}`;
     if (level >= LogLevel.Error) {
@@ -30,9 +33,6 @@ export class TestLogger implements IDepsLogger {
       console.log(line);
     }
   }
-
-  public async printCachedMessagesAsError(): Promise<void> { }
-  public async cleanupCache(): Promise<void> { }
 }
 
 export const logger = new TestLogger();

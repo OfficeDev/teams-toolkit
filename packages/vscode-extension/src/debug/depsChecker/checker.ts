@@ -42,8 +42,8 @@ export interface IDepsLogger {
   warning(message: string): Promise<boolean>;
   error(message: string): Promise<boolean>;
 
-  printCachedMessagesAsError(): Promise<void>;
-  cleanupCache(): Promise<void>;
+  printDetailLog(): Promise<void>;
+  cleanup(): void;
 }
 
 export interface IDepsTelemetry {
@@ -97,8 +97,8 @@ export class DepsChecker {
       try {
         await checker.install();
       } catch (error) {
-        await this._logger.printCachedMessagesAsError();
-        await this._logger.cleanupCache();
+        await this._logger.printDetailLog();
+        this._logger.cleanup();
         await this._logger.error(`Failed to install '${checker.constructor.name}', error = '${error}'`)
         const continueNext = await this.handleError(error);
         if (!continueNext) {
@@ -106,7 +106,7 @@ export class DepsChecker {
         }
       }
     }
-    await this._logger.cleanupCache();
+    await this._logger.cleanup();
 
     return shouldContinue;
   }

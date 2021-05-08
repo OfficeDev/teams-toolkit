@@ -820,6 +820,8 @@ export class TeamsAppSolution implements Solution {
                     const ue = error as UserError;
                     if(!ue.helpLink){
                         ue.helpLink = "https://aka.ms/teamsfx-solution-help";
+                        ue.source = "Solution",
+                        ue.name = "ProvisionFailure";
                     }
                 }
             }

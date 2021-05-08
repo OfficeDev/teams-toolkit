@@ -1,57 +1,83 @@
 # Env Checker FAQ
 
-## The toolkit cannot find Node.js on your machine
+## Overall
 
-As the TeamsFx project is implemented by `Node.js`, it's required to install the npm pacakges and run the project in local. Please refer to [nodejs.org](https://nodejs.org/) to install the right version: Currently only LTS versions (v10, v12 and v14) are supported by TeamsFx, and `Node v14` would be recommended to be installed.
+While debugging the TeamsFx project in local (type `F5`), `Env Checker` will help to check if the required dependencies are installed before debugging.
 
-**NOTE**
-* There are known issues with using `npm@7`, packaged with `Node v15` and later. If you have problems running npm install, it would be recommended to use `Node v14 (LTS)` instead.
-* Please restart all your Visual Studio Code instances after the installation is finished.
+Current required dependencies for local debugging:
 
-## Current installed Node.js is not in the supported version list (Azure hosting)
+Dependencies | Usage
+- | -
+Node.js | - restore the npm packages.<br>- start the app for local debugging.
+.NET SDK | - start simpleAuth service for local debugging.<br> - install the customized function binding extension.
 
- When `Azure` is selected as the hosting type, only LTS versions (v10, v12 and v14) of Node.js are supported by TeamsFx currently, please make sure the installed Node.js meets this requirement. In addition, **Node v14 (LTS)** would be recommended to be installed.
+Please Note:
+- For `Node.js`, `Env Checker` only checks its existence, and won't install it for users.
+- For `.NET SDK`, `Env Checker` will try to install it for users if it cannot be found. `.NET SDK` will be installed with the official provided [dotnet-install script](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-install-script). The script will download the portable version of `.NET Core SDK 3.1` and save it into under directory `%userprofile%/.fx/bin/dotnet` (on Windows) or `~/.fx/bin/dotnet` (on macOS/Linux), which is designed for TeamsFx's usage only and won't affect user's development environment. In addition, it's only needed to be installed once.
+- During the step to deploy Function App, `Env Checker` will also check and install `.NET SDK` in the same way as mentioned above.
+
+## NodeNotFound
+### Notification Message
+> The toolkit cannot find Node.js on your machine. As a fundamental language runtime for Teams app, these dependencies are required. Node.js is required and the recommended version is v12.
+
+As the TeamsFx project is implemented by `Node.js`, it's required to install the npm pacakges and run the project in local. 
+
+### Mitigation
+Please refer to [nodejs.org](https://nodejs.org/) to install the right version: currently only LTS versions (v10, v12 and v14) are supported by TeamsFx, and `Node v14` would be recommended to be installed.
 
 **NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
 
-## Current installed Node.js is not in the supported version list (SPFx hosting)
+## NodeNotSupported(Azure hosting)
+### Notification Message
+
+> Current installed Node.js is not in the supported version list (Azure hosting), which might not work as expected for some functionalities.
+
+When `Azure` is selected as the hosting type, only LTS versions (v10, v12 and v14) of Node.js are supported by TeamsFx currently, please make sure the installed Node.js meets this requirement. In addition, **Node v14 (LTS)** would be recommended to be installed.
+
+### Mitigation
+Please refer to [nodejs.org](https://nodejs.org/) to install the right version.
+
+**NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
+
+## NodeNotSupported(SPFx hosting)
+### Notification Message
+> Current installed Node.js is not in the supported version list (SPFx hosting), which might not work as expected for some functionalities.
   
- The SharePoint Framework v1.12.1 is supported on the following Node.js versions:
+The SharePoint Framework v1.12.1 is supported on the following Node.js versions:
+- Node.js v10.13.0+ (Dubnium)
+- Node.js v12.13.0+ (Erbium)
+- Node.js v14.15.0+ (Fermium) 
+ 
+And **the latest version of Node.js LTS v14** would be recommended to be installed. For details, please refer to: https://docs.microsoft.com/en-us/sharepoint/dev/spfx/set-up-your-development-environment#install-nodejs
 
- - Node.js v10.13.0+ (Dubnium)
- - Node.js v12.13.0+ (Erbium)
- - Node.js v14.15.0+ (Fermium) 
- 
- And **the latest version of Node.js LTS v14** would be recommended to be installed.
- 
- Details can see: https://docs.microsoft.com/en-us/sharepoint/dev/spfx/set-up-your-development-environment#install-nodejs
+### Mitigation
+Please refer to [nodejs.org](https://nodejs.org/) to install the right version.
 
 **NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
 
-## Why .NET SDK is needed?
-
-The `.NET SDK` is used to
-* install customized bindings for Azure Functions app during local debugging and its deployments. 
-* start the simpleAuth service during local debugging.
-
-## Failed to install .NET Core SDK (v3.1)
+## FailToInstallDotnet
+### Notification Message
+> Failed to install .NET Core SDK (v3.1), please install it manually and restart all your Visual Studio Code instances.
 
 ### Possible reasons
 * Timeout(longer than 3 minutes) to install it caused by poor network.
 * The process to install `.NET Core SDK` is killed by mistake.
 
-### Workaround solutions
+### Mitigation
 * Retry it (Type `F5` again).
 * Install the `.NET SDK` manually: please go to https://dotnet.microsoft.com/download, and install it on your platform. Both `.NET 5.0 SDK` and `.NET Core 3.1 SDK` are supported.
 
 **NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
 
-## (Linux only) The toolkit cannot find `.NET 5` or `.NET Core 3.1` on your machine. Please install it manually.
+## DotnetNotFound 
+### Notification Message
+> (Linux only) The toolkit cannot find `.NET 5` or `.NET Core 3.1` on your machine. As a fundamental runtime context for Teams app, these dependencies are required. Please install the required dependencies manually.
 
+### Mitigation
 Install the `.NET SDK` manually: please refer to the official documentation to check how to install it: https://docs.microsoft.com/en-us/dotnet/core/install/linux.
 
 **NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
 
-## Report issues if above FAQ can't solve your problems
+## Report issues 
 
-Please click [here](https://github.com/OfficeDev/TeamsFx/issues/new) to submit an issue on GitHub and attach the log from Visual Studio Code output channel named "Teams Toolkit".
+If above FAQs can't solve your problem, please click [here](https://github.com/OfficeDev/TeamsFx/issues/new) to submit an issue on GitHub and attach the log from Visual Studio Code output channel named "Teams Toolkit".

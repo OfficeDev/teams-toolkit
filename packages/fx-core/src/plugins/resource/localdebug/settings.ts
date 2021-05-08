@@ -8,6 +8,8 @@ export function generateSettings(): Record<string, unknown> {
      */
     return {
         // Ensure that Azure Function Extension does not kill the backend process
-        "azureFunctions.stopFuncTaskPostDebug": false
+        "azureFunctions.stopFuncTaskPostDebug": false,
+        "azureFunctions.showProjectWarning": false,
+        "csharp.suppressDotnetRestoreNotification": true
     };
 }

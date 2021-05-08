@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import "mocha";
 import chai from "chai";
-import { AadOperationError, AssertNotEmpty, BuildError, EmptyChoice, UnhandledError } from "../../../../src/plugins/resource/apim/error";
+import { AadOperationError, AssertNotEmpty, BuildError, InvalidAadObjectId, UnhandledError } from "../../../../src/plugins/resource/apim/error";
 
 describe("Error", () => {
     describe("#AssertNotEmpty()", () => {
@@ -27,9 +27,9 @@ describe("Error", () => {
         });
     });
     describe("#BuildError()", () => {
-        it("EmptyChoice", () => {
-            const error = BuildError(EmptyChoice, "test question");
-            chai.assert.equal(error.message, `No option in question 'test question' is selected, please choose one.`);
+        it("InvalidAadObjectId", () => {
+            const error = BuildError(InvalidAadObjectId, "test");
+            chai.assert.equal(error.message, "The Azure Active Directory application with object id 'test' could not be found.");
         });
 
         it("UnhandledError(error)", () => {

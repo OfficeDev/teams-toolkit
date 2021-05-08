@@ -19,6 +19,11 @@ The property `apimClientAADObjectId` in the config file `.fx/env.default.json` i
 
 ## ApimOperationError
 ### Error Message
+Failed to create API Management Service. The subscription is not registered to use namespace 'Microsoft.ApiManagement'. See https://aka.ms/rps-not-found for how to register subscriptions.
+### Mitigation
+Please register the resource provider namespace 'Microsoft.ApiManagement' for your subscription according to this [document](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/error-register-resource-provider#solution-3---azure-portal).
+
+### Error Message
 Failed to import API Management API. [Detail] One or more fields contain incorrect values. {reason}
 ### Mitigation
 The OpenAPI document is invalid. Please change the OpenAPI document according to the reason in the error message. The OpenAPI limitation in Azure API Management can be found [here](https://docs.microsoft.com/en-us/azure/api-management/api-management-api-import-restrictions).

@@ -55,10 +55,10 @@ export class BackendExtensionsInstaller {
       );
     } catch (error) {
       await this._logger.printDetailLog();
-      this._logger.cleanup();
       await this._logger.error(`Failed to run backend extension install: error = '${error}'`);
       throw new BackendExtensionsInstallError(`Failed to run backend extension install: error = '${error}'`, defaultHelpLink);
+    } finally {
+      this._logger.cleanup();
     }
-    this._logger.cleanup();
   }
 }

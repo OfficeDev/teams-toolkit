@@ -94,7 +94,7 @@ export class MainDialog extends RootDialog {
                 );
 
                 // show user picture
-                var photoBinary: ArrayBuffer;
+                let photoBinary: ArrayBuffer;
                 try {
                     photoBinary = await graphClient
                         .api("/me/photo/$value")

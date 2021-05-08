@@ -86,7 +86,7 @@ Click "Install" to install @InstallPackages.`,
 
   linuxDepsNotFound: `The toolkit cannot find @SupportedPackages on your machine.
 
-As a fundamental runtime context for Teams app, these dependencies are required. 
+As a fundamental runtime context for Teams app, these dependencies are required.
 
 Please install the required dependencies manually.
 

@@ -28,7 +28,7 @@ export class RootDialog extends ComponentDialog {
         const removedMentionText = TurnContext.removeRecipientMention(
             innerDc.context.activity
         );
-        const text = removedMentionText.toLowerCase().replace(/\n|\r/g, ""); // Remove the line break
+        const text = removedMentionText?.toLowerCase().replace(/\n|\r/g, ""); // Remove the line break
         switch (text) {
             case "show": {
                 if (innerDc.context.activity.conversation.isGroup) {

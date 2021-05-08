@@ -1,5 +1,17 @@
 # Local Debug FAQ
 
+## Overall
+Teams Toolkit allows you to debug your Teams app locally by leveraging Visual Studio Code debugging features. After pressing F5, several components of the app will be automatically started. The Teams web client will then be launched in your browser. Specifically, the following components may be started according to your app capacities:
+- Tab: a react app required by Teams Tab capacity
+- Auth: an authentication service acting as a proxy between the app and Azure Active Directory
+- Function: a Azure Functions app that may be needed by Tab
+- Bot: a bot server required by Teams Bot capacity
+- Ngrok: a tunneling service required by Teams Bot that forwards local address to public address
+
+During debugging, a localhost development certificate will also be generated and installed to your system after your confirmation.
+
+Some frequently asked questions are listed bellow.
+
 ## Which ports will be used?
 | Port | Component |
 | --- | --- |
@@ -43,7 +55,7 @@ $ kill <process id>
 This is mainly because the Teams account you logged in when the Teams web client is opened is different from the M365 account you logged in when developing the Teams app.
 
 ### Mitigation
-Please make sure you use the same M365 account. After logging in the correct account, start debugging again. You can see which M365 account you logged in via Teams toolkit, like:
+Please make sure you use the same M365 account. After logging in the correct account, start debugging again. You can see which M365 account you logged in via Teams Toolkit, like:
 
 ![Teams Toolkit M365 Account](../images/fx-core/localdebug/m365-account.png)
 

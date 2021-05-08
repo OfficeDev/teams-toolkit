@@ -10,11 +10,11 @@ import {
     GetTemplateError,
     NoResourceGroupError,
     NoStorageError,
-    NotProvisionError,
-    NotScaffoldError,
     StaticWebsiteDisabledError,
     UnzipTemplateError,
     runWithErrorCatchAndThrow,
+    CheckStorageError,
+    CheckResourceGroupError,
 } from "./resources/errors";
 import {
     Constants,
@@ -82,7 +82,7 @@ export class FrontendPluginImpl {
         this.azureStorageClient = new AzureStorageClient(this.config);
 
         const resourceGroupExists: boolean = await runWithErrorCatchAndThrow(
-            new Error(),
+            new CheckResourceGroupError(),
             async () => await this.azureStorageClient!.doesResourceGroupExists(),
         );
         if (!resourceGroupExists) {
@@ -175,7 +175,7 @@ export class FrontendPluginImpl {
         await progressHandler?.next(PreDeploySteps.CheckStorage);
 
         const resourceGroupExists: boolean = await runWithErrorCatchAndThrow(
-            new Error(),
+            new CheckResourceGroupError(),
             async () => await this.azureStorageClient!.doesResourceGroupExists(),
         );
         if (!resourceGroupExists) {
@@ -183,7 +183,7 @@ export class FrontendPluginImpl {
         }
 
         const storageExists: boolean = await runWithErrorCatchAndThrow(
-            new Error(),
+            new CheckStorageError(),
             async () => await this.azureStorageClient!.doesStorageAccountExists(),
         );
         if (!storageExists) {
@@ -191,8 +191,8 @@ export class FrontendPluginImpl {
         }
 
         const storageAvailable: boolean | undefined = await runWithErrorCatchAndThrow(
-            new Error(),
-            async () => await this.azureStorageClient.isStorageStaticWebsiteEnabled(),
+            new CheckStorageError(),
+            async () => await this.azureStorageClient!.isStorageStaticWebsiteEnabled(),
         );
         if (!storageAvailable) {
             throw new StaticWebsiteDisabledError();
@@ -209,7 +209,7 @@ export class FrontendPluginImpl {
 
         const client = this.azureStorageClient;
         if (!client) {
-            throw new NotProvisionError();
+            throw new Error();
         }
 
         const componentPath: string = path.join(ctx.root, FrontendPathInfo.WorkingDir);

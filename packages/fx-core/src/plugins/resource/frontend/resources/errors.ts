@@ -15,11 +15,14 @@ const tips = {
     reScaffold: `Run 'Start A New Project' again.`,
     doProvision: `Run 'Provision Resource' before this command.`,
     doLogin: "Login to Azure.",
+    reLogin: "Sign out and login to Azure again.",
     reProvision: `Run 'Provision Resource' again.`,
     doBuild: `Run 'npm install' and 'npm run build' in the folder: '${FrontendPathInfo.WorkingDir}'.`,
     ensureBuildPath: `Ensure your built project exists: '${FrontendPathInfo.BuildPath}'.`,
+    ensureResourceGroup: "Ensure your resource group exists",
     ensureAppNameValid:
         "Ensure your app name only contains alphabetical and numeric characters, and does not contain trademark or reserved words.",
+    deleteSameNameStorage: "Delete your Azure Storage Account with same name in another resource group or subscription",
     checkNetwork: "Check your network connection.",
     checkFsPermissions: "Check if you have Read/Write permissions to your file system.",
     checkStoragePermissions: "Check if you have permissions to your Azure Storage Account.",
@@ -54,27 +57,33 @@ export class FrontendPluginError extends Error {
     }
 }
 
-export class NotScaffoldError extends FrontendPluginError {
-    constructor() {
-        super(ErrorType.User, "NotScaffoldError", "Scaffold has not completed successfully.", [tips.reScaffold]);
-    }
-}
-
 export class UnauthenticatedError extends FrontendPluginError {
     constructor() {
         super(ErrorType.User, "UnauthenticatedError", "Failed to get user login information.", [tips.doLogin]);
     }
 }
 
-export class NotProvisionError extends FrontendPluginError {
+export class InvalidConfigError extends FrontendPluginError {
+    constructor(key: string) {
+        super(ErrorType.User, "InvalidConfigError", `Get invalid ${key}`, [tips.restoreEnvironment]);
+    }
+}
+
+export class CheckResourceGroupError extends FrontendPluginError {
     constructor() {
-        super(ErrorType.User, "NotProvisionError", "Provision has not completed successfully.", [tips.doProvision]);
+        super(ErrorType.User, "CheckResourceGroupError", "Failed to check resource group existence.", [tips.reLogin]);
     }
 }
 
 export class NoResourceGroupError extends FrontendPluginError {
     constructor() {
-        super(ErrorType.User, "NoResourceGroupError", "Failed to find resource group.", [tips.reProvision]);
+        super(ErrorType.User, "NoResourceGroupError", "Failed to find resource group.", [tips.ensureResourceGroup]);
+    }
+}
+
+export class CheckStorageError extends FrontendPluginError {
+    constructor() {
+        super(ErrorType.User, "CheckStorageError", "Failed to check Azure Storage Account availability", [tips.reLogin]);
     }
 }
 
@@ -105,9 +114,9 @@ export class InvalidStorageNameError extends FrontendPluginError {
 
 export class CreateStorageAccountError extends FrontendPluginError {
     constructor() {
-        super(ErrorType.System, "CreateStorageAccountError", "Failed to create Azure Storage Account.", [
+        super(ErrorType.User, "CreateStorageAccountError", "Failed to create Azure Storage Account.", [
             tips.ensureAppNameValid,
-            tips.checkNetwork,
+            tips.deleteSameNameStorage,
         ]);
     }
 }
@@ -118,7 +127,7 @@ export class EnableStaticWebsiteError extends FrontendPluginError {
             ErrorType.System,
             "EnableStaticWebsiteError",
             "Failed to enable static website feature for Azure Storage Account.",
-            [tips.checkStoragePermissions, tips.checkNetwork],
+            [tips.checkStoragePermissions],
         );
     }
 }
@@ -156,7 +165,7 @@ export class GetContainerError extends FrontendPluginError {
 
 export class FetchTemplateManifestError extends FrontendPluginError {
     constructor() {
-        super(ErrorType.System, "FetchTemplateManifestError", "Failed to fetch manifest.", [
+        super(ErrorType.System, "FetchTemplateManifestError", "Failed to fetch template manifest.", [
             tips.checkNetwork,
         ]);
     }
@@ -176,7 +185,7 @@ export class FetchTemplatePackageError extends FrontendPluginError {
 
 export class GetTemplateError extends FrontendPluginError {
     constructor() {
-        super(ErrorType.User, "GetTemplateError", "Failed to fetch template.", [
+        super(ErrorType.System, "GetTemplateError", "Failed to fetch template.", [
             tips.checkNetwork,
             tips.checkFsPermissions,
         ]);
@@ -206,12 +215,6 @@ export class NpmInstallError extends FrontendPluginError {
             tips.doBuild,
             tips.checkNetwork,
         ]);
-    }
-}
-
-export class InvalidTabScopeError extends FrontendPluginError {
-    constructor() {
-        super(ErrorType.User, "InvalidTabScopeError", "The Tab scope is invalid.", [tips.restoreEnvironment, tips.reScaffold]);
     }
 }
 

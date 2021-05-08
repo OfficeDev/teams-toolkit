@@ -81,7 +81,10 @@ export class FrontendPluginImpl {
         this.config = await FrontendConfig.fromPluginContext(ctx);
         this.azureStorageClient = new AzureStorageClient(this.config);
 
-        const resourceGroupExists: boolean = await this.azureStorageClient.doesResourceGroupExists();
+        const resourceGroupExists: boolean = await runWithErrorCatchAndThrow(
+            new Error(),
+            async () => await this.azureStorageClient!.doesResourceGroupExists(),
+        );
         if (!resourceGroupExists) {
             throw new NoResourceGroupError();
         }
@@ -97,7 +100,7 @@ export class FrontendPluginImpl {
         const client = this.azureStorageClient;
         const storageName = this.config?.storageName;
         if (!storageName || !client) {
-            throw new NotScaffoldError();
+            throw new Error("system error");
         }
 
         await progressHandler?.next(ProvisionSteps.CreateStorage);
@@ -171,17 +174,26 @@ export class FrontendPluginImpl {
 
         await progressHandler?.next(PreDeploySteps.CheckStorage);
 
-        const resourceGroupExists: boolean = await this.azureStorageClient.doesResourceGroupExists();
+        const resourceGroupExists: boolean = await runWithErrorCatchAndThrow(
+            new Error(),
+            async () => await this.azureStorageClient!.doesResourceGroupExists(),
+        );
         if (!resourceGroupExists) {
             throw new NoResourceGroupError();
         }
 
-        const storageExists: boolean = await this.azureStorageClient.doesStorageAccountExists();
+        const storageExists: boolean = await runWithErrorCatchAndThrow(
+            new Error(),
+            async () => await this.azureStorageClient!.doesStorageAccountExists(),
+        );
         if (!storageExists) {
             throw new NoStorageError();
         }
 
-        const storageAvailable: boolean | undefined = await this.azureStorageClient.isStorageStaticWebsiteEnabled();
+        const storageAvailable: boolean | undefined = await runWithErrorCatchAndThrow(
+            new Error(),
+            async () => await this.azureStorageClient.isStorageStaticWebsiteEnabled(),
+        );
         if (!storageAvailable) {
             throw new StaticWebsiteDisabledError();
         }

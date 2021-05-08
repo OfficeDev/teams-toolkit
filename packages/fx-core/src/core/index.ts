@@ -209,22 +209,6 @@ class CoreImpl implements Core {
         );
     }
 
-    async validateAppName(appName: string, answer?: ConfigMap): Promise<Result<any, FxError>> {
-        const folder = answer?.getString(CoreQuestionNames.Foler);
-        if(!folder) return ok(undefined);
-        const schema = {
-            pattern: "^[a-zA-Z][\\da-zA-Z]+$",
-        };
-        const validateResult = jsonschema.validate(appName, schema);
-        if (validateResult.errors && validateResult.errors.length > 0) {
-            return ok(`project name doesn't match pattern: ${schema.pattern}`);
-        }
-        const projectPath = path.resolve(folder, appName);
-        const exists = await fs.pathExists(projectPath);
-        if (exists) return ok(`Project path already exists:${projectPath}, please change a different project name.`);
-        return ok(undefined);
-    }
-
     async callFunc(func: Func, answer?: ConfigMap): Promise<Result<any, FxError>> {
         const namespace = func.namespace;
         const array = namespace?namespace.split("/"):[];
@@ -427,9 +411,9 @@ class CoreImpl implements Core {
             }
         }
         const t2 = new Date().getTime();
-        let getSelectSubItem: undefined | ((token: any) => Promise<[TreeItem, boolean]>) = undefined;
+        let getSelectSubItem: undefined | ((token: any, valid: boolean) => Promise<[TreeItem, boolean]>) = undefined;
         if (this.ctx.treeProvider) {
-            getSelectSubItem = async (token: any): Promise<[TreeItem, boolean]> => {
+            getSelectSubItem = async (token: any, valid: boolean): Promise<[TreeItem, boolean]> => {
                 let selectSubLabel = "";
                 const subscriptions = await getSubscriptionList(token);
                 const activeSubscriptionId = this.configs.get(this.env!)!.get("solution")?.getString("subscriptionId");
@@ -455,7 +439,7 @@ class CoreImpl implements Core {
                     label: selectSubLabel,
                     callback: ()=>{return Promise.resolve(ok(null));},
                     parent: "fx-extension.signinAzure",
-                    contextValue: contextValue,
+                    contextValue: valid? contextValue: "invalidFxProject",
                     icon: icon
                 }, !(activeSubscriptionId === undefined || activeSubscription === undefined)]);
             };
@@ -486,35 +470,18 @@ class CoreImpl implements Core {
 
                 if(subscription){
                     await this.readConfigs();
-                    let change = true;
-                    const subscriptionId = this.configs.get(this.env!)!.get("solution")!.getString("subscriptionId");
-                    if(subscriptionId){
-                        const confirm  = (await this.ctx.dialog?.communicate(
-                            new DialogMsg(DialogType.Show, {
-                                description: util.format(strings.core.SwitchSubNotice, subscriptionId),
-                                level: MsgLevel.Warning,
-                                items: ["Confirm"]
-                            }),
-                        ))?.getAnswer() === "Confirm";
-                        if(!confirm){
-                            change = false;
-                        } 
-                    }
-                    if(change)
-                    {
-                        this.configs.get(this.env!)!.get("solution")!.set("subscriptionId", subscription.subscriptionId);
-                        this.writeConfigs();
-                        this.ctx.treeProvider?.refresh([
-                            {
-                                commandId: "fx-extension.selectSubscription",
-                                label: subscriptionName,
-                                callback: () => { return Promise.resolve(ok(null)); },
-                                parent: "fx-extension.signinAzure",
-                                contextValue: "selectSubscription",
-                                icon: "subscriptionSelected"
-                            },
-                        ]);
-                    }
+                    this.configs.get(this.env!)!.get("solution")!.set("subscriptionId", subscription.subscriptionId);
+                    this.writeConfigs();
+                    this.ctx.treeProvider?.refresh([
+                        {
+                            commandId: "fx-extension.selectSubscription",
+                            label: subscriptionName,
+                            callback: () => { return Promise.resolve(ok(null)); },
+                            parent: "fx-extension.signinAzure",
+                            contextValue: "selectSubscription",
+                            icon: "subscriptionSelected"
+                        },
+                    ]);
                 }
 
                 return ok(null);
@@ -550,10 +517,8 @@ class CoreImpl implements Core {
                         },
                     ]);
 
-                    if (validFxProject) {
-                        const subItem = await getSelectSubItem!(token);
-                        this.ctx.treeProvider?.add([subItem[0]]);
-                    }
+                    const subItem = await getSelectSubItem!(token, validFxProject);
+                    this.ctx.treeProvider?.add([subItem[0]]);
                 }
 
                 return ok(null);
@@ -589,13 +554,11 @@ class CoreImpl implements Core {
                                     contextValue: "signedinAzure",
                                 },
                             ]);
-                            if (supported) {
-                                const subItem = await getSelectSubItem!(token);
-                                this.ctx.treeProvider?.add([subItem[0]]);
+                            const subItem = await getSelectSubItem!(token, supported);
+                            this.ctx.treeProvider?.add([subItem[0]]);
 
-                                if(!subItem[1]){
-                                    await selectSubscriptionCallback();
-                                }
+                            if (supported && !subItem[1]) {
+                                await selectSubscriptionCallback();
                             }
                         }
                     }

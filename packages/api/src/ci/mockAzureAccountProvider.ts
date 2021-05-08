@@ -21,6 +21,12 @@ dotenv.config();
 const user = process.env.TEST_USER_NAME ?? "";
 const password = process.env.TEST_USER_PASSWORD ?? "";
 
+type LoginStatus = {
+    status: string;
+    token?: string;
+    accountInfo?: Record<string, unknown>;
+};
+
 export class MockAzureAccountProvider implements AzureAccountProvider {
     static tokenCredentialsBase: TokenCredentialsBase;
 
@@ -98,6 +104,14 @@ export class MockAzureAccountProvider implements AzureAccountProvider {
         });
     }
 
+    public async getStatus(): Promise<LoginStatus> {
+        return Promise.resolve(
+            {
+                status: "SignedIn"
+            }
+        );
+    }
+
     public async deleteResourceGroup(rg: string): Promise<void> {
         if (!this.client) {
             const c = await msRestAzure.loginWithUsernamePassword(user, password);
@@ -129,7 +143,7 @@ export class MockAzureAccountProvider implements AzureAccountProvider {
             const subscriptions = await listAll(client.subscriptions, client.subscriptions.list());
             const filteredsubs = subscriptions.filter(
                 sub => !!sub.displayName && !!sub.subscriptionId
-            )
+            );
             return filteredsubs.map(sub => {
                 return { subscriptionName: sub.displayName!, subscriptionId: sub.subscriptionId!, tenantId: "undefined" };
             });

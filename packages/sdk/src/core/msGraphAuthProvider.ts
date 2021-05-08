@@ -10,7 +10,7 @@ import { validateScopesType } from "../util/utils";
 const defaultScope = "https://graph.microsoft.com/.default";
 
 /**
- * Microsoft Graph auth provider for Teams App Framework
+ * Microsoft Graph auth provider for Teams Framework
  *
  * @beta
  */

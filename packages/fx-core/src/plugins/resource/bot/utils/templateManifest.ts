@@ -5,7 +5,7 @@ import Ajv, { JSONSchemaType } from "ajv";
 import semver from "semver";
 
 import { ProgrammingLanguage } from "../enums/programmingLanguage";
-import { TemplateProjectsConstants } from "../constants";
+import { DownloadConstants, TemplateProjectsConstants } from "../constants";
 import { DownloadError, TemplateProjectNotFoundError, TplManifestFormatError } from "../errors";
 import { Logger } from "../logger";
 import * as utils from "../utils/common";
@@ -30,7 +30,9 @@ export class TemplateManifest {
         let res = undefined;
 
         try {
-            res = await axios.get(url);
+            res = await axios.get(url, {
+                timeout: DownloadConstants.TEMPLATES_TIMEOUT_MS
+            });
         } catch (e) {
             throw new DownloadError(url, e);
         }

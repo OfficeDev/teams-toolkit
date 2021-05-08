@@ -67,6 +67,6 @@ export class ResourceGroupManager {
                 }
             }
             return resolve(false);
-        })
+        });
     }
 }

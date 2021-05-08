@@ -13,6 +13,8 @@ export class InfoMessages {
 
     public static readonly installFunctionExtensions: string = "Installing Azure Functions binding.";
     public static readonly skipDeployment: string = "Nothing to deploy; no changes detected since last deployment.";
+    public static readonly failedToCheckDotnet = (error: Error) => `Failed to check .NET SDK, error = '${error}'`;
+    public static readonly failedToInstallDotnet = (error: Error) => `Failed to install .NET SDK, error = '${error}'`;
 
     public static readonly getTemplateFrom = (url: string) => `Retrieving template from '${url}'.`;
 

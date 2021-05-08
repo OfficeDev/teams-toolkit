@@ -26,9 +26,7 @@ export class FunctionPluginInfo {
         FunctionConfigKey.functionAppName,
         FunctionConfigKey.storageAccountName,
         FunctionConfigKey.appServicePlanName,
-        FunctionConfigKey.functionEndpoint,
-        FunctionConfigKey.scaffoldDone,
-        FunctionConfigKey.provisionDone
+        FunctionConfigKey.functionEndpoint
     ];
 
     public static readonly templateManifestURL: string =

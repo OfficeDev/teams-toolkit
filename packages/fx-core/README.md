@@ -12,13 +12,24 @@ The software may collect information about you and your use of the software and 
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
 
 
+## Contributing
+
+There are many ways in which you can participate in the project, for example:
+
+* [Submit bugs and feature requests](https://github.com/OfficeDev/TeamsFx/issues), and help us verify as they are checked in
+* Review [source code changes](https://github.com/OfficeDev/TeamsFx/pulls)
+
+If you are interested in fixing issues and contributing directly to the code base, please see the [Contributing Guide](./CONTRIBUTING.md).
+
 ## Reporting Security Issues
 
 **Please do not report security vulnerabilities through public GitHub issues.**
 
 Instead, please report them to the Microsoft Security Response Center (MSRC) at [https://msrc.microsoft.com/create-report](https://msrc.microsoft.com/create-report).
 
-For detailed guide, please refer to: [https://docs.opensource.microsoft.com/content/releasing/security.html](https://docs.opensource.microsoft.com/content/releasing/security.html).
+If you prefer to submit without logging in, send email to [secure@microsoft.com](mailto:secure@microsoft.com).  If possible, encrypt your message with our PGP key; please download it from the the [Microsoft Security Response Center PGP Key page](https://www.microsoft.com/en-us/msrc/pgp-key-msrc).
+
+You should receive a response within 24 hours. If for some reason you do not, please follow up via email to ensure we received your original message. Additional information can be found at [microsoft.com/msrc](https://www.microsoft.com/msrc).
 
 ## Trademarks 
 

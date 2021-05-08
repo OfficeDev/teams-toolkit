@@ -72,7 +72,6 @@ export default class SampleGallery extends React.Component<any, any> {
 
     receiveMessage = (event: any) => {
         const message = event.data.message;
-        console.log(`Received message: ${JSON.stringify(message)}`);
 
         switch (message) {
             default:
@@ -108,6 +107,7 @@ class SampleAppCard extends React.Component<any, any>{
                         className="right-aligned"
                         onClick={() =>{this.cloneSampleApp(this.props.sampleAppName, this.props.sampleAppUrl)}}/>
                     <PrimaryButton
+                        style={{display: "none"}}
                         text="Preview" />
                 </div>
             </div>

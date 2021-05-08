@@ -1,55 +1,53 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as path from "path";
-import * as fs from "fs";
 import * as os from "os";
-import * as util from "util";
 import commonlibLogger, { VsCodeLogProvider } from "../../commonlib/log";
 import { OutputChannel } from "vscode";
-import { LogLevel, ConfigFolderName } from "fx-api";
+import { LogLevel } from "fx-api";
 import { IDepsLogger } from "./checker";
 
-const appendFile = util.promisify(fs.appendFile);
-
 export class VSCodeLogger implements IDepsLogger {
-  private static checkerLogFileName = "env-checker.log";
-  private static globalConfigFolder = path.join(os.homedir(), `.${ConfigFolderName}`);
-
   public outputChannel: OutputChannel;
   private logger: VsCodeLogProvider;
+  private detailLogLines: string[] = [];
 
   public constructor(logger: VsCodeLogProvider) {
     this.outputChannel = logger.outputChannel;
     this.logger = logger;
-
-    fs.mkdirSync(VSCodeLogger.globalConfigFolder, { recursive: true });
   }
 
-  async debug(message: string): Promise<boolean> {
-    await this.writeLog(LogLevel.Debug, message);
+  public async debug(message: string): Promise<boolean> {
+    this.appendLine(LogLevel.Debug, message);
     return true;
   }
 
-  async info(message: string): Promise<boolean> {
-    await this.writeLog(LogLevel.Info, message);
+  public async info(message: string): Promise<boolean> {
+    this.appendLine(LogLevel.Info, message);
     return await this.logger.info(message);
   }
 
-  async warning(message: string): Promise<boolean> {
-    await this.writeLog(LogLevel.Warning, message);
+  public async warning(message: string): Promise<boolean> {
+    this.appendLine(LogLevel.Warning, message);
     return await this.logger.warning(message);
   }
 
-  async error(message: string): Promise<boolean> {
-    await this.writeLog(LogLevel.Error, message);
+  public async error(message: string): Promise<boolean> {
+    this.appendLine(LogLevel.Error, message);
     return await this.logger.error(message);
   }
 
-  private async writeLog(level: LogLevel, message: string): Promise<void> {
-    const line = `${LogLevel[level]} ${new Date().toISOString()}: ${message}` + os.EOL;
-    const logFilePath = path.join(VSCodeLogger.globalConfigFolder, VSCodeLogger.checkerLogFileName);
-    await appendFile(logFilePath, line);
+  public async printDetailLog(): Promise<void> {
+      await this.logger.error(this.detailLogLines.join(os.EOL));
+  }
+
+  public cleanup(): void {
+      this.detailLogLines = [];
+  }
+
+  private appendLine(level: LogLevel, message: string): void {
+    const line = `${LogLevel[level]} ${new Date().toISOString()}: ${message}`;
+    this.detailLogLines.push(line);
   }
 }
 

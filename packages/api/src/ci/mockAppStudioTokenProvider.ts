@@ -15,6 +15,12 @@ dotenv.config();
 const user = process.env.TEST_USER_NAME ?? "";
 const password = process.env.TEST_USER_PASSWORD ?? "";
 
+type LoginStatus = {
+    status: string;
+    token?: string;
+    accountInfo?: Record<string, unknown>;
+};
+
 export class MockAppStudioTokenProvider implements AppStudioTokenProvider {
     private static instance: MockAppStudioTokenProvider;
 
@@ -89,6 +95,14 @@ export class MockAppStudioTokenProvider implements AppStudioTokenProvider {
         return new Promise((resolve) => {
             resolve(true);
         });
+    }
+
+    public async getStatus(): Promise<LoginStatus> {
+        return Promise.resolve(
+            {
+                status: "SignedIn"
+            }
+        );
     }
 
     setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean> {

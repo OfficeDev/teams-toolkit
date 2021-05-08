@@ -6,7 +6,6 @@ import * as chai from "chai";
 import {
     PluginError,
     ErrorType,
-    DeployWithoutProvisionError,
     UserInputsError,
     CallAppStudioError,
     ConfigUpdatingError,
@@ -27,18 +26,6 @@ describe("Test Errors", () => {
             // Assert
             chai.assert.isTrue(pluginError instanceof PluginError);
             chai.assert.isTrue(pluginError.genMessage() === `${pluginError.message} Suggestions: ${suggestions.join("\n")}`);
-        });
-    });
-
-    describe("DeployWithoutProvisionError", () => {
-        it("Happy Path", () => {
-            // Arrange
-            // Act
-            const myError = new DeployWithoutProvisionError();
-
-            // Assert
-            chai.assert.isTrue(myError instanceof PluginError);
-            chai.assert.isTrue(myError.errorType === ErrorType.User);
         });
     });
 

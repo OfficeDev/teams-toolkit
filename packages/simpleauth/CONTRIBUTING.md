@@ -15,18 +15,18 @@ Build in Visual Studio directly, or use `dotnet build` command under root folder
 ## Debug the project
 
 1. Set proper value for the configurations in `./src/TeamsFxSimpleAuth/appsettings.json`. Follow README for how to set the configurations.
-1. Change solution configuration to `Debug` in Visual Studio.
-1. Set `TeamsFxSimpleAuth` as start up project in Visual Studio.
-1. Press F5 to start the project in debug mode.
+2. Change solution configuration to `Debug` in Visual Studio.
+3. Set `TeamsFxSimpleAuth` as start up project in Visual Studio.
+4. Press F5 to start the project in debug mode.
 
 ## Test the project
 
 ### Prepare test resources
 
 You only need to take following steps once.
-1. Register your M365 subscription at https://developer.microsoft.com/en-us/microsoft-365/profile. Record the username, password for your admin account, and tenant id for your M365 tenant.
-1. Create `teamsfx-integration-test-main-app` using admin account from step 1. Record the client id of this app.
-1. Configure the teamsfx-integration-test-main-app:
+1. Register your M365 subscription at https://developer.microsoft.com/en-us/microsoft-365. Record the username, password for your admin account, and tenant id for your M365 tenant.
+2. Create an AAD app registration named `teamsfx-integration-test-main-app` using admin account from step 1. Record the client id of this app.
+3. Configure the AAD app registration created in step 2:
     1. Add redirect uri: https://localhost. The redirect uri does not need to be valid. The test framework will parse the AAD response from redirect uri.
     2. Generate client secret, record the generated secret.
     3. Configure following application permission and grant admin consent for them in Azure Portal:
@@ -45,8 +45,7 @@ You only need to take following steps once.
         "AuthorizeUrl": "https://login.microsoftonline.com/<your-M365-tenant-id>/oauth2/v2.0/authorize",
         "ApiAppIdUri": "api://localhost",
         "RedirectUri": "https://localhost",
-        "CodeChallenge": "_r67lcj4MoDNBAkhxS7ke_YKhKCBAiM0SgzNCagbCxo",
-        "CodeVerifier": "1qaz2wsx3edc4rfv5tgb6yhn1234567890qwertyuiop",
+        "CodeVerifier": "CodeVerifier_for_SimpleAuth_Integration_test",
         "TestUsername": "<your-authorized-test-user-account>",
         "TestPassword": "<password-for-authorized-test-user-account>",
         "TestUsername2": "<your-another-authorized-test-user-account>",
@@ -65,8 +64,8 @@ Right click `TeamsFxSimpleAuth.Test` project in Visual Studio, and choose `Run T
 ### Debug test cases
 
 1. Change solution configuration to `Debug` in Visual Studio.
-1. Navigate to the test case source code you want to debug.
-1. Right click the test case and choose `Debug Test(s)`.
+2. Navigate to the test case source code you want to debug.
+3. Right click the test case and choose `Debug Test(s)`.
 
 ## Style Guidelines
 
@@ -74,6 +73,9 @@ The project already enabled StyleCop. Please fix the style warnings before commi
 
 ## Pull Request Process
 
-1. Merge your changes to `develop` branch.
-1. Make sure all the checks in pull request are passed.
-1. At least one approve from other developers is required.
+1. Check out a new branch from "main".
+2. Add your features and commit to the new branch.
+3. Make sure your changes are covered by tests. [Run test cases](##Run-test-cases)
+4. Ensure code style check has no warning or error. [Style Guidelines](#style-guidelines)
+5. Create a pull request to merge your changes to "main" branch.
+6. At least one approve from code owners is required.

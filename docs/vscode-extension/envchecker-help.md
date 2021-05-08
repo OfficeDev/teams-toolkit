@@ -14,6 +14,20 @@ As the TeamsFx project is implemented by `Node.js`, it's required to install the
 
 **NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
 
+## Current installed Node.js is not in the supported version list (SPFx hosting)
+  
+ The SharePoint Framework v1.12.1 is supported on the following Node.js versions:
+
+ - Node.js v10.13.0+ (Dubnium)
+ - Node.js v12.13.0+ (Erbium)
+ - Node.js v14.15.0+ (Fermium) 
+ 
+ And **the latest version of Node.js LTS v14** would be recommended to be installed.
+ 
+ Details can see: https://docs.microsoft.com/en-us/sharepoint/dev/spfx/set-up-your-development-environment#install-nodejs
+
+**NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
+
 ## Why .NET SDK is needed?
 
 The `.NET SDK` is used to
@@ -40,4 +54,4 @@ Install the `.NET SDK` manually: please refer to the official documentation to c
 
 ## Report issues if above FAQ can't solve your problems
 
-Please click [here](https://github.com/OfficeDev/TeamsFx/issues/new) to submit an issue on GitHub and attach the log file named `env-checker.log` under `%userprofile%/.fx/` (on Windows) or `~/.fx/` (on macOS/Linux).
+Please click [here](https://github.com/OfficeDev/TeamsFx/issues/new) to submit an issue on GitHub and attach the log from Visual Studio Code output channel named "Teams Toolkit".

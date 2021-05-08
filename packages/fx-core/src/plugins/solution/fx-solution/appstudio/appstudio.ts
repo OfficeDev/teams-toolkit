@@ -320,6 +320,7 @@ export namespace AppStudio {
         appName?: string,
         version?: string,
         botId?: string,
+        appNameSuffix?: string
     ): [IAppDefinition, TeamsAppManifest] {
         if (appName) {
             manifest = replaceConfigValue(manifest, "appName", appName);
@@ -341,7 +342,14 @@ export namespace AppStudio {
             updatedManifest.validDomains?.push(domain);
         }
 
-        return [convertToAppDefinition(updatedManifest, ignoreIcon), updatedManifest];
+        // For local debug teams app, the app name will have a suffix to differentiate from remote teams app
+        const appDefinition = convertToAppDefinition(updatedManifest, ignoreIcon);
+        if (appNameSuffix) {
+            appDefinition.shortName = appDefinition.shortName + appNameSuffix;
+            appDefinition.appName = appDefinition.shortName;
+        }
+
+        return [appDefinition, updatedManifest];
     }
 
     export function convertToAppDefinition(appManifest: TeamsAppManifest, ignoreIcon: boolean): IAppDefinition {

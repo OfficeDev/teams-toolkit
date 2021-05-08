@@ -3,9 +3,9 @@
 ## Introduction
 
 `TeamsFx` function extension does the following binding work for Teams app developers:
-1. Do authorization for http trigger: Http request must have Authorization header with access token, the client id of which should be in the list of `ALLOWED_APP_IDS` or equals to `CLIENT_ID` setting. 
-1. Refresh user access token in request header if it's about to expire.
-1. Provide user access token in `TeamsFxContext` as Azure Functions input binding.
+1. Do authorization for http trigger: Http request must have Authorization header with access token, the client id of which should be in the list of `ALLOWED_APP_IDS` or equals to `M365_CLIENT_ID` setting. 
+2. Refresh user access token in request header if it's about to expire.
+3. Provide user access token in `TeamsFxContext` as Azure Functions input binding.
 
 ## Usage
 
@@ -20,7 +20,7 @@ The package is published to [nuget.org](https://www.nuget.org/) with package id 
 
     Azure Functions Core Tools currently depends on the Azure CLI for authenticating with your Azure account. This means that you must [install the Azure CLI locally](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) to be able to publish to Azure from Azure Functions Core Tools.
 
-1. .NET Core 3.1 SDK
+2. .NET Core 3.1 SDK
 
 #### Create function app with extension
 
@@ -32,9 +32,9 @@ The package is published to [nuget.org](https://www.nuget.org/) with package id 
 
     Select `node` for worker runtime and `javascript` for language.
 
-1. Remove the `extensionBundle` section in *host.json*.
+2. Remove the `extensionBundle` section in *host.json*.
 
-1. In the function app root folder, explicitily install TeamsFx binding extension.
+3. In the function app root folder, explicitily install TeamsFx binding extension.
     
     ```
     func extensions install --package Microsoft.Azure.WebJobs.Extensions.TeamsFx --version <TARGET_VERSION>
@@ -42,7 +42,7 @@ The package is published to [nuget.org](https://www.nuget.org/) with package id 
 
     You can see a *extensions.csproj* file being added to your root directory.
 
-1. Refer TeamsFx binding in *function.json*.
+4. Refer TeamsFx binding in *function.json*.
 
     ```json
     {
@@ -57,7 +57,7 @@ The package is published to [nuget.org](https://www.nuget.org/) with package id 
     }
     ```
 
-1. Get TeamsFxConfig in function's *index.js*.
+5. Get TeamsFxConfig in function's *index.js*.
 
     ```javascript
     module.exports = async function (context, req, myTeamsFxConfig) {
@@ -71,7 +71,7 @@ The package is published to [nuget.org](https://www.nuget.org/) with package id 
     }
     ```
 
-1. Add parameters in *local.settings.json*.
+6. Add parameters in *local.settings.json*.
 
     | Variable | Description |
     |-|-|
@@ -91,15 +91,20 @@ func host start
 
 You will find your function app listening at `http://localhost:7071/api/MyHttpTrigger`.
 
-Use postman to send GET http request to `http://localhost:7071/api/MyHttpTrigger` with Header: `Authorization: Bearer <access-token>`.
+Use postman to send GET http request to `http://localhost:7071/api/MyHttpTrigger` with Header: `Authorization: Bearer <access-token>`. The `azp` or `appid` claim (which means client id) of access token should be same with the `M365_CLIENT_ID` configuration, or in the list of `ALLOWED_APP_IDS` configuration.
+You can refer [OAuth 2.0 auth code grant](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow) to get an appropriate access token manually using your AAD app.
 
 #### Deploy your function app to Azure Portal
 
+You can refer deployment guidance in `Deploy functions` section of [Azure Functions](https://docs.microsoft.com/en-us/azure/azure-functions/) document.
+
 ### C#
 
-Sample C# Function: [FunctionAppCSharp](tests\TestAssets\FunctionAppCSharp)
+You can use `TeamsFx` attribute in your function to use this binding. Configurations listed in JavaScript tutorial above are also required in C# functions.
+Here is the sample C# function you can refer: [FunctionAppCSharp](tests\TestAssets\FunctionAppCSharp).
 
 ## Change Logger Level
+The binding will log information to help you troubleshoot. You can adjust the log level based on your requirement.
 
 - Change logger level when debug locally
 

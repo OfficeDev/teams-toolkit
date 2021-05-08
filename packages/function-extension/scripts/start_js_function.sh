@@ -45,6 +45,10 @@ files=$(ls $local_settings_json_dir)
 for filename in $files
 do
     sed -i "s/__CLIENT_SECRET__/$TeamsFx_BINDING_IntegrationTestSettings__ClientSecret/g" $local_settings_json_dir/$filename
+    sed -i "s/__CLIENT_ID__/$TeamsFx_BINDING_IntegrationTestSettings__ClientId/g" $local_settings_json_dir/$filename
+    sed -i "s/__ALLOWED_APP_CLIENT_ID__/$TeamsFx_BINDING_IntegrationTestSettings__AllowedAppClientId/g" $local_settings_json_dir/$filename
+    sed -i "s/__AUTHORITY_HOST__/$TeamsFx_BINDING_IntegrationTestSettings_AuthorityHost/g" $local_settings_json_dir/$filename
+    sed -i "s/__TENANT_ID__/$TeamsFx_BINDING_IntegrationTestSettings__TenantId/g" $local_settings_json_dir/$filename
 done
 
 # TODO: Move the logic to C# test cases.
@@ -68,7 +72,7 @@ func host start --port 7072 &
 
 cd $test_space_emptyClientId
 func extensions install --package Microsoft.Azure.WebJobs.Extensions.TeamsFx --version $nuget_package_version --source $local_nuget_path
-func host start --port 7074 &
+func host start --port 7073 &
 
 
 popd

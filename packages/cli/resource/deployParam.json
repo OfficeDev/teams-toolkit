@@ -30,9 +30,9 @@
                     "cliName": "apim"
                 },
                 {
-                    "id": "fx-resource-teamsbot",
+                    "id": "fx-resource-bot",
                     "label": "Bot",
-                    "cliName": "teamsbot"
+                    "cliName": "bot"
                 },
                 {
                     "id": "fx-resource-spfx",

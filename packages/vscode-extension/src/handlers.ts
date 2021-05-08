@@ -57,9 +57,7 @@ import * as vscode from "vscode";
 import { VsCodeUI, VS_CODE_UI } from "./qm/vsc_ui";
 import { DepsChecker } from "./debug/depsChecker/checker";
 import { BackendExtensionsInstaller } from "./debug/depsChecker/backendExtensionsInstall";
-import { FuncToolChecker } from "./debug/depsChecker/funcToolChecker";
 import { DotnetChecker } from "./debug/depsChecker/dotnetChecker";
-import { NodeChecker, AzureSupportedNodeVersions } from "./debug/depsChecker/nodeChecker";
 import * as util from "util";
 import * as StringResources from "./resources/Strings.json";
 import { vscodeAdapter } from "./debug/depsChecker/vscodeAdapter";
@@ -67,6 +65,8 @@ import { vscodeLogger } from "./debug/depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "./debug/depsChecker/vscodeTelemetry";
 import { PanelType } from "./controls/PanelType";
 import { signedIn, signedOut } from "./commonlib/common/constant";
+import { AzureNodeChecker } from "./debug/depsChecker/azureNodeChecker";
+import { SPFxNodeChecker } from "./debug/depsChecker/spfxNodeChecker";
 
 export let core: CoreProxy;
 const runningTasks = new Set<string>(); // to control state of task execution
@@ -391,7 +391,7 @@ async function runUserTask(func: Func, eventName:string): Promise<Result<null, F
     const answers = new ConfigMap();
     answers.set("task", eventName);
     answers.set("platform", Platform.VSCode);
-    
+
     // 4. getQuestions
     const qres = await core.getQuestionsForUserTask(func, Platform.VSCode);
     if (qres.isErr()) {
@@ -511,25 +511,28 @@ export async function addCapabilityHandler(): Promise<Result<null, FxError>> {
 }
 
 /**
- * check & install required dependencies during local debug.
+ * check & install required dependencies during local debug when selected hosting type is Azure.
  */
 export async function validateDependenciesHandler(): Promise<void> {
-  const depsChecker = new DepsChecker(vscodeLogger, vscodeAdapter, [
-    new NodeChecker(AzureSupportedNodeVersions, vscodeAdapter, vscodeLogger, vscodeTelemetry), 
-    new DotnetChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry)]);
-  const shouldContinue = await depsChecker.resolve();
-  if (!shouldContinue) {
-    // TODO: better mechanism to stop the tasks and debug session.
-    throw new Error("debug stopped.");
-  }
+  const nodeChecker = new AzureNodeChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
+  const dotnetChecker = new DotnetChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
+  const depsChecker = new DepsChecker(vscodeLogger, vscodeAdapter, [nodeChecker, dotnetChecker]);
+  await validateDependenciesCore(depsChecker);
 }
 
-const spfxNodeSupportVersion = ["10", "12", "14"];
+/**
+ * check & install required dependencies during local debug when selected hosting type is SPFx.
+ */
 export async function validateSpfxDependenciesHandler(): Promise<void> {
-  const depsChecker = new DepsChecker(vscodeLogger, vscodeAdapter, [
-    new NodeChecker(spfxNodeSupportVersion, vscodeAdapter, vscodeLogger, vscodeTelemetry)]);
+  const nodeChecker = new SPFxNodeChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
+  const depsChecker = new DepsChecker(vscodeLogger, vscodeAdapter, [nodeChecker]);
+  await validateDependenciesCore(depsChecker);
+}
+
+async function validateDependenciesCore(depsChecker: DepsChecker): Promise<void> {
   const shouldContinue = await depsChecker.resolve();
   if (!shouldContinue) {
+    await debug.stopDebugging();
     // TODO: better mechanism to stop the tasks and debug session.
     throw new Error("debug stopped.");
   }
@@ -781,7 +784,7 @@ export async function showError(e: FxError) {
     const help = {
       title: StringResources.vsc.handlers.getHelp,
       run: async (): Promise<void> => {
-        commands.executeCommand("vscode.open", Uri.parse(`${e.helpLink}#${errorCode}`));
+        commands.executeCommand("vscode.open", Uri.parse(`${e.helpLink}#${e.source}${e.name}`));
       }
     };
 

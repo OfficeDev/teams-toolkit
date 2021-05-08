@@ -72,7 +72,6 @@ export default class SampleGallery extends React.Component<any, any> {
 
     receiveMessage = (event: any) => {
         const message = event.data.message;
-        console.log(`Received message: ${JSON.stringify(message)}`);
 
         switch (message) {
             default:

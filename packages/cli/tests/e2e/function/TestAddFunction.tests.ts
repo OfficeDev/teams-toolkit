@@ -120,9 +120,9 @@ describe("Test Add Function", function() {
     }
 
 
-    // test (validate)
+    // validate
     await execAsync(
-      `teamsfx test`,
+      `teamsfx validate`,
       {
         cwd: projectPath,
         env: process.env,

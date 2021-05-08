@@ -115,9 +115,9 @@ describe("Azure App Happy Path", function() {
       /// TODO: add check for deploy
     }
 
-    // test (validate)
+    // validate the manifest
     await execAsync(
-      `teamsfx test`,
+      `teamsfx validate`,
       {
         cwd: projectPath,
         env: process.env,

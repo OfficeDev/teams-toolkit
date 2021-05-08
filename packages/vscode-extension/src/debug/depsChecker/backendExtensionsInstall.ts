@@ -35,6 +35,8 @@ export class BackendExtensionsInstaller {
     const dotnetExecPath = await this._dotnetChecker.getDotnetExecPath();
 
     if (dotnetExecPath === "") {
+      await this._logger.printCachedMessagesAsError();
+      await this._logger.cleanupCache();
       await this._logger.error(`Failed to run backend extension install, .NET SDK executable not found`);
       throw new BackendExtensionsInstallError("Failed to run backend extension install, .NET SDK executable not found", defaultHelpLink);
     }
@@ -52,8 +54,11 @@ export class BackendExtensionsInstaller {
         "--ignore-failed-sources"
       );
     } catch (error) {
+      await this._logger.printCachedMessagesAsError();
+      await this._logger.cleanupCache();
       await this._logger.error(`Failed to run backend extension install: error = '${error}'`);
       throw new BackendExtensionsInstallError(`Failed to run backend extension install: error = '${error}'`, defaultHelpLink);
     }
+    await this._logger.cleanupCache();
   }
 }

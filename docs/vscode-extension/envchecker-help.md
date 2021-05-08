@@ -1,8 +1,8 @@
-# TeamsFx Environment Checker FAQ
+# Teams Toolkit Environment Checker FAQ
 
 ## Overall
 
-TeamsFx will help to check if the required dependencies are installed.
+Teams Toolkit will help to check if the required dependencies are installed.
 
 Current required dependencies for local debugging:
 
@@ -12,8 +12,8 @@ Current required dependencies for local debugging:
 | .NET SDK | - start simpleAuth service for local debugging.<br> - install the customized function binding extension.|
 
 Please Note:
-- For `Node.js`, TeamsFx will check its existence, and provided with the link to users where and how to install it.
-- For `.NET SDK`, TeamsFx will try to install it for users if it cannot be found. `.NET SDK` will be installed with the official provided [dotnet-install script](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-install-script). The script will download the portable version of `.NET Core SDK 3.1` and save it into under directory `%userprofile%/.fx/bin/dotnet` (on Windows) or `~/.fx/bin/dotnet` (on macOS/Linux), which is designed for TeamsFx's usage only and won't affect user's development environment. In addition, it's only needed to be installed once.
+- For `Node.js`, Teams Toolkit will check its existence, and provided with the link to users where and how to install it.
+- For `.NET SDK`, Teams Toolkit will try to install it for users if it cannot be found. `.NET SDK` will be installed with the official provided [dotnet-install script](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-install-script). The script will download the portable version of `.NET Core SDK 3.1` and save it into under directory `%userprofile%/.fx/bin/dotnet` (on Windows) or `~/.fx/bin/dotnet` (on macOS/Linux), which is designed for Teams Toolkit's usage only and won't affect user's development environment. In addition, it's only needed to be installed once.
 
 ## How to install Node.js?
 
@@ -34,10 +34,10 @@ Please refer to [the official website](https://dotnet.microsoft.com/download) to
 ### Notification Message
 > The toolkit cannot find Node.js on your machine. As a fundamental language runtime for Teams app, these dependencies are required. Node.js is required and the recommended version is v12.
 
-As the TeamsFx project is implemented by `Node.js`, it's required to install the npm pacakges and run the project in local. 
+As the Teams Toolkit project is implemented by `Node.js`, it's required to install the npm pacakges and run the project in local. 
 
 ### Mitigation
-Please refer to [nodejs.org](https://nodejs.org/) to install the right version: currently only LTS versions (v10, v12 and v14) are supported by TeamsFx, and `Node v14` would be recommended to be installed.
+Please refer to [nodejs.org](https://nodejs.org/) to install the right version: currently only LTS versions (v10, v12 and v14) are supported by Teams Toolkit, and `Node v14` would be recommended to be installed.
 
 **NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
 
@@ -46,7 +46,7 @@ Please refer to [nodejs.org](https://nodejs.org/) to install the right version: 
 
 > Current installed Node.js is not in the supported version list (Azure hosting), which might not work as expected for some functionalities.
 
-When `Azure` is selected as the hosting type, only LTS versions (v10, v12 and v14) of Node.js are supported by TeamsFx currently, please make sure the installed Node.js meets this requirement. In addition, **Node v14 (LTS)** would be recommended to be installed.
+When `Azure` is selected as the hosting type, only LTS versions (v10, v12 and v14) of Node.js are supported by Teams Toolkit currently, please make sure the installed Node.js meets this requirement. In addition, **Node v14 (LTS)** would be recommended to be installed.
 
 ### Mitigation
 Please refer to [the guide](#how-to-install-nodejs) to install `Node.js`.
@@ -87,4 +87,4 @@ Please refer to [the guide](#how-to-install-net-sdk) to install `.NET SDK` manua
 
 ## Report issues 
 
-If above FAQs can't solve your problem, please click [here](https://github.com/OfficeDev/TeamsFx/issues/new) to submit an issue on GitHub and attach the log from Visual Studio Code output channel named "Teams Toolkit".
+If above FAQs can't solve your problem, please click [here](https://github.com/OfficeDev/Teams Toolkit/issues/new) to submit an issue on GitHub and attach the log from Visual Studio Code output channel named "Teams Toolkit".

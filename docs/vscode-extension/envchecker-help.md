@@ -4,15 +4,13 @@
 
 Teams Toolkit will help to check if the required dependencies are installed.
 
-Current required dependencies for local debugging:
+Current required dependencies:
 
-| Dependencies | Usage |
-| - | - |
-| Node.js | - restore the npm packages.<br>- start the app for local debugging.|
-| .NET SDK | - start simpleAuth service for local debugging.<br> - install the customized function binding extension.|
+* [Node.js](https://nodejs.org/download/).
+* [.NET SDK](https://dotnet.microsoft.com/download): To start simpleAuth service for local debugging and install the customized function binding extension.
 
 Please Note:
-- For `Node.js`, Teams Toolkit will check its existence, and provided with the link to users where and how to install it.
+- For `Node.js`, Teams Toolkit will check its existence, and provide with the link to users where and how to install.
 - For `.NET SDK`, Teams Toolkit will try to install it for users if it cannot be found. `.NET SDK` will be installed with the official provided [dotnet-install script](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-install-script). The script will download the portable version of `.NET Core SDK 3.1` and save it into under directory `%userprofile%/.fx/bin/dotnet` (on Windows) or `~/.fx/bin/dotnet` (on macOS/Linux), which is designed for Teams Toolkit's usage only and won't affect user's development environment. In addition, it's only needed to be installed once.
 
 ## How to install Node.js?
@@ -26,7 +24,7 @@ Please refer to [nodejs.org](https://nodejs.org/) to download and install the su
 
 ## How to install .NET SDK?
 
-Please refer to [the official website](https://dotnet.microsoft.com/download) to download and install the supported versions: `.NET 5.0 SDK` and `.NET Core 3.1 SDK`.
+Please refer to [the official website](https://dotnet.microsoft.com/download) to download and install the supported versions: `.NET 5.0 SDK` or `.NET Core 3.1 SDK`.
 
 **NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
 

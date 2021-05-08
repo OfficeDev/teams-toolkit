@@ -32,6 +32,17 @@ export function isLinux(): boolean {
   return os.type() === "Linux";
 }
 
+// help links
+export const defaultHelpLink = "https://aka.ms/teamsfx-envchecker-help";
+
+export const nodeNotFoundHelpLink = `${defaultHelpLink}#the-toolkit-cannot-find-nodejs-on-your-machine`;
+export const nodeNotSupportedForAzureHelpLink = `${defaultHelpLink}#current-installed-nodejs-is-not-in-the-supported-version-list-azure-hosting`;
+export const nodeNotSupportedForSPFxHelpLink = `${defaultHelpLink}#current-installed-nodejs-is-not-in-the-supported-version-list-spfx-hosting`;
+
+export const dotnetExplanationHelpLink = `${defaultHelpLink}#why-net-sdk-is-needed`;
+export const dotnetFailToInstallHelpLink = `${defaultHelpLink}#failed-to-install-net-core-sdk-v31`;
+export const dotnetManualInstallHelpLink = `${defaultHelpLink}#linux-only-the-toolkit-cannot-find-net-5-or-net-core-31-on-your-machine-please-install-it-manually`;
+
 export const Messages = {
   learnMoreButtonText: "Learn more",
   continueButtonText: "Continue",
@@ -64,7 +75,7 @@ Click "Learn more" to learn how to install the Node.js.`,
 Click "Learn more" to learn more about the supported Node.js versions.
 Click "Continue" to continue local debugging.`,
 
-  dotnetNotFound: `The toolkit cannot find @NameVersion on your machine. As a fundamental runtime context for Teams app, it's required.`,
+  dotnetNotFound: `The toolkit cannot find @NameVersion on your machine. As a fundamental runtime context for Teams app, it's required. For the details why .NET SDK is needed, please refer to ${dotnetExplanationHelpLink}`,
   depsNotFound: `The toolkit cannot find @SupportedPackages on your machine.
 
 As a fundamental runtime context for Teams app, these dependencies are required. Following steps will help you to install the appropriate version to run the Microsoft Teams Toolkit.
@@ -75,18 +86,12 @@ Click "Install" to install @InstallPackages.`,
 
   linuxDepsNotFound: `The toolkit cannot find @SupportedPackages on your machine.
 
-As a fundamental runtime context for Teams app, these dependencies are required.
+As a fundamental runtime context for Teams app, these dependencies are required. 
 
 Please install the required dependencies manually.
 
 Click "Continue" to continue.`
 };
-
-export const defaultHelpLink = "https://aka.ms/AAby4tx";
-export const functionCoreToolsHelpLink = "https://aka.ms/AAby4tx";
-export const dotnetHelpLink = "https://aka.ms/AAby4tx";
-export const nodeHelpLink = "https://aka.ms/AAby4tx";
-export const backendExtensionsInstallHelpLink = "https://aka.ms/AAby4tx";
 
 export enum DepsCheckerEvent {
   funcCheck = "func-check",

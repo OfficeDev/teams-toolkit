@@ -17,7 +17,7 @@ import { ConfigFolderName } from "fx-api";
 import { DepsInfo, IDepsAdapter, IDepsChecker, IDepsLogger, IDepsTelemetry } from "./checker";
 import {
   DepsCheckerEvent,
-  dotnetHelpLink,
+  dotnetFailToInstallHelpLink,
   isLinux,
   isWindows,
   Messages,
@@ -125,7 +125,7 @@ export class DotnetChecker implements IDepsChecker {
       this._telemetry.sendEvent(DepsCheckerEvent.dotnetInstallError);
       throw new DepsCheckerError(
         Messages.failToInstallDotnet.split("@NameVersion").join(installedNameWithVersion),
-        dotnetHelpLink
+        dotnetFailToInstallHelpLink
       );
     }
     this._telemetry.sendEvent(DepsCheckerEvent.dotnetInstallCompleted);

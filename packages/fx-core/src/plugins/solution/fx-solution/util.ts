@@ -19,7 +19,6 @@ import {
 } from "fx-api";
 import { SubscriptionClient } from "@azure/arm-subscriptions";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-import { CLIENT_RENEG_LIMIT } from "node:tls";
 
 async function ask(description: string, dialog?: Dialog, defaultAnswer?: string): Promise<Result<string, FxError>> {
     const answer: string | undefined = (

@@ -5,6 +5,7 @@ Azure API Management (APIM) is used to create consistent and modern API gateways
 ## Prerequisite
 -   [Node.js](https://nodejs.org/en/)
 -	An M365 account, if you do not have M365 account, apply one from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
+-   An Azure account with an active subscription, [create an account for free](https://azure.microsoft.com/en-us/free/) and [register the resource provider 'Microsoft.ApiManagement' for the subscription](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/error-register-resource-provider#solution-3---azure-portal)
 -	Teams Toolkit or TeamsFx CLI
 
 ## Enable API Management Feature in TeamsFx
@@ -13,22 +14,22 @@ Azure API Management (APIM) is used to create consistent and modern API gateways
 You can enable Azure API Management by following steps:
 | Using Teams Toolkit| Using TeamsFx CLI|
 | :------------------| :----------------|
-| <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign in to Azure` under the `ACCOUNTS` section from sidebar.</li><li>After you signed in, select a subscription under your account.</li><li>Open command palette, select `Teams: Add Resources` and select `Register APIs in Azure API Management` in next step.</ul> | <ul><li>Run command `teamsfx account login azure`.</li><li>Run command `teamsfx account set --subscription $subscriptionId`.</li><li>Create a new API Management instance or use an existing API Management instance</li><ul><li>Create a new instance: Run command `teamsfx resource add azure-apim`.</li><li>Use an existing instance: Run command `teamsfx resource add azure-apim --apim-resource-group $resourceGroupName --apim-service-name $serviceName`.</li></ul></ul>|
+| <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign in to Azure` under the `ACCOUNTS` section from sidebar.<sup>[1]</sup></li><li>After you signed in, select a subscription under your account.<sup>[1]</sup></li><li>Open command palette, select `Teams: Add Resources` and select `Register APIs in Azure API Management` in next step.</ul> | <ul><li>Run command `teamsfx account login azure`.<sup>[1]</sup></li><li>Run command `teamsfx account set --subscription $subscriptionId`.<sup>[1]</sup></li><li>Create a new API Management instance or use an existing API Management instance</li><ul><li>Create a new instance: Run command `teamsfx resource add azure-apim`.</li><li>Use an existing instance: Run command `teamsfx resource add azure-apim --apim-resource-group $resourceGroupName --apim-service-name $serviceName`.</li></ul></ul>|
 
 >Note: We need your Azure account and subscription information here so you can specify whether to use an existing or new APIM instance. 
 
 ## Deploy to Azure
-Simply deploy your project to the cloud when it’s ready by following these steps: 
-- Login to Azure account
-- Login to M365 account
-- Set An active subscription
+Simply deploy your project to the cloud when it’s ready by following these steps:
+- Login to Azure account<sup>[1]</sup>
+- Login to M365 account<sup>[1]</sup>
+- Set An active subscription<sup>[1]</sup>
 - Provision the resources in the cloud
 - Deploy to the cloud
 
 You can do this using the Teams Toolkit in Visual Studio Code or using the TeamsFx CLI:
 | Using Teams Toolkit| Using TeamsFx CLI|
 | :------------------| :----------------|
-| <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign in to Azure` under the `ACCOUNTS` section from sidebar.</li> <li>After you signed in, select a subscription under your account.</li><li>Open Teams Toolkit, and sign into M365 by clicking the `Sign in to M365` under the `ACCOUNTS` section from sidebar.</li><li>Open the command palette and select: `Teams: Provision in the Cloud`.</li><li>Open the command palette and select: `Teams: Deploy to the Cloud`.</li></ul>  |<ul> <li>Run command `teamsfx account login azure`.</li> <li>Run command `teamsfx account set --subscription $subscriptionId`.</li> <li>Run command `teamsfx account login m365`.</li> <li> Run command `teamsfx provision`.</li> <li>Run command: `teamsfx deploy function apim --open-api-document openapi/openapi.json --api-prefix $apiPrefix --api-version $apiVersion`. </li></ul>|
+| <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign in to Azure` under the `ACCOUNTS` section from sidebar.<sup>[1]</sup></li> <li>After you signed in, select a subscription under your account.<sup>[1]</sup></li><li>Open Teams Toolkit, and sign into M365 by clicking the `Sign in to M365` under the `ACCOUNTS` section from sidebar.<sup>[1]</sup></li><li>Open the command palette and select: `Teams: Provision in the Cloud`.</li><li>Open the command palette and select: `Teams: Deploy to the Cloud`.</li></ul>  |<ul> <li>Run command `teamsfx account login azure`.<sup>[1]</sup></li> <li>Run command `teamsfx account set --subscription $subscriptionId`.<sup>[1]</sup></li> <li>Run command `teamsfx account login m365`.<sup>[1]</sup></li> <li> Run command `teamsfx provision`.</li> <li>Run command: `teamsfx deploy function apim --open-api-document openapi/openapi.json --api-prefix $apiPrefix --api-version $apiVersion`. </li></ul>|
 
 In the deployment step, there will be some inputs needed:
 - Select the resource `API Management`. The resource `Azure Function` should also be selected if the API changes have never been deployed to the cloud.
@@ -143,3 +144,6 @@ Below is a sample swagger file for the default http trigger function. You can co
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
 
 For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+
+## Note
+[1] Skip this step if it has been executed.

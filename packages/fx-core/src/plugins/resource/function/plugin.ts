@@ -37,7 +37,7 @@ import { Logger } from "./utils/logger";
 import { PostProvisionSteps, PreDeploySteps, ProvisionSteps, StepGroup, step } from "./resources/steps";
 import { functionNameQuestion } from "./questions";
 import { DotnetChecker } from "./utils/depsChecker/dotnetChecker";
-import { defaultHelpLink, Messages, isLinux } from "./utils/depsChecker/common";
+import { Messages, isLinux, dotnetManualInstallHelpLink } from "./utils/depsChecker/common";
 import { DepsCheckerError } from "./utils/depsChecker/errors";
 import { getNodeVersion } from "./utils/node-version";
 import { funcPluginAdapter } from "./utils/depsChecker/funcPluginAdapter";
@@ -586,7 +586,7 @@ export class FunctionPluginImpl {
 
             if (isLinux()) {
                 // TODO: handle linux installation
-                funcPluginAdapter.handleDotnetError(new DepsCheckerError(Messages.defaultErrorMessage, defaultHelpLink));
+                funcPluginAdapter.handleDotnetError(new DepsCheckerError(Messages.defaultErrorMessage, dotnetManualInstallHelpLink));
                 funcPluginLogger.cleanup();
                 return;
             }

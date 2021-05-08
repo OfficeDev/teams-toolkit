@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 /**
- * Error code to help debugging.
+ * Error code to trace the error types.
  * @beta
  */
 export enum ErrorCode {
@@ -12,7 +12,7 @@ export enum ErrorCode {
   InvalidParameter = "InvalidParameter",
 
   /**
-   * Invalid configuration.
+   * Invalid configuration error.
    */
   InvalidConfiguration = "InvalidConfiguration",
 
@@ -22,37 +22,37 @@ export enum ErrorCode {
   InternalError = "InternalError",
 
   /**
-   * Channel is not supported.
+   * Channel is not supported error.
    */
   ChannelNotSupported = "ChannelNotSupported",
 
   /**
-   * Runtime is not supported.
+   * Runtime is not supported error.
    */
   RuntimeNotSupported = "RuntimeNotSupported",
 
   /**
-   * User failed to finish the AAD consent flow.
+   * User failed to finish the AAD consent flow failed.
    */
   ConsentFailed = "ConsentFailed",
 
   /**
-   * The user or administrator has not consented to use the application.
+   * The user or administrator has not consented to use the application error.
    */
   UiRequiredError = "UiRequiredError",
 
   /**
-   * Token is not within its valid time range.
+   * Token is not within its valid time range error.
    */
   TokenExpiredError = "TokenExpiredError",
 
   /**
-   * Call service (AAD or simple authentication server) failed
+   * Call service (AAD or simple authentication server) failed.
    */
   ServiceError = "ServiceError",
 
   /**
-   * Operation failed error.
+   * Operation failed.
    */
   FailedOperation = "FailedOperation"
 }

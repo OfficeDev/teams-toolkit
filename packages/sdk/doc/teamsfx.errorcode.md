@@ -7,7 +7,7 @@
 > This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
 > 
 
-Error code to help debugging.
+Error code to trace the error types.
 
 <b>Signature:</b>
 
@@ -19,14 +19,14 @@ export declare enum ErrorCode
 
 |  Member | Value | Description |
 |  --- | --- | --- |
-|  ChannelNotSupported | <code>&quot;ChannelNotSupported&quot;</code> | <b><i>(BETA)</i></b> Channel is not supported. |
-|  ConsentFailed | <code>&quot;ConsentFailed&quot;</code> | <b><i>(BETA)</i></b> User failed to finish the AAD consent flow. |
-|  FailedOperation | <code>&quot;FailedOperation&quot;</code> | <b><i>(BETA)</i></b> Operation failed error. |
+|  ChannelNotSupported | <code>&quot;ChannelNotSupported&quot;</code> | <b><i>(BETA)</i></b> Channel is not supported error. |
+|  ConsentFailed | <code>&quot;ConsentFailed&quot;</code> | <b><i>(BETA)</i></b> User failed to finish the AAD consent flow failed. |
+|  FailedOperation | <code>&quot;FailedOperation&quot;</code> | <b><i>(BETA)</i></b> Operation failed. |
 |  InternalError | <code>&quot;InternalError&quot;</code> | <b><i>(BETA)</i></b> Internal error. |
-|  InvalidConfiguration | <code>&quot;InvalidConfiguration&quot;</code> | <b><i>(BETA)</i></b> Invalid configuration. |
+|  InvalidConfiguration | <code>&quot;InvalidConfiguration&quot;</code> | <b><i>(BETA)</i></b> Invalid configuration error. |
 |  InvalidParameter | <code>&quot;InvalidParameter&quot;</code> | <b><i>(BETA)</i></b> Invalid parameter error. |
-|  RuntimeNotSupported | <code>&quot;RuntimeNotSupported&quot;</code> | <b><i>(BETA)</i></b> Runtime is not supported. |
-|  ServiceError | <code>&quot;ServiceError&quot;</code> | <b><i>(BETA)</i></b> Call service (AAD or simple authentication server) failed |
-|  TokenExpiredError | <code>&quot;TokenExpiredError&quot;</code> | <b><i>(BETA)</i></b> Token is not within its valid time range. |
-|  UiRequiredError | <code>&quot;UiRequiredError&quot;</code> | <b><i>(BETA)</i></b> The user or administrator has not consented to use the application. |
+|  RuntimeNotSupported | <code>&quot;RuntimeNotSupported&quot;</code> | <b><i>(BETA)</i></b> Runtime is not supported error. |
+|  ServiceError | <code>&quot;ServiceError&quot;</code> | <b><i>(BETA)</i></b> Call service (AAD or simple authentication server) failed. |
+|  TokenExpiredError | <code>&quot;TokenExpiredError&quot;</code> | <b><i>(BETA)</i></b> Token is not within its valid time range error. |
+|  UiRequiredError | <code>&quot;UiRequiredError&quot;</code> | <b><i>(BETA)</i></b> The user or administrator has not consented to use the application error. |
 

@@ -10,7 +10,7 @@ import { formatString, getUserInfoFromSsoToken, parseJwt, validateScopesType } f
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 
 /**
- * Represent on-behalf-of flow to get user identity, and it is designed to be used in Azure Function or Bot scenarios.
+ * Represent on-behalf-of flow to get user identity, and it is designed to be used in server side.
  *
  * @example
  * ```typescript
@@ -116,9 +116,10 @@ export class OnBehalfOfUserCredential implements TokenCredential {
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
    * 
    * @returns Access token with expected scopes.
+   * 
+   * @remarks
    * If scopes is empty string or array, it returns SSO token.
    * If scopes is non-empty, it returns access token for target scope.
-   * Throw error if get access token failed.
    * 
    * @beta
    */

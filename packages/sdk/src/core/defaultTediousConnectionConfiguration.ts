@@ -112,7 +112,7 @@ export class DefaultTediousConnectionConfiguration {
   /**
    * Generate tedious connection configuration with default authentication type.
    *
-   * @param { SqlConfiguration } sqlConfig SQL configuration with username and password.
+   * @param { SqlConfiguration } SQL configuration with username and password.
    *
    * @returns Tedious connection configuration with username and password.
    * @internal
@@ -142,7 +142,7 @@ export class DefaultTediousConnectionConfiguration {
   /**
    * Generate tedious connection configuration with azure-active-directory-access-token authentication type.
    *
-   * @param { SqlConfiguration } sqlConfig SQL configuration with AAD access token.
+   * @param { SqlConfiguration } SQL configuration with AAD access token.
    *
    * @returns Tedious connection configuration with access token.
    * @internal

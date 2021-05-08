@@ -7,7 +7,7 @@
 > This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
 > 
 
-Endpoint of auth service provisioned by Teams App Framework toolkit. Default value comes from SIMPLE\_AUTH\_ENDPOINT environment variable.
+Endpoint of auth service provisioned by Teams Framework toolkit. Default value comes from SIMPLE\_AUTH\_ENDPOINT environment variable.
 
 <b>Signature:</b>
 

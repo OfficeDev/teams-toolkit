@@ -6,7 +6,7 @@ import { formatString } from "../util/utils";
 import { ErrorCode, ErrorMessage, ErrorWithCode } from "../core/errors";
 
 /**
- * Represent Microsoft 365 tenant identity, and it is usually used when user is not involved like time-triggered automation job.
+ * Represent Microsoft 365 tenant identity, and it is usually used when user is not involved.
  * 
  * @example
  * ```typescript
@@ -60,7 +60,6 @@ export class M365TenantCredential implements TokenCredential {
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
    * 
    * @returns Access token with expected scopes.
-   * Throw error if get access token failed.
    * 
    * @beta
    */

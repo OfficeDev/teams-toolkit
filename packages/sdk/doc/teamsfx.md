@@ -12,7 +12,7 @@
 |  [ErrorWithCode](./teamsfx.errorwithcode.md) | <b><i>(BETA)</i></b> Error class with code and message thrown by the SDK. |
 |  [M365TenantCredential](./teamsfx.m365tenantcredential.md) | <b><i>(BETA)</i></b> Represent Microsoft 365 tenant identity, and it is usually used when user is not involved like time-triggered automation job. |
 |  [MsGraphAuthProvider](./teamsfx.msgraphauthprovider.md) | <b><i>(BETA)</i></b> Microsoft Graph auth provider. |
-|  [OnBehalfOfUserCredential](./teamsfx.onbehalfofusercredential.md) | <b><i>(BETA)</i></b> Represent on-behalf-of flow to get user identity, and it is designed to be used in Azure Function or Bot scenarios. |
+|  [OnBehalfOfUserCredential](./teamsfx.onbehalfofusercredential.md) | <b><i>(BETA)</i></b> Represent on-behalf-of flow to get user identity, and it is designed to be used in server side. |
 |  [TeamsBotSsoPrompt](./teamsfx.teamsbotssoprompt.md) | <b><i>(BETA)</i></b> Creates a new prompt that leverage Teams Single Sign On (SSO) support for bot to automatically sign in user and help receive oauth token, asks the user to consent if needed. |
 |  [TeamsUserCredential](./teamsfx.teamsusercredential.md) | <b><i>(BETA)</i></b> Represent Teams current user's identity, and it is used within Teams client applications. |
 
@@ -20,7 +20,7 @@
 
 |  Enumeration | Description |
 |  --- | --- |
-|  [ErrorCode](./teamsfx.errorcode.md) | <b><i>(BETA)</i></b> Error code to help debugging. |
+|  [ErrorCode](./teamsfx.errorcode.md) | <b><i>(BETA)</i></b> Error code to trace the error types. |
 |  [LogLevel](./teamsfx.loglevel.md) | <b><i>(BETA)</i></b> Log level. |
 |  [ResourceType](./teamsfx.resourcetype.md) | <b><i>(BETA)</i></b> Available resource type. |
 

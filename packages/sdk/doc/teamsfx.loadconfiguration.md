@@ -27,5 +27,5 @@ void
 
 ## Exceptions
 
-[InvalidParameter](./teamsfx.errorcode.md) when configuration is not passed in when in browser environment
+[InvalidParameter](./teamsfx.errorcode.md) when configuration is not passed in browser environment
 

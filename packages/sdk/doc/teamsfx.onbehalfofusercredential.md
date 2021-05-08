@@ -7,7 +7,7 @@
 > This API is provided as a preview for developers and may change based on feedback that we receive. Do not use this API in a production environment.
 > 
 
-Represent on-behalf-of flow to get user identity, and it is designed to be used in Azure Function or Bot scenarios.
+Represent on-behalf-of flow to get user identity, and it is designed to be used in server side.
 
 <b>Signature:</b>
 

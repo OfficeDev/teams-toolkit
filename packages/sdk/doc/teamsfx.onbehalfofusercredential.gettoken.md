@@ -26,7 +26,7 @@ getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessTo
 
 Promise&lt;AccessToken \| null&gt;
 
-Access token with expected scopes. If scopes is empty string or array, it returns SSO token. If scopes is non-empty, it returns access token for target scope. Throw error if get access token failed.
+Access token with expected scopes.
 
 ## Exceptions
 
@@ -41,6 +41,10 @@ Access token with expected scopes. If scopes is empty string or array, it return
 [InvalidParameter](./teamsfx.errorcode.md) when scopes is not a valid string or string array.
 
 [RuntimeNotSupported](./teamsfx.errorcode.md) when runtime is browser.
+
+## Remarks
+
+If scopes is empty string or array, it returns SSO token. If scopes is non-empty, it returns access token for target scope.
 
 ## Example
 

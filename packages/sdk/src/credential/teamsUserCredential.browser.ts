@@ -26,7 +26,7 @@ const maxRetryCount = 3;
 const retryTimeSpanInMillisecond = 3000;
 
 /**
- * Represent Teams current user's identity, and it is used within Teams client applications.
+ * Represent Teams current user's identity, and it is used within Teams tab application.
  *
  * @remarks
  * Can only be used within Teams.
@@ -78,7 +78,7 @@ export class TeamsUserCredential implements TokenCredential {
    * await credential.login(["https://graph.microsoft.com/User.Read", "Calendars.Read"]); // multiple scopes using string array
    * await credential.login("https://graph.microsoft.com/User.Read Calendars.Read"); // multiple scopes using string
    * ```
-   * @param scopes - The list of scopes for which the token will have access.
+   * @param scopes - The list of scopes for which the token will have access, before that, we will request user to consent.
    *
    * @throws {@link ErrorCode|InternalError} when failed to login with unknown error.
    * @throws {@link ErrorCode|ServiceError} when simple auth server failed to exchange access token.

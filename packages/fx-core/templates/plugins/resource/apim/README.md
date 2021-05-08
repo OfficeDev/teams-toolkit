@@ -31,6 +31,7 @@ You can do this using the Teams Toolkit in Visual Studio Code or using the Teams
 | <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign in to Azure` under the `ACCOUNTS` section from sidebar.</li> <li>After you signed in, select a subscription under your account.</li><li>Open Teams Toolkit, and sign into M365 by clicking the `Sign in to M365` under the `ACCOUNTS` section from sidebar.</li><li>Open the command palette and select: `Teams: Provision in the Cloud`.</li><li>Open the command palette and select: `Teams: Deploy to the Cloud`.</li></ul>  |<ul> <li>Run command `teamsfx account login azure`.</li> <li>Run command `teamsfx account set --subscription $subscriptionId`.</li> <li>Run command `teamsfx account login m365`.</li> <li> Run command `teamsfx provision`.</li> <li>Run command: `teamsfx deploy function apim --open-api-document openapi/openapi.json --api-prefix $apiPrefix --api-version $apiVersion`. </li></ul>|
 
 In the deployment step, there will be some inputs needed:
+- Select the resource `API Management`. The resource `Azure Function` should also be selected if the API changes have never been deployed to Azure.
 - The OpenAPI Specification File (Default: `openapi/openapi.json`).
 - Input API prefix. The API Path will be `$apiPrefix-$resourceSuffix`. The API Name will be `$apiPrefix-$resourceSuffix-$apiVersion`.
 - Select an existing API version or input a new API version.

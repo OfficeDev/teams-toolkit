@@ -11,17 +11,9 @@ Azure API Management (APIM) is used to create consistent and modern API gateways
 >Publish APIs to APIM requires Azure Functions in your project. If your project does not include Azure Functions, please note that we will automatically add one for you. Read about [Azure Functions in TeamsFx](https://github.com/OfficeDev/TeamsFx/tree/main/templates/function-base/js/default#readme) to learn more.
 
 You can enable Azure API Management by following steps:
-- Use Teams Toolkit
-  - Open Teams Toolkit, and sign into Azure by clicking the `Sign in to Azure` under the `ACCOUNT` section from sidebar. 
-  - After you signed in, select a subscription under your account. 
-  - Open command palette, select `Teams: Add Resources` and select `Register APIs in Azure API Management` in next step. 
-  - Choose to create a new API Management instance or use an existing API Management instance.
-- Use TeamsFx CLI
-  - Run command `teamsfx account login azure`.
-  - Run command `teamsfx account set --subscription $subscriptionId`.
-  - Create a new API Management instance or use an existing API Management instance
-    - Create a new instance: Run command `teamsfx resource add azure-apim`.
-    - Use an existing instance: Run command `teamsfx resource add azure-apim --apim-resource-group $resourceGroupName --apim-service-name $serviceName`.
+| Using Teams Toolkit| Using TeamsFx CLI|
+| :------------------| :----------------|
+| <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign in to Azure` under the `ACCOUNTS` section from sidebar.</li><li>After you signed in, select a subscription under your account.</li><li>Open command palette, select `Teams: Add Resources` and select `Register APIs in Azure API Management` in next step.</ul> | <ul><li>Run command `teamsfx account login azure`.</li><li>Run command `teamsfx account set --subscription $subscriptionId`.</li><li>Create a new API Management instance or use an existing API Management instance</li><ul><li>Create a new instance: Run command `teamsfx resource add azure-apim`.</li><li>Use an existing instance: Run command `teamsfx resource add azure-apim --apim-resource-group $resourceGroupName --apim-service-name $serviceName`.</li></ul></ul>|
 
 >Note: We need your Azure account and subscription information here so you can specify whether to use an existing or new APIM instance. 
 
@@ -36,7 +28,7 @@ Simply deploy your project to the cloud when it’s ready by following these ste
 You can do this using the Teams Toolkit in Visual Studio Code or using the TeamsFx CLI:
 | Using Teams Toolkit| Using TeamsFx CLI|
 | :------------------| :----------------|
-| <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign in to Azure` under the `ACCOUNT` section from sidebar.</li> <li>After you signed in, select a subscription under your account.</li><li>Open Teams Toolkit, and sign into M365 by clicking the `Sign in to M365` under the `ACCOUNT` section from sidebar.</li><li>Open the command palette and select: `Teams: Provision in the Cloud`.</li><li>Open the command palette and select: `Teams: Deploy to the Cloud`.</li></ul>  |<ul> <li>Run command `teamsfx account login azure`.</li> <li>Run command `teamsfx account set --subscription $scriptionid`.</li> <li>Run command `teamsfx account login azure`.</li> <li> Run command `teamsfx provision`.</li> <li>Run command: `teamsfx deploy`. </li></ul>|
+| <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign in to Azure` under the `ACCOUNTS` section from sidebar.</li> <li>After you signed in, select a subscription under your account.</li><li>Open Teams Toolkit, and sign into M365 by clicking the `Sign in to M365` under the `ACCOUNTS` section from sidebar.</li><li>Open the command palette and select: `Teams: Provision in the Cloud`.</li><li>Open the command palette and select: `Teams: Deploy to the Cloud`.</li></ul>  |<ul> <li>Run command `teamsfx account login azure`.</li> <li>Run command `teamsfx account set --subscription $subscriptionId`.</li> <li>Run command `teamsfx account login m365`.</li> <li> Run command `teamsfx provision`.</li> <li>Run command: `teamsfx deploy function apim --open-api-document openapi/openapi.json --api-prefix $apiPrefix --api-version $apiVersion`. </li></ul>|
 
 In the deployment step, there will be some inputs needed:
 - The OpenAPI Specification File (Default: `openapi/openapi.json`).
@@ -50,9 +42,55 @@ Update the Open API document under the `openapi` folder. We support both yaml an
 
 ### Recommended way 1: Using npm package swagger-jsdoc
 - Run command: `npm install -g swagger-jsdoc`. 
-- Annotating source code. [[Detail]](https://github.com/Surnet/swagger-jsdoc/)
-- Edit the title and version in `openapi/openapi.json`.
-- Run command: swagger-jsdoc -d `./openapi/openapi.json **/*.ts`
+- Annotating source code. See https://github.com/Surnet/swagger-jsdoc/ for how to use swagger-jsdoc to annotate the source code. Below is a sample annotation.
+```ts
+/**
+ * @openapi
+ * /getUserProfile:
+ *  get:
+ *    summary: Get User Profile
+ *    operationId: get-user-profile
+ *    responses:
+ *      '200':
+ *        $ref: "#/components/responses/getUserProfileResponse"
+ */
+export default async function run(context: Context, req: HttpRequest, teamsfxContext: TeamsfxContext): Promise<Response> {
+    // Code
+}
+
+/**
+ * @openapi
+ * components:
+ *   responses:
+ *     getUserProfileResponse:
+ *       description: 200 response
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               receivedHTTPRequestBody:
+ *                 type: string
+ *               userInfoMessage:
+ *                 type: string
+ *               graphClientMessage:
+ *                 type: object
+ */
+interface GetUserProfileResponse{
+    // Code
+}
+```
+- Create an OpenAPI definition file `openapi/openapi.definition.json` and input the title and version. Below is a sample definition file.
+```json
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "{appName}",
+        "version": "v1"
+    }
+}
+```
+- Run command `swagger-jsdoc -d ./openapi/openapi.definition.json -o ./openapi/openapi.json ./api/getUserProfile/*`. Please change the file path `./api/getUserProfile/*` according to your modification.
 
 ### Recommended way 2: OpenAPI (Swagger) Editor in VS Code.
 Below is a sample swagger file for the default http trigger function. You can copy the content into `./openapi/openapi.json`, follow the [OpenAPI Specification](https://swagger.io/resources/open-api/), and change the content according to your modification (E.g. `/getUserProfile` -> `/$yourFunctionName` ).

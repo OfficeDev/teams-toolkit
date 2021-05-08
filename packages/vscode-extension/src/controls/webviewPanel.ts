@@ -222,9 +222,6 @@ export class WebviewPanel {
               const panelType = '${panelType}';
               const isSupportedNode = ${this.isValidNode()};
               const isMacPlatform = ${isMacOS()};
-              window.onload = function() {
-                console.log('Ready to accept data.');
-              };
             </script>
             <script nonce="${nonce}"  type="module" src="${scriptUri}"></script>
           </body>

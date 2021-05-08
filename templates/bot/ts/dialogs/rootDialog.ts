@@ -44,11 +44,7 @@ export class RootDialog extends ComponentDialog {
           { type: ActionTypes.ImBack, title: "Show Profile", value: "show" },
         ];
         const card = CardFactory.heroCard("Introduction", null, cardButtons, {
-          text: `This Bot has implemented single sign-on (SSO) using Teams Account 
-                      which user logged in Teams client, check <a href=\"placeholder\">TeamsFx authentication document</a> 
-                      and code in <pre>bot/dialogs/mainDialog.js</pre> to learn more about SSO.
-                      Type <strong>show</strong> or click the button below to show your profile by calling Microsoft Graph API with SSO.
-                      To learn more about building Bot using Microsoft Teams Framework, please refer to the <a href=\"placeholder\">TeamsFx document</a> .`,
+          text: `This Bot has implemented single sign-on (SSO) using the identity of the user signed into the Teams client. See the <a href="https://aka.ms/teamsfx-docs-auth">TeamsFx authentication document</a> and code in <pre>bot/dialogs/mainDialog.js</pre> to learn more about SSO.<br>Type <strong>show</strong> or click the button below to show your profile by calling Microsoft Graph API with SSO. To learn more about building Bot using Microsoft Teams Framework, please refer to the <a href="https://aka.ms/teamsfx-docs">TeamsFx documentation</a>.`,
         });
 
         await innerDc.context.sendActivity({ attachments: [card] });
@@ -64,9 +60,7 @@ export class RootDialog extends ComponentDialog {
             },
           ];
           const card = CardFactory.heroCard("", null, cardButtons, {
-            text: `This is a hello world Bot built by Microsoft Teams Framework, 
-                      which is designed only for illustration Bot purpose. This Bot by default will not handle any specific question or task. 
-                      Please type <strong>intro</strong> to see the introduction card.`,
+            text: `This is a hello world Bot built with Microsoft Teams Framework, which is designed for illustration purposes. This Bot by default will not handle any specific question or task.<br>Please type <strong>intro</strong> to see the introduction card.`,
           });
           await innerDc.context.sendActivity({ attachments: [card] });
         }

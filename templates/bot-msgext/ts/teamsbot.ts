@@ -1,10 +1,18 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-import { default as axios } from 'axios';
-import * as querystring from 'querystring';
+import { default as axios } from "axios";
+import * as querystring from "querystring";
 
-import { TeamsActivityHandler, SigninStateVerificationQuery, ActionTypes, CardFactory, BotState, TurnContext, tokenExchangeOperationName } from "botbuilder";
+import {
+    TeamsActivityHandler,
+    SigninStateVerificationQuery,
+    ActionTypes,
+    CardFactory,
+    BotState,
+    TurnContext,
+    tokenExchangeOperationName,
+} from "botbuilder";
 import { MainDialog } from "./dialogs/mainDialog";
 
 export class TeamsBot extends TeamsActivityHandler {
@@ -19,24 +27,34 @@ export class TeamsBot extends TeamsActivityHandler {
      * @param {UserState} userState
      * @param {Dialog} dialog
      */
-    constructor(conversationState: BotState, userState: BotState, dialog: MainDialog) {
+    constructor(
+        conversationState: BotState,
+        userState: BotState,
+        dialog: MainDialog
+    ) {
         super();
         if (!conversationState) {
-            throw new Error('[TeamsBot]: Missing parameter. conversationState is required');
+            throw new Error(
+                "[TeamsBot]: Missing parameter. conversationState is required"
+            );
         }
         if (!userState) {
-            throw new Error('[TeamsBot]: Missing parameter. userState is required');
+            throw new Error(
+                "[TeamsBot]: Missing parameter. userState is required"
+            );
         }
         if (!dialog) {
-            throw new Error('[TeamsBot]: Missing parameter. dialog is required');
+            throw new Error(
+                "[TeamsBot]: Missing parameter. dialog is required"
+            );
         }
         this.conversationState = conversationState;
         this.userState = userState;
         this.dialog = dialog;
-        this.dialogState = this.conversationState.createProperty('DialogState');
+        this.dialogState = this.conversationState.createProperty("DialogState");
 
         this.onMessage(async (context, next) => {
-            console.log('Running dialog with Message Activity.');
+            console.log("Running dialog with Message Activity.");
 
             // Run the Dialog with the new message Activity.
             await this.dialog.run(context, this.dialogState);
@@ -49,16 +67,21 @@ export class TeamsBot extends TeamsActivityHandler {
             const membersAdded = context.activity.membersAdded;
             for (let cnt = 0; cnt < membersAdded.length; cnt++) {
                 if (membersAdded[cnt].id) {
-                    const cardButtons = [{ type: ActionTypes.ImBack, title: 'Show introduction card', value: 'intro' }];
+                    const cardButtons = [
+                        {
+                            type: ActionTypes.ImBack,
+                            title: "Show introduction card",
+                            value: "intro",
+                        },
+                    ];
                     const card = CardFactory.heroCard(
-                        'Welcome',
+                        "Welcome",
                         null,
                         cardButtons,
                         {
-                            text: `Congratulations! Your hello world Bot 
-                            template is running. This bot will introduce you how to build bot using Microsoft Teams App Framework(TeamsFx). 
-                            You can reply <strong>intro</strong> to see the introduction card. TeamsFx helps you build Bot using <a href=\"https://dev.botframework.com/\">Bot Framework SDK</a>`
-                        });
+                            text: `Congratulations! Your hello world Bot template is running. This bot has default commands to help you modify it. <br>You can reply <strong>intro</strong> to see the introduction card. This bot is built with <a href=\"https://dev.botframework.com/\">Microsoft Bot Framework</a>`,
+                        }
+                    );
                     await context.sendActivity({ attachments: [card] });
                     break;
                 }
@@ -75,12 +98,20 @@ export class TeamsBot extends TeamsActivityHandler {
         await this.userState.saveChanges(context, false);
     }
 
-    async handleTeamsSigninVerifyState(context: TurnContext, query: SigninStateVerificationQuery) {
-        console.log('Running dialog with signin/verifystate from an Invoke Activity.');
+    async handleTeamsSigninVerifyState(
+        context: TurnContext,
+        query: SigninStateVerificationQuery
+    ) {
+        console.log(
+            "Running dialog with signin/verifystate from an Invoke Activity."
+        );
         await this.dialog.run(context, this.dialogState);
     }
 
-    async handleTeamsSigninTokenExchange(context: TurnContext, query: SigninStateVerificationQuery) {
+    async handleTeamsSigninTokenExchange(
+        context: TurnContext,
+        query: SigninStateVerificationQuery
+    ) {
         await this.dialog.run(context, this.dialogState);
     }
 
@@ -98,70 +129,95 @@ export class TeamsBot extends TeamsActivityHandler {
 
     // Message Extension Code
     // Action.
-    public async handleTeamsMessagingExtensionSubmitAction(context: TurnContext, action: any): Promise<any> {
+    public async handleTeamsMessagingExtensionSubmitAction(
+        context: TurnContext,
+        action: any
+    ): Promise<any> {
         switch (action.commandId) {
-            case 'createCard':
+            case "createCard":
                 return createCardCommand(context, action);
-            case 'shareMessage':
+            case "shareMessage":
                 return shareMessageCommand(context, action);
             default:
-                throw new Error('NotImplemented');
+                throw new Error("NotImplemented");
         }
     }
 
     // Search.
-    public async handleTeamsMessagingExtensionQuery(context: TurnContext, query: any): Promise<any> {
+    public async handleTeamsMessagingExtensionQuery(
+        context: TurnContext,
+        query: any
+    ): Promise<any> {
         const searchQuery = query.parameters[0].value;
-        const response = await axios.get(`http://registry.npmjs.com/-/v1/search?${querystring.stringify({ text: searchQuery, size: 8 })}`);
+        const response = await axios.get(
+            `http://registry.npmjs.com/-/v1/search?${querystring.stringify({
+                text: searchQuery,
+                size: 8,
+            })}`
+        );
 
         const attachments = [];
-        response.data.objects.forEach(obj => {
+        response.data.objects.forEach((obj) => {
             const heroCard = CardFactory.heroCard(obj.package.name);
             const preview = CardFactory.heroCard(obj.package.name);
-            preview.content.tap = { type: 'invoke', value: { description: obj.package.description } };
+            preview.content.tap = {
+                type: "invoke",
+                value: { description: obj.package.description },
+            };
             const attachment = { ...heroCard, preview };
             attachments.push(attachment);
         });
 
         return {
             composeExtension: {
-                type: 'result',
-                attachmentLayout: 'list',
-                attachments: attachments
-            }
+                type: "result",
+                attachmentLayout: "list",
+                attachments: attachments,
+            },
         };
     }
 
-    public async handleTeamsMessagingExtensionSelectItem(context: TurnContext, obj: any): Promise<any> {
+    public async handleTeamsMessagingExtensionSelectItem(
+        context: TurnContext,
+        obj: any
+    ): Promise<any> {
         return {
             composeExtension: {
-                type: 'result',
-                attachmentLayout: 'list',
-                attachments: [CardFactory.thumbnailCard(obj.description)]
-            }
+                type: "result",
+                attachmentLayout: "list",
+                attachments: [CardFactory.thumbnailCard(obj.description)],
+            },
         };
     }
 
     // Link Unfurling.
-    public async handleTeamsAppBasedLinkQuery(context: TurnContext, query: any): Promise<any> {
-        const attachment = CardFactory.thumbnailCard('Image Preview Card',
+    public async handleTeamsAppBasedLinkQuery(
+        context: TurnContext,
+        query: any
+    ): Promise<any> {
+        const attachment = CardFactory.thumbnailCard(
+            "Image Preview Card",
             query.url,
-            [query.url]);
+            [query.url]
+        );
 
         const result = {
-            attachmentLayout: 'list',
-            type: 'result',
-            attachments: [attachment]
+            attachmentLayout: "list",
+            type: "result",
+            attachments: [attachment],
         };
 
         const response = {
-            composeExtension: result
+            composeExtension: result,
         };
         return response;
     }
 }
 
-async function createCardCommand(context: TurnContext, action: any): Promise<any> {
+async function createCardCommand(
+    context: TurnContext,
+    action: any
+): Promise<any> {
     // The user has chosen to create a card by choosing the 'Create Card' context menu command.
     const data = action.data;
     const heroCard = CardFactory.heroCard(data.title, data.text);
@@ -174,20 +230,25 @@ async function createCardCommand(context: TurnContext, action: any): Promise<any
 
     return {
         composeExtension: {
-            type: 'result',
-            attachmentLayout: 'list',
-            attachments: [attachment]
+            type: "result",
+            attachmentLayout: "list",
+            attachments: [attachment],
         },
     };
 }
 
-async function shareMessageCommand(context: TurnContext, action: any): Promise<any> {
+async function shareMessageCommand(
+    context: TurnContext,
+    action: any
+): Promise<any> {
     // The user has chosen to share a message by choosing the 'Share Message' context menu command.
-    let userName = 'unknown';
-    if (action.messagePayload &&
+    let userName = "unknown";
+    if (
+        action.messagePayload &&
         action.messagePayload.from &&
         action.messagePayload.from.user &&
-        action.messagePayload.from.user.displayName) {
+        action.messagePayload.from.user.displayName
+    ) {
         userName = action.messagePayload.from.user.displayName;
     }
 
@@ -195,9 +256,9 @@ async function shareMessageCommand(context: TurnContext, action: any): Promise<a
     // shared message.  This demonstrates sending custom parameters along with the message payload.
     let images = [];
     const includeImage = action.data.includeImage;
-    if (includeImage === 'true') {
+    if (includeImage === "true") {
         images = [
-            'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQtB3AwMUeNoq4gUBGe6Ocj8kyh3bXa9ZbV7u1fVKQoyKFHdkqU',
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQtB3AwMUeNoq4gUBGe6Ocj8kyh3bXa9ZbV7u1fVKQoyKFHdkqU",
         ];
     }
     const heroCard = CardFactory.heroCard(
@@ -206,9 +267,11 @@ async function shareMessageCommand(context: TurnContext, action: any): Promise<a
         images
     );
 
-    if (action.messagePayload &&
+    if (
+        action.messagePayload &&
         action.messagePayload.attachment &&
-        action.messagePayload.attachments.length > 0) {
+        action.messagePayload.attachments.length > 0
+    ) {
         // This sample does not add the MessagePayload Attachments.  This is left as an
         // exercise for the user.
         heroCard.content.subtitle = `(${action.messagePayload.attachments.length} Attachments not included)`;
@@ -217,14 +280,14 @@ async function shareMessageCommand(context: TurnContext, action: any): Promise<a
     const attachment = {
         contentType: heroCard.contentType,
         content: heroCard.content,
-        preview: heroCard
+        preview: heroCard,
     };
 
     return {
         composeExtension: {
-            type: 'result',
-            attachmentLayout: 'list',
-            attachments: [attachment]
+            type: "result",
+            attachmentLayout: "list",
+            attachments: [attachment],
         },
     };
 }

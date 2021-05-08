@@ -57,7 +57,7 @@ Update the Open API document under the `openapi` folder. We support both yaml an
      *         $ref: "#/components/responses/getUserProfileResponse"
      */
     ```
-  - Response schema annotation
+  - Response annotation
     ```js
     /**
      * @openapi

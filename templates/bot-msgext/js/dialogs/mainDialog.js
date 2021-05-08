@@ -90,10 +90,16 @@ class MainDialog extends RootDialog {
                 );
 
                 // show user picture
-                var photoBinary = await graphClient
-                    .api("/me/photo/$value")
-                    .responseType(ResponseType.ARRAYBUFFER)
-                    .get();
+                var photoBinary;
+                try {
+                    photoBinary = await graphClient
+                        .api("/me/photo/$value")
+                        .responseType(ResponseType.ARRAYBUFFER)
+                        .get();
+                } catch {
+                    // Just continue when failing to get the photo.
+                    return await stepContext.endDialog();
+                }
                 const buffer = Buffer.from(photoBinary);
                 const imageUri =
                     "data:image/png;base64," + buffer.toString("base64");
@@ -104,7 +110,7 @@ class MainDialog extends RootDialog {
                 await stepContext.context.sendActivity({ attachments: [card] });
             } else {
                 await stepContext.context.sendActivity(
-                    "Getting profile from Microsoft Graph failed! "
+                    "Getting profile from Microsoft Graph failed!"
                 );
             }
 

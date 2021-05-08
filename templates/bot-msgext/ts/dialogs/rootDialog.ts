@@ -11,8 +11,8 @@ export class RootDialog extends ComponentDialog {
         super(id);
     }
 
-    async onBeginDialog(innerDc: DialogContext, options: {} | undefined) {
-        const result = await this.interrupt(innerDc);
+    async onBeginDialog(innerDc: DialogContext, options?: any) {
+        const result = await this.triggerCommand(innerDc);
         if (result) {
             return result;
         }
@@ -24,7 +24,7 @@ export class RootDialog extends ComponentDialog {
         return await super.onContinueDialog(innerDc);
     }
 
-    async interrupt(innerDc: DialogContext) {
+    async triggerCommand(innerDc: DialogContext) {
         const removedMentionText = TurnContext.removeRecipientMention(
             innerDc.context.activity
         );

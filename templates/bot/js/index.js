@@ -37,7 +37,7 @@ adapter.onTurnError = async (context, error) => {
     );
 
     // Send a message to the user
-    await context.sendActivity('The bot encountered an error or bug.');
+    await context.sendActivity(`The bot encountered an unhandled error:\n ${error.message}`);
     await context.sendActivity('To continue to run this bot, please fix the bot source code.');
     // Clear out state
     await conversationState.delete(context);
@@ -68,21 +68,26 @@ server.listen(process.env.port || process.env.PORT || 3978, function () {
 });
 
 // Listen for incoming requests.
-server.post('/api/messages', (req, res) => {
-    adapter.processActivity(req, res, async (context) => {
+server.post('/api/messages', async (req, res) => {
+    await adapter.processActivity(req, res, async (context) => {
         await bot.run(context);
+    }).catch(err => {
+        // Error message including "412" means it is waiting for user's consent, which is a normal process of SSO, sholdn't throw this error.
+        if (!err.message.includes('412')) {
+            throw err;
+        }
     });
 });
 
 server.get(
-    "/*",
+    '/*',
     restify.plugins.serveStatic({
         directory: path.join(__dirname, 'public')
     })
 );
 
 // Gracefully shutdown HTTP server
-['exit', 'uncaughtException', 'SIGINT', 'SIGTERM', 'SIGUSR1', 'SIGUSR2' ].forEach((event) => {
+['exit', 'uncaughtException', 'SIGINT', 'SIGTERM', 'SIGUSR1', 'SIGUSR2'].forEach((event) => {
     process.on(event, () => {
         server.close();
     });

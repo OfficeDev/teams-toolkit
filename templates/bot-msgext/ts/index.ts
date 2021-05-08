@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 // Import required packages
-import * as path from 'path';
+import * as path from "path";
 import * as restify from "restify";
 
 // Import required bot services.
@@ -42,7 +42,7 @@ const onTurnErrorHandler = async (context: TurnContext, error: Error) => {
     );
 
     // Send a message to the user
-    await context.sendActivity("The bot encountered an error or bug.");
+    await context.sendActivity(`The bot encountered an unhandled error:\n ${error.message}`);
     await context.sendActivity("To continue to run this bot, please fix the bot source code.");
 };
 
@@ -74,9 +74,14 @@ server.listen(process.env.port || process.env.PORT || 3978, () => {
 });
 
 // Listen for incoming requests.
-server.post("/api/messages", (req, res) => {
-    adapter.processActivity(req, res, async (context) => {
+server.post("/api/messages", async (req, res) => {
+    await adapter.processActivity(req, res, async (context) => {
         await bot.run(context);
+    }).catch(err => {
+        // Error message including "412" means it is waiting for user's consent, which is a normal process of SSO, sholdn't throw this error.
+        if (!err.message.includes("412")) {
+            throw err;
+        }
     });
 });
 

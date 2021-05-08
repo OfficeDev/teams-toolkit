@@ -89,7 +89,6 @@ export enum SolutionError {
     UnknownSolutionRunningState = "UnknownSolutionRunningState",
     CannotDeployBeforeProvision = "CannotDeployBeforeProvision",
     CannotPublishBeforeProvision = "CannotPublishBeforeProvision",
-    CancelProvision = "CancelProvision",
     NoSubscriptionFound = "NoSubscriptionFound",
     NoSubscriptionSelected = "NoSubscriptionSelected",
     FailedToGetParamForRegisterTeamsAppAndAad = "FailedToGetParamForRegisterTeamsAppAndAad",

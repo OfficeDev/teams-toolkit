@@ -716,7 +716,14 @@ class CoreImpl implements Core {
      * provision
      */
     public async provision(answers?: ConfigMap): Promise<Result<null, FxError>> {
-        return await this.selectedSolution!.provision(this.solutionContext(answers));
+        const provisionRes = await this.selectedSolution!.provision(this.solutionContext(answers));
+        if (provisionRes.isErr()) {
+            if (provisionRes.error.message.startsWith(strings.solution.CancelProvision)) {
+                return ok(null);
+            }
+            return err(provisionRes.error);
+        }
+        return ok(null);
     }
 
     /**

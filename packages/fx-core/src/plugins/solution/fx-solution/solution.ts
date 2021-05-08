@@ -107,7 +107,6 @@ import { ErrorResponse } from "@azure/arm-resources/esm/models/mappers";
 import * as strings from "../../../resources/strings.json";
 import * as util from "util";
 import { deepCopy } from "../../../common/tools";
-import { subscription } from "fx-api/build/ci/conf/azure";
 
 type LoadedPlugin = Plugin & { name: string; displayName: string; };
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -873,7 +872,7 @@ export class TeamsAppSolution implements Solution {
 
             const confirm  = (await ctx.dialog?.communicate(
                 new DialogMsg(DialogType.Show, {
-                    description: util.format(strings.solution.ProvisionConfirmNotice, username, subscriptionName ? subscriptionName:subscriptionId),
+                    description: util.format(strings.solution.ProvisionConfirmNotice, username, subscriptionName ? subscriptionName : subscriptionId),
                     level: MsgLevel.Warning,
                     items: ["Provision", "Cancel"]
                 }),
@@ -881,9 +880,9 @@ export class TeamsAppSolution implements Solution {
             
             if (confirm === "Cancel"){
                 return err(returnUserError(
-                    new Error(SolutionError.CancelProvision),
+                    new Error(strings.solution.CancelProvision),
                     "Solution",
-                    SolutionError.CancelProvision,
+                    strings.solution.CancelProvision,
                 ));
             }
         }
@@ -1247,7 +1246,7 @@ export class TeamsAppSolution implements Solution {
                 if(res === "Provision"){
                     const provisionRes = await this.provision(ctx);
                     if (provisionRes.isErr()) {
-                        if (provisionRes.error.message.startsWith(SolutionError.CancelProvision)) {
+                        if (provisionRes.error.message.startsWith(strings.solution.CancelProvision)) {
                             return ok(undefined);
                         }
                         return err(provisionRes.error);
@@ -1307,7 +1306,7 @@ export class TeamsAppSolution implements Solution {
                 if(res === "Provision"){
                     const provisionRes = await this.provision(ctx);
                     if (provisionRes.isErr()) {
-                        if (provisionRes.error.message.startsWith(SolutionError.CancelProvision)) {
+                        if (provisionRes.error.message.startsWith(strings.solution.CancelProvision)) {
                             return ok(undefined);
                         }
                         return err(provisionRes.error);

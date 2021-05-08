@@ -36,8 +36,8 @@ export function isLinux(): boolean {
 export const defaultHelpLink = "https://aka.ms/teamsfx-envchecker-help";
 
 export const nodeNotFoundHelpLink = `${defaultHelpLink}#nodenotfound`;
-export const nodeNotSupportedForAzureHelpLink = `${defaultHelpLink}#nodenotsupported-azure-hosting`;
-export const nodeNotSupportedForSPFxHelpLink = `${defaultHelpLink}#nodenotsupported-spfx-hosting`;
+export const nodeNotSupportedForAzureHelpLink = `${defaultHelpLink}#nodenotsupportedazure-hosting`;
+export const nodeNotSupportedForSPFxHelpLink = `${defaultHelpLink}#nodenotsupportedspfx-hosting`;
 
 export const dotnetExplanationHelpLink = `${defaultHelpLink}#overall`;
 export const dotnetFailToInstallHelpLink = `${defaultHelpLink}#failtoinstalldotnet`;

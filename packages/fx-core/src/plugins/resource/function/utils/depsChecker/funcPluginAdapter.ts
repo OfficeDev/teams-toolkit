@@ -6,7 +6,7 @@ import * as path from "path";
 import { funcPluginLogger as logger } from "./funcPluginLogger";
 import { DepsCheckerError } from "./errors";
 import { ConfigMap, returnUserError } from "fx-api";
-import { Messages, dotnetHelpLink } from "./common";
+import { defaultHelpLink, dotnetFailToInstallHelpLink, Messages } from "./common";
 import { IDepsAdapter } from "./checker";
 
 class FuncPluginAdapter implements IDepsAdapter {
@@ -43,7 +43,6 @@ class FuncPluginAdapter implements IDepsAdapter {
   }
 
   public dotnetCheckerEnabled(): boolean {
-    // TODO: enable dotnet checker after all features are ready
     return this.enabled;
   }
 
@@ -82,7 +81,7 @@ class FuncPluginAdapter implements IDepsAdapter {
     if (error instanceof DepsCheckerError) {
       throw returnUserError(error, "function", "DepsCheckerError", error.helpLink, error);
     } else {
-      throw returnUserError(new Error(Messages.defaultErrorMessage), "function", "DepsCheckerError", dotnetHelpLink, error);
+      throw returnUserError(new Error(Messages.defaultErrorMessage), "function", "DepsCheckerError", defaultHelpLink, error);
     }
   }
 }

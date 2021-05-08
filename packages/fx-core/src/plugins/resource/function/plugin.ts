@@ -36,9 +36,8 @@ import { FxResult, FunctionPluginResultFactory as ResultFactory } from "./result
 import { Logger } from "./utils/logger";
 import { PostProvisionSteps, PreDeploySteps, ProvisionSteps, StepGroup, step } from "./resources/steps";
 import { functionNameQuestion } from "./questions";
-import { dotnetHelpLink, Messages } from "./utils/depsChecker/common";
 import { DotnetChecker } from "./utils/depsChecker/dotnetChecker";
-import { isLinux } from "./utils/depsChecker/common";
+import { defaultHelpLink, Messages, isLinux } from "./utils/depsChecker/common";
 import { DepsCheckerError } from "./utils/depsChecker/errors";
 import { getNodeVersion } from "./utils/node-version";
 import { funcPluginAdapter } from "./utils/depsChecker/funcPluginAdapter";
@@ -585,14 +584,17 @@ export class FunctionPluginImpl {
 
             if (isLinux()) {
                 // TODO: handle linux installation
-                funcPluginAdapter.handleDotnetError(new DepsCheckerError(Messages.defaultErrorMessage, dotnetHelpLink));
+                funcPluginAdapter.handleDotnetError(new DepsCheckerError(Messages.defaultErrorMessage, defaultHelpLink));
                 return;
             }
 
             try {
                 await dotnetChecker.install();
             } catch (error) {
+                await funcPluginLogger.printDetailLog();
                 funcPluginAdapter.handleDotnetError(error);
+            } finally {
+                funcPluginLogger.cleanup();
             }
         });
     }

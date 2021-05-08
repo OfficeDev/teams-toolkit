@@ -21,7 +21,7 @@ export {
   ResourceType
 } from "./models/configuration";
 export { createMicrosoftGraphClient } from "./core/msGraphClientProvider";
-export { DefaultTediousConnectionConfiguration } from "./core/sqlConnector";
+export { DefaultTediousConnectionConfiguration } from "./core/defaultTediousConnectionConfiguration";
 export { TokenCredential, GetTokenOptions } from "@azure/identity";
 export {
   Logger,

@@ -10,6 +10,8 @@ import { internalLogger } from "../util/logger";
 
 /**
  * SQL connection configuration instance.
+ * @remarks
+ * Only works in in server side.
  *
  * @beta
  *
@@ -23,10 +25,14 @@ export class DefaultTediousConnectionConfiguration {
 
   /**
    * Generate connection configuration consumed by tedious.
-   *
+   * 
+   * @returns Connection configuration of tedious for the SQL.
+   * 
+   * @throws {@link ErrorCode|InvalidConfiguration} when SQL config resource configuration is invalid.
+   * @throws {@link ErrorCode|InternalError} when get user MSI token failed or MSI token is invalid.
+   * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
+   * 
    * @beta
-   * @returns return configuration items to the user for tedious to connection to the SQL.
-   * @throws {InvalidConfiguration} if sql config resource configuration is invalid
    */
   public async getConfig(): Promise<ConnectionConfig> {
     internalLogger.info("Get SQL configuration");
@@ -62,7 +68,7 @@ export class DefaultTediousConnectionConfiguration {
   /**
    * Check SQL use MSI identity or username and password.
    *
-   * @returns { boolean } false - login with SQL MSI identity, true - login with username and password.
+   * @returns false - login with SQL MSI identity, true - login with username and password.
    * @internal
    */
   private isMsiAuthentication(): boolean {
@@ -82,7 +88,7 @@ export class DefaultTediousConnectionConfiguration {
    * check configuration is an available configurations.
    * @param { SqlConfiguration } sqlConfig
    *
-   * @returns {boolean} true - sql configuration has a valid SQL endpoints, SQL username with password or identity ID.
+   * @returns true - SQL configuration has a valid SQL endpoints, SQL username with password or identity ID.
    *          false - configuration is not valid.
    * @internal
    */
@@ -96,11 +102,9 @@ export class DefaultTediousConnectionConfiguration {
       );
     }
     if (!(sqlConfig.sqlUsername && sqlConfig.sqlPassword) && !sqlConfig.sqlIdentityId) {
-      const errMsg = `SQL configuration is not valid without ${
-        sqlConfig.sqlIdentityId ? "" : "identity id "
-      } ${sqlConfig.sqlUsername ? "" : "SQL username "} ${
-        sqlConfig.sqlPassword ? "" : "SQL password"
-      } exist`;
+      const errMsg = `SQL configuration is not valid without ${sqlConfig.sqlIdentityId ? "" : "identity id "
+        } ${sqlConfig.sqlUsername ? "" : "SQL username "} ${sqlConfig.sqlPassword ? "" : "SQL password"
+        } exist`;
       internalLogger.error(errMsg);
       throw new ErrorWithCode(errMsg, ErrorCode.InvalidConfiguration);
     }
@@ -110,9 +114,9 @@ export class DefaultTediousConnectionConfiguration {
   /**
    * Generate tedious connection configuration with default authentication type.
    *
-   * @param { SqlConfiguration } sqlConfig sql configuration with username and password.
+   * @param { SqlConfiguration } SQL configuration with username and password.
    *
-   * @returns tedious connection configuration with username and password.
+   * @returns Tedious connection configuration with username and password.
    * @internal
    */
   private generateDefaultConfig(sqlConfig: SqlConfiguration): ConnectionConfig {
@@ -140,9 +144,9 @@ export class DefaultTediousConnectionConfiguration {
   /**
    * Generate tedious connection configuration with azure-active-directory-access-token authentication type.
    *
-   * @param { SqlConfiguration } sqlConfig sql configuration with AAD access token.
+   * @param { SqlConfiguration } SQL configuration with AAD access token.
    *
-   * @returns tedious connection configuration with access token.
+   * @returns Tedious connection configuration with access token.
    * @internal
    */
   private async generateTokenConfig(sqlConfig: SqlConfiguration): Promise<ConnectionConfig> {

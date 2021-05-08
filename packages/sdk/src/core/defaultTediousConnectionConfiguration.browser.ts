@@ -5,10 +5,9 @@ import { ConnectionConfig } from "tedious";
 import { formatString } from "../util/utils";
 
 /**
- * SQL connection configuration instance.
- *
- * @throws {RuntimeNotSupported} if runtime is browser
- *
+ * Generate connection configuration consumed by tedious.
+ * @remarks
+ * Only works in in server side.
  * @beta
  */
 export class DefaultTediousConnectionConfiguration {
@@ -24,10 +23,8 @@ export class DefaultTediousConnectionConfiguration {
 
   /**
    * Generate connection configuration consumed by tedious.
-   *
-   * @returns return configuration items to the user for tedious to connection to the SQL.
-   * @throws {RuntimeNotSupported} if runtime is browser
-   *
+   * @remarks
+   * Only works in in server side.
    * @beta
    */
   public async getConfig(): Promise<ConnectionConfig> {

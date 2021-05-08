@@ -21,7 +21,7 @@
 /packages/cli/tests/e2e/aad @KennethBWSong @adashen
 /packages/cli/tests/e2e/simpleauth @KennethBWSong @adashen
 /packages/cli/tests/e2e/sql @xzf0587 @adashen
-/packages/cli/tests/e2e/apim @XiaofuHuang @dooriya
+/packages/cli/tests/e2e/apim @XiaofuHuang @dooriya @kimizhu
 /packages/cli/tests/e2e/function @henzhang-ms @eriolchan @hund030
 /packages/cli/tests/e2e/frontend @hund030 @eriolchan @henzhang-ms
 
@@ -37,8 +37,8 @@
 /packages/fx-core/src/plugins/resource/aad @KennethBWSong @adashen
 /packages/fx-core/tests/plugins/resource/aad @KennethBWSong @adashen
 
-/packages/fx-core/src/plugins/resource/apim @XiaofuHuang @dooriya
-/packages/fx-core/tests/plugins/resource/apim @XiaofuHuang @dooriya
+/packages/fx-core/src/plugins/resource/apim @XiaofuHuang @dooriya @kimizhu
+/packages/fx-core/tests/plugins/resource/apim @XiaofuHuang @dooriya @kimizhu
 
 /packages/fx-core/src/plugins/resource/appstudio @nliu-ms @jayzhang
 /packages/fx-core/tests/plugins/resource/appstudio @nliu-ms @jayzhang

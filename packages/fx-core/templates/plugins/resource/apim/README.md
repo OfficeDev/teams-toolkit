@@ -24,7 +24,7 @@ You can enable Azure API Management by following steps:
 Simply deploy your project to the cloud when it’s ready by following these steps:
 - Login to Azure account<sup>\*</sup>
 - Login to M365 account<sup>\*</sup>
-- Set An active subscription<sup>\*</sup>
+- Set an active subscription<sup>\*</sup>
 - Provision the resources in the cloud
 - Deploy to the cloud
 

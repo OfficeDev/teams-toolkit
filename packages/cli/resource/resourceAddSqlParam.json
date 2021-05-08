@@ -15,7 +15,7 @@
             "option": [
                 {
                     "id": "function",
-                    "label": "New APIs from Azure Functions"
+                    "label": "Azure Function App"
                 },
                 {
                     "id": "sql",

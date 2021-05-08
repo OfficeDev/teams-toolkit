@@ -3,8 +3,9 @@
 
 "use strict";
 
-import fs from "fs-extra";
+import fs, { readFileSync } from "fs-extra";
 import os from "os";
+import path from "path";
 
 import {
   QTreeNode,
@@ -23,6 +24,8 @@ import CLILogProvider from "../commonlib/log";
 import * as constants from "../constants";
 import { UnknownError } from "../error";
 import activate from "../activate";
+import { CliTelemetryReporter } from "../commonlib/telemetry";
+import { CliTelemetry } from "../telemetry/cliTelemetry";
 
 export abstract class Generator {
   abstract readonly commandName: string;
@@ -34,6 +37,11 @@ export abstract class Generator {
   readonly stage?: Stage;
 
   async generate(projectPath?: string): Promise<Result<QTreeNode | QTreeNode[], FxError>> {
+    if (projectPath) {
+      const cliPackage = JSON.parse(readFileSync(path.join(__dirname, "../../package.json"), "utf8"));
+      const reporter = new CliTelemetryReporter(cliPackage.aiKey, cliPackage.name, cliPackage.version);
+      CliTelemetry.setReporter(reporter);
+    }
     const result = await activate(projectPath);
     if (result.isErr()) {
       return err(result.error);

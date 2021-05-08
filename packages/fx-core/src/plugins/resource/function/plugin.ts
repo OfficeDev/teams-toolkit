@@ -575,9 +575,11 @@ export class FunctionPluginImpl {
             const dotnetChecker = new DotnetChecker(funcPluginAdapter, funcPluginLogger, funcPluginTelemetry);
             try {
                 if (await dotnetChecker.isInstalled()) {
+                    funcPluginLogger.cleanup();
                     return;
                 }
             } catch (error) {
+                funcPluginLogger.debug(`Failed to checker for .NET SDK, error = '${error}'`);
                 funcPluginAdapter.handleDotnetError(error);
                 return;
             }
@@ -585,6 +587,7 @@ export class FunctionPluginImpl {
             if (isLinux()) {
                 // TODO: handle linux installation
                 funcPluginAdapter.handleDotnetError(new DepsCheckerError(Messages.defaultErrorMessage, defaultHelpLink));
+                funcPluginLogger.cleanup();
                 return;
             }
 
@@ -592,6 +595,7 @@ export class FunctionPluginImpl {
                 await dotnetChecker.install();
             } catch (error) {
                 await funcPluginLogger.printDetailLog();
+                funcPluginLogger.error(`Failed to install .NET SDK, error = '${error}'`);
                 funcPluginAdapter.handleDotnetError(error);
             } finally {
                 funcPluginLogger.cleanup();

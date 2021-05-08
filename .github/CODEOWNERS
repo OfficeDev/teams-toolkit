@@ -23,6 +23,7 @@
 /packages/cli/tests/e2e/sql @xzf0587 @adashen
 /packages/cli/tests/e2e/apim @XiaofuHuang @dooriya
 /packages/cli/tests/e2e/function @henzhang-ms @eriolchan @hund030
+/packages/cli/tests/e2e/frontend @hund030 @eriolchan @henzhang-ms
 
 /packages/api @jayzhang @1yefuwang1 @LongOddCode
 /packages/api/src/qm @jayzhang @1yefuwang1 @LongOddCode @jiayi-ruan

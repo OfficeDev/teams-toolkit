@@ -4,7 +4,7 @@
 import fs from "fs-extra";
 import path from "path";
 
-import { AadValidator, FunctionValidator, SimpleAuthValidator } from "fx-api";
+import { AadValidator, FrontendValidator, FunctionValidator, SimpleAuthValidator } from "fx-api";
 
 import {
   execAsync,
@@ -17,13 +17,13 @@ import {
 } from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 
-describe("Azure App Happy Path", function() {
+describe("Azure App Happy Path", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
 
-  it(`Tab + Bot (Create New) + Function + SQL + Apim`, async function() {
+  it(`Tab + Bot (Create New) + Function + SQL + Apim`, async function () {
     // new a project ( tab + function + sql )
     await execAsync(
       `teamsfx new --interactive false --app-name ${appName} --capabilities tab --azure-resources function sql`,
@@ -87,11 +87,11 @@ describe("Azure App Happy Path", function() {
       // Validate provision
       // Get context
       const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
-  
+
       // Validate Aad App
       const aad = AadValidator.init(context, false, AppStudioLogin);
       await AadValidator.validate(aad);
-  
+
       // Validate Simple Auth
       const simpleAuth = SimpleAuthValidator.init(context);
       await SimpleAuthValidator.validate(simpleAuth, aad);
@@ -99,6 +99,10 @@ describe("Azure App Happy Path", function() {
       // Validate Function App
       const func = FunctionValidator.init(context);
       await FunctionValidator.validateProvision(func);
+
+      // Validate Tab Frontend
+      const frontend = FrontendValidator.init(context);
+      await FrontendValidator.validateProvision(frontend);
     }
 
     // // deploy
@@ -152,7 +156,7 @@ describe("Azure App Happy Path", function() {
         timeout: 0
       }
     );
-    
+
     {
       /// TODO: add check for publish
     }

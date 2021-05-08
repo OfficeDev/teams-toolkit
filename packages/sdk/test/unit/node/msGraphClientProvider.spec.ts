@@ -32,7 +32,7 @@ describe("createMicrosoftGraphClient Tests - node", () => {
    * "nbf": 1537231048,
    * "exp": 1537234948,
    * "aio": "test_aio",
-   * "name": "Teams Framework Unit Test",
+   * "name": "Teams App Framework SDK Unit Test",
    * "oid": "11111111-2222-3333-4444-555555555555",
    * "preferred_username": "test@microsoft.com",
    * "rh": "test_rh",

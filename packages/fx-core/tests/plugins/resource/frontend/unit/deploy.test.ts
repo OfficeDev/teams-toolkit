@@ -31,9 +31,16 @@ describe("deploy", async () => {
                     ctime: longAgo,
                     mtime: longAgo,
                     items: {
-                        build: mockfs.directory({
+                        ".deployment": mockfs.directory({
                             mtime: yesterday,
                             ctime: yesterday,
+                            items: {
+                                "deployment.json": mockfs.file({
+                                    content: `{"lastBuildTime":"${yesterday.toISOString()}"}`,
+                                    ctime: yesterday,
+                                    mtime: yesterday,
+                                }),
+                            },
                         }),
                         dir: mockfs.directory({
                             mtime: today,
@@ -71,9 +78,16 @@ describe("deploy", async () => {
                     ctime: longAgo,
                     mtime: longAgo,
                     items: {
-                        build: mockfs.directory({
-                            mtime: today,
-                            ctime: today,
+                        ".deployment": mockfs.directory({
+                            mtime: yesterday,
+                            ctime: yesterday,
+                            items: {
+                                "deployment.json": mockfs.file({
+                                    content: `{"lastBuildTime":"${today.toISOString()}"}`,
+                                    ctime: yesterday,
+                                    mtime: yesterday,
+                                }),
+                            },
                         }),
                         dir: mockfs.directory({
                             mtime: yesterday,
@@ -117,16 +131,12 @@ describe("deploy", async () => {
                     ctime: longAgo,
                     mtime: longAgo,
                     items: {
-                        build: mockfs.directory({
-                            mtime: today,
-                            ctime: today,
-                        }),
                         ".deployment": mockfs.directory({
                             mtime: yesterday,
                             ctime: yesterday,
                             items: {
                                 "deployment.json": mockfs.file({
-                                    content: `{"time":"${yesterday.toJSON()}"}`,
+                                    content: `{"lastBuildTime":"${today.toISOString()}","lastDeployTime":"${yesterday.toISOString()}"}`,
                                     ctime: yesterday,
                                     mtime: yesterday,
                                 }),
@@ -145,16 +155,12 @@ describe("deploy", async () => {
                     ctime: longAgo,
                     mtime: longAgo,
                     items: {
-                        build: mockfs.directory({
-                            mtime: yesterday,
-                            ctime: yesterday,
-                        }),
                         ".deployment": mockfs.directory({
                             mtime: today,
                             ctime: today,
                             items: {
                                 "deployment.json": mockfs.file({
-                                    content: `{"time":"${today.toJSON()}"}`,
+                                    content: `{"lastBuildTime":"${yesterday.toISOString()}","lastDeployTime":"${today.toISOString()}"}`,
                                     ctime: today,
                                     mtime: today,
                                 }),

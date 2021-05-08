@@ -15,3 +15,4 @@ export * from "./resourceGroupManager";
 export * from "./apimValidator";
 export * from "./functionValidator";
 export * from "./botValidator";
+export * from "./frontendValidator";

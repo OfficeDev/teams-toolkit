@@ -52,7 +52,10 @@
             "default": "create-new"
         },
         "condition": {
-            "contains": "Bot"
+            "containsAny": [
+                "Bot",
+                "MessageExtension"
+            ]
         }
     },
     {

@@ -54,4 +54,4 @@ Install the `.NET SDK` manually: please refer to the official documentation to c
 
 ## Report issues if above FAQ can't solve your problems
 
-Please click [here](https://github.com/OfficeDev/TeamsFx/issues/new) to submit an issue on GitHub and attach the log file named `env-checker.log` under `%userprofile%/.fx/` (on Windows) or `~/.fx/` (on macOS/Linux).
+Please click [here](https://github.com/OfficeDev/TeamsFx/issues/new) to submit an issue on GitHub and attach the log from Visual Studio Code output channel named "Teams Toolkit".

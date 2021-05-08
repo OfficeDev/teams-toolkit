@@ -1,30 +1,35 @@
-# Microsoft Teams App Framework (TeamsFx)
-![CI workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/ci.yml/badge.svg)
-![E2E Test workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/e2e-test.yml/badge.svg)
-![SDK CI workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/sdk-ci.yml/badge.svg)
-![SimpleAuth CI workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/simpleauthCI.yml/badge.svg)
-![Function Extension CI workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/FunctionExtensionCI.yml/badge.svg)
+# Microsoft Teams Framework (TeamsFx)
+[![CI workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/ci.yml/badge.svg)](https://github.com/OfficeDev/TeamsFx/actions/workflows/ci.yml)
+[![E2E Test workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/e2e-test.yml/badge.svg)](https://github.com/OfficeDev/TeamsFx/actions/workflows/e2e-test.yml)
+[![SDK CI workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/sdk-ci.yml/badge.svg)](https://github.com/OfficeDev/TeamsFx/actions/workflows/sdk-ci.yml)
+[![SimpleAuth CI workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/simpleauthCI.yml/badge.svg)](https://github.com/OfficeDev/TeamsFx/actions/workflows/simpleauthCI.yml)
+[![Function Extension CI workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/FunctionExtensionCI.yml/badge.svg)](https://github.com/OfficeDev/TeamsFx/actions/workflows/FunctionExtensionCI.yml)
 
-> Please be advised that this project is currently in **Public Preview**, with a lot of bugs, and work left to do before it's ready for production. **Please expect breaking changes** as we continue to iterate. We really appreciate your [feedback](https://aka.ms/teamsfx-feedback), and [recordings](https://aka.ms/teamsfx-record), they make the product better. Thank you!
+> Please be advised that this project is currently in **Public Preview**, with a lot of bugs, and work left to do before it's ready for production. **Please expect breaking changes** as we continue to iterate. We really appreciate your [feedback](https://aka.ms/teamsfx-feedback), and [recordings](https://aka.ms/teamsfx-record), they really make the product better. Thank you!
 
-The Microsoft Teams App Framework (TeamsFx) is a set of solution to help everyone and every organization to build their own Teams apps. The Teams Tookit contains IDE extensions for Visual Studio and Visual Studio Code, a command line tool, and an SDK which helps developers deal with common tasks in building a Teams app.
+Microsoft Teams Framework is a library encapsulating common functionality and integration patterns (like simplified access to Microsoft Identity) for developers building apps for Microsoft Teams.
 
+The Teams Developer Platform offers a collection of solutions for Teams developers:
+- IDE extensions for Visual Studio and Visual Studio Code named "Teams Toolkit"
+- Docs, samples
+- Code libraries including Teams Framework `teamsfx` and the Teams Client Library `teams-js`
+- A command line tool `teamsfx` for automation and CI
 
-The TeamsFx contains the following packages, check 'packages' folder for more information.
+This repository contains the following packages:
 | Package | Description | 
 | ----------- | ----------- |
-| [VS Code Extension](https://github.com/OfficeDev/TeamsFx/tree/main/packages/vscode-extension) | The Microsoft Teams Toolkit enables you to create custom Teams apps directly within the Visual Studio Code environment. The toolkit guides you through the process and provides everything you need to build, debug, and launch your Teams app. |
-| [CLI](https://github.com/OfficeDev/TeamsFx/tree/main/packages/cli) | A set of CLI tools in TeamsFx which provide same functionalities as VS Code extension for develoeprs who prefer keyboard-centric experience for Teams app building  |
-| [SDK](https://github.com/OfficeDev/TeamsFx/tree/main/packages/sdk) | TeamsFx provides SDK to reduce develoeprs' programming work when dealing with Microsoft or Azure component and simplifies the autentication work for developers.  |
-| [API](https://github.com/OfficeDev/TeamsFx/tree/main/packages/api) | TeamsFx API Pack is a collection of API contracts between TeamsFx Extension/CLI and TeamsFx core module. It defines the interfaces for 3rd party developer to write plugins to extend the toolkit capabilities. |
-| [TeamsFx Core](https://github.com/OfficeDev/TeamsFx/tree/main/packages/fx-core) | TeamsFx Core package implements the core capabilities for VS Code Extension/CLI under TeamsFx API contracts. |
-| [Function Extension](https://github.com/OfficeDev/TeamsFx/tree/main/packages/function-extension) | TeamsFx help developers build backend servers on hosted on [Azure Function](https://docs.microsoft.com/en-us/azure/azure-functions/). This extension adds bindings to help build backend API for Teams app. |
-| [Simple Auth](https://github.com/OfficeDev/TeamsFx/tree/main/packages/simpleauth) | The Simple Auth is a backend service helping Teams tab app access first/third party services from client side.|
+| **Visual Studio Code Extension** <br/> [packages/vscode-extension](https://github.com/OfficeDev/TeamsFx/tree/main/packages/vscode-extension) | The extension named "Teams Toolkit" enables you to scaffold, run, debug, and deploy custom Teams apps directly from Visual Studio Code. It provides all the features of the CLI tool `teamsfx` integrated into the IDE, as well as easy access to more samples, docs and tools. |
+| **TeamsFx CLI** <br/> [packages/cli](https://github.com/OfficeDev/TeamsFx/tree/main/packages/cli) | Whether you prefer keyboard-centric developer operations, or you are automating your CI/CD pipeline, the `teamsfx` command line tool offers the same features as the IDE extensions.  |
+| **SDK**<br/> [packages/sdk](https://github.com/OfficeDev/TeamsFx/tree/main/packages/sdk) | The main TeamsFx code library encapsulating simple authentication for both client and server-side code tailored for Teams developers. |
+| **API** <br/> [packages/api](https://github.com/OfficeDev/TeamsFx/tree/main/packages/api) | The TeamsFx API is a collection of contracts supported by the IDE Extensions and CLI. It enables developers to write plugins to extend TeamsFx with new capabilities. |
+| **Core** <br/> [packages/fx-core](https://github.com/OfficeDev/TeamsFx/tree/main/packages/fx-core) | The Core package centralizes implementation of capabilities shared by the IDE Extensions and the CLI. |
+| **Azure Functions Support** <br/> [packages/function-extension](https://github.com/OfficeDev/TeamsFx/tree/main/packages/function-extension) | TeamsFx helps developers include server-side code in their Teams application backed by [Azure Functions](https://docs.microsoft.com/en-us/azure/azure-functions/). This plugin adds support to simplify the integration of an authentication-aware Azure Function into your Teams app. |
+| **Simple Auth** <br/> [packages/simpleauth](https://github.com/OfficeDev/TeamsFx/tree/main/packages/simpleauth) | This package adds support for server-side code necessary for client-side code to access services such as Microsoft Graph.|
 
 <br>
 
-## Get Start
-To start trying TeamsFx, check [Prerequest and Getting Start guidence](doc placeholder) first.
+## Getting Started
+To start a Teams project with TeamsFx, see the Prerequisites section of [the documentation](https://aka.ms/teamsfx-install).
 
 ## Contributing
 
@@ -46,13 +51,11 @@ VS Code collects usage data and sends it to Microsoft to help improve our produc
 Security issues and bugs should be reported privately, via email, to the Microsoft Security Response Center (MSRC) secure@microsoft.com. You should receive a response within 24 hours. If for some reason you do not, please follow up via email to ensure we received your original message. Further information, including the MSRC PGP key, can be found in the [Security TechCenter](https://www.microsoft.com/en-us/msrc/faqs-report-an-issue?rtc=1).
 
 ## Trademarks
-
 This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft 
 trademarks or logos is subject to and must follow 
 [Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general).
 Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship.
 Any use of third-party trademarks or logos are subject to those third-party's policies.
-
 
 ## Code of Conduct
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).

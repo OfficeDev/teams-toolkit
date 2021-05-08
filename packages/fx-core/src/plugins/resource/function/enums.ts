@@ -27,10 +27,6 @@ export enum FunctionConfigKey {
     appServicePlanName = "appServicePlanName",
     functionEndpoint = "functionEndpoint",
 
-    /* States */
-    scaffoldDone = "scaffoldDone",
-    provisionDone = "provisionDone",
-
     /* Intermediate  */
     functionName = "functionName",
     skipDeploy = "skipDeploy",

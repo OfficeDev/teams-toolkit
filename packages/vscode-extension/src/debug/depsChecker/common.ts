@@ -49,6 +49,8 @@ export const Messages = {
 
   defaultErrorMessage: "Please install the required dependencies manually.",
 
+  // since FuncToolChecker is disabled and azure functions core tools will be installed as devDependencies now,
+  // below messages won't be displayed to end user.
   startInstallFunctionCoreTool: `Downloading and installing @NameVersion.`,
   finishInstallFunctionCoreTool: `Successfully installed @NameVersion.`,
   needReplaceWithFuncCoreToolV3: `You must replace with @NameVersion to debug your local functions.`,

@@ -18,7 +18,7 @@ import * as fs from "fs-extra";
 import { CommonStrings, PluginBot, ConfigNames } from "./resources/strings";
 import { DialogUtils } from "./utils/dialog";
 import {
-    CheckThrowSomethingMissing, DeployWithoutProvisionError,
+    CheckThrowSomethingMissing,
     PackDirExistenceError,
     PreconditionError, SomethingMissingError, UserInputsError,
     ValidationError
@@ -141,7 +141,7 @@ export class TeamsBotImpl {
         CheckThrowSomethingMissing(ConfigNames.RESOURCE_GROUP, this.config.provision.resourceGroup);
         CheckThrowSomethingMissing(ConfigNames.LOCATION, this.config.provision.location);
         CheckThrowSomethingMissing(ConfigNames.SKU_NAME, this.config.provision.skuName);
-        
+
         if (!this.config.provision.siteName) {
             this.config.provision.siteName = ResourceNameFactory.createCommonName(this.ctx?.app.name.short);
             Logger.debug(`Site name generated to use is ${this.config.provision.siteName}.`);
@@ -173,8 +173,6 @@ export class TeamsBotImpl {
         await handler?.next(ProgressBarConstants.PROVISION_STEP_WEB_APP);
         // 2. Provision azure web app for hosting bot project.
         await this.provisionWebApp();
-
-        this.config.provision.provisioned = true;
 
         this.config.saveConfigIntoContext(context);
         this.telemetryStepOutSuccess(LifecycleFuncNames.PROVISION);
@@ -336,10 +334,6 @@ export class TeamsBotImpl {
         this.telemetryStepIn(LifecycleFuncNames.PRE_DEPLOY);
         Logger.info(Messages.PreDeployingBot);
 
-        if (!this.config.provision.provisioned) {
-            throw new DeployWithoutProvisionError();
-        }
-
         // Preconditions checking.
         const packDir = this.config.scaffold.workingDir!;
 
@@ -447,7 +441,7 @@ export class TeamsBotImpl {
 
         await handler?.next(ProgressBarConstants.LOCAL_DEBUG_STEP_BOT_REG);
         await this.createNewBotRegistrationOnAppStudio();
-        
+
         this.config.saveConfigIntoContext(context);
         this.telemetryStepOutSuccess(LifecycleFuncNames.LOCAL_DEBUG);
 
@@ -462,7 +456,7 @@ export class TeamsBotImpl {
         CheckThrowSomethingMissing(ConfigNames.LOCAL_ENDPOINT, this.config.localDebug.localEndpoint);
 
         await this.updateMessageEndpointOnAppStudio(`${this.config.localDebug.localEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`);
-                    
+
         this.config.saveConfigIntoContext(context);
         this.telemetryStepOutSuccess(LifecycleFuncNames.POST_LOCAL_DEBUG);
 

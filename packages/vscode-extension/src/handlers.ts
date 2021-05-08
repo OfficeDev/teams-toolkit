@@ -784,7 +784,7 @@ export async function showError(e: FxError) {
     const help = {
       title: StringResources.vsc.handlers.getHelp,
       run: async (): Promise<void> => {
-        commands.executeCommand("vscode.open", Uri.parse(`${e.helpLink}#${errorCode}`));
+        commands.executeCommand("vscode.open", Uri.parse(`${e.helpLink}#${e.source}${e.name}`));
       }
     };
 

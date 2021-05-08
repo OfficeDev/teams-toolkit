@@ -10,7 +10,7 @@ export class ProjectConstants {
     public static readonly openApiDocumentFileName: string = "openapi.json";
     public static readonly readMeFileName: string = "README.md";
     public static readonly maxRetries: number = 3;
-    public static readonly resourceDir: string = path.join(__dirname, "..", "..", "..", "..", "..", "templates", "plugins", "resource", "apim");
+    public static readonly resourceDir: string = path.join(__dirname, "..", "..", "..", "..", "templates", "plugins", "resource", "apim");
 }
 
 export class ApimDefaultValues {

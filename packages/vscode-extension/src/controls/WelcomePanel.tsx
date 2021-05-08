@@ -259,7 +259,6 @@ export default class WelcomePanel extends React.Component<any, IWelcomePanelStat
 
     receiveMessage = (event: any) => {
         const message = event.data.message;
-        console.log(`Received message: ${JSON.stringify(message)}`);
 
         switch (message) {
             default:

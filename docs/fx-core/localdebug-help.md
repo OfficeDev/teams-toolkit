@@ -8,7 +8,7 @@ Teams Toolkit allows you to debug your Teams app locally by leveraging Visual St
 - Bot: a bot server required by Teams Bot capacity
 - Ngrok: a tunneling service required by Teams Bot that forwards local address to public address
 
-During debugging, a localhost development certificate will also be generated and installed to your system after your confirmation.
+During debugging, a localhost development certificate will also be automatically generated and installed to your system after your confirmation.
 
 Some frequently asked questions are listed bellow.
 
@@ -83,12 +83,14 @@ fx-resource-local-debug.localBotEndpoint=https://767787237c6b.ngrok.io
 ```
 Please note that the `localBotEndpoint` should use https protocol.
 
-## What to do if I do not want to trust the development certificate?
+## What to do if I do not want to install the development certificate?
 ### Reason
-Since Teams requires https Tab hosting endpoint, a localhost development certificate will be automatically generated and needs your trust when debugging.
+Since Teams requires https Tab hosting endpoint, a localhost development certificate will be automatically generated and installed to your system after your confirmation. The confirmation window will be popped up during debugging, like:
+
+![Install-Certificate-Confirmation](../images/fx-core/localdebug/install-certificate-confirmation.png)
 
 ### Mitigation
-You can follow the script bellow to skip this step.
+We strongly recommend you to install the development certificate. However, if you do not want to install the development certificate, you can follow the script bellow to disable the confirmation window.
 
 Set the following configuration in *.fx/default.userdata* under the project root, then start debugging, like:
 ```

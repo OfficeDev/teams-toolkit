@@ -17,7 +17,8 @@ import {
     ProvisionError,
     ValidationError,
     runWithErrorCatchAndThrow,
-    FunctionNameConflictError
+    FunctionNameConflictError,
+    FetchConfigError
 } from "./resources/errors";
 import {
     DefaultProvisionConfigs, DefaultValues, DependentPluginInfo,
@@ -474,7 +475,7 @@ export class FunctionPluginImpl {
         if (v) {
             return v;
         }
-        throw new ValidationError(key);
+        throw new FetchConfigError(key);
     }
 
     public isPluginEnabled(ctx: PluginContext, plugin: string): boolean {

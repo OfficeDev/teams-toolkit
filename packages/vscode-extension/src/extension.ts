@@ -17,6 +17,7 @@ import * as StringResources from "./resources/Strings.json";
 
 export async function activate(context: vscode.ExtensionContext) {
   VsCodeLogInstance.info(StringResources.vsc.extension.activate);
+  
   // Init context
   initializeExtensionVariables(context);
 

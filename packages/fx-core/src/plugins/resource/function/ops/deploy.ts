@@ -2,16 +2,14 @@
 // Licensed under the MIT license.
 import * as fs from "fs-extra";
 import * as path from "path";
-import { MsgLevel, PluginContext } from "fx-api";
 import { WebSiteManagementClient } from "@azure/arm-appservice";
 import AdmZip from "adm-zip";
 import axios from "axios";
 import ignore, { Ignore } from "ignore";
 
-import { AzureInfo, Commands, CommonConstants, DefaultValues, FunctionPluginInfo, FunctionPluginPathInfo } from "../constants";
+import { AzureInfo, CommonConstants, DefaultValues, FunctionPluginPathInfo } from "../constants";
 import {
     ConfigFunctionAppError,
-    DotnetVersionError,
     FunctionAppOpError,
     PublishCredentialError,
     UploadZipError,
@@ -19,7 +17,6 @@ import {
     runWithErrorCatchAndThrow
 } from "../resources/errors";
 import { DeploySteps, StepGroup, step } from "../resources/steps";
-import { DialogUtils } from "../utils/dialog";
 import { ErrorMessages, InfoMessages } from "../resources/message";
 import { FunctionLanguage } from "../enums";
 import { LanguageStrategyFactory } from "../language-strategy";

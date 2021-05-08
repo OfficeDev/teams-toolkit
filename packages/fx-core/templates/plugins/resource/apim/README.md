@@ -44,53 +44,50 @@ Update the Open API document under the `openapi` folder. We support both yaml an
 ### Recommended way 1: Using npm package swagger-jsdoc
 - Run command: `npm install -g swagger-jsdoc`. 
 - Annotating source code. Read [more](https://github.com/Surnet/swagger-jsdoc/) about how to use swagger-jsdoc to annotate the source code. Below is a sample annotation.
-```ts
-/**
- * @openapi
- * /getUserProfile:
- *  get:
- *    summary: Get User Profile
- *    operationId: get-user-profile
- *    responses:
- *      '200':
- *        $ref: "#/components/responses/getUserProfileResponse"
- */
-export default async function run(context: Context, req: HttpRequest, teamsfxContext: TeamsfxContext): Promise<Response> {
-    // Code
-}
-
-/**
- * @openapi
- * components:
- *   responses:
- *     getUserProfileResponse:
- *       description: 200 response
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               receivedHTTPRequestBody:
- *                 type: string
- *               userInfoMessage:
- *                 type: string
- *               graphClientMessage:
- *                 type: object
- */
-interface GetUserProfileResponse{
-    // Code
-}
-```
+  - API annotation
+    ```js
+    /**
+     * @openapi
+    * /getUserProfile:
+    *  get:
+    *    summary: Get User Profile
+    *    operationId: get-user-profile
+    *    responses:
+    *      '200':
+    *        $ref: "#/components/responses/getUserProfileResponse"
+    */
+    ```
+  - Response schema annotation
+    ```js
+    /**
+     * @openapi
+    * components:
+    *   responses:
+    *     getUserProfileResponse:
+    *       description: 200 response
+    *       content:
+    *         application/json:
+    *           schema:
+    *             type: object
+    *             properties:
+    *               receivedHTTPRequestBody:
+    *                 type: string
+    *               userInfoMessage:
+    *                 type: string
+    *               graphClientMessage:
+    *                 type: object
+    */
+    ```
 - Create an OpenAPI definition file `openapi/openapi.definition.json` and input the title and version. Below is a sample definition file.
-```json
-{
-    "openapi": "3.0.1",
-    "info": {
-        "title": "{appName}",
-        "version": "v1"
+    ```json
+    {
+        "openapi": "3.0.1",
+        "info": {
+            "title": "{appName}",
+            "version": "v1"
+        }
     }
-}
-```
+    ```
 - Run command `swagger-jsdoc -d ./openapi/openapi.definition.json -o ./openapi/openapi.json ./api/getUserProfile/*`. Please change the file path `./api/getUserProfile/*` according to your modification.
 
 ### Recommended way 2: OpenAPI (Swagger) Editor in VS Code.

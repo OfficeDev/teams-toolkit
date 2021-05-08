@@ -46,7 +46,7 @@ export class TeamsUserCredential implements TokenCredential {
    * const config = {
    *  authentication: {
    *    runtimeConnectorEndpoint: "https://xxx.xxx.com",
-   *    initiateLoginEndpoint: "auth-start.html",
+   *    initiateLoginEndpoint: "https://localhost:3000/auth-start.html",
    *    clientId: "xxx"
    *   }
    * }

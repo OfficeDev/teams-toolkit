@@ -4,27 +4,27 @@
 import fs from "fs-extra";
 import path from "path";
 
-import { AadValidator, FunctionValidator, SimpleAuthValidator } from "fx-api";
+import { AadValidator, BotValidator } from "fx-api";
 
 import {
   execAsync,
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
-  setSimpleAuthSkuNameToB1,
+  setBotSkuNameToB1,
   cleanUp,
 } from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 
-describe("Test Add Function", function() {
+describe("Provision", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
 
-  it(`Create Tab Then Add Function`, async function() {
+  it(`Provision Resource: project with new bot - Test Plan ID 9729265`, async function () {
     await execAsync(
-      `teamsfx new --interactive false --app-name ${appName} --capabilities tab`,
+      `teamsfx new --interactive false --app-name ${appName} --capabilities bot`,
       {
         cwd: testFolder,
         env: process.env,
@@ -33,27 +33,7 @@ describe("Test Add Function", function() {
     );
     console.log(`[Successfully] scaffold to ${projectPath}`);
 
-    await setSimpleAuthSkuNameToB1(projectPath);
-
-    await execAsync(
-      `teamsfx resource add azure-function --function-name func1`,
-      {
-        cwd: projectPath,
-        env: process.env,
-        timeout: 0
-      }
-    );
-
-    await execAsync(
-      `teamsfx resource add azure-function --function-name func2`,
-      {
-        cwd: projectPath,
-        env: process.env,
-        timeout: 0
-      }
-    );
-
-    console.log(`[Successfully] add function to ${projectPath}`);
+    await setBotSkuNameToB1(projectPath);
 
     // set subscription
     await execAsync(
@@ -88,18 +68,14 @@ describe("Test Add Function", function() {
       const aad = AadValidator.init(context, false, AppStudioLogin);
       await AadValidator.validate(aad);
 
-      // Validate Simple Auth
-      const simpleAuth = SimpleAuthValidator.init(context);
-      await SimpleAuthValidator.validate(simpleAuth, aad);
-
-      // Validate Function App
-      const func = FunctionValidator.init(context);
-      await FunctionValidator.validateProvision(func, false);
+      // Validate Bot Provision
+      const bot = BotValidator.init(context);
+      await BotValidator.validateProvision(bot);
     }
 
     // deploy
     await execAsync(
-      `teamsfx deploy function`,
+      `teamsfx deploy bot`,
       {
         cwd: projectPath,
         env: process.env,
@@ -114,9 +90,9 @@ describe("Test Add Function", function() {
       // Get context
       const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
 
-      // Validate Function App
-      const func = FunctionValidator.init(context);
-      await FunctionValidator.validateDeploy(func);
+      // Validate Bot Deploy
+      const bot = BotValidator.init(context);
+      await BotValidator.validateDeploy(bot);
     }
 
 
@@ -166,6 +142,6 @@ describe("Test Add Function", function() {
   after(async () => {
     // clean up
     console.log(`[Successfully] start to clean up for ${projectPath}`);
-    await cleanUp(appName, projectPath);
+    // await cleanUp(appName, projectPath);
   });
 });

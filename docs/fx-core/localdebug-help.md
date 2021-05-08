@@ -49,10 +49,10 @@ This issue may look like:
 
 This is mainly because the custom app uploading is not turned on for your Teams tenant. You can follow [this document](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading) to turn it on.
 
-## What to do if I want to use my own tunnelling service instead of the built-in one for Bot or Messaging Extension?
+## What to do if I want to use my own tunneling service instead of the built-in one for Bot or Messaging Extension?
 Since Bot and Messaging Extension requires a public address as the messaging endpoint, ngrok will be used by default to automatically create a tunnel connection forwarding localhost address to public address.
 
-Set the following configurations in *.fx/default.userdata* under the project root, then start debugging, like:
+To use your own tunneling service, set the following configurations in *.fx/default.userdata* under the project root, then start debugging, like:
 ```
 fx-resource-local-debug.skipNgrok=true
 fx-resource-local-debug.localBotEndpoint=https://767787237c6b.ngrok.io

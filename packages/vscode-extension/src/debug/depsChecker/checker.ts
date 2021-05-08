@@ -87,10 +87,10 @@ export class DepsChecker {
       return shouldContinue;
     }
 
-    // if (isLinux()) {
-    //   const confirmMessage = await this.generateMsg(validCheckers);
-    //   return await this._adapter.displayContinueWithLearnMore(confirmMessage, dotnetManualInstallHelpLink);
-    // }
+    if (isLinux()) {
+      const confirmMessage = await this.generateMsg(validCheckers);
+      return await this._adapter.displayContinueWithLearnMore(confirmMessage, dotnetManualInstallHelpLink);
+    }
 
     this._adapter.showOutputChannel();
     for (const checker of validCheckers) {

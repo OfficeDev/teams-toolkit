@@ -53,8 +53,8 @@ export class TeamsBot extends TeamsActivityHandler {
                         cardButtons,
                         {
                             text: `Congratulations! Your hello world Bot 
-                            template is running. This bot will introduce you how to build bot using Microsoft Teams Framework. 
-                            You can reply <strong>intro</strong> to see the introduction card. TeamsFx helps you build Bot using <a href=\"https://dev.botframework.com/\">Bot Framework SDK</a>`
+                            template is running. This bot has default commands to help you modify it.
+                            You can reply <strong>intro</strong> to see the introduction card. This bot is built with <a href=\"https://dev.botframework.com/\">Microsoft Bot Framework</a>`
                         });
                     await context.sendActivity({ attachments: [card] });
                     break;

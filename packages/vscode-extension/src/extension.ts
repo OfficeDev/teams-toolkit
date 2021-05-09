@@ -14,6 +14,7 @@ import { TeamsfxDebugProvider } from "./debug/teamsfxDebugProvider";
 import { ExtensionSurvey } from "./utils/survey";
 import VsCodeLogInstance from "./commonlib/log";
 import * as StringResources from "./resources/Strings.json";
+import AppStudioLogin from "./commonlib/appStudioLogin";
 
 export async function activate(context: vscode.ExtensionContext) {
   VsCodeLogInstance.info(StringResources.vsc.extension.activate);
@@ -170,6 +171,12 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(azureAccountSettingsCmd);
   
+  const cmpAccountsCmd = vscode.commands.registerCommand(
+    "fx-extension.cmpAccounts",
+    handlers.cmpAccountsHandler
+  );
+  context.subscriptions.push(cmpAccountsCmd);
+
   // Register debug configuration provider
   const debugProvider: TeamsfxDebugProvider = new TeamsfxDebugProvider();
   context.subscriptions.push(

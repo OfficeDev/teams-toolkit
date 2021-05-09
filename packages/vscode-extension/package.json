@@ -173,6 +173,10 @@
         "icon": "$(list-selection)"
       },
       {
+        "command": "fx-extension.cmpAccounts",
+        "title": "Teams: Accounts"
+      },
+      {
         "command": "fx-extension.openWelcome",
         "title": "Teams: Quick Start"
       },

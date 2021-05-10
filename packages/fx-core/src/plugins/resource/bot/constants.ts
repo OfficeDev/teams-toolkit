@@ -136,6 +136,7 @@ export class ErrorNames {
 export class Links {
     public static readonly ISSUE_LINK = "https://github.com/OfficeDev/TeamsFx/issues/new";
     public static readonly HELP_LINK = "https://github.com/OfficeDev/TeamsFx/blob/main/docs/fx-core/bot-help.md";
+    public static readonly UPDATE_MESSAGE_ENDPOINT = `${Links.HELP_LINK}#how-to-reuse-existing-bot-registration-in-toolkit-v2`
 }
 
 export class Alias {

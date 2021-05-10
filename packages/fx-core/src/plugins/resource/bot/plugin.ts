@@ -9,7 +9,7 @@ import { createQuestions } from "./questions";
 import { LanguageStrategy } from "./languageStrategy";
 import { Messages } from "./resources/messages";
 import { FxResult, FxBotPluginResultFactory as ResultFactory } from "./result";
-import { ProgressBarConstants, DeployConfigs, FolderNames, QuestionNames, WebAppConstants, LifecycleFuncNames, TemplateProjectsConstants, AuthEnvNames, AuthValues, MaxLengths } from "./constants";
+import { ProgressBarConstants, DeployConfigs, FolderNames, QuestionNames, WebAppConstants, LifecycleFuncNames, TemplateProjectsConstants, AuthEnvNames, AuthValues, MaxLengths, Links } from "./constants";
 import { WayToRegisterBot } from "./enums/wayToRegisterBot";
 import { getZipDeployEndpoint } from "./utils/zipDeploy";
 
@@ -317,9 +317,10 @@ export class TeamsBotImpl {
             }
             case WayToRegisterBot.ReuseExisting: {
                 // Remind end developers to update message endpoint manually.
-                await DialogUtils.show(
+                await DialogUtils.showAndHelp(
                     context,
                     `Please update bot's message endpoint manually using ${this.config.provision.siteEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX} before you run this bot.`,
+                    Links.UPDATE_MESSAGE_ENDPOINT
                 );
                 break;
             }

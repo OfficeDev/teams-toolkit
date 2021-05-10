@@ -92,11 +92,15 @@ export class AppStudioPluginImpl {
             if (ctx.platform === Platform.VS) {
                 executePublishUpdate = true;
             } else {
+                let description = `The app ${existApp.displayName} has already been submitted to tenant App Catalog.\nStatus: ${existApp.publishingState}\n`;
+                if (existApp.lastModifiedDateTime) {
+                    description = description + `Last Modified: ${existApp.lastModifiedDateTime?.toString()}\n`;
+                }
+                description = description + "Do you want to submit a new update?";
                 executePublishUpdate = (await ctx.dialog?.communicate(new DialogMsg(
                     DialogType.Ask,
                     {
-                        description: `The app ${existApp.displayName} has already been submitted to tenant App Catalog.\nStatus: ${existApp.publishingState}\n`+
-                                    `Last Modified: ${existApp.lastModifiedDateTime?.toString()}.\nDo you want to submit a new update?`,
+                        description: description,
                         type: QuestionType.Confirm,
                         options: ["Confirm"]
                     }

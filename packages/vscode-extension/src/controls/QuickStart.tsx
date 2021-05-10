@@ -172,9 +172,14 @@ export default class QuickStart extends React.Component<any, any>{
                     <div className="stage">
                         {
                             this.state.currentStep === 1 && (
-                                <video id="capabilitiesVideo" className="player" controls disablePictureInPicture>
-                                    <source src="https://s3.amazonaws.com/codecademy-content/courses/React/react_video-fast.mp4"></source>
-                                </video>
+                                <div className="player" onMouseOver={this.onShowWatchOnBrowser} onMouseLeave={this.onHideWatchOnBrowser}>
+                                    <video id="capabilitiesVideo" className="capabilitiesVideo" controls disablePictureInPicture>
+                                        <source src="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"></source>
+                                    </video>
+                                    <div>
+                                        <a id="watchOnBrowser" className="watchOnBrowser" href="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" target="_blank">Watch on browser</a>
+                                    </div>
+                                </div>
                             )
                         }
                         {
@@ -262,6 +267,22 @@ export default class QuickStart extends React.Component<any, any>{
         this.setState({
             stepsDone: done
         });
+    }
+
+    onHideWatchOnBrowser = () => {
+        const video = document.getElementById("capabilitiesVideo") as HTMLMediaElement;
+        const watchOnBrowser = document.getElementById("watchOnBrowser") as any;
+
+        if(video && video.paused !== true) {
+            watchOnBrowser.style.display = "none";
+        }
+        
+    }
+
+    onShowWatchOnBrowser = () => {
+        const watchOnBrowser = document.getElementById("watchOnBrowser") as any;
+
+        watchOnBrowser.style.display = "";
     }
 
     displayCommands = () => {

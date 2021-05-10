@@ -383,6 +383,13 @@ class CoreImpl implements Core {
 
         await this.ctx.dialog?.communicate(
             new DialogMsg(DialogType.Ask, {
+                type: QuestionType.UpdateGlobalState,
+                description: "openReadme"
+            })
+        )
+
+        await this.ctx.dialog?.communicate(
+            new DialogMsg(DialogType.Ask, {
                 type: QuestionType.OpenFolder,
                 description: targetFolder,
             }),

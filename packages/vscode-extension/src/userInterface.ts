@@ -210,6 +210,10 @@ export class DialogManager implements Dialog {
         const uri = Uri.file(question.description);
         return await ext.ui.openFolder(uri);
       }
+      case QuestionType.UpdateGlobalState: {
+        await ext.context.globalState.update(question.description, true);
+        return undefined;
+      }
       case QuestionType.ExecuteCmd: {
         const terminalName: string = question.terminalName || "undefined";
         const terminals: Terminal[] = window.terminals.filter(

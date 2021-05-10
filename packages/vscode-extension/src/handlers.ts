@@ -50,7 +50,7 @@ import { ExtensionErrors, ExtensionSource } from "./error";
 import { WebviewPanel } from "./controls/webviewPanel";
 import * as constants from "./debug/constants";
 import logger from "./commonlib/log";
-import { isFeatureFlag } from "./utils/commonUtils";
+import { isFeatureFlag, isSPFxProject } from "./utils/commonUtils";
 import * as path from "path";
 import * as fs from "fs-extra";
 import * as vscode from "vscode";
@@ -179,6 +179,9 @@ export async function activate(): Promise<Result<null, FxError>> {
         showError(result.error);
         return err(result.error);
       }
+    }
+    {
+      await openMarkdownHandler();
     }
   } catch (e) {
     const FxError: FxError = {
@@ -589,6 +592,31 @@ export async function openWelcomeHandler() {
       retainContextWhenHidden: true
     });
     welcomePanel.webview.html = getHtmlForWebview();
+  }
+}
+
+// TODO: only select bot or tab/bot both selected
+async function openMarkdownHandler() {
+  const afterScaffold = ext.context.globalState.get("openReadme", false);
+  if (afterScaffold && workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
+    const workspaceFolder = workspace.workspaceFolders[0];
+    const workspacePath: string = workspaceFolder.uri.fsPath;
+    let targetFolder: string | undefined;
+    if (await isSPFxProject(workspacePath)) {
+      targetFolder = `${workspacePath}/SPFx`;
+    } else {
+      targetFolder = await commonUtils.getProjectRoot(
+        workspacePath,
+        constants.frontendFolderName
+      );
+    }
+    const uri = Uri.file(`${targetFolder}/README.md`);
+    workspace.openTextDocument(uri).then((document) => {
+      window.showTextDocument(document);
+    }).then(() => {
+      const PreviewMarkdownCommand = "markdown.showPreviewToSide";
+      commands.executeCommand(PreviewMarkdownCommand, uri);
+    });
   }
 }
 

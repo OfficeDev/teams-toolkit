@@ -418,6 +418,21 @@
           }
         }
       }
+    ],
+    "languages": [
+      {
+        "id": "teamsfx-toolkit-output",
+        "mimetypes": [
+          "text/x-code-output"
+        ]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "teamsfx-toolkit-output",
+        "scopeName": "teamsfx-toolkit.output",
+        "path": "./syntaxes/teamsfx-toolkit-output.tmLanguage"
+      }
     ]
   },
   "scripts": {
@@ -428,7 +443,7 @@
     "compile": "tsc -p ./ && npm run copy-files",
     "build": "npm run compile",
     "watch": "webpack --watch --devtool nosources-source-map --info-verbosity verbose --config ./webpack.config.js",
-    "package": "rimraf out && webpack --mode production --config ./webpack.config.js",
+    "package": "rimraf out && webpack --mode development --config ./webpack.config.js",
     "test-compile": "tsc -p ./",
     "test-watch": "npm run copy-test-files && tsc -watch -p ./",
     "pretest": "npm run lint && npm run check-format && npm run test-compile",

@@ -7,10 +7,7 @@ import { ext } from "../extensionVariables";
 const welcomePageKey = 'teamsfx-extension.welcomePage.shown';
 
 export async function openWelcomePageAfterExtensionInstallation(): Promise<void> {
-    if (!/^en(-us)?$/i.test(vscode.env.language)) {
-        // Don't show: this page is English only
-        return;
-    } else if (ext.context.globalState.get(welcomePageKey, false)) {
+    if (ext.context.globalState.get(welcomePageKey, false)) {
         // Don't show: already showed
         return;
     }

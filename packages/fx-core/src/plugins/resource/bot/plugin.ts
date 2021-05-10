@@ -144,7 +144,7 @@ export class TeamsBotImpl {
         CheckThrowSomethingMissing(CommonStrings.SHORT_APP_NAME, this.ctx?.app.name.short);
 
         if (!this.config.provision.siteName) {
-            this.config.provision.siteName = ResourceNameFactory.createCommonName(this.ctx.app.name.short, this.config.resourceNameSuffix, MaxLengths.WEB_APP_SITE_NAME);
+            this.config.provision.siteName = ResourceNameFactory.createCommonName(this.ctx?.app.name.short!, this.config.resourceNameSuffix, MaxLengths.WEB_APP_SITE_NAME);
             Logger.debug(`Site name generated to use is ${this.config.provision.siteName}.`);
         }
 
@@ -203,7 +203,7 @@ export class TeamsBotImpl {
 
         // 1. Provsion app service plan.
         const appServicePlanName = this.config.provision.appServicePlan ??
-            ResourceNameFactory.createCommonName(this.ctx.app.name.short, this.config.resourceNameSuffix, MaxLengths.APP_SERVICE_PLAN_NAME);
+            ResourceNameFactory.createCommonName(this.ctx?.app.name.short!, this.config.resourceNameSuffix, MaxLengths.APP_SERVICE_PLAN_NAME);
         Logger.info(Messages.ProvisioningAzureAppServicePlan);
         await AzureOperations.CreateOrUpdateAppServicePlan(webSiteMgmtClient, this.config.provision.resourceGroup!,
             appServicePlanName, utils.generateAppServicePlanConfig(this.config.provision.location!, this.config.provision.skuName!));
@@ -556,7 +556,7 @@ export class TeamsBotImpl {
         }
 
         // 1. Create a new AAD App Registraion with client secret.
-        const aadDisplayName = ResourceNameFactory.createCommonName(this.ctx.app.name.short, this.config.resourceNameSuffix, MaxLengths.AAD_DISPLAY_NAME);
+        const aadDisplayName = ResourceNameFactory.createCommonName(this.ctx?.app.name.short!, this.config.resourceNameSuffix, MaxLengths.AAD_DISPLAY_NAME);
 
         Logger.info(Messages.ProvisioningBotRegistration);
         const botAuthCreds = await AADRegistration.registerAADAppAndGetSecretByAppStudio(
@@ -607,7 +607,7 @@ export class TeamsBotImpl {
         let botAuthCreds = new BotAuthCredential();
 
         if (!this.config.scaffold.botRegistrationCreated()) {
-            const aadDisplayName = ResourceNameFactory.createCommonName(this.ctx.app.name.short, this.config.resourceNameSuffix, MaxLengths.AAD_DISPLAY_NAME);
+            const aadDisplayName = ResourceNameFactory.createCommonName(this.ctx?.app.name.short!, this.config.resourceNameSuffix, MaxLengths.AAD_DISPLAY_NAME);
             botAuthCreds = await AADRegistration.registerAADAppAndGetSecretByAppStudio(
                 appStudioToken!,
                 aadDisplayName
@@ -630,7 +630,7 @@ export class TeamsBotImpl {
         );
 
         const botChannelRegistrationName = this.config.provision.botChannelRegName ?
-            this.config.provision.botChannelRegName : ResourceNameFactory.createCommonName(this.ctx.app.name.short, this.config.resourceNameSuffix, MaxLengths.BOT_CHANNEL_REG_NAME);
+            this.config.provision.botChannelRegName : ResourceNameFactory.createCommonName(this.ctx?.app.name.short!, this.config.resourceNameSuffix, MaxLengths.BOT_CHANNEL_REG_NAME);
 
         Logger.info(Messages.ProvisioningAzureBotChannelRegistration);
         await AzureOperations.CreateBotChannelRegistration(botClient, this.config.provision.resourceGroup!, botChannelRegistrationName, botAuthCreds.clientId!);

@@ -15,6 +15,7 @@ import {
     runWithErrorCatchAndThrow,
     CheckStorageError,
     CheckResourceGroupError,
+    NoConfigsError,
 } from "./resources/errors";
 import {
     Constants,
@@ -100,7 +101,7 @@ export class FrontendPluginImpl {
         const client = this.azureStorageClient;
         const storageName = this.config?.storageName;
         if (!storageName || !client) {
-            throw new Error("system error");
+            throw new NoConfigsError();
         }
 
         await progressHandler?.next(ProvisionSteps.CreateStorage);
@@ -209,7 +210,7 @@ export class FrontendPluginImpl {
 
         const client = this.azureStorageClient;
         if (!client) {
-            throw new Error();
+            throw new NoConfigsError();
         }
 
         const componentPath: string = path.join(ctx.root, FrontendPathInfo.WorkingDir);

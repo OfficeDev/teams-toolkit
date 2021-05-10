@@ -17,7 +17,8 @@ const tips = {
     doLogin: "Login to Azure.",
     reLogin: "Sign out and login to Azure again.",
     reProvision: `Run 'Provision Resource' again.`,
-    doBuild: `Run 'npm install' and 'npm run build' in the folder: '${FrontendPathInfo.WorkingDir}'.`,
+    doNpmInstall: `Run 'npm install' in the folder: '${FrontendPathInfo.WorkingDir}'.`,
+    doBuild: `Run npm run build' in the folder: '${FrontendPathInfo.WorkingDir}'.`,
     ensureBuildPath: `Ensure your built project exists: '${FrontendPathInfo.BuildPath}'.`,
     ensureResourceGroup: "Ensure your resource group exists",
     ensureAppNameValid:
@@ -26,6 +27,7 @@ const tips = {
     checkNetwork: "Check your network connection.",
     checkFsPermissions: "Check if you have Read/Write permissions to your file system.",
     checkStoragePermissions: "Check if you have permissions to your Azure Storage Account.",
+    checkSystemTime: "You may get expired credentials, check if your system time is correct.",
     restoreEnvironment: "Restore the 'env.default.json' file if you modified it.",
 };
 
@@ -63,6 +65,12 @@ export class UnauthenticatedError extends FrontendPluginError {
     }
 }
 
+export class NoConfigsError extends FrontendPluginError {
+    constructor() {
+        super(ErrorType.System, "NoConfigsError", "Failed to get configs.", [tips.checkLog]);
+    }
+}
+
 export class InvalidConfigError extends FrontendPluginError {
     constructor(key: string) {
         super(ErrorType.User, "InvalidConfigError", `Get invalid ${key}`, [tips.restoreEnvironment]);
@@ -83,7 +91,7 @@ export class NoResourceGroupError extends FrontendPluginError {
 
 export class CheckStorageError extends FrontendPluginError {
     constructor() {
-        super(ErrorType.User, "CheckStorageError", "Failed to check Azure Storage Account availability", [tips.reLogin]);
+        super(ErrorType.User, "CheckStorageError", "Failed to check Azure Storage Account availability", [tips.reLogin, tips.checkSystemTime]);
     }
 }
 
@@ -127,14 +135,14 @@ export class EnableStaticWebsiteError extends FrontendPluginError {
             ErrorType.System,
             "EnableStaticWebsiteError",
             "Failed to enable static website feature for Azure Storage Account.",
-            [tips.checkStoragePermissions],
+            [tips.checkSystemTime, tips.checkStoragePermissions],
         );
     }
 }
 
 export class ClearStorageError extends FrontendPluginError {
     constructor() {
-        super(ErrorType.System, "ClearStorageError", "Failed to clear Azure Storage Account.", [tips.checkNetwork]);
+        super(ErrorType.System, "ClearStorageError", "Failed to clear Azure Storage Account.", [tips.checkSystemTime, tips.checkNetwork]);
     }
 }
 
@@ -147,7 +155,7 @@ export class UploadToStorageError extends FrontendPluginError {
                 FrontendPathInfo.WorkingDir,
                 FrontendPathInfo.BuildPath,
             )} to Azure Storage Account.`,
-            [tips.checkNetwork],
+            [tips.checkSystemTime, tips.checkNetwork],
         );
     }
 }
@@ -158,7 +166,7 @@ export class GetContainerError extends FrontendPluginError {
             ErrorType.System,
             "GetContainerError",
             `Failed to get container '${Constants.AzureStorageWebContainer}' from Azure Storage Account.`,
-            [tips.checkStoragePermissions, tips.checkNetwork],
+            [tips.checkSystemTime, tips.checkStoragePermissions, tips.checkNetwork],
         );
     }
 }
@@ -200,11 +208,17 @@ export class UnzipTemplateError extends FrontendPluginError {
     }
 }
 
+export class NoBuildPathError extends FrontendPluginError {
+    constructor() {
+        super(ErrorType.User, "NoBuildPathError", `Failed to find 'build' folder.`, [tips.doBuild, tips.ensureBuildPath]);
+    }
+}
+
 export class BuildError extends FrontendPluginError {
     constructor() {
         super(ErrorType.User, "BuildError", "Failed to build Tab app.", [
             tips.doBuild,
-            tips.ensureBuildPath,
+            tips.checkLog,
         ]);
     }
 }
@@ -212,8 +226,8 @@ export class BuildError extends FrontendPluginError {
 export class NpmInstallError extends FrontendPluginError {
     constructor() {
         super(ErrorType.User, "NpmInstallError", `Failed to run 'npm install' for Tab app.`, [
-            tips.doBuild,
-            tips.checkNetwork,
+            tips.doNpmInstall,
+            tips.checkLog,
         ]);
     }
 }

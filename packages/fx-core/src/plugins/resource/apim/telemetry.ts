@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { err, UserError } from "fx-api";
+import { UserError } from "fx-api";
 import { SystemError, TelemetryReporter } from "fx-api";
 import { PluginLifeCycle, ProjectConstants } from "./constants";
 import { OpenApiSchemaVersion } from "./model/openApiDocument";

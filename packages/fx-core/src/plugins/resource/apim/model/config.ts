@@ -4,7 +4,6 @@ import { ConfigValue, ReadonlySolutionConfig } from "fx-api";
 import {
     TeamsToolkitComponent,
     ComponentRetryCommands,
-    RetryCommands,
     SolutionConfigKeys,
     AadPluginConfigKeys,
     FunctionPluginConfigKeys,

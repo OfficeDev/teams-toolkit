@@ -43,7 +43,7 @@ import {
     Json,
     Dict,
     ProjectSettings,
-} from "fx-api";
+} from "@microsoft/teamsfx-api";
 import * as path from "path";
 import * as error from "./error";
 import { Loader, Meta } from "./loader";

@@ -280,7 +280,6 @@ export default class QuickStart extends React.Component<any, any>{
     }
 
     onShowWatchOnBrowser = () => {
-        const video = document.getElementById("capabilitiesVideo") as HTMLMediaElement;
         const watchOnBrowser = document.getElementById("watchOnBrowser") as any;
 
         watchOnBrowser.style.display = "";

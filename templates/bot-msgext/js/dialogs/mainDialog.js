@@ -90,7 +90,7 @@ class MainDialog extends RootDialog {
                 );
 
                 // show user picture
-                var photoBinary;
+                let photoBinary;
                 try {
                     photoBinary = await graphClient
                         .api("/me/photo/$value")

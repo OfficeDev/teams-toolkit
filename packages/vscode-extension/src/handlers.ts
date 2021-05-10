@@ -3,7 +3,7 @@
 
 "use strict";
 
-import { commands, Uri, window, workspace, ExtensionContext, env, ViewColumn, debug } from "vscode";
+import { commands, Uri, window, workspace, ExtensionContext, env, ViewColumn, debug, QuickPickItem } from "vscode";
 import {
   Result,
   FxError,
@@ -713,41 +713,11 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
     try {
       switch (node.contextValue) {
         case "signedinM365": {
-          let appstudioLogin: AppStudioTokenProvider = AppStudioTokenInstance;
-          const vscodeEnv = detectVsCodeEnv();
-          if (vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode) {
-            appstudioLogin = AppStudioCodeSpaceTokenInstance;
-          }
-          const result = await appstudioLogin.signout();
-          if (result) {
-            await TreeViewManagerInstance.getTreeView('teamsfx-accounts')!.refresh([
-              {
-                commandId: "fx-extension.signinM365",
-                label: StringResources.vsc.handlers.signIn365,
-                contextValue: "signinM365"
-              }
-            ]);
-          }
+          signOutM365();
           break;
         }
         case "signedinAzure": {
-          const result = await AzureAccountManager.signout();
-          if (result) {
-            await TreeViewManagerInstance.getTreeView('teamsfx-accounts')!.refresh([
-              {
-                commandId: "fx-extension.signinAzure",
-                label: StringResources.vsc.handlers.signInAzure,
-                contextValue: "signinAzure"
-              }
-            ]);
-            await TreeViewManagerInstance.getTreeView('teamsfx-accounts')!.remove([
-              {
-                commandId: "fx-extension.selectSubscription",
-                label: "",
-                parent: "fx-extension.signinAzure"
-              }
-            ]);
-          }
+          signOutAzure();
           break;
         }
       }
@@ -805,4 +775,136 @@ export async function showError(e: FxError) {
   } else {
     await window.showErrorMessage(`[${errorCode}]: ${e.message}`);
   }
+}
+
+export async function cmpAccountsHandler() {
+  let signInAzureOption: VscQuickPickItem = {
+    id:"signInAzure",
+    label: "Sign in to Azure",
+    function: () => signInAzure()
+  };
+
+  let signOutAzureOption: VscQuickPickItem = {
+    id:"signOutAzure",
+    label: "Sign out of Azure: ",
+    function: () => signOutAzure()
+  };
+
+  let signInM365Option: VscQuickPickItem = {
+    id:"signinM365",
+    label: "Sign in to M365",
+    function: () => signInM365()
+  };
+
+  let signOutM365Option: VscQuickPickItem = {
+    id:"signOutM365",
+    label: "Sign out of M365: ",
+    function: () => signOutM365()
+  };
+
+  //TODO: hide subscription list until core or api expose the get subscription list API 
+  // let selectSubscriptionOption: VscQuickPickItem = {
+  //   id: "selectSubscription",
+  //   label: "Specify an Azure Subscription",
+  //   function: () => selectSubscription(),
+  //   detail: "4 subscriptions discovered"
+  // };
+
+  const quickPick = window.createQuickPick();
+
+  let quickItemOptionArray: VscQuickPickItem[] = [];
+
+  let m365Account = await AppStudioTokenInstance.getStatus();
+  if(m365Account.status === "SignedIn"){
+    const accountInfo = m365Account.accountInfo;
+    const email = (accountInfo as any).upn ? (accountInfo as any).upn : undefined;
+    if(email !== undefined){
+      signOutM365Option.label = signOutM365Option.label.concat(email);
+    }
+    quickItemOptionArray.push(signOutM365Option);
+  }else{
+    quickItemOptionArray.push(signInM365Option);
+  }
+
+  let azureAccount = await AzureAccountManager.getStatus();
+  if (azureAccount.status === "SignedIn"){
+    const accountInfo = azureAccount.accountInfo;
+    const email = (accountInfo as any).upn ? (accountInfo as any).upn : undefined;
+    if(email !== undefined){
+      signOutAzureOption.label = signOutAzureOption.label.concat(email);
+    }
+    quickItemOptionArray.push(signOutAzureOption);
+    //quickItemOptionArray.push(selectSubscriptionOption);
+  }else{
+    quickItemOptionArray.push(signInAzureOption);
+  }
+
+  quickPick.items = quickItemOptionArray;
+  quickPick.onDidChangeSelection(selection => {
+    if (selection[0]) {
+      (selection[0] as VscQuickPickItem).function().catch(console.error);
+    }
+  });
+  quickPick.onDidHide(() => quickPick.dispose());
+  quickPick.show();
+}
+
+export async function signOutAzure() {
+  const result = await AzureAccountManager.signout();
+  if (result) {
+    await TreeViewManagerInstance.getTreeView('teamsfx-accounts')!.refresh([
+      {
+        commandId: "fx-extension.signinAzure",
+        label: StringResources.vsc.handlers.signInAzure,
+        contextValue: "signinAzure"
+      }
+    ]);
+    await TreeViewManagerInstance.getTreeView('teamsfx-accounts')!.remove([
+      {
+        commandId: "fx-extension.selectSubscription",
+        label: "",
+        parent: "fx-extension.signinAzure"
+      }
+    ]);
+  }
+}
+
+export async function signOutM365() {
+  let appstudioLogin: AppStudioTokenProvider = AppStudioTokenInstance;
+  const vscodeEnv = detectVsCodeEnv();
+  if (vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode) {
+    appstudioLogin = AppStudioCodeSpaceTokenInstance;
+  }
+  const result = await appstudioLogin.signout();
+  if (result) {
+    await TreeViewManagerInstance.getTreeView('teamsfx-accounts')!.refresh([
+      {
+        commandId: "fx-extension.signinM365",
+        label: StringResources.vsc.handlers.signIn365,
+        contextValue: "signinM365"
+      }
+    ]);
+  }
+}
+
+export async function signInAzure() {
+  vscode.commands.executeCommand("fx-extension.signinAzure");
+}
+
+export async function signInM365() {
+  vscode.commands.executeCommand("fx-extension.signinM365");
+}
+
+export async function selectSubscription() {
+  vscode.commands.executeCommand("fx-extension.specifySubscription");
+}
+
+export interface VscQuickPickItem extends QuickPickItem {
+
+  /**
+   * Current id of the option item.
+   */
+  id: string;
+
+  function: () => Promise<void>;
 }

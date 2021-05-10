@@ -31,8 +31,7 @@ export class FunctionScaffold {
         scenario: string
     ): Promise<AdmZip> {
         try {
-            const url: string = await getTemplateURL(
-                PluginInfo.templateManifestURL, group, language, scenario, PluginInfo.templateVersion);
+            const url: string = await getTemplateURL(group, language, scenario);
             Logger.info(InfoMessages.getTemplateFrom(url));
 
             const zip: AdmZip = await fetchZipFromURL(url);

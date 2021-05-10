@@ -148,7 +148,7 @@ export class ApiPrefixQuestion extends BaseQuestionService implements IQuestionS
                 method: QuestionConstants.VSCode.ApiPrefix.funcName,
             },
             validation: {
-                validFunc: (input: string): string | undefined => NamingRules.validate(input, NamingRules.apiPrefix)
+                validFunc: (input: string|string[]|undefined): string | undefined => NamingRules.validate(input, NamingRules.apiPrefix)
             }
         };
     }
@@ -227,7 +227,7 @@ export class NewApiVersionQuestion extends BaseQuestionService implements IQuest
                 method: QuestionConstants.VSCode.NewApiVersion.funcName,
             },
             validation: {
-                validFunc: (input: string): string | undefined => NamingRules.validate(input, NamingRules.versionIdentity)
+                validFunc: (input: string|string[]|undefined): string | undefined => NamingRules.validate(input, NamingRules.versionIdentity)
             }
         };
     }

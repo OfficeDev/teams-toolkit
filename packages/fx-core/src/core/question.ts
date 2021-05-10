@@ -22,17 +22,17 @@ export const QuestionAppName: TextInputQuestion = {
     name: CoreQuestionNames.AppName,
     title: "Project name",
     validation: {
-        validFunc: async (appName: string, answer?: ConfigMap): Promise<string|undefined> => {
+        validFunc: async (appName: string|string[]|undefined, answer?: ConfigMap): Promise<string|undefined> => {
             const folder = answer?.getString(CoreQuestionNames.Foler);
             if(!folder) return undefined;
             const schema = {
                 pattern: ProjectNamePattern,
             };
-            const validateResult = jsonschema.validate(appName, schema);
+            const validateResult = jsonschema.validate(appName as string, schema);
             if (validateResult.errors && validateResult.errors.length > 0) {
                 return `project name doesn't match pattern: ${schema.pattern}`;
             }
-            const projectPath = path.resolve(folder, appName);
+            const projectPath = path.resolve(folder, appName as string);
             const exists = await fs.pathExists(projectPath);
             if (exists) return `Project path already exists:${projectPath}, please change a different project name.`;
             return undefined;

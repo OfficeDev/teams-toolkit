@@ -275,11 +275,9 @@ export async function traverse(
         }
       }
       const valueToValidate = curr.condition.target ? await getRealValue(parentValue, curr.condition.target, inputs, remoteFuncExecutor) : parentValue;
-      if (valueToValidate) {
-        const validRes = await validate(curr.condition, valueToValidate as string | string[], inputs, remoteFuncExecutor);
-        if (validRes !== undefined) {
-          continue;
-        }
+      const validRes = await validate(curr.condition, valueToValidate as string | string[] | undefined, inputs, remoteFuncExecutor);
+      if (validRes !== undefined) {
+        continue;
       }
     }
 

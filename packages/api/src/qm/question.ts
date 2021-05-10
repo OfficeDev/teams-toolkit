@@ -158,7 +158,7 @@ export interface RemoteFuncValidation extends Func, AnyValidation{
  * The validation is checked by a validFunc provided by user
  */
 export interface LocalFuncValidation extends AnyValidation{
-    validFunc?: (input:string, previousAnswers?: ConfigMap)=>string|undefined|Promise<string|undefined>;
+    validFunc?: (input:string|string[]|undefined, previousAnswers?: ConfigMap)=>string|undefined|Promise<string|undefined>;
 }
 
 export type Validation =

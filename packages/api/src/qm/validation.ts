@@ -24,15 +24,15 @@ export function getValidationFunction(
   validation: Validation,
   outputs: ConfigMap,
   remoteFuncValidator?: RemoteFuncExecutor,
-): (input: string | string[]) => Promise<string | undefined> {
-  return async function(input: string | string[]): Promise<string | undefined> {
+): (input: string | string[] | undefined) => Promise<string | undefined> {
+  return async function(input: string | string[] | undefined): Promise<string | undefined> {
     return await validate(validation, input, outputs, remoteFuncValidator);
   };
 }
 
 export async function validate(
   validation: Validation,
-  valueToValidate: string | string[],
+  valueToValidate: string | string[] | undefined,
   inputs: ConfigMap,
   remoteFuncValidator?: RemoteFuncExecutor
 ): Promise<string | undefined> {
@@ -40,10 +40,10 @@ export async function validate(
   {
     const funcValidation: RemoteFuncValidation = validation as RemoteFuncValidation;
     if (funcValidation.method && remoteFuncValidator) {
-      funcValidation.params = valueToValidate as string; 
+      funcValidation.params = valueToValidate; 
       const res = await remoteFuncValidator(funcValidation as Func, inputs);
       if (res.isOk()) {
-        return res.value as string;
+        return res.value as string|undefined;
       } else {
         return undefined; // when callFunc failed, skip the validation
       }
@@ -54,9 +54,15 @@ export async function validate(
     //LocalFuncValidation
     const localFuncValidation: LocalFuncValidation = validation as LocalFuncValidation;
     if (localFuncValidation.validFunc) {
-      const res = await localFuncValidation.validFunc(valueToValidate as string, inputs);
+      const res = await localFuncValidation.validFunc(valueToValidate, inputs);
       return res as string;
     }
+  }
+
+  if(valueToValidate === undefined){
+    if(validation.required === true)
+      return `input value is required but undefined`;
+    return undefined;
   }
 
   {
@@ -64,9 +70,6 @@ export async function validate(
     const fileValidation: FileValidation = validation as FileValidation;
     if (fileValidation.exists !== undefined) {
       const path = valueToValidate as string;
-      if (!path) {
-        return `path should not be empty!`;
-      }
       const exists = await fs.pathExists(path);
       if(exists !== fileValidation.exists){
         return `path(${path}) existence should be ${fileValidation.exists}`;
@@ -78,9 +81,8 @@ export async function validate(
   {
     // StringValidation
     const stringValidation: StringValidation = validation as StringValidation;
-    const strToValidate = valueToValidate as string;
-    if (typeof strToValidate === "string") {
-      
+    const strToValidate = valueToValidate as string | undefined;
+    if (valueToValidate !== undefined && typeof strToValidate === "string") {
       const schema: any = {};
       if (stringValidation.equals && typeof stringValidation.equals === "string")
         schema.const = stringValidation.equals;
@@ -94,7 +96,7 @@ export async function validate(
       if (stringValidation.maxLength) schema.maxLength = stringValidation.maxLength;
       if (stringValidation.pattern) schema.pattern = stringValidation.pattern;
       if (Object.keys(schema).length > 0) {
-        const validateResult = jsonschema.validate(valueToValidate, schema);
+        const validateResult = jsonschema.validate(strToValidate, schema);
         if (validateResult.errors && validateResult.errors.length > 0) {
           return `'${strToValidate}' ${validateResult.errors[0].message}`;
         }
@@ -121,7 +123,6 @@ export async function validate(
   //NumberValidation
   {
     const numberValidation: NumberValidation = validation as NumberValidation;
-    const numberToValidate = Number(valueToValidate);
     const schema: any = {};
     if (numberValidation.equals && typeof numberValidation.equals === "number")
       schema.const = numberValidation.equals;
@@ -139,6 +140,7 @@ export async function validate(
     )
       schema.enum = numberValidation.enum;
     if (Object.keys(schema).length > 0) {
+      const numberToValidate = Number(valueToValidate);
       const validateResult = jsonschema.validate(numberToValidate, schema);
       if (validateResult.errors && validateResult.errors.length > 0) {
         return `'${numberToValidate}' ${validateResult.errors[0].message}`;

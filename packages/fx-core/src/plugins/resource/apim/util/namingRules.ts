@@ -123,14 +123,14 @@ export class NamingRules {
         }
     }
 
-    static validate(value: string, namingRule: INamingRule): string | undefined {
-        if (namingRule.minLength && value.length < namingRule.minLength) {
+    static validate(value: string|string[]|undefined, namingRule: INamingRule): string | undefined {
+        if (namingRule.minLength && (value as string).length < namingRule.minLength) {
             return `The value should be longer than ${namingRule.minLength}.`;
         }
-        if (namingRule.maxLength && value.length > namingRule.maxLength) {
+        if (namingRule.maxLength && (value as string).length > namingRule.maxLength) {
             return `The value should be shorter than ${namingRule.maxLength}.`;
         }
-        if (!namingRule.validPattern.regex.test(value)) {
+        if (!namingRule.validPattern.regex.test((value as string))) {
             return namingRule.validPattern.message;
         }
         return undefined;

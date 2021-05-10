@@ -26,9 +26,9 @@ const botIdQuestion = new QTreeNode({
     placeholder: "00000000-0000-0000-0000-00000000000",
     prompt: "Open bot managment tool to get bot id",
     validation: {
-        validFunc: async (botId: string) => {
+        validFunc: async (botId: string|string[]|undefined) => {
 
-            if (!botId || !isUUID(botId)) {
+            if (!botId || !isUUID(botId as string)) {
                 return "Invalid bot id: must be a valid GUID.";
             }
 
@@ -43,7 +43,7 @@ const botPasswordQuestion = new QTreeNode({
     title: "Enter bot password",
     default: "",
     validation: {
-        validFunc: async (botPassword: string) => {
+        validFunc: async (botPassword: string|string[]|undefined) => {
 
             if (!botPassword) {
                 return "Invalid bot password. Password is empty.";

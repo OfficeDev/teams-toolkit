@@ -100,7 +100,7 @@ export class ErrorWithCode extends Error {
    *
    * @param {string} message - error message.
    * @param {ErrorCode} code - error code.
-   * 
+   *
    * @beta
    */
   constructor(message?: string, code?: ErrorCode) {

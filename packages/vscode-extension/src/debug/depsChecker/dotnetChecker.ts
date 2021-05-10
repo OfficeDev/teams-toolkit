@@ -237,33 +237,30 @@ export class DotnetChecker implements IDepsChecker {
       const timecost = Number(((performance.now() - start) / 1000).toFixed(2));
 
       if (stderr && stderr.length > 0) {
+        const errorMessage = `${Messages.failToInstallDotnet.split("@NameVersion").join(installedNameWithVersion)} ${Messages.dotnetInstallStderr
+          } stdout = '${stdout}', stderr = '${stderr}'`;
+
         this._telemetry.sendSystemErrorEvent(
           DepsCheckerEvent.dotnetInstallScriptError,
           TelemtryMessages.failedToExecDotnetScript,
-          `stdout = '${stdout}', stderr = '${stderr}'`
+          errorMessage
         );
-        await this._logger.error(
-          `${Messages.failToInstallDotnet.split("@NameVersion").join(installedNameWithVersion)} ${
-            Messages.dotnetInstallStderr
-          } stdout = '${stdout}', stderr = '${stderr}'`
-        );
+        await this._logger.error(errorMessage);
       } else {
         this._telemetry.sendEvent(DepsCheckerEvent.dotnetInstallScriptCompleted, timecost);
       }
     } catch (error) {
+      const errorMessage =
+        `${Messages.failToInstallDotnet.split("@NameVersion").join(installedNameWithVersion)} ${Messages.dotnetInstallErrorCode}, ` +
+        `command = '${command}', options = '${options}', error = '${error}', stdout = '${error.stdout}', stderr = '${error.stderr}'`
+
       this._telemetry.sendSystemErrorEvent(
         DepsCheckerEvent.dotnetInstallScriptError,
         TelemtryMessages.failedToExecDotnetScript,
-        error
+        errorMessage
       );
       // swallow the exception since later validate will find out the errors anyway
-      await this._logger.error(
-        `${Messages.failToInstallDotnet.split("@NameVersion").join(installedNameWithVersion)} ${
-          Messages.dotnetInstallErrorCode
-        }, command = '${command}', options = '${options}', error = '${error}', stdout = '${
-          error.stdout
-        }', stderr = '${error.stderr}'`
-      );
+      await this._logger.error(errorMessage);
     }
   }
 
@@ -276,12 +273,13 @@ export class DotnetChecker implements IDepsChecker {
         .filter((version) => version !== null) as string[];
       return this.isDotnetVersionsInstalled(installedVersions);
     } catch (error) {
+      const errorMessage = `validate private install failed, error = '${error}'`;
       this._telemetry.sendSystemErrorEvent(
         DepsCheckerEvent.dotnetValidationError,
         TelemtryMessages.failedToValidateDotnet,
-        error
+        errorMessage
       );
-      await this._logger.debug(`validate private install failed, error = '${error}'`);
+      await this._logger.debug(errorMessage);
       return false;
     }
   }

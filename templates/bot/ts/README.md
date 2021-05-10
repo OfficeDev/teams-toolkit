@@ -5,7 +5,6 @@ A bot, chatbot, or conversational bot is an app that responds to simple commands
 This is a sample chatbot application demonstrating Single Sign-on using `botbuilder` and Teams Framework that can respond to a `hello` message.
 
 ## Prerequisites
-<<<<<<< HEAD
 - [NodeJS](https://nodejs.org/en/)
 - An M365 account, if you do not have M365 account, apply one from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
 - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) or [TeamsFx CLI](https://aka.ms/teamsfx-cli)
@@ -17,15 +16,6 @@ This is a sample chatbot application demonstrating Single Sign-on using `botbuil
 
 ## Debug
 Start debugging the project by hitting the `F5` key. Alternatively use the `Run and Debug Activity Panel` in Visual Studio Code and click the `Start Debugging` green arrow button.
-=======
--	[NodeJS](https://nodejs.org/en/)
--	An M365 account, if you do not have M365 account, apply one from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
--	[Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) or [TeamsFx CLI](https://aka.ms/teamsfx-cli)
-
-## Create an application
--	From Visual Studio Code, open command palette and select `Teams - Start a new project`.
--	From the CLI, run command `teamsfx new` to create a new conversational bot.
->>>>>>> fix(): readme wip
 
 ## Build
 -	From Teams Toolkit: In the project directory, execute “Teamsfx - Build Teams Package”.

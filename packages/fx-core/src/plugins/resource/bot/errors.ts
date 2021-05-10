@@ -15,17 +15,17 @@ export class PluginError extends Error {
     public suggestions: string[];
     public errorType: ErrorType;
     public innerError?: Error;
-    public helpLink?: string;
+    public showHelpLink?: boolean;
 
     constructor(type: ErrorType, name: string, details: string, suggestions: string[],
-        innerError?: Error, helpLink?: string) {
+        innerError?: Error, showHelpLink: boolean = false) {
         super(details);
         this.name = name;
         this.details = details;
         this.suggestions = suggestions;
         this.errorType = type;
         this.innerError = innerError;
-        this.helpLink = helpLink;
+        this.showHelpLink = showHelpLink;
         Object.setPrototypeOf(this, PluginError.prototype);
     }
 
@@ -140,7 +140,7 @@ export class MissingSubscriptionRegistrationError extends PluginError {
                 Messages.RegisterYouSubsToUseBot
             ],
             undefined,
-            Links.HELP_LINK
+            true
         );
     }
 }
@@ -291,7 +291,7 @@ export class FreeServerFarmsQuotaError extends PluginError {
                 Messages.DeleteFreeAppServicePlanOrChangeSku
             ],
             innerError,
-            Links.HELP_LINK
+            true
         );
     }
 }

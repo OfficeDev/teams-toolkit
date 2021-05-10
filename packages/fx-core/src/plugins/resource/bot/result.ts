@@ -15,13 +15,13 @@ export class FxBotPluginResultFactory {
     static readonly defaultHelpLink: string = Links.HELP_LINK;
     static readonly defaultIssueLink: string = Links.ISSUE_LINK;
 
-    public static UserError(errorName: string, errorMessage: string, helpLink?: string, innerError?: any): FxResult {
+    public static UserError(errorName: string, errorMessage: string, showHelpLink: boolean, innerError?: any): FxResult {
         return err(new UserError(
             errorName,
             errorMessage,
             FxBotPluginResultFactory.source,
             innerError?.stack,
-            helpLink,
+            showHelpLink ? FxBotPluginResultFactory.defaultHelpLink : undefined,
             innerError
         ));
     }

@@ -14,7 +14,7 @@ describe("Resource Name Factory", () => {
             const limit = 10;
 
             // Act
-            const name = ResourceNameFactory.createCommonName(appName, resourceNameSuffix, limit);
+            const name = ResourceNameFactory.createCommonName(resourceNameSuffix, appName, limit);
 
             // Assert
             const expectName = "9btabcdefg";

@@ -22,7 +22,7 @@ export class TeamsBotConfig {
     public teamsAppTenant?: string;
     public applicationIdUris?: string;
     public actRoles: PluginActRoles[] = [];
-    public resourceNameSuffix: string = utils.genUUID();
+    public resourceNameSuffix: string = "";
 
     public async restoreConfigFromContext(context: PluginContext): Promise<void> {
         await this.scaffold.restoreConfigFromContext(context);
@@ -65,9 +65,8 @@ export class TeamsBotConfig {
         }
 
         const resourceNameSuffixValue: ConfigValue = context.configOfOtherPlugins.get(PluginSolution.PLUGIN_NAME)?.get(PluginSolution.RESOURCE_NAME_SUFFIX);
-        if (resourceNameSuffixValue) {
-            this.resourceNameSuffix = resourceNameSuffixValue as string;
-        }
+        this.resourceNameSuffix = resourceNameSuffixValue ? resourceNameSuffixValue as string : utils.genUUID();
+
     }
 
     public saveConfigIntoContext(context: PluginContext): void {

@@ -50,7 +50,7 @@ export const Messages = {
   defaultErrorMessage: "Please install the required dependencies manually.",
 
   // since FuncToolChecker is disabled and azure functions core tools will be installed as devDependencies now,
-  // below messages won't be displayed to end user.
+  // below messages related to FuncToolChecker won't be displayed to end user.
   startInstallFunctionCoreTool: `Downloading and installing @NameVersion.`,
   finishInstallFunctionCoreTool: `Successfully installed @NameVersion.`,
   needReplaceWithFuncCoreToolV3: `You must replace with @NameVersion to debug your local functions.`,
@@ -94,6 +94,8 @@ Click "Continue" to continue.`
 };
 
 export enum DepsCheckerEvent {
+  // since FuncToolChecker is disabled and azure functions core tools will be installed as devDependencies now,
+  // below events related to FuncToolChecker won't be displayed to end user.
   funcCheck = "func-check",
   funcCheckSkipped = "func-check-skipped",
   funcInstall = "func-install",
@@ -110,7 +112,11 @@ export enum DepsCheckerEvent {
   dotnetInstallError = "dotnet-install-error",
   dotnetInstallScriptCompleted = "dotnet-install-script-completed",
   dotnetInstallScriptError = "dotnet-install-script-error",
-  dotnetValidationError = "dotnet-validation-error"
+  dotnetValidationError = "dotnet-validation-error",
+
+  nodeNotFound = "node-not-found",
+  nodeNotSupportedForAzure = "node-not-supported-for-azure",
+  nodeNotSupportedForSPFx = "node-not-supported-for-spfx"
 }
 
 export enum TelemtryMessages {

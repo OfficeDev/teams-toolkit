@@ -4,7 +4,7 @@ import "mocha";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import path from "path";
-import { OpenApiProcessor } from "../../../../src/plugins/resource/apim/util/openApiProcessor";
+import { OpenApiProcessor } from "../../../../src/plugins/resource/apim/utils/openApiProcessor";
 import { OpenApiSchemaVersion } from "../../../../src/plugins/resource/apim/model/openApiDocument";
 import { InvalidFunctionEndpoint, InvalidOpenApiDocument } from "../../../../src/plugins/resource/apim/error";
 chai.use(chaiAsPromised);

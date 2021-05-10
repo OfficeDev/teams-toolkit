@@ -5,7 +5,7 @@ import { ApimPluginConfigKeys, TeamsToolkitComponent } from "../constants";
 import { AssertConfigNotEmpty } from "../error";
 import { IApimPluginConfig, IAadPluginConfig } from "../model/config";
 import { AadService } from "../service/aadService";
-import { Lazy } from "../util/lazy";
+import { Lazy } from "../utils/commonUtils";
 
 export class TeamsAppAadManager {
     private readonly logger?: LogProvider;

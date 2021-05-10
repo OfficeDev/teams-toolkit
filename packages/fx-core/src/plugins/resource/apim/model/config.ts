@@ -10,7 +10,7 @@ import {
     ApimPluginConfigKeys,
 } from "../constants";
 import {AssertConfigNotEmpty, BuildError, InvalidConfigValue, InvalidPropertyType, NoPluginConfig} from "../error";
-import {INamingRule, NamingRules} from "../util/namingRules";
+import {INamingRule, NamingRules} from "../utils/namingRules";
 
 export interface IApimPluginConfig {
     resourceGroupName?: string;

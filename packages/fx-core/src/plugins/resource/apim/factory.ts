@@ -5,7 +5,7 @@ import { AssertNotEmpty, BuildError, NotImplemented } from "./error";
 import { ApimService } from "./service/apimService";
 import { ISolutionConfig, SolutionConfig } from "./model/config";
 import { AadService } from "./service/aadService";
-import { OpenApiProcessor } from "./util/openApiProcessor";
+import { OpenApiProcessor } from "./utils/openApiProcessor";
 import { ApimManager } from "./manager/apimManager";
 import { AadManager } from "./manager/aadManager";
 import { CliQuestionManager, IQuestionManager, VscQuestionManager } from "./manager/questionManager";
@@ -15,7 +15,7 @@ import { ApiManagementClient } from "@azure/arm-apimanagement";
 import { TeamsAppAadManager } from "./manager/teamsAppAadManager";
 import axios from "axios";
 import { AadDefaultValues } from "./constants";
-import { Lazy } from "./util/lazy";
+import { Lazy } from "./utils/commonUtils";
 import { ScaffoldManager } from "./manager/scaffoldManager";
 
 export class Factory {

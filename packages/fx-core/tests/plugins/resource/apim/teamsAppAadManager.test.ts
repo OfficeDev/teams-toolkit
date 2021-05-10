@@ -12,7 +12,7 @@ import { TeamsAppAadManager } from "../../../../src/plugins/resource/apim/manage
 import axios, { AxiosInstance } from "axios";
 import { AadDefaultValues } from "../../../../src/plugins/resource/apim/constants";
 import { assert } from "sinon";
-import { Lazy } from "../../../../src/plugins/resource/apim/util/lazy";
+import { Lazy } from "../../../../src/plugins/resource/apim/utils/commonUtils";
 import { v4 } from "uuid";
 dotenv.config();
 chai.use(chaiAsPromised);

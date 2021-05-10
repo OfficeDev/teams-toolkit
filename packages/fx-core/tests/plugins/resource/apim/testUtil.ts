@@ -26,7 +26,7 @@ import {
 } from "../../../../src/plugins/resource/apim/model/config";
 import { TeamsToolkitComponent } from "../../../../src/plugins/resource/apim/constants";
 import { AxiosInstance, Method } from "axios";
-import { IAadInfo } from "../../../../src/plugins/resource/apim/model/aadResponse";
+import { IAadInfo } from "../../../../src/plugins/resource/apim/model/aadResource";
 import { ApiManagementClient } from "@azure/arm-apimanagement";
 import dotenv from "dotenv";
 

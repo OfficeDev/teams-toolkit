@@ -10,11 +10,11 @@ import { AadManager } from "../../../../src/plugins/resource/apim/manager/aadMan
 import { v4 } from "uuid";
 import { AadHelper, MockGraphTokenProvider, it_if, after_if, before_if, EnvConfig } from "./testUtil";
 import { InvalidAadObjectId } from "../../../../src/plugins/resource/apim/error";
-import { IRequiredResourceAccess } from "../../../../src/plugins/resource/apim/model/aadResponse";
+import { IRequiredResourceAccess } from "../../../../src/plugins/resource/apim/model/aadResource";
 import { AadService } from "../../../../src/plugins/resource/apim/service/aadService";
 import { IAadPluginConfig, IApimPluginConfig } from "../../../../src/plugins/resource/apim/model/config";
 import { AadDefaultValues } from "../../../../src/plugins/resource/apim/constants";
-import { Lazy } from "../../../../src/plugins/resource/apim/util/lazy";
+import { Lazy } from "../../../../src/plugins/resource/apim/utils/commonUtils";
 dotenv.config();
 chai.use(chaiAsPromised);
 

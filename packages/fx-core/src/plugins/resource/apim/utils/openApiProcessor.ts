@@ -7,10 +7,10 @@ import urlParse from "url-parse";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { ApimDefaultValues } from "../constants";
-import { Telemetry } from "../telemetry";
+import { Telemetry } from "./telemetry";
 import { LogProvider, TelemetryReporter } from "@microsoft/teamsfx-api";
-import { getFileExtension } from "../util";
-import { LogMessages } from "../log";
+import { getFileExtension } from "./commonUtils";
+import { LogMessages } from "./log";
 import { OpenAPI, OpenAPIV2, OpenAPIV3 } from "openapi-types";
 
 export class OpenApiProcessor {

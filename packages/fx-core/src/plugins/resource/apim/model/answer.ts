@@ -7,7 +7,7 @@ import { QuestionConstants } from "../constants";
 import { AssertNotEmpty, BuildError, NotImplemented } from "../error";
 import { IApimPluginConfig } from "./config";
 import { IOpenApiDocument } from "./openApiDocument";
-import { IApimServiceResource } from "./resource";
+import { IApimServiceResource } from "./apimResource";
 
 export interface IAnswer {
     resourceGroupName: string | undefined;

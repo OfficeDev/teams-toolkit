@@ -15,11 +15,11 @@ import {
 import { ApimDefaultValues, ApimPluginConfigKeys, QuestionConstants, TeamsToolkitComponent } from "../constants";
 import { ApimPluginConfig, SolutionConfig } from "../model/config";
 import { ApimService } from "../service/apimService";
-import { OpenApiProcessor } from "../util/openApiProcessor";
+import { OpenApiProcessor } from "../utils/openApiProcessor";
 import { buildAnswer } from "../model/answer";
-import { Lazy } from "../util/lazy";
-import { NamingRules } from "../util/namingRules";
+import { NamingRules } from "../utils/namingRules";
 import { BaseQuestionService, IQuestionService } from "./question";
+import { Lazy } from "../utils/commonUtils";
 
 export class ApimServiceQuestion extends BaseQuestionService implements IQuestionService {
     private readonly lazyApimService: Lazy<ApimService>;

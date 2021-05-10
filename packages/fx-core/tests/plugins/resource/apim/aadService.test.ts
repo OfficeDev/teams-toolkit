@@ -9,7 +9,7 @@ import { v4 } from "uuid";
 import { AadHelper, MockGraphTokenProvider, it_if, before_if, after_if, EnvConfig } from "./testUtil";
 import { AadService } from "../../../../src/plugins/resource/apim/service/aadService";
 import { AadDefaultValues } from "../../../../src/plugins/resource/apim/constants";
-import { IAadInfo } from "../../../../src/plugins/resource/apim/model/aadResponse";
+import { IAadInfo } from "../../../../src/plugins/resource/apim/model/aadResource";
 chai.use(chaiAsPromised);
 
 const UT_SUFFIX = v4().substring(0, 6);

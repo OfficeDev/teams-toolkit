@@ -1,4 +1,4 @@
-## UpdateAppIdUriError
+## aad.UpdateAppIdUriError
 
 ### Error Message
 
@@ -56,7 +56,10 @@ Failed to update application property. Error detail: The host name should not be
 1. If you're using Azure Functions for backend api, remember to add your CDN endpoint to function's allowed origin list to enable CORS. [Learn More](https://docs.microsoft.com/en-us/azure/azure-functions/functions-how-to-use-azure-function-app-settings?tabs=portal#cors).
 
 
-## PermissionRelatedErrors
+## aad.ParsePermissionError
+## aad.UnknownPermissionName
+## aad.UnknownPermissionRole
+## aad.UnknownPermissionScope
 
 ### Error Message
 
@@ -91,7 +94,7 @@ az ad sp show --id 00000003-0000-0000-c000-000000000000 --query "appRoles[].valu
 ```
 
 
-## AadGetSkipAppConfigError
+## aad.AadGetSkipAppConfigError
 
 ### Error Message
 

@@ -1,8 +1,8 @@
 {
-  "name": "@microsoft/teamsfx-extension",
+  "name": "teamsfx-extension",
   "displayName": "Teams Toolkit",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "2.0.0-alpha.0",
+  "version": "2.0.0-alpha.19",
   "publisher": "Microsoft",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",

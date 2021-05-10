@@ -1128,11 +1128,3 @@ export class CoreProxy implements Core {
         );
     }
 }
-
-export async function Default(): Promise<Result<CoreProxy, FxError>> {
-    const result = await CoreProxy.getInstance().init();
-    if (result.isErr()) {
-        return err(result.error);
-    }
-    return ok(CoreProxy.getInstance());
-}

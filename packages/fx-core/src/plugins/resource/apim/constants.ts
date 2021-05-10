@@ -184,10 +184,10 @@ export enum TeamsToolkitComponent {
 }
 
 export enum RetryCommands {
-    Create = "create new project",
-    Update = "add resources",
-    Provision = "provision in the cloud",
-    Deploy = "deploy to the cloud",
+    Create = "start a project",
+    Update = "add the resource",
+    Provision = "provision resource",
+    Deploy = "deploy package",
     Login = "login and choose a subscription",
 }
 

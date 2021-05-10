@@ -36,3 +36,12 @@ export enum ProgrammingLanguage {
 }
 
 export const skipNgrokConfigKey = "fx-resource-local-debug.skipNgrok";
+
+const allAddress = "*"; // use * to represent 0.0.0.0 (IPV4)and :: (IPv6) for simplicity
+const loopbackAddress = "127.0.0.1";
+
+export const frontendPorts: [string, number][] = [[allAddress, 3000], [allAddress, 5000]];
+export const backendPorts: [string, number][] = [[allAddress, 7071], [loopbackAddress, 9229]];
+export const botPorts: [string, number][] = [[allAddress, 3978], [loopbackAddress, 9239]];
+
+export const portsInUseMessage = "The following ports are already in use by other processes, please close these processes and try again";

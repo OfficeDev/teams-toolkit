@@ -8,6 +8,8 @@ import * as vscode from "vscode";
 import * as constants from "./constants";
 import { ConfigFolderName, Func } from "fx-api";
 import { core, showError } from "../handlers";
+import { execPowerShell, execShell} from "./process";
+import * as os from "os";
 
 export async function getProjectRoot(
   folderPath: string,
@@ -143,4 +145,40 @@ async function getLocalDebugConfig(key: string): Promise<string | undefined> {
 
 export async function getSkipNgrokConfig(): Promise<string | undefined> {
   return getLocalDebugConfig(constants.skipNgrokConfigKey);
+}
+
+async function getPortListeningPidWindows(host: string, port: number): Promise<string | undefined> {
+  try {
+    let command = `(Get-NetTCPConnection -LocalPort ${port} -State Listen).OwningProcess`;
+    if (host === "127.0.0.1") {
+      // the process listening on 0.0.0.0 (IPv4) and ::1 (IPv6) will not block that on 127.0.0.1
+      command = `(Get-NetTCPConnection -LocalAddress ${host} -LocalPort ${port} -State Listen).OwningProcess`;
+    }
+    const result = (await execPowerShell(command)).trim();
+    return result.length === 0 ? undefined : result;
+  } catch (err) {
+    // ignore any error to not block debugging
+    return undefined;
+  }
+}
+
+async function getPortListeningPidLinux(host: string, port: number): Promise<string | undefined> {
+  // TODO
+  return undefined;
+}
+
+async function getPortListeningPidOSX(host: string, port: number): Promise<string | undefined> {
+  // TODO
+  return undefined;
+}
+
+export async function getPortListening(host: string, port: number): Promise<string | undefined> {
+  const osType = os.type();
+  if (osType === "Windows_NT") {
+    return getPortListeningPidWindows(host, port);
+  } else if (osType === "Darwin") {
+    return getPortListeningPidOSX(host, port);
+  } else {
+    return getPortListeningPidLinux(host, port);
+  }
 }

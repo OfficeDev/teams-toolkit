@@ -20,7 +20,7 @@ import {
   IProgressHandler,
   ConfigMap,
   LogLevel
-} from "fx-api";
+} from "@microsoft/teamsfx-api";
 import inquirer from "inquirer";
 import CLILogProvider from "./commonlib/log";
 import { ProgressHandler } from "./progressHandler";

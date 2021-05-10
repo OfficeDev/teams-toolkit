@@ -6,7 +6,7 @@ import { SqlConfig } from "./config";
 import { ErrorMessage } from "./errors";
 import { Constants } from "./constants";
 import { SqlResultFactory } from "./results";
-import { PluginContext } from "fx-api";
+import { PluginContext } from "@microsoft/teamsfx-api";
 export class ManagementClient {
     client?: SqlManagementClient;
     config: SqlConfig;

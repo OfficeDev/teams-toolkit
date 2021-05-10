@@ -5,7 +5,7 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 
 import { Logger } from "../../../../../src/plugins/resource/bot/logger";
-import { LogProvider } from "fx-api";
+import { LogProvider } from "@microsoft/teamsfx-api";
 import * as testUtils from "./utils";
 
 describe("Logger", () => {

@@ -1,10 +1,9 @@
 {
   "name": "@microsoft/teamsfx",
-  "version": "0.1.0",
+  "version": "0.1.0-alpha.0",
   "description": "Microsoft Teams Framework for Node.js and browser.",
   "main": "dist/index.js",
   "module": "dist-esm/src/index.js",
-  "private": true,
   "browser": {
     "./dist-esm/src/core/cache.js": "./dist-esm/src/core/cache.browser.js",
     "./dist-esm/src/credential/onBehalfOfUserCredential.js": "./dist-esm/src/credential/onBehalfOfUserCredential.browser.js",

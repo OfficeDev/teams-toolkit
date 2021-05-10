@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import * as path from "path";
-import { ConfigFolderName, SystemError, UserError } from "fx-api";
+import { ConfigFolderName, SystemError, UserError } from "@microsoft/teamsfx-api";
 
 import { FunctionPluginPathInfo as PathInfo } from "../constants";
 import { Logger } from "../utils/logger";

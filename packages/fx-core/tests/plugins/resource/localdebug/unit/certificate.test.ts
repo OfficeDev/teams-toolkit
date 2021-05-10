@@ -12,7 +12,7 @@ import os from "os";
 import * as path from "path";
 
 import { LocalCertificateManager } from "../../../../../src/plugins/resource/localdebug/certificate";
-import { ConfigFolderName } from "fx-api";
+import { ConfigFolderName } from "@microsoft/teamsfx-api";
 
 chai.use(chaiAsPromised);
 

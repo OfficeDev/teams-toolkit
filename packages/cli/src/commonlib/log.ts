@@ -5,7 +5,7 @@
 
 import colors from "colors";
 
-import { LogLevel, LogProvider } from "fx-api";
+import { LogLevel, LogProvider } from "@microsoft/teamsfx-api";
 
 import { CLILogLevel } from "../constants";
 

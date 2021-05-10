@@ -11,7 +11,7 @@ import * as fs from "fs-extra";
 import AzureAccountManager from "../commonlib/azureLogin";
 import AppStudioTokenInstance from "../commonlib/appStudioLogin";
 import { runCommand } from "../handlers";
-import { Stage } from "fx-api";
+import { Stage } from "@microsoft/teamsfx-api";
 import { PanelType } from "./PanelType";
 import { execSync } from "child_process";
 import { isMacOS } from "../utils/commonUtils";

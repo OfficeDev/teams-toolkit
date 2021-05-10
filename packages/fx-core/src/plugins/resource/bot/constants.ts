@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { WayToRegisterBot } from "./enums/wayToRegisterBot";
-import { OptionItem, ConfigFolderName } from "fx-api";
+import { OptionItem, ConfigFolderName } from "@microsoft/teamsfx-api";
 import { ProgrammingLanguage } from "./enums/programmingLanguage";
 
 export class RegularExprs {

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { IProgressHandler, PluginContext } from "fx-api";
+import { IProgressHandler, PluginContext } from "@microsoft/teamsfx-api";
 import { Messages } from "../resources/messages";
 
 export const ScaffoldSteps = {

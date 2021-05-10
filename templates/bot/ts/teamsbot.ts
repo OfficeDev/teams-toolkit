@@ -1,7 +1,15 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-import { TeamsActivityHandler, SigninStateVerificationQuery, ActionTypes, CardFactory, BotState, TurnContext, tokenExchangeOperationName } from "botbuilder";
+import {
+    TeamsActivityHandler,
+    SigninStateVerificationQuery,
+    ActionTypes,
+    CardFactory,
+    BotState,
+    TurnContext,
+    tokenExchangeOperationName,
+} from "botbuilder";
 import { MainDialog } from "./dialogs/mainDialog";
 
 export class TeamsBot extends TeamsActivityHandler {
@@ -16,24 +24,34 @@ export class TeamsBot extends TeamsActivityHandler {
      * @param {UserState} userState
      * @param {Dialog} dialog
      */
-    constructor(conversationState: BotState, userState: BotState, dialog: MainDialog) {
+    constructor(
+        conversationState: BotState,
+        userState: BotState,
+        dialog: MainDialog
+    ) {
         super();
         if (!conversationState) {
-            throw new Error('[TeamsBot]: Missing parameter. conversationState is required');
+            throw new Error(
+                "[TeamsBot]: Missing parameter. conversationState is required"
+            );
         }
         if (!userState) {
-            throw new Error('[TeamsBot]: Missing parameter. userState is required');
+            throw new Error(
+                "[TeamsBot]: Missing parameter. userState is required"
+            );
         }
         if (!dialog) {
-            throw new Error('[TeamsBot]: Missing parameter. dialog is required');
+            throw new Error(
+                "[TeamsBot]: Missing parameter. dialog is required"
+            );
         }
         this.conversationState = conversationState;
         this.userState = userState;
         this.dialog = dialog;
-        this.dialogState = this.conversationState.createProperty('DialogState');
+        this.dialogState = this.conversationState.createProperty("DialogState");
 
         this.onMessage(async (context, next) => {
-            console.log('Running dialog with Message Activity.');
+            console.log("Running dialog with Message Activity.");
 
             // Run the Dialog with the new message Activity.
             await this.dialog.run(context, this.dialogState);
@@ -46,16 +64,21 @@ export class TeamsBot extends TeamsActivityHandler {
             const membersAdded = context.activity.membersAdded;
             for (let cnt = 0; cnt < membersAdded.length; cnt++) {
                 if (membersAdded[cnt].id) {
-                    const cardButtons = [{ type: ActionTypes.ImBack, title: 'Show introduction card', value: 'intro' }];
+                    const cardButtons = [
+                        {
+                            type: ActionTypes.ImBack,
+                            title: "Show introduction card",
+                            value: "intro",
+                        },
+                    ];
                     const card = CardFactory.heroCard(
-                        'Welcome',
+                        "Welcome",
                         null,
                         cardButtons,
                         {
-                            text: `Congratulations! Your hello world Bot 
-                            template is running. This bot has default commands to help you modify it.
-                            You can reply <strong>intro</strong> to see the introduction card. This bot is built with <a href=\"https://dev.botframework.com/\">Microsoft Bot Framework</a>`
-                        });
+                            text: `Congratulations! Your hello world Bot template is running. This bot has default commands to help you modify it. <br>You can reply <strong>intro</strong> to see the introduction card. This bot is built with <a href=\"https://dev.botframework.com/\">Microsoft Bot Framework</a>`,
+                        }
+                    );
                     await context.sendActivity({ attachments: [card] });
                     break;
                 }
@@ -72,12 +95,20 @@ export class TeamsBot extends TeamsActivityHandler {
         await this.userState.saveChanges(context, false);
     }
 
-    async handleTeamsSigninVerifyState(context: TurnContext, query: SigninStateVerificationQuery) {
-        console.log('Running dialog with signin/verifystate from an Invoke Activity.');
+    async handleTeamsSigninVerifyState(
+        context: TurnContext,
+        query: SigninStateVerificationQuery
+    ) {
+        console.log(
+            "Running dialog with signin/verifystate from an Invoke Activity."
+        );
         await this.dialog.run(context, this.dialogState);
     }
 
-    async handleTeamsSigninTokenExchange(context: TurnContext, query: SigninStateVerificationQuery) {
+    async handleTeamsSigninTokenExchange(
+        context: TurnContext,
+        query: SigninStateVerificationQuery
+    ) {
         await this.dialog.run(context, this.dialogState);
     }
 

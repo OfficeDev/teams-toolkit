@@ -94,10 +94,16 @@ export class MainDialog extends RootDialog {
                 );
 
                 // show user picture
-                var photoBinary = await graphClient
-                    .api("/me/photo/$value")
-                    .responseType(ResponseType.ARRAYBUFFER)
-                    .get();
+                let photoBinary: ArrayBuffer;
+                try {
+                    photoBinary = await graphClient
+                        .api("/me/photo/$value")
+                        .responseType(ResponseType.ARRAYBUFFER)
+                        .get();
+                } catch {
+                    // Just continue when failing to get the photo.
+                    return await stepContext.endDialog();
+                }
                 const buffer = Buffer.from(photoBinary);
                 const imageUri =
                     "data:image/png;base64," + buffer.toString("base64");

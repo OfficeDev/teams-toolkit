@@ -72,15 +72,15 @@ export abstract class YargsCommand {
     } catch (e) {
       const FxError: FxError =
         e instanceof UserError || e instanceof SystemError ? e : UnknownError(e);
-      console.log(`[${FxError.source}.${FxError.name}]: ${FxError.message}`.red);
+      console.error(`[${FxError.source}.${FxError.name}]: ${FxError.message}`.red);
       if (FxError instanceof UserError && FxError.helpLink) {
-        console.log("Get help from".red, `${FxError.helpLink}#${FxError.source}${FxError.name}`.cyan.underline);
+        console.error("Get help from".red, `${FxError.helpLink}#${FxError.source}${FxError.name}`.cyan.underline);
       }
       if (FxError instanceof SystemError && FxError.issueLink) {
-        console.log("Report this issue at".red, `${FxError.issueLink}`.cyan.underline);
+        console.error("Report this issue at".red, `${FxError.issueLink}`.cyan.underline);
       }
       if (CLILogProvider.getLogLevel() === constants.CLILogLevel.debug) {
-        console.log("Call stack:\n".red, `${FxError.stack}`.red);
+        console.error("Call stack:\n".red, `${FxError.stack}`.red);
       }
       exit(-1, FxError);
     }

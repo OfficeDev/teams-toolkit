@@ -6,10 +6,12 @@
 export abstract class login {
     statusChangeMap = new Map();
 
-    async setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean> {
+    async setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediaCall = true): Promise<boolean> {
         this.statusChangeMap.set(name, statusChange);
         const loginStatus: LoginStatus = await this.getStatus();
-        statusChange(loginStatus.status, loginStatus.token, loginStatus.accountInfo);
+        if (immediaCall) {
+            statusChange(loginStatus.status, loginStatus.token, loginStatus.accountInfo);
+        }
         return true;
     }
 

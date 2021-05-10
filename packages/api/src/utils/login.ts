@@ -50,8 +50,9 @@ export interface AzureAccountProvider {
      * Add update account info callback 
      * @param name callback name
      * @param statusChange callback method
+     * @param immediaCall whether callback when register
      */
-    setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean>;
+    setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediaCall?: boolean): Promise<boolean>;
 
     /**
      * Remove update account info callback 
@@ -118,8 +119,9 @@ export interface AppStudioTokenProvider {
      * Add update account info callback 
      * @param name callback name
      * @param statusChange callback method
+     * @param immediaCall whether callback when register
      */
-    setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean>;
+    setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediaCall?: boolean): Promise<boolean>;
 
     /**
      * Remove update account info callback 
@@ -166,8 +168,9 @@ export interface GraphTokenProvider {
      * Add update account info callback 
      * @param name callback name
      * @param statusChange callback method
+     * @param immediaCall whether callback when register
      */
-    setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean>;
+    setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediaCall?: boolean): Promise<boolean>;
 
     /**
      * Remove update account info callback 

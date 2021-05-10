@@ -1,5 +1,5 @@
 import { DepsInfo, IDepsAdapter, IDepsChecker, IDepsLogger, IDepsTelemetry } from "./checker";
-import { Messages } from "./common";
+import { DepsCheckerEvent, Messages } from "./common";
 import { cpUtils } from "./cpUtils";
 import { NodeNotFoundError, NodeNotSupportedError } from "./errors";
 const NodeName = "Node.js";
@@ -18,10 +18,11 @@ export abstract class NodeChecker implements IDepsChecker {
   protected readonly abstract _supportedVersions: string[];
   protected readonly abstract _nodeNotSupportedHelpLink: string;
   protected readonly abstract _nodeNotFoundHelpLink: string;
+  protected readonly abstract _nodeNotSupportedEvent: DepsCheckerEvent;
 
+  private readonly _telemetry: IDepsTelemetry;
   private readonly _adapter: IDepsAdapter;
   private readonly _logger: IDepsLogger;
-  private readonly _telemetry: IDepsTelemetry;
 
   constructor(adapter: IDepsAdapter, logger: IDepsLogger, telemetry: IDepsTelemetry) {
     this._adapter = adapter;
@@ -38,11 +39,13 @@ export abstract class NodeChecker implements IDepsChecker {
 
     const currentVersion = await getInstalledNodeVersion();
     if (currentVersion === null) {
+      this._telemetry.sendUserErrorEvent(DepsCheckerEvent.nodeNotFound, "Node.js can't be found.");
       throw new NodeNotFoundError(Messages.NodeNotFound, this._nodeNotFoundHelpLink);
     }
 
     if (!NodeChecker.isVersionSupported(this._supportedVersions, currentVersion)) {
       const supportedVersions = this._supportedVersions.map((v) => "v" + v).join(" ,");
+      this._telemetry.sendUserErrorEvent(this._nodeNotSupportedEvent, `Node.js ${currentVersion.version} is not supported.`);
       throw new NodeNotSupportedError(
         Messages.NodeNotSupported
           .replace("@CurrentVersion", currentVersion.version)

@@ -6,7 +6,7 @@ import * as path from "path";
 import * as dotenv from "dotenv";
 import * as vscode from "vscode";
 import * as constants from "./constants";
-import { ConfigFolderName, Func } from "fx-api";
+import { ConfigFolderName, Func } from "@microsoft/teamsfx-api";
 import { core, showError } from "../handlers";
 
 export async function getProjectRoot(

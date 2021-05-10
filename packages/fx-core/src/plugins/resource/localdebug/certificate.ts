@@ -3,7 +3,7 @@
 "use strict";
 
 import * as fs from "fs-extra";
-import { ConfigFolderName, Dialog, DialogMsg, DialogType, LogProvider, PluginContext, QuestionType } from "fx-api";
+import { ConfigFolderName, Dialog, DialogMsg, DialogType, LogProvider, PluginContext, QuestionType } from "@microsoft/teamsfx-api";
 import { asn1, md, pki } from "node-forge";
 import * as os from "os";
 import { v4 as uuidv4 } from "uuid";

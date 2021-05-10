@@ -5,7 +5,7 @@ import {
     DialogType,
     MsgLevel,
     PluginContext,
-} from "fx-api";
+} from "@microsoft/teamsfx-api";
 
 export class DialogUtils {
     public static async show(ctx: PluginContext, message: string, level = MsgLevel.Info): Promise<void> {

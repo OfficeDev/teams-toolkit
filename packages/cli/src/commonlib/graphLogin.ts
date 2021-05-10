@@ -3,7 +3,7 @@
 
 "use strict";
 
-import { GraphTokenProvider } from "fx-api";
+import { GraphTokenProvider } from "@microsoft/teamsfx-api";
 import { LogLevel } from "@azure/msal-node";
 import { CodeFlowLogin } from "./codeFlowLogin";
 
@@ -134,7 +134,7 @@ export class GraphLogin extends login implements GraphTokenProvider {
   }
 }
 
-import { MockGraphTokenProvider } from "fx-api";
+import { MockGraphTokenProvider } from "@microsoft/teamsfx-api";
 
 const ciEnabled = process.env.CI_ENABLED;
 const graphLogin = ciEnabled && ciEnabled === "true" ? MockGraphTokenProvider.getInstance() : GraphLogin.getInstance();

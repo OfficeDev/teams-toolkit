@@ -7,7 +7,7 @@ import {
     PluginContext,
     TelemetryReporter,
     Question
-} from "fx-api";
+} from "@microsoft/teamsfx-api";
 
 export interface IQuestionService {
     // Control whether the question is displayed to the user.

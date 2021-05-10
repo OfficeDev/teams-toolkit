@@ -18,7 +18,7 @@ import {
   Platform,
   ok,
   Func
-} from "fx-api";
+} from "@microsoft/teamsfx-api";
 
 import CLILogProvider from "../commonlib/log";
 import * as constants from "../constants";

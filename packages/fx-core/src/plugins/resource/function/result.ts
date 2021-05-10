@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { FxError, Result, SystemError, UserError, err, ok } from "fx-api";
+import { FxError, Result, SystemError, UserError, err, ok } from "@microsoft/teamsfx-api";
 
 import { CommonConstants, DefaultValues, FunctionPluginInfo } from "./constants";
 

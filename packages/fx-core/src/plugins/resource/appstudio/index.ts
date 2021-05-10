@@ -4,7 +4,7 @@
 import {
     ConfigFolderName, FxError, NodeType, ok, err, Platform, Plugin, PluginContext, QTreeNode, Result, Stage,
     DialogMsg, DialogType, MsgLevel
-} from "fx-api";
+} from "@microsoft/teamsfx-api";
 import { AppStudioPluginImpl } from "./plugin";
 import { Constants } from "./constants";
 import { AppStudioError } from "./errors";

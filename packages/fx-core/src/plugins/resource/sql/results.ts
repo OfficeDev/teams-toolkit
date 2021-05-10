@@ -1,4 +1,4 @@
-import { FxError, SystemError, UserError, Result } from "fx-api";
+import { FxError, SystemError, UserError, Result } from "@microsoft/teamsfx-api";
 import { Constants } from "./constants";
 
 export type SqlResult = Result<any, FxError>;

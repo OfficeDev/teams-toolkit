@@ -13,7 +13,7 @@ import {
     IFunctionPluginConfig,
     ISolutionConfig,
 } from "../../../../src/plugins/resource/apim/model/config";
-import { PluginContext } from "fx-api";
+import { PluginContext } from "@microsoft/teamsfx-api";
 import { AadDefaultValues, QuestionConstants } from "../../../../src/plugins/resource/apim/constants";
 import { AadService } from "../../../../src/plugins/resource/apim/service/aadService";
 import axios from "axios";

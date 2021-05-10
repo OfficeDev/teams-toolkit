@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { IComposeExtension, IConfigurableTab, IMessagingExtensionCommand, IStaticTab } from "fx-api";
+import { IComposeExtension, IConfigurableTab, IMessagingExtensionCommand, IStaticTab } from "@microsoft/teamsfx-api";
 
 export interface IUserList {
     tenantId: string;

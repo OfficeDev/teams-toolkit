@@ -54,9 +54,33 @@
         overflow: hidden;
 
         .player{
+            position: relative;
+        }
+
+        .capabilitiesVideo {
             width: 100%;
             height: auto;
         }
+
+        .watchOnBrowser {
+            position: absolute;
+            background: rgba(0,0,0,.5);
+            top: 0;
+            right: 0;
+            margin: 10px;
+            border: 0;
+            color: #EEE;
+            -webkit-border-radius: 3px;
+            border-radius: 3px;
+        }
+        
+        .watchOnBrowser:hover {
+            cursor: pointer;
+        }
+    }
+
+    video::-webkit-media-controls-fullscreen-button {
+        display: none;
     }
 
     .action-card{

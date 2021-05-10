@@ -25,8 +25,8 @@ import {
   InputResultType,
   VsCodeEnv,
   AppStudioTokenProvider
-} from "fx-api";
-import { CoreProxy } from "fx-core";
+} from "@microsoft/teamsfx-api";
+import { CoreProxy } from "@microsoft/teamsfx-core";
 import DialogManagerInstance from "./userInterface";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";

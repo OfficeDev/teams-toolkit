@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { FxError, Result, SystemError, UserError } from "fx-api";
+import { FxError, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
 
 import { FrontendPluginInfo } from "./constants";
 

@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { RemoteFuncValidation, NodeType, QTreeNode } from "fx-api";
+import { RemoteFuncValidation, NodeType, QTreeNode } from "@microsoft/teamsfx-api";
 
 import { DefaultValues, DependentPluginInfo, FunctionPluginInfo, QuestionValidationFunc } from "./constants";
 import { QuestionKey } from "./enums";

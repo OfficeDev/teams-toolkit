@@ -24,7 +24,7 @@ import {
   isAutoSkipSelect,
   SingleSelectQuestion,
   MultiSelectQuestion
-} from "fx-api";
+} from "@microsoft/teamsfx-api";
 
 import activate from "../activate";
 import * as constants from "../constants";

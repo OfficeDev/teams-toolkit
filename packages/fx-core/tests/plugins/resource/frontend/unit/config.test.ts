@@ -3,7 +3,7 @@
 import "mocha";
 
 import * as chai from "chai";
-import { PluginContext } from "fx-api";
+import { PluginContext } from "@microsoft/teamsfx-api";
 import chaiAsPromised from "chai-as-promised";
 
 import { FrontendConfig } from "../../../../../src/plugins/resource/frontend/configs";

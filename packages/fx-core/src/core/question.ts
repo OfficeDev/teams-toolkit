@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ConfigMap, FileQuestion, NodeType, OptionItem, Question, SingleSelectQuestion, TextInputQuestion } from "fx-api";
+import { ConfigMap, FileQuestion, NodeType, OptionItem, Question, SingleSelectQuestion, TextInputQuestion } from "@microsoft/teamsfx-api";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
 import * as fs from "fs-extra";

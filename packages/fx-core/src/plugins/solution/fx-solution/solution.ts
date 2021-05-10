@@ -32,7 +32,7 @@ import {
     Err,
     UserError,
     SystemError
-} from "fx-api";
+} from "@microsoft/teamsfx-api";
 import { askSubscription, fillInCommonQuestions } from "./commonQuestions";
 import { executeLifecycles, executeConcurrently, LifecyclesWithContext } from "./executor";
 import { getPluginContext, getSubsriptionDisplayName } from "./util";

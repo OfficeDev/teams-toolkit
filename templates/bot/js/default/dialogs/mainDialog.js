@@ -86,7 +86,7 @@ class MainDialog extends RootDialog {
       const me = await graphClient.api("/me").get();
       if (me) {
         await stepContext.context.sendActivity(
-          `You're logged in as ${me.displayName} (${me.userPrincipalName}); your job title is: ${me.jobTitle}.`
+          `You're logged in as ${me.displayName} (${me.userPrincipalName})${me.jobTitle ? `; your job title is: ${me.jobTitle}` : ""}.`
         );
 
         // show user picture

@@ -16,7 +16,7 @@ import {
 import { Constants, FrontendPathInfo, FrontendPluginInfo as PluginInfo } from "../constants";
 import { Logger } from "../utils/logger";
 import { Messages } from "../resources/messages";
-import { PluginContext } from "fx-api";
+import { PluginContext } from "@microsoft/teamsfx-api";
 import { Utils } from "../utils";
 import { telemetryHelper } from "../utils/telemetry-helper";
 import { TemplateInfo, TemplateVariable } from "../resources/templateInfo";

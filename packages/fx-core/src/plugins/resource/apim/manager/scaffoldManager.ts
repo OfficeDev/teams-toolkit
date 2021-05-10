@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import { ApimDefaultValues, ProjectConstants } from "../constants";
 import { OpenApiProcessor } from "../util/openApiProcessor";
-import { LogProvider, TelemetryReporter } from "fx-api";
+import { LogProvider, TelemetryReporter } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import * as fs from "fs-extra";
 

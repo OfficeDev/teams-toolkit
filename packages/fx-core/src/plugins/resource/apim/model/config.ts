@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ConfigValue, ReadonlySolutionConfig } from "fx-api";
+import {ConfigValue, ReadonlySolutionConfig} from "@microsoft/teamsfx-api";
 import {
     TeamsToolkitComponent,
     ComponentRetryLifeCycle,
@@ -10,8 +10,8 @@ import {
     FunctionPluginConfigKeys,
     ApimPluginConfigKeys,
 } from "../constants";
-import { AssertConfigNotEmpty, BuildError, InvalidConfigValue, InvalidPropertyType, NoPluginConfig } from "../error";
-import { INamingRule, NamingRules } from "../util/namingRules";
+import {AssertConfigNotEmpty, BuildError, InvalidConfigValue, InvalidPropertyType, NoPluginConfig} from "../error";
+import {INamingRule, NamingRules} from "../util/namingRules";
 
 export interface IApimPluginConfig {
     resourceGroupName?: string;
@@ -47,7 +47,7 @@ export interface ISolutionConfig {
 }
 
 export class ApimPluginConfig implements IApimPluginConfig {
-    // TODO update fx-api to the latest version
+    // TODO update @microsoft/teamsfx-api to the latest version
     private readonly config: Map<string, ConfigValue>;
     constructor(config: Map<string, ConfigValue>) {
         this.config = config;

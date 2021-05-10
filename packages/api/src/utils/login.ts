@@ -50,9 +50,9 @@ export interface AzureAccountProvider {
      * Add update account info callback 
      * @param name callback name
      * @param statusChange callback method
-     * @param immediaCall whether callback when register
+     * @param immediateCall whether callback when register, the default value is true
      */
-    setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediaCall?: boolean): Promise<boolean>;
+    setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediateCall?: boolean): Promise<boolean>;
 
     /**
      * Remove update account info callback 
@@ -119,9 +119,9 @@ export interface AppStudioTokenProvider {
      * Add update account info callback 
      * @param name callback name
      * @param statusChange callback method
-     * @param immediaCall whether callback when register
+     * @param immediateCall whether callback when register, the default value is true
      */
-    setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediaCall?: boolean): Promise<boolean>;
+    setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediateCall?: boolean): Promise<boolean>;
 
     /**
      * Remove update account info callback 
@@ -168,9 +168,9 @@ export interface GraphTokenProvider {
      * Add update account info callback 
      * @param name callback name
      * @param statusChange callback method
-     * @param immediaCall whether callback when register
+     * @param immediateCall whether callback when register, the default value is true
      */
-    setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediaCall?: boolean): Promise<boolean>;
+    setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediateCall?: boolean): Promise<boolean>;
 
     /**
      * Remove update account info callback 

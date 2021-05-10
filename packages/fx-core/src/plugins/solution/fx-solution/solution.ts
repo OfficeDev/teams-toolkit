@@ -1955,7 +1955,8 @@ export class TeamsAppSolution implements Solution {
         const azureResource = settings.azureResources || [];
         if ( addFunc || ((addSQL || addApim) && !alreadyHaveFunction)) {
             pluginsToScaffold.push(this.functionPlugin);
-            azureResource.push(AzureResourceFunction.id);
+            if(!azureResource.includes(AzureResourceFunction.id))
+                azureResource.push(AzureResourceFunction.id);
             notifications.push(AzureResourceFunction.label);
         }
         if (addSQL && !alreadyHaveSql) {

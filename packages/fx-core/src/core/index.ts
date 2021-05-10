@@ -5,7 +5,6 @@
 import * as fs from "fs-extra";
 import * as os from "os";
 import * as strings from "../resources/strings.json";
-import * as util from "util";
 import {
     AzureAccountProvider,
     ConfigMap,
@@ -39,25 +38,19 @@ import {
     SystemError,
     UserError,
     SingleSelectQuestion,
-    StringValidation,
     FxError,
     ConfigFolderName,
     Json,
     Dict,
-    AzureSolutionSettings,
     ProjectSettings,
-    MsgLevel,
 } from "fx-api";
 import * as path from "path";
-// import * as Bundles from '../resource/bundles.json';
 import * as error from "./error";
 import { Loader, Meta } from "./loader";
-import { deserializeDict, fetchCodeZip, mapToJson, mergeSerectData, objectToConfigMap, objectToMap, saveFilesRecursively, serializeDict, sperateSecretData } from "../common/tools";
+import { deserializeDict, fetchCodeZip, mapToJson, mergeSerectData, objectToMap, saveFilesRecursively, serializeDict, sperateSecretData } from "../common/tools";
 import { VscodeManager } from "./vscodeManager";
-import { Settings } from "./settings";
 import { CoreQuestionNames, ProjectNamePattern, QuestionAppName, QuestionRootFolder, QuestionSelectSolution, SampleSelect, ScratchOptionNo, ScratchOptionYes, ScratchOrSampleSelect } from "./question";
 import * as jsonschema from "jsonschema";
-import { FxBotPluginResultFactory } from "../plugins/resource/bot/result";
 import { AzureSubscription, getSubscriptionList } from "./loginUtils";
 import { sleep } from "../plugins/resource/spfx/utils/utils";
 import AdmZip from "adm-zip";
@@ -244,27 +237,33 @@ class CoreImpl implements Core {
         const scratch = answers?.getString(CoreQuestionNames.CreateFromScratch);
         if(scratch === ScratchOptionNo.id){
             const samples = answers?.getOptionItem(CoreQuestionNames.Samples);
-            const url = samples!.data! as string;
-            const progress = this.ctx.dialog.createProgressBar("Fetch sample app", 2);
-            progress.start();
-            const fetchRes = await fetchCodeZip(url);
-            progress.next("unzip app package")
-            if (fetchRes !== undefined) {
-                await saveFilesRecursively(new AdmZip(fetchRes.data), folder!);
-                progress.next("open folder");
-                progress.end();
-                await this.ctx.dialog?.communicate(
-                    new DialogMsg(DialogType.Ask, {
-                        type: QuestionType.OpenFolder,
-                        description: folder!,
-                    }),
-                );
-                return ok(null);
+            if(samples && samples.data && folder){
+                const url = samples.data as string;
+                const sampleId = samples.id;
+                const progress = this.ctx.dialog.createProgressBar("Fetch sample app", 2);
+                progress.start();
+                try{
+                    const fetchRes = await fetchCodeZip(url);
+                    progress.next("unzip app package");
+                    if (fetchRes !== undefined) {
+                        await saveFilesRecursively(new AdmZip(fetchRes.data), sampleId, folder);
+                        progress.next("open folder");
+                        await this.ctx.dialog?.communicate(
+                            new DialogMsg(DialogType.Ask, {
+                                type: QuestionType.OpenFolder,
+                                description: `${folder}\\${sampleId}`,
+                            }),
+                        );
+                        return ok(null);
+                    }
+                }
+                finally{
+                    progress.end();
+                }
             }
-            progress.end();
             return err(new UserError(
-                error.CoreErrorNames.InvalidInput,
-                `App Name is empty`,
+                error.CoreErrorNames.DownloadSampleFail,
+                `DownloadSampleFail`,
                 error.CoreSource,
                 )
             );

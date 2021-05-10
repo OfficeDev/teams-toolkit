@@ -3,6 +3,7 @@ name: E2E test
 on:
   schedule:
     - cron: "0 4,7,10 * * *"
+  workflow_dispatch:
 
 jobs:
   e2e-tests:
@@ -21,7 +22,7 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.CD_PAT }}
-          ref: main
+          ref: ${{ github.ref }}
 
       - name: Setup node
         uses: actions/setup-node@v2.1.2

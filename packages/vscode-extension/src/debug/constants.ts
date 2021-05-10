@@ -37,7 +37,7 @@ export enum ProgrammingLanguage {
 
 export const skipNgrokConfigKey = "fx-resource-local-debug.skipNgrok";
 
-const allAddress = "*"; // use * to represent 0.0.0.0 (IPV4)and :: (IPv6) for simplicity
+const allAddress = "*"; // use * to represent 0.0.0.0 (IPV4) and :: (IPv6) for simplicity
 const loopbackAddress = "127.0.0.1";
 
 export const frontendPorts: [string, number][] = [[allAddress, 3000], [allAddress, 5000]];

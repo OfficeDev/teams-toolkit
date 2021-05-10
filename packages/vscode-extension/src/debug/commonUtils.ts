@@ -163,13 +163,22 @@ async function getPortListeningPidWindows(host: string, port: number): Promise<s
 }
 
 async function getPortListeningPidLinux(host: string, port: number): Promise<string | undefined> {
-  // TODO
-  return undefined;
+  try {
+    let command = `lsof -nP -t -i TCP:${port} -s TCP:LISTEN`;
+    if (host == "127.0.0.1") {
+      // the process listening on 0.0.0.0 (IPv4) and ::1 (IPv6) will not block that on 127.0.0.1
+      command = `lsof -nP -t -i TCP@${host}:${port} -s TCP:LISTEN`;
+    }
+    let result = (await execShell(command)).trim();
+    return result.length === 0 ? undefined : result;
+  } catch (err) {
+    // ignore any error to not block debugging
+    return undefined;
+  }
 }
 
 async function getPortListeningPidOSX(host: string, port: number): Promise<string | undefined> {
-  // TODO
-  return undefined;
+  return getPortListeningPidLinux(host, port);
 }
 
 export async function getPortListening(host: string, port: number): Promise<string | undefined> {

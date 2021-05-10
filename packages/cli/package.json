@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx-cli",
-  "version": "0.1.0-alpha.0",
+  "version": "0.1.0-alpha.1",
   "description": "",
   "license": "MIT",
   "engines": {
@@ -68,6 +68,8 @@
   "dependencies": {
     "@azure/identity": "^1.2.3",
     "@azure/ms-rest-nodeauth": "^3.0.7",
+    "@microsoft/teamsfx-api": "^0.1.0-alpha.1",
+    "@microsoft/teamsfx-core": "^0.1.0-alpha.1",
     "adm-zip": "^0.5.5",
     "applicationinsights": "^1.8.10",
     "async-mutex": "^0.3.1",
@@ -75,8 +77,6 @@
     "colors": "^1.4.0",
     "express": "^4.17.1",
     "fs-extra": "^9.1.0",
-    "@microsoft/teamsfx-api": "^0.1.0-alpha.0",
-    "@microsoft/teamsfx-core": "^0.1.0-alpha.0",
     "inquirer": "^8.0.0",
     "node-machine-id": "^1.1.12",
     "open": "^7.3.1",

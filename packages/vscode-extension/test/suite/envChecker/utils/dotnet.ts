@@ -88,7 +88,6 @@ export async function withDotnet(
   addToPath: boolean,
   callback: (dotnetExecPath: string) => Promise<void>
 ): Promise<void> {
-
   let installDir: string;
   let cleanupCallback: () => void;
 
@@ -111,7 +110,6 @@ export async function withDotnet(
     }
 
     await callback(dotnetExecPath);
-
   } finally {
     if (addToPath) {
       process.env.PATH = backupPath;
@@ -120,10 +118,15 @@ export async function withDotnet(
   }
 }
 
-export async function createTmpBackendProjectDir(csprojFileName: string): Promise<[string, () => void]> {
+export async function createTmpBackendProjectDir(
+  csprojFileName: string
+): Promise<[string, () => void]> {
   const [dir, cleanupCallback] = await createTmpDir();
 
-  const csprojPath = path.resolve(__dirname, "../../../../../../../templates/function-base/ts/default/extensions.csproj");
+  const csprojPath = path.resolve(
+    __dirname,
+    "../../../../../../../templates/function-base/ts/default/extensions.csproj"
+  );
   const targetPath = path.join(dir, csprojFileName);
   await fs.copyFile(csprojPath, targetPath, fs.constants.COPYFILE_EXCL);
 

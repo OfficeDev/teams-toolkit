@@ -51,8 +51,9 @@ suite("All checkers E2E test", async () => {
   let backendOutputPath: string;
   let cleanupProjectDir: () => void;
   setup(async function(this: Mocha.Context) {
-    [backendProjectDir, cleanupProjectDir] =
-      await dotnetUtils.createTmpBackendProjectDir(testCsprojFileName);
+    [backendProjectDir, cleanupProjectDir] = await dotnetUtils.createTmpBackendProjectDir(
+      testCsprojFileName
+    );
     backendOutputPath = path.resolve(backendProjectDir, testOutputDirName);
 
     await dotnetUtils.cleanup();
@@ -81,9 +82,13 @@ suite("All checkers E2E test", async () => {
     chai.assert.isTrue(
       await dotnetUtils.hasAnyDotnetVersions(dotnetExecPath!, dotnetUtils.dotnetSupportedVersions)
     );
-    
+
     chai.assert.isFalse(await isNonEmptyDir(backendOutputPath));
-    await backendExtensionsInstaller.install(backendProjectDir, testCsprojFileName, testOutputDirName);
+    await backendExtensionsInstaller.install(
+      backendProjectDir,
+      testCsprojFileName,
+      testOutputDirName
+    );
     chai.assert.isTrue(await isNonEmptyDir(backendOutputPath));
   });
 
@@ -118,7 +123,11 @@ suite("All checkers E2E test", async () => {
       );
 
       chai.assert.isFalse(await isNonEmptyDir(backendOutputPath));
-      await backendExtensionsInstaller.install(backendProjectDir, testCsprojFileName, testOutputDirName);
+      await backendExtensionsInstaller.install(
+        backendProjectDir,
+        testCsprojFileName,
+        testOutputDirName
+      );
       chai.assert.isTrue(await isNonEmptyDir(backendOutputPath));
     }
   });
@@ -148,13 +157,23 @@ suite("All checkers E2E test", async () => {
       );
 
       chai.assert.isFalse(await isNonEmptyDir(backendOutputPath));
-      await backendExtensionsInstaller.install(backendProjectDir, testCsprojFileName, testOutputDirName);
+      await backendExtensionsInstaller.install(
+        backendProjectDir,
+        testCsprojFileName,
+        testOutputDirName
+      );
       chai.assert.isTrue(await isNonEmptyDir(backendOutputPath));
     }
   });
 
   test("All disabled", async function(this: Mocha.Context) {
-    const [checker, _, dotnetChecker, backendExtensionsInstaller] = createTestChecker(true, false, false, false, false);
+    const [checker, _, dotnetChecker, backendExtensionsInstaller] = createTestChecker(
+      true,
+      false,
+      false,
+      false,
+      false
+    );
     const shouldContinue = await checker.resolve();
     const dotnetExecPath = await dotnetChecker.getDotnetExecPath();
 
@@ -170,12 +189,20 @@ suite("All checkers E2E test", async () => {
         dotnetUtils.dotnetSupportedVersions
       )
     ) {
-      await backendExtensionsInstaller.install(backendProjectDir, testCsprojFileName, testOutputDirName);
+      await backendExtensionsInstaller.install(
+        backendProjectDir,
+        testCsprojFileName,
+        testOutputDirName
+      );
       chai.assert.isTrue(await isNonEmptyDir(backendOutputPath));
     } else {
       // If dotnet command is not found, spawn will throw an ENOENT error
       await chai.assert.isRejected(
-        backendExtensionsInstaller.install(backendProjectDir, testCsprojFileName, testOutputDirName),
+        backendExtensionsInstaller.install(
+          backendProjectDir,
+          testCsprojFileName,
+          testOutputDirName
+        ),
         /ENOENT/
       );
       chai.assert.isFalse(await isNonEmptyDir(backendOutputPath));

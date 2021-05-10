@@ -31,18 +31,37 @@ export function assertPathEqual(actual: string, expected: string) {
 }
 
 export async function getExecutionPolicyForCurrentUser(): Promise<string> {
-  const policy = await cpUtils.executeCommand(undefined, logger, undefined, "powershell.exe", "-Command", "Get-ExecutionPolicy", "-Scope", "CurrentUser");
+  const policy = await cpUtils.executeCommand(
+    undefined,
+    logger,
+    undefined,
+    "powershell.exe",
+     "-Command",
+    "Get-ExecutionPolicy",
+    "-Scope",
+    "CurrentUser"
+  );
   return policy.trim();
 }
 
 export async function setExecutionPolicyForCurrentUser(policy: string): Promise<void> {
-  await cpUtils.executeCommand(undefined, logger, undefined, "powershell.exe", "-Command", "Set-ExecutionPolicy", "-Scope", "CurrentUser", policy);
+  await cpUtils.executeCommand(
+    undefined,
+    logger,
+    undefined,
+    "powershell.exe",
+    "-Command", 
+    "Set-ExecutionPolicy",
+    "-Scope",
+    "CurrentUser",
+    policy
+  );
 }
 
-export async function createTmpDir(): Promise<[string, () => void]>  {
+export async function createTmpDir(): Promise<[string, () => void]> {
   return new Promise((resolve, reject) => {
     // unsafeCleanup: recursively removes the created temporary directory, even when it's not empty.
-    tmp.dir({ unsafeCleanup: true }, function (err, path, cleanupCallback) {
+    tmp.dir({ unsafeCleanup: true }, function(err, path, cleanupCallback) {
       if (err) {
         reject(err);
         return;

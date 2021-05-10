@@ -993,14 +993,16 @@ export class TeamsAppSolution implements Solution {
             this.runningState = SolutionRunningState.DeployInProgress;
             const result = await this.doDeploy(ctx);
             if (result.isOk()) {
-                const msg = util.format(strings.solution.DeploySuccessNotice, ctx.projectSettings?.appName);
-                ctx.logProvider?.info(msg);
-                await ctx.dialog?.communicate(
-                    new DialogMsg(DialogType.Show, {
-                        description: msg,
-                        level: MsgLevel.Info,
-                    }),
-                );
+                if (this.isAzureProject(ctx)) {
+                    const msg = util.format(strings.solution.DeploySuccessNotice, ctx.projectSettings?.appName);
+                    ctx.logProvider?.info(msg);
+                    await ctx.dialog?.communicate(
+                        new DialogMsg(DialogType.Show, {
+                            description: msg,
+                            level: MsgLevel.Info,
+                        }),
+                    );
+                }
             } else {
                 const msg = util.format(strings.solution.DeployFailNotice, ctx.projectSettings?.appName);
                 ctx.logProvider?.info(msg);

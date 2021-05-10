@@ -10,7 +10,7 @@ import {
     NodeType,
     Func,
     Platform,
-} from "fx-api";
+} from "@microsoft/teamsfx-api";
 import { ManagementClient } from "./managementClient";
 import { ErrorMessage } from "./errors";
 import { SqlResultFactory } from "./results";

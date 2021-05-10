@@ -1,6 +1,6 @@
 # Contributing
 
-Welcome and thank you for your interest in contributing to **fx-api**! Before contributing to this project, please review this document for policies and procedures which will ease the contribution and review process for everyone. If you have questions, please raise your issue on github.
+Welcome and thank you for your interest in contributing to **@microsoft/teamsfx-api**! Before contributing to this project, please review this document for policies and procedures which will ease the contribution and review process for everyone. If you have questions, please raise your issue on github.
 
 ## Setup develop environment
 
@@ -14,7 +14,7 @@ Follow the official documents to install the required softwares:
 1. Clone this repo locally. (`git clone https://github.com/OfficeDev/TeamsFx.git`)
 2. Open a terminal and move into your local copy. (`cd TeamsFx`)
 3. Because the monorepo is managed by [Lerna](https://github.com/lerna/lerna), you need to bootstrap at the first time. (`npm run setup` or `npm install && npm run bootstrap`) All dependencies will be installed and linked locally.
-4. Build the `fx-api` package. (`cd packages/api && npm run build`)
+4. Build the `@microsoft/teamsfx-api` package. (`cd packages/api && npm run build`)
 
 **_NOTE:_** If you meet the error showing that some package cannot install, you can delete this package's `package-lock.json` file and try `npm run bootstrap` under `TeamsFx` folder again.
 

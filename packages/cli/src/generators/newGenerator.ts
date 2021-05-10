@@ -3,7 +3,7 @@
 
 "use strict";
 
-import { Stage } from "fx-api";
+import { Stage } from "@microsoft/teamsfx-api";
 
 import * as constants from "../constants";
 import { Generator } from "./generator";

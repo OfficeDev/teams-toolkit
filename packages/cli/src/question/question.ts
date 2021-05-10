@@ -19,7 +19,7 @@ import {
   getCallFuncValue,
   StaticOption,
   DymanicOption
-} from "fx-api";
+} from "@microsoft/teamsfx-api";
 
 import CLILogProvider from "../commonlib/log";
 import * as constants from "../constants";

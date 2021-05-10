@@ -90,10 +90,15 @@ class MainDialog extends RootDialog {
         );
 
         // show user picture
-        var photoBinary = await graphClient
-          .api("/me/photo/$value")
-          .responseType(ResponseType.ARRAYBUFFER)
-          .get();
+        let photoBinary;
+        try {
+          photoBinary = await graphClient
+            .api("/me/photo/$value")
+            .responseType(ResponseType.ARRAYBUFFER)
+            .get();
+        } catch {
+          return await stepContext.endDialog();
+        }
         const buffer = Buffer.from(photoBinary);
         const imageUri = "data:image/png;base64," + buffer.toString("base64");
         const card = CardFactory.thumbnailCard(

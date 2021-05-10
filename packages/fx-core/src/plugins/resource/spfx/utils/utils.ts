@@ -4,7 +4,7 @@ import lodash from "lodash";
 import * as fs from "fs-extra";
 import { glob } from "glob";
 import { exec } from "child_process";
-import { LogProvider } from "fx-api";
+import { LogProvider } from "@microsoft/teamsfx-api";
 import axios, { AxiosInstance } from "axios";
 
 export async function configure(

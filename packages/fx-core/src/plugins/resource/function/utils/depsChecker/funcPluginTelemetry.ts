@@ -3,7 +3,7 @@
 // Licensed under the MIT license.
 
 import { performance } from "perf_hooks";
-import { FxError, SystemError, UserError } from "fx-api";
+import { FxError, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { IDepsTelemetry } from "./checker";
 import { DepsCheckerEvent, TelemetryMessurement } from "./common";
 

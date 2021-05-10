@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import path from "path";
-import { AzureSolutionSettings, PluginContext } from "fx-api";
+import { AzureSolutionSettings, PluginContext } from "@microsoft/teamsfx-api";
 import { DependentPluginInfo, FrontendPathInfo } from "../constants";
 import { InvalidTabLanguageError } from "./errors";
 

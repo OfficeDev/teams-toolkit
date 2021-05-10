@@ -5,7 +5,7 @@ import * as vscode from "vscode";
 
 import * as commonUtils from "./commonUtils";
 import { core, showError } from "../handlers";
-import { Func } from "fx-api";
+import { Func } from "@microsoft/teamsfx-api";
 
 export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
   public async resolveDebugConfiguration?(

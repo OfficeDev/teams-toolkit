@@ -11,7 +11,7 @@ import {
     FuncQuestion,
     TextInputQuestion,
     TelemetryReporter,
-} from "fx-api";
+} from "@microsoft/teamsfx-api";
 import { ApimDefaultValues, ApimPluginConfigKeys, QuestionConstants, TeamsToolkitComponent } from "../constants";
 import { ApimPluginConfig, SolutionConfig } from "../model/config";
 import { ApimService } from "../service/apimService";

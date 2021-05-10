@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import axios, { AxiosInstance } from "axios";
-import { SystemError } from "fx-api";
+import { SystemError } from "@microsoft/teamsfx-api";
 import { IAppDefinition } from "../../solution/fx-solution/appstudio/interface";
 import { AppStudioError } from "./errors";
 import { IPublishingAppDenition } from "./interfaces/IPublishingAppDefinition";

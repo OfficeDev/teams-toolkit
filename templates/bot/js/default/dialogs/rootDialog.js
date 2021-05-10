@@ -1,18 +1,21 @@
-import {
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+const { ComponentDialog } = require("botbuilder-dialogs");
+const {
+    TurnContext,
     ActionTypes,
     CardFactory,
-    TurnContext,
     TextFormatTypes,
-} from "botbuilder";
-import { ComponentDialog, DialogContext } from "botbuilder-dialogs";
+} = require("botbuilder");
 
-export class RootDialog extends ComponentDialog {
-    constructor(id: string) {
+class RootDialog extends ComponentDialog {
+    constructor(id) {
         super(id);
     }
 
-    async onBeginDialog(innerDc: DialogContext, options: {} | undefined) {
-        const result = await this.interrupt(innerDc);
+    async onBeginDialog(innerDc, options) {
+        const result = await this.triggerCommand(innerDc);
         if (result) {
             return result;
         }
@@ -20,15 +23,19 @@ export class RootDialog extends ComponentDialog {
         return await super.onBeginDialog(innerDc, options);
     }
 
-    async onContinueDialog(innerDc: DialogContext) {
+    async onContinueDialog(innerDc) {
         return await super.onContinueDialog(innerDc);
     }
 
-    async interrupt(innerDc: DialogContext) {
+    async triggerCommand(innerDc) {
         const removedMentionText = TurnContext.removeRecipientMention(
-            innerDc.context.activity
+            innerDc.context.activity,
+            innerDc.context.activity.recipient.id
         );
-        const text = removedMentionText.toLowerCase().replace(/\n|\r/g, ""); // Remove the line break
+        let text = "";
+        if (removedMentionText) {
+            text = removedMentionText.toLowerCase().replace(/\n|\r/g, ""); // Remove the line break
+        }
         switch (text) {
             case "show": {
                 if (innerDc.context.activity.conversation.isGroup) {
@@ -76,8 +83,9 @@ export class RootDialog extends ComponentDialog {
                     });
                     await innerDc.context.sendActivity({ attachments: [card] });
                 }
-                return await innerDc.cancelAllDialogs();
             }
         }
     }
 }
+
+module.exports.RootDialog = RootDialog;

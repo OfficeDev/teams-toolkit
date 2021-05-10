@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { LogProvider } from "fx-api";
+import { LogProvider } from "@microsoft/teamsfx-api";
 
 import { FrontendPluginInfo } from "../constants";
 

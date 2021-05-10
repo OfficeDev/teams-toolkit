@@ -6,7 +6,7 @@ import { exec } from "child_process";
 import { default as urlParse } from "url-parse";
 import AdmZip from "adm-zip";
 
-import { ConfigValue, PluginContext, IBot, IComposeExtension } from "fx-api";
+import { ConfigValue, PluginContext, IBot, IComposeExtension } from "@microsoft/teamsfx-api";
 import { RegularExprs, WebAppConstants } from "../constants";
 import { ProgrammingLanguage } from "../enums/programmingLanguage";
 import * as appService from "@azure/arm-appservice";

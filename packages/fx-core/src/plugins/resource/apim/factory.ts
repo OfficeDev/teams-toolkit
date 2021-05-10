@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { AzureAccountProvider, GraphTokenProvider, LogProvider, Platform, PluginContext, TelemetryReporter } from "fx-api";
+import { AzureAccountProvider, GraphTokenProvider, LogProvider, Platform, PluginContext, TelemetryReporter } from "@microsoft/teamsfx-api";
 import { AssertNotEmpty, BuildError, NotImplemented } from "./error";
 import { ApimService } from "./service/apimService";
 import { ISolutionConfig, SolutionConfig } from "./model/config";

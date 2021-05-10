@@ -15,7 +15,7 @@ import {
   MultiSelectQuestion,
   SingleSelectQuestion,
   StaticOption
-} from "fx-api";
+} from "@microsoft/teamsfx-api";
 
 import * as constants from "./constants";
 

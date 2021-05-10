@@ -8,11 +8,11 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import * as vscode from "vscode";
 
-import { Result, FxError } from "fx-api";
+import { Result, FxError } from "@microsoft/teamsfx-api";
 
 import { ext } from "../../../src/extensionVariables";
 import { testFolder } from "../../globalVaribles";
-import { LogLevel } from "fx-api";
+import { LogLevel } from "@microsoft/teamsfx-api";
 import { AzureAccountManager } from "../../../src/commonlib/azureLogin";
 import VsCodeLogInstance from "../../../src/commonlib/log";
 import { EInputType, TestUserInput } from "../../testUserInput";

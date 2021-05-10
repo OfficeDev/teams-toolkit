@@ -5,7 +5,7 @@ import "mocha";
 import * as chai from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
-import {FxError, PluginContext, Result} from "fx-api";
+import {FxError, PluginContext, Result} from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import chaiAsPromised from "chai-as-promised";
 import fs from "fs-extra";

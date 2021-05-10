@@ -5,7 +5,7 @@ import "mocha";
 import * as chai from "chai";
 import fs from "fs-extra";
 import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio";
-import { ConfigMap, PluginContext } from "fx-api";
+import { ConfigMap, PluginContext } from "@microsoft/teamsfx-api";
 
 /* TODO
  *

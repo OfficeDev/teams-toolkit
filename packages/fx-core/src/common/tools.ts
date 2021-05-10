@@ -195,19 +195,19 @@ export async function fetchCodeZip(url: string) {
     return result;
 }
 
-export async function saveFilesRecursively(zip: AdmZip, dstPath: string): Promise<void> {
+export async function saveFilesRecursively(zip: AdmZip, appFolder: string, dstPath: string): Promise<void> {
     await Promise.all(
         zip
-        .getEntries()
-        .filter((entry) => !entry.isDirectory)
-        .map(async (entry) => {
+          .getEntries()
+          .filter((entry) => !entry.isDirectory && entry.entryName.includes(appFolder))
+          .map(async (entry) => {
             const data = entry.getData().toString();
-
-            const filePath = path.join(dstPath, entry.entryName);
+            const entryPath = entry.entryName.substring(entry.entryName.indexOf("/") + 1);
+            const filePath = path.join(dstPath, entryPath);
             await fs.ensureDir(path.dirname(filePath));
             await fs.writeFile(filePath, data);
-        })
-    );
+          })
+      );
 }
 
 

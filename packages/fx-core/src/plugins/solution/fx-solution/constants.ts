@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { IBot, IComposeExtension, IConfigurableTab, IStaticTab } from "@microsoft/teamsfx-api";
+import { IBot, IComposeExtension, IConfigurableTab, IStaticTab, UserError } from "@microsoft/teamsfx-api";
 
 /**
  * Void is used to construct Result<Void, FxError>.
@@ -295,3 +295,7 @@ export const STATIC_TABS_TPL: IStaticTab[] = [
         ]
     }
 ];
+
+
+export const DoProvisionFirstError = new UserError("DoProvisionFirst", "DoProvisionFirst", "Solution");
+export const CancelError = new UserError("UserCancel", "UserCancel", "Solution");

@@ -31,7 +31,8 @@ import {
     AzureSolutionSettings,
     Err,
     UserError,
-    SystemError
+    SystemError,
+    Platform
 } from "@microsoft/teamsfx-api";
 import { askSubscription, fillInCommonQuestions } from "./commonQuestions";
 import { executeLifecycles, executeConcurrently, LifecyclesWithContext } from "./executor";
@@ -68,6 +69,8 @@ import {
     STATIC_TABS_TPL,
     CONFIGURABLE_TABS_TPL,
     BOTS_TPL,
+    DoProvisionFirstError,
+    CancelError,
 } from "./constants";
 
 import { SpfxPlugin } from "../../resource/spfx";
@@ -861,7 +864,7 @@ export class TeamsAppSolution implements Solution {
         if (this.isAzureProject(ctx)) {
             //1. ask common questions for azure resources.
             const appName = manifest.name.short;
-            const azureToken = await ctx.azureAccountProvider?.getAccountCredentialAsync()
+            const azureToken = await ctx.azureAccountProvider?.getAccountCredentialAsync();
             const res = await fillInCommonQuestions(
                 ctx,
                 appName,
@@ -1255,16 +1258,17 @@ export class TeamsAppSolution implements Solution {
                     }),
                 ))?.getAnswer();
                 if(res === "Provision"){
-                    const provisionRes = await this.provision(ctx);
-                    if (provisionRes.isErr()) {
-                        if (provisionRes.error.message.startsWith(strings.solution.CancelProvision)) {
-                            return ok(undefined);
-                        }
-                        return err(provisionRes.error);
-                    }
+                    throw DoProvisionFirstError;
+                    // const provisionRes = await this.provision(ctx);
+                    // if (provisionRes.isErr()) {
+                    //     if (provisionRes.error.message.startsWith(strings.solution.CancelProvision)) {
+                    //         return ok(undefined);
+                    //     }
+                    //     return err(provisionRes.error);
+                    // }
                 }
-                else if(res === "Cancel"){
-                    return ok(undefined);
+                else{
+                    throw CancelError;
                 }
             }
             const res = this.getSelectedPlugins(ctx);
@@ -1315,16 +1319,10 @@ export class TeamsAppSolution implements Solution {
                     }),
                 ))?.getAnswer();
                 if(res === "Provision"){
-                    const provisionRes = await this.provision(ctx);
-                    if (provisionRes.isErr()) {
-                        if (provisionRes.error.message.startsWith(strings.solution.CancelProvision)) {
-                            return ok(undefined);
-                        }
-                        return err(provisionRes.error);
-                    }
+                    throw DoProvisionFirstError;
                 }
-                else if(res === "Cancel"){
-                    return ok(undefined);
+                else{
+                    throw CancelError;
                 }
             }
             const pluginsToPublish = [this.appStudioPlugin];
@@ -1342,7 +1340,6 @@ export class TeamsAppSolution implements Solution {
         }
         return ok(node);
     }
-
 
     // Update app manifest
     private async updateApp(

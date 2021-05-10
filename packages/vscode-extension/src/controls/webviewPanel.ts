@@ -81,9 +81,9 @@ export class WebviewPanel {
               if (folder !== undefined) {
                 const result = await this.fetchCodeZip(msg.data.appUrl);
                 if (result !== undefined) {
-                  await this.saveFilesRecursively(new AdmZip(result.data), folder[0].fsPath);
+                  await this.saveFilesRecursively(new AdmZip(result.data), msg.data.appFolder, folder[0].fsPath);
 
-                  vscode.commands.executeCommand("vscode.openFolder", folder[0]);
+                  vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(path.join(folder[0].fsPath, msg.data.appFolder)));
                 } else {
                   vscode.window.showErrorMessage("Failed to clone sample app");
                 }
@@ -182,15 +182,15 @@ export class WebviewPanel {
     return result;
   }
 
-  private async saveFilesRecursively(zip: AdmZip, dstPath: string): Promise<void> {
+  private async saveFilesRecursively(zip: AdmZip, appFolder: string, dstPath: string): Promise<void> {
     await Promise.all(
       zip
         .getEntries()
-        .filter((entry) => !entry.isDirectory)
+        .filter((entry) => !entry.isDirectory && entry.entryName.includes(appFolder))
         .map(async (entry) => {
           const data = entry.getData().toString();
-
-          const filePath = path.join(dstPath, entry.entryName);
+          const entryPath = entry.entryName.substring(entry.entryName.indexOf('/') + 1);
+          const filePath = path.join(dstPath, entryPath);
           await fs.ensureDir(path.dirname(filePath));
           await fs.writeFile(filePath, data);
         })

@@ -16,8 +16,8 @@ export class ProjectConstants {
 
 export class ApimDefaultValues {
     public static readonly functionBasePath: string = "/api";
-    public static readonly productDescription: string = "Created by TeamsFX.";
-    public static readonly oAuthServerDescription: string = "Created by TeamsFX.";
+    public static readonly productDescription: string = "Created by TeamsFx.";
+    public static readonly oAuthServerDescription: string = "Created by TeamsFx.";
     public static readonly enableScopeName: string = ".default";
     public static readonly userId: string = "sample@microsoft.com";
     public static readonly apiPrefix: string = "title";
@@ -132,7 +132,7 @@ export class ValidationConstants {
 
     public static readonly defaultValidPattern = {
         regex: /^[^*#&+:<>?]+$/,
-        message: "The value cannot contain any character in '*#&+:<>?'.",
+        message: "The value cannot contain any characters in '*#&+:<>?'.",
     }
 
     public static readonly guidValidPattern = {
@@ -243,7 +243,7 @@ export enum ProgressStep {
     Scaffold = "Scaffolding OpenAPI document",
     Provision = "Provisioning API Management",
     PostProvision = "Configuring API Management",
-    Deploy = "Importing API into API Management",
+    Deploy = "Importing API to API Management",
 }
 
 export const PluginLifeCycleToProgressStep: { [key in PluginLifeCycle]: ProgressStep } = {

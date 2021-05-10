@@ -1,10 +1,8 @@
 name: E2E test
 
 on:
-  pull_request:
-    branches:
-      - main
-      - release/**
+  schedule:
+    - cron: "0 4,7,10 * * *"
 
 jobs:
   e2e-tests:
@@ -23,6 +21,7 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.CD_PAT }}
+          ref: main
 
       - name: Setup node
         uses: actions/setup-node@v2.1.2

@@ -17,7 +17,7 @@ fi
 
 LANGUAGE_LIST=(js ts)
 
-TEPLATE_LIST=(
+TEMPLATE_LIST=(
     function-base.default
     function-triggers.HTTPTrigger
     tab.default
@@ -27,7 +27,7 @@ TEPLATE_LIST=(
 )
 
 for LANGUAGE in ${LANGUAGE_LIST[@]}; do
-    for TEMPLATE in ${TEPLATE_LIST[@]}; do
+    for TEMPLATE in ${TEMPLATE_LIST[@]}; do
         TEMPLATE=($(echo $TEMPLATE | tr "." "\n"))
         SCOPE=${TEMPLATE[0]}
         SCENARIO=${TEMPLATE[1]}

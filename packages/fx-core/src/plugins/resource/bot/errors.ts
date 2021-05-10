@@ -15,7 +15,7 @@ export class PluginError extends Error {
     public suggestions: string[];
     public errorType: ErrorType;
     public innerError?: Error;
-    public showHelpLink?: boolean;
+    public showHelpLink: boolean;
 
     constructor(type: ErrorType, name: string, details: string, suggestions: string[],
         innerError?: Error, showHelpLink: boolean = false) {

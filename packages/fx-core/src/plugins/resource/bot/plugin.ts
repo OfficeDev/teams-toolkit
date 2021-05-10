@@ -320,7 +320,7 @@ export class TeamsBotImpl {
                 // Remind end developers to update message endpoint manually.
                 await DialogUtils.showAndHelp(
                     context,
-                    `Please update bot's message endpoint manually using ${this.config.provision.siteEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX} before you run this bot.`,
+                    `Before running this bot, please manually update bot's message endpoint(${this.config.provision.siteEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}). Click 'Get Help' button to get more details.`,
                     Links.UPDATE_MESSAGE_ENDPOINT
                 );
                 break;

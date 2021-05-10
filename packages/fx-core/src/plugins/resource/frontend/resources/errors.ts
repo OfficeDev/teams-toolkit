@@ -18,7 +18,7 @@ const tips = {
     reLogin: "Sign out and login to Azure again.",
     reProvision: `Run 'Provision Resource' again.`,
     doNpmInstall: `Run 'npm install' in the folder: '${FrontendPathInfo.WorkingDir}'.`,
-    doBuild: `Run npm run build' in the folder: '${FrontendPathInfo.WorkingDir}'.`,
+    doBuild: `Run 'npm run build' in the folder: '${FrontendPathInfo.WorkingDir}'.`,
     ensureBuildPath: `Ensure your built project exists: '${FrontendPathInfo.BuildPath}'.`,
     ensureResourceGroup: "Ensure your resource group exists.",
     ensureAppNameValid:

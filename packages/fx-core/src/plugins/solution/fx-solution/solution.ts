@@ -565,7 +565,16 @@ export class TeamsAppSolution implements Solution {
             return maybeSelectedPlugins;
         }
         const selectedPlugins = maybeSelectedPlugins.value;
-        return await this.doScaffold(ctx, selectedPlugins);
+        const result = await this.doScaffold(ctx, selectedPlugins);
+        if (result.isOk()) {
+            await ctx.dialog?.communicate(
+                new DialogMsg(DialogType.Show, {
+                    description: strings.solution.ScaffoldSuccessNotice,
+                    level: MsgLevel.Info,
+                }),
+            );
+        }
+        return result;
     }
 
     async doScaffold(ctx: SolutionContext, selectedPlugins:LoadedPlugin[]): Promise<Result<any, FxError>> {

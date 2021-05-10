@@ -189,14 +189,14 @@ export enum RetryCommands {
     Login = "login and choose a subscription",
 }
 
-export const ComponentRetryCommands: { [key in TeamsToolkitComponent]: string } = Object.freeze({
+export const ComponentRetryCommands: { [key in TeamsToolkitComponent]: RetryCommands } = Object.freeze({
     [TeamsToolkitComponent.FunctionPlugin]: RetryCommands.Update,
     [TeamsToolkitComponent.AadPlugin]: RetryCommands.Create,
     [TeamsToolkitComponent.Solution]: RetryCommands.Create,
     [TeamsToolkitComponent.ApimPlugin]: RetryCommands.Update,
 });
 
-export const ConfigRetryCommands: { [key in TeamsToolkitComponent]: { [key: string]: string } } = {
+export const ConfigRetryCommands: { [key in TeamsToolkitComponent]: { [key: string]: RetryCommands } } = {
     [TeamsToolkitComponent.FunctionPlugin]: {
         [FunctionPluginConfigKeys.functionEndpoint]: RetryCommands.Provision,
     },

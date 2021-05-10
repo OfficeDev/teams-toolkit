@@ -17,7 +17,7 @@ import { AddressInfo } from "net";
 import { accountPath, UTF8 } from "./cacheAccess";
 import * as stringUtil from "util";
 import * as StringResources from "../resources/Strings.json";
-import { util } from "chai";
+import { loggedIn, loggedOut, loggingIn } from "./common/constant";
 
 class ErrorMessage {
   static readonly loginError: string = "LoginError";
@@ -40,6 +40,7 @@ export class CodeFlowLogin {
   mutex: Mutex | undefined;
   msalTokenCache: TokenCache | undefined;
   accountName: string | undefined;
+  status: string | undefined;
 
   constructor(scopes: string[], config: Configuration, port: number, accountName: string) {
     this.scopes = scopes;
@@ -49,6 +50,7 @@ export class CodeFlowLogin {
     this.pca = new PublicClientApplication(this.config!);
     this.msalTokenCache = this.pca.getTokenCache();
     this.accountName = accountName;
+    this.status = loggedOut;
   }
 
   async reloadCache() {
@@ -57,6 +59,7 @@ export class CodeFlowLogin {
       const dataCache = await this.msalTokenCache!.getAccountByHomeId(accountCache);
       if (dataCache) {
         this.account = dataCache;
+        this.status = loggedIn;
       }
     }
   }
@@ -85,6 +88,7 @@ export class CodeFlowLogin {
     );
 
     app.get("/", (req: express.Request, res: express.Response) => {
+      this.status = loggingIn;
       const tokenRequest = {
         code: req.query.code as string,
         scopes: this.scopes!,
@@ -98,6 +102,7 @@ export class CodeFlowLogin {
             if (response.account) {
               await this.mutex?.runExclusive(async () => {
                 this.account = response.account!;
+                this.status = loggedIn;
               });
               deferredRedirect.resolve(response.accessToken);
 
@@ -119,6 +124,7 @@ export class CodeFlowLogin {
           }
         })
         .catch((error) => {
+          this.status = loggedOut;
           VsCodeLogInstance.error("[Login] " + error.message);
           deferredRedirect.reject(error);
           res.status(500).send(error);
@@ -126,6 +132,11 @@ export class CodeFlowLogin {
     });
 
     const codeTimer = setTimeout(() => {
+      if (this.account) {
+        this.status = loggedIn;
+      } else {
+        this.status = loggedOut;
+      }
       deferredRedirect.reject(
         returnSystemError(
           new Error(ErrorMessage.timeoutMessage),
@@ -164,6 +175,8 @@ export class CodeFlowLogin {
     if (fs.existsSync(accountPath + this.accountName)) {
       fs.writeFileSync(accountPath + this.accountName, "", UTF8);
     }
+    this.account = undefined;
+    this.status = loggedOut;
     return true;
   }
 

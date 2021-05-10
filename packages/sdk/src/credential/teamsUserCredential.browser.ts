@@ -26,10 +26,10 @@ const maxRetryCount = 3;
 const retryTimeSpanInMillisecond = 3000;
 
 /**
- * Used within Teams client applications.
+ * Represent Teams current user's identity, and it is used within Teams tab application.
  *
  * @remarks
- * User can interactively login and consent within Teams.
+ * Can only be used within Teams.
  *
  * @beta
  */
@@ -38,22 +38,26 @@ export class TeamsUserCredential implements TokenCredential {
   private ssoToken: AccessToken | null;
 
   /**
-   * Constructor of TeamsUserCredential
-   * Developer need call loadConfiguration(config) before using this class
+   * Constructor of TeamsUserCredential.
+   * Developer need to call loadConfiguration(config) before using this class.
+   * 
    * @example
-   * ```
-   * var config = {
+   * ```typescript
+   * const config = {
    *  authentication: {
    *    runtimeConnectorEndpoint: "https://xxx.xxx.com",
-   *    initiateLoginEndpoint: "auth-start.html"
+   *    initiateLoginEndpoint: "https://localhost:3000/auth-start.html",
    *    clientId: "xxx"
    *   }
    * }
      loadConfiguration(config); // No default config from environment variables, developers must provide the config object.
-     var credential = new TeamsUserCredential();
+     const credential = new TeamsUserCredential(["https://graph.microsoft.com/User.Read"]);
    * ```
-   * @throws {InvalidConfiguration}
+   *
+   * @throws {@link ErrorCode|InvalidConfiguration} when client id, initiate login endpoint or simple auth endpoint is not found in config.
+   * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
    * 
+   * @beta
    */
   constructor() {
     internalLogger.info("Create teams user credential");
@@ -62,19 +66,27 @@ export class TeamsUserCredential implements TokenCredential {
   }
 
   /**
-   * Popup login page to get user's access token, will throw {@link ErrorWithCode} if failed.
+   * Popup login page to get user's access token with specific scopes.
    *
-   * @remarks Only works in Teams client app. User will be redirected to the authorization page to login and consent.
+   * @remarks
+   * Only works in Teams client APP. User will be redirected to the authorization page to login and consent.
    *
    * @example
    * ```typescript
-   * await credential.login(["User.Read"]);
+   * await credential.login(["https://graph.microsoft.com/User.Read"]); // single scope using string array
+   * await credential.login("https://graph.microsoft.com/User.Read"); // single scopes using string
+   * await credential.login(["https://graph.microsoft.com/User.Read", "Calendars.Read"]); // multiple scopes using string array
+   * await credential.login("https://graph.microsoft.com/User.Read Calendars.Read"); // multiple scopes using string
    * ```
-   * @param scopes - The array of Microsoft Token scope of access. Default value is  `[.default]`. Scopes provide a way to manage permissions to protected resources.
+   * @param scopes - The list of scopes for which the token will have access, before that, we will request user to consent.
    *
-   * @throws {InternalError}
-   * @throws {ServiceError}
-   * @throws {ConsentFailed}
+   * @throws {@link ErrorCode|InternalError} when failed to login with unknown error.
+   * @throws {@link ErrorCode|ServiceError} when simple auth server failed to exchange access token.
+   * @throws {@link ErrorCode|ConsentFailed} when user canceled or failed to consent.
+   * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
+   * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
+   *
+   * @beta
    */
   public async login(scopes: string | string[]): Promise<void> {
     validateScopesType(scopes);
@@ -85,8 +97,9 @@ export class TeamsUserCredential implements TokenCredential {
     return new Promise<void>((resolve, reject) => {
       microsoftTeams.initialize(() => {
         microsoftTeams.authentication.authenticate({
-          url: `${this.config.initiateLoginEndpoint}?clientId=${this.config.clientId
-            }&scope=${encodeURI(scopesStr)}`,
+          url: `${this.config.initiateLoginEndpoint}?clientId=${
+            this.config.clientId
+          }&scope=${encodeURI(scopesStr)}`,
           width: loginPageWidth,
           height: loginPageHeight,
           successCallback: async (result?: string) => {
@@ -117,31 +130,37 @@ export class TeamsUserCredential implements TokenCredential {
   }
 
   /**
-   * Get access token from credential
+   * Get access token from credential.
    *
    * @example
    * ```typescript
-   * await credential.getToken([]) // Get SSO token
-   * await credential.getToken("") // Get SSO token
-   * await credential.getToken(["User.Read"]) // Get Graph access token
-   * await credential.getToken("User.Read") // Get Graph access token
-   * await credential.getToken(["User.Read", "Application.Read.All"]) // Get Graph access token for multiple scopes
-   * await credential.getToken([".default"]) // Get Graph access token with default scope
-   * await credential.getToken(".default") // Get Graph access token with default scope
-   * await credential.getToken(["https://outlook.office.com/mail.read"]) // Get Outlook access token
+   * await credential.getToken([]) // Get SSO token using empty string array
+   * await credential.getToken("") // Get SSO token using empty string
+   * await credential.getToken([".default"]) // Get Graph access token with default scope using string array
+   * await credential.getToken(".default") // Get Graph access token with default scope using string
+   * await credential.getToken(["User.Read"]) // Get Graph access token for single scope using string array
+   * await credential.getToken("User.Read") // Get Graph access token for single scope using string
+   * await credential.getToken(["User.Read", "Application.Read.All"]) // Get Graph access token for multiple scopes using string array
+   * await credential.getToken("User.Read Application.Read.All") // Get Graph access token for multiple scopes using space-separated string
+   * await credential.getToken("https://graph.microsoft.com/User.Read") // Get Graph access token with full resource URI
+   * await credential.getToken(["https://outlook.office.com/Mail.Read"]) // Get Outlook access token
    * ```
    *
    * @param {string | string[]} scopes - The list of scopes for which the token will have access.
    * @param {GetTokenOptions} options - The options used to configure any requests this TokenCredential implementation might make.
    *
-   * @throws {InternalError}
-   * @throws {UiRequiredError}
-   * @throws {ServiceError}
+   * @throws {@link ErrorCode|InternalError} when failed to get access token with unknown error.
+   * @throws {@link ErrorCode|UiRequiredError} when need user consent to get access token.
+   * @throws {@link ErrorCode|ServiceError} when failed to get access token from simple auth server.
+   * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
+   * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
    *
-   * @returns user access token of defined scopes.
+   * @returns User access token of defined scopes.
    * If scopes is empty string or array, it returns SSO token.
    * If scopes is non-empty, it returns access token for target scope.
    * Throw error if get access token failed.
+   *
+   * @beta
    */
   async getToken(
     scopes: string | string[],
@@ -177,17 +196,20 @@ export class TeamsUserCredential implements TokenCredential {
   }
 
   /**
-   * Get the user info from SSO token
+   * Get basic user info from SSO token
    *
    * @example
-   * Get basic user info from SSO token
    * ```typescript
    * const currentUser = await credential.getUserInfo();
    * ```
-   * @throws {InternalError}
-   * @throws {InvalidParameter}
    *
-   * @returns UserInfo with user displayName, objectId and preferredUserName.
+   * @throws {@link ErrorCode|InternalError} when SSO token from Teams client is not valid.
+   * @throws {@link ErrorCode|InvalidParameter} when SSO token from Teams client is empty.
+   * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
+   *
+   * @returns Basic user info with user displayName, objectId and preferredUserName.
+   *
+   * @beta
    */
   public async getUserInfo(): Promise<UserInfo> {
     internalLogger.info("Get basic user info from SSO token");
@@ -235,7 +257,7 @@ export class TeamsUserCredential implements TokenCredential {
 
   /**
    * Get access token cache from authentication server
-   * @returns access token
+   * @returns Access token
    */
   private async getAndCacheAccessTokenFromSimpleAuthServer(
     scopesStr: string
@@ -318,7 +340,8 @@ export class TeamsUserCredential implements TokenCredential {
       // If the code not running in Teams, the initialize callback function would never trigger
       setTimeout(() => {
         if (!initialized) {
-          const errorMsg = "Initialize teams sdk timeout, maybe the code is not running inside Teams";
+          const errorMsg =
+            "Initialize teams sdk timeout, maybe the code is not running inside Teams";
           internalLogger.error(errorMsg);
           reject(new ErrorWithCode(errorMsg, ErrorCode.InternalError));
         }

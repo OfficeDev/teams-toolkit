@@ -52,7 +52,7 @@ export async function deployFunction(
  * Create a new project that is provisioned.
  *
  * @param name - project name
- * @returns the project folder path
+ * @returns The project folder path
  */
 export async function createNewProject(name: string): Promise<string> {
   const folder = getTestFolder();
@@ -95,7 +95,7 @@ export async function deployTab(projectPath: string, tabSrcFolder?: string): Pro
  * Get URL for Teams app sideloading.
  *
  * @param projectPath - folder path of project
- * @returns remote sideloading URL
+ * @returns Remote sideloading URL
  */
 export function getTeamsTabRemoteUrl(projectPath: string): string {
   const env = fs.readJsonSync(path.join(projectPath, ".fx/env.default.json"));
@@ -108,7 +108,7 @@ let page: Page;
 /**
  * Login Teams and return the browser page for testing.
  *
- * @returns browser and page instance
+ * @returns Browser and page instance
  */
 export async function getLoginEnvironment(): Promise<{
   browser: ChromiumBrowser;
@@ -154,7 +154,7 @@ async function loginTestUser(): Promise<void> {
     // Click password option is not stable, try twice here
     await page.click(selectors.passwordOption, { delay: 5000, timeout: 10000 });
     await page.click(selectors.passwordOption2, { delay: 5000, timeout: 10000 });
-  } catch (e) { }
+  } catch (e) {}
   await page.waitForSelector(selectors.password, { timeout: E2E_TIMEOUT });
   await page.click(selectors.password);
   await page.type(selectors.password, TEST_USER_PASSWORD);
@@ -216,7 +216,7 @@ export async function getAccessToken(
 /**
  * process.env.SDK_INTEGRATION_TEST_TEAMS_AAD_CLIENT_ID is the Test AAD app mocking Teams first party app.
  * This function mocks the sso token get from Teams
- * @returns sso token got from mocked Teams
+ * @returns SSO token got from mocked Teams
  */
 export async function getSsoTokenFromTeams(): Promise<string> {
   const missingConfigurations: string[] = [];
@@ -256,7 +256,7 @@ export async function getSsoTokenFromTeams(): Promise<string> {
  * Once invoke MockEnvironmentVariables, mock the variables in it with another value, it will take effect immediately.
  */
 export function MockEnvironmentVariable(): () => void {
-  require('dotenv').config();
+  require("dotenv").config();
   return mockedEnv({
     M365_CLIENT_ID: process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
     M365_CLIENT_SECRET: process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_SECRET,

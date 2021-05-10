@@ -35,7 +35,7 @@ import {
 } from "fx-api";
 import { askSubscription, fillInCommonQuestions } from "./commonQuestions";
 import { executeLifecycles, executeConcurrently, LifecyclesWithContext } from "./executor";
-import { getPluginContext } from "./util";
+import { getPluginContext, getSubsriptionDisplayName } from "./util";
 import { AppStudio } from "./appstudio/appstudio";
 import * as fs from "fs-extra";
 import {
@@ -565,7 +565,16 @@ export class TeamsAppSolution implements Solution {
             return maybeSelectedPlugins;
         }
         const selectedPlugins = maybeSelectedPlugins.value;
-        return await this.doScaffold(ctx, selectedPlugins);
+        const result = await this.doScaffold(ctx, selectedPlugins);
+        if (result.isOk()) {
+            await ctx.dialog?.communicate(
+                new DialogMsg(DialogType.Show, {
+                    description: strings.solution.ScaffoldSuccessNotice,
+                    level: MsgLevel.Info,
+                }),
+            );
+        }
+        return result;
     }
 
     async doScaffold(ctx: SolutionContext, selectedPlugins:LoadedPlugin[]): Promise<Result<any, FxError>> {
@@ -634,7 +643,7 @@ export class TeamsAppSolution implements Solution {
             if (!hasBot && !hasMsgExt) {
                 return err(
                     returnSystemError(
-                        new Error("One of bot and Message Extension is expected to be selected"),
+                        new Error("Select either Bot or Messaging Extension"),
                         "Solution",
                         SolutionError.InternelError,
                     ),
@@ -820,6 +829,8 @@ export class TeamsAppSolution implements Solution {
                     const ue = error as UserError;
                     if(!ue.helpLink){
                         ue.helpLink = "https://aka.ms/teamsfx-solution-help";
+                        ue.source = "Solution",
+                        ue.name = "ProvisionFailure";
                     }
                 }
             }
@@ -850,16 +861,38 @@ export class TeamsAppSolution implements Solution {
         if (this.isAzureProject(ctx)) {
             //1. ask common questions for azure resources.
             const appName = manifest.name.short;
+            const azureToken = await ctx.azureAccountProvider?.getAccountCredentialAsync()
             const res = await fillInCommonQuestions(
                 ctx,
                 appName,
                 ctx.config,
                 ctx.dialog,
-                await ctx.azureAccountProvider?.getAccountCredentialAsync(),
+                azureToken,
                 await ctx.appStudioToken?.getJsonObject(),
             );
             if (res.isErr()) {
                 return res;
+            }
+
+            // Only Azure project requires this confirm dialog
+            const username = (azureToken as any).username ? (azureToken as any).username : "";
+            const subscriptionId = ctx.config.get(GLOBAL_CONFIG)?.getString("subscriptionId");
+            const subscriptionName = await getSubsriptionDisplayName(azureToken!, subscriptionId!);
+
+            const confirm  = (await ctx.dialog?.communicate(
+                new DialogMsg(DialogType.Show, {
+                    description: util.format(strings.solution.ProvisionConfirmNotice, username, subscriptionName ? subscriptionName : subscriptionId),
+                    level: MsgLevel.Warning,
+                    items: ["Provision", "Cancel"]
+                }),
+            ))?.getAnswer();
+            
+            if (confirm === "Cancel"){
+                return err(returnUserError(
+                    new Error(strings.solution.CancelProvision),
+                    "Solution",
+                    strings.solution.CancelProvision,
+                ));
             }
         }
 
@@ -1221,7 +1254,10 @@ export class TeamsAppSolution implements Solution {
                 ))?.getAnswer();
                 if(res === "Provision"){
                     const provisionRes = await this.provision(ctx);
-                    if(provisionRes.isErr()){
+                    if (provisionRes.isErr()) {
+                        if (provisionRes.error.message.startsWith(strings.solution.CancelProvision)) {
+                            return ok(undefined);
+                        }
                         return err(provisionRes.error);
                     }
                 }
@@ -1278,7 +1314,10 @@ export class TeamsAppSolution implements Solution {
                 ))?.getAnswer();
                 if(res === "Provision"){
                     const provisionRes = await this.provision(ctx);
-                    if(provisionRes.isErr()){
+                    if (provisionRes.isErr()) {
+                        if (provisionRes.error.message.startsWith(strings.solution.CancelProvision)) {
+                            return ok(undefined);
+                        }
                         return err(provisionRes.error);
                     }
                 }
@@ -1477,6 +1516,7 @@ export class TeamsAppSolution implements Solution {
             manifest.name.short,
             manifest.version,
             botId,
+            "-local-debug"
         );
 
         const localTeamsAppID = ctx.config.get(GLOBAL_CONFIG)?.getString(LOCAL_DEBUG_TEAMS_APP_ID);
@@ -1981,7 +2021,7 @@ export class TeamsAppSolution implements Solution {
             && ( capabilitiesAnswer.includes(BotOptionItem.id) || capabilitiesAnswer.includes(MessageExtensionItem.id) ) ){
             return err(
                 returnUserError(
-                    new Error("Application already contains a Bot and/or Message Extension"),
+                    new Error("Application already contains a Bot and/or Messaging Extension"),
                     "Solution",
                     SolutionError.FailedToAddCapability,
                 ),

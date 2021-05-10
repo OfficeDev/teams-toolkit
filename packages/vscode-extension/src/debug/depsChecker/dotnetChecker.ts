@@ -115,9 +115,6 @@ export class DotnetChecker implements IDepsChecker {
     await this._adapter.runWithProgressIndicator(async () => {
       await this.handleInstall(installVersion, installDir);
     });
-    await this._logger.info(
-      Messages.finishInstallDotnet.replace("@NameVersion", installedNameWithVersion)
-    );
     await this._logger.debug(`[end] install dotnet ${installVersion}`);
 
     await this._logger.debug(`[start] validate dotnet version`);
@@ -179,6 +176,9 @@ export class DotnetChecker implements IDepsChecker {
       const dotnetExecPath = DotnetChecker.getDotnetExecPathFromDotnetInstallationDir(installDir);
       await DotnetChecker.persistDotnetExecPath(dotnetExecPath);
       await this._logger.debug(`[end] write dotnet path to config`);
+      await this._logger.info(
+          Messages.finishInstallDotnet.replace("@NameVersion", installedNameWithVersion)
+      );
     } catch (error) {
       await this._logger.error(
         `${Messages.failToInstallDotnet
@@ -450,6 +450,11 @@ export class DotnetChecker implements IDepsChecker {
       );
       return actual.includes(expected);
     } catch (error) {
+      this._telemetry.sendSystemErrorEvent(
+          DepsCheckerEvent.dotnetValidationError,
+          TelemtryMessages.failedToValidateDotnet,
+          error
+      );
       await this._logger.debug(
         `Failed to run hello world, dotnetPath = ${dotnetPath}, expected output = ${expected}, actual output = ${actual}, error = ${error}`
       );

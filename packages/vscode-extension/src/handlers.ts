@@ -3,7 +3,7 @@
 
 "use strict";
 
-import { commands, Uri, window, workspace, ExtensionContext, env, ViewColumn, debug } from "vscode";
+import { commands, Uri, window, workspace, ExtensionContext, env, ViewColumn, debug, QuickPickItem } from "vscode";
 import {
   Result,
   FxError,
@@ -57,9 +57,7 @@ import * as vscode from "vscode";
 import { VsCodeUI, VS_CODE_UI } from "./qm/vsc_ui";
 import { DepsChecker } from "./debug/depsChecker/checker";
 import { BackendExtensionsInstaller } from "./debug/depsChecker/backendExtensionsInstall";
-import { FuncToolChecker } from "./debug/depsChecker/funcToolChecker";
 import { DotnetChecker } from "./debug/depsChecker/dotnetChecker";
-import { NodeChecker, AzureSupportedNodeVersions } from "./debug/depsChecker/nodeChecker";
 import * as util from "util";
 import * as StringResources from "./resources/Strings.json";
 import { vscodeAdapter } from "./debug/depsChecker/vscodeAdapter";
@@ -67,6 +65,8 @@ import { vscodeLogger } from "./debug/depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "./debug/depsChecker/vscodeTelemetry";
 import { PanelType } from "./controls/PanelType";
 import { signedIn, signedOut } from "./commonlib/common/constant";
+import { AzureNodeChecker } from "./debug/depsChecker/azureNodeChecker";
+import { SPFxNodeChecker } from "./debug/depsChecker/spfxNodeChecker";
 
 export let core: CoreProxy;
 const runningTasks = new Set<string>(); // to control state of task execution
@@ -391,7 +391,7 @@ async function runUserTask(func: Func, eventName:string): Promise<Result<null, F
     const answers = new ConfigMap();
     answers.set("task", eventName);
     answers.set("platform", Platform.VSCode);
-    
+
     // 4. getQuestions
     const qres = await core.getQuestionsForUserTask(func, Platform.VSCode);
     if (qres.isErr()) {
@@ -511,25 +511,28 @@ export async function addCapabilityHandler(): Promise<Result<null, FxError>> {
 }
 
 /**
- * check & install required dependencies during local debug.
+ * check & install required dependencies during local debug when selected hosting type is Azure.
  */
 export async function validateDependenciesHandler(): Promise<void> {
-  const depsChecker = new DepsChecker(vscodeLogger, vscodeAdapter, [
-    new NodeChecker(AzureSupportedNodeVersions, vscodeAdapter, vscodeLogger, vscodeTelemetry), 
-    new DotnetChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry)]);
-  const shouldContinue = await depsChecker.resolve();
-  if (!shouldContinue) {
-    // TODO: better mechanism to stop the tasks and debug session.
-    throw new Error("debug stopped.");
-  }
+  const nodeChecker = new AzureNodeChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
+  const dotnetChecker = new DotnetChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
+  const depsChecker = new DepsChecker(vscodeLogger, vscodeAdapter, [nodeChecker, dotnetChecker]);
+  await validateDependenciesCore(depsChecker);
 }
 
-const spfxNodeSupportVersion = ["10", "12", "14"];
+/**
+ * check & install required dependencies during local debug when selected hosting type is SPFx.
+ */
 export async function validateSpfxDependenciesHandler(): Promise<void> {
-  const depsChecker = new DepsChecker(vscodeLogger, vscodeAdapter, [
-    new NodeChecker(spfxNodeSupportVersion, vscodeAdapter, vscodeLogger, vscodeTelemetry)]);
+  const nodeChecker = new SPFxNodeChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
+  const depsChecker = new DepsChecker(vscodeLogger, vscodeAdapter, [nodeChecker]);
+  await validateDependenciesCore(depsChecker);
+}
+
+async function validateDependenciesCore(depsChecker: DepsChecker): Promise<void> {
   const shouldContinue = await depsChecker.resolve();
   if (!shouldContinue) {
+    await debug.stopDebugging();
     // TODO: better mechanism to stop the tasks and debug session.
     throw new Error("debug stopped.");
   }
@@ -710,41 +713,11 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
     try {
       switch (node.contextValue) {
         case "signedinM365": {
-          let appstudioLogin: AppStudioTokenProvider = AppStudioTokenInstance;
-          const vscodeEnv = detectVsCodeEnv();
-          if (vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode) {
-            appstudioLogin = AppStudioCodeSpaceTokenInstance;
-          }
-          const result = await appstudioLogin.signout();
-          if (result) {
-            await TreeViewManagerInstance.getTreeView('teamsfx-accounts')!.refresh([
-              {
-                commandId: "fx-extension.signinM365",
-                label: StringResources.vsc.handlers.signIn365,
-                contextValue: "signinM365"
-              }
-            ]);
-          }
+          signOutM365();
           break;
         }
         case "signedinAzure": {
-          const result = await AzureAccountManager.signout();
-          if (result) {
-            await TreeViewManagerInstance.getTreeView('teamsfx-accounts')!.refresh([
-              {
-                commandId: "fx-extension.signinAzure",
-                label: StringResources.vsc.handlers.signInAzure,
-                contextValue: "signinAzure"
-              }
-            ]);
-            await TreeViewManagerInstance.getTreeView('teamsfx-accounts')!.remove([
-              {
-                commandId: "fx-extension.selectSubscription",
-                label: "",
-                parent: "fx-extension.signinAzure"
-              }
-            ]);
-          }
+          signOutAzure();
           break;
         }
       }
@@ -781,7 +754,7 @@ export async function showError(e: FxError) {
     const help = {
       title: StringResources.vsc.handlers.getHelp,
       run: async (): Promise<void> => {
-        commands.executeCommand("vscode.open", Uri.parse(`${e.helpLink}#${errorCode}`));
+        commands.executeCommand("vscode.open", Uri.parse(`${e.helpLink}#${e.source}${e.name}`));
       }
     };
 
@@ -802,4 +775,136 @@ export async function showError(e: FxError) {
   } else {
     await window.showErrorMessage(`[${errorCode}]: ${e.message}`);
   }
+}
+
+export async function cmpAccountsHandler() {
+  let signInAzureOption: VscQuickPickItem = {
+    id:"signInAzure",
+    label: "Sign in to Azure",
+    function: () => signInAzure()
+  };
+
+  let signOutAzureOption: VscQuickPickItem = {
+    id:"signOutAzure",
+    label: "Sign out of Azure: ",
+    function: () => signOutAzure()
+  };
+
+  let signInM365Option: VscQuickPickItem = {
+    id:"signinM365",
+    label: "Sign in to M365",
+    function: () => signInM365()
+  };
+
+  let signOutM365Option: VscQuickPickItem = {
+    id:"signOutM365",
+    label: "Sign out of M365: ",
+    function: () => signOutM365()
+  };
+
+  //TODO: hide subscription list until core or api expose the get subscription list API 
+  // let selectSubscriptionOption: VscQuickPickItem = {
+  //   id: "selectSubscription",
+  //   label: "Specify an Azure Subscription",
+  //   function: () => selectSubscription(),
+  //   detail: "4 subscriptions discovered"
+  // };
+
+  const quickPick = window.createQuickPick();
+
+  let quickItemOptionArray: VscQuickPickItem[] = [];
+
+  let m365Account = await AppStudioTokenInstance.getStatus();
+  if(m365Account.status === "SignedIn"){
+    const accountInfo = m365Account.accountInfo;
+    const email = (accountInfo as any).upn ? (accountInfo as any).upn : undefined;
+    if(email !== undefined){
+      signOutM365Option.label = signOutM365Option.label.concat(email);
+    }
+    quickItemOptionArray.push(signOutM365Option);
+  }else{
+    quickItemOptionArray.push(signInM365Option);
+  }
+
+  let azureAccount = await AzureAccountManager.getStatus();
+  if (azureAccount.status === "SignedIn"){
+    const accountInfo = azureAccount.accountInfo;
+    const email = (accountInfo as any).upn ? (accountInfo as any).upn : undefined;
+    if(email !== undefined){
+      signOutAzureOption.label = signOutAzureOption.label.concat(email);
+    }
+    quickItemOptionArray.push(signOutAzureOption);
+    //quickItemOptionArray.push(selectSubscriptionOption);
+  }else{
+    quickItemOptionArray.push(signInAzureOption);
+  }
+
+  quickPick.items = quickItemOptionArray;
+  quickPick.onDidChangeSelection(selection => {
+    if (selection[0]) {
+      (selection[0] as VscQuickPickItem).function().catch(console.error);
+    }
+  });
+  quickPick.onDidHide(() => quickPick.dispose());
+  quickPick.show();
+}
+
+export async function signOutAzure() {
+  const result = await AzureAccountManager.signout();
+  if (result) {
+    await TreeViewManagerInstance.getTreeView('teamsfx-accounts')!.refresh([
+      {
+        commandId: "fx-extension.signinAzure",
+        label: StringResources.vsc.handlers.signInAzure,
+        contextValue: "signinAzure"
+      }
+    ]);
+    await TreeViewManagerInstance.getTreeView('teamsfx-accounts')!.remove([
+      {
+        commandId: "fx-extension.selectSubscription",
+        label: "",
+        parent: "fx-extension.signinAzure"
+      }
+    ]);
+  }
+}
+
+export async function signOutM365() {
+  let appstudioLogin: AppStudioTokenProvider = AppStudioTokenInstance;
+  const vscodeEnv = detectVsCodeEnv();
+  if (vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode) {
+    appstudioLogin = AppStudioCodeSpaceTokenInstance;
+  }
+  const result = await appstudioLogin.signout();
+  if (result) {
+    await TreeViewManagerInstance.getTreeView('teamsfx-accounts')!.refresh([
+      {
+        commandId: "fx-extension.signinM365",
+        label: StringResources.vsc.handlers.signIn365,
+        contextValue: "signinM365"
+      }
+    ]);
+  }
+}
+
+export async function signInAzure() {
+  vscode.commands.executeCommand("fx-extension.signinAzure");
+}
+
+export async function signInM365() {
+  vscode.commands.executeCommand("fx-extension.signinM365");
+}
+
+export async function selectSubscription() {
+  vscode.commands.executeCommand("fx-extension.specifySubscription");
+}
+
+export interface VscQuickPickItem extends QuickPickItem {
+
+  /**
+   * Current id of the option item.
+   */
+  id: string;
+
+  function: () => Promise<void>;
 }

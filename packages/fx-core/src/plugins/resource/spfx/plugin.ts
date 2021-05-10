@@ -212,12 +212,6 @@ export class SPFxPluginImpl {
   }
 
   public async preDeploy(ctx: PluginContext): Promise<Result<any, FxError>> {
-    await ctx.dialog?.communicate(
-      new DialogMsg(DialogType.Show, {
-        description: "[SPFx] Ensuring Tenant App Catalog.",
-        level: MsgLevel.Info,
-      })
-    );
 
     const progressHandler = await ProgressHelper.startPreDeployProgressHandler(ctx);
     try {

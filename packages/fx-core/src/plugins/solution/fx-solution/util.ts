@@ -17,6 +17,8 @@ import {
     err,
     ResultAsync
 } from "fx-api";
+import { SubscriptionClient } from "@azure/arm-subscriptions";
+import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 
 async function ask(description: string, dialog?: Dialog, defaultAnswer?: string): Promise<Result<string, FxError>> {
     const answer: string | undefined = (
@@ -99,4 +101,10 @@ export function getPluginContextConstructor(solutionCtx: SolutionContext): (plug
     return function(pluginIdentifier: string): PluginContext {
         return getPluginContext(solutionCtx, pluginIdentifier);
     };
+}
+
+export async function getSubsriptionDisplayName(azureToken: TokenCredentialsBase, subscriptionId: string): Promise<string | undefined> {
+    const client = new SubscriptionClient(azureToken);
+    const subscription = await client.subscriptions.get(subscriptionId);
+    return subscription.displayName;
 }

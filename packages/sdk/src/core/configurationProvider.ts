@@ -19,12 +19,13 @@ import { ErrorWithCode, ErrorCode, ErrorMessage } from "./errors";
 export let config: Configuration;
 
 /**
- * Initialize configuration from environment variables and set the global instance
- *
- * @beta
+ * Initialize configuration from environment variables or configuration object and set the global instance
  *
  * @param {Configuration} configuration - Optional configuration that overrides the default configuration values. The override depth is 1.
- * @throws {InvalidParameter} if configuration is not passed in when in browser environment
+ *
+ * @throws {@link ErrorCode|InvalidParameter} when configuration is not passed in browser environment
+ *
+ * @beta
  */
 export function loadConfiguration(configuration?: Configuration): void {
   internalLogger.info("load configuration");
@@ -64,7 +65,7 @@ export function loadConfiguration(configuration?: Configuration): void {
   } else {
     newResources = [
       {
-        // sql resource
+        // SQL resource
         type: ResourceType.SQL,
         name: defaultResourceName,
         properties: {
@@ -93,15 +94,15 @@ export function loadConfiguration(configuration?: Configuration): void {
 }
 
 /**
- * Gets configuration for a specific resource.
- *
- * @beta
- *
+ * Get configuration for a specific resource.
  * @param {ResourceType} resourceType - The type of resource
  * @param {string} resourceName - The name of resource, default value is "default".
  *
- * @returns ResourceConfiguration for target resource from global configuration instance.
- * @throws {InvalidConfiguration} if resource configuration with the specific type and name is not found
+ * @returns Resource configuration for target resource from global configuration instance.
+ *
+ * @throws {@link ErrorCode|InvalidConfiguration} when resource configuration with the specific type and name is not found
+ *
+ * @beta
  */
 export function getResourceConfiguration(
   resourceType: ResourceType,
@@ -127,12 +128,13 @@ export function getResourceConfiguration(
 }
 
 /**
- * Gets configuration for authentication.
+ * Get configuration for authentication.
+ *
+ * @returns Authentication configuration from global configuration instance, the value may be undefined if no authentication config exists in current environment.
+ *
+ * @throws {@link ErrorCode|InvalidConfiguration} when global configuration does not exist
  *
  * @beta
- *
- * @returns AuthenticationConfiguration from global configuration instance, the value may be undefined if no authentication config exists in current environment.
- * @throws {InvalidConfiguration} if global configuration does not exist
  */
 export function getAuthenticationConfiguration(): AuthenticationConfiguration | undefined {
   internalLogger.info("Get authentication configuration");

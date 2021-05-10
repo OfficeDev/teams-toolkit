@@ -4,6 +4,8 @@
 /**
  * Base class for SSO token payload
  * Payload claims can be found here: https://docs.microsoft.com/en-us/azure/active-directory/develop/id-tokens
+ *
+ * @internal
  */
 export interface SSOTokenInfoBase {
   aud: string;
@@ -24,6 +26,8 @@ export interface SSOTokenInfoBase {
 
 /**
  * SSO token v1
+ *
+ * @internal
  */
 export interface SSOTokenV2Info extends SSOTokenInfoBase {
   azp: string;
@@ -33,6 +37,8 @@ export interface SSOTokenV2Info extends SSOTokenInfoBase {
 
 /**
  * SSO token v2
+ *
+ * @internal
  */
 export interface SSOTokenV1Info extends SSOTokenInfoBase {
   acr: string;

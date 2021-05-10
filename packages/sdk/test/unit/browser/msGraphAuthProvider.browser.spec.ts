@@ -34,11 +34,11 @@ describe("MsGraphAuthProvider Tests - Browser", () => {
     });
   }
 
-  beforeEach(function () {
+  beforeEach(function() {
     loadDefaultConfig();
   });
 
-  it("create MsGraphAuthProvider instance should throw InvalidParameter error with invalid scope", function () {
+  it("create MsGraphAuthProvider instance should throw InvalidParameter error with invalid scope", function() {
     const credential = new TeamsUserCredential();
     const invalidScopes: any = [10, 20];
     expect(() => {
@@ -48,25 +48,25 @@ describe("MsGraphAuthProvider Tests - Browser", () => {
       .with.property("code", ErrorCode.InvalidParameter);
   });
 
-  it("create MsGraphAuthProvider instance should success with given scopes", async function () {
+  it("create MsGraphAuthProvider instance should success with given scopes", async function() {
     const credential = new TeamsUserCredential();
     const authProvider: any = new MsGraphAuthProvider(credential, scopes);
     assert.strictEqual(authProvider.scopes, scopes);
   });
 
-  it("create MsGraphAuthProvider instance should success with empty scope", async function () {
+  it("create MsGraphAuthProvider instance should success with empty scope", async function() {
     const credential = new TeamsUserCredential();
     const authProvider: any = new MsGraphAuthProvider(credential, emptyScope);
     assert.strictEqual(authProvider.scopes, defaultScope);
   });
 
-  it("create MsGraphAuthProvider instance should success without providing scope", async function () {
+  it("create MsGraphAuthProvider instance should success without providing scope", async function() {
     const credential = new TeamsUserCredential();
     const authProvider: any = new MsGraphAuthProvider(credential);
     assert.strictEqual(authProvider.scopes, defaultScope);
   });
 
-  it("getAccessToken should success with valid config", async function () {
+  it("getAccessToken should success with valid config", async function() {
     sinon.stub(TeamsUserCredential.prototype, "getToken").callsFake(
       (scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null> => {
         const token: AccessToken = {

@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -11,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Graph;
 using Microsoft.Graph.Auth;
 using Microsoft.Identity.Client;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.TeamsFx.SimpleAuth.Tests.Models;
 
 namespace Microsoft.TeamsFx.SimpleAuth.Tests.Helpers
@@ -56,6 +59,12 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.Helpers
                 // Make token for the aad app expire after 10 minutes
                 var policyId = await GetOrCreateShortTokenLifetimePolicy();
                 await ApplyPolicyToAadApp(policyId, TeamsAadInfo.Id);
+
+                using (var sha256 = SHA256.Create())
+                {
+                    var challengeBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(IntegrationTestSettings.CodeVerifier));
+                    IntegrationTestSettings.CodeChallenge = Base64UrlEncoder.Encode(challengeBytes);
+                }
 
                 Utilities.ConsentAndGetAuthorizationCode(IntegrationTestSettings.AuthorizeUrl, TeamsAadInfo.AppId,
                     IntegrationTestSettings.RedirectUri, "https://graph.microsoft.com/User.Read", IntegrationTestSettings.CodeChallenge,

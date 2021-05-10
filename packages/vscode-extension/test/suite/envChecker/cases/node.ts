@@ -10,6 +10,7 @@ import { TestLogger } from "../adapters/testLogger";
 import { TestTelemetry } from "../adapters/testTelemetry";
 import { ConfigFolderName } from "fx-api";
 import { isLinux } from "../../../../src/utils/commonUtils";
+import { AzureNodeChecker } from "../../../../src/debug/depsChecker/azureNodeChecker";
 
 const azureSupportedNodeVersions = ["10", "12", "14"];
 
@@ -28,7 +29,7 @@ function createTestChecker(
     nodeCheckerEnabled
   );
   const logger = new TestLogger();
-  const nodeChecker = new NodeChecker(azureSupportedNodeVersions, testAdapter, logger, new TestTelemetry());
+  const nodeChecker = new AzureNodeChecker(testAdapter, logger, new TestTelemetry());
   const depsChecker = new DepsChecker(logger, testAdapter, [nodeChecker]);
 
   return [depsChecker, nodeChecker];

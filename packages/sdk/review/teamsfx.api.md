@@ -50,6 +50,7 @@ export enum ErrorCode {
     InvalidParameter = "InvalidParameter",
     RuntimeNotSupported = "RuntimeNotSupported",
     ServiceError = "ServiceError",
+    TokenExpiredError = "TokenExpiredError",
     UiRequiredError = "UiRequiredError"
 }
 
@@ -75,9 +76,7 @@ export { GetTokenOptions }
 // @beta
 export function loadConfiguration(configuration?: Configuration): void;
 
-// Warning: (ae-incompatible-release-tags) The symbol "LogFunction" is marked as @public, but its signature references "LogLevel" which is marked as @beta
-//
-// @public
+// @beta
 export type LogFunction = (level: LogLevel, message: string) => void;
 
 // @beta
@@ -112,7 +111,7 @@ export class MsGraphAuthProvider implements AuthenticationProvider {
 export class OnBehalfOfUserCredential implements TokenCredential {
     constructor(ssoToken: string);
     getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null>;
-    getUserInfo(): Promise<UserInfo>;
+    getUserInfo(): UserInfo;
     }
 
 // @beta

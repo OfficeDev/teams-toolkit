@@ -56,7 +56,7 @@ export async function getAccessToken(
 /**
  * process.env.SDK_INTEGRATION_TEST_TEAMS_AAD_CLIENT_ID is the Test AAD app mocking Teams first party app.
  * This function mocks the sso token get from Teams
- * @returns sso token got from mocked Teams
+ * @returns SSO token got from mocked Teams
  */
 export async function getSsoTokenFromTeams(): Promise<string> {
   const missingConfigurations: string[] = [];

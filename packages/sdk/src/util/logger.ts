@@ -28,11 +28,13 @@ export interface Logger {
 
 /**
  * Log function for customized logging.
+ *
+ * @beta
  */
 export type LogFunction = (level: LogLevel, message: string) => void;
 
 /**
- * logging level.
+ * Log level.
  *
  * @beta
  */
@@ -69,7 +71,7 @@ export function setLogLevel(level: LogLevel): void {
 /**
  * Get log level.
  *
- * @returns log level
+ * @returns Log level
  *
  * @beta
  */
@@ -136,7 +138,7 @@ class InternalLogger {
 export const internalLogger: InternalLogger = new InternalLogger();
 
 /**
- * Update custom logger. Use the output function if it's set. Priority is higher than setLogFunction.
+ * Set custom logger. Use the output function if it's set. Priority is higher than setLogFunction.
  *
  * @param {Logger} logger - custom logger. If it's undefined, custom logger will be cleared.
  *
@@ -147,7 +149,7 @@ export function setLogger(logger?: Logger): void {
 }
 
 /**
- * Update custom log function. Use the function if it's set. Priority is lower than setLogger.
+ * Set custom log function. Use the function if it's set. Priority is lower than setLogger.
  *
  * @param {LogFunction} logFunction - custom log function. If it's undefined, custom log function will be cleared.
  *

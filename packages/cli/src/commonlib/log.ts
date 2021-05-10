@@ -90,6 +90,23 @@ export class CLILogProvider implements LogProvider {
     }
     return true;
   }
+
+  async necessaryLog(logLevel: LogLevel, message: string) {
+    switch (logLevel) {
+      case LogLevel.Trace:
+      case LogLevel.Debug:
+      case LogLevel.Info:
+        console.info(colors.green(message));
+        break;
+      case LogLevel.Warning:
+        console.warn(colors.yellow(message));
+        break;
+      case LogLevel.Error:
+      case LogLevel.Fatal:
+        console.error(colors.red(message));
+        break;
+    }
+  }
 }
 
 export default CLILogProvider.getInstance();

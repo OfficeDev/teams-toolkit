@@ -6,18 +6,20 @@ import { formatString } from "../util/utils";
 import { ErrorCode, ErrorMessage, ErrorWithCode } from "../core/errors";
 
 /**
- * Used when user is not involved.
+ * Represent Microsoft 365 tenant identity, and it is usually used when user is not involved.
  *
  * @remarks
- * Can only be used in server side code.
+ * Only works in in server side.
  *
  * @beta
  */
 export class M365TenantCredential implements TokenCredential {
   /**
-   * Constructor of ApplicationCredential
-   * @throws {RuntimeNotSupported} if runtime is nodeJS
+   * Constructor of M365TenantCredential.
    *
+   * @remarks
+   * Only works in in server side.
+   * @beta
    */
   constructor() {
     throw new ErrorWithCode(
@@ -27,12 +29,11 @@ export class M365TenantCredential implements TokenCredential {
   }
 
   /**
-   * Get access token for credential
+   * Get access token for credential.
    *
-   * @param {string | string[]} scopes - The list of scopes for which the token will have access. Should in the format of {resource uri}/.default.
-   * @param {GetTokenOptions} options - The options used to configure any requests this TokenCredential implementation might make.
-   * @throws {RuntimeNotSupported} if runtime is nodeJS
-   *
+   * @remarks
+   * Only works in in server side.
+   * @beta
    */
   async getToken(
     scopes: string | string[],

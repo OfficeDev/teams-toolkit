@@ -77,7 +77,7 @@ export class AadManager {
                 ]
             );
             return resolve(aliveAadApps.concat(deletedAadApps));
-        })
+        });
     }
 
     public async deleteAadAppById(id: string, retryTimes = 5) {

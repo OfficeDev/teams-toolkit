@@ -8,6 +8,9 @@ import { formatString } from "../util/utils";
 /**
  * Settings used to configure an TeamsBotSsoPrompt instance.
  *
+ * @remarks
+ * Only works in in server side.
+ *
  * @beta
  */
 export interface TeamsBotSsoPromptSettings {
@@ -33,7 +36,7 @@ export interface TeamsBotSsoPromptSettings {
 
 /**
  * Creates a new prompt that leverage Teams Single Sign On (SSO) support for bot to automatically sign in user and
- * help rechieve oauth token, asks the user to consent if needed.
+ * help receive oauth token, asks the user to consent if needed.
  *
  * @remarks
  * The prompt will attempt to retrieve the users current token of the desired scopes and store it in
@@ -45,7 +48,7 @@ export interface TeamsBotSsoPromptSettings {
  * @example
  * When used with your bots `DialogSet` you can simply add a new instance of the prompt as a named
  * dialog using `DialogSet.add()`. You can then start the prompt from a waterfall step using either
- * `DialogContext.beginDialog()` or `DialogContext.prompt()`. The user will be prompted to signin as
+ * `DialogContext.beginDialog()` or `DialogContext.prompt()`. The user will be prompted to sign in as
  * needed and their access token will be passed as an argument to the callers next waterfall step:
  *
  * ```JavaScript
@@ -57,20 +60,14 @@ export interface TeamsBotSsoPromptSettings {
  * const dialogState = convoState.createProperty('dialogState');
  * const dialogs = new DialogSet(dialogState);
  *
- * const config: Configuration = {
- *    loginUrl: loginUrl,
- *    clientId: clientId,
- *    clientSecret: clientSecret,
- *    tenantId: tenantId
- * };
+ * loadConfiguration();
  * dialogs.add(new TeamsBotSsoPrompt('TeamsBotSsoPrompt', {
- *    config: config
- *    scopes: '["User.Read"],
+ *    scopes: ["User.Read"],
  * }));
  *
  * dialogs.add(new WaterfallDialog('taskNeedingLogin', [
  *      async (step) => {
- *          return await step.beginDialog('loginPrompt');
+ *          return await step.beginDialog('TeamsBotSsoPrompt');
  *      },
  *      async (step) => {
  *          const token = step.result;
@@ -90,11 +87,13 @@ export interface TeamsBotSsoPromptSettings {
  */
 export class TeamsBotSsoPrompt {
   /**
-   * Creates a new TeamsBotSsoPrompt instance.
+   * Constructor of TeamsBotSsoPrompt.
    *
    * @param dialogId Unique ID of the dialog within its parent `DialogSet` or `ComponentDialog`.
    * @param settings Settings used to configure the prompt.
-   * @throws {RuntimeNotSupported} if runtime is browser
+   *
+   * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
+   * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
    *
    * @beta
    */
@@ -107,14 +106,17 @@ export class TeamsBotSsoPrompt {
 
   /**
    * Called when a prompt dialog is pushed onto the dialog stack and is being activated.
-   *
-   * @param dc The DialogContext for the current turn of the conversation.
-   * @returns A `Promise` representing the asynchronous operation.
-   * @throws {RuntimeNotSupported} if runtime is browser
-   *
    * @remarks
    * If the task is successful, the result indicates whether the prompt is still
    * active after the turn has been processed by the prompt.
+   *
+   * @param dc The DialogContext for the current turn of the conversation.
+   *
+   * @throws {@link ErrorCode|InvalidParameter} when timeout property in teams bot sso prompt settings is not number or is not positive.
+   * @throws {@link ErrorCode|ChannelNotSupported} when bot channel is not MS Teams.
+   * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
+   *
+   * @returns A `Promise` representing the asynchronous operation.
    *
    * @beta
    */
@@ -127,15 +129,19 @@ export class TeamsBotSsoPrompt {
 
   /**
    * Called when a prompt dialog is the active dialog and the user replied with a new activity.
-   * @param dc The DialogContext for the current turn of the conversation.
-   * @returns A `Promise` representing the asynchronous operation.
-   * @throws {RuntimeNotSupported} if runtime is browser
    *
    * @remarks
    * If the task is successful, the result indicates whether the dialog is still
    * active after the turn has been processed by the dialog.
    * The prompt generally continues to receive the user's replies until it accepts the
    * user's reply as valid input for the prompt.
+   *
+   * @param dc The DialogContext for the current turn of the conversation.
+   *
+   * @returns A `Promise` representing the asynchronous operation.
+   *
+   * @throws {@link ErrorCode|ChannelNotSupported} when bot channel is not MS Teams.
+   * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
    *
    * @beta
    */

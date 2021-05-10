@@ -10,7 +10,7 @@ import { validateScopesType } from "../util/utils";
 const defaultScope = "https://graph.microsoft.com/.default";
 
 /**
- * Microsoft Graph auth provider for Teams App Framework
+ * Microsoft Graph auth provider for Teams Framework
  *
  * @beta
  */
@@ -19,10 +19,12 @@ export class MsGraphAuthProvider implements AuthenticationProvider {
   private scopes: string | string[];
 
   /**
-   * Constructor
+   * Constructor of MsGraphAuthProvider.
    *
    * @param {TokenCredential} credential - Credential used to invoke Microsoft Graph APIs.
-   * @param {string | string[]} scopes - Required scope in token when invoking Microsoft Graph APIs.
+   * @param {string | string[]} scopes - The list of scopes for which the token will have access.
+   *
+   * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
    *
    * @returns An instance of MsGraphAuthProvider.
    *
@@ -48,9 +50,15 @@ export class MsGraphAuthProvider implements AuthenticationProvider {
   }
 
   /**
-   * Get access token for Microsoft Graph API requests
+   * Get access token for Microsoft Graph API requests.
    *
-   * @returns access token from the credential
+   * @throws {@link ErrorCode|InternalError} when get access token failed due to empty token or unknown other problems.
+   * @throws {@link ErrorCode|TokenExpiredError} when SSO token has already expired.
+   * @throws {@link ErrorCode|UiRequiredError} when need user consent to get access token.
+   * @throws {@link ErrorCode|ServiceError} when failed to get access token from simple auth or AAD server.
+   * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
+   *
+   * @returns Access token from the credential.
    *
    */
   public async getAccessToken(): Promise<string> {

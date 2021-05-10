@@ -4,6 +4,7 @@
 
 import * as constants from "./constants";
 import CLILogProvider from "./commonlib/log";
+import { LogLevel } from "fx-api";
 
 export class ProgressHandler {
   private totalSteps: number;
@@ -27,7 +28,7 @@ export class ProgressHandler {
   public async start(detail?: string) {
     this.currentStep = 0;
     this.detail = detail;
-    CLILogProvider.info(this.generateWholeMessage());
+    CLILogProvider.necessaryLog(LogLevel.Info, this.generateWholeMessage());
   }
 
   public async end() {
@@ -38,6 +39,6 @@ export class ProgressHandler {
     this.detail = detail;
     this.currentStep++;
     this.totalSteps = Math.max(this.currentStep, this.totalSteps);
-    CLILogProvider.info(this.generateWholeMessage());
+    CLILogProvider.necessaryLog(LogLevel.Info, this.generateWholeMessage());
   }
 }

@@ -220,7 +220,6 @@ export default class QuickStart extends React.Component<any, any>{
 
     receiveMessage = (event: any) => {
         const message = event.data.message;
-        console.log(`Received message: ${JSON.stringify(message)}`);
 
         switch (message) {
             case 'm365AccountChange':

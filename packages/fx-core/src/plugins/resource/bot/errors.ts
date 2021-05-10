@@ -45,19 +45,6 @@ export class PreconditionError extends PluginError {
     }
 }
 
-export class DeployWithoutProvisionError extends PluginError {
-    constructor() {
-        super(
-            ErrorType.User,
-            ErrorNames.PRECONDITION_ERROR,
-            Messages.DoSthBeforeSth("provision", "running deploy"),
-            [
-                "Please run provision first",
-            ]
-        );
-    }
-}
-
 export class SomethingMissingError extends PreconditionError {
     constructor(something: string) {
         super(

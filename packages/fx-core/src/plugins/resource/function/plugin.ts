@@ -14,13 +14,11 @@ import {
     InitAzureSDKError,
     InstallNpmPackageError,
     InstallTeamsfxBindingError,
-    NoFunctionNameFromAnswerError,
-    NotProvisionError,
-    NotScaffoldError,
     ProvisionError,
     ValidationError,
     runWithErrorCatchAndThrow,
-    FunctionNameConflictError
+    FunctionNameConflictError,
+    FetchConfigError
 } from "./resources/errors";
 import {
     DefaultProvisionConfigs, DefaultValues, DependentPluginInfo,
@@ -39,9 +37,8 @@ import { FxResult, FunctionPluginResultFactory as ResultFactory } from "./result
 import { Logger } from "./utils/logger";
 import { PostProvisionSteps, PreDeploySteps, ProvisionSteps, StepGroup, step } from "./resources/steps";
 import { functionNameQuestion } from "./questions";
-import { dotnetHelpLink, Messages } from "./utils/depsChecker/common";
 import { DotnetChecker } from "./utils/depsChecker/dotnetChecker";
-import { isLinux } from "./utils/depsChecker/common";
+import { Messages, isLinux, dotnetManualInstallHelpLink } from "./utils/depsChecker/common";
 import { DepsCheckerError } from "./utils/depsChecker/errors";
 import { getNodeVersion } from "./utils/node-version";
 import { funcPluginAdapter } from "./utils/depsChecker/funcPluginAdapter";
@@ -68,18 +65,12 @@ export interface FunctionConfig {
     appServicePlanName?: string;
     functionEndpoint?: string;
 
-    /* States */
-    scaffoldDone: boolean;
-    provisionDone: boolean;
-
     /* Intermediate  */
     skipDeploy: boolean;
 }
 
 export class FunctionPluginImpl {
     config: FunctionConfig = {
-        scaffoldDone: false,
-        provisionDone: false,
         skipDeploy: false
     };
 
@@ -96,8 +87,6 @@ export class FunctionPluginImpl {
         this.config.functionAppName = ctx.config.get(FunctionConfigKey.functionAppName) as string;
         this.config.storageAccountName = ctx.config.get(FunctionConfigKey.storageAccountName) as string;
         this.config.appServicePlanName = ctx.config.get(FunctionConfigKey.appServicePlanName) as string;
-        this.config.scaffoldDone = ctx.config.get(FunctionConfigKey.scaffoldDone) === true.toString();
-        this.config.provisionDone = ctx.config.get(FunctionConfigKey.provisionDone) === true.toString();
 
         /* Always validate after sync for safety and security. */
         this.validateConfig();
@@ -220,7 +209,6 @@ export class FunctionPluginImpl {
             this.config.defaultFunctionName = this.config.functionName;
         }
 
-        this.config.scaffoldDone = true;
         this.syncConfigToContext(ctx);
 
         return ResultFactory.Success();
@@ -228,10 +216,6 @@ export class FunctionPluginImpl {
 
     public async preProvision(ctx: PluginContext): Promise<FxResult> {
         this.syncConfigFromContext(ctx);
-
-        if (!this.config.scaffoldDone) {
-            throw new NotScaffoldError();
-        }
 
         if (!this.config.functionAppName || !this.config.storageAccountName || !this.config.appServicePlanName) {
             const teamsAppName: string = ctx.app.name.short;
@@ -420,7 +404,6 @@ export class FunctionPluginImpl {
         }
         Logger.info(InfoMessages.functionAppAuthSettingsUpdated);
 
-        this.config.provisionDone = true;
         this.syncConfigToContext(ctx);
 
         return ResultFactory.Success();
@@ -428,14 +411,6 @@ export class FunctionPluginImpl {
 
     public async preDeploy(ctx: PluginContext): Promise<FxResult> {
         this.syncConfigFromContext(ctx);
-
-        if (!this.config.scaffoldDone) {
-            throw new NotScaffoldError();
-        }
-
-        if (!this.config.provisionDone) {
-            throw new NotProvisionError();
-        }
 
         const workingPath: string = this.getFunctionProjectRootPath(ctx);
         const functionLanguage: FunctionLanguage = this.checkAndGet(this.config.functionLanguage, FunctionConfigKey.functionLanguage);
@@ -449,7 +424,7 @@ export class FunctionPluginImpl {
         }
 
         // NOTE: make sure this step is before using `dotnet` command if you refactor this code.
-        await this.handleDotnetChecker();
+        await this.handleDotnetChecker(ctx);
 
         await runWithErrorCatchAndThrow(new InstallTeamsfxBindingError(), async () =>
             await step(StepGroup.PreDeployStepGroup, PreDeploySteps.installTeamsfxBinding, async () =>
@@ -499,7 +474,7 @@ export class FunctionPluginImpl {
         if (v) {
             return v;
         }
-        throw new ValidationError(key);
+        throw new FetchConfigError(key);
     }
 
     public isPluginEnabled(ctx: PluginContext, plugin: string): boolean {
@@ -596,29 +571,38 @@ export class FunctionPluginImpl {
         return undefined;
     }
 
-    private async handleDotnetChecker(): Promise<void> {
-        await step(StepGroup.PreDeployStepGroup, PreDeploySteps.dotnetInstall, async () => {
-            const dotnetChecker = new DotnetChecker(funcPluginAdapter, funcPluginLogger, funcPluginTelemetry);
-            try {
-                if (await dotnetChecker.isInstalled()) {
+    private async handleDotnetChecker(ctx: PluginContext): Promise<void> {
+        try {
+            await step(StepGroup.PreDeployStepGroup, PreDeploySteps.dotnetInstall, async () => {
+                const dotnetChecker = new DotnetChecker(funcPluginAdapter, funcPluginLogger, funcPluginTelemetry);
+                try {
+                    if (await dotnetChecker.isInstalled()) {
+                        return;
+                    }
+                } catch (error) {
+                    funcPluginLogger.debug(InfoMessages.failedToCheckDotnet(error));
+                    funcPluginAdapter.handleDotnetError(error);
                     return;
                 }
-            } catch (error) {
-                funcPluginAdapter.handleDotnetError(error);
-                return;
-            }
 
-            if (isLinux()) {
-                // TODO: handle linux installation
-                funcPluginAdapter.handleDotnetError(new DepsCheckerError(Messages.defaultErrorMessage, dotnetHelpLink));
-                return;
-            }
+                if (isLinux()) {
+                    // TODO: handle linux installation
+                  if(!await funcPluginAdapter.handleDotnetForLinux(ctx, dotnetChecker)) {
+                    funcPluginAdapter.handleDotnetError(new DepsCheckerError(Messages.defaultErrorMessage, dotnetManualInstallHelpLink));
+                  }
+                  return;
+                }
 
-            try {
-                await dotnetChecker.install();
-            } catch (error) {
-                funcPluginAdapter.handleDotnetError(error);
-            }
-        });
+                try {
+                    await dotnetChecker.install();
+                } catch (error) {
+                    await funcPluginLogger.printDetailLog();
+                    funcPluginLogger.error(InfoMessages.failedToInstallDotnet(error));
+                    funcPluginAdapter.handleDotnetError(error);
+                }
+            });
+        } finally {
+            funcPluginLogger.cleanup();
+        }
     }
 }

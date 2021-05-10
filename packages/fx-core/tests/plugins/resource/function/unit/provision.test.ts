@@ -50,8 +50,7 @@ const context: any = {
         }
     },
     config: new Map<string, string>([
-        ["nodeVersion", NodeVersion.Version14],
-        ["scaffoldDone", "true"]
+        ["nodeVersion", NodeVersion.Version14]
     ]),
     projectSettings: {
         solutionSettings: {

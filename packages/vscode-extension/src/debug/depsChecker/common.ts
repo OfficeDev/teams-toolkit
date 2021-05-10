@@ -35,12 +35,13 @@ export function isLinux(): boolean {
 // help links
 export const defaultHelpLink = "https://aka.ms/teamsfx-envchecker-help";
 
-export const nodeNotFoundHelpLink = `${defaultHelpLink}#the-toolkit-cannot-find-nodejs-on-your-machine`;
-export const nodeNotSupportedHelpLink = `${defaultHelpLink}#current-installed-nodejs-is-not-in-the-supported-version-list`;
+export const nodeNotFoundHelpLink = `${defaultHelpLink}#nodenotfound`;
+export const nodeNotSupportedForAzureHelpLink = `${defaultHelpLink}#nodenotsupportedazure-hosting`;
+export const nodeNotSupportedForSPFxHelpLink = `${defaultHelpLink}#nodenotsupportedspfx-hosting`;
 
-export const dotnetExplanationHelpLink = `${defaultHelpLink}#why-net-sdk-is-needed`;
-export const dotnetFailToInstallHelpLink = `${defaultHelpLink}#failed-to-install-net-core-sdk-v31`;
-export const dotnetManualInstallHelpLink = `${defaultHelpLink}#linux-only-the-toolkit-cannot-find-net-5-or-net-core-31-on-your-machine-please-install-it-manually`;
+export const dotnetExplanationHelpLink = `${defaultHelpLink}#overall`;
+export const dotnetFailToInstallHelpLink = `${defaultHelpLink}#failtoinstalldotnet`;
+export const dotnetManualInstallHelpLink = `${defaultHelpLink}#dotnetnotfound`;
 
 export const Messages = {
   learnMoreButtonText: "Learn more",
@@ -48,6 +49,8 @@ export const Messages = {
 
   defaultErrorMessage: "Please install the required dependencies manually.",
 
+  // since FuncToolChecker is disabled and azure functions core tools will be installed as devDependencies now,
+  // below messages won't be displayed to end user.
   startInstallFunctionCoreTool: `Downloading and installing @NameVersion.`,
   finishInstallFunctionCoreTool: `Successfully installed @NameVersion.`,
   needReplaceWithFuncCoreToolV3: `You must replace with @NameVersion to debug your local functions.`,

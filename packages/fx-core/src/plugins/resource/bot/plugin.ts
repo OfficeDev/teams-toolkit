@@ -18,7 +18,7 @@ import * as fs from "fs-extra";
 import { CommonStrings, PluginBot, ConfigNames } from "./resources/strings";
 import { DialogUtils } from "./utils/dialog";
 import {
-    CheckThrowSomethingMissing, DeployWithoutProvisionError,
+    CheckThrowSomethingMissing,
     PackDirExistenceError,
     PreconditionError, SomethingMissingError, UserInputsError,
     ValidationError
@@ -174,8 +174,6 @@ export class TeamsBotImpl {
         await handler?.next(ProgressBarConstants.PROVISION_STEP_WEB_APP);
         // 2. Provision azure web app for hosting bot project.
         await this.provisionWebApp();
-
-        this.config.provision.provisioned = true;
 
         this.config.saveConfigIntoContext(context);
         this.telemetryStepOutSuccess(LifecycleFuncNames.PROVISION);
@@ -340,10 +338,6 @@ export class TeamsBotImpl {
         await this.config.restoreConfigFromContext(context);
         this.telemetryStepIn(LifecycleFuncNames.PRE_DEPLOY);
         Logger.info(Messages.PreDeployingBot);
-
-        if (!this.config.provision.provisioned) {
-            throw new DeployWithoutProvisionError();
-        }
 
         // Preconditions checking.
         const packDir = this.config.scaffold.workingDir!;

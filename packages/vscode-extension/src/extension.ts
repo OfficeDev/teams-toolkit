@@ -170,6 +170,12 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(azureAccountSettingsCmd);
   
+  const cmpAccountsCmd = vscode.commands.registerCommand(
+    "fx-extension.cmpAccounts",
+    handlers.cmpAccountsHandler
+  );
+  context.subscriptions.push(cmpAccountsCmd);
+
   // Register debug configuration provider
   const debugProvider: TeamsfxDebugProvider = new TeamsfxDebugProvider();
   context.subscriptions.push(

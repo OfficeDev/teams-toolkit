@@ -7,7 +7,8 @@ import {
   ErrorCode,
   ErrorWithCode,
   loadConfiguration,
-  OnBehalfOfUserCredential
+  OnBehalfOfUserCredential,
+  UserInfo
 } from "../../../../src";
 import sinon from "sinon";
 import mockedEnv from "mocked-env";
@@ -35,6 +36,9 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
   const now = Math.floor(Date.now() / 1000);
   const timeInterval = 4000;
   const ssoTokenExp = now + timeInterval;
+  const testDisplayName = "Teams Framework Unit Test";
+  const testObjectId = "11111111-2222-3333-4444-555555555555";
+  const testPreferredUserName = "test@microsoft.com";
   const ssoToken = jwtBuilder({
     algorithm: "HS256",
     secret: "super-secret",
@@ -44,9 +48,9 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
     nbf: now,
     exp: timeInterval,
     aio: "test_aio",
-    name: "Teams Framework Unit Test",
-    oid: "11111111-2222-3333-4444-555555555555",
-    preferred_username: "test@microsoft.com",
+    name: testDisplayName,
+    oid: testObjectId,
+    preferred_username: testPreferredUserName,
     rh: "test_rh",
     scp: "access_as_user",
     sub: "test_sub",
@@ -254,5 +258,14 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
     assert.isTrue(
       errorResult.message!.indexOf("Failed to acquire access token on behalf of user: ") >= 0
     );
+  });
+
+  it("getUserInfo should succeed", async function() {
+    loadConfiguration();
+    const oboCredential = new OnBehalfOfUserCredential(ssoToken);
+    const userinfo: UserInfo = oboCredential.getUserInfo();
+    assert.strictEqual(userinfo.displayName, testDisplayName);
+    assert.strictEqual(userinfo.objectId, testObjectId);
+    assert.strictEqual(userinfo.preferredUserName, testPreferredUserName);
   });
 });

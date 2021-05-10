@@ -49,7 +49,7 @@ export class VSCodeTelemetry implements IDepsTelemetry {
   ): void {
     const error = new SystemError(
       eventName,
-      errorMessage,
+      `errorMsg=${errorMessage},errorStack=${errorStack}`,
       this._telemetryComponentType,
       errorStack
     );

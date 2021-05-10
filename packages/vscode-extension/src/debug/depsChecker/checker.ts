@@ -9,7 +9,7 @@
 // to copy you changes to function plugin.
 
 import { isLinux, Messages, defaultHelpLink, DepsCheckerEvent, dotnetManualInstallHelpLink } from "./common";
-import { DepsCheckerError, NodeNotFoundError, NotSupportedNodeError } from "./errors";
+import { DepsCheckerError, NodeNotFoundError, NodeNotSupportedError } from "./errors";
 
 export interface IDepsChecker {
   isEnabled(): Promise<boolean>;
@@ -41,6 +41,9 @@ export interface IDepsLogger {
   info(message: string): Promise<boolean>;
   warning(message: string): Promise<boolean>;
   error(message: string): Promise<boolean>;
+
+  printDetailLog(): Promise<void>;
+  cleanup(): void;
 }
 
 export interface IDepsTelemetry {
@@ -81,11 +84,13 @@ export class DepsChecker {
 
     // go to next step when no need to check.
     if (validCheckers.length === 0) {
+      this._logger.cleanup();
       return shouldContinue;
     }
 
     if (isLinux()) {
       const confirmMessage = await this.generateMsg(validCheckers);
+      this._logger.cleanup();
       return await this._adapter.displayContinueWithLearnMore(confirmMessage, dotnetManualInstallHelpLink);
     }
 
@@ -94,13 +99,16 @@ export class DepsChecker {
       try {
         await checker.install();
       } catch (error) {
-        await this._logger.debug(`Failed to install '${checker.constructor.name}', error = '${error}'`)
+        await this._logger.printDetailLog();
+        this._logger.cleanup();
+        await this._logger.error(`Failed to install '${checker.constructor.name}', error = '${error}'`)
         const continueNext = await this.handleError(error);
         if (!continueNext) {
           return !shouldContinue;
         }
       }
     }
+    this._logger.cleanup();
 
     return shouldContinue;
   }
@@ -136,10 +144,10 @@ export class DepsChecker {
   }
 
   private async handleError(error: Error): Promise<boolean> {
-    if (error instanceof NotSupportedNodeError) {
+    if (error instanceof NodeNotSupportedError) {
       return await this._adapter.displayContinueWithLearnMore(
         error.message,
-        (error as NotSupportedNodeError).helpLink
+        (error as NodeNotSupportedError).helpLink
       );
     } else if (error instanceof NodeNotFoundError) {
       return await this._adapter.displayLearnMore(

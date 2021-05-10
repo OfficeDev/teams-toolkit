@@ -64,9 +64,9 @@ export default async function run(
     return {
       status: 500,
       body: {
-        error: 'Failed to load app configuration.'
+        error: "Failed to load app configuration."
       }
-    }
+    };
   }
 
   // Prepare access token.
@@ -77,7 +77,7 @@ export default async function run(
       body: {
         error: "No access token was found in request header."
       }
-    }
+    };
   }
 
   // Construct credential.
@@ -90,10 +90,10 @@ export default async function run(
       status: 500,
       body: {
         error:
-          'Failed to obtain on-behalf-of credential using your accessToken. ' +
-          'Ensure your function app is configured with the right Azure AD App registration.'
+          "Failed to obtain on-behalf-of credential using your accessToken. " +
+          "Ensure your function app is configured with the right Azure AD App registration."
       }
-    }
+    };
   }
 
   // Query user's information from the access token.
@@ -102,7 +102,7 @@ export default async function run(
     if (currentUser && currentUser.displayName) {
       res.body.userInfoMessage = `User display name is ${currentUser.displayName}.`;
     } else {
-      res.body.userInfoMessage = `No user information was found in access token.`;
+      res.body.userInfoMessage = "No user information was found in access token.";
     }
   } catch(e) {
     context.log.error(e);
@@ -111,7 +111,7 @@ export default async function run(
       body: {
         error: "Access token is invalid."
       }
-    }
+    };
   }
 
   // Create a graph client to access user's Microsoft 365 data after user has consented.
@@ -124,9 +124,9 @@ export default async function run(
     return {
       status: 500,
       body: {
-        error: 'Failed to retrieve user profile from Microsoft Graph. The application may not be authorized.'
+        error: "Failed to retrieve user profile from Microsoft Graph. The application may not be authorized."
       }
-    }
+    };
   }
 
   return res;

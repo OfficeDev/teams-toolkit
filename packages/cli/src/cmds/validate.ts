@@ -11,11 +11,11 @@ import * as constants from "../constants";
 import { YargsCommand } from "../yargsCommand";
 import { getParamJson } from "../utils";
 
-export default class Test extends YargsCommand {
-  public readonly commandHead = `test`;
+export default class Validate extends YargsCommand {
+  public readonly commandHead = `validate`;
   public readonly command = `${this.commandHead}`;
-  public readonly description = "Test and validate the current application.";
-  public readonly paramPath = constants.testParamPath;
+  public readonly description = "Validate the current application.";
+  public readonly paramPath = constants.validateParamPath;
 
   public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
 

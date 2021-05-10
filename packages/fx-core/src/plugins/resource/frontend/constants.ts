@@ -18,14 +18,13 @@ export class Constants {
     static FrontendSuffix = "fe";
 
     static EmptyString = "";
-    static EmptyListString = "[]";
 
     static DayInMS = 1000 * 60 * 60 * 24;
     static SasTokenLifetime = Constants.DayInMS * 3;
 
-    static RequestRetryCounts = 3;
-    static RequestTimeoutInMS = 10 * 1000;
-    static ScaffoldRetryCounts = 1;
+    static RequestTryCounts = 3;
+    static RequestTimeoutInMS = 20 * 1000;
+    static ScaffoldTryCounts = 1;
 }
 
 export class FrontendPluginInfo {

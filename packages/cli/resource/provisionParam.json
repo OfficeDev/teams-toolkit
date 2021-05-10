@@ -11,7 +11,7 @@
         "data": {
             "type": "text",
             "name": "subscription",
-            "description": "Please select a subscription"
+            "description": "Select a subscription"
         }
     },
     {
@@ -56,7 +56,8 @@
                 "true",
                 "false"
             ],
-            "default": "true"
+            "default": "true",
+            "hide": true
         }
     }
 ]

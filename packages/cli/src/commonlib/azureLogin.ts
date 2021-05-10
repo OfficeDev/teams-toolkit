@@ -254,7 +254,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     if (AzureAccountManager.statusChange !== undefined) {
       await AzureAccountManager.statusChange("SignedOut", undefined, undefined);
     }
-    AzureAccountManager.codeFlowInstance.logout();
+    await AzureAccountManager.codeFlowInstance.logout();
     await this.notifyStatus();
     return Promise.resolve(true);
   }
@@ -277,8 +277,11 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   async getStatus(): Promise<LoginStatus> {
+    if (!AzureAccountManager.codeFlowInstance.account) {
+      await AzureAccountManager.codeFlowInstance.reloadCache();
+    }
     if (AzureAccountManager.codeFlowInstance.account) {
-      const credential = await this.doGetAccountCredentialAsync();
+      const credential = await this.getAccountCredentialAsync();
       const token = await credential?.getToken();
       const accountJson = await this.getJsonObject();
       return Promise.resolve({ status: signedIn, token: token?.accessToken, accountInfo: accountJson });

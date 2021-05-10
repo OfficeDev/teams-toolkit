@@ -8,8 +8,12 @@ import { internalLogger } from "./logger";
 
 /**
  * Parse jwt token payload
+ * 
  * @param token
- * @returns payload object
+ * 
+ * @returns Payload object
+ * 
+ * @internal
  */
 export function parseJwt(token: string): SSOTokenInfoBase {
   try {
@@ -29,6 +33,9 @@ export function parseJwt(token: string): SSOTokenInfoBase {
   }
 }
 
+/**
+ * @internal
+ */
 export function getUserInfoFromSsoToken(ssoToken: string): UserInfo {
   if (!ssoToken) {
     const errorMsg = "SSO token is undefined.";
@@ -61,9 +68,9 @@ export function getUserInfoFromSsoToken(ssoToken: string): UserInfo {
  *
  * @param str string template
  * @param replacements replacement string array
- * @returns formatted string
+ * @returns Formatted string
  *
- * @beta
+ * @internal
  */
 export function formatString(str: string, ...replacements: string[]): string {
   const args = replacements;
@@ -72,6 +79,9 @@ export function formatString(str: string, ...replacements: string[]): string {
   });
 }
 
+/**
+ * @internal
+ */
 export function validateScopesType(value: any): void {
   // string
   if (typeof value === "string" || value instanceof String) {

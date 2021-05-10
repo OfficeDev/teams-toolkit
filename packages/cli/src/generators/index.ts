@@ -18,7 +18,7 @@ import CLILogProvider from "../commonlib/log";
 import * as constants from "../constants";
 import { CapabilityAddBotGenerator, CapabilityAddTabGenerator, CapabilityAddMessageExtensionGenerator } from "./capabilityAdd";
 
-CLILogProvider.setLogLevel(constants.CLILogLevel.debug);
+CLILogProvider.setLogLevel(constants.CLILogLevel.verbose);
 
 const execAsync = promisify(exec);
 

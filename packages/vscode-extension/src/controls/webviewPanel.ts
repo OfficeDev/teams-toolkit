@@ -222,9 +222,6 @@ export class WebviewPanel {
               const panelType = '${panelType}';
               const isSupportedNode = ${this.isValidNode()};
               const isMacPlatform = ${isMacOS()};
-              window.onload = function() {
-                console.log('Ready to accept data.');
-              };
             </script>
             <script nonce="${nonce}"  type="module" src="${scriptUri}"></script>
           </body>
@@ -241,21 +238,27 @@ export class WebviewPanel {
   }
 
   isValidNode = () => {
-    const supportedVersions = ["10", "12", "14"];
-    const output = execSync("node --version");
-    const regex = /v(?<major_version>\d+)\.(?<minor_version>\d+)\.(?<patch_version>\d+)/gm;
-
-    const match = regex.exec(output.toString());
-    if (!match) {
-      return false;
+    try{
+      const supportedVersions = ["10", "12", "14"];
+      const output = execSync("node --version");
+      const regex = /v(?<major_version>\d+)\.(?<minor_version>\d+)\.(?<patch_version>\d+)/gm;
+  
+      const match = regex.exec(output.toString());
+      if (!match) {
+        return false;
+      }
+  
+      const majorVersion = match.groups?.major_version;
+      if (!majorVersion) {
+        return false;
+      }
+  
+      return supportedVersions.includes(majorVersion);
     }
+    catch(e){
 
-    const majorVersion = match.groups?.major_version;
-    if (!majorVersion) {
-      return false;
     }
-
-    return supportedVersions.includes(majorVersion);
+    return false;
   }
 
   public dispose() {

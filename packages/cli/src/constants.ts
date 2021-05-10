@@ -34,7 +34,7 @@ export const provisionParamPath = path.resolve(paramFolder, "provisionParam.json
 export const deployParamPath = path.resolve(paramFolder, "deployParam.json");
 export const publishParamPath = path.resolve(paramFolder, "publishParam.json");
 export const buildParamPath = path.resolve(paramFolder, "buildParam.json");
-export const testParamPath = path.resolve(paramFolder, "testParam.json");
+export const validateParamPath = path.resolve(paramFolder, "validateParam.json");
 
 export const RootFolderNode = new QTreeNode({
   type: NodeType.folder,

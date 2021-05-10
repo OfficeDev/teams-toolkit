@@ -2,7 +2,7 @@
   "name": "teamsfx-extension",
   "displayName": "Teams Toolkit",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "2.0.0-alpha.19",
+  "version": "2.0.1-alpha.1",
   "publisher": "Microsoft",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -171,6 +171,10 @@
         "command": "fx-extension.specifySubscription",
         "title": "Specify subscription",
         "icon": "$(list-selection)"
+      },
+      {
+        "command": "fx-extension.cmpAccounts",
+        "title": "Teams: Accounts"
       },
       {
         "command": "fx-extension.openWelcome",
@@ -515,8 +519,8 @@
     "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
-    "fx-api": "^1.1.1-alpha.11",
-    "fx-core": "^1.1.1-alpha.11",
+    "fx-api": "^1.1.2-alpha.1",
+    "fx-core": "^1.1.2-alpha.1",
     "jsonschema": "^1.4.0",
     "opn": "^6.0.0",
     "sudo-prompt": "^9.2.1",

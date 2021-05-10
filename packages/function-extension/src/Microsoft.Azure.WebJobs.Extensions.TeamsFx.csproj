@@ -2,6 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <CodeAnalysisRuleSet>$(SolutionDir)\ruleset\AllInOne.ruleset</CodeAnalysisRuleSet>
+	  <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <LangVersion>8.0</LangVersion>
     <AssemblyName>Microsoft.Azure.WebJobs.Extensions.TeamsFx</AssemblyName>
     <RootNamespace>Microsoft.Azure.WebJobs.Extensions.TeamsFx</RootNamespace>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
@@ -19,6 +22,10 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="JWT" Version="7.2.2" />
     <PackageReference Include="Microsoft.Azure.WebJobs" Version="3.0.22" />
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.Identity.Client" Version="4.22.0" />
   </ItemGroup>
 

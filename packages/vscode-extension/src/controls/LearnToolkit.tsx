@@ -92,7 +92,6 @@ export default class LearnToolkit extends React.Component<any, any>{
 
     receiveMessage = (event: any) => {
         const message = event.data.message;
-        console.log(`Received message: ${JSON.stringify(message)}`);
 
         switch (message) {
             default:

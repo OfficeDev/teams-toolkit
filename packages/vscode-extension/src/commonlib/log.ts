@@ -63,7 +63,6 @@ export class VsCodeLogProvider implements LogProvider {
       this.outputChannel.appendLine(`[${dateString}] [${LogLevel[logLevel]}] - ${message}`);
       return true;
     } catch (e) {
-      console.log(e);
       return false;
     }
   }

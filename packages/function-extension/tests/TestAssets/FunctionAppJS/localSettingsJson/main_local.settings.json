@@ -3,10 +3,10 @@
   "Values": {
     "AzureWebJobsStorage": "",
     "FUNCTIONS_WORKER_RUNTIME": "node",
-    "M365_CLIENT_ID": "4c7c4582-ac3d-4097-97bb-f818a91b60d9",
+    "M365_CLIENT_ID": "__CLIENT_ID__",
     "M365_CLIENT_SECRET": "__CLIENT_SECRET__",
-    "ALLOWED_APP_IDS": "6c7b6e6f-242a-42d0-ae07-823434beb336;98de5138-0f72-4b1b-a1a9-f28060d22837",
-    "M365_AUTHORITY_HOST": "https://login.microsoftonline.com",
-    "M365_TENANT_ID": "546a2d59-2038-4a68-acff-f0239a409516"
+    "ALLOWED_APP_IDS": "__ALLOWED_APP_CLIENT_ID__;00000000-0000-0000-0000-000000000000",
+    "M365_AUTHORITY_HOST": "__AUTHORITY_HOST__",
+    "M365_TENANT_ID": "__TENANT_ID__"
   }
 }

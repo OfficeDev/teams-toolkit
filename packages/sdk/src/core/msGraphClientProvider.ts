@@ -7,7 +7,7 @@ import { MsGraphAuthProvider } from "./msGraphAuthProvider";
 import { internalLogger } from "../util/logger";
 
 /**
- * Get Microsoft graph client, will throw {@link ErrorWithCode} if get GraphClient failed.
+ * Get Microsoft graph client.
  *
  * @example
  * Get Microsoft graph client by TokenCredential
@@ -48,10 +48,12 @@ import { internalLogger } from "../util/logger";
  * }
  * ```
  *
- * @param {TokenCredential} credential - token credential instance
+ * @param {TokenCredential} credential - token credential instance.
  * @param scopes - The array of Microsoft Token scope of access. Default value is `[.default]`.
  *
- * @returns Graph client with specified access.
+ * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
+ * 
+ * @returns Graph client with specified scopes.
  *
  * @beta
  */

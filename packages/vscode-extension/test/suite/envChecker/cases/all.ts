@@ -12,6 +12,7 @@ import { TestLogger } from "../adapters/testLogger";
 import { TestTelemetry } from "../adapters/testTelemetry";
 import { commandExistsInPath } from "../utils/common";
 import { isLinux } from "../../../../src/debug/depsChecker/common";
+import { AzureNodeChecker } from "../../../../src/debug/depsChecker/azureNodeChecker";
 
 const azureSupportedNodeVersions = ["10", "12", "14"];
 
@@ -31,7 +32,7 @@ function createTestChecker(
   );
   const logger = new TestLogger();
   const telemetry = new TestTelemetry();
-  const nodeChecker = new NodeChecker(azureSupportedNodeVersions, testAdapter, logger, telemetry);
+  const nodeChecker = new AzureNodeChecker(testAdapter, logger, telemetry);
   const dotnetChecker = new DotnetChecker(testAdapter, logger, telemetry);
   const depsChecker = new DepsChecker(logger, testAdapter, [dotnetChecker]);
 

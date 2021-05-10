@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 /**
- * Error code to help debugging.
+ * Error code to trace the error types.
  * @beta
  */
 export enum ErrorCode {
@@ -12,7 +12,7 @@ export enum ErrorCode {
   InvalidParameter = "InvalidParameter",
 
   /**
-   * Invalid configuration.
+   * Invalid configuration error.
    */
   InvalidConfiguration = "InvalidConfiguration",
 
@@ -27,36 +27,39 @@ export enum ErrorCode {
   ChannelNotSupported = "ChannelNotSupported",
 
   /**
-   * Runtime is not supported.
+   * Runtime is not supported error.
    */
   RuntimeNotSupported = "RuntimeNotSupported",
 
   /**
-   * User failed to finish the AAD consent flow.
+   * User failed to finish the AAD consent flow failed.
    */
   ConsentFailed = "ConsentFailed",
 
   /**
-   * The user or administrator has not consented to use the application.
+   * The user or administrator has not consented to use the application error.
    */
   UiRequiredError = "UiRequiredError",
 
   /**
-   * Token is not within its valid time range.
+   * Token is not within its valid time range error.
    */
   TokenExpiredError = "TokenExpiredError",
 
   /**
-   * Call service (AAD or simple authentication server) failed
+   * Call service (AAD or simple authentication server) failed.
    */
   ServiceError = "ServiceError",
 
   /**
-   * operation failed error.
+   * Operation failed.
    */
   FailedOperation = "FailedOperation"
 }
 
+/**
+ * @internal
+ */
 export class ErrorMessage {
   // InvalidConfiguration Error
   static readonly InvalidConfiguration = "{0} in configuration is invalid: {1}.";
@@ -80,23 +83,25 @@ export class ErrorMessage {
 }
 
 /**
- * Error class with code and message thrown by the SDK library.
+ * Error class with code and message thrown by the SDK.
  *
  * @beta
  */
 export class ErrorWithCode extends Error {
   /**
-   * error code
+   * Error code
    *
    * @readonly
    */
   code: string | undefined;
 
   /**
-   * Constructor of ErrorWithCode
+   * Constructor of ErrorWithCode.
    *
-   * @param {string} message - error message
-   * @param {ErrorCode} code - error code
+   * @param {string} message - error message.
+   * @param {ErrorCode} code - error code.
+   * 
+   * @beta
    */
   constructor(message?: string, code?: ErrorCode) {
     if (!code) {

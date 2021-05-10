@@ -18,7 +18,7 @@
                     "label": "Tab",
                     "cliName": "tab",
                     "description": "UI-based app",
-                    "detail": "Tabs are a simple way to surface content in your app by essentially embedding a webpage in Teams."
+                    "detail": "Tabs are Teams-aware webpages embedded in Microsoft Teams."
                 }
             ],
             "default": [

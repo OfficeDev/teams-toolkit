@@ -43,6 +43,7 @@ export interface ISolutionConfig {
     teamsAppTenantId: string;
     resourceGroupName: string;
     location: string;
+    remoteTeamsAppId?: string;
 }
 
 export class ApimPluginConfig implements IApimPluginConfig {
@@ -198,6 +199,9 @@ export class SolutionConfig implements ISolutionConfig {
     }
     get location(): string {
         return this.checkAndGet(SolutionConfigKeys.location);
+    }
+    get remoteTeamsAppId(): string | undefined {
+        return this.configOfOtherPlugins.get(TeamsToolkitComponent.Solution)?.get(SolutionConfigKeys.remoteTeamsAppId) as string;
     }
 
     private checkAndGet(key: string): string {

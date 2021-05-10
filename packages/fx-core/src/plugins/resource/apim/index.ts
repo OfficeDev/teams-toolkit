@@ -45,9 +45,9 @@ export class ApimPlugin implements Plugin {
     ): Promise<Result<T, FxError>> {
         try {
             await this.progressBar.init(PluginLifeCycleToProgressStep[lifeCycle], ctx);
-            Telemetry.sendLifeCycleEvent(ctx.telemetryReporter, lifeCycle, OperationStatus.Started);
+            Telemetry.sendLifeCycleEvent(ctx.telemetryReporter, ctx.configOfOtherPlugins, lifeCycle, OperationStatus.Started);
             const result = await fn(ctx, this.progressBar, ...params);
-            Telemetry.sendLifeCycleEvent(ctx.telemetryReporter, lifeCycle, OperationStatus.Succeeded);
+            Telemetry.sendLifeCycleEvent(ctx.telemetryReporter, ctx.configOfOtherPlugins, lifeCycle, OperationStatus.Succeeded);
             return ok(result);
         } catch (error) {
             let packagedError: SystemError | UserError;
@@ -60,7 +60,7 @@ export class ApimPlugin implements Plugin {
             }
 
             ctx.logProvider?.error(`[${ProjectConstants.pluginDisplayName}] ${error.message}`);
-            Telemetry.sendLifeCycleEvent(ctx.telemetryReporter, lifeCycle, OperationStatus.Failed, packagedError);
+            Telemetry.sendLifeCycleEvent(ctx.telemetryReporter, ctx.configOfOtherPlugins, lifeCycle, OperationStatus.Failed, packagedError);
             return err(packagedError);
         } finally {
             await this.progressBar.close(PluginLifeCycleToProgressStep[lifeCycle]);

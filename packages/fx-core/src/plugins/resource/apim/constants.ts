@@ -172,6 +172,7 @@ export class SolutionConfigKeys {
     public static readonly teamsAppTenantId: string = "teamsAppTenantId";
     public static readonly resourceGroupName: string = "resourceGroupName";
     public static readonly location: string = "location";
+    public static readonly remoteTeamsAppId: string = "remoteTeamsAppId";
 }
 
 export enum TeamsToolkitComponent {

@@ -1,8 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { UserError } from "fx-api";
+import { ReadonlySolutionConfig, UserError } from "fx-api";
 import { SystemError, TelemetryReporter } from "fx-api";
 import { PluginLifeCycle, ProjectConstants } from "./constants";
+import { SolutionConfig } from "./model/config";
 import { OpenApiSchemaVersion } from "./model/openApiDocument";
 import { IName, OperationStatus } from "./model/operation";
 
@@ -21,8 +22,10 @@ class TelemetryPropertyName {
 }
 
 export class Telemetry {
-    public static sendLifeCycleEvent(telemetryReporter: TelemetryReporter | undefined, lifeCycle: PluginLifeCycle, status: OperationStatus, error?: UserError | SystemError): void {
-        this.sendOperationEvent(telemetryReporter, lifeCycle, status, undefined, undefined, error);
+    public static sendLifeCycleEvent(telemetryReporter: TelemetryReporter | undefined, config: ReadonlySolutionConfig, lifeCycle: PluginLifeCycle, status: OperationStatus, error?: UserError | SystemError): void {
+        const solutionConfig = new SolutionConfig(config);
+        const properties = solutionConfig.remoteTeamsAppId ? { appid: solutionConfig.remoteTeamsAppId } : undefined;
+        this.sendOperationEvent(telemetryReporter, lifeCycle, status, properties, undefined, error);
     }
 
     public static sendApimOperationEvent(telemetryReporter: TelemetryReporter | undefined, operation: IName, resourceType: IName, status: OperationStatus, error?: UserError | SystemError): void {
@@ -46,10 +49,12 @@ export class Telemetry {
     }
 
     public static sendOpenApiDocumentEvent(telemetryReporter: TelemetryReporter | undefined, fileExtension: string, schemaVersion: OpenApiSchemaVersion): void {
-        telemetryReporter?.sendTelemetryEvent(TelemetryEventName.openApiDocument, {
+        const properties = {
             "file-extension": fileExtension,
             "schema-version": schemaVersion,
-        });
+        };
+
+        telemetryReporter?.sendTelemetryEvent(TelemetryEventName.openApiDocument, this.buildProperties(properties));
     }
 
     private static sendOperationEvent(telemetryReporter: TelemetryReporter | undefined, eventName: string, status: OperationStatus, properties?: { [key: string]: string }, measurements?: { [key: string]: number }, error?: UserError | SystemError): void {

@@ -80,7 +80,13 @@ It might be caused by timeout issue (longer than 3 minutes), the process to inst
 ### Mitigation
 Please refer to [the guide](#how-to-install-net-sdk) to install `.NET SDK` manually.
 
+## DotnetNotSupportTargetVersion
+> NETSDK1045: The current .NET SDK does not support 'newer version' as a target.
 
+### Mitigation
+Please refer to [the guide](https://docs.microsoft.com/dotnet/core/tools/sdk-errors/netsdk1045#globaljson-file) to check your global.json file in the root folder in your project and up the directory chain to the root of the volume, since it can be anywhere in the folder structure. If it contains an SDK version, delete the sdk node and all its children, or update it to the desired newer .NET Core version(`.NET 5` or `.NET 3.1` ).
+
+The global.json file is not required, so if it doesn't contain anything other than the sdk node, you can delete the whole file.
 ## Report issues 
 
 If above FAQs can't solve your problem, please click [here](https://github.com/OfficeDev/Teams Toolkit/issues/new) to submit an issue on GitHub and attach the log from Visual Studio Code output channel named "Teams Toolkit".

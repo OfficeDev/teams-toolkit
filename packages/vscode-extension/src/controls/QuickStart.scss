@@ -8,6 +8,10 @@
     .section{
         display: flex;
         margin-bottom: 36px;
+
+        .title {
+            min-width: 300px;
+        }
     }
 
     .flex-section{
@@ -17,6 +21,8 @@
     .table-of-contents{
         width: 50%;
         margin-right: 90px;
+        min-width: 352px;
+        max-width: 400px;
     }
 
     .logo{
@@ -52,6 +58,8 @@
     .stage{
         width: 50%;
         overflow: hidden;
+        min-width: 426px;
+        max-width: 600px;
 
         .player{
             width: 100%;

@@ -15,7 +15,7 @@ describe("Utils Tests", () => {
       .to.throw(ErrorWithCode, expectedErrorMsg)
       .with.property("code", ErrorCode.InvalidParameter);
 
-    const invalidScopes2 = new Promise(resolve => resolve(true));
+    const invalidScopes2 = new Promise((resolve) => resolve(true));
     expect(() => {
       validateScopesType(invalidScopes2);
     })

@@ -111,7 +111,7 @@ export class MsGraphAuthProvider implements AuthenticationProvider {
 export class OnBehalfOfUserCredential implements TokenCredential {
     constructor(ssoToken: string);
     getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null>;
-    getUserInfo(): Promise<UserInfo>;
+    getUserInfo(): UserInfo;
     }
 
 // @beta

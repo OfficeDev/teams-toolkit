@@ -50,6 +50,26 @@ export class DialogUtils {
         return options.find((x) => x === answer);
     }
 
+    public static async showAndHelp(ctx: PluginContext, message: string, link: string, level = MsgLevel.Info): Promise<void> {
+        const helpLabel = "Get Help";
+        const content: DialogMsg = new DialogMsg(DialogType.Ask, {
+            description: message,
+            type: QuestionType.Confirm,
+            options: [helpLabel]
+        });
+
+        const answer = await this.communicate(ctx.dialog, content);
+
+        const openLink: DialogMsg = new DialogMsg(DialogType.Ask, {
+            description: link,
+            type: QuestionType.OpenExternal
+        });
+
+        if (answer === helpLabel) {
+            await this.communicate(ctx.dialog, openLink);
+        }
+    }
+
     private static async communicate(dialog: Dialog | undefined, msg: DialogMsg): Promise<string | undefined> {
         if (dialog) {
             const answerMsg: DialogMsg = await dialog.communicate(msg);

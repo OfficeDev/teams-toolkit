@@ -132,8 +132,9 @@ export class AadService {
 
                 error.message = `[Detail] ${error?.response?.data?.error?.message ?? error.message}`;
                 this.logger?.error(LogMessages.operationFailed(operation, resourceType, resourceId));
-                Telemetry.sendAadOperationEvent(this.telemetryReporter, operation, resourceType, OperationStatus.Failed, executionIndex);
-                throw BuildError(AadOperationError, error, operation.displayName, resourceType.displayName);
+                const wrappedError = BuildError(AadOperationError, error, operation.displayName, resourceType.displayName);
+                Telemetry.sendAadOperationEvent(this.telemetryReporter, operation, resourceType, OperationStatus.Failed, executionIndex, wrappedError);
+                throw wrappedError;
             }
         });
     }

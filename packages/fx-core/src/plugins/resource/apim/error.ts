@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { FxError, returnSystemError, returnUserError } from "fx-api";
-import { ProjectConstants, ConfigRetryLifeCycle, LifeCycleCommands, TeamsToolkitComponent } from "./constants";
+import { ProjectConstants, ConfigRetryCommands, RetryCommands, TeamsToolkitComponent } from "./constants";
 
 enum ErrorType {
     User,
@@ -149,7 +149,7 @@ export function AssertNotEmpty(name: string, value: any): any {
 
 export function AssertConfigNotEmpty<T>(component: TeamsToolkitComponent, name: string, value: T | undefined): T {
     if (!value) {
-        throw BuildError(EmptyConfigValue, component, name, LifeCycleCommands[ConfigRetryLifeCycle[component][name]]);
+        throw BuildError(EmptyConfigValue, component, name, ConfigRetryCommands[component][name]);
     }
 
     return value;

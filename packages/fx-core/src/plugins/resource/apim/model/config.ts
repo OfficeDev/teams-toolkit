@@ -3,8 +3,8 @@
 import { ConfigValue, ReadonlySolutionConfig } from "fx-api";
 import {
     TeamsToolkitComponent,
-    ComponentRetryLifeCycle,
-    LifeCycleCommands,
+    ComponentRetryCommands,
+    RetryCommands,
     SolutionConfigKeys,
     AadPluginConfigKeys,
     FunctionPluginConfigKeys,
@@ -209,7 +209,7 @@ export class SolutionConfig implements ISolutionConfig {
 function checkAndGetOtherPluginConfig(configOfOtherPlugins: ReadonlySolutionConfig, component: TeamsToolkitComponent, key: string): string {
     const pluginConfig = configOfOtherPlugins.get(component);
     if (!pluginConfig) {
-        throw BuildError(NoPluginConfig, component, LifeCycleCommands[ComponentRetryLifeCycle[component]]);
+        throw BuildError(NoPluginConfig, component, ComponentRetryCommands[component]);
     }
 
     const value = AssertConfigNotEmpty(component, key, pluginConfig.get(key));

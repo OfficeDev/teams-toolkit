@@ -299,9 +299,10 @@ export class ApimService {
                 return undefined;
             }
 
+            const wrappedError = BuildError(ApimOperationError, error, operation.displayName, resourceType.displayName);
             this.logger?.info(LogMessages.operationFailed(operation, resourceType, resourceId));
-            Telemetry.sendApimOperationEvent(this.telemetryReporter, operation, resourceType, OperationStatus.Failed);
-            throw BuildError(ApimOperationError, error, operation.displayName, resourceType.displayName);
+            Telemetry.sendApimOperationEvent(this.telemetryReporter, operation, resourceType, OperationStatus.Failed, wrappedError);
+            throw wrappedError;
         }
     }
 

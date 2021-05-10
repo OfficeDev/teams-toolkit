@@ -3,7 +3,7 @@
 
 "use strict";
 
-import { GraphTokenProvider } from "fx-api";
+import { GraphTokenProvider } from "@microsoft/teamsfx-api";
 import { LogLevel, ConfidentialClientApplication } from "@azure/msal-node";
 
 import CLILogProvider from "./log";

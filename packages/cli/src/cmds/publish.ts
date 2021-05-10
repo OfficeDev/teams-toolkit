@@ -5,7 +5,7 @@
 
 import { Argv, Options } from "yargs";
 import * as path from "path";
-import { FxError, err, ok, Result, ConfigMap, Platform, Func } from "fx-api";
+import { FxError, err, ok, Result, ConfigMap, Platform, Func } from "@microsoft/teamsfx-api";
 import activate from "../activate";
 import * as constants from "../constants";
 import { YargsCommand } from "../yargsCommand";

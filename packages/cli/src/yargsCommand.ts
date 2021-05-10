@@ -5,7 +5,7 @@
 
 import { Argv, exit } from "yargs";
 
-import { FxError, Result, SystemError, UserError } from "fx-api";
+import { FxError, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
 
 import CLILogProvider from "./commonlib/log";
 import * as constants from "./constants";

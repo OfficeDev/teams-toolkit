@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import * as utils from "../utils/common";
 import { CommonStrings, PluginBot, PluginSolution } from "../resources/strings";
-import { ConfigValue, PluginContext } from "fx-api";
+import { ConfigValue, PluginContext } from "@microsoft/teamsfx-api";
 import { ProgrammingLanguage } from "../enums/programmingLanguage";
 import { WayToRegisterBot } from "../enums/wayToRegisterBot";
 

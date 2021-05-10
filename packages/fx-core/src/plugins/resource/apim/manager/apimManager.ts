@@ -6,7 +6,7 @@ import { IAadPluginConfig, IApimPluginConfig, IFunctionPluginConfig, ISolutionCo
 import { ApimService } from "../service/apimService";
 import { OpenApiProcessor } from "../util/openApiProcessor";
 import { IAnswer } from "../model/answer";
-import { LogProvider, TelemetryReporter } from "fx-api";
+import { LogProvider, TelemetryReporter } from "@microsoft/teamsfx-api";
 import { Lazy } from "../util/lazy";
 import { NamingRules } from "../util/namingRules";
 

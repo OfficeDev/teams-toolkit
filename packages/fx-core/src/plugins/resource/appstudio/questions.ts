@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { OptionItem } from "fx-api";
+import { OptionItem } from "@microsoft/teamsfx-api";
 
 export const manuallySubmitOption: OptionItem = {
     id: "ManuallySubmit",

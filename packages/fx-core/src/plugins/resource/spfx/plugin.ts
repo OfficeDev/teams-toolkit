@@ -10,7 +10,7 @@ import {
   DialogType,
   MsgLevel,
   Platform,
-} from "fx-api";
+} from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
 import lodash from "lodash";
 import * as fs from "fs-extra";

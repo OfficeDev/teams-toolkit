@@ -4,7 +4,7 @@ import { WebSiteManagementClient } from "@azure/arm-appservice";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import axios from "axios";
 import * as fs from "fs-extra";
-import { PluginContext } from "fx-api";
+import { PluginContext } from "@microsoft/teamsfx-api";
 import { Constants, Messages } from "./constants";
 import { CreateAppServicePlanError, CreateWebAppError, UpdateApplicationSettingsError, ZipDeployError } from "./errors";
 import { ResultFactory } from "./result";

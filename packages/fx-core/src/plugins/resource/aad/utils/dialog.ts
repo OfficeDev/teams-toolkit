@@ -8,7 +8,7 @@ import {
   MsgLevel,
   Dialog,
   IProgressHandler,
-} from "fx-api";
+} from "@microsoft/teamsfx-api";
 
 export class DialogUtils {
   private static dialog: Dialog;

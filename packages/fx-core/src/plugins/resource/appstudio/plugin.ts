@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureSolutionSettings, ConfigFolderName, PluginContext, TeamsAppManifest, Platform, DialogMsg, DialogType, QuestionType, MsgLevel, IProgressHandler } from "fx-api";
+import { AzureSolutionSettings, ConfigFolderName, PluginContext, TeamsAppManifest, Platform, DialogMsg, DialogType, QuestionType, MsgLevel, IProgressHandler } from "@microsoft/teamsfx-api";
 import { AppStudioClient } from "./appStudio";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";

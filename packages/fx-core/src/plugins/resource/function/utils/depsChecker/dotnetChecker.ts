@@ -13,7 +13,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as child_process from "child_process";
 import * as util from "util";
-import { ConfigFolderName } from "fx-api";
+import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import { DepsInfo, IDepsAdapter, IDepsChecker, IDepsLogger, IDepsTelemetry } from "./checker";
 import {
   DepsCheckerEvent,

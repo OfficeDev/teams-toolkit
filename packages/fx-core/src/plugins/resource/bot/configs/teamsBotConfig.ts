@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ConfigValue, PluginContext, AzureSolutionSettings } from "fx-api";
+import { ConfigValue, PluginContext, AzureSolutionSettings } from "@microsoft/teamsfx-api";
 
 import { LocalDebugConfig } from "./localDebugConfig";
 import { ProvisionConfig } from "./provisionConfig";

@@ -10,7 +10,7 @@ import { SubscriptionClient } from "@azure/arm-subscriptions";
 import * as fs from "fs-extra";
 import * as path from "path";
 
-import { AzureAccountProvider, ConfigFolderName, err, FxError, ok, Result } from "fx-api";
+import { AzureAccountProvider, ConfigFolderName, err, FxError, ok, Result } from "@microsoft/teamsfx-api";
 
 import { NotSupportedProjectType, NotFoundSubscriptionId } from "../error";
 import { login, LoginStatus } from "./common/login";

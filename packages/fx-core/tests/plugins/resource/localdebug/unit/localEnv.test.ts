@@ -7,7 +7,7 @@ import * as path from "path";
 
 import { LocalEnvProvider } from "../../../../../src/plugins/resource/localdebug/localEnv";
 import { LocalEnvFrontendKeys, LocalEnvBackendKeys, LocalEnvAuthKeys, LocalEnvBotKeys } from "../../../../../src/plugins/resource/localdebug/constants";
-import { ConfigFolderName } from "fx-api";
+import { ConfigFolderName } from "@microsoft/teamsfx-api";
 
 chai.use(chaiAsPromised);
 

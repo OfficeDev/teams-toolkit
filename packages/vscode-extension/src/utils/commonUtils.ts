@@ -5,7 +5,7 @@ import * as extensionPackage from "./../../package.json";
 import * as fs from "fs-extra";
 import { ext } from "../extensionVariables";
 import * as path from "path";
-import { ConfigFolderName } from "fx-api";
+import { ConfigFolderName } from "@microsoft/teamsfx-api";
 
 export function getPackageVersion(versionStr: string): string {
   if (versionStr.includes("alpha")) {

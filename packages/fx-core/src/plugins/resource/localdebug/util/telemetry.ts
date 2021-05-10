@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { PluginContext, SystemError, UserError } from "fx-api";
+import { PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { LocalDebugPluginInfo } from "../constants";
 
 enum TelemetryPropertyKey {

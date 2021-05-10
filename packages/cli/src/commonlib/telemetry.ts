@@ -3,7 +3,7 @@
 "use strict";
 
 import Reporter from "../telemetry/telemetryReporter";
-import { TelemetryReporter } from "fx-api";
+import { TelemetryReporter } from "@microsoft/teamsfx-api";
 
 /**
  *  CLI telemetry reporter used by fx-core.

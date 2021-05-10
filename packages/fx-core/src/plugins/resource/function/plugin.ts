@@ -424,7 +424,7 @@ export class FunctionPluginImpl {
         }
 
         // NOTE: make sure this step is before using `dotnet` command if you refactor this code.
-        await this.handleDotnetChecker();
+        await this.handleDotnetChecker(ctx);
 
         await runWithErrorCatchAndThrow(new InstallTeamsfxBindingError(), async () =>
             await step(StepGroup.PreDeployStepGroup, PreDeploySteps.installTeamsfxBinding, async () =>
@@ -571,7 +571,7 @@ export class FunctionPluginImpl {
         return undefined;
     }
 
-    private async handleDotnetChecker(): Promise<void> {
+    private async handleDotnetChecker(ctx: PluginContext): Promise<void> {
         try {
             await step(StepGroup.PreDeployStepGroup, PreDeploySteps.dotnetInstall, async () => {
                 const dotnetChecker = new DotnetChecker(funcPluginAdapter, funcPluginLogger, funcPluginTelemetry);
@@ -587,8 +587,10 @@ export class FunctionPluginImpl {
 
                 if (isLinux()) {
                     // TODO: handle linux installation
+                  if(!await funcPluginAdapter.handleDotnetForLinux(ctx, dotnetChecker)) {
                     funcPluginAdapter.handleDotnetError(new DepsCheckerError(Messages.defaultErrorMessage, dotnetManualInstallHelpLink));
-                    return;
+                  }
+                  return;
                 }
 
                 try {

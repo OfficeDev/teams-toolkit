@@ -2,11 +2,11 @@
 // Licensed under the MIT license.
 import { AadOperationError, AssertNotEmpty, BuildError } from "../error";
 import { AxiosInstance, AxiosResponse, Method } from "axios";
-import { IAadInfo, IPasswordCredential, IServicePrincipal, IServicePrincipals } from "../model/aadResource";
-import { ErrorHandlerResult } from "../model/errorHandlerResult";
-import { AzureResource, IName, OperationStatus, Operation } from "../constants";
+import { IAadInfo, IPasswordCredential, IServicePrincipal, IServicePrincipals } from "../interfaces/IAadResource";
+import { IName } from "../interfaces/IName";
+import { AzureResource, OperationStatus, Operation, ErrorHandlerResult } from "../constants";
 import { LogProvider, TelemetryReporter } from "@microsoft/teamsfx-api";
-import { LogMessages } from "../utils/log";
+import { LogMessages } from "../log";
 import { Telemetry } from "../utils/telemetry";
 import { RetryHandler } from "../utils/commonUtils";
 

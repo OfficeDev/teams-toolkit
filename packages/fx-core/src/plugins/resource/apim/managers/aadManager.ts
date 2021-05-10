@@ -3,9 +3,9 @@
 import { LogProvider, TelemetryReporter } from "@microsoft/teamsfx-api";
 import { ApimPluginConfigKeys, TeamsToolkitComponent } from "../constants";
 import { AssertConfigNotEmpty, AssertNotEmpty, BuildError, InvalidAadObjectId } from "../error";
-import { IAadInfo, IRequiredResourceAccess } from "../model/aadResource";
-import { IAadPluginConfig, IApimPluginConfig } from "../model/config";
-import { AadService } from "../service/aadService";
+import { IAadInfo, IRequiredResourceAccess } from "../interfaces/IAadResource";
+import { IAadPluginConfig, IApimPluginConfig } from "../config";
+import { AadService } from "../services/aadService";
 import { Lazy } from "../utils/commonUtils";
 import { NamingRules } from "../utils/namingRules";
 

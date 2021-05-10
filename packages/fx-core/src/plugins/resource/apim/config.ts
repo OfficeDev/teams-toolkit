@@ -8,9 +8,9 @@ import {
     AadPluginConfigKeys,
     FunctionPluginConfigKeys,
     ApimPluginConfigKeys,
-} from "../constants";
-import {AssertConfigNotEmpty, BuildError, InvalidConfigValue, InvalidPropertyType, NoPluginConfig} from "../error";
-import {INamingRule, NamingRules} from "../utils/namingRules";
+} from "./constants";
+import {AssertConfigNotEmpty, BuildError, InvalidConfigValue, InvalidPropertyType, NoPluginConfig} from "./error";
+import {INamingRule, NamingRules} from "./utils/namingRules";
 
 export interface IApimPluginConfig {
     resourceGroupName?: string;

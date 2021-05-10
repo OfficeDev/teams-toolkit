@@ -2,9 +2,9 @@
 // Licensed under the MIT license.
 import { ReadonlySolutionConfig, UserError } from "@microsoft/teamsfx-api";
 import { SystemError, TelemetryReporter } from "@microsoft/teamsfx-api";
-import { PluginLifeCycle, ProjectConstants, IName, OperationStatus } from "../constants";
-import { SolutionConfig } from "../model/config";
-import { OpenApiSchemaVersion } from "../model/openApiDocument";
+import { PluginLifeCycle, ProjectConstants, OperationStatus, OpenApiSchemaVersion } from "../constants";
+import { IName } from "../interfaces/IName";
+import { SolutionConfig } from "../config";
 
 class TelemetryEventName {
     public static readonly apimOperation: string = "apim-operation";

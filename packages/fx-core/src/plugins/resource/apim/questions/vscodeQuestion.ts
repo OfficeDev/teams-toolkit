@@ -13,10 +13,10 @@ import {
     TelemetryReporter,
 } from "@microsoft/teamsfx-api";
 import { ApimDefaultValues, ApimPluginConfigKeys, QuestionConstants, TeamsToolkitComponent } from "../constants";
-import { ApimPluginConfig, SolutionConfig } from "../model/config";
-import { ApimService } from "../service/apimService";
+import { ApimPluginConfig, SolutionConfig } from "../config";
+import { ApimService } from "../services/apimService";
 import { OpenApiProcessor } from "../utils/openApiProcessor";
-import { buildAnswer } from "../model/answer";
+import { buildAnswer } from "../answer";
 import { NamingRules } from "../utils/namingRules";
 import { BaseQuestionService, IQuestionService } from "./question";
 import { Lazy } from "../utils/commonUtils";

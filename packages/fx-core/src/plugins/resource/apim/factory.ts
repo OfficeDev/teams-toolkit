@@ -2,21 +2,21 @@
 // Licensed under the MIT license.
 import { AzureAccountProvider, GraphTokenProvider, LogProvider, Platform, PluginContext, TelemetryReporter } from "@microsoft/teamsfx-api";
 import { AssertNotEmpty, BuildError, NotImplemented } from "./error";
-import { ApimService } from "./service/apimService";
-import { ISolutionConfig, SolutionConfig } from "./model/config";
-import { AadService } from "./service/aadService";
+import { ApimService } from "./services/apimService";
+import { ISolutionConfig, SolutionConfig } from "./config";
+import { AadService } from "./services/aadService";
 import { OpenApiProcessor } from "./utils/openApiProcessor";
-import { ApimManager } from "./manager/apimManager";
-import { AadManager } from "./manager/aadManager";
-import { CliQuestionManager, IQuestionManager, VscQuestionManager } from "./manager/questionManager";
-import * as VSCode from "./question/vscodeQuestion";
-import * as CLI from "./question/cliQuestion";
+import { ApimManager } from "./managers/apimManager";
+import { AadManager } from "./managers/aadManager";
+import { CliQuestionManager, IQuestionManager, VscQuestionManager } from "./managers/questionManager";
+import * as VSCode from "./questions/vscodeQuestion";
+import * as CLI from "./questions/cliQuestion";
 import { ApiManagementClient } from "@azure/arm-apimanagement";
-import { TeamsAppAadManager } from "./manager/teamsAppAadManager";
+import { TeamsAppAadManager } from "./managers/teamsAppAadManager";
 import axios from "axios";
 import { AadDefaultValues } from "./constants";
 import { Lazy } from "./utils/commonUtils";
-import { ScaffoldManager } from "./manager/scaffoldManager";
+import { ScaffoldManager } from "./managers/scaffoldManager";
 
 export class Factory {
     public static async buildApimManager(ctx: PluginContext, solutionConfig: SolutionConfig): Promise<ApimManager> {

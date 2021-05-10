@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import path from "path";
+import { IName } from "./interfaces/IName";
 
 export class ProjectConstants {
     public static readonly pluginShortName: string = "APIM";
@@ -183,10 +184,10 @@ export enum TeamsToolkitComponent {
 }
 
 export enum RetryCommands {
-    Create = "start a project",
-    Update = "add the resource",
-    Provision = "provision resource",
-    Deploy = "deploy package",
+    Create = "create new project",
+    Update = "add resources",
+    Provision = "provision in the cloud",
+    Deploy = "deploy to the cloud",
     Login = "login and choose a subscription",
 }
 
@@ -273,11 +274,6 @@ export const ProgressMessages: { [key in ProgressStep]: { [step: string]: string
         ImportApi: "Import API into API management",
     },
 };
-
-export interface IName {
-    shortName: string;
-    displayName: string;
-}
 
 export enum OperationStatus {
     Started = "started",
@@ -367,4 +363,14 @@ export class Operation {
         shortName: "import",
         displayName: "import",
     };
+}
+
+export enum ErrorHandlerResult {
+    Continue = "Continue",
+    Return = "Return",
+}
+
+export enum OpenApiSchemaVersion {
+    V2 = "v2",
+    V3 = "v3",
 }

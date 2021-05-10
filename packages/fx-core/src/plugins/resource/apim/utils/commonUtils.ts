@@ -51,7 +51,7 @@ export function delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export interface FactoryFunc<TResult> { (): TResult; }
+interface FactoryFunc<TResult> { (): TResult; }
 
 // Do not support parallel execution
 export class Lazy<T> {

@@ -31,7 +31,7 @@ export class FrontendPluginInfo {
     static PluginName = "Tab Frontend plugin";
     static DisplayName = "Tab Frontend";
     static ShortName = "FE";
-    static IssueLink = ""; // TODO: default issue link
+    static IssueLink = "https://github.com/OfficeDev/TeamsFx/issues/new";
     static HelpLink = ""; // TODO: default help link
     static readonly templateManifestURL =
         "https://github.com/henzhang-ms/Teams-Templates/releases/latest/download/manifest.json";

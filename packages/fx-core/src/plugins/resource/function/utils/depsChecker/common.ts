@@ -42,7 +42,7 @@ export const nodeNotSupportedForSPFxHelpLink = `${defaultHelpLink}#current-insta
 export const dotnetExplanationHelpLink = `${defaultHelpLink}#why-net-sdk-is-needed`;
 export const dotnetFailToInstallHelpLink = `${defaultHelpLink}#failed-to-install-net-core-sdk-v31`;
 export const dotnetManualInstallHelpLink = `${defaultHelpLink}#linux-only-the-toolkit-cannot-find-net-5-or-net-core-31-on-your-machine-please-install-it-manually`;
-export const dotnetNotSupportTargetVersionHelpLink = `${defaultHelpLink}#dotnet-not-support-target-version`;
+export const dotnetNotSupportTargetVersionHelpLink = `${defaultHelpLink}#dotnetnotsupporttargetversion`;
 
 export const Messages = {
   learnMoreButtonText: "Learn more",

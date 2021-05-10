@@ -42,7 +42,7 @@ export const nodeNotSupportedForSPFxHelpLink = `${defaultHelpLink}#nodenotsuppor
 export const dotnetExplanationHelpLink = `${defaultHelpLink}#overall`;
 export const dotnetFailToInstallHelpLink = `${defaultHelpLink}#failtoinstalldotnet`;
 export const dotnetManualInstallHelpLink = `${defaultHelpLink}#dotnetnotfound`;
-export const dotnetNotSupportTargetVersionHelpLink = `${defaultHelpLink}#dotnet-not-support-target-version`;
+export const dotnetNotSupportTargetVersionHelpLink = `${defaultHelpLink}#dotnetnotsupporttargetversion`;
 
 export const Messages = {
   learnMoreButtonText: "Learn more",

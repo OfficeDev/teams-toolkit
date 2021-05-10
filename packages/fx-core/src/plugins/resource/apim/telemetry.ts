@@ -55,7 +55,7 @@ export class Telemetry {
     private static sendOperationEvent(telemetryReporter: TelemetryReporter | undefined, eventName: string, status: OperationStatus, properties?: { [key: string]: string }, measurements?: { [key: string]: number }, error?: UserError | SystemError): void {
         switch (status) {
             case OperationStatus.Started:
-                telemetryReporter?.sendTelemetryEvent(`${eventName} - start`, this.buildProperties(properties), measurements);
+                telemetryReporter?.sendTelemetryEvent(`${eventName}-start`, this.buildProperties(properties), measurements);
                 break;
             case OperationStatus.Succeeded:
                 telemetryReporter?.sendTelemetryEvent(eventName, this.buildProperties(properties));

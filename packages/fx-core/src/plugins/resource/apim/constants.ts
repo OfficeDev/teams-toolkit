@@ -230,7 +230,7 @@ export const ConfigRetryCommands: { [key in TeamsToolkitComponent]: { [key: stri
 
 export enum PluginLifeCycle {
     CallFunc = "call-func",
-    Question = "question",
+    GetQuestions = "get-questions",
     Scaffold = "scaffold",
     Provision = "provision",
     PostProvision = "post-provision",
@@ -247,7 +247,7 @@ export enum ProgressStep {
 
 export const PluginLifeCycleToProgressStep: { [key in PluginLifeCycle]: ProgressStep } = {
     [PluginLifeCycle.CallFunc]: ProgressStep.None,
-    [PluginLifeCycle.Question]: ProgressStep.None,
+    [PluginLifeCycle.GetQuestions]: ProgressStep.None,
     [PluginLifeCycle.Scaffold]: ProgressStep.Scaffold,
     [PluginLifeCycle.Provision]: ProgressStep.Provision,
     [PluginLifeCycle.PostProvision]: ProgressStep.PostProvision,

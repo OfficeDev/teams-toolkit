@@ -14,7 +14,7 @@ export class ApimPlugin implements Plugin {
     private progressBar: ProgressBar = new ProgressBar();
 
     public async getQuestions(stage: Stage, ctx: PluginContext): Promise<Result<QTreeNode | undefined, FxError>> {
-        return await this.executeWithFxError(PluginLifeCycle.Question, _getQuestions, ctx, stage);
+        return await this.executeWithFxError(PluginLifeCycle.GetQuestions, _getQuestions, ctx, stage);
     }
 
     public async callFunc(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {

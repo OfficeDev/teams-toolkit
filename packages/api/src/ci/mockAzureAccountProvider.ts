@@ -64,7 +64,13 @@ export class MockAzureAccountProvider implements AzureAccountProvider {
 
     async getAccountCredentialAsync(): Promise<TokenCredentialsBase | undefined> {
         if (MockAzureAccountProvider.tokenCredentialsBase == undefined) {
-            const authres = await msRestNodeAuth.loginWithUsernamePassword(user, password);
+            const authres = await msRestNodeAuth.loginWithUsernamePassword(
+                user,
+                password,
+                {
+                    domain: azureConfig.tenant.id,
+                }
+            );
             MockAzureAccountProvider.tokenCredentialsBase = authres;
         }
 

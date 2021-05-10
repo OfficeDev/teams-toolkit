@@ -42,7 +42,7 @@ export class FrontendPluginError extends Error {
         super(message);
         this.code = code;
         this.message = message;
-        this.suggestions = suggestions.concat(tips.checkLog);
+        this.suggestions = suggestions;
         this.errorType = errorType;
     }
 

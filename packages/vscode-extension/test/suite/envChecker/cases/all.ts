@@ -19,6 +19,8 @@ import { BackendExtensionsInstaller } from "../../../../src/debug/depsChecker/ba
 chai.use(chaiAsPromised);
 
 const azureSupportedNodeVersions = ["10", "12", "14"];
+const testCsprojFileName = "extensions.csproj";
+const testOutputDirName = "bin";
 
 function createTestChecker(
   hasTeamsfxBackend: boolean,
@@ -42,9 +44,6 @@ function createTestChecker(
 
   return [depsChecker, nodeChecker, dotnetChecker, backendExtensionsInstaller];
 }
-
-const testCsprojFileName = "extensions.csproj";
-const testOutputDirName = "bin";
 
 suite("All checkers E2E test", async () => {
   let backendProjectDir: string;

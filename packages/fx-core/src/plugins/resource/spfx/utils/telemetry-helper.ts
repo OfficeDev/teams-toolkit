@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { Constants, TelemetryKey, TelemetryValue } from "./constants";
-import { PluginContext, SystemError, UserError } from "fx-api";
+import { PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
 
 export class telemetryHelper {
   static sendSuccessEvent(

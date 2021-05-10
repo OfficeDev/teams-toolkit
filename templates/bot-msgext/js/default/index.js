@@ -1,23 +1,18 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+// index.js is used to setup and configure your bot
+
 // Import required packages
-import * as path from 'path';
-import * as restify from "restify";
+const restify = require('restify');
+const path = require('path');
 
 // Import required bot services.
 // See https://aka.ms/bot-services to learn more about the different parts of a bot.
-import {
-    BotFrameworkAdapter,
-    ConversationState,
-    MemoryStorage,
-    UserState,
-    TurnContext
-} from "botbuilder";
+const { BotFrameworkAdapter, ConversationState, MemoryStorage, UserState } = require('botbuilder');
 
-// This bot's main dialog.
-import { TeamsBot } from "./teamsBot";
-import { MainDialog } from "./dialogs/mainDialog";
+const { TeamsBot } = require('./teamsBot');
+const { MainDialog } = require('./dialogs/mainDialog');
 
 // Create adapter.
 // See https://aka.ms/about-bot-adapter to learn more about adapters.
@@ -26,28 +21,27 @@ const adapter = new BotFrameworkAdapter({
     appPassword: process.env.BOT_PASSWORD
 });
 
-// Catch-all for errors.
-const onTurnErrorHandler = async (context: TurnContext, error: Error) => {
+adapter.onTurnError = async (context, error) => {
     // This check writes out errors to console log .vs. app insights.
     // NOTE: In production environment, you should consider logging this to Azure
-    //       application insights.
+    //       application insights. See https://aka.ms/bottelemetry for telemetry 
+    //       configuration instructions.
     console.error(`\n [onTurnError] unhandled error: ${error}`);
 
     // Send a trace activity, which will be displayed in Bot Framework Emulator
     await context.sendTraceActivity(
-        "OnTurnError Trace",
+        'OnTurnError Trace',
         `${error}`,
-        "https://www.botframework.com/schemas/error",
-        "TurnError"
+        'https://www.botframework.com/schemas/error',
+        'TurnError'
     );
 
     // Send a message to the user
-    await context.sendActivity("The bot encountered an error or bug.");
-    await context.sendActivity("To continue to run this bot, please fix the bot source code.");
+    await context.sendActivity(`The bot encountered an unhandled error:\n ${error.message}`);
+    await context.sendActivity('To continue to run this bot, please fix the bot source code.');
+    // Clear out state
+    await conversationState.delete(context);
 };
-
-// Set the onTurnError for the singleton BotFrameworkAdapter.
-adapter.onTurnError = onTurnErrorHandler;
 
 // Define the state store for your bot.
 // See https://aka.ms/about-bot-state to learn more about using MemoryStorage.
@@ -69,20 +63,32 @@ const bot = new TeamsBot(conversationState, userState, dialog);
 
 // Create HTTP server.
 const server = restify.createServer();
-server.listen(process.env.port || process.env.PORT || 3978, () => {
-    console.log(`\nBot Started, ${server.name} listening to ${server.url}`);
+server.listen(process.env.port || process.env.PORT || 3978, function () {
+    console.log(`\nBot started, ${server.name} listening to ${server.url}`);
 });
 
 // Listen for incoming requests.
-server.post("/api/messages", (req, res) => {
-    adapter.processActivity(req, res, async (context) => {
+server.post('/api/messages', async (req, res) => {
+    await adapter.processActivity(req, res, async (context) => {
         await bot.run(context);
+    }).catch(err => {
+        // Error message including "412" means it is waiting for user's consent, which is a normal process of SSO, sholdn't throw this error.
+        if (!err.message.includes('412')) {
+            throw err;
+        }
     });
 });
 
 server.get(
-    "/*",
+    '/*',
     restify.plugins.serveStatic({
-        directory: path.join(__dirname, "public")
+        directory: path.join(__dirname, 'public')
     })
 );
+
+// Gracefully shutdown HTTP server
+['exit', 'uncaughtException', 'SIGINT', 'SIGTERM', 'SIGUSR1', 'SIGUSR2'].forEach((event) => {
+    process.on(event, () => {
+        server.close();
+    });
+});

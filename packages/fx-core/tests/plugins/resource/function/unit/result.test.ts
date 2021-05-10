@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import "mocha";
 import * as chai from "chai";
-import { FxError, SystemError, UserError } from "fx-api";
+import { FxError, SystemError, UserError } from "@microsoft/teamsfx-api";
 
 import { DefaultValues, FunctionPluginInfo } from "../../../../../src/plugins/resource/function/constants";
 import { FxResult, FunctionPluginResultFactory as ResultFactory } from "../../../../../src/plugins/resource/function/result";

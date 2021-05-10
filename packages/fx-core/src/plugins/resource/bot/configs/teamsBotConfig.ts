@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ConfigValue, PluginContext, AzureSolutionSettings } from "fx-api";
+import { ConfigValue, PluginContext, AzureSolutionSettings } from "@microsoft/teamsfx-api";
 
 import { LocalDebugConfig } from "./localDebugConfig";
 import { ProvisionConfig } from "./provisionConfig";
@@ -9,6 +9,7 @@ import { PluginSolution, PluginAAD } from "../resources/strings";
 import { PluginActRoles } from "../enums/pluginActRoles";
 import { QuestionNames } from "../constants";
 import { DeployConfig } from "./deployConfig";
+import * as utils from "../utils/common";
 
 export class TeamsBotConfig {
     public scaffold: ScaffoldConfig = new ScaffoldConfig();
@@ -21,6 +22,7 @@ export class TeamsBotConfig {
     public teamsAppTenant?: string;
     public applicationIdUris?: string;
     public actRoles: PluginActRoles[] = [];
+    public resourceNameSuffix: string = "";
 
     public async restoreConfigFromContext(context: PluginContext): Promise<void> {
         await this.scaffold.restoreConfigFromContext(context);
@@ -61,6 +63,10 @@ export class TeamsBotConfig {
         if (capabilities?.includes(PluginActRoles.MessageExtension) && !this.actRoles.includes(PluginActRoles.MessageExtension)) {
             this.actRoles.push(PluginActRoles.MessageExtension);
         }
+
+        const resourceNameSuffixValue: ConfigValue = context.configOfOtherPlugins.get(PluginSolution.PLUGIN_NAME)?.get(PluginSolution.RESOURCE_NAME_SUFFIX);
+        this.resourceNameSuffix = resourceNameSuffixValue ? resourceNameSuffixValue as string : utils.genUUID();
+
     }
 
     public saveConfigIntoContext(context: PluginContext): void {

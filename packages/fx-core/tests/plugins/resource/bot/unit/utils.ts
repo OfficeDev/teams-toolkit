@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ConfigMap, LogProvider, PluginContext, LogLevel, Dialog, DialogMsg, DialogType } from "fx-api";
+import { ConfigMap, LogProvider, PluginContext, LogLevel, Dialog, DialogMsg, DialogType } from "@microsoft/teamsfx-api";
 import { ResourceGroups, ResourceManagementClientContext } from "@azure/arm-resources";
 import { ServiceClientCredentials } from "@azure/ms-rest-js";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";

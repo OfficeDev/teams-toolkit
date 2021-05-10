@@ -5,7 +5,7 @@
 
 import { TokenCredential } from "@azure/core-auth";
 import { TokenCredentialsBase, DeviceTokenCredentials } from "@azure/ms-rest-nodeauth";
-import { AzureAccountProvider, ConfigFolderName, err, FxError, ok, Result } from "fx-api";
+import { AzureAccountProvider, ConfigFolderName, err, FxError, ok, Result } from "@microsoft/teamsfx-api";
 import { CodeFlowLogin, LoginFailureError, ConvertTokenToJson } from "./codeFlowLogin";
 import { MemoryCache } from "./memoryCache";
 import CLILogProvider from "./log";
@@ -17,7 +17,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import { env, signedIn, signedOut, unknownSubscription } from "./common/constant";
 import { login, LoginStatus } from "./common/login";
-import { UserError } from "fx-api";
+import { UserError } from "@microsoft/teamsfx-api";
 
 const accountName = "azure";
 const scopes = ["https://management.core.windows.net/user_impersonation"];
@@ -372,7 +372,7 @@ async function listAll<T>(
   return all;
 }
 
-import { MockAzureAccountProvider } from "fx-api";
+import { MockAzureAccountProvider } from "@microsoft/teamsfx-api";
 
 const ciEnabled = process.env.CI_ENABLED;
 const azureLogin = ciEnabled && ciEnabled === "true" ? MockAzureAccountProvider.getInstance() : AzureAccountManager.getInstance();

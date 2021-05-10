@@ -3,3 +3,8 @@ node_modules/
 
 # misc
 .env
+.deployment
+.DS_Store
+
+# build
+lib/

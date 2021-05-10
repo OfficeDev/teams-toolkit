@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ReadonlySolutionConfig, UserError } from "fx-api";
-import { SystemError, TelemetryReporter } from "fx-api";
+import { ReadonlySolutionConfig, UserError } from "@microsoft/teamsfx-api";
+import { SystemError, TelemetryReporter } from "@microsoft/teamsfx-api";
 import { PluginLifeCycle, ProjectConstants } from "./constants";
 import { SolutionConfig } from "./model/config";
 import { OpenApiSchemaVersion } from "./model/openApiDocument";

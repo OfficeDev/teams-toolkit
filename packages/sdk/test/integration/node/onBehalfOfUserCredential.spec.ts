@@ -34,7 +34,7 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
     ssoToken = await getSsoTokenFromTeams();
   });
 
-  it("getToken should success with valid config", async function () {
+  it("getToken should success with valid config", async function() {
     const credential = new OnBehalfOfUserCredential(ssoToken);
     let ssoTokenFromCredential = await credential.getToken([]);
     assert.strictEqual(ssoTokenFromCredential!.token, ssoToken);
@@ -43,7 +43,7 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
     assert.strictEqual(ssoTokenFromCredential!.token, ssoToken);
   });
 
-  it("get sso token should throw TokenExpiredError when sso token is expired", async function () {
+  it("get sso token should throw TokenExpiredError when sso token is expired", async function() {
     const credential = new OnBehalfOfUserCredential(expiredSsoToken);
     let err = await expect(credential.getToken([])).to.eventually.be.rejectedWith(ErrorWithCode);
     assert.strictEqual(err.code, ErrorCode.TokenExpiredError);
@@ -52,7 +52,7 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
     assert.strictEqual(err.code, ErrorCode.TokenExpiredError);
   });
 
-  it("getUserInfo should success with valid config", async function () {
+  it("getUserInfo should success with valid config", async function() {
     const credential = new OnBehalfOfUserCredential(ssoToken);
     const userInfo = await credential.getUserInfo();
     const tokenObject = parseJwt(ssoToken) as SSOTokenV2Info;
@@ -61,7 +61,7 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
     assert.strictEqual(userInfo.displayName, tokenObject.name);
   });
 
-  it("get graph access token should success with valid config", async function () {
+  it("get graph access token should success with valid config", async function() {
     const credential = new OnBehalfOfUserCredential(ssoToken);
     const graphToken = await credential.getToken(defaultScope);
     const tokenObject = parseJwt(graphToken!.token);
@@ -71,14 +71,14 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
     assert.include(tokenObject.scp, "User.Read");
   });
 
-  it("get graph access token should throw UiRequiredError without permission", async function () {
+  it("get graph access token should throw UiRequiredError without permission", async function() {
     const credential = new OnBehalfOfUserCredential(ssoToken);
     await expect(credential.getToken("https://graph.microsoft.com/Calendars.Read"))
       .to.eventually.be.rejectedWith(ErrorWithCode)
       .and.property("code", ErrorCode.UiRequiredError);
   });
 
-  it("get graph access token should throw TokenExpiredError when sso token is expired", async function () {
+  it("get graph access token should throw TokenExpiredError when sso token is expired", async function() {
     const credential = new OnBehalfOfUserCredential(expiredSsoToken);
     const err = await expect(credential.getToken(defaultScope)).to.eventually.be.rejectedWith(
       ErrorWithCode

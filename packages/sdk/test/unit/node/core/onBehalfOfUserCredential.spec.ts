@@ -3,7 +3,13 @@
 
 import { assert, expect, use as chaiUse } from "chai";
 import chaiPromises from "chai-as-promised";
-import { ErrorCode, ErrorWithCode, loadConfiguration, OnBehalfOfUserCredential } from "../../../../src";
+import {
+  ErrorCode,
+  ErrorWithCode,
+  loadConfiguration,
+  OnBehalfOfUserCredential,
+  UserInfo
+} from "../../../../src";
 import sinon from "sinon";
 import mockedEnv from "mocked-env";
 import { AuthenticationResult, ConfidentialClientApplication } from "@azure/msal-node";
@@ -30,6 +36,9 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
   const now = Math.floor(Date.now() / 1000);
   const timeInterval = 4000;
   const ssoTokenExp = now + timeInterval;
+  const testDisplayName = "Teams Framework Unit Test";
+  const testObjectId = "11111111-2222-3333-4444-555555555555";
+  const testPreferredUserName = "test@microsoft.com";
   const ssoToken = jwtBuilder({
     algorithm: "HS256",
     secret: "super-secret",
@@ -39,9 +48,9 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
     nbf: now,
     exp: timeInterval,
     aio: "test_aio",
-    name: "Teams Framework Unit Test",
-    oid: "11111111-2222-3333-4444-555555555555",
-    preferred_username: "test@microsoft.com",
+    name: testDisplayName,
+    oid: testObjectId,
+    preferred_username: testPreferredUserName,
     rh: "test_rh",
     scp: "access_as_user",
     sub: "test_sub",
@@ -52,7 +61,7 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
 
   const sandbox = sinon.createSandbox();
 
-  beforeEach(function () {
+  beforeEach(function() {
     mockedEnvRestore = mockedEnv({
       M365_CLIENT_ID: clientId,
       M365_CLIENT_SECRET: clientSecret,
@@ -83,12 +92,12 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
     );
   });
 
-  afterEach(function () {
+  afterEach(function() {
     sandbox.restore();
     mockedEnvRestore();
   });
 
-  it("create OnBehalfOfUserCredential instance should throw InvalidConfiguration Error when clientId not found", async function () {
+  it("create OnBehalfOfUserCredential instance should throw InvalidConfiguration Error when clientId not found", async function() {
     mockedEnvRestore = mockedEnv(
       {
         M365_CLIENT_SECRET: clientSecret,
@@ -106,7 +115,7 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
       .with.property("code", InvalidConfiguration);
   });
 
-  it("create OnBehalfOfUserCredential instance should throw InvalidConfiguration Error when authorityHost not found", async function () {
+  it("create OnBehalfOfUserCredential instance should throw InvalidConfiguration Error when authorityHost not found", async function() {
     mockedEnvRestore = mockedEnv(
       {
         M365_CLIENT_ID: clientId,
@@ -124,7 +133,7 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
       .with.property("code", InvalidConfiguration);
   });
 
-  it("create OnBehalfOfUserCredential instance should throw InvalidConfiguration Error when clientSecret not found", async function () {
+  it("create OnBehalfOfUserCredential instance should throw InvalidConfiguration Error when clientSecret not found", async function() {
     mockedEnvRestore = mockedEnv(
       {
         M365_CLIENT_ID: clientId,
@@ -142,7 +151,7 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
       .with.property("code", InvalidConfiguration);
   });
 
-  it("create OnBehalfOfUserCredential instance should throw InvalidConfiguration Error when tenantId not found", async function () {
+  it("create OnBehalfOfUserCredential instance should throw InvalidConfiguration Error when tenantId not found", async function() {
     mockedEnvRestore = mockedEnv(
       {
         M365_CLIENT_ID: clientId,
@@ -160,7 +169,7 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
       .with.property("code", InvalidConfiguration);
   });
 
-  it("create OnBehalfOfUserCredential instance should throw InvalidConfiguration Error when clientId, clientSecret, authorityHost, tenantId not found", async function () {
+  it("create OnBehalfOfUserCredential instance should throw InvalidConfiguration Error when clientId, clientSecret, authorityHost, tenantId not found", async function() {
     mockedEnvRestore = mockedEnv({}, { clear: true });
     loadConfiguration();
 
@@ -174,7 +183,7 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
       .with.property("code", InvalidConfiguration);
   });
 
-  it("create OnBehalfOfUserCredential instance should throw InternalError with invalid sso token", async function () {
+  it("create OnBehalfOfUserCredential instance should throw InternalError with invalid sso token", async function() {
     loadConfiguration();
     const invalidSsoToken = "invalid_sso_token";
 
@@ -185,7 +194,7 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
       .with.property("code", InternalError);
   });
 
-  it("getToken should success when scopes is empty string", async function () {
+  it("getToken should success when scopes is empty string", async function() {
     loadConfiguration();
     const oboCredential = new OnBehalfOfUserCredential(ssoToken);
     const token = await oboCredential.getToken("");
@@ -193,7 +202,7 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
     assert.strictEqual(token!.expiresOnTimestamp, ssoTokenExp);
   });
 
-  it("getToken should success when scopes is empty array", async function () {
+  it("getToken should success when scopes is empty array", async function() {
     loadConfiguration();
     const oboCredential = new OnBehalfOfUserCredential(ssoToken);
     const token = await oboCredential.getToken([]);
@@ -201,7 +210,7 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
     assert.strictEqual(token!.expiresOnTimestamp, ssoTokenExp);
   });
 
-  it("getToken should success when scopes is string", async function () {
+  it("getToken should success when scopes is string", async function() {
     loadConfiguration();
     const oboCredential = new OnBehalfOfUserCredential(ssoToken);
     const token = await oboCredential.getToken(scope);
@@ -209,7 +218,7 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
     assert.strictEqual(token!.expiresOnTimestamp, accessTokenExpNumber);
   });
 
-  it("getToken should success when scopes is string array", async function () {
+  it("getToken should success when scopes is string array", async function() {
     loadConfiguration();
     const oboCredential = new OnBehalfOfUserCredential(ssoToken);
     const scopesArray: string[] = [scope, "fake_scope_2"];
@@ -218,7 +227,7 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
     assert.strictEqual(token!.expiresOnTimestamp, accessTokenExpNumber);
   });
 
-  it("getToken should throw TokenExpiredError when get SSO token with sso token expired", async function () {
+  it("getToken should throw TokenExpiredError when get SSO token with sso token expired", async function() {
     const expiredSsoToken =
       "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Im5PbzNaRHJPRFhFSzFqS1doWHNsSFJfS1hFZyJ9.eyJhdWQiOiJjZWVkYTJjNi00MDBmLTQyYjMtYjE4ZC1jY2NmYzk5NjM4NmYiLCJpc3MiOiJodHRwczovL2xvZ2luLm1pY3Jvc29mdG9ubGluZS5jb20vNzJmOTg4YmYtODZmMS00MWFmLTkxYWItMmQ3Y2QwMTFkYjQ3L3YyLjAiLCJpYXQiOjE2MTk0OTI3MzEsIm5iZiI6MTYxOTQ5MjczMSwiZXhwIjoxNjE5NDk2NjMxLCJhaW8iOiJBVFFBeS84VEFBQUFFWDZLU0prRjlOaEFDL1NXV1hWTXFPVDNnNGZXR2dqS0ZEWjRramlEb25OVlY2cDlZTVFMaTFqVXdHWEZaclpaIiwiYXpwIjoiYjBjNDdmMjktM2M1Ny00MDQyLTkzM2YtYTdkNTQ2YmFlMzg3IiwiYXpwYWNyIjoiMCIsIm5hbWUiOiJNZXRhIE9TIHNlcnZpY2UgYWNjb3VudCBmb3IgZGV2ZWxvcG1lbnQiLCJvaWQiOiIyYTYxYzRjMy1lY2Y5LTQ5ZWItYjcxNy02NjczZmZmZDg5MmQiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJtZXRhZGV2QG1pY3Jvc29mdC5jb20iLCJyaCI6IjAuQVFFQXY0ajVjdkdHcjBHUnF5MTgwQkhiUnlsX3hMQlhQRUpBa3otbjFVYTY0NGNhQUpRLiIsInNjcCI6ImFjY2Vzc19hc191c2VyIiwic3ViIjoiNEhUVXFCbWVBQVFWa2ZrbU0wcFRtVHh3QjRkcDdITGtxSjRSYXFvb3dUTSIsInRpZCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsInV0aSI6ImFVQkxZSENBWmsyZE9LNW1wR2ctQUEiLCJ2ZXIiOiIyLjAifQ.QCkyqat72TS85vQ6h-jqAj-pnAOOkeOy3-WxgEQ1DJbW6fsoXmVGgso-ncMmeiYIoA1r9jy1cBfnEMBI1tBKcq4TOHseyde2uM-pxCGHNhFC_WiWy9KXKiou5bvgXdVqqCT7CQejpiNdm3wL-EFhXWBRj6OlLMLcUtnlcnKfOSmx8IIOuQrCjWtuE_wjpfo2AwkguuJ5defyOkYqlCfcJ9FyUrqhqsONMdh0lJiVY94PZ00UTjH3zPaC2tnKrGeXn-qrr9dccEUx2HqyAfdzPwymBLWMCrirVRKCZV3DtfKuozKkIxIPZz0891QZcFO8VgfBJaLmr6J7EL8lPtFKnw";
     const credential = new OnBehalfOfUserCredential(expiredSsoToken);
@@ -229,7 +238,7 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
     assert.strictEqual(err.code, ErrorCode.TokenExpiredError);
   });
 
-  it("getToken should throw ServiceError when fail to get access token due to AAD outage", async function () {
+  it("getToken should throw ServiceError when fail to get access token due to AAD outage", async function() {
     // Mock AAD outage
     sandbox.restore();
     sandbox.stub(ConfidentialClientApplication.prototype, "acquireTokenOnBehalfOf").callsFake(
@@ -249,5 +258,14 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
     assert.isTrue(
       errorResult.message!.indexOf("Failed to acquire access token on behalf of user: ") >= 0
     );
+  });
+
+  it("getUserInfo should succeed", async function() {
+    loadConfiguration();
+    const oboCredential = new OnBehalfOfUserCredential(ssoToken);
+    const userinfo: UserInfo = oboCredential.getUserInfo();
+    assert.strictEqual(userinfo.displayName, testDisplayName);
+    assert.strictEqual(userinfo.objectId, testObjectId);
+    assert.strictEqual(userinfo.preferredUserName, testPreferredUserName);
   });
 });

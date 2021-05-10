@@ -9,7 +9,7 @@ import {
   TelemetrySuccess,
   TelemetryErrorType
 } from "./cliTelemetryEvents";
-import { FxError, UserError } from "fx-api";
+import { FxError, UserError } from "@microsoft/teamsfx-api";
 import { getTeamsAppId } from "../utils";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace

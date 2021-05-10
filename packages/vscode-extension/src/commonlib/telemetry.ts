@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import * as vscode from "vscode";
 import Reporter from "vscode-extension-telemetry";
-import { TelemetryReporter } from "fx-api";
+import { TelemetryReporter } from "@microsoft/teamsfx-api";
 import { getPackageVersion } from "../utils/commonUtils";
 
 /**

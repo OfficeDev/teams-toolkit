@@ -5,7 +5,7 @@ import { AxiosInstance, AxiosResponse, Method } from "axios";
 import { IAadInfo, IPasswordCredential, IServicePrincipal, IServicePrincipals } from "../model/aadResponse";
 import { ErrorHandlerResult } from "../model/errorHandlerResult";
 import { AzureResource, IName, OperationStatus, Operation } from "../model/operation";
-import { LogProvider, TelemetryReporter } from "fx-api";
+import { LogProvider, TelemetryReporter } from "@microsoft/teamsfx-api";
 import { LogMessages } from "../log";
 import { Telemetry } from "../telemetry";
 import { RetryHandler } from "../util/retryHandler";

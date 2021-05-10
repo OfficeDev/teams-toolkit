@@ -6,7 +6,7 @@
 import colors from "colors";
 import { Argv } from "yargs";
 
-import { FxError, ok, Question, Result } from "fx-api";
+import { FxError, ok, Question, Result } from "@microsoft/teamsfx-api";
 
 import { YargsCommand } from "../yargsCommand";
 import AppStudioTokenProvider from "../commonlib/appStudioLogin";

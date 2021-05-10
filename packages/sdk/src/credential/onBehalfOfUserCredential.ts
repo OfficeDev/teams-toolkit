@@ -17,7 +17,7 @@ import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
  * loadConfiguration(); // load configuration from environment variables
  * const credential = new OnBehalfOfUserCredential(ssoToken);
  * ```
- * 
+ *
  * @remarks
  * Can only be used in server side.
  *
@@ -30,11 +30,11 @@ export class OnBehalfOfUserCredential implements TokenCredential {
   /**
    * Constructor of OnBehalfOfUserCredential
    *
-   * @remarks 
+   * @remarks
    * Only works in in server side.
-   * 
+   *
    * @param {string} ssoToken - User token provided by Teams SSO feature.
-   * 
+   *
    * @throws {@link ErrorCode|InvalidConfiguration} when client id, client secret, authority host or tenant id is not found in config.
    * @throws {@link ErrorCode|InternalError} when SSO token is not valid.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
@@ -104,23 +104,23 @@ export class OnBehalfOfUserCredential implements TokenCredential {
    * await credential.getToken("https://graph.microsoft.com/User.Read") // Get Graph access token with full resource URI
    * await credential.getToken(["https://outlook.office.com/Mail.Read"]) // Get Outlook access token
    * ```
-   * 
+   *
    * @param {string | string[]} scopes - The list of scopes for which the token will have access.
    * @param {GetTokenOptions} options - The options used to configure any requests this TokenCredential implementation might make.
-   * 
+   *
    * @throws {@link ErrorCode|InternalError} when failed to acquire access token on behalf of user with unknown error.
    * @throws {@link ErrorCode|TokenExpiredError} when SSO token has already expired.
    * @throws {@link ErrorCode|UiRequiredError} when need user consent to get access token.
    * @throws {@link ErrorCode|ServiceError} when failed to get access token from simple auth server.
    * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
-   * 
+   *
    * @returns Access token with expected scopes.
-   * 
+   *
    * @remarks
    * If scopes is empty string or array, it returns SSO token.
    * If scopes is non-empty, it returns access token for target scope.
-   * 
+   *
    * @beta
    */
   async getToken(
@@ -177,22 +177,19 @@ export class OnBehalfOfUserCredential implements TokenCredential {
    *
    * @example
    * ```typescript
-   * const currentUser = await credential.getUserInfo();
+   * const currentUser = getUserInfo();
    * ```
-   * 
+   *
    * @throws {@link ErrorCode|InternalError} when SSO token is not valid.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
-   * 
+   *
    * @returns Basic user info with user displayName, objectId and preferredUserName.
-   * 
+   *
    * @beta
    */
-  public getUserInfo(): Promise<UserInfo> {
+  public getUserInfo(): UserInfo {
     internalLogger.info("Get basic user info from SSO token");
-    const userInfo = getUserInfoFromSsoToken(this.ssoToken.token);
-    return new Promise<UserInfo>((resolve) => {
-      resolve(userInfo);
-    });
+    return getUserInfoFromSsoToken(this.ssoToken.token);
   }
 
   private generateAuthServerError(err: any): Error {
@@ -200,7 +197,7 @@ export class OnBehalfOfUserCredential implements TokenCredential {
     if (err.name === "InteractionRequiredAuthError") {
       const fullErrorMsg =
         "Failed to get access token from AAD server, interaction required: " + errorMessage;
-      internalLogger.error(fullErrorMsg);
+      internalLogger.warn(fullErrorMsg);
       return new ErrorWithCode(fullErrorMsg, ErrorCode.UiRequiredError);
     } else if (errorMessage && errorMessage.indexOf("AADSTS500133") >= 0) {
       const fullErrorMsg =

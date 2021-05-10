@@ -14,6 +14,7 @@ import { TeamsfxDebugProvider } from "./debug/teamsfxDebugProvider";
 import { ExtensionSurvey } from "./utils/survey";
 import VsCodeLogInstance from "./commonlib/log";
 import * as StringResources from "./resources/Strings.json";
+import { openWelcomePageAfterExtensionInstallation } from "./controls/openWelcomePage";
 
 export async function activate(context: vscode.ExtensionContext) {
   VsCodeLogInstance.info(StringResources.vsc.extension.activate);
@@ -208,6 +209,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
   const survey = new ExtensionSurvey(context);
   survey.activate();
+
+  openWelcomePageAfterExtensionInstallation();
 }
 
 // this method is called when your extension is deactivated

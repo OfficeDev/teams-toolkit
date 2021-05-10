@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Plugin, PluginContext, SystemError, UserError, err } from "fx-api";
+import { Plugin, PluginContext, SystemError, UserError, err } from "@microsoft/teamsfx-api";
 import { UnhandledError } from "./errors";
 import { SimpleAuthPluginImpl } from "./plugin";
 import { SimpleAuthResult, ResultFactory } from "./result";

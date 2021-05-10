@@ -7,7 +7,7 @@ import { ErrorCode, ErrorMessage, ErrorWithCode } from "../core/errors";
 
 /**
  * Represent Microsoft 365 tenant identity, and it is usually used when user is not involved.
- * 
+ *
  * @remarks
  * Only works in in server side.
  *
@@ -16,7 +16,7 @@ import { ErrorCode, ErrorMessage, ErrorWithCode } from "../core/errors";
 export class M365TenantCredential implements TokenCredential {
   /**
    * Constructor of M365TenantCredential.
-   * 
+   *
    * @remarks
    * Only works in in server side.
    * @beta
@@ -30,7 +30,7 @@ export class M365TenantCredential implements TokenCredential {
 
   /**
    * Get access token for credential.
-   * 
+   *
    * @remarks
    * Only works in in server side.
    * @beta

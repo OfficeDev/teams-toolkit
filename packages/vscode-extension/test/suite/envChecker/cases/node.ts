@@ -8,7 +8,7 @@ import { DepsChecker } from "../../../../src/debug/depsChecker/checker";
 import { TestAdapter } from "../adapters/testAdapter";
 import { TestLogger } from "../adapters/testLogger";
 import { TestTelemetry } from "../adapters/testTelemetry";
-import { ConfigFolderName } from "fx-api";
+import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import { isLinux } from "../../../../src/utils/commonUtils";
 import { AzureNodeChecker } from "../../../../src/debug/depsChecker/azureNodeChecker";
 

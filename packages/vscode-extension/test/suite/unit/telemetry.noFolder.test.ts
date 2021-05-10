@@ -6,7 +6,7 @@
 
 import * as chai from "chai";
 import * as spies from "chai-spies";
-import { TelemetryReporter } from "fx-api";
+import { TelemetryReporter } from "@microsoft/teamsfx-api";
 
 chai.use(spies);
 const expect = chai.expect;

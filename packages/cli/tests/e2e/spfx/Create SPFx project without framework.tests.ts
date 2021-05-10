@@ -42,7 +42,6 @@ describe("Start a new project", function () {
       "src/webparts/helloworld/loc/en-us.js",
       "src/webparts/helloworld/loc/mystrings.d.ts",
       "src/index.ts",
-      ".editorconfig",
       ".gitignore",
       "gulpfile.js",
       "package.json",

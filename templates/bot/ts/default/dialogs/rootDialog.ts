@@ -12,7 +12,7 @@ export class RootDialog extends ComponentDialog {
     }
 
     async onBeginDialog(innerDc: DialogContext, options: {} | undefined) {
-        const result = await this.interrupt(innerDc);
+        const result = await this.triggerCommand(innerDc);
         if (result) {
             return result;
         }
@@ -24,11 +24,19 @@ export class RootDialog extends ComponentDialog {
         return await super.onContinueDialog(innerDc);
     }
 
-    async interrupt(innerDc: DialogContext) {
+    async triggerCommand(innerDc: DialogContext) {
         const removedMentionText = TurnContext.removeRecipientMention(
             innerDc.context.activity
         );
-        const text = removedMentionText.toLowerCase().replace(/\n|\r/g, ""); // Remove the line break
+        const text = removedMentionText?.toLowerCase().replace(/\n|\r/g, "").trim(); // Remove the line break
+
+        // Empty text or not plain text command
+        if (!text ||
+            innerDc.context.activity.textFormat !==
+            TextFormatTypes.Plain) {
+            return await innerDc.cancelAllDialogs();
+        }
+
         switch (text) {
             case "show": {
                 if (innerDc.context.activity.conversation.isGroup) {
@@ -60,22 +68,17 @@ export class RootDialog extends ComponentDialog {
                 return await innerDc.cancelAllDialogs();
             }
             default: {
-                if (
-                    innerDc.context.activity.textFormat ===
-                    TextFormatTypes.Plain
-                ) {
-                    const cardButtons = [
-                        {
-                            type: ActionTypes.ImBack,
-                            title: "Show introduction card",
-                            value: "intro",
-                        },
-                    ];
-                    const card = CardFactory.heroCard("", null, cardButtons, {
-                        text: `This is a hello world Bot built with Microsoft Teams Framework, which is designed for illustration purposes. This Bot by default will not handle any specific question or task.<br>Please type <strong>intro</strong> to see the introduction card.`,
-                    });
-                    await innerDc.context.sendActivity({ attachments: [card] });
-                }
+                const cardButtons = [
+                    {
+                        type: ActionTypes.ImBack,
+                        title: "Show introduction card",
+                        value: "intro",
+                    },
+                ];
+                const card = CardFactory.heroCard("", null, cardButtons, {
+                    text: `This is a hello world Bot built with Microsoft Teams Framework, which is designed for illustration purposes. This Bot by default will not handle any specific question or task.<br>Please type <strong>intro</strong> to see the introduction card.`,
+                });
+                await innerDc.context.sendActivity({ attachments: [card] });
                 return await innerDc.cancelAllDialogs();
             }
         }

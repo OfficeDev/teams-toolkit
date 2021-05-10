@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { returnUserError, SystemError, UserError } from "fx-api";
+import { returnUserError, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { Constants } from "./utils/constants";
 import * as util from "util";
 

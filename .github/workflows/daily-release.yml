@@ -75,6 +75,7 @@ jobs:
           retry_on: error
           command: |
             cd ./packages/vscode-extension
+            rm -rf node_modules
             npm install
             npx vsce package
 

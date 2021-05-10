@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ConfigValue, PluginContext } from "fx-api";
+import { ConfigValue, PluginContext } from "@microsoft/teamsfx-api";
 
 import * as utils from "../utils/common";
 import { PluginSolution, PluginBot, PluginSql, PluginIdentity, PluginFunction, CommonStrings } from "../resources/strings";

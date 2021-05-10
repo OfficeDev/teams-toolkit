@@ -90,14 +90,20 @@ export class MainDialog extends RootDialog {
             const me = await graphClient.api("/me").get();
             if (me) {
                 await stepContext.context.sendActivity(
-                    `You're logged in as ${me.displayName} (${me.userPrincipalName}); your job title is: ${me.jobTitle}.`
+                    `You're logged in as ${me.displayName} (${me.userPrincipalName})${me.jobTitle ? `; your job title is: ${me.jobTitle}` : ""}.`
                 );
 
                 // show user picture
-                var photoBinary = await graphClient
-                    .api("/me/photo/$value")
-                    .responseType(ResponseType.ARRAYBUFFER)
-                    .get();
+                let photoBinary: ArrayBuffer;
+                try {
+                    photoBinary = await graphClient
+                        .api("/me/photo/$value")
+                        .responseType(ResponseType.ARRAYBUFFER)
+                        .get();
+                } catch {
+                    // Just continue when failing to get the photo.
+                    return await stepContext.endDialog();
+                }
                 const buffer = Buffer.from(photoBinary);
                 const imageUri =
                     "data:image/png;base64," + buffer.toString("base64");

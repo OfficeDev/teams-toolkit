@@ -6,13 +6,13 @@
 
 import { TokenCredential } from "@azure/core-auth";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-import { AzureAccountProvider, UserError } from "fx-api";
+import { AzureAccountProvider, UserError } from "@microsoft/teamsfx-api";
 import { ExtensionErrors } from "../error";
 import { AzureAccount } from "./azure-account.api";
 import { LoginFailureError } from "./codeFlowLogin";
 import * as vscode from "vscode";
 import * as identity from "@azure/identity";
-import { loggedIn, loggedOut, signedIn, signedOut } from "./common/constant";
+import { loggedIn, loggedOut, loggingIn, signedIn, signedOut, signingIn } from "./common/constant";
 import { login, LoginStatus } from "./common/login";
 import * as StringResources from "../resources/Strings.json";
 import * as util from "util";
@@ -307,13 +307,24 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     throw new UserError(ExtensionErrors.UnknownSubscription, StringResources.vsc.azureLogin.unknownSubscription, "Login");
   }
 
+  getAzureAccount(): AzureAccount {
+    const azureAccount: AzureAccount = vscode.extensions.getExtension<AzureAccount>(
+      "ms-vscode.azure-account"
+    )!.exports;
+    return azureAccount;
+  }
+
   async getStatus(): Promise<LoginStatus> {
-    if (this.isUserLogin()) {
+    const azureAccount = this.getAzureAccount();
+    if (azureAccount.status === loggedIn) {
       const credential = await this.doGetAccountCredentialAsync();
       const token = await credential?.getToken();
       const accountJson = await this.getJsonObject();
       return Promise.resolve({ status: signedIn, token: token?.accessToken, accountInfo: accountJson });
-    } else {
+    } else if (azureAccount.status === loggingIn) {
+      return Promise.resolve({ status: signingIn, token: undefined, accountInfo: undefined});
+    } 
+    else {
       return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });
     }
   }
@@ -330,6 +341,8 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         await this.notifyStatus();
       } else if (event === loggedIn) {
         await this.updateLoginStatus();
+        await this.notifyStatus();
+      } else if (event === loggingIn) {
         await this.notifyStatus();
       }
     });

@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import { default as chaiAsPromised } from "chai-as-promised";
 import AdmZip from "adm-zip";
 import path from "path";
-import { Stage } from "fx-api";
+import { Stage } from "@microsoft/teamsfx-api";
 
 import { TeamsBot } from "../../../../../src/plugins/resource/bot/index";
 import { TeamsBotImpl } from "../../../../../src/plugins/resource/bot/plugin";

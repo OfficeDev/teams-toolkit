@@ -20,10 +20,10 @@ const tips = {
     doNpmInstall: `Run 'npm install' in the folder: '${FrontendPathInfo.WorkingDir}'.`,
     doBuild: `Run npm run build' in the folder: '${FrontendPathInfo.WorkingDir}'.`,
     ensureBuildPath: `Ensure your built project exists: '${FrontendPathInfo.BuildPath}'.`,
-    ensureResourceGroup: "Ensure your resource group exists",
+    ensureResourceGroup: "Ensure your resource group exists.",
     ensureAppNameValid:
         "Ensure your app name only contains alphabetical and numeric characters, and does not contain trademark or reserved words.",
-    deleteSameNameStorage: "Delete your Azure Storage Account with same name in another resource group or subscription",
+    deleteSameNameStorage: "Delete your Azure Storage Account with same name in another resource group or subscription.",
     checkNetwork: "Check your network connection.",
     checkFsPermissions: "Check if you have Read/Write permissions to your file system.",
     checkStoragePermissions: "Check if you have permissions to your Azure Storage Account.",

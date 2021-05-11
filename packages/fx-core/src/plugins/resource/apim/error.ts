@@ -70,6 +70,12 @@ export const AadOperationError: IApimPluginError = {
     helpLink: "https://aka.ms/teamsfx-apim-help#aadoperationerror",
 };
 
+export const EmptyCliOptionError: IApimPluginError = {
+    type: ErrorType.User,
+    code: "EmptyCliOptionError",
+    message: (optionName: string) => `Option '${optionName}' is required at the first execution. Set the value of '${optionName}'`,
+};
+
 // System error
 export const NotImplemented: IApimPluginError = {
     type: ErrorType.System,

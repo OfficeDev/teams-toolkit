@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Plugin, FxError, PluginContext, SystemError, UserError, Result, err, ok, QTreeNode, Stage, Func } from "@microsoft/teamsfx-api";
-import { BuildError, UnhandledError } from "./error";
+import { Plugin, FxError, PluginContext, SystemError, UserError, Result, err, ok, QTreeNode, Stage, Func, Platform } from "@microsoft/teamsfx-api";
+import { BuildError, EmptyCliOptionError, UnhandledError } from "./error";
 import { Telemetry } from "./utils/telemetry";
 import { AadPluginConfig, ApimPluginConfig, FunctionPluginConfig, SolutionConfig } from "./config";
-import { AadDefaultValues, PluginLifeCycle, PluginLifeCycleToProgressStep, ProgressMessages, ProgressStep, ProjectConstants, OperationStatus } from "./constants";
+import { AadDefaultValues, PluginLifeCycle, PluginLifeCycleToProgressStep, ProgressMessages, ProgressStep, ProjectConstants, OperationStatus, QuestionConstants } from "./constants";
 import { Factory } from "./factory";
 import { ProgressBar } from "./utils/progressBar";
 import { buildAnswer } from "./answer";
@@ -118,7 +118,7 @@ async function _postProvision(ctx: PluginContext, progressBar: ProgressBar): Pro
     const aadConfig = new AadPluginConfig(ctx.configOfOtherPlugins);
 
     const apimManager = await Factory.buildApimManager(ctx, solutionConfig);
-    const aadManager = await Factory.buildAadManager(ctx, );
+    const aadManager = await Factory.buildAadManager(ctx,);
     const teamsAppAadManager = await Factory.buildTeamsAppAadManager(ctx);
 
     await progressBar.next(ProgressStep.PostProvision, ProgressMessages[ProgressStep.PostProvision].ConfigClientAad);
@@ -136,6 +136,17 @@ async function _deploy(ctx: PluginContext, progressBar: ProgressBar): Promise<vo
     const apimConfig = new ApimPluginConfig(ctx.config);
     const functionConfig = new FunctionPluginConfig(ctx.configOfOtherPlugins);
     const answer = buildAnswer(ctx);
+
+    // TODO: delete the following logic after cli question model fix undefined / empty string validation bug
+    if (ctx.platform === Platform.CLI) {
+        if (!apimConfig.apiPrefix && !answer.apiPrefix){
+            throw BuildError(EmptyCliOptionError, `--${QuestionConstants.CLI.ApiPrefix.questionName}`);
+        }
+        if (!apimConfig.apiDocumentPath && !answer.apiDocumentPath){
+            throw BuildError(EmptyCliOptionError, `--${QuestionConstants.CLI.OpenApiDocument.questionName}`);
+        }
+    }
+
     answer.save(Stage.deploy, apimConfig);
 
     const apimManager = await Factory.buildApimManager(ctx, solutionConfig);

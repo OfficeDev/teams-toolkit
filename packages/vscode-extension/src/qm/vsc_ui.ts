@@ -278,58 +278,40 @@ export class VsCodeUI implements UserInterface{
       quickPick.canSelectMany = false;
       // quickPick.step = option.step;
       // quickPick.totalSteps = option.totalSteps;
-      return await new Promise<InputResult>(
-        async (resolve): Promise<void> => {
+      let alreadyResolved = false;
+      const result = await new Promise<InputResult>(
+        async (resolve) => {
           const onDidAccept = async () => {
             let result = quickPick.items[0].detail;
-            if(result && result.length > 0)
+            if(result && result.length > 0){
+              alreadyResolved = true;
               resolve({ type: InputResultType.sucess, result: result });
+            }
           };
 
           disposables.push(
             // quickPick.onDidAccept(onDidAccept),
             quickPick.onDidHide(() => {
-              resolve({ type: InputResultType.cancel});
+              if(alreadyResolved === false){
+                alreadyResolved = true;
+                resolve({ type: InputResultType.cancel});
+              }
             })
           );
           disposables.push(
             quickPick.onDidTriggerButton((button) => { 
-              if (button === QuickInputButtons.Back)
+              if (button === QuickInputButtons.Back){
+                alreadyResolved = true;
                 resolve({ type: InputResultType.back });
+              }
               else
                 onDidAccept();
             })
           );
-          try {
+          /// set items
+          quickPick.items = [{label: "Select the workspace folder", detail: option.defaultUri}];
              
-            /// set items
-            quickPick.items = [{label: "Select the workspace folder", detail: option.defaultUri}];
-            
-            const items = quickPick.items as FxQuickPickItem[];
-            const optionMap = new Map<string, FxQuickPickItem>();
-            for(const item of items){
-              optionMap.set(item.id, item);
-            }
-            const onDidChangeSelection = async function(items:QuickPickItem[]):Promise<any>{
-              const defaultUrl = items[0].detail;
-              const uri = await window.showOpenDialog({
-                defaultUri: defaultUrl ? Uri.file(defaultUrl) : undefined,
-                canSelectFiles: false,
-                canSelectFolders: true,
-                canSelectMany: false,
-                title: option.title
-              });
-              const res = uri && uri.length > 0 ? uri[0].fsPath : undefined;
-              if (res) {
-                quickPick.items = [{label: "Select the workspace folder", detail: res}];
-                resolve({ type: InputResultType.sucess, result: res });
-              }
-            };
-            disposables.push(
-              quickPick.onDidChangeSelection(onDidChangeSelection)
-            );
-            quickPick.show();
-
+          const onDidChangeSelection = async function(items:QuickPickItem[]):Promise<any>{
             const defaultUrl = items[0].detail;
             const uri = await window.showOpenDialog({
               defaultUri: defaultUrl ? Uri.file(defaultUrl) : undefined,
@@ -340,17 +322,32 @@ export class VsCodeUI implements UserInterface{
             });
             const res = uri && uri.length > 0 ? uri[0].fsPath : undefined;
             if (res) {
-              quickPick.items = [{label: "path", detail: res}];
+              quickPick.items = [{label: "Select the workspace folder", detail: res}];
+              alreadyResolved = true;
               resolve({ type: InputResultType.sucess, result: res });
             }
-          } catch (err) {
-            resolve({
-              type: InputResultType.error,
-              error: returnSystemError(err, ExtensionSource, ExtensionErrors.UnknwonError)
-            });
+          };
+          disposables.push(
+            quickPick.onDidChangeSelection(onDidChangeSelection)
+          );
+          quickPick.show();
+
+          const uri = await window.showOpenDialog({
+            defaultUri: option.defaultUri ? Uri.file(option.defaultUri) : undefined,
+            canSelectFiles: false,
+            canSelectFolders: true,
+            canSelectMany: false,
+            title: option.title
+          });
+          const res = uri && uri.length > 0 ? uri[0].fsPath : undefined;
+          if (res) {
+            quickPick.items = [{label: "path", detail: res}];
+            alreadyResolved = true;
+            resolve({ type: InputResultType.sucess, result: res });
           }
         }
       );
+      return result;
     } finally {
       disposables.forEach((d) => {
         d.dispose();

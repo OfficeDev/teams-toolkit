@@ -20,9 +20,7 @@ import {
 import { getValidationFunction, RemoteFuncExecutor, validate } from "./validation";
 import { ConfigMap, Inputs } from "../config";
 import { InputResult, InputResultType, UserInterface } from "./ui";
-import { returnSystemError, returnUserError } from "../error";
-import { operationOptionsToRequestOptionsBase } from "@azure/core-http";
-import { QuestionType } from "../utils";
+import { returnSystemError } from "../error";
 
 async function getRealValue(
   parentValue: unknown,
@@ -146,22 +144,23 @@ const questionVisitor: QuestionVistor = async function (
   totalSteps?: number,
 ): Promise<InputResult> {
   //FunctionCallQuestion
+  let result:InputResult = {type: InputResultType.sucess, result: undefined};
   if (question.type === NodeType.func) {
     if (remoteFuncExecutor) {
       const res = await remoteFuncExecutor(question as Func, inputs);
       if (res.isOk()) {
-        return { type: InputResultType.sucess, result: res.value };
+        result = { type: InputResultType.sucess, result: res.value };
       }
       else {
-        return { type: InputResultType.error, error: res.error };
+        result = { type: InputResultType.error, error: res.error };
       }
     }
   } 
   else if(question.type === NodeType.localFunc){
     const res = await question.func(inputs);
-    return { type: InputResultType.sucess, result: res };
+    result = { type: InputResultType.sucess, result: res };
   }
-  else{
+  else {
     const title = question.title as string || question.description || question.name;
     const defaultValue = question.value? question.value : await getRealValue(parentValue, question.default, inputs, remoteFuncExecutor);
     if (question.type === NodeType.text || question.type === NodeType.password || question.type === NodeType.number) {
@@ -169,7 +168,7 @@ const questionVisitor: QuestionVistor = async function (
       const validationFunc = inputQuestion.validation ? getValidationFunction(inputQuestion.validation, inputs, remoteFuncExecutor) : undefined;
       const placeholder = await getCallFuncValue(inputs, false, inputQuestion.placeholder, remoteFuncExecutor) as string;
       const prompt = await getCallFuncValue(inputs, false, inputQuestion.prompt, remoteFuncExecutor) as string;
-      return await ui.showInputBox({
+      result = await ui.showInputBox({
         title: title,
         password: !!(question.type === NodeType.password),
         defaultValue: defaultValue as string,
@@ -208,7 +207,7 @@ const questionVisitor: QuestionVistor = async function (
       const mq = (selectQuestion as MultiSelectQuestion);
       const validationFunc = mq.validation ? getValidationFunction( mq.validation, inputs, remoteFuncExecutor) : undefined;
       const prompt = await getCallFuncValue(inputs, false, mq.prompt, remoteFuncExecutor) as string;
-      return await ui.showQuickPick({
+      result = await ui.showQuickPick({
         title: title,
         items: res.options,
         canSelectMany: !!(question.type === NodeType.multiSelect),
@@ -225,7 +224,7 @@ const questionVisitor: QuestionVistor = async function (
     } else if (question.type === NodeType.folder) {
       const fileQuestion: FileQuestion = question as FileQuestion;
       const validationFunc = fileQuestion.validation ? getValidationFunction(fileQuestion.validation, inputs, remoteFuncExecutor) : undefined;
-      return await ui.showOpenDialog({
+      result = await ui.showOpenDialog({
         defaultUri: defaultValue as string,
         canSelectFiles: false,
         canSelectFolders: true,
@@ -238,14 +237,7 @@ const questionVisitor: QuestionVistor = async function (
       });
     }
   }
-  return {
-    type: InputResultType.error,
-    error: returnUserError(
-      new Error(`Unsupported question node type:${question.type}`),
-      "API.qm",
-      "UnsupportedNodeType"
-    )
-  };
+  return result;
 };
 
 export async function traverse(

@@ -36,6 +36,14 @@ export async function validate(
   inputs: ConfigMap,
   remoteFuncValidator?: RemoteFuncExecutor
 ): Promise<string | undefined> {
+  // Required Validation
+  {
+    if(validation.required){
+      if(!valueToValidate){
+        return `This question is mandatory`;
+      }
+    }
+  }
   //RemoteFuncValidation
   {
     const funcValidation: RemoteFuncValidation = validation as RemoteFuncValidation;

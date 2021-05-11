@@ -254,7 +254,10 @@
                     "data": {
                         "type": "folder",
                         "name": "folder",
-                        "title": "Workspace folder"
+                        "title": "Workspace folder",
+                        "validation": {
+                            "required": true
+                        }
                     }
                 },
                 {

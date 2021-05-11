@@ -46,7 +46,7 @@ export class TelemetryUtils {
         if (TelemetryUtils.localAppId) {
             properties[TelemetryPropertyKey.appId] = TelemetryUtils.localAppId;
         }
-        TelemetryUtils.ctx.telemetryReporter?.sendTelemetryEvent(`${LocalDebugPluginInfo.pluginName}/${eventName}-start`, properties, measurements);
+        TelemetryUtils.ctx.telemetryReporter?.sendTelemetryEvent(`${eventName}-start`, properties, measurements);
     }
 
     public static sendSuccessEvent(
@@ -63,7 +63,7 @@ export class TelemetryUtils {
             properties[TelemetryPropertyKey.appId] = TelemetryUtils.localAppId;
         }
         properties[TelemetryPropertyKey.success] = TelemetryPropertyValue.success;
-        TelemetryUtils.ctx.telemetryReporter?.sendTelemetryErrorEvent(`${LocalDebugPluginInfo.pluginName}/${eventName}`, properties, measurements, errorProps);
+        TelemetryUtils.ctx.telemetryReporter?.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
     }
 
     public static sendErrorEvent(
@@ -88,6 +88,6 @@ export class TelemetryUtils {
         }
         properties[TelemetryPropertyKey.errorCode] = `${err.source}.${err.name}`;
         properties[TelemetryPropertyKey.errorMessage] = err.message;
-        TelemetryUtils.ctx.telemetryReporter?.sendTelemetryErrorEvent(`${LocalDebugPluginInfo.pluginName}/${eventName}`, properties, measurements, errorProps);
+        TelemetryUtils.ctx.telemetryReporter?.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
     }
 }

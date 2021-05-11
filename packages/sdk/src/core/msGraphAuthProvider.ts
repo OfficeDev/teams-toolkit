@@ -23,7 +23,7 @@ export class MsGraphAuthProvider implements AuthenticationProvider {
    *
    * @param {TokenCredential} credential - Credential used to invoke Microsoft Graph APIs.
    * @param {string | string[]} scopes - The list of scopes for which the token will have access.
-   * 
+   *
    * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
    *
    * @returns An instance of MsGraphAuthProvider.
@@ -57,7 +57,7 @@ export class MsGraphAuthProvider implements AuthenticationProvider {
    * @throws {@link ErrorCode|UiRequiredError} when need user consent to get access token.
    * @throws {@link ErrorCode|ServiceError} when failed to get access token from simple auth or AAD server.
    * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
-   * 
+   *
    * @returns Access token from the credential.
    *
    */

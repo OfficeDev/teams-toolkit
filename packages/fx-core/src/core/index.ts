@@ -47,7 +47,7 @@ import {
     AzureSolutionSettings,
     ProjectSettings,
     MsgLevel,
-} from "fx-api";
+} from "@microsoft/teamsfx-api";
 import * as path from "path";
 // import * as Bundles from '../resource/bundles.json';
 import * as error from "./error";

@@ -4,7 +4,7 @@ import "mocha";
 import chai from "chai";
 import { ApimPluginConfigKeys, TeamsToolkitComponent, SolutionConfigKeys } from "../../../../src/plugins/resource/apim/constants";
 import { ApimPluginConfig, SolutionConfig } from "../../../../src/plugins/resource/apim/model/config";
-import { ConfigValue, PluginIdentity, ReadonlyPluginConfig } from "fx-api";
+import { ConfigValue, PluginIdentity, ReadonlyPluginConfig } from "@microsoft/teamsfx-api";
 
 describe("config", () => {
     describe("SolutionConfig", () => {

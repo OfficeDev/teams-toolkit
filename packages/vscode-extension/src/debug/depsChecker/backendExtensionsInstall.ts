@@ -8,7 +8,7 @@
 // and run the scripts (tools/depsChecker/copyfiles.sh or tools/depsChecker/copyfiles.ps1 according to your OS)
 // to copy you changes to function plugin.
 
-import { defaultHelpLink } from "./common";
+import { defaultHelpLink, dotnetNotSupportTargetVersionHelpLink } from "./common";
 import { DotnetChecker } from "./dotnetChecker";
 import { BackendExtensionsInstallError } from "./errors";
 import { cpUtils } from "./cpUtils";
@@ -42,20 +42,28 @@ export class BackendExtensionsInstaller {
     }
 
     try {
-      await cpUtils.executeCommand(
-        backendRoot,
-        this._logger,
-        { shell: false },
-        dotnetExecPath,
-        "build",
-        csprojPath,
-        "-o",
-        outputPath,
-        "--ignore-failed-sources"
+      const result: cpUtils.ICommandResult = await cpUtils.tryExecuteCommand(
+          backendRoot,
+          this._logger,
+          { shell: false },
+          dotnetExecPath,
+          "build",
+          csprojPath,
+          "-o",
+          outputPath,
+          "--ignore-failed-sources"
       );
+      if (result.code !== 0) {
+        throw new Error(`Failed to run "${dotnetExecPath} build" command. output = ${result.cmdOutput}, err = ${result.cmdOutputIncludingStderr}`);
+      }
     } catch (error) {
       await this._logger.printDetailLog();
       await this._logger.error(`Failed to run backend extension install: error = '${error}'`);
+
+      if(error.message.includes("NETSDK1045")) {
+        // refer to https://docs.microsoft.com/en-us/dotnet/core/tools/sdk-errors/netsdk1045
+        throw new BackendExtensionsInstallError(`NETSDK1045: The current .NET SDK does not support 'newer version' as a target`, dotnetNotSupportTargetVersionHelpLink);
+      }
       throw new BackendExtensionsInstallError(`Failed to run backend extension install: error = '${error}'`, defaultHelpLink);
     } finally {
       this._logger.cleanup();

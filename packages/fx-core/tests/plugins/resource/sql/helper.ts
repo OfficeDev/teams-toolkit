@@ -1,5 +1,5 @@
 import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
-import { PluginContext } from "fx-api";
+import { PluginContext } from "@microsoft/teamsfx-api";
 import { Constants } from "../../../../src/plugins/resource/sql/constants";
 
 export class TestHelper {

@@ -32,7 +32,7 @@ import {
     Err,
     UserError,
     SystemError
-} from "fx-api";
+} from "@microsoft/teamsfx-api";
 import { askSubscription, fillInCommonQuestions } from "./commonQuestions";
 import { executeLifecycles, executeConcurrently, LifecyclesWithContext } from "./executor";
 import { getPluginContext, getSubsriptionDisplayName } from "./util";
@@ -565,7 +565,16 @@ export class TeamsAppSolution implements Solution {
             return maybeSelectedPlugins;
         }
         const selectedPlugins = maybeSelectedPlugins.value;
-        return await this.doScaffold(ctx, selectedPlugins);
+        const result = await this.doScaffold(ctx, selectedPlugins);
+        if (result.isOk()) {
+            await ctx.dialog?.communicate(
+                new DialogMsg(DialogType.Show, {
+                    description: strings.solution.ScaffoldSuccessNotice,
+                    level: MsgLevel.Info,
+                }),
+            );
+        }
+        return result;
     }
 
     async doScaffold(ctx: SolutionContext, selectedPlugins:LoadedPlugin[]): Promise<Result<any, FxError>> {
@@ -984,14 +993,16 @@ export class TeamsAppSolution implements Solution {
             this.runningState = SolutionRunningState.DeployInProgress;
             const result = await this.doDeploy(ctx);
             if (result.isOk()) {
-                const msg = util.format(strings.solution.DeploySuccessNotice, ctx.projectSettings?.appName);
-                ctx.logProvider?.info(msg);
-                await ctx.dialog?.communicate(
-                    new DialogMsg(DialogType.Show, {
-                        description: msg,
-                        level: MsgLevel.Info,
-                    }),
-                );
+                if (this.isAzureProject(ctx)) {
+                    const msg = util.format(strings.solution.DeploySuccessNotice, ctx.projectSettings?.appName);
+                    ctx.logProvider?.info(msg);
+                    await ctx.dialog?.communicate(
+                        new DialogMsg(DialogType.Show, {
+                            description: msg,
+                            level: MsgLevel.Info,
+                        }),
+                    );
+                }
             } else {
                 const msg = util.format(strings.solution.DeployFailNotice, ctx.projectSettings?.appName);
                 ctx.logProvider?.info(msg);

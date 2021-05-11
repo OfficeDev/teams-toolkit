@@ -40,10 +40,14 @@
         background-color: var(--vscode-editorWidget-background);
         border-radius: 2px;
         width: 278px;
+        height: 400px;
+        position: relative;
 
         .section{
             display: flex;
             margin-bottom: 0px;
+            padding-right: 8px;
+            flex-wrap: wrap;
         }
 
         .tag{
@@ -57,6 +61,7 @@
             text-align: center;
             color: var(--vscode-titleBar-activeForeground);
             margin: 8px 0px 0px 8px;
+            white-space: nowrap;
         }
 
         h2{
@@ -93,10 +98,12 @@
 
         .buttons{
             margin: 28px 12px 12px auto;
+            position: absolute;
+            bottom: 0px;
         }
 
         .right-aligned{
-            margin-left: auto;
+            margin-left: 190px;
             margin-right: 8px;
         }
     }

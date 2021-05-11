@@ -9,11 +9,11 @@ describe("Package Meta Test - Node", () => {
   it("has same value with package.json", () => {
     const packageData = fs.readJSONSync("package.json");
     assert.strictEqual(name, packageData.name);
-    assert.strictEqual(version, packageData.version);
+    assert.isTrue(packageData.version.startsWith(version));
     if (fs.existsSync("package-lock.json")) {
       const packageLockData = fs.readJSONSync("package-lock.json");
       assert.strictEqual(name, packageLockData.name);
-      assert.strictEqual(version, packageLockData.version);
+      assert.isTrue(packageLockData.version.startsWith(version));
     }
   });
 });

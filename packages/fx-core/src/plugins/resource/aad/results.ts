@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, SystemError, UserError, Result, ok } from "fx-api";
+import { FxError, SystemError, UserError, Result, ok } from "@microsoft/teamsfx-api";
 import { Plugins } from "./constants";
 
 export type AadResult = Result<any, FxError>;

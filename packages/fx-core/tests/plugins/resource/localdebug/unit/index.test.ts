@@ -3,7 +3,7 @@ import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import * as dotenv from "dotenv";
 import * as fs from "fs-extra";
-import { ConfigFolderName, Platform, PluginContext } from "fx-api";
+import { ConfigFolderName, Platform, PluginContext } from "@microsoft/teamsfx-api";
 import * as path from "path";
 
 import { LocalDebugPluginInfo } from "../../../../../src/plugins/resource/localdebug/constants";

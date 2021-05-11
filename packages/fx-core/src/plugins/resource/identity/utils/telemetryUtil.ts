@@ -1,4 +1,4 @@
-import { PluginContext } from "fx-api";
+import { PluginContext } from "@microsoft/teamsfx-api";
 import { Telemetry } from "../constants";
 
 export class TelemetryUtils {

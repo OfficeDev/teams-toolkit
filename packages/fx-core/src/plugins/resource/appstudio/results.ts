@@ -1,5 +1,5 @@
 
-import { SystemError, UserError } from "fx-api";
+import { SystemError, UserError } from "@microsoft/teamsfx-api";
 import { Constants } from "./constants";
 
 export class AppStudioResultFactory {

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ProductName } from "fx-api";
+import { ProductName } from "@microsoft/teamsfx-api";
 import * as vscode from "vscode";
 
 import { ext } from "../extensionVariables";

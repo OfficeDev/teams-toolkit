@@ -4,7 +4,7 @@
 
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { FxError, Result, SystemError, UserError, err, ok } from "fx-api";
+import { FxError, Result, SystemError, UserError, err, ok } from "@microsoft/teamsfx-api";
 
 import { Links, Alias } from "./constants";
 
@@ -15,18 +15,18 @@ export class FxBotPluginResultFactory {
     static readonly defaultHelpLink: string = Links.HELP_LINK;
     static readonly defaultIssueLink: string = Links.ISSUE_LINK;
 
-    public static UserError(errorName: string, errorMessage: string, helpLink?: string, innerError?: any): FxResult {
+    public static UserError(errorName: string, errorMessage: string, showHelpLink: boolean, innerError?: any): FxResult {
         return err(new UserError(
             errorName,
             errorMessage,
             FxBotPluginResultFactory.source,
             innerError?.stack,
-            FxBotPluginResultFactory.defaultHelpLink,
+            showHelpLink ? FxBotPluginResultFactory.defaultHelpLink : undefined,
             innerError
         ));
     }
 
-    public static SystemError(errorName: string, errorMessage: string, issueLink?: string, innerError?: any): FxResult {
+    public static SystemError(errorName: string, errorMessage: string, innerError?: any): FxResult {
         return err(new SystemError(
             errorName,
             errorMessage,

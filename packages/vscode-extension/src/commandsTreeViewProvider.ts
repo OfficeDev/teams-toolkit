@@ -4,7 +4,7 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import { ext } from "./extensionVariables";
-import { TreeItem, TreeCategory, Result, FxError, ok } from "fx-api";
+import { TreeItem, TreeCategory, Result, FxError, ok } from "@microsoft/teamsfx-api";
 import * as StringResources from "./resources/Strings.json";
 
 class TreeViewManager{

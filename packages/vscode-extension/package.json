@@ -2,7 +2,7 @@
   "name": "teamsfx-extension",
   "displayName": "Teams Toolkit (Preview)",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "2.0.1-alpha.1",
+  "version": "2.0.0-alpha.23",
   "publisher": "Microsoft",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -172,6 +172,10 @@
         "command": "fx-extension.specifySubscription",
         "title": "Specify subscription",
         "icon": "$(list-selection)"
+      },
+      {
+        "command": "fx-extension.cmpAccounts",
+        "title": "Teams: Accounts"
       },
       {
         "command": "fx-extension.openWelcome",
@@ -513,11 +517,11 @@
     "@azure/identity": "^1.2.1",
     "@azure/ms-rest-nodeauth": "^3.0.7",
     "@azure/msal-node": "^1.0.0-beta.5",
+    "@microsoft/teamsfx-api": "^0.1.0-alpha.2",
+    "@microsoft/teamsfx-core": "^0.1.0-alpha.2",
     "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
-    "fx-api": "^1.1.2-alpha.1",
-    "fx-core": "^1.1.2-alpha.1",
     "jsonschema": "^1.4.0",
     "opn": "^6.0.0",
     "sudo-prompt": "^9.2.1",
@@ -538,5 +542,8 @@
       "commit-msg": "commitlint -e $HUSKY_GIT_PARAMS"
     }
   },
-  "gitHead": "7d60c0765c0ea8c023a26c10d1c93001c597afbb"
+  "gitHead": "7d60c0765c0ea8c023a26c10d1c93001c597afbb",
+  "publishConfig": {
+    "access": "public"
+  }
 }

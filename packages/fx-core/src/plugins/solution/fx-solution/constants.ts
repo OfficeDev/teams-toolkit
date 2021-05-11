@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { IBot, IComposeExtension, IConfigurableTab, IStaticTab } from "fx-api";
+import { IBot, IComposeExtension, IConfigurableTab, IStaticTab } from "@microsoft/teamsfx-api";
 
 /**
  * Void is used to construct Result<Void, FxError>.

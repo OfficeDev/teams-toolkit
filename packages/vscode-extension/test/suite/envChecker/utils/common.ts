@@ -30,9 +30,10 @@ export function assertPathEqual(actual: string, expected: string) {
 }
 
 export async function getExecutionPolicyForCurrentUser(): Promise<string> {
-  return cpUtils.executeCommand(undefined, logger, { shell: 'powershell.exe' }, "Get-ExecutionPolicy", "-Scope", "CurrentUser");
+  const policy = await cpUtils.executeCommand(undefined, logger, undefined, "powershell.exe", "-Command", "Get-ExecutionPolicy", "-Scope", "CurrentUser");
+  return policy.trim();
 }
 
-export async function setExecutionPolicyForCurrentUser(policy: string) {
-  cpUtils.executeCommand(undefined, logger, { shell: 'powershell.exe' }, "Set-ExecutionPolicy", "-Scope", "CurrentUser", policy);
+export async function setExecutionPolicyForCurrentUser(policy: string): Promise<void> {
+  await cpUtils.executeCommand(undefined, logger, undefined, "powershell.exe", "-Command", "Set-ExecutionPolicy", "-Scope", "CurrentUser", policy);
 }

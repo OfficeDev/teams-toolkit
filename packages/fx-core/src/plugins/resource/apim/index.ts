@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Plugin, FxError, PluginContext, SystemError, UserError, Result, err, ok, QTreeNode, Stage, Func } from "fx-api";
+import { Plugin, FxError, PluginContext, SystemError, UserError, Result, err, ok, QTreeNode, Stage, Func } from "@microsoft/teamsfx-api";
 import { BuildError, UnhandledError } from "./error";
 import { Telemetry } from "./telemetry";
 import { AadPluginConfig, ApimPluginConfig, FunctionPluginConfig, SolutionConfig } from "./model/config";

@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { PluginContext, ok, QTreeNode, NodeType, Stage, Result, FxError } from "fx-api";
+import { PluginContext, ok, QTreeNode, NodeType, Stage, Result, FxError } from "@microsoft/teamsfx-api";
 import path from "path";
 
 import { AzureStorageClient } from "./clients";

@@ -34,7 +34,7 @@ describe("DefaultTediousConnection Tests - Node", () => {
     RestoreEnvironmentVariable(restore);
     // await clearUpLocalFirewall(sqlManagerClient, resourceGroup!, sqlName!);
   });
-  it("execQuery should success with username and password", async function () {
+  it("execQuery should success with username and password", async function() {
     connection = await getSQLConnection();
     const query = "select system_user as u, sysdatetime() as t";
     const result = await execQuery(query, connection);

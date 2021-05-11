@@ -8,7 +8,7 @@ import path from "path";
 import { promisify } from "util";
 import { v4 as uuidv4 } from "uuid";
 
-import { AzureConfig, AadManager, ResourceGroupManager } from "fx-api";
+import { AzureConfig, AadManager, ResourceGroupManager } from "@microsoft/teamsfx-api";
 
 import GraphTokenProvider from "../../src/commonlib/graphLogin";
 

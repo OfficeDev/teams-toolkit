@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { ApiContract } from "@azure/arm-apimanagement/src/models";
-import { ConfigMap, Platform, PluginContext, Stage } from "fx-api";
+import { ConfigMap, Platform, PluginContext, Stage } from "@microsoft/teamsfx-api";
 import { OpenAPI } from "openapi-types";
 import { QuestionConstants } from "../constants";
 import { AssertNotEmpty, BuildError, NotImplemented } from "../error";

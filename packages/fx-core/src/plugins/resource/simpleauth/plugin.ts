@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { FxError, PluginContext, Result } from "fx-api";
+import { FxError, PluginContext, Result } from "@microsoft/teamsfx-api";
 import { Constants, Messages } from "./constants";
 import { NoConfigError, UnauthenticatedError } from "./errors";
 import { ResultFactory } from "./result";

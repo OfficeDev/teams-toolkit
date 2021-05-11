@@ -18,8 +18,9 @@ import {
   FxError,
   IProgressStatus,
   IProgressHandler,
-  ConfigMap
-} from "fx-api";
+  ConfigMap,
+  LogLevel
+} from "@microsoft/teamsfx-api";
 import inquirer from "inquirer";
 import CLILogProvider from "./commonlib/log";
 import { ProgressHandler } from "./progressHandler";
@@ -153,13 +154,13 @@ export class DialogManager implements Dialog {
   private showMessage(msg: IMessage) {
     switch (msg.level) {
       case MsgLevel.Info:
-        CLILogProvider.info(msg.description);
+        CLILogProvider.necessaryLog(LogLevel.Info, msg.description);
         break;
       case MsgLevel.Warning:
-        CLILogProvider.warning(msg.description);
+        CLILogProvider.necessaryLog(LogLevel.Warning, msg.description);
         break;
       case MsgLevel.Error:
-        CLILogProvider.error(msg.description);
+        CLILogProvider.necessaryLog(LogLevel.Error, msg.description);
         break;
     }
     return;

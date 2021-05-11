@@ -18,7 +18,7 @@ export class OnBehalfOfUserCredential implements TokenCredential {
   /**
    * Constructor of OnBehalfOfUserCredential
    *
-   * @remarks 
+   * @remarks
    * Can Only works in in server side.
    * @beta
    */

@@ -5,7 +5,7 @@
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
 import * as os from "os";
-import { ConfigFolderName } from "fx-api";
+import { ConfigFolderName } from "@microsoft/teamsfx-api";
 
 export async function prepareLocalAuthService(zipPath: string): Promise<string> {
     const toolkitHome = `${os.homedir()}/.${ConfigFolderName}`;

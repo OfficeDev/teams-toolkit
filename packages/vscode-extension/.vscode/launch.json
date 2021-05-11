@@ -17,7 +17,7 @@
 				"${workspaceFolder}/../fx-core/build/**/*.js",
 				"${workspaceFolder}/../api/build/**/*.js"
 			],
-			"preLaunchTask": "npm: package"
+			"preLaunchTask": "npm: build"
 		},
 		{
 			"name": "Extension Tests (No Folder)",

@@ -35,7 +35,8 @@
     "unit-test:browser": "karma start --single-run --glob=./dist-test/index.unit.browser.js",
     "unit-test:node": "mocha dist-test/index.node.js --reporter ./tools/mocha-multi-reporter.js",
     "test:unit": "npm run build:test && npm run unit-test:node && npm run unit-test:browser",
-    "e2e-test": "mocha --no-timeouts -r test/mocha.env.ts -r ts-node/register test/e2e/**/*.spec.ts --exit"
+    "e2e-test": "mocha --no-timeouts -r test/mocha.env.ts -r ts-node/register test/e2e/**/*.spec.ts --exit",
+    "precommit": "lint-staged"
   },
   "files": [
     "dist/",
@@ -85,6 +86,7 @@
     "@rollup/plugin-node-resolve": "^8.0.0",
     "@rollup/plugin-replace": "^2.2.0",
     "@shared/eslint-config": "file:../eslint-config",
+    "@shared/prettier-config": "file:../prettier-config",
     "@types/chai": "^4.1.6",
     "@types/chai-as-promised": "^7.1.0",
     "@types/fs-extra": "^9.0.11",
@@ -103,7 +105,6 @@
     "dotenv": "^8.2.0",
     "eslint": "^7.15.0",
     "fs-extra": "^9.1.0",
-    "husky": "^4.3.8",
     "isomorphic-fetch": "^3.0.0",
     "jwt-builder": "^1.1.0",
     "karma": "^6.3.2",
@@ -134,19 +135,16 @@
     "url-join": "^4.0.1",
     "util": "^0.12.1"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged",
-      "commit-msg": "commitlint -e $HUSKY_GIT_PARAMS"
-    }
-  },
-  "lint-staged": {
-    "**/*.ts": [
-      "eslint"
-    ]
-  },
   "gitHead": "7d60c0765c0ea8c023a26c10d1c93001c597afbb",
   "publishConfig": {
     "access": "public"
+  },
+  "lint-staged": {
+    "*.{js,jsx,css,ts,tsx}": [
+      "eslint --cache --fix"
+    ],
+    "*": [
+      "prettier --config .prettierrc.js --ignore-unknown --write --ignore-path .prettierignore "
+    ]
   }
 }

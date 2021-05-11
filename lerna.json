@@ -2,6 +2,7 @@
     "version": "independent",
     "packages": [
         "packages/eslint-config",
+        "packages/prettier-config",
         "packages/api",
         "packages/fx-core",
         "packages/sdk",

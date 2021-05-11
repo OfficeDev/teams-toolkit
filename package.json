@@ -1,23 +1,18 @@
 {
   "name": "teamsfx",
   "scripts": {
-    "setup": "npm install && npm run bootstrap",
+    "setup": "npm install && npm run bootstrap && lerna exec -- npm install --only=dev",
     "bootstrap": "lerna bootstrap",
     "lint:staged": "lerna run lint:staged --stream",
     "lint": "lerna run lint --stream",
-    "version": "lerna clean --yes && lerna bootstrap --ignore-scripts -- --package-lock-only --no-audit && git add packages/*/package-lock.json"
+    "version": "lerna clean --yes && lerna bootstrap --ignore-scripts -- --package-lock-only --no-audit && git add packages/*/package-lock.json",
+    "prepare": "husky install"
   },
   "devDependencies": {
     "@commitlint/cli": "^12.0.1",
     "@commitlint/config-conventional": "^12.0.1",
-    "husky": "^4.3.8",
+    "husky": "^6.0.0",
     "lerna": "^4.0.0"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lerna run lint:staged --stream",
-      "commit-msg": "commitlint -e $HUSKY_GIT_PARAMS"
-    }
   },
   "bin": {
     "teamsfx": "./packages/cli/lib/cli.js"

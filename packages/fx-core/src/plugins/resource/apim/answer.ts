@@ -3,11 +3,11 @@
 import { ApiContract } from "@azure/arm-apimanagement/src/models";
 import { ConfigMap, Platform, PluginContext, Stage } from "@microsoft/teamsfx-api";
 import { OpenAPI } from "openapi-types";
-import { QuestionConstants } from "../constants";
-import { AssertNotEmpty, BuildError, NotImplemented } from "../error";
+import { QuestionConstants } from "./constants";
+import { AssertNotEmpty, BuildError, NotImplemented } from "./error";
 import { IApimPluginConfig } from "./config";
-import { IOpenApiDocument } from "./openApiDocument";
-import { IApimServiceResource } from "./resource";
+import { IOpenApiDocument } from "./interfaces/IOpenApiDocument";
+import { IApimServiceResource } from "./interfaces/IApimResource";
 
 export interface IAnswer {
     resourceGroupName: string | undefined;

@@ -2,10 +2,10 @@
 // Licensed under the MIT license.
 import { Func, NodeType, PluginContext, QTreeNode } from "@microsoft/teamsfx-api";
 import { BuildError, NotImplemented } from "../error";
-import { IApimPluginConfig } from "../model/config";
-import { IQuestionService } from "../question/question";
-import * as VSCode from "../question/vscodeQuestion";
-import * as CLI from "../question/cliQuestion";
+import { IApimPluginConfig } from "../config";
+import { IQuestionService } from "../questions/question";
+import * as VSCode from "../questions/vscodeQuestion";
+import * as CLI from "../questions/cliQuestion";
 
 export interface IQuestionManager {
     callFunc(func: Func, ctx: PluginContext): Promise<any>;

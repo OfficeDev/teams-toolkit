@@ -7,7 +7,7 @@ import {
     TelemetryReporter,
 } from "@microsoft/teamsfx-api";
 import { QuestionConstants } from "../constants";
-import { NamingRules } from "../util/namingRules";
+import { NamingRules } from "../utils/namingRules";
 import { BaseQuestionService, IQuestionService } from "./question";
 
 

@@ -9,10 +9,10 @@ import { v4 } from "uuid";
 import fs from "fs-extra";
 import md5 from "md5";
 import { after_if, before_if, MockAzureAccountProvider, it_if, ApimHelper, EnvConfig } from "./testUtil";
-import { ApimService } from "../../../../src/plugins/resource/apim/service/apimService";
-import { OpenApiSchemaVersion } from "../../../../src/plugins/resource/apim/model/openApiDocument";
+import { ApimService } from "../../../../src/plugins/resource/apim/services/apimService";
 import { ApiManagementClient } from "@azure/arm-apimanagement";
 import { AssertNotEmpty } from "../../../../src/plugins/resource/apim/error";
+import { OpenApiSchemaVersion } from "../../../../src/plugins/resource/apim/constants";
 dotenv.config();
 chai.use(chaiAsPromised);
 

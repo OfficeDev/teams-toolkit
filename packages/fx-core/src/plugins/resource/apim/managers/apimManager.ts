@@ -2,13 +2,13 @@
 // Licensed under the MIT license.
 import { ApimDefaultValues, ApimPluginConfigKeys, TeamsToolkitComponent } from "../constants";
 import { AssertConfigNotEmpty, AssertNotEmpty } from "../error";
-import { IAadPluginConfig, IApimPluginConfig, IFunctionPluginConfig, ISolutionConfig } from "../model/config";
-import { ApimService } from "../service/apimService";
-import { OpenApiProcessor } from "../util/openApiProcessor";
-import { IAnswer } from "../model/answer";
+import { IAadPluginConfig, IApimPluginConfig, IFunctionPluginConfig, ISolutionConfig } from "../config";
+import { ApimService } from "../services/apimService";
+import { OpenApiProcessor } from "../utils/openApiProcessor";
+import { IAnswer } from "../answer";
 import { LogProvider, TelemetryReporter } from "@microsoft/teamsfx-api";
-import { Lazy } from "../util/lazy";
-import { NamingRules } from "../util/namingRules";
+import { Lazy } from "../utils/commonUtils";
+import { NamingRules } from "../utils/namingRules";
 
 export class ApimManager {
     private readonly logger?: LogProvider;

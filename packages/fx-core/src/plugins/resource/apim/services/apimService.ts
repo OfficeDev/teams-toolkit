@@ -11,13 +11,11 @@ import {
     AuthorizationServerGetHeaders,
     ProductContract,
 } from "@azure/arm-apimanagement/src/models";
-import { ApimDefaultValues } from "../constants";
+import { ApimDefaultValues, AzureResource, OperationStatus, Operation, ErrorHandlerResult, OpenApiSchemaVersion } from "../constants";
 import { ApimOperationError, AssertNotEmpty, BuildError, InvalidAzureResourceId } from "../error";
-import { IApimServiceResource } from "../model/resource";
-import { OpenApiSchemaVersion } from "../model/openApiDocument";
-import { ErrorHandlerResult } from "../model/errorHandlerResult";
-import { Telemetry } from "../telemetry";
-import { AzureResource, IName, OperationStatus, Operation } from "../model/operation";
+import { IApimServiceResource } from "../interfaces/IApimResource";
+import { IName } from "../interfaces/IName";
+import { Telemetry } from "../utils/telemetry";
 import { LogProvider, TelemetryReporter } from "@microsoft/teamsfx-api";
 import { LogMessages } from "../log";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";

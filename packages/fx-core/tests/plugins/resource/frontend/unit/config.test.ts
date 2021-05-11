@@ -45,7 +45,7 @@ describe("frontendConfig", () => {
             pluginContext.config.set(FrontendConfigInfo.StorageName, invalidStorageName);
             assertRejected(
                 () => FrontendConfig.fromPluginContext(pluginContext),
-                new InvalidTemplateManifestError().code,
+                new InvalidTemplateManifestError("").code,
             );
         });
     });

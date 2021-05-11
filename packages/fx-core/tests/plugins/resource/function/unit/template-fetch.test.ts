@@ -11,8 +11,8 @@ import { FunctionPluginInfo } from "../../../../../src/plugins/resource/function
 import { fetchZipFromURL, getTemplateURL, requestWithRetry } from "../../../../../src/plugins/resource/function/utils/templates-fetch";
 import { FunctionLanguage } from "../../../../../src/plugins/resource/function/enums";
 
-const candidateTag = templates.tagPrefix + templates.templatesVersion.replace("*", "0");
-const targetTag = templates.tagPrefix + templates.templatesVersion.replace("*", "1");
+const candidateTag = templates.tagPrefix + templates.templatesVersion.replace(/\*/g, "0");
+const targetTag = templates.tagPrefix + templates.templatesVersion.replace(/\*/g, "1");
 
 const manifest = `
 templates@0.2.0

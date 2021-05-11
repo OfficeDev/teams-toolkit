@@ -134,8 +134,8 @@ export async function activate(): Promise<Result<null, FxError>> {
     {
       const telemetry = new VSCodeTelemetryReporter(
         extensionPackage.aiKey,
-        extensionPackage.name,
-        extensionPackage.version
+        extensionPackage.version,
+        extensionPackage.name
       );
       const result = await core.withTelemetry(telemetry);
       if (result.isErr()) {

@@ -9,7 +9,11 @@ import { createQuestions } from "./questions";
 import { LanguageStrategy } from "./languageStrategy";
 import { Messages } from "./resources/messages";
 import { FxResult, FxBotPluginResultFactory as ResultFactory } from "./result";
-import { ProgressBarConstants, DeployConfigs, FolderNames, QuestionNames, WebAppConstants, LifecycleFuncNames, TemplateProjectsConstants, AuthEnvNames, AuthValues, MaxLengths, Links } from "./constants";
+import {
+    ProgressBarConstants, DeployConfigs, FolderNames, QuestionNames, WebAppConstants,
+    LifecycleFuncNames, TemplateProjectsConstants, AuthEnvNames, AuthValues, MaxLengths,
+    Links, IdentityConstants
+} from "./constants";
 import { WayToRegisterBot } from "./enums/wayToRegisterBot";
 import { getZipDeployEndpoint } from "./utils/zipDeploy";
 
@@ -305,6 +309,15 @@ export class TeamsBotImpl {
             this.config.provision.location!,
             appSettings
         );
+
+        if (this.config.provision.identityName) {
+            siteEnvelope.identity = {
+                type: IdentityConstants.IDENTITY_TYPE_USER_ASSIGNED,
+                userAssignedIdentities: {
+                    [this.config.provision.identityName]: {}
+                }
+            };
+        }
 
         Logger.info(Messages.UpdatingAzureWebAppSettings);
         await AzureOperations.CreateOrUpdateAzureWebApp(webSiteMgmtClient, this.config.provision.resourceGroup!, this.config.provision.siteName!, siteEnvelope, true);

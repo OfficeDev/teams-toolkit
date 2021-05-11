@@ -43,7 +43,7 @@ export async function validateAndUpdateAnswers(
     }
 
     const ans: any = answers.get(node.data.name);
-    if (!ans) {
+    if (ans === undefined || ans === null) {
       continue;
     }
 

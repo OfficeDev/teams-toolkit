@@ -23,7 +23,7 @@ const {
   loadConfiguration,
   OnBehalfOfUserCredential,
   TeamsBotSsoPrompt,
-} = require("teamsdev-client");
+} = require("@microsoft/teamsfx");
 const { ResponseType } = require("@microsoft/microsoft-graph-client");
 
 class MainDialog extends RootDialog {

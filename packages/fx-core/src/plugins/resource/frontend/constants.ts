@@ -28,7 +28,7 @@ export class Constants {
 }
 
 export class FrontendPluginInfo {
-    static PluginName = "frontend";
+    static PluginName = "fx-resource-frontend-hosting";
     static DisplayName = "Tab Frontend";
     static ShortName = "FE";
     static IssueLink = ""; // TODO: default issue link

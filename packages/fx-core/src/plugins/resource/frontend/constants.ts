@@ -52,8 +52,8 @@ export class EnvironmentVariables {
 
 export class FrontendPathInfo {
     static WorkingDir = "tabs";
-    // static TemplateDir = path.join("templates", "plugins", "resource", "frontend");
-    // static RootDir = path.join(__dirname, "..", "..", "..", "..");
+    static TemplateDir = path.join("templates", "plugins", "resource", "frontend");
+    static RootDir = path.join(__dirname, "..", "..", "..", "..");
     static TemplateFileExt = ".tpl";
     static TemplatePackageExt = ".zip";
     static BuildFolderName = "build";

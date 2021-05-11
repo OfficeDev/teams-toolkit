@@ -27,7 +27,7 @@ export class TemplateInfo {
     language: string;
     scenario: string;
     version: string;
-    // localTemplateBaseName: string;
+    localTemplateBaseName: string;
     localTemplatePath: string;
     variables: TemplateVariable;
 
@@ -47,8 +47,8 @@ export class TemplateInfo {
 
         this.scenario = Scenario.Default;
 
-        const localTemplateFileName = [this.group, this.language, this.scenario].join(".") + FrontendPathInfo.TemplatePackageExt;
-        this.localTemplatePath =  path.join(getTemplatesFolder(), "plugins", "resource", "frontend", localTemplateFileName);
+        this.localTemplateBaseName = [this.group, this.language, this.scenario].join(".");
+        this.localTemplatePath =  path.join(getTemplatesFolder(), "plugins", "resource", "frontend", this.localTemplateBaseName + FrontendPathInfo.TemplatePackageExt);
     }
 
     private validateTabLanguage(language: string): string {

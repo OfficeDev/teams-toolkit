@@ -13,10 +13,14 @@ export enum TelemetryEvent {
   AddCapStart = "add-capability-start",
   AddCap = "add-capability",
 
+  OpenManifestEditorStart = "open-manifest-editor-start",
   OpenManifestEditor = "open-manifest-editor",
 
+  ValidateManifestStart = "validate-manifest-start",
   ValidateManifest = "validate-manifest",
-  BuildPackage = "build-package",
+
+  BuildStart = "build-start",
+  Build = "build",
 
   ProvisionStart = "provision-start",
   Provision = "provision",
@@ -28,6 +32,7 @@ export enum TelemetryEvent {
   UpdateAad = "update-aad",
 
   PublishStart = "publish-start",
+  Publish = "publish",
 
   F5Start = "f5-start",
   F5 = "f5",

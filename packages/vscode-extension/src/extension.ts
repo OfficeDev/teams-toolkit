@@ -207,6 +207,13 @@ export async function activate(context: vscode.ExtensionContext) {
   });
   context.subscriptions.push(debug);
 
+  const terminateDebug = vscode.debug.onDidTerminateDebugSession((e) => {
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.F5, {
+      [TelemetryProperty.DebugSessionId]: e.id
+    });
+  });
+  context.subscriptions.push(terminateDebug);
+
   const survey = new ExtensionSurvey(context);
   survey.activate();
 

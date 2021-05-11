@@ -1,0 +1,45 @@
+
+schedules:
+- cron: "0 0 * * *"
+  displayName: Daily run
+  branches:
+    include:
+    - main
+
+pool:
+  vmImage: windows-2019
+
+steps:
+- task: DotNetCoreCLI@2
+  displayName: 'dotnet build'
+  inputs:
+    projects: |
+     packages/function-extension
+     packages/simpleauth
+    arguments: '/p:Configuration=Release'
+
+# Remove files that won't be released
+- task: PowerShell@2
+  inputs:
+    targetType: 'inline'
+    script: 'Remove-Item ./packages/simpleauth/src/TeamsFxSimpleAuth/bin/Release/netcoreapp3.1/Microsoft.TeamsFx.SimpleAuth.exe'
+    
+- task: APIScan@2
+  displayName: 'Run APIScan'
+  inputs:
+    softwareFolder: 'packages/function-extension/src/bin/Release/netcoreapp3.1'
+    softwareName: TeamsFxFunctionExtension
+    softwareVersionNum: '$(Build.BuildId)'
+    isLargeApp: false
+  env:
+    AzureServicesAuthConnectionString: '$(AzureServicesAuthConnectionString)'
+
+- task: APIScan@2
+  displayName: 'Run APIScan'
+  inputs:
+    softwareFolder: packages/simpleauth/src/TeamsFxSimpleAuth/bin/Release/netcoreapp3.1
+    softwareName: TeamsFxSimpleAuth
+    softwareVersionNum: '$(Build.BuildId)'
+    isLargeApp: false
+  env:
+    AzureServicesAuthConnectionString: '$(AzureServicesAuthConnectionString)'

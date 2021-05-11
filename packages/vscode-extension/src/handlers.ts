@@ -607,7 +607,6 @@ export async function openWelcomeHandler() {
   }
 }
 
-// TODO: only select bot or tab/bot both selected
 async function openMarkdownHandler() {
   const afterScaffold = ext.context.globalState.get("openReadme", false);
   if (afterScaffold && workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
@@ -617,10 +616,21 @@ async function openMarkdownHandler() {
     if (await isSPFxProject(workspacePath)) {
       targetFolder = `${workspacePath}/SPFx`;
     } else {
-      targetFolder = await commonUtils.getProjectRoot(
+      const tabFolder = await commonUtils.getProjectRoot(
         workspacePath,
         constants.frontendFolderName
       );
+      const botFolder = await commonUtils.getProjectRoot(
+        workspacePath,
+        constants.botFolderName
+      );
+      if (tabFolder && botFolder) {
+        targetFolder = workspacePath;
+      } else if (tabFolder) {
+        targetFolder = tabFolder;
+      } else {
+        targetFolder = botFolder;
+      }
     }
     const uri = Uri.file(`${targetFolder}/README.md`);
     workspace.openTextDocument(uri).then((document) => {

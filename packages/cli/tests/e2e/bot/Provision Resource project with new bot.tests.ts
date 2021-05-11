@@ -128,6 +128,6 @@ describe("Provision", function () {
   after(async () => {
     // clean up
     console.log(`[Successfully] start to clean up for ${projectPath}`);
-    await cleanUp(appName, projectPath);
+    await cleanUp(appName, projectPath, true, true, false);
   });
 });

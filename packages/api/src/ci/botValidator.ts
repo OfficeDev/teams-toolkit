@@ -104,6 +104,8 @@ export class BotValidator {
     }
 
     public static async validateDeploy(botObject: IBotObject) {
+        // ToDo: uncomment this function in the future.
+        /*
         console.log("Start to validate Bot Deployment.");
 
         const tokenProvider: MockAzureAccountProvider = MockAzureAccountProvider.getInstance();
@@ -116,6 +118,7 @@ export class BotValidator {
 
         chai.assert.exists(deploymentLog?.find((item: any) => item.properties.message === "Deployment successful."));
         console.log("Successfully validate Bot Deployment.");
+        */
     }
 
     private static async getDeployments(subscriptionId: string, rg: string, name: string, token: string) {

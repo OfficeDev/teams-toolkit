@@ -98,7 +98,7 @@ describe("Provision", function () {
 
     // test (validate)
     await execAsync(
-      `teamsfx test`,
+      `teamsfx validate`,
       {
         cwd: projectPath,
         env: process.env,
@@ -122,20 +122,6 @@ describe("Provision", function () {
 
     {
       /// TODO: add check for build
-    }
-
-    // publish
-    await execAsync(
-      `teamsfx publish`,
-      {
-        cwd: projectPath,
-        env: process.env,
-        timeout: 0
-      }
-    );
-
-    {
-      /// TODO: add check for publish
     }
   });
 

@@ -5,7 +5,7 @@ import {
     NodeType,
     TextInputQuestion,
     TelemetryReporter,
-} from "fx-api";
+} from "@microsoft/teamsfx-api";
 import { QuestionConstants } from "../constants";
 import { NamingRules } from "../util/namingRules";
 import { BaseQuestionService, IQuestionService } from "./question";

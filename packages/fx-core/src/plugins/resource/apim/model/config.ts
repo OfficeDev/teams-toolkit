@@ -1,17 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ConfigValue, ReadonlySolutionConfig } from "fx-api";
+import {ConfigValue, ReadonlySolutionConfig} from "@microsoft/teamsfx-api";
 import {
     TeamsToolkitComponent,
-    ComponentRetryLifeCycle,
-    LifeCycleCommands,
+    ComponentRetryCommands,
     SolutionConfigKeys,
     AadPluginConfigKeys,
     FunctionPluginConfigKeys,
     ApimPluginConfigKeys,
 } from "../constants";
-import { AssertConfigNotEmpty, BuildError, InvalidConfigValue, InvalidPropertyType, NoPluginConfig } from "../error";
-import { INamingRule, NamingRules } from "../util/namingRules";
+import {AssertConfigNotEmpty, BuildError, InvalidConfigValue, InvalidPropertyType, NoPluginConfig} from "../error";
+import {INamingRule, NamingRules} from "../util/namingRules";
 
 export interface IApimPluginConfig {
     resourceGroupName?: string;
@@ -44,10 +43,11 @@ export interface ISolutionConfig {
     teamsAppTenantId: string;
     resourceGroupName: string;
     location: string;
+    remoteTeamsAppId?: string;
 }
 
 export class ApimPluginConfig implements IApimPluginConfig {
-    // TODO update fx-api to the latest version
+    // TODO update @microsoft/teamsfx-api to the latest version
     private readonly config: Map<string, ConfigValue>;
     constructor(config: Map<string, ConfigValue>) {
         this.config = config;
@@ -200,6 +200,9 @@ export class SolutionConfig implements ISolutionConfig {
     get location(): string {
         return this.checkAndGet(SolutionConfigKeys.location);
     }
+    get remoteTeamsAppId(): string | undefined {
+        return this.configOfOtherPlugins.get(TeamsToolkitComponent.Solution)?.get(SolutionConfigKeys.remoteTeamsAppId) as string;
+    }
 
     private checkAndGet(key: string): string {
         return checkAndGetOtherPluginConfig(this.configOfOtherPlugins, TeamsToolkitComponent.Solution, key);
@@ -209,7 +212,7 @@ export class SolutionConfig implements ISolutionConfig {
 function checkAndGetOtherPluginConfig(configOfOtherPlugins: ReadonlySolutionConfig, component: TeamsToolkitComponent, key: string): string {
     const pluginConfig = configOfOtherPlugins.get(component);
     if (!pluginConfig) {
-        throw BuildError(NoPluginConfig, component, LifeCycleCommands[ComponentRetryLifeCycle[component]]);
+        throw BuildError(NoPluginConfig, component, ComponentRetryCommands[component]);
     }
 
     const value = AssertConfigNotEmpty(component, key, pluginConfig.get(key));

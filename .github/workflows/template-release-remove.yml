@@ -1,0 +1,25 @@
+name: Templates Release Delete
+
+on:
+  delete:
+
+jobs:
+  build:
+    if: ${{ startsWith(github.event.ref, 'templates@') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch New Tags
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Generate Tag List
+        run: git tag | grep templates@ > ./template-tags.txt
+      - name: Update Template Tag list Release
+        uses: ncipollo/release-action@v1.7.3
+        with:
+          artifacts: ./template-tags.txt
+          name: 'Template Tag List'
+          body: 'Release to maintain template tag list.'
+          token: ${{ secrets.github_token }}
+          tag: 'template-tag-list'
+          allowUpdates: true

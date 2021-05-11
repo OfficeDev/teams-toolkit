@@ -5,7 +5,7 @@
 
 import * as path from "path";
 
-import { NodeType, QTreeNode } from "fx-api";
+import { NodeType, QTreeNode } from "@microsoft/teamsfx-api";
 
 export const cliSource = "TeamsfxCLI";
 export const cliName = "teamsfx";

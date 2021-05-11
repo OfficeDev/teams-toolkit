@@ -170,7 +170,7 @@ export default class WelcomePanel extends React.Component<any, IWelcomePanelStat
                             <div className="content-item">
                                 <div>
                                     <TooltipHost
-                                        content="This blank app combines all capabilities: tab, conversational bot and messaging extension. A great starting poing if you would like to play around the full potential of Teams app capabilities"
+                                        content="This app combines all capabilities: tab, conversational bot and messaging extension. A great starting point to use the full potential of all capabilities."
                                         tooltipProps={{
                                             styles:{
                                                 content: { color: '#CCCCCC'}

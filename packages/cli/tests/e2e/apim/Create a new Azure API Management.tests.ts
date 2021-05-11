@@ -4,7 +4,7 @@
 import fs from "fs-extra";
 import path from "path";
 
-import { ApimValidator } from "fx-api";
+import { ApimValidator } from "@microsoft/teamsfx-api";
 
 import {
   execAsync,

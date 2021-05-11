@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Func, NodeType, PluginContext, QTreeNode } from "fx-api";
+import { Func, NodeType, PluginContext, QTreeNode } from "@microsoft/teamsfx-api";
 import { BuildError, NotImplemented } from "../error";
 import { IApimPluginConfig } from "../model/config";
 import { IQuestionService } from "../question/question";

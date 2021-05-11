@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import "mocha";
-import { SystemError } from "fx-api";
-import { UserError } from "fx-api";
+import { SystemError } from "@microsoft/teamsfx-api";
+import { UserError } from "@microsoft/teamsfx-api";
 import { expect } from "chai";
 
 import { ErrorType, FunctionPluginError, runWithErrorCatchAndThrow } from "../../../../../src/plugins/resource/function/resources/errors";

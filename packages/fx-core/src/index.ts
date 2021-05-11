@@ -5,4 +5,3 @@
 export * from "./common";
 export * from "./plugins";
 export * from "./core";
-export const strings = "./resources/strings.json";

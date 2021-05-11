@@ -29,7 +29,13 @@ export class ResourceGroupManager {
     public static async init(): Promise<ResourceGroupManager> {
         if (!ResourceGroupManager.instance) {
             ResourceGroupManager.instance = new ResourceGroupManager();
-            const c = await msRestAzure.loginWithUsernamePassword(user, password);
+            const c = await msRestAzure.loginWithUsernamePassword(
+                user,
+                password,
+                {
+                    domain: azureConfig.tenant.id
+                }
+            );
             ResourceGroupManager.client = new arm.ResourceManagementClient(c, subscriptionId);
         }
         return Promise.resolve(ResourceGroupManager.instance);

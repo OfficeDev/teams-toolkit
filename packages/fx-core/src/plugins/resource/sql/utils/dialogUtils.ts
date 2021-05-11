@@ -7,7 +7,7 @@ import {
     QuestionType,
     MsgLevel,
     IProgressHandler,
-} from "fx-api";
+} from "@microsoft/teamsfx-api";
 import { sqlPasswordValidatorGenerator, sqlUserNameValidator } from "./checkInput";
 import { Constants } from "../constants";
 

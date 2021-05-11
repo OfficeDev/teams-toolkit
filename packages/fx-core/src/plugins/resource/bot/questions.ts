@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import { WayToRegisterBot } from "./enums/wayToRegisterBot";
 import { QuestionNames, RegularExprs, QuestionOptions } from "./constants";
-import { NodeType, QTreeNode } from "fx-api";
+import { NodeType, QTreeNode } from "@microsoft/teamsfx-api";
 import isUUID from "validator/lib/isUUID";
 
 const createQuestions = new QTreeNode({

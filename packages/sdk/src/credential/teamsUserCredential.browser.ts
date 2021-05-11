@@ -494,7 +494,7 @@ export class TeamsUserCredential implements TokenCredential {
         const fullErrorMsg =
           "Failed to get access token from authentication server, please login first: " +
           errorMessage;
-        internalLogger.error(fullErrorMsg);
+        internalLogger.warn(fullErrorMsg);
         return new ErrorWithCode(fullErrorMsg, ErrorCode.UiRequiredError);
       } else {
         const fullErrorMsg =

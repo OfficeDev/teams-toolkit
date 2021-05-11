@@ -3,11 +3,11 @@
 // Licensed under the MIT license.
 
 import * as path from "path";
-import { funcPluginLogger as logger } from "./funcPluginLogger";
-import { DepsCheckerError } from "./errors";
-import { ConfigMap, DialogMsg, DialogType, PluginContext, QuestionType, returnUserError } from "fx-api";
-import { Messages, dotnetManualInstallHelpLink } from "./common";
-import { IDepsAdapter, IDepsChecker } from "./checker";
+import {funcPluginLogger as logger} from "./funcPluginLogger";
+import {DepsCheckerError} from "./errors";
+import {ConfigMap, DialogMsg, DialogType, PluginContext, QuestionType, returnUserError} from "@microsoft/teamsfx-api";
+import {Messages, dotnetManualInstallHelpLink} from "./common";
+import {IDepsAdapter, IDepsChecker} from "./checker";
 
 class FuncPluginAdapter implements IDepsAdapter {
   private readonly downloadIndicatorInterval = 1000; // same as vscode-dotnet-runtime
@@ -91,7 +91,7 @@ class FuncPluginAdapter implements IDepsAdapter {
   }
 
   public async displayContinueWithLearnMoreLink(ctx: PluginContext, message: string, link: string): Promise<boolean> {
-    if(!ctx.dialog) {
+    if (!ctx.dialog) {
       // no dialog, always continue
       return true;
     }

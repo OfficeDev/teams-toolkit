@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
  
 import { Disposable, InputBox, QuickInputButton, QuickInputButtons, QuickPick, QuickPickItem, Uri, window } from "vscode";
-import { FxInputBoxOption, FxOpenDialogOption, FxQuickPickOption, InputResult, InputResultType, OptionItem, returnSystemError, UserInterface } from "fx-api";
+import { FxInputBoxOption, FxOpenDialogOption, FxQuickPickOption, InputResult, InputResultType, OptionItem, returnSystemError, UserInterface } from "@microsoft/teamsfx-api";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { ext } from "../extensionVariables";
 import { multiQuickPick } from "./quickpick";

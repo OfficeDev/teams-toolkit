@@ -16,7 +16,7 @@ import {
     Result,
     err,
     ResultAsync
-} from "fx-api";
+} from "@microsoft/teamsfx-api";
 import { SubscriptionClient } from "@azure/arm-subscriptions";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 

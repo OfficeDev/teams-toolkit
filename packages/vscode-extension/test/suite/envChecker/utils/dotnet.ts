@@ -6,7 +6,7 @@ import * as path from "path";
 import * as os from "os";
 import * as tmp from "tmp";
 
-import { ConfigFolderName } from "fx-api";
+import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import { cpUtils } from "../../../../src/debug/depsChecker/cpUtils";
 import { isWindows } from "../../../../src/debug/depsChecker/common";
 import { logger } from "../adapters/testLogger";

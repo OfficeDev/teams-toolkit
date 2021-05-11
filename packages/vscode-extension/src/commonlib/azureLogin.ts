@@ -6,7 +6,7 @@
 
 import { TokenCredential } from "@azure/core-auth";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-import { AzureAccountProvider, UserError } from "fx-api";
+import { AzureAccountProvider, UserError } from "@microsoft/teamsfx-api";
 import { ExtensionErrors } from "../error";
 import { AzureAccount } from "./azure-account.api";
 import { LoginFailureError } from "./codeFlowLogin";

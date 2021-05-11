@@ -57,6 +57,25 @@ Once deployed, you may want to submit your application to your organization's in
 * From Visual Studio Code: open the command palette and select: `Teams: Publish to Teams`.
 * From TeamsFx CLI: run command `teamsfx publish` in your project directory.
 
+## Use the App
+Once the app is published to Teams (or in local preview mode), you can start playing around with it and here is something you should know about how to use the messaging extension part. The template provides some simple functionalities: 
+* You can search `npm` packages.
+* You can create and send an adaptive card.
+![CreateCard](./images/AdaptiveCard.png)
+* You can share a message in an adaptive card form.
+![ShareMessage](./images/ShareMessage.png)
+* You can paste a link with monitored domain (`.botframwork.com` is monitored in this template) and a card will be rendered.
+![ComposeArea](./images/LinkUnfurlingImage.png)
+
+To trigger these functionalities, there are multiple entry points:
+* `@mention` Your messaging extension, from the `search box area`.
+![AtBotFromSearch](./images/AtBotFromSearch.png)
+* `@mention` your messaging extension from the `compose message area`.
+![AtBotFromMessage](./images/AtBotInMessage.png)
+* Click the `...` under compose message area, find your messaging extension.
+![ComposeArea](./images/ThreeDot.png)
+* Click the `...` next to any messages you received or sent.
+![ComposeArea](./images/ThreeDotOnMessage.png)
 
 ## Further reading
 

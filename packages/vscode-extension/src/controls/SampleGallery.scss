@@ -46,7 +46,6 @@
         .section{
             display: flex;
             margin-bottom: 0px;
-            padding-right: 8px;
             flex-wrap: wrap;
         }
 
@@ -97,14 +96,14 @@
         }
 
         .buttons{
-            margin: 28px 12px 12px auto;
             position: absolute;
-            bottom: 0px;
+            bottom: 12px;
+            right: 12px;
         }
 
         .right-aligned{
             margin-left: 190px;
-            margin-right: 8px;
+            margin-right: 0px;
         }
     }
 }

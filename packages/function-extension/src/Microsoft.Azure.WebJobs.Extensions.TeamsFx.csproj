@@ -8,7 +8,7 @@
     <AssemblyName>Microsoft.Azure.WebJobs.Extensions.TeamsFx</AssemblyName>
     <RootNamespace>Microsoft.Azure.WebJobs.Extensions.TeamsFx</RootNamespace>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <Version>0.1.0</Version>
+    <Version>0.1.0-rc</Version>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <Authors>Microsoft</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>

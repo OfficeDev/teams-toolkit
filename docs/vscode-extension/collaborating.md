@@ -7,6 +7,7 @@ As the person creating the project (creator), follow these steps to allow others
 ## Pre-requisites
 1. [Creator] Create a project with the Teams Toolkit in the IDE or teamsfx CLI.
 2. [Creator] Start your application locally at least once. This will create an application registration in Azure Active Directory.
+3. [Creator] Go to the [Teams Amdmin Center](https://admin.teams.microsoft.com/policies/app-setup) and select "Global (Org-wide default)", make sure "Upload custom apps" settings is turned to on.
 
 ## Add collaborators to application registration
 1. [Creator] Go to the [Azure Portal](https://portal.azure.com) and select "Azure Active Directory".

@@ -163,8 +163,8 @@ export class FetchTemplateManifestError extends FrontendPluginError {
 }
 
 export class InvalidTemplateManifestError extends FrontendPluginError {
-    constructor() {
-        super(ErrorType.System, "InvalidTemplateManifestError", "Failed to find template.", []);
+    constructor(compose: string) {
+        super(ErrorType.System, "InvalidTemplateManifestError", `Failed to find template for ${compose}.`, []);
     }
 }
 

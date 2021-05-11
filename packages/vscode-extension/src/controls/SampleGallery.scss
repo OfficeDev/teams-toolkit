@@ -1,9 +1,15 @@
 .sample-gallery{
-    margin: 52px 100px 52px 100px;
+    margin: 52px 20px;
 
-     .section{
+    .section{
         display: flex;
         margin-bottom: 36px;
+    }
+
+    #title{
+        margin-left: auto;
+        margin-right: auto;
+        width: 874px;
     }
 
     .logo{
@@ -34,6 +40,11 @@
             margin-bottom: 0px;
             font-weight: normal;
         }
+    }
+
+    .sample-stack{
+        width: 874px;
+        margin: 0 auto;
     }
 
     .sample-app-card{
@@ -98,6 +109,22 @@
         .right-aligned{
             margin-left: auto;
             margin-right: 8px;
+        }
+    }
+}
+
+/* On screens that are 914px or less, change to 2 column layout */
+@media screen and (max-width: 914px) {
+    .sample-gallery{
+        margin: 52px 0;
+
+        #title{
+            width: 874px;
+        }
+
+        .sample-stack{
+            width: 576px;
+            min-width: 576px;
         }
     }
 }

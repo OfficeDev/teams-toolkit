@@ -16,7 +16,7 @@ export default class SampleGallery extends React.Component<any, any> {
     render() {
         return(
             <div className="sample-gallery">
-                <div className="section">
+                <div className="section" id="title">
                     <div className="logo">
                         <Icon iconName="Heart" className="logo" />
                     </div>
@@ -26,6 +26,7 @@ export default class SampleGallery extends React.Component<any, any> {
                     </div>
                 </div>
                 <Stack
+                    className="sample-stack"
                     horizontal
                     verticalFill
                     wrap

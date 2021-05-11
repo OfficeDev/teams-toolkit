@@ -1,6 +1,6 @@
 {
-  "name": "teamsfx-cli",
-  "version": "1.1.2-alpha.1",
+  "name": "@microsoft/teamsfx-cli",
+  "version": "0.1.0-alpha.4",
   "description": "",
   "license": "MIT",
   "engines": {
@@ -68,6 +68,8 @@
   "dependencies": {
     "@azure/identity": "^1.2.3",
     "@azure/ms-rest-nodeauth": "^3.0.7",
+    "@microsoft/teamsfx-api": "^0.1.0-alpha.3",
+    "@microsoft/teamsfx-core": "^0.1.0-alpha.3",
     "adm-zip": "^0.5.5",
     "applicationinsights": "^1.8.10",
     "async-mutex": "^0.3.1",
@@ -75,8 +77,6 @@
     "colors": "^1.4.0",
     "express": "^4.17.1",
     "fs-extra": "^9.1.0",
-    "fx-api": "^1.1.2-alpha.1",
-    "fx-core": "^1.1.2-alpha.1",
     "inquirer": "^8.0.0",
     "node-machine-id": "^1.1.12",
     "open": "^7.3.1",
@@ -87,5 +87,8 @@
     "lib",
     "resource"
   ],
-  "gitHead": "7d60c0765c0ea8c023a26c10d1c93001c597afbb"
+  "gitHead": "7d60c0765c0ea8c023a26c10d1c93001c597afbb",
+  "publishConfig": {
+    "access": "public"
+  }
 }

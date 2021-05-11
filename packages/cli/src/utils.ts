@@ -22,7 +22,7 @@ import {
   getSingleOption,
   SingleSelectQuestion,
   MultiSelectQuestion,
-} from "fx-api";
+} from "@microsoft/teamsfx-api";
 
 import { ConfigNotFoundError, ReadFileError } from "./error";
 import AzureAccountManager from "./commonlib/azureLogin";

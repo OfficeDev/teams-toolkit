@@ -29,12 +29,9 @@ export class FunctionPluginInfo {
         FunctionConfigKey.functionEndpoint
     ];
 
-    public static readonly templateManifestURL: string =
-        "https://github.com/henzhang-ms/Teams-Templates/releases/latest/download/manifest.json";
     public static readonly templateBaseGroupName: string = "function-base";
     public static readonly templateBaseScenarioName: string = "default";
     public static readonly templateTriggerGroupName: string = "function-triggers";
-    public static readonly templateVersion: string = "0.2.*";
 }
 
 export class FunctionPluginPathInfo {
@@ -176,6 +173,7 @@ export class AzureInfo {
 
 export class Commands {
     public static readonly npmInstall: string = "npm install";
+    public static readonly npmInstallProd: string = "npm install --only=prod";
     public static readonly npmBuild: string = "npm run build";
 }
 

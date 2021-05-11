@@ -3,7 +3,7 @@
 
 "use strict";
 
-import { Result, FxError, err, ok, Core, UserError, SystemError, ConfigMap } from "fx-api";
+import { Result, FxError, err, ok, Core, UserError, SystemError, ConfigMap } from "@microsoft/teamsfx-api";
 
 import AzureAccountManager from "./commonlib/azureLogin";
 import AppStudioTokenProvider from "./commonlib/appStudioLogin";
@@ -15,7 +15,7 @@ import { getSubscriptionIdFromEnvFile } from "./utils";
 import { CliTelemetry } from "./telemetry/cliTelemetry";
 
 const coreAsync: Promise<Core> = new Promise(async (resolve) => {
-  const corePkg = await import("fx-core");
+  const corePkg = await import("@microsoft/teamsfx-core");
   return resolve(corePkg.CoreProxy.getInstance());
 });
 

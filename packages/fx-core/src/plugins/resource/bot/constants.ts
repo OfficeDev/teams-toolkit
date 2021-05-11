@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { WayToRegisterBot } from "./enums/wayToRegisterBot";
-import { OptionItem, ConfigFolderName } from "fx-api";
+import { OptionItem, ConfigFolderName } from "@microsoft/teamsfx-api";
 import { ProgrammingLanguage } from "./enums/programmingLanguage";
 
 export class RegularExprs {
@@ -129,11 +129,14 @@ export class ErrorNames {
     // User Exceptions
     public static readonly USER_INPUTS_ERROR = "UserInputsError";
     public static readonly PACK_DIR_EXISTENCE_ERROR = "PackDirectoryExistenceError";
+    public static readonly MISSING_SUBSCRIPTION_REGISTRATION_ERROR = "MissingSubscriptionRegistrationError";
+    public static readonly FREE_SERVER_FARMS_QUOTA_ERROR = "FreeServerFarmsQuotaError";
 }
 
 export class Links {
     public static readonly ISSUE_LINK = "https://github.com/OfficeDev/TeamsFx/issues/new";
     public static readonly HELP_LINK = "https://github.com/OfficeDev/TeamsFx/blob/main/docs/fx-core/bot-help.md";
+    public static readonly UPDATE_MESSAGE_ENDPOINT = `${Links.HELP_LINK}#how-to-reuse-existing-bot-registration-in-toolkit-v2`
 }
 
 export class Alias {
@@ -201,4 +204,21 @@ export class TypeNames {
 export class DownloadConstants {
     public static readonly DEFAULT_TIMEOUT_MS = 1000 * 20;
     public static readonly TEMPLATES_TIMEOUT_MS = 1000 * 20;
+}
+
+export class MaxLengths {
+    // get/verified on azure portal.
+    public static readonly BOT_CHANNEL_REG_NAME = 42;
+    public static readonly WEB_APP_SITE_NAME = 60;
+    public static readonly APP_SERVICE_PLAN_NAME = 40;
+    public static readonly AAD_DISPLAY_NAME = 120;
+}
+
+export class ErrorMessagesForChecking {
+    static readonly FreeServerFarmsQuotaErrorFromAzure =
+        "The maximum number of Free ServerFarms allowed in a Subscription is 10";
+}
+
+export class IdentityConstants {
+    public static readonly IDENTITY_TYPE_USER_ASSIGNED = "UserAssigned";
 }

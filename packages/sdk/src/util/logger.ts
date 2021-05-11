@@ -28,7 +28,7 @@ export interface Logger {
 
 /**
  * Log function for customized logging.
- * 
+ *
  * @beta
  */
 export type LogFunction = (level: LogLevel, message: string) => void;

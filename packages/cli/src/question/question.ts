@@ -19,7 +19,7 @@ import {
   getCallFuncValue,
   StaticOption,
   DymanicOption
-} from "fx-api";
+} from "@microsoft/teamsfx-api";
 
 import CLILogProvider from "../commonlib/log";
 import * as constants from "../constants";
@@ -43,7 +43,7 @@ export async function validateAndUpdateAnswers(
     }
 
     const ans: any = answers.get(node.data.name);
-    if (!ans) {
+    if (ans === undefined || ans === null) {
       continue;
     }
 

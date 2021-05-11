@@ -19,7 +19,7 @@ import {
   Result,
   FxError,
   IProgressHandler
-} from "fx-api";
+} from "@microsoft/teamsfx-api";
 import { ProgressHandler } from "./progressHandler";
 import { sleep } from "./utils/commonUtils";
 import VsCodeLogInstance from "./commonlib/log";

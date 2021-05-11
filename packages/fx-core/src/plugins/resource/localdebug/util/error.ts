@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { returnSystemError, returnUserError, SystemError, UserError } from "fx-api";
+import { returnSystemError, returnUserError, SystemError, UserError } from "@microsoft/teamsfx-api";
 
 export function UnsupportedPlatform(platform: string): SystemError {
     return returnSystemError(new Error(`Platform ${platform} is unsupported.`), "localdebug-plugin", "UnsupportedPlatform");

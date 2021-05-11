@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ConfigValue, PluginContext } from "fx-api";
+import { ConfigValue, PluginContext } from "@microsoft/teamsfx-api";
 
 import * as utils from "../utils/common";
 import { PluginSolution, PluginBot, PluginSql, PluginIdentity, PluginFunction, CommonStrings } from "../resources/strings";
@@ -21,6 +21,7 @@ export class ProvisionConfig {
     public sqlEndpoint?: string;
     public sqlDatabaseName?: string;
     public identityId?: string;
+    public identityName?: string;
     public sqlUserName?: string;
     public sqlPassword?: string;
     public functionEndpoint?: string;
@@ -81,6 +82,13 @@ export class ProvisionConfig {
             ?.get(PluginIdentity.IDENTITY_ID);
         if (identityValue) {
             this.identityId = identityValue as string;
+        }
+
+        const identityNameValue: ConfigValue = context.configOfOtherPlugins
+            .get(PluginIdentity.PLUGIN_NAME)
+            ?.get(PluginIdentity.IDENTITY_NAME);
+        if (identityNameValue) {
+            this.identityName = identityNameValue as string;
         }
 
         const functionEndpointValue: ConfigValue = context.configOfOtherPlugins

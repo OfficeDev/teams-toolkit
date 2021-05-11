@@ -31,8 +31,9 @@ import {
     AzureSolutionSettings,
     Err,
     UserError,
-    SystemError
-} from "fx-api";
+    SystemError,
+    Platform
+} from "@microsoft/teamsfx-api";
 import { askSubscription, fillInCommonQuestions } from "./commonQuestions";
 import { executeLifecycles, executeConcurrently, LifecyclesWithContext } from "./executor";
 import { getPluginContext, getSubsriptionDisplayName } from "./util";
@@ -68,6 +69,8 @@ import {
     STATIC_TABS_TPL,
     CONFIGURABLE_TABS_TPL,
     BOTS_TPL,
+    DoProvisionFirstError,
+    CancelError,
 } from "./constants";
 
 import { SpfxPlugin } from "../../resource/spfx";
@@ -358,7 +361,7 @@ export class TeamsAppSolution implements Solution {
         this.reloadPlugins(solutionSettings);
 
         const defaultColorPath = path.join(__dirname, "../../../../templates/plugins/solution/defaultIcon.png");
-        const defaultOutlinePath = path.join(__dirname, "../../../../templates/plugins/solution/defaultIcon.png");
+        const defaultOutlinePath = path.join(__dirname, "../../../../templates/plugins/solution/defaultOutline.png");
         await fs.copy(defaultColorPath, `${ctx.root}/.${ConfigFolderName}/color.png`);
         await fs.copy(defaultOutlinePath, `${ctx.root}/.${ConfigFolderName}/outline.png`);
         if (this.isAzureProject(ctx)) {
@@ -861,7 +864,7 @@ export class TeamsAppSolution implements Solution {
         if (this.isAzureProject(ctx)) {
             //1. ask common questions for azure resources.
             const appName = manifest.name.short;
-            const azureToken = await ctx.azureAccountProvider?.getAccountCredentialAsync()
+            const azureToken = await ctx.azureAccountProvider?.getAccountCredentialAsync();
             const res = await fillInCommonQuestions(
                 ctx,
                 appName,
@@ -993,14 +996,16 @@ export class TeamsAppSolution implements Solution {
             this.runningState = SolutionRunningState.DeployInProgress;
             const result = await this.doDeploy(ctx);
             if (result.isOk()) {
-                const msg = util.format(strings.solution.DeploySuccessNotice, ctx.projectSettings?.appName);
-                ctx.logProvider?.info(msg);
-                await ctx.dialog?.communicate(
-                    new DialogMsg(DialogType.Show, {
-                        description: msg,
-                        level: MsgLevel.Info,
-                    }),
-                );
+                if (this.isAzureProject(ctx)) {
+                    const msg = util.format(strings.solution.DeploySuccessNotice, ctx.projectSettings?.appName);
+                    ctx.logProvider?.info(msg);
+                    await ctx.dialog?.communicate(
+                        new DialogMsg(DialogType.Show, {
+                            description: msg,
+                            level: MsgLevel.Info,
+                        }),
+                    );
+                }
             } else {
                 const msg = util.format(strings.solution.DeployFailNotice, ctx.projectSettings?.appName);
                 ctx.logProvider?.info(msg);
@@ -1253,16 +1258,17 @@ export class TeamsAppSolution implements Solution {
                     }),
                 ))?.getAnswer();
                 if(res === "Provision"){
-                    const provisionRes = await this.provision(ctx);
-                    if (provisionRes.isErr()) {
-                        if (provisionRes.error.message.startsWith(strings.solution.CancelProvision)) {
-                            return ok(undefined);
-                        }
-                        return err(provisionRes.error);
-                    }
+                    throw DoProvisionFirstError;
+                    // const provisionRes = await this.provision(ctx);
+                    // if (provisionRes.isErr()) {
+                    //     if (provisionRes.error.message.startsWith(strings.solution.CancelProvision)) {
+                    //         return ok(undefined);
+                    //     }
+                    //     return err(provisionRes.error);
+                    // }
                 }
-                else if(res === "Cancel"){
-                    return ok(undefined);
+                else{
+                    throw CancelError;
                 }
             }
             const res = this.getSelectedPlugins(ctx);
@@ -1313,16 +1319,10 @@ export class TeamsAppSolution implements Solution {
                     }),
                 ))?.getAnswer();
                 if(res === "Provision"){
-                    const provisionRes = await this.provision(ctx);
-                    if (provisionRes.isErr()) {
-                        if (provisionRes.error.message.startsWith(strings.solution.CancelProvision)) {
-                            return ok(undefined);
-                        }
-                        return err(provisionRes.error);
-                    }
+                    throw DoProvisionFirstError;
                 }
-                else if(res === "Cancel"){
-                    return ok(undefined);
+                else{
+                    throw CancelError;
                 }
             }
             const pluginsToPublish = [this.appStudioPlugin];
@@ -1340,7 +1340,6 @@ export class TeamsAppSolution implements Solution {
         }
         return ok(node);
     }
-
 
     // Update app manifest
     private async updateApp(
@@ -1956,7 +1955,8 @@ export class TeamsAppSolution implements Solution {
         const azureResource = settings.azureResources || [];
         if ( addFunc || ((addSQL || addApim) && !alreadyHaveFunction)) {
             pluginsToScaffold.push(this.functionPlugin);
-            azureResource.push(AzureResourceFunction.id);
+            if(!azureResource.includes(AzureResourceFunction.id))
+                azureResource.push(AzureResourceFunction.id);
             notifications.push(AzureResourceFunction.label);
         }
         if (addSQL && !alreadyHaveSql) {

@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { ProductName } from "fx-api";
+import { ProductName } from "@microsoft/teamsfx-api";
 import { ProgrammingLanguage } from "./constants";
 
 export function generateTasks(includeFrontend: boolean, includeBackend: boolean, includeBot: boolean, programmingLanguage: string): Record<string, unknown>[] {

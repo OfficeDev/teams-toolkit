@@ -59,6 +59,16 @@ export async function validate(
     }
   }
 
+  // Required Validation
+  {
+    if(valueToValidate === undefined){
+      if(validation.required === true)
+        return `This question is mandatory`;
+      // if the value is undefined/null, no need to do the remaining validation.
+      return undefined;
+    }
+  }
+
   {
     //FileValidation
     const fileValidation: FileValidation = validation as FileValidation;

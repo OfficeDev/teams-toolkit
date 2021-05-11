@@ -10,7 +10,7 @@ import {
   DialogType,
   MsgLevel,
   Platform,
-} from "fx-api";
+} from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
 import lodash from "lodash";
 import * as fs from "fs-extra";
@@ -212,8 +212,10 @@ export class SPFxPluginImpl {
   }
 
   public async preDeploy(ctx: PluginContext): Promise<Result<any, FxError>> {
-
     const progressHandler = await ProgressHelper.startPreDeployProgressHandler(ctx);
+    if (ctx.platform === Platform.VSCode) {
+      (ctx.logProvider as any).outputChannel.show();
+    }
     try {
       const workspacePath = `${ctx.root}/SPFx`;
       await progressHandler?.next(PreDeployProgressMessage.NpmInstall);

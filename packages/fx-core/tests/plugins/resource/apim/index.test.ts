@@ -7,19 +7,14 @@ import dotenv from "dotenv";
 import { ApimPlugin } from "../../../../src/plugins/resource/apim/index";
 import { v4 } from "uuid";
 import { AadHelper, after_if, before_if, EnvConfig, it_if, MockAzureAccountProvider, MockGraphTokenProvider, MockPluginContext, ResourceGroupHelper } from "./testUtil";
-import {
-    IAadPluginConfig,
-    IApimPluginConfig,
-    IFunctionPluginConfig,
-    ISolutionConfig,
-} from "../../../../src/plugins/resource/apim/model/config";
-import { PluginContext } from "fx-api";
+import { PluginContext } from "@microsoft/teamsfx-api";
 import { AadDefaultValues, QuestionConstants } from "../../../../src/plugins/resource/apim/constants";
-import { AadService } from "../../../../src/plugins/resource/apim/service/aadService";
 import axios from "axios";
 import { AssertNotEmpty } from "../../../../src/plugins/resource/apim/error";
 import { ApiManagementClient } from "@azure/arm-apimanagement";
-import { ApimService } from "../../../../src/plugins/resource/apim/service/apimService";
+import { AadService } from "../../../../src/plugins/resource/apim/services/aadService";
+import { ApimService } from "../../../../src/plugins/resource/apim/services/apimService";
+import { IAadPluginConfig, IApimPluginConfig, IFunctionPluginConfig, ISolutionConfig } from "../../../../src/plugins/resource/apim/config";
 dotenv.config();
 chai.use(chaiAsPromised);
 

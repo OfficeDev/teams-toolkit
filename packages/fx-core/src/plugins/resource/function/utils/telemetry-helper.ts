@@ -3,7 +3,7 @@
 
 import { FunctionPluginInfo } from "../constants";
 import { FxResult } from "../result";
-import { PluginContext, SystemError, UserError } from "fx-api";
+import { PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { TelemetryKey, TelemetryValue } from "../enums";
 
 export class telemetryHelper {

@@ -12,7 +12,7 @@ import {
   TelemetryErrorType
 } from "./extTelemetryEvents";
 import * as extensionPackage from "../../package.json";
-import { FxError, Stage, UserError } from "fx-api";
+import { FxError, Stage, UserError } from "@microsoft/teamsfx-api";
 import { getTeamsAppId } from "../utils/commonUtils";
 
 export namespace ExtTelemetry {

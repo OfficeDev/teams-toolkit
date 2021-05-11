@@ -2,9 +2,10 @@
 // Licensed under the MIT license.
 
 import path from "path";
-import { AzureSolutionSettings, PluginContext } from "fx-api";
+import { AzureSolutionSettings, PluginContext } from "@microsoft/teamsfx-api";
 import { DependentPluginInfo, FrontendPathInfo } from "../constants";
 import { InvalidTabLanguageError } from "./errors";
+import { templatesVersion } from "../../../../common/templates";
 
 export interface TemplateVariable {
     showFunction: boolean;
@@ -25,6 +26,7 @@ export class TemplateInfo {
     language: string;
     scenario: string;
     version: string;
+    localTemplateBaseName: string;
     localTemplatePath: string;
     variables: TemplateVariable;
 
@@ -44,22 +46,22 @@ export class TemplateInfo {
 
         this.scenario = Scenario.Default;
 
-        const localTemplateFileName = [this.group, this.language, this.scenario].join(".") + FrontendPathInfo.TemplatePackageExt;
-        this.localTemplatePath = path.join(FrontendPathInfo.TemplateDir, localTemplateFileName);
+        this.localTemplateBaseName = [this.group, this.language, this.scenario].join(".");
+        this.localTemplatePath = path.join(FrontendPathInfo.TemplateDir, this.localTemplateBaseName + FrontendPathInfo.TemplatePackageExt);
     }
 
     private validateTabLanguage(language: string): string {
         if (language.toLowerCase() === TabLanguage.JavaScript.toLowerCase()) {
-            return TabLanguage.JavaScript;
+            return "js";
         }
 
         if (language.toLowerCase() === TabLanguage.TypeScript.toLowerCase()) {
-            return TabLanguage.TypeScript;
+            return "ts";
         }
 
         throw new InvalidTabLanguageError();
     }
 
     static readonly TemplateGroupName = "tab";
-    static readonly version = "0.4.x";
+    static readonly version = templatesVersion;
 }

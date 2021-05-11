@@ -39,6 +39,7 @@ export class PluginSolution {
     public static readonly LOCATION = "location";
     public static readonly TENANT_ID = "tenantId";
     public static readonly M365_TENANT_ID = "teamsAppTenantId";
+    public static readonly RESOURCE_NAME_SUFFIX = "resourceNameSuffix";
 }
 
 export class PluginSql {
@@ -51,7 +52,8 @@ export class PluginSql {
 
 export class PluginIdentity {
     public static readonly PLUGIN_NAME = "fx-resource-identity";
-    public static readonly IDENTITY_ID = "identity";
+    public static readonly IDENTITY_ID = "identityId";
+    public static readonly IDENTITY_NAME = "identityName";
 }
 
 export class PluginFunction {

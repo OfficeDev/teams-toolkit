@@ -1,10 +1,9 @@
 {
   "name": "@microsoft/teamsfx",
-  "version": "0.1.0",
+  "version": "0.1.0-alpha.3",
   "description": "Microsoft Teams Framework for Node.js and browser.",
   "main": "dist/index.js",
   "module": "dist-esm/src/index.js",
-  "private": true,
   "browser": {
     "./dist-esm/src/core/cache.js": "./dist-esm/src/core/cache.browser.js",
     "./dist-esm/src/credential/onBehalfOfUserCredential.js": "./dist-esm/src/credential/onBehalfOfUserCredential.browser.js",
@@ -18,7 +17,8 @@
     "build:browser": "tsc -p . && cross-env ONLY_BROWSER=true rollup -c 2>&1",
     "build:node": "tsc -p . && cross-env ONLY_NODE=true rollup -c 2>&1",
     "build:test": "tsc -p . && rollup -c rollup.test.config.js 2>&1",
-    "build": "tsc -p . && api-extractor run --local",
+    "build": "tsc -p . && npm run build:node && api-extractor run --local",
+    "prepare": "npm run build",
     "build:api-markdown": "tsc -p . && api-extractor run --local && api-documenter markdown -i temp -o ../../docs/sdk",
     "check-format": "prettier --list-different --config ./.prettierrc.json --ignore-path ./.prettierignore \"src/**/*.ts\" \"test/**/*.ts\" \"samples/**/*.ts\" \"*.{js,json}\"",
     "clean": "rimraf dist dist-* temp types *.tgz *.log",
@@ -64,8 +64,8 @@
     "@microsoft/microsoft-graph-client": "^2.2.1",
     "@microsoft/teams-js": "^1.9.0",
     "axios": "^0.21.1",
-    "botbuilder-core": ">=4.9.3",
-    "botbuilder-dialogs": ">=4.9.3",
+    "botbuilder-core": ">=4.9.3 <5.0.0",
+    "botbuilder-dialogs": ">=4.9.3 < 5.0.0",
     "jwt-decode": "^3.1.2",
     "memory-cache": "^0.2.0",
     "tedious": "^9.2.1",
@@ -145,5 +145,8 @@
       "eslint"
     ]
   },
-  "gitHead": "7d60c0765c0ea8c023a26c10d1c93001c597afbb"
+  "gitHead": "7d60c0765c0ea8c023a26c10d1c93001c597afbb",
+  "publishConfig": {
+    "access": "public"
+  }
 }

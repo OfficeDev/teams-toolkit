@@ -1,9 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import path from "path";
+import { IName } from "./interfaces/IName";
 
 export class ProjectConstants {
     public static readonly pluginShortName: string = "APIM";
+    public static readonly pluginName: string = "fx-resource-apim";
     public static readonly pluginDisplayName: string = "API Management";
     public static readonly configFilePath: string = "env.default.json";
     public static readonly workingDir: string = "openapi";
@@ -171,14 +173,7 @@ export class SolutionConfigKeys {
     public static readonly teamsAppTenantId: string = "teamsAppTenantId";
     public static readonly resourceGroupName: string = "resourceGroupName";
     public static readonly location: string = "location";
-}
-
-export enum LifeCycle {
-    Create,
-    Update,
-    Provision,
-    Deploy,
-    Login
+    public static readonly remoteTeamsAppId: string = "remoteTeamsAppId";
 }
 
 export enum TeamsToolkitComponent {
@@ -188,60 +183,78 @@ export enum TeamsToolkitComponent {
     ApimPlugin = "fx-resource-apim",
 }
 
-export const LifeCycleCommands: { [key in LifeCycle]: string } = Object.freeze({
-    [LifeCycle.Create]: "start a project",
-    [LifeCycle.Update]: "add the resource",
-    [LifeCycle.Provision]: "provision resource",
-    [LifeCycle.Deploy]: "deploy package",
-    [LifeCycle.Login]: "login and choose a subscription",
+export enum RetryCommands {
+    Create = "start a project",
+    Update = "add the resource",
+    Provision = "provision resource",
+    Deploy = "deploy package",
+    Login = "login and choose a subscription",
+}
+
+export const ComponentRetryCommands: { [key in TeamsToolkitComponent]: RetryCommands } = Object.freeze({
+    [TeamsToolkitComponent.FunctionPlugin]: RetryCommands.Update,
+    [TeamsToolkitComponent.AadPlugin]: RetryCommands.Create,
+    [TeamsToolkitComponent.Solution]: RetryCommands.Create,
+    [TeamsToolkitComponent.ApimPlugin]: RetryCommands.Update,
 });
 
-export const ComponentRetryLifeCycle: { [key in TeamsToolkitComponent]: LifeCycle } = Object.freeze({
-    [TeamsToolkitComponent.FunctionPlugin]: LifeCycle.Update,
-    [TeamsToolkitComponent.AadPlugin]: LifeCycle.Create,
-    [TeamsToolkitComponent.Solution]: LifeCycle.Create,
-    [TeamsToolkitComponent.ApimPlugin]: LifeCycle.Update,
-});
-
-export const ConfigRetryLifeCycle: { [key in TeamsToolkitComponent]: { [key: string]: LifeCycle } } = {
+export const ConfigRetryCommands: { [key in TeamsToolkitComponent]: { [key: string]: RetryCommands } } = {
     [TeamsToolkitComponent.FunctionPlugin]: {
-        [FunctionPluginConfigKeys.functionEndpoint]: LifeCycle.Provision,
+        [FunctionPluginConfigKeys.functionEndpoint]: RetryCommands.Provision,
     },
     [TeamsToolkitComponent.AadPlugin]: {
-        [AadPluginConfigKeys.objectId]: LifeCycle.Provision,
-        [AadPluginConfigKeys.clientId]: LifeCycle.Provision,
-        [AadPluginConfigKeys.oauth2PermissionScopeId]: LifeCycle.Provision,
-        [AadPluginConfigKeys.applicationIdUris]: LifeCycle.Provision,
+        [AadPluginConfigKeys.objectId]: RetryCommands.Provision,
+        [AadPluginConfigKeys.clientId]: RetryCommands.Provision,
+        [AadPluginConfigKeys.oauth2PermissionScopeId]: RetryCommands.Provision,
+        [AadPluginConfigKeys.applicationIdUris]: RetryCommands.Provision,
     },
     [TeamsToolkitComponent.Solution]: {
-        [SolutionConfigKeys.resourceNameSuffix]: LifeCycle.Create,
-        [SolutionConfigKeys.subscriptionId]: LifeCycle.Login,
-        [SolutionConfigKeys.teamsAppTenantId]: LifeCycle.Provision,
-        [SolutionConfigKeys.resourceGroupName]: LifeCycle.Provision,
-        [SolutionConfigKeys.location]: LifeCycle.Provision,
+        [SolutionConfigKeys.resourceNameSuffix]: RetryCommands.Create,
+        [SolutionConfigKeys.subscriptionId]: RetryCommands.Login,
+        [SolutionConfigKeys.teamsAppTenantId]: RetryCommands.Provision,
+        [SolutionConfigKeys.resourceGroupName]: RetryCommands.Provision,
+        [SolutionConfigKeys.location]: RetryCommands.Provision,
     },
     [TeamsToolkitComponent.ApimPlugin]: {
-        [ApimPluginConfigKeys.resourceGroupName]: LifeCycle.Provision,
-        [ApimPluginConfigKeys.serviceName]: LifeCycle.Provision,
-        [ApimPluginConfigKeys.productId]: LifeCycle.Provision,
-        [ApimPluginConfigKeys.oAuthServerId]: LifeCycle.Provision,
-        [ApimPluginConfigKeys.apimClientAADObjectId]: LifeCycle.Provision,
-        [ApimPluginConfigKeys.apimClientAADClientId]: LifeCycle.Provision,
-        [ApimPluginConfigKeys.apimClientAADClientSecret]: LifeCycle.Provision,
-        [ApimPluginConfigKeys.apiPrefix]: LifeCycle.Deploy,
-        [ApimPluginConfigKeys.versionSetId]: LifeCycle.Deploy,
-        [ApimPluginConfigKeys.apiPath]: LifeCycle.Deploy,
-        [ApimPluginConfigKeys.apiDocumentPath]: LifeCycle.Deploy,
+        [ApimPluginConfigKeys.resourceGroupName]: RetryCommands.Provision,
+        [ApimPluginConfigKeys.serviceName]: RetryCommands.Provision,
+        [ApimPluginConfigKeys.productId]: RetryCommands.Provision,
+        [ApimPluginConfigKeys.oAuthServerId]: RetryCommands.Provision,
+        [ApimPluginConfigKeys.apimClientAADObjectId]: RetryCommands.Provision,
+        [ApimPluginConfigKeys.apimClientAADClientId]: RetryCommands.Provision,
+        [ApimPluginConfigKeys.apimClientAADClientSecret]: RetryCommands.Provision,
+        [ApimPluginConfigKeys.apiPrefix]: RetryCommands.Deploy,
+        [ApimPluginConfigKeys.versionSetId]: RetryCommands.Deploy,
+        [ApimPluginConfigKeys.apiPath]: RetryCommands.Deploy,
+        [ApimPluginConfigKeys.apiDocumentPath]: RetryCommands.Deploy,
     },
 };
 
+export enum PluginLifeCycle {
+    CallFunc = "call-func",
+    GetQuestions = "get-questions",
+    Scaffold = "scaffold",
+    Provision = "provision",
+    PostProvision = "post-provision",
+    Deploy = "deploy"
+}
+
 export enum ProgressStep {
     None = "",
-    Scaffold = "Scaffold OpenAPI document",
-    Provision = "Create API Management and client AAD app",
-    PostProvision = "Configure API Management and AAD apps",
-    Deploy = "Import API into API Management",
+    Scaffold = "Scaffolding OpenAPI document",
+    Provision = "Provisioning API Management",
+    PostProvision = "Configuring API Management",
+    Deploy = "Importing API into API Management",
 }
+
+export const PluginLifeCycleToProgressStep: { [key in PluginLifeCycle]: ProgressStep } = {
+    [PluginLifeCycle.CallFunc]: ProgressStep.None,
+    [PluginLifeCycle.GetQuestions]: ProgressStep.None,
+    [PluginLifeCycle.Scaffold]: ProgressStep.Scaffold,
+    [PluginLifeCycle.Provision]: ProgressStep.Provision,
+    [PluginLifeCycle.PostProvision]: ProgressStep.PostProvision,
+    [PluginLifeCycle.Deploy]: ProgressStep.Deploy,
+};
 
 export const ProgressMessages: { [key in ProgressStep]: { [step: string]: string } } = {
     [ProgressStep.None]: {},
@@ -261,3 +274,103 @@ export const ProgressMessages: { [key in ProgressStep]: { [step: string]: string
         ImportApi: "Import API into API management",
     },
 };
+
+export enum OperationStatus {
+    Started = "started",
+    Failed = "failed",
+    Succeeded = "succeeded",
+}
+
+export class AzureResource {
+    static ResourceGroup: IName = {
+        shortName: "resource-group",
+        displayName: "Resource Group",
+    };
+
+    static APIM: IName = {
+        shortName: "apim",
+        displayName: "API Management Service",
+    };
+
+    static Product: IName = {
+        shortName: "apim-product",
+        displayName: "API Management product",
+    };
+
+    static OAuthServer: IName = {
+        shortName: "apim-oauth-server",
+        displayName: "API Management OAuth server",
+    };
+
+    static VersionSet: IName = {
+        shortName: "apim-version-set",
+        displayName: "API Management version set",
+    };
+
+    static API: IName = {
+        shortName: "apim-api",
+        displayName: "API Management API",
+    };
+
+    static ProductAPI: IName = {
+        shortName: "apim-product-api",
+        displayName: "API Management product and API relationship",
+    };
+
+    static Aad: IName = {
+        shortName: "aad",
+        displayName: "Azure Active Directory",
+    };
+
+    static AadSecret: IName = {
+        shortName: "aad-secret",
+        displayName: "Azure Active Directory client secret",
+    };
+
+    static ServicePrincipal: IName = {
+        shortName: "service-principal",
+        displayName: "Service Principal",
+    };
+}
+
+export class Operation {
+    static Create: IName = {
+        shortName: "create",
+        displayName: "create",
+    };
+
+    static Update: IName = {
+        shortName: "update",
+        displayName: "update",
+    };
+
+    static Get: IName = {
+        shortName: "get",
+        displayName: "get",
+    };
+
+    static List: IName = {
+        shortName: "list",
+        displayName: "list",
+    };
+
+    static ListNextPage: IName = {
+        shortName: "list-next",
+        displayName: "list (pagination)",
+    };
+
+    static Import: IName = {
+        shortName: "import",
+        displayName: "import",
+    };
+}
+
+export enum ErrorHandlerResult {
+    Continue = "Continue",
+    Return = "Return",
+}
+
+export enum OpenApiSchemaVersion {
+    V2 = "v2",
+    V3 = "v3",
+}

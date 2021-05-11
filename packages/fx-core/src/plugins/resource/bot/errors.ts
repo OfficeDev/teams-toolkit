@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ErrorNames } from "./constants";
+import { ErrorNames, Links } from "./constants";
 import { Messages } from "./resources/messages";
 
 export enum ErrorType {
@@ -15,14 +15,17 @@ export class PluginError extends Error {
     public suggestions: string[];
     public errorType: ErrorType;
     public innerError?: Error;
+    public showHelpLink: boolean;
 
-    constructor(type: ErrorType, name: string, details: string, suggestions: string[], innerError?: Error) {
+    constructor(type: ErrorType, name: string, details: string, suggestions: string[],
+        innerError?: Error, showHelpLink: boolean = false) {
         super(details);
         this.name = name;
         this.details = details;
         this.suggestions = suggestions;
         this.errorType = type;
         this.innerError = innerError;
+        this.showHelpLink = showHelpLink;
         Object.setPrototypeOf(this, PluginError.prototype);
     }
 
@@ -110,6 +113,21 @@ export class ProvisionError extends PluginError {
                 Messages.RetryTheCurrentStep
             ],
             innerError
+        );
+    }
+}
+
+export class MissingSubscriptionRegistrationError extends PluginError {
+    constructor() {
+        super(
+            ErrorType.User,
+            ErrorNames.MISSING_SUBSCRIPTION_REGISTRATION_ERROR,
+            Messages.TheSubsNotRegisterToUseBotService,
+            [
+                Messages.RegisterYouSubsToUseBot
+            ],
+            undefined,
+            true
         );
     }
 }
@@ -246,6 +264,21 @@ export class CommandExecutionError extends PluginError {
                 Messages.RetryTheCurrentStep
             ],
             innerError
+        );
+    }
+}
+
+export class FreeServerFarmsQuotaError extends PluginError {
+    constructor(innerError?: Error) {
+        super(
+            ErrorType.User,
+            ErrorNames.FREE_SERVER_FARMS_QUOTA_ERROR,
+            Messages.MaxFreeAppServicePlanIsTen,
+            [
+                Messages.DeleteFreeAppServicePlanOrChangeSku
+            ],
+            innerError,
+            true
         );
     }
 }

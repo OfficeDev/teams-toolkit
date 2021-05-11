@@ -14,7 +14,7 @@ import {
   Result,
   FxError,
   ok
-} from "fx-api";
+} from "@microsoft/teamsfx-api";
 
 import { ext } from "../../../src/extensionVariables";
 import DialogManagerInstance from "../../../src/userInterface";

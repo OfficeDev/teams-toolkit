@@ -3,7 +3,7 @@
 
 "use strict";
 
-import { AppStudioTokenProvider } from "fx-api";
+import { AppStudioTokenProvider } from "@microsoft/teamsfx-api";
 import * as vscode from "vscode";
 import { login, LoginStatus } from "./common/login";
 import { signedIn, signedOut } from "./common/constant";

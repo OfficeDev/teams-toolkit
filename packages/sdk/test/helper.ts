@@ -154,7 +154,7 @@ async function loginTestUser(): Promise<void> {
     // Click password option is not stable, try twice here
     await page.click(selectors.passwordOption, { delay: 5000, timeout: 10000 });
     await page.click(selectors.passwordOption2, { delay: 5000, timeout: 10000 });
-  } catch (e) { }
+  } catch (e) {}
   await page.waitForSelector(selectors.password, { timeout: E2E_TIMEOUT });
   await page.click(selectors.password);
   await page.type(selectors.password, TEST_USER_PASSWORD);
@@ -256,7 +256,7 @@ export async function getSsoTokenFromTeams(): Promise<string> {
  * Once invoke MockEnvironmentVariables, mock the variables in it with another value, it will take effect immediately.
  */
 export function MockEnvironmentVariable(): () => void {
-  require('dotenv').config();
+  require("dotenv").config();
   return mockedEnv({
     M365_CLIENT_ID: process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
     M365_CLIENT_SECRET: process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_SECRET,

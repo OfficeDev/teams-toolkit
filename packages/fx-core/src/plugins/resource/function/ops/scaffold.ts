@@ -12,7 +12,7 @@ import { LanguageStrategyFactory } from "../language-strategy";
 import { Logger } from "../utils/logger";
 import { ScaffoldSteps, StepGroup, step } from "../resources/steps";
 import { TemplateZipFallbackError, runWithErrorCatchAndThrow } from "../resources/errors";
-import { fetchZipFromURL, getTemplateURL, unzip} from "../utils/templates-fetch";
+import { convertTemplateLanguage, fetchZipFromURL, getTemplateURL, unzip} from "../utils/templates-fetch";
 
 export interface TemplateVariables {
     appName: string;
@@ -31,8 +31,7 @@ export class FunctionScaffold {
         scenario: string
     ): Promise<AdmZip> {
         try {
-            const url: string = await getTemplateURL(
-                PluginInfo.templateManifestURL, group, language, scenario, PluginInfo.templateVersion);
+            const url: string = await getTemplateURL(group, language, scenario);
             Logger.info(InfoMessages.getTemplateFrom(url));
 
             const zip: AdmZip = await fetchZipFromURL(url);
@@ -40,7 +39,8 @@ export class FunctionScaffold {
         } catch(e) {
             Logger.error(e.toString());
             return await runWithErrorCatchAndThrow(new TemplateZipFallbackError(), async() => {
-                const fileName: string = [group, language, scenario].join(PathInfo.templateZipNameSep) + PathInfo.templateZipExt;
+                const templateLanguage: string = convertTemplateLanguage(language);
+                const fileName: string = [group, templateLanguage, scenario].join(PathInfo.templateZipNameSep) + PathInfo.templateZipExt;
                 const zipPath: string = path.join(FunctionPluginPathInfo.rootPath, PathInfo.templateFolderPath, fileName);
                 const data: Buffer = await fs.readFile(zipPath);
                 const zip: AdmZip = new AdmZip(data);

@@ -7,7 +7,7 @@ import {
     Plugin,
     ok,
     err
-} from "fx-api";
+} from "@microsoft/teamsfx-api";
 import { IdentityConfig } from "./config";
 import { Constants, Telemetry } from "./constants";
 import { ContextUtils } from "./utils/contextUtils";

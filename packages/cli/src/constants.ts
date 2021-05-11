@@ -5,7 +5,7 @@
 
 import * as path from "path";
 
-import { NodeType, QTreeNode } from "fx-api";
+import { NodeType, QTreeNode } from "@microsoft/teamsfx-api";
 
 export const cliSource = "TeamsfxCLI";
 export const cliName = "teamsfx";
@@ -50,18 +50,40 @@ export const SubscriptionNode = new QTreeNode({
 });
 
 export const templates: {
-  tags: string[],
   title: string,
   description: string,
   sampleAppName: string,
   sampleAppUrl: string
 }[] = [
   {
-    tags: ["Launch Page", "TS"],
-    title: "To Do List (for test)",
-    description: "Sample app description goes here (for test)",
-    sampleAppName: "todolist",
-    sampleAppUrl: "https://github.com/HuihuiWu-Microsoft/Sample-app-graph/releases/download/v1.0/sample.app.graph.zip"
+    title: "In-meeting App",
+    sampleAppName: "in-meeting-app",
+    description: "In-meeting app is a hello-world template which shows how to build an app working in the context of a Teams meeting. ",
+    sampleAppUrl: "https://github.com/HuihuiWu-Microsoft/TeamsFx-Samples/archive/refs/heads/main.zip"
+  },
+  {
+    title: "Todo List with backend on Azure",
+    sampleAppName: "todo-list-with-Azure-backend",
+    description: "Todo List provides easy way to manage to-do items in Teams Client.",
+    sampleAppUrl: "https://github.com/HuihuiWu-Microsoft/TeamsFx-Samples/archive/refs/heads/main.zip"
+  },
+  {
+    title: "To Do List2",
+    sampleAppName: "todo-list-SPFx",
+    description: "Todo List with SPFx is a Todo List for individual user to manage his/her personal to-do items in the format of an app installed on Teams client.",
+    sampleAppUrl: "https://github.com/HuihuiWu-Microsoft/TeamsFx-Samples/archive/refs/heads/main.zip"
+  },
+  {
+    title: "Share Now",
+    sampleAppName: "share-now",
+    description: "The Share Now promotes the exchange of information between colleagues by enabling users to share content within the Teams environment. ",
+    sampleAppUrl: "https://github.com/HuihuiWu-Microsoft/TeamsFx-Samples/archive/refs/heads/main.zip"
+  },
+  {
+    title: "FAQ Plus",
+    sampleAppName: "faq-plus",
+    description: "FAQ Plus is a conversational Q&A bot providing an easy way to answer frequently asked questions by users. ",
+    sampleAppUrl: "https://github.com/HuihuiWu-Microsoft/TeamsFx-Samples/archive/refs/heads/main.zip"
   }
 ];
 

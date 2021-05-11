@@ -19,4 +19,4 @@ webpack.config.js
 #remove node modules after fx-core support webpack
 #node_modules/**
 
-!node_modules/fx-core
+!node_modules/@microsoft/teamsfx-core

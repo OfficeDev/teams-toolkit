@@ -25,8 +25,8 @@ import {
   InputResultType,
   VsCodeEnv,
   AppStudioTokenProvider
-} from "fx-api";
-import { CoreProxy } from "fx-core";
+} from "@microsoft/teamsfx-api";
+import { CoreProxy } from "@microsoft/teamsfx-core";
 import DialogManagerInstance from "./userInterface";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -100,7 +100,7 @@ export async function activate(): Promise<Result<null, FxError>> {
           window.showInformationMessage(StringResources.vsc.handlers.azureSignOut);
         }
         return Promise.resolve();
-      });
+      }, false);
       const result = await core.withAzureAccount(AzureAccountManager);
       if (result.isErr()) {
         showError(result.error);
@@ -122,7 +122,7 @@ export async function activate(): Promise<Result<null, FxError>> {
           window.showInformationMessage(StringResources.vsc.handlers.m365SignOut);
         }
         return Promise.resolve();
-      });
+      }, false);
 
       const result = await core.withAppStudioToken(appstudioLogin);
       if (result.isErr()) {
@@ -335,7 +335,19 @@ export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
       );
     }
   } catch (e) {
-    result = wrapError(e);
+    if(e instanceof UserError){
+      const ue:UserError = e as UserError;
+      if(ue.name === "DoProvisionFirst"){
+        runningTasks.delete(stage);
+        ExtTelemetry.sendTelemetryEvent(eventName, {
+          [TelemetryProperty.Success]: TelemetrySuccess.No
+        });
+        return await provisionHandler();
+      }
+    }
+    else {
+      result = wrapError(e);
+    }
   }
 
   // 7. unlock

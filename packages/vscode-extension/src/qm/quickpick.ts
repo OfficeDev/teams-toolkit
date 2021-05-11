@@ -1,4 +1,4 @@
-import { FxQuickPickOption, InputResult, InputResultType, OptionItem, returnSystemError, StaticOption } from "fx-api";
+import { FxQuickPickOption, InputResult, InputResultType, OptionItem, returnSystemError, StaticOption } from "@microsoft/teamsfx-api";
 import { Disposable, QuickInputButton, QuickInputButtons, Uri, window } from "vscode";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { ext } from "../extensionVariables";

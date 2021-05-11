@@ -4,7 +4,7 @@
 
 import * as constants from "./constants";
 import CLILogProvider from "./commonlib/log";
-import { LogLevel } from "fx-api";
+import { LogLevel } from "@microsoft/teamsfx-api";
 
 export class ProgressHandler {
   private totalSteps: number;

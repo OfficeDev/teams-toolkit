@@ -6,7 +6,7 @@ import * as chai from "chai";
 import * as faker from "faker";
 import * as path from "path";
 import * as sinon from "sinon";
-import { PluginContext } from "fx-api";
+import { PluginContext } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import axios from "axios";
 import chaiAsPromised from "chai-as-promised";
@@ -100,7 +100,7 @@ describe("FrontendScaffold", () => {
         it("pick newest", async () => {
             sinon.stub(axios, "get").resolves(TestHelper.getFakeAxiosResponse(TestHelper.getFakeTemplateManifest()));
 
-            const url = await FrontendScaffold.getTemplateURL("", "a", "b", "c", "0.1.*");
+            const url = await FrontendScaffold.getTemplateURL("", TestHelper.templateCompose);
 
             chai.assert.equal(url, TestHelper.latestTemplateURL);
         });

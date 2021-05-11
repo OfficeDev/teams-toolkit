@@ -1,5 +1,5 @@
 .quick-start-page{
-    margin: 100px 100px 100px 100px;
+    margin: 100px 0;
 
     a{
         text-decoration: none;
@@ -15,8 +15,17 @@
     }
 
     .table-of-contents{
-        width: 50%;
-        margin-right: 90px;
+        flex: 0 0 352px;
+    }
+
+    .content-margin{
+        min-width: 20px;
+        flex: 0 1 95px;
+    }
+
+    .side-margin{
+        min-width: 20px;
+        flex: 1 2 100px;
     }
 
     .logo{
@@ -32,7 +41,7 @@
 
         h2{
             font-size: 26px;
-            line-height: 30px;
+            line-height: 32px;
             margin-top: 0px;
             margin-bottom: 0px;
             font-weight: normal;
@@ -41,7 +50,7 @@
 
         h3{
             font-size: 12px;
-            line-height: 14px;
+            line-height: 16px;
             margin-top: 0px;
             margin-bottom: 0px;
             font-weight: normal;
@@ -50,13 +59,37 @@
     }
 
     .stage{
-        width: 50%;
-        overflow: hidden;
+        flex: 0 0 426px;
+        margin-top: 84px;
 
         .player{
+            position: relative;
+        }
+
+        .capabilitiesVideo {
             width: 100%;
             height: auto;
         }
+
+        .watchOnBrowser {
+            position: absolute;
+            background: rgba(0,0,0,.5);
+            top: 0;
+            right: 0;
+            margin: 10px;
+            border: 0;
+            color: #EEE;
+            -webkit-border-radius: 3px;
+            border-radius: 3px;
+        }
+        
+        .watchOnBrowser:hover {
+            cursor: pointer;
+        }
+    }
+
+    video::-webkit-media-controls-fullscreen-button {
+        display: none;
     }
 
     .action-card{

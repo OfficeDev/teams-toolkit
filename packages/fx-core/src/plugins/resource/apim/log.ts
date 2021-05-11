@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { ApimDefaultValues, ProjectConstants } from "./constants";
-import { IName } from "./model/operation";
-import { capitalizeFirstLetter } from "./util";
+import { IName } from "./interfaces/IName";
+import { capitalizeFirstLetter } from "./utils/commonUtils";
 
 export class LogMessages {
     public static readonly operationStarts = (operation: IName, resourceType: IName, resourceId?: string): string =>

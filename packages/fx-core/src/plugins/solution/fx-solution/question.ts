@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ConfigMap, FuncQuestion, Inputs, MultiSelectQuestion, NodeType, OptionItem, returnSystemError, SingleSelectQuestion, StaticOption } from "fx-api";
+import { ConfigMap, FuncQuestion, Inputs, MultiSelectQuestion, NodeType, OptionItem, returnSystemError, SingleSelectQuestion, StaticOption } from "@microsoft/teamsfx-api";
 import { SolutionError } from "./constants";
 
 export const TabOptionItem: OptionItem = {

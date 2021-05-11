@@ -6,6 +6,7 @@ import { AzureSolutionSettings, PluginContext } from "@microsoft/teamsfx-api";
 import { DependentPluginInfo, FrontendPathInfo } from "../constants";
 import { InvalidTabLanguageError } from "./errors";
 import { getTemplatesFolder } from "../../../..";
+import { templatesVersion } from "../../../../common/templates";
 
 export interface TemplateVariable {
     showFunction: boolean;
@@ -26,6 +27,7 @@ export class TemplateInfo {
     language: string;
     scenario: string;
     version: string;
+    // localTemplateBaseName: string;
     localTemplatePath: string;
     variables: TemplateVariable;
 
@@ -51,16 +53,16 @@ export class TemplateInfo {
 
     private validateTabLanguage(language: string): string {
         if (language.toLowerCase() === TabLanguage.JavaScript.toLowerCase()) {
-            return TabLanguage.JavaScript;
+            return "js";
         }
 
         if (language.toLowerCase() === TabLanguage.TypeScript.toLowerCase()) {
-            return TabLanguage.TypeScript;
+            return "ts";
         }
 
         throw new InvalidTabLanguageError();
     }
 
     static readonly TemplateGroupName = "tab";
-    static readonly version = "0.4.x";
+    static readonly version = templatesVersion;
 }

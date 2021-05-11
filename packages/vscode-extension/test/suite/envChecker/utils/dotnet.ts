@@ -5,11 +5,13 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as os from "os";
 import * as tmp from "tmp";
+import * as util from "util";
 
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import { cpUtils } from "../../../../src/debug/depsChecker/cpUtils";
 import { isWindows } from "../../../../src/debug/depsChecker/common";
 import { logger } from "../adapters/testLogger";
+import { createTmpDir } from "./common";
 import { DotnetChecker, DotnetVersion } from "../../../../src/debug/depsChecker/dotnetChecker";
 
 const find = require("find-process");
@@ -86,38 +88,47 @@ export async function withDotnet(
   addToPath: boolean,
   callback: (dotnetExecPath: string) => Promise<void>
 ): Promise<void> {
-  const withDotnetAsync = async (installDir: string) => {
+  let installDir: string;
+  let cleanupCallback: () => void;
+
+  try {
+    [installDir, cleanupCallback] = await createTmpDir();
+  } catch (error) {
+    throw new Error(`Failed to create tmpdir for dotnet, error = '${error}'`);
+  }
+
+  const backupPath = process.env.PATH;
+
+  try {
     // use private method as a helper method in test only
     await dotnetChecker["runDotnetInstallScript"](version, installDir);
     const dotnetExecPath = DotnetChecker["getDotnetExecPathFromDotnetInstallationDir"](installDir);
 
-    const backupPath = process.env.PATH;
-    try {
-      if (addToPath) {
-        process.env.PATH =
-          path.resolve(dotnetExecPath, "..") + (isWindows() ? ";" : ":") + process.env.PATH;
-      }
-
-      await callback(dotnetExecPath);
-    } finally {
-      if (addToPath) {
-        process.env.PATH = backupPath;
-      }
+    if (addToPath) {
+      process.env.PATH =
+        path.resolve(dotnetExecPath, "..") + (isWindows() ? ";" : ":") + process.env.PATH;
     }
-  };
 
-  return new Promise((resolve, reject) => {
-    // unsafeCleanup: recursively removes the created temporary directory, even when it's not empty.
-    tmp.dir({ unsafeCleanup: true }, function(err, path, cleanupCallback) {
-      if (err) {
-        reject(new Error(`Failed to create tmpdir, error = '${err}'`));
-        return;
-      }
+    await callback(dotnetExecPath);
+  } finally {
+    if (addToPath) {
+      process.env.PATH = backupPath;
+    }
+    cleanupCallback();
+  }
+}
 
-      withDotnetAsync(path)
-        .then(() => resolve())
-        .catch((error) => reject(error))
-        .finally(() => cleanupCallback());
-    });
-  });
+export async function createTmpBackendProjectDir(
+  csprojFileName: string
+): Promise<[string, () => void]> {
+  const [dir, cleanupCallback] = await createTmpDir();
+
+  const csprojPath = path.resolve(
+    __dirname,
+    "../../../../../../../templates/function-base/ts/default/extensions.csproj"
+  );
+  const targetPath = path.join(dir, csprojFileName);
+  await fs.copyFile(csprojPath, targetPath, fs.constants.COPYFILE_EXCL);
+
+  return [dir, cleanupCallback];
 }

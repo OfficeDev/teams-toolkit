@@ -57,17 +57,18 @@ export default class QuickStart extends React.Component<any, any>{
 
         return (
             <div className="quick-start-page">
-                <div className="section">
-                    <div className="logo">
-                        <Icon iconName="LightningBolt" className="logo" />
-                    </div>
-                    <div className="title">
-                        <h2>Quick Start</h2>
-                        <h3 className="text">Jumpstart your Teams app development experience</h3>
-                    </div>
-                </div>
                 <div className="flex-section">
+                    <div className="side-margin" />
                     <div className="table-of-contents">
+                        <div className="section">
+                            <div className="logo">
+                                <Icon iconName="LightningBolt" className="logo" />
+                            </div>
+                            <div className="title">
+                                <h2>Quick Start</h2>
+                                <h3 className="text">Jumpstart your Teams app development experience</h3>
+                            </div>
+                        </div>
                         {(()=>{
                             const curStep = stepCount;
                             stepCount++;
@@ -169,6 +170,7 @@ export default class QuickStart extends React.Component<any, any>{
                             />
                         })()}
                     </div>
+                    <div className="content-margin" />
                     <div className="stage">
                         {
                             this.state.currentStep === 1 && (
@@ -218,9 +220,10 @@ export default class QuickStart extends React.Component<any, any>{
                             )
                         }
                     </div>
+                    <div className="side-margin" />
                 </div>
             </div>
-        )
+        );
     }
 
     receiveMessage = (event: any) => {

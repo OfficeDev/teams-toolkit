@@ -361,10 +361,9 @@ export class TeamsAppSolution implements Solution {
         this.reloadPlugins(solutionSettings);
 
         const templatesFolder = getTemplatesFolder();
-        const defaultColorPath = `${templatesFolder}\\plugins\\solution\\defaultIcon.png`;
-        const defaultOutlinePath = `${templatesFolder}\\plugins\\solution\\defaultOutline.png`;
-        // const defaultColorPath = path.join(__dirname, "../../../../templates/plugins/solution/defaultIcon.png");
-        // const defaultOutlinePath = path.join(__dirname, "../../../../templates/plugins/solution/defaultIcon.png");
+        const defaultColorPath = path.join(templatesFolder ,"plugins", "solution", "defaultIcon.png");
+        const defaultOutlinePath = path.join(templatesFolder, "plugins", "solution", "defaultOutline.png");
+
         await fs.copy(defaultColorPath, `${ctx.root}/.${ConfigFolderName}/color.png`);
         await fs.copy(defaultOutlinePath, `${ctx.root}/.${ConfigFolderName}/outline.png`);
         if (this.isAzureProject(ctx)) {

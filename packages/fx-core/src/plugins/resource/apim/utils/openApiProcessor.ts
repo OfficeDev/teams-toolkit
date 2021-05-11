@@ -2,14 +2,14 @@
 // Licensed under the MIT license.
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { BuildError, InvalidFunctionEndpoint, InvalidOpenApiDocument } from "../error";
-import { OpenApiSchemaVersion, IOpenApiDocument } from "../model/openApiDocument";
+import { IOpenApiDocument } from "../interfaces/IOpenApiDocument";
 import urlParse from "url-parse";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { ApimDefaultValues } from "../constants";
-import { Telemetry } from "../telemetry";
+import { ApimDefaultValues, OpenApiSchemaVersion } from "../constants";
+import { Telemetry } from "./telemetry";
 import { LogProvider, TelemetryReporter } from "@microsoft/teamsfx-api";
-import { getFileExtension } from "../util";
+import { getFileExtension } from "./commonUtils";
 import { LogMessages } from "../log";
 import { OpenAPI, OpenAPIV2, OpenAPIV3 } from "openapi-types";
 

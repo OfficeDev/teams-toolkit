@@ -58,7 +58,7 @@ export async function setExecutionPolicyForCurrentUser(policy: string): Promise<
   );
 }
 
-export async function createTmpDir(): Promise<[string, () => void]> {
+export function createTmpDir(): Promise<[string, () => void]> {
   return new Promise((resolve, reject) => {
     // unsafeCleanup: recursively removes the created temporary directory, even when it's not empty.
     tmp.dir({ unsafeCleanup: true }, function(err, path, cleanupCallback) {
@@ -74,7 +74,7 @@ export async function createTmpDir(): Promise<[string, () => void]> {
 export async function isNonEmptyDir(dir: string): Promise<boolean> {
   try {
     const files = await fs.readdir(dir);
-    return files.length != 0;
+    return files.length !== 0;
   } catch (error) {
     return false;
   }

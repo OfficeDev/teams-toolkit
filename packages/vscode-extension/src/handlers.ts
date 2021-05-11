@@ -309,7 +309,7 @@ export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
     if (node) {
       VsCodeLogInstance.info(util.format(StringResources.vsc.handlers.questionTree, JSON.stringify(node, null, 4)));
       const res: InputResult = await traverse(node, answers, VS_CODE_UI, coreExeceutor);
-      VsCodeLogInstance.info(util.format(StringResources.vsc.handlers.userInput, JSON.stringify(answers.toJSON(), null, 4)));
+      VsCodeLogInstance.info(util.format(StringResources.vsc.handlers.userInput, JSON.stringify(res, null, 4)));
       if (res.type === InputResultType.error) {
         throw res.error!;
       } else if (res.type === InputResultType.cancel) {

@@ -9,6 +9,10 @@ export class Constants {
   public static readonly APP_CATALOG_REFRESH_TIME = 2000;
   public static readonly APP_CATALOG_MAX_TIMES = 30;
   public static readonly PLUGIN_NAME = "SPFx";
+  public static readonly BUILD_SHAREPOINT_PACKAGE = "Build SharePoint Package";
+  public static readonly READ_MORE = "Read more";
+  public static readonly CANCEL = "Cancel";
+  public static readonly DEPLOY_GUIDE = "https://docs.microsoft.com/en-us/sharepoint/dev/spfx/web-parts/get-started/using-web-part-as-ms-teams-tab#package-and-deploy-your-web-part-to-sharepoint";
 }
 
 export class PlaceHolders {
@@ -49,12 +53,12 @@ export class TelemetryEvent {
 }
 
 export class ProgressTitleMessage {
-  static readonly PreDeployProgressTitle = `[${Constants.PLUGIN_NAME}] Build SharePoint Package`;
+  static readonly PreDeployProgressTitle = "Building SharePoint package";
   static readonly DeployProgressTitle = `[${Constants.PLUGIN_NAME}] Deploy SharePoint Package`;
 }
 
 export class PreDeployProgressMessage{
-  static readonly NpmInstall = "Run: npm install";
+  static readonly NpmInstall = "Run: npm install. This may take more than 5 minutes to finish";
   static readonly GulpBundle = "Run: gulp bundle --ship";
   static readonly GulpPackage = "Run: gulp package-solution --ship";
 }

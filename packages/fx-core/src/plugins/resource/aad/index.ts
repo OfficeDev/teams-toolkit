@@ -18,6 +18,7 @@ import { AadResult, ResultFactory } from "./results";
 import { UnhandledError } from "./errors";
 import { TelemetryUtils } from "./utils/telemetry";
 import { DialogUtils } from "./utils/dialog";
+import { Stage, Telemetry } from "./constants";
 
 export class AadAppForTeamsPlugin implements Plugin {
   public pluginImpl: AadAppForTeamsImpl = new AadAppForTeamsImpl();
@@ -25,14 +26,16 @@ export class AadAppForTeamsPlugin implements Plugin {
   public async provision(ctx: PluginContext): Promise<AadResult> {
     return await this.runWithExceptionCatchingAsync(
       () => this.pluginImpl.provision(ctx),
-      ctx
+      ctx,
+      Stage.provision,
     );
   }
 
   public async localDebug(ctx: PluginContext): Promise<AadResult> {
     return await this.runWithExceptionCatchingAsync(
       () => this.pluginImpl.provision(ctx, true),
-      ctx
+      ctx,
+      Stage.localDebug,
     );
   }
 
@@ -42,21 +45,23 @@ export class AadAppForTeamsPlugin implements Plugin {
   ): AadResult {
     return this.runWithExceptionCatching(
       () => this.pluginImpl.setApplicationInContext(ctx, isLocalDebug),
-      ctx
+      ctx,
     );
   }
 
   public async postProvision(ctx: PluginContext): Promise<AadResult> {
     return await this.runWithExceptionCatchingAsync(
       () => this.pluginImpl.postProvision(ctx),
-      ctx
+      ctx,
+      Stage.postProvision,
     );
   }
 
   public async postLocalDebug(ctx: PluginContext): Promise<AadResult> {
     return await this.runWithExceptionCatchingAsync(
       () => this.pluginImpl.postProvision(ctx, true),
-      ctx
+      ctx,
+      Stage.postLocalDebug,
     );
   }
 
@@ -67,7 +72,8 @@ export class AadAppForTeamsPlugin implements Plugin {
     if (func.method === "aadUpdatePermission") {
       return await this.runWithExceptionCatchingAsync(
         () => this.pluginImpl.updatePermission(ctx),
-        ctx
+        ctx,
+        Stage.userTask,
       );
     }
 
@@ -83,34 +89,35 @@ export class AadAppForTeamsPlugin implements Plugin {
 
   private async runWithExceptionCatchingAsync(
     fn: () => Promise<AadResult>,
-    ctx: PluginContext
+    ctx: PluginContext,
+    stage: string,
   ): Promise<AadResult> {
     try {
       return await fn();
     } catch (e) {
-      return this.returnError(e, ctx);
+      return this.returnError(e, ctx, stage);
     }
   }
 
   private runWithExceptionCatching(
     fn: () => AadResult,
-    ctx: PluginContext
+    ctx: PluginContext,
   ): AadResult {
     try {
       return fn();
     } catch (e) {
-      return this.returnError(e, ctx);
+      return this.returnError(e, ctx, "");
     }
   }
 
-  private returnError(e: any, ctx: PluginContext): AadResult {
+  private returnError(e: any, ctx: PluginContext, stage: string): AadResult {
     if (e instanceof SystemError || e instanceof UserError) {
       ctx.logProvider?.error(e.message);
       if (e.innerError) {
         ctx.logProvider?.error(`Detailed error: ${e.innerError.message}`);
       }
       TelemetryUtils.init(ctx);
-      TelemetryUtils.sendException(e);
+      TelemetryUtils.sendException(stage, e.name, e instanceof UserError ? Telemetry.userError : Telemetry.systemError, e.message );
       DialogUtils.progress?.end();
       return err(e);
     } else {
@@ -120,7 +127,7 @@ export class AadAppForTeamsPlugin implements Plugin {
 
       ctx.logProvider?.error(e.message);
       TelemetryUtils.init(ctx);
-      TelemetryUtils.sendException(e);
+      TelemetryUtils.sendException(stage, UnhandledError.name, Telemetry.systemError, UnhandledError.message());
       return err(
         ResultFactory.SystemError(
           UnhandledError.name,

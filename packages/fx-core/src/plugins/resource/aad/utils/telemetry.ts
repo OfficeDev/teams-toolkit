@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { PluginContext } from "@microsoft/teamsfx-api";
-import { Constants, Plugins } from "../constants";
+import { PluginContext, UserError } from "@microsoft/teamsfx-api";
+import { Telemetry, Plugins } from "../constants";
 
 export class TelemetryUtils {
   static ctx: PluginContext;
@@ -15,11 +15,11 @@ export class TelemetryUtils {
     eventName: string,
     properties?: { [key: string]: string },
     measurements?: { [key: string]: number }
-  ) {
+  ): void {
     if (!properties) {
       properties = {};
     }
-    properties[Constants.telemetryComponent] = Plugins.pluginNameComplex;
+    properties[Telemetry.component] = Plugins.pluginNameComplex;
     TelemetryUtils.ctx.telemetryReporter?.sendTelemetryEvent(
       eventName,
       properties,
@@ -28,18 +28,25 @@ export class TelemetryUtils {
   }
 
   public static sendException(
-    error: Error,
+    eventName: string,
+    errorCode: string,
+    errorType: string,
+    errorMessage: string,
     properties?: { [key: string]: string },
     measurements?: { [key: string]: number }
-  ) {
+  ): void {
     if (!properties) {
       properties = {};
     }
-    properties[Constants.telemetryComponent] = Plugins.pluginNameComplex;
-    TelemetryUtils.ctx.telemetryReporter?.sendTelemetryException(
-      error,
+    
+    properties[Telemetry.component] = Plugins.pluginNameComplex;
+    properties[Telemetry.errorCode] = errorCode;
+    properties[Telemetry.errorType] = errorType;
+    properties[Telemetry.errorMessage] = errorMessage;
+    TelemetryUtils.ctx.telemetryReporter?.sendTelemetryEvent(
+      eventName,
       properties,
-      measurements
+      measurements,
     );
   }
 

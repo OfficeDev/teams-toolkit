@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { PluginContext } from "@microsoft/teamsfx-api";
-import { Constants } from "../constants";
+import { Constants, Telemetry } from "../constants";
 
 export class TelemetryUtils {
     static ctx: PluginContext;
@@ -18,32 +18,29 @@ export class TelemetryUtils {
         if (!properties) {
             properties = {};
         }
-        properties[Constants.Component] = Constants.SimpleAuthPlugin.id;
+        properties[Telemetry.component] = Constants.SimpleAuthPlugin.id;
         TelemetryUtils.ctx.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
     }
 
-    public static sendErrorEvent(
-        eventName: string,
-        properties?: { [key: string]: string },
-        measurements?: { [key: string]: number },
-        errorProps?: string[],
-    ) {
-        if (!properties) {
-            properties = {};
-        }
-        properties[Constants.Component] = Constants.SimpleAuthPlugin.id;
-        TelemetryUtils.ctx.telemetryReporter?.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
-    }
-
     public static sendException(
-        error: Error,
+        eventName: string,
+        errorCode: string,
+        errorType: string,
+        errorMessage: string,
         properties?: { [key: string]: string },
-        measurements?: { [key: string]: number },
+        measurements?: { [key: string]: number }
     ) {
         if (!properties) {
             properties = {};
         }
-        properties[Constants.Component] = Constants.SimpleAuthPlugin.id;
-        TelemetryUtils.ctx.telemetryReporter?.sendTelemetryException(error, properties, measurements);
+        properties[Telemetry.component] = Constants.SimpleAuthPlugin.id;
+        properties[Telemetry.errorCode] = errorCode;
+        properties[Telemetry.errorType] = errorType;
+        properties[Telemetry.errorMessage] = errorMessage;
+        TelemetryUtils.ctx.telemetryReporter?.sendTelemetryEvent(
+            eventName,
+            properties,
+            measurements,
+        );
     }
 }

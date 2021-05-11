@@ -94,6 +94,24 @@ export class Constants {
     static readonly FreeServerFarmsQuotaErrorHelpLink = "https://aka.ms/teamsfx-sa-help#freeserverfarmsquotaerror";
 }
 
+export class Telemetry {
+    static component = "component";
+    static errorCode = "error-code";
+    static errorType = "error-type";
+    static errorMessage = "error-message";
+    static userError = "user";
+    static systemError = "system";
+  }
+  
+  export class Stage {
+    static provision = "provision";
+    static localDebug = "local-debug";
+    static postProvision = "post-provision";
+    static postLocalDebug = "post-local-debug";
+    static userTask = "user-task";
+    static setApplicationInContext = "set-application-in-context";
+  }
+
 export interface Message {
     log: string;
     telemetry: string;

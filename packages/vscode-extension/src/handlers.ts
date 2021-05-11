@@ -567,7 +567,7 @@ export async function backendExtensionsInstallHandler(): Promise<void> {
 
       try {
         await backendExtensionsInstaller.install(backendRoot);
-      }catch (error) {
+      } catch (error) {
         await DepsChecker.handleErrorWithDisplay(error, vscodeAdapter);
         throw error;
       }

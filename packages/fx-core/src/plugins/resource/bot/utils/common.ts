@@ -195,13 +195,13 @@ export function genMsgExtSectionInManifest(botId: string): string {
 export function convertToLangKey(programmingLanguage: ProgrammingLanguage): string {
     switch (programmingLanguage) {
         case ProgrammingLanguage.JavaScript: {
-            return "JavaScript";
+            return "js";
         }
         case ProgrammingLanguage.TypeScript: {
-            return "TypeScript";
+            return "ts";
         }
         default: {
-            return "JavaScript";
+            return "js";
         }
     }
 }

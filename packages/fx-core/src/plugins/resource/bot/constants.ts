@@ -218,3 +218,7 @@ export class ErrorMessagesForChecking {
     static readonly FreeServerFarmsQuotaErrorFromAzure =
         "The maximum number of Free ServerFarms allowed in a Subscription is 10";
 }
+
+export class IdentityConstants {
+    public static readonly IDENTITY_TYPE_USER_ASSIGNED = "UserAssigned";
+}

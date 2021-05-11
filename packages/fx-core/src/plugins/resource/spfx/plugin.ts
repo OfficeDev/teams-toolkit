@@ -25,9 +25,10 @@ import {
 import { Constants, PlaceHolders, PreDeployProgressMessage } from "./utils/constants";
 import { BuildSPPackageError, NoSPPackageError} from "./error";
 import * as util from "util";
-import * as strings from "../../../resources/strings.json";
 import { ProgressHelper } from "./utils/progress-helper";
 import { REMOTE_MANIFEST } from "../../solution/fx-solution/constants";
+import { getStrings } from "../../../common/tools";
+import { getTemplatesFolder } from "../../..";
 
 export class SPFxPluginImpl {
   public async scaffold(
@@ -68,7 +69,7 @@ export class SPFxPluginImpl {
     // teams folder
     const teamsDir = `${outputFolderPath}/teams`;
 
-    const templateFolder = path.join(__dirname, "../../../../templates/plugins/resource/spfx");
+    const templateFolder = path.join(getTemplatesFolder(), "plugins", "resource", "spfx");
 
     await fs.mkdir(teamsDir);
     await fs.copyFile(
@@ -268,7 +269,7 @@ export class SPFxPluginImpl {
       throw NoSPPackageError(sharepointPackage);
     }
     
-    const guidance = util.format(strings.plugins.SPFx.deployNotice, sharepointPackage);
+    const guidance = util.format(getStrings().plugins.SPFx.deployNotice, sharepointPackage);
     ctx.logProvider?.info(guidance);
     if (ctx.platform === Platform.VSCode) {
       (ctx.logProvider as any).outputChannel.show();

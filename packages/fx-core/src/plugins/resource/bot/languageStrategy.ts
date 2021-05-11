@@ -15,6 +15,7 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import { Logger } from "./logger";
 import { Messages } from "./resources/messages";
+import { getTemplatesFolder } from "../../..";
 
 export class LanguageStrategy {
     public static async getTemplateProjectZip(programmingLanguage: ProgrammingLanguage, groupName: string): Promise<AdmZip> {
@@ -95,8 +96,8 @@ export class LanguageStrategy {
     }
 
     private static async generateLocalFallbackFilePath(programmingLanguage: ProgrammingLanguage, groupName: string): Promise<string> {
-        const fxCorePath = path.join(__dirname, "..", "..", "..", "..");
-        const targetFilePath = path.join(fxCorePath, "templates", "plugins", "resource", "bot", `${groupName.toLowerCase()}.${programmingLanguage.toLowerCase()}.${TemplateProjectsConstants.DEFAULT_SCENARIO_NAME.toLowerCase()}.zip`);
+        // const fxCorePath = path.join(__dirname, "..", "..", "..", "..");
+        const targetFilePath = path.join(getTemplatesFolder(), "plugins", "resource", "bot", `${groupName.toLowerCase()}.${programmingLanguage.toLowerCase()}.${TemplateProjectsConstants.DEFAULT_SCENARIO_NAME.toLowerCase()}.zip`);
 
         const targetExisted = await fs.pathExists(targetFilePath);
         if (!targetExisted) {

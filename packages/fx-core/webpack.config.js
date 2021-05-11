@@ -19,10 +19,12 @@ const config = {
     index: "./src/index.ts", // the entry point of this extension, 📖 -> https://webpack.js.org/configuration/entry-context/
   },
   output: {
+    filename: '[name].js',
     // the bundle is stored in the 'dist' folder (check package.json), 📖 -> https://webpack.js.org/configuration/output/
     path: path.resolve(__dirname, "build"),
     libraryTarget: "umd",
-    devtoolModuleFilenameTemplate: "../[resource-path]",
+    sourceMapFilename:"index.d.ts",
+    // devtoolModuleFilenameTemplate: "../[resource-path]",
     umdNamedDefine: true,
     globalObject: `(typeof self !== 'undefined' ? self : this)`
   },
@@ -33,7 +35,7 @@ const config = {
   },
   resolve: {
     // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
-    extensions: [".tsx", ".ts", ".js"]
+    extensions: [".tsx", ".ts", ".js", ".json"]
   },
   module: {
     rules: [
@@ -42,7 +44,10 @@ const config = {
         exclude: /node_modules/,
         use: [
           {
-            loader: "ts-loader"
+            loader: "ts-loader",
+            // options: {
+            //   configFile: path.resolve(__dirname, './tsconfig.json'),
+            // },
           }
         ]
       },
@@ -73,8 +78,7 @@ const config = {
     new webpack.IgnorePlugin({ resourceRegExp: /original-fs/ }),
     // new CopyPlugin({
     //   patterns: [
-    //     { from: "resource/plugins/resource/function/dotnet-install.sh", to: "resource/plugins/resource/function/dotnet-install.sh" },
-    //     { from: "resource/plugins/resource/function/dotnet-install.ps1", to: "resource/plugins/resource/function/dotnet-install.ps1" },
+    //     { from: "src/resources/strings.json", to: "resources/strings.json" }
     //   ],
     // }),
   ],

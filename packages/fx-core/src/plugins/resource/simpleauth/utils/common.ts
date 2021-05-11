@@ -8,6 +8,7 @@ import { EndpointInvalidError, NoConfigError, VersionFileNotExist, ZipDownloadEr
 import { ResultFactory } from "../result";
 import { TelemetryUtils } from "./telemetry";
 import { BlobServiceClient } from "@azure/storage-blob";
+import { getTemplatesFolder } from "../../../..";
 
 export class Utils {
     public static generateResourceName(appName: string, resourceNameSuffix: string): string {
@@ -18,8 +19,8 @@ export class Utils {
     }
 
     public static getSimpleAuthFilePath(): string {
-        const fxCoreDir: string = path.join(__dirname, "..", "..", "..", "..", "..");
-        return path.join(fxCoreDir, Constants.ResourcesFolderName, Constants.SimpleAuthFileName);
+        // const fxCoreDir: string = path.join(__dirname, "..", "..", "..", "..", "..");
+        return path.join(getTemplatesFolder(), "plugins", "resource", "simpleauth" , Constants.SimpleAuthFileName);
     }
 
     public static async downloadZip(filePath: string): Promise<void> {

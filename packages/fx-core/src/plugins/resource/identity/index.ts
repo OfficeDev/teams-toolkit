@@ -15,6 +15,7 @@ import { ResultFactory, Result } from "./results";
 import { Message } from "./utils/messages";
 import { TelemetryUtils } from "./utils/telemetryUtil";
 import { formatEndpoint } from "./utils/commonUtils";
+import { getTemplatesFolder } from "../../..";
 
 export class IdentityPlugin implements Plugin {
     template: any;
@@ -59,9 +60,10 @@ export class IdentityPlugin implements Plugin {
 
     async loadArmTemplate(ctx: PluginContext) {
         try {
-            const templatePath: string = path.resolve(this.armTemplateDir, "template.json");
+            const templatesFolder = path.resolve(getTemplatesFolder(), "plugins", "resource", "identity");
+            const templatePath: string = path.resolve(templatesFolder, "template.json");
             this.template = await fs.readJson(templatePath);
-            const paraPath: string = path.resolve(this.armTemplateDir, "parameters.json");
+            const paraPath: string = path.resolve(templatesFolder, "parameters.json");
             this.parameters = await fs.readJson(paraPath);
         } catch (_error) {
             ctx.logProvider?.error(ErrorMessage.IdentityLoadFileError.message() + `:${_error.message}`);

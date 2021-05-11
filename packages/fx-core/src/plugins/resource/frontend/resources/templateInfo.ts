@@ -5,6 +5,7 @@ import path from "path";
 import { AzureSolutionSettings, PluginContext } from "@microsoft/teamsfx-api";
 import { DependentPluginInfo, FrontendPathInfo } from "../constants";
 import { InvalidTabLanguageError } from "./errors";
+import { getTemplatesFolder } from "../../../..";
 
 export interface TemplateVariable {
     showFunction: boolean;
@@ -45,7 +46,7 @@ export class TemplateInfo {
         this.scenario = Scenario.Default;
 
         const localTemplateFileName = [this.group, this.language, this.scenario].join(".") + FrontendPathInfo.TemplatePackageExt;
-        this.localTemplatePath = path.join(FrontendPathInfo.TemplateDir, localTemplateFileName);
+        this.localTemplatePath =  path.join(getTemplatesFolder(), "plugins", "resource", "frontend", localTemplateFileName);
     }
 
     private validateTabLanguage(language: string): string {

@@ -18,6 +18,7 @@
     "build:node": "tsc -p . && cross-env ONLY_NODE=true rollup -c 2>&1",
     "build:test": "tsc -p . && rollup -c rollup.test.config.js 2>&1",
     "build": "tsc -p . && npm run build:node && api-extractor run --local",
+    "prepare": "npm run build",
     "build:api-markdown": "tsc -p . && api-extractor run --local && api-documenter markdown -i temp -o ../../docs/sdk",
     "check-format": "prettier --list-different --config ./.prettierrc.json --ignore-path ./.prettierignore \"src/**/*.ts\" \"test/**/*.ts\" \"samples/**/*.ts\" \"*.{js,json}\"",
     "clean": "rimraf dist dist-* temp types *.tgz *.log",

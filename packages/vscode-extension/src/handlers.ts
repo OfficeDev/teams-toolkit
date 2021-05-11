@@ -565,7 +565,12 @@ export async function backendExtensionsInstallHandler(): Promise<void> {
       const dotnetChecker = new DotnetChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
       const backendExtensionsInstaller = new BackendExtensionsInstaller(dotnetChecker, vscodeLogger);
 
-      await backendExtensionsInstaller.install(backendRoot);
+      try {
+        await backendExtensionsInstaller.install(backendRoot);
+      }catch (error) {
+        await DepsChecker.handleErrorWithDisplay(error, vscodeAdapter);
+        throw error;
+      }
     }
   }
 }

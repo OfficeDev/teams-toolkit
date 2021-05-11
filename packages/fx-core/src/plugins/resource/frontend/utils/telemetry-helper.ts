@@ -33,6 +33,7 @@ export class telemetryHelper {
             properties[TelemetryKey.ErrorType] = TelemetryValue.UserError;
         }
         properties[TelemetryKey.ErrorMessage] = e.message;
+        properties[TelemetryKey.ErrorCode] = e.name;
 
         ctx.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
     }

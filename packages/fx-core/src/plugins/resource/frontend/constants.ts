@@ -28,7 +28,7 @@ export class Constants {
 }
 
 export class FrontendPluginInfo {
-    static PluginName = "Tab Frontend plugin";
+    static PluginName = "frontend";
     static DisplayName = "Tab Frontend";
     static ShortName = "FE";
     static IssueLink = ""; // TODO: default issue link
@@ -111,8 +111,6 @@ export class TelemetryEvent {
 
     static readonly PreDeploy = "pre-deploy";
     static readonly Deploy = "deploy";
-
-    static readonly postLocalDebug = "post-local-debug";
 }
 
 export class TelemetryKey {
@@ -120,6 +118,7 @@ export class TelemetryKey {
     static readonly Success = "success";
     static readonly ErrorType = "error-type";
     static readonly ErrorMessage = "error-message";
+    static readonly ErrorCode = "error-code";
 }
 
 export class TelemetryValue {

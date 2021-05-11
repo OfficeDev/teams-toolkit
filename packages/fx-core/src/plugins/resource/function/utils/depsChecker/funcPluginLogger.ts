@@ -4,7 +4,7 @@
 import * as os from "os";
 import { IDepsLogger } from "./checker";
 import { Logger } from "../logger";
-import { LogLevel } from "fx-api";
+import { LogLevel } from "@microsoft/teamsfx-api";
 
 class FuncPluginLogger implements IDepsLogger {
   private detailLogLines: string[] = [];

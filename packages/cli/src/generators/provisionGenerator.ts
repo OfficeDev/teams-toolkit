@@ -3,7 +3,7 @@
 
 "use strict";
 
-import { err, FxError, NodeType, ok, QTreeNode, Result, Stage } from "fx-api";
+import { err, FxError, NodeType, ok, QTreeNode, Result, Stage } from "@microsoft/teamsfx-api";
 
 import * as constants from "../constants";
 import { flattenNodes } from "../utils";

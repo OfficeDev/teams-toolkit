@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
  
-import {returnSystemError, returnUserError, SystemError, UserError} from "fx-api";
+import {returnSystemError, returnUserError, SystemError, UserError} from "@microsoft/teamsfx-api";
 
 export const CoreSource = "Core";
 
@@ -22,6 +22,7 @@ export enum CoreErrorNames {
     UncatchedError = "UncatchedError",
     NotSupportedProjectType = "NotSupportedProjectType",
     InitError = "InitError",
+    DownloadSampleFail = "DownloadSampleFail"
 }
 
 export function InvalidContext(): UserError {

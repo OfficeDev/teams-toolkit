@@ -12,7 +12,7 @@ import {
   Result,
   QTreeNode,
   FxError,
-} from "fx-api";
+} from "@microsoft/teamsfx-api";
 import { AadAppForTeamsImpl } from "./plugin";
 import { AadResult, ResultFactory } from "./results";
 import { UnhandledError } from "./errors";

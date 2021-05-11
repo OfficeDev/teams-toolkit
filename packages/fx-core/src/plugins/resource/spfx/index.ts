@@ -12,7 +12,7 @@ import {
   Result,
   ok,
   TeamsAppManifest
-} from "fx-api";
+} from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { SPFxPluginImpl } from "./plugin";

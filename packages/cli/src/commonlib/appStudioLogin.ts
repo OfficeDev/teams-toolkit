@@ -3,7 +3,7 @@
 
 "use strict";
 
-import { AppStudioTokenProvider, UserError } from "fx-api";
+import { AppStudioTokenProvider, UserError } from "@microsoft/teamsfx-api";
 import { LogLevel } from "@azure/msal-node";
 import { CodeFlowLogin } from "./codeFlowLogin";
 import CLILogProvider from "./log";
@@ -142,7 +142,7 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
   }
 }
 
-import { MockAppStudioTokenProvider } from "fx-api";
+import { MockAppStudioTokenProvider } from "@microsoft/teamsfx-api";
 
 const ciEnabled = process.env.CI_ENABLED;
 const appStudioLogin = ciEnabled && ciEnabled === "true" ? MockAppStudioTokenProvider.getInstance() : AppStudioLogin.getInstance();

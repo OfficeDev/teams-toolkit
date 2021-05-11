@@ -4,7 +4,6 @@ export enum OperationStatus {
     Started = "started",
     Failed = "failed",
     Succeeded = "succeeded",
-    Skipped = "skipped",
 }
 
 export interface IName {

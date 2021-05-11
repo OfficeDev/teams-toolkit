@@ -12,7 +12,7 @@ import {
   MultiSelectQuestion,
   OptionItem,
   NodeType
-} from "fx-api";
+} from "@microsoft/teamsfx-api";
 
 import * as constants from "../constants";
 import { flattenNodes } from "../utils";

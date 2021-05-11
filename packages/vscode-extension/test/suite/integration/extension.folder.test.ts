@@ -7,7 +7,7 @@ import * as chai from "chai";
 import * as fs from "fs-extra";
 import * as vscode from "vscode";
 
-import { Result, FxError } from "fx-api";
+import { Result, FxError } from "@microsoft/teamsfx-api";
 
 import { ext } from "../../../src/extensionVariables";
 import { testWorkspace } from "../../globalVaribles";

@@ -4,7 +4,7 @@
 
 import * as fs from "fs-extra";
 import * as path from "path";
-import { Context, err, FxError, ok, ConfigFolderName, Result, returnUserError, Solution} from "fx-api";
+import { Context, err, FxError, ok, ConfigFolderName, Result, returnUserError, Solution} from "@microsoft/teamsfx-api";
 
 import { Settings } from "./settings";
 

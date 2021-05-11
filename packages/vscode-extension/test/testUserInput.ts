@@ -16,7 +16,7 @@ import {
   CancellationToken
 } from "vscode";
 
-import { IProgressStatus, Result, FxError } from "fx-api";
+import { IProgressStatus, Result, FxError } from "@microsoft/teamsfx-api";
 
 import { IUserInput } from "../src/userInput";
 import { testFolder } from "./globalVaribles";

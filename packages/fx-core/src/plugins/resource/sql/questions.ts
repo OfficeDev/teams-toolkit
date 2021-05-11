@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { RemoteFuncValidation, NodeType, QTreeNode, StringValidation } from "fx-api";
+import { RemoteFuncValidation, NodeType, QTreeNode, StringValidation } from "@microsoft/teamsfx-api";
 import { Constants } from "./constants";
 
 export const adminNameQuestion = new QTreeNode({

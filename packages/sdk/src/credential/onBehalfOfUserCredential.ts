@@ -197,7 +197,7 @@ export class OnBehalfOfUserCredential implements TokenCredential {
     if (err.name === "InteractionRequiredAuthError") {
       const fullErrorMsg =
         "Failed to get access token from AAD server, interaction required: " + errorMessage;
-      internalLogger.error(fullErrorMsg);
+      internalLogger.warn(fullErrorMsg);
       return new ErrorWithCode(fullErrorMsg, ErrorCode.UiRequiredError);
     } else if (errorMessage && errorMessage.indexOf("AADSTS500133") >= 0) {
       const fullErrorMsg =

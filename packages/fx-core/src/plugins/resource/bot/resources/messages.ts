@@ -65,6 +65,12 @@ export class Messages {
 
     public static readonly ProvisioningBotRegistration = "Provisioning bot registration.";
     public static readonly SuccessfullyProvisionedBotRegistration = "Successfully provisioned bot registration.";
-    
+
+    public static readonly TheSubsNotRegisterToUseBotService = "The subscription didn't register to use namespace 'Microsoft.BotService'.";
+    public static readonly MaxFreeAppServicePlanIsTen = "The maximum number of Free App Service Plan allowed in a Subscription is 10.";
+
+    // Suggestions
     public static readonly RetryTheCurrentStep = "Please retry the current step.";
+    public static readonly RegisterYouSubsToUseBot = "Please register your subscription to use namespace 'Microsoft.BotService'.";
+    public static readonly DeleteFreeAppServicePlanOrChangeSku = "Delete a free app service plan or change app service plan's sku in config file and retry.";
 }

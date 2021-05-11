@@ -1,6 +1,6 @@
 import {
     PluginContext,
-} from "fx-api";
+} from "@microsoft/teamsfx-api";
 
 export class ContextUtils {
     static ctx: PluginContext;

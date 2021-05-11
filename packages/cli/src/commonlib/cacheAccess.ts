@@ -4,7 +4,7 @@
 "use strict";
 
 import * as fs from "fs-extra";
-import { ConfigFolderName } from "fx-api";
+import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import * as os from "os";
 import VsCodeLogInstance from "./log";
 

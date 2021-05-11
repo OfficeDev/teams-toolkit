@@ -11,7 +11,7 @@ import {
     OptionItem,
     Platform,
     SubscriptionInfo,
-} from "fx-api";
+} from "@microsoft/teamsfx-api";
 import { AadOperationError, BuildError, NotImplemented } from "../../../../src/plugins/resource/apim/error";
 import { TokenCredential } from "@azure/core-auth";
 import { AsyncFunc, Func } from "mocha";

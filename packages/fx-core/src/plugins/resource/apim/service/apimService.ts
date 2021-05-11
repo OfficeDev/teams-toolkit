@@ -18,7 +18,7 @@ import { OpenApiSchemaVersion } from "../model/openApiDocument";
 import { ErrorHandlerResult } from "../model/errorHandlerResult";
 import { Telemetry } from "../telemetry";
 import { AzureResource, IName, OperationStatus, Operation } from "../model/operation";
-import { LogProvider, TelemetryReporter } from "fx-api";
+import { LogProvider, TelemetryReporter } from "@microsoft/teamsfx-api";
 import { LogMessages } from "../log";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { OpenAPI } from "openapi-types";
@@ -299,9 +299,10 @@ export class ApimService {
                 return undefined;
             }
 
+            const wrappedError = BuildError(ApimOperationError, error, operation.displayName, resourceType.displayName);
             this.logger?.info(LogMessages.operationFailed(operation, resourceType, resourceId));
-            Telemetry.sendApimOperationEvent(this.telemetryReporter, operation, resourceType, OperationStatus.Failed);
-            throw BuildError(ApimOperationError, error, operation.displayName, resourceType.displayName);
+            Telemetry.sendApimOperationEvent(this.telemetryReporter, operation, resourceType, OperationStatus.Failed, wrappedError);
+            throw wrappedError;
         }
     }
 

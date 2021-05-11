@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Plugin, PluginContext, Result, QTreeNode, Stage, FxError, err, UserError, SystemError } from "fx-api";
+import { Plugin, PluginContext, Result, QTreeNode, Stage, FxError, err, UserError, SystemError } from "@microsoft/teamsfx-api";
 
 import { FxResult, FxBotPluginResultFactory as ResultFactory } from "./result";
 import { TeamsBotImpl } from "./plugin";
@@ -123,12 +123,12 @@ export class TeamsBot implements Plugin {
 
             if (e instanceof PluginError) {
                 const result = (e.errorType === ErrorType.System ?
-                    ResultFactory.SystemError(e.name, e.genMessage(), undefined, e.innerError) :
-                    ResultFactory.UserError(e.name, e.genMessage(), undefined, e.innerError));
+                    ResultFactory.SystemError(e.name, e.genMessage(), e.innerError) :
+                    ResultFactory.UserError(e.name, e.genMessage(), e.showHelpLink, e.innerError));
                 return result;
             } else {
                 // Unrecognized Exception.
-                return ResultFactory.SystemError(e.name, e.message, undefined, e);
+                return ResultFactory.SystemError(e.name, e.message, e);
             }
 
         }

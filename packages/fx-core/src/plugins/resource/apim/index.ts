@@ -1,50 +1,53 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Plugin, FxError, PluginContext, SystemError, UserError, Result, err, ok, QTreeNode, Stage, Func } from "fx-api";
+import { Plugin, FxError, PluginContext, SystemError, UserError, Result, err, ok, QTreeNode, Stage, Func } from "@microsoft/teamsfx-api";
 import { BuildError, UnhandledError } from "./error";
 import { Telemetry } from "./telemetry";
 import { AadPluginConfig, ApimPluginConfig, FunctionPluginConfig, SolutionConfig } from "./model/config";
-import { AadDefaultValues, ProgressMessages, ProgressStep, ProjectConstants } from "./constants";
+import { AadDefaultValues, PluginLifeCycle, PluginLifeCycleToProgressStep, ProgressMessages, ProgressStep, ProjectConstants } from "./constants";
 import { Factory } from "./factory";
 import { ProgressBar } from "./util/progressBar";
 import { buildAnswer } from "./model/answer";
+import { OperationStatus } from "./model/operation";
 
 export class ApimPlugin implements Plugin {
     private progressBar: ProgressBar = new ProgressBar();
 
     public async getQuestions(stage: Stage, ctx: PluginContext): Promise<Result<QTreeNode | undefined, FxError>> {
-        return await this.executeWithFxError(ProgressStep.None, _getQuestions, ctx, stage);
+        return await this.executeWithFxError(PluginLifeCycle.GetQuestions, _getQuestions, ctx, stage);
     }
 
     public async callFunc(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
-        return await this.executeWithFxError(ProgressStep.None, _callFunc, ctx, func);
+        return await this.executeWithFxError(PluginLifeCycle.CallFunc, _callFunc, ctx, func);
     }
 
     public async scaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
-        return await this.executeWithFxError(ProgressStep.Scaffold, _scaffold, ctx);
+        return await this.executeWithFxError(PluginLifeCycle.Scaffold, _scaffold, ctx);
     }
 
     public async provision(ctx: PluginContext): Promise<Result<any, FxError>> {
-        return await this.executeWithFxError(ProgressStep.Provision, _provision, ctx);
+        return await this.executeWithFxError(PluginLifeCycle.Provision, _provision, ctx);
     }
 
     public async postProvision(ctx: PluginContext): Promise<Result<any, FxError>> {
-        return await this.executeWithFxError(ProgressStep.PostProvision, _postProvision, ctx);
+        return await this.executeWithFxError(PluginLifeCycle.PostProvision, _postProvision, ctx);
     }
 
     public async deploy(ctx: PluginContext): Promise<Result<any, FxError>> {
-        return await this.executeWithFxError(ProgressStep.Deploy, _deploy, ctx);
+        return await this.executeWithFxError(PluginLifeCycle.Deploy, _deploy, ctx);
     }
 
     private async executeWithFxError<T>(
-        progressStep: ProgressStep,
+        lifeCycle: PluginLifeCycle,
         fn: (ctx: PluginContext, progressBar: ProgressBar, ...params: any[]) => Promise<T>,
         ctx: PluginContext,
         ...params: any[]
     ): Promise<Result<T, FxError>> {
         try {
-            await this.progressBar.init(progressStep, ctx);
+            await this.progressBar.init(PluginLifeCycleToProgressStep[lifeCycle], ctx);
+            Telemetry.sendLifeCycleEvent(ctx.telemetryReporter, ctx.configOfOtherPlugins, lifeCycle, OperationStatus.Started);
             const result = await fn(ctx, this.progressBar, ...params);
+            Telemetry.sendLifeCycleEvent(ctx.telemetryReporter, ctx.configOfOtherPlugins, lifeCycle, OperationStatus.Succeeded);
             return ok(result);
         } catch (error) {
             let packagedError: SystemError | UserError;
@@ -56,12 +59,11 @@ export class ApimPlugin implements Plugin {
                 packagedError = BuildError(UnhandledError);
             }
 
-            // TODO: According to solution plugin's design to decide whether we need to keep the log and telemetry here.
             ctx.logProvider?.error(`[${ProjectConstants.pluginDisplayName}] ${error.message}`);
-            Telemetry.sendErrorEvent(ctx.telemetryReporter, packagedError);
+            Telemetry.sendLifeCycleEvent(ctx.telemetryReporter, ctx.configOfOtherPlugins, lifeCycle, OperationStatus.Failed, packagedError);
             return err(packagedError);
         } finally {
-            await this.progressBar.close(progressStep);
+            await this.progressBar.close(PluginLifeCycleToProgressStep[lifeCycle]);
         }
     }
 }

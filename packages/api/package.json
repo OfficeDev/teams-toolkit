@@ -1,6 +1,6 @@
 {
-  "name": "fx-api",
-  "version": "1.1.2-alpha.1",
+  "name": "@microsoft/teamsfx-api",
+  "version": "0.1.0-alpha.2",
   "description": "teamsfx framework api",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -68,5 +68,8 @@
       "eslint"
     ]
   },
-  "gitHead": "7d60c0765c0ea8c023a26c10d1c93001c597afbb"
+  "gitHead": "7d60c0765c0ea8c023a26c10d1c93001c597afbb",
+  "publishConfig": {
+    "access": "public"
+  }
 }

@@ -173,6 +173,7 @@ export class AzureInfo {
 
 export class Commands {
     public static readonly npmInstall: string = "npm install";
+    public static readonly npmInstallProd: string = "npm install --only=prod";
     public static readonly npmBuild: string = "npm run build";
 }
 

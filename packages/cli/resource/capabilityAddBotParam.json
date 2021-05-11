@@ -63,6 +63,7 @@
             "name": "bot-id",
             "type": "text",
             "title": "Enter bot id",
+            "default": "",
             "validation": {}
         }
     },
@@ -71,6 +72,7 @@
             "name": "bot-password",
             "type": "password",
             "title": "Enter bot password",
+            "default": "",
             "validation": {}
         }
     }

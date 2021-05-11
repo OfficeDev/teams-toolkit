@@ -134,8 +134,8 @@ export async function activate(): Promise<Result<null, FxError>> {
     {
       const telemetry = new VSCodeTelemetryReporter(
         extensionPackage.aiKey,
-        extensionPackage.name,
-        extensionPackage.version
+        extensionPackage.version,
+        extensionPackage.name
       );
       const result = await core.withTelemetry(telemetry);
       if (result.isErr()) {
@@ -197,7 +197,7 @@ export async function activate(): Promise<Result<null, FxError>> {
 export async function createNewProjectHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, {
     [TelemetryProperty.TriggerFrom]:
-      args && args[0] === CommandsTreeViewProvider.TreeViewFlag
+      args?.toString() === CommandsTreeViewProvider.TreeViewFlag
         ? TelemetryTiggerFrom.TreeView
         : TelemetryTiggerFrom.CommandPalette
   });
@@ -212,7 +212,7 @@ export async function updateProjectHandler(): Promise<Result<null, FxError>> {
 }
 
 export async function validateManifestHandler(): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ValidateManifest, {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ValidateManifestStart, {
     [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
   });
 
@@ -220,11 +220,20 @@ export async function validateManifestHandler(): Promise<Result<null, FxError>> 
     namespace: "fx-solution-azure",
     method: "validateManifest"
   };
-  return await core.executeUserTask(func);
+  const result = await core.executeUserTask(func);
+  if (result.isErr()) {
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, result.error);
+  } else {
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ValidateManifest, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes
+    });
+  }
+
+  return result;
 }
 
 export async function buildPackageHandler(): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.BuildPackage, {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.BuildStart, {
     [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
   });
 
@@ -232,7 +241,16 @@ export async function buildPackageHandler(): Promise<Result<null, FxError>> {
     namespace: "fx-solution-azure",
     method: "buildPackage"
   };
-  return await core.executeUserTask(func);
+  const result = await core.executeUserTask(func);
+  if (result.isErr()) {
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Build, result.error);
+  } else {
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Build, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes
+    });
+  }
+
+  return result;
 }
 
 export async function provisionHandler(): Promise<Result<null, FxError>> {
@@ -336,9 +354,11 @@ export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
       const ue:UserError = e as UserError;
       if(ue.name === "DoProvisionFirst"){
         runningTasks.delete(stage);
-        ExtTelemetry.sendTelemetryEvent(eventName, {
-          [TelemetryProperty.Success]: TelemetrySuccess.No
-        });
+        if (eventName) {
+          ExtTelemetry.sendTelemetryEvent(eventName, {
+            [TelemetryProperty.Success]: TelemetrySuccess.No
+          });
+        }
         return await provisionHandler();
       }
     }
@@ -450,9 +470,11 @@ function isLoginFaiureError(error: FxError): boolean {
   return !!error.message && error.message.includes("Cannot get user login information");
 }
 
-async function processResult(eventName: string, result: Result<null, FxError>) {
+async function processResult(eventName: string | undefined, result: Result<null, FxError>) {
   if (result.isErr()) {
-    ExtTelemetry.sendTelemetryErrorEvent(eventName, result.error);
+    if (eventName) {
+      ExtTelemetry.sendTelemetryErrorEvent(eventName, result.error);
+    }
     const error = result.error;
     if (isCancelWarning(error)) {
       // window.showWarningMessage(`Operation is canceled!`);
@@ -464,9 +486,11 @@ async function processResult(eventName: string, result: Result<null, FxError>) {
     }
     showError(error);
   } else {
-    ExtTelemetry.sendTelemetryEvent(eventName, {
-      [TelemetryProperty.Success]: TelemetrySuccess.Yes
-    });
+    if (eventName) {
+      ExtTelemetry.sendTelemetryEvent(eventName, {
+        [TelemetryProperty.Success]: TelemetrySuccess.Yes
+      });
+    }
   }
 }
 
@@ -565,7 +589,12 @@ export async function backendExtensionsInstallHandler(): Promise<void> {
       const dotnetChecker = new DotnetChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
       const backendExtensionsInstaller = new BackendExtensionsInstaller(dotnetChecker, vscodeLogger);
 
-      await backendExtensionsInstaller.install(backendRoot);
+      try {
+        await backendExtensionsInstaller.install(backendRoot);
+      } catch (error) {
+        await DepsChecker.handleErrorWithDisplay(error, vscodeAdapter);
+        throw error;
+      }
     }
   }
 }
@@ -621,7 +650,7 @@ export async function openReportIssues() {
 }
 
 export async function openManifestHandler(): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenManifestEditor, {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenManifestEditorStart, {
     [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.TreeView
   });
   if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
@@ -635,6 +664,9 @@ export async function openManifestHandler(): Promise<Result<null, FxError>> {
       workspace.openTextDocument(manifestFile).then((document) => {
         window.showTextDocument(document);
       });
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenManifestEditor, {
+        [TelemetryProperty.Success]: TelemetrySuccess.Yes
+      });
       return ok(null);
     } else {
       const FxError: FxError = {
@@ -644,6 +676,7 @@ export async function openManifestHandler(): Promise<Result<null, FxError>> {
         timestamp: new Date()
       };
       showError(FxError);
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, FxError);
       return err(FxError);
     }
   } else {
@@ -654,6 +687,7 @@ export async function openManifestHandler(): Promise<Result<null, FxError>> {
       timestamp: new Date()
     };
     showError(FxError);
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, FxError);
     return err(FxError);
   }
 }

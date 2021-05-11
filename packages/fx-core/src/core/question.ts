@@ -44,7 +44,10 @@ export const QuestionAppName: TextInputQuestion = {
 export const QuestionRootFolder: FileQuestion = {
     type: NodeType.folder,
     name: CoreQuestionNames.Foler,
-    title: "Workspace folder"
+    title: "Workspace folder",
+    validation: {
+        required: true
+    }
 };
 
 export const QuestionSelectSolution: SingleSelectQuestion = {

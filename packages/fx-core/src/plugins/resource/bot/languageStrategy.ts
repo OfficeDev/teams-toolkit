@@ -32,10 +32,7 @@ export class LanguageStrategy {
     }
 
     public static async getTemplateProjectZipUrl(programmingLanguage: ProgrammingLanguage, groupName: string): Promise<string> {
-        const manifest: TemplateManifest = await TemplateManifest.fromUrl(
-            TemplateProjectsConstants.NEWEST_MANIFEST_URL,
-        );
-
+        const manifest: TemplateManifest = await TemplateManifest.newInstance();
         return manifest.getNewestTemplateUrl(programmingLanguage, groupName);
     }
 
@@ -95,9 +92,9 @@ export class LanguageStrategy {
         }
     }
 
-    private static async generateLocalFallbackFilePath(programmingLanguage: ProgrammingLanguage, groupName: string): Promise<string> {
-        // const fxCorePath = path.join(__dirname, "..", "..", "..", "..");
-        const targetFilePath = path.join(getTemplatesFolder(), "plugins", "resource", "bot", `${groupName.toLowerCase()}.${programmingLanguage.toLowerCase()}.${TemplateProjectsConstants.DEFAULT_SCENARIO_NAME.toLowerCase()}.zip`);
+    private static async generateLocalFallbackFilePath(programmingLanguage: ProgrammingLanguage, groupName: string): Promise<string> { 
+        const langKey = utils.convertToLangKey(programmingLanguage);
+        const targetFilePath = path.join(getTemplatesFolder(), "plugins", "resource", "bot", `${groupName}.${langKey}.${TemplateProjectsConstants.DEFAULT_SCENARIO_NAME}.zip`);
 
         const targetExisted = await fs.pathExists(targetFilePath);
         if (!targetExisted) {

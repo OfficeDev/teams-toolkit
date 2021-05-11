@@ -34,9 +34,9 @@ export function useGraph(asyncFunc, options) {
   return data || error || loading
     ? { data, error, loading, reload }
     : {
-      data: initial.data,
-      error: initial.error,
-      loading: initial.loading,
-      reload,
-    };
+        data: initial.data,
+        error: initial.error,
+        loading: initial.loading,
+        reload,
+      };
 }

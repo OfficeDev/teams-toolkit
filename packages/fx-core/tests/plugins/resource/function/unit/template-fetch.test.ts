@@ -6,33 +6,23 @@ import * as sinon from "sinon";
 import AdmZip from "adm-zip";
 import axios from "axios";
 
+import * as templates from "../../../../../src/common/templates";
 import { FunctionPluginInfo } from "../../../../../src/plugins/resource/function/constants";
 import { fetchZipFromURL, getTemplateURL, requestWithRetry } from "../../../../../src/plugins/resource/function/utils/templates-fetch";
+import { FunctionLanguage } from "../../../../../src/plugins/resource/function/enums";
 
-const manifest = {
-    a: {
-        b: {
-            c: [
-                {
-                    version: "0.1.0",
-                    url: "url1"
-                },
-                {
-                    version: "0.2.0",
-                    url: "url2"
-                },
-                {
-                    version: "0.1.3",
-                    url: "url3"
-                },
-                {
-                    version: "0.1.2",
-                    url: "url4"
-                }
-            ]
-        }
-    }
-};
+const candidateTag = templates.tagPrefix + templates.templatesVersion.replace(/\*/g, "0");
+const targetTag = templates.tagPrefix + templates.templatesVersion.replace(/\*/g, "1");
+
+const manifest = `
+templates@0.2.0
+templates@0.1.1
+templates@0.1.1-alpha
+templates@0.2.1
+templates@0.3.1
+${candidateTag}
+${targetTag}
+`;
 
 describe(FunctionPluginInfo.pluginName, () => {
     describe("Template Fetch Test", () => {
@@ -45,10 +35,10 @@ describe(FunctionPluginInfo.pluginName, () => {
             sinon.stub(axios, "get").resolves({status: 200, data: manifest});
 
             // Act
-            const url = await getTemplateURL("", "a", "b", "c", "0.1.*");
+            const url = await getTemplateURL("a", FunctionLanguage.JavaScript, "c");
 
             // Assert
-            chai.assert.equal(url, "url3");
+            chai.assert.equal(url, templates.templateURL(targetTag, "a.js.c"));
         });
 
         it("Test fetchZipFromURL", async () => {

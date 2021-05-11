@@ -100,7 +100,7 @@ describe("FrontendScaffold", () => {
         it("pick newest", async () => {
             sinon.stub(axios, "get").resolves(TestHelper.getFakeAxiosResponse(TestHelper.getFakeTemplateManifest()));
 
-            const url = await FrontendScaffold.getTemplateURL("", "a", "b", "c", "0.1.*");
+            const url = await FrontendScaffold.getTemplateURL("", TestHelper.templateCompose);
 
             chai.assert.equal(url, TestHelper.latestTemplateURL);
         });

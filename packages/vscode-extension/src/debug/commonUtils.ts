@@ -8,8 +8,7 @@ import * as vscode from "vscode";
 import * as constants from "./constants";
 import { ConfigFolderName, Func } from "fx-api";
 import { core, showError } from "../handlers";
-import { execPowerShell, execShell} from "./process";
-import * as os from "os";
+import * as net from "net";
 
 export async function getProjectRoot(
   folderPath: string,
@@ -147,47 +146,32 @@ export async function getSkipNgrokConfig(): Promise<string | undefined> {
   return getLocalDebugConfig(constants.skipNgrokConfigKey);
 }
 
-async function getPortListeningPidWindows(host: string, port: number): Promise<string | undefined> {
-  try {
-    let command = `(Get-NetTCPConnection -LocalPort ${port} -State Listen).OwningProcess`;
-    if (host === "127.0.0.1") {
-      // the process listening on 0.0.0.0 (IPv4) and ::1 (IPv6) will not block that on 127.0.0.1
-      command = `(Get-NetTCPConnection -LocalAddress ${host} -LocalPort ${port} -State Listen).OwningProcess`;
+async function detectPortListeningImpl(port: number, host: string): Promise<boolean> {
+  return new Promise<boolean>((resolve, reject) => {
+    try {
+      const server = net.createServer();
+      server.once("error", (err) => {
+              if (err.message.includes("EADDRINUSE")) {
+                resolve(true);
+              }
+            })
+            .once("listening", () => {
+              server.close();
+              resolve(false);
+            })
+            .listen(port, host);
+    } catch (err) {
+      // ignore any error to not block debugging
+      resolve(false);
     }
-    const result = (await execPowerShell(command)).trim();
-    return result.length === 0 ? undefined : result;
-  } catch (err) {
-    // ignore any error to not block debugging
-    return undefined;
-  }
+  });
 }
 
-async function getPortListeningPidLinux(host: string, port: number): Promise<string | undefined> {
-  try {
-    let command = `lsof -nP -t -i TCP:${port} -s TCP:LISTEN`;
-    if (host == "127.0.0.1") {
-      // the process listening on 0.0.0.0 (IPv4) and ::1 (IPv6) will not block that on 127.0.0.1
-      command = `lsof -nP -t -i TCP@${host}:${port} -s TCP:LISTEN`;
+export async function detectPortListening(port: number, hosts: string[]): Promise<boolean> {
+  for (let host of hosts) {
+    if (await detectPortListeningImpl(port, host)) {
+      return true;
     }
-    let result = (await execShell(command)).trim();
-    return result.length === 0 ? undefined : result;
-  } catch (err) {
-    // ignore any error to not block debugging
-    return undefined;
   }
-}
-
-async function getPortListeningPidOSX(host: string, port: number): Promise<string | undefined> {
-  return getPortListeningPidLinux(host, port);
-}
-
-export async function getPortListening(host: string, port: number): Promise<string | undefined> {
-  const osType = os.type();
-  if (osType === "Windows_NT") {
-    return getPortListeningPidWindows(host, port);
-  } else if (osType === "Darwin") {
-    return getPortListeningPidOSX(host, port);
-  } else {
-    return getPortListeningPidLinux(host, port);
-  }
+  return false;
 }

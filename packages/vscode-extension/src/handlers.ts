@@ -562,7 +562,7 @@ export async function backendExtensionsInstallHandler(): Promise<void> {
  * detect if some ports are already in use, and if so, stop debugging
  */
 export async function detectPortsInUse(): Promise<void> {
-  let ports: [string, number][] = [];
+  let ports: [number, string[]][] = [];
   if (vscode.workspace.workspaceFolders) {
     const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
@@ -588,9 +588,8 @@ export async function detectPortsInUse(): Promise<void> {
 
   const portsInUse: number[] = [];
   for (let port of ports) {
-    const pid = await commonUtils.getPortListening(port[0], port[1]);
-    if (pid !== undefined) {
-      portsInUse.push(port[1]);
+    if (await commonUtils.detectPortListening(port[0], port[1])) {
+      portsInUse.push(port[0]);
     }
   }
   if (portsInUse.length > 0) {

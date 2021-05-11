@@ -1,10 +1,21 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FrontendPluginInfo, TelemetryKey, TelemetryValue } from "../constants";
+import { FrontendPluginInfo, TelemetryEvent, TelemetryKey, TelemetryValue } from "../constants";
 import { PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
 
 export class telemetryHelper {
+
+    static sendStartEvent(
+        ctx: PluginContext,
+        eventName: string,
+        properties: { [key: string]: string } = {},
+        measurements: { [key: string]: number } = {},
+    ): void {
+        properties[TelemetryKey.Component] = FrontendPluginInfo.PluginName;
+        ctx.telemetryReporter?.sendTelemetryEvent(eventName + TelemetryEvent.startSuffix, properties, measurements);
+    }
+
     static sendSuccessEvent(
         ctx: PluginContext,
         eventName: string,

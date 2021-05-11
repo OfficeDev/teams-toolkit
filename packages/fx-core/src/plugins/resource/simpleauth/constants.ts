@@ -56,6 +56,9 @@ export class Constants {
     static readonly SimpleAuthFileName: string = "SimpleAuth.zip";
     static readonly SimpleAuthZipName = (version: string): string  => `Microsoft.TeamsFx.SimpleAuth_${version}.zip`;
     static readonly VersionFileName: string = "version.txt";
+    static readonly GithubUserName: string = "OfficeDev";
+    static readonly GithubRepoName: string = "TeamsFx";
+    static readonly SimpleAuthName: string = "SimpleAuth";
 
     static readonly ResourceNameMaxLength = 40;
     static readonly SimpleAuthSuffix = "sa";

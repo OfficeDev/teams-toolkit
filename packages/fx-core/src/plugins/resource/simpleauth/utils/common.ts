@@ -9,6 +9,7 @@ import { ResultFactory } from "../result";
 import { TelemetryUtils } from "./telemetry";
 import { BlobServiceClient } from "@azure/storage-blob";
 import { getTemplatesFolder } from "../../../..";
+import downloadRelease from "@terascope/fetch-github-release";
 
 export class Utils {
     public static generateResourceName(appName: string, resourceNameSuffix: string): string {
@@ -38,13 +39,10 @@ export class Utils {
 
         const version = await fs.readFile(versionFilePath, "utf-8");
         const fileName = Constants.SimpleAuthZipName(version);
-        const blobUrlWithCredential = process.env.SIMPLE_AUTH_URL as string;
 
         try {
-            const blobClient = new BlobServiceClient(blobUrlWithCredential)
-                .getContainerClient("release")
-                .getBlobClient(fileName);
-            await blobClient.downloadToFile(filePath);
+            const isPrelease = true;
+            await downloadRelease(Constants.GithubUserName, Constants.GithubRepoName, filePath, ()=>{ return isPrelease}, (asset)=>{ return asset.name.includes(Constants.SimpleAuthName)});
         } catch (error) {
             throw ResultFactory.SystemError(
                 ZipDownloadError.name,

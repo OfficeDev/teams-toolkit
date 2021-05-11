@@ -197,7 +197,7 @@ export async function activate(): Promise<Result<null, FxError>> {
 export async function createNewProjectHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, {
     [TelemetryProperty.TriggerFrom]:
-      args && args[0] === CommandsTreeViewProvider.TreeViewFlag
+      args?.toString() === CommandsTreeViewProvider.TreeViewFlag
         ? TelemetryTiggerFrom.TreeView
         : TelemetryTiggerFrom.CommandPalette
   });

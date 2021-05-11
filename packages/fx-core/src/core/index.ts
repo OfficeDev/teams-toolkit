@@ -496,6 +496,7 @@ class CoreImpl implements Core {
                             callback: signinM365Callback,
                             parent: TreeCategory.Account,
                             contextValue: "signedinM365",
+                            icon: "M365"
                         },
                     ]);
                 }
@@ -535,6 +536,27 @@ class CoreImpl implements Core {
                 (status: string, token?: string | undefined, accountInfo?: Record<string, unknown> | undefined) => {
                     if (status === "SignedIn") {
                         signinM365Callback();
+                    } else if (status === "SigningIn") {
+                        this.ctx.treeProvider?.refresh([
+                            {
+                                commandId: "fx-extension.signinM365",
+                                label: "M365: Signing in...",
+                                callback: signinM365Callback,
+                                parent: TreeCategory.Account,
+                                icon: "spinner"
+                            },
+                        ]);
+                    } else if (status === "SignedOut") {
+                        this.ctx.treeProvider?.refresh([
+                            {
+                                commandId: "fx-extension.signinM365",
+                                label: "Sign in to M365",
+                                callback: signinM365Callback,
+                                parent: TreeCategory.Account,
+                                icon: "M365",
+                                contextValue: "signinM365"
+                            },
+                        ]);
                     }
                     return Promise.resolve();
                 },
@@ -551,6 +573,7 @@ class CoreImpl implements Core {
                                     callback: signinAzureCallback,
                                     parent: TreeCategory.Account,
                                     contextValue: "signedinAzure",
+                                    icon: "azure"
                                 },
                             ]);
                             const subItem = await getSelectSubItem!(token, supported);
@@ -560,7 +583,29 @@ class CoreImpl implements Core {
                                 await selectSubscriptionCallback();
                             }
                         }
+                    } else if (status === "SigningIn"){
+                        this.ctx.treeProvider?.refresh([
+                            {
+                                commandId: "fx-extension.signinAzure",
+                                label: "Azure: Signing in...",
+                                callback: signinAzureCallback,
+                                parent: TreeCategory.Account,
+                                icon: "spinner"
+                            },
+                        ]);
+                    } else if (status === "SignedOut") {
+                        this.ctx.treeProvider?.refresh([
+                            {
+                                commandId: "fx-extension.signinAzure",
+                                label: "Sign in to Azure",
+                                callback: signinAzureCallback,
+                                parent: TreeCategory.Account,
+                                icon: "azure",
+                                contextValue: "signinAzure"
+                            },
+                        ]);
                     }
+
                     return Promise.resolve();
                 },
             );

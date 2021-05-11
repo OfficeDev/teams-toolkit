@@ -100,7 +100,7 @@ export class BotValidator {
         const servicePlanResponse = await this.getWebappServicePlan(this.subscriptionId, this.rg, botObject.appServicePlan, token as string);
         chai.assert(servicePlanResponse, botObject.appServicePlan);
 
-        console.log("Successfully validate Function Provision.");
+        console.log("Successfully validate Bot Provision.");
     }
 
     public static async validateDeploy(botObject: IBotObject) {
@@ -121,9 +121,9 @@ export class BotValidator {
     private static async getDeployments(subscriptionId: string, rg: string, name: string, token: string) {
         try {
             axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-            const functionGetResponse = await axios.get(baseUrlListDeployments(subscriptionId, rg, name));
+            const getResponse = await axios.get(baseUrlListDeployments(subscriptionId, rg, name));
 
-            return functionGetResponse?.data?.value;
+            return getResponse?.data?.value;
         } catch (error) {
             console.log(error);
             return undefined;
@@ -133,9 +133,9 @@ export class BotValidator {
     private static async getDeploymentLog(subscriptionId: string, rg: string, name: string, token: string, id: string) {
         try {
             axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-            const functionGetResponse = await axios.get(baseUrlListDeploymentLogs(subscriptionId, rg, name, id));
+            const getResponse = await axios.get(baseUrlListDeploymentLogs(subscriptionId, rg, name, id));
 
-            return functionGetResponse?.data?.value;
+            return getResponse?.data?.value;
         } catch (error) {
             console.log(error);
             return undefined;
@@ -145,12 +145,12 @@ export class BotValidator {
     private static async getWebappConfigs(subscriptionId: string, rg: string, name: string, token: string) {
         try {
             axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-            const functionGetResponse = await axios.post(baseUrlAppSettings(subscriptionId, rg, name));
-            if (!functionGetResponse || !functionGetResponse.data || !functionGetResponse.data.properties) {
+            const getResponse = await axios.post(baseUrlAppSettings(subscriptionId, rg, name));
+            if (!getResponse || !getResponse.data || !getResponse.data.properties) {
                 return undefined;
             }
 
-            return functionGetResponse.data.properties;
+            return getResponse.data.properties;
         } catch (error) {
             console.log(error);
             return undefined;
@@ -160,12 +160,12 @@ export class BotValidator {
     private static async getWebappServicePlan(subscriptionId: string, rg: string, name: string, token: string) {
         try {
             axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-            const functionPlanResponse = await axios.get(baseUrlPlan(subscriptionId, rg, name));
-            if (!functionPlanResponse || !functionPlanResponse.data || !functionPlanResponse.data.sku || !functionPlanResponse.data.sku.name) {
+            const planResponse = await axios.get(baseUrlPlan(subscriptionId, rg, name));
+            if (!planResponse || !planResponse.data || !planResponse.data.sku || !planResponse.data.sku.name) {
                 return undefined;
             }
 
-            return functionPlanResponse.data.sku.name;
+            return planResponse.data.sku.name;
         } catch (error) {
             console.log(error);
             return undefined;

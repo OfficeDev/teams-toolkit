@@ -51,7 +51,7 @@ export class RootDialog extends ComponentDialog {
                 const cardButtons = [
                     {
                         type: ActionTypes.ImBack,
-                        title: "Show Profile",
+                        title: "Show profile",
                         value: "show",
                     },
                 ];

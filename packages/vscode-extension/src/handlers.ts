@@ -100,7 +100,7 @@ export async function activate(): Promise<Result<null, FxError>> {
           window.showInformationMessage(StringResources.vsc.handlers.azureSignOut);
         }
         return Promise.resolve();
-      });
+      }, false);
       const result = await core.withAzureAccount(AzureAccountManager);
       if (result.isErr()) {
         showError(result.error);
@@ -122,7 +122,7 @@ export async function activate(): Promise<Result<null, FxError>> {
           window.showInformationMessage(StringResources.vsc.handlers.m365SignOut);
         }
         return Promise.resolve();
-      });
+      }, false);
 
       const result = await core.withAppStudioToken(appstudioLogin);
       if (result.isErr()) {

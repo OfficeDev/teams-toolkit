@@ -69,7 +69,7 @@ export class BotValidator {
         const expectValues = new Map<string, string>([]);
         expectValues.set(BaseConfig.BOT_ID, ctx[DependentPluginInfo.botPluginName][DependentPluginInfo.botId] as string);
         expectValues.set(BaseConfig.M365_APPLICATION_ID_URI, ctx[DependentPluginInfo.aadPluginName][DependentPluginInfo.applicationIdUris] as string);
-        expectValues.set(BaseConfig.M365_AUTHORITY_HOST, ctx[DependentPluginInfo.aadPluginName][DependentPluginInfo.oauthHost] as string);
+        expectValues.set(BaseConfig.M365_AUTHORITY_HOST, "https://login.microsoftonline.com");
         expectValues.set(BaseConfig.M365_CLIENT_ID, ctx[DependentPluginInfo.aadPluginName][DependentPluginInfo.aadClientId] as string);
         expectValues.set(BaseConfig.M365_TENANT_ID, ctx[DependentPluginInfo.solutionPluginName][DependentPluginInfo.tenantId] as string);
         botObject.expectValues = expectValues;

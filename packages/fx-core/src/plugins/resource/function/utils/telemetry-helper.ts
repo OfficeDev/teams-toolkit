@@ -1,9 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
+
 import { FunctionPluginInfo } from "../constants";
 import { FxResult } from "../result";
-import { PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { TelemetryKey, TelemetryValue } from "../enums";
 
 export class telemetryHelper {
@@ -14,7 +15,6 @@ export class telemetryHelper {
         measurements: { [key: string]: number } = {},
     ): void {
         properties[TelemetryKey.Component] = FunctionPluginInfo.pluginName;
-        properties[TelemetryKey.Success] = TelemetryValue.Success;
 
         ctx.telemetryReporter?.sendTelemetryEvent(`${eventName}-start`, properties, measurements);
     }
@@ -41,6 +41,7 @@ export class telemetryHelper {
         properties[TelemetryKey.Component] = FunctionPluginInfo.pluginName;
         properties[TelemetryKey.Success] = TelemetryValue.Fail;
         properties[TelemetryKey.ErrorMessage] = e.message;
+        properties[TelemetryKey.ErrorCode] = e.name;
 
         if (e instanceof SystemError) {
             properties[TelemetryKey.ErrorType] = TelemetryValue.SystemError;

@@ -303,7 +303,7 @@ export class TeamsBotImpl {
             appSettings.push({ name: AuthEnvNames.API_ENDPOINT, value: this.config.provision.functionEndpoint });
         }
 
-        let siteEnvelope: appService.WebSiteManagementModels.Site = LanguageStrategy.getSiteEnvelope(
+        const siteEnvelope: appService.WebSiteManagementModels.Site = LanguageStrategy.getSiteEnvelope(
             this.config.scaffold.programmingLanguage!,
             this.config.provision.appServicePlan!,
             this.config.provision.location!,

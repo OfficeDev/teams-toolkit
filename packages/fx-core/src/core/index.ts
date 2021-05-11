@@ -408,6 +408,8 @@ class CoreImpl implements Core {
             supported = await this.isSupported();
             if (!supported) {
                 this.ctx.logProvider?.warning(`non Teams project:${workspace}`);
+            } else{
+                await this.readConfigs();
             }
         }
         const t2 = new Date().getTime();

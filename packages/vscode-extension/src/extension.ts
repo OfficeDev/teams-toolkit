@@ -97,6 +97,12 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(validateSpfxDependenciesCmd);
 
+  const detectPortsInUseCmd = vscode.commands.registerCommand(
+    "fx-extension.detect-ports-in-use",
+    handlers.detectPortsInUseHandler
+  );
+  context.subscriptions.push(detectPortsInUseCmd);
+
   // 1.8 pre debug check command (hide from UI)
   const preDebugCheckCmd = vscode.commands.registerCommand(
     "fx-extension.pre-debug-check",

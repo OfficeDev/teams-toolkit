@@ -43,14 +43,14 @@ describe(LocalDebugPluginInfo.pluginName, () => {
                 programmingLanguage: "javascript",
                 numConfigurations: 5,
                 numCompounds: 2,
-                numTasks: 9,
+                numTasks: 10,
                 numLocalEnvs: 30,
             },
             {
                 programmingLanguage: "typescript",
                 numConfigurations: 5,
                 numCompounds: 2,
-                numTasks: 9,
+                numTasks: 10,
                 numLocalEnvs: 30,
             }
         ];
@@ -103,14 +103,14 @@ describe(LocalDebugPluginInfo.pluginName, () => {
                 programmingLanguage: "javascript",
                 numConfigurations: 4,
                 numCompounds: 2,
-                numTasks: 6,
+                numTasks: 7,
                 numLocalEnvs: 16,
             },
             {
                 programmingLanguage: "typescript",
                 numConfigurations: 4,
                 numCompounds: 2,
-                numTasks: 6,
+                numTasks: 7,
                 numLocalEnvs: 16,
             }
         ];
@@ -160,14 +160,14 @@ describe(LocalDebugPluginInfo.pluginName, () => {
                 programmingLanguage: "javascript",
                 numConfigurations: 5,
                 numCompounds: 2,
-                numTasks: 7,
+                numTasks: 8,
                 numLocalEnvs: 14,
             },
             {
                 programmingLanguage: "typescript",
                 numConfigurations: 5,
                 numCompounds: 2,
-                numTasks: 7,
+                numTasks: 8,
                 numLocalEnvs: 14,
             }
         ];
@@ -217,14 +217,14 @@ describe(LocalDebugPluginInfo.pluginName, () => {
                 programmingLanguage: "javascript",
                 numConfigurations: 6,
                 numCompounds: 2,
-                numTasks: 12,
+                numTasks: 13,
                 numLocalEnvs: 44,
             },
             {
                 programmingLanguage: "typescript",
                 numConfigurations: 6,
                 numCompounds: 2,
-                numTasks: 12,
+                numTasks: 13,
                 numLocalEnvs: 44,
             }
         ];
@@ -278,14 +278,14 @@ describe(LocalDebugPluginInfo.pluginName, () => {
                 programmingLanguage: "javascript",
                 numConfigurations: 5,
                 numCompounds: 2,
-                numTasks: 9,
+                numTasks: 10,
                 numLocalEnvs: 30,
             },
             {
                 programmingLanguage: "typescript",
                 numConfigurations: 5,
                 numCompounds: 2,
-                numTasks: 9,
+                numTasks: 10,
                 numLocalEnvs: 30,
             }
         ];

@@ -602,7 +602,7 @@ export async function backendExtensionsInstallHandler(): Promise<void> {
 /**
  * detect if some ports are already in use, and if so, stop debugging
  */
-export async function detectPortsInUse(): Promise<void> {
+export async function detectPortsInUseHandler(): Promise<void> {
   let ports: [number, string[]][] = [];
   if (vscode.workspace.workspaceFolders) {
     const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];

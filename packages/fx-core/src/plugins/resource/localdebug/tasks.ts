@@ -10,13 +10,19 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
      * Referenced by launch.json
      *   - Pre Debug Check
      *   - Start Frontend
+     *   - Start Backend
+     *   - Start Bot
      *
      * Referenced inside tasks.json
+     *   - dependency check
+     *   - detect ports in use
+     *   - start ngrok
      *   - prepare dev env
      *   - prepare local environment
      *   - frontend npm install
      *   - backend npm install
      *   - backend extensions install
+     *   - bot npm install
      */
     const tasks: Record<string, unknown>[] = [];
 
@@ -27,6 +33,7 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
                 label: "Pre Debug Check",
                 dependsOn: [
                     "dependency check",
+                    "detect ports in use",
                     "prepare dev env",
                 ],
                 dependsOrder: "sequence",
@@ -40,6 +47,11 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
                 label: "dependency check",
                 type: "shell",
                 command: "echo ${command:fx-extension.validate-dependencies}",
+            },
+            {
+                label: "detect ports in use",
+                type: "shell",
+                command: "echo ${command:fx-extension.detect-ports-in-use}",
             },
             {
                 label: "prepare dev env",
@@ -111,6 +123,7 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
                 label: "Pre Debug Check",
                 dependsOn: [
                     "dependency check",
+                    "detect ports in use",
                     "start ngrok",
                     "prepare dev env",
                 ],
@@ -124,6 +137,11 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
                 label: "dependency check",
                 type: "shell",
                 command: "echo ${command:fx-extension.validate-dependencies}",
+            },
+            {
+                label: "detect ports in use",
+                type: "shell",
+                command: "echo ${command:fx-extension.detect-ports-in-use}",
             },
             {
                 label: "start ngrok",
@@ -162,6 +180,7 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
                 label: "Pre Debug Check",
                 dependsOn: [
                     "dependency check",
+                    "detect ports in use",
                     "start ngrok",
                     "prepare dev env",
                 ],
@@ -180,6 +199,11 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
                 label: "dependency check",
                 type: "shell",
                 command: "echo ${command:fx-extension.validate-dependencies}",
+            },
+            {
+                label: "detect ports in use",
+                type: "shell",
+                command: "echo ${command:fx-extension.detect-ports-in-use}",
             },
             {
                 label: "start ngrok",

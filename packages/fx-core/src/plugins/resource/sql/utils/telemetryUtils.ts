@@ -8,33 +8,21 @@ export class TelemetryUtils {
         TelemetryUtils.ctx = ctx;
     }
 
-    private static send(eventName: string,
-        properties: { [key: string]: string; },
+    public static sendEvent(eventName: string,
+        success?: boolean,
+        properties?: { [key: string]: string; },
         measurements?: { [key: string]: number; }) {
+        if (!properties) {
+            properties = {};
+        }
+        if (success) {
+            properties[Telemetry.properties.success] = Telemetry.resultYes;
+        }
         properties[Telemetry.properties.component] = Telemetry.componentName;
         if (this.ctx.app.id) {
             properties[Telemetry.properties.appid] = this.ctx.app.id;
         }
         TelemetryUtils.ctx.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
-    }
-
-    public static sendEvent(eventName: string,
-        properties?: { [key: string]: string; },
-        measurements?: { [key: string]: number; }) {
-        if (!properties) {
-            properties = {};
-        }
-        TelemetryUtils.send(eventName, properties, measurements);
-    }
-
-    public static sendSuccessEvent(eventName: string,
-        properties?: { [key: string]: string; },
-        measurements?: { [key: string]: number; }) {
-        if (!properties) {
-            properties = {};
-        }
-        properties[Telemetry.properties.success] = Telemetry.resultYes;
-        TelemetryUtils.send(eventName, properties, measurements);
     }
 
     public static sendErrorEvent(eventName: string,

@@ -56,7 +56,7 @@ export class IdentityPlugin implements Plugin {
         ctx.config.set(Constants.identityName, this.config.identityName);
         ctx.config.set(Constants.identityId, this.config.identityId);
         ctx.config.set(Constants.identity, this.config.identity);
-        TelemetryUtils.sendSuccessEvent(Telemetry.stage.provision);
+        TelemetryUtils.sendEvent(Telemetry.stage.provision, true);
         ctx.logProvider?.info(Message.endProvision);
         return ok(undefined);
     }

@@ -142,7 +142,7 @@ export class SqlPluginImpl {
             const error = SqlResultFactory.SystemError(ErrorMessage.SqlUserInfoError.name, ErrorMessage.SqlUserInfoError.message(), _error);
             throw error;
         }
-        TelemetryUtils.sendSuccessEvent(Telemetry.stage.preProvision);
+        TelemetryUtils.sendEvent(Telemetry.stage.preProvision, true);
         ctx.logProvider?.info(Message.endPreProvision);
         return ok(undefined);
     }
@@ -178,7 +178,7 @@ export class SqlPluginImpl {
             ctx.logProvider?.info(Message.skipProvisionDatabase);
         }
 
-        TelemetryUtils.sendSuccessEvent(Telemetry.stage.provision);
+        TelemetryUtils.sendEvent(Telemetry.stage.provision, true);
         ctx.logProvider?.info(Message.endProvision);
         await DialogUtils.progressBar?.end();
         return ok(undefined);
@@ -245,7 +245,7 @@ export class SqlPluginImpl {
 
         await managementClient.deleteLocalFirewallRule();
 
-        TelemetryUtils.sendSuccessEvent(Telemetry.stage.postProvision);
+        TelemetryUtils.sendEvent(Telemetry.stage.postProvision, true);
         ctx.logProvider?.info(Message.endPostProvision);
         await DialogUtils.progressBar?.end();
         return ok(undefined);

@@ -15,19 +15,22 @@ import {
     BuildError,
     CreateStorageAccountError,
     EnableStaticWebsiteError,
+    InvalidStorageNameError,
     NoBuildPathError,
     NoConfigsError,
     NoResourceGroupError,
     NoStorageError,
     StaticWebsiteDisabledError,
+    StorageAccountAlreadyTakenError,
 } from "../../../../../src/plugins/resource/frontend/resources/errors";
 import { FrontendConfig } from "../../../../../src/plugins/resource/frontend/configs";
-import { FrontendConfigInfo } from "../../../../../src/plugins/resource/frontend/constants";
+import { AzureErrorCode, FrontendConfigInfo } from "../../../../../src/plugins/resource/frontend/constants";
 import { FrontendPlugin } from "../../../../../src/plugins/resource/frontend/";
 import { FrontendProvision } from "../../../../../src/plugins/resource/frontend/ops/provision";
 import { FrontendScaffold } from "../../../../../src/plugins/resource/frontend/ops/scaffold";
 import { TestHelper } from "../helper";
 import { Utils } from "../../../../../src/plugins/resource/frontend/utils";
+import { StorageAccounts } from "@azure/arm-storage";
 
 chai.use(chaiAsPromised);
 
@@ -108,8 +111,8 @@ describe("frontendPlugin", () => {
             frontendPlugin = await TestHelper.initializedFrontendPlugin(new FrontendPlugin(), pluginContext);
 
             createStorageAccountStub = sinon
-                .stub(AzureStorageClient.prototype, "createStorageAccount")
-                .resolves(TestHelper.storageEndpoint);
+                .stub(StorageAccounts.prototype, "create")
+                .resolves(TestHelper.storageAccount);
             enableStaticWebsiteStub = sinon.stub(AzureStorageClient.prototype, "enableStaticWebsite");
         });
 
@@ -133,6 +136,22 @@ describe("frontendPlugin", () => {
             const result = await frontendPlugin.provision(pluginContext);
 
             assertError(result, new CreateStorageAccountError().code);
+        });
+
+        it("Storage Account already taken", async () => {
+            createStorageAccountStub.throws({ code: AzureErrorCode.StorageAccountAlreadyTaken });
+
+            const result = await frontendPlugin.provision(pluginContext);
+
+            assertError(result, new StorageAccountAlreadyTakenError().code);
+        });
+
+        it("Storage name contains reserved word", async () => {
+            createStorageAccountStub.throws({ code: AzureErrorCode.ReservedResourceName });
+
+            const result = await frontendPlugin.provision(pluginContext);
+
+            assertError(result, new InvalidStorageNameError().code);
         });
 
         it("Enable static website throw error", async () => {

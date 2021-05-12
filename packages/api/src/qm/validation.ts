@@ -61,11 +61,9 @@ export async function validate(
 
   // Required Validation
   {
-    if(valueToValidate === undefined){
+    if(!valueToValidate){
       if(validation.required === true)
         return `This question is mandatory`;
-      // if the value is undefined/null, no need to do the remaining validation.
-      return undefined;
     }
   }
 

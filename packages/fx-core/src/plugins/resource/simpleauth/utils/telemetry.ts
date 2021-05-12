@@ -34,7 +34,7 @@ export class TelemetryUtils {
         if (!properties) {
             properties = {};
         }
-        properties[Telemetry.isSuccess] = Telemetry.success;
+        properties[Telemetry.isSuccess] = Telemetry.fail;
         properties[Telemetry.component] = Constants.SimpleAuthPlugin.id;
         properties[Telemetry.errorCode] = `${Constants.SimpleAuthPlugin.shortName}.${errorName}`;
         properties[Telemetry.errorType] = errorType;

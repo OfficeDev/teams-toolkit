@@ -4,21 +4,16 @@
 import {
   Plugin,
   PluginContext,
-  Func,
-  ok,
   SystemError,
   UserError,
   err,
-  Result,
-  QTreeNode,
-  FxError,
 } from "@microsoft/teamsfx-api";
 import { AadAppForTeamsImpl } from "./plugin";
 import { AadResult, ResultFactory } from "./results";
 import { UnhandledError } from "./errors";
 import { TelemetryUtils } from "./utils/telemetry";
 import { DialogUtils } from "./utils/dialog";
-import { Stage, Telemetry } from "./constants";
+import { Messages, Telemetry } from "./constants";
 
 export class AadAppForTeamsPlugin implements Plugin {
   public pluginImpl: AadAppForTeamsImpl = new AadAppForTeamsImpl();
@@ -27,7 +22,7 @@ export class AadAppForTeamsPlugin implements Plugin {
     return await this.runWithExceptionCatchingAsync(
       () => this.pluginImpl.provision(ctx),
       ctx,
-      Stage.provision,
+      Messages.EndProvision.telemetry,
     );
   }
 
@@ -35,7 +30,7 @@ export class AadAppForTeamsPlugin implements Plugin {
     return await this.runWithExceptionCatchingAsync(
       () => this.pluginImpl.provision(ctx, true),
       ctx,
-      Stage.localDebug,
+      Messages.EndLocalDebug.telemetry,
     );
   }
 
@@ -53,7 +48,7 @@ export class AadAppForTeamsPlugin implements Plugin {
     return await this.runWithExceptionCatchingAsync(
       () => this.pluginImpl.postProvision(ctx),
       ctx,
-      Stage.postProvision,
+      Messages.EndPostProvision.telemetry,
     );
   }
 
@@ -61,30 +56,8 @@ export class AadAppForTeamsPlugin implements Plugin {
     return await this.runWithExceptionCatchingAsync(
       () => this.pluginImpl.postProvision(ctx, true),
       ctx,
-      Stage.postLocalDebug,
+      Messages.EndPostLocalDebug.telemetry,
     );
-  }
-
-  public async executeUserTask(
-    func: Func,
-    ctx: PluginContext
-  ): Promise<AadResult> {
-    if (func.method === "aadUpdatePermission") {
-      return await this.runWithExceptionCatchingAsync(
-        () => this.pluginImpl.updatePermission(ctx),
-        ctx,
-        Stage.userTask,
-      );
-    }
-
-    return ok(undefined);
-  }
-
-  public async getQuestionsForUserTask(
-    func: Func,
-    ctx: PluginContext
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    return await this.pluginImpl.getQuestionsForUserTask(func, ctx);
   }
 
   private async runWithExceptionCatchingAsync(

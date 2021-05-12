@@ -56,15 +56,6 @@ export class Telemetry {
   static systemError = "system";
 }
 
-export class Stage {
-  static provision = "provision";
-  static localDebug = "local-debug";
-  static postProvision = "post-provision";
-  static postLocalDebug = "post-local-debug";
-  static userTask = "user-task";
-  static setApplicationInContext = "set-application-in-context";
-}
-
 export class Plugins {
   static pluginName = "AAD App Registration";
   static pluginNameComplex = "fx-resource-aad-app-for-teams";

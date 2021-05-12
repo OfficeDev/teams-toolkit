@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { Plugin, PluginContext, SystemError, UserError, err } from "@microsoft/teamsfx-api";
-import { Stage, Telemetry } from "./constants";
+import { Messages, Telemetry } from "./constants";
 import { UnhandledError } from "./errors";
 import { SimpleAuthPluginImpl } from "./plugin";
 import { SimpleAuthResult, ResultFactory } from "./result";
@@ -12,19 +12,19 @@ export class SimpleAuthPlugin implements Plugin {
     simpleAuthPluginImpl = new SimpleAuthPluginImpl();
 
     public async localDebug(ctx: PluginContext): Promise<SimpleAuthResult> {
-        return this.runWithSimpleAuthError(() => this.simpleAuthPluginImpl.localDebug(ctx), ctx, Stage.localDebug);
+        return this.runWithSimpleAuthError(() => this.simpleAuthPluginImpl.localDebug(ctx), ctx, Messages.EndLocalDebug.telemetry);
     }
 
     public async postLocalDebug(ctx: PluginContext): Promise<SimpleAuthResult> {
-        return this.runWithSimpleAuthError(() => this.simpleAuthPluginImpl.postLocalDebug(ctx), ctx, Stage.postLocalDebug);
+        return this.runWithSimpleAuthError(() => this.simpleAuthPluginImpl.postLocalDebug(ctx), ctx, Messages.EndPostLocalDebug.telemetry);
     }
 
     public async provision(ctx: PluginContext): Promise<SimpleAuthResult> {
-        return this.runWithSimpleAuthError(() => this.simpleAuthPluginImpl.provision(ctx), ctx, Stage.provision);
+        return this.runWithSimpleAuthError(() => this.simpleAuthPluginImpl.provision(ctx), ctx, Messages.EndProvision.telemetry);
     }
 
     public async postProvision(ctx: PluginContext): Promise<SimpleAuthResult> {
-        return this.runWithSimpleAuthError(() => this.simpleAuthPluginImpl.postProvision(ctx), ctx, Stage.postProvision);
+        return this.runWithSimpleAuthError(() => this.simpleAuthPluginImpl.postProvision(ctx), ctx, Messages.EndPostProvision.telemetry);
     }
 
     private async runWithSimpleAuthError(fn: () => Promise<SimpleAuthResult>, ctx: PluginContext, stage: string): Promise<SimpleAuthResult> {

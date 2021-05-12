@@ -50,31 +50,6 @@ import * as jsonPermissionList from "./permissions/permissions.json";
 import { Utils } from "./utils/common";
 
 export class AadAppForTeamsImpl {
-  public async getQuestionsForUserTask(
-    func: Func,
-    ctx: PluginContext
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const aad_host = new QTreeNode({
-      type: NodeType.group,
-    });
-
-    if (
-      func.method === "aadUpdatePermission" &&
-      ctx.config.get(ConfigKeys.objectId) &&
-      ctx.config.get(Utils.addLocalDebugPrefix(true, ConfigKeys.objectId))
-    ) {
-      const aad_env = new QTreeNode({
-        type: NodeType.singleSelect,
-        name: Constants.AskForEnvName,
-        title: Constants.AskForEnv,
-        option: [Envs.Azure, Envs.LocalDebug, Envs.Both],
-      });
-      aad_host.addChild(aad_env);
-    }
-
-    return ResultFactory.Success(aad_host);
-  }
-
   public async provision(
     ctx: PluginContext,
     isLocalDebug = false

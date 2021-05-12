@@ -101,16 +101,7 @@ export class Telemetry {
     static errorMessage = "error-message";
     static userError = "user";
     static systemError = "system";
-  }
-  
-  export class Stage {
-    static provision = "provision";
-    static localDebug = "local-debug";
-    static postProvision = "post-provision";
-    static postLocalDebug = "post-local-debug";
-    static userTask = "user-task";
-    static setApplicationInContext = "set-application-in-context";
-  }
+}
 
 export interface Message {
     log: string;
@@ -119,7 +110,7 @@ export interface Message {
 
 export class Messages {
     public static readonly getLog = (log: string) => `[${Constants.SimpleAuthPlugin.name}] ${log}`;
-    private static readonly getEventName = (eventName: string) => `${Constants.SimpleAuthPlugin.id}/${eventName}`;
+    private static readonly getEventName = (eventName: string) => `${eventName}`;
 
     static readonly StartLocalDebug: Message = {
         log: Messages.getLog("Starting local-debug"),

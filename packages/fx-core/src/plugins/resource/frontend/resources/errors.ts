@@ -95,12 +95,6 @@ export class CheckStorageError extends FrontendPluginError {
     }
 }
 
-export class CheckStorageNameError extends FrontendPluginError {
-    constructor() {
-        super(ErrorType.User, "CheckStorageNameError", "Failed to check Azure Storage Account name availability.", [tips.reLogin, tips.checkNetwork]);
-    }
-}
-
 export class NoStorageError extends FrontendPluginError {
     constructor() {
         super(ErrorType.User, "NoStorageError", "Failed to find Azure Storage Account.", [tips.reProvision]);
@@ -124,9 +118,9 @@ export class InvalidStorageNameError extends FrontendPluginError {
     }
 }
 
-export class StorageNameAlreadyInUseError extends FrontendPluginError {
+export class StorageAccountAlreadyTakenError extends FrontendPluginError {
     constructor() {
-        super(ErrorType.User, "StorageNameAlreadyInUseError", "Azure Storage Name is already in use.", [tips.deleteSameNameStorage]);
+        super(ErrorType.User, "StorageAccountAlreadyTakenError", "Azure Storage Name is already in use.", [tips.deleteSameNameStorage]);
     }
 }
 
@@ -254,6 +248,18 @@ export async function runWithErrorCatchAndThrow<T>(error: FrontendPluginError, f
         return res;
     } catch (e) {
         Logger.error(e.toString());
+        error.setInnerError(e);
+        throw error;
+    }
+}
+
+export async function runWithErrorCatchAndWrap<T>(wrap: (error: any) => FrontendPluginError, fn: () => T | Promise<T>): Promise<T> {
+    try {
+        const res = await Promise.resolve(fn());
+        return res;
+    } catch (e) {
+        Logger.error(e.toString());
+        const error = wrap(e);
         error.setInnerError(e);
         throw error;
     }

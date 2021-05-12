@@ -128,3 +128,8 @@ export class TelemetryValue {
     static readonly UserError = "user";
     static readonly SystemError = "system";
 }
+
+export class AzureErrorCode {
+    static readonly ReservedResourceName = "ReservedResourceName";
+    static readonly StorageAccountAlreadyTaken = "StorageAccountAlreadyTaken";
+}

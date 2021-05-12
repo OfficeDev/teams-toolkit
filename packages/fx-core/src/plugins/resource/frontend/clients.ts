@@ -20,7 +20,6 @@ import { FrontendConfig } from "./configs";
 import { Logger } from "./utils/logger";
 import { Messages } from "./resources/messages";
 import { Utils } from "./utils";
-import { InvalidStorageNameError, StorageNameAlreadyInUseError } from "./resources/errors";
 
 export class AzureStorageClient {
     private resourceGroupClient: ResourceGroups;
@@ -56,10 +55,6 @@ export class AzureStorageClient {
             return true;
         }
         return false;
-    }
-
-    public async checkStorageNameAvailability(): Promise<StorageManagementModels.CheckNameAvailabilityResult> {
-        return await this.storageAccountClient.checkNameAvailability(this.storageName);
     }
 
     public async isStorageStaticWebsiteEnabled(): Promise<boolean | undefined> {

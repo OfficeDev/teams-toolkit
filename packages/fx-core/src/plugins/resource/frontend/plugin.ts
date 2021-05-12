@@ -16,11 +16,12 @@ import {
     CheckStorageError,
     CheckResourceGroupError,
     NoConfigsError,
-    CheckStorageNameError,
     InvalidStorageNameError,
-    StorageNameAlreadyInUseError,
+    StorageAccountAlreadyTakenError,
+    runWithErrorCatchAndWrap,
 } from "./resources/errors";
 import {
+    AzureErrorCode,
     Constants,
     DependentPluginInfo,
     FrontendConfigInfo,
@@ -93,19 +94,6 @@ export class FrontendPluginImpl {
             throw new NoResourceGroupError();
         }
 
-        const result = await runWithErrorCatchAndThrow(
-            new CheckStorageNameError(),
-            async () => await this.azureStorageClient!.checkStorageNameAvailability(),
-        );
-        switch (result.reason) {
-            case "AccountNameInvalid":
-                throw new InvalidStorageNameError();
-            case "AlreadyExists":
-                throw new StorageNameAlreadyInUseError();
-            case undefined:
-            // Storage name is valid.
-        }
-
         Logger.info(Messages.EndPreProvision(PluginInfo.DisplayName));
         return ok(this.config);
     }
@@ -121,8 +109,17 @@ export class FrontendPluginImpl {
         }
 
         await progressHandler?.next(ProvisionSteps.CreateStorage);
-        const endpoint = await runWithErrorCatchAndThrow(
-            new CreateStorageAccountError(),
+        const createStorageErrorWrapper = (innerError: any) => {
+            if (innerError.code === AzureErrorCode.ReservedResourceName) {
+                return new InvalidStorageNameError();
+            }
+            if (innerError.code === AzureErrorCode.StorageAccountAlreadyTaken) {
+                return new StorageAccountAlreadyTakenError();
+            }
+            return new CreateStorageAccountError();
+        };
+        const endpoint = await runWithErrorCatchAndWrap(
+            createStorageErrorWrapper,
             async () => await client.createStorageAccount(),
         );
 

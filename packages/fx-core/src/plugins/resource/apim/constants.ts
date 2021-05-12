@@ -184,11 +184,11 @@ export enum TeamsToolkitComponent {
 }
 
 export enum RetryCommands {
-    Create = "Teams: Create New Project",
-    Update = "Teams: Add Resources",
-    Provision = "Teams: Provision in the Cloud",
-    Deploy = "Teams: Deploy to the Cloud",
-    Login = "Teams Toolkit: Focus on Accounts View (choose a subscription)",
+    Create = "'Teams: Create New Project' command",
+    Update = "'Teams: Add Resources' command",
+    Provision = "'Teams: Provision in the Cloud' command",
+    Deploy = "'Teams: Deploy to the Cloud' command",
+    Login = "'Teams Toolkit: Focus on Accounts View' command, sign in to Azure and choose a subscription",
 }
 
 export const ComponentRetryCommands: { [key in TeamsToolkitComponent]: RetryCommands } = Object.freeze({

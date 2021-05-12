@@ -55,7 +55,8 @@ export class Constants {
     static readonly ResourcesFolderName: string = path.join("templates", "plugins", "resource", "simpleauth");
     static readonly SimpleAuthFileName: string = "SimpleAuth.zip";
     static readonly SimpleAuthZipName = (version: string): string  => `Microsoft.TeamsFx.SimpleAuth_${version}.zip`;
-    static readonly VersionFileName: string = "version.txt";
+    static readonly SimpleAuthReleaseUrl = (tagName: string, fileName: string): string => `https://github.com/OfficeDev/TeamsFx/releases/download/${tagName}/${fileName}`;
+    static readonly VersionFileName: string = "version.json";
     static readonly GithubUserName: string = "OfficeDev";
     static readonly GithubRepoName: string = "TeamsFx";
     static readonly SimpleAuthName: string = "SimpleAuth";

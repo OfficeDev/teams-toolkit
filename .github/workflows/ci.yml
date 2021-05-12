@@ -34,8 +34,13 @@ jobs:
 
       - name: Download Simple Auth bits
         run: |
-          npx download-github-release -p -s SimpleAuth OfficeDev TeamsFx ./packages/fx-core/templates/plugins/resource/simpleauth
-          npx cash-mv ./packages/fx-core/templates/plugins/resource/simpleauth/*.zip ./packages/fx-core/templates/plugins/resource/simpleauth/SimpleAuth.zip
+          $file=Get-Content packages/fx-core/templates/plugins/resource/simpleauth/version.json | ConvertFrom-Json
+          $version = $file.version
+          $tag = $file.tag
+          $fileName="Microsoft.TeamsFx.SimpleAuth_$version.zip"
+          $url = "https://github.com/OfficeDev/TeamsFx/releases/download/"+$tag+"/"+$fileName
+          Invoke-WebRequest $url -OutFile packages/fx-core/templates/plugins/resource/simpleauth/SimpleAuth.zip
+        shell: pwsh
 
       - name: Setup project
         run: |

@@ -7,9 +7,8 @@ import { Constants, Message } from "../constants";
 import { EndpointInvalidError, NoConfigError, VersionFileNotExist, ZipDownloadError } from "../errors";
 import { ResultFactory } from "../result";
 import { TelemetryUtils } from "./telemetry";
-import { BlobServiceClient } from "@azure/storage-blob";
 import { getTemplatesFolder } from "../../../..";
-import downloadRelease from "@terascope/fetch-github-release";
+import got from "got";
 
 export class Utils {
     public static generateResourceName(appName: string, resourceNameSuffix: string): string {
@@ -37,12 +36,12 @@ export class Utils {
             );
         }
 
-        const version = await fs.readFile(versionFilePath, "utf-8");
-        const fileName = Constants.SimpleAuthZipName(version);
+        const version = await fs.readJson(versionFilePath);
+        const fileName = Constants.SimpleAuthZipName(version!.version);
+        const distUrl = Constants.SimpleAuthReleaseUrl(version!.tag, fileName);
 
         try {
-            const isPrelease = true;
-            await downloadRelease(Constants.GithubUserName, Constants.GithubRepoName, filePath, ()=>{ return isPrelease}, (asset)=>{ return asset.name.includes(Constants.SimpleAuthName)});
+            await got.stream(distUrl).pipe(fs.createWriteStream(filePath));
         } catch (error) {
             throw ResultFactory.SystemError(
                 ZipDownloadError.name,

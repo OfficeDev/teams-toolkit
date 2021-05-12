@@ -8,7 +8,6 @@ import {
     ok,
     err,
     SystemError
-
 } from "@microsoft/teamsfx-api";
 
 import { IdentityConfig } from "./config";
@@ -50,7 +49,6 @@ export class IdentityPlugin implements Plugin {
         } catch (error) {
             const errorCode = error.source + "." + error.name;
             const errorType = error instanceof SystemError ? Telemetry.systemError : Telemetry.userError;
-            TelemetryUtils.init(ctx);
             TelemetryUtils.sendErrorEvent(Telemetry.stage.provision, errorCode, errorType, error.message);
             return err(error);
         }

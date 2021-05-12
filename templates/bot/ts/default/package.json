@@ -23,7 +23,7 @@
         "botbuilder-dialogs": "^4.12.0",
         "isomorphic-fetch": "^3.0.0",
         "restify": "^8.5.1",
-        "@microsoft/teamsfx": "0.1.0-alpha.3",
+        "@microsoft/teamsfx": "^0.1.0",
         "uuid": "^8.3.2"
     },
     "devDependencies": {

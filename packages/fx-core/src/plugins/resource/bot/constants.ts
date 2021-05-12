@@ -91,14 +91,14 @@ export class LifecycleFuncNames {
     public static readonly LOCAL_DEBUG = "local-debug";
     public static readonly POST_LOCAL_DEBUG = "post-local-debug";
 
-     // extra
-     public static readonly PROVISION_WEB_APP = "provisionWebApp";
-     public static readonly UPDATE_MESSAGE_ENDPOINT_AZURE = "updateMessageEndpointOnAzure";
-     public static readonly UPDATE_MESSAGE_ENDPOINT_APPSTUDIO = "updateMessageEndpointOnAppStudio";
-     public static readonly REUSE_EXISTING_BOT_REG = "reuseExistingBotRegistration";
-     public static readonly CREATE_NEW_BOT_REG_AZURE = "createNewBotRegistrationOnAzure";
-     public static readonly CREATE_NEW_BOT_REG_APPSTUDIO = "createNewBotRegistrationOnAppStudio";
-     public static readonly CHECK_AAD_APP = "checkAADApp";
+    // extra
+    public static readonly PROVISION_WEB_APP = "provisionWebApp";
+    public static readonly UPDATE_MESSAGE_ENDPOINT_AZURE = "updateMessageEndpointOnAzure";
+    public static readonly UPDATE_MESSAGE_ENDPOINT_APPSTUDIO = "updateMessageEndpointOnAppStudio";
+    public static readonly REUSE_EXISTING_BOT_REG = "reuseExistingBotRegistration";
+    public static readonly CREATE_NEW_BOT_REG_AZURE = "createNewBotRegistrationOnAzure";
+    public static readonly CREATE_NEW_BOT_REG_APPSTUDIO = "createNewBotRegistrationOnAppStudio";
+    public static readonly CHECK_AAD_APP = "checkAADApp";
 }
 
 export class Retry {

@@ -76,11 +76,11 @@
             "prepareTask": " Prepare task."
         },
         "appStudioLogin": {
-            "warningMsg": "The Teams Toolkit requires a Microsoft 365 organizational account where Teams is running and has been registered. You can still experience making a Teams app by using a testing account from [M365 Developer Program](https://developer.microsoft.com/en-us/microsoft-365/dev-program).",
+            "warningMsg": "The Teams Toolkit requires a Microsoft 365 organizational account where Teams is running and has been registered. You can create a free testing account from [M365 Developer Program](https://developer.microsoft.com/en-us/microsoft-365/dev-program) if needed.",
             "learnMore": "Learn More"
         },
         "azureLogin": {
-            "warningMsg": "The Teams Toolkit requires an Azure account and subscription to deploy the Azure resources for your project. You will not be charged without your further confirmation.",
+            "warningMsg": "The Teams Toolkit requires an Azure account and subscription to deploy the Azure resources for your project. You will not be charged without further confirmation.",
             "unknownSubscription": "Cannot set subscription. Select a subscription that you have access to."
         },
         "common": {
@@ -99,10 +99,10 @@
             "saveHomeAccountIdFail": "save home account id fail: "
         },
         "codeFlowLogin": {
-            "resultFileNotFound": "Result file not found, return simple OK message.",
-            "silentAcquireToken": "silent acquire token :%s",
-            "loginFailureTitle": "LoginFailure",
-            "loginFailureDescription": "Cannot get user login information. Please login correct account via browser."
+            "resultFileNotFound": "Result file not found.",
+            "silentAcquireToken": "Failed to retrieve token silently: %s",
+            "loginFailureTitle": "Login Failure",
+            "loginFailureDescription": "Cannot retrieve user login information. Login with another account."
         },
         "graphLogin": {
             "warningMsg": "The Teams Toolkit requires a Microsoft 365 account. This is the account that you use to log in to Microsoft Teams. The Teams Toolkit will use this account to manage applications and service principals."

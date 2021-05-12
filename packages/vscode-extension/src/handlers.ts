@@ -750,9 +750,11 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
     switch (node.contextValue) {
       case "signinM365": {
         await env.openExternal(Uri.parse("https://www.office.com/"));
+        break;
       }
       case "signinAzure": {
         await env.openExternal(Uri.parse("https://portal.azure.com/"));
+        break;
       }
     }
   });

@@ -8,8 +8,9 @@ import { Context, err, FxError, ok, ConfigFolderName, Result, returnUserError, S
 
 import { Settings } from "./settings";
 
-import { Default, TeamsAppSolution } from "../plugins/solution/fx-solution";
+// import { Default, TeamsAppSolution } from "../plugins/solution/fx-solution";
 import { CoreErrorNames, CoreSource } from "./error";
+import { TeamsAppSolution } from "../plugins/solution/fx-solution/solution";
 
 export interface Meta {
     name: string;

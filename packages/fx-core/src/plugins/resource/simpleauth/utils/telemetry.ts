@@ -25,7 +25,7 @@ export class TelemetryUtils {
 
     public static sendErrorEvent(
         eventName: string,
-        errorCode: string,
+        errorName: string,
         errorType: string,
         errorMessage: string,
         properties?: { [key: string]: string },
@@ -36,9 +36,9 @@ export class TelemetryUtils {
         }
         properties[Telemetry.isSuccess] = Telemetry.success;
         properties[Telemetry.component] = Constants.SimpleAuthPlugin.id;
-        properties[Telemetry.errorCode] = errorCode;
+        properties[Telemetry.errorCode] = `${Constants.SimpleAuthPlugin.shortName}.${errorName}`;
         properties[Telemetry.errorType] = errorType;
-        properties[Telemetry.errorMessage] = `${Constants.SimpleAuthPlugin.shortName}.${errorMessage}`;
+        properties[Telemetry.errorMessage] = errorMessage;
         TelemetryUtils.ctx.telemetryReporter?.sendTelemetryErrorEvent(
             eventName,
             properties,

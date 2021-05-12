@@ -30,7 +30,7 @@ export class TelemetryUtils {
 
   public static sendErrorEvent(
     eventName: string,
-    errorCode: string,
+    errorName: string,
     errorType: string,
     errorMessage: string,
     properties?: { [key: string]: string },
@@ -41,7 +41,7 @@ export class TelemetryUtils {
     }
     
     properties[Telemetry.component] = Plugins.pluginNameComplex;
-    properties[Telemetry.errorCode] = `${Plugins.pluginNameShort}.${errorCode}`;
+    properties[Telemetry.errorCode] = `${Plugins.pluginNameShort}.${errorName}`;
     properties[Telemetry.errorType] = errorType;
     properties[Telemetry.errorMessage] = errorMessage;
     properties[Telemetry.isSuccess] = Telemetry.fail;

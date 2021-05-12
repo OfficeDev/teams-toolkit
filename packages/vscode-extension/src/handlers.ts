@@ -606,7 +606,7 @@ export async function openWelcomeHandler(args?: any[]) {
 }
 
 function getTriggerFromProperty(args?: any[]) {
-  let isFromTreeView = (args && (args.toString() === "TreeView" || args.constructor.name === "TreeViewCommand"));
+  let isFromTreeView = (args && args.toString() === "TreeView");
 
   return {
     [TelemetryProperty.TriggerFrom]: isFromTreeView ? TelemetryTiggerFrom.TreeView : TelemetryTiggerFrom.CommandPalette

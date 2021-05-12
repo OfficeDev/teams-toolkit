@@ -761,7 +761,7 @@ export async function cmpAccountsHandler() {
   let signInAzureOption: VscQuickPickItem = {
     id:"signInAzure",
     label: "Sign in to Azure",
-    function: () => signInAzure(false)
+    function: () => signInAzure()
   };
 
   let signOutAzureOption: VscQuickPickItem = {
@@ -773,7 +773,7 @@ export async function cmpAccountsHandler() {
   let signInM365Option: VscQuickPickItem = {
     id:"signinM365",
     label: "Sign in to M365",
-    function: () => signInM365(false)
+    function: () => signInM365()
   };
 
   let signOutM365Option: VscQuickPickItem = {
@@ -873,17 +873,12 @@ export async function signOutM365(isFromTreeView: boolean) {
   }
 }
 
-export async function signInAzure(isFromTreeView: boolean) {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.LoginAzure, {
-    [TelemetryProperty.TriggerFrom]: isFromTreeView ? TelemetryTiggerFrom.TreeView : TelemetryTiggerFrom.CommandPalette
-  });
+export async function signInAzure() {
   vscode.commands.executeCommand("fx-extension.signinAzure");
 }
 
-export async function signInM365(isFromTreeView: boolean) {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.LoginM365, {
-    [TelemetryProperty.TriggerFrom]: isFromTreeView ? TelemetryTiggerFrom.TreeView : TelemetryTiggerFrom.CommandPalette
-  });
+export async function signInM365() {
+
   vscode.commands.executeCommand("fx-extension.signinM365");
 }
 

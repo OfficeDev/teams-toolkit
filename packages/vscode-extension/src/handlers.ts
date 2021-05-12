@@ -577,7 +577,7 @@ export async function backendExtensionsInstallHandler(): Promise<void> {
 /**
  * detect if some ports are already in use, and if so, stop debugging
  */
-export async function detectPortsInUse(): Promise<void> {
+async function detectPortsInUse(): Promise<void> {
   let ports: [number, string[]][] = [];
   if (vscode.workspace.workspaceFolders) {
     const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
@@ -624,6 +624,8 @@ export async function detectPortsInUse(): Promise<void> {
  * call localDebug on core
  */
 export async function preDebugCheckHandler(): Promise<void> {
+  await detectPortsInUse();
+
   let result: Result<any, FxError> = ok(null);
   result = await runCommand(Stage.debug);
   if (result.isErr()) {

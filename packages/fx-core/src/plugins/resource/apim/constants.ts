@@ -21,7 +21,7 @@ export class ApimDefaultValues {
     public static readonly oAuthServerDescription: string = "Created by TeamsFx.";
     public static readonly enableScopeName: string = ".default";
     public static readonly userId: string = "sample@microsoft.com";
-    public static readonly apiPrefix: string = "title";
+    public static readonly apiPrefix: string = "api-title";
     public static readonly apiVersion: string = "v1";
 }
 
@@ -184,11 +184,11 @@ export enum TeamsToolkitComponent {
 }
 
 export enum RetryCommands {
-    Create = "start a project",
-    Update = "add the resource",
-    Provision = "provision resource",
-    Deploy = "deploy package",
-    Login = "login and choose a subscription",
+    Create = "Teams: Create New Project",
+    Update = "Teams: Add Resources",
+    Provision = "Teams: Provision in the Cloud",
+    Deploy = "Teams: Deploy to the Cloud",
+    Login = "Teams Toolkit: Focus on Accounts View (choose a subscription)",
 }
 
 export const ComponentRetryCommands: { [key in TeamsToolkitComponent]: RetryCommands } = Object.freeze({

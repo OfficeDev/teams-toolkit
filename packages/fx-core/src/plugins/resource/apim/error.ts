@@ -41,13 +41,13 @@ export const EmptyConfigValue: IApimPluginError = {
     type: ErrorType.User,
     code: "EmptyConfigValue",
     message: (component: string, name: string, retryCommand: string) =>
-        `Project configuration '${name}' of ${component} is missing in '${ProjectConstants.configFilePath}'. Retry to ${retryCommand} or set the value manually.`,
+        `Project configuration '${name}' of ${component} is missing in '${ProjectConstants.configFilePath}'. Retry '${retryCommand}' command or set the value manually.`,
 };
 
 export const NoPluginConfig: IApimPluginError = {
     type: ErrorType.User,
     code: "NoPluginConfig",
-    message: (component: string, retryCommand: string) => `Cannot found ${component} configuration. Retry '${retryCommand}'.`,
+    message: (component: string, retryCommand: string) => `Cannot found ${component} configuration. Retry '${retryCommand}' command.`,
 };
 
 export const InvalidConfigValue: IApimPluginError = {

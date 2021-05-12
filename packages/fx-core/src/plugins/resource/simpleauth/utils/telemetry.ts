@@ -38,7 +38,7 @@ export class TelemetryUtils {
         properties[Telemetry.component] = Constants.SimpleAuthPlugin.id;
         properties[Telemetry.errorCode] = errorCode;
         properties[Telemetry.errorType] = errorType;
-        properties[Telemetry.errorMessage] = errorMessage;
+        properties[Telemetry.errorMessage] = `${Constants.SimpleAuthPlugin.shortName}.${errorMessage}`;
         TelemetryUtils.ctx.telemetryReporter?.sendTelemetryErrorEvent(
             eventName,
             properties,

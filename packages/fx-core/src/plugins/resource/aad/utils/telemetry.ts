@@ -41,7 +41,7 @@ export class TelemetryUtils {
     }
     
     properties[Telemetry.component] = Plugins.pluginNameComplex;
-    properties[Telemetry.errorCode] = errorCode;
+    properties[Telemetry.errorCode] = `${Plugins.pluginNameShort}.${errorCode}`;
     properties[Telemetry.errorType] = errorType;
     properties[Telemetry.errorMessage] = errorMessage;
     properties[Telemetry.isSuccess] = Telemetry.fail;

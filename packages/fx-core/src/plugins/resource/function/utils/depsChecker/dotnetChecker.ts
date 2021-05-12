@@ -235,9 +235,9 @@ export class DotnetChecker implements IDepsChecker {
     try {
       const start = performance.now();
       fs.chmodSync(this.getDotnetInstallScriptPath(), "755");
-      const { stdout, stderr } = await execFile(command[0], command.splice(1), options);
+      const { stdout, stderr } = await execFile(command[0], command.slice(1), options);
       await this._logger.debug(
-        `Finished running dotnet-install script, command = '${command}', options = '${JSON.stringify(
+        `Finished running dotnet-install script, command = '${command.join(" ")}', options = '${JSON.stringify(
           options
         )}', stdout = '${stdout}', stderr = '${stderr}'`
       );
@@ -265,7 +265,9 @@ export class DotnetChecker implements IDepsChecker {
         `${Messages.failToInstallDotnet.split("@NameVersion").join(installedNameWithVersion)} ${
           Messages.dotnetInstallErrorCode
         }, ` +
-        `command = '${command}', options = '${options}', error = '${error}', stdout = '${error.stdout}', stderr = '${error.stderr}'`;
+        `command = '${command.join(" ")}', options = '${JSON.stringify(
+          options
+        )}', error = '${error}', stdout = '${error.stdout}', stderr = '${error.stderr}'`;
 
       this._telemetry.sendSystemErrorEvent(
         DepsCheckerEvent.dotnetInstallScriptError,

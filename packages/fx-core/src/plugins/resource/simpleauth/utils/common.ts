@@ -36,9 +36,10 @@ export class Utils {
             );
         }
 
-        const version = await fs.readJson(versionFilePath);
-        const fileName = Constants.SimpleAuthZipName(version!.version);
-        const distUrl = Constants.SimpleAuthReleaseUrl(version!.tag, fileName);
+        const version = await fs.readFile(versionFilePath, "utf-8");
+        const tag = Constants.SimpleAuthTag(version);
+        const fileName = Constants.SimpleAuthZipName(version);
+        const distUrl = Constants.SimpleAuthReleaseUrl(tag, fileName);
 
         try {
             await got.stream(distUrl).pipe(fs.createWriteStream(filePath));

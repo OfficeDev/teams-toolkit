@@ -453,7 +453,11 @@ class CoreImpl implements Core {
                 }, !(activeSubscriptionId === undefined || activeSubscription === undefined)]);
             };
 
-            const selectSubscriptionCallback = async (): Promise<Result<null, FxError>> => {
+            const selectSubscriptionCallback = async (args?: any[]): Promise<Result<null, FxError>> => {
+                this.ctx?.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.SelectSubscription, {
+                    [TelemetryProperty.TriggerFrom]: args && args.toString() === "TreeView" ? TelemetryTiggerFrom.TreeView : TelemetryTiggerFrom.CommandPalette
+                });
+
                 const azureToken = await this.ctx.azureAccountProvider?.getAccountCredentialAsync();
                 const subscriptions: AzureSubscription[] = await getSubscriptionList(azureToken!);
                 const subscriptionNames: string[] = subscriptions.map((subscription) => subscription.displayName);
@@ -496,7 +500,11 @@ class CoreImpl implements Core {
                 return ok(null);
             };
 
-            const signinM365Callback = async (): Promise<Result<null, FxError>> => {
+            const signinM365Callback = async (args?: any[]): Promise<Result<null, FxError>> => {
+                this.ctx?.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.LoginStart, {
+                    [TelemetryProperty.TriggerFrom]: args && args.toString() === "TreeView" ? TelemetryTiggerFrom.TreeView : TelemetryTiggerFrom.CommandPalette,
+                    [TelemetryProperty.AccountType]: AccountType.M365
+                });
                 const token = await this.ctx.appStudioToken?.getJsonObject(true);
                 if (token !== undefined) {
                     this.ctx.treeProvider?.refresh([
@@ -514,7 +522,12 @@ class CoreImpl implements Core {
                 return ok(null);
             };
 
-            const signinAzureCallback = async (validFxProject: boolean): Promise<Result<null, FxError>> => {
+            const signinAzureCallback = async (validFxProject: boolean, args?: any[]): Promise<Result<null, FxError>> => {
+                this.ctx?.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.LoginStart, {
+                    [TelemetryProperty.TriggerFrom]: args && args.toString() === "TreeView" ? TelemetryTiggerFrom.TreeView : TelemetryTiggerFrom.CommandPalette,
+                    [TelemetryProperty.AccountType]: AccountType.Azure
+                });
+                
                 const token = await this.ctx.azureAccountProvider?.getAccountCredentialAsync(true);
                 if (token !== undefined) {
                     this.ctx.treeProvider?.refresh([
@@ -636,8 +649,8 @@ class CoreImpl implements Core {
                 {
                     commandId: "fx-extension.signinAzure",
                     label: azureAccountLabel,
-                    callback: async () => {
-                        return signinAzureCallback(supported);
+                    callback: async (args?: any[]) => {
+                        return signinAzureCallback(supported, args);
                     },
                     parent: TreeCategory.Account,
                     contextValue: azureAccountContextValue,
@@ -1189,4 +1202,24 @@ export async function Default(): Promise<Result<CoreProxy, FxError>> {
         return err(result.error);
     }
     return ok(CoreProxy.getInstance());
+}
+
+enum TelemetryTiggerFrom {
+    CommandPalette = "CommandPalette",
+    TreeView = "TreeView"
+}
+
+enum TelemetryProperty {
+    TriggerFrom = "trigger-from",
+    AccountType = "account-type"
+}
+
+enum TelemetryEvent {
+    LoginStart = "login-start",
+    SelectSubscription = "select-subscription"
+}
+
+export enum AccountType {
+    M365 = "m365",
+    Azure = "azure"
 }

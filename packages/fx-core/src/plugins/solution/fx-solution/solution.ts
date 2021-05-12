@@ -599,6 +599,17 @@ export class TeamsAppSolution implements Solution {
         });
 
         const res = await executeLifecycles(preScaffoldWithCtx, scaffoldWithCtx, postScaffoldWithCtx);
+
+        if (res.isOk()) {
+            const capabilities = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings).capabilities;
+            const hasBot = capabilities?.includes(BotOptionItem.id);
+            const hasMsgExt = capabilities?.includes(MessageExtensionItem.id);
+            const hasTab = capabilities?.includes(TabOptionItem.id);
+            if (hasTab && (hasBot || hasMsgExt)) {
+                
+            }
+        }
+
         return res;
     }
 

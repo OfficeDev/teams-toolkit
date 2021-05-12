@@ -140,6 +140,12 @@ export class ValidationConstants {
         regex: /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
         message: "The value should be a GUID."
     }
+
+    public static readonly CLI = {
+        invalidOptionMessage: (optionName: string) => `Option '--${optionName}' is required. Set the value of '--${optionName}'`,
+        emptyOptionMessage: (optionName: string) => `Option '--${optionName}' is required. Set the value of '--${optionName}'`,
+        overrideOptionMessage: (optionName: string) => `Option '--${optionName}' cannot be override. Remove option '--${optionName}'`,
+    }
 }
 
 export class ApimPluginConfigKeys {
@@ -184,10 +190,10 @@ export enum TeamsToolkitComponent {
 }
 
 export enum RetryCommands {
-    Create = "start a project",
-    Update = "add the resource",
-    Provision = "provision resource",
-    Deploy = "deploy package",
+    Create = "create new project",
+    Update = "add resources",
+    Provision = "provision in the cloud",
+    Deploy = "deploy to the cloud",
     Login = "login and choose a subscription",
 }
 

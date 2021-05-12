@@ -140,9 +140,10 @@ export class AppStudioPlugin implements Plugin {
             );
             return ok(teamsAppId);
         } catch (error) {
+            const innerError = error.innerError? `innerError: ${error.innerError}` : "";
             await ctx.dialog?.communicate(
                 new DialogMsg(DialogType.Show, {
-                    description: `[Teams Toolkit]: ${error.message}`,
+                    description: `[Teams Toolkit]: ${error.message} ${innerError}`,
                     level: MsgLevel.Warning
                 }),
             );

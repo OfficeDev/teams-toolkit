@@ -419,6 +419,21 @@
           }
         }
       }
+    ],
+    "languages": [
+      {
+        "id": "teamsfx-toolkit-output",
+        "mimetypes": [
+          "text/x-code-output"
+        ]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "teamsfx-toolkit-output",
+        "scopeName": "teamsfx-toolkit.output",
+        "path": "./syntaxes/teamsfx-toolkit-output.tmLanguage"
+      }
     ]
   },
   "scripts": {

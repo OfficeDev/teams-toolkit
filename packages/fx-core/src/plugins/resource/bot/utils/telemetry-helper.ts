@@ -1,11 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
-
-import { FunctionPluginInfo } from "../constants";
 import { FxResult } from "../result";
-import { TelemetryKey, TelemetryValue } from "../enums";
+import { PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { TelemetryKeys, TelemetryValues } from "../constants";
+import { PluginBot } from "../resources/strings";
 
 export class telemetryHelper {
     static sendStartEvent(
@@ -14,7 +13,8 @@ export class telemetryHelper {
         properties: { [key: string]: string } = {},
         measurements: { [key: string]: number } = {},
     ): void {
-        properties[TelemetryKey.Component] = FunctionPluginInfo.pluginName;
+        properties[TelemetryKeys.Component] = PluginBot.PLUGIN_NAME;
+        properties[TelemetryKeys.Success] = TelemetryValues.Success;
 
         ctx.telemetryReporter?.sendTelemetryEvent(`${eventName}-start`, properties, measurements);
     }
@@ -25,8 +25,8 @@ export class telemetryHelper {
         properties: { [key: string]: string } = {},
         measurements: { [key: string]: number } = {},
     ): void {
-        properties[TelemetryKey.Component] = FunctionPluginInfo.pluginName;
-        properties[TelemetryKey.Success] = TelemetryValue.Success;
+        properties[TelemetryKeys.Component] = PluginBot.PLUGIN_NAME;
+        properties[TelemetryKeys.Success] = TelemetryValues.Success;
 
         ctx.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
     }
@@ -38,15 +38,14 @@ export class telemetryHelper {
         properties: { [key: string]: string } = {},
         measurements: { [key: string]: number } = {},
     ): void {
-        properties[TelemetryKey.Component] = FunctionPluginInfo.pluginName;
-        properties[TelemetryKey.Success] = TelemetryValue.Fail;
-        properties[TelemetryKey.ErrorMessage] = e.message;
-        properties[TelemetryKey.ErrorCode] = e.name;
+        properties[TelemetryKeys.Component] = PluginBot.PLUGIN_NAME;
+        properties[TelemetryKeys.Success] = TelemetryValues.Fail;
+        properties[TelemetryKeys.ErrorMessage] = e.message;
 
         if (e instanceof SystemError) {
-            properties[TelemetryKey.ErrorType] = TelemetryValue.SystemError;
+            properties[TelemetryKeys.ErrorType] = TelemetryValues.SystemError;
         } else if (e instanceof UserError) {
-            properties[TelemetryKey.ErrorType] = TelemetryValue.UserError;
+            properties[TelemetryKeys.ErrorType] = TelemetryValues.UserError;
         }
 
         ctx.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);

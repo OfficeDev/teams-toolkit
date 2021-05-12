@@ -4,7 +4,7 @@
 import { IBotRegistration, IAADApplication, IAADPassword, IAppDefinition, IAppDefinitionBot, IAppManifestBot, IGroupChatCommand, IPersonalCommand, ITeamCommand, IMessagingExtension } from "./interface";
 import { TeamsAppManifest, ConfigMap, LogProvider, ICommand, ICommandList, IBot, IComposeExtension, AzureSolutionSettings, ProjectSettings } from "@microsoft/teamsfx-api";
 import { AzureSolutionQuestionNames, BotOptionItem, HostTypeOptionAzure, MessageExtensionItem, TabOptionItem } from "../question";
-import { TEAMS_APP_MANIFEST_TEMPLATE, CONFIGURABLE_TABS_TPL, STATIC_TABS_TPL, BOTS_TPL, COMPOSE_EXTENSIONS_TPL } from "../constants";
+import { TEAMS_APP_MANIFEST_TEMPLATE, CONFIGURABLE_TABS_TPL, STATIC_TABS_TPL, BOTS_TPL, COMPOSE_EXTENSIONS_TPL, TEAMS_APP_SHORT_NAME_MAX_LENGTH } from "../constants";
 import axios, { AxiosInstance } from "axios";
 
 export namespace AppStudio {
@@ -342,11 +342,15 @@ export namespace AppStudio {
             updatedManifest.validDomains?.push(domain);
         }
 
-        // For local debug teams app, the app name will have a suffix to differentiate from remote teams app
         const appDefinition = convertToAppDefinition(updatedManifest, ignoreIcon);
+        // For local debug teams app, the app name will have a suffix to differentiate from remote teams app
+        // if the resulting short name length doesn't exceeds limit.
         if (appNameSuffix) {
-            appDefinition.shortName = appDefinition.shortName + appNameSuffix;
-            appDefinition.appName = appDefinition.shortName;
+            const shortNameLength = appNameSuffix.length + (appDefinition.shortName?.length ?? 0);
+            if (shortNameLength <= TEAMS_APP_SHORT_NAME_MAX_LENGTH) {
+                appDefinition.shortName = appDefinition.shortName + appNameSuffix;
+                appDefinition.appName = appDefinition.shortName;
+            }
         }
 
         return [appDefinition, updatedManifest];

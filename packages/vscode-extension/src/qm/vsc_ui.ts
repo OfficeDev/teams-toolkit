@@ -261,123 +261,123 @@ export class VsCodeUI implements UserInterface{
 
   async showOpenDialog (option: FxOpenDialogOption):Promise<InputResult>{
 
-    const okButton : QuickInputButton = { 
-      iconPath: Uri.file(ext.context.asAbsolutePath("media/ok.svg")),
-      tooltip:"ok"
-    };  
-    const disposables: Disposable[] = [];
-    try {
-      const quickPick: QuickPick<QuickPickItem> = window.createQuickPick();
-      disposables.push(quickPick);
-      quickPick.title = option.title;
-      if (option.backButton) quickPick.buttons = [QuickInputButtons.Back, okButton];
-      else quickPick.buttons = [okButton];
-      quickPick.ignoreFocusOut = true;
-      quickPick.matchOnDescription = false;
-      quickPick.matchOnDetail = false;
-      quickPick.canSelectMany = false;
-      // quickPick.step = option.step;
-      // quickPick.totalSteps = option.totalSteps;
-      let alreadyResolved = false;
-      const result = await new Promise<InputResult>(
-        async (resolve) => {
-          const onDidAccept = async () => {
-            let result = quickPick.items[0].detail;
-            if(result && result.length > 0){
-              alreadyResolved = true;
-              resolve({ type: InputResultType.sucess, result: result });
-            }
-          };
+    // const okButton : QuickInputButton = { 
+    //   iconPath: Uri.file(ext.context.asAbsolutePath("media/ok.svg")),
+    //   tooltip:"ok"
+    // };  
+    // const disposables: Disposable[] = [];
+    // try {
+    //   const quickPick: QuickPick<QuickPickItem> = window.createQuickPick();
+    //   disposables.push(quickPick);
+    //   quickPick.title = option.title;
+    //   if (option.backButton) quickPick.buttons = [QuickInputButtons.Back, okButton];
+    //   else quickPick.buttons = [okButton];
+    //   quickPick.ignoreFocusOut = true;
+    //   quickPick.matchOnDescription = false;
+    //   quickPick.matchOnDetail = false;
+    //   quickPick.canSelectMany = false;
+    //   // quickPick.step = option.step;
+    //   // quickPick.totalSteps = option.totalSteps;
+    //   let alreadyResolved = false;
+    //   const result = await new Promise<InputResult>(
+    //     async (resolve) => {
+    //       const onDidAccept = async () => {
+    //         let result = quickPick.items[0].detail;
+    //         if(result && result.length > 0){
+    //           alreadyResolved = true;
+    //           resolve({ type: InputResultType.sucess, result: result });
+    //         }
+    //       };
 
-          disposables.push(
-            // quickPick.onDidAccept(onDidAccept),
-            quickPick.onDidHide(() => {
-              if(alreadyResolved === false){
-                alreadyResolved = true;
-                resolve({ type: InputResultType.cancel});
-              }
-            })
-          );
-          disposables.push(
-            quickPick.onDidTriggerButton((button) => { 
-              if (button === QuickInputButtons.Back){
-                alreadyResolved = true;
-                resolve({ type: InputResultType.back });
-              }
-              else
-                onDidAccept();
-            })
-          );
-          /// set items
-          quickPick.items = [{label: "Select the workspace folder", detail: option.defaultUri}];
+    //       disposables.push(
+    //         // quickPick.onDidAccept(onDidAccept),
+    //         quickPick.onDidHide(() => {
+    //           if(alreadyResolved === false){
+    //             alreadyResolved = true;
+    //             resolve({ type: InputResultType.cancel});
+    //           }
+    //         })
+    //       );
+    //       disposables.push(
+    //         quickPick.onDidTriggerButton((button) => { 
+    //           if (button === QuickInputButtons.Back){
+    //             alreadyResolved = true;
+    //             resolve({ type: InputResultType.back });
+    //           }
+    //           else
+    //             onDidAccept();
+    //         })
+    //       );
+    //       /// set items
+    //       quickPick.items = [{label: "Select the workspace folder", detail: option.defaultUri}];
              
-          const onDidChangeSelection = async function(items:QuickPickItem[]):Promise<any>{
-            const defaultUrl = items[0].detail;
-            const uri = await window.showOpenDialog({
-              defaultUri: defaultUrl ? Uri.file(defaultUrl) : undefined,
-              canSelectFiles: false,
-              canSelectFolders: true,
-              canSelectMany: false,
-              title: option.title
-            });
-            const res = uri && uri.length > 0 ? uri[0].fsPath : undefined;
-            if (res) {
-              quickPick.items = [{label: "Select the workspace folder", detail: res}];
-              alreadyResolved = true;
-              resolve({ type: InputResultType.sucess, result: res });
-            }
-          };
-          disposables.push(
-            quickPick.onDidChangeSelection(onDidChangeSelection)
-          );
-          quickPick.show();
+    //       const onDidChangeSelection = async function(items:QuickPickItem[]):Promise<any>{
+    //         const defaultUrl = items[0].detail;
+    //         const uri = await window.showOpenDialog({
+    //           defaultUri: defaultUrl ? Uri.file(defaultUrl) : undefined,
+    //           canSelectFiles: false,
+    //           canSelectFolders: true,
+    //           canSelectMany: false,
+    //           title: option.title
+    //         });
+    //         const res = uri && uri.length > 0 ? uri[0].fsPath : undefined;
+    //         if (res) {
+    //           quickPick.items = [{label: "Select the workspace folder", detail: res}];
+    //           alreadyResolved = true;
+    //           resolve({ type: InputResultType.sucess, result: res });
+    //         }
+    //       };
+    //       disposables.push(
+    //         quickPick.onDidChangeSelection(onDidChangeSelection)
+    //       );
+    //       quickPick.show();
 
-          const uri = await window.showOpenDialog({
-            defaultUri: option.defaultUri ? Uri.file(option.defaultUri) : undefined,
-            canSelectFiles: false,
-            canSelectFolders: true,
-            canSelectMany: false,
-            title: option.title
-          });
-          const res = uri && uri.length > 0 ? uri[0].fsPath : undefined;
-          if (res) {
-            quickPick.items = [{label: "path", detail: res}];
-            alreadyResolved = true;
-            resolve({ type: InputResultType.sucess, result: res });
-          }
-        }
-      );
-      return result;
-    } finally {
-      disposables.forEach((d) => {
-        d.dispose();
-      });
-    }
-
-
-    // while (true) {
-    //   const uri = await window.showOpenDialog({
-    //     defaultUri: option.defaultUri ? Uri.file(option.defaultUri) : undefined,
-    //     canSelectFiles: false,
-    //     canSelectFolders: true,
-    //     canSelectMany: false,
-    //     title: option.title
+    //       const uri = await window.showOpenDialog({
+    //         defaultUri: option.defaultUri ? Uri.file(option.defaultUri) : undefined,
+    //         canSelectFiles: false,
+    //         canSelectFolders: true,
+    //         canSelectMany: false,
+    //         title: option.title
+    //       });
+    //       const res = uri && uri.length > 0 ? uri[0].fsPath : undefined;
+    //       if (res) {
+    //         quickPick.items = [{label: "path", detail: res}];
+    //         alreadyResolved = true;
+    //         resolve({ type: InputResultType.sucess, result: res });
+    //       }
+    //     }
+    //   );
+    //   return result;
+    // } finally {
+    //   disposables.forEach((d) => {
+    //     d.dispose();
     //   });
-    //   const res = uri && uri.length > 0 ? uri[0].fsPath : undefined;
-    //   if (!res) {
-    //     return { type: InputResultType.cancel };
-    //   }
-    //   if(!option.validation){
-    //     return { type: InputResultType.sucess, result: res };
-    //   }
-    //   const validationRes = await option.validation(res);
-    //   if (!validationRes) {
-    //     return { type: InputResultType.sucess, result: res };
-    //   }
-    //   else {
-    //     await window.showErrorMessage(validationRes);
-    //   }
     // }
+
+
+    while (true) {
+      const uri = await window.showOpenDialog({
+        defaultUri: option.defaultUri ? Uri.file(option.defaultUri) : undefined,
+        canSelectFiles: false,
+        canSelectFolders: true,
+        canSelectMany: false,
+        title: option.title
+      });
+      const res = uri && uri.length > 0 ? uri[0].fsPath : undefined;
+      if (!res) {
+        return { type: InputResultType.cancel };
+      }
+      if(!option.validation){
+        return { type: InputResultType.sucess, result: res };
+      }
+      const validationRes = await option.validation(res);
+      if (!validationRes) {
+        return { type: InputResultType.sucess, result: res };
+      }
+      else {
+        await window.showErrorMessage(validationRes);
+      }
+    }
   }
 }
 

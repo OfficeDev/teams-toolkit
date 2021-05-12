@@ -83,6 +83,7 @@ export class FrontendPlugin implements Plugin {
             }
 
             if (e instanceof UserError || e instanceof SystemError) {
+                telemetryHelper.sendErrorEvent(ctx, stage, e);
                 return err(e);
             }
 

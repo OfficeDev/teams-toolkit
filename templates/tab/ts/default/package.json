@@ -17,8 +17,8 @@
     "react-dom": "^16.14.0",
     "react-router-dom": "^5.1.2",
     "react-scripts": "^4.0.3",
-    "teamsdev-client": "^1.1.0",
     "tslib": "^2.0.0",
+    "@microsoft/teamsfx": "^0.1.0",
     "typescript": "^4.1.2"
   },
   "scripts": {

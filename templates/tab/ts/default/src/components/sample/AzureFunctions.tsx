@@ -6,7 +6,7 @@ import {
   TeamsUserCredential,
   getResourceConfiguration,
   ResourceType,
-} from "teamsdev-client";
+} from "@microsoft/teamsfx";
 
 var functionName = process.env.REACT_APP_FUNC_NAME || "myFunc";
 

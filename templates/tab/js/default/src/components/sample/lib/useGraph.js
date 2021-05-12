@@ -3,7 +3,7 @@ import { useData } from "./useData";
 import {
   TeamsUserCredential,
   createMicrosoftGraphClient,
-} from "teamsdev-client";
+} from "@microsoft/teamsfx";
 
 export function useGraph(asyncFunc, options) {
   const credential = useRef(new TeamsUserCredential());

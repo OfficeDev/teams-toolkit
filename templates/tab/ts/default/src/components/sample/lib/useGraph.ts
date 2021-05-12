@@ -3,7 +3,7 @@ import { useData } from "./useData";
 import {
   TeamsUserCredential,
   createMicrosoftGraphClient,
-} from "teamsdev-client";
+} from "@microsoft/teamsfx";
 import { Client } from '@microsoft/microsoft-graph-client';
 
 export function useGraph<T>(asyncFunc: (graph: Client) => Promise<T>, options?: { scope: string | string[] }) {

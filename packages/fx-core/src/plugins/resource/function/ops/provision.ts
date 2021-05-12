@@ -147,11 +147,13 @@ export class FunctionProvision {
         oauthHost: string,
         tenantId: string
     ): SiteAuthSettings {
+        // Remove tailing "/"
+        const normalizedOauthHost = oauthHost.replace(/\/+$/g, "");
         return {
             enabled: true,
             defaultProvider: "AzureActiveDirectory",
             clientId: clientId,
-            issuer: `${oauthHost}/${tenantId}/v2.0`,
+            issuer: `${normalizedOauthHost}/${tenantId}/v2.0`,
             allowedAudiences: [
                 clientId,
                 applicationIdUri

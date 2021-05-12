@@ -68,7 +68,7 @@ export const templates: {
     sampleAppUrl: "https://github.com/HuihuiWu-Microsoft/TeamsFx-Samples/archive/refs/heads/main.zip"
   },
   {
-    title: "To Do List2",
+    title: "Todo List with SPFx",
     sampleAppName: "todo-list-SPFx",
     description: "Todo List with SPFx is a Todo List for individual user to manage his/her personal to-do items in the format of an app installed on Teams client.",
     sampleAppUrl: "https://github.com/HuihuiWu-Microsoft/TeamsFx-Samples/archive/refs/heads/main.zip"

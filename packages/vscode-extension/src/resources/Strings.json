@@ -53,8 +53,6 @@
         "handlers": {
             "concurrentTriggerTask": "task '%s' is still running [Note: You may need to wait for a few minutes if you cancelled the task]",
             "vsCodeEnvironment": "VS Code Environment: %s",
-            "questionTree": "Question tree: %s",
-            "userInput": "User input: %s",
             "operationNotSupport": "Operation not support: %s",
             "loginFailed": "Login failed, the operation is terminated.",
             "coreNotReady": "Core module is loading",

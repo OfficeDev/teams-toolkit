@@ -135,6 +135,10 @@ export class DialogManager implements Dialog {
     switch (question.type) {
       case QuestionType.Confirm:
         if (question.options && question.options.length === 1) {
+          const ciEnabled = process.env.CI_ENABLED;
+          if(ciEnabled){
+            return question.options[0];
+          }
           const answers = await inquirer.prompt([{
             name: QuestionType.Confirm,
             type: "confirm",
@@ -167,6 +171,10 @@ export class DialogManager implements Dialog {
 
   private async showMessage(msg: IMessage): Promise<string | undefined> {
     if (msg.items && msg.items.length > 0) {
+      const ciEnabled = process.env.CI_ENABLED;
+      if(ciEnabled){
+        return msg.items[0];
+      }
       const answers = await inquirer.prompt([{
         name: DialogType.Show,
         type: "list",

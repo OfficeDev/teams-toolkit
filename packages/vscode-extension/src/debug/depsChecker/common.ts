@@ -48,48 +48,44 @@ export const Messages = {
   learnMoreButtonText: "Learn more",
   continueButtonText: "Continue",
 
-  defaultErrorMessage: "Please install the required dependencies manually.",
+  defaultErrorMessage: "Install the required dependencies manually.",
 
   // since FuncToolChecker is disabled and azure functions core tools will be installed as devDependencies now,
   // below messages related to FuncToolChecker won't be displayed to end user.
   startInstallFunctionCoreTool: `Downloading and installing @NameVersion.`,
   finishInstallFunctionCoreTool: `Successfully installed @NameVersion.`,
-  needReplaceWithFuncCoreToolV3: `You must replace with @NameVersion to debug your local functions.`,
+  needReplaceWithFuncCoreToolV3: `You must update to @NameVersion to debug your local functions.`,
   needInstallFuncCoreTool: `You must have @NameVersion installed to debug your local functions.`,
-  failToInstallFuncCoreTool: `@NameVersion installation has failed and will have to be installed manually.`,
-  failToValidateFuncCoreTool: `Failed to validate @NameVersion after its installation.`,
+  failToInstallFuncCoreTool: `Failed to install @NameVersion. Install @NameVersion manually.`,
+  failToValidateFuncCoreTool: `Failed to validate @NameVersion after installation.`,
 
-  downloadDotnet: `Downloading and installing the portable version of @NameVersion, which will be installed to @InstallDir and won't affect the development environment.`,
+  downloadDotnet: `Downloading and installing the portable version of @NameVersion, which will be installed to @InstallDir and will not affect your environment.`,
   finishInstallDotnet: `Successfully installed @NameVersion.`,
-  useGlobalDotnet: `Use global dotnet from PATH.`,
+  useGlobalDotnet: `Using dotnet from PATH:`,
   dotnetInstallStderr: `dotnet-install command failed without error exit code but with non-empty standard error.`,
   dotnetInstallErrorCode: `dotnet-install command failed.`,
-  failToInstallDotnet: `Failed to install @NameVersion. Please install @NameVersion manually and restart all your Visual Studio Code instances`,
+  failToInstallDotnet: `Failed to install @NameVersion. Install @NameVersion manually and restart Visual Studio Code.`,
 
-  NodeNotFound: `The toolkit cannot find Node.js on your machine.
+  NodeNotFound: `Cannot find Node.js.
 
-As a fundamental language runtime for Teams app, these dependencies are required. Node.js is required and the recommended version is v12.
+Teams Toolkit requires Node.js; the recommended version is v12.
 
 Click "Learn more" to learn how to install the Node.js.`,
-  NodeNotSupported: `Current installed Node.js (@CurrentVersion) is not in the supported version list (@SupportedVersions), which might not work as expected for some functionalities.
+  NodeNotSupported: `Node.js (@CurrentVersion) is not in the supported version list (@SupportedVersions).
 
 Click "Learn more" to learn more about the supported Node.js versions.
 Click "Continue" to continue local debugging.`,
 
-  dotnetNotFound: `The toolkit cannot find @NameVersion on your machine. As a fundamental runtime context for Teams app, it's required. For the details why .NET SDK is needed, please refer to ${dotnetExplanationHelpLink}`,
-  depsNotFound: `The toolkit cannot find @SupportedPackages on your machine.
+  dotnetNotFound: `Cannot find @NameVersion. For the details why .NET SDK is needed, refer to ${dotnetExplanationHelpLink}`,
+  depsNotFound: `Cannot find @SupportedPackages.
 
-As a fundamental runtime context for Teams app, these dependencies are required. Following steps will help you to install the appropriate version to run the Microsoft Teams Toolkit.
-
-Please notice that these dependencies only need to be installed once.
+Teams Toolkit requires these dependencies.
 
 Click "Install" to install @InstallPackages.`,
 
-  linuxDepsNotFound: `The toolkit cannot find @SupportedPackages on your machine.
+  linuxDepsNotFound: `Cannot find @SupportedPackages.
 
-As a fundamental runtime context for Teams app, these dependencies are required. 
-
-Please install the required dependencies manually.
+Teams Toolkit requires these dependencies. 
 
 Click "Continue" to continue.`
 };

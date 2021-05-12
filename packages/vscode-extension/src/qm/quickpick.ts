@@ -75,7 +75,7 @@ export async function multiQuickPick(option: FxQuickPickOption) : Promise<InputR
         if (option.backButton) quickPick.buttons = [QuickInputButtons.Back, okButton];
         else quickPick.buttons = [okButton];
         quickPick.placeholder = option.placeholder;
-        quickPick.ignoreFocusOut = false;
+        quickPick.ignoreFocusOut = true;
         quickPick.matchOnDescription = true;
         quickPick.matchOnDetail = true;
         quickPick.canSelectMany = false;

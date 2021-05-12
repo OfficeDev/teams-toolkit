@@ -10,6 +10,7 @@ import {
   DialogType,
   MsgLevel,
   Platform,
+  QuestionType,
 } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
 import lodash from "lodash";
@@ -213,6 +214,29 @@ export class SPFxPluginImpl {
   }
 
   public async preDeploy(ctx: PluginContext): Promise<Result<any, FxError>> {
+    const confirm = (await ctx.dialog?.communicate(
+      new DialogMsg(DialogType.Show, {
+        description: getStrings().plugins.SPFx.buildNotice,
+        level: MsgLevel.Warning,
+        items: [Constants.BUILD_SHAREPOINT_PACKAGE, Constants.READ_MORE, Constants.CANCEL]
+      }),
+    ))?.getAnswer();
+
+    switch (confirm) {
+      case Constants.CANCEL: {
+        return ok(undefined);
+      }
+      case Constants.READ_MORE: {
+        await ctx.dialog?.communicate(
+          new DialogMsg(DialogType.Ask, {
+            description: Constants.DEPLOY_GUIDE,
+            type: QuestionType.OpenExternal
+          })
+        )
+        return ok(undefined);
+      }
+    }
+
     const progressHandler = await ProgressHelper.startPreDeployProgressHandler(ctx);
     if (ctx.platform === Platform.VSCode) {
       (ctx.logProvider as any).outputChannel.show();
@@ -245,12 +269,35 @@ export class SPFxPluginImpl {
         true
       );
       await ProgressHelper.endPreDeployProgress();
-      await ctx.dialog?.communicate(
-        new DialogMsg(DialogType.Show, {
-          description: "[SPFx] SharePoint Package Build Success.",
-          level: MsgLevel.Info,
-        })
+
+      const solutionConfig = await fs.readJson(
+        `${ctx.root}/SPFx/config/package-solution.json`
       );
+      const sharepointPackage = `${ctx.root}/SPFx/sharepoint/${solutionConfig.paths.zippedPackage}`;
+      const fileExists = await this.checkFileExist(sharepointPackage);
+      if (!fileExists) {
+        throw NoSPPackageError(sharepointPackage);
+      }
+
+      const dir = path.normalize(path.parse(sharepointPackage).dir);
+      const fileName = path.parse(sharepointPackage).name + path.parse(sharepointPackage).ext;
+      
+      const guidance = util.format(getStrings().plugins.SPFx.deployNotice, dir, fileName);
+      const answer = (await ctx.dialog?.communicate(
+        new DialogMsg(DialogType.Show, {
+          description: guidance,
+          level: MsgLevel.Info,
+          items: ["OK", Constants.READ_MORE]
+        })
+      ))?.getAnswer();
+      if (answer === Constants.READ_MORE) {
+        await ctx.dialog?.communicate(
+          new DialogMsg(DialogType.Ask, {
+            description: Constants.DEPLOY_GUIDE,
+            type: QuestionType.OpenExternal
+          })
+        )
+      }
       return ok(undefined);
     } catch (error) {
       await ProgressHelper.endPreDeployProgress();
@@ -259,21 +306,6 @@ export class SPFxPluginImpl {
   }
 
   public async deploy(ctx: PluginContext): Promise<Result<any, FxError>> {
-    const solutionConfig = await fs.readJson(
-      `${ctx.root}/SPFx/config/package-solution.json`
-    );
-    const sharepointPackage = `${ctx.root}/SPFx/sharepoint/${solutionConfig.paths.zippedPackage}`;
-
-    const fileExists = await this.checkFileExist(sharepointPackage);
-    if (!fileExists) {
-      throw NoSPPackageError(sharepointPackage);
-    }
-    
-    const guidance = util.format(getStrings().plugins.SPFx.deployNotice, sharepointPackage);
-    ctx.logProvider?.info(guidance);
-    if (ctx.platform === Platform.VSCode) {
-      (ctx.logProvider as any).outputChannel.show();
-    }
     return ok(undefined);
   }
 

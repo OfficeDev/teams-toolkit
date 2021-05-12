@@ -5,7 +5,6 @@ import { Disposable, InputBox, QuickInputButton, QuickInputButtons, QuickPick, Q
 import { FxInputBoxOption, FxOpenDialogOption, FxQuickPickOption, InputResult, InputResultType, OptionItem, returnSystemError, UserInterface } from "@microsoft/teamsfx-api";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { ext } from "../extensionVariables";
-import { multiQuickPick } from "./quickpick";
 
 export interface FxQuickPickItem extends QuickPickItem {
   id: string;
@@ -15,7 +14,7 @@ export interface FxQuickPickItem extends QuickPickItem {
 export class VsCodeUI implements UserInterface{
   
   async showQuickPick (option: FxQuickPickOption) : Promise<InputResult>{
-    if(option.canSelectMany) return await multiQuickPick(option);
+    //if(option.canSelectMany) return await multiQuickPick(option);
 
     const okButton : QuickInputButton = { 
       iconPath: Uri.file(ext.context.asAbsolutePath("media/ok.svg")),
@@ -29,7 +28,7 @@ export class VsCodeUI implements UserInterface{
       if (option.backButton) quickPick.buttons = [QuickInputButtons.Back, okButton];
       else quickPick.buttons = [okButton];
       quickPick.placeholder = option.placeholder;
-      quickPick.ignoreFocusOut = false;
+      quickPick.ignoreFocusOut = true;
       quickPick.matchOnDescription = true;
       quickPick.matchOnDetail = true;
       quickPick.canSelectMany = option.canSelectMany;
@@ -197,7 +196,7 @@ export class VsCodeUI implements UserInterface{
       if (option.backButton) inputBox.buttons = [QuickInputButtons.Back, okButton];
       else inputBox.buttons = [okButton];
       inputBox.value = option.defaultValue || "";
-      inputBox.ignoreFocusOut = false;
+      inputBox.ignoreFocusOut = true;
       inputBox.password = option.password;
       inputBox.placeholder = option.placeholder;
       inputBox.prompt = option.prompt;
@@ -386,5 +385,3 @@ export class VsCodeUI implements UserInterface{
 
 
 export const VS_CODE_UI = new VsCodeUI();
-   
-

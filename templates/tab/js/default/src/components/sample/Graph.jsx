@@ -7,8 +7,14 @@ export function Graph() {
   const { loading, error, data, reload } = useGraph(
     async (graph) => {
       const profile = await graph.api("/me").get();
-      const photo = await graph.api("/me/photo/$value").get();
-      return { profile, photo };
+      let photoUrl = "";
+      try {
+        const photo = await graph.api("/me/photo/$value").get();
+        photoUrl = URL.createObjectURL(photo);
+      } catch {
+        // Could not fetch photo from user's profile, return empty string as placeholder.
+      }
+      return { profile, photoUrl };
     },
     { scope: ["User.Read"] }
   );

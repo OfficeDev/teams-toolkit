@@ -16,6 +16,9 @@ import {
     CheckStorageError,
     CheckResourceGroupError,
     NoConfigsError,
+    CheckStorageNameError,
+    InvalidStorageNameError,
+    StorageNameAlreadyInUseError,
 } from "./resources/errors";
 import {
     Constants,
@@ -88,6 +91,19 @@ export class FrontendPluginImpl {
         );
         if (!resourceGroupExists) {
             throw new NoResourceGroupError();
+        }
+
+        const result = await runWithErrorCatchAndThrow(
+            new CheckStorageNameError(),
+            async () => await this.azureStorageClient!.checkStorageNameAvailability(),
+        );
+        switch (result.reason) {
+            case "AccountNameInvalid":
+                throw new InvalidStorageNameError();
+            case "AlreadyExists":
+                throw new StorageNameAlreadyInUseError();
+            case undefined:
+            // Storage name is valid.
         }
 
         Logger.info(Messages.EndPreProvision(PluginInfo.DisplayName));

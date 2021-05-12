@@ -73,7 +73,7 @@ export class NoConfigsError extends FrontendPluginError {
 
 export class InvalidConfigError extends FrontendPluginError {
     constructor(key: string) {
-        super(ErrorType.User, "InvalidConfigError", `Get invalid ${key}`, [tips.restoreEnvironment]);
+        super(ErrorType.User, "InvalidConfigError", `Get invalid ${key}.`, [tips.restoreEnvironment]);
     }
 }
 
@@ -91,7 +91,13 @@ export class NoResourceGroupError extends FrontendPluginError {
 
 export class CheckStorageError extends FrontendPluginError {
     constructor() {
-        super(ErrorType.User, "CheckStorageError", "Failed to check Azure Storage Account availability", [tips.reLogin, tips.checkSystemTime]);
+        super(ErrorType.User, "CheckStorageError", "Failed to check Azure Storage Account availability.", [tips.reLogin, tips.checkSystemTime]);
+    }
+}
+
+export class CheckStorageNameError extends FrontendPluginError {
+    constructor() {
+        super(ErrorType.User, "CheckStorageNameError", "Failed to check Azure Storage Account name availability.", [tips.reLogin, tips.checkNetwork]);
     }
 }
 
@@ -114,18 +120,19 @@ export class StaticWebsiteDisabledError extends FrontendPluginError {
 
 export class InvalidStorageNameError extends FrontendPluginError {
     constructor() {
-        super(ErrorType.User, "InvalidStorageNameError", "Azure Storage Name is invalid.", [
-            tips.ensureAppNameValid,
-        ]);
+        super(ErrorType.User, "InvalidStorageNameError", "Azure Storage Name is invalid.", [tips.ensureAppNameValid,]);
+    }
+}
+
+export class StorageNameAlreadyInUseError extends FrontendPluginError {
+    constructor() {
+        super(ErrorType.User, "StorageNameAlreadyInUseError", "Azure Storage Name is already in use.", [tips.deleteSameNameStorage]);
     }
 }
 
 export class CreateStorageAccountError extends FrontendPluginError {
     constructor() {
-        super(ErrorType.User, "CreateStorageAccountError", "Failed to create Azure Storage Account.", [
-            tips.ensureAppNameValid,
-            tips.deleteSameNameStorage,
-        ]);
+        super(ErrorType.User, "CreateStorageAccountError", "Failed to create Azure Storage Account.", [tips.checkLog]);
     }
 }
 

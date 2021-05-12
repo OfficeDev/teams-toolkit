@@ -24,7 +24,7 @@ import {
 import inquirer from "inquirer";
 import CLILogProvider from "./commonlib/log";
 import { ProgressHandler } from "./progressHandler";
-import { NotSupportedQuestionType } from "./error";
+import { InquirerAnswerNotFound, NotSupportedQuestionType } from "./error";
 
 export class DialogManager implements Dialog {
   private static instance: DialogManager;
@@ -56,11 +56,8 @@ export class DialogManager implements Dialog {
         return new DialogMsg(DialogType.Answer, answer);
       }
       case DialogType.Show: {
-        this.showMessage(msg.content as IMessage);
-        return new DialogMsg(DialogType.Show, {
-          description: "Show successfully",
-          level: MsgLevel.Info
-        });
+        const result = await this.showMessage(msg.content as IMessage);
+        return new DialogMsg(DialogType.Answer, result);
       }
       case DialogType.Output: {
         this.showMessage(msg.content as IMessage);
@@ -151,19 +148,35 @@ export class DialogManager implements Dialog {
     return undefined;
   }
 
-  private showMessage(msg: IMessage) {
-    switch (msg.level) {
-      case MsgLevel.Info:
-        CLILogProvider.necessaryLog(LogLevel.Info, msg.description);
-        break;
-      case MsgLevel.Warning:
-        CLILogProvider.necessaryLog(LogLevel.Warning, msg.description);
-        break;
-      case MsgLevel.Error:
-        CLILogProvider.necessaryLog(LogLevel.Error, msg.description);
-        break;
+  private async showMessage(msg: IMessage): Promise<string | undefined> {
+    if (msg.items && msg.items.length > 0) {
+      const answers = await inquirer.prompt([{
+        name: DialogType.Show,
+        type: "list",
+        message: msg.description,
+        choices: msg.items
+      }]);
+      if (DialogType.Show in answers) {
+        return answers[DialogType.Show];
+      }
+      else {
+        throw InquirerAnswerNotFound(msg);
+      }
     }
-    return;
+    else {
+      switch (msg.level) {
+        case MsgLevel.Info:
+          CLILogProvider.necessaryLog(LogLevel.Info, msg.description);
+          break;
+        case MsgLevel.Warning:
+          CLILogProvider.necessaryLog(LogLevel.Warning, msg.description);
+          break;
+        case MsgLevel.Error:
+          CLILogProvider.necessaryLog(LogLevel.Error, msg.description);
+          break;
+      }
+    }
+    return "Show successfully";
   }
 }
 

@@ -457,7 +457,8 @@ export class DotnetChecker implements IDepsChecker {
         dotnetPath,
         "run",
         "--project",
-        `${samplePath}`
+        `${samplePath}`,
+        "--force"
       );
       return actual.includes(expected);
     } catch (error) {

@@ -8,7 +8,7 @@ import { Context, err, FxError, ok, ConfigFolderName, Result, returnUserError, S
 
 import { Settings } from "./settings";
 
-import { Default } from "../plugins/solution/fx-solution";
+import { Default, TeamsAppSolution } from "../plugins/solution/fx-solution";
 import { CoreErrorNames, CoreSource } from "./error";
 
 export interface Meta {
@@ -44,11 +44,11 @@ export class Loader {
      */
     public static async loadSolutions(ctx: Context): Promise<Result<Map<string, Solution & Meta>, FxError>> {
         const resources: Map<string, Solution & Meta> = new Map();
-        const result = await Default();
-        if (result.isErr()) {
-            return err(result.error);
-        }
-        const as = Object.assign(result.value, {
+        // const result = new TeamsAppSolution();
+        // if (result.isErr()) {
+        //     return err(result.error);
+        // }
+        const as = Object.assign(new TeamsAppSolution(), {
             name: "fx-solution-azure",
             displayName: "azure",
             version: "1.0.0",

@@ -132,4 +132,5 @@ export class TelemetryValue {
 export class AzureErrorCode {
     static readonly ReservedResourceName = "ReservedResourceName";
     static readonly StorageAccountAlreadyTaken = "StorageAccountAlreadyTaken";
+    static readonly StorageAccountAlreadyExists = "StorageAccountAlreadyExists";
 }

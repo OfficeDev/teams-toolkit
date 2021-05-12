@@ -113,7 +113,7 @@ export class FrontendPluginImpl {
             if (innerError.code === AzureErrorCode.ReservedResourceName) {
                 return new InvalidStorageNameError();
             }
-            if (innerError.code === AzureErrorCode.StorageAccountAlreadyTaken) {
+            if (innerError.code === AzureErrorCode.StorageAccountAlreadyTaken || innerError.code === AzureErrorCode.StorageAccountAlreadyExists) {
                 return new StorageAccountAlreadyTakenError();
             }
             return new CreateStorageAccountError();

@@ -9,6 +9,7 @@ export class Constants {
   public static readonly APP_CATALOG_REFRESH_TIME = 2000;
   public static readonly APP_CATALOG_MAX_TIMES = 30;
   public static readonly PLUGIN_NAME = "SPFx";
+  public static readonly PLUGIN_DEV_NAME = "fx-resource-spfx";
   public static readonly BUILD_SHAREPOINT_PACKAGE = "Build SharePoint Package";
   public static readonly READ_MORE = "Read more";
   public static readonly CANCEL = "Cancel";

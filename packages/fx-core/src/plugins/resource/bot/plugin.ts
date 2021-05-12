@@ -663,7 +663,7 @@ export class TeamsBotImpl {
     }
 
     private telemetryStepOutSuccess(funcName: string) {
-        this.ctx?.telemetryReporter?.sendTelemetryEvent(`${funcName}-end`, {
+        this.ctx?.telemetryReporter?.sendTelemetryEvent(`${funcName}`, {
             component: PluginBot.PLUGIN_NAME,
             success: "yes",
         });

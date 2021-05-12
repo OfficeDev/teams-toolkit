@@ -280,35 +280,13 @@ export class VsCodeUI implements UserInterface{
       // quickPick.totalSteps = option.totalSteps;
       const res = await new Promise<InputResult>(
         async (resolve): Promise<void> => {
+
           const onDidAccept = async () => {
             let result = quickPick.items[0].detail;
             if(result && result.length > 0)
               resolve({ type: InputResultType.sucess, result: result });
           };
 
-          disposables.push(
-            // quickPick.onDidAccept(onDidAccept),
-            quickPick.onDidHide(() => {
-              if(fileSelectorIsOpen === false)
-                resolve({ type: InputResultType.cancel});
-            })
-          );
-          disposables.push(
-            quickPick.onDidTriggerButton((button) => { 
-              if (button === QuickInputButtons.Back)
-                resolve({ type: InputResultType.back });
-              else
-                onDidAccept();
-            })
-          );
-          /// set items
-          quickPick.items = [{label: "Select the workspace folder", detail: option.defaultUri}];
-            
-          const items = quickPick.items as FxQuickPickItem[];
-          const optionMap = new Map<string, FxQuickPickItem>();
-          for(const item of items){
-            optionMap.set(item.id, item);
-          }
           const onDidChangeSelection = async function(items:QuickPickItem[]):Promise<any>{
             const defaultUrl = items[0].detail;
             fileSelectorIsOpen = true;
@@ -326,20 +304,35 @@ export class VsCodeUI implements UserInterface{
               resolve({ type: InputResultType.sucess, result: res });
             }
           };
+
           disposables.push(
+            // quickPick.onDidAccept(onDidAccept),
+            quickPick.onDidHide(() => {
+              if(fileSelectorIsOpen === false)
+                resolve({ type: InputResultType.cancel});
+            }),
+            quickPick.onDidTriggerButton((button) => { 
+              if (button === QuickInputButtons.Back)
+                resolve({ type: InputResultType.back });
+              else
+                onDidAccept();
+            }),
             quickPick.onDidChangeSelection(onDidChangeSelection)
           );
+
+          quickPick.items = [{label: "Select the workspace folder", detail: option.defaultUri}];
           quickPick.show();
 
-          const defaultUrl = items[0].detail;
+          // pop up the dialog automatically
           fileSelectorIsOpen = true;
           const uri = await window.showOpenDialog({
-            defaultUri: defaultUrl ? Uri.file(defaultUrl) : undefined,
+            defaultUri: option.defaultUri ? Uri.file(option.defaultUri) : undefined,
             canSelectFiles: false,
             canSelectFolders: true,
             canSelectMany: false,
             title: option.title
           });
+
           fileSelectorIsOpen = false;
           const res = uri && uri.length > 0 ? uri[0].fsPath : undefined;
           if (res) {

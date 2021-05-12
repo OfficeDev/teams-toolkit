@@ -18,8 +18,8 @@
     "clean": "rm -rf build",
     "build": "rimraf build && tsc -p ./",
     "eslint:fix": "eslint package.json tsconfig.json src test --ext .ts --fix",
-    "prepare": "npm run package",
-    "prepublishOnly": "npm run test:unit",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run package && npm run test:unit",
     "package": "rimraf build && webpack --mode production --config ./webpack.config.js"
   },
   "lint-staged": {

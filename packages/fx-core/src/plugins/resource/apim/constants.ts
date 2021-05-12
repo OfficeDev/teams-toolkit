@@ -142,7 +142,7 @@ export class ValidationConstants {
     }
 
     public static readonly CLI = {
-        invalidOptionMessage: (optionName: string) => `Option '--${optionName}' is required. Set the value of '--${optionName}'`,
+        invalidOptionMessage: (optionName: string) => `The value of option '--${optionName}' is invalid.`,
         emptyOptionMessage: (optionName: string) => `Option '--${optionName}' is required. Set the value of '--${optionName}'`,
         overrideOptionMessage: (optionName: string) => `Option '--${optionName}' cannot be override. Remove option '--${optionName}'`,
     }

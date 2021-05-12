@@ -59,7 +59,6 @@ export class TeamsBotImpl {
     public async preScaffold(context: PluginContext): Promise<FxResult> {
         this.ctx = context;
         await this.config.restoreConfigFromContext(context);
-        this.telemetryStepIn(LifecycleFuncNames.PRE_SCAFFOLD);
         Logger.info(Messages.PreScaffoldingBot);
 
         const rawWay = this.ctx.answers?.get(QuestionNames.WAY_TO_REGISTER_BOT);
@@ -88,7 +87,6 @@ export class TeamsBotImpl {
         this.config.scaffold.wayToRegisterBot = pickedWay;
 
         this.config.saveConfigIntoContext(context);
-        this.telemetryStepOutSuccess(LifecycleFuncNames.PRE_SCAFFOLD);
 
         return ResultFactory.Success();
     }
@@ -96,7 +94,6 @@ export class TeamsBotImpl {
     public async scaffold(context: PluginContext): Promise<FxResult> {
         this.ctx = context;
         await this.config.restoreConfigFromContext(context);
-        this.telemetryStepIn(LifecycleFuncNames.SCAFFOLD);
         Logger.info(Messages.ScaffoldingBot);
 
         const handler = await ProgressBarFactory.newProgressBar(ProgressBarConstants.SCAFFOLD_TITLE, ProgressBarConstants.SCAFFOLD_STEPS_NUM, this.ctx);
@@ -126,7 +123,6 @@ export class TeamsBotImpl {
         zipContent.extractAllTo(this.config.scaffold.workingDir!, true);
 
         this.config.saveConfigIntoContext(context);
-        this.telemetryStepOutSuccess(LifecycleFuncNames.SCAFFOLD);
         Logger.info(Messages.SuccessfullyScaffoldedBot);
 
         return ResultFactory.Success();
@@ -135,7 +131,6 @@ export class TeamsBotImpl {
     public async preProvision(context: PluginContext): Promise<FxResult> {
         this.ctx = context;
         await this.config.restoreConfigFromContext(context);
-        this.telemetryStepIn(LifecycleFuncNames.PRE_PROVISION);
         Logger.info(Messages.PreProvisioningBot);
 
         // Preconditions checking.
@@ -153,7 +148,6 @@ export class TeamsBotImpl {
         }
 
         this.config.saveConfigIntoContext(context);
-        this.telemetryStepOutSuccess(LifecycleFuncNames.PRE_PROVISION);
 
         return ResultFactory.Success();
     }
@@ -161,7 +155,6 @@ export class TeamsBotImpl {
     public async provision(context: PluginContext): Promise<FxResult> {
         this.ctx = context;
         await this.config.restoreConfigFromContext(context);
-        this.telemetryStepIn(LifecycleFuncNames.PROVISION);
         Logger.info(Messages.ProvisioningBot);
 
         // Create and register progress bar for cleanup.
@@ -180,7 +173,6 @@ export class TeamsBotImpl {
         await this.provisionWebApp();
 
         this.config.saveConfigIntoContext(context);
-        this.telemetryStepOutSuccess(LifecycleFuncNames.PROVISION);
         Logger.info(Messages.SuccessfullyProvisionedBot);
 
         return ResultFactory.Success();
@@ -239,7 +231,6 @@ export class TeamsBotImpl {
     public async postProvision(context: PluginContext): Promise<FxResult> {
         this.ctx = context;
         await this.config.restoreConfigFromContext(context);
-        this.telemetryStepIn(LifecycleFuncNames.POST_PROVISION);
 
         // 1. Get required config items from other plugins.
         // 2. Update bot hosting env"s app settings.
@@ -337,7 +328,6 @@ export class TeamsBotImpl {
         }
 
         this.config.saveConfigIntoContext(context);
-        this.telemetryStepOutSuccess(LifecycleFuncNames.POST_PROVISION);
 
         return ResultFactory.Success();
     }
@@ -345,7 +335,6 @@ export class TeamsBotImpl {
     public async preDeploy(context: PluginContext): Promise<FxResult> {
         this.ctx = context;
         await this.config.restoreConfigFromContext(context);
-        this.telemetryStepIn(LifecycleFuncNames.PRE_DEPLOY);
         Logger.info(Messages.PreDeployingBot);
 
         // Preconditions checking.
@@ -366,7 +355,6 @@ export class TeamsBotImpl {
         }
 
         this.config.saveConfigIntoContext(context);
-        this.telemetryStepOutSuccess(LifecycleFuncNames.PRE_DEPLOY);
 
         return ResultFactory.Success();
     }
@@ -374,7 +362,6 @@ export class TeamsBotImpl {
     public async deploy(context: PluginContext): Promise<FxResult> {
         this.ctx = context;
         await this.config.restoreConfigFromContext(context);
-        this.telemetryStepIn(LifecycleFuncNames.DEPLOY);
         Logger.info(Messages.DeployingBot);
 
         if (!this.config.scaffold.workingDir) {
@@ -438,7 +425,6 @@ export class TeamsBotImpl {
         await deployMgr.updateLastDeployTime(deployTimeCandidate);
 
         this.config.saveConfigIntoContext(context);
-        this.telemetryStepOutSuccess(LifecycleFuncNames.DEPLOY);
         Logger.info(Messages.SuccessfullyDeployedBot);
 
         return ResultFactory.Success();
@@ -654,18 +640,5 @@ export class TeamsBotImpl {
         if (this.config.actRoles.includes(PluginActRoles.MessageExtension)) {
             this.ctx!.config.set(PluginBot.MESSAGE_EXTENSION_SECTION, utils.genMsgExtSectionInManifest(botId));
         }
-    }
-
-    private telemetryStepIn(funcName: string) {
-        this.ctx?.telemetryReporter?.sendTelemetryEvent(`${funcName}-start`, {
-            component: PluginBot.PLUGIN_NAME,
-        });
-    }
-
-    private telemetryStepOutSuccess(funcName: string) {
-        this.ctx?.telemetryReporter?.sendTelemetryEvent(`${funcName}`, {
-            component: PluginBot.PLUGIN_NAME,
-            success: "yes",
-        });
     }
 }

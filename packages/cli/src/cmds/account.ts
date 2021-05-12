@@ -54,7 +54,7 @@ async function outputAzureInfo(commandType: "login" | "show"): Promise<boolean> 
       consoleGreen(
         `[${constants.cliSource}] Successfully signed in to Azure. Your username is ${colors.yellow((result as any).username)}.`
       );
-      consoleGreen(`[${constants.cliSource}] Your subscriptons are:`);
+      consoleGreen(`[${constants.cliSource}] Your subscriptions are:`);
       consoleWhite(JSON.stringify(subscriptions, null, 2));
     } else {
       try {

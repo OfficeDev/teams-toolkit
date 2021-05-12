@@ -43,6 +43,7 @@ import {
     Json,
     Dict,
     ProjectSettings,
+    MsgLevel,
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import * as error from "./error";
@@ -235,38 +236,45 @@ class CoreImpl implements Core {
         const folder = answers?.getString(QuestionRootFolder.name);
 
         const scratch = answers?.getString(CoreQuestionNames.CreateFromScratch);
-        if(scratch === ScratchOptionNo.id){
+        if (scratch === ScratchOptionNo.id) {
             const samples = answers?.getOptionItem(CoreQuestionNames.Samples);
-            if(samples && samples.data && folder){
-                const url = samples.data as string;
-                const sampleId = samples.id;
-                const progress = this.ctx.dialog.createProgressBar("Fetch sample app", 2);
-                progress.start();
-                try{
-                    const fetchRes = await fetchCodeZip(url);
-                    progress.next("unzip app package");
-                    if (fetchRes !== undefined) {
-                        await saveFilesRecursively(new AdmZip(fetchRes.data), sampleId, folder);
-                        progress.next("open folder");
-                        await this.ctx.dialog?.communicate(
-                            new DialogMsg(DialogType.Ask, {
-                                type: QuestionType.OpenFolder,
-                                description: `${folder}\\${sampleId}`,
-                            }),
-                        );
-                        return ok(null);
+            if (samples && samples.data && folder) {
+                const answer = (await this.ctx.dialog?.communicate(
+                    new DialogMsg(DialogType.Show, {
+                        description: `Clone '${samples.label}' from Github. This will clone '${samples.label}' repository to your local machine`,
+                        level: MsgLevel.Info,
+                        items: ["Clone", "Cancel"]
+                    })
+                ))?.getAnswer();
+                if (answer === "Clone") {
+                    const url = samples.data as string;
+                    const sampleId = samples.id;
+                    const progress = this.ctx.dialog.createProgressBar("Fetch sample app", 2);
+                    progress.start();
+                    try {
+                        progress.next(`Downloading from '${url}'`);
+                        const fetchRes = await fetchCodeZip(url);
+                        progress.next("Unzipping the sample package");
+                        if (fetchRes !== undefined) {
+                            await saveFilesRecursively(new AdmZip(fetchRes.data), sampleId, folder);
+                            await this.ctx.dialog?.communicate(
+                                new DialogMsg(DialogType.Ask, {
+                                    type: QuestionType.OpenFolder,
+                                    description: `${folder}\\${sampleId}`,
+                                }),
+                            );
+                        }
+                        else{
+                            progress.end();
+                            return err(error.DownloadSampleFail());
+                        }
+                    }
+                    finally {
+                        progress.end();
                     }
                 }
-                finally{
-                    progress.end();
-                }
+                return ok(null);
             }
-            return err(new UserError(
-                error.CoreErrorNames.DownloadSampleFail,
-                `DownloadSampleFail`,
-                error.CoreSource,
-                )
-            );
         }
 
         this.ctx.logProvider?.info(`[Core] create - create target object`);
@@ -280,7 +288,7 @@ class CoreImpl implements Core {
         this.target.ctx.answers = answers;
 
         const appName = answers?.getString(QuestionAppName.name);
-        if(undefined === appName)
+        if (undefined === appName)
             return err(
                 new UserError(
                     error.CoreErrorNames.InvalidInput,
@@ -288,7 +296,7 @@ class CoreImpl implements Core {
                     error.CoreSource,
                 ),
             );
-            
+
         const validateResult = jsonschema.validate(appName, {
             pattern: ProjectNamePattern,
         });
@@ -316,7 +324,7 @@ class CoreImpl implements Core {
         this.target.ctx.root = projFolder;
 
         const loadRes = await Loader.loadSolutions(this.target.ctx);
-        if(loadRes.isErr()) {
+        if (loadRes.isErr()) {
             return err(loadRes.error);
         }
         const solutionName = answers?.getString(QuestionSelectSolution.name);
@@ -326,9 +334,9 @@ class CoreImpl implements Core {
                 this.target.selectedSolution = s;
                 break;
             }
-        } 
-        
-        if(!this.target.selectedSolution){
+        }
+
+        if (!this.target.selectedSolution) {
             return err(
                 new UserError(
                     error.CoreErrorNames.InvalidInput,
@@ -340,7 +348,7 @@ class CoreImpl implements Core {
 
         this.target.ctx.projectSettings = {
             appName: appName,
-            solutionSettings:{
+            solutionSettings: {
                 name: this.target.selectedSolution.name,
                 version: this.target.selectedSolution.version
             }
@@ -365,7 +373,7 @@ class CoreImpl implements Core {
             return createResult;
         }
 
-       
+
         this.ctx.logProvider?.info(`[Core] create - create basic folder with configs`);
 
         this.ctx.logProvider?.info(`[Core] scaffold start!`);

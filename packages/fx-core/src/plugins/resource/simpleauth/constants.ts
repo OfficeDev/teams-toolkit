@@ -101,6 +101,9 @@ export class Telemetry {
     static errorMessage = "error-message";
     static userError = "user";
     static systemError = "system";
+    static isSuccess = "success";
+    static success = "yes";
+    static fail = "no";
 }
 
 export interface Message {

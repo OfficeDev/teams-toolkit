@@ -18,11 +18,12 @@ export class TelemetryUtils {
         if (!properties) {
             properties = {};
         }
-        properties[Telemetry.component] = Constants.SimpleAuthPlugin.id;
+    properties[Telemetry.isSuccess] = Telemetry.success;
+    properties[Telemetry.component] = Constants.SimpleAuthPlugin.id;
         TelemetryUtils.ctx.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
     }
 
-    public static sendException(
+    public static sendErrorEvent(
         eventName: string,
         errorCode: string,
         errorType: string,
@@ -33,11 +34,12 @@ export class TelemetryUtils {
         if (!properties) {
             properties = {};
         }
+        properties[Telemetry.isSuccess] = Telemetry.success;
         properties[Telemetry.component] = Constants.SimpleAuthPlugin.id;
         properties[Telemetry.errorCode] = errorCode;
         properties[Telemetry.errorType] = errorType;
         properties[Telemetry.errorMessage] = errorMessage;
-        TelemetryUtils.ctx.telemetryReporter?.sendTelemetryEvent(
+        TelemetryUtils.ctx.telemetryReporter?.sendTelemetryErrorEvent(
             eventName,
             properties,
             measurements,

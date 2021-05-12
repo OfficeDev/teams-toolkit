@@ -90,7 +90,7 @@ export class AadAppForTeamsPlugin implements Plugin {
         ctx.logProvider?.error(`Detailed error: ${e.innerError.message}`);
       }
       TelemetryUtils.init(ctx);
-      TelemetryUtils.sendException(stage, e.name, e instanceof UserError ? Telemetry.userError : Telemetry.systemError, e.message );
+      TelemetryUtils.sendErrorEvent(stage, e.name, e instanceof UserError ? Telemetry.userError : Telemetry.systemError, e.message );
       DialogUtils.progress?.end();
       return err(e);
     } else {
@@ -100,7 +100,7 @@ export class AadAppForTeamsPlugin implements Plugin {
 
       ctx.logProvider?.error(e.message);
       TelemetryUtils.init(ctx);
-      TelemetryUtils.sendException(stage, UnhandledError.name, Telemetry.systemError, UnhandledError.message());
+      TelemetryUtils.sendErrorEvent(stage, UnhandledError.name, Telemetry.systemError, UnhandledError.message());
       return err(
         ResultFactory.SystemError(
           UnhandledError.name,

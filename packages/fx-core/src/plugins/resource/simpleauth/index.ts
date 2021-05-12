@@ -40,10 +40,10 @@ export class SimpleAuthPlugin implements Plugin {
             TelemetryUtils.init(ctx);
 
             if (e instanceof SystemError || e instanceof UserError) {
-                TelemetryUtils.sendException(stage, e.name, e instanceof UserError ? Telemetry.userError : Telemetry.systemError, e.message);
+                TelemetryUtils.sendErrorEvent(stage, e.name, e instanceof UserError ? Telemetry.userError : Telemetry.systemError, e.message);
                 return err(e);
             } else {
-                TelemetryUtils.sendException(stage, UnhandledError.name, Telemetry.systemError, UnhandledError.message(e?.message));
+                TelemetryUtils.sendErrorEvent(stage, UnhandledError.name, Telemetry.systemError, UnhandledError.message(e?.message));
                 return err(ResultFactory.SystemError(UnhandledError.name, UnhandledError.message(e?.message), e));
             }
         }

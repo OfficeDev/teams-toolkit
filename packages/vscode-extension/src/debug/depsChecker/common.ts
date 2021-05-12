@@ -68,10 +68,10 @@ export const Messages = {
 
   NodeNotFound: `Cannot find Node.js.
 
-Teams Toolkit requires Node.js; the recommended version is v12.
+Teams Toolkit requires Node.js; the recommended version is v12. Install it manually and restart Visual Studio Code.
 
 Click "Learn more" to learn how to install the Node.js.`,
-  NodeNotSupported: `Node.js (@CurrentVersion) is not in the supported version list (@SupportedVersions).
+  NodeNotSupported: `Node.js (@CurrentVersion) is not in the supported version list (@SupportedVersions). Install the supported version manually and restart Visual Studio Code.
 
 Click "Learn more" to learn more about the supported Node.js versions.
 Click "Continue" to continue local debugging.`,
@@ -85,7 +85,7 @@ Click "Install" to install @InstallPackages.`,
 
   linuxDepsNotFound: `Cannot find @SupportedPackages.
 
-Teams Toolkit requires these dependencies. 
+Teams Toolkit requires these dependencies. Install them manually and restart Visual Studio Code.
 
 Click "Continue" to continue.`
 };

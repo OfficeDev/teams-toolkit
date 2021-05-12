@@ -6,14 +6,11 @@ import {
     PluginContext,
     Plugin,
     ok,
-<<<<<<< HEAD
-    err
-} from "@microsoft/teamsfx-api";
-=======
     err,
     SystemError
-} from "fx-api";
->>>>>>> zhaofeng/sql-telemetry
+
+} from "@microsoft/teamsfx-api";
+
 import { IdentityConfig } from "./config";
 import { Constants, Telemetry } from "./constants";
 import { ContextUtils } from "./utils/contextUtils";

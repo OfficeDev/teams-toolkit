@@ -29,8 +29,6 @@ export class ScaffoldPlaceholders {
 }
 
 export class TemplateProjectsConstants {
-    public static readonly NEWEST_MANIFEST_URL: string =
-        "https://github.com/henzhang-ms/Teams-Templates/releases/latest/download/manifest.json";
     public static readonly GROUP_NAME_BOT: string = "bot";
     public static readonly GROUP_NAME_MSGEXT: string = "msgext";
     public static readonly GROUP_NAME_BOT_MSGEXT: string = "bot-msgext";
@@ -135,7 +133,7 @@ export class ErrorNames {
 
 export class Links {
     public static readonly ISSUE_LINK = "https://github.com/OfficeDev/TeamsFx/issues/new";
-    public static readonly HELP_LINK = "https://github.com/OfficeDev/TeamsFx/blob/main/docs/fx-core/bot-help.md";
+    public static readonly HELP_LINK = "https://aka.ms/teamsfx-bot-help";
     public static readonly UPDATE_MESSAGE_ENDPOINT = `${Links.HELP_LINK}#how-to-reuse-existing-bot-registration-in-toolkit-v2`
 }
 

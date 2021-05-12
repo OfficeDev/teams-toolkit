@@ -248,11 +248,6 @@
         "enablement": "never"
       },
       {
-        "command": "fx-extension.detect-ports-in-use",
-        "title": "Teams - Detect Ports in Use",
-        "enablement": "never"
-      },
-      {
         "command": "fx-extension.pre-debug-check",
         "title": "Teams - Pre Debug Check",
         "enablement": "never"

@@ -10,8 +10,8 @@
   "dependencies": {
     "@azure/functions": "^1.2.2",
     "@microsoft/microsoft-graph-client": "^2.2.1",
-    "isomorphic-fetch": "^3.0.0",
-    "teamsdev-client": "^1.1.0"
+    "@microsoft/teamsfx": "^0.1.0-alpha.3",
+    "isomorphic-fetch": "^3.0.0"
   },
   "devDependencies": {
     "typescript": "^3.3.3",

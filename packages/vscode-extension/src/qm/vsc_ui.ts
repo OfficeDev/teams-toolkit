@@ -29,7 +29,7 @@ export class VsCodeUI implements UserInterface{
       if (option.backButton) quickPick.buttons = [QuickInputButtons.Back, okButton];
       else quickPick.buttons = [okButton];
       quickPick.placeholder = option.placeholder;
-      quickPick.ignoreFocusOut = false;
+      quickPick.ignoreFocusOut = true;
       quickPick.matchOnDescription = true;
       quickPick.matchOnDetail = true;
       quickPick.canSelectMany = option.canSelectMany;
@@ -197,7 +197,7 @@ export class VsCodeUI implements UserInterface{
       if (option.backButton) inputBox.buttons = [QuickInputButtons.Back, okButton];
       else inputBox.buttons = [okButton];
       inputBox.value = option.defaultValue || "";
-      inputBox.ignoreFocusOut = false;
+      inputBox.ignoreFocusOut = true;
       inputBox.password = option.password;
       inputBox.placeholder = option.placeholder;
       inputBox.prompt = option.prompt;

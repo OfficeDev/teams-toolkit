@@ -204,7 +204,7 @@ export class WebviewPanel {
     const scriptPathOnDisk = vscode.Uri.file(path.join(this.extensionPath, "out/src", "client.js"));
     const scriptUri = scriptPathOnDisk.with({ scheme: "vscode-resource" });
 
-    // Use a nonce to whitelist which scripts can be run
+    // Use a nonce to to only allow specific scripts to be run
     const nonce = this.getNonce();
 
     return `<!DOCTYPE html>

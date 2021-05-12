@@ -393,7 +393,6 @@ export class DotnetChecker implements IDepsChecker {
     dotnetInstallDir: string
   ): Promise<string[]> {
     const command = [
-      // path.join does not prepend '.'
       this.getDotnetInstallScriptPath(),
       "-InstallDir",
       isWindows() ? DotnetChecker.escapeFilePath(dotnetInstallDir) : dotnetInstallDir,

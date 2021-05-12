@@ -87,6 +87,9 @@ export class LifecycleFuncNames {
     public static readonly PRE_DEPLOY = "pre-deploy";
     public static readonly DEPLOY = "deploy";
     public static readonly POST_DEPLOY = "post-deploy";
+
+    public static readonly LOCAL_DEBUG = "local-debug";
+    public static readonly POST_LOCAL_DEBUG = "post-local-debug";
 }
 
 export class Retry {
@@ -200,10 +203,25 @@ export class MaxLengths {
 }
 
 export class ErrorMessagesForChecking {
-    static readonly FreeServerFarmsQuotaErrorFromAzure =
+    public static readonly FreeServerFarmsQuotaErrorFromAzure =
         "The maximum number of Free ServerFarms allowed in a Subscription is 10";
 }
 
 export class IdentityConstants {
     public static readonly IDENTITY_TYPE_USER_ASSIGNED = "UserAssigned";
+}
+
+export class TelemetryKeys {
+    public static readonly Component = "component";
+    public static readonly Success = "success";
+    public static readonly ErrorType = "error-type";
+    public static readonly ErrorMessage = "error-message";
+    public static readonly ErrorCode = "error-code";
+}
+
+export class TelemetryValues {
+    public static readonly Success = "yes";
+    public static readonly Fail = "no";
+    public static readonly UserError = "user";
+    public static readonly SystemError = "system";
 }

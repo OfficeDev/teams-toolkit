@@ -12,6 +12,7 @@
     "test:localdebug": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/plugins/resource/localdebug/**/*.test.ts",
     "test:frontend": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/plugins/resource/frontend/**/*.test.ts",
     "test:aad": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/plugins/resource/aad/**/*.test.ts",
+    "test:simpleauth": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/plugins/resource/simpleauth/**/*.test.ts",
     "test:actions": "echo 'to be implemented'",
     "test:unit": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/**/*.test.ts",
     "clean": "rm -rf build",

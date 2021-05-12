@@ -600,7 +600,53 @@ export async function backendExtensionsInstallHandler(): Promise<void> {
 }
 
 /**
- * call localDebug on core, then call customized function to return result
+ * detect if some ports are already in use, and if so, stop debugging
+ */
+export async function detectPortsInUse(): Promise<void> {
+  let ports: [number, string[]][] = [];
+  if (vscode.workspace.workspaceFolders) {
+    const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
+    const workspacePath: string = workspaceFolder.uri.fsPath;
+    const frontendRoot = await commonUtils.getProjectRoot(
+      workspacePath,
+      constants.frontendFolderName
+    );
+    if (frontendRoot) {
+      ports.push(...constants.frontendPorts);
+    }
+    const backendRoot = await commonUtils.getProjectRoot(
+      workspacePath,
+      constants.backendFolderName
+    );
+    if (backendRoot) {
+      ports.push(...constants.backendPorts);
+    }
+    const botRoot = await commonUtils.getProjectRoot(workspacePath, constants.botFolderName);
+      if (botRoot) {
+        ports.push(...constants.botPorts);
+      }
+  }
+
+  const portsInUse: number[] = [];
+  for (let port of ports) {
+    if (await commonUtils.detectPortListening(port[0], port[1])) {
+      portsInUse.push(port[0]);
+    }
+  }
+  if (portsInUse.length > 0) {
+    let message = constants.portsInUseMessage + ":";
+    for (let port of portsInUse) {
+      message = message + ` ${port}`;
+    }
+    window.showErrorMessage(message);
+    // await debug.stopDebugging();
+    // TODO: better mechanism to stop the tasks and debug session.
+    throw new Error("debug stopped.");
+  }
+}
+
+/**
+ * call localDebug on core
  */
 export async function preDebugCheckHandler(): Promise<void> {
   let result: Result<any, FxError> = ok(null);
@@ -608,13 +654,6 @@ export async function preDebugCheckHandler(): Promise<void> {
   if (result.isErr()) {
     throw result.error;
   }
-  // } catch (e) {
-  //   result = wrapError(e);
-  //   const eventName = ExtTelemetry.stageToEvent(Stage.debug);
-  //   await processResult(eventName, result);
-  //   // If debug stage fails, throw error to terminate the debug process
-  //   throw result;
-  // }
 }
 
 export async function openDocumentHandler(): Promise<boolean> {

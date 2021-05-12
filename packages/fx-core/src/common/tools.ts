@@ -241,6 +241,6 @@ export const deepCopy = <T>(target: T): T => {
 
 
   export function getStrings():any{
-      const filepath = getResourceFolder() + "\\strings.json";
+      const filepath = path.join(getResourceFolder(),"strings.json");
       return fs.readJSONSync(filepath);
   }

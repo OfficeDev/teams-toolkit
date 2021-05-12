@@ -1,8 +1,8 @@
 {
   "name": "@microsoft/teamsfx-core",
   "version": "0.1.0-alpha.5",
-  "main": "build/core/index.js",
-  "types": "build/core/index.d.ts",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
   "license": "MIT",
   "scripts": {
     "lint:staged": "lint-staged",
@@ -16,10 +16,11 @@
     "test:actions": "echo 'to be implemented'",
     "test:unit": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/**/*.test.ts",
     "clean": "rm -rf build",
-    "build": "tsc -p ./",
+    "build": "rimraf build && tsc -p ./",
     "eslint:fix": "eslint package.json tsconfig.json src test --ext .ts --fix",
-    "prepare": "npm run build",
-    "prepublishOnly": "npm run test:unit"
+    "prepare": "npm run package",
+    "prepublishOnly": "npm run test:unit",
+    "package": "rimraf build && webpack --mode production --config ./webpack.config.js"
   },
   "lint-staged": {
     "**/*.ts": [
@@ -105,6 +106,7 @@
     "@typescript-eslint/parser": "^4.19.0",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
+    "copy-webpack-plugin": "^6.4.1",
     "dotenv": "^8.2.0",
     "eslint": "^7.22.0",
     "faker": "^5.5.2",
@@ -114,10 +116,13 @@
     "mock-fs": "^4.13.0",
     "nyc": "^15.1.0",
     "sinon": "^9.2.2",
+    "ts-loader": "^8.0.3",
     "ts-node": "^9.0.0",
     "tslint": "^6.1.3",
     "typedoc": "^0.20.35",
-    "typescript": "^4.2.3"
+    "typescript": "^4.2.3",
+    "webpack": "^4.44.1",
+    "webpack-cli": "^3.3.12"
   },
   "files": [
     "build/**/*",

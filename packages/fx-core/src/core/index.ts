@@ -4,7 +4,6 @@
 
 import * as fs from "fs-extra";
 import * as os from "os";
-import * as strings from "../resources/strings.json";
 import {
     AzureAccountProvider,
     ConfigMap,
@@ -48,13 +47,14 @@ import {
 import * as path from "path";
 import * as error from "./error";
 import { Loader, Meta } from "./loader";
-import { deserializeDict, fetchCodeZip, mapToJson, mergeSerectData, objectToMap, saveFilesRecursively, serializeDict, sperateSecretData } from "../common/tools";
+import { deserializeDict, fetchCodeZip, getStrings, mapToJson, mergeSerectData, objectToMap, saveFilesRecursively, serializeDict, sperateSecretData } from "../common/tools";
 import { VscodeManager } from "./vscodeManager";
 import { CoreQuestionNames, ProjectNamePattern, QuestionAppName, QuestionRootFolder, QuestionSelectSolution, SampleSelect, ScratchOptionNo, ScratchOptionYes, ScratchOrSampleSelect } from "./question";
 import * as jsonschema from "jsonschema";
 import { AzureSubscription, getSubscriptionList } from "./loginUtils";
 import { sleep } from "../plugins/resource/spfx/utils/utils";
 import AdmZip from "adm-zip";
+import { getResourceFolder } from "..";
 
 class CoreImpl implements Core {
     private target?: CoreImpl;
@@ -785,7 +785,7 @@ class CoreImpl implements Core {
     public async provision(answers?: ConfigMap): Promise<Result<null, FxError>> {
         const provisionRes = await this.selectedSolution!.provision(this.solutionContext(answers));
         if (provisionRes.isErr()) {
-            if (provisionRes.error.message.startsWith(strings.solution.CancelProvision)) {
+            if (provisionRes.error.message.startsWith(getStrings().solution.CancelProvision)) {
                 return ok(null);
             }
             return err(provisionRes.error);
@@ -1195,6 +1195,7 @@ export class CoreProxy implements Core {
         );
     }
 }
+
 
 export async function Default(): Promise<Result<CoreProxy, FxError>> {
     const result = await CoreProxy.getInstance().init();

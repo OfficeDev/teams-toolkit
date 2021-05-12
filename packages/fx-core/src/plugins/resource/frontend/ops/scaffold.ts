@@ -78,7 +78,7 @@ export class FrontendScaffold {
     }
 
     public static getTemplateZipFromLocal(templateInfo: TemplateInfo): AdmZip {
-        const templatePath = path.resolve(FrontendPathInfo.RootDir, templateInfo.localTemplatePath);
+        const templatePath = templateInfo.localTemplatePath;//path.resolve(FrontendPathInfo.RootDir, );
         return new AdmZip(templatePath);
     }
 

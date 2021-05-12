@@ -109,7 +109,7 @@ export class AadAppForTeamsPlugin implements Plugin {
       if (e.innerError) {
         let innerErrorMessage = `Detailed error: ${e.innerError.message}.`;
         if (e.innerError.response?.data?.errorMessage) {
-          innerErrorMessage += `Reason: ${e.innerError.response?.data?.errorMessage}`;
+          innerErrorMessage += ` Reason: ${e.innerError.response?.data?.errorMessage}`;
         }
         ctx.logProvider?.error(innerErrorMessage);
       }

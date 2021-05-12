@@ -15,7 +15,7 @@ import {
     runWithErrorCatchAndThrow,
     CheckStorageError,
     CheckResourceGroupError,
-    NoConfigsError,
+    NoPreStepError,
     InvalidStorageNameError,
     StorageAccountAlreadyTakenError,
     runWithErrorCatchAndWrap,
@@ -105,7 +105,7 @@ export class FrontendPluginImpl {
         const client = this.azureStorageClient;
         const storageName = this.config?.storageName;
         if (!storageName || !client) {
-            throw new NoConfigsError();
+            throw new NoPreStepError();
         }
 
         await progressHandler?.next(ProvisionSteps.CreateStorage);
@@ -223,7 +223,7 @@ export class FrontendPluginImpl {
 
         const client = this.azureStorageClient;
         if (!client) {
-            throw new NoConfigsError();
+            throw new NoPreStepError();
         }
 
         const componentPath: string = path.join(ctx.root, FrontendPathInfo.WorkingDir);

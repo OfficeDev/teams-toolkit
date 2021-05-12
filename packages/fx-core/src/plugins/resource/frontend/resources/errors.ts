@@ -65,9 +65,9 @@ export class UnauthenticatedError extends FrontendPluginError {
     }
 }
 
-export class NoConfigsError extends FrontendPluginError {
+export class NoPreStepError extends FrontendPluginError {
     constructor() {
-        super(ErrorType.System, "NoConfigsError", "Failed to get configs.", [tips.checkLog]);
+        super(ErrorType.System, "NoPreStepError", "The pre-step is not done.", [tips.checkLog]);
     }
 }
 

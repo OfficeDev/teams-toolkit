@@ -17,7 +17,7 @@ import {
     EnableStaticWebsiteError,
     InvalidStorageNameError,
     NoBuildPathError,
-    NoConfigsError,
+    NoPreStepError,
     NoResourceGroupError,
     NoStorageError,
     StaticWebsiteDisabledError,
@@ -265,7 +265,7 @@ describe("frontendPlugin", () => {
 
             const result = await frontendPlugin.deploy(pluginContext);
 
-            assertError(result, new NoConfigsError().code);
+            assertError(result, new NoPreStepError().code);
         });
 
         it("local path does not exists", async () => {

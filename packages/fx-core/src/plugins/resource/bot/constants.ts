@@ -76,30 +76,17 @@ export class QuestionNames {
 }
 
 export class LifecycleFuncNames {
-    public static readonly PRE_SCAFFOLD = "preScaffold";
+    public static readonly PRE_SCAFFOLD = "pre-scaffold";
     public static readonly SCAFFOLD = "scaffold";
-    public static readonly POST_SCAFFOLD = "postScaffold";
+    public static readonly POST_SCAFFOLD = "post-scaffold";
 
-    public static readonly PRE_PROVISION = "preProvision";
+    public static readonly PRE_PROVISION = "pre-provision";
     public static readonly PROVISION = "provision";
-    public static readonly POST_PROVISION = "postProvision";
+    public static readonly POST_PROVISION = "post-provision";
 
-    public static readonly PRE_DEPLOY = "preDeploy";
+    public static readonly PRE_DEPLOY = "pre-deploy";
     public static readonly DEPLOY = "deploy";
-    public static readonly POST_DEPLOY = "postDeploy";
-
-    public static readonly PRE_LOCAL_DEBUG = "preLocalDebug";
-    public static readonly LOCAL_DEBUG = "localDebug";
-    public static readonly POST_LOCAL_DEBUG = "postLocalDebug";
-
-    // extra
-    public static readonly PROVISION_WEB_APP = "provisionWebApp";
-    public static readonly UPDATE_MESSAGE_ENDPOINT_AZURE = "updateMessageEndpointOnAzure";
-    public static readonly UPDATE_MESSAGE_ENDPOINT_APPSTUDIO = "updateMessageEndpointOnAppStudio";
-    public static readonly REUSE_EXISTING_BOT_REG = "reuseExistingBotRegistration";
-    public static readonly CREATE_NEW_BOT_REG_AZURE = "createNewBotRegistrationOnAzure";
-    public static readonly CREATE_NEW_BOT_REG_APPSTUDIO = "createNewBotRegistrationOnAppStudio";
-    public static readonly CHECK_AAD_APP = "checkAADApp";
+    public static readonly POST_DEPLOY = "post-deploy";
 }
 
 export class Retry {

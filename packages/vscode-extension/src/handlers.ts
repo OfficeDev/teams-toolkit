@@ -43,7 +43,8 @@ import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetryTiggerFrom,
-  TelemetrySuccess
+  TelemetrySuccess,
+  AccountType
 } from "./telemetry/extTelemetryEvents";
 import * as commonUtils from "./debug/commonUtils";
 import { ExtensionErrors, ExtensionSource } from "./error";
@@ -830,8 +831,9 @@ export async function cmpAccountsHandler() {
 }
 
 export async function signOutAzure(isFromTreeView: boolean) {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SignOutAzure, {
-    [TelemetryProperty.TriggerFrom]: isFromTreeView ? TelemetryTiggerFrom.TreeView : TelemetryTiggerFrom.CommandPalette
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SignOutStart, {
+    [TelemetryProperty.TriggerFrom]: isFromTreeView ? TelemetryTiggerFrom.TreeView : TelemetryTiggerFrom.CommandPalette,
+    [TelemetryProperty.AccountType]: AccountType.Azure
   });
   const result = await AzureAccountManager.signout();
   if (result) {
@@ -853,8 +855,9 @@ export async function signOutAzure(isFromTreeView: boolean) {
 }
 
 export async function signOutM365(isFromTreeView: boolean) {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SignOutM365, {
-    [TelemetryProperty.TriggerFrom]: isFromTreeView ? TelemetryTiggerFrom.TreeView : TelemetryTiggerFrom.CommandPalette
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SignOutStart, {
+    [TelemetryProperty.TriggerFrom]: isFromTreeView ? TelemetryTiggerFrom.TreeView : TelemetryTiggerFrom.CommandPalette,
+    [TelemetryProperty.AccountType]: AccountType.M365
   });
   let appstudioLogin: AppStudioTokenProvider = AppStudioTokenInstance;
   const vscodeEnv = detectVsCodeEnv();
@@ -878,7 +881,6 @@ export async function signInAzure() {
 }
 
 export async function signInM365() {
-
   vscode.commands.executeCommand("fx-extension.signinM365");
 }
 

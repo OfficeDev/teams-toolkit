@@ -10,13 +10,7 @@ export enum TelemetryEvent {
   LoginStart = "login-start",
   Login = "login",
 
-  LoginAzure = "login-azure",
-
-  LoginM365 = "login-m365",
-
-  SignOutAzure = "sign-out-azure",
-
-  SignOutM365 = "sign-out-m365",
+  SignOutStart = "sign-out-start",
 
   CreateProjectStart = "create-project-start",
   CreateProject = "create-project",
@@ -90,6 +84,11 @@ export enum TelemetryTiggerFrom {
 export enum TelemetryErrorType {
   UserError = "user",
   SystemError = "system"
+}
+
+export enum AccountType {
+  M365 = "m365",
+  Azure = "azure"
 }
 
 export const TelemetryComponentType = "extension";

@@ -28,6 +28,20 @@
                     <key>1</key>
                     <dict>
                         <key>name</key>
+                        <string>token.warn-token</string>
+                    </dict>
+                </dict>
+                <key>match</key>
+                <string>(\[Warning\].*)</string>
+                <key>name</key>
+                <string>teamsfx-toolkit.warningMessage</string>
+            </dict>
+            <dict>
+                <key>captures</key>
+                <dict>
+                    <key>1</key>
+                    <dict>
+                        <key>name</key>
                         <string>token.error-token</string>
                     </dict>
                 </dict>

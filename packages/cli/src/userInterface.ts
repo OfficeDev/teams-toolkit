@@ -110,10 +110,27 @@ export class DialogManager implements Dialog {
 
   private async askQuestion(question: IQuestion): Promise<string | undefined> {
     if (question.description.includes("subscription")) {
-      CLILogProvider.error(
-        `Azure subscription required. Use 'teamsfx account set --subscription <SUBSCRIPTION>' to select your Azure subscription.`
-      );
-      return undefined;
+      let sub: string;
+      const subscriptions = question.options as string[];
+      if (subscriptions.length === 0) {
+        throw new Error("Your Azure account has no active subscriptions. Please switch an Azure account.");
+      } else if (subscriptions.length === 1) {
+        sub = subscriptions[0];
+        CLILogProvider.necessaryLog(
+          LogLevel.Warning,
+          `Your Azure account only has one subscription (${sub}). Use it as default.`
+        );
+      } else {
+        const answers = await inquirer.prompt([{
+          name: "subscription",
+          type: "list",
+          message: question.description,
+          choices: subscriptions
+        }]);
+        sub = answers["subscription"];
+      }
+
+      return sub;
     }
     switch (question.type) {
       case QuestionType.Confirm:

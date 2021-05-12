@@ -94,7 +94,7 @@ async function _scaffold(ctx: PluginContext, progressBar: ProgressBar): Promise<
     const scaffoldManager = await Factory.buildScaffoldManager(ctx, solutionConfig);
 
     if (answer.validate) {
-        answer.validate(Stage.update, apimConfig, ctx.root);
+        await answer.validate(Stage.update, apimConfig, ctx.root);
     }
 
     answer.save(Stage.update, apimConfig);
@@ -143,7 +143,7 @@ async function _deploy(ctx: PluginContext, progressBar: ProgressBar): Promise<vo
     const answer = buildAnswer(ctx);
 
     if (answer.validate) {
-        answer.validate(Stage.deploy, apimConfig, ctx.root);
+        await answer.validate(Stage.deploy, apimConfig, ctx.root);
     }
 
     answer.save(Stage.deploy, apimConfig);

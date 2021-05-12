@@ -36,6 +36,7 @@ export enum TelemetryEvent {
 
   F5Start = "f5-start",
   F5 = "f5",
+  StopDebug = "stop-debug",
 
   Survey = "survey"
 }
@@ -50,7 +51,10 @@ export enum TelemetryProperty {
   ErrorType = "error-type",
   ErrorCode = "error-code",
   ErrorMessage = "error-message",
-  DebugSessionId = "session-id"
+  DebugSessionId = "session-id",
+  DebugType = "type",
+  DebugRequest = "request",
+  DebugPort = "port"
 }
 
 export enum TelemetrySuccess {

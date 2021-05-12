@@ -649,6 +649,13 @@ export async function detectPortsInUse(): Promise<void> {
  * call localDebug on core
  */
 export async function preDebugCheckHandler(): Promise<void> {
+  // treat preDebugCheck as f5-start
+  try {
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.F5Start);
+  } catch {
+    // ignore telemetry error
+  }
+
   let result: Result<any, FxError> = ok(null);
   result = await runCommand(Stage.debug);
   if (result.isErr()) {

@@ -2332,7 +2332,7 @@ export class TeamsAppSolution implements Solution {
         }
 
         const manifestPath: string = path.join(rootPath, "manifest", isLocal ? "local" : "remote", "manifest.json");
-        const appSettingsJSONPath = path.join(rootPath, "blazor-server-tabs", isLocal ? "appsettings.Development.json" : "appsettings.json");
+        const appSettingsJSONPath = path.join(rootPath, isLocal ? "appsettings.Development.json" : "appsettings.json");
 
         const manifestTpl = (await fs.readFile(manifestPath)).toString();
         const manifestStr: string = Mustache.render(manifestTpl, {
@@ -2365,7 +2365,7 @@ export class TeamsAppSolution implements Solution {
         await fs.writeFile(appSettingsJSONPath, appSettingsJSON);
 
         if (isLocal) {
-            const launchSettingsJSONPath: string = path.join(rootPath, "blazor-server-tabs", "Properties", "launchSettings.json");
+            const launchSettingsJSONPath: string = path.join(rootPath, "Properties", "launchSettings.json");
             const launchSettingsJSONTpl = (await fs.readFile(launchSettingsJSONPath)).toString();
             const launchSettingsJSON = Mustache.render(launchSettingsJSONTpl, { "teams-app-id": teamsAppId });
             await fs.writeFile(launchSettingsJSONPath, launchSettingsJSON);

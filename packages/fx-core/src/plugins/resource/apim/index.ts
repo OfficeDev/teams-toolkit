@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Plugin, FxError, PluginContext, SystemError, UserError, Result, err, ok, QTreeNode, Stage, Func, Platform } from "@microsoft/teamsfx-api";
+import { Plugin, FxError, PluginContext, SystemError, UserError, Result, err, ok, QTreeNode, Stage, Func } from "@microsoft/teamsfx-api";
 import { BuildError, UnhandledError } from "./error";
 import { Telemetry } from "./utils/telemetry";
 import { AadPluginConfig, ApimPluginConfig, FunctionPluginConfig, SolutionConfig } from "./config";
-import { AadDefaultValues, PluginLifeCycle, PluginLifeCycleToProgressStep, ProgressMessages, ProgressStep, ProjectConstants, OperationStatus, QuestionConstants } from "./constants";
+import { AadDefaultValues, PluginLifeCycle, PluginLifeCycleToProgressStep, ProgressMessages, ProgressStep, ProjectConstants, OperationStatus } from "./constants";
 import { Factory } from "./factory";
 import { ProgressBar } from "./utils/progressBar";
 import { buildAnswer } from "./answer";

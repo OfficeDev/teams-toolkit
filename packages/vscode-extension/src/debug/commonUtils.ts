@@ -153,10 +153,14 @@ async function detectPortListeningImpl(port: number, host: string): Promise<bool
       server.once("error", (err) => {
               if (err.message.includes("EADDRINUSE")) {
                 resolve(true);
+              } else {
+                resolve(false);
               }
             })
             .once("listening", () => {
               server.close();
+            })
+            .once("close", () => {
               resolve(false);
             })
             .listen(port, host);

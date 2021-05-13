@@ -22,7 +22,7 @@ describe("config", () => {
 
         it("Undefined property", () => {
             chai.expect(() => solutionConfig.teamsAppTenantId).to.throw(
-                "Project configuration 'teamsAppTenantId' of solution is missing in 'env.default.json'. Retry 'Teams: Provision in the Cloud' command or set the value manually."
+                "Project configuration 'teamsAppTenantId' of 'solution' is missing in 'env.default.json'. Retry provision in the cloud or set the value manually."
             );
         });
         it("Error type property", () => {

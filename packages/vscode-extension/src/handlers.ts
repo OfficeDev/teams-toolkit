@@ -616,7 +616,7 @@ export async function backendExtensionsInstallHandler(): Promise<void> {
 /**
  * call localDebug on core
  */
- export async function preDebugCheckHandler(): Promise<void> {
+export async function preDebugCheckHandler(): Promise<void> {
   try {
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPreCheck);
   } catch {

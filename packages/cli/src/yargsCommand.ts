@@ -61,7 +61,7 @@ export abstract class YargsCommand {
     }
 
     const cliPackage = JSON.parse(readFileSync(path.join(__dirname, "/../package.json"), "utf8"));
-    const reporter = new CliTelemetryReporter(cliPackage.aiKey, cliPackage.name, cliPackage.version);
+    const reporter = new CliTelemetryReporter(cliPackage.aiKey, constants.cliTelemetryPrefix, cliPackage.version);
     CliTelemetry.setReporter(reporter);
 
     try {

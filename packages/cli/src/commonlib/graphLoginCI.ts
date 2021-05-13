@@ -17,7 +17,7 @@ const config = {
   auth: {
     clientId: process.env.E2E_CLIENT_ID ?? "",
     authority: "https://login.microsoftonline.com/" + process.env.E2E_TENANT_ID ?? "",
-    clientSecret: process.env.E2E_SECRET ?? ""
+    clientSecret: process.env.E2E_SECRET ?? "",
   },
   system: {
     loggerOptions: {
@@ -25,13 +25,13 @@ const config = {
         CLILogProvider.log(4 - loglevel, message);
       },
       piiLoggingEnabled: false,
-      logLevel: LogLevel.Verbose
-    }
-  }
+      logLevel: LogLevel.Verbose,
+    },
+  },
 };
 
 const clientCredentialRequest = {
-  scopes: ["https://graph.microsoft.com/.default"] // replace with your resource
+  scopes: ["https://graph.microsoft.com/.default"], // replace with your resource
 };
 
 export class GraphLogin extends login implements GraphTokenProvider {
@@ -87,7 +87,11 @@ export class GraphLogin extends login implements GraphTokenProvider {
   }
 
   async setStatusChangeCallback(
-    statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>
   ): Promise<boolean> {
     // GraphLogin.statusChange = statusChange;
     return new Promise((resolve) => {

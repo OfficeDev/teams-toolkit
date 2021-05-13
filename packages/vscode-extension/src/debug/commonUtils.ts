@@ -88,11 +88,13 @@ export async function hasTeamsfxBackend(): Promise<boolean> {
   return backendRoot !== undefined;
 }
 
-export async function getLocalDebugTeamsAppId(isLocalSideloadingConfiguration: boolean): Promise<string|undefined> {
+export async function getLocalDebugTeamsAppId(
+  isLocalSideloadingConfiguration: boolean
+): Promise<string | undefined> {
   const func: Func = {
     namespace: "fx-solution-azure/fx-resource-local-debug",
     method: "getLaunchInput",
-    params: isLocalSideloadingConfiguration ? "local" : "remote"
+    params: isLocalSideloadingConfiguration ? "local" : "remote",
   };
   try {
     const result = await core.callFunc(func);
@@ -108,7 +110,7 @@ export async function getLocalDebugTeamsAppId(isLocalSideloadingConfiguration: b
 export async function getProgrammingLanguage(): Promise<string | undefined> {
   const func: Func = {
     namespace: "fx-solution-azure/fx-resource-local-debug",
-    method: "getProgrammingLanguage"
+    method: "getProgrammingLanguage",
   };
   try {
     const result = await core.callFunc(func);
@@ -150,20 +152,21 @@ async function detectPortListeningImpl(port: number, host: string): Promise<bool
   return new Promise<boolean>((resolve, reject) => {
     try {
       const server = net.createServer();
-      server.once("error", (err) => {
-              if (err.message.includes("EADDRINUSE")) {
-                resolve(true);
-              } else {
-                resolve(false);
-              }
-            })
-            .once("listening", () => {
-              server.close();
-            })
-            .once("close", () => {
-              resolve(false);
-            })
-            .listen(port, host);
+      server
+        .once("error", (err) => {
+          if (err.message.includes("EADDRINUSE")) {
+            resolve(true);
+          } else {
+            resolve(false);
+          }
+        })
+        .once("listening", () => {
+          server.close();
+        })
+        .once("close", () => {
+          resolve(false);
+        })
+        .listen(port, host);
     } catch (err) {
       // ignore any error to not block debugging
       resolve(false);
@@ -172,7 +175,7 @@ async function detectPortListeningImpl(port: number, host: string): Promise<bool
 }
 
 export async function detectPortListening(port: number, hosts: string[]): Promise<boolean> {
-  for (let host of hosts) {
+  for (const host of hosts) {
     if (await detectPortListeningImpl(port, host)) {
       return true;
     }

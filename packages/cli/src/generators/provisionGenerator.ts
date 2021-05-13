@@ -20,7 +20,7 @@ export class ProvisionGenerator extends Generator {
       return err(result.error);
     }
     const root = result.value as QTreeNode;
-    const allNodes = flattenNodes(root).filter(node => node.data.type !== NodeType.group);
+    const allNodes = flattenNodes(root).filter((node) => node.data.type !== NodeType.group);
     return ok([constants.RootFolderNode, constants.SubscriptionNode, ...allNodes]);
   }
 }

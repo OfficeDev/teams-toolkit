@@ -3,8 +3,9 @@
   "version": "0.1.0",
   "description": "Shared ESLint configuration",
   "private": true,
-  "devDependencies": {
+  "dependencies": {
     "@typescript-eslint/eslint-plugin": "^4.19.0",
-    "@typescript-eslint/parser": "^4.19.0"
+    "@typescript-eslint/parser": "^4.19.0",
+    "eslint-plugin-unused-imports": "^1.1.1"
   }
 }

@@ -10,10 +10,7 @@ export enum Formats {
   UUID = "uuid",
 }
 
-export function format(
-  value: string | undefined,
-  type: Formats
-): string | undefined {
+export function format(value: string | undefined, type: Formats): string | undefined {
   if (!value) {
     return undefined;
   }
@@ -40,9 +37,7 @@ function formatEndpoint(endpoint: string): string {
     }
     return endpoint;
   } catch {
-    throw new Error(
-      ConfigErrorMessages.FormatError(Formats.Endpoint, endpoint)
-    );
+    throw new Error(ConfigErrorMessages.FormatError(Formats.Endpoint, endpoint));
   }
 }
 

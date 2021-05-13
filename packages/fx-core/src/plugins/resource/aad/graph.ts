@@ -92,10 +92,7 @@ export namespace GraphClient {
     );
   }
 
-  export async function getAadApp(
-    graphToken: string,
-    objectId: string,
-  ): Promise<IAADDefinition> {
+  export async function getAadApp(graphToken: string, objectId: string): Promise<IAADDefinition> {
     if (!objectId) {
       throw new Error(
         `${GraphClientErrorMessage.GetFailed}: ${GraphClientErrorMessage.AppObjectIdIsNull}.`
@@ -116,7 +113,7 @@ export namespace GraphClient {
 
   function initAxiosInstance(graphToken: string) {
     const instance = axios.create({
-      baseURL: baseUrl
+      baseURL: baseUrl,
     });
     instance.defaults.headers.common["Authorization"] = `Bearer ${graphToken}`;
     return instance;

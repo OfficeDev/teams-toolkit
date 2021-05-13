@@ -15,7 +15,7 @@ suite("Mock Tests", () => {
       const items: IUserInputItem[] = [
         { type: EInputType.defaultValue },
         { type: EInputType.specifiedItem, index: 0 },
-        { type: EInputType.specifiedValue, value: "test" }
+        { type: EInputType.specifiedValue, value: "test" },
       ];
       ui.addInputItems(items);
       items.forEach((item) => {
@@ -29,7 +29,7 @@ suite("Mock Tests", () => {
         { type: EInputType.specifiedItem, index: 0 },
         { type: EInputType.specifiedItem, index: 1 },
         { type: EInputType.specifiedValue, value: "c" },
-        { type: EInputType.specifiedValue, value: undefined }
+        { type: EInputType.specifiedValue, value: undefined },
       ];
       ui.addInputItems(items);
 

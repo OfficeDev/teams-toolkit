@@ -1,10 +1,10 @@
 [
-    {
-        "data": {
-            "type": "folder",
-            "name": "folder",
-            "title": "Select root folder of the project",
-            "default": "./"
-        }
+  {
+    "data": {
+      "type": "folder",
+      "name": "folder",
+      "title": "Select root folder of the project",
+      "default": "./"
     }
+  }
 ]

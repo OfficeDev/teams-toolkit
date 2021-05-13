@@ -58,7 +58,7 @@ export function isWorkspaceSupported(workspace: string): boolean {
     `${p}/package.json`,
     `${p}/.${ConfigFolderName}`,
     `${p}/.${ConfigFolderName}/settings.json`,
-    `${p}/.${ConfigFolderName}/env.default.json`
+    `${p}/.${ConfigFolderName}/env.default.json`,
   ];
 
   for (const fp of checklist) {

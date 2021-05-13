@@ -18,8 +18,8 @@ export function MemoryCache(this: any) {
  * @param  {Function} callback This function is called when the operation is complete.  Any error is provided as the
  *                             first parameter.
  */
-MemoryCache.prototype.remove = function(entries: any, callback: () => void) {
-  const updatedEntries = underscore.filter(this._entries, function(element) {
+MemoryCache.prototype.remove = function (entries: any, callback: () => void) {
+  const updatedEntries = underscore.filter(this._entries, function (element) {
     if (underscore.findWhere(entries, element)) {
       return false;
     }
@@ -36,16 +36,16 @@ MemoryCache.prototype.remove = function(entries: any, callback: () => void) {
  * @param  {Function} callback This function is called when the operation is complete.  Any error is provided as the
  *                             first parameter.
  */
-MemoryCache.prototype.add = function(entries: any, callback: (arg0: null, arg1: boolean) => void) {
+MemoryCache.prototype.add = function (entries: any, callback: (arg0: null, arg1: boolean) => void) {
   // Remove any entries that are duplicates of the existing
   // cache elements.
-  underscore.each(this._entries, function(element) {
-    underscore.each(entries, function(addElement, index) {
+  underscore.each(this._entries, function (element) {
+    underscore.each(entries, function (addElement, index) {
       if (
         addElement &&
-        ( underscore.isEqual(element, addElement) ||
-        element.accessToken == addElement.accessToken ||
-        element._authority == addElement._authority )
+        (underscore.isEqual(element, addElement) ||
+          element.accessToken == addElement.accessToken ||
+          element._authority == addElement._authority)
       ) {
         entries[index] = null;
       }
@@ -70,7 +70,7 @@ MemoryCache.prototype.add = function(entries: any, callback: (arg0: null, arg1: 
  *                             object.
  * @param  {TokenCacheFindCallback} callback
  */
-MemoryCache.prototype.find = function(
+MemoryCache.prototype.find = function (
   query: Partial<any>,
   callback: (arg0: null, arg1: any[]) => void
 ) {
@@ -78,6 +78,6 @@ MemoryCache.prototype.find = function(
   callback(null, results);
 };
 
-MemoryCache.prototype.size = function() {
+MemoryCache.prototype.size = function () {
   return this._entries.length;
 };

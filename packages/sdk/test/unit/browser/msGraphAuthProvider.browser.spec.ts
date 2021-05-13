@@ -10,7 +10,7 @@ import {
   TeamsUserCredential,
   GetTokenOptions,
   ErrorWithCode,
-  ErrorCode
+  ErrorCode,
 } from "../../../src";
 import sinon from "sinon";
 
@@ -29,16 +29,16 @@ describe("MsGraphAuthProvider Tests - Browser", () => {
       authentication: {
         initiateLoginEndpoint: loginUrl,
         simpleAuthEndpoint: authEndpoint,
-        clientId: clientId
-      }
+        clientId: clientId,
+      },
     });
   }
 
-  beforeEach(function() {
+  beforeEach(function () {
     loadDefaultConfig();
   });
 
-  it("create MsGraphAuthProvider instance should throw InvalidParameter error with invalid scope", function() {
+  it("create MsGraphAuthProvider instance should throw InvalidParameter error with invalid scope", function () {
     const credential = new TeamsUserCredential();
     const invalidScopes: any = [10, 20];
     expect(() => {
@@ -48,36 +48,38 @@ describe("MsGraphAuthProvider Tests - Browser", () => {
       .with.property("code", ErrorCode.InvalidParameter);
   });
 
-  it("create MsGraphAuthProvider instance should success with given scopes", async function() {
+  it("create MsGraphAuthProvider instance should success with given scopes", async function () {
     const credential = new TeamsUserCredential();
     const authProvider: any = new MsGraphAuthProvider(credential, scopes);
     assert.strictEqual(authProvider.scopes, scopes);
   });
 
-  it("create MsGraphAuthProvider instance should success with empty scope", async function() {
+  it("create MsGraphAuthProvider instance should success with empty scope", async function () {
     const credential = new TeamsUserCredential();
     const authProvider: any = new MsGraphAuthProvider(credential, emptyScope);
     assert.strictEqual(authProvider.scopes, defaultScope);
   });
 
-  it("create MsGraphAuthProvider instance should success without providing scope", async function() {
+  it("create MsGraphAuthProvider instance should success without providing scope", async function () {
     const credential = new TeamsUserCredential();
     const authProvider: any = new MsGraphAuthProvider(credential);
     assert.strictEqual(authProvider.scopes, defaultScope);
   });
 
-  it("getAccessToken should success with valid config", async function() {
-    sinon.stub(TeamsUserCredential.prototype, "getToken").callsFake(
-      (scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null> => {
-        const token: AccessToken = {
-          token: accessToken,
-          expiresOnTimestamp: Date.now()
-        };
-        return new Promise((resolve) => {
-          resolve(token);
-        });
-      }
-    );
+  it("getAccessToken should success with valid config", async function () {
+    sinon
+      .stub(TeamsUserCredential.prototype, "getToken")
+      .callsFake(
+        (scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null> => {
+          const token: AccessToken = {
+            token: accessToken,
+            expiresOnTimestamp: Date.now(),
+          };
+          return new Promise((resolve) => {
+            resolve(token);
+          });
+        }
+      );
     const credential = new TeamsUserCredential();
     const authProvider = new MsGraphAuthProvider(credential, scopes);
     const token = await authProvider.getAccessToken();

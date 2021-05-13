@@ -32,7 +32,7 @@ export const botLocalEnvPrefix = "BOT_";
 
 export enum ProgrammingLanguage {
   javascript = "javascript",
-  typescript = "typescript"
+  typescript = "typescript",
 }
 
 export const skipNgrokConfigKey = "fx-resource-local-debug.skipNgrok";
@@ -43,8 +43,18 @@ const loopbackAddressIPv4 = "127.0.0.1";
 const loopbackAddressIPv6 = "::1";
 const hosts = [allAddressIPv4, loopbackAddressIPv4, allAddressIPv6, loopbackAddressIPv6];
 
-export const frontendPorts: [number, string[]][] = [[3000, hosts], [5000, hosts]];
-export const backendPorts: [number, string[]][] = [[7071, hosts], [9229, hosts]];
-export const botPorts: [number, string[]][] = [[3978, hosts], [9239, hosts]];
+export const frontendPorts: [number, string[]][] = [
+  [3000, hosts],
+  [5000, hosts],
+];
+export const backendPorts: [number, string[]][] = [
+  [7071, hosts],
+  [9229, hosts],
+];
+export const botPorts: [number, string[]][] = [
+  [3978, hosts],
+  [9239, hosts],
+];
 
-export const portsInUseMessage = "The following ports are already in use. Close these ports and try again";
+export const portsInUseMessage =
+  "The following ports are already in use. Close these ports and try again";

@@ -15,7 +15,7 @@ import {
   Stage,
   Platform,
   MultiSelectQuestion,
-  OptionItem
+  OptionItem,
 } from "@microsoft/teamsfx-api";
 
 import activate from "../activate";
@@ -35,12 +35,11 @@ export default class Deploy extends YargsCommand {
 
   public builder(yargs: Argv): Argv<any> {
     const deployPluginOption = this.params[this.deployPluginNodeName];
-    yargs
-      .positional("components", {
-        array: true,
-        choices: deployPluginOption.choices,
-        description: deployPluginOption.description
-      });
+    yargs.positional("components", {
+      array: true,
+      choices: deployPluginOption.choices,
+      description: deployPluginOption.description,
+    });
     for (const name in this.params) {
       if (name !== this.deployPluginNodeName) {
         yargs.options(name, this.params[name]);
@@ -49,7 +48,9 @@ export default class Deploy extends YargsCommand {
     return yargs.version(false);
   }
 
-  public async runCommand(args: { [argName: string]: string | string[] }): Promise<Result<null, FxError>> {
+  public async runCommand(args: {
+    [argName: string]: string | string[];
+  }): Promise<Result<null, FxError>> {
     const answers = new ConfigMap();
     for (const name in this.params) {
       answers.set(name, args[name] || this.params[name].default);
@@ -71,11 +72,16 @@ export default class Deploy extends YargsCommand {
       }
       const rootNode = result.value!;
       const allNodes = flattenNodes(rootNode);
-      const deployPluginNode = allNodes.find(node => node.data.name === this.deployPluginNodeName)!;
-      const components = args.components as string[] || [];
+      const deployPluginNode = allNodes.find(
+        (node) => node.data.name === this.deployPluginNodeName
+      )!;
+      const components = (args.components as string[]) || [];
       if (components.length === 0) {
         const option = (deployPluginNode.data as MultiSelectQuestion).option as OptionItem[];
-        answers.set(this.deployPluginNodeName, option.map(op => op.cliName));
+        answers.set(
+          this.deployPluginNodeName,
+          option.map((op) => op.cliName)
+        );
       } else {
         answers.set(this.deployPluginNodeName, components);
       }

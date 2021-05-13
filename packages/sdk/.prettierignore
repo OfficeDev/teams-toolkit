@@ -5,3 +5,5 @@ review
 **/*.d.ts
 tools
 doc
+coverage/
+.nyc_output/

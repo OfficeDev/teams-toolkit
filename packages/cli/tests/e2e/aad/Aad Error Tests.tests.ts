@@ -13,7 +13,7 @@ import {
   cleanUp,
 } from "../commonUtils";
 
-describe("Aad Error Tests", function() {
+describe("Aad Error Tests", function () {
   let testFolder: string;
   let appName: string;
   let subscription: string;
@@ -26,17 +26,15 @@ describe("Aad Error Tests", function() {
     projectPath = path.resolve(testFolder, appName);
 
     // new a project
-    await execAsync(`teamsfx new --interactive false --app-name ${appName}`,
-      {
-        cwd: testFolder,
-        env: process.env,
-        timeout: 0
-      }
-    );
+    await execAsync(`teamsfx new --interactive false --app-name ${appName}`, {
+      cwd: testFolder,
+      env: process.env,
+      timeout: 0,
+    });
     console.log(`[Successfully] scaffold to ${projectPath}`);
   });
 
-  it(`AAD: AadGetAppError`, async function() {
+  it(`AAD: AadGetAppError`, async function () {
     {
       // set fake object id in context
       const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
@@ -47,20 +45,17 @@ describe("Aad Error Tests", function() {
 
     // provision
     try {
-      await execAsync(
-        `teamsfx provision --subscription ${subscription}`,
-        {
-          cwd: projectPath,
-          env: process.env,
-          timeout: 0
-        }
-      );
+      await execAsync(`teamsfx provision --subscription ${subscription}`, {
+        cwd: projectPath,
+        env: process.env,
+        timeout: 0,
+      });
     } catch (error) {
       expect(error.toString()).to.contains("AadGetAppError");
     }
   });
 
-  it(`AAD: GetSkipAppConfigError`, async function() {
+  it(`AAD: GetSkipAppConfigError`, async function () {
     {
       // set skip flag in context
       const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
@@ -71,14 +66,11 @@ describe("Aad Error Tests", function() {
 
     // provision
     try {
-      await execAsync(
-        `teamsfx provision --subscription ${subscription}`,
-        {
-          cwd: projectPath,
-          env: process.env,
-          timeout: 0
-        }
-      );
+      await execAsync(`teamsfx provision --subscription ${subscription}`, {
+        cwd: projectPath,
+        env: process.env,
+        timeout: 0,
+      });
     } catch (error) {
       expect(error.toString()).to.contains("GetSkipAppConfigError");
     }
@@ -99,14 +91,11 @@ describe("Aad Error Tests", function() {
 
     // provision
     try {
-      await execAsync(
-        `teamsfx provision --subscription ${subscription}`,
-        {
-          cwd: projectPath,
-          env: process.env,
-          timeout: 0
-        }
-      );
+      await execAsync(`teamsfx provision --subscription ${subscription}`, {
+        cwd: projectPath,
+        env: process.env,
+        timeout: 0,
+      });
     } catch (error) {
       expect(error.toString()).to.contains("UnknownPermissionScope");
     }
@@ -127,14 +116,11 @@ describe("Aad Error Tests", function() {
 
     // provision
     try {
-      await execAsync(
-        `teamsfx provision --subscription ${subscription}`,
-        {
-          cwd: projectPath,
-          env: process.env,
-          timeout: 0
-        }
-      );
+      await execAsync(`teamsfx provision --subscription ${subscription}`, {
+        cwd: projectPath,
+        env: process.env,
+        timeout: 0,
+      });
     } catch (error) {
       expect(error.toString()).to.contains("UnknownPermissionRole");
     }
@@ -155,14 +141,11 @@ describe("Aad Error Tests", function() {
 
     // provision
     try {
-      await execAsync(
-        `teamsfx provision --subscription ${subscription}`,
-        {
-          cwd: projectPath,
-          env: process.env,
-          timeout: 0
-        }
-      );
+      await execAsync(`teamsfx provision --subscription ${subscription}`, {
+        cwd: projectPath,
+        env: process.env,
+        timeout: 0,
+      });
     } catch (error) {
       expect(error.toString()).to.contains("ParsePermissionError");
     }

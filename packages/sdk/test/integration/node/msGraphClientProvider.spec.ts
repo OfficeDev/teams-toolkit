@@ -8,12 +8,12 @@ import {
   createMicrosoftGraphClient,
   loadConfiguration,
   OnBehalfOfUserCredential,
-  M365TenantCredential
+  M365TenantCredential,
 } from "../../../src";
 import {
   getSsoTokenFromTeams,
   MockEnvironmentVariable,
-  RestoreEnvironmentVariable
+  RestoreEnvironmentVariable,
 } from "../helper";
 
 chaiUse(chaiPromises);
@@ -21,7 +21,7 @@ let restore: () => void;
 
 describe("createMicrosoftGraphClient Tests - Node", () => {
   let ssoToken = "";
-  beforeEach(async function() {
+  beforeEach(async function () {
     restore = MockEnvironmentVariable();
     loadConfiguration();
 
@@ -32,7 +32,7 @@ describe("createMicrosoftGraphClient Tests - Node", () => {
     RestoreEnvironmentVariable(restore);
   });
 
-  it("call graph API should success with OnBehalfOfUserCredential", async function() {
+  it("call graph API should success with OnBehalfOfUserCredential", async function () {
     const scopes = ["User.Read"];
     const oboCredential = new OnBehalfOfUserCredential(ssoToken);
     const graphClient: any = createMicrosoftGraphClient(oboCredential, scopes);
@@ -40,7 +40,7 @@ describe("createMicrosoftGraphClient Tests - Node", () => {
     assert.strictEqual(profile.userPrincipalName, process.env.SDK_INTEGRATION_TEST_ACCOUNT_NAME);
   });
 
-  it("call graph API should failed when M365TenantCredential credential do not have admin permission", async function() {
+  it("call graph API should failed when M365TenantCredential credential do not have admin permission", async function () {
     const scopes = ["https://graph.microsoft.com/.default"];
     const m356Credential = new M365TenantCredential();
     const graphClient: any = createMicrosoftGraphClient(m356Credential, scopes);

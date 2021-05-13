@@ -10,7 +10,7 @@ export enum TelemetryEvent {
   AccountLogout = "logout",
 
   ProvisionStart = "provision-start",
-  Provision = "provision"
+  Provision = "provision",
 }
 
 export enum TelemetryProperty {
@@ -26,12 +26,12 @@ export enum TelemetryProperty {
 
 export enum TelemetrySuccess {
   Yes = "yes",
-  No = "no"
+  No = "no",
 }
 
 export enum TelemetryErrorType {
   UserError = "user",
-  SystemError = "system"
+  SystemError = "system",
 }
 
 export const TelemetryComponentType = "cli";

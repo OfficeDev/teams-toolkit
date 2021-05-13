@@ -1,9 +1,12 @@
 # TeamsFx Command Line Tool
 
+<!---[![Feature Requests]()]()
+[![Bugs]()]()--->
+
 ## TeamsFx CLI
 TeamsFx CLI a text-based command line interface that can help scaffold, validate, and deploy applications for Microsoft Teams from the terminal or a CI/CD process.
 
-Please refer to [TeamsFx CLI User Manual](/docs/cli/user-manual.md).
+This package [teamsfx-cli](/packages/cli) is where we develop the TeamsFx Command Line Tool with the community.
 
 ## Extensibility Model
 TeamsFx CLI depends on [fx-core](/packages/fx-core) and [api](/packages/api) packages. [fx-core](/packages/fx-core) is designed to be extensible. See [EXTENSIBILITY.md](/packages/api/ETENSIBILITY.md) for more
@@ -22,8 +25,8 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 
 There are many ways in which you can participate in the project, for example:
 
-* [Submit bugs and feature requests](https://github.com/OfficeDev/TeamsFx/issues), and help us verify as they are checked in
-* Review [source code changes](https://github.com/OfficeDev/TeamsFx/pulls)
+- [Submit bugs and feature requests](https://github.com/OfficeDev/TeamsFx/issues), and help us verify as they are checked in
+- Review [source code changes](https://github.com/OfficeDev/TeamsFx/pulls)
 
 If you are interested in fixing issues and contributing directly to the code base, please see the [Contributing Guide](./CONTRIBUTING.md).
 

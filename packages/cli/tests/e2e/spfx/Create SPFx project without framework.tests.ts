@@ -5,12 +5,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import { expect } from "chai";
 
-import {
-  cleanUpLocalProject,
-  execAsync,
-  getTestFolder,
-  getUniqueAppName
-} from "../commonUtils";
+import { cleanUpLocalProject, execAsync, getTestFolder, getUniqueAppName } from "../commonUtils";
 
 describe("Start a new project", function () {
   const testFolder = getTestFolder();
@@ -20,14 +15,11 @@ describe("Start a new project", function () {
 
   it("Create SPFx project without framework - Test Plan ID 9426251", async function () {
     const command = `teamsfx new --interactive false --app-name ${appName} --host-type spfx --spfx-framework-type ${type} --spfx-webpart-name helloworld --programming-language typescript`;
-    const result = await execAsync(
-      command,
-      {
-        cwd: testFolder,
-        env: process.env,
-        timeout: 0
-      }
-    );
+    const result = await execAsync(command, {
+      cwd: testFolder,
+      env: process.env,
+      timeout: 0,
+    });
 
     // check specified files
     const files: string[] = [
@@ -47,7 +39,7 @@ describe("Start a new project", function () {
       "package.json",
       "README.md",
       "tsconfig.json",
-      "tslint.json"
+      "tslint.json",
     ];
     for (const file of files) {
       const filePath = path.join(testFolder, appName, `SPFx`, file);

@@ -1,13 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  Plugin,
-  PluginContext,
-  SystemError,
-  UserError,
-  err,
-} from "@microsoft/teamsfx-api";
+import { Plugin, PluginContext, SystemError, UserError, err } from "@microsoft/teamsfx-api";
 import { AadAppForTeamsImpl } from "./plugin";
 import { AadResult, ResultFactory } from "./results";
 import { UnhandledError } from "./errors";
@@ -22,7 +16,7 @@ export class AadAppForTeamsPlugin implements Plugin {
     return await this.runWithExceptionCatchingAsync(
       () => this.pluginImpl.provision(ctx),
       ctx,
-      Messages.EndProvision.telemetry,
+      Messages.EndProvision.telemetry
     );
   }
 
@@ -30,17 +24,14 @@ export class AadAppForTeamsPlugin implements Plugin {
     return await this.runWithExceptionCatchingAsync(
       () => this.pluginImpl.provision(ctx, true),
       ctx,
-      Messages.EndLocalDebug.telemetry,
+      Messages.EndLocalDebug.telemetry
     );
   }
 
-  public setApplicationInContext(
-    ctx: PluginContext,
-    isLocalDebug = false
-  ): AadResult {
+  public setApplicationInContext(ctx: PluginContext, isLocalDebug = false): AadResult {
     return this.runWithExceptionCatching(
       () => this.pluginImpl.setApplicationInContext(ctx, isLocalDebug),
-      ctx,
+      ctx
     );
   }
 
@@ -48,7 +39,7 @@ export class AadAppForTeamsPlugin implements Plugin {
     return await this.runWithExceptionCatchingAsync(
       () => this.pluginImpl.postProvision(ctx),
       ctx,
-      Messages.EndPostProvision.telemetry,
+      Messages.EndPostProvision.telemetry
     );
   }
 
@@ -56,14 +47,14 @@ export class AadAppForTeamsPlugin implements Plugin {
     return await this.runWithExceptionCatchingAsync(
       () => this.pluginImpl.postProvision(ctx, true),
       ctx,
-      Messages.EndPostLocalDebug.telemetry,
+      Messages.EndPostLocalDebug.telemetry
     );
   }
 
   private async runWithExceptionCatchingAsync(
     fn: () => Promise<AadResult>,
     ctx: PluginContext,
-    stage: string,
+    stage: string
   ): Promise<AadResult> {
     try {
       return await fn();
@@ -72,10 +63,7 @@ export class AadAppForTeamsPlugin implements Plugin {
     }
   }
 
-  private runWithExceptionCatching(
-    fn: () => AadResult,
-    ctx: PluginContext,
-  ): AadResult {
+  private runWithExceptionCatching(fn: () => AadResult, ctx: PluginContext): AadResult {
     try {
       return fn();
     } catch (e) {
@@ -94,7 +82,12 @@ export class AadAppForTeamsPlugin implements Plugin {
         ctx.logProvider?.error(innerErrorMessage);
       }
       TelemetryUtils.init(ctx);
-      TelemetryUtils.sendErrorEvent(stage, e.name, e instanceof UserError ? Telemetry.userError : Telemetry.systemError, e.message );
+      TelemetryUtils.sendErrorEvent(
+        stage,
+        e.name,
+        e instanceof UserError ? Telemetry.userError : Telemetry.systemError,
+        e.message
+      );
       DialogUtils.progress?.end();
       return err(e);
     } else {
@@ -104,7 +97,12 @@ export class AadAppForTeamsPlugin implements Plugin {
 
       ctx.logProvider?.error(e.message);
       TelemetryUtils.init(ctx);
-      TelemetryUtils.sendErrorEvent(stage, UnhandledError.name, Telemetry.systemError, UnhandledError.message());
+      TelemetryUtils.sendErrorEvent(
+        stage,
+        UnhandledError.name,
+        Telemetry.systemError,
+        UnhandledError.message()
+      );
       return err(
         ResultFactory.SystemError(
           UnhandledError.name,

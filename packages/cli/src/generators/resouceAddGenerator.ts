@@ -3,15 +3,7 @@
 
 "use strict";
 
-import {
-  QTreeNode,
-  FxError,
-  ok,
-  Result,
-  err,
-  Stage,
-  NodeType
-} from "@microsoft/teamsfx-api";
+import { QTreeNode, FxError, ok, Result, err, Stage, NodeType } from "@microsoft/teamsfx-api";
 
 import * as constants from "../constants";
 import { flattenNodes } from "../utils";
@@ -19,7 +11,7 @@ import { Generator } from "./generator";
 
 abstract class ResourceAddGenerator extends Generator {
   abstract readonly resourceName: string;
-  
+
   public readonly stage = Stage.update;
 
   async generate(projectPath: string): Promise<Result<QTreeNode[], FxError>> {
@@ -33,8 +25,12 @@ abstract class ResourceAddGenerator extends Generator {
 
     const childrenNodes = (root.children || []).concat([]);
 
-    const functionNodes = flattenNodes(childrenNodes.filter(node => (node.condition as any).minItems === 1)[0]);
-    const resourcesNode = childrenNodes.filter(node => (node.condition as any).contains === this.resourceName)[0];
+    const functionNodes = flattenNodes(
+      childrenNodes.filter((node) => (node.condition as any).minItems === 1)[0]
+    );
+    const resourcesNode = childrenNodes.filter(
+      (node) => (node.condition as any).contains === this.resourceName
+    )[0];
     const resourceNodes = resourcesNode ? flattenNodes(resourcesNode) : [];
 
     (root.data as any).default = [this.resourceName];
@@ -42,7 +38,9 @@ abstract class ResourceAddGenerator extends Generator {
     root.children = undefined;
 
     // pick all related questions.
-    const allNodes = [root, ...functionNodes, ...resourceNodes].filter(node => node.data && node.data.type !== NodeType.group);
+    const allNodes = [root, ...functionNodes, ...resourceNodes].filter(
+      (node) => node.data && node.data.type !== NodeType.group
+    );
     return ok([constants.RootFolderNode, ...allNodes]);
   }
 }

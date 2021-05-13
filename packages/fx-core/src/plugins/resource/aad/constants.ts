@@ -103,10 +103,8 @@ export interface Messages {
 }
 
 export class Messages {
-  public static readonly getLog = (log: string) =>
-    `[${Plugins.pluginName}] ${log}`;
-  private static readonly getEventName = (eventName: string) =>
-    `${eventName}`;
+  public static readonly getLog = (log: string) => `[${Plugins.pluginName}] ${log}`;
+  private static readonly getEventName = (eventName: string) => `${eventName}`;
 
   static readonly StartProvision: Messages = {
     log: Messages.getLog("Start to provision"),
@@ -160,14 +158,10 @@ export class Messages {
 
   static readonly GetAadAppSuccess = "Successfully get Azure AD app.";
   static readonly CreateAadAppSuccess = "Successfully created Azure AD app.";
-  static readonly CreateAadAppPasswordSuccess =
-    "Successfully created password for Azure AD app.";
-  static readonly UpdatePermissionSuccess =
-    "Successfully updated permission for Azure AD app.";
-  static readonly SetAppIdUriSuccess =
-    "Successfully created application id uri for Azure AD app.";
-  static readonly UpdateRedirectUriSuccess =
-    "Successfully updated redirect uri for Azure AD app.";
+  static readonly CreateAadAppPasswordSuccess = "Successfully created password for Azure AD app.";
+  static readonly UpdatePermissionSuccess = "Successfully updated permission for Azure AD app.";
+  static readonly SetAppIdUriSuccess = "Successfully created application id uri for Azure AD app.";
+  static readonly UpdateRedirectUriSuccess = "Successfully updated redirect uri for Azure AD app.";
   static readonly UpdateAppIdUriSuccess =
     "Successfully updated application id uri for Azure AD app.";
   static readonly ParsePermissionSuccess = "Successfully parsed permissions.";
@@ -176,7 +170,8 @@ export class Messages {
   static readonly UserCancelled = "Selection is cancelled by user.";
   static readonly UpdatePermissionSuccessMessage =
     "Successfully updated permission for Azure AD app. You can go to Azure Portal to check the permission or grant admin consent.";
-  static readonly SkipProvision = "Azure AD app provision skipped. You need to mannual provision and config Azure AD app.";
+  static readonly SkipProvision =
+    "Azure AD app provision skipped. You need to mannual provision and config Azure AD app.";
 }
 
 export class ProgressTitle {

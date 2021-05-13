@@ -16,66 +16,51 @@ import {
 } from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 
-describe("Test Add Function", function() {
+describe("Test Add Function", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
 
-  it(`Create Tab Then Add Function`, async function() {
-    await execAsync(
-      `teamsfx new --interactive false --app-name ${appName} --capabilities tab`,
-      {
-        cwd: testFolder,
-        env: process.env,
-        timeout: 0
-      }
-    );
+  it(`Create Tab Then Add Function`, async function () {
+    await execAsync(`teamsfx new --interactive false --app-name ${appName} --capabilities tab`, {
+      cwd: testFolder,
+      env: process.env,
+      timeout: 0,
+    });
     console.log(`[Successfully] scaffold to ${projectPath}`);
 
     await setSimpleAuthSkuNameToB1(projectPath);
 
-    await execAsync(
-      `teamsfx resource add azure-function --function-name func1`,
-      {
-        cwd: projectPath,
-        env: process.env,
-        timeout: 0
-      }
-    );
+    await execAsync(`teamsfx resource add azure-function --function-name func1`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
 
-    await execAsync(
-      `teamsfx resource add azure-function --function-name func2`,
-      {
-        cwd: projectPath,
-        env: process.env,
-        timeout: 0
-      }
-    );
+    await execAsync(`teamsfx resource add azure-function --function-name func2`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
 
     console.log(`[Successfully] add function to ${projectPath}`);
 
     // set subscription
-    await execAsync(
-      `teamsfx account set --subscription ${subscription}`,
-      {
-        cwd: projectPath,
-        env: process.env,
-        timeout: 0
-      }
-    );
+    await execAsync(`teamsfx account set --subscription ${subscription}`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
 
     console.log(`[Successfully] set subscription for ${projectPath}`);
 
     // provision
-    await execAsync(
-      `teamsfx provision`,
-      {
-        cwd: projectPath,
-        env: process.env,
-        timeout: 0
-      }
-    );
+    await execAsync(`teamsfx provision`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
 
     console.log(`[Successfully] provision for ${projectPath}`);
 
@@ -98,14 +83,11 @@ describe("Test Add Function", function() {
     }
 
     // deploy
-    await execAsync(
-      `teamsfx deploy function`,
-      {
-        cwd: projectPath,
-        env: process.env,
-        timeout: 0
-      }
-    );
+    await execAsync(`teamsfx deploy function`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
     console.log(`[Successfully] deploy for ${projectPath}`);
 
     {
@@ -119,30 +101,23 @@ describe("Test Add Function", function() {
       await FunctionValidator.validateDeploy(func);
     }
 
-
     // validate
-    await execAsync(
-      `teamsfx validate`,
-      {
-        cwd: projectPath,
-        env: process.env,
-        timeout: 0
-      }
-    );
+    await execAsync(`teamsfx validate`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
 
     {
       /// TODO: add check for validate
     }
 
     // build
-    await execAsync(
-      `teamsfx build`,
-      {
-        cwd: projectPath,
-        env: process.env,
-        timeout: 0
-      }
-    );
+    await execAsync(`teamsfx build`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
 
     {
       /// TODO: add check for build

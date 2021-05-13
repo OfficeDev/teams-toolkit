@@ -1,79 +1,74 @@
 [
-    {
-        "data": {
-            "type": "folder",
-            "name": "folder",
-            "description": "Select root folder of the project",
-            "default": "./"
-        }
-    },
-    {
-        "data": {
-            "name": "capabilities",
-            "title": "Choose capabilities",
-            "type": "multiSelect",
-            "option": [
-                {
-                    "id": "Bot",
-                    "label": "Bot",
-                    "cliName": "bot",
-                    "description": "Conversational Agent",
-                    "detail": "Bots allow users to interfact with your web service through text, interactive cards, and task modules."
-                },
-                {
-                    "id": "MessageExtension",
-                    "label": "Messaging Extension",
-                    "cliName": "messaging-extension",
-                    "description": "Custom UI when users compose messages in Teams",
-                    "detail": "Messaging Extensions allow users to interact with your web service through buttons and forms in the Microsoft Teams client."
-                }
-            ],
-            "default": [
-                "messaging-extension"
-            ],
-            "hide": true
-        }
-    },
-    {
-        "data": {
-            "name": "way-to-register-bot",
-            "type": "singleSelect",
-            "option": [
-                {
-                    "id": "create-new",
-                    "label": "Create a new bot registration"
-                },
-                {
-                    "id": "reuse-existing",
-                    "label": "Use an existing bot registration"
-                }
-            ],
-            "title": "Bot registration",
-            "default": "create-new"
-        },
-        "condition": {
-            "containsAny": [
-                "Bot",
-                "MessageExtension"
-            ]
-        }
-    },
-    {
-        "data": {
-            "name": "bot-id",
-            "type": "text",
-            "title": "Enter bot id",
-            "default": "",
-            "validation": {}
-        }
-    },
-    {
-        "data": {
-            "name": "bot-password",
-            "type": "password",
-            "title": "Enter bot password",
-            "default": "",
-            "validation": {}
-        }
+  {
+    "data": {
+      "type": "folder",
+      "name": "folder",
+      "description": "Select root folder of the project",
+      "default": "./"
     }
+  },
+  {
+    "data": {
+      "name": "capabilities",
+      "title": "Choose capabilities",
+      "type": "multiSelect",
+      "option": [
+        {
+          "id": "Bot",
+          "label": "Bot",
+          "cliName": "bot",
+          "description": "Conversational Agent",
+          "detail": "Bots allow users to interfact with your web service through text, interactive cards, and task modules."
+        },
+        {
+          "id": "MessageExtension",
+          "label": "Messaging Extension",
+          "cliName": "messaging-extension",
+          "description": "Custom UI when users compose messages in Teams",
+          "detail": "Messaging Extensions allow users to interact with your web service through buttons and forms in the Microsoft Teams client."
+        }
+      ],
+      "default": ["messaging-extension"],
+      "hide": true
+    }
+  },
+  {
+    "data": {
+      "name": "way-to-register-bot",
+      "type": "singleSelect",
+      "option": [
+        {
+          "id": "create-new",
+          "label": "Create a new bot registration"
+        },
+        {
+          "id": "reuse-existing",
+          "label": "Use an existing bot registration"
+        }
+      ],
+      "title": "Bot registration",
+      "default": "create-new"
+    },
+    "condition": {
+      "containsAny": ["Bot", "MessageExtension"]
+    }
+  },
+  {
+    "data": {
+      "name": "bot-id",
+      "type": "text",
+      "title": "Enter bot id",
+      "default": "",
+      "validation": {}
+    }
+  },
+  {
+    "data": {
+      "name": "bot-password",
+      "type": "password",
+      "title": "Enter bot password",
+      "default": "",
+      "validation": {}
+    }
+  }
 ]

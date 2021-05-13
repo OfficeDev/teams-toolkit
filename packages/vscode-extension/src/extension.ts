@@ -53,10 +53,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(provisionCmd);
 
   // 1.5 Register the deploy command.
-  const deployCmd = vscode.commands.registerCommand(
-    "fx-extension.deploy",
-    handlers.deployHandler
-  );
+  const deployCmd = vscode.commands.registerCommand("fx-extension.deploy", handlers.deployHandler);
   context.subscriptions.push(deployCmd);
 
   const validateManifestCmd = vscode.commands.registerCommand(
@@ -170,7 +167,7 @@ export async function activate(context: vscode.ExtensionContext) {
     handlers.openAzureAccountHandler
   );
   context.subscriptions.push(azureAccountSettingsCmd);
-  
+
   const cmpAccountsCmd = vscode.commands.registerCommand(
     "fx-extension.cmpAccounts",
     handlers.cmpAccountsHandler

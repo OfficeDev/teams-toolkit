@@ -10,7 +10,14 @@ import { SubscriptionClient } from "@azure/arm-subscriptions";
 import * as fs from "fs-extra";
 import * as path from "path";
 
-import { AzureAccountProvider, ConfigFolderName, err, FxError, ok, Result } from "@microsoft/teamsfx-api";
+import {
+  AzureAccountProvider,
+  ConfigFolderName,
+  err,
+  FxError,
+  ok,
+  Result,
+} from "@microsoft/teamsfx-api";
 
 import { NotSupportedProjectType, NotFoundSubscriptionId } from "../error";
 import { login, LoginStatus } from "./common/login";
@@ -98,7 +105,11 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
    * Add update account info callback
    */
   async setStatusChangeCallback(
-    statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>
   ): Promise<boolean> {
     // AzureAccountManager.statusChange = statusChange;
     return new Promise((resolve) => {

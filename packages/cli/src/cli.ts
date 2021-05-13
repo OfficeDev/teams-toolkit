@@ -32,12 +32,12 @@ export function register(yargs: yargs.Argv): void {
     .options("verbose", {
       description: "Print additional information.",
       boolean: true,
-      default: false
+      default: false,
     })
     .options("debug", {
       description: "Print diagnostic information.",
       boolean: true,
-      default: false
+      default: false,
     })
     .demandCommand()
     .scriptName(constants.cliName)
@@ -46,7 +46,5 @@ export function register(yargs: yargs.Argv): void {
     .alias("help", "h")
     .alias("v", "version")
     .version()
-    .epilogue(
-      "For more information about the Teams Toolkit - https://aka.ms/teamsfx-learn."
-    ).argv;
+    .epilogue("For more information about the Teams Toolkit - https://aka.ms/teamsfx-learn.").argv;
 })();

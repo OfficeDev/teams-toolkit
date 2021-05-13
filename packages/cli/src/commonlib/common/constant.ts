@@ -24,11 +24,13 @@ export const env = {
   keyVaultDnsSuffix: ".vault.azure.net",
   azureDataLakeStoreFileSystemEndpointSuffix: "azuredatalakestore.net",
   azureDataLakeAnalyticsCatalogAndJobEndpointSuffix: "azuredatalakeanalytics.net",
-  validateAuthority: true
+  validateAuthority: true,
 };
 
 export const unknownSubscription = "UnknownSubscription";
 export const unknownSubscriptionDesc = "Cannot set subscription. Choose a correct subscription.";
 
-export const azureLoginMessage = "Log in to your Azure account - opening default web browser at https://login.microsoftonline.com/organizations/oauth2/v2.0/authorize.";
-export const m365LoginMessage = "Log in to your M365 account - opening default web browser at https://login.microsoftonline.com/common/oauth2/v2.0/authorize.";
+export const azureLoginMessage =
+  "Log in to your Azure account - opening default web browser at https://login.microsoftonline.com/organizations/oauth2/v2.0/authorize.";
+export const m365LoginMessage =
+  "Log in to your M365 account - opening default web browser at https://login.microsoftonline.com/common/oauth2/v2.0/authorize.";

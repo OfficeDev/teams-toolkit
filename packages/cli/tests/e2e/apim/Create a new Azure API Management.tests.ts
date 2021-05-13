@@ -26,36 +26,27 @@ describe("Create a new API Management Service", function () {
 
   it(`Import API into a new API Management Service`, async function () {
     // new a project
-    await execAsync(
-      `teamsfx new --app-name ${appName} --interactive false`,
-      {
-        cwd: testFolder,
-        env: process.env,
-        timeout: 0
-      }
-    );
+    await execAsync(`teamsfx new --app-name ${appName} --interactive false`, {
+      cwd: testFolder,
+      env: process.env,
+      timeout: 0,
+    });
 
     await setSimpleAuthSkuNameToB1(projectPath);
 
     await ApimValidator.init(subscriptionId, AzureLogin, GraphLogin);
 
-    await execAsync(
-      `teamsfx resource add azure-apim --subscription ${subscriptionId}`,
-      {
-        cwd: projectPath,
-        env: process.env,
-        timeout: 0
-      }
-    );
+    await execAsync(`teamsfx resource add azure-apim --subscription ${subscriptionId}`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
 
-    await execAsync(
-      `teamsfx provision`,
-      {
-        cwd: projectPath,
-        env: process.env,
-        timeout: 0
-      }
-    );
+    await execAsync(`teamsfx provision`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
 
     const provisionContext = await fs.readJSON(getConfigFileName(appName));
     await ApimValidator.validateProvision(provisionContext, appName);
@@ -65,7 +56,7 @@ describe("Create a new API Management Service", function () {
       {
         cwd: projectPath,
         env: process.env,
-        timeout: 0
+        timeout: 0,
       }
     );
 

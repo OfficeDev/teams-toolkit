@@ -3,7 +3,16 @@
 
 "use strict";
 
-import { Result, FxError, err, ok, Core, UserError, SystemError, ConfigMap } from "@microsoft/teamsfx-api";
+import {
+  Result,
+  FxError,
+  err,
+  ok,
+  Core,
+  UserError,
+  SystemError,
+  ConfigMap,
+} from "@microsoft/teamsfx-api";
 
 import AzureAccountManager from "./commonlib/azureLogin";
 import AppStudioTokenProvider from "./commonlib/appStudioLogin";

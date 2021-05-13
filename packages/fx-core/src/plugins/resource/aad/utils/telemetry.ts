@@ -21,11 +21,7 @@ export class TelemetryUtils {
     }
     properties[Telemetry.component] = Plugins.pluginNameComplex;
     properties[Telemetry.isSuccess] = Telemetry.success;
-    TelemetryUtils.ctx.telemetryReporter?.sendTelemetryEvent(
-      eventName,
-      properties,
-      measurements
-    );
+    TelemetryUtils.ctx.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
   }
 
   public static sendErrorEvent(
@@ -39,7 +35,7 @@ export class TelemetryUtils {
     if (!properties) {
       properties = {};
     }
-    
+
     properties[Telemetry.component] = Plugins.pluginNameComplex;
     properties[Telemetry.errorCode] = `${Plugins.pluginNameShort}.${errorName}`;
     properties[Telemetry.errorType] = errorType;
@@ -48,14 +44,11 @@ export class TelemetryUtils {
     TelemetryUtils.ctx.telemetryReporter?.sendTelemetryErrorEvent(
       eventName,
       properties,
-      measurements,
+      measurements
     );
   }
 
-  static readonly getErrorProperty = (
-    errorType: string,
-    errorMessage: string
-  ) => {
+  static readonly getErrorProperty = (errorType: string, errorMessage: string) => {
     return {
       "error-type": errorType,
       "error-message": errorMessage,

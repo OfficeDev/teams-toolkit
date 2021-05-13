@@ -23,39 +23,30 @@ describe("Provision", function () {
   const projectPath = path.resolve(testFolder, appName);
 
   it(`Provision Resource: project with new bot - Test Plan ID 9729265`, async function () {
-    await execAsync(
-      `teamsfx new --interactive false --app-name ${appName} --capabilities bot`,
-      {
-        cwd: testFolder,
-        env: process.env,
-        timeout: 0
-      }
-    );
+    await execAsync(`teamsfx new --interactive false --app-name ${appName} --capabilities bot`, {
+      cwd: testFolder,
+      env: process.env,
+      timeout: 0,
+    });
     console.log(`[Successfully] scaffold to ${projectPath}`);
 
     await setBotSkuNameToB1(projectPath);
 
     // set subscription
-    await execAsync(
-      `teamsfx account set --subscription ${subscription}`,
-      {
-        cwd: projectPath,
-        env: process.env,
-        timeout: 0
-      }
-    );
+    await execAsync(`teamsfx account set --subscription ${subscription}`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
 
     console.log(`[Successfully] set subscription for ${projectPath}`);
 
     // provision
-    await execAsync(
-      `teamsfx provision`,
-      {
-        cwd: projectPath,
-        env: process.env,
-        timeout: 0
-      }
-    );
+    await execAsync(`teamsfx provision`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
 
     console.log(`[Successfully] provision for ${projectPath}`);
 
@@ -74,14 +65,11 @@ describe("Provision", function () {
     }
 
     // deploy
-    await execAsync(
-      `teamsfx deploy bot`,
-      {
-        cwd: projectPath,
-        env: process.env,
-        timeout: 0
-      }
-    );
+    await execAsync(`teamsfx deploy bot`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
     console.log(`[Successfully] deploy for ${projectPath}`);
 
     {
@@ -95,30 +83,23 @@ describe("Provision", function () {
       await BotValidator.validateDeploy(bot);
     }
 
-
     // test (validate)
-    await execAsync(
-      `teamsfx validate`,
-      {
-        cwd: projectPath,
-        env: process.env,
-        timeout: 0
-      }
-    );
+    await execAsync(`teamsfx validate`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
 
     {
       /// TODO: add check for validate
     }
 
     // build
-    await execAsync(
-      `teamsfx build`,
-      {
-        cwd: projectPath,
-        env: process.env,
-        timeout: 0
-      }
-    );
+    await execAsync(`teamsfx build`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
 
     {
       /// TODO: add check for build

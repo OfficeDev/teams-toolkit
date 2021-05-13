@@ -18,7 +18,7 @@ import {
   IProgressStatus,
   Result,
   FxError,
-  IProgressHandler
+  IProgressHandler,
 } from "@microsoft/teamsfx-api";
 import { ProgressHandler } from "./progressHandler";
 import { sleep } from "./utils/commonUtils";
@@ -78,7 +78,7 @@ export class DialogManager implements Dialog {
         }
         return new DialogMsg(DialogType.Show, {
           description: "",
-          level: result ? MsgLevel.Info : MsgLevel.Error
+          level: result ? MsgLevel.Info : MsgLevel.Error,
         });
       }
       case DialogType.ShowProgress: {
@@ -86,18 +86,18 @@ export class DialogManager implements Dialog {
         if (result.isErr()) {
           return new DialogMsg(DialogType.Show, {
             description: result.error.source,
-            level: MsgLevel.Error
+            level: MsgLevel.Error,
           });
         }
         return new DialogMsg(DialogType.Show, {
           description: "",
-          level: MsgLevel.Info
+          level: MsgLevel.Info,
         });
       }
       default: {
         return new DialogMsg(DialogType.Show, {
           description: "",
-          level: MsgLevel.Error
+          level: MsgLevel.Error,
         });
       }
     }
@@ -146,14 +146,12 @@ export class DialogManager implements Dialog {
       {
         location: ProgressLocation.Notification,
         title: prog.title,
-        cancellable: prog.cancellable
+        cancellable: prog.cancellable,
       },
       async (progress) => {
         await sleep(0);
-        let currentStatus: IteratorResult<
-          IProgressStatus,
-          Result<null, FxError>
-        > = await prog.progressIter.next();
+        let currentStatus: IteratorResult<IProgressStatus, Result<null, FxError>> =
+          await prog.progressIter.next();
         while (!currentStatus.done) {
           progress.report(currentStatus.value);
           await sleep(0);
@@ -182,19 +180,21 @@ export class DialogManager implements Dialog {
           return undefined;
         }
         return await ext.ui.showQuickPick(options, {
-          placeHolder: question.description || StringResources.vsc.userInterface.noQuestionDescription,
+          placeHolder:
+            question.description || StringResources.vsc.userInterface.noQuestionDescription,
           ignoreFocusOut: true,
-          canPickMany: question.multiSelect
+          canPickMany: question.multiSelect,
         });
       }
       case QuestionType.Text: {
         return await ext.ui.showInputBox({
           value: question.defaultAnswer || "",
-          placeHolder: question.description || StringResources.vsc.userInterface.noQuestionDescription,
+          placeHolder:
+            question.description || StringResources.vsc.userInterface.noQuestionDescription,
           ignoreFocusOut: true,
           validateInput: question.validateInput,
           password: question.password,
-          prompt: question.prompt
+          prompt: question.prompt,
         });
       }
       case QuestionType.SelectFolder: {
@@ -202,7 +202,7 @@ export class DialogManager implements Dialog {
           canSelectFiles: false,
           canSelectFolders: true,
           canSelectMany: false,
-          title: question.description
+          title: question.description,
         });
         return uri && uri.length > 0 ? uri[0].fsPath : undefined;
       }
@@ -231,12 +231,16 @@ export class DialogManager implements Dialog {
         return undefined;
       }
       case QuestionType.Confirm: {
-        return await window.showWarningMessage(question.description, {modal: true}, ...(question.options?question.options:[]));
+        return await window.showWarningMessage(
+          question.description,
+          { modal: true },
+          ...(question.options ? question.options : [])
+        );
       }
       default: {
         await this.showMessage({
           description: StringResources.vsc.userInterface.notImplementQuestion,
-          level: MsgLevel.Error
+          level: MsgLevel.Error,
         });
         return undefined;
       }

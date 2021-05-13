@@ -21,10 +21,7 @@ export class Utils {
     }
   }
 
-  public static addLogAndTelemetry(
-    logProvider: LogProvider | undefined,
-    message: Messages
-  ) {
+  public static addLogAndTelemetry(logProvider: LogProvider | undefined, message: Messages) {
     logProvider?.info(message.log);
     TelemetryUtils.sendEvent(message.telemetry);
   }

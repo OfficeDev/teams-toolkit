@@ -5,6 +5,7 @@ Welcome and thank you for your interest in contributing to **@microsoft/teamsfx-
 ## Setup develop environment
 
 Follow the official documents to install the required softwares:
+
 1. [Git](https://git-scm.com/)
 2. [Node.js and NPM](https://nodejs.org/), **x64**, Node version >= 10.x, <= 14.x
 3. [Visual Studio Code](https://code.visualstudio.com/)
@@ -39,9 +40,9 @@ After running `npm run setup` in the root folder of the monorepo, a [Precommit G
 
 1. Checkout your local branch from the latest `main` branch and make your changes to your local branch.
 2. Before creating a pull request, make sure:
-    - Use eslint plugin to check whether there is any error or warning that breaks the rule. (`npm run lint`)
-    - Make sure modified functions are covered by unit tests. (`npm run test:unit`)
-    - Better to add comment for public class/method.
+   - Use eslint plugin to check whether there is any error or warning that breaks the rule. (`npm run lint`)
+   - Make sure modified functions are covered by unit tests. (`npm run test:unit`)
+   - Better to add comment for public class/method.
 3. Push your local branch and create the pull request.
 4. Make sure all the checks in pull request are passed.
 5. At least one approve from each code owner is required.

@@ -7,124 +7,124 @@ import * as sinon from "sinon";
 import * as utils from "../../../../../../src/plugins/resource/bot/utils/common";
 
 describe("Common Utils", () => {
-    describe("toBase64", () => {
-        it("Happy Path", async () => {
-            // Arrange
-            const source = "12345";
-            const expectResult = "MTIzNDU=";
+  describe("toBase64", () => {
+    it("Happy Path", async () => {
+      // Arrange
+      const source = "12345";
+      const expectResult = "MTIzNDU=";
 
-            // Act
-            const result = utils.toBase64(source);
+      // Act
+      const result = utils.toBase64(source);
 
-            // Assert
-            chai.assert.isTrue(result === expectResult);
-        });
+      // Assert
+      chai.assert.isTrue(result === expectResult);
+    });
+  });
+
+  describe("isNameValidInUrl", () => {
+    it("Name Valid", () => {
+      // Arrange
+      const name = "validName";
+
+      // Act
+      const result = utils.isNameValidInUrl(name);
+
+      // Assert
+      chai.assert.isTrue(result);
     });
 
-    describe("isNameValidInUrl", () => {
-        it("Name Valid", () => {
-            // Arrange
-            const name = "validName";
+    it("Name Invalid", () => {
+      // Arrange
+      const name = "@+-";
 
-            // Act
-            const result = utils.isNameValidInUrl(name);
+      // Act
+      const result = utils.isNameValidInUrl(name);
 
-            // Assert
-            chai.assert.isTrue(result);
-        });
-
-        it("Name Invalid", () => {
-            // Arrange
-            const name = "@+-";
-
-            // Act
-            const result = utils.isNameValidInUrl(name);
-
-            // Assert
-            chai.assert.isFalse(result);
-        });
+      // Assert
+      chai.assert.isFalse(result);
     });
+  });
 
-    describe("isDomainValidForAzureWebApp", () => {
-        it("Valid Domain", () => {
-            // Arrange
-            const url = "https://040523tbp5sf2z17ymkn4e4wze.azurewebsites.net";
+  describe("isDomainValidForAzureWebApp", () => {
+    it("Valid Domain", () => {
+      // Arrange
+      const url = "https://040523tbp5sf2z17ymkn4e4wze.azurewebsites.net";
 
-            // Act
-            const result = utils.isDomainValidForAzureWebApp(url);
+      // Act
+      const result = utils.isDomainValidForAzureWebApp(url);
 
-            // Assert
-            chai.assert.isTrue(result);
-        });
+      // Assert
+      chai.assert.isTrue(result);
     });
+  });
 
-    describe("existsInEnumValues", () => {
-        it("Value Existing In Enum", () => {
-            // Arrange
-            enum Color {
-                Red = "Red",
-                Green = "Green",
-                Blue = "Blue"
-            }
+  describe("existsInEnumValues", () => {
+    it("Value Existing In Enum", () => {
+      // Arrange
+      enum Color {
+        Red = "Red",
+        Green = "Green",
+        Blue = "Blue",
+      }
 
-            // Act
-            const result = utils.existsInEnumValues("Red", Color);
+      // Act
+      const result = utils.existsInEnumValues("Red", Color);
 
-            // Assert
-            chai.assert.isTrue(result);
-        });
+      // Assert
+      chai.assert.isTrue(result);
     });
+  });
 
-    describe("isHttpCodeOkOrCreated", () => {
-        it("Expect True", () => {
-            // Arrange
-            const code = 200;
+  describe("isHttpCodeOkOrCreated", () => {
+    it("Expect True", () => {
+      // Arrange
+      const code = 200;
 
-            // Act
-            const result = utils.isHttpCodeOkOrCreated(code);
+      // Act
+      const result = utils.isHttpCodeOkOrCreated(code);
 
-            // Assert
-            chai.assert.isTrue(result);
-        });
+      // Assert
+      chai.assert.isTrue(result);
     });
+  });
 
-    describe("genBotSectionInManifest", () => {
-        it("Happy Path", () => {
-            // Arrange
-            const botId = "123";
+  describe("genBotSectionInManifest", () => {
+    it("Happy Path", () => {
+      // Arrange
+      const botId = "123";
 
-            // Act
-            const result = utils.genBotSectionInManifest(botId);
+      // Act
+      const result = utils.genBotSectionInManifest(botId);
 
-            // Assert
-            chai.assert.isTrue(result.length > 0);
-        });
+      // Assert
+      chai.assert.isTrue(result.length > 0);
     });
+  });
 
-    describe("genMsgExtSectionInManifest", () => {
-        it("Happy Path", () => {
-            // Arrange
-            const botId = "123";
+  describe("genMsgExtSectionInManifest", () => {
+    it("Happy Path", () => {
+      // Arrange
+      const botId = "123";
 
-            // Act
-            const result = utils.genMsgExtSectionInManifest(botId);
+      // Act
+      const result = utils.genMsgExtSectionInManifest(botId);
 
-            // Assert
-            chai.assert.isTrue(result.length > 0);
-        });
+      // Assert
+      chai.assert.isTrue(result.length > 0);
     });
+  });
 
-    describe("convertToTelemetryName", () => {
-        it("Happy Path", () => {
-            // Arrange
-            const raw = "A b C";
+  describe("convertToTelemetryName", () => {
+    it("Happy Path", () => {
+      // Arrange
+      const raw = "A b C";
 
-            // Act
-            const result = utils.convertToTelemetryName(raw);
-            console.log(result);
+      // Act
+      const result = utils.convertToTelemetryName(raw);
+      console.log(result);
 
-            // Assert
-            chai.assert.isTrue(result === "a-b-c");
-        });
+      // Assert
+      chai.assert.isTrue(result === "a-b-c");
     });
+  });
 });

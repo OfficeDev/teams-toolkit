@@ -59,7 +59,7 @@ export default class Publish extends YargsCommand {
       answers.set("platform", Platform.VS);
       const func: Func = {
         namespace: "fx-solution-azure",
-        method: "VSpublish"
+        method: "VSpublish",
       };
       result = await core.executeUserTask!(func, answers);
     } else {

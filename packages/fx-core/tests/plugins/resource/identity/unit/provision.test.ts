@@ -16,59 +16,59 @@ dotenv.config();
 const testWithAzure: boolean = process.env.UT_TEST_ON_AZURE ? true : false;
 
 describe("identityPlugin", () => {
-    let identityPlugin: IdentityPlugin;
-    let pluginContext: PluginContext;
-    let credentials: msRestNodeAuth.TokenCredentialsBase;
+  let identityPlugin: IdentityPlugin;
+  let pluginContext: PluginContext;
+  let credentials: msRestNodeAuth.TokenCredentialsBase;
 
-    before(async () => {
-        if (testWithAzure) {
-            credentials = await msRestNodeAuth.interactiveLogin();
-        } else {
-            credentials = new msRestNodeAuth.ApplicationTokenCredentials(
-                faker.random.uuid(),
-                faker.internet.url(),
-                faker.internet.password(),
-            );
-        }
-    });
+  before(async () => {
+    if (testWithAzure) {
+      credentials = await msRestNodeAuth.interactiveLogin();
+    } else {
+      credentials = new msRestNodeAuth.ApplicationTokenCredentials(
+        faker.random.uuid(),
+        faker.internet.url(),
+        faker.internet.password()
+      );
+    }
+  });
 
-    beforeEach(async () => {
-        identityPlugin = new IdentityPlugin();
-        pluginContext = await TestHelper.pluginContext(credentials);
-    });
+  beforeEach(async () => {
+    identityPlugin = new IdentityPlugin();
+    pluginContext = await TestHelper.pluginContext(credentials);
+  });
 
-    afterEach(() => {
-        sinon.restore();
-    });
+  afterEach(() => {
+    sinon.restore();
+  });
 
-    it("provision", async function () {
-        // Arrange
-        sinon.stub(IdentityPlugin.prototype, "provisionWithArmTemplate").resolves();
+  it("provision", async function () {
+    // Arrange
+    sinon.stub(IdentityPlugin.prototype, "provisionWithArmTemplate").resolves();
 
-        // Act
-        const provisionResult = await identityPlugin.provision(pluginContext);
+    // Act
+    const provisionResult = await identityPlugin.provision(pluginContext);
 
-        // Assert
-        chai.assert.isTrue(provisionResult.isOk());
-        chai.assert.strictEqual(
-            pluginContext.config.get(Constants.identity),
-            identityPlugin.config.identity,
-        );
-    });
+    // Assert
+    chai.assert.isTrue(provisionResult.isOk());
+    chai.assert.strictEqual(
+      pluginContext.config.get(Constants.identity),
+      identityPlugin.config.identity
+    );
+  });
 
-    it("provision with Azure", async function () {
-        if (testWithAzure) {
-            // Act
-            const provisionResult = await identityPlugin.provision(pluginContext);
+  it("provision with Azure", async function () {
+    if (testWithAzure) {
+      // Act
+      const provisionResult = await identityPlugin.provision(pluginContext);
 
-            // Assert
-            chai.assert.isTrue(provisionResult.isOk());
-            chai.assert.strictEqual(
-                pluginContext.config.get(Constants.identity),
-                identityPlugin.config.identity,
-            );
-        } else {
-            this.skip();
-        }
-    });
+      // Assert
+      chai.assert.isTrue(provisionResult.isOk());
+      chai.assert.strictEqual(
+        pluginContext.config.get(Constants.identity),
+        identityPlugin.config.identity
+      );
+    } else {
+      this.skip();
+    }
+  });
 });

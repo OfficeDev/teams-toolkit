@@ -7,7 +7,7 @@ import {
   loadConfiguration,
   ErrorWithCode,
   ErrorCode,
-  getAuthenticationConfiguration
+  getAuthenticationConfiguration,
 } from "../../../src";
 
 chaiUse(chaiPromises);
@@ -22,8 +22,8 @@ describe("ConfigurationProvider Tests - Browser", () => {
       authentication: {
         initiateLoginEndpoint: loginUrl,
         simpleAuthEndpoint: authEndpoint,
-        clientId: clientId
-      }
+        clientId: clientId,
+      },
     });
 
     const authConfig = getAuthenticationConfiguration();

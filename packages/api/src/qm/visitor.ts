@@ -71,7 +71,7 @@ export async function loadOptions(
     } else {
       option = (await getCallFuncValue(
         inputs,
-        true,
+        false,
         selectQuestion.option as Func,
         remoteFuncExecutor
       )) as StaticOption;

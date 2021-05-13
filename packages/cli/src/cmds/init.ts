@@ -19,24 +19,24 @@ export default class Init extends YargsCommand {
     "app-name": {
       type: "string",
       description: "Application name.",
-      default: "TeamsBlazorApp"
+      default: "TeamsBlazorApp",
     },
     environment: {
       type: "string",
       description: "Environment: 'local' or 'remote'.",
       choices: ["local", "remote"],
-      default: "local"
+      default: "local",
     },
     endpoint: {
       type: "string",
       description: "Teams app endpoint.",
-      default: "https://localhost:44357"
+      default: "https://localhost:44357",
     },
     "root-path": {
       type: "string",
       description: "Path to the setting files.",
-      default: "./"
-    }
+      default: "./",
+    },
   };
 
   public builder(yargs: Argv): Argv<any> {
@@ -45,7 +45,7 @@ export default class Init extends YargsCommand {
       .options("verbose", {
         description: "Print additional information.",
         boolean: true,
-        default: false
+        default: false,
       })
       .options(this.params);
   }
@@ -69,7 +69,7 @@ export default class Init extends YargsCommand {
 
       const func: Func = {
         namespace: "fx-solution-azure",
-        method: "registerTeamsAppAndAad"
+        method: "registerTeamsAppAndAad",
       };
 
       const result = await core.executeUserTask!(func, answers);

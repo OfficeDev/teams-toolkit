@@ -19,7 +19,11 @@ export class ResourceAdd extends YargsCommand {
   public readonly command = `${this.commandHead} <resource-type>`;
   public readonly description = "Add a resource to the current application.";
 
-  public readonly subCommands: YargsCommand[] = [new ResourceAddSql(), new ResourceAddApim(), new ResourceAddFunction()];
+  public readonly subCommands: YargsCommand[] = [
+    new ResourceAddSql(),
+    new ResourceAddApim(),
+    new ResourceAddFunction(),
+  ];
 
   public builder(yargs: Argv): Argv<any> {
     this.subCommands.forEach((cmd) => {
@@ -179,7 +183,8 @@ export class ResourceAddFunction extends YargsCommand {
 export class ResourceShow extends YargsCommand {
   public readonly commandHead = `show`;
   public readonly command = `${this.commandHead} <resource-type>`;
-  public readonly description = "Show configuration details of resources in the current application.";
+  public readonly description =
+    "Show configuration details of resources in the current application.";
 
   public readonly subCommands: YargsCommand[] = [new ResourceShowFunction(), new ResourceShowSQL()];
 
@@ -288,7 +293,7 @@ export default class Resource extends YargsCommand {
   public readonly subCommands: YargsCommand[] = [
     new ResourceAdd(),
     new ResourceShow(),
-    new ResourceList()
+    new ResourceList(),
   ];
 
   public builder(yargs: Argv): Argv<any> {

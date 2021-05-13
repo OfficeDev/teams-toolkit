@@ -1,30 +1,28 @@
 [
-    {
-        "data": {
-            "type": "folder",
-            "name": "folder",
-            "description": "Select root folder of the project",
-            "default": "./"
-        }
-    },
-    {
-        "data": {
-            "name": "capabilities",
-            "title": "Choose capabilities",
-            "type": "multiSelect",
-            "option": [
-                {
-                    "id": "Tab",
-                    "label": "Tab",
-                    "cliName": "tab",
-                    "description": "UI-based app",
-                    "detail": "Tabs are Teams-aware webpages embedded in Microsoft Teams."
-                }
-            ],
-            "default": [
-                "tab"
-            ],
-            "hide": true
-        }
+  {
+    "data": {
+      "type": "folder",
+      "name": "folder",
+      "description": "Select root folder of the project",
+      "default": "./"
     }
+  },
+  {
+    "data": {
+      "name": "capabilities",
+      "title": "Choose capabilities",
+      "type": "multiSelect",
+      "option": [
+        {
+          "id": "Tab",
+          "label": "Tab",
+          "cliName": "tab",
+          "description": "UI-based app",
+          "detail": "Tabs are Teams-aware webpages embedded in Microsoft Teams."
+        }
+      ],
+      "default": ["tab"],
+      "hide": true
+    }
+  }
 ]

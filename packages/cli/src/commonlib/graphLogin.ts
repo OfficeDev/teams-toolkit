@@ -18,7 +18,7 @@ const config = {
   auth: {
     // TODO change this to our own first party aad
     clientId: "04b07795-8ddb-461a-bbee-02f9e1bf7b46",
-    authority: "https://login.microsoftonline.com/common"
+    authority: "https://login.microsoftonline.com/common",
   },
   system: {
     loggerOptions: {
@@ -26,9 +26,9 @@ const config = {
         CLILogProvider.log(4 - loglevel, message);
       },
       piiLoggingEnabled: false,
-      logLevel: LogLevel.Error
-    }
-  }
+      logLevel: LogLevel.Error,
+    },
+  },
   // TODO: add this back after graph change to 7ea7c24c-b1f6-4a20-9d11-9ae12e9e7ac0 first party app
   // cache: {
   //   cachePlugin
@@ -110,7 +110,11 @@ export class GraphLogin extends login implements GraphTokenProvider {
   }
 
   async setStatusChangeCallback(
-    statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>
   ): Promise<boolean> {
     GraphLogin.statusChange = statusChange;
     if (GraphLogin.codeFlowInstance.account) {
@@ -137,6 +141,9 @@ export class GraphLogin extends login implements GraphTokenProvider {
 import { MockGraphTokenProvider } from "@microsoft/teamsfx-api";
 
 const ciEnabled = process.env.CI_ENABLED;
-const graphLogin = ciEnabled && ciEnabled === "true" ? MockGraphTokenProvider.getInstance() : GraphLogin.getInstance();
+const graphLogin =
+  ciEnabled && ciEnabled === "true"
+    ? MockGraphTokenProvider.getInstance()
+    : GraphLogin.getInstance();
 
 export default graphLogin;

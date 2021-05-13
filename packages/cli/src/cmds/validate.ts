@@ -49,7 +49,7 @@ export default class Validate extends YargsCommand {
     {
       const func: Func = {
         namespace: "fx-solution-azure",
-        method: "validateManifest"
+        method: "validateManifest",
       };
       const result = await core.executeUserTask!(func, answers);
       if (result.isErr()) {

@@ -11,12 +11,20 @@ import { promisify } from "util";
 import { v4 as uuidv4 } from "uuid";
 
 import { NewGenerator } from "./newGenerator";
-import { ResourceAddApimGenerator, ResourceAddFunctionGenerator, ResourceAddSqlGenerator } from "./resouceAddGenerator";
+import {
+  ResourceAddApimGenerator,
+  ResourceAddFunctionGenerator,
+  ResourceAddSqlGenerator,
+} from "./resouceAddGenerator";
 import { ProvisionGenerator } from "./provisionGenerator";
 import { DeployGenerator } from "./deployGenerator";
 import CLILogProvider from "../commonlib/log";
 import * as constants from "../constants";
-import { CapabilityAddBotGenerator, CapabilityAddTabGenerator, CapabilityAddMessageExtensionGenerator } from "./capabilityAdd";
+import {
+  CapabilityAddBotGenerator,
+  CapabilityAddTabGenerator,
+  CapabilityAddMessageExtensionGenerator,
+} from "./capabilityAdd";
 
 CLILogProvider.setLogLevel(constants.CLILogLevel.verbose);
 
@@ -24,7 +32,7 @@ const execAsync = promisify(exec);
 
 const tmpFolder = path.resolve(os.homedir(), "test-folder");
 if (!fs.pathExistsSync(tmpFolder)) {
-    fs.mkdirSync(tmpFolder);
+  fs.mkdirSync(tmpFolder);
 }
 
 const appNameForResourceAdd = "tmpTeamsfxProj" + uuidv4().slice(0, 8);
@@ -39,13 +47,16 @@ const newCommandForCapabilityAddBot = `teamsfx new --app-name ${appNameForCapabi
 const projectPathForCapabilityAddBot = path.resolve(tmpFolder, appNameForCapabilityAddBot);
 const appNameForCapabilityAddMessageExtension = "tmpTeamsfxProj" + uuidv4().slice(0, 8);
 const newCommandForCapabilityAddMessageExtension = `teamsfx new --app-name ${appNameForCapabilityAddMessageExtension} --capabilities tab --interactive false`;
-const projectPathForCapabilityAddMessageExtension = path.resolve(tmpFolder, appNameForCapabilityAddMessageExtension);
+const projectPathForCapabilityAddMessageExtension = path.resolve(
+  tmpFolder,
+  appNameForCapabilityAddMessageExtension
+);
 
 const appNameForProvision = "tmpTeamsfxProj" + uuidv4().slice(0, 8);
 const projectPathForProvision = path.resolve(tmpFolder, appNameForProvision);
 const newCommandForProvision = `teamsfx new --app-name ${appNameForProvision} --azure-resources function sql --interactive false`;
 
-const argv = process.argv.slice(2).map(stage => stage.toLocaleLowerCase());
+const argv = process.argv.slice(2).map((stage) => stage.toLocaleLowerCase());
 const runNewGenerator = argv.includes("new");
 const runResourceAddGenerator = argv.includes("resource-add");
 const runCapabilityAddGenerator = argv.includes("capability-add");
@@ -56,17 +67,13 @@ const runNewCommandForCapabilityAdd = runCapabilityAddGenerator;
 const runNewCommandForProvision = runProvisionGenerator;
 
 const RunCommand = async (command: string, folder: string) => {
-  CLILogProvider.info(
-    `[ParamGenerator] Start to run '${command}' in ${folder}`
-  );
+  CLILogProvider.info(`[ParamGenerator] Start to run '${command}' in ${folder}`);
   await execAsync(command, {
     cwd: folder,
     env: process.env,
-    timeout: 0
+    timeout: 0,
   });
-  CLILogProvider.info(
-    `[ParamGenerator] Finish to run '${command}' in ${folder}`
-  );
+  CLILogProvider.info(`[ParamGenerator] Finish to run '${command}' in ${folder}`);
 };
 
 (async () => {
@@ -78,7 +85,7 @@ const RunCommand = async (command: string, folder: string) => {
   if (runNewCommandForResourceAdd) {
     await RunCommand(newCommandForResourceAdd, tmpFolder);
   }
-  
+
   if (runResourceAddGenerator) {
     const resourceAddFunctionGenerator = new ResourceAddFunctionGenerator();
     await resourceAddFunctionGenerator.run(projectPathForResourceAdd);

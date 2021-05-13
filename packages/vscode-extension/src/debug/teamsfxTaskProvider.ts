@@ -40,7 +40,9 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
         constants.backendFolderName
       );
       if (backendRoot) {
-        tasks.push(await this.createBackendStartTask(workspaceFolder, backendRoot, programmingLanguage));
+        tasks.push(
+          await this.createBackendStartTask(workspaceFolder, backendRoot, programmingLanguage)
+        );
         if (programmingLanguage === constants.ProgrammingLanguage.typescript) {
           tasks.push(await this.createBackendWatchTask(workspaceFolder, backendRoot));
         }
@@ -55,11 +57,14 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       if (botRoot) {
         tasks.push(await this.createNgrokStartTask(workspaceFolder, botRoot));
         const silent: boolean = frontendRoot !== undefined;
-        tasks.push(await this.createBotStartTask(workspaceFolder, botRoot, programmingLanguage, silent));
+        tasks.push(
+          await this.createBotStartTask(workspaceFolder, botRoot, programmingLanguage, silent)
+        );
       }
 
       const vscodeEnv = detectVsCodeEnv();
-      const isCodeSpaceEnv = (vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode);
+      const isCodeSpaceEnv =
+        vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode;
       if (isCodeSpaceEnv) {
         tasks.push(await this.createOpenTeamsWebClientTask(workspaceFolder));
       }
@@ -87,7 +92,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     const env = await commonUtils.getFrontendLocalEnv();
     const options: vscode.ShellExecutionOptions = {
       cwd: projectRoot,
-      env
+      env,
     };
     problemMatchers = problemMatchers || constants.frontendProblemMatcher;
     const task = new vscode.Task(
@@ -112,13 +117,14 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     const command: string = constants.backendStartCommand;
     definition = definition || { type: TeamsfxTaskProvider.type, command };
     // NOTE: properly handle quoting and escaping to work on windows (both powershell and cmd), linux and osx
-    const commandLine = programmingLanguage === constants.ProgrammingLanguage.typescript
+    const commandLine =
+      programmingLanguage === constants.ProgrammingLanguage.typescript
         ? "npx func start --typescript --language-worker=\"--inspect=9229\" --port \"7071\" --cors \"*\""
         : "npx func start --javascript --language-worker=\"--inspect=9229\" --port \"7071\" --cors \"*\"";
     const env = await commonUtils.getBackendLocalEnv();
     const options: vscode.ShellExecutionOptions = {
       cwd: projectRoot,
-      env
+      env,
     };
     problemMatchers = problemMatchers || constants.backendProblemMatcher;
     const task = new vscode.Task(
@@ -148,7 +154,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     const env = await commonUtils.getAuthLocalEnv();
     const options: vscode.ShellExecutionOptions = {
       cwd: projectRoot,
-      env
+      env,
     };
     const task = new vscode.Task(
       definition,
@@ -201,13 +207,14 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     const command: string = constants.botStartCommand;
     definition = definition || { type: TeamsfxTaskProvider.type, command };
     // TODO: tell nodemon which files to watch (depends on bot's decision)
-    const commandLine = programmingLanguage === constants.ProgrammingLanguage.typescript
+    const commandLine =
+      programmingLanguage === constants.ProgrammingLanguage.typescript
         ? "npx nodemon --exec node --inspect=9239 --signal SIGINT -r ts-node/register index.ts"
         : "npx nodemon --inspect=9239 --signal SIGINT index.js";
     const env = await commonUtils.getBotLocalEnv();
     const options: vscode.ShellExecutionOptions = {
       cwd: projectRoot,
-      env
+      env,
     };
     const task = new vscode.Task(
       definition,
@@ -229,7 +236,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     definition?: vscode.TaskDefinition
   ): Promise<vscode.Task> {
     const command: string = constants.openWenClientCommand;
-    definition = definition || { type: TeamsfxTaskProvider.type, command};
+    definition = definition || { type: TeamsfxTaskProvider.type, command };
 
     const localTeamsAppId: string | undefined = await commonUtils.getLocalDebugTeamsAppId(true);
     const commandLine = `npx open-cli https://teams.microsoft.com/_#/l/app/${localTeamsAppId}?installAppPackage=true`;
@@ -248,23 +255,24 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
   private async createBackendWatchTask(
     workspaceFolder: vscode.WorkspaceFolder,
     projectRoot: string,
-    definition?: vscode.TaskDefinition): Promise<vscode.Task>{
-      const command: string = constants.backendWatchCommand;
-      definition = definition || { type: TeamsfxTaskProvider.type, command };
-      const commandLine = "npx tsc --watch"; // TODO: tell tsc which files to watch (depends on function's decision)
-      const options: vscode.ShellExecutionOptions = {
-        cwd: projectRoot,
-      };
-      const task = new vscode.Task(
-        definition,
-        workspaceFolder,
-        command,
-        TeamsfxTaskProvider.type,
-        new vscode.ShellExecution(commandLine, options),
-        constants.tscWatchProblemMatcher
-      );
-      task.isBackground = true;
-      task.presentationOptions.reveal = vscode.TaskRevealKind.Silent;
-      return task;
+    definition?: vscode.TaskDefinition
+  ): Promise<vscode.Task> {
+    const command: string = constants.backendWatchCommand;
+    definition = definition || { type: TeamsfxTaskProvider.type, command };
+    const commandLine = "npx tsc --watch"; // TODO: tell tsc which files to watch (depends on function's decision)
+    const options: vscode.ShellExecutionOptions = {
+      cwd: projectRoot,
+    };
+    const task = new vscode.Task(
+      definition,
+      workspaceFolder,
+      command,
+      TeamsfxTaskProvider.type,
+      new vscode.ShellExecution(commandLine, options),
+      constants.tscWatchProblemMatcher
+    );
+    task.isBackground = true;
+    task.presentationOptions.reveal = vscode.TaskRevealKind.Silent;
+    return task;
   }
 }

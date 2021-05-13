@@ -49,7 +49,7 @@ export default class Build extends YargsCommand {
     {
       const func: Func = {
         namespace: "fx-solution-azure",
-        method: "buildPackage"
+        method: "buildPackage",
       };
       const result = await core.executeUserTask!(func, answers);
       if (result.isErr()) {

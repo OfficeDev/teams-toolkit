@@ -1,63 +1,60 @@
 [
-    {
-        "data": {
-            "type": "folder",
-            "name": "folder",
-            "description": "Select root folder of the project",
-            "default": "./"
-        }
-    },
-    {
-        "data": {
-            "type": "text",
-            "name": "subscription",
-            "description": "Select a subscription"
-        }
-    },
-    {
-        "data": {
-            "name": "sql-admin-name",
-            "description": "Admin name of SQL",
-            "type": "text",
-            "validation": {
-                "namespace": "fx-solution-azure/fx-resource-azure-sql",
-                "method": "sql-admin-name"
-            }
-        }
-    },
-    {
-        "data": {
-            "name": "sql-password",
-            "description": "Admin password of SQL",
-            "type": "password",
-            "validation": {
-                "namespace": "fx-solution-azure/fx-resource-azure-sql",
-                "method": "sql-password"
-            }
-        }
-    },
-    {
-        "data": {
-            "name": "sql-confirm-password",
-            "description": "Confirm admin password of SQL",
-            "type": "password",
-            "validation": {
-                "namespace": "fx-solution-azure/fx-resource-azure-sql",
-                "method": "sql-confirm-password"
-            }
-        }
-    },
-    {
-        "data": {
-            "name": "sql-skip-adding-user",
-            "description": "Skip adding database user",
-            "type": "singleSelect",
-            "option": [
-                "true",
-                "false"
-            ],
-            "default": "true",
-            "hide": true
-        }
+  {
+    "data": {
+      "type": "folder",
+      "name": "folder",
+      "description": "Select root folder of the project",
+      "default": "./"
     }
+  },
+  {
+    "data": {
+      "type": "text",
+      "name": "subscription",
+      "description": "Select a subscription"
+    }
+  },
+  {
+    "data": {
+      "name": "sql-admin-name",
+      "description": "Admin name of SQL",
+      "type": "text",
+      "validation": {
+        "namespace": "fx-solution-azure/fx-resource-azure-sql",
+        "method": "sql-admin-name"
+      }
+    }
+  },
+  {
+    "data": {
+      "name": "sql-password",
+      "description": "Admin password of SQL",
+      "type": "password",
+      "validation": {
+        "namespace": "fx-solution-azure/fx-resource-azure-sql",
+        "method": "sql-password"
+      }
+    }
+  },
+  {
+    "data": {
+      "name": "sql-confirm-password",
+      "description": "Confirm admin password of SQL",
+      "type": "password",
+      "validation": {
+        "namespace": "fx-solution-azure/fx-resource-azure-sql",
+        "method": "sql-confirm-password"
+      }
+    }
+  },
+  {
+    "data": {
+      "name": "sql-skip-adding-user",
+      "description": "Skip adding database user",
+      "type": "singleSelect",
+      "option": ["true", "false"],
+      "default": "true",
+      "hide": true
+    }
+  }
 ]

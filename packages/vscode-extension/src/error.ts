@@ -10,5 +10,5 @@ export enum ExtensionErrors {
   ConcurrentTriggerTask = "ConcurrentTriggerTask",
   EmptySelectOption = "EmptySelectOption",
   UnsupportedNodeType = "UnsupportedNodeType",
-  UnknownSubscription = "UnknownSubscription"
+  UnknownSubscription = "UnknownSubscription",
 }

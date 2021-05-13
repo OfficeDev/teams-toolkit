@@ -18,14 +18,19 @@ import {
   MultiSelectQuestion,
   getCallFuncValue,
   StaticOption,
-  DymanicOption
+  DymanicOption,
 } from "@microsoft/teamsfx-api";
 
 import CLILogProvider from "../commonlib/log";
 import * as constants from "../constants";
 import { flattenNodes, getChoicesFromQTNodeQuestion, toConfigMap } from "../utils";
 
-import { QTNConditionNotSupport, QTNQuestionTypeNotSupport, NotValidInputValue, NotValidOptionValue } from "../error";
+import {
+  QTNConditionNotSupport,
+  QTNQuestionTypeNotSupport,
+  NotValidInputValue,
+  NotValidOptionValue,
+} from "../error";
 
 export async function validateAndUpdateAnswers(
   root: QTreeNode | undefined,
@@ -48,7 +53,11 @@ export async function validateAndUpdateAnswers(
     }
 
     if ("validation" in node.data && node.data.validation) {
-      const validateFunc = getValidationFunction(node.data.validation, toConfigMap(answers), remoteFuncValidator);
+      const validateFunc = getValidationFunction(
+        node.data.validation,
+        toConfigMap(answers),
+        remoteFuncValidator
+      );
       const result = await validateFunc(ans);
       if (typeof result === "string") {
         throw NotValidInputValue(node.data.name, result);
@@ -61,7 +70,11 @@ export async function validateAndUpdateAnswers(
       let option = question.option;
 
       if (!(option instanceof Array)) {
-        option = await getCallFuncValue(answers, false, node.data.option as DymanicOption) as StaticOption;
+        option = (await getCallFuncValue(
+          answers,
+          false,
+          node.data.option as DymanicOption
+        )) as StaticOption;
       }
       // if the option is the object, need to find the object first.
       if (typeof option[0] !== "string") {
@@ -69,12 +82,13 @@ export async function validateAndUpdateAnswers(
         if (ans instanceof Array) {
           const items = [];
           for (const one of ans) {
-            const item = (option as OptionItem[]).filter(op => op.cliName === one || op.id === one)[0];
+            const item = (option as OptionItem[]).filter(
+              (op) => op.cliName === one || op.id === one
+            )[0];
             if (item) {
               if (question.returnObject) {
                 items.push(item);
-              }
-              else {
+              } else {
                 items.push(item.id);
               }
             } else {
@@ -85,14 +99,15 @@ export async function validateAndUpdateAnswers(
         }
         // for single-select question
         else {
-          const item = (option as OptionItem[]).filter(op => op.cliName === ans || op.id === ans)[0];
+          const item = (option as OptionItem[]).filter(
+            (op) => op.cliName === ans || op.id === ans
+          )[0];
           if (!item) {
             throw NotValidOptionValue(question, option);
           }
           if (question.returnObject) {
             answers.set(node.data.name, item);
-          }
-          else {
+          } else {
             answers.set(node.data.name, item.id);
           }
         }
@@ -143,7 +158,10 @@ export async function visitInteractively(
     }
 
     if ("containsAny" in node.condition && node.condition.containsAny) {
-      if (parentNodeAnswer instanceof Array && node.condition.containsAny.map(item => parentNodeAnswer.includes(item)).includes(true)) {
+      if (
+        parentNodeAnswer instanceof Array &&
+        node.condition.containsAny.map((item) => parentNodeAnswer.includes(item)).includes(true)
+      ) {
         shouldVisitChildren = true;
       } else {
         return answers;
@@ -162,24 +180,31 @@ export async function visitInteractively(
     if (node.data.type === NodeType.localFunc) {
       const res = await node.data.func(answers);
       answers[node.data.name] = res;
-    }
-    else if (!isAutoSkipSelect(node.data)) {
-      answers = await inquirer.prompt([toInquirerQuestion(node.data, answers, remoteFuncValidator)], answers);
+    } else if (!isAutoSkipSelect(node.data)) {
+      answers = await inquirer.prompt(
+        [toInquirerQuestion(node.data, answers, remoteFuncValidator)],
+        answers
+      );
       // convert the option.label to option.id
       if ("option" in node.data) {
         const option = node.data.option;
         if (option instanceof Array && option.length > 0 && typeof option[0] !== "string") {
           const tmpAns = answers[node.data.name];
           if (tmpAns instanceof Array) {
-            answers[node.data.name] = tmpAns.map(label => (option as OptionItem[]).find(op => label === op.label)?.id);
+            answers[node.data.name] = tmpAns.map(
+              (label) => (option as OptionItem[]).find((op) => label === op.label)?.id
+            );
           } else {
-            answers[node.data.name] = (option as OptionItem[]).find(op => tmpAns === op.label)?.id;
+            answers[node.data.name] = (option as OptionItem[]).find(
+              (op) => tmpAns === op.label
+            )?.id;
           }
         }
       }
-    }
-    else {
-      answers[node.data.name] = getSingleOption(node.data as (SingleSelectQuestion | MultiSelectQuestion));
+    } else {
+      answers[node.data.name] = getSingleOption(
+        node.data as SingleSelectQuestion | MultiSelectQuestion
+      );
     }
     answer = answers[node.data.name];
   }
@@ -193,7 +218,11 @@ export async function visitInteractively(
   return answers!;
 }
 
-export function toInquirerQuestion(data: Question, answers: { [_: string]: any }, remoteFuncValidator?: RemoteFuncExecutor): DistinctQuestion {
+export function toInquirerQuestion(
+  data: Question,
+  answers: { [_: string]: any },
+  remoteFuncValidator?: RemoteFuncExecutor
+): DistinctQuestion {
   let type: "input" | "number" | "password" | "list" | "checkbox";
   let defaultValue = data.default;
   switch (data.type) {
@@ -220,7 +249,7 @@ export function toInquirerQuestion(data: Question, answers: { [_: string]: any }
       throw QTNQuestionTypeNotSupport(data);
   }
   let choices = undefined;
-  if (answers["host-type"] === "SPFx" && data.name === "programming-language"){
+  if (answers["host-type"] === "SPFx" && data.name === "programming-language") {
     choices = ["TypeScript"];
   }
   return {
@@ -231,13 +260,17 @@ export function toInquirerQuestion(data: Question, answers: { [_: string]: any }
     default: defaultValue,
     validate: async (input: any) => {
       if ("validation" in data && data.validation) {
-        const validateFunc = getValidationFunction(data.validation, toConfigMap(answers), remoteFuncValidator);
+        const validateFunc = getValidationFunction(
+          data.validation,
+          toConfigMap(answers),
+          remoteFuncValidator
+        );
         const result = await validateFunc(input);
         if (typeof result === "string") {
           return result;
         }
       }
       return true;
-    }
+    },
   };
 }

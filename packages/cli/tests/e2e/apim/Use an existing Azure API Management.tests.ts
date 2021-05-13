@@ -29,14 +29,11 @@ describe("Use an existing API Management Service", function () {
 
   it(`Import API into an existing API Management Service`, async function () {
     // new a project
-    await execAsync(
-      `teamsfx new --app-name ${appName} --interactive false`,
-      {
-        cwd: testFolder,
-        env: process.env,
-        timeout: 0
-      }
-    );
+    await execAsync(`teamsfx new --app-name ${appName} --interactive false`, {
+      cwd: testFolder,
+      env: process.env,
+      timeout: 0,
+    });
 
     await setSimpleAuthSkuNameToB1(projectPath);
 
@@ -45,31 +42,36 @@ describe("Use an existing API Management Service", function () {
       {
         cwd: projectPath,
         env: process.env,
-        timeout: 0
+        timeout: 0,
       }
     );
 
     await ApimValidator.init(subscriptionId, AzureLogin, GraphLogin);
-    await ApimValidator.prepareApiManagementService(existingRGNameExtend, `${appName}-existing-apim`);
-
-    await execAsync(
-      `teamsfx provision`,
-      {
-        cwd: projectPath,
-        env: process.env,
-        timeout: 0
-      }
+    await ApimValidator.prepareApiManagementService(
+      existingRGNameExtend,
+      `${appName}-existing-apim`
     );
 
+    await execAsync(`teamsfx provision`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
+
     const provisionContext = await fs.readJSON(getConfigFileName(appName));
-    await ApimValidator.validateProvision(provisionContext, appName, existingRGNameExtend, `${appName}-existing-apim`);
+    await ApimValidator.validateProvision(
+      provisionContext,
+      appName,
+      existingRGNameExtend,
+      `${appName}-existing-apim`
+    );
 
     await execAsync(
       `teamsfx deploy apim --open-api-document openapi/openapi.json --api-prefix ${appName} --api-version v1`,
       {
         cwd: projectPath,
         env: process.env,
-        timeout: 0
+        timeout: 0,
       }
     );
 
@@ -82,7 +84,7 @@ describe("Use an existing API Management Service", function () {
       // clean up another resource group
       cleanUpResourceGroup(existingRGName),
       // clean up other resources
-      cleanUp(appName, projectPath, true, false, true)
+      cleanUp(appName, projectPath, true, false, true),
     ]);
   });
 });

@@ -8,31 +8,33 @@ import { PluginError } from "../../../../../../src/plugins/resource/bot/errors";
 import { Messages } from "../messages";
 
 describe("Test zipDeploy", () => {
-    describe("getZipDeployEndpoint", () => {
-        it("Empty SiteName", () => {
-            // Arrange
-            const siteName = "";
+  describe("getZipDeployEndpoint", () => {
+    it("Empty SiteName", () => {
+      // Arrange
+      const siteName = "";
 
-            // Act
-            try {
-                getZipDeployEndpoint(siteName);
-            } catch (e) {
-                chai.assert.isTrue(e instanceof PluginError);
-                return;
-            }
+      // Act
+      try {
+        getZipDeployEndpoint(siteName);
+      } catch (e) {
+        chai.assert.isTrue(e instanceof PluginError);
+        return;
+      }
 
-            chai.assert.fail(Messages.ShouldNotReachHere);
-        });
-
-        it("Happy Path", () => {
-            // Arrange
-            const siteName = "abc";
-
-            // Act
-            const deployEndpoint = getZipDeployEndpoint(siteName);
-
-            // Assert
-            chai.assert.isTrue(deployEndpoint === `https://${siteName}.scm.azurewebsites.net/api/zipdeploy`);
-        });
+      chai.assert.fail(Messages.ShouldNotReachHere);
     });
+
+    it("Happy Path", () => {
+      // Arrange
+      const siteName = "abc";
+
+      // Act
+      const deployEndpoint = getZipDeployEndpoint(siteName);
+
+      // Assert
+      chai.assert.isTrue(
+        deployEndpoint === `https://${siteName}.scm.azurewebsites.net/api/zipdeploy`
+      );
+    });
+  });
 });

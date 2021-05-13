@@ -9,14 +9,14 @@ paths:
       description: Get all users.
       operationId: getUsers
       parameters:
-      - name: id
-        in: path
-        description: user id
-        required: true
-        schema:
-          type: integer
+        - name: id
+          in: path
+          description: user id
+          required: true
+          schema:
+            type: integer
       responses:
-        '200':
+        "200":
           description: The user information.
           content:
             application/json:
@@ -26,7 +26,7 @@ components:
   schemas:
     User:
       required:
-      - name
+        - name
       type: object
       properties:
         id:
@@ -40,8 +40,8 @@ components:
           description: User name
         status:
           enum:
-          - Happy
-          - Sad
+            - Happy
+            - Sad
           type: string
           description: User status
         phoneNumbers:

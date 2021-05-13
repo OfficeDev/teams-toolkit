@@ -61,7 +61,11 @@ export abstract class YargsCommand {
     }
 
     const cliPackage = JSON.parse(readFileSync(path.join(__dirname, "/../package.json"), "utf8"));
-    const reporter = new CliTelemetryReporter(cliPackage.aiKey, cliPackage.name, cliPackage.version);
+    const reporter = new CliTelemetryReporter(
+      cliPackage.aiKey,
+      cliPackage.name,
+      cliPackage.version
+    );
     CliTelemetry.setReporter(reporter);
 
     try {
@@ -74,7 +78,10 @@ export abstract class YargsCommand {
         e instanceof UserError || e instanceof SystemError ? e : UnknownError(e);
       console.error(`[${FxError.source}.${FxError.name}]: ${FxError.message}`.red);
       if (FxError instanceof UserError && FxError.helpLink) {
-        console.error("Get help from".red, `${FxError.helpLink}#${FxError.source}${FxError.name}`.cyan.underline);
+        console.error(
+          "Get help from".red,
+          `${FxError.helpLink}#${FxError.source}${FxError.name}`.cyan.underline
+        );
       }
       if (FxError instanceof SystemError && FxError.issueLink) {
         console.error("Report this issue at".red, `${FxError.issueLink}`.cyan.underline);

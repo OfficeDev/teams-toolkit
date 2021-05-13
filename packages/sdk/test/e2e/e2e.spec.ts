@@ -9,14 +9,14 @@ import {
   deployTab,
   getLoginEnvironment,
   getTeamsTabRemoteUrl,
-  E2E_TIMEOUT
+  E2E_TIMEOUT,
 } from "../helper";
 import { TEST_USER_OBJECT_ID } from "./data";
 
 chaiUse(chaiPromises);
 
 describe("End to End Test in Teams", () => {
-  it("Tab app with Graph API", async function() {
+  it("Tab app with Graph API", async function () {
     const project = await createNewProject("sdkTabGraphE2E");
     await deployTab(project);
 
@@ -25,7 +25,7 @@ describe("End to End Test in Teams", () => {
       addButton: `ts-add-app-dialog-add-button`,
       grantButton: `button.ui-button`,
       accept: `input[type=submit]`,
-      objectId: `div:below(b:text("UPN:"))`
+      objectId: `div:below(b:text("UPN:"))`,
     };
 
     const appUrl = getTeamsTabRemoteUrl(project);

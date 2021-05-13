@@ -41,7 +41,7 @@ export class CapabilityAddTab extends YargsCommand {
 
     const func = {
       namespace: "fx-solution-azure",
-      method: "addCapability"
+      method: "addCapability",
     };
 
     const core = result.value;
@@ -91,7 +91,7 @@ export class CapabilityAddBot extends YargsCommand {
 
     const func = {
       namespace: "fx-solution-azure",
-      method: "addCapability"
+      method: "addCapability",
     };
 
     const core = result.value;
@@ -141,7 +141,7 @@ export class CapabilityAddMessageExtension extends YargsCommand {
 
     const func = {
       namespace: "fx-solution-azure",
-      method: "addCapability"
+      method: "addCapability",
     };
 
     const core = result.value;
@@ -164,13 +164,16 @@ export class CapabilityAddMessageExtension extends YargsCommand {
   }
 }
 
-
 export class CapabilityAdd extends YargsCommand {
   public readonly commandHead = `add`;
   public readonly command = `${this.commandHead} <capability>`;
   public readonly description = "Add new capabilities to the current application";
 
-  public readonly subCommands: YargsCommand[] = [new CapabilityAddTab(), new CapabilityAddBot(), new CapabilityAddMessageExtension()];
+  public readonly subCommands: YargsCommand[] = [
+    new CapabilityAddTab(),
+    new CapabilityAddBot(),
+    new CapabilityAddMessageExtension(),
+  ];
 
   public builder(yargs: Argv): Argv<any> {
     this.subCommands.forEach((cmd) => {

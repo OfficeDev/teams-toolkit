@@ -2,7 +2,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { IBot, IComposeExtension, IConfigurableTab, IStaticTab, UserError } from "@microsoft/teamsfx-api";
+import {
+  IBot,
+  IComposeExtension,
+  IConfigurableTab,
+  IStaticTab,
+  UserError,
+} from "@microsoft/teamsfx-api";
 
 /**
  * Void is used to construct Result<Void, FxError>.
@@ -44,62 +50,62 @@ export const BOT_ID = "botId";
 export const LOCAL_BOT_ID = "localBotId";
 
 export const DEFAULT_PERMISSION_REQUEST = [
-    {
-        resource: "Microsoft Graph",
-        delegated: ["User.Read"],
-        application: [],
-    },
+  {
+    resource: "Microsoft Graph",
+    delegated: ["User.Read"],
+    application: [],
+  },
 ];
 
 export enum SolutionError {
-    InvalidSelectedPluginNames = "InvalidSelectedPluginNames",
-    PluginNotFound = "PluginNotFound",
-    FailedToCreateAppIdInAppStudio = "FailedToCreateAppIdInAppStudio",
-    FailedToUpdateAppIdInAppStudio = "FailedToUpdateAppIdInAppStudio",
-    FailedToCreateLocalAppIdInAppStudio = "FailedToCreateLocalAppIdInAppStudio",
-    FailedToUpdateLocalAppIdInAppStudio = "FailedToUpdateLocalAppIdInAppStudio",
-    AADPluginNotEnabled = "AADPluginNotEnabled",
-    MissingPermissionsJson = "MissingPermissionsJson",
-    DialogIsNotPresent = "DialogIsNotPresent",
-    NoResourcePluginSelected = "NoResourcePluginSelected",
-    NoAppStudioToken = "NoAppStudioToken",
-    NoTeamsAppTenantId = "NoTeamsAppTenantId",
-    FailedToCreateResourceGroup = "FailedToCreateResourceGroup",
-    NotLoginToAzure = "NotLoginToAzure",
-    AzureAccountExtensionNotInitialized = "AzureAccountExtensionNotInitialized",
-    LocalTabEndpointMissing = "LocalTabEndpointMissing",
-    LocalTabDomainMissing = "LocalTabDomainMissing",
-    LocalClientIDMissing = "LocalDebugClientIDMissing",
-    LocalApplicationIdUrisMissing = "LocalApplicationIdUrisMissing",
-    LocalClientSecretMissing = "LocalClientSecretMissing",
-    CannotUpdatePermissionForSPFx = "CannotUpdatePermissionForSPFx",
-    CannotAddResourceForSPFx = "CannotAddResourceForSPFx",
-    FailedToParseAzureTenantId = "FailedToParseAzureTenantId",
-    FailedToGetAppStudioToken = "FailedToGetAppStudioToken",
-    FailedToLoadManifestFile = "FailedToLoadManifestFile",
-    CannotRunProvisionInSPFxProject = "CannotRunProvisionInSPFxProject",
-    CannotRunThisTaskInSPFxProject = "CannotRunThisTaskInSPFxProject",
-    FrontendEndpointAndDomainNotFound = "FrontendEndpointAndDomainNotFound",
-    RemoteClientIdNotFound = "RemoteClientIdNotFound",
-    AddResourceNotSupport = "AddResourceNotSupport",
-    FailedToAddCapability = "FailedToAddCapability",
-    NoResourceToDeploy = "NoResourceToDeploy",
-    ProvisionInProgress = "ProvisionInProgress",
-    DeploymentInProgress = "DeploymentInProgress",
-    UnknownSolutionRunningState = "UnknownSolutionRunningState",
-    CannotDeployBeforeProvision = "CannotDeployBeforeProvision",
-    CannotPublishBeforeProvision = "CannotPublishBeforeProvision",
-    NoSubscriptionFound = "NoSubscriptionFound",
-    NoSubscriptionSelected = "NoSubscriptionSelected",
-    FailedToGetParamForRegisterTeamsAppAndAad = "FailedToGetParamForRegisterTeamsAppAndAad",
-    BotInternalError = "BotInternalError",
-    InternelError = "InternelError",
-    RegisterTeamsAppAndAadError = "RegisterTeamsAppAndAadError",
-    UpdateManifestError = "UpdateManifestError",
-    GetLocalDebugConfigError = "GetLocalDebugConfigError",
-    GetRemoteConfigError = "GetRemoteConfigError",
-    UnsupportedPlatform = "UnsupportedPlatform",
-    InvalidInput = "InvalidInput"
+  InvalidSelectedPluginNames = "InvalidSelectedPluginNames",
+  PluginNotFound = "PluginNotFound",
+  FailedToCreateAppIdInAppStudio = "FailedToCreateAppIdInAppStudio",
+  FailedToUpdateAppIdInAppStudio = "FailedToUpdateAppIdInAppStudio",
+  FailedToCreateLocalAppIdInAppStudio = "FailedToCreateLocalAppIdInAppStudio",
+  FailedToUpdateLocalAppIdInAppStudio = "FailedToUpdateLocalAppIdInAppStudio",
+  AADPluginNotEnabled = "AADPluginNotEnabled",
+  MissingPermissionsJson = "MissingPermissionsJson",
+  DialogIsNotPresent = "DialogIsNotPresent",
+  NoResourcePluginSelected = "NoResourcePluginSelected",
+  NoAppStudioToken = "NoAppStudioToken",
+  NoTeamsAppTenantId = "NoTeamsAppTenantId",
+  FailedToCreateResourceGroup = "FailedToCreateResourceGroup",
+  NotLoginToAzure = "NotLoginToAzure",
+  AzureAccountExtensionNotInitialized = "AzureAccountExtensionNotInitialized",
+  LocalTabEndpointMissing = "LocalTabEndpointMissing",
+  LocalTabDomainMissing = "LocalTabDomainMissing",
+  LocalClientIDMissing = "LocalDebugClientIDMissing",
+  LocalApplicationIdUrisMissing = "LocalApplicationIdUrisMissing",
+  LocalClientSecretMissing = "LocalClientSecretMissing",
+  CannotUpdatePermissionForSPFx = "CannotUpdatePermissionForSPFx",
+  CannotAddResourceForSPFx = "CannotAddResourceForSPFx",
+  FailedToParseAzureTenantId = "FailedToParseAzureTenantId",
+  FailedToGetAppStudioToken = "FailedToGetAppStudioToken",
+  FailedToLoadManifestFile = "FailedToLoadManifestFile",
+  CannotRunProvisionInSPFxProject = "CannotRunProvisionInSPFxProject",
+  CannotRunThisTaskInSPFxProject = "CannotRunThisTaskInSPFxProject",
+  FrontendEndpointAndDomainNotFound = "FrontendEndpointAndDomainNotFound",
+  RemoteClientIdNotFound = "RemoteClientIdNotFound",
+  AddResourceNotSupport = "AddResourceNotSupport",
+  FailedToAddCapability = "FailedToAddCapability",
+  NoResourceToDeploy = "NoResourceToDeploy",
+  ProvisionInProgress = "ProvisionInProgress",
+  DeploymentInProgress = "DeploymentInProgress",
+  UnknownSolutionRunningState = "UnknownSolutionRunningState",
+  CannotDeployBeforeProvision = "CannotDeployBeforeProvision",
+  CannotPublishBeforeProvision = "CannotPublishBeforeProvision",
+  NoSubscriptionFound = "NoSubscriptionFound",
+  NoSubscriptionSelected = "NoSubscriptionSelected",
+  FailedToGetParamForRegisterTeamsAppAndAad = "FailedToGetParamForRegisterTeamsAppAndAad",
+  BotInternalError = "BotInternalError",
+  InternelError = "InternelError",
+  RegisterTeamsAppAndAadError = "RegisterTeamsAppAndAadError",
+  UpdateManifestError = "UpdateManifestError",
+  GetLocalDebugConfigError = "GetLocalDebugConfigError",
+  GetRemoteConfigError = "GetRemoteConfigError",
+  UnsupportedPlatform = "UnsupportedPlatform",
+  InvalidInput = "InvalidInput",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";
@@ -162,142 +168,123 @@ export const TEAMS_APP_MANIFEST_TEMPLATE = `{
 }`;
 
 export const COMPOSE_EXTENSIONS_TPL: IComposeExtension[] = [
-    {
-        "botId": "{botId}",
-        "commands": [
-            {
-                "id": "createCard",
-                "context": [
-                    "compose"
-                ],
-                "description": "Command to run action to create a Card from Compose Box",
-                "title": "Create Card",
-                "type": "action",
-                "parameters": [
-                    {
-                        "name": "title",
-                        "title": "Card title",
-                        "description": "Title for the card",
-                        "inputType": "text"
-                    },
-                    {
-                        "name": "subTitle",
-                        "title": "Subtitle",
-                        "description": "Subtitle for the card",
-                        "inputType": "text"
-                    },
-                    {
-                        "name": "text",
-                        "title": "Text",
-                        "description": "Text for the card",
-                        "inputType": "textarea"
-                    }
-                ]
-            },
-            {
-                "id": "shareMessage",
-                "context": [
-                    "message"
-                ],
-                "description": "Test command to run action on message context (message sharing)",
-                "title": "Share Message",
-                "type": "action",
-                "parameters": [
-                    {
-                        "name": "includeImage",
-                        "title": "Include Image",
-                        "description": "Include image in Hero Card",
-                        "inputType": "toggle"
-                    }
-                ]
-            },
-            {
-                "id": "searchQuery",
-                "context": [
-                    "compose",
-                    "commandBox"
-                ],
-                "description": "Test command to run query",
-                "title": "Search",
-                "type": "query",
-                "parameters": [
-                    {
-                        "name": "searchQuery",
-                        "title": "Search Query",
-                        "description": "Your search query",
-                        "inputType": "text"
-                    }
-                ]
-            }
+  {
+    botId: "{botId}",
+    commands: [
+      {
+        id: "createCard",
+        context: ["compose"],
+        description: "Command to run action to create a Card from Compose Box",
+        title: "Create Card",
+        type: "action",
+        parameters: [
+          {
+            name: "title",
+            title: "Card title",
+            description: "Title for the card",
+            inputType: "text",
+          },
+          {
+            name: "subTitle",
+            title: "Subtitle",
+            description: "Subtitle for the card",
+            inputType: "text",
+          },
+          {
+            name: "text",
+            title: "Text",
+            description: "Text for the card",
+            inputType: "textarea",
+          },
         ],
-        "messageHandlers": [
-            {
-                "type": "link",
-                "value": {
-                    "domains": [
-                        "*.botframework.com"
-                    ]
-                }
-            }
-        ]
-    }
+      },
+      {
+        id: "shareMessage",
+        context: ["message"],
+        description: "Test command to run action on message context (message sharing)",
+        title: "Share Message",
+        type: "action",
+        parameters: [
+          {
+            name: "includeImage",
+            title: "Include Image",
+            description: "Include image in Hero Card",
+            inputType: "toggle",
+          },
+        ],
+      },
+      {
+        id: "searchQuery",
+        context: ["compose", "commandBox"],
+        description: "Test command to run query",
+        title: "Search",
+        type: "query",
+        parameters: [
+          {
+            name: "searchQuery",
+            title: "Search Query",
+            description: "Your search query",
+            inputType: "text",
+          },
+        ],
+      },
+    ],
+    messageHandlers: [
+      {
+        type: "link",
+        value: {
+          domains: ["*.botframework.com"],
+        },
+      },
+    ],
+  },
 ];
 export const BOTS_TPL: IBot[] = [
-    {
-        "botId": "{botId}",
-        "scopes": [
-            "personal",
-            "team",
-            "groupchat"
+  {
+    botId: "{botId}",
+    scopes: ["personal", "team", "groupchat"],
+    supportsFiles: false,
+    isNotificationOnly: false,
+    commandLists: [
+      {
+        scopes: ["personal", "team", "groupchat"],
+        commands: [
+          {
+            title: "intro",
+            description: "Send introduction card of this Bot",
+          },
+          {
+            title: "show",
+            description: "Show user profile by calling Microsoft Graph API with SSO",
+          },
         ],
-        "supportsFiles": false,
-        "isNotificationOnly": false,
-        "commandLists": [
-            {
-                "scopes": [
-                    "personal",
-                    "team",
-                    "groupchat"
-                ],
-                "commands": [
-                    {
-                        "title": "intro",
-                        "description": "Send introduction card of this Bot"
-                    },
-                    {
-                        "title": "show",
-                        "description": "Show user profile by calling Microsoft Graph API with SSO"
-                    }
-                ]
-            }
-        ]
-    }
+      },
+    ],
+  },
 ];
 export const CONFIGURABLE_TABS_TPL: IConfigurableTab[] = [
-    {
-        "configurationUrl": "{baseUrl}/index.html#/config",
-        "canUpdateConfiguration": true,
-        "scopes": [
-            "team",
-            "groupchat"
-        ]
-    }
+  {
+    configurationUrl: "{baseUrl}/index.html#/config",
+    canUpdateConfiguration: true,
+    scopes: ["team", "groupchat"],
+  },
 ];
 
 export const STATIC_TABS_TPL: IStaticTab[] = [
-    {
-        "entityId": "index",
-        "name": "Personal Tab",
-        "contentUrl": "{baseUrl}/index.html#/tab",
-        "websiteUrl": "{baseUrl}/index.html#/tab",
-        "scopes": [
-            "personal"
-        ]
-    }
+  {
+    entityId: "index",
+    name: "Personal Tab",
+    contentUrl: "{baseUrl}/index.html#/tab",
+    websiteUrl: "{baseUrl}/index.html#/tab",
+    scopes: ["personal"],
+  },
 ];
 
-
-export const DoProvisionFirstError = new UserError("DoProvisionFirst", "DoProvisionFirst", "Solution");
+export const DoProvisionFirstError = new UserError(
+  "DoProvisionFirst",
+  "DoProvisionFirst",
+  "Solution"
+);
 export const CancelError = new UserError("UserCancel", "UserCancel", "Solution");
 // This is the max length specified in
 // https://developer.microsoft.com/en-us/json-schemas/teams/v1.7/MicrosoftTeams.schema.json

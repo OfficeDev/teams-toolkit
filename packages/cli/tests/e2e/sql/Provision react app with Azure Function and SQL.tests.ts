@@ -28,7 +28,7 @@ describe("Provision to Azure with SQL", function () {
       {
         cwd: testFolder,
         env: process.env,
-        timeout: 0
+        timeout: 0,
       }
     );
     console.log(`[Successfully] scaffold to ${projectPath}`);
@@ -41,13 +41,13 @@ describe("Provision to Azure with SQL", function () {
       {
         cwd: projectPath,
         env: process.env,
-        timeout: 0
+        timeout: 0,
       }
     );
 
     // Get context
     const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
-    
+
     // Validate Aad App
     await SqlValidator.init(context);
     await SqlValidator.validateSql();

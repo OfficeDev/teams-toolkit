@@ -60,8 +60,12 @@ export class CodeFlowLogin {
   }
 
   async login(): Promise<string> {
-    const codeVerifier = CodeFlowLogin.toBase64UrlEncoding(crypto.randomBytes(32).toString("base64"));
-    const codeChallenge = CodeFlowLogin.toBase64UrlEncoding(await CodeFlowLogin.sha256(codeVerifier));
+    const codeVerifier = CodeFlowLogin.toBase64UrlEncoding(
+      crypto.randomBytes(32).toString("base64")
+    );
+    const codeChallenge = CodeFlowLogin.toBase64UrlEncoding(
+      await CodeFlowLogin.sha256(codeVerifier)
+    );
     let serverPort = this.port;
 
     // try get an unused port
@@ -74,7 +78,7 @@ export class CodeFlowLogin {
       codeChallenge: codeChallenge,
       codeChallengeMethod: "S256",
       redirectUri: `http://localhost:${serverPort}`,
-      prompt: "select_account"
+      prompt: "select_account",
     };
 
     let deferredRedirect: Deferred<string>;
@@ -87,7 +91,7 @@ export class CodeFlowLogin {
         code: req.query.code as string,
         scopes: this.scopes!,
         redirectUri: `http://localhost:${serverPort}`,
-        codeVerifier: codeVerifier
+        codeVerifier: codeVerifier,
       };
 
       this.pca!.acquireTokenByCode(tokenRequest)
@@ -177,7 +181,7 @@ export class CodeFlowLogin {
         return this.pca!.acquireTokenSilent({
           account: this.account,
           scopes: this.scopes!,
-          forceRefresh: false
+          forceRefresh: false,
         })
           .then((response) => {
             if (response) {
@@ -208,26 +212,28 @@ export class CodeFlowLogin {
           authority: env.activeDirectoryEndpointUrl + tenantId,
           account: this.account,
           scopes: this.scopes!,
-          forceRefresh: true
+          forceRefresh: true,
         })
-        .then((response) => {
-          if (response) {
-            return response.accessToken;
-          } else {
-            return undefined;
-          }
-        })
-        .catch(async (error) => {
-          CliCodeLogInstance.error("[Login] getTenantToken acquireTokenSilent : " + error.message);
-          const accountList = await this.msalTokenCache?.getAllAccounts();
-          for (let i=0;i<accountList!.length;++i) {
-            this.msalTokenCache?.removeAccount(accountList![i]);
-          }
-          this.config!.auth.authority = env.activeDirectoryEndpointUrl + tenantId;
-          this.pca = new PublicClientApplication(this.config!);
-          const accessToken = await this.login();
-          return accessToken;
-        });
+          .then((response) => {
+            if (response) {
+              return response.accessToken;
+            } else {
+              return undefined;
+            }
+          })
+          .catch(async (error) => {
+            CliCodeLogInstance.error(
+              "[Login] getTenantToken acquireTokenSilent : " + error.message
+            );
+            const accountList = await this.msalTokenCache?.getAllAccounts();
+            for (let i = 0; i < accountList!.length; ++i) {
+              this.msalTokenCache?.removeAccount(accountList![i]);
+            }
+            this.config!.auth.authority = env.activeDirectoryEndpointUrl + tenantId;
+            this.pca = new PublicClientApplication(this.config!);
+            const accessToken = await this.login();
+            return accessToken;
+          });
       } else {
         return undefined;
       }
@@ -265,17 +271,11 @@ export class CodeFlowLogin {
   }
 
   static toBase64UrlEncoding(base64string: string) {
-    return base64string
-      .replace(/=/g, "")
-      .replace(/\+/g, "-")
-      .replace(/\//g, "_");
+    return base64string.replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
   }
 
   static sha256(s: string | Uint8Array): Promise<string> {
-    return new Promise(solve => solve(crypto
-      .createHash("sha256")
-      .update(s)
-      .digest("base64")));
+    return new Promise((solve) => solve(crypto.createHash("sha256").update(s).digest("base64")));
   }
 }
 
@@ -294,7 +294,7 @@ function sendFile(
       body = Buffer.from(data, UTF8);
       res.writeHead(200, {
         "Content-Length": body.length,
-        "Content-Type": contentType
+        "Content-Type": contentType,
       });
       res.end(body);
     }

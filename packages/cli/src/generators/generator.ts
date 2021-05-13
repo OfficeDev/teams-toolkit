@@ -17,7 +17,7 @@ import {
   Stage,
   Platform,
   ok,
-  Func
+  Func,
 } from "@microsoft/teamsfx-api";
 
 import CLILogProvider from "../commonlib/log";
@@ -38,8 +38,14 @@ export abstract class Generator {
 
   async generate(projectPath?: string): Promise<Result<QTreeNode | QTreeNode[], FxError>> {
     if (projectPath) {
-      const cliPackage = JSON.parse(readFileSync(path.join(__dirname, "../../package.json"), "utf8"));
-      const reporter = new CliTelemetryReporter(cliPackage.aiKey, cliPackage.name, cliPackage.version);
+      const cliPackage = JSON.parse(
+        readFileSync(path.join(__dirname, "../../package.json"), "utf8")
+      );
+      const reporter = new CliTelemetryReporter(
+        cliPackage.aiKey,
+        cliPackage.name,
+        cliPackage.version
+      );
       CliTelemetry.setReporter(reporter);
     }
     const result = await activate(projectPath);
@@ -73,7 +79,9 @@ export abstract class Generator {
 
       CLILogProvider.info(this.toLogMsg(`Start to write '${this.commandName}' parameters`));
       await this.writeJSON(result.value);
-      CLILogProvider.info(this.toLogMsg(`Finish to write '${this.commandName}' parameters to ${this.outputPath}`));
+      CLILogProvider.info(
+        this.toLogMsg(`Finish to write '${this.commandName}' parameters to ${this.outputPath}`)
+      );
     } catch (e) {
       const FxError: FxError =
         e instanceof UserError || e instanceof SystemError ? e : UnknownError(e);
@@ -99,7 +107,7 @@ export abstract class Generator {
     return fs.writeJSON(this.outputPath, params, {
       spaces: 4,
       EOL: os.EOL,
-      encoding: "utf-8"
+      encoding: "utf-8",
     });
   }
 }

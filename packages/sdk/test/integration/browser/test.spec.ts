@@ -10,5 +10,5 @@ const env = (window as any).__env__;
 describe("Create instance", () => {
   console.log("=========== hello", env.SDK_INTEGRATION_SQL_ENDPOINT);
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  it("Get graphClient", async function() {});
+  it("Get graphClient", async function () {});
 });

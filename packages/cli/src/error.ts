@@ -15,7 +15,7 @@ import {
   MultiSelectQuestion,
   SingleSelectQuestion,
   StaticOption,
-  IMessage
+  IMessage,
 } from "@microsoft/teamsfx-api";
 
 import * as constants from "./constants";
@@ -28,9 +28,12 @@ export function NotSupportedProjectType(): UserError {
   );
 }
 
-export function NotValidOptionValue(question: MultiSelectQuestion | SingleSelectQuestion, options: StaticOption): UserError {
+export function NotValidOptionValue(
+  question: MultiSelectQuestion | SingleSelectQuestion,
+  options: StaticOption
+): UserError {
   if (options instanceof Array && options.length > 0 && typeof options[0] !== "string") {
-    options = (options as OptionItem[]).map(op => op.id);
+    options = (options as OptionItem[]).map((op) => op.id);
   }
   throw NotValidInputValue(question.name, `This question only supports [${options}] options`);
 }
@@ -75,11 +78,7 @@ export function ConfigNotFoundError(configpath: string): SystemError {
 
 export function SampleAppClonedFailed(sampleAppUrl: string, e: Error): SystemError {
   e.message = `Cannot clone this sample app from ${sampleAppUrl}. Error: ${e.message}`;
-  return returnSystemError(
-    e,
-    constants.cliSource,
-    "SampleAppClonedFailed"
-  );
+  return returnSystemError(e, constants.cliSource, "SampleAppClonedFailed");
 }
 
 export function ReadFileError(e: Error): SystemError {
@@ -92,7 +91,11 @@ export function UnknownError(e: Error): SystemError {
 
 export function QTNConditionNotSupport(node: QTreeNode): SystemError {
   return returnSystemError(
-    new Error(`The condition of the question tree node is not supported. (${JSON.stringify(node.condition)})`),
+    new Error(
+      `The condition of the question tree node is not supported. (${JSON.stringify(
+        node.condition
+      )})`
+    ),
     constants.cliSource,
     "QTNConditionNotSupport"
   );
@@ -100,7 +103,9 @@ export function QTNConditionNotSupport(node: QTreeNode): SystemError {
 
 export function QTNQuestionTypeNotSupport(data: Question): SystemError {
   return returnSystemError(
-    new Error(`The condition of the question tree node is not supported. (${JSON.stringify(data)})`),
+    new Error(
+      `The condition of the question tree node is not supported. (${JSON.stringify(data)})`
+    ),
     constants.cliSource,
     "QTNQuestionTypeNotSupport"
   );
@@ -110,5 +115,6 @@ export function InquirerAnswerNotFound(data: IMessage): UserError {
   return returnUserError(
     new Error(`Answer not found for question:${data.description}`),
     constants.cliSource,
-    "InquirerAnswerNotFound");
+    "InquirerAnswerNotFound"
+  );
 }

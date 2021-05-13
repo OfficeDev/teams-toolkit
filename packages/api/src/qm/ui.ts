@@ -4,8 +4,6 @@
 import { FxError } from "../error";
 import { AnswerValue, OptionItem, StaticOption } from "./question";
 
- 
-
 export interface FxQuickPickOption {
   /**
    * title text of the QuickPick
@@ -29,7 +27,7 @@ export interface FxQuickPickOption {
    */
   placeholder?: string;
 
-  prompt?:string;
+  prompt?: string;
 
   /**
    * whether enable `go back` button
@@ -38,7 +36,7 @@ export interface FxQuickPickOption {
 
   /**
    * whether the answer return the original `OptionItem` object array.
-   * if true: the answer is the original `OptionItem` object array; 
+   * if true: the answer is the original `OptionItem` object array;
    * if false: the answer is the `id` array of the `OptionItem`
    * The default value is false
    */
@@ -49,9 +47,12 @@ export interface FxQuickPickOption {
    * @items: current selected `OptionItem` array
    * @returns: the new selected `id` array
    */
-  onDidChangeSelection?: (currentSelectedItems: OptionItem[], previousSelectedItems: OptionItem[]) => Promise<string[]>;
+  onDidChangeSelection?: (
+    currentSelectedItems: OptionItem[],
+    previousSelectedItems: OptionItem[]
+  ) => Promise<string[]>;
 
-  validation?: (input: string|string[]) => Promise<string | undefined>;
+  validation?: (input: string | string[]) => Promise<string | undefined>;
 
   step?: number;
   totalSteps?: number;
@@ -65,62 +66,62 @@ export interface FxInputBoxOption {
   prompt?: string;
   validation?: (input: string) => Promise<string | undefined>;
   backButton?: boolean;
-  number?:boolean;
+  number?: boolean;
   step?: number;
   totalSteps?: number;
 }
 
-export interface FxOpenDialogOption{
-    /**
-     * The resource the dialog shows when opened.
-     */
-    defaultUri?: string;
+export interface FxOpenDialogOption {
+  /**
+   * The resource the dialog shows when opened.
+   */
+  defaultUri?: string;
 
-    /**
-     * A human-readable string for the open button.
-     */
-    openLabel?: string;
+  /**
+   * A human-readable string for the open button.
+   */
+  openLabel?: string;
 
-    /**
-     * Allow to select files, defaults to `true`.
-     */
-    canSelectFiles?: boolean;
+  /**
+   * Allow to select files, defaults to `true`.
+   */
+  canSelectFiles?: boolean;
 
-    /**
-     * Allow to select folders, defaults to `false`.
-     */
-    canSelectFolders?: boolean;
+  /**
+   * Allow to select folders, defaults to `false`.
+   */
+  canSelectFolders?: boolean;
 
-    /**
-     * Allow to select many files or folders.
-     */
-    canSelectMany?: boolean;
+  /**
+   * Allow to select many files or folders.
+   */
+  canSelectMany?: boolean;
 
-    /**
-     * A set of file filters that are used by the dialog. Each entry is a human-readable label,
-     * like "TypeScript", and an array of extensions, e.g.
-     * ```ts
-     * {
-     *     'Images': ['png', 'jpg']
-     *     'TypeScript': ['ts', 'tsx']
-     * }
-     * ```
-     */
-    filters?: { [name: string]: string[] };
+  /**
+   * A set of file filters that are used by the dialog. Each entry is a human-readable label,
+   * like "TypeScript", and an array of extensions, e.g.
+   * ```ts
+   * {
+   *     'Images': ['png', 'jpg']
+   *     'TypeScript': ['ts', 'tsx']
+   * }
+   * ```
+   */
+  filters?: { [name: string]: string[] };
 
-    /**
-     * Dialog title.
-     *
-     * This parameter might be ignored, as not all operating systems display a title on open dialogs
-     * (for example, macOS).
-     */
-    title?: string;
+  /**
+   * Dialog title.
+   *
+   * This parameter might be ignored, as not all operating systems display a title on open dialogs
+   * (for example, macOS).
+   */
+  title?: string;
 
-    validation?: (input: string) => Promise<string | undefined>;
+  validation?: (input: string) => Promise<string | undefined>;
 
-    backButton?: boolean;
-    step?: number;
-    totalSteps?: number;
+  backButton?: boolean;
+  step?: number;
+  totalSteps?: number;
 }
 
 export enum InputResultType {
@@ -128,7 +129,7 @@ export enum InputResultType {
   back = "back",
   sucess = "sucess",
   error = "error",
-  pass = "pass" // for single select option quick pass it
+  pass = "pass", // for single select option quick pass it
 }
 
 export interface InputResult {
@@ -137,11 +138,8 @@ export interface InputResult {
   error?: FxError;
 }
 
-export interface UserInterface{
-  showQuickPick: (option: FxQuickPickOption) => Promise<InputResult> 
+export interface UserInterface {
+  showQuickPick: (option: FxQuickPickOption) => Promise<InputResult>;
   showInputBox: (option: FxInputBoxOption) => Promise<InputResult>;
   showOpenDialog: (option: FxOpenDialogOption) => Promise<InputResult>;
 }
-
-
-   

@@ -12,7 +12,7 @@ import {
   env,
   ViewColumn,
   debug,
-  QuickPickItem
+  QuickPickItem,
 } from "vscode";
 import {
   Result,
@@ -34,7 +34,7 @@ import {
   InputResult,
   InputResultType,
   VsCodeEnv,
-  AppStudioTokenProvider
+  AppStudioTokenProvider,
 } from "@microsoft/teamsfx-api";
 import { CoreProxy } from "@microsoft/teamsfx-core";
 import DialogManagerInstance from "./userInterface";
@@ -54,7 +54,7 @@ import {
   TelemetryProperty,
   TelemetryTiggerFrom,
   TelemetrySuccess,
-  AccountType
+  AccountType,
 } from "./telemetry/extTelemetryEvents";
 import * as commonUtils from "./debug/commonUtils";
 import { ExtensionErrors, ExtensionSource } from "./error";
@@ -210,7 +210,7 @@ export async function activate(): Promise<Result<null, FxError>> {
       source: ExtensionSource,
       message: e.message,
       stack: e.stack,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
     showError(FxError);
     return err(FxError);
@@ -236,14 +236,14 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
 
   const func: Func = {
     namespace: "fx-solution-azure",
-    method: "validateManifest"
+    method: "validateManifest",
   };
   const result = await core.executeUserTask(func);
   if (result.isErr()) {
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, result.error);
   } else {
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ValidateManifest, {
-      [TelemetryProperty.Success]: TelemetrySuccess.Yes
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
     });
   }
 
@@ -255,14 +255,14 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<null, Fx
 
   const func: Func = {
     namespace: "fx-solution-azure",
-    method: "buildPackage"
+    method: "buildPackage",
   };
   const result = await core.executeUserTask(func);
   if (result.isErr()) {
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Build, result.error);
   } else {
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Build, {
-      [TelemetryProperty.Success]: TelemetrySuccess.Yes
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
     });
   }
 
@@ -365,16 +365,20 @@ export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
       );
     }
   } catch (e) {
-    if (e instanceof UserError && (e as UserError).name === "DoProvisionFirst") {
-      runningTasks.delete(stage);
-      if (eventName) {
-        ExtTelemetry.sendTelemetryEvent(eventName, {
-          [TelemetryProperty.Success]: TelemetrySuccess.No
-        });
+    if (e instanceof UserError) {
+      const ue: UserError = e as UserError;
+      if (ue.name === "DoProvisionFirst") {
+        runningTasks.delete(stage);
+        if (eventName) {
+          ExtTelemetry.sendTelemetryEvent(eventName, {
+            [TelemetryProperty.Success]: TelemetrySuccess.No,
+          });
+        }
+        return await provisionHandler();
       }
-      return await provisionHandler();
+    } else {
+      result = wrapError(e);
     }
-    result = wrapError(e);
   }
 
   // 7. unlock
@@ -503,7 +507,7 @@ async function processResult(eventName: string | undefined, result: Result<null,
   } else {
     if (eventName) {
       ExtTelemetry.sendTelemetryEvent(eventName, {
-        [TelemetryProperty.Success]: TelemetrySuccess.Yes
+        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
       });
     }
   }
@@ -542,7 +546,7 @@ export async function updateAADHandler(args: any[]): Promise<Result<null, FxErro
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.UpdateAadStart, getTriggerFromProperty(args));
   const func: Func = {
     namespace: "fx-solution-azure/fx-resource-aad-app-for-teams",
-    method: "aadUpdatePermission"
+    method: "aadUpdatePermission",
   };
   return await runUserTask(func, TelemetryEvent.UpdateAad);
 }
@@ -551,7 +555,7 @@ export async function addCapabilityHandler(args: any[]): Promise<Result<null, Fx
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddCapStart, getTriggerFromProperty(args));
   const func: Func = {
     namespace: "fx-solution-azure",
-    method: "addCapability"
+    method: "addCapability",
   };
   return await runUserTask(func, TelemetryEvent.AddCap);
 }
@@ -698,7 +702,7 @@ function getTriggerFromProperty(args?: any[]) {
   return {
     [TelemetryProperty.TriggerFrom]: isFromTreeView
       ? TelemetryTiggerFrom.TreeView
-      : TelemetryTiggerFrom.CommandPalette
+      : TelemetryTiggerFrom.CommandPalette,
   };
 }
 
@@ -775,7 +779,7 @@ export async function openManifestHandler(args?: any[]): Promise<Result<null, Fx
         window.showTextDocument(document);
       });
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenManifestEditor, {
-        [TelemetryProperty.Success]: TelemetrySuccess.Yes
+        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
       });
       return ok(null);
     } else {
@@ -783,7 +787,7 @@ export async function openManifestHandler(args?: any[]): Promise<Result<null, Fx
         name: "FileNotFound",
         source: ExtensionSource,
         message: util.format(StringResources.vsc.handlers.fileNotFound, manifestFile),
-        timestamp: new Date()
+        timestamp: new Date(),
       };
       showError(FxError);
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, FxError);
@@ -794,7 +798,7 @@ export async function openManifestHandler(args?: any[]): Promise<Result<null, Fx
       name: "NoWorkspace",
       source: ExtensionSource,
       message: StringResources.vsc.handlers.noOpenWorkspace,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
     showError(FxError);
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, FxError);
@@ -864,7 +868,7 @@ export async function showError(e: FxError) {
       title: StringResources.vsc.handlers.getHelp,
       run: async (): Promise<void> => {
         commands.executeCommand("vscode.open", Uri.parse(`${e.helpLink}#${e.source}${e.name}`));
-      }
+      },
     };
 
     const button = await window.showErrorMessage(`[${errorCode}]: ${e.message}`, help);
@@ -876,7 +880,7 @@ export async function showError(e: FxError) {
       title: StringResources.vsc.handlers.reportIssue,
       run: async (): Promise<void> => {
         commands.executeCommand("vscode.open", Uri.parse(`${path}${param}`));
-      }
+      },
     };
 
     const button = await window.showErrorMessage(`[${errorCode}]: ${e.message}`, issue);
@@ -890,25 +894,25 @@ export async function cmpAccountsHandler() {
   const signInAzureOption: VscQuickPickItem = {
     id: "signInAzure",
     label: "Sign in to Azure",
-    function: () => signInAzure()
+    function: () => signInAzure(),
   };
 
   const signOutAzureOption: VscQuickPickItem = {
     id: "signOutAzure",
     label: "Sign out of Azure: ",
-    function: () => signOutAzure(false)
+    function: () => signOutAzure(false),
   };
 
   const signInM365Option: VscQuickPickItem = {
     id: "signinM365",
     label: "Sign in to M365",
-    function: () => signInM365()
+    function: () => signInM365(),
   };
 
   const signOutM365Option: VscQuickPickItem = {
     id: "signOutM365",
     label: "Sign out of M365: ",
-    function: () => signOutM365(false)
+    function: () => signOutM365(false),
   };
 
   //TODO: hide subscription list until core or api expose the get subscription list API
@@ -963,7 +967,7 @@ export async function signOutAzure(isFromTreeView: boolean) {
     [TelemetryProperty.TriggerFrom]: isFromTreeView
       ? TelemetryTiggerFrom.TreeView
       : TelemetryTiggerFrom.CommandPalette,
-    [TelemetryProperty.AccountType]: AccountType.Azure
+    [TelemetryProperty.AccountType]: AccountType.Azure,
   });
   const result = await AzureAccountManager.signout();
   if (result) {
@@ -971,15 +975,15 @@ export async function signOutAzure(isFromTreeView: boolean) {
       {
         commandId: "fx-extension.signinAzure",
         label: StringResources.vsc.handlers.signInAzure,
-        contextValue: "signinAzure"
-      }
+        contextValue: "signinAzure",
+      },
     ]);
     await TreeViewManagerInstance.getTreeView("teamsfx-accounts")!.remove([
       {
         commandId: "fx-extension.selectSubscription",
         label: "",
-        parent: "fx-extension.signinAzure"
-      }
+        parent: "fx-extension.signinAzure",
+      },
     ]);
   }
 }
@@ -989,7 +993,7 @@ export async function signOutM365(isFromTreeView: boolean) {
     [TelemetryProperty.TriggerFrom]: isFromTreeView
       ? TelemetryTiggerFrom.TreeView
       : TelemetryTiggerFrom.CommandPalette,
-    [TelemetryProperty.AccountType]: AccountType.M365
+    [TelemetryProperty.AccountType]: AccountType.M365,
   });
   let appstudioLogin: AppStudioTokenProvider = AppStudioTokenInstance;
   const vscodeEnv = detectVsCodeEnv();
@@ -1002,8 +1006,8 @@ export async function signOutM365(isFromTreeView: boolean) {
       {
         commandId: "fx-extension.signinM365",
         label: StringResources.vsc.handlers.signIn365,
-        contextValue: "signinM365"
-      }
+        contextValue: "signinM365",
+      },
     ]);
   }
 }

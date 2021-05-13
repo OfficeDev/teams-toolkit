@@ -44,8 +44,8 @@ loadConfiguration({
   authentication: {
     initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
     simpleAuthEndpoint: process.env.REACT_APP_TEAMSFX_ENDPOINT,
-    clientId: process.env.REACT_APP_CLIENT_ID
-  }
+    clientId: process.env.REACT_APP_CLIENT_ID,
+  },
 });
 ```
 
@@ -66,8 +66,8 @@ loadConfiguration({
   authentication: {
     initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
     simpleAuthEndpoint: process.env.REACT_APP_TEAMSFX_ENDPOINT,
-    clientId: process.env.REACT_APP_CLIENT_ID
-  }
+    clientId: process.env.REACT_APP_CLIENT_ID,
+  },
 });
 const credential = new TeamsUserCredential();
 const graphClient = createMicrosoftGraphClient(credential, ["User.Read"]); // Initializes MS Graph SDK using our MsGraphAuthProvider
@@ -123,7 +123,7 @@ try {
   // Show login button when specific ErrorWithCode is caught.
   if (err instanceof ErrorWithCode && err.code === ErrorCode.UiRequiredError) {
     this.setState({
-      showLoginBtn: true
+      showLoginBtn: true,
     });
   }
 }
@@ -147,8 +147,8 @@ loadConfiguration({
   authentication: {
     initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
     simpleAuthEndpoint: process.env.REACT_APP_TEAMSFX_ENDPOINT,
-    clientId: process.env.REACT_APP_CLIENT_ID
-  }
+    clientId: process.env.REACT_APP_CLIENT_ID,
+  },
 });
 const credential: any = new TeamsUserCredential();
 const graphClient = createMicrosoftGraphClient(credential, ["User.Read"]);
@@ -164,8 +164,8 @@ loadConfiguration({
   authentication: {
     initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
     simpleAuthEndpoint: process.env.REACT_APP_TEAMSFX_ENDPOINT,
-    clientId: process.env.REACT_APP_CLIENT_ID
-  }
+    clientId: process.env.REACT_APP_CLIENT_ID,
+  },
 });
 const credential: any = new TeamsUserCredential();
 const token = credential.getToken(""); // Get SSO token for the user
@@ -173,8 +173,8 @@ const token = credential.getToken(""); // Get SSO token for the user
 const apiConfig = getResourceConfiguration(ResourceType.API);
 const response = await axios.default.get(apiConfig.endpoint + "api/httptrigger1", {
   headers: {
-    authorization: "Bearer " + token
-  }
+    authorization: "Bearer " + token,
+  },
 });
 ```
 
@@ -200,35 +200,37 @@ connection.on("connect", (error) => {
 Add `TeamsBotSsoPrompt` to dialog set.
 
 ```ts
-const { ConversationState, MemoryStorage } = require('botbuilder');
-const { DialogSet, WaterfallDialog } = require('botbuilder-dialogs');
-const { TeamsBotSsoPrompt } = require('@microsoft/teamsfx');
+const { ConversationState, MemoryStorage } = require("botbuilder");
+const { DialogSet, WaterfallDialog } = require("botbuilder-dialogs");
+const { TeamsBotSsoPrompt } = require("@microsoft/teamsfx");
 
 const convoState = new ConversationState(new MemoryStorage());
-const dialogState = convoState.createProperty('dialogState');
+const dialogState = convoState.createProperty("dialogState");
 const dialogs = new DialogSet(dialogState);
 
 loadConfiguration();
-dialogs.add(new TeamsBotSsoPrompt('TeamsBotSsoPrompt', {
-   scopes: ["User.Read"],
-}));
+dialogs.add(
+  new TeamsBotSsoPrompt("TeamsBotSsoPrompt", {
+    scopes: ["User.Read"],
+  })
+);
 
-dialogs.add(new WaterfallDialog('taskNeedingLogin', [
-     async (step) => {
-         return await step.beginDialog('TeamsBotSsoPrompt');
-     },
-     async (step) => {
-         const token = step.result;
-         if (token) {
-
-             // ... continue with task needing access token ...
-
-         } else {
-             await step.context.sendActivity(`Sorry... We couldn't log you in. Try again later.`);
-             return await step.endDialog();
-         }
-     }
-]));
+dialogs.add(
+  new WaterfallDialog("taskNeedingLogin", [
+    async (step) => {
+      return await step.beginDialog("TeamsBotSsoPrompt");
+    },
+    async (step) => {
+      const token = step.result;
+      if (token) {
+        // ... continue with task needing access token ...
+      } else {
+        await step.context.sendActivity(`Sorry... We couldn't log you in. Try again later.`);
+        return await step.endDialog();
+      }
+    },
+  ])
+);
 ```
 
 ## Troubleshooting
@@ -254,7 +256,7 @@ setLogFunction((level: LogLevel, ...args: any[]) => {
     const { format, ...rest } = args;
     this.telemetryClient.trackTrace({
       message: util.format(format, ...rest),
-      severityLevel: Severity.Error
+      severityLevel: Severity.Error,
     });
   }
 });

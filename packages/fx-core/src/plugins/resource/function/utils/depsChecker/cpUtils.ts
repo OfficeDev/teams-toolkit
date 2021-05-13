@@ -57,7 +57,7 @@ export namespace cpUtils {
         workingDirectory = workingDirectory || os.tmpdir();
         const options: cp.SpawnOptions = {
           cwd: workingDirectory,
-          shell: true
+          shell: true,
         };
         Object.assign(options, additionalOptions);
 
@@ -68,7 +68,9 @@ export namespace cpUtils {
           timer = setTimeout(() => {
             childProc.kill();
             logger?.debug(
-              `Stop exec due to timeout, command: "${command} ${formattedArgs}", options = '${JSON.stringify(options)}'`
+              `Stop exec due to timeout, command: "${command} ${formattedArgs}", options = '${JSON.stringify(
+                options
+              )}'`
             );
             reject(
               new Error(
@@ -77,7 +79,9 @@ export namespace cpUtils {
             );
           }, options.timeout);
         }
-        logger?.debug(`Running command: "${command} ${formattedArgs}", options = '${JSON.stringify(options)}'`);
+        logger?.debug(
+          `Running command: "${command} ${formattedArgs}", options = '${JSON.stringify(options)}'`
+        );
 
         childProc.stdout?.on("data", (data: string | Buffer) => {
           data = data.toString();
@@ -110,7 +114,7 @@ export namespace cpUtils {
             code,
             cmdOutput,
             cmdOutputIncludingStderr,
-            formattedArgs
+            formattedArgs,
           });
         });
       }
@@ -159,5 +163,17 @@ export namespace cpUtils {
         reject(error);
       }
     });
+  }
+
+  /**
+   * timeout with millisecond
+   */
+  export function withTimeout(millis: number, promise: Promise<any>, msg: string): Promise<any> {
+    return Promise.race([
+      promise,
+      new Promise((resolve, reject) =>
+        setTimeout(() => reject(new Error(`${msg}, ${millis} ms`)), millis)
+      ),
+    ]);
   }
 }

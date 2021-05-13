@@ -134,7 +134,12 @@ export class ApiPrefixQuestion extends BaseQuestionService implements IQuestionS
 
     public async executeFunc(ctx: PluginContext): Promise<string> {
         const apiTitle = buildAnswer(ctx)?.openApiDocumentSpec?.info.title;
-        return !!apiTitle ? NamingRules.apiPrefix.sanitize(apiTitle) : ApimDefaultValues.apiPrefix;
+        let apiPrefix: string | undefined;
+        if (apiTitle) {
+            apiPrefix = NamingRules.apiPrefix.sanitize(apiTitle);
+        }
+
+        return apiPrefix ? apiPrefix : ApimDefaultValues.apiPrefix;
     }
 
     public getQuestion(): TextInputQuestion {
@@ -214,7 +219,12 @@ export class NewApiVersionQuestion extends BaseQuestionService implements IQuest
 
     public async executeFunc(ctx: PluginContext): Promise<string> {
         const apiVersion = buildAnswer(ctx)?.openApiDocumentSpec?.info.version;
-        return !!apiVersion ? NamingRules.versionIdentity.sanitize(apiVersion) : ApimDefaultValues.apiVersion;
+        let versionIdentity: string | undefined;
+        if (apiVersion) {
+            versionIdentity = NamingRules.versionIdentity.sanitize(apiVersion);
+        }
+
+        return versionIdentity ? versionIdentity : ApimDefaultValues.apiVersion;
     }
 
     public getQuestion(): TextInputQuestion {

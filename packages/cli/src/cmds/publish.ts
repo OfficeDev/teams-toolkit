@@ -10,6 +10,8 @@ import activate from "../activate";
 import * as constants from "../constants";
 import { YargsCommand } from "../yargsCommand";
 import { getParamJson } from "../utils";
+import CliTelemetry from "../telemetry/cliTelemetry";
+import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
 
 export default class Publish extends YargsCommand {
   public readonly commandHead = `publish`;
@@ -43,14 +45,17 @@ export default class Publish extends YargsCommand {
     // if input manifestFolderParam(actually also teams-app-id param),
     // this call is from VS platform, since CLI hide these two param from users.
     if (answers.has(manifestFolderParamName)) {
+      CliTelemetry.sendTelemetryEvent(TelemetryEvent.PublishStart);
       result = await activate();
     } else {
       const rootFolder = answers.getString("folder");
       answers.delete("folder");
+      CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.PublishStart);
       result = await activate(rootFolder);
     }
 
     if (result.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Publish, result.error);
       return err(result.error);
     }
 
@@ -67,8 +72,13 @@ export default class Publish extends YargsCommand {
       result = await core.publish(answers);
     }
     if (result.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Publish, result.error);
       return err(result.error);
     }
+
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.Publish, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes
+    });
     return ok(null);
   }
 }

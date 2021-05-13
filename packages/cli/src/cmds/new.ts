@@ -32,6 +32,9 @@ import { NotFoundInputedFolder, SampleAppClonedFailed } from "../error";
 import { validateAndUpdateAnswers, visitInteractively } from "../question/question";
 import { YargsCommand } from "../yargsCommand";
 import { flattenNodes, getJson, getSingleOptionString, toConfigMap, toYargsOptions } from "../utils";
+import CliTelemetry from "../telemetry/cliTelemetry";
+import { TelemetryClient } from "applicationinsights";
+import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
 
 export default class New extends YargsCommand {
   public readonly commandHead = `new`;
@@ -94,8 +97,10 @@ export default class New extends YargsCommand {
       }
     }
 
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart);
     const result = await activate();
     if (result.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateProject, result.error);
       return err(result.error);
     }
 
@@ -103,6 +108,7 @@ export default class New extends YargsCommand {
     {
       const result = await core.getQuestions!(Stage.create, Platform.CLI);
       if (result.isErr()) {
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateProject, result.error);
         return err(result.error);
       }
       await validateAndUpdateAnswers(result.value!, this.answers);
@@ -111,9 +117,14 @@ export default class New extends YargsCommand {
     {
       const result = await core.create(this.answers);
       if (result.isErr()) {
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateProject, result.error);
         return err(result.error);
       }
     }
+
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProject, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes
+    });
     return ok(null);
   }
 }
@@ -155,6 +166,7 @@ class NewTemplete extends YargsCommand {
     if (!fs.pathExistsSync(folder)) {
       throw NotFoundInputedFolder(folder);
     }
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSampleStart);
     const templateName = args["template-name"] as string;
     const template = constants.templates.find(t => t.sampleAppName === templateName)!;
     
@@ -165,6 +177,11 @@ class NewTemplete extends YargsCommand {
         `Cloned '${colors.yellow(template.sampleAppUrl)}' to '${colors.yellow(folder)}'`
       )
     );
+
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      [TelemetryProperty.SampleName]: templateName
+    });
     return ok(null);
   }
 

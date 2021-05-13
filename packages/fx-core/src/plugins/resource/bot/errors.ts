@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ErrorNames, Links } from "./constants";
+import { ErrorNames } from "./constants";
 import { Messages } from "./resources/messages";
 
 export enum ErrorType {

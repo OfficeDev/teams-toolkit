@@ -4,8 +4,6 @@ import "mocha";
 import * as chai from "chai";
 
 import { getZipDeployEndpoint } from "../../../../../../src/plugins/resource/bot/utils/zipDeploy";
-import { PluginError } from "../../../../../../src/plugins/resource/bot/errors";
-import { Messages } from "../messages";
 
 describe("Test zipDeploy", () => {
   describe("getZipDeployEndpoint", () => {

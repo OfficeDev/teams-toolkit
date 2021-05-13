@@ -41,8 +41,7 @@ export const QuestionAppName: TextInputQuestion = {
       }
       const projectPath = path.resolve(folder, appName);
       const exists = await fs.pathExists(projectPath);
-      if (exists)
-        return `Path exists: ${projectPath}. Select a different application name.`;
+      if (exists) return `Path exists: ${projectPath}. Select a different application name.`;
       return undefined;
     },
   },

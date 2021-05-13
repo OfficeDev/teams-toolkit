@@ -13,23 +13,21 @@ export class Constants {
   public static readonly BUILD_SHAREPOINT_PACKAGE = "Build SharePoint Package";
   public static readonly READ_MORE = "Read more";
   public static readonly CANCEL = "Cancel";
-  public static readonly DEPLOY_GUIDE = "https://docs.microsoft.com/en-us/sharepoint/dev/spfx/web-parts/get-started/using-web-part-as-ms-teams-tab#package-and-deploy-your-web-part-to-sharepoint";
+  public static readonly DEPLOY_GUIDE =
+    "https://docs.microsoft.com/en-us/sharepoint/dev/spfx/web-parts/get-started/using-web-part-as-ms-teams-tab#package-and-deploy-your-web-part-to-sharepoint";
 }
 
 export class PlaceHolders {
   public static readonly componentName = "<%= componentName %>";
-  public static readonly componentNameCamelCase =
-    "<%= componentNameCamelCase %>";
+  public static readonly componentNameCamelCase = "<%= componentNameCamelCase %>";
   public static readonly componentClassName = "<%= componentClassName %>";
   public static readonly componentStrings = "<%= componentStrings %>";
   public static readonly libraryName = "<%= libraryName %>";
   public static readonly componentId = "<%= componentId %>";
   public static readonly componentAlias = "<%= componentAlias %>";
   public static readonly componentDescription = "<%= componentDescription %>";
-  public static readonly componentNameUnescaped =
-    "<%= componentNameUnescaped %>";
-  public static readonly componentClassNameKebabCase =
-    "<%= componentClassNameKebabCase %>";
+  public static readonly componentNameUnescaped = "<%= componentNameUnescaped %>";
+  public static readonly componentClassNameKebabCase = "<%= componentClassNameKebabCase %>";
 }
 
 export class TelemetryKey {
@@ -58,13 +56,13 @@ export class ProgressTitleMessage {
   static readonly DeployProgressTitle = `[${Constants.PLUGIN_NAME}] Deploy SharePoint Package`;
 }
 
-export class PreDeployProgressMessage{
+export class PreDeployProgressMessage {
   static readonly NpmInstall = "Run: npm install. This may take more than 5 minutes to finish";
   static readonly GulpBundle = "Run: gulp bundle --ship";
   static readonly GulpPackage = "Run: gulp package-solution --ship";
 }
 
-export class DeployProgressMessage{
+export class DeployProgressMessage {
   static readonly GetSPAppCatalog = "Get SharePoint app catalog";
   static readonly UploadAndDeploy = "Upload and deploy SPFx package on your tenant website";
 }

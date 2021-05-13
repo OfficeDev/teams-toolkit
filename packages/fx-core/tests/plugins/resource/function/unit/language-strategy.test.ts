@@ -7,29 +7,28 @@ import { FunctionLanguage } from "../../../../../src/plugins/resource/function/e
 import { FunctionPluginInfo } from "../../../../../src/plugins/resource/function/constants";
 import { LanguageStrategyFactory } from "../../../../../src/plugins/resource/function/language-strategy";
 
-
 describe(FunctionPluginInfo.pluginName, () => {
-    describe("Function Language Strategy Test", () => {
-        it("Test get TypeScript language strategy", async () => {
-            // Arrange
-            const language = FunctionLanguage.TypeScript;
+  describe("Function Language Strategy Test", () => {
+    it("Test get TypeScript language strategy", async () => {
+      // Arrange
+      const language = FunctionLanguage.TypeScript;
 
-            // Act
-            const res = LanguageStrategyFactory.getStrategy(language);
+      // Act
+      const res = LanguageStrategyFactory.getStrategy(language);
 
-            // Assert
-            chai.assert.isTrue(res !== undefined);
-        });
-
-        it("Test get JavaScript language strategy", async () => {
-            // Arrange
-            const language = FunctionLanguage.JavaScript;
-
-            // Act
-            const res = LanguageStrategyFactory.getStrategy(language);
-
-            // Assert
-            chai.assert.isTrue(res !== undefined);
-        });
+      // Assert
+      chai.assert.isTrue(res !== undefined);
     });
+
+    it("Test get JavaScript language strategy", async () => {
+      // Arrange
+      const language = FunctionLanguage.JavaScript;
+
+      // Act
+      const res = LanguageStrategyFactory.getStrategy(language);
+
+      // Assert
+      chai.assert.isTrue(res !== undefined);
+    });
+  });
 });

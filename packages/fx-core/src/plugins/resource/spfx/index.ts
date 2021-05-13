@@ -11,7 +11,7 @@ import {
   err,
   Result,
   ok,
-  TeamsAppManifest
+  TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
@@ -50,9 +50,12 @@ export class SpfxPlugin implements Plugin {
         type: NodeType.singleSelect,
         name: SPFXQuestionNames.framework_type,
         title: "Framework",
-        option: [{id:"none", label:"None"}, {id:"react", label:"React"}],
+        option: [
+          { id: "none", label: "None" },
+          { id: "react", label: "React" },
+        ],
         placeholder: "Select an option",
-        default: "none"
+        default: "none",
       });
       spfx_frontend_host.addChild(spfx_framework_type);
 

@@ -8,7 +8,13 @@
 // and run the scripts (tools/depsChecker/copyfiles.sh or tools/depsChecker/copyfiles.ps1 according to your OS)
 // to copy you changes to function plugin.
 
-import { isLinux, Messages, defaultHelpLink, DepsCheckerEvent, dotnetManualInstallHelpLink } from "./common";
+import {
+  isLinux,
+  Messages,
+  defaultHelpLink,
+  DepsCheckerEvent,
+  dotnetManualInstallHelpLink,
+} from "./common";
 import { DepsCheckerError, NodeNotFoundError, NodeNotSupportedError } from "./errors";
 
 export interface IDepsChecker {
@@ -91,7 +97,10 @@ export class DepsChecker {
     if (isLinux()) {
       const confirmMessage = await this.generateMsg(validCheckers);
       this._logger.cleanup();
-      return await this._adapter.displayContinueWithLearnMore(confirmMessage, dotnetManualInstallHelpLink);
+      return await this._adapter.displayContinueWithLearnMore(
+        confirmMessage,
+        dotnetManualInstallHelpLink
+      );
     }
 
     this._adapter.showOutputChannel();
@@ -101,7 +110,9 @@ export class DepsChecker {
       } catch (error) {
         await this._logger.printDetailLog();
         this._logger.cleanup();
-        await this._logger.error(`Failed to install '${checker.constructor.name}', error = '${error}'`)
+        await this._logger.error(
+          `Failed to install '${checker.constructor.name}', error = '${error}'`
+        );
         const continueNext = await this.handleError(error);
         if (!continueNext) {
           return !shouldContinue;
@@ -121,7 +132,9 @@ export class DepsChecker {
           validCheckers.push(checker);
         }
       } catch (error) {
-        await this._logger.debug(`Failed to check '${checker.constructor.name}', error = '${error}'`)
+        await this._logger.debug(
+          `Failed to check '${checker.constructor.name}', error = '${error}'`
+        );
         const continueNext = await this.handleError(error);
         if (!continueNext) {
           return null;

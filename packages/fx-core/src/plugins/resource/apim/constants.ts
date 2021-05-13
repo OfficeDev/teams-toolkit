@@ -188,7 +188,7 @@ export enum TeamsToolkitComponent {
     ApimPlugin = "fx-resource-apim",
 }
 
-export enum RetryCommands {
+export enum RetryOperation {
     Create = "create a new project",
     Update = "add resources",
     Provision = "provision",
@@ -196,42 +196,42 @@ export enum RetryCommands {
     Login = "sign in to Azure and choose a subscription",
 }
 
-export const ComponentRetryCommands: { [key in TeamsToolkitComponent]: RetryCommands } = Object.freeze({
-    [TeamsToolkitComponent.FunctionPlugin]: RetryCommands.Update,
-    [TeamsToolkitComponent.AadPlugin]: RetryCommands.Create,
-    [TeamsToolkitComponent.Solution]: RetryCommands.Create,
-    [TeamsToolkitComponent.ApimPlugin]: RetryCommands.Update,
+export const ComponentRetryCommands: { [key in TeamsToolkitComponent]: RetryOperation } = Object.freeze({
+    [TeamsToolkitComponent.FunctionPlugin]: RetryOperation.Update,
+    [TeamsToolkitComponent.AadPlugin]: RetryOperation.Create,
+    [TeamsToolkitComponent.Solution]: RetryOperation.Create,
+    [TeamsToolkitComponent.ApimPlugin]: RetryOperation.Update,
 });
 
-export const ConfigRetryCommands: { [key in TeamsToolkitComponent]: { [key: string]: RetryCommands } } = {
+export const ConfigRetryCommands: { [key in TeamsToolkitComponent]: { [key: string]: RetryOperation } } = {
     [TeamsToolkitComponent.FunctionPlugin]: {
-        [FunctionPluginConfigKeys.functionEndpoint]: RetryCommands.Provision,
+        [FunctionPluginConfigKeys.functionEndpoint]: RetryOperation.Provision,
     },
     [TeamsToolkitComponent.AadPlugin]: {
-        [AadPluginConfigKeys.objectId]: RetryCommands.Provision,
-        [AadPluginConfigKeys.clientId]: RetryCommands.Provision,
-        [AadPluginConfigKeys.oauth2PermissionScopeId]: RetryCommands.Provision,
-        [AadPluginConfigKeys.applicationIdUris]: RetryCommands.Provision,
+        [AadPluginConfigKeys.objectId]: RetryOperation.Provision,
+        [AadPluginConfigKeys.clientId]: RetryOperation.Provision,
+        [AadPluginConfigKeys.oauth2PermissionScopeId]: RetryOperation.Provision,
+        [AadPluginConfigKeys.applicationIdUris]: RetryOperation.Provision,
     },
     [TeamsToolkitComponent.Solution]: {
-        [SolutionConfigKeys.resourceNameSuffix]: RetryCommands.Create,
-        [SolutionConfigKeys.subscriptionId]: RetryCommands.Login,
-        [SolutionConfigKeys.teamsAppTenantId]: RetryCommands.Provision,
-        [SolutionConfigKeys.resourceGroupName]: RetryCommands.Provision,
-        [SolutionConfigKeys.location]: RetryCommands.Provision,
+        [SolutionConfigKeys.resourceNameSuffix]: RetryOperation.Create,
+        [SolutionConfigKeys.subscriptionId]: RetryOperation.Login,
+        [SolutionConfigKeys.teamsAppTenantId]: RetryOperation.Provision,
+        [SolutionConfigKeys.resourceGroupName]: RetryOperation.Provision,
+        [SolutionConfigKeys.location]: RetryOperation.Provision,
     },
     [TeamsToolkitComponent.ApimPlugin]: {
-        [ApimPluginConfigKeys.resourceGroupName]: RetryCommands.Provision,
-        [ApimPluginConfigKeys.serviceName]: RetryCommands.Provision,
-        [ApimPluginConfigKeys.productId]: RetryCommands.Provision,
-        [ApimPluginConfigKeys.oAuthServerId]: RetryCommands.Provision,
-        [ApimPluginConfigKeys.apimClientAADObjectId]: RetryCommands.Provision,
-        [ApimPluginConfigKeys.apimClientAADClientId]: RetryCommands.Provision,
-        [ApimPluginConfigKeys.apimClientAADClientSecret]: RetryCommands.Provision,
-        [ApimPluginConfigKeys.apiPrefix]: RetryCommands.Deploy,
-        [ApimPluginConfigKeys.versionSetId]: RetryCommands.Deploy,
-        [ApimPluginConfigKeys.apiPath]: RetryCommands.Deploy,
-        [ApimPluginConfigKeys.apiDocumentPath]: RetryCommands.Deploy,
+        [ApimPluginConfigKeys.resourceGroupName]: RetryOperation.Provision,
+        [ApimPluginConfigKeys.serviceName]: RetryOperation.Provision,
+        [ApimPluginConfigKeys.productId]: RetryOperation.Provision,
+        [ApimPluginConfigKeys.oAuthServerId]: RetryOperation.Provision,
+        [ApimPluginConfigKeys.apimClientAADObjectId]: RetryOperation.Provision,
+        [ApimPluginConfigKeys.apimClientAADClientId]: RetryOperation.Provision,
+        [ApimPluginConfigKeys.apimClientAADClientSecret]: RetryOperation.Provision,
+        [ApimPluginConfigKeys.apiPrefix]: RetryOperation.Deploy,
+        [ApimPluginConfigKeys.versionSetId]: RetryOperation.Deploy,
+        [ApimPluginConfigKeys.apiPath]: RetryOperation.Deploy,
+        [ApimPluginConfigKeys.apiDocumentPath]: RetryOperation.Deploy,
     },
 };
 

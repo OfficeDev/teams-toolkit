@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { IProgressHandler, PluginContext } from "@microsoft/teamsfx-api";
-import { ProgressTitleMessage, PreDeployProgressMessage, DeployProgressMessage } from "./constants";
+import { ProgressTitleMessage, PreDeployProgressMessage} from "./constants";
 
 export class ProgressHelper {
     static preDeployProgress: IProgressHandler | undefined;

@@ -5,28 +5,32 @@ import "mocha";
 import * as chai from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
-import {FxError, PluginContext, Result} from "@microsoft/teamsfx-api";
+import { FxError, PluginContext, Result } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import chaiAsPromised from "chai-as-promised";
 import fs from "fs-extra";
 
-import {AzureStorageClient} from "../../../../../src/plugins/resource/frontend/clients";
+import { AzureStorageClient } from "../../../../../src/plugins/resource/frontend/clients";
 import {
     BuildError,
     CreateStorageAccountError,
     EnableStaticWebsiteError,
+    InvalidStorageNameError,
+    NoBuildPathError,
+    NoPreStepError,
     NoResourceGroupError,
     NoStorageError,
-    NotProvisionError,
     StaticWebsiteDisabledError,
+    StorageAccountAlreadyTakenError,
 } from "../../../../../src/plugins/resource/frontend/resources/errors";
-import {FrontendConfig} from "../../../../../src/plugins/resource/frontend/configs";
-import {Constants, FrontendConfigInfo} from "../../../../../src/plugins/resource/frontend/constants";
-import {FrontendPlugin} from "../../../../../src/plugins/resource/frontend/";
-import {FrontendProvision} from "../../../../../src/plugins/resource/frontend/ops/provision";
-import {FrontendScaffold} from "../../../../../src/plugins/resource/frontend/ops/scaffold";
-import {TestHelper} from "../helper";
-import {Utils} from "../../../../../src/plugins/resource/frontend/utils";
+import { FrontendConfig } from "../../../../../src/plugins/resource/frontend/configs";
+import { AzureErrorCode, FrontendConfigInfo } from "../../../../../src/plugins/resource/frontend/constants";
+import { FrontendPlugin } from "../../../../../src/plugins/resource/frontend/";
+import { FrontendProvision } from "../../../../../src/plugins/resource/frontend/ops/provision";
+import { FrontendScaffold } from "../../../../../src/plugins/resource/frontend/ops/scaffold";
+import { TestHelper } from "../helper";
+import { Utils } from "../../../../../src/plugins/resource/frontend/utils";
+import { StorageAccounts } from "@azure/arm-storage";
 
 chai.use(chaiAsPromised);
 
@@ -107,8 +111,8 @@ describe("frontendPlugin", () => {
             frontendPlugin = await TestHelper.initializedFrontendPlugin(new FrontendPlugin(), pluginContext);
 
             createStorageAccountStub = sinon
-                .stub(AzureStorageClient.prototype, "createStorageAccount")
-                .resolves(TestHelper.storageEndpoint);
+                .stub(StorageAccounts.prototype, "create")
+                .resolves(TestHelper.storageAccount);
             enableStaticWebsiteStub = sinon.stub(AzureStorageClient.prototype, "enableStaticWebsite");
         });
 
@@ -132,6 +136,22 @@ describe("frontendPlugin", () => {
             const result = await frontendPlugin.provision(pluginContext);
 
             assertError(result, new CreateStorageAccountError().code);
+        });
+
+        it("Storage Account already taken", async () => {
+            createStorageAccountStub.throws({ code: AzureErrorCode.StorageAccountAlreadyTaken });
+
+            const result = await frontendPlugin.provision(pluginContext);
+
+            assertError(result, new StorageAccountAlreadyTakenError().code);
+        });
+
+        it("Storage name contains reserved word", async () => {
+            createStorageAccountStub.throws({ code: AzureErrorCode.ReservedResourceName });
+
+            const result = await frontendPlugin.provision(pluginContext);
+
+            assertError(result, new InvalidStorageNameError().code);
         });
 
         it("Enable static website throw error", async () => {
@@ -245,7 +265,7 @@ describe("frontendPlugin", () => {
 
             const result = await frontendPlugin.deploy(pluginContext);
 
-            assertError(result, new NotProvisionError().code);
+            assertError(result, new NoPreStepError().code);
         });
 
         it("local path does not exists", async () => {
@@ -253,7 +273,7 @@ describe("frontendPlugin", () => {
 
             const result = await frontendPlugin.deploy(pluginContext);
 
-            assertError(result, new BuildError().code);
+            assertError(result, new NoBuildPathError().code);
         });
     });
 });

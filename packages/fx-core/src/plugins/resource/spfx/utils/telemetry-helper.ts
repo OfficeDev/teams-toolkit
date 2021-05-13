@@ -11,7 +11,7 @@ export class telemetryHelper {
     properties: { [key: string]: string } = {},
     measurements: { [key: string]: number } = {}
   ): void {
-    properties[TelemetryKey.Component] = Constants.PLUGIN_NAME;
+    properties[TelemetryKey.Component] = Constants.PLUGIN_DEV_NAME;
     properties[TelemetryKey.Success] = TelemetryValue.Success;
 
     ctx.telemetryReporter?.sendTelemetryEvent(
@@ -28,7 +28,7 @@ export class telemetryHelper {
     properties: { [key: string]: string } = {},
     measurements: { [key: string]: number } = {}
   ): void {
-    properties[TelemetryKey.Component] = Constants.PLUGIN_NAME;
+    properties[TelemetryKey.Component] = Constants.PLUGIN_DEV_NAME;
     properties[TelemetryKey.Success] = TelemetryValue.Fail;
 
     if (e instanceof SystemError) {

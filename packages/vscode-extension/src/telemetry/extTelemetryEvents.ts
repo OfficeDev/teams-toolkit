@@ -1,8 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 export enum TelemetryEvent {
+  QuickStart = "quick-start",
+
+  Samples = "samples",
+
+  Documentation = "documentation",
+
   LoginStart = "login-start",
   Login = "login",
+
+  SignOutStart = "sign-out-start",
 
   CreateProjectStart = "create-project-start",
   CreateProject = "create-project",
@@ -13,10 +21,14 @@ export enum TelemetryEvent {
   AddCapStart = "add-capability-start",
   AddCap = "add-capability",
 
+  OpenManifestEditorStart = "open-manifest-editor-start",
   OpenManifestEditor = "open-manifest-editor",
 
+  ValidateManifestStart = "validate-manifest-start",
   ValidateManifest = "validate-manifest",
-  BuildPackage = "build-package",
+
+  BuildStart = "build-start",
+  Build = "build",
 
   ProvisionStart = "provision-start",
   Provision = "provision",
@@ -28,9 +40,21 @@ export enum TelemetryEvent {
   UpdateAad = "update-aad",
 
   PublishStart = "publish-start",
+  Publish = "publish",
 
-  F5Start = "f5-start",
-  F5 = "f5",
+  ManageTeamsApp = "manage-teams-app",
+
+  ManageTeamsBot = "manage-teams-bot",
+
+  ReportIssues = "report-issues",
+
+  OpenM365Portal = "open-m365-portal",
+
+  OpenAzurePortal = "open-azure-portal",
+
+  DebugPreCheck = "debug-precheck",
+  DebugStart = "debug-start",
+  DebugStop = "debug-stop",
 
   Survey = "survey"
 }
@@ -45,7 +69,11 @@ export enum TelemetryProperty {
   ErrorType = "error-type",
   ErrorCode = "error-code",
   ErrorMessage = "error-message",
-  DebugSessionId = "session-id"
+  DebugSessionId = "session-id",
+  DebugType = "type",
+  DebugRequest = "request",
+  DebugPort = "port",
+  DebugRemote = "remote"
 }
 
 export enum TelemetrySuccess {
@@ -61,6 +89,11 @@ export enum TelemetryTiggerFrom {
 export enum TelemetryErrorType {
   UserError = "user",
   SystemError = "system"
+}
+
+export enum AccountType {
+  M365 = "m365",
+  Azure = "azure"
 }
 
 export const TelemetryComponentType = "extension";

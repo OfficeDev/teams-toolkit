@@ -167,8 +167,12 @@ export class AppStudioPluginImpl {
     }
 
     private isSPFxProject(ctx: PluginContext): boolean {
-        const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings).activeResourcePlugins;
-        return selectedPlugins.indexOf("fx-resource-spfx") !== -1;
+        const solutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
+        if (solutionSettings) {
+            const selectedPlugins = solutionSettings.activeResourcePlugins;
+            return selectedPlugins.indexOf("fx-resource-spfx") !== -1;
+        }
+        return false;
     }
 
     private async checkFileExist(filePath: string): Promise<boolean> {

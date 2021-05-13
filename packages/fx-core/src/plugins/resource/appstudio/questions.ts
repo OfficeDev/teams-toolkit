@@ -11,6 +11,6 @@ export const manuallySubmitOption: OptionItem = {
 
 export const autoPublishOption: OptionItem = {
     id: "AutoPublish",
-    label: "Install for you organization",
-    detail: "Send your app to your Teams adminsitrator for approval via the Teams App Portal."
+    label: "Install for your organization",
+    detail: "Send your app to your Teams administrator for approval via the Teams App Portal."
 };

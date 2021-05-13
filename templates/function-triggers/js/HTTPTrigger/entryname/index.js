@@ -5,7 +5,7 @@
 
 // Import polyfills for fetch required by msgraph-sdk-javascript.
 require("isomorphic-fetch");
-const teamsfx = require("teamsdev-client");
+const teamsfx = require("@microsoft/teamsfx");
 
 /**
  * This function handles requests from teamsfx client.
@@ -80,7 +80,7 @@ module.exports = async function (context, req, teamsfxContext) {
 
   // Query user's information from the access token.
   try {
-    const currentUser = await credential.getUserInfo();
+    const currentUser = credential.getUserInfo();
     if (currentUser && currentUser.displayName) {
       res.body.userInfoMessage = `User display name is ${currentUser.displayName}.`;
     } else {

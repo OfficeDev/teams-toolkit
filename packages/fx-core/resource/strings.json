@@ -18,7 +18,8 @@
     },
     "plugins":{
         "SPFx": {
-            "deployNotice": "[Teams Toolkit] Please go to SharePoint tenant App Catalog site at https://{your SharePoint App Catalog site}/AppCatalog/Forms/AllItems.aspx to deploy your package. You can find your SharePoint package at %s. Read more about how to deploy your SharePoint package from https://docs.microsoft.com/en-us/sharepoint/dev/spfx/web-parts/get-started/using-web-part-as-ms-teams-tab."
+            "buildNotice": "[Teams Toolkit] The automatic deployment is not currently supported for SPFx app. You can manually upload and deploy SharePoint package file to SharePoint App Catalog site.",
+            "deployNotice": "[Teams Toolkit] SharePoint package successfully built at %s. Visit [Microsoft Admin Center](https://admin.microsoft.com) and go to your tenant's SharePoint App Catalog site to upload the %s."
         }
     }
 }

@@ -49,7 +49,8 @@ export enum TelemetryKey {
     Component = "component",
     Success = "success",
     ErrorType = "error-type",
-    ErrorMessage = "error-message"
+    ErrorMessage = "error-message",
+    ErrorCode = "error-code"
 }
 
 export enum TelemetryValue {
@@ -60,15 +61,15 @@ export enum TelemetryValue {
 }
 
 export enum LifeCycle {
-    preScaffold = "preScaffold",
+    preScaffold = "pre-scaffold",
     scaffold = "scaffold",
-    postScaffold = "postScaffold",
-    preProvision = "preProvision",
+    postScaffold = "post-scaffold",
+    preProvision = "pre-provision",
     provision = "provision",
-    postProvision = "postProvision",
-    preDeploy = "preDeploy",
+    postProvision = "post-provision",
+    preDeploy = "pre-deploy",
     deploy = "deploy",
-    postDeploy = "postDeploy",
-    getQuestions = "getQuestions",
-    callFunc = "callFunc"
+    postDeploy = "post-deploy",
+    getQuestions = "get-questions",
+    callFunc = "call-func"
 }

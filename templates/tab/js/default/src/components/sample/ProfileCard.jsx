@@ -8,11 +8,11 @@ export const ProfileCard = (loading, data) => (
     inverted
     styles={{ height: "max-content", margin: "0.5em 0" }}
   >
-    <Card.Header styles={{"margin-bottom": "0"}}>
+    <Card.Header styles={{ "margin-bottom": "0" }}>
       {loading && (
         <Skeleton animation="wave">
           <Flex gap="gap.medium">
-            <Skeleton.Avatar size={"larger"} />
+            <Skeleton.Avatar size="larger" />
             <div>
               <Skeleton.Line width="100px" />
               <Skeleton.Line width="150px" />
@@ -21,10 +21,10 @@ export const ProfileCard = (loading, data) => (
         </Skeleton>
       )}
       {!loading && data && (
-        <Flex gap="gap.medium" >
+        <Flex gap="gap.medium">
           <Avatar
             size="larger"
-            image={URL.createObjectURL(data.photo)}
+            image={data.photoUrl}
             name={data.profile.displayName}
           />{" "}
           <Flex column>

@@ -43,7 +43,7 @@ export async function validateAndUpdateAnswers(
     }
 
     const ans: any = answers.get(node.data.name);
-    if (ans === undefined || ans === null) {
+    if (!ans) {
       continue;
     }
 
@@ -219,11 +219,15 @@ export function toInquirerQuestion(data: Question, answers: { [_: string]: any }
     case NodeType.localFunc:
       throw QTNQuestionTypeNotSupport(data);
   }
+  let choices = undefined;
+  if (answers["host-type"] === "SPFx" && data.name === "programming-language"){
+    choices = ["TypeScript"];
+  }
   return {
     type,
     name: data.name,
     message: data.description || data.title || "",
-    choices: getChoicesFromQTNodeQuestion(data, true),
+    choices: choices ? choices : getChoicesFromQTNodeQuestion(data, true),
     default: defaultValue,
     validate: async (input: any) => {
       if ("validation" in data && data.validation) {

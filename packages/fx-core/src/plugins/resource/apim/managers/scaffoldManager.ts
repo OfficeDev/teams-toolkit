@@ -5,6 +5,7 @@ import { OpenApiProcessor } from "../utils/openApiProcessor";
 import { LogProvider, TelemetryReporter } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import * as fs from "fs-extra";
+import { getTemplatesFolder } from "../../../..";
 
 export class ScaffoldManager {
     private readonly logger?: LogProvider;
@@ -23,7 +24,7 @@ export class ScaffoldManager {
         const openApiFileName = path.join(outputDir, ProjectConstants.openApiDocumentFileName);
         await this.openApiProcessor.generateDefaultOpenApi(openApiFileName, appName, ApimDefaultValues.apiVersion);
         
-        const inputReadmeFileName = path.join(ProjectConstants.resourceDir, ProjectConstants.readMeFileName);
+        const inputReadmeFileName = path.join(path.join(getTemplatesFolder(), "plugins", "resource", "apim"), ProjectConstants.readMeFileName);
         const outputReadmeFileName = path.join(outputDir, ProjectConstants.readMeFileName);
         await fs.copy(inputReadmeFileName, outputReadmeFileName);
     }

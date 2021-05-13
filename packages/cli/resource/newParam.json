@@ -200,6 +200,7 @@
                                                         "name": "bot-id",
                                                         "type": "text",
                                                         "title": "Enter bot id",
+                                                        "default": "",
                                                         "validation": {}
                                                     }
                                                 },
@@ -208,6 +209,7 @@
                                                         "name": "bot-password",
                                                         "type": "password",
                                                         "title": "Enter bot password",
+                                                        "default": "",
                                                         "validation": {}
                                                     }
                                                 }
@@ -289,7 +291,7 @@
                     },
                     {
                         "id": "todo-list-SPFx",
-                        "label": "To Do List2",
+                        "label": "Todo List with SPFx",
                         "detail": "Todo List with SPFx is a Todo List for individual user to manage his/her personal to-do items in the format of an app installed on Teams client.",
                         "data": "https://github.com/HuihuiWu-Microsoft/TeamsFx-Samples/archive/refs/heads/main.zip"
                     },

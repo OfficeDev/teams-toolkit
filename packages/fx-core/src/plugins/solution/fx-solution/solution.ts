@@ -107,9 +107,9 @@ import Mustache from "mustache";
 import path from "path";
 import { AppStudioPlugin } from "../../resource/appstudio";
 import { ErrorResponse } from "@azure/arm-resources/esm/models/mappers";
-import * as strings from "../../../resources/strings.json";
 import * as util from "util";
-import { deepCopy } from "../../../common/tools";
+import { deepCopy, getStrings } from "../../../common/tools";
+import { getTemplatesFolder } from "../../..";
 
 type LoadedPlugin = Plugin & { name: string; displayName: string; };
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -360,8 +360,10 @@ export class TeamsAppSolution implements Solution {
         //Reload plugins according to user answers
         this.reloadPlugins(solutionSettings);
 
-        const defaultColorPath = path.join(__dirname, "../../../../templates/plugins/solution/defaultIcon.png");
-        const defaultOutlinePath = path.join(__dirname, "../../../../templates/plugins/solution/defaultOutline.png");
+        const templatesFolder = getTemplatesFolder();
+        const defaultColorPath = path.join(templatesFolder ,"plugins", "solution", "defaultIcon.png");
+        const defaultOutlinePath = path.join(templatesFolder, "plugins", "solution", "defaultOutline.png");
+
         await fs.copy(defaultColorPath, `${ctx.root}/.${ConfigFolderName}/color.png`);
         await fs.copy(defaultOutlinePath, `${ctx.root}/.${ConfigFolderName}/outline.png`);
         if (this.isAzureProject(ctx)) {
@@ -572,7 +574,7 @@ export class TeamsAppSolution implements Solution {
         if (result.isOk()) {
             await ctx.dialog?.communicate(
                 new DialogMsg(DialogType.Show, {
-                    description: strings.solution.ScaffoldSuccessNotice,
+                    description: getStrings().solution.ScaffoldSuccessNotice,
                     level: MsgLevel.Info,
                 }),
             );
@@ -822,7 +824,7 @@ export class TeamsAppSolution implements Solution {
 
             const provisionResult = await this.doProvision(ctx);
             if (provisionResult.isOk()) {
-                const msg = util.format(strings.solution.ProvisionSuccessNotice, ctx.projectSettings?.appName);
+                const msg = util.format(getStrings().solution.ProvisionSuccessNotice, ctx.projectSettings?.appName);
                 ctx.logProvider?.info(msg);
                 await ctx.dialog?.communicate(
                     new DialogMsg(DialogType.Show, {
@@ -832,13 +834,13 @@ export class TeamsAppSolution implements Solution {
                 );
                 ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
             } else {
-                const msg = util.format(strings.solution.ProvisionFailNotice, ctx.projectSettings?.appName);
+                const msg = util.format(getStrings().solution.ProvisionFailNotice, ctx.projectSettings?.appName);
                 ctx.logProvider?.error(msg);
                 ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false);
                 const resourceGroupName = ctx.config.get(GLOBAL_CONFIG)?.getString("resourceGroupName");
                 const subscriptionId = ctx.config.get(GLOBAL_CONFIG)?.getString("subscriptionId");
                 const error = provisionResult.error;
-                error.message += " " + util.format(strings.solution.ProvisionFailGuide, subscriptionId, resourceGroupName);
+                error.message += " " + util.format(getStrings().solution.ProvisionFailGuide, subscriptionId, resourceGroupName);
                 if(error instanceof UserError){
                     const ue = error as UserError;
                     if(!ue.helpLink){
@@ -895,7 +897,7 @@ export class TeamsAppSolution implements Solution {
 
             const confirm  = (await ctx.dialog?.communicate(
                 new DialogMsg(DialogType.Show, {
-                    description: util.format(strings.solution.ProvisionConfirmNotice, username, subscriptionName ? subscriptionName : subscriptionId),
+                    description: util.format(getStrings().solution.ProvisionConfirmNotice, username, subscriptionName ? subscriptionName : subscriptionId),
                     level: MsgLevel.Warning,
                     items: ["Provision", "Cancel"]
                 }),
@@ -903,9 +905,9 @@ export class TeamsAppSolution implements Solution {
             
             if (confirm === "Cancel"){
                 return err(returnUserError(
-                    new Error(strings.solution.CancelProvision),
+                    new Error(getStrings().solution.CancelProvision),
                     "Solution",
-                    strings.solution.CancelProvision,
+                    getStrings().solution.CancelProvision,
                 ));
             }
         }
@@ -1008,7 +1010,7 @@ export class TeamsAppSolution implements Solution {
             const result = await this.doDeploy(ctx);
             if (result.isOk()) {
                 if (this.isAzureProject(ctx)) {
-                    const msg = util.format(strings.solution.DeploySuccessNotice, ctx.projectSettings?.appName);
+                    const msg = util.format(getStrings().solution.DeploySuccessNotice, ctx.projectSettings?.appName);
                     ctx.logProvider?.info(msg);
                     await ctx.dialog?.communicate(
                         new DialogMsg(DialogType.Show, {
@@ -1018,7 +1020,7 @@ export class TeamsAppSolution implements Solution {
                     );
                 }
             } else {
-                const msg = util.format(strings.solution.DeployFailNotice, ctx.projectSettings?.appName);
+                const msg = util.format(getStrings().solution.DeployFailNotice, ctx.projectSettings?.appName);
                 ctx.logProvider?.info(msg);
             }
 
@@ -1107,7 +1109,7 @@ export class TeamsAppSolution implements Solution {
             const result = await executeConcurrently("", publishWithCtx);
 
             if (result.isOk()) {
-                const msg = util.format(strings.solution.PublishSuccessNotice, ctx.projectSettings?.appName);
+                const msg = util.format(getStrings().solution.PublishSuccessNotice, ctx.projectSettings?.appName);
                 ctx.logProvider?.info(msg);
                 await ctx.dialog?.communicate(
                     new DialogMsg(DialogType.Show, {
@@ -1116,7 +1118,7 @@ export class TeamsAppSolution implements Solution {
                     }),
                 );
             } else {
-                const msg = util.format(strings.solution.PublishFailNotice, ctx.projectSettings?.appName);
+                const msg = util.format(getStrings().solution.PublishFailNotice, ctx.projectSettings?.appName);
                 ctx.logProvider?.info(msg);
             }
             
@@ -1263,7 +1265,7 @@ export class TeamsAppSolution implements Solution {
             if(isAzureProject && !provisioned){
                 const res  = (await ctx.dialog?.communicate(
                     new DialogMsg(DialogType.Show, {
-                        description: strings.solution.AskProvisionBeforeDeployOrPublish,
+                        description: getStrings().solution.AskProvisionBeforeDeployOrPublish,
                         level: MsgLevel.Warning,
                         items: ["Provision", "Cancel"]
                     }),
@@ -1324,7 +1326,7 @@ export class TeamsAppSolution implements Solution {
             if(isAzureProject && !provisioned){
                 const res  = (await ctx.dialog?.communicate(
                     new DialogMsg(DialogType.Show, {
-                        description: strings.solution.AskProvisionBeforeDeployOrPublish,
+                        description: getStrings().solution.AskProvisionBeforeDeployOrPublish,
                         level: MsgLevel.Warning,
                         items: ["Provision", "Cancel"]
                     }),
@@ -1994,7 +1996,7 @@ export class TeamsAppSolution implements Solution {
             ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false); //if selected plugin changed, we need to re-do provision
             await ctx.dialog?.communicate(
                 new DialogMsg(DialogType.Show, {
-                    description: util.format(strings.solution.AddResourceNotice, notifications.join(",")),
+                    description: util.format(getStrings().solution.AddResourceNotice, notifications.join(",")),
                     level: MsgLevel.Info,
                 }),
             );
@@ -2079,7 +2081,7 @@ export class TeamsAppSolution implements Solution {
             ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false); 
             await ctx.dialog?.communicate(
                 new DialogMsg(DialogType.Show, {
-                    description: util.format(strings.solution.AddCapabilityNotice, notifications.join(",")),
+                    description: util.format(getStrings().solution.AddCapabilityNotice, notifications.join(",")),
                     level: MsgLevel.Info,
                 }),
             );
@@ -2343,7 +2345,7 @@ export class TeamsAppSolution implements Solution {
         }
 
         const manifestPath: string = path.join(rootPath, "manifest", isLocal ? "local" : "remote", "manifest.json");
-        const appSettingsJSONPath = path.join(rootPath, "blazor-server-tabs", isLocal ? "appsettings.Development.json" : "appsettings.json");
+        const appSettingsJSONPath = path.join(rootPath, isLocal ? "appsettings.Development.json" : "appsettings.json");
 
         const manifestTpl = (await fs.readFile(manifestPath)).toString();
         const manifestStr: string = Mustache.render(manifestTpl, {
@@ -2376,7 +2378,7 @@ export class TeamsAppSolution implements Solution {
         await fs.writeFile(appSettingsJSONPath, appSettingsJSON);
 
         if (isLocal) {
-            const launchSettingsJSONPath: string = path.join(rootPath, "blazor-server-tabs", "Properties", "launchSettings.json");
+            const launchSettingsJSONPath: string = path.join(rootPath, "Properties", "launchSettings.json");
             const launchSettingsJSONTpl = (await fs.readFile(launchSettingsJSONPath)).toString();
             const launchSettingsJSON = Mustache.render(launchSettingsJSONTpl, { "teams-app-id": teamsAppId });
             await fs.writeFile(launchSettingsJSONPath, launchSettingsJSON);

@@ -33,8 +33,8 @@ export class VSCodeAdapter implements IDepsAdapter {
         try {
             await callback();
         } finally {
-            logger.outputChannel.appendLine("");
             clearTimeout(timer);
+            logger.outputChannel.appendLine("");
         }
     }
 

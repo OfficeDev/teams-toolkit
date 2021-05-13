@@ -17,8 +17,8 @@ export class ProjectConstants {
 
 export class ApimDefaultValues {
     public static readonly functionBasePath: string = "/api";
-    public static readonly productDescription: string = "Created by TeamsFX.";
-    public static readonly oAuthServerDescription: string = "Created by TeamsFX.";
+    public static readonly productDescription: string = "Created by TeamsFx.";
+    public static readonly oAuthServerDescription: string = "Created by TeamsFx.";
     public static readonly enableScopeName: string = ".default";
     public static readonly userId: string = "sample@microsoft.com";
     public static readonly apiPrefix: string = "title";
@@ -133,12 +133,18 @@ export class ValidationConstants {
 
     public static readonly defaultValidPattern = {
         regex: /^[^*#&+:<>?]+$/,
-        message: "The value cannot contain any character in '*#&+:<>?'.",
+        message: "The value cannot contain any characters in '*#&+:<>?'.",
     }
 
     public static readonly guidValidPattern = {
         regex: /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
         message: "The value should be a GUID."
+    }
+
+    public static readonly CLI = {
+        invalidOptionMessage: (optionName: string) => `The value of option '--${optionName}' is invalid.`,
+        emptyOptionMessage: (optionName: string) => `Option '--${optionName}' is required. Set the value of '--${optionName}'`,
+        overrideOptionMessage: (optionName: string) => `Option '--${optionName}' cannot be overridden. Remove option '--${optionName}'`,
     }
 }
 
@@ -244,7 +250,7 @@ export enum ProgressStep {
     Scaffold = "Scaffolding OpenAPI document",
     Provision = "Provisioning API Management",
     PostProvision = "Configuring API Management",
-    Deploy = "Importing API into API Management",
+    Deploy = "Importing API to API Management",
 }
 
 export const PluginLifeCycleToProgressStep: { [key in PluginLifeCycle]: ProgressStep } = {

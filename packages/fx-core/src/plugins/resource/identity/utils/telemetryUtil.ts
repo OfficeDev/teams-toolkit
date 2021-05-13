@@ -9,33 +9,39 @@ export class TelemetryUtils {
     }
 
     public static sendEvent(eventName: string,
+        success?: boolean,
         properties?: { [key: string]: string; },
         measurements?: { [key: string]: number; }) {
         if (!properties) {
             properties = {};
         }
-        properties[Telemetry.component] = Telemetry.telemetryName;
+        if (success) {
+            properties[Telemetry.properties.success] = Telemetry.resultYes;
+        }
+        properties[Telemetry.properties.component] = Telemetry.componentName;
+        if (this.ctx.app.id) {
+            properties[Telemetry.properties.appid] = this.ctx.app.id;
+        }
         TelemetryUtils.ctx.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
     }
 
     public static sendErrorEvent(eventName: string,
-        properties?: { [key: string]: string; },
-        measurements?: { [key: string]: number; },
-        errorProps?: string[]) {
-        if (!properties) {
-            properties = {};
-        }
-        properties[Telemetry.component] = Telemetry.telemetryName;
-        TelemetryUtils.ctx.telemetryReporter?.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
-    }
-
-    public static sendException(error: Error,
+        errorCode: string,
+        errorType: string,
+        errorMessage: string,
         properties?: { [key: string]: string; },
         measurements?: { [key: string]: number; }) {
         if (!properties) {
             properties = {};
         }
-        properties[Telemetry.component] = Telemetry.telemetryName;
-        TelemetryUtils.ctx.telemetryReporter?.sendTelemetryException(error, properties, measurements);
+        properties[Telemetry.properties.success] = Telemetry.resultNo;
+        properties[Telemetry.properties.errorCode] = errorCode;
+        properties[Telemetry.properties.errorType] = errorType;
+        properties[Telemetry.properties.errorMessage] = errorMessage;
+        properties[Telemetry.properties.component] = Telemetry.componentName;
+        if (this.ctx.app.id) {
+            properties[Telemetry.properties.appid] = this.ctx.app.id;
+        }
+        TelemetryUtils.ctx.telemetryReporter?.sendTelemetryErrorEvent(eventName, properties, measurements);
     }
 }

@@ -19,7 +19,7 @@ export interface IApimPluginError {
 export const NoValidOpenApiDocument: IApimPluginError = {
     type: ErrorType.User,
     code: "NoValidOpenApiDocument",
-    message: () => "There is no valid OpenApi document under the workspace.",
+    message: () => "No valid OpenApi document in the current workspace.",
     helpLink: "https://aka.ms/teamsfx-apim-help#novalidopenapidocument",
 };
 
@@ -41,19 +41,19 @@ export const EmptyConfigValue: IApimPluginError = {
     type: ErrorType.User,
     code: "EmptyConfigValue",
     message: (component: string, name: string, retryCommand: string) =>
-        `Project configuration '${name}' of ${component} is missing in '${ProjectConstants.configFilePath}'. Please retry to ${retryCommand} or set the value manually.`,
+        `Project configuration '${name}' of ${component} is missing in '${ProjectConstants.configFilePath}'. Retry to ${retryCommand} or set the value manually.`,
 };
 
 export const NoPluginConfig: IApimPluginError = {
     type: ErrorType.User,
     code: "NoPluginConfig",
-    message: (component: string, retryCommand: string) => `Cannot found ${component} configuration. Please retry to ${retryCommand}.`,
+    message: (component: string, retryCommand: string) => `Cannot found ${component} configuration. Retry '${retryCommand}'.`,
 };
 
 export const InvalidConfigValue: IApimPluginError = {
     type: ErrorType.User,
     code: "InvalidConfigValue",
-    message: (component: string, name: string, message: string) => `Project configuration '${name}' of ${component} is invalid. ${message}`,
+    message: (component: string, name: string, message: string) => `Project configuration '${name}' of '${component}' is invalid. ${message}`,
 };
 
 export const ApimOperationError: IApimPluginError = {
@@ -68,6 +68,12 @@ export const AadOperationError: IApimPluginError = {
     code: "AadOperationError",
     message: (operation: string, resourceType: string) => `Failed to ${operation} ${resourceType}.`,
     helpLink: "https://aka.ms/teamsfx-apim-help#aadoperationerror",
+};
+
+export const InvalidCliOptionError: IApimPluginError = {
+    type: ErrorType.User,
+    code: "InvalidCliOptionError",
+    message: (reason) => `Option is invalid. ${reason}`,
 };
 
 // System error

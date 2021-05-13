@@ -18,7 +18,6 @@ import { Logger } from "../utils/logger";
 import { Messages } from "../resources/messages";
 import { PluginContext } from "@microsoft/teamsfx-api";
 import { Utils } from "../utils";
-import { telemetryHelper } from "../utils/telemetry-helper";
 import { TemplateInfo, TemplateVariable } from "../resources/templateInfo";
 import { selectTag, tagListURL, templateURL } from "../../../../common/templates";
 
@@ -79,7 +78,7 @@ export class FrontendScaffold {
     }
 
     public static getTemplateZipFromLocal(templateInfo: TemplateInfo): AdmZip {
-        const templatePath = path.resolve(FrontendPathInfo.RootDir, templateInfo.localTemplatePath);
+        const templatePath = templateInfo.localTemplatePath;//path.resolve(FrontendPathInfo.RootDir, );
         return new AdmZip(templatePath);
     }
 
@@ -92,7 +91,6 @@ export class FrontendScaffold {
             );
             return await FrontendScaffold.fetchZipFromUrl(templateUrl);
         } catch (e) {
-            telemetryHelper.sendErrorEvent(ctx, Messages.FailedFetchTemplate(), e);
             Logger.warning(Messages.FailedFetchTemplate());
             return FrontendScaffold.getTemplateZipFromLocal(templateInfo);
         }

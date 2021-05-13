@@ -4,20 +4,16 @@
 import {
   Plugin,
   PluginContext,
-  Func,
-  ok,
   SystemError,
   UserError,
   err,
-  Result,
-  QTreeNode,
-  FxError,
 } from "@microsoft/teamsfx-api";
 import { AadAppForTeamsImpl } from "./plugin";
 import { AadResult, ResultFactory } from "./results";
 import { UnhandledError } from "./errors";
 import { TelemetryUtils } from "./utils/telemetry";
 import { DialogUtils } from "./utils/dialog";
+import { Messages, Telemetry } from "./constants";
 
 export class AadAppForTeamsPlugin implements Plugin {
   public pluginImpl: AadAppForTeamsImpl = new AadAppForTeamsImpl();
@@ -25,14 +21,16 @@ export class AadAppForTeamsPlugin implements Plugin {
   public async provision(ctx: PluginContext): Promise<AadResult> {
     return await this.runWithExceptionCatchingAsync(
       () => this.pluginImpl.provision(ctx),
-      ctx
+      ctx,
+      Messages.EndProvision.telemetry,
     );
   }
 
   public async localDebug(ctx: PluginContext): Promise<AadResult> {
     return await this.runWithExceptionCatchingAsync(
       () => this.pluginImpl.provision(ctx, true),
-      ctx
+      ctx,
+      Messages.EndLocalDebug.telemetry,
     );
   }
 
@@ -42,75 +40,61 @@ export class AadAppForTeamsPlugin implements Plugin {
   ): AadResult {
     return this.runWithExceptionCatching(
       () => this.pluginImpl.setApplicationInContext(ctx, isLocalDebug),
-      ctx
+      ctx,
     );
   }
 
   public async postProvision(ctx: PluginContext): Promise<AadResult> {
     return await this.runWithExceptionCatchingAsync(
       () => this.pluginImpl.postProvision(ctx),
-      ctx
+      ctx,
+      Messages.EndPostProvision.telemetry,
     );
   }
 
   public async postLocalDebug(ctx: PluginContext): Promise<AadResult> {
     return await this.runWithExceptionCatchingAsync(
       () => this.pluginImpl.postProvision(ctx, true),
-      ctx
+      ctx,
+      Messages.EndPostLocalDebug.telemetry,
     );
-  }
-
-  public async executeUserTask(
-    func: Func,
-    ctx: PluginContext
-  ): Promise<AadResult> {
-    if (func.method === "aadUpdatePermission") {
-      return await this.runWithExceptionCatchingAsync(
-        () => this.pluginImpl.updatePermission(ctx),
-        ctx
-      );
-    }
-
-    return ok(undefined);
-  }
-
-  public async getQuestionsForUserTask(
-    func: Func,
-    ctx: PluginContext
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    return await this.pluginImpl.getQuestionsForUserTask(func, ctx);
   }
 
   private async runWithExceptionCatchingAsync(
     fn: () => Promise<AadResult>,
-    ctx: PluginContext
+    ctx: PluginContext,
+    stage: string,
   ): Promise<AadResult> {
     try {
       return await fn();
     } catch (e) {
-      return this.returnError(e, ctx);
+      return this.returnError(e, ctx, stage);
     }
   }
 
   private runWithExceptionCatching(
     fn: () => AadResult,
-    ctx: PluginContext
+    ctx: PluginContext,
   ): AadResult {
     try {
       return fn();
     } catch (e) {
-      return this.returnError(e, ctx);
+      return this.returnError(e, ctx, "");
     }
   }
 
-  private returnError(e: any, ctx: PluginContext): AadResult {
+  private returnError(e: any, ctx: PluginContext, stage: string): AadResult {
     if (e instanceof SystemError || e instanceof UserError) {
       ctx.logProvider?.error(e.message);
       if (e.innerError) {
-        ctx.logProvider?.error(`Detailed error: ${e.innerError.message}`);
+        let innerErrorMessage = `Detailed error: ${e.innerError.message}.`;
+        if (e.innerError.response?.data?.errorMessage) {
+          innerErrorMessage += ` Reason: ${e.innerError.response?.data?.errorMessage}`;
+        }
+        ctx.logProvider?.error(innerErrorMessage);
       }
       TelemetryUtils.init(ctx);
-      TelemetryUtils.sendException(e);
+      TelemetryUtils.sendErrorEvent(stage, e.name, e instanceof UserError ? Telemetry.userError : Telemetry.systemError, e.message );
       DialogUtils.progress?.end();
       return err(e);
     } else {
@@ -120,7 +104,7 @@ export class AadAppForTeamsPlugin implements Plugin {
 
       ctx.logProvider?.error(e.message);
       TelemetryUtils.init(ctx);
-      TelemetryUtils.sendException(e);
+      TelemetryUtils.sendErrorEvent(stage, UnhandledError.name, Telemetry.systemError, UnhandledError.message());
       return err(
         ResultFactory.SystemError(
           UnhandledError.name,

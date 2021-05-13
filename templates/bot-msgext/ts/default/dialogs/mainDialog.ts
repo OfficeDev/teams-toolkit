@@ -17,7 +17,7 @@ import {
     loadConfiguration,
     OnBehalfOfUserCredential,
     TeamsBotSsoPrompt,
-} from "teamsdev-client";
+} from "@microsoft/teamsfx";
 import "isomorphic-fetch";
 
 const MAIN_DIALOG = "MainDialog";

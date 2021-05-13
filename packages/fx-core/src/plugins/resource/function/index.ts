@@ -23,7 +23,8 @@ export class FunctionPlugin implements Plugin {
     public async getQuestions(stage: Stage, ctx: PluginContext): Promise<Result<QTreeNode | undefined, FxError>> {
         Logger.setLogger(ctx.logProvider);
         const res = await this.runWithErrorWrapper(ctx, LifeCycle.getQuestions,
-            () => Promise.resolve(this.functionPluginImpl.getQuestions(stage, ctx))
+            () => Promise.resolve(this.functionPluginImpl.getQuestions(stage, ctx)),
+            false
         );
         return res;
     }
@@ -101,16 +102,21 @@ export class FunctionPlugin implements Plugin {
         return res;
     }
 
-    private async runWithErrorWrapper(ctx: PluginContext, name: string, fn: () => Promise<FxResult>): Promise<FxResult> {
+    private async runWithErrorWrapper(
+        ctx: PluginContext,
+        name: string,
+        fn: () => Promise<FxResult>,
+        sendTelemetry = true
+    ): Promise<FxResult> {
         try {
-            telemetryHelper.sendStartEvent(ctx, name);
+            sendTelemetry && telemetryHelper.sendStartEvent(ctx, name);
             const res: FxResult = await fn();
-            telemetryHelper.sendResultEvent(ctx, name, res);
+            sendTelemetry && telemetryHelper.sendResultEvent(ctx, name, res);
             return res;
         } catch (e) {
             if (e instanceof UserError || e instanceof SystemError) {
                 const res = err(e);
-                telemetryHelper.sendResultEvent(ctx, name, res);
+                sendTelemetry && telemetryHelper.sendResultEvent(ctx, name, res);
                 return res;
             }
 
@@ -118,13 +124,13 @@ export class FunctionPlugin implements Plugin {
                 const res = e.errorType === ErrorType.User ?
                     ResultFactory.UserError(e.getMessage(), e.code, undefined, e, e.stack) :
                     ResultFactory.SystemError(e.getMessage(), e.code, undefined, e, e.stack);
-                telemetryHelper.sendResultEvent(ctx, name, res);
+                sendTelemetry && telemetryHelper.sendResultEvent(ctx, name, res);
                 return res;
             }
 
             const UnhandledErrorCode = "UnhandledError";
             /* Never send unhandled error message for privacy concern. */
-            telemetryHelper.sendResultEvent(ctx, name, ResultFactory.SystemError("Got an unhandled error", UnhandledErrorCode));
+            sendTelemetry && telemetryHelper.sendResultEvent(ctx, name, ResultFactory.SystemError("Got an unhandled error", UnhandledErrorCode));
             return ResultFactory.SystemError(e.message, UnhandledErrorCode, undefined, e, e.stack);
         }
     }

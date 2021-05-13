@@ -12,7 +12,7 @@ import {
   loadConfiguration,
   OnBehalfOfUserCredential,
   UserInfo
-} from "teamsdev-client";
+} from "@microsoft/teamsfx";
 
 interface Response {
   status: number;
@@ -98,7 +98,7 @@ export default async function run(
 
   // Query user's information from the access token.
   try {
-    const currentUser: UserInfo = await credential.getUserInfo();
+    const currentUser: UserInfo = credential.getUserInfo();
     if (currentUser && currentUser.displayName) {
       res.body.userInfoMessage = `User display name is ${currentUser.displayName}.`;
     } else {

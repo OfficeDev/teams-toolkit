@@ -28,10 +28,10 @@ export const env = {
 };
 
 export const unknownSubscription = "UnknownSubscription";
-export const unknownSubscriptionDesc = "Cannot set subscription. Please choose a correct subscription.";
+export const unknownSubscriptionDesc = "Cannot set subscription. Choose a correct subscription.";
 
-export const azureLoginMessage = "Log in to your Azure account - the default web browser has been opened at https://login.microsoftonline.com/organizations/oauth2/v2.0/authorize.";
-export const m365LoginMessage = "Log in to your M365 account - the default web browser has been opened at https://login.microsoftonline.com/common/oauth2/v2.0/authorize.";
+export const azureLoginMessage = "Log in to your Azure account - opening default web browser at https://login.microsoftonline.com/organizations/oauth2/v2.0/authorize.";
+export const m365LoginMessage = "Log in to your M365 account - opening default web browser at https://login.microsoftonline.com/common/oauth2/v2.0/authorize.";
 
 export const changeLoginTenantMessage = "The following tenants require Multi-Factor Authentication (MFA). Use 'teamsfx account login azure --tenant TENANT_ID' to explicitly login to a tenant.";
 export const MFACode = "AADSTS50076";

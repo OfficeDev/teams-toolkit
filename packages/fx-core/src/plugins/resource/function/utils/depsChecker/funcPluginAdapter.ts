@@ -8,6 +8,7 @@ import {DepsCheckerError} from "./errors";
 import {ConfigMap, DialogMsg, DialogType, PluginContext, QuestionType, returnUserError} from "@microsoft/teamsfx-api";
 import {Messages, dotnetManualInstallHelpLink} from "./common";
 import {IDepsAdapter, IDepsChecker} from "./checker";
+import { getTemplatesFolder } from "../../../../..";
 
 class FuncPluginAdapter implements IDepsAdapter {
   private readonly downloadIndicatorInterval = 1000; // same as vscode-dotnet-runtime
@@ -39,7 +40,7 @@ class FuncPluginAdapter implements IDepsAdapter {
   }
 
   public getResourceDir(): string {
-    return path.resolve(path.join(__dirname, "..", "..", "..", "..", "..", "..", "resource", "plugins", "resource", "function"));
+    return path.resolve(path.join(getTemplatesFolder(), "plugins", "resource", "function"));
   }
 
   public dotnetCheckerEnabled(): boolean {

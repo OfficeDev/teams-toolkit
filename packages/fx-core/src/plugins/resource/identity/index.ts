@@ -6,8 +6,10 @@ import {
     PluginContext,
     Plugin,
     ok,
-    err
+    err,
+    SystemError
 } from "@microsoft/teamsfx-api";
+
 import { IdentityConfig } from "./config";
 import { Constants, Telemetry } from "./constants";
 import { ContextUtils } from "./utils/contextUtils";
@@ -15,6 +17,7 @@ import { ResultFactory, Result } from "./results";
 import { Message } from "./utils/messages";
 import { TelemetryUtils } from "./utils/telemetryUtil";
 import { formatEndpoint } from "./utils/commonUtils";
+import { getTemplatesFolder } from "../../..";
 
 export class IdentityPlugin implements Plugin {
     template: any;
@@ -25,7 +28,7 @@ export class IdentityPlugin implements Plugin {
     async provision(ctx: PluginContext): Promise<Result> {
         ctx.logProvider?.info(Message.startProvision);
         TelemetryUtils.init(ctx);
-        TelemetryUtils.sendEvent(Telemetry.provisionStart);
+        TelemetryUtils.sendEvent(Telemetry.stage.provision + Telemetry.startSuffix);
 
         ContextUtils.init(ctx);
         this.config.azureSubscriptionId = ContextUtils.getConfigString(Constants.solution, Constants.subscriptionId);
@@ -45,23 +48,26 @@ export class IdentityPlugin implements Plugin {
             this.parameters.parameters.identityName.value = this.config.identity;
             await this.provisionWithArmTemplate(ctx);
         } catch (error) {
-            TelemetryUtils.sendException(error);
+            const errorCode = error.source + "." + error.name;
+            const errorType = error instanceof SystemError ? Telemetry.systemError : Telemetry.userError;
+            TelemetryUtils.sendErrorEvent(Telemetry.stage.provision, errorCode, errorType, error.message);
             return err(error);
         }
 
         ctx.config.set(Constants.identityName, this.config.identityName);
         ctx.config.set(Constants.identityId, this.config.identityId);
         ctx.config.set(Constants.identity, this.config.identity);
-        TelemetryUtils.sendEvent(Telemetry.provisionEnd);
+        TelemetryUtils.sendEvent(Telemetry.stage.provision, true);
         ctx.logProvider?.info(Message.endProvision);
         return ok(undefined);
     }
 
     async loadArmTemplate(ctx: PluginContext) {
         try {
-            const templatePath: string = path.resolve(this.armTemplateDir, "template.json");
+            const templatesFolder = path.resolve(getTemplatesFolder(), "plugins", "resource", "identity");
+            const templatePath: string = path.resolve(templatesFolder, "template.json");
             this.template = await fs.readJson(templatePath);
-            const paraPath: string = path.resolve(this.armTemplateDir, "parameters.json");
+            const paraPath: string = path.resolve(templatesFolder, "parameters.json");
             this.parameters = await fs.readJson(paraPath);
         } catch (_error) {
             ctx.logProvider?.error(ErrorMessage.IdentityLoadFileError.message() + `:${_error.message}`);

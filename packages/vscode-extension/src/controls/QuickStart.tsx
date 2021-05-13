@@ -109,8 +109,8 @@ export default class QuickStart extends React.Component<any, any>{
                                 stepCount++;
                                 return <GetStartedAction
                                     title={`Install Node.js`}
-                                    content={["The toolkit cannot detect the right version of Node.js on your machine.", <br />, <br />, "Node.js v10.x, v12.x or v14.x is required (v.12.x is recommended).", <br />, <br />, "Read more about ", <a href="http://npm.github.io/installation-setup-docs/installing/using-a-node-version-manager.html">managing Node.js versions</a>, "."]}
-                                    actionText="Download Node.js (v.12.x)"
+                                    content={["The toolkit cannot detect the right version of Node.js on your machine.", <br />, <br />, "Node.js v10.x, v12.x or v14.x is required (v12.x is recommended).", <br />, <br />, "Read more about ", <a href="http://npm.github.io/installation-setup-docs/installing/using-a-node-version-manager.html">managing Node.js versions</a>, "."]}
+                                    actionText="Download Node.js (v12.x)"
                                     onAction={this.downloadNode}
                                     secondaryActionText="Next"
                                     onSecondaryAction={() => { this.onNextStep(curStep); }}

@@ -4,7 +4,7 @@
 
 The Teams Toolkit helps developers create and deploy Teams apps with integrated Identity, access to cloud storage, data from [Microsoft Graph](https://docs.microsoft.com/en-us/graph/teams-concept-overview), and other services in [Azure](https://docs.microsoft.com/en-us/microsoftteams/platform/build-your-first-app/build-bot) and [M365](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant) with a “zero-configuration” approach to the developer experience.
 
-<img src="https://raw.githubusercontent.com/HuihuiWu-Microsoft/Teams-Toolkit-V2/main/landingPage_MicrosoftTeams.png">
+<img src="https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/landingPage_MicrosoftTeams.png">
 
 ## What are Teams app “Capabilities”?
 
@@ -32,15 +32,15 @@ Verify you have the right prerequisites for building Teams apps and install some
 
 <table>
     <tr>
-        <td><img src="https://raw.githubusercontent.com/HuihuiWu-Microsoft/Teams-Toolkit-V2/main/landingPage_nodejs.png"></td>
+        <td><img src="https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/landingPage_nodejs.png"></td>
         <td><h3>Node.js</h3>As a fundamental runtime context for Teams app, Node.js v10.x, v12.x or v14.x is required (v12.x is recommended).</td>
     </tr>
     <tr>
-        <td><img src="https://raw.githubusercontent.com/HuihuiWu-Microsoft/Teams-Toolkit-V2/main/landingPage_m365.png"></td>
+        <td><img src="https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/landingPage_m365.png"></td>
         <td><h3>M365</h3>The Teams Toolkit requires a Microsoft 365 organizational account where Teams is running and has been registered.</td>
     </tr>
     <tr>
-        <td><img src="https://raw.githubusercontent.com/HuihuiWu-Microsoft/Teams-Toolkit-V2/main/landingPage_azure.png"></td>
+        <td><img src="https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/landingPage_azure.png"></td>
         <td><h3>Azure</h3> The Teams Toolkit may require an Azure account and subscription to deploy the Azure resources for your project.</td>
     </tr>
 </table>

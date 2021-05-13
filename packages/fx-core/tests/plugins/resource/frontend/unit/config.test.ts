@@ -8,7 +8,7 @@ import chaiAsPromised from "chai-as-promised";
 
 import { FrontendConfig } from "../../../../../src/plugins/resource/frontend/configs";
 import { FrontendConfigInfo } from "../../../../../src/plugins/resource/frontend/constants";
-import { InvalidTemplateManifestError, NotScaffoldError, UnauthenticatedError } from "../../../../../src/plugins/resource/frontend/resources/errors";
+import { InvalidConfigError, InvalidTemplateManifestError, UnauthenticatedError } from "../../../../../src/plugins/resource/frontend/resources/errors";
 import { TestHelper } from "../helper";
 
 chai.use(chaiAsPromised);
@@ -37,7 +37,7 @@ describe("frontendConfig", () => {
         it("no configs", async () => {
             pluginContext.configOfOtherPlugins = new Map([["solution", new Map()]]);
 
-            assertRejected(() => FrontendConfig.fromPluginContext(pluginContext), new NotScaffoldError().code);
+            assertRejected(() => FrontendConfig.fromPluginContext(pluginContext), new InvalidConfigError("").code);
         });
 
         it("invalid storage name", async () => {

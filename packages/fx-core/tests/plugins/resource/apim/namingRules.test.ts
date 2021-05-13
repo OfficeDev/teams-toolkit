@@ -42,6 +42,7 @@ describe("NamingRules", () => {
 
     describe("#short()", () => {
         const testData: { input: string, length: number, output: string }[] = [
+            { input: "", length: 1, output: "" },
             { input: "a", length: 1, output: "a" },
             { input: "a", length: 2, output: "a" },
             { input: "a123", length: 2, output: "a1" },
@@ -56,7 +57,6 @@ describe("NamingRules", () => {
 
         const errorData: { input: string, length: number }[] = [
             { input: "", length: 0 },
-            { input: "", length: 1 },
             { input: "a", length: 0 },
             { input: "a123", length: 0 },
             { input: "a123", length: -1 },

@@ -21,7 +21,8 @@
     "check-format": "prettier --list-different --config .prettierrc.json --ignore-path .prettierignore \"{src,tests}/**/*.ts\" \"*.{js,json}\"",
     "format": "prettier --write --config .prettierrc.json --ignore-path .prettierignore \"{src,tests}/**/*.ts\" \"*.{js,json}\"",
     "lint:fix": "eslint \"src/**/*.ts\" \"tests/**/*.ts\" --fix",
-    "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\""
+    "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "precommit": "lint-staged"
   },
   "keywords": [
     "teamsfx",
@@ -35,6 +36,7 @@
   "devDependencies": {
     "@azure/arm-subscriptions": "^3.0.0",
     "@shared/eslint-config": "file:../eslint-config",
+    "@shared/prettier-config": "file:../prettier-config",
     "@types/adm-zip": "^0.4.34",
     "@types/chai": "^4.2.14",
     "@types/chai-as-promised": "^7.1.3",
@@ -54,16 +56,15 @@
     "chai-spies": "^1.0.0",
     "copyfiles": "^2.4.1",
     "eslint": "^7.9.0",
-    "husky": "^4.3.8",
     "jsonschema": "^1.4.0",
     "mocha": "^8.3.0",
     "mocha-junit-reporter": "^2.0.0",
     "mocha-parallel-tests": "^2.3.0",
     "nyc": "^15.1.0",
-    "prettier": "^1.16.4",
     "ts-node": "^9.0.0",
     "typescript": "^4.1.2",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "lint-staged": "^10.5.4"
   },
   "dependencies": {
     "@azure/identity": "^1.2.3",
@@ -90,5 +91,13 @@
   "gitHead": "7d60c0765c0ea8c023a26c10d1c93001c597afbb",
   "publishConfig": {
     "access": "public"
+  },
+  "lint-staged": {
+    "*.{js,jsx,css,ts,tsx}": [
+      "npx eslint --cache --fix"
+    ],
+    "*": [
+      "npx prettier --config .prettierrc.js --ignore-unknown --write --ignore-path .prettierignore "
+    ]
   }
 }

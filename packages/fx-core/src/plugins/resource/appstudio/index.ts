@@ -150,15 +150,15 @@ export class AppStudioPlugin implements Plugin {
         }
 
         try {
-            const teamsAppId = await this.appStudioPluginImpl.publish(ctx);
-            ctx.logProvider?.info(`publish success!`);
+            const result = await this.appStudioPluginImpl.publish(ctx);
+            ctx.logProvider?.info(`Publish success!`);
             await ctx.dialog?.communicate(
                 new DialogMsg(DialogType.Show, {
-                    description: `${ctx.app.name.short} successfully published to the admin portal. Once approved, your app will be available for your organization.`,
+                    description: `${result.name} successfully published to the admin portal. Once approved, your app will be available for your organization.`,
                     level: MsgLevel.Info,
                 }),
             );
-            return ok(teamsAppId);
+            return ok(result.id);
         } catch (error) {
             const innerError = error.innerError ? `innerError: ${error.innerError}` : "";
             await ctx.dialog?.communicate(

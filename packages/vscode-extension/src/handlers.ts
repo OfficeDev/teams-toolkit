@@ -51,6 +51,7 @@ import { ExtensionErrors, ExtensionSource } from "./error";
 import { WebviewPanel } from "./controls/webviewPanel";
 import * as constants from "./debug/constants";
 import logger from "./commonlib/log";
+import { isSPFxProject } from "./utils/commonUtils";
 import * as path from "path";
 import * as fs from "fs-extra";
 import * as vscode from "vscode";
@@ -179,6 +180,9 @@ export async function activate(): Promise<Result<null, FxError>> {
         showError(result.error);
         return err(result.error);
       }
+    }
+    {
+      await openMarkdownHandler();
     }
   } catch (e) {
     const FxError: FxError = {
@@ -624,12 +628,23 @@ async function detectPortsInUse(): Promise<void> {
  * call localDebug on core
  */
 export async function preDebugCheckHandler(): Promise<void> {
+  try {
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPreCheck);
+  } catch {
+    // ignore telemetry error
+  }
+  
   await detectPortsInUse();
 
   let result: Result<any, FxError> = ok(null);
   result = await runCommand(Stage.debug);
   if (result.isErr()) {
-    throw result.error;
+    try {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPreCheck, result.error);
+    } finally {
+      // ignore telemetry error
+      throw result.error;
+    }
   }
 }
 
@@ -649,6 +664,41 @@ function getTriggerFromProperty(args?: any[]) {
   return {
     [TelemetryProperty.TriggerFrom]: isFromTreeView ? TelemetryTiggerFrom.TreeView : TelemetryTiggerFrom.CommandPalette
   };
+}
+
+async function openMarkdownHandler() {
+  const afterScaffold = ext.context.globalState.get("openReadme", false);
+  if (afterScaffold && workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
+    const workspaceFolder = workspace.workspaceFolders[0];
+    const workspacePath: string = workspaceFolder.uri.fsPath;
+    let targetFolder: string | undefined;
+    if (await isSPFxProject(workspacePath)) {
+      targetFolder = `${workspacePath}/SPFx`;
+    } else {
+      const tabFolder = await commonUtils.getProjectRoot(
+        workspacePath,
+        constants.frontendFolderName
+      );
+      const botFolder = await commonUtils.getProjectRoot(
+        workspacePath,
+        constants.botFolderName
+      );
+      if (tabFolder && botFolder) {
+        targetFolder = workspacePath;
+      } else if (tabFolder) {
+        targetFolder = tabFolder;
+      } else {
+        targetFolder = botFolder;
+      }
+    }
+    const uri = Uri.file(`${targetFolder}/README.md`);
+    workspace.openTextDocument(uri).then((document) => {
+      window.showTextDocument(document);
+    }).then(() => {
+      const PreviewMarkdownCommand = "markdown.showPreviewToSide";
+      commands.executeCommand(PreviewMarkdownCommand, uri);
+    });
+  }
 }
 
 export async function openSamplesHandler(args?: any[]) {

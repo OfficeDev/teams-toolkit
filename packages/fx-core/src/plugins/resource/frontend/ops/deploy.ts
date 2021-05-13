@@ -9,6 +9,7 @@ import {
     NpmInstallError,
     UploadToStorageError,
     runWithErrorCatchAndThrow,
+    NoBuildPathError,
 } from "../resources/errors";
 import { Commands, Constants, FrontendPathInfo } from "../constants";
 import { DeploySteps, ProgressHelper } from "../utils/progress-helper";
@@ -71,7 +72,7 @@ export class FrontendDeployment {
         const builtPath = path.join(componentPath, FrontendPathInfo.BuildPath);
         const pathExists = await fs.pathExists(builtPath);
         if (!pathExists) {
-            throw new BuildError();
+            throw new NoBuildPathError();
         }
         return builtPath;
     }

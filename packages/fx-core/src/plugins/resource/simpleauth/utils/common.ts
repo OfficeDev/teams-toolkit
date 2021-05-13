@@ -7,8 +7,8 @@ import { Constants, Message } from "../constants";
 import { EndpointInvalidError, NoConfigError, VersionFileNotExist, ZipDownloadError } from "../errors";
 import { ResultFactory } from "../result";
 import { TelemetryUtils } from "./telemetry";
-import { BlobServiceClient } from "@azure/storage-blob";
 import { getTemplatesFolder } from "../../../..";
+import got from "got";
 
 export class Utils {
     public static generateResourceName(appName: string, resourceNameSuffix: string): string {
@@ -37,14 +37,12 @@ export class Utils {
         }
 
         const version = await fs.readFile(versionFilePath, "utf-8");
+        const tag = Constants.SimpleAuthTag(version);
         const fileName = Constants.SimpleAuthZipName(version);
-        const blobUrlWithCredential = process.env.SIMPLE_AUTH_URL as string;
+        const distUrl = Constants.SimpleAuthReleaseUrl(tag, fileName);
 
         try {
-            const blobClient = new BlobServiceClient(blobUrlWithCredential)
-                .getContainerClient("release")
-                .getBlobClient(fileName);
-            await blobClient.downloadToFile(filePath);
+            await got.stream(distUrl).pipe(fs.createWriteStream(filePath));
         } catch (error) {
             throw ResultFactory.SystemError(
                 ZipDownloadError.name,

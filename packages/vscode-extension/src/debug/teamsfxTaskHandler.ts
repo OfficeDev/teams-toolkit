@@ -66,7 +66,7 @@ function onDidStartDebugSessionHandler(event: vscode.DebugSession): void {
                     [TelemetryProperty.DebugSessionId]: event.id,
                     [TelemetryProperty.DebugType]: debugConfig.type,
                     [TelemetryProperty.DebugRequest]: debugConfig.request,
-                    [TelemetryProperty.DebugPort]: debugConfig.port
+                    [TelemetryProperty.DebugPort]: debugConfig.port + ""
                 });
             } catch {
                 // ignore telemetry error

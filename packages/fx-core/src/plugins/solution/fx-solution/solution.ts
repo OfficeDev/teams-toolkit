@@ -608,7 +608,10 @@ export class TeamsAppSolution implements Solution {
             const hasMsgExt = capabilities?.includes(MessageExtensionItem.id);
             const hasTab = capabilities?.includes(TabOptionItem.id);
             if (hasTab && (hasBot || hasMsgExt)) {
-                
+                const readme = path.join(getTemplatesFolder(), "plugins", "solution", "README.md");
+                if (await fs.pathExists(readme)) {
+                    await fs.copy(readme, `${ctx.root}/README.md`);
+                }
             }
         }
 

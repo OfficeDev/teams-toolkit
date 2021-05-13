@@ -12,7 +12,7 @@ import {
   CommonStrings,
 } from "../resources/strings";
 import { WebAppConstants } from "../constants";
-import { ValidationError } from "../errors";
+import { ConfigValidationError } from "../errors";
 
 export class ProvisionConfig {
   public subscriptionId?: string;
@@ -149,7 +149,7 @@ export class ProvisionConfig {
 
   private validateRestoredConfig(): void {
     if (this.siteName && !utils.isNameValidInUrl(this.siteName)) {
-      throw new ValidationError("siteName", this.siteName);
+      throw new ConfigValidationError("siteName", this.siteName);
     }
   }
 }

@@ -448,7 +448,7 @@ class CoreImpl implements Core {
                     }
                 } else {
                     selectSubLabel = activeSubscription.displayName;
-                    icon = "subcriptionSelected";
+                    icon = "subscriptionSelected";
                 }
                 return ([{
                     commandId: "fx-extension.selectSubscription",

@@ -150,15 +150,18 @@ export interface FileValidation extends AnyValidation {
 /**
  * The validation is checked in a remote function call
  */
-export interface RemoteFuncValidation extends Func, AnyValidation{
+export interface RemoteFuncValidation extends Func{
 
 }
 
 /**
  * The validation is checked by a validFunc provided by user
  */
-export interface LocalFuncValidation extends AnyValidation{
-    validFunc?: (input:string|string[]|undefined, previousAnswers?: ConfigMap)=>string|undefined|Promise<string|undefined>;
+export interface LocalFuncValidationForString{
+    validFunc?: (input:string|undefined, previousAnswers?: ConfigMap)=>string|undefined|Promise<string|undefined>;
+}
+export interface LocalFuncValidationForStringArray{
+    validFunc?: (input:string[]|undefined, previousAnswers?: ConfigMap)=>string|undefined|Promise<string|undefined>;
 }
 
 export type Validation =
@@ -167,7 +170,8 @@ export type Validation =
     | StringArrayValidation
     | FileValidation
     | RemoteFuncValidation
-    | LocalFuncValidation;
+    | LocalFuncValidationForString
+    | LocalFuncValidationForStringArray;
 
 /**
  * Basic question data

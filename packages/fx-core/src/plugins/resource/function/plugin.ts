@@ -39,7 +39,7 @@ import { PostProvisionSteps, PreDeploySteps, ProvisionSteps, StepGroup, step } f
 import { functionNameQuestion } from "./questions";
 import { DotnetChecker } from "./utils/depsChecker/dotnetChecker";
 import { Messages, isLinux, dotnetManualInstallHelpLink } from "./utils/depsChecker/common";
-import { DepsCheckerError } from "./utils/depsChecker/errors";
+import { BackendExtensionsInstallError, DepsCheckerError } from "./utils/depsChecker/errors";
 import { getNodeVersion } from "./utils/node-version";
 import { funcPluginAdapter } from "./utils/depsChecker/funcPluginAdapter";
 import { funcPluginLogger } from "./utils/depsChecker/funcPluginLogger";
@@ -426,11 +426,7 @@ export class FunctionPluginImpl {
         // NOTE: make sure this step is before using `dotnet` command if you refactor this code.
         await this.handleDotnetChecker(ctx);
 
-        await runWithErrorCatchAndThrow(new InstallTeamsfxBindingError(), async () =>
-            await step(StepGroup.PreDeployStepGroup, PreDeploySteps.installTeamsfxBinding, async () =>
-                FunctionDeploy.installFuncExtensions(workingPath, functionLanguage)
-            )
-        );
+        await this.handleBackendExtensionsInstall(workingPath, functionLanguage);
 
         await runWithErrorCatchAndThrow(new InstallNpmPackageError(), async () =>
             await step(StepGroup.PreDeployStepGroup, PreDeploySteps.npmPrepare, async () =>
@@ -604,5 +600,18 @@ export class FunctionPluginImpl {
         } finally {
             funcPluginLogger.cleanup();
         }
+    }
+
+    private async handleBackendExtensionsInstall(workingPath: string, functionLanguage: FunctionLanguage): Promise<void> {
+        await runWithErrorCatchAndThrow(new InstallTeamsfxBindingError(), async () =>
+            await step(StepGroup.PreDeployStepGroup, PreDeploySteps.installTeamsfxBinding, async () => {
+                try {
+                    await FunctionDeploy.installFuncExtensions(workingPath, functionLanguage)
+                } catch (error) {
+                    // wrap the original error to UserError so the extensibility model will pop-up a dialog correctly
+                    funcPluginAdapter.handleDotnetError(error);
+                }
+            })
+        );
     }
 }

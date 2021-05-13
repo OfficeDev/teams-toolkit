@@ -59,10 +59,12 @@ export async function validate(
     }
   }
 
-  if(valueToValidate === undefined){
-    if(validation.required === true)
-      return `input value is required but undefined`;
-    return undefined;
+  // Required Validation
+  {
+    if(!valueToValidate){
+      if(validation.required === true)
+        return `This value is required to be not empty string or undefined`;
+    }
   }
 
   {
@@ -151,8 +153,8 @@ export async function validate(
   //StringArrayValidation
   {
     const stringArrayValidation: StringArrayValidation = validation as StringArrayValidation;
-    const arrayToValidate = valueToValidate as string[];
-    if (arrayToValidate instanceof Array) {
+    const arrayToValidate = valueToValidate as string[]|undefined;
+    if (arrayToValidate && arrayToValidate instanceof Array) {
       const schema: any = {};
       if (stringArrayValidation.maxItems) schema.maxItems = stringArrayValidation.maxItems;
       if (stringArrayValidation.minItems) schema.minItems = stringArrayValidation.minItems;

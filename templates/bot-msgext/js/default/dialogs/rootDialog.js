@@ -1,6 +1,3 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License.
-
 const { ComponentDialog } = require("botbuilder-dialogs");
 const {
     TurnContext,
@@ -58,7 +55,7 @@ class RootDialog extends ComponentDialog {
                 const cardButtons = [
                     {
                         type: ActionTypes.ImBack,
-                        title: "Show Profile",
+                        title: "Show profile",
                         value: "show",
                     },
                 ];

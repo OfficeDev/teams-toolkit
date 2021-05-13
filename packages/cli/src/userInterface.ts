@@ -24,7 +24,7 @@ import {
 import inquirer from "inquirer";
 import CLILogProvider from "./commonlib/log";
 import { ProgressHandler } from "./progressHandler";
-import { NotSupportedQuestionType } from "./error";
+import { InquirerAnswerNotFound, NotSupportedQuestionType } from "./error";
 
 export class DialogManager implements Dialog {
   private static instance: DialogManager;
@@ -56,11 +56,8 @@ export class DialogManager implements Dialog {
         return new DialogMsg(DialogType.Answer, answer);
       }
       case DialogType.Show: {
-        this.showMessage(msg.content as IMessage);
-        return new DialogMsg(DialogType.Show, {
-          description: "Show successfully",
-          level: MsgLevel.Info
-        });
+        const result = await this.showMessage(msg.content as IMessage);
+        return new DialogMsg(DialogType.Answer, result);
       }
       case DialogType.Output: {
         this.showMessage(msg.content as IMessage);
@@ -113,14 +110,35 @@ export class DialogManager implements Dialog {
 
   private async askQuestion(question: IQuestion): Promise<string | undefined> {
     if (question.description.includes("subscription")) {
-      CLILogProvider.error(
-        `Azure subscription required. Use 'teamsfx account set --subscription <SUBSCRIPTION>' to select your Azure subscription.`
-      );
-      return undefined;
+      let sub: string;
+      const subscriptions = question.options as string[];
+      if (subscriptions.length === 0) {
+        throw new Error("Your Azure account has no active subscriptions. Please switch an Azure account.");
+      } else if (subscriptions.length === 1) {
+        sub = subscriptions[0];
+        CLILogProvider.necessaryLog(
+          LogLevel.Warning,
+          `Your Azure account only has one subscription (${sub}). Use it as default.`
+        );
+      } else {
+        const answers = await inquirer.prompt([{
+          name: "subscription",
+          type: "list",
+          message: question.description,
+          choices: subscriptions
+        }]);
+        sub = answers["subscription"];
+      }
+
+      return sub;
     }
     switch (question.type) {
       case QuestionType.Confirm:
         if (question.options && question.options.length === 1) {
+          const ciEnabled = process.env.CI_ENABLED;
+          if(ciEnabled){
+            return question.options[0];
+          }
           const answers = await inquirer.prompt([{
             name: QuestionType.Confirm,
             type: "confirm",
@@ -151,19 +169,39 @@ export class DialogManager implements Dialog {
     return undefined;
   }
 
-  private showMessage(msg: IMessage) {
-    switch (msg.level) {
-      case MsgLevel.Info:
-        CLILogProvider.necessaryLog(LogLevel.Info, msg.description);
-        break;
-      case MsgLevel.Warning:
-        CLILogProvider.necessaryLog(LogLevel.Warning, msg.description);
-        break;
-      case MsgLevel.Error:
-        CLILogProvider.necessaryLog(LogLevel.Error, msg.description);
-        break;
+  private async showMessage(msg: IMessage): Promise<string | undefined> {
+    if (msg.items && msg.items.length > 0) {
+      const ciEnabled = process.env.CI_ENABLED;
+      if(ciEnabled){
+        return msg.items[0];
+      }
+      const answers = await inquirer.prompt([{
+        name: DialogType.Show,
+        type: "list",
+        message: msg.description,
+        choices: msg.items
+      }]);
+      if (DialogType.Show in answers) {
+        return answers[DialogType.Show];
+      }
+      else {
+        throw InquirerAnswerNotFound(msg);
+      }
     }
-    return;
+    else {
+      switch (msg.level) {
+        case MsgLevel.Info:
+          CLILogProvider.necessaryLog(LogLevel.Info, msg.description);
+          break;
+        case MsgLevel.Warning:
+          CLILogProvider.necessaryLog(LogLevel.Warning, msg.description);
+          break;
+        case MsgLevel.Error:
+          CLILogProvider.necessaryLog(LogLevel.Error, msg.description);
+          break;
+      }
+    }
+    return "Show successfully";
   }
 }
 

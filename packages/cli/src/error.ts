@@ -14,7 +14,8 @@ import {
   OptionItem,
   MultiSelectQuestion,
   SingleSelectQuestion,
-  StaticOption
+  StaticOption,
+  IMessage
 } from "@microsoft/teamsfx-api";
 
 import * as constants from "./constants";
@@ -27,8 +28,8 @@ export function NotSupportedProjectType(): UserError {
   );
 }
 
-export function NotValidOptionValue(question:MultiSelectQuestion | SingleSelectQuestion, options: StaticOption): UserError {
-  if(options instanceof Array && options.length > 0 && typeof options[0] !== "string"){
+export function NotValidOptionValue(question: MultiSelectQuestion | SingleSelectQuestion, options: StaticOption): UserError {
+  if (options instanceof Array && options.length > 0 && typeof options[0] !== "string") {
     options = (options as OptionItem[]).map(op => op.id);
   }
   throw NotValidInputValue(question.name, `This question only supports [${options}] options`);
@@ -103,4 +104,11 @@ export function QTNQuestionTypeNotSupport(data: Question): SystemError {
     constants.cliSource,
     "QTNQuestionTypeNotSupport"
   );
+}
+
+export function InquirerAnswerNotFound(data: IMessage): UserError {
+  return returnUserError(
+    new Error(`Answer not found for question:${data.description}`),
+    constants.cliSource,
+    "InquirerAnswerNotFound");
 }

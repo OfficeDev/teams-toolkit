@@ -47,7 +47,7 @@ export function Welcome(props) {
   return (
     <div className="welcome page">
       <div className="narrow page-padding">
-        <Image src="thumbsup.png" />
+        <Image src="hello.png" />
         <h1 className="center">
           Congratulations{userName ? ", " + userName : ""}!
         </h1>

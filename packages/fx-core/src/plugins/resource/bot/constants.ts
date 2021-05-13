@@ -29,8 +29,6 @@ export class ScaffoldPlaceholders {
 }
 
 export class TemplateProjectsConstants {
-    public static readonly NEWEST_MANIFEST_URL: string =
-        "https://github.com/henzhang-ms/Teams-Templates/releases/latest/download/manifest.json";
     public static readonly GROUP_NAME_BOT: string = "bot";
     public static readonly GROUP_NAME_MSGEXT: string = "msgext";
     public static readonly GROUP_NAME_BOT_MSGEXT: string = "bot-msgext";
@@ -78,21 +76,20 @@ export class QuestionNames {
 }
 
 export class LifecycleFuncNames {
-    public static readonly PRE_SCAFFOLD = "preScaffold";
+    public static readonly PRE_SCAFFOLD = "pre-scaffold";
     public static readonly SCAFFOLD = "scaffold";
-    public static readonly POST_SCAFFOLD = "postScaffold";
+    public static readonly POST_SCAFFOLD = "post-scaffold";
 
-    public static readonly PRE_PROVISION = "preProvision";
+    public static readonly PRE_PROVISION = "pre-provision";
     public static readonly PROVISION = "provision";
-    public static readonly POST_PROVISION = "postProvision";
+    public static readonly POST_PROVISION = "post-provision";
 
-    public static readonly PRE_DEPLOY = "preDeploy";
+    public static readonly PRE_DEPLOY = "pre-deploy";
     public static readonly DEPLOY = "deploy";
-    public static readonly POST_DEPLOY = "postDeploy";
+    public static readonly POST_DEPLOY = "post-deploy";
 
-    public static readonly PRE_LOCAL_DEBUG = "preLocalDebug";
-    public static readonly LOCAL_DEBUG = "localDebug";
-    public static readonly POST_LOCAL_DEBUG = "postLocalDebug";
+    public static readonly LOCAL_DEBUG = "local-debug";
+    public static readonly POST_LOCAL_DEBUG = "post-local-debug";
 
     // extra
     public static readonly PROVISION_WEB_APP = "provisionWebApp";
@@ -135,7 +132,7 @@ export class ErrorNames {
 
 export class Links {
     public static readonly ISSUE_LINK = "https://github.com/OfficeDev/TeamsFx/issues/new";
-    public static readonly HELP_LINK = "https://github.com/OfficeDev/TeamsFx/blob/main/docs/fx-core/bot-help.md";
+    public static readonly HELP_LINK = "https://aka.ms/teamsfx-bot-help";
     public static readonly UPDATE_MESSAGE_ENDPOINT = `${Links.HELP_LINK}#how-to-reuse-existing-bot-registration-in-toolkit-v2`
 }
 
@@ -215,6 +212,25 @@ export class MaxLengths {
 }
 
 export class ErrorMessagesForChecking {
-    static readonly FreeServerFarmsQuotaErrorFromAzure =
+    public static readonly FreeServerFarmsQuotaErrorFromAzure =
         "The maximum number of Free ServerFarms allowed in a Subscription is 10";
+}
+
+export class IdentityConstants {
+    public static readonly IDENTITY_TYPE_USER_ASSIGNED = "UserAssigned";
+}
+
+export class TelemetryKeys {
+    public static readonly Component = "component";
+    public static readonly Success = "success";
+    public static readonly ErrorType = "error-type";
+    public static readonly ErrorMessage = "error-message";
+    public static readonly ErrorCode = "error-code";
+}
+
+export class TelemetryValues {
+    public static readonly Success = "yes";
+    public static readonly Fail = "no";
+    public static readonly UserError = "user";
+    public static readonly SystemError = "system";
 }

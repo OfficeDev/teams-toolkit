@@ -94,6 +94,18 @@ export class Constants {
     static readonly FreeServerFarmsQuotaErrorHelpLink = "https://aka.ms/teamsfx-sa-help#freeserverfarmsquotaerror";
 }
 
+export class Telemetry {
+    static component = "component";
+    static errorCode = "error-code";
+    static errorType = "error-type";
+    static errorMessage = "error-message";
+    static userError = "user";
+    static systemError = "system";
+    static isSuccess = "success";
+    static success = "yes";
+    static fail = "no";
+}
+
 export interface Message {
     log: string;
     telemetry: string;
@@ -101,7 +113,7 @@ export interface Message {
 
 export class Messages {
     public static readonly getLog = (log: string) => `[${Constants.SimpleAuthPlugin.name}] ${log}`;
-    private static readonly getEventName = (eventName: string) => `${Constants.SimpleAuthPlugin.id}/${eventName}`;
+    private static readonly getEventName = (eventName: string) => `${eventName}`;
 
     static readonly StartLocalDebug: Message = {
         log: Messages.getLog("Starting local-debug"),

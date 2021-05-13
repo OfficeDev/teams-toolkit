@@ -66,7 +66,7 @@ export class FrontendPlugin implements Plugin {
         fn: () => Promise<TeamsFxResult>,
     ): Promise<TeamsFxResult> {
         try {
-            telemetryHelper.sendSuccessEvent(ctx, stage + TelemetryEvent.startSuffix);
+            telemetryHelper.sendStartEvent(ctx, stage);
             const result = await fn();
             telemetryHelper.sendSuccessEvent(ctx, stage);
             return result;
@@ -83,6 +83,7 @@ export class FrontendPlugin implements Plugin {
             }
 
             if (e instanceof UserError || e instanceof SystemError) {
+                telemetryHelper.sendErrorEvent(ctx, stage, e);
                 return err(e);
             }
 

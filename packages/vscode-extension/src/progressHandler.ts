@@ -29,7 +29,7 @@ export class ProgressHandler {
     const head = `${StringResources.vsc.progressHandler.teamsToolkitComponent} ${this.title}`;
     const body = `: [${this.currentStep}/${this.totalSteps}]`;
     const tail = this.detail ? ` ${this.detail}` : StringResources.vsc.progressHandler.prepareTask;
-    return `${head}${body}${tail} (Notice:You can reload the window and retry if task spends too long time.)`;
+    return `${head}${body}${tail} (Notice: You can reload the window and retry if task spends too long time.)`;
   }
 
   public async start(detail?: string) {

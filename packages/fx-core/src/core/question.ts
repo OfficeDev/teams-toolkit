@@ -44,7 +44,10 @@ export const QuestionAppName: TextInputQuestion = {
 export const QuestionRootFolder: FileQuestion = {
     type: NodeType.folder,
     name: CoreQuestionNames.Foler,
-    title: "Workspace folder"
+    title: "Workspace folder",
+    validation: {
+        required: true
+    }
 };
 
 export const QuestionSelectSolution: SingleSelectQuestion = {
@@ -93,7 +96,7 @@ export const SampleSelect: SingleSelectQuestion = {
         data: "https://github.com/HuihuiWu-Microsoft/TeamsFx-Samples/archive/refs/heads/main.zip"
     },{
         id:"todo-list-SPFx",
-        label: "To Do List2",
+        label: "Todo List with SPFx",
         detail: "Todo List with SPFx is a Todo List for individual user to manage his/her personal to-do items in the format of an app installed on Teams client.",
         data: "https://github.com/HuihuiWu-Microsoft/TeamsFx-Samples/archive/refs/heads/main.zip"
     },{

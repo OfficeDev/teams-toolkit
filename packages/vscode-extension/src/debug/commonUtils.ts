@@ -8,6 +8,7 @@ import * as vscode from "vscode";
 import * as constants from "./constants";
 import { ConfigFolderName, Func } from "@microsoft/teamsfx-api";
 import { core, showError } from "../handlers";
+import * as net from "net";
 
 export async function getProjectRoot(
   folderPath: string,
@@ -143,4 +144,38 @@ async function getLocalDebugConfig(key: string): Promise<string | undefined> {
 
 export async function getSkipNgrokConfig(): Promise<string | undefined> {
   return getLocalDebugConfig(constants.skipNgrokConfigKey);
+}
+
+async function detectPortListeningImpl(port: number, host: string): Promise<boolean> {
+  return new Promise<boolean>((resolve, reject) => {
+    try {
+      const server = net.createServer();
+      server.once("error", (err) => {
+              if (err.message.includes("EADDRINUSE")) {
+                resolve(true);
+              } else {
+                resolve(false);
+              }
+            })
+            .once("listening", () => {
+              server.close();
+            })
+            .once("close", () => {
+              resolve(false);
+            })
+            .listen(port, host);
+    } catch (err) {
+      // ignore any error to not block debugging
+      resolve(false);
+    }
+  });
+}
+
+export async function detectPortListening(port: number, hosts: string[]): Promise<boolean> {
+  for (let host of hosts) {
+    if (await detectPortListeningImpl(port, host)) {
+      return true;
+    }
+  }
+  return false;
 }

@@ -1,8 +1,8 @@
 {
   "name": "teamsfx-extension",
-  "displayName": "Teams Toolkit",
+  "displayName": "Teams Toolkit (Preview)",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "2.0.0-alpha.23",
+  "version": "2.0.0-alpha.26",
   "publisher": "Microsoft",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -28,6 +28,7 @@
     "Azure",
     "M365"
   ],
+  "preview": true,
   "categories": [
     "Azure",
     "Extension Packs",
@@ -40,15 +41,24 @@
   ],
   "activationEvents": [
     "*",
+    "onCommand:fx-extension.openWelcome",
+    "onCommand:fx-extension.openSamples",
+    "onCommand:fx-extension.openDocument",
     "onCommand:fx-extension.create",
     "onCommand:fx-extension.update",
     "onCommand:fx-extension.addCapability",
     "onCommand:fx-extension.provision",
     "onCommand:fx-extension.deploy",
     "onCommand:fx-extension.updateAad",
+    "onCommand:fx-extension.openManifest",
+    "onCommand:fx-extension.validateManifest",
+    "onCommand:fx-extension.build",
+    "onCommand:fx-extension.openAppManagement",
+    "onCommand:fx-extension.openBotManagement",
+    "onCommand:fx-extension.openReportIssues",
     "onCommand:fx-extension.validate-dependencies",
     "onCommand:fx-extension.pre-debug-check",
-    "workspaceContains:**/.teamsfx/*",
+    "workspaceContains:**/.fx/*",
     "onView:teamsfx"
   ],
   "contributes": {
@@ -77,7 +87,7 @@
         },
         {
           "id": "teamsfx-teams-dev-center",
-          "name": "Teams Dev Center"
+          "name": "Teams Developer Portal"
         },
         {
           "id": "teamsfx-feedback",
@@ -418,6 +428,21 @@
           }
         }
       }
+    ],
+    "languages": [
+      {
+        "id": "teamsfx-toolkit-output",
+        "mimetypes": [
+          "text/x-code-output"
+        ]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "teamsfx-toolkit-output",
+        "scopeName": "teamsfx-toolkit.output",
+        "path": "./syntaxes/teamsfx-toolkit-output.tmLanguage"
+      }
     ]
   },
   "scripts": {
@@ -516,8 +541,8 @@
     "@azure/identity": "^1.2.1",
     "@azure/ms-rest-nodeauth": "^3.0.7",
     "@azure/msal-node": "^1.0.0-beta.5",
-    "@microsoft/teamsfx-api": "^0.1.0-alpha.2",
-    "@microsoft/teamsfx-core": "^0.1.0-alpha.2",
+    "@microsoft/teamsfx-api": "^0.1.0-alpha.5",
+    "@microsoft/teamsfx-core": "^0.1.0-alpha.5",
     "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",

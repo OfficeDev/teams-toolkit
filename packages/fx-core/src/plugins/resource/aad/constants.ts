@@ -15,8 +15,6 @@ export class Constants {
   static AskForEnv = "Which Azure AD app do you want to update permission for?";
   static AskForEnvName = "aad-env";
 
-  static readonly telemetryComponent = "component";
-
   static defaultPermissions: RequiredResourceAccess = {
     resourceAppId: "00000003-0000-0000-c000-000000000000",
     resourceAccess: [
@@ -47,6 +45,18 @@ export class Constants {
       },
     ],
   };
+}
+
+export class Telemetry {
+  static component = "component";
+  static errorCode = "error-code";
+  static errorType = "error-type";
+  static errorMessage = "error-message";
+  static userError = "user";
+  static systemError = "system";
+  static isSuccess = "success";
+  static success = "yes";
+  static fail = "no";
 }
 
 export class Plugins {
@@ -96,7 +106,7 @@ export class Messages {
   public static readonly getLog = (log: string) =>
     `[${Plugins.pluginName}] ${log}`;
   private static readonly getEventName = (eventName: string) =>
-    `${Plugins.pluginName}/${eventName}`;
+    `${eventName}`;
 
   static readonly StartProvision: Messages = {
     log: Messages.getLog("Start to provision"),

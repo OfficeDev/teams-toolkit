@@ -3,7 +3,7 @@
 import "mocha";
 import chai from "chai";
 import { ApimPluginConfigKeys, TeamsToolkitComponent, SolutionConfigKeys } from "../../../../src/plugins/resource/apim/constants";
-import { ApimPluginConfig, SolutionConfig } from "../../../../src/plugins/resource/apim/model/config";
+import { ApimPluginConfig, SolutionConfig } from "../../../../src/plugins/resource/apim/config";
 import { ConfigValue, PluginIdentity, ReadonlyPluginConfig } from "@microsoft/teamsfx-api";
 
 describe("config", () => {
@@ -22,7 +22,7 @@ describe("config", () => {
 
         it("Undefined property", () => {
             chai.expect(() => solutionConfig.teamsAppTenantId).to.throw(
-                "Project configuration 'teamsAppTenantId' of solution is missing in 'env.default.json'. Please retry to provision resource or set the value manually."
+                "Project configuration 'teamsAppTenantId' of solution is missing in 'env.default.json'. Retry to provision resource or set the value manually."
             );
         });
         it("Error type property", () => {

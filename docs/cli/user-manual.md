@@ -200,7 +200,7 @@ The Open API document file path. Required in the first-time execution.
 ### `--api-prefix`         
 The API name prefix. Only need to be specified in the first-time execution. The default unique name of the API will be `{api-prefix}-{resource-suffix}-{api-version}`.
 ### `--api-version`
-The API version.
+The API version. Required.
 
 ***
 

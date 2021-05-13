@@ -103,7 +103,7 @@ export class QuestionConstants {
 
         public static readonly ApiVersion = class {
             public static readonly questionName: string = "api-version";
-            public static readonly description: string = "The API version.";
+            public static readonly description: string = "The API version. Required.";
         };
     };
 

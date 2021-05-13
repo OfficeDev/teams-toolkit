@@ -33,7 +33,7 @@ Verify you have the right prerequisites for building Teams apps and install some
 <table>
     <tr>
         <td><img src="https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/landingPage_nodejs.png"></td>
-        <td><h3>Node.js</h3>As a fundamental runtime context for Teams app, Node.js v10.x, v12.x or v14.x is required (v12.x is recommended).</td>
+        <td><h3>Node.js</h3>As a fundamental runtime context for Teams app, Node.js v10.x, v12.x or v14.x is required (v14.x is recommended).</td>
     </tr>
     <tr>
         <td><img src="https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/landingPage_m365.png"></td>

@@ -196,14 +196,14 @@ export enum RetryOperation {
     Login = "sign in to Azure and choose a subscription",
 }
 
-export const ComponentRetryCommands: { [key in TeamsToolkitComponent]: RetryOperation } = Object.freeze({
+export const ComponentRetryOperations: { [key in TeamsToolkitComponent]: RetryOperation } = Object.freeze({
     [TeamsToolkitComponent.FunctionPlugin]: RetryOperation.Update,
     [TeamsToolkitComponent.AadPlugin]: RetryOperation.Create,
     [TeamsToolkitComponent.Solution]: RetryOperation.Create,
     [TeamsToolkitComponent.ApimPlugin]: RetryOperation.Update,
 });
 
-export const ConfigRetryCommands: { [key in TeamsToolkitComponent]: { [key: string]: RetryOperation } } = {
+export const ConfigRetryOperations: { [key in TeamsToolkitComponent]: { [key: string]: RetryOperation } } = {
     [TeamsToolkitComponent.FunctionPlugin]: {
         [FunctionPluginConfigKeys.functionEndpoint]: RetryOperation.Provision,
     },

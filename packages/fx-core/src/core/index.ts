@@ -89,7 +89,7 @@ class CoreImpl implements Core {
 
         this.ctx = {
             root: os.homedir() + "/teams_app/",
-        };  
+        };
         this.globalFxFolder = os.homedir() + `/.${ConfigFolderName}/`;
     }
 
@@ -111,11 +111,11 @@ class CoreImpl implements Core {
         if (stage === Stage.create) {
             const scratchSelectNode = new QTreeNode(ScratchOrSampleSelect);
             node.addChild(scratchSelectNode);
-            
+
             const scratchNode = new QTreeNode({type:NodeType.group});
             scratchNode.condition = {equals: ScratchOptionYes.id};
             scratchSelectNode.addChild(scratchNode);
-            
+
             const sampleNode = new QTreeNode(SampleSelect);
             sampleNode.condition = {equals: ScratchOptionNo.id};
             scratchSelectNode.addChild(sampleNode);
@@ -207,7 +207,7 @@ class CoreImpl implements Core {
         const namespace = func.namespace;
         const array = namespace?namespace.split("/"):[];
         if (!namespace || "" === namespace || array.length === 0) {
-            
+
         } else {
             const solutionName = array[0];
             const solution = this.globalSolutions.get(solutionName);
@@ -527,7 +527,7 @@ class CoreImpl implements Core {
                     [TelemetryProperty.TriggerFrom]: args && args.toString() === "TreeView" ? TelemetryTiggerFrom.TreeView : TelemetryTiggerFrom.CommandPalette,
                     [TelemetryProperty.AccountType]: AccountType.Azure
                 });
-                
+
                 const token = await this.ctx.azureAccountProvider?.getAccountCredentialAsync(true);
                 if (token !== undefined) {
                     this.ctx.treeProvider?.refresh([
@@ -555,7 +555,7 @@ class CoreImpl implements Core {
                 azureAccountContextValue = "signedinAzure";
             }
 
-            this.ctx.appStudioToken?.setStatusChangeMap('tree-view', 
+            this.ctx.appStudioToken?.setStatusChangeMap('tree-view',
                 (status: string, token?: string | undefined, accountInfo?: Record<string, unknown> | undefined) => {
                     if (status === "SignedIn") {
                         signinM365Callback();
@@ -584,7 +584,7 @@ class CoreImpl implements Core {
                     return Promise.resolve();
                 },
             );
-            this.ctx.azureAccountProvider?.setStatusChangeMap( 'tree-view', 
+            this.ctx.azureAccountProvider?.setStatusChangeMap( 'tree-view',
                 async (status: string, token?: string | undefined, accountInfo?: Record<string, unknown> | undefined) => {
                     if (status === "SignedIn") {
                         const token = this.ctx.azureAccountProvider?.getAccountCredential();
@@ -683,7 +683,7 @@ class CoreImpl implements Core {
         }
 
         this.env = "default";
-         
+
         const res = await this.selectedSolution.open(this.solutionContext());
         const t4 = new Date().getTime();
         //this.ctx.logProvider?.debug(`core.open() time  ----- t2-t1:${t2-t1}, t3-t2:${t3-t2}, t4-t3:${t4-t3}`);
@@ -708,7 +708,7 @@ class CoreImpl implements Core {
         return true;
     }
 
-      
+
 
     public async readConfigs(): Promise<Result<null, FxError>> {
         if (!fs.existsSync(`${this.ctx.root}/.${ConfigFolderName}`)) {
@@ -736,12 +736,12 @@ class CoreImpl implements Core {
                     }
                     else{
                         dict = {};
-                    } 
+                    }
                     mergeSerectData(dict, configJson);
                     const solutionConfig: SolutionConfig = objectToMap(configJson);
                     this.configs.set(envName, solutionConfig);
                 }
-    
+
                 // read projectSettings
                 this.ctx.projectSettings = await this.readSettings(this.ctx.root);
                 res = ok(null);
@@ -854,7 +854,7 @@ class CoreImpl implements Core {
         const file = `${projectFolder}/.${ConfigFolderName}/settings.json`;
         const exist = await fs.pathExists(file);
         if (!exist) return undefined;
-        const settings:ProjectSettings = await fs.readJSON(file); 
+        const settings:ProjectSettings = await fs.readJSON(file);
         return settings;
     }
 
@@ -917,7 +917,7 @@ class CoreImpl implements Core {
             return err(loadResult.error);
         }
         this.globalSolutions = loadResult.value;
- 
+
         this.ctx.logProvider?.info("[Teams Toolkit] Initialized");
         return ok(null);
     }
@@ -1029,7 +1029,7 @@ export class CoreProxy implements Core {
         const platform = answers?.getString("platform") as Platform;
         if(!this.coreImpl.ctx.platform && platform)
             this.coreImpl.ctx.platform = platform;
-        
+
         try {
             // check if this project is supported
             if (checkAndConfig) {
@@ -1054,9 +1054,6 @@ export class CoreProxy implements Core {
                 this.coreImpl.ctx.logProvider?.info(`[Core] run task ${name} finish, isOk: ${res.isOk()}!`);
             return res;
         } catch (e) {
-            this.coreImpl.ctx.logProvider?.error(
-                `[Core] run task ${name} finish, isOk: false, throw error:${JSON.stringify(e)}`,
-            );
             if (
                 e instanceof UserError ||
                 e instanceof SystemError ||
@@ -1126,7 +1123,7 @@ export class CoreProxy implements Core {
          let check = true;
          if (Platform.VS === platform) check = false;
          ////////////////////////////
- 
+
          return await this.runWithErrorHandling<QTreeNode | undefined>(
              "executeUserTask",
              check,

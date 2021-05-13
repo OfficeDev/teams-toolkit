@@ -57,7 +57,7 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
             name: "Launch Remote (Edge)",
             type: LaunchBrowser.edge,
             request: "launch",
-            url: "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true",
+            url: "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&${account-hint}",
             presentation: {
                 group: "remote",
                 order: edgeOrder,
@@ -67,7 +67,7 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
             name: "Launch Remote (Chrome)",
             type: LaunchBrowser.chrome,
             request: "launch",
-            url: "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true",
+            url: "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&${account-hint}",
             presentation: {
                 group: "remote",
                 order: chromeOrder,

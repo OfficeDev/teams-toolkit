@@ -105,6 +105,10 @@
         "graphLogin": {
             "warningMsg": "The Teams Toolkit requires a Microsoft 365 account. This is the account that you use to log in to Microsoft Teams. The Teams Toolkit will use this account to manage applications and service principals."
         },
+        "localDebug": {
+            "portAlreadyInUse": "Port: %s is already in use. Close this port and try again.",
+            "portsAlreadyInUse": "Ports: %s are already in use. Close these ports and try again."
+        },
         "survey": {
             "takeSurvey": {
                 "title": "Take Survey",

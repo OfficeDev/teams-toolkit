@@ -144,10 +144,11 @@ export class NamingRules {
     }
 
     static short(str: string, maxLength: number): string {
-        const result = str.substring(0, maxLength);
-        if (result.length === 0) {
+        if (maxLength <= 0) {
             throw BuildError(ShortenToEmpty, str);
         }
+        
+        const result = str.substring(0, maxLength);
         return result;
     }
 }

@@ -70,6 +70,12 @@ export const AadOperationError: IApimPluginError = {
     helpLink: "https://aka.ms/teamsfx-apim-help#aadoperationerror",
 };
 
+export const InvalidCliOptionError: IApimPluginError = {
+    type: ErrorType.User,
+    code: "InvalidCliOptionError",
+    message: (reason) => `Option is invalid. ${reason}`,
+};
+
 // System error
 export const NotImplemented: IApimPluginError = {
     type: ErrorType.System,

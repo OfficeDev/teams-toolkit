@@ -92,6 +92,11 @@ async function _scaffold(ctx: PluginContext, progressBar: ProgressBar): Promise<
     const apimConfig = new ApimPluginConfig(ctx.config);
     const answer = buildAnswer(ctx);
     const scaffoldManager = await Factory.buildScaffoldManager(ctx, solutionConfig);
+
+    if (answer.validate) {
+        await answer.validate(Stage.update, apimConfig, ctx.root);
+    }
+
     answer.save(Stage.update, apimConfig);
 
     await progressBar.next(ProgressStep.Scaffold, ProgressMessages[ProgressStep.Scaffold].Scaffold);
@@ -118,7 +123,7 @@ async function _postProvision(ctx: PluginContext, progressBar: ProgressBar): Pro
     const aadConfig = new AadPluginConfig(ctx.configOfOtherPlugins);
 
     const apimManager = await Factory.buildApimManager(ctx, solutionConfig);
-    const aadManager = await Factory.buildAadManager(ctx, );
+    const aadManager = await Factory.buildAadManager(ctx);
     const teamsAppAadManager = await Factory.buildTeamsAppAadManager(ctx);
 
     await progressBar.next(ProgressStep.PostProvision, ProgressMessages[ProgressStep.PostProvision].ConfigClientAad);
@@ -136,6 +141,11 @@ async function _deploy(ctx: PluginContext, progressBar: ProgressBar): Promise<vo
     const apimConfig = new ApimPluginConfig(ctx.config);
     const functionConfig = new FunctionPluginConfig(ctx.configOfOtherPlugins);
     const answer = buildAnswer(ctx);
+
+    if (answer.validate) {
+        await answer.validate(Stage.deploy, apimConfig, ctx.root);
+    }
+
     answer.save(Stage.deploy, apimConfig);
 
     const apimManager = await Factory.buildApimManager(ctx, solutionConfig);

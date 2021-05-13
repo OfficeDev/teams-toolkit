@@ -4,7 +4,7 @@ import { Image } from "@fluentui/react-northstar";
 
 export function Publish(props) {
   const { docsUrl } = {
-    docsUrl: "https://aka.ms/todo",
+    docsUrl: "https://aka.ms/teamsfx-docs",
     ...props,
   };
   return (

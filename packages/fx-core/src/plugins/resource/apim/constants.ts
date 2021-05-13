@@ -140,6 +140,12 @@ export class ValidationConstants {
         regex: /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
         message: "The value should be a GUID."
     }
+
+    public static readonly CLI = {
+        invalidOptionMessage: (optionName: string) => `The value of option '--${optionName}' is invalid.`,
+        emptyOptionMessage: (optionName: string) => `Option '--${optionName}' is required. Set the value of '--${optionName}'`,
+        overrideOptionMessage: (optionName: string) => `Option '--${optionName}' cannot be overridden. Remove option '--${optionName}'`,
+    }
 }
 
 export class ApimPluginConfigKeys {

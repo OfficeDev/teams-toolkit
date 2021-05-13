@@ -3,11 +3,13 @@
 import { ApiContract } from "@azure/arm-apimanagement/src/models";
 import { ConfigMap, Platform, PluginContext, Stage } from "@microsoft/teamsfx-api";
 import { OpenAPI } from "openapi-types";
-import { QuestionConstants } from "./constants";
-import { AssertNotEmpty, BuildError, NotImplemented } from "./error";
+import { QuestionConstants, ValidationConstants } from "./constants";
+import { AssertNotEmpty, BuildError, InvalidCliOptionError, NotImplemented } from "./error";
 import { IApimPluginConfig } from "./config";
 import { IOpenApiDocument } from "./interfaces/IOpenApiDocument";
 import { IApimServiceResource } from "./interfaces/IApimResource";
+import { NamingRules } from "./utils/namingRules";
+import { OpenApiProcessor } from "./utils/openApiProcessor";
 
 export interface IAnswer {
     resourceGroupName: string | undefined;
@@ -18,6 +20,7 @@ export interface IAnswer {
     versionIdentity: string | undefined;
     openApiDocumentSpec?: OpenAPI.Document;
     save(stage: Stage, apimConfig: IApimPluginConfig): void;
+    validate?(stage: Stage, apimConfig: IApimPluginConfig, projectRootDir: string): Promise<void>;
 }
 
 export function buildAnswer(ctx: PluginContext): IAnswer {
@@ -114,5 +117,82 @@ export class CLIAnswer implements IAnswer {
                 apimConfig.apiPrefix = this.apiPrefix ?? apimConfig.apiPrefix;
                 break;
         }
+    }
+
+    async validate(stage: Stage, apimConfig: IApimPluginConfig, projectRootDir: string): Promise<void> {
+        const message = await this.validateWithMessage(stage, apimConfig, projectRootDir);
+        if (typeof message !== "undefined"){
+            throw BuildError(InvalidCliOptionError, message);
+        }
+    }
+
+    // TODO: delete the following logic after cli question model fix undefined / empty string validation bug
+    // https://msazure.visualstudio.com/Microsoft%20Teams%20Extensibility/_workitems/edit/9893622
+    // https://msazure.visualstudio.com/Microsoft%20Teams%20Extensibility/_workitems/edit/9823734
+    private async validateWithMessage(stage: Stage, apimConfig: IApimPluginConfig, projectRootDir: string): Promise<string | undefined> {
+        switch (stage) {
+            case Stage.update:
+                // Validate the option format
+                if (typeof this.resourceGroupName !== "undefined") {
+                    const message = NamingRules.validate(this.resourceGroupName, NamingRules.resourceGroupName);
+                    if (message) {
+                        return `${ValidationConstants.CLI.invalidOptionMessage(QuestionConstants.CLI.ApimResourceGroup.questionName)} ${message}`;
+                    }
+                }
+
+                if (typeof this.apimServiceName !== "undefined") {
+                    const message = NamingRules.validate(this.apimServiceName, NamingRules.apimServiceName);
+                    if (message) {
+                        return `${ValidationConstants.CLI.invalidOptionMessage(QuestionConstants.CLI.ApimServiceName.questionName)} ${message}`;
+                    }
+                }
+                break;
+            case Stage.deploy:
+                // Validate the option requirements
+                if (!apimConfig.apiPrefix && !this.apiPrefix) {
+                    return ValidationConstants.CLI.emptyOptionMessage(QuestionConstants.CLI.ApiPrefix.questionName);
+                }
+
+                if (!apimConfig.apiDocumentPath && !this.apiDocumentPath) {
+                    return ValidationConstants.CLI.emptyOptionMessage(QuestionConstants.CLI.OpenApiDocument.questionName);
+                }
+
+                if (!this.versionIdentity) {
+                    return ValidationConstants.CLI.emptyOptionMessage(QuestionConstants.CLI.ApiVersion.questionName);
+                }
+
+                // Validate the option override
+                if (apimConfig.apiPrefix && this.apiPrefix) {
+                    return ValidationConstants.CLI.overrideOptionMessage(QuestionConstants.CLI.ApiPrefix.questionName);
+                }
+
+                // Validate the option format
+                if (typeof this.apiPrefix !== "undefined") {
+                    const message = NamingRules.validate(this.apiPrefix, NamingRules.apiPrefix);
+                    if (message) {
+                        return `${ValidationConstants.CLI.invalidOptionMessage(QuestionConstants.CLI.ApiPrefix.questionName)} ${message}`;
+                    }
+                }
+
+                if (typeof this.apiDocumentPath !== "undefined") {
+                    try {
+                        const openApiProcessor = new OpenApiProcessor();
+                        await openApiProcessor.loadOpenApiDocument(this.apiDocumentPath, projectRootDir);
+                    } catch (error) {
+                        return `${ValidationConstants.CLI.invalidOptionMessage(QuestionConstants.CLI.OpenApiDocument.questionName)} ${error.message}`;
+                    }
+                }
+
+                if (typeof this.versionIdentity != "undefined") {
+                    const message = NamingRules.validate(this.versionIdentity, NamingRules.versionIdentity);
+                    if (message) {
+                        return `${ValidationConstants.CLI.invalidOptionMessage(QuestionConstants.CLI.OpenApiDocument.questionName)} ${message}`;
+                    }
+                }
+
+                break;
+        }
+
+        return undefined;
     }
 }

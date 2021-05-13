@@ -515,7 +515,6 @@
     "ms-rest": "^2.5.4",
     "node-loader": "^2.0.0",
     "node-sass": "^5.0.0",
-    "prettier": "^1.16.4",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-intl": "^5.13.5",
@@ -563,7 +562,7 @@
   },
   "lint-staged": {
     "*.{js,jsx,css,ts,tsx}": [
-      "npx eslint --cache --fix"
+      "npx eslint --cache --fix --quiet"
     ],
     "*": [
       "npx prettier --config .prettierrc.js --ignore-unknown --write --ignore-path .prettierignore "

@@ -82,3 +82,10 @@ export function getTeamsAppId() {
 
   return undefined;
 }
+
+export async function isSPFxProject(workspacePath: string): Promise<boolean> {
+  if (await fs.pathExists(`${workspacePath}/SPFx`)) {
+    return true;
+  }
+  return false;
+}

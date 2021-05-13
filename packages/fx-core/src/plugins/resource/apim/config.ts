@@ -3,7 +3,7 @@
 import { ConfigValue, ReadonlySolutionConfig } from "@microsoft/teamsfx-api";
 import {
   TeamsToolkitComponent,
-  ComponentRetryCommands,
+  ComponentRetryOperations,
   SolutionConfigKeys,
   AadPluginConfigKeys,
   FunctionPluginConfigKeys,
@@ -242,7 +242,7 @@ function checkAndGetOtherPluginConfig(
 ): string {
   const pluginConfig = configOfOtherPlugins.get(component);
   if (!pluginConfig) {
-    throw BuildError(NoPluginConfig, component, ComponentRetryCommands[component]);
+    throw BuildError(NoPluginConfig, component, ComponentRetryOperations[component]);
   }
 
   const value = AssertConfigNotEmpty(component, key, pluginConfig.get(key));

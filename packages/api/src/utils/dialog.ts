@@ -89,6 +89,7 @@ export enum QuestionType {
   ExecuteCmd = "ExecuteCmd",
   OpenExternal = "OpenExternal",
   Confirm = "Confirm",
+  UpdateGlobalState = "UpdateGlobalState",
 }
 
 export interface IQuestion {

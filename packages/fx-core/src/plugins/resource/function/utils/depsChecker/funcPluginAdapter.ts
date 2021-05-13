@@ -15,7 +15,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { Messages, dotnetManualInstallHelpLink } from "./common";
 import { IDepsAdapter, IDepsChecker } from "./checker";
-import { getTemplatesFolder } from "../../../../..";
+import { getResourceFolder } from "../../../../..";
 
 class FuncPluginAdapter implements IDepsAdapter {
   private readonly downloadIndicatorInterval = 1000; // same as vscode-dotnet-runtime

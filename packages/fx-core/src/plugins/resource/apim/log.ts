@@ -19,12 +19,8 @@ export class LogMessages {
     resourceId?: string
   ): string =>
     !resourceId
-      ? `[${ProjectConstants.pluginDisplayName}] ${capitalizeFirstLetter(operation.displayName)} ${
-          resourceType.displayName
-        } successfully.`
-      : `[${ProjectConstants.pluginDisplayName}] ${capitalizeFirstLetter(operation.displayName)} ${
-          resourceType.displayName
-        } '${resourceId}' successfully.`;
+      ? `[${ProjectConstants.pluginDisplayName}] Succeeded: ${operation.displayName} ${resourceType.displayName}.`
+      : `[${ProjectConstants.pluginDisplayName}] Succeeded: ${operation.displayName} ${resourceType.displayName} '${resourceId}'.`;
 
   public static readonly operationFailed = (
     operation: IName,
@@ -46,8 +42,8 @@ export class LogMessages {
 
   public static readonly resourceNotFound = (resourceType: IName, resourceId?: string): string =>
     !resourceId
-      ? `[${ProjectConstants.pluginDisplayName}] Failed to found resource ${resourceType.displayName} in Azure.`
-      : `[${ProjectConstants.pluginDisplayName}] Failed to found resource ${resourceType.displayName} '${resourceId} in Azure.`;
+      ? `[${ProjectConstants.pluginDisplayName}] Failed to find resource ${resourceType.displayName} in Azure.`
+      : `[${ProjectConstants.pluginDisplayName}] Failed to find resource ${resourceType.displayName} '${resourceId} in Azure.`;
 
   public static readonly accessFileFailed = (dir: string, file: string): string =>
     `[${ProjectConstants.pluginDisplayName}] Cannot access '${file}' in directory '${dir}'`;

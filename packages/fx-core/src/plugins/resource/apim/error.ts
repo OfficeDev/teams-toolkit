@@ -41,15 +41,15 @@ export const InvalidAadObjectId: IApimPluginError = {
 export const EmptyConfigValue: IApimPluginError = {
   type: ErrorType.User,
   code: "EmptyConfigValue",
-  message: (component: string, name: string, retryCommand: string) =>
-    `Project configuration '${name}' of ${component} is missing in '${ProjectConstants.configFilePath}'. Retry to ${retryCommand} or set the value manually.`,
+  message: (component: string, name: string, retryOperation: string) =>
+    `Project configuration '${name}' of '${component}' is missing in '${ProjectConstants.configFilePath}'. Retry ${retryOperation} or set the value manually.`,
 };
 
 export const NoPluginConfig: IApimPluginError = {
   type: ErrorType.User,
   code: "NoPluginConfig",
-  message: (component: string, retryCommand: string) =>
-    `Cannot found ${component} configuration. Retry '${retryCommand}'.`,
+  message: (component: string, retryOperation: string) =>
+    `Cannot found ${component} configuration. Retry ${retryOperation}.`,
 };
 
 export const InvalidConfigValue: IApimPluginError = {
@@ -181,7 +181,7 @@ export function AssertConfigNotEmpty<T>(
   value: T | undefined
 ): T {
   if (!value) {
-    throw BuildError(EmptyConfigValue, component, name, ConfigRetryCommands[component][name]);
+    throw BuildError(EmptyConfigValue, component, name, ConfigRetryOperations[component][name]);
   }
 
   return value;

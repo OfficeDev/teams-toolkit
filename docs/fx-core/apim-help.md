@@ -3,13 +3,13 @@
 ### Error Message
 There is no valid OpenAPI document under the workspace.
 ### Mitigation
-Please add a valid OpenAPI document (v2 / v3) in the project directory. Both json format and yaml format are supported. [Here](https://swagger.io/resources/open-api/) is the OpenAPI Specification.
+To import the API definition to Azure API Management, you need to provide an OpenAPI specification for the backend API hosted in Azure Functions. Please add a valid OpenAPI document (v2 / v3) in the project's directory. Both json format and yaml format are supported. [Here](https://swagger.io/resources/open-api/) is the OpenAPI Specification.
 
 ## InvalidOpenApiDocument
 ### Error Message
 The file '{filePath}' is not a valid OpenApi document.
 ### Mitigation
-Please add a valid OpenAPI document (v2 / v3) in the project directory. Both json format and yaml format are supported. [Here](https://swagger.io/resources/open-api/) is the OpenAPI Specification.
+To import the API definition to Azure API Management, you need to provide an OpenAPI specification for the backend API hosted in Azure Functions. Please add a valid OpenAPI document (v2 / v3) in the project's directory. Both json format and yaml format are supported. [Here](https://swagger.io/resources/open-api/) is the OpenAPI Specification.
 
 ## InvalidAadObjectId
 ### Error Message

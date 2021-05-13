@@ -288,7 +288,7 @@ export class DotnetChecker implements IDepsChecker {
       const installedVersions = dotnetSdks
         .map((sdk) => DotnetChecker.parseDotnetVersion(sdk.version))
         .filter((version) => version !== null) as string[];
-      return this.isDotnetVersionsInstalled(installedVersions);
+      return this.isDotnetVersionsInstalled(installedVersions) && (await this.validateWithHelloWorld());
     } catch (error) {
       const errorMessage = `validate private install failed, error = '${error}'`;
       this._telemetry.sendSystemErrorEvent(
@@ -421,8 +421,7 @@ export class DotnetChecker implements IDepsChecker {
   }
 
   private async validate(): Promise<boolean> {
-    const isInstallationValid =
-      (await this.isDotnetInstalledCorrectly()) && (await this.validateWithHelloWorld());
+    const isInstallationValid = await this.isDotnetInstalledCorrectly();
     if (!isInstallationValid) {
       this._telemetry.sendEvent(DepsCheckerEvent.dotnetValidationError);
       await DotnetChecker.cleanup();

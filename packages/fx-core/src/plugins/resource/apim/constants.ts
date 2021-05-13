@@ -87,12 +87,12 @@ export class QuestionConstants {
 
         public static readonly OpenApiDocument = class {
             public static readonly questionName: string = "open-api-document";
-            public static readonly description: string = "The Open API document file path.";
+            public static readonly description: string = "The Open API document file path. Required in the first-time execution.";
         };
 
         public static readonly ApiPrefix = class {
             public static readonly questionName: string = "api-prefix";
-            public static readonly description: string = "The API name prefix. The default unique name of the API will be '{api-prefix}-{resource-suffix}-{api-version}'.";
+            public static readonly description: string = "The API name prefix. Only need to be specified in the first-time execution. The default unique name of the API will be '{api-prefix}-{resource-suffix}-{api-version}'.";
         };
 
         public static readonly ApiId = class {

@@ -47,14 +47,14 @@
         "data": {
             "type": "text",
             "name": "open-api-document",
-            "description": "The Open API document file path."
+            "description": "The Open API document file path. Required in the first-time execution."
         }
     },
     {
         "data": {
             "type": "text",
             "name": "api-prefix",
-            "description": "The API name prefix. The default unique name of the API will be '{api-prefix}-{resource-suffix}-{api-version}'.",
+            "description": "The API name prefix. Only need to be specified in the first-time execution. The default unique name of the API will be '{api-prefix}-{resource-suffix}-{api-version}'.",
             "validation": {}
         }
     },

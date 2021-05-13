@@ -196,9 +196,9 @@ This command is used to deploy the current application. By default it will deplo
 > Below options will take effect when your project contains `apim`.
 
 ### `--open-api-document`  
-The Open API document file path.
+The Open API document file path. Required in the first-time execution.
 ### `--api-prefix`         
-The API name prefix. The default unique name of the API will be `{api-prefix}-{resource-suffix}-{api-version}`.
+The API name prefix. Only need to be specified in the first-time execution. The default unique name of the API will be '{api-prefix}-{resource-suffix}-{api-version}'.
 ### `--api-version`
 The API version.
 

@@ -3,6 +3,7 @@ import { Icon, Stack, Image, PrimaryButton } from '@fluentui/react'
 import './SampleGallery.scss'
 import { Commands } from './Commands'
 import HelloWorld from '../../media/helloworld.gif'
+import InMeetingApp from '../../media/sampleApp_inMeeting.png'
 
 export default class SampleGallery extends React.Component<any, any> {
     constructor(props: any) {
@@ -63,7 +64,7 @@ export default class SampleGallery extends React.Component<any, any> {
                         sampleAppFolder="faq-plus"
                         sampleAppUrl="https://github.com/HuihuiWu-Microsoft/TeamsFx-Samples/archive/refs/heads/main.zip" />
                     <SampleAppCard
-                        image={HelloWorld}
+                        image={InMeetingApp}
                         tags={["Meeting extension", "JS"]}
                         title="In-meeting App"
                         description="In-meeting app is a hello-world template which shows how to build an app in the context of a Teams meeting. This is a hello-world sample which does not provide any functional feature. This app contains a side panel and a Bot which only shows user profile and can only be added to a Teams meeting."

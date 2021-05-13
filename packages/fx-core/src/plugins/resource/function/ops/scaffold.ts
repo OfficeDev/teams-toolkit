@@ -13,7 +13,7 @@ import { Logger } from "../utils/logger";
 import { ScaffoldSteps, StepGroup, step } from "../resources/steps";
 import { TemplateZipFallbackError, runWithErrorCatchAndThrow } from "../resources/errors";
 import { convertTemplateLanguage, fetchZipFromURL, getTemplateURL, unzip} from "../utils/templates-fetch";
-
+import { getTemplatesFolder } from "../../../..";
 export interface TemplateVariables {
     appName: string;
     functionName: string;
@@ -41,7 +41,7 @@ export class FunctionScaffold {
             return await runWithErrorCatchAndThrow(new TemplateZipFallbackError(), async() => {
                 const templateLanguage: string = convertTemplateLanguage(language);
                 const fileName: string = [group, templateLanguage, scenario].join(PathInfo.templateZipNameSep) + PathInfo.templateZipExt;
-                const zipPath: string = path.join(FunctionPluginPathInfo.rootPath, PathInfo.templateFolderPath, fileName);
+                const zipPath: string = path.join(getTemplatesFolder(), "plugins", "resource", "function" , fileName);
                 const data: Buffer = await fs.readFile(zipPath);
                 const zip: AdmZip = new AdmZip(data);
                 return zip;

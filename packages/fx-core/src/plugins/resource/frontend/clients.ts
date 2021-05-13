@@ -195,6 +195,7 @@ export class AzureStorageClient {
             services: "bf" as StorageManagementModels.Services,
             resourceTypes: "sco" as StorageManagementModels.SignedResourceTypes,
             permissions: "rwld" as StorageManagementModels.Permissions,
+            sharedAccessStartTime: new Date(Date.now()),
             sharedAccessExpiryTime: new Date(Date.now() + Constants.SasTokenLifetime),
         };
 

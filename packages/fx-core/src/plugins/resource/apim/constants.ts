@@ -12,7 +12,6 @@ export class ProjectConstants {
     public static readonly openApiDocumentFileName: string = "openapi.json";
     public static readonly readMeFileName: string = "README.md";
     public static readonly maxRetries: number = 3;
-    public static readonly resourceDir: string = path.join(__dirname, "..", "..", "..", "..", "templates", "plugins", "resource", "apim");
 }
 
 export class ApimDefaultValues {
@@ -190,11 +189,11 @@ export enum TeamsToolkitComponent {
 }
 
 export enum RetryCommands {
-    Create = "'Teams: Create New Project' command",
-    Update = "'Teams: Add Resources' command",
-    Provision = "'Teams: Provision in the Cloud' command",
-    Deploy = "'Teams: Deploy to the Cloud' command",
-    Login = "'Teams Toolkit: Focus on Accounts View' command, sign in to Azure and choose a subscription",
+    Create = "create a new project",
+    Update = "add resources",
+    Provision = "provision",
+    Deploy = "deploy",
+    Login = "sign in to Azure and choose a subscription",
 }
 
 export const ComponentRetryCommands: { [key in TeamsToolkitComponent]: RetryCommands } = Object.freeze({

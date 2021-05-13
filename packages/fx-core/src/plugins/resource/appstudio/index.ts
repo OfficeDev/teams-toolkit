@@ -3,7 +3,7 @@
 
 import {
     ConfigFolderName, FxError, NodeType, ok, err, Platform, Plugin, PluginContext, QTreeNode, Result, Stage,
-    DialogMsg, DialogType, MsgLevel
+    DialogMsg, DialogType, MsgLevel, QuestionType
 } from "@microsoft/teamsfx-api";
 import { AppStudioPluginImpl } from "./plugin";
 import { Constants } from "./constants";
@@ -55,7 +55,7 @@ export class AppStudioPlugin implements Plugin {
 
         return ok(appStudioQuestions);
     }
-    
+
     /**
      * Validate manifest string against schema
      * @param {string} manifestString - the string of manifest.json file
@@ -65,7 +65,7 @@ export class AppStudioPlugin implements Plugin {
         const validationResult = await this.appStudioPluginImpl.validateManifest(ctx, manifestString);
         if (validationResult.length > 0) {
             const errMessage = AppStudioError.ValidationFailedError.message(validationResult);
-            ctx.logProvider?.error("[Teams Toolkit] Manifest Validation failed!");
+            ctx.logProvider?.error("Manifest Validation failed!");
             await ctx.dialog?.communicate(
                 new DialogMsg(DialogType.Show, {
                     description: errMessage,
@@ -74,7 +74,7 @@ export class AppStudioPlugin implements Plugin {
             );
             return err(AppStudioResultFactory.UserError(AppStudioError.ValidationFailedError.name, errMessage));
         }
-        const validationSuccess = "[Teams Toolkit] Manifest Validation succeed!";
+        const validationSuccess = "Manifest Validation succeed!";
         ctx.logProvider?.info(validationSuccess);
         await ctx.dialog?.communicate(
             new DialogMsg(DialogType.Show, {
@@ -93,7 +93,7 @@ export class AppStudioPlugin implements Plugin {
     public async buildTeamsPackage(ctx: PluginContext, appDirectory: string, manifestString: string): Promise<Result<string, FxError>> {
         try {
             const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, appDirectory, manifestString);
-            const builtSuccess = `[Teams Toolkit] Teams Package ${appPackagePath} built successfully!`;
+            const builtSuccess = `Teams Package ${appPackagePath} built successfully!`;
             ctx.logProvider?.info(builtSuccess);
             await ctx.dialog?.communicate(
                 new DialogMsg(DialogType.Show, {
@@ -103,14 +103,10 @@ export class AppStudioPlugin implements Plugin {
             );
             return ok(appPackagePath);
         } catch (error) {
-            ctx.logProvider?.error("[Teams Toolkit] Teams Package built failed!");
-            await ctx.dialog?.communicate(
-                new DialogMsg(DialogType.Show, {
-                    description: error.message,
-                    level: MsgLevel.Error,
-                }),
-            );
-            return err(error);
+            return err(AppStudioResultFactory.SystemError(
+                AppStudioError.TeamsPackageBuildError.name,
+                AppStudioError.TeamsPackageBuildError.message(error)
+            ));
         }
     }
 
@@ -125,25 +121,49 @@ export class AppStudioPlugin implements Plugin {
             if (answer === manuallySubmitOption.id) {
                 const appDirectory = `${ctx.root}/.${ConfigFolderName}`;
                 const manifestString = JSON.stringify(ctx.app);
-                return this.buildTeamsPackage(ctx, appDirectory, manifestString);
+                try {
+                    const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, appDirectory, manifestString);
+                    const answer = (await ctx.dialog?.communicate(
+                        new DialogMsg(DialogType.Show, {
+                            description: `Successfully created ${ctx.app.name.short} app package file at ${appPackagePath}. Send this to your administrator for approval.`,
+                            level: MsgLevel.Info,
+                            items: ["OK", Constants.READ_MORE]
+                        })
+                    ))?.getAnswer();
+                    if (answer === Constants.READ_MORE) {
+                        await ctx.dialog?.communicate(
+                            new DialogMsg(DialogType.Ask, {
+                                description: Constants.PUBLISH_GUIDE,
+                                type: QuestionType.OpenExternal
+                            })
+                        )
+                    }
+                    return ok(appPackagePath);
+                }
+                catch (error) {
+                    return err(AppStudioResultFactory.SystemError(
+                        AppStudioError.TeamsPackageBuildError.name,
+                        AppStudioError.TeamsPackageBuildError.message(error)
+                    ));
+                }
             }
         }
 
         try {
             const result = await this.appStudioPluginImpl.publish(ctx);
-            ctx.logProvider?.info(`[Teams Toolkit] publish success!`);
+            ctx.logProvider?.info(`Publish success!`);
             await ctx.dialog?.communicate(
                 new DialogMsg(DialogType.Show, {
-                    description: `[Teams Toolkit]: ${result.name} successfully published to the admin portal. Once approved, your app will be available for your organization.`,
+                    description: `${result.name} successfully published to the admin portal. Once approved, your app will be available for your organization.`,
                     level: MsgLevel.Info,
                 }),
             );
             return ok(result.id);
         } catch (error) {
-            const innerError = error.innerError? `innerError: ${error.innerError}` : "";
+            const innerError = error.innerError ? `innerError: ${error.innerError}` : "";
             await ctx.dialog?.communicate(
                 new DialogMsg(DialogType.Show, {
-                    description: `[Teams Toolkit]: ${error.message} ${innerError}`,
+                    description: `${error.message} ${innerError}`,
                     level: MsgLevel.Warning
                 }),
             );

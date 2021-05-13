@@ -9,7 +9,6 @@
         "ProvisionFailNotice": "fail to provision '%s' in the cloud!",
         "DeploySuccessNotice": "'%s' successfully deployed to the cloud.",
         "DeployFailNotice": "fail to deploy '%s' to the cloud!",
-        "PublishSuccessNotice": "'%s' successfully published to the admin portal. Once approved, your app will be available for your organization",
         "PublishFailNotice": "fail to publish '%s' to the admin portal.",
         "AskProvisionBeforeDeployOrPublish": "The toolkit has not provisioned resources to deploy. Do you want to provision in the cloud first?",
         "AddResourceNotice":"[Teams Toolkit] Resource \"%s\" have been successfully configured for your project, trigger 'TeamsFx - Provision in the Cloud' will create the resource(s) in your Azure subscription.",

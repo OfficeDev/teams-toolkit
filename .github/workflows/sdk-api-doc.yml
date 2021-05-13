@@ -1,0 +1,68 @@
+name: SDK API docs
+
+on:
+  push:
+    branches:
+      - nintan/sdk-doc-update
+
+jobs:
+  generate:
+    name: Generate SDK API docs
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node-version: [14]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.CD_PAT }}
+
+      - name: Setup node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Setup project
+        run: |
+          npm run setup
+
+      - name: Generate sdk api doc
+        run: |
+          npm run build:api-markdown
+        working-directory: ./packages/sdk
+
+      - name: Commit doc changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "docs(sdk): update API"
+
+          # Optional. Used by `git-commit`.
+          # See https://git-scm.com/docs/git-commit#_options
+          commit_options: '--no-verify --signoff'
+
+          # Optional glob pattern of files which should be added to the commit
+          # Defaults to all (.)
+          # See the `pathspec`-documentation for git
+          # - https://git-scm.com/docs/git-add#Documentation/git-add.txt-ltpathspecgt82308203
+          # - https://git-scm.com/docs/gitglossary#Documentation/gitglossary.txt-aiddefpathspecapathspec
+          file_pattern: docs/sdk/*.md
+
+          # Optional local file path to the repository
+          # Defaults to the root of the repository
+          repository: .
+
+          # Optional commit user and author settings
+          #commit_user_name: 'MSFT-yiz'
+          #commit_user_email: 'yiz@microsoft.com'
+
+          # Optional. Skip internal call to `git fetch`
+          skip_fetch: true    
+          
+          # Optional. Prevents the shell from expanding filenames. 
+          # Details: https://www.gnu.org/software/bash/manual/html_node/Filename-Expansion.html
+          disable_globbing: true

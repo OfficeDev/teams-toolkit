@@ -4,10 +4,10 @@ Azure API Management (APIM) is used to create consistent and modern API gateways
 
 ## Prerequisite
 -   [Node.js](https://nodejs.org/en/)
--	An M365 account, if you do not have M365 account, apply one from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
+-	An M365 account, if you do not have an M365 account, apply one from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
 -   An Azure account with an active subscription, [create an account for free](https://azure.microsoft.com/en-us/free/) 
-    -   Ensure the resource provider 'Microsoft.ApiManagement' is registered for the subscription following [this document](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/error-register-resource-provider#solution-3---azure-portal)
--	Teams Toolkit or TeamsFx CLI
+    -   Ensure the resource provider 'Microsoft.ApiManagement' is registered for the subscription by following [this document](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/error-register-resource-provider#solution-3---azure-portal)
+-	Teams Toolkit Extension for Visual Studio Code or TeamsFx CLI
 
 ## Enable API Management Feature in TeamsFx
 >Publish APIs to APIM requires Azure Functions in your project. If your project does not include Azure Functions, please note that we will automatically add one for you. Read about [Azure Functions in TeamsFx](https://github.com/OfficeDev/TeamsFx/tree/main/templates/function-base/js/default#readme) to learn more.
@@ -37,7 +37,7 @@ You can do this using the Teams Toolkit in Visual Studio Code or using the Teams
 In the deployment step, there will be some inputs needed:
 - Select the resource `API Management`. The resource `Azure Function` should also be selected if the API changes have never been deployed to the cloud.
 - The OpenAPI Specification File (Default: `openapi/openapi.json`).
-- Input API prefix. The API Path will be `$apiPrefix-$resourceSuffix`. The API Name will be `$apiPrefix-$resourceSuffix-$apiVersion`.
+- Input API prefix. The API path will be `$apiPrefix-$resourceSuffix`. The API Name will be `$apiPrefix-$resourceSuffix-$apiVersion`.
 - Select an existing API version or input a new API version.
 
 > Note: This may incur costs in your Azure Subscription if you choose to create a new instance in pervious step.
@@ -140,7 +140,7 @@ Below is a sample swagger file for the default http trigger function. You can co
 
 ## Documentation
 -   Find help in [troubleshooting guide](https://aka.ms/teamsfx-apim-help) if you met any issues.
--   Read [more](https://aka.ms/teamsfx-apim-doc) about how APIs can be called from power apps after published to APIM.
+-   Read [more](https://aka.ms/teamsfx-apim-doc) about how APIs can be called from Microsoft Power Apps after published to APIM.
 
 ## Code of Conduct
 

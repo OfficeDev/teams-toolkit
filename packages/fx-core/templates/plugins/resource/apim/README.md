@@ -7,7 +7,7 @@ Azure API Management (APIM) is used to create consistent and modern API gateways
 -	An M365 account, if you do not have an M365 account, apply one from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
 -   An Azure account with an active subscription, [create an account for free](https://azure.microsoft.com/en-us/free/) 
     -   Ensure the resource provider 'Microsoft.ApiManagement' is registered for the subscription by following [this document](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/error-register-resource-provider#solution-3---azure-portal)
--	Teams Toolkit VS Code extension or TeamsFx CLI
+-	Teams Toolkit Extension for Visual Studio Code or TeamsFx CLI
 
 ## Enable API Management Feature in TeamsFx
 >Publish APIs to APIM requires Azure Functions in your project. If your project does not include Azure Functions, please note that we will automatically add one for you. Read about [Azure Functions in TeamsFx](https://github.com/OfficeDev/TeamsFx/tree/main/templates/function-base/js/default#readme) to learn more.

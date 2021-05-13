@@ -421,7 +421,7 @@
             "description": "Ensure .NET SDK is installed.",
             "default": true
           },
-          "fx-extension.stopTeamsfxTasksPostDebug": {
+          "fx-extension.stopTeamsToolkitTasksPostDebug": {
             "type": "boolean",
             "description": "Automatically stop all Teams Toolkit tasks when debug session ends.",
             "default": true

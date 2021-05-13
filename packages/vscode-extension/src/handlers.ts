@@ -669,6 +669,7 @@ function getTriggerFromProperty(args?: any[]) {
 async function openMarkdownHandler() {
   const afterScaffold = ext.context.globalState.get("openReadme", false);
   if (afterScaffold && workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
+    ext.context.globalState.update("openReadme", false);
     const workspaceFolder = workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
     let targetFolder: string | undefined;

@@ -29,7 +29,7 @@ interface Deferred<T> {
   reject: (reason: any) => void;
 }
 
-export class CodeFlowLogin {
+export class CodeFlowTenantLogin {
   pca: PublicClientApplication | undefined;
   account: AccountInfo | undefined;
   scopes: string[] | undefined;
@@ -61,9 +61,9 @@ export class CodeFlowLogin {
     }
   }
 
-  async login(): Promise<string> {
-    const codeVerifier = CodeFlowLogin.toBase64UrlEncoding(crypto.randomBytes(32).toString("base64"));
-    const codeChallenge = CodeFlowLogin.toBase64UrlEncoding(await CodeFlowLogin.sha256(codeVerifier));
+  async login(tenantId?: string): Promise<string> {
+    const codeVerifier = CodeFlowTenantLogin.toBase64UrlEncoding(crypto.randomBytes(32).toString("base64"));
+    const codeChallenge = CodeFlowTenantLogin.toBase64UrlEncoding(await CodeFlowTenantLogin.sha256(codeVerifier));
     let serverPort = this.port;
 
     // try get an unused port
@@ -167,13 +167,13 @@ export class CodeFlowLogin {
     return true;
   }
 
-  async getToken(): Promise<string | undefined> {
+  async getToken(tenantId?: string): Promise<string | undefined> {
     try {
-      if (!this.account) {
+      if (!this.account && !tenantId) {
         await this.reloadCache();
       }
       if (!this.account) {
-        const accessToken = await this.login();
+        const accessToken = await this.login(tenantId);
         return accessToken;
       } else {
         return this.pca!.acquireTokenSilent({

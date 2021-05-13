@@ -239,9 +239,9 @@ export class DotnetChecker implements IDepsChecker {
       fs.chmodSync(this.getDotnetInstallScriptPath(), "755");
       const { stdout, stderr } = await execFile(command[0], command.slice(1), options);
       await this._logger.debug(
-        `Finished running dotnet-install script, command = '${command.join(" ")}', options = '${JSON.stringify(
-          options
-        )}', stdout = '${stdout}', stderr = '${stderr}'`
+        `Finished running dotnet-install script, command = '${command.join(
+          " "
+        )}', options = '${JSON.stringify(options)}', stdout = '${stdout}', stderr = '${stderr}'`
       );
 
       const timecost = Number(((performance.now() - start) / 1000).toFixed(2));
@@ -437,8 +437,8 @@ export class DotnetChecker implements IDepsChecker {
     }
 
     const samplePath = path.join(os.homedir(), `.${ConfigFolderName}`, "dotnetSample");
-    const expected: string = "Hello World";
-    let actual: string = "";
+    const expected = "Hello World";
+    let actual = "";
     try {
       await fs.remove(samplePath);
 

@@ -23,7 +23,7 @@ Verify you have the right prerequisites for building Teams apps and install some
     </tr>
 </table>
 
->Don’t have a M365 to experience building Teams app? Sign up for [Microsoft Developer Program](https://developer.microsoft.com/en-us/microsoft-365/dev-program), which allows you to have a testing tenant with preconfigured permissions.
+> Don’t have a M365 to experience building Teams app? Sign up for [Microsoft Developer Program](https://developer.microsoft.com/en-us/microsoft-365/dev-program), which allows you to have a testing tenant with preconfigured permissions.
 
 ### Built the project
 
@@ -33,7 +33,8 @@ Verify you have the right prerequisites for building Teams apps and install some
 1. Build the vsix package. (`cd packages/vscode-extension && npm run build`)
 
 ### Debug the project
-1. Open project in VS Code (`cd packages/vscode-extension && code .`) 
+
+1. Open project in VS Code (`cd packages/vscode-extension && code .`)
 1. Press `F5` in VS Code.
 
 ## Test the project

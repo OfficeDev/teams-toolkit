@@ -5,8 +5,8 @@
 const path = require("path");
 const HtmlWebPackPlugin = require("html-webpack-plugin");
 const webpack = require("webpack");
-const CopyPlugin = require('copy-webpack-plugin');
-const terserWebpackPlugin = require('terser-webpack-plugin');
+const CopyPlugin = require("copy-webpack-plugin");
+const terserWebpackPlugin = require("terser-webpack-plugin");
 
 /**@type {import('webpack').Configuration}*/
 const config = {
@@ -32,7 +32,7 @@ const config = {
   externals: {
     vscode: "commonjs vscode", // the vscode-module is created on-the-fly and must be excluded. Add other modules that cannot be webpack'ed, 📖 -> https://webpack.js.org/configuration/externals/
     keytar: "keytar",
-    "@microsoft/teamsfx-core": "@microsoft/teamsfx-core",
+    "@microsoft/teamsfx-core": "@microsoft/teamsfx-core"
   },
   resolve: {
     // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
@@ -52,24 +52,27 @@ const config = {
       {
         test: /\.s[ac]ss$/i,
         exclude: /node_modules/,
-        use: [
-          'style-loader',
-          'css-loader',
-          'sass-loader',
-        ],
+        use: ["style-loader", "css-loader", "sass-loader"]
       },
       {
         test: /\.(jpg|png|svg|gif)$/,
         use: {
-          loader: 'url-loader',
-        },
+          loader: "url-loader"
+        }
       }
     ]
   },
   plugins: [
-    new HtmlWebPackPlugin({template: "./src/commonlib/codeFlowResult/index.html", filename: "codeFlowResult/index.html" }),
+    new HtmlWebPackPlugin({
+      template: "./src/commonlib/codeFlowResult/index.html",
+      filename: "codeFlowResult/index.html"
+    }),
     new webpack.ContextReplacementPlugin(/express[\/\\]lib/, false, /$^/),
-    new webpack.ContextReplacementPlugin(/applicationinsights[\/\\]out[\/\\]AutoCollection/, false, /$^/),
+    new webpack.ContextReplacementPlugin(
+      /applicationinsights[\/\\]out[\/\\]AutoCollection/,
+      false,
+      /$^/
+    ),
     new webpack.ContextReplacementPlugin(/applicationinsights[\/\\]out[\/\\]Library/, false, /$^/),
     new webpack.ContextReplacementPlugin(/ms-rest[\/\\]lib/, false, /$^/),
     new webpack.IgnorePlugin({ resourceRegExp: /@opentelemetry\/tracing/ }),
@@ -77,20 +80,26 @@ const config = {
     new webpack.IgnorePlugin({ resourceRegExp: /original-fs/ }),
     new CopyPlugin({
       patterns: [
-        { from: "./src/debug/depsChecker/resource/dotnet-install.sh", to: "resource/dotnet-install.sh" },
-        { from: "./src/debug/depsChecker/resource/dotnet-install.ps1", to: "resource/dotnet-install.ps1" },
-      ],
-    }),
+        {
+          from: "./src/debug/depsChecker/resource/dotnet-install.sh",
+          to: "resource/dotnet-install.sh"
+        },
+        {
+          from: "./src/debug/depsChecker/resource/dotnet-install.ps1",
+          to: "resource/dotnet-install.ps1"
+        }
+      ]
+    })
   ],
   optimization: {
     minimizer: [
-        new terserWebpackPlugin({
-            terserOptions: {
-                mangle: false,
-                keep_fnames: true
-            }
-        })
+      new terserWebpackPlugin({
+        terserOptions: {
+          mangle: false,
+          keep_fnames: true
+        }
+      })
     ]
-}
+  }
 };
 module.exports = config;

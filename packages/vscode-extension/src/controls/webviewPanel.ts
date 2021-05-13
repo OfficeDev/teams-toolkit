@@ -30,10 +30,17 @@ export class WebviewPanel {
     const column = vscode.window.activeTextEditor
       ? vscode.window.activeTextEditor.viewColumn
       : undefined;
-    if (WebviewPanel.currentPanels && WebviewPanel.currentPanels.findIndex(panel => panel.panelType === panelType) > -1) {
-      WebviewPanel.currentPanels.find(panel => panel.panelType === panelType)!.panel.reveal(column);
+    if (
+      WebviewPanel.currentPanels &&
+      WebviewPanel.currentPanels.findIndex((panel) => panel.panelType === panelType) > -1
+    ) {
+      WebviewPanel.currentPanels
+        .find((panel) => panel.panelType === panelType)!
+        .panel.reveal(column);
     } else {
-      WebviewPanel.currentPanels.push(new WebviewPanel(extensionPath, panelType, column || vscode.ViewColumn.One));
+      WebviewPanel.currentPanels.push(
+        new WebviewPanel(extensionPath, panelType, column || vscode.ViewColumn.One)
+      );
     }
   }
 
@@ -83,19 +90,24 @@ export class WebviewPanel {
                 const dialogManager = DialogManager.getInstance();
                 const progress = dialogManager.createProgressBar("Fetch sample app", 2);
                 progress.start();
-                try{
+                try {
                   progress.next(`Downloading from '${msg.data.appUrl}'`);
                   const result = await this.fetchCodeZip(msg.data.appUrl);
                   progress.next("Unzipping the sample package");
                   if (result !== undefined) {
-                    await this.saveFilesRecursively(new AdmZip(result.data), msg.data.appFolder, folder[0].fsPath);
-                    vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(path.join(folder[0].fsPath, msg.data.appFolder)));
-                  }
-                  else {
+                    await this.saveFilesRecursively(
+                      new AdmZip(result.data),
+                      msg.data.appFolder,
+                      folder[0].fsPath
+                    );
+                    vscode.commands.executeCommand(
+                      "vscode.openFolder",
+                      vscode.Uri.file(path.join(folder[0].fsPath, msg.data.appFolder))
+                    );
+                  } else {
                     vscode.window.showErrorMessage("Failed to clone sample app");
                   }
-                }
-                finally{
+                } finally {
                   progress.end();
                 }
               }
@@ -126,21 +138,24 @@ export class WebviewPanel {
       ext.context.subscriptions
     );
 
-    AppStudioTokenInstance.setStatusChangeMap("quick-start-webview", (status, token, accountInfo) => {
-      let email = undefined;
-      if (status === "SignedIn") {
-        email = (accountInfo as any).upn ? (accountInfo as any).upn : undefined;
-      }
+    AppStudioTokenInstance.setStatusChangeMap(
+      "quick-start-webview",
+      (status, token, accountInfo) => {
+        let email = undefined;
+        if (status === "SignedIn") {
+          email = (accountInfo as any).upn ? (accountInfo as any).upn : undefined;
+        }
 
-      if (this.panel && this.panel.webview) {
-        this.panel.webview.postMessage({
-          message: "m365AccountChange",
-          data: email
-        });
-      }
+        if (this.panel && this.panel.webview) {
+          this.panel.webview.postMessage({
+            message: "m365AccountChange",
+            data: email
+          });
+        }
 
-      return Promise.resolve();
-    });
+        return Promise.resolve();
+      }
+    );
 
     AzureAccountManager.setStatusChangeMap("quick-start-webview", (status, token, accountInfo) => {
       let email = undefined;
@@ -165,8 +180,8 @@ export class WebviewPanel {
     this.panel.webview.html = this.getHtmlForWebview(panelType);
   }
 
-  private getWebpageTitle(panelType: PanelType){
-    switch(panelType){
+  private getWebpageTitle(panelType: PanelType) {
+    switch (panelType) {
       case PanelType.QuickStart:
         return "Quick Start";
       case PanelType.SampleGallery:
@@ -193,14 +208,18 @@ export class WebviewPanel {
     return result;
   }
 
-  private async saveFilesRecursively(zip: AdmZip, appFolder: string, dstPath: string): Promise<void> {
+  private async saveFilesRecursively(
+    zip: AdmZip,
+    appFolder: string,
+    dstPath: string
+  ): Promise<void> {
     await Promise.all(
       zip
         .getEntries()
         .filter((entry) => !entry.isDirectory && entry.entryName.includes(appFolder))
         .map(async (entry) => {
           const data = entry.getData().toString();
-          const entryPath = entry.entryName.substring(entry.entryName.indexOf('/') + 1);
+          const entryPath = entry.entryName.substring(entry.entryName.indexOf("/") + 1);
           const filePath = path.join(dstPath, entryPath);
           await fs.ensureDir(path.dirname(filePath));
           await fs.writeFile(filePath, data);
@@ -249,28 +268,25 @@ export class WebviewPanel {
   }
 
   isValidNode = () => {
-    try{
+    try {
       const supportedVersions = ["10", "12", "14"];
       const output = execSync("node --version");
       const regex = /v(?<major_version>\d+)\.(?<minor_version>\d+)\.(?<patch_version>\d+)/gm;
-  
+
       const match = regex.exec(output.toString());
       if (!match) {
         return false;
       }
-  
+
       const majorVersion = match.groups?.major_version;
       if (!majorVersion) {
         return false;
       }
-  
-      return supportedVersions.includes(majorVersion);
-    }
-    catch(e){
 
-    }
+      return supportedVersions.includes(majorVersion);
+    } catch (e) {}
     return false;
-  }
+  };
 
   public dispose() {
     WebviewPanel.currentPanels.splice(WebviewPanel.currentPanels.indexOf(this), 1);

@@ -11,12 +11,15 @@ The Teams Toolkit helps developers create and deploy Teams apps with integrated 
 Teams apps are a combination of [capabilities](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/capabilities-overview) and [entry points](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/extensibility-points). For example, people can chat with your app's bot (capability) in a channel (entry point).
 
 ### Tab
+
 <a href=https://docs.microsoft.com/en-us/microsoftteams/platform/tabs/what-are-tabs>Tab</a> are Teams-aware webpages embedded in Microsoft Teams. They are simple HTML tags that point to domains declared in the app manifest and can be added as part of a channel inside a team, group chat, or personal app for an individual user.
 
 ### Bot
+
 <a href=https://docs.microsoft.com/en-us/microsoftteams/platform/bots/what-are-bots>Bots</a> allow users to interact with your web service through text, interactive cards, and task modules.
 
 ### Messaging Extension
+
 <a href=https://docs.microsoft.com/en-us/microsoftteams/platform/messaging-extensions/what-are-messaging-extensions>Messaging extensions</a> allow users to interact with your web service through buttons and forms in the Microsoft Teams client.
 
 ## Build a Teams app in less than 5 minutes
@@ -42,13 +45,13 @@ Verify you have the right prerequisites for building Teams apps and install some
     </tr>
 </table>
 
->Don’t have a M365 to experience building Teams app? Sign up for [Microsoft Developer Program](https://developer.microsoft.com/en-us/microsoft-365/dev-program), which allows you to have a testing tenant with preconfigured permissions.
+> Don’t have a M365 to experience building Teams app? Sign up for [Microsoft Developer Program](https://developer.microsoft.com/en-us/microsoft-365/dev-program), which allows you to have a testing tenant with preconfigured permissions.
 
 ## Getting started
 
-After installing the Teams toolkit, follow the [Get Started](https://review.docs.microsoft.com/en-us/mods/build-your-first-app/build-first-app-overview?branch=main) instruction in our documentation to smoothly start with. 
+After installing the Teams toolkit, follow the [Get Started](https://review.docs.microsoft.com/en-us/mods/build-your-first-app/build-first-app-overview?branch=main) instruction in our documentation to smoothly start with.
 
-Under the Teams Toolkit extension tab, you can easily discover all applicable commands in the sidebar and Command Palette with the keyword ‘TeamsFx’. It also supports [Command Line Interface (CLI)](https://www.npmjs.com/package/teamsfx-cli) to increase efficiency. 
+Under the Teams Toolkit extension tab, you can easily discover all applicable commands in the sidebar and Command Palette with the keyword ‘TeamsFx’. It also supports [Command Line Interface (CLI)](https://www.npmjs.com/package/teamsfx-cli) to increase efficiency.
 
 ### Create your project
 
@@ -125,7 +128,6 @@ There are many ways in which you can participate in the project, for example:
 ## Reporting security issues
 
 Give security researchers information on how to privately report security vulnerabilities found in your open source project. See more details [Reporting security issues](https://docs.opensource.microsoft.com/content/releasing/security.html).
-
 
 ## Telemetry
 

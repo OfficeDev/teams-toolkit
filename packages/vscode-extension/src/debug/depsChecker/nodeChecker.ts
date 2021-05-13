@@ -48,8 +48,8 @@ export abstract class NodeChecker implements IDepsChecker {
       this._telemetry.sendUserErrorEvent(this._nodeNotSupportedEvent, `Node.js ${currentVersion.version} is not supported.`);
       throw new NodeNotSupportedError(
         Messages.NodeNotSupported
-          .replace("@CurrentVersion", currentVersion.version)
-          .replace("@SupportedVersions", supportedVersions),
+          .split("@CurrentVersion").join(currentVersion.version)
+          .split("@SupportedVersions").join(supportedVersions),
         this._nodeNotSupportedHelpLink
       );
     }

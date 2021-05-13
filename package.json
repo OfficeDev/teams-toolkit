@@ -16,6 +16,5 @@
     },
     "bin": {
         "teamsfx": "./packages/cli/lib/cli.js"
-    },
-    "dependencies": {}
+    }
 }

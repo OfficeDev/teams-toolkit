@@ -25,7 +25,7 @@ export function useGraph(asyncFunc, options) {
   const { data, error, loading, reload } = useData(
     async () => {
       await credential.current.login(scope);
-      const graph =  createMicrosoftGraphClient(credential.current, scope);
+      const graph = createMicrosoftGraphClient(credential.current, scope);
       return await asyncFunc(graph);
     },
     { auto: false }

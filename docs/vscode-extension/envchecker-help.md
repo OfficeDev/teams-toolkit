@@ -91,12 +91,12 @@ The `global.json` file is not required, so if it doesn't contain anything other 
 
 ## Teams Toolkit Validation Settings
 
-There're two settings to turn on/off .NET SDK and Node.js validation, and both of them are enabled by default. You are able to uncheck the box if you don't need the dependencies validation and would like to handle it by yourself.
+There are two settings to turn on/off .NET SDK and Node.js validation, and both of them are enabled by default. You are able to uncheck the box if you don not need the dependencies validation and would like to handle it by yourself.
 
-To open your user and workspace settings, use the following VS Code menu command:
+To open your user and workspace settings, use the following Visual Studio Code menu command:
 
-* On Windows/Linux - File > Preferences > Settings > Extensions > Teams Toolkit
-* On macOS - Code > Preferences > Settings > Extensions > Teams Toolkit
+* On Windows/Linux - **File > Preferences > Settings > Extensions > Teams Toolkit**
+* On macOS - **Code > Preferences > Settings > Extensions > Teams Toolkit**
 
 ![envchecker-settings](../images/vscode-extension/envchecker/envchecker-settings.png)
 

@@ -95,10 +95,8 @@ There're two settings to turn on/off .NET SDK and Node.js validation, and both o
 
 To open your user and workspace settings, use the following VS Code menu command:
 
-* On Windows/Linux - File > Preferences > Settings
-* On macOS - Code > Preferences > Settings
-
-Then go to Extensions > Teams Toolkit
+* On Windows/Linux - File > Preferences > Settings > Extensions > Teams Toolkit
+* On macOS - Code > Preferences > Settings > Extensions > Teams Toolkit
 
 ![envchecker-settings](../images/vscode-extension/envchecker/envchecker-settings.png)
 

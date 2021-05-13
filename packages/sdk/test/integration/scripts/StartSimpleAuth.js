@@ -22,7 +22,6 @@ async function downloadSimpleAuth() {
     const tagName = `simpleauth@${version}`;
     const fileName = `Microsoft.TeamsFx.SimpleAuth_${version}.zip`;
     const distUrl = `https://github.com/OfficeDev/TeamsFx/releases/download/${tagName}/${fileName}`;
-    console.log("DistUrl:",distUrl);
     try {
         await got.stream(distUrl).pipe(fs.createWriteStream(path.resolve(__dirname, "SimpleAuth.zip")));
     } catch (error) {
@@ -32,7 +31,6 @@ async function downloadSimpleAuth() {
 
 async function startSimpleAuth() {
     let simpleAuthZip = `${__dirname}/SimpleAuth.zip`;
-    console.log("SimpleAuthZip:", simpleAuthZip);
     setupEnv();
     if (!fs.existsSync(simpleAuthZip)) {
         try {
@@ -41,11 +39,13 @@ async function startSimpleAuth() {
             console.log(err.message);
         }
     }
-    simpleAuthZip = new admZip(`${simpleAuthZip}`);
-    simpleAuthZip.extractAllTo(`${__dirname}/SimpleAuthUnzipOutput`, true);
-    spawn('dotnet', [`${__dirname}/SimpleAuthUnzipOutput/Microsoft.TeamsFx.SimpleAuth.dll`]);
+    setTimeout(() => {
+        simpleAuthZip = new admZip(`${simpleAuthZip}`);
+        simpleAuthZip.extractAllTo(`${__dirname}/SimpleAuthUnzipOutput`, true);
+        spawn('dotnet', [`${__dirname}/SimpleAuthUnzipOutput/Microsoft.TeamsFx.SimpleAuth.dll`]);
+    }, 1500);
 }
 
-(async()=>{
+(async () => {
     await startSimpleAuth();
 })();

@@ -92,7 +92,7 @@ function onDidTerminateDebugSessionHandler(event: vscode.DebugSession): void {
         }
 
         const extConfig: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration("fx-extension");
-        if (extConfig.get<boolean>("stopTeamsfxTasksPostDebug", true)) {
+        if (extConfig.get<boolean>("stopTeamsToolkitTasksPostDebug", true)) {
             for (const task of allRunningTeamsfxTasks) {
                 try {
                     process.kill(task[1], "SIGINT");

@@ -1,14 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  DialogMsg,
-  DialogType,
-  QuestionType,
-  MsgLevel,
-  Dialog,
-  IProgressHandler,
-} from "@microsoft/teamsfx-api";
+import { DialogMsg, DialogType, MsgLevel, Dialog, IProgressHandler } from "@microsoft/teamsfx-api";
 
 export class DialogUtils {
   private static dialog: Dialog;

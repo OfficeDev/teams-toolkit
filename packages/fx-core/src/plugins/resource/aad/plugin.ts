@@ -1,17 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  Dialog,
-  Func,
-  LogProvider,
-  FxError,
-  MsgLevel,
-  NodeType,
-  PluginContext,
-  QTreeNode,
-  Result,
-} from "@microsoft/teamsfx-api";
+import { Dialog, LogProvider, MsgLevel, PluginContext } from "@microsoft/teamsfx-api";
 import { AadResult, ResultFactory } from "./results";
 import {
   PostProvisionConfig,
@@ -32,28 +22,16 @@ import {
 } from "./errors";
 import { Envs } from "./interfaces/models";
 import { DialogUtils } from "./utils/dialog";
-import {
-  ConfigKeys,
-  Constants,
-  Messages,
-  ProgressDetail,
-  ProgressTitle,
-} from "./constants";
+import { ConfigKeys, Constants, Messages, ProgressDetail, ProgressTitle } from "./constants";
 import { IPermission } from "./interfaces/IPermission";
-import {
-  RequiredResourceAccess,
-  ResourceAccess,
-} from "./interfaces/IAADDefinition";
+import { RequiredResourceAccess, ResourceAccess } from "./interfaces/IAADDefinition";
 import { validate as uuidValidate } from "uuid";
 import { IPermissionList } from "./interfaces/IPermissionList";
 import * as jsonPermissionList from "./permissions/permissions.json";
 import { Utils } from "./utils/common";
 
 export class AadAppForTeamsImpl {
-  public async provision(
-    ctx: PluginContext,
-    isLocalDebug = false
-  ): Promise<AadResult> {
+  public async provision(ctx: PluginContext, isLocalDebug = false): Promise<AadResult> {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetryWithLocalDebug(
       ctx.logProvider,
@@ -67,28 +45,14 @@ export class AadAppForTeamsImpl {
     if (skip) {
       ctx.logProvider?.info(Messages.getLog(Messages.SkipProvision));
       if (
-        ctx.config.get(
-          Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.objectId)
-        ) &&
-        ctx.config.get(
-          Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.clientId)
-        ) &&
-        ctx.config.get(
-          Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.clientSecret)
-        ) &&
-        ctx.config.get(
-          Utils.addLocalDebugPrefix(
-            isLocalDebug,
-            ConfigKeys.oauth2PermissionScopeId
-          )
-        )
+        ctx.config.get(Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.objectId)) &&
+        ctx.config.get(Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.clientId)) &&
+        ctx.config.get(Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.clientSecret)) &&
+        ctx.config.get(Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.oauth2PermissionScopeId))
       ) {
         const config: ProvisionConfig = new ProvisionConfig(isLocalDebug);
         config.oauth2PermissionScopeId = ctx.config.get(
-          Utils.addLocalDebugPrefix(
-            isLocalDebug,
-            ConfigKeys.oauth2PermissionScopeId
-          )
+          Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.oauth2PermissionScopeId)
         ) as string;
         config.saveConfigIntoContext(ctx, TokenProvider.tenantId as string);
         Utils.addLogAndTelemetryWithLocalDebug(
@@ -104,16 +68,12 @@ export class AadAppForTeamsImpl {
           GetSkipAppConfigError.message(),
           undefined,
           undefined,
-          GetSkipAppConfigError.helpLink,
+          GetSkipAppConfigError.helpLink
         );
       }
     }
 
-    DialogUtils.init(
-      ctx.dialog as Dialog,
-      ProgressTitle.Provision,
-      ProgressTitle.ProvisionSteps
-    );
+    DialogUtils.init(ctx.dialog as Dialog, ProgressTitle.Provision, ProgressTitle.ProvisionSteps);
 
     let config: ProvisionConfig = new ProvisionConfig(isLocalDebug);
     await config.restoreConfigFromContext(ctx);
@@ -137,16 +97,11 @@ export class AadAppForTeamsImpl {
     if (!config.password) {
       DialogUtils.progress?.next(ProgressDetail.CreateAadAppSecret);
       await AadAppClient.createAadAppSecret(config);
-      ctx.logProvider?.info(
-        Messages.getLog(Messages.CreateAadAppPasswordSuccess)
-      );
+      ctx.logProvider?.info(Messages.getLog(Messages.CreateAadAppPasswordSuccess));
     }
 
     DialogUtils.progress?.next(ProgressDetail.UpdatePermission);
-    await AadAppClient.updateAadAppPermission(
-      config.objectId as string,
-      permissions
-    );
+    await AadAppClient.updateAadAppPermission(config.objectId as string, permissions);
     ctx.logProvider?.info(Messages.getLog(Messages.UpdatePermissionSuccess));
 
     DialogUtils.progress?.end();
@@ -160,29 +115,17 @@ export class AadAppForTeamsImpl {
     return ResultFactory.Success();
   }
 
-  public setApplicationInContext(
-    ctx: PluginContext,
-    isLocalDebug = false
-  ): AadResult {
-    const config: SetApplicationInContextConfig = new SetApplicationInContextConfig(
-      isLocalDebug
-    );
+  public setApplicationInContext(ctx: PluginContext, isLocalDebug = false): AadResult {
+    const config: SetApplicationInContextConfig = new SetApplicationInContextConfig(isLocalDebug);
     config.restoreConfigFromContext(ctx);
 
     if (!config.frontendDomain && !config.botId) {
-      throw ResultFactory.UserError(
-        AppIdUriInvalidError.name,
-        AppIdUriInvalidError.message()
-      );
+      throw ResultFactory.UserError(AppIdUriInvalidError.name, AppIdUriInvalidError.message());
     }
 
     let applicationIdUri = "api://";
-    applicationIdUri += config.frontendDomain
-      ? `${config.frontendDomain}/`
-      : "";
-    applicationIdUri += config.botId
-      ? "botid-" + config.botId
-      : config.clientId;
+    applicationIdUri += config.frontendDomain ? `${config.frontendDomain}/` : "";
+    applicationIdUri += config.botId ? "botid-" + config.botId : config.clientId;
     config.applicationIdUri = applicationIdUri;
 
     ctx.logProvider?.info(Messages.getLog(Messages.SetAppIdUriSuccess));
@@ -190,10 +133,7 @@ export class AadAppForTeamsImpl {
     return ResultFactory.Success();
   }
 
-  public async postProvision(
-    ctx: PluginContext,
-    isLocalDebug = false
-  ): Promise<AadResult> {
+  public async postProvision(ctx: PluginContext, isLocalDebug = false): Promise<AadResult> {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetryWithLocalDebug(
       ctx.logProvider,
@@ -231,10 +171,7 @@ export class AadAppForTeamsImpl {
       config.frontendEndpoint,
       config.botEndpoint
     );
-    await AadAppClient.updateAadAppRedirectUri(
-      config.objectId as string,
-      redirectUris
-    );
+    await AadAppClient.updateAadAppRedirectUri(config.objectId as string, redirectUris);
     ctx.logProvider?.info(Messages.getLog(Messages.UpdateRedirectUriSuccess));
 
     DialogUtils.progress?.next(ProgressDetail.UpdateAppIdUri);
@@ -285,10 +222,7 @@ export class AadAppForTeamsImpl {
     DialogUtils.progress?.start(ProgressDetail.Starting);
     DialogUtils.progress?.next(ProgressDetail.UpdatePermission);
     for (const config of configs) {
-      await AadAppClient.updateAadAppPermission(
-        config.objectId as string,
-        permissions
-      );
+      await AadAppClient.updateAadAppPermission(config.objectId as string, permissions);
     }
     ctx.logProvider?.info(Messages.getLog(Messages.UpdatePermissionSuccess));
 
@@ -365,29 +299,25 @@ export class AadAppForTeamsImpl {
   ): RequiredResourceAccess[] {
     let permissionRequestParsed: IPermission[];
     try {
-      permissionRequestParsed = <IPermission[]>(
-        JSON.parse(permissionRequest as string)
-      );
+      permissionRequestParsed = <IPermission[]>JSON.parse(permissionRequest as string);
     } catch (error) {
       throw ResultFactory.UserError(
         ParsePermissionError.name,
         ParsePermissionError.message(),
         error,
         undefined,
-        ParsePermissionError.helpLink,
+        ParsePermissionError.helpLink
       );
     }
 
-    const permissions = AadAppForTeamsImpl.generateRequiredResourceAccess(
-      permissionRequestParsed
-    );
+    const permissions = AadAppForTeamsImpl.generateRequiredResourceAccess(permissionRequestParsed);
     if (!permissions) {
       throw ResultFactory.UserError(
         ParsePermissionError.name,
         ParsePermissionError.message(),
         undefined,
         undefined,
-        ParsePermissionError.helpLink,
+        ParsePermissionError.helpLink
       );
     }
 
@@ -418,7 +348,7 @@ export class AadAppForTeamsImpl {
             UnknownPermissionName.message(resourceIdOrName),
             undefined,
             undefined,
-            UnknownPermissionName.helpLink,
+            UnknownPermissionName.helpLink
           );
         }
 
@@ -429,7 +359,7 @@ export class AadAppForTeamsImpl {
             UnknownPermissionName.message(resourceIdOrName),
             undefined,
             undefined,
-            UnknownPermissionName.helpLink,
+            UnknownPermissionName.helpLink
           );
         }
         resourceId = id;
@@ -447,10 +377,14 @@ export class AadAppForTeamsImpl {
       }
 
       permission.delegated = permission.delegated?.concat(permission.scopes);
-      permission.delegated = permission.delegated?.filter((scopeName, i) => i === permission.delegated?.indexOf(scopeName));
+      permission.delegated = permission.delegated?.filter(
+        (scopeName, i) => i === permission.delegated?.indexOf(scopeName)
+      );
 
       permission.application = permission.application?.concat(permission.roles);
-      permission.application = permission.application?.filter((roleName, i) => i === permission.application?.indexOf(roleName));
+      permission.application = permission.application?.filter(
+        (roleName, i) => i === permission.application?.indexOf(roleName)
+      );
 
       permission.application?.forEach((roleName) => {
         if (!roleName) {
@@ -470,7 +404,7 @@ export class AadAppForTeamsImpl {
               UnknownPermissionRole.message(roleName, permission.resource),
               undefined,
               undefined,
-              UnknownPermissionRole.helpLink,
+              UnknownPermissionRole.helpLink
             );
           }
           resourceAccess.id = roleId;
@@ -497,7 +431,7 @@ export class AadAppForTeamsImpl {
               UnknownPermissionScope.message(scopeName, permission.resource),
               undefined,
               undefined,
-              UnknownPermissionScope.helpLink,
+              UnknownPermissionScope.helpLink
             );
           }
           resourceAccess.id = map[resourceId].scopes[scopeName];

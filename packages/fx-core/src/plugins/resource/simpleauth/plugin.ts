@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import { FxError, PluginContext, Result } from "@microsoft/teamsfx-api";
 import { Constants, Messages } from "./constants";
-import { NoConfigError, UnauthenticatedError } from "./errors";
+import { UnauthenticatedError } from "./errors";
 import { ResultFactory } from "./result";
 import { Utils } from "./utils/common";
 import { DialogUtils } from "./utils/dialog";
@@ -10,114 +10,123 @@ import { TelemetryUtils } from "./utils/telemetry";
 import { WebAppClient } from "./webAppClient";
 
 export class SimpleAuthPluginImpl {
-    webAppClient!: WebAppClient;
+  webAppClient!: WebAppClient;
 
-    public async localDebug(ctx: PluginContext): Promise<Result<any, FxError>> {
-        TelemetryUtils.init(ctx);
-        Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartLocalDebug);
+  public async localDebug(ctx: PluginContext): Promise<Result<any, FxError>> {
+    TelemetryUtils.init(ctx);
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartLocalDebug);
 
-        const simpleAuthFilePath = Utils.getSimpleAuthFilePath();
-        ctx.config.set(Constants.SimpleAuthPlugin.configKeys.filePath, simpleAuthFilePath);
-        await Utils.downloadZip(simpleAuthFilePath);
+    const simpleAuthFilePath = Utils.getSimpleAuthFilePath();
+    ctx.config.set(Constants.SimpleAuthPlugin.configKeys.filePath, simpleAuthFilePath);
+    await Utils.downloadZip(simpleAuthFilePath);
 
-        Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndLocalDebug);
-        return ResultFactory.Success();
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndLocalDebug);
+    return ResultFactory.Success();
+  }
+
+  public async postLocalDebug(ctx: PluginContext): Promise<Result<any, FxError>> {
+    TelemetryUtils.init(ctx);
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartPostLocalDebug);
+
+    const configs = Utils.getWebAppConfig(ctx, true);
+
+    const configArray = [];
+    for (const [key, value] of Object.entries(configs)) {
+      configArray.push(`${key}="${value}"`);
     }
 
-    public async postLocalDebug(ctx: PluginContext): Promise<Result<any, FxError>> {
-        TelemetryUtils.init(ctx);
-        Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartPostLocalDebug);
+    ctx.config.set(
+      Constants.SimpleAuthPlugin.configKeys.environmentVariableParams,
+      configArray.join(" ")
+    );
 
-        const configs = Utils.getWebAppConfig(ctx, true);
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndPostLocalDebug);
+    return ResultFactory.Success();
+  }
 
-        const configArray = [];
-        for (const [key, value] of Object.entries(configs)) {
-            configArray.push(`${key}="${value}"`);
-        }
+  public async provision(ctx: PluginContext): Promise<Result<any, FxError>> {
+    TelemetryUtils.init(ctx);
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartProvision);
 
-        ctx.config.set(Constants.SimpleAuthPlugin.configKeys.environmentVariableParams, configArray.join(" "));
+    const credentials = await ctx.azureAccountProvider!.getAccountCredentialAsync();
 
-        Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndPostLocalDebug);
-        return ResultFactory.Success();
+    if (!credentials) {
+      throw ResultFactory.SystemError(UnauthenticatedError.name, UnauthenticatedError.message());
     }
 
-    public async provision(ctx: PluginContext): Promise<Result<any, FxError>> {
-        TelemetryUtils.init(ctx);
-        Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartProvision);
+    const resourceNameSuffix = Utils.getConfigValueWithValidation(
+      ctx,
+      Constants.SolutionPlugin.id,
+      Constants.SolutionPlugin.configKeys.resourceNameSuffix
+    ) as string;
+    const subscriptionId = Utils.getConfigValueWithValidation(
+      ctx,
+      Constants.SolutionPlugin.id,
+      Constants.SolutionPlugin.configKeys.subscriptionId
+    ) as string;
+    const resourceGroupName = Utils.getConfigValueWithValidation(
+      ctx,
+      Constants.SolutionPlugin.id,
+      Constants.SolutionPlugin.configKeys.resourceGroupName
+    ) as string;
+    const location = Utils.getConfigValueWithValidation(
+      ctx,
+      Constants.SolutionPlugin.id,
+      Constants.SolutionPlugin.configKeys.location
+    ) as string;
 
-        const credentials = await ctx.azureAccountProvider!.getAccountCredentialAsync();
+    const webAppName = Utils.generateResourceName(ctx.app.name.short, resourceNameSuffix);
+    const appServicePlanName = webAppName;
 
-        if (!credentials) {
-            throw ResultFactory.SystemError(UnauthenticatedError.name, UnauthenticatedError.message());
-        }
+    this.webAppClient = new WebAppClient(
+      credentials,
+      subscriptionId,
+      resourceGroupName,
+      appServicePlanName,
+      webAppName,
+      location,
+      ctx
+    );
 
-        const resourceNameSuffix = Utils.getConfigValueWithValidation(
-            ctx,
-            Constants.SolutionPlugin.id,
-            Constants.SolutionPlugin.configKeys.resourceNameSuffix,
-        ) as string;
-        const subscriptionId = Utils.getConfigValueWithValidation(
-            ctx,
-            Constants.SolutionPlugin.id,
-            Constants.SolutionPlugin.configKeys.subscriptionId,
-        ) as string;
-        const resourceGroupName = Utils.getConfigValueWithValidation(
-            ctx,
-            Constants.SolutionPlugin.id,
-            Constants.SolutionPlugin.configKeys.resourceGroupName,
-        ) as string;
-        const location = Utils.getConfigValueWithValidation(
-            ctx,
-            Constants.SolutionPlugin.id,
-            Constants.SolutionPlugin.configKeys.location,
-        ) as string;
+    DialogUtils.progressBar = ctx.dialog?.createProgressBar(
+      Constants.ProgressBar.provision.title,
+      3
+    );
+    DialogUtils.progressBar?.start(Constants.ProgressBar.start);
 
-        const webAppName = Utils.generateResourceName(ctx.app.name.short, resourceNameSuffix);
-        const appServicePlanName = webAppName;
+    const endpoint = await this.webAppClient.createWebApp();
 
-        this.webAppClient = new WebAppClient(
-            credentials,
-            subscriptionId,
-            resourceGroupName,
-            appServicePlanName,
-            webAppName,
-            location,
-            ctx,
-        );
+    DialogUtils.progressBar?.next(Constants.ProgressBar.provision.zipDeploy);
+    const simpleAuthFilePath = Utils.getSimpleAuthFilePath();
+    await Utils.downloadZip(simpleAuthFilePath);
+    await this.webAppClient.zipDeploy(simpleAuthFilePath);
 
-        DialogUtils.progressBar = ctx.dialog?.createProgressBar(Constants.ProgressBar.provision.title, 3);
-        DialogUtils.progressBar?.start(Constants.ProgressBar.start);
+    ctx.config.set(Constants.SimpleAuthPlugin.configKeys.endpoint, endpoint);
 
-        const endpoint = await this.webAppClient.createWebApp();
+    DialogUtils.progressBar?.end();
 
-        DialogUtils.progressBar?.next(Constants.ProgressBar.provision.zipDeploy);
-        const simpleAuthFilePath = Utils.getSimpleAuthFilePath();
-        await Utils.downloadZip(simpleAuthFilePath);
-        await this.webAppClient.zipDeploy(simpleAuthFilePath);
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndProvision);
+    return ResultFactory.Success();
+  }
 
-        ctx.config.set(Constants.SimpleAuthPlugin.configKeys.endpoint, endpoint);
+  public async postProvision(ctx: PluginContext): Promise<Result<any, FxError>> {
+    TelemetryUtils.init(ctx);
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartPostProvision);
 
-        DialogUtils.progressBar?.end();
+    DialogUtils.progressBar = ctx.dialog?.createProgressBar(
+      Constants.ProgressBar.postProvision.title,
+      1
+    );
+    DialogUtils.progressBar?.start(Constants.ProgressBar.start);
+    DialogUtils.progressBar?.next(Constants.ProgressBar.postProvision.updateWebApp);
 
-        Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndProvision);
-        return ResultFactory.Success();
-    }
+    const configs = Utils.getWebAppConfig(ctx, false);
 
-    public async postProvision(ctx: PluginContext): Promise<Result<any, FxError>> {
-        TelemetryUtils.init(ctx);
-        Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartPostProvision);
+    await this.webAppClient.configWebApp(configs);
 
-        DialogUtils.progressBar = ctx.dialog?.createProgressBar(Constants.ProgressBar.postProvision.title, 1);
-        DialogUtils.progressBar?.start(Constants.ProgressBar.start);
-        DialogUtils.progressBar?.next(Constants.ProgressBar.postProvision.updateWebApp);
+    DialogUtils.progressBar?.end();
 
-        const configs = Utils.getWebAppConfig(ctx, false);
-
-        await this.webAppClient.configWebApp(configs);
-
-        DialogUtils.progressBar?.end();
-
-        Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndPostProvision);
-        return ResultFactory.Success();
-    }
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndPostProvision);
+    return ResultFactory.Success();
+  }
 }

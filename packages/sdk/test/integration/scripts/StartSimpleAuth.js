@@ -17,12 +17,12 @@ function setupEnv() {
 }
 
 async function downloadSimpleAuth() {
-    const versionFilePath = path.join(__dirname, "version.txt");
+    const versionFilePath = path.join(__dirname, "SimpleAuthVersion.txt");
     const version = fs.readFileSync(versionFilePath, "utf-8");
     const tagName = `simpleauth@${version}`;
     const fileName = `Microsoft.TeamsFx.SimpleAuth_${version}.zip`;
     const distUrl = `https://github.com/OfficeDev/TeamsFx/releases/download/${tagName}/${fileName}`;
-    console.log("======",distUrl);
+    console.log("DistUrl:",distUrl);
     try {
         await got.stream(distUrl).pipe(fs.createWriteStream(path.resolve(__dirname, "SimpleAuth.zip")));
     } catch (error) {
@@ -32,6 +32,7 @@ async function downloadSimpleAuth() {
 
 async function startSimpleAuth() {
     let simpleAuthZip = `${__dirname}/SimpleAuth.zip`;
+    console.log("SimpleAuthZip:", simpleAuthZip);
     setupEnv();
     if (!fs.existsSync(simpleAuthZip)) {
         try {

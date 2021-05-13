@@ -1256,26 +1256,32 @@ export class TeamsAppSolution implements Solution {
         } else if (stage === Stage.deploy) {
             const isAzureProject = this.isAzureProject(ctx);
             const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
-            if(isAzureProject && !provisioned){
-                const res  = (await ctx.dialog?.communicate(
-                    new DialogMsg(DialogType.Show, {
-                        description: getStrings().solution.AskProvisionBeforeDeployOrPublish,
-                        level: MsgLevel.Warning,
-                        items: ["Provision", "Cancel"]
-                    }),
-                ))?.getAnswer();
-                if(res === "Provision"){
-                    throw DoProvisionFirstError;
-                    // const provisionRes = await this.provision(ctx);
-                    // if (provisionRes.isErr()) {
-                    //     if (provisionRes.error.message.startsWith(strings.solution.CancelProvision)) {
-                    //         return ok(undefined);
-                    //     }
-                    //     return err(provisionRes.error);
-                    // }
-                }
-                else{
-                    throw CancelError;
+            if(isAzureProject && !provisioned) {
+                if (ctx.platform === Platform.VSCode) {
+                    const res  = (await ctx.dialog?.communicate(
+                        new DialogMsg(DialogType.Show, {
+                            description: getStrings().solution.AskProvisionBeforeDeployOrPublish,
+                            level: MsgLevel.Warning,
+                            items: ["Provision", "Cancel"]
+                        }),
+                    ))?.getAnswer();
+                    if(res === "Provision"){
+                        throw DoProvisionFirstError;
+                        // const provisionRes = await this.provision(ctx);
+                        // if (provisionRes.isErr()) {
+                        //     if (provisionRes.error.message.startsWith(strings.solution.CancelProvision)) {
+                        //         return ok(undefined);
+                        //     }
+                        //     return err(provisionRes.error);
+                        // }
+                    } else{
+                        throw CancelError;
+                    }
+                } else {
+                    return err(returnUserError(
+                        new Error(getStrings().solution.AskProvisionBeforeDeployOrPublish), 
+                        "Solution", 
+                        SolutionError.CannotDeployBeforeProvision));
                 }
             }
             const res = this.getSelectedPlugins(ctx);
@@ -1318,19 +1324,27 @@ export class TeamsAppSolution implements Solution {
             const isAzureProject = this.isAzureProject(ctx);
             const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
             if(isAzureProject && !provisioned){
-                const res  = (await ctx.dialog?.communicate(
-                    new DialogMsg(DialogType.Show, {
-                        description: getStrings().solution.AskProvisionBeforeDeployOrPublish,
-                        level: MsgLevel.Warning,
-                        items: ["Provision", "Cancel"]
-                    }),
-                ))?.getAnswer();
-                if(res === "Provision"){
-                    throw DoProvisionFirstError;
+                if (ctx.platform === Platform.VSCode) {
+                    const res  = (await ctx.dialog?.communicate(
+                        new DialogMsg(DialogType.Show, {
+                            description: getStrings().solution.AskProvisionBeforeDeployOrPublish,
+                            level: MsgLevel.Warning,
+                            items: ["Provision", "Cancel"]
+                        }),
+                    ))?.getAnswer();
+                    if(res === "Provision"){
+                        throw DoProvisionFirstError;
+                    }
+                    else{
+                        throw CancelError;
+                    }
+                } else {
+                    return err(returnUserError(
+                        new Error(getStrings().solution.AskProvisionBeforeDeployOrPublish), 
+                        "Solution", 
+                        SolutionError.CannotPublishBeforeProvision));
                 }
-                else{
-                    throw CancelError;
-                }
+                
             }
             const pluginsToPublish = [this.appStudioPlugin];
             for (const plugin of pluginsToPublish) {

@@ -433,10 +433,6 @@ export class TeamsBotImpl {
     CheckThrowSomethingMissing(ConfigNames.SUBSCRIPTION_ID, this.config.provision.subscriptionId);
     CheckThrowSomethingMissing(ConfigNames.RESOURCE_GROUP, this.config.provision.resourceGroup);
 
-    if (!utils.isDomainValidForAzureWebApp(this.config.provision.siteEndpoint!)) {
-      throw new ConfigValidationError("siteEndpoint", this.config.provision.siteEndpoint!);
-    }
-
     this.config.saveConfigIntoContext(context);
 
     return ResultFactory.Success();

@@ -6,12 +6,15 @@ import { OptionItem, ConfigFolderName } from "@microsoft/teamsfx-api";
 import { ProgrammingLanguage } from "./enums/programmingLanguage";
 
 export class RegularExprs {
-  public static readonly NORMAL_NAME: RegExp = /^[a-zA-Z0-9\-]{2,60}$/;
   public static readonly CHARS_TO_BE_SKIPPED: RegExp = /[^a-zA-Z0-9]/g;
   public static readonly RESOURCE_SUFFIX: RegExp = /[0-9a-z]{1,16}/;
   // Refer to https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/resource-name-rules
-  public static readonly APP_SERVICE_PLAN_NAME: RegExp = /^[0-9a-zA-Z][-0-9a-zA-Z]{1,59}$/;
+  // 1-40 Alphanumerics and hyphens.
+  public static readonly APP_SERVICE_PLAN_NAME: RegExp = /^[a-zA-Z0-9\-]{1,40}$/;
+  // 2-60 Contains alphanumerics and hyphens.Can't start or end with hyphen.
   public static readonly WEB_APP_SITE_NAME: RegExp = /^[a-zA-Z0-9][a-zA-Z0-9\-]{0,58}[a-zA-Z0-9]$/;
+  // 2-64 Alphanumerics, underscores, periods, and hyphens. Start with alphanumeric.
+  public static readonly BOT_CHANNEL_REG_NAME: RegExp = /^[a-zA-Z0-9][a-zA-Z0-9_\.\-]{1,63}$/;
 }
 
 export class WebAppConstants {
@@ -198,6 +201,13 @@ export class DeployConfigs {
     DeployConfigs.DEPLOYMENT_FOLDER,
     ".vscode",
   ];
+}
+
+export class ConfigKeys {
+  public static readonly SITE_NAME = "siteName";
+  public static readonly SITE_ENDPOINT = "siteEndpoint";
+  public static readonly APP_SERVICE_PLAN = "appServicePlan";
+  public static readonly BOT_CHANNEL_REG_NAME = "botChannelRegName";
 }
 
 export class FolderNames {

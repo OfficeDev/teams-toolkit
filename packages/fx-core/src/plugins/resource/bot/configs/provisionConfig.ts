@@ -11,7 +11,7 @@ import {
   PluginFunction,
   CommonStrings,
 } from "../resources/strings";
-import { WebAppConstants } from "../constants";
+import { ConfigKeys, WebAppConstants } from "../constants";
 import { ConfigValidationError } from "../errors";
 
 export class ProvisionConfig {
@@ -148,8 +148,20 @@ export class ProvisionConfig {
   }
 
   private validateRestoredConfig(): void {
-    if (this.siteName && !utils.isNameValidInUrl(this.siteName)) {
-      throw new ConfigValidationError("siteName", this.siteName);
+    if (this.siteName && !utils.isValidWebAppSiteName(this.siteName)) {
+      throw new ConfigValidationError(ConfigKeys.SITE_NAME, this.siteName);
+    }
+
+    if (this.siteEndpoint && !utils.isDomainValidForAzureWebApp(this.siteEndpoint)) {
+      throw new ConfigValidationError(ConfigKeys.SITE_ENDPOINT, this.siteEndpoint);
+    }
+
+    if (this.appServicePlan && !utils.isValidAppServicePlanName(this.appServicePlan)) {
+      throw new ConfigValidationError(ConfigKeys.APP_SERVICE_PLAN, this.appServicePlan);
+    }
+
+    if (this.botChannelRegName && !utils.isValidBotChannelRegName(this.botChannelRegName)) {
+      throw new ConfigValidationError(ConfigKeys.BOT_CHANNEL_REG_NAME, this.botChannelRegName);
     }
   }
 }

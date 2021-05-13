@@ -15,7 +15,7 @@ import { WebAppClient } from "../../../../../src/plugins/resource/simpleauth/web
 import * as faker from "faker";
 import * as dotenv from "dotenv";
 import { Utils } from "../../../../../src/plugins/resource/simpleauth/utils/common";
-import { PluginContext } from "fx-api";
+import { PluginContext } from "@microsoft/teamsfx-api";
 
 chai.use(chaiAsPromised);
 

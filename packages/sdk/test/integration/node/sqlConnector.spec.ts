@@ -62,7 +62,7 @@ async function addLocalFirewall(client: SqlManagementClient, rg: string, sqlName
   const localIp: string = response.data;
   const model: SqlManagementModels.FirewallRule = {
     startIpAddress: localIp,
-    endIpAddress: localIp
+    endIpAddress: localIp,
   };
   await client!.firewallRules!.createOrUpdate(rg, sqlName, localRule, model);
 }

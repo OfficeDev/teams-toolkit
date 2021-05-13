@@ -8,9 +8,8 @@ import {
   MsGraphAuthProvider,
   loadConfiguration,
   TeamsUserCredential,
-  GetTokenOptions,
   ErrorWithCode,
-  ErrorCode
+  ErrorCode,
 } from "../../../src";
 import sinon from "sinon";
 
@@ -29,8 +28,8 @@ describe("MsGraphAuthProvider Tests - Browser", () => {
       authentication: {
         initiateLoginEndpoint: loginUrl,
         simpleAuthEndpoint: authEndpoint,
-        clientId: clientId
-      }
+        clientId: clientId,
+      },
     });
   }
 
@@ -67,21 +66,39 @@ describe("MsGraphAuthProvider Tests - Browser", () => {
   });
 
   it("getAccessToken should success with valid config", async function () {
-    sinon.stub(TeamsUserCredential.prototype, "getToken").callsFake(
-      (scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null> => {
+    sinon
+      .stub(TeamsUserCredential.prototype, "getToken")
+      .callsFake((): Promise<AccessToken | null> => {
         const token: AccessToken = {
           token: accessToken,
-          expiresOnTimestamp: Date.now()
+          expiresOnTimestamp: Date.now(),
         };
         return new Promise((resolve) => {
           resolve(token);
         });
-      }
-    );
+      });
     const credential = new TeamsUserCredential();
     const authProvider = new MsGraphAuthProvider(credential, scopes);
     const token = await authProvider.getAccessToken();
     assert.strictEqual(token, accessToken);
+    sinon.restore();
+  });
+
+  it("getAccessToken should throw UiRequiredError with unconsent scope", async function () {
+    sinon
+      .stub(TeamsUserCredential.prototype, "getToken")
+      .callsFake((): Promise<AccessToken | null> => {
+        throw new ErrorWithCode(
+          "Failed to get access token from authentication server, please login first.",
+          ErrorCode.UiRequiredError
+        );
+      });
+    const unconsentScopes = "unconsent_scope";
+    const credential = new TeamsUserCredential();
+    const authProvider = new MsGraphAuthProvider(credential, unconsentScopes);
+    await expect(authProvider.getAccessToken())
+      .to.eventually.be.rejectedWith(ErrorWithCode)
+      .and.property("code", ErrorCode.UiRequiredError);
     sinon.restore();
   });
 });

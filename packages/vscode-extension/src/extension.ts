@@ -8,12 +8,13 @@ import { initializeExtensionVariables } from "./extensionVariables";
 import * as handlers from "./handlers";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "./telemetry/extTelemetryEvents";
-import { registerTeamsfxTaskEvents } from "./debug/teamsfxTaskHandler";
+import { registerTeamsfxTaskAndDebugEvents } from "./debug/teamsfxTaskHandler";
 import { TeamsfxTaskProvider } from "./debug/teamsfxTaskProvider";
 import { TeamsfxDebugProvider } from "./debug/teamsfxDebugProvider";
 import { ExtensionSurvey } from "./utils/survey";
 import VsCodeLogInstance from "./commonlib/log";
 import * as StringResources from "./resources/Strings.json";
+import { openWelcomePageAfterExtensionInstallation } from "./controls/openWelcomePage";
 
 export async function activate(context: vscode.ExtensionContext) {
   VsCodeLogInstance.info(StringResources.vsc.extension.activate);
@@ -52,10 +53,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(provisionCmd);
 
   // 1.5 Register the deploy command.
-  const deployCmd = vscode.commands.registerCommand(
-    "fx-extension.deploy",
-    handlers.deployHandler
-  );
+  const deployCmd = vscode.commands.registerCommand("fx-extension.deploy", handlers.deployHandler);
   context.subscriptions.push(deployCmd);
 
   const validateManifestCmd = vscode.commands.registerCommand(
@@ -169,7 +167,7 @@ export async function activate(context: vscode.ExtensionContext) {
     handlers.openAzureAccountHandler
   );
   context.subscriptions.push(azureAccountSettingsCmd);
-  
+
   const cmpAccountsCmd = vscode.commands.registerCommand(
     "fx-extension.cmpAccounts",
     handlers.cmpAccountsHandler
@@ -191,23 +189,17 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.debug.registerDebugConfigurationProvider("msedge", debugProvider)
   );
 
-  // Register debug task event handlers
-  registerTeamsfxTaskEvents();
+  // Register task and debug event handlers, as well as sending telemetries
+  registerTeamsfxTaskAndDebugEvents();
 
   await handlers.cmdHdlLoadTreeView(context);
   // 2. Call activate function of toolkit core.
   await handlers.activate();
 
-  // Trigger telemetry when start debug session
-  const debug = vscode.debug.onDidStartDebugSession((e) => {
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.F5Start, {
-      [TelemetryProperty.DebugSessionId]: e.id
-    });
-  });
-  context.subscriptions.push(debug);
-
   const survey = new ExtensionSurvey(context);
   survey.activate();
+
+  openWelcomePageAfterExtensionInstallation();
 }
 
 // this method is called when your extension is deactivated

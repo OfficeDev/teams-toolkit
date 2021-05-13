@@ -11,7 +11,7 @@ Verify you have the right prerequisites for building Teams apps and install some
 <table>
     <tr>
         <td><img src="https://raw.githubusercontent.com/HuihuiWu-Microsoft/Teams-Toolkit-V2/main/landingPage_nodejs.png"></td>
-        <td><h3>Node.js</h3>As a fundamental runtime context for Teams app, Node.js v10.x, v12.x or v14.x is required (v.12.x is recommended).</td>
+        <td><h3>Node.js</h3>As a fundamental runtime context for Teams app, Node.js v10.x, v12.x or v14.x is required (v14.x is recommended).</td>
     </tr>
     <tr>
         <td><img src="https://raw.githubusercontent.com/HuihuiWu-Microsoft/Teams-Toolkit-V2/main/landingPage_m365.png"></td>
@@ -23,7 +23,7 @@ Verify you have the right prerequisites for building Teams apps and install some
     </tr>
 </table>
 
->Don’t have a M365 to experience building Teams app? Sign up for [Microsoft Developer Program](https://developer.microsoft.com/en-us/microsoft-365/dev-program), which allows you to have a testing tenant with preconfigured permissions.
+> Don’t have a M365 to experience building Teams app? Sign up for [Microsoft Developer Program](https://developer.microsoft.com/en-us/microsoft-365/dev-program), which allows you to have a testing tenant with preconfigured permissions.
 
 ### Built the project
 
@@ -33,7 +33,8 @@ Verify you have the right prerequisites for building Teams apps and install some
 1. Build the vsix package. (`cd packages/vscode-extension && npm run build`)
 
 ### Debug the project
-1. Open project in VS Code (`cd packages/vscode-extension && code .`) 
+
+1. Open project in VS Code (`cd packages/vscode-extension && code .`)
 1. Press `F5` in VS Code.
 
 ## Test the project

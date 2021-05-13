@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
  
-import {returnSystemError, returnUserError, SystemError, UserError} from "fx-api";
+import {returnSystemError, returnUserError, SystemError, UserError} from "@microsoft/teamsfx-api";
 
 export const CoreSource = "Core";
 
@@ -22,6 +22,8 @@ export enum CoreErrorNames {
     UncatchedError = "UncatchedError",
     NotSupportedProjectType = "NotSupportedProjectType",
     InitError = "InitError",
+    DownloadSampleFail = "DownloadSampleFail",
+    NoSubscriptionSelected = "NoSubscriptionSelected",
 }
 
 export function InvalidContext(): UserError {
@@ -46,4 +48,8 @@ export function EnvNotExist(param: any): UserError {
 
 export function NotSupportedProjectType(): UserError {
     return returnUserError(new Error(`Project type not supported`), CoreSource, CoreErrorNames.NotSupportedProjectType);
+}
+
+export function DownloadSampleFail(): SystemError {
+    return returnUserError(new Error("Failed to clone sample app"), CoreSource, CoreErrorNames.DownloadSampleFail);
 }

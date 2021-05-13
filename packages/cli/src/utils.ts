@@ -22,7 +22,7 @@ import {
   getSingleOption,
   SingleSelectQuestion,
   MultiSelectQuestion,
-} from "fx-api";
+} from "@microsoft/teamsfx-api";
 
 import { ConfigNotFoundError, ReadFileError } from "./error";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -169,9 +169,12 @@ export async function setSubscriptionId(
     }
 
     await AzureAccountManager.setSubscription(subscriptionId);
+    const subs = await AzureAccountManager.listSubscriptions();
+    const sub = subs.find(sub => sub.subscriptionId === subscriptionId);
 
     const configJson = result.value;
-    configJson["solution"].subscriptionId = subscriptionId;
+    configJson["solution"].subscriptionId = sub?.subscriptionId;
+    configJson["solution"].tenantId = sub?.tenantId;
     await fs.writeFile(getConfigPath(rootFolder), JSON.stringify(configJson, null, 4));
   }
   return ok(null);

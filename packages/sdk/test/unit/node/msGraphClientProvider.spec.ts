@@ -11,7 +11,7 @@ import {
   OnBehalfOfUserCredential,
   M365TenantCredential,
   ErrorWithCode,
-  ErrorCode
+  ErrorCode,
 } from "../../../src";
 
 chaiUse(chaiPromises);
@@ -51,7 +51,7 @@ describe("createMicrosoftGraphClient Tests - node", () => {
       M365_CLIENT_ID: clientId,
       M365_CLIENT_SECRET: clientSecret,
       M365_TENANT_ID: tenantId,
-      M365_AUTHORITY_HOST: authorityHost
+      M365_AUTHORITY_HOST: authorityHost,
     });
     loadConfiguration();
   });

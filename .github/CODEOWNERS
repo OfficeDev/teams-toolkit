@@ -9,7 +9,7 @@
 # In each subsection folders are ordered first by depth, then alphabetically.
 # This should make it easy to add new rules without breaking existing ones.
 
-/packages/vscode-extension @1openwindow @HuihuiWu-Microsoft @nliu-ms
+/packages/vscode-extension @1openwindow @HuihuiWu-Microsoft @nliu-ms @jayzhang @LongOddCode
 /packages/vscode-extension/src/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @meifans @dooriya
 /packages/vscode-extension/src/qm @jayzhang @1openwindow @jiayi-ruan @HuihuiWu-Microsoft @nliu-ms
 /packages/vscode-extension/src/debug @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @meifans @dooriya
@@ -18,16 +18,20 @@
 
 /packages/cli @chagong @Alive-Fish @jiayi-ruan
 /packages/cli/src/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @meifans @dooriya
+/packages/cli/src/commonlib/appStudioLoginUserPassword.ts @chagong @Alive-Fish @jiayi-ruan
+/packages/cli/src/commonlib/azureLoginUserPassword.ts @chagong @Alive-Fish @jiayi-ruan
+/packages/cli/src/commonlib/graphLoginUserPassword.ts @chagong @Alive-Fish @jiayi-ruan
+/packages/cli/src/commonlib/common/userPasswordConfig.ts @chagong @Alive-Fish @jiayi-ruan
 /packages/cli/tests/e2e/aad @KennethBWSong @adashen
 /packages/cli/tests/e2e/simpleauth @KennethBWSong @adashen
 /packages/cli/tests/e2e/sql @xzf0587 @adashen
 /packages/cli/tests/e2e/apim @XiaofuHuang @dooriya @kimizhu
 /packages/cli/tests/e2e/function @henzhang-ms @eriolchan @hund030
 /packages/cli/tests/e2e/frontend @hund030 @eriolchan @henzhang-ms
+/packages/cli/tests/e2e/bot @IvanJobs @eriolchan @YitongFeng-git
 
 /packages/api @jayzhang @1yefuwang1 @LongOddCode
 /packages/api/src/qm @jayzhang @1yefuwang1 @LongOddCode @jiayi-ruan
-/packages/api/src/ci @jayzhang @1yefuwang1 @LongOddCode @Alive-Fish @KennethBWSong @XiaofuHuang @henzhang-ms @eriolchan
 
 /packages/sdk @tecton @blackchoey @SLdragon @dilin-MS @wenytang-ms
 
@@ -54,6 +58,7 @@
 
 /packages/fx-core/src/plugins/resource/function @henzhang-ms @eriolchan @hund030
 /packages/fx-core/tests/plugins/resource/function @henzhang-ms @eriolchan @hund030
+/packages/fx-core/src/plugins/resource/function/utils/depsChecker @a1exwang @kimizhu @meifans @qinezh
 
 /packages/fx-core/src/plugins/resource/identity @xzf0587 @adashen
 /packages/fx-core/tests/plugins/resource/identity @xzf0587 @adashen

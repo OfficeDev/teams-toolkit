@@ -12,13 +12,14 @@ import {
   Result,
   ok,
   TeamsAppManifest
-} from "fx-api";
+} from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { SPFxPluginImpl } from "./plugin";
 import { TelemetryEvent } from "./utils/constants";
 import { telemetryHelper } from "./utils/telemetry-helper";
 import { ProgressHelper } from "./utils/progress-helper";
+import { getTemplatesFolder } from "../../..";
 export class SpfxConfig {
   webpartName = "my-SPFx-app";
   webpartDesc = "This is a SPFx app.";
@@ -110,7 +111,7 @@ export class SpfxPlugin implements Plugin {
   }
 
   public async getManifest(): Promise<TeamsAppManifest> {
-    const templateFolder = path.join(__dirname, "../../../../templates/plugins/resource/spfx");
+    const templateFolder = path.join(getTemplatesFolder(), "plugins", "resource", "spfx");
     const manifestFile = path.resolve(templateFolder, "./solution/manifest.json");
     const manifestString = (await fs.readFile(manifestFile)).toString();
     const manifest: TeamsAppManifest = JSON.parse(manifestString);

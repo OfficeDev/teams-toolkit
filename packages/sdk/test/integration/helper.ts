@@ -1,17 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-
-import { exec } from "child_process";
-import { promisify } from "util";
 import * as msal from "@azure/msal-node";
 import mockedEnv from "mocked-env";
 import urljoin from "url-join";
 import { JwtPayload } from "jwt-decode";
 import * as dotenv from "dotenv";
-
-const execAsync = promisify(exec);
-
-let restore: () => void;
 
 /**
  * Get Access Token from a specific AAD app client id.
@@ -32,8 +25,8 @@ export async function getAccessToken(
   const msalConfig = {
     auth: {
       clientId: clientId,
-      authority: urljoin(defaultAuthorityHost!, tenantId!)
-    }
+      authority: urljoin(defaultAuthorityHost!, tenantId!),
+    },
   };
   let scopes: string[];
   // this scope is required.
@@ -47,7 +40,7 @@ export async function getAccessToken(
   const usernamePasswordRequest = {
     scopes: scopes,
     username: userName,
-    password: password
+    password: password,
   };
   const response = await pca.acquireTokenByUsernamePassword(usernamePasswordRequest);
   return response!.accessToken;
@@ -103,7 +96,7 @@ export function MockEnvironmentVariable(): () => void {
     SQL_ENDPOINT: process.env.SDK_INTEGRATION_SQL_ENDPOINT,
     SQL_DATABASE: process.env.SDK_INTEGRATION_SQL_DATABASE_NAME,
     SQL_USER_NAME: process.env.SDK_INTEGRATION_SQL_USER_NAME,
-    SQL_PASSWORD: process.env.SDK_INTEGRATION_SQL_PASSWORD
+    SQL_PASSWORD: process.env.SDK_INTEGRATION_SQL_PASSWORD,
   });
 }
 

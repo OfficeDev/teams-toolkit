@@ -1,5 +1,5 @@
 import { IDepsLogger } from "../../../../src/debug/depsChecker/checker";
-import { LogLevel } from "fx-api";
+import { LogLevel } from "@microsoft/teamsfx-api";
 
 export class TestLogger implements IDepsLogger {
   public debug(message: string): Promise<boolean> {

@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { PluginContext, SystemError, UserError } from "fx-api";
-import { LocalDebugPluginInfo } from "../constants";
+import { PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { LocalDebugPluginInfo, SolutionPlugin } from "../constants";
 
 enum TelemetryPropertyKey {
     component = "component",
+    appId = "appid",
     success = "success",
     errorType = "error-type",
     errorCode = "error-code",
@@ -26,9 +27,11 @@ export enum TelemetryEventName {
 
 export class TelemetryUtils {
     static ctx: PluginContext;
+    static localAppId: string | undefined;
 
     public static init(ctx: PluginContext) {
         TelemetryUtils.ctx = ctx;
+        TelemetryUtils.localAppId = ctx.configOfOtherPlugins?.get(SolutionPlugin.Name)?.get(SolutionPlugin.LocalTeamsAppId) as string;
     }
 
     public static sendStartEvent(
@@ -40,7 +43,10 @@ export class TelemetryUtils {
             properties = {};
         }
         properties[TelemetryPropertyKey.component] = LocalDebugPluginInfo.pluginName;
-        TelemetryUtils.ctx.telemetryReporter?.sendTelemetryEvent(`${LocalDebugPluginInfo.pluginName}/${eventName}-start`, properties, measurements);
+        if (TelemetryUtils.localAppId) {
+            properties[TelemetryPropertyKey.appId] = TelemetryUtils.localAppId;
+        }
+        TelemetryUtils.ctx.telemetryReporter?.sendTelemetryEvent(`${eventName}-start`, properties, measurements);
     }
 
     public static sendSuccessEvent(
@@ -53,8 +59,11 @@ export class TelemetryUtils {
             properties = {};
         }
         properties[TelemetryPropertyKey.component] = LocalDebugPluginInfo.pluginName;
+        if (TelemetryUtils.localAppId) {
+            properties[TelemetryPropertyKey.appId] = TelemetryUtils.localAppId;
+        }
         properties[TelemetryPropertyKey.success] = TelemetryPropertyValue.success;
-        TelemetryUtils.ctx.telemetryReporter?.sendTelemetryErrorEvent(`${LocalDebugPluginInfo.pluginName}/${eventName}`, properties, measurements, errorProps);
+        TelemetryUtils.ctx.telemetryReporter?.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
     }
 
     public static sendErrorEvent(
@@ -68,6 +77,9 @@ export class TelemetryUtils {
             properties = {};
         }
         properties[TelemetryPropertyKey.component] = LocalDebugPluginInfo.pluginName;
+        if (TelemetryUtils.localAppId) {
+            properties[TelemetryPropertyKey.appId] = TelemetryUtils.localAppId;
+        }
         properties[TelemetryPropertyKey.success] = TelemetryPropertyValue.failure;
         if (err instanceof SystemError) {
             properties[TelemetryPropertyKey.errorType] = TelemetryPropertyValue.systemError;
@@ -76,6 +88,6 @@ export class TelemetryUtils {
         }
         properties[TelemetryPropertyKey.errorCode] = `${err.source}.${err.name}`;
         properties[TelemetryPropertyKey.errorMessage] = err.message;
-        TelemetryUtils.ctx.telemetryReporter?.sendTelemetryErrorEvent(`${LocalDebugPluginInfo.pluginName}/${eventName}`, properties, measurements, errorProps);
+        TelemetryUtils.ctx.telemetryReporter?.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
     }
 }

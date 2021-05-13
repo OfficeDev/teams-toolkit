@@ -3,7 +3,13 @@
 
 import { assert, expect, use as chaiUse } from "chai";
 import chaiPromises from "chai-as-promised";
-import { createMicrosoftGraphClient, ErrorCode, ErrorWithCode, loadConfiguration, TeamsUserCredential } from "../../../src";
+import {
+  createMicrosoftGraphClient,
+  ErrorCode,
+  ErrorWithCode,
+  loadConfiguration,
+  TeamsUserCredential,
+} from "../../../src";
 
 chaiUse(chaiPromises);
 describe("MsGraphClientProvider Tests - Browser", () => {
@@ -19,8 +25,8 @@ describe("MsGraphClientProvider Tests - Browser", () => {
       authentication: {
         initiateLoginEndpoint: loginUrl,
         simpleAuthEndpoint: authEndpoint,
-        clientId: clientId
-      }
+        clientId: clientId,
+      },
     });
   }
 

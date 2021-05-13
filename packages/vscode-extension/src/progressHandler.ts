@@ -3,7 +3,7 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { IProgressStatus, ok } from "fx-api";
+import { IProgressStatus, ok } from "@microsoft/teamsfx-api";
 import { ProgressLocation } from "vscode";
 import { ext } from "./extensionVariables";
 import { sleep } from "./utils/commonUtils";
@@ -29,7 +29,7 @@ export class ProgressHandler {
     const head = `${StringResources.vsc.progressHandler.teamsToolkitComponent} ${this.title}`;
     const body = `: [${this.currentStep}/${this.totalSteps}]`;
     const tail = this.detail ? ` ${this.detail}` : StringResources.vsc.progressHandler.prepareTask;
-    return `${head}${body}${tail} (Notice:You can reload the window and retry if task spends too long time.)`;
+    return `${head}${body}${tail} (Notice: You can reload the window and retry if task spends too long time.)`;
   }
 
   public async start(detail?: string) {

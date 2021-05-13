@@ -1,50 +1,52 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Plugin, FxError, PluginContext, SystemError, UserError, Result, err, ok, QTreeNode, Stage, Func } from "fx-api";
+import { Plugin, FxError, PluginContext, SystemError, UserError, Result, err, ok, QTreeNode, Stage, Func } from "@microsoft/teamsfx-api";
 import { BuildError, UnhandledError } from "./error";
-import { Telemetry } from "./telemetry";
-import { AadPluginConfig, ApimPluginConfig, FunctionPluginConfig, SolutionConfig } from "./model/config";
-import { AadDefaultValues, ProgressMessages, ProgressStep, ProjectConstants } from "./constants";
+import { Telemetry } from "./utils/telemetry";
+import { AadPluginConfig, ApimPluginConfig, FunctionPluginConfig, SolutionConfig } from "./config";
+import { AadDefaultValues, PluginLifeCycle, PluginLifeCycleToProgressStep, ProgressMessages, ProgressStep, ProjectConstants, OperationStatus } from "./constants";
 import { Factory } from "./factory";
-import { ProgressBar } from "./util/progressBar";
-import { buildAnswer } from "./model/answer";
+import { ProgressBar } from "./utils/progressBar";
+import { buildAnswer } from "./answer";
 
 export class ApimPlugin implements Plugin {
     private progressBar: ProgressBar = new ProgressBar();
 
     public async getQuestions(stage: Stage, ctx: PluginContext): Promise<Result<QTreeNode | undefined, FxError>> {
-        return await this.executeWithFxError(ProgressStep.None, _getQuestions, ctx, stage);
+        return await this.executeWithFxError(PluginLifeCycle.GetQuestions, _getQuestions, ctx, stage);
     }
 
     public async callFunc(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
-        return await this.executeWithFxError(ProgressStep.None, _callFunc, ctx, func);
+        return await this.executeWithFxError(PluginLifeCycle.CallFunc, _callFunc, ctx, func);
     }
 
     public async scaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
-        return await this.executeWithFxError(ProgressStep.Scaffold, _scaffold, ctx);
+        return await this.executeWithFxError(PluginLifeCycle.Scaffold, _scaffold, ctx);
     }
 
     public async provision(ctx: PluginContext): Promise<Result<any, FxError>> {
-        return await this.executeWithFxError(ProgressStep.Provision, _provision, ctx);
+        return await this.executeWithFxError(PluginLifeCycle.Provision, _provision, ctx);
     }
 
     public async postProvision(ctx: PluginContext): Promise<Result<any, FxError>> {
-        return await this.executeWithFxError(ProgressStep.PostProvision, _postProvision, ctx);
+        return await this.executeWithFxError(PluginLifeCycle.PostProvision, _postProvision, ctx);
     }
 
     public async deploy(ctx: PluginContext): Promise<Result<any, FxError>> {
-        return await this.executeWithFxError(ProgressStep.Deploy, _deploy, ctx);
+        return await this.executeWithFxError(PluginLifeCycle.Deploy, _deploy, ctx);
     }
 
     private async executeWithFxError<T>(
-        progressStep: ProgressStep,
+        lifeCycle: PluginLifeCycle,
         fn: (ctx: PluginContext, progressBar: ProgressBar, ...params: any[]) => Promise<T>,
         ctx: PluginContext,
         ...params: any[]
     ): Promise<Result<T, FxError>> {
         try {
-            await this.progressBar.init(progressStep, ctx);
+            await this.progressBar.init(PluginLifeCycleToProgressStep[lifeCycle], ctx);
+            Telemetry.sendLifeCycleEvent(ctx.telemetryReporter, ctx.configOfOtherPlugins, lifeCycle, OperationStatus.Started);
             const result = await fn(ctx, this.progressBar, ...params);
+            Telemetry.sendLifeCycleEvent(ctx.telemetryReporter, ctx.configOfOtherPlugins, lifeCycle, OperationStatus.Succeeded);
             return ok(result);
         } catch (error) {
             let packagedError: SystemError | UserError;
@@ -56,12 +58,11 @@ export class ApimPlugin implements Plugin {
                 packagedError = BuildError(UnhandledError);
             }
 
-            // TODO: According to solution plugin's design to decide whether we need to keep the log and telemetry here.
             ctx.logProvider?.error(`[${ProjectConstants.pluginDisplayName}] ${error.message}`);
-            Telemetry.sendErrorEvent(ctx.telemetryReporter, packagedError);
+            Telemetry.sendLifeCycleEvent(ctx.telemetryReporter, ctx.configOfOtherPlugins, lifeCycle, OperationStatus.Failed, packagedError);
             return err(packagedError);
         } finally {
-            await this.progressBar.close(progressStep);
+            await this.progressBar.close(PluginLifeCycleToProgressStep[lifeCycle]);
         }
     }
 }
@@ -91,6 +92,11 @@ async function _scaffold(ctx: PluginContext, progressBar: ProgressBar): Promise<
     const apimConfig = new ApimPluginConfig(ctx.config);
     const answer = buildAnswer(ctx);
     const scaffoldManager = await Factory.buildScaffoldManager(ctx, solutionConfig);
+
+    if (answer.validate) {
+        await answer.validate(Stage.update, apimConfig, ctx.root);
+    }
+
     answer.save(Stage.update, apimConfig);
 
     await progressBar.next(ProgressStep.Scaffold, ProgressMessages[ProgressStep.Scaffold].Scaffold);
@@ -117,7 +123,7 @@ async function _postProvision(ctx: PluginContext, progressBar: ProgressBar): Pro
     const aadConfig = new AadPluginConfig(ctx.configOfOtherPlugins);
 
     const apimManager = await Factory.buildApimManager(ctx, solutionConfig);
-    const aadManager = await Factory.buildAadManager(ctx, );
+    const aadManager = await Factory.buildAadManager(ctx);
     const teamsAppAadManager = await Factory.buildTeamsAppAadManager(ctx);
 
     await progressBar.next(ProgressStep.PostProvision, ProgressMessages[ProgressStep.PostProvision].ConfigClientAad);
@@ -135,6 +141,11 @@ async function _deploy(ctx: PluginContext, progressBar: ProgressBar): Promise<vo
     const apimConfig = new ApimPluginConfig(ctx.config);
     const functionConfig = new FunctionPluginConfig(ctx.configOfOtherPlugins);
     const answer = buildAnswer(ctx);
+
+    if (answer.validate) {
+        await answer.validate(Stage.deploy, apimConfig, ctx.root);
+    }
+
     answer.save(Stage.deploy, apimConfig);
 
     const apimManager = await Factory.buildApimManager(ctx, solutionConfig);

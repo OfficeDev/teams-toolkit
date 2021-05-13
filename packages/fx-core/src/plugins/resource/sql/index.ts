@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { err, Func, FxError, Plugin, PluginContext, QTreeNode, Result, Stage, SystemError, UserError } from "fx-api";
+import { err, Func, FxError, Plugin, PluginContext, QTreeNode, Result, Stage, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { Telemetry } from "./constants";
 import { ErrorMessage } from "./errors";
 import { SqlPluginImpl } from "./plugin";
 import { SqlResult, SqlResultFactory } from "./results";
@@ -11,15 +12,15 @@ export class SqlPlugin implements Plugin {
     sqlImpl = new SqlPluginImpl();
 
     public async preProvision(ctx: PluginContext): Promise<SqlResult> {
-        return this.runWithSqlError(() => this.sqlImpl.preProvision(ctx), ctx);
+        return this.runWithSqlError(Telemetry.stage.preProvision, () => this.sqlImpl.preProvision(ctx), ctx);
     }
 
     public async provision(ctx: PluginContext): Promise<SqlResult> {
-        return this.runWithSqlError(() => this.sqlImpl.provision(ctx), ctx);
+        return this.runWithSqlError(Telemetry.stage.provision, () => this.sqlImpl.provision(ctx), ctx);
     }
 
     public async postProvision(ctx: PluginContext): Promise<SqlResult> {
-        return this.runWithSqlError(() => this.sqlImpl.postProvision(ctx), ctx);
+        return this.runWithSqlError(Telemetry.stage.postProvision, () => this.sqlImpl.postProvision(ctx), ctx);
     }
 
     public async callFunc(func: Func, ctx: PluginContext): Promise<SqlResult> {
@@ -27,10 +28,10 @@ export class SqlPlugin implements Plugin {
     }
 
     public async getQuestions(stage: Stage, ctx: PluginContext): Promise<Result<QTreeNode | undefined, FxError>> {
-        return this.runWithSqlError(() => this.sqlImpl.getQuestions(stage, ctx), ctx);
+        return this.runWithSqlError(Telemetry.stage.postProvision, () => this.sqlImpl.getQuestions(stage, ctx), ctx);
     }
 
-    private async runWithSqlError(fn: () => Promise<SqlResult>, ctx: PluginContext): Promise<SqlResult> {
+    private async runWithSqlError(stage: string, fn: () => Promise<SqlResult>, ctx: PluginContext): Promise<SqlResult> {
         try {
             return await fn();
         } catch (e) {
@@ -41,16 +42,19 @@ export class SqlPlugin implements Plugin {
             }
             if (!(e instanceof SystemError) && !(e instanceof UserError)) {
                 ctx.logProvider?.error(e.message);
-
             }
-            TelemetryUtils.init(ctx);
-            TelemetryUtils.sendException(e);
 
+            let res: SqlResult;
             if (e instanceof SystemError || e instanceof UserError) {
-                return err(e);
+                res = err(e);
             } else {
-                return err(SqlResultFactory.SystemError(ErrorMessage.UnhandledError.name, ErrorMessage.UnhandledError.message(), e));
+                res = err(SqlResultFactory.SystemError(ErrorMessage.UnhandledError.name, ErrorMessage.UnhandledError.message(), e));
             }
+            const errorCode = res.error.source + "." + res.error.name;
+            const errorType = res.error instanceof SystemError ? Telemetry.systemError : Telemetry.userError;
+            TelemetryUtils.init(ctx);
+            TelemetryUtils.sendErrorEvent(stage, errorCode, errorType, res.error.message);
+            return res;
         }
     }
 }

@@ -12,13 +12,13 @@ export { TeamsBotSsoPromptTokenResponse } from "./bot/teamsBotSsoPromptTokenResp
 export {
   getAuthenticationConfiguration,
   getResourceConfiguration,
-  loadConfiguration
+  loadConfiguration,
 } from "./core/configurationProvider";
 export {
   Configuration,
   AuthenticationConfiguration,
   ResourceConfiguration,
-  ResourceType
+  ResourceType,
 } from "./models/configuration";
 export { createMicrosoftGraphClient } from "./core/msGraphClientProvider";
 export { DefaultTediousConnectionConfiguration } from "./core/defaultTediousConnectionConfiguration";
@@ -30,5 +30,5 @@ export {
   setLogLevel,
   getLogLevel,
   setLogger,
-  setLogFunction
+  setLogFunction,
 } from "./util/logger";

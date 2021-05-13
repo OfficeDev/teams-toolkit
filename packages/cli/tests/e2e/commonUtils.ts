@@ -8,7 +8,7 @@ import path from "path";
 import { promisify } from "util";
 import { v4 as uuidv4 } from "uuid";
 
-import { AzureConfig, AadManager, ResourceGroupManager } from "fx-api";
+import { cfg, AadManager, ResourceGroupManager } from "../commonlib";
 
 import GraphTokenProvider from "../../src/commonlib/graphLogin";
 
@@ -32,7 +32,7 @@ export function getUniqueAppName() {
 }
 
 export function getSubscriptionId() {
-    return AzureConfig.subscription.id;
+    return cfg.subscription.id;
 }
 
 const envFilePathSuffix = path.join(".fx", "env.default.json");

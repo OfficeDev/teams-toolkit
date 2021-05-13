@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { PluginContext } from "fx-api";
-import { Constants, Plugins } from "../constants";
+import { PluginContext } from "@microsoft/teamsfx-api";
+import { Telemetry, Plugins } from "../constants";
 
 export class TelemetryUtils {
   static ctx: PluginContext;
@@ -15,38 +15,40 @@ export class TelemetryUtils {
     eventName: string,
     properties?: { [key: string]: string },
     measurements?: { [key: string]: number }
-  ) {
+  ): void {
     if (!properties) {
       properties = {};
     }
-    properties[Constants.telemetryComponent] = Plugins.pluginNameComplex;
-    TelemetryUtils.ctx.telemetryReporter?.sendTelemetryEvent(
+    properties[Telemetry.component] = Plugins.pluginNameComplex;
+    properties[Telemetry.isSuccess] = Telemetry.success;
+    TelemetryUtils.ctx.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
+  }
+
+  public static sendErrorEvent(
+    eventName: string,
+    errorName: string,
+    errorType: string,
+    errorMessage: string,
+    properties?: { [key: string]: string },
+    measurements?: { [key: string]: number }
+  ): void {
+    if (!properties) {
+      properties = {};
+    }
+
+    properties[Telemetry.component] = Plugins.pluginNameComplex;
+    properties[Telemetry.errorCode] = `${Plugins.pluginNameShort}.${errorName}`;
+    properties[Telemetry.errorType] = errorType;
+    properties[Telemetry.errorMessage] = errorMessage;
+    properties[Telemetry.isSuccess] = Telemetry.fail;
+    TelemetryUtils.ctx.telemetryReporter?.sendTelemetryErrorEvent(
       eventName,
       properties,
       measurements
     );
   }
 
-  public static sendException(
-    error: Error,
-    properties?: { [key: string]: string },
-    measurements?: { [key: string]: number }
-  ) {
-    if (!properties) {
-      properties = {};
-    }
-    properties[Constants.telemetryComponent] = Plugins.pluginNameComplex;
-    TelemetryUtils.ctx.telemetryReporter?.sendTelemetryException(
-      error,
-      properties,
-      measurements
-    );
-  }
-
-  static readonly getErrorProperty = (
-    errorType: string,
-    errorMessage: string
-  ) => {
+  static readonly getErrorProperty = (errorType: string, errorMessage: string) => {
     return {
       "error-type": errorType,
       "error-message": errorMessage,

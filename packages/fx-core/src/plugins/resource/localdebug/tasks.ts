@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { ProductName } from "fx-api";
+import { ProductName } from "@microsoft/teamsfx-api";
 import { ProgrammingLanguage } from "./constants";
 
 export function generateTasks(includeFrontend: boolean, includeBackend: boolean, includeBot: boolean, programmingLanguage: string): Record<string, unknown>[] {
@@ -10,13 +10,18 @@ export function generateTasks(includeFrontend: boolean, includeBackend: boolean,
      * Referenced by launch.json
      *   - Pre Debug Check
      *   - Start Frontend
+     *   - Start Backend
+     *   - Start Bot
      *
      * Referenced inside tasks.json
+     *   - dependency check
+     *   - start ngrok
      *   - prepare dev env
      *   - prepare local environment
      *   - frontend npm install
      *   - backend npm install
      *   - backend extensions install
+     *   - bot npm install
      */
     const tasks: Record<string, unknown>[] = [];
 

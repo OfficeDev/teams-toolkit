@@ -5,14 +5,14 @@
 
 "use strict";
 
-import { AppStudioTokenProvider, UserError } from "fx-api";
+import { AppStudioTokenProvider, UserError } from "@microsoft/teamsfx-api";
 import { LogLevel } from "@azure/msal-node";
 import { ExtensionErrors } from "../error";
 import { CodeFlowLogin } from "./codeFlowLogin";
 import VsCodeLogInstance from "./log";
 import * as vscode from "vscode";
 import { getBeforeCacheAccess, getAfterCacheAccess } from "./cacheAccess";
-import { signedIn, signedOut } from "./common/constant";
+import { loggedIn, loggingIn, signedIn, signedOut, signingIn } from "./common/constant";
 import { login, LoginStatus } from "./common/login";
 import * as StringResources from "../resources/Strings.json";
 import * as util from "util";
@@ -87,14 +87,21 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
           // throw user cancel error
           throw new UserError(ExtensionErrors.UserCancel, StringResources.vsc.common.userCancel, "Login");
         }
+        AppStudioLogin.codeFlowInstance.status = loggingIn;
+        this.notifyStatus();
       }
-      const loginToken = await AppStudioLogin.codeFlowInstance.getToken();
-      if (loginToken && AppStudioLogin.statusChange !== undefined) {
-        const tokenJson = await this.getJsonObject();
-        await AppStudioLogin.statusChange("SignedIn", loginToken, tokenJson);
+      try {
+        const loginToken = await AppStudioLogin.codeFlowInstance.getToken();
+        if (loginToken && AppStudioLogin.statusChange !== undefined) {
+          const tokenJson = await this.getJsonObject();
+          await AppStudioLogin.statusChange(signedIn, loginToken, tokenJson);
+        }
+        await this.notifyStatus();
+        return loginToken;
+      } catch (error) {
+        this.notifyStatus();
+        throw error;
       }
-      await this.notifyStatus();
-      return loginToken;
     }
 
     return AppStudioLogin.codeFlowInstance.getToken();
@@ -120,11 +127,10 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
     if (!userConfirmation) {
       throw new UserError(ExtensionErrors.UserCancel, StringResources.vsc.common.userCancel, "SignOut");
     }
-    AppStudioLogin.codeFlowInstance.account = undefined;
-    if (AppStudioLogin.statusChange !== undefined) {
-      await AppStudioLogin.statusChange("SignedOut", undefined, undefined);
-    }
     await AppStudioLogin.codeFlowInstance.logout();
+    if (AppStudioLogin.statusChange !== undefined) {
+      await AppStudioLogin.statusChange(signedOut, undefined, undefined);
+    }
     await this.notifyStatus();
     return new Promise((resolve) => {
       resolve(true);
@@ -132,17 +138,16 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
   }
 
   private async doesUserConfirmLogin(): Promise<boolean> {
-    const warningMsg = StringResources.vsc.appStudioLogin.warningMsg;
+    const message = StringResources.vsc.appStudioLogin.message;
     const signin = StringResources.vsc.common.signin;
     const readMore = StringResources.vsc.common.readMore;
-    const cancel = StringResources.vsc.common.cancel;
     let userSelected: string | undefined;
     do {
       userSelected = await vscode.window.showInformationMessage(
-        warningMsg,
+        message,
+        {modal: true},
         signin,
-        readMore,
-        cancel
+        readMore
       );
       if (userSelected === readMore) {
         vscode.env.openExternal(vscode.Uri.parse("https://developer.microsoft.com/en-us/microsoft-365/dev-program"));
@@ -171,7 +176,7 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
     if (AppStudioLogin.codeFlowInstance.account) {
       const loginToken = await AppStudioLogin.codeFlowInstance.getToken();
       const tokenJson = await this.getJsonObject();
-      await AppStudioLogin.statusChange("SignedIn", loginToken, tokenJson);
+      await AppStudioLogin.statusChange(signedIn, loginToken, tokenJson);
     }
     return new Promise((resolve) => {
       resolve(true);
@@ -180,10 +185,12 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
 
   async getStatus(): Promise<LoginStatus> {
     await AppStudioLogin.codeFlowInstance.reloadCache();
-    if (AppStudioLogin.codeFlowInstance.account) {
+    if (AppStudioLogin.codeFlowInstance.status === loggedIn) {
       const loginToken = await AppStudioLogin.codeFlowInstance.getToken();
       const tokenJson = await this.getJsonObject();
       return Promise.resolve({ status: signedIn, token: loginToken, accountInfo: tokenJson });
+    } else if (AppStudioLogin.codeFlowInstance.status === loggingIn) {
+      return Promise.resolve({ status: signingIn, token: undefined, accountInfo: undefined });
     } else {
       return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });
     }

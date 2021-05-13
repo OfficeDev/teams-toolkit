@@ -6,13 +6,15 @@
 import * as path from "path";
 import { Argv, Options } from "yargs";
 
-import { ConfigMap, err, FxError, ok, Platform, Result, Stage } from "fx-api";
+import { ConfigMap, err, FxError, ok, Platform, Result, Stage } from "@microsoft/teamsfx-api";
 
 import activate from "../activate";
 import * as constants from "../constants";
 import { validateAndUpdateAnswers } from "../question/question";
 import { getParamJson, readConfigs, setSubscriptionId } from "../utils";
 import { YargsCommand } from "../yargsCommand";
+import CliTelemetry from "../telemetry/cliTelemetry";
+import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
 
 export class ResourceAdd extends YargsCommand {
   public readonly commandHead = `add`;
@@ -54,8 +56,14 @@ export class ResourceAddSql extends YargsCommand {
     const rootFolder = path.resolve(answers.getString("folder") || "./");
     answers.delete("folder");
 
+    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.UpdateProjectStart, {
+      [TelemetryProperty.Resources]: this.commandHead
+    });
     const result = await activate(rootFolder);
     if (result.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
+        [TelemetryProperty.Resources]: this.commandHead
+      });
       return err(result.error);
     }
 
@@ -63,6 +71,9 @@ export class ResourceAddSql extends YargsCommand {
     {
       const result = await core.getQuestions!(Stage.update, Platform.CLI);
       if (result.isErr()) {
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
+          [TelemetryProperty.Resources]: this.commandHead
+        });
         return err(result.error);
       }
       await validateAndUpdateAnswers(result.value!, answers);
@@ -71,10 +82,17 @@ export class ResourceAddSql extends YargsCommand {
     {
       const result = await core.update(answers);
       if (result.isErr()) {
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
+          [TelemetryProperty.Resources]: this.commandHead
+        });
         return err(result.error);
       }
     }
 
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.UpdateProject, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      [TelemetryProperty.Resources]: this.commandHead
+    });
     return ok(null);
   }
 }
@@ -99,15 +117,25 @@ export class ResourceAddApim extends YargsCommand {
     const rootFolder = path.resolve(answers.getString("folder") || "./");
     answers.delete("folder");
 
+    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.UpdateProjectStart, {
+      [TelemetryProperty.Resources]: this.commandHead
+    });
+
     {
       const result = await setSubscriptionId(args.subscription, rootFolder);
       if (result.isErr()) {
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
+          [TelemetryProperty.Resources]: this.commandHead
+        });
         return result;
       }
     }
 
     const result = await activate(rootFolder);
     if (result.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
+        [TelemetryProperty.Resources]: this.commandHead
+      });
       return err(result.error);
     }
 
@@ -115,6 +143,9 @@ export class ResourceAddApim extends YargsCommand {
     {
       const result = await core.getQuestions!(Stage.update, Platform.CLI);
       if (result.isErr()) {
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
+          [TelemetryProperty.Resources]: this.commandHead
+        });
         return err(result.error);
       }
       await validateAndUpdateAnswers(result.value!, answers);
@@ -123,10 +154,17 @@ export class ResourceAddApim extends YargsCommand {
     {
       const result = await core.update(answers);
       if (result.isErr()) {
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
+          [TelemetryProperty.Resources]: this.commandHead
+        });
         return err(result.error);
       }
     }
 
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.UpdateProject, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      [TelemetryProperty.Resources]: this.commandHead
+    });
     return ok(null);
   }
 }
@@ -151,8 +189,14 @@ export class ResourceAddFunction extends YargsCommand {
     const rootFolder = path.resolve(answers.getString("folder") || "./");
     answers.delete("folder");
 
+    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.UpdateProjectStart, {
+      [TelemetryProperty.Resources]: this.commandHead
+    });
     const result = await activate(rootFolder);
     if (result.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
+        [TelemetryProperty.Resources]: this.commandHead
+      });
       return err(result.error);
     }
 
@@ -160,6 +204,9 @@ export class ResourceAddFunction extends YargsCommand {
     {
       const result = await core.getQuestions!(Stage.update, Platform.CLI);
       if (result.isErr()) {
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
+          [TelemetryProperty.Resources]: this.commandHead
+        });
         return err(result.error);
       }
       await validateAndUpdateAnswers(result.value!, answers);
@@ -168,10 +215,17 @@ export class ResourceAddFunction extends YargsCommand {
     {
       const result = await core.update(answers);
       if (result.isErr()) {
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
+          [TelemetryProperty.Resources]: this.commandHead
+        });
         return err(result.error);
       }
     }
 
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.UpdateProject, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      [TelemetryProperty.Resources]: this.commandHead
+    });
     return ok(null);
   }
 }

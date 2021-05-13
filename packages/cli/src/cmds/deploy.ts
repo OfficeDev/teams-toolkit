@@ -16,13 +16,15 @@ import {
   Platform,
   MultiSelectQuestion,
   OptionItem
-} from "fx-api";
+} from "@microsoft/teamsfx-api";
 
 import activate from "../activate";
 import * as constants from "../constants";
 import { validateAndUpdateAnswers } from "../question/question";
 import { YargsCommand } from "../yargsCommand";
 import { flattenNodes, getParamJson } from "../utils";
+import CliTelemetry from "../telemetry/cliTelemetry";
+import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
 
 export default class Deploy extends YargsCommand {
   public readonly commandHead = `deploy`;
@@ -57,9 +59,11 @@ export default class Deploy extends YargsCommand {
 
     const rootFolder = path.resolve(answers.getString("folder") || "./");
     answers.delete("folder");
+    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.DeployStart);
 
     const result = await activate(rootFolder);
     if (result.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Deploy, result.error);
       return err(result.error);
     }
 
@@ -67,6 +71,7 @@ export default class Deploy extends YargsCommand {
     {
       const result = await core.getQuestions!(Stage.deploy, Platform.CLI);
       if (result.isErr()) {
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Deploy, result.error);
         return err(result.error);
       }
       const rootNode = result.value!;
@@ -85,9 +90,14 @@ export default class Deploy extends YargsCommand {
     {
       const result = await core.deploy(answers);
       if (result.isErr()) {
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Deploy, result.error);
         return err(result.error);
       }
     }
+
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.Deploy, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes
+    });
     return ok(null);
   }
 }

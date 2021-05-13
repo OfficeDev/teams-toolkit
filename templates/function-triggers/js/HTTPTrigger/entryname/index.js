@@ -5,7 +5,7 @@
 
 // Import polyfills for fetch required by msgraph-sdk-javascript.
 require("isomorphic-fetch");
-const teamsfx = require("teamsdev-client");
+const teamsfx = require("@microsoft/teamsfx");
 
 /**
  * This function handles requests from teamsfx client.
@@ -32,7 +32,7 @@ module.exports = async function (context, req, teamsfxContext) {
   // Initialize response.
   const res = {
     status: 200,
-    body: {}
+    body: {},
   };
 
   // Put an echo into response body.
@@ -41,13 +41,13 @@ module.exports = async function (context, req, teamsfxContext) {
   // Set default configuration for teamsfx SDK.
   try {
     teamsfx.loadConfiguration();
-  } catch(e) {
+  } catch (e) {
     context.log.error(e);
     return {
       status: 500,
       body: {
-        error: "Failed to load app configuration."
-      }
+        error: "Failed to load app configuration.",
+      },
     };
   }
 
@@ -57,8 +57,8 @@ module.exports = async function (context, req, teamsfxContext) {
     return {
       status: 400,
       body: {
-        error: "No access token was found in request header."
-      }
+        error: "No access token was found in request header.",
+      },
     };
   }
 
@@ -66,33 +66,33 @@ module.exports = async function (context, req, teamsfxContext) {
   let credential;
   try {
     credential = new teamsfx.OnBehalfOfUserCredential(accessToken);
-  } catch(e) {
+  } catch (e) {
     context.log.error(e);
     return {
       status: 500,
       body: {
         error:
           "Failed to obtain on-behalf-of credential using your accessToken. " +
-          "Ensure your function app is configured with the right Azure AD App registration."
-      }
+          "Ensure your function app is configured with the right Azure AD App registration.",
+      },
     };
   }
 
   // Query user's information from the access token.
   try {
-    const currentUser = await credential.getUserInfo();
+    const currentUser = credential.getUserInfo();
     if (currentUser && currentUser.displayName) {
       res.body.userInfoMessage = `User display name is ${currentUser.displayName}.`;
     } else {
       res.body.userInfoMessage = "No user information was found in access token.";
     }
-  } catch(e) {
+  } catch (e) {
     context.log.error(e);
     return {
       status: 400,
       body: {
-        error: "Access token is invalid."
-      }
+        error: "Access token is invalid.",
+      },
     };
   }
 
@@ -106,8 +106,9 @@ module.exports = async function (context, req, teamsfxContext) {
     return {
       status: 500,
       body: {
-        error: "Failed to retrieve user profile from Microsoft Graph. The application may not be authorized."
-      }
+        error:
+          "Failed to retrieve user profile from Microsoft Graph. The application may not be authorized.",
+      },
     };
   }
 

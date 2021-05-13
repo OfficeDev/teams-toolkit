@@ -2,11 +2,17 @@ name: E2E test
 
 on:
   schedule:
-    - cron: "0 2,4,6,8,10 * * *"
+    - cron: "0 4,7,10 * * *"
+  workflow_dispatch:
 
 jobs:
   e2e-tests:
     name: run e2e test on (${{ matrix.os }} node ${{ matrix.node-version }}) with source code
+    env:
+      TEST_USER_NAME: ${{ secrets.TEST_USER_NAME }}
+      TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+      TEST_SUBSCRIPTION_ID: ${{ secrets.TEST_SUBSCRIPTION_ID }}
+      CI_ENABLED: "true"
 
     strategy:
       matrix:
@@ -21,7 +27,7 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.CD_PAT }}
-          ref: main
+          ref: ${{ github.ref }}
 
       - name: Setup node
         uses: actions/setup-node@v2.1.2
@@ -29,15 +35,12 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Download Simple Auth bits
-        env:
-          SIMPLE_AUTH_SAS_TOKEN: ${{secrets.SIMPLE_AUTH_SAS_TOKEN}}
-          SIMPLE_AUTH_ENDPOINT: ${{secrets.SIMPLE_AUTH_ENDPOINT}}
         run: |
-            $version=Get-Content packages/fx-core/templates/plugins/resource/simpleauth/version.txt
-            $fileName="Microsoft.TeamsFx.SimpleAuth_$version.zip"
-            echo $SIMPLE_AUTH_ENDPOINT
-            $url=$env:SIMPLE_AUTH_ENDPOINT+'/'+$fileName+'?'+$env:SIMPLE_AUTH_SAS_TOKEN
-            Invoke-WebRequest $url -OutFile packages/fx-core/templates/plugins/resource/simpleauth/SimpleAuth.zip
+          $version=Get-Content packages/fx-core/templates/plugins/resource/simpleauth/version.txt
+          $tag = "simpleauth@"+$version
+          $fileName="Microsoft.TeamsFx.SimpleAuth_$version.zip"
+          $url = "https://github.com/OfficeDev/TeamsFx/releases/download/"+$tag+"/"+$fileName
+          Invoke-WebRequest $url -OutFile packages/fx-core/templates/plugins/resource/simpleauth/SimpleAuth.zip
         shell: pwsh
 
       - name: Setup project
@@ -45,11 +48,14 @@ jobs:
           npm run setup
           npm link
 
-      - name: E2E Test
-        env:
-          TEST_USER_NAME: ${{ secrets.TEST_USER_NAME }}
-          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
-          TEST_SUBSCRIPTION_ID: ${{ secrets.TEST_SUBSCRIPTION_ID }}
-          CI_ENABLED: "true"
+      - name: E2E Test clean
         run: |
-          npx lerna run test:e2e
+          npx lerna run test:e2e:clean
+
+      - name: E2E Test Smoke Cases
+        run: |
+          npx lerna run test:e2e:smoke
+
+      - name: E2E Test Other Cases
+        run: |
+          npx lerna run test:e2e:others

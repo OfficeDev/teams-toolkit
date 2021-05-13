@@ -21,12 +21,15 @@ import {
   TeamsBotSsoPromptTokenResponse,
   TeamsBotSsoPromptSettings,
   loadConfiguration,
-  Configuration
+  Configuration,
 } from "../../../src";
 import { assert, use as chaiUse } from "chai";
 import chaiPromises from "chai-as-promised";
-import sinon from "sinon";
-import { getSsoTokenFromTeams, MockEnvironmentVariable, RestoreEnvironmentVariable } from "../../helper";
+import {
+  getSsoTokenFromTeams,
+  MockEnvironmentVariable,
+  RestoreEnvironmentVariable,
+} from "../../helper";
 import { parseJwt } from "../../../src/util/utils";
 
 chaiUse(chaiPromises);
@@ -45,9 +48,8 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
   let ssoToken: string;
   enum SsoLogInResult {
     Success = "Success",
-    Fail = "Fail"
+    Fail = "Fail",
   }
-  const sandbox = sinon.createSandbox();
 
   before(async function () {
     restore = MockEnvironmentVariable();
@@ -55,7 +57,6 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
   });
 
   after(function () {
-    sandbox.restore();
     RestoreEnvironmentVariable(restore);
   });
 
@@ -162,12 +163,15 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
         id: activity.conversation!.id,
         name: activity.conversation!.name,
         conversationType: "personal",
-        tenantId: tenantId
-      }
+        tenantId: tenantId,
+      },
     };
   }
 
-  function assertTeamsSsoOauthCardActivity(activity: Partial<Activity>, scopes: string[] = ["User.Read"]): void {
+  function assertTeamsSsoOauthCardActivity(
+    activity: Partial<Activity>,
+    scopes: string[] = ["User.Read"]
+  ): void {
     assert.isArray(activity.attachments);
     assert.strictEqual(activity.attachments?.length, 1);
     assert.strictEqual(activity.attachments![0].contentType, CardFactory.contentTypes.oauthCard);
@@ -196,7 +200,7 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
     invokeActivity.name = tokenExchangeOperationName;
     invokeActivity.value = {
       id: id,
-      token: ssoToken
+      token: ssoToken,
     };
     adapter.send(invokeActivity);
   }
@@ -207,16 +211,13 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
    * @param endOnInvalidMessage boolean value set to teamsSsoPromptSettings.endOnInvalidMessage property
    * @param channelId value set to dialog context activity channel. Defaults to `Channels.MSteams`.
    */
-  async function initializeTestEnv(
-    param: InitializeParams
-  ): Promise<TestAdapter> {
+  async function initializeTestEnv(param: InitializeParams): Promise<TestAdapter> {
     // Create new ConversationState with MemoryStorage
     const convoState: ConversationState = new ConversationState(new MemoryStorage());
 
     // Create a DialogState property, DialogSet and TeamsBotSsoPrompt
-    const dialogState: StatePropertyAccessor<DialogState> = convoState.createProperty(
-      "dialogState"
-    );
+    const dialogState: StatePropertyAccessor<DialogState> =
+      convoState.createProperty("dialogState");
     const dialogs: DialogSet = new DialogSet(dialogState);
 
     let botScopes = param.scopes;
@@ -227,7 +228,7 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
     const settings: TeamsBotSsoPromptSettings = {
       scopes: botScopes,
       timeout: param.timeout_value,
-      endOnInvalidMessage: param.endOnInvalidMessage
+      endOnInvalidMessage: param.endOnInvalidMessage,
     };
 
     loadConfiguration(param.config);
@@ -237,7 +238,8 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
     // Initialize TestAdapter.
     const adapter: TestAdapter = new TestAdapter(async (turnContext) => {
       const dc = await dialogs.createContext(turnContext);
-      dc.context.activity.channelId = param.channelId === undefined ? Channels.Msteams : param.channelId;
+      dc.context.activity.channelId =
+        param.channelId === undefined ? Channels.Msteams : param.channelId;
 
       const results = await dc.continueDialog();
       if (results.status === DialogTurnStatus.empty) {
@@ -258,9 +260,9 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
 });
 
 interface InitializeParams {
-  scopes?: string[],
-  timeout_value?: number,
-  endOnInvalidMessage?: boolean,
-  channelId?: Channels,
-  config?: Configuration,
+  scopes?: string[];
+  timeout_value?: number;
+  endOnInvalidMessage?: boolean;
+  channelId?: Channels;
+  config?: Configuration;
 }

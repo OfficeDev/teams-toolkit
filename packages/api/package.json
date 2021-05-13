@@ -1,6 +1,6 @@
 {
-  "name": "fx-api",
-  "version": "1.1.2-alpha.1",
+  "name": "@microsoft/teamsfx-api",
+  "version": "0.1.0-alpha.6",
   "description": "teamsfx framework api",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -20,17 +20,17 @@
     "prepare": "npm run build",
     "lint:fix": "eslint \"src/**/*.ts\" \"tests/**/*.ts\" --fix",
     "doc": "typedoc",
-    "test:unit": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/**/*.ts"
+    "test:unit": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/**/*.ts",
+    "precommit": "lint-staged"
   },
   "devDependencies": {
     "@shared/eslint-config": "file:../eslint-config",
+    "@shared/prettier-config": "file:../prettier-config",
     "@types/chai": "^4.2.14",
     "@types/chai-as-promised": "^7.1.3",
     "@types/chai-spies": "^1.0.3",
-    "@types/md5": "^2.3.0",
     "@types/mocha": "^8.2.2",
     "@types/node": "^14.14.10",
-    "@types/tedious": "^4.0.3",
     "@typescript-eslint/eslint-plugin": "^4.19.0",
     "@typescript-eslint/parser": "^4.19.0",
     "chai-as-promised": "^7.1.1",
@@ -45,28 +45,24 @@
     "typescript": "^4.2.3"
   },
   "dependencies": {
-    "@azure/arm-apimanagement": "^6.0.0",
-    "@azure/arm-resources": "^4.0.0",
-    "@azure/arm-sql": "^7.0.2",
-    "@azure/arm-subscriptions": "^3.0.0",
     "@azure/core-http": "^1.2.2",
-    "@azure/identity": "^1.3.0",
-    "@azure/ms-rest-nodeauth": "^3.0.6",
+    "@azure/ms-rest-nodeauth": "^3.0.7",
     "@types/fs-extra": "^9.0.10",
     "axios": "^0.21.1",
-    "azure-arm-resource": "^3.1.1-preview",
     "chai": "^4.3.4",
-    "dotenv": "^8.2.0",
     "jsonschema": "^1.4.0",
-    "md5": "^2.3.0",
-    "ms-rest-azure": "^3.0.0",
-    "neverthrow": "^3.2.0",
-    "tedious": "^9.2.1"
+    "neverthrow": "^3.2.0"
+  },
+  "gitHead": "7d60c0765c0ea8c023a26c10d1c93001c597afbb",
+  "publishConfig": {
+    "access": "public"
   },
   "lint-staged": {
-    "**/*.ts": [
-      "eslint"
+    "*.{js,jsx,css,ts,tsx}": [
+      "npx eslint --cache --fix --quiet"
+    ],
+    "*": [
+      "npx prettier --config .prettierrc.js --ignore-unknown --write --ignore-path .prettierignore "
     ]
-  },
-  "gitHead": "7d60c0765c0ea8c023a26c10d1c93001c597afbb"
+  }
 }

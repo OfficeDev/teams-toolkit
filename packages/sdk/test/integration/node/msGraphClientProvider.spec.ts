@@ -8,12 +8,12 @@ import {
   createMicrosoftGraphClient,
   loadConfiguration,
   OnBehalfOfUserCredential,
-  M365TenantCredential
+  M365TenantCredential,
 } from "../../../src";
 import {
   getSsoTokenFromTeams,
   MockEnvironmentVariable,
-  RestoreEnvironmentVariable
+  RestoreEnvironmentVariable,
 } from "../helper";
 
 chaiUse(chaiPromises);

@@ -44,8 +44,8 @@ loadConfiguration({
   authentication: {
     initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
     simpleAuthEndpoint: process.env.REACT_APP_TEAMSFX_ENDPOINT,
-    clientId: process.env.REACT_APP_CLIENT_ID
-  }
+    clientId: process.env.REACT_APP_CLIENT_ID,
+  },
 });
 ```
 
@@ -66,8 +66,8 @@ loadConfiguration({
   authentication: {
     initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
     simpleAuthEndpoint: process.env.REACT_APP_TEAMSFX_ENDPOINT,
-    clientId: process.env.REACT_APP_CLIENT_ID
-  }
+    clientId: process.env.REACT_APP_CLIENT_ID,
+  },
 });
 const credential = new TeamsUserCredential();
 const graphClient = createMicrosoftGraphClient(credential, ["User.Read"]); // Initializes MS Graph SDK using our MsGraphAuthProvider
@@ -123,7 +123,7 @@ try {
   // Show login button when specific ErrorWithCode is caught.
   if (err instanceof ErrorWithCode && err.code === ErrorCode.UiRequiredError) {
     this.setState({
-      showLoginBtn: true
+      showLoginBtn: true,
     });
   }
 }
@@ -147,8 +147,8 @@ loadConfiguration({
   authentication: {
     initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
     simpleAuthEndpoint: process.env.REACT_APP_TEAMSFX_ENDPOINT,
-    clientId: process.env.REACT_APP_CLIENT_ID
-  }
+    clientId: process.env.REACT_APP_CLIENT_ID,
+  },
 });
 const credential: any = new TeamsUserCredential();
 const graphClient = createMicrosoftGraphClient(credential, ["User.Read"]);
@@ -164,8 +164,8 @@ loadConfiguration({
   authentication: {
     initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
     simpleAuthEndpoint: process.env.REACT_APP_TEAMSFX_ENDPOINT,
-    clientId: process.env.REACT_APP_CLIENT_ID
-  }
+    clientId: process.env.REACT_APP_CLIENT_ID,
+  },
 });
 const credential: any = new TeamsUserCredential();
 const token = credential.getToken(""); // Get SSO token for the user
@@ -173,8 +173,8 @@ const token = credential.getToken(""); // Get SSO token for the user
 const apiConfig = getResourceConfiguration(ResourceType.API);
 const response = await axios.default.get(apiConfig.endpoint + "api/httptrigger1", {
   headers: {
-    authorization: "Bearer " + token
-  }
+    authorization: "Bearer " + token,
+  },
 });
 ```
 
@@ -200,35 +200,37 @@ connection.on("connect", (error) => {
 Add `TeamsBotSsoPrompt` to dialog set.
 
 ```ts
-const { ConversationState, MemoryStorage } = require('botbuilder');
-const { DialogSet, WaterfallDialog } = require('botbuilder-dialogs');
-const { TeamsBotSsoPrompt } = require('@microsoft/teamsfx');
+const { ConversationState, MemoryStorage } = require("botbuilder");
+const { DialogSet, WaterfallDialog } = require("botbuilder-dialogs");
+const { TeamsBotSsoPrompt } = require("@microsoft/teamsfx");
 
 const convoState = new ConversationState(new MemoryStorage());
-const dialogState = convoState.createProperty('dialogState');
+const dialogState = convoState.createProperty("dialogState");
 const dialogs = new DialogSet(dialogState);
 
 loadConfiguration();
-dialogs.add(new TeamsBotSsoPrompt('TeamsBotSsoPrompt', {
-   scopes: ["User.Read"],
-}));
+dialogs.add(
+  new TeamsBotSsoPrompt("TeamsBotSsoPrompt", {
+    scopes: ["User.Read"],
+  })
+);
 
-dialogs.add(new WaterfallDialog('taskNeedingLogin', [
-     async (step) => {
-         return await step.beginDialog('TeamsBotSsoPrompt');
-     },
-     async (step) => {
-         const token = step.result;
-         if (token) {
-
-             // ... continue with task needing access token ...
-
-         } else {
-             await step.context.sendActivity(`Sorry... We couldn't log you in. Try again later.`);
-             return await step.endDialog();
-         }
-     }
-]));
+dialogs.add(
+  new WaterfallDialog("taskNeedingLogin", [
+    async (step) => {
+      return await step.beginDialog("TeamsBotSsoPrompt");
+    },
+    async (step) => {
+      const token = step.result;
+      if (token) {
+        // ... continue with task needing access token ...
+      } else {
+        await step.context.sendActivity(`Sorry... We couldn't log you in. Try again later.`);
+        return await step.endDialog();
+      }
+    },
+  ])
+);
 ```
 
 ## Troubleshooting
@@ -254,7 +256,7 @@ setLogFunction((level: LogLevel, ...args: any[]) => {
     const { format, ...rest } = args;
     this.telemetryClient.trackTrace({
       message: util.format(format, ...rest),
-      severityLevel: Severity.Error
+      severityLevel: Severity.Error,
     });
   }
 });
@@ -271,27 +273,44 @@ setLogger(context.log);
 
 Please take a look at the [Samples](https://github.com/OfficeDev/TeamsFx-Samples) project for detailed examples on how to use this library.
 
-## Contributing
-
-This project welcomes contributions and suggestions. Most contributions require you to agree to a
-Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
-the rights to use your contribution. For details, visit https://cla.microsoft.com.
-
-When you submit a pull request, a CLA-bot will automatically determine whether you need to provide
-a CLA and decorate the PR appropriately (e.g., label, comment). Simply follow the instructions
-provided by the bot. You will only need to do this once across all repos using our CLA.
-
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
-For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
-contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
-
-If you'd like to contribute to this library, please read the [contribution guide](CONTRIBUTING.md) to learn more about how to build and test the code.
-
-## Reporting security issues and bugs
-
-Security issues and bugs should be reported privately, via email, to the Microsoft Security Response Center (MSRC) secure@microsoft.com. You should receive a response within 24 hours. If for some reason you do not, please follow up via email to ensure we received your original message. Further information, including the MSRC PGP key, can be found in the [Security TechCenter](https://technet.microsoft.com/en-us/security/ff852094.aspx).
-
 ## Related projects
 
 - [Microsoft Teams Toolkit for Visual Studio Code](https://github.com/OfficeDev/TeamsFx/tree/main/packages/vscode-extension)
 - [TeamsFx Cli](https://github.com/OfficeDev/TeamsFx/tree/main/packages/cli)
+
+## Data Collection.
+
+The software may collect information about you and your use of the software and send it to Microsoft. Microsoft may use this information to provide services and improve our products and services. You may turn off the telemetry as described in the repository. There are also some features in the software that may enable you and Microsoft to collect data from users of your applications. If you use these features, you must comply with applicable law, including providing appropriate notices to users of your applications together with a copy of Microsoft's privacy statement. Our privacy statement is located at https://go.microsoft.com/fwlink/?LinkID=824704. You can learn more about data collection and use in the help documentation and our privacy statement. Your use of the software operates as your consent to these practices.
+
+## Code of Conduct
+
+This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+
+## Contributing
+
+There are many ways in which you can participate in the project, for example:
+
+- [Submit bugs and feature requests](https://github.com/OfficeDev/TeamsFx/issues), and help us verify as they are checked in
+- Review [source code changes](https://github.com/OfficeDev/TeamsFx/pulls)
+
+If you are interested in fixing issues and contributing directly to the code base, please see the [Contributing Guide](./CONTRIBUTING.md).
+
+## Reporting Security Issues
+
+**Please do not report security vulnerabilities through public GitHub issues.**
+
+Instead, please report them to the Microsoft Security Response Center (MSRC) at [https://msrc.microsoft.com/create-report](https://msrc.microsoft.com/create-report).
+
+If you prefer to submit without logging in, send email to [secure@microsoft.com](mailto:secure@microsoft.com). If possible, encrypt your message with our PGP key; please download it from the the [Microsoft Security Response Center PGP Key page](https://www.microsoft.com/en-us/msrc/pgp-key-msrc).
+
+You should receive a response within 24 hours. If for some reason you do not, please follow up via email to ensure we received your original message. Additional information can be found at [microsoft.com/msrc](https://www.microsoft.com/msrc).
+
+## Trademarks
+
+This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft trademarks or logos is subject to and must follow [Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general). Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship. Any use of third-party trademarks or logos are subject to those third-party's policies.
+
+## License
+
+Copyright (c) Microsoft Corporation. All rights reserved.
+
+Licensed under the [MIT](LICENSE.txt) license.

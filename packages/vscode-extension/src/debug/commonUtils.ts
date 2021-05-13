@@ -6,8 +6,11 @@ import * as path from "path";
 import * as dotenv from "dotenv";
 import * as vscode from "vscode";
 import * as constants from "./constants";
-import { ConfigFolderName, Func } from "fx-api";
+import { ConfigFolderName, Func } from "@microsoft/teamsfx-api";
 import { core, showError } from "../handlers";
+import * as net from "net";
+import { ext } from "../extensionVariables";
+import { getActiveEnv, isWorkspaceSupported } from "../utils/commonUtils";
 
 export async function getProjectRoot(
   folderPath: string,
@@ -144,3 +147,80 @@ async function getLocalDebugConfig(key: string): Promise<string | undefined> {
 export async function getSkipNgrokConfig(): Promise<string | undefined> {
   return getLocalDebugConfig(constants.skipNgrokConfigKey);
 }
+
+async function detectPortListeningImpl(port: number, host: string): Promise<boolean> {
+  return new Promise<boolean>((resolve, reject) => {
+    try {
+      const server = net.createServer();
+      server.once("error", (err) => {
+              if (err.message.includes("EADDRINUSE")) {
+                resolve(true);
+              } else {
+                resolve(false);
+              }
+            })
+            .once("listening", () => {
+              server.close();
+            })
+            .once("close", () => {
+              resolve(false);
+            })
+            .listen(port, host);
+    } catch (err) {
+      // ignore any error to not block debugging
+      resolve(false);
+    }
+  });
+}
+
+export async function detectPortListening(port: number, hosts: string[]): Promise<boolean> {
+  for (let host of hosts) {
+    if (await detectPortListeningImpl(port, host)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+export async function getPortsInUse(): Promise<number[]> {
+  const ports: [number, string[]][] = [];
+  if (vscode.workspace.workspaceFolders) {
+    const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
+    const workspacePath: string = workspaceFolder.uri.fsPath;
+    const frontendRoot = await getProjectRoot(workspacePath, constants.frontendFolderName);
+    if (frontendRoot) {
+      ports.push(...constants.frontendPorts);
+    }
+    const backendRoot = await getProjectRoot(workspacePath, constants.backendFolderName);
+    if (backendRoot) {
+      ports.push(...constants.backendPorts);
+    }
+    const botRoot = await getProjectRoot(workspacePath, constants.botFolderName);
+    if (botRoot) {
+      ports.push(...constants.botPorts);
+    }
+  }
+
+  const portsInUse: number[] = [];
+  for (const port of ports) {
+    if (await detectPortListening(port[0], port[1])) {
+      portsInUse.push(port[0]);
+    }
+  }
+  return portsInUse;
+}
+
+export function getTeamsAppTenantId(): string | undefined {
+  if (ext.workspaceUri) {
+    const ws = ext.workspaceUri.fsPath;
+    if (isWorkspaceSupported(ws)) {
+      const env = getActiveEnv();
+      const envJsonPath = path.join(ws, `.${ConfigFolderName}/env.${env}.json`);
+      const envJson = JSON.parse(fs.readFileSync(envJsonPath, "utf8"));
+      return envJson.solution.teamsAppTenantId;
+    }
+  }
+
+  return undefined;
+}
+

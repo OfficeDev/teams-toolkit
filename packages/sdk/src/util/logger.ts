@@ -28,7 +28,7 @@ export interface Logger {
 
 /**
  * Log function for customized logging.
- * 
+ *
  * @beta
  */
 export type LogFunction = (level: LogLevel, message: string) => void;
@@ -54,7 +54,7 @@ export enum LogLevel {
   /**
    * Show error message.
    */
-  Error
+  Error,
 }
 
 /**
@@ -88,7 +88,7 @@ class InternalLogger {
     verbose: console.debug,
     info: console.info,
     warn: console.warn,
-    error: console.error
+    error: console.error,
   };
 
   public error(message: string): void {

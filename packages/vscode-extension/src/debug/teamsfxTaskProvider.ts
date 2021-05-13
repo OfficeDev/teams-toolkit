@@ -5,7 +5,7 @@ import * as vscode from "vscode";
 
 import * as constants from "./constants";
 import * as commonUtils from "./commonUtils";
-import { ProductName, VsCodeEnv } from "fx-api";
+import { ProductName, VsCodeEnv } from "@microsoft/teamsfx-api";
 import { DotnetChecker } from "./depsChecker/dotnetChecker";
 import { detectVsCodeEnv } from "../handlers";
 import { vscodeAdapter } from "./depsChecker/vscodeAdapter";

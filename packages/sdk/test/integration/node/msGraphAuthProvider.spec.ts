@@ -7,13 +7,13 @@ import {
   loadConfiguration,
   OnBehalfOfUserCredential,
   M365TenantCredential,
-  MsGraphAuthProvider
+  MsGraphAuthProvider,
 } from "../../../src";
 import {
   getSsoTokenFromTeams,
   MockEnvironmentVariable,
   RestoreEnvironmentVariable,
-  AADJwtPayLoad
+  AADJwtPayLoad,
 } from "../helper";
 import jwtDecode from "jwt-decode";
 

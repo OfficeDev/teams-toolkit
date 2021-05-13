@@ -8,11 +8,11 @@ export const ProfileCard = (loading: boolean, data?: any) => (
     inverted
     styles={{ height: "max-content", margin: "0.5em 0" }}
   >
-    <Card.Header styles={{"margin-bottom": "0"}}>
+    <Card.Header styles={{ "margin-bottom": "0" }}>
       {loading && (
         <Skeleton animation="wave">
           <Flex gap="gap.medium">
-            <Skeleton.Avatar size={"larger"} />
+            <Skeleton.Avatar size="larger" />
             <div>
               <Skeleton.Line width="100px" />
               <Skeleton.Line width="150px" />
@@ -21,12 +21,8 @@ export const ProfileCard = (loading: boolean, data?: any) => (
         </Skeleton>
       )}
       {!loading && data && (
-        <Flex gap="gap.medium" >
-          <Avatar
-            size="larger"
-            image={URL.createObjectURL(data.photo)}
-            name={data.profile.displayName}
-          />{" "}
+        <Flex gap="gap.medium">
+          <Avatar size="larger" image={data.photoUrl} name={data.profile.displayName} />{" "}
           <Flex column>
             <Text content={data.profile.displayName} weight="bold" />
             <Text content={data.profile.mail} size="small" />

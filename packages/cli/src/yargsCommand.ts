@@ -5,12 +5,12 @@
 
 import { Argv, exit } from "yargs";
 
-import { FxError, Result, SystemError, UserError } from "fx-api";
+import { FxError, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
 
 import CLILogProvider from "./commonlib/log";
 import * as constants from "./constants";
 import { UnknownError } from "./error";
-import { CliTelemetry } from "./telemetry/cliTelemetry";
+import CliTelemetryInstance, { CliTelemetry } from "./telemetry/cliTelemetry";
 import { CliTelemetryReporter } from "./commonlib/telemetry";
 import { readFileSync } from "fs";
 import path from "path";
@@ -61,7 +61,7 @@ export abstract class YargsCommand {
     }
 
     const cliPackage = JSON.parse(readFileSync(path.join(__dirname, "/../package.json"), "utf8"));
-    const reporter = new CliTelemetryReporter(cliPackage.aiKey, cliPackage.name, cliPackage.version);
+    const reporter = new CliTelemetryReporter(cliPackage.aiKey, constants.cliTelemetryPrefix, cliPackage.version);
     CliTelemetry.setReporter(reporter);
 
     try {
@@ -72,17 +72,21 @@ export abstract class YargsCommand {
     } catch (e) {
       const FxError: FxError =
         e instanceof UserError || e instanceof SystemError ? e : UnknownError(e);
-      console.log(`[${FxError.source}.${FxError.name}]: ${FxError.message}`.red);
+      console.error(`[${FxError.source}.${FxError.name}]: ${FxError.message}`.red);
       if (FxError instanceof UserError && FxError.helpLink) {
-        console.log("Get help from".red, `${FxError.helpLink}#${FxError.source}${FxError.name}`.cyan.underline);
+        console.error("Get help from".red, `${FxError.helpLink}#${FxError.source}${FxError.name}`.cyan.underline);
       }
       if (FxError instanceof SystemError && FxError.issueLink) {
-        console.log("Report this issue at".red, `${FxError.issueLink}`.cyan.underline);
+        console.error("Report this issue at".red, `${FxError.issueLink}`.cyan.underline);
       }
       if (CLILogProvider.getLogLevel() === constants.CLILogLevel.debug) {
-        console.log("Call stack:\n".red, `${FxError.stack}`.red);
+        console.error("Call stack:\n".red, `${FxError.stack}`.red);
       }
+
+      CliTelemetryInstance.flush();
       exit(-1, FxError);
     }
+
+    CliTelemetryInstance.flush();
   }
 }

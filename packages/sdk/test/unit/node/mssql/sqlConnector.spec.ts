@@ -11,7 +11,7 @@ import {
   DefaultTediousConnectionConfiguration,
   ErrorWithCode,
   setLogLevel,
-  LogLevel
+  LogLevel,
 } from "../../../../src";
 
 chaiUse(chaiPromises);
@@ -46,7 +46,7 @@ describe("DefaultTediousConnection Tests - Node", () => {
       SQL_ENDPOINT: fakeSQLServerEndpoint,
       SQL_DATABASE: fakeSQLDataName,
       SQL_USER_NAME: fakeSQLUserName,
-      SQL_PASSWORD: fakeSQLPassword
+      SQL_PASSWORD: fakeSQLPassword,
     });
     loadConfiguration();
 
@@ -65,7 +65,7 @@ describe("DefaultTediousConnection Tests - Node", () => {
     restore = mockedEnv({
       SQL_ENDPOINT: fakeSQLServerEndpoint,
       SQL_DATABASE: fakeSQLDataName,
-      IDENTITY_ID: fakeSQLIdentityId
+      IDENTITY_ID: fakeSQLIdentityId,
     });
     loadConfiguration();
 
@@ -74,7 +74,7 @@ describe("DefaultTediousConnection Tests - Node", () => {
       return new Promise<AccessToken>((resolve) => {
         resolve({
           token: fakeToken,
-          expiresOnTimestamp: 12345678
+          expiresOnTimestamp: 12345678,
         });
       });
     });
@@ -95,7 +95,7 @@ describe("DefaultTediousConnection Tests - Node", () => {
     restore = mockedEnv({
       SQL_DATABASE: fakeSQLDataName,
       SQL_USER_NAME: fakeSQLUserName,
-      SQL_PASSWORD: fakeSQLPassword
+      SQL_PASSWORD: fakeSQLPassword,
     });
     loadConfiguration();
 
@@ -108,7 +108,7 @@ describe("DefaultTediousConnection Tests - Node", () => {
   it("getConfig should throw InvalidConfiguration error without username, password or identity id", async function () {
     restore = mockedEnv({
       SQL_ENDPOINT: fakeSQLServerEndpoint,
-      SQL_DATABASE: fakeSQLDataName
+      SQL_DATABASE: fakeSQLDataName,
     });
     loadConfiguration();
 

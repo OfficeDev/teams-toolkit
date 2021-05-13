@@ -4,7 +4,7 @@ import { TestHelper } from "../helper";
 import { IdentityPlugin } from "../../../../../src/plugins/resource/identity";
 import * as dotenv from "dotenv";
 import chaiAsPromised from "chai-as-promised";
-import { PluginContext } from "fx-api";
+import { PluginContext } from "@microsoft/teamsfx-api";
 import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import * as faker from "faker";
 import * as sinon from "sinon";

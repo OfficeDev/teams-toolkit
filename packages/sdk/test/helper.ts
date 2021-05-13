@@ -8,11 +8,6 @@ import fs from "fs-extra";
 import * as msal from "@azure/msal-node";
 import mockedEnv from "mocked-env";
 import { chromium, ChromiumBrowser, Page } from "playwright-chromium";
-import {
-  TEST_USER_NAME,
-  TEST_USER_PASSWORD,
-  TEST_SUBSCRIPTION_ID
-} from "../../api/src/ci/conf/secrets";
 import urljoin from "url-join";
 import { JwtPayload } from "jwt-decode";
 import { cleanUp } from "../../cli/tests/e2e/commonUtils";
@@ -66,7 +61,7 @@ export async function createNewProject(name: string): Promise<string> {
   console.log(`Provisioning project ${name}...`);
   if (
     !(await callCli(
-      `teamsfx provision --folder ${projectFolder} --subscription ${TEST_SUBSCRIPTION_ID}`
+      `teamsfx provision --folder ${projectFolder} --subscription ${process.env.TEST_SUBSCRIPTION_ID}`
     ))
   ) {
     await deleteProject(name, projectFolder);
@@ -139,7 +134,7 @@ async function loginTestUser(): Promise<void> {
     passwordOption2: `span#FormsAuthentication`,
     password: `input[name=Password]`,
     submit: `input[type=submit]`,
-    title: `h2[title="Join or create a team"]`
+    title: `h2[title="Join or create a team"]`,
   };
 
   const context = await browser.newContext();
@@ -147,17 +142,17 @@ async function loginTestUser(): Promise<void> {
   await page.goto(TEAMS_URL, { timeout: E2E_TIMEOUT });
   await page.waitForSelector(selectors.username, { timeout: E2E_TIMEOUT });
   await page.click(selectors.username);
-  await page.type(selectors.username, TEST_USER_NAME);
+  await page.type(selectors.username, process.env.TEST_USER_NAME);
   await page.press(selectors.username, "Enter");
   await page.waitForSelector(selectors.passwordOption2, { timeout: E2E_TIMEOUT, state: "visible" });
   try {
     // Click password option is not stable, try twice here
     await page.click(selectors.passwordOption, { delay: 5000, timeout: 10000 });
     await page.click(selectors.passwordOption2, { delay: 5000, timeout: 10000 });
-  } catch (e) { }
+  } catch (e) {}
   await page.waitForSelector(selectors.password, { timeout: E2E_TIMEOUT });
   await page.click(selectors.password);
-  await page.type(selectors.password, TEST_USER_PASSWORD);
+  await page.type(selectors.password, process.env.TEST_USER_PASSWORD);
   await page.press(selectors.password, "Enter");
   await page.waitForSelector(selectors.submit);
   await page.click(selectors.submit);
@@ -168,7 +163,7 @@ async function callCli(command: string): Promise<boolean> {
   const result = await execAsync(command, {
     cwd: process.cwd(),
     env: process.env,
-    timeout: 0
+    timeout: 0,
   });
   return result.stderr === "";
 }
@@ -192,8 +187,8 @@ export async function getAccessToken(
   const msalConfig = {
     auth: {
       clientId: clientId,
-      authority: urljoin(defaultAuthorityHost!, tenantId!)
-    }
+      authority: urljoin(defaultAuthorityHost!, tenantId!),
+    },
   };
   let scopes: string[];
   // this scope is required.
@@ -207,7 +202,7 @@ export async function getAccessToken(
   const usernamePasswordRequest = {
     scopes: scopes,
     username: userName,
-    password: password
+    password: password,
   };
   const response = await pca.acquireTokenByUsernamePassword(usernamePasswordRequest);
   return response!.accessToken;
@@ -256,7 +251,7 @@ export async function getSsoTokenFromTeams(): Promise<string> {
  * Once invoke MockEnvironmentVariables, mock the variables in it with another value, it will take effect immediately.
  */
 export function MockEnvironmentVariable(): () => void {
-  require('dotenv').config();
+  require("dotenv").config();
   return mockedEnv({
     M365_CLIENT_ID: process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
     M365_CLIENT_SECRET: process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_SECRET,
@@ -269,7 +264,7 @@ export function MockEnvironmentVariable(): () => void {
     SQL_PASSWORD: process.env.SDK_INTEGRATION_SQL_PASSWORD,
 
     INITIATE_LOGIN_ENDPOINT: "fake_initiate_login_endpoint",
-    M365_APPLICATION_ID_URI: process.env.SDK_INTEGRATION_TEST_M365_APPLICATION_ID_URI
+    M365_APPLICATION_ID_URI: process.env.SDK_INTEGRATION_TEST_M365_APPLICATION_ID_URI,
   });
 }
 

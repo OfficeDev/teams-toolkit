@@ -4983,7 +4983,7 @@ THE SOFTWARE.
 
 ---------------------------------------------------------
 
-fx-api 1.1.1-alpha.5 - MIT
+@microsoft/teamsfx-api 0.1.0-alpha.0 - MIT
 
 
 (c) Sindre Sorhus

@@ -25,8 +25,9 @@ export interface AzureAccountProvider {
     /**
      * Async get ms-rest-* [credential](https://github.com/Azure/ms-rest-nodeauth/blob/master/lib/credentials/tokenCredentialsBase.ts)
      * @param showDialog Control whether the UI layer displays pop-up windows.
+     * @param tenantId Tenant or directory id
      */
-    getAccountCredentialAsync(showDialog?: boolean): Promise<TokenCredentialsBase | undefined>;
+    getAccountCredentialAsync(showDialog?: boolean, tenantId?: string): Promise<TokenCredentialsBase | undefined>;
     /**
      * Async get identity [crendential](https://github.com/Azure/azure-sdk-for-js/blob/master/sdk/core/core-auth/src/tokenCredential.ts)
      * @param showDialog Control whether the UI layer displays pop-up windows.
@@ -50,8 +51,9 @@ export interface AzureAccountProvider {
      * Add update account info callback 
      * @param name callback name
      * @param statusChange callback method
+     * @param immediateCall whether callback when register, the default value is true
      */
-    setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean>;
+    setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediateCall?: boolean): Promise<boolean>;
 
     /**
      * Remove update account info callback 
@@ -118,8 +120,9 @@ export interface AppStudioTokenProvider {
      * Add update account info callback 
      * @param name callback name
      * @param statusChange callback method
+     * @param immediateCall whether callback when register, the default value is true
      */
-    setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean>;
+    setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediateCall?: boolean): Promise<boolean>;
 
     /**
      * Remove update account info callback 
@@ -166,8 +169,9 @@ export interface GraphTokenProvider {
      * Add update account info callback 
      * @param name callback name
      * @param statusChange callback method
+     * @param immediateCall whether callback when register, the default value is true
      */
-    setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean>;
+    setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediateCall?: boolean): Promise<boolean>;
 
     /**
      * Remove update account info callback 

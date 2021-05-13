@@ -2,7 +2,6 @@ import React from "react";
 import "./App.css";
 import * as microsoftTeams from "@microsoft/teams-js";
 
-
 /**
  * The 'Config' component is used to display your group tabs
  * user configuration options.  Here you will allow the user to
@@ -10,7 +9,6 @@ import * as microsoftTeams from "@microsoft/teams-js";
  * their choices and communicate that to Teams to enable the save button.
  */
 class TabConfig extends React.Component {
-
   render() {
     // Initialize the Microsoft Teams SDK
     microsoftTeams.initialize();
@@ -23,10 +21,10 @@ class TabConfig extends React.Component {
     microsoftTeams.settings.registerOnSaveHandler((saveEvent) => {
       const baseUrl = `https://${window.location.hostname}:${window.location.port}`;
       microsoftTeams.settings.setSettings({
-        "suggestedDisplayName": "My Tab",
-        "entityId": "Test",
-        "contentUrl": baseUrl + "/index.html#/tab",
-        "websiteUrl": baseUrl + "/index.html#/tab"
+        suggestedDisplayName: "My Tab",
+        entityId: "Test",
+        contentUrl: baseUrl + "/index.html#/tab",
+        websiteUrl: baseUrl + "/index.html#/tab",
       });
       saveEvent.notifySuccess();
     });
@@ -43,8 +41,8 @@ class TabConfig extends React.Component {
       <div>
         <h1>Tab Configuration</h1>
         <div>
-          This is where you will add your tab configuration options the user
-          can choose when the tab is added to your team/group chat.
+          This is where you will add your tab configuration options the user can choose when the tab
+          is added to your team/group chat.
         </div>
       </div>
     );

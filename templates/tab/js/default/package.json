@@ -3,17 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@microsoft/teams-js": "^1.6.0",
     "@fluentui/react-northstar": "^0.54.0",
+    "@microsoft/teams-js": "^1.6.0",
+    "@microsoft/teamsfx": "^0.1.0",
     "axios": "^0.21.1",
     "classnames": "^2.3.1",
     "msteams-react-base-component": "^3.1.0",
-    "tslib": "^2.0.0",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
+    "react": "^16.14.0",
+    "react-dom": "^16.14.0",
     "react-router-dom": "^5.1.2",
     "react-scripts": "^4.0.3",
-    "teamsdev-client": "^1.1.0"
+    "tslib": "^2.0.0"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -23,6 +23,12 @@
     "provision": "teamsfx provision",
     "deploy": "teamsfx deploy",
     "publish-teams": "teamsfx publish"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
   },
   "browserslist": {
     "production": [

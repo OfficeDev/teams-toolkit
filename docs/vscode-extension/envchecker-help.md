@@ -80,7 +80,26 @@ It might be caused by timeout issue (longer than 3 minutes), the process to inst
 ### Mitigation
 Please refer to [the guide](#how-to-install-net-sdk) to install `.NET SDK` manually.
 
+## DotnetNotSupportTargetVersion
+### Notification Message
+> NETSDK1045: The current .NET SDK does not support 'newer version' as a target.
+
+### Mitigation
+Please refer to [the guide](https://docs.microsoft.com/dotnet/core/tools/sdk-errors/netsdk1045#globaljson-file) to check your `global.json` file in the root folder in your project and up the directory chain to the root of the volume, since it can be anywhere in the folder structure. If it contains an SDK version, delete the sdk node and all its children, or update it to the desired newer .NET Core version (`.NET 5` or `.NET Core 3.1` ).
+
+The `global.json` file is not required, so if it doesn't contain anything other than the sdk node, you can delete the whole file.
+
+## Teams Toolkit Validation Settings
+
+There are two settings to turn on/off .NET SDK and Node.js validation, and both of them are enabled by default. You are able to uncheck the box if you do not need the dependencies validation and would like to install the dependencies by yourself. Check the [Node.js installation guide](#how-to-install-nodejs) and [.NET SDK installation guide](#how-to-install-net-sdk).
+
+To open your user and workspace settings, use the following Visual Studio Code menu command:
+
+* On Windows/Linux - **File > Preferences > Settings > Extensions > Teams Toolkit**
+* On macOS - **Code > Preferences > Settings > Extensions > Teams Toolkit**
+
+![envchecker-settings](../images/vscode-extension/envchecker/envchecker-settings.png)
 
 ## Report issues 
 
-If above FAQs can't solve your problem, please click [here](https://github.com/OfficeDev/Teams Toolkit/issues/new) to submit an issue on GitHub and attach the log from Visual Studio Code output channel named "Teams Toolkit".
+If above FAQs can't solve your problem, please click [here](https://github.com/OfficeDev/Teamsfx/issues/new) to submit an issue on GitHub and attach the log from Visual Studio Code output channel named "Teams Toolkit".

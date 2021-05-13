@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import axios, { AxiosInstance } from "axios";
-import { SystemError } from "fx-api";
+import { SystemError } from "@microsoft/teamsfx-api";
 import { IAppDefinition } from "../../solution/fx-solution/appstudio/interface";
 import { AppStudioError } from "./errors";
 import { IPublishingAppDenition } from "./interfaces/IPublishingAppDefinition";
@@ -86,10 +86,18 @@ export namespace AppStudioClient {
             
             if (response && response.data) {
                 if (response.data.error) {
+                    // To avoid App Studio BadGateway error
+                    // The app is actually published to app catalog.
+                    if (response.data.error.code === "BadGateway") {
+                        const appDefinition = await getAppByTeamsAppId(teamsAppId, appStudioToken);
+                        if (appDefinition) {
+                            return appDefinition.teamsAppId;
+                        }
+                    }
                     throw AppStudioResultFactory.SystemError(
                         AppStudioError.TeamsAppPublishFailedError.name,
                         AppStudioError.TeamsAppPublishFailedError.message(teamsAppId),
-                        response.data.error.message
+                        `code: ${response.data.error.code}, message: ${response.data.error.message}`
                     );
                 } else {
                     return response.data.id;

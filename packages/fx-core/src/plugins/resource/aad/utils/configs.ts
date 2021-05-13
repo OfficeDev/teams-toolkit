@@ -1,24 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { PluginContext, ConfigValue } from "fx-api";
-import {
-  Constants,
-  Plugins,
-  ConfigKeysOfOtherPlugin,
-  ConfigKeys,
-} from "../constants";
+import { PluginContext, ConfigValue } from "@microsoft/teamsfx-api";
+import { Constants, Plugins, ConfigKeysOfOtherPlugin, ConfigKeys } from "../constants";
 import { ConfigErrorMessages as Errors, GetConfigError } from "../errors";
 import { format, Formats } from "./format";
 import { Utils } from "./common";
 import { ResultFactory } from "../results";
 import { v4 as uuidv4 } from "uuid";
 
-function checkAndSaveConfig(
-  context: PluginContext,
-  key: string,
-  value: ConfigValue
-) {
+function checkAndSaveConfig(context: PluginContext, key: string, value: ConfigValue) {
   if (!value) {
     return;
   }
@@ -43,10 +34,7 @@ export class ProvisionConfig {
   public async restoreConfigFromContext(ctx: PluginContext): Promise<void> {
     const displayName: string = ctx.app.name.short;
     if (displayName) {
-      this.displayName = displayName.substr(
-        0,
-        Constants.aadAppMaxLength
-      ) as string;
+      this.displayName = displayName.substr(0, Constants.aadAppMaxLength) as string;
     } else {
       throw ResultFactory.SystemError(
         GetConfigError.name,
@@ -63,23 +51,20 @@ export class ProvisionConfig {
       throw ResultFactory.SystemError(
         GetConfigError.name,
         GetConfigError.message(
-          Errors.GetConfigError(
-            ConfigKeysOfOtherPlugin.solutionPermissionRequest,
-            Plugins.solution
-          )
+          Errors.GetConfigError(ConfigKeysOfOtherPlugin.solutionPermissionRequest, Plugins.solution)
         )
       );
     }
 
     const objectId: ConfigValue = ctx.config.get(
-      Utils.addLocalDebugPrefix(this.isLocalDebug, ConfigKeys.objectId),
+      Utils.addLocalDebugPrefix(this.isLocalDebug, ConfigKeys.objectId)
     );
     if (objectId) {
       this.objectId = objectId as string;
     }
 
     const clientSecret: ConfigValue = ctx.config.get(
-      Utils.addLocalDebugPrefix(this.isLocalDebug, ConfigKeys.clientSecret),
+      Utils.addLocalDebugPrefix(this.isLocalDebug, ConfigKeys.clientSecret)
     );
     if (clientSecret) {
       this.password = clientSecret as string;
@@ -106,22 +91,13 @@ export class ProvisionConfig {
     );
     checkAndSaveConfig(
       ctx,
-      Utils.addLocalDebugPrefix(
-        this.isLocalDebug,
-        ConfigKeys.oauth2PermissionScopeId
-      ),
+      Utils.addLocalDebugPrefix(this.isLocalDebug, ConfigKeys.oauth2PermissionScopeId),
       this.oauth2PermissionScopeId
     );
+    checkAndSaveConfig(ctx, ConfigKeys.teamsMobileDesktopAppId, Constants.teamsMobileDesktopAppId);
     checkAndSaveConfig(
       ctx,
-      ConfigKeys.teamsMobileDesktopAppId,
-      Constants.teamsMobileDesktopAppId
-    );
-    checkAndSaveConfig(ctx,
-      Utils.addLocalDebugPrefix(
-        this.isLocalDebug,
-        ConfigKeys.tenantId
-      ),
+      Utils.addLocalDebugPrefix(this.isLocalDebug, ConfigKeys.tenantId),
       tenantId
     );
     checkAndSaveConfig(ctx, ConfigKeys.oauthHost, Constants.oauthAuthorityPrefix);
@@ -130,7 +106,7 @@ export class ProvisionConfig {
   }
 
   private static getOauthAuthority(tenantId: string): string {
-    return Constants.oauthAuthorityPrefix + tenantId;
+    return `${Constants.oauthAuthorityPrefix}/${tenantId}`;
   }
 }
 
@@ -152,19 +128,19 @@ export class SetApplicationInContextConfig {
     } else {
       frontendDomain = this.isLocalDebug
         ? ctx.configOfOtherPlugins
-          .get(Plugins.localDebug)
-          ?.get(ConfigKeysOfOtherPlugin.localDebugTabDomain)
+            .get(Plugins.localDebug)
+            ?.get(ConfigKeysOfOtherPlugin.localDebugTabDomain)
         : ctx.configOfOtherPlugins
-          .get(Plugins.frontendHosting)
-          ?.get(ConfigKeysOfOtherPlugin.frontendHostingDomain);
+            .get(Plugins.frontendHosting)
+            ?.get(ConfigKeysOfOtherPlugin.frontendHostingDomain);
       if (frontendDomain) {
         this.frontendDomain = format(frontendDomain as string, Formats.Domain);
       }
     }
 
-    const botId: ConfigValue = this.isLocalDebug ?
-      ctx.configOfOtherPlugins.get(Plugins.teamsBot)?.get(ConfigKeysOfOtherPlugin.teamsBotIdLocal) :
-      ctx.configOfOtherPlugins.get(Plugins.teamsBot)?.get(ConfigKeysOfOtherPlugin.teamsBotId);
+    const botId: ConfigValue = this.isLocalDebug
+      ? ctx.configOfOtherPlugins.get(Plugins.teamsBot)?.get(ConfigKeysOfOtherPlugin.teamsBotIdLocal)
+      : ctx.configOfOtherPlugins.get(Plugins.teamsBot)?.get(ConfigKeysOfOtherPlugin.teamsBotId);
     if (botId) {
       this.botId = format(botId as string, Formats.UUID);
     }
@@ -177,9 +153,7 @@ export class SetApplicationInContextConfig {
     } else {
       throw ResultFactory.SystemError(
         GetConfigError.name,
-        GetConfigError.message(
-          Errors.GetConfigError(ConfigKeys.clientId, Plugins.pluginName)
-        )
+        GetConfigError.message(Errors.GetConfigError(ConfigKeys.clientId, Plugins.pluginName))
       );
     }
   }
@@ -207,33 +181,27 @@ export class PostProvisionConfig {
   public async restoreConfigFromContext(ctx: PluginContext): Promise<void> {
     let frontendEndpoint: ConfigValue = ctx.config.get(ConfigKeys.endpoint);
     if (frontendEndpoint) {
-      this.frontendEndpoint = format(
-        frontendEndpoint as string,
-        Formats.Endpoint
-      );
+      this.frontendEndpoint = format(frontendEndpoint as string, Formats.Endpoint);
     } else {
       frontendEndpoint = this.isLocalDebug
         ? ctx.configOfOtherPlugins
-          .get(Plugins.localDebug)
-          ?.get(ConfigKeysOfOtherPlugin.localDebugTabEndpoint)
+            .get(Plugins.localDebug)
+            ?.get(ConfigKeysOfOtherPlugin.localDebugTabEndpoint)
         : ctx.configOfOtherPlugins
-          .get(Plugins.frontendHosting)
-          ?.get(ConfigKeysOfOtherPlugin.frontendHostingEndpoint);
+            .get(Plugins.frontendHosting)
+            ?.get(ConfigKeysOfOtherPlugin.frontendHostingEndpoint);
       if (frontendEndpoint) {
-        this.frontendEndpoint = format(
-          frontendEndpoint as string,
-          Formats.Endpoint
-        );
+        this.frontendEndpoint = format(frontendEndpoint as string, Formats.Endpoint);
       }
     }
 
     const botEndpoint: ConfigValue = this.isLocalDebug
       ? ctx.configOfOtherPlugins
-        .get(Plugins.localDebug)
-        ?.get(ConfigKeysOfOtherPlugin.localDebugBotEndpoint)
+          .get(Plugins.localDebug)
+          ?.get(ConfigKeysOfOtherPlugin.localDebugBotEndpoint)
       : ctx.configOfOtherPlugins
-        .get(Plugins.teamsBot)
-        ?.get(ConfigKeysOfOtherPlugin.teamsBotEndpoint);
+          .get(Plugins.teamsBot)
+          ?.get(ConfigKeysOfOtherPlugin.teamsBotEndpoint);
     if (botEndpoint) {
       this.botEndpoint = format(botEndpoint as string, Formats.Endpoint);
     }
@@ -246,9 +214,7 @@ export class PostProvisionConfig {
     } else {
       throw ResultFactory.SystemError(
         GetConfigError.name,
-        GetConfigError.message(
-          Errors.GetConfigError(ConfigKeys.objectId, Plugins.pluginName)
-        )
+        GetConfigError.message(Errors.GetConfigError(ConfigKeys.objectId, Plugins.pluginName))
       );
     }
 
@@ -286,9 +252,7 @@ export class UpdatePermissionConfig {
     } else {
       throw ResultFactory.SystemError(
         GetConfigError.name,
-        GetConfigError.message(
-          Errors.GetConfigError(ConfigKeys.objectId, Plugins.pluginName)
-        )
+        GetConfigError.message(Errors.GetConfigError(ConfigKeys.objectId, Plugins.pluginName))
       );
     }
 
@@ -301,10 +265,7 @@ export class UpdatePermissionConfig {
       throw ResultFactory.SystemError(
         GetConfigError.name,
         GetConfigError.message(
-          Errors.GetConfigError(
-            ConfigKeysOfOtherPlugin.solutionPermissionRequest,
-            Plugins.solution
-          )
+          Errors.GetConfigError(ConfigKeysOfOtherPlugin.solutionPermissionRequest, Plugins.solution)
         )
       );
     }

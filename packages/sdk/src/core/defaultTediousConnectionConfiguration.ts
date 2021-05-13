@@ -25,13 +25,13 @@ export class DefaultTediousConnectionConfiguration {
 
   /**
    * Generate connection configuration consumed by tedious.
-   * 
+   *
    * @returns Connection configuration of tedious for the SQL.
-   * 
+   *
    * @throws {@link ErrorCode|InvalidConfiguration} when SQL config resource configuration is invalid.
    * @throws {@link ErrorCode|InternalError} when get user MSI token failed or MSI token is invalid.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
-   * 
+   *
    * @beta
    */
   public async getConfig(): Promise<ConnectionConfig> {
@@ -102,9 +102,11 @@ export class DefaultTediousConnectionConfiguration {
       );
     }
     if (!(sqlConfig.sqlUsername && sqlConfig.sqlPassword) && !sqlConfig.sqlIdentityId) {
-      const errMsg = `SQL configuration is not valid without ${sqlConfig.sqlIdentityId ? "" : "identity id "
-        } ${sqlConfig.sqlUsername ? "" : "SQL username "} ${sqlConfig.sqlPassword ? "" : "SQL password"
-        } exist`;
+      const errMsg = `SQL configuration is not valid without ${
+        sqlConfig.sqlIdentityId ? "" : "identity id "
+      } ${sqlConfig.sqlUsername ? "" : "SQL username "} ${
+        sqlConfig.sqlPassword ? "" : "SQL password"
+      } exist`;
       internalLogger.error(errMsg);
       throw new ErrorWithCode(errMsg, ErrorCode.InvalidConfiguration);
     }
@@ -130,13 +132,13 @@ export class DefaultTediousConnectionConfiguration {
         type: TediousAuthenticationType.default,
         options: {
           userName: sqlConfig.sqlUsername,
-          password: sqlConfig.sqlPassword
-        }
+          password: sqlConfig.sqlPassword,
+        },
       },
       options: {
         database: sqlConfig.sqlDatabaseName,
-        encrypt: true
-      }
+        encrypt: true,
+      },
     };
     return config;
   }
@@ -167,13 +169,13 @@ export class DefaultTediousConnectionConfiguration {
         authentication: {
           type: TediousAuthenticationType.MSI,
           options: {
-            token: token.token
-          }
+            token: token.token,
+          },
         },
         options: {
           database: sqlConfig.sqlDatabaseName,
-          encrypt: true
-        }
+          encrypt: true,
+        },
       };
       internalLogger.verbose(
         `Generate token configuration success, server endpoint is ${sqlConfig.sqlServerEndpoint}, database name is ${sqlConfig.sqlDatabaseName}`
@@ -194,7 +196,7 @@ export class DefaultTediousConnectionConfiguration {
  */
 enum TediousAuthenticationType {
   default = "default",
-  MSI = "azure-active-directory-access-token"
+  MSI = "azure-active-directory-access-token",
 }
 
 /**

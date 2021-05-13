@@ -52,7 +52,7 @@ import { internalLogger } from "../util/logger";
  * @param scopes - The array of Microsoft Token scope of access. Default value is `[.default]`.
  *
  * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
- * 
+ *
  * @returns Graph client with specified scopes.
  *
  * @beta
@@ -64,7 +64,7 @@ export function createMicrosoftGraphClient(
   internalLogger.info("Create Microsoft Graph Client");
   const authProvider = new MsGraphAuthProvider(credential, scopes);
   const graphClient = Client.initWithMiddleware({
-    authProvider
+    authProvider,
   });
 
   return graphClient;

@@ -3,7 +3,7 @@
 "use strict";
 
 import * as fs from "fs-extra";
-import { ConfigFolderName, Dialog, DialogMsg, DialogType, LogProvider, PluginContext, QuestionType } from "fx-api";
+import { ConfigFolderName, Dialog, DialogMsg, DialogType, LogProvider, PluginContext, QuestionType } from "@microsoft/teamsfx-api";
 import { asn1, md, pki } from "node-forge";
 import * as os from "os";
 import { v4 as uuidv4 } from "uuid";
@@ -15,9 +15,9 @@ const continueText: string = "Continue";
 const learnMoreText: string = "Learn More";
 const learnMoreUrl: string = "https://aka.ms/teamsfx-ca-certificate";
 const confirmMessage: string = "To debug applications in Teams, your localhost server must be on HTTPS.\
- For Teams to trust the self-signed SSL certificate used by the toolkit, a CA certificate can be added to your certificate store.\
+ For Teams to trust the self-signed SSL certificate used by the toolkit, a CA certificate must be added to your certificate store.\
  You may skip this step, but you'll have to manually trust the secure connection in a new browser window when debugging your apps in Teams.\
- For more information \"https://aka.ms/teamsfx-ca-certificate\". You may be asked for your account credentials if you continue to install the certificate.";
+ For more information \"https://aka.ms/teamsfx-ca-certificate\". You may be asked for your account credentials when installing the certificate.";
 
 export interface LocalCertificate {
     certPath: string,

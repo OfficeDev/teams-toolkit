@@ -9,7 +9,7 @@ import {
   TelemetrySuccess,
   TelemetryErrorType
 } from "./cliTelemetryEvents";
-import { FxError, UserError } from "fx-api";
+import { FxError, UserError } from "@microsoft/teamsfx-api";
 import { getTeamsAppId } from "../utils";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -34,7 +34,7 @@ export class CliTelemetry {
     return CliTelemetry.instance;
   }
 
-  public withRootFolder(rootFolder: string): CliTelemetry {
+  public withRootFolder(rootFolder: string | undefined): CliTelemetry {
     CliTelemetry.rootFolder = rootFolder;
     return CliTelemetry.instance;
   }

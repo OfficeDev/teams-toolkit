@@ -21,18 +21,17 @@ To test the SDK, you'd better install [Visual Studio Code](https://code.visualst
 
 # Debugging SDK
 
-Use [npm-link](https://docs.npmjs.com/cli/v7/commands/npm-link) to test the SDK iteratively.
+Use [npm-pack](https://docs.npmjs.com/cli/v6/commands/npm-pack) to test the SDK.
 If you use a project created by TeamsFx VS Code extension, remove the `@microsoft/teamsfx` in package.json first.
 
 ```bash
-cd packages/sdk              # go into the SDK package directory
-npm link                     # create global link
-cd ../test-project-using-sdk # go into test project directory.
-npm link @microsoft/teamsfx  # link-install the package
+cd packages/sdk                             # go into the SDK package directory
+npm pack                                    # create local packed file
+cd ../test-project-using-sdk                # go into test project directory.
+npm install ../microsoft-teamsfx-x.x.x.tgz  # install the local built package
 ```
 
-Run `npm run build` under `packages/sdk` after any updates of SDK.
-
+Run `npm run build` and `npm pack` under `packages/sdk` after any updates of SDK.
 
 # Running test cases
 
@@ -59,12 +58,12 @@ Use `npm run format` to fix format issues and `npm run lint` to check lint issue
 # Pull Request Process
 
 1. Check out a new branch from "main".
-1. Update code in correct place. [Supporting Browser and NodeJS](#supporting-browser-and-nodejs)
-2. Make sure modified codes are covered by unit tests. [Running test cases](#running-test-cases)
-3. Ensure code style check has no error. [Style Guidelines](#style-guidelines)
-4. Add comment for public class/method. Please check [comment template](API_COMMENT.md) for details.
-5. Merge your changes to "main" branch.
-6. At least one approve from code owners is required.
+2. Update code in correct place. [Supporting Browser and NodeJS](#supporting-browser-and-nodejs)
+3. Make sure modified codes are covered by unit tests. [Running test cases](#running-test-cases)
+4. Ensure code style check has no error. [Style Guidelines](#style-guidelines)
+5. Add comment for public class/method. Please check [comment template](API_COMMENT.md) for details.
+6. Merge your changes to "main" branch.
+7. At least one approve from code owners is required.
 
 ## Supporting Browser and NodeJS
 

@@ -1,9 +1,10 @@
 import * as chai from "chai";
-import * as fs from "fs";
+import * as fs from "fs-extra";
 
 import { cpUtils } from "../../../../src/debug/depsChecker/cpUtils";
 import { isWindows } from "../../../../src/debug/depsChecker/common";
 import { logger } from "../adapters/testLogger";
+import * as tmp from "tmp";
 
 export async function commandExistsInPath(command: string): Promise<boolean> {
   try {
@@ -30,9 +31,51 @@ export function assertPathEqual(actual: string, expected: string) {
 }
 
 export async function getExecutionPolicyForCurrentUser(): Promise<string> {
-  return cpUtils.executeCommand(undefined, logger, { shell: 'powershell.exe' }, "Get-ExecutionPolicy", "-Scope", "CurrentUser");
+  const policy = await cpUtils.executeCommand(
+    undefined,
+    logger,
+    undefined,
+    "powershell.exe",
+     "-Command",
+    "Get-ExecutionPolicy",
+    "-Scope",
+    "CurrentUser"
+  );
+  return policy.trim();
 }
 
-export async function setExecutionPolicyForCurrentUser(policy: string) {
-  cpUtils.executeCommand(undefined, logger, { shell: 'powershell.exe' }, "Set-ExecutionPolicy", "-Scope", "CurrentUser", policy);
+export async function setExecutionPolicyForCurrentUser(policy: string): Promise<void> {
+  await cpUtils.executeCommand(
+    undefined,
+    logger,
+    undefined,
+    "powershell.exe",
+    "-Command", 
+    "Set-ExecutionPolicy",
+    "-Scope",
+    "CurrentUser",
+    policy
+  );
+}
+
+export function createTmpDir(): Promise<[string, () => void]> {
+  return new Promise((resolve, reject) => {
+    // unsafeCleanup: recursively removes the created temporary directory, even when it's not empty.
+    tmp.dir({ unsafeCleanup: true }, function(err, path, cleanupCallback) {
+      if (err) {
+        reject(err);
+        return;
+      }
+      resolve([path, cleanupCallback]);
+    });
+  });
+}
+
+export async function isNonEmptyDir(dir: string): Promise<boolean> {
+  try {
+    const files = await fs.readdir(dir);
+    return files.length !== 0;
+  } catch (error) {
+    return false;
+  }
 }

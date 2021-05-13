@@ -15,7 +15,9 @@ import {
     SolutionConfig,
     SystemError,
     SolutionContext,
-} from "fx-api";
+    AzureAccountProvider,
+    SubscriptionInfo,
+} from "@microsoft/teamsfx-api";
 import { GLOBAL_CONFIG, SolutionError } from "./constants";
 import { v4 as uuidv4 } from "uuid";
 import { ResourceManagementClient } from "@azure/arm-resources";
@@ -103,8 +105,20 @@ function getExistingAnswers(config: SolutionConfig): CommonQuestions | undefined
     return commonQuestions;
 }
 
-export async function askSubscription(config: SolutionConfig, azureToken: TokenCredentialsBase, dialog?: Dialog,) : Promise<Result<string, FxError>>{
-    const subscriptions: AzureSubscription[] = await getSubscriptionList(azureToken);
+/**
+ * Ask user to select a subscription. subscriptionId, tenantId 
+ * 
+ */
+export async function askSubscription(config: SolutionConfig, azureAccountProvider?: AzureAccountProvider, dialog?: Dialog) : Promise<Result<{subscriptionId: string, tenantId: string}, FxError>>{
+    if (azureAccountProvider === undefined) {
+        return err(
+            returnSystemError(
+                new Error("azureAccountProvider is undefined"),
+                "Solution",
+                SolutionError.InternelError)
+        );
+    }
+    const subscriptions: SubscriptionInfo[] = await azureAccountProvider.listSubscriptions();
     if (subscriptions.length === 0) {
         return err(
             returnUserError(
@@ -115,11 +129,12 @@ export async function askSubscription(config: SolutionConfig, azureToken: TokenC
         );
     }
     const activeSubscriptionId = config.get(GLOBAL_CONFIG)?.getString("subscriptionId");
+    const activeTenantId = config.get(GLOBAL_CONFIG)?.getString("tenantId");
     if (
-        activeSubscriptionId === undefined ||
+        activeSubscriptionId === undefined || activeTenantId == undefined ||
         subscriptions.findIndex((sub) => sub.subscriptionId === activeSubscriptionId) < 0
     ) {
-        const subscriptionNames: string[] = subscriptions.map((subscription) => subscription.displayName);
+        const subscriptionNames: string[] = subscriptions.map((subscription) => subscription.subscriptionName);
         const subscriptionName = (
             await dialog?.communicate(
                 new DialogMsg(DialogType.Ask, {
@@ -138,11 +153,11 @@ export async function askSubscription(config: SolutionConfig, azureToken: TokenC
                 ),
             );
         }
-        const subscription = subscriptions.find((subscription) => subscription.displayName === subscriptionName);
+        const subscription = subscriptions.find((subscription) => subscription.subscriptionName === subscriptionName);
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        return ok(subscription!.subscriptionId!);
+        return ok({subscriptionId: subscription?.subscriptionId!, tenantId: subscription?.tenantId!});
     } else {
-        return ok(activeSubscriptionId);
+        return ok({subscriptionId: activeSubscriptionId, tenantId: activeTenantId});
     }
 }
 
@@ -155,7 +170,7 @@ async function askCommonQuestions(
     appName: string,
     config: SolutionConfig,
     dialog?: Dialog,
-    azureToken?: TokenCredentialsBase,
+    azureAccountProvider?: AzureAccountProvider,
     appstudioTokenJson?: object,
 ): Promise<Result<CommonQuestions, FxError>> {
     if (appstudioTokenJson === undefined) {
@@ -163,6 +178,23 @@ async function askCommonQuestions(
             returnSystemError(new Error("Graph token json is undefined"), "Solution", SolutionError.NoAppStudioToken),
         );
     }
+    
+    const commonQuestions = new CommonQuestions(); 
+
+    //1. check subscriptionId
+    const subscriptionResult = await askSubscription(config, azureAccountProvider, dialog);
+    if (subscriptionResult.isErr()){
+        return err(subscriptionResult.error);
+    }
+    const subscriptionId = subscriptionResult.value.subscriptionId;
+    commonQuestions.subscriptionId = subscriptionId;
+    commonQuestions.tenantId = subscriptionResult.value.tenantId;
+    ctx.logProvider?.info(`[Solution] askCommonQuestions, step 1 - check subscriptionId pass!`);
+
+    // Note setSubscription here will change the token returned by getAccountCredentialAsync according to the subscription selected.
+    // So getting azureToken needs to precede setSubscription.
+    azureAccountProvider?.setSubscription(subscriptionId);
+    const azureToken = await azureAccountProvider?.getAccountCredentialAsync();
     if (azureToken === undefined) {
         return err(
             returnUserError(
@@ -172,17 +204,6 @@ async function askCommonQuestions(
             ),
         );
     }
-    
-    const commonQuestions = new CommonQuestions(); 
-
-    //1. check subscriptionId
-    const subscriptionResult = await askSubscription(config, azureToken, dialog);
-    if (subscriptionResult.isErr()){
-        return err(subscriptionResult.error);
-    }
-    const subscriptionId = subscriptionResult.value;
-    commonQuestions.subscriptionId = subscriptionId;
-    ctx.logProvider?.info(`[Solution] askCommonQuestions, step 1 - check subscriptionId pass!`);
     
     //2. check resource group
     const rmClient = new ResourceManagementClient(azureToken, subscriptionId);
@@ -240,12 +261,6 @@ async function askCommonQuestions(
         commonQuestions.resourceNameSuffix = resourceNameSuffix;
     ctx.logProvider?.info(`[Solution] askCommonQuestions, step 4 - check resourceNameSuffix pass!`);
 
-    //tenantId
-    const parseTenantIdResult = await parseAzureTenantId(azureToken);
-    if (parseTenantIdResult.isErr()) {
-        return err(parseTenantIdResult.error);
-    }
-    commonQuestions.tenantId = parseTenantIdResult.value;
     ctx.logProvider?.info(`[Solution] askCommonQuestions, step 5 - check tenantId pass!`);
 
     return ok(commonQuestions);
@@ -262,11 +277,11 @@ export async function fillInCommonQuestions(
     appName: string,
     config: SolutionConfig,
     dialog?: Dialog,
-    azureToken?: TokenCredentialsBase,
+    azureAccountProvider?: AzureAccountProvider,
     // eslint-disable-next-line @typescript-eslint/ban-types
     appStudioJson?: object,
 ): Promise<Result<SolutionConfig, FxError>> {
-    const result = await askCommonQuestions(ctx, appName, config, dialog, azureToken, appStudioJson);
+    const result = await askCommonQuestions(ctx, appName, config, dialog, azureAccountProvider, appStudioJson);
     if (result.isOk()) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const globalConfig = config.get(GLOBAL_CONFIG)!;

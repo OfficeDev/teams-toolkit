@@ -1,8 +1,8 @@
 {
   "name": "teamsfx-extension",
-  "displayName": "Teams Toolkit",
+  "displayName": "Teams Toolkit (Preview)",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "2.0.1-alpha.1",
+  "version": "2.0.0-alpha.29",
   "publisher": "Microsoft",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -28,6 +28,7 @@
     "Azure",
     "M365"
   ],
+  "preview": true,
   "categories": [
     "Azure",
     "Extension Packs",
@@ -40,15 +41,24 @@
   ],
   "activationEvents": [
     "*",
+    "onCommand:fx-extension.openWelcome",
+    "onCommand:fx-extension.openSamples",
+    "onCommand:fx-extension.openDocument",
     "onCommand:fx-extension.create",
     "onCommand:fx-extension.update",
     "onCommand:fx-extension.addCapability",
     "onCommand:fx-extension.provision",
     "onCommand:fx-extension.deploy",
     "onCommand:fx-extension.updateAad",
+    "onCommand:fx-extension.openManifest",
+    "onCommand:fx-extension.validateManifest",
+    "onCommand:fx-extension.build",
+    "onCommand:fx-extension.openAppManagement",
+    "onCommand:fx-extension.openBotManagement",
+    "onCommand:fx-extension.openReportIssues",
     "onCommand:fx-extension.validate-dependencies",
     "onCommand:fx-extension.pre-debug-check",
-    "workspaceContains:**/.teamsfx/*",
+    "workspaceContains:**/.fx/*",
     "onView:teamsfx"
   ],
   "contributes": {
@@ -77,7 +87,7 @@
         },
         {
           "id": "teamsfx-teams-dev-center",
-          "name": "Teams Dev Center"
+          "name": "Teams Developer Portal"
         },
         {
           "id": "teamsfx-feedback",
@@ -411,12 +421,27 @@
             "description": "Ensure .NET SDK is installed.",
             "default": true
           },
-          "fx-extension.stopTeamsfxTasksPostDebug": {
+          "fx-extension.stopTeamsToolkitTasksPostDebug": {
             "type": "boolean",
             "description": "Automatically stop all Teams Toolkit tasks when debug session ends.",
             "default": true
           }
         }
+      }
+    ],
+    "languages": [
+      {
+        "id": "teamsfx-toolkit-output",
+        "mimetypes": [
+          "text/x-code-output"
+        ]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "teamsfx-toolkit-output",
+        "scopeName": "teamsfx-toolkit.output",
+        "path": "./syntaxes/teamsfx-toolkit-output.tmLanguage"
       }
     ]
   },
@@ -426,7 +451,7 @@
     "copy-files": "copyfiles -u 1 src/**/*.html src/**/*.css src/**/*.ps1 src/**/*.sh out/src/",
     "copy-test-files": "copyfiles -u 1 test/**/*.ps1 test/**/*.sh out/test/",
     "compile": "tsc -p ./ && npm run copy-files",
-    "build": "npm run compile",
+    "build": "rimraf out && npm run compile",
     "watch": "webpack --watch --devtool nosources-source-map --info-verbosity verbose --config ./webpack.config.js",
     "package": "rimraf out && webpack --mode production --config ./webpack.config.js",
     "test-compile": "tsc -p ./",
@@ -440,7 +465,8 @@
     "format": "prettier --write --config .prettierrc.json --ignore-path .prettierignore \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,json}\"",
     "lint:fix": "eslint --config .eslintrc.js package.json src test --ext .ts --fix --fix-type [problem,suggestion]",
     "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "precommit": "lint-staged"
   },
   "devDependencies": {
     "@azure/arm-subscriptions": "^3.0.0",
@@ -449,6 +475,7 @@
     "@commitlint/config-conventional": "^12.0.1",
     "@fluentui/react": "^8.5.1",
     "@shared/eslint-config": "file:../eslint-config",
+    "@shared/prettier-config": "file:../prettier-config",
     "@types/adm-zip": "^0.4.33",
     "@types/chai": "^4.2.14",
     "@types/chai-as-promised": "^7.1.3",
@@ -480,7 +507,6 @@
     "fs-extra": "^9.0.1",
     "glob": "^7.1.6",
     "html-webpack-plugin": "^3.2.0",
-    "husky": "^4.3.8",
     "lint-staged": "^10.5.4",
     "mocha": "^8.1.3",
     "mocha-junit-reporter": "^2.0.0",
@@ -489,7 +515,6 @@
     "ms-rest": "^2.5.4",
     "node-loader": "^2.0.0",
     "node-sass": "^5.0.0",
-    "prettier": "^1.16.4",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-intl": "^5.13.5",
@@ -516,11 +541,11 @@
     "@azure/identity": "^1.2.1",
     "@azure/ms-rest-nodeauth": "^3.0.7",
     "@azure/msal-node": "^1.0.0-beta.5",
+    "@microsoft/teamsfx-api": "^0.1.0-alpha.6",
+    "@microsoft/teamsfx-core": "^0.1.0-alpha.7",
     "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
-    "fx-api": "^1.1.2-alpha.1",
-    "fx-core": "^1.1.2-alpha.1",
     "jsonschema": "^1.4.0",
     "opn": "^6.0.0",
     "sudo-prompt": "^9.2.1",
@@ -528,18 +553,19 @@
     "vscode-extension-telemetry": "^0.1.6",
     "vscode-test": "^1.5.2"
   },
-  "lint-staged": {
-    "**/*.ts": [
-      "eslint"
-    ]
-  },
   "extensionDependencies": [
     "ms-vscode.azure-account"
   ],
-  "husky": {
-    "hooks": {
-      "commit-msg": "commitlint -e $HUSKY_GIT_PARAMS"
-    }
+  "gitHead": "7d60c0765c0ea8c023a26c10d1c93001c597afbb",
+  "publishConfig": {
+    "access": "public"
   },
-  "gitHead": "7d60c0765c0ea8c023a26c10d1c93001c597afbb"
+  "lint-staged": {
+    "*.{js,jsx,css,ts,tsx}": [
+      "npx eslint --cache --fix --quiet"
+    ],
+    "*": [
+      "npx prettier --config .prettierrc.js --ignore-unknown --write --ignore-path .prettierignore "
+    ]
+  }
 }

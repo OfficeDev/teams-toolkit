@@ -12,7 +12,7 @@ import {
   TelemetryErrorType
 } from "./extTelemetryEvents";
 import * as extensionPackage from "../../package.json";
-import { FxError, Stage, UserError } from "fx-api";
+import { FxError, Stage, UserError } from "@microsoft/teamsfx-api";
 import { getTeamsAppId } from "../utils/commonUtils";
 
 export namespace ExtTelemetry {
@@ -29,7 +29,8 @@ export namespace ExtTelemetry {
     }
   }
 
-  export function stageToEvent(stage: Stage): string {
+  export function stageToEvent(stage: Stage): string | undefined {
+    /* debug telemetry event is not handling here */
     switch (stage) {
       case Stage.create:
         return TelemetryEvent.CreateProject;
@@ -39,10 +40,10 @@ export namespace ExtTelemetry {
         return TelemetryEvent.Provision;
       case Stage.deploy:
         return TelemetryEvent.Deploy;
-      case Stage.debug:
-        return TelemetryEvent.F5;
+      case Stage.publish:
+        return TelemetryEvent.Publish;
       default:
-        return "Unknown";
+        return undefined;
     }
   }
 

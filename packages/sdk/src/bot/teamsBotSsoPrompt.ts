@@ -15,14 +15,14 @@ import {
   StatusCodes,
   TokenExchangeInvokeRequest,
   tokenExchangeOperationName,
-  TokenExchangeResource
+  TokenExchangeResource,
 } from "botbuilder-core";
 import {
   Dialog,
   DialogContext,
   DialogTurnResult,
   PromptOptions,
-  PromptRecognizerResult
+  PromptRecognizerResult,
 } from "botbuilder-dialogs";
 import { TeamsBotSsoPromptTokenResponse } from "./teamsBotSsoPromptTokenResponse";
 import { config } from "../core/configurationProvider";
@@ -141,7 +141,7 @@ export class TeamsBotSsoPrompt extends Dialog {
    *
    * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
-   * 
+   *
    * @beta
    */
   constructor(dialogId: string, private settings: TeamsBotSsoPromptSettings) {
@@ -155,13 +155,13 @@ export class TeamsBotSsoPrompt extends Dialog {
    * @remarks
    * If the task is successful, the result indicates whether the prompt is still
    * active after the turn has been processed by the prompt.
-   * 
+   *
    * @param dc The DialogContext for the current turn of the conversation.
-   * 
+   *
    * @throws {@link ErrorCode|InvalidParameter} when timeout property in teams bot sso prompt settings is not number or is not positive.
    * @throws {@link ErrorCode|ChannelNotSupported} when bot channel is not MS Teams.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
-   * 
+   *
    * @returns A `Promise` representing the asynchronous operation.
    *
    * @beta
@@ -203,20 +203,20 @@ export class TeamsBotSsoPrompt extends Dialog {
 
   /**
    * Called when a prompt dialog is the active dialog and the user replied with a new activity.
-   * 
+   *
    * @remarks
    * If the task is successful, the result indicates whether the dialog is still
    * active after the turn has been processed by the dialog.
    * The prompt generally continues to receive the user's replies until it accepts the
    * user's reply as valid input for the prompt.
-   * 
+   *
    * @param dc The DialogContext for the current turn of the conversation.
-   * 
+   *
    * @returns A `Promise` representing the asynchronous operation.
-   * 
+   *
    * @throws {@link ErrorCode|ChannelNotSupported} when bot channel is not MS Teams.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
-   * 
+   *
    * @beta
    */
   public async continueDialog(dc: DialogContext): Promise<DialogTurnResult> {
@@ -243,9 +243,8 @@ export class TeamsBotSsoPrompt extends Dialog {
         this.isTokenExchangeRequestInvoke(dc.context)
       ) {
         // Recognize token
-        const recognized: PromptRecognizerResult<TeamsBotSsoPromptTokenResponse> = await this.recognizeToken(
-          dc
-        );
+        const recognized: PromptRecognizerResult<TeamsBotSsoPromptTokenResponse> =
+          await this.recognizeToken(dc);
 
         if (recognized.succeeded) {
           return await dc.endDialog(recognized.value);
@@ -345,14 +344,14 @@ export class TeamsBotSsoPrompt extends Dialog {
 
     const tokenExchangeResource: TokenExchangeResource = {
       id: uuidv4(),
-      uri: config.authentication?.applicationIdUri!.replace(/\/$/, "") + "/access_as_user"
+      uri: config.authentication?.applicationIdUri!.replace(/\/$/, "") + "/access_as_user",
     };
 
     internalLogger.verbose("Token exchange resource uri: " + tokenExchangeResource.uri);
 
     return {
       signInLink: signInLink,
-      tokenExchangeResource: tokenExchangeResource
+      tokenExchangeResource: tokenExchangeResource,
     };
   }
 
@@ -394,7 +393,7 @@ export class TeamsBotSsoPrompt extends Dialog {
               ssoTokenExpiration: new Date(ssoTokenExpiration * 1000).toISOString(),
               connectionName: "",
               token: exchangedToken.token,
-              expiration: exchangedToken.expiresOnTimestamp.toString()
+              expiration: exchangedToken.expiresOnTimestamp.toString(),
             };
           }
         } catch (error) {
@@ -430,7 +429,7 @@ export class TeamsBotSsoPrompt extends Dialog {
   ): Activity {
     const invokeResponse: Partial<Activity> = {
       type: invokeResponseType,
-      value: { status, body: new TokenExchangeInvokeResponse(id as string, failureDetail) }
+      value: { status, body: new TokenExchangeInvokeResponse(id as string, failureDetail) },
     };
     return invokeResponse as Activity;
   }

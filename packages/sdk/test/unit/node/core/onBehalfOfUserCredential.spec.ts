@@ -3,7 +3,13 @@
 
 import { assert, expect, use as chaiUse } from "chai";
 import chaiPromises from "chai-as-promised";
-import { ErrorCode, ErrorWithCode, loadConfiguration, OnBehalfOfUserCredential } from "../../../../src";
+import {
+  ErrorCode,
+  ErrorWithCode,
+  loadConfiguration,
+  OnBehalfOfUserCredential,
+  UserInfo,
+} from "../../../../src";
 import sinon from "sinon";
 import mockedEnv from "mocked-env";
 import { AuthenticationResult, ConfidentialClientApplication } from "@azure/msal-node";
@@ -30,6 +36,9 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
   const now = Math.floor(Date.now() / 1000);
   const timeInterval = 4000;
   const ssoTokenExp = now + timeInterval;
+  const testDisplayName = "Teams Framework Unit Test";
+  const testObjectId = "11111111-2222-3333-4444-555555555555";
+  const testPreferredUserName = "test@microsoft.com";
   const ssoToken = jwtBuilder({
     algorithm: "HS256",
     secret: "super-secret",
@@ -39,15 +48,15 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
     nbf: now,
     exp: timeInterval,
     aio: "test_aio",
-    name: "Teams Framework Unit Test",
-    oid: "11111111-2222-3333-4444-555555555555",
-    preferred_username: "test@microsoft.com",
+    name: testDisplayName,
+    oid: testObjectId,
+    preferred_username: testPreferredUserName,
     rh: "test_rh",
     scp: "access_as_user",
     sub: "test_sub",
     tid: "test_tenant_id",
     uti: "test_uti",
-    ver: "2.0"
+    ver: "2.0",
   });
 
   const sandbox = sinon.createSandbox();
@@ -57,12 +66,13 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
       M365_CLIENT_ID: clientId,
       M365_CLIENT_SECRET: clientSecret,
       M365_AUTHORITY_HOST: authorityHost,
-      M365_TENANT_ID: tenantId
+      M365_TENANT_ID: tenantId,
     });
 
     // Mock ConfidentialClientApplication implementation
-    sandbox.stub(ConfidentialClientApplication.prototype, "acquireTokenOnBehalfOf").callsFake(
-      (): Promise<AuthenticationResult | null> => {
+    sandbox
+      .stub(ConfidentialClientApplication.prototype, "acquireTokenOnBehalfOf")
+      .callsFake((): Promise<AuthenticationResult | null> => {
         const authResult: AuthenticationResult = {
           authority: "fake_authority",
           uniqueId: "fake_uniqueId",
@@ -74,13 +84,12 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
           accessToken: accessToken,
           fromCache: false,
           tokenType: "fake_tokenType",
-          expiresOn: accessTokenExpDate
+          expiresOn: accessTokenExpDate,
         };
         return new Promise<AuthenticationResult>((resolve) => {
           resolve(authResult);
         });
-      }
-    );
+      });
   });
 
   afterEach(function () {
@@ -93,7 +102,7 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
       {
         M365_CLIENT_SECRET: clientSecret,
         M365_AUTHORITY_HOST: authorityHost,
-        M365_TENANT_ID: tenantId
+        M365_TENANT_ID: tenantId,
       },
       { clear: true }
     );
@@ -111,7 +120,7 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
       {
         M365_CLIENT_ID: clientId,
         M365_CLIENT_SECRET: clientSecret,
-        M365_TENANT_ID: tenantId
+        M365_TENANT_ID: tenantId,
       },
       { clear: true }
     );
@@ -129,7 +138,7 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
       {
         M365_CLIENT_ID: clientId,
         M365_AUTHORITY_HOST: authorityHost,
-        M365_TENANT_ID: tenantId
+        M365_TENANT_ID: tenantId,
       },
       { clear: true }
     );
@@ -147,7 +156,7 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
       {
         M365_CLIENT_ID: clientId,
         M365_CLIENT_SECRET: clientSecret,
-        M365_AUTHORITY_HOST: authorityHost
+        M365_AUTHORITY_HOST: authorityHost,
       },
       { clear: true }
     );
@@ -232,13 +241,13 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
   it("getToken should throw ServiceError when fail to get access token due to AAD outage", async function () {
     // Mock AAD outage
     sandbox.restore();
-    sandbox.stub(ConfidentialClientApplication.prototype, "acquireTokenOnBehalfOf").callsFake(
-      (): Promise<AuthenticationResult | null> => {
+    sandbox
+      .stub(ConfidentialClientApplication.prototype, "acquireTokenOnBehalfOf")
+      .callsFake((): Promise<AuthenticationResult | null> => {
         return new Promise<AuthenticationResult>(() => {
           throw new Error("AAD outage");
         });
-      }
-    );
+      });
     loadConfiguration();
     const oboCredential = new OnBehalfOfUserCredential(ssoToken);
 
@@ -249,5 +258,14 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
     assert.isTrue(
       errorResult.message!.indexOf("Failed to acquire access token on behalf of user: ") >= 0
     );
+  });
+
+  it("getUserInfo should succeed", async function () {
+    loadConfiguration();
+    const oboCredential = new OnBehalfOfUserCredential(ssoToken);
+    const userinfo: UserInfo = oboCredential.getUserInfo();
+    assert.strictEqual(userinfo.displayName, testDisplayName);
+    assert.strictEqual(userinfo.objectId, testObjectId);
+    assert.strictEqual(userinfo.preferredUserName, testPreferredUserName);
   });
 });

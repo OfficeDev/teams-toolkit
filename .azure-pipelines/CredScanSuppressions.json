@@ -1,0 +1,25 @@
+{
+    "tool": "Credential Scanner",
+    "suppressions": [
+        {
+             "file": "packages\\function-extension\tests\\TestAssets\\FunctionAppJS\\localSettingsJson\\emptyClientId_local.settings.json",
+            "_justification": "Fake credentials used for unit tests."
+        },
+        {
+             "file": "packages\\function-extension\tests\\TestAssets\\FunctionAppJS\\localSettingsJson\\main_local.settings.json",
+            "_justification": "Fake credentials used for unit tests."
+        },
+        {
+            "placeholder": "M365_CLIENT_SECRET",
+            "_justification": "This is the secret place holder used by TeamsFx project."
+        },
+        {
+            "placeholder": "SQL_USERNAME",
+            "_justification": "This is the secret place holder used by TeamsFx project."
+        },
+        {
+            "placeholder": "publishingPassword",
+            "_justification": "This is the secret place holder used by TeamsFx project."
+        }
+    ]
+}

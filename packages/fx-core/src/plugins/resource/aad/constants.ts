@@ -6,7 +6,7 @@ import { RequiredResourceAccess } from "./interfaces/IAADDefinition";
 export class Constants {
   static teamsMobileDesktopAppId = "1fec8e78-bce4-4aaf-ab1b-5451cc387264";
   static teamsWebAppId = "5e3ce6c0-2b1f-4285-8d4b-75ee78787346";
-  static oauthAuthorityPrefix = "https://login.microsoftonline.com/";
+  static oauthAuthorityPrefix = "https://login.microsoftonline.com";
   static aadAppMaxLength = 120;
   static aadAppPasswordDisplayName = "default";
 
@@ -14,8 +14,6 @@ export class Constants {
 
   static AskForEnv = "Which Azure AD app do you want to update permission for?";
   static AskForEnvName = "aad-env";
-
-  static readonly telemetryComponent = "component";
 
   static defaultPermissions: RequiredResourceAccess = {
     resourceAppId: "00000003-0000-0000-c000-000000000000",
@@ -47,6 +45,18 @@ export class Constants {
       },
     ],
   };
+}
+
+export class Telemetry {
+  static component = "component";
+  static errorCode = "error-code";
+  static errorType = "error-type";
+  static errorMessage = "error-message";
+  static userError = "user";
+  static systemError = "system";
+  static isSuccess = "success";
+  static success = "yes";
+  static fail = "no";
 }
 
 export class Plugins {
@@ -93,10 +103,8 @@ export interface Messages {
 }
 
 export class Messages {
-  public static readonly getLog = (log: string) =>
-    `[${Plugins.pluginName}] ${log}`;
-  private static readonly getEventName = (eventName: string) =>
-    `${Plugins.pluginName}/${eventName}`;
+  public static readonly getLog = (log: string) => `[${Plugins.pluginName}] ${log}`;
+  private static readonly getEventName = (eventName: string) => `${eventName}`;
 
   static readonly StartProvision: Messages = {
     log: Messages.getLog("Start to provision"),
@@ -150,14 +158,10 @@ export class Messages {
 
   static readonly GetAadAppSuccess = "Successfully get Azure AD app.";
   static readonly CreateAadAppSuccess = "Successfully created Azure AD app.";
-  static readonly CreateAadAppPasswordSuccess =
-    "Successfully created password for Azure AD app.";
-  static readonly UpdatePermissionSuccess =
-    "Successfully updated permission for Azure AD app.";
-  static readonly SetAppIdUriSuccess =
-    "Successfully created application id uri for Azure AD app.";
-  static readonly UpdateRedirectUriSuccess =
-    "Successfully updated redirect uri for Azure AD app.";
+  static readonly CreateAadAppPasswordSuccess = "Successfully created password for Azure AD app.";
+  static readonly UpdatePermissionSuccess = "Successfully updated permission for Azure AD app.";
+  static readonly SetAppIdUriSuccess = "Successfully created application id uri for Azure AD app.";
+  static readonly UpdateRedirectUriSuccess = "Successfully updated redirect uri for Azure AD app.";
   static readonly UpdateAppIdUriSuccess =
     "Successfully updated application id uri for Azure AD app.";
   static readonly ParsePermissionSuccess = "Successfully parsed permissions.";
@@ -166,7 +170,8 @@ export class Messages {
   static readonly UserCancelled = "Selection is cancelled by user.";
   static readonly UpdatePermissionSuccessMessage =
     "Successfully updated permission for Azure AD app. You can go to Azure Portal to check the permission or grant admin consent.";
-  static readonly SkipProvision = "Azure AD app provision skipped. You need to mannual provision and config Azure AD app.";
+  static readonly SkipProvision =
+    "Azure AD app provision skipped. You need to mannual provision and config Azure AD app.";
 }
 
 export class ProgressTitle {

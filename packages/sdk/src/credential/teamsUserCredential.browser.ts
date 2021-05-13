@@ -68,7 +68,7 @@ export class TeamsUserCredential implements TokenCredential {
   /**
    * Popup login page to get user's access token with specific scopes.
    *
-   * @remarks 
+   * @remarks
    * Only works in Teams client APP. User will be redirected to the authorization page to login and consent.
    *
    * @example
@@ -85,7 +85,7 @@ export class TeamsUserCredential implements TokenCredential {
    * @throws {@link ErrorCode|ConsentFailed} when user canceled or failed to consent.
    * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
-   * 
+   *
    * @beta
    */
   public async login(scopes: string | string[]): Promise<void> {
@@ -97,8 +97,9 @@ export class TeamsUserCredential implements TokenCredential {
     return new Promise<void>((resolve, reject) => {
       microsoftTeams.initialize(() => {
         microsoftTeams.authentication.authenticate({
-          url: `${this.config.initiateLoginEndpoint}?clientId=${this.config.clientId
-            }&scope=${encodeURI(scopesStr)}`,
+          url: `${this.config.initiateLoginEndpoint}?clientId=${
+            this.config.clientId
+          }&scope=${encodeURI(scopesStr)}`,
           width: loginPageWidth,
           height: loginPageHeight,
           successCallback: async (result?: string) => {
@@ -122,7 +123,7 @@ export class TeamsUserCredential implements TokenCredential {
             const errorMsg = `Consent failed for the scope ${scopesStr} with error: ${reason}`;
             internalLogger.error(errorMsg);
             reject(new ErrorWithCode(errorMsg, ErrorCode.ConsentFailed));
-          }
+          },
         });
       });
     });
@@ -158,7 +159,7 @@ export class TeamsUserCredential implements TokenCredential {
    * If scopes is empty string or array, it returns SSO token.
    * If scopes is non-empty, it returns access token for target scope.
    * Throw error if get access token failed.
-   * 
+   *
    * @beta
    */
   async getToken(
@@ -201,13 +202,13 @@ export class TeamsUserCredential implements TokenCredential {
    * ```typescript
    * const currentUser = await credential.getUserInfo();
    * ```
-   * 
+   *
    * @throws {@link ErrorCode|InternalError} when SSO token from Teams client is not valid.
    * @throws {@link ErrorCode|InvalidParameter} when SSO token from Teams client is empty.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
    *
    * @returns Basic user info with user displayName, objectId and preferredUserName.
-   * 
+   *
    * @beta
    */
   public async getUserInfo(): Promise<UserInfo> {
@@ -230,14 +231,14 @@ export class TeamsUserCredential implements TokenCredential {
           code: authCodeResult.code,
           code_verifier: authCodeResult.codeVerifier,
           redirect_uri: authCodeResult.redirectUri,
-          grant_type: GrantType.authCode
+          grant_type: GrantType.authCode,
         });
 
         const tokenResult: AccessTokenResult = response.data;
         const key = await this.getAccessTokenCacheKey(scopesStr);
         this.setTokenCache(key, {
           token: tokenResult.access_token,
-          expiresOnTimestamp: tokenResult.expires_on
+          expiresOnTimestamp: tokenResult.expires_on,
         });
         return;
       } catch (err) {
@@ -268,13 +269,13 @@ export class TeamsUserCredential implements TokenCredential {
       const axiosInstance: AxiosInstance = await this.getAxiosInstance();
       const response = await axiosInstance.post("/auth/token", {
         scope: scopesStr,
-        grant_type: GrantType.ssoToken
+        grant_type: GrantType.ssoToken,
       });
 
       const accessTokenResult: AccessTokenResult = response.data;
       const accessToken: AccessToken = {
         token: accessTokenResult.access_token,
-        expiresOnTimestamp: accessTokenResult.expires_on
+        expiresOnTimestamp: accessTokenResult.expires_on,
       };
       const cacheKey = await this.getAccessTokenCacheKey(scopesStr);
       this.setTokenCache(cacheKey, accessToken);
@@ -321,7 +322,7 @@ export class TeamsUserCredential implements TokenCredential {
 
             const ssoToken: AccessToken = {
               token,
-              expiresOnTimestamp: tokenObject.exp * 1000
+              expiresOnTimestamp: tokenObject.exp * 1000,
             };
 
             this.ssoToken = ssoToken;
@@ -332,14 +333,15 @@ export class TeamsUserCredential implements TokenCredential {
             internalLogger.error(errorMsg);
             reject(new ErrorWithCode(errorMsg, ErrorCode.InternalError));
           },
-          resources: []
+          resources: [],
         });
       });
 
       // If the code not running in Teams, the initialize callback function would never trigger
       setTimeout(() => {
         if (!initialized) {
-          const errorMsg = "Initialize teams sdk timeout, maybe the code is not running inside Teams";
+          const errorMsg =
+            "Initialize teams sdk timeout, maybe the code is not running inside Teams";
           internalLogger.error(errorMsg);
           reject(new ErrorWithCode(errorMsg, ErrorCode.InternalError));
         }
@@ -398,7 +400,7 @@ export class TeamsUserCredential implements TokenCredential {
   private async getAxiosInstance(): Promise<AxiosInstance> {
     const ssoToken = await this.getSSOToken();
     const axiosInstance: AxiosInstance = axios.create({
-      baseURL: this.config.simpleAuthEndpoint
+      baseURL: this.config.simpleAuthEndpoint,
     });
 
     axiosInstance.interceptors.request.use((config) => {
@@ -492,7 +494,7 @@ export class TeamsUserCredential implements TokenCredential {
         const fullErrorMsg =
           "Failed to get access token from authentication server, please login first: " +
           errorMessage;
-        internalLogger.error(fullErrorMsg);
+        internalLogger.warn(fullErrorMsg);
         return new ErrorWithCode(fullErrorMsg, ErrorCode.UiRequiredError);
       } else {
         const fullErrorMsg =

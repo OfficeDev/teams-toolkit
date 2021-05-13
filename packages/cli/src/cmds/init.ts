@@ -5,10 +5,12 @@
 
 import { Argv, Options } from "yargs";
 
-import { FxError, err, ok, Result, Func, ConfigMap, Platform } from "fx-api";
+import { FxError, err, ok, Result, Func, ConfigMap, Platform } from "@microsoft/teamsfx-api";
 
 import { YargsCommand } from "../yargsCommand";
 import activate from "../activate";
+import CliTelemetry from "../telemetry/cliTelemetry";
+import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
 
 export default class Init extends YargsCommand {
   public readonly commandHead = `init`;
@@ -58,8 +60,10 @@ export default class Init extends YargsCommand {
       answers.set(name, args[name] || this.params[name].default);
     }
 
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.InitStart);
     const result = await activate();
     if (result.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Init, result.error);
       return err(result.error);
     }
 
@@ -74,10 +78,15 @@ export default class Init extends YargsCommand {
 
       const result = await core.executeUserTask!(func, answers);
       if (result.isErr()) {
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Init, result.error);
         return err(result.error);
       }
       console.info(JSON.stringify(result.value, null, 4));
     }
+
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.Init, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes
+    });
     return ok(null);
   }
 }

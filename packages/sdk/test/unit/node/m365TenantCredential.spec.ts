@@ -25,7 +25,7 @@ describe("M365TenantCredential Tests - Node", () => {
       M365_CLIENT_ID: clientId,
       M365_CLIENT_SECRET: clientSecret,
       M365_TENANT_ID: tenantId,
-      M365_AUTHORITY_HOST: authorityHost
+      M365_AUTHORITY_HOST: authorityHost,
     });
     loadConfiguration();
   });
@@ -37,10 +37,14 @@ describe("M365TenantCredential Tests - Node", () => {
   it("getToken should throw InvalidParameter error with invalid scopes", async function () {
     const invalidScopes: any = [new Error()];
     const credential = new M365TenantCredential();
-    const errorResult = await expect(credential.getToken(invalidScopes))
-      .to.eventually.be.rejectedWith(ErrorWithCode);
+    const errorResult = await expect(
+      credential.getToken(invalidScopes)
+    ).to.eventually.be.rejectedWith(ErrorWithCode);
     assert.strictEqual(errorResult.code, ErrorCode.InvalidParameter);
-    assert.strictEqual(errorResult.message, "The type of scopes is not valid, it must be string or string array");
+    assert.strictEqual(
+      errorResult.message,
+      "The type of scopes is not valid, it must be string or string array"
+    );
   });
 
   it("create M365TenantCredential instance should success with valid config", function () {
@@ -92,17 +96,17 @@ describe("M365TenantCredential Tests - Node", () => {
   });
 
   it("getToken should success with valid config", async function () {
-    sinon.stub(ClientSecretCredential.prototype, "getToken").callsFake(
-      (): Promise<AccessToken | null> => {
+    sinon
+      .stub(ClientSecretCredential.prototype, "getToken")
+      .callsFake((): Promise<AccessToken | null> => {
         const token: AccessToken = {
           token: fakeToken,
-          expiresOnTimestamp: Date.now() + 10 * 1000 * 60
+          expiresOnTimestamp: Date.now() + 10 * 1000 * 60,
         };
         return new Promise((resolve) => {
           resolve(token);
         });
-      }
-    );
+      });
 
     const credential = new M365TenantCredential();
     const token = await credential.getToken(scopes);
@@ -115,11 +119,11 @@ describe("M365TenantCredential Tests - Node", () => {
   });
 
   it("getToken should throw ServiceError when authenticate failed", async function () {
-    sinon.stub(ClientSecretCredential.prototype, "getToken").callsFake(
-      (): Promise<AccessToken | null> => {
+    sinon
+      .stub(ClientSecretCredential.prototype, "getToken")
+      .callsFake((): Promise<AccessToken | null> => {
         throw new AuthenticationError(401, "Authentication failed");
-      }
-    );
+      });
 
     const credential = new M365TenantCredential();
 
@@ -135,11 +139,11 @@ describe("M365TenantCredential Tests - Node", () => {
   });
 
   it("getToken should throw InternalError with unknown error", async function () {
-    sinon.stub(ClientSecretCredential.prototype, "getToken").callsFake(
-      (): Promise<AccessToken | null> => {
+    sinon
+      .stub(ClientSecretCredential.prototype, "getToken")
+      .callsFake((): Promise<AccessToken | null> => {
         throw new Error("Unknown error");
-      }
-    );
+      });
 
     const credential = new M365TenantCredential();
 
@@ -154,13 +158,13 @@ describe("M365TenantCredential Tests - Node", () => {
   });
 
   it("getToken should throw InternalError when get empty access token", async function () {
-    sinon.stub(ClientSecretCredential.prototype, "getToken").callsFake(
-      (): Promise<AccessToken | null> => {
+    sinon
+      .stub(ClientSecretCredential.prototype, "getToken")
+      .callsFake((): Promise<AccessToken | null> => {
         return new Promise((resolve) => {
           resolve(null);
         });
-      }
-    );
+      });
 
     const credential = new M365TenantCredential();
 

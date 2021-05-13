@@ -5,11 +5,13 @@
 
 import { Argv, Options } from "yargs";
 import * as path from "path";
-import { FxError, err, ok, Result, ConfigMap, Platform, Func } from "fx-api";
+import { FxError, err, ok, Result, ConfigMap, Platform, Func } from "@microsoft/teamsfx-api";
 import activate from "../activate";
 import * as constants from "../constants";
 import { YargsCommand } from "../yargsCommand";
 import { getParamJson } from "../utils";
+import CliTelemetry from "../telemetry/cliTelemetry";
+import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
 
 export default class Build extends YargsCommand {
   public readonly commandHead = `build`;
@@ -40,9 +42,11 @@ export default class Build extends YargsCommand {
 
     const rootFolder = answers.getString("folder");
     answers.delete("folder");
+    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.BuildStart);
     answers.set("platform", Platform.CLI);
     const result = await activate(rootFolder);
     if (result.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Build, result.error);
       return err(result.error);
     }
     const core = result.value;
@@ -53,10 +57,14 @@ export default class Build extends YargsCommand {
       };
       const result = await core.executeUserTask!(func, answers);
       if (result.isErr()) {
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Build, result.error);
         return err(result.error);
       }
     }
 
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.Build, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes
+    });
     return ok(null);
   }
 }

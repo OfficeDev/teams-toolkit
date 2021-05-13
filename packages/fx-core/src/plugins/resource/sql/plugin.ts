@@ -10,7 +10,7 @@ import {
     NodeType,
     Func,
     Platform,
-} from "fx-api";
+} from "@microsoft/teamsfx-api";
 import { ManagementClient } from "./managementClient";
 import { ErrorMessage } from "./errors";
 import { SqlResultFactory } from "./results";
@@ -99,12 +99,14 @@ export class SqlPluginImpl {
 
         this.init(ctx);
         DialogUtils.init(ctx);
+        TelemetryUtils.init(ctx);
+        TelemetryUtils.sendEvent(Telemetry.stage.preProvision + Telemetry.startSuffix);
 
         this.config.skipAddingUser = ctx.config.get(Constants.skipAddingUser) as boolean;
         if (ctx.platform === Platform.CLI) {
-            const skipAddingUser = ctx.answers?.get(Constants.questionKey.skipAddingUser) as string
+            const skipAddingUser = ctx.answers?.get(Constants.questionKey.skipAddingUser) as string;
             if (skipAddingUser) {
-                this.config.skipAddingUser = skipAddingUser === "true" ? true : false
+                this.config.skipAddingUser = skipAddingUser === "true" ? true : false;
                 ctx.config.set(Constants.skipAddingUser, this.config.skipAddingUser);
             }
         }
@@ -140,6 +142,7 @@ export class SqlPluginImpl {
             const error = SqlResultFactory.SystemError(ErrorMessage.SqlUserInfoError.name, ErrorMessage.SqlUserInfoError.message(), _error);
             throw error;
         }
+        TelemetryUtils.sendEvent(Telemetry.stage.preProvision, true);
         ctx.logProvider?.info(Message.endPreProvision);
         return ok(undefined);
     }
@@ -148,7 +151,7 @@ export class SqlPluginImpl {
         ctx.logProvider?.info(Message.startProvision);
         DialogUtils.init(ctx, ProgressTitle.Provision, ProgressTitle.ProvisionSteps);
         TelemetryUtils.init(ctx);
-        TelemetryUtils.sendEvent(Telemetry.provisionStart);
+        TelemetryUtils.sendEvent(Telemetry.stage.provision + Telemetry.startSuffix);
 
         const managementClient: ManagementClient = new ManagementClient(ctx, this.config);
         await managementClient.init();
@@ -175,7 +178,7 @@ export class SqlPluginImpl {
             ctx.logProvider?.info(Message.skipProvisionDatabase);
         }
 
-        TelemetryUtils.sendEvent(Telemetry.provisionEnd);
+        TelemetryUtils.sendEvent(Telemetry.stage.provision, true);
         ctx.logProvider?.info(Message.endProvision);
         await DialogUtils.progressBar?.end();
         return ok(undefined);
@@ -185,7 +188,7 @@ export class SqlPluginImpl {
         ctx.logProvider?.info(Message.startPostProvision);
         DialogUtils.init(ctx, ProgressTitle.PostProvision, ProgressTitle.PostProvisionSteps);
         TelemetryUtils.init(ctx);
-        TelemetryUtils.sendEvent(Telemetry.postProvisionStart);
+        TelemetryUtils.sendEvent(Telemetry.stage.postProvision + Telemetry.startSuffix);
 
         const sqlClient = new SqlClient(ctx, this.config);
         const managementClient: ManagementClient = new ManagementClient(ctx, this.config);
@@ -242,7 +245,7 @@ export class SqlPluginImpl {
 
         await managementClient.deleteLocalFirewallRule();
 
-        TelemetryUtils.sendEvent(Telemetry.postProvisionEnd);
+        TelemetryUtils.sendEvent(Telemetry.stage.postProvision, true);
         ctx.logProvider?.info(Message.endPostProvision);
         await DialogUtils.progressBar?.end();
         return ok(undefined);

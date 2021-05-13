@@ -1,0 +1,83 @@
+name: bump version
+
+on:
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'force release even if no update(set empty if not)'
+        required: false
+        default: '--force-publish'
+      version:
+        description: 'which version to bump(premajor, preminor, prepatch)'
+        required: true
+        default: 'preminor'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.CD_PAT }}
+          ref: ${{ github.ref }}
+
+      - name: Setup node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: 14
+
+      - name: Setup npm registry
+        run: |
+          echo "${{ secrets.NPMRC }}" > ~/.npmrc
+
+      - name: Download Simple Auth bits
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 5
+          retry_on: error
+          shell: pwsh
+          command: |
+            $version=Get-Content packages/fx-core/templates/plugins/resource/simpleauth/version.txt
+            $tag = "simpleauth@"+$version
+            $fileName="Microsoft.TeamsFx.SimpleAuth_$version.zip"
+            $url = "https://github.com/OfficeDev/TeamsFx/releases/download/"+$tag+"/"+$fileName
+            Invoke-WebRequest $url -OutFile packages/fx-core/templates/plugins/resource/simpleauth/SimpleAuth.zip
+
+      - name: Setup project
+        run: |
+          npm run setup
+
+      - name: Setup git
+        run: |
+          git config --global user.name 'MSFT-yiz'
+          git config --global user.email 'yiz@microsoft.com'
+
+      - name: release npm packages to npmjs.org
+        if: ${{ github.event.inputs.stable == 'false' }}
+        run: |
+          npx lerna publish --no-private --preid=alpha --dist-tag=alpha ${{ github.event.inputs.version }} --yes ${{ github.event.inputs.force }}
+
+      - name: pack vsix
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 5
+          retry_on: error
+          command: |
+            cd ./packages/vscode-extension
+            npm install
+            npx vsce package
+
+      - name: release VSCode extension to github
+        if: ${{ github.event.inputs.stable == 'true' }}
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: "${{ secrets.CD_PAT }}"
+          automatic_release_tag: "daily"
+          prerelease: true
+          files: |
+            ./packages/**/*.vsix

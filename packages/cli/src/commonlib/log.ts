@@ -5,7 +5,7 @@
 
 import colors from "colors";
 
-import { LogLevel, LogProvider } from "fx-api";
+import { LogLevel, LogProvider } from "@microsoft/teamsfx-api";
 
 import { CLILogLevel } from "../constants";
 
@@ -75,7 +75,7 @@ export class CLILogProvider implements LogProvider {
           CLILogProvider.logLevel === CLILogLevel.debug ||
           CLILogProvider.logLevel === CLILogLevel.verbose
         ) {
-          console.info(colors.green(message));
+          console.info(colors.white(message));
         }
         break;
       case LogLevel.Warning:

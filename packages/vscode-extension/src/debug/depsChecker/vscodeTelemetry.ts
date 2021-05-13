@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { performance } from "perf_hooks";
-import { SystemError, UserError } from "fx-api";
+import { SystemError, UserError } from "@microsoft/teamsfx-api";
 import { TelemetryProperty } from "../../telemetry/extTelemetryEvents";
 import { ExtTelemetry } from "../../telemetry/extTelemetry";
 import { DepsCheckerEvent, TelemetryMessurement } from "./common";

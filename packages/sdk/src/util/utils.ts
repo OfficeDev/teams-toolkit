@@ -8,11 +8,11 @@ import { internalLogger } from "./logger";
 
 /**
  * Parse jwt token payload
- * 
+ *
  * @param token
- * 
+ *
  * @returns Payload object
- * 
+ *
  * @internal
  */
 export function parseJwt(token: string): SSOTokenInfoBase {
@@ -47,7 +47,7 @@ export function getUserInfoFromSsoToken(ssoToken: string): UserInfo {
   const userInfo: UserInfo = {
     displayName: tokenObject.name,
     objectId: tokenObject.oid,
-    preferredUserName: ""
+    preferredUserName: "",
   };
 
   if (tokenObject.ver === "2.0") {
@@ -94,7 +94,7 @@ export function validateScopesType(value: any): void {
   }
 
   // string array
-  if (Array.isArray(value) && value.length > 0 && value.every(item => typeof item === "string")) {
+  if (Array.isArray(value) && value.length > 0 && value.every((item) => typeof item === "string")) {
     return;
   }
 

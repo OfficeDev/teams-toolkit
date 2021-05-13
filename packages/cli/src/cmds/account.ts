@@ -6,7 +6,7 @@
 import colors from "colors";
 import { Argv } from "yargs";
 
-import { FxError, ok, Question, Result } from "fx-api";
+import { FxError, ok, Question, Result } from "@microsoft/teamsfx-api";
 
 import { YargsCommand } from "../yargsCommand";
 import AppStudioTokenProvider from "../commonlib/appStudioLogin";
@@ -46,15 +46,15 @@ async function outputM365Info(commandType: "login" | "show"): Promise<boolean> {
   return Promise.resolve(result !== undefined);
 }
 
-async function outputAzureInfo(commandType: "login" | "show"): Promise<boolean> {
-  const result = await AzureTokenProvider.getAccountCredentialAsync();
+async function outputAzureInfo(commandType: "login" | "show", tenantId = ""): Promise<boolean> {
+  const result = await AzureTokenProvider.getAccountCredentialAsync(true, tenantId);
   if (result) {
     const subscriptions = await AzureTokenProvider.listSubscriptions();
     if (commandType === "login") {
       consoleGreen(
         `[${constants.cliSource}] Successfully signed in to Azure. Your username is ${colors.yellow((result as any).username)}.`
       );
-      consoleGreen(`[${constants.cliSource}] Your subscriptons are:`);
+      consoleGreen(`[${constants.cliSource}] Your subscriptions are:`);
       consoleWhite(JSON.stringify(subscriptions, null, 2));
     } else {
       try {
@@ -125,11 +125,17 @@ class AccountLogin extends YargsCommand {
   public readonly description = "Log in to the selected cloud service.";
 
   public builder(yargs: Argv): Argv<any> {
-    return yargs.positional("service", {
-      description: "Azure or M365",
-      type: "string",
-      choices: ["azure", "m365"]
-    });
+    return yargs
+      .positional("service", {
+        description: "Azure or M365",
+        type: "string",
+        choices: ["azure", "m365"]
+      })
+      .option("tenant", {
+        description: "Authenticate with a specific Azure Active Directory tenant.",
+        type: "string",
+        default: ""
+      });
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
@@ -138,7 +144,8 @@ class AccountLogin extends YargsCommand {
     });
     switch (args.service) {
       case "azure": {
-        const result = await outputAzureInfo("login");
+        await AzureTokenProvider.signout();
+        const result = await outputAzureInfo("login", args.tenant);
         CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLogin, {
           [TelemetryProperty.AccountType]: args.service,
           [TelemetryProperty.Success]: result? TelemetrySuccess.Yes : TelemetrySuccess.No
@@ -146,6 +153,7 @@ class AccountLogin extends YargsCommand {
         break;
       }
       case "m365": {
+        await AppStudioTokenProvider.signout();
         const result = await outputM365Info("login");
         CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLogin, {
           [TelemetryProperty.AccountType]: args.service,

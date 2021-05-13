@@ -3,7 +3,7 @@
 "use strict";
 
 import * as fs from "fs-extra";
-import { Func, FxError, Platform, Plugin, PluginContext, Result, err, ok, VsCodeEnv, AzureSolutionSettings } from "fx-api";
+import { Func, FxError, Platform, Plugin, PluginContext, Result, err, ok, VsCodeEnv, AzureSolutionSettings } from "@microsoft/teamsfx-api";
 import * as os from "os";
 
 import { LocalCertificateManager } from "./certificate";

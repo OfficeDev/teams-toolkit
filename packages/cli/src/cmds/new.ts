@@ -101,7 +101,7 @@ export default class New extends YargsCommand {
 
     const core = result.value;
     {
-      const result = await core.getQuestions!(Stage.create, Platform.VSCode);
+      const result = await core.getQuestions!(Stage.create, Platform.CLI);
       if (result.isErr()) {
         return err(result.error);
       }

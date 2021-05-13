@@ -6,4 +6,6 @@ export class Constants {
     public static readonly PUBLISH_PATH_QUESTION = "manifest-folder";
     public static readonly BUILD_OR_PUBLISH_QUESTION = "build-or-publish";
     public static readonly REMOTE_TEAMS_APP_ID = "teams-app-id";
+    public static readonly READ_MORE = "Read more";
+    public static readonly PUBLISH_GUIDE = "https://review.docs.microsoft.com/en-us/microsoftteams/platform/concepts/deploy-and-publish/appsource/publish";
 }

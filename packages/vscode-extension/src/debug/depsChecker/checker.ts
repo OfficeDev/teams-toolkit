@@ -140,7 +140,7 @@ export class DepsChecker {
       supportedPackages.push(supportedPackage);
     }
     const supportedMessage = supportedPackages.join(" and ");
-    return Messages.linuxDepsNotFound.replace("@SupportedPackages", supportedMessage);
+    return Messages.linuxDepsNotFound.split("@SupportedPackages").join(supportedMessage);
   }
 
   private async handleError(error: Error): Promise<boolean> {

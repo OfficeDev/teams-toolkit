@@ -12,10 +12,12 @@ module.exports = {
         "plugin:@typescript-eslint/recommended"
     ],
     plugins: [
-        "@typescript-eslint/eslint-plugin"
+        "@typescript-eslint/eslint-plugin",
     ],
     rules: {
-        quotes: ["error", "double", { "allowTemplateLiterals": true }],
+        quotes: ["error", "double", {"allowTemplateLiterals": true}],
         semi: ["error", "always"],
+        '@typescript-eslint/no-var-requires': 0,
+        '@typescript-eslint/no-empty-function': 0,
     },
 };

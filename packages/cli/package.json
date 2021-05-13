@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx-cli",
-  "version": "0.1.0-alpha.6",
+  "version": "0.1.0-alpha.7",
   "description": "",
   "license": "MIT",
   "engines": {
@@ -57,20 +57,20 @@
     "copyfiles": "^2.4.1",
     "eslint": "^7.9.0",
     "jsonschema": "^1.4.0",
+    "lint-staged": "^10.5.4",
     "mocha": "^8.3.0",
     "mocha-junit-reporter": "^2.0.0",
     "mocha-parallel-tests": "^2.3.0",
     "nyc": "^15.1.0",
     "ts-node": "^9.0.0",
     "typescript": "^4.1.2",
-    "uuid": "^8.3.2",
-    "lint-staged": "^10.5.4"
+    "uuid": "^8.3.2"
   },
   "dependencies": {
     "@azure/identity": "^1.2.3",
     "@azure/ms-rest-nodeauth": "^3.0.7",
-    "@microsoft/teamsfx-api": "^0.1.0-alpha.5",
-    "@microsoft/teamsfx-core": "^0.1.0-alpha.5",
+    "@microsoft/teamsfx-api": "^0.1.0-alpha.6",
+    "@microsoft/teamsfx-core": "^0.1.0-alpha.6",
     "adm-zip": "^0.5.5",
     "applicationinsights": "^1.8.10",
     "async-mutex": "^0.3.1",
@@ -94,7 +94,7 @@
   },
   "lint-staged": {
     "*.{js,jsx,css,ts,tsx}": [
-      "npx eslint --cache --fix"
+      "npx eslint --cache --fix --quiet"
     ],
     "*": [
       "npx prettier --config .prettierrc.js --ignore-unknown --write --ignore-path .prettierignore "

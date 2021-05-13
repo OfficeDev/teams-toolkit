@@ -41,4 +41,9 @@ export class AppStudioError {
         name: "TeamsAppPublishCancelled",
         message: (name: string) => `Publish Teams app with ID ${name} has been cancelled.`
     }
+
+    public static readonly TeamsPackageBuildError = {
+        name: "TeamsPackageBuildError",
+        message: (error: any) => error.message ? error.message: "Teams Package built failed!"
+    }
 }

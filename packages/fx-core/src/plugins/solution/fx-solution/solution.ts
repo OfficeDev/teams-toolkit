@@ -880,18 +880,18 @@ export class TeamsAppSolution implements Solution {
         if (this.isAzureProject(ctx)) {
             //1. ask common questions for azure resources.
             const appName = manifest.name.short;
-            const azureToken = await ctx.azureAccountProvider?.getAccountCredentialAsync();
             const res = await fillInCommonQuestions(
                 ctx,
                 appName,
                 ctx.config,
                 ctx.dialog,
-                azureToken,
+                ctx.azureAccountProvider,
                 await ctx.appStudioToken?.getJsonObject(),
             );
             if (res.isErr()) {
                 return res;
             }
+            const azureToken = await ctx.azureAccountProvider?.getAccountCredentialAsync();
 
             // Only Azure project requires this confirm dialog
             const username = (azureToken as any).username ? (azureToken as any).username : "";
@@ -1111,16 +1111,7 @@ export class TeamsAppSolution implements Solution {
 
             const result = await executeConcurrently("", publishWithCtx);
 
-            if (result.isOk()) {
-                const msg = util.format(getStrings().solution.PublishSuccessNotice, ctx.projectSettings?.appName);
-                ctx.logProvider?.info(msg);
-                await ctx.dialog?.communicate(
-                    new DialogMsg(DialogType.Show, {
-                        description: msg,
-                        level: MsgLevel.Info,
-                    }),
-                );
-            } else {
+            if (!result.isOk()){
                 const msg = util.format(getStrings().solution.PublishFailNotice, ctx.projectSettings?.appName);
                 ctx.logProvider?.info(msg);
             }
@@ -1706,11 +1697,13 @@ export class TeamsAppSolution implements Solution {
                             ),
                         );
                     }
-                    const result = await askSubscription(ctx.config, azureToken, ctx.dialog);
+                    const result = await askSubscription(ctx.config, ctx.azureAccountProvider, ctx.dialog);
                     if (result.isErr()) {
                         return err(result.error);
                     }
-                    ctx.config.get(GLOBAL_CONFIG)?.set("subscriptionId", result.value);
+                    ctx.azureAccountProvider?.setSubscription(result.value.subscriptionId);
+                    ctx.config.get(GLOBAL_CONFIG)?.set("subscriptionId", result.value.subscriptionId);
+                    ctx.config.get(GLOBAL_CONFIG)?.set("tenantId", result.value.tenantId);
                 }
                 return ok(null);
             }

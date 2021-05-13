@@ -389,12 +389,14 @@ class CoreImpl implements Core {
 
         this.ctx.logProvider?.info(`[Core] scaffold success! open target folder:${targetFolder}`);
 
-        await this.ctx.dialog?.communicate(
-            new DialogMsg(DialogType.Ask, {
-                type: QuestionType.UpdateGlobalState,
-                description: "openReadme"
-            })
-        )
+        if (this.ctx.platform === Platform.VSCode) {
+            await this.ctx.dialog?.communicate(
+                new DialogMsg(DialogType.Ask, {
+                    type: QuestionType.UpdateGlobalState,
+                    description: "openReadme"
+                })
+            )
+        }
 
         await this.ctx.dialog?.communicate(
             new DialogMsg(DialogType.Ask, {

@@ -62,7 +62,7 @@
         "data": {
             "type": "text",
             "name": "api-version",
-            "description": "The API version.",
+            "description": "The API version. Required.",
             "validation": {
                 "required": true
             }

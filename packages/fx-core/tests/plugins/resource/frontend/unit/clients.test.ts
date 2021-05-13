@@ -44,11 +44,7 @@ describe("AzureStorageClient", () => {
     });
 
     describe("createStorageAccount", () => {
-        const sampleStorageAccount = {
-            primaryEndpoints: {
-                web: faker.internet.url(),
-            },
-        } as StorageAccountsCreateResponse;
+        const sampleStorageAccount = TestHelper.storageAccount;
 
         afterEach(() => {
             sinon.restore();

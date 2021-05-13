@@ -33,15 +33,12 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Download Simple Auth bits
-        env:
-          SIMPLE_AUTH_SAS_TOKEN: ${{secrets.SIMPLE_AUTH_SAS_TOKEN}}
-          SIMPLE_AUTH_ENDPOINT: ${{secrets.SIMPLE_AUTH_ENDPOINT}}
         run: |
-            $version=Get-Content packages/fx-core/templates/plugins/resource/simpleauth/version.txt
-            $fileName="Microsoft.TeamsFx.SimpleAuth_$version.zip"
-            echo $SIMPLE_AUTH_ENDPOINT
-            $url=$env:SIMPLE_AUTH_ENDPOINT+'/'+$fileName+'?'+$env:SIMPLE_AUTH_SAS_TOKEN
-            Invoke-WebRequest $url -OutFile packages/fx-core/templates/plugins/resource/simpleauth/SimpleAuth.zip
+          $version=Get-Content packages/fx-core/templates/plugins/resource/simpleauth/version.txt
+          $tag = "simpleauth@"+$version
+          $fileName="Microsoft.TeamsFx.SimpleAuth_$version.zip"
+          $url = "https://github.com/OfficeDev/TeamsFx/releases/download/"+$tag+"/"+$fileName
+          Invoke-WebRequest $url -OutFile packages/fx-core/templates/plugins/resource/simpleauth/SimpleAuth.zip
         shell: pwsh
 
       - name: Setup project

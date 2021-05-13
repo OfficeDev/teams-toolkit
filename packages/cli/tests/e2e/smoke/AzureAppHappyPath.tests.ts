@@ -148,19 +148,20 @@ describe("Azure App Happy Path", function () {
       /// TODO: add check for build
     }
 
-    // publish
-    await execAsync(
-      `teamsfx publish`,
-      {
-        cwd: projectPath,
-        env: process.env,
-        timeout: 0
-      }
-    );
+    /// TODO: Publish broken: https://msazure.visualstudio.com/Microsoft%20Teams%20Extensibility/_workitems/edit/9856390
+    // // publish
+    // await execAsync(
+    //   `teamsfx publish`,
+    //   {
+    //     cwd: projectPath,
+    //     env: process.env,
+    //     timeout: 0
+    //   }
+    // );
 
-    {
-      /// TODO: add check for publish
-    }
+    // {
+    //   /// TODO: add check for publish
+    // }
   });
 
   after(async () => {

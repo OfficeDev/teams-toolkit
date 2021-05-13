@@ -52,8 +52,9 @@ export enum TelemetryEvent {
 
   OpenAzurePortal = "open-azure-portal",
 
-  F5Start = "f5-start",
-  F5 = "f5",
+  DebugPreCheck = "debug-precheck",
+  DebugStart = "debug-start",
+  DebugStop = "debug-stop",
 
   Survey = "survey"
 }
@@ -68,7 +69,11 @@ export enum TelemetryProperty {
   ErrorType = "error-type",
   ErrorCode = "error-code",
   ErrorMessage = "error-message",
-  DebugSessionId = "session-id"
+  DebugSessionId = "session-id",
+  DebugType = "type",
+  DebugRequest = "request",
+  DebugPort = "port",
+  DebugRemote = "remote"
 }
 
 export enum TelemetrySuccess {

@@ -1,4 +1,4 @@
-import { loadConfiguration, ResourceType } from "teamsdev-client";
+import { loadConfiguration, ResourceType } from "@microsoft/teamsfx";
 import { useData } from "./useData";
 import { useTeams } from "msteams-react-base-component";
 

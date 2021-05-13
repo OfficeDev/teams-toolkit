@@ -84,8 +84,8 @@ export class LanguageStrategy {
 
         if (programmingLanguage === ProgrammingLanguage.JavaScript) {
             try {
-                // fail to npm install teamsdev-client on azure web app, so pack it locally.
-                await utils.execute("npm install teamsdev-client", packDir);
+                // fail to npm install @microsoft/teamsfx on azure web app, so pack it locally.
+                await utils.execute("npm install @microsoft/teamsfx", packDir);
             } catch (e) {
                 throw new CommandExecutionError(`${Commands.NPM_INSTALL}`, e.message, e);
             }

@@ -30,15 +30,12 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Download Simple Auth bits
-        env:
-          SIMPLE_AUTH_SAS_TOKEN: ${{secrets.SIMPLE_AUTH_SAS_TOKEN}}
-          SIMPLE_AUTH_ENDPOINT: ${{secrets.SIMPLE_AUTH_ENDPOINT}}
         run: |
-            $version=Get-Content packages/fx-core/templates/plugins/resource/simpleauth/version.txt
-            $fileName="Microsoft.TeamsFx.SimpleAuth_$version.zip"
-            echo $SIMPLE_AUTH_ENDPOINT
-            $url=$env:SIMPLE_AUTH_ENDPOINT+'/'+$fileName+'?'+$env:SIMPLE_AUTH_SAS_TOKEN
-            Invoke-WebRequest $url -OutFile packages/fx-core/templates/plugins/resource/simpleauth/SimpleAuth.zip
+          $version=Get-Content packages/fx-core/templates/plugins/resource/simpleauth/version.txt
+          $tag = "simpleauth@"+$version
+          $fileName="Microsoft.TeamsFx.SimpleAuth_$version.zip"
+          $url = "https://github.com/OfficeDev/TeamsFx/releases/download/"+$tag+"/"+$fileName
+          Invoke-WebRequest $url -OutFile packages/fx-core/templates/plugins/resource/simpleauth/SimpleAuth.zip
         shell: pwsh
 
       - name: Setup project
@@ -50,8 +47,7 @@ jobs:
         env:
           TEST_USER_NAME: ${{ secrets.TEST_USER_NAME }}
           TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
-          TEST_SUBSCRIPTION_ID: ${{ secrets.TEST_SUBSCRIPTION_ID_2 }}
-          TEST_TENANT_ID: ${{ secrets.TEST_TENANT_ID_2 }}
+          TEST_SUBSCRIPTION_ID: ${{ secrets.TEST_SUBSCRIPTION_ID }}
           CI_ENABLED: "true"
         run: |
           npx lerna run test:e2e

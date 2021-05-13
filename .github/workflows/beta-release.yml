@@ -35,9 +35,6 @@ jobs:
 
       - name: Download Simple Auth bits
         uses: nick-invision/retry@v2
-        env:
-          SIMPLE_AUTH_SAS_TOKEN: ${{secrets.SIMPLE_AUTH_SAS_TOKEN}}
-          SIMPLE_AUTH_ENDPOINT: ${{secrets.SIMPLE_AUTH_ENDPOINT}}
         with:
           timeout_minutes: 10
           max_attempts: 5
@@ -45,9 +42,9 @@ jobs:
           shell: pwsh
           command: |
             $version=Get-Content packages/fx-core/templates/plugins/resource/simpleauth/version.txt
+            $tag = "simpleauth@"+$version
             $fileName="Microsoft.TeamsFx.SimpleAuth_$version.zip"
-            echo $SIMPLE_AUTH_ENDPOINT
-            $url=$env:SIMPLE_AUTH_ENDPOINT+'/'+$fileName+'?'+$env:SIMPLE_AUTH_SAS_TOKEN
+            $url = "https://github.com/OfficeDev/TeamsFx/releases/download/"+$tag+"/"+$fileName
             Invoke-WebRequest $url -OutFile packages/fx-core/templates/plugins/resource/simpleauth/SimpleAuth.zip
 
       - name: Setup project

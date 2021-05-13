@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { PluginContext } from "@microsoft/teamsfx-api";
+import { PluginContext, ReadonlyPluginConfig } from "@microsoft/teamsfx-api";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 
 import { Constants, DependentPluginInfo, FrontendConfigInfo } from "./constants";
-import { InvalidStorageNameError, NotScaffoldError, UnauthenticatedError } from "./resources/errors";
+import { InvalidConfigError, InvalidStorageNameError, UnauthenticatedError } from "./resources/errors";
 import { Utils } from "./utils";
 
 export class FrontendConfig {
@@ -45,13 +45,10 @@ export class FrontendConfig {
         const appName = ctx.app.name.short;
         const solutionConfigs = ctx.configOfOtherPlugins.get(DependentPluginInfo.SolutionPluginName);
 
-        const subscriptionId = solutionConfigs?.get(DependentPluginInfo.SubscriptionId) as string;
-        const resourceNameSuffix = solutionConfigs?.get(DependentPluginInfo.ResourceNameSuffix) as string;
-        const resourceGroupName = solutionConfigs?.get(DependentPluginInfo.ResourceGroupName) as string;
-        const location = solutionConfigs?.get(DependentPluginInfo.Location) as string;
-        if (!subscriptionId || !resourceNameSuffix || !resourceGroupName) {
-            throw new NotScaffoldError();
-        }
+        const subscriptionId = FrontendConfig.getConfig<string>(DependentPluginInfo.SubscriptionId, solutionConfigs);
+        const resourceNameSuffix = FrontendConfig.getConfig<string>(DependentPluginInfo.ResourceNameSuffix, solutionConfigs);
+        const resourceGroupName = FrontendConfig.getConfig<string>(DependentPluginInfo.ResourceGroupName, solutionConfigs);
+        const location = FrontendConfig.getConfig<string>(DependentPluginInfo.Location, solutionConfigs);
 
         let storageName = ctx.config.getString(FrontendConfigInfo.StorageName);
         if (!storageName) {
@@ -70,5 +67,13 @@ export class FrontendConfig {
             storageName,
             credentials,
         );
+    }
+
+    private static getConfig<T>(key: string, configs?: ReadonlyPluginConfig): T {
+        const value = configs?.get(key) as T;
+        if (!value) {
+            throw new InvalidConfigError(key)
+        }
+        return value;
     }
 }

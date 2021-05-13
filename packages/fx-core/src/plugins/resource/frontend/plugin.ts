@@ -10,13 +10,18 @@ import {
     GetTemplateError,
     NoResourceGroupError,
     NoStorageError,
-    NotProvisionError,
-    NotScaffoldError,
     StaticWebsiteDisabledError,
     UnzipTemplateError,
     runWithErrorCatchAndThrow,
+    CheckStorageError,
+    CheckResourceGroupError,
+    NoPreStepError,
+    InvalidStorageNameError,
+    StorageAccountAlreadyTakenError,
+    runWithErrorCatchAndWrap,
 } from "./resources/errors";
 import {
+    AzureErrorCode,
     Constants,
     DependentPluginInfo,
     FrontendConfigInfo,
@@ -81,7 +86,10 @@ export class FrontendPluginImpl {
         this.config = await FrontendConfig.fromPluginContext(ctx);
         this.azureStorageClient = new AzureStorageClient(this.config);
 
-        const resourceGroupExists: boolean = await this.azureStorageClient.doesResourceGroupExists();
+        const resourceGroupExists: boolean = await runWithErrorCatchAndThrow(
+            new CheckResourceGroupError(),
+            async () => await this.azureStorageClient!.doesResourceGroupExists(),
+        );
         if (!resourceGroupExists) {
             throw new NoResourceGroupError();
         }
@@ -97,12 +105,21 @@ export class FrontendPluginImpl {
         const client = this.azureStorageClient;
         const storageName = this.config?.storageName;
         if (!storageName || !client) {
-            throw new NotScaffoldError();
+            throw new NoPreStepError();
         }
 
         await progressHandler?.next(ProvisionSteps.CreateStorage);
-        const endpoint = await runWithErrorCatchAndThrow(
-            new CreateStorageAccountError(),
+        const createStorageErrorWrapper = (innerError: any) => {
+            if (innerError.code === AzureErrorCode.ReservedResourceName) {
+                return new InvalidStorageNameError();
+            }
+            if (innerError.code === AzureErrorCode.StorageAccountAlreadyTaken || innerError.code === AzureErrorCode.StorageAccountAlreadyExists) {
+                return new StorageAccountAlreadyTakenError();
+            }
+            return new CreateStorageAccountError();
+        };
+        const endpoint = await runWithErrorCatchAndWrap(
+            createStorageErrorWrapper,
             async () => await client.createStorageAccount(),
         );
 
@@ -171,17 +188,26 @@ export class FrontendPluginImpl {
 
         await progressHandler?.next(PreDeploySteps.CheckStorage);
 
-        const resourceGroupExists: boolean = await this.azureStorageClient.doesResourceGroupExists();
+        const resourceGroupExists: boolean = await runWithErrorCatchAndThrow(
+            new CheckResourceGroupError(),
+            async () => await this.azureStorageClient!.doesResourceGroupExists(),
+        );
         if (!resourceGroupExists) {
             throw new NoResourceGroupError();
         }
 
-        const storageExists: boolean = await this.azureStorageClient.doesStorageAccountExists();
+        const storageExists: boolean = await runWithErrorCatchAndThrow(
+            new CheckStorageError(),
+            async () => await this.azureStorageClient!.doesStorageAccountExists(),
+        );
         if (!storageExists) {
             throw new NoStorageError();
         }
 
-        const storageAvailable: boolean | undefined = await this.azureStorageClient.isStorageStaticWebsiteEnabled();
+        const storageAvailable: boolean | undefined = await runWithErrorCatchAndThrow(
+            new CheckStorageError(),
+            async () => await this.azureStorageClient!.isStorageStaticWebsiteEnabled(),
+        );
         if (!storageAvailable) {
             throw new StaticWebsiteDisabledError();
         }
@@ -197,7 +223,7 @@ export class FrontendPluginImpl {
 
         const client = this.azureStorageClient;
         if (!client) {
-            throw new NotProvisionError();
+            throw new NoPreStepError();
         }
 
         const componentPath: string = path.join(ctx.root, FrontendPathInfo.WorkingDir);

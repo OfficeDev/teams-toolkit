@@ -62,11 +62,12 @@ function onDidStartDebugSessionHandler(event: vscode.DebugSession): void {
         {
             // send f5 event telemetry
             try {
-                ExtTelemetry.sendTelemetryEvent(TelemetryEvent.F5, {
+                ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugStart, {
                     [TelemetryProperty.DebugSessionId]: event.id,
                     [TelemetryProperty.DebugType]: debugConfig.type,
                     [TelemetryProperty.DebugRequest]: debugConfig.request,
-                    [TelemetryProperty.DebugPort]: debugConfig.port + ""
+                    [TelemetryProperty.DebugPort]: debugConfig.port + "",
+                    [TelemetryProperty.DebugRemote]: debugConfig.name?.includes("Remote") || debugConfig.name?.includes("remote") ? "true" : "false"
                 });
             } catch {
                 // ignore telemetry error
@@ -82,7 +83,7 @@ function onDidTerminateDebugSessionHandler(event: vscode.DebugSession): void {
     {
         // send stop-debug event telemetry
         try {
-            ExtTelemetry.sendTelemetryEvent(TelemetryEvent.StopDebug, {
+            ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugStop, {
                 [TelemetryProperty.DebugSessionId]: event.id
             });
         } catch {

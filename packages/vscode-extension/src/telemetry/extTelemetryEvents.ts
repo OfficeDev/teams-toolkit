@@ -34,9 +34,9 @@ export enum TelemetryEvent {
   PublishStart = "publish-start",
   Publish = "publish",
 
-  F5Start = "f5-start",
-  F5 = "f5",
-  StopDebug = "stop-debug",
+  DebugPreCheck = "debug-precheck",
+  DebugStart = "debug-start",
+  DebugStop = "debug-stop",
 
   Survey = "survey"
 }
@@ -54,7 +54,8 @@ export enum TelemetryProperty {
   DebugSessionId = "session-id",
   DebugType = "type",
   DebugRequest = "request",
-  DebugPort = "port"
+  DebugPort = "port",
+  DebugRemote = "remote"
 }
 
 export enum TelemetrySuccess {

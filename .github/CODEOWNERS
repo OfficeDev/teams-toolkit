@@ -9,7 +9,7 @@
 # In each subsection folders are ordered first by depth, then alphabetically.
 # This should make it easy to add new rules without breaking existing ones.
 
-/packages/vscode-extension @1openwindow @HuihuiWu-Microsoft @nliu-ms @jayzhang
+/packages/vscode-extension @1openwindow @HuihuiWu-Microsoft @nliu-ms @jayzhang @LongOddCode
 /packages/vscode-extension/src/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @meifans @dooriya
 /packages/vscode-extension/src/qm @jayzhang @1openwindow @jiayi-ruan @HuihuiWu-Microsoft @nliu-ms
 /packages/vscode-extension/src/debug @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @meifans @dooriya

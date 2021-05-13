@@ -1,11 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  PublicClientApplication,
-  LogLevel,
-  DeviceCodeRequest,
-} from "@azure/msal-node";
+import { PublicClientApplication, LogLevel, DeviceCodeRequest } from "@azure/msal-node";
 import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 
 const config = {

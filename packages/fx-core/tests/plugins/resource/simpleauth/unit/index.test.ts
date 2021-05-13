@@ -23,87 +23,92 @@ dotenv.config();
 const testWithAzure: boolean = process.env.UT_TEST_ON_AZURE ? true : false;
 
 describe("simpleAuthPlugin", () => {
-    let simpleAuthPlugin: SimpleAuthPlugin;
-    let pluginContext: PluginContext;
-    let credentials: msRestNodeAuth.TokenCredentialsBase;
+  let simpleAuthPlugin: SimpleAuthPlugin;
+  let pluginContext: PluginContext;
+  let credentials: msRestNodeAuth.TokenCredentialsBase;
 
-    before(async () => {
-        if (testWithAzure) {
-            credentials = await msRestNodeAuth.interactiveLogin();
-        } else {
-            credentials = new msRestNodeAuth.ApplicationTokenCredentials(
-                faker.random.uuid(),
-                faker.internet.url(),
-                faker.internet.password(),
-            );
-        }
-    });
+  before(async () => {
+    if (testWithAzure) {
+      credentials = await msRestNodeAuth.interactiveLogin();
+    } else {
+      credentials = new msRestNodeAuth.ApplicationTokenCredentials(
+        faker.random.uuid(),
+        faker.internet.url(),
+        faker.internet.password()
+      );
+    }
+  });
 
-    beforeEach(async () => {
-        simpleAuthPlugin = new SimpleAuthPlugin();
-        pluginContext = await TestHelper.pluginContext(credentials);
-    });
+  beforeEach(async () => {
+    simpleAuthPlugin = new SimpleAuthPlugin();
+    pluginContext = await TestHelper.pluginContext(credentials);
+  });
 
-    afterEach(() => {
-        sinon.restore();
-    });
+  afterEach(() => {
+    sinon.restore();
+  });
 
-    it("local debug", async function () {
-        // Act
-        await simpleAuthPlugin.localDebug(pluginContext);
-        await simpleAuthPlugin.postLocalDebug(pluginContext);
+  it("local debug", async function () {
+    // Act
+    await simpleAuthPlugin.localDebug(pluginContext);
+    await simpleAuthPlugin.postLocalDebug(pluginContext);
 
-        // Assert
-        const filePath = pluginContext.config.get(Constants.SimpleAuthPlugin.configKeys.filePath) as string;
-        chai.assert.isOk(filePath);
-        chai.assert.isTrue(await fs.pathExists(filePath));
-        const expectedEnvironmentVariableParams =
-            "CLIENT_ID=\"mock-local-clientId\" CLIENT_SECRET=\"mock-local-clientSecret\" OAUTH_AUTHORITY=\"https://login.microsoftonline.com/mock-teamsAppTenantId\" IDENTIFIER_URI=\"mock-local-applicationIdUris\" ALLOWED_APP_IDS=\"mock-teamsMobileDesktopAppId;mock-teamsWebAppId\" TAB_APP_ENDPOINT=\"https://endpoint.mock\" AAD_METADATA_ADDRESS=\"https://login.microsoftonline.com/mock-teamsAppTenantId/v2.0/.well-known/openid-configuration\"";
-        chai.assert.strictEqual(
-            pluginContext.config.get(Constants.SimpleAuthPlugin.configKeys.environmentVariableParams),
-            expectedEnvironmentVariableParams,
-        );
-    });
+    // Assert
+    const filePath = pluginContext.config.get(
+      Constants.SimpleAuthPlugin.configKeys.filePath
+    ) as string;
+    chai.assert.isOk(filePath);
+    chai.assert.isTrue(await fs.pathExists(filePath));
+    const expectedEnvironmentVariableParams =
+      'CLIENT_ID="mock-local-clientId" CLIENT_SECRET="mock-local-clientSecret" OAUTH_AUTHORITY="https://login.microsoftonline.com/mock-teamsAppTenantId" IDENTIFIER_URI="mock-local-applicationIdUris" ALLOWED_APP_IDS="mock-teamsMobileDesktopAppId;mock-teamsWebAppId" TAB_APP_ENDPOINT="https://endpoint.mock" AAD_METADATA_ADDRESS="https://login.microsoftonline.com/mock-teamsAppTenantId/v2.0/.well-known/openid-configuration"';
+    chai.assert.strictEqual(
+      pluginContext.config.get(Constants.SimpleAuthPlugin.configKeys.environmentVariableParams),
+      expectedEnvironmentVariableParams
+    );
+  });
 
-    it("provision", async function () {
-        // Arrange
-        const endpoint = faker.internet.url();
-        sinon.stub(WebAppClient.prototype, "createWebApp").resolves(endpoint);
-        sinon.stub(WebAppClient.prototype, "zipDeploy").resolves();
-        sinon.stub(WebAppClient.prototype, "configWebApp").resolves();
+  it("provision", async function () {
+    // Arrange
+    const endpoint = faker.internet.url();
+    sinon.stub(WebAppClient.prototype, "createWebApp").resolves(endpoint);
+    sinon.stub(WebAppClient.prototype, "zipDeploy").resolves();
+    sinon.stub(WebAppClient.prototype, "configWebApp").resolves();
 
-        // Act
-        const provisionResult = await simpleAuthPlugin.provision(pluginContext);
-        const postProvisionResult = await simpleAuthPlugin.postProvision(pluginContext);
+    // Act
+    const provisionResult = await simpleAuthPlugin.provision(pluginContext);
+    const postProvisionResult = await simpleAuthPlugin.postProvision(pluginContext);
 
-        // Assert
-        chai.assert.isTrue(provisionResult.isOk());
-        chai.assert.strictEqual(
-            pluginContext.config.get(Constants.SimpleAuthPlugin.configKeys.endpoint),
-            endpoint,
-        );
-        chai.assert.isTrue(postProvisionResult.isOk());
-    });
+    // Assert
+    chai.assert.isTrue(provisionResult.isOk());
+    chai.assert.strictEqual(
+      pluginContext.config.get(Constants.SimpleAuthPlugin.configKeys.endpoint),
+      endpoint
+    );
+    chai.assert.isTrue(postProvisionResult.isOk());
+  });
 
-    it("provision with Azure", async function () {
-        if (testWithAzure) {
-            // Act
-            const provisionResult = await simpleAuthPlugin.provision(pluginContext);
-            const postProvisionResult = await simpleAuthPlugin.postProvision(pluginContext);
+  it("provision with Azure", async function () {
+    if (testWithAzure) {
+      // Act
+      const provisionResult = await simpleAuthPlugin.provision(pluginContext);
+      const postProvisionResult = await simpleAuthPlugin.postProvision(pluginContext);
 
-            // Assert
-            chai.assert.isTrue(provisionResult.isOk());
-            const resourceNameSuffix = pluginContext.configOfOtherPlugins
-                .get(Constants.SolutionPlugin.id)
-                ?.get(Constants.SolutionPlugin.configKeys.resourceNameSuffix) as string;
-            const webAppName = Utils.generateResourceName(pluginContext.app.name.short, resourceNameSuffix);
-            chai.assert.strictEqual(
-                pluginContext.config.get(Constants.SimpleAuthPlugin.configKeys.endpoint),
-                `https://${webAppName}.azurewebsites.net`,
-            );
-            chai.assert.isTrue(postProvisionResult.isOk());
-        } else {
-            this.skip();
-        }
-    });
+      // Assert
+      chai.assert.isTrue(provisionResult.isOk());
+      const resourceNameSuffix = pluginContext.configOfOtherPlugins
+        .get(Constants.SolutionPlugin.id)
+        ?.get(Constants.SolutionPlugin.configKeys.resourceNameSuffix) as string;
+      const webAppName = Utils.generateResourceName(
+        pluginContext.app.name.short,
+        resourceNameSuffix
+      );
+      chai.assert.strictEqual(
+        pluginContext.config.get(Constants.SimpleAuthPlugin.configKeys.endpoint),
+        `https://${webAppName}.azurewebsites.net`
+      );
+      chai.assert.isTrue(postProvisionResult.isOk());
+    } else {
+      this.skip();
+    }
+  });
 });

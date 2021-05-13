@@ -24,7 +24,7 @@ import {
   normalizeComponentName,
 } from "./utils/utils";
 import { Constants, PlaceHolders, PreDeployProgressMessage } from "./utils/constants";
-import { BuildSPPackageError, NoSPPackageError} from "./error";
+import { BuildSPPackageError, NoSPPackageError } from "./error";
 import * as util from "util";
 import { ProgressHelper } from "./utils/progress-helper";
 import { REMOTE_MANIFEST } from "../../solution/fx-solution/constants";
@@ -32,10 +32,7 @@ import { getStrings } from "../../../common/tools";
 import { getTemplatesFolder } from "../../..";
 
 export class SPFxPluginImpl {
-  public async scaffold(
-    ctx: PluginContext,
-    config: SpfxConfig
-  ): Promise<Result<any, FxError>> {
+  public async scaffold(ctx: PluginContext, config: SpfxConfig): Promise<Result<any, FxError>> {
     const componentName = normalizeComponentName(config.webpartName);
     const componentNameCamelCase = lodash.camelCase(componentName);
     const componentId = uuid.v4();
@@ -44,10 +41,7 @@ export class SPFxPluginImpl {
     const libraryName = lodash.kebabCase(ctx.projectSettings?.appName);
     let componentAlias = componentClassName;
     if (componentClassName.length > Constants.MAX_ALIAS_LENGTH) {
-      componentAlias = componentClassName.substring(
-        0,
-        Constants.MAX_ALIAS_LENGTH
-      );
+      componentAlias = componentClassName.substring(0, Constants.MAX_ALIAS_LENGTH);
     }
     let componentClassNameKebabCase = lodash.kebabCase(componentClassName);
     if (componentClassNameKebabCase.length > Constants.MAX_BUNDLE_NAME_LENGTH) {
@@ -57,10 +51,7 @@ export class SPFxPluginImpl {
       );
       const lastCharacterIndex = componentClassNameKebabCase.length - 1;
       if (componentClassNameKebabCase[lastCharacterIndex] === "-") {
-        componentClassNameKebabCase = componentClassNameKebabCase.substring(
-          0,
-          lastCharacterIndex
-        );
+        componentClassNameKebabCase = componentClassNameKebabCase.substring(0, lastCharacterIndex);
       }
     }
 
@@ -96,17 +87,11 @@ export class SPFxPluginImpl {
           recursive: true,
         });
         await fs.copyFile(
-          path.resolve(
-            templateFolder,
-            "./webpart/none/{componentClassName}.module.scss"
-          ),
+          path.resolve(templateFolder, "./webpart/none/{componentClassName}.module.scss"),
           `${srcDir}/webparts/${componentNameCamelCase}/${componentClassName}.module.scss`
         );
         await fs.copyFile(
-          path.resolve(
-            templateFolder,
-            "./webpart/none/{componentClassName}.ts"
-          ),
+          path.resolve(templateFolder, "./webpart/none/{componentClassName}.ts"),
           `${srcDir}/webparts/${componentNameCamelCase}/${componentClassName}.ts`
         );
         await fs.copyFile(
@@ -118,31 +103,19 @@ export class SPFxPluginImpl {
         const componentDir = `${srcDir}/webparts/${componentNameCamelCase}/components`;
         fs.mkdirSync(componentDir, { recursive: true });
         await fs.copyFile(
-          path.resolve(
-            templateFolder,
-            "./webpart/react/{componentClassName}.ts"
-          ),
+          path.resolve(templateFolder, "./webpart/react/{componentClassName}.ts"),
           `${srcDir}/webparts/${componentNameCamelCase}/${componentClassName}.ts`
         );
         await fs.copyFile(
-          path.resolve(
-            templateFolder,
-            "./webpart/react/components/{componentName}.module.scss"
-          ),
+          path.resolve(templateFolder, "./webpart/react/components/{componentName}.module.scss"),
           `${componentDir}/${componentName}.module.scss`
         );
         await fs.copyFile(
-          path.resolve(
-            templateFolder,
-            "./webpart/react/components/{componentName}.tsx"
-          ),
+          path.resolve(templateFolder, "./webpart/react/components/{componentName}.tsx"),
           `${componentDir}/${componentName}.tsx`
         );
         await fs.copyFile(
-          path.resolve(
-            templateFolder,
-            "./webpart/react/components/I{componentName}Props.ts"
-          ),
+          path.resolve(templateFolder, "./webpart/react/components/I{componentName}Props.ts"),
           `${componentDir}/I${componentName}Props.ts`
         );
         await fs.copyFile(
@@ -157,18 +130,12 @@ export class SPFxPluginImpl {
       `${srcDir}/webparts/${componentNameCamelCase}/loc`
     );
     await fs.copy(
-      path.resolve(
-        templateFolder,
-        "./webpart/base/{componentClassName}.manifest.json"
-      ),
+      path.resolve(templateFolder, "./webpart/base/{componentClassName}.manifest.json"),
       `${srcDir}/webparts/${componentNameCamelCase}/${componentClassName}.manifest.json`
     );
 
     // config folder
-    await fs.copy(
-      path.resolve(templateFolder, "./solution/config"),
-      `${outputFolderPath}/config`
-    );
+    await fs.copy(path.resolve(templateFolder, "./solution/config"), `${outputFolderPath}/config`);
 
     // Other files
     await fs.copyFile(
@@ -203,10 +170,7 @@ export class SPFxPluginImpl {
     replaceMap.set(PlaceHolders.componentAlias, componentAlias);
     replaceMap.set(PlaceHolders.componentDescription, config.webpartDesc);
     replaceMap.set(PlaceHolders.componentNameUnescaped, config.webpartName);
-    replaceMap.set(
-      PlaceHolders.componentClassNameKebabCase,
-      componentClassNameKebabCase
-    );
+    replaceMap.set(PlaceHolders.componentClassNameKebabCase, componentClassNameKebabCase);
 
     await configure(outputFolderPath, replaceMap);
     await configure(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`, replaceMap);
@@ -214,13 +178,15 @@ export class SPFxPluginImpl {
   }
 
   public async preDeploy(ctx: PluginContext): Promise<Result<any, FxError>> {
-    const confirm = (await ctx.dialog?.communicate(
-      new DialogMsg(DialogType.Show, {
-        description: getStrings().plugins.SPFx.buildNotice,
-        level: MsgLevel.Warning,
-        items: [Constants.BUILD_SHAREPOINT_PACKAGE, Constants.READ_MORE, Constants.CANCEL]
-      }),
-    ))?.getAnswer();
+    const confirm = (
+      await ctx.dialog?.communicate(
+        new DialogMsg(DialogType.Show, {
+          description: getStrings().plugins.SPFx.buildNotice,
+          level: MsgLevel.Warning,
+          items: [Constants.BUILD_SHAREPOINT_PACKAGE, Constants.READ_MORE, Constants.CANCEL],
+        })
+      )
+    )?.getAnswer();
 
     switch (confirm) {
       case Constants.CANCEL: {
@@ -230,9 +196,9 @@ export class SPFxPluginImpl {
         await ctx.dialog?.communicate(
           new DialogMsg(DialogType.Ask, {
             description: Constants.DEPLOY_GUIDE,
-            type: QuestionType.OpenExternal
+            type: QuestionType.OpenExternal,
           })
-        )
+        );
         return ok(undefined);
       }
     }
@@ -244,13 +210,7 @@ export class SPFxPluginImpl {
     try {
       const workspacePath = `${ctx.root}/SPFx`;
       await progressHandler?.next(PreDeployProgressMessage.NpmInstall);
-      await execute(
-        `npm install`,
-        "SPFx",
-        workspacePath,
-        ctx.logProvider,
-        true
-      );
+      await execute(`npm install`, "SPFx", workspacePath, ctx.logProvider, true);
       const gulpCommand = await SPFxPluginImpl.findGulpCommand(workspacePath);
       await progressHandler?.next(PreDeployProgressMessage.GulpBundle);
       await execute(
@@ -270,9 +230,7 @@ export class SPFxPluginImpl {
       );
       await ProgressHelper.endPreDeployProgress();
 
-      const solutionConfig = await fs.readJson(
-        `${ctx.root}/SPFx/config/package-solution.json`
-      );
+      const solutionConfig = await fs.readJson(`${ctx.root}/SPFx/config/package-solution.json`);
       const sharepointPackage = `${ctx.root}/SPFx/sharepoint/${solutionConfig.paths.zippedPackage}`;
       const fileExists = await this.checkFileExist(sharepointPackage);
       if (!fileExists) {
@@ -281,22 +239,24 @@ export class SPFxPluginImpl {
 
       const dir = path.normalize(path.parse(sharepointPackage).dir);
       const fileName = path.parse(sharepointPackage).name + path.parse(sharepointPackage).ext;
-      
+
       const guidance = util.format(getStrings().plugins.SPFx.deployNotice, dir, fileName);
-      const answer = (await ctx.dialog?.communicate(
-        new DialogMsg(DialogType.Show, {
-          description: guidance,
-          level: MsgLevel.Info,
-          items: ["OK", Constants.READ_MORE]
-        })
-      ))?.getAnswer();
+      const answer = (
+        await ctx.dialog?.communicate(
+          new DialogMsg(DialogType.Show, {
+            description: guidance,
+            level: MsgLevel.Info,
+            items: ["OK", Constants.READ_MORE],
+          })
+        )
+      )?.getAnswer();
       if (answer === Constants.READ_MORE) {
         await ctx.dialog?.communicate(
           new DialogMsg(DialogType.Ask, {
             description: Constants.DEPLOY_GUIDE,
-            type: QuestionType.OpenExternal
+            type: QuestionType.OpenExternal,
           })
-        )
+        );
       }
       return ok(undefined);
     } catch (error) {
@@ -323,9 +283,7 @@ export class SPFxPluginImpl {
     const platform = process.platform;
     if (
       platform === "win32" &&
-      (await fs.pathExists(
-        path.join(rootPath, "node_modules", ".bin", "gulp.cmd")
-      ))
+      (await fs.pathExists(path.join(rootPath, "node_modules", ".bin", "gulp.cmd")))
     ) {
       gulpCommand = path.join(".", "node_modules", ".bin", "gulp.cmd");
     } else if (

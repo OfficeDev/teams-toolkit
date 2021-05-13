@@ -21,7 +21,7 @@ import {
   isLinux,
   isWindows,
   Messages,
-  TelemtryMessages
+  TelemtryMessages,
 } from "./common";
 import { performance } from "perf_hooks";
 import { DepsCheckerError } from "./errors";
@@ -32,7 +32,7 @@ const execFile = util.promisify(child_process.execFile);
 export enum DotnetVersion {
   v21 = "2.1",
   v31 = "3.1",
-  v50 = "5.0"
+  v50 = "5.0",
 }
 
 export const DotnetCoreSDKName = ".NET Core SDK";
@@ -68,7 +68,7 @@ export class DotnetChecker implements IDepsChecker {
       name: DotnetCoreSDKName,
       installVersion: `${installVersion}`,
       supportedVersions: supportedVersions,
-      details: map
+      details: map,
     };
   }
 
@@ -162,7 +162,7 @@ export class DotnetChecker implements IDepsChecker {
   private async getDotnetExecPathFromConfig(): Promise<string | null> {
     try {
       const config = await fs.readJson(DotnetChecker.getDotnetConfigPath(), {
-        encoding: DotnetChecker.encoding
+        encoding: DotnetChecker.encoding,
       });
       if (typeof config.dotnetExecutablePath === "string") {
         return config.dotnetExecutablePath;
@@ -207,7 +207,7 @@ export class DotnetChecker implements IDepsChecker {
       {
         encoding: DotnetChecker.encoding,
         spaces: 4,
-        EOL: os.EOL
+        EOL: os.EOL,
       }
     );
   }
@@ -231,7 +231,7 @@ export class DotnetChecker implements IDepsChecker {
       maxBuffer: DotnetChecker.maxBuffer,
       timeout: DotnetChecker.timeout,
       killSignal: "SIGKILL",
-      shell: false
+      shell: false,
     };
 
     try {
@@ -239,9 +239,9 @@ export class DotnetChecker implements IDepsChecker {
       fs.chmodSync(this.getDotnetInstallScriptPath(), "755");
       const { stdout, stderr } = await execFile(command[0], command.slice(1), options);
       await this._logger.debug(
-        `Finished running dotnet-install script, command = '${command.join(" ")}', options = '${JSON.stringify(
-          options
-        )}', stdout = '${stdout}', stderr = '${stderr}'`
+        `Finished running dotnet-install script, command = '${command.join(
+          " "
+        )}', options = '${JSON.stringify(options)}', stdout = '${stdout}', stderr = '${stderr}'`
       );
 
       const timecost = Number(((performance.now() - start) / 1000).toFixed(2));
@@ -401,7 +401,7 @@ export class DotnetChecker implements IDepsChecker {
       "-InstallDir",
       isWindows() ? DotnetChecker.escapeFilePath(dotnetInstallDir) : dotnetInstallDir,
       "-Channel",
-      version
+      version,
     ];
 
     if (isWindows()) {
@@ -413,7 +413,7 @@ export class DotnetChecker implements IDepsChecker {
         "-Command",
         `& { [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12 ; & ${command.join(
           " "
-        )} }`
+        )} }`,
       ];
     } else {
       return command;

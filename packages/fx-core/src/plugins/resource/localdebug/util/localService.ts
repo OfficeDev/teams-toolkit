@@ -8,15 +8,14 @@ import * as os from "os";
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
 
 export async function prepareLocalAuthService(zipPath: string): Promise<string> {
-    const toolkitHome = `${os.homedir()}/.${ConfigFolderName}`;
-    const authServiceFolder = `${toolkitHome}/localauth`;
-    const authServiceDll = `${authServiceFolder}/Microsoft.TeamsFx.SimpleAuth.dll`;
-    if (!await fs.pathExists(authServiceDll))
-    {
-        const zip = new AdmZip(zipPath);
-        await fs.ensureDir(authServiceFolder);
-        zip.extractAllTo(authServiceFolder, true);
-    }
+  const toolkitHome = `${os.homedir()}/.${ConfigFolderName}`;
+  const authServiceFolder = `${toolkitHome}/localauth`;
+  const authServiceDll = `${authServiceFolder}/Microsoft.TeamsFx.SimpleAuth.dll`;
+  if (!(await fs.pathExists(authServiceDll))) {
+    const zip = new AdmZip(zipPath);
+    await fs.ensureDir(authServiceFolder);
+    zip.extractAllTo(authServiceFolder, true);
+  }
 
-    return authServiceFolder;
+  return authServiceFolder;
 }

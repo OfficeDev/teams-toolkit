@@ -14,14 +14,16 @@
   "requiresCustomScript": false,
   "supportedHosts": ["SharePointWebPart", "TeamsPersonalApp"],
 
-  "preconfiguredEntries": [{
-    "groupId": "5c03119e-3074-46fd-976b-c60198311f70", // Other
-    "group": { "default": "Other" },
-    "title": { "default": "<%= componentNameUnescaped %>" },
-    "description": { "default": "<%= componentDescription %>" },
-    "officeFabricIconFontName": "Page",
-    "properties": {
-      "description": "<%= componentNameUnescaped %>"
+  "preconfiguredEntries": [
+    {
+      "groupId": "5c03119e-3074-46fd-976b-c60198311f70", // Other
+      "group": { "default": "Other" },
+      "title": { "default": "<%= componentNameUnescaped %>" },
+      "description": { "default": "<%= componentDescription %>" },
+      "officeFabricIconFontName": "Page",
+      "properties": {
+        "description": "<%= componentNameUnescaped %>"
+      }
     }
-  }]
+  ]
 }

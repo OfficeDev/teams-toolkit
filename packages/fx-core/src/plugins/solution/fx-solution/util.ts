@@ -1,44 +1,48 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import {
-    PluginConfig,
-    Dialog,
-    FxError,
-    DialogMsg,
-    DialogType,
-    QuestionType,
-    SolutionContext,
-    PluginContext,
-    Context,
-    ConfigMap,
-    TeamsAppManifest,
-    ok,
-    Result,
-    err,
-    ResultAsync
+  PluginConfig,
+  Dialog,
+  FxError,
+  DialogMsg,
+  DialogType,
+  QuestionType,
+  SolutionContext,
+  PluginContext,
+  Context,
+  ConfigMap,
+  TeamsAppManifest,
+  ok,
+  Result,
+  err,
+  ResultAsync,
 } from "@microsoft/teamsfx-api";
 import { SubscriptionClient } from "@azure/arm-subscriptions";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 
-async function ask(description: string, dialog?: Dialog, defaultAnswer?: string): Promise<Result<string, FxError>> {
-    const answer: string | undefined = (
-        await dialog?.communicate(
-            new DialogMsg(DialogType.Ask, {
-                type: QuestionType.Text,
-                description,
-                defaultAnswer,
-            }),
-        )
-    )?.getAnswer();
-    if (!answer) {
-        return err({
-            name: "invalidUserInput",
-            message: "User input should not be empty",
-            source: __filename,
-            timestamp: new Date(),
-        });
-    }
-    return ok(answer);
+async function ask(
+  description: string,
+  dialog?: Dialog,
+  defaultAnswer?: string
+): Promise<Result<string, FxError>> {
+  const answer: string | undefined = (
+    await dialog?.communicate(
+      new DialogMsg(DialogType.Ask, {
+        type: QuestionType.Text,
+        description,
+        defaultAnswer,
+      })
+    )
+  )?.getAnswer();
+  if (!answer) {
+    return err({
+      name: "invalidUserInput",
+      message: "User input should not be empty",
+      source: __filename,
+      timestamp: new Date(),
+    });
+  }
+  return ok(answer);
 }
 
 /**
@@ -47,8 +51,11 @@ async function ask(description: string, dialog?: Dialog, defaultAnswer?: string)
  * @param dialog communication channel to the core module
  * @param description description of the question.
  */
-export function askWithoutDefaultAnswer(description: string, dialog?: Dialog): ResultAsync<string, FxError> {
-    return new ResultAsync(ask(description, dialog));
+export function askWithoutDefaultAnswer(
+  description: string,
+  dialog?: Dialog
+): ResultAsync<string, FxError> {
+  return new ResultAsync(ask(description, dialog));
 }
 
 /**
@@ -59,13 +66,13 @@ export function askWithoutDefaultAnswer(description: string, dialog?: Dialog): R
  * @param t the context that will be carried with the answer.
  */
 export function askWithoutDefaultAnswerWith<T>(
-    description: string,
-    t: T,
-    dialog?: Dialog,
+  description: string,
+  t: T,
+  dialog?: Dialog
 ): ResultAsync<[string, T], FxError> {
-    return new ResultAsync(ask(description, dialog)).map((answer: string) => {
-        return [answer, t];
-    });
+  return new ResultAsync(ask(description, dialog)).map((answer: string) => {
+    return [answer, t];
+  });
 }
 
 /**
@@ -74,37 +81,42 @@ export function askWithoutDefaultAnswerWith<T>(
  * @param pluginIdentifier plugin name
  */
 export function getPluginContext(
-    solutionCtx: SolutionContext,
-    pluginIdentifier: string,
-    manifest?: TeamsAppManifest
+  solutionCtx: SolutionContext,
+  pluginIdentifier: string,
+  manifest?: TeamsAppManifest
 ): PluginContext {
-    const baseCtx: Context = solutionCtx;
-    if (!solutionCtx.config.has(pluginIdentifier)) {
-        solutionCtx.config.set(pluginIdentifier, new ConfigMap());
-    }
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const pluginConfig: PluginConfig = solutionCtx.config.get(pluginIdentifier)!;
-    const pluginCtx: PluginContext = {
-        ...baseCtx,
-        configOfOtherPlugins: solutionCtx.config,
-        config: pluginConfig,
-        app: manifest? manifest:new TeamsAppManifest(),
-    };
-    return pluginCtx;
+  const baseCtx: Context = solutionCtx;
+  if (!solutionCtx.config.has(pluginIdentifier)) {
+    solutionCtx.config.set(pluginIdentifier, new ConfigMap());
+  }
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const pluginConfig: PluginConfig = solutionCtx.config.get(pluginIdentifier)!;
+  const pluginCtx: PluginContext = {
+    ...baseCtx,
+    configOfOtherPlugins: solutionCtx.config,
+    config: pluginConfig,
+    app: manifest ? manifest : new TeamsAppManifest(),
+  };
+  return pluginCtx;
 }
 
 /**
  * A curry-ed version of getPluginContext
  * @param solutionCtx solution context
  */
-export function getPluginContextConstructor(solutionCtx: SolutionContext): (pluginIdentifier: string) => PluginContext {
-    return function(pluginIdentifier: string): PluginContext {
-        return getPluginContext(solutionCtx, pluginIdentifier);
-    };
+export function getPluginContextConstructor(
+  solutionCtx: SolutionContext
+): (pluginIdentifier: string) => PluginContext {
+  return function (pluginIdentifier: string): PluginContext {
+    return getPluginContext(solutionCtx, pluginIdentifier);
+  };
 }
 
-export async function getSubsriptionDisplayName(azureToken: TokenCredentialsBase, subscriptionId: string): Promise<string | undefined> {
-    const client = new SubscriptionClient(azureToken);
-    const subscription = await client.subscriptions.get(subscriptionId);
-    return subscription.displayName;
+export async function getSubsriptionDisplayName(
+  azureToken: TokenCredentialsBase,
+  subscriptionId: string
+): Promise<string | undefined> {
+  const client = new SubscriptionClient(azureToken);
+  const subscription = await client.subscriptions.get(subscriptionId);
+  return subscription.displayName;
 }

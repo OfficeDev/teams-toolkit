@@ -11,66 +11,66 @@ import { Messages } from "./messages";
 import { PluginError } from "../../../../../src/plugins/resource/bot/errors";
 
 describe("Language Strategy", () => {
-    describe("getTemplateProjectZip", () => {
-        it("Fetch From Public Url", async () => {
-            // Arrange
-            const programmingLanguage = ProgrammingLanguage.JavaScript;
-            const group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
+  describe("getTemplateProjectZip", () => {
+    it("Fetch From Public Url", async () => {
+      // Arrange
+      const programmingLanguage = ProgrammingLanguage.JavaScript;
+      const group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
 
-            // Act
-            const zip = await LanguageStrategy.getTemplateProjectZip(programmingLanguage, group_name);
+      // Act
+      const zip = await LanguageStrategy.getTemplateProjectZip(programmingLanguage, group_name);
 
-            // Assert
-            chai.assert.isNotNull(zip);
-        });
-
-        it("Fetch From Local", async () => {
-            // Arrange
-            const programmingLanguage = ProgrammingLanguage.JavaScript;
-            const group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
-            sinon.stub(LanguageStrategy, "getTemplateProjectZipUrl").resolves("");
-
-            // Act
-            const zip = await LanguageStrategy.getTemplateProjectZip(programmingLanguage, group_name);
-
-            // Assert
-            chai.assert.isNotNull(zip);
-        });
+      // Assert
+      chai.assert.isNotNull(zip);
     });
 
-    describe("localBuild", () => {
-        it("TypeScript Invalid PackDir", async () => {
-            // Arrange
-            const lang = ProgrammingLanguage.TypeScript;
-            const packDir = "anything";
+    it("Fetch From Local", async () => {
+      // Arrange
+      const programmingLanguage = ProgrammingLanguage.JavaScript;
+      const group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
+      sinon.stub(LanguageStrategy, "getTemplateProjectZipUrl").resolves("");
 
-            // Act
-            try {
-                await LanguageStrategy.localBuild(lang, packDir);
-            } catch (e) {
-                chai.assert.isTrue(e instanceof PluginError);
-                return;
-            }
+      // Act
+      const zip = await LanguageStrategy.getTemplateProjectZip(programmingLanguage, group_name);
 
-            // Assert
-            chai.assert.fail(Messages.ShouldNotReachHere);
-        });
-
-        it("JavaScript Invalid PackDir", async () => {
-            // Arrange
-            const lang = ProgrammingLanguage.JavaScript;
-            const packDir = "anything";
-
-            // Act
-            try {
-                await LanguageStrategy.localBuild(lang, packDir);
-            } catch (e) {
-                chai.assert.isTrue(e instanceof PluginError);
-                return;
-            }
-
-            // Assert
-            chai.assert.fail(Messages.ShouldNotReachHere);
-        });
+      // Assert
+      chai.assert.isNotNull(zip);
     });
+  });
+
+  describe("localBuild", () => {
+    it("TypeScript Invalid PackDir", async () => {
+      // Arrange
+      const lang = ProgrammingLanguage.TypeScript;
+      const packDir = "anything";
+
+      // Act
+      try {
+        await LanguageStrategy.localBuild(lang, packDir);
+      } catch (e) {
+        chai.assert.isTrue(e instanceof PluginError);
+        return;
+      }
+
+      // Assert
+      chai.assert.fail(Messages.ShouldNotReachHere);
+    });
+
+    it("JavaScript Invalid PackDir", async () => {
+      // Arrange
+      const lang = ProgrammingLanguage.JavaScript;
+      const packDir = "anything";
+
+      // Act
+      try {
+        await LanguageStrategy.localBuild(lang, packDir);
+      } catch (e) {
+        chai.assert.isTrue(e instanceof PluginError);
+        return;
+      }
+
+      // Assert
+      chai.assert.fail(Messages.ShouldNotReachHere);
+    });
+  });
 });

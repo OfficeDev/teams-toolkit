@@ -3,5 +3,5 @@
 import { IProgressHandler } from "@microsoft/teamsfx-api";
 
 export class DialogUtils {
-    public static progressBar: IProgressHandler | undefined;
+  public static progressBar: IProgressHandler | undefined;
 }

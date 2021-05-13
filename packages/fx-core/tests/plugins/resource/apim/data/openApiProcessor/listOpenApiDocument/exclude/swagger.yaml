@@ -1,9 +1,9 @@
-swagger: '2.0'
+swagger: "2.0"
 info:
   title: user input swagger
   version: v1
 paths:
-  '/users/{id}':
+  "/users/{id}":
     get:
       description: Get all users.
       operationId: getUsers
@@ -17,10 +17,10 @@ paths:
       produces:
         - application/json
       responses:
-        '200':
+        "200":
           description: The user information.
           schema:
-            '$ref': '#/definitions/User'
+            "$ref": "#/definitions/User"
 definitions:
   User:
     type: object

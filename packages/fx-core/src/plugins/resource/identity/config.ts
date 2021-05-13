@@ -1,12 +1,12 @@
 export class IdentityConfig {
-    isPrivate = true;
+  isPrivate = true;
 
-    azureSubscriptionId = "";
-    resourceGroup = "";
-    resourceNameSuffix = "";
-    location = "";
+  azureSubscriptionId = "";
+  resourceGroup = "";
+  resourceNameSuffix = "";
+  location = "";
 
-    identity = "";
-    identityId = "";
-    identityName = "";
+  identity = "";
+  identityId = "";
+  identityName = "";
 }

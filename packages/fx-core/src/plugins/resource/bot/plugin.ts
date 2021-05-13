@@ -59,7 +59,6 @@ export class TeamsBotImpl {
     public async preScaffold(context: PluginContext): Promise<FxResult> {
         this.ctx = context;
         await this.config.restoreConfigFromContext(context);
-        this.telemetryStepIn(LifecycleFuncNames.PRE_SCAFFOLD);
         Logger.info(Messages.PreScaffoldingBot);
 
         const rawWay = this.ctx.answers?.get(QuestionNames.WAY_TO_REGISTER_BOT);
@@ -88,7 +87,6 @@ export class TeamsBotImpl {
         this.config.scaffold.wayToRegisterBot = pickedWay;
 
         this.config.saveConfigIntoContext(context);
-        this.telemetryStepOutSuccess(LifecycleFuncNames.PRE_SCAFFOLD);
 
         return ResultFactory.Success();
     }
@@ -96,7 +94,6 @@ export class TeamsBotImpl {
     public async scaffold(context: PluginContext): Promise<FxResult> {
         this.ctx = context;
         await this.config.restoreConfigFromContext(context);
-        this.telemetryStepIn(LifecycleFuncNames.SCAFFOLD);
         Logger.info(Messages.ScaffoldingBot);
 
         const handler = await ProgressBarFactory.newProgressBar(ProgressBarConstants.SCAFFOLD_TITLE, ProgressBarConstants.SCAFFOLD_STEPS_NUM, this.ctx);
@@ -126,7 +123,6 @@ export class TeamsBotImpl {
         zipContent.extractAllTo(this.config.scaffold.workingDir!, true);
 
         this.config.saveConfigIntoContext(context);
-        this.telemetryStepOutSuccess(LifecycleFuncNames.SCAFFOLD);
         Logger.info(Messages.SuccessfullyScaffoldedBot);
 
         return ResultFactory.Success();
@@ -135,7 +131,6 @@ export class TeamsBotImpl {
     public async preProvision(context: PluginContext): Promise<FxResult> {
         this.ctx = context;
         await this.config.restoreConfigFromContext(context);
-        this.telemetryStepIn(LifecycleFuncNames.PRE_PROVISION);
         Logger.info(Messages.PreProvisioningBot);
 
         // Preconditions checking.
@@ -153,7 +148,6 @@ export class TeamsBotImpl {
         }
 
         this.config.saveConfigIntoContext(context);
-        this.telemetryStepOutSuccess(LifecycleFuncNames.PRE_PROVISION);
 
         return ResultFactory.Success();
     }
@@ -161,7 +155,6 @@ export class TeamsBotImpl {
     public async provision(context: PluginContext): Promise<FxResult> {
         this.ctx = context;
         await this.config.restoreConfigFromContext(context);
-        this.telemetryStepIn(LifecycleFuncNames.PROVISION);
         Logger.info(Messages.ProvisioningBot);
 
         // Create and register progress bar for cleanup.
@@ -180,15 +173,12 @@ export class TeamsBotImpl {
         await this.provisionWebApp();
 
         this.config.saveConfigIntoContext(context);
-        this.telemetryStepOutSuccess(LifecycleFuncNames.PROVISION);
         Logger.info(Messages.SuccessfullyProvisionedBot);
 
         return ResultFactory.Success();
     }
 
     private async provisionWebApp() {
-
-        this.telemetryStepIn(LifecycleFuncNames.PROVISION_WEB_APP);
 
         CheckThrowSomethingMissing(CommonStrings.SHORT_APP_NAME, this.ctx?.app.name.short);
 
@@ -236,14 +226,11 @@ export class TeamsBotImpl {
 
         // Update config for manifest.json
         this.ctx!.config.set(PluginBot.VALID_DOMAIN, `${this.config.provision.siteName}.${WebAppConstants.WEB_APP_SITE_DOMAIN}`);
-
-        this.telemetryStepOutSuccess(LifecycleFuncNames.PROVISION_WEB_APP);
     }
 
     public async postProvision(context: PluginContext): Promise<FxResult> {
         this.ctx = context;
         await this.config.restoreConfigFromContext(context);
-        this.telemetryStepIn(LifecycleFuncNames.POST_PROVISION);
 
         // 1. Get required config items from other plugins.
         // 2. Update bot hosting env"s app settings.
@@ -341,7 +328,6 @@ export class TeamsBotImpl {
         }
 
         this.config.saveConfigIntoContext(context);
-        this.telemetryStepOutSuccess(LifecycleFuncNames.POST_PROVISION);
 
         return ResultFactory.Success();
     }
@@ -349,7 +335,6 @@ export class TeamsBotImpl {
     public async preDeploy(context: PluginContext): Promise<FxResult> {
         this.ctx = context;
         await this.config.restoreConfigFromContext(context);
-        this.telemetryStepIn(LifecycleFuncNames.PRE_DEPLOY);
         Logger.info(Messages.PreDeployingBot);
 
         // Preconditions checking.
@@ -370,7 +355,6 @@ export class TeamsBotImpl {
         }
 
         this.config.saveConfigIntoContext(context);
-        this.telemetryStepOutSuccess(LifecycleFuncNames.PRE_DEPLOY);
 
         return ResultFactory.Success();
     }
@@ -378,7 +362,6 @@ export class TeamsBotImpl {
     public async deploy(context: PluginContext): Promise<FxResult> {
         this.ctx = context;
         await this.config.restoreConfigFromContext(context);
-        this.telemetryStepIn(LifecycleFuncNames.DEPLOY);
         Logger.info(Messages.DeployingBot);
 
         if (!this.config.scaffold.workingDir) {
@@ -442,7 +425,6 @@ export class TeamsBotImpl {
         await deployMgr.updateLastDeployTime(deployTimeCandidate);
 
         this.config.saveConfigIntoContext(context);
-        this.telemetryStepOutSuccess(LifecycleFuncNames.DEPLOY);
         Logger.info(Messages.SuccessfullyDeployedBot);
 
         return ResultFactory.Success();
@@ -451,7 +433,6 @@ export class TeamsBotImpl {
     public async localDebug(context: PluginContext): Promise<FxResult> {
         this.ctx = context;
         await this.config.restoreConfigFromContext(context);
-        this.telemetryStepIn(LifecycleFuncNames.LOCAL_DEBUG);
 
         const handler = await ProgressBarFactory.newProgressBar(ProgressBarConstants.LOCAL_DEBUG_TITLE, ProgressBarConstants.LOCAL_DEBUG_STEPS_NUM, this.ctx);
 
@@ -461,7 +442,6 @@ export class TeamsBotImpl {
         await this.createNewBotRegistrationOnAppStudio();
 
         this.config.saveConfigIntoContext(context);
-        this.telemetryStepOutSuccess(LifecycleFuncNames.LOCAL_DEBUG);
 
         return ResultFactory.Success();
     }
@@ -469,20 +449,17 @@ export class TeamsBotImpl {
     public async postLocalDebug(context: PluginContext): Promise<FxResult> {
         this.ctx = context;
         await this.config.restoreConfigFromContext(context);
-        this.telemetryStepIn(LifecycleFuncNames.POST_LOCAL_DEBUG);
 
         CheckThrowSomethingMissing(ConfigNames.LOCAL_ENDPOINT, this.config.localDebug.localEndpoint);
 
         await this.updateMessageEndpointOnAppStudio(`${this.config.localDebug.localEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`);
 
         this.config.saveConfigIntoContext(context);
-        this.telemetryStepOutSuccess(LifecycleFuncNames.POST_LOCAL_DEBUG);
 
         return ResultFactory.Success();
     }
 
     private async updateMessageEndpointOnAppStudio(endpoint: string) {
-        this.telemetryStepIn(LifecycleFuncNames.UPDATE_MESSAGE_ENDPOINT_APPSTUDIO);
 
         const appStudioToken = await this.ctx?.appStudioToken?.getAccessToken();
         CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
@@ -498,12 +475,9 @@ export class TeamsBotImpl {
         };
 
         await AppStudio.updateMessageEndpoint(appStudioToken!, botReg.botId!, botReg);
-
-        this.telemetryStepOutSuccess(LifecycleFuncNames.UPDATE_MESSAGE_ENDPOINT_APPSTUDIO);
     }
 
     private async updateMessageEndpointOnAzure(endpoint: string) {
-        this.telemetryStepIn(LifecycleFuncNames.UPDATE_MESSAGE_ENDPOINT_AZURE);
 
         const serviceClientCredentials = await this.ctx?.azureAccountProvider?.getAccountCredentialAsync();
         if (!serviceClientCredentials) {
@@ -523,13 +497,9 @@ export class TeamsBotImpl {
         await AzureOperations.UpdateBotChannelRegistration(botClient, this.config.provision.resourceGroup!,
             botChannelRegistrationName, this.config.scaffold.botId!, endpoint);
         Logger.info(Messages.SuccessfullyUpdatedBotMessageEndpoint);
-
-        this.telemetryStepOutSuccess(LifecycleFuncNames.UPDATE_MESSAGE_ENDPOINT_AZURE);
     }
 
     private async reuseExistingBotRegistration() {
-        this.telemetryStepIn(LifecycleFuncNames.REUSE_EXISTING_BOT_REG);
-
         const rawBotId = this.ctx!.answers?.get(QuestionNames.GET_BOT_ID);
         if (!rawBotId) {
             throw new UserInputsError(QuestionNames.GET_BOT_ID, rawBotId as string);
@@ -542,8 +512,6 @@ export class TeamsBotImpl {
         }
         const botPassword = rawBotPassword as string;
 
-        this.telemetryStepOutSuccess(LifecycleFuncNames.REUSE_EXISTING_BOT_REG);
-
         return {
             botId: botId,
             botPassword: botPassword,
@@ -551,7 +519,6 @@ export class TeamsBotImpl {
     }
 
     private async createNewBotRegistrationOnAppStudio() {
-        this.telemetryStepIn(LifecycleFuncNames.CREATE_NEW_BOT_REG_APPSTUDIO);
 
         const appStudioToken = await this.ctx?.appStudioToken?.getAccessToken();
         CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
@@ -599,12 +566,9 @@ export class TeamsBotImpl {
         }
 
         this.updateManifest(this.config.localDebug.localBotId!);
-
-        this.telemetryStepOutSuccess(LifecycleFuncNames.CREATE_NEW_BOT_REG_APPSTUDIO);
     }
 
     private async createNewBotRegistrationOnAzure() {
-        this.telemetryStepIn(LifecycleFuncNames.CREATE_NEW_BOT_REG_AZURE);
 
         // 1. Create a new AAD App Registraion with client secret.
         const appStudioToken = await this.ctx?.appStudioToken?.getAccessToken();
@@ -665,8 +629,6 @@ export class TeamsBotImpl {
         }
 
         this.updateManifest(this.config.scaffold.botId!);
-
-        this.telemetryStepOutSuccess(LifecycleFuncNames.CREATE_NEW_BOT_REG_AZURE);
     }
 
     private updateManifest(botId: string) {
@@ -678,18 +640,5 @@ export class TeamsBotImpl {
         if (this.config.actRoles.includes(PluginActRoles.MessageExtension)) {
             this.ctx!.config.set(PluginBot.MESSAGE_EXTENSION_SECTION, utils.genMsgExtSectionInManifest(botId));
         }
-    }
-
-    private telemetryStepIn(funcName: string) {
-        this.ctx?.telemetryReporter?.sendTelemetryEvent(`${funcName}-start`, {
-            component: PluginBot.PLUGIN_NAME,
-        });
-    }
-
-    private telemetryStepOutSuccess(funcName: string) {
-        this.ctx?.telemetryReporter?.sendTelemetryEvent(`${funcName}-end`, {
-            component: PluginBot.PLUGIN_NAME,
-            success: "yes",
-        });
     }
 }

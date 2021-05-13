@@ -7,6 +7,7 @@ import { promisify } from "util";
 import axios from "axios";
 import AdmZip from "adm-zip";
 import * as path from "path";
+import { getResourceFolder } from "..";
 
 const execAsync = promisify(exec);
 
@@ -237,3 +238,9 @@ export const deepCopy = <T>(target: T): T => {
     }
     return target;
   };
+
+
+  export function getStrings():any{
+      const filepath = getResourceFolder() + "\\strings.json";
+      return fs.readJSONSync(filepath);
+  }

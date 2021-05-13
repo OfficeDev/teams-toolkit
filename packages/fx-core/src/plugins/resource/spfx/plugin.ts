@@ -26,9 +26,10 @@ import {
 import { Constants, PlaceHolders, PreDeployProgressMessage } from "./utils/constants";
 import { BuildSPPackageError, NoSPPackageError} from "./error";
 import * as util from "util";
-import * as strings from "../../../resources/strings.json";
 import { ProgressHelper } from "./utils/progress-helper";
 import { REMOTE_MANIFEST } from "../../solution/fx-solution/constants";
+import { getStrings } from "../../../common/tools";
+import { getTemplatesFolder } from "../../..";
 
 export class SPFxPluginImpl {
   public async scaffold(
@@ -69,7 +70,7 @@ export class SPFxPluginImpl {
     // teams folder
     const teamsDir = `${outputFolderPath}/teams`;
 
-    const templateFolder = path.join(__dirname, "../../../../templates/plugins/resource/spfx");
+    const templateFolder = path.join(getTemplatesFolder(), "plugins", "resource", "spfx");
 
     await fs.mkdir(teamsDir);
     await fs.copyFile(
@@ -215,7 +216,7 @@ export class SPFxPluginImpl {
   public async preDeploy(ctx: PluginContext): Promise<Result<any, FxError>> {
     const confirm = (await ctx.dialog?.communicate(
       new DialogMsg(DialogType.Show, {
-        description: strings.plugins.SPFx.buildNotice,
+        description: getStrings().plugins.SPFx.buildNotice,
         level: MsgLevel.Warning,
         items: [Constants.BUILD_SHAREPOINT_PACKAGE, Constants.READ_MORE, Constants.CANCEL]
       }),
@@ -281,7 +282,7 @@ export class SPFxPluginImpl {
       const dir = path.normalize(path.parse(sharepointPackage).dir);
       const fileName = path.parse(sharepointPackage).name + path.parse(sharepointPackage).ext;
       
-      const guidance = util.format(strings.plugins.SPFx.deployNotice, dir, fileName);
+      const guidance = util.format(getStrings().plugins.SPFx.deployNotice, dir, fileName);
       const answer = (await ctx.dialog?.communicate(
         new DialogMsg(DialogType.Show, {
           description: guidance,

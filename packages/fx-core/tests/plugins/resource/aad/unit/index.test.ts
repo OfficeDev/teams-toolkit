@@ -4,7 +4,7 @@
 import "mocha";
 import * as chai from "chai";
 import * as dotenv from "dotenv";
-import { ConfigMap, Func, PluginContext } from "@microsoft/teamsfx-api";
+import { PluginContext } from "@microsoft/teamsfx-api";
 import { AadAppForTeamsPlugin } from "../../../../../src/plugins/resource/aad/index";
 import {
   mockTokenProviderAzure,
@@ -14,11 +14,10 @@ import {
   mockTokenProviderAzureGraph,
   mockTokenProviderGraph,
 } from "../helper";
-import { Envs } from "../../../../../src/plugins/resource/aad/interfaces/models";
 import sinon from "sinon";
 import { AadAppClient } from "../../../../../src/plugins/resource/aad/aadAppClient";
 import { getAppStudioToken, getGraphToken } from "../tokenProvider";
-import { ConfigKeys, Constants } from "../../../../../src/plugins/resource/aad/constants";
+import { ConfigKeys } from "../../../../../src/plugins/resource/aad/constants";
 import { ProvisionConfig } from "../../../../../src/plugins/resource/aad/utils/configs";
 
 dotenv.config();
@@ -58,7 +57,7 @@ describe("AadAppForTeamsPlugin: CI", () => {
     chai.assert.isTrue(postProvision.isOk());
   });
 
-  it("provision: tab and bot with permission update", async function () {
+  it("provision: tab and bot", async function () {
     context = await TestHelper.pluginContext(new Map(), true, true, false);
     context.appStudioToken = mockTokenProvider();
     context.graphTokenProvider = mockTokenProviderGraph();
@@ -72,14 +71,6 @@ describe("AadAppForTeamsPlugin: CI", () => {
 
     const postProvision = await plugin.postProvision(context);
     chai.assert.isTrue(postProvision.isOk());
-
-    const func: Func = {
-      namespace: "namespace",
-      method: "aadUpdatePermission",
-    };
-
-    const updatePermissionResult = await plugin.executeUserTask(func, context);
-    chai.assert.isTrue(updatePermissionResult.isOk());
   });
 
   it("provision: none input and fix", async function () {
@@ -127,63 +118,6 @@ describe("AadAppForTeamsPlugin: CI", () => {
 
     const postProvision = await plugin.postLocalDebug(context);
     chai.assert.isTrue(postProvision.isOk());
-  });
-
-  it("provision and local debug: tab and bot with update current and wrong permission", async function () {
-    context = await TestHelper.pluginContext(new Map(), true, true, false);
-    context.appStudioToken = mockTokenProvider();
-    context.graphTokenProvider = mockTokenProviderGraph();
-
-    const provision = await plugin.provision(context);
-    chai.assert.isTrue(provision.isOk());
-
-    mockProvisionResult(context);
-    const setAppId = plugin.setApplicationInContext(context);
-    chai.assert.isTrue(setAppId.isOk());
-
-    const postProvision = await plugin.postProvision(context);
-    chai.assert.isTrue(postProvision.isOk());
-
-    context = await TestHelper.pluginContext(context.config, true, true, true);
-    context.appStudioToken = mockTokenProvider();
-    context.graphTokenProvider = mockTokenProviderGraph();
-
-    const localDebug = await plugin.localDebug(context);
-    chai.assert.isTrue(localDebug.isOk());
-
-    mockProvisionResult(context, true);
-    const setAppIdLocal = plugin.setApplicationInContext(context, true);
-    chai.assert.isTrue(setAppIdLocal.isOk());
-
-    const postLocalDebug = await plugin.postLocalDebug(context);
-    chai.assert.isTrue(postLocalDebug.isOk());
-
-    const func: Func = {
-      namespace: "namespace",
-      method: "aadUpdatePermission",
-    };
-
-    context.answers = new ConfigMap();
-    context.answers.set(Constants.AskForEnvName, Envs.Both);
-    const updatePermissionResult = await plugin.executeUserTask(func, context);
-    chai.assert.isTrue(updatePermissionResult.isOk());
-
-    context = await TestHelper.pluginContext(
-      context.config,
-      true,
-      true,
-      false,
-      true
-    );
-    context.appStudioToken = mockTokenProvider();
-    context.answers = new ConfigMap();
-    context.answers.set(Constants.AskForEnvName, Envs.Both);
-
-    const updatePermissionResultWrong = await plugin.executeUserTask(
-      func,
-      context
-    );
-    chai.assert.isTrue(updatePermissionResultWrong.isErr());
   });
 });
 

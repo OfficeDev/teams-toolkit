@@ -1,8 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 export enum TelemetryEvent {
+  QuickStart = "quick-start",
+
+  Samples = "samples",
+
+  Documentation = "documentation",
+
   LoginStart = "login-start",
   Login = "login",
+
+  SignOutStart = "sign-out-start",
 
   CreateProjectStart = "create-project-start",
   CreateProject = "create-project",
@@ -33,6 +41,16 @@ export enum TelemetryEvent {
 
   PublishStart = "publish-start",
   Publish = "publish",
+
+  ManageTeamsApp = "manage-teams-app",
+
+  ManageTeamsBot = "manage-teams-bot",
+
+  ReportIssues = "report-issues",
+
+  OpenM365Portal = "open-m365-portal",
+
+  OpenAzurePortal = "open-azure-portal",
 
   DebugPreCheck = "debug-precheck",
   DebugStart = "debug-start",
@@ -71,6 +89,11 @@ export enum TelemetryTiggerFrom {
 export enum TelemetryErrorType {
   UserError = "user",
   SystemError = "system"
+}
+
+export enum AccountType {
+  M365 = "m365",
+  Azure = "azure"
 }
 
 export const TelemetryComponentType = "extension";

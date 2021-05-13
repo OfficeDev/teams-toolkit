@@ -36,8 +36,8 @@ export class FunctionPluginInfo {
 
 export class FunctionPluginPathInfo {
     public static readonly solutionFolderName: string = "api";
-    public static readonly rootPath: string = path.join(__dirname, "..", "..", "..", "..");
-    public static readonly templateFolderPath: string = path.join("templates", "plugins", "resource", "function");
+    // public static readonly rootPath: string = path.join(__dirname, "..", "..", "..", "..");
+    // public static readonly templateFolderPath: string = path.join("templates", "plugins", "resource", "function");
     public static readonly templateFileExt: string = ".tpl";
     public static readonly templateZipExt: string = ".zip";
     public static readonly templateZipNameSep: string = ".";

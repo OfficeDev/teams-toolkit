@@ -10,7 +10,7 @@ import { FxError, Result, SystemError, UserError } from "@microsoft/teamsfx-api"
 import CLILogProvider from "./commonlib/log";
 import * as constants from "./constants";
 import { UnknownError } from "./error";
-import { CliTelemetry } from "./telemetry/cliTelemetry";
+import CliTelemetryInstance, { CliTelemetry } from "./telemetry/cliTelemetry";
 import { CliTelemetryReporter } from "./commonlib/telemetry";
 import { readFileSync } from "fs";
 import path from "path";
@@ -82,7 +82,11 @@ export abstract class YargsCommand {
       if (CLILogProvider.getLogLevel() === constants.CLILogLevel.debug) {
         console.error("Call stack:\n".red, `${FxError.stack}`.red);
       }
+
+      CliTelemetryInstance.flush();
       exit(-1, FxError);
     }
+
+    CliTelemetryInstance.flush();
   }
 }

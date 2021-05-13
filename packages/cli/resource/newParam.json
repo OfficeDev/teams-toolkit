@@ -266,7 +266,7 @@
                     "data": {
                         "type": "text",
                         "name": "app-name",
-                        "title": "Project name"
+                        "title": "Application name"
                     }
                 }
             ]

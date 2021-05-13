@@ -3,6 +3,7 @@
 
 import * as vscode from "vscode";
 
+import AppStudioTokenInstance from "../commonlib/appStudioLogin";
 import * as commonUtils from "./commonUtils";
 import { core, showError } from "../handlers";
 import { Func } from "@microsoft/teamsfx-api";
@@ -42,6 +43,29 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
           teamsAppId as string
         );
 
+        if (isLocalSideloadingConfiguration) {
+          // fill account hint for local only
+          const accountHintPlaceholder = "${account-hint}";
+          let tenantId = undefined, loginHint = undefined;
+          try {
+            const tokenObject = await AppStudioTokenInstance.getJsonObject(false);
+            tenantId = tokenObject?.tid;
+            loginHint = tokenObject?.upn;
+          } catch {
+            // ignore error
+          }
+          if (tenantId && loginHint) {
+            debugConfiguration.url = (debugConfiguration.url as string).replace(
+              accountHintPlaceholder,
+              `appTenantId=${tenantId}&login_hint=${loginHint}`
+            );
+          } else {
+            debugConfiguration.url = (debugConfiguration.url as string).replace(
+              accountHintPlaceholder,
+              ""
+            );
+          }
+        }
       }
     } catch (err) {
       // TODO(kuojianlu): add log and telemetry

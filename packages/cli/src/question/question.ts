@@ -18,7 +18,8 @@ import {
   MultiSelectQuestion,
   getCallFuncValue,
   StaticOption,
-  DymanicOption
+  DymanicOption,
+  AnyValidation
 } from "@microsoft/teamsfx-api";
 
 import CLILogProvider from "../commonlib/log";
@@ -118,8 +119,8 @@ export async function visitInteractively(
       throw QTNConditionNotSupport(node);
     }
 
-    if (node.condition.equals) {
-      if (node.condition.equals === parentNodeAnswer) {
+    if ((node.condition as AnyValidation).equals) {
+      if ((node.condition as AnyValidation).equals === parentNodeAnswer) {
         shouldVisitChildren = true;
       } else {
         return answers;

@@ -157,12 +157,9 @@ export interface RemoteFuncValidation extends Func{
 /**
  * The validation is checked by a validFunc provided by user
  */
-export interface LocalFuncValidationForString{
-    validFunc?: (input:string|undefined, previousAnswers?: ConfigMap)=>string|undefined|Promise<string|undefined>;
-}
-export interface LocalFuncValidationForStringArray{
-    validFunc?: (input:string[]|undefined, previousAnswers?: ConfigMap)=>string|undefined|Promise<string|undefined>;
-}
+export interface LocalFuncValidation{
+    validFunc: (input:string|string[]|undefined, previousAnswers?: ConfigMap)=>string|undefined|Promise<string|undefined>;
+} 
 
 export type Validation =
     | NumberValidation
@@ -170,8 +167,7 @@ export type Validation =
     | StringArrayValidation
     | FileValidation
     | RemoteFuncValidation
-    | LocalFuncValidationForString
-    | LocalFuncValidationForStringArray;
+    | LocalFuncValidation;
 
 /**
  * Basic question data

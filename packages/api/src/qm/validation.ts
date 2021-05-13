@@ -9,7 +9,8 @@ import {
   StringArrayValidation,
   StringValidation,
   Validation,
-  Func
+  Func,
+  AnyValidation
 } from "./question";
 import * as fs from "fs-extra";
 import * as jsonschema from "jsonschema"; 
@@ -55,14 +56,15 @@ export async function validate(
     const localFuncValidation: LocalFuncValidation = validation as LocalFuncValidation;
     if (localFuncValidation.validFunc) {
       const res = await localFuncValidation.validFunc(valueToValidate, inputs);
-      return res as string;
+      return res as string|undefined;
     }
   }
 
   // Required Validation
   {
+    const anyValidation = validation as AnyValidation;
     if(!valueToValidate){
-      if(validation.required === true)
+      if(anyValidation.required === true)
         return `This value is required to be not empty string or undefined`;
     }
   }

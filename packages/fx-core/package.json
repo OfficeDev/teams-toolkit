@@ -133,10 +133,10 @@
   },
   "lint-staged": {
     "*.{js,jsx,css,ts,tsx}": [
-      "eslint --cache --fix"
+      "npx eslint --cache --fix"
     ],
     "*": [
-      "prettier --config .prettierrc.js --ignore-unknown --write --ignore-path .prettierignore "
+      "npx prettier --config .prettierrc.js --ignore-unknown --write --ignore-path .prettierignore "
     ]
   }
 }

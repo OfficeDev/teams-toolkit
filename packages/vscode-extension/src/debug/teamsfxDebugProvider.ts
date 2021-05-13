@@ -43,9 +43,11 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
           teamsAppId as string
         );
 
-        if (isLocalSideloadingConfiguration) {
-          // fill account hint for local only
-          const accountHintPlaceholder = "${account-hint}";
+        const accountHintPlaceholder = "${account-hint}";
+        const isaccountHintConfiguration: boolean = (debugConfiguration.url as string).includes(
+          accountHintPlaceholder
+        );
+        if (isaccountHintConfiguration) {
           let tenantId = undefined, loginHint = undefined;
           try {
             const tokenObject = await AppStudioTokenInstance.getJsonObject(false);

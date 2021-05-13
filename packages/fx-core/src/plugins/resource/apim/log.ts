@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 import { ApimDefaultValues, ProjectConstants } from "./constants";
 import { IName } from "./interfaces/IName";
-import { capitalizeFirstLetter } from "./utils/commonUtils";
 
 export class LogMessages {
     public static readonly operationStarts = (operation: IName, resourceType: IName, resourceId?: string): string =>
@@ -12,9 +11,8 @@ export class LogMessages {
 
     public static readonly operationSuccess = (operation: IName, resourceType: IName, resourceId?: string): string =>
         !resourceId
-            ? `[${ProjectConstants.pluginDisplayName}] Succeeded: ${capitalizeFirstLetter(operation.displayName)} ${resourceType.displayName}.`
-            : `[${ProjectConstants.pluginDisplayName}] Succeeded: ${capitalizeFirstLetter(operation.displayName)} ${resourceType.displayName
-            } '${resourceId}'.`;
+            ? `[${ProjectConstants.pluginDisplayName}] Succeeded: ${operation.displayName} ${resourceType.displayName}.`
+            : `[${ProjectConstants.pluginDisplayName}] Succeeded: ${operation.displayName} ${resourceType.displayName} '${resourceId}'.`;
 
     public static readonly operationFailed = (operation: IName, resourceType: IName, resourceId?: string): string =>
         !resourceId

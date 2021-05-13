@@ -1,50 +1,48 @@
 [
-    {
-        "data": {
-            "type": "folder",
-            "name": "folder",
-            "description": "Select root folder of the project",
-            "default": "./"
-        }
-    },
-    {
-        "data": {
-            "name": "add-azure-resources",
-            "title": "Cloud resources",
-            "type": "multiSelect",
-            "option": [
-                {
-                    "id": "function",
-                    "label": "Azure Function App"
-                },
-                {
-                    "id": "sql",
-                    "label": "Azure SQL Database"
-                },
-                {
-                    "id": "apim",
-                    "label": "Register APIs in Azure API Management"
-                }
-            ],
-            "default": [
-                "function"
-            ],
-            "hide": true
-        }
-    },
-    {
-        "data": {
-            "name": "function-name",
-            "description": "Provide a function name.",
-            "type": "text",
-            "default": "getUserProfile",
-            "validation": {
-                "namespace": "fx-solution-azure/fx-resource-function",
-                "method": "validateFunctionName"
-            }
-        },
-        "condition": {
-            "minItems": 1
-        }
+  {
+    "data": {
+      "type": "folder",
+      "name": "folder",
+      "description": "Select root folder of the project",
+      "default": "./"
     }
+  },
+  {
+    "data": {
+      "name": "add-azure-resources",
+      "title": "Cloud resources",
+      "type": "multiSelect",
+      "option": [
+        {
+          "id": "function",
+          "label": "Azure Function App"
+        },
+        {
+          "id": "sql",
+          "label": "Azure SQL Database"
+        },
+        {
+          "id": "apim",
+          "label": "Azure API Management"
+        }
+      ],
+      "default": ["function"],
+      "hide": true
+    }
+  },
+  {
+    "data": {
+      "name": "function-name",
+      "description": "Provide a function name.",
+      "type": "text",
+      "default": "getUserProfile",
+      "validation": {
+        "namespace": "fx-solution-azure/fx-resource-function",
+        "method": "validateFunctionName"
+      }
+    },
+    "condition": {
+      "minItems": 1
+    }
+  }
 ]

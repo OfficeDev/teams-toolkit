@@ -32,7 +32,7 @@ jobs:
           echo "${{ secrets.NPMRC }}" > ~/.npmrc
 
       - name: Download Simple Auth bits
-        uses: nick-invision/retry@2
+        uses: nick-invision/retry@v2
         with:
           timeout_minutes: 10
           max_attempts: 5

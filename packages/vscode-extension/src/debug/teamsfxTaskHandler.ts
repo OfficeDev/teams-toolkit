@@ -79,7 +79,7 @@ function onDidStartDebugSessionHandler(event: vscode.DebugSession): void {
     }
 }
 
-export function terminateAllRunningTeamsfxTasks() {
+export function terminateAllRunningTeamsfxTasks(): void {
   for (const task of allRunningTeamsfxTasks) {
     try {
       process.kill(task[1], "SIGINT");

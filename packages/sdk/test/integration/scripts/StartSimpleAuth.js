@@ -1,8 +1,8 @@
 const admZip = require('adm-zip');
-const { BlobServiceClient } = require('@azure/storage-blob');
 const fs = require('fs');
 const path = require('path');
 const { spawn } = require('child_process');
+const got = require('got');
 require("dotenv").config();
 
 function setupEnv() {
@@ -17,15 +17,14 @@ function setupEnv() {
 }
 
 async function downloadSimpleAuth() {
-    const versionFilePath = path.join(__dirname, "../../../../fx-core/templates/plugins/resource/simpleauth/version.txt");
+    const versionFilePath = path.join(__dirname, "version.txt");
     const version = fs.readFileSync(versionFilePath, "utf-8");
+    const tagName = `simpleauth@${version}`;
     const fileName = `Microsoft.TeamsFx.SimpleAuth_${version}.zip`;
-    let endpoint = process.env.SIMPLE_AUTH_ENDPOINT;
-    endpoint = endpoint.slice(0, -8);
-    const blobUrlWithCredential = `${endpoint}?${process.env.SIMPLE_AUTH_SAS_TOKEN}`;
+    const distUrl = `https://github.com/OfficeDev/TeamsFx/releases/download/${tagName}/${fileName}`;
+    console.log("======",distUrl);
     try {
-        const blobClient = new BlobServiceClient(blobUrlWithCredential).getContainerClient("release").getBlobClient(fileName);
-        await blobClient.downloadToFile(__dirname + '/SimpleAuth.zip');
+        await got.stream(distUrl).pipe(fs.createWriteStream(path.resolve(__dirname, "SimpleAuth.zip")));
     } catch (error) {
         console.log(error.message);
     }

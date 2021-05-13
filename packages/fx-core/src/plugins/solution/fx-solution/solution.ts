@@ -1111,16 +1111,7 @@ export class TeamsAppSolution implements Solution {
 
             const result = await executeConcurrently("", publishWithCtx);
 
-            if (result.isOk()) {
-                const msg = util.format(getStrings().solution.PublishSuccessNotice, ctx.projectSettings?.appName);
-                ctx.logProvider?.info(msg);
-                await ctx.dialog?.communicate(
-                    new DialogMsg(DialogType.Show, {
-                        description: msg,
-                        level: MsgLevel.Info,
-                    }),
-                );
-            } else {
+            if (!result.isOk()){
                 const msg = util.format(getStrings().solution.PublishFailNotice, ctx.projectSettings?.appName);
                 ctx.logProvider?.info(msg);
             }

@@ -76,11 +76,11 @@
             "prepareTask": " Prepare task."
         },
         "appStudioLogin": {
-            "warningMsg": "The Teams Toolkit requires a Microsoft 365 organizational account where Teams is running and has been registered. You can create a free testing account from M365 Developer Program if needed.",
+            "message": "The Teams Toolkit requires a Microsoft 365 organizational account where Teams is running and has been registered. You can create a free testing account from M365 Developer Program if needed.",
             "learnMore": "Learn More"
         },
         "azureLogin": {
-            "warningMsg": "The Teams Toolkit requires an Azure account and subscription to deploy the Azure resources for your project. You will not be charged without further confirmation.",
+            "message": "The Teams Toolkit requires an Azure account and subscription to deploy the Azure resources for your project. You will not be charged without further confirmation.",
             "unknownSubscription": "Cannot set subscription. Select a subscription that you have access to."
         },
         "common": {

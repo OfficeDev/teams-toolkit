@@ -181,13 +181,13 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   private async doesUserConfirmLogin(): Promise<boolean> {
-    const warningMsg = StringResources.vsc.azureLogin.warningMsg;
+    const message = StringResources.vsc.azureLogin.message;
     const signin = StringResources.vsc.common.signin;
     const readMore = StringResources.vsc.common.readMore;
     let userSelected: string | undefined;
     do {
       userSelected = await vscode.window.showInformationMessage(
-        warningMsg,
+        message,
         {modal: true},
         signin,
         readMore

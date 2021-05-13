@@ -138,13 +138,13 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
   }
 
   private async doesUserConfirmLogin(): Promise<boolean> {
-    const warningMsg = StringResources.vsc.appStudioLogin.warningMsg;
+    const message = StringResources.vsc.appStudioLogin.message;
     const signin = StringResources.vsc.common.signin;
     const readMore = StringResources.vsc.common.readMore;
     let userSelected: string | undefined;
     do {
       userSelected = await vscode.window.showInformationMessage(
-        warningMsg,
+        message,
         {modal: true},
         signin,
         readMore

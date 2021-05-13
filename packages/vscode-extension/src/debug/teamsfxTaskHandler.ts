@@ -7,7 +7,7 @@ import * as vscode from "vscode";
 import { ext } from "../extensionVariables";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
-import { isWorkspaceSupported } from "../utils/commonUtils";
+import { isWorkspaceSupported, getTeamsAppId } from "../utils/commonUtils";
 
 interface IRunningTeamsfxTask {
     source: string;
@@ -62,12 +62,13 @@ function onDidStartDebugSessionHandler(event: vscode.DebugSession): void {
         {
             // send f5 event telemetry
             try {
+                const remoteAppId = getTeamsAppId() as string;
                 ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugStart, {
                     [TelemetryProperty.DebugSessionId]: event.id,
                     [TelemetryProperty.DebugType]: debugConfig.type,
                     [TelemetryProperty.DebugRequest]: debugConfig.request,
                     [TelemetryProperty.DebugPort]: debugConfig.port + "",
-                    [TelemetryProperty.DebugRemote]: debugConfig.name?.includes("Remote") || debugConfig.name?.includes("remote") ? "true" : "false"
+                    [TelemetryProperty.DebugRemote]: debugConfig.url as string && remoteAppId && (debugConfig.url as string).includes(remoteAppId) ? "true" : "false"
                 });
             } catch {
                 // ignore telemetry error

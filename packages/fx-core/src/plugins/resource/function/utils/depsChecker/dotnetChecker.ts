@@ -118,9 +118,13 @@ export class DotnetChecker implements IDepsChecker {
         .replace("@NameVersion", installedNameWithVersion)
         .replace("@InstallDir", installDir)
     );
+
     await this._adapter.runWithProgressIndicator(async () => {
       await this.handleInstall(installVersion, installDir);
     });
+    await this._logger.info(
+      Messages.finishInstallDotnet.replace("@NameVersion", installedNameWithVersion)
+    );
     await this._logger.debug(`[end] install dotnet ${installVersion}`);
 
     await this._logger.debug(`[start] validate dotnet version`);
@@ -172,6 +176,7 @@ export class DotnetChecker implements IDepsChecker {
     return null;
   }
 
+  // Do not print info level log in this method because it runs concurrently with the progress bar
   private async handleInstall(version: DotnetVersion, installDir: string): Promise<void> {
     try {
       if (isLinux()) {
@@ -184,9 +189,6 @@ export class DotnetChecker implements IDepsChecker {
       const dotnetExecPath = DotnetChecker.getDotnetExecPathFromDotnetInstallationDir(installDir);
       await DotnetChecker.persistDotnetExecPath(dotnetExecPath);
       await this._logger.debug(`[end] write dotnet path to config`);
-      await this._logger.info(
-        Messages.finishInstallDotnet.replace("@NameVersion", installedNameWithVersion)
-      );
     } catch (error) {
       await this._logger.error(
         `${Messages.failToInstallDotnet
@@ -235,9 +237,9 @@ export class DotnetChecker implements IDepsChecker {
     try {
       const start = performance.now();
       fs.chmodSync(this.getDotnetInstallScriptPath(), "755");
-      const { stdout, stderr } = await execFile(command[0], command.splice(1), options);
+      const { stdout, stderr } = await execFile(command[0], command.slice(1), options);
       await this._logger.debug(
-        `Finished running dotnet-install script, command = '${command}', options = '${JSON.stringify(
+        `Finished running dotnet-install script, command = '${command.join(" ")}', options = '${JSON.stringify(
           options
         )}', stdout = '${stdout}', stderr = '${stderr}'`
       );
@@ -265,7 +267,9 @@ export class DotnetChecker implements IDepsChecker {
         `${Messages.failToInstallDotnet.split("@NameVersion").join(installedNameWithVersion)} ${
           Messages.dotnetInstallErrorCode
         }, ` +
-        `command = '${command}', options = '${options}', error = '${error}', stdout = '${error.stdout}', stderr = '${error.stderr}'`;
+        `command = '${command.join(" ")}', options = '${JSON.stringify(
+          options
+        )}', error = '${error}', stdout = '${error.stdout}', stderr = '${error.stderr}'`;
 
       this._telemetry.sendSystemErrorEvent(
         DepsCheckerEvent.dotnetInstallScriptError,
@@ -393,8 +397,7 @@ export class DotnetChecker implements IDepsChecker {
     dotnetInstallDir: string
   ): Promise<string[]> {
     const command = [
-      // path.join does not prepend '.'
-      [".", this.getDotnetInstallScriptName()].join(path.sep),
+      this.getDotnetInstallScriptPath(),
       "-InstallDir",
       isWindows() ? DotnetChecker.escapeFilePath(dotnetInstallDir) : dotnetInstallDir,
       "-Channel",
@@ -456,7 +459,8 @@ export class DotnetChecker implements IDepsChecker {
         dotnetPath,
         "run",
         "--project",
-        `${samplePath}`
+        `${samplePath}`,
+        "--force"
       );
       return actual.includes(expected);
     } catch (error) {

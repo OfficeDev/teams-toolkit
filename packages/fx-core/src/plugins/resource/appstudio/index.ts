@@ -130,19 +130,20 @@ export class AppStudioPlugin implements Plugin {
         }
 
         try {
-            const teamsAppId = await this.appStudioPluginImpl.publish(ctx);
+            const result = await this.appStudioPluginImpl.publish(ctx);
             ctx.logProvider?.info(`[Teams Toolkit] publish success!`);
             await ctx.dialog?.communicate(
                 new DialogMsg(DialogType.Show, {
-                    description: `[Teams Toolkit]: ${ctx.app.name.short} successfully published to the admin portal. Once approved, your app will be available for your organization.`,
+                    description: `[Teams Toolkit]: ${result.name} successfully published to the admin portal. Once approved, your app will be available for your organization.`,
                     level: MsgLevel.Info,
                 }),
             );
-            return ok(teamsAppId);
+            return ok(result.id);
         } catch (error) {
+            const innerError = error.innerError? `innerError: ${error.innerError}` : "";
             await ctx.dialog?.communicate(
                 new DialogMsg(DialogType.Show, {
-                    description: `[Teams Toolkit]: ${error.message}`,
+                    description: `[Teams Toolkit]: ${error.message} ${innerError}`,
                     level: MsgLevel.Warning
                 }),
             );

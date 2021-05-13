@@ -15,6 +15,7 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import { Logger } from "./logger";
 import { Messages } from "./resources/messages";
+import { getTemplatesFolder } from "../../..";
 
 export class LanguageStrategy {
     public static async getTemplateProjectZip(programmingLanguage: ProgrammingLanguage, groupName: string): Promise<AdmZip> {
@@ -31,10 +32,7 @@ export class LanguageStrategy {
     }
 
     public static async getTemplateProjectZipUrl(programmingLanguage: ProgrammingLanguage, groupName: string): Promise<string> {
-        const manifest: TemplateManifest = await TemplateManifest.fromUrl(
-            TemplateProjectsConstants.NEWEST_MANIFEST_URL,
-        );
-
+        const manifest: TemplateManifest = await TemplateManifest.newInstance();
         return manifest.getNewestTemplateUrl(programmingLanguage, groupName);
     }
 
@@ -86,17 +84,17 @@ export class LanguageStrategy {
 
         if (programmingLanguage === ProgrammingLanguage.JavaScript) {
             try {
-                // fail to npm install teamsdev-client on azure web app, so pack it locally.
-                await utils.execute("npm install teamsdev-client", packDir);
+                // fail to npm install @microsoft/teamsfx on azure web app, so pack it locally.
+                await utils.execute("npm install @microsoft/teamsfx", packDir);
             } catch (e) {
                 throw new CommandExecutionError(`${Commands.NPM_INSTALL}`, e.message, e);
             }
         }
     }
 
-    private static async generateLocalFallbackFilePath(programmingLanguage: ProgrammingLanguage, groupName: string): Promise<string> {
-        const fxCorePath = path.join(__dirname, "..", "..", "..", "..");
-        const targetFilePath = path.join(fxCorePath, "templates", "plugins", "resource", "bot", `${groupName.toLowerCase()}.${programmingLanguage.toLowerCase()}.${TemplateProjectsConstants.DEFAULT_SCENARIO_NAME.toLowerCase()}.zip`);
+    private static async generateLocalFallbackFilePath(programmingLanguage: ProgrammingLanguage, groupName: string): Promise<string> { 
+        const langKey = utils.convertToLangKey(programmingLanguage);
+        const targetFilePath = path.join(getTemplatesFolder(), "plugins", "resource", "bot", `${groupName}.${langKey}.${TemplateProjectsConstants.DEFAULT_SCENARIO_NAME}.zip`);
 
         const targetExisted = await fs.pathExists(targetFilePath);
         if (!targetExisted) {

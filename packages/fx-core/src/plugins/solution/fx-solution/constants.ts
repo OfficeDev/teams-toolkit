@@ -299,3 +299,6 @@ export const STATIC_TABS_TPL: IStaticTab[] = [
 
 export const DoProvisionFirstError = new UserError("DoProvisionFirst", "DoProvisionFirst", "Solution");
 export const CancelError = new UserError("UserCancel", "UserCancel", "Solution");
+// This is the max length specified in
+// https://developer.microsoft.com/en-us/json-schemas/teams/v1.7/MicrosoftTeams.schema.json
+export const TEAMS_APP_SHORT_NAME_MAX_LENGTH = 30;

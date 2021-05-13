@@ -59,6 +59,14 @@ export async function validate(
     }
   }
 
+  // Required Validation
+  {
+    if(!valueToValidate){
+      if(validation.required === true)
+        return `This question is mandatory`;
+    }
+  }
+
   {
     //FileValidation
     const fileValidation: FileValidation = validation as FileValidation;

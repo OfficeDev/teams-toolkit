@@ -10,7 +10,8 @@ import { AzureStorageClient } from "../../../../src/plugins/resource/frontend/cl
 import { DependentPluginInfo } from "../../../../src/plugins/resource/frontend/constants";
 import { FrontendConfig } from "../../../../src/plugins/resource/frontend/configs";
 import { FrontendPlugin } from "../../../../src/plugins/resource/frontend";
-import { Manifest } from "../../../../src/plugins/resource/frontend/ops/scaffold";
+import * as templates from "../../../../src/common/templates";
+import { StorageAccountsCreateResponse } from "@azure/arm-storage/esm/models";
 
 export class TestHelper {
     static appName = "app-test";
@@ -32,6 +33,12 @@ export class TestHelper {
     static fakeSubscriptionId: string = faker.datatype.uuid();
     static tabLanguage = "javascript";
     static fakeClientId: string = faker.datatype.uuid();
+
+    static storageAccount = {
+        primaryEndpoints: {
+            web: TestHelper.storageEndpoint,
+        },
+    } as StorageAccountsCreateResponse;
 
     static fakeAzureAccountProvider: AzureAccountProvider = {
         getAccountCredential: () => {
@@ -144,7 +151,10 @@ export class TestHelper {
         return frontendPlugin;
     }
 
-    static latestTemplateURL: string = faker.internet.url();
+    static candidateTag = templates.tagPrefix + templates.templatesVersion.replace(/\*/g, "0");
+    static targetTag = templates.tagPrefix + templates.templatesVersion.replace(/\*/g, "1");
+    static templateCompose = "a.b.c";
+    static latestTemplateURL: string = templates.templateURL(TestHelper.targetTag, TestHelper.templateCompose);
 
     static getFakeAxiosResponse(data: any, status = 200): AxiosResponse<any> {
         return {
@@ -156,30 +166,15 @@ export class TestHelper {
         };
     }
 
-    static getFakeTemplateManifest(): Manifest {
-        return {
-            a: {
-                b: {
-                    c: [
-                        {
-                            version: "0.1.0",
-                            url: faker.internet.url(),
-                        },
-                        {
-                            version: "0.2.0",
-                            url: faker.internet.url(),
-                        },
-                        {
-                            version: "0.1.3",
-                            url: TestHelper.latestTemplateURL,
-                        },
-                        {
-                            version: "0.1.2",
-                            url: faker.internet.url(),
-                        },
-                    ],
-                },
-            },
-        };
+    static getFakeTemplateManifest(): string {
+        return `
+templates@0.2.0
+templates@0.1.1
+templates@0.1.1-alpha
+templates@0.2.1
+templates@0.3.1
+${TestHelper.candidateTag}
+${TestHelper.targetTag}
+`;
     }
 }

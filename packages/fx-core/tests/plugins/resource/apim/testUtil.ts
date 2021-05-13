@@ -23,10 +23,10 @@ import {
     IApimPluginConfig,
     IFunctionPluginConfig,
     ISolutionConfig,
-} from "../../../../src/plugins/resource/apim/model/config";
+} from "../../../../src/plugins/resource/apim/config";
 import { TeamsToolkitComponent } from "../../../../src/plugins/resource/apim/constants";
 import { AxiosInstance, Method } from "axios";
-import { IAadInfo } from "../../../../src/plugins/resource/apim/model/aadResponse";
+import { IAadInfo } from "../../../../src/plugins/resource/apim/interfaces/IAadResource";
 import { ApiManagementClient } from "@azure/arm-apimanagement";
 import dotenv from "dotenv";
 

@@ -57,17 +57,18 @@ export default class QuickStart extends React.Component<any, any>{
 
         return (
             <div className="quick-start-page">
-                <div className="section">
-                    <div className="logo">
-                        <Icon iconName="LightningBolt" className="logo" />
-                    </div>
-                    <div className="title">
-                        <h2>Quick Start</h2>
-                        <h3 className="text">Jumpstart your Teams app development experience</h3>
-                    </div>
-                </div>
                 <div className="flex-section">
+                    <div className="side-margin" />
                     <div className="table-of-contents">
+                        <div className="section">
+                            <div className="logo">
+                                <Icon iconName="LightningBolt" className="logo" />
+                            </div>
+                            <div className="title">
+                                <h2>Quick Start</h2>
+                                <h3 className="text">Jumpstart your Teams app development experience</h3>
+                            </div>
+                        </div>
                         {(()=>{
                             const curStep = stepCount;
                             stepCount++;
@@ -108,8 +109,8 @@ export default class QuickStart extends React.Component<any, any>{
                                 stepCount++;
                                 return <GetStartedAction
                                     title={`Install Node.js`}
-                                    content={["The toolkit cannot detect the right version of Node.js on your machine.", <br />, <br />, "Node.js v10.x, v12.x or v14.x is required (v.12.x is recommended).", <br />, <br />, "Read more about ", <a href="http://npm.github.io/installation-setup-docs/installing/using-a-node-version-manager.html">managing Node.js versions</a>, "."]}
-                                    actionText="Download Node.js (v.12.x)"
+                                    content={["The toolkit cannot detect the right version of Node.js on your machine.", <br />, <br />, "Node.js v10.x, v12.x or v14.x is required (v12.x is recommended).", <br />, <br />, "Read more about ", <a href="http://npm.github.io/installation-setup-docs/installing/using-a-node-version-manager.html">managing Node.js versions</a>, "."]}
+                                    actionText="Download Node.js (v12.x)"
                                     onAction={this.downloadNode}
                                     secondaryActionText="Next"
                                     onSecondaryAction={() => { this.onNextStep(curStep); }}
@@ -169,6 +170,7 @@ export default class QuickStart extends React.Component<any, any>{
                             />
                         })()}
                     </div>
+                    <div className="content-margin" />
                     <div className="stage">
                         {
                             this.state.currentStep === 1 && (
@@ -218,9 +220,10 @@ export default class QuickStart extends React.Component<any, any>{
                             )
                         }
                     </div>
+                    <div className="side-margin" />
                 </div>
             </div>
-        )
+        );
     }
 
     receiveMessage = (event: any) => {

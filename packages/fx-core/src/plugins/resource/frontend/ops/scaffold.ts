@@ -18,8 +18,8 @@ import { Logger } from "../utils/logger";
 import { Messages } from "../resources/messages";
 import { PluginContext } from "@microsoft/teamsfx-api";
 import { Utils } from "../utils";
-import { telemetryHelper } from "../utils/telemetry-helper";
 import { TemplateInfo, TemplateVariable } from "../resources/templateInfo";
+import { selectTag, tagListURL, templateURL } from "../../../../common/templates";
 
 export type Manifest = {
     [key: string]: {
@@ -33,9 +33,9 @@ export type Manifest = {
 };
 
 export class FrontendScaffold {
-    public static async fetchTemplateManifest(url: string): Promise<Manifest> {
+    public static async fetchTemplateTagList(url: string): Promise<string> {
         const result = await runWithErrorCatchAndThrow(
-            new FetchTemplatePackageError(),
+            new FetchTemplateManifestError(),
             async () => await Utils.requestWithRetry(async () => {
                 return axios.get(url, {
                     timeout: Constants.RequestTimeoutInMS,
@@ -43,25 +43,21 @@ export class FrontendScaffold {
             }, Constants.ScaffoldTryCounts)
         );
         if (!result) {
-            throw new FetchTemplatePackageError();
+            throw new FetchTemplateManifestError();
         }
         return result.data;
     }
 
     public static async getTemplateURL(
         manifestUrl: string,
-        group: string,
-        language: string,
-        scenario: string,
-        version: string
+        templateBaseName: string,
     ): Promise<string> {
-        const manifest: Manifest = await this.fetchTemplateManifest(manifestUrl);
-        return runWithErrorCatchAndThrow(new InvalidTemplateManifestError(), () => {
-            const urls: { version: string; url: string }[] = manifest[group][language][scenario]
-                .filter((x) => semver.satisfies(x.version, version))
-                .sort((a, b) => -semver.compare(a.version, b.version));
-            return urls[0].url;
-        });
+        const tags: string = await this.fetchTemplateTagList(manifestUrl);
+        const selectedTag = selectTag(tags.replace(/\r/g, Constants.EmptyString).split("\n"));
+        if (!selectedTag) {
+            throw new InvalidTemplateManifestError(templateBaseName);
+        }
+        return templateURL(selectedTag, templateBaseName);
     }
 
     public static async fetchZipFromUrl(url: string): Promise<AdmZip> {
@@ -82,7 +78,7 @@ export class FrontendScaffold {
     }
 
     public static getTemplateZipFromLocal(templateInfo: TemplateInfo): AdmZip {
-        const templatePath = path.resolve(FrontendPathInfo.RootDir, templateInfo.localTemplatePath);
+        const templatePath = templateInfo.localTemplatePath;//path.resolve(FrontendPathInfo.RootDir, );
         return new AdmZip(templatePath);
     }
 
@@ -90,15 +86,11 @@ export class FrontendScaffold {
         try {
             // Temporarily hard code template language as JavaScript
             const templateUrl = await FrontendScaffold.getTemplateURL(
-                PluginInfo.templateManifestURL,
-                templateInfo.group,
-                templateInfo.language,
-                templateInfo.scenario,
-                templateInfo.version
+                tagListURL,
+                templateInfo.localTemplateBaseName
             );
             return await FrontendScaffold.fetchZipFromUrl(templateUrl);
         } catch (e) {
-            telemetryHelper.sendErrorEvent(ctx, Messages.FailedFetchTemplate(), e);
             Logger.warning(Messages.FailedFetchTemplate());
             return FrontendScaffold.getTemplateZipFromLocal(templateInfo);
         }

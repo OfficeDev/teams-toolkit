@@ -24,6 +24,7 @@
 /packages/cli/tests/e2e/apim @XiaofuHuang @dooriya @kimizhu
 /packages/cli/tests/e2e/function @henzhang-ms @eriolchan @hund030
 /packages/cli/tests/e2e/frontend @hund030 @eriolchan @henzhang-ms
+/packages/cli/tests/e2e/bot @IvanJobs @eriolchan @YitongFeng-git
 
 /packages/api @jayzhang @1yefuwang1 @LongOddCode
 /packages/api/src/qm @jayzhang @1yefuwang1 @LongOddCode @jiayi-ruan
@@ -54,6 +55,7 @@
 
 /packages/fx-core/src/plugins/resource/function @henzhang-ms @eriolchan @hund030
 /packages/fx-core/tests/plugins/resource/function @henzhang-ms @eriolchan @hund030
+/packages/fx-core/src/plugins/resource/function/utils/depsChecker @a1exwang @kimizhu @meifans @qinezh
 
 /packages/fx-core/src/plugins/resource/identity @xzf0587 @adashen
 /packages/fx-core/tests/plugins/resource/identity @xzf0587 @adashen

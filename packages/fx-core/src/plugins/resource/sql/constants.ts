@@ -57,22 +57,27 @@ export class Constants {
 }
 
 export class Telemetry {
-    static readonly telemetryName = "fx-resource-azure-sql";
-    static readonly provisionStart = `${Telemetry.telemetryName}/provision-start`;
-    static readonly provisionEnd = `${Telemetry.telemetryName}/provision`;
-    static readonly postProvisionStart = `${Telemetry.telemetryName}/post-provision-start`;
-    static readonly postProvisionEnd = `${Telemetry.telemetryName}/post-provision`;
+    static readonly componentName = "fx-resource-azure-sql";
+    static startSuffix = "-start";
+    static resultYes = "yes";
+    static resultNo = "no";
+    static userError = "user";
+    static systemError = "system";
 
-    static readonly component = "component";
-    static readonly success = "success";
-    static readonly errorType = "error-type";
-    static readonly errorMessage = "error-message";
+    static readonly stage = {
+        preProvision: "pre-provision",
+        provision: "provision",
+        postProvision: "post-provision",
+        getQuestion: "get-question"
+    };
 
-    static readonly getErrorProperty = (errorType: string, errorMessage: string) => {
-        return {
-            "error-type": errorType,
-            "error-message": errorMessage,
-        };
+    static readonly properties = {
+        component: "component",
+        success: "success",
+        errorCode: "error-code",
+        errorType: "error-type",
+        errorMessage: "error-message",
+        appid: "appid"
     };
 }
 

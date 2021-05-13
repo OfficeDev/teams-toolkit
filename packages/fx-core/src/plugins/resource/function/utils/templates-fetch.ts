@@ -4,7 +4,6 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import AdmZip from "adm-zip";
 import axios, { AxiosResponse } from "axios";
-import semver from "semver";
 
 import {
     BadTemplateManifestError,
@@ -16,25 +15,15 @@ import {
 import { DefaultValues } from "../constants";
 import { InfoMessages } from "../resources/message";
 import { Logger } from "./logger";
+import { selectTag, tagListURL, templateURL } from "../../../../common/templates";
+import { FunctionLanguage } from "../enums";
 
-// group -> programming language -> scenario -> version + url
-export type Manifest = {
-    [key:string]: {
-        [key: string]: {
-            [key: string]: {
-                version: string;
-                url: string
-            }[]
-        }
-    }
-};
-
-async function fetchTemplateManifest(manifestUrl: string): Promise<Manifest> {
-    return await runWithErrorCatchAndThrow(new TemplateManifestNetworkError(manifestUrl), async () => {
-        const res: AxiosResponse<Manifest> = await requestWithRetry(
+async function fetchTemplateTagList(url: string): Promise<string> {
+    return await runWithErrorCatchAndThrow(new TemplateManifestNetworkError(url), async () => {
+        const res: AxiosResponse<string> = await requestWithRetry(
             DefaultValues.scaffoldTryCount,
             async () => {
-                return await axios.get(manifestUrl, {
+                return await axios.get(url, {
                     timeout: DefaultValues.scaffoldTimeoutInMs
                 });
             }
@@ -43,22 +32,27 @@ async function fetchTemplateManifest(manifestUrl: string): Promise<Manifest> {
     });
 }
 
+export function convertTemplateLanguage(language: FunctionLanguage): string {
+    switch (language) {
+        case FunctionLanguage.JavaScript:
+            return "js";
+        case FunctionLanguage.TypeScript:
+            return "ts";
+    }
+}
+
 export async function getTemplateURL(
-    manifestUrl: string, group: string, language: string,
-    scenario: string, version: string): Promise<string> {
-
-    const manifest: Manifest = await fetchTemplateManifest(manifestUrl);
-    const url = await runWithErrorCatchAndThrow(new BadTemplateManifestError(`${group}+${language}+${scenario}+${version}`),
-        () => {
-            // The format from website may be incorrect, parse it inside try-catch block
-            const urls: {version: string, url: string}[] =
-                manifest[group][language][scenario]
-                    .filter(x => semver.satisfies(x.version, version))
-                    .sort((a, b) => -semver.compare(a.version, b.version));
-            return urls[0].url;
-        });
-
-    return url;
+    group: string,
+    language: FunctionLanguage,
+    scenario: string
+): Promise<string> {
+    const tags: string = await fetchTemplateTagList(tagListURL);
+    const selectedTag = selectTag(tags.replace(/\r/g, "").split("\n"));
+    if (!selectedTag) {
+        throw new BadTemplateManifestError(`${group}+${language}+${scenario}`);
+    }
+    const templateLanguage = convertTemplateLanguage(language);
+    return templateURL(selectedTag, `${group}.${templateLanguage}.${scenario}`);
 }
 
 export async function fetchZipFromURL(url: string): Promise<AdmZip> {

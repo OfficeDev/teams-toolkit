@@ -1,9 +1,15 @@
 .sample-gallery{
-    margin: 52px 100px 52px 100px;
+    margin: 52px 20px;
 
-     .section{
+    .section{
         display: flex;
         margin-bottom: 36px;
+    }
+
+    #title{
+        margin-left: auto;
+        margin-right: auto;
+        width: 874px;
     }
 
     .logo{
@@ -36,6 +42,11 @@
         }
     }
 
+    .sample-stack{
+        width: 874px;
+        margin: 0 auto;
+    }
+
     .sample-app-card{
         background-color: var(--vscode-editorWidget-background);
         border-radius: 2px;
@@ -46,7 +57,6 @@
         .section{
             display: flex;
             margin-bottom: 0px;
-            padding-right: 8px;
             flex-wrap: wrap;
         }
 
@@ -97,14 +107,30 @@
         }
 
         .buttons{
-            margin: 28px 12px 12px auto;
             position: absolute;
-            bottom: 0px;
+            bottom: 12px;
+            right: 12px;
         }
 
         .right-aligned{
             margin-left: 190px;
-            margin-right: 8px;
+            margin-right: 0px;
+        }
+    }
+}
+
+/* On screens that are 914px or less, change to 2 column layout */
+@media screen and (max-width: 914px) {
+    .sample-gallery{
+        margin: 52px 0;
+
+        #title{
+            width: 874px;
+        }
+
+        .sample-stack{
+            width: 576px;
+            min-width: 576px;
         }
     }
 }

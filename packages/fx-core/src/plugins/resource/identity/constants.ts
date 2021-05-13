@@ -18,19 +18,23 @@ export class Constants {
 }
 
 export class Telemetry {
-    static readonly telemetryName = `${Constants.prefix}-resource-identity`;
-    static readonly provisionStart = `${Telemetry.telemetryName}/provision-start`;
-    static readonly provisionEnd = `${Telemetry.telemetryName}/provision`;
+    static readonly componentName = "fx-resource-azure-identity";
+    static startSuffix = "-start";
+    static resultYes = "yes";
+    static resultNo = "no";
+    static userError = "user";
+    static systemError = "system";
 
-    static readonly component = "component";
-    static readonly success = "success";
-    static readonly errorType = "error-type";
-    static readonly errorMessage = "error-message";
+    static readonly stage = {
+        provision: "provision",
+    };
 
-    static readonly getErrorProperty = (errorType: string, errorMessage: string) => {
-        return {
-            "error-type": errorType,
-            "error-message": errorMessage,
-        };
+    static readonly properties = {
+        component: "component",
+        success: "success",
+        errorCode: "error-code",
+        errorType: "error-type",
+        errorMessage: "error-message",
+        appid: "appid"
     };
 }

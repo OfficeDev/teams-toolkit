@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import path from "path";
+import { IName } from "./interfaces/IName";
 
 export class ProjectConstants {
     public static readonly pluginShortName: string = "APIM";
@@ -11,16 +12,15 @@ export class ProjectConstants {
     public static readonly openApiDocumentFileName: string = "openapi.json";
     public static readonly readMeFileName: string = "README.md";
     public static readonly maxRetries: number = 3;
-    public static readonly resourceDir: string = path.join(__dirname, "..", "..", "..", "..", "templates", "plugins", "resource", "apim");
 }
 
 export class ApimDefaultValues {
     public static readonly functionBasePath: string = "/api";
-    public static readonly productDescription: string = "Created by TeamsFX.";
-    public static readonly oAuthServerDescription: string = "Created by TeamsFX.";
+    public static readonly productDescription: string = "Created by TeamsFx.";
+    public static readonly oAuthServerDescription: string = "Created by TeamsFx.";
     public static readonly enableScopeName: string = ".default";
     public static readonly userId: string = "sample@microsoft.com";
-    public static readonly apiPrefix: string = "title";
+    public static readonly apiPrefix: string = "api-title";
     public static readonly apiVersion: string = "v1";
 }
 
@@ -132,12 +132,18 @@ export class ValidationConstants {
 
     public static readonly defaultValidPattern = {
         regex: /^[^*#&+:<>?]+$/,
-        message: "The value cannot contain any character in '*#&+:<>?'.",
+        message: "The value cannot contain any characters in '*#&+:<>?'.",
     }
 
     public static readonly guidValidPattern = {
         regex: /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
         message: "The value should be a GUID."
+    }
+
+    public static readonly CLI = {
+        invalidOptionMessage: (optionName: string) => `The value of option '--${optionName}' is invalid.`,
+        emptyOptionMessage: (optionName: string) => `Option '--${optionName}' is required. Set the value of '--${optionName}'`,
+        overrideOptionMessage: (optionName: string) => `Option '--${optionName}' cannot be overridden. Remove option '--${optionName}'`,
     }
 }
 
@@ -182,50 +188,50 @@ export enum TeamsToolkitComponent {
     ApimPlugin = "fx-resource-apim",
 }
 
-export enum RetryCommands {
-    Create = "start a project",
-    Update = "add the resource",
-    Provision = "provision resource",
-    Deploy = "deploy package",
-    Login = "login and choose a subscription",
+export enum RetryOperation {
+    Create = "create a new project",
+    Update = "add API Management resource",
+    Provision = "provision in the cloud",
+    Deploy = "deploy to the cloud",
+    Login = "sign in to Azure and choose a subscription",
 }
 
-export const ComponentRetryCommands: { [key in TeamsToolkitComponent]: RetryCommands } = Object.freeze({
-    [TeamsToolkitComponent.FunctionPlugin]: RetryCommands.Update,
-    [TeamsToolkitComponent.AadPlugin]: RetryCommands.Create,
-    [TeamsToolkitComponent.Solution]: RetryCommands.Create,
-    [TeamsToolkitComponent.ApimPlugin]: RetryCommands.Update,
+export const ComponentRetryOperations: { [key in TeamsToolkitComponent]: RetryOperation } = Object.freeze({
+    [TeamsToolkitComponent.FunctionPlugin]: RetryOperation.Update,
+    [TeamsToolkitComponent.AadPlugin]: RetryOperation.Create,
+    [TeamsToolkitComponent.Solution]: RetryOperation.Create,
+    [TeamsToolkitComponent.ApimPlugin]: RetryOperation.Update,
 });
 
-export const ConfigRetryCommands: { [key in TeamsToolkitComponent]: { [key: string]: RetryCommands } } = {
+export const ConfigRetryOperations: { [key in TeamsToolkitComponent]: { [key: string]: RetryOperation } } = {
     [TeamsToolkitComponent.FunctionPlugin]: {
-        [FunctionPluginConfigKeys.functionEndpoint]: RetryCommands.Provision,
+        [FunctionPluginConfigKeys.functionEndpoint]: RetryOperation.Provision,
     },
     [TeamsToolkitComponent.AadPlugin]: {
-        [AadPluginConfigKeys.objectId]: RetryCommands.Provision,
-        [AadPluginConfigKeys.clientId]: RetryCommands.Provision,
-        [AadPluginConfigKeys.oauth2PermissionScopeId]: RetryCommands.Provision,
-        [AadPluginConfigKeys.applicationIdUris]: RetryCommands.Provision,
+        [AadPluginConfigKeys.objectId]: RetryOperation.Provision,
+        [AadPluginConfigKeys.clientId]: RetryOperation.Provision,
+        [AadPluginConfigKeys.oauth2PermissionScopeId]: RetryOperation.Provision,
+        [AadPluginConfigKeys.applicationIdUris]: RetryOperation.Provision,
     },
     [TeamsToolkitComponent.Solution]: {
-        [SolutionConfigKeys.resourceNameSuffix]: RetryCommands.Create,
-        [SolutionConfigKeys.subscriptionId]: RetryCommands.Login,
-        [SolutionConfigKeys.teamsAppTenantId]: RetryCommands.Provision,
-        [SolutionConfigKeys.resourceGroupName]: RetryCommands.Provision,
-        [SolutionConfigKeys.location]: RetryCommands.Provision,
+        [SolutionConfigKeys.resourceNameSuffix]: RetryOperation.Create,
+        [SolutionConfigKeys.subscriptionId]: RetryOperation.Login,
+        [SolutionConfigKeys.teamsAppTenantId]: RetryOperation.Provision,
+        [SolutionConfigKeys.resourceGroupName]: RetryOperation.Provision,
+        [SolutionConfigKeys.location]: RetryOperation.Provision,
     },
     [TeamsToolkitComponent.ApimPlugin]: {
-        [ApimPluginConfigKeys.resourceGroupName]: RetryCommands.Provision,
-        [ApimPluginConfigKeys.serviceName]: RetryCommands.Provision,
-        [ApimPluginConfigKeys.productId]: RetryCommands.Provision,
-        [ApimPluginConfigKeys.oAuthServerId]: RetryCommands.Provision,
-        [ApimPluginConfigKeys.apimClientAADObjectId]: RetryCommands.Provision,
-        [ApimPluginConfigKeys.apimClientAADClientId]: RetryCommands.Provision,
-        [ApimPluginConfigKeys.apimClientAADClientSecret]: RetryCommands.Provision,
-        [ApimPluginConfigKeys.apiPrefix]: RetryCommands.Deploy,
-        [ApimPluginConfigKeys.versionSetId]: RetryCommands.Deploy,
-        [ApimPluginConfigKeys.apiPath]: RetryCommands.Deploy,
-        [ApimPluginConfigKeys.apiDocumentPath]: RetryCommands.Deploy,
+        [ApimPluginConfigKeys.resourceGroupName]: RetryOperation.Provision,
+        [ApimPluginConfigKeys.serviceName]: RetryOperation.Provision,
+        [ApimPluginConfigKeys.productId]: RetryOperation.Provision,
+        [ApimPluginConfigKeys.oAuthServerId]: RetryOperation.Provision,
+        [ApimPluginConfigKeys.apimClientAADObjectId]: RetryOperation.Provision,
+        [ApimPluginConfigKeys.apimClientAADClientId]: RetryOperation.Provision,
+        [ApimPluginConfigKeys.apimClientAADClientSecret]: RetryOperation.Provision,
+        [ApimPluginConfigKeys.apiPrefix]: RetryOperation.Deploy,
+        [ApimPluginConfigKeys.versionSetId]: RetryOperation.Deploy,
+        [ApimPluginConfigKeys.apiPath]: RetryOperation.Deploy,
+        [ApimPluginConfigKeys.apiDocumentPath]: RetryOperation.Deploy,
     },
 };
 
@@ -243,7 +249,7 @@ export enum ProgressStep {
     Scaffold = "Scaffolding OpenAPI document",
     Provision = "Provisioning API Management",
     PostProvision = "Configuring API Management",
-    Deploy = "Importing API into API Management",
+    Deploy = "Importing API to API Management",
 }
 
 export const PluginLifeCycleToProgressStep: { [key in PluginLifeCycle]: ProgressStep } = {
@@ -273,3 +279,103 @@ export const ProgressMessages: { [key in ProgressStep]: { [step: string]: string
         ImportApi: "Import API into API management",
     },
 };
+
+export enum OperationStatus {
+    Started = "started",
+    Failed = "failed",
+    Succeeded = "succeeded",
+}
+
+export class AzureResource {
+    static ResourceGroup: IName = {
+        shortName: "resource-group",
+        displayName: "Resource Group",
+    };
+
+    static APIM: IName = {
+        shortName: "apim",
+        displayName: "API Management Service",
+    };
+
+    static Product: IName = {
+        shortName: "apim-product",
+        displayName: "API Management product",
+    };
+
+    static OAuthServer: IName = {
+        shortName: "apim-oauth-server",
+        displayName: "API Management OAuth server",
+    };
+
+    static VersionSet: IName = {
+        shortName: "apim-version-set",
+        displayName: "API Management version set",
+    };
+
+    static API: IName = {
+        shortName: "apim-api",
+        displayName: "API Management API",
+    };
+
+    static ProductAPI: IName = {
+        shortName: "apim-product-api",
+        displayName: "API Management product and API relationship",
+    };
+
+    static Aad: IName = {
+        shortName: "aad",
+        displayName: "Azure Active Directory application",
+    };
+
+    static AadSecret: IName = {
+        shortName: "aad-secret",
+        displayName: "Azure Active Directory client secret",
+    };
+
+    static ServicePrincipal: IName = {
+        shortName: "service-principal",
+        displayName: "Service Principal",
+    };
+}
+
+export class Operation {
+    static Create: IName = {
+        shortName: "create",
+        displayName: "create",
+    };
+
+    static Update: IName = {
+        shortName: "update",
+        displayName: "update",
+    };
+
+    static Get: IName = {
+        shortName: "get",
+        displayName: "get",
+    };
+
+    static List: IName = {
+        shortName: "list",
+        displayName: "list",
+    };
+
+    static ListNextPage: IName = {
+        shortName: "list-next",
+        displayName: "list (pagination)",
+    };
+
+    static Import: IName = {
+        shortName: "import",
+        displayName: "import",
+    };
+}
+
+export enum ErrorHandlerResult {
+    Continue = "Continue",
+    Return = "Return",
+}
+
+export enum OpenApiSchemaVersion {
+    V2 = "v2",
+    V3 = "v3",
+}

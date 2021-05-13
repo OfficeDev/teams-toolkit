@@ -3,7 +3,7 @@ import { useData } from "./useData";
 import {
   TeamsUserCredential,
   createMicrosoftGraphClient,
-} from "teamsdev-client";
+} from "@microsoft/teamsfx";
 
 export function useGraph(asyncFunc, options) {
   const credential = useRef(new TeamsUserCredential());
@@ -11,7 +11,7 @@ export function useGraph(asyncFunc, options) {
   const { scope } = { scope: ["User.Read"], ...options };
   const initial = useData(async () => {
     try {
-      const graph = await createMicrosoftGraphClient(credential.current, scope);
+      const graph = createMicrosoftGraphClient(credential.current, scope);
       return await asyncFunc(graph);
     } catch (err) {
       if (err.code.includes("UiRequiredError")) {
@@ -25,7 +25,7 @@ export function useGraph(asyncFunc, options) {
   const { data, error, loading, reload } = useData(
     async () => {
       await credential.current.login(scope);
-      const graph = await createMicrosoftGraphClient(credential.current, scope);
+      const graph = createMicrosoftGraphClient(credential.current, scope);
       return await asyncFunc(graph);
     },
     { auto: false }
@@ -34,9 +34,9 @@ export function useGraph(asyncFunc, options) {
   return data || error || loading
     ? { data, error, loading, reload }
     : {
-      data: initial.data,
-      error: initial.error,
-      loading: initial.loading,
-      reload,
-    };
+        data: initial.data,
+        error: initial.error,
+        loading: initial.loading,
+        reload,
+      };
 }

@@ -15,6 +15,7 @@ import { Stage } from "@microsoft/teamsfx-api";
 import { PanelType } from "./PanelType";
 import { execSync } from "child_process";
 import { isMacOS } from "../utils/commonUtils";
+import { DialogManager } from "../userInterface";
 
 export class WebviewPanel {
   private static readonly viewType = "react";
@@ -79,13 +80,23 @@ export class WebviewPanel {
                 title: "Select folder to clone the sample app"
               });
               if (folder !== undefined) {
-                const result = await this.fetchCodeZip(msg.data.appUrl);
-                if (result !== undefined) {
-                  await this.saveFilesRecursively(new AdmZip(result.data), msg.data.appFolder, folder[0].fsPath);
-
-                  vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(path.join(folder[0].fsPath, msg.data.appFolder)));
-                } else {
-                  vscode.window.showErrorMessage("Failed to clone sample app");
+                const dialogManager = DialogManager.getInstance();
+                const progress = dialogManager.createProgressBar("Fetch sample app", 2);
+                progress.start();
+                try{
+                  progress.next(`Downloading from '${msg.data.appUrl}'`);
+                  const result = await this.fetchCodeZip(msg.data.appUrl);
+                  progress.next("Unzipping the sample package");
+                  if (result !== undefined) {
+                    await this.saveFilesRecursively(new AdmZip(result.data), msg.data.appFolder, folder[0].fsPath);
+                    vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(path.join(folder[0].fsPath, msg.data.appFolder)));
+                  }
+                  else {
+                    vscode.window.showErrorMessage("Failed to clone sample app");
+                  }
+                }
+                finally{
+                  progress.end();
                 }
               }
             }
@@ -204,7 +215,7 @@ export class WebviewPanel {
     const scriptPathOnDisk = vscode.Uri.file(path.join(this.extensionPath, "out/src", "client.js"));
     const scriptUri = scriptPathOnDisk.with({ scheme: "vscode-resource" });
 
-    // Use a nonce to whitelist which scripts can be run
+    // Use a nonce to to only allow specific scripts to be run
     const nonce = this.getNonce();
 
     return `<!DOCTYPE html>

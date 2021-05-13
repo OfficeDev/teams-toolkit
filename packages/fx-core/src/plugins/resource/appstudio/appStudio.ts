@@ -89,7 +89,7 @@ export namespace AppStudioClient {
                     throw AppStudioResultFactory.SystemError(
                         AppStudioError.TeamsAppPublishFailedError.name,
                         AppStudioError.TeamsAppPublishFailedError.message(teamsAppId),
-                        response.data.error.message
+                        `code: ${response.data.error.code}, message: ${response.data.error.message}`
                     );
                 } else {
                     return response.data.id;

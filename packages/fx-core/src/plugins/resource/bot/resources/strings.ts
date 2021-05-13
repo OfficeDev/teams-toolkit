@@ -52,7 +52,8 @@ export class PluginSql {
 
 export class PluginIdentity {
     public static readonly PLUGIN_NAME = "fx-resource-identity";
-    public static readonly IDENTITY_ID = "identity";
+    public static readonly IDENTITY_ID = "identityId";
+    public static readonly IDENTITY_NAME = "identityName";
 }
 
 export class PluginFunction {

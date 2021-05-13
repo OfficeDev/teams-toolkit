@@ -42,7 +42,7 @@ const NodeJSCommonStrategy: FunctionLanguageStrategy = {
 const JavaScriptLanguageStrategy: FunctionLanguageStrategy = {
     ...NodeJSCommonStrategy,
     buildCommands: [{
-        command: Commands.npmInstall,
+        command: Commands.npmInstallProd,
         relativePath: CommonConstants.emptyString
     }]
 };

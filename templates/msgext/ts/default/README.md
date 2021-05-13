@@ -54,14 +54,24 @@ Once deployed, you may want to submit your application to your organization's in
 * From TeamsFx CLI: run command `teamsfx publish` in your project directory.
 
 ## Use the App
-Once the message extension is published to Teams (or in local preview mode), you should see the app running like this:
+Once the message extension is published to Teams (or in local preview mode), you can start playing around with it. The template provides some simple functionalities: 
+* You can search `npm` packages.
+* You can create and send an adaptive card.
+![CreateCard](./images/AdaptiveCard.png)
+* You can share a message in an adaptive card form.
+![ShareMessage](./images/ShareMessage.png)
+* You can paste a link with monitored domain (`.botframwork.com` is monitored in this template) and a card will be rendered.
+![ComposeArea](./images/LinkUnfurlingImage.png)
 
-![ME gif](./images/ME.gif)
-
-What you will learn in this hello world sample:
-* What is search command in message extension and how to use it.
-* What is action command in message extension and how to use it.
-* What is link unfurling in message extension and how to use it.
+To trigger these functionalities, there are multiple entry points:
+* `@mention` Your messaging extension, from the `search box area`.
+![AtBotFromSearch](./images/AtBotFromSearch.png)
+* `@mention` your messaging extension from the `compose message area`.
+![AtBotFromMessage](./images/AtBotInMessage.png)
+* Click the `...` under compose message area, find your messaging extension.
+![ComposeArea](./images/ThreeDot.png)
+* Click the `...` next to any messages you received or sent.
+![ComposeArea](./images/ThreeDotOnMessage.png)
  
 ## Further reading
 

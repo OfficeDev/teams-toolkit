@@ -3,7 +3,8 @@ name: SDK API docs
 on:
   push:
     branches:
-      - nintan/sdk-doc-update
+      - main
+      - release/**
 
 jobs:
   generate:

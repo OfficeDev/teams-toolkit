@@ -42,7 +42,8 @@ import {
     Json,
     Dict,
     ProjectSettings,
-    MsgLevel,
+    SubscriptionInfo,
+    MsgLevel
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import * as error from "./error";
@@ -466,8 +467,16 @@ class CoreImpl implements Core {
                 });
 
                 const azureToken = await this.ctx.azureAccountProvider?.getAccountCredentialAsync();
-                const subscriptions: AzureSubscription[] = await getSubscriptionList(azureToken!);
-                const subscriptionNames: string[] = subscriptions.map((subscription) => subscription.displayName);
+                // const subscriptions: AzureSubscription[] = await getSubscriptionList(azureToken!);
+                const subscriptions: SubscriptionInfo[] | undefined = await this.ctx.azureAccountProvider?.listSubscriptions();
+                if (!subscriptions) {
+                    return err(returnSystemError(
+                        new Error("No subscription was found"),
+                        error.CoreSource,
+                        error.CoreErrorNames.InvalidContext
+                    ))
+                }
+                const subscriptionNames: string[] = subscriptions.map((subscription) => subscription.subscriptionName);
                 const subscriptionName = (
                     await this.ctx.dialog?.communicate(
                         new DialogMsg(DialogType.Ask, {
@@ -478,19 +487,20 @@ class CoreImpl implements Core {
                     )
                 )?.getAnswer();
                 if (subscriptionName === undefined || subscriptionName == "unknown") {
-                    return err({
-                        name: "emptySubscription",
-                        message: "No subscription selected",
-                        source: __filename,
-                        timestamp: new Date(),
-                    });
+                    return err(returnUserError(
+                        new Error("No subscription selected"),
+                        error.CoreSource,
+                        error.CoreErrorNames.NoSubscriptionSelected
+                    ))
                 }
 
-                const subscription = subscriptions.find((subscription) => subscription.displayName === subscriptionName);
+                const subscription = subscriptions.find((subscription) => subscription.subscriptionName === subscriptionName);
 
                 if(subscription){
                     await this.readConfigs();
                     this.configs.get(this.env!)!.get("solution")!.set("subscriptionId", subscription.subscriptionId);
+                    this.configs.get(this.env!)!.get("solution")!.set("tenantId", subscription.tenantId);
+                    await this.ctx.azureAccountProvider?.setSubscription(subscription.subscriptionId);
                     this.writeConfigs();
                     this.ctx.treeProvider?.refresh([
                         {

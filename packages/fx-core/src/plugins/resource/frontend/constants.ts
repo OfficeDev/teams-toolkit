@@ -31,7 +31,7 @@ export class FrontendPluginInfo {
     static PluginName = "fx-resource-frontend-hosting";
     static DisplayName = "Tab Frontend";
     static ShortName = "FE";
-    static IssueLink = ""; // TODO: default issue link
+    static IssueLink = "https://github.com/OfficeDev/TeamsFx/issues/new";
     static HelpLink = ""; // TODO: default help link
     static readonly templateManifestURL =
         "https://github.com/henzhang-ms/Teams-Templates/releases/latest/download/manifest.json";
@@ -126,4 +126,10 @@ export class TelemetryValue {
     static readonly Fail = "no";
     static readonly UserError = "user";
     static readonly SystemError = "system";
+}
+
+export class AzureErrorCode {
+    static readonly ReservedResourceName = "ReservedResourceName";
+    static readonly StorageAccountAlreadyTaken = "StorageAccountAlreadyTaken";
+    static readonly StorageAccountAlreadyExists = "StorageAccountAlreadyExists";
 }

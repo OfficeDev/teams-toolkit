@@ -15,14 +15,19 @@ const tips = {
     reScaffold: `Run 'Start A New Project' again.`,
     doProvision: `Run 'Provision Resource' before this command.`,
     doLogin: "Login to Azure.",
+    reLogin: "Sign out and login to Azure again.",
     reProvision: `Run 'Provision Resource' again.`,
-    doBuild: `Run 'npm install' and 'npm run build' in the folder: '${FrontendPathInfo.WorkingDir}'.`,
+    doNpmInstall: `Run 'npm install' in the folder: '${FrontendPathInfo.WorkingDir}'.`,
+    doBuild: `Run 'npm run build' in the folder: '${FrontendPathInfo.WorkingDir}'.`,
     ensureBuildPath: `Ensure your built project exists: '${FrontendPathInfo.BuildPath}'.`,
+    ensureResourceGroup: "Ensure your resource group exists.",
     ensureAppNameValid:
         "Ensure your app name only contains alphabetical and numeric characters, and does not contain trademark or reserved words.",
+    deleteSameNameStorage: "Delete your Azure Storage Account with same name in another resource group or subscription.",
     checkNetwork: "Check your network connection.",
     checkFsPermissions: "Check if you have Read/Write permissions to your file system.",
     checkStoragePermissions: "Check if you have permissions to your Azure Storage Account.",
+    checkSystemTime: "You may get expired credentials, check if your system time is correct.",
     restoreEnvironment: "Restore the 'env.default.json' file if you modified it.",
 };
 
@@ -37,7 +42,7 @@ export class FrontendPluginError extends Error {
         super(message);
         this.code = code;
         this.message = message;
-        this.suggestions = suggestions.concat(tips.checkLog);
+        this.suggestions = suggestions;
         this.errorType = errorType;
     }
 
@@ -54,27 +59,39 @@ export class FrontendPluginError extends Error {
     }
 }
 
-export class NotScaffoldError extends FrontendPluginError {
-    constructor() {
-        super(ErrorType.User, "NotScaffoldError", "Scaffold has not completed successfully.", [tips.reScaffold]);
-    }
-}
-
 export class UnauthenticatedError extends FrontendPluginError {
     constructor() {
         super(ErrorType.User, "UnauthenticatedError", "Failed to get user login information.", [tips.doLogin]);
     }
 }
 
-export class NotProvisionError extends FrontendPluginError {
+export class NoPreStepError extends FrontendPluginError {
     constructor() {
-        super(ErrorType.User, "NotProvisionError", "Provision has not completed successfully.", [tips.doProvision]);
+        super(ErrorType.System, "NoPreStepError", "The pre-step is not done.", [tips.checkLog]);
+    }
+}
+
+export class InvalidConfigError extends FrontendPluginError {
+    constructor(key: string) {
+        super(ErrorType.User, "InvalidConfigError", `Get invalid ${key}.`, [tips.restoreEnvironment]);
+    }
+}
+
+export class CheckResourceGroupError extends FrontendPluginError {
+    constructor() {
+        super(ErrorType.User, "CheckResourceGroupError", "Failed to check resource group existence.", [tips.reLogin]);
     }
 }
 
 export class NoResourceGroupError extends FrontendPluginError {
     constructor() {
-        super(ErrorType.User, "NoResourceGroupError", "Failed to find resource group.", [tips.reProvision]);
+        super(ErrorType.User, "NoResourceGroupError", "Failed to find resource group.", [tips.ensureResourceGroup]);
+    }
+}
+
+export class CheckStorageError extends FrontendPluginError {
+    constructor() {
+        super(ErrorType.User, "CheckStorageError", "Failed to check Azure Storage Account availability.", [tips.reLogin, tips.checkSystemTime]);
     }
 }
 
@@ -97,18 +114,19 @@ export class StaticWebsiteDisabledError extends FrontendPluginError {
 
 export class InvalidStorageNameError extends FrontendPluginError {
     constructor() {
-        super(ErrorType.User, "InvalidStorageNameError", "Azure Storage Name is invalid.", [
-            tips.ensureAppNameValid,
-        ]);
+        super(ErrorType.User, "InvalidStorageNameError", "Azure Storage Name is invalid.", [tips.ensureAppNameValid,]);
+    }
+}
+
+export class StorageAccountAlreadyTakenError extends FrontendPluginError {
+    constructor() {
+        super(ErrorType.User, "StorageAccountAlreadyTakenError", "Azure Storage Name is already in use.", [tips.deleteSameNameStorage]);
     }
 }
 
 export class CreateStorageAccountError extends FrontendPluginError {
     constructor() {
-        super(ErrorType.System, "CreateStorageAccountError", "Failed to create Azure Storage Account.", [
-            tips.ensureAppNameValid,
-            tips.checkNetwork,
-        ]);
+        super(ErrorType.User, "CreateStorageAccountError", "Failed to create Azure Storage Account.", [tips.checkLog]);
     }
 }
 
@@ -118,14 +136,14 @@ export class EnableStaticWebsiteError extends FrontendPluginError {
             ErrorType.System,
             "EnableStaticWebsiteError",
             "Failed to enable static website feature for Azure Storage Account.",
-            [tips.checkStoragePermissions, tips.checkNetwork],
+            [tips.checkSystemTime, tips.checkStoragePermissions],
         );
     }
 }
 
 export class ClearStorageError extends FrontendPluginError {
     constructor() {
-        super(ErrorType.System, "ClearStorageError", "Failed to clear Azure Storage Account.", [tips.checkNetwork]);
+        super(ErrorType.System, "ClearStorageError", "Failed to clear Azure Storage Account.", [tips.checkSystemTime, tips.checkNetwork]);
     }
 }
 
@@ -138,7 +156,7 @@ export class UploadToStorageError extends FrontendPluginError {
                 FrontendPathInfo.WorkingDir,
                 FrontendPathInfo.BuildPath,
             )} to Azure Storage Account.`,
-            [tips.checkNetwork],
+            [tips.checkSystemTime, tips.checkNetwork],
         );
     }
 }
@@ -149,14 +167,14 @@ export class GetContainerError extends FrontendPluginError {
             ErrorType.System,
             "GetContainerError",
             `Failed to get container '${Constants.AzureStorageWebContainer}' from Azure Storage Account.`,
-            [tips.checkStoragePermissions, tips.checkNetwork],
+            [tips.checkSystemTime, tips.checkStoragePermissions, tips.checkNetwork],
         );
     }
 }
 
 export class FetchTemplateManifestError extends FrontendPluginError {
     constructor() {
-        super(ErrorType.System, "FetchTemplateManifestError", "Failed to fetch manifest.", [
+        super(ErrorType.System, "FetchTemplateManifestError", "Failed to fetch template manifest.", [
             tips.checkNetwork,
         ]);
     }
@@ -176,7 +194,7 @@ export class FetchTemplatePackageError extends FrontendPluginError {
 
 export class GetTemplateError extends FrontendPluginError {
     constructor() {
-        super(ErrorType.User, "GetTemplateError", "Failed to fetch template.", [
+        super(ErrorType.System, "GetTemplateError", "Failed to fetch template.", [
             tips.checkNetwork,
             tips.checkFsPermissions,
         ]);
@@ -191,11 +209,17 @@ export class UnzipTemplateError extends FrontendPluginError {
     }
 }
 
+export class NoBuildPathError extends FrontendPluginError {
+    constructor() {
+        super(ErrorType.User, "NoBuildPathError", `Failed to find 'build' folder.`, [tips.doBuild, tips.ensureBuildPath]);
+    }
+}
+
 export class BuildError extends FrontendPluginError {
     constructor() {
         super(ErrorType.User, "BuildError", "Failed to build Tab app.", [
             tips.doBuild,
-            tips.ensureBuildPath,
+            tips.checkLog,
         ]);
     }
 }
@@ -203,15 +227,9 @@ export class BuildError extends FrontendPluginError {
 export class NpmInstallError extends FrontendPluginError {
     constructor() {
         super(ErrorType.User, "NpmInstallError", `Failed to run 'npm install' for Tab app.`, [
-            tips.doBuild,
-            tips.checkNetwork,
+            tips.doNpmInstall,
+            tips.checkLog,
         ]);
-    }
-}
-
-export class InvalidTabScopeError extends FrontendPluginError {
-    constructor() {
-        super(ErrorType.User, "InvalidTabScopeError", "The Tab scope is invalid.", [tips.restoreEnvironment, tips.reScaffold]);
     }
 }
 
@@ -230,6 +248,18 @@ export async function runWithErrorCatchAndThrow<T>(error: FrontendPluginError, f
         return res;
     } catch (e) {
         Logger.error(e.toString());
+        error.setInnerError(e);
+        throw error;
+    }
+}
+
+export async function runWithErrorCatchAndWrap<T>(wrap: (error: any) => FrontendPluginError, fn: () => T | Promise<T>): Promise<T> {
+    try {
+        const res = await Promise.resolve(fn());
+        return res;
+    } catch (e) {
+        Logger.error(e.toString());
+        const error = wrap(e);
         error.setInnerError(e);
         throw error;
     }

@@ -11,6 +11,7 @@ import { DependentPluginInfo } from "../../../../src/plugins/resource/frontend/c
 import { FrontendConfig } from "../../../../src/plugins/resource/frontend/configs";
 import { FrontendPlugin } from "../../../../src/plugins/resource/frontend";
 import * as templates from "../../../../src/common/templates";
+import { StorageAccountsCreateResponse } from "@azure/arm-storage/esm/models";
 
 export class TestHelper {
     static appName = "app-test";
@@ -32,6 +33,12 @@ export class TestHelper {
     static fakeSubscriptionId: string = faker.datatype.uuid();
     static tabLanguage = "javascript";
     static fakeClientId: string = faker.datatype.uuid();
+
+    static storageAccount = {
+        primaryEndpoints: {
+            web: TestHelper.storageEndpoint,
+        },
+    } as StorageAccountsCreateResponse;
 
     static fakeAzureAccountProvider: AzureAccountProvider = {
         getAccountCredential: () => {

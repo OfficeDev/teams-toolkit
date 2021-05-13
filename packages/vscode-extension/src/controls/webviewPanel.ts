@@ -110,7 +110,7 @@ export class WebviewPanel {
             await AppStudioTokenInstance.getJsonObject(false);
             break;
           case Commands.SigninAzure:
-            await AzureAccountManager.getAccountCredentialAsync(false);
+            vscode.commands.executeCommand("fx-extension.signinAzure", ["webview", false]);
             break;
           case Commands.CreateNewProject:
             await runCommand(Stage.create);

@@ -439,6 +439,10 @@ class CoreImpl implements Core {
                     if(subscriptions.length === 0){
                         contextValue = "emptySubscription";
                     }
+
+                    if(subscriptions.length ===1){
+                        this.setSubscription(subscriptions[0]);
+                    }
                 } else {
                     selectSubLabel = activeSubscription.displayName;
                     icon = "subcriptionSelected";
@@ -450,7 +454,7 @@ class CoreImpl implements Core {
                     parent: "fx-extension.signinAzure",
                     contextValue: valid? contextValue: "invalidFxProject",
                     icon: icon
-                }, !(activeSubscriptionId === undefined || activeSubscription === undefined)]);
+                }, !(activeSubscriptionId === undefined || activeSubscription === undefined) || subscriptions.length ===1]);
             };
 
             const selectSubscriptionCallback = async (args?: any[]): Promise<Result<null, FxError>> => {
@@ -481,21 +485,7 @@ class CoreImpl implements Core {
 
                 const subscription = subscriptions.find((subscription) => subscription.displayName === subscriptionName);
 
-                if(subscription){
-                    await this.readConfigs();
-                    this.configs.get(this.env!)!.get("solution")!.set("subscriptionId", subscription.subscriptionId);
-                    this.writeConfigs();
-                    this.ctx.treeProvider?.refresh([
-                        {
-                            commandId: "fx-extension.selectSubscription",
-                            label: subscriptionName,
-                            callback: () => { return Promise.resolve(ok(null)); },
-                            parent: "fx-extension.signinAzure",
-                            contextValue: "selectSubscription",
-                            icon: "subscriptionSelected"
-                        },
-                    ]);
-                }
+                this.setSubscription(subscription);
 
                 return ok(null);
             };
@@ -524,11 +514,12 @@ class CoreImpl implements Core {
 
             const signinAzureCallback = async (validFxProject: boolean, args?: any[]): Promise<Result<null, FxError>> => {
                 this.ctx?.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.LoginStart, {
-                    [TelemetryProperty.TriggerFrom]: args && args.toString() === "TreeView" ? TelemetryTiggerFrom.TreeView : TelemetryTiggerFrom.CommandPalette,
+                    [TelemetryProperty.TriggerFrom]: args && args[0].toString() === "TreeView" ? TelemetryTiggerFrom.TreeView : TelemetryTiggerFrom.CommandPalette,
                     [TelemetryProperty.AccountType]: AccountType.Azure
                 });
                 
-                const token = await this.ctx.azureAccountProvider?.getAccountCredentialAsync(true);
+                const showDialog = args && args[1] !== undefined? args[1]: true;
+                const token = await this.ctx.azureAccountProvider?.getAccountCredentialAsync(showDialog);
                 if (token !== undefined) {
                     this.ctx.treeProvider?.refresh([
                         {
@@ -542,6 +533,10 @@ class CoreImpl implements Core {
 
                     const subItem = await getSelectSubItem!(token, validFxProject);
                     this.ctx.treeProvider?.add([subItem[0]]);
+
+                    if (validFxProject && !subItem[1]) {
+                        await selectSubscriptionCallback();
+                    }
                 }
 
                 return ok(null);
@@ -601,10 +596,6 @@ class CoreImpl implements Core {
                             ]);
                             const subItem = await getSelectSubItem!(token, supported);
                             this.ctx.treeProvider?.add([subItem[0]]);
-
-                            if (supported && !subItem[1]) {
-                                await selectSubscriptionCallback();
-                            }
                         }
                     } else if (status === "SigningIn"){
                         this.ctx.treeProvider?.refresh([
@@ -688,6 +679,24 @@ class CoreImpl implements Core {
         const t4 = new Date().getTime();
         //this.ctx.logProvider?.debug(`core.open() time  ----- t2-t1:${t2-t1}, t3-t2:${t3-t2}, t4-t3:${t4-t3}`);
         return res;
+    }
+
+    private async setSubscription(subscription: AzureSubscription|undefined){
+        if (subscription) {
+            await this.readConfigs();
+            this.configs.get(this.env!)!.get("solution")!.set("subscriptionId", subscription.subscriptionId);
+            this.writeConfigs();
+            this.ctx.treeProvider?.refresh([
+                {
+                    commandId: "fx-extension.selectSubscription",
+                    label: subscription.displayName,
+                    callback: () => { return Promise.resolve(ok(null)); },
+                    parent: "fx-extension.signinAzure",
+                    contextValue: "selectSubscription",
+                    icon: "subscriptionSelected"
+                },
+            ]);
+        }
     }
 
     public async isSupported(workspace?: string): Promise<boolean> {

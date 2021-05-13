@@ -3,6 +3,7 @@
 
 "use strict";
 
+import colors from "colors";
 import { TokenCredential } from "@azure/core-auth";
 import { TokenCredentialsBase, DeviceTokenCredentials } from "@azure/ms-rest-nodeauth";
 import { AzureAccountProvider, ConfigFolderName, err, FxError, ok, Result } from "@microsoft/teamsfx-api";
@@ -115,44 +116,51 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   /**
    * Async get ms-rest-* [credential](https://github.com/Azure/ms-rest-nodeauth/blob/master/lib/credentials/tokenCredentialsBase.ts)
    */
-  async getAccountCredentialAsync(showDialog = true): Promise<TokenCredentialsBase | undefined> {
-    if (AzureAccountManager.codeFlowInstance.account) {
-      const loginToken = await AzureAccountManager.codeFlowInstance.getToken();
-      const tokenJson = await this.getJsonObject();
-      this.setMemoryCache(loginToken, tokenJson);
+  async getAccountCredentialAsync(showDialog = true, tenantId = ""): Promise<TokenCredentialsBase | undefined> {
+    if (tenantId.length==0) {
+      if (AzureAccountManager.codeFlowInstance.account) {
+        const loginToken = await AzureAccountManager.codeFlowInstance.getToken();
+        const tokenJson = await this.getJsonObject();
+        this.setMemoryCache(loginToken, tokenJson);
+      }
+      if (AzureAccountManager.codeFlowInstance.account) {
+        return new Promise(async (resolve) => {
+          if (!AzureAccountManager.tenantId || AzureAccountManager.tenantId===AzureAccountManager.domain) {
+            const tokenJson = await this.getJsonObject();
+            const credential = new DeviceTokenCredentials(
+              config.auth.clientId,
+              (tokenJson as any).tid,
+              (tokenJson as any).upn ?? (tokenJson as any).unique_name,
+              undefined,
+              env,
+              memoryDictionary[AzureAccountManager.domain!]
+            );
+            resolve(credential);
+          } else {
+            const token = await AzureAccountManager.codeFlowInstance.getTenantToken(AzureAccountManager.tenantId);
+            const tokenJson = ConvertTokenToJson(token!);
+            this.setMemoryCache(token, tokenJson);
+            const credential = new DeviceTokenCredentials(
+              config.auth.clientId,
+              (tokenJson as any).tid,
+              (tokenJson as any).upn ?? (tokenJson as any).unique_name,
+              undefined,
+              env,
+              memoryDictionary[AzureAccountManager.tenantId]
+            );
+            resolve(credential);
+          }
+        });
+      }
+      await this.login(showDialog);
+      await this.updateLoginStatus();
+      return this.doGetAccountCredentialAsync();
+    } else {
+      AzureAccountManager.tenantId = tenantId;
+      await this.login(showDialog, tenantId);
+      await this.updateLoginStatus();
+      return this.doGetAccountCredentialAsync();
     }
-    if (AzureAccountManager.codeFlowInstance.account) {
-      return new Promise(async (resolve) => {
-        if (!AzureAccountManager.tenantId || AzureAccountManager.tenantId===AzureAccountManager.domain) {
-          const tokenJson = await this.getJsonObject();
-          const credential = new DeviceTokenCredentials(
-            config.auth.clientId,
-            (tokenJson as any).tid,
-            (tokenJson as any).upn ?? (tokenJson as any).unique_name,
-            undefined,
-            env,
-            memoryDictionary[AzureAccountManager.domain!]
-          );
-          resolve(credential);
-        } else {
-          const token = await AzureAccountManager.codeFlowInstance.getTenantToken(AzureAccountManager.tenantId);
-          const tokenJson = ConvertTokenToJson(token!);
-          this.setMemoryCache(token, tokenJson);
-          const credential = new DeviceTokenCredentials(
-            config.auth.clientId,
-            (tokenJson as any).tid,
-            (tokenJson as any).upn ?? (tokenJson as any).unique_name,
-            undefined,
-            env,
-            memoryDictionary[AzureAccountManager.tenantId]
-          );
-          resolve(credential);
-        }
-      });
-    }
-    await this.login(showDialog);
-    await this.updateLoginStatus();
-    return this.doGetAccountCredentialAsync();
   }
 
   /**
@@ -175,8 +183,8 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     await this.notifyStatus();
   }
 
-  private async login(showDialog: boolean): Promise<void> {
-    const accessToken = await AzureAccountManager.codeFlowInstance.getToken();
+  private async login(showDialog: boolean, tenantId?: string): Promise<void> {
+    const accessToken = await AzureAccountManager.codeFlowInstance.getToken(tenantId);
     const tokenJson = await this.getJsonObject();
     this.setMemoryCache(accessToken, tokenJson);
   }
@@ -301,10 +309,39 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     const credential = await this.getAccountCredentialAsync();
     const arr: SubscriptionInfo[] = [];
     if (credential) {
-      const subscriptionClient = new SubscriptionClient(credential);
-      const tenants = await listAll(subscriptionClient.tenants, subscriptionClient.tenants.list());
-      for (let i=0;i<tenants.length;++i) {
-        const token = await AzureAccountManager.codeFlowInstance.getTenantToken(tenants[i].tenantId!);
+      if (!AzureAccountManager.tenantId) {
+        const subscriptionClient = new SubscriptionClient(credential);
+        const tenants = await listAll(subscriptionClient.tenants, subscriptionClient.tenants.list());
+        for (let i=0;i<tenants.length;++i) {
+          const token = await AzureAccountManager.codeFlowInstance.getTenantToken(tenants[i].tenantId!);
+          if (token) {
+            const tokenJson = ConvertTokenToJson(token!);
+            this.setMemoryCache(token, tokenJson);
+            const tenantCredential = new DeviceTokenCredentials(
+              config.auth.clientId,
+              (tokenJson as any).tid,
+              (tokenJson as any).upn ?? (tokenJson as any).unique_name,
+              undefined,
+              env,
+              memoryDictionary[(tokenJson as any).tid]
+            );
+            const tenantClient = new SubscriptionClient(tenantCredential);
+            const subscriptions = await listAll(tenantClient.subscriptions, tenantClient.subscriptions.list());
+            for(let j=0;j<subscriptions.length;++j) {
+              const item = subscriptions[j];
+              arr.push({
+                subscriptionId: item.subscriptionId!,
+                subscriptionName: item.displayName!,
+                tenantId: tenants[i].tenantId!
+              });
+            }
+          } else {
+            console.log(colors.green(tenants[i].tenantId!));
+          }
+        }
+        AzureAccountManager.codeFlowInstance.showMFA = true;
+      } else {
+        const token = await AzureAccountManager.codeFlowInstance.getTenantToken(AzureAccountManager.tenantId);
         const tokenJson = ConvertTokenToJson(token!);
         this.setMemoryCache(token, tokenJson);
         const tenantCredential = new DeviceTokenCredentials(
@@ -322,7 +359,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
           arr.push({
             subscriptionId: item.subscriptionId!,
             subscriptionName: item.displayName!,
-            tenantId: tenants[i].tenantId!
+            tenantId: AzureAccountManager.tenantId
           });
         }
       }

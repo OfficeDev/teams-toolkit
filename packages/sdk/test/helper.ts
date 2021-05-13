@@ -11,7 +11,7 @@ import { chromium, ChromiumBrowser, Page } from "playwright-chromium";
 import {
   TEST_USER_NAME,
   TEST_USER_PASSWORD,
-  TEST_SUBSCRIPTION_ID
+  TEST_SUBSCRIPTION_ID,
 } from "../../api/src/ci/conf/secrets";
 import urljoin from "url-join";
 import { JwtPayload } from "jwt-decode";
@@ -139,7 +139,7 @@ async function loginTestUser(): Promise<void> {
     passwordOption2: `span#FormsAuthentication`,
     password: `input[name=Password]`,
     submit: `input[type=submit]`,
-    title: `h2[title="Join or create a team"]`
+    title: `h2[title="Join or create a team"]`,
   };
 
   const context = await browser.newContext();
@@ -168,7 +168,7 @@ async function callCli(command: string): Promise<boolean> {
   const result = await execAsync(command, {
     cwd: process.cwd(),
     env: process.env,
-    timeout: 0
+    timeout: 0,
   });
   return result.stderr === "";
 }
@@ -192,8 +192,8 @@ export async function getAccessToken(
   const msalConfig = {
     auth: {
       clientId: clientId,
-      authority: urljoin(defaultAuthorityHost!, tenantId!)
-    }
+      authority: urljoin(defaultAuthorityHost!, tenantId!),
+    },
   };
   let scopes: string[];
   // this scope is required.
@@ -207,7 +207,7 @@ export async function getAccessToken(
   const usernamePasswordRequest = {
     scopes: scopes,
     username: userName,
-    password: password
+    password: password,
   };
   const response = await pca.acquireTokenByUsernamePassword(usernamePasswordRequest);
   return response!.accessToken;
@@ -269,7 +269,7 @@ export function MockEnvironmentVariable(): () => void {
     SQL_PASSWORD: process.env.SDK_INTEGRATION_SQL_PASSWORD,
 
     INITIATE_LOGIN_ENDPOINT: "fake_initiate_login_endpoint",
-    M365_APPLICATION_ID_URI: process.env.SDK_INTEGRATION_TEST_M365_APPLICATION_ID_URI
+    M365_APPLICATION_ID_URI: process.env.SDK_INTEGRATION_TEST_M365_APPLICATION_ID_URI,
   });
 }
 

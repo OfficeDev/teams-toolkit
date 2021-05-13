@@ -64,7 +64,7 @@ export function createMicrosoftGraphClient(
   internalLogger.info("Create Microsoft Graph Client");
   const authProvider = new MsGraphAuthProvider(credential, scopes);
   const graphClient = Client.initWithMiddleware({
-    authProvider
+    authProvider,
   });
 
   return graphClient;

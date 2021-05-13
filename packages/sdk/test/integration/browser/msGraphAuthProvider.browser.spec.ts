@@ -15,27 +15,27 @@ const env = (window as any).__env__;
 describe("MsGraphAuthProvider Tests - Browser", () => {
   let ssoToken: SSOToken;
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     ssoToken = await getSSOToken();
 
     // mock getting sso token.
-    sinon.stub(TeamsUserCredential.prototype, <any>"getSSOToken").callsFake(
-      (): Promise<AccessToken | null> => {
+    sinon
+      .stub(TeamsUserCredential.prototype, <any>"getSSOToken")
+      .callsFake((): Promise<AccessToken | null> => {
         return new Promise((resolve) => {
           resolve({
             token: ssoToken.token!,
-            expiresOnTimestamp: ssoToken.expire_time!
+            expiresOnTimestamp: ssoToken.expire_time!,
           });
         });
-      }
-    );
+      });
 
     loadConfiguration({
       authentication: {
         initiateLoginEndpoint: "fake_login_url",
         simpleAuthEndpoint: "http://localhost:5000",
-        clientId: env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID
-      }
+        clientId: env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
+      },
     });
   });
 
@@ -43,7 +43,7 @@ describe("MsGraphAuthProvider Tests - Browser", () => {
     sinon.restore();
   });
 
-  it("getAccessToken with user.read scopes should get valid access token", async function() {
+  it("getAccessToken with user.read scopes should get valid access token", async function () {
     const scopes = "User.Read";
     const credential = new TeamsUserCredential();
     const authProvider: MsGraphAuthProvider = new MsGraphAuthProvider(credential, scopes);
@@ -57,7 +57,7 @@ describe("MsGraphAuthProvider Tests - Browser", () => {
     assert.isTrue(decodedToken.scp!.indexOf(scopes) >= 0);
   });
 
-  it("getAccessToken without scopes should get access token with default scope", async function() {
+  it("getAccessToken without scopes should get access token with default scope", async function () {
     const credential = new TeamsUserCredential();
     const authProvider: MsGraphAuthProvider = new MsGraphAuthProvider(credential);
     const accessToken = await authProvider.getAccessToken();

@@ -83,17 +83,8 @@ export function getTeamsAppId() {
   return undefined;
 }
 
-export async function checkFileExist(filePath: string): Promise<boolean> {
-  try {
-      await fs.stat(filePath);
-      return true;
-  } catch (error) {
-      return false;
-  }
-}
-
 export async function isSPFxProject(workspacePath: string): Promise<boolean> {
-  if (await checkFileExist(`${workspacePath}/SPFx`)) {
+  if (await fs.pathExists(`${workspacePath}/SPFx`)) {
     return true;
   }
   return false;

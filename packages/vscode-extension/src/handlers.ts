@@ -51,7 +51,7 @@ import { ExtensionErrors, ExtensionSource } from "./error";
 import { WebviewPanel } from "./controls/webviewPanel";
 import * as constants from "./debug/constants";
 import logger from "./commonlib/log";
-import { isFeatureFlag, isSPFxProject } from "./utils/commonUtils";
+import { isSPFxProject } from "./utils/commonUtils";
 import * as path from "path";
 import * as fs from "fs-extra";
 import * as vscode from "vscode";

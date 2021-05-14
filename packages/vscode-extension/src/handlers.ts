@@ -623,6 +623,18 @@ export async function preDebugCheckHandler(): Promise<void> {
     // ignore telemetry error
   }
 
+  let result: Result<any, FxError> = ok(null);
+  result = await runCommand(Stage.debug);
+  if (result.isErr()) {
+    try {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPreCheck, result.error);
+    } finally {
+      // ignore telemetry error
+      terminateAllRunningTeamsfxTasks();
+      throw result.error;
+    }
+  }
+
   const portsInUse = await commonUtils.getPortsInUse();
   if (portsInUse.length > 0) {
     let message: string;
@@ -642,18 +654,6 @@ export async function preDebugCheckHandler(): Promise<void> {
       window.showErrorMessage(message);
       terminateAllRunningTeamsfxTasks();
       throw error;
-    }
-  }
-
-  let result: Result<any, FxError> = ok(null);
-  result = await runCommand(Stage.debug);
-  if (result.isErr()) {
-    try {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPreCheck, result.error);
-    } finally {
-      // ignore telemetry error
-      terminateAllRunningTeamsfxTasks();
-      throw result.error;
     }
   }
 }

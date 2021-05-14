@@ -3,7 +3,7 @@
 
 import {
     ConfigFolderName, FxError, NodeType, ok, err, Platform, Plugin, PluginContext, QTreeNode, Result, Stage,
-    DialogMsg, DialogType, MsgLevel, QuestionType, SystemError
+    DialogMsg, DialogType, MsgLevel, QuestionType, SystemError, UserError
 } from "@microsoft/teamsfx-api";
 import { AppStudioPluginImpl } from "./plugin";
 import { Constants } from "./constants";
@@ -160,19 +160,18 @@ export class AppStudioPlugin implements Plugin {
             );
             return ok(result.id);
         } catch (error) {
-            if (error instanceof SystemError ) {
+            if (error instanceof SystemError || error instanceof UserError) {
                 if (error.name === AppStudioError.TeamsAppPublishCancelError.name) {
                     return ok(undefined);
                 }
                 const innerError = error.innerError ? `innerError: ${error.innerError}` : "";
-                await ctx.dialog?.communicate(
-                    new DialogMsg(DialogType.Show, {
-                        description: `${error.message} ${innerError}`,
-                        level: MsgLevel.Warning
-                    }),
-                );
+                error.message = `${error.message} ${innerError}`;
+                return err(error);
+            } else {
+                const unhandled = new SystemError(AppStudioError.UnhandledError.name,
+                    AppStudioError.UnhandledError.message, Constants.PLUGIN_NAME, undefined, undefined, error);
+                return err(unhandled);
             }
-            return err(error);
         }
     }
 }

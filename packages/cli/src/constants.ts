@@ -9,6 +9,7 @@ import { NodeType, QTreeNode } from "@microsoft/teamsfx-api";
 
 export const cliSource = "TeamsfxCLI";
 export const cliName = "teamsfx";
+export const cliTelemetryPrefix = "teamsfx-cli";
 
 export const paramFolder = path.resolve(__dirname, "../resource");
 export const newParamPath = path.resolve(paramFolder, "newParam.json");

@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx",
-  "version": "0.1.1-alpha.0",
+  "version": "0.1.1-alpha.1",
   "description": "Microsoft Teams Framework for Node.js and browser.",
   "main": "dist/index.js",
   "module": "dist-esm/src/index.js",
@@ -127,7 +127,6 @@
     "mocked-env": "^1.3.2",
     "nyc": "^15.1.0",
     "playwright-chromium": "^1.10.0",
-    "prettier": "^1.16.4",
     "puppeteer": "^1.11.0",
     "rimraf": "^3.0.0",
     "rollup": "^2.41.0",
@@ -145,7 +144,7 @@
   },
   "lint-staged": {
     "*.{js,jsx,css,ts,tsx}": [
-      "npx eslint --cache --fix"
+      "npx eslint --cache --fix --quiet"
     ],
     "*": [
       "npx prettier --config .prettierrc.js --ignore-unknown --write --ignore-path .prettierignore "

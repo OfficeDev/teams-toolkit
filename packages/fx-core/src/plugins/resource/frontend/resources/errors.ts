@@ -156,7 +156,7 @@ export class CreateStorageAccountError extends FrontendPluginError {
 export class EnableStaticWebsiteError extends FrontendPluginError {
   constructor() {
     super(
-      ErrorType.System,
+      ErrorType.User,
       "EnableStaticWebsiteError",
       "Failed to enable static website feature for Azure Storage Account.",
       [tips.checkSystemTime, tips.checkStoragePermissions]
@@ -166,7 +166,7 @@ export class EnableStaticWebsiteError extends FrontendPluginError {
 
 export class ClearStorageError extends FrontendPluginError {
   constructor() {
-    super(ErrorType.System, "ClearStorageError", "Failed to clear Azure Storage Account.", [
+    super(ErrorType.User, "ClearStorageError", "Failed to clear Azure Storage Account.", [
       tips.checkSystemTime,
       tips.checkNetwork,
     ]);
@@ -176,7 +176,7 @@ export class ClearStorageError extends FrontendPluginError {
 export class UploadToStorageError extends FrontendPluginError {
   constructor() {
     super(
-      ErrorType.System,
+      ErrorType.User,
       "UploadToStorageError",
       `Failed to upload local path ${path.join(
         FrontendPathInfo.WorkingDir,
@@ -190,7 +190,7 @@ export class UploadToStorageError extends FrontendPluginError {
 export class GetContainerError extends FrontendPluginError {
   constructor() {
     super(
-      ErrorType.System,
+      ErrorType.User,
       "GetContainerError",
       `Failed to get container '${Constants.AzureStorageWebContainer}' from Azure Storage Account.`,
       [tips.checkSystemTime, tips.checkStoragePermissions, tips.checkNetwork]

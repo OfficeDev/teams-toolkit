@@ -6,8 +6,9 @@
 import * as chai from "chai";
 import axios from "axios";
 
-import MockAppStudioTokenProvider from "./mockAppStudioTokenProvider";
-import { AppStudioTokenProvider } from "../utils/login";
+import { AppStudioTokenProvider } from "@microsoft/teamsfx-api";
+
+import MockAppStudioTokenProvider from "../../src/commonlib/appStudioLoginUserPassword";
 import { IAADDefinition, IAadObject, IAadObjectLocal } from "./interfaces/IAADDefinition";
 
 const aadPluginName = "fx-resource-aad-app-for-teams";

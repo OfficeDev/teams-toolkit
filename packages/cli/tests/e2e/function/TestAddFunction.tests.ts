@@ -4,7 +4,7 @@
 import fs from "fs-extra";
 import path from "path";
 
-import { AadValidator, FunctionValidator, SimpleAuthValidator } from "@microsoft/teamsfx-api";
+import { AadValidator, FunctionValidator, SimpleAuthValidator } from "../../commonlib";
 
 import {
   execAsync,

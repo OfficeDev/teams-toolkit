@@ -7,7 +7,7 @@ import {
   GetTokenOptions,
   ClientSecretCredential,
   TokenCredentialOptions,
-  AuthenticationError
+  AuthenticationError,
 } from "@azure/identity";
 import { AuthenticationConfiguration } from "../models/configuration";
 import { internalLogger } from "../util/logger";
@@ -49,7 +49,7 @@ export class M365TenantCredential implements TokenCredential {
     const config = this.loadAndValidateConfig();
 
     const tokenCredentialOptions: TokenCredentialOptions = {
-      authorityHost: config.authorityHost
+      authorityHost: config.authorityHost,
     };
 
     this.clientSecretCredential = new ClientSecretCredential(

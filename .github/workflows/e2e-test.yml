@@ -8,6 +8,11 @@ on:
 jobs:
   e2e-tests:
     name: run e2e test on (${{ matrix.os }} node ${{ matrix.node-version }}) with source code
+    env:
+      TEST_USER_NAME: ${{ secrets.TEST_USER_NAME }}
+      TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+      TEST_SUBSCRIPTION_ID: ${{ secrets.TEST_SUBSCRIPTION_ID }}
+      CI_ENABLED: "true"
 
     strategy:
       matrix:
@@ -43,11 +48,14 @@ jobs:
           npm run setup
           npm link
 
-      - name: E2E Test
-        env:
-          TEST_USER_NAME: ${{ secrets.TEST_USER_NAME }}
-          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
-          TEST_SUBSCRIPTION_ID: ${{ secrets.TEST_SUBSCRIPTION_ID }}
-          CI_ENABLED: "true"
+      - name: E2E Test clean
         run: |
-          npx lerna run test:e2e
+          npx lerna run test:e2e:clean
+
+      - name: E2E Test Smoke Cases
+        run: |
+          npx lerna run test:e2e:smoke
+
+      - name: E2E Test Other Cases
+        run: |
+          npx lerna run test:e2e:others

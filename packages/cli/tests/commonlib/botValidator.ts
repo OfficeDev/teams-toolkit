@@ -3,7 +3,8 @@
 
 import axios from "axios";
 import * as chai from "chai";
-import { MockAzureAccountProvider } from "./mockAzureAccountProvider";
+
+import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
 
 const baseUrlAppSettings = (subscriptionId: string, rg: string, name: string) =>
     `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.Web/sites/${name}/config/appsettings/list?api-version=2019-08-01`;
@@ -81,7 +82,7 @@ export class BotValidator {
     public static async validateProvision(botObject: IBotObject) {
         console.log("Start to validate Bot Provision.");
 
-        const tokenProvider: MockAzureAccountProvider = MockAzureAccountProvider.getInstance();
+        const tokenProvider = MockAzureAccountProvider;
         const tokenCredential = await tokenProvider.getAccountCredentialAsync();
         const token = (await tokenCredential?.getToken())?.accessToken;
 

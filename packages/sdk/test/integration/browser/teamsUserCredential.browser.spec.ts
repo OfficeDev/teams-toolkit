@@ -22,25 +22,25 @@ describe("TeamsUserCredential Tests - Browser", () => {
       authentication: {
         initiateLoginEndpoint: FAKE_LOGIN_ENDPOINT,
         simpleAuthEndpoint: "http://localhost:5000",
-        clientId: env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID
-      }
+        clientId: env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
+      },
     });
-    sinon.stub(TeamsUserCredential.prototype, <any>"getSSOToken").callsFake(
-      (): Promise<AccessToken | null> => {
+    sinon
+      .stub(TeamsUserCredential.prototype, <any>"getSSOToken")
+      .callsFake((): Promise<AccessToken | null> => {
         return new Promise((resolve) => {
           resolve({
             token: ssoToken.token!,
-            expiresOnTimestamp: ssoToken.expire_time!
+            expiresOnTimestamp: ssoToken.expire_time!,
           });
         });
-      }
-    );
+      });
   });
   after(() => {
     sinon.restore();
   });
 
-  it("GetUserInfo should success with SSOToken", async function() {
+  it("GetUserInfo should success with SSOToken", async function () {
     const credential: TeamsUserCredential = new TeamsUserCredential();
     const info = await credential.getUserInfo();
     assert.strictEqual(info.preferredUserName, env.SDK_INTEGRATION_TEST_ACCOUNT_NAME);
@@ -48,7 +48,7 @@ describe("TeamsUserCredential Tests - Browser", () => {
     assert.strictEqual(info.objectId, TEST_USER_OBJECT_ID);
   });
 
-  it("GetToken should success with consent scope", async function() {
+  it("GetToken should success with consent scope", async function () {
     const credential: TeamsUserCredential = new TeamsUserCredential();
     // await expect(credential.getToken(["User.Read"])).to.be.eventually.have.property("token");
     const accessToken = await credential.getToken(["User.Read"]);
@@ -57,7 +57,7 @@ describe("TeamsUserCredential Tests - Browser", () => {
     assert.isTrue(decodedToken.scp!.startsWith("User.Read"));
   });
 
-  it("GetToken should throw UiRequiredError with unconsent scope", async function() {
+  it("GetToken should throw UiRequiredError with unconsent scope", async function () {
     const credential: TeamsUserCredential = new TeamsUserCredential();
     await expect(credential.getToken(["Calendars.Read"]))
       .to.eventually.be.rejectedWith(ErrorWithCode)

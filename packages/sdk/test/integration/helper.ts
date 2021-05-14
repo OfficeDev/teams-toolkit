@@ -25,8 +25,8 @@ export async function getAccessToken(
   const msalConfig = {
     auth: {
       clientId: clientId,
-      authority: urljoin(defaultAuthorityHost!, tenantId!)
-    }
+      authority: urljoin(defaultAuthorityHost!, tenantId!),
+    },
   };
   let scopes: string[];
   // this scope is required.
@@ -40,7 +40,7 @@ export async function getAccessToken(
   const usernamePasswordRequest = {
     scopes: scopes,
     username: userName,
-    password: password
+    password: password,
   };
   const response = await pca.acquireTokenByUsernamePassword(usernamePasswordRequest);
   return response!.accessToken;
@@ -96,7 +96,7 @@ export function MockEnvironmentVariable(): () => void {
     SQL_ENDPOINT: process.env.SDK_INTEGRATION_SQL_ENDPOINT,
     SQL_DATABASE: process.env.SDK_INTEGRATION_SQL_DATABASE_NAME,
     SQL_USER_NAME: process.env.SDK_INTEGRATION_SQL_USER_NAME,
-    SQL_PASSWORD: process.env.SDK_INTEGRATION_SQL_PASSWORD
+    SQL_PASSWORD: process.env.SDK_INTEGRATION_SQL_PASSWORD,
   });
 }
 

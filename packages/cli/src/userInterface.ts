@@ -19,7 +19,7 @@ import {
   IProgressStatus,
   IProgressHandler,
   ConfigMap,
-  LogLevel
+  LogLevel,
 } from "@microsoft/teamsfx-api";
 import inquirer from "inquirer";
 import CLILogProvider from "./commonlib/log";
@@ -63,7 +63,7 @@ export class DialogManager implements Dialog {
         this.showMessage(msg.content as IMessage);
         return new DialogMsg(DialogType.Show, {
           description: "Output successfully",
-          level: MsgLevel.Info
+          level: MsgLevel.Info,
         });
       }
       case DialogType.ShowProgress: {
@@ -71,18 +71,18 @@ export class DialogManager implements Dialog {
         if (result.isErr()) {
           return new DialogMsg(DialogType.Show, {
             description: result.error.source,
-            level: MsgLevel.Error
+            level: MsgLevel.Error,
           });
         }
         return new DialogMsg(DialogType.Show, {
           description: "Show Progress Successfully!",
-          level: MsgLevel.Info
+          level: MsgLevel.Info,
         });
       }
       default: {
         return new DialogMsg(DialogType.Show, {
           description: "Wrong dialog Type",
-          level: MsgLevel.Error
+          level: MsgLevel.Error,
         });
       }
     }
@@ -98,10 +98,8 @@ export class DialogManager implements Dialog {
   }
 
   private async showProgress(prog: IProgress): Promise<Result<null, FxError>> {
-    let currentStatus: IteratorResult<
-      IProgressStatus,
-      Result<null, FxError>
-    > = await prog.progressIter.next();
+    let currentStatus: IteratorResult<IProgressStatus, Result<null, FxError>> =
+      await prog.progressIter.next();
     while (!currentStatus.done) {
       currentStatus = await prog.progressIter.next();
     }
@@ -113,7 +111,9 @@ export class DialogManager implements Dialog {
       let sub: string;
       const subscriptions = question.options as string[];
       if (subscriptions.length === 0) {
-        throw new Error("Your Azure account has no active subscriptions. Please switch an Azure account.");
+        throw new Error(
+          "Your Azure account has no active subscriptions. Please switch an Azure account."
+        );
       } else if (subscriptions.length === 1) {
         sub = subscriptions[0];
         CLILogProvider.necessaryLog(
@@ -121,12 +121,14 @@ export class DialogManager implements Dialog {
           `Your Azure account only has one subscription (${sub}). Use it as default.`
         );
       } else {
-        const answers = await inquirer.prompt([{
-          name: "subscription",
-          type: "list",
-          message: question.description,
-          choices: subscriptions
-        }]);
+        const answers = await inquirer.prompt([
+          {
+            name: "subscription",
+            type: "list",
+            message: question.description,
+            choices: subscriptions,
+          },
+        ]);
         sub = answers["subscription"];
       }
 
@@ -136,19 +138,20 @@ export class DialogManager implements Dialog {
       case QuestionType.Confirm:
         if (question.options && question.options.length === 1) {
           const ciEnabled = process.env.CI_ENABLED;
-          if(ciEnabled){
+          if (ciEnabled) {
             return question.options[0];
           }
-          const answers = await inquirer.prompt([{
-            name: QuestionType.Confirm,
-            type: "confirm",
-            message: question.description,
-          }]);
+          const answers = await inquirer.prompt([
+            {
+              name: QuestionType.Confirm,
+              type: "confirm",
+              message: question.description,
+            },
+          ]);
           const confirmOption = question.options[0];
           if (answers[QuestionType.Confirm]) {
             return confirmOption;
-          }
-          else {
+          } else {
             return undefined;
           }
         }
@@ -162,33 +165,29 @@ export class DialogManager implements Dialog {
       case QuestionType.Text:
         break;
     }
-    const err = NotSupportedQuestionType(question);
-    CLILogProvider.error(
-      `code:${err.source}.${err.name}, message: ${err.message}, stack: ${err.stack}`
-    );
-    return undefined;
+    throw NotSupportedQuestionType(question);
   }
 
   private async showMessage(msg: IMessage): Promise<string | undefined> {
     if (msg.items && msg.items.length > 0) {
       const ciEnabled = process.env.CI_ENABLED;
-      if(ciEnabled){
+      if (ciEnabled) {
         return msg.items[0];
       }
-      const answers = await inquirer.prompt([{
-        name: DialogType.Show,
-        type: "list",
-        message: msg.description,
-        choices: msg.items
-      }]);
+      const answers = await inquirer.prompt([
+        {
+          name: DialogType.Show,
+          type: "list",
+          message: msg.description,
+          choices: msg.items,
+        },
+      ]);
       if (DialogType.Show in answers) {
         return answers[DialogType.Show];
-      }
-      else {
+      } else {
         throw InquirerAnswerNotFound(msg);
       }
-    }
-    else {
+    } else {
       switch (msg.level) {
         case MsgLevel.Info:
           CLILogProvider.necessaryLog(LogLevel.Info, msg.description);

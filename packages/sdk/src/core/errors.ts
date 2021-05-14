@@ -54,7 +54,7 @@ export enum ErrorCode {
   /**
    * Operation failed.
    */
-  FailedOperation = "FailedOperation"
+  FailedOperation = "FailedOperation",
 }
 
 /**

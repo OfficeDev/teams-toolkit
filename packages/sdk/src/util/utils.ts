@@ -47,7 +47,7 @@ export function getUserInfoFromSsoToken(ssoToken: string): UserInfo {
   const userInfo: UserInfo = {
     displayName: tokenObject.name,
     objectId: tokenObject.oid,
-    preferredUserName: ""
+    preferredUserName: "",
   };
 
   if (tokenObject.ver === "2.0") {
@@ -74,7 +74,7 @@ export function getUserInfoFromSsoToken(ssoToken: string): UserInfo {
  */
 export function formatString(str: string, ...replacements: string[]): string {
   const args = replacements;
-  return str.replace(/{(\d+)}/g, function(match, number) {
+  return str.replace(/{(\d+)}/g, function (match, number) {
     return typeof args[number] != "undefined" ? args[number] : match;
   });
 }

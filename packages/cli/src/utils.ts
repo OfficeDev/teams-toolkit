@@ -169,9 +169,12 @@ export async function setSubscriptionId(
     }
 
     await AzureAccountManager.setSubscription(subscriptionId);
+    const subs = await AzureAccountManager.listSubscriptions();
+    const sub = subs.find(sub => sub.subscriptionId === subscriptionId);
 
     const configJson = result.value;
-    configJson["solution"].subscriptionId = subscriptionId;
+    configJson["solution"].subscriptionId = sub?.subscriptionId;
+    configJson["solution"].tenantId = sub?.tenantId;
     await fs.writeFile(getConfigPath(rootFolder), JSON.stringify(configJson, null, 4));
   }
   return ok(null);

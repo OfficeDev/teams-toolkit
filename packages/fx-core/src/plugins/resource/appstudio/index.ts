@@ -3,13 +3,14 @@
 
 import {
     ConfigFolderName, FxError, NodeType, ok, err, Platform, Plugin, PluginContext, QTreeNode, Result, Stage,
-    DialogMsg, DialogType, MsgLevel, QuestionType
+    DialogMsg, DialogType, MsgLevel, QuestionType, SystemError, UserError
 } from "@microsoft/teamsfx-api";
 import { AppStudioPluginImpl } from "./plugin";
 import { Constants } from "./constants";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
 import { manuallySubmitOption, autoPublishOption } from "./questions";
+import { TelemetryUtils, TelemetryEventName, TelemetryPropertyKey } from "./utils/telemetry";
 
 export class AppStudioPlugin implements Plugin {
     private appStudioPluginImpl = new AppStudioPluginImpl();
@@ -62,6 +63,8 @@ export class AppStudioPlugin implements Plugin {
      * @returns {string[]} an array of errors
      */
     public async validateManifest(ctx: PluginContext, manifestString: string): Promise<Result<string[], FxError>> {
+        TelemetryUtils.init(ctx);
+        TelemetryUtils.sendStartEvent(TelemetryEventName.validateManifest);
         const validationResult = await this.appStudioPluginImpl.validateManifest(ctx, manifestString);
         if (validationResult.length > 0) {
             const errMessage = AppStudioError.ValidationFailedError.message(validationResult);
@@ -82,6 +85,9 @@ export class AppStudioPlugin implements Plugin {
                 level: MsgLevel.Info,
             }),
         );
+        let properties: { [key: string]: string } = {};
+        properties[TelemetryPropertyKey.validationResult] = validationResult.join("\n");
+        TelemetryUtils.sendSuccessEvent(TelemetryEventName.validateManifest, properties);
         return ok(validationResult);
     }
 
@@ -91,6 +97,8 @@ export class AppStudioPlugin implements Plugin {
      * @returns {string} - Path of built appPackage.zip
      */
     public async buildTeamsPackage(ctx: PluginContext, appDirectory: string, manifestString: string): Promise<Result<string, FxError>> {
+        TelemetryUtils.init(ctx);
+        TelemetryUtils.sendStartEvent(TelemetryEventName.buildTeamsPackage);
         try {
             const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, appDirectory, manifestString);
             const builtSuccess = `Teams Package ${appPackagePath} built successfully!`;
@@ -101,8 +109,10 @@ export class AppStudioPlugin implements Plugin {
                     level: MsgLevel.Info,
                 }),
             );
+            TelemetryUtils.sendSuccessEvent(TelemetryEventName.buildTeamsPackage);
             return ok(appPackagePath);
         } catch (error) {
+            TelemetryUtils.sendErrorEvent(TelemetryEventName.buildTeamsPackage, error);
             return err(AppStudioResultFactory.SystemError(
                 AppStudioError.TeamsPackageBuildError.name,
                 AppStudioError.TeamsPackageBuildError.message(error)
@@ -115,7 +125,9 @@ export class AppStudioPlugin implements Plugin {
      * @param {PluginContext} ctx
      * @returns {string[]} - Teams App ID in Teams app catalog
      */
-    public async publish(ctx: PluginContext): Promise<Result<string, FxError>> {
+    public async publish(ctx: PluginContext): Promise<Result<string | undefined, FxError>> {
+        TelemetryUtils.init(ctx);
+        TelemetryUtils.sendStartEvent(TelemetryEventName.publish);
         if (ctx.platform !== Platform.VS) {
             const answer = ctx.answers?.get(Constants.BUILD_OR_PUBLISH_QUESTION);
             if (answer === manuallySubmitOption.id) {
@@ -138,9 +150,11 @@ export class AppStudioPlugin implements Plugin {
                             })
                         )
                     }
+                    TelemetryUtils.sendSuccessEvent(TelemetryEventName.publish);
                     return ok(appPackagePath);
                 }
                 catch (error) {
+                    TelemetryUtils.sendErrorEvent(TelemetryEventName.publish, error);
                     return err(AppStudioResultFactory.SystemError(
                         AppStudioError.TeamsPackageBuildError.name,
                         AppStudioError.TeamsPackageBuildError.message(error)
@@ -158,16 +172,24 @@ export class AppStudioPlugin implements Plugin {
                     level: MsgLevel.Info,
                 }),
             );
+            TelemetryUtils.sendSuccessEvent(TelemetryEventName.publish);
             return ok(result.id);
         } catch (error) {
-            const innerError = error.innerError ? `innerError: ${error.innerError}` : "";
-            await ctx.dialog?.communicate(
-                new DialogMsg(DialogType.Show, {
-                    description: `${error.message} ${innerError}`,
-                    level: MsgLevel.Warning
-                }),
-            );
-            return err(error);
+            if (error instanceof SystemError || error instanceof UserError) {
+                if (error.name === AppStudioError.TeamsAppPublishCancelError.name) {
+                    TelemetryUtils.sendSuccessEvent(TelemetryEventName.publish);
+                    return ok(undefined);
+                }
+                const innerError = error.innerError ? `innerError: ${error.innerError}` : "";
+                error.message = `${error.message} ${innerError}`;
+                TelemetryUtils.sendErrorEvent(TelemetryEventName.publish, error);
+                return err(error);
+            } else {
+                const unhandled = new SystemError(AppStudioError.UnhandledError.name,
+                    AppStudioError.UnhandledError.message, Constants.PLUGIN_NAME, undefined, undefined, error);
+                TelemetryUtils.sendErrorEvent(TelemetryEventName.publish, unhandled);
+                return err(unhandled);
+            }
         }
     }
 }

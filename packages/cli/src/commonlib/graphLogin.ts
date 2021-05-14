@@ -134,9 +134,9 @@ export class GraphLogin extends login implements GraphTokenProvider {
   }
 }
 
-import { MockGraphTokenProvider } from "@microsoft/teamsfx-api";
+import GraphTokenProviderUserPassword from "./graphLoginUserPassword";
 
 const ciEnabled = process.env.CI_ENABLED;
-const graphLogin = ciEnabled && ciEnabled === "true" ? MockGraphTokenProvider.getInstance() : GraphLogin.getInstance();
+const graphLogin = ciEnabled && ciEnabled === "true" ? GraphTokenProviderUserPassword : GraphLogin.getInstance();
 
 export default graphLogin;

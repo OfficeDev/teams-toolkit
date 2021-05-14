@@ -71,20 +71,21 @@ export class OnBehalfOfUserCredential implements TokenCredential {
       throw new ErrorWithCode(errorMsg, ErrorCode.InvalidConfiguration);
     }
 
+    const normalizedAuthorityHost = config.authentication!.authorityHost!.replace(/\/+$/g, "");
     const authority: string =
-      config.authentication?.authorityHost + "/" + config.authentication?.tenantId;
+      normalizedAuthorityHost + "/" + config.authentication?.tenantId;
     this.msalClient = new ConfidentialClientApplication({
       auth: {
         clientId: config.authentication!.clientId!,
         authority: authority,
-        clientSecret: config.authentication!.clientSecret!
-      }
+        clientSecret: config.authentication!.clientSecret!,
+      },
     });
 
     const decodedSsoToken = parseJwt(ssoToken);
     this.ssoToken = {
       token: ssoToken,
-      expiresOnTimestamp: decodedSsoToken.exp
+      expiresOnTimestamp: decodedSsoToken.exp,
     };
   }
 
@@ -148,7 +149,7 @@ export class OnBehalfOfUserCredential implements TokenCredential {
       try {
         authenticationResult = await this.msalClient.acquireTokenOnBehalfOf({
           oboAssertion: this.ssoToken.token,
-          scopes: scopesArray
+          scopes: scopesArray,
         });
       } catch (error) {
         throw this.generateAuthServerError(error);
@@ -165,7 +166,7 @@ export class OnBehalfOfUserCredential implements TokenCredential {
 
       result = {
         token: authenticationResult.accessToken,
-        expiresOnTimestamp: authenticationResult.expiresOn!.getTime()
+        expiresOnTimestamp: authenticationResult.expiresOn!.getTime(),
       };
     }
 

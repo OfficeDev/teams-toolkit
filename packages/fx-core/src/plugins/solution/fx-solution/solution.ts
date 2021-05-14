@@ -29,9 +29,7 @@ import {
   MsgLevel,
   ConfigFolderName,
   AzureSolutionSettings,
-  Err,
   UserError,
-  SystemError,
   Platform,
 } from "@microsoft/teamsfx-api";
 import { askSubscription, fillInCommonQuestions } from "./commonQuestions";
@@ -66,9 +64,6 @@ import {
   REMOTE_MANIFEST,
   BOT_ID,
   LOCAL_BOT_ID,
-  STATIC_TABS_TPL,
-  CONFIGURABLE_TABS_TPL,
-  BOTS_TPL,
   DoProvisionFirstError,
   CancelError,
 } from "./constants";
@@ -106,7 +101,6 @@ import {
 import Mustache from "mustache";
 import path from "path";
 import { AppStudioPlugin } from "../../resource/appstudio";
-import { ErrorResponse } from "@azure/arm-resources/esm/models/mappers";
 import * as util from "util";
 import { deepCopy, getStrings } from "../../../common/tools";
 import { getTemplatesFolder } from "../../..";
@@ -1031,6 +1025,24 @@ export class TeamsAppSolution implements Solution {
     if (isIdle.isErr()) {
       return err(isIdle.error);
     }
+    const manifest = maybeManifest.value;
+
+    if (this.isAzureProject(ctx)) {
+      //1. ask common questions for azure resources.
+      const appName = manifest.name.short;
+      const res = await fillInCommonQuestions(
+        ctx,
+        appName,
+        ctx.config,
+        ctx.dialog,
+        ctx.azureAccountProvider,
+        await ctx.appStudioToken?.getJsonObject()
+      );
+      if (res.isErr()) {
+        return res;
+      }
+      const azureToken = await ctx.azureAccountProvider?.getAccountCredentialAsync();
+    }
 
     const isProvisionSucceeded = this.checkWetherProvisionSucceeded(ctx.config);
     if (!isProvisionSucceeded) {
@@ -1867,7 +1879,9 @@ export class TeamsAppSolution implements Solution {
     return ok({ tabEndpoint, tabDomain, aadId, botDomain, botId, webApplicationInfoResource });
   }
 
-  private getLocalDebugConfig(config: SolutionConfig): Result<
+  private getLocalDebugConfig(
+    config: SolutionConfig
+  ): Result<
     {
       localTabEndpoint?: string;
       localTabDomain?: string;

@@ -9,69 +9,72 @@ import { Messages } from "../messages";
 import { ProgrammingLanguage } from "../../../../../../src/plugins/resource/bot/enums/programmingLanguage";
 
 describe("DialogUtils", () => {
-    describe("Test output", () => {
-        const pluginContext = testUtils.newPluginContext();
-        pluginContext.dialog = testUtils.generateFakeDialog();
-        it("Happy Path", async () => {
-            // Arrange
-            const message = "anything";
+  describe("Test output", () => {
+    const pluginContext = testUtils.newPluginContext();
+    pluginContext.dialog = testUtils.generateFakeDialog();
+    it("Happy Path", async () => {
+      // Arrange
+      const message = "anything";
 
-            // Act
-            try {
-                await DialogUtils.output(pluginContext, message);
-            } catch {
-                chai.assert.fail(Messages.ShouldNotReachHere);
-            }
-
-        });
+      // Act
+      try {
+        await DialogUtils.output(pluginContext, message);
+      } catch {
+        chai.assert.fail(Messages.ShouldNotReachHere);
+      }
     });
+  });
 
-    describe("Test show", () => {
-        const pluginContext = testUtils.newPluginContext();
-        pluginContext.dialog = testUtils.generateFakeDialog();
-        it("Happy Path", async () => {
-            // Arrange
-            const message = "anything";
+  describe("Test show", () => {
+    const pluginContext = testUtils.newPluginContext();
+    pluginContext.dialog = testUtils.generateFakeDialog();
+    it("Happy Path", async () => {
+      // Arrange
+      const message = "anything";
 
-            // Act
-            try {
-                await DialogUtils.show(pluginContext, message);
-            } catch {
-                chai.assert.fail(Messages.ShouldNotReachHere);
-            }
-
-        });
+      // Act
+      try {
+        await DialogUtils.show(pluginContext, message);
+      } catch {
+        chai.assert.fail(Messages.ShouldNotReachHere);
+      }
     });
+  });
 
-    describe("Test ask", () => {
-        const pluginContext = testUtils.newPluginContext();
-        pluginContext.dialog = testUtils.generateFakeDialog();
-        it("Happy Path", async () => {
-            // Arrange
-            const description = "anything";
-            const defaultAnswer = "default";
+  describe("Test ask", () => {
+    const pluginContext = testUtils.newPluginContext();
+    pluginContext.dialog = testUtils.generateFakeDialog();
+    it("Happy Path", async () => {
+      // Arrange
+      const description = "anything";
+      const defaultAnswer = "default";
 
-            // Act
-            const result = await DialogUtils.ask(pluginContext, description, defaultAnswer);
+      // Act
+      const result = await DialogUtils.ask(pluginContext, description, defaultAnswer);
 
-            // Assert
-            chai.assert.isTrue(result === defaultAnswer);
-        });
+      // Assert
+      chai.assert.isTrue(result === defaultAnswer);
     });
+  });
 
-    describe("Test askEnum", () => {
-        const pluginContext = testUtils.newPluginContext();
-        pluginContext.dialog = testUtils.generateFakeDialog();
-        it("askEnum Returns Undefined", async () => {
-            // Arrange
-            const description = "anything";
-            const defaultValue = ProgrammingLanguage.JavaScript;
+  describe("Test askEnum", () => {
+    const pluginContext = testUtils.newPluginContext();
+    pluginContext.dialog = testUtils.generateFakeDialog();
+    it("askEnum Returns Undefined", async () => {
+      // Arrange
+      const description = "anything";
+      const defaultValue = ProgrammingLanguage.JavaScript;
 
-            // Act
-            const result = await DialogUtils.askEnum<ProgrammingLanguage>(pluginContext, description, ProgrammingLanguage, defaultValue);
+      // Act
+      const result = await DialogUtils.askEnum<ProgrammingLanguage>(
+        pluginContext,
+        description,
+        ProgrammingLanguage,
+        defaultValue
+      );
 
-            // Assert
-            chai.assert.isTrue(result === undefined);
-        });
+      // Assert
+      chai.assert.isTrue(result === undefined);
     });
+  });
 });

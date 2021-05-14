@@ -13,7 +13,7 @@ import * as crypto from "crypto";
 import { AddressInfo } from "net";
 import { accountPath, UTF8 } from "./cacheAccess";
 import open from "open";
-import { azureLoginMessage, env, m365LoginMessage } from "./common/constant";
+import { azureLoginMessage, env, m365LoginMessage, MFACode } from "./common/constant";
 import colors from "colors";
 import * as constants from "../constants";
 
@@ -154,10 +154,12 @@ export class CodeFlowLogin {
   }
 
   async logout(): Promise<boolean> {
-    const accountCache = String(fs.readFileSync(accountPath + this.accountName, UTF8));
-    const dataCache = await this.msalTokenCache!.getAccountByHomeId(accountCache);
-    if (dataCache) {
-      this.msalTokenCache?.removeAccount(dataCache);
+    if (fs.existsSync(accountPath + this.accountName)) {
+      const accountCache = String(fs.readFileSync(accountPath + this.accountName, UTF8));
+      const dataCache = await this.msalTokenCache!.getAccountByHomeId(accountCache);
+      if (dataCache) {
+        this.msalTokenCache?.removeAccount(dataCache);
+      }
     }
     if (fs.existsSync(accountPath + this.accountName)) {
       fs.writeFileSync(accountPath + this.accountName, "", UTF8);
@@ -218,15 +220,19 @@ export class CodeFlowLogin {
           }
         })
         .catch(async (error) => {
-          CliCodeLogInstance.error("[Login] getTenantToken acquireTokenSilent : " + error.message);
-          const accountList = await this.msalTokenCache?.getAllAccounts();
-          for (let i=0;i<accountList!.length;++i) {
-            this.msalTokenCache?.removeAccount(accountList![i]);
+          if (error.message.indexOf(MFACode) >= 0) {
+            throw error;
+          } else {
+            CliCodeLogInstance.error("[Login] getTenantToken acquireTokenSilent : " + error.message);
+            const accountList = await this.msalTokenCache?.getAllAccounts();
+            for (let i=0;i<accountList!.length;++i) {
+              this.msalTokenCache?.removeAccount(accountList![i]);
+            }
+            this.config!.auth.authority = env.activeDirectoryEndpointUrl + tenantId;
+            this.pca = new PublicClientApplication(this.config!);
+            const accessToken = await this.login();
+            return accessToken;
           }
-          this.config!.auth.authority = env.activeDirectoryEndpointUrl + tenantId;
-          this.pca = new PublicClientApplication(this.config!);
-          const accessToken = await this.login();
-          return accessToken;
         });
       } else {
         return undefined;

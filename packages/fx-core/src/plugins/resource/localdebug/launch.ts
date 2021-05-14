@@ -57,7 +57,7 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
             name: "Launch Remote (Edge)",
             type: LaunchBrowser.edge,
             request: "launch",
-            url: "https://teams.microsoft.com/_#/l/app/${teamsAppId}?installAppPackage=true",
+            url: "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&${account-hint}",
             presentation: {
                 group: "remote",
                 order: edgeOrder,
@@ -67,7 +67,7 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
             name: "Launch Remote (Chrome)",
             type: LaunchBrowser.chrome,
             request: "launch",
-            url: "https://teams.microsoft.com/_#/l/app/${teamsAppId}?installAppPackage=true",
+            url: "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&${account-hint}",
             presentation: {
                 group: "remote",
                 order: chromeOrder,
@@ -84,7 +84,7 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
                     name: "Start and Attach to Frontend (Edge)",
                     type: LaunchBrowser.edge,
                     request: "launch",
-                    url: "https://teams.microsoft.com/_#/l/app/${localTeamsAppId}?installAppPackage=true",
+                    url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&${account-hint}",
                     preLaunchTask: "Start Frontend",
                     cascadeTerminateToConfigurations: ["Start and Attach to Backend"],
                     presentation: {
@@ -96,7 +96,7 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
                     name: "Start and Attach to Frontend (Chrome)",
                     type: LaunchBrowser.chrome,
                     request: "launch",
-                    url: "https://teams.microsoft.com/_#/l/app/${localTeamsAppId}?installAppPackage=true",
+                    url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&${account-hint}",
                     preLaunchTask: "Start Frontend",
                     cascadeTerminateToConfigurations: ["Start and Attach to Backend"],
                     presentation: {
@@ -124,7 +124,7 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
                     name: "Start and Attach to Frontend (Edge)",
                     type: LaunchBrowser.edge,
                     request: "launch",
-                    url: "https://teams.microsoft.com/_#/l/app/${localTeamsAppId}?installAppPackage=true",
+                    url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&${account-hint}",
                     preLaunchTask: "Start Frontend",
                     presentation: {
                         group: "all",
@@ -135,7 +135,7 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
                     name: "Start and Attach to Frontend (Chrome)",
                     type: LaunchBrowser.chrome,
                     request: "launch",
-                    url: "https://teams.microsoft.com/_#/l/app/${localTeamsAppId}?installAppPackage=true",
+                    url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&${account-hint}",
                     preLaunchTask: "Start Frontend",
                     presentation: {
                         group: "all",
@@ -153,7 +153,7 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
                 name: "Launch Bot (Edge)",
                 type: LaunchBrowser.edge,
                 request: "launch",
-                url: "https://teams.microsoft.com/_#/l/app/${localTeamsAppId}?installAppPackage=true",
+                url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&${account-hint}",
                 cascadeTerminateToConfigurations: ["Start and Attach to Bot"],
                 presentation: {
                     group: "all",
@@ -164,7 +164,7 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
                 name: "Launch Bot (Chrome)",
                 type: LaunchBrowser.chrome,
                 request: "launch",
-                url: "https://teams.microsoft.com/_#/l/app/${localTeamsAppId}?installAppPackage=true",
+                url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&${account-hint}",
                 cascadeTerminateToConfigurations: ["Start and Attach to Bot"],
                 presentation: {
                     group: "all",
@@ -193,7 +193,7 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
                 name: "Start and Attach to Frontend (Edge)",
                 type: LaunchBrowser.edge,
                 request: "launch",
-                url: "https://teams.microsoft.com/_#/l/app/${localTeamsAppId}?installAppPackage=true",
+                url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&${account-hint}",
                 preLaunchTask: "Start Frontend",
                 cascadeTerminateToConfigurations: includeBackend ? ["Start and Attach to Bot", "Start and Attach to Backend"]: ["Start and Attach to Bot"],
                 presentation: {
@@ -205,7 +205,7 @@ export function generateConfigurations(includeFrontend: boolean, includeBackend:
                 name: "Start and Attach to Frontend (Chrome)",
                 type: LaunchBrowser.chrome,
                 request: "launch",
-                url: "https://teams.microsoft.com/_#/l/app/${localTeamsAppId}?installAppPackage=true",
+                url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&${account-hint}",
                 preLaunchTask: "Start Frontend",
                 cascadeTerminateToConfigurations: includeBackend ? ["Start and Attach to Bot", "Start and Attach to Backend"]: ["Start and Attach to Bot"],
                 presentation: {

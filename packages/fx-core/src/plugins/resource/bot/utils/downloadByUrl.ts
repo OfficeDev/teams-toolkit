@@ -6,20 +6,23 @@ import { DownloadError } from "../errors";
 
 import * as utils from "./common";
 
-export async function downloadByUrl(url: string, timeoutMs: number = DownloadConstants.DEFAULT_TIMEOUT_MS): Promise<Buffer> {
-    let res = undefined;
-    try {
-        res = await axios.get(url, {
-            responseType: "arraybuffer",
-            timeout: timeoutMs
-        });
-    } catch (e) {
-        throw new DownloadError(url, e);
-    }
+export async function downloadByUrl(
+  url: string,
+  timeoutMs: number = DownloadConstants.DEFAULT_TIMEOUT_MS
+): Promise<Buffer> {
+  let res = undefined;
+  try {
+    res = await axios.get(url, {
+      responseType: "arraybuffer",
+      timeout: timeoutMs,
+    });
+  } catch (e) {
+    throw new DownloadError(url, e);
+  }
 
-    if (!res || !utils.isHttpCodeOkOrCreated(res.status)) {
-        throw new DownloadError(url);
-    }
+  if (!res || !utils.isHttpCodeOkOrCreated(res.status)) {
+    throw new DownloadError(url);
+  }
 
-    return res.data;
+  return res.data;
 }

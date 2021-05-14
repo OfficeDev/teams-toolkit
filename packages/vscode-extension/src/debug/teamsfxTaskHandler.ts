@@ -108,6 +108,7 @@ function onDidTerminateDebugSessionHandler(event: vscode.DebugSession): void {
         }
 
         allRunningDebugSessions.delete(event.id);
+        allRunningTeamsfxTasks.clear();
     }
 }
 

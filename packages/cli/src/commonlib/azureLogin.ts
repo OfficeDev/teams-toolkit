@@ -6,7 +6,14 @@
 import colors from "colors";
 import { TokenCredential } from "@azure/core-auth";
 import { TokenCredentialsBase, DeviceTokenCredentials } from "@azure/ms-rest-nodeauth";
-import { AzureAccountProvider, ConfigFolderName, err, FxError, ok, Result } from "@microsoft/teamsfx-api";
+import {
+  AzureAccountProvider,
+  ConfigFolderName,
+  err,
+  FxError,
+  ok,
+  Result,
+} from "@microsoft/teamsfx-api";
 import { CodeFlowLogin, LoginFailureError, ConvertTokenToJson } from "./codeFlowLogin";
 import { MemoryCache } from "./memoryCache";
 import CLILogProvider from "./log";
@@ -16,12 +23,24 @@ import { LogLevel } from "@azure/msal-node";
 import { NotFoundSubscriptionId, NotSupportedProjectType } from "../error";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { changeLoginTenantMessage, env, MFACode, signedIn, signedOut, unknownSubscription } from "./common/constant";
+import {
+  changeLoginTenantMessage,
+  env,
+  MFACode,
+  signedIn,
+  signedOut,
+  unknownSubscription,
+} from "./common/constant";
 import { login, LoginStatus } from "./common/login";
 import { UserError } from "@microsoft/teamsfx-api";
 import { CodeFlowTenantLogin } from "./codeFlowTenantLogin";
 import CliTelemetry from "./../telemetry/cliTelemetry";
-import { TelemetryAccountType, TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
+import {
+  TelemetryAccountType,
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "../telemetry/cliTelemetryEvents";
 
 const accountName = "azure";
 const scopes = ["https://management.core.windows.net/user_impersonation"];
@@ -32,12 +51,12 @@ const afterCacheAccess = getAfterCacheAccess(scopes, accountName);
 
 const cachePlugin = {
   beforeCacheAccess,
-  afterCacheAccess
+  afterCacheAccess,
 };
 
 function getConfig(tenantId?: string) {
-  var authority;
-  if (tenantId && tenantId.length>0) {
+  let authority;
+  if (tenantId && tenantId.length > 0) {
     authority = "https://login.microsoftonline.com/" + tenantId;
   } else {
     authority = "https://login.microsoftonline.com/organizations";
@@ -45,7 +64,7 @@ function getConfig(tenantId?: string) {
   const config = {
     auth: {
       clientId: "7ea7c24c-b1f6-4a20-9d11-9ae12e9e7ac0",
-      authority: authority
+      authority: authority,
     },
     system: {
       loggerOptions: {
@@ -53,19 +72,19 @@ function getConfig(tenantId?: string) {
           CLILogProvider.log(4 - loglevel, message);
         },
         piiLoggingEnabled: false,
-        logLevel: LogLevel.Error
-      }
+        logLevel: LogLevel.Error,
+      },
     },
     cache: {
-      cachePlugin
-    }
+      cachePlugin,
+    },
   };
   return config;
 }
 
 // eslint-disable-next-line
 // @ts-ignore
-const memoryDictionary: {[tenantId: string] : MemoryCache;} = {};
+const memoryDictionary: { [tenantId: string]: MemoryCache } = {};
 
 export class AzureAccountManager extends login implements AzureAccountProvider {
   private static instance: AzureAccountManager;
@@ -129,7 +148,10 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   /**
    * Async get ms-rest-* [credential](https://github.com/Azure/ms-rest-nodeauth/blob/master/lib/credentials/tokenCredentialsBase.ts)
    */
-  async getAccountCredentialAsync(showDialog = true, tenantId = ""): Promise<TokenCredentialsBase | undefined> {
+  async getAccountCredentialAsync(
+    showDialog = true,
+    tenantId = ""
+  ): Promise<TokenCredentialsBase | undefined> {
     let cred;
     try {
       if (tenantId.length == 0) {
@@ -197,12 +219,15 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       throw e;
     }
 
-    const userid = cred? cred.clientId : "";
-    const internal = cred? (cred as DeviceTokenCredentials).username.endsWith("@microsoft.com") : false;
-    CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLogin, { [TelemetryProperty.AccountType]: TelemetryAccountType.Azure,
-        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+    const userid = cred ? cred.clientId : "";
+    const internal = cred
+      ? (cred as DeviceTokenCredentials).username.endsWith("@microsoft.com")
+      : false;
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLogin, {
+      [TelemetryProperty.AccountType]: TelemetryAccountType.Azure,
+      [TelemetryProperty.Success]: cred ? TelemetrySuccess.Yes : TelemetrySuccess.No,
       [TelemetryProperty.UserId]: userid,
-      [TelemetryProperty.Internal]: internal ? "true" : "false"
+      [TelemetryProperty.Internal]: internal ? "true" : "false",
     });
     return cred;
   }
@@ -215,16 +240,13 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   private async updateLoginStatus(): Promise<void> {
-    const checkCodeFlow = AzureAccountManager.codeFlowInstance !== undefined &&
+    const checkCodeFlow =
+      AzureAccountManager.codeFlowInstance !== undefined &&
       AzureAccountManager.codeFlowInstance.account;
-    const checkCodeFlowTenant = AzureAccountManager.codeFlowTenantInstance !== undefined &&
+    const checkCodeFlowTenant =
+      AzureAccountManager.codeFlowTenantInstance !== undefined &&
       AzureAccountManager.codeFlowTenantInstance.account;
-    if (
-      AzureAccountManager.statusChange !== undefined &&
-      (
-        checkCodeFlow || checkCodeFlowTenant
-      )
-    ) {
+    if (AzureAccountManager.statusChange !== undefined && (checkCodeFlow || checkCodeFlowTenant)) {
       const credential = await this.doGetAccountCredentialAsync();
       const accessToken = await credential?.getToken();
       const accountJson = await this.getJsonObject();
@@ -235,10 +257,10 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
 
   private async login(showDialog: boolean, tenantId?: string): Promise<void> {
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLoginStart, {
-      [TelemetryProperty.AccountType]: TelemetryAccountType.Azure
+      [TelemetryProperty.AccountType]: TelemetryAccountType.Azure,
     });
     let accessToken;
-    if (tenantId && tenantId.length>0) {
+    if (tenantId && tenantId.length > 0) {
       accessToken = await AzureAccountManager.codeFlowTenantInstance.getToken(tenantId);
     } else {
       accessToken = await AzureAccountManager.codeFlowInstance.getToken();
@@ -261,7 +283,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         // @ts-ignore
         memoryDictionary[(tokenJson as any).tid] = new MemoryCache();
       }
-      
+
       memoryDictionary[(tokenJson as any).tid].add(
         [
           {
@@ -272,10 +294,12 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
             accessToken: accessToken,
             userId: (tokenJson as any).upn ?? (tokenJson as any).unique_name,
             _clientId: getConfig().auth.clientId,
-            _authority: env.activeDirectoryEndpointUrl + (tokenJson as any).tid
-          }
+            _authority: env.activeDirectoryEndpointUrl + (tokenJson as any).tid,
+          },
         ],
-        function () { const _ = 1; }
+        function () {
+          const _ = 1;
+        }
       );
     }
   }
@@ -283,26 +307,34 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   private async doGetAccountCredentialAsync(): Promise<TokenCredentialsBase | undefined> {
     if (AzureAccountManager.codeFlowInstance.account) {
       const dataJson = await this.getJsonObject();
-      const checkDefaultTenant = !AzureAccountManager.tenantId || AzureAccountManager.tenantId===AzureAccountManager.domain;
+      const checkDefaultTenant =
+        !AzureAccountManager.tenantId ||
+        AzureAccountManager.tenantId === AzureAccountManager.domain;
       const credential = new DeviceTokenCredentials(
         getConfig().auth.clientId,
         (dataJson as any).tid,
         (dataJson as any).upn ?? (dataJson as any).unique_name,
         undefined,
         env,
-        checkDefaultTenant ? memoryDictionary[AzureAccountManager.domain!] : memoryDictionary[AzureAccountManager.tenantId!]
+        checkDefaultTenant
+          ? memoryDictionary[AzureAccountManager.domain!]
+          : memoryDictionary[AzureAccountManager.tenantId!]
       );
       return Promise.resolve(credential);
     } else if (AzureAccountManager.codeFlowTenantInstance.account) {
       const dataJson = await this.getJsonObject(false);
-      const checkDefaultTenant = !AzureAccountManager.tenantId || AzureAccountManager.tenantId===AzureAccountManager.domain;
+      const checkDefaultTenant =
+        !AzureAccountManager.tenantId ||
+        AzureAccountManager.tenantId === AzureAccountManager.domain;
       const credential = new DeviceTokenCredentials(
         getConfig().auth.clientId,
         (dataJson as any).tid,
         (dataJson as any).upn ?? (dataJson as any).unique_name,
         undefined,
         env,
-        checkDefaultTenant ? memoryDictionary[AzureAccountManager.domain!] : memoryDictionary[AzureAccountManager.tenantId!]
+        checkDefaultTenant
+          ? memoryDictionary[AzureAccountManager.domain!]
+          : memoryDictionary[AzureAccountManager.tenantId!]
       );
       return Promise.resolve(credential);
     }
@@ -314,7 +346,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   async getJsonObject(showDialog = true): Promise<Record<string, unknown> | undefined> {
-    var token;
+    let token;
     if (AzureAccountManager.codeFlowTenantInstance == undefined) {
       token = await AzureAccountManager.codeFlowInstance.getToken();
     } else {
@@ -346,7 +378,11 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
    * Add update account info callback
    */
   async setStatusChangeCallback(
-    statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>
   ): Promise<boolean> {
     AzureAccountManager.statusChange = statusChange;
     await AzureAccountManager.codeFlowInstance.reloadCache();
@@ -367,13 +403,24 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       const credential = await this.getAccountCredentialAsync();
       const token = await credential?.getToken();
       const accountJson = await this.getJsonObject();
-      return Promise.resolve({ status: signedIn, token: token?.accessToken, accountInfo: accountJson });
+      return Promise.resolve({
+        status: signedIn,
+        token: token?.accessToken,
+        accountInfo: accountJson,
+      });
     } else {
       return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });
     }
   }
 
-  setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean> {
+  setStatusChangeMap(
+    name: string,
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>
+  ): Promise<boolean> {
     throw new Error("Method not implemented.");
   }
   removeStatusChangeMap(name: string): Promise<boolean> {
@@ -384,13 +431,18 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     const credential = await this.getAccountCredentialAsync();
     const arr: SubscriptionInfo[] = [];
     if (credential) {
-      var showMFA = true;
+      let showMFA = true;
       if (!AzureAccountManager.tenantId) {
         const subscriptionClient = new SubscriptionClient(credential);
-        const tenants = await listAll(subscriptionClient.tenants, subscriptionClient.tenants.list());
-        for (let i=0;i<tenants.length;++i) {
+        const tenants = await listAll(
+          subscriptionClient.tenants,
+          subscriptionClient.tenants.list()
+        );
+        for (let i = 0; i < tenants.length; ++i) {
           try {
-            const token = await AzureAccountManager.codeFlowInstance.getTenantToken(tenants[i].tenantId!);
+            const token = await AzureAccountManager.codeFlowInstance.getTenantToken(
+              tenants[i].tenantId!
+            );
             if (token) {
               const tokenJson = ConvertTokenToJson(token!);
               this.setMemoryCache(token, tokenJson);
@@ -403,13 +455,16 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
                 memoryDictionary[(tokenJson as any).tid]
               );
               const tenantClient = new SubscriptionClient(tenantCredential);
-              const subscriptions = await listAll(tenantClient.subscriptions, tenantClient.subscriptions.list());
-              for(let j=0;j<subscriptions.length;++j) {
+              const subscriptions = await listAll(
+                tenantClient.subscriptions,
+                tenantClient.subscriptions.list()
+              );
+              for (let j = 0; j < subscriptions.length; ++j) {
                 const item = subscriptions[j];
                 arr.push({
                   subscriptionId: item.subscriptionId!,
                   subscriptionName: item.displayName!,
-                  tenantId: tenants[i].tenantId!
+                  tenantId: tenants[i].tenantId!,
                 });
               }
             }
@@ -424,7 +479,9 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
           }
         }
       } else {
-        const token = await AzureAccountManager.codeFlowInstance.getTenantToken(AzureAccountManager.tenantId);
+        const token = await AzureAccountManager.codeFlowInstance.getTenantToken(
+          AzureAccountManager.tenantId
+        );
         const tokenJson = ConvertTokenToJson(token!);
         this.setMemoryCache(token, tokenJson);
         const tenantCredential = new DeviceTokenCredentials(
@@ -436,13 +493,16 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
           memoryDictionary[(tokenJson as any).tid]
         );
         const tenantClient = new SubscriptionClient(tenantCredential);
-        const subscriptions = await listAll(tenantClient.subscriptions, tenantClient.subscriptions.list());
-        for(let j=0;j<subscriptions.length;++j) {
+        const subscriptions = await listAll(
+          tenantClient.subscriptions,
+          tenantClient.subscriptions.list()
+        );
+        for (let j = 0; j < subscriptions.length; ++j) {
           const item = subscriptions[j];
           arr.push({
             subscriptionId: item.subscriptionId!,
             subscriptionName: item.displayName!,
-            tenantId: AzureAccountManager.tenantId
+            tenantId: AzureAccountManager.tenantId,
           });
         }
       }
@@ -452,9 +512,9 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
 
   async setSubscription(subscriptionId: string): Promise<void> {
     const list = await this.listSubscriptions();
-    for (let i=0;i<list.length;++i) {
+    for (let i = 0; i < list.length; ++i) {
       const item = list[i];
-      if (item.subscriptionId==subscriptionId) {
+      if (item.subscriptionId == subscriptionId) {
         AzureAccountManager.tenantId = item.tenantId;
         AzureAccountManager.subscriptionId = item.subscriptionId;
         return;
@@ -495,6 +555,9 @@ async function listAll<T>(
 import AzureAccountProviderUserPassword from "./azureLoginUserPassword";
 
 const ciEnabled = process.env.CI_ENABLED;
-const azureLogin = ciEnabled && ciEnabled === "true" ? AzureAccountProviderUserPassword : AzureAccountManager.getInstance();
+const azureLogin =
+  ciEnabled && ciEnabled === "true"
+    ? AzureAccountProviderUserPassword
+    : AzureAccountManager.getInstance();
 
 export default azureLogin;

@@ -13,14 +13,13 @@ export enum TelemetryPropertyKey {
 }
 
 enum TelemetryPropertyValue {
-    UserError = "UserError",
-    SystemError = "SystemError",
-    UnhandledError = "UnhandledError"
+    UserError = "user",
+    SystemError = "system"
 }
 
 export enum TelemetryEventName {
-    validateManifest = "validateManifest",
-    buildTeamsPackage = "buildTeamsPackage",
+    validateManifest = "validate-manifest",
+    buildTeamsPackage = "build",
     publish = "publish"
 }
 
@@ -52,7 +51,7 @@ export class TelemetryUtils {
             properties = {};
         }
         properties[TelemetryPropertyKey.component] = Constants.PLUGIN_NAME;
-        TelemetryUtils.ctx.telemetryReporter?.sendTelemetryEvent(`${eventName}-succeed`, properties, measurements);
+        TelemetryUtils.ctx.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
     }
 
     public static sendErrorEvent(
@@ -69,8 +68,6 @@ export class TelemetryUtils {
             properties[TelemetryPropertyKey.errorType] = TelemetryPropertyValue.SystemError;
         } else if (error instanceof UserError) {
             properties[TelemetryPropertyKey.errorType] = TelemetryPropertyValue.UserError;
-        } else {
-            properties[TelemetryPropertyKey.errorType] = TelemetryPropertyValue.UnhandledError;
         }
         properties[TelemetryPropertyKey.errorCode] = `${error.source}.${error.name}`;
         properties[TelemetryPropertyKey.errorMessage] = error.message;

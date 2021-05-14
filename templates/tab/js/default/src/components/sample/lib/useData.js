@@ -11,6 +11,8 @@ export function useData(asyncFn, options) {
           return { data, loading: false, error: null };
         case "error":
           return { data: null, loading: false, error };
+        default:
+          return {};
       }
     },
     { data: null, loading: !!auto, error: null }
@@ -26,6 +28,6 @@ export function useData(asyncFn, options) {
   }
   useEffect(() => {
     if (auto) reload();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   return { data, loading, error, reload };
 }

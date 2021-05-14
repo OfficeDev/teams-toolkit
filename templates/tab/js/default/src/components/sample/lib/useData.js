@@ -4,6 +4,7 @@ export function useData(asyncFn, options) {
   const { auto } = { auto: true, ...options };
   const [{ data, loading, error }, dispatch] = useReducer(
     ({ data: oldData }, { type, data, error }) => {
+      // eslint-disable-next-line default-case
       switch (type) {
         case "loading":
           return { data: oldData, loading: true, error: null };
@@ -26,6 +27,6 @@ export function useData(asyncFn, options) {
   }
   useEffect(() => {
     if (auto) reload();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   return { data, loading, error, reload };
 }

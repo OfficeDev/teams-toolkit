@@ -52,10 +52,10 @@ jobs:
         run: |
           npx lerna run test:e2e-clean
 
-      - name: E2E Test first stage
+      - name: E2E Test Smoke Cases
         run: |
-          npx lerna run test:e2e-1
+          npx lerna run test:e2e:smoke
 
-      - name: E2E Test second stage
+      - name: E2E Test Other Cases
         run: |
-          npx lerna run test:e2e-2
+          npx lerna run test:e2e:others

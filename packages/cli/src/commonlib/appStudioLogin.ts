@@ -10,6 +10,8 @@ import CLILogProvider from "./log";
 import { getBeforeCacheAccess, getAfterCacheAccess } from "./cacheAccess";
 import { signedIn, signedOut } from "./common/constant";
 import { login, LoginStatus } from "./common/login";
+import CliTelemetry from "./../telemetry/cliTelemetry";
+import { TelemetryAccountType, TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
 
 const accountName = "appStudio";
 const scopes = ["https://dev.teams.microsoft.com/AppDefinitions.ReadWrite"];
@@ -73,17 +75,51 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
    * Get team access token
    */
   async getAccessToken(showDialog = true): Promise<string | undefined> {
-    if (!AppStudioLogin.codeFlowInstance.account) {
-      const loginToken = await AppStudioLogin.codeFlowInstance.getToken();
-      if (loginToken && AppStudioLogin.statusChange !== undefined) {
-        const tokenJson = await this.getJsonObject();
-        await AppStudioLogin.statusChange("SignedIn", loginToken, tokenJson);
+    let loginToken;
+    try {
+      if (!AppStudioLogin.codeFlowInstance.account) {
+        CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLoginStart, {
+          [TelemetryProperty.AccountType]: TelemetryAccountType.M365,
+        });
+        loginToken = await AppStudioLogin.codeFlowInstance.getToken();
+        if (loginToken && AppStudioLogin.statusChange !== undefined) {
+          const tokenJson = await this.getJsonObject();
+          await AppStudioLogin.statusChange("SignedIn", loginToken, tokenJson);
+        }
+        await this.notifyStatus();
+      } else {
+        loginToken = await AppStudioLogin.codeFlowInstance.getToken();
       }
-      await this.notifyStatus();
-      return loginToken;
+
+      if (loginToken) {
+        const array = loginToken.split(".");
+        const buff = Buffer.from(array[1], "base64");
+        const res = JSON.parse(buff.toString("utf-8"));
+        CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLogin, {
+          [TelemetryProperty.AccountType]: TelemetryAccountType.M365,
+          [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+          [TelemetryProperty.UserId]: res.oid,
+          [TelemetryProperty.Internal]: res.upn.endsWith("@microsoft.com") ? "true" : "false",
+        });
+      } else {
+        CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLogin, {
+          [TelemetryProperty.AccountType]: TelemetryAccountType.M365,
+          [TelemetryProperty.Success]: TelemetrySuccess.No,
+          [TelemetryProperty.UserId]: "",
+          [TelemetryProperty.Internal]: "false",
+        });
+      }
+    } catch (e) {
+      CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLogin, {
+        [TelemetryProperty.AccountType]: TelemetryAccountType.M365,
+        [TelemetryProperty.Success]: TelemetrySuccess.No,
+        [TelemetryProperty.UserId]: "",
+        [TelemetryProperty.Internal]: "false",
+      });
+      throw e;
     }
 
-    return AppStudioLogin.codeFlowInstance.getToken();
+    return loginToken;
   }
 
   async getJsonObject(showDialog = true): Promise<Record<string, unknown> | undefined> {
@@ -114,7 +150,11 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
   }
 
   async setStatusChangeCallback(
-    statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>
   ): Promise<boolean> {
     AppStudioLogin.statusChange = statusChange;
     await AppStudioLogin.codeFlowInstance.reloadCache();

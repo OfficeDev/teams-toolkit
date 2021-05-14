@@ -20,6 +20,8 @@ import { changeLoginTenantMessage, env, MFACode, signedIn, signedOut, unknownSub
 import { login, LoginStatus } from "./common/login";
 import { UserError } from "@microsoft/teamsfx-api";
 import { CodeFlowTenantLogin } from "./codeFlowTenantLogin";
+import CliTelemetry from "./../telemetry/cliTelemetry";
+import { TelemetryAccountType, TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
 
 const accountName = "azure";
 const scopes = ["https://management.core.windows.net/user_impersonation"];
@@ -128,57 +130,81 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
    * Async get ms-rest-* [credential](https://github.com/Azure/ms-rest-nodeauth/blob/master/lib/credentials/tokenCredentialsBase.ts)
    */
   async getAccountCredentialAsync(showDialog = true, tenantId = ""): Promise<TokenCredentialsBase | undefined> {
-    if (tenantId.length==0) {
-      if (AzureAccountManager.codeFlowInstance.account) {
-        const loginToken = await AzureAccountManager.codeFlowInstance.getToken();
-        const tokenJson = await this.getJsonObject();
-        this.setMemoryCache(loginToken, tokenJson);
+    let cred;
+    try {
+      if (tenantId.length == 0) {
+        if (AzureAccountManager.codeFlowInstance.account) {
+          const loginToken = await AzureAccountManager.codeFlowInstance.getToken();
+          const tokenJson = await this.getJsonObject();
+          this.setMemoryCache(loginToken, tokenJson);
+        }
+        if (AzureAccountManager.codeFlowInstance.account) {
+          return new Promise(async (resolve) => {
+            if (
+              !AzureAccountManager.tenantId ||
+              AzureAccountManager.tenantId === AzureAccountManager.domain
+            ) {
+              const tokenJson = await this.getJsonObject();
+              const credential = new DeviceTokenCredentials(
+                getConfig().auth.clientId,
+                (tokenJson as any).tid,
+                (tokenJson as any).upn ?? (tokenJson as any).unique_name,
+                undefined,
+                env,
+                memoryDictionary[AzureAccountManager.domain!]
+              );
+              resolve(credential);
+            } else {
+              const token = await AzureAccountManager.codeFlowInstance.getTenantToken(
+                AzureAccountManager.tenantId
+              );
+              const tokenJson = ConvertTokenToJson(token!);
+              this.setMemoryCache(token, tokenJson);
+              const credential = new DeviceTokenCredentials(
+                getConfig().auth.clientId,
+                (tokenJson as any).tid,
+                (tokenJson as any).upn ?? (tokenJson as any).unique_name,
+                undefined,
+                env,
+                memoryDictionary[AzureAccountManager.tenantId]
+              );
+              resolve(credential);
+            }
+          });
+        }
+        await this.login(showDialog);
+      } else {
+        AzureAccountManager.codeFlowTenantInstance = new CodeFlowTenantLogin(
+          scopes,
+          getConfig(tenantId),
+          SERVER_PORT,
+          accountName
+        );
+        await AzureAccountManager.codeFlowTenantInstance.logout();
+        AzureAccountManager.tenantId = tenantId;
+        await this.login(showDialog, tenantId);
       }
-      if (AzureAccountManager.codeFlowInstance.account) {
-        return new Promise(async (resolve) => {
-          if (!AzureAccountManager.tenantId || AzureAccountManager.tenantId===AzureAccountManager.domain) {
-            const tokenJson = await this.getJsonObject();
-            const credential = new DeviceTokenCredentials(
-              getConfig().auth.clientId,
-              (tokenJson as any).tid,
-              (tokenJson as any).upn ?? (tokenJson as any).unique_name,
-              undefined,
-              env,
-              memoryDictionary[AzureAccountManager.domain!]
-            );
-            resolve(credential);
-          } else {
-            const token = await AzureAccountManager.codeFlowInstance.getTenantToken(AzureAccountManager.tenantId);
-            const tokenJson = ConvertTokenToJson(token!);
-            this.setMemoryCache(token, tokenJson);
-            const credential = new DeviceTokenCredentials(
-              getConfig().auth.clientId,
-              (tokenJson as any).tid,
-              (tokenJson as any).upn ?? (tokenJson as any).unique_name,
-              undefined,
-              env,
-              memoryDictionary[AzureAccountManager.tenantId]
-            );
-            resolve(credential);
-          }
-        });
-      }
-      await this.login(showDialog);
+
       await this.updateLoginStatus();
-      return this.doGetAccountCredentialAsync();
-    } else {
-      AzureAccountManager.codeFlowTenantInstance = new CodeFlowTenantLogin(
-        scopes,
-        getConfig(tenantId),
-        SERVER_PORT,
-        accountName
-      );
-      await AzureAccountManager.codeFlowTenantInstance.logout();
-      AzureAccountManager.tenantId = tenantId;
-      await this.login(showDialog, tenantId);
-      await this.updateLoginStatus();
-      return this.doGetAccountCredentialAsync();
+      cred = await this.doGetAccountCredentialAsync();
+    } catch (e) {
+      CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLogin, {
+        [TelemetryProperty.AccountType]: TelemetryAccountType.Azure,
+        [TelemetryProperty.Success]: TelemetrySuccess.No,
+        [TelemetryProperty.UserId]: "",
+        [TelemetryProperty.Internal]: "false",
+      });
+      throw e;
     }
+
+    const userid = cred? cred.clientId : "";
+    const internal = cred? (cred as DeviceTokenCredentials).username.endsWith("@microsoft.com") : false;
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLogin, { [TelemetryProperty.AccountType]: TelemetryAccountType.Azure,
+        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      [TelemetryProperty.UserId]: userid,
+      [TelemetryProperty.Internal]: internal ? "true" : "false"
+    });
+    return cred;
   }
 
   /**
@@ -208,7 +234,10 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   private async login(showDialog: boolean, tenantId?: string): Promise<void> {
-    var accessToken;
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLoginStart, {
+      [TelemetryProperty.AccountType]: TelemetryAccountType.Azure
+    });
+    let accessToken;
     if (tenantId && tenantId.length>0) {
       accessToken = await AzureAccountManager.codeFlowTenantInstance.getToken(tenantId);
     } else {

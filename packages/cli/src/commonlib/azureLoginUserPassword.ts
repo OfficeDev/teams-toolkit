@@ -12,14 +12,14 @@ import * as arm from "azure-arm-resource";
 import dotenv from "dotenv";
 import * as msRestAzure from "ms-rest-azure";
 
-import { returnUserError } from "../error";
-import { AzureAccountProvider, SubscriptionInfo } from "../utils/login";
-import * as azureConfig from "./conf/azure";
+import { returnUserError, AzureAccountProvider, SubscriptionInfo } from "@microsoft/teamsfx-api";
+
+import * as cfg from "./common/userPasswordConfig";
 
 dotenv.config();
 
-const user = process.env.TEST_USER_NAME ?? "";
-const password = process.env.TEST_USER_PASSWORD ?? "";
+const user = cfg.user;
+const password = cfg.password;
 
 type LoginStatus = {
     status: string;
@@ -27,72 +27,72 @@ type LoginStatus = {
     accountInfo?: Record<string, unknown>;
 };
 
-export class MockAzureAccountProvider implements AzureAccountProvider {
+export class AzureAccountProviderUserPassword implements AzureAccountProvider {
     static tokenCredentialsBase: TokenCredentialsBase;
 
     static tokenCredential: TokenCredential;
 
     private client?: arm.ResourceManagementClient;
 
-    private static instance: MockAzureAccountProvider;
+    private static instance: AzureAccountProviderUserPassword;
 
     /**
      * Gets instance
      * @returns instance
      */
-    public static getInstance(): MockAzureAccountProvider {
-        if (!MockAzureAccountProvider.instance) {
-            MockAzureAccountProvider.instance = new MockAzureAccountProvider();
+    public static getInstance(): AzureAccountProviderUserPassword {
+        if (!AzureAccountProviderUserPassword.instance) {
+            AzureAccountProviderUserPassword.instance = new AzureAccountProviderUserPassword();
         }
 
-        return MockAzureAccountProvider.instance;
+        return AzureAccountProviderUserPassword.instance;
     }
 
     /**
      * Get ms-rest-* [credential](https://github.com/Azure/ms-rest-nodeauth/blob/master/lib/credentials/tokenCredentialsBase.ts)
      */
     getAccountCredential(): TokenCredentialsBase | undefined {
-        return MockAzureAccountProvider.tokenCredentialsBase;
+        return AzureAccountProviderUserPassword.tokenCredentialsBase;
     }
 
     /**
      * Get identity [crendential](https://github.com/Azure/azure-sdk-for-js/blob/master/sdk/core/core-auth/src/tokenCredential.ts)
      */
     getIdentityCredential(): TokenCredential | undefined {
-        return MockAzureAccountProvider.tokenCredential;
+        return AzureAccountProviderUserPassword.tokenCredential;
     }
 
     async getAccountCredentialAsync(): Promise<TokenCredentialsBase | undefined> {
-        if (MockAzureAccountProvider.tokenCredentialsBase == undefined) {
+        if (AzureAccountProviderUserPassword.tokenCredentialsBase == undefined) {
             const authres = await msRestNodeAuth.loginWithUsernamePassword(
                 user,
                 password,
                 {
-                    domain: azureConfig.tenant.id,
+                    domain: cfg.tenant.id,
                 }
             );
-            MockAzureAccountProvider.tokenCredentialsBase = authres;
+            AzureAccountProviderUserPassword.tokenCredentialsBase = authres;
         }
 
         return new Promise((resolve) => {
-            resolve(MockAzureAccountProvider.tokenCredentialsBase);
+            resolve(AzureAccountProviderUserPassword.tokenCredentialsBase);
         });
     }
 
     async getIdentityCredentialAsync(): Promise<TokenCredential | undefined> {
-        if (MockAzureAccountProvider.tokenCredential == undefined) {
+        if (AzureAccountProviderUserPassword.tokenCredential == undefined) {
             const identityCredential = new identity.UsernamePasswordCredential(
-                azureConfig.tenant.id,
+                cfg.tenant.id,
                 "04b07795-8ddb-461a-bbee-02f9e1bf7b46",
                 user,
                 password,
             );
             const credentialChain = new identity.ChainedTokenCredential(identityCredential);
-            MockAzureAccountProvider.tokenCredential = credentialChain;
+            AzureAccountProviderUserPassword.tokenCredential = credentialChain;
         }
 
         return new Promise((resolve) => {
-            resolve(MockAzureAccountProvider.tokenCredential);
+            resolve(AzureAccountProviderUserPassword.tokenCredential);
         });
     }
 
@@ -121,7 +121,7 @@ export class MockAzureAccountProvider implements AzureAccountProvider {
     public async deleteResourceGroup(rg: string): Promise<void> {
         if (!this.client) {
             const c = await msRestAzure.loginWithUsernamePassword(user, password);
-            this.client = new arm.ResourceManagementClient(c, azureConfig.subscription.id);
+            this.client = new arm.ResourceManagementClient(c, cfg.subscription.id);
         }
         this.client!.resourceGroups.deleteMethod(rg, function(err, result, request, response) {
             if (err) {
@@ -151,7 +151,8 @@ export class MockAzureAccountProvider implements AzureAccountProvider {
                 sub => !!sub.displayName && !!sub.subscriptionId
             );
             return filteredsubs.map(sub => {
-                return { subscriptionName: sub.displayName!, subscriptionId: sub.subscriptionId!, tenantId: "undefined" };
+                /// TODO: cfg.tenant.id may not fit to subscriptionId.
+                return { subscriptionName: sub.displayName!, subscriptionId: sub.subscriptionId!, tenantId: cfg.tenant.id };
             });
         }
         return [];
@@ -199,4 +200,4 @@ export type AzureSubscription = {
     subscriptionId: string;
 };
 
-export default MockAzureAccountProvider.getInstance();
+export default AzureAccountProviderUserPassword.getInstance();

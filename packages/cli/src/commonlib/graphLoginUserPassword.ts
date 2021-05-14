@@ -6,25 +6,26 @@
 import dotenv from "dotenv";
 import * as msal from "@azure/msal-node";
 
-import * as azureConfig from "./conf/azure";
-import { GraphTokenProvider } from "../utils/login";
+import { GraphTokenProvider } from "@microsoft/teamsfx-api";
+
+import * as cfg from "./common/userPasswordConfig";
 
 dotenv.config();
 
-const user = process.env.TEST_USER_NAME ?? "";
-const password = process.env.TEST_USER_PASSWORD ?? "";
+const user = cfg.user;
+const password = cfg.password;
 
 const msalConfig = {
     auth: {
-        clientId: azureConfig.client_id,
-        authority: `https://login.microsoftonline.com/${azureConfig.tenant.id}`,
+        clientId: cfg.client_id,
+        authority: `https://login.microsoftonline.com/${cfg.tenant.id}`,
     },
 };
 
 const scopes = ["https://graph.microsoft.com/.default"];
 
-export class MockGraphTokenProvider implements GraphTokenProvider {
-    private static instance: MockGraphTokenProvider;
+export class GraphTokenProviderUserPassword implements GraphTokenProvider {
+    private static instance: GraphTokenProviderUserPassword;
 
     private static accessToken: string | undefined;
 
@@ -32,12 +33,12 @@ export class MockGraphTokenProvider implements GraphTokenProvider {
      * Gets instance
      * @returns instance
      */
-    public static getInstance(): MockGraphTokenProvider {
-        if (!MockGraphTokenProvider.instance) {
-            MockGraphTokenProvider.instance = new MockGraphTokenProvider();
+    public static getInstance(): GraphTokenProviderUserPassword {
+        if (!GraphTokenProviderUserPassword.instance) {
+            GraphTokenProviderUserPassword.instance = new GraphTokenProviderUserPassword();
         }
 
-        return MockGraphTokenProvider.instance;
+        return GraphTokenProviderUserPassword.instance;
     }
 
     async getAccessToken(): Promise<string | undefined> {
@@ -52,12 +53,12 @@ export class MockGraphTokenProvider implements GraphTokenProvider {
         await pca
             .acquireTokenByUsernamePassword(usernamePasswordRequest)
             .then((response) => {
-                MockGraphTokenProvider.accessToken = response!.accessToken;
+                GraphTokenProviderUserPassword.accessToken = response!.accessToken;
             })
             .catch((e) => {
                 console.log(e);
             });
-        return MockGraphTokenProvider.accessToken;
+        return GraphTokenProviderUserPassword.accessToken;
     }
 
     async getJsonObject(showDialog = true): Promise<Record<string, unknown> | undefined> {
@@ -97,4 +98,4 @@ export class MockGraphTokenProvider implements GraphTokenProvider {
     }
 }
 
-export default MockGraphTokenProvider.getInstance();
+export default GraphTokenProviderUserPassword.getInstance();

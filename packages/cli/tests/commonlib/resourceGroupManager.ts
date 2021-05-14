@@ -6,7 +6,7 @@
 import * as arm from "azure-arm-resource";
 import * as msRestAzure from "ms-rest-azure";
 
-import * as azureConfig from "./conf/azure";
+import * as azureConfig from "../../src/commonlib/common/userPasswordConfig";
 
 const user = process.env.TEST_USER_NAME ?? "";
 const password = process.env.TEST_USER_PASSWORD ?? "";

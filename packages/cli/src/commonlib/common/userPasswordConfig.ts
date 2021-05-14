@@ -17,5 +17,5 @@ export const tenant = {
 };
 
 export const subscription = {
-  id: process.env.TEST_SUBSCRIPTION_ID ? process.env.TEST_SUBSCRIPTION_ID : "1756abc0-3554-4341-8d6a-46674962ea19"
+  id: process.env.TEST_SUBSCRIPTION_ID || ""
 };

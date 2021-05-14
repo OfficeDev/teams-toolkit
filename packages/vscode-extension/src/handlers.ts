@@ -396,8 +396,10 @@ export function detectVsCodeEnv(): VsCodeEnv {
     // Codespaces browser-based editor will return UIKind.Web for uiKind
     if (vscode.env.uiKind === vscode.UIKind.Web) {
       return VsCodeEnv.codespaceBrowser;
-    } else {
+    } else if (vscode.env.remoteName === "codespaces") {
       return VsCodeEnv.codespaceVsCode;
+    } else {
+      return VsCodeEnv.remote;
     }
   } else {
     // running locally

@@ -29,7 +29,6 @@ class RootDialog extends ComponentDialog {
       text = removedMentionText.toLowerCase().replace(/\n|\r/g, "").trim(); // Remove the line break
     }
 
-    // Empty text or not plain text command
     if (!text || innerDc.context.activity.textFormat !== TextFormatTypes.Plain) {
       return await innerDc.cancelAllDialogs();
     }

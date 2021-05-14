@@ -102,7 +102,7 @@ import Mustache from "mustache";
 import path from "path";
 import { AppStudioPlugin } from "../../resource/appstudio";
 import * as util from "util";
-import { deepCopy, getStrings } from "../../../common/tools";
+import { deepCopy, getStrings, isUserCancelError } from "../../../common/tools";
 import { getTemplatesFolder } from "../../..";
 
 type LoadedPlugin = Plugin & { name: string; displayName: string };
@@ -865,23 +865,29 @@ export class TeamsAppSolution implements Solution {
         );
         ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
       } else {
-        const msg = util.format(
-          getStrings().solution.ProvisionFailNotice,
-          ctx.projectSettings?.appName
-        );
-        ctx.logProvider?.error(msg);
-        ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false);
-        const resourceGroupName = ctx.config.get(GLOBAL_CONFIG)?.getString("resourceGroupName");
-        const subscriptionId = ctx.config.get(GLOBAL_CONFIG)?.getString("subscriptionId");
-        const error = provisionResult.error;
-        error.message +=
-          " " +
-          util.format(getStrings().solution.ProvisionFailGuide, subscriptionId, resourceGroupName);
-        if (error instanceof UserError) {
-          const ue = error as UserError;
-          if (!ue.helpLink) {
-            ue.helpLink = "https://aka.ms/teamsfx-solution-help";
-            (ue.source = "Solution"), (ue.name = "ProvisionFailure");
+        if (!isUserCancelError(provisionResult.error)) {
+          const msg = util.format(
+            getStrings().solution.ProvisionFailNotice,
+            ctx.projectSettings?.appName
+          );
+          ctx.logProvider?.error(msg);
+          ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false);
+          const resourceGroupName = ctx.config.get(GLOBAL_CONFIG)?.getString("resourceGroupName");
+          const subscriptionId = ctx.config.get(GLOBAL_CONFIG)?.getString("subscriptionId");
+          const error = provisionResult.error;
+          error.message +=
+            " " +
+            util.format(
+              getStrings().solution.ProvisionFailGuide,
+              subscriptionId,
+              resourceGroupName
+            );
+          if (error instanceof UserError) {
+            const ue = error as UserError;
+            if (!ue.helpLink) {
+              ue.helpLink = "https://aka.ms/teamsfx-solution-help";
+              (ue.source = "Solution"), (ue.name = "ProvisionFailure");
+            }
           }
         }
       }
@@ -944,7 +950,7 @@ export class TeamsAppSolution implements Solution {
         )
       )?.getAnswer();
 
-      if (confirm === "Cancel") {
+      if (confirm !== "Provision") {
         return err(
           returnUserError(
             new Error(getStrings().solution.CancelProvision),

@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import { exec } from "child_process";
 import * as fs from "fs-extra";
-import { ConfigMap, Dict, Json } from "@microsoft/teamsfx-api";
+import { ConfigMap, Dict, Json, UserError } from "@microsoft/teamsfx-api";
 import { promisify } from "util";
 import axios from "axios";
 import AdmZip from "adm-zip";
@@ -247,4 +247,13 @@ export const deepCopy = <T>(target: T): T => {
 export function getStrings(): any {
   const filepath = path.resolve(getResourceFolder(), "strings.json");
   return fs.readJSONSync(filepath);
+}
+
+export function isUserCancelError(error: Error): boolean {
+  const errorName = "name" in error ? (error as any)["name"] : "";
+  return (
+    errorName === "User Cancel" ||
+    errorName === getStrings().solution.CancelProvision ||
+    errorName === "UserCancel"
+  );
 }

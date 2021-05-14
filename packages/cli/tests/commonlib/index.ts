@@ -3,10 +3,7 @@
 
 "use strict";
 
-export * as AzureConfig from "./conf/azure";
-export * from "./mockAppStudioTokenProvider";
-export * from "./mockAzureAccountProvider";
-export * from "./mockGraphTokenProvider";
+export * as cfg from "../../src/commonlib/common/userPasswordConfig";
 export * from "./aadValidate";
 export * from "./simpleAuthValidator";
 export * from "./sqlValidate";

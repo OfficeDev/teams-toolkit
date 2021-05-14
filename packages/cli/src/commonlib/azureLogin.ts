@@ -372,9 +372,9 @@ async function listAll<T>(
   return all;
 }
 
-import { MockAzureAccountProvider } from "@microsoft/teamsfx-api";
+import AzureAccountProviderUserPassword from "./azureLoginUserPassword";
 
 const ciEnabled = process.env.CI_ENABLED;
-const azureLogin = ciEnabled && ciEnabled === "true" ? MockAzureAccountProvider.getInstance() : AzureAccountManager.getInstance();
+const azureLogin = ciEnabled && ciEnabled === "true" ? AzureAccountProviderUserPassword : AzureAccountManager.getInstance();
 
 export default azureLogin;

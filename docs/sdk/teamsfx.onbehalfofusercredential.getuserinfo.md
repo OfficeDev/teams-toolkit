@@ -12,11 +12,11 @@ Get basic user info from SSO token.
 <b>Signature:</b>
 
 ```typescript
-getUserInfo(): Promise<UserInfo>;
+getUserInfo(): UserInfo;
 ```
 <b>Returns:</b>
 
-Promise&lt;[UserInfo](./teamsfx.userinfo.md)<!-- -->&gt;
+[UserInfo](./teamsfx.userinfo.md)
 
 Basic user info with user displayName, objectId and preferredUserName.
 
@@ -30,7 +30,7 @@ Basic user info with user displayName, objectId and preferredUserName.
 
 
 ```typescript
-const currentUser = await credential.getUserInfo();
+const currentUser = getUserInfo();
 
 ```
 

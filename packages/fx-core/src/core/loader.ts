@@ -1,24 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 "use strict";
-
-import * as fs from "fs-extra";
-import * as path from "path";
-import {
-  Context,
-  err,
-  FxError,
-  ok,
-  ConfigFolderName,
-  Result,
-  returnUserError,
-  Solution,
-} from "@microsoft/teamsfx-api";
-
-import { Settings } from "./settings";
-
-// import { Default, TeamsAppSolution } from "../plugins/solution/fx-solution";
-import { CoreErrorNames, CoreSource } from "./error";
+import { Context, FxError, ok, ConfigFolderName, Result, Solution } from "@microsoft/teamsfx-api";
 import { TeamsAppSolution } from "../plugins/solution/fx-solution/solution";
 
 export interface Meta {

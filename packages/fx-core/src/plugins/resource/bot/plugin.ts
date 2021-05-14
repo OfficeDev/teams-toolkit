@@ -15,7 +15,6 @@ import {
   FolderNames,
   QuestionNames,
   WebAppConstants,
-  LifecycleFuncNames,
   TemplateProjectsConstants,
   AuthEnvNames,
   AuthValues,

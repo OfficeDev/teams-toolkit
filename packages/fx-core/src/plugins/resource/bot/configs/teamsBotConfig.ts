@@ -7,7 +7,6 @@ import { ProvisionConfig } from "./provisionConfig";
 import { ScaffoldConfig } from "./scaffoldConfig";
 import { PluginSolution, PluginAAD } from "../resources/strings";
 import { PluginActRoles } from "../enums/pluginActRoles";
-import { QuestionNames } from "../constants";
 import { DeployConfig } from "./deployConfig";
 import * as utils from "../utils/common";
 
@@ -22,7 +21,7 @@ export class TeamsBotConfig {
   public teamsAppTenant?: string;
   public applicationIdUris?: string;
   public actRoles: PluginActRoles[] = [];
-  public resourceNameSuffix: string = "";
+  public resourceNameSuffix = "";
 
   public async restoreConfigFromContext(context: PluginContext): Promise<void> {
     await this.scaffold.restoreConfigFromContext(context);

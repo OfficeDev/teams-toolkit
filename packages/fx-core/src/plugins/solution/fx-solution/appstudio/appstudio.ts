@@ -7,7 +7,6 @@ import {
   IAADPassword,
   IAppDefinition,
   IAppDefinitionBot,
-  IAppManifestBot,
   IGroupChatCommand,
   IPersonalCommand,
   ITeamCommand,
@@ -15,7 +14,6 @@ import {
 } from "./interface";
 import {
   TeamsAppManifest,
-  ConfigMap,
   LogProvider,
   ICommand,
   ICommandList,
@@ -25,7 +23,6 @@ import {
   ProjectSettings,
 } from "@microsoft/teamsfx-api";
 import {
-  AzureSolutionQuestionNames,
   BotOptionItem,
   HostTypeOptionAzure,
   MessageExtensionItem,

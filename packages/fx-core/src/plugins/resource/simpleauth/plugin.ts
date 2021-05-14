@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import { FxError, PluginContext, Result } from "@microsoft/teamsfx-api";
 import { Constants, Messages } from "./constants";
-import { NoConfigError, UnauthenticatedError } from "./errors";
+import { UnauthenticatedError } from "./errors";
 import { ResultFactory } from "./result";
 import { Utils } from "./utils/common";
 import { DialogUtils } from "./utils/dialog";

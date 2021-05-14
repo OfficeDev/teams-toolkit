@@ -1,5 +1,5 @@
 import { PluginContext } from "@microsoft/teamsfx-api";
-import { Constants, Telemetry } from "../constants";
+import { Telemetry } from "../constants";
 
 export class TelemetryUtils {
   static ctx: PluginContext;

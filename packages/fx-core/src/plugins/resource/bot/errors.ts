@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ErrorNames, Links } from "./constants";
+import { ErrorNames } from "./constants";
 import { Messages } from "./resources/messages";
 
 export enum ErrorType {
@@ -23,7 +23,7 @@ export class PluginError extends Error {
     details: string,
     suggestions: string[],
     innerError?: Error,
-    showHelpLink: boolean = false
+    showHelpLink = false
   ) {
     super(details);
     this.name = name;

@@ -10,8 +10,6 @@ import {
   DialogMsg,
   DialogType,
   QuestionType,
-  MsgLevel,
-  IProgressHandler,
 } from "@microsoft/teamsfx-api";
 import { AppStudioClient } from "./appStudio";
 import { AppStudioError } from "./errors";

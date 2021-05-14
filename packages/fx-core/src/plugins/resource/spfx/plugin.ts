@@ -17,12 +17,7 @@ import lodash from "lodash";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { SpfxConfig } from ".";
-import {
-  configure,
-  createAxiosInstanceWithToken,
-  execute,
-  normalizeComponentName,
-} from "./utils/utils";
+import { configure, execute, normalizeComponentName } from "./utils/utils";
 import { Constants, PlaceHolders, PreDeployProgressMessage } from "./utils/constants";
 import { BuildSPPackageError, NoSPPackageError } from "./error";
 import * as util from "util";

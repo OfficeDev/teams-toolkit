@@ -5,7 +5,6 @@ import {
   FileQuestion,
   NodeType,
   OptionItem,
-  Question,
   SingleSelectQuestion,
   TextInputQuestion,
 } from "@microsoft/teamsfx-api";

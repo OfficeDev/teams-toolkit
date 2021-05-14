@@ -29,9 +29,7 @@ import {
   MsgLevel,
   ConfigFolderName,
   AzureSolutionSettings,
-  Err,
   UserError,
-  SystemError,
   Platform,
 } from "@microsoft/teamsfx-api";
 import { askSubscription, fillInCommonQuestions } from "./commonQuestions";
@@ -66,9 +64,6 @@ import {
   REMOTE_MANIFEST,
   BOT_ID,
   LOCAL_BOT_ID,
-  STATIC_TABS_TPL,
-  CONFIGURABLE_TABS_TPL,
-  BOTS_TPL,
   DoProvisionFirstError,
   CancelError,
 } from "./constants";
@@ -106,7 +101,6 @@ import {
 import Mustache from "mustache";
 import path from "path";
 import { AppStudioPlugin } from "../../resource/appstudio";
-import { ErrorResponse } from "@azure/arm-resources/esm/models/mappers";
 import * as util from "util";
 import { deepCopy, getStrings } from "../../../common/tools";
 import { getTemplatesFolder } from "../../..";
@@ -292,7 +286,7 @@ export class TeamsAppSolution implements Solution {
         )
       );
     }
-    let capabilities = answers.getStringArray(AzureSolutionQuestionNames.Capabilities) || [];
+    const capabilities = answers.getStringArray(AzureSolutionQuestionNames.Capabilities) || [];
     if (!capabilities || capabilities.length === 0) {
       return err(
         returnSystemError(
@@ -1859,9 +1853,7 @@ export class TeamsAppSolution implements Solution {
     return ok({ tabEndpoint, tabDomain, aadId, botDomain, botId, webApplicationInfoResource });
   }
 
-  private getLocalDebugConfig(
-    config: SolutionConfig
-  ): Result<
+  private getLocalDebugConfig(config: SolutionConfig): Result<
     {
       localTabEndpoint?: string;
       localTabDomain?: string;

@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { FunctionPluginPathInfo as PathInfo, RegularExpr } from "../constants";
+import { FunctionPluginPathInfo as PathInfo } from "../constants";
 
 export class InfoMessages {
   public static readonly askNodeVersion: string = "Select Node version for the function app.";

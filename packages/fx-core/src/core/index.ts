@@ -72,10 +72,9 @@ import {
   ScratchOrSampleSelect,
 } from "./question";
 import * as jsonschema from "jsonschema";
-import { AzureSubscription, getSubscriptionList } from "./loginUtils";
+import { getSubscriptionList } from "./loginUtils";
 import { sleep } from "../plugins/resource/spfx/utils/utils";
 import AdmZip from "adm-zip";
-import { getResourceFolder } from "..";
 
 class CoreImpl implements Core {
   private target?: CoreImpl;
@@ -1033,7 +1032,7 @@ class CoreImpl implements Core {
             description: "",
             author: "",
             scripts: {
-              test: 'echo "Error: no test specified" && exit 1',
+              test: "echo \"Error: no test specified\" && exit 1",
             },
             license: "MIT",
           },

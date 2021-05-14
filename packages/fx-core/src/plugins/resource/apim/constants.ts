@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import path from "path";
+
 import { IName } from "./interfaces/IName";
 
 export class ProjectConstants {

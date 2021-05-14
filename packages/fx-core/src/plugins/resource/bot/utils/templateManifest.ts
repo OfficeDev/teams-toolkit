@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { default as axios } from "axios";
-import semver from "semver";
 
 import { ProgrammingLanguage } from "../enums/programmingLanguage";
 import { DownloadConstants, TemplateProjectsConstants } from "../constants";

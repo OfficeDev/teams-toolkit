@@ -13,7 +13,7 @@ import * as crypto from "crypto";
 import { AddressInfo } from "net";
 import { accountPath, UTF8 } from "./cacheAccess";
 import open from "open";
-import { azureLoginMessage, env, m365LoginMessage, MFACode } from "./common/constant";
+import { azureLoginMessage, changeLoginTenantMessage, env, m365LoginMessage, MFACode } from "./common/constant";
 import colors from "colors";
 import * as constants from "../constants";
 
@@ -29,7 +29,7 @@ interface Deferred<T> {
   reject: (reason: any) => void;
 }
 
-export class CodeFlowLogin {
+export class CodeFlowTenantLogin {
   pca: PublicClientApplication | undefined;
   account: AccountInfo | undefined;
   scopes: string[] | undefined;
@@ -38,6 +38,7 @@ export class CodeFlowLogin {
   mutex: Mutex | undefined;
   msalTokenCache: TokenCache | undefined;
   accountName: string | undefined;
+  showMFA: boolean | undefined;
 
   constructor(scopes: string[], config: Configuration, port: number, accountName: string) {
     this.scopes = scopes;
@@ -47,6 +48,7 @@ export class CodeFlowLogin {
     this.pca = new PublicClientApplication(this.config!);
     this.msalTokenCache = this.pca.getTokenCache();
     this.accountName = accountName;
+    this.showMFA = true;
   }
 
   async reloadCache() {
@@ -59,9 +61,9 @@ export class CodeFlowLogin {
     }
   }
 
-  async login(): Promise<string> {
-    const codeVerifier = CodeFlowLogin.toBase64UrlEncoding(crypto.randomBytes(32).toString("base64"));
-    const codeChallenge = CodeFlowLogin.toBase64UrlEncoding(await CodeFlowLogin.sha256(codeVerifier));
+  async login(tenantId?: string): Promise<string> {
+    const codeVerifier = CodeFlowTenantLogin.toBase64UrlEncoding(crypto.randomBytes(32).toString("base64"));
+    const codeChallenge = CodeFlowTenantLogin.toBase64UrlEncoding(await CodeFlowTenantLogin.sha256(codeVerifier));
     let serverPort = this.port;
 
     // try get an unused port
@@ -154,12 +156,10 @@ export class CodeFlowLogin {
   }
 
   async logout(): Promise<boolean> {
-    if (fs.existsSync(accountPath + this.accountName)) {
-      const accountCache = String(fs.readFileSync(accountPath + this.accountName, UTF8));
-      const dataCache = await this.msalTokenCache!.getAccountByHomeId(accountCache);
-      if (dataCache) {
-        this.msalTokenCache?.removeAccount(dataCache);
-      }
+    const accountCache = String(fs.readFileSync(accountPath + this.accountName, UTF8));
+    const dataCache = await this.msalTokenCache!.getAccountByHomeId(accountCache);
+    if (dataCache) {
+      this.msalTokenCache?.removeAccount(dataCache);
     }
     if (fs.existsSync(accountPath + this.accountName)) {
       fs.writeFileSync(accountPath + this.accountName, "", UTF8);
@@ -167,13 +167,13 @@ export class CodeFlowLogin {
     return true;
   }
 
-  async getToken(): Promise<string | undefined> {
+  async getToken(tenantId?: string): Promise<string | undefined> {
     try {
-      if (!this.account) {
+      if (!this.account && !tenantId) {
         await this.reloadCache();
       }
       if (!this.account) {
-        const accessToken = await this.login();
+        const accessToken = await this.login(tenantId);
         return accessToken;
       } else {
         return this.pca!.acquireTokenSilent({
@@ -196,49 +196,6 @@ export class CodeFlowLogin {
       }
     } catch (error) {
       CliCodeLogInstance.error("[Login] " + error.message);
-      throw LoginFailureError(error);
-    }
-  }
-
-  async getTenantToken(tenantId: string): Promise<string | undefined> {
-    try {
-      if (!this.account) {
-        await this.reloadCache();
-      }
-      if (this.account) {
-        return this.pca!.acquireTokenSilent({
-          authority: env.activeDirectoryEndpointUrl + tenantId,
-          account: this.account,
-          scopes: this.scopes!,
-          forceRefresh: true
-        })
-        .then((response) => {
-          if (response) {
-            return response.accessToken;
-          } else {
-            return undefined;
-          }
-        })
-        .catch(async (error) => {
-          if (error.message.indexOf(MFACode) >= 0) {
-            throw error;
-          } else {
-            CliCodeLogInstance.error("[Login] getTenantToken acquireTokenSilent : " + error.message);
-            const accountList = await this.msalTokenCache?.getAllAccounts();
-            for (let i=0;i<accountList!.length;++i) {
-              this.msalTokenCache?.removeAccount(accountList![i]);
-            }
-            this.config!.auth.authority = env.activeDirectoryEndpointUrl + tenantId;
-            this.pca = new PublicClientApplication(this.config!);
-            const accessToken = await this.login();
-            return accessToken;
-          }
-        });
-      } else {
-        return undefined;
-      }
-    } catch (error) {
-      CliCodeLogInstance.error("[Login] getTenantToken : " + error.message);
       throw LoginFailureError(error);
     }
   }

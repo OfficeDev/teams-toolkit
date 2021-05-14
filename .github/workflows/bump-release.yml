@@ -1,4 +1,4 @@
-name: rc release
+name: bump version
 
 on:
   workflow_dispatch:

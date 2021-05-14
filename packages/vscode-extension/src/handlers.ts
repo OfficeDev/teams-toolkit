@@ -34,7 +34,13 @@ import {
   VsCodeEnv,
   AppStudioTokenProvider
 } from "@microsoft/teamsfx-api";
-import { CoreProxy, isUserCancelError } from "@microsoft/teamsfx-core";
+import {
+  CoreProxy,
+  InvalidProjectError,
+  isUserCancelError,
+  isValidProject,
+  NoProjectOpenedError
+} from "@microsoft/teamsfx-core";
 import DialogManagerInstance from "./userInterface";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -55,7 +61,7 @@ import {
   AccountType
 } from "./telemetry/extTelemetryEvents";
 import * as commonUtils from "./debug/commonUtils";
-import { ExtensionErrors, ExtensionSource, InvalidProject, NoProjectOpenedError } from "./error";
+import { ExtensionErrors, ExtensionSource } from "./error";
 import { WebviewPanel } from "./controls/webviewPanel";
 import * as constants from "./debug/constants";
 import { isSPFxProject } from "./utils/commonUtils";
@@ -85,22 +91,6 @@ export function getWorkspacePath(): string | undefined {
     ? workspace.workspaceFolders[0].uri.fsPath
     : undefined;
   return workspacePath;
-}
-
-export function isValidProject(workspacePath?: string): boolean {
-  if (!workspacePath) workspacePath = getWorkspacePath();
-  if (!workspacePath) return false;
-  const checklist: string[] = [
-    path.join(workspacePath, `.${ConfigFolderName}`, "settings.json"),
-    path.join(workspacePath, `.${ConfigFolderName}`, "env.default.json"),
-    path.join(workspacePath, `.${ConfigFolderName}`, "manifest.source.json")
-  ];
-  for (const fp of checklist) {
-    if (!fs.pathExistsSync(fp)) {
-      return false;
-    }
-  }
-  return true;
 }
 
 export async function activate(): Promise<Result<null, FxError>> {
@@ -307,7 +297,7 @@ export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
       }
       const isValid = isValidProject(workspacePath);
       if (isValid === false) {
-        result = err(InvalidProject);
+        result = err(InvalidProjectError);
         await processResult(eventName, result);
         return result;
       }
@@ -433,7 +423,7 @@ async function runUserTask(func: Func, eventName: string): Promise<Result<null, 
     }
     const isValid = isValidProject(workspacePath);
     if (isValid === false) {
-      result = err(InvalidProject);
+      result = err(InvalidProjectError);
       await processResult(eventName, result);
       return result;
     }

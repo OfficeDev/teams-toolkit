@@ -6,8 +6,8 @@ import * as path from "path";
 import { ext } from "./extensionVariables";
 import { TreeItem, TreeCategory, Result, FxError, ok } from "@microsoft/teamsfx-api";
 import * as StringResources from "./resources/Strings.json";
-import { getWorkspacePath, isValidProject } from "./handlers";
-import { isValidShade } from "@fluentui/react";
+import { getWorkspacePath } from "./handlers";
+import { isValidProject } from "@microsoft/teamsfx-core";
 
 class TreeViewManager {
   private static instance: TreeViewManager;
@@ -64,7 +64,7 @@ class TreeViewManager {
     const accountProvider = new CommandsTreeViewProvider([]);
     disposables.push(vscode.window.registerTreeDataProvider("teamsfx-accounts", accountProvider));
 
-    const projectTreeViewCommand = isValidProject()
+    const projectTreeViewCommand = isValidProject(getWorkspacePath())
       ? [
           new TreeViewCommand(
             StringResources.vsc.commandsTreeViewProvider.createProjectTitle,

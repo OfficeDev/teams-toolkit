@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import { exec } from "child_process";
 import * as fs from "fs-extra";
-import { ConfigMap, Dict, Json, UserError } from "@microsoft/teamsfx-api";
+import { ConfigFolderName, ConfigMap, Dict, Json, UserError } from "@microsoft/teamsfx-api";
 import { promisify } from "util";
 import axios from "axios";
 import AdmZip from "adm-zip";
@@ -256,4 +256,19 @@ export function isUserCancelError(error: Error): boolean {
     errorName === getStrings().solution.CancelProvision ||
     errorName === "UserCancel"
   );
+}
+
+export function isValidProject(workspacePath?: string): boolean {
+  if (!workspacePath) return false;
+  const checklist: string[] = [
+    path.join(workspacePath, `.${ConfigFolderName}`, "settings.json"),
+    path.join(workspacePath, `.${ConfigFolderName}`, "env.default.json"),
+    path.join(workspacePath, `.${ConfigFolderName}`, "manifest.source.json"),
+  ];
+  for (const fp of checklist) {
+    if (!fs.pathExistsSync(fp)) {
+      return false;
+    }
+  }
+  return true;
 }

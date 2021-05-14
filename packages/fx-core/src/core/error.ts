@@ -54,13 +54,17 @@ export function EnvNotExist(param: any): UserError {
   );
 }
 
-export function NotSupportedProjectType(): UserError {
-  return returnUserError(
-    new Error(`Project type not supported`),
-    CoreSource,
-    CoreErrorNames.NotSupportedProjectType
-  );
-}
+export const NoProjectOpenedError = new UserError(
+  "NoProjectOpened",
+  "No project opened, you can create a new project or open an existing one.",
+  CoreSource
+);
+
+export const InvalidProjectError = new UserError(
+  "InvalidProject",
+  "The project type is invalid",
+  CoreSource
+);
 
 export function DownloadSampleFail(): SystemError {
   return returnUserError(

@@ -86,7 +86,11 @@ export function AzureFunctions(props) {
       </p>
       {!!docsUrl && (
         <p>
-          For more information, see the <a href={docsUrl}>docs</a>.
+          For more information, see the{" "}
+          <a href={docsUrl} target="_blank" rel="noreferrer">
+            docs
+          </a>
+          .
         </p>
       )}
     </div>

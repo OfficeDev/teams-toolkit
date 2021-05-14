@@ -17,8 +17,7 @@ export function Deploy(props) {
       </p>
       <p>
         To provision your resources, you can either use our CLI command "teamsfx
-        provision" or apply “Teams: Provision in the Cloud" in Command
-        palette.
+        provision" or apply “Teams: Provision in the Cloud" in Command palette.
       </p>
       <p>
         To deploy your app, you can either use our CLI command "teamsfx deploy"
@@ -26,7 +25,11 @@ export function Deploy(props) {
       </p>
       <Image src="deploy.png" />
       <p>
-        For more information, see the <a href={docsUrl}>doc</a>.
+        For more information, see the{" "}
+        <a href={docsUrl} target="_blank" rel="noreferrer">
+          docs
+        </a>
+        .
       </p>
     </div>
   );

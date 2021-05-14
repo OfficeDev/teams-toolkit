@@ -4,26 +4,26 @@
 import { Dialog, IProgressHandler } from "@microsoft/teamsfx-api";
 
 export class StepHelper {
-    progressHandler?: IProgressHandler;
+  progressHandler?: IProgressHandler;
 
-    message: string;
-    title: string;
+  message: string;
+  title: string;
 
-    constructor (title: string) {
-        this.title = title;
-        this.message = "";
-    }
+  constructor(title: string) {
+    this.title = title;
+    this.message = "";
+  }
 
-    public async start(entireSteps: number, dialog?: Dialog) {
-        this.progressHandler = dialog?.createProgressBar(this.title, entireSteps);
-        await this.progressHandler?.start();
-    }
+  public async start(entireSteps: number, dialog?: Dialog) {
+    this.progressHandler = dialog?.createProgressBar(this.title, entireSteps);
+    await this.progressHandler?.start();
+  }
 
-    public async forward(message: string): Promise<void> {
-        await this.progressHandler?.next(message);
-    }
+  public async forward(message: string): Promise<void> {
+    await this.progressHandler?.next(message);
+  }
 
-    public async end(): Promise<void> {
-        await this.progressHandler?.end();
-    }
+  public async end(): Promise<void> {
+    await this.progressHandler?.end();
+  }
 }

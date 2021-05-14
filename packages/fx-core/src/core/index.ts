@@ -1140,7 +1140,8 @@ export class CoreProxy implements Core {
     try {
       // check if this project is supported
       if (checkAndConfig) {
-        const supported = isValidProject(this.coreImpl.ctx.root);
+        const workspacePath = answers?.getString("workspacePath");
+        const supported = isValidProject(workspacePath);
         if (!supported) {
           return notSupportedRes;
         }

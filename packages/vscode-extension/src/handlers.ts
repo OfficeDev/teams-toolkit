@@ -287,9 +287,9 @@ export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
   let result: Result<null, FxError> = ok(null);
 
   try {
+    const workspacePath = getWorkspacePath();
     // 1. check concurrent lock
     if (stage !== Stage.create) {
-      const workspacePath = getWorkspacePath();
       if (workspacePath === undefined) {
         result = err(NoProjectOpenedError);
         await processResult(eventName, result);
@@ -329,6 +329,7 @@ export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
     const answers = new ConfigMap();
     answers.set("stage", stage);
     answers.set("platform", Platform.VSCode);
+    answers.set("workspacePath", workspacePath);
 
     // 4. getQuestions
     const qres = await core.getQuestions(stage, Platform.VSCode);
@@ -455,6 +456,7 @@ async function runUserTask(func: Func, eventName: string): Promise<Result<null, 
     const answers = new ConfigMap();
     answers.set("task", eventName);
     answers.set("platform", Platform.VSCode);
+    answers.set("workspacePath", workspacePath);
 
     // 4. getQuestions
     const qres = await core.getQuestionsForUserTask(func, Platform.VSCode);

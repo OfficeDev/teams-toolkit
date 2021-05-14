@@ -6,5 +6,5 @@
  */
 export enum GrantType {
   authCode = "authorization_code",
-  ssoToken = "sso_token"
+  ssoToken = "sso_token",
 }

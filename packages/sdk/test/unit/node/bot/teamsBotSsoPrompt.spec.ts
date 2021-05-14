@@ -14,7 +14,7 @@ import {
   StatusCodes,
   TestAdapter,
   tokenExchangeOperationName,
-  verifyStateOperationName
+  verifyStateOperationName,
 } from "botbuilder-core";
 import { DialogSet, DialogState, DialogTurnStatus } from "botbuilder-dialogs";
 import {
@@ -25,7 +25,7 @@ import {
   ErrorCode,
   TeamsBotSsoPromptSettings,
   loadConfiguration,
-  Configuration
+  Configuration,
 } from "../../../../src";
 import { assert, expect, use as chaiUse } from "chai";
 import chaiPromises from "chai-as-promised";
@@ -80,18 +80,18 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
   const sleepTimeOffset: number = timeoutValue + 20;
   enum SsoLogInResult {
     Success = "Success",
-    Fail = "Fail"
+    Fail = "Fail",
   }
   const sandbox = sinon.createSandbox();
 
-  beforeEach(function() {
+  beforeEach(function () {
     mockedEnvRestore = mockedEnv({
       INITIATE_LOGIN_ENDPOINT: initiateLoginEndpoint,
       M365_CLIENT_ID: clientId,
       M365_CLIENT_SECRET: clientSecret,
       M365_TENANT_ID: tenantId,
       M365_AUTHORITY_HOST: authorityHost,
-      M365_APPLICATION_ID_URI: applicationIdUri
+      M365_APPLICATION_ID_URI: applicationIdUri,
     });
 
     // Mock onBehalfOfUserCredential implementation
@@ -109,18 +109,18 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
       return new Promise<AccessToken>((resolve) => {
         resolve({
           token: exchangeToken,
-          expiresOnTimestamp: expiresOnTimestamp
+          expiresOnTimestamp: expiresOnTimestamp,
         });
       });
     });
   });
 
-  afterEach(function() {
+  afterEach(function () {
     sandbox.restore();
     mockedEnvRestore();
   });
 
-  it("teams bot sso prompt should be able to sign user in and get exchange tokens when consent", async function() {
+  it("teams bot sso prompt should be able to sign user in and get exchange tokens when consent", async function () {
     this.timeout(500);
 
     const adapter: TestAdapter = await initializeTestEnv();
@@ -176,7 +176,7 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
       });
   });
 
-  it("teams bot sso prompt should timeout with teams verification invoke activity when wait a long time", async function() {
+  it("teams bot sso prompt should timeout with teams verification invoke activity when wait a long time", async function () {
     const adapter: TestAdapter = await initializeTestEnv(timeoutValue);
 
     await adapter
@@ -207,7 +207,7 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
       .assertReply(SsoLogInResult.Fail);
   });
 
-  it("teams bot sso prompt should timeout with token exchange activity when wait a long time", async function() {
+  it("teams bot sso prompt should timeout with token exchange activity when wait a long time", async function () {
     const adapter: TestAdapter = await initializeTestEnv(timeoutValue);
 
     await adapter
@@ -224,7 +224,7 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
       .assertReply(SsoLogInResult.Fail);
   });
 
-  it("teams bot sso prompt should timeout with message activity when wait a long time", async function() {
+  it("teams bot sso prompt should timeout with message activity when wait a long time", async function () {
     const adapter: TestAdapter = await initializeTestEnv(timeoutValue);
 
     await adapter
@@ -243,7 +243,7 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
       .assertReply(SsoLogInResult.Fail);
   });
 
-  it("teams bot sso prompt should end on invalid message when endOnInvalidMessage default to true", async function() {
+  it("teams bot sso prompt should end on invalid message when endOnInvalidMessage default to true", async function () {
     const adapter: TestAdapter = await initializeTestEnv(undefined);
 
     await adapter
@@ -260,7 +260,7 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
       .assertReply(SsoLogInResult.Fail);
   });
 
-  it("teams bot sso prompt should not end on invalid message when endOnInvalidMessage set to false", async function() {
+  it("teams bot sso prompt should not end on invalid message when endOnInvalidMessage set to false", async function () {
     const adapter: TestAdapter = await initializeTestEnv(undefined, false);
 
     await adapter
@@ -319,7 +319,7 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
       });
   });
 
-  it("teams bot sso prompt should only work in MS Teams Channel", async function() {
+  it("teams bot sso prompt should only work in MS Teams Channel", async function () {
     const adapter: TestAdapter = await initializeTestEnv(undefined, undefined, Channels.Test);
 
     await adapter.send("Hello").catch((error) => {
@@ -330,10 +330,10 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
     });
   });
 
-  it("create TeamsBotSsoPrompt instance should throw InvalidParameter error with invalid scopes", async function() {
+  it("create TeamsBotSsoPrompt instance should throw InvalidParameter error with invalid scopes", async function () {
     const invalidScopes = [1, 2];
     const settings: any = {
-      scopes: invalidScopes
+      scopes: invalidScopes,
     };
 
     loadConfiguration();
@@ -357,8 +357,8 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
         id: activity.conversation!.id,
         name: activity.conversation!.name,
         conversationType: "personal",
-        tenantId: tenantId
-      }
+        tenantId: tenantId,
+      },
     };
   }
 
@@ -391,7 +391,7 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
     invokeActivity.name = tokenExchangeOperationName;
     invokeActivity.value = {
       id: id,
-      token: ssoToken
+      token: ssoToken,
     };
     adapter.send(invokeActivity);
   }
@@ -412,14 +412,13 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
     const convoState: ConversationState = new ConversationState(new MemoryStorage());
 
     // Create a DialogState property, DialogSet and TeamsBotSsoPrompt
-    const dialogState: StatePropertyAccessor<DialogState> = convoState.createProperty(
-      "dialogState"
-    );
+    const dialogState: StatePropertyAccessor<DialogState> =
+      convoState.createProperty("dialogState");
     const dialogs: DialogSet = new DialogSet(dialogState);
     const settings: TeamsBotSsoPromptSettings = {
       scopes: requiredScopes,
       timeout: timeout_value,
-      endOnInvalidMessage: endOnInvalidMessage
+      endOnInvalidMessage: endOnInvalidMessage,
     };
 
     loadConfiguration(config);

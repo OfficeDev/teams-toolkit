@@ -17,7 +17,11 @@ export function Publish(props) {
       </p>
       <Image src="publish.png" />
       <p>
-        For more information, see the <a href={docsUrl}>doc</a>.
+        For more information, see the{" "}
+        <a href={docsUrl} target="_blank" rel="noreferrer">
+          docs
+        </a>
+        .
       </p>
     </div>
   );

@@ -7,7 +7,6 @@ import { ProvisionConfig } from "./provisionConfig";
 import { ScaffoldConfig } from "./scaffoldConfig";
 import { PluginSolution, PluginAAD } from "../resources/strings";
 import { PluginActRoles } from "../enums/pluginActRoles";
-import { QuestionNames } from "../constants";
 import { DeployConfig } from "./deployConfig";
 import * as utils from "../utils/common";
 

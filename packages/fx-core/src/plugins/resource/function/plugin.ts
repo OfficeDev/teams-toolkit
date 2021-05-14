@@ -63,7 +63,7 @@ import {
 import { functionNameQuestion } from "./questions";
 import { DotnetChecker } from "./utils/depsChecker/dotnetChecker";
 import { Messages, isLinux, dotnetManualInstallHelpLink } from "./utils/depsChecker/common";
-import { BackendExtensionsInstallError, DepsCheckerError } from "./utils/depsChecker/errors";
+import { DepsCheckerError } from "./utils/depsChecker/errors";
 import { getNodeVersion } from "./utils/node-version";
 import { funcPluginAdapter } from "./utils/depsChecker/funcPluginAdapter";
 import { funcPluginLogger } from "./utils/depsChecker/funcPluginLogger";

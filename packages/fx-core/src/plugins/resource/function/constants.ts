@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import * as path from "path";
+
 import { Kind, SkuName, SkuTier } from "@azure/arm-storage/esm/models";
 
 import { FunctionConfigKey, FunctionLanguage, NodeVersion } from "./enums";

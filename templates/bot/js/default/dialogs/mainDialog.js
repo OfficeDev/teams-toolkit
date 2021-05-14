@@ -1,6 +1,3 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License.
-
 const {
   DialogSet,
   DialogTurnStatus,
@@ -23,7 +20,7 @@ const {
   loadConfiguration,
   OnBehalfOfUserCredential,
   TeamsBotSsoPrompt,
-} = require("teamsdev-client");
+} = require("@microsoft/teamsfx");
 const { ResponseType } = require("@microsoft/microsoft-graph-client");
 
 class MainDialog extends RootDialog {

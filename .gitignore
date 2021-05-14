@@ -360,9 +360,14 @@ coverage
 
 # test
 test-results.*
+.env
 
 # simple auth
 SimpleAuth.zip
+SimpleAuthUnzipOutput
 
 # so you can npm install inside a template and not worry about committing
 templates/*/*/package-lock.json
+
+# eslint
+.eslintcache

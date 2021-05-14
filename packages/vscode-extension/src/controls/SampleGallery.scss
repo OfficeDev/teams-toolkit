@@ -1,137 +1,136 @@
-.sample-gallery{
-    margin: 52px 20px;
+.sample-gallery {
+  margin: 52px 20px;
 
-    .section{
-        display: flex;
-        margin-bottom: 36px;
+  .section {
+    display: flex;
+    margin-bottom: 36px;
+  }
+
+  #title {
+    margin-left: auto;
+    margin-right: auto;
+    width: 874px;
+  }
+
+  .logo {
+    width: 28px;
+    height: 28px;
+    font-size: 28px;
+    color: var(--vscode-textLink-foreground);
+  }
+
+  .title {
+    width: auto;
+    margin-left: 12px;
+
+    h2 {
+      font-size: 26px;
+      line-height: 30px;
+      color: var(--vscode-badge-foreground);
+      margin-top: 0px;
+      margin-bottom: 0px;
+      font-weight: normal;
     }
 
-    #title{
-        margin-left: auto;
-        margin-right: auto;
-        width: 874px;
+    h3 {
+      font-size: 12px;
+      line-height: 14px;
+      color: var(--vscode-titleBar-activeForeground);
+      margin-top: 0px;
+      margin-bottom: 0px;
+      font-weight: normal;
+    }
+  }
+
+  .sample-stack {
+    width: 874px;
+    margin: 0 auto;
+  }
+
+  .sample-app-card {
+    background-color: var(--vscode-editorWidget-background);
+    border-radius: 2px;
+    width: 278px;
+    height: 400px;
+    position: relative;
+
+    .section {
+      display: flex;
+      margin-bottom: 0px;
+      flex-wrap: wrap;
     }
 
-    .logo{
-        width: 28px;
-        height: 28px;
-        font-size: 28px;
-        color: var(--vscode-textLink-foreground);
+    .tag {
+      background-color: var(--vscode-editor-inactiveSelectionBackground);
+      border-radius: 20px;
+      width: fit-content;
+      padding: 3px 8px 3px 8px;
+      font-size: 9px;
+      line-height: 11px;
+      align-items: center;
+      text-align: center;
+      color: var(--vscode-titleBar-activeForeground);
+      margin: 8px 0px 0px 8px;
+      white-space: nowrap;
     }
 
-    .title{
-        width: auto;
-        margin-left: 12px;
-
-        h2{
-            font-size: 26px;
-            line-height: 30px;
-            color: var(--vscode-badge-foreground);
-            margin-top: 0px;
-            margin-bottom: 0px;
-            font-weight: normal;
-        }
-
-        h3{
-            font-size: 12px;
-            line-height: 14px;
-            color: var(--vscode-titleBar-activeForeground);
-            margin-top: 0px;
-            margin-bottom: 0px;
-            font-weight: normal;
-        }
+    h2 {
+      font-size: 12px;
+      text-align: center;
+      color: var(--vscode-titleBar-activeForeground);
+      font-weight: normal;
+      text-align: left;
+      margin: 12px 12px 0px 12px;
     }
 
-    .sample-stack{
-        width: 874px;
-        margin: 0 auto;
+    h3 {
+      font-size: 12px;
+      color: var(--vscode-titleBar-activeForeground);
+      opacity: 50%;
+      font-weight: normal;
+      text-align: left;
+      margin: 8px 12px 0px 12px;
+      opacity: 50%;
     }
 
-    .sample-app-card{
-        background-color: var(--vscode-editorWidget-background);
-        border-radius: 2px;
-        width: 278px;
-        height: 400px;
-        position: relative;
-
-        .section{
-            display: flex;
-            margin-bottom: 0px;
-            padding-right: 8px;
-            flex-wrap: wrap;
-        }
-
-        .tag{
-            background-color: var(--vscode-editor-inactiveSelectionBackground);
-            border-radius: 20px;
-            width: fit-content;
-            padding: 3px 8px 3px 8px;
-            font-size: 9px;
-            line-height: 11px;
-            align-items: center;
-            text-align: center;
-            color: var(--vscode-titleBar-activeForeground);
-            margin: 8px 0px 0px 8px;
-            white-space: nowrap;
-        }
-
-        h2{
-            font-size: 12px;
-            text-align: center;
-            color: var(--vscode-titleBar-activeForeground);
-            font-weight: normal;
-            text-align: left;
-            margin: 12px 12px 0px 12px;
-        }
-
-        h3{
-            font-size: 12px;
-            color: var(--vscode-titleBar-activeForeground);
-            opacity: 50%;
-            font-weight: normal;
-            text-align: left;
-            margin: 8px 12px 0px 12px;
-            opacity: 50%;
-        }
-
-        button{
-            font-size: 13px;
-            text-align: center;
-            background-color: var(--vscode-button-background);
-            height: 28px;
-            padding: 6px 11px 6px 11px;
-            border-radius: 0px;
-        }
-
-        span{
-            font-weight: normal;
-        }
-
-        .buttons{
-            margin: 28px 12px 12px auto;
-            position: absolute;
-            bottom: 0px;
-        }
-
-        .right-aligned{
-            margin-left: 190px;
-            margin-right: 8px;
-        }
+    button {
+      font-size: 13px;
+      text-align: center;
+      background-color: var(--vscode-button-background);
+      height: 28px;
+      padding: 6px 11px 6px 11px;
+      border-radius: 0px;
     }
+
+    span {
+      font-weight: normal;
+    }
+
+    .buttons {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+    }
+
+    .right-aligned {
+      margin-left: 190px;
+      margin-right: 0px;
+    }
+  }
 }
 
 /* On screens that are 914px or less, change to 2 column layout */
 @media screen and (max-width: 914px) {
-    .sample-gallery{
-        margin: 52px 0;
+  .sample-gallery {
+    margin: 52px 0;
 
-        #title{
-            width: 874px;
-        }
-
-        .sample-stack{
-            width: 576px;
-            min-width: 576px;
-        }
+    #title {
+      width: 874px;
     }
+
+    .sample-stack {
+      width: 576px;
+      min-width: 576px;
+    }
+  }
 }

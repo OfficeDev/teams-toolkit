@@ -3,7 +3,17 @@
 
 "use strict";
 
-import { commands, Uri, window, workspace, ExtensionContext, env, ViewColumn, debug, QuickPickItem } from "vscode";
+import {
+  commands,
+  Uri,
+  window,
+  workspace,
+  ExtensionContext,
+  env,
+  ViewColumn,
+  debug,
+  QuickPickItem
+} from "vscode";
 import {
   Result,
   FxError,
@@ -35,7 +45,7 @@ import AppStudioCodeSpaceTokenInstance from "./commonlib/appStudioCodeSpaceLogin
 import VsCodeLogInstance from "./commonlib/log";
 import { VSCodeTelemetryReporter } from "./commonlib/telemetry";
 import { CommandsTreeViewProvider, TreeViewCommand } from "./commandsTreeViewProvider";
-import TreeViewManagerInstance from './commandsTreeViewProvider'
+import TreeViewManagerInstance from "./commandsTreeViewProvider";
 import * as extensionPackage from "./../package.json";
 import { ext } from "./extensionVariables";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
@@ -43,14 +53,15 @@ import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetryTiggerFrom,
-  TelemetrySuccess
+  TelemetrySuccess,
+  AccountType
 } from "./telemetry/extTelemetryEvents";
 import * as commonUtils from "./debug/commonUtils";
 import { ExtensionErrors, ExtensionSource } from "./error";
 import { WebviewPanel } from "./controls/webviewPanel";
 import * as constants from "./debug/constants";
 import logger from "./commonlib/log";
-import { isFeatureFlag } from "./utils/commonUtils";
+import { isSPFxProject } from "./utils/commonUtils";
 import * as path from "path";
 import * as fs from "fs-extra";
 import * as vscode from "vscode";
@@ -93,14 +104,18 @@ export async function activate(): Promise<Result<null, FxError>> {
     }
 
     {
-      AzureAccountManager.setStatusChangeMap("successfully-sign-in-azure", (status, token, accountInfo) => {
-        if (status === signedIn) {
-          window.showInformationMessage(StringResources.vsc.handlers.azureSignIn);
-        } else if (status === signedOut) {
-          window.showInformationMessage(StringResources.vsc.handlers.azureSignOut);
-        }
-        return Promise.resolve();
-      }, false);
+      AzureAccountManager.setStatusChangeMap(
+        "successfully-sign-in-azure",
+        (status, token, accountInfo) => {
+          if (status === signedIn) {
+            window.showInformationMessage(StringResources.vsc.handlers.azureSignIn);
+          } else if (status === signedOut) {
+            window.showInformationMessage(StringResources.vsc.handlers.azureSignOut);
+          }
+          return Promise.resolve();
+        },
+        false
+      );
       const result = await core.withAzureAccount(AzureAccountManager);
       if (result.isErr()) {
         showError(result.error);
@@ -115,14 +130,18 @@ export async function activate(): Promise<Result<null, FxError>> {
         appstudioLogin = AppStudioCodeSpaceTokenInstance;
       }
 
-      appstudioLogin.setStatusChangeMap("successfully-sign-in-m365", (status, token, accountInfo) => {
-        if (status === signedIn) {
-          window.showInformationMessage(StringResources.vsc.handlers.m365SignIn);
-        } else if (status === signedOut) {
-          window.showInformationMessage(StringResources.vsc.handlers.m365SignOut);
-        }
-        return Promise.resolve();
-      }, false);
+      appstudioLogin.setStatusChangeMap(
+        "successfully-sign-in-m365",
+        (status, token, accountInfo) => {
+          if (status === signedIn) {
+            window.showInformationMessage(StringResources.vsc.handlers.m365SignIn);
+          } else if (status === signedOut) {
+            window.showInformationMessage(StringResources.vsc.handlers.m365SignOut);
+          }
+          return Promise.resolve();
+        },
+        false
+      );
 
       const result = await core.withAppStudioToken(appstudioLogin);
       if (result.isErr()) {
@@ -153,7 +172,9 @@ export async function activate(): Promise<Result<null, FxError>> {
     }
 
     {
-      const result = await core.withTreeProvider(TreeViewManagerInstance.getTreeView('teamsfx-accounts')!);
+      const result = await core.withTreeProvider(
+        TreeViewManagerInstance.getTreeView("teamsfx-accounts")!
+      );
       if (result.isErr()) {
         showError(result.error);
         return err(result.error);
@@ -180,6 +201,9 @@ export async function activate(): Promise<Result<null, FxError>> {
         return err(result.error);
       }
     }
+    {
+      await openMarkdownHandler();
+    }
   } catch (e) {
     const FxError: FxError = {
       name: e.name,
@@ -195,26 +219,20 @@ export async function activate(): Promise<Result<null, FxError>> {
 }
 
 export async function createNewProjectHandler(args?: any[]): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, {
-    [TelemetryProperty.TriggerFrom]:
-      args?.toString() === CommandsTreeViewProvider.TreeViewFlag
-        ? TelemetryTiggerFrom.TreeView
-        : TelemetryTiggerFrom.CommandPalette
-  });
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
   return await runCommand(Stage.create);
 }
 
-export async function updateProjectHandler(): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.UpdateProjectStart, {
-    [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
-  });
+export async function updateProjectHandler(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.UpdateProjectStart, getTriggerFromProperty(args));
   return await runCommand(Stage.update);
 }
 
-export async function validateManifestHandler(): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ValidateManifestStart, {
-    [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
-  });
+export async function validateManifestHandler(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.ValidateManifestStart,
+    getTriggerFromProperty(args)
+  );
 
   const func: Func = {
     namespace: "fx-solution-azure",
@@ -232,10 +250,8 @@ export async function validateManifestHandler(): Promise<Result<null, FxError>> 
   return result;
 }
 
-export async function buildPackageHandler(): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.BuildStart, {
-    [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
-  });
+export async function buildPackageHandler(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.BuildStart, getTriggerFromProperty(args));
 
   const func: Func = {
     namespace: "fx-solution-azure",
@@ -253,28 +269,22 @@ export async function buildPackageHandler(): Promise<Result<null, FxError>> {
   return result;
 }
 
-export async function provisionHandler(): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ProvisionStart, {
-    [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
-  });
+export async function provisionHandler(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ProvisionStart, getTriggerFromProperty(args));
   return await runCommand(Stage.provision);
 }
 
-export async function deployHandler(): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DeployStart, {
-    [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
-  });
+export async function deployHandler(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DeployStart, getTriggerFromProperty(args));
   return await runCommand(Stage.deploy);
 }
 
-export async function publishHandler(): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.PublishStart, {
-    [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
-  });
+export async function publishHandler(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.PublishStart, getTriggerFromProperty(args));
   return await runCommand(Stage.publish);
 }
 
-const coreExeceutor: RemoteFuncExecutor = async function (
+const coreExeceutor: RemoteFuncExecutor = async function(
   func: Func,
   answers: Inputs | ConfigMap
 ): Promise<Result<unknown, FxError>> {
@@ -291,7 +301,10 @@ export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
       result = err(
         new UserError(
           ExtensionErrors.ConcurrentTriggerTask,
-          util.format(StringResources.vsc.handlers.concurrentTriggerTask, Array.from(runningTasks).join(",")),
+          util.format(
+            StringResources.vsc.handlers.concurrentTriggerTask,
+            Array.from(runningTasks).join(",")
+          ),
           ExtensionSource
         )
       );
@@ -325,13 +338,15 @@ export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
     // 5. run question model
     const node = qres.value;
     if (node) {
-      VsCodeLogInstance.info(util.format(StringResources.vsc.handlers.questionTree, JSON.stringify(node, null, 4)));
       const res: InputResult = await traverse(node, answers, VS_CODE_UI, coreExeceutor);
-      VsCodeLogInstance.info(util.format(StringResources.vsc.handlers.userInput, JSON.stringify(res, null, 4)));
       if (res.type === InputResultType.error) {
         throw res.error!;
       } else if (res.type === InputResultType.cancel) {
-        throw new UserError(ExtensionErrors.UserCancel, StringResources.vsc.common.userCancel, ExtensionSource);
+        throw new UserError(
+          ExtensionErrors.UserCancel,
+          StringResources.vsc.common.userCancel,
+          ExtensionSource
+        );
       }
     }
 
@@ -350,21 +365,16 @@ export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
       );
     }
   } catch (e) {
-    if(e instanceof UserError){
-      const ue:UserError = e as UserError;
-      if(ue.name === "DoProvisionFirst"){
-        runningTasks.delete(stage);
-        if (eventName) {
-          ExtTelemetry.sendTelemetryEvent(eventName, {
-            [TelemetryProperty.Success]: TelemetrySuccess.No
-          });
-        }
-        return await provisionHandler();
+    if ("name" in e && (e as FxError).name === "DoProvisionFirst") {
+      runningTasks.delete(stage);
+      if (eventName) {
+        ExtTelemetry.sendTelemetryEvent(eventName, {
+          [TelemetryProperty.Success]: TelemetrySuccess.No
+        });
       }
+      return await provisionHandler();
     }
-    else {
-      result = wrapError(e);
-    }
+    result = wrapError(e);
   }
 
   // 7. unlock
@@ -377,24 +387,24 @@ export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
 }
 
 export function detectVsCodeEnv(): VsCodeEnv {
-    // extensionKind returns ExtensionKind.UI when running locally, so use this to detect remote
-    const extension = vscode.extensions.getExtension("Microsoft.teamsfx-extension");
+  // extensionKind returns ExtensionKind.UI when running locally, so use this to detect remote
+  const extension = vscode.extensions.getExtension("Microsoft.teamsfx-extension");
 
-    if (extension?.extensionKind === vscode.ExtensionKind.Workspace) {
-        // running remotely
-        // Codespaces browser-based editor will return UIKind.Web for uiKind
-        if (vscode.env.uiKind === vscode.UIKind.Web) {
-            return VsCodeEnv.codespaceBrowser;
-        } else {
-            return VsCodeEnv.codespaceVsCode;
-        }
+  if (extension?.extensionKind === vscode.ExtensionKind.Workspace) {
+    // running remotely
+    // Codespaces browser-based editor will return UIKind.Web for uiKind
+    if (vscode.env.uiKind === vscode.UIKind.Web) {
+      return VsCodeEnv.codespaceBrowser;
     } else {
-        // running locally
-        return VsCodeEnv.local;
+      return VsCodeEnv.codespaceVsCode;
     }
+  } else {
+    // running locally
+    return VsCodeEnv.local;
   }
+}
 
-async function runUserTask(func: Func, eventName:string): Promise<Result<null, FxError>> {
+async function runUserTask(func: Func, eventName: string): Promise<Result<null, FxError>> {
   let result: Result<null, FxError> = ok(null);
 
   try {
@@ -403,7 +413,10 @@ async function runUserTask(func: Func, eventName:string): Promise<Result<null, F
       result = err(
         new UserError(
           ExtensionErrors.ConcurrentTriggerTask,
-          util.format(StringResources.vsc.handlers.concurrentTriggerTask, Array.from(runningTasks).join(",")),
+          util.format(
+            StringResources.vsc.handlers.concurrentTriggerTask,
+            Array.from(runningTasks).join(",")
+          ),
           ExtensionSource
         )
       );
@@ -433,13 +446,15 @@ async function runUserTask(func: Func, eventName:string): Promise<Result<null, F
     // 5. run question model
     const node = qres.value;
     if (node) {
-      VsCodeLogInstance.info(util.format(StringResources.vsc.handlers.questionTree, JSON.stringify(node, null, 4)));
       const res: InputResult = await traverse(node, answers, VS_CODE_UI, coreExeceutor);
-      VsCodeLogInstance.info(util.format(StringResources.vsc.handlers.userInput, JSON.stringify(res, null, 4)));
       if (res.type === InputResultType.error && res.error) {
         throw res.error;
       } else if (res.type === InputResultType.cancel) {
-        throw new UserError(ExtensionErrors.UserCancel, StringResources.vsc.common.userCancel, ExtensionSource);
+        throw new UserError(
+          ExtensionErrors.UserCancel,
+          StringResources.vsc.common.userCancel,
+          ExtensionSource
+        );
       }
     }
 
@@ -523,10 +538,8 @@ function checkCoreNotEmpty(): Result<null, SystemError> {
 /**
  * manually added customized command
  */
-export async function updateAADHandler(): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.UpdateAadStart, {
-    [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
-  });
+export async function updateAADHandler(args: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.UpdateAadStart, getTriggerFromProperty(args));
   const func: Func = {
     namespace: "fx-solution-azure/fx-resource-aad-app-for-teams",
     method: "aadUpdatePermission"
@@ -534,11 +547,8 @@ export async function updateAADHandler(): Promise<Result<null, FxError>> {
   return await runUserTask(func, TelemetryEvent.UpdateAad);
 }
 
-
-export async function addCapabilityHandler(): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddCapStart, {
-    [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette
-  });
+export async function addCapabilityHandler(args: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddCapStart, getTriggerFromProperty(args));
   const func: Func = {
     namespace: "fx-solution-azure",
     method: "addCapability"
@@ -587,7 +597,10 @@ export async function backendExtensionsInstallHandler(): Promise<void> {
 
     if (backendRoot) {
       const dotnetChecker = new DotnetChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
-      const backendExtensionsInstaller = new BackendExtensionsInstaller(dotnetChecker, vscodeLogger);
+      const backendExtensionsInstaller = new BackendExtensionsInstaller(
+        dotnetChecker,
+        vscodeLogger
+      );
 
       try {
         await backendExtensionsInstaller.install(backendRoot);
@@ -602,8 +615,8 @@ export async function backendExtensionsInstallHandler(): Promise<void> {
 /**
  * detect if some ports are already in use, and if so, stop debugging
  */
-export async function detectPortsInUse(): Promise<void> {
-  let ports: [number, string[]][] = [];
+async function detectPortsInUse(): Promise<void> {
+  const ports: [number, string[]][] = [];
   if (vscode.workspace.workspaceFolders) {
     const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
@@ -622,20 +635,20 @@ export async function detectPortsInUse(): Promise<void> {
       ports.push(...constants.backendPorts);
     }
     const botRoot = await commonUtils.getProjectRoot(workspacePath, constants.botFolderName);
-      if (botRoot) {
-        ports.push(...constants.botPorts);
-      }
+    if (botRoot) {
+      ports.push(...constants.botPorts);
+    }
   }
 
   const portsInUse: number[] = [];
-  for (let port of ports) {
+  for (const port of ports) {
     if (await commonUtils.detectPortListening(port[0], port[1])) {
       portsInUse.push(port[0]);
     }
   }
   if (portsInUse.length > 0) {
     let message = constants.portsInUseMessage + ":";
-    for (let port of portsInUse) {
+    for (const port of portsInUse) {
       message = message + ` ${port}`;
     }
     window.showErrorMessage(message);
@@ -649,49 +662,107 @@ export async function detectPortsInUse(): Promise<void> {
  * call localDebug on core
  */
 export async function preDebugCheckHandler(): Promise<void> {
+  try {
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPreCheck);
+  } catch {
+    // ignore telemetry error
+  }
+
+  await detectPortsInUse();
+
   let result: Result<any, FxError> = ok(null);
   result = await runCommand(Stage.debug);
   if (result.isErr()) {
-    throw result.error;
+    try {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPreCheck, result.error);
+    } finally {
+      // ignore telemetry error
+      throw result.error;
+    }
   }
 }
 
-export async function openDocumentHandler(): Promise<boolean> {
+export async function openDocumentHandler(args: any[]): Promise<boolean> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, getTriggerFromProperty(args));
   return env.openExternal(Uri.parse("https://aka.ms/build-first-app"));
 }
 
-export async function openWelcomeHandler() {
-  if (isFeatureFlag()) {
-    WebviewPanel.createOrShow(ext.context.extensionPath, PanelType.QuickStart);
-  } else {
-    const welcomePanel = window.createWebviewPanel("react", StringResources.vsc.handlers.teamsToolkit, ViewColumn.One, {
-      enableScripts: true,
-      retainContextWhenHidden: true
-    });
-    welcomePanel.webview.html = getHtmlForWebview();
+export async function openWelcomeHandler(args?: any[]) {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.QuickStart, getTriggerFromProperty(args));
+  WebviewPanel.createOrShow(ext.context.extensionPath, PanelType.QuickStart);
+}
+
+function getTriggerFromProperty(args?: any[]) {
+  const isFromTreeView = args && args.toString() === "TreeView";
+
+  return {
+    [TelemetryProperty.TriggerFrom]: isFromTreeView
+      ? TelemetryTiggerFrom.TreeView
+      : TelemetryTiggerFrom.CommandPalette
+  };
+}
+
+async function openMarkdownHandler() {
+  const afterScaffold = ext.context.globalState.get("openReadme", false);
+  if (afterScaffold && workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
+    ext.context.globalState.update("openReadme", false);
+    const workspaceFolder = workspace.workspaceFolders[0];
+    const workspacePath: string = workspaceFolder.uri.fsPath;
+    let targetFolder: string | undefined;
+    if (await isSPFxProject(workspacePath)) {
+      targetFolder = `${workspacePath}/SPFx`;
+    } else {
+      const tabFolder = await commonUtils.getProjectRoot(
+        workspacePath,
+        constants.frontendFolderName
+      );
+      const botFolder = await commonUtils.getProjectRoot(workspacePath, constants.botFolderName);
+      if (tabFolder && botFolder) {
+        targetFolder = workspacePath;
+      } else if (tabFolder) {
+        targetFolder = tabFolder;
+      } else {
+        targetFolder = botFolder;
+      }
+    }
+    const uri = Uri.file(`${targetFolder}/README.md`);
+    workspace
+      .openTextDocument(uri)
+      .then((document) => {
+        window.showTextDocument(document);
+      })
+      .then(() => {
+        const PreviewMarkdownCommand = "markdown.showPreviewToSide";
+        commands.executeCommand(PreviewMarkdownCommand, uri);
+      });
   }
 }
 
-export async function openSamplesHandler() {
+export async function openSamplesHandler(args?: any[]) {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Samples, getTriggerFromProperty(args));
   WebviewPanel.createOrShow(ext.context.extensionPath, PanelType.SampleGallery);
 }
 
-export async function openAppManagement() {
+export async function openAppManagement(args?: any[]) {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ManageTeamsApp, getTriggerFromProperty(args));
   return env.openExternal(Uri.parse("https://dev.teams.microsoft.com/apps"));
 }
 
-export async function openBotManagement() {
+export async function openBotManagement(args?: any[]) {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ManageTeamsBot, getTriggerFromProperty(args));
   return env.openExternal(Uri.parse("https://dev.teams.microsoft.com/bots"));
 }
 
-export async function openReportIssues() {
+export async function openReportIssues(args?: any[]) {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ReportIssues, getTriggerFromProperty(args));
   return env.openExternal(Uri.parse("https://github.com/OfficeDev/TeamsFx/issues"));
 }
 
-export async function openManifestHandler(): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenManifestEditorStart, {
-    [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.TreeView
-  });
+export async function openManifestHandler(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.OpenManifestEditorStart,
+    getTriggerFromProperty(args)
+  );
   if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     const workspaceFolder = workspace.workspaceFolders[0];
     const configRoot = await commonUtils.getProjectRoot(
@@ -732,61 +803,13 @@ export async function openManifestHandler(): Promise<Result<null, FxError>> {
 }
 
 export async function openM365AccountHandler() {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenM365Portal);
   return env.openExternal(Uri.parse("https://admin.microsoft.com/Adminportal/"));
 }
 
 export async function openAzureAccountHandler() {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenAzurePortal);
   return env.openExternal(Uri.parse("https://portal.azure.com/"));
-}
-
-// TODO: remove this once welcome page is ready
-function getHtmlForWebview() {
-  return `<!DOCTYPE html>
-  <html>
-
-  <head>
-    <meta charset="utf-8" />
-    <title>Teams Toolkit</title>
-  </head>
-
-  <body>
-    <div class="message-container">
-      <div class="message">
-        Coming Soon...
-      </div>
-    </div>
-    <style type="text/css">
-      html {
-        height: 100%;
-      }
-
-      body {
-        box-sizing: border-box;
-        min-height: 100%;
-        margin: 0;
-        padding: 15px 30px;
-        display: flex;
-        flex-direction: column;
-        color: white;
-        font-family: "Segoe UI", "Helvetica Neue", "Helvetica", Arial, sans-serif;
-        background-color: #2C2C32;
-      }
-
-      .message-container {
-        flex-grow: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 30px;
-      }
-
-      .message {
-        font-weight: 300;
-        font-size: 1.4rem;
-      }
-    </style>
-  </body>
-  </html>`;
 }
 
 export async function cmdHdlLoadTreeView(context: ExtensionContext) {
@@ -798,16 +821,15 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
     try {
       switch (node.contextValue) {
         case "signedinM365": {
-          signOutM365();
+          signOutM365(true);
           break;
         }
         case "signedinAzure": {
-          signOutAzure();
+          signOutAzure(true);
           break;
         }
       }
-    }
-    catch (e) {
+    } catch (e) {
       showError(e);
     }
   });
@@ -817,9 +839,11 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
     switch (node.contextValue) {
       case "signinM365": {
         await env.openExternal(Uri.parse("https://www.office.com/"));
+        break;
       }
       case "signinAzure": {
-        await env.openExternal(Uri.parse("https://ms.portal.azure.com/"));
+        await env.openExternal(Uri.parse("https://portal.azure.com/"));
+        break;
       }
     }
   });
@@ -833,7 +857,7 @@ export async function showError(e: FxError) {
   VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}, stack: ${e.stack}`);
 
   const errorCode = `${e.source}.${e.name}`;
-  if(isCancelWarning(e)){
+  if (isCancelWarning(e)) {
     return;
   } else if (e instanceof UserError && e.helpLink && typeof e.helpLink != "undefined") {
     const help = {
@@ -863,31 +887,31 @@ export async function showError(e: FxError) {
 }
 
 export async function cmpAccountsHandler() {
-  let signInAzureOption: VscQuickPickItem = {
-    id:"signInAzure",
+  const signInAzureOption: VscQuickPickItem = {
+    id: "signInAzure",
     label: "Sign in to Azure",
     function: () => signInAzure()
   };
 
-  let signOutAzureOption: VscQuickPickItem = {
-    id:"signOutAzure",
+  const signOutAzureOption: VscQuickPickItem = {
+    id: "signOutAzure",
     label: "Sign out of Azure: ",
-    function: () => signOutAzure()
+    function: () => signOutAzure(false)
   };
 
-  let signInM365Option: VscQuickPickItem = {
-    id:"signinM365",
+  const signInM365Option: VscQuickPickItem = {
+    id: "signinM365",
     label: "Sign in to M365",
     function: () => signInM365()
   };
 
-  let signOutM365Option: VscQuickPickItem = {
-    id:"signOutM365",
+  const signOutM365Option: VscQuickPickItem = {
+    id: "signOutM365",
     label: "Sign out of M365: ",
-    function: () => signOutM365()
+    function: () => signOutM365(false)
   };
 
-  //TODO: hide subscription list until core or api expose the get subscription list API 
+  //TODO: hide subscription list until core or api expose the get subscription list API
   // let selectSubscriptionOption: VscQuickPickItem = {
   //   id: "selectSubscription",
   //   label: "Specify an Azure Subscription",
@@ -897,35 +921,35 @@ export async function cmpAccountsHandler() {
 
   const quickPick = window.createQuickPick();
 
-  let quickItemOptionArray: VscQuickPickItem[] = [];
+  const quickItemOptionArray: VscQuickPickItem[] = [];
 
-  let m365Account = await AppStudioTokenInstance.getStatus();
-  if(m365Account.status === "SignedIn"){
+  const m365Account = await AppStudioTokenInstance.getStatus();
+  if (m365Account.status === "SignedIn") {
     const accountInfo = m365Account.accountInfo;
     const email = (accountInfo as any).upn ? (accountInfo as any).upn : undefined;
-    if(email !== undefined){
+    if (email !== undefined) {
       signOutM365Option.label = signOutM365Option.label.concat(email);
     }
     quickItemOptionArray.push(signOutM365Option);
-  }else{
+  } else {
     quickItemOptionArray.push(signInM365Option);
   }
 
-  let azureAccount = await AzureAccountManager.getStatus();
-  if (azureAccount.status === "SignedIn"){
+  const azureAccount = await AzureAccountManager.getStatus();
+  if (azureAccount.status === "SignedIn") {
     const accountInfo = azureAccount.accountInfo;
     const email = (accountInfo as any).upn ? (accountInfo as any).upn : undefined;
-    if(email !== undefined){
+    if (email !== undefined) {
       signOutAzureOption.label = signOutAzureOption.label.concat(email);
     }
     quickItemOptionArray.push(signOutAzureOption);
     //quickItemOptionArray.push(selectSubscriptionOption);
-  }else{
+  } else {
     quickItemOptionArray.push(signInAzureOption);
   }
 
   quickPick.items = quickItemOptionArray;
-  quickPick.onDidChangeSelection(selection => {
+  quickPick.onDidChangeSelection((selection) => {
     if (selection[0]) {
       (selection[0] as VscQuickPickItem).function().catch(console.error);
     }
@@ -934,17 +958,23 @@ export async function cmpAccountsHandler() {
   quickPick.show();
 }
 
-export async function signOutAzure() {
+export async function signOutAzure(isFromTreeView: boolean) {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SignOutStart, {
+    [TelemetryProperty.TriggerFrom]: isFromTreeView
+      ? TelemetryTiggerFrom.TreeView
+      : TelemetryTiggerFrom.CommandPalette,
+    [TelemetryProperty.AccountType]: AccountType.Azure
+  });
   const result = await AzureAccountManager.signout();
   if (result) {
-    await TreeViewManagerInstance.getTreeView('teamsfx-accounts')!.refresh([
+    await TreeViewManagerInstance.getTreeView("teamsfx-accounts")!.refresh([
       {
         commandId: "fx-extension.signinAzure",
         label: StringResources.vsc.handlers.signInAzure,
         contextValue: "signinAzure"
       }
     ]);
-    await TreeViewManagerInstance.getTreeView('teamsfx-accounts')!.remove([
+    await TreeViewManagerInstance.getTreeView("teamsfx-accounts")!.remove([
       {
         commandId: "fx-extension.selectSubscription",
         label: "",
@@ -954,7 +984,13 @@ export async function signOutAzure() {
   }
 }
 
-export async function signOutM365() {
+export async function signOutM365(isFromTreeView: boolean) {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SignOutStart, {
+    [TelemetryProperty.TriggerFrom]: isFromTreeView
+      ? TelemetryTiggerFrom.TreeView
+      : TelemetryTiggerFrom.CommandPalette,
+    [TelemetryProperty.AccountType]: AccountType.M365
+  });
   let appstudioLogin: AppStudioTokenProvider = AppStudioTokenInstance;
   const vscodeEnv = detectVsCodeEnv();
   if (vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode) {
@@ -962,7 +998,7 @@ export async function signOutM365() {
   }
   const result = await appstudioLogin.signout();
   if (result) {
-    await TreeViewManagerInstance.getTreeView('teamsfx-accounts')!.refresh([
+    await TreeViewManagerInstance.getTreeView("teamsfx-accounts")!.refresh([
       {
         commandId: "fx-extension.signinM365",
         label: StringResources.vsc.handlers.signIn365,
@@ -985,7 +1021,6 @@ export async function selectSubscription() {
 }
 
 export interface VscQuickPickItem extends QuickPickItem {
-
   /**
    * Current id of the option item.
    */

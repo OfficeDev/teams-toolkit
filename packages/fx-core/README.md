@@ -1,6 +1,6 @@
-# TeamsFx Core Pack
+# TeamsFx Core
 
-TeamsFx Core Pack implements the core capabilities for TeamsFx Extension/CLI under TeamsFx API contracts.
+The TeamsFx Core package implements shared capabilities for Teams Toolkit IDE Extensions and the CLI through API contracts defined in the [api](/packages/api).
 
 ## Data Collection. 
 

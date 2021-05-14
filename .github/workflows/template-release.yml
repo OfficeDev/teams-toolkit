@@ -1,7 +1,9 @@
 name: Templates Release
 
 on:
-  create:
+  push:
+    tags:
+    - templates@*
 
 jobs:
   build:

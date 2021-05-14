@@ -22,7 +22,8 @@ export enum CoreErrorNames {
     UncatchedError = "UncatchedError",
     NotSupportedProjectType = "NotSupportedProjectType",
     InitError = "InitError",
-    DownloadSampleFail = "DownloadSampleFail"
+    DownloadSampleFail = "DownloadSampleFail",
+    NoSubscriptionSelected = "NoSubscriptionSelected",
 }
 
 export function InvalidContext(): UserError {
@@ -47,4 +48,8 @@ export function EnvNotExist(param: any): UserError {
 
 export function NotSupportedProjectType(): UserError {
     return returnUserError(new Error(`Project type not supported`), CoreSource, CoreErrorNames.NotSupportedProjectType);
+}
+
+export function DownloadSampleFail(): SystemError {
+    return returnUserError(new Error("Failed to clone sample app"), CoreSource, CoreErrorNames.DownloadSampleFail);
 }

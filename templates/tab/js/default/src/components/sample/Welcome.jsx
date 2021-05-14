@@ -6,7 +6,7 @@ import { AzureFunctions } from "./AzureFunctions";
 import { Graph } from "./Graph";
 import { CurrentUser } from "./CurrentUser";
 import { useTeamsFx } from "./lib/useTeamsFx";
-import { TeamsUserCredential } from "teamsdev-client";
+import { TeamsUserCredential } from "@microsoft/teamsfx";
 import { useData } from "./lib/useData";
 import { Deploy } from "./Deploy";
 import { Publish } from "./Publish";
@@ -47,7 +47,7 @@ export function Welcome(props) {
   return (
     <div className="welcome page">
       <div className="narrow page-padding">
-        <Image src="thumbsup.png" />
+        <Image src="hello.png" />
         <h1 className="center">
           Congratulations{userName ? ", " + userName : ""}!
         </h1>

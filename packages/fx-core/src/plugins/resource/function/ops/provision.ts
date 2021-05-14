@@ -108,10 +108,13 @@ export class FunctionProvision {
         oauthHost: string,
         tenantId: string,
         applicationIdUris: string
-    ): void {
+    ): void {        
+        // Remove tailing "/"
+        const normalizedOauthHost = oauthHost.replace(/\/+$/g, "");
+
         this.pushAppSettings(site, FunctionAppSettingKeys.clientId, clientId);
         this.pushAppSettings(site, FunctionAppSettingKeys.clientSecret, clientSecret);
-        this.pushAppSettings(site, FunctionAppSettingKeys.oauthHost, oauthHost);
+        this.pushAppSettings(site, FunctionAppSettingKeys.oauthHost, normalizedOauthHost);
         this.pushAppSettings(site, FunctionAppSettingKeys.tenantId, tenantId);
         this.pushAppSettings(site, FunctionAppSettingKeys.applicationIdUris, applicationIdUris);
     }
@@ -147,11 +150,13 @@ export class FunctionProvision {
         oauthHost: string,
         tenantId: string
     ): SiteAuthSettings {
+        // Remove tailing "/"
+        const normalizedOauthHost = oauthHost.replace(/\/+$/g, "");
         return {
             enabled: true,
             defaultProvider: "AzureActiveDirectory",
             clientId: clientId,
-            issuer: `${oauthHost}/${tenantId}/v2.0`,
+            issuer: `${normalizedOauthHost}/${tenantId}/v2.0`,
             allowedAudiences: [
                 clientId,
                 applicationIdUri

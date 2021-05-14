@@ -5,6 +5,9 @@ import { ProductName } from "@microsoft/teamsfx-api";
 import * as vscode from "vscode";
 
 import { ext } from "../extensionVariables";
+import { ExtTelemetry } from "../telemetry/extTelemetry";
+import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
+import { isWorkspaceSupported, getTeamsAppId } from "../utils/commonUtils";
 
 interface IRunningTeamsfxTask {
     source: string;
@@ -13,6 +16,7 @@ interface IRunningTeamsfxTask {
 }
 
 const allRunningTeamsfxTasks: Map<IRunningTeamsfxTask, number> = new Map<IRunningTeamsfxTask, number>();
+const allRunningDebugSessions: Set<string> = new Set<string>();
 
 function isTeamsfxTask(task: vscode.Task): boolean {
     // teamsfx: xxx start / xxx watch
@@ -33,9 +37,11 @@ function isTeamsfxTask(task: vscode.Task): boolean {
 }
 
 function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent): void {
-    const task = event.execution.task;
-    if (task.scope !== undefined && isTeamsfxTask(task)) {
-        allRunningTeamsfxTasks.set({ source: task.source, name: task.name, scope: task.scope}, event.processId);
+    if (ext.workspaceUri && isWorkspaceSupported(ext.workspaceUri.fsPath)) {
+        const task = event.execution.task;
+        if (task.scope !== undefined && isTeamsfxTask(task)) {
+            allRunningTeamsfxTasks.set({ source: task.source, name: task.name, scope: task.scope}, event.processId);
+        }
     }
 }
 
@@ -46,15 +52,47 @@ function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): void {
     }
 }
 
+function onDidStartDebugSessionHandler(event: vscode.DebugSession): void {
+    if (ext.workspaceUri && isWorkspaceSupported(ext.workspaceUri.fsPath)) {
+        const debugConfig = event.configuration;
+        if (debugConfig &&
+            debugConfig.name &&
+            (debugConfig.url || debugConfig.port) && // it's from launch.json
+            !debugConfig.postRestartTask) // and not a restart one
+        {
+            // send f5 event telemetry
+            try {
+                const remoteAppId = getTeamsAppId() as string;
+                ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugStart, {
+                    [TelemetryProperty.DebugSessionId]: event.id,
+                    [TelemetryProperty.DebugType]: debugConfig.type,
+                    [TelemetryProperty.DebugRequest]: debugConfig.request,
+                    [TelemetryProperty.DebugPort]: debugConfig.port + "",
+                    [TelemetryProperty.DebugRemote]: debugConfig.url as string && remoteAppId && (debugConfig.url as string).includes(remoteAppId) ? "true" : "false"
+                });
+            } catch {
+                // ignore telemetry error
+            }
+
+            allRunningDebugSessions.add(event.id);
+        }
+    }
+}
+
 function onDidTerminateDebugSessionHandler(event: vscode.DebugSession): void {
-    const debugConfig = event.configuration;
-    if (debugConfig &&
-        debugConfig.name &&
-        (debugConfig.url || debugConfig.port) && // it's from launch.json
-        !debugConfig.postRestartTask) // and not a restart one
+    if (allRunningDebugSessions.has(event.id)) // a valid debug session
     {
+        // send stop-debug event telemetry
+        try {
+            ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugStop, {
+                [TelemetryProperty.DebugSessionId]: event.id
+            });
+        } catch {
+            // ignore telemetry error
+        }
+
         const extConfig: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration("fx-extension");
-        if (extConfig.get<boolean>("stopTeamsfxTasksPostDebug", true)) {
+        if (extConfig.get<boolean>("stopTeamsToolkitTasksPostDebug", true)) {
             for (const task of allRunningTeamsfxTasks) {
                 try {
                     process.kill(task[1], "SIGINT");
@@ -64,12 +102,14 @@ function onDidTerminateDebugSessionHandler(event: vscode.DebugSession): void {
             }
         }
 
+        allRunningDebugSessions.delete(event.id);
         allRunningTeamsfxTasks.clear();
     }
 }
 
-export function registerTeamsfxTaskEvents(): void {
+export function registerTeamsfxTaskAndDebugEvents(): void {
     ext.context.subscriptions.push(vscode.tasks.onDidStartTaskProcess(onDidStartTaskProcessHandler));
     ext.context.subscriptions.push(vscode.tasks.onDidEndTaskProcess(onDidEndTaskProcessHandler));
+    ext.context.subscriptions.push(vscode.debug.onDidStartDebugSession(onDidStartDebugSessionHandler));
     ext.context.subscriptions.push(vscode.debug.onDidTerminateDebugSession(onDidTerminateDebugSessionHandler));
 } 

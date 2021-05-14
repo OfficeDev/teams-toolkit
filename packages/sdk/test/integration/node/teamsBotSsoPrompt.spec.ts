@@ -25,7 +25,6 @@ import {
 } from "../../../src";
 import { assert, use as chaiUse } from "chai";
 import chaiPromises from "chai-as-promised";
-import sinon from "sinon";
 import {
   getSsoTokenFromTeams,
   MockEnvironmentVariable,
@@ -51,7 +50,6 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
     Success = "Success",
     Fail = "Fail"
   }
-  const sandbox = sinon.createSandbox();
 
   before(async function() {
     restore = MockEnvironmentVariable();
@@ -59,7 +57,6 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
   });
 
   after(function() {
-    sandbox.restore();
     RestoreEnvironmentVariable(restore);
   });
 

@@ -4,7 +4,6 @@
 
 import * as fs from "fs-extra";
 import * as os from "os";
-import * as strings from "../resources/strings.json";
 import {
     AzureAccountProvider,
     ConfigMap,
@@ -43,17 +42,20 @@ import {
     Json,
     Dict,
     ProjectSettings,
+    SubscriptionInfo,
+    MsgLevel
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import * as error from "./error";
 import { Loader, Meta } from "./loader";
-import { deserializeDict, fetchCodeZip, mapToJson, mergeSerectData, objectToMap, saveFilesRecursively, serializeDict, sperateSecretData } from "../common/tools";
+import { deserializeDict, fetchCodeZip, getStrings, mapToJson, mergeSerectData, objectToMap, saveFilesRecursively, serializeDict, sperateSecretData } from "../common/tools";
 import { VscodeManager } from "./vscodeManager";
 import { CoreQuestionNames, ProjectNamePattern, QuestionAppName, QuestionRootFolder, QuestionSelectSolution, SampleSelect, ScratchOptionNo, ScratchOptionYes, ScratchOrSampleSelect } from "./question";
 import * as jsonschema from "jsonschema";
 import { AzureSubscription, getSubscriptionList } from "./loginUtils";
 import { sleep } from "../plugins/resource/spfx/utils/utils";
 import AdmZip from "adm-zip";
+import { getResourceFolder } from "..";
 
 class CoreImpl implements Core {
     private target?: CoreImpl;
@@ -88,7 +90,7 @@ class CoreImpl implements Core {
 
         this.ctx = {
             root: os.homedir() + "/teams_app/",
-        };  
+        };
         this.globalFxFolder = os.homedir() + `/.${ConfigFolderName}/`;
     }
 
@@ -110,11 +112,11 @@ class CoreImpl implements Core {
         if (stage === Stage.create) {
             const scratchSelectNode = new QTreeNode(ScratchOrSampleSelect);
             node.addChild(scratchSelectNode);
-            
+
             const scratchNode = new QTreeNode({type:NodeType.group});
             scratchNode.condition = {equals: ScratchOptionYes.id};
             scratchSelectNode.addChild(scratchNode);
-            
+
             const sampleNode = new QTreeNode(SampleSelect);
             sampleNode.condition = {equals: ScratchOptionNo.id};
             scratchSelectNode.addChild(sampleNode);
@@ -206,7 +208,7 @@ class CoreImpl implements Core {
         const namespace = func.namespace;
         const array = namespace?namespace.split("/"):[];
         if (!namespace || "" === namespace || array.length === 0) {
-            
+
         } else {
             const solutionName = array[0];
             const solution = this.globalSolutions.get(solutionName);
@@ -235,38 +237,45 @@ class CoreImpl implements Core {
         const folder = answers?.getString(QuestionRootFolder.name);
 
         const scratch = answers?.getString(CoreQuestionNames.CreateFromScratch);
-        if(scratch === ScratchOptionNo.id){
+        if (scratch === ScratchOptionNo.id) {
             const samples = answers?.getOptionItem(CoreQuestionNames.Samples);
-            if(samples && samples.data && folder){
-                const url = samples.data as string;
-                const sampleId = samples.id;
-                const progress = this.ctx.dialog.createProgressBar("Fetch sample app", 2);
-                progress.start();
-                try{
-                    const fetchRes = await fetchCodeZip(url);
-                    progress.next("unzip app package");
-                    if (fetchRes !== undefined) {
-                        await saveFilesRecursively(new AdmZip(fetchRes.data), sampleId, folder);
-                        progress.next("open folder");
-                        await this.ctx.dialog?.communicate(
-                            new DialogMsg(DialogType.Ask, {
-                                type: QuestionType.OpenFolder,
-                                description: `${folder}\\${sampleId}`,
-                            }),
-                        );
-                        return ok(null);
+            if (samples && samples.data && folder) {
+                const answer = (await this.ctx.dialog?.communicate(
+                    new DialogMsg(DialogType.Show, {
+                        description: `Clone '${samples.label}' from Github. This will clone '${samples.label}' repository to your local machine`,
+                        level: MsgLevel.Info,
+                        items: ["Clone", "Cancel"]
+                    })
+                ))?.getAnswer();
+                if (answer === "Clone") {
+                    const url = samples.data as string;
+                    const sampleId = samples.id;
+                    const progress = this.ctx.dialog.createProgressBar("Fetch sample app", 2);
+                    progress.start();
+                    try {
+                        progress.next(`Downloading from '${url}'`);
+                        const fetchRes = await fetchCodeZip(url);
+                        progress.next("Unzipping the sample package");
+                        if (fetchRes !== undefined) {
+                            await saveFilesRecursively(new AdmZip(fetchRes.data), sampleId, folder);
+                            await this.ctx.dialog?.communicate(
+                                new DialogMsg(DialogType.Ask, {
+                                    type: QuestionType.OpenFolder,
+                                    description: `${folder}\\${sampleId}`,
+                                }),
+                            );
+                        }
+                        else{
+                            progress.end();
+                            return err(error.DownloadSampleFail());
+                        }
+                    }
+                    finally {
+                        progress.end();
                     }
                 }
-                finally{
-                    progress.end();
-                }
+                return ok(null);
             }
-            return err(new UserError(
-                error.CoreErrorNames.DownloadSampleFail,
-                `DownloadSampleFail`,
-                error.CoreSource,
-                )
-            );
         }
 
         this.ctx.logProvider?.info(`[Core] create - create target object`);
@@ -280,7 +289,7 @@ class CoreImpl implements Core {
         this.target.ctx.answers = answers;
 
         const appName = answers?.getString(QuestionAppName.name);
-        if(undefined === appName)
+        if (undefined === appName)
             return err(
                 new UserError(
                     error.CoreErrorNames.InvalidInput,
@@ -288,7 +297,7 @@ class CoreImpl implements Core {
                     error.CoreSource,
                 ),
             );
-            
+
         const validateResult = jsonschema.validate(appName, {
             pattern: ProjectNamePattern,
         });
@@ -316,7 +325,7 @@ class CoreImpl implements Core {
         this.target.ctx.root = projFolder;
 
         const loadRes = await Loader.loadSolutions(this.target.ctx);
-        if(loadRes.isErr()) {
+        if (loadRes.isErr()) {
             return err(loadRes.error);
         }
         const solutionName = answers?.getString(QuestionSelectSolution.name);
@@ -326,9 +335,9 @@ class CoreImpl implements Core {
                 this.target.selectedSolution = s;
                 break;
             }
-        } 
-        
-        if(!this.target.selectedSolution){
+        }
+
+        if (!this.target.selectedSolution) {
             return err(
                 new UserError(
                     error.CoreErrorNames.InvalidInput,
@@ -340,7 +349,7 @@ class CoreImpl implements Core {
 
         this.target.ctx.projectSettings = {
             appName: appName,
-            solutionSettings:{
+            solutionSettings: {
                 name: this.target.selectedSolution.name,
                 version: this.target.selectedSolution.version
             }
@@ -365,7 +374,7 @@ class CoreImpl implements Core {
             return createResult;
         }
 
-       
+
         this.ctx.logProvider?.info(`[Core] create - create basic folder with configs`);
 
         this.ctx.logProvider?.info(`[Core] scaffold start!`);
@@ -379,6 +388,15 @@ class CoreImpl implements Core {
         await this.target.writeConfigs();
 
         this.ctx.logProvider?.info(`[Core] scaffold success! open target folder:${targetFolder}`);
+
+        if (this.ctx.platform === Platform.VSCode) {
+            await this.ctx.dialog?.communicate(
+                new DialogMsg(DialogType.Ask, {
+                    type: QuestionType.UpdateGlobalState,
+                    description: "openReadme"
+                })
+            )
+        }
 
         await this.ctx.dialog?.communicate(
             new DialogMsg(DialogType.Ask, {
@@ -433,7 +451,7 @@ class CoreImpl implements Core {
                     }
                 } else {
                     selectSubLabel = activeSubscription.displayName;
-                    icon = "subcriptionSelected";
+                    icon = "subscriptionSelected";
                 }
                 return ([{
                     commandId: "fx-extension.selectSubscription",
@@ -445,10 +463,22 @@ class CoreImpl implements Core {
                 }, !(activeSubscriptionId === undefined || activeSubscription === undefined)]);
             };
 
-            const selectSubscriptionCallback = async (): Promise<Result<null, FxError>> => {
+            const selectSubscriptionCallback = async (args?: any[]): Promise<Result<null, FxError>> => {
+                this.ctx?.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.SelectSubscription, {
+                    [TelemetryProperty.TriggerFrom]: args && args.toString() === "TreeView" ? TelemetryTiggerFrom.TreeView : TelemetryTiggerFrom.CommandPalette
+                });
+
                 const azureToken = await this.ctx.azureAccountProvider?.getAccountCredentialAsync();
-                const subscriptions: AzureSubscription[] = await getSubscriptionList(azureToken!);
-                const subscriptionNames: string[] = subscriptions.map((subscription) => subscription.displayName);
+                // const subscriptions: AzureSubscription[] = await getSubscriptionList(azureToken!);
+                const subscriptions: SubscriptionInfo[] | undefined = await this.ctx.azureAccountProvider?.listSubscriptions();
+                if (!subscriptions) {
+                    return err(returnSystemError(
+                        new Error("No subscription was found"),
+                        error.CoreSource,
+                        error.CoreErrorNames.InvalidContext
+                    ))
+                }
+                const subscriptionNames: string[] = subscriptions.map((subscription) => subscription.subscriptionName);
                 const subscriptionName = (
                     await this.ctx.dialog?.communicate(
                         new DialogMsg(DialogType.Ask, {
@@ -459,19 +489,20 @@ class CoreImpl implements Core {
                     )
                 )?.getAnswer();
                 if (subscriptionName === undefined || subscriptionName == "unknown") {
-                    return err({
-                        name: "emptySubscription",
-                        message: "No subscription selected",
-                        source: __filename,
-                        timestamp: new Date(),
-                    });
+                    return err(returnUserError(
+                        new Error("No subscription selected"),
+                        error.CoreSource,
+                        error.CoreErrorNames.NoSubscriptionSelected
+                    ))
                 }
 
-                const subscription = subscriptions.find((subscription) => subscription.displayName === subscriptionName);
+                const subscription = subscriptions.find((subscription) => subscription.subscriptionName === subscriptionName);
 
                 if(subscription){
                     await this.readConfigs();
                     this.configs.get(this.env!)!.get("solution")!.set("subscriptionId", subscription.subscriptionId);
+                    this.configs.get(this.env!)!.get("solution")!.set("tenantId", subscription.tenantId);
+                    await this.ctx.azureAccountProvider?.setSubscription(subscription.subscriptionId);
                     this.writeConfigs();
                     this.ctx.treeProvider?.refresh([
                         {
@@ -488,7 +519,11 @@ class CoreImpl implements Core {
                 return ok(null);
             };
 
-            const signinM365Callback = async (): Promise<Result<null, FxError>> => {
+            const signinM365Callback = async (args?: any[]): Promise<Result<null, FxError>> => {
+                this.ctx?.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.LoginStart, {
+                    [TelemetryProperty.TriggerFrom]: args && args.toString() === "TreeView" ? TelemetryTiggerFrom.TreeView : TelemetryTiggerFrom.CommandPalette,
+                    [TelemetryProperty.AccountType]: AccountType.M365
+                });
                 const token = await this.ctx.appStudioToken?.getJsonObject(true);
                 if (token !== undefined) {
                     this.ctx.treeProvider?.refresh([
@@ -506,7 +541,12 @@ class CoreImpl implements Core {
                 return ok(null);
             };
 
-            const signinAzureCallback = async (validFxProject: boolean): Promise<Result<null, FxError>> => {
+            const signinAzureCallback = async (validFxProject: boolean, args?: any[]): Promise<Result<null, FxError>> => {
+                this.ctx?.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.LoginStart, {
+                    [TelemetryProperty.TriggerFrom]: args && args.toString() === "TreeView" ? TelemetryTiggerFrom.TreeView : TelemetryTiggerFrom.CommandPalette,
+                    [TelemetryProperty.AccountType]: AccountType.Azure
+                });
+
                 const token = await this.ctx.azureAccountProvider?.getAccountCredentialAsync(true);
                 if (token !== undefined) {
                     this.ctx.treeProvider?.refresh([
@@ -534,7 +574,7 @@ class CoreImpl implements Core {
                 azureAccountContextValue = "signedinAzure";
             }
 
-            this.ctx.appStudioToken?.setStatusChangeMap('tree-view', 
+            this.ctx.appStudioToken?.setStatusChangeMap('tree-view',
                 (status: string, token?: string | undefined, accountInfo?: Record<string, unknown> | undefined) => {
                     if (status === "SignedIn") {
                         signinM365Callback();
@@ -563,7 +603,7 @@ class CoreImpl implements Core {
                     return Promise.resolve();
                 },
             );
-            this.ctx.azureAccountProvider?.setStatusChangeMap( 'tree-view', 
+            this.ctx.azureAccountProvider?.setStatusChangeMap( 'tree-view',
                 async (status: string, token?: string | undefined, accountInfo?: Record<string, unknown> | undefined) => {
                     if (status === "SignedIn") {
                         const token = this.ctx.azureAccountProvider?.getAccountCredential();
@@ -628,8 +668,8 @@ class CoreImpl implements Core {
                 {
                     commandId: "fx-extension.signinAzure",
                     label: azureAccountLabel,
-                    callback: async () => {
-                        return signinAzureCallback(supported);
+                    callback: async (args?: any[]) => {
+                        return signinAzureCallback(supported, args);
                     },
                     parent: TreeCategory.Account,
                     contextValue: azureAccountContextValue,
@@ -662,7 +702,7 @@ class CoreImpl implements Core {
         }
 
         this.env = "default";
-         
+
         const res = await this.selectedSolution.open(this.solutionContext());
         const t4 = new Date().getTime();
         //this.ctx.logProvider?.debug(`core.open() time  ----- t2-t1:${t2-t1}, t3-t2:${t3-t2}, t4-t3:${t4-t3}`);
@@ -687,7 +727,7 @@ class CoreImpl implements Core {
         return true;
     }
 
-      
+
 
     public async readConfigs(): Promise<Result<null, FxError>> {
         if (!fs.existsSync(`${this.ctx.root}/.${ConfigFolderName}`)) {
@@ -715,12 +755,12 @@ class CoreImpl implements Core {
                     }
                     else{
                         dict = {};
-                    } 
+                    }
                     mergeSerectData(dict, configJson);
                     const solutionConfig: SolutionConfig = objectToMap(configJson);
                     this.configs.set(envName, solutionConfig);
                 }
-    
+
                 // read projectSettings
                 this.ctx.projectSettings = await this.readSettings(this.ctx.root);
                 res = ok(null);
@@ -764,7 +804,7 @@ class CoreImpl implements Core {
     public async provision(answers?: ConfigMap): Promise<Result<null, FxError>> {
         const provisionRes = await this.selectedSolution!.provision(this.solutionContext(answers));
         if (provisionRes.isErr()) {
-            if (provisionRes.error.message.startsWith(strings.solution.CancelProvision)) {
+            if (provisionRes.error.message.startsWith(getStrings().solution.CancelProvision)) {
                 return ok(null);
             }
             return err(provisionRes.error);
@@ -833,7 +873,7 @@ class CoreImpl implements Core {
         const file = `${projectFolder}/.${ConfigFolderName}/settings.json`;
         const exist = await fs.pathExists(file);
         if (!exist) return undefined;
-        const settings:ProjectSettings = await fs.readJSON(file); 
+        const settings:ProjectSettings = await fs.readJSON(file);
         return settings;
     }
 
@@ -896,7 +936,7 @@ class CoreImpl implements Core {
             return err(loadResult.error);
         }
         this.globalSolutions = loadResult.value;
- 
+
         this.ctx.logProvider?.info("[Teams Toolkit] Initialized");
         return ok(null);
     }
@@ -1008,7 +1048,7 @@ export class CoreProxy implements Core {
         const platform = answers?.getString("platform") as Platform;
         if(!this.coreImpl.ctx.platform && platform)
             this.coreImpl.ctx.platform = platform;
-        
+
         try {
             // check if this project is supported
             if (checkAndConfig) {
@@ -1033,9 +1073,6 @@ export class CoreProxy implements Core {
                 this.coreImpl.ctx.logProvider?.info(`[Core] run task ${name} finish, isOk: ${res.isOk()}!`);
             return res;
         } catch (e) {
-            this.coreImpl.ctx.logProvider?.error(
-                `[Core] run task ${name} finish, isOk: false, throw error:${JSON.stringify(e)}`,
-            );
             if (
                 e instanceof UserError ||
                 e instanceof SystemError ||
@@ -1105,7 +1142,7 @@ export class CoreProxy implements Core {
          let check = true;
          if (Platform.VS === platform) check = false;
          ////////////////////////////
- 
+
          return await this.runWithErrorHandling<QTreeNode | undefined>(
              "executeUserTask",
              check,
@@ -1175,10 +1212,31 @@ export class CoreProxy implements Core {
     }
 }
 
+
 export async function Default(): Promise<Result<CoreProxy, FxError>> {
     const result = await CoreProxy.getInstance().init();
     if (result.isErr()) {
         return err(result.error);
     }
     return ok(CoreProxy.getInstance());
+}
+
+enum TelemetryTiggerFrom {
+    CommandPalette = "CommandPalette",
+    TreeView = "TreeView"
+}
+
+enum TelemetryProperty {
+    TriggerFrom = "trigger-from",
+    AccountType = "account-type"
+}
+
+enum TelemetryEvent {
+    LoginStart = "login-start",
+    SelectSubscription = "select-subscription"
+}
+
+export enum AccountType {
+    M365 = "m365",
+    Azure = "azure"
 }

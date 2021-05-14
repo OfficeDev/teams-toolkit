@@ -1,18 +1,22 @@
 # TeamsFx Command Line Tool
-<!---[![Feature Requests]()]()
-[![Bugs]()]()--->
-
-## The Package
-
-This package [teamsfx-cli](/packages/cli) is where we develop the TeamsFx Command Line Tool with the community. 
 
 ## TeamsFx CLI
-
-TeamsFx CLI a text-based command line interface that can operate TeamsFx funcitionalities. The Teams App developers who prefer keyboard centric experience can use TeamsFx CLI to develop Teams Apps. It also enables CI/CD scenario where CLI can be easily integrated.
-
-## TeamsFx CLI User Manual
+TeamsFx CLI a text-based command line interface that can help scaffold, validate, and deploy applications for Microsoft Teams from the terminal or a CI/CD process.
 
 Please refer to [TeamsFx CLI User Manual](/docs/cli/user-manual.md).
+
+## Extensibility Model
+TeamsFx CLI depends on [fx-core](/packages/fx-core) and [api](/packages/api) packages. [fx-core](/packages/fx-core) is designed to be extensible. See [EXTENSIBILITY.md](/packages/api/ETENSIBILITY.md) for more
+
+## Data Collection. 
+
+The software may collect information about you and your use of the software and send it to Microsoft. Microsoft may use this information to provide services and improve our products and services. You may turn off the telemetry as described in the repository. There are also some features in the software that may enable you and Microsoft to collect data from users of your applications. If you use these features, you must comply with applicable law, including providing appropriate notices to users of your applications together with a copy of Microsoft's privacy statement. Our privacy statement is located at https://go.microsoft.com/fwlink/?LinkID=824704. You can learn more about data collection and use in the help documentation and our privacy statement. Your use of the software operates as your consent to these practices.
+
+
+## Code of Conduct
+
+This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+
 
 ## Contributing
 
@@ -23,16 +27,22 @@ There are many ways in which you can participate in the project, for example:
 
 If you are interested in fixing issues and contributing directly to the code base, please see the [Contributing Guide](./CONTRIBUTING.md).
 
-## Extensibility Model
+## Reporting Security Issues
 
-TeamsFx CLI is built on [Fx Core](/packages/fx-core) and [Fx API](/packages/api) packages which locate in the same repo. [Fx Core](/packages/fx-core) is designed to support extensibility model to extend TeamsFx tooling functionalities. Please check [Fx Core](/packages/fx-core) and [Fx API](/packages/api) for details.
+**Please do not report security vulnerabilities through public GitHub issues.**
 
-## Code of Conduct
+Instead, please report them to the Microsoft Security Response Center (MSRC) at [https://msrc.microsoft.com/create-report](https://msrc.microsoft.com/create-report).
 
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+If you prefer to submit without logging in, send email to [secure@microsoft.com](mailto:secure@microsoft.com).  If possible, encrypt your message with our PGP key; please download it from the the [Microsoft Security Response Center PGP Key page](https://www.microsoft.com/en-us/msrc/pgp-key-msrc).
+
+You should receive a response within 24 hours. If for some reason you do not, please follow up via email to ensure we received your original message. Additional information can be found at [microsoft.com/msrc](https://www.microsoft.com/msrc).
+
+## Trademarks 
+
+This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft trademarks or logos is subject to and must follow [Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general). Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship. Any use of third-party trademarks or logos are subject to those third-party's policies.
 
 ## License
 
 Copyright (c) Microsoft Corporation. All rights reserved.
 
-Licensed under the [MIT](LICENSE) license.
+Licensed under the [MIT](LICENSE.txt) license.

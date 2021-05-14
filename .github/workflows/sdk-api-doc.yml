@@ -5,6 +5,8 @@ on:
     branches:
       - main
       - release/**
+    paths:
+      - packages/sdk/src/**
 
 jobs:
   generate:
@@ -56,10 +58,6 @@ jobs:
           # Optional local file path to the repository
           # Defaults to the root of the repository
           repository: .
-
-          # Optional commit user and author settings
-          #commit_user_name: 'MSFT-yiz'
-          #commit_user_email: 'yiz@microsoft.com'
 
           # Optional. Skip internal call to `git fetch`
           skip_fetch: true    

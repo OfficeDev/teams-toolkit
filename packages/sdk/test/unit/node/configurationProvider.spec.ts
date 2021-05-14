@@ -9,7 +9,7 @@ import {
   ErrorWithCode,
   ErrorCode,
   getResourceConfiguration,
-  getAuthenticationConfiguration
+  getAuthenticationConfiguration,
 } from "../../../src";
 
 chaiUse(chaiPromises);
@@ -35,8 +35,8 @@ describe("ConfigurationProvider Tests - Node", () => {
           type: ResourceType.API,
           name: "default",
           properties: {
-            functionEndpoint: fakeAPIEndpoint
-          }
+            functionEndpoint: fakeAPIEndpoint,
+          },
         },
         {
           type: ResourceType.SQL,
@@ -45,10 +45,10 @@ describe("ConfigurationProvider Tests - Node", () => {
             sqlServerEndpoint: fakeSQLEndpoint,
             sqlUsername: fakeSQLUserName,
             sqlPassword: fakeSQLPassword,
-            sqlDatabaseName: fakeSQLDataName
-          }
-        }
-      ]
+            sqlDatabaseName: fakeSQLDataName,
+          },
+        },
+      ],
     });
 
     const result = getResourceConfiguration(ResourceType.SQL);
@@ -70,10 +70,10 @@ describe("ConfigurationProvider Tests - Node", () => {
             sqlServerEndpoint: fakeSQLEndpoint,
             sqlUsername: fakeSQLUserName,
             sqlPassword: fakeSQLPassword,
-            sqlDatabaseName: fakeSQLDataName
-          }
-        }
-      ]
+            sqlDatabaseName: fakeSQLDataName,
+          },
+        },
+      ],
     });
     try {
       getResourceConfiguration(ResourceType.API);
@@ -94,10 +94,10 @@ describe("ConfigurationProvider Tests - Node", () => {
             sqlServerEndpoint: fakeSQLEndpoint,
             sqlUsername: fakeSQLUserName,
             sqlPassword: fakeSQLPassword,
-            sqlDatabaseName: fakeSQLDataName
-          }
-        }
-      ]
+            sqlDatabaseName: fakeSQLDataName,
+          },
+        },
+      ],
     });
     try {
       getResourceConfiguration(ResourceType.SQL, "API-1");
@@ -134,8 +134,8 @@ describe("ConfigurationProvider Tests - Node", () => {
 
     loadConfiguration({
       authentication: {
-        clientId: overrideClientId
-      }
+        clientId: overrideClientId,
+      },
     });
 
     const authConfig = getAuthenticationConfiguration();

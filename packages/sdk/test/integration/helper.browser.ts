@@ -12,7 +12,7 @@ export async function getSSOToken(): Promise<SSOToken> {
     password: env.SDK_INTEGRATION_TEST_ACCOUNT_PASSWORD,
     client_id: env.SDK_INTEGRATION_TEST_TEAMS_AAD_CLIENT_ID,
     scope: env.SDK_INTEGRATION_TEST_TEAMS_ACCESS_AS_USER_SCOPE,
-    grant_type: "password"
+    grant_type: "password",
   };
   const formBody = [];
   for (const [key, value] of Object.entries(details)) {
@@ -26,13 +26,13 @@ export async function getSSOToken(): Promise<SSOToken> {
     body,
     {
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-      }
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
     }
   );
   const SSOToken = {
     token: (response.data as any)["access_token"],
-    expire_time: (response.data as any)["expires_in"]
+    expire_time: (response.data as any)["expires_in"],
   };
   return SSOToken;
 }

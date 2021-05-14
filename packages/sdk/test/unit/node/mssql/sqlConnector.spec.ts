@@ -11,7 +11,7 @@ import {
   DefaultTediousConnectionConfiguration,
   ErrorWithCode,
   setLogLevel,
-  LogLevel
+  LogLevel,
 } from "../../../../src";
 
 chaiUse(chaiPromises);
@@ -37,16 +37,16 @@ describe("DefaultTediousConnection Tests - Node", () => {
   after(() => {
     setLogLevel(LogLevel.Info);
   });
-  afterEach(function() {
+  afterEach(function () {
     restore();
   });
 
-  it("getConfig should success with username and password", async function() {
+  it("getConfig should success with username and password", async function () {
     restore = mockedEnv({
       SQL_ENDPOINT: fakeSQLServerEndpoint,
       SQL_DATABASE: fakeSQLDataName,
       SQL_USER_NAME: fakeSQLUserName,
-      SQL_PASSWORD: fakeSQLPassword
+      SQL_PASSWORD: fakeSQLPassword,
     });
     loadConfiguration();
 
@@ -61,11 +61,11 @@ describe("DefaultTediousConnection Tests - Node", () => {
     assert.strictEqual(tediousConnectConfig.authentication!.options.password, fakeSQLPassword);
   });
 
-  it("getConfig should success with access token", async function() {
+  it("getConfig should success with access token", async function () {
     restore = mockedEnv({
       SQL_ENDPOINT: fakeSQLServerEndpoint,
       SQL_DATABASE: fakeSQLDataName,
-      IDENTITY_ID: fakeSQLIdentityId
+      IDENTITY_ID: fakeSQLIdentityId,
     });
     loadConfiguration();
 
@@ -74,7 +74,7 @@ describe("DefaultTediousConnection Tests - Node", () => {
       return new Promise<AccessToken>((resolve) => {
         resolve({
           token: fakeToken,
-          expiresOnTimestamp: 12345678
+          expiresOnTimestamp: 12345678,
         });
       });
     });
@@ -91,11 +91,11 @@ describe("DefaultTediousConnection Tests - Node", () => {
     sinon.restore();
   });
 
-  it("getConfig should throw InvalidConfiguration error without host name", async function() {
+  it("getConfig should throw InvalidConfiguration error without host name", async function () {
     restore = mockedEnv({
       SQL_DATABASE: fakeSQLDataName,
       SQL_USER_NAME: fakeSQLUserName,
-      SQL_PASSWORD: fakeSQLPassword
+      SQL_PASSWORD: fakeSQLPassword,
     });
     loadConfiguration();
 
@@ -105,10 +105,10 @@ describe("DefaultTediousConnection Tests - Node", () => {
       .and.property("code", INVALID_CONFIGURATION);
   });
 
-  it("getConfig should throw InvalidConfiguration error without username, password or identity id", async function() {
+  it("getConfig should throw InvalidConfiguration error without username, password or identity id", async function () {
     restore = mockedEnv({
       SQL_ENDPOINT: fakeSQLServerEndpoint,
-      SQL_DATABASE: fakeSQLDataName
+      SQL_DATABASE: fakeSQLDataName,
     });
     loadConfiguration();
 

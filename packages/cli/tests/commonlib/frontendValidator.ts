@@ -3,7 +3,7 @@
 
 import axios from "axios";
 import * as chai from "chai";
-import { MockAzureAccountProvider } from "./mockAzureAccountProvider";
+import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
 
 const baseUrlContainer = (
     subscriptionId: string,
@@ -74,7 +74,7 @@ export class FrontendValidator {
     public static async validateProvision(frontendObject: IFrontendObject) {
         console.log("Start to validate Frontend Provision.");
 
-        const tokenProvider: MockAzureAccountProvider = MockAzureAccountProvider.getInstance();
+        const tokenProvider = MockAzureAccountProvider;
         const tokenCredential = await tokenProvider.getAccountCredentialAsync();
         const token = (await tokenCredential?.getToken())?.accessToken;
         chai.assert.exists(token);
@@ -89,7 +89,7 @@ export class FrontendValidator {
     public static async validateDeploy(frontendObject: IFrontendObject) {
         console.log("Start to validate Frontend Deploy.");
 
-        const tokenProvider: MockAzureAccountProvider = MockAzureAccountProvider.getInstance();
+        const tokenProvider = MockAzureAccountProvider;
         const tokenCredential = await tokenProvider.getAccountCredentialAsync();
         const token = (await tokenCredential?.getToken())?.accessToken;
         chai.assert.exists(token);

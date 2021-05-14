@@ -1,91 +1,91 @@
-.learn-toolkit-page{
+.learn-toolkit-page {
   margin: 100px 100px 100px 100px;
 
-  .back{
-      margin-bottom: 40px;
+  .back {
+    margin-bottom: 40px;
+    height: 16px;
+
+    button {
       height: 16px;
+    }
 
-      button{
-        height: 16px;
-      }
-
-      span{
+    span {
       font-size: 13px;
       line-height: 15px;
       align-items: center;
-      color: #3794FF;
+      color: #3794ff;
     }
   }
 
-  .flex-section{
+  .flex-section {
     display: flex;
   }
 
-  .header{
+  .header {
     margin-bottom: 20px;
   }
 
-  .table-of-contents{
+  .table-of-contents {
     width: 50%;
     margin-right: 90px;
   }
 
-  .logo{
-      width: 28px;
-      height: 28px;
+  .logo {
+    width: 28px;
+    height: 28px;
   }
 
-  .title{
+  .title {
     width: auto;
 
-    h2{
+    h2 {
       font-size: 26px;
       line-height: 30px;
-      color: #CCCCCC;
+      color: #cccccc;
       font-weight: normal;
     }
 
-    h3{
+    h3 {
       font-size: 12px;
       line-height: 14px;
-      color: #CCCCCC;
+      color: #cccccc;
       margin-top: 0px;
       margin-bottom: 0px;
       font-weight: normal;
     }
   }
 
-  .stage{
+  .stage {
     width: 50%;
   }
 
-  .action-card{
+  .action-card {
     background-color: #252526;
     border-radius: 4px;
     padding: 12px 12px 12px 12px;
     margin-bottom: 12px;
   }
 
-  .collapse-action-card{
+  .collapse-action-card {
     padding: 12px 12px 12px 12px;
     margin-bottom: 12px;
   }
 
-  .action-icon{
+  .action-icon {
     min-width: 16px;
     margin-right: 8px;
   }
 
-  .action-title{
+  .action-title {
     font-size: 13px;
     line-height: 15px;
-    color: #FFFFFF;
+    color: #ffffff;
   }
 
-  .left{
+  .left {
     float: left;
 
-    span{
+    span {
       font-size: 13px;
       line-height: 15px;
       align-items: center;
@@ -93,30 +93,30 @@
     }
   }
 
-  .right{
+  .right {
     float: right;
 
-    span{
+    span {
       font-size: 13px;
       line-height: 15px;
       align-items: center;
       text-align: center;
-      color: #3794FF;
+      color: #3794ff;
     }
   }
 
-  .tip{
+  .tip {
     color: #808080;
     font-size: 11px;
     line-height: 16px;
     align-items: center;
   }
 
-  .card-line{
+  .card-line {
     margin-bottom: 8px;
   }
 
-  .left-right-align{
+  .left-right-align {
     overflow: hidden;
   }
 }

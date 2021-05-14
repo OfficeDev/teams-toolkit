@@ -6,7 +6,7 @@ import { SqlManagementClient, SqlManagementModels } from "@azure/arm-sql";
 import * as chai from "chai";
 import * as tedious from "tedious";
 
-import MockAzureAccountProvider from "./mockAzureAccountProvider";
+import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
 
 const echoIpAddress = "https://api.ipify.org";
 const localRule = "AllowLocal";

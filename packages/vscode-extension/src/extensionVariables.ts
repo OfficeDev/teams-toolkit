@@ -3,9 +3,9 @@
 // Licensed under the MIT license.
 
 "use strict";
- 
+
 import * as vscode from "vscode";
-import { ExtensionContext, Uri } from "vscode"; 
+import { ExtensionContext, Uri } from "vscode";
 import { UserInput, IUserInput } from "./userInput";
 
 /**

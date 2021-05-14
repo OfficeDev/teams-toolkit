@@ -7,25 +7,25 @@
   padding: 4rem;
 }
 
-.welcome.page>.narrow>img {
+.welcome.page > .narrow > img {
   margin: 0 auto;
   display: block;
   width: 200px;
 }
 
-.welcome.page>.narrow>ul {
+.welcome.page > .narrow > ul {
   width: 80%;
   justify-content: space-between;
   margin: 4rem auto;
   border-bottom: none;
 }
 
-.welcome.page>.narrow>ul>li {
+.welcome.page > .narrow > ul > li {
   background-color: inherit;
   margin: auto;
 }
 
-.welcome.page>.narrow>ul>li>a {
+.welcome.page > .narrow > ul > li > a {
   font-size: 14px;
   min-height: 32px;
   border-bottom-color: rgb(98, 100, 167);
@@ -35,7 +35,7 @@
   text-align: center;
 }
 
-.sections>* {
+.sections > * {
   margin: 4rem auto;
 }
 

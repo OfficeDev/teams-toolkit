@@ -1,4 +1,4 @@
-## DatabaseUserCreateError
+## SQL.DatabaseUserCreateError
 
 ### Error Message
 
@@ -7,36 +7,37 @@ database <database> create user <user> failed.
 ### Mitigation
 
 #### Step #1 add skip flag
-1. Open `.fx\env.default.json` file
-1. Set value of 'skipAddingUser' config of 'fx-resource-azure-sql' 
+1. Open `.fx\env.default.json` file.
+1. Set value of 'skipAddingUser' config of 'fx-resource-azure-sql'.
 
-   ![image](../images/fx-core/sql/add-flag.png)
+      ![image](../images/fx-core/sql/add-flag.png)
 
-1. Run `Provision` command again
+1. Run `Provision` command again.
 
 #### Step #2 add database user manually
 
 To make sure the identity user can access to database correctly, you should add database user manually.
 Since the current logged in account hasn't enough permission to add database user, you may get a user account have enough permission to access to database. 
-1. Find values of 'sqlEndpoint', 'databaseName' config of 'fx-resource-azure-sql' and value of 'identity' config of 'fx-resource-identity'
+1. Find values of 'sqlEndpoint', 'databaseName' config of 'fx-resource-azure-sql' and value of 'identity' config of 'fx-resource-identity'.
 
-   ![image](../images/fx-core/sql/config.png)
+      ![image](../images/fx-core/sql/config.png)
 
 1. Provision aad admin in SQL Database. You can follow [set aad admin](https://docs.microsoft.com/en-us/azure/azure-sql/database/authentication-aad-configure?tabs=azure-powershell#provision-azure-ad-admin-sql-database) to set aad admin with enough permission for the {sqlEndpoint}.
 
-1. Login the SQL server from portal and select database to login
+1. Login the SQL server from portal and select database to login.
 
-  ![image](../images/fx-core/sql/login-db.png)
+      ![image](../images/fx-core/sql/login-db.png)
 
-4. Create contained database users. Execute Transact-SQL 
-```
-go
-CREATE USER [{identity}] FROM EXTERNAL PROVIDER;
-go
-sp_addrolemember  'db_datareader',  '{identity}';
-go
-sp_addrolemember  'db_datawriter',  '{identity}';
-```
+1. Create contained database users. Execute Transact-SQL. 
 
-  ![image](../images/fx-core/sql/add-database-user.png)
+   ```
+   CREATE USER [{identity}] FROM EXTERNAL PROVIDER;
+   go
+   sp_addrolemember  'db_datareader',  '{identity}';
+   go
+   sp_addrolemember  'db_datawriter',  '{identity}';
+   go
+   ```
+
+      ![image](../images/fx-core/sql/add-database-user.png)
 

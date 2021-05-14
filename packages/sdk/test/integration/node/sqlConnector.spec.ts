@@ -34,7 +34,7 @@ describe("DefaultTediousConnection Tests - Node", () => {
     RestoreEnvironmentVariable(restore);
     // await clearUpLocalFirewall(sqlManagerClient, resourceGroup!, sqlName!);
   });
-  it("execQuery should success with username and password", async function() {
+  it("execQuery should success with username and password", async function () {
     connection = await getSQLConnection();
     const query = "select system_user as u, sysdatetime() as t";
     const result = await execQuery(query, connection);
@@ -62,7 +62,7 @@ async function addLocalFirewall(client: SqlManagementClient, rg: string, sqlName
   const localIp: string = response.data;
   const model: SqlManagementModels.FirewallRule = {
     startIpAddress: localIp,
-    endIpAddress: localIp
+    endIpAddress: localIp,
   };
   await client!.firewallRules!.createOrUpdate(rg, sqlName, localRule, model);
 }

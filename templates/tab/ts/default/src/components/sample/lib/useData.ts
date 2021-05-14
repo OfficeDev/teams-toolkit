@@ -11,24 +11,20 @@ type Action<T> =
   | { type: "result"; result: T }
   | { type: "error"; error: any };
 
-const createReducer = <T>() => (
-  state: State<T>,
-  action: Action<T>
-): State<T> => {
-  switch (action.type) {
-    case "loading":
-      return { data: state.data, loading: true };
-    case "result":
-      return { data: action.result, loading: false };
-    case "error":
-      return { loading: false, error: action.error };
-  }
-};
+const createReducer =
+  <T>() =>
+  (state: State<T>, action: Action<T>): State<T> => {
+    switch (action.type) {
+      case "loading":
+        return { data: state.data, loading: true };
+      case "result":
+        return { data: action.result, loading: false };
+      case "error":
+        return { loading: false, error: action.error };
+    }
+  };
 
-export function useData<T>(
-  asyncFn: () => Promise<T>,
-  options?: { auto: boolean }
-) {
+export function useData<T>(asyncFn: () => Promise<T>, options?: { auto: boolean }) {
   const { auto } = { auto: true, ...options };
   const [{ data, loading, error }, dispatch] = useReducer(createReducer<T>(), {
     loading: !!auto,

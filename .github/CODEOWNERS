@@ -18,6 +18,10 @@
 
 /packages/cli @chagong @Alive-Fish @jiayi-ruan
 /packages/cli/src/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @meifans @dooriya
+/packages/cli/src/commonlib/appStudioLoginUserPassword.ts @chagong @Alive-Fish @jiayi-ruan
+/packages/cli/src/commonlib/azureLoginUserPassword.ts @chagong @Alive-Fish @jiayi-ruan
+/packages/cli/src/commonlib/graphLoginUserPassword.ts @chagong @Alive-Fish @jiayi-ruan
+/packages/cli/src/commonlib/common/userPasswordConfig.ts @chagong @Alive-Fish @jiayi-ruan
 /packages/cli/tests/e2e/aad @KennethBWSong @adashen
 /packages/cli/tests/e2e/simpleauth @KennethBWSong @adashen
 /packages/cli/tests/e2e/sql @xzf0587 @adashen
@@ -28,7 +32,6 @@
 
 /packages/api @jayzhang @1yefuwang1 @LongOddCode
 /packages/api/src/qm @jayzhang @1yefuwang1 @LongOddCode @jiayi-ruan
-/packages/api/src/ci @jayzhang @1yefuwang1 @LongOddCode @Alive-Fish @KennethBWSong @XiaofuHuang @henzhang-ms @eriolchan
 
 /packages/sdk @tecton @blackchoey @SLdragon @dilin-MS @wenytang-ms
 

@@ -46,4 +46,9 @@ export class AppStudioError {
         name: "TeamsPackageBuildError",
         message: (error: any) => error.message ? error.message: "Teams Package built failed!"
     }
+
+    public static readonly UnhandledError = {
+        name: "UnhandledError",
+        message: "UnhandledError"
+    }
 }

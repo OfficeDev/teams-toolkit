@@ -7,13 +7,14 @@ import axios, { AxiosRequestConfig } from "axios";
 import dotenv from "dotenv";
 import qs from "querystring";
 
-import * as azureConfig from "./conf/azure";
-import { AppStudioTokenProvider } from "../utils/login";
+import { AppStudioTokenProvider } from "@microsoft/teamsfx-api";
+
+import * as cfg from "./common/userPasswordConfig";
 
 dotenv.config();
 
-const user = process.env.TEST_USER_NAME ?? "";
-const password = process.env.TEST_USER_PASSWORD ?? "";
+const user = cfg.user;
+const password = cfg.password;
 
 type LoginStatus = {
     status: string;
@@ -21,16 +22,16 @@ type LoginStatus = {
     accountInfo?: Record<string, unknown>;
 };
 
-export class MockAppStudioTokenProvider implements AppStudioTokenProvider {
-    private static instance: MockAppStudioTokenProvider;
+export class AppStudioTokenProviderUserPassword implements AppStudioTokenProvider {
+    private static instance: AppStudioTokenProviderUserPassword;
 
     private static accessToken: string | undefined;
 
-    public static getInstance(): MockAppStudioTokenProvider {
-        if (!MockAppStudioTokenProvider.instance) {
-            MockAppStudioTokenProvider.instance = new MockAppStudioTokenProvider();
+    public static getInstance(): AppStudioTokenProviderUserPassword {
+        if (!AppStudioTokenProviderUserPassword.instance) {
+            AppStudioTokenProviderUserPassword.instance = new AppStudioTokenProviderUserPassword();
         }
-        return MockAppStudioTokenProvider.instance;
+        return AppStudioTokenProviderUserPassword.instance;
     }
 
     /**
@@ -38,7 +39,7 @@ export class MockAppStudioTokenProvider implements AppStudioTokenProvider {
      */
     async getAccessToken(showDialog = true): Promise<string | undefined> {
         const data = qs.stringify({
-            client_id: azureConfig.client_id,
+            client_id: cfg.client_id,
             scope: "https://dev.teams.microsoft.com/AppDefinitions.ReadWrite",
             username: user,
             password: password,
@@ -47,7 +48,7 @@ export class MockAppStudioTokenProvider implements AppStudioTokenProvider {
 
         const config: AxiosRequestConfig = {
             method: "post",
-            url: `https://login.microsoftonline.com/${azureConfig.tenant.id}/oauth2/v2.0/token`,
+            url: `https://login.microsoftonline.com/${cfg.tenant.id}/oauth2/v2.0/token`,
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
                 Cookie:
@@ -58,13 +59,13 @@ export class MockAppStudioTokenProvider implements AppStudioTokenProvider {
 
         await axios(config)
             .then((r: any) => {
-                MockAppStudioTokenProvider.accessToken = r.data.access_token;
+                AppStudioTokenProviderUserPassword.accessToken = r.data.access_token;
             })
             .catch((e: any) => {
                 console.log(e);
             });
 
-        return MockAppStudioTokenProvider.accessToken;
+        return AppStudioTokenProviderUserPassword.accessToken;
     }
 
     async getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined> {
@@ -113,4 +114,4 @@ export class MockAppStudioTokenProvider implements AppStudioTokenProvider {
     }
 }
 
-export default MockAppStudioTokenProvider.getInstance();
+export default AppStudioTokenProviderUserPassword.getInstance();

@@ -142,9 +142,9 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
   }
 }
 
-import { MockAppStudioTokenProvider } from "@microsoft/teamsfx-api";
+import AppStudioTokenProviderUserPassword from "./appStudioLoginUserPassword";
 
 const ciEnabled = process.env.CI_ENABLED;
-const appStudioLogin = ciEnabled && ciEnabled === "true" ? MockAppStudioTokenProvider.getInstance() : AppStudioLogin.getInstance();
+const appStudioLogin = ciEnabled && ciEnabled === "true" ? AppStudioTokenProviderUserPassword : AppStudioLogin.getInstance();
 
 export default appStudioLogin;

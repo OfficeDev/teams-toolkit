@@ -37,7 +37,8 @@ export default class TelemetryReporter {
       this.appInsightsClient = new appInsights.TelemetryClient(key);
       this.appInsightsClient.channel.setUseDiskRetryCaching(true);
     } else {
-      appInsights.setup(key)
+      appInsights
+        .setup(key)
         .setAutoCollectRequests(false)
         .setAutoCollectPerformance(false)
         .setAutoCollectExceptions(false)
@@ -55,14 +56,20 @@ export default class TelemetryReporter {
   private getCommonProperties(): { [key: string]: string } {
     const commonProperties = Object.create(null);
     commonProperties["common.os"] = os.platform();
-    commonProperties["common.platformversion"] = (os.release() || "").replace(/^(\d+)(\.\d+)?(\.\d+)?(.*)/, "$1$2$3");
+    commonProperties["common.platformversion"] = (os.release() || "").replace(
+      /^(\d+)(\.\d+)?(\.\d+)?(.*)/,
+      "$1$2$3"
+    );
     commonProperties["common.cliversion"] = this.cliVersion;
     commonProperties["common.machineid"] = this.machineId;
 
     return commonProperties;
   }
 
-  private cloneAndChange(obj?: { [key: string]: string }, change?: (key: string, val: string) => string): { [key: string]: string } | undefined {
+  private cloneAndChange(
+    obj?: { [key: string]: string },
+    change?: (key: string, val: string) => string
+  ): { [key: string]: string } | undefined {
     if (obj === null || typeof obj !== "object") return obj;
     if (typeof change !== "function") return obj;
 
@@ -79,7 +86,10 @@ export default class TelemetryReporter {
       return "";
     }
 
-    const cleanupPatterns = (this.appRoot === undefined)? [] : [new RegExp(this.appRoot.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi")];
+    const cleanupPatterns =
+      this.appRoot === undefined
+        ? []
+        : [new RegExp(this.appRoot.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi")];
 
     let updatedStack = stack;
 
@@ -95,7 +105,8 @@ export default class TelemetryReporter {
     }
 
     const nodeModulesRegex = /^[\\\/]?(node_modules|node_modules\.asar)[\\\/]/;
-    const fileRegex = /(file:\/\/)?([a-zA-Z]:(\\\\|\\|\/)|(\\\\|\\|\/))?([\w-\._]+(\\\\|\\|\/))+[\w-\._]*/g;
+    const fileRegex =
+      /(file:\/\/)?([a-zA-Z]:(\\\\|\\|\/)|(\\\\|\\|\/))?([\w-\._]+(\\\\|\\|\/))+[\w-\._]*/g;
     let lastIndex = 0;
     updatedStack = "";
 
@@ -105,7 +116,10 @@ export default class TelemetryReporter {
         break;
       }
       // Anoynimize user file paths that do not need to be retained or cleaned up.
-      if (!nodeModulesRegex.test(result[0]) && cleanUpIndexes.every(([x, y]) => result.index < x || result.index >= y)) {
+      if (
+        !nodeModulesRegex.test(result[0]) &&
+        cleanUpIndexes.every(([x, y]) => result.index < x || result.index >= y)
+      ) {
         updatedStack += stack.substring(lastIndex, result.index) + "<REDACTED: user-file-path>";
         lastIndex = fileRegex.lastIndex;
       }
@@ -126,24 +140,40 @@ export default class TelemetryReporter {
     this.appRoot = appRoot;
   }
 
-  public sendTelemetryEvent(eventName: string, properties?: { [key: string]: string }, measurements?: { [key: string]: number }): void {
+  public sendTelemetryEvent(
+    eventName: string,
+    properties?: { [key: string]: string },
+    measurements?: { [key: string]: number }
+  ): void {
     if (this.userOptIn && eventName && this.appInsightsClient) {
-      const cleanProperties = this.cloneAndChange(properties, (key: string, prop: string) => this.anonymizeFilePaths(prop));
+      const cleanProperties = this.cloneAndChange(properties, (key: string, prop: string) =>
+        this.anonymizeFilePaths(prop)
+      );
 
       this.appInsightsClient.trackEvent({
         name: `${this.cliName}/${eventName}`,
         properties: cleanProperties,
-        measurements: measurements
+        measurements: measurements,
       });
 
       if (this.logging) {
-        logger.trace(`Telemetry: ${this.cliName}/${eventName} ${JSON.stringify({ properties, measurements })}\n`);
+        logger.debug(
+          `Telemetry: ${this.cliName}/${eventName} ${JSON.stringify({
+            properties,
+            measurements,
+          })}\n`
+        );
       }
     }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public sendTelemetryErrorEvent(eventName: string, properties?: { [key: string]: string }, measurements?: { [key: string]: number }, _errorProps?: string[]): void {
+  public sendTelemetryErrorEvent(
+    eventName: string,
+    properties?: { [key: string]: string },
+    measurements?: { [key: string]: number },
+    _errorProps?: string[]
+  ): void {
     if (this.userOptIn && eventName && this.appInsightsClient) {
       const cleanProperties = this.cloneAndChange(properties, (key: string, prop: string) => {
         return this.anonymizeFilePaths(prop);
@@ -152,39 +182,55 @@ export default class TelemetryReporter {
       this.appInsightsClient.trackEvent({
         name: `${this.cliName}/${eventName}`,
         properties: cleanProperties,
-        measurements: measurements
+        measurements: measurements,
       });
 
       if (this.logging) {
-        logger.trace(`Telemetry: ${this.cliName}/${eventName} ${JSON.stringify({ properties, measurements })}\n`);
+        logger.debug(
+          `Telemetry: ${this.cliName}/${eventName} ${JSON.stringify({
+            properties,
+            measurements,
+          })}\n`
+        );
       }
     }
   }
 
-  public sendTelemetryException(error: Error, properties?: { [key: string]: string }, measurements?: { [key: string]: number }): void {
+  public sendTelemetryException(
+    error: Error,
+    properties?: { [key: string]: string },
+    measurements?: { [key: string]: number }
+  ): void {
     if (this.userOptIn && error && this.appInsightsClient) {
-      const cleanProperties = this.cloneAndChange(properties, (_key: string, prop: string) => this.anonymizeFilePaths(prop));
+      const cleanProperties = this.cloneAndChange(properties, (_key: string, prop: string) =>
+        this.anonymizeFilePaths(prop)
+      );
 
       this.appInsightsClient.trackException({
         exception: error,
         properties: cleanProperties,
-        measurements: measurements
+        measurements: measurements,
       });
 
       if (this.logging) {
-        logger.trace(`Telemetry: ${this.cliName}/${error.name} ${error.message} ${JSON.stringify({ properties, measurements })}\n`);
+        logger.debug(
+          `Telemetry: ${this.cliName}/${error.name} ${error.message} ${JSON.stringify({
+            properties,
+            measurements,
+          })}\n`
+        );
       }
     }
   }
 
   public flush(): Promise<void[]> {
-    const flushEventsToAI = new Promise<void>(resolve => {
+    const flushEventsToAI = new Promise<void>((resolve) => {
       if (this.appInsightsClient) {
         this.appInsightsClient.flush({
           callback: () => {
             this.appInsightsClient = undefined;
             resolve(void 0);
-          }
+          },
         });
       } else {
         resolve(void 0);

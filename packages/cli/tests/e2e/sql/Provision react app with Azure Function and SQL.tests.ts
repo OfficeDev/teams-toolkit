@@ -4,7 +4,7 @@
 import fs from "fs-extra";
 import path from "path";
 
-import { SqlValidator } from "@microsoft/teamsfx-api";
+import { SqlValidator } from "../../commonlib";
 
 import {
   execAsync,

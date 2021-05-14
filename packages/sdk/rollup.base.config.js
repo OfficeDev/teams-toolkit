@@ -26,7 +26,7 @@ export function nodeConfig(test = false) {
     output: {
       file: "dist/index.js",
       format: "cjs",
-      sourcemap: true
+      sourcemap: true,
     },
     preserveSymlinks: false,
     plugins: [
@@ -36,12 +36,12 @@ export function nodeConfig(test = false) {
         // replace dynamic checks with if (true) since this is for node only.
         // Allows rollup's dead code elimination to be more aggressive.
         "if (isNode)": "if (true)",
-        preventAssignment: true
+        preventAssignment: true,
       }),
       nodeResolve({ preferBuiltins: true }),
       json(),
-      cjs()
-    ]
+      cjs(),
+    ],
   };
 
   if (test) {
@@ -73,7 +73,7 @@ export function browserConfig(testType) {
       file: "dist-browser/teamsfx.js",
       format: "umd",
       sourcemap: true,
-      name: "TeamsFx"
+      name: "TeamsFx",
     },
     preserveSymlinks: false,
     plugins: [
@@ -84,15 +84,15 @@ export function browserConfig(testType) {
         // browser only. Rollup's dead code elimination will remove
         // any code guarded by if (isNode) { ... }
         "if (isNode)": "if (false)",
-        preventAssignment: true
+        preventAssignment: true,
       }),
       nodeResolve({
         mainFields: ["module", "browser"],
         preferBuiltins: false,
-        browser: true
+        browser: true,
       }),
-      cjs()
-    ]
+      cjs(),
+    ],
   };
 
   if (testType === "unit") {
@@ -101,7 +101,7 @@ export function browserConfig(testType) {
   } else if (testType === "integration") {
     baseConfig.input = [
       "dist-esm/test/integration/*.spec.js",
-      "dist-esm/test/integration/browser/*.spec.js"
+      "dist-esm/test/integration/browser/*.spec.js",
     ];
     baseConfig.output.file = "dist-test/index.integration.browser.js";
   } else {

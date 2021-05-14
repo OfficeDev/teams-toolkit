@@ -78,6 +78,7 @@ import { PanelType } from "./controls/PanelType";
 import { signedIn, signedOut } from "./commonlib/common/constant";
 import { AzureNodeChecker } from "./debug/depsChecker/azureNodeChecker";
 import { SPFxNodeChecker } from "./debug/depsChecker/spfxNodeChecker";
+import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 
 export let core: CoreProxy;
 const runningTasks = new Set<string>(); // to control state of task execution
@@ -613,52 +614,6 @@ export async function backendExtensionsInstallHandler(): Promise<void> {
 }
 
 /**
- * detect if some ports are already in use, and if so, stop debugging
- */
-async function detectPortsInUse(): Promise<void> {
-  const ports: [number, string[]][] = [];
-  if (vscode.workspace.workspaceFolders) {
-    const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
-    const workspacePath: string = workspaceFolder.uri.fsPath;
-    const frontendRoot = await commonUtils.getProjectRoot(
-      workspacePath,
-      constants.frontendFolderName
-    );
-    if (frontendRoot) {
-      ports.push(...constants.frontendPorts);
-    }
-    const backendRoot = await commonUtils.getProjectRoot(
-      workspacePath,
-      constants.backendFolderName
-    );
-    if (backendRoot) {
-      ports.push(...constants.backendPorts);
-    }
-    const botRoot = await commonUtils.getProjectRoot(workspacePath, constants.botFolderName);
-    if (botRoot) {
-      ports.push(...constants.botPorts);
-    }
-  }
-
-  const portsInUse: number[] = [];
-  for (const port of ports) {
-    if (await commonUtils.detectPortListening(port[0], port[1])) {
-      portsInUse.push(port[0]);
-    }
-  }
-  if (portsInUse.length > 0) {
-    let message = constants.portsInUseMessage + ":";
-    for (const port of portsInUse) {
-      message = message + ` ${port}`;
-    }
-    window.showErrorMessage(message);
-    // await debug.stopDebugging();
-    // TODO: better mechanism to stop the tasks and debug session.
-    throw new Error("debug stopped.");
-  }
-}
-
-/**
  * call localDebug on core
  */
 export async function preDebugCheckHandler(): Promise<void> {
@@ -668,8 +623,6 @@ export async function preDebugCheckHandler(): Promise<void> {
     // ignore telemetry error
   }
 
-  await detectPortsInUse();
-
   let result: Result<any, FxError> = ok(null);
   result = await runCommand(Stage.debug);
   if (result.isErr()) {
@@ -677,7 +630,30 @@ export async function preDebugCheckHandler(): Promise<void> {
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPreCheck, result.error);
     } finally {
       // ignore telemetry error
+      terminateAllRunningTeamsfxTasks();
       throw result.error;
+    }
+  }
+
+  const portsInUse = await commonUtils.getPortsInUse();
+  if (portsInUse.length > 0) {
+    let message: string;
+    if (portsInUse.length > 1) {
+      message = util.format(
+        StringResources.vsc.localDebug.portsAlreadyInUse,
+        portsInUse.join(", ")
+      );
+    } else {
+      message = util.format(StringResources.vsc.localDebug.portAlreadyInUse, portsInUse[0]);
+    }
+    const error = new UserError(ExtensionErrors.PortAlreadyInUse, message, ExtensionSource);
+    try {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPreCheck, error);
+    } finally {
+      // ignore telemetry error
+      window.showErrorMessage(message);
+      terminateAllRunningTeamsfxTasks();
+      throw error;
     }
   }
 }

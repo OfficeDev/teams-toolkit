@@ -182,7 +182,8 @@ export class DialogManager implements Dialog {
           return undefined;
         }
         return await ext.ui.showQuickPick(options, {
-          placeHolder: question.description || StringResources.vsc.userInterface.noQuestionDescription,
+          placeHolder:
+            question.description || StringResources.vsc.userInterface.noQuestionDescription,
           ignoreFocusOut: true,
           canPickMany: question.multiSelect
         });
@@ -190,7 +191,8 @@ export class DialogManager implements Dialog {
       case QuestionType.Text: {
         return await ext.ui.showInputBox({
           value: question.defaultAnswer || "",
-          placeHolder: question.description || StringResources.vsc.userInterface.noQuestionDescription,
+          placeHolder:
+            question.description || StringResources.vsc.userInterface.noQuestionDescription,
           ignoreFocusOut: true,
           validateInput: question.validateInput,
           password: question.password,
@@ -231,7 +233,11 @@ export class DialogManager implements Dialog {
         return undefined;
       }
       case QuestionType.Confirm: {
-        return await window.showWarningMessage(question.description, {modal: true}, ...(question.options?question.options:[]));
+        return await window.showWarningMessage(
+          question.description,
+          { modal: true },
+          ...(question.options ? question.options : [])
+        );
       }
       default: {
         await this.showMessage({

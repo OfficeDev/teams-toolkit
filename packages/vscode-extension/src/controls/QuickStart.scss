@@ -1,177 +1,176 @@
-.quick-start-page{
-    margin: 100px 0;
+.quick-start-page {
+  margin: 100px 0;
 
-    a{
-        text-decoration: none;
-    }
-  
-    .section{
-        display: flex;
-        margin-bottom: 36px;
-    }
+  a {
+    text-decoration: none;
+  }
 
-    .flex-section{
-        display: flex;
-    }
+  .section {
+    display: flex;
+    margin-bottom: 36px;
+  }
 
-    .table-of-contents{
-        flex: 0 0 352px;
-    }
+  .flex-section {
+    display: flex;
+  }
 
-    .content-margin{
-        min-width: 20px;
-        flex: 0 1 95px;
-    }
+  .table-of-contents {
+    flex: 0 0 352px;
+  }
 
-    .side-margin{
-        min-width: 20px;
-        flex: 1 2 100px;
-    }
+  .content-margin {
+    min-width: 20px;
+    flex: 0 1 95px;
+  }
 
-    .logo{
-        width: 28px;
-        height: 28px;
-        font-size: 28px;
-        color: var(--vscode-textLink-foreground);
-    }
+  .side-margin {
+    min-width: 20px;
+    flex: 1 2 100px;
+  }
 
-    .title{
-        width: auto;
-        margin-left: 12px;
+  .logo {
+    width: 28px;
+    height: 28px;
+    font-size: 28px;
+    color: var(--vscode-textLink-foreground);
+  }
 
-        h2{
-            font-size: 26px;
-            line-height: 32px;
-            margin-top: 0px;
-            margin-bottom: 0px;
-            font-weight: normal;
-            color: var(--vscode-titleBar-activeForeground);
-        }
+  .title {
+    width: auto;
+    margin-left: 12px;
 
-        h3{
-            font-size: 12px;
-            line-height: 16px;
-            margin-top: 0px;
-            margin-bottom: 0px;
-            font-weight: normal;
-            color: var(--vscode-titleBar-activeForeground);
-        }
+    h2 {
+      font-size: 26px;
+      line-height: 32px;
+      margin-top: 0px;
+      margin-bottom: 0px;
+      font-weight: normal;
+      color: var(--vscode-titleBar-activeForeground);
     }
 
-    .stage{
-        flex: 0 0 426px;
-        margin-top: 84px;
+    h3 {
+      font-size: 12px;
+      line-height: 16px;
+      margin-top: 0px;
+      margin-bottom: 0px;
+      font-weight: normal;
+      color: var(--vscode-titleBar-activeForeground);
+    }
+  }
 
-        .player{
-            position: relative;
-        }
+  .stage {
+    flex: 0 0 426px;
+    margin-top: 84px;
 
-        .capabilitiesVideo {
-            width: 100%;
-            height: auto;
-        }
-
-        .watchOnBrowser {
-            position: absolute;
-            background: rgba(0,0,0,.5);
-            top: 0;
-            right: 0;
-            margin: 10px;
-            border: 0;
-            color: #EEE;
-            -webkit-border-radius: 3px;
-            border-radius: 3px;
-        }
-        
-        .watchOnBrowser:hover {
-            cursor: pointer;
-        }
+    .player {
+      position: relative;
     }
 
-    video::-webkit-media-controls-fullscreen-button {
-        display: none;
+    .capabilitiesVideo {
+      width: 100%;
+      height: auto;
     }
 
-    .action-card{
-        border-radius: 4px;
-        padding: 12px 12px 12px 12px;
-        margin-bottom: 12px;
-        background-color: var(--vscode-editorWidget-background);
-
-        .action-title{
-            font-size: 13px;
-            line-height: 15px;
-            color: var(--vscode-badge-foreground);
-        }
+    .watchOnBrowser {
+      position: absolute;
+      background: rgba(0, 0, 0, 0.5);
+      top: 0;
+      right: 0;
+      margin: 10px;
+      border: 0;
+      color: #eee;
+      -webkit-border-radius: 3px;
+      border-radius: 3px;
     }
 
-    .collapse-action-card{
-        padding: 12px 12px 12px 12px;
-        margin-bottom: 12px;
-        cursor: pointer;
+    .watchOnBrowser:hover {
+      cursor: pointer;
+    }
+  }
+
+  video::-webkit-media-controls-fullscreen-button {
+    display: none;
+  }
+
+  .action-card {
+    border-radius: 4px;
+    padding: 12px 12px 12px 12px;
+    margin-bottom: 12px;
+    background-color: var(--vscode-editorWidget-background);
+
+    .action-title {
+      font-size: 13px;
+      line-height: 15px;
+      color: var(--vscode-badge-foreground);
+    }
+  }
+
+  .collapse-action-card {
+    padding: 12px 12px 12px 12px;
+    margin-bottom: 12px;
+    cursor: pointer;
+  }
+
+  .action-icon {
+    min-width: 16px;
+    margin-right: 8px;
+    font-size: 16px;
+  }
+
+  .action-title {
+    font-size: 13px;
+    line-height: 15px;
+    color: var(--vscode-menu-foreground);
+  }
+
+  .action-content {
+    font-size: 12px;
+    color: var(--vscode-sideBarTitle-foreground);
+  }
+
+  .left {
+    float: left;
+
+    button {
+      background-color: var(--vscode-button-background);
+      border-radius: 0px;
+      height: 28px;
+      padding: 6px 11px 6px 11px;
     }
 
-    .action-icon{
-        min-width: 16px;
-        margin-right: 8px;
-        font-size: 16px;
+    span {
+      font-size: 13px;
+      line-height: 15px;
+      align-items: center;
+      text-align: center;
+      font-weight: normal;
     }
+  }
 
-    .action-title{
-        font-size: 13px;
-        line-height: 15px;
-        color: var(--vscode-menu-foreground);
+  .right {
+    float: right;
+
+    span {
+      font-size: 13px;
+      line-height: 15px;
+      align-items: center;
+      text-align: center;
+      color: var(--vscode-textLink-foreground);
     }
+  }
 
-    .action-content{
-        font-size: 12px;
-        color: var(--vscode-sideBarTitle-foreground);
-    }
+  .tip {
+    color: #808080;
+    font-size: 11px;
+    line-height: 16px;
+    align-items: center;
+  }
 
-    .left{
-        float: left;
+  .card-line {
+    margin-bottom: 8px;
+  }
 
-        button{
-            background-color: var(--vscode-button-background);
-            border-radius: 0px;
-            height: 28px;
-            padding: 6px 11px 6px 11px;
-        }
-
-        span{
-            font-size: 13px;
-            line-height: 15px;
-            align-items: center;
-            text-align: center;
-            font-weight: normal;
-        }
-    }
-
-    .right{
-        float: right;
-
-        span{
-            font-size: 13px;
-            line-height: 15px;
-            align-items: center;
-            text-align: center;
-            color: var(--vscode-textLink-foreground);
-        }
-    }
-
-    .tip{
-        color: #808080;
-        font-size: 11px;
-        line-height: 16px;
-        align-items: center;
-    }
-
-    .card-line{
-        margin-bottom: 8px;
-    }
-
-    .left-right-align{
-        overflow: hidden;
-    }
+  .left-right-align {
+    overflow: hidden;
+  }
 }
-

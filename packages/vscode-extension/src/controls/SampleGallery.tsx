@@ -4,7 +4,7 @@ import "./SampleGallery.scss";
 import { Commands } from "./Commands";
 import FAQPlus from "../../media/faq-plus.gif";
 import InMeetingApp from "../../media/in-meeting-app.png";
-import ShareNow from "../../media/share-now.png";
+import ShareNow from "../../media/share-now.gif";
 import ToDoList from "../../media/to-do-list.gif";
 import ToDoListSharepoint from "../../media/to-do-list-sharepoint.gif";
 

@@ -57,7 +57,7 @@ export class WebviewPanel {
         // Enable javascript in the webview
         enableScripts: true,
         retainContextWhenHidden: true,
-        localResourceRoots: [vscode.Uri.file(path.join(this.extensionPath, "out"))]
+        localResourceRoots: [vscode.Uri.file(path.join(this.extensionPath, "out"))],
       }
     );
 
@@ -84,7 +84,7 @@ export class WebviewPanel {
                 canSelectFiles: false,
                 canSelectFolders: true,
                 canSelectMany: false,
-                title: "Select folder to clone the sample app"
+                title: "Select folder to clone the sample app",
               });
               if (folder !== undefined) {
                 const dialogManager = DialogManager.getInstance();
@@ -130,6 +130,9 @@ export class WebviewPanel {
           case Commands.SwitchPanel:
             WebviewPanel.createOrShow(this.extensionPath, msg.data);
             break;
+          case Commands.InitAccountInfo:
+            this.setStatusChangeMap();
+            break;
           default:
             break;
         }
@@ -138,6 +141,20 @@ export class WebviewPanel {
       ext.context.subscriptions
     );
 
+    // Set the webview's initial html content
+    this.panel.webview.html = this.getHtmlForWebview(panelType);
+  }
+
+  private getWebpageTitle(panelType: PanelType) {
+    switch (panelType) {
+      case PanelType.QuickStart:
+        return "Quick Start";
+      case PanelType.SampleGallery:
+        return "Samples";
+    }
+  }
+
+  private setStatusChangeMap() {
     AppStudioTokenInstance.setStatusChangeMap(
       "quick-start-webview",
       (status, token, accountInfo) => {
@@ -149,7 +166,7 @@ export class WebviewPanel {
         if (this.panel && this.panel.webview) {
           this.panel.webview.postMessage({
             message: "m365AccountChange",
-            data: email
+            data: email,
           });
         }
 
@@ -169,24 +186,12 @@ export class WebviewPanel {
       if (this.panel && this.panel.webview) {
         this.panel.webview.postMessage({
           message: "azureAccountChange",
-          data: email
+          data: email,
         });
       }
 
       return Promise.resolve();
     });
-
-    // Set the webview's initial html content
-    this.panel.webview.html = this.getHtmlForWebview(panelType);
-  }
-
-  private getWebpageTitle(panelType: PanelType) {
-    switch (panelType) {
-      case PanelType.QuickStart:
-        return "Quick Start";
-      case PanelType.SampleGallery:
-        return "Samples";
-    }
   }
 
   private async fetchCodeZip(url: string) {
@@ -196,7 +201,7 @@ export class WebviewPanel {
       retries--;
       try {
         result = await axios.get(url, {
-          responseType: "arraybuffer"
+          responseType: "arraybuffer",
         });
         if (result.status === 200 || result.status === 201) {
           return result;

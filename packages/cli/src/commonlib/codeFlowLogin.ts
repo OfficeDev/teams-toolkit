@@ -13,7 +13,7 @@ import * as crypto from "crypto";
 import { AddressInfo } from "net";
 import { accountPath, UTF8 } from "./cacheAccess";
 import open from "open";
-import { azureLoginMessage, changeLoginTenantMessage, env, m365LoginMessage, MFACode } from "./common/constant";
+import { azureLoginMessage, env, m365LoginMessage, MFACode } from "./common/constant";
 import colors from "colors";
 import * as constants from "../constants";
 
@@ -38,7 +38,6 @@ export class CodeFlowLogin {
   mutex: Mutex | undefined;
   msalTokenCache: TokenCache | undefined;
   accountName: string | undefined;
-  showMFA: boolean | undefined;
 
   constructor(scopes: string[], config: Configuration, port: number, accountName: string) {
     this.scopes = scopes;
@@ -48,7 +47,6 @@ export class CodeFlowLogin {
     this.pca = new PublicClientApplication(this.config!);
     this.msalTokenCache = this.pca.getTokenCache();
     this.accountName = accountName;
-    this.showMFA = true;
   }
 
   async reloadCache() {
@@ -156,10 +154,12 @@ export class CodeFlowLogin {
   }
 
   async logout(): Promise<boolean> {
-    const accountCache = String(fs.readFileSync(accountPath + this.accountName, UTF8));
-    const dataCache = await this.msalTokenCache!.getAccountByHomeId(accountCache);
-    if (dataCache) {
-      this.msalTokenCache?.removeAccount(dataCache);
+    if (fs.existsSync(accountPath + this.accountName)) {
+      const accountCache = String(fs.readFileSync(accountPath + this.accountName, UTF8));
+      const dataCache = await this.msalTokenCache!.getAccountByHomeId(accountCache);
+      if (dataCache) {
+        this.msalTokenCache?.removeAccount(dataCache);
+      }
     }
     if (fs.existsSync(accountPath + this.accountName)) {
       fs.writeFileSync(accountPath + this.accountName, "", UTF8);
@@ -221,11 +221,7 @@ export class CodeFlowLogin {
         })
         .catch(async (error) => {
           if (error.message.indexOf(MFACode) >= 0) {
-            if (this.showMFA) {
-              console.log(colors.green(changeLoginTenantMessage));
-              this.showMFA = false;
-            }
-            return undefined;
+            throw error;
           } else {
             CliCodeLogInstance.error("[Login] getTenantToken acquireTokenSilent : " + error.message);
             const accountList = await this.msalTokenCache?.getAllAccounts();

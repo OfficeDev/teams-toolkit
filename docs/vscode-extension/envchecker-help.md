@@ -91,7 +91,7 @@ The `global.json` file is not required, so if it doesn't contain anything other 
 
 ## Teams Toolkit Validation Settings
 
-There are two settings to turn on/off .NET SDK and Node.js validation, and both of them are enabled by default. You are able to uncheck the box if you don not need the dependencies validation and would like to handle it by yourself.
+There are two settings to turn on/off .NET SDK and Node.js validation, and both of them are enabled by default. You are able to uncheck the box if you do not need the dependencies validation and would like to install the dependencies by yourself. Check the [Node.js installation guide](#how-to-install-nodejs) and [.NET SDK installation guide](#how-to-install-net-sdk).
 
 To open your user and workspace settings, use the following Visual Studio Code menu command:
 
@@ -102,4 +102,4 @@ To open your user and workspace settings, use the following Visual Studio Code m
 
 ## Report issues 
 
-If above FAQs can't solve your problem, please click [here](https://github.com/OfficeDev/Teams Toolkit/issues/new) to submit an issue on GitHub and attach the log from Visual Studio Code output channel named "Teams Toolkit".
+If above FAQs can't solve your problem, please click [here](https://github.com/OfficeDev/Teamsfx/issues/new) to submit an issue on GitHub and attach the log from Visual Studio Code output channel named "Teams Toolkit".

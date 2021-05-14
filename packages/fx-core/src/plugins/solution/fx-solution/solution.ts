@@ -1025,24 +1025,6 @@ export class TeamsAppSolution implements Solution {
     if (isIdle.isErr()) {
       return err(isIdle.error);
     }
-    const manifest = maybeManifest.value;
-
-    if (this.isAzureProject(ctx)) {
-      //1. ask common questions for azure resources.
-      const appName = manifest.name.short;
-      const res = await fillInCommonQuestions(
-        ctx,
-        appName,
-        ctx.config,
-        ctx.dialog,
-        ctx.azureAccountProvider,
-        await ctx.appStudioToken?.getJsonObject()
-      );
-      if (res.isErr()) {
-        return res;
-      }
-      const azureToken = await ctx.azureAccountProvider?.getAccountCredentialAsync();
-    }
 
     const isProvisionSucceeded = this.checkWetherProvisionSucceeded(ctx.config);
     if (!isProvisionSucceeded) {

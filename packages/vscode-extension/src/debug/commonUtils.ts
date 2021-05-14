@@ -9,6 +9,8 @@ import * as constants from "./constants";
 import { ConfigFolderName, Func } from "@microsoft/teamsfx-api";
 import { core, showError } from "../handlers";
 import * as net from "net";
+import { ext } from "../extensionVariables";
+import { getActiveEnv, isWorkspaceSupported } from "../utils/commonUtils";
 
 export async function getProjectRoot(
   folderPath: string,
@@ -178,4 +180,18 @@ export async function detectPortListening(port: number, hosts: string[]): Promis
     }
   }
   return false;
+}
+
+export function getTeamsAppTenantId(): string | undefined {
+  if (ext.workspaceUri) {
+    const ws = ext.workspaceUri.fsPath;
+    if (isWorkspaceSupported(ws)) {
+      const env = getActiveEnv();
+      const envJsonPath = path.join(ws, `.${ConfigFolderName}/env.${env}.json`);
+      const envJson = JSON.parse(fs.readFileSync(envJsonPath, "utf8"));
+      return envJson.solution.teamsAppTenantId;
+    }
+  }
+
+  return undefined;
 }

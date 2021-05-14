@@ -123,7 +123,7 @@ export class TeamsUserCredential implements TokenCredential {
             const errorMsg = `Consent failed for the scope ${scopesStr} with error: ${reason}`;
             internalLogger.error(errorMsg);
             reject(new ErrorWithCode(errorMsg, ErrorCode.ConsentFailed));
-          }
+          },
         });
       });
     });
@@ -231,14 +231,14 @@ export class TeamsUserCredential implements TokenCredential {
           code: authCodeResult.code,
           code_verifier: authCodeResult.codeVerifier,
           redirect_uri: authCodeResult.redirectUri,
-          grant_type: GrantType.authCode
+          grant_type: GrantType.authCode,
         });
 
         const tokenResult: AccessTokenResult = response.data;
         const key = await this.getAccessTokenCacheKey(scopesStr);
         this.setTokenCache(key, {
           token: tokenResult.access_token,
-          expiresOnTimestamp: tokenResult.expires_on
+          expiresOnTimestamp: tokenResult.expires_on,
         });
         return;
       } catch (err) {
@@ -269,13 +269,13 @@ export class TeamsUserCredential implements TokenCredential {
       const axiosInstance: AxiosInstance = await this.getAxiosInstance();
       const response = await axiosInstance.post("/auth/token", {
         scope: scopesStr,
-        grant_type: GrantType.ssoToken
+        grant_type: GrantType.ssoToken,
       });
 
       const accessTokenResult: AccessTokenResult = response.data;
       const accessToken: AccessToken = {
         token: accessTokenResult.access_token,
-        expiresOnTimestamp: accessTokenResult.expires_on
+        expiresOnTimestamp: accessTokenResult.expires_on,
       };
       const cacheKey = await this.getAccessTokenCacheKey(scopesStr);
       this.setTokenCache(cacheKey, accessToken);
@@ -322,7 +322,7 @@ export class TeamsUserCredential implements TokenCredential {
 
             const ssoToken: AccessToken = {
               token,
-              expiresOnTimestamp: tokenObject.exp * 1000
+              expiresOnTimestamp: tokenObject.exp * 1000,
             };
 
             this.ssoToken = ssoToken;
@@ -333,7 +333,7 @@ export class TeamsUserCredential implements TokenCredential {
             internalLogger.error(errorMsg);
             reject(new ErrorWithCode(errorMsg, ErrorCode.InternalError));
           },
-          resources: []
+          resources: [],
         });
       });
 
@@ -400,7 +400,7 @@ export class TeamsUserCredential implements TokenCredential {
   private async getAxiosInstance(): Promise<AxiosInstance> {
     const ssoToken = await this.getSSOToken();
     const axiosInstance: AxiosInstance = axios.create({
-      baseURL: this.config.simpleAuthEndpoint
+      baseURL: this.config.simpleAuthEndpoint,
     });
 
     axiosInstance.interceptors.request.use((config) => {

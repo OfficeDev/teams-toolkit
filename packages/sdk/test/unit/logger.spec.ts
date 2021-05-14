@@ -9,7 +9,7 @@ import {
   setLogLevel,
   getLogLevel,
   LogLevel,
-  Logger
+  Logger,
 } from "../../src/util/logger";
 
 describe("Logger Tests", () => {
@@ -28,7 +28,7 @@ describe("Logger Tests", () => {
       error: errorStub,
       warn: warnStub,
       info: infoStub,
-      verbose: verboseStub
+      verbose: verboseStub,
     } as Logger;
     setLogger(logger);
   });

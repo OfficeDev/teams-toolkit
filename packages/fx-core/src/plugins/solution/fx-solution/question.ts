@@ -3,7 +3,6 @@
 import {
   ConfigMap,
   FuncQuestion,
-  Inputs,
   MultiSelectQuestion,
   NodeType,
   OptionItem,

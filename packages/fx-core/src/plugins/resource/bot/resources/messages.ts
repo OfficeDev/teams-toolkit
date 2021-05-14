@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Links } from "../constants";
 
 export class Messages {
   public static readonly SomethingIsInvalidWithValue = (something: string, value: string): string =>

@@ -5,7 +5,6 @@ import AdmZip from "adm-zip";
 import Mustache from "mustache";
 import axios from "axios";
 import fs from "fs-extra";
-import semver from "semver";
 
 import {
   FetchTemplateManifestError,
@@ -13,7 +12,7 @@ import {
   InvalidTemplateManifestError,
   runWithErrorCatchAndThrow,
 } from "../resources/errors";
-import { Constants, FrontendPathInfo, FrontendPluginInfo as PluginInfo } from "../constants";
+import { Constants, FrontendPathInfo } from "../constants";
 import { Logger } from "../utils/logger";
 import { Messages } from "../resources/messages";
 import { PluginContext } from "@microsoft/teamsfx-api";

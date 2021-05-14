@@ -18,7 +18,6 @@ import { ProgressBarFactory } from "./progressBars";
 import { LifecycleFuncNames, ProgressBarConstants } from "./constants";
 import { ErrorType, PluginError } from "./errors";
 import { Logger } from "./logger";
-import { PluginBot } from "./resources/strings";
 import { telemetryHelper } from "./utils/telemetry-helper";
 
 export class TeamsBot implements Plugin {

@@ -1,17 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  Dialog,
-  Func,
-  LogProvider,
-  FxError,
-  MsgLevel,
-  NodeType,
-  PluginContext,
-  QTreeNode,
-  Result,
-} from "@microsoft/teamsfx-api";
+import { Dialog, LogProvider, MsgLevel, PluginContext } from "@microsoft/teamsfx-api";
 import { AadResult, ResultFactory } from "./results";
 import {
   PostProvisionConfig,

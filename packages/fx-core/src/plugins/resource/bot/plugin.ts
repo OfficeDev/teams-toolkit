@@ -15,7 +15,6 @@ import {
   FolderNames,
   QuestionNames,
   WebAppConstants,
-  LifecycleFuncNames,
   TemplateProjectsConstants,
   AuthEnvNames,
   AuthValues,
@@ -36,7 +35,6 @@ import {
   PreconditionError,
   SomethingMissingError,
   UserInputsError,
-  ConfigValidationError,
 } from "./errors";
 import { TeamsBotConfig } from "./configs/teamsBotConfig";
 import AdmZip from "adm-zip";

@@ -10,7 +10,6 @@ import {
   FunctionPluginPathInfo as PathInfo,
   FunctionPluginInfo as PluginInfo,
   RegularExpr,
-  FunctionPluginPathInfo,
 } from "../constants";
 import { FunctionLanguage } from "../enums";
 import { InfoMessages } from "../resources/message";

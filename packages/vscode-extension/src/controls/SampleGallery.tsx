@@ -2,8 +2,11 @@ import * as React from "react";
 import { Icon, Stack, Image, PrimaryButton } from "@fluentui/react";
 import "./SampleGallery.scss";
 import { Commands } from "./Commands";
-import HelloWorld from "../../media/helloworld.gif";
-import InMeetingApp from "../../media/sampleApp_inMeeting.png";
+import FAQPlus from "../../media/faq-plus.gif";
+import InMeetingApp from "../../media/in-meeting-app.png";
+import ShareNow from "../../media/share-now.gif";
+import ToDoList from "../../media/to-do-list.gif";
+import ToDoListSharepoint from "../../media/to-do-list-sharepoint.gif";
 
 export default class SampleGallery extends React.Component<any, any> {
   constructor(props: any) {
@@ -37,7 +40,7 @@ export default class SampleGallery extends React.Component<any, any> {
           tokens={{ childrenGap: 20 }}
         >
           <SampleAppCard
-            image={HelloWorld}
+            image={ToDoList}
             tags={["React", "Azure function", "Azure SQL", "JS"]}
             title="Todo List with Azure backend"
             description="Todo List provides an easy way to manage to-do items in Teams Client. This app helps enabling task collaboration and management for your team. The frontend is a React app and the backend is hosted on Azure. You will need an Azure subscription to run the app."
@@ -45,7 +48,7 @@ export default class SampleGallery extends React.Component<any, any> {
             sampleAppUrl="https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip"
           />
           <SampleAppCard
-            image={HelloWorld}
+            image={ToDoListSharepoint}
             tags={["SharePoint", "SPFx", "TS"]}
             title="Todo List with SPFx "
             description="Todo List with SPFx is a Todo List for individuals to manage his/her personal to-do items. This app is hosted on Sharepoint. There is no requirements to deploy Azure resources."
@@ -53,7 +56,7 @@ export default class SampleGallery extends React.Component<any, any> {
             sampleAppUrl="https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip"
           />
           <SampleAppCard
-            image={HelloWorld}
+            image={ShareNow}
             tags={["Tab", "Message Extension", "TS"]}
             title="Share Now"
             description="Share Now promotes the exchange of information between colleagues by enabling users to share content within the Teams environment. Users engage the app to share items of interest, discover new shared content, set preferences, and bookmark favorites for later reading."
@@ -61,7 +64,7 @@ export default class SampleGallery extends React.Component<any, any> {
             sampleAppUrl="https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip"
           />
           <SampleAppCard
-            image={HelloWorld}
+            image={FAQPlus}
             tags={["Easy QnA", "Bot", "JS"]}
             title="FAQ Plus"
             description="FAQ Plus is a conversational Q&A bot providing an easy way to answer frequently asked questions by users. One can ask a question and the bot responds with information in the knowledge base. If the answer is not in the knowledge base, the bot submits the question to a pre-configured team of experts who help provide support."
@@ -132,8 +135,8 @@ class SampleAppCard extends React.Component<any, any> {
       data: {
         appName: sampleAppName,
         appUrl: sampleAppUrl,
-        appFolder: sampleAppFolder
-      }
+        appFolder: sampleAppFolder,
+      },
     });
   };
 }

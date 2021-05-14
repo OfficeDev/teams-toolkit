@@ -3,12 +3,19 @@
 // Licensed under the MIT license.
 
 import * as path from "path";
-import {funcPluginLogger as logger} from "./funcPluginLogger";
-import {DepsCheckerError} from "./errors";
-import {ConfigMap, DialogMsg, DialogType, PluginContext, QuestionType, returnUserError} from "@microsoft/teamsfx-api";
-import {Messages, dotnetManualInstallHelpLink} from "./common";
-import {IDepsAdapter, IDepsChecker} from "./checker";
-import { getResourceFolder} from "../../../../..";
+import { funcPluginLogger as logger } from "./funcPluginLogger";
+import { DepsCheckerError } from "./errors";
+import {
+  ConfigMap,
+  DialogMsg,
+  DialogType,
+  PluginContext,
+  QuestionType,
+  returnUserError,
+} from "@microsoft/teamsfx-api";
+import { Messages, dotnetManualInstallHelpLink } from "./common";
+import { IDepsAdapter, IDepsChecker } from "./checker";
+import { getResourceFolder } from "../../../../..";
 
 class FuncPluginAdapter implements IDepsAdapter {
   private readonly downloadIndicatorInterval = 1000; // same as vscode-dotnet-runtime
@@ -28,10 +35,7 @@ class FuncPluginAdapter implements IDepsAdapter {
     return await action();
   }
 
-  public displayContinueWithLearnMore(
-    message: string,
-    link: string
-  ): Promise<boolean> {
+  public displayContinueWithLearnMore(message: string, link: string): Promise<boolean> {
     return Promise.resolve(true);
   }
 
@@ -47,9 +51,7 @@ class FuncPluginAdapter implements IDepsAdapter {
     return this.enabled;
   }
 
-  public async runWithProgressIndicator(
-    callback: () => Promise<void>
-  ): Promise<void> {
+  public async runWithProgressIndicator(callback: () => Promise<void>): Promise<void> {
     // NOTE: We cannot use outputChannel in plugin to print the dots in one line.
     let counter = 1;
     const timer = setInterval(() => {
@@ -82,7 +84,13 @@ class FuncPluginAdapter implements IDepsAdapter {
     if (error instanceof DepsCheckerError) {
       throw returnUserError(error, "function", "DepsCheckerError", error.helpLink, error);
     } else {
-      throw returnUserError(new Error(Messages.defaultErrorMessage), "function", "DepsCheckerError", dotnetManualInstallHelpLink, error);
+      throw returnUserError(
+        new Error(Messages.defaultErrorMessage),
+        "function",
+        "DepsCheckerError",
+        dotnetManualInstallHelpLink,
+        error
+      );
     }
   }
 
@@ -91,30 +99,33 @@ class FuncPluginAdapter implements IDepsAdapter {
     return this.displayContinueWithLearnMoreLink(ctx, confirmMessage, dotnetManualInstallHelpLink);
   }
 
-  public async displayContinueWithLearnMoreLink(ctx: PluginContext, message: string, link: string): Promise<boolean> {
+  public async displayContinueWithLearnMoreLink(
+    ctx: PluginContext,
+    message: string,
+    link: string
+  ): Promise<boolean> {
     if (!ctx.dialog) {
       // no dialog, always continue
       return true;
     }
 
-    let userSelected: string | undefined;
-    userSelected = (await ctx.dialog.communicate(new DialogMsg(
-      DialogType.Ask,
-      {
-        description: message,
-        type: QuestionType.Confirm,
-        options: [Messages.learnMoreButtonText, Messages.continueButtonText], // Cancel is added by default
-      },
-    ))).getAnswer();
+    const userSelected: string | undefined = (
+      await ctx.dialog.communicate(
+        new DialogMsg(DialogType.Ask, {
+          description: message,
+          type: QuestionType.Confirm,
+          options: [Messages.learnMoreButtonText, Messages.continueButtonText], // Cancel is added by default
+        })
+      )
+    ).getAnswer();
 
     if (userSelected === Messages.learnMoreButtonText) {
-      await ctx.dialog.communicate(new DialogMsg(
-        DialogType.Ask,
-        {
+      await ctx.dialog.communicate(
+        new DialogMsg(DialogType.Ask, {
           type: QuestionType.OpenExternal,
           description: link,
-        },
-      ));
+        })
+      );
     }
 
     return userSelected === Messages.continueButtonText;

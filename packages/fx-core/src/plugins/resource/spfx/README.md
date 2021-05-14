@@ -29,10 +29,10 @@ nvm use 12.x
 5. Input webpart description.
 6. Select "none" or "react" as frontend framework.
 7. Select the root folder from where your project will be created in.
-8. After scafolding, open a terminal and execute: "cd SPFx  npm install" to install the depedended plugin
+8. After scafolding, open a terminal and execute: "cd SPFx npm install" to install the depedended plugin
 9. Open command palette: "TeamsFx: Deploy Package"
 10. SPFx plugin will automatically build the project, upload the bundled SPFx package to SharePoint App Catalog.
-11. Open SharePoint App Catalog, and click `Sync to Teams`.  Confirm that you can see the status message `Successfully synced teams solution` on the top-right corner.
+11. Open SharePoint App Catalog, and click `Sync to Teams`. Confirm that you can see the status message `Successfully synced teams solution` on the top-right corner.
 12. Open Teams Client, you can see the teams app now.
 
 ## Contributing

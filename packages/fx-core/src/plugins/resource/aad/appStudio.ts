@@ -67,9 +67,7 @@ export namespace AppStudio {
     }
 
     const instance = initAxiosInstance(appStudioToken);
-    const response = await instance.post(
-      `${baseUrl}/api/aadapp/${aadAppObjectId}/passwords`
-    );
+    const response = await instance.post(`${baseUrl}/api/aadapp/${aadAppObjectId}/passwords`);
     if (response && response.data) {
       const app = <IAADPassword>response.data;
 
@@ -85,7 +83,7 @@ export namespace AppStudio {
 
   export async function getAadApp(
     appStudioToken: string,
-    aadAppObjectId: string,
+    aadAppObjectId: string
   ): Promise<IAADDefinition> {
     if (!aadAppObjectId) {
       throw new Error(
@@ -103,14 +101,12 @@ export namespace AppStudio {
       }
     }
 
-    throw new Error(
-      `${AppStudioErrorMessage.GetFailed}: ${AppStudioErrorMessage.EmptyResponse}.`
-    );
+    throw new Error(`${AppStudioErrorMessage.GetFailed}: ${AppStudioErrorMessage.EmptyResponse}.`);
   }
 
   function initAxiosInstance(appStudioToken: string) {
     const instance = axios.create({
-      baseURL: baseUrl
+      baseURL: baseUrl,
     });
     instance.defaults.headers.common["Authorization"] = `Bearer ${appStudioToken}`;
     return instance;

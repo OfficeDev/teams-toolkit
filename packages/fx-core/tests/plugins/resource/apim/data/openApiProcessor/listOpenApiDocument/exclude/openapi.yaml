@@ -3,7 +3,7 @@ info:
   title: user input swagger
   version: v1
 paths:
-  '/users/{id}':
+  "/users/{id}":
     get:
       summary: GetUsers
       description: Get all users.
@@ -16,12 +16,12 @@ paths:
           schema:
             type: integer
       responses:
-        '200':
+        "200":
           description: The user information.
           content:
             application/json:
               schema:
-                '$ref': '#/components/schemas/User'
+                "$ref": "#/components/schemas/User"
 components:
   schemas:
     User:

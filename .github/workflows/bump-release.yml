@@ -1,9 +1,16 @@
-name: Daily release
+name: bump version
 
 on:
-  schedule:
-    - cron: "0 8 * * *"
   workflow_dispatch:
+    inputs:
+      force:
+        description: 'force release even if no update(set empty if not)'
+        required: false
+        default: '--force-publish'
+      version:
+        description: 'which version to bump(premajor, preminor, prepatch)'
+        required: true
+        default: 'preminor'
 
 jobs:
   release:
@@ -15,7 +22,7 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.CD_PAT }}
-          ref: main
+          ref: ${{ github.ref }}
 
       - name: Setup node
         uses: actions/setup-node@v2.1.2
@@ -50,8 +57,9 @@ jobs:
           git config --global user.email 'yiz@microsoft.com'
 
       - name: release npm packages to npmjs.org
+        if: ${{ github.event.inputs.stable == 'false' }}
         run: |
-          npx lerna publish --no-private --preid=alpha --dist-tag=alpha --yes prerelease
+          npx lerna publish --no-private --preid=alpha --dist-tag=alpha ${{ github.event.inputs.version }} --yes ${{ github.event.inputs.force }}
 
       - name: pack vsix
         uses: nick-invision/retry@v2
@@ -61,11 +69,11 @@ jobs:
           retry_on: error
           command: |
             cd ./packages/vscode-extension
-            rm -rf node_modules
             npm install
             npx vsce package
 
       - name: release VSCode extension to github
+        if: ${{ github.event.inputs.stable == 'true' }}
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: "${{ secrets.CD_PAT }}"

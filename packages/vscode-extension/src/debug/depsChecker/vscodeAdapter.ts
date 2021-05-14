@@ -6,94 +6,96 @@ import { hasTeamsfxBackend } from "../commonUtils";
 import { vscodeLogger as logger } from "./vscodeLogger";
 
 export class VSCodeAdapter implements IDepsAdapter {
-    private readonly configurationPrefix = "fx-extension";
-    private readonly downloadIndicatorInterval = 1000; // same as vscode-dotnet-runtime
-    private readonly validateDotnetSdkKey = "validateDotnetSdk";
-    private readonly validateFuncCoreToolsKey = "validateFuncCoreTools";
-    private readonly validateNodeVersionKey = "validateNode";
+  private readonly configurationPrefix = "fx-extension";
+  private readonly downloadIndicatorInterval = 1000; // same as vscode-dotnet-runtime
+  private readonly validateDotnetSdkKey = "validateDotnetSdk";
+  private readonly validateFuncCoreToolsKey = "validateFuncCoreTools";
+  private readonly validateNodeVersionKey = "validateNode";
 
-    public hasTeamsfxBackend(): Promise<boolean> {
-        return hasTeamsfxBackend();
+  public hasTeamsfxBackend(): Promise<boolean> {
+    return hasTeamsfxBackend();
+  }
+
+  public dotnetCheckerEnabled(): boolean {
+    return this.checkerEnabled(this.validateDotnetSdkKey);
+  }
+
+  public funcToolCheckerEnabled(): boolean {
+    return this.checkerEnabled(this.validateFuncCoreToolsKey);
+  }
+
+  public nodeCheckerEnabled(): boolean {
+    return this.checkerEnabled(this.validateNodeVersionKey);
+  }
+
+  public async runWithProgressIndicator(callback: () => Promise<void>): Promise<void> {
+    const timer = setInterval(
+      () => logger.outputChannel.append("."),
+      this.downloadIndicatorInterval
+    );
+    try {
+      await callback();
+    } finally {
+      clearTimeout(timer);
+      logger.outputChannel.appendLine("");
+    }
+  }
+
+  public async displayContinueWithLearnMore(message: string, link: string): Promise<boolean> {
+    const learnMoreButton: MessageItem = { title: Messages.learnMoreButtonText };
+    const continueButton: MessageItem = { title: Messages.continueButtonText };
+    const input = await window.showWarningMessage(
+      message,
+      { modal: true },
+      learnMoreButton,
+      continueButton
+    );
+
+    if (input === continueButton) {
+      return true;
+    } else if (input == learnMoreButton) {
+      await openUrl(link);
     }
 
-    public dotnetCheckerEnabled(): boolean {
-        return this.checkerEnabled(this.validateDotnetSdkKey);
+    return false;
+  }
+
+  public async displayLearnMore(message: string, link: string): Promise<boolean> {
+    return await this.displayWarningMessage(message, Messages.learnMoreButtonText, async () => {
+      await openUrl(link);
+      return Promise.resolve(false);
+    });
+  }
+
+  public async displayWarningMessage(
+    message: string,
+    buttonText: string,
+    action: () => Promise<boolean>
+  ): Promise<boolean> {
+    const button: MessageItem = { title: buttonText };
+    const input = await window.showWarningMessage(message, { modal: true }, button);
+    if (input === button) {
+      return await action();
     }
 
-    public funcToolCheckerEnabled(): boolean {
-        return this.checkerEnabled(this.validateFuncCoreToolsKey);
-    }
+    // click cancel button
+    return false;
+  }
 
-    public nodeCheckerEnabled(): boolean {
-        return this.checkerEnabled(this.validateNodeVersionKey);
-    }
+  public showOutputChannel(): void {
+    logger.outputChannel.show(false);
+  }
 
-    public async runWithProgressIndicator(callback: () => Promise<void>): Promise<void> {
-        const timer = setInterval(() => logger.outputChannel.append("."), this.downloadIndicatorInterval);
-        try {
-            await callback();
-        } finally {
-            clearTimeout(timer);
-            logger.outputChannel.appendLine("");
-        }
-    }
+  public getResourceDir(): string {
+    return path.resolve(__dirname, "resource");
+  }
 
-    public async displayContinueWithLearnMore(
-        message: string,
-        link: string
-    ): Promise<boolean> {
-        const learnMoreButton: MessageItem = { title: Messages.learnMoreButtonText };
-        const continueButton: MessageItem = { title: Messages.continueButtonText };
-        const input = await window.showWarningMessage(
-            message,
-            { modal: true },
-            learnMoreButton,
-            continueButton
-        );
-
-        if (input === continueButton) {
-            return true;
-        } else if (input == learnMoreButton) {
-            await openUrl(link);
-        }
-
-        return false;
-    }
-
-    public async displayLearnMore(message: string, link: string): Promise<boolean> {
-        return await this.displayWarningMessage(message, Messages.learnMoreButtonText, async () => {
-            await openUrl(link);
-            return Promise.resolve(false);
-        });
-    }
-
-    public async displayWarningMessage(
-        message: string,
-        buttonText: string,
-        action: () => Promise<boolean>
-    ): Promise<boolean> {
-        const button: MessageItem = { title: buttonText };
-        const input = await window.showWarningMessage(message, { modal: true }, button);
-        if (input === button) {
-            return await action();
-        }
-
-        // click cancel button
-        return false;
-    }
-
-    public showOutputChannel(): void {
-        logger.outputChannel.show(false);
-    }
-
-    public getResourceDir(): string {
-        return path.resolve(__dirname, "resource");
-    }
-
-    private checkerEnabled(key: string): boolean {
-        const configuration: WorkspaceConfiguration = workspace.getConfiguration(this.configurationPrefix);
-        return configuration.get<boolean>(key, false);
-    }
+  private checkerEnabled(key: string): boolean {
+    const configuration: WorkspaceConfiguration = workspace.getConfiguration(
+      this.configurationPrefix
+    );
+    return configuration.get<boolean>(key, false);
+  }
 }
 
 export const vscodeAdapter = new VSCodeAdapter();

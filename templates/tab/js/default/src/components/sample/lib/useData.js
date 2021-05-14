@@ -4,7 +4,6 @@ export function useData(asyncFn, options) {
   const { auto } = { auto: true, ...options };
   const [{ data, loading, error }, dispatch] = useReducer(
     ({ data: oldData }, { type, data, error }) => {
-      // eslint-disable-next-line default-case
       switch (type) {
         case "loading":
           return { data: oldData, loading: true, error: null };
@@ -12,6 +11,8 @@ export function useData(asyncFn, options) {
           return { data, loading: false, error: null };
         case "error":
           return { data: null, loading: false, error };
+        default:
+          return {};
       }
     },
     { data: null, loading: !!auto, error: null }

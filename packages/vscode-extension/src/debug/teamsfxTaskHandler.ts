@@ -87,6 +87,7 @@ export function terminateAllRunningTeamsfxTasks(): void {
       // ignore and keep killing others
     }
   }
+  allRunningTeamsfxTasks.clear();
 }
 
 function onDidTerminateDebugSessionHandler(event: vscode.DebugSession): void {
@@ -107,7 +108,6 @@ function onDidTerminateDebugSessionHandler(event: vscode.DebugSession): void {
         }
 
         allRunningDebugSessions.delete(event.id);
-        allRunningTeamsfxTasks.clear();
     }
 }
 

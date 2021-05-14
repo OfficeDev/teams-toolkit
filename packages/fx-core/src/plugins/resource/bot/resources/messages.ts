@@ -29,8 +29,10 @@ export class Messages {
     `Failed to download from '${url}'.`;
   public static readonly FailToFindSomethingFor = (something: string, forsth: string): string =>
     `Failed to retrieve '${something}' for '${forsth}'.`;
-  public static readonly ReferToIssueLink = `Refer to ${Links.ISSUE_LINK}.`;
-  public static readonly ReferToHelpLink = `Refer to ${Links.HELP_LINK}.`;
+  public static readonly ClickHelpButtonForDetails =
+    "Please click 'Get Help' button for more details.";
+  public static readonly ClickIssueButtonToReportIssue =
+    "Please click 'Report Issue' button to report the issue.";
   public static readonly CommandFailWithMessage = (command: string, message: string): string =>
     `Run '${command}' failed with message: ${message}`;
   public static readonly DoSthBeforeSth = (sth: string, beforeSth: string): string =>
@@ -102,4 +104,8 @@ export class Messages {
     "Please register your subscription to use namespace 'Microsoft.BotService'.";
   public static readonly DeleteFreeAppServicePlanOrChangeSku =
     "Delete a free app service plan or change app service plan's sku in config file and retry.";
+  public static readonly RecoverConfig = "Please recover the config value.";
+  public static readonly RecreateTheProject = "Please recreate the project.";
+  public static readonly CheckCommandOutputAndTryToFixIt =
+    "Please check the command output and try to fix it.";
 }

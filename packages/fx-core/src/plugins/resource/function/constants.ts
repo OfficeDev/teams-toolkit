@@ -54,8 +54,9 @@ export class FunctionPluginPathInfo {
 export class RegularExpr {
   public static readonly validFunctionNamePattern: RegExp = /^[a-zA-Z][\w-]{0,126}$/;
   // See https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/resource-name-rules.
-  public static readonly validAppServicePlanNamePattern: RegExp = /^[0-9a-zA-Z][-0-9a-zA-Z]{1,59}$/;
-  public static readonly validFunctionAppNamePattern: RegExp = /^[0-9a-zA-Z][-0-9a-zA-Z]{1,59}$/;
+  public static readonly validAppServicePlanNamePattern: RegExp = /^[a-zA-Z0-9\-]{1,40}$/;
+  public static readonly validFunctionAppNamePattern: RegExp =
+    /^[a-zA-Z0-9][a-zA-Z0-9\-]{0,58}[a-zA-Z0-9]$/;
   public static readonly validStorageAccountNamePattern: RegExp = /^[a-z0-9]{3,24}$/;
   public static readonly validResourceSuffixPattern: RegExp = /[0-9a-z]{1,16}/;
   public static readonly allCharToBeSkippedInName: RegExp = /[^a-zA-Z0-9]/g;

@@ -21,13 +21,37 @@ describe("Common Utils", () => {
     });
   });
 
-  describe("isNameValidInUrl", () => {
+  describe("isValidWebAppSiteName", () => {
     it("Name Valid", () => {
       // Arrange
       const name = "validName";
 
       // Act
-      const result = utils.isNameValidInUrl(name);
+      const result = utils.isValidWebAppSiteName(name);
+
+      // Assert
+      chai.assert.isTrue(result);
+    });
+
+    it("Name Invalid", () => {
+      // Arrange
+      const name = "-starthyphen";
+
+      // Act
+      const result = utils.isValidWebAppSiteName(name);
+
+      // Assert
+      chai.assert.isFalse(result);
+    });
+  });
+
+  describe("isValidAppServicePlanName", () => {
+    it("Name Valid", () => {
+      // Arrange
+      const name = "validName";
+
+      // Act
+      const result = utils.isValidAppServicePlanName(name);
 
       // Assert
       chai.assert.isTrue(result);
@@ -38,7 +62,31 @@ describe("Common Utils", () => {
       const name = "@+-";
 
       // Act
-      const result = utils.isNameValidInUrl(name);
+      const result = utils.isValidAppServicePlanName(name);
+
+      // Assert
+      chai.assert.isFalse(result);
+    });
+  });
+
+  describe("isValidBotChannelRegName", () => {
+    it("Name Valid", () => {
+      // Arrange
+      const name = "validName";
+
+      // Act
+      const result = utils.isValidBotChannelRegName(name);
+
+      // Assert
+      chai.assert.isTrue(result);
+    });
+
+    it("Name Invalid", () => {
+      // Arrange
+      const name = ".startperiod";
+
+      // Act
+      const result = utils.isValidBotChannelRegName(name);
 
       // Assert
       chai.assert.isFalse(result);

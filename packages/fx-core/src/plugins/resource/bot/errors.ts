@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ErrorNames, Links } from "./constants";
+import { ErrorNames } from "./constants";
 import { Messages } from "./resources/messages";
 
 export enum ErrorType {
@@ -49,7 +49,7 @@ export class PreconditionError extends PluginError {
 export class SomethingMissingError extends PreconditionError {
   constructor(something: string) {
     super(Messages.SomethingIsMissing(something), [
-      Messages.ReferToHelpLink,
+      Messages.ClickHelpButtonForDetails,
       Messages.RetryTheCurrentStep,
     ]);
   }
@@ -132,13 +132,13 @@ export class ConfigUpdatingError extends PluginError {
   }
 }
 
-export class ValidationError extends PluginError {
+export class ConfigValidationError extends PluginError {
   constructor(name: string, value: string) {
     super(
-      ErrorType.System,
-      ErrorNames.VALIDATION_ERROR,
+      ErrorType.User,
+      ErrorNames.CONFIG_VALIDATION_ERROR,
       Messages.SomethingIsInvalidWithValue(name, value),
-      [Messages.ReferToHelpLink]
+      [Messages.RecoverConfig, Messages.RecreateTheProject]
     );
   }
 }
@@ -149,7 +149,7 @@ export class PackDirExistenceError extends PluginError {
       ErrorType.User,
       ErrorNames.PACK_DIR_EXISTENCE_ERROR,
       Messages.SomethingIsNotExisting("pack directory"),
-      [Messages.ReferToHelpLink]
+      [Messages.RecreateTheProject]
     );
   }
 }
@@ -202,24 +202,13 @@ export class DownloadError extends PluginError {
   }
 }
 
-export class TplManifestFormatError extends PluginError {
-  constructor() {
-    super(
-      ErrorType.System,
-      ErrorNames.MANIFEST_FORMAT_ERROR,
-      Messages.SomethingIsInWrongFormat('Templates" manifest.json'),
-      [Messages.ReferToHelpLink]
-    );
-  }
-}
-
 export class TemplateProjectNotFoundError extends PluginError {
   constructor() {
     super(
       ErrorType.System,
       ErrorNames.TEMPLATE_PROJECT_NOT_FOUND_ERROR,
       Messages.SomethingIsNotFound("Template project for scaffold"),
-      [Messages.ReferToHelpLink]
+      [Messages.RetryTheCurrentStep]
     );
   }
 }
@@ -230,7 +219,7 @@ export class CommandExecutionError extends PluginError {
       ErrorType.System,
       ErrorNames.COMMAND_EXECUTION_ERROR,
       Messages.CommandFailWithMessage(cmd, message),
-      [Messages.RetryTheCurrentStep],
+      [Messages.CheckCommandOutputAndTryToFixIt, Messages.RetryTheCurrentStep],
       innerError
     );
   }

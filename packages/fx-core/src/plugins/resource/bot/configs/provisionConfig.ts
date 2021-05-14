@@ -11,7 +11,8 @@ import {
   PluginFunction,
   CommonStrings,
 } from "../resources/strings";
-import { WebAppConstants } from "../constants";
+import { ConfigKeys, WebAppConstants } from "../constants";
+import { ConfigValidationError } from "../errors";
 
 export class ProvisionConfig {
   public subscriptionId?: string;
@@ -133,6 +134,8 @@ export class ProvisionConfig {
     if (botChannelRegNameValue) {
       this.botChannelRegName = botChannelRegNameValue as string;
     }
+
+    this.validateRestoredConfig();
   }
 
   public saveConfigIntoContext(context: PluginContext): void {
@@ -142,5 +145,23 @@ export class ProvisionConfig {
     utils.checkAndSaveConfig(context, PluginBot.SITE_ENDPOINT, this.siteEndpoint);
     utils.checkAndSaveConfig(context, PluginBot.REDIRECT_URI, this.redirectUri);
     utils.checkAndSaveConfig(context, PluginBot.SKU_NAME, this.skuName);
+  }
+
+  private validateRestoredConfig(): void {
+    if (this.siteName && !utils.isValidWebAppSiteName(this.siteName)) {
+      throw new ConfigValidationError(ConfigKeys.SITE_NAME, this.siteName);
+    }
+
+    if (this.siteEndpoint && !utils.isDomainValidForAzureWebApp(this.siteEndpoint)) {
+      throw new ConfigValidationError(ConfigKeys.SITE_ENDPOINT, this.siteEndpoint);
+    }
+
+    if (this.appServicePlan && !utils.isValidAppServicePlanName(this.appServicePlan)) {
+      throw new ConfigValidationError(ConfigKeys.APP_SERVICE_PLAN, this.appServicePlan);
+    }
+
+    if (this.botChannelRegName && !utils.isValidBotChannelRegName(this.botChannelRegName)) {
+      throw new ConfigValidationError(ConfigKeys.BOT_CHANNEL_REG_NAME, this.botChannelRegName);
+    }
   }
 }

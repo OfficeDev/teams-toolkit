@@ -9,7 +9,7 @@ import {
   UserInputsError,
   CallAppStudioError,
   ConfigUpdatingError,
-  ValidationError,
+  ConfigValidationError,
   PackDirExistenceError,
 } from "../../../../../src/plugins/resource/bot/errors";
 
@@ -74,18 +74,18 @@ describe("Test Errors", () => {
     });
   });
 
-  describe("ValidationError", () => {
+  describe("ConfigValidationError", () => {
     it("Happy Path", () => {
       // Arrange
       const name = "name";
       const value = "value";
 
       // Act
-      const myError = new ValidationError(name, value);
+      const myError = new ConfigValidationError(name, value);
 
       // Assert
       chai.assert.isTrue(myError instanceof PluginError);
-      chai.assert.isTrue(myError.errorType === ErrorType.System);
+      chai.assert.isTrue(myError.errorType === ErrorType.User);
     });
   });
 

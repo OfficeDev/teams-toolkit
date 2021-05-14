@@ -279,7 +279,7 @@ describe("Teams Bot Resource Plugin", () => {
       botPluginImpl.config.teamsAppClientSecret = "anything";
       botPluginImpl.config.teamsAppTenant = "anything";
       botPluginImpl.config.applicationIdUris = "anything";
-      botPluginImpl.config.provision.siteEndpoint = "anything";
+      botPluginImpl.config.provision.siteEndpoint = "https://anything.azurewebsites.net";
 
       const pluginContext = testUtils.newPluginContext();
 

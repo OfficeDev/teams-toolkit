@@ -50,9 +50,16 @@ export function zipAFolder(
   return zip.toBuffer();
 }
 
-export function isNameValidInUrl(name: string): boolean {
-  const reg: RegExp = RegularExprs.NORMAL_NAME;
-  return reg.test(name);
+export function isValidWebAppSiteName(name: string): boolean {
+  return RegularExprs.WEB_APP_SITE_NAME.test(name);
+}
+
+export function isValidAppServicePlanName(name: string): boolean {
+  return RegularExprs.APP_SERVICE_PLAN_NAME.test(name);
+}
+
+export function isValidBotChannelRegName(name: string): boolean {
+  return RegularExprs.BOT_CHANNEL_REG_NAME.test(name);
 }
 
 export function isDomainValidForAzureWebApp(url: string): boolean {

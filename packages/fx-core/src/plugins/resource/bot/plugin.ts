@@ -36,7 +36,7 @@ import {
   PreconditionError,
   SomethingMissingError,
   UserInputsError,
-  ValidationError,
+  ConfigValidationError,
 } from "./errors";
 import { TeamsBotConfig } from "./configs/teamsBotConfig";
 import AdmZip from "adm-zip";
@@ -432,10 +432,6 @@ export class TeamsBotImpl {
     );
     CheckThrowSomethingMissing(ConfigNames.SUBSCRIPTION_ID, this.config.provision.subscriptionId);
     CheckThrowSomethingMissing(ConfigNames.RESOURCE_GROUP, this.config.provision.resourceGroup);
-
-    if (!utils.isDomainValidForAzureWebApp(this.config.provision.siteEndpoint!)) {
-      throw new ValidationError("siteEndpoint", this.config.provision.siteEndpoint!);
-    }
 
     this.config.saveConfigIntoContext(context);
 

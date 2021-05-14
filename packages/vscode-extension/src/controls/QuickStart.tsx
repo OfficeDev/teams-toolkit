@@ -7,7 +7,7 @@ import CommandsIMG from "../../media/step_commands.svg";
 import NodeIMG from "../../media/step_nodejs.svg";
 import M365IMG from "../../media/step_m365.svg";
 import AzureIMG from "../../media/step_azure.svg";
-import BuildAppIMG from "../../media/step_buildapp.svg";
+import TodoListSampleIMG from "../../media/todolist-sample.gif";
 import Step_Done from "../../media/Done.svg";
 import Step_Active_0 from "../../media/active-0.svg";
 import Step_Active_1 from "../../media/active-1.svg";
@@ -257,13 +257,13 @@ export default class QuickStart extends React.Component<any, any> {
                   controls
                   disablePictureInPicture
                 >
-                  <source src="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"></source>
+                  <source src="https://aka.ms/teamsfx-video"></source>
                 </video>
                 <div>
                   <a
                     id="watchOnBrowser"
                     className="watchOnBrowser"
-                    href="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+                    href="https://aka.ms/teamsfx-video"
                     target="_blank"
                   >
                     Watch on browser
@@ -275,7 +275,9 @@ export default class QuickStart extends React.Component<any, any> {
             {this.state.currentStep === 3 && !isSupportedNode && <Image src={NodeIMG} />}
             {this.state.currentStep === (isSupportedNode ? 3 : 4) && <Image src={M365IMG} />}
             {this.state.currentStep === (isSupportedNode ? 4 : 5) && <Image src={AzureIMG} />}
-            {this.state.currentStep === (isSupportedNode ? 5 : 6) && <Image src={BuildAppIMG} />}
+            {this.state.currentStep === (isSupportedNode ? 5 : 6) && (
+              <Image src={TodoListSampleIMG} />
+            )}
           </div>
           <div className="side-margin" />
         </div>

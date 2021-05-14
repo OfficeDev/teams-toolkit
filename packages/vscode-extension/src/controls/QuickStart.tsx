@@ -30,12 +30,19 @@ export default class QuickStart extends React.Component<any, any> {
       currentStep: 1,
       m365Account: undefined,
       azureAccount: undefined,
-      stepsDone: [false, false, false, false, false, false]
+      stepsDone: [false, false, false, false, false, false],
     };
   }
 
   componentDidMount() {
     window.addEventListener("message", this.receiveMessage, false);
+    this.initAccountInfo();
+  }
+
+  initAccountInfo() {
+    vscode.postMessage({
+      command: Commands.InitAccountInfo,
+    });
   }
 
   render() {
@@ -49,7 +56,7 @@ export default class QuickStart extends React.Component<any, any> {
         <a href="https://developer.microsoft.com/en-us/microsoft-365/dev-program">
           M365 Developer Program
         </a>,
-        "."
+        ".",
       ];
     } else {
       m365AccountContent = `You have successfully signed in with your M365 account (${this.state.m365Account}).`;
@@ -61,7 +68,7 @@ export default class QuickStart extends React.Component<any, any> {
         "The Teams Toolkit requires an Azure account and subscription to deploy the Azure resources for your project.",
         <br />,
         <br />,
-        "You will not be charged without your further confirmation."
+        "You will not be charged without your further confirmation.",
       ];
     } else {
       azureAccountContent = `You have successfully signed in with your Azure account (${this.state.azureAccount}).`;
@@ -93,7 +100,7 @@ export default class QuickStart extends React.Component<any, any> {
                     <a href="https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/capabilities-overview">
                       Capabilities
                     </a>,
-                    " are the extension points for building apps on the Microsoft Teams platform."
+                    " are the extension points for building apps on the Microsoft Teams platform.",
                   ]}
                   actionText="Watch Video (1 min)"
                   onAction={this.onWatchVideo}
@@ -128,7 +135,7 @@ export default class QuickStart extends React.Component<any, any> {
                     <a href="https://github.com/OfficeDev/TeamsFx/tree/main/packages/cli">
                       Command Line Interface (CLI)
                     </a>,
-                    " to increase productivity"
+                    " to increase productivity",
                   ]}
                   onCollapsedCardClicked={this.onCollapsedCardClicked}
                   step={curStep}
@@ -154,7 +161,7 @@ export default class QuickStart extends React.Component<any, any> {
                       <a href="http://npm.github.io/installation-setup-docs/installing/using-a-node-version-manager.html">
                         managing Node.js versions
                       </a>,
-                      "."
+                      ".",
                     ]}
                     actionText="Download Node.js (v14.x)"
                     onAction={this.downloadNode}
@@ -222,7 +229,7 @@ export default class QuickStart extends React.Component<any, any> {
                     "Explore our sample apps to quickly get started with concepts and code examples.",
                     <br />,
                     <br />,
-                    "You can also create a new project from scratch."
+                    "You can also create a new project from scratch.",
                   ]}
                   actionText="View all Samples"
                   onAction={this.viewAllSamples}
@@ -293,19 +300,19 @@ export default class QuickStart extends React.Component<any, any> {
 
   onNextStep = (step: number) => {
     this.setState({
-      currentStep: step + 1
+      currentStep: step + 1,
     });
   };
 
   createNewProject = () => {
     vscode.postMessage({
-      command: Commands.CreateNewProject
+      command: Commands.CreateNewProject,
     });
   };
 
   onCollapsedCardClicked = (step: number) => {
     this.setState({
-      currentStep: step
+      currentStep: step,
     });
   };
 
@@ -318,7 +325,7 @@ export default class QuickStart extends React.Component<any, any> {
     const done = this.state.stepsDone;
     done[0] = true;
     this.setState({
-      stepsDone: done
+      stepsDone: done,
     });
   };
 
@@ -340,50 +347,50 @@ export default class QuickStart extends React.Component<any, any> {
   displayCommands = () => {
     vscode.postMessage({
       command: Commands.DisplayCommands,
-      data: "Teams"
+      data: "Teams",
     });
 
     const done = this.state.stepsDone;
     done[1] = true;
     this.setState({
-      stepsDone: done
+      stepsDone: done,
     });
   };
 
   downloadNode = () => {
     vscode.postMessage({
       command: Commands.OpenExternalLink,
-      data: "https://nodejs.org/dist/latest-v14.x/"
+      data: "https://nodejs.org/dist/latest-v14.x/",
     });
 
     const done = this.state.stepsDone;
     done[2] = true;
     this.setState({
-      stepsDone: done
+      stepsDone: done,
     });
   };
 
   signinM365 = () => {
     vscode.postMessage({
-      command: Commands.SigninM365
+      command: Commands.SigninM365,
     });
 
     const done = this.state.stepsDone;
     done[3] = true;
     this.setState({
-      stepsDone: done
+      stepsDone: done,
     });
   };
 
   signinAzure = () => {
     vscode.postMessage({
-      command: Commands.SigninAzure
+      command: Commands.SigninAzure,
     });
 
     const done = this.state.stepsDone;
     done[4] = true;
     this.setState({
-      stepsDone: done
+      stepsDone: done,
     });
   };
 
@@ -391,12 +398,12 @@ export default class QuickStart extends React.Component<any, any> {
     const done = this.state.stepsDone;
     done[5] = true;
     this.setState({
-      stepsDone: done
+      stepsDone: done,
     });
 
     vscode.postMessage({
       command: Commands.SwitchPanel,
-      data: PanelType.SampleGallery
+      data: PanelType.SampleGallery,
     });
   };
 }

@@ -431,7 +431,7 @@ export class TreeViewCommand extends vscode.TreeItem {
       this.command = {
         title: label,
         command: commandId,
-        arguments: [CommandsTreeViewProvider.TreeViewFlag]
+        arguments: [[CommandsTreeViewProvider.TreeViewFlag]]
       };
     }
   }

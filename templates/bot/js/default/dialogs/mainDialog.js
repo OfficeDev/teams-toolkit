@@ -1,14 +1,6 @@
-const {
-  DialogSet,
-  DialogTurnStatus,
-  WaterfallDialog,
-} = require("botbuilder-dialogs");
+const { DialogSet, DialogTurnStatus, WaterfallDialog } = require("botbuilder-dialogs");
 const { RootDialog } = require("./rootDialog");
-const {
-  tokenExchangeOperationName,
-  ActivityTypes,
-  CardFactory,
-} = require("botbuilder");
+const { tokenExchangeOperationName, ActivityTypes, CardFactory } = require("botbuilder");
 
 const MAIN_DIALOG = "MainDialog";
 const MAIN_WATERFALL_DIALOG = "MainWaterfallDialog";
@@ -69,21 +61,17 @@ class MainDialog extends RootDialog {
   async showUserInfo(stepContext) {
     const tokenResponse = stepContext.result;
     if (tokenResponse) {
-      await stepContext.context.sendActivity(
-        "Call Microsoft Graph on behalf of user..."
-      );
+      await stepContext.context.sendActivity("Call Microsoft Graph on behalf of user...");
 
       // Call Microsoft Graph on behalf of user
-      const oboCredential = new OnBehalfOfUserCredential(
-        tokenResponse.ssoToken
-      );
-      const graphClient = createMicrosoftGraphClient(oboCredential, [
-        "User.Read",
-      ]);
+      const oboCredential = new OnBehalfOfUserCredential(tokenResponse.ssoToken);
+      const graphClient = createMicrosoftGraphClient(oboCredential, ["User.Read"]);
       const me = await graphClient.api("/me").get();
       if (me) {
         await stepContext.context.sendActivity(
-          `You're logged in as ${me.displayName} (${me.userPrincipalName})${me.jobTitle ? `; your job title is: ${me.jobTitle}` : ""}.`
+          `You're logged in as ${me.displayName} (${me.userPrincipalName})${
+            me.jobTitle ? `; your job title is: ${me.jobTitle}` : ""
+          }.`
         );
 
         // show user picture
@@ -98,35 +86,24 @@ class MainDialog extends RootDialog {
         }
         const buffer = Buffer.from(photoBinary);
         const imageUri = "data:image/png;base64," + buffer.toString("base64");
-        const card = CardFactory.thumbnailCard(
-          "User Picture",
-          CardFactory.images([imageUri])
-        );
+        const card = CardFactory.thumbnailCard("User Picture", CardFactory.images([imageUri]));
         await stepContext.context.sendActivity({ attachments: [card] });
       } else {
-        await stepContext.context.sendActivity(
-          "Getting profile from Microsoft Graph failed! "
-        );
+        await stepContext.context.sendActivity("Getting profile from Microsoft Graph failed! ");
       }
 
       return await stepContext.endDialog();
     }
 
-    await stepContext.context.sendActivity(
-      "Login was not successful please try again."
-    );
+    await stepContext.context.sendActivity("Login was not successful please try again.");
     return await stepContext.endDialog();
   }
 
   async onEndDialog(context, instance, reason) {
     const conversationId = context.activity.conversation.id;
-    const currentDedupKeys = this.dedupStorageKeys.filter(
-      (key) => key.indexOf(conversationId) > 0
-    );
+    const currentDedupKeys = this.dedupStorageKeys.filter((key) => key.indexOf(conversationId) > 0);
     await this.dedupStorage.delete(currentDedupKeys);
-    this.dedupStorageKeys = this.dedupStorageKeys.filter(
-      (key) => key.indexOf(conversationId) < 0
-    );
+    this.dedupStorageKeys = this.dedupStorageKeys.filter((key) => key.indexOf(conversationId) < 0);
   }
 
   // If a user is signed into multiple Teams clients, the Bot might receive a "signin/tokenExchange" from each client.
@@ -160,19 +137,12 @@ class MainDialog extends RootDialog {
     const activity = context.activity;
     const channelId = activity.channelId;
     const conversationId = activity.conversation.id;
-    if (
-      activity.type !== ActivityTypes.Invoke ||
-      activity.name !== tokenExchangeOperationName
-    ) {
-      throw new Error(
-        "TokenExchangeState can only be used with Invokes of signin/tokenExchange."
-      );
+    if (activity.type !== ActivityTypes.Invoke || activity.name !== tokenExchangeOperationName) {
+      throw new Error("TokenExchangeState can only be used with Invokes of signin/tokenExchange.");
     }
     const value = activity.value;
     if (!value || !value.id) {
-      throw new Error(
-        "Invalid signin/tokenExchange. Missing activity.value.id."
-      );
+      throw new Error("Invalid signin/tokenExchange. Missing activity.value.id.");
     }
     return `${channelId}/${conversationId}/${value.id}`;
   }

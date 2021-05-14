@@ -27,7 +27,7 @@ export const ProjectNamePattern = "^[a-zA-Z][\\da-zA-Z]+$";
 export const QuestionAppName: TextInputQuestion = {
   type: NodeType.text,
   name: CoreQuestionNames.AppName,
-  title: "Project name",
+  title: "Application name",
   validation: {
     validFunc: async (appName: string, answer?: ConfigMap): Promise<string | undefined> => {
       const folder = answer?.getString(CoreQuestionNames.Foler);
@@ -37,12 +37,12 @@ export const QuestionAppName: TextInputQuestion = {
       };
       const validateResult = jsonschema.validate(appName, schema);
       if (validateResult.errors && validateResult.errors.length > 0) {
-        return `project name doesn't match pattern: ${schema.pattern}`;
+        return "Application name must start with a letter and can only contain letters and digits.";
       }
       const projectPath = path.resolve(folder, appName);
       const exists = await fs.pathExists(projectPath);
       if (exists)
-        return `Project path already exists:${projectPath}, please change a different project name.`;
+        return `Path exists: ${projectPath}. Select a different application name.`;
       return undefined;
     },
   },

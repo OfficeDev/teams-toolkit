@@ -22,10 +22,7 @@ export function Graph() {
   return (
     <div>
       <h2>Get the user's profile photo</h2>
-      <p>
-        Click below to authorize this app to read your profile photo using
-        Microsoft Graph.
-      </p>
+      <p>Click below to authorize this app to read your profile photo using Microsoft Graph.</p>
       <Button primary content="Authorize" disabled={loading} onClick={reload} />
       {loading && ProfileCard(true)}
       {!loading && error && <div className="error">{error.toString()}</div>}

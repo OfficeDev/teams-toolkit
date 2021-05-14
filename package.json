@@ -5,7 +5,7 @@
         "bootstrap": "lerna bootstrap",
         "lint:staged": "lerna run lint:staged --stream",
         "lint": "lerna run lint --stream",
-        "version": "lerna clean --yes && lerna bootstrap --ignore-scripts -- --package-lock-only --no-audit && git add packages/*/package-lock.json",
+        "version": "lerna clean --yes && npm run setup && git add packages/*/package-lock.json",
         "prepare": "husky install"
     },
     "devDependencies": {
@@ -16,6 +16,5 @@
     },
     "bin": {
         "teamsfx": "./packages/cli/lib/cli.js"
-    },
-    "dependencies": {}
+    }
 }

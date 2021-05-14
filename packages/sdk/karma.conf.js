@@ -2,7 +2,7 @@
 process.env.CHROME_BIN = require("puppeteer").executablePath();
 require("dotenv").config();
 
-module.exports = function(config) {
+module.exports = function (config) {
   config.set({
     // base path that will be used to resolve all patterns (eg. files, exclude)
     basePath: "./",
@@ -20,14 +20,14 @@ module.exports = function(config) {
       "karma-ie-launcher",
       "karma-env-preprocessor",
       "karma-coverage",
-      "karma-junit-reporter"
+      "karma-junit-reporter",
     ],
 
     // list of files / patterns to load in the browser
     files: [
       // "dist-test/index.browser.js",
       config.glob,
-      { pattern: `${config.glob}.map`, type: "html", included: false, served: true }
+      { pattern: `${config.glob}.map`, type: "html", included: false, served: true },
     ],
 
     // list of files / patterns to exclude
@@ -36,7 +36,7 @@ module.exports = function(config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      "**/*.js": ["env"]
+      "**/*.js": ["env"],
       // IMPORTANT: COMMENT following line if you want to debug in your browsers!!
       // Preprocess source file to calculate code coverage, however this will make source file unreadable
       // "dist-test/index.js": ["coverage"]
@@ -63,7 +63,8 @@ module.exports = function(config) {
       "SDK_INTEGRATION_TEST_M365_AAD_CLIENT_SECRET",
       "SDK_INTEGRATION_TEST_AAD_TENANT_ID",
       "SDK_INTEGRATION_TEST_AAD_AUTHORITY_HOST",
-      "SDK_INTEGRATION_TEST_TEAMS_ACCESS_AS_USER_SCOPE"
+      "SDK_INTEGRATION_TEST_TEAMS_ACCESS_AS_USER_SCOPE",
+      "SDK_INTEGRATION_TEST_USER_OBJECT_ID",
     ],
 
     // test results reporter to use
@@ -74,7 +75,7 @@ module.exports = function(config) {
     coverageReporter: {
       // specify a common output directory
       dir: "coverage-browser/",
-      reporters: [{ type: "json", subdir: ".", file: "coverage.json" }]
+      reporters: [{ type: "json", subdir: ".", file: "coverage.json" }],
     },
 
     remapIstanbulReporter: {
@@ -83,8 +84,8 @@ module.exports = function(config) {
         lcovonly: "coverage-browser/lcov.info",
         html: "coverage-browser/html/report",
         "text-summary": null,
-        cobertura: "./coverage-browser/cobertura-coverage.xml"
-      }
+        cobertura: "./coverage-browser/cobertura-coverage.xml",
+      },
     },
 
     junitReporter: {
@@ -94,7 +95,7 @@ module.exports = function(config) {
       useBrowserName: false, // add browser name to report and classes names
       nameFormatter: undefined, // function (browser, result) to customize the name attribute in xml testcase element
       classNameFormatter: undefined, // function (browser, result) to customize the classname attribute in xml testcase element
-      properties: {} // key value pair of properties to add to the <properties> section of the report
+      properties: {}, // key value pair of properties to add to the <properties> section of the report
     },
 
     // web server port
@@ -116,8 +117,8 @@ module.exports = function(config) {
     customLaunchers: {
       ChromeHeadlessNoSandbox: {
         base: "ChromeHeadless",
-        flags: ["--no-sandbox", "--disable-web-security"]
-      }
+        flags: ["--no-sandbox", "--disable-web-security"],
+      },
     },
 
     // Continuous Integration mode
@@ -136,8 +137,8 @@ module.exports = function(config) {
       mocha: {
         // change Karma's debug.html to the mocha web reporter
         reporter: "html",
-        timeout: "600000"
-      }
-    }
+        timeout: "600000",
+      },
+    },
   });
 };

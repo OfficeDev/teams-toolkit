@@ -132,13 +132,13 @@ export class DefaultTediousConnectionConfiguration {
         type: TediousAuthenticationType.default,
         options: {
           userName: sqlConfig.sqlUsername,
-          password: sqlConfig.sqlPassword
-        }
+          password: sqlConfig.sqlPassword,
+        },
       },
       options: {
         database: sqlConfig.sqlDatabaseName,
-        encrypt: true
-      }
+        encrypt: true,
+      },
     };
     return config;
   }
@@ -169,13 +169,13 @@ export class DefaultTediousConnectionConfiguration {
         authentication: {
           type: TediousAuthenticationType.MSI,
           options: {
-            token: token.token
-          }
+            token: token.token,
+          },
         },
         options: {
           database: sqlConfig.sqlDatabaseName,
-          encrypt: true
-        }
+          encrypt: true,
+        },
       };
       internalLogger.verbose(
         `Generate token configuration success, server endpoint is ${sqlConfig.sqlServerEndpoint}, database name is ${sqlConfig.sqlDatabaseName}`
@@ -196,7 +196,7 @@ export class DefaultTediousConnectionConfiguration {
  */
 enum TediousAuthenticationType {
   default = "default",
-  MSI = "azure-active-directory-access-token"
+  MSI = "azure-active-directory-access-token",
 }
 
 /**

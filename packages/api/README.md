@@ -1,6 +1,6 @@
-# TeamsFx API Pack
+# TeamsFx API
 
-TeamsFx API Pack is a collection of API contracts between TeamsFx Extension/CLI and TeamsFx core module. It defines the interfaces for 3rd party developer to write plugins to extending the toolkit capabilities.
+The TeamsFx API is a collection of contracts supported by the IDE Extensions and CLI. It enables developers to write plugins to extend TeamsFx with new capabilities.
 
 ## Data Collection. 
 

@@ -22,7 +22,8 @@ export enum CoreErrorNames {
     UncatchedError = "UncatchedError",
     NotSupportedProjectType = "NotSupportedProjectType",
     InitError = "InitError",
-    DownloadSampleFail = "DownloadSampleFail"
+    DownloadSampleFail = "DownloadSampleFail",
+    NoSubscriptionSelected = "NoSubscriptionSelected",
 }
 
 export function InvalidContext(): UserError {

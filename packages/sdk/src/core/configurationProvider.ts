@@ -6,7 +6,7 @@ import {
   AuthenticationConfiguration,
   Configuration,
   ResourceConfiguration,
-  ResourceType
+  ResourceType,
 } from "../models/configuration";
 import { internalLogger } from "../util/logger";
 import { formatString } from "../util/utils";
@@ -56,7 +56,7 @@ export function loadConfiguration(configuration?: Configuration): void {
       clientSecret: process.env.M365_CLIENT_SECRET,
       simpleAuthEndpoint: process.env.SIMPLE_AUTH_ENDPOINT,
       initiateLoginEndpoint: process.env.INITIATE_LOGIN_ENDPOINT,
-      applicationIdUri: process.env.M365_APPLICATION_ID_URI
+      applicationIdUri: process.env.M365_APPLICATION_ID_URI,
     };
   }
 
@@ -73,23 +73,23 @@ export function loadConfiguration(configuration?: Configuration): void {
           sqlUsername: process.env.SQL_USER_NAME,
           sqlPassword: process.env.SQL_PASSWORD,
           sqlDatabaseName: process.env.SQL_DATABASE_NAME,
-          sqlIdentityId: process.env.IDENTITY_ID
-        }
+          sqlIdentityId: process.env.IDENTITY_ID,
+        },
       },
       {
         // API resource
         type: ResourceType.API,
         name: defaultResourceName,
         properties: {
-          endpoint: process.env.API_ENDPOINT
-        }
-      }
+          endpoint: process.env.API_ENDPOINT,
+        },
+      },
     ];
   }
 
   config = {
     authentication: newAuthentication,
-    resources: newResources
+    resources: newResources,
   };
 }
 

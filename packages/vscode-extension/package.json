@@ -2,7 +2,7 @@
   "name": "teamsfx-extension",
   "displayName": "Teams Toolkit (Preview)",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "2.0.0-alpha.26",
+  "version": "2.0.0-alpha.29",
   "publisher": "Microsoft",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -421,7 +421,7 @@
             "description": "Ensure .NET SDK is installed.",
             "default": true
           },
-          "fx-extension.stopTeamsfxTasksPostDebug": {
+          "fx-extension.stopTeamsToolkitTasksPostDebug": {
             "type": "boolean",
             "description": "Automatically stop all Teams Toolkit tasks when debug session ends.",
             "default": true
@@ -451,7 +451,7 @@
     "copy-files": "copyfiles -u 1 src/**/*.html src/**/*.css src/**/*.ps1 src/**/*.sh out/src/",
     "copy-test-files": "copyfiles -u 1 test/**/*.ps1 test/**/*.sh out/test/",
     "compile": "tsc -p ./ && npm run copy-files",
-    "build": "npm run compile",
+    "build": "rimraf out && npm run compile",
     "watch": "webpack --watch --devtool nosources-source-map --info-verbosity verbose --config ./webpack.config.js",
     "package": "rimraf out && webpack --mode production --config ./webpack.config.js",
     "test-compile": "tsc -p ./",
@@ -515,7 +515,6 @@
     "ms-rest": "^2.5.4",
     "node-loader": "^2.0.0",
     "node-sass": "^5.0.0",
-    "prettier": "^1.16.4",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-intl": "^5.13.5",
@@ -542,8 +541,8 @@
     "@azure/identity": "^1.2.1",
     "@azure/ms-rest-nodeauth": "^3.0.7",
     "@azure/msal-node": "^1.0.0-beta.5",
-    "@microsoft/teamsfx-api": "^0.1.0-alpha.5",
-    "@microsoft/teamsfx-core": "^0.1.0-alpha.5",
+    "@microsoft/teamsfx-api": "^0.1.0-alpha.6",
+    "@microsoft/teamsfx-core": "^0.1.0-alpha.7",
     "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
@@ -563,7 +562,7 @@
   },
   "lint-staged": {
     "*.{js,jsx,css,ts,tsx}": [
-      "npx eslint --cache --fix"
+      "npx eslint --cache --fix --quiet"
     ],
     "*": [
       "npx prettier --config .prettierrc.js --ignore-unknown --write --ignore-path .prettierignore "

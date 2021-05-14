@@ -11,7 +11,7 @@ import {
   OnBehalfOfUserCredential,
   M365TenantCredential,
   ErrorWithCode,
-  ErrorCode
+  ErrorCode,
 } from "../../../src";
 
 chaiUse(chaiPromises);
@@ -46,21 +46,21 @@ describe("createMicrosoftGraphClient Tests - node", () => {
   const ssoToken =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJ0ZXN0X2F1ZGllbmNlIiwiaXNzIjoiaHR0cHM6Ly9sb2dpbi5taWNyb3NvZnRvbmxpbmUuY29tL3Rlc3RfYWFkX2lkL3YyLjAiLCJpYXQiOjE1MzcyMzEwNDgsIm5iZiI6MTUzNzIzMTA0OCwiZXhwIjoxNTM3MjM0OTQ4LCJhaW8iOiJ0ZXN0X2FpbyIsIm5hbWUiOiJNT0RTIFRvb2xraXQgU0RLIFVuaXQgVGVzdCIsIm9pZCI6IjExMTExMTExLTIyMjItMzMzMy00NDQ0LTU1NTU1NTU1NTU1NSIsInByZWZlcnJlZF91c2VybmFtZSI6InRlc3RAbWljcm9zb2Z0LmNvbSIsInJoIjoidGVzdF9yaCIsInNjcCI6ImFjY2Vzc19hc191c2VyIiwic3ViIjoidGVzdF9zdWIiLCJ0aWQiOiJ0ZXN0X3RlbmFudF9pZCIsInV0aSI6InRlc3RfdXRpIiwidmVyIjoiMi4wIn0.SshbL1xuE1aNZD5swrWOQYgTR9QCNXkZqUebautBvKM";
 
-  beforeEach(function() {
+  beforeEach(function () {
     mockedEnvRestore = mockedEnv({
       M365_CLIENT_ID: clientId,
       M365_CLIENT_SECRET: clientSecret,
       M365_TENANT_ID: tenantId,
-      M365_AUTHORITY_HOST: authorityHost
+      M365_AUTHORITY_HOST: authorityHost,
     });
     loadConfiguration();
   });
 
-  afterEach(function() {
+  afterEach(function () {
     mockedEnvRestore();
   });
 
-  it("createMicrosoftGraphClient should throw InvalidParameter error with invalid scope", function() {
+  it("createMicrosoftGraphClient should throw InvalidParameter error with invalid scope", function () {
     const oboCredential = new OnBehalfOfUserCredential(ssoToken);
     const invalidScopes: any = [10, 20];
     expect(() => {
@@ -70,13 +70,13 @@ describe("createMicrosoftGraphClient Tests - node", () => {
       .with.property("code", ErrorCode.InvalidParameter);
   });
 
-  it("createMicrosoftGraphClient should success with OnBehalfOfUserCredential", async function() {
+  it("createMicrosoftGraphClient should success with OnBehalfOfUserCredential", async function () {
     const oboCredential = new OnBehalfOfUserCredential(ssoToken);
     const graphClient: any = createMicrosoftGraphClient(oboCredential, scopes);
     expect(graphClient.config.authProvider.credential).to.be.instanceOf(OnBehalfOfUserCredential);
   });
 
-  it("createMicrosoftGraphClient should success with M365TenantCredential", async function() {
+  it("createMicrosoftGraphClient should success with M365TenantCredential", async function () {
     const m356Credential = new M365TenantCredential();
     const graphClient: any = createMicrosoftGraphClient(m356Credential, scopes);
     expect(graphClient.config.authProvider.credential).to.be.instanceOf(M365TenantCredential);

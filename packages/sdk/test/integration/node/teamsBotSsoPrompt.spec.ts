@@ -13,7 +13,7 @@ import {
   StatePropertyAccessor,
   StatusCodes,
   TestAdapter,
-  tokenExchangeOperationName
+  tokenExchangeOperationName,
 } from "botbuilder-core";
 import { DialogSet, DialogState, DialogTurnStatus } from "botbuilder-dialogs";
 import {
@@ -21,15 +21,14 @@ import {
   TeamsBotSsoPromptTokenResponse,
   TeamsBotSsoPromptSettings,
   loadConfiguration,
-  Configuration
+  Configuration,
 } from "../../../src";
 import { assert, use as chaiUse } from "chai";
 import chaiPromises from "chai-as-promised";
-import sinon from "sinon";
 import {
   getSsoTokenFromTeams,
   MockEnvironmentVariable,
-  RestoreEnvironmentVariable
+  RestoreEnvironmentVariable,
 } from "../../helper";
 import { parseJwt } from "../../../src/util/utils";
 
@@ -49,21 +48,19 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
   let ssoToken: string;
   enum SsoLogInResult {
     Success = "Success",
-    Fail = "Fail"
+    Fail = "Fail",
   }
-  const sandbox = sinon.createSandbox();
 
-  before(async function() {
+  before(async function () {
     restore = MockEnvironmentVariable();
     ssoToken = await getSsoTokenFromTeams();
   });
 
-  after(function() {
-    sandbox.restore();
+  after(function () {
     RestoreEnvironmentVariable(restore);
   });
 
-  it("teams bot sso prompt should not be able to sign user in and get exchange tokens when not consent", async function() {
+  it("teams bot sso prompt should not be able to sign user in and get exchange tokens when not consent", async function () {
     this.timeout(5000);
 
     const notConsentScopes = ["Calendars.Read"];
@@ -89,7 +86,7 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
       });
   });
 
-  it("teams bot sso prompt should be able to sign user in and get exchange tokens when consent", async function() {
+  it("teams bot sso prompt should be able to sign user in and get exchange tokens when consent", async function () {
     this.timeout(5000);
 
     const adapter: TestAdapter = await initializeTestEnv({});
@@ -119,7 +116,7 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
       });
   });
 
-  it("teams bot sso prompt should not end on invalid message when endOnInvalidMessage set to false", async function() {
+  it("teams bot sso prompt should not end on invalid message when endOnInvalidMessage set to false", async function () {
     const adapter: TestAdapter = await initializeTestEnv({ endOnInvalidMessage: false });
 
     await adapter
@@ -166,8 +163,8 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
         id: activity.conversation!.id,
         name: activity.conversation!.name,
         conversationType: "personal",
-        tenantId: tenantId
-      }
+        tenantId: tenantId,
+      },
     };
   }
 
@@ -203,7 +200,7 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
     invokeActivity.name = tokenExchangeOperationName;
     invokeActivity.value = {
       id: id,
-      token: ssoToken
+      token: ssoToken,
     };
     adapter.send(invokeActivity);
   }
@@ -219,9 +216,8 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
     const convoState: ConversationState = new ConversationState(new MemoryStorage());
 
     // Create a DialogState property, DialogSet and TeamsBotSsoPrompt
-    const dialogState: StatePropertyAccessor<DialogState> = convoState.createProperty(
-      "dialogState"
-    );
+    const dialogState: StatePropertyAccessor<DialogState> =
+      convoState.createProperty("dialogState");
     const dialogs: DialogSet = new DialogSet(dialogState);
 
     let botScopes = param.scopes;
@@ -232,7 +228,7 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
     const settings: TeamsBotSsoPromptSettings = {
       scopes: botScopes,
       timeout: param.timeout_value,
-      endOnInvalidMessage: param.endOnInvalidMessage
+      endOnInvalidMessage: param.endOnInvalidMessage,
     };
 
     loadConfiguration(param.config);

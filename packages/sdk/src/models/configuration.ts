@@ -116,5 +116,5 @@ export enum ResourceType {
    * Rest API.
    *
    */
-  API
+  API,
 }

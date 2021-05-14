@@ -203,7 +203,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
 
   private async doesUserConfirmSignout(): Promise<boolean> {
     const accountInfo = (await this.getStatus()).accountInfo;
-    const email = (accountInfo as any).upn ? (accountInfo as any).upn : undefined;
+    const email = (accountInfo as any).upn ? (accountInfo as any).upn : (accountInfo as any).email;
     const confirm = StringResources.vsc.common.signout;
     const userSelected: string | undefined = await vscode.window.showInformationMessage(
       util.format(StringResources.vsc.common.signOutOf, email),

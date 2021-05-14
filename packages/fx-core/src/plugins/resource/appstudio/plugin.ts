@@ -52,7 +52,7 @@ export class AppStudioPluginImpl {
         return zipFileName;
     }
 
-    public async publish(ctx: PluginContext): Promise<string> {
+    public async publish(ctx: PluginContext): Promise<{name: string, id: string}> {
         let appDirectory: string | undefined = undefined;
         let manifestString: string | undefined = undefined;
 
@@ -108,12 +108,14 @@ export class AppStudioPluginImpl {
             }
             
             if (executePublishUpdate) {
-                return await this.beforePublish(ctx, appDirectory, manifestString, true);
+                const appId = await this.beforePublish(ctx, appDirectory, manifestString, true);
+                return {id: appId, name: manifest.name.short};
             } else {
                 throw AppStudioResultFactory.SystemError(AppStudioError.TeamsAppPublishCancelError.name, AppStudioError.TeamsAppPublishCancelError.message(manifest.name.short));
             }
         } else {
-            return await this.beforePublish(ctx, appDirectory, manifestString, false);
+            const appId = await this.beforePublish(ctx, appDirectory, manifestString, false);
+            return {id: appId, name: manifest.name.short};
         }
     }
 

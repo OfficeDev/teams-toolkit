@@ -1,12 +1,12 @@
 import { useRef } from "react";
 import { useData } from "./useData";
-import {
-  TeamsUserCredential,
-  createMicrosoftGraphClient,
-} from "@microsoft/teamsfx";
-import { Client } from '@microsoft/microsoft-graph-client';
+import { TeamsUserCredential, createMicrosoftGraphClient } from "@microsoft/teamsfx";
+import { Client } from "@microsoft/microsoft-graph-client";
 
-export function useGraph<T>(asyncFunc: (graph: Client) => Promise<T>, options?: { scope: string | string[] }) {
+export function useGraph<T>(
+  asyncFunc: (graph: Client) => Promise<T>,
+  options?: { scope: string | string[] }
+) {
   const credential = useRef(new TeamsUserCredential());
 
   const { scope } = { scope: ["User.Read"], ...options };
@@ -35,9 +35,9 @@ export function useGraph<T>(asyncFunc: (graph: Client) => Promise<T>, options?: 
   return data || error || loading
     ? { data, error, loading, reload }
     : {
-      data: initial.data,
-      error: initial.error,
-      loading: initial.loading,
-      reload,
-    };
+        data: initial.data,
+        error: initial.error,
+        loading: initial.loading,
+        reload,
+      };
 }

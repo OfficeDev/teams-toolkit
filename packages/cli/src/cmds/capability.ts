@@ -13,6 +13,8 @@ import * as constants from "../constants";
 import { validateAndUpdateAnswers } from "../question/question";
 import { getParamJson } from "../utils";
 import { YargsCommand } from "../yargsCommand";
+import CliTelemetry from "../telemetry/cliTelemetry";
+import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
 
 export class CapabilityAddTab extends YargsCommand {
   public readonly commandHead = `tab`;
@@ -34,8 +36,12 @@ export class CapabilityAddTab extends YargsCommand {
     const rootFolder = path.resolve(answers.getString("folder") || "./");
     answers.delete("folder");
 
+    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.AddCapStart);
     const result = await activate(rootFolder);
     if (result.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCap, result.error, {
+        [TelemetryProperty.Capabilities]: this.commandHead
+      });
       return err(result.error);
     }
 
@@ -48,6 +54,9 @@ export class CapabilityAddTab extends YargsCommand {
     {
       const result = await core.getQuestionsForUserTask!(func, Platform.CLI);
       if (result.isErr()) {
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCap, result.error, {
+          [TelemetryProperty.Capabilities]: this.commandHead
+        });
         return err(result.error);
       }
       await validateAndUpdateAnswers(result.value!, answers);
@@ -56,10 +65,17 @@ export class CapabilityAddTab extends YargsCommand {
     {
       const result = await core.executeUserTask!(func, answers);
       if (result.isErr()) {
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCap, result.error, {
+          [TelemetryProperty.Capabilities]: this.commandHead
+        });
         return err(result.error);
       }
     }
 
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.AddCap, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      [TelemetryProperty.Capabilities]: this.commandHead
+    });
     return ok(null);
   }
 }
@@ -84,8 +100,12 @@ export class CapabilityAddBot extends YargsCommand {
     const rootFolder = path.resolve(answers.getString("folder") || "./");
     answers.delete("folder");
 
+    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.AddCapStart);
     const result = await activate(rootFolder);
     if (result.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCap, result.error, {
+        [TelemetryProperty.Capabilities]: this.commandHead
+      });
       return err(result.error);
     }
 
@@ -98,6 +118,9 @@ export class CapabilityAddBot extends YargsCommand {
     {
       const result = await core.getQuestionsForUserTask!(func, Platform.CLI);
       if (result.isErr()) {
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCap, result.error, {
+          [TelemetryProperty.Capabilities]: this.commandHead
+        });
         return err(result.error);
       }
       await validateAndUpdateAnswers(result.value!, answers);
@@ -106,10 +129,17 @@ export class CapabilityAddBot extends YargsCommand {
     {
       const result = await core.executeUserTask!(func, answers);
       if (result.isErr()) {
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCap, result.error, {
+          [TelemetryProperty.Capabilities]: this.commandHead
+        });
         return err(result.error);
       }
     }
 
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.AddCap, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      [TelemetryProperty.Capabilities]: this.commandHead
+    });
     return ok(null);
   }
 }
@@ -134,8 +164,12 @@ export class CapabilityAddMessageExtension extends YargsCommand {
     const rootFolder = path.resolve(answers.getString("folder") || "./");
     answers.delete("folder");
 
+    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.AddCapStart);
     const result = await activate(rootFolder);
     if (result.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCap, result.error, {
+        [TelemetryProperty.Capabilities]: this.commandHead
+      });
       return err(result.error);
     }
 
@@ -148,6 +182,9 @@ export class CapabilityAddMessageExtension extends YargsCommand {
     {
       const result = await core.getQuestionsForUserTask!(func, Platform.CLI);
       if (result.isErr()) {
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCap, result.error, {
+          [TelemetryProperty.Capabilities]: this.commandHead
+        });
         return err(result.error);
       }
       await validateAndUpdateAnswers(result.value!, answers);
@@ -156,10 +193,17 @@ export class CapabilityAddMessageExtension extends YargsCommand {
     {
       const result = await core.executeUserTask!(func, answers);
       if (result.isErr()) {
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCap, result.error, {
+          [TelemetryProperty.Capabilities]: this.commandHead
+        });
         return err(result.error);
       }
     }
 
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.AddCap, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      [TelemetryProperty.Capabilities]: this.commandHead
+    });
     return ok(null);
   }
 }

@@ -34,7 +34,7 @@ export class CliTelemetry {
     return CliTelemetry.instance;
   }
 
-  public withRootFolder(rootFolder: string): CliTelemetry {
+  public withRootFolder(rootFolder: string | undefined): CliTelemetry {
     CliTelemetry.rootFolder = rootFolder;
     return CliTelemetry.instance;
   }

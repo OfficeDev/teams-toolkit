@@ -147,7 +147,7 @@ export default class QuickStart extends React.Component<any, any> {
                       "The toolkit cannot detect the right version of Node.js on your machine.",
                       <br />,
                       <br />,
-                      "Node.js v10.x, v12.x or v14.x is required (v12.x is recommended).",
+                      "Node.js v10.x, v12.x or v14.x is required (v14.x is recommended).",
                       <br />,
                       <br />,
                       "Read more about ",
@@ -156,7 +156,7 @@ export default class QuickStart extends React.Component<any, any> {
                       </a>,
                       "."
                     ]}
-                    actionText="Download Node.js (v12.x)"
+                    actionText="Download Node.js (v14.x)"
                     onAction={this.downloadNode}
                     secondaryActionText="Next"
                     onSecondaryAction={() => {
@@ -353,7 +353,7 @@ export default class QuickStart extends React.Component<any, any> {
   downloadNode = () => {
     vscode.postMessage({
       command: Commands.OpenExternalLink,
-      data: "https://nodejs.org/dist/latest-v12.x/"
+      data: "https://nodejs.org/dist/latest-v14.x/"
     });
 
     const done = this.state.stepsDone;

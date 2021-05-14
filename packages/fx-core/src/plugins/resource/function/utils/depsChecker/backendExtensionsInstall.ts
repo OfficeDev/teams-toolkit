@@ -27,7 +27,11 @@ export class BackendExtensionsInstaller {
     this._logger = logger;
   }
 
-  public async install(backendRoot: string, csprojPath: string = defaultCsprojPath, outputPath: string = defaultOutputPath): Promise<void> {
+  public async install(
+    backendRoot: string,
+    csprojPath: string = defaultCsprojPath,
+    outputPath: string = defaultOutputPath
+  ): Promise<void> {
     if (!outputPath) {
       outputPath = defaultOutputPath;
     }
@@ -37,34 +41,47 @@ export class BackendExtensionsInstaller {
     if (dotnetExecPath === "") {
       await this._logger.printDetailLog();
       this._logger.cleanup();
-      await this._logger.error(`Failed to run backend extension install, .NET SDK executable not found`);
-      throw new BackendExtensionsInstallError("Failed to run backend extension install, .NET SDK executable not found", defaultHelpLink);
+      await this._logger.error(
+        `Failed to run backend extension install, .NET SDK executable not found`
+      );
+      throw new BackendExtensionsInstallError(
+        "Failed to run backend extension install, .NET SDK executable not found",
+        defaultHelpLink
+      );
     }
 
     try {
       const result: cpUtils.ICommandResult = await cpUtils.tryExecuteCommand(
-          backendRoot,
-          this._logger,
-          { shell: false },
-          dotnetExecPath,
-          "build",
-          csprojPath,
-          "-o",
-          outputPath,
-          "--ignore-failed-sources"
+        backendRoot,
+        this._logger,
+        { shell: false },
+        dotnetExecPath,
+        "build",
+        csprojPath,
+        "-o",
+        outputPath,
+        "--ignore-failed-sources"
       );
       if (result.code !== 0) {
-        throw new Error(`Failed to run "${dotnetExecPath} build" command. output = ${result.cmdOutput}, err = ${result.cmdOutputIncludingStderr}`);
+        throw new Error(
+          `Failed to run "${dotnetExecPath} build" command. output = ${result.cmdOutput}, err = ${result.cmdOutputIncludingStderr}`
+        );
       }
     } catch (error) {
       await this._logger.printDetailLog();
       await this._logger.error(`Failed to run backend extension install: error = '${error}'`);
 
-      if(error.message.includes("NETSDK1045")) {
+      if (error.message.includes("NETSDK1045")) {
         // refer to https://docs.microsoft.com/en-us/dotnet/core/tools/sdk-errors/netsdk1045
-        throw new BackendExtensionsInstallError(`NETSDK1045: The current .NET SDK does not support 'newer version' as a target`, dotnetNotSupportTargetVersionHelpLink);
+        throw new BackendExtensionsInstallError(
+          `NETSDK1045: The current .NET SDK does not support 'newer version' as a target`,
+          dotnetNotSupportTargetVersionHelpLink
+        );
       }
-      throw new BackendExtensionsInstallError(`Failed to run backend extension install: error = '${error}'`, defaultHelpLink);
+      throw new BackendExtensionsInstallError(
+        `Failed to run backend extension install: error = '${error}'`,
+        defaultHelpLink
+      );
     } finally {
       this._logger.cleanup();
     }

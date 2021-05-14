@@ -18,11 +18,11 @@ import {
   AzureAccountProvider,
   SubscriptionInfo,
 } from "@microsoft/teamsfx-api";
-import { GLOBAL_CONFIG, SolutionError } from "./constants";
-import { v4 as uuidv4 } from "uuid";
-import { ResourceManagementClient } from "@azure/arm-resources";
-import { SubscriptionClient } from "@azure/arm-subscriptions";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
+import {GLOBAL_CONFIG, SolutionError} from "./constants";
+import {v4 as uuidv4} from "uuid";
+import {ResourceManagementClient} from "@azure/arm-resources";
+import {SubscriptionClient} from "@azure/arm-subscriptions";
+import {TokenCredentialsBase} from "@azure/ms-rest-nodeauth";
 
 interface PartialList<T> extends Array<T> {
   nextLink?: string;
@@ -31,7 +31,7 @@ interface PartialList<T> extends Array<T> {
 // Copied from https://github.com/microsoft/vscode-azure-account/blob/2b3c1a8e81e237580465cc9a1f4da5caa34644a6/sample/src/extension.ts
 // to list all subscriptions
 async function listAll<T>(
-  client: { listNext(nextPageLink: string): Promise<PartialList<T>> },
+  client: {listNext(nextPageLink: string): Promise<PartialList<T>>;},
   first: Promise<PartialList<T>>
 ): Promise<T[]> {
   const all: T[] = [];
@@ -54,14 +54,14 @@ async function getSubscriptionList(azureToken: TokenCredentialsBase): Promise<Az
   const client = new SubscriptionClient(azureToken);
   const subscriptions = await listAll(client.subscriptions, client.subscriptions.list());
   const subs: Partial<AzureSubscription>[] = subscriptions.map((sub) => {
-    return { displayName: sub.displayName, subscriptionId: sub.subscriptionId };
+    return {displayName: sub.displayName, subscriptionId: sub.subscriptionId};
   });
   const filteredSubs = subs.filter(
     (sub) => sub.displayName !== undefined && sub.subscriptionId !== undefined
   );
   return filteredSubs.map((sub) => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return { displayName: sub.displayName!, subscriptionId: sub.subscriptionId! };
+    return {displayName: sub.displayName!, subscriptionId: sub.subscriptionId!};
   });
 }
 
@@ -125,7 +125,7 @@ export async function askSubscription(
   config: SolutionConfig,
   azureAccountProvider?: AzureAccountProvider,
   dialog?: Dialog
-): Promise<Result<{ subscriptionId: string; tenantId: string }, FxError>> {
+): Promise<Result<{subscriptionId: string; tenantId: string;}, FxError>> {
   if (azureAccountProvider === undefined) {
     return err(
       returnSystemError(
@@ -186,9 +186,9 @@ export async function askSubscription(
       );
     }
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return ok({ subscriptionId: subscription.subscriptionId, tenantId: subscription.tenantId });
+    return ok({subscriptionId: subscription.subscriptionId, tenantId: subscription.tenantId});
   } else {
-    return ok({ subscriptionId: activeSubscriptionId, tenantId: activeTenantId });
+    return ok({subscriptionId: activeSubscriptionId, tenantId: activeTenantId});
   }
 }
 

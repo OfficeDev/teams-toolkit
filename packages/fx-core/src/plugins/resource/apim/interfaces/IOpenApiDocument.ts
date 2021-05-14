@@ -4,6 +4,6 @@ import { OpenAPI } from "openapi-types";
 import { OpenApiSchemaVersion } from "../constants";
 
 export interface IOpenApiDocument {
-    schemaVersion: OpenApiSchemaVersion;
-    spec: OpenAPI.Document;
+  schemaVersion: OpenApiSchemaVersion;
+  spec: OpenAPI.Document;
 }

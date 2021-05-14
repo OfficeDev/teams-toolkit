@@ -14,11 +14,7 @@ export class telemetryHelper {
     properties[TelemetryKey.Component] = Constants.PLUGIN_DEV_NAME;
     properties[TelemetryKey.Success] = TelemetryValue.Success;
 
-    ctx.telemetryReporter?.sendTelemetryEvent(
-      eventName,
-      properties,
-      measurements
-    );
+    ctx.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
   }
 
   static sendErrorEvent(
@@ -38,10 +34,6 @@ export class telemetryHelper {
     }
     properties[TelemetryKey.ErrorMessage] = e.message;
 
-    ctx.telemetryReporter?.sendTelemetryEvent(
-      eventName,
-      properties,
-      measurements
-    );
+    ctx.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
   }
 }

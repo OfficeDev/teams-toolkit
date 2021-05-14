@@ -37,7 +37,7 @@ class FuncPluginLogger implements IDepsLogger {
   }
 
   public cleanup(): void {
-      this.detailLogLines = [];
+    this.detailLogLines = [];
   }
 
   private appendLine(level: LogLevel, message: string): void {

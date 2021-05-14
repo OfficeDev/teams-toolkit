@@ -7,10 +7,7 @@ import { exec } from "child_process";
 import { LogProvider } from "@microsoft/teamsfx-api";
 import axios, { AxiosInstance } from "axios";
 
-export async function configure(
-  configurePath: string,
-  map: Map<string, string>
-): Promise<void> {
+export async function configure(configurePath: string, map: Map<string, string>): Promise<void> {
   let files: string[] = [];
   const extensions = ["*.json", "*.ts", "*.js", "*.scss", "*.tsx"];
 

@@ -45,7 +45,7 @@ class FuncPluginTelemetry implements IDepsTelemetry {
 
   public sendEvent(eventName: DepsCheckerEvent, timecost?: number): void {
     const properties: { [p: string]: string } = {
-      [TelemetryProperty.Component]: this._telemetryComponentType
+      [TelemetryProperty.Component]: this._telemetryComponentType,
     };
 
     const measurements: { [p: string]: number } = {};
@@ -70,7 +70,7 @@ class FuncPluginTelemetry implements IDepsTelemetry {
   public sendUserErrorEvent(eventName: DepsCheckerEvent, errorMessage: string): void {
     const error = new UserError(eventName, errorMessage, this._telemetryComponentType);
     ExtTelemetry.sendTelemetryErrorEvent(eventName, error, {
-      [TelemetryProperty.Component]: this._telemetryComponentType
+      [TelemetryProperty.Component]: this._telemetryComponentType,
     });
   }
 
@@ -86,7 +86,7 @@ class FuncPluginTelemetry implements IDepsTelemetry {
       errorStack
     );
     ExtTelemetry.sendTelemetryErrorEvent(eventName, error, {
-      [TelemetryProperty.Component]: this._telemetryComponentType
+      [TelemetryProperty.Component]: this._telemetryComponentType,
     });
   }
 }

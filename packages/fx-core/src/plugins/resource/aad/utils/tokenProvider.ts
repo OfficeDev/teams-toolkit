@@ -71,20 +71,14 @@ export class TokenProvider {
     if (token) {
       TokenProvider.token = token;
     } else {
-      throw ResultFactory.SystemError(
-        GetTokenError.name,
-        GetTokenError.message(this.audience)
-      );
+      throw ResultFactory.SystemError(GetTokenError.name, GetTokenError.message(this.audience));
     }
 
     const tenantId = await instance.getTenant(ctx);
     if (tenantId) {
       this.tenantId = tenantId;
     } else {
-      throw ResultFactory.SystemError(
-        TenantNotExistError.name,
-        TenantNotExistError.message()
-      );
+      throw ResultFactory.SystemError(TenantNotExistError.name, TenantNotExistError.message());
     }
   }
 }

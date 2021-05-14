@@ -15,22 +15,25 @@ export interface AadError {
 
 export const GetAppError: AadError = {
   name: "AadGetAppError",
-  message: (objectId: string) => `Failed to get app info with Object ID: ${objectId}. ` +
+  message: (objectId: string) =>
+    `Failed to get app info with Object ID: ${objectId}. ` +
     "Please make sure object id is valid, " +
     `or delete 'objectId' under ${Plugins.pluginNameComplex} in env.default.json and try again.`,
 };
 
 export const GetAppConfigError: AadError = {
   name: "AadGetAppConfigError",
-  message: (config: string) => `Failed to get ${config} from Azure AD app settings.` +
+  message: (config: string) =>
+    `Failed to get ${config} from Azure AD app settings.` +
     "Please make sure Azure AD app is correctly configured, " +
     `or delete 'objectId' under ${Plugins.pluginNameComplex} in env.default.json and try again.`,
 };
 
 export const GetSkipAppConfigError: AadError = {
   name: "AadGetSkipAppConfigError",
-  message: () => `Failed to get all necessary info. You need to set ${ConfigKeys.objectId}, ${ConfigKeys.clientId}, ${ConfigKeys.clientSecret}, ` +
-  `${ConfigKeys.oauth2PermissionScopeId} under ${Plugins.pluginNameComplex} in env.default.json.`,
+  message: () =>
+    `Failed to get all necessary info. You need to set ${ConfigKeys.objectId}, ${ConfigKeys.clientId}, ${ConfigKeys.clientSecret}, ` +
+    `${ConfigKeys.oauth2PermissionScopeId} under ${Plugins.pluginNameComplex} in env.default.json.`,
   helpLink: aadHelpLink,
 };
 
@@ -41,7 +44,8 @@ export const CreateAppError: AadError = {
 
 export const CreateSecretError: AadError = {
   name: "AadCreateSecretError",
-  message: () => `Failed to create an application secret in Azure Active Directory. ${referLogMessage}`,
+  message: () =>
+    `Failed to create an application secret in Azure Active Directory. ${referLogMessage}`,
 };
 
 export const UpdateRedirectUriError: AadError = {
@@ -65,8 +69,7 @@ export const UpdatePermissionError: AadError = {
 
 export const AppIdUriInvalidError: AadError = {
   name: "AadAppIdUriInvalid",
-  message: () =>
-    "Invalid Application ID URI. Provision your application before continuing.",
+  message: () => "Invalid Application ID URI. Provision your application before continuing.",
 };
 
 export const ParsePermissionError: AadError = {
@@ -102,14 +105,12 @@ export const UnknownPermissionScope: AadError = {
 
 export const GetTokenError: AadError = {
   name: "GetTokenError",
-  message: (audience: string) =>
-    `Failed to get user login information for ${audience}.`,
+  message: (audience: string) => `Failed to get user login information for ${audience}.`,
 };
 
 export const TenantNotExistError: AadError = {
   name: "TenantNotExistError",
-  message: () =>
-    "Failed to get tenant information from user login.",
+  message: () => "Failed to get tenant information from user login.",
 };
 
 export const GetConfigError: AadError = {
@@ -132,8 +133,7 @@ export class AppStudioErrorMessage {
     "Failed to update application registration in Azure Active Directory.";
   static readonly CreateSecretFailed =
     "Failed to create an application secret in Azure Active Directory.";
-  static readonly GetFailed =
-    "Failed to retrieve Azure Active Directory application registration.";
+  static readonly GetFailed = "Failed to retrieve Azure Active Directory application registration.";
 
   static readonly AppDefinitionIsNull = "Missing application definition.";
   static readonly AppObjectIdIsNull = "Missing Object ID.";
@@ -148,8 +148,7 @@ export class GraphClientErrorMessage {
     "Failed to update application registration in Azure Active Directory.";
   static readonly CreateSecretFailed =
     "Failed to create an application secret in Azure Active Directory.";
-  static readonly GetFailed =
-    "Failed to retrieve Azure Active Directory application registration.";
+  static readonly GetFailed = "Failed to retrieve Azure Active Directory application registration.";
 
   static readonly AppDefinitionIsNull = "Missing application definition.";
   static readonly AppObjectIdIsNull = "Missing Object ID.";

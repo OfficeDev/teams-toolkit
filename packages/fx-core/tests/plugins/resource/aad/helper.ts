@@ -14,13 +14,17 @@ import {
   GraphTokenProvider,
 } from "@microsoft/teamsfx-api";
 import sinon from "sinon";
-import { ConfigKeys, ConfigKeysOfOtherPlugin, Plugins } from "../../../../src/plugins/resource/aad/constants";
+import {
+  ConfigKeys,
+  ConfigKeysOfOtherPlugin,
+  Plugins,
+} from "../../../../src/plugins/resource/aad/constants";
 import jwt_decode from "jwt-decode";
 import { Utils } from "../../../../src/plugins/resource/aad/utils/common";
 
-const permissions = "[{\"resource\": \"Microsoft Graph\",\"delegated\": [\"User.Read\"],\"application\":[]}]";
+const permissions = '[{"resource": "Microsoft Graph","delegated": ["User.Read"],"application":[]}]';
 const permissionsWrong =
-  "[{\"resource\": \"Microsoft Graph\",\"delegated\": [\"User.ReadData\"],\"application\":[]}]";
+  '[{"resource": "Microsoft Graph","delegated": ["User.ReadData"],"application":[]}]';
 
 const mockLogProvider: LogProvider = {
   async log(logLevel: LogLevel, message: string): Promise<boolean> {
@@ -142,22 +146,10 @@ export class TestHelper {
     }
 
     const configOfOtherPlugins = isLocalDebug
-      ? mockConfigOfOtherPluginsLocalDebug(
-          domain,
-          endpoint,
-          botEndpoint,
-          botId,
-          wrongPermission
-        )
-      : mockConfigOfOtherPluginsProvision(
-          domain,
-          endpoint,
-          botEndpoint,
-          botId,
-          wrongPermission
-        );
+      ? mockConfigOfOtherPluginsLocalDebug(domain, endpoint, botEndpoint, botId, wrongPermission)
+      : mockConfigOfOtherPluginsProvision(domain, endpoint, botEndpoint, botId, wrongPermission);
 
-    const pluginContext = ({
+    const pluginContext = {
       logProvider: mockLogProvider,
       dialog: mockDialogProvider,
       telemetryReporter: mockTelemetryReporter,
@@ -168,7 +160,7 @@ export class TestHelper {
           short: "aad-plugin-unit-test",
         },
       },
-    } as unknown) as PluginContext;
+    } as unknown as PluginContext;
 
     return pluginContext;
   }
@@ -237,10 +229,7 @@ function mockConfigOfOtherPluginsLocalDebug(
   ]);
 }
 
-export function mockProvisionResult(
-  context: PluginContext,
-  isLocalDebug = false
-) {
+export function mockProvisionResult(context: PluginContext, isLocalDebug = false) {
   context.config.set(
     Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.clientId),
     faker.random.uuid()

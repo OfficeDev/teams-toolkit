@@ -11,17 +11,16 @@ export function Deploy(props) {
     <div className="deploy page">
       <h2>Deploy to the Cloud</h2>
       <p>
-        Before publishing your app to Teams App Catalog, you may want to
-        provision and deploy your app's resources to the cloud to make sure your
-        app will be running smoothly!
+        Before publishing your app to Teams App Catalog, you may want to provision and deploy your
+        app's resources to the cloud to make sure your app will be running smoothly!
       </p>
       <p>
-        To provision your resources, you can either use our CLI command "teamsfx
-        provision" or apply “Teams: Provision in the Cloud" in Command palette.
+        To provision your resources, you can either use our CLI command "teamsfx provision" or apply
+        “Teams: Provision in the Cloud" in Command palette.
       </p>
       <p>
-        To deploy your app, you can either use our CLI command "teamsfx deploy"
-        or apply “Teams: Deploy to the cloud" in Command palette.
+        To deploy your app, you can either use our CLI command "teamsfx deploy" or apply “Teams:
+        Deploy to the cloud" in Command palette.
       </p>
       <Image src="deploy.png" />
       <p>

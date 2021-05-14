@@ -48,12 +48,8 @@ export function Welcome(props) {
     <div className="welcome page">
       <div className="narrow page-padding">
         <Image src="hello.png" />
-        <h1 className="center">
-          Congratulations{userName ? ", " + userName : ""}!
-        </h1>
-        <p className="center">
-          Your app is running in your {friendlyEnvironmentName}
-        </p>
+        <h1 className="center">Congratulations{userName ? ", " + userName : ""}!</h1>
+        <p className="center">Your app is running in your {friendlyEnvironmentName}</p>
         <Menu defaultActiveIndex={0} items={items} underlined secondary />
         <div className="sections">
           {selectedMenuItem === "local" && (

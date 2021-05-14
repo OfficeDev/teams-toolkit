@@ -4,7 +4,7 @@ When building a Teams application, you can optionally add backend API(s) to deve
 
 ## Prerequisites
 
-* Teams Toolkit or TeamsFx CLI.
+- Teams Toolkit or TeamsFx CLI.
 
 ## Develop
 
@@ -14,7 +14,7 @@ Teams Toolkit and TeamsFx CLI can provide template code for you to get started. 
 
 A common use case to call the function is sending an HTTP request to the service with an SSO token in the authorization header. The token can be retrieved from TeamsFx SDK from your app's client side. Here is an example code snippet:
 
-``` TypeScript
+```TypeScript
   var credential = new TeamsUserCredential();
   var accessToken = await credential.getToken('');
   var response = await axios.default.get(functionEndpoint + '/api/' + functionName, {
@@ -26,8 +26,8 @@ A common use case to call the function is sending an HTTP request to the service
 
 ### Add More Functions
 
-* From Visual Studio Code: open the command palette, select `Teams: Add Resources` and select `Azure Function App`.
-* From TeamsFx CLI: run command `teamsfx resource add azure-function` in your project directory.
+- From Visual Studio Code: open the command palette, select `Teams: Add Resources` and select `Azure Function App`.
+- From TeamsFx CLI: run command `teamsfx resource add azure-function` in your project directory.
 
 ## Deploy to Azure
 
@@ -40,9 +40,9 @@ Deploy your project to Azure when it’s ready by following these steps:
 
 You can do this using the Teams Toolkit in Visual Studio Code or using the TeamsFx CLI:
 
-| Using Teams Toolkit| Using TeamsFx CLI|
-| :------------------| :----------------|
-| <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign in to Azure` under the `ACCOUNT` section from sidebar.</li> <li>After you signed in, select a subscription under your account.</li><li>Open the command palette and select: `Teams: Provision in the Cloud`.</li><li>Open the command palette and select: `Teams: Deploy to the Cloud`.</li></ul>  | <ul> <li>Run command `teamsfx account login azure`.</li> <li>Run command `teamsfx account set --subscription $subscriptionid`.</li> <li> Run command `teamsfx provision`.</li> <li>Run command: `teamsfx deploy`. </li></ul>|
+| Using Teams Toolkit                                                                                                                                                                                                                                                                                                                                                     | Using TeamsFx CLI                                                                                                                                                                                                            |
+| :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign in to Azure` under the `ACCOUNT` section from sidebar.</li> <li>After you signed in, select a subscription under your account.</li><li>Open the command palette and select: `Teams: Provision in the Cloud`.</li><li>Open the command palette and select: `Teams: Deploy to the Cloud`.</li></ul> | <ul> <li>Run command `teamsfx account login azure`.</li> <li>Run command `teamsfx account set --subscription $subscriptionid`.</li> <li> Run command `teamsfx provision`.</li> <li>Run command: `teamsfx deploy`. </li></ul> |
 
 **Note: This may incur costs in your Azure Subscription.**
 
@@ -50,11 +50,11 @@ You can do this using the Teams Toolkit in Visual Studio Code or using the Teams
 
 By default, Teams Toolkit and TeamsFx CLI will provision an Azure function app with function runtime version 3, and node runtime version 12. You can change the node version through Azure Portal.
 
-* Sign in to [Azure Portal](https://azure.microsoft.com/).
-* Find your application's resource group and Azure Function app resource. The resource group name and the Azure function app name are stored in your project configuration file `.fx/env.*.json`. You can find them by searching the key `resourceGroupName` and `functionAppName` in that file.
-* After enter the home page of the Azure function app, you can find a navigation item called `Configuration` under `settings` group.
-* Click `Configuration`, you would see a list of settings. Then click `WEBSITE_NODE_DEFAULT_VERSION` and update the value to `~10`, `~12` or `~14` according to your requirement.
-* After Click `OK` button, don't forget to click `Save` button on the top of the page.
+- Sign in to [Azure Portal](https://azure.microsoft.com/).
+- Find your application's resource group and Azure Function app resource. The resource group name and the Azure function app name are stored in your project configuration file `.fx/env.*.json`. You can find them by searching the key `resourceGroupName` and `functionAppName` in that file.
+- After enter the home page of the Azure function app, you can find a navigation item called `Configuration` under `settings` group.
+- Click `Configuration`, you would see a list of settings. Then click `WEBSITE_NODE_DEFAULT_VERSION` and update the value to `~10`, `~12` or `~14` according to your requirement.
+- After Click `OK` button, don't forget to click `Save` button on the top of the page.
 
 Then following requests sent to the Azure function app will be handled by new node runtime version.
 

@@ -22,11 +22,7 @@ export const ProfileCard = (loading: boolean, data?: any) => (
       )}
       {!loading && data && (
         <Flex gap="gap.medium">
-          <Avatar
-            size="larger"
-            image={data.photoUrl}
-            name={data.profile.displayName}
-          />{" "}
+          <Avatar size="larger" image={data.photoUrl} name={data.profile.displayName} />{" "}
           <Flex column>
             <Text content={data.profile.displayName} weight="bold" />
             <Text content={data.profile.mail} size="small" />

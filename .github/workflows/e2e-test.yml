@@ -50,7 +50,7 @@ jobs:
 
       - name: E2E Test clean
         run: |
-          npx lerna run test:e2e-clean
+          npx lerna run test:e2e:clean
 
       - name: E2E Test Smoke Cases
         run: |

@@ -290,7 +290,7 @@ class CoreImpl implements Core {
               await this.ctx.dialog?.communicate(
                 new DialogMsg(DialogType.Ask, {
                   type: QuestionType.OpenFolder,
-                  description: `${folder}\\${sampleId}`,
+                  description: path.join(folder, sampleId),
                 })
               );
             } else {

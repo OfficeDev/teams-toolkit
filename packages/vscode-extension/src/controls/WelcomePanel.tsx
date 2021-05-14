@@ -207,7 +207,7 @@ export default class WelcomePanel extends React.Component<any, IWelcomePanelStat
                       onClick={() => {
                         this.cloneSampleApp(
                           "To Do List",
-                          "https://github.com/HuihuiWu-Microsoft/Sample-app-graph/releases/download/v1.0/sample.app.graph.zip"
+                          "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip"
                         );
                       }}
                     >

@@ -3,7 +3,7 @@
 
 import {
     ConfigFolderName, FxError, NodeType, ok, err, Platform, Plugin, PluginContext, QTreeNode, Result, Stage,
-    DialogMsg, DialogType, MsgLevel, QuestionType
+    DialogMsg, DialogType, MsgLevel, QuestionType, SystemError
 } from "@microsoft/teamsfx-api";
 import { AppStudioPluginImpl } from "./plugin";
 import { Constants } from "./constants";
@@ -115,7 +115,7 @@ export class AppStudioPlugin implements Plugin {
      * @param {PluginContext} ctx
      * @returns {string[]} - Teams App ID in Teams app catalog
      */
-    public async publish(ctx: PluginContext): Promise<Result<string, FxError>> {
+    public async publish(ctx: PluginContext): Promise<Result<string | undefined, FxError>> {
         if (ctx.platform !== Platform.VS) {
             const answer = ctx.answers?.get(Constants.BUILD_OR_PUBLISH_QUESTION);
             if (answer === manuallySubmitOption.id) {
@@ -160,13 +160,18 @@ export class AppStudioPlugin implements Plugin {
             );
             return ok(result.id);
         } catch (error) {
-            const innerError = error.innerError ? `innerError: ${error.innerError}` : "";
-            await ctx.dialog?.communicate(
-                new DialogMsg(DialogType.Show, {
-                    description: `${error.message} ${innerError}`,
-                    level: MsgLevel.Warning
-                }),
-            );
+            if (error instanceof SystemError ) {
+                if (error.name === AppStudioError.TeamsAppPublishCancelError.name) {
+                    return ok(undefined);
+                }
+                const innerError = error.innerError ? `innerError: ${error.innerError}` : "";
+                await ctx.dialog?.communicate(
+                    new DialogMsg(DialogType.Show, {
+                        description: `${error.message} ${innerError}`,
+                        level: MsgLevel.Warning
+                    }),
+                );
+            }
             return err(error);
         }
     }

@@ -171,10 +171,10 @@ class NewTemplete extends YargsCommand {
     const template = constants.templates.find(t => t.sampleAppName === templateName)!;
     
     const result = await this.fetchCodeZip(template.sampleAppUrl);
-    await this.saveFilesRecursively(new AdmZip(result.data), folder);
+    await this.saveFilesRecursively(new AdmZip(result.data), template.sampleAppName, folder);
     console.log(
       colors.green(
-        `Cloned '${colors.yellow(template.sampleAppUrl)}' to '${colors.yellow(folder)}'`
+        `Downloaded the '${colors.yellow(template.sampleAppName)}' sample to '${colors.yellow(path.join(folder, template.sampleAppName))}'.`
       )
     );
 
@@ -199,15 +199,19 @@ class NewTemplete extends YargsCommand {
     }
   }
 
-  private async saveFilesRecursively(zip: AdmZip, dstPath: string): Promise<void> {
+  private async saveFilesRecursively(
+    zip: AdmZip,
+    appFolder: string,
+    dstPath: string
+  ): Promise<void> {
     await Promise.all(
       zip
         .getEntries()
-        .filter((entry) => !entry.isDirectory)
+        .filter((entry) => !entry.isDirectory && entry.entryName.includes(appFolder))
         .map(async (entry) => {
           const data = entry.getData().toString();
-
-          const filePath = path.join(dstPath, entry.entryName);
+          const entryPath = entry.entryName.substring(entry.entryName.indexOf("/") + 1);
+          const filePath = path.join(dstPath, entryPath);
           await fs.ensureDir(path.dirname(filePath));
           await fs.writeFile(filePath, data);
         })

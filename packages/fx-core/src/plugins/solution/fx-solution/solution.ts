@@ -1794,7 +1794,7 @@ export class TeamsAppSolution implements Solution {
       return err(
         returnSystemError(
           new Error(
-            "Failed to get webApplicationInfoResource, make sure you do the provision first."
+            "Missing configuration data for manifest. Run 'provision' first. Data required: webApplicationInfoResource."
           ),
           "Solution",
           localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
@@ -1805,7 +1805,9 @@ export class TeamsAppSolution implements Solution {
     if (!aadId) {
       return err(
         returnSystemError(
-          new Error(`config ${LOCAL_DEBUG_AAD_ID} is missing`),
+          new Error(
+            `Missing configuration data for manifest. Run 'provision' first. Data required: ${LOCAL_DEBUG_AAD_ID}.`
+          ),
           "Solution",
           localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
         )
@@ -1816,9 +1818,9 @@ export class TeamsAppSolution implements Solution {
       return err(
         returnSystemError(
           new Error(
-            `${localDebug ? LOCAL_DEBUG_TAB_ENDPOINT : FRONTEND_ENDPOINT}, ${
-              localDebug ? LOCAL_BOT_ID : BOT_ID
-            }  are all missing`
+            `Missing configuration data for manifest. Data required: ${
+              localDebug ? LOCAL_DEBUG_TAB_ENDPOINT : FRONTEND_ENDPOINT
+            }, ${localDebug ? LOCAL_BOT_ID : BOT_ID}.`
           ),
           "Solution",
           localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
@@ -1829,9 +1831,11 @@ export class TeamsAppSolution implements Solution {
       return err(
         returnSystemError(
           new Error(
-            `Invalid config for tab: ${
+            `Invalid configuration data for manifest: ${
               localDebug ? LOCAL_DEBUG_TAB_ENDPOINT : FRONTEND_ENDPOINT
-            }=${tabEndpoint} ${localDebug ? LOCAL_DEBUG_TAB_DOMAIN : FRONTEND_DOMAIN}=${tabDomain}`
+            }=${tabEndpoint}, ${
+              localDebug ? LOCAL_DEBUG_TAB_DOMAIN : FRONTEND_DOMAIN
+            }=${tabDomain}.`
           ),
           "Solution",
           localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
@@ -1842,7 +1846,11 @@ export class TeamsAppSolution implements Solution {
       if (!botDomain) {
         return err(
           returnSystemError(
-            new Error(`${localDebug ? LOCAL_DEBUG_BOT_DOMAIN : BOT_DOMAIN} is undefined`),
+            new Error(
+              `Missing configuration data for manifest. Data required: ${
+                localDebug ? LOCAL_DEBUG_BOT_DOMAIN : BOT_DOMAIN
+              }.`
+            ),
             "Solution",
             localDebug ? SolutionError.GetLocalDebugConfigError : SolutionError.GetRemoteConfigError
           )

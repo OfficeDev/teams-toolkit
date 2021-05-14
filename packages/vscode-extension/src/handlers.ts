@@ -10,7 +10,6 @@ import {
   workspace,
   ExtensionContext,
   env,
-  ViewColumn,
   debug,
   QuickPickItem,
 } from "vscode";
@@ -24,7 +23,6 @@ import {
   Func,
   UserError,
   SystemError,
-  returnUserError,
   returnSystemError,
   ConfigFolderName,
   traverse,
@@ -36,7 +34,7 @@ import {
   VsCodeEnv,
   AppStudioTokenProvider,
 } from "@microsoft/teamsfx-api";
-import { CoreProxy } from "@microsoft/teamsfx-core";
+import { CoreProxy, isUserCancelError } from "@microsoft/teamsfx-core";
 import DialogManagerInstance from "./userInterface";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -44,7 +42,7 @@ import AppStudioTokenInstance from "./commonlib/appStudioLogin";
 import AppStudioCodeSpaceTokenInstance from "./commonlib/appStudioCodeSpaceLogin";
 import VsCodeLogInstance from "./commonlib/log";
 import { VSCodeTelemetryReporter } from "./commonlib/telemetry";
-import { CommandsTreeViewProvider, TreeViewCommand } from "./commandsTreeViewProvider";
+import { TreeViewCommand } from "./commandsTreeViewProvider";
 import TreeViewManagerInstance from "./commandsTreeViewProvider";
 import * as extensionPackage from "./../package.json";
 import { ext } from "./extensionVariables";
@@ -60,12 +58,9 @@ import * as commonUtils from "./debug/commonUtils";
 import { ExtensionErrors, ExtensionSource } from "./error";
 import { WebviewPanel } from "./controls/webviewPanel";
 import * as constants from "./debug/constants";
-import logger from "./commonlib/log";
 import { isSPFxProject } from "./utils/commonUtils";
-import * as path from "path";
 import * as fs from "fs-extra";
 import * as vscode from "vscode";
-import { VsCodeUI, VS_CODE_UI } from "./qm/vsc_ui";
 import { DepsChecker } from "./debug/depsChecker/checker";
 import { BackendExtensionsInstaller } from "./debug/depsChecker/backendExtensionsInstall";
 import { DotnetChecker } from "./debug/depsChecker/dotnetChecker";
@@ -79,6 +74,7 @@ import { signedIn, signedOut } from "./commonlib/common/constant";
 import { AzureNodeChecker } from "./debug/depsChecker/azureNodeChecker";
 import { SPFxNodeChecker } from "./debug/depsChecker/spfxNodeChecker";
 import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
+import { VS_CODE_UI } from "./qm/vsc_ui";
 
 export let core: CoreProxy;
 const runningTasks = new Set<string>(); // to control state of task execution
@@ -477,13 +473,6 @@ async function runUserTask(func: Func, eventName: string): Promise<Result<null, 
 }
 
 //TODO workaround
-function isCancelWarning(error: FxError): boolean {
-  return (
-    (!!error.name && error.name === ExtensionErrors.UserCancel) ||
-    (!!error.message && error.message.includes("User Cancel"))
-  );
-}
-//TODO workaround
 function isLoginFaiureError(error: FxError): boolean {
   return !!error.message && error.message.includes("Cannot get user login information");
 }
@@ -494,8 +483,7 @@ async function processResult(eventName: string | undefined, result: Result<null,
       ExtTelemetry.sendTelemetryErrorEvent(eventName, result.error);
     }
     const error = result.error;
-    if (isCancelWarning(error)) {
-      // window.showWarningMessage(`Operation is canceled!`);
+    if (isUserCancelError(error)) {
       return;
     }
     if (isLoginFaiureError(error)) {
@@ -835,7 +823,7 @@ export async function showError(e: FxError) {
   VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}, stack: ${e.stack}`);
 
   const errorCode = `${e.source}.${e.name}`;
-  if (isCancelWarning(e)) {
+  if (isUserCancelError(e)) {
     return;
   } else if (e instanceof UserError && e.helpLink && typeof e.helpLink != "undefined") {
     const help = {

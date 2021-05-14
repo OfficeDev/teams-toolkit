@@ -20,6 +20,7 @@ export class Constants {
   static EmptyString = "";
 
   static DayInMS = 1000 * 60 * 60 * 24;
+  static SasTokenLifetimePadding = Constants.DayInMS;
   static SasTokenLifetime = Constants.DayInMS * 3;
 
   static RequestTryCounts = 3;

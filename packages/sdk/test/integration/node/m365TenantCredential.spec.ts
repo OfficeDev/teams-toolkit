@@ -39,10 +39,24 @@ describe("M365TenantCredential Tests - Node", () => {
     );
   });
 
+  it("getToken should success with .default scope when authority host has tailing slash", async function () {
+    restore = mockedEnv({
+      M365_AUTHORITY_HOST: process.env.SDK_INTEGRATION_TEST_AAD_AUTHORITY_HOST + "/",
+    });
+    loadConfiguration();
+
+    const credential = new M365TenantCredential();
+    const token = await credential.getToken(defaultGraphScope);
+
+    const decodedToken = jwtDecode<AADJwtPayLoad>(token!.token);
+    assert.strictEqual(decodedToken.aud, "https://graph.microsoft.com");
+    assert.strictEqual(decodedToken.appid, process.env.M365_CLIENT_ID);
+    assert.strictEqual(decodedToken.idtyp, "app");
+  });
+
   it("getToken should success with .default scope", async function () {
     const credential = new M365TenantCredential();
     const token = await credential.getToken(defaultGraphScope);
-    const tokenFromCache = await credential.getToken(defaultGraphScope);
 
     const decodedToken = jwtDecode<AADJwtPayLoad>(token!.token);
     assert.strictEqual(decodedToken.aud, "https://graph.microsoft.com");

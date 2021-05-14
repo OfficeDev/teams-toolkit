@@ -18,6 +18,7 @@ import {
   MockEnvironmentVariable,
   RestoreEnvironmentVariable,
 } from "../helper";
+import mockedEnv from "mocked-env";
 
 chaiUse(chaiPromises);
 let restore: () => void;
@@ -30,8 +31,12 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
 
   before(async () => {
     restore = MockEnvironmentVariable();
-    loadConfiguration();
     ssoToken = await getSsoTokenFromTeams();
+  });
+
+  beforeEach(async () => {
+    restore = MockEnvironmentVariable();
+    loadConfiguration();
   });
 
   it("getToken should success with valid config", async function () {
@@ -62,6 +67,21 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
   });
 
   it("get graph access token should success with valid config", async function () {
+    const credential = new OnBehalfOfUserCredential(ssoToken);
+    const graphToken = await credential.getToken(defaultScope);
+    const tokenObject = parseJwt(graphToken!.token);
+    const userInfo = await credential.getUserInfo();
+    assert.strictEqual(tokenObject.oid, userInfo.objectId);
+    assert.strictEqual(tokenObject.aud, "https://graph.microsoft.com");
+    assert.include(tokenObject.scp, "User.Read");
+  });
+
+  it("get graph access token should success when authority host has tailing slash", async function () {
+    restore = mockedEnv({
+      M365_AUTHORITY_HOST: process.env.SDK_INTEGRATION_TEST_AAD_AUTHORITY_HOST + "/",
+    });
+    loadConfiguration();
+
     const credential = new OnBehalfOfUserCredential(ssoToken);
     const graphToken = await credential.getToken(defaultScope);
     const tokenObject = parseJwt(graphToken!.token);

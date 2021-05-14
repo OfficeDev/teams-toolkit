@@ -71,8 +71,9 @@ export class OnBehalfOfUserCredential implements TokenCredential {
       throw new ErrorWithCode(errorMsg, ErrorCode.InvalidConfiguration);
     }
 
+    const normalizedAuthorityHost = config.authentication!.authorityHost!.replace(/\/+$/g, "");
     const authority: string =
-      config.authentication?.authorityHost + "/" + config.authentication?.tenantId;
+      normalizedAuthorityHost + "/" + config.authentication?.tenantId;
     this.msalClient = new ConfidentialClientApplication({
       auth: {
         clientId: config.authentication!.clientId!,

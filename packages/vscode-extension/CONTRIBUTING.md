@@ -29,7 +29,7 @@ Verify you have the right prerequisites for building Teams apps and install some
 
 1. Clone this repo locally. (`git clone https://github.com/OfficeDev/TeamsFx.git`)
 1. Open a terminal and move into your local copy. (`cd TeamsFx`)
-1. Because the monorepo is managed by Lerna, you need to bootstrap at the first time. (`npm run setup` or `npm install && npm run bootstrap`) All dependencies will be installed.
+1. `npm install`
 1. Build the vsix package. (`cd packages/vscode-extension && npm run build`)
 
 ### Debug the project

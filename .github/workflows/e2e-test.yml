@@ -45,8 +45,7 @@ jobs:
 
       - name: Setup project
         run: |
-          npm run setup
-          npm link
+          npm install
 
       - name: E2E Test clean
         run: |

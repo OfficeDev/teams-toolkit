@@ -13,7 +13,7 @@ Follow the official documents to install the required softwares:
 
 1. Clone this repo locally. (`git clone https://github.com/OfficeDev/TeamsFx.git`)
 2. Open a terminal and move into your local copy. (`cd TeamsFx`)
-3. Because the monorepo is managed by Lerna, you need to bootstrap at the first time. (`npm run setup` or `npm install && npm run bootstrap`) All dependencies will be installed and linked locally.
+3. `npm install`
 4. Build the `fx-core` package. (`cd packages/fx-core && npm run build`)
 
 **_NOTE:_** If you meet the error showing that some package cannot install, you can delete this package's `package-lock.json` file and try `npm run bootstrap` under `TeamsFx` folder again.
@@ -27,7 +27,7 @@ Please also run `npx lerna run test:unit --since origin/main` in the root folder
 
 ## Style Guidelines
 
-After running `npm run setup` in the root folder of the monorepo, a [Precommit Git Hook](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks) will be added by [Husky](https://github.com/typicode/husky), which will run
+After running `npm install` in the root folder of the monorepo, a [Precommit Git Hook](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks) will be added by [Husky](https://github.com/typicode/husky), which will run
 
 1. [ESLint](https://github.com/eslint/eslint): Please fix ESLint errors & warning before committing your code.
 2. [Prettier](https://github.com/prettier/prettier): Your code will be formatted automatically.

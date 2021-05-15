@@ -16,7 +16,7 @@ To test the SDK, you'd better install [Visual Studio Code](https://code.visualst
 
 1. Clone this repo locally. (`git clone https://github.com/OfficeDev/TeamsFx.git`)
 2. Open a terminal and move into your local copy. (`cd TeamsFx`)
-3. Because the monorepo is managed by Lerna, you need to bootstrap at the first time. (`npm run setup` or `npm install && npm run bootstrap`) All dependencies will be installed.
+3. `npm install`
 4. Build the SDK package. (`cd packages/sdk && npm run build`)
 
 # Debugging SDK

@@ -32,7 +32,7 @@ jobs:
 
       - name: Setup project
         run: |
-          npm run setup
+          npm install
 
       - name: Generate sdk api doc
         run: |

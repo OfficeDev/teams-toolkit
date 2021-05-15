@@ -48,7 +48,7 @@ jobs:
 
       - name: Setup project
         run: |
-          npm run setup
+          npm install
 
       - name: Unit Test
         run: |
@@ -77,6 +77,5 @@ jobs:
           TEST_SUBSCRIPTION_ID: ${{ secrets.TEST_SUBSCRIPTION_ID }}
           CI_ENABLED: "true"
         run: |
-          npm link
           npx lerna run test:integration --since origin/main
 

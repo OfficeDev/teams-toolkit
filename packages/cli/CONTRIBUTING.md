@@ -30,7 +30,7 @@ The TeamsFx CLI may require an Azure account and subscription to deploy the Azur
 ### Build the whole monorepo
 1. `git clone https://github.com/OfficeDev/TeamsFx.git`
 2. `cd TeamsFx`
-3. `npm run setup`
+3. `npm install`
 
 This will run "lerna bootstrap" to link packages in monorepo locally. 
 
@@ -41,15 +41,14 @@ This will run "lerna bootstrap" to link packages in monorepo locally.
 
 This will install the dependent packages from public registry and build CLI package alone.
 
-**_NOTE:_** If you meet the error showing that some package cannot install, you can delete this package's `package-lock.json` file and try `npm run bootstrap` under `TeamsFx` folder again.
+**_NOTE:_** If you meet the error showing that some package cannot install, you can delete this package's `package-lock.json` file and try `npm install` under `TeamsFx` folder again.
 
 ## Debug the project
 ---
 
 ### Run your local project
 1. `cd TeamsFx`
-2. `npm run setup`
-3. `npm link`
+2. `npm install`
 
 ### Debug inside VSCode
 1. `cd TeamsFx/packages/cli`

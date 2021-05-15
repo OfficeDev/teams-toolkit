@@ -1,8 +1,7 @@
 {
     "name": "teamsfx",
     "scripts": {
-        "setup": "npm install && npm run bootstrap && npx lerna exec -- npm install --only=dev",
-        "bootstrap": "lerna bootstrap",
+        "postinstall": "lerna bootstrap --hoist @shared/*",
         "lint:staged": "lerna run lint:staged --stream",
         "lint": "lerna run lint --stream",
         "version": "lerna bootstrap --ignore-scripts -- --package-lock-only --no-audit && git add packages/*/package-lock.json",
@@ -10,9 +9,11 @@
     },
     "devDependencies": {
         "@commitlint/cli": "^12.0.1",
-        "@commitlint/config-conventional": "^12.0.1",
-        "lerna": "^4.0.0",
-        "husky": "^6.0.0"
+        "@commitlint/config-conventional": "^12.1.4",
+        "@shared/eslint-config": "file:./packages/eslint-config",
+        "@shared/prettier-config": "file:./packages/prettier-config",
+        "husky": "^6.0.0",
+        "lerna": "^4.0.0"
     },
     "bin": {
         "teamsfx": "./packages/cli/lib/cli.js"

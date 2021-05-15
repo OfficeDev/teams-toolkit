@@ -1,3 +1,4 @@
 **/*.d.ts
 coverage/
 .nyc_output/
+*.md

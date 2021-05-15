@@ -4,10 +4,9 @@
 
 1. `git clone https://github.com/OfficeDev/TeamsFx.git`
 2. `cd TeamsFx`
-3. `npm run setup`
-4. `npm link`
+3. `npm install`
 
-If you meet the error showing that some package cannot install, you can delete this package's `package-lock.json` file and try `npm run bootstrap` under `TeamsFx` folder again.
+If you meet the error showing that some package cannot install, you can delete this package's `package-lock.json` file and try `npm install` under `TeamsFx` folder again.
 
 ## How to Generate Parameter Files (for Repo Contributors)
 

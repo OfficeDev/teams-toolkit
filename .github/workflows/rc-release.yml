@@ -49,7 +49,7 @@ jobs:
 
       - name: Setup project
         run: |
-          npm run setup
+          npm install
 
       - name: Setup git
         run: |

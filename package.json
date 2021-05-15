@@ -11,7 +11,9 @@
         "@commitlint/cli": "^12.0.1",
         "@commitlint/config-conventional": "^12.1.4",
         "@shared/eslint-config": "file:./packages/eslint-config",
-        "@shared/prettier-config": "file:./packages/prettier-config",
+        "@shared/prettier-config": "file:./packages/prettier-config"
+    },
+    "dependencies": {
         "husky": "^6.0.0",
         "lerna": "^4.0.0"
     },

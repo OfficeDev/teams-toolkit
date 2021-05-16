@@ -1,6 +1,6 @@
 # Build Messaging Extensions for Teams
 
-A Messaging Extension allows users to interact with your web service while composing messages in the Microsoft Teams client. Users can invoke your web service to assist message composition, feom the message compose box, or from the search bar.
+A Messaging Extension allows users to interact with your web service while composing messages in the Microsoft Teams client. Users can invoke your web service to assist message composition, from the message compose box, or from the search bar.
 
 Messaging Extensions are implemented on top of the Bot support architecture within Teams.
 

@@ -6,8 +6,6 @@ import { OptionItem } from "./qm";
 import { Platform, VsCodeEnv } from "./constants";
 import { AnswerValue } from "./qm";
 
-// foo
-
 export type ConfigValue =
   | string
   | string[]

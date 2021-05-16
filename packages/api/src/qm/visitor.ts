@@ -294,9 +294,8 @@ export async function traverse(
   const stack: QTreeNode[] = [];
   const history: QTreeNode[] = [];
   stack.push(root);
-  let manualNum = 1; // manual input step
-  const skipNum = 0; // group, func or auto-skip select
-  let totalManualNum = 1;
+  let step = 1; // manual input step
+  let totalStep = 1;
   const parentMap = new Map<QTreeNode, QTreeNode>();
   const valueMap = new Map<QTreeNode, unknown>();
   const autoSkipSet = new Set<QTreeNode>();
@@ -309,15 +308,15 @@ export async function traverse(
     //visit
     if (curr.data.type !== NodeType.group) {
       const question = curr.data as Question;
-      totalManualNum = manualNum + stack.length;
+      totalStep = step + stack.length;
       const inputResult = await questionVisitor(
         question,
         parentValue,
         ui,
         inputs,
         remoteFuncExecutor,
-        manualNum,
-        totalManualNum
+        step,
+        totalStep
       );
       if (inputResult.type === InputResultType.back) {
         //go back
@@ -366,7 +365,7 @@ export async function traverse(
           // no node to back
           return { type: InputResultType.cancel };
         }
-        --manualNum;
+        --step;
         continue; //ignore the following steps
       } else if (
         inputResult.type === InputResultType.error ||
@@ -382,7 +381,7 @@ export async function traverse(
         if (inputResult.type === InputResultType.skip || question.type === NodeType.func) {
           if (inputResult.type === InputResultType.skip) autoSkipSet.add(curr);
         } else {
-          ++manualNum;
+          ++step;
         }
         let valueInMap = question.value;
         if (question.type === NodeType.singleSelect) {

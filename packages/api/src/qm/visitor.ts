@@ -331,7 +331,6 @@ export async function traverse(
           }
         }
         stack.push(curr);
-        inputs.delete(curr.data.name);
 
         // find the previoud input that is neither group nor func nor single option select
         let found = false;

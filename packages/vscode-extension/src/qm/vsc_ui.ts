@@ -42,15 +42,15 @@ export class VsCodeUI implements UserInterface {
       const quickPick: QuickPick<QuickPickItem> = window.createQuickPick();
       disposables.push(quickPick);
       quickPick.title = option.title;
-      if (option.backButton) quickPick.buttons = [QuickInputButtons.Back, okButton];
+      if (option.step && option.step > 1) quickPick.buttons = [QuickInputButtons.Back, okButton];
       else quickPick.buttons = [okButton];
       quickPick.placeholder = option.placeholder;
       quickPick.ignoreFocusOut = true;
       quickPick.matchOnDescription = true;
       quickPick.matchOnDetail = true;
       quickPick.canSelectMany = option.canSelectMany;
-      // quickPick.step = option.step;
-      // quickPick.totalSteps = option.totalSteps;
+      quickPick.step = option.step;
+      quickPick.totalSteps = option.totalSteps;
       let previousSelectedItems: FxQuickPickItem[] = [];
       return await new Promise<InputResult>(
         async (resolve): Promise<void> => {
@@ -212,15 +212,15 @@ export class VsCodeUI implements UserInterface {
       const inputBox: InputBox = window.createInputBox();
       disposables.push(inputBox);
       inputBox.title = option.title;
-      if (option.backButton) inputBox.buttons = [QuickInputButtons.Back, okButton];
+      if (option.step && option.step > 1) inputBox.buttons = [QuickInputButtons.Back, okButton];
       else inputBox.buttons = [okButton];
       inputBox.value = option.defaultValue || "";
       inputBox.ignoreFocusOut = true;
       inputBox.password = option.password;
       inputBox.placeholder = option.placeholder;
       inputBox.prompt = option.prompt;
-      // inputBox.step = option.step;
-      // inputBox.totalSteps = option.totalSteps;
+      inputBox.step = option.step;
+      inputBox.totalSteps = option.totalSteps;
       if (option.number) {
         const numberValidation = async function(input: string): Promise<string | undefined> {
           if (!input || input.trim() === "" || isNaN(Number(input)))
@@ -288,14 +288,14 @@ export class VsCodeUI implements UserInterface {
       const quickPick: QuickPick<QuickPickItem> = window.createQuickPick();
       disposables.push(quickPick);
       quickPick.title = option.title;
-      if (option.backButton) quickPick.buttons = [QuickInputButtons.Back, okButton];
+      if (option.step && option.step > 1) quickPick.buttons = [QuickInputButtons.Back, okButton];
       else quickPick.buttons = [okButton];
       quickPick.ignoreFocusOut = true;
       quickPick.matchOnDescription = false;
       quickPick.matchOnDetail = false;
       quickPick.canSelectMany = false;
-      // quickPick.step = option.step;
-      // quickPick.totalSteps = option.totalSteps;
+      quickPick.step = option.step;
+      quickPick.totalSteps = option.totalSteps;
       const res = await new Promise<InputResult>(
         async (resolve): Promise<void> => {
           const onDidAccept = async () => {

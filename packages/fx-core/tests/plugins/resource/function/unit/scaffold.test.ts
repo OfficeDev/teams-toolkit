@@ -1,11 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import "mocha";
-import * as chai from "chai";
 import * as fs from "fs-extra";
+import * as chai from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
 import AdmZip from "adm-zip";
+import mock from "mock-fs";
 
 import * as fetch from "../../../../../src/plugins/resource/function/utils/templates-fetch";
 import {
@@ -15,6 +16,7 @@ import {
 import { FunctionPlugin } from "../../../../../src/plugins/resource/function/index";
 import { FxResult } from "../../../../../src/plugins/resource/function/result";
 import { FunctionLanguage, QuestionKey } from "../../../../../src/plugins/resource/function/enums";
+import { getTemplatesFolder } from "../../../../../src";
 
 const context: any = {
   configOfOtherPlugins: new Map<string, Map<string, string>>([
@@ -43,6 +45,33 @@ describe(FunctionPluginInfo.pluginName, () => {
       fs.emptyDirSync(context.root);
       fs.rmdirSync(context.root);
       sinon.restore();
+    });
+
+    before(() => {
+      const config: any = {};
+      config[
+        path.join(
+          getTemplatesFolder(),
+          "plugins",
+          "resource",
+          "function",
+          "function-base.js.default.zip"
+        )
+      ] = new AdmZip().toBuffer();
+      config[
+        path.join(
+          getTemplatesFolder(),
+          "plugins",
+          "resource",
+          "function",
+          "function-triggers.js.HTTPTrigger.zip"
+        )
+      ] = new AdmZip().toBuffer();
+      mock(config);
+    });
+
+    after(() => {
+      mock.restore();
     });
 
     it("Test pre-scaffold without function name", async () => {
@@ -104,23 +133,6 @@ describe(FunctionPluginInfo.pluginName, () => {
       context.answers = new Map<string, string>([
         [QuestionKey.functionName, "httpTrigger"],
         [QuestionKey.programmingLanguage, FunctionLanguage.JavaScript],
-      ]);
-      sinon.stub(fetch, "getTemplateURL").rejects(new Error());
-      const plugin: FunctionPlugin = new FunctionPlugin();
-
-      // Act
-      await plugin.preScaffold(context);
-      const ret: FxResult = await plugin.scaffold(context);
-
-      // Assert
-      chai.assert.isTrue(ret.isOk());
-    });
-
-    it("Test scaffold with fallback in TS", async () => {
-      // Arrange
-      context.answers = new Map<string, string>([
-        [QuestionKey.functionName, "httpTrigger"],
-        [QuestionKey.programmingLanguage, FunctionLanguage.TypeScript],
       ]);
       sinon.stub(fetch, "getTemplateURL").rejects(new Error());
       const plugin: FunctionPlugin = new FunctionPlugin();

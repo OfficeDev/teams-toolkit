@@ -1,50 +1,42 @@
-# Build Backend APIs
+# Server-side code in Teams applications 
 
-When building a Teams application, you can optionally add backend API(s) to develop server-side logics.
+Azure Functions are a great way to add server-side behaviors to any Teams application.
 
 ## Prerequisites
 
-- Teams Toolkit or TeamsFx CLI.
+- [NodeJS](https://nodejs.org/en/)
+- An M365 account. If you do not have M365 account, apply one from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
+- [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) or [TeamsFx CLI](https://aka.ms/teamsfx-cli)
 
 ## Develop
 
-Teams Toolkit and TeamsFx CLI can provide template code for you to get started. The starter code handles calls from your Teams App client side, initializes the TeamsFx SDK to access current connected user information and prepares a pre-authenticated Microsoft Graph Client for you to access more user's data. You can modify the template code with your custom logic or add more functions with `HTTPTrigger`. Read [Azure Functions developer guide](https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference) for more development resources.
+The Teams Toolkit IDE Extension and TeamsFx CLI provide template code for you to get started with Azure Functions for your Teams application. Microsoft Teams Framework simplifies the task of establishing the user's identity within the Azure Function.
 
-### Call Function
+The template handles calls from your Teams "custom tab" (client-side of your app), initializes the TeamsFx SDK to access the current user context, and demonstrates how to obtain a pre-authenticated Microsoft Graph Client. Microsoft Graph is the "data plane" of M365 - you can use it to access content within M365 in your company. With it you can read and write documents, SharePoint collections, Teams channels, and many other entities within M365. Read more about [Microsoft Graph](https://docs.microsoft.com/en-us/graph/overview).
 
-A common use case to call the function is sending an HTTP request to the service with an SSO token in the authorization header. The token can be retrieved from TeamsFx SDK from your app's client side. Here is an example code snippet:
+You can add your logic to the single Azure Function created by this template, as well as add more functions as necessary. See [Azure Functions developer guide](https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference) for more information.
 
-```TypeScript
+### Call the Function
+
+To call your Azure Function, the client sends an HTTP request with an SSO token in the `Authorization` header. The token can be retrieved using the TeamsFx SDK from your app's client (custom tab). Here is an example:
+
+```ts
+  import { TeamsUserCredential } from "@microsoft/teamsfx";
+
   var credential = new TeamsUserCredential();
-  var accessToken = await credential.getToken('');
-  var response = await axios.default.get(functionEndpoint + '/api/' + functionName, {
+  var accessToken = await credential.getToken(''); 
+  // note: empty string argument on the previous line is required for now, this will be fixed in a later release
+  var response = await fetch(`${functionEndpoint}/api/${functionName}`, {
     headers: {
-      authorization: "Bearer " + accessToken.token
+      Authorization: `Bearer ${accessToken.token}`
     }
   });
 ```
 
 ### Add More Functions
 
-- From Visual Studio Code: open the command palette, select `Teams: Add Resources` and select `Azure Function App`.
+- From Visual Studio Code, open the command palette, select `Teams: Add Resources` and select `Azure Function App`.
 - From TeamsFx CLI: run command `teamsfx resource add azure-function` in your project directory.
-
-## Deploy to Azure
-
-Deploy your project to Azure when it’s ready by following these steps:
-
-1. Log in to your Azure account
-2. Select an active subscription
-3. Provision your application resources in the cloud
-4. Deploy your application to the cloud
-
-You can do this using the Teams Toolkit in Visual Studio Code or using the TeamsFx CLI:
-
-| Using Teams Toolkit                                                                                                                                                                                                                                                                                                                                                     | Using TeamsFx CLI                                                                                                                                                                                                            |
-| :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign in to Azure` under the `ACCOUNT` section from sidebar.</li> <li>After you signed in, select a subscription under your account.</li><li>Open the command palette and select: `Teams: Provision in the Cloud`.</li><li>Open the command palette and select: `Teams: Deploy to the Cloud`.</li></ul> | <ul> <li>Run command `teamsfx account login azure`.</li> <li>Run command `teamsfx account set --subscription $subscriptionid`.</li> <li> Run command `teamsfx provision`.</li> <li>Run command: `teamsfx deploy`. </li></ul> |
-
-**Note: This may incur costs in your Azure Subscription.**
 
 ## Change Node.js runtime version
 
@@ -57,6 +49,39 @@ By default, Teams Toolkit and TeamsFx CLI will provision an Azure function app w
 - After Click `OK` button, don't forget to click `Save` button on the top of the page.
 
 Then following requests sent to the Azure function app will be handled by new node runtime version.
+
+## Debug
+
+Start debugging the project by hitting the `F5` key in Visual Studio Code. Alternatively use the `Run and Debug Activity Panel` in Visual Studio Code and click the `Start Debugging` green arrow button.
+
+## Build
+
+- From Visual Studio Code: open the command palette and select `Teams: Build Teams Package`.
+- Alternatively, from the command line run `teamsfx build` in the project directory.
+
+## Validate manifest file
+
+To check that your manifest file is valid:
+
+- From Visual Studio Code: open the command palette and select: `Teams: Validate App Manifest File`.
+- From TeamsFx CLI: run command `teamsfx validate` in your project directory.
+
+## Deploy to Azure
+
+Deploy your project to Azure by following these steps:
+
+| From Visual Studio Code                                                                                                                                                                                                                                                                                                                                                     | Using TeamsFx CLI                                                                                                                                                                                                            |
+| :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign in to Azure` under the `ACCOUNT` section from sidebar.</li> <li>After you signed in, select a subscription under your account.</li><li>Open the command palette and select: `Teams: Provision in the Cloud`.</li><li>Open the command palette and select: `Teams: Deploy to the Cloud`.</li></ul> | <ul> <li>Run command `teamsfx account login azure`.</li> <li>Run command `teamsfx account set --subscription <your-subscription-id>`.</li> <li> Run command `teamsfx provision`.</li> <li>Run command: `teamsfx deploy`. </li></ul> |
+
+> Note: Provisioning and deployment may incur charges to your Azure Subscription.
+
+## Publish to Teams
+
+Once deployed, you may want to distribute your application to your organization's internal app store in Teams. Your app will be submitted for admin approval.
+
+- From Visual Studio Code: open the command palette and select: `Teams: Publish to Teams`.
+- From TeamsFx CLI: run command `teamsfx publish` in your project directory.
 
 ## Code of Conduct
 

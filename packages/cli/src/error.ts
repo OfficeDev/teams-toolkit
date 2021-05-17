@@ -114,9 +114,9 @@ export function QTNQuestionTypeNotSupport(data: Question): SystemError {
   );
 }
 
-export function InquirerAnswerNotFound(data: IMessage): UserError {
+export function InquirerAnswerNotFound(data: string): UserError {
   return returnUserError(
-    new Error(`Answer not found for question:${data.description}`),
+    new Error(`Answer not found for question:${data}`),
     constants.cliSource,
     "InquirerAnswerNotFound"
   );

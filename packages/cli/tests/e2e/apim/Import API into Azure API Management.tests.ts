@@ -4,7 +4,7 @@
 import fs from "fs-extra";
 import path from "path";
 
-import { ApimValidator } from "@microsoft/teamsfx-api";
+import { ApimValidator } from "../../commonlib";
 
 import {
   execAsync,
@@ -68,7 +68,7 @@ describe("Import API into API Management", function () {
   it(`Create a new API version in Azure API Management`, async function () {
     await ApimValidator.init(subscriptionId, AzureLogin, GraphLogin);
     await execAsync(
-      `teamsfx deploy apim --open-api-document openapi/openapi.json --api-prefix ${appName} --api-version v2`,
+      `teamsfx deploy apim --api-version v2`,
       {
         cwd: projectPath,
         env: process.env,
@@ -83,7 +83,7 @@ describe("Import API into API Management", function () {
   it(`Update an existing API version in Azure API Management`, async function () {
     await ApimValidator.init(subscriptionId, AzureLogin, GraphLogin);
     await execAsync(
-      `teamsfx deploy apim --open-api-document openapi/openapi.json --api-prefix ${appName} --api-version v1`,
+      `teamsfx deploy apim --api-version v1`,
       {
         cwd: projectPath,
         env: process.env,

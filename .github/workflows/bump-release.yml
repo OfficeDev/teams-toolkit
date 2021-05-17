@@ -1,4 +1,4 @@
-name: Beta release
+name: bump version
 
 on:
   workflow_dispatch:
@@ -7,10 +7,10 @@ on:
         description: 'force release even if no update(set empty if not)'
         required: false
         default: '--force-publish'
-      stable:
-        description: 'promote to stable version(true or false)'
-        required: false
-        default: 'false'
+      version:
+        description: 'which version to bump(premajor, preminor, prepatch)'
+        required: true
+        default: 'preminor'
 
 jobs:
   release:
@@ -56,15 +56,10 @@ jobs:
           git config --global user.name 'MSFT-yiz'
           git config --global user.email 'yiz@microsoft.com'
 
-      - name: release beta npm packages to npmjs.org
+      - name: release npm packages to npmjs.org
         if: ${{ github.event.inputs.stable == 'false' }}
         run: |
-          npx lerna publish --no-private --preid=beta --dist-tag=beta prerelease --yes ${{ github.event.inputs.force }}
-
-      - name: release stable npm packages to npmjs.org
-        if: ${{ github.event.inputs.stable == 'true' }}
-        run: |
-          npx lerna publish --no-private --dist-tag=stable patch --yes ${{ github.event.inputs.force }}
+          npx lerna publish --no-private --preid=alpha --dist-tag=alpha ${{ github.event.inputs.version }} --yes ${{ github.event.inputs.force }}
 
       - name: pack vsix
         uses: nick-invision/retry@v2
@@ -77,22 +72,12 @@ jobs:
             npm install
             npx vsce package
 
-      - name: release beta VSCode extension to github
-        if: ${{ github.event.inputs.stable == 'false' }}
-        uses: marvinpinto/action-automatic-releases@latest
-        with:
-          repo_token: "${{ secrets.CD_PAT }}"
-          automatic_release_tag: "beta"
-          prerelease: true
-          files: |
-            ./packages/**/*.vsix
-
-      - name: release stable VSCode extension to github
+      - name: release VSCode extension to github
         if: ${{ github.event.inputs.stable == 'true' }}
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: "${{ secrets.CD_PAT }}"
-          automatic_release_tag: "latest"
-          prerelease: false
+          automatic_release_tag: "daily"
+          prerelease: true
           files: |
             ./packages/**/*.vsix

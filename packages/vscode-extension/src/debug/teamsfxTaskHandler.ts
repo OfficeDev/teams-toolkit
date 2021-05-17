@@ -79,6 +79,17 @@ function onDidStartDebugSessionHandler(event: vscode.DebugSession): void {
     }
 }
 
+export function terminateAllRunningTeamsfxTasks(): void {
+  for (const task of allRunningTeamsfxTasks) {
+    try {
+      process.kill(task[1], "SIGINT");
+    } catch (e) {
+      // ignore and keep killing others
+    }
+  }
+  allRunningTeamsfxTasks.clear();
+}
+
 function onDidTerminateDebugSessionHandler(event: vscode.DebugSession): void {
     if (allRunningDebugSessions.has(event.id)) // a valid debug session
     {
@@ -92,14 +103,8 @@ function onDidTerminateDebugSessionHandler(event: vscode.DebugSession): void {
         }
 
         const extConfig: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration("fx-extension");
-        if (extConfig.get<boolean>("stopTeamsfxTasksPostDebug", true)) {
-            for (const task of allRunningTeamsfxTasks) {
-                try {
-                    process.kill(task[1], "SIGINT");
-                } catch(e) {
-                    // ignore and keep killing others
-                }
-            }
+        if (extConfig.get<boolean>("stopTeamsToolkitTasksPostDebug", true)) {
+            terminateAllRunningTeamsfxTasks();
         }
 
         allRunningDebugSessions.delete(event.id);

@@ -10,4 +10,5 @@ export enum Commands {
   SigninAzure = "sign-in-azure",
   CreateNewProject = "create-new-project",
   SwitchPanel = "switch-panel",
+  InitAccountInfo = "init-account-info",
 }

@@ -6,8 +6,9 @@ import * as chai from "chai";
 import { ApiManagementClient } from "@azure/arm-apimanagement";
 import fs from "fs-extra";
 import md5 from "md5";
-import { AzureAccountProvider, GraphTokenProvider } from "../utils/login";
 import { ResourceManagementClient } from "@azure/arm-resources";
+
+import { AzureAccountProvider, GraphTokenProvider } from "@microsoft/teamsfx-api";
 
 export class ApimValidator {
     static apimClient?: ApiManagementClient;

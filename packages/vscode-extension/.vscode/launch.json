@@ -3,66 +3,51 @@
 // Hover to view descriptions of existing attributes.
 // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
 {
-	"version": "0.2.0",
-	"configurations": [
-		{
-			"name": "Run Extension",
-			"type": "pwa-extensionHost",
-			"request": "launch",
-			"args": [
-				"--extensionDevelopmentPath=${workspaceFolder}"
-			],
-			"resolveSourceMapLocations": [
-				"${workspaceFolder}/out/**/*.js",
-				"${workspaceFolder}/../fx-core/build/**/*.js",
-				"${workspaceFolder}/../api/build/**/*.js"
-			],
-			"preLaunchTask": "npm: build"
-		},
-		{
-			"name": "Extension Tests (No Folder)",
-			"type": "extensionHost",
-			"request": "launch",
-			"args": [
-				"--extensionDevelopmentPath=${workspaceFolder}",
-				"--extensionTestsPath=${workspaceFolder}/out/test/index.noFolder"
-			],
-			"outFiles": [
-				"${workspaceFolder}/out/test/**/*.js"
-			],
-			"preLaunchTask": "npm: test-watch"
-		},
-		{
-			"name": "Extension Tests (Specified Folder)",
-			"type": "extensionHost",
-			"request": "launch",
-			"args": [
-				"${workspaceFolder}/test-folder/myapp",
-				"--extensionDevelopmentPath=${workspaceFolder}",
-				"--extensionTestsPath=${workspaceFolder}/out/test/index.folder"
-			],
-			"outFiles": [
-				"${workspaceFolder}/out/test/**/*.js"
-			],
-			"preLaunchTask": "npm: test-watch"
-		},
-		{
-			"name": "Environment Checker Tests",
-			"type": "node",
-			"request": "launch",
-			"program": "${workspaceFolder}/node_modules/mocha/bin/mocha",
-			"args": [
-				"--ui",
-				"tdd",
-				"./out/test/suite/envChecker/cases/**/*.js",
-				"--timeout",
-				"180000"
-			],
-			"outFiles": [
-				"${workspaceFolder}/out/src/**/*.js",
-				"${workspaceFolder}/out/test/**/*.js"
-			],
-			"preLaunchTask": "npm: test-watch"
-		},
-	]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run Extension",
+      "type": "pwa-extensionHost",
+      "request": "launch",
+      "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/out/**/*.js",
+        "${workspaceFolder}/../fx-core/build/**/*.js",
+        "${workspaceFolder}/../api/build/**/*.js"
+      ],
+      "preLaunchTask": "npm: build"
+    },
+    {
+      "name": "Extension Tests (No Folder)",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}",
+        "--extensionTestsPath=${workspaceFolder}/out/test/index.noFolder"
+      ],
+      "outFiles": ["${workspaceFolder}/out/test/**/*.js"],
+      "preLaunchTask": "npm: test-watch"
+    },
+    {
+      "name": "Extension Tests (Specified Folder)",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "${workspaceFolder}/test-folder/myapp",
+        "--extensionDevelopmentPath=${workspaceFolder}",
+        "--extensionTestsPath=${workspaceFolder}/out/test/index.folder"
+      ],
+      "outFiles": ["${workspaceFolder}/out/test/**/*.js"],
+      "preLaunchTask": "npm: test-watch"
+    },
+    {
+      "name": "Environment Checker Tests",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/mocha/bin/mocha",
+      "args": ["--ui", "tdd", "./out/test/suite/envChecker/cases/**/*.js", "--timeout", "180000"],
+      "outFiles": ["${workspaceFolder}/out/src/**/*.js", "${workspaceFolder}/out/test/**/*.js"],
+      "preLaunchTask": "npm: test-watch"
+    }
+  ]
 }

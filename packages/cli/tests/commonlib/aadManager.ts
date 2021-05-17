@@ -5,8 +5,9 @@
 
 import axios, { AxiosInstance } from "axios";
 
-import MockGraphTokenProvider from "./mockGraphTokenProvider";
-import { GraphTokenProvider } from "../utils/login";
+import { GraphTokenProvider } from "@microsoft/teamsfx-api";
+
+import MockGraphTokenProvider from "../../src/commonlib/graphLoginUserPassword";
 
 interface IAadAppInfo {
     displayName: string,

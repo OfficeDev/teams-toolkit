@@ -4,38 +4,38 @@
 
 const path = require("path");
 const webpack = require("webpack");
-const CopyPlugin = require('copy-webpack-plugin');
-const terserWebpackPlugin = require('terser-webpack-plugin');
+const CopyPlugin = require("copy-webpack-plugin");
+const terserWebpackPlugin = require("terser-webpack-plugin");
 
 /**@type {import('webpack').Configuration}*/
 const config = {
   target: "node", // vscode extensions run in a Node.js-context 📖 -> https://webpack.js.org/configuration/node/
   //mode: 'none', // this leaves the source code as close as possible to the original (when packaging we set this to 'production')
   node: {
-    __dirname: false
+    __dirname: false,
   },
 
   entry: {
     index: "./src/index.ts", // the entry point of this extension, 📖 -> https://webpack.js.org/configuration/entry-context/
   },
   output: {
-    filename: '[name].js',
+    filename: "[name].js",
     // the bundle is stored in the 'dist' folder (check package.json), 📖 -> https://webpack.js.org/configuration/output/
     path: path.resolve(__dirname, "build"),
     libraryTarget: "umd",
-    sourceMapFilename:"index.d.ts",
+    sourceMapFilename: "index.d.ts",
     // devtoolModuleFilenameTemplate: "../[resource-path]",
     umdNamedDefine: true,
-    globalObject: `(typeof self !== 'undefined' ? self : this)`
+    globalObject: `(typeof self !== 'undefined' ? self : this)`,
   },
   devtool: "source-map",
   externals: {
     commonjs: "commonjs", //Add other modules that cannot be webpack'ed, 📖 -> https://webpack.js.org/configuration/externals/
-    keytar: "keytar"
+    keytar: "keytar",
   },
   resolve: {
     // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
-    extensions: [".tsx", ".ts", ".js", ".json"]
+    extensions: [".tsx", ".ts", ".js", ".json"],
   },
   module: {
     rules: [
@@ -48,29 +48,29 @@ const config = {
             // options: {
             //   configFile: path.resolve(__dirname, './tsconfig.json'),
             // },
-          }
-        ]
+          },
+        ],
       },
       {
         test: /\.s[ac]ss$/i,
         exclude: /node_modules/,
-        use: [
-          'style-loader',
-          'css-loader',
-          'sass-loader',
-        ],
+        use: ["style-loader", "css-loader", "sass-loader"],
       },
       {
         test: /\.(jpg|png|svg|gif)$/,
         use: {
-          loader: 'url-loader',
+          loader: "url-loader",
         },
-      }
-    ]
+      },
+    ],
   },
   plugins: [
     new webpack.ContextReplacementPlugin(/express[\/\\]lib/, false, /$^/),
-    new webpack.ContextReplacementPlugin(/applicationinsights[\/\\]out[\/\\]AutoCollection/, false, /$^/),
+    new webpack.ContextReplacementPlugin(
+      /applicationinsights[\/\\]out[\/\\]AutoCollection/,
+      false,
+      /$^/
+    ),
     new webpack.ContextReplacementPlugin(/applicationinsights[\/\\]out[\/\\]Library/, false, /$^/),
     new webpack.ContextReplacementPlugin(/ms-rest[\/\\]lib/, false, /$^/),
     new webpack.IgnorePlugin({ resourceRegExp: /@opentelemetry\/tracing/ }),
@@ -84,13 +84,13 @@ const config = {
   ],
   optimization: {
     minimizer: [
-        new terserWebpackPlugin({
-            terserOptions: {
-                mangle: false,
-                keep_fnames: true
-            }
-        })
-    ]
-}
+      new terserWebpackPlugin({
+        terserOptions: {
+          mangle: false,
+          keep_fnames: true,
+        },
+      }),
+    ],
+  },
 };
 module.exports = config;

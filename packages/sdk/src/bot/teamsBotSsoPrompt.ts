@@ -15,14 +15,14 @@ import {
   StatusCodes,
   TokenExchangeInvokeRequest,
   tokenExchangeOperationName,
-  TokenExchangeResource
+  TokenExchangeResource,
 } from "botbuilder-core";
 import {
   Dialog,
   DialogContext,
   DialogTurnResult,
   PromptOptions,
-  PromptRecognizerResult
+  PromptRecognizerResult,
 } from "botbuilder-dialogs";
 import { TeamsBotSsoPromptTokenResponse } from "./teamsBotSsoPromptTokenResponse";
 import { config } from "../core/configurationProvider";
@@ -243,9 +243,8 @@ export class TeamsBotSsoPrompt extends Dialog {
         this.isTokenExchangeRequestInvoke(dc.context)
       ) {
         // Recognize token
-        const recognized: PromptRecognizerResult<TeamsBotSsoPromptTokenResponse> = await this.recognizeToken(
-          dc
-        );
+        const recognized: PromptRecognizerResult<TeamsBotSsoPromptTokenResponse> =
+          await this.recognizeToken(dc);
 
         if (recognized.succeeded) {
           return await dc.endDialog(recognized.value);
@@ -345,14 +344,14 @@ export class TeamsBotSsoPrompt extends Dialog {
 
     const tokenExchangeResource: TokenExchangeResource = {
       id: uuidv4(),
-      uri: config.authentication?.applicationIdUri!.replace(/\/$/, "") + "/access_as_user"
+      uri: config.authentication?.applicationIdUri!.replace(/\/$/, "") + "/access_as_user",
     };
 
     internalLogger.verbose("Token exchange resource uri: " + tokenExchangeResource.uri);
 
     return {
       signInLink: signInLink,
-      tokenExchangeResource: tokenExchangeResource
+      tokenExchangeResource: tokenExchangeResource,
     };
   }
 
@@ -394,7 +393,7 @@ export class TeamsBotSsoPrompt extends Dialog {
               ssoTokenExpiration: new Date(ssoTokenExpiration * 1000).toISOString(),
               connectionName: "",
               token: exchangedToken.token,
-              expiration: exchangedToken.expiresOnTimestamp.toString()
+              expiration: exchangedToken.expiresOnTimestamp.toString(),
             };
           }
         } catch (error) {
@@ -430,7 +429,7 @@ export class TeamsBotSsoPrompt extends Dialog {
   ): Activity {
     const invokeResponse: Partial<Activity> = {
       type: invokeResponseType,
-      value: { status, body: new TokenExchangeInvokeResponse(id as string, failureDetail) }
+      value: { status, body: new TokenExchangeInvokeResponse(id as string, failureDetail) },
     };
     return invokeResponse as Activity;
   }

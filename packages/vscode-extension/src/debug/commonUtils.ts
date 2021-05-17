@@ -9,6 +9,8 @@ import * as constants from "./constants";
 import { ConfigFolderName, Func } from "@microsoft/teamsfx-api";
 import { core, showError } from "../handlers";
 import * as net from "net";
+import { ext } from "../extensionVariables";
+import { getActiveEnv, isWorkspaceSupported } from "../utils/commonUtils";
 
 export async function getProjectRoot(
   folderPath: string,
@@ -179,3 +181,46 @@ export async function detectPortListening(port: number, hosts: string[]): Promis
   }
   return false;
 }
+
+export async function getPortsInUse(): Promise<number[]> {
+  const ports: [number, string[]][] = [];
+  if (vscode.workspace.workspaceFolders) {
+    const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
+    const workspacePath: string = workspaceFolder.uri.fsPath;
+    const frontendRoot = await getProjectRoot(workspacePath, constants.frontendFolderName);
+    if (frontendRoot) {
+      ports.push(...constants.frontendPorts);
+    }
+    const backendRoot = await getProjectRoot(workspacePath, constants.backendFolderName);
+    if (backendRoot) {
+      ports.push(...constants.backendPorts);
+    }
+    const botRoot = await getProjectRoot(workspacePath, constants.botFolderName);
+    if (botRoot) {
+      ports.push(...constants.botPorts);
+    }
+  }
+
+  const portsInUse: number[] = [];
+  for (const port of ports) {
+    if (await detectPortListening(port[0], port[1])) {
+      portsInUse.push(port[0]);
+    }
+  }
+  return portsInUse;
+}
+
+export function getTeamsAppTenantId(): string | undefined {
+  if (ext.workspaceUri) {
+    const ws = ext.workspaceUri.fsPath;
+    if (isWorkspaceSupported(ws)) {
+      const env = getActiveEnv();
+      const envJsonPath = path.join(ws, `.${ConfigFolderName}/env.${env}.json`);
+      const envJson = JSON.parse(fs.readFileSync(envJsonPath, "utf8"));
+      return envJson.solution.teamsAppTenantId;
+    }
+  }
+
+  return undefined;
+}
+

@@ -3,7 +3,7 @@
 
 import axios from "axios";
 import * as chai from "chai";
-import { MockAzureAccountProvider } from "./mockAzureAccountProvider";
+import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
 
 const baseUrlAppSettings = (subscriptionId: string, rg: string, name: string) =>
     `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.Web/sites/${name}/config/appsettings/list?api-version=2019-08-01`;
@@ -98,7 +98,7 @@ export class FunctionValidator {
     public static async validateProvision(functionObject: IFunctionObject, sqlEnabled = true) {
         console.log("Start to validate Function Provision.");
 
-        const tokenProvider: MockAzureAccountProvider = MockAzureAccountProvider.getInstance();
+        const tokenProvider = MockAzureAccountProvider;
         const tokenCredential = await tokenProvider.getAccountCredentialAsync();
         const token = (await tokenCredential?.getToken())?.accessToken;
 

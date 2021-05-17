@@ -17,47 +17,75 @@ import { ConfigFolderName } from "@microsoft/teamsfx-api";
 chai.use(chaiAsPromised);
 
 describe("localService", () => {
-    const workspaceFolder = path.resolve(__dirname, "../data/");
+  const workspaceFolder = path.resolve(__dirname, "../data/");
+  beforeEach(() => {
+    fs.emptyDirSync(workspaceFolder);
+  });
+
+  describe("prepareLocalAuthService", () => {
+    const fakeHomeDir = path.resolve(__dirname, "../data/.home/");
+
     beforeEach(() => {
-        fs.emptyDirSync(workspaceFolder);
+      sinon.stub(os, "homedir").callsFake(() => fakeHomeDir);
+      fs.emptyDirSync(fakeHomeDir);
     });
 
-    describe("prepareLocalAuthService", () => {
-        const fakeHomeDir = path.resolve(__dirname, "../data/.home/");
-
-        beforeEach(() => {
-            sinon.stub(os, "homedir").callsFake(() => fakeHomeDir);
-            fs.emptyDirSync(fakeHomeDir);
-        });
-
-        afterEach(() => {
-            sinon.restore();
-        });
-
-        it("happy path", async () => {
-            fs.createFileSync(`${fakeHomeDir}/Microsoft.TeamsFx.SimpleAuth.dll`);
-            const zip = new AdmZip();
-            zip.addLocalFile(`${fakeHomeDir}/Microsoft.TeamsFx.SimpleAuth.dll`);
-            zip.writeZip(`${fakeHomeDir}/test.zip`);
-
-            const localAuthFolder = await prepareLocalAuthService(`${fakeHomeDir}/test.zip`);
-
-            chai.assert.equal(localAuthFolder, `${fakeHomeDir}/.${ConfigFolderName}/localauth`);
-            chai.assert.isTrue(fs.pathExistsSync(`${localAuthFolder}/Microsoft.TeamsFx.SimpleAuth.dll`));
-        });
-
-        it("dll exists", async() => {
-            fs.createFileSync(`${fakeHomeDir}/.${ConfigFolderName}/localauth/Microsoft.TeamsFx.SimpleAuth.dll`);
-            fs.createFileSync(`${fakeHomeDir}/test.dll`);
-            const zip = new AdmZip();
-            zip.addLocalFile(`${fakeHomeDir}/test.dll`);
-            zip.writeZip(`${fakeHomeDir}/test.zip`);
-
-            const localAuthFolder = await prepareLocalAuthService(`${fakeHomeDir}/test.zip`);
-
-            chai.assert.equal(localAuthFolder, `${fakeHomeDir}/.${ConfigFolderName}/localauth`);
-            chai.assert.isTrue(fs.pathExistsSync(`${localAuthFolder}/Microsoft.TeamsFx.SimpleAuth.dll`));
-            chai.assert.isFalse(fs.pathExistsSync(`${fakeHomeDir}/.${ConfigFolderName}/localauth/test.dll`));
-        });
+    afterEach(() => {
+      sinon.restore();
     });
+
+    it("happy path", async () => {
+      fs.createFileSync(`${fakeHomeDir}/Microsoft.TeamsFx.SimpleAuth.dll`);
+      const zip = new AdmZip();
+      zip.addLocalFile(`${fakeHomeDir}/Microsoft.TeamsFx.SimpleAuth.dll`);
+      zip.writeZip(`${fakeHomeDir}/test.zip`);
+
+      const localAuthFolder = await prepareLocalAuthService(`${fakeHomeDir}/test.zip`);
+
+      chai.assert.equal(localAuthFolder, `${fakeHomeDir}/.${ConfigFolderName}/localauth`);
+      chai.assert.isTrue(fs.pathExistsSync(`${localAuthFolder}/Microsoft.TeamsFx.SimpleAuth.dll`));
+    });
+
+    it("version not match", async () => {
+      fs.createFileSync(`${fakeHomeDir}/Microsoft.TeamsFx.SimpleAuth.dll`);
+      fs.writeFileSync(`${fakeHomeDir}/version.txt`, "0.0.2", "utf8");
+      fs.createFileSync(`${fakeHomeDir}/.${ConfigFolderName}/localauth-version.txt`);
+      const zip = new AdmZip();
+      zip.addLocalFile(`${fakeHomeDir}/Microsoft.TeamsFx.SimpleAuth.dll`);
+      zip.writeZip(`${fakeHomeDir}/test.zip`);
+
+      const localAuthFolder = await prepareLocalAuthService(`${fakeHomeDir}/test.zip`);
+
+      chai.assert.equal(localAuthFolder, `${fakeHomeDir}/.${ConfigFolderName}/localauth`);
+      chai.assert.isTrue(fs.pathExistsSync(`${localAuthFolder}/Microsoft.TeamsFx.SimpleAuth.dll`));
+      chai.assert.equal(
+        fs.readFileSync(`${fakeHomeDir}/.${ConfigFolderName}/localauth-version.txt`, "utf8").trim(),
+        "0.0.2"
+      );
+    });
+
+    it("dll exists", async () => {
+      fs.createFileSync(
+        `${fakeHomeDir}/.${ConfigFolderName}/localauth/Microsoft.TeamsFx.SimpleAuth.dll`
+      );
+      fs.createFileSync(`${fakeHomeDir}/test.dll`);
+      fs.writeFileSync(`${fakeHomeDir}/version.txt`, "0.0.1", "utf8");
+      fs.writeFileSync(
+        `${fakeHomeDir}/.${ConfigFolderName}/localauth-version.txt`,
+        "0.0.1",
+        "utf8"
+      );
+      const zip = new AdmZip();
+      zip.addLocalFile(`${fakeHomeDir}/test.dll`);
+      zip.writeZip(`${fakeHomeDir}/test.zip`);
+
+      const localAuthFolder = await prepareLocalAuthService(`${fakeHomeDir}/test.zip`);
+
+      chai.assert.equal(localAuthFolder, `${fakeHomeDir}/.${ConfigFolderName}/localauth`);
+      chai.assert.isTrue(fs.pathExistsSync(`${localAuthFolder}/Microsoft.TeamsFx.SimpleAuth.dll`));
+      chai.assert.isFalse(
+        fs.pathExistsSync(`${fakeHomeDir}/.${ConfigFolderName}/localauth/test.dll`)
+      );
+    });
+  });
 });

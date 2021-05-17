@@ -11,14 +11,11 @@ import {
   UpdatePermissionError,
   UpdateRedirectUriError,
   GetAppError,
-  GetAppConfigError
+  GetAppConfigError,
 } from "./errors";
 import { GraphClient } from "./graph";
 import { IAADPassword } from "./interfaces/IAADApplication";
-import {
-  IAADDefinition,
-  RequiredResourceAccess,
-} from "./interfaces/IAADDefinition";
+import { IAADDefinition, RequiredResourceAccess } from "./interfaces/IAADDefinition";
 import { ResultFactory } from "./results";
 import { ProvisionConfig } from "./utils/configs";
 import { DialogUtils } from "./utils/dialog";
@@ -38,59 +35,37 @@ export class AadAppClient {
       );
       let provisionAadResponse: IAADDefinition;
       if (TokenProvider.audience === TokenAudience.AppStudio) {
-        provisionAadResponse = await this.retryHanlder(() =>
-          AppStudio.createAADAppV2(
-            TokenProvider.token as string,
-            provisionObject
-          )
-        ) as IAADDefinition;
+        provisionAadResponse = (await this.retryHanlder(() =>
+          AppStudio.createAADAppV2(TokenProvider.token as string, provisionObject)
+        )) as IAADDefinition;
       } else {
-        provisionAadResponse = await this.retryHanlder(() =>
-          GraphClient.createAADApp(
-            TokenProvider.token as string,
-            provisionObject
-          )
-        ) as IAADDefinition;
+        provisionAadResponse = (await this.retryHanlder(() =>
+          GraphClient.createAADApp(TokenProvider.token as string, provisionObject)
+        )) as IAADDefinition;
       }
 
       config.clientId = provisionAadResponse.appId;
       config.objectId = provisionAadResponse.id;
     } catch (error) {
-      throw ResultFactory.SystemError(
-        CreateAppError.name,
-        CreateAppError.message(),
-        error
-      );
+      throw ResultFactory.SystemError(CreateAppError.name, CreateAppError.message(), error);
     }
   }
 
-  public static async createAadAppSecret(
-    config: ProvisionConfig
-  ): Promise<void> {
+  public static async createAadAppSecret(config: ProvisionConfig): Promise<void> {
     try {
       let createSecretObject: IAADPassword;
       if (TokenProvider.audience === TokenAudience.AppStudio) {
         createSecretObject = (await AadAppClient.retryHanlder(() =>
-          AppStudio.createAADAppPassword(
-            TokenProvider.token as string,
-            config.objectId as string
-          )
+          AppStudio.createAADAppPassword(TokenProvider.token as string, config.objectId as string)
         )) as IAADPassword;
       } else {
         createSecretObject = (await AadAppClient.retryHanlder(() =>
-          GraphClient.createAadAppSecret(
-            TokenProvider.token as string,
-            config.objectId as string
-          )
+          GraphClient.createAadAppSecret(TokenProvider.token as string, config.objectId as string)
         )) as IAADPassword;
       }
       config.password = createSecretObject.value;
     } catch (error) {
-      throw ResultFactory.SystemError(
-        CreateSecretError.name,
-        CreateSecretError.message(),
-        error
-      );
+      throw ResultFactory.SystemError(CreateSecretError.name, CreateSecretError.message(), error);
     }
   }
 
@@ -99,9 +74,7 @@ export class AadAppClient {
     redirectUris: string[]
   ): Promise<void> {
     try {
-      const updateRedirectUriObject = AadAppClient.getAadUrlObject(
-        redirectUris
-      );
+      const updateRedirectUriObject = AadAppClient.getAadUrlObject(redirectUris);
       if (TokenProvider.audience === TokenAudience.AppStudio) {
         await AadAppClient.retryHanlder(() =>
           AppStudio.updateAADApp(
@@ -129,14 +102,9 @@ export class AadAppClient {
     }
   }
 
-  public static async updateAadAppIdUri(
-    objectId: string,
-    applicationIdUri: string
-  ): Promise<void> {
+  public static async updateAadAppIdUri(objectId: string, applicationIdUri: string): Promise<void> {
     try {
-      const updateAppIdObject = AadAppClient.getAadApplicationIdObject(
-        applicationIdUri
-      );
+      const updateAppIdObject = AadAppClient.getAadApplicationIdObject(applicationIdUri);
       if (TokenProvider.audience === TokenAudience.AppStudio) {
         await AadAppClient.retryHanlder(() =>
           AppStudio.updateAADApp(
@@ -160,7 +128,7 @@ export class AadAppClient {
         UpdateAppIdUriError.message(),
         error,
         undefined,
-        UpdateAppIdUriError.helpLink,
+        UpdateAppIdUriError.helpLink
       );
     }
   }
@@ -170,9 +138,7 @@ export class AadAppClient {
     permissions: RequiredResourceAccess[]
   ): Promise<void> {
     try {
-      const updatePermissionObject = AadAppClient.getAadPermissionObject(
-        permissions
-      );
+      const updatePermissionObject = AadAppClient.getAadPermissionObject(permissions);
       if (TokenProvider.audience === TokenAudience.AppStudio) {
         await AadAppClient.retryHanlder(() =>
           AppStudio.updateAADApp(
@@ -207,24 +173,23 @@ export class AadAppClient {
     let getAppObject: IAADDefinition;
     try {
       if (TokenProvider.audience === TokenAudience.AppStudio) {
-        getAppObject = await this.retryHanlder(() =>
+        getAppObject = (await this.retryHanlder(() =>
           AppStudio.getAadApp(TokenProvider.token as string, objectId)
-        ) as IAADDefinition;
+        )) as IAADDefinition;
       } else {
-        getAppObject = await this.retryHanlder(() =>
+        getAppObject = (await this.retryHanlder(() =>
           GraphClient.getAadApp(TokenProvider.token as string, objectId)
-        ) as IAADDefinition;
+        )) as IAADDefinition;
       }
     } catch (error) {
-      throw ResultFactory.SystemError(
-        GetAppError.name,
-        GetAppError.message(objectId),
-        error
-      );
+      throw ResultFactory.SystemError(GetAppError.name, GetAppError.message(objectId), error);
     }
 
     const config = new ProvisionConfig(islocalDebug);
-    if (getAppObject.api?.oauth2PermissionScopes && getAppObject.api?.oauth2PermissionScopes[0].id) {
+    if (
+      getAppObject.api?.oauth2PermissionScopes &&
+      getAppObject.api?.oauth2PermissionScopes[0].id
+    ) {
       config.oauth2PermissionScopeId = getAppObject.api?.oauth2PermissionScopes[0].id;
     } else {
       throw ResultFactory.UserError(
@@ -272,8 +237,7 @@ export class AadAppClient {
         requestedAccessTokenVersion: 2,
         oauth2PermissionScopes: [
           {
-            adminConsentDescription:
-              "Allows Teams to call the app’s web APIs as the current user.",
+            adminConsentDescription: "Allows Teams to call the app’s web APIs as the current user.",
             adminConsentDisplayName: "Teams can access app’s web APIs",
             id: oauth2PermissionScopeId,
             isEnabled: true,
@@ -316,17 +280,13 @@ export class AadAppClient {
     };
   }
 
-  private static getAadApplicationIdObject(
-    applicationIdUri: string
-  ): IAADDefinition {
+  private static getAadApplicationIdObject(applicationIdUri: string): IAADDefinition {
     return {
       identifierUris: [applicationIdUri],
     };
   }
 
-  private static getAadPermissionObject(
-    permissions: RequiredResourceAccess[]
-  ): IAADDefinition {
+  private static getAadPermissionObject(permissions: RequiredResourceAccess[]): IAADDefinition {
     return {
       requiredResourceAccess: permissions,
     };

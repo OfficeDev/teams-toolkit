@@ -2,7 +2,12 @@
 // Licensed under the MIT license.
 import { AadOperationError, AssertNotEmpty, BuildError } from "../error";
 import { AxiosInstance, AxiosResponse, Method } from "axios";
-import { IAadInfo, IPasswordCredential, IServicePrincipal, IServicePrincipals } from "../interfaces/IAadResource";
+import {
+  IAadInfo,
+  IPasswordCredential,
+  IServicePrincipal,
+  IServicePrincipals,
+} from "../interfaces/IAadResource";
 import { IName } from "../interfaces/IName";
 import { AzureResource, OperationStatus, Operation, ErrorHandlerResult } from "../constants";
 import { LogProvider, TelemetryReporter } from "@microsoft/teamsfx-api";
@@ -11,138 +16,190 @@ import { Telemetry } from "../utils/telemetry";
 import { RetryHandler } from "../utils/commonUtils";
 
 export class AadService {
-    private readonly logger?: LogProvider;
-    private readonly telemetryReporter?: TelemetryReporter;
-    private readonly axios: AxiosInstance;
+  private readonly logger?: LogProvider;
+  private readonly telemetryReporter?: TelemetryReporter;
+  private readonly axios: AxiosInstance;
 
-    constructor(axios: AxiosInstance, telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
-        this.logger = logger;
-        this.telemetryReporter = telemetryReporter;
-        this.axios = axios;
+  constructor(axios: AxiosInstance, telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
+    this.logger = logger;
+    this.telemetryReporter = telemetryReporter;
+    this.axios = axios;
+  }
+
+  public async createAad(aadName: string): Promise<IAadInfo> {
+    const body = {
+      displayName: aadName,
+    };
+
+    const response = await this.execute(
+      Operation.Create,
+      AzureResource.Aad,
+      undefined,
+      "post",
+      "/applications",
+      body
+    );
+    const data = AssertNotEmpty("response.data", response?.data);
+    return data as IAadInfo;
+  }
+
+  public async addSecret(objectId: string, displayName: string): Promise<IPasswordCredential> {
+    const body = {
+      passwordCredential: {
+        displayName: displayName,
+      },
+    };
+
+    const response = await this.execute(
+      Operation.Create,
+      AzureResource.AadSecret,
+      undefined,
+      "post",
+      `/applications/${objectId}/addPassword`,
+      body
+    );
+    const data = AssertNotEmpty("response.data", response?.data);
+    return data as IPasswordCredential;
+  }
+
+  public async getAad(objectId: string): Promise<IAadInfo | undefined> {
+    const response = await this.execute(
+      Operation.Get,
+      AzureResource.Aad,
+      objectId,
+      "get",
+      `/applications/${objectId}`,
+      undefined,
+      this._resourceNotFoundErrorHandler
+    );
+    return response?.data as IAadInfo;
+  }
+
+  public async updateAad(objectId: string, data: IAadInfo): Promise<void> {
+    await this.execute(
+      Operation.Update,
+      AzureResource.Aad,
+      objectId,
+      "patch",
+      `/applications/${objectId}`,
+      data
+    );
+  }
+
+  public async getServicePrincipals(appId: string): Promise<IServicePrincipal[]> {
+    const response = await this.execute(
+      Operation.Get,
+      AzureResource.ServicePrincipal,
+      appId,
+      "get",
+      `/servicePrincipals?$filter=appId eq '${appId}'`
+    );
+    const servicePrincipals = response?.data as IServicePrincipals;
+
+    const result = AssertNotEmpty("servicePrincipals.value", servicePrincipals?.value);
+
+    if (result.length === 0) {
+      this.logger?.info(LogMessages.resourceNotFound(AzureResource.ServicePrincipal, appId));
     }
 
-    public async createAad(aadName: string): Promise<IAadInfo> {
-        const body = {
-            displayName: aadName,
-        };
+    return result;
+  }
 
-        const response = await this.execute(Operation.Create, AzureResource.Aad, undefined, "post", "/applications", body);
-        const data = AssertNotEmpty("response.data", response?.data);
-        return data as IAadInfo;
+  public async createServicePrincipalIfNotExists(appId: string): Promise<void> {
+    const existingServicePrincipals = await this.getServicePrincipals(appId);
+    if (existingServicePrincipals.length > 0) {
+      return;
     }
 
-    public async addSecret(objectId: string, displayName: string): Promise<IPasswordCredential> {
-        const body = {
-            passwordCredential: {
-                displayName: displayName,
-            },
-        };
+    const body = {
+      appId: appId,
+    };
+    await this.execute(
+      Operation.Create,
+      AzureResource.ServicePrincipal,
+      appId,
+      "post",
+      "/servicePrincipals",
+      body
+    );
+  }
 
-        const response = await this.execute(
-            Operation.Create,
-            AzureResource.AadSecret,
-            undefined,
-            "post",
-            `/applications/${objectId}/addPassword`,
-            body
+  private async execute(
+    operation: IName,
+    resourceType: IName,
+    resourceId: string | undefined,
+    method: Method,
+    url: string,
+    data?: any,
+    errorHandler?: (error: any) => ErrorHandlerResult
+  ): Promise<AxiosResponse<any> | undefined> {
+    return await RetryHandler.retry(async (executionIndex) => {
+      try {
+        this.logger?.info(
+          executionIndex === 0
+            ? LogMessages.operationStarts(operation, resourceType, resourceId)
+            : LogMessages.operationRetry(operation, resourceType, resourceId)
         );
-        const data = AssertNotEmpty("response.data", response?.data);
-        return data as IPasswordCredential;
-    }
-
-    public async getAad(objectId: string): Promise<IAadInfo | undefined> {
-        const response = await this.execute(
-            Operation.Get,
-            AzureResource.Aad,
-            objectId,
-            "get",
-            `/applications/${objectId}`,
-            undefined,
-            this._resourceNotFoundErrorHandler
+        Telemetry.sendAadOperationEvent(
+          this.telemetryReporter,
+          operation,
+          resourceType,
+          OperationStatus.Started,
+          executionIndex
         );
-        return response?.data as IAadInfo;
-    }
 
-    public async updateAad(objectId: string, data: IAadInfo): Promise<void> {
-        await this.execute(Operation.Update, AzureResource.Aad, objectId, "patch", `/applications/${objectId}`, data);
-    }
+        const result = await this.axios.request({ method: method, url: url, data: data });
 
-    public async getServicePrincipals(appId: string): Promise<IServicePrincipal[]> {
-        const response = await this.execute(
-            Operation.Get,
-            AzureResource.ServicePrincipal,
-            appId,
-            "get",
-            `/servicePrincipals?$filter=appId eq '${appId}'`
+        this.logger?.info(LogMessages.operationSuccess(operation, resourceType, resourceId));
+        Telemetry.sendAadOperationEvent(
+          this.telemetryReporter,
+          operation,
+          resourceType,
+          OperationStatus.Succeeded,
+          executionIndex
         );
-        const servicePrincipals = response?.data as IServicePrincipals;
-
-        const result = AssertNotEmpty("servicePrincipals.value", servicePrincipals?.value);
-
-        if (result.length === 0) {
-            this.logger?.info(LogMessages.resourceNotFound(AzureResource.ServicePrincipal, appId));
-        }
-
         return result;
-    }
-
-    public async createServicePrincipalIfNotExists(appId: string): Promise<void> {
-        const existingServicePrincipals = await this.getServicePrincipals(appId);
-        if (existingServicePrincipals.length > 0) {
-            return;
+      } catch (error) {
+        if (!!errorHandler && errorHandler(error) === ErrorHandlerResult.Return) {
+          this.logger?.info(LogMessages.operationSuccess(operation, resourceType, resourceId));
+          Telemetry.sendAadOperationEvent(
+            this.telemetryReporter,
+            operation,
+            resourceType,
+            OperationStatus.Succeeded,
+            executionIndex
+          );
+          if (operation === Operation.Get) {
+            this.logger?.info(LogMessages.resourceNotFound(resourceType, resourceId));
+          }
+          return undefined;
         }
 
-        const body = {
-            appId: appId,
-        };
-        await this.execute(Operation.Create, AzureResource.ServicePrincipal, appId, "post", "/servicePrincipals", body);
+        error.message = `[Detail] ${error?.response?.data?.error?.message ?? error.message}`;
+        this.logger?.error(LogMessages.operationFailed(operation, resourceType, resourceId));
+        const wrappedError = BuildError(
+          AadOperationError,
+          error,
+          operation.displayName,
+          resourceType.displayName
+        );
+        Telemetry.sendAadOperationEvent(
+          this.telemetryReporter,
+          operation,
+          resourceType,
+          OperationStatus.Failed,
+          executionIndex,
+          wrappedError
+        );
+        throw wrappedError;
+      }
+    });
+  }
+
+  private _resourceNotFoundErrorHandler(error: any): ErrorHandlerResult {
+    if (error?.response?.status == 404) {
+      return ErrorHandlerResult.Return;
     }
-
-    private async execute(
-        operation: IName,
-        resourceType: IName,
-        resourceId: string | undefined,
-        method: Method,
-        url: string,
-        data?: any,
-        errorHandler?: (error: any) => ErrorHandlerResult
-    ): Promise<AxiosResponse<any> | undefined> {
-        return await RetryHandler.retry(async (executionIndex) => {
-            try {
-                this.logger?.info(
-                    executionIndex === 0
-                        ? LogMessages.operationStarts(operation, resourceType, resourceId)
-                        : LogMessages.operationRetry(operation, resourceType, resourceId));
-                Telemetry.sendAadOperationEvent(this.telemetryReporter, operation, resourceType, OperationStatus.Started, executionIndex);
-
-                const result = await this.axios.request({ method: method, url: url, data: data });
-
-                this.logger?.info(LogMessages.operationSuccess(operation, resourceType, resourceId));
-                Telemetry.sendAadOperationEvent(this.telemetryReporter, operation, resourceType, OperationStatus.Succeeded, executionIndex);
-                return result;
-            } catch (error) {
-                if (!!errorHandler && errorHandler(error) === ErrorHandlerResult.Return) {
-                    this.logger?.info(LogMessages.operationSuccess(operation, resourceType, resourceId));
-                    Telemetry.sendAadOperationEvent(this.telemetryReporter, operation, resourceType, OperationStatus.Succeeded, executionIndex);
-                    if (operation === Operation.Get) {
-                        this.logger?.info(LogMessages.resourceNotFound(resourceType, resourceId));
-                    }
-                    return undefined;
-                }
-
-                error.message = `[Detail] ${error?.response?.data?.error?.message ?? error.message}`;
-                this.logger?.error(LogMessages.operationFailed(operation, resourceType, resourceId));
-                const wrappedError = BuildError(AadOperationError, error, operation.displayName, resourceType.displayName);
-                Telemetry.sendAadOperationEvent(this.telemetryReporter, operation, resourceType, OperationStatus.Failed, executionIndex, wrappedError);
-                throw wrappedError;
-            }
-        });
-    }
-
-    private _resourceNotFoundErrorHandler(error: any): ErrorHandlerResult {
-        if (error?.response?.status == 404) {
-            return ErrorHandlerResult.Return;
-        }
-        return ErrorHandlerResult.Continue;
-    }
+    return ErrorHandlerResult.Continue;
+  }
 }

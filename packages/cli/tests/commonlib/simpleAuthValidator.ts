@@ -3,7 +3,7 @@
 
 import axios from "axios";
 import * as chai from "chai";
-import { MockAzureAccountProvider } from "./mockAzureAccountProvider";
+import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
 import { IAadObject } from "./interfaces/IAADDefinition";
 
 const simpleAuthPluginName = "fx-resource-simple-auth";
@@ -60,7 +60,7 @@ export class SimpleAuthValidator {
         const resourceName: string = simpleAuthObject.endpoint.slice(8, -18);
         chai.assert.exists(resourceName);
 
-        const tokenProvider: MockAzureAccountProvider = MockAzureAccountProvider.getInstance();
+        const tokenProvider = MockAzureAccountProvider;
         const tokenCredential = await tokenProvider.getAccountCredentialAsync();
         const token = (await tokenCredential?.getToken())?.accessToken;
 

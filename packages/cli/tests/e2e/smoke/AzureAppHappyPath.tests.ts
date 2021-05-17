@@ -5,7 +5,7 @@ import fs from "fs-extra";
 import path from "path";
 import * as chai from "chai";
 
-import { AadValidator, AppStudioValidator, FrontendValidator, FunctionValidator, SimpleAuthValidator } from "@microsoft/teamsfx-api";
+import { AadValidator, AppStudioValidator, FrontendValidator, FunctionValidator, SimpleAuthValidator } from "../../commonlib";
 
 import {
   execAsync,

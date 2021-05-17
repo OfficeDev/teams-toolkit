@@ -18,89 +18,118 @@ import { Messages } from "./resources/messages";
 import { getTemplatesFolder } from "../../..";
 
 export class LanguageStrategy {
-    public static async getTemplateProjectZip(programmingLanguage: ProgrammingLanguage, groupName: string): Promise<AdmZip> {
-        try {
-            const zipUrl = await LanguageStrategy.getTemplateProjectZipUrl(programmingLanguage, groupName);
-            const zipBuffer = await downloadByUrl(zipUrl, DownloadConstants.TEMPLATES_TIMEOUT_MS);
-            Logger.info(Messages.SuccessfullyRetrievedTemplateZip(zipUrl));
-            return new AdmZip(zipBuffer);
-        } catch (e) {
-            const fallbackFilePath = await LanguageStrategy.generateLocalFallbackFilePath(programmingLanguage, groupName);
-            Logger.info(Messages.FallingBackToUseLocalTemplateZip);
-            return new AdmZip(fallbackFilePath);
-        }
+  public static async getTemplateProjectZip(
+    programmingLanguage: ProgrammingLanguage,
+    groupName: string
+  ): Promise<AdmZip> {
+    try {
+      const zipUrl = await LanguageStrategy.getTemplateProjectZipUrl(
+        programmingLanguage,
+        groupName
+      );
+      const zipBuffer = await downloadByUrl(zipUrl, DownloadConstants.TEMPLATES_TIMEOUT_MS);
+      Logger.info(Messages.SuccessfullyRetrievedTemplateZip(zipUrl));
+      return new AdmZip(zipBuffer);
+    } catch (e) {
+      const fallbackFilePath = await LanguageStrategy.generateLocalFallbackFilePath(
+        programmingLanguage,
+        groupName
+      );
+      Logger.info(Messages.FallingBackToUseLocalTemplateZip);
+      return new AdmZip(fallbackFilePath);
+    }
+  }
+
+  public static async getTemplateProjectZipUrl(
+    programmingLanguage: ProgrammingLanguage,
+    groupName: string
+  ): Promise<string> {
+    const manifest: TemplateManifest = await TemplateManifest.newInstance();
+    return manifest.getNewestTemplateUrl(programmingLanguage, groupName);
+  }
+
+  public static getSiteEnvelope(
+    language: ProgrammingLanguage,
+    appServicePlanName: string,
+    location: string,
+    appSettings?: NameValuePair[]
+  ): appService.WebSiteManagementModels.Site {
+    const siteEnvelope: appService.WebSiteManagementModels.Site = {
+      location: location,
+      serverFarmId: appServicePlanName,
+      siteConfig: {
+        appSettings: [],
+      },
+    };
+
+    if (!appSettings) {
+      appSettings = [];
     }
 
-    public static async getTemplateProjectZipUrl(programmingLanguage: ProgrammingLanguage, groupName: string): Promise<string> {
-        const manifest: TemplateManifest = await TemplateManifest.newInstance();
-        return manifest.getNewestTemplateUrl(programmingLanguage, groupName);
+    appSettings.push({
+      name: "SCM_DO_BUILD_DURING_DEPLOYMENT",
+      value: "true",
+    });
+
+    appSettings.push({
+      name: "WEBSITE_NODE_DEFAULT_VERSION",
+      value: "12.13.0",
+    });
+
+    appSettings.forEach((p: NameValuePair) => {
+      siteEnvelope?.siteConfig?.appSettings?.push(p);
+    });
+
+    return siteEnvelope;
+  }
+
+  public static async localBuild(
+    programmingLanguage: ProgrammingLanguage,
+    packDir: string,
+    unPackFlag?: boolean
+  ): Promise<void> {
+    if (programmingLanguage === ProgrammingLanguage.TypeScript) {
+      //Typescript needs tsc build before deploy because of windows app server. other languages don"t need it.
+      try {
+        await utils.execute("npm install", packDir);
+        await utils.execute("npm run build", packDir);
+      } catch (e) {
+        throw new CommandExecutionError(
+          `${Commands.NPM_INSTALL},${Commands.NPM_BUILD}`,
+          e.message,
+          e
+        );
+      }
     }
 
-    public static getSiteEnvelope(
-        language: ProgrammingLanguage,
-        appServicePlanName: string,
-        location: string,
-        appSettings?: NameValuePair[],
-    ): appService.WebSiteManagementModels.Site {
-        const siteEnvelope: appService.WebSiteManagementModels.Site = {
-            location: location,
-            serverFarmId: appServicePlanName,
-            siteConfig: {
-                appSettings: [],
-            },
-        };
+    if (programmingLanguage === ProgrammingLanguage.JavaScript) {
+      try {
+        // fail to npm install @microsoft/teamsfx on azure web app, so pack it locally.
+        await utils.execute("npm install @microsoft/teamsfx", packDir);
+      } catch (e) {
+        throw new CommandExecutionError(`${Commands.NPM_INSTALL}`, e.message, e);
+      }
+    }
+  }
 
-        if (!appSettings) {
-            appSettings = [];
-        }
+  private static async generateLocalFallbackFilePath(
+    programmingLanguage: ProgrammingLanguage,
+    groupName: string
+  ): Promise<string> {
+    const langKey = utils.convertToLangKey(programmingLanguage);
+    const targetFilePath = path.join(
+      getTemplatesFolder(),
+      "plugins",
+      "resource",
+      "bot",
+      `${groupName}.${langKey}.${TemplateProjectsConstants.DEFAULT_SCENARIO_NAME}.zip`
+    );
 
-        appSettings.push({
-            name: "SCM_DO_BUILD_DURING_DEPLOYMENT",
-            value: "true",
-        });
-
-        appSettings.push({
-            name: "WEBSITE_NODE_DEFAULT_VERSION",
-            value: "12.13.0",
-        });
-
-        appSettings.forEach((p: NameValuePair) => {
-            siteEnvelope?.siteConfig?.appSettings?.push(p);
-        });
-
-        return siteEnvelope;
+    const targetExisted = await fs.pathExists(targetFilePath);
+    if (!targetExisted) {
+      throw new SomethingMissingError(targetFilePath);
     }
 
-    public static async localBuild(programmingLanguage: ProgrammingLanguage, packDir: string, unPackFlag?: boolean): Promise<void> {
-        if (programmingLanguage === ProgrammingLanguage.TypeScript) {
-            //Typescript needs tsc build before deploy because of windows app server. other languages don"t need it.
-            try {
-                await utils.execute("npm install", packDir);
-                await utils.execute("npm run build", packDir);
-            } catch (e) {
-                throw new CommandExecutionError(`${Commands.NPM_INSTALL},${Commands.NPM_BUILD}`, e.message, e);
-            }
-        }
-
-        if (programmingLanguage === ProgrammingLanguage.JavaScript) {
-            try {
-                // fail to npm install @microsoft/teamsfx on azure web app, so pack it locally.
-                await utils.execute("npm install @microsoft/teamsfx", packDir);
-            } catch (e) {
-                throw new CommandExecutionError(`${Commands.NPM_INSTALL}`, e.message, e);
-            }
-        }
-    }
-
-    private static async generateLocalFallbackFilePath(programmingLanguage: ProgrammingLanguage, groupName: string): Promise<string> { 
-        const langKey = utils.convertToLangKey(programmingLanguage);
-        const targetFilePath = path.join(getTemplatesFolder(), "plugins", "resource", "bot", `${groupName}.${langKey}.${TemplateProjectsConstants.DEFAULT_SCENARIO_NAME}.zip`);
-
-        const targetExisted = await fs.pathExists(targetFilePath);
-        if (!targetExisted) {
-            throw new SomethingMissingError(targetFilePath);
-        }
-
-        return targetFilePath;
-    }
+    return targetFilePath;
+  }
 }

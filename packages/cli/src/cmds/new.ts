@@ -32,6 +32,9 @@ import { NotFoundInputedFolder, SampleAppClonedFailed } from "../error";
 import { validateAndUpdateAnswers, visitInteractively } from "../question/question";
 import { YargsCommand } from "../yargsCommand";
 import { flattenNodes, getJson, getSingleOptionString, toConfigMap, toYargsOptions } from "../utils";
+import CliTelemetry from "../telemetry/cliTelemetry";
+import { TelemetryClient } from "applicationinsights";
+import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
 
 export default class New extends YargsCommand {
   public readonly commandHead = `new`;
@@ -94,15 +97,18 @@ export default class New extends YargsCommand {
       }
     }
 
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart);
     const result = await activate();
     if (result.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateProject, result.error);
       return err(result.error);
     }
 
     const core = result.value;
     {
-      const result = await core.getQuestions!(Stage.create, Platform.VSCode);
+      const result = await core.getQuestions!(Stage.create, Platform.CLI);
       if (result.isErr()) {
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateProject, result.error);
         return err(result.error);
       }
       await validateAndUpdateAnswers(result.value!, this.answers);
@@ -111,9 +117,14 @@ export default class New extends YargsCommand {
     {
       const result = await core.create(this.answers);
       if (result.isErr()) {
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateProject, result.error);
         return err(result.error);
       }
     }
+
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProject, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes
+    });
     return ok(null);
   }
 }
@@ -155,16 +166,22 @@ class NewTemplete extends YargsCommand {
     if (!fs.pathExistsSync(folder)) {
       throw NotFoundInputedFolder(folder);
     }
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSampleStart);
     const templateName = args["template-name"] as string;
     const template = constants.templates.find(t => t.sampleAppName === templateName)!;
     
     const result = await this.fetchCodeZip(template.sampleAppUrl);
-    await this.saveFilesRecursively(new AdmZip(result.data), folder);
+    await this.saveFilesRecursively(new AdmZip(result.data), template.sampleAppName, folder);
     console.log(
       colors.green(
-        `Cloned '${colors.yellow(template.sampleAppUrl)}' to '${colors.yellow(folder)}'`
+        `Downloaded the '${colors.yellow(template.sampleAppName)}' sample to '${colors.yellow(path.join(folder, template.sampleAppName))}'.`
       )
     );
+
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      [TelemetryProperty.SampleName]: templateName
+    });
     return ok(null);
   }
 
@@ -182,15 +199,19 @@ class NewTemplete extends YargsCommand {
     }
   }
 
-  private async saveFilesRecursively(zip: AdmZip, dstPath: string): Promise<void> {
+  private async saveFilesRecursively(
+    zip: AdmZip,
+    appFolder: string,
+    dstPath: string
+  ): Promise<void> {
     await Promise.all(
       zip
         .getEntries()
-        .filter((entry) => !entry.isDirectory)
+        .filter((entry) => !entry.isDirectory && entry.entryName.includes(appFolder))
         .map(async (entry) => {
           const data = entry.getData().toString();
-
-          const filePath = path.join(dstPath, entry.entryName);
+          const entryPath = entry.entryName.substring(entry.entryName.indexOf("/") + 1);
+          const filePath = path.join(dstPath, entryPath);
           await fs.ensureDir(path.dirname(filePath));
           await fs.writeFile(filePath, data);
         })

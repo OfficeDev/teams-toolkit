@@ -2,13 +2,8 @@ name: Daily release
 
 on:
   schedule:
-    - cron: "30 9 * * *"
+    - cron: "0 8 * * *"
   workflow_dispatch:
-    inputs:
-      bump:
-        description: 'bump patch version(true or false)'
-        required: false
-        default: 'false'
 
 jobs:
   release:
@@ -55,14 +50,8 @@ jobs:
           git config --global user.email 'yiz@microsoft.com'
 
       - name: release npm packages to npmjs.org
-        if: ${{ github.event_name == 'schedule' || github.event.inputs.bump == 'false' }}
         run: |
           npx lerna publish --no-private --preid=alpha --dist-tag=alpha --yes prerelease
-
-      - name: bump patch version and release npm packages to npmjs.org
-        if: ${{ github.event.inputs.bump == 'true' }}
-        run: |
-          npx lerna publish --no-private --preid=alpha --dist-tag=alpha --yes prepatch --force-publish
 
       - name: pack vsix
         uses: nick-invision/retry@v2

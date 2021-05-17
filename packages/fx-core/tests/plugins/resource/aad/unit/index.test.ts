@@ -85,12 +85,7 @@ describe("AadAppForTeamsPlugin: CI", () => {
     const setAppId = plugin.setApplicationInContext(context);
     chai.assert.isTrue(setAppId.isErr());
 
-    context = await TestHelper.pluginContext(
-      context.config,
-      true,
-      false,
-      false
-    );
+    context = await TestHelper.pluginContext(context.config, true, false, false);
     context.appStudioToken = mockTokenProvider();
     context.graphTokenProvider = mockTokenProviderGraph();
 
@@ -150,9 +145,7 @@ describe("AadAppForTeamsPlugin: Azure", () => {
   it("provision: tab and bot with context changes", async function () {
     context = await TestHelper.pluginContext(new Map(), true, true, false);
     context.appStudioToken = mockTokenProviderAzure(appStudioToken as string);
-    context.graphTokenProvider = mockTokenProviderAzureGraph(
-      graphToken as string
-    );
+    context.graphTokenProvider = mockTokenProviderAzureGraph(graphToken as string);
 
     const provision = await plugin.provision(context);
     chai.assert.isTrue(provision.isOk());
@@ -181,9 +174,7 @@ describe("AadAppForTeamsPlugin: Azure", () => {
     context.config.set(ConfigKeys.objectId, "");
     context = await TestHelper.pluginContext(context.config, true, true);
     context.appStudioToken = mockTokenProviderAzure(appStudioToken as string);
-    context.graphTokenProvider = mockTokenProviderAzureGraph(
-      graphToken as string
-    );
+    context.graphTokenProvider = mockTokenProviderAzureGraph(graphToken as string);
 
     const provisionThird = await plugin.provision(context);
     chai.assert.isTrue(provisionThird.isOk());

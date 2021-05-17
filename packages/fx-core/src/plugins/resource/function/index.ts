@@ -108,7 +108,7 @@ export class FunctionPlugin implements Plugin {
 
   public async preDeploy(ctx: PluginContext): Promise<FxResult> {
     Logger.setLogger(ctx.logProvider);
-    funcPluginAdapter.setFeatureFlag(ctx.answers);
+    funcPluginAdapter.setFeatureFlag(ctx);
     await StepHelperFactory.preDeployStepHelper.start(
       Object.entries(PreDeploySteps).length,
       ctx.dialog
@@ -122,7 +122,7 @@ export class FunctionPlugin implements Plugin {
 
   public async deploy(ctx: PluginContext): Promise<FxResult> {
     Logger.setLogger(ctx.logProvider);
-    funcPluginAdapter.setFeatureFlag(ctx.answers);
+    funcPluginAdapter.setFeatureFlag(ctx);
     await StepHelperFactory.deployStepHelper.start(Object.entries(DeploySteps).length, ctx.dialog);
     const res = await this.runWithErrorWrapper(ctx, LifeCycle.deploy, () =>
       this.functionPluginImpl.deploy(ctx)

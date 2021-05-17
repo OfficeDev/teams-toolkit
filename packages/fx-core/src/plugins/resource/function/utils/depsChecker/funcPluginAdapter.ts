@@ -9,6 +9,7 @@ import {
   ConfigMap,
   DialogMsg,
   DialogType,
+  Platform,
   PluginContext,
   QuestionType,
   returnUserError,
@@ -76,8 +77,13 @@ class FuncPluginAdapter implements IDepsAdapter {
     throw new Error("Method not implemented.");
   }
 
-  public setFeatureFlag(answers?: ConfigMap): void {
-    this.enabled = answers?.getBoolean(this.answerKey) || false;
+  public setFeatureFlag(ctx?: PluginContext): void {
+    // NOTE: only enable env checker for vscode extension according to the design
+    if (ctx?.platform === Platform.VSCode) {
+      this.enabled = ctx?.answers?.getBoolean(this.answerKey) || false;
+    } else {
+      this.enabled = false;
+    }
   }
 
   public handleDotnetError(error: Error): void {

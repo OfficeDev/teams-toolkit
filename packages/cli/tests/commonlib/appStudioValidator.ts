@@ -4,8 +4,8 @@
 import axios, { AxiosInstance } from "axios";
 import * as chai from "chai";
 
-import MockAppStudioTokenProvider from "./mockAppStudioTokenProvider";
-import { AppStudioTokenProvider } from "../utils/login";
+import MockAppStudioTokenProvider from "../../src/commonlib/appStudioLoginUserPassword";
+import { AppStudioTokenProvider } from "@microsoft/teamsfx-api";
 
 export class AppStudioValidator {
     public static provider: AppStudioTokenProvider;

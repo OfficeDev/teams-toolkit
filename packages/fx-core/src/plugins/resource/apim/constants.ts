@@ -11,7 +11,7 @@ export class ProjectConstants {
   public static readonly workingDir: string = "openapi";
   public static readonly openApiDocumentFileName: string = "openapi.json";
   public static readonly readMeFileName: string = "README.md";
-  public static readonly maxRetries: number = 3;
+  public static readonly maxRetries: number = 5;
 }
 
 export class ApimDefaultValues {
@@ -204,13 +204,14 @@ export enum RetryOperation {
   Login = "sign in to Azure and choose a subscription",
 }
 
-export const ComponentRetryOperations: { [key in TeamsToolkitComponent]: RetryOperation } =
-  Object.freeze({
-    [TeamsToolkitComponent.FunctionPlugin]: RetryOperation.Update,
-    [TeamsToolkitComponent.AadPlugin]: RetryOperation.Create,
-    [TeamsToolkitComponent.Solution]: RetryOperation.Create,
-    [TeamsToolkitComponent.ApimPlugin]: RetryOperation.Update,
-  });
+export const ComponentRetryOperations: {
+  [key in TeamsToolkitComponent]: RetryOperation;
+} = Object.freeze({
+  [TeamsToolkitComponent.FunctionPlugin]: RetryOperation.Update,
+  [TeamsToolkitComponent.AadPlugin]: RetryOperation.Create,
+  [TeamsToolkitComponent.Solution]: RetryOperation.Create,
+  [TeamsToolkitComponent.ApimPlugin]: RetryOperation.Update,
+});
 
 export const ConfigRetryOperations: {
   [key in TeamsToolkitComponent]: { [key: string]: RetryOperation };

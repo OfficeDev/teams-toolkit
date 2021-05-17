@@ -185,7 +185,6 @@ export async function askSubscription(
         )
       );
     }
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return ok({ subscriptionId: subscription.subscriptionId, tenantId: subscription.tenantId });
   } else {
     return ok({ subscriptionId: activeSubscriptionId, tenantId: activeTenantId });

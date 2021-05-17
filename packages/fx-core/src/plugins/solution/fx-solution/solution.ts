@@ -1929,7 +1929,7 @@ export class TeamsAppSolution implements Solution {
           if (result.isErr()) {
             return err(result.error);
           }
-          ctx.azureAccountProvider?.setSubscription(result.value.subscriptionId);
+          await ctx.azureAccountProvider?.setSubscription(result.value.subscriptionId);
           ctx.config.get(GLOBAL_CONFIG)?.set("subscriptionId", result.value.subscriptionId);
           ctx.config.get(GLOBAL_CONFIG)?.set("tenantId", result.value.tenantId);
         }

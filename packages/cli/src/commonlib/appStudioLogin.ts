@@ -10,15 +10,8 @@ import CLILogProvider from "./log";
 import { getBeforeCacheAccess, getAfterCacheAccess } from "./cacheAccess";
 import { signedIn, signedOut } from "./common/constant";
 import { login, LoginStatus } from "./common/login";
-import CliTelemetry from "./../telemetry/cliTelemetry";
-import {
-  TelemetryAccountType,
-  TelemetryEvent,
-  TelemetryProperty,
-  TelemetrySuccess,
-} from "../telemetry/cliTelemetryEvents";
 
-const accountName = "m365";
+const accountName = "appStudio";
 const scopes = ["https://dev.teams.microsoft.com/AppDefinitions.ReadWrite"];
 const SERVER_PORT = 0;
 

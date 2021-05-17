@@ -17,7 +17,7 @@ import { login, LoginStatus } from "./common/login";
 import * as StringResources from "../resources/Strings.json";
 import * as util from "util";
 
-const accountName = "m365";
+const accountName = "appStudio";
 const scopes = ["https://dev.teams.microsoft.com/AppDefinitions.ReadWrite"];
 const SERVER_PORT = 0;
 
@@ -26,13 +26,13 @@ const afterCacheAccess = getAfterCacheAccess(scopes, accountName);
 
 const cachePlugin = {
   beforeCacheAccess,
-  afterCacheAccess,
+  afterCacheAccess
 };
 
 const config = {
   auth: {
     clientId: "7ea7c24c-b1f6-4a20-9d11-9ae12e9e7ac0",
-    authority: "https://login.microsoftonline.com/common",
+    authority: "https://login.microsoftonline.com/common"
   },
   system: {
     loggerOptions: {
@@ -41,12 +41,12 @@ const config = {
         VsCodeLogInstance.info(message);
       },
       piiLoggingEnabled: false,
-      logLevel: LogLevel.Error,
-    },
+      logLevel: LogLevel.Error
+    }
   },
   cache: {
-    cachePlugin,
-  },
+    cachePlugin
+  }
 };
 
 export class AppStudioLogin extends login implements AppStudioTokenProvider {

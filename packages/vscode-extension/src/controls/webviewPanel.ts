@@ -87,6 +87,16 @@ export class WebviewPanel {
                 title: "Select folder to clone the sample app",
               });
               if (folder !== undefined) {
+                const sampleAppPath = path.join(folder[0].fsPath, msg.data.appFolder);
+                if (
+                  (await fs.pathExists(sampleAppPath)) &&
+                  (await fs.readdir(sampleAppPath)).length > 0
+                ) {
+                  vscode.window.showErrorMessage(
+                    `Path ${sampleAppPath} alreay exists. Select a different folder.`
+                  );
+                  return;
+                }
                 const dialogManager = DialogManager.getInstance();
                 const progress = dialogManager.createProgressBar("Fetch sample app", 2);
                 progress.start();
@@ -102,7 +112,7 @@ export class WebviewPanel {
                     );
                     vscode.commands.executeCommand(
                       "vscode.openFolder",
-                      vscode.Uri.file(path.join(folder[0].fsPath, msg.data.appFolder))
+                      vscode.Uri.file(sampleAppPath)
                     );
                   } else {
                     vscode.window.showErrorMessage("Failed to clone sample app");

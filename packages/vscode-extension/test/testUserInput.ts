@@ -13,7 +13,7 @@ import {
   env,
   ProgressOptions,
   Progress,
-  CancellationToken
+  CancellationToken,
 } from "vscode";
 
 import { IProgressStatus, Result, FxError } from "@microsoft/teamsfx-api";
@@ -24,7 +24,7 @@ import { testFolder } from "./globalVaribles";
 export enum EInputType {
   defaultValue = "defaultValue",
   specifiedItem = "specifiedItem",
-  specifiedValue = "specifiedValue"
+  specifiedValue = "specifiedValue",
 }
 
 export interface IUserInputItem {

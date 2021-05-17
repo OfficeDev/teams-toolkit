@@ -25,9 +25,9 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
         }
 
         const localTeamsAppIdPlaceholder = "${localTeamsAppId}";
-        const isLocalSideloadingConfiguration: boolean = (debugConfiguration.url as string).includes(
-          localTeamsAppIdPlaceholder
-        );
+        const isLocalSideloadingConfiguration: boolean = (
+          debugConfiguration.url as string
+        ).includes(localTeamsAppIdPlaceholder);
         const teamsAppIdPlaceholder = "${teamsAppId}";
         const isSideloadingConfiguration: boolean = (debugConfiguration.url as string).includes(
           teamsAppIdPlaceholder
@@ -37,7 +37,9 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
           return debugConfiguration;
         }
 
-        const teamsAppId = await commonUtils.getLocalDebugTeamsAppId(isLocalSideloadingConfiguration);
+        const teamsAppId = await commonUtils.getLocalDebugTeamsAppId(
+          isLocalSideloadingConfiguration
+        );
         debugConfiguration.url = (debugConfiguration.url as string).replace(
           isLocalSideloadingConfiguration ? localTeamsAppIdPlaceholder : teamsAppIdPlaceholder,
           teamsAppId as string
@@ -48,7 +50,8 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
           accountHintPlaceholder
         );
         if (isaccountHintConfiguration) {
-          let tenantId = undefined, loginHint = undefined;
+          let tenantId = undefined,
+            loginHint = undefined;
           try {
             const tokenObject = (await AppStudioTokenInstance.getStatus())?.accountInfo;
             if (tokenObject) {

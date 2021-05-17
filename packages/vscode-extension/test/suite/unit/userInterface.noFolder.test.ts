@@ -13,7 +13,7 @@ import {
   IProgressStatus,
   Result,
   FxError,
-  ok
+  ok,
 } from "@microsoft/teamsfx-api";
 
 import { ext } from "../../../src/extensionVariables";
@@ -30,35 +30,35 @@ suite("UI Unit Tests", async () => {
 
   suite("Manually", () => {
     suite("Show Message Immediately", () => {
-      test("Infomation", async function(this: Mocha.Context) {
+      test("Infomation", async function (this: Mocha.Context) {
         await DialogManagerInstance["showMessage"]({
           description: "Info",
-          level: MsgLevel.Info
+          level: MsgLevel.Info,
         });
         for (let i = 0; i < 1e9; ++i) {} // simulate the large calculated work.
       });
 
-      test("Warning", async function(this: Mocha.Context) {
+      test("Warning", async function (this: Mocha.Context) {
         await DialogManagerInstance["showMessage"]({
           description: "Warning",
-          level: MsgLevel.Warning
+          level: MsgLevel.Warning,
         });
         for (let i = 0; i < 1e9; ++i) {} // simulate the large calculated work.
       });
 
-      test("Error", async function(this: Mocha.Context) {
+      test("Error", async function (this: Mocha.Context) {
         await DialogManagerInstance["showMessage"]({
           description: "Error",
-          level: MsgLevel.Error
+          level: MsgLevel.Error,
         });
         for (let i = 0; i < 1e9; ++i) {} // simulate the large calculated work.
       });
     });
 
-    test("Show Progress", async function(this: Mocha.Context) {
+    test("Show Progress", async function (this: Mocha.Context) {
       this.timeout(0);
 
-      const progressIterGenerator = async function*(): AsyncGenerator<
+      const progressIterGenerator = async function* (): AsyncGenerator<
         IProgressStatus,
         Result<null, FxError>
       > {
@@ -73,18 +73,18 @@ suite("UI Unit Tests", async () => {
 
       await DialogManagerInstance["showProgress"]({
         progressIter: progressIterGenerator(),
-        title: "Test"
+        title: "Test",
       });
 
       await DialogManagerInstance.communicate(
         new DialogMsg(DialogType.ShowProgress, {
           progressIter: progressIterGenerator(),
-          title: "Test"
+          title: "Test",
         })
       );
     });
 
-    test("Show Progress 2", async function(this: Mocha.Context) {
+    test("Show Progress 2", async function (this: Mocha.Context) {
       this.timeout(0);
       const handler = DialogManagerInstance.createProgressBar("Test Progress Bar", 3);
 
@@ -107,7 +107,7 @@ suite("UI Unit Tests", async () => {
       await DialogManagerInstance["askQuestion"]({
         type: QuestionType.ExecuteCmd,
         terminalName: "test",
-        description: "cd ../../../.."
+        description: "cd ../../../..",
       });
       // TODO: do some special command and check it.
     });
@@ -117,7 +117,7 @@ suite("UI Unit Tests", async () => {
         await DialogManagerInstance.communicate(
           new DialogMsg(DialogType.Show, {
             description: "test",
-            level: MsgLevel.Info
+            level: MsgLevel.Info,
           })
         ),
         new DialogMsg(DialogType.Answer, "Show Successfully")
@@ -127,12 +127,12 @@ suite("UI Unit Tests", async () => {
         await DialogManagerInstance.communicate(
           new DialogMsg(DialogType.Output, {
             description: "test",
-            level: MsgLevel.Info
+            level: MsgLevel.Info,
           })
         ),
         new DialogMsg(DialogType.Show, {
           description: "",
-          level: MsgLevel.Info
+          level: MsgLevel.Info,
         })
       );
     });
@@ -151,7 +151,7 @@ suite("UI Unit Tests", async () => {
           type: QuestionType.Radio,
           description: "test",
           defaultAnswer: "a",
-          options: ["a", "b", "c"]
+          options: ["a", "b", "c"],
         };
 
         chai.assert.ok((await DialogManagerInstance["askQuestion"](question)) === "a");
@@ -176,13 +176,13 @@ suite("UI Unit Tests", async () => {
           { type: EInputType.specifiedItem, index: "placeHolder" },
           { type: EInputType.defaultValue },
           { type: EInputType.specifiedItem, index: "placeHolder" },
-          { type: EInputType.specifiedValue, value: undefined }
+          { type: EInputType.specifiedValue, value: undefined },
         ]);
 
         const question: IQuestion = {
           type: QuestionType.Text,
           description: "test",
-          defaultAnswer: "abcd"
+          defaultAnswer: "abcd",
         };
 
         chai.assert.ok((await DialogManagerInstance["askQuestion"](question)) === "abcd");
@@ -197,12 +197,12 @@ suite("UI Unit Tests", async () => {
       test("Select Folder", async () => {
         (ext.ui as TestUserInput).addInputItems([
           { type: EInputType.specifiedValue, value: testFolder },
-          { type: EInputType.specifiedValue, value: undefined }
+          { type: EInputType.specifiedValue, value: undefined },
         ]);
 
         const question: IQuestion = {
           type: QuestionType.SelectFolder,
-          description: "lalala"
+          description: "lalala",
         };
 
         chai.assert.ok(
@@ -215,7 +215,7 @@ suite("UI Unit Tests", async () => {
         chai.assert.ok(
           (await DialogManagerInstance["askQuestion"]({
             type: QuestionType.OpenFolder,
-            description: Uri.file(testFolder).fsPath
+            description: Uri.file(testFolder).fsPath,
           })) === Uri.file(testFolder).fsPath
         );
       });
@@ -230,7 +230,7 @@ suite("UI Unit Tests", async () => {
             type: QuestionType.Radio,
             description: "test",
             defaultAnswer: "a",
-            options: ["a", "b", "c"]
+            options: ["a", "b", "c"],
           })
         ),
         new DialogMsg(DialogType.Answer, "a")
@@ -240,7 +240,7 @@ suite("UI Unit Tests", async () => {
         await DialogManagerInstance.communicate(new DialogMsg(DialogType.Answer, "abc")),
         new DialogMsg(DialogType.Show, {
           description: "",
-          level: MsgLevel.Error
+          level: MsgLevel.Error,
         })
       );
     });

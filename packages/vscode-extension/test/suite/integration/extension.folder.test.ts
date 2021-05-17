@@ -15,7 +15,7 @@ import { TestUserInput } from "../../testUserInput";
 import { execSync } from "child_process";
 
 suite("Extension Integration Tests (Specified Folder)", async () => {
-  suiteSetup(async function(this: Mocha.Context) {
+  suiteSetup(async function (this: Mocha.Context) {
     this.timeout(0);
     chai.assert.ok(fs.existsSync(testWorkspace));
     ext.ui = new TestUserInput();

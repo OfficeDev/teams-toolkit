@@ -93,7 +93,7 @@ Teams Toolkit requires these dependencies.
 
 Click "Continue" to continue.
 
-(If you just installed @SupportedPackages, restart Visual Studio Code for the change to take effect.)`
+(If you just installed @SupportedPackages, restart Visual Studio Code for the change to take effect.)`,
 };
 
 export enum DepsCheckerEvent {
@@ -119,7 +119,7 @@ export enum DepsCheckerEvent {
 
   nodeNotFound = "node-not-found",
   nodeNotSupportedForAzure = "node-not-supported-for-azure",
-  nodeNotSupportedForSPFx = "node-not-supported-for-spfx"
+  nodeNotSupportedForSPFx = "node-not-supported-for-spfx",
 }
 
 export enum TelemtryMessages {
@@ -127,9 +127,9 @@ export enum TelemtryMessages {
   funcV1Installed = "func v1 is installed by user.",
   NPMNotFound = "npm is not found.",
   failedToExecDotnetScript = "failed to exec dotnet script.",
-  failedToValidateDotnet = "failed to validate dotnet."
+  failedToValidateDotnet = "failed to validate dotnet.",
 }
 
 export enum TelemetryMessurement {
-  completionTime = "completion-time"
+  completionTime = "completion-time",
 }

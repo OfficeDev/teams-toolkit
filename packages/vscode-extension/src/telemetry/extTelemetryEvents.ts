@@ -56,7 +56,7 @@ export enum TelemetryEvent {
   DebugStart = "debug-start",
   DebugStop = "debug-stop",
 
-  Survey = "survey"
+  Survey = "survey",
 }
 
 export enum TelemetryProperty {
@@ -73,27 +73,27 @@ export enum TelemetryProperty {
   DebugType = "type",
   DebugRequest = "request",
   DebugPort = "port",
-  DebugRemote = "remote"
+  DebugRemote = "remote",
 }
 
 export enum TelemetrySuccess {
   Yes = "yes",
-  No = "no"
+  No = "no",
 }
 
 export enum TelemetryTiggerFrom {
   CommandPalette = "CommandPalette",
-  TreeView = "TreeView"
+  TreeView = "TreeView",
 }
 
 export enum TelemetryErrorType {
   UserError = "user",
-  SystemError = "system"
+  SystemError = "system",
 }
 
 export enum AccountType {
   M365 = "m365",
-  Azure = "azure"
+  Azure = "azure",
 }
 
 export const TelemetryComponentType = "extension";

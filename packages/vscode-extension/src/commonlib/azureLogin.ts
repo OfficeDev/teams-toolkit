@@ -41,7 +41,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     if (!AzureAccountManager.instance) {
       AzureAccountManager.instance = new AzureAccountManager();
     }
-    
+
     return AzureAccountManager.instance;
   }
 
@@ -52,9 +52,8 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
    * @returns the instance of TokenCredentialsBase
    */
   getAccountCredential(showDialog = true): TokenCredentialsBase | undefined {
-    const azureAccount: AzureAccount = vscode.extensions.getExtension<AzureAccount>(
-      "ms-vscode.azure-account"
-    )!.exports;
+    const azureAccount: AzureAccount =
+      vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
     if (azureAccount.status === "LoggedIn") {
       if (azureAccount.subscriptions.length > 0) {
         if (AzureAccountManager.tenantId) {
@@ -117,9 +116,8 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   private isUserLogin(): boolean {
-    const azureAccount: AzureAccount = vscode.extensions.getExtension<AzureAccount>(
-      "ms-vscode.azure-account"
-    )!.exports;
+    const azureAccount: AzureAccount =
+      vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
     return azureAccount.status === "LoggedIn";
   }
 
@@ -128,7 +126,11 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       const userConfirmation: boolean = await this.doesUserConfirmLogin();
       if (!userConfirmation) {
         // throw user cancel error
-        throw new UserError(ExtensionErrors.UserCancel, StringResources.vsc.common.userCancel, "Login");
+        throw new UserError(
+          ExtensionErrors.UserCancel,
+          StringResources.vsc.common.userCancel,
+          "Login"
+        );
       }
     }
     await vscode.commands.executeCommand("azure-account.login");
@@ -136,9 +138,8 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
 
   private doGetAccountCredentialAsync(): Promise<TokenCredentialsBase | undefined> {
     if (this.isUserLogin()) {
-      const azureAccount: AzureAccount = vscode.extensions.getExtension<AzureAccount>(
-        "ms-vscode.azure-account"
-      )!.exports;
+      const azureAccount: AzureAccount =
+        vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
       // Choose one tenant credential when users have multi tenants. (TODO, need to optize after UX design)
       // 1. When azure-account-extension has at least one subscription, return the first one credential.
       // 2. When azure-account-extension has no subscription and has at at least one session, return the first session credential.
@@ -188,12 +189,16 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     do {
       userSelected = await vscode.window.showInformationMessage(
         message,
-        {modal: true},
+        { modal: true },
         signin,
         readMore
       );
       if (userSelected === readMore) {
-        vscode.env.openExternal(vscode.Uri.parse("https://docs.microsoft.com/en-us/azure/cost-management-billing/manage/create-subscription"));
+        vscode.env.openExternal(
+          vscode.Uri.parse(
+            "https://docs.microsoft.com/en-us/azure/cost-management-billing/manage/create-subscription"
+          )
+        );
       }
     } while (userSelected === readMore);
 
@@ -236,7 +241,11 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     const userConfirmation: boolean = await this.doesUserConfirmSignout();
     if (!userConfirmation) {
       // throw user cancel error
-      throw new UserError(ExtensionErrors.UserCancel, StringResources.vsc.common.userCancel, "SignOut");
+      throw new UserError(
+        ExtensionErrors.UserCancel,
+        StringResources.vsc.common.userCancel,
+        "SignOut"
+      );
     }
     await vscode.commands.executeCommand("azure-account.logout");
     AzureAccountManager.tenantId = undefined;
@@ -267,9 +276,8 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
    */
   async listSubscriptions(): Promise<SubscriptionInfo[]> {
     await this.getAccountCredentialAsync();
-    const azureAccount: AzureAccount = vscode.extensions.getExtension<AzureAccount>(
-      "ms-vscode.azure-account"
-    )!.exports;
+    const azureAccount: AzureAccount =
+      vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
     const arr: SubscriptionInfo[] = [];
     if (azureAccount.status === "LoggedIn") {
       if (azureAccount.subscriptions.length > 0) {
@@ -278,7 +286,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
           arr.push({
             subscriptionId: item.subscription.subscriptionId!,
             subscriptionName: item.subscription.displayName!,
-            tenantId: item.session.tenantId!
+            tenantId: item.session.tenantId!,
           });
         }
       }
@@ -291,9 +299,8 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
    */
   async setSubscription(subscriptionId: string): Promise<void> {
     if (this.isUserLogin()) {
-      const azureAccount: AzureAccount = vscode.extensions.getExtension<AzureAccount>(
-        "ms-vscode.azure-account"
-      )!.exports;
+      const azureAccount: AzureAccount =
+        vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
       for (let i = 0; i < azureAccount.subscriptions.length; ++i) {
         const item = azureAccount.subscriptions[i];
         if (item.subscription.subscriptionId == subscriptionId) {
@@ -303,13 +310,16 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         }
       }
     }
-    throw new UserError(ExtensionErrors.UnknownSubscription, StringResources.vsc.azureLogin.unknownSubscription, "Login");
+    throw new UserError(
+      ExtensionErrors.UnknownSubscription,
+      StringResources.vsc.azureLogin.unknownSubscription,
+      "Login"
+    );
   }
 
   getAzureAccount(): AzureAccount {
-    const azureAccount: AzureAccount = vscode.extensions.getExtension<AzureAccount>(
-      "ms-vscode.azure-account"
-    )!.exports;
+    const azureAccount: AzureAccount =
+      vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
     return azureAccount;
   }
 
@@ -319,19 +329,21 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       const credential = await this.doGetAccountCredentialAsync();
       const token = await credential?.getToken();
       const accountJson = await this.getJsonObject();
-      return Promise.resolve({ status: signedIn, token: token?.accessToken, accountInfo: accountJson });
+      return Promise.resolve({
+        status: signedIn,
+        token: token?.accessToken,
+        accountInfo: accountJson,
+      });
     } else if (azureAccount.status === loggingIn) {
-      return Promise.resolve({ status: signingIn, token: undefined, accountInfo: undefined});
-    } 
-    else {
+      return Promise.resolve({ status: signingIn, token: undefined, accountInfo: undefined });
+    } else {
       return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });
     }
   }
 
   async addStatusChangeEvent() {
-    const azureAccount: AzureAccount = vscode.extensions.getExtension<AzureAccount>(
-      "ms-vscode.azure-account"
-    )!.exports;
+    const azureAccount: AzureAccount =
+      vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
     azureAccount.onStatusChanged(async (event) => {
       if (event === loggedOut) {
         if (AzureAccountManager.statusChange !== undefined) {

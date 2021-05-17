@@ -55,6 +55,7 @@ export class VSCodeAdapter implements IDepsAdapter {
       return true;
     } else if (input == learnMoreButton) {
       await openUrl(link);
+      return await this.displayContinueWithLearnMore(message, link);
     }
 
     return false;
@@ -63,7 +64,7 @@ export class VSCodeAdapter implements IDepsAdapter {
   public async displayLearnMore(message: string, link: string): Promise<boolean> {
     return await this.displayWarningMessage(message, Messages.learnMoreButtonText, async () => {
       await openUrl(link);
-      return Promise.resolve(false);
+      return await this.displayLearnMore(message, link);
     });
   }
 

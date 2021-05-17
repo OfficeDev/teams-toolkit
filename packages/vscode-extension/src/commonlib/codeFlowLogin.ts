@@ -18,6 +18,13 @@ import { accountPath, UTF8 } from "./cacheAccess";
 import * as stringUtil from "util";
 import * as StringResources from "../resources/Strings.json";
 import { loggedIn, loggedOut, loggingIn } from "./common/constant";
+import { ExtTelemetry } from "../telemetry/extTelemetry";
+import {
+  AccountType,
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess
+} from "../telemetry/extTelemetryEvents";
 
 class ErrorMessage {
   static readonly loginError: string = "LoginError";
@@ -39,7 +46,7 @@ export class CodeFlowLogin {
   port: number | undefined;
   mutex: Mutex | undefined;
   msalTokenCache: TokenCache | undefined;
-  accountName: string | undefined;
+  accountName: string;
   status: string | undefined;
 
   constructor(scopes: string[], config: Configuration, port: number, accountName: string) {
@@ -65,6 +72,9 @@ export class CodeFlowLogin {
   }
 
   async login(): Promise<string> {
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.LoginStart, {
+      [TelemetryProperty.AccountType]: this.accountName
+    });
     const codeVerifier = CodeFlowLogin.toBase64UrlEncoding(
       crypto.randomBytes(32).toString("base64")
     );
@@ -162,6 +172,24 @@ export class CodeFlowLogin {
       redirectPromise.then(cancelCodeTimer, cancelCodeTimer);
       accessToken = await redirectPromise;
     } finally {
+      if (accessToken) {
+        const tokenJson = ConvertTokenToJson(accessToken);
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Login, {
+          [TelemetryProperty.AccountType]: this.accountName,
+          [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+          [TelemetryProperty.UserId]: (tokenJson as any).oid ? (tokenJson as any).oid : "",
+          [TelemetryProperty.Internal]: (tokenJson as any).upn?.endsWith("@microsoft.com")
+            ? "true"
+            : "false"
+        });
+      } else {
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Login, {
+          [TelemetryProperty.AccountType]: this.accountName,
+          [TelemetryProperty.Success]: TelemetrySuccess.No,
+          [TelemetryProperty.UserId]: "",
+          [TelemetryProperty.Internal]: "false"
+        });
+      }
       server.close();
     }
 

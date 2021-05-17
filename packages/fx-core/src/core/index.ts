@@ -584,13 +584,6 @@ class CoreImpl implements Core {
       };
 
       const signinM365Callback = async (args?: any[]): Promise<Result<null, FxError>> => {
-        this.ctx?.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.LoginStart, {
-          [TelemetryProperty.TriggerFrom]:
-            args && args.toString() === "TreeView"
-              ? TelemetryTiggerFrom.TreeView
-              : TelemetryTiggerFrom.CommandPalette,
-          [TelemetryProperty.AccountType]: AccountType.M365,
-        });
         const token = await this.ctx.appStudioToken?.getJsonObject(true);
         if (token !== undefined) {
           this.ctx.treeProvider?.refresh([
@@ -603,22 +596,6 @@ class CoreImpl implements Core {
               icon: "M365",
             },
           ]);
-
-          this.ctx?.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.Login, {
-            [TelemetryProperty.AccountType]: AccountType.M365,
-            [TelemetryProperty.Success]: "yes",
-            [TelemetryProperty.UserId]: (token as any).oid,
-            [TelemetryProperty.Internal]: (token as any).upn.endsWith("@microsoft.com")
-              ? "true"
-              : "false",
-          });
-        } else {
-          this.ctx?.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.Login, {
-            [TelemetryProperty.AccountType]: AccountType.M365,
-            [TelemetryProperty.Success]: "no",
-            [TelemetryProperty.UserId]: "",
-            [TelemetryProperty.Internal]: "false",
-          });
         }
 
         return ok(null);
@@ -628,14 +605,6 @@ class CoreImpl implements Core {
         validFxProject: boolean,
         args?: any[]
       ): Promise<Result<null, FxError>> => {
-        this.ctx?.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.LoginStart, {
-          [TelemetryProperty.TriggerFrom]:
-            args && args[0].toString() === "TreeView"
-              ? TelemetryTiggerFrom.TreeView
-              : TelemetryTiggerFrom.CommandPalette,
-          [TelemetryProperty.AccountType]: AccountType.Azure,
-        });
-
         const showDialog = args && args[1] !== undefined ? args[1] : true;
         const token = await this.ctx.azureAccountProvider?.getAccountCredentialAsync(showDialog);
         if (token !== undefined) {
@@ -649,14 +618,6 @@ class CoreImpl implements Core {
             },
           ]);
 
-          const res = await token.getToken();
-          this.ctx.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.Login, {
-            [TelemetryProperty.AccountType]: AccountType.Azure,
-            [TelemetryProperty.Success]: "yes",
-            [TelemetryProperty.UserId]: res.oid ? res.oid : "",
-            [TelemetryProperty.Internal]: res.userId?.endsWith("@microsoft.com") ? "true" : "false",
-          });
-
           const subItem = await getSelectSubItem!(token, validFxProject);
           this.ctx.treeProvider?.add([subItem[0]]);
 
@@ -667,13 +628,6 @@ class CoreImpl implements Core {
               await selectSubscriptionCallback();
             }
           }
-        } else {
-          this.ctx.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.Login, {
-            [TelemetryProperty.AccountType]: AccountType.Azure,
-            [TelemetryProperty.Success]: "no",
-            [TelemetryProperty.UserId]: "",
-            [TelemetryProperty.Internal]: "false",
-          });
         }
 
         return ok(null);

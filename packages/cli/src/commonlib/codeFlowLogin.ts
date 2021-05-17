@@ -16,6 +16,12 @@ import open from "open";
 import { azureLoginMessage, env, m365LoginMessage, MFACode } from "./common/constant";
 import colors from "colors";
 import * as constants from "../constants";
+import CliTelemetry from "../telemetry/cliTelemetry";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "../telemetry/cliTelemetryEvents";
 
 class ErrorMessage {
   static readonly loginError: string = "LoginError";
@@ -37,7 +43,7 @@ export class CodeFlowLogin {
   port: number | undefined;
   mutex: Mutex | undefined;
   msalTokenCache: TokenCache | undefined;
-  accountName: string | undefined;
+  accountName: string;
 
   constructor(scopes: string[], config: Configuration, port: number, accountName: string) {
     this.scopes = scopes;
@@ -60,8 +66,15 @@ export class CodeFlowLogin {
   }
 
   async login(): Promise<string> {
-    const codeVerifier = CodeFlowLogin.toBase64UrlEncoding(crypto.randomBytes(32).toString("base64"));
-    const codeChallenge = CodeFlowLogin.toBase64UrlEncoding(await CodeFlowLogin.sha256(codeVerifier));
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLoginStart, {
+      [TelemetryProperty.AccountType]: this.accountName,
+    });
+    const codeVerifier = CodeFlowLogin.toBase64UrlEncoding(
+      crypto.randomBytes(32).toString("base64")
+    );
+    const codeChallenge = CodeFlowLogin.toBase64UrlEncoding(
+      await CodeFlowLogin.sha256(codeVerifier)
+    );
     let serverPort = this.port;
 
     // try get an unused port
@@ -74,7 +87,7 @@ export class CodeFlowLogin {
       codeChallenge: codeChallenge,
       codeChallengeMethod: "S256",
       redirectUri: `http://localhost:${serverPort}`,
-      prompt: "select_account"
+      prompt: "select_account",
     };
 
     let deferredRedirect: Deferred<string>;
@@ -87,7 +100,7 @@ export class CodeFlowLogin {
         code: req.query.code as string,
         scopes: this.scopes!,
         redirectUri: `http://localhost:${serverPort}`,
-        codeVerifier: codeVerifier
+        codeVerifier: codeVerifier,
       };
 
       this.pca!.acquireTokenByCode(tokenRequest)
@@ -147,6 +160,24 @@ export class CodeFlowLogin {
       redirectPromise.then(cancelCodeTimer, cancelCodeTimer);
       accessToken = await redirectPromise;
     } finally {
+      if (accessToken) {
+        const tokenJson = ConvertTokenToJson(accessToken);
+        CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLogin, {
+          [TelemetryProperty.AccountType]: this.accountName,
+          [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+          [TelemetryProperty.UserId]: (tokenJson as any).oid ? (tokenJson as any).oid : "",
+          [TelemetryProperty.Internal]: (tokenJson as any).upn?.endsWith("@microsoft.com")
+            ? "true"
+            : "false",
+        });
+      } else {
+        CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLogin, {
+          [TelemetryProperty.AccountType]: this.accountName,
+          [TelemetryProperty.Success]: TelemetrySuccess.No,
+          [TelemetryProperty.UserId]: "",
+          [TelemetryProperty.Internal]: "false",
+        });
+      }
       server.close();
     }
 
@@ -179,7 +210,7 @@ export class CodeFlowLogin {
         return this.pca!.acquireTokenSilent({
           account: this.account,
           scopes: this.scopes!,
-          forceRefresh: false
+          forceRefresh: false,
         })
           .then((response) => {
             if (response) {
@@ -210,30 +241,32 @@ export class CodeFlowLogin {
           authority: env.activeDirectoryEndpointUrl + tenantId,
           account: this.account,
           scopes: this.scopes!,
-          forceRefresh: true
+          forceRefresh: true,
         })
-        .then((response) => {
-          if (response) {
-            return response.accessToken;
-          } else {
-            return undefined;
-          }
-        })
-        .catch(async (error) => {
-          if (error.message.indexOf(MFACode) >= 0) {
-            throw error;
-          } else {
-            CliCodeLogInstance.error("[Login] getTenantToken acquireTokenSilent : " + error.message);
-            const accountList = await this.msalTokenCache?.getAllAccounts();
-            for (let i=0;i<accountList!.length;++i) {
-              this.msalTokenCache?.removeAccount(accountList![i]);
+          .then((response) => {
+            if (response) {
+              return response.accessToken;
+            } else {
+              return undefined;
             }
-            this.config!.auth.authority = env.activeDirectoryEndpointUrl + tenantId;
-            this.pca = new PublicClientApplication(this.config!);
-            const accessToken = await this.login();
-            return accessToken;
-          }
-        });
+          })
+          .catch(async (error) => {
+            if (error.message.indexOf(MFACode) >= 0) {
+              throw error;
+            } else {
+              CliCodeLogInstance.error(
+                "[Login] getTenantToken acquireTokenSilent : " + error.message
+              );
+              const accountList = await this.msalTokenCache?.getAllAccounts();
+              for (let i = 0; i < accountList!.length; ++i) {
+                this.msalTokenCache?.removeAccount(accountList![i]);
+              }
+              this.config!.auth.authority = env.activeDirectoryEndpointUrl + tenantId;
+              this.pca = new PublicClientApplication(this.config!);
+              const accessToken = await this.login();
+              return accessToken;
+            }
+          });
       } else {
         return undefined;
       }
@@ -271,17 +304,11 @@ export class CodeFlowLogin {
   }
 
   static toBase64UrlEncoding(base64string: string) {
-    return base64string
-      .replace(/=/g, "")
-      .replace(/\+/g, "-")
-      .replace(/\//g, "_");
+    return base64string.replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
   }
 
   static sha256(s: string | Uint8Array): Promise<string> {
-    return new Promise(solve => solve(crypto
-      .createHash("sha256")
-      .update(s)
-      .digest("base64")));
+    return new Promise((solve) => solve(crypto.createHash("sha256").update(s).digest("base64")));
   }
 }
 
@@ -300,7 +327,7 @@ function sendFile(
       body = Buffer.from(data, UTF8);
       res.writeHead(200, {
         "Content-Length": body.length,
-        "Content-Type": contentType
+        "Content-Type": contentType,
       });
       res.end(body);
     }

@@ -11,9 +11,14 @@ import { getBeforeCacheAccess, getAfterCacheAccess } from "./cacheAccess";
 import { signedIn, signedOut } from "./common/constant";
 import { login, LoginStatus } from "./common/login";
 import CliTelemetry from "./../telemetry/cliTelemetry";
-import { TelemetryAccountType, TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
+import {
+  TelemetryAccountType,
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "../telemetry/cliTelemetryEvents";
 
-const accountName = "appStudio";
+const accountName = "m365";
 const scopes = ["https://dev.teams.microsoft.com/AppDefinitions.ReadWrite"];
 const SERVER_PORT = 0;
 
@@ -22,13 +27,13 @@ const afterCacheAccess = getAfterCacheAccess(scopes, accountName);
 
 const cachePlugin = {
   beforeCacheAccess,
-  afterCacheAccess
+  afterCacheAccess,
 };
 
 const config = {
   auth: {
     clientId: "7ea7c24c-b1f6-4a20-9d11-9ae12e9e7ac0",
-    authority: "https://login.microsoftonline.com/common"
+    authority: "https://login.microsoftonline.com/common",
   },
   system: {
     loggerOptions: {
@@ -36,12 +41,12 @@ const config = {
         CLILogProvider.log(4 - loglevel, message);
       },
       piiLoggingEnabled: false,
-      logLevel: LogLevel.Error
-    }
+      logLevel: LogLevel.Error,
+    },
   },
   cache: {
-    cachePlugin
-  }
+    cachePlugin,
+  },
 };
 
 export class AppStudioLogin extends login implements AppStudioTokenProvider {
@@ -75,51 +80,17 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
    * Get team access token
    */
   async getAccessToken(showDialog = true): Promise<string | undefined> {
-    let loginToken;
-    try {
-      if (!AppStudioLogin.codeFlowInstance.account) {
-        CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLoginStart, {
-          [TelemetryProperty.AccountType]: TelemetryAccountType.M365,
-        });
-        loginToken = await AppStudioLogin.codeFlowInstance.getToken();
-        if (loginToken && AppStudioLogin.statusChange !== undefined) {
-          const tokenJson = await this.getJsonObject();
-          await AppStudioLogin.statusChange("SignedIn", loginToken, tokenJson);
-        }
-        await this.notifyStatus();
-      } else {
-        loginToken = await AppStudioLogin.codeFlowInstance.getToken();
+    if (!AppStudioLogin.codeFlowInstance.account) {
+      const loginToken = await AppStudioLogin.codeFlowInstance.getToken();
+      if (loginToken && AppStudioLogin.statusChange !== undefined) {
+        const tokenJson = await this.getJsonObject();
+        await AppStudioLogin.statusChange("SignedIn", loginToken, tokenJson);
       }
-
-      if (loginToken) {
-        const array = loginToken.split(".");
-        const buff = Buffer.from(array[1], "base64");
-        const res = JSON.parse(buff.toString("utf-8"));
-        CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLogin, {
-          [TelemetryProperty.AccountType]: TelemetryAccountType.M365,
-          [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-          [TelemetryProperty.UserId]: res.oid,
-          [TelemetryProperty.Internal]: res.upn.endsWith("@microsoft.com") ? "true" : "false",
-        });
-      } else {
-        CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLogin, {
-          [TelemetryProperty.AccountType]: TelemetryAccountType.M365,
-          [TelemetryProperty.Success]: TelemetrySuccess.No,
-          [TelemetryProperty.UserId]: "",
-          [TelemetryProperty.Internal]: "false",
-        });
-      }
-    } catch (e) {
-      CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLogin, {
-        [TelemetryProperty.AccountType]: TelemetryAccountType.M365,
-        [TelemetryProperty.Success]: TelemetrySuccess.No,
-        [TelemetryProperty.UserId]: "",
-        [TelemetryProperty.Internal]: "false",
-      });
-      throw e;
+      await this.notifyStatus();
+      return loginToken;
     }
 
-    return loginToken;
+    return AppStudioLogin.codeFlowInstance.getToken();
   }
 
   async getJsonObject(showDialog = true): Promise<Record<string, unknown> | undefined> {
@@ -185,6 +156,9 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
 import AppStudioTokenProviderUserPassword from "./appStudioLoginUserPassword";
 
 const ciEnabled = process.env.CI_ENABLED;
-const appStudioLogin = ciEnabled && ciEnabled === "true" ? AppStudioTokenProviderUserPassword : AppStudioLogin.getInstance();
+const appStudioLogin =
+  ciEnabled && ciEnabled === "true"
+    ? AppStudioTokenProviderUserPassword
+    : AppStudioLogin.getInstance();
 
 export default appStudioLogin;

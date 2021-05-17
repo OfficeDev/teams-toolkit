@@ -63,38 +63,31 @@ export const templates: {
   {
     tags: ["React", "Azure function", "Azure SQL", "JS"],
     title: "Todo List with Azure backend",
-    description: "Todo List provides an easy way to manage to-do items in Teams Client. This app helps enabling task collaboration and management for your team. The frontend is a React app and the backend is hosted on Azure. You will need an Azure subscription to run the app.",
+    description: "Todo List app with Azure Function backend and Azure SQL database",
     sampleAppName: "todo-list-with-Azure-backend",
-    sampleAppUrl: "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip"
+    sampleAppUrl: "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip",
   },
   {
     tags: ["SharePoint", "SPFx", "TS"],
     title: "Todo List with SPFx ",
-    description: "Todo List with SPFx is a Todo List for individuals to manage his/her personal to-do items. This app is hosted on Sharepoint. There is no requirements to deploy Azure resources.",
+    description: "Todo List app hosting on SharePoint",
     sampleAppName: "todo-list-SPFx",
-    sampleAppUrl: "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip"
+    sampleAppUrl: "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip",
   },
   {
     tags: ["Tab", "Message Extension", "TS"],
     title: "Share Now",
-    description: "Share Now promotes the exchange of information between colleagues by enabling users to share content within the Teams environment. Users engage the app to share items of interest, discover new shared content, set preferences, and bookmark favorites for later reading.",
+    description: "Knowledge sharing app contains a Tab and a Message Extension",
     sampleAppName: "share-now",
-    sampleAppUrl: "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip"
-  },
-  {
-    tags: ["Easy QnA", "Bot", "JS"],
-    title: "FAQ Plus",
-    description: "FAQ Plus is a conversational Q&A bot providing an easy way to answer frequently asked questions by users. One can ask a question and the bot responds with information in the knowledge base. If the answer is not in the knowledge base, the bot submits the question to a pre-configured team of experts who help provide support.",
-    sampleAppName: "faq-plus",
-    sampleAppUrl: "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip"
+    sampleAppUrl: "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip",
   },
   {
     tags: ["Meeting extension", "JS"],
     title: "In-meeting App",
-    description: "In-meeting app is a hello-world template which shows how to build an app in the context of a Teams meeting. This is a hello-world sample which does not provide any functional feature. This app contains a side panel and a Bot which only shows user profile and can only be added to a Teams meeting.",
+    description: "A template for apps using only in the context of a Teams meeting",
     sampleAppName: "in-meeting-app",
-    sampleAppUrl: "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip"
-  }
+    sampleAppUrl: "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip",
+  },
 ];
 
 export enum CLILogLevel {

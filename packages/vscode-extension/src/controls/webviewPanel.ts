@@ -74,17 +74,17 @@ export class WebviewPanel {
             break;
           case Commands.CloneSampleApp:
             const selection = await vscode.window.showInformationMessage(
-              `Clone '${msg.data.appName}' from Github. This will clone '${msg.data.appName}' repository to your local machine`,
+              `Download '${msg.data.appName}' from Github. This will download '${msg.data.appName}' repository and open to your local machine`,
               { modal: false },
-              "Clone",
+              "Download",
               "Cancel"
             );
-            if (selection === "Clone") {
+            if (selection === "Download") {
               const folder = await vscode.window.showOpenDialog({
                 canSelectFiles: false,
                 canSelectFolders: true,
                 canSelectMany: false,
-                title: "Select folder to clone the sample app",
+                title: "Select folder to download the sample app",
               });
               if (folder !== undefined) {
                 const dialogManager = DialogManager.getInstance();
@@ -105,7 +105,7 @@ export class WebviewPanel {
                       vscode.Uri.file(path.join(folder[0].fsPath, msg.data.appFolder))
                     );
                   } else {
-                    vscode.window.showErrorMessage("Failed to clone sample app");
+                    vscode.window.showErrorMessage("Failed to download sample app");
                   }
                 } finally {
                   progress.end();

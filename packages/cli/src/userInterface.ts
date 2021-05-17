@@ -98,12 +98,38 @@ export class DialogManager implements Dialog {
   }
 
   private async showProgress(prog: IProgress): Promise<Result<null, FxError>> {
-    let currentStatus: IteratorResult<IProgressStatus, Result<null, FxError>> =
-      await prog.progressIter.next();
+    let currentStatus: IteratorResult<
+      IProgressStatus,
+      Result<null, FxError>
+    > = await prog.progressIter.next();
     while (!currentStatus.done) {
       currentStatus = await prog.progressIter.next();
     }
     return currentStatus.value;
+  }
+
+  private static async askListQuestion(
+    options: string[],
+    questionDescription: string
+  ): Promise<string | undefined> {
+    const ciEnabled = process.env.CI_ENABLED;
+    if (ciEnabled) {
+      return options[0];
+    }
+    const questionName = "dialog_list_question";
+    const answers = await inquirer.prompt([
+      {
+        name: questionName,
+        type: "list",
+        message: questionDescription,
+        choices: options,
+      },
+    ]);
+    if (questionName in answers) {
+      return answers[questionName];
+    } else {
+      throw InquirerAnswerNotFound(questionDescription);
+    }
   }
 
   private async askQuestion(question: IQuestion): Promise<string | undefined> {
@@ -154,6 +180,12 @@ export class DialogManager implements Dialog {
           } else {
             return undefined;
           }
+        } else if (question.options && question.options.length > 1) {
+          // Need to add "Cancel" option for confirm question.
+          return await DialogManager.askListQuestion(
+            question.options.concat("Cancel"),
+            question.description
+          );
         }
         break;
       case QuestionType.OpenExternal:
@@ -170,23 +202,7 @@ export class DialogManager implements Dialog {
 
   private async showMessage(msg: IMessage): Promise<string | undefined> {
     if (msg.items && msg.items.length > 0) {
-      const ciEnabled = process.env.CI_ENABLED;
-      if (ciEnabled) {
-        return msg.items[0];
-      }
-      const answers = await inquirer.prompt([
-        {
-          name: DialogType.Show,
-          type: "list",
-          message: msg.description,
-          choices: msg.items,
-        },
-      ]);
-      if (DialogType.Show in answers) {
-        return answers[DialogType.Show];
-      } else {
-        throw InquirerAnswerNotFound(msg);
-      }
+      return await DialogManager.askListQuestion(msg.items, msg.description);
     } else {
       switch (msg.level) {
         case MsgLevel.Info:

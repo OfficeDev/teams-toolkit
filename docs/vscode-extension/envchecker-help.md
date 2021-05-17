@@ -100,6 +100,14 @@ To open your user and workspace settings, use the following Visual Studio Code m
 
 ![envchecker-settings](../images/vscode-extension/envchecker/envchecker-settings.png)
 
+## BackendExtensionsInstallFailed
+### Notification Message
+> Failed to run backend extension install.
+
+### Mitigation
+* Retry Function app deployment.
+* If you are using TeamsFX CLI, check whether .NET Core version (`.NET 5` or `.NET Core 3.1`) is installed. If not, refer to [the guide](#how-to-install-net-sdk) to install `.NET SDK` manually.
+
 ## Report issues 
 
 If above FAQs can't solve your problem, please click [here](https://github.com/OfficeDev/Teamsfx/issues/new) to submit an issue on GitHub and attach the log from Visual Studio Code output channel named "Teams Toolkit".

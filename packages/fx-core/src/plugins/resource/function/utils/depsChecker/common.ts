@@ -43,6 +43,7 @@ export const dotnetExplanationHelpLink = `${defaultHelpLink}#overall`;
 export const dotnetFailToInstallHelpLink = `${defaultHelpLink}#failtoinstalldotnet`;
 export const dotnetManualInstallHelpLink = `${defaultHelpLink}#dotnetnotfound`;
 export const dotnetNotSupportTargetVersionHelpLink = `${defaultHelpLink}#dotnetnotsupporttargetversion`;
+export const backendExtensionsInstallFailedHelpLink = `${defaultHelpLink}#backendextensionsinstallfailed`;
 
 export const Messages = {
   learnMoreButtonText: "Learn more",

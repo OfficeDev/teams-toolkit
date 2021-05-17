@@ -8,7 +8,7 @@
 // and run the scripts (tools/depsChecker/copyfiles.sh or tools/depsChecker/copyfiles.ps1 according to your OS)
 // to copy you changes to function plugin.
 
-import { defaultHelpLink, dotnetNotSupportTargetVersionHelpLink } from "./common";
+import { backendExtensionsInstallFailedHelpLink, defaultHelpLink, dotnetNotSupportTargetVersionHelpLink } from "./common";
 import { DotnetChecker } from "./dotnetChecker";
 import { BackendExtensionsInstallError } from "./errors";
 import { cpUtils } from "./cpUtils";
@@ -80,7 +80,7 @@ export class BackendExtensionsInstaller {
       }
       throw new BackendExtensionsInstallError(
         `Failed to run backend extension install: error = '${error}'`,
-        defaultHelpLink
+        backendExtensionsInstallFailedHelpLink
       );
     } finally {
       this._logger.cleanup();

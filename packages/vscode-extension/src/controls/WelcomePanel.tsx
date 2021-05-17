@@ -20,7 +20,7 @@ export default class WelcomePanel extends React.Component<any, IWelcomePanelStat
     this.state = {
       learnToolkit: { show: true, showCancel: false },
       buildApp: { show: true, showCancel: false },
-      showGettingStarted: true
+      showGettingStarted: true,
     };
   }
 
@@ -73,25 +73,25 @@ export default class WelcomePanel extends React.Component<any, IWelcomePanelStat
                       styles={{
                         progressBar: {
                           borderRadius: 6,
-                          backgroundColor: "#3794FF"
+                          backgroundColor: "#3794FF",
                         },
                         progressTrack: {
                           borderRadius: 6,
                           paddingTop: 0,
-                          paddingBottom: 0
+                          paddingBottom: 0,
                         },
                         itemName: {
                           color: "#808080",
                           fontSize: 11,
                           lineHeight: 11,
                           paddingBottom: 4,
-                          paddingTop: 0
+                          paddingTop: 0,
                         },
                         itemProgress: {
                           borderRadius: 6,
                           paddingTop: 0,
-                          paddingBottom: 0
-                        }
+                          paddingBottom: 0,
+                        },
                       }}
                     />
                   </div>
@@ -105,7 +105,7 @@ export default class WelcomePanel extends React.Component<any, IWelcomePanelStat
                           width: 16,
                           height: 16,
                           margin: 0,
-                          padding: 0
+                          padding: 0,
                         }}
                         onClick={this.closeLearnToolkitCard}
                       ></IconButton>
@@ -133,25 +133,25 @@ export default class WelcomePanel extends React.Component<any, IWelcomePanelStat
                       styles={{
                         progressBar: {
                           borderRadius: 6,
-                          backgroundColor: "#3794FF"
+                          backgroundColor: "#3794FF",
                         },
                         progressTrack: {
                           borderRadius: 6,
                           paddingTop: 0,
-                          paddingBottom: 0
+                          paddingBottom: 0,
                         },
                         itemName: {
                           color: "#808080",
                           fontSize: 11,
                           lineHeight: 11,
                           paddingBottom: 4,
-                          paddingTop: 0
+                          paddingTop: 0,
                         },
                         itemProgress: {
                           borderRadius: 6,
                           paddingTop: 0,
-                          paddingBottom: 0
-                        }
+                          paddingBottom: 0,
+                        },
                       }}
                     />
                   </div>
@@ -165,7 +165,7 @@ export default class WelcomePanel extends React.Component<any, IWelcomePanelStat
                           width: 16,
                           height: 16,
                           margin: 0,
-                          padding: 0
+                          padding: 0,
                         }}
                         onClick={this.closeBuildAppCard}
                       ></IconButton>
@@ -189,8 +189,8 @@ export default class WelcomePanel extends React.Component<any, IWelcomePanelStat
                     content="This app combines all capabilities: tab, conversational bot and messaging extension. A great starting point to use the full potential of all capabilities."
                     tooltipProps={{
                       styles: {
-                        content: { color: "#CCCCCC" }
-                      }
+                        content: { color: "#CCCCCC" },
+                      },
                     }}
                     calloutProps={{
                       backgroundColor: "#333333",
@@ -198,8 +198,8 @@ export default class WelcomePanel extends React.Component<any, IWelcomePanelStat
                       styles: {
                         beak: { background: "#333333" },
                         beakCurtain: { background: "#333333" },
-                        calloutMain: { background: "#333333" }
-                      }
+                        calloutMain: { background: "#333333" },
+                      },
                     }}
                   >
                     <ActionButton
@@ -301,28 +301,28 @@ export default class WelcomePanel extends React.Component<any, IWelcomePanelStat
   showCancelLearnToolkitCard = () => {
     const showCard = this.state.learnToolkit.show;
     this.setState({
-      learnToolkit: { show: showCard, showCancel: true }
+      learnToolkit: { show: showCard, showCancel: true },
     });
   };
 
   hideCancelLearnToolkitCard = () => {
     const showCard = this.state.learnToolkit.show;
     this.setState({
-      learnToolkit: { show: showCard, showCancel: false }
+      learnToolkit: { show: showCard, showCancel: false },
     });
   };
 
   showCancelBuildAppCard = () => {
     const showCard = this.state.buildApp.show;
     this.setState({
-      buildApp: { show: showCard, showCancel: true }
+      buildApp: { show: showCard, showCancel: true },
     });
   };
 
   hideCancelBuildAppCard = () => {
     const showCard = this.state.buildApp.show;
     this.setState({
-      buildApp: { show: showCard, showCancel: false }
+      buildApp: { show: showCard, showCancel: false },
     });
   };
 
@@ -330,7 +330,7 @@ export default class WelcomePanel extends React.Component<any, IWelcomePanelStat
     const showAnotherCard = this.state.buildApp.show;
     this.setState({
       learnToolkit: { show: false, showCancel: false },
-      showGettingStarted: showAnotherCard
+      showGettingStarted: showAnotherCard,
     });
   };
 
@@ -338,14 +338,14 @@ export default class WelcomePanel extends React.Component<any, IWelcomePanelStat
     const showAnotherCard = this.state.learnToolkit.show;
     this.setState({
       buildApp: { show: false, showCancel: false },
-      showGettingStarted: showAnotherCard
+      showGettingStarted: showAnotherCard,
     });
   };
 
   openExternalLink = (link: string) => {
     vscode.postMessage({
       command: Commands.OpenExternalLink,
-      data: link
+      data: link,
     });
   };
 
@@ -354,8 +354,8 @@ export default class WelcomePanel extends React.Component<any, IWelcomePanelStat
       command: Commands.CloneSampleApp,
       data: {
         appName: sampleAppName,
-        appUrl: sampleAppUrl
-      }
+        appUrl: sampleAppUrl,
+      },
     });
   };
 

@@ -820,7 +820,7 @@ export class FunctionPluginImpl {
           funcPluginTelemetry
         );
         try {
-          if (await dotnetChecker.isInstalled()) {
+          if (!await dotnetChecker.isEnabled() || await dotnetChecker.isInstalled()) {
             return;
           }
         } catch (error) {

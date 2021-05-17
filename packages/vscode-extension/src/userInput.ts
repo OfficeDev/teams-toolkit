@@ -14,7 +14,7 @@ import {
   env,
   ProgressOptions,
   Progress,
-  CancellationToken
+  CancellationToken,
 } from "vscode";
 
 import { IProgressStatus, Result, FxError } from "@microsoft/teamsfx-api";

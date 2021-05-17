@@ -22,8 +22,8 @@ export class TestLogger implements IDepsLogger {
     return Promise.resolve(true);
   }
 
-  public async printDetailLog(): Promise<void> { }
-  public cleanup(): void { }
+  public async printDetailLog(): Promise<void> {}
+  public cleanup(): void {}
 
   private writeLog(level: LogLevel, message: string) {
     const line = `${LogLevel[level]} ${new Date().toISOString()}: ${message}`;

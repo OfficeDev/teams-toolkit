@@ -9,7 +9,7 @@ import {
   TelemetryComponentType,
   TelemetrySuccess,
   TelemetryEvent,
-  TelemetryErrorType
+  TelemetryErrorType,
 } from "./extTelemetryEvents";
 import * as extensionPackage from "../../package.json";
 import { FxError, Stage, UserError } from "@microsoft/teamsfx-api";

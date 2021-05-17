@@ -15,9 +15,9 @@ export async function run(): Promise<void> {
     reporterOptions: {
       reporterEnabled: "spec, mocha-junit-reporter",
       mochaJunitReporterReporterOptions: {
-        mochaFile: path.resolve(__dirname, "..", "..", "test-results.nofolder.xml")
-      }
-    }
+        mochaFile: path.resolve(__dirname, "..", "..", "test-results.nofolder.xml"),
+      },
+    },
   };
 
   addEnvVarsToMochaOptions(options);

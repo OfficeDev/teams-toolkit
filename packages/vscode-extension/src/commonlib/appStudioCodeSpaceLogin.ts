@@ -73,7 +73,11 @@ export class AppStudioCodeSpaceLogin extends login implements AppStudioTokenProv
   }
 
   async setStatusChangeCallback(
-    statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>
   ): Promise<boolean> {
     AppStudioCodeSpaceLogin.statusChange = statusChange;
     const session = await this.tryAuthenticate(false);
@@ -82,13 +86,15 @@ export class AppStudioCodeSpaceLogin extends login implements AppStudioTokenProv
       const tokenJson = this.parseToken(session.accessToken);
       await AppStudioCodeSpaceLogin.statusChange("SignedIn", session.accessToken, tokenJson);
     }
-    
+
     return new Promise((resolve) => {
       resolve(true);
     });
   }
 
-  private async tryAuthenticate(createIfNone: boolean): Promise<vscode.AuthenticationSession | undefined> {
+  private async tryAuthenticate(
+    createIfNone: boolean
+  ): Promise<vscode.AuthenticationSession | undefined> {
     return vscode.authentication
       .getSession("microsoft", scopes, { createIfNone: createIfNone })
       .then((session: vscode.AuthenticationSession | undefined) => {
@@ -110,7 +116,11 @@ export class AppStudioCodeSpaceLogin extends login implements AppStudioTokenProv
     const session = await this.tryAuthenticate(false);
     if (session && session.accessToken) {
       const tokenJson = await this.getJsonObject();
-      return Promise.resolve({ status: signedIn, token: session.accessToken, accountInfo: tokenJson });
+      return Promise.resolve({
+        status: signedIn,
+        token: session.accessToken,
+        accountInfo: tokenJson,
+      });
     } else {
       return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });
     }

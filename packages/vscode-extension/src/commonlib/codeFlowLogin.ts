@@ -65,8 +65,12 @@ export class CodeFlowLogin {
   }
 
   async login(): Promise<string> {
-    const codeVerifier = CodeFlowLogin.toBase64UrlEncoding(crypto.randomBytes(32).toString("base64"));
-    const codeChallenge = CodeFlowLogin.toBase64UrlEncoding(await CodeFlowLogin.sha256(codeVerifier));
+    const codeVerifier = CodeFlowLogin.toBase64UrlEncoding(
+      crypto.randomBytes(32).toString("base64")
+    );
+    const codeChallenge = CodeFlowLogin.toBase64UrlEncoding(
+      await CodeFlowLogin.sha256(codeVerifier)
+    );
     let serverPort = this.port;
 
     // try get an unused port
@@ -79,7 +83,7 @@ export class CodeFlowLogin {
       codeChallenge: codeChallenge,
       codeChallengeMethod: "S256",
       redirectUri: `http://localhost:${serverPort}`,
-      prompt: "select_account"
+      prompt: "select_account",
     };
 
     let deferredRedirect: Deferred<string>;
@@ -93,7 +97,7 @@ export class CodeFlowLogin {
         code: req.query.code as string,
         scopes: this.scopes!,
         redirectUri: `http://localhost:${serverPort}`,
-        codeVerifier: codeVerifier
+        codeVerifier: codeVerifier,
       };
 
       this.pca!.acquireTokenByCode(tokenRequest)
@@ -108,14 +112,12 @@ export class CodeFlowLogin {
 
               const resultFilePath = path.join(__dirname, "./codeFlowResult/index.html");
               if (fs.existsSync(resultFilePath)) {
-                sendFile(
-                  res,
-                  resultFilePath,
-                  "text/html; charset=utf-8"
-                );
+                sendFile(res, resultFilePath, "text/html; charset=utf-8");
               } else {
                 // do not break if result file has issue
-                VsCodeLogInstance.error("[Login] " + StringResources.vsc.codeFlowLogin.resultFileNotFound);
+                VsCodeLogInstance.error(
+                  "[Login] " + StringResources.vsc.codeFlowLogin.resultFileNotFound
+                );
                 res.sendStatus(200);
               }
             }
@@ -189,7 +191,7 @@ export class CodeFlowLogin {
         return this.pca!.acquireTokenSilent({
           account: this.account,
           scopes: this.scopes!,
-          forceRefresh: false
+          forceRefresh: false,
         })
           .then((response) => {
             if (response) {
@@ -199,7 +201,13 @@ export class CodeFlowLogin {
             }
           })
           .catch(async (error) => {
-            VsCodeLogInstance.error("[Login] " + stringUtil.format(StringResources.vsc.codeFlowLogin.silentAcquireToken, error.message));
+            VsCodeLogInstance.error(
+              "[Login] " +
+                stringUtil.format(
+                  StringResources.vsc.codeFlowLogin.silentAcquireToken,
+                  error.message
+                )
+            );
             const accessToken = await this.login();
             return accessToken;
           });
@@ -238,17 +246,11 @@ export class CodeFlowLogin {
   }
 
   static toBase64UrlEncoding(base64string: string) {
-    return base64string
-      .replace(/=/g, "")
-      .replace(/\+/g, "-")
-      .replace(/\//g, "_");
+    return base64string.replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
   }
 
   static sha256(s: string | Uint8Array): Promise<string> {
-    return require("crypto")
-      .createHash("sha256")
-      .update(s)
-      .digest("base64");
+    return require("crypto").createHash("sha256").update(s).digest("base64");
   }
 }
 
@@ -259,7 +261,7 @@ function sendFile(res: http.ServerResponse, filepath: string, contentType: strin
     } else {
       res.writeHead(200, {
         "Content-Length": body.length,
-        "Content-Type": contentType
+        "Content-Type": contentType,
       });
       res.end(body);
     }

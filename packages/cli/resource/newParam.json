@@ -293,12 +293,6 @@
             "label": "Share Now",
             "detail": "The Share Now promotes the exchange of information between colleagues by enabling users to share content within the Teams environment. ",
             "data": "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip"
-          },
-          {
-            "id": "faq-plus",
-            "label": "FAQ Plus",
-            "detail": "FAQ Plus is a conversational Q&A bot providing an easy way to answer frequently asked questions by users. ",
-            "data": "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip"
           }
         ],
         "returnObject": true

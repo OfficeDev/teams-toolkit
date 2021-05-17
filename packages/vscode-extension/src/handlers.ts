@@ -819,13 +819,13 @@ export function cmdHdlDisposeTreeView() {
   TreeViewManagerInstance.dispose();
 }
 
-export async function showError(e: FxError) {
+export async function showError(e: UserError | SystemError) {
   VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}, stack: ${e.stack}`);
 
   const errorCode = `${e.source}.${e.name}`;
   if (isUserCancelError(e)) {
     return;
-  } else if (e instanceof UserError && e.helpLink && typeof e.helpLink != "undefined") {
+  } else if ("helpLink" in e && e.helpLink && typeof e.helpLink != "undefined") {
     const help = {
       title: StringResources.vsc.handlers.getHelp,
       run: async (): Promise<void> => {
@@ -835,7 +835,7 @@ export async function showError(e: FxError) {
 
     const button = await window.showErrorMessage(`[${errorCode}]: ${e.message}`, help);
     if (button) await button.run();
-  } else if (e instanceof SystemError && e.issueLink && typeof e.issueLink != "undefined") {
+  } else if ("issueLink" in e && e.issueLink && typeof e.issueLink != "undefined") {
     const path = e.issueLink.replace(/\/$/, "") + "?";
     const param = `title=new+bug+report: ${errorCode}&body=${e.message}\n\n${e.stack}`;
     const issue = {

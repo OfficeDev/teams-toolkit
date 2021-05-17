@@ -278,6 +278,21 @@ class CoreImpl implements Core {
         if (answer === "Download") {
           const url = samples.data as string;
           const sampleId = samples.id;
+
+          const sampleAppPath = path.join(folder, sampleId);
+          if (
+            (await fs.pathExists(sampleAppPath)) &&
+            (await fs.readdir(sampleAppPath)).length > 0
+          ) {
+            return err(
+              new UserError(
+                error.CoreErrorNames.ProjectFolderExist,
+                `Path ${sampleAppPath} alreay exists. Select a different folder.`,
+                error.CoreSource
+              )
+            );
+          }
+
           const progress = this.ctx.dialog.createProgressBar("Fetch sample app", 2);
           progress.start();
           try {

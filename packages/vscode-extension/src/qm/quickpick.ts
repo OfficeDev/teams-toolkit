@@ -4,7 +4,7 @@ import {
   InputResultType,
   OptionItem,
   returnSystemError,
-  StaticOption
+  StaticOption,
 } from "@microsoft/teamsfx-api";
 import { Disposable, QuickInputButton, QuickInputButtons, Uri, window } from "vscode";
 import { ExtensionErrors, ExtensionSource } from "../error";
@@ -46,7 +46,7 @@ export class FxMultiQuickPickItem implements FxQuickPickItem {
       label: this.rawLabel,
       description: this.description,
       detail: this.detail,
-      data: this.data
+      data: this.data,
     };
   }
 
@@ -69,7 +69,7 @@ export class FxMultiQuickPickItem implements FxQuickPickItem {
 export async function multiQuickPick(option: FxQuickPickOption): Promise<InputResult> {
   const okButton: QuickInputButton = {
     iconPath: Uri.file(ext.context.asAbsolutePath("media/ok.svg")),
-    tooltip: "ok"
+    tooltip: "ok",
   };
   const disposables: Disposable[] = [];
   try {
@@ -94,89 +94,87 @@ export async function multiQuickPick(option: FxQuickPickOption): Promise<InputRe
         option.prompt ? option.prompt + ", p" : "P"
       }ress <Enter> to continue, press <Alt+LeftArrow> to go back. `,
       id: "",
-      label: `$(checklist) Selected ${selectNum} item${selectNum > 1 ? "s" : ""}`
+      label: `$(checklist) Selected ${selectNum} item${selectNum > 1 ? "s" : ""}`,
     });
 
-    return await new Promise<InputResult>(
-      async (resolve): Promise<void> => {
-        const onDidAccept = async () => {
-          const item = quickPick.selectedItems[0];
-          if (item === undefined || item === firstItem) {
-            const selectedItems = quickPick.items.filter((i) => i.picked);
-            const strArray = Array.from(selectedItems.map((i) => i.id));
-            if (option.validation) {
-              const validateRes = await option.validation(strArray);
-              if (validateRes) {
-                return;
-              }
+    return await new Promise<InputResult>(async (resolve): Promise<void> => {
+      const onDidAccept = async () => {
+        const item = quickPick.selectedItems[0];
+        if (item === undefined || item === firstItem) {
+          const selectedItems = quickPick.items.filter((i) => i.picked);
+          const strArray = Array.from(selectedItems.map((i) => i.id));
+          if (option.validation) {
+            const validateRes = await option.validation(strArray);
+            if (validateRes) {
+              return;
             }
-            if (option.returnObject)
-              resolve({
-                type: InputResultType.sucess,
-                result: selectedItems.map((i) => i.getOptionItem())
-              });
-            else resolve({ type: InputResultType.sucess, result: selectedItems.map((i) => i.id) });
           }
-          item.click();
-          if (option.onDidChangeSelection) {
-            const newIds: string[] = (
-              await option.onDidChangeSelection(
-                quickPick.items.filter((i) => i.picked).map((i) => i.getOptionItem()),
-                previousSelectedItems
-              )
-            ).sort();
-            previousSelectedItems = [];
-            quickPick.items.forEach((i) => {
-              if (newIds.includes(i.id)) {
-                i.check();
-                previousSelectedItems.push(i.getOptionItem());
-              } else i.uncheck();
+          if (option.returnObject)
+            resolve({
+              type: InputResultType.sucess,
+              result: selectedItems.map((i) => i.getOptionItem()),
             });
-          }
-          selectNum = quickPick.items.filter((i) => i.picked).length;
-          firstItem.label = `$(checklist) Selected ${selectNum} item${selectNum > 1 ? "s" : ""}`;
-          quickPick.items = quickPick.items;
-        };
-
-        disposables.push(
-          quickPick.onDidAccept(onDidAccept),
-          quickPick.onDidHide(() => {
-            resolve({ type: InputResultType.cancel });
-          })
-        );
-        disposables.push(
-          quickPick.onDidTriggerButton((button) => {
-            if (button === QuickInputButtons.Back) resolve({ type: InputResultType.back });
-            else onDidAccept();
-          })
-        );
-        try {
-          // set items
-          const items: FxMultiQuickPickItem[] = [firstItem];
-          option.items.forEach((element: string | OptionItem) => {
-            items.push(new FxMultiQuickPickItem(element));
-          });
-          // default
-          if (option.defaultValue) {
-            const ids = option.defaultValue as string[];
-            items.forEach((i) => {
-              if (ids.includes(i.id)) {
-                i.check();
-              }
-            });
-            previousSelectedItems = items.filter((i) => i.picked).map((i) => i.getOptionItem());
-          }
-          quickPick.items = items;
-          disposables.push(quickPick);
-          quickPick.show();
-        } catch (err) {
-          resolve({
-            type: InputResultType.error,
-            error: returnSystemError(err, ExtensionSource, ExtensionErrors.UnknwonError)
+          else resolve({ type: InputResultType.sucess, result: selectedItems.map((i) => i.id) });
+        }
+        item.click();
+        if (option.onDidChangeSelection) {
+          const newIds: string[] = (
+            await option.onDidChangeSelection(
+              quickPick.items.filter((i) => i.picked).map((i) => i.getOptionItem()),
+              previousSelectedItems
+            )
+          ).sort();
+          previousSelectedItems = [];
+          quickPick.items.forEach((i) => {
+            if (newIds.includes(i.id)) {
+              i.check();
+              previousSelectedItems.push(i.getOptionItem());
+            } else i.uncheck();
           });
         }
+        selectNum = quickPick.items.filter((i) => i.picked).length;
+        firstItem.label = `$(checklist) Selected ${selectNum} item${selectNum > 1 ? "s" : ""}`;
+        quickPick.items = quickPick.items;
+      };
+
+      disposables.push(
+        quickPick.onDidAccept(onDidAccept),
+        quickPick.onDidHide(() => {
+          resolve({ type: InputResultType.cancel });
+        })
+      );
+      disposables.push(
+        quickPick.onDidTriggerButton((button) => {
+          if (button === QuickInputButtons.Back) resolve({ type: InputResultType.back });
+          else onDidAccept();
+        })
+      );
+      try {
+        // set items
+        const items: FxMultiQuickPickItem[] = [firstItem];
+        option.items.forEach((element: string | OptionItem) => {
+          items.push(new FxMultiQuickPickItem(element));
+        });
+        // default
+        if (option.defaultValue) {
+          const ids = option.defaultValue as string[];
+          items.forEach((i) => {
+            if (ids.includes(i.id)) {
+              i.check();
+            }
+          });
+          previousSelectedItems = items.filter((i) => i.picked).map((i) => i.getOptionItem());
+        }
+        quickPick.items = items;
+        disposables.push(quickPick);
+        quickPick.show();
+      } catch (err) {
+        resolve({
+          type: InputResultType.error,
+          error: returnSystemError(err, ExtensionSource, ExtensionErrors.UnknwonError),
+        });
       }
-    );
+    });
   } finally {
     disposables.forEach((d) => {
       d.dispose();

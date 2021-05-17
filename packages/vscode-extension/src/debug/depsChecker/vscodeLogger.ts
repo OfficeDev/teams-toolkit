@@ -38,11 +38,11 @@ export class VSCodeLogger implements IDepsLogger {
   }
 
   public async printDetailLog(): Promise<void> {
-      await this.logger.error(this.detailLogLines.join(os.EOL));
+    await this.logger.error(this.detailLogLines.join(os.EOL));
   }
 
   public cleanup(): void {
-      this.detailLogLines = [];
+    this.detailLogLines = [];
   }
 
   private appendLine(level: LogLevel, message: string): void {

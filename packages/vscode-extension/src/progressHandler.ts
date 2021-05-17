@@ -46,7 +46,7 @@ export class ProgressHandler {
     ext.ui.withProgress(
       {
         location: ProgressLocation.Notification,
-        cancellable: false
+        cancellable: false,
       },
       async (progress) => {
         await sleep(10);

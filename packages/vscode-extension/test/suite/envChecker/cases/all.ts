@@ -49,7 +49,7 @@ suite("All checkers E2E test", async () => {
   let backendProjectDir: string;
   let backendOutputPath: string;
   let cleanupProjectDir: () => void;
-  setup(async function(this: Mocha.Context) {
+  setup(async function (this: Mocha.Context) {
     [backendProjectDir, cleanupProjectDir] = await dotnetUtils.createTmpBackendProjectDir(
       testCsprojFileName
     );
@@ -58,7 +58,7 @@ suite("All checkers E2E test", async () => {
     await dotnetUtils.cleanup();
   });
 
-  test("All installed", async function(this: Mocha.Context) {
+  test("All installed", async function (this: Mocha.Context) {
     const nodeVersion = await nodeUtils.getNodeVersion();
     if (!(nodeVersion != null && azureSupportedNodeVersions.includes(nodeVersion))) {
       this.skip();
@@ -91,7 +91,7 @@ suite("All checkers E2E test", async () => {
     chai.assert.isTrue(await isNonEmptyDir(backendOutputPath));
   });
 
-  test("None installed", async function(this: Mocha.Context) {
+  test("None installed", async function (this: Mocha.Context) {
     const nodeVersion = await nodeUtils.getNodeVersion();
     if (nodeVersion != null) {
       this.skip();
@@ -131,7 +131,7 @@ suite("All checkers E2E test", async () => {
     }
   });
 
-  test("Node.js is installed, but .NET SDK is not", async function(this: Mocha.Context) {
+  test("Node.js is installed, but .NET SDK is not", async function (this: Mocha.Context) {
     const nodeVersion = await nodeUtils.getNodeVersion();
     if (!(nodeVersion != null && azureSupportedNodeVersions.includes(nodeVersion))) {
       this.skip();
@@ -165,7 +165,7 @@ suite("All checkers E2E test", async () => {
     }
   });
 
-  test("All disabled", async function(this: Mocha.Context) {
+  test("All disabled", async function (this: Mocha.Context) {
     const [checker, _, dotnetChecker, backendExtensionsInstaller] = createTestChecker(
       true,
       false,
@@ -208,7 +208,7 @@ suite("All checkers E2E test", async () => {
     }
   });
 
-  teardown(async function(this: Mocha.Context) {
+  teardown(async function (this: Mocha.Context) {
     await dotnetUtils.cleanup();
     cleanupProjectDir();
   });

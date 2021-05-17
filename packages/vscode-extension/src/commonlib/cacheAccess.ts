@@ -70,7 +70,9 @@ export function getAfterCacheAccess(scopes: string[], accountName: string) {
         if (key.indexOf(scopes[0].toLowerCase()) != -1) {
           fs.writeFile(accountPath + accountName, data.AccessToken[key][homeAccountId], (err) => {
             if (err) {
-              VsCodeLogInstance.error(StringResources.vsc.cacheAccess.saveHomeAccountIdFail + err.message);
+              VsCodeLogInstance.error(
+                StringResources.vsc.cacheAccess.saveHomeAccountIdFail + err.message
+              );
             }
           });
         }

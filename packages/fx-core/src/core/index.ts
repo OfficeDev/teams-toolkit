@@ -269,13 +269,13 @@ class CoreImpl implements Core {
         const answer = (
           await this.ctx.dialog?.communicate(
             new DialogMsg(DialogType.Show, {
-              description: `Clone '${samples.label}' from Github. This will clone '${samples.label}' repository to your local machine`,
+              description: `Download '${samples.label}' from Github. This will download '${samples.label}' repository and open to your local machine`,
               level: MsgLevel.Info,
-              items: ["Clone", "Cancel"],
+              items: ["Download", "Cancel"],
             })
           )
         )?.getAnswer();
-        if (answer === "Clone") {
+        if (answer === "Download") {
           const url = samples.data as string;
           const sampleId = samples.id;
           const progress = this.ctx.dialog.createProgressBar("Fetch sample app", 2);

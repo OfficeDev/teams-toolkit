@@ -603,6 +603,22 @@ class CoreImpl implements Core {
               icon: "M365",
             },
           ]);
+
+          this.ctx?.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.Login, {
+            [TelemetryProperty.AccountType]: AccountType.M365,
+            [TelemetryProperty.Success]: "yes",
+            [TelemetryProperty.UserId]: (token as any).oid,
+            [TelemetryProperty.Internal]: (token as any).upn.endsWith("@microsoft.com")
+              ? "true"
+              : "false",
+          });
+        } else {
+          this.ctx?.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.Login, {
+            [TelemetryProperty.AccountType]: AccountType.M365,
+            [TelemetryProperty.Success]: "no",
+            [TelemetryProperty.UserId]: "",
+            [TelemetryProperty.Internal]: "false",
+          });
         }
 
         return ok(null);
@@ -633,6 +649,14 @@ class CoreImpl implements Core {
             },
           ]);
 
+          const res = await token.getToken();
+          this.ctx.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.Login, {
+            [TelemetryProperty.AccountType]: AccountType.Azure,
+            [TelemetryProperty.Success]: "yes",
+            [TelemetryProperty.UserId]: res.oid ? res.oid : "",
+            [TelemetryProperty.Internal]: res.userId?.endsWith("@microsoft.com") ? "true" : "false",
+          });
+
           const subItem = await getSelectSubItem!(token, validFxProject);
           this.ctx.treeProvider?.add([subItem[0]]);
 
@@ -643,6 +667,13 @@ class CoreImpl implements Core {
               await selectSubscriptionCallback();
             }
           }
+        } else {
+          this.ctx.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.Login, {
+            [TelemetryProperty.AccountType]: AccountType.Azure,
+            [TelemetryProperty.Success]: "no",
+            [TelemetryProperty.UserId]: "",
+            [TelemetryProperty.Internal]: "false",
+          });
         }
 
         return ok(null);
@@ -1407,10 +1438,15 @@ enum TelemetryTiggerFrom {
 enum TelemetryProperty {
   TriggerFrom = "trigger-from",
   AccountType = "account-type",
+  UserId = "hashed-userid",
+  Internal = "internal",
+  InternalAlias = "internal-alias",
+  Success = "success",
 }
 
 enum TelemetryEvent {
   LoginStart = "login-start",
+  Login = "login",
   SelectSubscription = "select-subscription",
 }
 

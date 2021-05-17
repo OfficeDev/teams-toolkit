@@ -31,10 +31,15 @@ describe("Language Strategy", () => {
       sinon.stub(LanguageStrategy, "getTemplateProjectZipUrl").resolves("");
 
       // Act
-      const zip = await LanguageStrategy.getTemplateProjectZip(programmingLanguage, group_name);
+      try {
+        await LanguageStrategy.getTemplateProjectZip(programmingLanguage, group_name);
+      } catch (e) {
+        chai.assert.isTrue(e instanceof PluginError);
+        return;
+      }
 
       // Assert
-      chai.assert.isNotNull(zip);
+      chai.assert.fail(Messages.ShouldNotReachHere);
     });
   });
 

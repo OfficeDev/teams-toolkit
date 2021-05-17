@@ -17,7 +17,7 @@ import { login, LoginStatus } from "./common/login";
 import * as StringResources from "../resources/Strings.json";
 import * as util from "util";
 
-export const accountName = "m365";
+const accountName = "m365";
 const scopes = ["https://dev.teams.microsoft.com/AppDefinitions.ReadWrite"];
 const SERVER_PORT = 0;
 

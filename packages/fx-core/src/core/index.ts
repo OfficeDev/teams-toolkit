@@ -1063,7 +1063,7 @@ class CoreImpl implements Core {
             description: "",
             author: "",
             scripts: {
-              test: "echo \"Error: no test specified\" && exit 1",
+              test: 'echo "Error: no test specified" && exit 1',
             },
             license: "MIT",
           },
@@ -1391,16 +1391,9 @@ enum TelemetryTiggerFrom {
 
 enum TelemetryProperty {
   TriggerFrom = "trigger-from",
-  AccountType = "account-type",
-  UserId = "hashed-userid",
-  Internal = "internal",
-  InternalAlias = "internal-alias",
-  Success = "success",
 }
 
 enum TelemetryEvent {
-  LoginStart = "login-start",
-  Login = "login",
   SelectSubscription = "select-subscription",
 }
 

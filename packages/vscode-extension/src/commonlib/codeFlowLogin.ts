@@ -20,7 +20,6 @@ import * as StringResources from "../resources/Strings.json";
 import { loggedIn, loggedOut, loggingIn } from "./common/constant";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
-  AccountType,
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess

@@ -833,7 +833,7 @@ export class FunctionPluginImpl {
           // TODO: handle linux installation
           if (!(await funcPluginAdapter.handleDotnetForLinux(ctx, dotnetChecker))) {
             // NOTE: this is a temporary fix for Linux, to make the error message more readable.
-            const message = await funcPluginAdapter.generateMsg(Messages.linuxDepsNotFound, [dotnetChecker]);
+            const message = await funcPluginAdapter.generateMsg(Messages.linuxDepsNotFoundHelpLinkMessage, [dotnetChecker]);
             funcPluginAdapter.handleDotnetError(
               new DepsCheckerError(message, dotnetManualInstallHelpLink)
             );

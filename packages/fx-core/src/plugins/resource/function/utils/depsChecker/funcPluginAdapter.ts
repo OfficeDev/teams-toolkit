@@ -81,6 +81,8 @@ class FuncPluginAdapter implements IDepsAdapter {
     // NOTE: only enable env checker for vscode extension according to the design
     if (ctx?.platform === Platform.VSCode) {
       this.enabled = ctx?.answers?.getBoolean(this.answerKey) || false;
+    } else if (ctx?.platform === Platform.CLI) {
+      this.enabled = true;
     } else {
       this.enabled = false;
     }

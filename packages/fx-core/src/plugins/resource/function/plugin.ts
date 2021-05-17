@@ -6,6 +6,7 @@ import {
   Func,
   FxError,
   NodeType,
+  Platform,
   PluginContext,
   QTreeNode,
   ReadonlyPluginConfig,
@@ -827,6 +828,14 @@ export class FunctionPluginImpl {
           funcPluginLogger.debug(InfoMessages.failedToCheckDotnet(error));
           funcPluginAdapter.handleDotnetError(error);
           return;
+        }
+
+        // For CLI, we won't install .NET for the user.
+        // Tell the user the manually install the dependencies.
+        if (ctx.platform === Platform.CLI) {
+          funcPluginAdapter.handleDotnetError(
+            new DepsCheckerError(Messages.defaultErrorMessage, dotnetManualInstallHelpLink)
+          );
         }
 
         if (isLinux()) {

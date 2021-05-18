@@ -172,32 +172,7 @@ export class SPFxPluginImpl {
     return ok(undefined);
   }
 
-  public async preDeploy(ctx: PluginContext): Promise<Result<any, FxError>> {
-    const confirm = (
-      await ctx.dialog?.communicate(
-        new DialogMsg(DialogType.Show, {
-          description: getStrings().plugins.SPFx.buildNotice,
-          level: MsgLevel.Warning,
-          items: [Constants.BUILD_SHAREPOINT_PACKAGE, Constants.READ_MORE, Constants.CANCEL],
-        })
-      )
-    )?.getAnswer();
-
-    switch (confirm) {
-      case Constants.CANCEL: {
-        return ok(undefined);
-      }
-      case Constants.READ_MORE: {
-        await ctx.dialog?.communicate(
-          new DialogMsg(DialogType.Ask, {
-            description: Constants.DEPLOY_GUIDE,
-            type: QuestionType.OpenExternal,
-          })
-        );
-        return ok(undefined);
-      }
-    }
-
+  private async buildSPPackge(ctx: PluginContext): Promise<Result<any, FxError>> {
     const progressHandler = await ProgressHelper.startPreDeployProgressHandler(ctx);
     if (ctx.platform === Platform.VSCode) {
       (ctx.logProvider as any).outputChannel.show();
@@ -257,6 +232,32 @@ export class SPFxPluginImpl {
     } catch (error) {
       await ProgressHelper.endPreDeployProgress();
       throw BuildSPPackageError(error);
+    }
+  }
+
+  public async preDeploy(ctx: PluginContext): Promise<Result<any, FxError>> {
+    const confirm = (
+      await ctx.dialog?.communicate(
+        new DialogMsg(DialogType.Show, {
+          description: getStrings().plugins.SPFx.buildNotice,
+          level: MsgLevel.Warning,
+          items: [Constants.BUILD_SHAREPOINT_PACKAGE, Constants.READ_MORE, Constants.CANCEL],
+        })
+      )
+    )?.getAnswer();
+
+    switch (confirm) {
+      case Constants.BUILD_SHAREPOINT_PACKAGE:
+        return this.buildSPPackge(ctx);
+      case Constants.READ_MORE:
+        await ctx.dialog?.communicate(
+          new DialogMsg(DialogType.Ask, {
+            description: Constants.DEPLOY_GUIDE,
+            type: QuestionType.OpenExternal,
+          })
+        );
+      default:
+        return ok(undefined);
     }
   }
 

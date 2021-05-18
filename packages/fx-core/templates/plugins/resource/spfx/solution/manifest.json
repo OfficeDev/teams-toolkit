@@ -3,7 +3,7 @@
     "manifestVersion": "1.8",
     "packageName": "<%= componentNameCamelCase %>",
     "id": "<%= componentId %>",
-    "version": "1.0.0.0",
+    "version": "1.0.0",
     "developer": {
         "name": "SPFx + Teams Dev",
         "websiteUrl": "https://products.office.com/en-us/sharepoint/collaboration",

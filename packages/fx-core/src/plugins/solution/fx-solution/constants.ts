@@ -289,3 +289,8 @@ export const CancelError = new UserError("UserCancel", "UserCancel", "Solution")
 // This is the max length specified in
 // https://developer.microsoft.com/en-us/json-schemas/teams/v1.7/MicrosoftTeams.schema.json
 export const TEAMS_APP_SHORT_NAME_MAX_LENGTH = 30;
+
+// Default values for the developer fields in manifest.
+export const DEFAULT_DEVELOPER_WEBSITE_URL = "https://www.example.com";
+export const DEFAULT_DEVELOPER_TERM_OF_USE_URL = "https://www.example.com/termofuse";
+export const DEFAULT_DEVELOPER_PRIVACY_URL = "https://www.example.com/privacy";

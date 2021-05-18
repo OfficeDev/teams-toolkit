@@ -644,7 +644,10 @@ export async function preDebugCheckHandler(): Promise<void> {
     }
     const error = new UserError(ExtensionErrors.PortAlreadyInUse, message, ExtensionSource);
     try {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPreCheck, error);
+      const localAppId = commonUtils.getLocalTeamsAppId() as string;
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPreCheck, error, {
+        [TelemetryProperty.DebugAppId]: localAppId,
+      });
     } finally {
       // ignore telemetry error
       window.showErrorMessage(message);

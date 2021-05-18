@@ -95,7 +95,7 @@ class FuncPluginAdapter implements IDepsAdapter {
   }
 
   public async handleDotnetForLinux(ctx: PluginContext, checker: IDepsChecker): Promise<boolean> {
-    const confirmMessage = await this.generateMsg([checker]);
+    const confirmMessage = await this.generateMsg(Messages.linuxDepsNotFound, [checker]);
     return this.displayContinueWithLearnMoreLink(ctx, confirmMessage, dotnetManualInstallHelpLink);
   }
 
@@ -131,7 +131,7 @@ class FuncPluginAdapter implements IDepsAdapter {
     return userSelected === Messages.continueButtonText;
   }
 
-  private async generateMsg(checkers: Array<IDepsChecker>): Promise<string> {
+  public async generateMsg(messageTemplate: string, checkers: Array<IDepsChecker>): Promise<string> {
     const supportedPackages = [];
     for (const checker of checkers) {
       const info = await checker.getDepsInfo();
@@ -140,7 +140,7 @@ class FuncPluginAdapter implements IDepsAdapter {
       supportedPackages.push(supportedPackage);
     }
     const supportedMessage = supportedPackages.join(" and ");
-    return Messages.linuxDepsNotFound.replace("@SupportedPackages", supportedMessage);
+    return messageTemplate.replace("@SupportedPackages", supportedMessage);
   }
 }
 

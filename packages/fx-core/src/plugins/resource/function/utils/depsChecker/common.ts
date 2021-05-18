@@ -88,6 +88,11 @@ Click "Install" to install @InstallPackages.`,
 Teams Toolkit requires these dependencies. 
 
 Click "Continue" to continue.`,
+
+  linuxDepsNotFoundHelpLinkMessage: `Cannot find @SupportedPackages.
+
+Teams Toolkit requires these dependencies.`,
+
 };
 
 export enum DepsCheckerEvent {

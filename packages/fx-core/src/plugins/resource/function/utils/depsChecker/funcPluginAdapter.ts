@@ -13,7 +13,7 @@ import {
   QuestionType,
   returnUserError,
 } from "@microsoft/teamsfx-api";
-import { Messages, dotnetManualInstallHelpLink } from "./common";
+import { Messages, dotnetManualInstallHelpLink, defaultHelpLink } from "./common";
 import { IDepsAdapter, IDepsChecker } from "./checker";
 import { getResourceFolder } from "../../../../..";
 
@@ -81,14 +81,17 @@ class FuncPluginAdapter implements IDepsAdapter {
   }
 
   public handleDotnetError(error: Error): void {
+    const source = "functionDepsChecker";
+    const defaultAnchor = "report-issues";
     if (error instanceof DepsCheckerError) {
-      throw returnUserError(error, "function", "DepsCheckerError", error.helpLink, error);
+      const [helpLink, anchor] = this.splitHelpLink(error.helpLink);
+      throw returnUserError(error, source, anchor || defaultAnchor, helpLink, error);
     } else {
       throw returnUserError(
         new Error(Messages.defaultErrorMessage),
-        "function",
-        "DepsCheckerError",
-        dotnetManualInstallHelpLink,
+        source,
+        defaultAnchor,
+        defaultHelpLink,
         error
       );
     }
@@ -141,6 +144,15 @@ class FuncPluginAdapter implements IDepsAdapter {
     }
     const supportedMessage = supportedPackages.join(" and ");
     return messageTemplate.replace("@SupportedPackages", supportedMessage);
+  }
+
+  private splitHelpLink(link: string): [string, string] {
+    const lastAnchor = link.lastIndexOf("#");
+    if (lastAnchor !== -1) {
+      return [link.slice(0, lastAnchor), link.slice(lastAnchor + 1)];
+    } else {
+      return [link, ""];
+    }
   }
 }
 

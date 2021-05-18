@@ -63,7 +63,7 @@ And **the latest version of Node.js LTS v14** would be recommended to be install
 ### Mitigation
 Please refer to [the guide](#how-to-install-nodejs) to install `Node.js`.
 
-## FailToInstallDotnet
+## <a name="functionDepsCheckerfailtoinstalldotnet"></a>FailToInstallDotnet
 ### Notification Message
 > Failed to install .NET Core SDK (v3.1), please install it manually and restart all your Visual Studio Code instances.
 
@@ -73,14 +73,14 @@ It might be caused by timeout issue (longer than 3 minutes), the process to inst
 * Retry the operation (local debugging or Function app deployment).
 * Please refer to [the guide](#how-to-install-net-sdk) to install `.NET SDK` manually.
 
-## DotnetNotFound 
+## <a name="functionDepsCheckerdotnetnotfound"></a>DotnetNotFound
 ### Notification Message
 > (Linux only) The toolkit cannot find `.NET 5` or `.NET Core 3.1` on your machine. As a fundamental runtime context for Teams app, these dependencies are required. Please install the required dependencies manually.
 
 ### Mitigation
 Please refer to [the guide](#how-to-install-net-sdk) to install `.NET SDK` manually.
 
-## DotnetNotSupportTargetVersion
+## <a name="functionDepsCheckerdotnetnotsupporttargetversion"></a>DotnetNotSupportTargetVersion
 ### Notification Message
 > NETSDK1045: The current .NET SDK does not support 'newer version' as a target.
 
@@ -100,6 +100,6 @@ To open your user and workspace settings, use the following Visual Studio Code m
 
 ![envchecker-settings](../images/vscode-extension/envchecker/envchecker-settings.png)
 
-## Report issues 
+## <a name="functionDepsCheckerreport-issues"></a>Report issues 
 
 If above FAQs can't solve your problem, please click [here](https://github.com/OfficeDev/Teamsfx/issues/new) to submit an issue on GitHub and attach the log from Visual Studio Code output channel named "Teams Toolkit".

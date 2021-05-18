@@ -608,7 +608,10 @@ export async function backendExtensionsInstallHandler(): Promise<void> {
  */
 export async function preDebugCheckHandler(): Promise<void> {
   try {
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPreCheck);
+    const localAppId = commonUtils.getLocalTeamsAppId() as string;
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPreCheck, {
+      [TelemetryProperty.DebugAppId]: localAppId,
+    });
   } catch {
     // ignore telemetry error
   }
@@ -617,7 +620,10 @@ export async function preDebugCheckHandler(): Promise<void> {
   result = await runCommand(Stage.debug);
   if (result.isErr()) {
     try {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPreCheck, result.error);
+      const localAppId = commonUtils.getLocalTeamsAppId() as string;
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPreCheck, result.error, {
+        [TelemetryProperty.DebugAppId]: localAppId,
+      });
     } finally {
       // ignore telemetry error
       terminateAllRunningTeamsfxTasks();
@@ -638,7 +644,10 @@ export async function preDebugCheckHandler(): Promise<void> {
     }
     const error = new UserError(ExtensionErrors.PortAlreadyInUse, message, ExtensionSource);
     try {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPreCheck, error);
+      const localAppId = commonUtils.getLocalTeamsAppId() as string;
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPreCheck, error, {
+        [TelemetryProperty.DebugAppId]: localAppId,
+      });
     } finally {
       // ignore telemetry error
       window.showErrorMessage(message);

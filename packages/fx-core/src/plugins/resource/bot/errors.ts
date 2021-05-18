@@ -237,3 +237,15 @@ export class FreeServerFarmsQuotaError extends PluginError {
     );
   }
 }
+
+export class BotNameRegisteredError extends PluginError {
+  constructor(innerError?: Error) {
+    super(
+      ErrorType.User,
+      ErrorNames.BOT_NAME_REGISTERED_ERROR,
+      Messages.BotNameAlreadyRegistered,
+      [Messages.DeleteExistingBotChannelRegistration, Messages.DeleteBotAfterAzureAccountSwitching],
+      innerError
+    );
+  }
+}

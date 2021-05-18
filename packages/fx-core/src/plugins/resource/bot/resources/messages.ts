@@ -96,6 +96,8 @@ export class Messages {
     "The subscription didn't register to use namespace 'Microsoft.BotService'.";
   public static readonly MaxFreeAppServicePlanIsTen =
     "The maximum number of Free App Service Plan allowed in a Subscription is 10.";
+  public static readonly BotNameAlreadyRegistered =
+    "The bot name is already registered to another bot application.";
 
   // Suggestions
   public static readonly RetryTheCurrentStep = "Please retry the current step.";
@@ -107,4 +109,8 @@ export class Messages {
   public static readonly RecreateTheProject = "Please recreate the project.";
   public static readonly CheckCommandOutputAndTryToFixIt =
     "Please check the command output and try to fix it.";
+  public static readonly DeleteExistingBotChannelRegistration =
+    "Please delete existing azure bot channel registrations.";
+  public static readonly DeleteBotAfterAzureAccountSwitching =
+    "If azure account is switched, don't forget to delete azure bot channel registration under the previous account.";
 }

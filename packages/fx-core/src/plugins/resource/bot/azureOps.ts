@@ -11,11 +11,13 @@ import {
   MessageEndpointUpdatingError,
   MissingSubscriptionRegistrationError,
   FreeServerFarmsQuotaError,
+  BotNameRegisteredError,
 } from "./errors";
 import { CommonStrings, ConfigNames } from "./resources/strings";
 import * as utils from "./utils/common";
 import { default as axios } from "axios";
 import { ErrorMessagesForChecking } from "./constants";
+import { Messages } from "./resources/messages";
 
 export class AzureOperations {
   public static async CreateBotChannelRegistration(
@@ -38,6 +40,11 @@ export class AzureOperations {
     } catch (e) {
       if (e.code === "MissingSubscriptionRegistration") {
         throw new MissingSubscriptionRegistrationError();
+      } else if (
+        e.code === "InvalidBotData" &&
+        e.message.includes(Messages.BotNameAlreadyRegistered)
+      ) {
+        throw new BotNameRegisteredError();
       } else {
         throw new ProvisionError(CommonStrings.BOT_CHANNEL_REGISTRATION, e);
       }

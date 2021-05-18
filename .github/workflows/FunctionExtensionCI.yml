@@ -8,7 +8,7 @@ on:
   pull_request:
     paths:
       - 'packages/function-extension/**'
-    branches: [ main ]
+  workflow_dispatch:
 
 defaults:
   run:

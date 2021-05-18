@@ -31,6 +31,7 @@ import {
   AzureSolutionSettings,
   UserError,
   Platform,
+  QuestionType,
 } from "@microsoft/teamsfx-api";
 import { askSubscription, fillInCommonQuestions } from "./commonQuestions";
 import { executeLifecycles, executeConcurrently, LifecyclesWithContext } from "./executor";
@@ -945,12 +946,13 @@ export class TeamsAppSolution implements Solution {
               subscriptionName ? subscriptionName : subscriptionId
             ),
             level: MsgLevel.Warning,
-            items: ["Provision", "Cancel"],
+            items: ["Provision", "Read more"],
+            modal: true,
           })
         )
       )?.getAnswer();
 
-      if (confirm !== "Provision") {
+      if (confirm === undefined) {
         return err(
           returnUserError(
             new Error(getStrings().solution.CancelProvision),
@@ -958,6 +960,14 @@ export class TeamsAppSolution implements Solution {
             getStrings().solution.CancelProvision
           )
         );
+      } else if (confirm === "Read more") {
+        await ctx.dialog?.communicate(
+          new DialogMsg(DialogType.Ask, {
+            description: "https://azure.microsoft.com/en-us/pricing/calculator/",
+            type: QuestionType.OpenExternal,
+          })
+        );
+        return ok(undefined);
       }
     }
 
@@ -1348,7 +1358,8 @@ export class TeamsAppSolution implements Solution {
               new DialogMsg(DialogType.Show, {
                 description: getStrings().solution.AskProvisionBeforeDeployOrPublish,
                 level: MsgLevel.Warning,
-                items: ["Provision", "Cancel"],
+                items: ["Provision"],
+                modal: true,
               })
             )
           )?.getAnswer();
@@ -1432,7 +1443,8 @@ export class TeamsAppSolution implements Solution {
               new DialogMsg(DialogType.Show, {
                 description: getStrings().solution.AskProvisionBeforeDeployOrPublish,
                 level: MsgLevel.Warning,
-                items: ["Provision", "Cancel"],
+                items: ["Provision"],
+                modal: true,
               })
             )
           )?.getAnswer();

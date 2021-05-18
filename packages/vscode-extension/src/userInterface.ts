@@ -124,13 +124,25 @@ export class DialogManager implements Dialog {
     let result = undefined;
     switch (msg.level) {
       case MsgLevel.Info:
-        result = ext.ui.showInformationMessage(msg.description, ...(msg.items ? msg.items : []));
+        result = ext.ui.showInformationMessage(
+          msg.description,
+          msg.modal,
+          ...(msg.items ? msg.items : [])
+        );
         break;
       case MsgLevel.Warning:
-        result = ext.ui.showWarningMessage(msg.description, ...(msg.items ? msg.items : []));
+        result = ext.ui.showWarningMessage(
+          msg.description,
+          msg.modal,
+          ...(msg.items ? msg.items : [])
+        );
         break;
       case MsgLevel.Error:
-        result = ext.ui.showErrorMessage(msg.description, ...(msg.items ? msg.items : []));
+        result = ext.ui.showErrorMessage(
+          msg.description,
+          msg.modal,
+          ...(msg.items ? msg.items : [])
+        );
         break;
     }
     await sleep(0);

@@ -178,13 +178,14 @@ export class SPFxPluginImpl {
         new DialogMsg(DialogType.Show, {
           description: getStrings().plugins.SPFx.buildNotice,
           level: MsgLevel.Warning,
-          items: [Constants.BUILD_SHAREPOINT_PACKAGE, Constants.READ_MORE, Constants.CANCEL],
+          items: [Constants.BUILD_SHAREPOINT_PACKAGE, Constants.READ_MORE],
+          modal: true,
         })
       )
     )?.getAnswer();
 
     switch (confirm) {
-      case Constants.CANCEL: {
+      case undefined: {
         return ok(undefined);
       }
       case Constants.READ_MORE: {

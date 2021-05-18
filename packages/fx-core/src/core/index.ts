@@ -271,7 +271,8 @@ class CoreImpl implements Core {
             new DialogMsg(DialogType.Show, {
               description: `Download '${samples.label}' from Github. This will download '${samples.label}' repository and open to your local machine`,
               level: MsgLevel.Info,
-              items: ["Download", "Cancel"],
+              items: ["Download"],
+              modal: true,
             })
           )
         )?.getAnswer();

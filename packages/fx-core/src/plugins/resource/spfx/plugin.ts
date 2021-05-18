@@ -242,6 +242,7 @@ export class SPFxPluginImpl {
           description: getStrings().plugins.SPFx.buildNotice,
           level: MsgLevel.Warning,
           items: [Constants.BUILD_SHAREPOINT_PACKAGE, Constants.READ_MORE],
+          modal: true,
         })
       )
     )?.getAnswer();

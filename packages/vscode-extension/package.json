@@ -1,9 +1,9 @@
 {
-  "name": "teamsfx-extension",
+  "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit (Preview)",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
   "version": "2.0.0-rc.1",
-  "publisher": "Microsoft",
+  "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
   "main": "./out/src/extension.js",

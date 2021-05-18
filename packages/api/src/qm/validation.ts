@@ -9,23 +9,25 @@ import {
   StringArrayValidation,
   StringValidation,
   Validation,
-  Func
+  Func,
 } from "./question";
 import * as fs from "fs-extra";
-import * as jsonschema from "jsonschema"; 
+import * as jsonschema from "jsonschema";
 import { Result } from "neverthrow";
 import { FxError } from "../error";
 import { ConfigMap, Inputs } from "../config";
- 
 
-export type RemoteFuncExecutor = (func:Func, answers: ConfigMap) => Promise<Result<unknown, FxError>>; 
+export type RemoteFuncExecutor = (
+  func: Func,
+  answers: ConfigMap
+) => Promise<Result<unknown, FxError>>;
 
 export function getValidationFunction(
   validation: Validation,
   outputs: ConfigMap,
-  remoteFuncValidator?: RemoteFuncExecutor,
+  remoteFuncValidator?: RemoteFuncExecutor
 ): (input: string | string[]) => Promise<string | undefined> {
-  return async function(input: string | string[]): Promise<string | undefined> {
+  return async function (input: string | string[]): Promise<string | undefined> {
     return await validate(validation, input, outputs, remoteFuncValidator);
   };
 }
@@ -40,7 +42,7 @@ export async function validate(
   {
     const funcValidation: RemoteFuncValidation = validation as RemoteFuncValidation;
     if (funcValidation.method && remoteFuncValidator) {
-      funcValidation.params = valueToValidate as string; 
+      funcValidation.params = valueToValidate as string;
       const res = await remoteFuncValidator(funcValidation as Func, inputs);
       if (res.isOk()) {
         return res.value as string;
@@ -61,9 +63,8 @@ export async function validate(
 
   // Required Validation
   {
-    if(!valueToValidate){
-      if(validation.required === true)
-        return `This question is mandatory`;
+    if (!valueToValidate) {
+      if (validation.required === true) return `This question is mandatory`;
     }
   }
 
@@ -76,7 +77,7 @@ export async function validate(
         return `path should not be empty!`;
       }
       const exists = await fs.pathExists(path);
-      if(exists !== fileValidation.exists){
+      if (exists !== fileValidation.exists) {
         return `path(${path}) existence should be ${fileValidation.exists}`;
       }
       return undefined;
@@ -88,7 +89,6 @@ export async function validate(
     const stringValidation: StringValidation = validation as StringValidation;
     const strToValidate = valueToValidate as string;
     if (typeof strToValidate === "string") {
-      
       const schema: any = {};
       if (stringValidation.equals && typeof stringValidation.equals === "string")
         schema.const = stringValidation.equals;

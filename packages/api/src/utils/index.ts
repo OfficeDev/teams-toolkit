@@ -14,11 +14,10 @@ export * from "./telemetry";
 export * from "./dialog";
 export * from "./tree";
 
-export interface ToolsProvider
-{
-    logProvider: LogProvider;
-    tokenProvider: TokenProvider;
-    telemetryReporter: TelemetryReporter;
-    treeProvider: TreeProvider;
-    dialog: Dialog;
+export interface ToolsProvider {
+  logProvider: LogProvider;
+  tokenProvider: TokenProvider;
+  telemetryReporter: TelemetryReporter;
+  treeProvider: TreeProvider;
+  dialog: Dialog;
 }

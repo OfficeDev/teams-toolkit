@@ -2,19 +2,25 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { ConfigMap, PluginConfig, ProjectSettings, ReadonlySolutionConfig, SolutionConfig } from "./config";
- 
+import {
+  ConfigMap,
+  PluginConfig,
+  ProjectSettings,
+  ReadonlySolutionConfig,
+  SolutionConfig,
+} from "./config";
+
 import { VsCode } from "./vscode";
 import { TeamsAppManifest } from "./manifest";
 import {
-    GraphTokenProvider,
-    LogProvider,
-    TelemetryReporter,
-    AzureAccountProvider,
-    AppStudioTokenProvider,
-    Dialog,
-    TreeProvider
-} from "./utils"; 
+  GraphTokenProvider,
+  LogProvider,
+  TelemetryReporter,
+  AzureAccountProvider,
+  AppStudioTokenProvider,
+  Dialog,
+  TreeProvider,
+} from "./utils";
 import { Platform } from "./constants";
 
 /*
@@ -22,48 +28,47 @@ import { Platform } from "./constants";
  * develop a Teams APP.
  */
 export interface Context {
-    
-    root: string;
+  root: string;
 
-    dialog?: Dialog;
+  dialog?: Dialog;
 
-    logProvider?: LogProvider;
+  logProvider?: LogProvider;
 
-    telemetryReporter?: TelemetryReporter;
+  telemetryReporter?: TelemetryReporter;
 
-    azureAccountProvider?: AzureAccountProvider;
+  azureAccountProvider?: AzureAccountProvider;
 
-    graphTokenProvider?: GraphTokenProvider;
+  graphTokenProvider?: GraphTokenProvider;
 
-    appStudioToken?: AppStudioTokenProvider;
+  appStudioToken?: AppStudioTokenProvider;
 
-    treeProvider?: TreeProvider;
+  treeProvider?: TreeProvider;
 
-    platform? : Platform;
+  platform?: Platform;
 
-    answers?: ConfigMap; // for question model
+  answers?: ConfigMap; // for question model
 
-    projectSettings?:ProjectSettings;
+  projectSettings?: ProjectSettings;
 }
 
 export interface SolutionContext extends Context {
-    dotVsCode?: VsCode;
+  dotVsCode?: VsCode;
 
-    app: TeamsAppManifest;
+  app: TeamsAppManifest;
 
-    config: SolutionConfig;
+  config: SolutionConfig;
 }
 
 export interface PluginContext extends Context {
-    // A readonly view of other plugins' config
-    // FolderProvider: FolderProvider;
+  // A readonly view of other plugins' config
+  // FolderProvider: FolderProvider;
 
-    // A readonly view of other plugins' config
-    configOfOtherPlugins: ReadonlySolutionConfig;
+  // A readonly view of other plugins' config
+  configOfOtherPlugins: ReadonlySolutionConfig;
 
-    // A mutable config for current plugin
-    config: PluginConfig;
+  // A mutable config for current plugin
+  config: PluginConfig;
 
-    // A readonly of view of teams manifest. Useful for bot plugin.
-    app: Readonly<TeamsAppManifest>;
+  // A readonly of view of teams manifest. Useful for bot plugin.
+  app: Readonly<TeamsAppManifest>;
 }

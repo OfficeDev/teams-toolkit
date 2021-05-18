@@ -279,7 +279,7 @@ class CoreImpl implements Core {
           const url = samples.data as string;
           const sampleId = samples.id;
 
-          const sampleAppPath = path.join(folder, sampleId);
+          const sampleAppPath = path.resolve(folder, sampleId);
           if (
             (await fs.pathExists(sampleAppPath)) &&
             (await fs.readdir(sampleAppPath)).length > 0
@@ -594,13 +594,6 @@ class CoreImpl implements Core {
       };
 
       const signinM365Callback = async (args?: any[]): Promise<Result<null, FxError>> => {
-        this.ctx?.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.LoginStart, {
-          [TelemetryProperty.TriggerFrom]:
-            args && args.toString() === "TreeView"
-              ? TelemetryTiggerFrom.TreeView
-              : TelemetryTiggerFrom.CommandPalette,
-          [TelemetryProperty.AccountType]: AccountType.M365,
-        });
         const token = await this.ctx.appStudioToken?.getJsonObject(true);
         if (token !== undefined) {
           this.ctx.treeProvider?.refresh([
@@ -622,14 +615,6 @@ class CoreImpl implements Core {
         validFxProject: boolean,
         args?: any[]
       ): Promise<Result<null, FxError>> => {
-        this.ctx?.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.LoginStart, {
-          [TelemetryProperty.TriggerFrom]:
-            args && args[0].toString() === "TreeView"
-              ? TelemetryTiggerFrom.TreeView
-              : TelemetryTiggerFrom.CommandPalette,
-          [TelemetryProperty.AccountType]: AccountType.Azure,
-        });
-
         const showDialog = args && args[1] !== undefined ? args[1] : true;
         const token = await this.ctx.azureAccountProvider?.getAccountCredentialAsync(showDialog);
         if (token !== undefined) {
@@ -1416,11 +1401,9 @@ enum TelemetryTiggerFrom {
 
 enum TelemetryProperty {
   TriggerFrom = "trigger-from",
-  AccountType = "account-type",
 }
 
 enum TelemetryEvent {
-  LoginStart = "login-start",
   SelectSubscription = "select-subscription",
 }
 

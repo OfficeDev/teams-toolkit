@@ -12,7 +12,7 @@
 	  <CodeAnalysisRuleSet>$(SolutionDir)\ruleset\AllInOne.ruleset</CodeAnalysisRuleSet>
 	  <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
 	  <LangVersion>8.0</LangVersion>
-	  <Version>0.1.0-rc.1</Version>
+	  <Version>0.1.0</Version>
 	  <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
 	  <Authors>Microsoft</Authors>
 	  <PackageLicenseExpression>MIT</PackageLicenseExpression>

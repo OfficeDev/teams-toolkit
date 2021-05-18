@@ -13,7 +13,7 @@ import {
   QuestionType,
   returnUserError,
 } from "@microsoft/teamsfx-api";
-import { Messages, dotnetManualInstallHelpLink } from "./common";
+import { Messages, dotnetManualInstallHelpLink, defaultHelpLink } from "./common";
 import { IDepsAdapter, IDepsChecker } from "./checker";
 import { getResourceFolder } from "../../../../..";
 
@@ -81,21 +81,24 @@ class FuncPluginAdapter implements IDepsAdapter {
   }
 
   public handleDotnetError(error: Error): void {
+    const source = "functionDepsChecker";
+    const defaultAnchor = "report-issues";
     if (error instanceof DepsCheckerError) {
-      throw returnUserError(error, "function", "DepsCheckerError", error.helpLink, error);
+      const [helpLink, anchor] = this.splitHelpLink(error.helpLink);
+      throw returnUserError(error, source, anchor || defaultAnchor, helpLink, error);
     } else {
       throw returnUserError(
         new Error(Messages.defaultErrorMessage),
-        "function",
-        "DepsCheckerError",
-        dotnetManualInstallHelpLink,
+        source,
+        defaultAnchor,
+        defaultHelpLink,
         error
       );
     }
   }
 
   public async handleDotnetForLinux(ctx: PluginContext, checker: IDepsChecker): Promise<boolean> {
-    const confirmMessage = await this.generateMsg([checker]);
+    const confirmMessage = await this.generateMsg(Messages.linuxDepsNotFound, [checker]);
     return this.displayContinueWithLearnMoreLink(ctx, confirmMessage, dotnetManualInstallHelpLink);
   }
 
@@ -126,12 +129,17 @@ class FuncPluginAdapter implements IDepsAdapter {
           description: link,
         })
       );
+
+      return this.displayContinueWithLearnMoreLink(ctx, message, link);
     }
 
     return userSelected === Messages.continueButtonText;
   }
 
-  private async generateMsg(checkers: Array<IDepsChecker>): Promise<string> {
+  public async generateMsg(
+    messageTemplate: string,
+    checkers: Array<IDepsChecker>
+  ): Promise<string> {
     const supportedPackages = [];
     for (const checker of checkers) {
       const info = await checker.getDepsInfo();
@@ -140,7 +148,16 @@ class FuncPluginAdapter implements IDepsAdapter {
       supportedPackages.push(supportedPackage);
     }
     const supportedMessage = supportedPackages.join(" and ");
-    return Messages.linuxDepsNotFound.replace("@SupportedPackages", supportedMessage);
+    return messageTemplate.replace("@SupportedPackages", supportedMessage);
+  }
+
+  private splitHelpLink(link: string): [string, string] {
+    const lastAnchor = link.lastIndexOf("#");
+    if (lastAnchor !== -1) {
+      return [link.slice(0, lastAnchor), link.slice(lastAnchor + 1)];
+    } else {
+      return [link, ""];
+    }
   }
 }
 

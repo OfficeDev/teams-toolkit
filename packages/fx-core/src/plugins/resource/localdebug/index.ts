@@ -187,9 +187,15 @@ export class LocalDebugPlugin implements Plugin {
 
   public async localDebug(ctx: PluginContext): Promise<Result<any, FxError>> {
     const vscEnv = ctx.answers?.getString("vscenv");
-    const includeFrontend = ctx.configOfOtherPlugins?.has(FrontendHostingPlugin.Name);
-    const includeBackend = ctx.configOfOtherPlugins?.has(FunctionPlugin.Name);
-    const includeBot = ctx.configOfOtherPlugins?.has(BotPlugin.Name);
+    const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
+      ?.activeResourcePlugins;
+    const includeFrontend = selectedPlugins?.some(
+      (pluginName) => pluginName === FrontendHostingPlugin.Name
+    );
+    const includeBackend = selectedPlugins?.some(
+      (pluginName) => pluginName === FunctionPlugin.Name
+    );
+    const includeBot = selectedPlugins?.some((pluginName) => pluginName === BotPlugin.Name);
     const skipNgrok = ctx.config?.get(LocalDebugConfigKeys.SkipNgrok) as string;
 
     const telemetryProperties = {
@@ -271,9 +277,15 @@ export class LocalDebugPlugin implements Plugin {
   }
 
   public async postLocalDebug(ctx: PluginContext): Promise<Result<any, FxError>> {
-    const includeFrontend = ctx.configOfOtherPlugins?.has(FrontendHostingPlugin.Name);
-    const includeBackend = ctx.configOfOtherPlugins?.has(FunctionPlugin.Name);
-    const includeBot = ctx.configOfOtherPlugins?.has(BotPlugin.Name);
+    const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
+      ?.activeResourcePlugins;
+    const includeFrontend = selectedPlugins?.some(
+      (pluginName) => pluginName === FrontendHostingPlugin.Name
+    );
+    const includeBackend = selectedPlugins?.some(
+      (pluginName) => pluginName === FunctionPlugin.Name
+    );
+    const includeBot = selectedPlugins?.some((pluginName) => pluginName === BotPlugin.Name);
     const trustDevCert = ctx.config?.get(
       LocalDebugConfigKeys.TrustDevelopmentCertificate
     ) as string;
@@ -289,10 +301,6 @@ export class LocalDebugPlugin implements Plugin {
     TelemetryUtils.sendStartEvent(TelemetryEventName.postLocalDebug, telemetryProperties);
 
     if (ctx.platform === Platform.VSCode) {
-      const includeFrontend = ctx.configOfOtherPlugins.has(FrontendHostingPlugin.Name);
-      const includeBackend = ctx.configOfOtherPlugins.has(FunctionPlugin.Name);
-      const includeBot = ctx.configOfOtherPlugins.has(BotPlugin.Name);
-
       const localEnvProvider = new LocalEnvProvider(ctx.root);
       const localEnvs = await localEnvProvider.loadLocalEnv(
         includeFrontend,

@@ -1,6 +1,6 @@
 import * as path from "path";
-import { window, workspace, WorkspaceConfiguration, MessageItem } from "vscode";
-import { Messages, openUrl } from "./common";
+import { window, workspace, WorkspaceConfiguration, MessageItem, commands, Uri } from "vscode";
+import { Messages } from "./common";
 import { IDepsAdapter } from "./checker";
 import { hasTeamsfxBackend } from "../commonUtils";
 import { vscodeLogger as logger } from "./vscodeLogger";
@@ -54,7 +54,8 @@ export class VSCodeAdapter implements IDepsAdapter {
     if (input === continueButton) {
       return true;
     } else if (input == learnMoreButton) {
-      await openUrl(link);
+      await VSCodeAdapter.openUrl(link);
+      return await this.displayContinueWithLearnMore(message, link);
     }
 
     return false;
@@ -62,8 +63,8 @@ export class VSCodeAdapter implements IDepsAdapter {
 
   public async displayLearnMore(message: string, link: string): Promise<boolean> {
     return await this.displayWarningMessage(message, Messages.learnMoreButtonText, async () => {
-      await openUrl(link);
-      return Promise.resolve(false);
+      await VSCodeAdapter.openUrl(link);
+      return await this.displayLearnMore(message, link);
     });
   }
 
@@ -95,6 +96,10 @@ export class VSCodeAdapter implements IDepsAdapter {
       this.configurationPrefix
     );
     return configuration.get<boolean>(key, false);
+  }
+
+  private static async openUrl(url: string): Promise<void> {
+    await commands.executeCommand("vscode.open", Uri.parse(url));
   }
 }
 

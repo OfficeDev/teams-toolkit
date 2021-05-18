@@ -139,26 +139,15 @@ class AccountLogin extends YargsCommand {
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLoginStart, {
-      [TelemetryProperty.AccountType]: args.service
-    });
     switch (args.service) {
       case "azure": {
         await AzureTokenProvider.signout();
         const result = await outputAzureInfo("login", args.tenant);
-        CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLogin, {
-          [TelemetryProperty.AccountType]: args.service,
-          [TelemetryProperty.Success]: result? TelemetrySuccess.Yes : TelemetrySuccess.No
-        });
         break;
       }
       case "m365": {
         await AppStudioTokenProvider.signout();
         const result = await outputM365Info("login");
-        CliTelemetry.sendTelemetryEvent(TelemetryEvent.AccountLogin, {
-          [TelemetryProperty.AccountType]: args.service,
-          [TelemetryProperty.Success]: result? TelemetrySuccess.Yes : TelemetrySuccess.No
-        });
         break;
       }
     }

@@ -35,6 +35,9 @@ import {
   BOTS_TPL,
   COMPOSE_EXTENSIONS_TPL,
   TEAMS_APP_SHORT_NAME_MAX_LENGTH,
+  DEFAULT_DEVELOPER_WEBSITE_URL,
+  DEFAULT_DEVELOPER_TERM_OF_USE_URL,
+  DEFAULT_DEVELOPER_PRIVACY_URL,
 } from "../constants";
 import axios, { AxiosInstance } from "axios";
 
@@ -396,11 +399,11 @@ export namespace AppStudio {
     if (botId) {
       manifest = replaceConfigValue(manifest, "botId", botId);
     }
-    manifest = replaceConfigValue(
-      manifest,
-      "baseUrl",
-      tabEndpoint ? tabEndpoint : "https://localhost:3000"
-    );
+
+    if (tabEndpoint) {
+      manifest = replaceConfigValue(manifest, "baseUrl", tabEndpoint);
+    }
+
     manifest = replaceConfigValue(manifest, "appClientId", appId);
     manifest = replaceConfigValue(manifest, "appid", appId);
     manifest = replaceConfigValue(
@@ -413,6 +416,12 @@ export namespace AppStudio {
 
     for (const domain of domains) {
       updatedManifest.validDomains?.push(domain);
+    }
+
+    if (!tabEndpoint && updatedManifest.developer) {
+      updatedManifest.developer.websiteUrl = DEFAULT_DEVELOPER_WEBSITE_URL;
+      updatedManifest.developer.termsOfUseUrl = DEFAULT_DEVELOPER_TERM_OF_USE_URL;
+      updatedManifest.developer.privacyUrl = DEFAULT_DEVELOPER_PRIVACY_URL;
     }
 
     const appDefinition = convertToAppDefinition(updatedManifest, ignoreIcon);

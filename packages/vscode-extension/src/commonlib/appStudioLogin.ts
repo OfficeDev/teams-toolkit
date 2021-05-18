@@ -26,13 +26,13 @@ const afterCacheAccess = getAfterCacheAccess(scopes, accountName);
 
 const cachePlugin = {
   beforeCacheAccess,
-  afterCacheAccess,
+  afterCacheAccess
 };
 
 const config = {
   auth: {
     clientId: "7ea7c24c-b1f6-4a20-9d11-9ae12e9e7ac0",
-    authority: "https://login.microsoftonline.com/common",
+    authority: "https://login.microsoftonline.com/common"
   },
   system: {
     loggerOptions: {
@@ -41,12 +41,12 @@ const config = {
         VsCodeLogInstance.info(message);
       },
       piiLoggingEnabled: false,
-      logLevel: LogLevel.Error,
-    },
+      logLevel: LogLevel.Error
+    }
   },
   cache: {
-    cachePlugin,
-  },
+    cachePlugin
+  }
 };
 
 export class AppStudioLogin extends login implements AppStudioTokenProvider {

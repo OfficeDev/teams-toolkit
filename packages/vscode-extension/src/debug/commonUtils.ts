@@ -226,3 +226,17 @@ export function getTeamsAppTenantId(): string | undefined {
 
   return undefined;
 }
+
+export function getLocalTeamsAppId(): string | undefined {
+  if (ext.workspaceUri) {
+    const ws = ext.workspaceUri.fsPath;
+    if (isWorkspaceSupported(ws)) {
+      const env = getActiveEnv();
+      const envJsonPath = path.join(ws, `.${ConfigFolderName}/env.${env}.json`);
+      const envJson = JSON.parse(fs.readFileSync(envJsonPath, "utf8"));
+      return envJson.solution.localDebugTeamsAppId;
+    }
+  }
+
+  return undefined;
+}

@@ -10,15 +10,6 @@
 // to copy you changes to function plugin.
 
 import * as os from "os";
-const opn = require("opn");
-
-export async function openUrl(url: string): Promise<void> {
-  // Using this functionality is blocked by https://github.com/Microsoft/vscode/issues/25852
-  // Specifically, opening the Live Metrics Stream for Linux Function Apps doesn't work in this extension.
-  // await vscode.env.openExternal(vscode.Uri.parse(url));
-
-  opn(url);
-}
 
 export function isWindows(): boolean {
   return os.type() === "Windows_NT";
@@ -46,7 +37,7 @@ export const dotnetNotSupportTargetVersionHelpLink = `${defaultHelpLink}#dotnetn
 
 export const Messages = {
   learnMoreButtonText: "Learn more",
-  continueButtonText: "Continue",
+  continueButtonText: "Continue anyway",
 
   defaultErrorMessage: "Install the required dependencies manually.",
 
@@ -76,7 +67,7 @@ Click "Learn more" to learn how to install the Node.js.
   NodeNotSupported: `Node.js (@CurrentVersion) is not in the supported version list (@SupportedVersions).
 
 Click "Learn more" to learn more about the supported Node.js versions.
-Click "Continue" to continue local debugging.
+Click "Continue anyway" to continue local debugging.
 
 (If you just installed Node.js (@SupportedVersions), restart Visual Studio Code for the change to take effect.)`,
 
@@ -91,9 +82,13 @@ Click "Install" to install @InstallPackages.`,
 
 Teams Toolkit requires these dependencies. 
 
-Click "Continue" to continue.
+Click "Continue anyway" to continue.
 
 (If you just installed @SupportedPackages, restart Visual Studio Code for the change to take effect.)`,
+
+  linuxDepsNotFoundHelpLinkMessage: `Cannot find @SupportedPackages.
+
+Teams Toolkit requires these dependencies.`,
 };
 
 export enum DepsCheckerEvent {

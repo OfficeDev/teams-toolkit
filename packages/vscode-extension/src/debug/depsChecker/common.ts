@@ -94,6 +94,11 @@ Teams Toolkit requires these dependencies.
 Click "Continue" to continue.
 
 (If you just installed @SupportedPackages, restart Visual Studio Code for the change to take effect.)`,
+
+  linuxDepsNotFoundHelpLinkMessage: `Cannot find @SupportedPackages.
+
+Teams Toolkit requires these dependencies.`,
+
 };
 
 export enum DepsCheckerEvent {

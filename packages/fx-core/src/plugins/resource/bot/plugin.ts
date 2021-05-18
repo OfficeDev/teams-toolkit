@@ -401,6 +401,9 @@ export class TeamsBotImpl {
           `Before running this bot, please manually update bot's message endpoint(${this.config.provision.siteEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}). Click 'Get Help' button for more details.`,
           Links.UPDATE_MESSAGE_ENDPOINT
         );
+        Logger.info(
+          `Please manually update bot's message endpoint(${this.config.provision.siteEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}).`
+        );
         break;
       }
     }

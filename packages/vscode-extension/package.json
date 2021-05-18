@@ -547,7 +547,6 @@
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "jsonschema": "^1.4.0",
-    "opn": "^6.0.0",
     "sudo-prompt": "^9.2.1",
     "underscore": "^1.12.1",
     "vscode-extension-telemetry": "^0.1.6",

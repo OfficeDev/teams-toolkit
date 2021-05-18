@@ -99,7 +99,7 @@ export class VSCodeAdapter implements IDepsAdapter {
   }
 
   private static async openUrl(url: string): Promise<void> {
-    return commands.executeCommand("vscode.open", Uri.parse(url));
+    await commands.executeCommand("vscode.open", Uri.parse(url));
   }
 }
 

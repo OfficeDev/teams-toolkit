@@ -201,6 +201,9 @@ export async function activate(): Promise<Result<null, FxError>> {
     {
       await openMarkdownHandler();
     }
+    {
+      await openSampleReadmeHandler();
+    }
   } catch (e) {
     const FxError: FxError = {
       name: e.name,
@@ -692,6 +695,20 @@ async function openMarkdownHandler() {
       }
     }
     const uri = Uri.file(`${targetFolder}/README.md`);
+    workspace.openTextDocument(uri).then(() => {
+      const PreviewMarkdownCommand = "markdown.showPreviewToSide";
+      commands.executeCommand(PreviewMarkdownCommand, uri);
+    });
+  }
+}
+
+async function openSampleReadmeHandler() {
+  const afterScaffold = ext.context.globalState.get("openSampleReadme", false);
+  if (afterScaffold && workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
+    ext.context.globalState.update("openSampleReadme", false);
+    const workspaceFolder = workspace.workspaceFolders[0];
+    const workspacePath: string = workspaceFolder.uri.fsPath;
+    const uri = Uri.file(`${workspacePath}/README.md`);
     workspace.openTextDocument(uri).then(() => {
       const PreviewMarkdownCommand = "markdown.showPreviewToSide";
       commands.executeCommand(PreviewMarkdownCommand, uri);

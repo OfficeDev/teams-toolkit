@@ -301,6 +301,16 @@ class CoreImpl implements Core {
             progress.next("Unzipping the sample package");
             if (fetchRes !== undefined) {
               await saveFilesRecursively(new AdmZip(fetchRes.data), sampleId, folder);
+
+              if (this.ctx.platform === Platform.VSCode) {
+                await this.ctx.dialog?.communicate(
+                  new DialogMsg(DialogType.Ask, {
+                    type: QuestionType.UpdateGlobalState,
+                    description: "openSampleReadme",
+                  })
+                );
+              }
+
               await this.ctx.dialog?.communicate(
                 new DialogMsg(DialogType.Ask, {
                   type: QuestionType.OpenFolder,
@@ -1078,7 +1088,7 @@ class CoreImpl implements Core {
             description: "",
             author: "",
             scripts: {
-              test: "echo \"Error: no test specified\" && exit 1",
+              test: 'echo "Error: no test specified" && exit 1',
             },
             license: "MIT",
           },

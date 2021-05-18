@@ -23,20 +23,20 @@ Short summary on functionality and used technologies.
 
 ## Solution
 
-| Solution    | Author(s)                                               |
-| ----------- | ------------------------------------------------------- |
-| folder name | Author details (name, company, twitter alias with link) |
+Solution|Author(s)
+--------|---------
+folder name | Author details (name, company, twitter alias with link)
 
 ## Version history
 
-| Version | Date             | Comments        |
-| ------- | ---------------- | --------------- |
-| 1.1     | March 10, 2021   | Update comment  |
-| 1.0     | January 29, 2021 | Initial release |
+Version|Date|Comments
+-------|----|--------
+1.1|March 10, 2021|Update comment
+1.0|January 29, 2021|Initial release
 
 ## Disclaimer
 
-**THIS CODE IS PROVIDED _AS IS_ WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ANY IMPLIED WARRANTIES OF FITNESS FOR A PARTICULAR PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.**
+**THIS CODE IS PROVIDED *AS IS* WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING ANY IMPLIED WARRANTIES OF FITNESS FOR A PARTICULAR PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.**
 
 ---
 
@@ -46,27 +46,26 @@ Short summary on functionality and used technologies.
 2. You can either download [Visual Studio Code](https://code.visualstudio.com) and install Teams Toolkit V2 or download TeamsFx CLI.
 3. Open the project with VSCode and in the Teams Toolkit V2 sidebar, click `Provision in the Cloud` under PROJECT.
 
-   Or you can use TeamsFx CLI with running this cmd under your project path:
-   `teamsfx provision`
+    Or you can use TeamsFx CLI with running this cmd under your project path:
+    `teamsfx provision`
 
-   It will provision an app in Teams App Studio. You may need to login with your M365 tenant admin account.
+    It will provision an app in Teams App Studio. You may need to login with your M365 tenant admin account.
 
 4. Build and Deploy your SharePoint Package.
+    - Click `Deploy to the Cloud` in Teams Toolkit V2 sidebar, or run `Teams: Deploy to the Cloud` from command palette. This will generate a SharePoint package(*.sppkg) under sharepoint/solution folder.
+  
+    Or you can use TeamsFx CLI with running this cmd under your project path:
+        `teamsfx deploy`
 
-   - Click `Deploy to the Cloud` in Teams Toolkit V2 sidebar, or run `Teams: Deploy to the Cloud` from command palette. This will generate a SharePoint package(\*.sppkg) under sharepoint/solution folder.
+    - Upload or drag and drop the *.sppkg to the SharePoint App Catalog site, please follow the instruction: [Deploy the HelloWorld package to App Catalog](https://docs.microsoft.com/en-us/sharepoint/dev/spfx/web-parts/get-started/serve-your-web-part-in-a-sharepoint-page#deploy-the-helloworld-package-to-app-catalog)
+5. Go back to Teams Toolkit V2, and in the sidebar, click `Publish to Teams`. 
 
-   Or you can use TeamsFx CLI with running this cmd under your project path:
-   `teamsfx deploy`
-
-   - Upload or drag and drop the \*.sppkg to the SharePoint App Catalog site, please follow the instruction: [Deploy the HelloWorld package to App Catalog](https://docs.microsoft.com/en-us/sharepoint/dev/spfx/web-parts/get-started/serve-your-web-part-in-a-sharepoint-page#deploy-the-helloworld-package-to-app-catalog)
-
-5. Go back to Teams Toolkit V2, and in the sidebar, click `Publish to Teams`.
-
-   Or you can use TeamsFx CLI with running this cmd under your project path:
-   `teamsfx publish`
+    Or you can use TeamsFx CLI with running this cmd under your project path:
+        `teamsfx publish`
 
 You will find your app in [Microsoft Teams admin center](https://admin.teams.microsoft.com/policies/manage-apps). Enter your app name in the search box.
-Click the item and select `Publish` in the Publishing status. 6. You may need to wait for a few minutes after publishing your teams app.And then login to Teams, and you will find your app in the `Apps - Built for {your-tenant-name}` category.
+Click the item and select `Publish` in the Publishing status.
+6. You may need to wait for a few minutes after publishing your teams app.And then login to Teams, and you will find your app in the `Apps - Built for {your-tenant-name}` category.
 
 ## Features
 

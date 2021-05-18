@@ -20,13 +20,13 @@ const afterCacheAccess = getAfterCacheAccess(scopes, accountName);
 
 const cachePlugin = {
   beforeCacheAccess,
-  afterCacheAccess
+  afterCacheAccess,
 };
 
 const config = {
   auth: {
     clientId: "7ea7c24c-b1f6-4a20-9d11-9ae12e9e7ac0",
-    authority: "https://login.microsoftonline.com/common"
+    authority: "https://login.microsoftonline.com/common",
   },
   system: {
     loggerOptions: {
@@ -34,12 +34,12 @@ const config = {
         CLILogProvider.log(4 - loglevel, message);
       },
       piiLoggingEnabled: false,
-      logLevel: LogLevel.Error
-    }
+      logLevel: LogLevel.Error,
+    },
   },
   cache: {
-    cachePlugin
-  }
+    cachePlugin,
+  },
 };
 
 export class AppStudioLogin extends login implements AppStudioTokenProvider {
@@ -114,7 +114,11 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
   }
 
   async setStatusChangeCallback(
-    statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>
   ): Promise<boolean> {
     AppStudioLogin.statusChange = statusChange;
     await AppStudioLogin.codeFlowInstance.reloadCache();
@@ -145,6 +149,9 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
 import AppStudioTokenProviderUserPassword from "./appStudioLoginUserPassword";
 
 const ciEnabled = process.env.CI_ENABLED;
-const appStudioLogin = ciEnabled && ciEnabled === "true" ? AppStudioTokenProviderUserPassword : AppStudioLogin.getInstance();
+const appStudioLogin =
+  ciEnabled && ciEnabled === "true"
+    ? AppStudioTokenProviderUserPassword
+    : AppStudioLogin.getInstance();
 
 export default appStudioLogin;

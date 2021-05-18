@@ -121,3 +121,11 @@ export function InquirerAnswerNotFound(data: string): UserError {
     "InquirerAnswerNotFound"
   );
 }
+
+export function ProjectFolderExist(path: string): UserError {
+  return returnUserError(
+    new Error(`Path ${path} alreay exists. Select a different folder.`),
+    constants.cliSource,
+    "ProjectFolderExist"
+  );
+}

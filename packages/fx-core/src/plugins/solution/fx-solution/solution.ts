@@ -946,13 +946,21 @@ export class TeamsAppSolution implements Solution {
               subscriptionName ? subscriptionName : subscriptionId
             ),
             level: MsgLevel.Warning,
-            items: ["Provision", "Read more"],
+            items: ["Provision", "Cost calculator"],
             modal: true,
           })
         )
       )?.getAnswer();
 
-      if (confirm === undefined) {
+      if (confirm !== "Provision") {
+        if (confirm === "Cost calculator") {
+          await ctx.dialog?.communicate(
+            new DialogMsg(DialogType.Ask, {
+              description: "https://azure.microsoft.com/en-us/pricing/calculator/",
+              type: QuestionType.OpenExternal,
+            })
+          );
+        }
         return err(
           returnUserError(
             new Error(getStrings().solution.CancelProvision),
@@ -960,14 +968,6 @@ export class TeamsAppSolution implements Solution {
             getStrings().solution.CancelProvision
           )
         );
-      } else if (confirm === "Read more") {
-        await ctx.dialog?.communicate(
-          new DialogMsg(DialogType.Ask, {
-            description: "https://azure.microsoft.com/en-us/pricing/calculator/",
-            type: QuestionType.OpenExternal,
-          })
-        );
-        return ok(undefined);
       }
     }
 

@@ -692,15 +692,10 @@ async function openMarkdownHandler() {
       }
     }
     const uri = Uri.file(`${targetFolder}/README.md`);
-    workspace
-      .openTextDocument(uri)
-      .then((document) => {
-        window.showTextDocument(document);
-      })
-      .then(() => {
-        const PreviewMarkdownCommand = "markdown.showPreviewToSide";
-        commands.executeCommand(PreviewMarkdownCommand, uri);
-      });
+    workspace.openTextDocument(uri).then(() => {
+      const PreviewMarkdownCommand = "markdown.showPreviewToSide";
+      commands.executeCommand(PreviewMarkdownCommand, uri);
+    });
   }
 }
 

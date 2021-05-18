@@ -46,7 +46,7 @@ export const dotnetNotSupportTargetVersionHelpLink = `${defaultHelpLink}#dotnetn
 
 export const Messages = {
   learnMoreButtonText: "Learn more",
-  continueButtonText: "Continue",
+  continueButtonText: "Continue anyway",
 
   defaultErrorMessage: "Install the required dependencies manually.",
 
@@ -68,13 +68,13 @@ export const Messages = {
 
   NodeNotFound: `Cannot find Node.js.
 
-Teams Toolkit requires Node.js; the recommended version is v12.
+Teams Toolkit requires Node.js; the recommended version is v14.
 
 Click "Learn more" to learn how to install the Node.js.`,
   NodeNotSupported: `Node.js (@CurrentVersion) is not in the supported version list (@SupportedVersions).
 
 Click "Learn more" to learn more about the supported Node.js versions.
-Click "Continue" to continue local debugging.`,
+Click "Continue anyway" to continue local debugging.`,
 
   dotnetNotFound: `Cannot find @NameVersion. For the details why .NET SDK is needed, refer to ${dotnetExplanationHelpLink}`,
   depsNotFound: `Cannot find @SupportedPackages.
@@ -85,14 +85,13 @@ Click "Install" to install @InstallPackages.`,
 
   linuxDepsNotFound: `Cannot find @SupportedPackages.
 
-Teams Toolkit requires these dependencies. 
+Teams Toolkit requires these dependencies.
 
-Click "Continue" to continue.`,
+Click "Continue anyway" to continue.`,
 
   linuxDepsNotFoundHelpLinkMessage: `Cannot find @SupportedPackages.
 
 Teams Toolkit requires these dependencies.`,
-
 };
 
 export enum DepsCheckerEvent {

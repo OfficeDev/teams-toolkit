@@ -280,7 +280,7 @@ class CoreImpl implements Core {
           const url = samples.data as string;
           const sampleId = samples.id;
 
-          const sampleAppPath = path.join(folder, sampleId);
+          const sampleAppPath = path.resolve(folder, sampleId);
           if (
             (await fs.pathExists(sampleAppPath)) &&
             (await fs.readdir(sampleAppPath)).length > 0

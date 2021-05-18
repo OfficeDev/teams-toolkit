@@ -129,12 +129,17 @@ class FuncPluginAdapter implements IDepsAdapter {
           description: link,
         })
       );
+
+      return this.displayContinueWithLearnMoreLink(ctx, message, link);
     }
 
     return userSelected === Messages.continueButtonText;
   }
 
-  public async generateMsg(messageTemplate: string, checkers: Array<IDepsChecker>): Promise<string> {
+  public async generateMsg(
+    messageTemplate: string,
+    checkers: Array<IDepsChecker>
+  ): Promise<string> {
     const supportedPackages = [];
     for (const checker of checkers) {
       const info = await checker.getDepsInfo();

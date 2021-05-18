@@ -28,7 +28,7 @@ import {
 
 import activate from "../activate";
 import * as constants from "../constants";
-import { NotFoundInputedFolder, SampleAppDownloadFailed } from "../error";
+import { NotFoundInputedFolder, SampleAppDownloadFailed, ProjectFolderExist } from "../error";
 import { validateAndUpdateAnswers, visitInteractively } from "../question/question";
 import { YargsCommand } from "../yargsCommand";
 import {
@@ -39,7 +39,6 @@ import {
   toYargsOptions,
 } from "../utils";
 import CliTelemetry from "../telemetry/cliTelemetry";
-import { TelemetryClient } from "applicationinsights";
 import {
   TelemetryEvent,
   TelemetryProperty,
@@ -180,12 +179,17 @@ class NewTemplete extends YargsCommand {
     const templateName = args["template-name"] as string;
     const template = constants.templates.find((t) => t.sampleAppName === templateName)!;
 
+    const sampleAppFolder = path.resolve(folder, template.sampleAppName);
+    if ((await fs.pathExists(sampleAppFolder)) && (await fs.readdir(sampleAppFolder)).length > 0) {
+      throw ProjectFolderExist(sampleAppFolder);
+    }
+
     const result = await this.fetchCodeZip(template.sampleAppUrl);
     await this.saveFilesRecursively(new AdmZip(result.data), template.sampleAppName, folder);
     console.log(
       colors.green(
         `Downloaded the '${colors.yellow(template.sampleAppName)}' sample to '${colors.yellow(
-          path.join(folder, template.sampleAppName)
+          sampleAppFolder
         )}'.`
       )
     );

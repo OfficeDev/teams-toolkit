@@ -49,7 +49,9 @@ export enum TelemetryProperty {
   ErrorMessage = "error-message",
   SampleName = "sample-name",
   Capabilities = "capabilities",
-  Resources = "resources"
+  Resources = "resources",
+  Internal = "internal",
+  InternalAlias = "internal-alias"
 }
 
 export enum TelemetrySuccess {
@@ -60,6 +62,11 @@ export enum TelemetrySuccess {
 export enum TelemetryErrorType {
   UserError = "user",
   SystemError = "system"
+}
+
+export enum TelemetryAccountType {
+  Azure = "azure",
+  M365 = "m365"
 }
 
 export const TelemetryComponentType = "cli";

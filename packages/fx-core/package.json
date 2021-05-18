@@ -60,7 +60,6 @@
     "node-forge": "^0.10.0",
     "node-ts-uuid": "^1.0.8",
     "openapi-types": "^7.2.3",
-    "opn": "^6.0.0",
     "semver": "^7.3.4",
     "sudo-prompt": "^9.2.1",
     "tedious": "^9.2.1",

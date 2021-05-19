@@ -798,7 +798,7 @@ class CoreImpl implements Core {
 
   private async setSubscription(subscription: SubscriptionInfo | undefined) {
     if (subscription) {
-      await this.readConfigs();
+      // await this.readConfigs();
       this.configs
         .get(this.env!)!
         .get("solution")!
@@ -840,9 +840,10 @@ class CoreImpl implements Core {
   }
 
   public async readConfigs(): Promise<Result<null, FxError>> {
-    if (!fs.existsSync(`${this.ctx.root}/.${ConfigFolderName}`)) {
+    const confFolderPath = path.resolve(this.ctx.root, `.${ConfigFolderName}`);
+    if (!fs.existsSync(confFolderPath)) {
       this.ctx.logProvider?.warning(
-        `[Core] readConfigs() - folder does not exist: ${this.ctx.root}/.${ConfigFolderName}`
+        `[Core] readConfigs() - folder does not exist: ${confFolderPath}`
       );
       return ok(null);
     }
@@ -851,15 +852,15 @@ class CoreImpl implements Core {
       try {
         // load env
         const reg = /env\.(\w+)\.json/;
-        for (const file of fs.readdirSync(`${this.ctx.root}/.${ConfigFolderName}`)) {
+        for (const file of fs.readdirSync(confFolderPath)) {
           const slice = reg.exec(file);
           if (!slice) {
             continue;
           }
           const envName = slice[1];
-          const filePath = `${this.ctx.root}/.${ConfigFolderName}/${file}`;
-          const configJson: Json = await fs.readJson(filePath);
-          const localDataPath = `${this.ctx.root}/.${ConfigFolderName}/${envName}.userdata`;
+          const jsonFilePath = path.resolve(confFolderPath, file);
+          const configJson: Json = await fs.readJson(jsonFilePath);
+          const localDataPath = path.resolve(confFolderPath, `${envName}.userdata`);
           let dict: Dict<string>;
           if (await fs.pathExists(localDataPath)) {
             const dictContent = await fs.readFile(localDataPath, "UTF-8");
@@ -870,6 +871,13 @@ class CoreImpl implements Core {
           mergeSerectData(dict, configJson);
           const solutionConfig: SolutionConfig = objectToMap(configJson);
           this.configs.set(envName, solutionConfig);
+          this.ctx.logProvider?.debug(
+            `[Core] readConfigs()#########file:${jsonFilePath}, content:${JSON.stringify(
+              configJson,
+              null,
+              4
+            )}`
+          );
         }
 
         // read projectSettings
@@ -878,37 +886,51 @@ class CoreImpl implements Core {
         break;
       } catch (e) {
         res = err(error.ReadFileError(e));
-        sleep(10);
+        await sleep(10);
       }
     }
     return res;
   }
 
   public async writeConfigs(): Promise<Result<null, FxError>> {
-    if (!fs.existsSync(`${this.ctx.root}/.${ConfigFolderName}`)) {
+    const confFolderPath = path.resolve(this.ctx.root, `.${ConfigFolderName}`);
+    if (!fs.existsSync(confFolderPath)) {
       this.ctx.logProvider?.warning(
-        `[Core] writeConfigs() - folder does not exist:${this.ctx.root}/.${ConfigFolderName}`
+        `[Core] writeConfigs() - folder does not exist: ${confFolderPath}`
       );
       return ok(null);
     }
-    try {
-      for (const entry of this.configs.entries()) {
-        const envName = entry[0];
-        const solutionConfig = entry[1];
-        const configJson = mapToJson(solutionConfig);
-        const filePath = `${this.ctx.root}/.${ConfigFolderName}/env.${envName}.json`;
-        const localDataPath = `${this.ctx.root}/.${ConfigFolderName}/${envName}.userdata`;
-        const localData = sperateSecretData(configJson);
-        const content = JSON.stringify(configJson, null, 4);
-        await fs.writeFile(filePath, content);
-        await fs.writeFile(localDataPath, serializeDict(localData));
+    let res: Result<null, FxError> = ok(null);
+    for (let i = 0; i < 5; ++i) {
+      try {
+        for (const entry of this.configs.entries()) {
+          const envName = entry[0];
+          const solutionConfig = entry[1];
+          const configJson = mapToJson(solutionConfig);
+          const jsonFilePath = path.resolve(confFolderPath, `env.${envName}.json`);
+          const localDataPath = path.resolve(confFolderPath, `${envName}.userdata`);
+          const localData = sperateSecretData(configJson);
+          const content = JSON.stringify(configJson, null, 4);
+          const callback = (err: NodeJS.ErrnoException) => {
+            if (err) {
+              this.ctx.logProvider?.error(`[Core] writeConfigs() Error: ${err}`);
+            }
+          };
+          await fs.writeFile(jsonFilePath, content, callback);
+          await fs.writeFile(localDataPath, serializeDict(localData), callback);
+          this.ctx.logProvider?.debug(
+            `[Core] writeConfigs()#########file:${jsonFilePath}, content:${content}`
+          );
+        }
+        //write settings
+        await this.writeSettings(this.ctx.root, this.ctx.projectSettings);
+        break;
+      } catch (e) {
+        res = err(error.WriteFileError(e));
+        await sleep(10);
       }
-      //write settings
-      await this.writeSettings(this.ctx.root, this.ctx.projectSettings);
-    } catch (e) {
-      return err(error.WriteFileError(e));
     }
-    return ok(null);
+    return res;
   }
 
   /**
@@ -1179,6 +1201,7 @@ export class CoreProxy implements Core {
         if (readRes.isErr()) {
           return err(readRes.error);
         }
+        this.coreImpl.ctx.logProvider?.info(`[Core] readConfigs() success! task:${name}`);
       }
 
       // do it
@@ -1202,10 +1225,10 @@ export class CoreProxy implements Core {
       if (checkAndConfig) {
         const writeRes = await this.coreImpl.writeConfigs();
         if (writeRes.isErr()) {
-          this.coreImpl.ctx.logProvider?.info(`[Core] persist config failed:${writeRes.error}!`);
+          this.coreImpl.ctx.logProvider?.error(`[Core] persist config failed:${writeRes.error}!`);
           return err(writeRes.error);
         }
-        // this.coreImpl.ctx.logProvider?.info(`[Core] persist config success!`);
+        this.coreImpl.ctx.logProvider?.info(`[Core] persist config success! task:${name}`);
       }
     }
   }

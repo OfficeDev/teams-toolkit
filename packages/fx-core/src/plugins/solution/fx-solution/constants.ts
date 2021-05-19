@@ -128,8 +128,8 @@ export const LOCAL_DEBUG_TEAMS_APP_ID = "localDebugTeamsAppId";
 export const REMOTE_TEAMS_APP_ID = "remoteTeamsAppId";
 
 export const TEAMS_APP_MANIFEST_TEMPLATE = `{
-    "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.7/MicrosoftTeams.schema.json",
-    "manifestVersion": "1.7",
+    "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.10/MicrosoftTeams.schema.json",
+    "manifestVersion": "1.10",
     "version": "{version}",
     "id": "{appid}",
     "packageName": "com.microsoft.teams.extension",

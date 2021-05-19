@@ -1171,7 +1171,7 @@ export class TeamsAppSolution implements Solution {
   async publish(ctx: SolutionContext): Promise<Result<any, FxError>> {
     const isAzureProject = this.isAzureProject(ctx);
     const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
-    if (isAzureProject && !provisioned) {
+    if (!provisioned) {
       return ok(Void);
     }
 
@@ -1460,6 +1460,25 @@ export class TeamsAppSolution implements Solution {
           return err(
             returnUserError(
               new Error(getStrings().solution.AskProvisionBeforeDeployOrPublish),
+              "Solution",
+              SolutionError.CannotPublishBeforeProvision
+            )
+          );
+        }
+      }
+      if (!provisioned && this.spfxSelected(ctx)) {
+        if (ctx.platform === Platform.VSCode) {
+          ctx.dialog?.communicate(
+            new DialogMsg(DialogType.Show, {
+              description: getStrings().solution.SPFxAskProvisionBeforePublish,
+              level: MsgLevel.Error
+            })
+          );
+          throw CancelError;
+        } else {
+          return err(
+            returnUserError(
+              new Error(getStrings().solution.SPFxAskProvisionBeforePublish),
               "Solution",
               SolutionError.CannotPublishBeforeProvision
             )

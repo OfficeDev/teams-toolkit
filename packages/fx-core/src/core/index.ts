@@ -886,7 +886,7 @@ class CoreImpl implements Core {
         break;
       } catch (e) {
         res = err(error.ReadFileError(e));
-        sleep(10);
+        await sleep(10);
       }
     }
     return res;
@@ -927,7 +927,7 @@ class CoreImpl implements Core {
         break;
       } catch (e) {
         res = err(error.WriteFileError(e));
-        sleep(10);
+        await sleep(10);
       }
     }
     return res;

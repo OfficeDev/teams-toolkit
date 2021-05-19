@@ -54,6 +54,10 @@ Then following requests sent to the Azure function app will be handled by new no
 
 Start debugging the project by hitting the `F5` key in Visual Studio Code. Alternatively use the `Run and Debug Activity Panel` in Visual Studio Code and click the `Start Debugging` green arrow button.
 
+## Edit the manifest
+
+You can find the Teams manifest in `.fx/manifest.source.json`. It contains template arguments with `{...}` statements which will be replaced at build time. You may add any extra properties or permissions you require to this file. See the [schema reference](https://docs.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema) for more.
+
 ## Deploy to Azure
 
 Deploy your project to Azure by following these steps:

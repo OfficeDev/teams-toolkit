@@ -63,9 +63,4 @@ describe("TeamsUserCredential Tests - Browser", () => {
       .to.eventually.be.rejectedWith(ErrorWithCode)
       .and.property("code", UIREQUIREDERROR);
   });
-
-  it("Error", function () {
-    const testFalse = false;
-    assert.isTrue(testFalse);
-  });
 });

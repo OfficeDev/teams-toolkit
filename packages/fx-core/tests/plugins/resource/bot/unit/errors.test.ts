@@ -7,7 +7,7 @@ import {
   PluginError,
   ErrorType,
   UserInputsError,
-  CallAppStudioError,
+  AADAppCheckingError,
   ConfigUpdatingError,
   ConfigValidationError,
   PackDirExistenceError,
@@ -46,13 +46,11 @@ describe("Test Errors", () => {
     });
   });
 
-  describe("CallAppStudioError", () => {
+  describe("AADAppCheckingError", () => {
     it("Happy Path", () => {
       // Arrange
-      const apiName = "genPassword";
-
       // Act
-      const myError = new CallAppStudioError(apiName);
+      const myError = new AADAppCheckingError();
 
       // Assert
       chai.assert.isTrue(myError instanceof PluginError);
@@ -70,7 +68,7 @@ describe("Test Errors", () => {
 
       // Assert
       chai.assert.isTrue(myError instanceof PluginError);
-      chai.assert.isTrue(myError.errorType === ErrorType.System);
+      chai.assert.isTrue(myError.errorType === ErrorType.User);
     });
   });
 

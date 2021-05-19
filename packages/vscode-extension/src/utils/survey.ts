@@ -3,12 +3,12 @@ import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
 import * as StringResources from "../resources/Strings.json";
 
-const SURVEY_URL = "https://aka.ms/AAamyhp"; // To be updated
+const SURVEY_URL = "https://aka.ms/teams-toolkit-survey";
 
 enum ExtensionSurveyStateKeys {
   DoNotShowAgain = "survey/doNotShowAgain",
   RemindMeLater = "survey/remindMeLater",
-  DisableSurveyForTime = "survey/disableSurveyForTime",
+  DisableSurveyForTime = "survey/disableSurveyForTime"
 }
 
 const TIME_TO_DISABLE_SURVEY = 1000 * 60 * 60 * 24 * 7 * 12; // 4 weeks
@@ -79,7 +79,7 @@ export class ExtensionSurvey {
       title: StringResources.vsc.survey.takeSurvey.title,
       run: async (): Promise<void> => {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Survey, {
-          message: StringResources.vsc.survey.takeSurvey.message,
+          message: StringResources.vsc.survey.takeSurvey.message
         });
         vscode.commands.executeCommand(
           "vscode.open",
@@ -94,28 +94,28 @@ export class ExtensionSurvey {
           ExtensionSurveyStateKeys.DisableSurveyForTime,
           disableSurveyForTime
         );
-      },
+      }
     };
 
     const remind = {
       title: StringResources.vsc.survey.remindMeLater.title,
       run: async (): Promise<void> => {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Survey, {
-          message: StringResources.vsc.survey.remindMeLater.message,
+          message: StringResources.vsc.survey.remindMeLater.message
         });
         const remindMeLaterTime = Date.now() + this.timeToShowSurvey;
         await globalState.update(ExtensionSurveyStateKeys.RemindMeLater, remindMeLaterTime);
-      },
+      }
     };
 
     const never = {
       title: StringResources.vsc.survey.dontShowAgain.title,
       run: async (): Promise<void> => {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Survey, {
-          message: StringResources.vsc.survey.dontShowAgain.message,
+          message: StringResources.vsc.survey.dontShowAgain.message
         });
         await globalState.update(ExtensionSurveyStateKeys.DoNotShowAgain, true);
-      },
+      }
     };
 
     const selection = await vscode.window.showInformationMessage(
@@ -127,12 +127,12 @@ export class ExtensionSurvey {
 
     if (selection) {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Survey, {
-        message: StringResources.vsc.survey.banner.message,
+        message: StringResources.vsc.survey.banner.message
       });
       await selection.run();
     } else {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Survey, {
-        message: StringResources.vsc.survey.cancelMessage,
+        message: StringResources.vsc.survey.cancelMessage
       });
     }
   }

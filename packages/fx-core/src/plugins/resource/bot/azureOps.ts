@@ -11,6 +11,7 @@ import {
   MessageEndpointUpdatingError,
   MissingSubscriptionRegistrationError,
   FreeServerFarmsQuotaError,
+  InvalidBotDataError,
 } from "./errors";
 import { CommonStrings, ConfigNames } from "./resources/strings";
 import * as utils from "./utils/common";
@@ -38,6 +39,8 @@ export class AzureOperations {
     } catch (e) {
       if (e.code === "MissingSubscriptionRegistration") {
         throw new MissingSubscriptionRegistrationError();
+      } else if (e.code === "InvalidBotData") {
+        throw new InvalidBotDataError(e);
       } else {
         throw new ProvisionError(CommonStrings.BOT_CHANNEL_REGISTRATION, e);
       }

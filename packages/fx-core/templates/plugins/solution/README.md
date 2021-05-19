@@ -1,6 +1,6 @@
-# More infomation
+# More Information
 
-You have a new Teams project scaffolded! To understand more about the structure of the project, you can read the readme files listed below to get futher information.
+You have a new Teams project scaffolded! To understand more about the structure of the project, you can read the readme files listed below to get further information.
 
 Microsoft Teams apps bring key information, common tools, and trusted processes to where people increasingly gather, learn, and work.Apps are how you extend Teams to fit your needs. Create something brand new for Teams or integrate an existing app.
 
@@ -12,7 +12,3 @@ There are multiple ways to extend Teams, so every app is unique. Some only have 
 
 - Tab capabilities: [README](./tabs/README.md)
 - Bot capabilities: [README](./bot/README.md)
-
-## Code of Conduct
-
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.

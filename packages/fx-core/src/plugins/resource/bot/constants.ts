@@ -135,7 +135,7 @@ export class ErrorNames {
   public static readonly MISSING_SUBSCRIPTION_REGISTRATION_ERROR =
     "MissingSubscriptionRegistrationError";
   public static readonly FREE_SERVER_FARMS_QUOTA_ERROR = "FreeServerFarmsQuotaError";
-  public static readonly BOT_NAME_REGISTERED_ERROR = "BotNameRegisteredError";
+  public static readonly INVALID_BOT_DATA_ERROR = "InvalidBotDataError";
 }
 
 export class Links {

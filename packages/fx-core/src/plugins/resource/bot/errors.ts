@@ -238,12 +238,12 @@ export class FreeServerFarmsQuotaError extends PluginError {
   }
 }
 
-export class BotNameRegisteredError extends PluginError {
-  constructor(innerError?: Error) {
+export class InvalidBotDataError extends PluginError {
+  constructor(innerError: Error) {
     super(
       ErrorType.User,
-      ErrorNames.BOT_NAME_REGISTERED_ERROR,
-      Messages.BotNameAlreadyRegistered,
+      ErrorNames.INVALID_BOT_DATA_ERROR,
+      innerError.message,
       [Messages.DeleteExistingBotChannelRegistration, Messages.DeleteBotAfterAzureAccountSwitching],
       innerError
     );

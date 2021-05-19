@@ -33,11 +33,11 @@ export class Messages {
   public static readonly ClickIssueButtonToReportIssue =
     "Please click 'Report Issue' button to report the issue.";
   public static readonly CommandExecutionFailed = (command: string): string =>
-    `Run '${command}' failed.`;
+    `Failed to run '${command}'.`;
   public static readonly DoSthBeforeSth = (sth: string, beforeSth: string): string =>
     `Perform command '${sth}' before '${beforeSth}'.`;
   public static readonly FailToCallAppStudioForCheckingAADApp =
-    "Failed to call app studio's api to check aad app's existence.";
+    "Failed to call App Studio's api to check AAD application's existence.";
   public static readonly SuccessfullyRetrievedTemplateZip = (zipUrl: string): string =>
     `Successfully retrieved zip package from ${zipUrl}.`;
   public static readonly FallingBackToUseLocalTemplateZip =
@@ -96,8 +96,8 @@ export class Messages {
     "The subscription didn't register to use namespace 'Microsoft.BotService'.";
   public static readonly MaxFreeAppServicePlanIsTen =
     "The maximum number of Free App Service Plan allowed in a Subscription is 10.";
-  public static readonly BotNameAlreadyRegistered =
-    "The bot name is already registered to another bot application.";
+  public static readonly RemindUsersToUpdateMessageEndpoint = (messageEndpoint: string): string =>
+    `Before running this bot, please manually update bot's message endpoint(${messageEndpoint}). Click 'Get Help' button for more details.`;
 
   // Suggestions
   public static readonly RetryTheCurrentStep = "Please retry the current step.";

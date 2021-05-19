@@ -836,7 +836,7 @@ export class TeamsAppSolution implements Solution {
       return canProvision;
     }
     const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
-    if(provisioned){
+    if (provisioned) {
       const msg = util.format(
         getStrings().solution.AlreadyProvisionNotice,
         ctx.projectSettings?.appName
@@ -959,14 +959,14 @@ export class TeamsAppSolution implements Solution {
               subscriptionName ? subscriptionName : subscriptionId
             ),
             level: MsgLevel.Warning,
-            items: ["Provision", "Cost calculator"],
+            items: ["Provision", "Pricing calculator"],
             modal: true,
           })
         )
       )?.getAnswer();
 
       if (confirm !== "Provision") {
-        if (confirm === "Cost calculator") {
+        if (confirm === "Pricing calculator") {
           await ctx.dialog?.communicate(
             new DialogMsg(DialogType.Ask, {
               description: "https://azure.microsoft.com/en-us/pricing/calculator/",
@@ -1347,7 +1347,7 @@ export class TeamsAppSolution implements Solution {
       return await this.getQuestionsForAddResource(ctx, manifest);
     } else if (stage === Stage.provision) {
       const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
-      if(provisioned) return ok(undefined);
+      if (provisioned) return ok(undefined);
       const res = this.getSelectedPlugins(ctx);
       if (res.isErr()) {
         return err(res.error);

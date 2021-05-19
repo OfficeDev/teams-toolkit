@@ -211,23 +211,26 @@ export class SPFxPluginImpl {
       const fileName = path.parse(sharepointPackage).name + path.parse(sharepointPackage).ext;
 
       const guidance = util.format(getStrings().plugins.SPFx.deployNotice, dir, fileName);
-      const answer = (
-        await ctx.dialog?.communicate(
+      ctx.dialog
+        ?.communicate(
           new DialogMsg(DialogType.Show, {
             description: guidance,
             level: MsgLevel.Info,
             items: ["OK", Constants.READ_MORE],
           })
         )
-      )?.getAnswer();
-      if (answer === Constants.READ_MORE) {
-        await ctx.dialog?.communicate(
-          new DialogMsg(DialogType.Ask, {
-            description: Constants.DEPLOY_GUIDE,
-            type: QuestionType.OpenExternal,
-          })
-        );
-      }
+        .then((value) => {
+          const answer = value.getAnswer();
+          if (answer === Constants.READ_MORE) {
+            ctx.dialog?.communicate(
+              new DialogMsg(DialogType.Ask, {
+                description: Constants.DEPLOY_GUIDE,
+                type: QuestionType.OpenExternal,
+              })
+            );
+          }
+        });
+
       return ok(undefined);
     } catch (error) {
       await ProgressHelper.endPreDeployProgress();

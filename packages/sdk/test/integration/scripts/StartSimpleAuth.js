@@ -11,4 +11,15 @@ process.env.ALLOWED_APP_IDS =
 process.env.TAB_APP_ENDPOINT = "*";
 process.env.SDK_INTEGRATION_TEST_USER_OBJECT_ID = process.env.SDK_INTEGRATION_TEST_USER_OBJECT_ID;
 
-spawn("dotnet", [`${__dirname}/SimpleAuthUnzipOutput/Microsoft.TeamsFx.SimpleAuth.dll`]);
+const ls = spawn("dotnet", [`${__dirname}/SimpleAuthUnzipOutput/Microsoft.TeamsFx.SimpleAuth.dll`]);
+ls.stdout.on("data", (data) => {
+  console.log(`stdout: ${data}`);
+});
+
+ls.stderr.on("data", (data) => {
+  console.error(`stderr: ${data}`);
+});
+
+ls.on("close", (code) => {
+  console.log(`child process exited with code ${code}`);
+});

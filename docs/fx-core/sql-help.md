@@ -22,10 +22,8 @@ Since the current logged in account hasn't enough permission to add database use
 
       ![image](../images/fx-core/sql/config.png)
 
-1. Provision aad admin in SQL Database. You can follow [set aad admin](https://docs.microsoft.com/en-us/azure/azure-sql/database/authentication-aad-configure?tabs=azure-powershell#provision-azure-ad-admin-sql-database) to set aad admin for the {sqlEndpoint}. 
+1. Provision aad admin in SQL Database. You can follow [set aad admin](https://docs.microsoft.com/en-us/azure/azure-sql/database/authentication-aad-configure?tabs=azure-powershell#provision-azure-ad-admin-sql-database) to set aad admin for the {sqlEndpoint}. Usually you can use the **account logged-in Azure** as aad admin.
    
-   *Note: The aad admin account should own enough permission to add {identity} as user in database. You can try to use the **account logged-in Azure** first. If the Azure account lacks permission, you may seek for account with more permission to do it*
-
 1. Login the SQL server from portal and select database to login.
 
       ![image](../images/fx-core/sql/login-db.png)

@@ -4,7 +4,7 @@ import { IAADDefinition } from "./interfaces/IAADDefinition";
 
 import { AxiosInstance, default as axios } from "axios";
 import {
-  CallAppStudioError,
+  AADAppCheckingError,
   ConfigUpdatingError,
   ProvisionError,
   SomethingMissingError,
@@ -96,7 +96,7 @@ export class AppStudio {
         axiosInstance.get(`${AppStudio.baseUrl}/api/aadapp/v2/${objectId}`)
       );
     } catch (e) {
-      throw new CallAppStudioError(LifecycleFuncNames.CHECK_AAD_APP, e);
+      throw new AADAppCheckingError(e);
     }
 
     if (!response || !response.data) {

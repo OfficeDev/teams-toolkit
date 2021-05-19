@@ -172,8 +172,8 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
     const confirm = StringResources.vsc.common.signout;
     const userSelected = await vscode.window.showInformationMessage(
       util.format(StringResources.vsc.common.signOutOf, email),
-      confirm,
-      StringResources.vsc.common.cancel
+      { modal: true },
+      confirm
     );
     return Promise.resolve(userSelected === confirm);
   }

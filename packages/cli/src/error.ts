@@ -114,14 +114,6 @@ export function QTNQuestionTypeNotSupport(data: Question): SystemError {
   );
 }
 
-export function InquirerAnswerNotFound(data: string): UserError {
-  return returnUserError(
-    new Error(`Answer not found for question:${data}`),
-    constants.cliSource,
-    "InquirerAnswerNotFound"
-  );
-}
-
 export function ProjectFolderExist(path: string): UserError {
   return returnUserError(
     new Error(`Path ${path} alreay exists. Select a different folder.`),

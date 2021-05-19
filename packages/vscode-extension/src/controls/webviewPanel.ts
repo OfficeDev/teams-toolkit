@@ -75,9 +75,8 @@ export class WebviewPanel {
           case Commands.CloneSampleApp:
             const selection = await vscode.window.showInformationMessage(
               `Download '${msg.data.appName}' from Github. This will download '${msg.data.appName}' repository and open to your local machine`,
-              { modal: false },
-              "Download",
-              "Cancel"
+              { modal: true },
+              "Download"
             );
             if (selection === "Download") {
               const folder = await vscode.window.showOpenDialog({

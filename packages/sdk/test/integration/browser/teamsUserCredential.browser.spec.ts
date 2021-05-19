@@ -21,7 +21,7 @@ describe("TeamsUserCredential Tests - Browser", () => {
     loadConfiguration({
       authentication: {
         initiateLoginEndpoint: FAKE_LOGIN_ENDPOINT,
-        simpleAuthEndpoint: "http://localhost:5000",
+        simpleAuthEndpoint: "https://localhost:5001",
         clientId: env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
       },
     });

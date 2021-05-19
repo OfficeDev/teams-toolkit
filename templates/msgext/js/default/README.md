@@ -28,17 +28,17 @@ Deploy your project to Azure by following these steps:
 
 > Note: Provisioning and deployment may incur charges to your Azure Subscription.
 
-## Build
-
-- From Visual Studio Code: open the command palette and select `Teams: Build Teams Package`.
-- Alternatively, from the command line run `teamsfx build` in the project directory.
-
 ## Validate manifest file
 
 To check that your manifest file is valid:
 
 - From Visual Studio Code: open the command palette and select: `Teams: Validate App Manifest File`.
 - From TeamsFx CLI: run command `teamsfx validate` in your project directory.
+
+## Build
+
+- From Visual Studio Code: open the command palette and select `Teams: Build Teams Package`.
+- Alternatively, from the command line run `teamsfx build` in the project directory.
 
 ## Publish to Teams
 

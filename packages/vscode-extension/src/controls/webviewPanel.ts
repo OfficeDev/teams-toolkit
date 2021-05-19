@@ -234,11 +234,10 @@ export class WebviewPanel {
         .getEntries()
         .filter((entry) => !entry.isDirectory && entry.entryName.includes(appFolder))
         .map(async (entry) => {
-          const data = entry.getData().toString();
           const entryPath = entry.entryName.substring(entry.entryName.indexOf("/") + 1);
           const filePath = path.join(dstPath, entryPath);
           await fs.ensureDir(path.dirname(filePath));
-          await fs.writeFile(filePath, data);
+          await fs.writeFile(filePath, entry.getData());
         })
     );
   }

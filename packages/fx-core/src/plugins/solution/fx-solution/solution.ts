@@ -835,7 +835,7 @@ export class TeamsAppSolution implements Solution {
       return canProvision;
     }
     const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
-    if(provisioned){
+    if (provisioned) {
       const msg = util.format(
         getStrings().solution.AlreadyProvisionNotice,
         ctx.projectSettings?.appName
@@ -1070,7 +1070,13 @@ export class TeamsAppSolution implements Solution {
     const isAzureProject = this.isAzureProject(ctx);
     const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
     if (isAzureProject && !provisioned) {
-      return ok(Void);
+      return err(
+        returnUserError(
+          new Error(getStrings().solution.NotProvisionedNotice),
+          "Solution",
+          SolutionError.CannotDeployBeforeProvision
+        )
+      );
     }
     try {
       if (this.isAzureProject(ctx)) {
@@ -1172,7 +1178,13 @@ export class TeamsAppSolution implements Solution {
     const isAzureProject = this.isAzureProject(ctx);
     const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
     if (!provisioned) {
-      return ok(Void);
+      return err(
+        returnUserError(
+          new Error(getStrings().solution.NotProvisionedNotice),
+          "Solution",
+          SolutionError.CannotDeployBeforeProvision
+        )
+      );
     }
 
     const maybeManifestTpl = await this.reloadManifestAndCheckRequiredFields(ctx);
@@ -1337,7 +1349,7 @@ export class TeamsAppSolution implements Solution {
       return await this.getQuestionsForAddResource(ctx, manifest);
     } else if (stage === Stage.provision) {
       const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
-      if(provisioned) return ok(undefined);
+      if (provisioned) return ok(undefined);
       const res = this.getSelectedPlugins(ctx);
       if (res.isErr()) {
         return err(res.error);
@@ -1369,20 +1381,13 @@ export class TeamsAppSolution implements Solution {
           )?.getAnswer();
           if (res === "Provision") {
             throw DoProvisionFirstError;
-            // const provisionRes = await this.provision(ctx);
-            // if (provisionRes.isErr()) {
-            //     if (provisionRes.error.message.startsWith(strings.solution.CancelProvision)) {
-            //         return ok(undefined);
-            //     }
-            //     return err(provisionRes.error);
-            // }
           } else {
             throw CancelError;
           }
         } else {
           return err(
             returnUserError(
-              new Error(getStrings().solution.AskProvisionBeforeDeployOrPublish),
+              new Error(getStrings().solution.NotProvisionedNotice),
               "Solution",
               SolutionError.CannotDeployBeforeProvision
             )
@@ -1459,9 +1464,9 @@ export class TeamsAppSolution implements Solution {
         } else {
           return err(
             returnUserError(
-              new Error(getStrings().solution.AskProvisionBeforeDeployOrPublish),
+              new Error(getStrings().solution.NotProvisionedNotice),
               "Solution",
-              SolutionError.CannotPublishBeforeProvision
+              SolutionError.CannotDeployBeforeProvision
             )
           );
         }
@@ -1471,7 +1476,7 @@ export class TeamsAppSolution implements Solution {
           ctx.dialog?.communicate(
             new DialogMsg(DialogType.Show, {
               description: getStrings().solution.SPFxAskProvisionBeforePublish,
-              level: MsgLevel.Error
+              level: MsgLevel.Error,
             })
           );
           throw CancelError;

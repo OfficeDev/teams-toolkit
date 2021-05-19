@@ -93,12 +93,6 @@ export const SampleSelect: SingleSelectQuestion = {
   title: "Start from a sample",
   option: [
     {
-      id: "in-meeting-app",
-      label: "In-meeting App",
-      detail: "A template for apps using only in the context of a Teams meeting",
-      data: "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip",
-    },
-    {
       id: "todo-list-with-Azure-backend",
       label: "Todo List with backend on Azure",
       detail: "Todo List app with Azure Function backend and Azure SQL database",
@@ -114,6 +108,12 @@ export const SampleSelect: SingleSelectQuestion = {
       id: "share-now",
       label: "Share Now",
       detail: "Knowledge sharing app contains a Tab and a Message Extension",
+      data: "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip",
+    },
+    {
+      id: "in-meeting-app",
+      label: "In-meeting App",
+      detail: "A template for apps using only in the context of a Teams meeting",
       data: "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip",
     },
   ],

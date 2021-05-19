@@ -74,6 +74,9 @@ export enum TelemetryProperty {
   DebugRequest = "request",
   DebugPort = "port",
   DebugRemote = "remote",
+  DebugAppId = "debug-appid",
+  Internal = "internal",
+  InternalAlias = "internal-alias",
 }
 
 export enum TelemetrySuccess {

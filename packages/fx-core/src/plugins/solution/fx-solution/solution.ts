@@ -835,7 +835,20 @@ export class TeamsAppSolution implements Solution {
     if (canProvision.isErr()) {
       return canProvision;
     }
-
+    const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
+    if(provisioned){
+      const msg = util.format(
+        getStrings().solution.AlreadyProvisionNotice,
+        ctx.projectSettings?.appName
+      );
+      ctx.dialog?.communicate(
+        new DialogMsg(DialogType.Show, {
+          description: msg,
+          level: MsgLevel.Warning,
+        })
+      );
+      return ok(undefined);
+    }
     try {
       // Just to trigger M365 login before the concurrent execution of provision.
       // Because concurrent exectution of provision may getAccessToken() concurrently, which
@@ -858,7 +871,7 @@ export class TeamsAppSolution implements Solution {
           ctx.projectSettings?.appName
         );
         ctx.logProvider?.info(msg);
-        await ctx.dialog?.communicate(
+        ctx.dialog?.communicate(
           new DialogMsg(DialogType.Show, {
             description: msg,
             level: MsgLevel.Info,
@@ -1333,6 +1346,8 @@ export class TeamsAppSolution implements Solution {
     } else if (stage === Stage.update) {
       return await this.getQuestionsForAddResource(ctx, manifest);
     } else if (stage === Stage.provision) {
+      const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
+      if(provisioned) return ok(undefined);
       const res = this.getSelectedPlugins(ctx);
       if (res.isErr()) {
         return err(res.error);

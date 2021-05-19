@@ -302,6 +302,16 @@ class CoreImpl implements Core {
             progress.next("Unzipping the sample package");
             if (fetchRes !== undefined) {
               await saveFilesRecursively(new AdmZip(fetchRes.data), sampleId, folder);
+
+              if (this.ctx.platform === Platform.VSCode) {
+                await this.ctx.dialog?.communicate(
+                  new DialogMsg(DialogType.Ask, {
+                    type: QuestionType.UpdateGlobalState,
+                    description: "openSampleReadme",
+                  })
+                );
+              }
+
               await this.ctx.dialog?.communicate(
                 new DialogMsg(DialogType.Ask, {
                   type: QuestionType.OpenFolder,
@@ -585,13 +595,6 @@ class CoreImpl implements Core {
       };
 
       const signinM365Callback = async (args?: any[]): Promise<Result<null, FxError>> => {
-        this.ctx?.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.LoginStart, {
-          [TelemetryProperty.TriggerFrom]:
-            args && args.toString() === "TreeView"
-              ? TelemetryTiggerFrom.TreeView
-              : TelemetryTiggerFrom.CommandPalette,
-          [TelemetryProperty.AccountType]: AccountType.M365,
-        });
         const token = await this.ctx.appStudioToken?.getJsonObject(true);
         if (token !== undefined) {
           this.ctx.treeProvider?.refresh([
@@ -613,14 +616,6 @@ class CoreImpl implements Core {
         validFxProject: boolean,
         args?: any[]
       ): Promise<Result<null, FxError>> => {
-        this.ctx?.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.LoginStart, {
-          [TelemetryProperty.TriggerFrom]:
-            args && args[0].toString() === "TreeView"
-              ? TelemetryTiggerFrom.TreeView
-              : TelemetryTiggerFrom.CommandPalette,
-          [TelemetryProperty.AccountType]: AccountType.Azure,
-        });
-
         const showDialog = args && args[1] !== undefined ? args[1] : true;
         const token = await this.ctx.azureAccountProvider?.getAccountCredentialAsync(showDialog);
         if (token !== undefined) {
@@ -1079,7 +1074,7 @@ class CoreImpl implements Core {
             description: "",
             author: "",
             scripts: {
-              test: "echo \"Error: no test specified\" && exit 1",
+              test: 'echo "Error: no test specified" && exit 1',
             },
             license: "MIT",
           },
@@ -1407,11 +1402,9 @@ enum TelemetryTiggerFrom {
 
 enum TelemetryProperty {
   TriggerFrom = "trigger-from",
-  AccountType = "account-type",
 }
 
 enum TelemetryEvent {
-  LoginStart = "login-start",
   SelectSubscription = "select-subscription",
 }
 

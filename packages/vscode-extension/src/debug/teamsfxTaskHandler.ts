@@ -4,6 +4,7 @@
 import { ProductName } from "@microsoft/teamsfx-api";
 import * as vscode from "vscode";
 
+import { getLocalTeamsAppId } from "./commonUtils";
 import { ext } from "../extensionVariables";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
@@ -79,17 +80,18 @@ function onDidStartDebugSessionHandler(event: vscode.DebugSession): void {
       // send f5 event telemetry
       try {
         const remoteAppId = getTeamsAppId() as string;
+        const localAppId = getLocalTeamsAppId() as string;
+        const isRemote =
+          (debugConfig.url as string) &&
+          remoteAppId &&
+          (debugConfig.url as string).includes(remoteAppId);
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugStart, {
           [TelemetryProperty.DebugSessionId]: event.id,
           [TelemetryProperty.DebugType]: debugConfig.type,
           [TelemetryProperty.DebugRequest]: debugConfig.request,
           [TelemetryProperty.DebugPort]: debugConfig.port + "",
-          [TelemetryProperty.DebugRemote]:
-            (debugConfig.url as string) &&
-            remoteAppId &&
-            (debugConfig.url as string).includes(remoteAppId)
-              ? "true"
-              : "false",
+          [TelemetryProperty.DebugRemote]: isRemote ? "true" : "false",
+          [TelemetryProperty.DebugAppId]: isRemote ? remoteAppId : localAppId,
         });
       } catch {
         // ignore telemetry error

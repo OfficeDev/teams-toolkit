@@ -113,6 +113,7 @@ export class WebviewPanel {
                       "vscode.openFolder",
                       vscode.Uri.file(sampleAppPath)
                     );
+                    ext.context.globalState.update("openSampleReadme", true);
                   } else {
                     vscode.window.showErrorMessage("Failed to download sample app");
                   }

@@ -1,47 +1,49 @@
 {
-  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.8/MicrosoftTeams.schema.json",
-  "manifestVersion": "1.8",
-  "packageName": "<%= componentNameCamelCase %>",
-  "id": "<%= componentId %>",
-  "version": "1.0.0.0",
-  "developer": {
-    "name": "SPFx + Teams Dev",
-    "websiteUrl": "https://products.office.com/en-us/sharepoint/collaboration",
-    "privacyUrl": "https://privacy.microsoft.com/en-us/privacystatement",
-    "termsOfUseUrl": "https://www.microsoft.com/en-us/servicesagreement"
-  },
-  "name": {
-    "short": "<%= componentNameCamelCase %>"
-  },
-  "description": {
-    "short": "<%= componentNameCamelCase %>",
-    "full": "<%= componentNameCamelCase %>"
-  },
-  "icons": {
-    "outline": "outline.png",
-    "color": "color.png"
-  },
-  "accentColor": "#004578",
-  "staticTabs": [
-    {
-      "entityId": "<%= componentId %>",
-      "name": "<%= componentNameCamelCase %>",
-      "contentUrl": "https://{teamSiteDomain}/_layouts/15/TeamsLogon.aspx?SPFX=true&dest=/_layouts/15/teamshostedapp.aspx%3Fteams%26personal%26componentId=<%= componentId %>%26forceLocale={locale}",
-      "websiteUrl": "https://products.office.com/en-us/sharepoint/collaboration",
-      "scopes": ["personal"]
+    "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.8/MicrosoftTeams.schema.json",
+    "manifestVersion": "1.8",
+    "packageName": "<%= componentNameCamelCase %>",
+    "id": "<%= componentId %>",
+    "version": "1.0.0",
+    "developer": {
+        "name": "SPFx + Teams Dev",
+        "websiteUrl": "https://products.office.com/en-us/sharepoint/collaboration",
+        "privacyUrl": "https://privacy.microsoft.com/en-us/privacystatement",
+        "termsOfUseUrl": "https://www.microsoft.com/en-us/servicesagreement"
+    },
+    "name": {
+        "short": "<%= componentNameCamelCase %>"
+    },
+    "description": {
+        "short": "<%= componentNameCamelCase %>",
+        "full": "<%= componentNameCamelCase %>"
+    },
+    "icons": {
+        "outline": "outline.png",
+        "color": "color.png"
+    },
+    "accentColor": "#004578",
+    "staticTabs": [
+        {
+            "entityId": "<%= componentId %>",
+            "name": "<%= componentNameCamelCase %>",
+            "contentUrl": "https://{teamSiteDomain}/_layouts/15/TeamsLogon.aspx?SPFX=true&dest=/_layouts/15/teamshostedapp.aspx%3Fteams%26personal%26componentId=<%= componentId %>%26forceLocale={locale}",
+            "websiteUrl": "https://products.office.com/en-us/sharepoint/collaboration",
+            "scopes": [
+                "personal"
+            ]
+        }
+    ],
+    "validDomains": [
+        "*.login.microsoftonline.com",
+        "*.sharepoint.com",
+        "*.sharepoint-df.com",
+        "spoppe-a.akamaihd.net",
+        "spoprod-a.akamaihd.net",
+        "resourceseng.blob.core.windows.net",
+        "msft.spoppe.com"
+    ],
+    "webApplicationInfo": {
+        "resource": "https://{teamSiteDomain}",
+        "id": "00000003-0000-0ff1-ce00-000000000000"
     }
-  ],
-  "validDomains": [
-    "*.login.microsoftonline.com",
-    "*.sharepoint.com",
-    "*.sharepoint-df.com",
-    "spoppe-a.akamaihd.net",
-    "spoprod-a.akamaihd.net",
-    "resourceseng.blob.core.windows.net",
-    "msft.spoppe.com"
-  ],
-  "webApplicationInfo": {
-    "resource": "https://{teamSiteDomain}",
-    "id": "00000003-0000-0ff1-ce00-000000000000"
-  }
 }

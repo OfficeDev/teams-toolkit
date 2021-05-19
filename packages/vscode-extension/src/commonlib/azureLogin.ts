@@ -5,7 +5,7 @@
 "use strict";
 
 import { TokenCredential } from "@azure/core-auth";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
+import { DeviceTokenCredentials, TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { AzureAccountProvider, UserError } from "@microsoft/teamsfx-api";
 import { ExtensionErrors } from "../error";
 import { AzureAccount } from "./azure-account.api";
@@ -16,6 +16,13 @@ import { loggedIn, loggedOut, loggingIn, signedIn, signedOut, signingIn } from "
 import { login, LoginStatus } from "./common/login";
 import * as StringResources from "../resources/Strings.json";
 import * as util from "util";
+import { ExtTelemetry } from "../telemetry/extTelemetry";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+  AccountType
+} from "../telemetry/extTelemetryEvents";
 
 export class AzureAccountManager extends login implements AzureAccountProvider {
   private static instance: AzureAccountManager;
@@ -91,8 +98,32 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     if (this.isUserLogin()) {
       return this.doGetAccountCredentialAsync();
     }
-    await this.login(showDialog);
-    return this.doGetAccountCredentialAsync();
+
+    let cred;
+    try {
+      await this.login(showDialog);
+      cred = await this.doGetAccountCredentialAsync();
+    } catch (e) {
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Login, {
+        [TelemetryProperty.AccountType]: AccountType.Azure,
+        [TelemetryProperty.Success]: TelemetrySuccess.No,
+        [TelemetryProperty.UserId]: "",
+        [TelemetryProperty.Internal]: "false"
+      });
+      throw e;
+    }
+
+    const userid = cred ? cred.clientId : "";
+    const internal = cred
+      ? (cred as DeviceTokenCredentials).username.endsWith("@microsoft.com")
+      : false;
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Login, {
+      [TelemetryProperty.AccountType]: AccountType.Azure,
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      [TelemetryProperty.UserId]: userid,
+      [TelemetryProperty.Internal]: internal ? "true" : "false"
+    });
+    return cred;
   }
 
   /**
@@ -133,6 +164,10 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         );
       }
     }
+
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.LoginStart, {
+      [TelemetryProperty.AccountType]: AccountType.Azure
+    });
     await vscode.commands.executeCommand("azure-account.login");
   }
 
@@ -331,7 +366,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       return Promise.resolve({
         status: signedIn,
         token: token?.accessToken,
-        accountInfo: accountJson,
+        accountInfo: accountJson
       });
     } else if (azureAccount.status === loggingIn) {
       return Promise.resolve({ status: signingIn, token: undefined, accountInfo: undefined });

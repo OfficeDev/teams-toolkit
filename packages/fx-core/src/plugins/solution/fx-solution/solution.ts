@@ -1175,14 +1175,13 @@ export class TeamsAppSolution implements Solution {
   }
 
   async publish(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    const isAzureProject = this.isAzureProject(ctx);
     const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
     if (!provisioned) {
       return err(
         returnUserError(
           new Error(getStrings().solution.NotProvisionedNotice),
           "Solution",
-          SolutionError.CannotDeployBeforeProvision
+          SolutionError.CannotPublishBeforeProvision
         )
       );
     }
@@ -1466,7 +1465,7 @@ export class TeamsAppSolution implements Solution {
             returnUserError(
               new Error(getStrings().solution.NotProvisionedNotice),
               "Solution",
-              SolutionError.CannotDeployBeforeProvision
+              SolutionError.CannotPublishBeforeProvision
             )
           );
         }

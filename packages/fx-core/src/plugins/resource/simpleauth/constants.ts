@@ -88,7 +88,7 @@ export class Constants {
       title: "Provisioning Simple Auth",
       createAppServicePlan: "Creating Azure App Service plan",
       createWebApp: "Creating Azure Web App",
-      zipDeploy: "Deploying Simply Auth",
+      zipDeploy: "Deploying Simple Auth",
     },
     postProvision: {
       title: "Configuring Simple Auth",

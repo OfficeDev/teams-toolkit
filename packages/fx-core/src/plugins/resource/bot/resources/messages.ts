@@ -3,7 +3,7 @@
 
 export class Messages {
   public static readonly SomethingIsInvalidWithValue = (something: string, value: string): string =>
-    `'${something}' is invalid with '${value}'.`;
+    `'${something}' is invalid with value '${value}'.`;
   public static readonly InputValidValueForSomething = (something: string): string =>
     `Please select valid values for '${something}'.`;
   public static readonly SomethingIsMissing = (something: string): string =>
@@ -32,12 +32,12 @@ export class Messages {
     "Please click 'Get Help' button for more details.";
   public static readonly ClickIssueButtonToReportIssue =
     "Please click 'Report Issue' button to report the issue.";
-  public static readonly CommandFailWithMessage = (command: string, message: string): string =>
-    `Run '${command}' failed with message: ${message}`;
+  public static readonly CommandExecutionFailed = (command: string): string =>
+    `Run '${command}' failed.`;
   public static readonly DoSthBeforeSth = (sth: string, beforeSth: string): string =>
     `Perform command '${sth}' before '${beforeSth}'.`;
-  public static readonly FailToCallAppStudio = (apiName: string): string =>
-    `Failed to execute '${apiName}'.`;
+  public static readonly FailToCallAppStudioForCheckingAADApp =
+    "Failed to call app studio's api to check aad app's existence.";
   public static readonly SuccessfullyRetrievedTemplateZip = (zipUrl: string): string =>
     `Successfully retrieved zip package from ${zipUrl}.`;
   public static readonly FallingBackToUseLocalTemplateZip =
@@ -113,4 +113,6 @@ export class Messages {
     "Please delete existing azure bot channel registrations.";
   public static readonly DeleteBotAfterAzureAccountSwitching =
     "If azure account is switched, don't forget to delete azure bot channel registration under the previous account.";
+  public static readonly CheckOutputLogAndTryToFix =
+    "Please check log in output channel and try to fix this issue.";
 }

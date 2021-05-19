@@ -34,6 +34,13 @@ Deploy your project to Azure by following these steps:
 
 > Note: Provisioning and deployment may incur charges to your Azure Subscription.
 
+## Preview
+
+Once the provisioning and deployment steps are finished, you can preview your app:
+1. From Visual Studio Code, open the `Run and Debug Activity Panel`.
+1. Select `Launch Remote (Edge)` or `Launch Remote (Chrome)` from the launch configuration drop-down. 
+1. Press the Play (green arrow) button to launch your app - now running remotely from Azure.
+
 ## Validate manifest file
 
 To check that your manifest file is valid:

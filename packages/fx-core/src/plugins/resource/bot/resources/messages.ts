@@ -3,7 +3,7 @@
 
 export class Messages {
   public static readonly SomethingIsInvalidWithValue = (something: string, value: string): string =>
-    `'${something}' is invalid with '${value}'.`;
+    `'${something}' is invalid with value '${value}'.`;
   public static readonly InputValidValueForSomething = (something: string): string =>
     `Please select valid values for '${something}'.`;
   public static readonly SomethingIsMissing = (something: string): string =>
@@ -32,12 +32,12 @@ export class Messages {
     "Please click 'Get Help' button for more details.";
   public static readonly ClickIssueButtonToReportIssue =
     "Please click 'Report Issue' button to report the issue.";
-  public static readonly CommandFailWithMessage = (command: string, message: string): string =>
-    `Run '${command}' failed with message: ${message}`;
+  public static readonly CommandExecutionFailed = (command: string): string =>
+    `Failed to run '${command}'.`;
   public static readonly DoSthBeforeSth = (sth: string, beforeSth: string): string =>
     `Perform command '${sth}' before '${beforeSth}'.`;
-  public static readonly FailToCallAppStudio = (apiName: string): string =>
-    `Failed to execute '${apiName}'.`;
+  public static readonly FailToCallAppStudioForCheckingAADApp =
+    "Failed to call App Studio's api to check AAD application's existence.";
   public static readonly SuccessfullyRetrievedTemplateZip = (zipUrl: string): string =>
     `Successfully retrieved zip package from ${zipUrl}.`;
   public static readonly FallingBackToUseLocalTemplateZip =
@@ -96,6 +96,8 @@ export class Messages {
     "The subscription didn't register to use namespace 'Microsoft.BotService'.";
   public static readonly MaxFreeAppServicePlanIsTen =
     "The maximum number of Free App Service Plan allowed in a Subscription is 10.";
+  public static readonly RemindUsersToUpdateMessageEndpoint = (messageEndpoint: string): string =>
+    `Before running this bot, please manually update bot's message endpoint(${messageEndpoint}). Click 'Get Help' button for more details.`;
 
   // Suggestions
   public static readonly RetryTheCurrentStep = "Please retry the current step.";
@@ -107,4 +109,10 @@ export class Messages {
   public static readonly RecreateTheProject = "Please recreate the project.";
   public static readonly CheckCommandOutputAndTryToFixIt =
     "Please check the command output and try to fix it.";
+  public static readonly DeleteExistingBotChannelRegistration =
+    "Please delete existing azure bot channel registrations.";
+  public static readonly DeleteBotAfterAzureAccountSwitching =
+    "If azure account is switched, don't forget to delete azure bot channel registration under the previous account.";
+  public static readonly CheckOutputLogAndTryToFix =
+    "Please check log in output channel and try to fix this issue.";
 }

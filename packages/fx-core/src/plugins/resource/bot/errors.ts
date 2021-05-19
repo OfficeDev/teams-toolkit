@@ -42,7 +42,7 @@ export class PluginError extends Error {
 
 export class PreconditionError extends PluginError {
   constructor(message: string, suggestions: string[]) {
-    super(ErrorType.System, ErrorNames.PRECONDITION_ERROR, message, suggestions);
+    super(ErrorType.User, ErrorNames.PRECONDITION_ERROR, message, suggestions);
   }
 }
 
@@ -71,12 +71,12 @@ export class UserInputsError extends PluginError {
   }
 }
 
-export class CallAppStudioError extends PluginError {
-  constructor(apiName: string, innerError?: Error) {
+export class AADAppCheckingError extends PluginError {
+  constructor(innerError?: Error) {
     super(
       ErrorType.System,
       ErrorNames.CALL_APPSTUDIO_API_ERROR,
-      Messages.FailToCallAppStudio(apiName),
+      Messages.FailToCallAppStudioForCheckingAADApp,
       [Messages.RetryTheCurrentStep],
       innerError
     );
@@ -86,10 +86,10 @@ export class CallAppStudioError extends PluginError {
 export class ClientCreationError extends PluginError {
   constructor(clientName: string, innerError?: Error) {
     super(
-      ErrorType.System,
+      ErrorType.User,
       ErrorNames.CLIENT_CREATION_ERROR,
       Messages.FailToCreateSomeClient(clientName),
-      [Messages.RetryTheCurrentStep],
+      [Messages.CheckOutputLogAndTryToFix, Messages.RetryTheCurrentStep],
       innerError
     );
   }
@@ -98,10 +98,10 @@ export class ClientCreationError extends PluginError {
 export class ProvisionError extends PluginError {
   constructor(resource: string, innerError?: Error) {
     super(
-      ErrorType.System,
+      ErrorType.User,
       ErrorNames.PROVISION_ERROR,
       Messages.FailToProvisionSomeResource(resource),
-      [Messages.RetryTheCurrentStep],
+      [Messages.CheckOutputLogAndTryToFix, Messages.RetryTheCurrentStep],
       innerError
     );
   }
@@ -123,10 +123,10 @@ export class MissingSubscriptionRegistrationError extends PluginError {
 export class ConfigUpdatingError extends PluginError {
   constructor(configName: string, innerError?: Error) {
     super(
-      ErrorType.System,
+      ErrorType.User,
       ErrorNames.CONFIG_UPDATING_ERROR,
       Messages.FailToUpdateConfigs(configName),
-      [Messages.RetryTheCurrentStep],
+      [Messages.CheckOutputLogAndTryToFix, Messages.RetryTheCurrentStep],
       innerError
     );
   }
@@ -157,10 +157,10 @@ export class PackDirExistenceError extends PluginError {
 export class ListPublishingCredentialsError extends PluginError {
   constructor(innerError?: Error) {
     super(
-      ErrorType.System,
+      ErrorType.User,
       ErrorNames.LIST_PUBLISHING_CREDENTIALS_ERROR,
       Messages.FailToListPublishingCredentials,
-      [Messages.RetryTheCurrentStep],
+      [Messages.CheckOutputLogAndTryToFix, Messages.RetryTheCurrentStep],
       innerError
     );
   }
@@ -169,10 +169,10 @@ export class ListPublishingCredentialsError extends PluginError {
 export class ZipDeployError extends PluginError {
   constructor(innerError?: Error) {
     super(
-      ErrorType.System,
+      ErrorType.User,
       ErrorNames.ZIP_DEPLOY_ERROR,
       Messages.FailToDoZipDeploy,
-      ["Please retry the deploy command."],
+      [Messages.CheckOutputLogAndTryToFix, Messages.RetryTheCurrentStep],
       innerError
     );
   }
@@ -181,10 +181,10 @@ export class ZipDeployError extends PluginError {
 export class MessageEndpointUpdatingError extends PluginError {
   constructor(endpoint: string, innerError?: Error) {
     super(
-      ErrorType.System,
+      ErrorType.User,
       ErrorNames.MSG_ENDPOINT_UPDATING_ERROR,
       Messages.FailToUpdateMessageEndpoint(endpoint),
-      [Messages.RetryTheCurrentStep],
+      [Messages.CheckOutputLogAndTryToFix, Messages.RetryTheCurrentStep],
       innerError
     );
   }
@@ -193,7 +193,7 @@ export class MessageEndpointUpdatingError extends PluginError {
 export class DownloadError extends PluginError {
   constructor(url: string, innerError?: Error) {
     super(
-      ErrorType.System,
+      ErrorType.User,
       ErrorNames.DOWNLOAD_ERROR,
       Messages.FailToDownloadFrom(url),
       ["Please check your network status and retry."],
@@ -205,7 +205,7 @@ export class DownloadError extends PluginError {
 export class TemplateProjectNotFoundError extends PluginError {
   constructor() {
     super(
-      ErrorType.System,
+      ErrorType.User,
       ErrorNames.TEMPLATE_PROJECT_NOT_FOUND_ERROR,
       Messages.SomethingIsNotFound("Template project for scaffold"),
       [Messages.RetryTheCurrentStep]
@@ -214,11 +214,11 @@ export class TemplateProjectNotFoundError extends PluginError {
 }
 
 export class CommandExecutionError extends PluginError {
-  constructor(cmd: string, message: string, innerError?: Error) {
+  constructor(cmd: string, innerError?: Error) {
     super(
-      ErrorType.System,
+      ErrorType.User,
       ErrorNames.COMMAND_EXECUTION_ERROR,
-      Messages.CommandFailWithMessage(cmd, message),
+      Messages.CommandExecutionFailed(cmd),
       [Messages.CheckCommandOutputAndTryToFixIt, Messages.RetryTheCurrentStep],
       innerError
     );
@@ -234,6 +234,18 @@ export class FreeServerFarmsQuotaError extends PluginError {
       [Messages.DeleteFreeAppServicePlanOrChangeSku],
       innerError,
       true
+    );
+  }
+}
+
+export class InvalidBotDataError extends PluginError {
+  constructor(innerError: Error) {
+    super(
+      ErrorType.User,
+      ErrorNames.INVALID_BOT_DATA_ERROR,
+      innerError.message,
+      [Messages.DeleteExistingBotChannelRegistration, Messages.DeleteBotAfterAzureAccountSwitching],
+      innerError
     );
   }
 }

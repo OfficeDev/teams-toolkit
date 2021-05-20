@@ -236,11 +236,7 @@
       },
       {
         "command": "fx-extension.openAppManagement",
-        "title": "Teams: App Management"
-      },
-      {
-        "command": "fx-extension.openBotManagement",
-        "title": "Teams: Bot Management"
+        "title": "Teams: Teams Developer Portal"
       },
       {
         "command": "fx-extension.openReportIssues",

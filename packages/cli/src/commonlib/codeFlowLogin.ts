@@ -198,7 +198,7 @@ export class CodeFlowLogin {
     return true;
   }
 
-  async getToken(): Promise<string | undefined> {
+  async getToken(refresh = true): Promise<string | undefined> {
     try {
       if (!this.account) {
         await this.reloadCache();
@@ -221,8 +221,13 @@ export class CodeFlowLogin {
           })
           .catch(async (error) => {
             CliCodeLogInstance.error("[Login] silent acquire token : " + error.message);
-            const accessToken = await this.login();
-            return accessToken;
+            await this.logout();
+            if (refresh) {
+              const accessToken = await this.login();
+              return accessToken;
+            } else {
+              return undefined;
+            }
           });
       }
     } catch (error) {

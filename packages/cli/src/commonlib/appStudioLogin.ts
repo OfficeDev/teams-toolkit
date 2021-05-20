@@ -123,7 +123,7 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
     AppStudioLogin.statusChange = statusChange;
     await AppStudioLogin.codeFlowInstance.reloadCache();
     if (AppStudioLogin.codeFlowInstance.account) {
-      const loginToken = await AppStudioLogin.codeFlowInstance.getToken();
+      const loginToken = await AppStudioLogin.codeFlowInstance.getToken(false);
       const tokenJson = await this.getJsonObject();
       await AppStudioLogin.statusChange("SignedIn", loginToken, tokenJson);
     }
@@ -137,9 +137,13 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
       await AppStudioLogin.codeFlowInstance.reloadCache();
     }
     if (AppStudioLogin.codeFlowInstance.account) {
-      const loginToken = await AppStudioLogin.codeFlowInstance.getToken();
-      const tokenJson = await this.getJsonObject();
-      return Promise.resolve({ status: signedIn, token: loginToken, accountInfo: tokenJson });
+      const loginToken = await AppStudioLogin.codeFlowInstance.getToken(false);
+      if (loginToken) {
+        const tokenJson = await this.getJsonObject();
+        return Promise.resolve({ status: signedIn, token: loginToken, accountInfo: tokenJson });
+      } else {
+        return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });  
+      }
     } else {
       return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });
     }

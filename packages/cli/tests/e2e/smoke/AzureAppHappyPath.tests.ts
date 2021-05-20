@@ -3,8 +3,9 @@
 
 import fs from "fs-extra";
 import path from "path";
+import * as chai from "chai";
 
-import { AadValidator, FrontendValidator, FunctionValidator, SimpleAuthValidator } from "../../commonlib";
+import { AadValidator, AppStudioValidator, FrontendValidator, FunctionValidator, SimpleAuthValidator } from "../../commonlib";
 
 import {
   execAsync,
@@ -121,7 +122,7 @@ describe("Azure App Happy Path", function () {
     }
 
     // validate the manifest
-    await execAsync(
+    const validationResult = await execAsync(
       `teamsfx validate`,
       {
         cwd: projectPath,
@@ -131,7 +132,7 @@ describe("Azure App Happy Path", function () {
     );
 
     {
-      /// TODO: add check for validate
+      chai.assert.isEmpty(validationResult.stderr);
     }
 
     // build
@@ -145,23 +146,30 @@ describe("Azure App Happy Path", function () {
     );
 
     {
-      /// TODO: add check for build
+      // Validate built package
+      const file = `${projectPath}/.fx/appPackage.zip`;
+      chai.assert.isTrue(await fs.pathExists(file));
     }
 
-    /// TODO: Publish broken: https://msazure.visualstudio.com/Microsoft%20Teams%20Extensibility/_workitems/edit/9856390
-    // // publish
-    // await execAsync(
-    //   `teamsfx publish`,
-    //   {
-    //     cwd: projectPath,
-    //     env: process.env,
-    //     timeout: 0
-    //   }
-    // );
+    // publish
+    await execAsync(
+      `teamsfx publish`,
+      {
+        cwd: projectPath,
+        env: process.env,
+        timeout: 0
+      }
+    );
 
-    // {
-    //   /// TODO: add check for publish
-    // }
+    {
+      // Validate publish result
+      const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
+      const aad = AadValidator.init(context, false, AppStudioLogin);
+      const appId = aad.clientId;
+
+      AppStudioValidator.init();
+      await AppStudioValidator.validatePublish(appId);
+    }
   });
 
   after(async () => {

@@ -1,14 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import {
-  PluginContext,
-  ok,
-  QTreeNode,
-  NodeType,
-  Stage,
-  Result,
-  FxError,
-} from "@microsoft/teamsfx-api";
+import { PluginContext, ok } from "@microsoft/teamsfx-api";
 import path from "path";
 
 import { AzureStorageClient } from "./clients";
@@ -65,14 +57,6 @@ export class FrontendPluginImpl {
       return;
     }
     ctx.config.set(key, value);
-  }
-
-  public getQuestions(stage: Stage, _ctx: PluginContext): Result<QTreeNode | undefined, FxError> {
-    const res = new QTreeNode({
-      type: NodeType.group,
-    });
-
-    return ok(res);
   }
 
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
@@ -246,7 +230,7 @@ export class FrontendPluginImpl {
 
   public async deploy(ctx: PluginContext): Promise<TeamsFxResult> {
     Logger.info(Messages.StartDeploy(PluginInfo.DisplayName));
-    const progressHandler = await ProgressHelper.startDeployProgressHandler(ctx);
+    await ProgressHelper.startDeployProgressHandler(ctx);
 
     const client = this.azureStorageClient;
     if (!client) {

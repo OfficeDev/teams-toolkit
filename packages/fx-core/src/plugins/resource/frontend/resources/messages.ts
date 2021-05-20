@@ -12,7 +12,7 @@ export class Messages {
   static readonly ProgressScaffold = "Scaffolding Tab frontend project.";
   static readonly ProgressCreateStorage = "Creating Azure Storage account.";
   static readonly ProgressConfigure = "Configuring.";
-  static readonly ProgressNPMInstall = 'Running "npm install" for Tab frontend project.';
+  static readonly ProgressNPMInstall = `Running "npm install" for Tab frontend project.`;
   static readonly ProgressBuild = "Building Tab frontend project.";
   static readonly ProgressCheckStorage = "Checking Azure Storage account availability.";
   static readonly ProgressGetSrcAndDest = "Retrieving deployment source and destination.";

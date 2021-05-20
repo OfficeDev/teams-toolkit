@@ -11,7 +11,7 @@ on:
         default: 'prerelease'
 
 jobs:
-  release:
+  cd:
     runs-on: ubuntu-latest
 
     steps:

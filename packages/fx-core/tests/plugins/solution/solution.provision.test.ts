@@ -68,4 +68,43 @@ describe("provision() test", () => {
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.PublishInProgress);
   });
+
+  it("should return error for invalid plugin names", async () => {
+    const solution = new TeamsAppSolution();
+    const mockedCtx = mockSolutionContext();
+    const someInvalidPluginName = "SomeInvalidPluginName";
+    mockedCtx.projectSettings = {
+      appName: "my app",
+      solutionSettings: {
+        hostType: HostTypeOptionSPFx.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [someInvalidPluginName]
+      },
+    };
+    const result = await solution.provision(mockedCtx);
+    expect(result.isErr()).to.be.true;
+    expect(result._unsafeUnwrapErr().name).equals("ProvisionFailure");
+    expect(result._unsafeUnwrapErr().message).contains(`Plugin name ${someInvalidPluginName} is not valid`);
+  });
+
+  it("should return error if manifest file is not found", async () => {
+    const solution = new TeamsAppSolution();
+    const mockedCtx = mockSolutionContext();
+    mockedCtx.projectSettings = {
+      appName: "my app",
+      solutionSettings: {
+        hostType: HostTypeOptionSPFx.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [solution.fehostPlugin.name]
+      },
+    };
+    // We leverage the fact that in testing env, this is not file at `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}` 
+    // So we even don't need to mock fs.readJson
+    const result = await solution.provision(mockedCtx);
+    expect(result.isErr()).to.be.true;
+    expect(result._unsafeUnwrapErr().name).equals(SolutionError.FailedToLoadManifestFile);
+  });
+
 });

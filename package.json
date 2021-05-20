@@ -1,7 +1,7 @@
 {
     "name": "teamsfx",
     "scripts": {
-        "setup": "npm install && npm run bootstrap && npx lerna exec -- npm install --only=dev",
+        "setup": "npm install && npm run bootstrap --hoist",
         "bootstrap": "lerna bootstrap",
         "lint:staged": "lerna run lint:staged --stream",
         "lint": "lerna run lint --stream",

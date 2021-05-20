@@ -64,7 +64,7 @@ export function NotSupportedProjectType(): UserError {
 
 export function DownloadSampleFail(): SystemError {
   return returnUserError(
-    new Error("Failed to clone sample app"),
+    new Error("Failed to download sample app"),
     CoreSource,
     CoreErrorNames.DownloadSampleFail
   );

@@ -185,7 +185,6 @@ export async function askSubscription(
         )
       );
     }
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return ok({ subscriptionId: subscription.subscriptionId, tenantId: subscription.tenantId });
   } else {
     return ok({ subscriptionId: activeSubscriptionId, tenantId: activeTenantId });
@@ -228,7 +227,7 @@ async function askCommonQuestions(
 
   // Note setSubscription here will change the token returned by getAccountCredentialAsync according to the subscription selected.
   // So getting azureToken needs to precede setSubscription.
-  azureAccountProvider?.setSubscription(subscriptionId);
+  await azureAccountProvider?.setSubscription(subscriptionId);
   const azureToken = await azureAccountProvider?.getAccountCredentialAsync();
   if (azureToken === undefined) {
     return err(

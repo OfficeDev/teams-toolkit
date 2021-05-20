@@ -169,23 +169,25 @@ export class AppStudioPlugin implements Plugin {
             appDirectory,
             manifestString
           );
-          const answer = (
-            await ctx.dialog?.communicate(
+          ctx.dialog
+            ?.communicate(
               new DialogMsg(DialogType.Show, {
                 description: `Successfully created ${ctx.app.name.short} app package file at ${appPackagePath}. Send this to your administrator for approval.`,
                 level: MsgLevel.Info,
                 items: ["OK", Constants.READ_MORE],
               })
             )
-          )?.getAnswer();
-          if (answer === Constants.READ_MORE) {
-            await ctx.dialog?.communicate(
-              new DialogMsg(DialogType.Ask, {
-                description: Constants.PUBLISH_GUIDE,
-                type: QuestionType.OpenExternal,
-              })
-            );
-          }
+            .then((value) => {
+              const answer = value.getAnswer();
+              if (answer === Constants.READ_MORE) {
+                ctx.dialog?.communicate(
+                  new DialogMsg(DialogType.Ask, {
+                    description: Constants.PUBLISH_GUIDE,
+                    type: QuestionType.OpenExternal,
+                  })
+                );
+              }
+            });
           TelemetryUtils.sendSuccessEvent(TelemetryEventName.publish);
           return ok(appPackagePath);
         } catch (error) {

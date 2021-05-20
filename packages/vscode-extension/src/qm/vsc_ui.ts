@@ -303,7 +303,6 @@ export class VsCodeUI implements UserInterface {
             if (result && result.length > 0)
               resolve({ type: InputResultType.sucess, result: result });
           };
-
           const onDidChangeSelection = async function(items: QuickPickItem[]): Promise<any> {
             const defaultUrl = items[0].detail;
             fileSelectorIsOpen = true;
@@ -321,7 +320,6 @@ export class VsCodeUI implements UserInterface {
               resolve({ type: InputResultType.sucess, result: res });
             }
           };
-
           disposables.push(
             // quickPick.onDidAccept(onDidAccept),
             quickPick.onDidHide(() => {
@@ -333,7 +331,6 @@ export class VsCodeUI implements UserInterface {
             }),
             quickPick.onDidChangeSelection(onDidChangeSelection)
           );
-
           quickPick.items = [{ label: "Select the workspace folder", detail: option.defaultUri }];
           quickPick.show();
 

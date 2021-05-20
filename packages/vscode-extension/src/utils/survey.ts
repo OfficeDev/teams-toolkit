@@ -3,7 +3,7 @@ import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
 import * as StringResources from "../resources/Strings.json";
 
-const SURVEY_URL = "https://aka.ms/AAamyhp"; // To be updated
+const SURVEY_URL = "https://aka.ms/teams-toolkit-survey";
 
 enum ExtensionSurveyStateKeys {
   DoNotShowAgain = "survey/doNotShowAgain",

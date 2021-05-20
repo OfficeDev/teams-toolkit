@@ -1,71 +1,76 @@
 # Build Messaging Extensions for Teams
 
-_Messaging extensions_ allows users to interact with your web service through buttons and forms in the Microsoft Teams client. They can search, or initiate actions, in an external system from the compose message area, the command box, or directly from a message.
+A Messaging Extension allows users to interact with your web service while composing messages in the Microsoft Teams client. Users can invoke your web service to assist message composition, from the message compose box, or from the search bar.
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/en/)
-- An M365 account, if you do not have M365 account, apply one from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
-- Teams Toolkit or TeamsFx CLI
+- [NodeJS](https://nodejs.org/en/)
+- An M365 account. If you do not have M365 account, apply one from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
+- [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) or [TeamsFx CLI](https://aka.ms/teamsfx-cli)
 
 ## Create an application
 
-- From Visual Studio Code, there are two ways to create a new messaging extension, select `Create New Project` in the left panel or directly open the command palette and select `Teams: Create New Project`.
-- From TeamsFx CLI, run command `teamsfx new` to create a new messaging extension.
+- From Visual Studio Code, open command palette and select `Teams - Start a new project`. Or from the CLI, (after `npm install -g teamsfx`) run command `teamsfx new`.
+- Choose the messaging extension capability from the prompts.
+  > Note: You have the option to reuse an existing bot by entering the credential manually. But make sure that bot is not associated with any AAD apps.
 
 ## Debug
 
-Start debugging the project by hitting the `F5` key. Alternatively use the `Run Panel` in Visual Studio Code and click the `Start Debugging` green arrow button.
+Start debugging the project by hitting the `F5` key in Visual Studio Code. Alternatively use the `Run and Debug Activity Panel` in Visual Studio Code and click the `Start Debugging` green arrow button.
 
-## Build
+## Edit the manifest
 
-- From Visual Studio Code: open the command palette and select `Teams: Build Teams Package`.
-- From TeamsFx CLI: run command `teamsfx build` in the project directory.
+You can find the Teams manifest in `.fx/manifest.source.json`. It contains template arguments with `{...}` statements which will be replaced at build time. You may add any extra properties or permissions you require to this file. See the [schema reference](https://docs.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema) for more.
+
+## Deploy to Azure
+
+Deploy your project to Azure by following these steps:
+
+| From Visual Studio Code                                                                                                                                                                                                                                                                                                                                                     | Using TeamsFx CLI                                                                                                                                                                                                            |
+| :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign in to Azure` under the `ACCOUNTS` section from sidebar.</li> <li>After you signed in, select a subscription under your account.</li><li>Open the command palette and select: `Teams: Provision in the Cloud`.</li><li>Open the command palette and select: `Teams: Deploy to the Cloud`.</li></ul> | <ul> <li>Run command `teamsfx account login azure`.</li> <li>Run command `teamsfx account set --subscription <your-subscription-id>`.</li> <li> Run command `teamsfx provision`.</li> <li>Run command: `teamsfx deploy`. </li></ul> |
+
+> Note: Provisioning and deployment may incur charges to your Azure Subscription.
+
+## Preview
+
+Once the provisioning and deployment steps are finished, you can preview your app:
+1. From Visual Studio Code, open the `Run and Debug Activity Panel`.
+1. Select `Launch Remote (Edge)` or `Launch Remote (Chrome)` from the launch configuration drop-down. 
+1. Press the Play (green arrow) button to launch your app - now running remotely from Azure.
 
 ## Validate manifest file
 
-To check that your manifest file is valid or not:
+To check that your manifest file is valid:
 
 - From Visual Studio Code: open the command palette and select: `Teams: Validate App Manifest File`.
 - From TeamsFx CLI: run command `teamsfx validate` in your project directory.
 
-## Deploy to Azure
+## Build
 
-Deploy your project to Azure when it’s ready by following these steps:
-
-1. Log in to your Azure account
-2. Select an active subscription
-3. Provision your application resources in the cloud
-4. Deploy your application to the cloud
-
-You can do this using the Teams Toolkit in Visual Studio Code or using the TeamsFx CLI:
-
-| Using Teams Toolkit                                                                                                                                                                                                                                                                                                                                                     | Using TeamsFx CLI                                                                                                                                                                                                            |
-| :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign in to Azure` under the `ACCOUNT` section from sidebar.</li> <li>After you signed in, select a subscription under your account.</li><li>Open the command palette and select: `Teams: Provision in the Cloud`.</li><li>Open the command palette and select: `Teams: Deploy to the Cloud`.</li></ul> | <ul> <li>Run command `teamsfx account login azure`.</li> <li>Run command `teamsfx account set --subscription $subscriptionid`.</li> <li> Run command `teamsfx provision`.</li> <li>Run command: `teamsfx deploy`. </li></ul> |
-
-> Note: This may incur costs in your Azure Subscription.
+- From Visual Studio Code: open the command palette and select `Teams: Build Teams Package`.
+- Alternatively, from the command line run `teamsfx build` in the project directory.
 
 ## Publish to Teams
 
-Once deployed, you may want to submit your application to your organization's internal app store. Your app will be submitted for admin approval.
+Once deployed, you may want to distribute your application to your organization's internal app store in Teams. Your app will be submitted for admin approval.
 
 - From Visual Studio Code: open the command palette and select: `Teams: Publish to Teams`.
 - From TeamsFx CLI: run command `teamsfx publish` in your project directory.
 
 ## Use the App
 
-Once the message extension is published to Teams (or in local preview mode), you can start playing around with it. The template provides some simple functionalities:
+This template provides some sample functionality:
 
-- You can search `npm` packages.
+- You can search for `npm` packages from the search bar.
 - You can create and send an adaptive card.
   ![CreateCard](./images/AdaptiveCard.png)
 - You can share a message in an adaptive card form.
   ![ShareMessage](./images/ShareMessage.png)
-- You can paste a link with monitored domain (`.botframwork.com` is monitored in this template) and a card will be rendered.
+- You can paste a link that "unfurls" (`.botframwork.com` is monitored in this template) and a card will be rendered.
   ![ComposeArea](./images/LinkUnfurlingImage.png)
 
-To trigger these functionalities, there are multiple entry points:
+To trigger these functions, there are multiple entry points:
 
 - `@mention` Your messaging extension, from the `search box area`.
   ![AtBotFromSearch](./images/AtBotFromSearch.png)
@@ -82,9 +87,3 @@ To trigger these functionalities, there are multiple entry points:
 - [Action Command](https://docs.microsoft.com/en-us/microsoftteams/platform/messaging-extensions/how-to/action-commands/define-action-command)
 - [Link Unfurling](https://docs.microsoft.com/en-us/microsoftteams/platform/messaging-extensions/how-to/link-unfurling?tabs=dotnet)
 
-## Code of Conduct
-
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
-
-For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
-contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.

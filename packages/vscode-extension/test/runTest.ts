@@ -14,14 +14,14 @@ async function main() {
     const extensionTestsPath1 = path.resolve(__dirname, "./index.noFolder");
     await runTests({
       extensionDevelopmentPath,
-      extensionTestsPath: extensionTestsPath1
+      extensionTestsPath: extensionTestsPath1,
     });
 
     const extensionTestsPath2 = path.resolve(__dirname, "./index.folder");
     await runTests({
       extensionDevelopmentPath,
       extensionTestsPath: extensionTestsPath2,
-      launchArgs: [testWorkspace]
+      launchArgs: [testWorkspace],
     });
   } catch (err) {
     console.error("Failed to run tests");

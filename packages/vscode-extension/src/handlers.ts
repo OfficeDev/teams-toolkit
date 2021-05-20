@@ -201,6 +201,9 @@ export async function activate(): Promise<Result<null, FxError>> {
     {
       await openMarkdownHandler();
     }
+    {
+      await openSampleReadmeHandler();
+    }
   } catch (e) {
     const FxError: FxError = {
       name: e.name,
@@ -608,7 +611,10 @@ export async function backendExtensionsInstallHandler(): Promise<void> {
  */
 export async function preDebugCheckHandler(): Promise<void> {
   try {
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPreCheck);
+    const localAppId = commonUtils.getLocalTeamsAppId() as string;
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPreCheck, {
+      [TelemetryProperty.DebugAppId]: localAppId,
+    });
   } catch {
     // ignore telemetry error
   }
@@ -617,7 +623,10 @@ export async function preDebugCheckHandler(): Promise<void> {
   result = await runCommand(Stage.debug);
   if (result.isErr()) {
     try {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPreCheck, result.error);
+      const localAppId = commonUtils.getLocalTeamsAppId() as string;
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPreCheck, result.error, {
+        [TelemetryProperty.DebugAppId]: localAppId,
+      });
     } finally {
       // ignore telemetry error
       terminateAllRunningTeamsfxTasks();
@@ -638,7 +647,10 @@ export async function preDebugCheckHandler(): Promise<void> {
     }
     const error = new UserError(ExtensionErrors.PortAlreadyInUse, message, ExtensionSource);
     try {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPreCheck, error);
+      const localAppId = commonUtils.getLocalTeamsAppId() as string;
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPreCheck, error, {
+        [TelemetryProperty.DebugAppId]: localAppId,
+      });
     } finally {
       // ignore telemetry error
       window.showErrorMessage(message);
@@ -692,15 +704,24 @@ async function openMarkdownHandler() {
       }
     }
     const uri = Uri.file(`${targetFolder}/README.md`);
-    workspace
-      .openTextDocument(uri)
-      .then((document) => {
-        window.showTextDocument(document);
-      })
-      .then(() => {
-        const PreviewMarkdownCommand = "markdown.showPreviewToSide";
-        commands.executeCommand(PreviewMarkdownCommand, uri);
-      });
+    workspace.openTextDocument(uri).then(() => {
+      const PreviewMarkdownCommand = "markdown.showPreviewToSide";
+      commands.executeCommand(PreviewMarkdownCommand, uri);
+    });
+  }
+}
+
+async function openSampleReadmeHandler() {
+  const afterScaffold = ext.context.globalState.get("openSampleReadme", false);
+  if (afterScaffold && workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
+    ext.context.globalState.update("openSampleReadme", false);
+    const workspaceFolder = workspace.workspaceFolders[0];
+    const workspacePath: string = workspaceFolder.uri.fsPath;
+    const uri = Uri.file(`${workspacePath}/README.md`);
+    workspace.openTextDocument(uri).then(() => {
+      const PreviewMarkdownCommand = "markdown.showPreviewToSide";
+      commands.executeCommand(PreviewMarkdownCommand, uri);
+    });
   }
 }
 
@@ -819,13 +840,13 @@ export function cmdHdlDisposeTreeView() {
   TreeViewManagerInstance.dispose();
 }
 
-export async function showError(e: FxError) {
+export async function showError(e: UserError | SystemError) {
   VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}, stack: ${e.stack}`);
 
   const errorCode = `${e.source}.${e.name}`;
   if (isUserCancelError(e)) {
     return;
-  } else if (e instanceof UserError && e.helpLink && typeof e.helpLink != "undefined") {
+  } else if ("helpLink" in e && e.helpLink && typeof e.helpLink != "undefined") {
     const help = {
       title: StringResources.vsc.handlers.getHelp,
       run: async (): Promise<void> => {
@@ -835,7 +856,7 @@ export async function showError(e: FxError) {
 
     const button = await window.showErrorMessage(`[${errorCode}]: ${e.message}`, help);
     if (button) await button.run();
-  } else if (e instanceof SystemError && e.issueLink && typeof e.issueLink != "undefined") {
+  } else if ("issueLink" in e && e.issueLink && typeof e.issueLink != "undefined") {
     const path = e.issueLink.replace(/\/$/, "") + "?";
     const param = `title=new+bug+report: ${errorCode}&body=${e.message}\n\n${e.stack}`;
     const issue = {

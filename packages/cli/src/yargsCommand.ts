@@ -61,7 +61,11 @@ export abstract class YargsCommand {
     }
 
     const cliPackage = JSON.parse(readFileSync(path.join(__dirname, "/../package.json"), "utf8"));
-    const reporter = new CliTelemetryReporter(cliPackage.aiKey, constants.cliTelemetryPrefix, cliPackage.version);
+    const reporter = new CliTelemetryReporter(
+      cliPackage.aiKey,
+      constants.cliTelemetryPrefix,
+      cliPackage.version
+    );
     CliTelemetry.setReporter(reporter);
 
     try {
@@ -70,13 +74,15 @@ export abstract class YargsCommand {
         throw result.error;
       }
     } catch (e) {
-      const FxError: FxError =
-        e instanceof UserError || e instanceof SystemError ? e : UnknownError(e);
+      const FxError: UserError | SystemError = "source" in e ? e : UnknownError(e);
       console.error(`[${FxError.source}.${FxError.name}]: ${FxError.message}`.red);
-      if (FxError instanceof UserError && FxError.helpLink) {
-        console.error("Get help from".red, `${FxError.helpLink}#${FxError.source}${FxError.name}`.cyan.underline);
+      if ("helpLink" in FxError && FxError.helpLink) {
+        console.error(
+          "Get help from".red,
+          `${FxError.helpLink}#${FxError.source}${FxError.name}`.cyan.underline
+        );
       }
-      if (FxError instanceof SystemError && FxError.issueLink) {
+      if ("issueLink" in FxError && FxError.issueLink) {
         console.error("Report this issue at".red, `${FxError.issueLink}`.cyan.underline);
       }
       if (CLILogProvider.getLogLevel() === constants.CLILogLevel.debug) {

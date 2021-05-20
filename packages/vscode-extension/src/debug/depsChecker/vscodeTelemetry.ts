@@ -13,7 +13,7 @@ export class VSCodeTelemetry implements IDepsTelemetry {
 
   public sendEvent(eventName: DepsCheckerEvent, timecost?: number): void {
     const properties: { [p: string]: string } = {
-      [TelemetryProperty.Component]: this._telemetryComponentType
+      [TelemetryProperty.Component]: this._telemetryComponentType,
     };
 
     const measurements: { [p: string]: number } = {};
@@ -38,7 +38,7 @@ export class VSCodeTelemetry implements IDepsTelemetry {
   public sendUserErrorEvent(eventName: DepsCheckerEvent, errorMessage: string): void {
     const error = new UserError(eventName, errorMessage, this._telemetryComponentType);
     ExtTelemetry.sendTelemetryErrorEvent(eventName, error, {
-      [TelemetryProperty.Component]: this._telemetryComponentType
+      [TelemetryProperty.Component]: this._telemetryComponentType,
     });
   }
 
@@ -54,7 +54,7 @@ export class VSCodeTelemetry implements IDepsTelemetry {
       errorStack
     );
     ExtTelemetry.sendTelemetryErrorEvent(eventName, error, {
-      [TelemetryProperty.Component]: this._telemetryComponentType
+      [TelemetryProperty.Component]: this._telemetryComponentType,
     });
   }
 }

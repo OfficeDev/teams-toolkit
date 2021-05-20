@@ -64,14 +64,6 @@ export default class SampleGallery extends React.Component<any, any> {
             sampleAppUrl="https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip"
           />
           <SampleAppCard
-            image={FAQPlus}
-            tags={["Easy QnA", "Bot", "JS"]}
-            title="FAQ Plus"
-            description="FAQ Plus is a conversational Q&A bot providing an easy way to answer frequently asked questions by users. One can ask a question and the bot responds with information in the knowledge base. If the answer is not in the knowledge base, the bot submits the question to a pre-configured team of experts who help provide support."
-            sampleAppFolder="faq-plus"
-            sampleAppUrl="https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip"
-          />
-          <SampleAppCard
             image={InMeetingApp}
             tags={["Meeting extension", "JS"]}
             title="In-meeting App"

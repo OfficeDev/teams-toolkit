@@ -11,14 +11,14 @@ import {
   Messages,
   defaultHelpLink,
   DepsCheckerEvent,
-  TelemtryMessages
+  TelemtryMessages,
 } from "./common";
 import { DepsCheckerError } from "./errors";
 
 export enum FuncVersion {
   v1 = "1",
   v2 = "2",
-  v3 = "3"
+  v3 = "3",
 }
 
 const funcPackageName = "azure-functions-core-tools";
@@ -46,7 +46,7 @@ export class FuncToolChecker implements IDepsChecker {
       name: funcToolName,
       installVersion: installVersion,
       supportedVersions: supportedVersions,
-      details: new Map<string, string>()
+      details: new Map<string, string>(),
     });
   }
 
@@ -218,9 +218,8 @@ export class FuncToolChecker implements IDepsChecker {
     );
 
     const tryInstallfailed: boolean = result.code !== 0;
-    const needAdminPermission: boolean = result.cmdOutputIncludingStderr.includes(
-      "permission denied"
-    );
+    const needAdminPermission: boolean =
+      result.cmdOutputIncludingStderr.includes("permission denied");
     const command = `npm install -g ${funcPackageName}@${version} --unsafe-perm true`;
 
     if (tryInstallfailed && needAdminPermission && isMacOS()) {
@@ -243,7 +242,7 @@ export class FuncToolChecker implements IDepsChecker {
         undefined,
         this._logger,
         {
-          shell: "cmd.exe"
+          shell: "cmd.exe",
         },
         "where",
         "func"

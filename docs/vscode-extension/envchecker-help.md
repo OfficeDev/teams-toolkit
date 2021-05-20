@@ -30,7 +30,7 @@ Please refer to [the official website](https://dotnet.microsoft.com/download) to
 
 ## NodeNotFound
 ### Notification Message
-> The toolkit cannot find Node.js on your machine. As a fundamental language runtime for Teams app, these dependencies are required. Node.js is required and the recommended version is v12.
+> Cannot find Node.js. Teams Toolkit requires Node.js; the recommended version is v14.
 
 As the Teams Toolkit project is implemented by `Node.js`, it's required to install the npm pacakges and run the project in local. 
 
@@ -41,8 +41,7 @@ Please refer to [nodejs.org](https://nodejs.org/) to install the right version: 
 
 ## NodeNotSupported(Azure hosting)
 ### Notification Message
-
-> Current installed Node.js is not in the supported version list (Azure hosting), which might not work as expected for some functionalities.
+> Node.js (*node_version*) is not in the supported version list (v10, v12, v14).
 
 When `Azure` is selected as the hosting type, only LTS versions (v10, v12 and v14) of Node.js are supported by Teams Toolkit currently, please make sure the installed Node.js meets this requirement. In addition, **Node v14 (LTS)** would be recommended to be installed.
 
@@ -51,7 +50,7 @@ Please refer to [the guide](#how-to-install-nodejs) to install `Node.js`.
 
 ## NodeNotSupported(SPFx hosting)
 ### Notification Message
-> Current installed Node.js is not in the supported version list (SPFx hosting), which might not work as expected for some functionalities.
+> Node.js (*node_version*) is not in the supported version list (v10, v12, v14).
   
 The SharePoint Framework v1.12.1 is supported on the following Node.js versions:
 - Node.js v10.13.0+ (Dubnium)
@@ -63,9 +62,9 @@ And **the latest version of Node.js LTS v14** would be recommended to be install
 ### Mitigation
 Please refer to [the guide](#how-to-install-nodejs) to install `Node.js`.
 
-## FailToInstallDotnet
+## <a name="functionDepsCheckerfailtoinstalldotnet"></a>FailToInstallDotnet
 ### Notification Message
-> Failed to install .NET Core SDK (v3.1), please install it manually and restart all your Visual Studio Code instances.
+> Failed to install .NET Core SDK (v3.1). Install .NET Core SDK (v3.1) manually and restart Visual Studio Code.
 
 It might be caused by timeout issue (longer than 3 minutes), the process to install `.NET SDK` is killed, or other unknown issues.
 
@@ -73,14 +72,14 @@ It might be caused by timeout issue (longer than 3 minutes), the process to inst
 * Retry the operation (local debugging or Function app deployment).
 * Please refer to [the guide](#how-to-install-net-sdk) to install `.NET SDK` manually.
 
-## DotnetNotFound 
+## <a name="functionDepsCheckerdotnetnotfound"></a>DotnetNotFound
 ### Notification Message
-> (Linux only) The toolkit cannot find `.NET 5` or `.NET Core 3.1` on your machine. As a fundamental runtime context for Teams app, these dependencies are required. Please install the required dependencies manually.
+> Cannot find .NET Core SDK (v3.1 or v5.0). Teams Toolkit requires these dependencies.
 
 ### Mitigation
 Please refer to [the guide](#how-to-install-net-sdk) to install `.NET SDK` manually.
 
-## DotnetNotSupportTargetVersion
+## <a name="functionDepsCheckerdotnetnotsupporttargetversion"></a>DotnetNotSupportTargetVersion
 ### Notification Message
 > NETSDK1045: The current .NET SDK does not support 'newer version' as a target.
 
@@ -100,6 +99,6 @@ To open your user and workspace settings, use the following Visual Studio Code m
 
 ![envchecker-settings](../images/vscode-extension/envchecker/envchecker-settings.png)
 
-## Report issues 
+## <a name="functionDepsCheckerreport-issues"></a>Report issues 
 
 If above FAQs can't solve your problem, please click [here](https://github.com/OfficeDev/Teamsfx/issues/new) to submit an issue on GitHub and attach the log from Visual Studio Code output channel named "Teams Toolkit".

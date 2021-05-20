@@ -10,7 +10,7 @@ export default class LearnToolkit extends React.Component<any, any> {
     super(props);
 
     this.state = {
-      currentStep: 1
+      currentStep: 1,
     };
   }
 
@@ -48,7 +48,7 @@ export default class LearnToolkit extends React.Component<any, any> {
                 <a href="https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/capabilities-overview">
                   Capabilities
                 </a>,
-                " are the extension points for building apps on the Microsoft Teams platform."
+                " are the extension points for building apps on the Microsoft Teams platform.",
               ]}
               actionText="Watch Video (1 min)"
               secondaryActionText="Next"
@@ -104,7 +104,7 @@ export default class LearnToolkit extends React.Component<any, any> {
 
   onNextStep = (step: number) => {
     this.setState({
-      currentStep: step + 1
+      currentStep: step + 1,
     });
   };
 
@@ -113,7 +113,7 @@ export default class LearnToolkit extends React.Component<any, any> {
   displayCommands = () => {
     vscode.postMessage({
       command: Commands.DisplayCommandPalette,
-      data: "Teams"
+      data: "Teams",
     });
   };
 }

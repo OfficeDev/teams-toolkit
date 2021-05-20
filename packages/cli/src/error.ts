@@ -79,9 +79,9 @@ export function ConfigNotFoundError(configpath: string): SystemError {
   );
 }
 
-export function SampleAppClonedFailed(sampleAppUrl: string, e: Error): SystemError {
-  e.message = `Cannot clone this sample app from ${sampleAppUrl}. Error: ${e.message}`;
-  return returnSystemError(e, constants.cliSource, "SampleAppClonedFailed");
+export function SampleAppDownloadFailed(sampleAppUrl: string, e: Error): SystemError {
+  e.message = `Cannot download this sample app from ${sampleAppUrl}. Error: ${e.message}`;
+  return returnSystemError(e, constants.cliSource, "SampleAppDownloadFailed");
 }
 
 export function ReadFileError(e: Error): SystemError {
@@ -114,10 +114,10 @@ export function QTNQuestionTypeNotSupport(data: Question): SystemError {
   );
 }
 
-export function InquirerAnswerNotFound(data: IMessage): UserError {
+export function ProjectFolderExist(path: string): UserError {
   return returnUserError(
-    new Error(`Answer not found for question:${data.description}`),
+    new Error(`Path ${path} alreay exists. Select a different folder.`),
     constants.cliSource,
-    "InquirerAnswerNotFound"
+    "ProjectFolderExist"
   );
 }

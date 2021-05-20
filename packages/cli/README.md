@@ -1,19 +1,17 @@
 # TeamsFx Command Line Tool
 
-## TeamsFx CLI
-
 TeamsFx CLI a text-based command line interface that can help scaffold, validate, and deploy applications for Microsoft Teams from the terminal or a CI/CD process.
 
 ## Getting Started
 
-Let's start by installing teamsfx-cli and run cli command:
+Let's start by installing `teamsfx-cli` from NPM and run `teamsfx -h` to check all available commands:
 
 ```powershell
 $ npm install -g @microsoft/teamsfx-cli
-$ teamsfx -v
+$ teamsfx -h
 ```
 
-Please refer to [TeamsFx CLI User Manual](/docs/cli/user-manual.md).
+Please refer to [TeamsFx CLI User Manual](/docs/cli/user-manual.md) for in-depth instructions.
 
 ## Extensibility Model
 

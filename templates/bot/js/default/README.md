@@ -12,7 +12,7 @@ This is a sample chatbot application demonstrating Single Sign-on using `botbuil
 
 ## Create an application
 
-- From Visual Studio Code, open command palette and select `Teams - Start a new project`. Or from the CLI, (after `npm install -g teamsfx`) run command `teamsfx new`.
+- From Visual Studio Code, open command palette and select `Teams - Start a new project`. Or from the CLI, (after `npm install -g @microsoft/teamsfx-cli`) run command `teamsfx new`.
 - Choose the bot capabilities from the prompts.
   > Note: You have the option to reuse an existing bot by entering the credential manually. But make sure that bot is not associated with any AAD apps.
 

@@ -1,0 +1,29 @@
+name: publish to vscode market
+
+on:
+  workflow_dispatch:
+
+jobs:
+  publish-to-vscode-market:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.CD_PAT }}
+          ref: ${{ github.ref }}
+
+      - name: Setup node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: 14
+
+      - name: Publish
+        run: |
+          npm install 
+          npx vsce publish
+        working-directory: ./packages/sdk
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }} 

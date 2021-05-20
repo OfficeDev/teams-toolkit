@@ -57,7 +57,7 @@ export class WebviewPanel {
         // Enable javascript in the webview
         enableScripts: true,
         retainContextWhenHidden: true,
-        localResourceRoots: [vscode.Uri.file(path.join(this.extensionPath, "out"))],
+        localResourceRoots: [vscode.Uri.file(path.join(this.extensionPath, "out"))]
       }
     );
 
@@ -75,16 +75,15 @@ export class WebviewPanel {
           case Commands.CloneSampleApp:
             const selection = await vscode.window.showInformationMessage(
               `Download '${msg.data.appName}' from Github. This will download '${msg.data.appName}' repository and open to your local machine`,
-              { modal: false },
-              "Download",
-              "Cancel"
+              { modal: true },
+              "Download"
             );
             if (selection === "Download") {
               const folder = await vscode.window.showOpenDialog({
                 canSelectFiles: false,
                 canSelectFolders: true,
                 canSelectMany: false,
-                title: "Select folder to download the sample app",
+                title: "Select folder to download the sample app"
               });
               if (folder !== undefined) {
                 const sampleAppPath = path.join(folder[0].fsPath, msg.data.appFolder);
@@ -177,7 +176,7 @@ export class WebviewPanel {
         if (this.panel && this.panel.webview) {
           this.panel.webview.postMessage({
             message: "m365AccountChange",
-            data: email,
+            data: email
           });
         }
 
@@ -197,7 +196,7 @@ export class WebviewPanel {
       if (this.panel && this.panel.webview) {
         this.panel.webview.postMessage({
           message: "azureAccountChange",
-          data: email,
+          data: email
         });
       }
 
@@ -212,7 +211,7 @@ export class WebviewPanel {
       retries--;
       try {
         result = await axios.get(url, {
-          responseType: "arraybuffer",
+          responseType: "arraybuffer"
         });
         if (result.status === 200 || result.status === 201) {
           return result;

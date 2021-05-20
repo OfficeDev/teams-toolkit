@@ -31,6 +31,7 @@ import {
   AzureSolutionSettings,
   UserError,
   Platform,
+  QuestionType,
 } from "@microsoft/teamsfx-api";
 import { askSubscription, fillInCommonQuestions } from "./commonQuestions";
 import { executeLifecycles, executeConcurrently, LifecyclesWithContext } from "./executor";
@@ -958,12 +959,21 @@ export class TeamsAppSolution implements Solution {
               subscriptionName ? subscriptionName : subscriptionId
             ),
             level: MsgLevel.Warning,
-            items: ["Provision", "Cancel"],
+            items: ["Provision", "Pricing calculator"],
+            modal: true,
           })
         )
       )?.getAnswer();
 
       if (confirm !== "Provision") {
+        if (confirm === "Pricing calculator") {
+          await ctx.dialog?.communicate(
+            new DialogMsg(DialogType.Ask, {
+              description: "https://azure.microsoft.com/en-us/pricing/calculator/",
+              type: QuestionType.OpenExternal,
+            })
+          );
+        }
         return err(
           returnUserError(
             new Error(getStrings().solution.CancelProvision),
@@ -1368,30 +1378,13 @@ export class TeamsAppSolution implements Solution {
       const isAzureProject = this.isAzureProject(ctx);
       const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
       if (isAzureProject && !provisioned) {
-        if (ctx.platform === Platform.VSCode) {
-          const res = (
-            await ctx.dialog?.communicate(
-              new DialogMsg(DialogType.Show, {
-                description: getStrings().solution.AskProvisionBeforeDeployOrPublish,
-                level: MsgLevel.Warning,
-                items: ["Provision", "Cancel"],
-              })
-            )
-          )?.getAnswer();
-          if (res === "Provision") {
-            throw DoProvisionFirstError;
-          } else {
-            throw CancelError;
-          }
-        } else {
-          return err(
-            returnUserError(
-              new Error(getStrings().solution.NotProvisionedNotice),
-              "Solution",
-              SolutionError.CannotDeployBeforeProvision
-            )
-          );
-        }
+        return err(
+          returnUserError(
+            new Error(getStrings().solution.FailedToDeployBeforeProvision),
+            "Solution",
+            SolutionError.CannotDeployBeforeProvision
+          )
+        );
       }
       const res = this.getSelectedPlugins(ctx);
       if (res.isErr()) {
@@ -1445,30 +1438,13 @@ export class TeamsAppSolution implements Solution {
       const isAzureProject = this.isAzureProject(ctx);
       const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
       if (isAzureProject && !provisioned) {
-        if (ctx.platform === Platform.VSCode) {
-          const res = (
-            await ctx.dialog?.communicate(
-              new DialogMsg(DialogType.Show, {
-                description: getStrings().solution.AskProvisionBeforeDeployOrPublish,
-                level: MsgLevel.Warning,
-                items: ["Provision", "Cancel"],
-              })
-            )
-          )?.getAnswer();
-          if (res === "Provision") {
-            throw DoProvisionFirstError;
-          } else {
-            throw CancelError;
-          }
-        } else {
-          return err(
-            returnUserError(
-              new Error(getStrings().solution.NotProvisionedNotice),
-              "Solution",
-              SolutionError.CannotPublishBeforeProvision
-            )
-          );
-        }
+        return err(
+          returnUserError(
+            new Error(getStrings().solution.FailedToPublishBeforeProvision),
+            "Solution",
+            SolutionError.CannotPublishBeforeProvision
+          )
+        );
       }
       if (!provisioned && this.spfxSelected(ctx)) {
         if (ctx.platform === Platform.VSCode) {

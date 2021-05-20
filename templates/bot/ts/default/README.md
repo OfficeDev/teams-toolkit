@@ -20,10 +20,26 @@ This is a sample chatbot application demonstrating Single Sign-on using `botbuil
 
 Start debugging the project by hitting the `F5` key in Visual Studio Code. Alternatively use the `Run and Debug Activity Panel` in Visual Studio Code and click the `Start Debugging` green arrow button.
 
-## Build
+## Edit the manifest
 
-- From Visual Studio Code: open the command palette and select `Teams: Build Teams Package`.
-- Alternatively, from the command line run `teamsfx build` in the project directory.
+You can find the Teams manifest in `.fx/manifest.source.json`. It contains template arguments with `{...}` statements which will be replaced at build time. You may add any extra properties or permissions you require to this file. See the [schema reference](https://docs.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema) for more.
+
+## Deploy to Azure
+
+Deploy your project to Azure by following these steps:
+
+| From Visual Studio Code                                                                                                                                                                                                                                                                                                                                                     | Using TeamsFx CLI                                                                                                                                                                                                            |
+| :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign in to Azure` under the `ACCOUNTS` section from sidebar.</li> <li>After you signed in, select a subscription under your account.</li><li>Open the command palette and select: `Teams: Provision in the Cloud`.</li><li>Open the command palette and select: `Teams: Deploy to the Cloud`.</li></ul> | <ul> <li>Run command `teamsfx account login azure`.</li> <li>Run command `teamsfx account set --subscription <your-subscription-id>`.</li> <li> Run command `teamsfx provision`.</li> <li>Run command: `teamsfx deploy`. </li></ul> |
+
+> Note: Provisioning and deployment may incur charges to your Azure Subscription.
+
+## Preview
+
+Once the provisioning and deployment steps are finished, you can preview your app:
+1. From Visual Studio Code, open the `Run and Debug Activity Panel`.
+1. Select `Launch Remote (Edge)` or `Launch Remote (Chrome)` from the launch configuration drop-down. 
+1. Press the Play (green arrow) button to launch your app - now running remotely from Azure.
 
 ## Validate manifest file
 
@@ -32,15 +48,10 @@ To check that your manifest file is valid:
 - From Visual Studio Code: open the command palette and select: `Teams: Validate App Manifest File`.
 - From TeamsFx CLI: run command `teamsfx validate` in your project directory.
 
-## Deploy to Azure
+## Build
 
-Deploy your project to Azure by following these steps:
-
-| From Visual Studio Code                                                                                                                                                                                                                                                                                                                                                     | Using TeamsFx CLI                                                                                                                                                                                                            |
-| :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign in to Azure` under the `ACCOUNT` section from sidebar.</li> <li>After you signed in, select a subscription under your account.</li><li>Open the command palette and select: `Teams: Provision in the Cloud`.</li><li>Open the command palette and select: `Teams: Deploy to the Cloud`.</li></ul> | <ul> <li>Run command `teamsfx account login azure`.</li> <li>Run command `teamsfx account set --subscription <your-subscription-id>`.</li> <li> Run command `teamsfx provision`.</li> <li>Run command: `teamsfx deploy`. </li></ul> |
-
-> Note: Provisioning and deployment may incur charges to your Azure Subscription.
+- From Visual Studio Code: open the command palette and select `Teams: Build Teams Package`.
+- Alternatively, from the command line run `teamsfx build` in the project directory.
 
 ## Publish to Teams
 
@@ -54,10 +65,3 @@ Once deployed, you may want to distribute your application to your organization'
 - [Bot Basics](https://docs.microsoft.com/azure/bot-service/bot-builder-basics?view=azure-bot-service-4.0)
 - [Bot Framework Documentation](https://docs.botframework.com/)
 - [Azure Bot Service Introduction](https://docs.microsoft.com/azure/bot-service/bot-service-overview-introduction?view=azure-bot-service-4.0)
-
-## Code of Conduct
-
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
-
-For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
-contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.

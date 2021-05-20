@@ -13,7 +13,7 @@ import {
   env,
   ProgressOptions,
   Progress,
-  CancellationToken,
+  CancellationToken
 } from "vscode";
 
 import { IProgressStatus, Result, FxError } from "@microsoft/teamsfx-api";
@@ -24,7 +24,7 @@ import { testFolder } from "./globalVaribles";
 export enum EInputType {
   defaultValue = "defaultValue",
   specifiedItem = "specifiedItem",
-  specifiedValue = "specifiedValue",
+  specifiedValue = "specifiedValue"
 }
 
 export interface IUserInputItem {
@@ -120,20 +120,26 @@ export class TestUserInput implements IUserInput {
 
   public async showInformationMessage(
     message: string,
+    modal: boolean,
     ...items: string[]
   ): Promise<string | undefined> {
-    return await window.showInformationMessage(message, ...items);
+    return await window.showInformationMessage(message, { modal: modal }, ...items);
   }
 
   public async showWarningMessage(
     message: string,
+    modal: boolean,
     ...items: string[]
   ): Promise<string | undefined> {
-    return await window.showWarningMessage(message, ...items);
+    return await window.showWarningMessage(message, { modal: modal }, ...items);
   }
 
-  public async showErrorMessage(message: string, ...items: string[]): Promise<string | undefined> {
-    return await window.showErrorMessage(message, ...items);
+  public async showErrorMessage(
+    message: string,
+    modal: boolean,
+    ...items: string[]
+  ): Promise<string | undefined> {
+    return await window.showErrorMessage(message, { modal: modal }, ...items);
   }
 
   public async openExternal(link: Uri): Promise<boolean> {

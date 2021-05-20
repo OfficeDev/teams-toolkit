@@ -24,7 +24,7 @@ import {
 import inquirer from "inquirer";
 import CLILogProvider from "./commonlib/log";
 import { ProgressHandler } from "./progressHandler";
-import { InquirerAnswerNotFound, NotSupportedQuestionType } from "./error";
+import { NotSupportedQuestionType } from "./error";
 
 export class DialogManager implements Dialog {
   private static instance: DialogManager;
@@ -98,10 +98,8 @@ export class DialogManager implements Dialog {
   }
 
   private async showProgress(prog: IProgress): Promise<Result<null, FxError>> {
-    let currentStatus: IteratorResult<
-      IProgressStatus,
-      Result<null, FxError>
-    > = await prog.progressIter.next();
+    let currentStatus: IteratorResult<IProgressStatus, Result<null, FxError>> =
+      await prog.progressIter.next();
     while (!currentStatus.done) {
       currentStatus = await prog.progressIter.next();
     }
@@ -128,7 +126,26 @@ export class DialogManager implements Dialog {
     if (questionName in answers) {
       return answers[questionName];
     } else {
-      throw InquirerAnswerNotFound(questionDescription);
+      return undefined;
+    }
+  }
+
+  private static async askConfirmQuestion(confirmOption: string, questionDescription: string) {
+    const ciEnabled = process.env.CI_ENABLED;
+    if (ciEnabled) {
+      return confirmOption;
+    }
+    const answers = await inquirer.prompt([
+      {
+        name: QuestionType.Confirm,
+        type: "confirm",
+        message: questionDescription,
+      },
+    ]);
+    if (answers[QuestionType.Confirm]) {
+      return confirmOption;
+    } else {
+      return undefined;
     }
   }
 
@@ -163,23 +180,7 @@ export class DialogManager implements Dialog {
     switch (question.type) {
       case QuestionType.Confirm:
         if (question.options && question.options.length === 1) {
-          const ciEnabled = process.env.CI_ENABLED;
-          if (ciEnabled) {
-            return question.options[0];
-          }
-          const answers = await inquirer.prompt([
-            {
-              name: QuestionType.Confirm,
-              type: "confirm",
-              message: question.description,
-            },
-          ]);
-          const confirmOption = question.options[0];
-          if (answers[QuestionType.Confirm]) {
-            return confirmOption;
-          } else {
-            return undefined;
-          }
+          return await DialogManager.askConfirmQuestion(question.options[0], question.description);
         } else if (question.options && question.options.length > 1) {
           // Need to add "Cancel" option for confirm question.
           return await DialogManager.askListQuestion(
@@ -201,8 +202,15 @@ export class DialogManager implements Dialog {
   }
 
   private async showMessage(msg: IMessage): Promise<string | undefined> {
-    if (msg.items && msg.items.length > 0) {
-      return await DialogManager.askListQuestion(msg.items, msg.description);
+    if (msg.items && msg.items.length === 1) {
+      return await DialogManager.askConfirmQuestion(msg.items[0], msg.description);
+    } else if (msg.items && msg.items.length > 1) {
+      // if modal, vsc will append "cancel" item so the plugin won't define "cancel" in dialog items.
+      if (msg.modal) {
+        return await DialogManager.askListQuestion(msg.items.concat("Cancel"), msg.description);
+      } else {
+        return await DialogManager.askListQuestion(msg.items, msg.description);
+      }
     } else {
       switch (msg.level) {
         case MsgLevel.Info:

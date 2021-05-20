@@ -49,7 +49,7 @@ Verify you have the right prerequisites for building Teams apps and install some
 
 ## Getting started
 
-After installing the Teams toolkit, follow the [Get Started](https://review.docs.microsoft.com/en-us/mods/build-your-first-app/build-first-app-overview?branch=main) instruction in our documentation to smoothly start with.
+After installing the Teams toolkit, follow the [Get Started](https://aka.ms/teamsfx-build-first-app) instruction in our documentation to smoothly start with.
 
 Under the Teams Toolkit extension tab, you can easily discover all applicable commands in the sidebar and Command Palette with the keyword ‘TeamsFx’. It also supports [Command Line Interface (CLI)](https://www.npmjs.com/package/teamsfx-cli) to increase efficiency.
 

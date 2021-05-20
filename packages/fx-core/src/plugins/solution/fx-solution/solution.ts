@@ -1080,7 +1080,13 @@ export class TeamsAppSolution implements Solution {
     const isAzureProject = this.isAzureProject(ctx);
     const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
     if (isAzureProject && !provisioned) {
-      return ok(Void);
+      return err(
+        returnUserError(
+          new Error(getStrings().solution.NotProvisionedNotice),
+          "Solution",
+          SolutionError.CannotDeployBeforeProvision
+        )
+      );
     }
     try {
       if (this.isAzureProject(ctx)) {
@@ -1182,7 +1188,13 @@ export class TeamsAppSolution implements Solution {
     const isAzureProject = this.isAzureProject(ctx);
     const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
     if (!provisioned) {
-      return ok(Void);
+      return err(
+        returnUserError(
+          new Error(getStrings().solution.NotProvisionedNotice),
+          "Solution",
+          SolutionError.CannotPublishBeforeProvision
+        )
+      );
     }
 
     const maybeManifestTpl = await this.reloadManifestAndCheckRequiredFields(ctx);
@@ -1440,7 +1452,7 @@ export class TeamsAppSolution implements Solution {
           ctx.dialog?.communicate(
             new DialogMsg(DialogType.Show, {
               description: getStrings().solution.SPFxAskProvisionBeforePublish,
-              level: MsgLevel.Error
+              level: MsgLevel.Error,
             })
           );
           throw CancelError;

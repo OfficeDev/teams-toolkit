@@ -1,11 +1,11 @@
 # Local Debug FAQ
 
 ## Overall
-Teams Toolkit allows you to debug your Teams app locally by leveraging Visual Studio Code debugging features. After pressing F5, several components of the app will be automatically started. The Teams web client will then be launched in your browser. Specifically, the following components may be started according to your app capacities:
-- Tab: a react app required by Teams Tab capacity
+Teams Toolkit allows you to debug your Teams app locally by leveraging Visual Studio Code debugging features. After pressing F5, several components of the app will be automatically started. The Teams web client will then be launched in your browser. Specifically, the following components may be started according to your app capabilities:
+- Tab: a react app required by Teams Tab capability
 - Auth: an authentication service acting as a proxy between the app and Azure Active Directory
 - Function: a Azure Functions app that may be needed by Tab
-- Bot: a bot server required by Teams Bot capacity
+- Bot: a bot server required by Teams Bot capability
 - Ngrok: a tunneling service required by Teams Bot that forwards local address to public address
 
 During debugging, a localhost development certificate will also be automatically generated and installed to your system after your confirmation.

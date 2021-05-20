@@ -13,5 +13,5 @@ export enum ExtensionErrors {
   EmptySelectOption = "EmptySelectOption",
   UnsupportedNodeType = "UnsupportedNodeType",
   UnknownSubscription = "UnknownSubscription",
-  PortAlreadyInUse = "PortAlreadyInUse"
+  PortAlreadyInUse = "PortAlreadyInUse",
 }

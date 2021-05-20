@@ -14,7 +14,7 @@ import {
   env,
   ProgressOptions,
   Progress,
-  CancellationToken
+  CancellationToken,
 } from "vscode";
 
 import { IProgressStatus, Result, FxError } from "@microsoft/teamsfx-api";
@@ -77,7 +77,11 @@ export interface IUserInput {
    * // @throws `UserCancelledError` if the user cancels.
    * @return A thenable that resolves to the selected item when being dismissed.
    */
-  showInformationMessage(message: string, ...items: string[]): Promise<string | undefined>;
+  showInformationMessage(
+    message: string,
+    modal?: boolean,
+    ...items: string[]
+  ): Promise<string | undefined>;
 
   /**
    * Show a warning message.
@@ -87,7 +91,11 @@ export interface IUserInput {
    * // @throws `UserCancelledError` if the user cancels.
    * @return A thenable that resolves to the selected item when being dismissed.
    */
-  showWarningMessage(message: string, ...items: string[]): Promise<string | undefined>;
+  showWarningMessage(
+    message: string,
+    modal?: boolean,
+    ...items: string[]
+  ): Promise<string | undefined>;
 
   /**
    * Show an error message.
@@ -97,7 +105,11 @@ export interface IUserInput {
    * // @throws `UserCancelledError` if the user cancels.
    * @return A thenable that resolves to the selected item when being dismissed.
    */
-  showErrorMessage(message: string, ...items: string[]): Promise<string | undefined>;
+  showErrorMessage(
+    message: string,
+    modal?: boolean,
+    ...items: string[]
+  ): Promise<string | undefined>;
 
   /**
    * Open an external url
@@ -143,20 +155,26 @@ export class UserInput implements IUserInput {
 
   public async showInformationMessage(
     message: string,
+    modal: boolean,
     ...items: string[]
   ): Promise<string | undefined> {
-    return await window.showInformationMessage(message, ...items);
+    return await window.showInformationMessage(message, { modal: modal }, ...items);
   }
 
   public async showWarningMessage(
     message: string,
+    modal: boolean,
     ...items: string[]
   ): Promise<string | undefined> {
-    return await window.showWarningMessage(message, ...items);
+    return await window.showWarningMessage(message, { modal: modal }, ...items);
   }
 
-  public async showErrorMessage(message: string, ...items: string[]): Promise<string | undefined> {
-    return await window.showErrorMessage(message, ...items);
+  public async showErrorMessage(
+    message: string,
+    modal: boolean,
+    ...items: string[]
+  ): Promise<string | undefined> {
+    return await window.showErrorMessage(message, { modal: modal }, ...items);
   }
 
   public async openExternal(link: Uri): Promise<boolean> {

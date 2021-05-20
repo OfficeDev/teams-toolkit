@@ -20,7 +20,7 @@ import { EInputType, TestUserInput } from "../../testUserInput";
 suite("Extension Integration Tests (No Folder)", async () => {
   let workspace: string;
 
-  suiteSetup(async function(this: Mocha.Context) {
+  suiteSetup(async function (this: Mocha.Context) {
     this.timeout(0);
     workspace = path.resolve(testFolder);
     if (fs.existsSync(workspace)) {
@@ -38,7 +38,7 @@ suite("Extension Integration Tests (No Folder)", async () => {
   //   chai.assert.equal(true, typeof(identityCredential)!==null);
   // });
 
-  test("Log test", async function(this: Mocha.Context) {
+  test("Log test", async function (this: Mocha.Context) {
     const re1 = await VsCodeLogInstance.info("123");
     chai.assert.equal(true, re1);
     const re2 = await VsCodeLogInstance.log(LogLevel.Fatal, "123");

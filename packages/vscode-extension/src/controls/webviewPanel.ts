@@ -74,19 +74,28 @@ export class WebviewPanel {
             break;
           case Commands.CloneSampleApp:
             const selection = await vscode.window.showInformationMessage(
-              `Clone '${msg.data.appName}' from Github. This will clone '${msg.data.appName}' repository to your local machine`,
-              { modal: false },
-              "Clone",
-              "Cancel"
+              `Download '${msg.data.appName}' from Github. This will download '${msg.data.appName}' repository and open to your local machine`,
+              { modal: true },
+              "Download"
             );
-            if (selection === "Clone") {
+            if (selection === "Download") {
               const folder = await vscode.window.showOpenDialog({
                 canSelectFiles: false,
                 canSelectFolders: true,
                 canSelectMany: false,
-                title: "Select folder to clone the sample app",
+                title: "Select folder to download the sample app",
               });
               if (folder !== undefined) {
+                const sampleAppPath = path.join(folder[0].fsPath, msg.data.appFolder);
+                if (
+                  (await fs.pathExists(sampleAppPath)) &&
+                  (await fs.readdir(sampleAppPath)).length > 0
+                ) {
+                  vscode.window.showErrorMessage(
+                    `Path ${sampleAppPath} alreay exists. Select a different folder.`
+                  );
+                  return;
+                }
                 const dialogManager = DialogManager.getInstance();
                 const progress = dialogManager.createProgressBar("Fetch sample app", 2);
                 progress.start();
@@ -102,10 +111,11 @@ export class WebviewPanel {
                     );
                     vscode.commands.executeCommand(
                       "vscode.openFolder",
-                      vscode.Uri.file(path.join(folder[0].fsPath, msg.data.appFolder))
+                      vscode.Uri.file(sampleAppPath)
                     );
+                    ext.context.globalState.update("openSampleReadme", true);
                   } else {
-                    vscode.window.showErrorMessage("Failed to clone sample app");
+                    vscode.window.showErrorMessage("Failed to download sample app");
                   }
                 } finally {
                   progress.end();
@@ -223,11 +233,10 @@ export class WebviewPanel {
         .getEntries()
         .filter((entry) => !entry.isDirectory && entry.entryName.includes(appFolder))
         .map(async (entry) => {
-          const data = entry.getData().toString();
           const entryPath = entry.entryName.substring(entry.entryName.indexOf("/") + 1);
           const filePath = path.join(dstPath, entryPath);
           await fs.ensureDir(path.dirname(filePath));
-          await fs.writeFile(filePath, data);
+          await fs.writeFile(filePath, entry.getData());
         })
     );
   }

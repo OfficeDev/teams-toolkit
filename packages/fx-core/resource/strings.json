@@ -2,17 +2,20 @@
   "core": {},
   "solution": {
     "ScaffoldSuccessNotice": "[Teams Toolkit] Scaffold successfully.",
-    "ProvisionConfirmNotice": "The Teams Toolkit will provision resources under %s (Azure account) with %s (subscription). Costs may incur according to the [cost calculator](https://azure.microsoft.com/en-us/pricing/calculator/).",
+    "ProvisionConfirmNotice": "The Teams Toolkit will provision resources under %s (Azure account) with %s (subscription). Costs may incur according to the pricing calculator.",
     "ProvisionFailGuide": "Provision resources failed, subscription id: '%s', resource group: '%s'. You can choose to rollback to delete the resource group and redo provision.",
     "ProvisionSuccessNotice": "'%s' successfully provisioned in the cloud.",
     "ProvisionFailNotice": "fail to provision '%s' in the cloud!",
     "DeploySuccessNotice": "'%s' successfully deployed to the cloud.",
     "DeployFailNotice": "fail to deploy '%s' to the cloud!",
     "PublishFailNotice": "fail to publish '%s' to the admin portal.",
-    "AskProvisionBeforeDeployOrPublish": "The toolkit has not provisioned resources to deploy. Do you want to provision in the cloud first?",
+    "FailedToDeployBeforeProvision": "Failed to deploy because the resources have not been provisioned yet. Make sure you do the provision first.",
+    "FailedToPublishBeforeProvision": "Failed to publish because the resources have not been provisioned yet. Make sure you do the provision first.",
+    "SPFxAskProvisionBeforePublish": "Failed to publish because the teams app has not been provisioned yet. Please provision first.",
     "AddResourceNotice": "[Teams Toolkit] Resource \"%s\" have been successfully configured for your project, trigger 'TeamsFx - Provision in the Cloud' will create the resource(s) in your Azure subscription.",
     "AddCapabilityNotice": "[Teams Toolkit] Capability \"%s\" have been successfully configured for your project, trigger 'TeamsFx - Provision in the Cloud' will create the resource(s) in your Azure subscription.",
-    "CancelProvision": "CancelProvision"
+    "CancelProvision": "CancelProvision",
+    "AlreadyProvisionNotice": "'%s' is already provisioned in the cloud."
   },
   "plugins": {
     "SPFx": {

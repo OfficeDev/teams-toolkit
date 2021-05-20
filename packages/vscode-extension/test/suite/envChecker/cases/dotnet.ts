@@ -13,7 +13,12 @@ import { DotnetChecker, DotnetVersion } from "../../../../src/debug/depsChecker/
 import { CustomDotnetInstallScript, TestAdapter } from "../adapters/testAdapter";
 import { logger } from "../adapters/testLogger";
 import { TestTelemetry } from "../adapters/testTelemetry";
-import { assertPathEqual, commandExistsInPath, getExecutionPolicyForCurrentUser, setExecutionPolicyForCurrentUser } from "../utils/common";
+import {
+  assertPathEqual,
+  commandExistsInPath,
+  getExecutionPolicyForCurrentUser,
+  setExecutionPolicyForCurrentUser,
+} from "../utils/common";
 import { cpUtils } from "../../../../src/debug/depsChecker/cpUtils";
 
 function createTestChecker(
@@ -39,12 +44,12 @@ function createTestChecker(
 }
 
 suite("DotnetChecker E2E Test - first run", async () => {
-  setup(async function(this: Mocha.Context) {
+  setup(async function (this: Mocha.Context) {
     await dotnetUtils.cleanup();
     // cleanup to make sure the environment is clean before test
   });
 
-  test(".NET SDK is not installed, whether globally or in home dir", async function(this: Mocha.Context) {
+  test(".NET SDK is not installed, whether globally or in home dir", async function (this: Mocha.Context) {
     if (await commandExistsInPath(dotnetUtils.dotnetCommand)) {
       this.skip();
     }
@@ -69,7 +74,7 @@ suite("DotnetChecker E2E Test - first run", async () => {
     }
   });
 
-  test(".NET SDK is not installed and the user clicks cancel on Linux", async function(this: Mocha.Context) {
+  test(".NET SDK is not installed and the user clicks cancel on Linux", async function (this: Mocha.Context) {
     if (!(isLinux() && !(await commandExistsInPath(dotnetUtils.dotnetCommand)))) {
       this.skip();
     }
@@ -87,7 +92,7 @@ suite("DotnetChecker E2E Test - first run", async () => {
     chai.assert.equal(dotnetExecPath, dotnetUtils.dotnetCommand);
   });
 
-  test(".NET SDK supported version is installed globally", async function(this: Mocha.Context) {
+  test(".NET SDK supported version is installed globally", async function (this: Mocha.Context) {
     if (
       !(await dotnetUtils.hasAnyDotnetVersions(
         dotnetUtils.dotnetCommand,
@@ -121,7 +126,7 @@ suite("DotnetChecker E2E Test - first run", async () => {
     assertPathEqual(dotnetExecPathFromConfig!, dotnetExecPath);
   });
 
-  test(".NET SDK is too old", async function(this: Mocha.Context) {
+  test(".NET SDK is too old", async function (this: Mocha.Context) {
     const has21 = await dotnetUtils.hasDotnetVersion(
       dotnetUtils.dotnetCommand,
       dotnetUtils.dotnetOldVersion
@@ -155,7 +160,7 @@ suite("DotnetChecker E2E Test - first run", async () => {
     }
   });
 
-  test(".NET SDK not installed, for frontend-only projects", async function(this: Mocha.Context) {
+  test(".NET SDK not installed, for frontend-only projects", async function (this: Mocha.Context) {
     if (await commandExistsInPath(dotnetUtils.dotnetCommand)) {
       this.skip();
     }
@@ -179,7 +184,7 @@ suite("DotnetChecker E2E Test - first run", async () => {
     }
   });
 
-  test("DotnetChecker feature flag", async function(this: Mocha.Context) {
+  test("DotnetChecker feature flag", async function (this: Mocha.Context) {
     const [checker, dotnetChecker] = createTestChecker(true, false, false);
 
     const shouldContinue = await checker.resolve();
@@ -193,7 +198,7 @@ suite("DotnetChecker E2E Test - first run", async () => {
     chai.assert.equal(dotnetExecPath, dotnetUtils.dotnetCommand);
   });
 
-  test(".NET SDK installation failure and manually install", async function(this: Mocha.Context) {
+  test(".NET SDK installation failure and manually install", async function (this: Mocha.Context) {
     if (isLinux() || (await commandExistsInPath(dotnetUtils.dotnetCommand))) {
       this.skip();
     }
@@ -289,20 +294,19 @@ suite("DotnetChecker E2E Test - first run", async () => {
     });
   });
 
-
-  teardown(async function(this: Mocha.Context) {
+  teardown(async function (this: Mocha.Context) {
     // cleanup to make sure the environment is clean
     await dotnetUtils.cleanup();
   });
 });
 
 suite("DotnetChecker E2E Test - second run", () => {
-  setup(async function(this: Mocha.Context) {
+  setup(async function (this: Mocha.Context) {
     await dotnetUtils.cleanup();
     // cleanup to make sure the environment is clean before test
   });
 
-  test("Valid dotnet.json file", async function(this: Mocha.Context) {
+  test("Valid dotnet.json file", async function (this: Mocha.Context) {
     if (await commandExistsInPath(dotnetUtils.dotnetCommand)) {
       this.skip();
     }
@@ -329,7 +333,7 @@ suite("DotnetChecker E2E Test - second run", () => {
           {
             encoding: "utf-8",
             spaces: 4,
-            EOL: os.EOL
+            EOL: os.EOL,
           }
         );
 
@@ -346,7 +350,7 @@ suite("DotnetChecker E2E Test - second run", () => {
     );
   });
 
-  test("Invalid dotnet.json file and .NET SDK not installed", async function(this: Mocha.Context) {
+  test("Invalid dotnet.json file and .NET SDK not installed", async function (this: Mocha.Context) {
     if (await commandExistsInPath(dotnetUtils.dotnetCommand)) {
       this.skip();
     }
@@ -361,7 +365,7 @@ suite("DotnetChecker E2E Test - second run", () => {
       {
         encoding: "utf-8",
         spaces: 4,
-        EOL: os.EOL
+        EOL: os.EOL,
       }
     );
 
@@ -381,7 +385,7 @@ suite("DotnetChecker E2E Test - second run", () => {
     }
   });
 
-  test("Invalid dotnet.json file and .NET SDK installed", async function(this: Mocha.Context) {
+  test("Invalid dotnet.json file and .NET SDK installed", async function (this: Mocha.Context) {
     if (await commandExistsInPath(dotnetUtils.dotnetCommand)) {
       this.skip();
     }
@@ -402,7 +406,7 @@ suite("DotnetChecker E2E Test - second run", () => {
           {
             encoding: "utf-8",
             spaces: 4,
-            EOL: os.EOL
+            EOL: os.EOL,
           }
         );
 
@@ -423,7 +427,7 @@ suite("DotnetChecker E2E Test - second run", () => {
     );
   });
 
-  teardown(async function(this: Mocha.Context) {
+  teardown(async function (this: Mocha.Context) {
     // cleanup to make sure the environment is clean
     await dotnetUtils.cleanup();
   });

@@ -23,18 +23,27 @@ import {
   Question,
   isAutoSkipSelect,
   SingleSelectQuestion,
-  MultiSelectQuestion
+  MultiSelectQuestion,
 } from "@microsoft/teamsfx-api";
 
 import activate from "../activate";
 import * as constants from "../constants";
-import { NotFoundInputedFolder, SampleAppClonedFailed } from "../error";
+import { NotFoundInputedFolder, SampleAppDownloadFailed, ProjectFolderExist } from "../error";
 import { validateAndUpdateAnswers, visitInteractively } from "../question/question";
 import { YargsCommand } from "../yargsCommand";
-import { flattenNodes, getJson, getSingleOptionString, toConfigMap, toYargsOptions } from "../utils";
+import {
+  flattenNodes,
+  getJson,
+  getSingleOptionString,
+  toConfigMap,
+  toYargsOptions,
+} from "../utils";
 import CliTelemetry from "../telemetry/cliTelemetry";
-import { TelemetryClient } from "applicationinsights";
-import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "../telemetry/cliTelemetryEvents";
 
 export default class New extends YargsCommand {
   public readonly commandHead = `new`;
@@ -65,19 +74,21 @@ export default class New extends YargsCommand {
         const data = node.data as Question;
         if (isAutoSkipSelect(data)) {
           // set the only option to default value so yargs will auto fill it.
-          data.default = getSingleOptionString(data as (SingleSelectQuestion | MultiSelectQuestion));
+          data.default = getSingleOptionString(data as SingleSelectQuestion | MultiSelectQuestion);
           (data as any).hide = true;
         }
         this.params[data.name] = toYargsOptions(data);
       });
-      yargs.options({
-        "interactive": {
-          description: "Select the options interactively",
-          boolean: true,
-          default: true,
-          global: false
-        }
-      }).options(this.params);
+      yargs
+        .options({
+          interactive: {
+            description: "Select the options interactively",
+            boolean: true,
+            default: true,
+            global: false,
+          },
+        })
+        .options(this.params);
     }
     return yargs.version(false);
   }
@@ -123,7 +134,7 @@ export default class New extends YargsCommand {
     }
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProject, {
-      [TelemetryProperty.Success]: TelemetrySuccess.Yes
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
     });
     return ok(null);
   }
@@ -141,20 +152,18 @@ class NewTemplete extends YargsCommand {
     this.subCommands.forEach((cmd) => {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     });
-    const templatesNames = constants.templates.map(t => t.sampleAppName);
+    const templatesNames = constants.templates.map((t) => t.sampleAppName);
     yargs
-      .positional(
-        "template-name", {
-          description: "Enter the template name",
-          type: "string",
-          choices: templatesNames,
-          default: templatesNames[0]
-        }
-      )
+      .positional("template-name", {
+        description: "Enter the template name",
+        type: "string",
+        choices: templatesNames,
+        default: templatesNames[0],
+      })
       .options(RootFolderNodeData.name, {
         type: "string",
         description: RootFolderNodeData.description,
-        default: RootFolderNodeData.default
+        default: RootFolderNodeData.default,
       });
     return yargs;
   }
@@ -162,25 +171,32 @@ class NewTemplete extends YargsCommand {
   public async runCommand(args: {
     [argName: string]: string | string[];
   }): Promise<Result<null, FxError>> {
-    const folder = path.resolve(args.folder as string || "./");
+    const folder = path.resolve((args.folder as string) || "./");
     if (!fs.pathExistsSync(folder)) {
       throw NotFoundInputedFolder(folder);
     }
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSampleStart);
     const templateName = args["template-name"] as string;
-    const template = constants.templates.find(t => t.sampleAppName === templateName)!;
-    
+    const template = constants.templates.find((t) => t.sampleAppName === templateName)!;
+
+    const sampleAppFolder = path.resolve(folder, template.sampleAppName);
+    if ((await fs.pathExists(sampleAppFolder)) && (await fs.readdir(sampleAppFolder)).length > 0) {
+      throw ProjectFolderExist(sampleAppFolder);
+    }
+
     const result = await this.fetchCodeZip(template.sampleAppUrl);
     await this.saveFilesRecursively(new AdmZip(result.data), template.sampleAppName, folder);
     console.log(
       colors.green(
-        `Downloaded the '${colors.yellow(template.sampleAppName)}' sample to '${colors.yellow(path.join(folder, template.sampleAppName))}'.`
+        `Downloaded the '${colors.yellow(template.sampleAppName)}' sample to '${colors.yellow(
+          sampleAppFolder
+        )}'.`
       )
     );
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      [TelemetryProperty.SampleName]: templateName
+      [TelemetryProperty.SampleName]: templateName,
     });
     return ok(null);
   }
@@ -188,14 +204,14 @@ class NewTemplete extends YargsCommand {
   private async fetchCodeZip(url: string) {
     try {
       const result = await axios.get(url, {
-        responseType: "arraybuffer"
+        responseType: "arraybuffer",
       });
       if (result.status === 200 || result.status === 201) {
         return result;
       }
-      throw SampleAppClonedFailed(url, new Error(result.statusText));
+      throw SampleAppDownloadFailed(url, new Error(result.statusText));
     } catch (e) {
-      throw SampleAppClonedFailed(url, e);
+      throw SampleAppDownloadFailed(url, e);
     }
   }
 
@@ -209,11 +225,10 @@ class NewTemplete extends YargsCommand {
         .getEntries()
         .filter((entry) => !entry.isDirectory && entry.entryName.includes(appFolder))
         .map(async (entry) => {
-          const data = entry.getData().toString();
           const entryPath = entry.entryName.substring(entry.entryName.indexOf("/") + 1);
           const filePath = path.join(dstPath, entryPath);
           await fs.ensureDir(path.dirname(filePath));
-          await fs.writeFile(filePath, data);
+          await fs.writeFile(filePath, entry.getData());
         })
     );
   }
@@ -235,7 +250,9 @@ class NewTempleteList extends YargsCommand {
     console.log(constants.templates);
     console.log(
       colors.green(
-        `Use the command ${colors.yellow("teamsfx new template <sampleAppName>")} to create an application from the sample app.`
+        `Use the command ${colors.yellow(
+          "teamsfx new template <sampleAppName>"
+        )} to create an application from the sample app.`
       )
     );
     return ok(null);

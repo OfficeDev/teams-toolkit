@@ -28,19 +28,19 @@ const reporterSpy = spy.interface({
     error: Error,
     properties?: { [p: string]: string },
     measurements?: { [p: string]: number }
-  ): void {}
+  ): void {},
 });
 
 const mock = require("mock-require");
 mock("vscode-extension-telemetry", {
-  default: function(
+  default: function (
     extensionId: string,
     extensionVersion: string,
     key: string,
     firstParty?: boolean
   ) {
     return reporterSpy;
-  }
+  },
 });
 
 import { VSCodeTelemetryReporter } from "../../../src/commonlib/telemetry";
@@ -72,7 +72,7 @@ suite("telemetry", () => {
       "sampleErrorEvent",
       {
         stringProp: "some string",
-        stackProp: "some user stack trace"
+        stackProp: "some user stack trace",
       },
       { numericMeasure: 123 },
       ["stackProp"]
@@ -82,7 +82,7 @@ suite("telemetry", () => {
       "sampleErrorEvent",
       {
         stringProp: "some string",
-        stackProp: "some user stack trace"
+        stackProp: "some user stack trace",
       },
       { numericMeasure: 123 },
       ["stackProp"]

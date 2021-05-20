@@ -36,7 +36,7 @@ export async function getExecutionPolicyForCurrentUser(): Promise<string> {
     logger,
     undefined,
     "powershell.exe",
-     "-Command",
+    "-Command",
     "Get-ExecutionPolicy",
     "-Scope",
     "CurrentUser"
@@ -50,7 +50,7 @@ export async function setExecutionPolicyForCurrentUser(policy: string): Promise<
     logger,
     undefined,
     "powershell.exe",
-    "-Command", 
+    "-Command",
     "Set-ExecutionPolicy",
     "-Scope",
     "CurrentUser",
@@ -61,7 +61,7 @@ export async function setExecutionPolicyForCurrentUser(policy: string): Promise<
 export function createTmpDir(): Promise<[string, () => void]> {
   return new Promise((resolve, reject) => {
     // unsafeCleanup: recursively removes the created temporary directory, even when it's not empty.
-    tmp.dir({ unsafeCleanup: true }, function(err, path, cleanupCallback) {
+    tmp.dir({ unsafeCleanup: true }, function (err, path, cleanupCallback) {
       if (err) {
         reject(err);
         return;

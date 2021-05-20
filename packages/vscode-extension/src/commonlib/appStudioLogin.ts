@@ -85,7 +85,11 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
         const userConfirmation: boolean = await this.doesUserConfirmLogin();
         if (!userConfirmation) {
           // throw user cancel error
-          throw new UserError(ExtensionErrors.UserCancel, StringResources.vsc.common.userCancel, "Login");
+          throw new UserError(
+            ExtensionErrors.UserCancel,
+            StringResources.vsc.common.userCancel,
+            "Login"
+          );
         }
         AppStudioLogin.codeFlowInstance.status = loggingIn;
         this.notifyStatus();
@@ -125,7 +129,11 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
   async signout(): Promise<boolean> {
     const userConfirmation = await this.doesUserConfirmSignout();
     if (!userConfirmation) {
-      throw new UserError(ExtensionErrors.UserCancel, StringResources.vsc.common.userCancel, "SignOut");
+      throw new UserError(
+        ExtensionErrors.UserCancel,
+        StringResources.vsc.common.userCancel,
+        "SignOut"
+      );
     }
     await AppStudioLogin.codeFlowInstance.logout();
     if (AppStudioLogin.statusChange !== undefined) {
@@ -145,12 +153,14 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
     do {
       userSelected = await vscode.window.showInformationMessage(
         message,
-        {modal: true},
+        { modal: true },
         signin,
         readMore
       );
       if (userSelected === readMore) {
-        vscode.env.openExternal(vscode.Uri.parse("https://developer.microsoft.com/en-us/microsoft-365/dev-program"));
+        vscode.env.openExternal(
+          vscode.Uri.parse("https://developer.microsoft.com/en-us/microsoft-365/dev-program")
+        );
       }
     } while (userSelected === readMore);
     return Promise.resolve(userSelected === signin);
@@ -162,14 +172,18 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
     const confirm = StringResources.vsc.common.signout;
     const userSelected = await vscode.window.showInformationMessage(
       util.format(StringResources.vsc.common.signOutOf, email),
-      confirm,
-      StringResources.vsc.common.cancel
+      { modal: true },
+      confirm
     );
     return Promise.resolve(userSelected === confirm);
   }
 
   async setStatusChangeCallback(
-    statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>
   ): Promise<boolean> {
     AppStudioLogin.statusChange = statusChange;
     await AppStudioLogin.codeFlowInstance.reloadCache();

@@ -44,7 +44,7 @@ export function getParamJson(jsonFilePath: string): { [_: string]: Options } {
       const data = node.data as Question;
       if (isAutoSkipSelect(data)) {
         // set the only option to default value so yargs will auto fill it.
-        data.default = getSingleOptionString(data as (SingleSelectQuestion | MultiSelectQuestion));
+        data.default = getSingleOptionString(data as SingleSelectQuestion | MultiSelectQuestion);
         (data as any).hide = true;
       }
       params[data.name] = toYargsOptions(data);
@@ -53,16 +53,19 @@ export function getParamJson(jsonFilePath: string): { [_: string]: Options } {
   }
 }
 
-export function getChoicesFromQTNodeQuestion(data: Question, interactive = false): string[] | undefined {
+export function getChoicesFromQTNodeQuestion(
+  data: Question,
+  interactive = false
+): string[] | undefined {
   const option = "option" in data ? data.option : undefined;
   if (option && option instanceof Array && option.length > 0) {
     if (typeof option[0] === "string") {
       return option as string[];
     } else {
       if (interactive) {
-        return (option as OptionItem[]).map(op => op.label);
+        return (option as OptionItem[]).map((op) => op.label);
       } else {
-        return (option as OptionItem[]).map(op => op.cliName ? op.cliName : op.id);
+        return (option as OptionItem[]).map((op) => (op.cliName ? op.cliName : op.id));
       }
     }
   } else {
@@ -70,31 +73,30 @@ export function getChoicesFromQTNodeQuestion(data: Question, interactive = false
   }
 }
 
-export function getSingleOptionString(q: SingleSelectQuestion | MultiSelectQuestion): string | string[] {
+export function getSingleOptionString(
+  q: SingleSelectQuestion | MultiSelectQuestion
+): string | string[] {
   const singleOption = getSingleOption(q);
   if (q.returnObject) {
     if (q.type === NodeType.singleSelect) {
       return singleOption.id;
-    }
-    else {
+    } else {
       return [singleOption[0].id];
     }
-  }
-  else {
+  } else {
     return singleOption;
   }
 }
 
 export function toYargsOptions(data: Question): Options {
   const choices = getChoicesFromQTNodeQuestion(data);
-  if (choices && choices.length > 0 && data.default === undefined) {
-    data.default = choices[0];
-  }
+  // if (choices && choices.length > 0 && data.default === undefined) {
+  //   data.default = choices[0];
+  // }
   const defaultValue = data.default;
   if (defaultValue && defaultValue instanceof Array && defaultValue.length > 0) {
     data.default = defaultValue.map((item) => item.toLocaleLowerCase());
-  }
-  else if (defaultValue && typeof defaultValue === "string"){
+  } else if (defaultValue && typeof defaultValue === "string") {
     data.default = defaultValue.toLocaleLowerCase();
   }
   return {
@@ -103,7 +105,7 @@ export function toYargsOptions(data: Question): Options {
     default: data.default,
     choices: choices,
     hidden: !!(data as any).hide,
-    global: false
+    global: false,
   };
 }
 
@@ -119,7 +121,7 @@ export function flattenNodes(node: QTreeNode): QTreeNode[] {
   const nodeCopy = Object.assign({}, node);
   const children = (nodeCopy.children || []).concat([]);
   nodeCopy.children = undefined;
-  return [nodeCopy].concat(...children.map(nd => flattenNodes(nd)));
+  return [nodeCopy].concat(...children.map((nd) => flattenNodes(nd)));
 }
 
 export async function sleep(ms: number): Promise<void> {
@@ -149,7 +151,9 @@ export async function readConfigs(rootfolder: string): Promise<Result<any, FxErr
   }
 }
 
-export async function getSubscriptionIdFromEnvFile(rootfolder: string): Promise<string | undefined> {
+export async function getSubscriptionIdFromEnvFile(
+  rootfolder: string
+): Promise<string | undefined> {
   const result = await readConfigs(rootfolder);
   if (result.isErr()) {
     throw result.error;
@@ -170,7 +174,7 @@ export async function setSubscriptionId(
 
     await AzureAccountManager.setSubscription(subscriptionId);
     const subs = await AzureAccountManager.listSubscriptions();
-    const sub = subs.find(sub => sub.subscriptionId === subscriptionId);
+    const sub = subs.find((sub) => sub.subscriptionId === subscriptionId);
 
     const configJson = result.value;
     configJson["solution"].subscriptionId = sub?.subscriptionId;
@@ -187,7 +191,7 @@ export function isWorkspaceSupported(workspace: string): boolean {
     `${p}/package.json`,
     `${p}/.${ConfigFolderName}`,
     `${p}/.${ConfigFolderName}/settings.json`,
-    `${p}/.${ConfigFolderName}/env.${getActiveEnv()}.json`
+    `${p}/.${ConfigFolderName}/env.${getActiveEnv()}.json`,
   ];
 
   for (const fp of checklist) {

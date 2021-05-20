@@ -271,15 +271,31 @@ class CoreImpl implements Core {
         const answer = (
           await this.ctx.dialog?.communicate(
             new DialogMsg(DialogType.Show, {
-              description: `Clone '${samples.label}' from Github. This will clone '${samples.label}' repository to your local machine`,
+              description: `Download '${samples.label}' from Github. This will download '${samples.label}' repository and open to your local machine`,
               level: MsgLevel.Info,
-              items: ["Clone", "Cancel"],
+              items: ["Download"],
+              modal: true,
             })
           )
         )?.getAnswer();
-        if (answer === "Clone") {
+        if (answer === "Download") {
           const url = samples.data as string;
           const sampleId = samples.id;
+
+          const sampleAppPath = path.resolve(folder, sampleId);
+          if (
+            (await fs.pathExists(sampleAppPath)) &&
+            (await fs.readdir(sampleAppPath)).length > 0
+          ) {
+            return err(
+              new UserError(
+                error.CoreErrorNames.ProjectFolderExist,
+                `Path ${sampleAppPath} alreay exists. Select a different folder.`,
+                error.CoreSource
+              )
+            );
+          }
+
           const progress = this.ctx.dialog.createProgressBar("Fetch sample app", 2);
           progress.start();
           try {
@@ -288,6 +304,16 @@ class CoreImpl implements Core {
             progress.next("Unzipping the sample package");
             if (fetchRes !== undefined) {
               await saveFilesRecursively(new AdmZip(fetchRes.data), sampleId, folder);
+
+              if (this.ctx.platform === Platform.VSCode) {
+                await this.ctx.dialog?.communicate(
+                  new DialogMsg(DialogType.Ask, {
+                    type: QuestionType.UpdateGlobalState,
+                    description: "openSampleReadme",
+                  })
+                );
+              }
+
               await this.ctx.dialog?.communicate(
                 new DialogMsg(DialogType.Ask, {
                   type: QuestionType.OpenFolder,
@@ -571,13 +597,6 @@ class CoreImpl implements Core {
       };
 
       const signinM365Callback = async (args?: any[]): Promise<Result<null, FxError>> => {
-        this.ctx?.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.LoginStart, {
-          [TelemetryProperty.TriggerFrom]:
-            args && args.toString() === "TreeView"
-              ? TelemetryTiggerFrom.TreeView
-              : TelemetryTiggerFrom.CommandPalette,
-          [TelemetryProperty.AccountType]: AccountType.M365,
-        });
         const token = await this.ctx.appStudioToken?.getJsonObject(true);
         if (token !== undefined) {
           this.ctx.treeProvider?.refresh([
@@ -599,14 +618,6 @@ class CoreImpl implements Core {
         validFxProject: boolean,
         args?: any[]
       ): Promise<Result<null, FxError>> => {
-        this.ctx?.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.LoginStart, {
-          [TelemetryProperty.TriggerFrom]:
-            args && args[0].toString() === "TreeView"
-              ? TelemetryTiggerFrom.TreeView
-              : TelemetryTiggerFrom.CommandPalette,
-          [TelemetryProperty.AccountType]: AccountType.Azure,
-        });
-
         const showDialog = args && args[1] !== undefined ? args[1] : true;
         const token = await this.ctx.azureAccountProvider?.getAccountCredentialAsync(showDialog);
         if (token !== undefined) {
@@ -790,7 +801,7 @@ class CoreImpl implements Core {
 
   private async setSubscription(subscription: SubscriptionInfo | undefined) {
     if (subscription) {
-      await this.readConfigs();
+      // await this.readConfigs();
       this.configs
         .get(this.env!)!
         .get("solution")!
@@ -814,9 +825,10 @@ class CoreImpl implements Core {
   }
 
   public async readConfigs(): Promise<Result<null, FxError>> {
-    if (!fs.existsSync(`${this.ctx.root}/.${ConfigFolderName}`)) {
+    const confFolderPath = path.resolve(this.ctx.root, `.${ConfigFolderName}`);
+    if (!fs.existsSync(confFolderPath)) {
       this.ctx.logProvider?.warning(
-        `[Core] readConfigs() - folder does not exist: ${this.ctx.root}/.${ConfigFolderName}`
+        `[Core] readConfigs() - folder does not exist: ${confFolderPath}`
       );
       return ok(null);
     }
@@ -825,15 +837,15 @@ class CoreImpl implements Core {
       try {
         // load env
         const reg = /env\.(\w+)\.json/;
-        for (const file of fs.readdirSync(`${this.ctx.root}/.${ConfigFolderName}`)) {
+        for (const file of fs.readdirSync(confFolderPath)) {
           const slice = reg.exec(file);
           if (!slice) {
             continue;
           }
           const envName = slice[1];
-          const filePath = `${this.ctx.root}/.${ConfigFolderName}/${file}`;
-          const configJson: Json = await fs.readJson(filePath);
-          const localDataPath = `${this.ctx.root}/.${ConfigFolderName}/${envName}.userdata`;
+          const jsonFilePath = path.resolve(confFolderPath, file);
+          const configJson: Json = await fs.readJson(jsonFilePath);
+          const localDataPath = path.resolve(confFolderPath, `${envName}.userdata`);
           let dict: Dict<string>;
           if (await fs.pathExists(localDataPath)) {
             const dictContent = await fs.readFile(localDataPath, "UTF-8");
@@ -844,6 +856,13 @@ class CoreImpl implements Core {
           mergeSerectData(dict, configJson);
           const solutionConfig: SolutionConfig = objectToMap(configJson);
           this.configs.set(envName, solutionConfig);
+          this.ctx.logProvider?.debug(
+            `[Core] readConfigs()#########file:${jsonFilePath}, content:${JSON.stringify(
+              configJson,
+              null,
+              4
+            )}`
+          );
         }
 
         // read projectSettings
@@ -852,37 +871,51 @@ class CoreImpl implements Core {
         break;
       } catch (e) {
         res = err(error.ReadFileError(e));
-        sleep(10);
+        await sleep(10);
       }
     }
     return res;
   }
 
   public async writeConfigs(): Promise<Result<null, FxError>> {
-    if (!fs.existsSync(`${this.ctx.root}/.${ConfigFolderName}`)) {
+    const confFolderPath = path.resolve(this.ctx.root, `.${ConfigFolderName}`);
+    if (!fs.existsSync(confFolderPath)) {
       this.ctx.logProvider?.warning(
-        `[Core] writeConfigs() - folder does not exist:${this.ctx.root}/.${ConfigFolderName}`
+        `[Core] writeConfigs() - folder does not exist: ${confFolderPath}`
       );
       return ok(null);
     }
-    try {
-      for (const entry of this.configs.entries()) {
-        const envName = entry[0];
-        const solutionConfig = entry[1];
-        const configJson = mapToJson(solutionConfig);
-        const filePath = `${this.ctx.root}/.${ConfigFolderName}/env.${envName}.json`;
-        const localDataPath = `${this.ctx.root}/.${ConfigFolderName}/${envName}.userdata`;
-        const localData = sperateSecretData(configJson);
-        const content = JSON.stringify(configJson, null, 4);
-        await fs.writeFile(filePath, content);
-        await fs.writeFile(localDataPath, serializeDict(localData));
+    let res: Result<null, FxError> = ok(null);
+    for (let i = 0; i < 5; ++i) {
+      try {
+        for (const entry of this.configs.entries()) {
+          const envName = entry[0];
+          const solutionConfig = entry[1];
+          const configJson = mapToJson(solutionConfig);
+          const jsonFilePath = path.resolve(confFolderPath, `env.${envName}.json`);
+          const localDataPath = path.resolve(confFolderPath, `${envName}.userdata`);
+          const localData = sperateSecretData(configJson);
+          const content = JSON.stringify(configJson, null, 4);
+          const callback = (err: NodeJS.ErrnoException) => {
+            if (err) {
+              this.ctx.logProvider?.error(`[Core] writeConfigs() Error: ${err}`);
+            }
+          };
+          await fs.writeFile(jsonFilePath, content, callback);
+          await fs.writeFile(localDataPath, serializeDict(localData), callback);
+          this.ctx.logProvider?.debug(
+            `[Core] writeConfigs()#########file:${jsonFilePath}, content:${content}`
+          );
+        }
+        //write settings
+        await this.writeSettings(this.ctx.root, this.ctx.projectSettings);
+        break;
+      } catch (e) {
+        res = err(error.WriteFileError(e));
+        await sleep(10);
       }
-      //write settings
-      await this.writeSettings(this.ctx.root, this.ctx.projectSettings);
-    } catch (e) {
-      return err(error.WriteFileError(e));
     }
-    return ok(null);
+    return res;
   }
 
   /**
@@ -1154,6 +1187,7 @@ export class CoreProxy implements Core {
         if (readRes.isErr()) {
           return err(readRes.error);
         }
+        this.coreImpl.ctx.logProvider?.info(`[Core] readConfigs() success! task:${name}`);
       }
 
       // do it
@@ -1177,10 +1211,10 @@ export class CoreProxy implements Core {
       if (checkAndConfig) {
         const writeRes = await this.coreImpl.writeConfigs();
         if (writeRes.isErr()) {
-          this.coreImpl.ctx.logProvider?.info(`[Core] persist config failed:${writeRes.error}!`);
+          this.coreImpl.ctx.logProvider?.error(`[Core] persist config failed:${writeRes.error}!`);
           return err(writeRes.error);
         }
-        // this.coreImpl.ctx.logProvider?.info(`[Core] persist config success!`);
+        this.coreImpl.ctx.logProvider?.info(`[Core] persist config success! task:${name}`);
       }
     }
   }
@@ -1376,11 +1410,9 @@ enum TelemetryTiggerFrom {
 
 enum TelemetryProperty {
   TriggerFrom = "trigger-from",
-  AccountType = "account-type",
 }
 
 enum TelemetryEvent {
-  LoginStart = "login-start",
   SelectSubscription = "select-subscription",
 }
 

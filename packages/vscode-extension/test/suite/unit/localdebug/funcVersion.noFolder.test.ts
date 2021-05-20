@@ -2,7 +2,10 @@
 // Licensed under the MIT license.
 
 import { expect } from "chai";
-import { FuncVersion, getFuncToolsVersion } from "../../../../src/debug/depsChecker/funcToolChecker";
+import {
+  FuncVersion,
+  getFuncToolsVersion,
+} from "../../../../src/debug/depsChecker/funcToolChecker";
 
 suite("[debug > funcCoreTools] funcVersion", () => {
   test("getFuncToolsVersion", () => {

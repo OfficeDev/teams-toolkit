@@ -64,101 +64,89 @@ class TreeViewManager {
     const accountProvider = new CommandsTreeViewProvider([]);
     disposables.push(vscode.window.registerTreeDataProvider("teamsfx-accounts", accountProvider));
 
-    const projectTreeViewCommand = isValidProject(getWorkspacePath())
-      ? [
-          new TreeViewCommand(
-            StringResources.vsc.commandsTreeViewProvider.createProjectTitle,
-            StringResources.vsc.commandsTreeViewProvider.createProjectDescription,
-            "fx-extension.create",
-            vscode.TreeItemCollapsibleState.None,
-            undefined,
-            undefined,
-            "createProject"
-          ),
-          new TreeViewCommand(
-            StringResources.vsc.commandsTreeViewProvider.addCapabilitiesTitle,
-            StringResources.vsc.commandsTreeViewProvider.addCapabilitiesDescription,
-            "fx-extension.addCapability",
-            vscode.TreeItemCollapsibleState.None,
-            undefined,
-            undefined,
-            "addCapability"
-          ),
-          new TreeViewCommand(
-            StringResources.vsc.commandsTreeViewProvider.addResourcesTitle,
-            StringResources.vsc.commandsTreeViewProvider.addResourcesDescription,
-            "fx-extension.update",
-            vscode.TreeItemCollapsibleState.None,
-            undefined,
-            undefined,
-            "addResources"
-          ),
-          new TreeViewCommand(
-            StringResources.vsc.commandsTreeViewProvider.manifestEditorTitle,
-            StringResources.vsc.commandsTreeViewProvider.manifestEditorDescription,
-            "fx-extension.openManifest",
-            vscode.TreeItemCollapsibleState.None,
-            undefined,
-            undefined,
-            "manifestEditor"
-          ),
-          new TreeViewCommand(
-            StringResources.vsc.commandsTreeViewProvider.validateManifestTitle,
-            StringResources.vsc.commandsTreeViewProvider.validateManifestDescription,
-            "fx-extension.validateManifest",
-            vscode.TreeItemCollapsibleState.None,
-            undefined,
-            undefined,
-            "validatemanifest"
-          ),
-          new TreeViewCommand(
-            StringResources.vsc.commandsTreeViewProvider.buildPackageTitle,
-            StringResources.vsc.commandsTreeViewProvider.buildPackageDescription,
-            "fx-extension.build",
-            vscode.TreeItemCollapsibleState.None,
-            undefined,
-            undefined,
-            "build"
-          ),
-          new TreeViewCommand(
-            StringResources.vsc.commandsTreeViewProvider.provisionTitle,
-            StringResources.vsc.commandsTreeViewProvider.provisionDescription,
-            "fx-extension.provision",
-            vscode.TreeItemCollapsibleState.None,
-            undefined,
-            undefined,
-            "provision"
-          ),
-          new TreeViewCommand(
-            StringResources.vsc.commandsTreeViewProvider.deployTitle,
-            StringResources.vsc.commandsTreeViewProvider.deployDescription,
-            "fx-extension.deploy",
-            vscode.TreeItemCollapsibleState.None,
-            undefined,
-            undefined,
-            "deploy"
-          ),
-          new TreeViewCommand(
-            StringResources.vsc.commandsTreeViewProvider.publishTitle,
-            StringResources.vsc.commandsTreeViewProvider.publishDescription,
-            "fx-extension.publish",
-            vscode.TreeItemCollapsibleState.None,
-            undefined,
-            undefined,
-            "publish"
-          )
-        ]
-      : [
-          new TreeViewCommand(
-            StringResources.vsc.commandsTreeViewProvider.createProjectTitle,
-            StringResources.vsc.commandsTreeViewProvider.createProjectDescription,
-            "fx-extension.create",
-            vscode.TreeItemCollapsibleState.None,
-            undefined,
-            undefined,
-            "createProject"
-          )
-        ];
+    const projectTreeViewCommand = [
+      new TreeViewCommand(
+        StringResources.vsc.commandsTreeViewProvider.createProjectTitle,
+        StringResources.vsc.commandsTreeViewProvider.createProjectDescription,
+        "fx-extension.create",
+        vscode.TreeItemCollapsibleState.None,
+        undefined,
+        undefined,
+        "createProject"
+      ),
+      new TreeViewCommand(
+        StringResources.vsc.commandsTreeViewProvider.addCapabilitiesTitle,
+        StringResources.vsc.commandsTreeViewProvider.addCapabilitiesDescription,
+        "fx-extension.addCapability",
+        vscode.TreeItemCollapsibleState.None,
+        undefined,
+        undefined,
+        "addCapability"
+      ),
+      new TreeViewCommand(
+        StringResources.vsc.commandsTreeViewProvider.addResourcesTitle,
+        StringResources.vsc.commandsTreeViewProvider.addResourcesDescription,
+        "fx-extension.update",
+        vscode.TreeItemCollapsibleState.None,
+        undefined,
+        undefined,
+        "addResources"
+      ),
+      new TreeViewCommand(
+        StringResources.vsc.commandsTreeViewProvider.manifestEditorTitle,
+        StringResources.vsc.commandsTreeViewProvider.manifestEditorDescription,
+        "fx-extension.openManifest",
+        vscode.TreeItemCollapsibleState.None,
+        undefined,
+        undefined,
+        "manifestEditor"
+      ),
+      new TreeViewCommand(
+        StringResources.vsc.commandsTreeViewProvider.validateManifestTitle,
+        StringResources.vsc.commandsTreeViewProvider.validateManifestDescription,
+        "fx-extension.validateManifest",
+        vscode.TreeItemCollapsibleState.None,
+        undefined,
+        undefined,
+        "validatemanifest"
+      ),
+      new TreeViewCommand(
+        StringResources.vsc.commandsTreeViewProvider.buildPackageTitle,
+        StringResources.vsc.commandsTreeViewProvider.buildPackageDescription,
+        "fx-extension.build",
+        vscode.TreeItemCollapsibleState.None,
+        undefined,
+        undefined,
+        "build"
+      ),
+      new TreeViewCommand(
+        StringResources.vsc.commandsTreeViewProvider.provisionTitle,
+        StringResources.vsc.commandsTreeViewProvider.provisionDescription,
+        "fx-extension.provision",
+        vscode.TreeItemCollapsibleState.None,
+        undefined,
+        undefined,
+        "provision"
+      ),
+      new TreeViewCommand(
+        StringResources.vsc.commandsTreeViewProvider.deployTitle,
+        StringResources.vsc.commandsTreeViewProvider.deployDescription,
+        "fx-extension.deploy",
+        vscode.TreeItemCollapsibleState.None,
+        undefined,
+        undefined,
+        "deploy"
+      ),
+      new TreeViewCommand(
+        StringResources.vsc.commandsTreeViewProvider.publishTitle,
+        StringResources.vsc.commandsTreeViewProvider.publishDescription,
+        "fx-extension.publish",
+        vscode.TreeItemCollapsibleState.None,
+        undefined,
+        undefined,
+        "publish"
+      )
+    ];
 
     const projectProvider = new CommandsTreeViewProvider(projectTreeViewCommand);
     disposables.push(vscode.window.registerTreeDataProvider("teamsfx-project", projectProvider));

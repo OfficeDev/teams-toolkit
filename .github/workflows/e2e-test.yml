@@ -59,3 +59,7 @@ jobs:
       - name: E2E Test Other Cases
         run: |
           npx lerna run test:e2e:others
+
+      - name: E2E Test Apim Cases
+        run: |
+          npx lerna run test:e2e:apim

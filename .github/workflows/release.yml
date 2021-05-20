@@ -1,0 +1,113 @@
+name: release
+
+on:
+  schedule:
+    - cron: "0 8 * * *"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'which version to bump(major, minor, patch, premajor, preminor, prepatch, prerelease)'
+        required: true
+        default: 'prerelease'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout dev branch
+        if: ${{ github.event_name == 'schedule' }}
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.CD_PAT }}
+          ref: dev
+
+      - name: Checkout release branch
+        if: ${{ github.event_name != 'schedule' }}
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.CD_PAT }}
+          ref: ${{ github.ref }}
+
+      - name: Setup node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: 14
+
+      - name: Setup npm registry
+        run: |
+          echo "${{ secrets.NPMRC }}" > ~/.npmrc
+
+      - name: Download Simple Auth bits
+        uses: nick-invision/retry@v2
+        with: 
+          timeout_minutes: 10
+          max_attempts: 5
+          retry_on: error
+          shell: pwsh
+          command: |
+            $version=Get-Content packages/fx-core/templates/plugins/resource/simpleauth/version.txt
+            $tag = "simpleauth@"+$version
+            $fileName="Microsoft.TeamsFx.SimpleAuth_$version.zip"
+            $url = "https://github.com/OfficeDev/TeamsFx/releases/download/"+$tag+"/"+$fileName
+            Invoke-WebRequest $url -OutFile packages/fx-core/templates/plugins/resource/simpleauth/SimpleAuth.zip
+
+      - name: Setup project
+        run: |
+          npm run setup
+
+      - name: Setup git
+        run: |
+          git config --global user.name 'MSFT-yiz'
+          git config --global user.email 'yiz@microsoft.com'
+
+      - name: check whether vscode extension changed or not
+        id: extension-checker
+        run: |
+          if npx lerna changed | grep 'ms-teams-vscode-extension';
+          then
+            echo "::set-output name=CHANGED::true"
+          else
+            echo "::set-output name=CHANGED::false"
+          fi
+
+      - name: release daily npm packages to npmjs.org
+        if: ${{ github.ref == 'refs/heads/dev' }}
+        run: |
+          npx lerna publish --no-private --preid=alpha --dist-tag=alpha ${{ github.event.inputs.version }} --yes
+
+      - name: release rc npm packages to npmjs.org
+        if: ${{ github.event.inputs.version == 'prerelease' && startsWith(github.ref, 'refs/heads/release/') }}
+        run: |
+          npx lerna publish --no-private --preid=rc --dist-tag=rc prerelease --yes
+
+      - name: release stable npm packages to npmjs.org
+        if: ${{ github.event.inputs.version == 'major' || github.event.inputs.version == 'minor' || github.event.inputs.version == 'patch' }}
+        run: |
+          npx lerna publish --no-private --dist-tag=latest ${{ github.event.inputs.version }} --yes
+
+      - name: pack vsix
+        id: pack-vsix
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 5
+          retry_on: error
+          command: |
+            cd ./packages/vscode-extension
+            npm install
+            npx vsce package
+            VERSION=`ls *.vsix | awk -F '.vsix' '{print $1}'`
+            echo "::set-output name=VERSION::$VERSION"
+
+      - name: release VSCode extension to github
+        if: ${{ steps.extension-checker.outputs.CHANGED == 'true' }}
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: ${{ secrets.CD_PAT }}
+          prerelease: true
+          automatic_release_tag: ${{ steps.pack-vsix.outputs.VERSION }}
+          files: |
+            ./packages/**/*.vsix

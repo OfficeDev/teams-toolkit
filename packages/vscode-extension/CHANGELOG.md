@@ -2,26 +2,31 @@
 
 ## 2.0.0 - May 25 2021
 2.0.0 is a major version upgrade for Teams Toolkit with many new improvements and supports.
-- Add: new design of UI and command palette list
-- Add: new getting started guide, samples and doc link from toolkit
-- Add: new sign-in experience for M365 and Azure
-- Add: new interactive flow for screating new app
-- Add: add message extension capability to Teams app
-- Add: sample codes for in-meeting app.
-- Add: add Typescript support
-- Add: support e2e dev experience for tab app hosted by either Azure or SPFx
-- Add: support adding backend API (Azure Functions) and SQL DB to tab app
-- Add: remote debugging support for tab app, bot app, and message extension
-- Add: dev environment checking and auto-setup
-- Add: cloud provision and deploy for Teams app from treeview UI and command palette
-- Add: support simplified auth code and graph client through scaffolding
-- Add: Mac/Linux support of new toolkit
-- Add: integration with GitHub Codespaces for dev/test
-- Enhancement: improved helloworld app through scaffolding for tab app, bot app, and message extension
-- Enhancement: imoroved local frontend/backend debugging support for tab app, bot app, and message extension
-- Enhancement: improved error messages and logging
-- Enhancement: improved publish to teams flow
-- Bug fixes
+
+Added:
+- new design of UI and command palette list
+- new getting started guide, samples and doc link from toolkit
+- new sign-in experience for M365 and Azure
+- new interactive flow for creating new app
+- add messaging extension capability to Teams app
+- sample codes for in-meeting app.
+- support e2e dev experience for tab app hosted by either Azure or SPFx
+- support adding backend API (Azure Functions) and SQL DB to tab app
+- preview support for tab app, bot app, and messaging extension
+- dev environment checking and auto-setup
+- cloud provision and deploy for Teams app from treeview UI and command palette
+- support simplified auth code and graph client through scaffolding
+- Mac/Linux support of new toolkit
+- integration with GitHub Codespaces for dev/test
+
+Enhanced:
+- improved helloworld app through scaffolding for tab app, bot app, and messaging extension
+- imoroved local frontend/backend debugging support for tab app, bot app, and messaging extension
+- improved error messages and logging
+- improved publish to teams flow
+
+Fixed:
+- cumulated bug fixes
 ## 1.2.3 - April 20 2021
 - Add scaffold option for a Teams messaging extension with SSO (Single Sign-on)
 ## 1.2.2 - April 1 2021

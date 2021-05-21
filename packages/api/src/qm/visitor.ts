@@ -176,9 +176,7 @@ const questionVisitor: QuestionVistor = async function (
       question.type === NodeType.password ||
       question.type === NodeType.number
     ) {
-      const inputQuestion: TextInputQuestion | NumberInputQuestion = question as
-        | TextInputQuestion
-        | NumberInputQuestion;
+      const inputQuestion: TextInputQuestion = question as TextInputQuestion;
       const validationFunc = inputQuestion.validation
         ? getValidationFunction(inputQuestion.validation, inputs, remoteFuncExecutor)
         : undefined;
@@ -194,14 +192,13 @@ const questionVisitor: QuestionVistor = async function (
         inputQuestion.prompt,
         remoteFuncExecutor
       )) as string;
-      return await ui.showInputBox({
+      return await ui.inputText({
         title: title,
         password: !!(question.type === NodeType.password),
-        defaultValue: defaultValue as string,
+        default: defaultValue as string,
         placeholder: placeholder,
         prompt: prompt,
         validation: validationFunc,
-        number: !!(question.type === NodeType.number),
         step: step,
         totalSteps: totalSteps,
       });
@@ -244,30 +241,39 @@ const questionVisitor: QuestionVistor = async function (
         mq.prompt,
         remoteFuncExecutor
       )) as string;
-      return await ui.showQuickPick({
-        title: title,
-        items: res.options,
-        canSelectMany: !!(question.type === NodeType.multiSelect),
-        returnObject: selectQuestion.returnObject,
-        defaultValue: defaultValue as string | string[],
-        placeholder: placeholder,
-        onDidChangeSelection:
-          question.type === NodeType.multiSelect ? mq.onDidChangeSelection : undefined,
-        validation: validationFunc,
-        prompt: prompt,
-        step: step,
-        totalSteps: totalSteps,
-      });
+      if(question.type  === NodeType.singleSelect){
+        return await ui.selectOption({
+          title: title,
+          options: res.options,
+          returnObject: selectQuestion.returnObject,
+          default: defaultValue as string,
+          placeholder: placeholder,
+          prompt: prompt,
+          step: step,
+          totalSteps: totalSteps,
+        });
+      }
+      else{
+        return await ui.selectOptions({
+          title: title,
+          options: res.options,
+          returnObject: selectQuestion.returnObject,
+          default: defaultValue as string[],
+          placeholder: placeholder,
+          prompt: prompt,
+          onDidChangeSelection: mq.onDidChangeSelection,
+          validation: validationFunc,
+          step: step,
+          totalSteps: totalSteps,
+        });
+      }
     } else if (question.type === NodeType.folder) {
       const fileQuestion: FileQuestion = question as FileQuestion;
       const validationFunc = fileQuestion.validation
         ? getValidationFunction(fileQuestion.validation, inputs, remoteFuncExecutor)
         : undefined;
-      return await ui.showOpenDialog({
-        defaultUri: defaultValue as string,
-        canSelectFiles: false,
-        canSelectFolders: true,
-        canSelectMany: false,
+      return await ui.selectFolder({
+        default: defaultValue as string,
         title: title,
         validation: validationFunc,
         step: step,

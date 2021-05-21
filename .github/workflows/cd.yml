@@ -7,6 +7,10 @@ on:
         description: 'which version to bump(major, minor, patch, premajor, preminor, prepatch, prerelease)'
         required: true
         default: 'prerelease'
+      force:
+        description: 'force release even if no update(set empty if not)'
+        required: false
+        default: '--force-publish'
 
 jobs:
   cd:
@@ -72,26 +76,26 @@ jobs:
           fi
 
       - name: release daily npm packages to npmjs.org
-        if: ${{ github.ref == 'refs/heads/dev' }}
+        if: ${{ github.ref == 'refs/heads/dev' && startsWith(github.event.inputs.version, 'pre') }}
         run: |
-          npx lerna publish --no-private --preid=alpha --dist-tag=alpha ${{ github.event.inputs.version }} --yes
+          npx lerna publish --no-private --preid=alpha --dist-tag=alpha ${{ github.event.inputs.version }} --yes ${{ github.event.inputs.force }}
 
       - name: release rc npm packages to npmjs.org
-        if: ${{ github.event.inputs.version == 'prerelease' && startsWith(github.ref, 'refs/heads/release/') }}
+        if: ${{ startsWith(github.ref, 'refs/heads/release/') && github.event.inputs.version == 'prerelease' }}
         run: |
-          npx lerna publish --no-private --preid=rc --dist-tag=rc prerelease --yes
+          npx lerna publish --no-private --preid=rc --dist-tag=rc prerelease --yes ${{ github.event.inputs.force }}
 
       - name: release stable npm packages to npmjs.org
-        if: ${{ github.event.inputs.version == 'major' || github.event.inputs.version == 'minor' || github.event.inputs.version == 'patch' }}
+        if: ${{ startsWith(github.ref, 'refs/heads/release/') && !startsWith(github.event.inputs.version, 'pre') }}
         run: |
-          npx lerna publish --no-private --dist-tag=latest ${{ github.event.inputs.version }} --yes
+          npx lerna publish --no-private --dist-tag=latest ${{ github.event.inputs.version }} --yes ${{ github.event.inputs.force }}
 
       - name: pack vsix
         id: pack-vsix
         uses: nick-invision/retry@v2
         with:
           timeout_minutes: 10
-          max_attempts: 5
+          max_attempts: 10
           retry_on: error
           command: |
             cd ./packages/vscode-extension
@@ -101,7 +105,7 @@ jobs:
             echo "::set-output name=VERSION::$VERSION"
 
       - name: release VSCode extension to github
-        if: ${{ steps.extension-checker.outputs.CHANGED == 'true' }}
+        if: ${{ steps.extension-checker.outputs.CHANGED == 'true' || github.event.inputs.force == '--force-publish' }}
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: ${{ secrets.CD_PAT }}

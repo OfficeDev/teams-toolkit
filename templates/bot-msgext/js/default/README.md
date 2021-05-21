@@ -16,7 +16,7 @@ This is a simple hello world application with both Bot and Message extension cap
 
 ## Create an application
 
-- From Visual Studio Code, open command palette and select `Teams - Start a new project`. Or from the CLI, (after `npm install -g @microsoft/teamsfx-cli`) run command `teamsfx new`.
+- From Visual Studio Code, open command palette and select `Teams: Create New Project`. Or from the CLI, (after `npm install -g @microsoft/teamsfx-cli`) run command `teamsfx new`.
 - Choose the messaging extension capability from the prompts.
   > Note: You have the option to reuse an existing bot by entering the credential manually. But make sure that bot is not associated with any AAD apps.
 

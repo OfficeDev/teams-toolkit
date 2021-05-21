@@ -2,9 +2,10 @@
 // Licensed under the MIT license.
 import { WebSiteManagementClient } from "@azure/arm-appservice";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import * as fs from "fs-extra";
-import { PluginContext } from "@microsoft/teamsfx-api";
+import * as _fs from "fs";
+import { err, FxError, ok, PluginContext, Result, TimeConsumingTask, UserInterface, Void } from "@microsoft/teamsfx-api";
 import { Constants, Messages } from "./constants";
 import {
   CreateAppServicePlanError,
@@ -14,6 +15,7 @@ import {
 } from "./errors";
 import { ResultFactory } from "./result";
 import { DialogUtils } from "./utils/dialog";
+import { rsort } from "semver";
 
 export class WebAppClient {
   private credentials: TokenCredentialsBase;
@@ -99,27 +101,64 @@ export class WebAppClient {
     }
   }
 
-  public async zipDeploy(filePath: string) {
+  public async zipDeploy(ui: UserInterface, filePath: string) {
     const token = await this.credentials.getToken();
-
-    try {
-      const zipdeployResult = await axios({
-        method: "POST",
-        url: `https://${this.webAppName}.scm.azurewebsites.net/api/zipdeploy`,
-        headers: {
-          Authorization: `Bearer ${token.accessToken}`,
-        },
-        data: await fs.readFile(filePath),
-        maxContentLength: Infinity,
-        maxBodyLength: Infinity,
-      });
-      this.ctx.logProvider?.info(Messages.getLog("zipdeploy is done: " + zipdeployResult.status));
-    } catch (error) {
-      throw ResultFactory.SystemError(
-        ZipDeployError.name,
-        ZipDeployError.message(error?.message),
-        error
-      );
+    const stat = _fs.statSync(filePath);
+    const _this = this;
+    const cancelTokenSource = axios.CancelToken.source();
+    const task: TimeConsumingTask<AxiosResponse<any>> = {
+      name: Constants.ProgressBar.provision.zipDeploy,
+      total: stat.size * 2,
+      current: 0,
+      message: "",
+      isCanceled: false,
+      async run(): Promise<Result<AxiosResponse<any>, FxError>> {
+        return new Promise(async (resolve) => {
+          try {
+            const fileStream = _fs.createReadStream(filePath);
+            fileStream.on("data", (buffer: Buffer) => {
+              this.current += buffer.length;
+              if(this.current === stat.size)
+                this.message = "waiting for server response";
+            });
+            this.message = "Uploading zip package";
+            const response = await axios({
+              method: "POST",
+              url: `https://${_this.webAppName}.scm.azurewebsites.net/api/zipdeploy`,
+              headers: {
+                Authorization: `Bearer ${token.accessToken}`,
+              },
+              data: fileStream, //await fs.readFile(filePath),
+              maxContentLength: Infinity,
+              maxBodyLength: Infinity,
+              cancelToken: cancelTokenSource.token,
+            });
+            this.current = this.total;
+            resolve(ok(response));
+          } catch (error) {
+            resolve(
+              err(
+                ResultFactory.SystemError(
+                  ZipDeployError.name,
+                  ZipDeployError.message(error?.message),
+                  error
+                )
+              )
+            );
+          }
+        });
+      },
+      cancel() {
+        cancelTokenSource.cancel();
+        this.isCanceled = true;
+      },
+    };
+    const res = await ui.runWithProgress(task);
+    if(res.isOk()){
+      this.ctx.logProvider?.info(Messages.getLog(`zipdeploy is done! status:${res.value.status}`));
+    }
+    else {
+      throw res.error;
     }
   }
 

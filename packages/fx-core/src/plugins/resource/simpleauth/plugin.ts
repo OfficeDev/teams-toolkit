@@ -99,7 +99,7 @@ export class SimpleAuthPluginImpl {
     await DialogUtils.progressBar?.next(Constants.ProgressBar.provision.zipDeploy);
     const simpleAuthFilePath = Utils.getSimpleAuthFilePath();
     await Utils.downloadZip(simpleAuthFilePath);
-    await this.webAppClient.zipDeploy(simpleAuthFilePath);
+    await this.webAppClient.zipDeploy(ctx.ui!, simpleAuthFilePath);
 
     ctx.config.set(Constants.SimpleAuthPlugin.configKeys.endpoint, endpoint);
 

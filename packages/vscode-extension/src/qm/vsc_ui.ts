@@ -15,7 +15,7 @@ import {
   ExtensionContext
 } from "vscode";
 import {
-  CancelError,
+  UserCancelError,
   err,
   FxError,
   InputResult,
@@ -77,7 +77,7 @@ function toIdSet(items: ({ id: string } | string)[]): Set<string> {
   return set;
 }
 
-function cloneSet(set: Set<string>): Set<string> {
+export function cloneSet(set: Set<string>): Set<string> {
   const res = new Set<string>();
   for (const e of set) res.add(e);
   return res;
@@ -511,13 +511,17 @@ export class VsCodeUI implements UserInterface {
         async (progress, token): Promise<any> => {
           token.onCancellationRequested(() => {
             task.cancel();
-            resolve(err(CancelError));
+            resolve(err(UserCancelError));
           });
           const startTime = new Date().getTime();
           const res = task.run();
           progress.report({ increment: 0 });
           let lastLength = 0;
-          res.then((v) => resolve(v)).catch((e) => resolve(err(e)));
+          res.then((v:any) => { 
+            resolve(v) 
+          }).catch((e:any) => { 
+            resolve(err(e))
+          });
           while ((task.total === 0 || task.current < task.total) && !task.isCanceled) {
             const inc = task.current - lastLength;
             if (inc > 0) {
@@ -525,15 +529,15 @@ export class VsCodeUI implements UserInterface {
               const remainingTime = (elapsedTime * (task.total - task.current)) / task.current;
               progress.report({
                 increment: (inc * 100) / task.total,
-                message: `${task.message} - ${Math.round(
+                message: `progress:${Math.round(
                   (task.current * 100) / task.total
-                )} %, remaining time: ${Math.round(remainingTime)} ms`
+                )} %, remaining time: ${Math.round(remainingTime)} ms (${task.message})`
               });
               lastLength += inc;
             }
             await sleep(100);
           }
-          if (task.isCanceled) resolve(err(CancelError));
+          if (task.isCanceled) resolve(err(UserCancelError));
         }
       );
     });

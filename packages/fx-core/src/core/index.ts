@@ -45,6 +45,7 @@ import {
   SubscriptionInfo,
   MsgLevel,
   AzureSolutionSettings,
+  UserInterface,
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import * as error from "./error";
@@ -1007,8 +1008,9 @@ class CoreImpl implements Core {
     return await this.selectedSolution!.scaffold(this.solutionContext(answers));
   }
 
-  public async withDialog(dialog: Dialog): Promise<Result<null, FxError>> {
+  public async withDialog(dialog: Dialog, ui?: UserInterface): Promise<Result<null, FxError>> {
     this.ctx.dialog = dialog;
+    this.ctx.ui = ui;
     return ok(null);
   }
 
@@ -1218,8 +1220,8 @@ export class CoreProxy implements Core {
       }
     }
   }
-  withDialog(dialog: Dialog): Promise<Result<null, FxError>> {
-    return this.coreImpl.withDialog(dialog);
+  withDialog(dialog: Dialog, ui?: UserInterface): Promise<Result<null, FxError>> {
+    return this.coreImpl.withDialog(dialog, ui);
   }
   withLogger(logger: LogProvider): Promise<Result<null, FxError>> {
     return this.coreImpl.withLogger(logger);

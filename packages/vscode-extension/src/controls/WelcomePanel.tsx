@@ -240,7 +240,7 @@ export default class WelcomePanel extends React.Component<any, IWelcomePanelStat
                   <ActionButton
                     iconProps={{ iconName: "Link" }}
                     onClick={() => {
-                      this.openExternalLink("https://review.docs.microsoft.com");
+                      this.openExternalLink("https://aka.ms/teamsfx-docs");
                     }}
                   >
                     Teams app fundamentals

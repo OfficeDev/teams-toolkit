@@ -684,7 +684,7 @@ export async function preDebugCheckHandler(): Promise<void> {
 
 export async function openDocumentHandler(args: any[]): Promise<boolean> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, getTriggerFromProperty(args));
-  return env.openExternal(Uri.parse("https://aka.ms/build-first-app"));
+  return env.openExternal(Uri.parse("https://aka.ms/teamsfx-build-first-app"));
 }
 
 export async function openWelcomeHandler(args?: any[]) {

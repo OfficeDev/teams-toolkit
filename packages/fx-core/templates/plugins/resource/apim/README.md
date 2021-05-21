@@ -55,7 +55,7 @@ Update the Open API document under the `openapi` folder. We support both yaml an
 
 ### Recommended way 1: Using npm package swagger-jsdoc
 
-- Run command: `npm install -g swagger-jsdoc`.
+- Install the stable version of swagger-jsdoc. Run command: `npm install -g swagger-jsdoc@6`.
 - Annotating source code. Read [more](https://github.com/Surnet/swagger-jsdoc/) about how to use swagger-jsdoc to annotate the source code. Below is a sample annotation.
   - API annotation
     ```js

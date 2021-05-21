@@ -11,7 +11,8 @@ jobs:
     env:
       TEST_USER_NAME: ${{ secrets.TEST_USER_NAME }}
       TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
-      TEST_SUBSCRIPTION_ID: ${{ secrets.TEST_SUBSCRIPTION_ID }}
+      TEST_SUBSCRIPTION_ID: ${{ secrets.TEST_SUBSCRIPTION_ID_2 }}
+      TEST_TENANT_ID: ${{ secrets.TEST_TENANT_ID_2 }}
       CI_ENABLED: "true"
 
     strategy:

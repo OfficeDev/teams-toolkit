@@ -118,8 +118,7 @@ export class WebAppClient {
             const fileStream = _fs.createReadStream(filePath);
             fileStream.on("data", (buffer: Buffer) => {
               this.current += buffer.length;
-              if(this.current === stat.size)
-                this.message = "waiting for server response";
+              if (this.current === stat.size) this.message = "waiting for server response";
             });
             this.message = "Uploading zip package";
             const response = await axios({
@@ -154,10 +153,9 @@ export class WebAppClient {
       },
     };
     const res = await ui.runWithProgress(task);
-    if(res.isOk()){
+    if (res.isOk()) {
       this.ctx.logProvider?.info(Messages.getLog(`zipdeploy is done! status:${res.value.status}`));
-    }
-    else {
+    } else {
       throw res.error;
     }
   }

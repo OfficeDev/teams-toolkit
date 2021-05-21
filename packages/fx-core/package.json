@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx-core",
-  "version": "0.1.0-rc.4",
+  "version": "0.1.0-rc.4.wp",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "license": "MIT",
@@ -19,7 +19,7 @@
     "build": "rimraf build && tsc -p ./",
     "eslint:fix": "eslint package.json tsconfig.json src test --ext .ts --fix",
     "prepare": "npm run build && node ./scripts/download-templates-zip.js",
-    "prepublishOnly": "npm run test:unit && npm run package",
+    "prepublishOnly": "npm run test:unit && npm run build",
     "package": "rimraf build && webpack --mode production --config ./webpack.config.js",
     "precommit": "lint-staged"
   },
@@ -36,7 +36,7 @@
     "@azure/msal-node": "^1.0.0",
     "@azure/storage-blob": "^12.3.0",
     "@dbpiper/timer": "1.0.0-beta.2",
-    "@microsoft/teamsfx-api": "^0.1.0-rc.4",
+    "@microsoft/teamsfx-api": "^0.1.0-rc.4.wp",
     "@types/jwt-decode": "3.1.0",
     "adm-zip": "^0.5.5",
     "ajv": "^7.1.1",

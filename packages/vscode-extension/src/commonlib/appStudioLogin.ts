@@ -188,7 +188,7 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
     AppStudioLogin.statusChange = statusChange;
     await AppStudioLogin.codeFlowInstance.reloadCache();
     if (AppStudioLogin.codeFlowInstance.account) {
-      const loginToken = await AppStudioLogin.codeFlowInstance.getToken();
+      const loginToken = await AppStudioLogin.codeFlowInstance.getToken(false);
       const tokenJson = await this.getJsonObject();
       await AppStudioLogin.statusChange(signedIn, loginToken, tokenJson);
     }
@@ -200,9 +200,13 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
   async getStatus(): Promise<LoginStatus> {
     await AppStudioLogin.codeFlowInstance.reloadCache();
     if (AppStudioLogin.codeFlowInstance.status === loggedIn) {
-      const loginToken = await AppStudioLogin.codeFlowInstance.getToken();
-      const tokenJson = await this.getJsonObject();
-      return Promise.resolve({ status: signedIn, token: loginToken, accountInfo: tokenJson });
+      const loginToken = await AppStudioLogin.codeFlowInstance.getToken(false);
+      if (loginToken) {
+        const tokenJson = await this.getJsonObject();
+        return Promise.resolve({ status: signedIn, token: loginToken, accountInfo: tokenJson });
+      } else {
+        return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });  
+      }
     } else if (AppStudioLogin.codeFlowInstance.status === loggingIn) {
       return Promise.resolve({ status: signingIn, token: undefined, accountInfo: undefined });
     } else {

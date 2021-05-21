@@ -209,7 +209,7 @@ export class CodeFlowLogin {
     return true;
   }
 
-  async getToken(): Promise<string | undefined> {
+  async getToken(refresh = true): Promise<string | undefined> {
     try {
       if (!this.account) {
         const accessToken = await this.login();
@@ -235,8 +235,12 @@ export class CodeFlowLogin {
                   error.message
                 )
             );
-            const accessToken = await this.login();
-            return accessToken;
+            await this.logout();
+            if (refresh) {
+              const accessToken = await this.login();
+              return accessToken;
+            }
+            return undefined;
           });
       }
     } catch (error) {

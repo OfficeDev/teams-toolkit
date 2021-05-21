@@ -362,7 +362,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     AzureAccountManager.statusChange = statusChange;
     await AzureAccountManager.codeFlowInstance.reloadCache();
     if (AzureAccountManager.codeFlowInstance.account) {
-      const loginToken = await AzureAccountManager.codeFlowInstance.getToken();
+      const loginToken = await AzureAccountManager.codeFlowInstance.getToken(false);
       const tokenJson = await this.getJsonObject();
       this.setMemoryCache(loginToken, tokenJson);
       await AzureAccountManager.statusChange("SignedIn", loginToken, tokenJson);
@@ -375,6 +375,10 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       await AzureAccountManager.codeFlowInstance.reloadCache();
     }
     if (AzureAccountManager.codeFlowInstance.account) {
+      const loginToken = await AzureAccountManager.codeFlowInstance.getToken(false);
+      if (!loginToken) {
+        return Promise.resolve({ status: signedOut, token: undefined, accountInfo: undefined });
+      }
       const credential = await this.getAccountCredentialAsync();
       const token = await credential?.getToken();
       const accountJson = await this.getJsonObject();

@@ -53,6 +53,7 @@ import {
   deserializeDict,
   fetchCodeZip,
   getStrings,
+  isValidProject,
   mapToJson,
   mergeSerectData,
   objectToMap,
@@ -75,6 +76,7 @@ import {
 import * as jsonschema from "jsonschema";
 import { sleep } from "../plugins/resource/spfx/utils/utils";
 import AdmZip from "adm-zip";
+export * from "./error";
 
 class CoreImpl implements Core {
   private target?: CoreImpl;
@@ -469,7 +471,7 @@ class CoreImpl implements Core {
       supported = false;
     } else {
       this.ctx.root = workspace;
-      supported = await this.isSupported();
+      supported = isValidProject(workspace);
       if (!supported) {
         this.ctx.logProvider?.warning(`non Teams project:${workspace}`);
       } else {
@@ -822,24 +824,6 @@ class CoreImpl implements Core {
     }
   }
 
-  public async isSupported(workspace?: string): Promise<boolean> {
-    let p = this.ctx.root;
-    if (workspace) {
-      p = workspace;
-    }
-    // some validation
-    const checklist: string[] = [
-      `${p}/.${ConfigFolderName}/settings.json`,
-      `${p}/.${ConfigFolderName}/env.default.json`,
-    ];
-    for (const fp of checklist) {
-      if (!(await fs.pathExists(path.resolve(fp)))) {
-        return false;
-      }
-    }
-    return true;
-  }
-
   public async readConfigs(): Promise<Result<null, FxError>> {
     const confFolderPath = path.resolve(this.ctx.root, `.${ConfigFolderName}`);
     if (!fs.existsSync(confFolderPath)) {
@@ -1189,7 +1173,8 @@ export class CoreProxy implements Core {
     try {
       // check if this project is supported
       if (checkAndConfig) {
-        const supported = await this.coreImpl.isSupported();
+        const workspacePath = this.coreImpl.ctx.root;
+        const supported = isValidProject(workspacePath);
         if (!supported) {
           return notSupportedRes;
         }
@@ -1278,7 +1263,7 @@ export class CoreProxy implements Core {
     return await this.runWithErrorHandling<QTreeNode | undefined>(
       "getQuestionsForUserTask",
       true,
-      err(error.NotSupportedProjectType()),
+      err(error.InvalidProjectError),
       () => this.coreImpl.getQuestionsForUserTask(func, platform)
     );
   }
@@ -1292,7 +1277,7 @@ export class CoreProxy implements Core {
     return await this.runWithErrorHandling<QTreeNode | undefined>(
       "executeUserTask",
       check,
-      err(error.NotSupportedProjectType()),
+      err(error.InvalidProjectError),
       () => this.coreImpl.executeUserTask(func, answers),
       answers
     );
@@ -1344,7 +1329,7 @@ export class CoreProxy implements Core {
     return await this.runWithErrorHandling<null>(
       "localDebug",
       true,
-      err(error.NotSupportedProjectType()),
+      err(error.InvalidProjectError),
       () => this.coreImpl.localDebug(answers),
       answers
     );
@@ -1353,7 +1338,7 @@ export class CoreProxy implements Core {
     return await this.runWithErrorHandling<null>(
       "provision",
       true,
-      err(error.NotSupportedProjectType()),
+      err(error.InvalidProjectError),
       () => this.coreImpl.provision(answers),
       answers
     );
@@ -1362,7 +1347,7 @@ export class CoreProxy implements Core {
     return await this.runWithErrorHandling<null>(
       "deploy",
       true,
-      err(error.NotSupportedProjectType()),
+      err(error.InvalidProjectError),
       () => this.coreImpl.deploy(answers),
       answers
     );
@@ -1371,7 +1356,7 @@ export class CoreProxy implements Core {
     return await this.runWithErrorHandling<null>(
       "publish",
       true,
-      err(error.NotSupportedProjectType()),
+      err(error.InvalidProjectError),
       () => this.coreImpl.publish(answers),
       answers
     );
@@ -1380,7 +1365,7 @@ export class CoreProxy implements Core {
     return await this.runWithErrorHandling<null>(
       "createEnv",
       true,
-      err(error.NotSupportedProjectType()),
+      err(error.InvalidProjectError),
       () => this.coreImpl.createEnv(env)
     );
   }
@@ -1388,7 +1373,7 @@ export class CoreProxy implements Core {
     return await this.runWithErrorHandling<null>(
       "removeEnv",
       true,
-      err(error.NotSupportedProjectType()),
+      err(error.InvalidProjectError),
       () => this.coreImpl.removeEnv(env)
     );
   }
@@ -1396,7 +1381,7 @@ export class CoreProxy implements Core {
     return await this.runWithErrorHandling<null>(
       "switchEnv",
       true,
-      err(error.NotSupportedProjectType()),
+      err(error.InvalidProjectError),
       () => this.coreImpl.switchEnv(env)
     );
   }
@@ -1404,7 +1389,7 @@ export class CoreProxy implements Core {
     return await this.runWithErrorHandling<string[]>(
       "listEnvs",
       true,
-      err(error.NotSupportedProjectType()),
+      err(error.InvalidProjectError),
       () => this.coreImpl.listEnvs()
     );
   }

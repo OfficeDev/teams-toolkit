@@ -109,7 +109,6 @@ type QuestionVistor = (
   question: Question,
   parentValue: unknown,
   ui: UserInterface,
-  backButton: boolean,
   inputs: ConfigMap,
   remoteFuncExecutor?: RemoteFuncExecutor,
   step?: number,
@@ -149,7 +148,6 @@ const questionVisitor: QuestionVistor = async function (
   question: Question,
   parentValue: unknown,
   ui: UserInterface,
-  backButton: boolean,
   inputs: ConfigMap,
   remoteFuncExecutor?: RemoteFuncExecutor,
   step?: number,
@@ -203,10 +201,9 @@ const questionVisitor: QuestionVistor = async function (
         placeholder: placeholder,
         prompt: prompt,
         validation: validationFunc,
-        backButton: backButton,
         number: !!(question.type === NodeType.number),
-        // step: step,
-        // totalSteps: totalSteps
+        step: step,
+        totalSteps: totalSteps,
       });
     } else if (question.type === NodeType.singleSelect || question.type === NodeType.multiSelect) {
       const selectQuestion: SingleSelectQuestion | MultiSelectQuestion = question as
@@ -227,7 +224,7 @@ const questionVisitor: QuestionVistor = async function (
       if (res.autoSkip === true) {
         const returnResult = getSingleOption(selectQuestion, res.options);
         return {
-          type: InputResultType.pass,
+          type: InputResultType.skip,
           result: returnResult,
         };
       }
@@ -254,13 +251,12 @@ const questionVisitor: QuestionVistor = async function (
         returnObject: selectQuestion.returnObject,
         defaultValue: defaultValue as string | string[],
         placeholder: placeholder,
-        backButton: backButton,
         onDidChangeSelection:
           question.type === NodeType.multiSelect ? mq.onDidChangeSelection : undefined,
         validation: validationFunc,
         prompt: prompt,
-        // step: step,
-        // totalSteps: totalSteps
+        step: step,
+        totalSteps: totalSteps,
       });
     } else if (question.type === NodeType.folder) {
       const fileQuestion: FileQuestion = question as FileQuestion;
@@ -274,9 +270,8 @@ const questionVisitor: QuestionVistor = async function (
         canSelectMany: false,
         title: title,
         validation: validationFunc,
-        backButton: backButton,
-        // step: step,
-        // totalSteps: totalSteps
+        step: step,
+        totalSteps: totalSteps,
       });
     }
   }
@@ -298,55 +293,30 @@ export async function traverse(
 ): Promise<InputResult> {
   const stack: QTreeNode[] = [];
   const history: QTreeNode[] = [];
-  let firstQuestion: Question | undefined;
   stack.push(root);
-  let step = 0;
-  let totalSteps = 1;
+  let step = 1; // manual input step
+  let totalStep = 1;
   const parentMap = new Map<QTreeNode, QTreeNode>();
+  const valueMap = new Map<QTreeNode, unknown>();
+  const autoSkipSet = new Set<QTreeNode>();
   while (stack.length > 0) {
     const curr = stack.pop();
     if (!curr) continue;
     const parent = parentMap.get(curr);
-    let parentValue = parent && parent.data.type !== NodeType.group ? parent.data.value : undefined;
-    if (curr.condition) {
-      /// if parent node is single select node and return OptionItem as value, then the parentValue is it's id
-      if (parent && parent.data.type === NodeType.singleSelect) {
-        const sq: SingleSelectQuestion = parent.data;
-        if (sq.returnObject) {
-          parentValue = (sq.value as OptionItem).id;
-        }
-      }
-      const valueToValidate = curr.condition.target
-        ? await getRealValue(parentValue, curr.condition.target, inputs, remoteFuncExecutor)
-        : parentValue;
-      if (valueToValidate) {
-        const validRes = await validate(
-          curr.condition,
-          valueToValidate as string | string[],
-          inputs,
-          remoteFuncExecutor
-        );
-        if (validRes !== undefined) {
-          continue;
-        }
-      }
-    }
+    const parentValue = parent ? valueMap.get(parent) : undefined;
 
     //visit
     if (curr.data.type !== NodeType.group) {
       const question = curr.data as Question;
-      if (!firstQuestion) firstQuestion = question;
-      ++step;
-      totalSteps = step + stack.length;
+      totalStep = step + stack.length;
       const inputResult = await questionVisitor(
         question,
         parentValue,
         ui,
-        question !== firstQuestion,
         inputs,
         remoteFuncExecutor,
         step,
-        totalSteps
+        totalStep
       );
       if (inputResult.type === InputResultType.back) {
         //go back
@@ -361,7 +331,7 @@ export async function traverse(
           }
         }
         stack.push(curr);
-        --step;
+
         // find the previoud input that is neither group nor func nor single option select
         let found = false;
         while (history.length > 0) {
@@ -378,69 +348,75 @@ export async function traverse(
             }
           }
           stack.push(last);
-          --step;
-          let autoSkip = false;
-          if (last.data.type === NodeType.singleSelect || last.data.type === NodeType.multiSelect) {
-            const loadOptionRes = await loadOptions(last.data, inputs, remoteFuncExecutor);
-            autoSkip = loadOptionRes.autoSkip;
-          }
+          if (last.data.type !== NodeType.group) inputs.delete(last.data.name);
 
-          if (last.data.type !== NodeType.group && last.data.type !== NodeType.func && !autoSkip) {
+          const lastIsAutoSkip = autoSkipSet.has(last);
+          if (
+            last.data.type !== NodeType.group &&
+            last.data.type !== NodeType.func &&
+            !lastIsAutoSkip
+          ) {
             found = true;
             break;
           }
         }
         if (!found) {
           // no node to back
-          return { type: InputResultType.back };
+          return { type: InputResultType.cancel };
         }
+        --step;
         continue; //ignore the following steps
       } else if (
         inputResult.type === InputResultType.error ||
         inputResult.type === InputResultType.cancel
       ) {
-        //cancel
         return inputResult;
       } //continue
       else {
-        //success or pass
+        //success or skip
         question.value = inputResult.result;
-        if (inputs instanceof ConfigMap) {
-          (inputs as ConfigMap).set(question.name, question.value);
+        inputs.set(question.name, question.value);
+
+        if (inputResult.type === InputResultType.skip || question.type === NodeType.func) {
+          if (inputResult.type === InputResultType.skip) autoSkipSet.add(curr);
         } else {
-          (inputs as Inputs)[question.name] = question.value;
+          ++step;
         }
+        let valueInMap = question.value;
+        if (question.type === NodeType.singleSelect) {
+          const sq: SingleSelectQuestion = question as SingleSelectQuestion;
+          if (sq.value && typeof sq.value !== "string") {
+            valueInMap = (sq.value as OptionItem).id;
+          }
+        } else if (question.type === NodeType.multiSelect) {
+          const mq: MultiSelectQuestion = question as MultiSelectQuestion;
+          if (mq.value && typeof mq.value[0] !== "string") {
+            valueInMap = (mq.value as OptionItem[]).map((i) => i.id);
+          }
+        }
+        valueMap.set(curr, valueInMap);
       }
     }
 
     history.push(curr);
 
     if (curr.children) {
-      for (let i = curr.children.length - 1; i >= 0; --i) {
-        const child = curr.children[i];
+      const matchChildren: QTreeNode[] = [];
+      const valudInMap = valueMap.get(curr);
+      for (const child of curr.children) {
         if (!child) continue;
+        if (child.condition) {
+          const validRes = await validate(child.condition, valudInMap as string | string[], inputs);
+          if (validRes !== undefined) {
+            continue;
+          }
+        }
+        matchChildren.push(child);
+      }
+      for (let i = matchChildren.length - 1; i >= 0; --i) {
+        const child = matchChildren[i];
         parentMap.set(child, curr);
         stack.push(child);
-
-        // if(child.data.type === NodeType.func || child.data.type === NodeType.group) //ignore non-input node
-        //   continue;
-        // if (child.condition) {  //ignore node to skip
-        //   let currValue = curr.data.type !== NodeType.group ? curr.data.value : undefined;
-        //   if (curr.data.type === NodeType.singleSelect) {
-        //     const csq:SingleSelectQuestion = curr.data;
-        //     if (csq.returnObject) {
-        //       currValue = (csq.value as OptionItem).id;
-        //     }
-        //   }
-        //   const valueToValidate = child.condition.target ? await getRealValue(currValue, child.condition.target, inputs, remoteFuncExecutor) : currValue;
-        //   if (valueToValidate) {
-        //     const validRes = await validate(child.condition, valueToValidate as string | string[], inputs, remoteFuncExecutor);
-        //     if (validRes !== undefined) {
-        //       continue;
-        //     }
-        //   }
-        // }
-        // ++ totalSteps;
       }
     }
   }

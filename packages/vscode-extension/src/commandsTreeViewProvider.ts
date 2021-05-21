@@ -6,6 +6,8 @@ import * as path from "path";
 import { ext } from "./extensionVariables";
 import { TreeItem, TreeCategory, Result, FxError, ok } from "@microsoft/teamsfx-api";
 import * as StringResources from "./resources/Strings.json";
+import { getWorkspacePath } from "./handlers";
+import { isValidProject } from "@microsoft/teamsfx-core";
 
 class TreeViewManager {
   private static instance: TreeViewManager;
@@ -52,7 +54,7 @@ class TreeViewManager {
         TreeCategory.GettingStarted,
         undefined,
         "book_16"
-      ),
+      )
     ];
     const getStartedProvider = new CommandsTreeViewProvider(getStartTreeViewCommand);
     disposables.push(
@@ -143,8 +145,9 @@ class TreeViewManager {
         undefined,
         undefined,
         "publish"
-      ),
+      )
     ];
+
     const projectProvider = new CommandsTreeViewProvider(projectTreeViewCommand);
     disposables.push(vscode.window.registerTreeDataProvider("teamsfx-project", projectProvider));
 
@@ -158,7 +161,7 @@ class TreeViewManager {
         undefined,
         undefined,
         "appManagement"
-      ),
+      )
       // new TreeViewCommand(
       //   StringResources.vsc.commandsTreeViewProvider.appManagementTitle,
       //   StringResources.vsc.commandsTreeViewProvider.appManagementDescription,
@@ -192,7 +195,7 @@ class TreeViewManager {
         TreeCategory.Feedback,
         undefined,
         "reportIssues"
-      ),
+      )
     ];
     const feedbackProvider = new CommandsTreeViewProvider(feedbackTreeViewCommand);
     disposables.push(vscode.window.registerTreeDataProvider("teamsfx-feedback", feedbackProvider));
@@ -221,10 +224,11 @@ export default TreeViewManager.getInstance();
 
 export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeViewCommand> {
   public static readonly TreeViewFlag = "TreeView";
-  private _onDidChangeTreeData: vscode.EventEmitter<TreeViewCommand | undefined | void> =
-    new vscode.EventEmitter<TreeViewCommand | undefined | void>();
-  readonly onDidChangeTreeData: vscode.Event<TreeViewCommand | undefined | void> =
-    this._onDidChangeTreeData.event;
+  private _onDidChangeTreeData: vscode.EventEmitter<
+    TreeViewCommand | undefined | void
+  > = new vscode.EventEmitter<TreeViewCommand | undefined | void>();
+  readonly onDidChangeTreeData: vscode.Event<TreeViewCommand | undefined | void> = this
+    ._onDidChangeTreeData.event;
 
   private commands: TreeViewCommand[] = [];
   private disposableMap: Map<string, vscode.Disposable> = new Map();
@@ -440,7 +444,7 @@ export class TreeViewCommand extends vscode.TreeItem {
       this.command = {
         title: label,
         command: commandId,
-        arguments: [[CommandsTreeViewProvider.TreeViewFlag]],
+        arguments: [[CommandsTreeViewProvider.TreeViewFlag]]
       };
     }
   }

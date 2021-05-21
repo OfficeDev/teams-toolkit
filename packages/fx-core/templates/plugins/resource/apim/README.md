@@ -169,13 +169,10 @@ Below is a sample swagger file for the default http trigger function. You can co
     import swaggerJSDoc from 'swagger-jsdoc';
     import fs from "fs-extra";
 
-    export default async function cli() {
-        const configFilePath = 'openapi.config.json';
-        const swaggerFilePath = 'openapi.json';
-
-        const options = await fs.readJson(configFilePath);
+    async function cli() {
+        const options = await fs.readJson("openapi.config.json");
         const swaggerSpec = await swaggerJSDoc(options);
-        await fs.writeJson(swaggerFilePath, swaggerSpec, { spaces: 2 });
+        await fs.writeJson("openapi.json", swaggerSpec, { spaces: 2 });
     }
 
     cli();

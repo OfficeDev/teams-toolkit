@@ -53,57 +53,7 @@ In the deployment step, there will be some inputs needed:
 
 Update the Open API document under the `openapi` folder. We support both yaml and json format for the Open API document. You need to author the Open API document and ensure the API schema is aligned with the function implementation. For how to generate the Open API document, we have the following recommendations.
 
-### Recommended way 1: Using npm package swagger-jsdoc
-
-- Run command: `npm install -g swagger-jsdoc`.
-- Annotating source code. Read [more](https://github.com/Surnet/swagger-jsdoc/) about how to use swagger-jsdoc to annotate the source code. Below is a sample annotation.
-  - API annotation
-    ```js
-    /**
-     * @openapi
-     * /getUserProfile:
-     *   get:
-     *     summary: Get User Profile
-     *     operationId: get-user-profile
-     *     responses:
-     *       '200':
-     *         $ref: "#/components/responses/getUserProfileResponse"
-     */
-    ```
-  - Response annotation
-    ```js
-    /**
-     * @openapi
-     * components:
-     *   responses:
-     *     getUserProfileResponse:
-     *       description: 200 response
-     *       content:
-     *         application/json:
-     *           schema:
-     *             type: object
-     *             properties:
-     *               receivedHTTPRequestBody:
-     *                 type: string
-     *               userInfoMessage:
-     *                 type: string
-     *               graphClientMessage:
-     *                 type: object
-     */
-    ```
-- Create an OpenAPI definition file `openapi/openapi.definition.json` and input the title and version. Below is a sample definition file.
-  ```json
-  {
-    "openapi": "3.0.1",
-    "info": {
-      "title": "{appName}",
-      "version": "v1"
-    }
-  }
-  ```
-- Run command `swagger-jsdoc -d ./openapi/openapi.definition.json -o ./openapi/openapi.json ./api/getUserProfile/*`. Please change the file path `./api/getUserProfile/*` according to your modification.
-
-### Recommended way 2: OpenAPI (Swagger) Editor in VS Code.
+### Recommended way 1: OpenAPI (Swagger) Editor in VS Code.
 
 Below is a sample swagger file for the default http trigger function. You can copy the content into `./openapi/openapi.json`, follow the [OpenAPI Specification](https://swagger.io/resources/open-api/), and change the content according to your modification (E.g. `/getUserProfile` -> `/$yourFunctionName` ).
 
@@ -147,6 +97,91 @@ Below is a sample swagger file for the default http trigger function. You can co
   }
 }
 ```
+
+### Recommended way 2: Using npm package swagger-jsdoc
+- Annotating source code. Read [more](https://github.com/Surnet/swagger-jsdoc/) about how to use swagger-jsdoc to annotate the source code. Below is a sample annotation.
+  - API annotation
+    ```js
+    /**
+     * @openapi
+     * /getUserProfile:
+     *   get:
+     *     summary: Get User Profile
+     *     operationId: get-user-profile
+     *     responses:
+     *       '200':
+     *         $ref: "#/components/responses/getUserProfileResponse"
+     */
+    ```
+  - Response annotation
+    ```js
+    /**
+     * @openapi
+     * components:
+     *   responses:
+     *     getUserProfileResponse:
+     *       description: 200 response
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               receivedHTTPRequestBody:
+     *                 type: string
+     *               userInfoMessage:
+     *                 type: string
+     *               graphClientMessage:
+     *                 type: object
+     */
+    ```
+- Use swagger-jsdoc to generate OpenAPI document. Below is an example, you can learn more from [here](https://github.com/Surnet/swagger-jsdoc/tree/v7/examples/cli).
+  - Create an configuration `openapi/openapi.config.json` and input the title and version. Below is a sample definition file. Please change the file path `./api/getUserProfile/*` according to your modification.
+    ```json
+    {
+      "swaggerDefinition": {
+        "openapi": "3.0.1",
+        "info": {
+          "title": "{appName}",
+          "version": "v1"
+        }
+      },
+      "apis": ["../api/getUserProfile/*"]
+    }
+    ```
+  - Create `openapi/package.json` with content below.
+    ```json
+    {
+        "name": "swagger-jsdoc-generator",
+        "description": "Using swagger-jsdoc to generate OpenAPI",
+        "version": "0.0.1",
+        "type": "module",
+        "dependencies": {
+            "fs-extra": "^10.0.0",
+            "swagger-jsdoc": "^7.0.0-rc.6"
+        },
+        "scripts": {
+            "generate": "npm install & node ./index.js"
+        }
+    }
+    ```
+  - Create `openapi/index.js` with the content below.
+    ```js
+    import swaggerJSDoc from 'swagger-jsdoc';
+    import fs from "fs-extra";
+
+    export default async function cli() {
+        const configFilePath = 'openapi.config.json';
+        const swaggerFilePath = 'openapi.json';
+
+        const options = await fs.readJson(configFilePath);
+        const swaggerSpec = await swaggerJSDoc(options);
+        await fs.writeJson(swaggerFilePath, swaggerSpec, { spaces: 2 });
+    }
+
+    cli();
+    ```
+  - Run command `cd openapi`.
+  - Generate OpenAPI document `openapi/openapi.json`. Run command `npm run generate`.
 
 ## Documentation
 

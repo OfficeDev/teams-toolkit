@@ -8,9 +8,9 @@ on:
         required: true
         default: 'prerelease'
       force:
-        description: 'force release even if no update(set empty if not)'
+        description: 'force release even if no update(set --force-publish if necessary)'
         required: false
-        default: '--force-publish'
+        default: ''
 
 jobs:
   cd:
@@ -95,7 +95,7 @@ jobs:
         uses: nick-invision/retry@v2
         with:
           timeout_minutes: 10
-          max_attempts: 10
+          max_attempts: 40
           retry_on: error
           command: |
             cd ./packages/vscode-extension

@@ -10,46 +10,6 @@ export function generateConfigurations(
   includeBackend: boolean,
   includeBot: boolean
 ): Record<string, unknown>[] {
-  /* No attach until CLI ready
-    let launchConfigurations: object[] = [
-        {
-            name: "Attach to Frontend (Chrome)",
-            type: LaunchBrowser.chrome,
-            request: "launch",
-            url: "https://teams.microsoft.com/_#/l/app/${input:teamsAppId}?installAppPackage=true",
-            presentation: {
-                group: "partial",
-                order: 2
-            }
-        },
-        {
-            name: "Attach to Frontend (Edge)",
-            type: LaunchBrowser.edge,
-            request: "launch",
-            url: "https://teams.microsoft.com/_#/l/app/${input:teamsAppId}?installAppPackage=true",
-            presentation: {
-                group: "partial",
-                order: 4
-            }
-        }
-    ];
-
-    if (includeBackend) {
-        launchConfigurations.push(
-            {
-                name: "Attach to backend",
-                type: "node",
-                request: "attach",
-                port: 9229,
-                restart: true,
-                presentation: {
-                    group: "partial",
-                }
-            }
-        );
-    }
-    */
-
   let edgeOrder = 2,
     chromeOrder = 1;
   if (os.type() === "Windows_NT") {

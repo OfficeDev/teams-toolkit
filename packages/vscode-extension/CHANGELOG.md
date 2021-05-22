@@ -1,7 +1,7 @@
 # Changelog
 
-## 2.0.0 - May 25 2021
-2.0.0 is a major version upgrade for Teams Toolkit with many new improvements and supports.
+## 2.0.1 - May 25 2021
+2.0.1 is a major version upgrade for Teams Toolkit with many new improvements and supports.
 
 Added:
 - new design of UI and command palette list

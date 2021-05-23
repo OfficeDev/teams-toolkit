@@ -500,8 +500,10 @@ export class VsCodeUI implements UserInterface {
     else if (level === MsgLevel.Error) return window.showErrorMessage(message, option, ...items);
   }
 
-  async runWithProgress<T>(task: TimeConsumingTask<T>): Promise<Result<T, FxError>> {
-    return new Promise<Result<T, FxError>>(async (resolve) => {
+  async runWithProgress(
+    task: TimeConsumingTask<Result<any, FxError>>
+  ): Promise<Result<any, FxError>> {
+    return new Promise<Result<any, FxError>>(async (resolve) => {
       window.withProgress(
         {
           location: ProgressLocation.Notification,
@@ -522,16 +524,17 @@ export class VsCodeUI implements UserInterface {
           }).catch((e:any) => { 
             resolve(err(e))
           });
-          while ((task.total === 0 || task.current < task.total) && !task.isCanceled) {
+          while ((task.current < task.total) && !task.isCanceled) {
             const inc = task.current - lastLength;
             if (inc > 0) {
               const elapsedTime = new Date().getTime() - startTime;
               const remainingTime = (elapsedTime * (task.total - task.current)) / task.current;
               progress.report({
                 increment: (inc * 100) / task.total,
-                message: `progress:${Math.round(
+                message: `progress: ${Math.round(
                   (task.current * 100) / task.total
-                )} %, remaining time: ${Math.round(remainingTime)} ms (${task.message})`
+                )} %, remaining time: ${Math.round(remainingTime)} ms 
+                ${task.message !== undefined && task.message !== "" ? "("+task.message+")" : ""}`
               });
               lastLength += inc;
             }

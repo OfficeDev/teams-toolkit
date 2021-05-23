@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { FxError, PluginContext, Result } from "@microsoft/teamsfx-api";
+import { FunctionGroupTask, FxError, ok, PluginContext, Result } from "@microsoft/teamsfx-api";
 import { Constants, Messages } from "./constants";
 import { UnauthenticatedError } from "./errors";
 import { ResultFactory } from "./result";
@@ -45,68 +45,74 @@ export class SimpleAuthPluginImpl {
   }
 
   public async provision(ctx: PluginContext): Promise<Result<any, FxError>> {
-    TelemetryUtils.init(ctx);
-    Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartProvision);
+    const task1 = async (): Promise<Result<undefined, Error>> => {
+      TelemetryUtils.init(ctx);
+      Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartProvision);
+  
+      const credentials = await ctx.azureAccountProvider!.getAccountCredentialAsync();
+  
+      if (!credentials) {
+        throw ResultFactory.SystemError(UnauthenticatedError.name, UnauthenticatedError.message());
+      }
+  
+      const resourceNameSuffix = Utils.getConfigValueWithValidation(
+        ctx,
+        Constants.SolutionPlugin.id,
+        Constants.SolutionPlugin.configKeys.resourceNameSuffix
+      ) as string;
+      const subscriptionId = Utils.getConfigValueWithValidation(
+        ctx,
+        Constants.SolutionPlugin.id,
+        Constants.SolutionPlugin.configKeys.subscriptionId
+      ) as string;
+      const resourceGroupName = Utils.getConfigValueWithValidation(
+        ctx,
+        Constants.SolutionPlugin.id,
+        Constants.SolutionPlugin.configKeys.resourceGroupName
+      ) as string;
+      const location = Utils.getConfigValueWithValidation(
+        ctx,
+        Constants.SolutionPlugin.id,
+        Constants.SolutionPlugin.configKeys.location
+      ) as string;
+  
+      const webAppName = Utils.generateResourceName(ctx.app.name.short, resourceNameSuffix);
+      const appServicePlanName = webAppName;
+  
+      this.webAppClient = new WebAppClient(
+        credentials,
+        subscriptionId,
+        resourceGroupName,
+        appServicePlanName,
+        webAppName,
+        location,
+        ctx
+      );
+      return ok(undefined);
+    };
 
-    const credentials = await ctx.azureAccountProvider!.getAccountCredentialAsync();
+    let endpoint:string;
 
-    if (!credentials) {
-      throw ResultFactory.SystemError(UnauthenticatedError.name, UnauthenticatedError.message());
+    const task2 = async (): Promise<Result<undefined, Error>> => {
+      await this.webAppClient.createAppServicePlan();
+      return ok(undefined);
     }
-
-    const resourceNameSuffix = Utils.getConfigValueWithValidation(
-      ctx,
-      Constants.SolutionPlugin.id,
-      Constants.SolutionPlugin.configKeys.resourceNameSuffix
-    ) as string;
-    const subscriptionId = Utils.getConfigValueWithValidation(
-      ctx,
-      Constants.SolutionPlugin.id,
-      Constants.SolutionPlugin.configKeys.subscriptionId
-    ) as string;
-    const resourceGroupName = Utils.getConfigValueWithValidation(
-      ctx,
-      Constants.SolutionPlugin.id,
-      Constants.SolutionPlugin.configKeys.resourceGroupName
-    ) as string;
-    const location = Utils.getConfigValueWithValidation(
-      ctx,
-      Constants.SolutionPlugin.id,
-      Constants.SolutionPlugin.configKeys.location
-    ) as string;
-
-    const webAppName = Utils.generateResourceName(ctx.app.name.short, resourceNameSuffix);
-    const appServicePlanName = webAppName;
-
-    this.webAppClient = new WebAppClient(
-      credentials,
-      subscriptionId,
-      resourceGroupName,
-      appServicePlanName,
-      webAppName,
-      location,
-      ctx
-    );
-
-    DialogUtils.progressBar = ctx.dialog?.createProgressBar(
-      Constants.ProgressBar.provision.title,
-      3
-    );
-    await DialogUtils.progressBar?.start(Constants.ProgressBar.start);
-
-    const endpoint = await this.webAppClient.createWebApp();
-
-    await DialogUtils.progressBar?.next(Constants.ProgressBar.provision.zipDeploy);
-    const simpleAuthFilePath = Utils.getSimpleAuthFilePath();
-    await Utils.downloadZip(simpleAuthFilePath);
-    await this.webAppClient.zipDeploy(ctx.ui!, simpleAuthFilePath);
-
-    ctx.config.set(Constants.SimpleAuthPlugin.configKeys.endpoint, endpoint);
-
-    await DialogUtils.progressBar?.end();
-
-    Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndProvision);
-    return ResultFactory.Success();
+    const task3 = async (): Promise<Result<undefined, Error>> => {
+      endpoint = await this.webAppClient.createWebApp();
+      return ok(undefined);
+    }
+    const task4 = async (): Promise<Result<undefined, Error>> => {
+      const simpleAuthFilePath = Utils.getSimpleAuthFilePath();
+      await Utils.downloadZip(simpleAuthFilePath);
+      await this.webAppClient.zipDeploy(simpleAuthFilePath);
+      ctx.config.set(Constants.SimpleAuthPlugin.configKeys.endpoint, endpoint);
+      Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndProvision);
+      return ok(undefined);
+    }
+    const group = new FunctionGroupTask(Constants.ProgressBar.provision.title
+      ,[task1,task2,task3,task4],false, true);
+    const res = await ctx.ui?.runWithProgress(group);
+    return res;
   }
 
   public async postProvision(ctx: PluginContext): Promise<Result<any, FxError>> {

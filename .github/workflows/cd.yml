@@ -8,9 +8,9 @@ on:
         required: true
         default: 'prerelease'
       force:
-        description: 'force release even if no update(set empty if not)'
+        description: 'force release even if no update(set --force-publish if necessary)'
         required: false
-        default: '--force-publish'
+        default: ''
 
 jobs:
   cd:
@@ -46,7 +46,7 @@ jobs:
         uses: nick-invision/retry@v2
         with: 
           timeout_minutes: 10
-          max_attempts: 5
+          max_attempts: 10
           retry_on: error
           shell: pwsh
           command: |
@@ -98,6 +98,7 @@ jobs:
           max_attempts: 10
           retry_on: error
           command: |
+            sleep 5
             cd ./packages/vscode-extension
             npm install
             npx vsce package

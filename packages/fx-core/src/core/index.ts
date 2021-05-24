@@ -268,17 +268,17 @@ class CoreImpl implements Core {
     if (scratch === ScratchOptionNo.id) {
       const samples = answers?.getOptionItem(CoreQuestionNames.Samples);
       if (samples && samples.data && folder) {
-        const answer = (
-          await this.ctx.dialog?.communicate(
-            new DialogMsg(DialogType.Show, {
-              description: `Download '${samples.label}' from Github. This will download '${samples.label}' repository and open to your local machine`,
-              level: MsgLevel.Info,
-              items: ["Download"],
-              modal: true,
-            })
-          )
-        )?.getAnswer();
-        if (answer === "Download") {
+        // const answer = (
+        //   await this.ctx.dialog?.communicate(
+        //     new DialogMsg(DialogType.Show, {
+        //       description: `Download '${samples.label}' from Github. This will download '${samples.label}' repository and open to your local machine`,
+        //       level: MsgLevel.Info,
+        //       items: ["Download"],
+        //       modal: true,
+        //     })
+        //   )
+        // )?.getAnswer();
+        // if (answer === "Download") {
           const url = samples.data as string;
           const sampleId = samples.id;
 
@@ -327,7 +327,7 @@ class CoreImpl implements Core {
           } finally {
             progress.end();
           }
-        }
+        //}
         return ok(null);
       }
     }

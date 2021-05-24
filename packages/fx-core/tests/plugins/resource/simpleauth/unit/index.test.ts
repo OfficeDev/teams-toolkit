@@ -71,6 +71,7 @@ describe("simpleAuthPlugin", () => {
     // Arrange
     const endpoint = faker.internet.url();
     sinon.stub(WebAppClient.prototype, "createWebApp").resolves(endpoint);
+    sinon.stub(WebAppClient.prototype, "createAppServicePlan").resolves();
     sinon.stub(WebAppClient.prototype, "zipDeploy").resolves();
     sinon.stub(WebAppClient.prototype, "configWebApp").resolves();
 

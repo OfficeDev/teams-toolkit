@@ -32,7 +32,7 @@ import {
   TextInputConfig,
   TimeConsumingTask,
   UIConfig,
-  UserInterface
+  UserInteraction
 } from "@microsoft/teamsfx-api";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { sleep } from "../utils/commonUtils";
@@ -93,7 +93,7 @@ function isSame(set1: Set<string>, set2: Set<string>): boolean {
   return true;
 }
 
-export class VsCodeUI implements UserInterface {
+export class VsCodeUI implements UserInteraction {
   showSteps = true;
   context:ExtensionContext;
   constructor(context: ExtensionContext){
@@ -508,13 +508,16 @@ export class VsCodeUI implements UserInterface {
         {
           location: ProgressLocation.Notification,
           title: task.name,
-          cancellable: true
+          cancellable: task.cancelable
         },
         async (progress, token): Promise<any> => {
-          token.onCancellationRequested(() => {
-            task.cancel();
-            resolve(err(UserCancelError));
-          });
+          if(task.cancelable){
+            token.onCancellationRequested(() => {
+              task.cancel();
+              resolve(err(UserCancelError));
+            });
+          }
+          
           const startTime = new Date().getTime();
           const res = task.run();
           progress.report({ increment: 0 });

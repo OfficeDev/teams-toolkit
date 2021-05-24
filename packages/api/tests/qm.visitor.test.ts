@@ -16,9 +16,9 @@ import {
   Result,
   SingleSelectQuestion,
   traverse,
-  UserInterface,
+  UserInteraction,
   ConfigMap,
-  SelectOptionConfig,
+  SelectSingleOptionConfig,
   TextInputConfig,
   SelectFolderConfig,
   SelectFileConfig,
@@ -59,8 +59,8 @@ describe("Question Model - Traverse Test", () => {
 
     const titleTrace: (string | undefined)[] = [];
     const selectTrace: (string | undefined)[] = [];
-    const mockUi: UserInterface = {
-      selectOption: async function (config: SelectOptionConfig): Promise<InputResult> {
+    const mockUi: UserInteraction = {
+      selectSingleOption: async function (config: SelectSingleOptionConfig): Promise<InputResult> {
         titleTrace.push(config.title);
         const index: number = Math.floor(Math.random() * config.options.length);
         const result = config.options[index];
@@ -74,7 +74,7 @@ describe("Question Model - Traverse Test", () => {
           return {type: InputResultType.sucess, result: returnId};
         }
       },
-      selectOptions: async function (config: SelectOptionsConfig) : Promise<InputResult>{
+      selectMultipleOptions: async function (config: SelectOptionsConfig) : Promise<InputResult>{
         throw Error("Not support");
       },
       inputText: async function (config: TextInputConfig): Promise<InputResult> {

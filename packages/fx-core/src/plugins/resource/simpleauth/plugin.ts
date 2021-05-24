@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { FunctionGroupTask, FxError, ok, PluginContext, Result } from "@microsoft/teamsfx-api";
+import { err, FunctionGroupTask, FxError, ok, PluginContext, Result } from "@microsoft/teamsfx-api";
 import { Constants, Messages } from "./constants";
 import { UnauthenticatedError } from "./errors";
 import { ResultFactory } from "./result";
@@ -109,10 +109,22 @@ export class SimpleAuthPluginImpl {
       Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndProvision);
       return ok(undefined);
     }
-    const group = new FunctionGroupTask(Constants.ProgressBar.provision.title
-      ,[task1,task2,task3,task4],false, true);
-    const res = await ctx.ui?.runWithProgress(group);
-    return res;
+    const group = new FunctionGroupTask({
+      name:Constants.ProgressBar.provision.title,
+      tasks:[task1,task2,task3,task4],
+      taskNames:[
+        "Initializing",
+        Constants.ProgressBar.provision.createAppServicePlan,
+        Constants.ProgressBar.provision.createWebApp,
+        Constants.ProgressBar.provision.zipDeploy
+      ], 
+      cancelable:true,
+      concurrent: false,
+      fastFail: true
+    });
+    const res = (await ctx.ui?.runWithProgress(group)) as Result<any, FxError>;
+    if(res.isOk()) return ok(undefined);
+    else return err(res.error);
   }
 
   public async postProvision(ctx: PluginContext): Promise<Result<any, FxError>> {

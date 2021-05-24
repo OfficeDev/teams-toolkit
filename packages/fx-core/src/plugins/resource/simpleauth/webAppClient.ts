@@ -2,9 +2,9 @@
 // Licensed under the MIT license.
 import { WebSiteManagementClient } from "@azure/arm-appservice";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-import axios, { AxiosResponse, CancelTokenSource } from "axios";
+import axios, {CancelTokenSource } from "axios";
 import * as fs from "fs-extra";
-import { err, FxError, ok, PluginContext, Result, TimeConsumingTask, UserInterface, Void } from "@microsoft/teamsfx-api";
+import { PluginContext} from "@microsoft/teamsfx-api";
 import { Constants, Messages } from "./constants";
 import {
   CreateAppServicePlanError,

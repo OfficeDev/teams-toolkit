@@ -19,7 +19,7 @@ import {
 } from "./question";
 import { getValidationFunction, RemoteFuncExecutor, validate } from "./validation";
 import { ConfigMap, Inputs } from "../config";
-import { InputResult, InputResultType, UserInterface } from "./ui";
+import { InputResult, InputResultType, UserInteraction } from "./ui";
 import { returnSystemError, returnUserError } from "../error";
 import { operationOptionsToRequestOptionsBase } from "@azure/core-http";
 import { QuestionType } from "../utils";
@@ -108,7 +108,7 @@ export function getSingleOption(
 type QuestionVistor = (
   question: Question,
   parentValue: unknown,
-  ui: UserInterface,
+  ui: UserInteraction,
   inputs: ConfigMap,
   remoteFuncExecutor?: RemoteFuncExecutor,
   step?: number,
@@ -147,7 +147,7 @@ export async function getCallFuncValue(
 const questionVisitor: QuestionVistor = async function (
   question: Question,
   parentValue: unknown,
-  ui: UserInterface,
+  ui: UserInteraction,
   inputs: ConfigMap,
   remoteFuncExecutor?: RemoteFuncExecutor,
   step?: number,
@@ -193,6 +193,7 @@ const questionVisitor: QuestionVistor = async function (
         remoteFuncExecutor
       )) as string;
       return await ui.inputText({
+        name: question.name,
         title: title,
         password: !!(question.type === NodeType.password),
         default: defaultValue as string,
@@ -243,6 +244,7 @@ const questionVisitor: QuestionVistor = async function (
       )) as string;
       if(question.type  === NodeType.singleSelect){
         return await ui.selectOption({
+          name: question.name,
           title: title,
           options: res.options,
           returnObject: selectQuestion.returnObject,
@@ -255,6 +257,7 @@ const questionVisitor: QuestionVistor = async function (
       }
       else{
         return await ui.selectOptions({
+          name: question.name,
           title: title,
           options: res.options,
           returnObject: selectQuestion.returnObject,
@@ -273,6 +276,7 @@ const questionVisitor: QuestionVistor = async function (
         ? getValidationFunction(fileQuestion.validation, inputs, remoteFuncExecutor)
         : undefined;
       return await ui.selectFolder({
+        name: question.name,
         default: defaultValue as string,
         title: title,
         validation: validationFunc,
@@ -294,7 +298,7 @@ const questionVisitor: QuestionVistor = async function (
 export async function traverse(
   root: QTreeNode,
   inputs: ConfigMap,
-  ui: UserInterface,
+  ui: UserInteraction,
   remoteFuncExecutor?: RemoteFuncExecutor
 ): Promise<InputResult> {
   const stack: QTreeNode[] = [];

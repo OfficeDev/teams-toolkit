@@ -31,8 +31,7 @@ const config = {
   devtool: "source-map",
   externals: {
     vscode: "commonjs vscode", // the vscode-module is created on-the-fly and must be excluded. Add other modules that cannot be webpack'ed, 📖 -> https://webpack.js.org/configuration/externals/
-    keytar: "keytar",
-    "@microsoft/teamsfx-core": "@microsoft/teamsfx-core",
+    keytar: "keytar"
   },
   resolve: {
     // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
@@ -88,6 +87,14 @@ const config = {
           from: "./src/debug/depsChecker/resource/dotnet-install.ps1",
           to: "resource/dotnet-install.ps1",
         },
+        {
+          from: "../fx-core/resource/",
+          to: "../resource/"
+        },
+        {
+          from: "../fx-core/templates/",
+          to: "../templates/"
+        }
       ],
     }),
   ],

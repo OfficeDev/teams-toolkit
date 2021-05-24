@@ -3,7 +3,9 @@ name: Environment Checker Integration Test PR Runs
 on:
   pull_request:
     branches:
+      - dev
       - main
+      - release/**
     paths:
       - '.github/workflows/env-checker-ci-pr.yml'
       - '.github/env-checker'
@@ -11,8 +13,9 @@ on:
       - 'packages/vscode-extension/test/suite/envChecker/**'
   push:
     branches:
+      - dev
       - main
-      - release
+      - release/**
     paths:
       - '.github/workflows/env-checker-ci-pr.yml'
       - '.github/env-checker'

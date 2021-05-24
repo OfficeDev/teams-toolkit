@@ -134,7 +134,7 @@ export class FrontendPluginImpl {
       async () => await client.enableStaticWebsite()
     );
 
-    config.hostname = new URL(config.endpoint).hostname;
+    config.domain = new URL(config.endpoint).hostname;
     config.syncToPluginContext(ctx);
 
     await ProgressHelper.endProvisionProgress();

@@ -123,7 +123,7 @@ describe("frontendPlugin", () => {
     });
 
     it("happy path", async () => {
-      const hostname = new URL(TestHelper.storageEndpoint).hostname;
+      const domain = new URL(TestHelper.storageEndpoint).hostname;
 
       const result = await frontendPlugin.provision(pluginContext);
 
@@ -132,7 +132,7 @@ describe("frontendPlugin", () => {
         pluginContext.config.get(FrontendConfigInfo.Endpoint),
         TestHelper.storageEndpoint
       );
-      chai.assert.equal(pluginContext.config.get(FrontendConfigInfo.Hostname), hostname);
+      chai.assert.equal(pluginContext.config.get(FrontendConfigInfo.Domain), domain);
     });
 
     it("Create storage throw error", async () => {

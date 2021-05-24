@@ -34,8 +34,6 @@ export class FrontendPluginInfo {
   static ShortName = "FE";
   static IssueLink = "https://github.com/OfficeDev/TeamsFx/issues/new";
   static HelpLink = ""; // TODO: default help link
-  static readonly templateManifestURL =
-    "https://github.com/henzhang-ms/Teams-Templates/releases/latest/download/manifest.json";
 }
 
 export class Commands {
@@ -95,9 +93,7 @@ export class DependentPluginInfo {
 export class FrontendConfigInfo {
   static readonly StorageName = "storageName";
   static readonly Endpoint = "endpoint";
-  static readonly Hostname = "domain";
-  static readonly StaticTab = "staticTabs";
-  static readonly ConfigurableTab = "configurableTabs";
+  static readonly Domain = "domain";
 }
 
 export class TelemetryEvent {

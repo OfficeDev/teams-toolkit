@@ -19,7 +19,7 @@ export class FrontendConfig {
   credentials: TokenCredentialsBase;
 
   endpoint?: string;
-  hostname?: string;
+  domain?: string;
 
   private constructor(
     subscriptionId: string,
@@ -83,10 +83,16 @@ export class FrontendConfig {
   }
 
   public syncToPluginContext(ctx: PluginContext): void {
-    FrontendConfig.setConfigIfNotExists(ctx, FrontendConfigInfo.Endpoint, this.endpoint);
-    FrontendConfig.setConfigIfNotExists(ctx, FrontendConfigInfo.Hostname, this.hostname);
-    FrontendConfig.setConfigIfNotExists(ctx, FrontendConfigInfo.StorageName, this.storageName);
+    Object.entries(this)
+      .filter((kv) => FrontendConfig.persistentConfigList.find((x: string) => x === kv[0]))
+      .forEach((kv) => {
+        if (kv[1]) {
+          FrontendConfig.setConfigIfNotExists(ctx, kv[0], kv[1]);
+        }
+      });
   }
+
+  private static persistentConfigList = Object.entries(FrontendConfigInfo).map((kv) => kv[1]);
 
   private static getConfig<T>(key: string, configs?: ReadonlyPluginConfig): T {
     const value = configs?.get(key) as T;

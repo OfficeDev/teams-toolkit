@@ -5,3 +5,7 @@ coverage
 .npmrc
 .env
 .prettierrc.json
+
+templates/plugins/resource/bot/**/*.zip
+templates/plugins/resource/frontend/**/*.zip
+templates/plugins/resource/function/**/*.zip

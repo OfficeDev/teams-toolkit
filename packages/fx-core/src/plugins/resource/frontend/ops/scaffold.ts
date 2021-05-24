@@ -88,7 +88,6 @@ export class FrontendScaffold {
     templateInfo: TemplateInfo
   ): Promise<AdmZip> {
     try {
-      // Temporarily hard code template language as JavaScript
       const templateUrl = await FrontendScaffold.getTemplateURL(
         tagListURL,
         templateInfo.localTemplateBaseName

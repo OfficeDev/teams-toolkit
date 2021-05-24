@@ -12,9 +12,7 @@ import {
 import { Utils } from "./utils";
 
 export class FrontendConfig {
-  appName: string;
   subscriptionId: string;
-  resourceNameSuffix: string;
   resourceGroupName: string;
   location: string;
   storageName: string;
@@ -23,19 +21,15 @@ export class FrontendConfig {
   localPath?: string;
 
   private constructor(
-    appName: string,
     subscriptionId: string,
     resourceGroupName: string,
     location: string,
-    resourceNameSuffix: string,
     storageName: string,
     credentials: TokenCredentialsBase
   ) {
-    this.appName = appName;
     this.subscriptionId = subscriptionId;
     this.resourceGroupName = resourceGroupName;
     this.location = location;
-    this.resourceNameSuffix = resourceNameSuffix;
     this.storageName = storageName;
     this.credentials = credentials;
   }
@@ -79,11 +73,9 @@ export class FrontendConfig {
     }
 
     return new FrontendConfig(
-      appName,
       subscriptionId,
       resourceGroupName,
       location,
-      resourceNameSuffix,
       storageName,
       credentials
     );

@@ -42,6 +42,44 @@ jobs:
         run: |
           echo "${{ secrets.NPMRC }}" > ~/.npmrc
 
+      - name: generate templates
+        run: .github/scripts/template-zip-autogen.sh
+
+      - name: move templates' daily tag
+        if: ${{ github.ref == 'refs/heads/dev' && startsWith(github.event.inputs.version, 'pre') }}
+        run: |
+          git tag --force templates@0.0.0-daily
+          git push --force origin templates@0.0.0-daily
+
+      - name: update templates' daily archieves
+        if: ${{ github.ref == 'refs/heads/dev' && startsWith(github.event.inputs.version, 'pre') }}
+        uses: ncipollo/release-action@v1.7.3
+        with:
+          artifacts: ./*.zip
+          name: 'Release for templates daily version'
+          token: ${{ secrets.github_token }}
+          tag: 'templates@0.0.0-daily'
+          allowUpdates: true
+
+      - name: move templates' prerelease tag
+        if: ${{ startsWith(github.ref, 'refs/heads/release/') && github.event.inputs.version == 'prerelease' }}
+        run: |
+          git tag --force templates@0.0.0-alpha
+          git push --force origin templates@0.0.0-alpha
+
+      - name: update templates' prerelease archieves
+        if: ${{ startsWith(github.ref, 'refs/heads/release/') && github.event.inputs.version == 'prerelease' }}
+        uses: ncipollo/release-action@v1.7.3
+        with:
+          artifacts: ./*.zip
+          name: 'Release for templates prerelease version'
+          token: ${{ secrets.github_token }}
+          tag: 'templates@0.0.0-alpha'
+          allowUpdates: true
+
+      - name: cleanup templates
+        run: rm -rf ./*.zip
+
       - name: Download Simple Auth bits
         uses: nick-invision/retry@v2
         with: 

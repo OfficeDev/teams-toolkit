@@ -1,0 +1,31 @@
+name: publish to VSCode marketplace
+
+on:
+  workflow_dispatch:
+    inputs:
+      URL:
+        description: 'input the URL of the VSIX.'
+        required: true
+        default: ''
+
+jobs:
+  publish-to-vscode-marketplace:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: 14
+
+      - name: Install VSCE command
+        run: |
+          npm install vsce -g
+
+      - name: Download VISX fils
+        run: |
+          wget --tries=5 --waitretry=5 ${{ github.event.inputs.URL }} 
+
+      - name: release to VSCode marketplace
+        run: |
+          vsce publish --pat ${{ secrets.VSCE_PAT }} --packagePath *.vsix

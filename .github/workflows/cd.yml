@@ -49,7 +49,7 @@ jobs:
         if: ${{ github.ref == 'refs/heads/dev' && startsWith(github.event.inputs.version, 'pre') }}
         uses: marvinpinto/action-automatic-releases@latest
         with:
-          repo_token: ${{ secrets.CD_PAT  }}
+          repo_token: ${{ secrets.CD_PAT }}
           prerelease: true
           automatic_release_tag: "templates@0.0.0-daily"
           files: |
@@ -59,7 +59,7 @@ jobs:
         if: ${{ startsWith(github.ref, 'refs/heads/release/') && github.event.inputs.version == 'prerelease' }}
         uses: marvinpinto/action-automatic-releases@latest
         with:
-          repo_token: ${{ secrets.CD_PAT  }}
+          repo_token: ${{ secrets.CD_PAT }}
           prerelease: true
           automatic_release_tag: "templates@0.0.0-alpha"
           files: |

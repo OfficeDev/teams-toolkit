@@ -91,7 +91,16 @@ jobs:
             npm install
             npx lerna bootstrap --concurrency 1
 
+      ## In headless Linux CI machines xvfb is required to run VS Code
+      ## https://code.visualstudio.com/api/working-with-extensions/continuous-integration#github-actions
+      - name: Integration Test with xvfb
+        working-directory: ./packages/vscode-extension
+        if: runner.os == 'Linux'
+        run: |
+          xvfb-run -a npm run test:env-checker
+
       - name: Integration Test
         working-directory: ./packages/vscode-extension
+        if: runner.os != 'Linux'
         run: |
           npm run test:env-checker

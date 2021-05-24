@@ -26,7 +26,7 @@ describe("validate manifest", () => {
     it("valid manifest", async () => {
         const manifestFile = path.resolve(__dirname, "./../resources/valid.manifest.json");
         const manifest = await fs.readJson(manifestFile);
-        const manifestString = manifest.toString();
+        const manifestString = JSON.stringify(manifest);
 
         sinon.stub(plugin, "validateManifest").resolves(ok([]));
         
@@ -42,7 +42,7 @@ describe("validate manifest", () => {
     it("invalid manifest", async () => {
         const manifestFile = path.resolve(__dirname, "./../resources/invalid.manifest.json");
         const manifest = await fs.readJson(manifestFile);
-        const manifestString = manifest.toString();
+        const manifestString = JSON.stringify(manifest);
 
         sinon.stub(plugin, "validateManifest").resolves(ok(["developer | Required properties are missing from object: []."]));
 

@@ -50,9 +50,9 @@ In the deployment step, there will be some inputs needed:
 > Note: This may incur costs in your Azure Subscription if you choose to create a new instance in pervious step.
 
 ## Write OpenAPI Document
- We support both yaml and json format for the OpenAPI document. You need to follow the [OpenAPI Specification](https://swagger.io/resources/open-api/), author the OpenAPI document and ensure the API schema is aligned with the function implementation. 
+ We support both yaml and json format for the OpenAPI document. You need to follow the [OpenAPI Specification](https://swagger.io/resources/open-api/), author the OpenAPI document and ensure the API schema is aligned with the Azure Functions HTTP trigger implementation. 
 
-Below is a sample swagger file for the default http trigger function. You can copy the content into `./openapi/openapi.json`, and change the content according to your modification (E.g. `/getUserProfile` -> `/$yourFunctionName` ).
+Below is a sample swagger file for the default HTTP trigger function. You can copy the content into `./openapi/openapi.json`, and change the content according to your modification (E.g. `/getUserProfile` -> `/$yourFunctionName` ).
 
 ```json
 {
@@ -94,7 +94,7 @@ Below is a sample swagger file for the default http trigger function. You can co
   }
 }
 ```
-You can use your favorite way to generate OpenAPI document, such as [OpenAPI (Swagger) Editor](https://marketplace.visualstudio.com/items?itemName=42Crunch.vscode-openapi) and [swagger-jsdoc](https://github.com/Surnet/swagger-jsdoc/).
+You can use your favorite tool to generate an OpenAPI document, such as [OpenAPI (Swagger) Editor](https://marketplace.visualstudio.com/items?itemName=42Crunch.vscode-openapi) and [swagger-jsdoc](https://github.com/Surnet/swagger-jsdoc/).
 
 ## Documentation
 

@@ -1,12 +1,9 @@
 name: SDK API docs
 
 on:
-  push:
-    branches:
-      - main
-      - release/**
-    paths:
-      - packages/sdk/src/**
+  schedule:
+    - cron: "0 0 * * 3" # every Wednesday
+  workflow_dispatch:
 
 jobs:
   generate:

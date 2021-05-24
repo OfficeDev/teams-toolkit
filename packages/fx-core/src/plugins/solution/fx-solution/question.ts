@@ -208,9 +208,9 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
     ];
   },
   default: "javascript",
-  placeholder: (previousAnswers?: ConfigMap): string | undefined => {
+  placeholder: (previousAnswers?: ConfigMap): string => {
     const hostType = previousAnswers?.getString(AzureSolutionQuestionNames.HostType);
     if (HostTypeOptionSPFx.id === hostType) return "SPFx is currently supporting TypeScript only.";
-    return undefined;
+    return "Select a programming language.";
   },
 };

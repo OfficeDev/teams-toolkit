@@ -51,7 +51,7 @@ jobs:
         with:
           repo_token: ${{ secrets.CD_PAT }}
           prerelease: true
-          automatic_release_tag: "templates@0.0.0-daily"
+          automatic_release_tag: "templates@0.0.0-alpha"
           files: |
             ./*.zip
 
@@ -61,7 +61,7 @@ jobs:
         with:
           repo_token: ${{ secrets.CD_PAT }}
           prerelease: true
-          automatic_release_tag: "templates@0.0.0-alpha"
+          automatic_release_tag: "templates@0.0.0-rc"
           files: |
             ./*.zip
 

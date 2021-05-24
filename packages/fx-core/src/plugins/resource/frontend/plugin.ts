@@ -123,7 +123,7 @@ export class FrontendPluginImpl {
       }
       return new CreateStorageAccountError();
     };
-    const endpoint = await runWithErrorCatchAndWrap(
+    config.endpoint = await runWithErrorCatchAndWrap(
       createStorageErrorWrapper,
       async () => await client.createStorageAccount()
     );
@@ -134,10 +134,8 @@ export class FrontendPluginImpl {
       async () => await client.enableStaticWebsite()
     );
 
-    const hostname = new URL(endpoint).hostname;
-    this.setConfigIfNotExists(ctx, FrontendConfigInfo.Endpoint, endpoint);
-    this.setConfigIfNotExists(ctx, FrontendConfigInfo.Hostname, hostname);
-    this.setConfigIfNotExists(ctx, FrontendConfigInfo.StorageName, config.storageName);
+    config.hostname = new URL(config.endpoint).hostname;
+    config.syncToPluginContext(ctx);
 
     await ProgressHelper.endProvisionProgress();
     Logger.info(Messages.EndProvision(PluginInfo.DisplayName));

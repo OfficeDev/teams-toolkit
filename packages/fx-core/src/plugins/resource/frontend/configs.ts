@@ -18,7 +18,8 @@ export class FrontendConfig {
   storageName: string;
   credentials: TokenCredentialsBase;
 
-  localPath?: string;
+  endpoint?: string;
+  hostname?: string;
 
   private constructor(
     subscriptionId: string,
@@ -81,11 +82,24 @@ export class FrontendConfig {
     );
   }
 
+  public syncToPluginContext(ctx: PluginContext): void {
+    FrontendConfig.setConfigIfNotExists(ctx, FrontendConfigInfo.Endpoint, this.endpoint);
+    FrontendConfig.setConfigIfNotExists(ctx, FrontendConfigInfo.Hostname, this.hostname);
+    FrontendConfig.setConfigIfNotExists(ctx, FrontendConfigInfo.StorageName, this.storageName);
+  }
+
   private static getConfig<T>(key: string, configs?: ReadonlyPluginConfig): T {
     const value = configs?.get(key) as T;
     if (!value) {
       throw new InvalidConfigError(key);
     }
     return value;
+  }
+
+  private static setConfigIfNotExists(ctx: PluginContext, key: string, value: unknown): void {
+    if (ctx.config.get(key)) {
+      return;
+    }
+    ctx.config.set(key, value);
   }
 }

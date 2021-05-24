@@ -402,12 +402,14 @@ class Config {
 
 async function retry<T>(
   fn: (retries: number) => Promise<T>,
-  condition: (result: T) => boolean
+  condition: (result: T) => boolean,
+  maxRetries: number = 20,
+  retryTimeInterval: number = 1000
 ): Promise<T> {
   let executionIndex = 1;
   let result: T = await fn(executionIndex);
-  while (executionIndex <= 20 && condition(result)) {
-    await delay(executionIndex * 1000);
+  while (executionIndex <= maxRetries && condition(result)) {
+    await delay(executionIndex * retryTimeInterval);
     result = await fn(executionIndex);
     ++executionIndex;
   }
@@ -415,6 +417,10 @@ async function retry<T>(
 }
 
 function delay(ms: number): Promise<void> {
+  if (ms <= 0) {
+    return Promise.resolve();
+  }
+
   // tslint:disable-next-line no-string-based-set-timeout
   return new Promise((resolve) => setTimeout(resolve, ms));
 }

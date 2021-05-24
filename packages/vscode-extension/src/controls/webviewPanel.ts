@@ -73,55 +73,55 @@ export class WebviewPanel {
             vscode.env.openExternal(vscode.Uri.parse(msg.data));
             break;
           case Commands.CloneSampleApp:
-            const selection = await vscode.window.showInformationMessage(
-              `Download '${msg.data.appName}' from Github. This will download '${msg.data.appName}' repository and open to your local machine`,
-              { modal: true },
-              "Download"
-            );
-            if (selection === "Download") {
-              const folder = await vscode.window.showOpenDialog({
-                canSelectFiles: false,
-                canSelectFolders: true,
-                canSelectMany: false,
-                title: "Select folder to download the sample app",
-              });
-              if (folder !== undefined) {
-                const sampleAppPath = path.join(folder[0].fsPath, msg.data.appFolder);
-                if (
-                  (await fs.pathExists(sampleAppPath)) &&
-                  (await fs.readdir(sampleAppPath)).length > 0
-                ) {
-                  vscode.window.showErrorMessage(
-                    `Path ${sampleAppPath} alreay exists. Select a different folder.`
+            // const selection = await vscode.window.showInformationMessage(
+            //   `Download '${msg.data.appName}' from Github. This will download '${msg.data.appName}' repository and open to your local machine`,
+            //   { modal: true },
+            //   "Download"
+            // );
+            // if (selection === "Download") {
+            const folder = await vscode.window.showOpenDialog({
+              canSelectFiles: false,
+              canSelectFolders: true,
+              canSelectMany: false,
+              title: "Select folder to download the sample app",
+            });
+            if (folder !== undefined) {
+              const sampleAppPath = path.join(folder[0].fsPath, msg.data.appFolder);
+              if (
+                (await fs.pathExists(sampleAppPath)) &&
+                (await fs.readdir(sampleAppPath)).length > 0
+              ) {
+                vscode.window.showErrorMessage(
+                  `Path ${sampleAppPath} alreay exists. Select a different folder.`
+                );
+                return;
+              }
+              const dialogManager = DialogManager.getInstance();
+              const progress = dialogManager.createProgressBar("Fetch sample app", 2);
+              progress.start();
+              try {
+                progress.next(`Downloading from '${msg.data.appUrl}'`);
+                const result = await this.fetchCodeZip(msg.data.appUrl);
+                progress.next("Unzipping the sample package");
+                if (result !== undefined) {
+                  await this.saveFilesRecursively(
+                    new AdmZip(result.data),
+                    msg.data.appFolder,
+                    folder[0].fsPath
                   );
-                  return;
+                  vscode.commands.executeCommand(
+                    "vscode.openFolder",
+                    vscode.Uri.file(sampleAppPath)
+                  );
+                  ext.context.globalState.update("openSampleReadme", true);
+                } else {
+                  vscode.window.showErrorMessage("Failed to download sample app");
                 }
-                const dialogManager = DialogManager.getInstance();
-                const progress = dialogManager.createProgressBar("Fetch sample app", 2);
-                progress.start();
-                try {
-                  progress.next(`Downloading from '${msg.data.appUrl}'`);
-                  const result = await this.fetchCodeZip(msg.data.appUrl);
-                  progress.next("Unzipping the sample package");
-                  if (result !== undefined) {
-                    await this.saveFilesRecursively(
-                      new AdmZip(result.data),
-                      msg.data.appFolder,
-                      folder[0].fsPath
-                    );
-                    vscode.commands.executeCommand(
-                      "vscode.openFolder",
-                      vscode.Uri.file(sampleAppPath)
-                    );
-                    ext.context.globalState.update("openSampleReadme", true);
-                  } else {
-                    vscode.window.showErrorMessage("Failed to download sample app");
-                  }
-                } finally {
-                  progress.end();
-                }
+              } finally {
+                progress.end();
               }
             }
+            //}
             break;
           case Commands.DisplayCommandPalette:
             break;

@@ -153,6 +153,9 @@ const questionVisitor: QuestionVistor = async function (
   step?: number,
   totalSteps?: number
 ): Promise<InputResult> {
+  if(inputs.get(question.name) !== undefined) {
+    return { type: InputResultType.sucess, result: inputs.get(question.name) };
+  }
   //FunctionCallQuestion
   if (question.type === NodeType.func) {
     if (remoteFuncExecutor) {

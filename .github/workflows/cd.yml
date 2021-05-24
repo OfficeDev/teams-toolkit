@@ -45,37 +45,25 @@ jobs:
       - name: generate templates
         run: .github/scripts/template-zip-autogen.sh
 
-      - name: move templates' daily tag
+      - name: release templates' daily version to github
         if: ${{ github.ref == 'refs/heads/dev' && startsWith(github.event.inputs.version, 'pre') }}
-        run: |
-          git tag --force templates@0.0.0-daily
-          git push --force origin templates@0.0.0-daily
-
-      - name: update templates' daily archieves
-        if: ${{ github.ref == 'refs/heads/dev' && startsWith(github.event.inputs.version, 'pre') }}
-        uses: ncipollo/release-action@v1.7.3
+        uses: marvinpinto/action-automatic-releases@latest
         with:
-          artifacts: ./*.zip
-          name: 'Release for templates daily version'
-          token: ${{ secrets.github_token }}
-          tag: 'templates@0.0.0-daily'
-          allowUpdates: true
+          repo_token: ${{ secrets.CD_PAT  }}
+          prerelease: true
+          automatic_release_tag: "templates@0.0.0-daily"
+          files: |
+            ./*.zip
 
-      - name: move templates' prerelease tag
+      - name: release templates' prerelease version to github
         if: ${{ startsWith(github.ref, 'refs/heads/release/') && github.event.inputs.version == 'prerelease' }}
-        run: |
-          git tag --force templates@0.0.0-alpha
-          git push --force origin templates@0.0.0-alpha
-
-      - name: update templates' prerelease archieves
-        if: ${{ startsWith(github.ref, 'refs/heads/release/') && github.event.inputs.version == 'prerelease' }}
-        uses: ncipollo/release-action@v1.7.3
+        uses: marvinpinto/action-automatic-releases@latest
         with:
-          artifacts: ./*.zip
-          name: 'Release for templates prerelease version'
-          token: ${{ secrets.github_token }}
-          tag: 'templates@0.0.0-alpha'
-          allowUpdates: true
+          repo_token: ${{ secrets.CD_PAT  }}
+          prerelease: true
+          automatic_release_tag: "templates@0.0.0-alpha"
+          files: |
+            ./*.zip
 
       - name: cleanup templates
         run: rm -rf ./*.zip

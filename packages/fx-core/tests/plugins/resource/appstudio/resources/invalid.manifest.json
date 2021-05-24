@@ -1,14 +1,13 @@
 {
-  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.8/MicrosoftTeams.schema.json",
-  "manifestVersion": "1.8",
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.9/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.9",
   "version": "1.0.0",
   "id": "c24d7903-a3b2-49b8-8bda-a4cf639fb25d",
   "packageName": "com.microsoft.teams.extension",
   "developer": {
     "name": "Teams App, Inc.",
     "websiteUrl": "https://localhost:3000",
-    "privacyUrl": "https://localhost:3000/privacy",
-    "termsOfUseUrl": "https://localhost:3000/termsofuse"
+    "privacyUrl": "https://localhost:3000/privacy"
   },
   "icons": {
     "color": "color.png",
@@ -27,6 +26,8 @@
     {
       "entityId": "index",
       "name": "Personal Tab",
+      "contentUrl": "https://localhost:3000/tab",
+      "websiteUrl": "https://localhost:3000/tab",
       "scopes": ["personal"]
     }
   ],

@@ -122,8 +122,8 @@ export default class QuickStart extends React.Component<any, any> {
               return (
                 <GetStartedAction
                   title={`Explore Teams Toolkit commands`}
-                  content={`Open Command Palette (${shortcut}) and type ‘Teamsfx’ to find all relevant commands. `}
-                  actionText="Display TeamsFx commands"
+                  content={`Open Command Palette (${shortcut}) and type ‘Teams’ to find all relevant commands. `}
+                  actionText="Display Teams commands"
                   onAction={this.displayCommands}
                   secondaryActionText="Next"
                   onSecondaryAction={() => {

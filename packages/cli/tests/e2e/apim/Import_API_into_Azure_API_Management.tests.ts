@@ -26,73 +26,64 @@ describe("Import API into API Management", function () {
 
   before(async () => {
     // new a project
-    await execAsync(
-      `teamsfx new --app-name ${appName} --interactive false`,
-      {
-        cwd: testFolder,
-        env: process.env,
-        timeout: 0
-      }
-    );
+    let result = await execAsync(`teamsfx new --app-name ${appName} --interactive false`, {
+      cwd: testFolder,
+      env: process.env,
+      timeout: 0,
+    });
+    console.log(`Create new project. Error message: ${result.stderr}`);
 
     await setSimpleAuthSkuNameToB1(projectPath);
 
-    await execAsync(
-      `teamsfx resource add azure-apim --subscription ${subscriptionId}`,
-      {
-        cwd: projectPath,
-        env: process.env,
-        timeout: 0
-      }
-    );
+    result = await execAsync(`teamsfx resource add azure-apim --subscription ${subscriptionId}`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
+    console.log(`Add APIM resource. Error message: ${result.stderr}`);
 
-    await execAsync(
-      `teamsfx provision`,
-      {
-        cwd: projectPath,
-        env: process.env,
-        timeout: 0
-      }
-    );
+    result = await execAsync(`teamsfx provision`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
+    console.log(`Provision. Error message: ${result.stderr}`);
 
-    await execAsync(
+    result = await execAsync(
       `teamsfx deploy apim --open-api-document openapi/openapi.json --api-prefix ${appName} --api-version v1`,
       {
         cwd: projectPath,
         env: process.env,
-        timeout: 0
+        timeout: 0,
       }
     );
+    console.log(`Deploy. Error message: ${result.stderr}`);
   });
 
   it(`Create a new API version in Azure API Management`, async function () {
     await ApimValidator.init(subscriptionId, AzureLogin, GraphLogin);
-    await execAsync(
-      `teamsfx deploy apim --api-version v2`,
-      {
-        cwd: projectPath,
-        env: process.env,
-        timeout: 0
-      }
-    );
+    const result = await execAsync(`teamsfx deploy apim --api-version v2`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
+    console.log(`Deploy. Error message: ${result.stderr}`);
 
     const deployContext = await fs.readJSON(getConfigFileName(appName));
-    await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v2")
+    await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v2");
   });
 
   it(`Update an existing API version in Azure API Management`, async function () {
     await ApimValidator.init(subscriptionId, AzureLogin, GraphLogin);
-    await execAsync(
-      `teamsfx deploy apim --api-version v1`,
-      {
-        cwd: projectPath,
-        env: process.env,
-        timeout: 0
-      }
-    );
+    const result = await execAsync(`teamsfx deploy apim --api-version v1`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
+    console.log(`Deploy. Error message: ${result.stderr}`);
 
     const deployContext = await fs.readJSON(getConfigFileName(appName));
-    await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v1")
+    await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v1");
   });
 
   after(async () => {

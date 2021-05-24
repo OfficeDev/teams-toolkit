@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { PluginContext } from "@microsoft/teamsfx-api";
+import { InputResult, MsgLevel, PluginContext, SelectFileConfig, SelectFilesConfig, SelectFolderConfig, SelectOptionConfig, SelectOptionsConfig, TextInputConfig, TimeConsumingTask } from "@microsoft/teamsfx-api";
 import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import { Constants } from "../../../../src/plugins/resource/simpleauth/constants";
 
@@ -133,6 +133,40 @@ export class TestHelper {
           short: "hello-app",
         },
       },
+      ui: {
+        selectOption: async function (config: SelectOptionConfig): Promise<InputResult> {
+          throw Error("Not support");
+        },
+        selectOptions: async function (config: SelectOptionsConfig) : Promise<InputResult>{
+          throw Error("Not support");
+        },
+        inputText: async function (config: TextInputConfig): Promise<InputResult> {
+          throw Error("Not support");
+        },
+        selectFolder: async function (config: SelectFolderConfig): Promise<InputResult> {
+          throw Error("Not support");
+        },
+        selectFile: async function(config: SelectFileConfig) : Promise<InputResult>{
+          throw Error("Not support");
+        },
+        selectFiles: async function(config: SelectFilesConfig) : Promise<InputResult>{
+          throw Error("Not support");
+        },
+        openUrl: async function(link: string): Promise<boolean>{
+          throw Error("Not support");
+        },
+        showMessage: async function(
+          level: MsgLevel,
+          message: string,
+          modal: boolean,
+          ...items: string[]
+        ): Promise<string | undefined>{
+          throw Error("Not support");
+        },
+        runWithProgress: async function(task: TimeConsumingTask<any>): Promise<any>{
+          return task.run();
+        }
+      }
     } as unknown as PluginContext;
 
     return pluginContext;

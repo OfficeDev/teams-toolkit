@@ -224,16 +224,16 @@ export class AppStudioPlugin implements Plugin {
         TelemetryUtils.sendErrorEvent(TelemetryEventName.publish, error);
         return err(error);
       } else {
-        const unhandled = new SystemError(
-          AppStudioError.UnhandledError.name,
-          AppStudioError.UnhandledError.message,
+        const publishFailed = new SystemError(
+          AppStudioError.TeamsAppPublishFailedError.name,
+          error.message,
           Constants.PLUGIN_NAME,
           undefined,
           undefined,
           error
         );
-        TelemetryUtils.sendErrorEvent(TelemetryEventName.publish, unhandled);
-        return err(unhandled);
+        TelemetryUtils.sendErrorEvent(TelemetryEventName.publish, publishFailed);
+        return err(publishFailed);
       }
     }
   }

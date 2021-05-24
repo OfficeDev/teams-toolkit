@@ -19,7 +19,7 @@
     "build": "rimraf build && tsc -p ./",
     "eslint:fix": "eslint package.json tsconfig.json src test --ext .ts --fix",
     "prepare": "npm run build && node ./scripts/download-templates-zip.js",
-    "prepublishOnly": "npm run test:unit && npm run package",
+    "prepublishOnly": "npm run test:unit && npm run build",
     "package": "rimraf build && webpack --mode production --config ./webpack.config.js",
     "precommit": "lint-staged"
   },

@@ -509,6 +509,8 @@ class CoreImpl implements Core {
 
             if (subscriptions.length === 1) {
               this.setSubscription(subscriptions[0]);
+              selectSubLabel = subscriptions[0].subscriptionName;
+              icon = "subscriptionSelected";
             }
           } else {
             selectSubLabel = activeSubscription.subscriptionName;

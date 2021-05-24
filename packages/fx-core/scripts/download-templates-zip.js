@@ -54,18 +54,9 @@ async function main() {
         const res = await axios.get(`${config.templateDownloadBaseURL}/${tag}/${fileName}`, {
           responseType: "arraybuffer",
         });
-        await fs.writeFile(
-          path.join(
-            __dirname,
-            "..",
-            "templates",
-            "plugins",
-            "resource",
-            template[2],
-            `${fileName}`
-          ),
-          res.data
-        );
+        const folder = path.join(__dirname, "..", "templates", "plugins", "resource", template[2]);
+        await fs.ensureDir(folder);
+        await fs.writeFile(path.join(folder, `${fileName}`), res.data);
       });
     }
   }

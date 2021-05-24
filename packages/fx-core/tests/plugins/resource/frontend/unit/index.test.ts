@@ -51,10 +51,7 @@ describe("frontendPlugin", () => {
 
     beforeEach(async () => {
       pluginContext = TestHelper.getFakePluginContext();
-      frontendPlugin = await TestHelper.initializedFrontendPlugin(
-        new FrontendPlugin(),
-        pluginContext
-      );
+      frontendPlugin = new FrontendPlugin();
     });
 
     afterEach(() => {
@@ -78,10 +75,7 @@ describe("frontendPlugin", () => {
 
     beforeEach(async () => {
       pluginContext = TestHelper.getFakePluginContext();
-      frontendPlugin = await TestHelper.initializedFrontendPlugin(
-        new FrontendPlugin(),
-        pluginContext
-      );
+      frontendPlugin = new FrontendPlugin();
     });
 
     afterEach(() => {
@@ -96,9 +90,6 @@ describe("frontendPlugin", () => {
       );
 
       chai.assert.isTrue(result.isOk());
-      result.map((config) => {
-        chai.assert.isTrue(/^[a-z0-9]{1,16}fe[a-z0-9]{6}$/.test(config.storageName!));
-      });
     });
 
     it("resource group not exists", async () => {
@@ -119,10 +110,7 @@ describe("frontendPlugin", () => {
 
     beforeEach(async () => {
       pluginContext = TestHelper.getFakePluginContext();
-      frontendPlugin = await TestHelper.initializedFrontendPlugin(
-        new FrontendPlugin(),
-        pluginContext
-      );
+      frontendPlugin = new FrontendPlugin();
 
       createStorageAccountStub = sinon
         .stub(StorageAccounts.prototype, "create")
@@ -187,10 +175,7 @@ describe("frontendPlugin", () => {
     beforeEach(async () => {
       pluginContext = TestHelper.getFakePluginContext();
       pluginContext.config.set(FrontendConfigInfo.Endpoint, TestHelper.storageEndpoint);
-      frontendPlugin = await TestHelper.initializedFrontendPlugin(
-        new FrontendPlugin(),
-        pluginContext
-      );
+      frontendPlugin = new FrontendPlugin();
     });
 
     afterEach(() => {
@@ -216,7 +201,6 @@ describe("frontendPlugin", () => {
     beforeEach(async () => {
       frontendPlugin = new FrontendPlugin();
       pluginContext = TestHelper.getFakePluginContext();
-      frontendPlugin = await TestHelper.initializedFrontendPlugin(frontendPlugin, pluginContext);
 
       staticWebsiteEnabledStub = sinon
         .stub(AzureStorageClient.prototype, "isStorageStaticWebsiteEnabled")
@@ -262,7 +246,6 @@ describe("frontendPlugin", () => {
     beforeEach(async () => {
       frontendPlugin = new FrontendPlugin();
       pluginContext = TestHelper.getFakePluginContext();
-      frontendPlugin = await TestHelper.initializedFrontendPlugin(frontendPlugin, pluginContext);
       sinon.stub(AzureStorageClient.prototype, "getContainer").resolves({} as any);
       sinon.stub(AzureStorageClient.prototype, "deleteAllBlobs").resolves();
       sinon.stub(AzureStorageClient.prototype, "uploadFiles").resolves();
@@ -280,14 +263,6 @@ describe("frontendPlugin", () => {
     it("happy path", async () => {
       const result = await frontendPlugin.deploy(pluginContext);
       chai.assert.isTrue(result.isOk());
-    });
-
-    it("no deployment parameters", async () => {
-      frontendPlugin = new FrontendPlugin();
-
-      const result = await frontendPlugin.deploy(pluginContext);
-
-      assertError(result, new NoPreStepError().code);
     });
 
     it("local path does not exists", async () => {

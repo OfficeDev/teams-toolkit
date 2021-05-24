@@ -147,19 +147,6 @@ export class TestHelper {
     return new AzureStorageClient(config);
   }
 
-  static async initializedFrontendPlugin(
-    frontendPlugin: FrontendPlugin,
-    pluginContext: PluginContext
-  ): Promise<FrontendPlugin> {
-    const config = await TestHelper.getFakeFrontendConfig(pluginContext);
-    frontendPlugin.frontendPluginImpl.config = config;
-
-    frontendPlugin.frontendPluginImpl.azureStorageClient =
-      await TestHelper.getFakeAzureStorageClient(pluginContext);
-
-    return frontendPlugin;
-  }
-
   static candidateTag = templates.tagPrefix + templates.templatesVersion.replace(/\*/g, "0");
   static targetTag = templates.tagPrefix + templates.templatesVersion.replace(/\*/g, "1");
   static templateCompose = "a.b.c";

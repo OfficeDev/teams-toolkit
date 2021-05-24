@@ -10,22 +10,20 @@ import {
   NodeType,
   ok,
   OptionItem,
-  Platform,
   QTreeNode,
-  Inputs,
   Result,
   SingleSelectQuestion,
   traverse,
   UserInteraction,
   ConfigMap,
-  SelectSingleOptionConfig,
   TextInputConfig,
   SelectFolderConfig,
   SelectFileConfig,
   SelectFilesConfig,
   MsgLevel,
   TimeConsumingTask,
-  SelectOptionsConfig
+  SelectOptionsConfig,
+  SelectOptionConfig
 } from "../src/index";
 import * as chai from "chai";
 import {RemoteFuncExecutor} from "../src/qm/validation";
@@ -60,7 +58,7 @@ describe("Question Model - Traverse Test", () => {
     const titleTrace: (string | undefined)[] = [];
     const selectTrace: (string | undefined)[] = [];
     const mockUi: UserInteraction = {
-      selectSingleOption: async function (config: SelectSingleOptionConfig): Promise<InputResult> {
+      selectOption: async function (config: SelectOptionConfig): Promise<InputResult> {
         titleTrace.push(config.title);
         const index: number = Math.floor(Math.random() * config.options.length);
         const result = config.options[index];
@@ -74,7 +72,7 @@ describe("Question Model - Traverse Test", () => {
           return {type: InputResultType.sucess, result: returnId};
         }
       },
-      selectMultipleOptions: async function (config: SelectOptionsConfig) : Promise<InputResult>{
+      selectOptions: async function (config: SelectOptionsConfig) : Promise<InputResult>{
         throw Error("Not support");
       },
       inputText: async function (config: TextInputConfig): Promise<InputResult> {

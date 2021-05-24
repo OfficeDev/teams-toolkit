@@ -23,14 +23,8 @@ jobs:
           npm install vsce -g
 
       - name: Download VISX fils
-        uses: nick-invision/retry@v2
-        with: 
-          timeout_minutes: 10
-          max_attempts: 10
-          retry_on: error
-          shell: bash
-          command: |
-            wget ${{ github.event.inputs.URL }} 
+        run: |
+          wget --tries=5 --waitretry=5 ${{ github.event.inputs.URL }} 
 
       - name: release to VSCode marketplace
         run: |

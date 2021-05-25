@@ -35,7 +35,7 @@ class TreeViewManager {
         vscode.TreeItemCollapsibleState.None,
         TreeCategory.GettingStarted,
         undefined,
-        "lightningBolt_16"
+        {name: "lightningBolt_16", custom: true}
       ),
       new TreeViewCommand(
         StringResources.vsc.commandsTreeViewProvider.samplesTitle,
@@ -44,7 +44,7 @@ class TreeViewManager {
         vscode.TreeItemCollapsibleState.None,
         TreeCategory.GettingStarted,
         undefined,
-        "heart_16"
+        { name: "heart", custom: false }
       ),
       new TreeViewCommand(
         StringResources.vsc.commandsTreeViewProvider.documentationTitle,
@@ -53,7 +53,7 @@ class TreeViewManager {
         vscode.TreeItemCollapsibleState.None,
         TreeCategory.GettingStarted,
         undefined,
-        "book_16"
+        { name: "book", custom: false }
       )
     ];
     const getStartedProvider = new CommandsTreeViewProvider(getStartTreeViewCommand);
@@ -72,7 +72,7 @@ class TreeViewManager {
         vscode.TreeItemCollapsibleState.None,
         undefined,
         undefined,
-        "createProject"
+        { name: "new-folder", custom: false }
       ),
       new TreeViewCommand(
         StringResources.vsc.commandsTreeViewProvider.addCapabilitiesTitle,
@@ -81,7 +81,7 @@ class TreeViewManager {
         vscode.TreeItemCollapsibleState.None,
         undefined,
         undefined,
-        "addCapability"
+        { name: "addCapability", custom: true }
       ),
       new TreeViewCommand(
         StringResources.vsc.commandsTreeViewProvider.addResourcesTitle,
@@ -90,7 +90,7 @@ class TreeViewManager {
         vscode.TreeItemCollapsibleState.None,
         undefined,
         undefined,
-        "addResources"
+        { name: "addResources", custom: true }
       ),
       new TreeViewCommand(
         StringResources.vsc.commandsTreeViewProvider.manifestEditorTitle,
@@ -99,7 +99,7 @@ class TreeViewManager {
         vscode.TreeItemCollapsibleState.None,
         undefined,
         undefined,
-        "manifestEditor"
+        { name: "edit", custom: false }
       ),
       new TreeViewCommand(
         StringResources.vsc.commandsTreeViewProvider.validateManifestTitle,
@@ -108,7 +108,7 @@ class TreeViewManager {
         vscode.TreeItemCollapsibleState.None,
         undefined,
         undefined,
-        "validatemanifest"
+        { name: "checklist", custom: false }
       ),
       new TreeViewCommand(
         StringResources.vsc.commandsTreeViewProvider.buildPackageTitle,
@@ -117,7 +117,7 @@ class TreeViewManager {
         vscode.TreeItemCollapsibleState.None,
         undefined,
         undefined,
-        "build"
+        { name: "package", custom: false }
       ),
       new TreeViewCommand(
         StringResources.vsc.commandsTreeViewProvider.provisionTitle,
@@ -126,7 +126,7 @@ class TreeViewManager {
         vscode.TreeItemCollapsibleState.None,
         undefined,
         undefined,
-        "provision"
+        { name: "type-hierarchy", custom: false }
       ),
       new TreeViewCommand(
         StringResources.vsc.commandsTreeViewProvider.deployTitle,
@@ -135,7 +135,7 @@ class TreeViewManager {
         vscode.TreeItemCollapsibleState.None,
         undefined,
         undefined,
-        "deploy"
+        { name: "cloud-upload", custom: false }
       ),
       new TreeViewCommand(
         StringResources.vsc.commandsTreeViewProvider.publishTitle,
@@ -144,7 +144,7 @@ class TreeViewManager {
         vscode.TreeItemCollapsibleState.None,
         undefined,
         undefined,
-        "publish"
+        { name: "publish", custom: true }
       )
     ];
 
@@ -160,7 +160,7 @@ class TreeViewManager {
         vscode.TreeItemCollapsibleState.None,
         undefined,
         undefined,
-        "appManagement"
+        { name: "appManagement", custom: true }
       )
       // new TreeViewCommand(
       //   StringResources.vsc.commandsTreeViewProvider.appManagementTitle,
@@ -194,7 +194,7 @@ class TreeViewManager {
         vscode.TreeItemCollapsibleState.None,
         TreeCategory.Feedback,
         undefined,
-        "reportIssues"
+        { name: "report", custom: false }
       )
     ];
     const feedbackProvider = new CommandsTreeViewProvider(feedbackTreeViewCommand);
@@ -279,11 +279,7 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
         }
         originalCommand.contextValue = treeItem.contextValue;
         if (treeItem.icon) {
-          originalCommand.iconPath = path.join(
-            ext.context.extensionPath,
-            "media",
-            `${treeItem.icon}.svg`
-          );
+          originalCommand.iconPath = { light: path.join(ext.context.extensionPath, "media", "light", `${treeItem.icon}.svg`), dark: path.join(ext.context.extensionPath, "media", "dark", `${treeItem.icon}.svg`)};
         }
       }
     }
@@ -319,7 +315,7 @@ export class CommandsTreeViewProvider implements vscode.TreeDataProvider<TreeVie
           : undefined,
         typeof treeItem.parent === "number" ? (treeItem.parent as TreeCategory) : undefined,
         [],
-        treeItem.icon,
+        treeItem.icon? {name: treeItem.icon, custom: true}: undefined,
         treeItem.contextValue
       );
 
@@ -429,15 +425,19 @@ export class TreeViewCommand extends vscode.TreeItem {
     public collapsibleState?: vscode.TreeItemCollapsibleState,
     public category?: TreeCategory,
     public children?: TreeViewCommand[],
-    public imageName?: string,
-    public contextValue?: string
+    public image?: {name: string; custom: boolean},
+    public contextValue?: string,
   ) {
     super(label, collapsibleState ? collapsibleState : vscode.TreeItemCollapsibleState.None);
     this.description = "";
     this.contextValue = contextValue;
 
-    if (imageName !== undefined) {
-      this.iconPath = path.join(ext.context.extensionPath, "media", `${this.imageName}.svg`);
+    if (image !== undefined) {
+      if(!image.custom){
+        this.iconPath = new vscode.ThemeIcon(this.image!.name);
+      } else{
+        this.iconPath = { light: path.join(ext.context.extensionPath, "media", "light", `${this.image?.name}.svg`), dark: path.join(ext.context.extensionPath, "media", "dark", `${this.image?.name}.svg`)};
+      }
     }
 
     if (commandId) {

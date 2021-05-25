@@ -7,7 +7,6 @@ const {
 
 class TeamsBot extends TeamsActivityHandler {
   /**
-   *
    * @param {ConversationState} conversationState
    * @param {UserState} userState
    * @param {Dialog} dialog

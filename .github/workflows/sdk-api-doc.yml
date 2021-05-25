@@ -2,7 +2,7 @@ name: SDK API docs
 
 on:
   schedule:
-    - cron: "0 0 * * 3" # every Wednesday
+    - cron: "0 0 * * *"
   workflow_dispatch:
 
 jobs:

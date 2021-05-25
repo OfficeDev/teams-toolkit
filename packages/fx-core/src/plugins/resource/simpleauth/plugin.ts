@@ -120,7 +120,7 @@ export class SimpleAuthPluginImpl {
     });
     const res = (await ctx.ui?.runWithProgress(group)) as Result<any, FxError>;
     if(res.isOk()) return ok(undefined);
-    else return err(res.error);
+    else throw res.error;
   }
 
   public async postProvision(ctx: PluginContext): Promise<Result<any, FxError>> {

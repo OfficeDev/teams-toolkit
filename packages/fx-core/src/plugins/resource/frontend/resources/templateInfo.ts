@@ -13,8 +13,8 @@ export interface TemplateVariable {
 }
 
 export class TabLanguage {
-  static readonly JavaScript = "JavaScript";
-  static readonly TypeScript = "TypeScript";
+  static readonly JavaScript = "javascript";
+  static readonly TypeScript = "typescript";
 }
 
 export class Scenario {
@@ -55,19 +55,17 @@ export class TemplateInfo {
     this.localTemplateBaseName = [this.group, this.language, this.scenario].join(".");
     this.localTemplatePath = path.join(
       getTemplatesFolder(),
-      "plugins",
-      "resource",
-      "frontend",
+      FrontendPathInfo.TemplateDir,
       this.localTemplateBaseName + FrontendPathInfo.TemplatePackageExt
     );
   }
 
   private validateTabLanguage(language: string): string {
-    if (language.toLowerCase() === TabLanguage.JavaScript.toLowerCase()) {
+    if (language.toLowerCase() === TabLanguage.JavaScript) {
       return "js";
     }
 
-    if (language.toLowerCase() === TabLanguage.TypeScript.toLowerCase()) {
+    if (language.toLowerCase() === TabLanguage.TypeScript) {
       return "ts";
     }
 

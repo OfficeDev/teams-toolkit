@@ -1,127 +1,54 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError } from "../error";
-import { AnswerValue, OptionItem, StaticOption } from "./question";
+import { err, ok, Result } from "neverthrow";
+import { FxError, UserCancelError } from "../error";
+import { StaticOption } from "../qm/question";
 
-export interface FxQuickPickOption {
-  /**
-   * title text of the QuickPick
-   */
+export interface UIConfig {
+  name: string;
   title: string;
-  /**
-   * select option list
-   */
-  items: StaticOption;
-  /**
-   * whether is multiple select or single select
-   */
-  canSelectMany: boolean;
-  /**
-   * The default selected `id` (for single select) or `id` array (for multiple select)
-   */
-  defaultValue?: string | string[];
-
-  /**
-   * placeholder text
-   */
   placeholder?: string;
-
   prompt?: string;
+  step?: number;
+  totalSteps?: number;
+}
 
-  /**
-   * whether enable `go back` button
-   */
-  backButton?: boolean;
-
-  /**
-   * whether the answer return the original `OptionItem` object array.
-   * if true: the answer is the original `OptionItem` object array;
-   * if false: the answer is the `id` array of the `OptionItem`
-   * The default value is false
-   */
+export interface SelectOptionConfig extends UIConfig {
+  options: StaticOption;
+  default?: string;
   returnObject?: boolean;
+}
 
-  /**
-   * a callback function when the select changes
-   * @items: current selected `OptionItem` array
-   * @returns: the new selected `id` array
-   */
+export interface SelectOptionsConfig extends UIConfig {
+  options: StaticOption;
+  default?: string[];
+  returnObject?: boolean;
   onDidChangeSelection?: (
-    currentSelectedItems: OptionItem[],
-    previousSelectedItems: OptionItem[]
-  ) => Promise<string[]>;
-
-  validation?: (input: string | string[]) => Promise<string | undefined>;
-
-  step?: number;
-  totalSteps?: number;
+    currentSelectedIds: Set<string>,
+    previousSelectedIds: Set<string>
+  ) => Promise<Set<string>>;
+  validation?: (input: string[]) => string | undefined | Promise<string | undefined>;
 }
 
-export interface FxInputBoxOption {
-  title: string;
-  password: boolean;
-  defaultValue?: string;
-  placeholder?: string;
-  prompt?: string;
+export interface TextInputConfig extends UIConfig {
+  password?: boolean;
+  default?: string;
   validation?: (input: string) => Promise<string | undefined>;
-  backButton?: boolean;
-  number?: boolean;
-  step?: number;
-  totalSteps?: number;
 }
 
-export interface FxOpenDialogOption {
-  /**
-   * The resource the dialog shows when opened.
-   */
-  defaultUri?: string;
-
-  /**
-   * A human-readable string for the open button.
-   */
-  openLabel?: string;
-
-  /**
-   * Allow to select files, defaults to `true`.
-   */
-  canSelectFiles?: boolean;
-
-  /**
-   * Allow to select folders, defaults to `false`.
-   */
-  canSelectFolders?: boolean;
-
-  /**
-   * Allow to select many files or folders.
-   */
-  canSelectMany?: boolean;
-
-  /**
-   * A set of file filters that are used by the dialog. Each entry is a human-readable label,
-   * like "TypeScript", and an array of extensions, e.g.
-   * ```ts
-   * {
-   *     'Images': ['png', 'jpg']
-   *     'TypeScript': ['ts', 'tsx']
-   * }
-   * ```
-   */
-  filters?: { [name: string]: string[] };
-
-  /**
-   * Dialog title.
-   *
-   * This parameter might be ignored, as not all operating systems display a title on open dialogs
-   * (for example, macOS).
-   */
-  title?: string;
-
+export interface SelectFileConfig extends UIConfig {
+  default?: string;
   validation?: (input: string) => Promise<string | undefined>;
+}
 
-  backButton?: boolean;
-  step?: number;
-  totalSteps?: number;
+export interface SelectFolderConfig extends UIConfig {
+  default?: string;
+  validation?: (input: string) => Promise<string | undefined>;
+}
+
+export interface SelectFilesConfig extends UIConfig {
+  validation?: (input: string[]) => Promise<string | undefined>;
 }
 
 export enum InputResultType {
@@ -129,17 +56,136 @@ export enum InputResultType {
   back = "back",
   sucess = "sucess",
   error = "error",
-  skip = "skip", // for single select option quick pass it
+  skip = "skip",
 }
 
 export interface InputResult {
   type: InputResultType;
-  result?: AnswerValue;
+  result?: unknown;
   error?: FxError;
 }
 
-export interface UserInterface {
-  showQuickPick: (option: FxQuickPickOption) => Promise<InputResult>;
-  showInputBox: (option: FxInputBoxOption) => Promise<InputResult>;
-  showOpenDialog: (option: FxOpenDialogOption) => Promise<InputResult>;
+export enum MsgLevel {
+  Info = "Info",
+  Warning = "Warning",
+  Error = "Error",
+}
+
+export interface TimeConsumingTask<T> {
+  name: string;
+  cancelable:boolean;
+  total: number;
+  current: number;
+  message: string;
+  isCanceled: boolean;
+  run(...args: any): Promise<T>;
+  cancel(): void;
+}
+
+export interface UserInteraction {
+  selectOption: (config: SelectOptionConfig) => Promise<InputResult>;
+  selectOptions: (config: SelectOptionsConfig) => Promise<InputResult>;
+  inputText: (config: TextInputConfig) => Promise<InputResult>;
+  selectFile: (config: SelectFileConfig) => Promise<InputResult>;
+  selectFiles: (config: SelectFilesConfig) => Promise<InputResult>;
+  selectFolder: (config: SelectFolderConfig) => Promise<InputResult>;
+  openUrl(link: string): Promise<boolean>;
+  showMessage(
+    level: MsgLevel,
+    message: string,
+    modal: boolean,
+    ...items: string[]
+  ): Promise<string | undefined>;
+  runWithProgress(task: TimeConsumingTask<any>): Promise<any>;
+}
+
+export interface FunctionGroupTaskConfig<T>{
+  name: string,
+  tasks: (() => Promise<Result<T, Error>>)[],
+  taskNames?: string[];
+  cancelable: boolean,
+  concurrent: boolean,
+  fastFail: boolean
+}
+
+export class FunctionGroupTask<T> implements TimeConsumingTask<Result<Result<T, Error>[], Error>> {
+  name: string;
+  current = 0;
+  total = 0;
+  message = "";
+  isCanceled = false;
+  concurrent = true;
+  cancelable = true;
+  fastFail = false;
+  tasks: (() => Promise<Result<T, Error>>)[];
+  taskNames?: string[];
+  constructor(config: FunctionGroupTaskConfig<T>) {
+    this.name = config.name;
+    this.tasks = config.tasks;
+    this.taskNames = config.taskNames;
+    this.cancelable = config.cancelable;
+    this.concurrent = config.concurrent;
+    this.fastFail = config.fastFail;
+    this.total = this.tasks.length;
+  }
+  async run(): Promise<Result<Result<T, Error>[], Error>> {
+    if (this.total === 0) return ok([]);
+    return new Promise(async (resolve) => {
+      let results: Result<T, Error>[] = [];
+      if (!this.concurrent) {
+        for (let i = 0; i < this.total; ++i) {
+          if (this.isCanceled === true) 
+          {
+            resolve(err(UserCancelError));
+            return ;
+          }  
+          const task = this.tasks[i];
+          if(this.taskNames){
+            this.message = this.taskNames[i];
+          }
+          try {
+            let taskRes = await task();
+            if (taskRes.isErr() && this.fastFail) {
+              this.isCanceled = true;
+              resolve(err(taskRes.error));
+              return ;
+            }
+            results.push(taskRes);
+          } catch (e) {
+            if (this.fastFail) {
+              this.isCanceled = true;
+              resolve(err(e));
+              return ;
+            }
+            results.push(err(e));
+          }
+          this.current = i + 1;
+        }
+      } else {
+        let promiseResults = this.tasks.map((t) => t());
+        promiseResults.forEach((p) => {
+          p.then((v) => {
+            this.current++;
+            if (v.isErr() && this.fastFail) {
+              this.isCanceled = true;
+              resolve(err(v.error));
+            }
+          }).catch((e) => {
+            this.current++;
+            if (this.fastFail) {
+              this.isCanceled = true;
+              resolve(err(e));
+            }
+          });
+        });
+        results = await Promise.all(promiseResults);
+      }
+      resolve(ok(results));
+    });
+  }
+
+  cancel() {
+    if(this.cancelable)
+      this.isCanceled = true;
+  }
 }

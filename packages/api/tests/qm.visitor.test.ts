@@ -5,22 +5,25 @@ import "mocha";
 import {
   Func,
   FxError,
-  FxInputBoxOption,
-  FxOpenDialogOption,
-  FxQuickPickOption,
   InputResult,
   InputResultType,
   NodeType,
   ok,
   OptionItem,
-  Platform,
   QTreeNode,
-  Inputs,
   Result,
   SingleSelectQuestion,
   traverse,
-  UserInterface,
-  ConfigMap
+  UserInteraction,
+  ConfigMap,
+  TextInputConfig,
+  SelectFolderConfig,
+  SelectFileConfig,
+  SelectFilesConfig,
+  MsgLevel,
+  TimeConsumingTask,
+  SelectOptionsConfig,
+  SelectOptionConfig
 } from "../src/index";
 import * as chai from "chai";
 import {RemoteFuncExecutor} from "../src/qm/validation";
@@ -54,28 +57,51 @@ describe("Question Model - Traverse Test", () => {
 
     const titleTrace: (string | undefined)[] = [];
     const selectTrace: (string | undefined)[] = [];
-    const mockUi: UserInterface = {
-      showQuickPick: async function (option: FxQuickPickOption): Promise<InputResult> {
-        titleTrace.push(option.title);
-        const index: number = Math.floor(Math.random() * option.items.length);
-        const result = option.items[index];
+    const mockUi: UserInteraction = {
+      selectOption: async function (config: SelectOptionConfig): Promise<InputResult> {
+        titleTrace.push(config.title);
+        const index: number = Math.floor(Math.random() * config.options.length);
+        const result = config.options[index];
         const optionIsString = typeof result === "string";
         const returnId = optionIsString ? result as string : (result as OptionItem).id;
         selectTrace.push(returnId);
-        if (option.returnObject) {
+        if (config.returnObject) {
           return {type: InputResultType.sucess, result: optionIsString ? {id: result} : result};
         }
         else {
           return {type: InputResultType.sucess, result: returnId};
         }
       },
-      showInputBox: async function (option: FxInputBoxOption): Promise<InputResult> {
-        titleTrace.push(option.title);
+      selectOptions: async function (config: SelectOptionsConfig) : Promise<InputResult>{
+        throw Error("Not support");
+      },
+      inputText: async function (config: TextInputConfig): Promise<InputResult> {
+        titleTrace.push(config.title);
         return {type: InputResultType.sucess, result: "ok"};
       },
-      showOpenDialog: async function (option: FxOpenDialogOption): Promise<InputResult> {
-        titleTrace.push(option.title);
+      selectFolder: async function (config: SelectFolderConfig): Promise<InputResult> {
+        titleTrace.push(config.title);
         return {type: InputResultType.sucess, result: "ok"};
+      },
+      selectFile: async function(config: SelectFileConfig) : Promise<InputResult>{
+        return {type: InputResultType.sucess, result: "ok"};
+      },
+      selectFiles: async function(config: SelectFilesConfig) : Promise<InputResult>{
+        throw Error("Not support");
+      },
+      openUrl: async function(link: string): Promise<boolean>{
+        throw Error("Not support");
+      },
+      showMessage: async function(
+        level: MsgLevel,
+        message: string,
+        modal: boolean,
+        ...items: string[]
+      ): Promise<string | undefined>{
+        throw Error("Not support");
+      },
+      runWithProgress: async function(task: TimeConsumingTask<any>): Promise<any>{
+        throw Error("Not support");
       }
     };
 

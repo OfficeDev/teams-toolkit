@@ -80,8 +80,7 @@ import { signedIn, signedOut } from "./commonlib/common/constant";
 import { AzureNodeChecker } from "./debug/depsChecker/azureNodeChecker";
 import { SPFxNodeChecker } from "./debug/depsChecker/spfxNodeChecker";
 import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
-import { VS_CODE_UI } from "./qm/vsc_ui";
-import * as path from "path";
+import { VS_CODE_UI } from "./extension";
 
 export let core: CoreProxy;
 const runningTasks = new Set<string>(); // to control state of task execution
@@ -99,7 +98,7 @@ export async function activate(): Promise<Result<null, FxError>> {
     core = CoreProxy.getInstance();
 
     {
-      const result = await core.withDialog(DialogManagerInstance);
+      const result = await core.withDialog(DialogManagerInstance, VS_CODE_UI);
       if (result.isErr()) {
         showError(result.error);
         return err(result.error);

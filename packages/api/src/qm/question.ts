@@ -281,7 +281,7 @@ export interface MultiSelectQuestion extends BaseQuestion {
      * @items: current selected `OptionItem` array
      * @returns: the new selected `id` array
      */
-    onDidChangeSelection?: (currentSelectedItems: OptionItem[], previousSelectedItems: OptionItem[]) => Promise<string[]>;
+    onDidChangeSelection?: (currentSelectedIds: Set<string>, previousSelectedIds: Set<string>) => Promise<Set<string>>;
 
     validation?: StringArrayValidation | RemoteFuncValidation | LocalFuncValidation;
 }

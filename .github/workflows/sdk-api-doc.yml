@@ -1,4 +1,4 @@
-name: SDK API docs
+name: SDK API docs & version update
 
 on:
   schedule:
@@ -36,7 +36,7 @@ jobs:
           npm run build:api-markdown
         working-directory: ./packages/sdk
 
-      - name: Commit doc changes
+      - name: Commit doc & version changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: "docs(sdk): update API"

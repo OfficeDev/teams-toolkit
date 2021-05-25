@@ -29,7 +29,7 @@ import AzureAccountManager from "./commonlib/azureLogin";
 
 export function getJson<T>(jsonFilePath: string): T | undefined {
   if (jsonFilePath && fs.existsSync(jsonFilePath)) {
-    return require(path.resolve(jsonFilePath));
+    return fs.readJSONSync(path.resolve(jsonFilePath));
   }
   return undefined;
 }

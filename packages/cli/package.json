@@ -13,8 +13,8 @@
   },
   "scripts": {
     "copy-files": "copyfiles -u 1 src/**/*.html src/**/*.css lib/",
-    "build": "tsc -p ./ && npm run copy-files",
-    "watch": "tsc -w -p ./ && npm run copy-files",
+    "build": "rimraf lib && tsc -p ./ && npm run copy-files",
+    "watch": "rimraf lib && tsc -w -p ./ && npm run copy-files",
     "package": "rimraf lib && npx webpack --mode production --config ./webpack.config.js",
     "prepublishOnly": "npm run test:unit && npm run test:integration && npm run package",
     "test:e2e": "npm run test:e2e:clean && npm run test:e2e:smoke && npm run test:e2e:others",

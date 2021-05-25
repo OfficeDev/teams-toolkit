@@ -30,6 +30,7 @@ export enum FunctionConfigKey {
   /* Intermediate  */
   functionName = "functionName",
   skipDeploy = "skipDeploy",
+  site = "site",
 }
 
 export enum QuestionKey {

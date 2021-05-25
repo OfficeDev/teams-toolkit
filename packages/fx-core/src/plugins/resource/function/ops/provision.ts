@@ -75,7 +75,15 @@ export class FunctionProvision {
       },
     };
 
-    return AzureLib.ensureFunctionApp(client, resourceGroupName, functionAppName, siteEnvelope);
+    const site = await AzureLib.ensureFunctionApp(client, resourceGroupName, functionAppName, siteEnvelope);
+
+    // The ensureFunctionApp may return a site found on Azure,
+    // we need to return a site with updated settings for post provision.
+    settings.forEach(pair => {
+      pair.name && pair.value && this.pushAppSettings(site, pair.name, pair.value);
+    });
+
+    return site;
   }
 
   // TODO: Extend to support multiple language and versions.
@@ -97,7 +105,7 @@ export class FunctionProvision {
   }
 
   // Push AppSettings when it is not included.
-  private static pushAppSettings(
+  public static pushAppSettings(
     site: Site,
     newName: string,
     newValue: string,

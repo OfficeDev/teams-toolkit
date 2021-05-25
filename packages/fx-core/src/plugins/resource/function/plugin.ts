@@ -91,6 +91,7 @@ export interface FunctionConfig {
 
   /* Intermediate  */
   skipDeploy: boolean;
+  site?: Site;
 }
 
 export class FunctionPluginImpl {
@@ -450,6 +451,8 @@ export class FunctionPluginImpl {
       throw new ProvisionError(ResourceType.functionApp);
     }
 
+    this.config.site = site;
+
     if (!this.config.functionEndpoint) {
       this.config.functionEndpoint = `https://${site.defaultHostName}`;
     }
@@ -476,47 +479,35 @@ export class FunctionPluginImpl {
       FunctionConfigKey.credential
     );
 
+    // Retrieve and do cleanup
+    const site = this.checkAndGet(this.config.site, FunctionConfigKey.site);
+    this.config.site = undefined;
+
     const webSiteManagementClient: WebSiteManagementClient = await runWithErrorCatchAndThrow(
       new InitAzureSDKError(),
       () => AzureClientFactory.getWebSiteManagementClient(credential, subscriptionId)
     );
 
-    const site: Site | undefined = await runWithErrorCatchAndThrow(
+    // We must query app settings from azure here, for two reasons:
+    // 1. The site object returned by SDK may not contain app settings.
+    // 2. Azure automatically added some app settings during creation.
+    const res: StringDictionary = await runWithErrorCatchAndThrow(
       new ConfigFunctionAppError(),
       async () =>
-        await step(StepGroup.PostProvisionStepGroup, PostProvisionSteps.findFunctionApp, async () =>
-          AzureLib.findFunctionApp(webSiteManagementClient, resourceGroupName, functionAppName)
+        await webSiteManagementClient.webApps.listApplicationSettings(
+          resourceGroupName,
+          functionAppName
         )
     );
-    if (!site) {
-      Logger.error(ErrorMessages.failToFindFunctionApp);
-      throw new ConfigFunctionAppError();
-    }
 
-    if (!site.siteConfig) {
-      Logger.info(InfoMessages.functionAppConfigIsEmpty);
-      site.siteConfig = {};
-    }
-
-    // The site queried does not contains appSettings, complete it through another API.
-    if (!site.siteConfig.appSettings) {
-      const res: StringDictionary = await runWithErrorCatchAndThrow(
-        new ConfigFunctionAppError(),
-        async () =>
-          await webSiteManagementClient.webApps.listApplicationSettings(
-            resourceGroupName,
-            functionAppName
-          )
+    if (res.properties) {
+      Object.entries(res.properties).forEach(
+        (kv: [string, string]) => {
+          // The site have some settings added in provision step,
+          // which should not be overwritten by queried settings.
+          FunctionProvision.pushAppSettings(site, kv[0], kv[1], false);
+        }
       );
-
-      if (res.properties) {
-        site.siteConfig.appSettings = Object.entries(res.properties).map(
-          (kv: [string, string]) => ({
-            name: kv[0],
-            value: kv[1],
-          })
-        );
-      }
     }
 
     this.collectFunctionAppSettings(ctx, site);
@@ -647,9 +638,6 @@ export class FunctionPluginImpl {
   }
 
   public isPluginEnabled(ctx: PluginContext, plugin: string): boolean {
-    const solutionConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(
-      DependentPluginInfo.solutionPluginName
-    );
     const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
       .activeResourcePlugins;
     return selectedPlugins.includes(plugin);
@@ -833,7 +821,10 @@ export class FunctionPluginImpl {
           // TODO: handle linux installation
           if (!(await funcPluginAdapter.handleDotnetForLinux(ctx, dotnetChecker))) {
             // NOTE: this is a temporary fix for Linux, to make the error message more readable.
-            const message = await funcPluginAdapter.generateMsg(Messages.linuxDepsNotFoundHelpLinkMessage, [dotnetChecker]);
+            const message = await funcPluginAdapter.generateMsg(
+              Messages.linuxDepsNotFoundHelpLinkMessage,
+              [dotnetChecker]
+            );
             funcPluginAdapter.handleDotnetError(
               new DepsCheckerError(message, dotnetManualInstallHelpLink)
             );

@@ -48,7 +48,7 @@ jobs:
         run: |
           npm run setup
 
-      - name: Package CLI
+      - name: Package CLI and install
         run: |
           npm run package
           npm pack

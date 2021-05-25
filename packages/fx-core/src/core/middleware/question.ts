@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks";
-import { err, FxError, InputResult, InputResultType, Inputs, ok, QTreeNode, Result, Stage, traverse, UserCancelError } from "@microsoft/teamsfx-api";
+import { err, Func, FxError, InputResult, InputResultType, Inputs, ok, QTreeNode, Result, Stage, traverse, UserCancelError } from "@microsoft/teamsfx-api";
 import { FxCore } from "../..";
 
 /**
@@ -14,12 +14,29 @@ export const QuestionModelMW: Middleware = async (
 ) => {
   const inputs: Inputs = ctx.arguments[ctx.arguments.length - 1]; 
   const method = ctx.method;
-  const solutionCtx = (ctx.self as FxCore).ctx;
+  const core = (ctx.self as FxCore);
+  const solutionCtx = core.ctx;
   let getQuestionRes: Result<QTreeNode | undefined, FxError> = ok(undefined);
   if (method === "createProject")
-    getQuestionRes = await ctx.self._getQuestions( Stage.create, inputs );
+    getQuestionRes = await core._getQuestions( Stage.create, inputs, solutionCtx);
   else if (method === "provisionResources"){
-    getQuestionRes = await ctx.self._getQuestions( Stage.provision, inputs, solutionCtx);
+    getQuestionRes = await core._getQuestions( Stage.provision, inputs, solutionCtx);
+  }
+  else if (method === "localDebug"){
+    getQuestionRes = await core._getQuestions( Stage.debug, inputs, solutionCtx);
+  }
+  else if (method === "buildArtifacts"){
+    getQuestionRes = await core._getQuestions( Stage.build, inputs, solutionCtx);
+  }
+  else if (method === "deployArtifacts"){
+    getQuestionRes = await core._getQuestions( Stage.deploy, inputs, solutionCtx);
+  }
+  else if (method === "publishApplication"){
+    getQuestionRes = await core._getQuestions( Stage.publish, inputs, solutionCtx);
+  }
+  else if (method === "executeUserTask"){
+    const func = ctx.arguments[0] as Func;
+    getQuestionRes = await core._getQuestionsForUserTask(func, inputs, solutionCtx);
   }
   if (getQuestionRes.isErr()) {
     ctx.result = err(getQuestionRes.error);
@@ -28,7 +45,7 @@ export const QuestionModelMW: Middleware = async (
 
   const node = getQuestionRes.value;
   if (node) {
-    const res: InputResult = await traverse(node, inputs, (ctx.self as FxCore).tools.ui);
+    const res: InputResult = await traverse(node, inputs, core.tools.ui);
     if (res.type === InputResultType.error) {
       ctx.result = err(res.error!);
       return;

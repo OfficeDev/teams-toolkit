@@ -15,8 +15,8 @@ export enum TelemetryEvent {
   CreateProjectStart = "create-project-start",
   CreateProject = "create-project",
 
-  UpdateProjectStart = "add-resource-start",
-  UpdateProject = "add-resource",
+  AddResourceStart = "add-resource-start",
+  AddResource = "add-resource",
 
   AddCapStart = "add-capability-start",
   AddCap = "add-capability",

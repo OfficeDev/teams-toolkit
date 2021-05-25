@@ -38,7 +38,15 @@ export class ApimPlugin implements Plugin {
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     return await this.executeWithFxError(PluginLifeCycle.GetQuestions, _getQuestions, ctx, stage);
   }
-
+  public async getQuestionsForUserTask(
+    func: Func,
+    ctx: PluginContext
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
+    if(func.method === "AddResource"){
+      return await this.executeWithFxError(PluginLifeCycle.GetQuestions, _getQuestions, ctx, Stage.update);
+    }
+    return err(new UserError("NotSupportedMethod","Not supported method:"+func.method,ProjectConstants.pluginShortName))
+  }
   public async callFunc(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
     return await this.executeWithFxError(PluginLifeCycle.CallFunc, _callFunc, ctx, func);
   }
@@ -123,6 +131,7 @@ async function _getQuestions(
       return undefined;
   }
 }
+ 
 
 async function _callFunc(ctx: PluginContext, progressBar: ProgressBar, func: Func): Promise<any> {
   const solutionConfig = new SolutionConfig(ctx.configOfOtherPlugins);

@@ -187,7 +187,7 @@ export type SubscriptionInfo = {
 };
 
 export type TokenProvider = {
-    azure: AzureAccountProvider;
-    graph: GraphTokenProvider;
-    appStudio: AppStudioTokenProvider;
+    azureAccountProvider: AzureAccountProvider;
+    graphTokenProvider: GraphTokenProvider;
+    appStudioToken: AppStudioTokenProvider;
 };

@@ -426,7 +426,7 @@ export class LocalDebugPlugin implements Plugin {
     return ok(undefined);
   }
 
-  public async callFunc(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
+  public async executeUserTask(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
     if (func.method == "getLaunchInput") {
       const env = func.params as string;
       const solutionConfigs = ctx.configOfOtherPlugins.get(SolutionPlugin.Name);

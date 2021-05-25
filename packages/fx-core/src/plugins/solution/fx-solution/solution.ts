@@ -395,7 +395,8 @@ export class TeamsAppSolution implements Solution {
 
   private async reloadManifest(ctx: SolutionContext): Promise<Result<TeamsAppManifest, FxError>> {
     try {
-      const manifest = await fs.readJson(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`);
+      const filePath = path.join(ctx.root,`.${ConfigFolderName}`, REMOTE_MANIFEST);
+      const manifest = await fs.readJson(filePath);
       if (!manifest) {
         return err(
           returnSystemError(
@@ -1360,8 +1361,6 @@ export class TeamsAppSolution implements Solution {
       const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
       programmingLanguage.condition = { minItems: 1 };
       capNode.addChild(programmingLanguage);
-    } else if (stage === Stage.update) {
-      return await this.getQuestionsForAddResource(ctx, manifest);
     } else if (stage === Stage.provision) {
       const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
       if (provisioned) return ok(undefined);
@@ -1970,6 +1969,7 @@ export class TeamsAppSolution implements Solution {
   }
 
   async getQuestionsForAddResource(
+    func:Func,
     ctx: SolutionContext,
     manifest?: TeamsAppManifest
   ): Promise<Result<QTreeNode | undefined, FxError>> {
@@ -2016,9 +2016,9 @@ export class TeamsAppSolution implements Solution {
     const addAzureResourceNode = new QTreeNode(addQuestion);
 
     // there two cases to add function re-scaffold: 1. select add function   2. select add sql and function is not selected when creating
-    if (this.functionPlugin.getQuestions) {
+    if (this.functionPlugin.getQuestionsForUserTask) {
       const pluginCtx = getPluginContext(ctx, this.functionPlugin.name, manifest);
-      const res = await this.functionPlugin.getQuestions(Stage.update, pluginCtx);
+      const res = await this.functionPlugin.getQuestionsForUserTask(func, pluginCtx);
       if (res.isErr()) return res;
       if (res.value) {
         const azure_function = res.value as QTreeNode;
@@ -2034,9 +2034,9 @@ export class TeamsAppSolution implements Solution {
     }
 
     //Azure SQL
-    if (this.sqlPlugin.getQuestions && !alreadyHaveSQL) {
+    if (this.sqlPlugin.getQuestionsForUserTask && !alreadyHaveSQL) {
       const pluginCtx = getPluginContext(ctx, this.sqlPlugin.name, manifest);
-      const res = await this.sqlPlugin.getQuestions(Stage.update, pluginCtx);
+      const res = await this.sqlPlugin.getQuestionsForUserTask(func, pluginCtx);
       if (res.isErr()) return res;
       if (res.value) {
         const azure_sql = res.value as QTreeNode;
@@ -2178,6 +2178,9 @@ export class TeamsAppSolution implements Solution {
     const manifest = maybeManifest.value;
     if (func.method === "addCapability") {
       return await this.getQuestionsForAddCapability(ctx, manifest);
+    }
+    if( func.method === "addResource"){
+      return await this.getQuestionsForAddResource(func, ctx, manifest);
     }
     if (array.length == 2) {
       const pluginName = array[1];
@@ -2500,7 +2503,7 @@ export class TeamsAppSolution implements Solution {
           `${ctx.root}/.${ConfigFolderName}`,
           manifestString
         );
-      } else if (method === "aadUpdatePermission" && array.length == 2) {
+      } else if (array.length == 2) {
         const pluginName = array[1];
         const plugin = this.pluginMap.get(pluginName);
         if (plugin && plugin.executeUserTask) {
@@ -2509,17 +2512,8 @@ export class TeamsAppSolution implements Solution {
             return maybeManifest;
           }
           const manifestTpl = maybeManifest.value;
-
           const pctx = getPluginContext(ctx, plugin.name, manifestTpl);
-          let result = await this.getPermissionRequest(ctx);
-          if (result.isErr()) {
-            return result;
-          }
-          ctx.config.get(GLOBAL_CONFIG)?.set(PERMISSION_REQUEST, result.value);
-          result = await plugin.executeUserTask(func, pctx);
-          // Remove permissionRequest to prevent its persistence in config.
-          ctx.config.get(GLOBAL_CONFIG)?.delete(PERMISSION_REQUEST);
-          return result;
+          return plugin.executeUserTask(func, pctx); 
         }
       }
     }

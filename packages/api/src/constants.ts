@@ -21,7 +21,6 @@ export enum VsCodeEnv {
 export enum Stage {
   create = "create",
   build = "build",
-  update = "update",
   debug = "debug",
   provision = "provision",
   deploy = "deploy",
@@ -29,6 +28,7 @@ export enum Stage {
   createEnv = "createEnv",
   removeEnv = "removeEnv",
   switchEnv = "switchEnv",
-  userTask = "userTask"
+  userTask = "userTask",
+  update = "update" //never used again except APIM just for reference
 }
  

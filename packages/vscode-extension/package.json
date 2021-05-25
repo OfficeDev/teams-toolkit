@@ -49,7 +49,6 @@
     "onCommand:fx-extension.addCapability",
     "onCommand:fx-extension.provision",
     "onCommand:fx-extension.deploy",
-    "onCommand:fx-extension.updateAad",
     "onCommand:fx-extension.openManifest",
     "onCommand:fx-extension.validateManifest",
     "onCommand:fx-extension.build",

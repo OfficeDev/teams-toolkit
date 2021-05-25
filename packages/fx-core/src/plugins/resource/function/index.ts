@@ -37,15 +37,15 @@ export class FunctionPlugin implements Plugin {
     return await this.functionPluginImpl.callFunc(func, ctx);
   }
 
-  public async getQuestions(
-    stage: Stage,
+  public async getQuestionsForUserTask(
+    func: Func,
     ctx: PluginContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     Logger.setLogger(ctx.logProvider);
     const res = await this.runWithErrorWrapper(
       ctx,
       LifeCycle.getQuestions,
-      () => Promise.resolve(this.functionPluginImpl.getQuestions(stage, ctx)),
+      () => Promise.resolve(this.functionPluginImpl.getQuestionsForUserTask(func, ctx)),
       false
     );
     return res;

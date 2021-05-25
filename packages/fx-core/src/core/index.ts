@@ -87,7 +87,7 @@ export class FxCore implements Core {
   async loadSolutionContext(inputs: Inputs): Promise<SolutionContext> {
     try {
       const projectSettings: ProjectSettings = await fs.readJson(
-        path.join(inputs.projectPath!, `.${ConfigFolderName}`, "setting.json")
+        path.join(inputs.projectPath!, `.${ConfigFolderName}`, "settings.json")
       );
       const envName = projectSettings.currentEnv;
       const confFolderPath = path.resolve(inputs.projectPath!, `.${ConfigFolderName}`);
@@ -104,6 +104,7 @@ export class FxCore implements Core {
       mergeSerectData(dict, configJson);
       const solutionConfig: SolutionConfig = objectToMap(configJson);
       const solutionContext:SolutionContext = {
+        projectSettings: projectSettings,
         config: solutionConfig,
         root: inputs.projectPath!,
         ... this.tools,
@@ -159,7 +160,7 @@ export class FxCore implements Core {
     getSelectSubItem = async (token: any, valid: boolean): Promise<[TreeItem, boolean]> => {
       let selectSubLabel = "";
       const subscriptions: SubscriptionInfo[] | undefined =
-        await this.tools.tokenProvider.azure.listSubscriptions();
+        await this.tools.tokenProvider.azureAccountProvider.listSubscriptions();
       if (subscriptions) {
         const activeSubscriptionId = this.ctx?.config.get("solution")?.getString("subscriptionId");
         const activeSubscription = subscriptions.find(
@@ -224,10 +225,10 @@ export class FxCore implements Core {
             : TelemetryTiggerFrom.CommandPalette,
       });
 
-      const azureToken = await this.tools.tokenProvider.azure.getAccountCredentialAsync();
+      const azureToken = await this.tools.tokenProvider.azureAccountProvider.getAccountCredentialAsync();
       // const subscriptions: AzureSubscription[] = await getSubscriptionList(azureToken!);
       const subscriptions: SubscriptionInfo[] | undefined =
-        await this.tools.tokenProvider.azure?.listSubscriptions();
+        await this.tools.tokenProvider.azureAccountProvider?.listSubscriptions();
       if (!subscriptions) {
         return err(
           returnSystemError(
@@ -268,7 +269,7 @@ export class FxCore implements Core {
     };
 
     const signinM365Callback = async (args?: any[]): Promise<Result<null, FxError>> => {
-      const token = await this.tools.tokenProvider.appStudio?.getJsonObject(true);
+      const token = await this.tools.tokenProvider.appStudioToken?.getJsonObject(true);
       if (token !== undefined) {
         this.tools.treeProvider?.refresh([
           {
@@ -290,7 +291,7 @@ export class FxCore implements Core {
       args?: any[]
     ): Promise<Result<null, FxError>> => {
       const showDialog = args && args[1] !== undefined ? args[1] : true;
-      const token = await this.tools.tokenProvider.azure?.getAccountCredentialAsync(showDialog);
+      const token = await this.tools.tokenProvider.azureAccountProvider?.getAccountCredentialAsync(showDialog);
       if (token !== undefined) {
         this.tools.treeProvider?.refresh([
           {
@@ -319,13 +320,13 @@ export class FxCore implements Core {
 
     let azureAccountLabel = "Sign in to Azure";
     let azureAccountContextValue = "signinAzure";
-    const token = this.tools.tokenProvider.azure.getAccountCredential();
+    const token = this.tools.tokenProvider.azureAccountProvider.getAccountCredential();
     if (token !== undefined) {
       azureAccountLabel = (token as any).username ? (token as any).username : "";
       azureAccountContextValue = "signedinAzure";
     }
 
-    this.tools.tokenProvider.appStudio?.setStatusChangeMap(
+    this.tools.tokenProvider.appStudioToken?.setStatusChangeMap(
       "tree-view",
       (
         status: string,
@@ -359,7 +360,7 @@ export class FxCore implements Core {
         return Promise.resolve();
       }
     );
-    this.tools.tokenProvider.azure?.setStatusChangeMap(
+    this.tools.tokenProvider.azureAccountProvider?.setStatusChangeMap(
       "tree-view",
       async (
         status: string,
@@ -367,7 +368,7 @@ export class FxCore implements Core {
         accountInfo?: Record<string, unknown> | undefined
       ) => {
         if (status === "SignedIn") {
-          const token = this.tools.tokenProvider.azure?.getAccountCredential();
+          const token = this.tools.tokenProvider.azureAccountProvider?.getAccountCredential();
           if (token !== undefined) {
             this.tools.treeProvider?.refresh([
               {
@@ -451,12 +452,12 @@ export class FxCore implements Core {
     return ok(Void);
   }
 
-  
+  @hooks([ConfigWriterMW])
   private async setSubscription(subscription: SubscriptionInfo | undefined) {
     if (subscription) {
       this.ctx!.config.get("solution")?.set("tenantId", subscription.tenantId);
       this.ctx!.config.get("solution")?.set("subscriptionId", subscription.subscriptionId);
-      await this.tools.tokenProvider.azure.setSubscription(subscription.subscriptionId);
+      await this.tools.tokenProvider.azureAccountProvider.setSubscription(subscription.subscriptionId);
       this.tools.treeProvider?.refresh([
         {
           commandId: "fx-extension.selectSubscription",
@@ -633,16 +634,20 @@ export class FxCore implements Core {
   
   @hooks([ErrorHandlerMW, ContextLoaderMW])
   async getQuestions(task: Stage, inputs: Inputs) : Promise<Result<QTreeNode | undefined, FxError>> {
-    return this._getQuestions(task, inputs);
+    return this._getQuestions(task, inputs, this.ctx);
   }
 
   @hooks([ErrorHandlerMW, ContextLoaderMW])
   async getQuestionsForUserTask(func: FunctionRouter, inputs: Inputs) : Promise<Result<QTreeNode | undefined, FxError>>{
+    return this._getQuestionsForUserTask(func, inputs, this.ctx);
+  }
+ 
+  async _getQuestionsForUserTask(func: FunctionRouter, inputs: Inputs, ctx?:SolutionContext) : Promise<Result<QTreeNode | undefined, FxError>>{
     const namespace = func.namespace;
     const array = namespace ? namespace.split("/") : [];
     if (namespace && "" !== namespace && array.length > 0) {
       this.ctx!.answers = inputs;
-      const res = await this.solution.getQuestionsForUserTask(func, this.ctx!);
+      const res = await this.solution.getQuestionsForUserTask(func, ctx!);
       if (res.isOk()) {
         if (res.value) {
           const node = res.value.trim();
@@ -659,8 +664,6 @@ export class FxCore implements Core {
       )
     );
   }
- 
- 
   async _getQuestions(stage: Stage, inputs: Inputs, ctx?:SolutionContext): Promise<Result<QTreeNode | undefined, FxError>> {
     const node = new QTreeNode({ type: NodeType.group });
     if (stage === Stage.create) {

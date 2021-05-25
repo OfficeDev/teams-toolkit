@@ -212,12 +212,12 @@ export class FunctionPluginImpl {
     return ResultFactory.Success();
   }
 
-  public getQuestions(stage: Stage, ctx: PluginContext): Result<QTreeNode | undefined, FxError> {
+  public getQuestionsForUserTask(func: Func, ctx: PluginContext): Result<QTreeNode | undefined, FxError> {
     const res = new QTreeNode({
       type: NodeType.group,
     });
 
-    if (stage === Stage.update) {
+    if (func.method === "addResource") {
       functionNameQuestion.validation = {
         validFunc: async(input: string|string[]|undefined, previousInputs?: Inputs) : Promise<string | undefined> => {
           const workingPath: string = this.getFunctionProjectRootPath(ctx);

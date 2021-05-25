@@ -14,10 +14,13 @@ export const ContextLoaderMW: Middleware = async (
 ) => {
   try {
     const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-    if(inputs.projectPath)
+    if(inputs.projectPath && ctx.method !== "createProject")
       (ctx.self as FxCore).loadSolutionContext(inputs);
     else 
+    {
+      delete inputs.projectPath;
       (ctx.self as FxCore).newSolutionContext(inputs);
+    }  
   }
   catch(e) {
     ctx.result = err(error.CreateContextError);

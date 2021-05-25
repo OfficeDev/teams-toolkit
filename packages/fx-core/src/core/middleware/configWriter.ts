@@ -8,6 +8,7 @@ import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks";
 import * as error from "../error";
 import { ConfigFolderName, err, Inputs, SolutionContext } from "@microsoft/teamsfx-api";
 import { mapToJson, serializeDict, sperateSecretData } from "../../common/tools";
+import { FxCore } from "..";
 
 /**
  * This middleware will help to persist configs if necessary.
@@ -20,6 +21,7 @@ export const ConfigWriterMW: Middleware = async (
     await next();
   }
   finally {
+    const core = (ctx.self) as FxCore;
     const solutionContext: SolutionContext = ctx.self.ctx;
     const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
     if (solutionContext && inputs.projectPath && solutionContext.root) {
@@ -30,11 +32,11 @@ export const ConfigWriterMW: Middleware = async (
         const configJson = mapToJson(solutionConfig);
         const jsonFilePath = path.resolve(confFolderPath, `env.${envName}.json`);
         const localDataPath = path.resolve(confFolderPath, `${envName}.userdata`);
-        const localData = sperateSecretData(configJson);
-        const content = JSON.stringify(configJson, null, 4);
-        await fs.writeFile(jsonFilePath, content,);
+        const localData = sperateSecretData(configJson); 
+        const settingPath = path.resolve(confFolderPath, "settings.json");
+        await fs.writeFile(jsonFilePath, JSON.stringify(configJson, null, 4));
         await fs.writeFile(localDataPath, serializeDict(localData));
-        await fs.writeFile(path.resolve(confFolderPath, "settings.json"), solutionContext.projectSettings);
+        await fs.writeFile(settingPath, JSON.stringify(solutionContext.projectSettings, null, 4));
       } catch (e) {
         ctx.res = err(error.WriteFileError(e));
       }

@@ -119,14 +119,13 @@ export const AzureResourcesQuestion: MultiSelectQuestion = {
   option: [AzureResourceSQL, AzureResourceFunction],
   default: [],
   onDidChangeSelection: async function (
-    selectedItems: OptionItem[],
-    previousSelectedItems: OptionItem[]
-  ): Promise<string[]> {
-    const hasSQL = selectedItems.some((i) => i.id === AzureResourceSQL.id);
-    if (hasSQL) {
-      return [AzureResourceSQL.id, AzureResourceFunction.id];
+    currentSelectedIds: Set<string>,
+    previousSelectedIds: Set<string>
+  ): Promise<Set<string>> {
+    if (currentSelectedIds.has(AzureResourceSQL.id)) {
+      currentSelectedIds.add(AzureResourceFunction.id);
     }
-    return selectedItems.map((i) => i.id);
+    return currentSelectedIds;
   },
   placeholder: "Select a resource (optional)",
 };
@@ -146,16 +145,15 @@ export function createAddAzureResourceQuestion(
     option: options,
     default: [],
     onDidChangeSelection: async function (
-      currentSelectedItems: OptionItem[],
-      previousSelectedItems: OptionItem[]
-    ): Promise<string[]> {
-      const hasSQL = currentSelectedItems.some((i) => i.id === AzureResourceSQL.id);
-      const hasAPIM = currentSelectedItems.some((i) => i.id === AzureResourceApim.id);
-      const ids = currentSelectedItems.map((i) => i.id);
-      if ((hasSQL || hasAPIM) && !alreadyHaveFunction && !ids.includes(AzureResourceFunction.id)) {
-        ids.push(AzureResourceFunction.id);
+      currentSelectedIds: Set<string>,
+      previousSelectedIds: Set<string>
+    ): Promise<Set<string>> {
+      const hasSQL = currentSelectedIds.has(AzureResourceSQL.id);
+      const hasAPIM = currentSelectedIds.has(AzureResourceApim.id);
+      if ((hasSQL || hasAPIM) && !alreadyHaveFunction) {
+        currentSelectedIds.add(AzureResourceFunction.id);
       }
-      return ids;
+      return currentSelectedIds;
     },
   };
 }
@@ -208,9 +206,9 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
     ];
   },
   default: "javascript",
-  placeholder: (previousAnswers?: ConfigMap): string | undefined => {
+  placeholder: (previousAnswers?: ConfigMap): string => {
     const hostType = previousAnswers?.getString(AzureSolutionQuestionNames.HostType);
     if (HostTypeOptionSPFx.id === hostType) return "SPFx is currently supporting TypeScript only.";
-    return undefined;
+    return "Select a programming language.";
   },
 };

@@ -6,6 +6,7 @@ import * as chai from "chai";
 import * as faker from "faker";
 import * as path from "path";
 import * as sinon from "sinon";
+import mock from "mock-fs";
 import { PluginContext } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import axios from "axios";
@@ -19,6 +20,7 @@ import {
   TemplateVariable,
 } from "../../../../../src/plugins/resource/frontend/resources/templateInfo";
 import { TestHelper } from "../helper";
+import { getTemplatesFolder } from "../../../../../src";
 
 chai.use(chaiAsPromised);
 
@@ -66,6 +68,17 @@ describe("FrontendScaffold", () => {
   });
 
   describe("getTemplateZip", () => {
+    before(() => {
+      const config: any = {};
+      config[path.join(getTemplatesFolder(), FrontendPathInfo.TemplateDir, `tab.js.default.zip`)] =
+        new AdmZip().toBuffer();
+      mock(config);
+    });
+
+    after(() => {
+      mock.restore();
+    });
+
     it("fallback", async () => {
       sinon.stub(FrontendScaffold, "getTemplateURL").rejects();
       const pluginContext: PluginContext = TestHelper.getFakePluginContext();

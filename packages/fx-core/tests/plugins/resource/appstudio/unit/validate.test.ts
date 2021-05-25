@@ -3,42 +3,55 @@
 
 import "mocha";
 import * as chai from "chai";
+import sinon from "sinon";
 import fs from "fs-extra";
+import path from "path";
 import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio";
-import { ConfigMap, PluginContext } from "@microsoft/teamsfx-api";
+import { ConfigMap, PluginContext, TeamsAppManifest, ok } from "@microsoft/teamsfx-api";
 
-/* TODO
- *
- * @Long provide mockPluginContext for unit test
 describe("validate manifest", () => {
-    it("valid", async () => {
-        const manifest = await fs.readJson("./../resources/valid.manifest.json");
-        const manifestString = manifest.toString();
+    let plugin: AppStudioPlugin;
+    let ctx: PluginContext;
 
-        const plugin = new AppStudioPlugin();
-        let ctx: PluginContext = {
+    beforeEach(async () => {
+        plugin = new AppStudioPlugin();
+        ctx = {
             root: "./",
             configOfOtherPlugins: new Map(),
             config: new ConfigMap(),
-            app: null,
+            app: new TeamsAppManifest()
         }
-        const validationResult = await plugin.validateManifest(manifestString);
+    })
+
+    it("valid manifest", async () => {
+        const manifestFile = path.resolve(__dirname, "./../resources/valid.manifest.json");
+        const manifest = await fs.readJson(manifestFile);
+        const manifestString = JSON.stringify(manifest);
+
+        sinon.stub(plugin, "validateManifest").resolves(ok([]));
+        
+        const validationResult = await plugin.validateManifest(ctx, manifestString);
         chai.assert.isTrue(validationResult.isOk());
         if (validationResult.isOk()) {
-            chai.assert.equal(validationResult.value, []);
+            chai.expect(validationResult.value).to.have.lengthOf(0);
         }
+
+        sinon.restore();
     });
 
-    it("invalid", async () => {
-        const manifest = await fs.readJson("./../resources/invalid.manifest.json");
-        const manifestString = manifest.toString();
+    it("invalid manifest", async () => {
+        const manifestFile = path.resolve(__dirname, "./../resources/invalid.manifest.json");
+        const manifest = await fs.readJson(manifestFile);
+        const manifestString = JSON.stringify(manifest);
 
-        const plugin = new AppStudioPlugin();
-        const validationResult = await plugin.validateManifest(manifestString);
+        sinon.stub(plugin, "validateManifest").resolves(ok(["developer | Required properties are missing from object: []."]));
+
+        const validationResult = await plugin.validateManifest(ctx, manifestString);
         chai.assert.isTrue(validationResult.isOk());
         if (validationResult.isOk()) {
-            chai.assert(validationResult.value.length > 0);
+            chai.expect(validationResult.value).to.have.lengthOf(1);
         }
+
+        sinon.restore();
     });
 });
-*/

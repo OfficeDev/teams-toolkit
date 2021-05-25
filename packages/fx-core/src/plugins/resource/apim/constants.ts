@@ -13,6 +13,7 @@ export class ProjectConstants {
   public static readonly readMeFileName: string = "README.md";
   public static readonly maxRetries: number = 5;
   public static readonly retryTimeInterval: number = 2000;
+  public static readonly helpLink: string = "https://aka.ms/teamsfx-apim-help";
 }
 
 export class ApimDefaultValues {

@@ -7,7 +7,6 @@ import * as vscode from "vscode";
 import { initializeExtensionVariables } from "./extensionVariables";
 import * as handlers from "./handlers";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
-import { TelemetryEvent, TelemetryProperty } from "./telemetry/extTelemetryEvents";
 import { registerTeamsfxTaskAndDebugEvents } from "./debug/teamsfxTaskHandler";
 import { TeamsfxTaskProvider } from "./debug/teamsfxTaskProvider";
 import { TeamsfxDebugProvider } from "./debug/teamsfxDebugProvider";
@@ -15,10 +14,13 @@ import { ExtensionSurvey } from "./utils/survey";
 import VsCodeLogInstance from "./commonlib/log";
 import * as StringResources from "./resources/Strings.json";
 import { openWelcomePageAfterExtensionInstallation } from "./controls/openWelcomePage";
+import { VsCodeUI } from "./qm/vsc_ui";
+
+export let VS_CODE_UI:VsCodeUI;
 
 export async function activate(context: vscode.ExtensionContext) {
   VsCodeLogInstance.info(StringResources.vsc.extension.activate);
-
+  VS_CODE_UI = new VsCodeUI(context);
   // Init context
   initializeExtensionVariables(context);
 

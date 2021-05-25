@@ -45,6 +45,7 @@ import {
   SubscriptionInfo,
   MsgLevel,
   AzureSolutionSettings,
+  UserInteraction,
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import * as error from "./error";
@@ -268,17 +269,17 @@ class CoreImpl implements Core {
     if (scratch === ScratchOptionNo.id) {
       const samples = answers?.getOptionItem(CoreQuestionNames.Samples);
       if (samples && samples.data && folder) {
-        const answer = (
-          await this.ctx.dialog?.communicate(
-            new DialogMsg(DialogType.Show, {
-              description: `Download '${samples.label}' from Github. This will download '${samples.label}' repository and open to your local machine`,
-              level: MsgLevel.Info,
-              items: ["Download"],
-              modal: true,
-            })
-          )
-        )?.getAnswer();
-        if (answer === "Download") {
+        // const answer = (
+        //   await this.ctx.dialog?.communicate(
+        //     new DialogMsg(DialogType.Show, {
+        //       description: `Download '${samples.label}' from Github. This will download '${samples.label}' repository and open to your local machine`,
+        //       level: MsgLevel.Info,
+        //       items: ["Download"],
+        //       modal: true,
+        //     })
+        //   )
+        // )?.getAnswer();
+        // if (answer === "Download") {
           const url = samples.data as string;
           const sampleId = samples.id;
 
@@ -327,7 +328,7 @@ class CoreImpl implements Core {
           } finally {
             progress.end();
           }
-        }
+        //}
         return ok(null);
       }
     }
@@ -509,6 +510,8 @@ class CoreImpl implements Core {
 
             if (subscriptions.length === 1) {
               this.setSubscription(subscriptions[0]);
+              selectSubLabel = subscriptions[0].subscriptionName;
+              icon = "subscriptionSelected";
             }
           } else {
             selectSubLabel = activeSubscription.subscriptionName;
@@ -1007,8 +1010,9 @@ class CoreImpl implements Core {
     return await this.selectedSolution!.scaffold(this.solutionContext(answers));
   }
 
-  public async withDialog(dialog: Dialog): Promise<Result<null, FxError>> {
+  public async withDialog(dialog: Dialog, ui?: UserInteraction): Promise<Result<null, FxError>> {
     this.ctx.dialog = dialog;
+    this.ctx.ui = ui;
     return ok(null);
   }
 
@@ -1218,8 +1222,8 @@ export class CoreProxy implements Core {
       }
     }
   }
-  withDialog(dialog: Dialog): Promise<Result<null, FxError>> {
-    return this.coreImpl.withDialog(dialog);
+  withDialog(dialog: Dialog, ui?: UserInteraction): Promise<Result<null, FxError>> {
+    return this.coreImpl.withDialog(dialog, ui);
   }
   withLogger(logger: LogProvider): Promise<Result<null, FxError>> {
     return this.coreImpl.withLogger(logger);

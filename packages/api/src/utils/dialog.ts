@@ -4,6 +4,7 @@
 
 import { Result } from "neverthrow";
 import { FxError } from "../error";
+import { MsgLevel } from "../qm/ui";
 export interface Dialog {
   /*
    * Platforms (such as VSCode, CLI) support this function to communicate with core.
@@ -68,12 +69,7 @@ export interface IProgressHandler {
    */
   end: () => Promise<void>;
 }
-
-export enum MsgLevel {
-  Info = "Info",
-  Warning = "Warning",
-  Error = "Error",
-}
+ 
 
 export interface IMessage {
   description: string;

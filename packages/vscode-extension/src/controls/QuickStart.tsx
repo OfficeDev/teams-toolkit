@@ -6,7 +6,7 @@ import { PanelType } from "./PanelType";
 import CommandsIMG from "../../media/step_commands.svg";
 import NodeIMG from "../../media/step_nodejs.svg";
 import M365IMG from "../../media/step_m365.svg";
-import AzureIMG from "../../media/step_azure.svg";
+import AzureIMG from "../../media/step_azure.png";
 import TodoListSampleIMG from "../../media/todolist-sample.gif";
 import Step_Done from "../../media/Done.svg";
 import Step_Active_0 from "../../media/active-0.svg";
@@ -122,8 +122,8 @@ export default class QuickStart extends React.Component<any, any> {
               return (
                 <GetStartedAction
                   title={`Explore Teams Toolkit commands`}
-                  content={`Open Command Palette (${shortcut}) and type ‘Teamsfx’ to find all relevant commands. `}
-                  actionText="Display TeamsFx commands"
+                  content={`Open Command Palette (${shortcut}) and type ‘Teams’ to find all relevant commands. `}
+                  actionText="Display Teams commands"
                   onAction={this.displayCommands}
                   secondaryActionText="Next"
                   onSecondaryAction={() => {

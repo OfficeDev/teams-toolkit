@@ -164,9 +164,9 @@ export namespace AppStudio {
       }
     } catch (e) {
       if (e instanceof Error) {
-        await logProvider?.warning(`failed to update app due to ${e.name}: ${e.message}`);
+        await logProvider?.warning(`Cannot get the app definition with app ID ${teamsAppId}, due to ${e.name}: ${e.message}`);
       }
-      throw new Error(`failed to update app due to ${e.name}: ${e.message}`);
+      throw new Error(`Cannot get the app definition with app ID ${teamsAppId}, due to ${e.name}: ${e.message}`);
     }
     throw new Error(`Cannot get the app definition with app ID ${teamsAppId}`);
   }

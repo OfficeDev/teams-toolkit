@@ -1,15 +1,14 @@
 import {
-  FxQuickPickOption,
   InputResult,
   InputResultType,
   OptionItem,
-  returnSystemError,
-  StaticOption,
+  returnSystemError
 } from "@microsoft/teamsfx-api";
 import { Disposable, QuickInputButton, QuickInputButtons, Uri, window } from "vscode";
+import { SelectOptionsConfig } from "../../../api/build";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { ext } from "../extensionVariables";
-import { FxQuickPickItem } from "./vsc_ui";
+import { cloneSet, FxQuickPickItem } from "./vsc_ui";
 
 export class FxMultiQuickPickItem implements FxQuickPickItem {
   id: string;
@@ -18,7 +17,6 @@ export class FxMultiQuickPickItem implements FxQuickPickItem {
   description?: string | undefined;
   detail?: string | undefined;
   alwaysShow?: boolean | undefined;
-
   picked: boolean;
   rawLabel: string;
 
@@ -66,7 +64,7 @@ export class FxMultiQuickPickItem implements FxQuickPickItem {
   }
 }
 
-export async function multiQuickPick(option: FxQuickPickOption): Promise<InputResult> {
+export async function selectOptions(config: SelectOptionsConfig): Promise<InputResult> {
   const okButton: QuickInputButton = {
     iconPath: Uri.file(ext.context.asAbsolutePath("media/ok.svg")),
     tooltip: "ok",
@@ -75,23 +73,24 @@ export async function multiQuickPick(option: FxQuickPickOption): Promise<InputRe
   try {
     const quickPick = window.createQuickPick<FxMultiQuickPickItem>();
     disposables.push(quickPick);
-    quickPick.title = option.title;
-    if (option.backButton) quickPick.buttons = [QuickInputButtons.Back, okButton];
+    quickPick.title = config.title;
+    if (config.step && config.step > 1) quickPick.buttons = [QuickInputButtons.Back, okButton];
     else quickPick.buttons = [okButton];
-    quickPick.placeholder = option.placeholder;
+    quickPick.placeholder = config.placeholder;
     quickPick.ignoreFocusOut = true;
     quickPick.matchOnDescription = true;
     quickPick.matchOnDetail = true;
     quickPick.canSelectMany = false;
-    // quickPick.step = option.step;
-    // quickPick.totalSteps = option.totalSteps;
-    let previousSelectedItems: OptionItem[] = [];
+    quickPick.step = config.step;
+    quickPick.totalSteps = config.totalSteps;
+    const currentIds = new Set<string>();
+    const preIds = new Set<string>();
 
-    let selectNum = option.defaultValue ? option.defaultValue.length : 0;
+    let selectNum = config.default ? config.default.length : 0;
     const firstItem = new FxMultiQuickPickItem({
       description: "",
       detail: `${
-        option.prompt ? option.prompt + ", p" : "P"
+        config.prompt ? config.prompt + ", p" : "P"
       }ress <Enter> to continue, press <Alt+LeftArrow> to go back. `,
       id: "",
       label: `$(checklist) Selected ${selectNum} item${selectNum > 1 ? "s" : ""}`,
@@ -103,13 +102,13 @@ export async function multiQuickPick(option: FxQuickPickOption): Promise<InputRe
         if (item === undefined || item === firstItem) {
           const selectedItems = quickPick.items.filter((i) => i.picked);
           const strArray = Array.from(selectedItems.map((i) => i.id));
-          if (option.validation) {
-            const validateRes = await option.validation(strArray);
+          if (config.validation) {
+            const validateRes = await config.validation(strArray);
             if (validateRes) {
               return;
             }
           }
-          if (option.returnObject)
+          if (config.returnObject)
             resolve({
               type: InputResultType.sucess,
               result: selectedItems.map((i) => i.getOptionItem()),
@@ -117,18 +116,16 @@ export async function multiQuickPick(option: FxQuickPickOption): Promise<InputRe
           else resolve({ type: InputResultType.sucess, result: selectedItems.map((i) => i.id) });
         }
         item.click();
-        if (option.onDidChangeSelection) {
-          const newIds: string[] = (
-            await option.onDidChangeSelection(
-              quickPick.items.filter((i) => i.picked).map((i) => i.getOptionItem()),
-              previousSelectedItems
-            )
-          ).sort();
-          previousSelectedItems = [];
+        if (config.onDidChangeSelection) {
+          currentIds.clear();
+          quickPick.items.filter((i) => i.picked).map((i) => currentIds.add(i.id));
+          const clonedCurrentSet = cloneSet(currentIds);
+          const newIds = await config.onDidChangeSelection( clonedCurrentSet, preIds );
+          preIds.clear();
           quickPick.items.forEach((i) => {
-            if (newIds.includes(i.id)) {
+            if (newIds.has(i.id)) {
               i.check();
-              previousSelectedItems.push(i.getOptionItem());
+              preIds.add(i.id);
             } else i.uncheck();
           });
         }
@@ -152,18 +149,19 @@ export async function multiQuickPick(option: FxQuickPickOption): Promise<InputRe
       try {
         // set items
         const items: FxMultiQuickPickItem[] = [firstItem];
-        option.items.forEach((element: string | OptionItem) => {
+        config.options.forEach((element: string | OptionItem) => {
           items.push(new FxMultiQuickPickItem(element));
         });
         // default
-        if (option.defaultValue) {
-          const ids = option.defaultValue as string[];
+        if (config.default) {
+          const ids = config.default as string[];
           items.forEach((i) => {
             if (ids.includes(i.id)) {
               i.check();
             }
           });
-          previousSelectedItems = items.filter((i) => i.picked).map((i) => i.getOptionItem());
+          preIds.clear();
+          items.filter((i) => i.picked).map(i=>preIds.add(i.id));
         }
         quickPick.items = items;
         disposables.push(quickPick);

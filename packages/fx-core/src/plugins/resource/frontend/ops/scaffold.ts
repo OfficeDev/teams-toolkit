@@ -79,7 +79,7 @@ export class FrontendScaffold {
   }
 
   public static getTemplateZipFromLocal(templateInfo: TemplateInfo): AdmZip {
-    const templatePath = templateInfo.localTemplatePath; //path.resolve(FrontendPathInfo.RootDir, );
+    const templatePath = templateInfo.localTemplatePath;
     return new AdmZip(templatePath);
   }
 
@@ -88,7 +88,6 @@ export class FrontendScaffold {
     templateInfo: TemplateInfo
   ): Promise<AdmZip> {
     try {
-      // Temporarily hard code template language as JavaScript
       const templateUrl = await FrontendScaffold.getTemplateURL(
         tagListURL,
         templateInfo.localTemplateBaseName

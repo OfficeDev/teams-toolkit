@@ -10,8 +10,6 @@ import { v4 as uuidv4 } from "uuid";
 
 import { cfg, AadManager, ResourceGroupManager } from "../commonlib";
 
-import GraphTokenProvider from "../../src/commonlib/graphLogin";
-
 export const execAsync = promisify(exec);
 
 const testFolder = path.resolve(os.homedir(), "test-folder");
@@ -68,7 +66,7 @@ export async function cleanUpAadApp(
 ) {
     const envFilePath = path.resolve(projectPath, envFilePathSuffix);
     const context = await fs.readJSON(envFilePath);
-    const manager = await AadManager.init(GraphTokenProvider);
+    const manager = await AadManager.init();
     const promises: Promise<boolean>[] = [];
 
     const clean = async (objectId?: string) => {
@@ -159,7 +157,7 @@ export async function cleanUp(
 
 export async function cleanUpResourcesCreatedHoursAgo(type: "aad" | "rg", contains: string, hours?: number, retryTimes = 5) {
     if (type === "aad") {
-        const aadManager = await AadManager.init(GraphTokenProvider);
+        const aadManager = await AadManager.init();
         await aadManager.deleteAadApps(contains, hours, retryTimes);
     } else {
         const rgManager = await ResourceGroupManager.init();

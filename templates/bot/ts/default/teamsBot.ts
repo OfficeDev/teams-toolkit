@@ -16,7 +16,6 @@ export class TeamsBot extends TeamsActivityHandler {
   dialogState: any;
 
   /**
-   *
    * @param {ConversationState} conversationState
    * @param {UserState} userState
    * @param {Dialog} dialog

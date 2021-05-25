@@ -18,7 +18,7 @@
     "build:node": "tsc -p . && cross-env ONLY_NODE=true rollup -c 2>&1",
     "build:test": "tsc -p . && rollup -c rollup.test.config.js 2>&1",
     "build": "tsc -p . && npm run build:node && api-extractor run --local",
-    "prepare": "npm run build",
+    "prepare": "npm run syncVersion && npm run build",
     "build:api-markdown": "tsc -p . && api-extractor run --local && api-documenter markdown -i temp -o ../../docs/sdk",
     "check-format": "prettier --list-different --config ./.prettierrc.json --ignore-path ./.prettierignore \"src/**/*.ts\" \"test/**/*.ts\" \"samples/**/*.ts\" \"*.{js,json}\"",
     "clean": "rimraf dist dist-* temp types *.tgz *.log",
@@ -37,7 +37,8 @@
     "unit-test:node": "mocha dist-test/index.node.js --reporter ./tools/mocha-multi-reporter.js",
     "test:unit": "npm run build:test && npm run unit-test:node && npm run unit-test:browser",
     "e2e-test": "mocha --no-timeouts -r test/mocha.env.ts -r ts-node/register test/e2e/**/*.spec.ts --exit",
-    "precommit": "lint-staged"
+    "precommit": "lint-staged",
+    "syncVersion": "node tools/syncVersion.js"
   },
   "files": [
     "dist/",

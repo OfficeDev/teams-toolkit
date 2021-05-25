@@ -12,30 +12,25 @@ import {
 import { Utils } from "./utils";
 
 export class FrontendConfig {
-  appName: string;
   subscriptionId: string;
-  resourceNameSuffix: string;
   resourceGroupName: string;
   location: string;
   storageName: string;
   credentials: TokenCredentialsBase;
 
-  localPath?: string;
+  endpoint?: string;
+  domain?: string;
 
   private constructor(
-    appName: string,
     subscriptionId: string,
     resourceGroupName: string,
     location: string,
-    resourceNameSuffix: string,
     storageName: string,
     credentials: TokenCredentialsBase
   ) {
-    this.appName = appName;
     this.subscriptionId = subscriptionId;
     this.resourceGroupName = resourceGroupName;
     this.location = location;
-    this.resourceNameSuffix = resourceNameSuffix;
     this.storageName = storageName;
     this.credentials = credentials;
   }
@@ -79,15 +74,25 @@ export class FrontendConfig {
     }
 
     return new FrontendConfig(
-      appName,
       subscriptionId,
       resourceGroupName,
       location,
-      resourceNameSuffix,
       storageName,
       credentials
     );
   }
+
+  public syncToPluginContext(ctx: PluginContext): void {
+    Object.entries(this)
+      .filter((kv) => FrontendConfig.persistentConfigList.includes(kv[0]))
+      .forEach((kv) => {
+        if (kv[1]) {
+          FrontendConfig.setConfigIfNotExists(ctx, kv[0], kv[1]);
+        }
+      });
+  }
+
+  private static persistentConfigList = Object.values(FrontendConfigInfo);
 
   private static getConfig<T>(key: string, configs?: ReadonlyPluginConfig): T {
     const value = configs?.get(key) as T;
@@ -95,5 +100,12 @@ export class FrontendConfig {
       throw new InvalidConfigError(key);
     }
     return value;
+  }
+
+  private static setConfigIfNotExists(ctx: PluginContext, key: string, value: unknown): void {
+    if (ctx.config.get(key)) {
+      return;
+    }
+    ctx.config.set(key, value);
   }
 }

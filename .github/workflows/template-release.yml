@@ -19,7 +19,7 @@ jobs:
       with:
         ref: ${{ github.ref }}
     - name: Generate Template Zip Files
-      run: .github/scripts/template-zip-autogen.sh ${{ github.ref }}
+      run: .github/scripts/template-zip-autogen.sh
     - name: Create Templates Release
       uses: ncipollo/release-action@v1.7.3
       with:

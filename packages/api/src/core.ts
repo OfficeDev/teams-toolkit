@@ -30,7 +30,7 @@ import {
 } from "./utils";
 import { Result } from "neverthrow";
 import { ConfigMap } from "./config";
-import { Func, QTreeNode } from "./qm";
+import { Func, QTreeNode, UserInteraction } from "./qm";
 import { Platform, Stage } from "./constants";
 import { FxError } from "./error";
 
@@ -48,7 +48,7 @@ export interface Core {
     /**
      * withDialog
      */
-    withDialog: (dialog: Dialog) => Promise<Result<null, FxError>>;
+    withDialog: (dialog: Dialog, ui?: UserInteraction) => Promise<Result<null, FxError>>;
 
     /**
      * withLogger

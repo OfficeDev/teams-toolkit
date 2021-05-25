@@ -41,13 +41,16 @@
       "preLaunchTask": "npm: test-watch"
     },
     {
-      "name": "Environment Checker Tests",
-      "type": "node",
+      "name": "Extension Tests (Environment Checker)",
+      "type": "extensionHost",
       "request": "launch",
-      "program": "${workspaceFolder}/node_modules/mocha/bin/mocha",
-      "args": ["--ui", "tdd", "./out/test/suite/envChecker/cases/**/*.js", "--timeout", "180000"],
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}",
+        "--extensionTestsPath=${workspaceFolder}/out/test/suite/envChecker/index"
+      ],
       "outFiles": ["${workspaceFolder}/out/src/**/*.js", "${workspaceFolder}/out/test/**/*.js"],
-      "preLaunchTask": "npm: test-watch"
+      "preLaunchTask": "npm: test-watch",
+      "sourceMaps": true
     }
   ]
 }

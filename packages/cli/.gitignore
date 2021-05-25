@@ -39,3 +39,8 @@ obj
 
 test-folder
 .env
+
+resource
+!resource/*Param.json
+templates
+*.tgz

@@ -10,7 +10,7 @@ import { FrontendConfig } from "../../../../../src/plugins/resource/frontend/con
 import { FrontendConfigInfo } from "../../../../../src/plugins/resource/frontend/constants";
 import {
   InvalidConfigError,
-  InvalidTemplateManifestError,
+  InvalidStorageNameError,
   UnauthenticatedError,
 } from "../../../../../src/plugins/resource/frontend/resources/errors";
 import { TestHelper } from "../helper";
@@ -19,7 +19,11 @@ chai.use(chaiAsPromised);
 
 describe("frontendConfig", () => {
   function assertRejected(fn: () => Promise<FrontendConfig>, errorName: string) {
-    chai.expect(fn()).to.eventually.be.rejectedWith().and.have.property("name").include(errorName);
+    return chai
+      .expect(fn())
+      .to.eventually.be.rejectedWith()
+      .and.have.property("code")
+      .and.include(errorName);
   }
 
   describe("fromPluginContext", () => {
@@ -35,7 +39,7 @@ describe("frontendConfig", () => {
 
     it("no azure credential", async () => {
       pluginContext.azureAccountProvider = undefined;
-      assertRejected(
+      await assertRejected(
         () => FrontendConfig.fromPluginContext(pluginContext),
         new UnauthenticatedError().code
       );
@@ -44,7 +48,7 @@ describe("frontendConfig", () => {
     it("no configs", async () => {
       pluginContext.configOfOtherPlugins = new Map([["solution", new Map()]]);
 
-      assertRejected(
+      await assertRejected(
         () => FrontendConfig.fromPluginContext(pluginContext),
         new InvalidConfigError("").code
       );
@@ -53,9 +57,9 @@ describe("frontendConfig", () => {
     it("invalid storage name", async () => {
       const invalidStorageName = "dangerous.com/";
       pluginContext.config.set(FrontendConfigInfo.StorageName, invalidStorageName);
-      assertRejected(
+      await assertRejected(
         () => FrontendConfig.fromPluginContext(pluginContext),
-        new InvalidTemplateManifestError("").code
+        new InvalidStorageNameError().code
       );
     });
   });

@@ -42,6 +42,32 @@ jobs:
         run: |
           echo "${{ secrets.NPMRC }}" > ~/.npmrc
 
+      - name: generate templates
+        run: .github/scripts/template-zip-autogen.sh
+
+      - name: release templates' daily version to github
+        if: ${{ github.ref == 'refs/heads/dev' && startsWith(github.event.inputs.version, 'pre') }}
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: ${{ secrets.CD_PAT }}
+          prerelease: true
+          automatic_release_tag: "templates@0.0.0-alpha"
+          files: |
+            ./*.zip
+
+      - name: release templates' prerelease version to github
+        if: ${{ startsWith(github.ref, 'refs/heads/release/') && github.event.inputs.version == 'prerelease' }}
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: ${{ secrets.CD_PAT }}
+          prerelease: true
+          automatic_release_tag: "templates@0.0.0-rc"
+          files: |
+            ./*.zip
+
+      - name: cleanup templates
+        run: rm -rf ./*.zip
+
       - name: Download Simple Auth bits
         uses: nick-invision/retry@v2
         with: 

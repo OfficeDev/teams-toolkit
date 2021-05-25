@@ -11,6 +11,6 @@
     "strict": true, /* enable all strict type-checking options */
     "resolveJsonModule": true
   },
-  "include": ["src", "resource"],
+  "include": ["src"],
   "exclude": ["node_modules"]
 }

@@ -19,7 +19,7 @@ import {
 } from "./question";
 import { getValidationFunction, RemoteFuncExecutor, validate } from "./validation";
 import { ConfigMap, Inputs } from "../config";
-import { InputResult, InputResultType, UserInterface } from "./ui";
+import { InputResult, InputResultType, UserInteraction } from "./ui";
 import { returnSystemError, returnUserError } from "../error";
 import { operationOptionsToRequestOptionsBase } from "@azure/core-http";
 import { QuestionType } from "../utils";
@@ -108,7 +108,7 @@ export function getSingleOption(
 type QuestionVistor = (
   question: Question,
   parentValue: unknown,
-  ui: UserInterface,
+  ui: UserInteraction,
   inputs: ConfigMap,
   remoteFuncExecutor?: RemoteFuncExecutor,
   step?: number,
@@ -147,12 +147,15 @@ export async function getCallFuncValue(
 const questionVisitor: QuestionVistor = async function (
   question: Question,
   parentValue: unknown,
-  ui: UserInterface,
+  ui: UserInteraction,
   inputs: ConfigMap,
   remoteFuncExecutor?: RemoteFuncExecutor,
   step?: number,
   totalSteps?: number
 ): Promise<InputResult> {
+  if(inputs.get(question.name) !== undefined) {
+    return { type: InputResultType.sucess, result: inputs.get(question.name) };
+  }
   //FunctionCallQuestion
   if (question.type === NodeType.func) {
     if (remoteFuncExecutor) {
@@ -176,9 +179,7 @@ const questionVisitor: QuestionVistor = async function (
       question.type === NodeType.password ||
       question.type === NodeType.number
     ) {
-      const inputQuestion: TextInputQuestion | NumberInputQuestion = question as
-        | TextInputQuestion
-        | NumberInputQuestion;
+      const inputQuestion: TextInputQuestion = question as TextInputQuestion;
       const validationFunc = inputQuestion.validation
         ? getValidationFunction(inputQuestion.validation, inputs, remoteFuncExecutor)
         : undefined;
@@ -194,14 +195,14 @@ const questionVisitor: QuestionVistor = async function (
         inputQuestion.prompt,
         remoteFuncExecutor
       )) as string;
-      return await ui.showInputBox({
+      return await ui.inputText({
+        name: question.name,
         title: title,
         password: !!(question.type === NodeType.password),
-        defaultValue: defaultValue as string,
+        default: defaultValue as string,
         placeholder: placeholder,
         prompt: prompt,
         validation: validationFunc,
-        number: !!(question.type === NodeType.number),
         step: step,
         totalSteps: totalSteps,
       });
@@ -244,30 +245,42 @@ const questionVisitor: QuestionVistor = async function (
         mq.prompt,
         remoteFuncExecutor
       )) as string;
-      return await ui.showQuickPick({
-        title: title,
-        items: res.options,
-        canSelectMany: !!(question.type === NodeType.multiSelect),
-        returnObject: selectQuestion.returnObject,
-        defaultValue: defaultValue as string | string[],
-        placeholder: placeholder,
-        onDidChangeSelection:
-          question.type === NodeType.multiSelect ? mq.onDidChangeSelection : undefined,
-        validation: validationFunc,
-        prompt: prompt,
-        step: step,
-        totalSteps: totalSteps,
-      });
+      if(question.type  === NodeType.singleSelect){
+        return await ui.selectOption({
+          name: question.name,
+          title: title,
+          options: res.options,
+          returnObject: selectQuestion.returnObject,
+          default: defaultValue as string,
+          placeholder: placeholder,
+          prompt: prompt,
+          step: step,
+          totalSteps: totalSteps,
+        });
+      }
+      else{
+        return await ui.selectOptions({
+          name: question.name,
+          title: title,
+          options: res.options,
+          returnObject: selectQuestion.returnObject,
+          default: defaultValue as string[],
+          placeholder: placeholder,
+          prompt: prompt,
+          onDidChangeSelection: mq.onDidChangeSelection,
+          validation: validationFunc,
+          step: step,
+          totalSteps: totalSteps,
+        });
+      }
     } else if (question.type === NodeType.folder) {
       const fileQuestion: FileQuestion = question as FileQuestion;
       const validationFunc = fileQuestion.validation
         ? getValidationFunction(fileQuestion.validation, inputs, remoteFuncExecutor)
         : undefined;
-      return await ui.showOpenDialog({
-        defaultUri: defaultValue as string,
-        canSelectFiles: false,
-        canSelectFolders: true,
-        canSelectMany: false,
+      return await ui.selectFolder({
+        name: question.name,
+        default: defaultValue as string,
         title: title,
         validation: validationFunc,
         step: step,
@@ -288,7 +301,7 @@ const questionVisitor: QuestionVistor = async function (
 export async function traverse(
   root: QTreeNode,
   inputs: ConfigMap,
-  ui: UserInterface,
+  ui: UserInteraction,
   remoteFuncExecutor?: RemoteFuncExecutor
 ): Promise<InputResult> {
   const stack: QTreeNode[] = [];

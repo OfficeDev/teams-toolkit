@@ -159,7 +159,7 @@ export class AadService {
         return result;
       } catch (error) {
         error.message = `[Detail] ${error?.response?.data?.error?.message ?? error.message}`;
-        this.logger?.info(LogMessages.operationFailed(operation, resourceType, resourceId));
+        this.logger?.warning(LogMessages.operationFailed(operation, resourceType, resourceId));
         const wrappedError = BuildError(
           AadOperationError,
           error,

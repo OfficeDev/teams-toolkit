@@ -84,7 +84,7 @@ export class FrontendConfig {
 
   public syncToPluginContext(ctx: PluginContext): void {
     Object.entries(this)
-      .filter((kv) => FrontendConfig.persistentConfigList.find((x: string) => x === kv[0]))
+      .filter((kv) => FrontendConfig.persistentConfigList.includes(kv[0]))
       .forEach((kv) => {
         if (kv[1]) {
           FrontendConfig.setConfigIfNotExists(ctx, kv[0], kv[1]);
@@ -92,7 +92,7 @@ export class FrontendConfig {
       });
   }
 
-  private static persistentConfigList = Object.entries(FrontendConfigInfo).map((kv) => kv[1]);
+  private static persistentConfigList = Object.values(FrontendConfigInfo);
 
   private static getConfig<T>(key: string, configs?: ReadonlyPluginConfig): T {
     const value = configs?.get(key) as T;

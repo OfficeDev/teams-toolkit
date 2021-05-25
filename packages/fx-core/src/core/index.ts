@@ -735,6 +735,14 @@ class CoreImpl implements Core {
                 contextValue: "signinAzure",
               },
             ]);
+
+            this.ctx.treeProvider?.remove([
+              {
+                commandId: "fx-extension.selectSubscription",
+                label: "",
+                parent: "fx-extension.signinAzure"
+              }
+            ]);
           }
 
           return Promise.resolve();

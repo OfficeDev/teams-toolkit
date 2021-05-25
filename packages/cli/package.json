@@ -1,6 +1,7 @@
 {
   "name": "@microsoft/teamsfx-cli",
   "version": "0.1.0-rc.4",
+  "author": "Microsoft Corporation",
   "description": "",
   "license": "MIT",
   "engines": {
@@ -11,10 +12,11 @@
     "url": "git+https://github.com/OfficeDev/TeamsFx.git"
   },
   "scripts": {
-    "prepare": "npm run build",
     "copy-files": "copyfiles -u 1 src/**/*.html src/**/*.css lib/",
     "build": "tsc -p ./ && npm run copy-files",
     "watch": "tsc -w -p ./ && npm run copy-files",
+    "package": "rimraf lib && npx webpack --mode production --config ./webpack.config.js",
+    "prepublishOnly": "npm run test:unit && npm run test:integration && npm run package",
     "test:e2e": "npm run test:e2e:clean && npm run test:e2e:smoke && npm run test:e2e:others",
     "test:e2e:clean": "ts-node tests/e2e/clean.ts",
     "test:e2e:smoke": "mocha --no-timeouts --require ts-node/register tests/e2e/smoke/*.tests.ts",
@@ -34,7 +36,7 @@
   ],
   "preferGlobal": true,
   "bin": {
-    "teamsfx": "./lib/cli.js"
+    "teamsfx": "./cli.js"
   },
   "aiKey": "9b98d367-eb8f-4338-a848-97fa528660a0",
   "devDependencies": {
@@ -60,17 +62,27 @@
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chai-spies": "^1.0.0",
+    "copy-webpack-plugin": "^9.0.0",
     "copyfiles": "^2.4.1",
+    "css-loader": "^5.2.5",
     "eslint": "^7.9.0",
+    "html-webpack-plugin": "^5.3.1",
     "jsonschema": "^1.4.0",
     "lint-staged": "^10.5.4",
     "mocha": "^8.3.0",
     "mocha-junit-reporter": "^2.0.0",
-    "mocha-parallel-tests": "^2.3.0",
     "nyc": "^15.1.0",
+    "path-browserify": "^1.0.1",
+    "sass-loader": "^11.1.1",
+    "style-loader": "^2.0.0",
+    "terser-webpack-plugin": "^5.1.2",
+    "ts-loader": "^9.2.2",
     "ts-node": "^9.0.0",
     "typescript": "^4.1.2",
-    "uuid": "^8.3.2"
+    "url-loader": "^4.1.1",
+    "uuid": "^8.3.2",
+    "webpack": "^5.37.1",
+    "webpack-cli": "^4.7.0"
   },
   "dependencies": {
     "@azure/arm-apimanagement": "^6.0.0",
@@ -102,7 +114,8 @@
   },
   "files": [
     "lib",
-    "resource"
+    "resource",
+    "templates"
   ],
   "gitHead": "7d60c0765c0ea8c023a26c10d1c93001c597afbb",
   "publishConfig": {

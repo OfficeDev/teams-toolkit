@@ -1,7 +1,7 @@
 {
     "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.9/MicrosoftTeams.schema.json",
     "manifestVersion": "1.9",
-    "packageName": "<%= componentNameCamelCase %>",
+    "packageName": "<%= componentNameUnescaped %>",
     "id": "<%= componentId %>",
     "version": "1.0.0",
     "developer": {
@@ -11,11 +11,11 @@
         "termsOfUseUrl": "https://www.microsoft.com/en-us/servicesagreement"
     },
     "name": {
-        "short": "<%= componentNameCamelCase %>"
+        "short": "<%= componentNameUnescaped %>"
     },
     "description": {
-        "short": "<%= componentNameCamelCase %>",
-        "full": "<%= componentNameCamelCase %>"
+        "short": "<%= componentNameUnescaped %>",
+        "full": "<%= componentNameUnescaped %>"
     },
     "icons": {
         "outline": "outline.png",
@@ -25,7 +25,7 @@
     "staticTabs": [
         {
             "entityId": "<%= componentId %>",
-            "name": "<%= componentNameCamelCase %>",
+            "name": "<%= componentNameUnescaped %>",
             "contentUrl": "https://{teamSiteDomain}/_layouts/15/TeamsLogon.aspx?SPFX=true&dest=/_layouts/15/teamshostedapp.aspx%3Fteams%26personal%26componentId=<%= componentId %>%26forceLocale={locale}",
             "websiteUrl": "https://products.office.com/en-us/sharepoint/collaboration",
             "scopes": [

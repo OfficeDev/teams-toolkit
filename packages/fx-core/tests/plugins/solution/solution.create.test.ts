@@ -12,7 +12,7 @@ import {
   TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
-import fs, { PathLike, writeFile } from "fs-extra";
+import fs, { PathLike } from "fs-extra";
 import {
   BOTS_TPL,
   COMPOSE_EXTENSIONS_TPL,
@@ -32,8 +32,6 @@ import {
   MessageExtensionItem,
   TabOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
-import { entries } from "lodash";
-import { assert } from "sinon";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;

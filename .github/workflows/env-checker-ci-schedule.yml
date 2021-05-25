@@ -17,8 +17,9 @@ jobs:
       ##
       ## Details about this issue: https://github.com/npm/cli/wiki/%22cb()-never-called%3F--I'm-having-the-same-problem!%22
       ### tl;dr: This error is not one thing, but a category of errors. It means "something broke and we didn't have a way to catch it". We will always need a lot of detail to reproduce an error like this, or we cannot ever fix it. Every instance is unique, and your cb() never called is nothing like any other.
+      # macos-latest is 10.15. We need to test 11 as well.
       matrix: # TODO: add more versions and cases where Node.js do not exist
-        os: [windows-latest, macos-latest, ubuntu-latest]
+        os: [windows-latest, macos-latest, macos-11, ubuntu-latest]
         node-version: [10, 12, 14]
         func-version: [none]
         dotnet-version: [none, 3.1.x, 5.0.x]
@@ -32,12 +33,12 @@ jobs:
           fetch-depth: 0
 
       - name: Uninstalling .NET on Windows
-        if: ${{ matrix.os == 'windows-latest' }}
+        if: ${{ runner.os == 'Windows' }}
         run: |
           powershell -NoProfile -Command ./.github/env-checker/uninstall-dotnet.ps1
 
       - name: Uninstalling .NET on macOS or Ubuntu
-        if: ${{ matrix.os == 'macos-latest' || matrix.os == 'ubuntu-latest' }}
+        if: ${{ runner.os == 'macOS' || runner.os == 'Linux' }}
         run: |
           ./.github/env-checker/uninstall-dotnet.sh
 
@@ -47,12 +48,12 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Setup Azure Functions Core Tools For Linux
-        if: ${{ matrix.os == 'ubuntu-latest' && matrix.func-version != 'none' }}
+        if: ${{ runner.os == 'Linux' && matrix.func-version != 'none' }}
         run: |
           sudo npm install --unsafe-perm -g azure-functions-core-tools@${{ matrix.func-version }}
 
       - name: Setup Azure Functions Core Tools For Windows and macOS
-        if: ${{ matrix.os != 'ubuntu-latest' && matrix.func-version != 'none' }}
+        if: ${{ runner.os != 'Linux' && matrix.func-version != 'none' }}
         run: |
           npm install -g azure-functions-core-tools@${{ matrix.func-version }}
 

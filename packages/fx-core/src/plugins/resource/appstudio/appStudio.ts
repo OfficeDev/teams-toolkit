@@ -53,39 +53,6 @@ export namespace AppStudioClient {
   }
 
   /**
-   * Update App Definition in App Studio
-   */
-  export async function updateTeamsApp(
-    teamsAppId: string,
-    appDefinition: IAppDefinition,
-    appStudioToken: string
-  ): Promise<boolean> {
-    try {
-      const requester = createRequesterWithToken(appStudioToken);
-      const response = await requester.post(`/api/appdefinitions/${teamsAppId}`, appDefinition);
-      if (response && response.data) {
-        const app = <IAppDefinition>response.data;
-
-        if (app && app.teamsAppId && app.teamsAppId === teamsAppId) {
-          return true;
-        } else {
-          throw AppStudioResultFactory.SystemError(
-            AppStudioError.TeamsAppUpdateIDNotMatchError.name,
-            AppStudioError.TeamsAppUpdateIDNotMatchError.message(teamsAppId, app.teamsAppId)
-          );
-        }
-      }
-    } catch (e) {
-      throw AppStudioResultFactory.SystemError(
-        AppStudioError.TeamsAppUpdateFailedError.name,
-        AppStudioError.TeamsAppUpdateFailedError.message(teamsAppId),
-        e
-      );
-    }
-    return false;
-  }
-
-  /**
    * Publish Teams app to Teams App Catalog
    */
   export async function publishTeamsApp(

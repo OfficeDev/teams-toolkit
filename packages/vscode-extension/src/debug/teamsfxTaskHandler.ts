@@ -105,7 +105,7 @@ function onDidStartDebugSessionHandler(event: vscode.DebugSession): void {
 export function terminateAllRunningTeamsfxTasks(): void {
   for (const task of allRunningTeamsfxTasks) {
     try {
-      process.kill(task[1], "SIGINT");
+      process.kill(task[1], "SIGTERM");
     } catch (e) {
       // ignore and keep killing others
     }

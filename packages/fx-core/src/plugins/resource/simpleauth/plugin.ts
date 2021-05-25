@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { err, FunctionGroupTask, FxError, ok, PluginContext, Result } from "@microsoft/teamsfx-api";
+import { FxError, PluginContext, Result } from "@microsoft/teamsfx-api";
 import { Constants, Messages } from "./constants";
 import { UnauthenticatedError } from "./errors";
 import { ResultFactory } from "./result";
@@ -88,39 +88,25 @@ export class SimpleAuthPluginImpl {
       ctx
     );
 
-    let endpoint:string;
+    DialogUtils.progressBar = ctx.dialog?.createProgressBar(
+      Constants.ProgressBar.provision.title,
+      3
+    );
+    await DialogUtils.progressBar?.start(Constants.ProgressBar.start);
 
-    const task1 = async (): Promise<Result<undefined, Error>> => {
-      await this.webAppClient.createAppServicePlan();
-      return ok(undefined);
-    }
-    const task2 = async (): Promise<Result<undefined, Error>> => {
-      endpoint = await this.webAppClient.createWebApp();
-      return ok(undefined);
-    }
-    const task3 = async (): Promise<Result<undefined, Error>> => {
-      const simpleAuthFilePath = Utils.getSimpleAuthFilePath();
-      await Utils.downloadZip(simpleAuthFilePath);
-      await this.webAppClient.zipDeploy(simpleAuthFilePath);
-      ctx.config.set(Constants.SimpleAuthPlugin.configKeys.endpoint, endpoint);
-      Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndProvision);
-      return ok(undefined);
-    }
-    const group = new FunctionGroupTask({
-      name:Constants.ProgressBar.provision.title,
-      tasks:[task1,task2,task3],
-      taskNames:[
-        Constants.ProgressBar.provision.createAppServicePlan,
-        Constants.ProgressBar.provision.createWebApp,
-        Constants.ProgressBar.provision.zipDeploy
-      ], 
-      cancelable:true,
-      concurrent: false,
-      fastFail: true
-    });
-    const res = (await ctx.ui?.runWithProgress(group)) as Result<any, FxError>;
-    if(res.isOk()) return ok(undefined);
-    else throw res.error;
+    const endpoint = await this.webAppClient.createWebApp();
+
+    await DialogUtils.progressBar?.next(Constants.ProgressBar.provision.zipDeploy);
+    const simpleAuthFilePath = Utils.getSimpleAuthFilePath();
+    await Utils.downloadZip(simpleAuthFilePath);
+    await this.webAppClient.zipDeploy(simpleAuthFilePath);
+
+    ctx.config.set(Constants.SimpleAuthPlugin.configKeys.endpoint, endpoint);
+
+    await DialogUtils.progressBar?.end();
+
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndProvision);
+    return ResultFactory.Success();
   }
 
   public async postProvision(ctx: PluginContext): Promise<Result<any, FxError>> {

@@ -2,9 +2,9 @@
 // Licensed under the MIT license.
 import { WebSiteManagementClient } from "@azure/arm-appservice";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-import axios, {CancelTokenSource } from "axios";
+import axios from "axios";
 import * as fs from "fs-extra";
-import { PluginContext} from "@microsoft/teamsfx-api";
+import { PluginContext } from "@microsoft/teamsfx-api";
 import { Constants, Messages } from "./constants";
 import {
   CreateAppServicePlanError,
@@ -24,7 +24,7 @@ export class WebAppClient {
   private location: string;
   private webSiteManagementClient: WebSiteManagementClient;
   private ctx: PluginContext;
-  cancelTokenSource:CancelTokenSource;
+
   constructor(
     credentials: TokenCredentialsBase,
     subscriptionId: string,
@@ -45,9 +45,9 @@ export class WebAppClient {
       this.subscriptionId
     );
     this.ctx = ctx;
-    this.cancelTokenSource = axios.CancelToken.source();
   }
-  public async createAppServicePlan(){
+
+  public async createWebApp(): Promise<string> {
     try {
       DialogUtils.progressBar?.next(Constants.ProgressBar.provision.createAppServicePlan);
       const appServicePlan = await this.webSiteManagementClient.appServicePlans.createOrUpdate(
@@ -58,8 +58,7 @@ export class WebAppClient {
           sku: {
             name: this.getSkuName(),
           },
-        },
-        {cancelToken: this.cancelTokenSource.token}
+        }
       );
       this.ctx.logProvider?.info(
         Messages.getLog("appServicePlan is created: " + appServicePlan.name)
@@ -80,16 +79,13 @@ export class WebAppClient {
         error
       );
     }
-  }
 
-  public async createWebApp(): Promise<string> {
     try {
       DialogUtils.progressBar?.next(Constants.ProgressBar.provision.createWebApp);
       const webApp = await this.webSiteManagementClient.webApps.createOrUpdate(
         this.resourceGroupName,
         this.webAppName,
-        { location: this.location, serverFarmId: this.appServicePlanName },
-        {cancelToken: this.cancelTokenSource.token}
+        { location: this.location, serverFarmId: this.appServicePlanName }
       );
       this.ctx.logProvider?.info(Messages.getLog("webApp is created: " + webApp.name));
 
@@ -105,8 +101,9 @@ export class WebAppClient {
 
   public async zipDeploy(filePath: string) {
     const token = await this.credentials.getToken();
+
     try {
-      const response = await axios({
+      const zipdeployResult = await axios({
         method: "POST",
         url: `https://${this.webAppName}.scm.azurewebsites.net/api/zipdeploy`,
         headers: {
@@ -115,15 +112,14 @@ export class WebAppClient {
         data: await fs.readFile(filePath),
         maxContentLength: Infinity,
         maxBodyLength: Infinity,
-        cancelToken: this.cancelTokenSource.token,
       });
-      this.ctx.logProvider?.info(Messages.getLog(`zipdeploy is done! status:${response.status}`));
+      this.ctx.logProvider?.info(Messages.getLog("zipdeploy is done: " + zipdeployResult.status));
     } catch (error) {
       throw ResultFactory.SystemError(
-            ZipDeployError.name,
-            ZipDeployError.message(error?.message),
-            error
-          );
+        ZipDeployError.name,
+        ZipDeployError.message(error?.message),
+        error
+      );
     }
   }
 

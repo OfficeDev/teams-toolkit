@@ -39,15 +39,12 @@ export class AppStudioPlugin implements Plugin {
     });
 
     if (stage === Stage.publish) {
-      if (ctx.platform === Platform.VS) {
+      if (ctx.answers?.platform === Platform.VS) {
         const appPath = new QTreeNode({
           type: NodeType.folder,
           name: Constants.PUBLISH_PATH_QUESTION,
           title: "Please select the folder contains manifest.json and icons",
-          default: `${ctx.root}/.${ConfigFolderName}`,
-          validation: {
-            required: true,
-          },
+          default: `${ctx.root}/.${ConfigFolderName}`
         });
         appStudioQuestions.addChild(appPath);
 
@@ -61,7 +58,7 @@ export class AppStudioPlugin implements Plugin {
         const buildOrPublish = new QTreeNode({
           name: Constants.BUILD_OR_PUBLISH_QUESTION,
           type: NodeType.singleSelect,
-          option: [manuallySubmitOption, autoPublishOption],
+          staticOptions: [manuallySubmitOption, autoPublishOption],
           title: "Teams Toolkit: Publish to Teams",
           default: autoPublishOption.id,
         });
@@ -158,8 +155,8 @@ export class AppStudioPlugin implements Plugin {
   public async publish(ctx: PluginContext): Promise<Result<string | undefined, FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.publish);
-    if (ctx.platform !== Platform.VS) {
-      const answer = ctx.answers?.get(Constants.BUILD_OR_PUBLISH_QUESTION);
+    if (ctx.answers?.platform !== Platform.VS) {
+      const answer = ctx.answers![Constants.BUILD_OR_PUBLISH_QUESTION] as string;
       if (answer === manuallySubmitOption.id) {
         const appDirectory = `${ctx.root}/.${ConfigFolderName}`;
         const manifestString = JSON.stringify(ctx.app);

@@ -174,7 +174,7 @@ export class SPFxPluginImpl {
 
   private async buildSPPackge(ctx: PluginContext): Promise<Result<any, FxError>> {
     const progressHandler = await ProgressHelper.startPreDeployProgressHandler(ctx);
-    if (ctx.platform === Platform.VSCode) {
+    if (ctx.answers?.platform === Platform.VSCode) {
       (ctx.logProvider as any).outputChannel.show();
     }
     try {

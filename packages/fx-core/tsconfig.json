@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "experimentalDecorators": true,
     "module": "commonjs",
     "target": "es2017",
     "outDir": "build",
@@ -16,7 +17,8 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "jsx": "react",
-    "declaration": true
+    "declaration": true,
+    "experimentalDecorators": true,
   },
   "include": ["src"],
   "exclude": ["node_modules", "**/tests/*"]

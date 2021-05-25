@@ -3,7 +3,7 @@
 
 import { err, ok, Result } from "neverthrow";
 import { FxError, UserCancelError } from "../error";
-import { StaticOption } from "../qm/question";
+import { StaticOptions } from "../qm/question";
 
 export interface UIConfig {
   name: string;
@@ -15,13 +15,13 @@ export interface UIConfig {
 }
 
 export interface SelectOptionConfig extends UIConfig {
-  options: StaticOption;
+  options: StaticOptions;
   default?: string;
   returnObject?: boolean;
 }
 
 export interface SelectOptionsConfig extends UIConfig {
-  options: StaticOption;
+  options: StaticOptions;
   default?: string[];
   returnObject?: boolean;
   onDidChangeSelection?: (

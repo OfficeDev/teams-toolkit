@@ -79,8 +79,8 @@ export class AppStudioPluginImpl {
 
     // For vs platform, read the local manifest.json file
     // For cli/vsc platform, get manifest from ctx
-    if (ctx.platform === Platform.VS) {
-      appDirectory = ctx.answers?.getString(Constants.PUBLISH_PATH_QUESTION);
+    if (ctx.answers?.platform === Platform.VS) {
+      appDirectory = ctx.answers![Constants.PUBLISH_PATH_QUESTION] as string;
       const manifestFile = `${appDirectory}/${Constants.MANIFEST_FILE}`;
       try {
         const manifestFileState = await fs.stat(manifestFile);
@@ -119,7 +119,7 @@ export class AppStudioPluginImpl {
       // For VS Code/CLI platform, let the user confirm before publish
       // For VS platform, do not enable confirm
       let executePublishUpdate = false;
-      if (ctx.platform === Platform.VS) {
+      if (ctx.answers?.platform === Platform.VS) {
         executePublishUpdate = true;
       } else {
         let description = `The app ${existApp.displayName} has already been submitted to tenant App Catalog.\nStatus: ${existApp.publishingState}\n`;
@@ -176,8 +176,8 @@ export class AppStudioPluginImpl {
 
       // Update App in App Studio
       let remoteTeamsAppId: string | undefined = undefined;
-      if (ctx.platform === Platform.VS) {
-        remoteTeamsAppId = ctx.answers?.getString(Constants.REMOTE_TEAMS_APP_ID);
+      if (ctx.answers?.platform === Platform.VS) {
+        remoteTeamsAppId = ctx.answers![Constants.REMOTE_TEAMS_APP_ID] as string;
       } else {
         remoteTeamsAppId = ctx.configOfOtherPlugins
           .get("solution")

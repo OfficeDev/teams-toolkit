@@ -116,9 +116,9 @@ async function _getQuestions(
   const questionManager = await Factory.buildQuestionManager(ctx, solutionConfig);
   switch (stage) {
     case Stage.update:
-      return await questionManager.update(apimConfig);
+      return await questionManager.update(ctx, apimConfig);
     case Stage.deploy:
-      return await questionManager.deploy(apimConfig);
+      return await questionManager.deploy(ctx, apimConfig);
     default:
       return undefined;
   }

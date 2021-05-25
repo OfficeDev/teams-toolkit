@@ -26,7 +26,6 @@ import {
   returnSystemError,
   ConfigFolderName,
   traverse,
-  RemoteFuncExecutor,
   Inputs,
   ConfigMap,
   InputResult,
@@ -35,7 +34,7 @@ import {
   AppStudioTokenProvider
 } from "@microsoft/teamsfx-api";
 import {
-  CoreProxy,
+  loadSolutionContext,
   InvalidProjectError,
   isUserCancelError,
   isValidProject,
@@ -82,7 +81,7 @@ import { SPFxNodeChecker } from "./debug/depsChecker/spfxNodeChecker";
 import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { VS_CODE_UI } from "./extension";
 
-export let core: CoreProxy;
+export let core: loadSolutionContext;
 const runningTasks = new Set<string>(); // to control state of task execution
 
 export function getWorkspacePath(): string | undefined {
@@ -95,7 +94,7 @@ export function getWorkspacePath(): string | undefined {
 export async function activate(): Promise<Result<null, FxError>> {
   const result: Result<null, FxError> = ok(null);
   try {
-    core = CoreProxy.getInstance();
+    core = loadSolutionContext.getInstance();
 
     {
       const result = await core.withDialog(DialogManagerInstance, VS_CODE_UI);
@@ -277,13 +276,6 @@ export async function publishHandler(args?: any[]): Promise<Result<null, FxError
   return await runCommand(Stage.publish);
 }
 
-const coreExeceutor: RemoteFuncExecutor = async function(
-  func: Func,
-  answers: Inputs | ConfigMap
-): Promise<Result<unknown, FxError>> {
-  return await core.callFunc(func, answers as ConfigMap);
-};
-
 export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
   const eventName = ExtTelemetry.stageToEvent(stage);
   let result: Result<null, FxError> = ok(null);
@@ -328,10 +320,13 @@ export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
       throw checkCoreRes.error;
     }
 
-    const answers = new ConfigMap();
-    answers.set("stage", stage);
-    answers.set("platform", Platform.VSCode);
-    answers.set("workspacePath", workspacePath);
+    const answers:Inputs = {
+      projectPath: workspacePath,
+      platform: Platform.VSCode,
+      vscodeEnv: detectVsCodeEnv(),
+      "function-dotnet-checker-enabled": vscodeAdapter.dotnetCheckerEnabled(),
+      stage: stage
+    };
 
     // 4. getQuestions
     const qres = await core.getQuestions(stage, Platform.VSCode);
@@ -339,14 +334,12 @@ export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
       throw qres.error;
     }
 
-    const vscenv = detectVsCodeEnv();
-    answers.set("vscenv", vscenv);
-    VsCodeLogInstance.info(util.format(StringResources.vsc.handlers.vsCodeEnvironment, vscenv));
+    VsCodeLogInstance.info(util.format(StringResources.vsc.handlers.vsCodeEnvironment, answers.vscodeEnv));
 
     // 5. run question model
     const node = qres.value;
     if (node) {
-      const res: InputResult = await traverse(node, answers, VS_CODE_UI, coreExeceutor);
+      const res: InputResult = await traverse(node, answers, VS_CODE_UI);
       if (res.type === InputResultType.error) {
         throw res.error!;
       } else if (res.type === InputResultType.cancel) {
@@ -455,11 +448,12 @@ async function runUserTask(func: Func, eventName: string): Promise<Result<null, 
       throw checkCoreRes.error;
     }
 
-    const answers = new ConfigMap();
-    answers.set("task", eventName);
-    answers.set("platform", Platform.VSCode);
-    answers.set("workspacePath", workspacePath);
-
+    const answers:Inputs = {
+      projectPath: workspacePath,
+      platform: Platform.VSCode,
+      vscodeEnv: detectVsCodeEnv(),
+      "function-dotnet-checker-enabled": vscodeAdapter.dotnetCheckerEnabled()
+    };
     // 4. getQuestions
     const qres = await core.getQuestionsForUserTask(func, Platform.VSCode);
     if (qres.isErr()) {
@@ -469,7 +463,7 @@ async function runUserTask(func: Func, eventName: string): Promise<Result<null, 
     // 5. run question model
     const node = qres.value;
     if (node) {
-      const res: InputResult = await traverse(node, answers, VS_CODE_UI, coreExeceutor);
+      const res: InputResult = await traverse(node, answers, VS_CODE_UI);
       if (res.type === InputResultType.error && res.error) {
         throw res.error;
       } else if (res.type === InputResultType.cancel) {

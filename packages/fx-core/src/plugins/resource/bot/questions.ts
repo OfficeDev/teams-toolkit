@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import { WayToRegisterBot } from "./enums/wayToRegisterBot";
 import { QuestionNames, QuestionOptions } from "./constants";
-import { NodeType, QTreeNode } from "@microsoft/teamsfx-api";
+import { Inputs, NodeType, QTreeNode } from "@microsoft/teamsfx-api";
 import isUUID from "validator/lib/isUUID";
 
 const createQuestions = new QTreeNode({
@@ -12,7 +12,7 @@ const createQuestions = new QTreeNode({
 const wayToRegisterBotQuestion = new QTreeNode({
   name: QuestionNames.WAY_TO_REGISTER_BOT,
   type: NodeType.singleSelect,
-  option: QuestionOptions.WAY_TO_REGISTER_BOT_OPTIONS,
+  staticOptions: QuestionOptions.WAY_TO_REGISTER_BOT_OPTIONS,
   title: "Bot registration",
   default: WayToRegisterBot.CreateNew,
   placeholder: "Select an option",
@@ -26,7 +26,8 @@ const botIdQuestion = new QTreeNode({
   placeholder: "00000000-0000-0000-0000-00000000000",
   prompt: "Open bot managment tool to get bot id",
   validation: {
-    validFunc: async (botId: string) => {
+    validFunc: async (input: string|string[]|undefined, previousInputs?: Inputs) => {
+      const botId = input as string;
       if (!botId || !isUUID(botId)) {
         return "Invalid bot id: must be a valid GUID.";
       }
@@ -38,15 +39,15 @@ const botIdQuestion = new QTreeNode({
 
 const botPasswordQuestion = new QTreeNode({
   name: QuestionNames.GET_BOT_PASSWORD,
-  type: NodeType.password,
+  type: NodeType.text,
+  password: true,
   title: "Enter bot password",
   default: "",
   validation: {
-    validFunc: async (botPassword: string) => {
-      if (!botPassword) {
+    validFunc: async (input: string|string[]|undefined, previousInputs?: Inputs) => {
+      if (!(input as string)) {
         return "Invalid bot password. Password is empty.";
       }
-
       return undefined;
     },
   },

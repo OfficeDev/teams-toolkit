@@ -1,42 +1,32 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { RemoteFuncValidation, NodeType, QTreeNode } from "@microsoft/teamsfx-api";
+import { NodeType, QTreeNode, TextInputQuestion } from "@microsoft/teamsfx-api";
 import { Constants } from "./constants";
 
-export const adminNameQuestion = new QTreeNode({
+export const adminNameQuestion: TextInputQuestion = {
   name: Constants.questionKey.adminName,
-  description: Constants.userQuestion.adminName,
-  type: NodeType.text,
-  validation: {
-    namespace: `${Constants.solutionPluginFullName}/${Constants.pluginFullName}`,
-    method: Constants.questionKey.adminName,
-  } as RemoteFuncValidation,
-});
+  title: Constants.userQuestion.adminName,
+  type: NodeType.text
+};
 
-export const adminPasswordQuestion = new QTreeNode({
+export const adminPasswordQuestion: TextInputQuestion = {
   name: Constants.questionKey.adminPassword,
-  description: Constants.userQuestion.adminPassword,
-  type: NodeType.password,
-  validation: {
-    namespace: `${Constants.solutionPluginFullName}/${Constants.pluginFullName}`,
-    method: Constants.questionKey.adminPassword,
-  } as RemoteFuncValidation,
-});
+  title: Constants.userQuestion.adminPassword,
+  type: NodeType.text,
+  password: true
+};
 
-export const confirmPasswordQuestion = new QTreeNode({
+export const confirmPasswordQuestion: TextInputQuestion = {
   name: Constants.questionKey.confirmPassword,
-  description: Constants.userQuestion.confirmPassword,
-  type: NodeType.password,
-  validation: {
-    namespace: `${Constants.solutionPluginFullName}/${Constants.pluginFullName}`,
-    method: Constants.questionKey.confirmPassword,
-  } as RemoteFuncValidation,
-});
+  title: Constants.userQuestion.confirmPassword,
+  type: NodeType.text,
+  password: true
+};
 
 export const skipAddingUserQuestion = new QTreeNode({
   name: Constants.questionKey.skipAddingUser,
-  description: Constants.userQuestion.confirmPassword,
+  title: Constants.userQuestion.confirmPassword,
   type: NodeType.singleSelect,
-  option: ["true", "false"],
+  staticOptions: ["true", "false"],
   default: "false",
 });

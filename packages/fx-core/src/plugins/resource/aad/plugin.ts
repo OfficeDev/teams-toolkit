@@ -260,7 +260,7 @@ export class AadAppForTeamsImpl {
     }
 
     if (azureAad && localAad) {
-      const ans = ctx.answers?.get(Constants.AskForEnvName);
+      const ans = ctx.answers![Constants.AskForEnvName];
       if (!ans) {
         ctx.logProvider?.info(Messages.UserCancelled);
         return undefined;

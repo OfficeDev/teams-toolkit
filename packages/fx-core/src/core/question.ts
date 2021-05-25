@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import {
-  ConfigMap,
-  FileQuestion,
+  FolderQuestion,
+  Inputs,
   NodeType,
   OptionItem,
   SingleSelectQuestion,
@@ -29,12 +29,13 @@ export const QuestionAppName: TextInputQuestion = {
   name: CoreQuestionNames.AppName,
   title: "Application name",
   validation: {
-    validFunc: async (appName: string, answer?: ConfigMap): Promise<string | undefined> => {
-      const folder = answer?.getString(CoreQuestionNames.Foler);
+    validFunc: async (input: string|string[]|undefined, previousInputs?: Inputs): Promise<string | undefined> => {
+      const folder = previousInputs![CoreQuestionNames.Foler] as string;
       if (!folder) return undefined;
       const schema = {
         pattern: ProjectNamePattern,
       };
+      const appName = input as string;
       const validateResult = jsonschema.validate(appName, schema);
       if (validateResult.errors && validateResult.errors.length > 0) {
         return "Application name must start with a letter and can only contain letters and digits.";
@@ -48,20 +49,17 @@ export const QuestionAppName: TextInputQuestion = {
   placeholder: "Application name",
 };
 
-export const QuestionRootFolder: FileQuestion = {
+export const QuestionRootFolder: FolderQuestion = {
   type: NodeType.folder,
   name: CoreQuestionNames.Foler,
-  title: "Workspace folder",
-  validation: {
-    required: true,
-  },
+  title: "Workspace folder"
 };
 
 export const QuestionSelectSolution: SingleSelectQuestion = {
   type: NodeType.singleSelect,
   name: CoreQuestionNames.Solution,
   title: "Select a solution",
-  option: [],
+  staticOptions: [],
   skipSingleOption: true,
 };
 
@@ -81,7 +79,7 @@ export const ScratchOrSampleSelect: SingleSelectQuestion = {
   type: NodeType.singleSelect,
   name: CoreQuestionNames.CreateFromScratch,
   title: "Teams Toolkit: Create a new Teams app",
-  option: [ScratchOptionYes, ScratchOptionNo],
+  staticOptions: [ScratchOptionYes, ScratchOptionNo],
   default: ScratchOptionYes.id,
   placeholder: "Select an option",
   skipSingleOption: true,
@@ -91,7 +89,7 @@ export const SampleSelect: SingleSelectQuestion = {
   type: NodeType.singleSelect,
   name: CoreQuestionNames.Samples,
   title: "Start from a sample",
-  option: [
+  staticOptions: [
     {
       id: "todo-list-with-Azure-backend",
       label: "Todo List with backend on Azure",

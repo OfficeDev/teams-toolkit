@@ -79,7 +79,7 @@ export default class Deploy extends YargsCommand {
       const deployPluginNode = allNodes.find(node => node.data.name === this.deployPluginNodeName)!;
       const components = args.components as string[] || [];
       if (components.length === 0) {
-        const option = (deployPluginNode.data as MultiSelectQuestion).option as OptionItem[];
+        const option = (deployPluginNode.data as MultiSelectQuestion).staticOptions as OptionItem[];
         answers.set(this.deployPluginNodeName, option.map(op => op.cliName));
       } else {
         answers.set(this.deployPluginNodeName, components);

@@ -159,15 +159,15 @@ export async function visitInteractively(
 
   let answer: any = undefined;
   if (node.data.type !== NodeType.group) {
-    if (node.data.type === NodeType.localFunc) {
+    if (node.data.type === NodeType.func) {
       const res = await node.data.func(answers);
       answers[node.data.name] = res;
     }
     else if (!isAutoSkipSelect(node.data)) {
       answers = await inquirer.prompt([toInquirerQuestion(node.data, answers, remoteFuncValidator)], answers);
       // convert the option.label to option.id
-      if ("option" in node.data) {
-        const option = node.data.option;
+      if ("staticOptions" in node.data) {
+        const option = (node.data as SingleSelectQuestion|MultiSelectQuestion).staticOptions;
         if (option instanceof Array && option.length > 0 && typeof option[0] !== "string") {
           const tmpAns = answers[node.data.name];
           if (tmpAns instanceof Array) {

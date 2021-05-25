@@ -72,7 +72,7 @@ export default class New extends YargsCommand {
       }
       nodesWithoutGroup.forEach((node) => {
         const data = node.data as Question;
-        if (isAutoSkipSelect(data)) {
+        if (isAutoSkipSelect(data) &&  data.type != NodeType.func) {
           // set the only option to default value so yargs will auto fill it.
           data.default = getSingleOptionString(data as SingleSelectQuestion | MultiSelectQuestion);
           (data as any).hide = true;
@@ -162,7 +162,7 @@ class NewTemplete extends YargsCommand {
       })
       .options(RootFolderNodeData.name, {
         type: "string",
-        description: RootFolderNodeData.description,
+        description: RootFolderNodeData.type != NodeType.func ? RootFolderNodeData.title : "unknown",
         default: RootFolderNodeData.default,
       });
     return yargs;

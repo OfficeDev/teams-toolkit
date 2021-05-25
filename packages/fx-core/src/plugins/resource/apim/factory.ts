@@ -88,7 +88,7 @@ export class Factory {
     ctx: PluginContext,
     solutionConfig: SolutionConfig
   ): Promise<IQuestionManager> {
-    switch (ctx.platform) {
+    switch (ctx.answers?.platform) {
       case Platform.VSCode:
         // Lazy init apim service to get the latest subscription id in configuration
         const lazyApimService = new Lazy<ApimService>(

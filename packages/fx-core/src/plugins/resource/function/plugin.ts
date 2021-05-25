@@ -5,6 +5,7 @@ import {
   AzureSolutionSettings,
   Func,
   FxError,
+  Inputs,
   NodeType,
   PluginContext,
   QTreeNode,
@@ -191,13 +192,13 @@ export class FunctionPluginImpl {
         return ResultFactory.Success(ErrorMessages.invalidFunctionName);
       }
 
-      const stage: Stage | undefined = ctx.answers?.get(QuestionKey.stage) as Stage;
+      const stage: Stage | undefined = ctx.answers![QuestionKey.stage] as Stage;
       if (stage === Stage.create) {
         return ResultFactory.Success();
       }
 
       const language: FunctionLanguage =
-        (ctx.answers?.get(QuestionKey.programmingLanguage) as FunctionLanguage) ??
+        (ctx.answers![QuestionKey.programmingLanguage] as FunctionLanguage) ??
         (ctx.configOfOtherPlugins
           .get(DependentPluginInfo.solutionPluginName)
           ?.get(DependentPluginInfo.programmingLanguage) as FunctionLanguage);
@@ -217,7 +218,32 @@ export class FunctionPluginImpl {
     });
 
     if (stage === Stage.update) {
-      res.addChild(functionNameQuestion);
+      functionNameQuestion.validation = {
+        validFunc: async(input: string|string[]|undefined, previousInputs?: Inputs) : Promise<string | undefined> => {
+          const workingPath: string = this.getFunctionProjectRootPath(ctx);
+          const name = input as string;
+          if (!name || !RegularExpr.validFunctionNamePattern.test(name)) {
+            return ErrorMessages.invalidFunctionName;
+          }
+
+          const stage: Stage | undefined = ctx.answers![QuestionKey.stage] as Stage;
+          if (stage === Stage.create) {
+            return undefined;
+          }
+
+          const language: FunctionLanguage =
+            (ctx.answers![QuestionKey.programmingLanguage] as FunctionLanguage) ??
+            (ctx.configOfOtherPlugins
+              .get(DependentPluginInfo.solutionPluginName)
+              ?.get(DependentPluginInfo.programmingLanguage) as FunctionLanguage);
+
+          // If language is unknown, skip checking and let scaffold handle the error.
+          if (language && (await FunctionScaffold.doesFunctionPathExist(workingPath, language, name))) {
+            return ErrorMessages.functionAlreadyExists;
+          }
+        }
+      };
+      res.addChild(new QTreeNode(functionNameQuestion));
     }
 
     return ResultFactory.Success(res);
@@ -233,7 +259,7 @@ export class FunctionPluginImpl {
     );
 
     const name: string =
-      (ctx.answers?.get(QuestionKey.functionName) as string) ?? DefaultValues.functionName;
+      (ctx.answers![QuestionKey.functionName] as string) ?? DefaultValues.functionName;
     if (await FunctionScaffold.doesFunctionPathExist(workingPath, functionLanguage, name)) {
       throw new FunctionNameConflictError();
     }

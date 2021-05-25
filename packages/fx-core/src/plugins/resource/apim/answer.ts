@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { ApiContract } from "@azure/arm-apimanagement/src/models";
-import { ConfigMap, Platform, PluginContext, Stage } from "@microsoft/teamsfx-api";
+import { ConfigMap, Inputs, OptionItem, Platform, PluginContext, Stage } from "@microsoft/teamsfx-api";
 import { OpenAPI } from "openapi-types";
 import { QuestionConstants, ValidationConstants } from "./constants";
 import { AssertNotEmpty, BuildError, InvalidCliOptionError, NotImplemented } from "./error";
@@ -25,7 +25,7 @@ export interface IAnswer {
 
 export function buildAnswer(ctx: PluginContext): IAnswer {
   const answers = AssertNotEmpty("ctx.answers", ctx.answers);
-  switch (ctx.platform) {
+  switch (ctx.answers?.platform) {
     case Platform.VSCode:
       return new VSCodeAnswer(answers);
     case Platform.CLI:
@@ -36,42 +36,41 @@ export function buildAnswer(ctx: PluginContext): IAnswer {
 }
 
 export class VSCodeAnswer implements IAnswer {
-  private answer: ConfigMap;
-  constructor(answer: ConfigMap) {
+  private answer: Inputs;
+  constructor(answer: Inputs) {
     this.answer = answer;
   }
   get resourceGroupName(): string | undefined {
-    const apimService = this.answer?.getOptionItem(QuestionConstants.VSCode.Apim.questionName)
-      ?.data as IApimServiceResource;
+    const apimService = (this.answer[QuestionConstants.VSCode.Apim.questionName] as OptionItem).data as IApimServiceResource;
     return apimService?.resourceGroupName;
   }
   get apimServiceName(): string | undefined {
-    const apimService = this.answer?.getOptionItem(QuestionConstants.VSCode.Apim.questionName)
+    const apimService = (this.answer[QuestionConstants.VSCode.Apim.questionName] as OptionItem)
       ?.data as IApimServiceResource;
     return apimService?.serviceName;
   }
   get apiDocumentPath(): string | undefined {
-    return this.answer?.getOptionItem(QuestionConstants.VSCode.OpenApiDocument.questionName)?.label;
+    return (this.answer[QuestionConstants.VSCode.OpenApiDocument.questionName] as OptionItem)?.label;
   }
   get openApiDocumentSpec(): OpenAPI.Document | undefined {
-    const openApiDocument = this.answer?.getOptionItem(
+    const openApiDocument = (this.answer[
       QuestionConstants.VSCode.OpenApiDocument.questionName
-    )?.data as IOpenApiDocument;
+    ] as OptionItem)?.data as IOpenApiDocument;
     return openApiDocument?.spec as OpenAPI.Document;
   }
   get apiPrefix(): string | undefined {
-    return this.answer?.getString(QuestionConstants.VSCode.ApiPrefix.questionName);
+    return this.answer[QuestionConstants.VSCode.ApiPrefix.questionName] as string;
   }
   get apiId(): string | undefined {
-    const api = this.answer?.getOptionItem(QuestionConstants.VSCode.ApiVersion.questionName)
+    const api = (this.answer[QuestionConstants.VSCode.ApiVersion.questionName] as OptionItem)
       ?.data as ApiContract;
     return api?.name;
   }
   get versionIdentity(): string | undefined {
-    const api = this.answer?.getOptionItem(QuestionConstants.VSCode.ApiVersion.questionName)
+    const api = (this.answer[QuestionConstants.VSCode.ApiVersion.questionName] as OptionItem)
       ?.data as ApiContract;
     return (
-      api?.apiVersion ?? this.answer?.getString(QuestionConstants.VSCode.NewApiVersion.questionName)
+      api?.apiVersion ?? this.answer[QuestionConstants.VSCode.NewApiVersion.questionName] as string
     );
   }
 
@@ -90,28 +89,28 @@ export class VSCodeAnswer implements IAnswer {
 }
 
 export class CLIAnswer implements IAnswer {
-  private answer: ConfigMap;
-  constructor(answer: ConfigMap) {
+  private answer: Inputs;
+  constructor(answer: Inputs) {
     this.answer = answer;
   }
 
   get resourceGroupName(): string | undefined {
-    return this.answer?.getString(QuestionConstants.CLI.ApimResourceGroup.questionName);
+    return this.answer[QuestionConstants.CLI.ApimResourceGroup.questionName] as string;
   }
   get apimServiceName(): string | undefined {
-    return this.answer?.getString(QuestionConstants.CLI.ApimServiceName.questionName);
+    return this.answer[QuestionConstants.CLI.ApimServiceName.questionName] as string;
   }
   get apiDocumentPath(): string | undefined {
-    return this.answer?.getString(QuestionConstants.CLI.OpenApiDocument.questionName);
+    return this.answer[QuestionConstants.CLI.OpenApiDocument.questionName] as string;
   }
   get apiPrefix(): string | undefined {
-    return this.answer?.getString(QuestionConstants.CLI.ApiPrefix.questionName);
+    return this.answer[QuestionConstants.CLI.ApiPrefix.questionName] as string;
   }
   get apiId(): string | undefined {
-    return this.answer?.getString(QuestionConstants.CLI.ApiId.questionName);
+    return this.answer[QuestionConstants.CLI.ApiId.questionName] as string;
   }
   get versionIdentity(): string | undefined {
-    return this.answer?.getString(QuestionConstants.CLI.ApiVersion.questionName);
+    return this.answer[QuestionConstants.CLI.ApiVersion.questionName] as string;
   }
 
   save(stage: Stage, apimConfig: IApimPluginConfig): void {

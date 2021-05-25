@@ -75,7 +75,7 @@ export class TeamsBotImpl {
     await this.config.restoreConfigFromContext(context);
     Logger.info(Messages.PreScaffoldingBot);
 
-    const rawWay = this.ctx.answers?.get(QuestionNames.WAY_TO_REGISTER_BOT);
+    const rawWay = this.ctx.answers![QuestionNames.WAY_TO_REGISTER_BOT];
 
     if (!rawWay) {
       throw new UserInputsError(QuestionNames.WAY_TO_REGISTER_BOT, rawWay as string);
@@ -609,13 +609,13 @@ export class TeamsBotImpl {
   }
 
   private async reuseExistingBotRegistration() {
-    const rawBotId = this.ctx!.answers?.get(QuestionNames.GET_BOT_ID);
+    const rawBotId = this.ctx!.answers![QuestionNames.GET_BOT_ID];
     if (!rawBotId) {
       throw new UserInputsError(QuestionNames.GET_BOT_ID, rawBotId as string);
     }
     const botId = rawBotId as string;
 
-    const rawBotPassword = this.ctx!.answers?.get(QuestionNames.GET_BOT_PASSWORD);
+    const rawBotPassword = this.ctx!.answers![QuestionNames.GET_BOT_PASSWORD];
     if (!rawBotPassword) {
       throw new UserInputsError(QuestionNames.GET_BOT_PASSWORD, rawBotPassword as string);
     }

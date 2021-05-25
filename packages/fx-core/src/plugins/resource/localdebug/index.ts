@@ -67,7 +67,7 @@ export class LocalDebugPlugin implements Plugin {
       ?.get(SolutionPlugin.ProgrammingLanguage) as string;
 
     const telemetryProperties = {
-      platform: ctx.platform as string,
+      platform: ctx.answers?.platform as string,
       spfx: isSpfx ? "true" : "false",
       frontend: includeFrontend ? "true" : "false",
       function: includeBackend ? "true" : "false",
@@ -78,7 +78,7 @@ export class LocalDebugPlugin implements Plugin {
     TelemetryUtils.sendStartEvent(TelemetryEventName.scaffold, telemetryProperties);
 
     // scaffold for both vscode and cli
-    if (ctx.platform === Platform.VSCode || ctx.platform === Platform.CLI) {
+    if (ctx.answers?.platform === Platform.VSCode || ctx.answers?.platform === Platform.CLI) {
       if (isSpfx) {
         // Only generate launch.json and tasks.json for SPFX
         const launchConfigurations = Launch.generateSpfxConfigurations();
@@ -186,7 +186,7 @@ export class LocalDebugPlugin implements Plugin {
   }
 
   public async localDebug(ctx: PluginContext): Promise<Result<any, FxError>> {
-    const vscEnv = ctx.answers?.getString("vscenv");
+    const vscEnv = ctx.answers?.vscodeEnv;
     const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
       ?.activeResourcePlugins;
     const includeFrontend = selectedPlugins?.some(
@@ -199,7 +199,7 @@ export class LocalDebugPlugin implements Plugin {
     const skipNgrok = ctx.config?.get(LocalDebugConfigKeys.SkipNgrok) as string;
 
     const telemetryProperties = {
-      platform: ctx.platform as string,
+      platform: ctx.answers?.platform as string,
       vscenv: vscEnv as string,
       frontend: includeFrontend ? "true" : "false",
       function: includeBackend ? "true" : "false",
@@ -211,7 +211,7 @@ export class LocalDebugPlugin implements Plugin {
 
     // setup configs used by other plugins
     // TODO: dynamicly determine local ports
-    if (ctx.platform === Platform.VSCode) {
+    if (ctx.answers?.platform === Platform.VSCode) {
       let localTabEndpoint: string;
       let localTabDomain: string;
       let localAuthEndpoint: string;
@@ -291,7 +291,7 @@ export class LocalDebugPlugin implements Plugin {
     ) as string;
 
     const telemetryProperties = {
-      platform: ctx.platform as string,
+      platform: ctx.answers?.platform as string,
       frontend: includeFrontend ? "true" : "false",
       function: includeBackend ? "true" : "false",
       bot: includeBot ? "true" : "false",
@@ -300,7 +300,7 @@ export class LocalDebugPlugin implements Plugin {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.postLocalDebug, telemetryProperties);
 
-    if (ctx.platform === Platform.VSCode) {
+    if (ctx.answers?.platform === Platform.VSCode) {
       const localEnvProvider = new LocalEnvProvider(ctx.root);
       const localEnvs = await localEnvProvider.loadLocalEnv(
         includeFrontend,

@@ -6,11 +6,12 @@ import {
   OptionItem,
   SingleSelectQuestion,
   NodeType,
-  Validation,
   PluginContext,
   FuncQuestion,
   TextInputQuestion,
   TelemetryReporter,
+  Inputs,
+  ValidationSchema,
 } from "@microsoft/teamsfx-api";
 import {
   ApimDefaultValues,
@@ -57,14 +58,17 @@ export class ApimServiceQuestion extends BaseQuestionService implements IQuestio
     return [newOption, ...existingOptions];
   }
 
-  public getQuestion(): SingleSelectQuestion {
+  public getQuestion(ctx: PluginContext): SingleSelectQuestion {
     return {
       type: NodeType.singleSelect,
       name: QuestionConstants.VSCode.Apim.questionName,
-      description: QuestionConstants.VSCode.Apim.description,
-      option: {
-        namespace: QuestionConstants.namespace,
-        method: QuestionConstants.VSCode.Apim.funcName,
+      title: QuestionConstants.VSCode.Apim.description,
+      staticOptions: [{
+        id: QuestionConstants.VSCode.Apim.createNewApimOption,
+        label: QuestionConstants.VSCode.Apim.createNewApimOption,
+      }],
+      dynamicOptions: async (inputs: Inputs) : Promise< OptionItem[] > => {
+         return this.executeFunc(ctx);
       },
       returnObject: true,
       skipSingleOption: false,
@@ -101,14 +105,14 @@ export class OpenApiDocumentQuestion extends BaseQuestionService implements IQue
     return result;
   }
 
-  public getQuestion(): SingleSelectQuestion {
+  public getQuestion(ctx: PluginContext): SingleSelectQuestion {
     return {
       type: NodeType.singleSelect,
       name: QuestionConstants.VSCode.OpenApiDocument.questionName,
-      description: QuestionConstants.VSCode.OpenApiDocument.description,
-      option: {
-        namespace: QuestionConstants.namespace,
-        method: QuestionConstants.VSCode.OpenApiDocument.funcName,
+      title: QuestionConstants.VSCode.OpenApiDocument.description,
+      staticOptions: [],
+      dynamicOptions: async (inputs: Inputs) : Promise< OptionItem[] > => {
+        return this.executeFunc(ctx);
       },
       returnObject: true,
       skipSingleOption: false,
@@ -143,12 +147,13 @@ export class ExistingOpenApiDocumentFunc extends BaseQuestionService implements 
     return { id: openApiDocumentPath, label: openApiDocumentPath, data: openApiDocument };
   }
 
-  public getQuestion(): FuncQuestion {
+  public getQuestion(ctx: PluginContext): FuncQuestion {
     return {
       type: NodeType.func,
       name: QuestionConstants.VSCode.ExistingOpenApiDocument.questionName,
-      namespace: QuestionConstants.namespace,
-      method: QuestionConstants.VSCode.ExistingOpenApiDocument.funcName,
+      func: async (inputs: Inputs) :  Promise< OptionItem > => {
+        return this.executeFunc(ctx);
+      }
     };
   }
 }
@@ -170,19 +175,18 @@ export class ApiPrefixQuestion extends BaseQuestionService implements IQuestionS
     return apiPrefix ? apiPrefix : ApimDefaultValues.apiPrefix;
   }
 
-  public getQuestion(): TextInputQuestion {
+  public getQuestion(ctx: PluginContext): TextInputQuestion {
     return {
       type: NodeType.text,
       name: QuestionConstants.VSCode.ApiPrefix.questionName,
-      description: QuestionConstants.VSCode.ApiPrefix.description,
+      title: QuestionConstants.VSCode.ApiPrefix.description,
       prompt: QuestionConstants.VSCode.ApiPrefix.prompt,
-      default: {
-        namespace: QuestionConstants.namespace,
-        method: QuestionConstants.VSCode.ApiPrefix.funcName,
+      default: async (inputs: Inputs): Promise< string > => {
+        return this.executeFunc(ctx);
       },
       validation: {
-        validFunc: (input: string): string | undefined =>
-          NamingRules.validate(input, NamingRules.apiPrefix),
+        validFunc: (input: string|string[]|undefined, previousInputs?: Inputs): string | undefined =>
+          NamingRules.validate(input as string, NamingRules.apiPrefix),
       },
     };
   }
@@ -241,14 +245,14 @@ export class ApiVersionQuestion extends BaseQuestionService implements IQuestion
     return [createNewApiVersionOption, ...existingApiVersionOptions];
   }
 
-  public getQuestion(): SingleSelectQuestion {
+  public getQuestion(ctx: PluginContext): SingleSelectQuestion {
     return {
       type: NodeType.singleSelect,
       name: QuestionConstants.VSCode.ApiVersion.questionName,
-      description: QuestionConstants.VSCode.ApiVersion.description,
-      option: {
-        namespace: QuestionConstants.namespace,
-        method: QuestionConstants.VSCode.ApiVersion.funcName,
+      title: QuestionConstants.VSCode.ApiVersion.description,
+      staticOptions:[],
+      dynamicOptions: async (inputs: Inputs) : Promise< OptionItem[] > => {
+        return this.executeFunc(ctx);
       },
       returnObject: true,
       skipSingleOption: false,
@@ -263,7 +267,7 @@ export class NewApiVersionQuestion extends BaseQuestionService implements IQuest
     super(telemetryReporter, logger);
   }
 
-  public condition(): { target?: string } & Validation {
+  public condition(): { target?: string } & ValidationSchema {
     return {
       equals: QuestionConstants.VSCode.ApiVersion.createNewApiVersionOption,
     };
@@ -279,18 +283,17 @@ export class NewApiVersionQuestion extends BaseQuestionService implements IQuest
     return versionIdentity ? versionIdentity : ApimDefaultValues.apiVersion;
   }
 
-  public getQuestion(): TextInputQuestion {
+  public getQuestion(ctx: PluginContext): TextInputQuestion {
     return {
       type: NodeType.text,
       name: QuestionConstants.VSCode.NewApiVersion.questionName,
-      description: QuestionConstants.VSCode.NewApiVersion.description,
-      default: {
-        namespace: QuestionConstants.namespace,
-        method: QuestionConstants.VSCode.NewApiVersion.funcName,
+      title: QuestionConstants.VSCode.NewApiVersion.description,
+      default: async (inputs: Inputs): Promise<string> => {
+        return this.executeFunc(ctx);
       },
       validation: {
-        validFunc: (input: string): string | undefined =>
-          NamingRules.validate(input, NamingRules.versionIdentity),
+        validFunc: (input: string|string[]|undefined, previousInputs?: Inputs): string | undefined =>
+          NamingRules.validate(input as string, NamingRules.versionIdentity),
       },
     };
   }

@@ -50,7 +50,7 @@ export class SpfxPlugin implements Plugin {
         type: NodeType.singleSelect,
         name: SPFXQuestionNames.framework_type,
         title: "Framework",
-        option: [
+        staticOptions: [
           { id: "none", label: "None" },
           { id: "react", label: "React" },
         ],
@@ -88,11 +88,11 @@ export class SpfxPlugin implements Plugin {
   public async scaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
     //answers ---> config by huajie
     if (ctx.answers) {
-      let v = ctx.answers.getString(SPFXQuestionNames.framework_type);
+      let v = ctx.answers[SPFXQuestionNames.framework_type] as string;
       this.config.framework = v || this.config.framework;
-      v = ctx.answers.getString(SPFXQuestionNames.webpart_name);
+      v = ctx.answers[SPFXQuestionNames.webpart_name] as string;
       this.config.webpartName = v || this.config.webpartName;
-      v = ctx.answers.getString(SPFXQuestionNames.webpart_desp);
+      v = ctx.answers[SPFXQuestionNames.webpart_desp] as string;
       this.config.webpartDesc = v || this.config.webpartDesc;
     }
 

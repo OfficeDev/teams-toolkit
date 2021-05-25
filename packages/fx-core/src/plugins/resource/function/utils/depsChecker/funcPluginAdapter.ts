@@ -9,6 +9,7 @@ import {
   ConfigMap,
   DialogMsg,
   DialogType,
+  Inputs,
   PluginContext,
   QuestionType,
   returnUserError,
@@ -76,8 +77,8 @@ class FuncPluginAdapter implements IDepsAdapter {
     throw new Error("Method not implemented.");
   }
 
-  public setFeatureFlag(answers?: ConfigMap): void {
-    this.enabled = answers?.getBoolean(this.answerKey) || false;
+  public setFeatureFlag(answers?: Inputs): void {
+    this.enabled = answers![this.answerKey] as boolean || false;
   }
 
   public handleDotnetError(error: Error): void {

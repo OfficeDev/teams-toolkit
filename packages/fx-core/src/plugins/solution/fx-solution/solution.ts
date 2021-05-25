@@ -32,6 +32,8 @@ import {
   UserError,
   Platform,
   QuestionType,
+  Inputs,
+  SubscriptionInfo,
 } from "@microsoft/teamsfx-api";
 import { askSubscription, fillInCommonQuestions } from "./commonQuestions";
 import { executeLifecycles, executeConcurrently, LifecyclesWithContext } from "./executor";
@@ -213,6 +215,7 @@ enum SolutionRunningState {
 }
 
 export class TeamsAppSolution implements Solution {
+  name = "fx-solution-azure";
   identityPlugin: LoadedPlugin = newIdentityPlugin();
   fehostPlugin: LoadedPlugin = newFehostPlugin();
   sqlPlugin: LoadedPlugin = newSqlPlugin();
@@ -287,7 +290,7 @@ export class TeamsAppSolution implements Solution {
         )
       );
     }
-    const capabilities = answers.getStringArray(AzureSolutionQuestionNames.Capabilities) || [];
+    const capabilities = answers[AzureSolutionQuestionNames.Capabilities] as string[] || [];
     if (!capabilities || capabilities.length === 0) {
       return err(
         returnSystemError(
@@ -297,7 +300,7 @@ export class TeamsAppSolution implements Solution {
         )
       );
     }
-    let hostType = answers.getString(AzureSolutionQuestionNames.HostType);
+    let hostType = answers[AzureSolutionQuestionNames.HostType] as string;
     if (capabilities.includes(BotOptionItem.id) || capabilities.includes(MessageExtensionItem.id))
       hostType = HostTypeOptionAzure.id;
     if (!hostType) {
@@ -311,7 +314,7 @@ export class TeamsAppSolution implements Solution {
     }
     let azureResources: string[] | undefined;
     if (hostType === HostTypeOptionAzure.id && capabilities.includes(TabOptionItem.id)) {
-      azureResources = answers.getStringArray(AzureSolutionQuestionNames.AzureResources);
+      azureResources = answers[AzureSolutionQuestionNames.AzureResources] as string[];
       if (azureResources) {
         if (
           (azureResources.includes(AzureResourceSQL.id) ||
@@ -344,7 +347,7 @@ export class TeamsAppSolution implements Solution {
     }
 
     // Only non-SPFx project will ask this question.
-    const lang = ctx.answers?.getString(AzureSolutionQuestionNames.ProgrammingLanguage);
+    const lang = ctx.answers![AzureSolutionQuestionNames.ProgrammingLanguage] as string;
     if (lang) {
       ctx.config.get(GLOBAL_CONFIG)?.set(PROGRAMMING_LANGUAGE, lang);
     }
@@ -370,7 +373,7 @@ export class TeamsAppSolution implements Solution {
     await fs.copy(defaultOutlinePath, `${ctx.root}/.${ConfigFolderName}/outline.png`);
     if (this.isAzureProject(ctx)) {
       const manifest = await AppStudio.createManifest(ctx.projectSettings!);
-      if (manifest) Object.assign(ctx.app, manifest);
+      // if (manifest) Object.assign(ctx.app, manifest);
       await fs.writeFile(
         `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`,
         JSON.stringify(manifest, null, 4)
@@ -402,7 +405,7 @@ export class TeamsAppSolution implements Solution {
           )
         );
       }
-      Object.assign(ctx.app, manifest);
+      // Object.assign(ctx.app, manifest);
       return ok(manifest);
     } catch (e) {
       return err(
@@ -484,7 +487,8 @@ export class TeamsAppSolution implements Solution {
     return spfxExists === undefined ? false : spfxExists;
   }
 
-  private isAzureProject(ctx: SolutionContext): boolean {
+  private isAzureProject(ctx?: SolutionContext): boolean {
+    if(!ctx) return true;
     const settings = this.getAzureSolutionSettings(ctx);
     return HostTypeOptionAzure.id === settings.hostType;
   }
@@ -577,6 +581,9 @@ export class TeamsAppSolution implements Solution {
    * scaffold
    */
   async scaffold(ctx: SolutionContext): Promise<Result<any, FxError>> {
+    const createRes = await this.create(ctx);
+    if(createRes.isErr()) return createRes;
+    
     const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
     if (maybeSelectedPlugins.isErr()) {
       return maybeSelectedPlugins;
@@ -1141,9 +1148,7 @@ export class TeamsAppSolution implements Solution {
     }
     const manifest = loadManifestResult.value;
 
-    const optionsToDeploy = ctx.answers?.getStringArray(
-      AzureSolutionQuestionNames.PluginSelectionDeploy
-    );
+    const optionsToDeploy = ctx.answers![AzureSolutionQuestionNames.PluginSelectionDeploy] as string[];
     if (optionsToDeploy === undefined || optionsToDeploy.length === 0) {
       return err(
         returnUserError(
@@ -1418,7 +1423,7 @@ export class TeamsAppSolution implements Solution {
       });
 
       const selectQuestion = DeployPluginSelectQuestion;
-      selectQuestion.option = options;
+      selectQuestion.staticOptions = options;
       selectQuestion.default = options.map((i) => i.id);
       const pluginSelection = new QTreeNode(selectQuestion);
       node.addChild(pluginSelection);
@@ -1448,7 +1453,7 @@ export class TeamsAppSolution implements Solution {
         );
       }
       if (!provisioned && this.spfxSelected(ctx)) {
-        if (ctx.platform === Platform.VSCode) {
+        if (ctx.answers?.platform === Platform.VSCode) {
           ctx.dialog?.communicate(
             new DialogMsg(DialogType.Show, {
               description: getStrings().solution.SPFxAskProvisionBeforePublish,
@@ -2052,6 +2057,28 @@ export class TeamsAppSolution implements Solution {
         const apim = res.value as QTreeNode;
         if (apim.data) {
           const funcNode = new QTreeNode(AskSubscriptionQuestion);
+          AskSubscriptionQuestion.func = async (inputs: Inputs): Promise<Void> => {
+            if (!ctx.config.get(GLOBAL_CONFIG)?.getString("subscriptionId")) {
+              const azureToken = await ctx.azureAccountProvider?.getAccountCredentialAsync();
+              if (azureToken === undefined) {
+                return err(
+                  returnUserError(
+                    new Error("Please login to azure using Azure Account Extension"),
+                    "Solution",
+                    SolutionError.NotLoginToAzure
+                  )
+                );
+              }
+              const result = await askSubscription(ctx.config, ctx.azureAccountProvider, ctx.dialog);
+              if (result.isErr()) {
+                return err(result.error);
+              }
+              await ctx.azureAccountProvider?.setSubscription(result.value.subscriptionId);
+              ctx.config.get(GLOBAL_CONFIG)?.set("subscriptionId", result.value.subscriptionId);
+              ctx.config.get(GLOBAL_CONFIG)?.set("tenantId", result.value.tenantId);
+            }
+            return ok(Void);
+          }
           groupNode.addChild(funcNode);
           groupNode.addChild(apim);
         }
@@ -2143,8 +2170,7 @@ export class TeamsAppSolution implements Solution {
     ctx: SolutionContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     const namespace = func.namespace;
-    const array = namespace.split("/");
-
+    const array = namespace.split("/"); 
     const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx);
     if (maybeManifest.isErr()) {
       return err(maybeManifest.error);
@@ -2207,9 +2233,9 @@ export class TeamsAppSolution implements Solution {
     const alreadyHaveSql = selectedPlugins?.includes(this.sqlPlugin.name);
     const alreadyHaveApim = selectedPlugins?.includes(this.apimPlugin.name);
 
-    const addResourcesAnswer = ctx.answers?.get(
+    const addResourcesAnswer = ctx.answers[
       AzureSolutionQuestionNames.AddResources
-    ) as string[];
+     ] as string[];
 
     const addSQL = addResourcesAnswer.includes(AzureResourceSQL.id);
     const addFunc = addResourcesAnswer.includes(AzureResourceFunction.id);
@@ -2286,7 +2312,7 @@ export class TeamsAppSolution implements Solution {
       );
     }
 
-    const capabilitiesAnswer = ctx.answers.getStringArray(AzureSolutionQuestionNames.Capabilities);
+    const capabilitiesAnswer = ctx.answers[AzureSolutionQuestionNames.Capabilities] as string[];
     if (!capabilitiesAnswer || capabilitiesAnswer.length === 0) {
       return ok(Void);
     }
@@ -2330,7 +2356,7 @@ export class TeamsAppSolution implements Solution {
       this.reloadPlugins(settings);
       if (this.isAzureProject(ctx)) {
         const manifest = await AppStudio.createManifest(ctx.projectSettings!);
-        if (manifest) Object.assign(ctx.app, manifest);
+        // if (manifest) Object.assign(ctx.app, manifest);
         await fs.writeFile(
           `${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`,
           JSON.stringify(manifest, null, 4)
@@ -2382,7 +2408,7 @@ export class TeamsAppSolution implements Solution {
     const method = func.method;
     const array = namespace.split("/");
     if (method === "addCapability") {
-      return await this.executeAddCapability(func, ctx);
+      return await this.executeAddCapability(func, ctx!);
     }
     if (namespace.includes("solution")) {
       if (method === "registerTeamsAppAndAad") {
@@ -2395,10 +2421,10 @@ export class TeamsAppSolution implements Solution {
         // VSpublish means VS calling cli to do publish. It is different than normal cli work flow
         // It's teamsfx init followed by teamsfx  publish without running provision.
         // Using executeUserTask here could bypass the fx project check.
-        if (ctx.platform !== "vs") {
+        if (ctx.answers?.platform !== "vs") {
           return err(
             returnSystemError(
-              new Error(`VS publish is not supposed to run on platform ${ctx.platform}`),
+              new Error(`VS publish is not supposed to run on platform ${ctx.answers?.platform}`),
               "Solution",
               SolutionError.UnsupportedPlatform
             )
@@ -2508,7 +2534,7 @@ export class TeamsAppSolution implements Solution {
   }
 
   private extractParamForRegisterTeamsAppAndAad(
-    answers?: ConfigMap
+    answers?: Inputs
   ): Result<ParamForRegisterTeamsAppAndAad, FxError> {
     if (answers == undefined) {
       return err(
@@ -2527,7 +2553,7 @@ export class TeamsAppSolution implements Solution {
       "root-path": "",
     };
     for (const key of Object.keys(param)) {
-      const value = answers.getString(key);
+      const value = answers[key];
       if (value == undefined) {
         return err(
           returnSystemError(

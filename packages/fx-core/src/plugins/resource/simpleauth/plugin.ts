@@ -45,63 +45,60 @@ export class SimpleAuthPluginImpl {
   }
 
   public async provision(ctx: PluginContext): Promise<Result<any, FxError>> {
-    const task1 = async (): Promise<Result<undefined, Error>> => {
-      TelemetryUtils.init(ctx);
-      Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartProvision);
-  
-      const credentials = await ctx.azureAccountProvider!.getAccountCredentialAsync();
-  
-      if (!credentials) {
-        throw ResultFactory.SystemError(UnauthenticatedError.name, UnauthenticatedError.message());
-      }
-  
-      const resourceNameSuffix = Utils.getConfigValueWithValidation(
-        ctx,
-        Constants.SolutionPlugin.id,
-        Constants.SolutionPlugin.configKeys.resourceNameSuffix
-      ) as string;
-      const subscriptionId = Utils.getConfigValueWithValidation(
-        ctx,
-        Constants.SolutionPlugin.id,
-        Constants.SolutionPlugin.configKeys.subscriptionId
-      ) as string;
-      const resourceGroupName = Utils.getConfigValueWithValidation(
-        ctx,
-        Constants.SolutionPlugin.id,
-        Constants.SolutionPlugin.configKeys.resourceGroupName
-      ) as string;
-      const location = Utils.getConfigValueWithValidation(
-        ctx,
-        Constants.SolutionPlugin.id,
-        Constants.SolutionPlugin.configKeys.location
-      ) as string;
-  
-      const webAppName = Utils.generateResourceName(ctx.app.name.short, resourceNameSuffix);
-      const appServicePlanName = webAppName;
-  
-      this.webAppClient = new WebAppClient(
-        credentials,
-        subscriptionId,
-        resourceGroupName,
-        appServicePlanName,
-        webAppName,
-        location,
-        ctx
-      );
-      return ok(undefined);
-    };
+    TelemetryUtils.init(ctx);
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartProvision);
+
+    const credentials = await ctx.azureAccountProvider!.getAccountCredentialAsync();
+
+    if (!credentials) {
+      throw ResultFactory.SystemError(UnauthenticatedError.name, UnauthenticatedError.message());
+    }
+
+    const resourceNameSuffix = Utils.getConfigValueWithValidation(
+      ctx,
+      Constants.SolutionPlugin.id,
+      Constants.SolutionPlugin.configKeys.resourceNameSuffix
+    ) as string;
+    const subscriptionId = Utils.getConfigValueWithValidation(
+      ctx,
+      Constants.SolutionPlugin.id,
+      Constants.SolutionPlugin.configKeys.subscriptionId
+    ) as string;
+    const resourceGroupName = Utils.getConfigValueWithValidation(
+      ctx,
+      Constants.SolutionPlugin.id,
+      Constants.SolutionPlugin.configKeys.resourceGroupName
+    ) as string;
+    const location = Utils.getConfigValueWithValidation(
+      ctx,
+      Constants.SolutionPlugin.id,
+      Constants.SolutionPlugin.configKeys.location
+    ) as string;
+
+    const webAppName = Utils.generateResourceName(ctx.app.name.short, resourceNameSuffix);
+    const appServicePlanName = webAppName;
+
+    this.webAppClient = new WebAppClient(
+      credentials,
+      subscriptionId,
+      resourceGroupName,
+      appServicePlanName,
+      webAppName,
+      location,
+      ctx
+    );
 
     let endpoint:string;
 
-    const task2 = async (): Promise<Result<undefined, Error>> => {
+    const task1 = async (): Promise<Result<undefined, Error>> => {
       await this.webAppClient.createAppServicePlan();
       return ok(undefined);
     }
-    const task3 = async (): Promise<Result<undefined, Error>> => {
+    const task2 = async (): Promise<Result<undefined, Error>> => {
       endpoint = await this.webAppClient.createWebApp();
       return ok(undefined);
     }
-    const task4 = async (): Promise<Result<undefined, Error>> => {
+    const task3 = async (): Promise<Result<undefined, Error>> => {
       const simpleAuthFilePath = Utils.getSimpleAuthFilePath();
       await Utils.downloadZip(simpleAuthFilePath);
       await this.webAppClient.zipDeploy(simpleAuthFilePath);
@@ -111,9 +108,8 @@ export class SimpleAuthPluginImpl {
     }
     const group = new FunctionGroupTask({
       name:Constants.ProgressBar.provision.title,
-      tasks:[task1,task2,task3,task4],
+      tasks:[task1,task2,task3],
       taskNames:[
-        "Initializing",
         Constants.ProgressBar.provision.createAppServicePlan,
         Constants.ProgressBar.provision.createWebApp,
         Constants.ProgressBar.provision.zipDeploy

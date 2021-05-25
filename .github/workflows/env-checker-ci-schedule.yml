@@ -2,8 +2,8 @@ name: Environment Checker Integration Test Schedule Run
 
 on:
   schedule:
-    # Runs everyday 00:00 UTC
-    - cron:  '0 0 * * *'
+    # Runs everyday 15:42 China Time. Avoid start of hour because these are high load times.
+    - cron:  '42 7 * * *'
   workflow_dispatch: # Manual trigger
 
 jobs:

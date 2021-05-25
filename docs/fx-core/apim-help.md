@@ -1,23 +1,23 @@
 # APIM Help
-## NoValidOpenApiDocument
+## APIM.NoValidOpenApiDocument
 ### Error Message
 There is no valid OpenAPI document under the workspace.
 ### Mitigation
 To import the API definition to Azure API Management, you need to provide an OpenAPI specification for the backend API hosted in Azure Functions. Please add a valid OpenAPI document (v2 / v3) in the project's directory. Both json format and yaml format are supported. [Here](https://swagger.io/resources/open-api/) is the OpenAPI Specification.
 
-## InvalidOpenApiDocument
+## APIM.InvalidOpenApiDocument
 ### Error Message
 The file '{filePath}' is not a valid OpenApi document.
 ### Mitigation
 To import the API definition to Azure API Management, you need to provide an OpenAPI specification for the backend API hosted in Azure Functions. Please add a valid OpenAPI document (v2 / v3) in the project's directory. Both json format and yaml format are supported. [Here](https://swagger.io/resources/open-api/) is the OpenAPI Specification.
 
-## InvalidAadObjectId
+## APIM.InvalidAadObjectId
 ### Error Message
 The Azure Active Directory application with object id '{objectId}' could not be found.
 ### Mitigation
 The property `apimClientAADObjectId` in the config file `.fx/env.default.json` is invalid. Please fill in an existing AAD object id or delete it and run provision command again.
 
-## ApimOperationError
+## APIM.ApimOperationError
 
 | Error Message | Mitigation |
 | :-------------| :----------|
@@ -25,7 +25,7 @@ The property `apimClientAADObjectId` in the config file `.fx/env.default.json` i
 |Failed: import API Management API. [Detail] One or more fields contain incorrect values. {reason}. | The OpenAPI document is invalid. Please change the OpenAPI document according to the reason in the error message. The OpenAPI limitation in Azure API Management can be found [here](https://docs.microsoft.com/en-us/azure/api-management/api-management-api-import-restrictions).|
 |Failed: import API Management API. [Detail] One or more fields contain incorrect values. Cannot create API '{apiId}' with the same Path '{apiPath}' as API '{apiId}' unless it's a part of the same version set. | Please change the title in the OpenAPI document and retry command `Teamsfx: Deploy to the cloud`. The title in the OpenAPI document should be unique in the API Management service.|
 
-## AadOperationError
+## APIM.AadOperationError
 ### Error Message
 Failed: create Azure Active Directory application. [Detail] Insufficient privileges to complete the operation.
 ### Mitigation

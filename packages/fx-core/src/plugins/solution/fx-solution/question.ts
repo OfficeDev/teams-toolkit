@@ -66,6 +66,7 @@ export const HostTypeOptionSPFx: OptionItem = {
 export const AzureResourceSQL: OptionItem = {
   id: "sql",
   label: "Azure SQL Database",
+  description: "Azure Function App will be also selected to access Azure SQL Database"
 };
 
 export const AzureResourceFunction: OptionItem = {
@@ -76,6 +77,7 @@ export const AzureResourceFunction: OptionItem = {
 export const AzureResourceApim: OptionItem = {
   id: "apim",
   label: "Register APIs in Azure API Management",
+  description: "Azure Function App will be also selected to be published as an API"
 };
 
 export function createCapabilityQuestion(): MultiSelectQuestion {

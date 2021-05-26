@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks";
-import { err, Func, FxError, InputResult, InputResultType, Inputs, ok, QTreeNode, Result, Stage, traverse, UserCancelError } from "@microsoft/teamsfx-api";
+import { err, Func, FxError, Inputs, ok, QTreeNode, Result, Stage, traverse, UserCancelError } from "@microsoft/teamsfx-api";
 import { FxCore } from "../..";
 
 /**
@@ -45,11 +45,11 @@ export const QuestionModelMW: Middleware = async (
 
   const node = getQuestionRes.value;
   if (node) {
-    const res: InputResult = await traverse(node, inputs, core.tools.ui);
-    if (res.type === InputResultType.error) {
+    const res = await traverse(node, inputs, core.tools.ui);
+    if (res.type === "error") {
       ctx.result = err(res.error!);
       return;
-    } else if (res.type === InputResultType.cancel) {
+    } else if (res.type === "cancel") {
       ctx.result = err(UserCancelError);
       return;
     }

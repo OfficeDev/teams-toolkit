@@ -87,6 +87,10 @@ export function ReadFileError(e: Error): SystemError {
   return returnSystemError(e, constants.cliSource, "ReadFileError");
 }
 
+export function WriteFileError(e: Error): SystemError {
+  return returnSystemError(e, constants.cliSource, "WriteFileError");
+}
+
 export function UnknownError(e: Error): SystemError {
   return returnSystemError(e, constants.cliSource, "UnknownError");
 }

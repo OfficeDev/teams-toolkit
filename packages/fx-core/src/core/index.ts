@@ -590,6 +590,7 @@ export class FxCore implements Core {
     return this._getQuestionsForUserTask(func, inputs, this.ctx);
   }
  
+  @hooks([ErrorHandlerMW])
   async _getQuestionsForUserTask(func: FunctionRouter, inputs: Inputs, ctx?:SolutionContext) : Promise<Result<QTreeNode | undefined, FxError>>{
     const namespace = func.namespace;
     const array = namespace ? namespace.split("/") : [];
@@ -612,6 +613,7 @@ export class FxCore implements Core {
       )
     );
   }
+  @hooks([ErrorHandlerMW])
   async _getQuestions(stage: Stage, inputs: Inputs, ctx?:SolutionContext): Promise<Result<QTreeNode | undefined, FxError>> {
     const node = new QTreeNode({ type: "group" });
     if (stage === Stage.create) {

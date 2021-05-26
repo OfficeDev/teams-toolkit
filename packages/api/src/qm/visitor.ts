@@ -13,7 +13,7 @@ import {
 import { getValidationFunction, validate } from "./validation";
 import { returnSystemError, returnUserError } from "../error";
 import { Inputs } from "../types";
-import { InputResult, InputResultType, UserInteraction } from "./ui";
+import { InputResult, UserInteraction } from "./ui";
 
 export function isAutoSkipSelect(q: Question): boolean {
   if (q.type === "singleSelect" || q.type === "multiSelect") {
@@ -66,7 +66,7 @@ type QuestionVistor = (
   inputs: Inputs ,
   step?: number,
   totalSteps?: number,
-) => Promise<InputResult>;
+) => Promise<InputResult<string | OptionItem | StaticOptions>>;
  
 
 export async function getCallFuncValue(inputs: Inputs , raw?: unknown ):Promise<unknown>{
@@ -88,13 +88,13 @@ const questionVisitor: QuestionVistor = async function (
   inputs: Inputs ,
   step?: number,
   totalSteps?: number,
-): Promise<InputResult> {  
+): Promise<InputResult<string | OptionItem | StaticOptions>> {  
   if(inputs[question.name] !== undefined) {
-    return { type: InputResultType.sucess, result: inputs[question.name] };
+    return { type: "success", result: inputs[question.name] as string | OptionItem | StaticOptions };
   }
   if (question.type === "func") {
     const res = await question.func(inputs);
-    return { type: InputResultType.sucess, result: res };
+    return { type: "success", result: res as string | OptionItem | StaticOptions };
   } else {
     const defaultValue = question.value? question.value : await getCallFuncValue(inputs, question.default);
     const placeholder = await getCallFuncValue(inputs, question.placeholder) as string;
@@ -103,6 +103,7 @@ const questionVisitor: QuestionVistor = async function (
     if (question.type === "text") {
       const inputQuestion = question as TextInputQuestion;
       return await ui.inputText({
+        type: "text",
         name: question.name,
         title: question.title,
         password: (inputQuestion as TextInputQuestion).password,
@@ -118,7 +119,7 @@ const questionVisitor: QuestionVistor = async function (
       const res = await loadOptions(selectQuestion, inputs);
       if (!res.options || res.options.length === 0) {
         return {
-          type: InputResultType.error,
+          type: "error",
           error: returnSystemError(
             new Error("Select option is empty!"),
             "API",
@@ -130,12 +131,13 @@ const questionVisitor: QuestionVistor = async function (
       if (res.autoSkip === true) {
         const returnResult = getSingleOption(selectQuestion, res.options);
         return {
-          type: InputResultType.skip,
-          result: returnResult
+          type: "skip",
+          result: returnResult,
         };
       }
       if(question.type === "singleSelect"){
         return await ui.selectOption({
+          type: "radio",
           name: question.name,
           title: question.title,
           options: res.options,
@@ -150,6 +152,7 @@ const questionVisitor: QuestionVistor = async function (
       else {
         const mq = selectQuestion as MultiSelectQuestion;
         return await ui.selectOptions({
+          type: "multibox",
           name: question.name,
           title: question.title,
           options: res.options,
@@ -165,6 +168,7 @@ const questionVisitor: QuestionVistor = async function (
       }
     } else if (question.type === "multiFile") {
       return await ui.selectFiles({
+        type: "files",
         name: question.name,
         title: question.title,
         placeholder: placeholder,
@@ -175,6 +179,7 @@ const questionVisitor: QuestionVistor = async function (
       });
     } else if(question.type === "singleFile" ){
       return await ui.selectFile({
+        type: "file",
         name: question.name,
         title: question.title,
         placeholder: placeholder,
@@ -186,6 +191,7 @@ const questionVisitor: QuestionVistor = async function (
       });
     } else if(question.type === "folder"){
       return await ui.selectFolder({
+        type: "folder",
         name: question.name,
         title: question.title,
         placeholder: placeholder,
@@ -198,7 +204,7 @@ const questionVisitor: QuestionVistor = async function (
     }
   }
   return {
-    type: InputResultType.error,
+    type: "error",
     error: returnUserError(
       new Error(`Unsupported question node type:${JSON.stringify(question)}`),
       "API.qm",
@@ -211,7 +217,7 @@ export async function traverse(
   root: QTreeNode,
   inputs: Inputs ,
   ui: UserInteraction
-): Promise<InputResult> {
+): Promise<InputResult<string | OptionItem | StaticOptions>> {
   const stack: QTreeNode[] = [];
   const history: QTreeNode[] = [];
   stack.push(root);
@@ -234,7 +240,7 @@ export async function traverse(
         step,
         totalStep
       );
-      if (inputResult.type === InputResultType.back) {
+      if (inputResult.type === "back") {
         //go back
         if (curr.children) {
           while (stack.length > 0) {
@@ -278,13 +284,13 @@ export async function traverse(
         }
         if (!found) {
           // no node to back
-          return { type: InputResultType.cancel };
+          return { type: "cancel" };
         }
         --step;
         continue; //ignore the following steps
       } else if (
-        inputResult.type === InputResultType.error ||
-        inputResult.type === InputResultType.cancel
+        inputResult.type === "error" ||
+        inputResult.type === "cancel"
       ) {
         return inputResult;
       } //continue
@@ -293,8 +299,8 @@ export async function traverse(
         question.value = inputResult.result;
         inputs[question.name] = question.value;
 
-        if (inputResult.type === InputResultType.skip || question.type === "func") {
-          if (inputResult.type === InputResultType.skip) autoSkipSet.add(curr);
+        if (inputResult.type === "skip" || question.type === "func") {
+          if (inputResult.type === "skip") autoSkipSet.add(curr);
         } else {
           ++step;
         }
@@ -336,6 +342,6 @@ export async function traverse(
       }
     }
   }
-  return { type: InputResultType.sucess };
+  return { type: "success" };
 }
 

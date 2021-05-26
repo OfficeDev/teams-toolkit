@@ -18,7 +18,7 @@ export type ConfigValue =
   | OptionItem[]
   | OptionItem
   | undefined
-  | unknown;
+  | any;
 
 export type PluginIdentity = string;
 

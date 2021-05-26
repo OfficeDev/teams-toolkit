@@ -37,11 +37,25 @@ export default class QuickStart extends React.Component<any, any> {
   componentDidMount() {
     window.addEventListener("message", this.receiveMessage, false);
     this.initAccountInfo();
+    this.getGlobalStepsDone();
   }
 
   initAccountInfo() {
     vscode.postMessage({
       command: Commands.InitAccountInfo,
+    });
+  }
+
+  getGlobalStepsDone() {
+    vscode.postMessage({
+      command: Commands.GetGlobalStepsDone,
+    });
+  }
+
+  setGlobalStepsDone(data: []) {
+    vscode.postMessage({
+      command: Commands.UpdateGlobalStepsDone,
+      data: data,
     });
   }
 
@@ -193,7 +207,7 @@ export default class QuickStart extends React.Component<any, any> {
                   expanded={this.state.currentStep === curStep}
                   onCollapsedCardClicked={this.onCollapsedCardClicked}
                   step={curStep}
-                  done={this.state.stepsDone[3] || this.state.m365Account}
+                  done={this.state.stepsDone[3] && this.state.m365Account}
                 />
               );
             })()}
@@ -215,7 +229,7 @@ export default class QuickStart extends React.Component<any, any> {
                   expanded={this.state.currentStep === curStep}
                   onCollapsedCardClicked={this.onCollapsedCardClicked}
                   step={curStep}
-                  done={this.state.stepsDone[4] || this.state.azureAccount}
+                  done={this.state.stepsDone[4] && this.state.azureAccount}
                 />
               );
             })()}
@@ -295,6 +309,9 @@ export default class QuickStart extends React.Component<any, any> {
       case "azureAccountChange":
         this.setState({ azureAccount: event.data.data });
         break;
+      case "updateStepsDone":
+        this.setState({stepsDone: event.data.data });
+        break;
       default:
         break;
     }
@@ -329,6 +346,7 @@ export default class QuickStart extends React.Component<any, any> {
     this.setState({
       stepsDone: done,
     });
+    this.setGlobalStepsDone(done);
   };
 
   onHideWatchOnBrowser = () => {
@@ -357,6 +375,7 @@ export default class QuickStart extends React.Component<any, any> {
     this.setState({
       stepsDone: done,
     });
+    this.setGlobalStepsDone(done);
   };
 
   downloadNode = () => {
@@ -370,6 +389,7 @@ export default class QuickStart extends React.Component<any, any> {
     this.setState({
       stepsDone: done,
     });
+    this.setGlobalStepsDone(done);
   };
 
   signinM365 = () => {
@@ -382,6 +402,7 @@ export default class QuickStart extends React.Component<any, any> {
     this.setState({
       stepsDone: done,
     });
+    this.setGlobalStepsDone(done);
   };
 
   signinAzure = () => {
@@ -394,6 +415,7 @@ export default class QuickStart extends React.Component<any, any> {
     this.setState({
       stepsDone: done,
     });
+    this.setGlobalStepsDone(done);
   };
 
   viewAllSamples = () => {
@@ -402,6 +424,7 @@ export default class QuickStart extends React.Component<any, any> {
     this.setState({
       stepsDone: done,
     });
+    this.setGlobalStepsDone(done);
 
     vscode.postMessage({
       command: Commands.SwitchPanel,
@@ -425,6 +448,7 @@ class GetStartedAction extends React.Component<any, any> {
             <div className="action-title">{this.props.title}</div>
           </div>
           <div className="card-line action-content">{this.props.content}</div>
+          <div className="tip">{this.props.tip}</div>
           <div className="left-right-align">
             <div className="left">
               {this.props.actionText && (
@@ -438,7 +462,6 @@ class GetStartedAction extends React.Component<any, any> {
               />
             </div>
           </div>
-          <div className="tip">{this.props.tip}</div>
         </div>
       );
     } else {

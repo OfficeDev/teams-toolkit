@@ -3,7 +3,7 @@ import { ActionButton, Icon, PrimaryButton, Image } from "@fluentui/react";
 import "./LearnToolkit.scss";
 import { Commands } from "./Commands";
 import AllCommands from "../../media/teams.png";
-import CLI from "../../media/azure.svg";
+import CLI from "../../media/dark/azure.svg";
 
 export default class LearnToolkit extends React.Component<any, any> {
   constructor(props: any) {

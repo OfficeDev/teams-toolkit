@@ -11,4 +11,6 @@ export enum Commands {
   CreateNewProject = "create-new-project",
   SwitchPanel = "switch-panel",
   InitAccountInfo = "init-account-info",
+  UpdateGlobalStepsDone = "update-global-steps-done",
+  GetGlobalStepsDone = "get-global-steps-done",
 }

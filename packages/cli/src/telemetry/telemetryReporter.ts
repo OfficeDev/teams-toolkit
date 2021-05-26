@@ -7,6 +7,7 @@ import * as os from "os";
 import * as appInsights from "applicationinsights";
 import { machineIdSync } from "node-machine-id";
 import logger from "../commonlib/log";
+import { UserSettings } from "../userSetttings";
 
 export default class TelemetryReporter {
   private appInsightsClient: appInsights.TelemetryClient | undefined;
@@ -26,7 +27,13 @@ export default class TelemetryReporter {
   }
 
   private updateUserOptIn(key: string): void {
-    // TODO: user should be able to disable telemetry
+    const result = UserSettings.getTelemetrySetting();
+    if (result.isOk() && result.value === false) {
+      this.userOptIn = false;
+    } else {
+      this.userOptIn = true;
+    }
+
     if (this.userOptIn) {
       this.createAppInsightsClient(key);
     }

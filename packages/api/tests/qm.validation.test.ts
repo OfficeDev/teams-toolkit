@@ -2,25 +2,15 @@
 // Licensed under the MIT license.
 
 import {
-    Func,
-    FxError,
-    ok,
-    Result,
     StringArrayValidation,
     StringValidation,
-    ConfigMap,
     Inputs,
     Platform,
     VsCodeEnv,
 } from "../src/index";
 import * as chai from "chai";
 import {FuncValidation, validate} from "../src/qm/validation";
-import * as fs from "fs-extra";
-import * as os from "os";
-import * as path from "path";
-
 import "mocha";
-import { platform } from "process";
 
  
 describe("Question Model - Validation Test", () => {

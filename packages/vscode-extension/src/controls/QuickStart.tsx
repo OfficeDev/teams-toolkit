@@ -448,6 +448,7 @@ class GetStartedAction extends React.Component<any, any> {
             <div className="action-title">{this.props.title}</div>
           </div>
           <div className="card-line action-content">{this.props.content}</div>
+          <div className="tip">{this.props.tip}</div>
           <div className="left-right-align">
             <div className="left">
               {this.props.actionText && (
@@ -461,7 +462,6 @@ class GetStartedAction extends React.Component<any, any> {
               />
             </div>
           </div>
-          <div className="tip">{this.props.tip}</div>
         </div>
       );
     } else {

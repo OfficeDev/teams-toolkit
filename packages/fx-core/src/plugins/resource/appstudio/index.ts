@@ -98,7 +98,6 @@ export class AppStudioPlugin implements Plugin {
       );
     }
     const validationSuccess = "Manifest Validation succeed!";
-    ctx.logProvider?.info(validationSuccess);
     await ctx.dialog?.communicate(
       new DialogMsg(DialogType.Show, {
         description: validationSuccess,
@@ -130,7 +129,6 @@ export class AppStudioPlugin implements Plugin {
         manifestString
       );
       const builtSuccess = `Teams Package ${appPackagePath} built successfully!`;
-      ctx.logProvider?.info(builtSuccess);
       await ctx.dialog?.communicate(
         new DialogMsg(DialogType.Show, {
           description: builtSuccess,

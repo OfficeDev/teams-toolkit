@@ -301,5 +301,7 @@ describe("update()", () => {
     const result = await solution.update(mockedCtx);
     expect(result.isOk()).equals(false);
     expect(mockedCtx.projectSettings).to.be.deep.equal(originalProjectSettings);
+    // provisionSucceeded is not changed due to the failure of solution.update()
+    mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
   });
 });

@@ -12,6 +12,7 @@
     "url": "git+https://github.com/OfficeDev/TeamsFx.git"
   },
   "scripts": {
+    "prepare": "npm run build",
     "copy-files": "copyfiles -u 1 src/**/*.html src/**/*.css lib/",
     "build": "rimraf lib && tsc -p ./ && npm run copy-files",
     "watch": "rimraf lib && tsc -w -p ./ && npm run copy-files",

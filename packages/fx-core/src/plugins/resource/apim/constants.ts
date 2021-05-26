@@ -11,7 +11,8 @@ export class ProjectConstants {
   public static readonly workingDir: string = "openapi";
   public static readonly openApiDocumentFileName: string = "openapi.json";
   public static readonly readMeFileName: string = "README.md";
-  public static readonly maxRetries: number = 3;
+  public static readonly maxRetries: number = 5;
+  public static readonly retryTimeInterval: number = 2000;
   public static readonly helpLink: string = "https://aka.ms/teamsfx-apim-help";
 }
 

@@ -178,25 +178,6 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
     return Promise.resolve(userSelected === confirm);
   }
 
-  async setStatusChangeCallback(
-    statusChange: (
-      status: string,
-      token?: string,
-      accountInfo?: Record<string, unknown>
-    ) => Promise<void>
-  ): Promise<boolean> {
-    AppStudioLogin.statusChange = statusChange;
-    await AppStudioLogin.codeFlowInstance.reloadCache();
-    if (AppStudioLogin.codeFlowInstance.account) {
-      const loginToken = await AppStudioLogin.codeFlowInstance.getToken(false);
-      const tokenJson = await this.getJsonObject();
-      await AppStudioLogin.statusChange(signedIn, loginToken, tokenJson);
-    }
-    return new Promise((resolve) => {
-      resolve(true);
-    });
-  }
-
   async getStatus(): Promise<LoginStatus> {
     await AppStudioLogin.codeFlowInstance.reloadCache();
     if (AppStudioLogin.codeFlowInstance.status === loggedIn) {

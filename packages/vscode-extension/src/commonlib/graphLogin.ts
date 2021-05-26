@@ -136,24 +136,6 @@ export class GraphLogin extends login implements GraphTokenProvider {
     return Promise.resolve(userSelected === confirm);
   }
 
-  async setStatusChangeCallback(
-    statusChange: (
-      status: string,
-      token?: string,
-      accountInfo?: Record<string, unknown>
-    ) => Promise<void>
-  ): Promise<boolean> {
-    GraphLogin.statusChange = statusChange;
-    if (GraphLogin.codeFlowInstance.account) {
-      const loginToken = await GraphLogin.codeFlowInstance.getToken();
-      const tokenJson = await this.getJsonObject();
-      await GraphLogin.statusChange("SignedIn", loginToken, tokenJson);
-    }
-    return new Promise((resolve) => {
-      resolve(true);
-    });
-  }
-
   async getStatus(): Promise<LoginStatus> {
     if (GraphLogin.codeFlowInstance.account) {
       const loginToken = await GraphLogin.codeFlowInstance.getToken();

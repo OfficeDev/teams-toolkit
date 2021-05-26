@@ -349,27 +349,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     return Promise.resolve(true);
   }
 
-  /**
-   * Add update account info callback
-   */
-  async setStatusChangeCallback(
-    statusChange: (
-      status: string,
-      token?: string,
-      accountInfo?: Record<string, unknown>
-    ) => Promise<void>
-  ): Promise<boolean> {
-    AzureAccountManager.statusChange = statusChange;
-    await AzureAccountManager.codeFlowInstance.reloadCache();
-    if (AzureAccountManager.codeFlowInstance.account) {
-      const loginToken = await AzureAccountManager.codeFlowInstance.getToken(false);
-      const tokenJson = await this.getJsonObject();
-      this.setMemoryCache(loginToken, tokenJson);
-      await AzureAccountManager.statusChange("SignedIn", loginToken, tokenJson);
-    }
-    return Promise.resolve(true);
-  }
-
   async getStatus(): Promise<LoginStatus> {
     if (!AzureAccountManager.codeFlowInstance.account) {
       await AzureAccountManager.codeFlowInstance.reloadCache();

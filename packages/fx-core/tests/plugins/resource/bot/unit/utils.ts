@@ -166,9 +166,6 @@ export function newPluginContext(): PluginContext {
       signout: () => {
         return Promise.resolve(true);
       },
-      setStatusChangeCallback: (anything) => {
-        return Promise.resolve(true);
-      },
       setStatusChangeMap: (name: string, anything) => {
         return Promise.resolve(true);
       },
@@ -190,9 +187,6 @@ export function newPluginContext(): PluginContext {
         return Promise.resolve(undefined);
       },
       signout: () => {
-        return Promise.resolve(true);
-      },
-      setStatusChangeCallback: (anything) => {
         return Promise.resolve(true);
       },
       setStatusChangeMap: (name: string, anything) => {

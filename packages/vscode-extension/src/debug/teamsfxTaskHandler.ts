@@ -21,6 +21,15 @@ const allRunningTeamsfxTasks: Map<IRunningTeamsfxTask, number> = new Map<
   number
 >();
 const allRunningDebugSessions: Set<string> = new Set<string>();
+const activeNpmInstallTasks = new Set<string>();
+
+function isNpmInstallTask(task: vscode.Task): boolean {
+  if (task) {
+    return task.name.trim().toLocaleLowerCase().endsWith("npm install");
+  }
+
+  return false;
+}
 
 function isTeamsfxTask(task: vscode.Task): boolean {
   // teamsfx: xxx start / xxx watch
@@ -56,6 +65,8 @@ function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent): void
         { source: task.source, name: task.name, scope: task.scope },
         event.processId
       );
+    } else if (isNpmInstallTask(task)) {
+      activeNpmInstallTasks.add(task.name);
     }
   }
 }
@@ -64,6 +75,20 @@ function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): void {
   const task = event.execution.task;
   if (task.scope !== undefined && isTeamsfxTask(task)) {
     allRunningTeamsfxTasks.delete({ source: task.source, name: task.name, scope: task.scope });
+  } else if (isNpmInstallTask(task)) {
+    activeNpmInstallTasks.delete(task.name);
+    // when the task in the active terminal is ended.
+    // TODO: only when the task is ended successfully.
+    if (vscode.window.activeTerminal?.name === task.name) {
+      for (const hiddenTaskName of activeNpmInstallTasks) {
+        // show the first hiden terminal.
+        const hiddenTerminal = vscode.window.terminals.find(t => t.name === hiddenTaskName);
+        if (hiddenTerminal !== undefined) {
+          hiddenTerminal.show(true);
+          return;
+        }
+      }
+    }
   }
 }
 

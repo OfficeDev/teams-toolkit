@@ -5,8 +5,6 @@ import "mocha";
 import {
   Func,
   FxError,
-  InputResult,
-  InputResultType,
   NodeType,
   ok,
   OptionItem,
@@ -16,14 +14,22 @@ import {
   traverse,
   UserInteraction,
   ConfigMap,
-  TextInputConfig,
+  InputTextConfig,
   SelectFolderConfig,
   SelectFileConfig,
   SelectFilesConfig,
-  MsgLevel,
   TimeConsumingTask,
-  SelectOptionsConfig,
-  SelectOptionConfig
+  SingleSelectConfig,
+  MultiSelectConfig,
+  SingleSelectResult,
+  MultiSelectResult,
+  returnSystemError,
+  InputTextResult,
+  SelectFolderResult,
+  SelectFileResult,
+  SelectFilesResult,
+  OpenUrlResult,
+  ShowMessageResult
 } from "../src/index";
 import * as chai from "chai";
 import {RemoteFuncExecutor} from "../src/qm/validation";
@@ -58,7 +64,7 @@ describe("Question Model - Traverse Test", () => {
     const titleTrace: (string | undefined)[] = [];
     const selectTrace: (string | undefined)[] = [];
     const mockUi: UserInteraction = {
-      selectOption: async function (config: SelectOptionConfig): Promise<InputResult> {
+      selectOption: async function (config: SingleSelectConfig): Promise<SingleSelectResult> {
         titleTrace.push(config.title);
         const index: number = Math.floor(Math.random() * config.options.length);
         const result = config.options[index];
@@ -66,38 +72,45 @@ describe("Question Model - Traverse Test", () => {
         const returnId = optionIsString ? result as string : (result as OptionItem).id;
         selectTrace.push(returnId);
         if (config.returnObject) {
-          return {type: InputResultType.sucess, result: optionIsString ? {id: result} : result};
+          return {type: "success", result: result};
         }
         else {
-          return {type: InputResultType.sucess, result: returnId};
+          return {type: "success", result: returnId};
         }
       },
-      selectOptions: async function (config: SelectOptionsConfig) : Promise<InputResult>{
+      selectOptions: async function (config: MultiSelectConfig) : Promise<MultiSelectResult>{
+        return {
+          type: "error",
+          error: returnSystemError(
+            new Error("Not support"),
+            "ExtensionTest",
+            "NotSupport"
+          )
+        }
+      },
+      inputText: async function (config: InputTextConfig): Promise<InputTextResult> {
+        titleTrace.push(config.title);
+        return {type: "success", result: "ok"};
+      },
+      selectFolder: async function (config: SelectFolderConfig): Promise<SelectFolderResult> {
+        titleTrace.push(config.title);
+        return {type: "success", result: "ok"};
+      },
+      selectFile: async function(config: SelectFileConfig) : Promise<SelectFileResult>{
+        return {type: "success", result: "ok"};
+      },
+      selectFiles: async function(config: SelectFilesConfig) : Promise<SelectFilesResult>{
         throw Error("Not support");
       },
-      inputText: async function (config: TextInputConfig): Promise<InputResult> {
-        titleTrace.push(config.title);
-        return {type: InputResultType.sucess, result: "ok"};
-      },
-      selectFolder: async function (config: SelectFolderConfig): Promise<InputResult> {
-        titleTrace.push(config.title);
-        return {type: InputResultType.sucess, result: "ok"};
-      },
-      selectFile: async function(config: SelectFileConfig) : Promise<InputResult>{
-        return {type: InputResultType.sucess, result: "ok"};
-      },
-      selectFiles: async function(config: SelectFilesConfig) : Promise<InputResult>{
-        throw Error("Not support");
-      },
-      openUrl: async function(link: string): Promise<boolean>{
+      openUrl: async function(link: string): Promise<OpenUrlResult>{
         throw Error("Not support");
       },
       showMessage: async function(
-        level: MsgLevel,
+        level: "info" | "warn" | "error",
         message: string,
         modal: boolean,
         ...items: string[]
-      ): Promise<string | undefined>{
+      ): Promise<ShowMessageResult>{
         throw Error("Not support");
       },
       runWithProgress: async function(task: TimeConsumingTask<any>): Promise<any>{
@@ -133,7 +146,7 @@ describe("Question Model - Traverse Test", () => {
 
     const inputs = new ConfigMap();
     const res = await traverse(n1, inputs, mockUi);
-    chai.assert.isTrue(res.type === InputResultType.sucess);
+    chai.assert.isTrue(res.type === "success");
     chai.assert.isTrue(titleTrace.length === 3);
     chai.assert.isTrue(selectTrace.length === 3);
     for (let i = 0; i < selectTrace.length - 1; ++i) {

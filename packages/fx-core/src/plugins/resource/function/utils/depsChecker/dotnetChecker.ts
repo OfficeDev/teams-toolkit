@@ -44,7 +44,7 @@ const installedNameWithVersion = `${DotnetCoreSDKName} (v${DotnetVersion.v31})`;
 
 export class DotnetChecker implements IDepsChecker {
   private static encoding = "utf-8";
-  private static timeout = 3 * 60 * 1000; // same as vscode-dotnet-runtime
+  private static timeout = 5 * 60 * 1000; // same as vscode-dotnet-runtime
   private static maxBuffer = 500 * 1024;
 
   private readonly _adapter: IDepsAdapter;

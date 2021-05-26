@@ -22,7 +22,7 @@ export enum NodeType {
     localFunc = "localFunc",
 }
 
-export type AnswerValue = string | string[] | number | OptionItem | OptionItem[] | undefined | unknown;
+export type AnswerValue = string | string[] | number | OptionItem | OptionItem[] | undefined | any;
 
 export type KnownAnswerValue = string | string[] | number | OptionItem | OptionItem[] | undefined;
 

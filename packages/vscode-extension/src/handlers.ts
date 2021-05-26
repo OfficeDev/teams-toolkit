@@ -29,8 +29,6 @@ import {
   RemoteFuncExecutor,
   Inputs,
   ConfigMap,
-  InputResult,
-  InputResultType,
   VsCodeEnv,
   AppStudioTokenProvider
 } from "@microsoft/teamsfx-api";
@@ -346,10 +344,10 @@ export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
     // 5. run question model
     const node = qres.value;
     if (node) {
-      const res: InputResult = await traverse(node, answers, VS_CODE_UI, coreExeceutor);
-      if (res.type === InputResultType.error) {
+      const res = await traverse(node, answers, VS_CODE_UI, coreExeceutor);
+      if (res.type === "error") {
         throw res.error!;
-      } else if (res.type === InputResultType.cancel) {
+      } else if (res.type === "cancel") {
         throw new UserError(
           ExtensionErrors.UserCancel,
           StringResources.vsc.common.userCancel,
@@ -469,10 +467,10 @@ async function runUserTask(func: Func, eventName: string): Promise<Result<null, 
     // 5. run question model
     const node = qres.value;
     if (node) {
-      const res: InputResult = await traverse(node, answers, VS_CODE_UI, coreExeceutor);
-      if (res.type === InputResultType.error && res.error) {
+      const res = await traverse(node, answers, VS_CODE_UI, coreExeceutor);
+      if (res.type === "error" && res.error) {
         throw res.error;
-      } else if (res.type === InputResultType.cancel) {
+      } else if (res.type === "cancel") {
         throw new UserError(
           ExtensionErrors.UserCancel,
           StringResources.vsc.common.userCancel,

@@ -18,7 +18,7 @@ import { FxError } from "../error";
 import { ConfigMap, Inputs } from "../config";
  
 
-export type RemoteFuncExecutor = (func:Func, answers: ConfigMap) => Promise<Result<unknown, FxError>>; 
+export type RemoteFuncExecutor = (func:Func, answers: ConfigMap) => Promise<Result<any, FxError>>; 
 
 export function getValidationFunction(
   validation: Validation,

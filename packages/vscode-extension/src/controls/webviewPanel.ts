@@ -143,6 +143,12 @@ export class WebviewPanel {
           case Commands.InitAccountInfo:
             this.setStatusChangeMap();
             break;
+          case Commands.UpdateGlobalStepsDone:
+            this.updateGlobalStepsDone(msg.data);
+            break;
+          case Commands.GetGlobalStepsDone:
+            this.getGlobalStepsDone();
+            break;
           default:
             break;
         }
@@ -153,6 +159,20 @@ export class WebviewPanel {
 
     // Set the webview's initial html content
     this.panel.webview.html = this.getHtmlForWebview(panelType);
+  }
+
+  private updateGlobalStepsDone(data: any) {
+    ext.context.globalState.update("globalStepsDone", data);
+  }
+
+  private getGlobalStepsDone() {
+    let globalStepsDone = ext.context.globalState.get("globalStepsDone", []);
+    if (this.panel && this.panel.webview) {
+      this.panel.webview.postMessage({
+        message: "updateStepsDone",
+        data: globalStepsDone,
+      });
+    }
   }
 
   private getWebpageTitle(panelType: PanelType) {

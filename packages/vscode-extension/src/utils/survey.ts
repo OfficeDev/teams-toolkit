@@ -12,7 +12,7 @@ enum ExtensionSurveyStateKeys {
 }
 
 const TIME_TO_DISABLE_SURVEY = 1000 * 60 * 60 * 24 * 7 * 12; // 4 weeks
-const TIME_TO_SHOW_SURVEY = 1000 * 60 * 60 * 1; // 1 hours
+const TIME_TO_SHOW_SURVEY = 1000 * 60 * 15; // 15 minutes 
 const SAMPLE_PERCENTAGE = 25; // 25 percent for public preview
 
 export class ExtensionSurvey {

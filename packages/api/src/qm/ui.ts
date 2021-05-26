@@ -68,7 +68,7 @@ export type SelectFilesResult = InputResult<string[]>;
 
 export type SelectFolderResult = InputResult<string>;
 
-export type OpenUrlResult = InputResult<string>;
+export type OpenUrlResult = InputResult<boolean>;
 
 export type ShowMessageResult = InputResult<string>;
 

@@ -504,7 +504,7 @@ export class VsCodeUI implements UserInteraction {
       try {
         const result = await env.openExternal(uri);
         if (result) {
-          resolve({ type: "success" });
+          resolve({ type: "success", result: result as any });
           return;
         } else {
           error = new Error(`Cannot open ${link}.`);
@@ -535,10 +535,14 @@ export class VsCodeUI implements UserInteraction {
         let promise: Thenable<string | undefined>;
         let result: string | undefined = undefined;
         switch (level) {
-          case "info":
+          case "info":{
             promise = window.showInformationMessage(message, option, ...items);
-          case "warn":
+            break;
+          }
+          case "warn":{
             promise = window.showWarningMessage(message, option, ...items);
+            break;
+          }
           case "error":
             promise = window.showErrorMessage(message, option, ...items);
         }

@@ -160,7 +160,6 @@ export class FxCore implements Core {
       });
 
       const azureToken = await this.tools.tokenProvider.azureAccountProvider.getAccountCredentialAsync();
-      // const subscriptions: AzureSubscription[] = await getSubscriptionList(azureToken!);
       const subscriptions: SubscriptionInfo[] | undefined =
         await this.tools.tokenProvider.azureAccountProvider?.listSubscriptions();
       if (!subscriptions) {
@@ -203,7 +202,7 @@ export class FxCore implements Core {
     };
 
     const signinM365Callback = async (args?: any[]): Promise<Result<null, FxError>> => {
-      const token = await this.tools.tokenProvider.appStudioToken?.getJsonObject(true);
+      const token = await this.tools.tokenProvider.appStudioToken.getJsonObject(true);
       if (token !== undefined) {
         this.tools.treeProvider?.refresh([
           {
@@ -225,7 +224,7 @@ export class FxCore implements Core {
       args?: any[]
     ): Promise<Result<null, FxError>> => {
       const showDialog = args && args[1] !== undefined ? args[1] : true;
-      const token = await this.tools.tokenProvider.azureAccountProvider?.getAccountCredentialAsync(showDialog);
+      const token = await this.tools.tokenProvider.azureAccountProvider.getAccountCredentialAsync(showDialog);
       if (token !== undefined) {
         this.tools.treeProvider?.refresh([
           {
@@ -254,7 +253,7 @@ export class FxCore implements Core {
 
     let azureAccountLabel = "Sign in to Azure";
     let azureAccountContextValue = "signinAzure";
-    const token = this.tools.tokenProvider.azureAccountProvider.getAccountCredential();
+    const token = await this.tools.tokenProvider.azureAccountProvider.getAccountCredentialAsync();
     if (token !== undefined) {
       azureAccountLabel = (token as any).username ? (token as any).username : "";
       azureAccountContextValue = "signedinAzure";
@@ -302,7 +301,7 @@ export class FxCore implements Core {
         accountInfo?: Record<string, unknown> | undefined
       ) => {
         if (status === "SignedIn") {
-          const token = this.tools.tokenProvider.azureAccountProvider?.getAccountCredential();
+          const token = await this.tools.tokenProvider.azureAccountProvider.getIdentityCredentialAsync();
           if (token !== undefined) {
             this.tools.treeProvider?.refresh([
               {

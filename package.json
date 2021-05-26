@@ -15,6 +15,6 @@
         "husky": "^6.0.0"
     },
     "bin": {
-        "teamsfx": "./packages/cli/lib/cli.js"
+        "teamsfx": "./packages/cli/cli.js"
     }
 }

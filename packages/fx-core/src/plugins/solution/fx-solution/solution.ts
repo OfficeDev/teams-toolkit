@@ -1088,7 +1088,7 @@ export class TeamsAppSolution implements Solution {
     if (isAzureProject && !provisioned) {
       return err(
         returnUserError(
-          new Error(getStrings().solution.NotProvisionedNotice),
+          new Error(util.format(getStrings().solution.NotProvisionedNotice, ctx.projectSettings?.appName)),
           "Solution",
           SolutionError.CannotDeployBeforeProvision
         )
@@ -1194,7 +1194,7 @@ export class TeamsAppSolution implements Solution {
     if (!provisioned) {
       return err(
         returnUserError(
-          new Error(getStrings().solution.NotProvisionedNotice),
+          new Error(util.format(getStrings().solution.NotProvisionedNotice, ctx.projectSettings?.appName)),
           "Solution",
           SolutionError.CannotPublishBeforeProvision
         )

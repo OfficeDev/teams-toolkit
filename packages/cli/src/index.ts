@@ -1,21 +1,20 @@
-#!/usr/bin/env node
-
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
 "use strict";
 
-import { readdirSync, readFileSync } from "fs";
+import path from "path";
+import fs from "fs-extra";
 import yargs from "yargs";
 
 import { commands } from "./cmds";
 import * as constants from "./constants";
 
 /**
- * registers cli and partner commands with yargs.
+ * Registers cli and partner commands with yargs.
  * @param yargs
  */
-export function register(yargs: yargs.Argv): void {
+function register(yargs: yargs.Argv): void {
   commands.forEach((command) => {
     yargs.command(
       command.command,
@@ -26,7 +25,20 @@ export function register(yargs: yargs.Argv): void {
   });
 }
 
-(async () => {
+/**
+ * Shows in `teamsfx -v`.
+ * @returns the version of teamsfx-cli.
+ */
+function getVersion(): string {
+  const pkgPath = path.resolve(__dirname, "..", "package.json");
+  const pkgContent = fs.readJsonSync(pkgPath);
+  return pkgContent.version;
+}
+
+/**
+ * Starts the CLI process.
+ */
+export function start() {
   register(yargs);
   yargs
     .options("verbose", {
@@ -45,8 +57,8 @@ export function register(yargs: yargs.Argv): void {
     .strict()
     .alias("help", "h")
     .alias("v", "version")
-    .version()
+    .version(getVersion())
     .epilogue(
       "For more information about the Teams Toolkit - https://aka.ms/teamsfx-learn."
     ).argv;
-})();
+}

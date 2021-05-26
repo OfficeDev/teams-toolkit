@@ -20,14 +20,14 @@ export const NoValidOpenApiDocument: IApimPluginError = {
   type: ErrorType.User,
   code: "NoValidOpenApiDocument",
   message: () => "No valid OpenApi document in the current workspace.",
-  helpLink: "https://aka.ms/teamsfx-apim-help#novalidopenapidocument",
+  helpLink: ProjectConstants.helpLink,
 };
 
 export const InvalidOpenApiDocument: IApimPluginError = {
   type: ErrorType.User,
   code: "InvalidOpenApiDocument",
   message: (filePath: string) => `The file '${filePath}' is not a valid OpenApi document.`,
-  helpLink: "https://aka.ms/teamsfx-apim-help#invalidopenapidocument",
+  helpLink: ProjectConstants.helpLink,
 };
 
 export const InvalidAadObjectId: IApimPluginError = {
@@ -35,7 +35,7 @@ export const InvalidAadObjectId: IApimPluginError = {
   code: "InvalidAadObjectId",
   message: (objectId: string) =>
     `The Azure Active Directory application with object id '${objectId}' could not be found.`,
-  helpLink: "https://aka.ms/teamsfx-apim-help#invalidaadobjectid",
+  helpLink: ProjectConstants.helpLink,
 };
 
 export const EmptyConfigValue: IApimPluginError = {
@@ -63,14 +63,14 @@ export const ApimOperationError: IApimPluginError = {
   type: ErrorType.User,
   code: "ApimOperationError",
   message: (operation: string, resourceType: string) => `Failed to ${operation} ${resourceType}.`,
-  helpLink: "https://aka.ms/teamsfx-apim-help#apimoperationerror",
+  helpLink: ProjectConstants.helpLink,
 };
 
 export const AadOperationError: IApimPluginError = {
   type: ErrorType.User,
   code: "AadOperationError",
   message: (operation: string, resourceType: string) => `Failed to ${operation} ${resourceType}.`,
-  helpLink: "https://aka.ms/teamsfx-apim-help#aadoperationerror",
+  helpLink: ProjectConstants.helpLink,
 };
 
 export const InvalidCliOptionError: IApimPluginError = {

@@ -70,9 +70,8 @@ describe("FrontendScaffold", () => {
   describe("getTemplateZip", () => {
     before(() => {
       const config: any = {};
-      config[
-        path.join(getTemplatesFolder(), "plugins", "resource", "frontend", `tab.js.default.zip`)
-      ] = new AdmZip().toBuffer();
+      config[path.join(getTemplatesFolder(), FrontendPathInfo.TemplateDir, `tab.js.default.zip`)] =
+        new AdmZip().toBuffer();
       mock(config);
     });
 

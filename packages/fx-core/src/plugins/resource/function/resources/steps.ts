@@ -16,7 +16,6 @@ export enum ProvisionSteps {
 }
 
 export enum PostProvisionSteps {
-  findFunctionApp = "Retrieving settings.",
   updateFunctionSettings = "Updating settings.",
   updateFunctionAuthSettings = "Updating auth settings.",
 }

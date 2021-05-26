@@ -234,8 +234,8 @@ export class DotnetChecker implements IDepsChecker {
       shell: false,
     };
 
+    const start = performance.now();
     try {
-      const start = performance.now();
       fs.chmodSync(this.getDotnetInstallScriptPath(), "755");
       const { stdout, stderr } = await execFile(command[0], command.slice(1), options);
       await this._logger.debug(
@@ -251,7 +251,7 @@ export class DotnetChecker implements IDepsChecker {
           .split("@NameVersion")
           .join(installedNameWithVersion)} ${
           Messages.dotnetInstallStderr
-        } stdout = '${stdout}', stderr = '${stderr}'`;
+        } stdout = '${stdout}', stderr = '${stderr}', timecost = '${timecost}s'`;
 
         this._telemetry.sendSystemErrorEvent(
           DepsCheckerEvent.dotnetInstallScriptError,
@@ -263,13 +263,14 @@ export class DotnetChecker implements IDepsChecker {
         this._telemetry.sendEvent(DepsCheckerEvent.dotnetInstallScriptCompleted, timecost);
       }
     } catch (error) {
+      const timecost = Number(((performance.now() - start) / 1000).toFixed(2));
       const errorMessage =
         `${Messages.failToInstallDotnet.split("@NameVersion").join(installedNameWithVersion)} ${
           Messages.dotnetInstallErrorCode
         }, ` +
         `command = '${command.join(" ")}', options = '${JSON.stringify(
           options
-        )}', error = '${error}', stdout = '${error.stdout}', stderr = '${error.stderr}'`;
+        )}', error = '${error}', stdout = '${error.stdout}', stderr = '${error.stderr}', timecost = '${timecost}s'`;
 
       this._telemetry.sendSystemErrorEvent(
         DepsCheckerEvent.dotnetInstallScriptError,

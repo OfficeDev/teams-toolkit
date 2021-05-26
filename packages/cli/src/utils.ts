@@ -8,8 +8,6 @@ import path from "path";
 import { Options } from "yargs";
 
 import {
-  NodeType,
-  QTreeNode,
   OptionItem,
   Question,
   err,
@@ -22,6 +20,9 @@ import {
   getSingleOption,
   SingleSelectQuestion,
   MultiSelectQuestion,
+  QTreeNode,
+  Inputs,
+  Platform,
 } from "@microsoft/teamsfx-api";
 
 import { ConfigNotFoundError, ReadFileError } from "./error";
@@ -57,7 +58,7 @@ export function getChoicesFromQTNodeQuestion(
   data: Question,
   interactive = false
 ): string[] | undefined {
-  const option = "option" in data ? data.option : undefined;
+  const option = "staticOptions" in data ? data.staticOptions : undefined;
   if (option && option instanceof Array && option.length > 0) {
     if (typeof option[0] === "string") {
       return option as string[];
@@ -78,7 +79,7 @@ export function getSingleOptionString(
 ): string | string[] {
   const singleOption = getSingleOption(q);
   if (q.returnObject) {
-    if (q.type === NodeType.singleSelect) {
+    if (q.type === "singleSelect") {
       return singleOption.id;
     } else {
       return [singleOption[0].id];
@@ -101,7 +102,7 @@ export function toYargsOptions(data: Question): Options {
     data.default = defaultValue.toLocaleLowerCase();
   }
   return {
-    array: data.type === NodeType.multiSelect,
+    array: data.type === "multiSelect",
     description: data.title || "",
     default: data.default,
     choices: choices,
@@ -216,4 +217,31 @@ export function getTeamsAppId(rootfolder: string | undefined): any {
   }
 
   return undefined;
+}
+
+
+
+export function getSystemInputs(projectPath?: string):Inputs{
+  const systemInputs:Inputs = {
+    platform: Platform.CLI,
+    projectPath: projectPath,
+    featureFlag: true
+  };
+  return systemInputs;
+}
+
+export function argsToInputs(params: { [_: string]: Options }, args: { [argName: string]: string|string[] }):Inputs{
+  const inputs = getSystemInputs();
+  for (const name in params) {
+    if (name.endsWith("folder")) {
+      inputs[name] = path.resolve(args[name] as string);
+    } 
+    else {
+      inputs[name] = args[name] || params[name].default;
+    }
+  }
+  const rootFolder = path.resolve(inputs["folder"] as string || "./");
+  delete inputs["folder"];
+  inputs.projectPath = rootFolder;
+  return inputs;
 }

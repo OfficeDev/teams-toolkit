@@ -9,8 +9,7 @@ import {
   ok,
   Result,
   err,
-  Stage,
-  NodeType
+  Stage
 } from "@microsoft/teamsfx-api";
 
 import * as constants from "../constants";
@@ -42,7 +41,7 @@ abstract class ResourceAddGenerator extends Generator {
     root.children = undefined;
 
     // pick all related questions.
-    const allNodes = [root, ...functionNodes, ...resourceNodes].filter(node => node.data && node.data.type !== NodeType.group);
+    const allNodes = [root, ...functionNodes, ...resourceNodes].filter(node => node.data && node.data.type !== "group");
     return ok([constants.RootFolderNode, ...allNodes]);
   }
 }

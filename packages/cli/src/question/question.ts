@@ -5,32 +5,28 @@
 
 import inquirer, { DistinctQuestion } from "inquirer";
 import {
-  NodeType,
   QTreeNode,
   OptionItem,
   Question,
-  ConfigMap,
   getValidationFunction,
-  RemoteFuncExecutor,
   isAutoSkipSelect,
   getSingleOption,
   SingleSelectQuestion,
   MultiSelectQuestion,
-  getCallFuncValue,
-  StaticOption,
-  DymanicOption
+  Inputs,
+  StaticValidation,
+  StaticOptions,
+  getCallFuncValue
 } from "@microsoft/teamsfx-api";
 
-import CLILogProvider from "../commonlib/log";
-import * as constants from "../constants";
-import { flattenNodes, getChoicesFromQTNodeQuestion, toConfigMap } from "../utils";
+import { flattenNodes, getChoicesFromQTNodeQuestion, getSystemInputs, toConfigMap } from "../utils";
 
 import { QTNConditionNotSupport, QTNQuestionTypeNotSupport, NotValidInputValue, NotValidOptionValue } from "../error";
 
+
 export async function validateAndUpdateAnswers(
   root: QTreeNode | undefined,
-  answers: ConfigMap,
-  remoteFuncValidator?: RemoteFuncExecutor
+  answers: Inputs
 ): Promise<void> {
   if (!root) {
     return;
@@ -38,17 +34,17 @@ export async function validateAndUpdateAnswers(
 
   const nodes = flattenNodes(root);
   for (const node of nodes) {
-    if (node.data.type === NodeType.group) {
+    if (node.data.type === "group") {
       continue;
     }
 
-    const ans: any = answers.get(node.data.name);
+    const ans: any = answers[node.data.name];
     if (!ans) {
       continue;
     }
 
     if ("validation" in node.data && node.data.validation) {
-      const validateFunc = getValidationFunction(node.data.validation, toConfigMap(answers), remoteFuncValidator);
+      const validateFunc = getValidationFunction(node.data.validation, answers);
       const result = await validateFunc(ans);
       if (typeof result === "string") {
         throw NotValidInputValue(node.data.name, result);
@@ -56,12 +52,12 @@ export async function validateAndUpdateAnswers(
     }
 
     // if it is a select question
-    if (node.data.type === NodeType.multiSelect || node.data.type === NodeType.singleSelect) {
+    if (node.data.type === "multiSelect" || node.data.type === "singleSelect") {
       const question = node.data as SingleSelectQuestion | MultiSelectQuestion;
-      let option = question.option;
+      let option = question.staticOptions;
 
       if (!(option instanceof Array)) {
-        option = await getCallFuncValue(answers, false, node.data.option as DymanicOption) as StaticOption;
+        option = await getCallFuncValue(answers, node.data.dynamicOptions) as StaticOptions;
       }
       // if the option is the object, need to find the object first.
       if (typeof option[0] !== "string") {
@@ -81,7 +77,7 @@ export async function validateAndUpdateAnswers(
               throw NotValidOptionValue(question, option);
             }
           }
-          answers.set(node.data.name, items);
+          answers[node.data.name] = items;
         }
         // for single-select question
         else {
@@ -90,10 +86,10 @@ export async function validateAndUpdateAnswers(
             throw NotValidOptionValue(question, option);
           }
           if (question.returnObject) {
-            answers.set(node.data.name, item);
+            answers[node.data.name] = item;
           }
           else {
-            answers.set(node.data.name, item.id);
+            answers[node.data.name] = item.id;
           }
         }
       }
@@ -103,12 +99,11 @@ export async function validateAndUpdateAnswers(
 
 export async function visitInteractively(
   node: QTreeNode,
-  answers?: any,
-  parentNodeAnswer?: any,
-  remoteFuncValidator?: RemoteFuncExecutor
-): Promise<{ [_: string]: any }> {
+  answers?: Inputs,
+  parentNodeAnswer?: any
+): Promise<Inputs> {
   if (!answers) {
-    answers = {};
+    answers = getSystemInputs();
   }
 
   let shouldVisitChildren = false;
@@ -118,8 +113,8 @@ export async function visitInteractively(
       throw QTNConditionNotSupport(node);
     }
 
-    if (node.condition.equals) {
-      if (node.condition.equals === parentNodeAnswer) {
+    if ((node.condition as StaticValidation).equals) {
+      if ((node.condition as StaticValidation).equals === parentNodeAnswer) {
         shouldVisitChildren = true;
       } else {
         return answers;
@@ -158,13 +153,13 @@ export async function visitInteractively(
   }
 
   let answer: any = undefined;
-  if (node.data.type !== NodeType.group) {
-    if (node.data.type === NodeType.func) {
+  if (node.data.type !== "group") {
+    if (node.data.type === "func") {
       const res = await node.data.func(answers);
       answers[node.data.name] = res;
     }
     else if (!isAutoSkipSelect(node.data)) {
-      answers = await inquirer.prompt([toInquirerQuestion(node.data, answers, remoteFuncValidator)], answers);
+      answers = await inquirer.prompt([toInquirerQuestion(node.data, answers)], answers);
       // convert the option.label to option.id
       if ("staticOptions" in node.data) {
         const option = (node.data as SingleSelectQuestion|MultiSelectQuestion).staticOptions;
@@ -186,37 +181,37 @@ export async function visitInteractively(
 
   if (shouldVisitChildren && node.children) {
     for (const child of node.children) {
-      answers = await visitInteractively(child, answers, answer, remoteFuncValidator);
+      answers = await visitInteractively(child, answers, answer);
     }
   }
 
   return answers!;
 }
 
-export function toInquirerQuestion(data: Question, answers: { [_: string]: any }, remoteFuncValidator?: RemoteFuncExecutor): DistinctQuestion {
+export function toInquirerQuestion(data: Question, answers: Inputs): DistinctQuestion {
   let type: "input" | "number" | "password" | "list" | "checkbox";
   let defaultValue = data.default;
   switch (data.type) {
-    case NodeType.file:
-    case NodeType.folder:
+    case "singleFile":
+    case "multiFile":
+    case "folder":
       defaultValue = defaultValue || "./";
-    case NodeType.text:
+    case "text":
       type = "input";
       break;
-    case NodeType.number:
-      type = "number";
-      break;
-    case NodeType.password:
-      type = "password";
-      break;
-    case NodeType.singleSelect:
+    // case number:
+    //   type = "number";
+    //   break;
+    // case password:
+    //   type = "password";
+    //   break;
+    case "singleSelect":
       type = "list";
       break;
-    case NodeType.multiSelect:
+    case "multiSelect":
       type = "checkbox";
       break;
-    case NodeType.func:
-    case NodeType.localFunc:
+    case "func":
       throw QTNQuestionTypeNotSupport(data);
   }
   let choices = undefined;
@@ -226,12 +221,12 @@ export function toInquirerQuestion(data: Question, answers: { [_: string]: any }
   return {
     type,
     name: data.name,
-    message: data.description || data.title || "",
+    message: data.title || "",
     choices: choices ? choices : getChoicesFromQTNodeQuestion(data, true),
     default: defaultValue,
     validate: async (input: any) => {
       if ("validation" in data && data.validation) {
-        const validateFunc = getValidationFunction(data.validation, toConfigMap(answers), remoteFuncValidator);
+        const validateFunc = getValidationFunction(data.validation, answers);
         const result = await validateFunc(input);
         if (typeof result === "string") {
           return result;

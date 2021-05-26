@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Func, NodeType, PluginContext, QTreeNode } from "@microsoft/teamsfx-api";
+import { Func, PluginContext, QTreeNode } from "@microsoft/teamsfx-api";
 import { BuildError, NotImplemented } from "../error";
 import { IApimPluginConfig } from "../config";
 import { IQuestionService } from "../questions/question";
@@ -61,7 +61,7 @@ export class VscQuestionManager implements IQuestionManager {
 
   async update(ctx: PluginContext, apimConfig: IApimPluginConfig): Promise<QTreeNode> {
     const rootNode = new QTreeNode({
-      type: NodeType.group,
+      type: "group",
     });
     if (apimConfig.serviceName) {
       return rootNode;
@@ -75,7 +75,7 @@ export class VscQuestionManager implements IQuestionManager {
 
   async deploy(ctx: PluginContext, apimConfig: IApimPluginConfig): Promise<QTreeNode> {
     const rootNode = new QTreeNode({
-      type: NodeType.group,
+      type: "group",
     });
 
     let documentNode: QTreeNode;
@@ -134,7 +134,7 @@ export class CliQuestionManager implements IQuestionManager {
 
   async update(ctx: PluginContext): Promise<QTreeNode> {
     const rootNode = new QTreeNode({
-      type: NodeType.group,
+      type: "group",
     });
 
     const apimResourceGroupQuestion = this.apimResourceGroupQuestion.getQuestion();
@@ -146,7 +146,7 @@ export class CliQuestionManager implements IQuestionManager {
 
   async deploy(): Promise<QTreeNode> {
     const rootNode = new QTreeNode({
-      type: NodeType.group,
+      type: "group",
     });
 
     const openApiDocumentQuestion = this.openApiDocumentQuestion.getQuestion();

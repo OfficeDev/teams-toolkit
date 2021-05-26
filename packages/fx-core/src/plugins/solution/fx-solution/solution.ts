@@ -9,7 +9,6 @@ import {
   err,
   QTreeNode,
   ConfigMap,
-  NodeType,
   Stage,
   returnSystemError,
   returnUserError,
@@ -32,8 +31,7 @@ import {
   UserError,
   Platform,
   QuestionType,
-  Inputs,
-  SubscriptionInfo,
+  Inputs
 } from "@microsoft/teamsfx-api";
 import { askSubscription, fillInCommonQuestions } from "./commonQuestions";
 import { executeLifecycles, executeConcurrently, LifecyclesWithContext } from "./executor";
@@ -1248,7 +1246,7 @@ export class TeamsAppSolution implements Solution {
     ctx: SolutionContext,
     addAzureResource: boolean
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const tabNode = new QTreeNode({ type: NodeType.group });
+    const tabNode = new QTreeNode({ type: "group" });
 
     //Frontend plugin
     if (this.fehostPlugin.getQuestions) {
@@ -1300,7 +1298,7 @@ export class TeamsAppSolution implements Solution {
     stage: Stage,
     ctx: SolutionContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const node = new QTreeNode({ type: NodeType.group });
+    const node = new QTreeNode({ type: "group" });
     let manifest: TeamsAppManifest | undefined = undefined;
     if (stage !== Stage.create) {
       const checkRes = this.checkWhetherSolutionIsIdle();
@@ -2051,7 +2049,7 @@ export class TeamsAppSolution implements Solution {
       const res = await this.apimPlugin.getQuestions(Stage.update, pluginCtx);
       if (res.isErr()) return res;
       if (res.value) {
-        const groupNode = new QTreeNode({ type: NodeType.group });
+        const groupNode = new QTreeNode({ type: "group" });
         groupNode.condition = { contains: AzureResourceApim.id };
         addAzureResourceNode.addChild(groupNode);
         const apim = res.value as QTreeNode;

@@ -4,7 +4,6 @@ import {
   PluginContext,
   ok,
   QTreeNode,
-  NodeType,
   Stage,
   Result,
   FxError,
@@ -68,11 +67,7 @@ export class FrontendPluginImpl {
   }
 
   public getQuestions(stage: Stage, _ctx: PluginContext): Result<QTreeNode | undefined, FxError> {
-    const res = new QTreeNode({
-      type: NodeType.group,
-    });
-
-    return ok(res);
+    return ok(undefined);
   }
 
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {

@@ -4,22 +4,6 @@
 import { Inputs } from "../types";
 import { FuncValidation, StringArrayValidation, StringValidation, ValidationSchema } from "./validation";
 
-/**
- * reference:
- * https://www.w3schools.com/html/html_form_input_types.asp
- * https://www.w3schools.com/tags/att_option_value.asp
- */
-export enum NodeType {
-    text = "text",
-    singleSelect = "singleSelect",
-    multiSelect = "multiSelect",
-    singleFile = "singleFile",
-    multiFile = "multiFile",
-    folder = "folder",
-    group = "group",
-    func = "func",
-}
-
 export interface FunctionRouter{
     namespace:string,
     method:string
@@ -62,6 +46,8 @@ export type DymanicOptions = LocalFunc<StaticOptions>;
 export interface BaseQuestion {
  
     name: string;
+    
+    title?:string;
  
     value?: unknown;
 
@@ -73,8 +59,7 @@ export interface BaseQuestion {
 }
 
 export interface UserInputQuestion extends BaseQuestion{
-    type: NodeType.singleSelect | NodeType.multiSelect | NodeType.singleFile 
-    | NodeType.multiFile| NodeType.folder | NodeType.text;
+    type: "singleSelect"|"multiSelect"|"singleFile"|"multiFile"|"folder"|"text";
     title:string ;
     placeholder?: string | LocalFunc<string | undefined>;
     prompt?: string | LocalFunc<string | undefined>;
@@ -84,7 +69,7 @@ export interface UserInputQuestion extends BaseQuestion{
 
 export interface SingleSelectQuestion extends UserInputQuestion {
     
-    type: NodeType.singleSelect;
+    type: "singleSelect";
 
     /**
      * CLI focus only on this option
@@ -117,7 +102,7 @@ export interface SingleSelectQuestion extends UserInputQuestion {
 }
 
 export interface MultiSelectQuestion extends UserInputQuestion {
-    type: NodeType.multiSelect;
+    type: "multiSelect";
 
     staticOptions: StaticOptions;
 
@@ -154,7 +139,7 @@ export interface MultiSelectQuestion extends UserInputQuestion {
 }
 
 export interface TextInputQuestion extends UserInputQuestion {
-    type: NodeType.text;
+    type: "text";
     password?: boolean; 
     value?: string;
     default?: string | LocalFunc<string | undefined>;
@@ -163,21 +148,21 @@ export interface TextInputQuestion extends UserInputQuestion {
 
 
 export interface SingleFileQuestion extends UserInputQuestion {
-    type: NodeType.singleFile;
+    type: "singleFile";
     value?: string;
     default?: string | LocalFunc<string | undefined>;
     validation?: FuncValidation;
 }
 
 export interface MultiFileQuestion extends UserInputQuestion {
-    type: NodeType.multiFile;
+    type: "multiFile";
     value?: string[];
     default?: string | LocalFunc<string | undefined>;
     validation?: FuncValidation;
 }
 
 export interface FolderQuestion extends UserInputQuestion {
-    type: NodeType.folder;
+    type: "folder";
     value?: string;
     default?: string | LocalFunc<string | undefined>;
     validation?: FuncValidation;
@@ -188,12 +173,12 @@ export interface FolderQuestion extends UserInputQuestion {
  * The dynamic data can be refered by the child question in condition check or default value.
  */
 export interface FuncQuestion extends BaseQuestion{
-    type: NodeType.func;
+    type: "func";
     func: LocalFunc<unknown>;
 }
 
 export interface Group {
-    type: NodeType.group;
+    type: "group";
     name?: string; 
 }
 
@@ -216,7 +201,7 @@ export type Question =
  */
 export class QTreeNode {
     data: Question | Group;
-    condition?: ValidationSchema;
+    condition?: ValidationSchema & {target?:string};
     children?: QTreeNode[];
     addChild(node: QTreeNode): QTreeNode {
         if (!this.children) {
@@ -246,7 +231,7 @@ export class QTreeNode {
             }
             this.children = newChildren;
         }
-        if (this.data.type === NodeType.group) {
+        if (this.data.type === "group") {
             if( !this.children || this.children.length === 0)
                 return undefined;
             if( this.children.length === 1){

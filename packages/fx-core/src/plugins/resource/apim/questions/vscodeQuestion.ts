@@ -5,7 +5,6 @@ import {
   LogProvider,
   OptionItem,
   SingleSelectQuestion,
-  NodeType,
   PluginContext,
   FuncQuestion,
   TextInputQuestion,
@@ -60,7 +59,7 @@ export class ApimServiceQuestion extends BaseQuestionService implements IQuestio
 
   public getQuestion(ctx: PluginContext): SingleSelectQuestion {
     return {
-      type: NodeType.singleSelect,
+      type: "singleSelect",
       name: QuestionConstants.VSCode.Apim.questionName,
       title: QuestionConstants.VSCode.Apim.description,
       staticOptions: [{
@@ -107,7 +106,7 @@ export class OpenApiDocumentQuestion extends BaseQuestionService implements IQue
 
   public getQuestion(ctx: PluginContext): SingleSelectQuestion {
     return {
-      type: NodeType.singleSelect,
+      type: "singleSelect",
       name: QuestionConstants.VSCode.OpenApiDocument.questionName,
       title: QuestionConstants.VSCode.OpenApiDocument.description,
       staticOptions: [],
@@ -149,7 +148,7 @@ export class ExistingOpenApiDocumentFunc extends BaseQuestionService implements 
 
   public getQuestion(ctx: PluginContext): FuncQuestion {
     return {
-      type: NodeType.func,
+      type: "func",
       name: QuestionConstants.VSCode.ExistingOpenApiDocument.questionName,
       func: async (inputs: Inputs) :  Promise< OptionItem > => {
         return this.executeFunc(ctx);
@@ -177,7 +176,7 @@ export class ApiPrefixQuestion extends BaseQuestionService implements IQuestionS
 
   public getQuestion(ctx: PluginContext): TextInputQuestion {
     return {
-      type: NodeType.text,
+      type: "text",
       name: QuestionConstants.VSCode.ApiPrefix.questionName,
       title: QuestionConstants.VSCode.ApiPrefix.description,
       prompt: QuestionConstants.VSCode.ApiPrefix.prompt,
@@ -247,7 +246,7 @@ export class ApiVersionQuestion extends BaseQuestionService implements IQuestion
 
   public getQuestion(ctx: PluginContext): SingleSelectQuestion {
     return {
-      type: NodeType.singleSelect,
+      type: "singleSelect",
       name: QuestionConstants.VSCode.ApiVersion.questionName,
       title: QuestionConstants.VSCode.ApiVersion.description,
       staticOptions:[],
@@ -285,7 +284,7 @@ export class NewApiVersionQuestion extends BaseQuestionService implements IQuest
 
   public getQuestion(ctx: PluginContext): TextInputQuestion {
     return {
-      type: NodeType.text,
+      type: "text",
       name: QuestionConstants.VSCode.NewApiVersion.questionName,
       title: QuestionConstants.VSCode.NewApiVersion.description,
       default: async (inputs: Inputs): Promise<string> => {

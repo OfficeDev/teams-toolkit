@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { NodeType, TextInputQuestion } from "@microsoft/teamsfx-api";
+import { TextInputQuestion } from "@microsoft/teamsfx-api";
 
 import {
   DefaultValues,
@@ -11,6 +11,6 @@ import { InfoMessages } from "./resources/message";
 export const functionNameQuestion:TextInputQuestion = {
   name: QuestionKey.functionName,
   title: InfoMessages.askFunctionName,
-  type: NodeType.text,
+  type: "text",
   default: DefaultValues.functionName
 };

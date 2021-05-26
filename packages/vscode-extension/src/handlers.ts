@@ -32,10 +32,7 @@ import {
   Tools
 } from "@microsoft/teamsfx-api";
 import {
-  InvalidProjectError,
   isUserCancelError,
-  isValidProject,
-  NoProjectOpenedError,
   FxCore
 } from "@microsoft/teamsfx-core";
 import DialogManagerInstance from "./userInterface";
@@ -79,9 +76,7 @@ import { SPFxNodeChecker } from "./debug/depsChecker/spfxNodeChecker";
 import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { VS_CODE_UI } from "./extension";
 
-export let core: FxCore;
-const runningTasks = new Set<string>(); // to control state of task execution
-
+export let core: FxCore; 
 export function getWorkspacePath(): string | undefined {
   const workspacePath: string | undefined = workspace.workspaceFolders?.length
     ? workspace.workspaceFolders[0].uri.fsPath
@@ -233,39 +228,7 @@ export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
   let result: Result<any, FxError> = ok(null);
   try {
     const workspacePath = getWorkspacePath();
-    // 1. check concurrent lock
-    if (stage !== Stage.create) {
-      if (workspacePath === undefined) {
-        result = err(NoProjectOpenedError);
-        await processResult(eventName, result);
-        return result;
-      }
-      const isValid = isValidProject(workspacePath);
-      if (isValid === false) {
-        result = err(InvalidProjectError);
-        await processResult(eventName, result);
-        return result;
-      }
-      if (runningTasks.size > 0) {
-        result = err(
-          new UserError(
-            ExtensionErrors.ConcurrentTriggerTask,
-            util.format(
-              StringResources.vsc.handlers.concurrentTriggerTask,
-              Array.from(runningTasks).join(",")
-            ),
-            ExtensionSource
-          )
-        );
-        await processResult(eventName, result);
-        return result;
-      }
-    }
 
-    // 2. lock
-    runningTasks.add(stage);
-
-    // 3. check core not empty
     const checkCoreRes = checkCoreNotEmpty();
     if (checkCoreRes.isErr()) {
       throw checkCoreRes.error;
@@ -273,8 +236,7 @@ export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
 
     const inputs:Inputs = getSystemInputs();
     inputs.stage = stage;
- 
-    // 6. run task
+  
     if (stage === Stage.create){
       const tmpResult = await core.createProject(inputs);
       if (tmpResult.isErr()) {
@@ -297,22 +259,8 @@ export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
       );
     }
   } catch (e) {
-    if ("name" in e && (e as FxError).name === "DoProvisionFirst") {
-      runningTasks.delete(stage);
-      if (eventName) {
-        ExtTelemetry.sendTelemetryEvent(eventName, {
-          [TelemetryProperty.Success]: TelemetrySuccess.No
-        });
-      }
-      return await provisionHandler();
-    }
     result = wrapError(e);
-  }
-
-  // 7. unlock
-  runningTasks.delete(stage);
-
-  // 8. send telemetry and show error
+  } 
   await processResult(eventName, result);
 
   return result;
@@ -340,55 +288,18 @@ export function detectVsCodeEnv(): VsCodeEnv {
 
 async function runUserTask(func: Func, eventName: string): Promise<Result<any, FxError>> {
   let result: Result<any, FxError> = ok(null);
-
   try {
-    const workspacePath = getWorkspacePath();
-    if (workspacePath === undefined) {
-      result = err(NoProjectOpenedError);
-      await processResult(eventName, result);
-      return result;
-    }
-    const isValid = isValidProject(workspacePath);
-    if (isValid === false) {
-      result = err(InvalidProjectError);
-      await processResult(eventName, result);
-      return result;
-    }
-    // 1. check concurrent lock
-    if (runningTasks.size > 0) {
-      result = err(
-        new UserError(
-          ExtensionErrors.ConcurrentTriggerTask,
-          util.format(
-            StringResources.vsc.handlers.concurrentTriggerTask,
-            Array.from(runningTasks).join(",")
-          ),
-          ExtensionSource
-        )
-      );
-      await processResult(eventName, result);
-      return result;
-    }
-
-    // 2. lock
-    runningTasks.add(eventName);
-
-    // 3. check core not empty
+     
     const checkCoreRes = checkCoreNotEmpty();
     if (checkCoreRes.isErr()) {
       throw checkCoreRes.error;
     }
-
     const answers:Inputs = getSystemInputs();
     result = await core.executeUserTask(func, answers);
   } catch (e) {
     result = wrapError(e);
   }
 
-  // 7. unlock
-  runningTasks.delete(eventName);
-
-  // 8. send telemetry and show error
   await processResult(eventName, result);
 
   return result;

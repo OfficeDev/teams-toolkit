@@ -95,8 +95,8 @@ const SecretDataMatchers = [
   "fx-resource-apim.apimClientAADClientSecret",
 ];
 
-export function sperateSecretData(configJson: Json): Dict<string> {
-  const res: Dict<string> = {};
+export function sperateSecretData(configJson: Json): Record<string,string> {
+  const res: Record<string,string> = {};
   for (const matcher of SecretDataMatchers) {
     const splits = matcher.split(".");
     const resourceId = splits[0];
@@ -124,7 +124,7 @@ export function sperateSecretData(configJson: Json): Dict<string> {
   return res;
 }
 
-export function mergeSerectData(dict: Dict<string>, configJson: Json): void {
+export function mergeSerectData(dict: Record<string,string>, configJson: Json): void {
   for (const matcher of SecretDataMatchers) {
     const splits = matcher.split(".");
     const resourceId = splits[0];
@@ -157,7 +157,7 @@ export function mergeSerectData(dict: Dict<string>, configJson: Json): void {
   }
 }
 
-export function serializeDict(dict: Dict<string>): string {
+export function serializeDict(dict: Record<string,string>): string {
   const array: string[] = [];
   for (const key of Object.keys(dict)) {
     const value = dict[key];
@@ -166,9 +166,9 @@ export function serializeDict(dict: Dict<string>): string {
   return array.join("\n");
 }
 
-export function deserializeDict(data: string): Dict<string> {
+export function deserializeDict(data: string): Record<string,string> {
   const lines = data.split("\n");
-  const dict: Dict<string> = {};
+  const dict: Record<string,string> = {};
   for (const line of lines) {
     const index = line.indexOf("=");
     if (index > 0) {

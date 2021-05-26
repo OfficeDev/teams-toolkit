@@ -3,19 +3,13 @@
 
 import "mocha";
 import {
-  Func,
-  FxError,
   InputResult,
   InputResultType,
-  NodeType,
-  ok,
   OptionItem,
   QTreeNode,
-  Result,
   SingleSelectQuestion,
   traverse,
   UserInteraction,
-  ConfigMap,
   TextInputConfig,
   SelectFolderConfig,
   SelectFileConfig,
@@ -23,31 +17,25 @@ import {
   MsgLevel,
   TimeConsumingTask,
   SelectOptionsConfig,
-  SelectOptionConfig
+  SelectOptionConfig,
+  Inputs,
+  Platform,
+  VsCodeEnv
 } from "../src/index";
-import * as chai from "chai";
-import {RemoteFuncExecutor} from "../src/qm/validation";
- 
-const mockRemoteFuncExecutor: RemoteFuncExecutor = async function (func: Func, answers: ConfigMap): Promise<Result<string | undefined, FxError>> {
-  if (func.method === "mockValidator") {
-    const input = func.params as string;
-    if (input.length > 5) return ok("input too long");
-    else return ok(undefined);
-  }
-  return ok(undefined);
-};
+import * as chai from "chai"; 
+  
 
 function createSingleSelectioNode(id: string, optionLength: number, stringOption: boolean): QTreeNode {
   const question: SingleSelectQuestion = {
-    type: NodeType.singleSelect,
+    type: "singleSelect",
     name: id,
     title: id,
-    option: []
+    staticOptions: []
   };
   for (let i = 0; i < optionLength; ++i) {
     const optionId = `${id}-${i + 1}`;
-    if (stringOption) (question.option as string[]).push(optionId);
-    else (question.option as OptionItem[]).push({id: optionId, label: optionId});
+    if (stringOption) (question.staticOptions as string[]).push(optionId);
+    else (question.staticOptions as OptionItem[]).push({id: optionId, label: optionId});
   }
   return new QTreeNode(question);
 }
@@ -131,7 +119,7 @@ describe("Question Model - Traverse Test", () => {
     n122.condition = {equals: "1-2-2"};
     n12.addChild(n122);
 
-    const inputs = new ConfigMap();
+    const inputs:Inputs = {platform:Platform.VSCode, vscodeEnv: VsCodeEnv.local};
     const res = await traverse(n1, inputs, mockUi);
     chai.assert.isTrue(res.type === InputResultType.sucess);
     chai.assert.isTrue(titleTrace.length === 3);

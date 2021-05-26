@@ -4,7 +4,6 @@
 import {
   ConfigFolderName,
   FxError,
-  NodeType,
   ok,
   err,
   Platform,
@@ -35,13 +34,13 @@ export class AppStudioPlugin implements Plugin {
     ctx: PluginContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     const appStudioQuestions = new QTreeNode({
-      type: NodeType.group,
+      type: "group",
     });
 
     if (stage === Stage.publish) {
       if (ctx.answers?.platform === Platform.VS) {
         const appPath = new QTreeNode({
-          type: NodeType.folder,
+          type: "folder",
           name: Constants.PUBLISH_PATH_QUESTION,
           title: "Please select the folder contains manifest.json and icons",
           default: `${ctx.root}/.${ConfigFolderName}`
@@ -49,7 +48,7 @@ export class AppStudioPlugin implements Plugin {
         appStudioQuestions.addChild(appPath);
 
         const remoteTeamsAppId = new QTreeNode({
-          type: NodeType.text,
+          type: "text",
           name: Constants.REMOTE_TEAMS_APP_ID,
           title: "Please input the teams app id in App Studio",
         });
@@ -57,7 +56,7 @@ export class AppStudioPlugin implements Plugin {
       } else {
         const buildOrPublish = new QTreeNode({
           name: Constants.BUILD_OR_PUBLISH_QUESTION,
-          type: NodeType.singleSelect,
+          type: "singleSelect",
           staticOptions: [manuallySubmitOption, autoPublishOption],
           title: "Teams Toolkit: Publish to Teams",
           default: autoPublishOption.id,

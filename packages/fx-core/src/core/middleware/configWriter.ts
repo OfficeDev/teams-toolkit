@@ -21,7 +21,6 @@ export const ConfigWriterMW: Middleware = async (
     await next();
   }
   finally {
-    const core = (ctx.self) as FxCore;
     const solutionContext: SolutionContext = ctx.self.ctx;
     const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
     if (solutionContext && inputs.projectPath && solutionContext.root) {

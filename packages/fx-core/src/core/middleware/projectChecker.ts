@@ -8,7 +8,7 @@ import { isValidProject } from "../../common/tools";
 import { InvalidProjectError, NoProjectOpenedError } from "../error";
 
  
-export const ProjectTypeCheckerMW: Middleware = async (
+export const ProjectCheckerMW: Middleware = async (
   ctx: HookContext,
   next: NextFunction
 ) => {

@@ -4,7 +4,6 @@
 import {
   PluginContext,
   QTreeNode,
-  NodeType,
   Plugin,
   FxError,
   Stage,
@@ -42,12 +41,12 @@ export class SpfxPlugin implements Plugin {
     ctx: PluginContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     const spfx_frontend_host = new QTreeNode({
-      type: NodeType.group,
+      type: "group",
     });
 
     if (stage === Stage.create) {
       const spfx_framework_type = new QTreeNode({
-        type: NodeType.singleSelect,
+        type: "singleSelect",
         name: SPFXQuestionNames.framework_type,
         title: "Framework",
         staticOptions: [
@@ -60,7 +59,7 @@ export class SpfxPlugin implements Plugin {
       spfx_frontend_host.addChild(spfx_framework_type);
 
       const spfx_webpart_name = new QTreeNode({
-        type: NodeType.text,
+        type: "text",
         name: SPFXQuestionNames.webpart_name,
         title: "Web Part Name",
         default: "helloworld",
@@ -71,7 +70,7 @@ export class SpfxPlugin implements Plugin {
       spfx_frontend_host.addChild(spfx_webpart_name);
 
       const spfx_webpart_desp = new QTreeNode({
-        type: NodeType.text,
+        type: "text",
         name: SPFXQuestionNames.webpart_desp,
         title: "Web Part Description",
         default: "helloworld description",

@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { PluginContext, Result, Stage, QTreeNode, NodeType, FxError } from "@microsoft/teamsfx-api";
+import { PluginContext, Result, Stage, QTreeNode, FxError } from "@microsoft/teamsfx-api";
 
 import { AADRegistration } from "./aadRegistration";
 import * as factory from "./clientFactory";
@@ -65,7 +65,7 @@ export class TeamsBotImpl {
 
     return ResultFactory.Success(
       new QTreeNode({
-        type: NodeType.group,
+        type: "group",
       })
     );
   }

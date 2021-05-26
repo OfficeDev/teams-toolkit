@@ -3,7 +3,6 @@
 
 import {
   TextInputQuestion,
-  NodeType,
   QTreeNode,
   Question,
   SingleSelectQuestion,
@@ -17,7 +16,7 @@ import { Inputs } from "../types";
 import { InputResult, InputResultType, UserInteraction } from "./ui";
 
 export function isAutoSkipSelect(q: Question): boolean {
-  if (q.type === NodeType.singleSelect || q.type === NodeType.multiSelect) {
+  if (q.type === "singleSelect" || q.type === "multiSelect") {
     const select = q as (SingleSelectQuestion | MultiSelectQuestion); 
     if (select.skipSingleOption && select.staticOptions.length === 1) {
       return true;
@@ -27,7 +26,7 @@ export function isAutoSkipSelect(q: Question): boolean {
 }
 
 export async function loadOptions(q: Question, inputs: Inputs): Promise<{autoSkip:boolean, options?: StaticOptions}> {
-  if (q.type === NodeType.singleSelect || q.type === NodeType.multiSelect) {
+  if (q.type === "singleSelect" || q.type === "multiSelect") {
     const selectQuestion = q as (SingleSelectQuestion | MultiSelectQuestion);
     let option:StaticOptions; 
     if(selectQuestion.dynamicOptions)
@@ -55,7 +54,7 @@ export function getSingleOption(q: SingleSelectQuestion | MultiSelectQuestion, o
     else 
       returnResult = (option[0] as OptionItem).id;
   }
-  if (q.type === NodeType.singleSelect)
+  if (q.type === "singleSelect")
     return returnResult;
   else
     return [returnResult];
@@ -70,7 +69,7 @@ type QuestionVistor = (
 ) => Promise<InputResult>;
  
 
-async function getCallFuncValue(inputs: Inputs , raw?: unknown ):Promise<unknown>{
+export async function getCallFuncValue(inputs: Inputs , raw?: unknown ):Promise<unknown>{
   if(raw && typeof raw === "function") {
     return await raw(inputs);
   }
@@ -93,7 +92,7 @@ const questionVisitor: QuestionVistor = async function (
   if(inputs[question.name] !== undefined) {
     return { type: InputResultType.sucess, result: inputs[question.name] };
   }
-  if (question.type === NodeType.func) {
+  if (question.type === "func") {
     const res = await question.func(inputs);
     return { type: InputResultType.sucess, result: res };
   } else {
@@ -101,7 +100,7 @@ const questionVisitor: QuestionVistor = async function (
     const placeholder = await getCallFuncValue(inputs, question.placeholder) as string;
     const prompt = await getCallFuncValue(inputs, question.prompt) as string;
     const validationFunc = question.validation ? getValidationFunction(question.validation, inputs) : undefined;
-    if (question.type === NodeType.text) {
+    if (question.type === "text") {
       const inputQuestion = question as TextInputQuestion;
       return await ui.inputText({
         name: question.name,
@@ -114,7 +113,7 @@ const questionVisitor: QuestionVistor = async function (
         step: step,
         totalSteps: totalSteps
       });
-    } else if (question.type === NodeType.singleSelect || question.type === NodeType.multiSelect) {
+    } else if (question.type === "singleSelect" || question.type === "multiSelect") {
       const selectQuestion = question as (SingleSelectQuestion | MultiSelectQuestion);
       const res = await loadOptions(selectQuestion, inputs);
       if (!res.options || res.options.length === 0) {
@@ -135,7 +134,7 @@ const questionVisitor: QuestionVistor = async function (
           result: returnResult
         };
       }
-      if(question.type === NodeType.singleSelect){
+      if(question.type === "singleSelect"){
         return await ui.selectOption({
           name: question.name,
           title: question.title,
@@ -164,7 +163,7 @@ const questionVisitor: QuestionVistor = async function (
           validation: validationFunc
         });
       }
-    } else if (question.type === NodeType.multiFile) {
+    } else if (question.type === "multiFile") {
       return await ui.selectFiles({
         name: question.name,
         title: question.title,
@@ -174,7 +173,7 @@ const questionVisitor: QuestionVistor = async function (
         totalSteps: totalSteps,
         validation: validationFunc
       });
-    } else if(question.type === NodeType.singleFile ){
+    } else if(question.type === "singleFile" ){
       return await ui.selectFile({
         name: question.name,
         title: question.title,
@@ -185,7 +184,7 @@ const questionVisitor: QuestionVistor = async function (
         totalSteps: totalSteps,
         validation: validationFunc
       });
-    } else if(question.type === NodeType.folder){
+    } else if(question.type === "folder"){
       return await ui.selectFolder({
         name: question.name,
         title: question.title,
@@ -225,7 +224,7 @@ export async function traverse(
     const curr = stack.pop();
     if (!curr) continue;
     //visit
-    if (curr.data.type !== NodeType.group) {
+    if (curr.data.type !== "group") {
       const question = curr.data as Question;
       totalStep = step + stack.length;
       const inputResult = await questionVisitor(
@@ -265,12 +264,12 @@ export async function traverse(
             }
           }
           stack.push(last);
-          if (last.data.type !== NodeType.group) delete inputs[last.data.name];
+          if (last.data.type !== "group") delete inputs[last.data.name];
 
           const lastIsAutoSkip = autoSkipSet.has(last);
           if (
-            last.data.type !== NodeType.group &&
-            last.data.type !== NodeType.func &&
+            last.data.type !== "group" &&
+            last.data.type !== "func" &&
             !lastIsAutoSkip
           ) {
             found = true;
@@ -294,18 +293,18 @@ export async function traverse(
         question.value = inputResult.result;
         inputs[question.name] = question.value;
 
-        if (inputResult.type === InputResultType.skip || question.type === NodeType.func) {
+        if (inputResult.type === InputResultType.skip || question.type === "func") {
           if (inputResult.type === InputResultType.skip) autoSkipSet.add(curr);
         } else {
           ++step;
         }
         let valueInMap = question.value;
-        if (question.type === NodeType.singleSelect) {
+        if (question.type === "singleSelect") {
           const sq: SingleSelectQuestion = question as SingleSelectQuestion;
           if (sq.value && typeof sq.value !== "string") {
             valueInMap = (sq.value as OptionItem).id;
           }
-        } else if (question.type === NodeType.multiSelect) {
+        } else if (question.type === "multiSelect") {
           const mq: MultiSelectQuestion = question as MultiSelectQuestion;
           if (mq.value && typeof mq.value[0] !== "string") {
             valueInMap = (mq.value as OptionItem[]).map((i) => i.id);

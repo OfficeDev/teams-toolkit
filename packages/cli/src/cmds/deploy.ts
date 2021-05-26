@@ -11,20 +11,18 @@ import {
   err,
   ok,
   Result,
-  ConfigMap,
   Stage,
-  Platform,
   MultiSelectQuestion,
   OptionItem
 } from "@microsoft/teamsfx-api";
 
 import activate from "../activate";
 import * as constants from "../constants";
-import { validateAndUpdateAnswers } from "../question/question";
 import { YargsCommand } from "../yargsCommand";
-import { flattenNodes, getParamJson } from "../utils";
+import { argsToInputs, flattenNodes, getParamJson } from "../utils";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
+import { validateAndUpdateAnswers } from "../question/question";
 
 export default class Deploy extends YargsCommand {
   public readonly commandHead = `deploy`;
@@ -52,16 +50,10 @@ export default class Deploy extends YargsCommand {
   }
 
   public async runCommand(args: { [argName: string]: string | string[] }): Promise<Result<null, FxError>> {
-    const answers = new ConfigMap();
-    for (const name in this.params) {
-      answers.set(name, args[name] || this.params[name].default);
-    }
+    const answers = argsToInputs(this.params, args);
+    CliTelemetry.withRootFolder(answers.projectPath).sendTelemetryEvent(TelemetryEvent.DeployStart);
 
-    const rootFolder = path.resolve(answers.getString("folder") || "./");
-    answers.delete("folder");
-    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.DeployStart);
-
-    const result = await activate(rootFolder);
+    const result = await activate(answers.projectPath);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Deploy, result.error);
       return err(result.error);
@@ -69,7 +61,7 @@ export default class Deploy extends YargsCommand {
 
     const core = result.value;
     {
-      const result = await core.getQuestions!(Stage.deploy, Platform.CLI);
+      const result = await core.getQuestions!(Stage.deploy, answers);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Deploy, result.error);
         return err(result.error);
@@ -80,15 +72,15 @@ export default class Deploy extends YargsCommand {
       const components = args.components as string[] || [];
       if (components.length === 0) {
         const option = (deployPluginNode.data as MultiSelectQuestion).staticOptions as OptionItem[];
-        answers.set(this.deployPluginNodeName, option.map(op => op.cliName));
+        answers[this.deployPluginNodeName] = option.map(op => op.cliName);
       } else {
-        answers.set(this.deployPluginNodeName, components);
+        answers[this.deployPluginNodeName] = components;
       }
       await validateAndUpdateAnswers(result.value!, answers);
     }
 
     {
-      const result = await core.deploy(answers);
+      const result = await core.deployArtifacts(answers);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Deploy, result.error);
         return err(result.error);

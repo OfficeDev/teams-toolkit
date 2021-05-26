@@ -3,7 +3,6 @@
 import {
   FolderQuestion,
   Inputs,
-  NodeType,
   OptionItem,
   SingleSelectQuestion,
   TextInputQuestion,
@@ -25,7 +24,7 @@ export enum CoreQuestionNames {
 export const ProjectNamePattern = "^[a-zA-Z][\\da-zA-Z]+$";
 
 export const QuestionAppName: TextInputQuestion = {
-  type: NodeType.text,
+  type: "text",
   name: CoreQuestionNames.AppName,
   title: "Application name",
   validation: {
@@ -50,13 +49,13 @@ export const QuestionAppName: TextInputQuestion = {
 };
 
 export const QuestionRootFolder: FolderQuestion = {
-  type: NodeType.folder,
+  type: "folder",
   name: CoreQuestionNames.Foler,
   title: "Workspace folder"
 };
 
 export const QuestionSelectSolution: SingleSelectQuestion = {
-  type: NodeType.singleSelect,
+  type: "singleSelect",
   name: CoreQuestionNames.Solution,
   title: "Select a solution",
   staticOptions: [],
@@ -76,7 +75,7 @@ export const ScratchOptionNo: OptionItem = {
 };
 
 export const ScratchOrSampleSelect: SingleSelectQuestion = {
-  type: NodeType.singleSelect,
+  type: "singleSelect",
   name: CoreQuestionNames.CreateFromScratch,
   title: "Teams Toolkit: Create a new Teams app",
   staticOptions: [ScratchOptionYes, ScratchOptionNo],
@@ -86,7 +85,7 @@ export const ScratchOrSampleSelect: SingleSelectQuestion = {
 };
 
 export const SampleSelect: SingleSelectQuestion = {
-  type: NodeType.singleSelect,
+  type: "singleSelect",
   name: CoreQuestionNames.Samples,
   title: "Start from a sample",
   staticOptions: [

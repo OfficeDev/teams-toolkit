@@ -7,7 +7,6 @@ import {
   ok,
   Stage,
   QTreeNode,
-  NodeType,
   Func,
   Platform,
   Inputs,
@@ -77,7 +76,7 @@ export class SqlPluginImpl {
     if (stage === Stage.provision) {
       ctx.logProvider?.info(Message.startGetQuestions);
       const sqlNode = new QTreeNode({
-        type: NodeType.group,
+        type: "group",
       });
       this.init(ctx);
       if (this.config.azureSubscriptionId) {

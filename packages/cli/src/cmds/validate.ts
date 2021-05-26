@@ -9,7 +9,7 @@ import { FxError, err, ok, Result, ConfigMap, Platform, Func } from "@microsoft/
 import activate from "../activate";
 import * as constants from "../constants";
 import { YargsCommand } from "../yargsCommand";
-import { getParamJson } from "../utils";
+import { argsToInputs, getParamJson } from "../utils";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
 
@@ -28,23 +28,9 @@ export default class Validate extends YargsCommand {
   public async runCommand(args: {
     [argName: string]: string | string[];
   }): Promise<Result<null, FxError>> {
-    const answers = new ConfigMap();
-    for (const name in this.params) {
-      if (!args[name]) {
-        continue;
-      }
-      if (name.endsWith("folder")) {
-        answers.set(name, path.resolve(args[name] as string));
-      } else {
-        answers.set(name, args[name]);
-      }
-    }
-
-    const rootFolder = answers.getString("folder");
-    answers.delete("folder");
-    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.ValidateManifestStart);
-    answers.set("platform", Platform.CLI);
-    const result = await activate(rootFolder);
+    const answers = argsToInputs(this.params, args);
+    CliTelemetry.withRootFolder(answers.projectPath).sendTelemetryEvent(TelemetryEvent.ValidateManifestStart);
+    const result = await activate(answers.projectPath);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, result.error);
       return err(result.error);

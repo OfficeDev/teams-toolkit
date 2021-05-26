@@ -4,7 +4,6 @@ import {
   FuncQuestion,
   Inputs,
   MultiSelectQuestion,
-  NodeType,
   ok,
   OptionItem,
   returnSystemError,
@@ -83,7 +82,7 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
   return {
     name: AzureSolutionQuestionNames.Capabilities,
     title: "Select capabilities",
-    type: NodeType.multiSelect,
+    type: "multiSelect",
     staticOptions: [TabOptionItem, BotOptionItem, MessageExtensionItem],
     default: [TabOptionItem.id],
     placeholder: "Select at least 1 capability",
@@ -94,7 +93,7 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
 export const FrontendHostTypeQuestion: SingleSelectQuestion = {
   name: AzureSolutionQuestionNames.HostType,
   title: "Frontend hosting type",
-  type: NodeType.singleSelect,
+  type: "singleSelect",
   staticOptions:[HostTypeOptionAzure, HostTypeOptionSPFx],
   dynamicOptions: (previousAnswers: Inputs): StaticOptions => {
     const cap = previousAnswers[AzureSolutionQuestionNames.Capabilities] as string[];
@@ -118,7 +117,7 @@ export const FrontendHostTypeQuestion: SingleSelectQuestion = {
 export const AzureResourcesQuestion: MultiSelectQuestion = {
   name: AzureSolutionQuestionNames.AzureResources,
   title: "Cloud resources",
-  type: NodeType.multiSelect,
+  type: "multiSelect",
   staticOptions: [AzureResourceSQL, AzureResourceFunction],
   default: [],
   onDidChangeSelection: async function (
@@ -144,7 +143,7 @@ export function createAddAzureResourceQuestion(
   return {
     name: AzureSolutionQuestionNames.AddResources,
     title: "Cloud resources",
-    type: NodeType.multiSelect,
+    type: "multiSelect",
     staticOptions: options,
     default: [],
     onDidChangeSelection: async function (
@@ -174,7 +173,7 @@ export function addCapabilityQuestion(
   return {
     name: AzureSolutionQuestionNames.Capabilities,
     title: "Choose capabilities",
-    type: NodeType.multiSelect,
+    type: "multiSelect",
     staticOptions: options,
     default: [],
   };
@@ -183,7 +182,7 @@ export function addCapabilityQuestion(
 export const DeployPluginSelectQuestion: MultiSelectQuestion = {
   name: AzureSolutionQuestionNames.PluginSelectionDeploy,
   title: `Select resources`,
-  type: NodeType.multiSelect,
+  type: "multiSelect",
   skipSingleOption: true,
   staticOptions: [],
   default: [],
@@ -191,7 +190,7 @@ export const DeployPluginSelectQuestion: MultiSelectQuestion = {
 
 export const AskSubscriptionQuestion: FuncQuestion = {
   name: AzureSolutionQuestionNames.AskSub,
-  type: NodeType.func,
+  type: "func",
   func: async (inputs: Inputs): Promise<Void> => {
     return ok(Void);
   }
@@ -200,7 +199,7 @@ export const AskSubscriptionQuestion: FuncQuestion = {
 export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
   name: AzureSolutionQuestionNames.ProgrammingLanguage,
   title: "Programming Language",
-  type: NodeType.singleSelect,
+  type: "singleSelect",
   staticOptions:  [
     { id: "javascript", label: "JavaScript" },
     { id: "typescript", label: "TypeScript" },

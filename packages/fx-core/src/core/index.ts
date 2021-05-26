@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-"use strict";
 
 import * as fs from "fs-extra";
 import {
@@ -9,14 +8,12 @@ import {
   DialogType,
   err,
   Func,
-  NodeType,
   ok,
   Platform,
   QTreeNode,
   QuestionType,
   Result,
   returnSystemError,
-  SolutionConfig,
   SolutionContext,
   Stage,
   TreeCategory,
@@ -26,9 +23,6 @@ import {
   SingleSelectQuestion,
   FxError,
   ConfigFolderName,
-  Json,
-  Dict,
-  ProjectSettings,
   SubscriptionInfo,
   AzureSolutionSettings,
   Inputs,
@@ -36,16 +30,13 @@ import {
   Void,
   FunctionRouter,
   OptionItem,
-  PluginConfig,
+  Solution,
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import * as error from "./error";
 import {
-  deserializeDict,
   fetchCodeZip,
   isValidProject,
-  mergeSerectData,
-  objectToMap,
   saveFilesRecursively,
 } from "../common/tools";
 import {
@@ -68,15 +59,16 @@ import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { QuestionModelMW } from "./middleware/question";
 import { ConfigWriterMW } from "./middleware/configWriter";
 import { ContextLoaderMW } from "./middleware/contextLoader";
-import { ProjectTypeCheckerMW } from "./middleware/projectTypeChecker";
+import { ProjectCheckerMW } from "./middleware/projectChecker";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
+import { SolutionLoaderMW } from "./middleware/solutionLoader";
  
  
 export class FxCore implements Core {
   
   tools: Tools;
 
-  solution = new TeamsAppSolution();
+  solution:Solution = new TeamsAppSolution();
 
   ctx?: SolutionContext;
 
@@ -84,64 +76,6 @@ export class FxCore implements Core {
     this.tools = tools;
   }
   
-  async loadSolutionContext(inputs: Inputs): Promise<SolutionContext> {
-    try {
-      const projectSettings: ProjectSettings = await fs.readJson(
-        path.join(inputs.projectPath!, `.${ConfigFolderName}`, "settings.json")
-      );
-      const envName = projectSettings.currentEnv;
-      const confFolderPath = path.resolve(inputs.projectPath!, `.${ConfigFolderName}`);
-      const jsonFilePath = path.resolve(confFolderPath, `env.${envName}.json`);
-      const configJson: Json = await fs.readJson(jsonFilePath);
-      const localDataPath = path.resolve(confFolderPath, `${envName}.userdata`);
-      let dict: Dict<string>;
-      if (await fs.pathExists(localDataPath)) {
-        const dictContent = await fs.readFile(localDataPath, "UTF-8");
-        dict = deserializeDict(dictContent);
-      } else {
-        dict = {};
-      }
-      mergeSerectData(dict, configJson);
-      const solutionConfig: SolutionConfig = objectToMap(configJson);
-      const solutionContext:SolutionContext = {
-        projectSettings: projectSettings,
-        config: solutionConfig,
-        root: inputs.projectPath!,
-        ... this.tools,
-        ... this.tools.tokenProvider,
-        answers: inputs
-      } ;
-      this.ctx = solutionContext;
-      return solutionContext;
-    } catch (e) {
-      throw new UserError(
-        error.CoreErrorNames.ReadFileError,
-        `Read file error:${e}`,
-        error.CoreSource
-      );
-    }
-  }
-
-  async newSolutionContext(inputs: Inputs): Promise<SolutionContext> {
-    const projectSettings:ProjectSettings = {
-      appName: "",
-      currentEnv: "default",
-      solutionSettings:{
-        name: this.solution.name,
-        version:"1.0.0"
-      }
-    };
-    const solutionContext:SolutionContext = {
-      projectSettings: projectSettings,
-      config: new Map<string, PluginConfig>(),
-      root: "",
-      ... this.tools,
-      ... this.tools.tokenProvider,
-      answers: inputs
-    } ;
-    this.ctx = solutionContext;
-    return solutionContext;
-  }
  
   public async registerTreeViewHandler(inputs: Inputs): Promise<Result<Void, FxError>> {
     if(!this.tools.treeProvider) return ok(Void);
@@ -404,6 +338,13 @@ export class FxCore implements Core {
               contextValue: "signinAzure",
             },
           ]);
+          this.tools.treeProvider?.remove([
+            {
+              commandId: "fx-extension.selectSubscription",
+              label: "",
+              parent: "fx-extension.signinAzure"
+            }
+          ]);
         }
 
         return Promise.resolve();
@@ -566,10 +507,16 @@ export class FxCore implements Core {
     await fs.ensureDir(projectPath);
     await fs.ensureDir(path.join(projectPath,`.${ConfigFolderName}`));
 
+    
     const createResult = await this.createBasicFolderStructure(inputs);
     if (createResult.isErr()) {
       return err(createResult.error);
     }
+
+    //solution load (hardcode)
+    this.solution = new TeamsAppSolution();
+    this.ctx!.projectSettings!.solutionSettings!.name = this.solution.name;
+    
     const scaffoldRes = await this.solution.scaffold(this.ctx!);
     if (scaffoldRes.isErr()) {
       return scaffoldRes;
@@ -586,33 +533,30 @@ export class FxCore implements Core {
     return ok(projectPath);
   }
    
-  @hooks([ErrorHandlerMW, ProjectTypeCheckerMW, ConcurrentLockerMW, ContextLoaderMW, QuestionModelMW, ConfigWriterMW])
+  @hooks([ErrorHandlerMW, ProjectCheckerMW, ConcurrentLockerMW, SolutionLoaderMW, ContextLoaderMW, QuestionModelMW, ConfigWriterMW])
   async provisionResources(inputs: Inputs) : Promise<Result<Void, FxError>>{
-    return this.solution.provision(this.ctx!);
+    return this.solution!.provision(this.ctx!);
   }
-  @hooks([ErrorHandlerMW, ProjectTypeCheckerMW, ConcurrentLockerMW, ContextLoaderMW, QuestionModelMW, ConfigWriterMW])
-  async buildArtifacts(inputs: Inputs) : Promise<Result<Void, FxError>>{
-     throw error.TaskNotSupportError;
-  }
-  @hooks([ErrorHandlerMW, ProjectTypeCheckerMW, ConcurrentLockerMW, ContextLoaderMW, QuestionModelMW, ConfigWriterMW])
+  
+  @hooks([ErrorHandlerMW, ProjectCheckerMW, ConcurrentLockerMW, SolutionLoaderMW, ContextLoaderMW, QuestionModelMW, ConfigWriterMW])
   async deployArtifacts(inputs: Inputs) : Promise<Result<Void, FxError>>{
-    return this.solution.deploy(this.ctx!);
+    return this.solution!.deploy(this.ctx!);
   }
-  @hooks([ErrorHandlerMW, ProjectTypeCheckerMW, ConcurrentLockerMW, ContextLoaderMW, QuestionModelMW, ConfigWriterMW])
+  @hooks([ErrorHandlerMW, ProjectCheckerMW, ConcurrentLockerMW, SolutionLoaderMW, ContextLoaderMW, QuestionModelMW, ConfigWriterMW])
   async localDebug(inputs: Inputs) : Promise<Result<Void, FxError>>{
-    return this.solution.localDebug(this.ctx!);
+    return this.solution!.localDebug(this.ctx!);
   } 
-  @hooks([ErrorHandlerMW, ProjectTypeCheckerMW, ConcurrentLockerMW, ContextLoaderMW, QuestionModelMW, ConfigWriterMW])
+  @hooks([ErrorHandlerMW, ProjectCheckerMW, ConcurrentLockerMW, SolutionLoaderMW, ContextLoaderMW, QuestionModelMW, ConfigWriterMW])
   async publishApplication(inputs: Inputs) : Promise<Result<Void, FxError>>{
-    return this.solution.publish(this.ctx!);
+    return this.solution!.publish(this.ctx!);
   } 
 
-  @hooks([ErrorHandlerMW, ProjectTypeCheckerMW, ConcurrentLockerMW, ContextLoaderMW, QuestionModelMW, ConfigWriterMW])
+  @hooks([ErrorHandlerMW, ProjectCheckerMW, ConcurrentLockerMW, SolutionLoaderMW, ContextLoaderMW, QuestionModelMW, ConfigWriterMW])
   async executeUserTask(func: Func, inputs: Inputs) :  Promise<Result<unknown, FxError>>{
     const namespace = func.namespace;
     const array = namespace ? namespace.split("/") : [];
-    if ("" !== namespace && array.length > 0) {
-      await this.solution.executeUserTask(func, this.ctx!);
+    if ("" !== namespace && array.length > 0 && this.solution && this.solution.executeUserTask) {
+      return this.solution.executeUserTask(func, this.ctx!);
     }
     return err(
       returnUserError(
@@ -621,6 +565,10 @@ export class FxCore implements Core {
         error.CoreErrorNames.executeUserTaskRouteFailed
       )
     );
+  }
+  
+  async buildArtifacts(inputs: Inputs) : Promise<Result<Void, FxError>>{
+     throw error.TaskNotSupportError;
   }
   async createEnv (systemInputs: Inputs) : Promise<Result<Void, FxError>>{
     throw error.TaskNotSupportError;
@@ -632,12 +580,12 @@ export class FxCore implements Core {
     throw error.TaskNotSupportError;
   }
   
-  @hooks([ErrorHandlerMW, ContextLoaderMW])
+  @hooks([ErrorHandlerMW, SolutionLoaderMW, ContextLoaderMW, ConfigWriterMW])
   async getQuestions(task: Stage, inputs: Inputs) : Promise<Result<QTreeNode | undefined, FxError>> {
     return this._getQuestions(task, inputs, this.ctx);
   }
 
-  @hooks([ErrorHandlerMW, ContextLoaderMW])
+  @hooks([ErrorHandlerMW, SolutionLoaderMW, ContextLoaderMW, ConfigWriterMW])
   async getQuestionsForUserTask(func: FunctionRouter, inputs: Inputs) : Promise<Result<QTreeNode | undefined, FxError>>{
     return this._getQuestionsForUserTask(func, inputs, this.ctx);
   }
@@ -645,9 +593,9 @@ export class FxCore implements Core {
   async _getQuestionsForUserTask(func: FunctionRouter, inputs: Inputs, ctx?:SolutionContext) : Promise<Result<QTreeNode | undefined, FxError>>{
     const namespace = func.namespace;
     const array = namespace ? namespace.split("/") : [];
-    if (namespace && "" !== namespace && array.length > 0) {
+    if (namespace && "" !== namespace && array.length > 0 && this.solution && this.solution.getQuestionsForUserTask) {
       this.ctx!.answers = inputs;
-      const res = await this.solution.getQuestionsForUserTask(func, ctx!);
+      const res = await this.solution.getQuestionsForUserTask!(func, ctx!);
       if (res.isOk()) {
         if (res.value) {
           const node = res.value.trim();
@@ -665,12 +613,12 @@ export class FxCore implements Core {
     );
   }
   async _getQuestions(stage: Stage, inputs: Inputs, ctx?:SolutionContext): Promise<Result<QTreeNode | undefined, FxError>> {
-    const node = new QTreeNode({ type: NodeType.group });
+    const node = new QTreeNode({ type: "group" });
     if (stage === Stage.create) {
       const scratchSelectNode = new QTreeNode(ScratchOrSampleSelect);
       node.addChild(scratchSelectNode);
 
-      const scratchNode = new QTreeNode({ type: NodeType.group });
+      const scratchNode = new QTreeNode({ type: "group" });
       scratchNode.condition = { equals: ScratchOptionYes.id };
       scratchSelectNode.addChild(scratchNode);
 
@@ -684,7 +632,7 @@ export class FxCore implements Core {
       selectSolution.staticOptions = solutionNames;
       const solutionSelectNode = new QTreeNode(selectSolution);
       scratchNode.addChild(solutionSelectNode);
-      for (const v of [this.solution]) {
+      for (const v of [this.solution!]) {
         if (v.getQuestions) {
           const res = await v.getQuestions(stage, ctx!);
           if (res.isErr()) return res;

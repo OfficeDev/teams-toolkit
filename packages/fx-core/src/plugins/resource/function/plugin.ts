@@ -6,7 +6,6 @@ import {
   Func,
   FxError,
   Inputs,
-  NodeType,
   PluginContext,
   QTreeNode,
   ReadonlyPluginConfig,
@@ -214,7 +213,7 @@ export class FunctionPluginImpl {
 
   public getQuestionsForUserTask(func: Func, ctx: PluginContext): Result<QTreeNode | undefined, FxError> {
     const res = new QTreeNode({
-      type: NodeType.group,
+      type: "group",
     });
 
     if (func.method === "addResource") {

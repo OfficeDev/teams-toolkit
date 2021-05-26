@@ -11,7 +11,7 @@ import { ConfigMap, err, FxError, ok, Platform, Result, Stage } from "@microsoft
 import activate from "../activate";
 import * as constants from "../constants";
 import { validateAndUpdateAnswers } from "../question/question";
-import { getParamJson, readConfigs, setSubscriptionId } from "../utils";
+import { argsToInputs, getParamJson, readConfigs, setSubscriptionId } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
@@ -48,28 +48,25 @@ export class ResourceAddSql extends YargsCommand {
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    const answers = new ConfigMap();
-    for (const name in this.params) {
-      answers.set(name, args[name] || this.params[name].default);
-    }
+    const answers = argsToInputs(this.params, args);
 
-    const rootFolder = path.resolve(answers.getString("folder") || "./");
-    answers.delete("folder");
-
-    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.UpdateProjectStart, {
+    CliTelemetry.withRootFolder(answers.projectPath).sendTelemetryEvent(TelemetryEvent.UpdateProjectStart, {
       [TelemetryProperty.Resources]: this.commandHead
     });
-    const result = await activate(rootFolder);
+    const result = await activate(answers.projectPath);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
         [TelemetryProperty.Resources]: this.commandHead
       });
       return err(result.error);
     }
-
+    const func = {
+      namespace: "fx-solution-azure",
+      method: "addResource"
+    };
     const core = result.value;
     {
-      const result = await core.getQuestions!(Stage.update, Platform.CLI);
+      const result = await core.getQuestionsForUserTask!(func, answers);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
           [TelemetryProperty.Resources]: this.commandHead
@@ -80,7 +77,7 @@ export class ResourceAddSql extends YargsCommand {
     }
 
     {
-      const result = await core.update(answers);
+      const result = await core.executeUserTask(func, answers);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
           [TelemetryProperty.Resources]: this.commandHead
@@ -109,20 +106,14 @@ export class ResourceAddApim extends YargsCommand {
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    const answers = new ConfigMap();
-    for (const name in this.params) {
-      answers.set(name, args[name] || this.params[name].default);
-    }
+    const answers = argsToInputs(this.params, args);
 
-    const rootFolder = path.resolve(answers.getString("folder") || "./");
-    answers.delete("folder");
-
-    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.UpdateProjectStart, {
+    CliTelemetry.withRootFolder(answers.projectPath).sendTelemetryEvent(TelemetryEvent.UpdateProjectStart, {
       [TelemetryProperty.Resources]: this.commandHead
     });
 
     {
-      const result = await setSubscriptionId(args.subscription, rootFolder);
+      const result = await setSubscriptionId(args.subscription, answers.projectPath);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
           [TelemetryProperty.Resources]: this.commandHead
@@ -131,17 +122,20 @@ export class ResourceAddApim extends YargsCommand {
       }
     }
 
-    const result = await activate(rootFolder);
+    const result = await activate(answers.projectPath);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
         [TelemetryProperty.Resources]: this.commandHead
       });
       return err(result.error);
     }
-
+    const func = {
+      namespace: "fx-solution-azure",
+      method: "addResource"
+    };
     const core = result.value;
     {
-      const result = await core.getQuestions!(Stage.update, Platform.CLI);
+      const result = await core.getQuestionsForUserTask!(func, answers);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
           [TelemetryProperty.Resources]: this.commandHead
@@ -152,7 +146,7 @@ export class ResourceAddApim extends YargsCommand {
     }
 
     {
-      const result = await core.update(answers);
+      const result = await core.executeUserTask(func, answers);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
           [TelemetryProperty.Resources]: this.commandHead
@@ -181,28 +175,25 @@ export class ResourceAddFunction extends YargsCommand {
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    const answers = new ConfigMap();
-    for (const name in this.params) {
-      answers.set(name, args[name] || this.params[name].default);
-    }
+    const answers = argsToInputs(this.params, args);
 
-    const rootFolder = path.resolve(answers.getString("folder") || "./");
-    answers.delete("folder");
-
-    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.UpdateProjectStart, {
+    CliTelemetry.withRootFolder(answers.projectPath).sendTelemetryEvent(TelemetryEvent.UpdateProjectStart, {
       [TelemetryProperty.Resources]: this.commandHead
     });
-    const result = await activate(rootFolder);
+    const result = await activate(answers.projectPath);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
         [TelemetryProperty.Resources]: this.commandHead
       });
       return err(result.error);
     }
-
+    const func = {
+      namespace: "fx-solution-azure",
+      method: "addResource"
+    };
     const core = result.value;
     {
-      const result = await core.getQuestions!(Stage.update, Platform.CLI);
+      const result = await core.getQuestionsForUserTask!(func, answers);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
           [TelemetryProperty.Resources]: this.commandHead
@@ -213,7 +204,7 @@ export class ResourceAddFunction extends YargsCommand {
     }
 
     {
-      const result = await core.update(answers);
+      const result = await core.executeUserTask(func, answers);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
           [TelemetryProperty.Resources]: this.commandHead

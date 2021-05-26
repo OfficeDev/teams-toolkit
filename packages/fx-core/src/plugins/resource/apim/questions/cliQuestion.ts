@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 import {
   LogProvider,
-  NodeType,
   TextInputQuestion,
   TelemetryReporter,
   Inputs,
@@ -18,7 +17,7 @@ export class ApimServiceNameQuestion extends BaseQuestionService implements IQue
 
   public getQuestion(): TextInputQuestion {
     return {
-      type: NodeType.text,
+      type: "text",
       name: QuestionConstants.CLI.ApimServiceName.questionName,
       title: QuestionConstants.CLI.ApimServiceName.description,
       validation: {
@@ -36,7 +35,7 @@ export class ApimResourceGroupQuestion extends BaseQuestionService implements IQ
 
   public getQuestion(): TextInputQuestion {
     return {
-      type: NodeType.text,
+      type: "text",
       name: QuestionConstants.CLI.ApimResourceGroup.questionName,
       title: QuestionConstants.CLI.ApimResourceGroup.description,
       validation: {
@@ -54,7 +53,7 @@ export class OpenApiDocumentQuestion extends BaseQuestionService implements IQue
 
   public getQuestion(): TextInputQuestion {
     return {
-      type: NodeType.text,
+      type: "text",
       name: QuestionConstants.CLI.OpenApiDocument.questionName,
       title: QuestionConstants.CLI.OpenApiDocument.description,
       // TODO: Validate OpenAPI document after CLI support remote validation func
@@ -69,7 +68,7 @@ export class ApiPrefixQuestion extends BaseQuestionService implements IQuestionS
 
   public getQuestion(): TextInputQuestion {
     return {
-      type: NodeType.text,
+      type: "text",
       name: QuestionConstants.CLI.ApiPrefix.questionName,
       title: QuestionConstants.CLI.ApiPrefix.description,
       // TODO: Validate API prefix after CLI support remote validation func
@@ -89,7 +88,7 @@ export class ApiIdQuestion extends BaseQuestionService implements IQuestionServi
 
   public getQuestion(): TextInputQuestion {
     return {
-      type: NodeType.text,
+      type: "text",
       name: QuestionConstants.CLI.ApiId.questionName,
       title: QuestionConstants.CLI.ApiId.description,
       // TODO: Validate API id after CLI support remote validation func
@@ -108,7 +107,7 @@ export class ApiVersionQuestion extends BaseQuestionService implements IQuestion
 
   public getQuestion(): TextInputQuestion {
     return {
-      type: NodeType.text,
+      type: "text",
       name: QuestionConstants.CLI.ApiVersion.questionName,
       title: QuestionConstants.CLI.ApiVersion.description,
       validation: {

@@ -15,18 +15,15 @@ import {
   err,
   ok,
   Result,
-  Stage,
-  Platform,
-  ConfigMap,
   QTreeNode,
-  NodeType,
   Question,
   isAutoSkipSelect,
   SingleSelectQuestion,
   MultiSelectQuestion,
+  Stage,
 } from "@microsoft/teamsfx-api";
 
-import activate from "../activate";
+import activate  from "../activate";
 import * as constants from "../constants";
 import { NotFoundInputedFolder, SampleAppDownloadFailed, ProjectFolderExist } from "../error";
 import { validateAndUpdateAnswers, visitInteractively } from "../question/question";
@@ -35,6 +32,7 @@ import {
   flattenNodes,
   getJson,
   getSingleOptionString,
+  getSystemInputs,
   toConfigMap,
   toYargsOptions,
 } from "../utils";
@@ -53,7 +51,7 @@ export default class New extends YargsCommand {
 
   public readonly root = getJson<QTreeNode>(this.paramPath);
   public params: { [_: string]: Options } = {};
-  public answers: ConfigMap = new ConfigMap();
+  public answers = getSystemInputs();
 
   public readonly subCommands: YargsCommand[] = [new NewTemplete()];
 
@@ -63,7 +61,7 @@ export default class New extends YargsCommand {
     });
     if (this.root) {
       const nodes = flattenNodes(JSON.parse(JSON.stringify(this.root)));
-      const nodesWithoutGroup = nodes.filter((node) => node.data.type !== NodeType.group);
+      const nodesWithoutGroup = nodes.filter((node) => node.data.type !== "group");
       for (const node of nodesWithoutGroup) {
         if (node.data.name === "folder") {
           (node.data as any).default = "./";
@@ -72,7 +70,7 @@ export default class New extends YargsCommand {
       }
       nodesWithoutGroup.forEach((node) => {
         const data = node.data as Question;
-        if (isAutoSkipSelect(data) &&  data.type != NodeType.func) {
+        if (isAutoSkipSelect(data) &&  data.type != "func") {
           // set the only option to default value so yargs will auto fill it.
           data.default = getSingleOptionString(data as SingleSelectQuestion | MultiSelectQuestion);
           (data as any).hide = true;
@@ -104,7 +102,7 @@ export default class New extends YargsCommand {
       }
     } else {
       for (const name in this.params) {
-        this.answers.set(name, args[name] || this.params[name].default);
+        this.answers[name] = args[name] || this.params[name].default;
       }
     }
 
@@ -117,7 +115,7 @@ export default class New extends YargsCommand {
 
     const core = result.value;
     {
-      const result = await core.getQuestions!(Stage.create, Platform.CLI);
+      const result = await core.getQuestions!(Stage.create, this.answers);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateProject, result.error);
         return err(result.error);
@@ -126,7 +124,7 @@ export default class New extends YargsCommand {
     }
 
     {
-      const result = await core.create(this.answers);
+      const result = await core.createProject(this.answers);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateProject, result.error);
         return err(result.error);
@@ -162,7 +160,7 @@ class NewTemplete extends YargsCommand {
       })
       .options(RootFolderNodeData.name, {
         type: "string",
-        description: RootFolderNodeData.type != NodeType.func ? RootFolderNodeData.title : "unknown",
+        description: RootFolderNodeData.type != "func" ? RootFolderNodeData.title : "unknown",
         default: RootFolderNodeData.default,
       });
     return yargs;

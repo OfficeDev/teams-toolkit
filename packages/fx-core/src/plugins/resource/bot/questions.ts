@@ -2,16 +2,16 @@
 // Licensed under the MIT license.
 import { WayToRegisterBot } from "./enums/wayToRegisterBot";
 import { QuestionNames, QuestionOptions } from "./constants";
-import { Inputs, NodeType, QTreeNode } from "@microsoft/teamsfx-api";
+import { Inputs, QTreeNode } from "@microsoft/teamsfx-api";
 import isUUID from "validator/lib/isUUID";
 
 const createQuestions = new QTreeNode({
-  type: NodeType.group,
+  type: "group",
 });
 
 const wayToRegisterBotQuestion = new QTreeNode({
   name: QuestionNames.WAY_TO_REGISTER_BOT,
-  type: NodeType.singleSelect,
+  type: "singleSelect",
   staticOptions: QuestionOptions.WAY_TO_REGISTER_BOT_OPTIONS,
   title: "Bot registration",
   default: WayToRegisterBot.CreateNew,
@@ -20,7 +20,7 @@ const wayToRegisterBotQuestion = new QTreeNode({
 
 const botIdQuestion = new QTreeNode({
   name: QuestionNames.GET_BOT_ID,
-  type: NodeType.text,
+  type: "text",
   title: "Enter bot id",
   default: "",
   placeholder: "00000000-0000-0000-0000-00000000000",
@@ -39,7 +39,7 @@ const botIdQuestion = new QTreeNode({
 
 const botPasswordQuestion = new QTreeNode({
   name: QuestionNames.GET_BOT_PASSWORD,
-  type: NodeType.text,
+  type: "text",
   password: true,
   title: "Enter bot password",
   default: "",
@@ -54,7 +54,7 @@ const botPasswordQuestion = new QTreeNode({
 });
 
 const reusingExistingBotGroup = new QTreeNode({
-  type: NodeType.group,
+  type: "group",
 });
 
 reusingExistingBotGroup.addChild(botIdQuestion);

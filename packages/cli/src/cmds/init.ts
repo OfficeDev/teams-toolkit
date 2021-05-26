@@ -11,6 +11,7 @@ import { YargsCommand } from "../yargsCommand";
 import activate from "../activate";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
+import { argsToInputs } from "../utils";
 
 export default class Init extends YargsCommand {
   public readonly commandHead = `init`;
@@ -55,11 +56,7 @@ export default class Init extends YargsCommand {
   public async runCommand(args: {
     [argName: string]: string | string[];
   }): Promise<Result<null, FxError>> {
-    const answers = new ConfigMap();
-    for (const name in this.params) {
-      answers.set(name, args[name] || this.params[name].default);
-    }
-
+    const answers = argsToInputs(this.params, args);
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.InitStart);
     const result = await activate();
     if (result.isErr()) {
@@ -69,7 +66,7 @@ export default class Init extends YargsCommand {
 
     const core = result.value;
     {
-      answers.set("platform", Platform.VS);
+      answers.platform = Platform.VS;
 
       const func: Func = {
         namespace: "fx-solution-azure",

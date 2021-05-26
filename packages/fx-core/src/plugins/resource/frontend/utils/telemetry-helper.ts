@@ -11,17 +11,24 @@ import {
 import { PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
 
 export class telemetryHelper {
-  static sendStartEvent(
+  private static fillCommonProperty(
     ctx: PluginContext,
-    eventName: string,
-    properties: { [key: string]: string } = {},
-    measurements: { [key: string]: number } = {}
+    properties: { [key: string]: string }
   ): void {
     properties[TelemetryKey.Component] = FrontendPluginInfo.PluginName;
     properties[TelemetryKey.AppId] =
       (ctx.configOfOtherPlugins
         .get(DependentPluginInfo.SolutionPluginName)
         ?.get(DependentPluginInfo.RemoteTeamsAppId) as string) || "";
+  }
+
+  static sendStartEvent(
+    ctx: PluginContext,
+    eventName: string,
+    properties: { [key: string]: string } = {},
+    measurements: { [key: string]: number } = {}
+  ): void {
+    telemetryHelper.fillCommonProperty(ctx, properties);
 
     ctx.telemetryReporter?.sendTelemetryEvent(
       eventName + TelemetryEvent.startSuffix,
@@ -36,12 +43,8 @@ export class telemetryHelper {
     properties: { [key: string]: string } = {},
     measurements: { [key: string]: number } = {}
   ): void {
-    properties[TelemetryKey.Component] = FrontendPluginInfo.PluginName;
+    telemetryHelper.fillCommonProperty(ctx, properties);
     properties[TelemetryKey.Success] = TelemetryValue.Success;
-    properties[TelemetryKey.AppId] =
-      (ctx.configOfOtherPlugins
-        .get(DependentPluginInfo.SolutionPluginName)
-        ?.get(DependentPluginInfo.RemoteTeamsAppId) as string) || "";
 
     ctx.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
   }
@@ -53,12 +56,8 @@ export class telemetryHelper {
     properties: { [key: string]: string } = {},
     measurements: { [key: string]: number } = {}
   ): void {
-    properties[TelemetryKey.Component] = FrontendPluginInfo.PluginName;
+    telemetryHelper.fillCommonProperty(ctx, properties);
     properties[TelemetryKey.Success] = TelemetryValue.Fail;
-    properties[TelemetryKey.AppId] =
-      (ctx.configOfOtherPlugins
-        .get(DependentPluginInfo.SolutionPluginName)
-        ?.get(DependentPluginInfo.RemoteTeamsAppId) as string) || "";
 
     if (e instanceof SystemError) {
       properties[TelemetryKey.ErrorType] = TelemetryValue.SystemError;

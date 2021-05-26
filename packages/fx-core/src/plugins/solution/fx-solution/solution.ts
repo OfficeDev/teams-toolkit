@@ -2298,7 +2298,7 @@ export class TeamsAppSolution implements Solution {
   async executeAddCapability(func: Func, ctx: SolutionContext): Promise<Result<any, FxError>> {
     if (!ctx.answers) {
       return err(
-        returnUserError(new Error(`answer is emtry!`), "Solution", SolutionError.InternelError)
+        returnUserError(new Error(`answer is empty!`), "Solution", SolutionError.InternelError)
       );
     }
     const settings = this.getAzureSolutionSettings(ctx);
@@ -2405,6 +2405,10 @@ export class TeamsAppSolution implements Solution {
    * execute user task
    */
   async executeUserTask(func: Func, ctx: SolutionContext): Promise<Result<any, FxError>> {
+    if(!ctx.answers)  
+      return err(
+        returnUserError(new Error(`answer is empty!`), "Solution", SolutionError.InternelError)
+      );
     const namespace = func.namespace;
     const method = func.method;
     const array = namespace.split("/");

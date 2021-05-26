@@ -17,6 +17,7 @@ import {
 } from "../../../../../src/plugins/resource/function/constants";
 import { NodeVersion } from "../../../../../src/plugins/resource/function/enums";
 import { FunctionPlugin } from "../../../../../src/plugins/resource/function";
+import { Platform } from "@microsoft/teamsfx-api";
 
 const context: any = {
   configOfOtherPlugins: new Map<string, Map<string, string | string[]>>([
@@ -97,6 +98,7 @@ const context: any = {
     }),
   },
   root: __dirname,
+  answers: {platform: Platform.VSCode}
 };
 
 describe(FunctionPluginInfo.pluginName, () => {

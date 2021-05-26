@@ -19,6 +19,7 @@ import {
 import { FunctionDeploy } from "../../../../../src/plugins/resource/function/ops/deploy";
 import { FunctionLanguage } from "../../../../../src/plugins/resource/function/enums";
 import { FunctionPlugin } from "../../../../../src/plugins/resource/function";
+import { Platform } from "@microsoft/teamsfx-api";
 
 const context: any = {
   configOfOtherPlugins: new Map<string, Map<string, string>>([
@@ -88,6 +89,7 @@ const context: any = {
     }),
   },
   root: path.join(__dirname, "ut"),
+  answers: {platform: Platform.VSCode}
 };
 
 describe(FunctionPluginInfo.pluginName, () => {

@@ -395,7 +395,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
     });
 
     it("vs", async () => {
-      pluginContext.answers!.projectPath = Platform.VS;
+      pluginContext.answers!.platform = Platform.VS;
       const result = await plugin.scaffold(pluginContext);
       chai.assert.isTrue(result.isOk());
 

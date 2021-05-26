@@ -575,14 +575,11 @@ export class TeamsAppSolution implements Solution {
     }
     return ok(selectedPlugins);
   }
-
+git 
   /**
    * scaffold
    */
   async scaffold(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    const createRes = await this.create(ctx);
-    if(createRes.isErr()) return createRes;
-    
     const maybeSelectedPlugins = this.getSelectedPlugins(ctx);
     if (maybeSelectedPlugins.isErr()) {
       return maybeSelectedPlugins;

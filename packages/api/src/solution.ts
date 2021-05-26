@@ -11,6 +11,8 @@ import { Stage } from "./constants";
 export interface Solution {
     name: string;
     
+    create: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
+    
     scaffold: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
  
     provision: (ctx: SolutionContext) => Promise<Result<any, FxError>>;

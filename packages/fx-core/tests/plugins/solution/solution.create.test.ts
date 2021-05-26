@@ -79,7 +79,7 @@ describe("Solution create()", async () => {
     const result = await solution.create(mockedSolutionCtx);
     expect(result.isErr()).equals(true);
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.InternelError);
-    // expect(mockedSolutionCtx.config.get(GLOBAL_CONFIG)).to.be.not.undefined;
+    expect(mockedSolutionCtx.config.get(GLOBAL_CONFIG)).to.be.not.undefined;
   });
 
   it("should fail if projectSettings.solutionSettings is undefined", async () => {

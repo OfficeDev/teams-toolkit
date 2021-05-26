@@ -516,6 +516,11 @@ export class FxCore implements Core {
     this.solution = new TeamsAppSolution();
     this.ctx!.projectSettings!.solutionSettings!.name = this.solution.name;
     
+    const createRes = await this.solution.create(this.ctx!);
+    if (createRes.isErr()) {
+      return createRes;
+    } 
+
     const scaffoldRes = await this.solution.scaffold(this.ctx!);
     if (scaffoldRes.isErr()) {
       return scaffoldRes;

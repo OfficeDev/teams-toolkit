@@ -124,7 +124,7 @@ describe("Solution scaffold()", () => {
     };
     const result = await solution.scaffold(mockedCtx);
     expect(result.isErr()).to.be.true;
-    // expect(result._unsafeUnwrapErr().name).equals(SolutionError.PluginNotFound);
+    expect(result._unsafeUnwrapErr().name).equals(SolutionError.PluginNotFound);
   });
 
   it("should return error if manifest file is not found", async () => {
@@ -144,7 +144,7 @@ describe("Solution scaffold()", () => {
     // So we even don't need to mock fs.readJson
     const result = await solution.scaffold(mockedCtx);
     expect(result.isErr()).to.be.true;
-    // expect(result._unsafeUnwrapErr().name).equals(SolutionError.FailedToLoadManifestFile);
+    expect(result._unsafeUnwrapErr().name).equals(SolutionError.FailedToLoadManifestFile);
   });
 });
 
@@ -187,8 +187,8 @@ describe("Solution scaffold() reading manifest file with no app name", () => {
     };
     const result = await solution.scaffold(mockedCtx);
     expect(result.isErr()).to.be.true;
-    // expect(result._unsafeUnwrapErr().name).equals(SolutionError.FailedToLoadManifestFile);
-    // expect(result._unsafeUnwrapErr().message).equals("Name is missing");
+    expect(result._unsafeUnwrapErr().name).equals(SolutionError.FailedToLoadManifestFile);
+    expect(result._unsafeUnwrapErr().message).equals("Name is missing");
   });
 
 });
@@ -235,7 +235,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
     mockScaffoldThatAlwaysSucceed(solution.fehostPlugin);
     
     const result = await solution.scaffold(mockedCtx);
-    // expect(result.isOk()).to.be.true;
+    expect(result.isOk()).to.be.true;
   });
 
   it("should work and generate README.md for happy path with tab and bot", async () => {
@@ -256,8 +256,8 @@ describe("Solution scaffold() reading valid manifest file", () => {
     mockScaffoldThatAlwaysSucceed(solution.fehostPlugin);
     mockScaffoldThatAlwaysSucceed(solution.botPlugin);
     const result = await solution.scaffold(mockedCtx);
-    // expect(result.isOk()).to.be.true;
-    // expect(fileContent.get(`${mockedCtx.root}/README.md`)).equals(mockedReadMeContent);
+    expect(result.isOk()).to.be.true;
+    expect(fileContent.get(`${mockedCtx.root}/README.md`)).equals(mockedReadMeContent);
   });
 
   it("should work and generate README.md for happy path with tab and msgext", async () => {
@@ -278,8 +278,8 @@ describe("Solution scaffold() reading valid manifest file", () => {
     mockScaffoldThatAlwaysSucceed(solution.fehostPlugin);
     mockScaffoldThatAlwaysSucceed(solution.botPlugin);
     const result = await solution.scaffold(mockedCtx);
-    // expect(result.isOk()).to.be.true;
-    // expect(fileContent.get(`${mockedCtx.root}/README.md`)).equals(mockedReadMeContent);
+    expect(result.isOk()).to.be.true;
+    expect(fileContent.get(`${mockedCtx.root}/README.md`)).equals(mockedReadMeContent);
   });
 
 });

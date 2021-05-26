@@ -1,11 +1,10 @@
 import {
-  InputResult,
-  InputResultType,
   OptionItem,
-  returnSystemError
+  returnSystemError,
+  MultiSelectResult,
+  MultiSelectConfig
 } from "@microsoft/teamsfx-api";
 import { Disposable, QuickInputButton, QuickInputButtons, Uri, window } from "vscode";
-import { SelectOptionsConfig } from "../../../api/build";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { ext } from "../extensionVariables";
 import { cloneSet, FxQuickPickItem } from "./vsc_ui";
@@ -64,7 +63,7 @@ export class FxMultiQuickPickItem implements FxQuickPickItem {
   }
 }
 
-export async function selectOptions(config: SelectOptionsConfig): Promise<InputResult> {
+export async function selectOptions(config: MultiSelectConfig): Promise<MultiSelectResult> {
   const okButton: QuickInputButton = {
     iconPath: Uri.file(ext.context.asAbsolutePath("media/ok.svg")),
     tooltip: "ok",
@@ -96,7 +95,7 @@ export async function selectOptions(config: SelectOptionsConfig): Promise<InputR
       label: `$(checklist) Selected ${selectNum} item${selectNum > 1 ? "s" : ""}`,
     });
 
-    return await new Promise<InputResult>(async (resolve): Promise<void> => {
+    return new Promise<MultiSelectResult>(async (resolve): Promise<void> => {
       const onDidAccept = async () => {
         const item = quickPick.selectedItems[0];
         if (item === undefined || item === firstItem) {
@@ -110,10 +109,10 @@ export async function selectOptions(config: SelectOptionsConfig): Promise<InputR
           }
           if (config.returnObject)
             resolve({
-              type: InputResultType.sucess,
+              type: "success",
               result: selectedItems.map((i) => i.getOptionItem()),
             });
-          else resolve({ type: InputResultType.sucess, result: selectedItems.map((i) => i.id) });
+          else resolve({ type: "success", result: selectedItems.map((i) => i.id) });
         }
         item.click();
         if (config.onDidChangeSelection) {
@@ -137,12 +136,12 @@ export async function selectOptions(config: SelectOptionsConfig): Promise<InputR
       disposables.push(
         quickPick.onDidAccept(onDidAccept),
         quickPick.onDidHide(() => {
-          resolve({ type: InputResultType.cancel });
+          resolve({ type: "cancel" });
         })
       );
       disposables.push(
         quickPick.onDidTriggerButton((button) => {
-          if (button === QuickInputButtons.Back) resolve({ type: InputResultType.back });
+          if (button === QuickInputButtons.Back) resolve({ type: "back" });
           else onDidAccept();
         })
       );
@@ -168,7 +167,7 @@ export async function selectOptions(config: SelectOptionsConfig): Promise<InputR
         quickPick.show();
       } catch (err) {
         resolve({
-          type: InputResultType.error,
+          type: "error",
           error: returnSystemError(err, ExtensionSource, ExtensionErrors.UnknwonError),
         });
       }

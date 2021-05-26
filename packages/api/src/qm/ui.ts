@@ -3,73 +3,77 @@
 
 import { err, ok, Result } from "neverthrow";
 import { FxError, UserCancelError } from "../error";
-import { StaticOption } from "../qm/question";
+import { OptionItem, StaticOption } from "../qm/question";
 
-export interface UIConfig {
+export interface UIConfig<T> {
+  type: "radio" | "multibox" | "text" | "file" | "files" | "folder";
   name: string;
   title: string;
   placeholder?: string;
   prompt?: string;
   step?: number;
   totalSteps?: number;
+  default?: T;
+  validation?: (input: T) => string | undefined | Promise<string | undefined>;
 }
 
-export interface SelectOptionConfig extends UIConfig {
+export interface SingleSelectConfig extends UIConfig<string> {
+  type: "radio";
   options: StaticOption;
-  default?: string;
   returnObject?: boolean;
 }
 
-export interface SelectOptionsConfig extends UIConfig {
+export interface MultiSelectConfig extends UIConfig<string[]> {
+  type: "multibox";
   options: StaticOption;
-  default?: string[];
   returnObject?: boolean;
   onDidChangeSelection?: (
     currentSelectedIds: Set<string>,
     previousSelectedIds: Set<string>
   ) => Promise<Set<string>>;
-  validation?: (input: string[]) => string | undefined | Promise<string | undefined>;
 }
 
-export interface TextInputConfig extends UIConfig {
+export interface InputTextConfig extends UIConfig<string> {
+  type: "text";
   password?: boolean;
-  default?: string;
-  validation?: (input: string) => Promise<string | undefined>;
 }
 
-export interface SelectFileConfig extends UIConfig {
-  default?: string;
-  validation?: (input: string) => Promise<string | undefined>;
-}
+export interface SelectFileConfig extends UIConfig<string> {
+  type: "file";
+};
 
-export interface SelectFolderConfig extends UIConfig {
-  default?: string;
-  validation?: (input: string) => Promise<string | undefined>;
-}
+export interface SelectFilesConfig extends UIConfig<string[]> {
+  type: "files";
+};
 
-export interface SelectFilesConfig extends UIConfig {
-  validation?: (input: string[]) => Promise<string | undefined>;
-}
+export interface SelectFolderConfig extends UIConfig<string> {
+  type: "folder";
+};
 
-export enum InputResultType {
-  cancel = "cancel",
-  back = "back",
-  sucess = "sucess",
-  error = "error",
-  skip = "skip",
-}
-
-export interface InputResult {
-  type: InputResultType;
-  result?: unknown;
+export interface InputResult<T> {
+  type: "success" | "skip" | "cancel" | "back" | "error";
+  result?: T;
   error?: FxError;
 }
 
-export enum MsgLevel {
-  Info = "Info",
-  Warning = "Warning",
-  Error = "Error",
-}
+export type SingleSelectResult = InputResult<string | OptionItem>;
+
+export type MultiSelectResult = InputResult<StaticOption>;
+
+export type InputTextResult = InputResult<string>;
+
+export type SelectFileResult = InputResult<string>;
+
+export type SelectFilesResult = InputResult<string[]>;
+
+export type SelectFolderResult = InputResult<string>;
+
+export type OpenUrlResult = InputResult<string>;
+
+export type ShowMessageResult = InputResult<string>;
+
+export type RunWithProgressResult = InputResult<any>;
+
 
 export interface TimeConsumingTask<T> {
   name: string;
@@ -82,21 +86,22 @@ export interface TimeConsumingTask<T> {
   cancel(): void;
 }
 
+/// TODO: use Result<xxx, FxError> instead of SingleSelectResult/MultiSelectResult/xxx
 export interface UserInteraction {
-  selectOption: (config: SelectOptionConfig) => Promise<InputResult>;
-  selectOptions: (config: SelectOptionsConfig) => Promise<InputResult>;
-  inputText: (config: TextInputConfig) => Promise<InputResult>;
-  selectFile: (config: SelectFileConfig) => Promise<InputResult>;
-  selectFiles: (config: SelectFilesConfig) => Promise<InputResult>;
-  selectFolder: (config: SelectFolderConfig) => Promise<InputResult>;
-  openUrl(link: string): Promise<boolean>;
+  selectOption: (config: SingleSelectConfig) => Promise<SingleSelectResult>;
+  selectOptions: (config: MultiSelectConfig) => Promise<MultiSelectResult>;
+  inputText: (config: InputTextConfig) => Promise<InputTextResult>;
+  selectFile: (config: SelectFileConfig) => Promise<SelectFileResult>;
+  selectFiles: (config: SelectFilesConfig) => Promise<SelectFilesResult>;
+  selectFolder: (config: SelectFolderConfig) => Promise<SelectFolderResult>;
+  openUrl(link: string): Promise<OpenUrlResult>;
   showMessage(
-    level: MsgLevel,
+    level: "info" | "warn" | "error",
     message: string,
     modal: boolean,
     ...items: string[]
-  ): Promise<string | undefined>;
-  runWithProgress(task: TimeConsumingTask<any>): Promise<any>;
+  ): Promise<ShowMessageResult>;
+  runWithProgress(task: TimeConsumingTask<any>): Promise<RunWithProgressResult>;
 }
 
 export interface FunctionGroupTaskConfig<T>{

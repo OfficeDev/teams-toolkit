@@ -13,16 +13,13 @@ import {
   OptionItem,
   MultiSelectQuestion,
   FileQuestion,
-  NumberInputQuestion,
   DynamicValue,
   AnswerValue,
 } from "./question";
 import { getValidationFunction, RemoteFuncExecutor, validate } from "./validation";
-import { ConfigMap, Inputs } from "../config";
-import { InputResult, InputResultType, UserInteraction } from "./ui";
+import { ConfigMap } from "../config";
+import { InputResult, UserInteraction } from "./ui";
 import { returnSystemError, returnUserError } from "../error";
-import { operationOptionsToRequestOptionsBase } from "@azure/core-http";
-import { QuestionType } from "../utils";
 
 async function getRealValue(
   parentValue: unknown,
@@ -113,7 +110,7 @@ type QuestionVistor = (
   remoteFuncExecutor?: RemoteFuncExecutor,
   step?: number,
   totalSteps?: number
-) => Promise<InputResult>;
+) => Promise<InputResult<string | OptionItem | StaticOption>>;
 
 export async function getCallFuncValue(
   inputs: ConfigMap,
@@ -152,23 +149,23 @@ const questionVisitor: QuestionVistor = async function (
   remoteFuncExecutor?: RemoteFuncExecutor,
   step?: number,
   totalSteps?: number
-): Promise<InputResult> {
+): Promise<InputResult<string | OptionItem | StaticOption>> {
   if(inputs.get(question.name) !== undefined) {
-    return { type: InputResultType.sucess, result: inputs.get(question.name) };
+    return { type: "success", result: inputs.get(question.name) };
   }
   //FunctionCallQuestion
   if (question.type === NodeType.func) {
     if (remoteFuncExecutor) {
       const res = await remoteFuncExecutor(question as Func, inputs);
       if (res.isOk()) {
-        return { type: InputResultType.sucess, result: res.value };
+        return { type: "success", result: res.value };
       } else {
-        return { type: InputResultType.error, error: res.error };
+        return { type: "error", error: res.error };
       }
     }
   } else if (question.type === NodeType.localFunc) {
     const res = await question.func(inputs);
-    return { type: InputResultType.sucess, result: res };
+    return { type: "success", result: res };
   } else {
     const title = (question.title as string) || question.description || question.name;
     const defaultValue = question.value
@@ -196,6 +193,7 @@ const questionVisitor: QuestionVistor = async function (
         remoteFuncExecutor
       )) as string;
       return await ui.inputText({
+        type: "text",
         name: question.name,
         title: title,
         password: !!(question.type === NodeType.password),
@@ -213,7 +211,7 @@ const questionVisitor: QuestionVistor = async function (
       const res = await loadOptions(selectQuestion, inputs, remoteFuncExecutor);
       if (!res.options || res.options.length === 0) {
         return {
-          type: InputResultType.error,
+          type: "error",
           error: returnSystemError(
             new Error("Select option is empty!"),
             "API",
@@ -225,7 +223,7 @@ const questionVisitor: QuestionVistor = async function (
       if (res.autoSkip === true) {
         const returnResult = getSingleOption(selectQuestion, res.options);
         return {
-          type: InputResultType.skip,
+          type: "skip",
           result: returnResult,
         };
       }
@@ -247,6 +245,7 @@ const questionVisitor: QuestionVistor = async function (
       )) as string;
       if(question.type  === NodeType.singleSelect){
         return await ui.selectOption({
+          type: "radio",
           name: question.name,
           title: title,
           options: res.options,
@@ -260,6 +259,7 @@ const questionVisitor: QuestionVistor = async function (
       }
       else{
         return await ui.selectOptions({
+          type: "multibox",
           name: question.name,
           title: title,
           options: res.options,
@@ -279,6 +279,7 @@ const questionVisitor: QuestionVistor = async function (
         ? getValidationFunction(fileQuestion.validation, inputs, remoteFuncExecutor)
         : undefined;
       return await ui.selectFolder({
+        type: "folder",
         name: question.name,
         default: defaultValue as string,
         title: title,
@@ -289,7 +290,7 @@ const questionVisitor: QuestionVistor = async function (
     }
   }
   return {
-    type: InputResultType.error,
+    type: "error",
     error: returnUserError(
       new Error(`Unsupported question node type:${question.type}`),
       "API.qm",
@@ -303,7 +304,7 @@ export async function traverse(
   inputs: ConfigMap,
   ui: UserInteraction,
   remoteFuncExecutor?: RemoteFuncExecutor
-): Promise<InputResult> {
+): Promise<InputResult<string | OptionItem | StaticOption>> {
   const stack: QTreeNode[] = [];
   const history: QTreeNode[] = [];
   stack.push(root);
@@ -331,7 +332,7 @@ export async function traverse(
         step,
         totalStep
       );
-      if (inputResult.type === InputResultType.back) {
+      if (inputResult.type === "back") {
         //go back
         if (curr.children) {
           while (stack.length > 0) {
@@ -375,13 +376,13 @@ export async function traverse(
         }
         if (!found) {
           // no node to back
-          return { type: InputResultType.cancel };
+          return { type: "cancel" };
         }
         --step;
         continue; //ignore the following steps
       } else if (
-        inputResult.type === InputResultType.error ||
-        inputResult.type === InputResultType.cancel
+        inputResult.type === "error" ||
+        inputResult.type === "cancel"
       ) {
         return inputResult;
       } //continue
@@ -390,8 +391,8 @@ export async function traverse(
         question.value = inputResult.result;
         inputs.set(question.name, question.value);
 
-        if (inputResult.type === InputResultType.skip || question.type === NodeType.func) {
-          if (inputResult.type === InputResultType.skip) autoSkipSet.add(curr);
+        if (inputResult.type === "skip" || question.type === NodeType.func) {
+          if (inputResult.type === "skip") autoSkipSet.add(curr);
         } else {
           ++step;
         }
@@ -433,5 +434,5 @@ export async function traverse(
       }
     }
   }
-  return { type: InputResultType.sucess };
+  return { type: "success" };
 }

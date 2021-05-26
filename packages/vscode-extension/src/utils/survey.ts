@@ -12,8 +12,8 @@ enum ExtensionSurveyStateKeys {
 }
 
 const TIME_TO_DISABLE_SURVEY = 1000 * 60 * 60 * 24 * 7 * 12; // 4 weeks
-const TIME_TO_SHOW_SURVEY = 1000 * 60 * 15; // 15 minutes 
-const SAMPLE_PERCENTAGE = 25; // 25 percent for public preview
+const TIME_TO_SHOW_SURVEY = 1000 * 60 * 1; // 15 minutes 
+const SAMPLE_PERCENTAGE = 100; // 25 percent for public preview
 
 export class ExtensionSurvey {
   private context: vscode.ExtensionContext;
@@ -69,7 +69,7 @@ export class ExtensionSurvey {
 
   public async showSurvey(): Promise<void> {
     const globalState = this.context.globalState;
-    const extension = vscode.extensions.getExtension("Microsoft.teamsfx-extension");
+    const extension = vscode.extensions.getExtension("TeamsDevApp.ms-teams-vscode-extension");
     if (!extension) {
       return;
     }

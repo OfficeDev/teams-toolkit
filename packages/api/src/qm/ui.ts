@@ -70,7 +70,7 @@ export type SelectFolderResult = InputResult<string>;
 
 export type OpenUrlResult = InputResult<boolean>;
 
-export type ShowMessageResult = InputResult<string>;
+export type ShowMessageResult = InputResult<string|undefined>;
 
 export type RunWithProgressResult = InputResult<any>;
 

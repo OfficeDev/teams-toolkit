@@ -389,7 +389,7 @@ export class VsCodeUI implements UserInteraction {
   async selectFileInQuickPick(config: SelectFileConfig, defaultValue?: string): Promise<SelectFileResult>;
   async selectFileInQuickPick(config: SelectFilesConfig, defaultValue?: string): Promise<SelectFilesResult>;
   async selectFileInQuickPick(config: SelectFolderConfig, defaultValue?: string): Promise<SelectFolderResult>;
-  async selectFileInQuickPick<T>(config: UIConfig<T>, defaultValue?: string): Promise<InputResult<T>> {
+  async selectFileInQuickPick(config: SelectFileConfig|SelectFilesConfig|SelectFolderConfig, defaultValue?: string): Promise<InputResult<string|string[]>> {
     /// TODO: use generic constraints.
     const okButton: QuickInputButton = {
       iconPath: Uri.file(this.context.asAbsolutePath("media/ok.svg")),
@@ -416,9 +416,9 @@ export class VsCodeUI implements UserInteraction {
             const result = quickPick.items[0].detail;
             if (result && result.length > 0) {
               if (config.type === "files") {
-                resolve({ type: "success", result: result.split(";") as any});
+                resolve({ type: "success", result: result.split(";")});
               } else {
-                resolve({ type: "success", result: result as any });
+                resolve({ type: "success", result: result });
               }
             }
           };
@@ -453,13 +453,13 @@ export class VsCodeUI implements UserInteraction {
                 quickPick.items = [
                   { label: config.prompt || "Select file/folder", detail: resultString }
                 ];
-                resolve({ type: "success", result: results as any });
+                resolve({ type: "success", result: results });
               } else {
                 const result = uriList[0].fsPath;
                 quickPick.items = [
                   { label: config.prompt || "Select file/folder", detail: result }
                 ];
-                resolve({ type: "success", result: result as any });
+                resolve({ type: "success", result: result });
               }
             }
           };
@@ -481,11 +481,11 @@ export class VsCodeUI implements UserInteraction {
               quickPick.items = [
                 { label: config.prompt || "Select file/folder", detail: resultString }
               ];
-              resolve({ type: "success", result: results as any });
+              resolve({ type: "success", result: results });
             } else {
               const result = uriList[0].fsPath;
               quickPick.items = [{ label: config.prompt || "Select file/folder", detail: result }];
-              resolve({ type: "success", result: result as any });
+              resolve({ type: "success", result: result });
             }
           }
         }
@@ -500,26 +500,16 @@ export class VsCodeUI implements UserInteraction {
   async openUrl(link: string): Promise<OpenUrlResult> {
     const uri = Uri.parse(link);
     return new Promise(async resolve => {
-      let error: Error | undefined;
-      try {
-        const result = await env.openExternal(uri);
-        if (result) {
-          resolve({ type: "success", result: result as any });
-          return;
-        } else {
-          error = new Error(`Cannot open ${link}.`);
-        }
-      } catch (e) {
-        error = e;
-      } finally {
-        if (error) {
+      env.openExternal(uri).then(v=>{
+        if(v)
+          resolve({ type: "success", result: v });
+        else 
           resolve({ type: "error", error: returnSystemError(
-            error,
-            ExtensionSource,
-            ExtensionErrors.OpenExternalFailed
-          )});
-        }
-      }
+          new Error(`Cannot open ${link}.`),
+          ExtensionSource,
+          ExtensionErrors.OpenExternalFailed
+        )});
+      })
     });
   }
 
@@ -533,7 +523,6 @@ export class VsCodeUI implements UserInteraction {
       const option = { modal: modal };
       try {
         let promise: Thenable<string | undefined>;
-        let result: string | undefined = undefined;
         switch (level) {
           case "info":{
             promise = window.showInformationMessage(message, option, ...items);
@@ -546,12 +535,9 @@ export class VsCodeUI implements UserInteraction {
           case "error":
             promise = window.showErrorMessage(message, option, ...items);
         }
-        if (items.length === 0) {
-          await sleep(0);
-        } else {
-          result = await promise;
-        }
-        resolve({ type: "success", result });
+        promise.then(v=>{
+          resolve({ type: "success", result: v });
+        });
       } catch (error) {
         resolve({ type: "error", error: returnSystemError(
           error,

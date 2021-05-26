@@ -1,7 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FrontendPluginInfo, TelemetryEvent, TelemetryKey, TelemetryValue } from "../constants";
+import {
+  DependentPluginInfo,
+  FrontendPluginInfo,
+  TelemetryEvent,
+  TelemetryKey,
+  TelemetryValue,
+} from "../constants";
 import { PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
 
 export class telemetryHelper {
@@ -12,6 +18,11 @@ export class telemetryHelper {
     measurements: { [key: string]: number } = {}
   ): void {
     properties[TelemetryKey.Component] = FrontendPluginInfo.PluginName;
+    properties[TelemetryKey.AppId] =
+      (ctx.configOfOtherPlugins
+        .get(DependentPluginInfo.SolutionPluginName)
+        ?.get(DependentPluginInfo.RemoteTeamsAppId) as string) || "";
+
     ctx.telemetryReporter?.sendTelemetryEvent(
       eventName + TelemetryEvent.startSuffix,
       properties,
@@ -27,6 +38,10 @@ export class telemetryHelper {
   ): void {
     properties[TelemetryKey.Component] = FrontendPluginInfo.PluginName;
     properties[TelemetryKey.Success] = TelemetryValue.Success;
+    properties[TelemetryKey.AppId] =
+      (ctx.configOfOtherPlugins
+        .get(DependentPluginInfo.SolutionPluginName)
+        ?.get(DependentPluginInfo.RemoteTeamsAppId) as string) || "";
 
     ctx.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
   }
@@ -40,6 +55,10 @@ export class telemetryHelper {
   ): void {
     properties[TelemetryKey.Component] = FrontendPluginInfo.PluginName;
     properties[TelemetryKey.Success] = TelemetryValue.Fail;
+    properties[TelemetryKey.AppId] =
+      (ctx.configOfOtherPlugins
+        .get(DependentPluginInfo.SolutionPluginName)
+        ?.get(DependentPluginInfo.RemoteTeamsAppId) as string) || "";
 
     if (e instanceof SystemError) {
       properties[TelemetryKey.ErrorType] = TelemetryValue.SystemError;

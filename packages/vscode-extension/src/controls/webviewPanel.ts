@@ -163,7 +163,6 @@ export class WebviewPanel {
 
   private updateGlobalStepsDone(data: any) {
     ext.context.globalState.update("globalStepsDone", data);
-    //const afterScaffold = ext.context.globalState.get("openSampleReadme", false);
   }
 
   private getGlobalStepsDone() {

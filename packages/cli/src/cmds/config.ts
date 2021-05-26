@@ -7,8 +7,6 @@ import { Argv } from "yargs";
 import { YargsCommand } from "../yargsCommand";
 import { FxError, Result, ok, err } from "@microsoft/teamsfx-api";
 import { UserSettings, CliConfigOptions, CliConfigTelemetry } from "../userSetttings";
-import { Console } from "console";
-
 
 export class ConfigGet extends YargsCommand {
   public readonly commandHead = `get`;

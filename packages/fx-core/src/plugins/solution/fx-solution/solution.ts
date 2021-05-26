@@ -2225,24 +2225,29 @@ export class TeamsAppSolution implements Solution {
       );
     }
 
+    let addNewResoruceToProvision = false;
     const notifications: string[] = [];
     const pluginsToScaffold: LoadedPlugin[] = [this.localDebugPlugin];
     const azureResource = settings.azureResources || [];
     if (addFunc || ((addSQL || addApim) && !alreadyHaveFunction)) {
       pluginsToScaffold.push(this.functionPlugin);
-      if (!azureResource.includes(AzureResourceFunction.id))
+      if (!azureResource.includes(AzureResourceFunction.id)){
         azureResource.push(AzureResourceFunction.id);
+        addNewResoruceToProvision = true;
+      }
       notifications.push(AzureResourceFunction.label);
     }
     if (addSQL && !alreadyHaveSql) {
       pluginsToScaffold.push(this.sqlPlugin);
       azureResource.push(AzureResourceSQL.id);
       notifications.push(AzureResourceSQL.label);
+      addNewResoruceToProvision = true;
     }
     if (addApim && !alreadyHaveApim) {
       pluginsToScaffold.push(this.apimPlugin);
       azureResource.push(AzureResourceApim.id);
       notifications.push(AzureResourceApim.label);
+      addNewResoruceToProvision = true;
     }
 
     if (notifications.length > 0) {
@@ -2255,16 +2260,9 @@ export class TeamsAppSolution implements Solution {
         return err(scaffoldRes.error);
       }
       ctx.logProvider?.info(`finish scaffolding ${notifications.join(",")}!`);
-      ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false); //if selected plugin changed, we need to re-do provision
-      await ctx.dialog?.communicate(
-        new DialogMsg(DialogType.Show, {
-          description: util.format(
-            getStrings().solution.AddResourceNotice,
-            notifications.join(",")
-          ),
-          level: MsgLevel.Info,
-        })
-      );
+      if(addNewResoruceToProvision)
+        ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false); //if selected plugin changed, we need to re-do provision
+      ctx.ui?.showMessage("info", util.format(getStrings().solution.AddResourceNotice,notifications.join(",")), false);
     }
     return ok(Void);
   }

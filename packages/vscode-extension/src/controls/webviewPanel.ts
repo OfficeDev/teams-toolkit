@@ -169,7 +169,7 @@ export class WebviewPanel {
     let globalStepsDone = ext.context.globalState.get("globalStepsDone", []);
     if (this.panel && this.panel.webview) {
       this.panel.webview.postMessage({
-        message: "getGlobalStepsDone",
+        message: "updateStepsDone",
         data: globalStepsDone,
       });
     }

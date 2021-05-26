@@ -207,7 +207,7 @@ export default class QuickStart extends React.Component<any, any> {
                   expanded={this.state.currentStep === curStep}
                   onCollapsedCardClicked={this.onCollapsedCardClicked}
                   step={curStep}
-                  done={this.state.stepsDone[3] || this.state.m365Account}
+                  done={this.state.stepsDone[3] && this.state.m365Account}
                 />
               );
             })()}
@@ -229,7 +229,7 @@ export default class QuickStart extends React.Component<any, any> {
                   expanded={this.state.currentStep === curStep}
                   onCollapsedCardClicked={this.onCollapsedCardClicked}
                   step={curStep}
-                  done={this.state.stepsDone[4] || this.state.azureAccount}
+                  done={this.state.stepsDone[4] && this.state.azureAccount}
                 />
               );
             })()}
@@ -309,7 +309,7 @@ export default class QuickStart extends React.Component<any, any> {
       case "azureAccountChange":
         this.setState({ azureAccount: event.data.data });
         break;
-      case "getGlobalStepsDone":
+      case "updateStepsDone":
         this.setState({stepsDone: event.data.data });
         break;
       default:

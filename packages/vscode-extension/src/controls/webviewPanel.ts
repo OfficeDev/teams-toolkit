@@ -184,10 +184,10 @@ export class WebviewPanel {
       }
     );
 
-    AzureAccountManager.setStatusChangeMap("quick-start-webview", (status, token, accountInfo) => {
+    AzureAccountManager.setStatusChangeMap("quick-start-webview", async (status, token, accountInfo) => {
       let email = undefined;
       if (status === "SignedIn") {
-        const token = AzureAccountManager.getAccountCredential();
+        const token = await AzureAccountManager.getAccountCredentialAsync();
         if (token !== undefined) {
           email = (token as any).username ? (token as any).username : undefined;
         }

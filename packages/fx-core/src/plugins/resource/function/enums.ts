@@ -52,6 +52,7 @@ export enum TelemetryKey {
   ErrorType = "error-type",
   ErrorMessage = "error-message",
   ErrorCode = "error-code",
+  AppId = "appid",
 }
 
 export enum TelemetryValue {

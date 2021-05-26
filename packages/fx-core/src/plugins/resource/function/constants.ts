@@ -85,6 +85,7 @@ export class DependentPluginInfo {
   public static readonly resourceNameSuffix: string = "resourceNameSuffix";
   public static readonly location: string = "location";
   public static readonly programmingLanguage: string = "programmingLanguage";
+  public static readonly remoteTeamsAppId = "remoteTeamsAppId";
 
   public static readonly aadPluginName: string = "fx-resource-aad-app-for-teams";
   public static readonly aadClientId: string = "clientId";

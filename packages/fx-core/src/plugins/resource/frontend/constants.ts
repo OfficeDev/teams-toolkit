@@ -74,6 +74,7 @@ export class DependentPluginInfo {
   static readonly ResourceNameSuffix = "resourceNameSuffix";
   static readonly Location = "location";
   static readonly ProgrammingLanguage = "programmingLanguage";
+  static readonly RemoteTeamsAppId = "remoteTeamsAppId";
 
   static readonly FunctionPluginName = "fx-resource-function";
   static readonly FunctionEndpoint = "functionEndpoint";
@@ -115,6 +116,7 @@ export class TelemetryKey {
   static readonly ErrorType = "error-type";
   static readonly ErrorMessage = "error-message";
   static readonly ErrorCode = "error-code";
+  static readonly AppId = "appid";
 }
 
 export class TelemetryValue {

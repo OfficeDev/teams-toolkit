@@ -3,7 +3,7 @@
 
 import { PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
 
-import { FunctionPluginInfo } from "../constants";
+import { DependentPluginInfo, FunctionPluginInfo } from "../constants";
 import { FxResult } from "../result";
 import { TelemetryKey, TelemetryValue } from "../enums";
 
@@ -15,6 +15,10 @@ export class telemetryHelper {
     measurements: { [key: string]: number } = {}
   ): void {
     properties[TelemetryKey.Component] = FunctionPluginInfo.pluginName;
+    properties[TelemetryKey.AppId] =
+      (ctx.configOfOtherPlugins
+        .get(DependentPluginInfo.solutionPluginName)
+        ?.get(DependentPluginInfo.remoteTeamsAppId) as string) || "";
 
     ctx.telemetryReporter?.sendTelemetryEvent(`${eventName}-start`, properties, measurements);
   }
@@ -27,6 +31,10 @@ export class telemetryHelper {
   ): void {
     properties[TelemetryKey.Component] = FunctionPluginInfo.pluginName;
     properties[TelemetryKey.Success] = TelemetryValue.Success;
+    properties[TelemetryKey.AppId] =
+      (ctx.configOfOtherPlugins
+        .get(DependentPluginInfo.solutionPluginName)
+        ?.get(DependentPluginInfo.remoteTeamsAppId) as string) || "";
 
     ctx.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
   }
@@ -42,6 +50,10 @@ export class telemetryHelper {
     properties[TelemetryKey.Success] = TelemetryValue.Fail;
     properties[TelemetryKey.ErrorMessage] = e.message;
     properties[TelemetryKey.ErrorCode] = e.name;
+    properties[TelemetryKey.AppId] =
+      (ctx.configOfOtherPlugins
+        .get(DependentPluginInfo.solutionPluginName)
+        ?.get(DependentPluginInfo.remoteTeamsAppId) as string) || "";
 
     if (e instanceof SystemError) {
       properties[TelemetryKey.ErrorType] = TelemetryValue.SystemError;

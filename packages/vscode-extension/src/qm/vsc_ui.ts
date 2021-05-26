@@ -481,7 +481,7 @@ export class VsCodeUI implements UserInteraction {
               quickPick.items = [
                 { label: config.prompt || "Select file/folder", detail: resultString }
               ];
-              resolve({ type: "success", result: results as any });
+              resolve({ type: "success", result: resultString as any });
             } else {
               const result = uriList[0].fsPath;
               quickPick.items = [{ label: config.prompt || "Select file/folder", detail: result }];

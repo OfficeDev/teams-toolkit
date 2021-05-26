@@ -2413,7 +2413,10 @@ export class TeamsAppSolution implements Solution {
     const method = func.method;
     const array = namespace.split("/");
     if (method === "addCapability") {
-      return await this.executeAddCapability(func, ctx!);
+      return this.executeAddCapability(func, ctx!);
+    }
+    if (method === "addResource") {
+      return this.executeAddResource(ctx);
     }
     if (namespace.includes("solution")) {
       if (method === "registerTeamsAppAndAad") {

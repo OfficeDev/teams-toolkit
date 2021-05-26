@@ -8,6 +8,7 @@ import {
   Dialog,
   DialogMsg,
   DialogType,
+  Platform,
 } from "@microsoft/teamsfx-api";
 import { ResourceGroups, ResourceManagementClientContext } from "@azure/arm-resources";
 import { ServiceClientCredentials } from "@azure/ms-rest-js";
@@ -123,9 +124,10 @@ export function newPluginContext(): PluginContext {
       ],
     ]),
     config: new ConfigMap(),
-    answers: new ConfigMap(),
+    answers: {platform:Platform.VSCode},
     projectSettings: {
       appName: "My App",
+      currentEnv: "default",
       solutionSettings: {
         name: "AnyName",
         version: "0.0.1",

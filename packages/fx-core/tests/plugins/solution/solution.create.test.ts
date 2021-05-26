@@ -7,6 +7,7 @@ import { TeamsAppSolution } from " ../../../src/plugins/solution";
 import {
   ConfigFolderName,
   ConfigMap,
+  Platform,
   SolutionConfig,
   SolutionContext,
   TeamsAppManifest,
@@ -48,9 +49,8 @@ describe("Solution create()", async () => {
     const config: SolutionConfig = new Map();
     return {
       root: ".",
-      app: new TeamsAppManifest(),
       config,
-      answers: new ConfigMap(),
+      answers: {platform:Platform.VSCode},
       projectSettings: undefined,
     };
   }
@@ -88,6 +88,7 @@ describe("Solution create()", async () => {
     const mockedSolutionCtx = mockSolutionContext();
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
+      currentEnv: "default",
       solutionSettings: undefined,
     };
     const result = await solution.create(mockedSolutionCtx);
@@ -101,6 +102,7 @@ describe("Solution create()", async () => {
     const mockedSolutionCtx = mockSolutionContext();
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
+      currentEnv: "default",
       solutionSettings: {
         name: "azure",
         version: "1.0",
@@ -117,12 +119,14 @@ describe("Solution create()", async () => {
     const mockedSolutionCtx = mockSolutionContext();
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
+      currentEnv: "default",
       solutionSettings: {
         name: "azure",
         version: "1.0",
       },
     };
-    mockedSolutionCtx.answers?.set(AzureSolutionQuestionNames.Capabilities, [BotOptionItem.id]);
+    const answers = mockedSolutionCtx.answers!;
+    answers[AzureSolutionQuestionNames.Capabilities] = [BotOptionItem.id];
     const result = await solution.create(mockedSolutionCtx);
     expect(result.isOk()).equals(true);
     expect(mockedSolutionCtx.config.get(GLOBAL_CONFIG)).is.not.undefined;
@@ -134,17 +138,16 @@ describe("Solution create()", async () => {
     const mockedSolutionCtx = mockSolutionContext();
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
+      currentEnv: "default",
       solutionSettings: {
         name: "azure",
         version: "1.0",
       },
     };
-    mockedSolutionCtx.answers?.set(AzureSolutionQuestionNames.Capabilities, [BotOptionItem.id]);
+    const answers = mockedSolutionCtx.answers!;
+    answers[AzureSolutionQuestionNames.Capabilities as string] = [BotOptionItem.id];
     const programmingLanguage = "TypeScript";
-    mockedSolutionCtx.answers?.set(
-      AzureSolutionQuestionNames.ProgrammingLanguage,
-      programmingLanguage
-    );
+    answers[AzureSolutionQuestionNames.ProgrammingLanguage as string]= programmingLanguage;
     const result = await solution.create(mockedSolutionCtx);
     expect(result.isOk()).equals(true);
     const lang = mockedSolutionCtx.config.get(GLOBAL_CONFIG)?.getString(PROGRAMMING_LANGUAGE);
@@ -157,12 +160,14 @@ describe("Solution create()", async () => {
     const mockedSolutionCtx = mockSolutionContext();
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
+      currentEnv: "default",
       solutionSettings: {
         name: "azure",
         version: "1.0",
       },
     };
-    mockedSolutionCtx.answers?.set(AzureSolutionQuestionNames.Capabilities, [BotOptionItem.id]);
+    const answers = mockedSolutionCtx.answers!;
+    answers[AzureSolutionQuestionNames.Capabilities as string] = [BotOptionItem.id];
     const result = await solution.create(mockedSolutionCtx);
     expect(result.isOk()).equals(true);
     const lang = mockedSolutionCtx.config.get(GLOBAL_CONFIG)?.getString(PROGRAMMING_LANGUAGE);
@@ -175,14 +180,15 @@ describe("Solution create()", async () => {
     const mockedSolutionCtx = mockSolutionContext();
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
+      currentEnv: "default",
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
         version: "1.0",
       },
     };
-
-    mockedSolutionCtx.answers?.set(AzureSolutionQuestionNames.Capabilities, [TabOptionItem.id]);
+    const answers = mockedSolutionCtx.answers!;
+    answers[AzureSolutionQuestionNames.Capabilities as string] = [TabOptionItem.id];
     const result = await solution.create(mockedSolutionCtx);
     expect(result.isErr()).equals(true);
     expect(result._unsafeUnwrapErr().message).equals("hostType is undefined");
@@ -195,15 +201,16 @@ describe("Solution create()", async () => {
     const mockedSolutionCtx = mockSolutionContext();
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
+      currentEnv: "default",
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
         version: "1.0",
       },
     };
-
-    mockedSolutionCtx.answers?.set(AzureSolutionQuestionNames.Capabilities, [TabOptionItem.id]);
-    mockedSolutionCtx.answers?.set(AzureSolutionQuestionNames.HostType, HostTypeOptionAzure.id);
+    const answers = mockedSolutionCtx.answers!;
+    answers[AzureSolutionQuestionNames.Capabilities as string] = [TabOptionItem.id];
+    answers[AzureSolutionQuestionNames.HostType as string] = HostTypeOptionAzure.id;
 
     const result = await solution.create(mockedSolutionCtx);
     expect(result.isOk()).equals(true);
@@ -228,13 +235,14 @@ describe("Solution create()", async () => {
     const mockedSolutionCtx = mockSolutionContext();
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
+      currentEnv: "default",
       solutionSettings: {
         name: "azure",
         version: "1.0",
       },
     };
-
-    mockedSolutionCtx.answers?.set(AzureSolutionQuestionNames.Capabilities, [BotOptionItem.id]);
+    const answers = mockedSolutionCtx.answers!;
+    answers[AzureSolutionQuestionNames.Capabilities as string] = [BotOptionItem.id];
 
     const result = await solution.create(mockedSolutionCtx);
     expect(result.isOk()).equals(true);
@@ -265,15 +273,14 @@ describe("Solution create()", async () => {
     const mockedSolutionCtx = mockSolutionContext();
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
+      currentEnv: "default",
       solutionSettings: {
         name: "azure",
         version: "1.0",
       },
     };
-
-    mockedSolutionCtx.answers?.set(AzureSolutionQuestionNames.Capabilities, [
-      MessageExtensionItem.id,
-    ]);
+    const answers = mockedSolutionCtx.answers!;
+    answers[AzureSolutionQuestionNames.Capabilities as string] = [MessageExtensionItem.id];
 
     const result = await solution.create(mockedSolutionCtx);
     expect(result.isOk()).equals(true);
@@ -301,18 +308,19 @@ describe("Solution create()", async () => {
     const mockedSolutionCtx = mockSolutionContext();
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
+      currentEnv: "default",
       solutionSettings: {
         name: "azure",
         version: "1.0",
       },
     };
-
-    mockedSolutionCtx.answers?.set(AzureSolutionQuestionNames.Capabilities, [
+    const answers = mockedSolutionCtx.answers!;
+    answers[AzureSolutionQuestionNames.Capabilities] =[
       TabOptionItem.id,
       BotOptionItem.id,
       MessageExtensionItem.id,
-    ]);
-    mockedSolutionCtx.answers?.set(AzureSolutionQuestionNames.HostType, HostTypeOptionAzure.id);
+    ]; 
+    answers[AzureSolutionQuestionNames.HostType] = HostTypeOptionAzure.id; 
 
     const result = await solution.create(mockedSolutionCtx);
     expect(result.isOk()).equals(true);
@@ -334,15 +342,16 @@ describe("Solution create()", async () => {
     const mockedSolutionCtx = mockSolutionContext();
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
+      currentEnv: "default",
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
         version: "1.0",
       },
     };
-
-    mockedSolutionCtx.answers?.set(AzureSolutionQuestionNames.Capabilities, [TabOptionItem.id]);
-    mockedSolutionCtx.answers?.set(AzureSolutionQuestionNames.HostType, HostTypeOptionSPFx.id);
+    const answers = mockedSolutionCtx.answers!;
+    answers[AzureSolutionQuestionNames.Capabilities] = [ TabOptionItem.id ]; 
+    answers[AzureSolutionQuestionNames.HostType] = HostTypeOptionSPFx.id; 
 
     const result = await solution.create(mockedSolutionCtx);
     expect(result.isOk()).equals(true);

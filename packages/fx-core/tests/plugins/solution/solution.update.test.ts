@@ -10,8 +10,10 @@ import { TeamsAppSolution } from " ../../../src/plugins/solution";
 import {
   ConfigMap,
   err,
+  Func,
   FxError,
   ok,
+  Platform,
   Result,
   returnSystemError,
   SolutionConfig,
@@ -40,9 +42,9 @@ function mockSolutionContext(): SolutionContext {
   const config: SolutionConfig = new Map();
   return {
     root: ".",
-    app: new TeamsAppManifest(),
+    // app: new TeamsAppManifest(),
     config,
-    answers: new ConfigMap(),
+    answers: {platform: Platform.VSCode},
     projectSettings: undefined,
   };
 }
@@ -52,7 +54,11 @@ describe("update()", () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
     mockedCtx.answers = undefined;
-    const result = await solution.update(mockedCtx);
+    const func:Func = {
+      namespace: "fx-solution-azure",
+      method: "addResource"
+    };
+    const result = await solution.executeUserTask(func, mockedCtx);
     expect(result.isErr()).equals(true);
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.InternelError);
   });
@@ -60,9 +66,10 @@ describe("update()", () => {
   it("should return AddResourceNotSupport for SPFx project", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
-    mockedCtx.answers = new ConfigMap();
+    mockedCtx.answers = {platform: Platform.VSCode};
     mockedCtx.projectSettings = {
       appName: "my app",
+      currentEnv: "default",
       solutionSettings: {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
@@ -77,9 +84,10 @@ describe("update()", () => {
   it("should return AddResourceNotSupport if capabilities is empty", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
-    mockedCtx.answers = new ConfigMap();
+    mockedCtx.answers = {platform: Platform.VSCode};
     mockedCtx.projectSettings = {
       appName: "my app",
+      currentEnv: "default",
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
@@ -94,9 +102,10 @@ describe("update()", () => {
   it("should return AddResourceNotSupport if capabilities doesn't contain Tab", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
-    mockedCtx.answers = new ConfigMap();
+    mockedCtx.answers = {platform: Platform.VSCode};
     mockedCtx.projectSettings = {
       appName: "my app",
+      currentEnv: "default",
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
@@ -112,9 +121,10 @@ describe("update()", () => {
   it("should return AddResourceNotSupport if user tries to add SQL when SQL is already activated", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
-    mockedCtx.answers = new ConfigMap();
+    mockedCtx.answers = {platform: Platform.VSCode};
     mockedCtx.projectSettings = {
       appName: "my app",
+      currentEnv: "default",
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
@@ -127,7 +137,7 @@ describe("update()", () => {
         ],
       },
     };
-    mockedCtx.answers?.set(AzureSolutionQuestionNames.AddResources, [AzureResourceSQL.id]);
+    mockedCtx.answers![AzureSolutionQuestionNames.AddResources] = [AzureResourceSQL.id];
     const result = await solution.update(mockedCtx);
     expect(result.isErr()).equals(true);
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.AddResourceNotSupport);
@@ -136,9 +146,10 @@ describe("update()", () => {
   it("should return AddResourceNotSupport if user tries to add APIM when APIM is already activated", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
-    mockedCtx.answers = new ConfigMap();
+    mockedCtx.answers = {platform: Platform.VSCode};
     mockedCtx.projectSettings = {
       appName: "my app",
+      currentEnv: "default",
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
@@ -151,7 +162,7 @@ describe("update()", () => {
         ],
       },
     };
-    mockedCtx.answers?.set(AzureSolutionQuestionNames.AddResources, [AzureResourceApim.id]);
+    mockedCtx.answers![AzureSolutionQuestionNames.AddResources] = [AzureResourceApim.id];
     const result = await solution.update(mockedCtx);
     expect(result.isErr()).equals(true);
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.AddResourceNotSupport);
@@ -160,9 +171,10 @@ describe("update()", () => {
   it("should add FunctionPlugin when adding SQL if FunctionPlugin is not already added", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
-    mockedCtx.answers = new ConfigMap();
+    mockedCtx.answers = {platform: Platform.VSCode};
     mockedCtx.projectSettings = {
       appName: "my app",
+      currentEnv: "default",
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
@@ -172,7 +184,7 @@ describe("update()", () => {
         azureResources: [],
       },
     };
-    mockedCtx.answers?.set(AzureSolutionQuestionNames.AddResources, [AzureResourceSQL.id]);
+    mockedCtx.answers![AzureSolutionQuestionNames.AddResources] = [AzureResourceSQL.id];
     solution.doScaffold = async function (
       _ctx: SolutionContext,
       _selectedPlugins
@@ -192,9 +204,10 @@ describe("update()", () => {
   it("should add FunctionPlugin when adding APIM if FunctionPlugin is not already added", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
-    mockedCtx.answers = new ConfigMap();
+    mockedCtx.answers = {platform: Platform.VSCode};
     mockedCtx.projectSettings = {
       appName: "my app",
+      currentEnv: "default",
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
@@ -204,7 +217,7 @@ describe("update()", () => {
         azureResources: [],
       },
     };
-    mockedCtx.answers?.set(AzureSolutionQuestionNames.AddResources, [AzureResourceApim.id]);
+    mockedCtx.answers![AzureSolutionQuestionNames.AddResources] = [AzureResourceApim.id];
     solution.doScaffold = async function (
       _ctx: SolutionContext,
       _selectedPlugins
@@ -224,9 +237,10 @@ describe("update()", () => {
   it("should set provisionSucceeded to false", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
-    mockedCtx.answers = new ConfigMap();
+    mockedCtx.answers = {platform: Platform.VSCode};
     mockedCtx.projectSettings = {
       appName: "my app",
+      currentEnv: "default",
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
@@ -236,7 +250,7 @@ describe("update()", () => {
         azureResources: [],
       },
     };
-    mockedCtx.answers?.set(AzureSolutionQuestionNames.AddResources, [AzureResourceApim.id]);
+    mockedCtx.answers![AzureSolutionQuestionNames.AddResources] =  [AzureResourceApim.id];
     solution.doScaffold = async function (
       _ctx: SolutionContext,
       _selectedPlugins
@@ -260,9 +274,10 @@ describe("update()", () => {
   it("should leave projectSettings unchanged if scaffold fails", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
-    mockedCtx.answers = new ConfigMap();
+    mockedCtx.answers = {platform: Platform.VSCode};
     mockedCtx.projectSettings = {
       appName: "my app",
+      currentEnv: "default",
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
@@ -273,7 +288,7 @@ describe("update()", () => {
       },
     };
     const originalProjectSettings = _.cloneDeep(mockedCtx.projectSettings);
-    mockedCtx.answers?.set(AzureSolutionQuestionNames.AddResources, [AzureResourceApim.id]);
+    mockedCtx.answers![AzureSolutionQuestionNames.AddResources] = [AzureResourceApim.id];
     solution.doScaffold = async function (
       _ctx: SolutionContext,
       _selectedPlugins

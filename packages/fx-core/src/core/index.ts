@@ -474,7 +474,7 @@ class CoreImpl implements Core {
       this.ctx.root = workspace;
       supported = isValidProject(workspace);
       if (!supported) {
-        this.ctx.logProvider?.warning(`non Teams project:${workspace}`);
+        this.ctx.logProvider?.info(`non Teams project:${workspace}`);
       } else {
         await this.readConfigs();
       }

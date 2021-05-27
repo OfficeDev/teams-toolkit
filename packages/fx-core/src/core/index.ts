@@ -253,7 +253,7 @@ export class FxCore implements Core {
 
     let azureAccountLabel = "Sign in to Azure";
     let azureAccountContextValue = "signinAzure";
-    const token = await this.tools.tokenProvider.azureAccountProvider.getAccountCredentialAsync();
+    const token = this.tools.tokenProvider.azureAccountProvider.getAccountCredential();
     if (token !== undefined) {
       azureAccountLabel = (token as any).username ? (token as any).username : "";
       azureAccountContextValue = "signedinAzure";
@@ -301,7 +301,7 @@ export class FxCore implements Core {
         accountInfo?: Record<string, unknown> | undefined
       ) => {
         if (status === "SignedIn") {
-          const token = await this.tools.tokenProvider.azureAccountProvider.getIdentityCredentialAsync();
+          const token = this.tools.tokenProvider.azureAccountProvider.getIdentityCredential();
           if (token !== undefined) {
             this.tools.treeProvider?.refresh([
               {

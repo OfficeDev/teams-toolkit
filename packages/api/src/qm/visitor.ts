@@ -99,7 +99,6 @@ const questionVisitor: QuestionVistor = async function (
     const defaultValue = question.value? question.value : await getCallFuncValue(inputs, question.default);
     const placeholder = await getCallFuncValue(inputs, question.placeholder) as string;
     const prompt = await getCallFuncValue(inputs, question.prompt) as string;
-    const validationFunc = question.validation ? getValidationFunction(question.validation, inputs) : undefined;
     if (question.type === "text") {
       const validationFunc = question.validation ? getValidationFunction<string>(question.validation, inputs) : undefined;
       const inputQuestion = question as TextInputQuestion;
@@ -137,7 +136,6 @@ const questionVisitor: QuestionVistor = async function (
         };
       }
       if(question.type === "singleSelect"){
-        const validationFunc = question.validation ? getValidationFunction<string>(question.validation, inputs) : undefined;
         return await ui.selectOption({
           type: "radio",
           name: question.name,

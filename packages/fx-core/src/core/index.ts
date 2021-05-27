@@ -572,15 +572,17 @@ class CoreImpl implements Core {
         const subscriptionNames: string[] = subscriptions.map(
           (subscription) => subscription.subscriptionName
         );
-        const subscriptionName = (
-          await this.ctx.dialog?.communicate(
-            new DialogMsg(DialogType.Ask, {
-              type: QuestionType.Radio,
-              description: "Please select a subscription",
-              options: subscriptionNames,
-            })
-          )
-        )?.getAnswer();
+
+        const askSubQuickPick = await this.ctx.ui?.selectOption({
+          name: "askSubQuickPick",
+          type: "radio",
+          title: "Teams Toolkit: Select an Azure subscription",
+          placeholder: "Select an Azure subscription that you wish to deploy your Teams app to",
+          options: subscriptionNames,
+        });
+
+        const subscriptionName = askSubQuickPick?.result;
+
         if (subscriptionName === undefined || subscriptionName == "unknown") {
           return err(
             returnUserError(

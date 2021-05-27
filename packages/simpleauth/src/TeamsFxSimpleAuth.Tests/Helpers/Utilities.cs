@@ -112,8 +112,6 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.Helpers
                 if(!string.IsNullOrEmpty(authorizationCode))
                 {
                     driver.Close();
-                    driver.Quit();
-                    driver.Dispose();
                     return authorizationCode;
                 }
                 Thread.Sleep(200 * ++retryTime);

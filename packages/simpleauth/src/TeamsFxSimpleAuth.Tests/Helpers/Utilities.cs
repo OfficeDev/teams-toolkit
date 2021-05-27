@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNetCore.WebUtilities;
@@ -69,7 +70,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.Helpers
             string codeChallenge, string testAccountUserName, string testAccountPassword)
         {
             var chromeOptions = new ChromeOptions();
-            chromeOptions.AddArguments("--no-sandbox", "--headless", "--window-size=1920,1080");
+            chromeOptions.AddArguments("--no-sandbox", "--window-size=1920,1080");
             // Here System.Environment.CurrentDirectory will return the current directory path.
             // This update is for ask Cloudtest to find the correct chromedriver from the built folder 
             // e.g. src/TeamsFxSimpleAuth.Test/bin/Release/netcoreapp3.1/
@@ -101,18 +102,26 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.Helpers
 
             // Click "Accept"
             ClickElementWithRetry(driver, By.Id("idSIButton9"));
+            
+            Uri redirectedUrl;
+            string authorizationCode;
+            int retryTime = 0;
 
-            Uri redirectedUrl = new Uri(driver.Url);
-            driver.Close();
-
-            string authorizationCode = HttpUtility.ParseQueryString(redirectedUrl.Query).Get("code");
-
-            if (string.IsNullOrEmpty(authorizationCode))
+            do
             {
-                throw new Exception($"Failed to get authorization code from redirect url: {redirectedUrl.AbsoluteUri}");
-            }
+                redirectedUrl = new Uri(driver.Url);
+                authorizationCode = HttpUtility.ParseQueryString(redirectedUrl.Query).Get("code");
+                if(!string.IsNullOrEmpty(authorizationCode))
+                {
+                    driver.Close();
+                    driver.Quit();
+                    driver.Dispose();
+                    return authorizationCode;
+                }
+                Thread.Sleep(200 * ++retryTime);
+            } while (retryTime < 3);
 
-            return authorizationCode;
+            throw new Exception($"Failed to get authorization code from redirect url: {redirectedUrl.AbsoluteUri}");
         }
 
         public static string GetAuthorizationCode(IntegrationTestSettings settings, IConfiguration configuration)

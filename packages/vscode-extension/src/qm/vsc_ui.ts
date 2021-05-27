@@ -37,11 +37,11 @@ import {
   MultiSelectConfig,
   InputTextConfig,
   TimeConsumingTask,
-  UIConfig,
   UserInteraction
 } from "@microsoft/teamsfx-api";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { sleep } from "../utils/commonUtils";
+import * as StringResources from "../resources/Strings.json";
 
 export interface FxQuickPickItem extends QuickPickItem {
   id: string;
@@ -546,8 +546,7 @@ export class VsCodeUI implements UserInteraction {
         )});
       }
     });
-  }
-
+  } 
   async runWithProgress(
     task: TimeConsumingTask<Result<any, FxError>>
   ): Promise<RunWithProgressResult> {
@@ -555,7 +554,6 @@ export class VsCodeUI implements UserInteraction {
       window.withProgress(
         {
           location: ProgressLocation.Notification,
-          title: task.name,
           cancellable: task.cancelable
         },
         async (progress, token): Promise<any> => {
@@ -568,11 +566,9 @@ export class VsCodeUI implements UserInteraction {
               });
             });
           }
-          const startTime = new Date().getTime();
+          // const startTime = new Date().getTime();
           const res = task.run();
-          if(task.showProgress)
-            progress.report({ increment: 0 });
-          let lastLength = 0;
+         
           res.then((v:any) => { 
             resolve(v) 
           }).catch((e:any) => { 
@@ -585,35 +581,37 @@ export class VsCodeUI implements UserInteraction {
               )
             })
           });
-          if(task.showProgress){
+          const head = `${StringResources.vsc.progressHandler.teamsToolkitComponent} ${task.name}`;
+          if(!task.showProgress){
+            const body = `: [${task.current}/${task.total}]`;
+            const tail = task.message? ` ${task.message}` : StringResources.vsc.progressHandler.prepareTask;
+            const message = `${head}${body}${tail}`
             do{
-              progress.report({
-                message: task.message
-              });
-            } while (task.progress < 100 && !task.isCanceled)
+              progress.report({ message: message });
+              await sleep(100);
+            } while (task.current < task.total && !task.isCanceled)
           }
           else {
+            let lastLength = 0;
+            if(task.showProgress){
+              const body = `: ${Math.round((task.current-lastLength)*100/task.total)} %`;
+              const tail = task.message? ` ${task.message}` : StringResources.vsc.progressHandler.prepareTask;
+              const message = `${head}${body}${tail}`;
+              progress.report({ increment: 0, message: message});
+            }
             do{
-              const inc = task.progress - lastLength;
+              const inc = task.current - lastLength;
               if (inc > 0) {
-                const elapsedTime = new Date().getTime() - startTime;
-                const remainingTime = (elapsedTime * (100 - task.progress)) / task.progress;
-                if(task.showProgress){
-                  progress.report({
-                    increment: inc,
-                    message: `progress: ${Math.round(task.progress)} %, remaining time: ${Math.round(remainingTime)} ms 
-                    ${task.message !== undefined && task.message !== "" ? "("+task.message+")" : ""}`
-                  });
-                }
-                else {
-                  progress.report({
-                    message: task.message
-                  });
-                }
+                // const elapsedTime = new Date().getTime() - startTime;
+                // const remainingTime = (elapsedTime * (task.total - task.current)) / task.current;
+                const body = `: ${Math.round(task.current*100/task.total)} %`;
+                const tail = task.message? ` ${task.message}` : StringResources.vsc.progressHandler.prepareTask;
+                const message = `${head}${body}${tail}`
+                progress.report({ increment: inc, message: message });
                 lastLength += inc;
               }
               await sleep(100);
-            } while (task.progress < 100 && !task.isCanceled)
+            } while (task.current < task.total && !task.isCanceled)
           }
           if (task.isCanceled) resolve({
             type: "error",

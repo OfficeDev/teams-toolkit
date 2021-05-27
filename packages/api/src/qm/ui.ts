@@ -81,10 +81,8 @@ export interface TimeConsumingTask<T> {
    * whether ui support cancel or not
    */
   cancelable:boolean;
-  /**
-   * progress from 0-100
-   */
-  progress: number;
+  current:number;
+  total:number;
   showProgress:boolean;
   message: string;
   isFinished: boolean;
@@ -123,7 +121,8 @@ export interface FunctionGroupTaskConfig<T>{
 
 export class FunctionGroupTask<T> implements TimeConsumingTask<Result<Result<T, FxError>[], FxError>> {
   name: string;
-  progress:number = 0;
+  current:number = 0;
+  total:number;
   message = "";
   isCanceled = false;
   isFinished = false;
@@ -141,6 +140,7 @@ export class FunctionGroupTask<T> implements TimeConsumingTask<Result<Result<T, 
     this.concurrent = config.concurrent;
     this.fastFail = config.fastFail;
     this.showProgress = config.showProgress;
+    this.total = this.tasks.length;
   }
   async run(): Promise<Result<Result<T, FxError>[], FxError>> {
     if (this.tasks.length === 0) return ok([]);
@@ -173,7 +173,7 @@ export class FunctionGroupTask<T> implements TimeConsumingTask<Result<Result<T, 
             }
             results.push(err(e));
           } finally{
-            this.progress = (i + 1)*100/this.tasks.length;
+            this.current = i + 1;
           }
         }
         this.isFinished = true;
@@ -184,7 +184,7 @@ export class FunctionGroupTask<T> implements TimeConsumingTask<Result<Result<T, 
           p.then((v) => {
             finishNum ++;
             if(this.showProgress)
-              this.progress = finishNum * 100 / this.tasks.length;
+              this.current = finishNum;
             if (v.isErr() && this.fastFail) {
               this.isCanceled = true;
               resolve(err(v.error));
@@ -192,7 +192,7 @@ export class FunctionGroupTask<T> implements TimeConsumingTask<Result<Result<T, 
           }).catch((e) => {
             finishNum ++;
             if(this.showProgress)
-              this.progress = finishNum * 100 / this.tasks.length;
+              this.current = finishNum;
             if (this.fastFail) {
               this.isCanceled = true;
               resolve(err(e));

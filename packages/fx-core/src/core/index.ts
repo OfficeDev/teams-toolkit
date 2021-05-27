@@ -539,20 +539,20 @@ export class FxCore implements Core {
    
   @hooks([ErrorHandlerMW, ProjectCheckerMW, ConcurrentLockerMW, SolutionLoaderMW, ContextLoaderMW, QuestionModelMW, ConfigWriterMW])
   async provisionResources(inputs: Inputs) : Promise<Result<Void, FxError>>{
-    return this.solution!.provision(this.ctx!);
+    return await this.solution!.provision(this.ctx!);
   }
   
   @hooks([ErrorHandlerMW, ProjectCheckerMW, ConcurrentLockerMW, SolutionLoaderMW, ContextLoaderMW, QuestionModelMW, ConfigWriterMW])
   async deployArtifacts(inputs: Inputs) : Promise<Result<Void, FxError>>{
-    return this.solution!.deploy(this.ctx!);
+    return await this.solution!.deploy(this.ctx!);
   }
   @hooks([ErrorHandlerMW, ProjectCheckerMW, ConcurrentLockerMW, SolutionLoaderMW, ContextLoaderMW, QuestionModelMW, ConfigWriterMW])
   async localDebug(inputs: Inputs) : Promise<Result<Void, FxError>>{
-    return this.solution!.localDebug(this.ctx!);
+    return await this.solution!.localDebug(this.ctx!);
   } 
   @hooks([ErrorHandlerMW, ProjectCheckerMW, ConcurrentLockerMW, SolutionLoaderMW, ContextLoaderMW, QuestionModelMW, ConfigWriterMW])
   async publishApplication(inputs: Inputs) : Promise<Result<Void, FxError>>{
-    return this.solution!.publish(this.ctx!);
+    return await this.solution!.publish(this.ctx!);
   } 
 
   @hooks([ErrorHandlerMW, ProjectCheckerMW, ConcurrentLockerMW, SolutionLoaderMW, ContextLoaderMW, QuestionModelMW, ConfigWriterMW])
@@ -560,7 +560,7 @@ export class FxCore implements Core {
     const namespace = func.namespace;
     const array = namespace ? namespace.split("/") : [];
     if ("" !== namespace && array.length > 0 && this.solution && this.solution.executeUserTask) {
-      return this.solution.executeUserTask(func, this.ctx!);
+      return await this.solution.executeUserTask(func, this.ctx!);
     }
     return err(
       returnUserError(
@@ -586,12 +586,12 @@ export class FxCore implements Core {
   
   @hooks([ErrorHandlerMW, SolutionLoaderMW, ContextLoaderMW, ConfigWriterMW])
   async getQuestions(task: Stage, inputs: Inputs) : Promise<Result<QTreeNode | undefined, FxError>> {
-    return this._getQuestions(task, inputs, this.ctx);
+    return await this._getQuestions(task, inputs, this.ctx);
   }
 
   @hooks([ErrorHandlerMW, SolutionLoaderMW, ContextLoaderMW, ConfigWriterMW])
   async getQuestionsForUserTask(func: FunctionRouter, inputs: Inputs) : Promise<Result<QTreeNode | undefined, FxError>>{
-    return this._getQuestionsForUserTask(func, inputs, this.ctx);
+    return await this._getQuestionsForUserTask(func, inputs, this.ctx);
   }
  
   @hooks([ErrorHandlerMW])

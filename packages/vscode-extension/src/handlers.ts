@@ -75,6 +75,7 @@ import { AzureNodeChecker } from "./debug/depsChecker/azureNodeChecker";
 import { SPFxNodeChecker } from "./debug/depsChecker/spfxNodeChecker";
 import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { VS_CODE_UI } from "./extension";
+import { testProgress } from "./testprogress";
 
 export let core: FxCore; 
 export function getWorkspacePath(): string | undefined {
@@ -227,8 +228,6 @@ export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
   const eventName = ExtTelemetry.stageToEvent(stage);
   let result: Result<any, FxError> = ok(null);
   try {
-    const workspacePath = getWorkspacePath();
-
     const checkCoreRes = checkCoreNotEmpty();
     if (checkCoreRes.isErr()) {
       throw checkCoreRes.error;

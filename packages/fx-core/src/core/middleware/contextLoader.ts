@@ -17,11 +17,11 @@ export const ContextLoaderMW: Middleware = async (
     const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
     const core = ctx.self as FxCore;
     if(inputs.projectPath && ctx.method !== "createProject")
-      loadSolutionContext(core, inputs);
+     await loadSolutionContext(core, inputs);
     else 
     {
       delete inputs.projectPath;
-      newSolutionContext(core, inputs);
+      await newSolutionContext(core, inputs);
     }  
   }
   catch(e) {
@@ -35,11 +35,10 @@ export const ContextLoaderMW: Middleware = async (
 
 async function loadSolutionContext(core: FxCore, inputs: Inputs){
   try {
-    const projectSettings: ProjectSettings = await fs.readJson(
-      path.join(inputs.projectPath!, `.${ConfigFolderName}`, "settings.json")
-    );
-    const envName = projectSettings.currentEnv;
     const confFolderPath = path.resolve(inputs.projectPath!, `.${ConfigFolderName}`);
+    const settingsFile = path.resolve(confFolderPath, "settings.json");
+    const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
+    const envName = projectSettings.currentEnv;
     const jsonFilePath = path.resolve(confFolderPath, `env.${envName}.json`);
     const configJson: Json = await fs.readJson(jsonFilePath);
     const localDataPath = path.resolve(confFolderPath, `${envName}.userdata`);

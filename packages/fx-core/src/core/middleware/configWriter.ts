@@ -8,7 +8,6 @@ import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks";
 import * as error from "../error";
 import { ConfigFolderName, err, Inputs, SolutionContext } from "@microsoft/teamsfx-api";
 import { mapToJson, serializeDict, sperateSecretData } from "../../common/tools";
-import { FxCore } from "..";
 
 /**
  * This middleware will help to persist configs if necessary.

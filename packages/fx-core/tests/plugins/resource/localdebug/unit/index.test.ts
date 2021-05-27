@@ -57,7 +57,6 @@ describe(LocalDebugPluginInfo.pluginName, () => {
     ];
     parameters1.forEach((parameter: TestParameter) => {
       it(`happy path: tab with function (${parameter.programmingLanguage})`, async () => {
-        // pluginContext.platform = Platform.VSCode;
         pluginContext.configOfOtherPlugins = new Map([
           ["solution", new Map([["programmingLanguage", parameter.programmingLanguage]])],
         ]);
@@ -120,7 +119,6 @@ describe(LocalDebugPluginInfo.pluginName, () => {
     ];
     parameters2.forEach((parameter) => {
       it(`happy path: tab without function (${parameter.programmingLanguage})`, async () => {
-        // pluginContext.platform = Platform.VSCode;
         pluginContext.configOfOtherPlugins = new Map([
           ["solution", new Map([["programmingLanguage", parameter.programmingLanguage]])],
         ]);
@@ -178,7 +176,6 @@ describe(LocalDebugPluginInfo.pluginName, () => {
     ];
     parameters3.forEach((parameter) => {
       it(`happy path: bot (${parameter.programmingLanguage})`, async () => {
-        // pluginContext.platform = Platform.VSCode;
         pluginContext.configOfOtherPlugins = new Map([
           ["solution", new Map([["programmingLanguage", parameter.programmingLanguage]])],
         ]);
@@ -233,7 +230,6 @@ describe(LocalDebugPluginInfo.pluginName, () => {
     ];
     parameters4.forEach((parameter) => {
       it(`happy path: tab with function and bot (${parameter.programmingLanguage})`, async () => {
-        // pluginContext.platform = Platform.VSCode;
         pluginContext.configOfOtherPlugins = new Map([
           ["solution", new Map([["programmingLanguage", parameter.programmingLanguage]])],
         ]);
@@ -297,7 +293,6 @@ describe(LocalDebugPluginInfo.pluginName, () => {
     ];
     parameters5.forEach((parameter) => {
       it(`happy path: tab without function and bot (${parameter.programmingLanguage})`, async () => {
-        // pluginContext.platform = Platform.VSCode;
         pluginContext.configOfOtherPlugins = new Map([
           ["solution", new Map([["programmingLanguage", parameter.programmingLanguage]])],
         ]);
@@ -339,7 +334,6 @@ describe(LocalDebugPluginInfo.pluginName, () => {
     });
 
     it("spfx", async () => {
-      // pluginContext.platform = Platform.VSCode;
       pluginContext.configOfOtherPlugins = new Map();
       pluginContext.projectSettings = {
         appName: "",
@@ -373,7 +367,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
     });
 
     it("cli", async () => {
-      // pluginContext.platform = Platform.CLI;
+      pluginContext.answers!.platform = Platform.CLI;
       pluginContext.configOfOtherPlugins = new Map([["fx-resource-function", new Map()]]);
       pluginContext.projectSettings = {
         appName: "",

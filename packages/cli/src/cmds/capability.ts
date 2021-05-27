@@ -31,7 +31,7 @@ export class CapabilityAddTab extends YargsCommand {
     const rootFolder = path.resolve(args.folder || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.AddCapStart);
 
-    CLIUIInstance.addPresetAnswers(args);
+    CLIUIInstance.updatePresetAnswers(args);
 
     const result = await activate(rootFolder);
     if (result.isErr()) {
@@ -101,7 +101,7 @@ export class CapabilityAddBot extends YargsCommand {
     const rootFolder = path.resolve(args.folder || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.AddCapStart);
 
-    CLIUIInstance.addPresetAnswers(args);
+    CLIUIInstance.updatePresetAnswers(args);
 
     const result = await activate(rootFolder);
     if (result.isErr()) {
@@ -171,7 +171,7 @@ export class CapabilityAddMessageExtension extends YargsCommand {
     const rootFolder = path.resolve(args.folder || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.AddCapStart);
 
-    CLIUIInstance.addPresetAnswers(args);
+    CLIUIInstance.updatePresetAnswers(args);
 
     const result = await activate(rootFolder);
     if (result.isErr()) {

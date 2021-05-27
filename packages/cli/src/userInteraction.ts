@@ -52,13 +52,55 @@ export class CLIUserInteraction implements UserInteraction {
     return CLIUserInteraction.instance;
   }
 
-  public addPresetAnswer(key: string, value: any) {
+  public updatePresetAnswer(key: string, value: any) {
     this.presetAnswers.set(key, value);
   }
 
-  public addPresetAnswers(answers: { [key: string]: any}) {
+  public updatePresetAnswers(answers: { [key: string]: any}) {
     for (const key in answers) {
-      this.addPresetAnswer(key, answers[key]);
+      this.updatePresetAnswer(key, answers[key]);
+    }
+  }
+
+  public updatePresetAnswerFromConfig(config: SingleSelectConfig | MultiSelectConfig) {
+    if (!this.presetAnswers.has(config.name)) {
+      return;
+    }
+
+    if (typeof config.options[0] === "string") {
+      return;
+    }
+    const options = config.options as OptionItem[];
+    const labels = options.map(op => op.label);
+    const ids = options.map(op => op.id);
+    const cliNames = options.map(op => op.cliName);
+
+    const presetAnwser = this.presetAnswers.get(config.name);
+    if (presetAnwser instanceof Array) {
+      if (presetAnwser.length === 0) {
+        return;
+      }
+
+      const idIndexes = this.findIndexes(ids, presetAnwser);
+      const cliNameIndexes = this.findIndexes(cliNames, presetAnwser);
+
+      const labelSubArray1 = this.getSubArray(labels, idIndexes);
+      const labelSubArray2 = this.getSubArray(labels, cliNameIndexes);
+
+      if (labelSubArray1[0]) {
+        this.updatePresetAnswer(config.name, labelSubArray1);
+      } else if (labelSubArray2[0]) {
+        this.updatePresetAnswer(config.name, labelSubArray2);
+      }
+    } else {
+      const idIndex = this.findIndex(ids, presetAnwser);
+      const cliNameIndex = this.findIndex(cliNames, presetAnwser);
+
+      if (idIndex >= 0) {
+        this.updatePresetAnswer(config.name, labels[idIndex]);
+      } else if (cliNameIndex >= 0) {
+        this.updatePresetAnswer(config.name, labels[cliNameIndex]);
+      }
     }
   }
 
@@ -147,11 +189,11 @@ export class CLIUserInteraction implements UserInteraction {
     return this.runInquirer(this.toInquirerQuestion("confirm", name, message, undefined, undefined, undefined));
   }
 
-  private findIndex(choices: string[], answer?: string): number {
+  private findIndex(choices: (string | undefined)[], answer?: string): number {
     return choices.findIndex(choice => choice === answer);
   }
 
-  private findIndexes(choices: string[], answers?: string[]): number[] {
+  private findIndexes(choices: (string | undefined)[], answers?: string[]): number[] {
     const indexes = answers?.map(answer => this.findIndex(choices, answer));
     return indexes?.filter(index => index >= 0) || [];
   }
@@ -192,6 +234,7 @@ export class CLIUserInteraction implements UserInteraction {
   }
   
   public async selectOption(config: SingleSelectConfig): Promise<SingleSelectResult> {
+    this.updatePresetAnswerFromConfig(config);
     return new Promise(async resolve => {
       const [choices, defaultValue] = this.toChoices(config.options, config.default);
       const result = await this.singleSelect(
@@ -203,14 +246,14 @@ export class CLIUserInteraction implements UserInteraction {
       );
       if (result.isOk()) {
         const index = this.findIndex(choices, result.value);
-        const anwer = config.options[index];
+        const anwser = config.options[index];
         if (config.returnObject) {
-          resolve({ type: "success", result: anwer });
+          resolve({ type: "success", result: anwser });
         } else {
-          if (typeof anwer === "string") {
-            resolve({ type: "success", result: anwer });
+          if (typeof anwser === "string") {
+            resolve({ type: "success", result: anwser });
           } else {
-            resolve({ type: "success", result: anwer.id });
+            resolve({ type: "success", result: anwser.id });
           }
         }
       } else {
@@ -220,6 +263,7 @@ export class CLIUserInteraction implements UserInteraction {
   }
 
   public async selectOptions(config: MultiSelectConfig): Promise<MultiSelectResult> {
+    this.updatePresetAnswerFromConfig(config);
     return new Promise(async resolve => {
       const [choices, defaultValue] = this.toChoices(config.options, config.default);
       const result = await this.multiSelect(

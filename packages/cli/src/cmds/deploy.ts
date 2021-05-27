@@ -57,7 +57,7 @@ export default class Deploy extends YargsCommand {
     const rootFolder = path.resolve(args.folder as string || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.DeployStart);
 
-    CLIUIInstance.addPresetAnswers(args);
+    CLIUIInstance.updatePresetAnswers(args);
     CLIUIInstance.removePresetAnswers(["components"]);
 
     const result = await activate(rootFolder);
@@ -82,12 +82,12 @@ export default class Deploy extends YargsCommand {
         const components = args.components as string[] || [];
         const option = (deployPluginNode.data as MultiSelectQuestion).option as OptionItem[];
         if (components.length === 0) {
-          CLIUIInstance.addPresetAnswer(this.deployPluginNodeName, option.map(op => op.id));
+          CLIUIInstance.updatePresetAnswer(this.deployPluginNodeName, option.map(op => op.id));
         } else {
           const labels = option.map(op => op.label);
           const ids = option.map(op => op.id);
           const indexes = components.map(component => labels.findIndex(label => label === component));
-          CLIUIInstance.addPresetAnswer(this.deployPluginNodeName, indexes.map(index => ids[index]));
+          CLIUIInstance.updatePresetAnswer(this.deployPluginNodeName, indexes.map(index => ids[index]));
         }
         const result = await traverse(node, answers, CLIUIInstance, coreExeceutor);
         if (result.type === "error" && result.error) {

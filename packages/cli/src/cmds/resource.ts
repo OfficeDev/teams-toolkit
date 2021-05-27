@@ -53,7 +53,7 @@ export class ResourceAddSql extends YargsCommand {
       [TelemetryProperty.Resources]: this.commandHead
     });
 
-    CLIUIInstance.addPresetAnswers(args);
+    CLIUIInstance.updatePresetAnswers(args);
 
     const result = await activate(rootFolder);
     if (result.isErr()) {
@@ -120,7 +120,7 @@ export class ResourceAddApim extends YargsCommand {
       [TelemetryProperty.Resources]: this.commandHead
     });
 
-    CLIUIInstance.addPresetAnswers(args);
+    CLIUIInstance.updatePresetAnswers(args);
 
     {
       const result = await setSubscriptionId(args.subscription, rootFolder);
@@ -197,7 +197,7 @@ export class ResourceAddFunction extends YargsCommand {
       [TelemetryProperty.Resources]: this.commandHead
     });
 
-    CLIUIInstance.addPresetAnswers(args);
+    CLIUIInstance.updatePresetAnswers(args);
 
     const result = await activate(rootFolder);
     if (result.isErr()) {

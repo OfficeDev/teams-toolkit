@@ -32,7 +32,7 @@ export default class Provision extends YargsCommand {
     const rootFolder = path.resolve(args.folder || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.ProvisionStart);
 
-    CLIUIInstance.addPresetAnswers(args);
+    CLIUIInstance.updatePresetAnswers(args);
 
     {
       const result = await setSubscriptionId(args.subscription, rootFolder);

@@ -100,7 +100,7 @@ export default class New extends YargsCommand {
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart);
 
     if (!args.interactive) {
-      CLIUIInstance.addPresetAnswers(args);
+      CLIUIInstance.updatePresetAnswers(args);
     }
 
     const result = await activate();

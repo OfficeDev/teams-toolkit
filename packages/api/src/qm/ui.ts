@@ -77,10 +77,17 @@ export type RunWithProgressResult = InputResult<any>;
 
 export interface TimeConsumingTask<T> {
   name: string;
+  /**
+   * whether ui support cancel or not
+   */
   cancelable:boolean;
-  total: number;
-  current: number;
+  /**
+   * progress from 0-100
+   */
+  progress: number;
+  showProgress:boolean;
   message: string;
+  isFinished: boolean;
   isCanceled: boolean;
   run(...args: any): Promise<T>;
   cancel(): void;
@@ -106,24 +113,26 @@ export interface UserInteraction {
 
 export interface FunctionGroupTaskConfig<T>{
   name: string,
-  tasks: (() => Promise<Result<T, Error>>)[],
+  tasks: (() => Promise<Result<T, FxError>>)[],
   taskNames?: string[];
+  showProgress: boolean;
   cancelable: boolean,
-  concurrent: boolean,
-  fastFail: boolean
+  concurrent?: boolean,
+  fastFail?: boolean
 }
 
-export class FunctionGroupTask<T> implements TimeConsumingTask<Result<Result<T, Error>[], Error>> {
+export class FunctionGroupTask<T> implements TimeConsumingTask<Result<Result<T, FxError>[], FxError>> {
   name: string;
-  current = 0;
-  total = 0;
+  progress:number = 0;
   message = "";
   isCanceled = false;
-  concurrent = true;
+  isFinished = false;
   cancelable = true;
-  fastFail = false;
-  tasks: (() => Promise<Result<T, Error>>)[];
+  concurrent?;
+  fastFail?;
+  tasks: (() => Promise<Result<T, FxError>>)[];
   taskNames?: string[];
+  showProgress:boolean;
   constructor(config: FunctionGroupTaskConfig<T>) {
     this.name = config.name;
     this.tasks = config.tasks;
@@ -131,14 +140,14 @@ export class FunctionGroupTask<T> implements TimeConsumingTask<Result<Result<T, 
     this.cancelable = config.cancelable;
     this.concurrent = config.concurrent;
     this.fastFail = config.fastFail;
-    this.total = this.tasks.length;
+    this.showProgress = config.showProgress;
   }
-  async run(): Promise<Result<Result<T, Error>[], Error>> {
-    if (this.total === 0) return ok([]);
+  async run(): Promise<Result<Result<T, FxError>[], FxError>> {
+    if (this.tasks.length === 0) return ok([]);
     return new Promise(async (resolve) => {
-      let results: Result<T, Error>[] = [];
+      let results: Result<T, FxError>[] = [];
       if (!this.concurrent) {
-        for (let i = 0; i < this.total; ++i) {
+        for (let i = 0; i < this.tasks.length; ++i) {
           if (this.isCanceled === true) 
           {
             resolve(err(UserCancelError));
@@ -163,20 +172,27 @@ export class FunctionGroupTask<T> implements TimeConsumingTask<Result<Result<T, 
               return ;
             }
             results.push(err(e));
+          } finally{
+            this.progress = (i + 1)*100/this.tasks.length;
           }
-          this.current = i + 1;
         }
+        this.isFinished = true;
       } else {
         let promiseResults = this.tasks.map((t) => t());
+        let finishNum = 0;
         promiseResults.forEach((p) => {
           p.then((v) => {
-            this.current++;
+            finishNum ++;
+            if(this.showProgress)
+              this.progress = finishNum * 100 / this.tasks.length;
             if (v.isErr() && this.fastFail) {
               this.isCanceled = true;
               resolve(err(v.error));
             }
           }).catch((e) => {
-            this.current++;
+            finishNum ++;
+            if(this.showProgress)
+              this.progress = finishNum * 100 / this.tasks.length;
             if (this.fastFail) {
               this.isCanceled = true;
               resolve(err(e));
@@ -184,6 +200,7 @@ export class FunctionGroupTask<T> implements TimeConsumingTask<Result<Result<T, 
           });
         });
         results = await Promise.all(promiseResults);
+        this.isFinished = true;
       }
       resolve(ok(results));
     });

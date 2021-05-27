@@ -125,7 +125,7 @@ export class AppStudioPluginImpl {
         let description = `The app ${existApp.displayName} has already been submitted to tenant App Catalog.\nStatus: ${existApp.publishingState}\n`;
         if (existApp.lastModifiedDateTime) {
           description =
-            description + `Last Modified: ${existApp.lastModifiedDateTime?.toString()}\n`;
+            description + `Last Modified: ${existApp.lastModifiedDateTime?.toLocaleString()}\n`;
         }
         description = description + "Do you want to submit a new update?";
         executePublishUpdate =

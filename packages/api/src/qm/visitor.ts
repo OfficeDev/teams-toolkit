@@ -11,9 +11,10 @@ import {
   MultiSelectQuestion
 } from "./question";
 import { getValidationFunction, validate } from "./validation";
-import { returnSystemError, returnUserError } from "../error";
-import { Inputs } from "../types";
+import { assembleError, FxError, returnSystemError, returnUserError, SystemError, UserCancelError } from "../error";
+import { Inputs, Void } from "../types";
 import { InputResult, UserInteraction } from "./ui";
+import { err, ok, Result } from "neverthrow";
 
 export function isAutoSkipSelect(q: Question): boolean {
   if (q.type === "singleSelect" || q.type === "multiSelect") {
@@ -60,13 +61,13 @@ export function getSingleOption(q: SingleSelectQuestion | MultiSelectQuestion, o
     return [returnResult];
 }
 
-type QuestionVistor = (
-  question: Question,
-  ui: UserInteraction,
-  inputs: Inputs ,
-  step?: number,
-  totalSteps?: number,
-) => Promise<InputResult<string | OptionItem | StaticOptions>>;
+// type QuestionVistor = (
+//   question: Question,
+//   ui: UserInteraction,
+//   inputs: Inputs ,
+//   step?: number,
+//   totalSteps?: number,
+// ) => Promise<InputResult<any>>;
  
 
 export async function getCallFuncValue(inputs: Inputs , raw?: unknown ):Promise<unknown>{
@@ -82,19 +83,33 @@ export async function getCallFuncValue(inputs: Inputs , raw?: unknown ):Promise<
  * @param core
  * @param inputs
  */
-const questionVisitor: QuestionVistor = async function (
+const questionVisitor = async function (
   question: Question,
   ui: UserInteraction,
   inputs: Inputs ,
   step?: number,
   totalSteps?: number,
-): Promise<InputResult<string | OptionItem | StaticOptions>> {  
+): Promise<Result<InputResult<any>, FxError>> {  
   if(inputs[question.name] !== undefined) {
-    return { type: "success", result: inputs[question.name] as string | OptionItem | StaticOptions };
+    return ok({ type: "success", result: inputs[question.name]} );
   }
   if (question.type === "func") {
-    const res = await question.func(inputs);
-    return { type: "success", result: res as string | OptionItem | StaticOptions };
+    try{
+      const res = await question.func(inputs);
+      if("isOk" in res){
+        const fxresult = res as Result<any, FxError>;
+        if(fxresult.isOk()){
+          return ok({ type: "success", result: fxresult.value} );
+        }
+        else {
+          return err(fxresult.error);
+        }
+      }
+      return ok({ type: "success", result: res} );
+    }
+    catch(e){
+      return err(assembleError(e));
+    }
   } else {
     const defaultValue = question.value? question.value : await getCallFuncValue(inputs, question.default);
     const placeholder = await getCallFuncValue(inputs, question.placeholder) as string;
@@ -103,7 +118,6 @@ const questionVisitor: QuestionVistor = async function (
       const validationFunc = question.validation ? getValidationFunction<string>(question.validation, inputs) : undefined;
       const inputQuestion = question as TextInputQuestion;
       return await ui.inputText({
-        type: "text",
         name: question.name,
         title: question.title,
         password: (inputQuestion as TextInputQuestion).password,
@@ -118,26 +132,19 @@ const questionVisitor: QuestionVistor = async function (
       const selectQuestion = question as (SingleSelectQuestion | MultiSelectQuestion);
       const res = await loadOptions(selectQuestion, inputs);
       if (!res.options || res.options.length === 0) {
-        return {
-          type: "error",
-          error: returnSystemError(
+        return err(returnSystemError(
             new Error("Select option is empty!"),
             "API",
             "EmptySelectOption"
-          )
-        };
+          ));
       }
       // Skip single/mulitple option select
       if (res.autoSkip === true) {
         const returnResult = getSingleOption(selectQuestion, res.options);
-        return {
-          type: "skip",
-          result: returnResult,
-        };
+        return ok({ type: "skip",  result: returnResult});
       }
       if(question.type === "singleSelect"){
         return await ui.selectOption({
-          type: "radio",
           name: question.name,
           title: question.title,
           options: res.options,
@@ -153,7 +160,6 @@ const questionVisitor: QuestionVistor = async function (
         const mq = selectQuestion as MultiSelectQuestion;
         const validationFunc = question.validation ? getValidationFunction<string[]>(question.validation, inputs) : undefined;
         return await ui.selectOptions({
-          type: "multibox",
           name: question.name,
           title: question.title,
           options: res.options,
@@ -170,7 +176,6 @@ const questionVisitor: QuestionVistor = async function (
     } else if (question.type === "multiFile") {
       const validationFunc = question.validation ? getValidationFunction<string[]>(question.validation, inputs) : undefined;
       return await ui.selectFiles({
-        type: "files",
         name: question.name,
         title: question.title,
         placeholder: placeholder,
@@ -182,7 +187,6 @@ const questionVisitor: QuestionVistor = async function (
     } else if(question.type === "singleFile" ){
       const validationFunc = question.validation ? getValidationFunction<string>(question.validation, inputs) : undefined;
       return await ui.selectFile({
-        type: "file",
         name: question.name,
         title: question.title,
         placeholder: placeholder,
@@ -195,7 +199,6 @@ const questionVisitor: QuestionVistor = async function (
     } else if(question.type === "folder"){
       const validationFunc = question.validation ? getValidationFunction<string>(question.validation, inputs) : undefined;
       return await ui.selectFolder({
-        type: "folder",
         name: question.name,
         title: question.title,
         placeholder: placeholder,
@@ -207,21 +210,18 @@ const questionVisitor: QuestionVistor = async function (
       });
     }
   }
-  return {
-    type: "error",
-    error: returnUserError(
+  return err(returnUserError(
       new Error(`Unsupported question node type:${JSON.stringify(question)}`),
-      "API.qm",
+      "API",
       "UnsupportedNodeType"
-    )
-  };
+  ));
 };
 
 export async function traverse(
   root: QTreeNode,
   inputs: Inputs ,
   ui: UserInteraction
-): Promise<InputResult<string | OptionItem | StaticOptions>> {
+): Promise<Result<Void, FxError>> {
   const stack: QTreeNode[] = [];
   const history: QTreeNode[] = [];
   stack.push(root);
@@ -237,13 +237,17 @@ export async function traverse(
     if (curr.data.type !== "group") {
       const question = curr.data as Question;
       totalStep = step + stack.length;
-      const inputResult = await questionVisitor(
+      const qvres = await questionVisitor(
         question,
         ui,
         inputs,
         step,
         totalStep
       );
+      if(qvres.isErr()){ // Cancel or Error
+        return err(qvres.error);
+      }
+      const inputResult = qvres.value;
       if (inputResult.type === "back") {
         //go back
         if (curr.children) {
@@ -287,17 +291,11 @@ export async function traverse(
           }
         }
         if (!found) {
-          // no node to back
-          return { type: "cancel" };
+          return err(UserCancelError);
         }
         --step;
         continue; //ignore the following steps
-      } else if (
-        inputResult.type === "error" ||
-        inputResult.type === "cancel"
-      ) {
-        return inputResult;
-      } //continue
+      }  
       else {
         //success or skip
         question.value = inputResult.result;
@@ -346,6 +344,6 @@ export async function traverse(
       }
     }
   }
-  return { type: "success" };
+  return ok(Void);
 }
 

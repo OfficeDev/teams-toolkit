@@ -2073,7 +2073,7 @@ export class TeamsAppSolution implements Solution {
               ctx.config.get(GLOBAL_CONFIG)?.set("tenantId", result.value.tenantId);
             }
             return ok(Void);
-          }
+          };
           groupNode.addChild(funcNode);
           groupNode.addChild(apim);
         }

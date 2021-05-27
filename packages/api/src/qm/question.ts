@@ -176,7 +176,7 @@ export interface FolderQuestion extends UserInputQuestion {
  */
 export interface FuncQuestion extends BaseQuestion{
     type: "func";
-    func: LocalFunc<unknown>;
+    func: LocalFunc<any>;
 }
 
 export interface Group {

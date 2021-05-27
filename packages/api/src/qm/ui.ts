@@ -6,7 +6,6 @@ import { FxError, UserCancelError } from "../error";
 import { OptionItem, StaticOptions } from "../qm/question";
 
 export interface UIConfig<T> {
-  type: "radio" | "multibox" | "text" | "file" | "files" | "folder";
   name: string;
   title: string;
   placeholder?: string;
@@ -18,13 +17,11 @@ export interface UIConfig<T> {
 }
 
 export interface SingleSelectConfig extends UIConfig<string> {
-  type: "radio";
   options: StaticOptions;
   returnObject?: boolean;
 }
 
 export interface MultiSelectConfig extends UIConfig<string[]> {
-  type: "multibox";
   options: StaticOptions;
   returnObject?: boolean;
   onDidChangeSelection?: (
@@ -34,26 +31,21 @@ export interface MultiSelectConfig extends UIConfig<string[]> {
 }
 
 export interface InputTextConfig extends UIConfig<string> {
-  type: "text";
   password?: boolean;
 }
 
 export interface SelectFileConfig extends UIConfig<string> {
-  type: "file";
 };
 
 export interface SelectFilesConfig extends UIConfig<string[]> {
-  type: "files";
 };
 
 export interface SelectFolderConfig extends UIConfig<string> {
-  type: "folder";
 };
 
 export interface InputResult<T> {
-  type: "success" | "skip" | "cancel" | "back" | "error";
+  type: "success" | "skip" | "back";
   result?: T;
-  error?: FxError;
 }
 
 export type SingleSelectResult = InputResult<string | OptionItem>;
@@ -93,20 +85,20 @@ export interface TimeConsumingTask<T> {
 
 /// TODO: use Result<xxx, FxError> instead of SingleSelectResult/MultiSelectResult/xxx
 export interface UserInteraction {
-  selectOption: (config: SingleSelectConfig) => Promise<SingleSelectResult>;
-  selectOptions: (config: MultiSelectConfig) => Promise<MultiSelectResult>;
-  inputText: (config: InputTextConfig) => Promise<InputTextResult>;
-  selectFile: (config: SelectFileConfig) => Promise<SelectFileResult>;
-  selectFiles: (config: SelectFilesConfig) => Promise<SelectFilesResult>;
-  selectFolder: (config: SelectFolderConfig) => Promise<SelectFolderResult>;
-  openUrl(link: string): Promise<OpenUrlResult>;
+  selectOption: (config: SingleSelectConfig) => Promise<Result<SingleSelectResult,FxError>>;
+  selectOptions: (config: MultiSelectConfig) => Promise<Result<MultiSelectResult,FxError>>;
+  inputText: (config: InputTextConfig) => Promise<Result<InputTextResult,FxError>>;
+  selectFile: (config: SelectFileConfig) => Promise<Result<SelectFileResult,FxError>>;
+  selectFiles: (config: SelectFilesConfig) => Promise<Result<SelectFilesResult,FxError>>;
+  selectFolder: (config: SelectFolderConfig) => Promise<Result<SelectFolderResult,FxError>>;
+  openUrl(link: string): Promise<Result<OpenUrlResult,FxError>>;
   showMessage(
     level: "info" | "warn" | "error",
     message: string,
     modal: boolean,
     ...items: string[]
-  ): Promise<ShowMessageResult>;
-  runWithProgress(task: TimeConsumingTask<any>): Promise<RunWithProgressResult>;
+  ): Promise<Result<ShowMessageResult,FxError>>;
+  runWithProgress(task: TimeConsumingTask<any>): Promise<Result<RunWithProgressResult,FxError>>;
 }
 
 export interface FunctionGroupTaskConfig<T>{
@@ -119,7 +111,7 @@ export interface FunctionGroupTaskConfig<T>{
   fastFail?: boolean
 }
 
-export class FunctionGroupTask<T> implements TimeConsumingTask<Result<Result<T, FxError>[], FxError>> {
+export class TaskGroup<T> implements TimeConsumingTask<Result<Result<T, FxError>[], FxError>> {
   name: string;
   current:number = 0;
   total:number;

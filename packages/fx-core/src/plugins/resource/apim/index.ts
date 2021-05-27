@@ -42,7 +42,7 @@ export class ApimPlugin implements Plugin {
     func: Func,
     ctx: PluginContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    if(func.method === "AddResource"){
+    if(func.method === "addResource"){
       return await this.executeWithFxError(PluginLifeCycle.GetQuestions, _getQuestions, ctx, Stage.update);
     }
     return err(new UserError("NotSupportedMethod","Not supported method:"+func.method,ProjectConstants.pluginShortName))

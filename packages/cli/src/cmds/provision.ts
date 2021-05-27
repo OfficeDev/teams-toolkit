@@ -6,15 +6,15 @@
 import { Argv, Options } from "yargs";
 import * as path from "path";
 
-import { FxError, err, ok, Result, ConfigMap, Stage, Platform } from "@microsoft/teamsfx-api";
+import { FxError, err, ok, Result, ConfigMap, Stage, Platform, traverse, UserCancelError } from "@microsoft/teamsfx-api";
 
-import activate from "../activate";
+import activate, { coreExeceutor } from "../activate";
 import * as constants from "../constants";
-import { validateAndUpdateAnswers } from "../question/question";
 import { getParamJson, setSubscriptionId } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
+import CLIUIInstance from "../userInteraction";
 
 export default class Provision extends YargsCommand {
   public readonly commandHead = `provision`;
@@ -29,14 +29,10 @@ export default class Provision extends YargsCommand {
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    const answers = new ConfigMap();
-    for (const name in this.params) {
-      answers.set(name, args[name] || this.params[name].default);
-    }
-
-    const rootFolder = path.resolve(answers.getString("folder") || "./");
-    answers.delete("folder");
+    const rootFolder = path.resolve(args.folder || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.ProvisionStart);
+
+    CLIUIInstance.addPresetAnswers(args);
 
     {
       const result = await setSubscriptionId(args.subscription, rootFolder);
@@ -52,6 +48,8 @@ export default class Provision extends YargsCommand {
       return err(result.error);
     }
 
+    const answers = new ConfigMap();
+
     const core = result.value;
     {
       const result = await core.getQuestions!(Stage.provision, Platform.CLI);
@@ -59,7 +57,15 @@ export default class Provision extends YargsCommand {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Provision, result.error);
         return err(result.error);
       }
-      await validateAndUpdateAnswers(result.value, answers);
+      const node = result.value;
+      if (node) {
+        const result = await traverse(node, answers, CLIUIInstance, coreExeceutor);
+        if (result.type === "error" && result.error) {
+          return err(result.error);
+        } else if (result.type === "cancel") {
+          return err(UserCancelError);
+        }
+      }
     }
 
     {

@@ -3,7 +3,7 @@
 
 "use strict";
 
-import { Result, FxError, err, ok, Core, UserError, SystemError, ConfigMap } from "@microsoft/teamsfx-api";
+import { Result, FxError, err, ok, Core, UserError, SystemError, ConfigMap, RemoteFuncExecutor, Func, Inputs } from "@microsoft/teamsfx-api";
 
 import AzureAccountManager from "./commonlib/azureLogin";
 import AppStudioTokenProvider from "./commonlib/appStudioLogin";
@@ -13,11 +13,20 @@ import { UnknownError } from "./error";
 import DialogManagerInstance from "./userInterface";
 import { getSubscriptionIdFromEnvFile } from "./utils";
 import { CliTelemetry } from "./telemetry/cliTelemetry";
+import CLIUIInstance from "./userInteraction";
 
 const coreAsync: Promise<Core> = new Promise(async (resolve) => {
   const corePkg = await import("@microsoft/teamsfx-core");
   return resolve(corePkg.CoreProxy.getInstance());
 });
+
+export const coreExeceutor: RemoteFuncExecutor = async function(
+  func: Func,
+  answers: ConfigMap
+): Promise<Result<any, FxError>> {
+  const core = await coreAsync;
+  return core.callFunc!(func, answers as ConfigMap);
+};
 
 export default async function activate(rootPath?: string): Promise<Result<Core, FxError>> {
   if (rootPath) {
@@ -30,7 +39,7 @@ export default async function activate(rootPath?: string): Promise<Result<Core, 
   const core = await coreAsync;
   try {
     {
-      const result = await core.withDialog(DialogManagerInstance);
+      const result = await core.withDialog(DialogManagerInstance, CLIUIInstance);
       if (result.isErr()) {
         return err(result.error);
       }

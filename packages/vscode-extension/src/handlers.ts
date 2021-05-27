@@ -75,7 +75,6 @@ import { AzureNodeChecker } from "./debug/depsChecker/azureNodeChecker";
 import { SPFxNodeChecker } from "./debug/depsChecker/spfxNodeChecker";
 import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { VS_CODE_UI } from "./extension";
-import { testProgress } from "./testprogress";
 
 export let core: FxCore; 
 export function getWorkspacePath(): string | undefined {

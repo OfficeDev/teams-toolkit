@@ -459,7 +459,7 @@ export class ApimService {
         operation.displayName,
         resourceType.displayName
       );
-      this.logger?.info(LogMessages.operationFailed(operation, resourceType, resourceId));
+      this.logger?.warning(LogMessages.operationFailed(operation, resourceType, resourceId));
       Telemetry.sendApimOperationEvent(
         this.telemetryReporter,
         operation,

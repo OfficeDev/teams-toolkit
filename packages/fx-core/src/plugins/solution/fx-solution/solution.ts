@@ -2248,6 +2248,7 @@ export class TeamsAppSolution implements Solution {
         )
       );
     }
+
     let addNewResoruceToProvision = false;
     const notifications: string[] = [];
     const pluginsToScaffold: LoadedPlugin[] = [this.localDebugPlugin];

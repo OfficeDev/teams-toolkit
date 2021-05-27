@@ -268,7 +268,7 @@ export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
 
 export function detectVsCodeEnv(): VsCodeEnv {
   // extensionKind returns ExtensionKind.UI when running locally, so use this to detect remote
-  const extension = vscode.extensions.getExtension("Microsoft.teamsfx-extension");
+  const extension = vscode.extensions.getExtension("TeamsDevApp.ms-teams-vscode-extension");
 
   if (extension?.extensionKind === vscode.ExtensionKind.Workspace) {
     // running remotely

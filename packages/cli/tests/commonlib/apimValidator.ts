@@ -233,8 +233,24 @@ export class ApimValidator {
 
   private static async validateClientAad(config: Config): Promise<any> {
     chai.assert.isNotEmpty(config?.apimClientAADObjectId);
-    const response = await this.axiosInstance?.get(
-      `/applications/${config?.apimClientAADObjectId}`
+    const response = await retry(
+      async () => {
+        try {
+          return await this.axiosInstance?.get(`/applications/${config?.apimClientAADObjectId}`);
+        } catch (error) {
+          if (error?.response?.status == 404) {
+            return undefined;
+          }
+          throw error;
+        }
+      },
+      (response) => {
+        return (
+          !response ||
+          response?.data?.passwordCredentials?.length == 0 ||
+          response?.data?.requiredResourceAccess?.length === 0
+        );
+      }
     );
 
     const enableIdTokenIssuance = response?.data?.web.implicitGrantSettings?.enableIdTokenIssuance;
@@ -266,14 +282,35 @@ export class ApimValidator {
     chai.assert.isNotEmpty(config?.objectId);
     chai.assert.isNotEmpty(config?.apimClientAADClientId);
 
-    const aadResponse = await this.axiosInstance?.get(`/applications/${config?.objectId}`);
+    const aadResponse = await retry(
+      async () => {
+        try {
+          return await this.axiosInstance?.get(`/applications/${config?.objectId}`);
+        } catch (error) {
+          if (error?.response?.status == 404) {
+            return undefined;
+          }
+          throw error;
+        }
+      },
+      (response) => {
+        return !response || response?.data?.api?.knownClientApplications.length === 0;
+      }
+    );
     const knownClientApplications = aadResponse?.data?.api?.knownClientApplications as string[];
     chai.assert.isNotEmpty(knownClientApplications);
     chai.assert.include(knownClientApplications, config?.apimClientAADClientId);
 
     chai.assert.isNotEmpty(config?.clientId);
-    const servicePrincipalResponse = await this.axiosInstance?.get(
-      `/servicePrincipals?$filter=appId eq '${config?.clientId}'`
+    const servicePrincipalResponse = await retry(
+      async () => {
+        return await this.axiosInstance?.get(
+          `/servicePrincipals?$filter=appId eq '${config?.clientId}'`
+        );
+      },
+      (response) => {
+        return !response || response?.data?.value.length === 0;
+      }
     );
     const servicePrincipals = servicePrincipalResponse?.data?.value as any[];
     chai.assert.isNotEmpty(servicePrincipals);
@@ -361,4 +398,29 @@ class Config {
   get apiDocumentPath() {
     return this.config[this.apimPlugin]["apiDocumentPath"];
   }
+}
+
+async function retry<T>(
+  fn: (retries: number) => Promise<T>,
+  condition: (result: T) => boolean,
+  maxRetries: number = 20,
+  retryTimeInterval: number = 1000
+): Promise<T> {
+  let executionIndex = 1;
+  let result: T = await fn(executionIndex);
+  while (executionIndex <= maxRetries && condition(result)) {
+    await delay(executionIndex * retryTimeInterval);
+    result = await fn(executionIndex);
+    ++executionIndex;
+  }
+  return result;
+}
+
+function delay(ms: number): Promise<void> {
+  if (ms <= 0) {
+    return Promise.resolve();
+  }
+
+  // tslint:disable-next-line no-string-based-set-timeout
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }

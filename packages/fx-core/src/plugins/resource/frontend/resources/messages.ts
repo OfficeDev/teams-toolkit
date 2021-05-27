@@ -47,7 +47,7 @@ export class Messages {
   static readonly StartSyncLocalToStorage = (localPath: string, storageName: string) =>
     `Uploading local path '${localPath}' to Azure Storage account '${storageName}'.`;
   static readonly StartDeleteAllBlobs = (storageName: string, containerName: string) =>
-    `Deleting all existing blobs in container '${containerName}') for Azure Storage account '${storageName}'.`;
+    `Deleting all existing blobs in container '${containerName}' for Azure Storage account '${storageName}'.`;
   static readonly StartUploadFiles = (sourceFolder: string, storageName: string) =>
     `Uploading files in '${sourceFolder}' to Azure Storage account '${storageName}'.`;
 

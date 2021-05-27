@@ -23,11 +23,15 @@ export function capitalizeFirstLetter(str: string): string {
 }
 
 export class RetryHandler {
-  public static async retry<T>(fn: (retries: number) => Promise<T>): Promise<T> {
+  public static async retry<T>(
+    fn: (retries: number) => Promise<T>,
+    maxRetries?: number,
+    retryTimeInterval?: number
+  ): Promise<T> {
     let executionIndex = 0;
     let error = undefined;
-    while (executionIndex <= ProjectConstants.maxRetries) {
-      await delay(executionIndex * 1000);
+    while (executionIndex <= (maxRetries ?? ProjectConstants.maxRetries)) {
+      await delay(executionIndex * (retryTimeInterval ?? ProjectConstants.retryTimeInterval));
 
       try {
         const response = await fn(executionIndex);

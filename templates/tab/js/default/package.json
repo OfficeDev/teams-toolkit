@@ -18,11 +18,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "eject": "react-scripts eject",
-    "test": "teamsfx test",
-    "provision": "teamsfx provision",
-    "deploy": "teamsfx deploy",
-    "publish-teams": "teamsfx publish"
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": [

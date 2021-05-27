@@ -73,20 +73,20 @@ export class AadAppForTeamsPlugin implements Plugin {
 
   private returnError(e: any, ctx: PluginContext, stage: string): AadResult {
     if (e instanceof SystemError || e instanceof UserError) {
-      ctx.logProvider?.error(e.message);
+      let errorMessage = e.message;
       if (e.innerError) {
-        let innerErrorMessage = `Detailed error: ${e.innerError.message}.`;
+        errorMessage += ` Detailed error: ${e.innerError.message}.`;
         if (e.innerError.response?.data?.errorMessage) {
-          innerErrorMessage += ` Reason: ${e.innerError.response?.data?.errorMessage}`;
+          errorMessage += ` Reason: ${e.innerError.response?.data?.errorMessage}`;
         }
-        ctx.logProvider?.error(innerErrorMessage);
       }
+      ctx.logProvider?.error(errorMessage);
       TelemetryUtils.init(ctx);
       TelemetryUtils.sendErrorEvent(
         stage,
         e.name,
         e instanceof UserError ? Telemetry.userError : Telemetry.systemError,
-        e.message
+        errorMessage
       );
       DialogUtils.progress?.end();
       return err(e);
@@ -101,7 +101,7 @@ export class AadAppForTeamsPlugin implements Plugin {
         stage,
         UnhandledError.name,
         Telemetry.systemError,
-        UnhandledError.message()
+        UnhandledError.message() + " " + e.message
       );
       return err(
         ResultFactory.SystemError(

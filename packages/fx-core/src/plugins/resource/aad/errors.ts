@@ -15,8 +15,8 @@ export interface AadError {
 
 export const GetAppError: AadError = {
   name: "AadGetAppError",
-  message: (objectId: string) =>
-    `Failed to get app info with Object ID: ${objectId}. ` +
+  message: () =>
+    `Failed to get app info with current Object Id in env.default.json. ` +
     "Please make sure object id is valid, " +
     `or delete 'objectId' under ${Plugins.pluginNameComplex} in env.default.json and try again.`,
 };
@@ -80,7 +80,7 @@ export const ParsePermissionError: AadError = {
 
 export const UnhandledError: AadError = {
   name: "UnhandledError",
-  message: () => "Unhandled Error.",
+  message: () => "Unhandled Error. ",
 };
 
 export const UnknownPermissionName: AadError = {

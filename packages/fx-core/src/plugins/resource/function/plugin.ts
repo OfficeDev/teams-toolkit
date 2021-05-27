@@ -219,7 +219,7 @@ export class FunctionPluginImpl {
 
     if (func.method === "addResource") {
       functionNameQuestion.validation = {
-        validFunc: async(input: string|string[]|undefined, previousInputs?: Inputs) : Promise<string | undefined> => {
+        validFunc: async(input: string, previousInputs?: Inputs) : Promise<string | undefined> => {
           const workingPath: string = this.getFunctionProjectRootPath(ctx);
           const name = input as string;
           if (!name || !RegularExpr.validFunctionNamePattern.test(name)) {

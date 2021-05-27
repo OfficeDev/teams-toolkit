@@ -281,8 +281,8 @@ describe("Question Model - Validation Test", () => {
 
 
     it("FuncValidation", async () => {
-        const validation: FuncValidation = {
-            validFunc: function(input: string|string[]|undefined): string | undefined | Promise<string | undefined> {
+        const validation: FuncValidation<string> = {
+            validFunc: function(input: string): string | undefined | Promise<string | undefined> {
                 if ((input as string).length > 5) return "length > 5";
                 return undefined;
             }

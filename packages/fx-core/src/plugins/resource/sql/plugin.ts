@@ -88,27 +88,27 @@ export class SqlPluginImpl {
 
       if (!this.config.existSql) {
         adminNameQuestion.validation = {
-          validFunc: async (input: string|string[]|undefined, previousInputs?: Inputs) : Promise<string | undefined> => {
+          validFunc: async (input: string, previousInputs?: Inputs) : Promise<string | undefined> => {
             const res = sqlUserNameValidator(input as string);
             return res;
           }
         };
         adminPasswordQuestion.validation = {
-          validFunc: async (input: string|string[]|undefined, previousInputs?: Inputs) : Promise<string | undefined> => {
+          validFunc: async (input: string, previousInputs?: Inputs) : Promise<string | undefined> => {
             const password = input as string;
             const name = previousInputs![Constants.questionKey.adminName] as string;
             const res = sqlPasswordValidatorGenerator(name)(password);
             return res;
           }
-        }
+        };
         confirmPasswordQuestion.validation = {
-          validFunc: async (input: string|string[]|undefined, previousInputs?: Inputs) : Promise<string | undefined> => {
+          validFunc: async (input: string, previousInputs?: Inputs) : Promise<string | undefined> => {
             const confirm = input as string;
             const password = previousInputs![Constants.questionKey.adminPassword] as string;
             const res = sqlConfirmPasswordValidatorGenerator(password)(confirm);
             return res;
           }
-        }
+        };
         sqlNode.addChild(new QTreeNode(adminNameQuestion));
         sqlNode.addChild(new QTreeNode(adminPasswordQuestion));
         sqlNode.addChild(new QTreeNode(confirmPasswordQuestion));

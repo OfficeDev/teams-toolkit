@@ -184,7 +184,7 @@ export class ApiPrefixQuestion extends BaseQuestionService implements IQuestionS
         return this.executeFunc(ctx);
       },
       validation: {
-        validFunc: (input: string|string[]|undefined, previousInputs?: Inputs): string | undefined =>
+        validFunc: (input: string, previousInputs?: Inputs): string | undefined =>
           NamingRules.validate(input as string, NamingRules.apiPrefix),
       },
     };
@@ -291,7 +291,7 @@ export class NewApiVersionQuestion extends BaseQuestionService implements IQuest
         return this.executeFunc(ctx);
       },
       validation: {
-        validFunc: (input: string|string[]|undefined, previousInputs?: Inputs): string | undefined =>
+        validFunc: (input: string, previousInputs?: Inputs): string | undefined =>
           NamingRules.validate(input as string, NamingRules.versionIdentity),
       },
     };

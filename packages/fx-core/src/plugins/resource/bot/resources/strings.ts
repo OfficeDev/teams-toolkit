@@ -40,6 +40,7 @@ export class PluginSolution {
   public static readonly TENANT_ID = "tenantId";
   public static readonly M365_TENANT_ID = "teamsAppTenantId";
   public static readonly RESOURCE_NAME_SUFFIX = "resourceNameSuffix";
+  public static readonly REMOTE_TEAMS_APPID = "remoteTeamsAppId";
 }
 
 export class PluginSql {

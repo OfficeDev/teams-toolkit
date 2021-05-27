@@ -6,7 +6,7 @@
 import * as path from "path";
 import { Argv, Options } from "yargs";
 
-import { ConfigMap, err, FxError, ok, Platform, Result, traverse, UserCancelError } from "@microsoft/teamsfx-api";
+import { ConfigMap, err, FxError, ok, Result } from "@microsoft/teamsfx-api";
 
 import activate from "../activate";
 import * as constants from "../constants";
@@ -45,6 +45,8 @@ export class CapabilityAddTab extends YargsCommand {
       namespace: "fx-solution-azure",
       method: "addCapability"
     };
+
+    const answers = new ConfigMap();
 
     const core = result.value;
 
@@ -96,6 +98,8 @@ export class CapabilityAddBot extends YargsCommand {
       method: "addCapability"
     };
 
+    const answers = new ConfigMap();
+
     const core = result.value;
     {
       const result = await core.executeUserTask(func, getSystemInputs());
@@ -144,6 +148,8 @@ export class CapabilityAddMessageExtension extends YargsCommand {
       namespace: "fx-solution-azure",
       method: "addCapability"
     };
+
+    const answers = new ConfigMap();
 
     const core = result.value;
     {

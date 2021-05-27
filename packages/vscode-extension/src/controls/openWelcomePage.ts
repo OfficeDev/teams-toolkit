@@ -4,7 +4,7 @@
 import * as vscode from "vscode";
 import { ext } from "../extensionVariables";
 
-const welcomePageKey = "teamsfx-extension.welcomePage.shown";
+const welcomePageKey = "ms-teams-vscode-extension.welcomePage.shown";
 
 export async function openWelcomePageAfterExtensionInstallation(): Promise<void> {
   if (ext.context.globalState.get(welcomePageKey, false)) {

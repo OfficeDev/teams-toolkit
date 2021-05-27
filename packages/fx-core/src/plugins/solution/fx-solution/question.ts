@@ -27,7 +27,7 @@ export const BotOptionItem: OptionItem = {
   cliName: "bot",
   description: "Conversational Agent",
   detail:
-    "Bots allow users to interfact with your web service through text, interactive cards, and task modules.",
+    "Bots allow users to interact with your web service through text, interactive cards, and task modules.",
 };
 
 export const MessageExtensionItem: OptionItem = {

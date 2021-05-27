@@ -20,13 +20,11 @@ import {
   isAutoSkipSelect,
   SingleSelectQuestion,
   MultiSelectQuestion,
-  Stage,
 } from "@microsoft/teamsfx-api";
 
 import activate  from "../activate";
 import * as constants from "../constants";
 import { NotFoundInputedFolder, SampleAppDownloadFailed, ProjectFolderExist } from "../error";
-import { validateAndUpdateAnswers, visitInteractively } from "../question/question";
 import { YargsCommand } from "../yargsCommand";
 import {
   flattenNodes,
@@ -42,6 +40,7 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
+import CLIUIInstance from "../userInteraction";
 
 export default class New extends YargsCommand {
   public readonly commandHead = `new`;
@@ -94,19 +93,12 @@ export default class New extends YargsCommand {
   public async runCommand(args: {
     [argName: string]: string | string[];
   }): Promise<Result<null, FxError>> {
-    if (args.interactive) {
-      if (this.root) {
-        /// TODO: enable remote validation function
-        const answers = await visitInteractively(this.root);
-        this.answers = toConfigMap(answers);
-      }
-    } else {
-      for (const name in this.params) {
-        this.answers[name] = args[name] || this.params[name].default;
-      }
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart);
+
+    if (!args.interactive) {
+      CLIUIInstance.updatePresetAnswers(args);
     }
 
-    CliTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart);
     const result = await activate();
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateProject, result.error);
@@ -114,17 +106,9 @@ export default class New extends YargsCommand {
     }
 
     const core = result.value;
-    {
-      const result = await core.getQuestions!(Stage.create, this.answers);
-      if (result.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateProject, result.error);
-        return err(result.error);
-      }
-      await validateAndUpdateAnswers(result.value!, this.answers);
-    }
 
     {
-      const result = await core.createProject(this.answers);
+      const result = await core.createProject(getSystemInputs());
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateProject, result.error);
         return err(result.error);

@@ -6,15 +6,15 @@
 import * as path from "path";
 import { Argv, Options } from "yargs";
 
-import { ConfigMap, err, FxError, ok, Platform, Result, Stage } from "@microsoft/teamsfx-api";
+import { ConfigMap, err, FxError, ok, Platform, Result, Stage, traverse, UserCancelError } from "@microsoft/teamsfx-api";
 
 import activate from "../activate";
 import * as constants from "../constants";
-import { validateAndUpdateAnswers } from "../question/question";
-import { argsToInputs, getParamJson, readConfigs, setSubscriptionId } from "../utils";
+import { getParamJson, getSystemInputs, readConfigs, setSubscriptionId } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
+import CLIUIInstance from "../userInteraction";
 
 export class ResourceAdd extends YargsCommand {
   public readonly commandHead = `add`;
@@ -48,36 +48,30 @@ export class ResourceAddSql extends YargsCommand {
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    const answers = argsToInputs(this.params, args);
-
-    CliTelemetry.withRootFolder(answers.projectPath).sendTelemetryEvent(TelemetryEvent.UpdateProjectStart, {
+    const rootFolder = path.resolve(args.folder || "./");
+    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.UpdateProjectStart, {
       [TelemetryProperty.Resources]: this.commandHead
     });
-    const result = await activate(answers.projectPath);
+
+    CLIUIInstance.updatePresetAnswers(args);
+
+    const result = await activate(rootFolder);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
         [TelemetryProperty.Resources]: this.commandHead
       });
       return err(result.error);
     }
+
     const func = {
       namespace: "fx-solution-azure",
       method: "addResource"
     };
+
     const core = result.value;
-    {
-      const result = await core.getQuestionsForUserTask!(func, answers);
-      if (result.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
-          [TelemetryProperty.Resources]: this.commandHead
-        });
-        return err(result.error);
-      }
-      await validateAndUpdateAnswers(result.value!, answers);
-    }
 
     {
-      const result = await core.executeUserTask(func, answers);
+      const result = await core.executeUserTask(func, getSystemInputs(rootFolder));
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
           [TelemetryProperty.Resources]: this.commandHead
@@ -106,14 +100,15 @@ export class ResourceAddApim extends YargsCommand {
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    const answers = argsToInputs(this.params, args);
-
-    CliTelemetry.withRootFolder(answers.projectPath).sendTelemetryEvent(TelemetryEvent.UpdateProjectStart, {
+    const rootFolder = path.resolve(args.folder || "./");
+    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.UpdateProjectStart, {
       [TelemetryProperty.Resources]: this.commandHead
     });
 
+    CLIUIInstance.updatePresetAnswers(args);
+
     {
-      const result = await setSubscriptionId(args.subscription, answers.projectPath);
+      const result = await setSubscriptionId(args.subscription, rootFolder);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
           [TelemetryProperty.Resources]: this.commandHead
@@ -122,31 +117,22 @@ export class ResourceAddApim extends YargsCommand {
       }
     }
 
-    const result = await activate(answers.projectPath);
+    const result = await activate(rootFolder);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
         [TelemetryProperty.Resources]: this.commandHead
       });
       return err(result.error);
     }
+
     const func = {
       namespace: "fx-solution-azure",
       method: "addResource"
     };
+
     const core = result.value;
     {
-      const result = await core.getQuestionsForUserTask!(func, answers);
-      if (result.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
-          [TelemetryProperty.Resources]: this.commandHead
-        });
-        return err(result.error);
-      }
-      await validateAndUpdateAnswers(result.value!, answers);
-    }
-
-    {
-      const result = await core.executeUserTask(func, answers);
+      const result = await core.executeUserTask(func, getSystemInputs(rootFolder));
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
           [TelemetryProperty.Resources]: this.commandHead
@@ -175,36 +161,29 @@ export class ResourceAddFunction extends YargsCommand {
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    const answers = argsToInputs(this.params, args);
-
-    CliTelemetry.withRootFolder(answers.projectPath).sendTelemetryEvent(TelemetryEvent.UpdateProjectStart, {
+    const rootFolder = path.resolve(args.folder || "./");
+    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.UpdateProjectStart, {
       [TelemetryProperty.Resources]: this.commandHead
     });
-    const result = await activate(answers.projectPath);
+
+    CLIUIInstance.updatePresetAnswers(args);
+
+    const result = await activate(rootFolder);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
         [TelemetryProperty.Resources]: this.commandHead
       });
       return err(result.error);
     }
+
     const func = {
       namespace: "fx-solution-azure",
       method: "addResource"
     };
+
     const core = result.value;
     {
-      const result = await core.getQuestionsForUserTask!(func, answers);
-      if (result.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
-          [TelemetryProperty.Resources]: this.commandHead
-        });
-        return err(result.error);
-      }
-      await validateAndUpdateAnswers(result.value!, answers);
-    }
-
-    {
-      const result = await core.executeUserTask(func, answers);
+      const result = await core.executeUserTask(func, getSystemInputs(rootFolder));
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
           [TelemetryProperty.Resources]: this.commandHead

@@ -4,17 +4,25 @@
 import { FxResult } from "../result";
 import { PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { TelemetryKeys, TelemetryValues } from "../constants";
-import { PluginBot } from "../resources/strings";
+import { PluginBot, PluginSolution } from "../resources/strings";
 
 export class telemetryHelper {
+  static fillCommonProperty(ctx: PluginContext, properties: { [key: string]: string }) {
+    properties[TelemetryKeys.Component] = PluginBot.PLUGIN_NAME;
+    properties[TelemetryKeys.AppId] =
+      (ctx.configOfOtherPlugins
+        .get(PluginSolution.PLUGIN_NAME)
+        ?.get(PluginSolution.REMOTE_TEAMS_APPID) as string) || "";
+  }
+
   static sendStartEvent(
     ctx: PluginContext,
     eventName: string,
     properties: { [key: string]: string } = {},
     measurements: { [key: string]: number } = {}
   ): void {
-    properties[TelemetryKeys.Component] = PluginBot.PLUGIN_NAME;
     properties[TelemetryKeys.Success] = TelemetryValues.Success;
+    this.fillCommonProperty(ctx, properties);
 
     ctx.telemetryReporter?.sendTelemetryEvent(`${eventName}-start`, properties, measurements);
   }
@@ -25,8 +33,8 @@ export class telemetryHelper {
     properties: { [key: string]: string } = {},
     measurements: { [key: string]: number } = {}
   ): void {
-    properties[TelemetryKeys.Component] = PluginBot.PLUGIN_NAME;
     properties[TelemetryKeys.Success] = TelemetryValues.Success;
+    this.fillCommonProperty(ctx, properties);
 
     ctx.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
   }
@@ -38,10 +46,10 @@ export class telemetryHelper {
     properties: { [key: string]: string } = {},
     measurements: { [key: string]: number } = {}
   ): void {
-    properties[TelemetryKeys.Component] = PluginBot.PLUGIN_NAME;
     properties[TelemetryKeys.Success] = TelemetryValues.Fail;
     properties[TelemetryKeys.ErrorMessage] = e.message;
-
+    this.fillCommonProperty(ctx, properties);
+    
     if (e instanceof SystemError) {
       properties[TelemetryKeys.ErrorType] = TelemetryValues.SystemError;
     } else if (e instanceof UserError) {

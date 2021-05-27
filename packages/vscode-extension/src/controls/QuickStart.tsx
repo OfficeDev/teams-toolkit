@@ -116,7 +116,7 @@ export default class QuickStart extends React.Component<any, any> {
                     </a>,
                     " are the extension points for building apps on the Microsoft Teams platform.",
                   ]}
-                  actionText="Watch Video (1 min)"
+                  actionText="Watch Video (< 1 min)"
                   onAction={this.onWatchVideo}
                   secondaryActionText="Next"
                   onSecondaryAction={() => {

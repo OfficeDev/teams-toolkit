@@ -3,7 +3,9 @@
 
 "use strict";
 
-import { Result, FxError, err, ok, Core, Tools, Inputs } from "@microsoft/teamsfx-api";
+import { Result, FxError, err, ok, Inputs, Tools } from "@microsoft/teamsfx-api";
+
+import { FxCore } from "@microsoft/teamsfx-core";
 
 import AzureAccountManager from "./commonlib/azureLogin";
 import AppStudioTokenProvider from "./commonlib/appStudioLogin";
@@ -12,19 +14,18 @@ import CLILogProvider from "./commonlib/log";
 import DialogManagerInstance from "./userInterface";
 import { getSubscriptionIdFromEnvFile, getSystemInputs } from "./utils";
 import { CliTelemetry } from "./telemetry/cliTelemetry";
-import { FxCore } from "@microsoft/teamsfx-core";
+import CLIUIInstance from "./userInteraction";
 
-export default async function activate(rootPath?: string): Promise<Result<Core, FxError>> {
+export default async function activate(rootPath?: string): Promise<Result<FxCore, FxError>> {
   if (rootPath) {
     const subscription = await getSubscriptionIdFromEnvFile(rootPath);
     if (subscription) {
       await AzureAccountManager.setSubscription(subscription);
     }
-  }
-  if (rootPath) {
     CliTelemetry.setReporter(CliTelemetry.getReporter().withRootFolder(rootPath));
   }
-  const tools:Tools = {
+
+  const tools: Tools = {
     logProvider: CLILogProvider,
     tokenProvider: {
       azureAccountProvider: AzureAccountManager,
@@ -33,10 +34,10 @@ export default async function activate(rootPath?: string): Promise<Result<Core, 
     },
     telemetryReporter: CliTelemetry.getReporter(),
     dialog: DialogManagerInstance,
-    ui: CLI_UI_IMPL
+    ui: CLIUIInstance
   };
   const core = new FxCore(tools);
-  const systemInputs:Inputs = getSystemInputs(rootPath);
+  const systemInputs: Inputs = getSystemInputs(rootPath);
   
   const result = await core.init(systemInputs);
   if (result.isErr()) {
@@ -44,5 +45,3 @@ export default async function activate(rootPath?: string): Promise<Result<Core, 
   }
   return ok(core);
 }
-
-

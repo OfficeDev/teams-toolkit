@@ -3,8 +3,6 @@
 
 "use strict";
 
-import open from "open";
-
 import {
   IMessage,
   MsgLevel,
@@ -21,10 +19,11 @@ import {
   ConfigMap,
   LogLevel,
 } from "@microsoft/teamsfx-api";
-import inquirer from "inquirer";
+
 import CLILogProvider from "./commonlib/log";
 import { ProgressHandler } from "./progressHandler";
 import { NotSupportedQuestionType } from "./error";
+import CLIUIInstance from "./userInteraction";
 
 export class DialogManager implements Dialog {
   private static instance: DialogManager;
@@ -108,49 +107,6 @@ export class DialogManager implements Dialog {
     return currentStatus.value;
   }
 
-  private static async askListQuestion(
-    options: string[],
-    questionDescription: string
-  ): Promise<string | undefined> {
-    const ciEnabled = process.env.CI_ENABLED;
-    if (ciEnabled) {
-      return options[0];
-    }
-    const questionName = "dialog_list_question";
-    const answers = await inquirer.prompt([
-      {
-        name: questionName,
-        type: "list",
-        message: questionDescription,
-        choices: options,
-      },
-    ]);
-    if (questionName in answers) {
-      return answers[questionName];
-    } else {
-      return undefined;
-    }
-  }
-
-  private static async askConfirmQuestion(confirmOption: string, questionDescription: string) {
-    const ciEnabled = process.env.CI_ENABLED;
-    if (ciEnabled) {
-      return confirmOption;
-    }
-    const answers = await inquirer.prompt([
-      {
-        name: QuestionType.Confirm,
-        type: "confirm",
-        message: questionDescription,
-      },
-    ]);
-    if (answers[QuestionType.Confirm]) {
-      return confirmOption;
-    } else {
-      return undefined;
-    }
-  }
-
   private async askQuestion(question: IQuestion): Promise<string | undefined> {
     if (question.description.includes("subscription")) {
       let sub: string;
@@ -166,34 +122,46 @@ export class DialogManager implements Dialog {
           `Your Azure account only has one subscription (${sub}). Use it as default.`
         );
       } else {
-        const answers = await inquirer.prompt([
+        const result = await CLIUIInstance.selectOption(
           {
+            type: "radio",
             name: "subscription",
-            type: "list",
-            message: question.description,
-            choices: subscriptions,
-          },
-        ]);
-        sub = answers["subscription"];
+            title: question.description,
+            options: subscriptions
+          }
+        )
+        if (result.type === "success") {
+          sub = result.result as string;
+        } else {
+          return undefined;
+        }
       }
 
       return sub;
     }
     switch (question.type) {
-      case QuestionType.Confirm:
-        if (question.options && question.options.length === 1) {
-          return await DialogManager.askConfirmQuestion(question.options[0], question.description);
-        } else if (question.options && question.options.length > 1) {
-          // Need to add "Cancel" option for confirm question.
-          return await DialogManager.askListQuestion(
-            question.options.concat("Cancel"),
-            question.description
-          );
+      case QuestionType.Confirm: {
+        if (!question.options || question.options.length === 0) {
+          break;
         }
-        break;
-      case QuestionType.OpenExternal:
-        open(question.description);
+        const result = await CLIUIInstance.showMessage(
+          "info",
+          question.description,
+          true,
+          ...question.options
+        );
+        if (result.type === "success") {
+          return result.result;
+        } else {
+          return undefined;
+        }
+      }
+      case QuestionType.OpenExternal: {
+        await CLIUIInstance.openUrl(
+          question.description
+        );
         return undefined;
+      }
       case QuestionType.OpenFolder:
         return undefined;
       /// TODO: remove this part of hard code
@@ -204,29 +172,29 @@ export class DialogManager implements Dialog {
   }
 
   private async showMessage(msg: IMessage): Promise<string | undefined> {
-    if (msg.items && msg.items.length === 1) {
-      return await DialogManager.askConfirmQuestion(msg.items[0], msg.description);
-    } else if (msg.items && msg.items.length > 1) {
-      // if modal, vsc will append "cancel" item so the plugin won't define "cancel" in dialog items.
-      if (msg.modal) {
-        return await DialogManager.askListQuestion(msg.items.concat("Cancel"), msg.description);
-      } else {
-        return await DialogManager.askListQuestion(msg.items, msg.description);
-      }
-    } else {
-      switch (msg.level) {
-        case MsgLevel.Info:
-          CLILogProvider.necessaryLog(LogLevel.Info, msg.description);
-          break;
-        case MsgLevel.Warning:
-          CLILogProvider.necessaryLog(LogLevel.Warning, msg.description);
-          break;
-        case MsgLevel.Error:
-          CLILogProvider.necessaryLog(LogLevel.Error, msg.description);
-          break;
-      }
+    let level: "info" | "warn" | "error";
+    switch (msg.level) {
+      case MsgLevel.Info:
+        level = "info";
+        break;
+      case MsgLevel.Warning:
+        level = "warn";
+        break;
+      case MsgLevel.Error:
+        level = "error";
+        break;
     }
-    return "Show successfully";
+    const result = await CLIUIInstance.showMessage(
+      level,
+      msg.description,
+      !!msg.modal,
+      ...(msg.items || [])
+    );
+    if (result.type === "success") {
+      return result.result;
+    } else {
+      return undefined;
+    }
   }
 }
 

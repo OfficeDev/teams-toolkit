@@ -17,7 +17,7 @@
     "build": "rimraf lib && tsc -p ./ && npm run copy-files",
     "watch": "rimraf lib && tsc -w -p ./ && npm run copy-files",
     "package": "rimraf lib && npx webpack --mode production --config ./webpack.config.js",
-    "prepublishOnly": "npm run test:unit && npm run test:integration && npm run package",
+    "prepack": "npm run test:unit && npm run test:integration && npm run package",
     "test:e2e": "npm run test:e2e:clean && npm run test:e2e:smoke && npm run test:e2e:others",
     "test:e2e:clean": "ts-node tests/e2e/clean.ts",
     "test:e2e:smoke": "mocha --no-timeouts --require ts-node/register tests/e2e/smoke/*.tests.ts",

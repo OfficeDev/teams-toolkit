@@ -3,8 +3,8 @@
 
 "use strict";
 
-import { Argv, Options } from "yargs";
 import * as path from "path";
+import { Argv, Options } from "yargs";
 
 import {
   FxError,
@@ -13,16 +13,16 @@ import {
   Result,
   Stage,
   MultiSelectQuestion,
-  OptionItem
+  OptionItem,
 } from "@microsoft/teamsfx-api";
 
 import activate from "../activate";
 import * as constants from "../constants";
 import { YargsCommand } from "../yargsCommand";
-import { argsToInputs, flattenNodes, getParamJson } from "../utils";
+import { flattenNodes, getParamJson, getSystemInputs } from "../utils";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
-import { validateAndUpdateAnswers } from "../question/question";
+import CLIUIInstance from "../userInteraction";
 
 export default class Deploy extends YargsCommand {
   public readonly commandHead = `deploy`;
@@ -50,10 +50,13 @@ export default class Deploy extends YargsCommand {
   }
 
   public async runCommand(args: { [argName: string]: string | string[] }): Promise<Result<null, FxError>> {
-    const answers = argsToInputs(this.params, args);
-    CliTelemetry.withRootFolder(answers.projectPath).sendTelemetryEvent(TelemetryEvent.DeployStart);
+    const rootFolder = path.resolve(args.folder as string || "./");
+    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.DeployStart);
 
-    const result = await activate(answers.projectPath);
+    CLIUIInstance.updatePresetAnswers(args);
+    CLIUIInstance.removePresetAnswers(["components"]);
+
+    const result = await activate(rootFolder);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Deploy, result.error);
       return err(result.error);
@@ -61,26 +64,31 @@ export default class Deploy extends YargsCommand {
 
     const core = result.value;
     {
-      const result = await core.getQuestions!(Stage.deploy, answers);
+      /// TODO: this should be removed!
+      const result = await core.getQuestions(Stage.deploy, getSystemInputs());
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Deploy, result.error);
         return err(result.error);
       }
-      const rootNode = result.value!;
-      const allNodes = flattenNodes(rootNode);
-      const deployPluginNode = allNodes.find(node => node.data.name === this.deployPluginNodeName)!;
-      const components = args.components as string[] || [];
-      if (components.length === 0) {
+      const node = result.value;
+      if (node) {
+        const allNodes = flattenNodes(node);
+        const deployPluginNode = allNodes.find(node => node.data.name === this.deployPluginNodeName)!;
+        const components = args.components as string[] || [];
         const option = (deployPluginNode.data as MultiSelectQuestion).staticOptions as OptionItem[];
-        answers[this.deployPluginNodeName] = option.map(op => op.cliName);
-      } else {
-        answers[this.deployPluginNodeName] = components;
+        if (components.length === 0) {
+          CLIUIInstance.updatePresetAnswer(this.deployPluginNodeName, option.map(op => op.id));
+        } else {
+          const labels = option.map(op => op.label);
+          const ids = option.map(op => op.id);
+          const indexes = components.map(component => labels.findIndex(label => label === component));
+          CLIUIInstance.updatePresetAnswer(this.deployPluginNodeName, indexes.map(index => ids[index]));
+        }
       }
-      await validateAndUpdateAnswers(result.value!, answers);
     }
 
     {
-      const result = await core.deployArtifacts(answers);
+      const result = await core.deployArtifacts(getSystemInputs());
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Deploy, result.error);
         return err(result.error);

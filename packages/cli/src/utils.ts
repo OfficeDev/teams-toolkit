@@ -219,8 +219,6 @@ export function getTeamsAppId(rootfolder: string | undefined): any {
   return undefined;
 }
 
-
-
 export function getSystemInputs(projectPath?: string):Inputs{
   const systemInputs:Inputs = {
     platform: Platform.CLI,

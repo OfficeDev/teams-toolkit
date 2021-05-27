@@ -3,17 +3,18 @@
 
 "use strict";
 
+import path from "path";
 import { Argv, Options } from "yargs";
 
-import { FxError, err, ok, Result, Stage } from "@microsoft/teamsfx-api";
+import { FxError, err, ok, Result } from "@microsoft/teamsfx-api";
 
 import activate from "../activate";
 import * as constants from "../constants";
-import { validateAndUpdateAnswers } from "../question/question";
-import { argsToInputs, getParamJson, setSubscriptionId } from "../utils";
+import { getParamJson, getSystemInputs, setSubscriptionId } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
+import CLIUIInstance from "../userInteraction";
 
 export default class Provision extends YargsCommand {
   public readonly commandHead = `provision`;
@@ -28,18 +29,20 @@ export default class Provision extends YargsCommand {
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    const answers = argsToInputs(this.params, args);
-    CliTelemetry.withRootFolder(answers.projectPath).sendTelemetryEvent(TelemetryEvent.ProvisionStart);
+    const rootFolder = path.resolve(args.folder || "./");
+    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.ProvisionStart);
+
+    CLIUIInstance.updatePresetAnswers(args);
 
     {
-      const result = await setSubscriptionId(args.subscription, answers.projectPath);
+      const result = await setSubscriptionId(args.subscription, rootFolder);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Provision, result.error);
         return result;
       }
     }
 
-    const result = await activate(answers.projectPath);
+    const result = await activate(rootFolder);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Provision, result.error);
       return err(result.error);
@@ -47,16 +50,7 @@ export default class Provision extends YargsCommand {
 
     const core = result.value;
     {
-      const result = await core.getQuestions!(Stage.provision, answers);
-      if (result.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Provision, result.error);
-        return err(result.error);
-      }
-      await validateAndUpdateAnswers(result.value, answers);
-    }
-
-    {
-      const result = await core.provisionResources(answers);
+      const result = await core.provisionResources(getSystemInputs());
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Provision, result.error);
         return err(result.error);

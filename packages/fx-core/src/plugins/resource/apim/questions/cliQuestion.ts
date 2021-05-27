@@ -21,7 +21,7 @@ export class ApimServiceNameQuestion extends BaseQuestionService implements IQue
       name: QuestionConstants.CLI.ApimServiceName.questionName,
       title: QuestionConstants.CLI.ApimServiceName.description,
       validation: {
-        validFunc: (input: string|string[]|undefined, previousInputs?: Inputs): string | undefined =>
+        validFunc: (input: string, previousInputs?: Inputs): string | undefined =>
           NamingRules.validate(input as string, NamingRules.apimServiceName),
       },
     };
@@ -39,7 +39,7 @@ export class ApimResourceGroupQuestion extends BaseQuestionService implements IQ
       name: QuestionConstants.CLI.ApimResourceGroup.questionName,
       title: QuestionConstants.CLI.ApimResourceGroup.description,
       validation: {
-        validFunc: (input: string|string[]|undefined, previousInputs?: Inputs): string | undefined =>
+        validFunc: (input: string, previousInputs?: Inputs): string | undefined =>
           NamingRules.validate(input as string, NamingRules.resourceGroupName),
       },
     };
@@ -73,7 +73,7 @@ export class ApiPrefixQuestion extends BaseQuestionService implements IQuestionS
       title: QuestionConstants.CLI.ApiPrefix.description,
       // TODO: Validate API prefix after CLI support remote validation func
       validation: {
-        validFunc: (input: string|string[]|undefined, previousInputs?: Inputs): string | undefined =>
+        validFunc: (input: string, previousInputs?: Inputs): string | undefined =>
           NamingRules.validate(input as string, NamingRules.apiPrefix),
       },
     };
@@ -93,7 +93,7 @@ export class ApiIdQuestion extends BaseQuestionService implements IQuestionServi
       title: QuestionConstants.CLI.ApiId.description,
       // TODO: Validate API id after CLI support remote validation func
       validation: {
-        validFunc: (input: string|string[]|undefined, previousInputs?: Inputs): string | undefined =>
+        validFunc: (input: string, previousInputs?: Inputs): string | undefined =>
           NamingRules.validate(input as string, NamingRules.apiId),
       },
     };
@@ -111,7 +111,7 @@ export class ApiVersionQuestion extends BaseQuestionService implements IQuestion
       name: QuestionConstants.CLI.ApiVersion.questionName,
       title: QuestionConstants.CLI.ApiVersion.description,
       validation: {
-        validFunc: (input: string|string[]|undefined, previousInputs?: Inputs): string | undefined =>
+        validFunc: (input: string, previousInputs?: Inputs): string | undefined =>
           NamingRules.validate(input as string, NamingRules.versionIdentity),
         required: true,
       },

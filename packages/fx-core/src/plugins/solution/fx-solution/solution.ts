@@ -575,7 +575,7 @@ export class TeamsAppSolution implements Solution {
     }
     return ok(selectedPlugins);
   }
-git 
+  
   /**
    * scaffold
    */

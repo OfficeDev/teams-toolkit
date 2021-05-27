@@ -137,7 +137,7 @@ export interface MultiSelectQuestion extends UserInputQuestion {
      */
     onDidChangeSelection?: (currentSelectedIds: Set<string>, previousSelectedIds: Set<string>) => Promise<Set<string>>;
 
-    validation?: StringArrayValidation | FuncValidation;
+    validation?: StringArrayValidation | FuncValidation<string[]>;
 }
 
 export interface TextInputQuestion extends UserInputQuestion {
@@ -145,7 +145,7 @@ export interface TextInputQuestion extends UserInputQuestion {
     password?: boolean; 
     value?: string;
     default?: string | LocalFunc<string | undefined>;
-    validation?: StringValidation | FuncValidation;
+    validation?: StringValidation | FuncValidation<string>;
 }
 
 
@@ -153,21 +153,21 @@ export interface SingleFileQuestion extends UserInputQuestion {
     type: "singleFile";
     value?: string;
     default?: string | LocalFunc<string | undefined>;
-    validation?: FuncValidation;
+    validation?: FuncValidation<string>;
 }
 
 export interface MultiFileQuestion extends UserInputQuestion {
     type: "multiFile";
     value?: string[];
     default?: string | LocalFunc<string | undefined>;
-    validation?: FuncValidation;
+    validation?: FuncValidation<string[]>
 }
 
 export interface FolderQuestion extends UserInputQuestion {
     type: "folder";
     value?: string;
     default?: string | LocalFunc<string | undefined>;
-    validation?: FuncValidation;
+    validation?: FuncValidation<string>;
 }
 
 /**

@@ -101,6 +101,7 @@ const questionVisitor: QuestionVistor = async function (
     const prompt = await getCallFuncValue(inputs, question.prompt) as string;
     const validationFunc = question.validation ? getValidationFunction(question.validation, inputs) : undefined;
     if (question.type === "text") {
+      const validationFunc = question.validation ? getValidationFunction<string>(question.validation, inputs) : undefined;
       const inputQuestion = question as TextInputQuestion;
       return await ui.inputText({
         type: "text",
@@ -136,6 +137,7 @@ const questionVisitor: QuestionVistor = async function (
         };
       }
       if(question.type === "singleSelect"){
+        const validationFunc = question.validation ? getValidationFunction<string>(question.validation, inputs) : undefined;
         return await ui.selectOption({
           type: "radio",
           name: question.name,
@@ -151,6 +153,7 @@ const questionVisitor: QuestionVistor = async function (
       }
       else {
         const mq = selectQuestion as MultiSelectQuestion;
+        const validationFunc = question.validation ? getValidationFunction<string[]>(question.validation, inputs) : undefined;
         return await ui.selectOptions({
           type: "multibox",
           name: question.name,
@@ -167,6 +170,7 @@ const questionVisitor: QuestionVistor = async function (
         });
       }
     } else if (question.type === "multiFile") {
+      const validationFunc = question.validation ? getValidationFunction<string[]>(question.validation, inputs) : undefined;
       return await ui.selectFiles({
         type: "files",
         name: question.name,
@@ -178,6 +182,7 @@ const questionVisitor: QuestionVistor = async function (
         validation: validationFunc
       });
     } else if(question.type === "singleFile" ){
+      const validationFunc = question.validation ? getValidationFunction<string>(question.validation, inputs) : undefined;
       return await ui.selectFile({
         type: "file",
         name: question.name,
@@ -190,6 +195,7 @@ const questionVisitor: QuestionVistor = async function (
         validation: validationFunc
       });
     } else if(question.type === "folder"){
+      const validationFunc = question.validation ? getValidationFunction<string>(question.validation, inputs) : undefined;
       return await ui.selectFolder({
         type: "folder",
         name: question.name,

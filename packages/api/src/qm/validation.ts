@@ -45,33 +45,33 @@ export interface StringArrayValidation extends StaticValidation {
 /**
 * The validation is checked by a validFunc provided by user
 */
-export interface FuncValidation {
-  validFunc?: (input: string|string[]|undefined, previousInputs?: Inputs) => string | undefined | Promise<string | undefined>;
+export interface FuncValidation<T extends string|string[]|undefined> {
+  validFunc: (input: T, previousInputs?: Inputs) => string | undefined|Promise<string | undefined>;
 }
 
 export type ValidationSchema =
   | StringValidation
   | StringArrayValidation
-  | FuncValidation;
+  | FuncValidation<any>;
 
 
-export function getValidationFunction(
+export function getValidationFunction<T extends string|string[]|undefined>(
   validation: ValidationSchema,
   inputs: Inputs
-): (input: string | string[] | undefined)  => Promise<string | undefined> {
-  return async function(input: string | string[] | undefined): Promise<string | undefined> {
-    return await validate(validation, input, inputs);
+): (input: T)  => string | undefined|Promise<string | undefined> {
+  return function(input: T): string | undefined | Promise<string | undefined> {
+    return validate(validation, input, inputs);
   };
 }
 
-export async function validate(
+export async function validate<T extends string|string[]|undefined>(
   validSchema: ValidationSchema,
-  value: string | string[] | undefined,
+  value: T,
   inputs?: Inputs
 ): Promise<string | undefined> {
   {
     //FuncValidation
-    const funcValidation: FuncValidation = validSchema as FuncValidation;
+    const funcValidation: FuncValidation<T> = validSchema as FuncValidation<T>;
     if (funcValidation.validFunc) {
       const res = await funcValidation.validFunc(value, inputs);
       return res as string;

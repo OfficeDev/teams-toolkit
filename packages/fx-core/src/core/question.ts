@@ -28,7 +28,7 @@ export const QuestionAppName: TextInputQuestion = {
   name: CoreQuestionNames.AppName,
   title: "Application name",
   validation: {
-    validFunc: async (input: string|string[]|undefined, previousInputs?: Inputs): Promise<string | undefined> => {
+    validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
       const folder = previousInputs![CoreQuestionNames.Foler] as string;
       if (!folder) return undefined;
       const schema = {

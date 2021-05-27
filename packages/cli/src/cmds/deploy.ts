@@ -15,16 +15,18 @@ import {
   Stage,
   Platform,
   MultiSelectQuestion,
-  OptionItem
+  OptionItem,
+  traverse,
+  UserCancelError
 } from "@microsoft/teamsfx-api";
 
-import activate from "../activate";
+import activate, { coreExeceutor } from "../activate";
 import * as constants from "../constants";
-import { validateAndUpdateAnswers } from "../question/question";
 import { YargsCommand } from "../yargsCommand";
 import { flattenNodes, getParamJson } from "../utils";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
+import CLIUIInstance from "../userInteraction";
 
 export default class Deploy extends YargsCommand {
   public readonly commandHead = `deploy`;
@@ -52,20 +54,19 @@ export default class Deploy extends YargsCommand {
   }
 
   public async runCommand(args: { [argName: string]: string | string[] }): Promise<Result<null, FxError>> {
-    const answers = new ConfigMap();
-    for (const name in this.params) {
-      answers.set(name, args[name] || this.params[name].default);
-    }
-
-    const rootFolder = path.resolve(answers.getString("folder") || "./");
-    answers.delete("folder");
+    const rootFolder = path.resolve(args.folder as string || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.DeployStart);
+
+    CLIUIInstance.updatePresetAnswers(args);
+    CLIUIInstance.removePresetAnswers(["components"]);
 
     const result = await activate(rootFolder);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Deploy, result.error);
       return err(result.error);
     }
+
+    const answers = new ConfigMap();
 
     const core = result.value;
     {
@@ -74,17 +75,27 @@ export default class Deploy extends YargsCommand {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Deploy, result.error);
         return err(result.error);
       }
-      const rootNode = result.value!;
-      const allNodes = flattenNodes(rootNode);
-      const deployPluginNode = allNodes.find(node => node.data.name === this.deployPluginNodeName)!;
-      const components = args.components as string[] || [];
-      if (components.length === 0) {
+      const node = result.value;
+      if (node) {
+        const allNodes = flattenNodes(node);
+        const deployPluginNode = allNodes.find(node => node.data.name === this.deployPluginNodeName)!;
+        const components = args.components as string[] || [];
         const option = (deployPluginNode.data as MultiSelectQuestion).option as OptionItem[];
-        answers.set(this.deployPluginNodeName, option.map(op => op.cliName));
-      } else {
-        answers.set(this.deployPluginNodeName, components);
+        if (components.length === 0) {
+          CLIUIInstance.updatePresetAnswer(this.deployPluginNodeName, option.map(op => op.id));
+        } else {
+          const labels = option.map(op => op.label);
+          const ids = option.map(op => op.id);
+          const indexes = components.map(component => labels.findIndex(label => label === component));
+          CLIUIInstance.updatePresetAnswer(this.deployPluginNodeName, indexes.map(index => ids[index]));
+        }
+        const result = await traverse(node, answers, CLIUIInstance, coreExeceutor);
+        if (result.type === "error" && result.error) {
+          return err(result.error);
+        } else if (result.type === "cancel") {
+          return err(UserCancelError);
+        }
       }
-      await validateAndUpdateAnswers(result.value!, answers);
     }
 
     {

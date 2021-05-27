@@ -6,15 +6,15 @@
 import * as path from "path";
 import { Argv, Options } from "yargs";
 
-import { ConfigMap, err, FxError, ok, Platform, Result, Stage } from "@microsoft/teamsfx-api";
+import { ConfigMap, err, FxError, ok, Platform, Result, Stage, traverse, UserCancelError } from "@microsoft/teamsfx-api";
 
-import activate from "../activate";
+import activate, { coreExeceutor } from "../activate";
 import * as constants from "../constants";
-import { validateAndUpdateAnswers } from "../question/question";
 import { getParamJson, readConfigs, setSubscriptionId } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
+import CLIUIInstance from "../userInteraction";
 
 export class ResourceAdd extends YargsCommand {
   public readonly commandHead = `add`;
@@ -48,17 +48,13 @@ export class ResourceAddSql extends YargsCommand {
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    const answers = new ConfigMap();
-    for (const name in this.params) {
-      answers.set(name, args[name] || this.params[name].default);
-    }
-
-    const rootFolder = path.resolve(answers.getString("folder") || "./");
-    answers.delete("folder");
-
+    const rootFolder = path.resolve(args.folder || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.UpdateProjectStart, {
       [TelemetryProperty.Resources]: this.commandHead
     });
+
+    CLIUIInstance.updatePresetAnswers(args);
+
     const result = await activate(rootFolder);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
@@ -66,6 +62,8 @@ export class ResourceAddSql extends YargsCommand {
       });
       return err(result.error);
     }
+
+    const answers = new ConfigMap();
 
     const core = result.value;
     {
@@ -76,7 +74,15 @@ export class ResourceAddSql extends YargsCommand {
         });
         return err(result.error);
       }
-      await validateAndUpdateAnswers(result.value!, answers);
+      const node = result.value;
+      if (node) {
+        const result = await traverse(node, answers, CLIUIInstance, coreExeceutor);
+        if (result.type === "error" && result.error) {
+          return err(result.error);
+        } else if (result.type === "cancel") {
+          return err(UserCancelError);
+        }
+      }
     }
 
     {
@@ -109,17 +115,12 @@ export class ResourceAddApim extends YargsCommand {
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    const answers = new ConfigMap();
-    for (const name in this.params) {
-      answers.set(name, args[name] || this.params[name].default);
-    }
-
-    const rootFolder = path.resolve(answers.getString("folder") || "./");
-    answers.delete("folder");
-
+    const rootFolder = path.resolve(args.folder || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.UpdateProjectStart, {
       [TelemetryProperty.Resources]: this.commandHead
     });
+
+    CLIUIInstance.updatePresetAnswers(args);
 
     {
       const result = await setSubscriptionId(args.subscription, rootFolder);
@@ -139,6 +140,8 @@ export class ResourceAddApim extends YargsCommand {
       return err(result.error);
     }
 
+    const answers = new ConfigMap();
+
     const core = result.value;
     {
       const result = await core.getQuestions!(Stage.update, Platform.CLI);
@@ -148,7 +151,15 @@ export class ResourceAddApim extends YargsCommand {
         });
         return err(result.error);
       }
-      await validateAndUpdateAnswers(result.value!, answers);
+      const node = result.value;
+      if (node) {
+        const result = await traverse(node, answers, CLIUIInstance, coreExeceutor);
+        if (result.type === "error" && result.error) {
+          return err(result.error);
+        } else if (result.type === "cancel") {
+          return err(UserCancelError);
+        }
+      }
     }
 
     {
@@ -181,17 +192,13 @@ export class ResourceAddFunction extends YargsCommand {
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    const answers = new ConfigMap();
-    for (const name in this.params) {
-      answers.set(name, args[name] || this.params[name].default);
-    }
-
-    const rootFolder = path.resolve(answers.getString("folder") || "./");
-    answers.delete("folder");
-
+    const rootFolder = path.resolve(args.folder || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.UpdateProjectStart, {
       [TelemetryProperty.Resources]: this.commandHead
     });
+
+    CLIUIInstance.updatePresetAnswers(args);
+
     const result = await activate(rootFolder);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
@@ -199,6 +206,8 @@ export class ResourceAddFunction extends YargsCommand {
       });
       return err(result.error);
     }
+
+    const answers = new ConfigMap();
 
     const core = result.value;
     {
@@ -209,7 +218,15 @@ export class ResourceAddFunction extends YargsCommand {
         });
         return err(result.error);
       }
-      await validateAndUpdateAnswers(result.value!, answers);
+      const node = result.value;
+      if (node) {
+        const result = await traverse(node, answers, CLIUIInstance, coreExeceutor);
+        if (result.type === "error" && result.error) {
+          return err(result.error);
+        } else if (result.type === "cancel") {
+          return err(UserCancelError);
+        }
+      }
     }
 
     {

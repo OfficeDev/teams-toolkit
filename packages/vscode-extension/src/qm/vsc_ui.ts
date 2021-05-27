@@ -475,7 +475,7 @@ export class VsCodeUI implements UserInteraction {
             title: config.title
           });
           if (uriList && uriList.length > 0) {
-            if (config.type === "folder") {
+            if (config.type === "files") {
               const results = uriList.map((u) => u.fsPath);
               const resultString = results.join(";");
               quickPick.items = [

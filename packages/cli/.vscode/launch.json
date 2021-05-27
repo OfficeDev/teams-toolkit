@@ -7,134 +7,20 @@
     {
       "type": "pwa-node",
       "request": "launch",
-      "name": "Launch new command",
+      "name": "Launch new command (non-interactive)",
       "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}/lib/cli.js",
-      "args": ["new", "--app-name", "spfxApp", "--folder", "./test-folder", "--host-type", "SPFx"],
-      "outFiles": ["${workspaceFolder}/lib/**/*.js"],
-      "resolveSourceMapLocations": ["${workspaceFolder}/lib/**/*.js"]
-    },
-    {
-      "type": "pwa-node",
-      "request": "launch",
-      "name": "Launch deploy command",
-      "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}/lib/cli.js",
-      "args": [
-        "deploy",
-        "--folder",
-        "./test-folder/azureApp0326",
-        "--deploy-plugin",
-        "Tab Front-end"
+      "program": "${workspaceFolder}/cli.js",
+      "args": ["new", "--interactive", "false"],
+      "outFiles": [
+        "${workspaceFolder}/lib/**/*.js",
+        "${workspaceFolder}/../fx-core/build/**/*.js",
+        "${workspaceFolder}/../api/build/**/*.js"
       ],
-      "outFiles": ["${workspaceFolder}/lib/**/*.js"],
-      "resolveSourceMapLocations": ["${workspaceFolder}/lib/**/*.js"]
-    },
-    {
-      "type": "pwa-node",
-      "request": "launch",
-      "name": "Launch login command",
-      "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}/lib/cli.js",
-      "args": ["account", "login", "m365"],
-      "outFiles": ["${workspaceFolder}/lib/**/*.js"],
-      "resolveSourceMapLocations": ["${workspaceFolder}/lib/**/*.js"]
-    },
-    {
-      "type": "pwa-node",
-      "request": "launch",
-      "name": "Launch resource add azure-function command",
-      "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}/lib/cli.js",
-      "args": [
-        "resource",
-        "add",
-        "azure-function",
-        "--folder",
-        "./test-folder/azureApp",
-        "--function-name",
-        "myFunc"
-      ],
-      "outFiles": ["${workspaceFolder}/lib/**/*.js"],
-      "resolveSourceMapLocations": ["${workspaceFolder}/lib/**/*.js"]
-    },
-    {
-      "type": "pwa-node",
-      "request": "launch",
-      "name": "Launch resource add azure-sql command",
-      "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}/lib/cli.js",
-      "args": [
-        "resource",
-        "add",
-        "azure-sql",
-        "--folder",
-        "./test-folder/azureApp",
-        "--sql-username",
-        "testuser01",
-        "--sql-password",
-        "Test0001"
-      ],
-      "outFiles": ["${workspaceFolder}/lib/**/*.js"],
-      "resolveSourceMapLocations": ["${workspaceFolder}/lib/**/*.js"]
-    },
-    {
-      "type": "pwa-node",
-      "request": "launch",
-      "name": "Launch resource configure aad command",
-      "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}/lib/cli.js",
-      "args": [
-        "resource",
-        "configure",
-        "aad",
-        "--aad-env",
-        "both",
-        "--folder",
-        "./test-folder/azureApp"
-      ],
-      "outFiles": ["${workspaceFolder}/lib/**/*.js"],
-      "resolveSourceMapLocations": ["${workspaceFolder}/lib/**/*.js"]
-    },
-    {
-      "type": "pwa-node",
-      "request": "launch",
-      "name": "Launch resource show function command",
-      "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}/lib/cli.js",
-      "args": ["resource", "show", "azure-function", "--folder", "./test-folder/azureApp"],
-      "outFiles": ["${workspaceFolder}/lib/**/*.js"],
-      "resolveSourceMapLocations": ["${workspaceFolder}/lib/**/*.js"]
-    },
-    {
-      "type": "pwa-node",
-      "request": "launch",
-      "name": "Launch resource list command",
-      "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}/lib/cli.js",
-      "args": ["resource", "list", "--folder", "./test-folder/azureApp"],
-      "outFiles": ["${workspaceFolder}/lib/**/*.js"],
-      "resolveSourceMapLocations": ["${workspaceFolder}/lib/**/*.js"]
-    },
-    {
-      "type": "pwa-node",
-      "request": "launch",
-      "name": "Launch publish command",
-      "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}/lib/cli.js",
-      "args": ["publish", "--folder", "./test-folder/azureApp"],
-      "outFiles": ["${workspaceFolder}/lib/**/*.js"],
-      "resolveSourceMapLocations": ["${workspaceFolder}/lib/**/*.js"]
-    },
-    {
-      "type": "pwa-node",
-      "request": "launch",
-      "name": "Launch provision command",
-      "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}/lib/cli.js",
-      "args": ["provision", "--folder", "./test-folder/azureApp"],
-      "outFiles": ["${workspaceFolder}/lib/**/*.js"],
-      "resolveSourceMapLocations": ["${workspaceFolder}/lib/**/*.js"]
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/lib/**/*.js",
+        "${workspaceFolder}/../fx-core/build/**/*.js",
+        "${workspaceFolder}/../api/build/**/*.js"
+      ]
     }
   ]
 }

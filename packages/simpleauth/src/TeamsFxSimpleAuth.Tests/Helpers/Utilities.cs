@@ -119,6 +119,7 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.Helpers
                 authorizationCode = HttpUtility.ParseQueryString(redirectedUrl.Query).Get("code");
             } while (retryTime < 3);
 
+            driver.Close();
             throw new Exception($"Failed to get authorization code from redirect url: {redirectedUrl.AbsoluteUri}");
         }
 

@@ -103,14 +103,12 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.Helpers
             // Click "Accept"
             ClickElementWithRetry(driver, By.Id("idSIButton9"));
             
-            Uri redirectedUrl;
-            string authorizationCode;
+            Uri redirectedUrl = new Uri(driver.Url);
+            string authorizationCode = HttpUtility.ParseQueryString(redirectedUrl.Query).Get("code");
             int retryTime = 0;
 
             do
             {
-                redirectedUrl = new Uri(driver.Url);
-                authorizationCode = HttpUtility.ParseQueryString(redirectedUrl.Query).Get("code");
                 if(!string.IsNullOrEmpty(authorizationCode))
                 {
                     driver.Close();
@@ -119,6 +117,8 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.Helpers
                     return authorizationCode;
                 }
                 Thread.Sleep(200 * ++retryTime);
+                redirectedUrl = new Uri(driver.Url);
+                authorizationCode = HttpUtility.ParseQueryString(redirectedUrl.Query).Get("code");
             } while (retryTime < 3);
 
             throw new Exception($"Failed to get authorization code from redirect url: {redirectedUrl.AbsoluteUri}");

@@ -13,9 +13,6 @@ import {
   SelectFileResult,
   SelectFilesResult,
   SelectFolderResult,
-  OpenUrlResult,
-  ShowMessageResult,
-  RunWithProgressResult,
   SingleSelectConfig,
   MultiSelectConfig,
   InputTextConfig,
@@ -233,7 +230,7 @@ export class CLIUserInteraction implements UserInteraction {
     }
   }
   
-  public async selectOption(config: SingleSelectConfig): Promise<SingleSelectResult> {
+  public async selectOption(config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
     this.updatePresetAnswerFromConfig(config);
     return new Promise(async resolve => {
       const [choices, defaultValue] = this.toChoices(config.options, config.default);
@@ -248,21 +245,21 @@ export class CLIUserInteraction implements UserInteraction {
         const index = this.findIndex(choices, result.value);
         const anwser = config.options[index];
         if (config.returnObject) {
-          resolve({ type: "success", result: anwser });
+          resolve(ok({ type: "success", result: anwser }));
         } else {
           if (typeof anwser === "string") {
-            resolve({ type: "success", result: anwser });
+            resolve(ok({ type: "success", result: anwser }));
           } else {
-            resolve({ type: "success", result: anwser.id });
+            resolve(ok({ type: "success", result: anwser.id }));
           }
         }
       } else {
-        resolve({ type: "error", error: result.error });
+        resolve(err(result.error));
       }
     });
   }
 
-  public async selectOptions(config: MultiSelectConfig): Promise<MultiSelectResult> {
+  public async selectOptions(config: MultiSelectConfig): Promise<Result<MultiSelectResult,FxError>> {
     this.updatePresetAnswerFromConfig(config);
     return new Promise(async resolve => {
       const [choices, defaultValue] = this.toChoices(config.options, config.default);
@@ -277,21 +274,21 @@ export class CLIUserInteraction implements UserInteraction {
         const indexes = this.findIndexes(choices, result.value);
         const anwers = this.getSubArray(config.options as any[], indexes);
         if (config.returnObject) {
-          resolve({ type: "success", result: anwers });
+          resolve(ok({ type: "success", result: anwers }));
         } else {
           if (typeof anwers[0] === "string") {
-            resolve({ type: "success", result: anwers });
+            resolve(ok({ type: "success", result: anwers }));
           } else {
-            resolve({ type: "success", result: (anwers as OptionItem[]).map(answer => answer.id) });
+            resolve(ok({ type: "success", result: (anwers as OptionItem[]).map(answer => answer.id) }));
           }
         }
       } else {
-        resolve({ type: "error", error: result.error });
+        resolve(err(result.error));
       }
     });
   }
 
-  public async inputText(config: InputTextConfig): Promise<InputTextResult> {
+  public async inputText(config: InputTextConfig): Promise<Result<InputTextResult,FxError>> {
     return new Promise(async resolve => {
       const result = await this.input(
         config.name,
@@ -301,16 +298,15 @@ export class CLIUserInteraction implements UserInteraction {
         this.toValidationFunc(config.validation)
       );
       if (result.isOk()) {
-        resolve({ type: "success", result: result.value });
+        resolve(ok({ type: "success", result: result.value }));
       } else {
-        resolve({ type: "error", error: result.error });
+        resolve(err(result.error));
       }
     });
   }
 
-  public async selectFile(config: SelectFileConfig): Promise<SelectFileResult> {
+  public async selectFile(config: SelectFileConfig): Promise<Result<SelectFileResult,FxError>> {
     const newConfig: InputTextConfig = {
-      type: "text",
       name: config.name,
       title: config.title,
       default: config.default,
@@ -319,13 +315,12 @@ export class CLIUserInteraction implements UserInteraction {
     return this.inputText(newConfig);
   }
 
-  public async selectFiles(config: SelectFilesConfig): Promise<SelectFilesResult> {
+  public async selectFiles(config: SelectFilesConfig): Promise<Result<SelectFilesResult,FxError>> {
     const validation = (input: string) => {
       const strings = input.split(";").map(s => s.trim());
       return config.validation?.(strings);
     }
     const newConfig: InputTextConfig = {
-      type: "text",
       name: config.name,
       title: config.title + " (Please use ';' to split file paths)",
       default: config.default?.join("; "),
@@ -333,17 +328,16 @@ export class CLIUserInteraction implements UserInteraction {
     }
     return new Promise(async resolve => {
       const result = await this.inputText(newConfig);
-      if (result.type === "success") {
-        resolve( { type: "success", result: result.result?.split(";").map(s => s.trim()) });
+      if (result.isOk()) {
+        resolve(ok( { type: "success", result: result.value.result?.split(";").map(s => s.trim()) } ));
       } else {
-        resolve( { type: "error", error: result.error });
+        resolve(err(result.error));
       }
     });
   }
 
-  public async selectFolder(config: SelectFolderConfig): Promise<SelectFolderResult> {
+  public async selectFolder(config: SelectFolderConfig): Promise<Result<SelectFolderResult,FxError>> {
     const newConfig: InputTextConfig = {
-      type: "text",
       name: config.name,
       title: config.title,
       default: config.default,
@@ -352,9 +346,9 @@ export class CLIUserInteraction implements UserInteraction {
     return this.inputText(newConfig);
   }
 
-  public async openUrl(link: string): Promise<OpenUrlResult> {
+  public async openUrl(link: string): Promise<Result<boolean,FxError>> {
     await open(link);
-    return { type: "success", result: true };
+    return ok(true);
   }
 
   public async showMessage(
@@ -362,7 +356,7 @@ export class CLIUserInteraction implements UserInteraction {
     message: string,
     modal: boolean,
     ...items: string[]
-  ): Promise<ShowMessageResult> {
+  ): Promise<Result<string|undefined,FxError>> {
     return new Promise(async resolve => {
       switch (items.length) {
         case 0:
@@ -377,18 +371,18 @@ export class CLIUserInteraction implements UserInteraction {
               await CLILogProvider.necessaryLog(LogLevel.Error, message);
               break;
           }
-          resolve({ type: "success" });
+          resolve(ok(undefined));
           break;
         case 1: {
           const result = await this.confirm("MyConfirmQuestion", message);
           if (result.isOk()) {
             if (result.value) {
-              resolve({ type: "success", result: items[0] });
+              resolve(ok(items[0]));
             } else {
-              resolve({ type: "success" });
+              resolve(ok(undefined));
             }
           } else {
-            resolve({ type: "error", error: result.error});
+            resolve(err(result.error));
           }
           break;
         }
@@ -400,12 +394,12 @@ export class CLIUserInteraction implements UserInteraction {
           );
           if (result.isOk()) {
             if (result.value !== "Cancel") {
-              resolve({ type: "success", result: result.value });
+              resolve(ok(result.value));
             } else {
-              resolve({ type: "success" });
+              resolve(ok(undefined));
             }
           } else {
-            resolve({ type: "error", error: result.error});
+            resolve(err(result.error));
           }
           break;
         }
@@ -413,14 +407,14 @@ export class CLIUserInteraction implements UserInteraction {
     });
   }
 
-  public async runWithProgress(task: TimeConsumingTask<any>): Promise<RunWithProgressResult> {
+  public async runWithProgress(task: TimeConsumingTask<any>): Promise<Result<any,FxError>> {
     return new Promise(async resolve => {
       const res = task.run();
 
       res.then((v:any) => {
         resolve(v); 
       }).catch((e:any) => { 
-        resolve({ type: "error", error: UnknownError(e) });
+        resolve(err(UnknownError(e)));
       });
 
       const head = `[Teams Toolkit] ${task.name}`;
@@ -455,11 +449,7 @@ export class CLIUserInteraction implements UserInteraction {
           await sleep(100);
         } while (task.current < task.total && !task.isCanceled)
       }
-      if (task.isCanceled) resolve({
-        type: "error",
-        error: UserCancelError
-      });
-      resolve({ type: "success" });
+      if (task.isCanceled) resolve(err(UserCancelError));
     });
   }
 }

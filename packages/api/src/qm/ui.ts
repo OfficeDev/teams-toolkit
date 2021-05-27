@@ -58,13 +58,7 @@ export type SelectFileResult = InputResult<string>;
 
 export type SelectFilesResult = InputResult<string[]>;
 
-export type SelectFolderResult = InputResult<string>;
-
-export type OpenUrlResult = InputResult<boolean>;
-
-export type ShowMessageResult = InputResult<string|undefined>;
-
-export type RunWithProgressResult = InputResult<any>;
+export type SelectFolderResult = InputResult<string>; 
 
 
 export interface TimeConsumingTask<T> {
@@ -91,14 +85,15 @@ export interface UserInteraction {
   selectFile: (config: SelectFileConfig) => Promise<Result<SelectFileResult,FxError>>;
   selectFiles: (config: SelectFilesConfig) => Promise<Result<SelectFilesResult,FxError>>;
   selectFolder: (config: SelectFolderConfig) => Promise<Result<SelectFolderResult,FxError>>;
-  openUrl(link: string): Promise<Result<OpenUrlResult,FxError>>;
+  
+  openUrl(link: string): Promise<Result<boolean,FxError>>;
   showMessage(
     level: "info" | "warn" | "error",
     message: string,
     modal: boolean,
     ...items: string[]
-  ): Promise<Result<ShowMessageResult,FxError>>;
-  runWithProgress(task: TimeConsumingTask<any>): Promise<Result<RunWithProgressResult,FxError>>;
+  ): Promise<Result<string|undefined,FxError>>;
+  runWithProgress(task: TimeConsumingTask<any>): Promise<Result<any,FxError>>;
 }
 
 export interface FunctionGroupTaskConfig<T>{

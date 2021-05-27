@@ -29,7 +29,8 @@ import {
   VsCodeEnv,
   AppStudioTokenProvider,
   Void,
-  Tools
+  Tools,
+  TaskGroup
 } from "@microsoft/teamsfx-api";
 import {
   isUserCancelError,
@@ -58,7 +59,7 @@ import * as commonUtils from "./debug/commonUtils";
 import { ExtensionErrors, ExtensionSource } from "./error";
 import { WebviewPanel } from "./controls/webviewPanel";
 import * as constants from "./debug/constants";
-import { isSPFxProject } from "./utils/commonUtils";
+import { isSPFxProject, sleep } from "./utils/commonUtils";
 import * as fs from "fs-extra";
 import * as vscode from "vscode";
 import { DepsChecker } from "./debug/depsChecker/checker";

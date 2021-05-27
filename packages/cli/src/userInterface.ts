@@ -124,14 +124,13 @@ export class DialogManager implements Dialog {
       } else {
         const result = await CLIUIInstance.selectOption(
           {
-            type: "radio",
             name: "subscription",
             title: question.description,
             options: subscriptions
           }
         )
-        if (result.type === "success") {
-          sub = result.result as string;
+        if (result.isOk()) {
+          sub = result.value.result as string;
         } else {
           return undefined;
         }
@@ -150,8 +149,8 @@ export class DialogManager implements Dialog {
           true,
           ...question.options
         );
-        if (result.type === "success") {
-          return result.result;
+        if (result.isOk()) {
+          return result.value;
         } else {
           return undefined;
         }
@@ -190,8 +189,8 @@ export class DialogManager implements Dialog {
       !!msg.modal,
       ...(msg.items || [])
     );
-    if (result.type === "success") {
-      return result.result;
+    if (result.isOk()) {
+      return result.value;
     } else {
       return undefined;
     }

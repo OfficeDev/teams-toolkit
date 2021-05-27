@@ -24,9 +24,6 @@ import {
   SelectFileResult,
   SelectFilesResult,
   SelectFolderResult,
-  OpenUrlResult,
-  ShowMessageResult,
-  RunWithProgressResult,
   OptionItem,
   Result,
   returnSystemError,
@@ -483,18 +480,14 @@ export class VsCodeUI implements UserInteraction {
     }
   }
 
-  async openUrl(link: string): Promise<Result<OpenUrlResult,FxError>> {
+  async openUrl(link: string): Promise<Result<boolean,FxError>> {
     const uri = Uri.parse(link);
     return new Promise(async resolve => {
       env.openExternal(uri).then(v=>{
         if(v)
-          resolve(ok({ type: "success", result: v }));
+          resolve(ok(v));
         else 
-          resolve(err(returnSystemError(
-          new Error(`Cannot open ${link}.`),
-          ExtensionSource,
-          ExtensionErrors.OpenExternalFailed
-        )));
+          resolve(err(UserCancelError));
       })
     });
   }
@@ -504,7 +497,7 @@ export class VsCodeUI implements UserInteraction {
     message: string,
     modal: boolean,
     ...items: string[]
-  ): Promise<Result<ShowMessageResult,FxError>> {
+  ): Promise<Result<string|undefined,FxError>> {
     return new Promise(async resolve => {
       const option = { modal: modal };
       try {
@@ -522,14 +515,17 @@ export class VsCodeUI implements UserInteraction {
             promise = window.showErrorMessage(message, option, ...items);
         }
         promise.then(v=>{
-          resolve(ok({ type: "success", result: v }));
+          if(v)
+            resolve(ok(v));
+          else 
+            resolve(err(UserCancelError));
         });
       } catch (error) {
         resolve(err(assembleError(error)));
       }
     });
   } 
-  async runWithProgress( task: TimeConsumingTask<any>): Promise<Result<RunWithProgressResult, FxError>> {
+  async runWithProgress( task: TimeConsumingTask<any>): Promise<Result<any, FxError>> {
     return new Promise(async (resolve) => {
       window.withProgress(
         {
@@ -543,43 +539,44 @@ export class VsCodeUI implements UserInteraction {
               resolve(err(UserCancelError));
             });
           }
-          // const startTime = new Date().getTime();
           const res = task.run();
-         
-          res.then((v:any) => { 
+          let lastReport = 0;
+          res.then(async (v:any) => { 
+            report(task);
+            await sleep(100);
             resolve(v) 
           }).catch((e:any) => { 
             resolve(err(assembleError(e)))
           });
           const head = `${StringResources.vsc.progressHandler.teamsToolkitComponent} ${task.name}`;
-          if(!task.showProgress){
-            const body = `: [${task.current}/${task.total}]`;
-            const tail = task.message? ` ${task.message}` : StringResources.vsc.progressHandler.prepareTask;
-            const message = `${head}${body}${tail}`
+          
+          const report = (task:TimeConsumingTask<any>)=>{
+            body = task.showProgress? `: ${Math.round(task.current*100/task.total)} %` : `: [${task.current+1}/${task.total}]`;
+            tail = task.message? ` ${task.message}` : StringResources.vsc.progressHandler.prepareTask;
+            message = `${head}${body}${tail}`;
+            if(task.showProgress)
+              progress.report({ increment: (task.current-lastReport)*100/task.total, message: message});
+            else 
+              progress.report({ message: message});
+          };
+          let body,tail,message:string;
+          if(task.showProgress){
+            report(task);
             do{
-              progress.report({ message: message });
+              const inc = (task.current-lastReport)*100/task.total;
+              const delta = task.current - lastReport;
+              if (inc > 0) {
+                report(task);
+                lastReport += delta;
+              }
               await sleep(100);
-            } while (task.current < task.total && !task.isCanceled)
+            } while (task.current < task.total && !task.isCanceled);
+            report(task);
+            await sleep(100);
           }
           else {
-            let lastLength = 0;
-            if(task.showProgress){
-              const body = `: ${Math.round((task.current-lastLength)*100/task.total)} %`;
-              const tail = task.message? ` ${task.message}` : StringResources.vsc.progressHandler.prepareTask;
-              const message = `${head}${body}${tail}`;
-              progress.report({ increment: 0, message: message});
-            }
             do{
-              const inc = task.current - lastLength;
-              if (inc > 0) {
-                // const elapsedTime = new Date().getTime() - startTime;
-                // const remainingTime = (elapsedTime * (task.total - task.current)) / task.current;
-                const body = `: ${Math.round(task.current*100/task.total)} %`;
-                const tail = task.message? ` ${task.message}` : StringResources.vsc.progressHandler.prepareTask;
-                const message = `${head}${body}${tail}`
-                progress.report({ increment: inc, message: message });
-                lastLength += inc;
-              }
+              report(task);
               await sleep(100);
             } while (task.current < task.total && !task.isCanceled)
           }

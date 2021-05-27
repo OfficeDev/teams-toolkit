@@ -6,15 +6,15 @@
 import * as path from "path";
 import { Argv, Options } from "yargs";
 
-import { ConfigMap, err, FxError, ok, Platform, Result } from "@microsoft/teamsfx-api";
+import { ConfigMap, err, FxError, ok, Platform, Result, traverse, UserCancelError } from "@microsoft/teamsfx-api";
 
-import activate from "../activate";
+import activate, { coreExeceutor } from "../activate";
 import * as constants from "../constants";
-import { validateAndUpdateAnswers } from "../question/question";
 import { getParamJson } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
+import CLIUIInstance from "../userInteraction";
 
 export class CapabilityAddTab extends YargsCommand {
   public readonly commandHead = `tab`;
@@ -28,15 +28,11 @@ export class CapabilityAddTab extends YargsCommand {
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    const answers = new ConfigMap();
-    for (const name in this.params) {
-      answers.set(name, args[name] || this.params[name].default);
-    }
-
-    const rootFolder = path.resolve(answers.getString("folder") || "./");
-    answers.delete("folder");
-
+    const rootFolder = path.resolve(args.folder || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.AddCapStart);
+
+    CLIUIInstance.updatePresetAnswers(args);
+
     const result = await activate(rootFolder);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCap, result.error, {
@@ -50,6 +46,8 @@ export class CapabilityAddTab extends YargsCommand {
       method: "addCapability"
     };
 
+    const answers = new ConfigMap();
+
     const core = result.value;
     {
       const result = await core.getQuestionsForUserTask!(func, Platform.CLI);
@@ -59,7 +57,15 @@ export class CapabilityAddTab extends YargsCommand {
         });
         return err(result.error);
       }
-      await validateAndUpdateAnswers(result.value!, answers);
+      const node = result.value;
+      if (node) {
+        const result = await traverse(node, answers, CLIUIInstance, coreExeceutor);
+        if (result.type === "error" && result.error) {
+          return err(result.error);
+        } else if (result.type === "cancel") {
+          return err(UserCancelError);
+        }
+      }
     }
 
     {
@@ -92,15 +98,11 @@ export class CapabilityAddBot extends YargsCommand {
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    const answers = new ConfigMap();
-    for (const name in this.params) {
-      answers.set(name, args[name] || this.params[name].default);
-    }
-
-    const rootFolder = path.resolve(answers.getString("folder") || "./");
-    answers.delete("folder");
-
+    const rootFolder = path.resolve(args.folder || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.AddCapStart);
+
+    CLIUIInstance.updatePresetAnswers(args);
+
     const result = await activate(rootFolder);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCap, result.error, {
@@ -114,6 +116,8 @@ export class CapabilityAddBot extends YargsCommand {
       method: "addCapability"
     };
 
+    const answers = new ConfigMap();
+
     const core = result.value;
     {
       const result = await core.getQuestionsForUserTask!(func, Platform.CLI);
@@ -123,7 +127,15 @@ export class CapabilityAddBot extends YargsCommand {
         });
         return err(result.error);
       }
-      await validateAndUpdateAnswers(result.value!, answers);
+      const node = result.value;
+      if (node) {
+        const result = await traverse(node, answers, CLIUIInstance, coreExeceutor);
+        if (result.type === "error" && result.error) {
+          return err(result.error);
+        } else if (result.type === "cancel") {
+          return err(UserCancelError);
+        }
+      }
     }
 
     {
@@ -156,15 +168,11 @@ export class CapabilityAddMessageExtension extends YargsCommand {
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    const answers = new ConfigMap();
-    for (const name in this.params) {
-      answers.set(name, args[name] || this.params[name].default);
-    }
-
-    const rootFolder = path.resolve(answers.getString("folder") || "./");
-    answers.delete("folder");
-
+    const rootFolder = path.resolve(args.folder || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.AddCapStart);
+
+    CLIUIInstance.updatePresetAnswers(args);
+
     const result = await activate(rootFolder);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCap, result.error, {
@@ -178,6 +186,8 @@ export class CapabilityAddMessageExtension extends YargsCommand {
       method: "addCapability"
     };
 
+    const answers = new ConfigMap();
+
     const core = result.value;
     {
       const result = await core.getQuestionsForUserTask!(func, Platform.CLI);
@@ -187,7 +197,15 @@ export class CapabilityAddMessageExtension extends YargsCommand {
         });
         return err(result.error);
       }
-      await validateAndUpdateAnswers(result.value!, answers);
+      const node = result.value;
+      if (node) {
+        const result = await traverse(node, answers, CLIUIInstance, coreExeceutor);
+        if (result.type === "error" && result.error) {
+          return err(result.error);
+        } else if (result.type === "cancel") {
+          return err(UserCancelError);
+        }
+      }
     }
 
     {

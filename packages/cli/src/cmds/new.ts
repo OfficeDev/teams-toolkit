@@ -24,18 +24,18 @@ import {
   isAutoSkipSelect,
   SingleSelectQuestion,
   MultiSelectQuestion,
+  traverse,
+  UserCancelError,
 } from "@microsoft/teamsfx-api";
 
-import activate from "../activate";
+import activate, { coreExeceutor } from "../activate";
 import * as constants from "../constants";
 import { NotFoundInputedFolder, SampleAppDownloadFailed, ProjectFolderExist } from "../error";
-import { validateAndUpdateAnswers, visitInteractively } from "../question/question";
 import { YargsCommand } from "../yargsCommand";
 import {
   flattenNodes,
   getJson,
   getSingleOptionString,
-  toConfigMap,
   toYargsOptions,
 } from "../utils";
 import CliTelemetry from "../telemetry/cliTelemetry";
@@ -44,6 +44,7 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
+import CLIUIInstance from "../userInteraction";
 
 export default class New extends YargsCommand {
   public readonly commandHead = `new`;
@@ -96,19 +97,12 @@ export default class New extends YargsCommand {
   public async runCommand(args: {
     [argName: string]: string | string[];
   }): Promise<Result<null, FxError>> {
-    if (args.interactive) {
-      if (this.root) {
-        /// TODO: enable remote validation function
-        const answers = await visitInteractively(this.root);
-        this.answers = toConfigMap(answers);
-      }
-    } else {
-      for (const name in this.params) {
-        this.answers.set(name, args[name] || this.params[name].default);
-      }
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart);
+
+    if (!args.interactive) {
+      CLIUIInstance.updatePresetAnswers(args);
     }
 
-    CliTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart);
     const result = await activate();
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateProject, result.error);
@@ -122,7 +116,15 @@ export default class New extends YargsCommand {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateProject, result.error);
         return err(result.error);
       }
-      await validateAndUpdateAnswers(result.value!, this.answers);
+      const node = result.value;
+      if (node) {
+        const result = await traverse(node, this.answers, CLIUIInstance, coreExeceutor);
+        if (result.type === "error" && result.error) {
+          return err(result.error);
+        } else if (result.type === "cancel") {
+          return err(UserCancelError);
+        }
+      }
     }
 
     {

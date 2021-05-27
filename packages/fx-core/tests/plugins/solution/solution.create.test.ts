@@ -3,7 +3,7 @@
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { it } from "mocha";
-import { TeamsAppSolution } from " ../../../src/plugins/solution";
+import { SolutionRunningState, TeamsAppSolution } from " ../../../src/plugins/solution";
 import {
   ConfigFolderName,
   ConfigMap,
@@ -39,7 +39,7 @@ const expect = chai.expect;
 describe("Solution running state on creation", () => {
   const solution = new TeamsAppSolution();
   it("should be idle", () => {
-    expect(solution.runningState).equal("idle");
+    expect(solution.runningState).equal(SolutionRunningState.Idle);
   });
 });
 

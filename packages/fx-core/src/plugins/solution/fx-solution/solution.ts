@@ -205,7 +205,7 @@ function newAppStudioPlugin(): LoadedPlugin {
 }
 
 // Maybe we need a state machine to track state transition.
-enum SolutionRunningState {
+export enum SolutionRunningState {
   Idle = "idle",
   ProvisionInProgress = "ProvisionInProgress",
   DeployInProgress = "DeployInProgress",
@@ -790,35 +790,34 @@ export class TeamsAppSolution implements Solution {
    * Checks whether solution's state is idle
    */
   private checkWhetherSolutionIsIdle(): Result<Void, FxError> {
-    if (this.runningState === SolutionRunningState.Idle) {
-      return ok(Void);
+    switch (this.runningState) {
+      case SolutionRunningState.Idle:
+        return ok(Void);
+      case SolutionRunningState.ProvisionInProgress:
+        return err(
+          returnUserError(
+            new Error("Provision in progress. Please wait for its completion."),
+            "Solution",
+            SolutionError.ProvisionInProgress
+          )
+        );
+      case SolutionRunningState.DeployInProgress:
+        return err(
+          returnUserError(
+            new Error("Deployment in progress. Please wait for its completion."),
+            "Solution",
+            SolutionError.DeploymentInProgress
+          )
+        );
+      case SolutionRunningState.PublishInProgress:
+        return err(
+          returnUserError(
+            new Error("Publish in progress. Please wait for its completion."),
+            "Solution",
+            SolutionError.PublishInProgress
+          )
+        );
     }
-
-    if (this.runningState === SolutionRunningState.ProvisionInProgress) {
-      return err(
-        returnUserError(
-          new Error("Provision in progress. Please wait for its completion."),
-          "Solution",
-          SolutionError.ProvisionInProgress
-        )
-      );
-    }
-    if (this.runningState === SolutionRunningState.DeployInProgress) {
-      return err(
-        returnUserError(
-          new Error("Deployment in progress. Please wait for its completion."),
-          "Solution",
-          SolutionError.DeploymentInProgress
-        )
-      );
-    }
-    return err(
-      returnSystemError(
-        new Error(`unknown solution state: ${this.runningState}`),
-        "Solution",
-        SolutionError.UnknownSolutionRunningState
-      )
-    );
   }
 
   private checkWetherProvisionSucceeded(solutionConfig: SolutionConfig): boolean {

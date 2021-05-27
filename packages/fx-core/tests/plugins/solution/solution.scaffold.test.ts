@@ -99,7 +99,7 @@ const validManifest = {
           "id": "{appClientId}",
           "resource": "{webApplicationInfoResource}"
       }
-  }
+  };
 
 describe("Solution scaffold()", () => {
   const mocker = sinon.createSandbox();
@@ -150,7 +150,7 @@ describe("Solution scaffold() reading manifest file with no app name", () => {
   const fileContent: Map<string, any> = new Map();
 
   const manifestWithNoAppName = _.cloneDeep(validManifest);
-  manifestWithNoAppName.name.short = ""
+  manifestWithNoAppName.name.short = "";
 
   beforeEach(() => {
     mocker.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {

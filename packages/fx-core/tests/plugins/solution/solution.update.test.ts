@@ -287,6 +287,68 @@ describe("update()", () => {
     expect(result.isOk()).equals(false);
     expect(mockedCtx.projectSettings).to.be.deep.equal(originalProjectSettings);
     // provisionSucceeded is not changed due to the failure of solution.update()
+    expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be.true;
+  });
+
+  it("shouldn't set provisionSucceeded to false when adding a new Function endpoint", async () => {
+    const solution = new TeamsAppSolution();
+    const mockedCtx = mockSolutionContext();
+    mockedCtx.answers = new ConfigMap();
+    mockedCtx.projectSettings = {
+      appName: "my app",
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        capabilities: [TabOptionItem.id],
+        activeResourcePlugins: [solution.fehostPlugin.name, solution.localDebug.name, solution.functionPlugin.name],
+        azureResources: [AzureResourceFunction.id],
+      },
+    };
+    mockedCtx.answers?.set(AzureSolutionQuestionNames.AddResources, [AzureResourceFunction.id]);
+    solution.doScaffold = async function (
+      _ctx: SolutionContext,
+      _selectedPlugins
+    ): Promise<Result<any, FxError>> {
+      return ok(Void);
+    };
+    // mock that provision already succeeded
+    mockedCtx.config.set(GLOBAL_CONFIG, new ConfigMap());
     mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+    const result = await solution.update(mockedCtx);
+    expect(result.isOk()).equals(true);
+    // provisionSucceeded is not changed because function is already added.
+    expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be.true;
+  });
+
+  it("should set provisionSucceeded to false when adding SQL to a project with Function", async () => {
+    const solution = new TeamsAppSolution();
+    const mockedCtx = mockSolutionContext();
+    mockedCtx.answers = new ConfigMap();
+    mockedCtx.projectSettings = {
+      appName: "my app",
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        capabilities: [TabOptionItem.id],
+        activeResourcePlugins: [solution.fehostPlugin.name, solution.localDebug.name, solution.functionPlugin.name],
+        azureResources: [AzureResourceFunction.id],
+      },
+    };
+    mockedCtx.answers?.set(AzureSolutionQuestionNames.AddResources, [AzureResourceFunction.id, AzureResourceSQL.id]);
+    solution.doScaffold = async function (
+      _ctx: SolutionContext,
+      _selectedPlugins
+    ): Promise<Result<any, FxError>> {
+      return ok(Void);
+    };
+    // mock that provision already succeeded
+    mockedCtx.config.set(GLOBAL_CONFIG, new ConfigMap());
+    mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+    const result = await solution.update(mockedCtx);
+    expect(result.isOk()).equals(true);
+    // provisionSucceeded is not changed because function is already added.
+    expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be.false;
   });
 });

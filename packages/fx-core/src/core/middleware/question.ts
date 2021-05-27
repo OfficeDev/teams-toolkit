@@ -46,14 +46,10 @@ export const QuestionModelMW: Middleware = async (
   const node = getQuestionRes.value;
   if (node) {
     const res = await traverse(node, inputs, core.tools.ui);
-    if (res.type === "error") {
-      ctx.result = err(res.error!);
-      return;
-    } else if (res.type === "cancel") {
-      ctx.result = err(UserCancelError);
+    if(res.isErr()){
+      ctx.result = err(res.error);
       return;
     }
   }
-
   await next();
 };

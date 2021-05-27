@@ -17,6 +17,7 @@ import {
   SolutionContext,
   AzureAccountProvider,
   SubscriptionInfo,
+  UserInteraction,
 } from "@microsoft/teamsfx-api";
 import { GLOBAL_CONFIG, SolutionError } from "./constants";
 import { v4 as uuidv4 } from "uuid";
@@ -124,7 +125,7 @@ function getExistingAnswers(config: SolutionConfig): CommonQuestions | undefined
 export async function askSubscription(
   config: SolutionConfig,
   azureAccountProvider?: AzureAccountProvider,
-  dialog?: Dialog
+  ui?:UserInteraction
 ): Promise<Result<{ subscriptionId: string; tenantId: string }, FxError>> {
   if (azureAccountProvider === undefined) {
     return err(
@@ -155,24 +156,23 @@ export async function askSubscription(
     const subscriptionNames: string[] = subscriptions.map(
       (subscription) => subscription.subscriptionName
     );
-    const subscriptionName = (
-      await dialog?.communicate(
-        new DialogMsg(DialogType.Ask, {
-          type: QuestionType.Radio,
-          description: "Select a subscription",
-          options: subscriptionNames,
-        })
-      )
-    )?.getAnswer();
-    if (subscriptionName === undefined) {
-      return err(
-        returnUserError(
-          new Error("No subscription selected"),
-          "Solution",
-          SolutionError.NoSubscriptionSelected
-        )
-      );
-    }
+    const askRes = await ui!.selectOption({
+      name: "askSub",
+      title: "Select a subscription",
+      options: subscriptionNames
+    }); 
+    if(askRes.isErr()) 
+      throw askRes.error;
+    // if (subscriptionName === undefined) {
+    //   return err(
+    //     returnUserError(
+    //       new Error("No subscription selected"),
+    //       "Solution",
+    //       SolutionError.NoSubscriptionSelected
+    //     )
+    //   );
+    // }
+    const subscriptionName = askRes.value.result;
     const subscription = subscriptions.find(
       (subscription) => subscription.subscriptionName === subscriptionName
     );
@@ -199,7 +199,6 @@ async function askCommonQuestions(
   ctx: SolutionContext,
   appName: string,
   config: SolutionConfig,
-  dialog?: Dialog,
   azureAccountProvider?: AzureAccountProvider,
   appstudioTokenJson?: object
 ): Promise<Result<CommonQuestions, FxError>> {
@@ -216,7 +215,7 @@ async function askCommonQuestions(
   const commonQuestions = new CommonQuestions();
 
   //1. check subscriptionId
-  const subscriptionResult = await askSubscription(config, azureAccountProvider, dialog);
+  const subscriptionResult = await askSubscription(config, azureAccountProvider, ctx.ui);
   if (subscriptionResult.isErr()) {
     return err(subscriptionResult.error);
   }
@@ -322,7 +321,6 @@ export async function fillInCommonQuestions(
     ctx,
     appName,
     config,
-    dialog,
     azureAccountProvider,
     appStudioJson
   );

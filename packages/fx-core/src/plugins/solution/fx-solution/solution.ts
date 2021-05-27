@@ -1939,7 +1939,7 @@ export class TeamsAppSolution implements Solution {
               )
             );
           }
-          const result = await askSubscription(ctx.config, ctx.azureAccountProvider, ctx.dialog);
+          const result = await askSubscription(ctx.config, ctx.azureAccountProvider, ctx.ui);
           if (result.isErr()) {
             return err(result.error);
           }
@@ -2064,7 +2064,7 @@ export class TeamsAppSolution implements Solution {
                   )
                 );
               }
-              const result = await askSubscription(ctx.config, ctx.azureAccountProvider, ctx.dialog);
+              const result = await askSubscription(ctx.config, ctx.azureAccountProvider, ctx.ui);
               if (result.isErr()) {
                 return err(result.error);
               }

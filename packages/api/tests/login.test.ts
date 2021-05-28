@@ -18,9 +18,6 @@ class TestAzureAccountProvider implements AzureAccountProvider {
     signout(): Promise<boolean> {
         throw new Error("Method not implemented.");
     }
-    setStatusChangeCallback({}: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean> {
-        throw new Error("Method not implemented.");
-    }
     setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean> {
         throw new Error("Method not implemented.");
     }
@@ -54,9 +51,6 @@ class GraphProvider implements GraphTokenProvider {
     signout(): Promise<boolean> {
         throw new Error("Method not implemented.");
     }
-    setStatusChangeCallback({}: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean> {
-        throw new Error("Method not implemented.");
-    }
     setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean> {
         throw new Error("Method not implemented.");
     }
@@ -79,9 +73,6 @@ class GraphProvider2 implements GraphTokenProvider {
         return result;
     }
     signout(): Promise<boolean> {
-        throw new Error("Method not implemented.");
-    }
-    setStatusChangeCallback({}: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean> {
         throw new Error("Method not implemented.");
     }
     setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean> {

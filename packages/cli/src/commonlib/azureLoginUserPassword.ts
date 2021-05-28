@@ -88,14 +88,6 @@ export class AzureAccountProviderUserPassword implements AzureAccountProvider {
         });
     }
 
-    async setStatusChangeCallback(
-      statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>
-    ): Promise<boolean> {
-        return new Promise((resolve) => {
-            resolve(true);
-        });
-    }
-
     public async getStatus(): Promise<LoginStatus> {
         return Promise.resolve(
             {

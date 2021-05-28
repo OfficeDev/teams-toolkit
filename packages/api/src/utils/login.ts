@@ -28,14 +28,6 @@ export interface AzureAccountProvider {
     signout(): Promise<boolean>
 
     /**
-     * Add update account info callback. If this method called twice, the latter will overwrite the previous execution.
-     * @param status SignedIn: User already sign in, SignedOut: User sign out.
-     * @param token SignedIn: access token string, SignedOut: undefined.
-     * @param accountInfo SignedIn: access token json object, SignedOut: undefined.
-     */
-    setStatusChangeCallback(statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean>;
-
-    /**
      * Add update account info callback 
      * @param name callback name
      * @param statusChange callback method
@@ -97,14 +89,6 @@ export interface AppStudioTokenProvider {
     signout(): Promise<boolean>;
 
     /**
-     * Add update account info callback. If this method called twice, the latter will overwrite the previous execution.
-     * @param status SignedIn: User already sign in, SignedOut: User sign out.
-     * @param token SignedIn: access token string, SignedOut: undefined.
-     * @param accountInfo SignedIn: access token json object, SignedOut: undefined.
-     */
-    setStatusChangeCallback(statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean>;
-
-    /**
      * Add update account info callback 
      * @param name callback name
      * @param statusChange callback method
@@ -144,14 +128,6 @@ export interface GraphTokenProvider {
      * Graph sign out
      */
     signout(): Promise<boolean>;
-
-    /**
-     * Add update account info callback. If this method called twice, the latter will overwrite the previous execution.
-     * @param status SignedIn: User already sign in, SignedOut: User sign out.
-     * @param token SignedIn: access token string, SignedOut: undefined.
-     * @param accountInfo SignedIn: access token json object, SignedOut: undefined.
-     */
-    setStatusChangeCallback(statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean>;
 
     /**
      * Add update account info callback 

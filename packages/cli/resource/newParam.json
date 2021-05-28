@@ -3,19 +3,20 @@
     "type": "singleSelect",
     "name": "scratch",
     "title": "Teams Toolkit: Create a new Teams app",
-    "option": [
+    "staticOptions": [
       {
         "id": "yes",
-        "label": "Create a new Teams app",
+        "label": "$(new-folder) Create a new Teams app",
         "detail": "Use the Teams Toolkit to create a new application."
       },
       {
         "id": "no",
-        "label": "Start from a sample",
+        "label": "$(heart) Start from a sample",
         "detail": "Use an existing sample as a starting point for your new application."
       }
     ],
     "default": "yes",
+    "placeholder": "Select an option",
     "skipSingleOption": true
   },
   "children": [
@@ -32,7 +33,9 @@
             "type": "singleSelect",
             "name": "solution",
             "title": "Select a solution",
-            "option": ["fx-solution-azure"],
+            "staticOptions": [
+              "fx-solution-azure"
+            ],
             "skipSingleOption": true
           },
           "children": [
@@ -41,7 +44,7 @@
                 "name": "capabilities",
                 "title": "Select capabilities",
                 "type": "multiSelect",
-                "option": [
+                "staticOptions": [
                   {
                     "id": "Tab",
                     "label": "Tab",
@@ -54,7 +57,7 @@
                     "label": "Bot",
                     "cliName": "bot",
                     "description": "Conversational Agent",
-                    "detail": "Bots allow users to interfact with your web service through text, interactive cards, and task modules."
+                    "detail": "Bots allow users to interact with your web service through text, interactive cards, and task modules."
                   },
                   {
                     "id": "MessagingExtension",
@@ -64,7 +67,10 @@
                     "detail": "Messaging Extensions allow users to interact with your web service through buttons and forms in the Microsoft Teams client."
                   }
                 ],
-                "default": ["Tab"],
+                "default": [
+                  "Tab"
+                ],
+                "placeholder": "Select at least 1 capability",
                 "validation": {
                   "minItems": 1
                 }
@@ -75,7 +81,7 @@
                     "name": "host-type",
                     "title": "Frontend hosting type",
                     "type": "singleSelect",
-                    "option": [
+                    "staticOptions": [
                       {
                         "id": "Azure",
                         "label": "Azure",
@@ -88,6 +94,7 @@
                       }
                     ],
                     "default": "Azure",
+                    "placeholder": "Select a hosting type",
                     "skipSingleOption": true
                   },
                   "condition": {
@@ -104,7 +111,7 @@
                             "type": "singleSelect",
                             "name": "spfx-framework-type",
                             "title": "Framework",
-                            "option": [
+                            "staticOptions": [
                               {
                                 "id": "none",
                                 "label": "None"
@@ -114,6 +121,7 @@
                                 "label": "React"
                               }
                             ],
+                            "placeholder": "Select an option",
                             "default": "none"
                           }
                         },
@@ -149,19 +157,20 @@
                         "name": "azure-resources",
                         "title": "Cloud resources",
                         "type": "multiSelect",
-                        "option": [
+                        "staticOptions": [
                           {
                             "id": "sql",
-                            "label": "Azure SQL Database"
+                            "label": "Azure SQL Database",
+                            "description": "Azure Function App will be also selected to access Azure SQL Database"
                           },
                           {
                             "id": "function",
                             "label": "Azure Function App"
                           }
                         ],
-                        "default": []
+                        "default": [],
+                        "placeholder": "Select a resource (optional)"
                       },
-                      "children": [],
                       "condition": {
                         "equals": "Azure"
                       }
@@ -172,7 +181,7 @@
                   "data": {
                     "name": "way-to-register-bot",
                     "type": "singleSelect",
-                    "option": [
+                    "staticOptions": [
                       {
                         "id": "create-new",
                         "label": "Create a new bot registration"
@@ -183,7 +192,8 @@
                       }
                     ],
                     "title": "Bot registration",
-                    "default": "create-new"
+                    "default": "create-new",
+                    "placeholder": "Select an option"
                   },
                   "children": [
                     {
@@ -197,13 +207,16 @@
                             "type": "text",
                             "title": "Enter bot id",
                             "default": "",
+                            "placeholder": "00000000-0000-0000-0000-00000000000",
+                            "prompt": "Open bot managment tool to get bot id",
                             "validation": {}
                           }
                         },
                         {
                           "data": {
                             "name": "bot-password",
-                            "type": "password",
+                            "type": "text",
+                            "password": true,
                             "title": "Enter bot password",
                             "default": "",
                             "validation": {}
@@ -216,7 +229,10 @@
                     }
                   ],
                   "condition": {
-                    "containsAny": ["Bot", "MessagingExtension"]
+                    "containsAny": [
+                      "Bot",
+                      "MessagingExtension"
+                    ]
                   }
                 },
                 {
@@ -224,7 +240,7 @@
                     "name": "programming-language",
                     "title": "Programming Language",
                     "type": "singleSelect",
-                    "option": [
+                    "staticOptions": [
                       {
                         "id": "javascript",
                         "label": "JavaScript"
@@ -234,8 +250,10 @@
                         "label": "TypeScript"
                       }
                     ],
-                    "default": "javascript",
-                    "skipSingleOption": true
+                    "default": "javascript"
+                  },
+                  "condition": {
+                    "minItems": 1
                   }
                 }
               ],
@@ -249,17 +267,16 @@
           "data": {
             "type": "folder",
             "name": "folder",
-            "title": "Workspace folder",
-            "validation": {
-              "required": true
-            }
+            "title": "Workspace folder"
           }
         },
         {
           "data": {
             "type": "text",
             "name": "app-name",
-            "title": "Application name"
+            "title": "Application name",
+            "validation": {},
+            "placeholder": "Application name"
           }
         }
       ]
@@ -269,7 +286,7 @@
         "type": "singleSelect",
         "name": "samples",
         "title": "Start from a sample",
-        "option": [
+        "staticOptions": [
           {
             "id": "todo-list-with-Azure-backend",
             "label": "Todo List with backend on Azure",
@@ -295,6 +312,7 @@
             "data": "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip"
           }
         ],
+        "placeholder": "Select a sample",
         "returnObject": true
       },
       "condition": {
@@ -305,10 +323,7 @@
           "data": {
             "type": "folder",
             "name": "folder",
-            "title": "Workspace folder",
-            "validation": {
-              "required": true
-            }
+            "title": "Workspace folder"
           }
         }
       ]

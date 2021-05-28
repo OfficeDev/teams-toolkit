@@ -28,7 +28,9 @@ const config = {
     loggerOptions: {
       // @ts-ignore
       loggerCallback(loglevel, message, containsPii) {
-        VsCodeLogInstance.info(message);
+        if (loglevel<=LogLevel.Error) {
+          VsCodeLogInstance.error(message);
+        }
       },
       piiLoggingEnabled: false,
       logLevel: LogLevel.Error,

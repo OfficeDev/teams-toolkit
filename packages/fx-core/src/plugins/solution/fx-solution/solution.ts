@@ -1295,9 +1295,10 @@ export class TeamsAppSolution implements Solution {
     stage: Stage,
     ctx: SolutionContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
+    const isDynamicQuestion = (ctx.answers?.platform === Platform.VSCode);
     const node = new QTreeNode({ type: "group" });
     let manifest: TeamsAppManifest | undefined = undefined;
-    if (stage !== Stage.create) {
+    if (stage !== Stage.create && isDynamicQuestion) {
       const checkRes = this.checkWhetherSolutionIsIdle();
       if (checkRes.isErr()) return err(checkRes.error);
 
@@ -1357,13 +1358,23 @@ export class TeamsAppSolution implements Solution {
       programmingLanguage.condition = { minItems: 1 };
       capNode.addChild(programmingLanguage);
     } else if (stage === Stage.provision) {
-      const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
-      if (provisioned) return ok(undefined);
-      const res = this.getSelectedPlugins(ctx);
-      if (res.isErr()) {
-        return err(res.error);
+      if(isDynamicQuestion){
+        const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
+        if (provisioned) return ok(undefined);
       }
-      for (const plugin of res.value) {
+      let pluginsToProvision:LoadedPlugin[];
+      if(isDynamicQuestion){
+        const res = this.getSelectedPlugins(ctx);
+        if (res.isErr()) {
+          return err(res.error);
+        }
+        pluginsToProvision = res.value;
+      }
+      else {
+        pluginsToProvision = this.allPlugins;
+      }
+      
+      for (const plugin of pluginsToProvision) {
         if (plugin.getQuestions) {
           const pluginCtx = getPluginContext(ctx, plugin.name, manifest);
           const getQuestionRes = await plugin.getQuestions(stage, pluginCtx);
@@ -1375,28 +1386,37 @@ export class TeamsAppSolution implements Solution {
         }
       }
     } else if (stage === Stage.deploy) {
-      const isAzureProject = this.isAzureProject(ctx);
-      const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
-      if (isAzureProject && !provisioned) {
-        return err(
-          returnUserError(
-            new Error(getStrings().solution.FailedToDeployBeforeProvision),
-            "Solution",
-            SolutionError.CannotDeployBeforeProvision
-          )
-        );
+      if(isDynamicQuestion){
+        const isAzureProject = this.isAzureProject(ctx);
+        const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
+        if (isAzureProject && !provisioned) {
+          return err(
+            returnUserError(
+              new Error(getStrings().solution.FailedToDeployBeforeProvision),
+              "Solution",
+              SolutionError.CannotDeployBeforeProvision
+            )
+          );
+        }
       }
-      const res = this.getSelectedPlugins(ctx);
-      if (res.isErr()) {
-        return err(
-          returnUserError(
-            new Error("No resource to deploy"),
-            "Solution",
-            SolutionError.NoResourceToDeploy
-          )
-        );
+      let pluginsToDeploy:LoadedPlugin[];
+      if(isDynamicQuestion){
+        const res = this.getSelectedPlugins(ctx);
+        if (res.isErr()) {
+          return err(
+            returnUserError(
+              new Error("No resource to deploy"),
+              "Solution",
+              SolutionError.NoResourceToDeploy
+            )
+          );
+        }
+        pluginsToDeploy = res.value.filter((plugin) => !!plugin.deploy);
       }
-      const pluginsToDeploy = res.value.filter((plugin) => !!plugin.deploy);
+      else {
+        pluginsToDeploy = this.allPlugins.filter((plugin) => !!plugin.deploy);
+      }
+      
       if (pluginsToDeploy.length === 0) {
         return err(
           returnUserError(
@@ -1435,34 +1455,36 @@ export class TeamsAppSolution implements Solution {
         }
       }
     } else if (stage === Stage.publish) {
-      const isAzureProject = this.isAzureProject(ctx);
-      const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
-      if (isAzureProject && !provisioned) {
-        return err(
-          returnUserError(
-            new Error(getStrings().solution.FailedToPublishBeforeProvision),
-            "Solution",
-            SolutionError.CannotPublishBeforeProvision
-          )
-        );
-      }
-      if (!provisioned && this.spfxSelected(ctx)) {
-        if (ctx.answers?.platform === Platform.VSCode) {
-          ctx.dialog?.communicate(
-            new DialogMsg(DialogType.Show, {
-              description: getStrings().solution.SPFxAskProvisionBeforePublish,
-              level: MsgLevel.Error,
-            })
-          );
-          throw CancelError;
-        } else {
+      if(isDynamicQuestion){
+        const isAzureProject = this.isAzureProject(ctx);
+        const provisioned = this.checkWetherProvisionSucceeded(ctx.config);
+        if (isAzureProject && !provisioned) {
           return err(
             returnUserError(
-              new Error(getStrings().solution.SPFxAskProvisionBeforePublish),
+              new Error(getStrings().solution.FailedToPublishBeforeProvision),
               "Solution",
               SolutionError.CannotPublishBeforeProvision
             )
           );
+        }
+        if (!provisioned && this.spfxSelected(ctx)) {
+          if (ctx.answers?.platform === Platform.VSCode) {
+            ctx.dialog?.communicate(
+              new DialogMsg(DialogType.Show, {
+                description: getStrings().solution.SPFxAskProvisionBeforePublish,
+                level: MsgLevel.Error,
+              })
+            );
+            throw CancelError;
+          } else {
+            return err(
+              returnUserError(
+                new Error(getStrings().solution.SPFxAskProvisionBeforePublish),
+                "Solution",
+                SolutionError.CannotPublishBeforeProvision
+              )
+            );
+          }
         }
       }
       const pluginsToPublish = [this.appStudioPlugin];
@@ -1968,9 +1990,10 @@ export class TeamsAppSolution implements Solution {
     ctx: SolutionContext,
     manifest?: TeamsAppManifest
   ): Promise<Result<QTreeNode | undefined, FxError>> {
+    const isDynamicQuestion = (ctx.answers?.platform === Platform.VSCode);
     const settings = this.getAzureSolutionSettings(ctx);
 
-    if (
+    if ( isDynamicQuestion &&
       !(
         settings.hostType === HostTypeOptionAzure.id &&
         settings.capabilities &&
@@ -1986,7 +2009,7 @@ export class TeamsAppSolution implements Solution {
       );
     }
 
-    const selectedPlugins = settings.activeResourcePlugins;
+    const selectedPlugins = settings.activeResourcePlugins || [];
 
     if (!selectedPlugins) {
       return err(
@@ -2041,7 +2064,7 @@ export class TeamsAppSolution implements Solution {
     }
 
     //APIM
-    if (this.apimPlugin.getQuestions && !alreadyHaveAPIM) {
+    if (this.apimPlugin.getQuestions && (!alreadyHaveAPIM || !isDynamicQuestion)) {
       const pluginCtx = getPluginContext(ctx, this.apimPlugin.name, manifest);
       const res = await this.apimPlugin.getQuestions(Stage.update, pluginCtx);
       if (res.isErr()) return res;
@@ -2084,11 +2107,12 @@ export class TeamsAppSolution implements Solution {
 
   async getQuestionsForAddCapability(
     ctx: SolutionContext,
-    manifest: TeamsAppManifest
+    manifest?: TeamsAppManifest
   ): Promise<Result<QTreeNode | undefined, FxError>> {
+    const isDynamicQuestion = (ctx.answers?.platform === Platform.VSCode);
     const settings = this.getAzureSolutionSettings(ctx);
 
-    if (!(settings.hostType === HostTypeOptionAzure.id)) {
+    if (!(settings.hostType === HostTypeOptionAzure.id) && isDynamicQuestion) {
       return err(
         returnUserError(
           new Error("Add capability is not supported for SPFx project"),
@@ -2098,13 +2122,8 @@ export class TeamsAppSolution implements Solution {
       );
     }
 
-    const capabilities = settings.capabilities;
+    const capabilities = settings.capabilities || [];
 
-    if (!capabilities) {
-      return err(
-        returnUserError(new Error("capabilities is empty"), "Solution", SolutionError.InternelError)
-      );
-    }
     const alreadyHaveTab = capabilities.includes(TabOptionItem.id);
 
     const alreadyHaveBotOrMe =
@@ -2127,7 +2146,7 @@ export class TeamsAppSolution implements Solution {
     const addCapNode = new QTreeNode(addCapQuestion);
 
     //Tab sub tree
-    if (!alreadyHaveTab) {
+    if (!alreadyHaveTab || !isDynamicQuestion) {
       const tabRes = await this.getTabScaffoldQuestions(ctx, false);
       if (tabRes.isErr()) return tabRes;
       if (tabRes.value) {
@@ -2138,12 +2157,11 @@ export class TeamsAppSolution implements Solution {
     }
 
     //Bot sub tree
-    if (!alreadyHaveBotOrMe && this.botPlugin.getQuestions) {
-      const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx);
+    if ((!alreadyHaveBotOrMe || !isDynamicQuestion) && this.botPlugin.getQuestions) {
       const pluginCtx = getPluginContext(
         ctx,
         this.botPlugin.name,
-        maybeManifest.isOk() ? maybeManifest.value : undefined
+        manifest
       );
       const res = await this.botPlugin.getQuestions(Stage.create, pluginCtx);
       if (res.isErr()) return res;
@@ -2164,13 +2182,17 @@ export class TeamsAppSolution implements Solution {
     func: Func,
     ctx: SolutionContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
+    const isDynamicQuestion = (ctx.answers?.platform === Platform.VSCode);
     const namespace = func.namespace;
     const array = namespace.split("/"); 
-    const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx);
-    if (maybeManifest.isErr()) {
-      return err(maybeManifest.error);
+    let manifest:TeamsAppManifest|undefined = undefined;
+    if(isDynamicQuestion){
+      const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx);
+      if (maybeManifest.isErr()) {
+        return err(maybeManifest.error);
+      }
+      manifest = maybeManifest.value;
     }
-    const manifest = maybeManifest.value;
     if (func.method === "addCapability") {
       return await this.getQuestionsForAddCapability(ctx, manifest);
     }

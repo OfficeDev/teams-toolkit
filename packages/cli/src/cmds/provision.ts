@@ -50,7 +50,7 @@ export default class Provision extends YargsCommand {
 
     const core = result.value;
     {
-      const result = await core.provisionResources(getSystemInputs());
+      const result = await core.provisionResources(getSystemInputs(rootFolder));
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Provision, result.error);
         return err(result.error);

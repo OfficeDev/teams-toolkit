@@ -16,7 +16,8 @@ import "mocha";
 describe("Question Model - Validation Test", () => {
     const inputs:Inputs = {
       platform: Platform.VSCode,
-      vscodeEnv: VsCodeEnv.local
+      vscodeEnv: VsCodeEnv.local,
+      projectPath: ""
     }
     describe("StringValidation", () => {
         it("equals", async () => {

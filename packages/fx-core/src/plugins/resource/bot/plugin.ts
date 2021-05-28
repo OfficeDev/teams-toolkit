@@ -701,6 +701,17 @@ export class TeamsBotImpl {
         appStudioToken!,
         aadDisplayName
       );
+
+      if (!this.config.scaffold.botId) {
+        this.config.scaffold.botId = botAuthCreds.clientId;
+      }
+      if (!this.config.scaffold.botPassword) {
+        this.config.scaffold.botPassword = botAuthCreds.clientSecret;
+      }
+      if (!this.config.scaffold.objectId) {
+        this.config.scaffold.objectId = botAuthCreds.objectId;
+      }
+      this.config.saveConfigIntoContext(this.ctx!); // Checkpoint for aad app provision.
     } else {
       botAuthCreds.clientId = this.config.scaffold.botId;
       botAuthCreds.clientSecret = this.config.scaffold.botPassword;
@@ -722,10 +733,10 @@ export class TeamsBotImpl {
     const botChannelRegistrationName = this.config.provision.botChannelRegName
       ? this.config.provision.botChannelRegName
       : ResourceNameFactory.createCommonName(
-          this.config.resourceNameSuffix,
-          this.ctx?.app.name.short,
-          MaxLengths.BOT_CHANNEL_REG_NAME
-        );
+        this.config.resourceNameSuffix,
+        this.ctx?.app.name.short,
+        MaxLengths.BOT_CHANNEL_REG_NAME
+      );
 
     Logger.info(Messages.ProvisioningAzureBotChannelRegistration);
     await AzureOperations.CreateBotChannelRegistration(
@@ -744,18 +755,6 @@ export class TeamsBotImpl {
       botChannelRegistrationName
     );
     Logger.info(Messages.SuccessfullyProvisionedMsTeamsChannel);
-
-    if (!this.config.scaffold.botId) {
-      this.config.scaffold.botId = botAuthCreds.clientId;
-    }
-
-    if (!this.config.scaffold.botPassword) {
-      this.config.scaffold.botPassword = botAuthCreds.clientSecret;
-    }
-
-    if (!this.config.scaffold.objectId) {
-      this.config.scaffold.objectId = botAuthCreds.objectId;
-    }
 
     if (!this.config.provision.botChannelRegName) {
       this.config.provision.botChannelRegName = botChannelRegistrationName;

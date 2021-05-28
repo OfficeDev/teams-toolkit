@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using Microsoft.AspNetCore.WebUtilities;
@@ -101,18 +102,25 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.Helpers
 
             // Click "Accept"
             ClickElementWithRetry(driver, By.Id("idSIButton9"));
-
+            
             Uri redirectedUrl = new Uri(driver.Url);
-            driver.Close();
-
             string authorizationCode = HttpUtility.ParseQueryString(redirectedUrl.Query).Get("code");
+            int retryTime = 0;
 
-            if (string.IsNullOrEmpty(authorizationCode))
+            do
             {
-                throw new Exception($"Failed to get authorization code from redirect url: {redirectedUrl.AbsoluteUri}");
-            }
+                if(!string.IsNullOrEmpty(authorizationCode))
+                {
+                    driver.Close();
+                    return authorizationCode;
+                }
+                Thread.Sleep(200 * ++retryTime);
+                redirectedUrl = new Uri(driver.Url);
+                authorizationCode = HttpUtility.ParseQueryString(redirectedUrl.Query).Get("code");
+            } while (retryTime < 3);
 
-            return authorizationCode;
+            driver.Close();
+            throw new Exception($"Failed to get authorization code from redirect url: {redirectedUrl.AbsoluteUri}");
         }
 
         public static string GetAuthorizationCode(IntegrationTestSettings settings, IConfiguration configuration)

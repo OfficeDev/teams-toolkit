@@ -85,8 +85,8 @@ export function getWorkspacePath(): string | undefined {
   return workspacePath;
 }
 
+ 
 export async function activate(): Promise<Result<Void, FxError>> {
-
   let result: Result<Void, FxError> = ok(Void);
   try {
     const telemetry = new VSCodeTelemetryReporter(
@@ -111,6 +111,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
     if (vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode) {
       appstudioLogin = AppStudioCodeSpaceTokenInstance;
     }
+
     appstudioLogin.setStatusChangeMap(
       "successfully-sign-in-m365",
       (status, token, accountInfo) => {

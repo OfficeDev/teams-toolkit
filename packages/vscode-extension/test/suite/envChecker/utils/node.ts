@@ -3,6 +3,8 @@
 
 import { cpUtils } from "../../../../src/debug/depsChecker/cpUtils";
 
+export const azureSupportedNodeVersions = ["10", "12", "14"];
+
 export async function getNodeVersion(): Promise<string | null> {
   const nodeVersionRegex = /v(?<major_version>\d+)\.(?<minor_version>\d+)\.(?<patch_version>\d+)/gm;
   try {

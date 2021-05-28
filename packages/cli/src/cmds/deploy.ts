@@ -65,7 +65,7 @@ export default class Deploy extends YargsCommand {
     const core = result.value;
     {
       /// TODO: this should be removed!
-      const result = await core.getQuestions(Stage.deploy, getSystemInputs());
+      const result = await core.getQuestions(Stage.deploy, getSystemInputs(rootFolder));
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Deploy, result.error);
         return err(result.error);
@@ -85,7 +85,7 @@ export default class Deploy extends YargsCommand {
     }
 
     {
-      const result = await core.deployArtifacts(getSystemInputs());
+      const result = await core.deployArtifacts(getSystemInputs(rootFolder));
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Deploy, result.error);
         return err(result.error);

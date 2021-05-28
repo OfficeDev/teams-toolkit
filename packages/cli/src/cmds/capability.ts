@@ -46,12 +46,10 @@ export class CapabilityAddTab extends YargsCommand {
       method: "addCapability"
     };
 
-    const answers = new ConfigMap();
-
     const core = result.value;
 
     {
-      const result = await core.executeUserTask(func, getSystemInputs());
+      const result = await core.executeUserTask(func, getSystemInputs(rootFolder));
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCap, result.error, {
           [TelemetryProperty.Capabilities]: this.commandHead
@@ -102,7 +100,7 @@ export class CapabilityAddBot extends YargsCommand {
 
     const core = result.value;
     {
-      const result = await core.executeUserTask(func, getSystemInputs());
+      const result = await core.executeUserTask(func, getSystemInputs(rootFolder));
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCap, result.error, {
           [TelemetryProperty.Capabilities]: this.commandHead
@@ -153,7 +151,7 @@ export class CapabilityAddMessageExtension extends YargsCommand {
 
     const core = result.value;
     {
-      const result = await core.executeUserTask!(func, getSystemInputs());
+      const result = await core.executeUserTask(func, getSystemInputs(rootFolder));
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCap, result.error, {
           [TelemetryProperty.Capabilities]: this.commandHead

@@ -90,6 +90,14 @@ export class AppStudioTokenProviderUserPassword implements AppStudioTokenProvide
         });
     }
 
+    public async getStatus(): Promise<LoginStatus> {
+        return Promise.resolve(
+            {
+                status: "SignedIn"
+            }
+        );
+    }
+
     setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean> {
         throw new Error("Method not implemented.");
     }

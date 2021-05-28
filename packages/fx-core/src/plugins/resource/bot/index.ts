@@ -158,7 +158,6 @@ export class TeamsBot implements Plugin {
       return res;
     } catch (e) {
       await ProgressBarFactory.closeProgressBar(); // Close all progress bars.
-      this.teamsBotImpl.config.saveConfigIntoContext(context); // Save config when exceptions occur.
 
       if (e instanceof UserError || e instanceof SystemError) {
         const res = err(e);

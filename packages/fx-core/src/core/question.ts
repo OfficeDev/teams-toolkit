@@ -64,13 +64,13 @@ export const QuestionSelectSolution: SingleSelectQuestion = {
 
 export const ScratchOptionYes: OptionItem = {
   id: "yes",
-  label: "$(new-folder) Create a new Teams app",
+  label: "Create a new Teams app",
   detail: "Use the Teams Toolkit to create a new application.",
 };
 
 export const ScratchOptionNo: OptionItem = {
   id: "no",
-  label: "$(heart) Start from a sample",
+  label: "Start from a sample",
   detail: "Use an existing sample as a starting point for your new application.",
 };
 

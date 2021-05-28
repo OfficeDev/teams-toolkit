@@ -82,14 +82,6 @@ export class GraphTokenProviderUserPassword implements GraphTokenProvider {
         });
     }
 
-    async setStatusChangeCallback(
-      statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>
-    ): Promise<boolean> {
-        return new Promise((resolve) => {
-            resolve(true);
-        });
-    }
-
     setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean> {
         throw new Error("Method not implemented.");
     }

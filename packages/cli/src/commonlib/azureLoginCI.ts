@@ -81,18 +81,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     });
   }
 
-  /**
-   * Add update account info callback
-   */
-  async setStatusChangeCallback(
-    statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>
-  ): Promise<boolean> {
-    // AzureAccountManager.statusChange = statusChange;
-    return new Promise((resolve) => {
-      resolve(true);
-    });
-  }
-
   async getSubscriptionList(azureToken: TokenCredentialsBase): Promise<AzureSubscription[]> {
     const client = new SubscriptionClient(azureToken);
     const subscriptions = await listAll(client.subscriptions, client.subscriptions.list());

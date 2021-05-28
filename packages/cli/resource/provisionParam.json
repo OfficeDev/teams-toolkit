@@ -52,7 +52,7 @@
             "name": "sql-skip-adding-user",
             "description": "Skip adding database user",
             "type": "singleSelect",
-            "option": [
+            "staticOptions": [
                 "true",
                 "false"
             ],

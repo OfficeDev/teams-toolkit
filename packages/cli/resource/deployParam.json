@@ -13,7 +13,7 @@
             "title": "Select resource(s) to deploy",
             "type": "multiSelect",
             "skipSingleOption": true,
-            "option": [
+            "staticOptions": [
                 {
                     "id": "fx-resource-frontend-hosting",
                     "label": "Tab Front-end",

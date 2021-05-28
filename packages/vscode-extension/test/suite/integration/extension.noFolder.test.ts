@@ -32,8 +32,6 @@ suite("Extension Integration Tests (No Folder)", async () => {
   });
 
   // test("Login test", async function (this: Mocha.Context) {
-  //   var accountCrendential = AzureAccountManager.getInstance().getAccountCredential();
-  //   var identityCredential = AzureAccountManager.getInstance().getIdentityCredential();
   //   chai.assert.equal(true, typeof(accountCrendential)!==null);
   //   chai.assert.equal(true, typeof(identityCredential)!==null);
   // });

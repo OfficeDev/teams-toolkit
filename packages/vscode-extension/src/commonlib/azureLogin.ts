@@ -53,45 +53,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   /**
-   * Get AccountCredential
-   *  - Use scenario : https://docs.microsoft.com/en-us/azure/developer/javascript/core/node-sdk-azure-authenticate
-   *  - NPM guideline : https://docs.microsoft.com/en-us/azure/developer/javascript/core/node-sdk-azure-authenticate
-   * @returns the instance of TokenCredentialsBase
-   */
-  getAccountCredential(showDialog = true): TokenCredentialsBase | undefined {
-    const azureAccount: AzureAccount =
-      vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
-    if (azureAccount.status === "LoggedIn") {
-      if (azureAccount.subscriptions.length > 0) {
-        if (AzureAccountManager.tenantId) {
-          for (let i = 0; i < azureAccount.sessions.length; ++i) {
-            const item = azureAccount.sessions[i];
-            if (item.tenantId == AzureAccountManager.tenantId) {
-              return item.credentials2;
-            }
-          }
-        }
-        return azureAccount.subscriptions[0].session.credentials2;
-      } else if (azureAccount.sessions.length > 0) {
-        return azureAccount.sessions[0].credentials2;
-      } else {
-        return undefined;
-      }
-    }
-    return undefined;
-  }
-
-  /**
-   * Get IdentityCredential
-   *  - Use scenario : https://docs.microsoft.com/en-us/azure/developer/javascript/core/node-sdk-azure-authenticate
-   *  - NPM guideline : https://www.npmjs.com/package/@azure/ms-rest-nodeauth
-   * @returns the instance of TokenCredential
-   */
-  getIdentityCredential(showDialog = true): TokenCredential | undefined {
-    throw new Error("Method not implemented.");
-  }
-
-  /**
    * Async get ms-rest-* [credential](https://github.com/Azure/ms-rest-nodeauth/blob/master/lib/credentials/tokenCredentialsBase.ts)
    */
   async getAccountCredentialAsync(showDialog = true): Promise<TokenCredentialsBase | undefined> {

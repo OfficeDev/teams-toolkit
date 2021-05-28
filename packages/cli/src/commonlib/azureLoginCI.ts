@@ -41,19 +41,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     return AzureAccountManager.instance;
   }
 
-  /**
-   * Get ms-rest-* [credential](https://github.com/Azure/ms-rest-nodeauth/blob/master/lib/credentials/tokenCredentialsBase.ts)
-   */
-  getAccountCredential(): TokenCredentialsBase | undefined {
-    return AzureAccountManager.tokenCredentialsBase;
-  }
-  /**
-   * Get identity [crendential](https://github.com/Azure/azure-sdk-for-js/blob/master/sdk/core/core-auth/src/tokenCredential.ts)
-   */
-  getIdentityCredential(): TokenCredential | undefined {
-    return AzureAccountManager.tokenCredential;
-  }
-
   async getAccountCredentialAsync(): Promise<TokenCredentialsBase | undefined> {
     if (AzureAccountManager.tokenCredentialsBase == undefined) {
       const authres = await msRestNodeAuth.loginWithServicePrincipalSecretWithAuthResponse(

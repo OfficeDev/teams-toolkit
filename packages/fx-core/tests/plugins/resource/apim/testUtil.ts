@@ -105,14 +105,6 @@ export class MockAzureAccountProvider implements AzureAccountProvider {
     throw BuildError(NotImplemented);
   }
 
-  getAccountCredential(): TokenCredentialsBase | undefined {
-    throw BuildError(NotImplemented);
-  }
-
-  getIdentityCredential(): TokenCredential | undefined {
-    throw BuildError(NotImplemented);
-  }
-
   getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
     throw BuildError(NotImplemented);
   }

@@ -129,26 +129,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   /**
-   * Get AccountCredential
-   *  - Use scenario : https://docs.microsoft.com/en-us/azure/developer/javascript/core/node-sdk-azure-authenticate
-   *  - NPM guideline : https://docs.microsoft.com/en-us/azure/developer/javascript/core/node-sdk-azure-authenticate
-   * @returns the instance of TokenCredentialsBase
-   */
-  getAccountCredential(showDialog = true): TokenCredentialsBase | undefined {
-    throw new Error("Method not implemented.");
-  }
-
-  /**
-   * Get IdentityCredential
-   *  - Use scenario : https://docs.microsoft.com/en-us/azure/developer/javascript/core/node-sdk-azure-authenticate
-   *  - NPM guideline : https://www.npmjs.com/package/@azure/ms-rest-nodeauth
-   * @returns the instance of TokenCredential
-   */
-  getIdentityCredential(showDialog = true): TokenCredential | undefined {
-    return undefined;
-  }
-
-  /**
    * Async get ms-rest-* [credential](https://github.com/Azure/ms-rest-nodeauth/blob/master/lib/credentials/tokenCredentialsBase.ts)
    */
   async getAccountCredentialAsync(

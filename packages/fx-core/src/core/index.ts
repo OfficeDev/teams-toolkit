@@ -653,7 +653,7 @@ class CoreImpl implements Core {
 
       let azureAccountLabel = "Sign in to Azure";
       let azureAccountContextValue = "signinAzure";
-      const token = this.ctx.azureAccountProvider?.getAccountCredential();
+      const token = await this.ctx.azureAccountProvider?.getAccountCredentialAsync();
       if (token !== undefined) {
         azureAccountLabel = (token as any).username ? (token as any).username : "";
         azureAccountContextValue = "signedinAzure";
@@ -701,7 +701,7 @@ class CoreImpl implements Core {
           accountInfo?: Record<string, unknown> | undefined
         ) => {
           if (status === "SignedIn") {
-            const token = this.ctx.azureAccountProvider?.getAccountCredential();
+            const token = await this.ctx.azureAccountProvider?.getAccountCredentialAsync();
             if (token !== undefined) {
               this.ctx.treeProvider?.refresh([
                 {

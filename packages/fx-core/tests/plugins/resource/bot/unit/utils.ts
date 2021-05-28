@@ -177,12 +177,6 @@ export function newPluginContext(): PluginContext {
       },
     },
     azureAccountProvider: {
-      getAccountCredential: (showDialog?: boolean) => {
-        return undefined;
-      },
-      getIdentityCredential: (showDialog?: boolean) => {
-        return undefined;
-      },
       getAccountCredentialAsync: (showDialog?: boolean) => {
         return Promise.resolve(undefined);
       },

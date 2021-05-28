@@ -229,6 +229,7 @@ export class FxCore implements Core {
         this.tools.treeProvider?.refresh([
           {
             commandId: "fx-extension.signinAzure",
+            
             label: (token as any).username ? (token as any).username : "",
             callback: signinAzureCallback,
             parent: TreeCategory.Account,
@@ -301,7 +302,7 @@ export class FxCore implements Core {
         accountInfo?: Record<string, unknown> | undefined
       ) => {
         if (status === "SignedIn") {
-          const token = await this.tools.tokenProvider.azureAccountProvider.getIdentityCredentialAsync();
+          const token = await this.tools.tokenProvider.azureAccountProvider.getAccountCredentialAsync();
           if (token !== undefined) {
             this.tools.treeProvider?.refresh([
               {

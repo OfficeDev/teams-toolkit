@@ -11,18 +11,6 @@ import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
  */
 export interface AzureAccountProvider {
     /**
-     * @deprecated
-     * Get ms-rest-* [credential](https://github.com/Azure/ms-rest-nodeauth/blob/master/lib/credentials/tokenCredentialsBase.ts)
-     * @param showDialog Control whether the UI layer displays pop-up windows.
-     */
-    getAccountCredential(showDialog?: boolean): TokenCredentialsBase | undefined;
-    /**
-     * @deprecated
-     * Get identity [crendential](https://github.com/Azure/azure-sdk-for-js/blob/master/sdk/core/core-auth/src/tokenCredential.ts)
-     * @param showDialog Control whether the UI layer displays pop-up windows.
-     */
-    getIdentityCredential(showDialog?: boolean): TokenCredential | undefined;
-    /**
      * Async get ms-rest-* [credential](https://github.com/Azure/ms-rest-nodeauth/blob/master/lib/credentials/tokenCredentialsBase.ts)
      * @param showDialog Control whether the UI layer displays pop-up windows.
      * @param tenantId Tenant or directory id
@@ -38,14 +26,6 @@ export interface AzureAccountProvider {
      * Azure sign out
      */
     signout(): Promise<boolean>
-
-    /**
-     * Add update account info callback. If this method called twice, the latter will overwrite the previous execution.
-     * @param status SignedIn: User already sign in, SignedOut: User sign out.
-     * @param token SignedIn: access token string, SignedOut: undefined.
-     * @param accountInfo SignedIn: access token json object, SignedOut: undefined.
-     */
-    setStatusChangeCallback(statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean>;
 
     /**
      * Add update account info callback 
@@ -109,14 +89,6 @@ export interface AppStudioTokenProvider {
     signout(): Promise<boolean>;
 
     /**
-     * Add update account info callback. If this method called twice, the latter will overwrite the previous execution.
-     * @param status SignedIn: User already sign in, SignedOut: User sign out.
-     * @param token SignedIn: access token string, SignedOut: undefined.
-     * @param accountInfo SignedIn: access token json object, SignedOut: undefined.
-     */
-    setStatusChangeCallback(statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean>;
-
-    /**
      * Add update account info callback 
      * @param name callback name
      * @param statusChange callback method
@@ -156,14 +128,6 @@ export interface GraphTokenProvider {
      * Graph sign out
      */
     signout(): Promise<boolean>;
-
-    /**
-     * Add update account info callback. If this method called twice, the latter will overwrite the previous execution.
-     * @param status SignedIn: User already sign in, SignedOut: User sign out.
-     * @param token SignedIn: access token string, SignedOut: undefined.
-     * @param accountInfo SignedIn: access token json object, SignedOut: undefined.
-     */
-    setStatusChangeCallback(statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean>;
 
     /**
      * Add update account info callback 

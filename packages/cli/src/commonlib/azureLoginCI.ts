@@ -10,7 +10,7 @@ import { SubscriptionClient } from "@azure/arm-subscriptions";
 import * as fs from "fs-extra";
 import * as path from "path";
 
-import { AzureAccountProvider, ConfigFolderName, err, FxError, ok, Result } from "@microsoft/teamsfx-api";
+import { AzureAccountProvider, ConfigFolderName, err, FxError, ok, Result, SubscriptionInfo } from "@microsoft/teamsfx-api";
 
 import { NotSupportedProjectType, NotFoundSubscriptionId } from "../error";
 import { login, LoginStatus } from "./common/login";
@@ -39,19 +39,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     }
 
     return AzureAccountManager.instance;
-  }
-
-  /**
-   * Get ms-rest-* [credential](https://github.com/Azure/ms-rest-nodeauth/blob/master/lib/credentials/tokenCredentialsBase.ts)
-   */
-  getAccountCredential(): TokenCredentialsBase | undefined {
-    return AzureAccountManager.tokenCredentialsBase;
-  }
-  /**
-   * Get identity [crendential](https://github.com/Azure/azure-sdk-for-js/blob/master/sdk/core/core-auth/src/tokenCredential.ts)
-   */
-  getIdentityCredential(): TokenCredential | undefined {
-    return AzureAccountManager.tokenCredential;
   }
 
   async getAccountCredentialAsync(): Promise<TokenCredentialsBase | undefined> {
@@ -89,18 +76,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     // if (AzureAccountManager.statusChange !== undefined) {
     //   await AzureAccountManager.statusChange("SignedOut", undefined, undefined);
     // }
-    return new Promise((resolve) => {
-      resolve(true);
-    });
-  }
-
-  /**
-   * Add update account info callback
-   */
-  async setStatusChangeCallback(
-    statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>
-  ): Promise<boolean> {
-    // AzureAccountManager.statusChange = statusChange;
     return new Promise((resolve) => {
       resolve(true);
     });
@@ -158,13 +133,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     throw new Error("Method not implemented.");
   }
 }
-
-// TODO: remove after api update
-export type SubscriptionInfo = {
-  subscriptionName: string;
-  subscriptionId: string;
-  tenantId: string;
-};
 
 interface PartialList<T> extends Array<T> {
   nextLink?: string;

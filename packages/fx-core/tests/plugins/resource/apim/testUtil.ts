@@ -88,29 +88,12 @@ export class MockAzureAccountProvider implements AzureAccountProvider {
   removeStatusChangeMap(name: string): Promise<boolean> {
     throw BuildError(NotImplemented);
   }
-  setStatusChangeCallback(
-    statusChange: (
-      status: string,
-      token?: string,
-      accountInfo?: Record<string, unknown>
-    ) => Promise<void>
-  ): Promise<boolean> {
-    throw BuildError(NotImplemented);
-  }
 
   signout(): Promise<boolean> {
     throw BuildError(NotImplemented);
   }
 
   getIdentityCredentialAsync(): Promise<TokenCredential | undefined> {
-    throw BuildError(NotImplemented);
-  }
-
-  getAccountCredential(): TokenCredentialsBase | undefined {
-    throw BuildError(NotImplemented);
-  }
-
-  getIdentityCredential(): TokenCredential | undefined {
     throw BuildError(NotImplemented);
   }
 
@@ -170,15 +153,6 @@ export class MockGraphTokenProvider implements GraphTokenProvider {
     throw BuildError(NotImplemented);
   }
   getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
-    throw BuildError(NotImplemented);
-  }
-  setStatusChangeCallback(
-    statusChange: (
-      status: string,
-      token?: string,
-      accountInfo?: Record<string, unknown>
-    ) => Promise<void>
-  ): Promise<boolean> {
     throw BuildError(NotImplemented);
   }
   signout(): Promise<boolean> {

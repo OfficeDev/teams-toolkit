@@ -77,11 +77,6 @@ const context: any = {
   },
   config: new Map<string, string>([["functionAppName", "ut"]]),
   azureAccountProvider: {
-    getAccountCredential: () => ({
-      signRequest: () => {
-        return;
-      },
-    }),
     getAccountCredentialAsync: async () => ({
       signRequest: () => {
         return;

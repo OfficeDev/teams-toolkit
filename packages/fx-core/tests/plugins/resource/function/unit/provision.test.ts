@@ -86,11 +86,6 @@ const context: any = {
     },
   },
   azureAccountProvider: {
-    getAccountCredential: () => ({
-      signRequest: () => {
-        return;
-      },
-    }),
     getAccountCredentialAsync: async () => ({
       signRequest: () => {
         return;

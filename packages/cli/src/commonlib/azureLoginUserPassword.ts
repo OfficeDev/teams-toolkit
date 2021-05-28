@@ -48,20 +48,6 @@ export class AzureAccountProviderUserPassword implements AzureAccountProvider {
         return AzureAccountProviderUserPassword.instance;
     }
 
-    /**
-     * Get ms-rest-* [credential](https://github.com/Azure/ms-rest-nodeauth/blob/master/lib/credentials/tokenCredentialsBase.ts)
-     */
-    getAccountCredential(): TokenCredentialsBase | undefined {
-        return AzureAccountProviderUserPassword.tokenCredentialsBase;
-    }
-
-    /**
-     * Get identity [crendential](https://github.com/Azure/azure-sdk-for-js/blob/master/sdk/core/core-auth/src/tokenCredential.ts)
-     */
-    getIdentityCredential(): TokenCredential | undefined {
-        return AzureAccountProviderUserPassword.tokenCredential;
-    }
-
     async getAccountCredentialAsync(): Promise<TokenCredentialsBase | undefined> {
         if (AzureAccountProviderUserPassword.tokenCredentialsBase == undefined) {
             const authres = await msRestNodeAuth.loginWithUsernamePassword(
@@ -99,14 +85,6 @@ export class AzureAccountProviderUserPassword implements AzureAccountProvider {
     public async signout(): Promise<boolean> {
         return new Promise((resolve) => {
           resolve(true);
-        });
-    }
-
-    async setStatusChangeCallback(
-      statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>
-    ): Promise<boolean> {
-        return new Promise((resolve) => {
-            resolve(true);
         });
     }
 

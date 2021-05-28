@@ -23,7 +23,9 @@ const config = {
   system: {
     loggerOptions: {
       loggerCallback(loglevel: any, message: any, containsPii: any) {
-        CLILogProvider.log(4 - loglevel, message);
+        if (this.logLevel<=LogLevel.Error) {
+          CLILogProvider.log(4 - loglevel, message);
+        }
       },
       piiLoggingEnabled: false,
       logLevel: LogLevel.Error
@@ -104,20 +106,6 @@ export class GraphLogin extends login implements GraphTokenProvider {
       await GraphLogin.statusChange("SignedOut", undefined, undefined);
     }
     await this.notifyStatus();
-    return new Promise((resolve) => {
-      resolve(true);
-    });
-  }
-
-  async setStatusChangeCallback(
-    statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>
-  ): Promise<boolean> {
-    GraphLogin.statusChange = statusChange;
-    if (GraphLogin.codeFlowInstance.account) {
-      const loginToken = await GraphLogin.codeFlowInstance.getToken();
-      const tokenJson = await this.getJsonObject();
-      await GraphLogin.statusChange("SignedIn", loginToken, tokenJson);
-    }
     return new Promise((resolve) => {
       resolve(true);
     });

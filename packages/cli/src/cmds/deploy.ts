@@ -79,10 +79,7 @@ export default class Deploy extends YargsCommand {
         if (components.length === 0) {
           CLIUIInstance.updatePresetAnswer(this.deployPluginNodeName, option.map(op => op.id));
         } else {
-          const labels = option.map(op => op.label);
-          const ids = option.map(op => op.id);
-          const indexes = components.map(component => labels.findIndex(label => label === component));
-          CLIUIInstance.updatePresetAnswer(this.deployPluginNodeName, indexes.map(index => ids[index]));
+          CLIUIInstance.updatePresetAnswer(this.deployPluginNodeName, components);
         }
       }
     }

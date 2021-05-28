@@ -48,9 +48,6 @@ export class TestHelper {
   } as StorageAccountsCreateResponse;
 
   static fakeAzureAccountProvider: AzureAccountProvider = {
-    getAccountCredential: () => {
-      return TestHelper.fakeCredential;
-    },
     getAccountCredentialAsync: async () => {
       return TestHelper.fakeCredential;
     },

@@ -28,7 +28,9 @@ const config = {
     loggerOptions: {
       // @ts-ignore
       loggerCallback(loglevel, message, containsPii) {
-        VsCodeLogInstance.info(message);
+        if (loglevel<=LogLevel.Error) {
+          VsCodeLogInstance.error(message);
+        }
       },
       piiLoggingEnabled: false,
       logLevel: LogLevel.Error,
@@ -134,24 +136,6 @@ export class GraphLogin extends login implements GraphTokenProvider {
       confirm
     );
     return Promise.resolve(userSelected === confirm);
-  }
-
-  async setStatusChangeCallback(
-    statusChange: (
-      status: string,
-      token?: string,
-      accountInfo?: Record<string, unknown>
-    ) => Promise<void>
-  ): Promise<boolean> {
-    GraphLogin.statusChange = statusChange;
-    if (GraphLogin.codeFlowInstance.account) {
-      const loginToken = await GraphLogin.codeFlowInstance.getToken();
-      const tokenJson = await this.getJsonObject();
-      await GraphLogin.statusChange("SignedIn", loginToken, tokenJson);
-    }
-    return new Promise((resolve) => {
-      resolve(true);
-    });
   }
 
   async getStatus(): Promise<LoginStatus> {

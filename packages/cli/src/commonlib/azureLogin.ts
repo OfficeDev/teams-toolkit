@@ -13,6 +13,7 @@ import {
   FxError,
   ok,
   Result,
+  SubscriptionInfo,
 } from "@microsoft/teamsfx-api";
 import { CodeFlowLogin, LoginFailureError, ConvertTokenToJson } from "./codeFlowLogin";
 import { MemoryCache } from "./memoryCache";
@@ -69,7 +70,9 @@ function getConfig(tenantId?: string) {
     system: {
       loggerOptions: {
         loggerCallback(loglevel: any, message: any, containsPii: any) {
-          CLILogProvider.log(4 - loglevel, message);
+          if (this.logLevel<=LogLevel.Error) {
+            CLILogProvider.log(4 - loglevel, message);
+          }
         },
         piiLoggingEnabled: false,
         logLevel: LogLevel.Error,
@@ -123,26 +126,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     }
 
     return AzureAccountManager.instance;
-  }
-
-  /**
-   * Get AccountCredential
-   *  - Use scenario : https://docs.microsoft.com/en-us/azure/developer/javascript/core/node-sdk-azure-authenticate
-   *  - NPM guideline : https://docs.microsoft.com/en-us/azure/developer/javascript/core/node-sdk-azure-authenticate
-   * @returns the instance of TokenCredentialsBase
-   */
-  getAccountCredential(showDialog = true): TokenCredentialsBase | undefined {
-    throw new Error("Method not implemented.");
-  }
-
-  /**
-   * Get IdentityCredential
-   *  - Use scenario : https://docs.microsoft.com/en-us/azure/developer/javascript/core/node-sdk-azure-authenticate
-   *  - NPM guideline : https://www.npmjs.com/package/@azure/ms-rest-nodeauth
-   * @returns the instance of TokenCredential
-   */
-  getIdentityCredential(showDialog = true): TokenCredential | undefined {
-    return undefined;
   }
 
   /**
@@ -349,27 +332,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     return Promise.resolve(true);
   }
 
-  /**
-   * Add update account info callback
-   */
-  async setStatusChangeCallback(
-    statusChange: (
-      status: string,
-      token?: string,
-      accountInfo?: Record<string, unknown>
-    ) => Promise<void>
-  ): Promise<boolean> {
-    AzureAccountManager.statusChange = statusChange;
-    await AzureAccountManager.codeFlowInstance.reloadCache();
-    if (AzureAccountManager.codeFlowInstance.account) {
-      const loginToken = await AzureAccountManager.codeFlowInstance.getToken(false);
-      const tokenJson = await this.getJsonObject();
-      this.setMemoryCache(loginToken, tokenJson);
-      await AzureAccountManager.statusChange("SignedIn", loginToken, tokenJson);
-    }
-    return Promise.resolve(true);
-  }
-
   async getStatus(): Promise<LoginStatus> {
     if (!AzureAccountManager.codeFlowInstance.account) {
       await AzureAccountManager.codeFlowInstance.reloadCache();
@@ -502,13 +464,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     throw NotFoundSubscriptionId();
   }
 }
-
-// TODO: remove after api update
-export type SubscriptionInfo = {
-  subscriptionName: string;
-  subscriptionId: string;
-  tenantId: string;
-};
 
 interface PartialList<T> extends Array<T> {
   nextLink?: string;

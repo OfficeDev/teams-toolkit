@@ -10,7 +10,7 @@ import { SubscriptionClient } from "@azure/arm-subscriptions";
 import * as fs from "fs-extra";
 import * as path from "path";
 
-import { AzureAccountProvider, ConfigFolderName, err, FxError, ok, Result } from "@microsoft/teamsfx-api";
+import { AzureAccountProvider, ConfigFolderName, err, FxError, ok, Result, SubscriptionInfo } from "@microsoft/teamsfx-api";
 
 import { NotSupportedProjectType, NotFoundSubscriptionId } from "../error";
 import { login, LoginStatus } from "./common/login";
@@ -158,13 +158,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     throw new Error("Method not implemented.");
   }
 }
-
-// TODO: remove after api update
-export type SubscriptionInfo = {
-  subscriptionName: string;
-  subscriptionId: string;
-  tenantId: string;
-};
 
 interface PartialList<T> extends Array<T> {
   nextLink?: string;

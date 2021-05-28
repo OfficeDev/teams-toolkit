@@ -183,6 +183,7 @@ export class CLIUserInteraction implements UserInteraction {
   }
 
   private async confirm(name: string, message: string): Promise<Result<boolean, FxError>> {
+    /// TODO: add default value.
     return this.runInquirer(this.toInquirerQuestion("confirm", name, message, undefined, undefined, undefined));
   }
 
@@ -402,6 +403,7 @@ export class CLIUserInteraction implements UserInteraction {
           break;
         }
         default: {
+          /// TODO: add default value.
           const result = await this.singleSelect(
             "MySingleSelectQuestion",
             message,

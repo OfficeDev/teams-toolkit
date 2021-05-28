@@ -231,11 +231,11 @@ export function getSystemInputs(projectPath?: string):Inputs{
 export function argsToInputs(params: { [_: string]: Options }, args: { [argName: string]: string|string[] }):Inputs{
   const inputs = getSystemInputs();
   for (const name in params) {
-    if (name.endsWith("folder")) {
+    if (name.endsWith("folder") && args[name]) {
       inputs[name] = path.resolve(args[name] as string);
     } 
     else {
-      inputs[name] = args[name] || params[name].default;
+      inputs[name] = args[name];
     }
   }
   const rootFolder = path.resolve(inputs["folder"] as string || "./");

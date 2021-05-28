@@ -2,7 +2,12 @@ import { IDepsAdapter } from "../../../../src/debug/depsChecker/checker";
 import * as process from "process";
 import * as path from "path";
 
-export class CustomDotnetInstallScript {
+export interface ICustomDotnetInstallScript {
+  getScriptPath(): string;
+}
+
+// This class is for mocking dotnet-install output and error.
+export class CustomOutputDotnetInstallScript implements ICustomDotnetInstallScript {
   private readonly _useCustomScript: boolean;
   private readonly _scriptExitCode: number;
   private readonly _scriptStdout: string;
@@ -26,6 +31,21 @@ export class CustomDotnetInstallScript {
   }
 }
 
+// This class is for mocking dotnet-install script path.
+export class CustomPathDotnetInstallScript implements ICustomDotnetInstallScript {
+  private readonly scriptPath: string;
+  /**
+   * @param scriptPath: the dir that contains the dotnet-install scripts.
+   */
+  constructor(scriptPath: string) {
+    this.scriptPath = scriptPath;
+  }
+
+  public getScriptPath(): string {
+    return this.scriptPath;
+  }
+}
+
 export class TestAdapter implements IDepsAdapter {
   private readonly _hasTeamsfxBackend: boolean;
   private readonly _dotnetCheckerEnabled: boolean;
@@ -34,7 +54,7 @@ export class TestAdapter implements IDepsAdapter {
 
   private readonly _clickCancel: boolean;
 
-  private readonly _customScript: CustomDotnetInstallScript;
+  private readonly _customScript: ICustomDotnetInstallScript;
 
   constructor(
     hasTeamsfxBackend: boolean,
@@ -42,7 +62,7 @@ export class TestAdapter implements IDepsAdapter {
     dotnetCheckerEnabled = true,
     funcToolCheckerEnabled = true,
     nodeCheckerEnabled = true,
-    customScript = new CustomDotnetInstallScript()
+    customScript: ICustomDotnetInstallScript = new CustomOutputDotnetInstallScript()
   ) {
     this._hasTeamsfxBackend = hasTeamsfxBackend;
     this._clickCancel = clickCancel;

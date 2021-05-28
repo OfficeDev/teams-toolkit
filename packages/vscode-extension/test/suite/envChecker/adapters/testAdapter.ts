@@ -35,7 +35,7 @@ export class CustomOutputDotnetInstallScript implements ICustomDotnetInstallScri
 export class CustomPathDotnetInstallScript implements ICustomDotnetInstallScript {
   private readonly scriptPath: string;
   /**
-   * @param targetPath: the dir that contains the dotnet-install scripts.
+   * @param scriptPath: the dir that contains the dotnet-install scripts.
    */
   constructor(scriptPath: string) {
     this.scriptPath = scriptPath;

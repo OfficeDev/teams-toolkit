@@ -270,6 +270,7 @@ export default class QuickStart extends React.Component<any, any> {
                   className="capabilitiesVideo"
                   controls
                   disablePictureInPicture
+                  onPlay={this.onWatchVideo}
                 >
                   <source src="https://aka.ms/teamsfx-video"></source>
                 </video>
@@ -279,6 +280,7 @@ export default class QuickStart extends React.Component<any, any> {
                     className="watchOnBrowser"
                     href="https://aka.ms/teamsfx-video"
                     target="_blank"
+                    onClick={this.onWatchVideo}
                   >
                     Watch on browser
                   </a>

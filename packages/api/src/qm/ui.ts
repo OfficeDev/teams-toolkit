@@ -6,7 +6,6 @@ import { FxError, UserCancelError } from "../error";
 import { OptionItem, StaticOption } from "../qm/question";
 
 export interface UIConfig<T> {
-  type: "radio" | "multibox" | "text" | "file" | "files" | "folder";
   name: string;
   title: string;
   placeholder?: string;
@@ -18,13 +17,11 @@ export interface UIConfig<T> {
 }
 
 export interface SingleSelectConfig extends UIConfig<string> {
-  type: "radio";
   options: StaticOption;
   returnObject?: boolean;
 }
 
 export interface MultiSelectConfig extends UIConfig<string[]> {
-  type: "multibox";
   options: StaticOption;
   returnObject?: boolean;
   onDidChangeSelection?: (
@@ -34,26 +31,21 @@ export interface MultiSelectConfig extends UIConfig<string[]> {
 }
 
 export interface InputTextConfig extends UIConfig<string> {
-  type: "text";
   password?: boolean;
 }
 
 export interface SelectFileConfig extends UIConfig<string> {
-  type: "file";
 };
 
 export interface SelectFilesConfig extends UIConfig<string[]> {
-  type: "files";
 };
 
 export interface SelectFolderConfig extends UIConfig<string> {
-  type: "folder";
 };
 
 export interface InputResult<T> {
-  type: "success" | "skip" | "cancel" | "back" | "error";
+  type: "success" | "skip" | "back";
   result?: T;
-  error?: FxError;
 }
 
 export type SingleSelectResult = InputResult<string | OptionItem>;
@@ -66,21 +58,20 @@ export type SelectFileResult = InputResult<string>;
 
 export type SelectFilesResult = InputResult<string[]>;
 
-export type SelectFolderResult = InputResult<string>;
-
-export type OpenUrlResult = InputResult<boolean>;
-
-export type ShowMessageResult = InputResult<string|undefined>;
-
-export type RunWithProgressResult = InputResult<any>;
+export type SelectFolderResult = InputResult<string>; 
 
 
 export interface TimeConsumingTask<T> {
   name: string;
+  /**
+   * whether ui support cancel or not
+   */
   cancelable:boolean;
-  total: number;
-  current: number;
+  current:number;
+  total:number;
+  showProgress:boolean;
   message: string;
+  isFinished: boolean;
   isCanceled: boolean;
   run(...args: any): Promise<T>;
   cancel(): void;
@@ -88,42 +79,46 @@ export interface TimeConsumingTask<T> {
 
 /// TODO: use Result<xxx, FxError> instead of SingleSelectResult/MultiSelectResult/xxx
 export interface UserInteraction {
-  selectOption: (config: SingleSelectConfig) => Promise<SingleSelectResult>;
-  selectOptions: (config: MultiSelectConfig) => Promise<MultiSelectResult>;
-  inputText: (config: InputTextConfig) => Promise<InputTextResult>;
-  selectFile: (config: SelectFileConfig) => Promise<SelectFileResult>;
-  selectFiles: (config: SelectFilesConfig) => Promise<SelectFilesResult>;
-  selectFolder: (config: SelectFolderConfig) => Promise<SelectFolderResult>;
-  openUrl(link: string): Promise<OpenUrlResult>;
+  selectOption: (config: SingleSelectConfig) => Promise<Result<SingleSelectResult,FxError>>;
+  selectOptions: (config: MultiSelectConfig) => Promise<Result<MultiSelectResult,FxError>>;
+  inputText: (config: InputTextConfig) => Promise<Result<InputTextResult,FxError>>;
+  selectFile: (config: SelectFileConfig) => Promise<Result<SelectFileResult,FxError>>;
+  selectFiles: (config: SelectFilesConfig) => Promise<Result<SelectFilesResult,FxError>>;
+  selectFolder: (config: SelectFolderConfig) => Promise<Result<SelectFolderResult,FxError>>;
+  
+  openUrl(link: string): Promise<Result<boolean,FxError>>;
   showMessage(
     level: "info" | "warn" | "error",
     message: string,
     modal: boolean,
     ...items: string[]
-  ): Promise<ShowMessageResult>;
-  runWithProgress(task: TimeConsumingTask<any>): Promise<RunWithProgressResult>;
+  ): Promise<Result<string|undefined,FxError>>;
+  runWithProgress(task: TimeConsumingTask<any>): Promise<Result<any,FxError>>;
 }
 
 export interface FunctionGroupTaskConfig<T>{
   name: string,
-  tasks: (() => Promise<Result<T, Error>>)[],
+  tasks: (() => Promise<Result<T, FxError>>)[],
   taskNames?: string[];
+  showProgress: boolean;
   cancelable: boolean,
-  concurrent: boolean,
-  fastFail: boolean
+  concurrent?: boolean,
+  fastFail?: boolean
 }
 
-export class FunctionGroupTask<T> implements TimeConsumingTask<Result<Result<T, Error>[], Error>> {
+export class TaskGroup<T> implements TimeConsumingTask<Result<Result<T, FxError>[], FxError>> {
   name: string;
-  current = 0;
-  total = 0;
+  current:number = 0;
+  total:number;
   message = "";
   isCanceled = false;
-  concurrent = true;
+  isFinished = false;
   cancelable = true;
-  fastFail = false;
-  tasks: (() => Promise<Result<T, Error>>)[];
+  concurrent?;
+  fastFail?;
+  tasks: (() => Promise<Result<T, FxError>>)[];
   taskNames?: string[];
+  showProgress:boolean;
   constructor(config: FunctionGroupTaskConfig<T>) {
     this.name = config.name;
     this.tasks = config.tasks;
@@ -131,14 +126,15 @@ export class FunctionGroupTask<T> implements TimeConsumingTask<Result<Result<T, 
     this.cancelable = config.cancelable;
     this.concurrent = config.concurrent;
     this.fastFail = config.fastFail;
+    this.showProgress = config.showProgress;
     this.total = this.tasks.length;
   }
-  async run(): Promise<Result<Result<T, Error>[], Error>> {
-    if (this.total === 0) return ok([]);
+  async run(): Promise<Result<Result<T, FxError>[], FxError>> {
+    if (this.tasks.length === 0) return ok([]);
     return new Promise(async (resolve) => {
-      let results: Result<T, Error>[] = [];
+      let results: Result<T, FxError>[] = [];
       if (!this.concurrent) {
-        for (let i = 0; i < this.total; ++i) {
+        for (let i = 0; i < this.tasks.length; ++i) {
           if (this.isCanceled === true) 
           {
             resolve(err(UserCancelError));
@@ -163,20 +159,27 @@ export class FunctionGroupTask<T> implements TimeConsumingTask<Result<Result<T, 
               return ;
             }
             results.push(err(e));
+          } finally{
+            this.current = i + 1;
           }
-          this.current = i + 1;
         }
+        this.isFinished = true;
       } else {
         let promiseResults = this.tasks.map((t) => t());
+        let finishNum = 0;
         promiseResults.forEach((p) => {
           p.then((v) => {
-            this.current++;
+            finishNum ++;
+            if(this.showProgress)
+              this.current = finishNum;
             if (v.isErr() && this.fastFail) {
               this.isCanceled = true;
               resolve(err(v.error));
             }
           }).catch((e) => {
-            this.current++;
+            finishNum ++;
+            if(this.showProgress)
+              this.current = finishNum;
             if (this.fastFail) {
               this.isCanceled = true;
               resolve(err(e));
@@ -184,6 +187,7 @@ export class FunctionGroupTask<T> implements TimeConsumingTask<Result<Result<T, 
           });
         });
         results = await Promise.all(promiseResults);
+        this.isFinished = true;
       }
       resolve(ok(results));
     });

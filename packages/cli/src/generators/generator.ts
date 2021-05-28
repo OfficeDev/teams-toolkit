@@ -15,7 +15,6 @@ import {
   SystemError,
   err,
   Stage,
-  Platform,
   ok,
   Func
 } from "@microsoft/teamsfx-api";
@@ -26,6 +25,7 @@ import { UnknownError } from "../error";
 import activate from "../activate";
 import { CliTelemetryReporter } from "../commonlib/telemetry";
 import { CliTelemetry } from "../telemetry/cliTelemetry";
+import { getSystemInputs } from "../utils";
 
 export abstract class Generator {
   abstract readonly commandName: string;
@@ -46,12 +46,12 @@ export abstract class Generator {
     if (result.isErr()) {
       return err(result.error);
     }
-
+    const inputs = getSystemInputs(projectPath);
     const core = result.value;
     {
       const result = this.doUserTask
-        ? await core.getQuestionsForUserTask!(this.func!, Platform.CLI)
-        : await core.getQuestions!(this.stage!, Platform.CLI);
+        ? await core.getQuestionsForUserTask!(this.func!, inputs)
+        : await core.getQuestions!(this.stage!, inputs);
 
       if (result.isErr()) {
         return err(result.error);

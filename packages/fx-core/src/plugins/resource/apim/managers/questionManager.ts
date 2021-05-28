@@ -9,8 +9,8 @@ import * as CLI from "../questions/cliQuestion";
 
 export interface IQuestionManager {
   callFunc(func: Func, ctx: PluginContext): Promise<any>;
-  update(apimConfig?: IApimPluginConfig): Promise<QTreeNode>;
-  deploy(apimConfig?: IApimPluginConfig): Promise<QTreeNode>;
+  update(ctx: PluginContext, apimConfig?: IApimPluginConfig): Promise<QTreeNode>;
+  deploy(ctx: PluginContext, apimConfig?: IApimPluginConfig): Promise<QTreeNode>;
 }
 
 export class VscQuestionManager implements IQuestionManager {
@@ -59,7 +59,7 @@ export class VscQuestionManager implements IQuestionManager {
     throw BuildError(NotImplemented);
   }
 
-  async update(apimConfig: IApimPluginConfig): Promise<QTreeNode> {
+  async update(ctx: PluginContext, apimConfig: IApimPluginConfig): Promise<QTreeNode> {
     const rootNode = new QTreeNode({
       type: NodeType.group,
     });
@@ -67,39 +67,39 @@ export class VscQuestionManager implements IQuestionManager {
       return rootNode;
     }
 
-    const question = this.apimServiceQuestion.getQuestion();
+    const question = this.apimServiceQuestion.getQuestion(ctx);
     const apimServiceNode = new QTreeNode(question);
     rootNode.addChild(apimServiceNode);
     return rootNode;
   }
 
-  async deploy(apimConfig: IApimPluginConfig): Promise<QTreeNode> {
+  async deploy(ctx: PluginContext, apimConfig: IApimPluginConfig): Promise<QTreeNode> {
     const rootNode = new QTreeNode({
       type: NodeType.group,
     });
 
     let documentNode: QTreeNode;
     if (!apimConfig.apiDocumentPath) {
-      const documentPathQuestion = this.openApiDocumentQuestion.getQuestion();
+      const documentPathQuestion = this.openApiDocumentQuestion.getQuestion(ctx);
       documentNode = new QTreeNode(documentPathQuestion);
     } else {
-      const documentPathFunc = this.existingOpenApiDocumentFunc.getQuestion();
+      const documentPathFunc = this.existingOpenApiDocumentFunc.getQuestion(ctx);
       documentNode = new QTreeNode(documentPathFunc);
     }
 
     rootNode.addChild(documentNode);
 
     if (!apimConfig.apiPrefix) {
-      const apiPrefixQuestion = this.apiPrefixQuestion.getQuestion();
+      const apiPrefixQuestion = this.apiPrefixQuestion.getQuestion(ctx);
       const apiPrefixQuestionNode = new QTreeNode(apiPrefixQuestion);
       documentNode.addChild(apiPrefixQuestionNode);
     }
 
-    const versionQuestion = this.apiVersionQuestion.getQuestion();
+    const versionQuestion = this.apiVersionQuestion.getQuestion(ctx);
     const versionQuestionNode = new QTreeNode(versionQuestion);
     documentNode.addChild(versionQuestionNode);
 
-    const newVersionQuestion = this.newApiVersionQuestion.getQuestion();
+    const newVersionQuestion = this.newApiVersionQuestion.getQuestion(ctx);
     const newVersionQuestionNode = new QTreeNode(newVersionQuestion);
     newVersionQuestionNode.condition = this.newApiVersionQuestion.condition();
     versionQuestionNode.addChild(newVersionQuestionNode);
@@ -132,7 +132,7 @@ export class CliQuestionManager implements IQuestionManager {
     throw BuildError(NotImplemented);
   }
 
-  async update(): Promise<QTreeNode> {
+  async update(ctx: PluginContext): Promise<QTreeNode> {
     const rootNode = new QTreeNode({
       type: NodeType.group,
     });
@@ -144,7 +144,7 @@ export class CliQuestionManager implements IQuestionManager {
     return rootNode;
   }
 
-  async deploy(): Promise<QTreeNode> {
+  async deploy(ctx: PluginContext): Promise<QTreeNode> {
     const rootNode = new QTreeNode({
       type: NodeType.group,
     });

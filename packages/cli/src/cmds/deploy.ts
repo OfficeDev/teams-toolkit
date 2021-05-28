@@ -3,27 +3,23 @@
 
 "use strict";
 
-import { Argv, Options } from "yargs";
 import * as path from "path";
+import { Argv, Options } from "yargs";
 
 import {
   FxError,
   err,
   ok,
   Result,
-  ConfigMap,
   Stage,
-  Platform,
   MultiSelectQuestion,
   OptionItem,
-  traverse,
-  UserCancelError
 } from "@microsoft/teamsfx-api";
 
-import activate, { coreExeceutor } from "../activate";
+import activate from "../activate";
 import * as constants from "../constants";
 import { YargsCommand } from "../yargsCommand";
-import { flattenNodes, getParamJson } from "../utils";
+import { flattenNodes, getParamJson, getSystemInputs } from "../utils";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
 import CLIUIInstance from "../userInteraction";
@@ -66,11 +62,10 @@ export default class Deploy extends YargsCommand {
       return err(result.error);
     }
 
-    const answers = new ConfigMap();
-
     const core = result.value;
     {
-      const result = await core.getQuestions!(Stage.deploy, Platform.CLI);
+      /// TODO: this should be removed!
+      const result = await core.getQuestions(Stage.deploy, getSystemInputs(rootFolder));
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Deploy, result.error);
         return err(result.error);
@@ -86,17 +81,11 @@ export default class Deploy extends YargsCommand {
         } else {
           CLIUIInstance.updatePresetAnswer(this.deployPluginNodeName, components);
         }
-        const result = await traverse(node, answers, CLIUIInstance, coreExeceutor);
-        if (result.type === "error" && result.error) {
-          return err(result.error);
-        } else if (result.type === "cancel") {
-          return err(UserCancelError);
-        }
       }
     }
 
     {
-      const result = await core.deploy(answers);
+      const result = await core.deployArtifacts(getSystemInputs(rootFolder));
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Deploy, result.error);
         return err(result.error);

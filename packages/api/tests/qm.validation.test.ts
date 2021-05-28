@@ -2,41 +2,22 @@
 // Licensed under the MIT license.
 
 import {
-    FileValidation,
-    Func,
-    FxError,
-    LocalFuncValidation,
-    NumberValidation,
-    ok,
-    Platform,
-    Inputs,
-    RemoteFuncValidation,
-    Result,
     StringArrayValidation,
     StringValidation,
-    ConfigMap,
+    Inputs,
+    Platform,
+    VsCodeEnv,
 } from "../src/index";
 import * as chai from "chai";
-import {RemoteFuncExecutor, validate} from "../src/qm/validation";
-import * as fs from "fs-extra";
-import * as os from "os";
-import * as path from "path";
-
+import {FuncValidation, validate} from "../src/qm/validation";
 import "mocha";
 
  
-const mockRemoteFuncExecutor: RemoteFuncExecutor = async function (func: Func, answers: ConfigMap): Promise<Result<string | undefined, FxError>> {
-    if (func.method === "mockValidator") {
-        const input = func.params as string;
-        if (input.length > 5) return ok("input too long");
-        else return ok(undefined);
-    }
-    return ok(undefined);
-};
-
-
 describe("Question Model - Validation Test", () => {
-    const inputs = new ConfigMap();
+    const inputs:Inputs = {
+      platform: Platform.VSCode,
+      vscodeEnv: VsCodeEnv.local
+    }
     describe("StringValidation", () => {
         it("equals", async () => {
             const validation: StringValidation = { equals: "123" };
@@ -182,88 +163,7 @@ describe("Question Model - Validation Test", () => {
             chai.assert.isTrue(res4 === undefined);
         });
     });
-    describe("NumberValidation", () => {
-        it("maximum,minimum", async () => {
-            const validation: NumberValidation = { maximum: 10, minimum: 5 };
-            const value1 = "4";
-            const res1 = await validate(validation, value1, inputs);
-            chai.assert.isTrue(res1 !== undefined);
-            const value2 = "8";
-            const res2 = await validate(validation, value2, inputs);
-            chai.assert.isTrue(res2 === undefined);
-            const value3 = "10";
-            const res3 = await validate(validation, value3, inputs);
-            chai.assert.isTrue(res3 === undefined);
-            const value4 = "100";
-            const res4 = await validate(validation, value4, inputs);
-            chai.assert.isTrue(res4 !== undefined);
-        });
-
-        it("exclusiveMaximum,exclusiveMinimumm", async () => {
-            const validation: NumberValidation = { exclusiveMaximum: 10, exclusiveMinimum: 5 };
-            const value1 = "5";
-            const res1 = await validate(validation, value1, inputs);
-            chai.assert.isTrue(res1 !== undefined);
-            const value2 = "10";
-            const res2 = await validate(validation, value2, inputs);
-            chai.assert.isTrue(res2 !== undefined);
-            const value3 = "11";
-            const res3 = await validate(validation, value3, inputs);
-            chai.assert.isTrue(res3 !== undefined);
-            const value4 = "8";
-            const res4 = await validate(validation, value4, inputs);
-            chai.assert.isTrue(res4 === undefined);
-        });
-
-        it("multipleOf", async () => {
-            const validation: NumberValidation = { multipleOf: 10 };
-            const value1 = "50";
-            const res1 = await validate(validation, value1, inputs);
-            chai.assert.isTrue(res1 === undefined);
-            const value2 = "10";
-            const res2 = await validate(validation, value2, inputs);
-            chai.assert.isTrue(res2 === undefined);
-            const value3 = "11";
-            const res3 = await validate(validation, value3, inputs);
-            chai.assert.isTrue(res3 !== undefined);
-            const value4 = "8";
-            const res4 = await validate(validation, value4, inputs);
-            chai.assert.isTrue(res4 !== undefined);
-        });
-
-        it("enum", async () => {
-            const validation: NumberValidation = { enum: [1, 3, 5, 7] };
-            const value1 = "1";
-            const res1 = await validate(validation, value1, inputs);
-            chai.assert.isTrue(res1 === undefined);
-            const value2 = "3";
-            const res2 = await validate(validation, value2, inputs);
-            chai.assert.isTrue(res2 === undefined);
-            const value3 = "2";
-            const res3 = await validate(validation, value3, inputs);
-            chai.assert.isTrue(res3 !== undefined);
-            const value4 = "8";
-            const res4 = await validate(validation, value4, inputs);
-            chai.assert.isTrue(res4 !== undefined);
-        });
-
-        it("equals", async () => {
-            const validation: NumberValidation = { equals: 2 };
-            const value1 = "-2";
-            const res1 = await validate(validation, value1, inputs);
-            chai.assert.isTrue(res1 !== undefined);
-            const value2 = "3";
-            const res2 = await validate(validation, value2, inputs);
-            chai.assert.isTrue(res2 !== undefined);
-            const value3 = "2";
-            const res3 = await validate(validation, value3, inputs);
-            chai.assert.isTrue(res3 === undefined);
-            const value4 = "8";
-            const res4 = await validate(validation, value4, inputs);
-            chai.assert.isTrue(res4 !== undefined);
-        });
-    });
-
+     
     describe("StringArrayValidation", () => {
         it("maxItems,minItems", async () => {
             const validation: StringArrayValidation = { maxItems: 3, minItems: 1 };
@@ -380,10 +280,10 @@ describe("Question Model - Validation Test", () => {
 
 
 
-    it("LocalFuncValidation", async () => {
-        const validation: LocalFuncValidation = {
+    it("FuncValidation", async () => {
+        const validation: FuncValidation<string> = {
             validFunc: function(input: string): string | undefined | Promise<string | undefined> {
-                if (input.length > 5) return "length > 5";
+                if ((input as string).length > 5) return "length > 5";
                 return undefined;
             }
         };
@@ -396,55 +296,5 @@ describe("Question Model - Validation Test", () => {
         const value3 = "";
         const res3 = await validate(validation, value3, inputs);
         chai.assert.isTrue(res3 === undefined);
-    });
-    describe("FileValidation", () => {
-        it("exists", async () => {
-            const validation: FileValidation = {
-                exists: true
-            };
-            const folder = os.tmpdir();
-            const value1 = folder;
-            const res1 = await validate(validation, value1, inputs);
-            chai.assert.isTrue(res1 === undefined);
-            const filePath = path.resolve(folder, `${new Date().getTime()}.txt`);
-            await fs.ensureFile(filePath);
-            const res2 = await validate(validation, filePath, inputs);
-            chai.assert.isTrue(res2 === undefined);
-            await fs.remove(filePath);
-            const res3 = await validate(validation, filePath, inputs);
-            chai.assert.isTrue(res3 !== undefined);
-        });
-
-        it("notExist", async () => {
-            const validation: FileValidation = {
-                exists: false
-            };
-            const folder = os.tmpdir();
-            const value1 = folder;
-            const res1 = await validate(validation, value1, inputs);
-            chai.assert.isTrue(res1 !== undefined);
-            const filePath = path.resolve(folder, `${new Date().getTime()}.txt`);
-            await fs.ensureFile(filePath);
-            const res2 = await validate(validation, filePath, inputs);
-            chai.assert.isTrue(res2 !== undefined);
-            await fs.remove(filePath);
-            const res3 = await validate(validation, filePath, inputs);
-            chai.assert.isTrue(res3 === undefined);
-        });
-    });
-
-    it("RemoteFuncValidation", async () => {
-        const validation: RemoteFuncValidation = {
-            namespace: "",
-            method: "mockValidator"
-        };
-         
-        inputs.set("app-name", "myapp");
-        const value1 = "1234888888888888888856";
-        const res1 = await validate(validation, value1, inputs, mockRemoteFuncExecutor);
-        chai.assert.isTrue(res1 === "input too long");
-        const value2 = "1234";
-        const res2 = await validate(validation, value2, inputs, mockRemoteFuncExecutor);
-        chai.assert.isTrue(res2 === undefined);
     });
 });

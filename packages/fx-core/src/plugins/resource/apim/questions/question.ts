@@ -20,7 +20,7 @@ export interface IQuestionService {
   executeFunc?(ctx: PluginContext): Promise<string | OptionItem | OptionItem[]>;
 
   // Generate the question
-  getQuestion(): Question;
+  getQuestion(ctx: PluginContext): Question;
 }
 
 export class BaseQuestionService {

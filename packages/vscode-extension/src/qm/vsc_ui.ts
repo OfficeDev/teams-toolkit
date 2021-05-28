@@ -24,9 +24,6 @@ import {
   SelectFileResult,
   SelectFilesResult,
   SelectFolderResult,
-  OpenUrlResult,
-  ShowMessageResult,
-  RunWithProgressResult,
   OptionItem,
   Result,
   returnSystemError,
@@ -37,11 +34,15 @@ import {
   MultiSelectConfig,
   InputTextConfig,
   TimeConsumingTask,
+  UserInteraction,
   UIConfig,
-  UserInteraction
+  err,
+  assembleError,
+  ok
 } from "@microsoft/teamsfx-api";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { sleep } from "../utils/commonUtils";
+import * as StringResources from "../resources/Strings.json";
 
 export interface FxQuickPickItem extends QuickPickItem {
   id: string;
@@ -106,16 +107,14 @@ export class VsCodeUI implements UserInteraction {
     this.context = context;
   }
 
-  async selectOption(option: SingleSelectConfig): Promise<SingleSelectResult> {
+  async selectOption(option: SingleSelectConfig): Promise<Result<SingleSelectResult,FxError>> {
     if (option.options.length === 0) {
-      return {
-        type: "error",
-        error: returnSystemError(
+      return  err(returnSystemError(
           new Error("select option is empty"),
           ExtensionSource,
           ExtensionErrors.EmptySelectOption
         )
-      };
+      );
     }
     const okButton: QuickInputButton = {
       iconPath: Uri.file(this.context.asAbsolutePath("media/ok.svg")),
@@ -136,7 +135,7 @@ export class VsCodeUI implements UserInteraction {
         quickPick.step = option.step;
         quickPick.totalSteps = option.totalSteps;
       }
-      return await new Promise<SingleSelectResult>(
+      return await new Promise<Result<SingleSelectResult,FxError>>(
         async (resolve): Promise<void> => {
           // set items
           quickPick.items = option.options.map((i: string | OptionItem) => getFxQuickPickItem(i));
@@ -166,16 +165,16 @@ export class VsCodeUI implements UserInteraction {
             )
               result = item.id;
             else result = getOptionItem(item);
-            resolve({ type: "success", result: result });
+            resolve(ok({ type: "success", result: result }));
           };
 
           disposables.push(
             quickPick.onDidAccept(onDidAccept),
             quickPick.onDidHide(() => {
-              resolve({ type: "cancel" });
+              resolve(err(UserCancelError));
             }),
             quickPick.onDidTriggerButton((button) => {
-              if (button === QuickInputButtons.Back) resolve({ type: "back" });
+              if (button === QuickInputButtons.Back) resolve(ok({ type: "back" }));
               else onDidAccept();
             })
           );
@@ -191,16 +190,14 @@ export class VsCodeUI implements UserInteraction {
     }
   }
 
-  async selectOptions(option: MultiSelectConfig): Promise<MultiSelectResult> {
+  async selectOptions(option: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> {
     if (option.options.length === 0) {
-      return {
-        type: "error",
-        error: returnSystemError(
+      return err(returnSystemError(
           new Error("select option is empty"),
           ExtensionSource,
           ExtensionErrors.EmptySelectOption
         )
-      };
+      );
     }
     const okButton: QuickInputButton = {
       iconPath: Uri.file(this.context.asAbsolutePath("media/ok.svg")),
@@ -222,7 +219,7 @@ export class VsCodeUI implements UserInteraction {
         quickPick.totalSteps = option.totalSteps;
       }
       const preIds: Set<string> = new Set<string>();
-      return await new Promise<MultiSelectResult>(
+      return await new Promise<Result<MultiSelectResult, FxError>>(
         async (resolve): Promise<void> => {
           // set items
           quickPick.items = option.options.map((i: string | OptionItem) => getFxQuickPickItem(i));
@@ -262,16 +259,16 @@ export class VsCodeUI implements UserInteraction {
             )
               result = strArray;
             else result = quickPick.selectedItems.map((i) => getOptionItem(i));
-            resolve({ type: "success", result: result });
+            resolve(ok({ type: "success", result: result }));
           };
 
           disposables.push(
             quickPick.onDidAccept(onDidAccept),
             quickPick.onDidHide(() => {
-              resolve({ type: "cancel" });
+              resolve(err(UserCancelError));
             }),
             quickPick.onDidTriggerButton((button) => {
-              if (button === QuickInputButtons.Back) resolve({ type: "back" });
+              if (button === QuickInputButtons.Back) resolve(ok({ type: "back" }));
               else onDidAccept();
             })
           );
@@ -313,7 +310,7 @@ export class VsCodeUI implements UserInteraction {
     }
   }
 
-  async inputText(option: InputTextConfig): Promise<InputTextResult> {
+  async inputText(option: InputTextConfig): Promise<Result<InputTextResult, FxError>> {
     const okButton: QuickInputButton = {
       iconPath: Uri.file(this.context.asAbsolutePath("media/ok.svg")),
       tooltip: "ok"
@@ -333,13 +330,13 @@ export class VsCodeUI implements UserInteraction {
         inputBox.step = option.step;
         inputBox.totalSteps = option.totalSteps;
       }
-      return await new Promise<InputTextResult>((resolve): void => {
+      return await new Promise<Result<InputTextResult, FxError>>((resolve): void => {
         const onDidAccept = async () => {
           const validationRes = option.validation
             ? await option.validation(inputBox.value)
             : undefined;
           if (!validationRes) {
-            resolve({ type: "success", result: inputBox.value });
+            resolve(ok({ type: "success", result: inputBox.value }));
           } else {
             inputBox.validationMessage = validationRes;
           }
@@ -357,10 +354,10 @@ export class VsCodeUI implements UserInteraction {
           }),
           inputBox.onDidAccept(onDidAccept),
           inputBox.onDidHide(() => {
-            resolve({ type: "cancel" });
+            resolve(err(UserCancelError));
           }),
           inputBox.onDidTriggerButton((button) => {
-            if (button === QuickInputButtons.Back) resolve({ type: "back" });
+            if (button === QuickInputButtons.Back) resolve(ok({ type: "back" }));
             else onDidAccept();
           })
         );
@@ -374,22 +371,22 @@ export class VsCodeUI implements UserInteraction {
     }
   }
 
-  async selectFolder(config: SelectFolderConfig): Promise<SelectFolderResult> {
-    return this.selectFileInQuickPick(config, config.default);
+  async selectFolder(config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> {
+    return this.selectFileInQuickPick(config, "folder", config.default);
   }
 
-  async selectFile(config: SelectFileConfig): Promise<SelectFileResult> {
-    return this.selectFileInQuickPick(config, config.default);
+  async selectFile(config: SelectFileConfig): Promise<Result<SelectFileResult, FxError>> {
+    return this.selectFileInQuickPick(config, "file", config.default);
   }
 
-  async selectFiles(config: SelectFilesConfig): Promise<SelectFilesResult> {
-    return this.selectFileInQuickPick(config, config.default ? config.default.join(";") : undefined);
+  async selectFiles(config: SelectFilesConfig): Promise<Result<SelectFilesResult, FxError>> {
+    return this.selectFileInQuickPick(config, "files", config.default ? config.default.join(";") : undefined);
   }
 
-  async selectFileInQuickPick(config: SelectFileConfig, defaultValue?: string): Promise<SelectFileResult>;
-  async selectFileInQuickPick(config: SelectFilesConfig, defaultValue?: string): Promise<SelectFilesResult>;
-  async selectFileInQuickPick(config: SelectFolderConfig, defaultValue?: string): Promise<SelectFolderResult>;
-  async selectFileInQuickPick(config: SelectFileConfig|SelectFilesConfig|SelectFolderConfig, defaultValue?: string): Promise<InputResult<string|string[]>> {
+  async selectFileInQuickPick(config: SelectFileConfig, type:"file"|"files"|"folder", defaultValue?: string): Promise<Result<SelectFileResult, FxError>>;
+  async selectFileInQuickPick(config: SelectFilesConfig, type:"file"|"files"|"folder", defaultValue?: string): Promise<Result<SelectFilesResult, FxError>>;
+  async selectFileInQuickPick(config: SelectFolderConfig, type:"file"|"files"|"folder", defaultValue?: string): Promise<Result<SelectFolderResult, FxError>>;
+  async selectFileInQuickPick(config: UIConfig<any>, type:"file"|"files"|"folder", defaultValue?: string): Promise< Result<InputResult<string[]|string>, FxError>> {
     /// TODO: use generic constraints.
     const okButton: QuickInputButton = {
       iconPath: Uri.file(this.context.asAbsolutePath("media/ok.svg")),
@@ -410,25 +407,27 @@ export class VsCodeUI implements UserInteraction {
         quickPick.step = config.step;
         quickPick.totalSteps = config.totalSteps;
       }
+      let fileSelectorIsOpen = false;
       return await new Promise(
-        async (resolve): Promise<void> => {
+        async (resolve) => {
           const onDidAccept = () => {
             const result = quickPick.items[0].detail;
             if (result && result.length > 0) {
-              if (config.type === "files") {
-                resolve({ type: "success", result: result.split(";")});
+              if (type === "files") {
+                resolve(ok({ type: "success", result: result.split(";")}));
               } else {
-                resolve({ type: "success", result: result });
+                resolve(ok({ type: "success", result: result }));
               }
             }
           };
 
           disposables.push(
             quickPick.onDidHide(() => {
-              resolve({ type: "cancel" });
+              if(fileSelectorIsOpen === false)
+                resolve(err(UserCancelError));
             }),
             quickPick.onDidTriggerButton((button) => {
-              if (button === QuickInputButtons.Back) resolve({ type: "back" });
+              if (button === QuickInputButtons.Back) resolve(ok({ type: "back" }));
               else onDidAccept();
             })
           );
@@ -437,57 +436,41 @@ export class VsCodeUI implements UserInteraction {
           quickPick.items = [
             { label: config.prompt || "Select file/folder", detail: defaultValue }
           ];
-          const onDidChangeSelection = async function(items: QuickPickItem[]): Promise<any> {
-            const defaultUrl = items[0].detail;
+          const showFileSelectDialog = async function(defaultUrl?:string){
+            fileSelectorIsOpen = true;
             const uriList: Uri[] | undefined = await window.showOpenDialog({
               defaultUri: defaultUrl ? Uri.file(defaultUrl) : undefined,
-              canSelectFiles: config.type === "file" || config.type === "files",
-              canSelectFolders: config.type === "folder",
-              canSelectMany: config.type === "files",
+              canSelectFiles: type === "file" || type === "files",
+              canSelectFolders: type === "folder",
+              canSelectMany: type === "files",
               title: config.title
             });
+            fileSelectorIsOpen = false;
             if (uriList && uriList.length > 0) {
-              if (config.type === "files") {
+              if (type === "files") {
                 const results = uriList.map((u) => u.fsPath);
                 const resultString = results.join(";");
                 quickPick.items = [
                   { label: config.prompt || "Select file/folder", detail: resultString }
                 ];
-                resolve({ type: "success", result: results });
+                resolve(ok({ type: "success", result: results }));
               } else {
                 const result = uriList[0].fsPath;
                 quickPick.items = [
                   { label: config.prompt || "Select file/folder", detail: result }
                 ];
-                resolve({ type: "success", result: result });
+                resolve(ok({ type: "success", result: result }));
               }
             }
+          };
+          const onDidChangeSelection = async function(items: QuickPickItem[]): Promise<any> {
+            const defaultUrl = items[0].detail;
+            await showFileSelectDialog(defaultUrl);
           };
           disposables.push(quickPick.onDidChangeSelection(onDidChangeSelection));
           disposables.push(quickPick);
           quickPick.show();
-
-          const uriList: Uri[] | undefined = await window.showOpenDialog({
-            defaultUri: defaultValue ? Uri.file(defaultValue) : undefined,
-            canSelectFiles: config.type === "file" || config.type === "files",
-            canSelectFolders: config.type === "folder",
-            canSelectMany: config.type === "files",
-            title: config.title
-          });
-          if (uriList && uriList.length > 0) {
-            if (config.type === "files") {
-              const results = uriList.map((u) => u.fsPath);
-              const resultString = results.join(";");
-              quickPick.items = [
-                { label: config.prompt || "Select file/folder", detail: resultString }
-              ];
-              resolve({ type: "success", result: results });
-            } else {
-              const result = uriList[0].fsPath;
-              quickPick.items = [{ label: config.prompt || "Select file/folder", detail: result }];
-              resolve({ type: "success", result: result });
-            }
-          }
+          await showFileSelectDialog(defaultValue);
         }
       );
     } finally {
@@ -497,18 +480,14 @@ export class VsCodeUI implements UserInteraction {
     }
   }
 
-  async openUrl(link: string): Promise<OpenUrlResult> {
+  async openUrl(link: string): Promise<Result<boolean,FxError>> {
     const uri = Uri.parse(link);
     return new Promise(async resolve => {
       env.openExternal(uri).then(v=>{
         if(v)
-          resolve({ type: "success", result: v });
+          resolve(ok(v));
         else 
-          resolve({ type: "error", error: returnSystemError(
-          new Error(`Cannot open ${link}.`),
-          ExtensionSource,
-          ExtensionErrors.OpenExternalFailed
-        )});
+          resolve(err(UserCancelError));
       })
     });
   }
@@ -518,7 +497,7 @@ export class VsCodeUI implements UserInteraction {
     message: string,
     modal: boolean,
     ...items: string[]
-  ): Promise<ShowMessageResult> {
+  ): Promise<Result<string|undefined,FxError>> {
     return new Promise(async resolve => {
       const option = { modal: modal };
       try {
@@ -536,75 +515,73 @@ export class VsCodeUI implements UserInteraction {
             promise = window.showErrorMessage(message, option, ...items);
         }
         promise.then(v=>{
-          resolve({ type: "success", result: v });
+          if(v)
+            resolve(ok(v));
+          else 
+            resolve(err(UserCancelError));
         });
       } catch (error) {
-        resolve({ type: "error", error: returnSystemError(
-          error,
-          ExtensionSource,
-          ExtensionErrors.UnknwonError
-        )});
+        resolve(err(assembleError(error)));
       }
     });
-  }
-
-  async runWithProgress(
-    task: TimeConsumingTask<Result<any, FxError>>
-  ): Promise<RunWithProgressResult> {
+  } 
+  async runWithProgress( task: TimeConsumingTask<any>): Promise<Result<any, FxError>> {
     return new Promise(async (resolve) => {
       window.withProgress(
         {
           location: ProgressLocation.Notification,
-          title: task.name,
           cancellable: task.cancelable
         },
         async (progress, token): Promise<any> => {
           if(task.cancelable){
             token.onCancellationRequested(() => {
               task.cancel();
-              resolve({
-                type: "error",
-                error: UserCancelError
-              });
+              resolve(err(UserCancelError));
             });
           }
-          
-          const startTime = new Date().getTime();
           const res = task.run();
-          progress.report({ increment: 0 });
-          let lastLength = 0;
-          res.then((v:any) => { 
+          let lastReport = 0;
+          res.then(async (v:any) => { 
+            report(task);
+            await sleep(100);
             resolve(v) 
           }).catch((e:any) => { 
-            resolve({
-              type: "error",
-              error: returnSystemError(
-                e,
-                ExtensionSource,
-                ExtensionErrors.UnknwonError
-              )
-            })
+            resolve(err(assembleError(e)))
           });
-          while ((task.current < task.total) && !task.isCanceled) {
-            const inc = task.current - lastLength;
-            if (inc > 0) {
-              const elapsedTime = new Date().getTime() - startTime;
-              const remainingTime = (elapsedTime * (task.total - task.current)) / task.current;
-              progress.report({
-                increment: (inc * 100) / task.total,
-                message: `progress: ${Math.round(
-                  (task.current * 100) / task.total
-                )} %, remaining time: ${Math.round(remainingTime)} ms 
-                ${task.message !== undefined && task.message !== "" ? "("+task.message+")" : ""}`
-              });
-              lastLength += inc;
-            }
+          const head = `${StringResources.vsc.progressHandler.teamsToolkitComponent} ${task.name}`;
+          
+          const report = (task:TimeConsumingTask<any>)=>{
+            body = task.showProgress? `: ${Math.round(task.current*100/task.total)} %` : `: [${task.current+1}/${task.total}]`;
+            tail = task.message? ` ${task.message}` : StringResources.vsc.progressHandler.prepareTask;
+            message = `${head}${body}${tail}`;
+            if(task.showProgress)
+              progress.report({ increment: (task.current-lastReport)*100/task.total, message: message});
+            else 
+              progress.report({ message: message});
+          };
+          let body,tail,message:string;
+          if(task.showProgress){
+            report(task);
+            do{
+              const inc = (task.current-lastReport)*100/task.total;
+              const delta = task.current - lastReport;
+              if (inc > 0) {
+                report(task);
+                lastReport += delta;
+              }
+              await sleep(100);
+            } while (task.current < task.total && !task.isCanceled);
+            report(task);
             await sleep(100);
           }
-          if (task.isCanceled) resolve({
-            type: "error",
-            error: UserCancelError
-          });
+          else {
+            do{
+              report(task);
+              await sleep(100);
+            } while (task.current < task.total && !task.isCanceled)
+          }
+          if(task.isCanceled) 
+            resolve(err(UserCancelError));
         }
       );
     });

@@ -5,6 +5,7 @@ import {
   AzureSolutionSettings,
   Func,
   FxError,
+  Inputs,
   NodeType,
   PluginContext,
   QTreeNode,
@@ -212,13 +213,37 @@ export class FunctionPluginImpl {
     return ResultFactory.Success();
   }
 
-  public getQuestions(stage: Stage, ctx: PluginContext): Result<QTreeNode | undefined, FxError> {
+  public getQuestionsForUserTask(func: Func, ctx: PluginContext): Result<QTreeNode | undefined, FxError> {
     const res = new QTreeNode({
       type: NodeType.group,
     });
+    if (func.method === "addResource") {
+      functionNameQuestion.validation = {
+        validFunc: async(input: string, previousInputs: Inputs) : Promise<string | undefined> => {
+          const workingPath: string = this.getFunctionProjectRootPath(ctx);
+          const name = input as string;
+          if (!name || !RegularExpr.validFunctionNamePattern.test(name)) {
+            return ErrorMessages.invalidFunctionName;
+          }
 
-    if (stage === Stage.update) {
-      res.addChild(functionNameQuestion);
+          const stage: Stage | undefined = previousInputs[QuestionKey.stage] as Stage;
+          if (stage === Stage.create) {
+            return undefined;
+          }
+
+          const language: FunctionLanguage =
+            (previousInputs[QuestionKey.programmingLanguage] as FunctionLanguage) ??
+            (ctx.configOfOtherPlugins
+              .get(DependentPluginInfo.solutionPluginName)
+              ?.get(DependentPluginInfo.programmingLanguage) as FunctionLanguage);
+
+          // If language is unknown, skip checking and let scaffold handle the error.
+          if (language && (await FunctionScaffold.doesFunctionPathExist(workingPath, language, name))) {
+            return ErrorMessages.functionAlreadyExists;
+          }
+        }
+      };
+      res.addChild(new QTreeNode(functionNameQuestion));
     }
 
     return ResultFactory.Success(res);

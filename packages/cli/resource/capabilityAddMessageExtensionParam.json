@@ -3,7 +3,7 @@
         "data": {
             "type": "folder",
             "name": "folder",
-            "description": "Select root folder of the project",
+            "title": "Select root folder of the project",
             "default": "./"
         }
     },
@@ -12,13 +12,20 @@
             "name": "capabilities",
             "title": "Choose capabilities",
             "type": "multiSelect",
-            "option": [
+            "staticOptions": [
+                {
+                    "id": "Tab",
+                    "label": "Tab",
+                    "cliName": "tab",
+                    "description": "UI-based app",
+                    "detail": "Tabs are Teams-aware webpages embedded in Microsoft Teams."
+                },
                 {
                     "id": "Bot",
                     "label": "Bot",
                     "cliName": "bot",
                     "description": "Conversational Agent",
-                    "detail": "Bots allow users to interfact with your web service through text, interactive cards, and task modules."
+                    "detail": "Bots allow users to interact with your web service through text, interactive cards, and task modules."
                 },
                 {
                     "id": "MessagingExtension",
@@ -38,7 +45,7 @@
         "data": {
             "name": "way-to-register-bot",
             "type": "singleSelect",
-            "option": [
+            "staticOptions": [
                 {
                     "id": "create-new",
                     "label": "Create a new bot registration"
@@ -49,7 +56,8 @@
                 }
             ],
             "title": "Bot registration",
-            "default": "create-new"
+            "default": "create-new",
+            "placeholder": "Select an option"
         },
         "condition": {
             "containsAny": [
@@ -64,13 +72,16 @@
             "type": "text",
             "title": "Enter bot id",
             "default": "",
+            "placeholder": "00000000-0000-0000-0000-00000000000",
+            "prompt": "Open bot managment tool to get bot id",
             "validation": {}
         }
     },
     {
         "data": {
             "name": "bot-password",
-            "type": "password",
+            "type": "text",
+            "password": true,
             "title": "Enter bot password",
             "default": "",
             "validation": {}

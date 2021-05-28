@@ -1,14 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import {
-  ConfigMap,
   FuncQuestion,
+  Inputs,
   MultiSelectQuestion,
   NodeType,
+  ok,
   OptionItem,
   returnSystemError,
   SingleSelectQuestion,
   StaticOption,
+  Void,
 } from "@microsoft/teamsfx-api";
 import { SolutionError } from "./constants";
 
@@ -95,8 +97,9 @@ export const FrontendHostTypeQuestion: SingleSelectQuestion = {
   name: AzureSolutionQuestionNames.HostType,
   title: "Frontend hosting type",
   type: NodeType.singleSelect,
-  option: (previousAnswers?: ConfigMap): StaticOption => {
-    const cap = previousAnswers?.getStringArray(AzureSolutionQuestionNames.Capabilities);
+  option:[HostTypeOptionAzure, HostTypeOptionSPFx],
+  dynamicOptions: (previousAnswers: Inputs): StaticOption => {
+    const cap = previousAnswers[AzureSolutionQuestionNames.Capabilities] as string[];
     if (cap) {
       if (cap.includes(BotOptionItem.id) || cap.includes(MessageExtensionItem.id))
         return [HostTypeOptionAzure];
@@ -191,16 +194,21 @@ export const DeployPluginSelectQuestion: MultiSelectQuestion = {
 export const AskSubscriptionQuestion: FuncQuestion = {
   name: AzureSolutionQuestionNames.AskSub,
   type: NodeType.func,
-  namespace: "fx-solution-azure",
-  method: "askSubscription",
+  func: async (inputs: Inputs): Promise<Void> => {
+    return ok(Void);
+  }
 };
 
 export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
   name: AzureSolutionQuestionNames.ProgrammingLanguage,
   title: "Programming Language",
   type: NodeType.singleSelect,
-  option: (previousAnswers?: ConfigMap): StaticOption => {
-    const hostType = previousAnswers?.getString(AzureSolutionQuestionNames.HostType);
+  option:  [
+    { id: "javascript", label: "JavaScript" },
+    { id: "typescript", label: "TypeScript" },
+  ],
+  dynamicOptions: (inputs: Inputs): StaticOption => {
+    const hostType = inputs[AzureSolutionQuestionNames.HostType] as string;
     if (HostTypeOptionSPFx.id === hostType) return [{ id: "typescript", label: "TypeScript" }];
     return [
       { id: "javascript", label: "JavaScript" },
@@ -208,8 +216,8 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
     ];
   },
   default: "javascript",
-  placeholder: (previousAnswers?: ConfigMap): string => {
-    const hostType = previousAnswers?.getString(AzureSolutionQuestionNames.HostType);
+  placeholder:(inputs: Inputs): string => {
+    const hostType = inputs[AzureSolutionQuestionNames.HostType] as string;
     if (HostTypeOptionSPFx.id === hostType) return "SPFx is currently supporting TypeScript only.";
     return "Select a programming language.";
   },

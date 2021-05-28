@@ -3,14 +3,14 @@
 
 "use strict";
 
+import path from "path";
 import { Argv, Options } from "yargs";
-import * as path from "path";
 
-import { FxError, err, ok, Result, ConfigMap, Stage, Platform, traverse, UserCancelError } from "@microsoft/teamsfx-api";
+import { FxError, err, ok, Result } from "@microsoft/teamsfx-api";
 
-import activate, { coreExeceutor } from "../activate";
+import activate from "../activate";
 import * as constants from "../constants";
-import { getParamJson, setSubscriptionId } from "../utils";
+import { getParamJson, getSystemInputs, setSubscriptionId } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
@@ -48,28 +48,9 @@ export default class Provision extends YargsCommand {
       return err(result.error);
     }
 
-    const answers = new ConfigMap();
-
     const core = result.value;
     {
-      const result = await core.getQuestions!(Stage.provision, Platform.CLI);
-      if (result.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Provision, result.error);
-        return err(result.error);
-      }
-      const node = result.value;
-      if (node) {
-        const result = await traverse(node, answers, CLIUIInstance, coreExeceutor);
-        if (result.type === "error" && result.error) {
-          return err(result.error);
-        } else if (result.type === "cancel") {
-          return err(UserCancelError);
-        }
-      }
-    }
-
-    {
-      const result = await core.provision(answers);
+      const result = await core.provisionResources(getSystemInputs(rootFolder));
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Provision, result.error);
         return err(result.error);

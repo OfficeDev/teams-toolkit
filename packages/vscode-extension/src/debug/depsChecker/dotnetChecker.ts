@@ -398,7 +398,7 @@ export class DotnetChecker implements IDepsChecker {
     dotnetInstallDir: string
   ): Promise<string[]> {
     const command = [
-      isWindows() ? DotnetChecker.escapeFilePath(this.getDotnetInstallScriptPath()) : this.getDotnetInstallScriptPath(),
+      this.getDotnetInstallScriptPath(),
       "-InstallDir",
       isWindows() ? DotnetChecker.escapeFilePath(dotnetInstallDir) : dotnetInstallDir,
       "-Channel",

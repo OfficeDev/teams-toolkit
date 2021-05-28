@@ -38,7 +38,8 @@ const botIdQuestion = new QTreeNode({
 
 const botPasswordQuestion = new QTreeNode({
   name: QuestionNames.GET_BOT_PASSWORD,
-  type: NodeType.password,
+  type: NodeType.text,
+  password: true,
   title: "Enter bot password",
   default: "",
   validation: {

@@ -57,16 +57,6 @@ function isTeamsfxTask(task: vscode.Task): boolean {
   return false;
 }
 
-function displayTerminal(taskName: string): boolean {
-  const terminal = vscode.window.terminals.find(t => t.name === taskName);
-  if (terminal !== undefined && terminal !== vscode.window.activeTerminal) {
-    terminal.show(true);
-    return true;
-  }
-
-  return false;
-}
-
 function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent): void {
   if (ext.workspaceUri && isWorkspaceSupported(ext.workspaceUri.fsPath)) {
     const task = event.execution.task;
@@ -83,24 +73,21 @@ function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent): void
 
 function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): void {
   const task = event.execution.task;
-  const activeTerminal = vscode.window.activeTerminal;
-
   if (task.scope !== undefined && isTeamsfxTask(task)) {
     allRunningTeamsfxTasks.delete({ source: task.source, name: task.name, scope: task.scope });
   } else if (isNpmInstallTask(task)) {
     activeNpmInstallTasks.delete(task.name);
-
-    if (activeTerminal?.name === task.name && event.exitCode === 0) {
-      // when the task in active terminal is ended successfully.
+    // when the task in the active terminal is ended.
+    // TODO: only when the task is ended successfully.
+    if (vscode.window.activeTerminal?.name === task.name) {
       for (const hiddenTaskName of activeNpmInstallTasks) {
-        // display the first hidden terminal.
-        if (displayTerminal(hiddenTaskName)) {
+        // show the first hiden terminal.
+        const hiddenTerminal = vscode.window.terminals.find(t => t.name === hiddenTaskName);
+        if (hiddenTerminal !== undefined) {
+          hiddenTerminal.show(true);
           return;
         }
       }
-    } else if (activeTerminal?.name !== task.name && event.exitCode !== 0) {
-      // when the task in hidden terminal failed to execute.
-      displayTerminal(task.name);
     }
   }
 }

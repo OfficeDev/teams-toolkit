@@ -7,6 +7,7 @@ import { TeamsAppSolution } from " ../../../src/plugins/solution";
 import {
   ConfigFolderName,
   ConfigMap,
+  Platform,
   SolutionConfig,
   SolutionContext,
   TeamsAppManifest,
@@ -51,6 +52,7 @@ describe("Solution create()", async () => {
       app: new TeamsAppManifest(),
       config,
       answers: new ConfigMap(),
+      inputs:{platform:Platform.VSCode, projectPath:""},
       projectSettings: undefined,
     };
   }

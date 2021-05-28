@@ -6,11 +6,11 @@
 import * as path from "path";
 import { Argv, Options } from "yargs";
 
-import { ConfigMap, err, FxError, ok, Platform, Result, Stage, traverse, UserCancelError } from "@microsoft/teamsfx-api";
+import { err, FxError, ok, Result } from "@microsoft/teamsfx-api";
 
-import activate, { coreExeceutor } from "../activate";
+import activate from "../activate";
 import * as constants from "../constants";
-import { getParamJson, readConfigs, setSubscriptionId } from "../utils";
+import { getParamJson, getSystemInputs, readConfigs, setSubscriptionId } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
@@ -63,30 +63,15 @@ export class ResourceAddSql extends YargsCommand {
       return err(result.error);
     }
 
-    const answers = new ConfigMap();
+    const func = {
+      namespace: "fx-solution-azure",
+      method: "addResource"
+    };
 
     const core = result.value;
-    {
-      const result = await core.getQuestions!(Stage.update, Platform.CLI);
-      if (result.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
-          [TelemetryProperty.Resources]: this.commandHead
-        });
-        return err(result.error);
-      }
-      const node = result.value;
-      if (node) {
-        const result = await traverse(node, answers, CLIUIInstance, coreExeceutor);
-        if (result.type === "error" && result.error) {
-          return err(result.error);
-        } else if (result.type === "cancel") {
-          return err(UserCancelError);
-        }
-      }
-    }
 
     {
-      const result = await core.update(answers);
+      const result = await core.executeUserTask(func, getSystemInputs(rootFolder));
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
           [TelemetryProperty.Resources]: this.commandHead
@@ -140,30 +125,14 @@ export class ResourceAddApim extends YargsCommand {
       return err(result.error);
     }
 
-    const answers = new ConfigMap();
+    const func = {
+      namespace: "fx-solution-azure",
+      method: "addResource"
+    };
 
     const core = result.value;
     {
-      const result = await core.getQuestions!(Stage.update, Platform.CLI);
-      if (result.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
-          [TelemetryProperty.Resources]: this.commandHead
-        });
-        return err(result.error);
-      }
-      const node = result.value;
-      if (node) {
-        const result = await traverse(node, answers, CLIUIInstance, coreExeceutor);
-        if (result.type === "error" && result.error) {
-          return err(result.error);
-        } else if (result.type === "cancel") {
-          return err(UserCancelError);
-        }
-      }
-    }
-
-    {
-      const result = await core.update(answers);
+      const result = await core.executeUserTask(func, getSystemInputs(rootFolder));
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
           [TelemetryProperty.Resources]: this.commandHead
@@ -207,30 +176,14 @@ export class ResourceAddFunction extends YargsCommand {
       return err(result.error);
     }
 
-    const answers = new ConfigMap();
+    const func = {
+      namespace: "fx-solution-azure",
+      method: "addResource"
+    };
 
     const core = result.value;
     {
-      const result = await core.getQuestions!(Stage.update, Platform.CLI);
-      if (result.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
-          [TelemetryProperty.Resources]: this.commandHead
-        });
-        return err(result.error);
-      }
-      const node = result.value;
-      if (node) {
-        const result = await traverse(node, answers, CLIUIInstance, coreExeceutor);
-        if (result.type === "error" && result.error) {
-          return err(result.error);
-        } else if (result.type === "cancel") {
-          return err(UserCancelError);
-        }
-      }
-    }
-
-    {
-      const result = await core.update(answers);
+      const result = await core.executeUserTask(func, getSystemInputs(rootFolder));
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
           [TelemetryProperty.Resources]: this.commandHead

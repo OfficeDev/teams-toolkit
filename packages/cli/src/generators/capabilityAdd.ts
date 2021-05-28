@@ -10,8 +10,7 @@ import {
   Result,
   err,
   MultiSelectQuestion,
-  OptionItem,
-  NodeType
+  OptionItem
 } from "@microsoft/teamsfx-api";
 
 import * as constants from "../constants";
@@ -33,7 +32,7 @@ abstract class CapabilityAddGenerator extends Generator {
       return err(result.error);
     }
     const root = result.value as QTreeNode;
-    const allNodes = flattenNodes(root).filter(node => node.data.type !== NodeType.group);
+    const allNodes = flattenNodes(root).filter(node => node.data.type !== "group");
 
     // get capabilities node
     const capabilityParamName = "capabilities";

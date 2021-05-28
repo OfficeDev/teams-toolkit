@@ -3,7 +3,7 @@
 
 "use strict";
 
-import { err, FxError, NodeType, ok, QTreeNode, Result, Stage } from "@microsoft/teamsfx-api";
+import { err, FxError, ok, QTreeNode, Result, Stage } from "@microsoft/teamsfx-api";
 
 import * as constants from "../constants";
 import { flattenNodes } from "../utils";
@@ -20,7 +20,7 @@ export class DeployGenerator extends Generator {
       return err(result.error);
     }
     const root = result.value as QTreeNode;
-    const allNodes = flattenNodes(root).filter(node => node.data.type !== NodeType.group);
+    const allNodes = flattenNodes(root).filter(node => node.data.type !== "group");
     return ok([constants.RootFolderNode, ...allNodes]);
   }
 }

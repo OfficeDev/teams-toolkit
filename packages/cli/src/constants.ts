@@ -43,14 +43,14 @@ export const validateParamPath = path.resolve(paramFolder, "validateParam.json")
 export const RootFolderNode = new QTreeNode({
   type: NodeType.folder,
   name: "folder",
-  description: "Select root folder of the project",
+  title: "Select root folder of the project",
   default: "./",
 });
 
 export const SubscriptionNode = new QTreeNode({
   type: NodeType.text,
   name: "subscription",
-  description: "Select a subscription",
+  title: "Select a subscription",
 });
 
 export const templates: {

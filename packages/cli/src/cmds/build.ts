@@ -5,11 +5,11 @@
 
 import { Argv, Options } from "yargs";
 import * as path from "path";
-import { FxError, err, ok, Result, ConfigMap, Platform, Func } from "@microsoft/teamsfx-api";
+import { FxError, err, ok, Result, Func, Inputs } from "@microsoft/teamsfx-api";
 import activate from "../activate";
 import * as constants from "../constants";
 import { YargsCommand } from "../yargsCommand";
-import { getParamJson } from "../utils";
+import { getParamJson, getSystemInputs } from "../utils";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
 
@@ -28,22 +28,23 @@ export default class Build extends YargsCommand {
   public async runCommand(args: {
     [argName: string]: string | string[];
   }): Promise<Result<null, FxError>> {
-    const answers = new ConfigMap();
+    const answers:Inputs = getSystemInputs();
     for (const name in this.params) {
       if (!args[name]) {
         continue;
       }
       if (name.endsWith("folder")) {
-        answers.set(name, path.resolve(args[name] as string));
+        answers[name] = path.resolve(args[name] as string);
       } else {
-        answers.set(name, args[name]);
+        answers[name] = args[name];
       }
     }
-
-    const rootFolder = answers.getString("folder");
-    answers.delete("folder");
+ 
+    const rootFolder = path.resolve(answers["folder"]as string || "./");
+    delete answers.folder;
+    answers.projectPath = rootFolder;
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.BuildStart);
-    answers.set("platform", Platform.CLI);
+    
     const result = await activate(rootFolder);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Build, result.error);

@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import { exec } from "child_process";
 import * as fs from "fs-extra";
-import { ConfigFolderName, ConfigMap, Dict, Json, UserError } from "@microsoft/teamsfx-api";
+import { ConfigFolderName, ConfigMap, Context, Dict, Json, UserError } from "@microsoft/teamsfx-api";
 import { promisify } from "util";
 import axios from "axios";
 import AdmZip from "adm-zip";
@@ -270,4 +270,15 @@ export function isValidProject(workspacePath?: string): boolean {
     }
   }
   return true;
+}
+
+
+export function getAnswer(ctx:Context, key: string){
+  if(ctx.answers){
+    if(ctx.answers.has(key)) return ctx.answers.get(key);
+  }
+  if(ctx.inputs) {
+    if(ctx.inputs[key]) return ctx.inputs[key];
+  }
+  return undefined;
 }

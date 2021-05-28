@@ -24,6 +24,7 @@ export enum CoreErrorNames {
   InitError = "InitError",
   DownloadSampleFail = "DownloadSampleFail",
   NoSubscriptionSelected = "NoSubscriptionSelected",
+  NoneFxError = "NoneFxError"
 }
 
 export function InvalidContext(): UserError {
@@ -45,7 +46,12 @@ export function EnvAlreadyExist(param: any): UserError {
     CoreErrorNames.EnvAlreadyExist
   );
 }
-
+export function UncatchedError(error: Error): SystemError {
+  return new SystemError( CoreErrorNames.UncatchedError,
+    "Uncatched Error",
+    CoreSource
+  );
+}
 export function EnvNotExist(param: any): UserError {
   return returnUserError(
     new Error(`Environment does not exist: ${param}`),
@@ -65,6 +71,16 @@ export const InvalidProjectError = new UserError(
   "The project type is invalid",
   CoreSource
 );
+
+export const ConcurrentError = new UserError(
+  "ConcurrentOperation",
+  "Concurrent operation",
+  CoreSource
+);
+
+export const TaskNotSupportError = new SystemError("TaskNotSupport", "TaskNotSupport", CoreSource);
+
+export const CreateContextError = new SystemError("CreateContextError","Failed to create SolutioContext",CoreSource);
 
 export function DownloadSampleFail(): SystemError {
   return returnUserError(

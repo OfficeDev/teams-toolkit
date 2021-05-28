@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import {
-  ConfigMap,
-  FileQuestion,
+  FolderQuestion,
+  Inputs,
   NodeType,
   OptionItem,
   SingleSelectQuestion,
@@ -29,12 +29,13 @@ export const QuestionAppName: TextInputQuestion = {
   name: CoreQuestionNames.AppName,
   title: "Application name",
   validation: {
-    validFunc: async (appName: string, answer?: ConfigMap): Promise<string | undefined> => {
-      const folder = answer?.getString(CoreQuestionNames.Foler);
+    validFunc: async (input: string, previousInputs: Inputs): Promise<string | undefined> => {
+      const folder = previousInputs[CoreQuestionNames.Foler] as string;
       if (!folder) return undefined;
       const schema = {
         pattern: ProjectNamePattern,
       };
+      const appName = input as string;
       const validateResult = jsonschema.validate(appName, schema);
       if (validateResult.errors && validateResult.errors.length > 0) {
         return "Application name must start with a letter and can only contain letters and digits.";
@@ -48,13 +49,10 @@ export const QuestionAppName: TextInputQuestion = {
   placeholder: "Application name",
 };
 
-export const QuestionRootFolder: FileQuestion = {
+export const QuestionRootFolder: FolderQuestion = {
   type: NodeType.folder,
   name: CoreQuestionNames.Foler,
-  title: "Workspace folder",
-  validation: {
-    required: true,
-  },
+  title: "Workspace folder"
 };
 
 export const QuestionSelectSolution: SingleSelectQuestion = {
@@ -67,13 +65,13 @@ export const QuestionSelectSolution: SingleSelectQuestion = {
 
 export const ScratchOptionYes: OptionItem = {
   id: "yes",
-  label: "$(new-folder) Create a new Teams app",
+  label: "Create a new Teams app",
   detail: "Use the Teams Toolkit to create a new application.",
 };
 
 export const ScratchOptionNo: OptionItem = {
   id: "no",
-  label: "$(heart) Start from a sample",
+  label: "Start from a sample",
   detail: "Use an existing sample as a starting point for your new application.",
 };
 

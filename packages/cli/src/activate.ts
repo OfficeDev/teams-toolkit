@@ -3,105 +3,45 @@
 
 "use strict";
 
-import { Result, FxError, err, ok, Core, UserError, SystemError, ConfigMap, RemoteFuncExecutor, Func, Inputs } from "@microsoft/teamsfx-api";
+import { Result, FxError, err, ok, Inputs, Tools } from "@microsoft/teamsfx-api";
+
+import { FxCore } from "@microsoft/teamsfx-core";
 
 import AzureAccountManager from "./commonlib/azureLogin";
 import AppStudioTokenProvider from "./commonlib/appStudioLogin";
 import GraphTokenProvider from "./commonlib/graphLogin";
 import CLILogProvider from "./commonlib/log";
-import { UnknownError } from "./error";
 import DialogManagerInstance from "./userInterface";
-import { getSubscriptionIdFromEnvFile } from "./utils";
+import { getSubscriptionIdFromEnvFile, getSystemInputs } from "./utils";
 import { CliTelemetry } from "./telemetry/cliTelemetry";
 import CLIUIInstance from "./userInteraction";
 
-const coreAsync: Promise<Core> = new Promise(async (resolve) => {
-  const corePkg = await import("@microsoft/teamsfx-core");
-  return resolve(corePkg.CoreProxy.getInstance());
-});
-
-export const coreExeceutor: RemoteFuncExecutor = async function(
-  func: Func,
-  answers: ConfigMap
-): Promise<Result<any, FxError>> {
-  const core = await coreAsync;
-  return core.callFunc!(func, answers as ConfigMap);
-};
-
-export default async function activate(rootPath?: string): Promise<Result<Core, FxError>> {
+export default async function activate(rootPath?: string): Promise<Result<FxCore, FxError>> {
   if (rootPath) {
     const subscription = await getSubscriptionIdFromEnvFile(rootPath);
     if (subscription) {
       await AzureAccountManager.setSubscription(subscription);
     }
+    CliTelemetry.setReporter(CliTelemetry.getReporter().withRootFolder(rootPath));
   }
 
-  const core = await coreAsync;
-  try {
-    {
-      const result = await core.withDialog(DialogManagerInstance, CLIUIInstance);
-      if (result.isErr()) {
-        return err(result.error);
-      }
-    }
-
-    {
-      const result = await core.withAzureAccount(AzureAccountManager);
-      if (result.isErr()) {
-        return err(result.error);
-      }
-    }
-
-    {
-      const result = await core.withAppStudioToken(AppStudioTokenProvider);
-      if (result.isErr()) {
-        return err(result.error);
-      }
-    }
-
-    {
-      const result = await core.withGraphToken(GraphTokenProvider);
-      if (result.isErr()) {
-        return err(result.error);
-      }
-    }
-
-    {
-      if (rootPath) {
-        CliTelemetry.setReporter(CliTelemetry.getReporter().withRootFolder(rootPath));
-      }
-      const result = await core.withTelemetry(CliTelemetry.getReporter());
-      if (result.isErr()) {
-        return err(result.error);
-      }
-    }
-
-    {
-      const result = await core.withLogger(CLILogProvider);
-      if (result.isErr()) {
-        return err(result.error);
-      }
-    }
-
-    {
-      const globalConfig = new ConfigMap();
-      globalConfig.set("featureFlag", true);
-      const result = await core.init(globalConfig);
-      if (result.isErr()) {
-        return err(result.error);
-      }
-    }
-
-    {
-      const result = await core.open(rootPath);
-      if (result.isErr()) {
-        return err(result.error);
-      }
-    }
-    return ok(core);
-  } catch (e) {
-    const FxError: FxError =
-      e instanceof UserError || e instanceof SystemError ? e : UnknownError(e);
-    return err(FxError);
+  const tools: Tools = {
+    logProvider: CLILogProvider,
+    tokenProvider: {
+      azureAccountProvider: AzureAccountManager,
+      graphTokenProvider: GraphTokenProvider,
+      appStudioToken: AppStudioTokenProvider
+    },
+    telemetryReporter: CliTelemetry.getReporter(),
+    dialog: DialogManagerInstance,
+    ui: CLIUIInstance
+  };
+  const core = new FxCore(tools);
+  const systemInputs: Inputs = getSystemInputs(rootPath);
+  
+  const result = await core.init(systemInputs);
+  if (result.isErr()) {
+    return err(result.error);
   }
+  return ok(core);
 }

@@ -44,10 +44,7 @@ export class AppStudioPlugin implements Plugin {
           type: NodeType.folder,
           name: Constants.PUBLISH_PATH_QUESTION,
           title: "Please select the folder contains manifest.json and icons",
-          default: `${ctx.root}/.${ConfigFolderName}`,
-          validation: {
-            required: true,
-          },
+          default: `${ctx.root}/.${ConfigFolderName}`
         });
         appStudioQuestions.addChild(appPath);
 

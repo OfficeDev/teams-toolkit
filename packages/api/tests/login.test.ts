@@ -15,7 +15,16 @@ class TestAzureAccountProvider implements AzureAccountProvider {
     getIdentityCredentialAsync(): Promise<TokenCredential | undefined> {
         throw new Error("getIdentityCredentialAsync Method not implemented.");
     }
+    getAccountCredential(): TokenCredentialsBase {
+        throw new Error("getAccountCredential Method not implemented.");
+    }
+    getIdentityCredential(): TokenCredential {
+        throw new Error("getIdentityCredential Method not implemented.");
+    }
     signout(): Promise<boolean> {
+        throw new Error("Method not implemented.");
+    }
+    setStatusChangeCallback({}: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean> {
         throw new Error("Method not implemented.");
     }
     setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean> {
@@ -51,6 +60,9 @@ class GraphProvider implements GraphTokenProvider {
     signout(): Promise<boolean> {
         throw new Error("Method not implemented.");
     }
+    setStatusChangeCallback({}: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean> {
+        throw new Error("Method not implemented.");
+    }
     setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean> {
         throw new Error("Method not implemented.");
     }
@@ -75,6 +87,9 @@ class GraphProvider2 implements GraphTokenProvider {
     signout(): Promise<boolean> {
         throw new Error("Method not implemented.");
     }
+    setStatusChangeCallback({}: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean> {
+        throw new Error("Method not implemented.");
+    }
     setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean> {
         throw new Error("Method not implemented.");
     }
@@ -82,6 +97,24 @@ class GraphProvider2 implements GraphTokenProvider {
         throw new Error("Method not implemented.");
     }
 }
+
+describe("azureLogin", function () {
+    describe("withAzureAccountProvider", function () {
+        it("plugin context happy path", () => {
+            const azure = new TestAzureAccountProvider();
+            try {
+                azure.getAccountCredential();
+            } catch (error) {
+                assert.equal(error.message, "getAccountCredential Method not implemented.");
+            }
+            try {
+                azure.getIdentityCredential();
+            } catch (error) {
+                assert.equal(error.message, "getIdentityCredential Method not implemented.");
+            }
+        });
+    });
+});
 
 describe("graphLogin", function () {
     describe("withGraphProvider", function () {

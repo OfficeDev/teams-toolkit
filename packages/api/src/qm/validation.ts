@@ -1,94 +1,93 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import * as jsonschema from "jsonschema";  
+import { Inputs } from "../types";
+  
 
-import {
-  FileValidation,
-  RemoteFuncValidation,
-  LocalFuncValidation,
-  NumberValidation,
-  StringArrayValidation,
-  StringValidation,
-  Validation,
-  Func
-} from "./question";
-import * as fs from "fs-extra";
-import * as jsonschema from "jsonschema"; 
-import { Result } from "neverthrow";
-import { FxError } from "../error";
-import { ConfigMap, Inputs } from "../config";
- 
 
-export type RemoteFuncExecutor = (func:Func, answers: ConfigMap) => Promise<Result<any, FxError>>; 
+/**
+ * Validation for Any Instance Type
+ * JSON Schema Validation reference: http://json-schema.org/draft/2019-09/json-schema-validation.html
+ */
+ export interface StaticValidation {
+  required?: boolean; // default value is true
+  equals?: unknown;
+}
 
-export function getValidationFunction(
+/**
+* //Validation for Strings
+*/
+export interface StringValidation extends StaticValidation {
+  maxLength?: number;
+  minLength?: number;
+  pattern?: string;
+  enum?: string[]; // the value must be contained in this list
+  startsWith?: string; //non-standard
+  endsWith?: string; //non-standard
+  includes?: string; //non-standard
+  equals?: string; //non-standard
+}
+
+/**
+* Validation for String Arrays
+*/
+export interface StringArrayValidation extends StaticValidation {
+  maxItems?: number;
+  minItems?: number;
+  uniqueItems?: boolean;
+  equals?: string[]; //non-standard
+  enum?: string[]; // non-standard all the values must be contained in this list
+  contains?: string; ////non-standard
+  containsAll?: string[]; ///non-standard, the values must contains all items in the array
+  containsAny?: string[]; ///non-standard, the values must contains any one in the array
+}
+
+/**
+* The validation is checked by a validFunc provided by user
+*/
+export interface FuncValidation<T extends string|string[]|undefined> {
+  validFunc: (input: T, previousInputs: Inputs) => string | undefined|Promise<string | undefined>;
+}
+
+export type Validation =
+  | StringValidation
+  | StringArrayValidation
+  | FuncValidation<any>;
+
+
+export function getValidationFunction<T extends string|string[]|undefined>(
   validation: Validation,
-  outputs: ConfigMap,
-  remoteFuncValidator?: RemoteFuncExecutor,
-): (input: string | string[]) => Promise<string | undefined> {
-  return async function(input: string | string[]): Promise<string | undefined> {
-    return await validate(validation, input, outputs, remoteFuncValidator);
+  inputs: Inputs
+): (input: T)  => string | undefined|Promise<string | undefined> {
+  return function(input: T): string | undefined | Promise<string | undefined> {
+    return validate(validation, input, inputs);
   };
 }
 
-export async function validate(
-  validation: Validation,
-  valueToValidate: string | string[],
-  inputs: ConfigMap,
-  remoteFuncValidator?: RemoteFuncExecutor
+export async function validate<T extends string|string[]|undefined>(
+  validSchema: Validation,
+  value: T,
+  inputs: Inputs
 ): Promise<string | undefined> {
-  //RemoteFuncValidation
   {
-    const funcValidation: RemoteFuncValidation = validation as RemoteFuncValidation;
-    if (funcValidation.method && remoteFuncValidator) {
-      funcValidation.params = valueToValidate as string; 
-      const res = await remoteFuncValidator(funcValidation as Func, inputs);
-      if (res.isOk()) {
-        return res.value as string;
-      } else {
-        return undefined; // when callFunc failed, skip the validation
-      }
-    }
-  }
-
-  {
-    //LocalFuncValidation
-    const localFuncValidation: LocalFuncValidation = validation as LocalFuncValidation;
-    if (localFuncValidation.validFunc) {
-      const res = await localFuncValidation.validFunc(valueToValidate as string, inputs);
+    //FuncValidation
+    const funcValidation: FuncValidation<T> = validSchema as FuncValidation<T>;
+    if (funcValidation.validFunc) {
+      const res = await funcValidation.validFunc(value, inputs);
       return res as string;
     }
   }
-
-  // Required Validation
-  {
-    if(!valueToValidate){
-      if(validation.required === true)
-        return `This question is mandatory`;
-    }
-  }
-
-  {
-    //FileValidation
-    const fileValidation: FileValidation = validation as FileValidation;
-    if (fileValidation.exists !== undefined) {
-      const path = valueToValidate as string;
-      if (!path) {
-        return `path should not be empty!`;
-      }
-      const exists = await fs.pathExists(path);
-      if(exists !== fileValidation.exists){
-        return `path(${path}) existence should be ${fileValidation.exists}`;
-      }
-      return undefined;
-    }
+  
+  if(!value){
+    if((validSchema as StaticValidation).required === true)
+      return `input value is required.`;
   }
 
   {
     // StringValidation
-    const stringValidation: StringValidation = validation as StringValidation;
-    const strToValidate = valueToValidate as string;
+    const stringValidation: StringValidation = validSchema as StringValidation;
+    const strToValidate = value as string;
     if (typeof strToValidate === "string") {
-      
       const schema: any = {};
       if (stringValidation.equals && typeof stringValidation.equals === "string")
         schema.const = stringValidation.equals;
@@ -102,7 +101,7 @@ export async function validate(
       if (stringValidation.maxLength) schema.maxLength = stringValidation.maxLength;
       if (stringValidation.pattern) schema.pattern = stringValidation.pattern;
       if (Object.keys(schema).length > 0) {
-        const validateResult = jsonschema.validate(valueToValidate, schema);
+        const validateResult = jsonschema.validate(strToValidate, schema);
         if (validateResult.errors && validateResult.errors.length > 0) {
           return `'${strToValidate}' ${validateResult.errors[0].message}`;
         }
@@ -126,38 +125,10 @@ export async function validate(
     }
   }
 
-  //NumberValidation
-  {
-    const numberValidation: NumberValidation = validation as NumberValidation;
-    const numberToValidate = Number(valueToValidate);
-    const schema: any = {};
-    if (numberValidation.equals && typeof numberValidation.equals === "number")
-      schema.const = numberValidation.equals;
-    if (numberValidation.multipleOf) schema.multipleOf = numberValidation.multipleOf;
-    if (numberValidation.maximum) schema.maximum = numberValidation.maximum;
-    if (numberValidation.exclusiveMaximum)
-      schema.exclusiveMaximum = numberValidation.exclusiveMaximum;
-    if (numberValidation.minimum) schema.minimum = numberValidation.minimum;
-    if (numberValidation.exclusiveMinimum)
-      schema.exclusiveMinimum = numberValidation.exclusiveMinimum;
-    if (
-      numberValidation.enum &&
-      numberValidation.enum.length > 0 &&
-      typeof numberValidation.enum[0] === "number"
-    )
-      schema.enum = numberValidation.enum;
-    if (Object.keys(schema).length > 0) {
-      const validateResult = jsonschema.validate(numberToValidate, schema);
-      if (validateResult.errors && validateResult.errors.length > 0) {
-        return `'${numberToValidate}' ${validateResult.errors[0].message}`;
-      }
-    }
-  }
-
   //StringArrayValidation
   {
-    const stringArrayValidation: StringArrayValidation = validation as StringArrayValidation;
-    const arrayToValidate = valueToValidate as string[];
+    const stringArrayValidation: StringArrayValidation = validSchema as StringArrayValidation;
+    const arrayToValidate = value as string[];
     if (arrayToValidate instanceof Array) {
       const schema: any = {};
       if (stringArrayValidation.maxItems) schema.maxItems = stringArrayValidation.maxItems;

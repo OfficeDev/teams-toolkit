@@ -14,8 +14,7 @@ import {
   OptionItem,
   MultiSelectQuestion,
   SingleSelectQuestion,
-  StaticOption,
-  IMessage,
+  StaticOption
 } from "@microsoft/teamsfx-api";
 
 import * as constants from "./constants";

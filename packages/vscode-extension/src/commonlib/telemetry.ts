@@ -19,7 +19,7 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
   private readonly extVersion: string;
 
   constructor(key: string, extensionVersion: string, extensionId: string) {
-    super(async () => await this.reporter.dispose());
+    super(() => this.reporter.dispose());
     this.reporter = new Reporter(extensionId, extensionVersion, key, true);
     this.extVersion = getPackageVersion(extensionVersion);
   }

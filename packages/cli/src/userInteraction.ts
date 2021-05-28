@@ -13,9 +13,6 @@ import {
   SelectFileResult,
   SelectFilesResult,
   SelectFolderResult,
-  OpenUrlResult,
-  ShowMessageResult,
-  RunWithProgressResult,
   SingleSelectConfig,
   MultiSelectConfig,
   InputTextConfig,
@@ -186,6 +183,7 @@ export class CLIUserInteraction implements UserInteraction {
   }
 
   private async confirm(name: string, message: string): Promise<Result<boolean, FxError>> {
+    /// TODO: add default value.
     return this.runInquirer(this.toInquirerQuestion("confirm", name, message, undefined, undefined, undefined));
   }
 
@@ -233,7 +231,22 @@ export class CLIUserInteraction implements UserInteraction {
     }
   }
   
-  public async selectOption(config: SingleSelectConfig): Promise<SingleSelectResult> {
+  public async selectOption(config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
+    if (config.name === "subscription") {
+      const subscriptions = config.options as string[];
+      if (subscriptions.length === 0) {
+        throw new Error(
+          "Your Azure account has no active subscriptions. Please switch an Azure account."
+        );
+      } else if (subscriptions.length === 1) {
+        const sub = subscriptions[0];
+        CLILogProvider.necessaryLog(
+          LogLevel.Warning,
+          `Your Azure account only has one subscription (${sub}). Use it as default.`
+        );
+        return ok({ type: "success", result: sub });
+      }
+    }
     this.updatePresetAnswerFromConfig(config);
     return new Promise(async resolve => {
       const [choices, defaultValue] = this.toChoices(config.options, config.default);
@@ -248,21 +261,21 @@ export class CLIUserInteraction implements UserInteraction {
         const index = this.findIndex(choices, result.value);
         const anwser = config.options[index];
         if (config.returnObject) {
-          resolve({ type: "success", result: anwser });
+          resolve(ok({ type: "success", result: anwser }));
         } else {
           if (typeof anwser === "string") {
-            resolve({ type: "success", result: anwser });
+            resolve(ok({ type: "success", result: anwser }));
           } else {
-            resolve({ type: "success", result: anwser.id });
+            resolve(ok({ type: "success", result: anwser.id }));
           }
         }
       } else {
-        resolve({ type: "error", error: result.error });
+        resolve(err(result.error));
       }
     });
   }
 
-  public async selectOptions(config: MultiSelectConfig): Promise<MultiSelectResult> {
+  public async selectOptions(config: MultiSelectConfig): Promise<Result<MultiSelectResult,FxError>> {
     this.updatePresetAnswerFromConfig(config);
     return new Promise(async resolve => {
       const [choices, defaultValue] = this.toChoices(config.options, config.default);
@@ -277,21 +290,21 @@ export class CLIUserInteraction implements UserInteraction {
         const indexes = this.findIndexes(choices, result.value);
         const anwers = this.getSubArray(config.options as any[], indexes);
         if (config.returnObject) {
-          resolve({ type: "success", result: anwers });
+          resolve(ok({ type: "success", result: anwers }));
         } else {
           if (typeof anwers[0] === "string") {
-            resolve({ type: "success", result: anwers });
+            resolve(ok({ type: "success", result: anwers }));
           } else {
-            resolve({ type: "success", result: (anwers as OptionItem[]).map(answer => answer.id) });
+            resolve(ok({ type: "success", result: (anwers as OptionItem[]).map(answer => answer.id) }));
           }
         }
       } else {
-        resolve({ type: "error", error: result.error });
+        resolve(err(result.error));
       }
     });
   }
 
-  public async inputText(config: InputTextConfig): Promise<InputTextResult> {
+  public async inputText(config: InputTextConfig): Promise<Result<InputTextResult,FxError>> {
     return new Promise(async resolve => {
       const result = await this.input(
         config.name,
@@ -301,16 +314,15 @@ export class CLIUserInteraction implements UserInteraction {
         this.toValidationFunc(config.validation)
       );
       if (result.isOk()) {
-        resolve({ type: "success", result: result.value });
+        resolve(ok({ type: "success", result: result.value }));
       } else {
-        resolve({ type: "error", error: result.error });
+        resolve(err(result.error));
       }
     });
   }
 
-  public async selectFile(config: SelectFileConfig): Promise<SelectFileResult> {
+  public async selectFile(config: SelectFileConfig): Promise<Result<SelectFileResult,FxError>> {
     const newConfig: InputTextConfig = {
-      type: "text",
       name: config.name,
       title: config.title,
       default: config.default,
@@ -319,13 +331,12 @@ export class CLIUserInteraction implements UserInteraction {
     return this.inputText(newConfig);
   }
 
-  public async selectFiles(config: SelectFilesConfig): Promise<SelectFilesResult> {
+  public async selectFiles(config: SelectFilesConfig): Promise<Result<SelectFilesResult,FxError>> {
     const validation = (input: string) => {
       const strings = input.split(";").map(s => s.trim());
       return config.validation?.(strings);
     }
     const newConfig: InputTextConfig = {
-      type: "text",
       name: config.name,
       title: config.title + " (Please use ';' to split file paths)",
       default: config.default?.join("; "),
@@ -333,17 +344,16 @@ export class CLIUserInteraction implements UserInteraction {
     }
     return new Promise(async resolve => {
       const result = await this.inputText(newConfig);
-      if (result.type === "success") {
-        resolve( { type: "success", result: result.result?.split(";").map(s => s.trim()) });
+      if (result.isOk()) {
+        resolve(ok( { type: "success", result: result.value.result?.split(";").map(s => s.trim()) } ));
       } else {
-        resolve( { type: "error", error: result.error });
+        resolve(err(result.error));
       }
     });
   }
 
-  public async selectFolder(config: SelectFolderConfig): Promise<SelectFolderResult> {
+  public async selectFolder(config: SelectFolderConfig): Promise<Result<SelectFolderResult,FxError>> {
     const newConfig: InputTextConfig = {
-      type: "text",
       name: config.name,
       title: config.title,
       default: config.default,
@@ -352,9 +362,9 @@ export class CLIUserInteraction implements UserInteraction {
     return this.inputText(newConfig);
   }
 
-  public async openUrl(link: string): Promise<OpenUrlResult> {
+  public async openUrl(link: string): Promise<Result<boolean,FxError>> {
     await open(link);
-    return { type: "success", result: true };
+    return ok(true);
   }
 
   public async showMessage(
@@ -362,7 +372,7 @@ export class CLIUserInteraction implements UserInteraction {
     message: string,
     modal: boolean,
     ...items: string[]
-  ): Promise<ShowMessageResult> {
+  ): Promise<Result<string|undefined,FxError>> {
     return new Promise(async resolve => {
       switch (items.length) {
         case 0:
@@ -377,22 +387,23 @@ export class CLIUserInteraction implements UserInteraction {
               await CLILogProvider.necessaryLog(LogLevel.Error, message);
               break;
           }
-          resolve({ type: "success" });
+          resolve(ok(undefined));
           break;
         case 1: {
           const result = await this.confirm("MyConfirmQuestion", message);
           if (result.isOk()) {
             if (result.value) {
-              resolve({ type: "success", result: items[0] });
+              resolve(ok(items[0]));
             } else {
-              resolve({ type: "success" });
+              resolve(ok(undefined));
             }
           } else {
-            resolve({ type: "error", error: result.error});
+            resolve(err(result.error));
           }
           break;
         }
         default: {
+          /// TODO: add default value.
           const result = await this.singleSelect(
             "MySingleSelectQuestion",
             message,
@@ -400,12 +411,12 @@ export class CLIUserInteraction implements UserInteraction {
           );
           if (result.isOk()) {
             if (result.value !== "Cancel") {
-              resolve({ type: "success", result: result.value });
+              resolve(ok(result.value));
             } else {
-              resolve({ type: "success" });
+              resolve(ok(undefined));
             }
           } else {
-            resolve({ type: "error", error: result.error});
+            resolve(err(result.error));
           }
           break;
         }
@@ -413,41 +424,49 @@ export class CLIUserInteraction implements UserInteraction {
     });
   }
 
-  public async runWithProgress(task: TimeConsumingTask<any>): Promise<RunWithProgressResult> {
+  public async runWithProgress(task: TimeConsumingTask<any>): Promise<Result<any,FxError>> {
     return new Promise(async resolve => {
-      const startTime = new Date().getTime();
       const res = task.run();
-      let lastLength = 0;
-      
-      await CLILogProvider.necessaryLog(LogLevel.Info, task.name);
 
       res.then((v:any) => {
         resolve(v); 
       }).catch((e:any) => { 
-        resolve({ type: "error", error: UnknownError(e) });
+        resolve(err(UnknownError(e)));
       });
 
-      while (task.current < task.total && !task.isCanceled) {
-        const inc = task.current - lastLength;
-        if (inc > 0) {
-          const elapsedTime = new Date().getTime() - startTime;
-          const remainingTime = (elapsedTime * (task.total - task.current)) / task.current;
-          await CLILogProvider.necessaryLog(
-            LogLevel.Info,
-            `progress: ${Math.round(
-              (task.current * 100) / task.total
-            )} %, remaining time: ${Math.round(remainingTime)} ms 
-            ${task.message !== undefined && task.message !== "" ? "("+task.message+")" : ""}`
-          );
-          lastLength += inc;
-        }
-        await sleep(100);
+      const head = `[Teams Toolkit] ${task.name}`;
+      if(!task.showProgress){
+        const body = `: [${task.current}/${task.total}]`;
+        const tail = task.message? ` ${task.message}` : "Prepare task.";
+        const message = `${head}${body}${tail}`
+        do{
+          await CLILogProvider.necessaryLog(LogLevel.Info, message);
+          await sleep(100);
+        } while (task.current < task.total && !task.isCanceled)
       }
-      if (task.isCanceled) resolve({
-        type: "error",
-        error: UserCancelError
-      });
-      resolve({ type: "success" });
+      else {
+        let lastLength = 0;
+        if(task.showProgress){
+          const body = `: ${Math.round((task.current-lastLength)*100/task.total)} %`;
+          const tail = task.message? ` ${task.message}` : "Prepare task.";
+          const message = `${head}${body}${tail}`;
+          await CLILogProvider.necessaryLog(LogLevel.Info, message);
+        }
+        do{
+          const inc = task.current - lastLength;
+          if (inc > 0) {
+            // const elapsedTime = new Date().getTime() - startTime;
+            // const remainingTime = (elapsedTime * (task.total - task.current)) / task.current;
+            const body = `: ${Math.round(task.current*100/task.total)} %`;
+            const tail = task.message? ` ${task.message}` : "Prepare task.";
+            const message = `${head}${body}${tail}`
+            await CLILogProvider.necessaryLog(LogLevel.Info, message);
+            lastLength += inc;
+          }
+          await sleep(100);
+        } while (task.current < task.total && !task.isCanceled)
+      }
+      if (task.isCanceled) resolve(err(UserCancelError));
     });
   }
 }

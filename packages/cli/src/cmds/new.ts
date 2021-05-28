@@ -15,20 +15,14 @@ import {
   err,
   ok,
   Result,
-  Stage,
-  Platform,
-  ConfigMap,
   QTreeNode,
-  NodeType,
   Question,
   isAutoSkipSelect,
   SingleSelectQuestion,
   MultiSelectQuestion,
-  traverse,
-  UserCancelError,
 } from "@microsoft/teamsfx-api";
 
-import activate, { coreExeceutor } from "../activate";
+import activate  from "../activate";
 import * as constants from "../constants";
 import { NotFoundInputedFolder, SampleAppDownloadFailed, ProjectFolderExist } from "../error";
 import { YargsCommand } from "../yargsCommand";
@@ -36,6 +30,8 @@ import {
   flattenNodes,
   getJson,
   getSingleOptionString,
+  getSystemInputs,
+  toConfigMap,
   toYargsOptions,
 } from "../utils";
 import CliTelemetry from "../telemetry/cliTelemetry";
@@ -54,7 +50,7 @@ export default class New extends YargsCommand {
 
   public readonly root = getJson<QTreeNode>(this.paramPath);
   public params: { [_: string]: Options } = {};
-  public answers: ConfigMap = new ConfigMap();
+  public answers = getSystemInputs();
 
   public readonly subCommands: YargsCommand[] = [new NewTemplete()];
 
@@ -64,7 +60,7 @@ export default class New extends YargsCommand {
     });
     if (this.root) {
       const nodes = flattenNodes(JSON.parse(JSON.stringify(this.root)));
-      const nodesWithoutGroup = nodes.filter((node) => node.data.type !== NodeType.group);
+      const nodesWithoutGroup = nodes.filter((node) => node.data.type !== "group");
       for (const node of nodesWithoutGroup) {
         if (node.data.name === "folder") {
           (node.data as any).default = "./";
@@ -73,7 +69,7 @@ export default class New extends YargsCommand {
       }
       nodesWithoutGroup.forEach((node) => {
         const data = node.data as Question;
-        if (isAutoSkipSelect(data)) {
+        if (isAutoSkipSelect(data) &&  data.type != "func") {
           // set the only option to default value so yargs will auto fill it.
           data.default = getSingleOptionString(data as SingleSelectQuestion | MultiSelectQuestion);
           (data as any).hide = true;
@@ -110,25 +106,9 @@ export default class New extends YargsCommand {
     }
 
     const core = result.value;
-    {
-      const result = await core.getQuestions!(Stage.create, Platform.CLI);
-      if (result.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateProject, result.error);
-        return err(result.error);
-      }
-      const node = result.value;
-      if (node) {
-        const result = await traverse(node, this.answers, CLIUIInstance, coreExeceutor);
-        if (result.type === "error" && result.error) {
-          return err(result.error);
-        } else if (result.type === "cancel") {
-          return err(UserCancelError);
-        }
-      }
-    }
 
     {
-      const result = await core.create(this.answers);
+      const result = await core.createProject(getSystemInputs());
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateProject, result.error);
         return err(result.error);
@@ -164,7 +144,7 @@ class NewTemplete extends YargsCommand {
       })
       .options(RootFolderNodeData.name, {
         type: "string",
-        description: RootFolderNodeData.description,
+        description: RootFolderNodeData.type != "func" ? RootFolderNodeData.title : "unknown",
         default: RootFolderNodeData.default,
       });
     return yargs;

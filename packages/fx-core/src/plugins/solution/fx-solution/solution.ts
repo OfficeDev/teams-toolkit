@@ -1295,7 +1295,7 @@ export class TeamsAppSolution implements Solution {
     stage: Stage,
     ctx: SolutionContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const isDynamicQuestion = (ctx.answers?.platform === Platform.VSCode);
+    const isDynamicQuestion = (ctx.answers?.platform !== Platform.CLI);
     const node = new QTreeNode({ type: "group" });
     let manifest: TeamsAppManifest | undefined = undefined;
     if (stage !== Stage.create && isDynamicQuestion) {
@@ -1990,7 +1990,7 @@ export class TeamsAppSolution implements Solution {
     ctx: SolutionContext,
     manifest?: TeamsAppManifest
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const isDynamicQuestion = (ctx.answers?.platform === Platform.VSCode);
+    const isDynamicQuestion = (ctx.answers?.platform !== Platform.CLI);
     const settings = this.getAzureSolutionSettings(ctx);
 
     if ( isDynamicQuestion &&
@@ -2109,7 +2109,7 @@ export class TeamsAppSolution implements Solution {
     ctx: SolutionContext,
     manifest?: TeamsAppManifest
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const isDynamicQuestion = (ctx.answers?.platform === Platform.VSCode);
+    const isDynamicQuestion = (ctx.answers?.platform !== Platform.CLI);
     const settings = this.getAzureSolutionSettings(ctx);
 
     if (!(settings.hostType === HostTypeOptionAzure.id) && isDynamicQuestion) {
@@ -2182,7 +2182,7 @@ export class TeamsAppSolution implements Solution {
     func: Func,
     ctx: SolutionContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const isDynamicQuestion = (ctx.answers?.platform === Platform.VSCode);
+    const isDynamicQuestion = (ctx.answers?.platform !== Platform.CLI);
     const namespace = func.namespace;
     const array = namespace.split("/"); 
     let manifest:TeamsAppManifest|undefined = undefined;
@@ -2204,11 +2204,6 @@ export class TeamsAppSolution implements Solution {
       const plugin = this.pluginMap.get(pluginName);
       if (plugin) {
         if (plugin.getQuestionsForUserTask) {
-          const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx);
-          if (maybeManifest.isErr()) {
-            return err(maybeManifest.error);
-          }
-          const manifest = maybeManifest.value;
           const pctx = getPluginContext(ctx, plugin.name, manifest);
           return await plugin.getQuestionsForUserTask(func, pctx);
         } else {
@@ -2216,13 +2211,7 @@ export class TeamsAppSolution implements Solution {
         }
       }
     }
-    return err(
-      returnUserError(
-        new Error(`getQuestionsForUserTaskRouteFailed:${JSON.stringify(func)}`),
-        "Solution",
-        `getQuestionsForUserTaskRouteFailed`
-      )
-    );
+    return ok(undefined);
   }
   async executeAddResource(ctx: SolutionContext): Promise<Result<any, FxError>> {
     if (!ctx.answers) {

@@ -10,7 +10,7 @@ import * as dotnetUtils from "../utils/dotnet";
 import { isWindows, isLinux } from "../../../../src/debug/depsChecker/common";
 import { DepsChecker } from "../../../../src/debug/depsChecker/checker";
 import { DotnetChecker, DotnetVersion } from "../../../../src/debug/depsChecker/dotnetChecker";
-import { CustomDotnetInstallScript, TestAdapter } from "../adapters/testAdapter";
+import { ICustomDotnetInstallScript, CustomOutputDotnetInstallScript, CustomPathDotnetInstallScript, TestAdapter } from "../adapters/testAdapter";
 import { logger } from "../adapters/testLogger";
 import { TestTelemetry } from "../adapters/testTelemetry";
 import {
@@ -19,7 +19,6 @@ import {
   getExecutionPolicyForCurrentUser,
   setExecutionPolicyForCurrentUser,
 } from "../utils/common";
-import { cpUtils } from "../../../../src/debug/depsChecker/cpUtils";
 
 function createTestChecker(
   hasTeamsfxBackend: boolean,
@@ -27,7 +26,7 @@ function createTestChecker(
   dotnetCheckerEnabled = true,
   funcToolCheckerEnabled = true,
   nodeCheckerEnabled = true,
-  customDotnetInstallScript = new CustomDotnetInstallScript()
+  customDotnetInstallScript: ICustomDotnetInstallScript = new CustomOutputDotnetInstallScript()
 ): [DepsChecker, DotnetChecker] {
   const testAdapter = new TestAdapter(
     hasTeamsfxBackend,
@@ -90,6 +89,31 @@ suite("DotnetChecker E2E Test - first run", async () => {
     chai.assert.isFalse(shouldContinue);
     chai.assert.isNull(dotnetExecPathFromConfig);
     chai.assert.equal(dotnetExecPath, dotnetUtils.dotnetCommand);
+  });
+
+  test(".NET SDK is not installed and the user homedir contains special characters", async function (this: Mocha.Context) {
+    if (isLinux() && !(await commandExistsInPath(dotnetUtils.dotnetCommand))) {
+      this.skip();
+    }
+
+    // test for space and non-ASCII characters
+    const specialUserName = 'Aarón García';
+
+    const [resourceDir, cleanupCallback] = await dotnetUtils.createMockResourceDir(specialUserName);
+    try {
+      const [checker, dotnetChecker] = createTestChecker(true, true, true, true, true, new CustomPathDotnetInstallScript(resourceDir));
+
+      const shouldContinue = await checker.resolve();
+      const dotnetExecPath = await dotnetChecker.getDotnetExecPath();
+
+      chai.assert.isTrue(shouldContinue);
+      chai.assert.isNotNull(dotnetExecPath);
+      chai.assert.isTrue(
+        await dotnetUtils.hasDotnetVersion(dotnetExecPath!, dotnetUtils.dotnetInstallVersion)
+      );
+    } finally {
+      cleanupCallback();
+    }
   });
 
   test(".NET SDK supported version is installed globally", async function (this: Mocha.Context) {
@@ -210,7 +234,7 @@ suite("DotnetChecker E2E Test - first run", async () => {
       true,
       true,
       true,
-      new CustomDotnetInstallScript(
+      new CustomOutputDotnetInstallScript(
         true,
         1,
         "mock dotnet installing",

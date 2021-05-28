@@ -5,7 +5,6 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as os from "os";
 import * as tmp from "tmp";
-import * as util from "util";
 
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import { cpUtils } from "../../../../src/debug/depsChecker/cpUtils";
@@ -131,4 +130,16 @@ export async function createTmpBackendProjectDir(
   await fs.copyFile(csprojPath, targetPath, fs.constants.COPYFILE_EXCL);
 
   return [dir, cleanupCallback];
+}
+
+export async function createMockResourceDir(dirName: string): Promise<[string, () => void]> {
+  const [dir, cleanupCallback] = await createTmpDir();
+
+  const resourceDir = path.resolve(__dirname, "../../../../src/debug/depsChecker/resource");
+  const targetDir = path.join(dir, dirName);
+
+  await fs.ensureDir(targetDir);
+  await fs.copy(resourceDir, targetDir);
+
+  return [targetDir, cleanupCallback];
 }

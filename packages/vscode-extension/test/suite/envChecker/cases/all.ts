@@ -12,15 +12,13 @@ import { DepsChecker } from "../../../../src/debug/depsChecker/checker";
 import { TestAdapter } from "../adapters/testAdapter";
 import { logger } from "../adapters/testLogger";
 import { TestTelemetry } from "../adapters/testTelemetry";
-import { commandExistsInPath, createTmpDir, isNonEmptyDir } from "../utils/common";
+import { commandExistsInPath, isNonEmptyDir } from "../utils/common";
+import { azureSupportedNodeVersions } from "../utils/node";
+import { testCsprojFileName, testOutputDirName } from "../utils/backendExtensionsInstaller";
 import { isLinux } from "../../../../src/debug/depsChecker/common";
 import { AzureNodeChecker } from "../../../../src/debug/depsChecker/azureNodeChecker";
 import { BackendExtensionsInstaller } from "../../../../src/debug/depsChecker/backendExtensionsInstall";
 chai.use(chaiAsPromised);
-
-const azureSupportedNodeVersions = ["10", "12", "14"];
-const testCsprojFileName = "extensions.csproj";
-const testOutputDirName = "bin";
 
 function createTestChecker(
   hasTeamsfxBackend: boolean,

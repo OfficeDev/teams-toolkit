@@ -33,7 +33,7 @@ export class CustomOutputDotnetInstallScript implements ICustomDotnetInstallScri
 
 // This class is for mocking dotnet-install script path.
 export class CustomPathDotnetInstallScript implements ICustomDotnetInstallScript {
-  private readonly scriptPath: string
+  private readonly scriptPath: string;
   /**
    * @param targetPath: the dir that contains the dotnet-install scripts.
    */
@@ -45,7 +45,6 @@ export class CustomPathDotnetInstallScript implements ICustomDotnetInstallScript
     return this.scriptPath;
   }
 }
-
 
 export class TestAdapter implements IDepsAdapter {
   private readonly _hasTeamsfxBackend: boolean;

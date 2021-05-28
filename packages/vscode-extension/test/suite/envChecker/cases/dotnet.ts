@@ -10,7 +10,12 @@ import * as dotnetUtils from "../utils/dotnet";
 import { isWindows, isLinux } from "../../../../src/debug/depsChecker/common";
 import { DepsChecker } from "../../../../src/debug/depsChecker/checker";
 import { DotnetChecker, DotnetVersion } from "../../../../src/debug/depsChecker/dotnetChecker";
-import { ICustomDotnetInstallScript, CustomOutputDotnetInstallScript, CustomPathDotnetInstallScript, TestAdapter } from "../adapters/testAdapter";
+import {
+  ICustomDotnetInstallScript,
+  CustomOutputDotnetInstallScript,
+  CustomPathDotnetInstallScript,
+  TestAdapter,
+} from "../adapters/testAdapter";
 import { logger } from "../adapters/testLogger";
 import { TestTelemetry } from "../adapters/testTelemetry";
 import {
@@ -97,11 +102,18 @@ suite("DotnetChecker E2E Test - first run", async () => {
     }
 
     // test for space and non-ASCII characters
-    const specialUserName = 'Aarón García';
+    const specialUserName = "Aarón García";
 
     const [resourceDir, cleanupCallback] = await dotnetUtils.createMockResourceDir(specialUserName);
     try {
-      const [checker, dotnetChecker] = createTestChecker(true, true, true, true, true, new CustomPathDotnetInstallScript(resourceDir));
+      const [checker, dotnetChecker] = createTestChecker(
+        true,
+        true,
+        true,
+        true,
+        true,
+        new CustomPathDotnetInstallScript(resourceDir)
+      );
 
       const shouldContinue = await checker.resolve();
       const dotnetExecPath = await dotnetChecker.getDotnetExecPath();

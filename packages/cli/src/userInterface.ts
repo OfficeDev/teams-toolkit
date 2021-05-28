@@ -108,36 +108,6 @@ export class DialogManager implements Dialog {
   }
 
   private async askQuestion(question: IQuestion): Promise<string | undefined> {
-    if (question.description.includes("subscription")) {
-      let sub: string;
-      const subscriptions = question.options as string[];
-      if (subscriptions.length === 0) {
-        throw new Error(
-          "Your Azure account has no active subscriptions. Please switch an Azure account."
-        );
-      } else if (subscriptions.length === 1) {
-        sub = subscriptions[0];
-        CLILogProvider.necessaryLog(
-          LogLevel.Warning,
-          `Your Azure account only has one subscription (${sub}). Use it as default.`
-        );
-      } else {
-        const result = await CLIUIInstance.selectOption(
-          {
-            name: "subscription",
-            title: question.description,
-            options: subscriptions
-          }
-        )
-        if (result.isOk()) {
-          sub = result.value.result as string;
-        } else {
-          return undefined;
-        }
-      }
-
-      return sub;
-    }
     switch (question.type) {
       case QuestionType.Confirm: {
         if (!question.options || question.options.length === 0) {

@@ -156,8 +156,9 @@ export async function askSubscription(
     const subscriptionNames: string[] = subscriptions.map(
       (subscription) => subscription.subscriptionName
     );
+    /// TODO: subscriptionNames may need change to OptionItem[]
     const askRes = await ui!.selectOption({
-      name: "askSub",
+      name: "subscription",
       title: "Select a subscription",
       options: subscriptionNames
     }); 

@@ -231,6 +231,21 @@ export class CLIUserInteraction implements UserInteraction {
   }
   
   public async selectOption(config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
+    if (config.name === "subscription") {
+      const subscriptions = config.options as string[];
+      if (subscriptions.length === 0) {
+        throw new Error(
+          "Your Azure account has no active subscriptions. Please switch an Azure account."
+        );
+      } else if (subscriptions.length === 1) {
+        const sub = subscriptions[0];
+        CLILogProvider.necessaryLog(
+          LogLevel.Warning,
+          `Your Azure account only has one subscription (${sub}). Use it as default.`
+        );
+        return ok({ type: "success", result: sub });
+      }
+    }
     this.updatePresetAnswerFromConfig(config);
     return new Promise(async resolve => {
       const [choices, defaultValue] = this.toChoices(config.options, config.default);

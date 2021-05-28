@@ -2216,13 +2216,7 @@ export class TeamsAppSolution implements Solution {
         }
       }
     }
-    return err(
-      returnUserError(
-        new Error(`getQuestionsForUserTaskRouteFailed:${JSON.stringify(func)}`),
-        "Solution",
-        `getQuestionsForUserTaskRouteFailed`
-      )
-    );
+    return ok(undefined);
   }
   async executeAddResource(ctx: SolutionContext): Promise<Result<any, FxError>> {
     if (!ctx.answers) {

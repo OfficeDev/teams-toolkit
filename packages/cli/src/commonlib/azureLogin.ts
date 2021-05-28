@@ -13,6 +13,7 @@ import {
   FxError,
   ok,
   Result,
+  SubscriptionInfo,
 } from "@microsoft/teamsfx-api";
 import { CodeFlowLogin, LoginFailureError, ConvertTokenToJson } from "./codeFlowLogin";
 import { MemoryCache } from "./memoryCache";
@@ -502,13 +503,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     throw NotFoundSubscriptionId();
   }
 }
-
-// TODO: remove after api update
-export type SubscriptionInfo = {
-  subscriptionName: string;
-  subscriptionId: string;
-  tenantId: string;
-};
 
 interface PartialList<T> extends Array<T> {
   nextLink?: string;

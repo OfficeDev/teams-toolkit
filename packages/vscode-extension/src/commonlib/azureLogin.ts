@@ -6,7 +6,7 @@
 
 import { TokenCredential } from "@azure/core-auth";
 import { DeviceTokenCredentials, TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-import { AzureAccountProvider, UserError } from "@microsoft/teamsfx-api";
+import { AzureAccountProvider, UserError, SubscriptionInfo } from "@microsoft/teamsfx-api";
 import { ExtensionErrors } from "../error";
 import { AzureAccount } from "./azure-account.api";
 import { LoginFailureError } from "./codeFlowLogin";
@@ -393,12 +393,5 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     });
   }
 }
-
-// TODO: remove after api update
-export type SubscriptionInfo = {
-  subscriptionName: string;
-  subscriptionId: string;
-  tenantId: string;
-};
 
 export default AzureAccountManager.getInstance();

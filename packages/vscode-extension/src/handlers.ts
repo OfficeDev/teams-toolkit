@@ -29,8 +29,7 @@ import {
   VsCodeEnv,
   AppStudioTokenProvider,
   Void,
-  Tools,
-  TaskGroup
+  Tools
 } from "@microsoft/teamsfx-api";
 import {
   isUserCancelError,
@@ -167,7 +166,6 @@ export function getSystemInputs():Inputs{
 
 export async function createNewProjectHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
-  await testProgress();
   return await runCommand(Stage.create);
 }
 

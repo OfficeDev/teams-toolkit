@@ -174,6 +174,6 @@ export interface Inputs extends Json{
 
 
 export interface ProjectConfig{
-  settings: ProjectSettings;
-  config: SolutionConfig;
+  settings?: ProjectSettings;
+  config?: SolutionConfig;
 }

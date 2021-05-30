@@ -33,7 +33,7 @@ import {
   SingleSelectConfig,
   MultiSelectConfig,
   InputTextConfig,
-  TimeConsumingTask,
+  RunnableTask,
   UserInteraction,
   UIConfig,
   err,
@@ -525,7 +525,7 @@ export class VsCodeUI implements UserInteraction {
       }
     });
   } 
-  async runWithProgress( task: TimeConsumingTask<any>): Promise<Result<any, FxError>> {
+  async runWithProgress( task: RunnableTask<any>): Promise<Result<any, FxError>> {
     return new Promise(async (resolve) => {
       window.withProgress(
         {
@@ -549,8 +549,7 @@ export class VsCodeUI implements UserInteraction {
             resolve(err(assembleError(e)))
           });
           const head = `${StringResources.vsc.progressHandler.teamsToolkitComponent} ${task.name}`;
-          
-          const report = (task:TimeConsumingTask<any>)=>{
+          const report = (task:RunnableTask<any>)=>{
             body = task.showProgress? `: ${Math.round(task.current*100/task.total)} %` : `: [${task.current+1}/${task.total}]`;
             tail = task.message? ` ${task.message}` : StringResources.vsc.progressHandler.prepareTask;
             message = `${head}${body}${tail}`;

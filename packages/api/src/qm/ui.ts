@@ -61,20 +61,21 @@ export type SelectFilesResult = InputResult<string[]>;
 export type SelectFolderResult = InputResult<string>; 
 
 
-export interface TimeConsumingTask<T> {
+export interface RunnableTask<T> {
   name: string;
-  /**
-   * whether ui support cancel or not
-   */
-  cancelable:boolean;
   current:number;
   total:number;
-  showProgress:boolean;
   message: string;
-  isFinished: boolean;
   isCanceled: boolean;
-  run(...args: any): Promise<T>;
+  run(...args: any): Promise<Result<T,FxError>>;
   cancel(): void;
+}
+
+export interface TaskConfig{
+  cancellable:boolean,
+  showProgress:boolean,
+  concurrent?: boolean,
+  fastFail?: boolean
 }
 
 /// TODO: use Result<xxx, FxError> instead of SingleSelectResult/MultiSelectResult/xxx
@@ -93,26 +94,15 @@ export interface UserInteraction {
     modal: boolean,
     ...items: string[]
   ): Promise<Result<string|undefined,FxError>>;
-  runWithProgress(task: TimeConsumingTask<any>): Promise<Result<any,FxError>>;
+  runWithProgress<T>(task: RunnableTask<T>, config: TaskConfig, ...args:any): Promise<Result<T,FxError>>;
 }
 
-export interface FunctionGroupTaskConfig<T>{
-  name: string,
-  tasks: (() => Promise<Result<T, FxError>>)[],
-  taskNames?: string[];
-  showProgress: boolean;
-  cancelable: boolean,
-  concurrent?: boolean,
-  fastFail?: boolean
-}
-
-export class TaskGroup<T> implements TimeConsumingTask<Result<Result<T, FxError>[], FxError>> {
+export class GroupOfTasks<T> implements RunnableTask<Result<Result<T, FxError>[], FxError>> {
   name: string;
   current:number = 0;
   total:number;
   message = "";
   isCanceled = false;
-  isFinished = false;
   cancelable = true;
   concurrent?;
   fastFail?;
@@ -163,7 +153,6 @@ export class TaskGroup<T> implements TimeConsumingTask<Result<Result<T, FxError>
             this.current = i + 1;
           }
         }
-        this.isFinished = true;
       } else {
         let promiseResults = this.tasks.map((t) => t());
         let finishNum = 0;
@@ -187,7 +176,6 @@ export class TaskGroup<T> implements TimeConsumingTask<Result<Result<T, FxError>
           });
         });
         results = await Promise.all(promiseResults);
-        this.isFinished = true;
       }
       resolve(ok(results));
     });

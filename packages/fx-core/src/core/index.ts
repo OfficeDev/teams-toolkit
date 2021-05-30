@@ -622,11 +622,8 @@ export class FxCore implements Core {
   async _getQuestions(stage: Stage, inputs: Inputs, ctx?:SolutionContext): Promise<Result<QTreeNode | undefined, FxError>> {
     const node = new QTreeNode({ type: "group" });
     if (stage === Stage.create) {
-      if(inputs.platform === Platform.VSCode){
-        (ScratchOrSampleSelect.staticOptions[0] as OptionItem).label = "$(new-folder) " + (ScratchOrSampleSelect.staticOptions[0] as OptionItem).label;
-        (ScratchOrSampleSelect.staticOptions[1] as OptionItem).label = "$(heart) " + (ScratchOrSampleSelect.staticOptions[1] as OptionItem).label;
-      }
-      const scratchSelectNode = new QTreeNode(ScratchOrSampleSelect);
+      
+      const scratchSelectNode = new QTreeNode(ScratchOrSampleSelect(inputs.platform === Platform.CLI));
       node.addChild(scratchSelectNode);
 
       const scratchNode = new QTreeNode({ type: "group" });

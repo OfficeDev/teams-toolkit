@@ -76,6 +76,7 @@ import { AzureNodeChecker } from "./debug/depsChecker/azureNodeChecker";
 import { SPFxNodeChecker } from "./debug/depsChecker/spfxNodeChecker";
 import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { VS_CODE_UI } from "./extension";
+import { testProgress } from "../test/testUI";
 
 export let core: FxCore; 
 export function getWorkspacePath(): string | undefined {
@@ -166,6 +167,7 @@ export function getSystemInputs():Inputs{
 
 export async function createNewProjectHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
+  await testProgress();
   return await runCommand(Stage.create);
 }
 

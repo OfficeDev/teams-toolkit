@@ -19,7 +19,7 @@ import {
   SelectFileConfig,
   SelectFilesConfig,
   SelectFolderConfig,
-  TimeConsumingTask,
+  RunnableTask,
   UserInteraction,
   Result,
   FxError,
@@ -424,7 +424,7 @@ export class CLIUserInteraction implements UserInteraction {
     });
   }
 
-  public async runWithProgress(task: TimeConsumingTask<any>): Promise<Result<any,FxError>> {
+  public async runWithProgress(task: RunnableTask<any>): Promise<Result<any,FxError>> {
     return new Promise(async resolve => {
       const res = task.run();
 

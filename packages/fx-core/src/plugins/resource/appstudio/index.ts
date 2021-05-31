@@ -135,7 +135,9 @@ export class AppStudioPlugin implements Plugin {
           level: MsgLevel.Info,
         })
       );
-      TelemetryUtils.sendSuccessEvent(TelemetryEventName.buildTeamsPackage);
+      const properties: { [key: string]: string } = {};
+      properties[TelemetryPropertyKey.buildOnly] = "true";
+      TelemetryUtils.sendSuccessEvent(TelemetryEventName.buildTeamsPackage, properties);
       return ok(appPackagePath);
     } catch (error) {
       TelemetryUtils.sendErrorEvent(TelemetryEventName.buildTeamsPackage, error);

@@ -3,6 +3,7 @@
 
 import { PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { Constants } from "./../constants";
+import { GLOBAL_CONFIG, REMOTE_TEAMS_APP_ID } from "../../../solution/fx-solution/constants";
 
 export enum TelemetryPropertyKey {
   component = "component",
@@ -13,6 +14,7 @@ export enum TelemetryPropertyKey {
   updateExistingApp = "update",
   success = "success",
   appId = "appid",
+  buildOnly = "build",
 }
 
 enum TelemetryPropertyValue {
@@ -44,8 +46,9 @@ export class TelemetryUtils {
       properties = {};
     }
     properties[TelemetryPropertyKey.component] = Constants.PLUGIN_NAME;
-    if (this.ctx.app.id) {
-      properties[TelemetryPropertyKey.appId] = this.ctx.app.id
+    const teamsAppId = this.ctx.configOfOtherPlugins.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID) as string;
+    if (teamsAppId) {
+      properties[TelemetryPropertyKey.appId] = teamsAppId;
     }
     TelemetryUtils.ctx.telemetryReporter?.sendTelemetryErrorEvent(
       `${eventName}-start`,
@@ -64,8 +67,9 @@ export class TelemetryUtils {
     }
     properties[TelemetryPropertyKey.component] = Constants.PLUGIN_NAME;
     properties[TelemetryPropertyKey.success] = TelemetryPropertyValue.success;
-    if (this.ctx.app.id) {
-      properties[TelemetryPropertyKey.appId] = this.ctx.app.id
+    const teamsAppId = this.ctx.configOfOtherPlugins.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID) as string;
+    if (teamsAppId) {
+      properties[TelemetryPropertyKey.appId] = teamsAppId;
     }
     TelemetryUtils.ctx.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
   }
@@ -88,8 +92,10 @@ export class TelemetryUtils {
     properties[TelemetryPropertyKey.errorCode] = `${error.source}.${error.name}`;
     properties[TelemetryPropertyKey.errorMessage] = error.message;
     properties[TelemetryPropertyKey.success] = TelemetryPropertyValue.failure;
-    if (this.ctx.app.id) {
-      properties[TelemetryPropertyKey.appId] = this.ctx.app.id
+
+    const teamsAppId = this.ctx.configOfOtherPlugins.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID) as string;
+    if (teamsAppId) {
+      properties[TelemetryPropertyKey.appId] = teamsAppId;
     }
     TelemetryUtils.ctx.telemetryReporter?.sendTelemetryErrorEvent(
       eventName,

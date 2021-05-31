@@ -191,7 +191,7 @@ class NewTemplete extends YargsCommand {
     await this.saveFilesRecursively(new AdmZip(result.data), template.sampleAppName, folder);
     await CLILogProvider.necessaryLog(
       LogLevel.Info,
-      `Downloaded the '${CLILogProvider.yellow(template.sampleAppName)}' sample to '${CLILogProvider.yellow(
+      `Downloaded the '${CLILogProvider.white(template.sampleAppName)}' sample to '${CLILogProvider.white(
         sampleAppFolder
       )}'.`
     );
@@ -252,7 +252,7 @@ class NewTempleteList extends YargsCommand {
     await CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(constants.templates, undefined, 4), true);
     await CLILogProvider.necessaryLog(
       LogLevel.Info,
-      `Use the command ${CLILogProvider.yellow(
+      `Use the command ${CLILogProvider.white(
         "teamsfx new template <sampleAppName>"
       )} to create an application from the sample app.`
     );

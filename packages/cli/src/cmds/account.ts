@@ -21,12 +21,12 @@ async function outputM365Info(commandType: "login" | "show"): Promise<boolean> {
     if (commandType === "login") {
       await CLILogProvider.necessaryLog(
         LogLevel.Info,
-        `[${constants.cliSource}] Successfully signed in to M365. Your username is ${CLILogProvider.yellow((result as any).upn)}.`
+        `[${constants.cliSource}] Successfully signed in to M365. Your username is ${CLILogProvider.white((result as any).upn)}.`
       );
     } else {
       await CLILogProvider.necessaryLog(
         LogLevel.Info,
-        `[${constants.cliSource}] Your M365 Account is: ${CLILogProvider.yellow((result as any).upn)}.`
+        `[${constants.cliSource}] Your M365 Account is: ${CLILogProvider.white((result as any).upn)}.`
       );
     }
   } else {
@@ -43,7 +43,7 @@ async function outputAzureInfo(commandType: "login" | "show", tenantId = ""): Pr
     const subscriptions = await AzureTokenProvider.listSubscriptions();
     if (commandType === "login") {
       await CLILogProvider.necessaryLog(LogLevel.Info, 
-        `[${constants.cliSource}] Successfully signed in to Azure. Your username is ${CLILogProvider.yellow((result as any).username)}.`
+        `[${constants.cliSource}] Successfully signed in to Azure. Your username is ${CLILogProvider.white((result as any).username)}.`
       );
       await CLILogProvider.necessaryLog(LogLevel.Info, `[${constants.cliSource}] Your subscriptions are:`);
       await CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(subscriptions, null, 2), true);
@@ -52,11 +52,11 @@ async function outputAzureInfo(commandType: "login" | "show", tenantId = ""): Pr
         const activeSub = await getSubscriptionIdFromEnvFile("./");
         if (activeSub) {
           await CLILogProvider.necessaryLog(LogLevel.Info, 
-            `[${constants.cliSource}] Your Azure Account is: ${CLILogProvider.yellow((result as any).username)}`
-            + ` and current active subscription id is: ${CLILogProvider.yellow(activeSub)}.`
+            `[${constants.cliSource}] Your Azure Account is: ${CLILogProvider.white((result as any).username)}`
+            + ` and current active subscription id is: ${CLILogProvider.white(activeSub)}.`
           );
         } else {
-          await CLILogProvider.necessaryLog(LogLevel.Info, `[${constants.cliSource}] Your Azure Account is: ${CLILogProvider.yellow((result as any).username)}.`);
+          await CLILogProvider.necessaryLog(LogLevel.Info, `[${constants.cliSource}] Your Azure Account is: ${CLILogProvider.white((result as any).username)}.`);
           await CLILogProvider.necessaryLog(LogLevel.Info, 
             `[${constants.cliSource}] Below is a list of all subscriptions we found,`
             + ` use \`teamsfx account set\` to set an active subscription.`
@@ -65,7 +65,7 @@ async function outputAzureInfo(commandType: "login" | "show", tenantId = ""): Pr
         }
       } catch (e) {
         if (e.name === "ConfigNotFound") {
-          await CLILogProvider.necessaryLog(LogLevel.Info, `[${constants.cliSource}] Your Azure Account is: ${CLILogProvider.yellow((result as any).username)}.`);
+          await CLILogProvider.necessaryLog(LogLevel.Info, `[${constants.cliSource}] Your Azure Account is: ${CLILogProvider.white((result as any).username)}.`);
           await CLILogProvider.necessaryLog(LogLevel.Warning, 
             "WARN：Azure subscription is set on project level. Run `teamsfx account show` command in a TeamsFx project folder to check active subscription information."
           );

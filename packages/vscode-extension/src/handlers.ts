@@ -651,7 +651,12 @@ export function cmdHdlDisposeTreeView() {
 }
 
 export async function showError(e: UserError | SystemError) {
-  VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}, stack: ${e.stack}`);
+  if( e.stack ) {
+    VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}, stack: ${e.stack}`);
+  }
+  else {
+    VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}`);
+  }
 
   const errorCode = `${e.source}.${e.name}`;
   if (isUserCancelError(e)) {

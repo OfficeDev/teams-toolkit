@@ -20,7 +20,9 @@ export class AppStudioValidator {
         
         const requester = this.createRequesterWithToken(token!);
         const response = await requester.get(`/api/publishing/${appId}`);
-        chai.assert.isNotEmpty(response.data.value);
+        if (response.data.error) {
+            chai.assert.fail(`Publish failed, code: ${response.data.error.code}, message: ${response.data.error.message}`);
+        }
     }
 
     private static createRequesterWithToken(appStudioToken: string): AxiosInstance {

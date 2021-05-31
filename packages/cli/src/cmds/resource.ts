@@ -6,7 +6,7 @@
 import * as path from "path";
 import { Argv, Options } from "yargs";
 
-import { err, FxError, ok, Result } from "@microsoft/teamsfx-api";
+import { err, FxError, ok, Result, LogLevel } from "@microsoft/teamsfx-api";
 
 import activate from "../activate";
 import * as constants from "../constants";
@@ -15,6 +15,7 @@ import { YargsCommand } from "../yargsCommand";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
 import CLIUIInstance from "../userInteraction";
+import CLILogProvider from "../commonlib/log";
 
 export class ResourceAdd extends YargsCommand {
   public readonly commandHead = `add`;
@@ -238,7 +239,7 @@ export class ResourceShowFunction extends YargsCommand {
     const pluginName = "fx-resource-function";
     if (result.isOk()) {
       if (pluginName in result.value) {
-        console.log(result.value[pluginName]);
+        CLILogProvider.necessaryLog(LogLevel.Info, result.value[pluginName], true);
       }
       return ok(null);
     } else {
@@ -265,7 +266,7 @@ export class ResourceShowSQL extends YargsCommand {
     const pluginName = "fx-resource-azure-sql";
     if (result.isOk()) {
       if (pluginName in result.value) {
-        console.log(result.value[pluginName]);
+        CLILogProvider.necessaryLog(LogLevel.Info, result.value[pluginName], true);
       }
       return ok(null);
     } else {
@@ -292,11 +293,11 @@ export class ResourceList extends YargsCommand {
     pluginNameMap.set("fx-resource-function", "azure-function");
 
     if (result.isOk()) {
-      pluginNameMap.forEach((pluginAlias: string, pluginName: string) => {
+      for (const [pluginAlias, pluginName] of pluginNameMap) {
         if (pluginName in result.value) {
-          console.log(pluginAlias);
+          CLILogProvider.necessaryLog(LogLevel.Info, pluginAlias, true);
         }
-      });
+      }
       return ok(null);
     } else {
       return err(result.error);

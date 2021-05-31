@@ -5,13 +5,14 @@
 
 import { Argv, Options } from "yargs";
 
-import { FxError, err, ok, Result, Func, ConfigMap, Platform } from "@microsoft/teamsfx-api";
+import { FxError, err, ok, Result, Func, ConfigMap, Platform, LogLevel } from "@microsoft/teamsfx-api";
 
 import { YargsCommand } from "../yargsCommand";
 import activate from "../activate";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
 import { argsToInputs } from "../utils";
+import CLILogProvider from "../commonlib/log";
 
 export default class Init extends YargsCommand {
   public readonly commandHead = `init`;
@@ -78,7 +79,7 @@ export default class Init extends YargsCommand {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Init, result.error);
         return err(result.error);
       }
-      console.info(JSON.stringify(result.value, null, 4));
+      CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(result.value, null, 4), true);
     }
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.Init, {

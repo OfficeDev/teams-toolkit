@@ -96,20 +96,6 @@ export class AzureAccountProviderUserPassword implements AzureAccountProvider {
         );
     }
 
-    public async deleteResourceGroup(rg: string): Promise<void> {
-        if (!this.client) {
-            const c = await msRestAzure.loginWithUsernamePassword(user, password);
-            this.client = new arm.ResourceManagementClient(c, cfg.subscription.id);
-        }
-        this.client!.resourceGroups.deleteMethod(rg, function(err, result, request, response) {
-            if (err) {
-                console.log(err);
-            } else {
-                console.log(result);
-            }
-        });
-    }
-
     setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean> {
         throw new Error("Method not implemented.");
     }

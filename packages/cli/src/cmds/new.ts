@@ -5,7 +5,6 @@
 
 import AdmZip from "adm-zip";
 import axios from "axios";
-import colors from "colors";
 import fs from "fs-extra";
 import path from "path";
 import { Argv, Options } from "yargs";
@@ -20,6 +19,7 @@ import {
   isAutoSkipSelect,
   SingleSelectQuestion,
   MultiSelectQuestion,
+  LogLevel
 } from "@microsoft/teamsfx-api";
 
 import activate  from "../activate";
@@ -31,7 +31,6 @@ import {
   getJson,
   getSingleOptionString,
   getSystemInputs,
-  toConfigMap,
   toYargsOptions,
 } from "../utils";
 import CliTelemetry from "../telemetry/cliTelemetry";
@@ -41,6 +40,7 @@ import {
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
 import CLIUIInstance from "../userInteraction";
+import CLILogProvider from "../commonlib/log";
 
 export default class New extends YargsCommand {
   public readonly commandHead = `new`;
@@ -168,12 +168,11 @@ class NewTemplete extends YargsCommand {
 
     const result = await this.fetchCodeZip(template.sampleAppUrl);
     await this.saveFilesRecursively(new AdmZip(result.data), template.sampleAppName, folder);
-    console.log(
-      colors.green(
-        `Downloaded the '${colors.yellow(template.sampleAppName)}' sample to '${colors.yellow(
-          sampleAppFolder
-        )}'.`
-      )
+    CLILogProvider.necessaryLog(
+      LogLevel.Info,
+      `Downloaded the '${CLILogProvider.white(template.sampleAppName)}' sample to '${CLILogProvider.white(
+        sampleAppFolder
+      )}'.`
     );
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, {
@@ -228,14 +227,13 @@ class NewTempleteList extends YargsCommand {
   public async runCommand(args: {
     [argName: string]: string | string[];
   }): Promise<Result<null, FxError>> {
-    console.log(colors.green(`The following are sample apps:`));
-    console.log(constants.templates);
-    console.log(
-      colors.green(
-        `Use the command ${colors.yellow(
-          "teamsfx new template <sampleAppName>"
-        )} to create an application from the sample app.`
-      )
+    CLILogProvider.necessaryLog(LogLevel.Info, `The following are sample apps:`);
+    CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(constants.templates, undefined, 4), true);
+    CLILogProvider.necessaryLog(
+      LogLevel.Info,
+      `Use the command ${CLILogProvider.white(
+        "teamsfx new template <sampleAppName>"
+      )} to create an application from the sample app.`
     );
     return ok(null);
   }

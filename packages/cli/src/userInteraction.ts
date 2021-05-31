@@ -380,13 +380,13 @@ export class CLIUserInteraction implements UserInteraction {
         case 0:
           switch (level) {
             case "info":
-              await CLILogProvider.necessaryLog(LogLevel.Info, message);
+              CLILogProvider.necessaryLog(LogLevel.Info, message);
               break;
             case "warn":
-              await CLILogProvider.necessaryLog(LogLevel.Warning, message);
+              CLILogProvider.necessaryLog(LogLevel.Warning, message);
               break;
             case "error":
-              await CLILogProvider.necessaryLog(LogLevel.Error, message);
+              CLILogProvider.necessaryLog(LogLevel.Error, message);
               break;
           }
           resolve(ok(undefined));

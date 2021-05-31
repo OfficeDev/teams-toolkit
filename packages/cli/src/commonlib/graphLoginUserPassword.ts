@@ -9,6 +9,7 @@ import * as msal from "@azure/msal-node";
 import { GraphTokenProvider } from "@microsoft/teamsfx-api";
 
 import * as cfg from "./common/userPasswordConfig";
+import CLILogProvider from "./log";
 
 dotenv.config();
 
@@ -55,8 +56,8 @@ export class GraphTokenProviderUserPassword implements GraphTokenProvider {
             .then((response) => {
                 GraphTokenProviderUserPassword.accessToken = response!.accessToken;
             })
-            .catch((e) => {
-                console.log(e);
+            .catch(async (e: any) => {
+                await CLILogProvider.error(e);
             });
         return GraphTokenProviderUserPassword.accessToken;
     }

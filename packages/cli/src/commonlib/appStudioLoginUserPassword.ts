@@ -10,6 +10,7 @@ import qs from "querystring";
 import { AppStudioTokenProvider } from "@microsoft/teamsfx-api";
 
 import * as cfg from "./common/userPasswordConfig";
+import CLILogProvider from "./log";
 
 dotenv.config();
 
@@ -61,8 +62,8 @@ export class AppStudioTokenProviderUserPassword implements AppStudioTokenProvide
             .then((r: any) => {
                 AppStudioTokenProviderUserPassword.accessToken = r.data.access_token;
             })
-            .catch((e: any) => {
-                console.log(e);
+            .catch(async (e: any) => {
+                await CLILogProvider.error(e);
             });
 
         return AppStudioTokenProviderUserPassword.accessToken;

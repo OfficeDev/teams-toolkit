@@ -412,10 +412,10 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
           } catch (error) {
             if (error.message.indexOf(MFACode) >= 0) {
               if (showMFA) {
-                console.log(colors.green(changeLoginTenantMessage));
+                await CLILogProvider.info(changeLoginTenantMessage);
                 showMFA = false;
               }
-              console.log(colors.green(tenants[i].tenantId!));
+              await CLILogProvider.info(tenants[i].tenantId!);
             }
           }
         }

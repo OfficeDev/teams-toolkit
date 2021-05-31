@@ -7,7 +7,7 @@ import * as http from "http";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { Mutex } from "async-mutex";
-import { returnSystemError, UserError } from "@microsoft/teamsfx-api";
+import { LogLevel, returnSystemError, UserError } from "@microsoft/teamsfx-api";
 import CliCodeLogInstance from "./log";
 import * as crypto from "crypto";
 import { AddressInfo } from "net";
@@ -137,11 +137,10 @@ export class CodeFlowTenantLogin {
     try {
       await this.startServer(server, serverPort!);
       this.pca!.getAuthCodeUrl(authCodeUrlParameters).then(async (response: string) => {
-        // TODO change console.log to logProvider, for now, logProvider may be hidden
         if (this.accountName == "azure") {
-          console.log(colors.green(`[${constants.cliSource}] ${azureLoginMessage}`));
+          await CliCodeLogInstance.necessaryLog(LogLevel.Info, `[${constants.cliSource}] ${azureLoginMessage}`);
         } else {
-          console.log(colors.green(`[${constants.cliSource}] ${m365LoginMessage}`));
+          await CliCodeLogInstance.necessaryLog(LogLevel.Info, `[${constants.cliSource}] ${m365LoginMessage}`);
         }
         open(response);
       });

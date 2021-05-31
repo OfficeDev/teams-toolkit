@@ -104,7 +104,7 @@ export class CLILogProvider implements LogProvider {
         break;
       case LogLevel.Debug:
         if (CLILogProvider.logLevel === CLILogLevel.debug) {
-          console.debug(this.white(message.white));
+          console.debug(this.white(message));
         }
         break;
       case LogLevel.Info:

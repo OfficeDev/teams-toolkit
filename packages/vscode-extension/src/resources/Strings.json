@@ -107,7 +107,8 @@
     },
     "localDebug": {
       "portAlreadyInUse": "Port: %s is already in use. Close this port and try again.",
-      "portsAlreadyInUse": "Ports: %s are already in use. Close these ports and try again."
+      "portsAlreadyInUse": "Ports: %s are already in use. Close these ports and try again.",
+      "waitForBrowserStarted": "Please wait while the toolkit is starting your browser..."
     },
     "survey": {
       "takeSurvey": {

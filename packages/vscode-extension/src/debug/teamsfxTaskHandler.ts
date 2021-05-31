@@ -9,6 +9,8 @@ import { ext } from "../extensionVariables";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
 import { isWorkspaceSupported, getTeamsAppId } from "../utils/commonUtils";
+import * as constants from "./constants";
+import * as StringResources from "../resources/Strings.json";
 
 interface IRunningTeamsfxTask {
   source: string;
@@ -75,6 +77,10 @@ function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent): void
         { source: task.source, name: task.name, scope: task.scope },
         event.processId
       );
+      // NOTE: trigger task via "Terminal -> Run Task..." will not enter this flow since the task name will be "teamsfx: frontend start"
+      if (task.name === constants.frontendStartCommand) {
+        vscode.window.showInformationMessage(StringResources.vsc.localDebug.waitForBrowserStarted);
+      }
     } else if (isNpmInstallTask(task)) {
       activeNpmInstallTasks.add(task.name);
     }

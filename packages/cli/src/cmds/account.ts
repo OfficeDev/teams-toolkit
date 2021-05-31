@@ -3,10 +3,9 @@
 
 "use strict";
 
-import colors from "colors";
 import { Argv } from "yargs";
 
-import { FxError, ok, Question, Result } from "@microsoft/teamsfx-api";
+import { FxError, LogLevel, ok, Question, Result } from "@microsoft/teamsfx-api";
 
 import { YargsCommand } from "../yargsCommand";
 import AppStudioTokenProvider from "../commonlib/appStudioLogin";
@@ -15,32 +14,24 @@ import { signedIn } from "../commonlib/common/constant";
 import CLILogProvider from "../commonlib/log";
 import * as constants from "../constants";
 import { getSubscriptionIdFromEnvFile, setSubscriptionId, toYargsOptions } from "../utils";
-import CliTelemetry from "../telemetry/cliTelemetry";
-import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
-
-function consoleGreen(msg: string) {
-  console.log(colors.green(msg));
-}
-
-function consoleWhite(msg: string) {
-  console.log(colors.white(msg));
-}
-
-function consoleYellow(msg: string) {
-  console.log(colors.yellow(msg));
-}
 
 async function outputM365Info(commandType: "login" | "show"): Promise<boolean> {
   const result = await AppStudioTokenProvider.getJsonObject();
   if (result) {
     if (commandType === "login") {
-      consoleGreen(`[${constants.cliSource}] Successfully signed in to M365. Your username is ${colors.yellow((result as any).upn)}.`)
+      await CLILogProvider.necessaryLog(
+        LogLevel.Info,
+        `[${constants.cliSource}] Successfully signed in to M365. Your username is ${CLILogProvider.yellow((result as any).upn)}.`
+      );
     } else {
-      consoleGreen(`[${constants.cliSource}] Your M365 Account is: ${colors.yellow((result as any).upn)}.`);
+      await CLILogProvider.necessaryLog(
+        LogLevel.Info,
+        `[${constants.cliSource}] Your M365 Account is: ${CLILogProvider.yellow((result as any).upn)}.`
+      );
     }
   } else {
     if (commandType === "login") {
-      CLILogProvider.error(`[${constants.cliSource}] Failed to sign in to M365.`);
+      await CLILogProvider.necessaryLog(LogLevel.Error, `[${constants.cliSource}] Failed to sign in to M365.`);
     }
   }
   return Promise.resolve(result !== undefined);
@@ -51,31 +42,31 @@ async function outputAzureInfo(commandType: "login" | "show", tenantId = ""): Pr
   if (result) {
     const subscriptions = await AzureTokenProvider.listSubscriptions();
     if (commandType === "login") {
-      consoleGreen(
-        `[${constants.cliSource}] Successfully signed in to Azure. Your username is ${colors.yellow((result as any).username)}.`
+      await CLILogProvider.necessaryLog(LogLevel.Info, 
+        `[${constants.cliSource}] Successfully signed in to Azure. Your username is ${CLILogProvider.yellow((result as any).username)}.`
       );
-      consoleGreen(`[${constants.cliSource}] Your subscriptions are:`);
-      consoleWhite(JSON.stringify(subscriptions, null, 2));
+      await CLILogProvider.necessaryLog(LogLevel.Info, `[${constants.cliSource}] Your subscriptions are:`);
+      await CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(subscriptions, null, 2), true);
     } else {
       try {
         const activeSub = await getSubscriptionIdFromEnvFile("./");
         if (activeSub) {
-          consoleGreen(
-            `[${constants.cliSource}] Your Azure Account is: ${colors.yellow((result as any).username)}`
-            + ` and current active subscription id is: ${colors.yellow(activeSub)}.`
+          await CLILogProvider.necessaryLog(LogLevel.Info, 
+            `[${constants.cliSource}] Your Azure Account is: ${CLILogProvider.yellow((result as any).username)}`
+            + ` and current active subscription id is: ${CLILogProvider.yellow(activeSub)}.`
           );
         } else {
-          consoleGreen(`[${constants.cliSource}] Your Azure Account is: ${colors.yellow((result as any).username)}.`);
-          consoleGreen(
+          await CLILogProvider.necessaryLog(LogLevel.Info, `[${constants.cliSource}] Your Azure Account is: ${CLILogProvider.yellow((result as any).username)}.`);
+          await CLILogProvider.necessaryLog(LogLevel.Info, 
             `[${constants.cliSource}] Below is a list of all subscriptions we found,`
             + ` use \`teamsfx account set\` to set an active subscription.`
           );
-          consoleWhite(JSON.stringify(subscriptions, null, 2));
+          await CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(subscriptions, null, 2), true);
         }
       } catch (e) {
         if (e.name === "ConfigNotFound") {
-          consoleGreen(`[${constants.cliSource}] Your Azure Account is: ${colors.yellow((result as any).username)}.`);
-          consoleYellow(
+          await CLILogProvider.necessaryLog(LogLevel.Info, `[${constants.cliSource}] Your Azure Account is: ${CLILogProvider.yellow((result as any).username)}.`);
+          await CLILogProvider.necessaryLog(LogLevel.Warning, 
             "WARN：Azure subscription is set on project level. Run `teamsfx account show` command in a TeamsFx project folder to check active subscription information."
           );
         } else {
@@ -112,7 +103,7 @@ class AccountShow extends YargsCommand {
     }
 
     if (m365Status.status !== signedIn && azureStatus.status !== signedIn) {
-      consoleGreen("Use `teamsfx account login azure` or `teamsfx account login m365` to log in to Azure or M365 account.");
+      await CLILogProvider.necessaryLog(LogLevel.Info, "Use `teamsfx account login azure` or `teamsfx account login m365` to log in to Azure or M365 account.");
     }
 
     return ok(null);
@@ -173,18 +164,18 @@ class AccountLogout extends YargsCommand {
       case "azure": {
         const result = await AzureTokenProvider.signout();
         if (result) {
-          consoleGreen(`[${constants.cliSource}] Successfully signed out of Azure.`);
+          await CLILogProvider.necessaryLog(LogLevel.Info, `[${constants.cliSource}] Successfully signed out of Azure.`);
         } else {
-          CLILogProvider.error(`[${constants.cliSource}] Failed to sign out of Azure.`);
+          await CLILogProvider.necessaryLog(LogLevel.Error, `[${constants.cliSource}] Failed to sign out of Azure.`);
         }
         break;
       }
       case "m365": {
         const result = await AppStudioTokenProvider.signout();
         if (result) {
-          consoleGreen(`[${constants.cliSource}] Successfully signed out of M365.`);
+          await CLILogProvider.necessaryLog(LogLevel.Info, `[${constants.cliSource}] Successfully signed out of M365.`);
         } else {
-          CLILogProvider.error(`[${constants.cliSource}] Failed to sign out of M365.`);
+          await CLILogProvider.necessaryLog(LogLevel.Error, `[${constants.cliSource}] Failed to sign out of M365.`);
         }
         break;
       }

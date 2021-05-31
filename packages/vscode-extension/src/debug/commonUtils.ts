@@ -11,6 +11,7 @@ import { core, getSystemInputs, showError } from "../handlers";
 import * as net from "net";
 import { ext } from "../extensionVariables";
 import { getActiveEnv, isWorkspaceSupported } from "../utils/commonUtils";
+import { initializeFocusRects } from "@fluentui/utilities";
 
 export async function getProjectRoot(
   folderPath: string,
@@ -96,10 +97,12 @@ export async function getLocalDebugTeamsAppId(
   const func: Func = {
     namespace: "fx-solution-azure/fx-resource-local-debug",
     method: "getLaunchInput",
-    params: isLocalSideloadingConfiguration ? "local" : "remote",
+    params: isLocalSideloadingConfiguration ? "local" : "remote"
   };
   try {
-    const result = await core.executeUserTask(func, getSystemInputs());
+    const inputs = getSystemInputs();
+    inputs.readonly = true;
+    const result = await core.executeUserTask(func, inputs);
     if (result.isErr()) {
       throw result.error;
     }
@@ -115,7 +118,9 @@ export async function getProgrammingLanguage(): Promise<string | undefined> {
     method: "getProgrammingLanguage",
   };
   try {
-    const result = await core.executeUserTask(func, getSystemInputs());
+    const inputs = getSystemInputs();
+    inputs.readonly = true;
+    const result = await core.executeUserTask(func, inputs);
     if (result.isErr()) {
       throw result.error;
     }

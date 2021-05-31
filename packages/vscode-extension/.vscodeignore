@@ -9,10 +9,10 @@ src/**
 **/*.ts
 test-folder/**
 test/**
-commitlint.config.js
 build/**
 .prettierrc.json
 .prettierignore
 webpack.config.js
 .github
 node_modules
+!out/templates

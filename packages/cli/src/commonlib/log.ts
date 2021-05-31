@@ -128,7 +128,7 @@ export class CLILogProvider implements LogProvider {
     return true;
   }
 
-  async necessaryLog(logLevel: LogLevel, message: string, white = false) {
+  necessaryLog(logLevel: LogLevel, message: string, white = false) {
     switch (logLevel) {
       case LogLevel.Trace:
       case LogLevel.Debug:

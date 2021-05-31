@@ -15,7 +15,6 @@ import * as msRestAzure from "ms-rest-azure";
 import { returnUserError, AzureAccountProvider, SubscriptionInfo } from "@microsoft/teamsfx-api";
 
 import * as cfg from "./common/userPasswordConfig";
-import CLILogProvider from "./log";
 
 dotenv.config();
 

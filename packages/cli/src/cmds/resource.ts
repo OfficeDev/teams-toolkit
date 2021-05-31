@@ -286,7 +286,7 @@ export class ResourceShowFunction extends YargsCommand {
     const pluginName = "fx-resource-function";
     if (result.isOk()) {
       if (pluginName in result.value) {
-        await CLILogProvider.necessaryLog(LogLevel.Info, result.value[pluginName], true);
+        CLILogProvider.necessaryLog(LogLevel.Info, result.value[pluginName], true);
       }
       return ok(null);
     } else {
@@ -313,7 +313,7 @@ export class ResourceShowSQL extends YargsCommand {
     const pluginName = "fx-resource-azure-sql";
     if (result.isOk()) {
       if (pluginName in result.value) {
-        await CLILogProvider.necessaryLog(LogLevel.Info, result.value[pluginName], true);
+        CLILogProvider.necessaryLog(LogLevel.Info, result.value[pluginName], true);
       }
       return ok(null);
     } else {
@@ -342,7 +342,7 @@ export class ResourceList extends YargsCommand {
     if (result.isOk()) {
       for (const [pluginAlias, pluginName] of pluginNameMap) {
         if (pluginName in result.value) {
-          await CLILogProvider.necessaryLog(LogLevel.Info, pluginAlias, true);
+          CLILogProvider.necessaryLog(LogLevel.Info, pluginAlias, true);
         }
       }
       return ok(null);

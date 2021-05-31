@@ -75,18 +75,18 @@ export abstract class YargsCommand {
       }
     } catch (e) {
       const FxError: UserError | SystemError = "source" in e ? e : UnknownError(e);
-      await CLILogProvider.necessaryLog(LogLevel.Error, `[${FxError.source}.${FxError.name}]: ${FxError.message}`);
+      CLILogProvider.necessaryLog(LogLevel.Error, `[${FxError.source}.${FxError.name}]: ${FxError.message}`);
       if ("helpLink" in FxError && FxError.helpLink) {
-        await CLILogProvider.necessaryLog(LogLevel.Error, 
+        CLILogProvider.necessaryLog(LogLevel.Error, 
           `Get help from ${CLILogProvider.linkColor(`${FxError.helpLink}#${FxError.source}${FxError.name}`)}`
         );
       }
       if ("issueLink" in FxError && FxError.issueLink) {
-        await CLILogProvider.necessaryLog(LogLevel.Error, `Report this issue at ${CLILogProvider.linkColor(FxError.issueLink)}`);
+        CLILogProvider.necessaryLog(LogLevel.Error, `Report this issue at ${CLILogProvider.linkColor(FxError.issueLink)}`);
       }
       if (CLILogProvider.getLogLevel() === constants.CLILogLevel.debug) {
-        await CLILogProvider.necessaryLog(LogLevel.Error, "Call stack:");
-        await CLILogProvider.necessaryLog(LogLevel.Error, FxError.stack || "undefined");
+        CLILogProvider.necessaryLog(LogLevel.Error, "Call stack:");
+        CLILogProvider.necessaryLog(LogLevel.Error, FxError.stack || "undefined");
       }
 
       CliTelemetryInstance.flush();

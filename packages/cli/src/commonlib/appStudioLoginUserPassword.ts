@@ -7,7 +7,7 @@ import axios, { AxiosRequestConfig } from "axios";
 import dotenv from "dotenv";
 import qs from "querystring";
 
-import { AppStudioTokenProvider } from "@microsoft/teamsfx-api";
+import { AppStudioTokenProvider, LogLevel } from "@microsoft/teamsfx-api";
 
 import * as cfg from "./common/userPasswordConfig";
 import CLILogProvider from "./log";
@@ -62,8 +62,8 @@ export class AppStudioTokenProviderUserPassword implements AppStudioTokenProvide
             .then((r: any) => {
                 AppStudioTokenProviderUserPassword.accessToken = r.data.access_token;
             })
-            .catch(async (e: any) => {
-                await CLILogProvider.error(e);
+            .catch((e: any) => {
+                CLILogProvider.necessaryLog(LogLevel.Error, JSON.stringify(e, undefined, 4));
             });
 
         return AppStudioTokenProviderUserPassword.accessToken;

@@ -33,7 +33,7 @@ import {
   unknownSubscription,
 } from "./common/constant";
 import { login, LoginStatus } from "./common/login";
-import { UserError } from "@microsoft/teamsfx-api";
+import { LogLevel as LLevel } from "@microsoft/teamsfx-api";
 import { CodeFlowTenantLogin } from "./codeFlowTenantLogin";
 import CliTelemetry from "./../telemetry/cliTelemetry";
 import {
@@ -412,10 +412,10 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
           } catch (error) {
             if (error.message.indexOf(MFACode) >= 0) {
               if (showMFA) {
-                await CLILogProvider.info(changeLoginTenantMessage);
+                CLILogProvider.necessaryLog(LLevel.Info, changeLoginTenantMessage);
                 showMFA = false;
               }
-              await CLILogProvider.info(tenants[i].tenantId!);
+              CLILogProvider.necessaryLog(LLevel.Info, tenants[i].tenantId!);
             }
           }
         }

@@ -368,13 +368,13 @@ export class CLIUserInteraction implements UserInteraction {
         case 0:
           switch (level) {
             case "info":
-              await CLILogProvider.necessaryLog(LogLevel.Info, message);
+              CLILogProvider.necessaryLog(LogLevel.Info, message);
               break;
             case "warn":
-              await CLILogProvider.necessaryLog(LogLevel.Warning, message);
+              CLILogProvider.necessaryLog(LogLevel.Warning, message);
               break;
             case "error":
-              await CLILogProvider.necessaryLog(LogLevel.Error, message);
+              CLILogProvider.necessaryLog(LogLevel.Error, message);
               break;
           }
           resolve({ type: "success" });
@@ -419,7 +419,7 @@ export class CLIUserInteraction implements UserInteraction {
       const res = task.run();
       let lastLength = 0;
       
-      await CLILogProvider.necessaryLog(LogLevel.Info, task.name);
+      CLILogProvider.necessaryLog(LogLevel.Info, task.name);
 
       res.then((v:any) => {
         resolve(v); 
@@ -432,7 +432,7 @@ export class CLIUserInteraction implements UserInteraction {
         if (inc > 0) {
           const elapsedTime = new Date().getTime() - startTime;
           const remainingTime = (elapsedTime * (task.total - task.current)) / task.current;
-          await CLILogProvider.necessaryLog(
+          CLILogProvider.necessaryLog(
             LogLevel.Info,
             `progress: ${Math.round(
               (task.current * 100) / task.total

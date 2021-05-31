@@ -82,7 +82,7 @@ export default class Init extends YargsCommand {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Init, result.error);
         return err(result.error);
       }
-      await CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(result.value, null, 4), true);
+      CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(result.value, null, 4), true);
     }
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.Init, {

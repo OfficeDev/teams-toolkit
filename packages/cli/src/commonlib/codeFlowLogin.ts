@@ -124,7 +124,7 @@ export class CodeFlowLogin {
           }
         })
         .catch((error) => {
-          CliCodeLogInstance.error("[Login] " + error.message);
+          CliCodeLogInstance.necessaryLog(LogLevel.Error, "[Login] " + error.message);
           deferredRedirect.reject(error);
           res.status(500).send(error);
         });
@@ -149,9 +149,9 @@ export class CodeFlowLogin {
       await this.startServer(server, serverPort!);
       this.pca!.getAuthCodeUrl(authCodeUrlParameters).then(async (response: string) => {
         if (this.accountName == "azure") {
-          await CliCodeLogInstance.necessaryLog(LogLevel.Info, `[${constants.cliSource}] ${azureLoginMessage}`);
+          CliCodeLogInstance.necessaryLog(LogLevel.Info, `[${constants.cliSource}] ${azureLoginMessage}`);
         } else {
-          await CliCodeLogInstance.necessaryLog(LogLevel.Info, `[${constants.cliSource}] ${m365LoginMessage}`);
+          CliCodeLogInstance.necessaryLog(LogLevel.Info, `[${constants.cliSource}] ${m365LoginMessage}`);
         }
         open(response);
       });
@@ -219,7 +219,7 @@ export class CodeFlowLogin {
             }
           })
           .catch(async (error) => {
-            CliCodeLogInstance.error("[Login] silent acquire token : " + error.message);
+            CliCodeLogInstance.necessaryLog(LogLevel.Error, "[Login] silent acquire token : " + error.message);
             await this.logout();
             if (refresh) {
               const accessToken = await this.login();
@@ -230,7 +230,7 @@ export class CodeFlowLogin {
           });
       }
     } catch (error) {
-      CliCodeLogInstance.error("[Login] " + error.message);
+      CliCodeLogInstance.necessaryLog(LogLevel.Error, "[Login] " + error.message);
       throw LoginFailureError(error);
     }
   }
@@ -258,7 +258,7 @@ export class CodeFlowLogin {
             if (error.message.indexOf(MFACode) >= 0) {
               throw error;
             } else {
-              CliCodeLogInstance.error(
+              CliCodeLogInstance.necessaryLog(LogLevel.Error, 
                 "[Login] getTenantToken acquireTokenSilent : " + error.message
               );
               const accountList = await this.msalTokenCache?.getAllAccounts();
@@ -275,7 +275,7 @@ export class CodeFlowLogin {
         return undefined;
       }
     } catch (error) {
-      CliCodeLogInstance.error("[Login] getTenantToken : " + error.message);
+      CliCodeLogInstance.necessaryLog(LogLevel.Error, "[Login] getTenantToken : " + error.message);
       throw LoginFailureError(error);
     }
   }
@@ -324,7 +324,7 @@ function sendFile(
 ) {
   fs.readFile(filepath, (err, body) => {
     if (err) {
-      CliCodeLogInstance.error(err.message);
+      CliCodeLogInstance.necessaryLog(LogLevel.Error, err.message);
     } else {
       let data = body.toString();
       data = data.replace(/\${accountName}/g, accountName == "azure" ? "Azure" : "M365");

@@ -31,11 +31,11 @@ export class ConfigGet extends YargsCommand {
     const config = result.value;
     switch (args.option) {
       case CliConfigOptions.Telemetry:
-        await CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(config.telemetry, null, 2), true);
+        CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(config.telemetry, null, 2), true);
         return ok(null);
     }
 
-    await CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(config, null, 2), true);
+    CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(config, null, 2), true);
     return ok(null);
   }
 }
@@ -63,12 +63,12 @@ export class ConfigSet extends YargsCommand {
         const opt = { [args.option]: args.value };
         const result = UserSettings.setConfigSync(opt);
         if (result.isErr()) {
-          await CLILogProvider.necessaryLog(LogLevel.Error, "Configure user settings failed");
+          CLILogProvider.necessaryLog(LogLevel.Error, "Configure user settings failed");
           return result;
         }
     }
 
-    await CLILogProvider.necessaryLog(LogLevel.Info, "Configure user settings successful.");
+    CLILogProvider.necessaryLog(LogLevel.Info, "Configure user settings successful.");
     return ok(null);
   }
 }

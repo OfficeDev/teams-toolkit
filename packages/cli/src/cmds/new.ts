@@ -189,7 +189,7 @@ class NewTemplete extends YargsCommand {
 
     const result = await this.fetchCodeZip(template.sampleAppUrl);
     await this.saveFilesRecursively(new AdmZip(result.data), template.sampleAppName, folder);
-    await CLILogProvider.necessaryLog(
+    CLILogProvider.necessaryLog(
       LogLevel.Info,
       `Downloaded the '${CLILogProvider.white(template.sampleAppName)}' sample to '${CLILogProvider.white(
         sampleAppFolder
@@ -248,9 +248,9 @@ class NewTempleteList extends YargsCommand {
   public async runCommand(args: {
     [argName: string]: string | string[];
   }): Promise<Result<null, FxError>> {
-    await CLILogProvider.necessaryLog(LogLevel.Info, `The following are sample apps:`);
-    await CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(constants.templates, undefined, 4), true);
-    await CLILogProvider.necessaryLog(
+    CLILogProvider.necessaryLog(LogLevel.Info, `The following are sample apps:`);
+    CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(constants.templates, undefined, 4), true);
+    CLILogProvider.necessaryLog(
       LogLevel.Info,
       `Use the command ${CLILogProvider.white(
         "teamsfx new template <sampleAppName>"

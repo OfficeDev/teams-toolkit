@@ -79,7 +79,7 @@ function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent): void
       );
       // NOTE: trigger task via "Terminal -> Run Task..." will not enter this flow since the task name will be "teamsfx: frontend start"
       if (task.name === constants.frontendStartCommand) {
-        vscode.window.showInformationMessage(StringResources.vsc.localDebug.waitForBrowserStarted);
+        vscode.window.showInformationMessage(StringResources.vsc.localDebug.waitForBrowserToStart);
       }
     } else if (isNpmInstallTask(task)) {
       activeNpmInstallTasks.add(task.name);

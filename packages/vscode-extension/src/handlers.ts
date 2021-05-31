@@ -29,8 +29,7 @@ import {
   VsCodeEnv,
   AppStudioTokenProvider,
   Void,
-  Tools,
-  TaskGroup
+  Tools
 } from "@microsoft/teamsfx-api";
 import {
   isUserCancelError,
@@ -76,8 +75,10 @@ import { AzureNodeChecker } from "./debug/depsChecker/azureNodeChecker";
 import { SPFxNodeChecker } from "./debug/depsChecker/spfxNodeChecker";
 import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { VS_CODE_UI } from "./extension";
+import { registerAccountTreeHandler } from "./accountTree";
 
 export let core: FxCore; 
+export let tools:Tools;
 export function getWorkspacePath(): string | undefined {
   const workspacePath: string | undefined = workspace.workspaceFolders?.length
     ? workspace.workspaceFolders[0].uri.fsPath
@@ -124,7 +125,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
       },
       false
     );
-    const tools:Tools = {
+    tools = {
       logProvider: VsCodeLogInstance,
       tokenProvider: {
         azureAccountProvider: AzureAccountManager,
@@ -137,7 +138,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
       ui: VS_CODE_UI
     };
     core = new FxCore(tools); 
-    result = await core.init(getSystemInputs());
+    await registerAccountTreeHandler();
     await openMarkdownHandler();
     await openSampleReadmeHandler();
   } catch (e) {

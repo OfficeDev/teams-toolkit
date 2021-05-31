@@ -61,23 +61,26 @@ export type SelectFilesResult = InputResult<string[]>;
 export type SelectFolderResult = InputResult<string>; 
 
 
-export interface TimeConsumingTask<T> {
-  name: string;
-  /**
-   * whether ui support cancel or not
-   */
-  cancelable:boolean;
-  current:number;
-  total:number;
-  showProgress:boolean;
-  message: string;
-  isFinished: boolean;
-  isCanceled: boolean;
-  run(...args: any): Promise<T>;
-  cancel(): void;
+export interface RunnableTask<T> {
+  name?: string;
+  current?:number;
+  readonly total?:number;
+  message?: string;
+  run(...args: any): Promise<Result<T,FxError>>;
+  cancel?(): void;
+  isCanceled?: boolean;
 }
 
-/// TODO: use Result<xxx, FxError> instead of SingleSelectResult/MultiSelectResult/xxx
+export interface TaskConfig{
+  cancellable?:boolean
+  showProgress?:boolean,
+}
+
+export interface TaskGroupConfig{
+  sequential ?: boolean,
+  fastFail?: boolean
+}
+
 export interface UserInteraction {
   selectOption: (config: SingleSelectConfig) => Promise<Result<SingleSelectResult,FxError>>;
   selectOptions: (config: MultiSelectConfig) => Promise<Result<MultiSelectResult,FxError>>;
@@ -93,47 +96,30 @@ export interface UserInteraction {
     modal: boolean,
     ...items: string[]
   ): Promise<Result<string|undefined,FxError>>;
-  runWithProgress(task: TimeConsumingTask<any>): Promise<Result<any,FxError>>;
+  runWithProgress<T>(task: RunnableTask<T>, config: TaskConfig, ...args:any): Promise<Result<T,FxError>>;
 }
 
-export interface FunctionGroupTaskConfig<T>{
-  name: string,
-  tasks: (() => Promise<Result<T, FxError>>)[],
-  taskNames?: string[];
-  showProgress: boolean;
-  cancelable: boolean,
-  concurrent?: boolean,
-  fastFail?: boolean
-}
-
-export class TaskGroup<T> implements TimeConsumingTask<Result<Result<T, FxError>[], FxError>> {
-  name: string;
+export class GroupOfTasks<T> implements RunnableTask<Result<T, FxError>[]> {
+  name?:string;
   current:number = 0;
-  total:number;
-  message = "";
+  readonly total:number;
   isCanceled = false;
-  isFinished = false;
-  cancelable = true;
-  concurrent?;
-  fastFail?;
-  tasks: (() => Promise<Result<T, FxError>>)[];
-  taskNames?: string[];
-  showProgress:boolean;
-  constructor(config: FunctionGroupTaskConfig<T>) {
-    this.name = config.name;
-    this.tasks = config.tasks;
-    this.taskNames = config.taskNames;
-    this.cancelable = config.cancelable;
-    this.concurrent = config.concurrent;
-    this.fastFail = config.fastFail;
-    this.showProgress = config.showProgress;
+  tasks: RunnableTask<T>[]; 
+  config?: TaskGroupConfig;
+  message?:string;
+  constructor(tasks:RunnableTask<T>[], config?: TaskGroupConfig) {
+    this.tasks = tasks;
+    this.config = config;
     this.total = this.tasks.length;
   }
-  async run(): Promise<Result<Result<T, FxError>[], FxError>> {
+  async run(...args:any): Promise<Result<Result<T, FxError>[], FxError>> {
     if (this.tasks.length === 0) return ok([]);
     return new Promise(async (resolve) => {
       let results: Result<T, FxError>[] = [];
-      if (!this.concurrent) {
+      const isFastFail = this.config && this.config.fastFail;
+      const isSeq = this.config && this.config.sequential;
+      if (isSeq) {
+        this.current = 0;
         for (let i = 0; i < this.tasks.length; ++i) {
           if (this.isCanceled === true) 
           {
@@ -141,19 +127,19 @@ export class TaskGroup<T> implements TimeConsumingTask<Result<Result<T, FxError>
             return ;
           }  
           const task = this.tasks[i];
-          if(this.taskNames){
-            this.message = this.taskNames[i];
+          if(task.name){
+            this.message = task.name;
           }
           try {
-            let taskRes = await task();
-            if (taskRes.isErr() && this.fastFail) {
+            let taskRes = await task.run(args);
+            if (taskRes.isErr() && isFastFail) {
               this.isCanceled = true;
               resolve(err(taskRes.error));
               return ;
             }
             results.push(taskRes);
           } catch (e) {
-            if (this.fastFail) {
+            if (isFastFail) {
               this.isCanceled = true;
               resolve(err(e));
               return ;
@@ -163,38 +149,35 @@ export class TaskGroup<T> implements TimeConsumingTask<Result<Result<T, FxError>
             this.current = i + 1;
           }
         }
-        this.isFinished = true;
       } else {
-        let promiseResults = this.tasks.map((t) => t());
-        let finishNum = 0;
+        let promiseResults = this.tasks.map((t) => t.run(args));
         promiseResults.forEach((p) => {
           p.then((v) => {
-            finishNum ++;
-            if(this.showProgress)
-              this.current = finishNum;
-            if (v.isErr() && this.fastFail) {
+            this.current ++;
+            if (v.isErr() && isFastFail) {
               this.isCanceled = true;
               resolve(err(v.error));
+              return ;
             }
           }).catch((e) => {
-            finishNum ++;
-            if(this.showProgress)
-              this.current = finishNum;
-            if (this.fastFail) {
+            this.current ++;
+            if (isFastFail) {
               this.isCanceled = true;
               resolve(err(e));
+              return ;
             }
           });
         });
         results = await Promise.all(promiseResults);
-        this.isFinished = true;
       }
       resolve(ok(results));
     });
   }
 
   cancel() {
-    if(this.cancelable)
-      this.isCanceled = true;
+    for(const task of this.tasks)
+      if(task.cancel)
+        task.cancel();
+    this.isCanceled = true;
   }
 }

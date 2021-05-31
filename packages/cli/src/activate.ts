@@ -37,11 +37,5 @@ export default async function activate(rootPath?: string): Promise<Result<FxCore
     ui: CLIUIInstance
   };
   const core = new FxCore(tools);
-  const systemInputs: Inputs = getSystemInputs(rootPath);
-  
-  const result = await core.init(systemInputs);
-  if (result.isErr()) {
-    return err(result.error);
-  }
   return ok(core);
 }

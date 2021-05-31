@@ -19,8 +19,7 @@ import {
   SelectFileConfig,
   SelectFilesConfig,
   SelectFolderConfig,
-  TimeConsumingTask,
-  UserInteraction,
+  RunnableTask,
   Result,
   FxError,
   ok,
@@ -29,6 +28,9 @@ import {
   OptionItem,
   LogLevel,
   UserCancelError,
+  TaskConfig,
+  assembleError,
+  UserInteraction
 } from "@microsoft/teamsfx-api";
 
 import CLILogProvider from "./commonlib/log";
@@ -424,50 +426,54 @@ export class CLIUserInteraction implements UserInteraction {
     });
   }
 
-  public async runWithProgress(task: TimeConsumingTask<any>): Promise<Result<any,FxError>> {
-    return new Promise(async resolve => {
-      const res = task.run();
-
-      res.then((v:any) => {
-        resolve(v); 
-      }).catch((e:any) => { 
-        resolve(err(UnknownError(e)));
-      });
-
-      const head = `[Teams Toolkit] ${task.name}`;
-      if(!task.showProgress){
-        const body = `: [${task.current}/${task.total}]`;
-        const tail = task.message? ` ${task.message}` : "Prepare task.";
-        const message = `${head}${body}${tail}`
-        do{
-          await CLILogProvider.necessaryLog(LogLevel.Info, message);
-          await sleep(100);
-        } while (task.current < task.total && !task.isCanceled)
-      }
-      else {
-        let lastLength = 0;
-        if(task.showProgress){
-          const body = `: ${Math.round((task.current-lastLength)*100/task.total)} %`;
-          const tail = task.message? ` ${task.message}` : "Prepare task.";
-          const message = `${head}${body}${tail}`;
-          await CLILogProvider.necessaryLog(LogLevel.Info, message);
-        }
-        do{
-          const inc = task.current - lastLength;
-          if (inc > 0) {
-            // const elapsedTime = new Date().getTime() - startTime;
-            // const remainingTime = (elapsedTime * (task.total - task.current)) / task.current;
-            const body = `: ${Math.round(task.current*100/task.total)} %`;
+  public async runWithProgress<T>(task: RunnableTask<T>, config: TaskConfig, ...args:any): Promise<Result<T,FxError>> {
+    return new Promise(async (resolve) => {
+      let lastReport = 0;
+          const showProgress = config.showProgress === true
+          const total = task.total ? task.total : 1;
+          const head = `[Teams Toolkit] ${task.name?task.name:""}`;
+          const report = async (task:RunnableTask<T>)=>{
+            const current = task.current ? task.current : 0;
+            const body = showProgress ? `: ${Math.round(current*100/total)} %` : `: [${current+1}/${total}]`;
             const tail = task.message? ` ${task.message}` : "Prepare task.";
-            const message = `${head}${body}${tail}`
-            await CLILogProvider.necessaryLog(LogLevel.Info, message);
-            lastLength += inc;
+            const message = `${head}${body}${tail}`;
+            if(showProgress)
+              await CLILogProvider.necessaryLog(LogLevel.Info, message);
+          };
+          task.run(args).then(async (v) => { 
+            report(task);
+            await sleep(100);
+            resolve(v) 
+          }).catch((e) => { 
+            resolve(err(assembleError(e)))
+          });
+          let current;
+          if(showProgress){
+            report(task);
+            do{
+              current = task.current ? task.current : 0;
+              const inc = (current-lastReport)*100/total;
+              const delta = current - lastReport;
+              if (inc > 0) {
+                report(task);
+                lastReport += delta;
+              }
+              await sleep(100);
+            } while (current < total && !task.isCanceled);
+            report(task);
+            await sleep(100);
           }
-          await sleep(100);
-        } while (task.current < task.total && !task.isCanceled)
-      }
-      if (task.isCanceled) resolve(err(UserCancelError));
-    });
+          else {
+            do{
+              report(task);
+              await sleep(100);
+              current = task.current ? task.current : 0;
+            } while (current < total && !task.isCanceled)
+          }
+          if(task.isCanceled) 
+            resolve(err(UserCancelError));
+        }
+    );
   }
 }
 

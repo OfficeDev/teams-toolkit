@@ -33,12 +33,13 @@ import {
   SingleSelectConfig,
   MultiSelectConfig,
   InputTextConfig,
-  TimeConsumingTask,
-  UserInteraction,
+  RunnableTask,
   UIConfig,
   err,
   assembleError,
-  ok
+  ok,
+  TaskConfig,
+  UserInteraction
 } from "@microsoft/teamsfx-api";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { sleep } from "../utils/commonUtils";
@@ -525,52 +526,55 @@ export class VsCodeUI implements UserInteraction {
       }
     });
   } 
-  async runWithProgress( task: TimeConsumingTask<any>): Promise<Result<any, FxError>> {
+  async runWithProgress<T>(task: RunnableTask<T>, config: TaskConfig, ...args:any): Promise<Result<T, FxError>> {
     return new Promise(async (resolve) => {
       window.withProgress(
         {
           location: ProgressLocation.Notification,
-          cancellable: task.cancelable
+          cancellable: config.cancellable
         },
         async (progress, token): Promise<any> => {
-          if(task.cancelable){
+          if(config.cancellable === true){
             token.onCancellationRequested(() => {
-              task.cancel();
+              if(task.cancel)
+                task.cancel();
               resolve(err(UserCancelError));
             });
           }
-          const res = task.run();
           let lastReport = 0;
-          res.then(async (v:any) => { 
-            report(task);
-            await sleep(100);
-            resolve(v) 
-          }).catch((e:any) => { 
-            resolve(err(assembleError(e)))
-          });
-          const head = `${StringResources.vsc.progressHandler.teamsToolkitComponent} ${task.name}`;
-          
-          const report = (task:TimeConsumingTask<any>)=>{
-            body = task.showProgress? `: ${Math.round(task.current*100/task.total)} %` : `: [${task.current+1}/${task.total}]`;
-            tail = task.message? ` ${task.message}` : StringResources.vsc.progressHandler.prepareTask;
-            message = `${head}${body}${tail}`;
-            if(task.showProgress)
-              progress.report({ increment: (task.current-lastReport)*100/task.total, message: message});
+          const showProgress = config.showProgress === true
+          const total = task.total ? task.total : 1;
+          const head = `${StringResources.vsc.progressHandler.teamsToolkitComponent} ${task.name?task.name:""}`;
+          const report = (task:RunnableTask<T>)=>{
+            const current = task.current ? task.current : 0;
+            const body = showProgress ? `: ${Math.round(current*100/total)} %` : `: [${current+1}/${total}]`;
+            const tail = task.message? ` ${task.message}` : StringResources.vsc.progressHandler.prepareTask;
+            const message = `${head}${body}${tail}`;
+            if(showProgress)
+              progress.report({ increment: (current - lastReport)*100/total, message: message});
             else 
               progress.report({ message: message});
           };
-          let body,tail,message:string;
-          if(task.showProgress){
+          task.run(args).then(async (v) => { 
+            report(task);
+            await sleep(100);
+            resolve(v) 
+          }).catch((e) => { 
+            resolve(err(assembleError(e)))
+          });
+          let current;
+          if(showProgress){
             report(task);
             do{
-              const inc = (task.current-lastReport)*100/task.total;
-              const delta = task.current - lastReport;
+              current = task.current ? task.current : 0;
+              const inc = (current-lastReport)*100/total;
+              const delta = current - lastReport;
               if (inc > 0) {
                 report(task);
                 lastReport += delta;
               }
               await sleep(100);
-            } while (task.current < task.total && !task.isCanceled);
+            } while (current < total && !task.isCanceled);
             report(task);
             await sleep(100);
           }
@@ -578,7 +582,8 @@ export class VsCodeUI implements UserInteraction {
             do{
               report(task);
               await sleep(100);
-            } while (task.current < task.total && !task.isCanceled)
+              current = task.current ? task.current : 0;
+            } while (current < total && !task.isCanceled)
           }
           if(task.isCanceled) 
             resolve(err(UserCancelError));

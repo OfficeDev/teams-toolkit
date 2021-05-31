@@ -64,24 +64,39 @@ export const QuestionSelectSolution: SingleSelectQuestion = {
 
 export const ScratchOptionYes: OptionItem = {
   id: "yes",
-  label: "Create a new Teams app",
+  label: "$(new-folder) Create a new Teams app",
   detail: "Use the Teams Toolkit to create a new application.",
 };
 
 export const ScratchOptionNo: OptionItem = {
   id: "no",
+  label: "$(heart) Start from a sample",
+  detail: "Use an existing sample as a starting point for your new application.",
+};
+
+export const ScratchOptionYesCLI: OptionItem = {
+  id: "yes",
+  label: "Create a new Teams app",
+  detail: "Use the Teams Toolkit to create a new application.",
+};
+
+export const ScratchOptionNoCLI: OptionItem = {
+  id: "no",
   label: "Start from a sample",
   detail: "Use an existing sample as a starting point for your new application.",
 };
 
-export const ScratchOrSampleSelect: SingleSelectQuestion = {
-  type: "singleSelect",
-  name: CoreQuestionNames.CreateFromScratch,
-  title: "Teams Toolkit: Create a new Teams app",
-  staticOptions: [ScratchOptionYes, ScratchOptionNo],
-  default: ScratchOptionYes.id,
-  placeholder: "Select an option",
-  skipSingleOption: true,
+export function ScratchOrSampleSelect(cli: boolean): SingleSelectQuestion {
+
+  return {
+    type: "singleSelect",
+    name: CoreQuestionNames.CreateFromScratch,
+    title: "Teams Toolkit: Create a new Teams app",
+    staticOptions: cli? [ScratchOptionYesCLI, ScratchOptionNoCLI]:[ScratchOptionYes, ScratchOptionNo],
+    default: ScratchOptionYes.id,
+    placeholder: "Select an option",
+    skipSingleOption: true,
+  };
 };
 
 export const SampleSelect: SingleSelectQuestion = {

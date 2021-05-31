@@ -170,3 +170,10 @@ export interface Inputs extends Json{
   platform: Platform;
   vscodeEnv?:VsCodeEnv;
 }   
+
+
+
+export interface ProjectConfig{
+  settings?: ProjectSettings;
+  config?: SolutionConfig;
+}

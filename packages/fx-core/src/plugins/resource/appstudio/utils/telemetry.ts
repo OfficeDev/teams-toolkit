@@ -10,11 +10,14 @@ export enum TelemetryPropertyKey {
   errorCode = "error-code",
   errorMessage = "error-message",
   validationResult = "validation-result",
+  success = "success",
 }
 
 enum TelemetryPropertyValue {
   UserError = "user",
   SystemError = "system",
+  success = "yes",
+  failure = "no",
 }
 
 export enum TelemetryEventName {
@@ -55,6 +58,7 @@ export class TelemetryUtils {
       properties = {};
     }
     properties[TelemetryPropertyKey.component] = Constants.PLUGIN_NAME;
+    properties[TelemetryPropertyKey.success] = TelemetryPropertyValue.success;
     TelemetryUtils.ctx.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
   }
 
@@ -75,6 +79,7 @@ export class TelemetryUtils {
     }
     properties[TelemetryPropertyKey.errorCode] = `${error.source}.${error.name}`;
     properties[TelemetryPropertyKey.errorMessage] = error.message;
+    properties[TelemetryPropertyKey.success] = TelemetryPropertyValue.failure;
     TelemetryUtils.ctx.telemetryReporter?.sendTelemetryErrorEvent(
       eventName,
       properties,

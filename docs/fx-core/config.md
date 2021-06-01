@@ -157,10 +157,13 @@ This section is to describe configuration items in `fx-resource-local-debug` sec
 
 Config Name | Config Type | Description
 ------|------|------
+trustDevCert|string|Whether to trust the development certificate. `true` or `false`
+skipNgrok|string|Whether to skip Ngrok. `true` or `false`
 localAuthEndpoint|string|Output. The endpoint of local auth service. `http://localhost:{port}`
 localTabEndpoint|string|Output. The endpoint of local tab frontend. `https://localhost:{port}`
 localTabDomain|string|Output. The domain of local tab frontend. `localhost:3000`
 localFunctionEndpoint|string|Output. The endpoint of local function. `http://localhost:{port}`
 localBotEndpoint|string|Output. The endpoint of local bot service. `https://{random}.ngrok.io`
+localBotDomain|string|Output. The domain of local bot service. `{random}.ngrok.io`
 
 

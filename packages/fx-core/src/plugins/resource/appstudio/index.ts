@@ -89,9 +89,11 @@ export class AppStudioPlugin implements Plugin {
           level: MsgLevel.Error,
         })
       );
-      return err(
-        AppStudioResultFactory.UserError(AppStudioError.ValidationFailedError.name, errMessage)
-      );
+      const properties: { [key: string]: string } = {};
+      properties[TelemetryPropertyKey.validationResult] = validationResult.join("\n");
+      const validationFailed = AppStudioResultFactory.UserError(AppStudioError.ValidationFailedError.name, errMessage);
+      TelemetryUtils.sendErrorEvent(TelemetryEventName.validateManifest, validationFailed, properties);
+      return err(validationFailed);
     }
     const validationSuccess = "Manifest Validation succeed!";
     await ctx.dialog?.communicate(
@@ -100,9 +102,7 @@ export class AppStudioPlugin implements Plugin {
         level: MsgLevel.Info,
       })
     );
-    const properties: { [key: string]: string } = {};
-    properties[TelemetryPropertyKey.validationResult] = validationResult.join("\n");
-    TelemetryUtils.sendSuccessEvent(TelemetryEventName.validateManifest, properties);
+    TelemetryUtils.sendSuccessEvent(TelemetryEventName.validateManifest);
     return ok(validationResult);
   }
 
@@ -131,7 +131,9 @@ export class AppStudioPlugin implements Plugin {
           level: MsgLevel.Info,
         })
       );
-      TelemetryUtils.sendSuccessEvent(TelemetryEventName.buildTeamsPackage);
+      const properties: { [key: string]: string } = {};
+      properties[TelemetryPropertyKey.buildOnly] = "true";
+      TelemetryUtils.sendSuccessEvent(TelemetryEventName.buildTeamsPackage, properties);
       return ok(appPackagePath);
     } catch (error) {
       TelemetryUtils.sendErrorEvent(TelemetryEventName.buildTeamsPackage, error);
@@ -205,6 +207,8 @@ export class AppStudioPlugin implements Plugin {
           level: MsgLevel.Info,
         })
       );
+      const properties: { [key: string]: string } = {};
+      properties[TelemetryPropertyKey.updateExistingApp] = String(result.update); 
       TelemetryUtils.sendSuccessEvent(TelemetryEventName.publish);
       return ok(result.id);
     } catch (error) {

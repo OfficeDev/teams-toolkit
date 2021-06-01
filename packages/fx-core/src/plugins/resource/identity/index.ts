@@ -122,7 +122,7 @@ export class IdentityPlugin implements Plugin {
       ctx.logProvider?.error(
         ErrorMessage.IdentityProvisionError.message(this.config.identity) + `:${_error.message}`
       );
-      const error = ResultFactory.SystemError(
+      const error = ResultFactory.UserError(
         ErrorMessage.IdentityProvisionError.name,
         ErrorMessage.IdentityProvisionError.message(this.config.identity),
         _error

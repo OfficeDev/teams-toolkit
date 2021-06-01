@@ -90,7 +90,7 @@ export class SqlPlugin implements Plugin {
       const errorType =
         res.error instanceof SystemError ? Telemetry.systemError : Telemetry.userError;
       TelemetryUtils.init(ctx);
-      TelemetryUtils.sendErrorEvent(stage, errorCode, errorType, res.error.message);
+      TelemetryUtils.sendErrorEvent(stage, errorCode, errorType, res.error.message, res.error.innerError?.message);
       return res;
     }
   }

@@ -222,7 +222,10 @@ export class SqlPluginImpl {
     ctx.logProvider?.info(Message.startPostProvision);
     DialogUtils.init(ctx, ProgressTitle.PostProvision, ProgressTitle.PostProvisionSteps);
     TelemetryUtils.init(ctx);
-    TelemetryUtils.sendEvent(Telemetry.stage.postProvision + Telemetry.startSuffix);
+    TelemetryUtils.sendEvent(Telemetry.stage.postProvision + Telemetry.startSuffix,
+      undefined,
+      { [Telemetry.properties.skipAddingUser]: this.config.skipAddingUser ? Telemetry.resultYes : Telemetry.resultNo }
+    );
 
     const sqlClient = new SqlClient(ctx, this.config);
     const managementClient: ManagementClient = new ManagementClient(ctx, this.config);
@@ -289,7 +292,10 @@ export class SqlPluginImpl {
 
     await managementClient.deleteLocalFirewallRule();
 
-    TelemetryUtils.sendEvent(Telemetry.stage.postProvision, true);
+    TelemetryUtils.sendEvent(Telemetry.stage.postProvision,
+      true,
+      { [Telemetry.properties.skipAddingUser]: this.config.skipAddingUser ? Telemetry.resultYes : Telemetry.resultNo }
+    );
     ctx.logProvider?.info(Message.endPostProvision);
     await DialogUtils.progressBar?.end();
     return ok(undefined);

@@ -29,7 +29,7 @@ export class SqlClient {
       this.ctx.logProvider?.error(
         ErrorMessage.SqlCheckDBUserError.message(this.config.identity, error.message)
       );
-      throw SqlResultFactory.SystemError(
+      throw SqlResultFactory.UserError(
         ErrorMessage.SqlCheckDBUserError.name,
         ErrorMessage.SqlCheckDBUserError.message(this.config.identity, ErrorMessage.GetDetail),
         error

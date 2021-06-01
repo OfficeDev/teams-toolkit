@@ -79,6 +79,8 @@ export class Telemetry {
     errorType: "error-type",
     errorMessage: "error-message",
     appid: "appid",
+    skipAddingUser: "skip-adding-user",
+    errorReason: "error-reason"
   };
 }
 

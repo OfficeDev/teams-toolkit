@@ -86,11 +86,9 @@ This section is to describe configuration items in `fx-resource-frontend-hosting
 
 Config Name | Config Type | Description
 ------|------|------
-endpoint|	string|	Output. The endpoint of static website. https://domain.com 
+endpoint|	string|	Output. The endpoint of static website. https://domain.com
 domain	|string|	Output. The domain of static website. domain.com
-storageName|	string|	Output. The name of the storage where static website is hosted.
-staticTabs|	string	|Output. The value of staticTabs field in manifest.json
-configurableTabs|	string	|Output. The value of configurableTabs field in manifest.json
+storageName|	string|	Output. The name of the Azure Storage Account where static website is hosted.
 
 ## Configuration schema for Azure SQL
 
@@ -121,7 +119,7 @@ Config Name | Config Type | Description
 ------|------|------
 filePath|	string|	Output. The zip file path of Runtime Connector in local computer. `E:\FooBar\runtimeConnector\resources\TeamsRuntimeConnector.zip`
 environmentVariableParams|	string|	Output. CLI parameters of environment variable. `CLIENT_ID="aaa" clientSecret="123"`
-endpoint|	string|	Output. The endpoint of Runtime Connector. https://domain.com 
+endpoint|	string|	Output. The endpoint of Runtime Connector. https://domain.com
 
 
 ## Configuration schema for Azure Active Directory

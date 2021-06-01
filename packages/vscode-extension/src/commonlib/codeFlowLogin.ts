@@ -148,7 +148,7 @@ export class CodeFlowLogin {
           StringResources.vsc.codeFlowLogin.loginTimeoutTitle
         )
       );
-    }, 0.2 * 60 * 1000); // keep the same as azure login
+    }, 5 * 60 * 1000); // keep the same as azure login
 
     function cancelCodeTimer() {
       clearTimeout(codeTimer);

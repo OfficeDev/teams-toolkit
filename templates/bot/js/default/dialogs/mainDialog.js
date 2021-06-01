@@ -1,4 +1,4 @@
-const { DialogSet, DialogTurnStatus, WaterfallDialog } = require("botbuilder-dialogs");
+const { Dialog, DialogSet, DialogTurnStatus, WaterfallDialog } = require("botbuilder-dialogs");
 const { RootDialog } = require("./rootDialog");
 const { tokenExchangeOperationName, ActivityTypes, CardFactory } = require("botbuilder");
 
@@ -29,6 +29,7 @@ class MainDialog extends RootDialog {
     this.addDialog(
       new WaterfallDialog(MAIN_WATERFALL_DIALOG, [
         this.ssoStep.bind(this),
+        this.dedupStep.bind(this),
         this.showUserInfo.bind(this),
       ])
     );
@@ -56,6 +57,16 @@ class MainDialog extends RootDialog {
 
   async ssoStep(stepContext) {
     return await stepContext.beginDialog(TEAMS_SSO_PROMPT_ID);
+  }
+
+  async dedupStep(stepContext) {
+    const tokenResponse = stepContext.result;
+    if (tokenResponse) {
+      if (await this.shouldDedup(stepContext.context)) {
+        return Dialog.EndOfTurn;
+      }
+    }
+    return await stepContext.next(tokenResponse);
   }
 
   async showUserInfo(stepContext) {

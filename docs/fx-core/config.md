@@ -88,7 +88,7 @@ Config Name | Config Type | Description
 ------|------|------
 endpoint|string|Output. The endpoint of static website. https://domain.com 
 domain|string|Output. The domain of static website. domain.com
-storageName|string|Output. The name of the storage where static website is hosted.
+storageName|string|Output. The name of the Azure Storage Account where static website is hosted.
 staticTabs|string|Output. The value of staticTabs field in manifest.json
 configurableTabs|string|Output. The value of configurableTabs field in manifest.json
 

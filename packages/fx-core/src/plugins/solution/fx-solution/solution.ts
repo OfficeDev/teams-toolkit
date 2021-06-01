@@ -1158,7 +1158,7 @@ export class TeamsAppSolution implements Solution {
     const pluginsToDeploy: LoadedPlugin[] = [];
     for (const optionId of optionsToDeploy) {
       const filtered = this.pluginMap.get(optionId);
-      if (filtered) {
+      if (filtered && res.value.find(p => p.name === filtered.name)) {
         pluginsToDeploy.push(filtered);
       }
     }

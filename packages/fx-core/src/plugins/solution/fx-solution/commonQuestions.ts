@@ -126,7 +126,7 @@ export async function askSubscription(
   config: SolutionConfig,
   azureAccountProvider?: AzureAccountProvider,
   ui?:UserInteraction
-): Promise<Result<{ subscriptionId: string; tenantId: string }, FxError>> {
+): Promise<Result<SubscriptionInfo, FxError>> {
   if (azureAccountProvider === undefined) {
     return err(
       returnSystemError(
@@ -148,10 +148,11 @@ export async function askSubscription(
   }
   const activeSubscriptionId = config.get(GLOBAL_CONFIG)?.getString("subscriptionId");
   const activeTenantId = config.get(GLOBAL_CONFIG)?.getString("tenantId");
+  const sub = subscriptions.find((sub) => sub.subscriptionId === activeSubscriptionId);
   if (
     activeSubscriptionId === undefined ||
     activeTenantId == undefined ||
-    subscriptions.findIndex((sub) => sub.subscriptionId === activeSubscriptionId) < 0
+    sub === undefined
   ) {
     const subscriptionNames: string[] = subscriptions.map(
       (subscription) => subscription.subscriptionName
@@ -164,20 +165,11 @@ export async function askSubscription(
     }); 
     if(askRes.isErr()) 
       throw askRes.error;
-    // if (subscriptionName === undefined) {
-    //   return err(
-    //     returnUserError(
-    //       new Error("No subscription selected"),
-    //       "Solution",
-    //       SolutionError.NoSubscriptionSelected
-    //     )
-    //   );
-    // }
     const subscriptionName = askRes.value.result;
-    const subscription = subscriptions.find(
+    const selectedSub = subscriptions.find(
       (subscription) => subscription.subscriptionName === subscriptionName
     );
-    if (subscription === undefined) {
+    if (selectedSub === undefined) {
       return err(
         returnSystemError(
           new Error("Subscription not found"),
@@ -186,9 +178,9 @@ export async function askSubscription(
         )
       );
     }
-    return ok({ subscriptionId: subscription.subscriptionId, tenantId: subscription.tenantId });
+    return ok(selectedSub);
   } else {
-    return ok({ subscriptionId: activeSubscriptionId, tenantId: activeTenantId });
+    return ok(sub);
   }
 }
 
@@ -228,6 +220,20 @@ async function askCommonQuestions(
   // Note setSubscription here will change the token returned by getAccountCredentialAsync according to the subscription selected.
   // So getting azureToken needs to precede setSubscription.
   await azureAccountProvider?.setSubscription(subscriptionId);
+  if(ctx.treeProvider){
+    ctx.treeProvider.refresh([
+      {
+        commandId: "fx-extension.selectSubscription",
+        label: subscriptionResult.value.subscriptionName,
+        callback: () => {
+          return Promise.resolve(ok(null));
+        },
+        parent: "fx-extension.signinAzure",
+        contextValue: "selectSubscription",
+        icon: "subscriptionSelected",
+      },
+    ]);
+  }
   const azureToken = await azureAccountProvider?.getAccountCredentialAsync();
   if (azureToken === undefined) {
     return err(

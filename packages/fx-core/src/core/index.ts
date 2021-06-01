@@ -130,6 +130,25 @@ export class FxCore implements Core {
     return await this._getQuestionsForUserTask(func, inputs, ctx);
   }
 
+   
+  @hooks([ErrorHandlerMW])
+  async getProjectConfig(inputs: Inputs): Promise<Result<ProjectConfig|undefined, FxError>>{
+    if(inputs.projectPath){
+      const ctx = await loadSolutionContext(this, inputs);
+      return ok({
+        settings: ctx.projectSettings,
+        config: ctx.config
+      });
+    }
+    else return ok(undefined);
+  }
+
+  @hooks([ErrorHandlerMW, ProjectCheckerMW])
+  async setSubscriptionInfo(inputs: Inputs) :Promise<Result<Void, FxError>>{
+    const ctx = await loadSolutionContext(this, inputs);
+    return this._setSubscriptionInfo(ctx, inputs);
+  }
+
   @hooks([QuestionModelMW, ConfigWriterMW])
   async _createProject(ctx: SolutionContext, inputs: Inputs): Promise<Result<string, FxError>> {
     const folder = inputs[QuestionRootFolder.name] as string;
@@ -249,8 +268,7 @@ export class FxCore implements Core {
     return ok(projectPath);
   }
   
-  
-  
+ 
 
   @hooks([QuestionModelMW, ConfigWriterMW])
   async _provisionResources(ctx: SolutionContext, inputs: Inputs) : Promise<Result<Void, FxError>>{
@@ -305,22 +323,11 @@ export class FxCore implements Core {
   
   
 
-  @hooks([ErrorHandlerMW])
-  async getProjectConfig(inputs: Inputs): Promise<Result<ProjectConfig|undefined, FxError>>{
-    if(inputs.projectPath){
-      const ctx = await loadSolutionContext(this, inputs);
-      return ok({
-        settings: ctx.projectSettings,
-        config: ctx.config
-      });
-    }
-    else return ok(undefined);
-  }
 
-  @hooks([ErrorHandlerMW, ConfigWriterMW])
-  async setSubscriptionInfo(inputs: Inputs) :Promise<Result<Void, FxError>>{
+
+  @hooks([ConfigWriterMW])
+  async _setSubscriptionInfo(ctx: SolutionContext, inputs: Inputs) :Promise<Result<Void, FxError>>{
     if(inputs.projectPath){
-      const ctx = await loadSolutionContext(this, inputs);
       if(ctx.config && ctx.config.get("solution")){
         if(inputs.tenantId)
           ctx.config.get("solution")?.set("tenantId",inputs.tenantId);

@@ -28,32 +28,55 @@ export enum AccountType {
   Azure = "azure",
 }
 
+export async function getSubscriptionId():Promise<string|undefined>{ 
+  const projectConfigRes = await core.getProjectConfig(getSystemInputs()); 
+  if(projectConfigRes.isOk()){
+    if(projectConfigRes.value){ 
+      const solutionConfig = projectConfigRes.value.config;
+      if(solutionConfig){
+        return solutionConfig.get("solution")?.get("subscriptionId");
+      }
+    }
+  }
+  return undefined;
+}
 
-export async function registerAccountTreeHandler(): Promise<Result<Void, FxError>> {
-  
-  let activeSubscriptionId:string|undefined = undefined;
+export async function getAzureSolutionSettings():Promise<AzureSolutionSettings|undefined>{ 
   const projectConfigRes = await core.getProjectConfig(getSystemInputs());
-  let supported = false;
   let solutionSettings:AzureSolutionSettings;
   if(projectConfigRes.isOk()){
     if(projectConfigRes.value){
-      supported = true;
-      const solutionConfig = projectConfigRes.value.config;
-      if(solutionConfig){
-        activeSubscriptionId = solutionConfig.get("solution")?.get("subscriptionId");
-      }
-      solutionSettings = projectConfigRes.value.settings?.solutionSettings as AzureSolutionSettings;
+      return projectConfigRes.value.settings?.solutionSettings as AzureSolutionSettings;
     }
   }
+  return undefined;
+}
+
+export async function isValid():Promise<boolean>{ 
+  const projectConfigRes = await core.getProjectConfig(getSystemInputs());
+  let supported = false;
+  if(projectConfigRes.isOk()){
+    if(projectConfigRes.value){
+      supported = true;
+    }
+  }
+  return supported;
+}
+
+
+
+export async function registerAccountTreeHandler(): Promise<Result<Void, FxError>> {
+   
   let getSelectSubItem:
     | undefined
-    | ((token: any, valid: boolean) => Promise<[TreeItem, boolean]>) = undefined;
+    | ((token: any) => Promise<[TreeItem, boolean]>) = undefined;
   
-  getSelectSubItem = async (token: any, valid: boolean): Promise<[TreeItem, boolean]> => {
+  getSelectSubItem = async (token: any): Promise<[TreeItem, boolean]> => {
     let selectSubLabel = "";
     const subscriptions: SubscriptionInfo[] | undefined =
       await tools.tokenProvider.azureAccountProvider.listSubscriptions();
     if (subscriptions) {
+      const activeSubscriptionId = await getSubscriptionId();
       const activeSubscription = subscriptions.find(
         (subscription) => subscription.subscriptionId === activeSubscriptionId
       );
@@ -76,6 +99,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
         selectSubLabel = activeSubscription.subscriptionName;
         icon = "subscriptionSelected";
       }
+      const valid = await isValid();
       return [
         {
           commandId: "fx-extension.selectSubscription",
@@ -174,7 +198,6 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
   };
 
   const signinAzureCallback = async (
-    validFxProject: boolean,
     args?: any[]
   ): Promise<Result<null, FxError>> => {
     const showDialog = args && args[1] !== undefined ? args[1] : true;
@@ -191,10 +214,11 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
         },
       ]);
 
-      const subItem = await getSelectSubItem!(token, validFxProject);
+      const subItem = await getSelectSubItem!(token);
       tools.treeProvider?.add([subItem[0]]);
 
-      if (validFxProject && !subItem[1]) {
+      if (!subItem[1]) {
+        const solutionSettings = await getAzureSolutionSettings();
         if (solutionSettings && "Azure" === solutionSettings.hostType) {
           await selectSubscriptionCallback();
         }
@@ -268,7 +292,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
               icon: "azure",
             },
           ]);
-          const subItem = await getSelectSubItem!(token, supported);
+          const subItem = await getSelectSubItem!(token);
           tools.treeProvider?.add([subItem[0]]);
         }
       } else if (status === "SigningIn") {
@@ -305,7 +329,6 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
       return Promise.resolve();
     }
   );
-
   tools.treeProvider!.add([
     {
       commandId: "fx-extension.signinM365",
@@ -324,7 +347,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
       commandId: "fx-extension.signinAzure",
       label: azureAccountLabel,
       callback: async (args?: any[]) => {
-        return signinAzureCallback(supported, args);
+        return signinAzureCallback(args);
       },
       parent: TreeCategory.Account,
       contextValue: azureAccountContextValue,

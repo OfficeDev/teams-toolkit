@@ -110,8 +110,8 @@ This section is to describe configuration items in `fx-resource-function` sectio
 Config Name | Config Type | Description
 ------|------|------
 defaultFunctionName|string|The default function name scaffolded
-functionAppName|string|Output. The functions app name.
-functionEndpoint|string|Output. The functions app endpoint. `https://${functionAppName}.azurewebsites.net`
+functionAppName|string|Output. The function app name.
+functionEndpoint|string|Output. The function app endpoint. `https://${functionAppName}.azurewebsites.net`
 
 ## Configuration schema for simple auth
 

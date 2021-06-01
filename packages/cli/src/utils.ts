@@ -101,6 +101,15 @@ export function toYargsOptions(data: Question): Options {
   } else if (defaultValue && typeof defaultValue === "string") {
     data.default = defaultValue.toLocaleLowerCase();
   }
+  if (data.default === undefined) {
+    return {
+      array: data.type === "multiSelect",
+      description: data.title || "",
+      choices: choices,
+      hidden: !!(data as any).hide,
+      global: false,
+    }
+  }
   return {
     array: data.type === "multiSelect",
     description: data.title || "",

@@ -73,7 +73,7 @@ This section is to describe configuration items in `fx-resource-bot` section of 
 Config Name | Config Type | Description
 ------|------|------
 wayToRegisterBot|string|The way to register bot, one is `create-new`, the other is `reuse-existing`.
-skuName|string|The sku name for azure web app which is used for hosting the bot project on Azure.
+skuName|string|The sku name for Azure Web App which is used for hosting the bot project on Azure. For example, F1, B1. For more options, refer to [App Service Pricing](https://azure.microsoft.com/en-us/pricing/details/app-service/windows/).
 localBotId|string|The AAD App client id generated during local debug which is paired with localBotPassword to provide authentication between the bot project and the bot framework service.
 localBotPassword|string|The AAD App client secret generated during local debug which is paired with localBotId to provide authentication between the bot project and the bot framework service.
 localObjectId|string|The AAD App object id generated during local debug which is co-related with localBotId and localBotPassword.

@@ -97,7 +97,7 @@ suite("DotnetChecker E2E Test - first run", async () => {
   });
 
   test(".NET SDK is not installed and the user homedir contains special characters", async function (this: Mocha.Context) {
-    if (isLinux() && !(await commandExistsInPath(dotnetUtils.dotnetCommand))) {
+    if (isLinux() || (await commandExistsInPath(dotnetUtils.dotnetCommand))) {
       this.skip();
     }
 

@@ -103,8 +103,10 @@ export async function withDotnet(
     await dotnetChecker["runDotnetInstallScript"](version, installDir);
     const dotnetExecPath = DotnetChecker["getDotnetExecPathFromDotnetInstallationDir"](installDir);
 
-    if (!await hasDotnetVersion(dotnetExecPath, version)) {
-      throw new Error(`Failed to install .NET SDK version '${version}' for testing, dotnetExecPath = '${dotnetExecPath}'`);
+    if (!(await hasDotnetVersion(dotnetExecPath, version))) {
+      throw new Error(
+        `Failed to install .NET SDK version '${version}' for testing, dotnetExecPath = '${dotnetExecPath}'`
+      );
     }
 
     if (addToPath) {

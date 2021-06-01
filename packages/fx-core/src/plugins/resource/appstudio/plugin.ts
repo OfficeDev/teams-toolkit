@@ -232,7 +232,7 @@ export class AppStudioPluginImpl {
     const solutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
     if (solutionSettings) {
       const selectedPlugins = solutionSettings.activeResourcePlugins;
-      return selectedPlugins.indexOf("fx-resource-spfx") !== -1;
+      return selectedPlugins && selectedPlugins.indexOf("fx-resource-spfx") !== -1;
     }
     return false;
   }

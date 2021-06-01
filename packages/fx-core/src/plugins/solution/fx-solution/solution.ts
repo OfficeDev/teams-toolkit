@@ -1295,7 +1295,7 @@ export class TeamsAppSolution implements Solution {
     stage: Stage,
     ctx: SolutionContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const isDynamicQuestion = (ctx.answers?.platform !== Platform.CLI);
+    const isDynamicQuestion = (ctx.answers?.platform === Platform.VSCode);
     const node = new QTreeNode({ type: "group" });
     let manifest: TeamsAppManifest | undefined = undefined;
     if (stage !== Stage.create && isDynamicQuestion) {
@@ -1990,7 +1990,7 @@ export class TeamsAppSolution implements Solution {
     ctx: SolutionContext,
     manifest?: TeamsAppManifest
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const isDynamicQuestion = (ctx.answers?.platform !== Platform.CLI);
+    const isDynamicQuestion = (ctx.answers?.platform === Platform.VSCode);
     const settings = this.getAzureSolutionSettings(ctx);
 
     if ( isDynamicQuestion &&
@@ -2109,7 +2109,7 @@ export class TeamsAppSolution implements Solution {
     ctx: SolutionContext,
     manifest?: TeamsAppManifest
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const isDynamicQuestion = (ctx.answers?.platform !== Platform.CLI);
+    const isDynamicQuestion = (ctx.answers?.platform === Platform.VSCode);
     const settings = this.getAzureSolutionSettings(ctx);
 
     if (!(settings.hostType === HostTypeOptionAzure.id) && isDynamicQuestion) {
@@ -2182,7 +2182,7 @@ export class TeamsAppSolution implements Solution {
     func: Func,
     ctx: SolutionContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const isDynamicQuestion = (ctx.answers?.platform !== Platform.CLI);
+    const isDynamicQuestion = (ctx.answers?.platform === Platform.VSCode);
     const namespace = func.namespace;
     const array = namespace.split("/"); 
     let manifest:TeamsAppManifest|undefined = undefined;

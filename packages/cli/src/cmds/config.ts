@@ -5,8 +5,9 @@
 
 import { Argv } from "yargs";
 import { YargsCommand } from "../yargsCommand";
-import { FxError, Result, ok, err } from "@microsoft/teamsfx-api";
+import { FxError, Result, ok, LogLevel } from "@microsoft/teamsfx-api";
 import { UserSettings, CliConfigOptions, CliConfigTelemetry } from "../userSetttings";
+import CLILogProvider from "../commonlib/log";
 
 export class ConfigGet extends YargsCommand {
   public readonly commandHead = `get`;
@@ -30,11 +31,11 @@ export class ConfigGet extends YargsCommand {
     const config = result.value;
     switch (args.option) {
       case CliConfigOptions.Telemetry:
-        console.log(JSON.stringify(config.telemetry, null, 2).white);
+        CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(config.telemetry, null, 2), true);
         return ok(null);
     }
 
-    console.log(JSON.stringify(config, null, 2).white);
+    CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(config, null, 2), true);
     return ok(null);
   }
 }
@@ -62,12 +63,12 @@ export class ConfigSet extends YargsCommand {
         const opt = { [args.option]: args.value };
         const result = UserSettings.setConfigSync(opt);
         if (result.isErr()) {
-          console.log("Configure user settings failed".red);
+          CLILogProvider.necessaryLog(LogLevel.Error, "Configure user settings failed");
           return result;
         }
     }
 
-    console.log("Configure user settings successful.".green)
+    CLILogProvider.necessaryLog(LogLevel.Info, "Configure user settings successful.");
     return ok(null);
   }
 }

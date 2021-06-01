@@ -7,7 +7,7 @@ import * as http from "http";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { Mutex } from "async-mutex";
-import { returnSystemError, returnUserError, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { returnSystemError, returnUserError, SystemError, UserError, LogLevel } from "@microsoft/teamsfx-api";
 import CliCodeLogInstance from "./log";
 import * as crypto from "crypto";
 import { AddressInfo } from "net";
@@ -129,7 +129,7 @@ export class CodeFlowLogin {
           }
         })
         .catch((error) => {
-          CliCodeLogInstance.error("[Login] " + error.message);
+          CliCodeLogInstance.necessaryLog(LogLevel.Error, "[Login] " + error.message);
           deferredRedirect.reject(error);
           res.status(500).send(error);
         });
@@ -153,11 +153,10 @@ export class CodeFlowLogin {
     try {
       await this.startServer(server, serverPort!);
       this.pca!.getAuthCodeUrl(authCodeUrlParameters).then(async (response: string) => {
-        // TODO change console.log to logProvider, for now, logProvider may be hidden
         if (this.accountName == "azure") {
-          console.log(colors.green(`[${constants.cliSource}] ${azureLoginMessage}`));
+          CliCodeLogInstance.necessaryLog(LogLevel.Info, `[${constants.cliSource}] ${azureLoginMessage}`);
         } else {
-          console.log(colors.green(`[${constants.cliSource}] ${m365LoginMessage}`));
+          CliCodeLogInstance.necessaryLog(LogLevel.Info, `[${constants.cliSource}] ${m365LoginMessage}`);
         }
         open(response);
       });
@@ -225,7 +224,7 @@ export class CodeFlowLogin {
             }
           })
           .catch(async (error) => {
-            CliCodeLogInstance.error("[Login] silent acquire token : " + error.message);
+            CliCodeLogInstance.necessaryLog(LogLevel.Error, "[Login] silent acquire token : " + error.message);
             await this.logout();
             if (refresh) {
               const accessToken = await this.login();
@@ -236,7 +235,7 @@ export class CodeFlowLogin {
           });
       }
     } catch (error) {
-      CliCodeLogInstance.error("[Login] " + error.message);
+      CliCodeLogInstance.necessaryLog(LogLevel.Error, "[Login] " + error.message);
       if (error.name!==ErrorMessage.loginTimeoutTitle &&
         error.name!==ErrorMessage.loginPortConflictTitle) {
         throw LoginCodeFlowError(error);
@@ -269,7 +268,7 @@ export class CodeFlowLogin {
             if (error.message.indexOf(MFACode) >= 0) {
               throw error;
             } else {
-              CliCodeLogInstance.error(
+              CliCodeLogInstance.necessaryLog(LogLevel.Error, 
                 "[Login] getTenantToken acquireTokenSilent : " + error.message
               );
               const accountList = await this.msalTokenCache?.getAllAccounts();
@@ -286,7 +285,7 @@ export class CodeFlowLogin {
         return undefined;
       }
     } catch (error) {
-      CliCodeLogInstance.error("[Login] getTenantToken : " + error.message);
+      CliCodeLogInstance.necessaryLog(LogLevel.Error, "[Login] getTenantToken : " + error.message);
       throw LoginFailureError(error);
     }
   }
@@ -335,7 +334,7 @@ function sendFile(
 ) {
   fs.readFile(filepath, (err, body) => {
     if (err) {
-      CliCodeLogInstance.error(err.message);
+      CliCodeLogInstance.necessaryLog(LogLevel.Error, err.message);
     } else {
       let data = body.toString();
       data = data.replace(/\${accountName}/g, accountName == "azure" ? "Azure" : "M365");

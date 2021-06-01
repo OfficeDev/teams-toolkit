@@ -67,7 +67,7 @@ import { DepsCheckerError } from "./utils/depsChecker/errors";
 import { getNodeVersion } from "./utils/node-version";
 import { funcPluginAdapter } from "./utils/depsChecker/funcPluginAdapter";
 import { funcPluginLogger } from "./utils/depsChecker/funcPluginLogger";
-import { funcPluginTelemetry } from "./utils/depsChecker/funcPluginTelemetry";
+import { FuncPluginTelemetry } from "./utils/depsChecker/funcPluginTelemetry";
 
 type Site = WebSiteManagementModels.Site;
 type AppServicePlan = WebSiteManagementModels.AppServicePlan;
@@ -593,7 +593,7 @@ export class FunctionPluginImpl {
     // NOTE: make sure this step is before using `dotnet` command if you refactor this code.
     await this.handleDotnetChecker(ctx);
 
-    await this.handleBackendExtensionsInstall(workingPath, functionLanguage);
+    await this.handleBackendExtensionsInstall(ctx, workingPath, functionLanguage);
 
     await runWithErrorCatchAndThrow(
       new InstallNpmPackageError(),
@@ -830,7 +830,7 @@ export class FunctionPluginImpl {
         const dotnetChecker = new DotnetChecker(
           funcPluginAdapter,
           funcPluginLogger,
-          funcPluginTelemetry
+          new FuncPluginTelemetry(ctx)
         );
         try {
           if (await dotnetChecker.isInstalled()) {
@@ -871,6 +871,7 @@ export class FunctionPluginImpl {
   }
 
   private async handleBackendExtensionsInstall(
+    ctx: PluginContext,
     workingPath: string,
     functionLanguage: FunctionLanguage
   ): Promise<void> {
@@ -879,7 +880,7 @@ export class FunctionPluginImpl {
       async () =>
         await step(StepGroup.PreDeployStepGroup, PreDeploySteps.installTeamsfxBinding, async () => {
           try {
-            await FunctionDeploy.installFuncExtensions(workingPath, functionLanguage);
+            await FunctionDeploy.installFuncExtensions(ctx, workingPath, functionLanguage);
           } catch (error) {
             // wrap the original error to UserError so the extensibility model will pop-up a dialog correctly
             funcPluginAdapter.handleDotnetError(error);

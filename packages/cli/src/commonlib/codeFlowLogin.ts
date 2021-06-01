@@ -147,13 +147,13 @@ export class CodeFlowLogin {
     let accessToken = undefined;
     try {
       await this.startServer(server, serverPort!);
-      this.pca!.getAuthCodeUrl(authCodeUrlParameters).then(async (response: string) => {
+      this.pca!.getAuthCodeUrl(authCodeUrlParameters).then(async (url: string) => {
         if (this.accountName == "azure") {
-          CliCodeLogInstance.necessaryLog(LogLevel.Info, `[${constants.cliSource}] ${azureLoginMessage}`);
+          CliCodeLogInstance.necessaryLog(LogLevel.Info, `[${constants.cliSource}] ${azureLoginMessage}${url}`);
         } else {
-          CliCodeLogInstance.necessaryLog(LogLevel.Info, `[${constants.cliSource}] ${m365LoginMessage}`);
+          CliCodeLogInstance.necessaryLog(LogLevel.Info, `[${constants.cliSource}] ${m365LoginMessage}${url}`);
         }
-        open(response);
+        open(url);
       });
 
       redirectPromise.then(cancelCodeTimer, cancelCodeTimer);

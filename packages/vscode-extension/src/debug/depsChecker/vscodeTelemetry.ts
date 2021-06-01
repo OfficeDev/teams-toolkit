@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import * as os from "os";
 import { performance } from "perf_hooks";
 import { SystemError, UserError } from "@microsoft/teamsfx-api";
 import { TelemetryProperty } from "../../telemetry/extTelemetryEvents";
@@ -12,9 +13,7 @@ export class VSCodeTelemetry implements IDepsTelemetry {
   private readonly _telemetryComponentType = "extension:debug:envchecker";
 
   public sendEvent(eventName: DepsCheckerEvent, timecost?: number): void {
-    const properties: { [p: string]: string } = {
-      [TelemetryProperty.Component]: this._telemetryComponentType,
-    };
+    const properties = this.getBaseProperties();
 
     const measurements: { [p: string]: number } = {};
     if (timecost) {
@@ -37,9 +36,7 @@ export class VSCodeTelemetry implements IDepsTelemetry {
 
   public sendUserErrorEvent(eventName: DepsCheckerEvent, errorMessage: string): void {
     const error = new UserError(eventName, errorMessage, this._telemetryComponentType);
-    ExtTelemetry.sendTelemetryErrorEvent(eventName, error, {
-      [TelemetryProperty.Component]: this._telemetryComponentType,
-    });
+    ExtTelemetry.sendTelemetryErrorEvent(eventName, error, this.getBaseProperties());
   }
 
   public sendSystemErrorEvent(
@@ -53,9 +50,15 @@ export class VSCodeTelemetry implements IDepsTelemetry {
       this._telemetryComponentType,
       errorStack
     );
-    ExtTelemetry.sendTelemetryErrorEvent(eventName, error, {
+    ExtTelemetry.sendTelemetryErrorEvent(eventName, error, this.getBaseProperties());
+  }
+
+  private getBaseProperties(): { [p: string]: string } {
+    return {
       [TelemetryProperty.Component]: this._telemetryComponentType,
-    });
+      [TelemetryProperty.OSArch]: os.arch(),
+      [TelemetryProperty.OSRelease]: os.release(),
+    };
   }
 }
 

@@ -3,7 +3,7 @@
 "use strict";
 
 import * as error from "../error";
-import { ConfigFolderName, Inputs, Json, PluginConfig, ProjectSettings, SolutionConfig, SolutionContext, UserError } from "@microsoft/teamsfx-api";
+import { ConfigFolderName, Inputs, Json, Platform, PluginConfig, ProjectSettings, SolutionConfig, SolutionContext, UserError } from "@microsoft/teamsfx-api";
 import { deserializeDict, FxCore, mergeSerectData, objectToMap } from "../..";
 import * as path from "path";
 import * as fs from "fs-extra";
@@ -34,6 +34,11 @@ import * as fs from "fs-extra";
 
 export async function loadSolutionContext(core: FxCore, inputs: Inputs):Promise<SolutionContext>{
   try {
+
+    if(!inputs.projectPath || inputs.platform === Platform.VS || inputs.ignoreTypeCheck){
+      return await newSolutionContext(core, inputs);
+    }
+ 
     const confFolderPath = path.resolve(inputs.projectPath!, `.${ConfigFolderName}`);
     const settingsFile = path.resolve(confFolderPath, "settings.json");
     const projectSettings: ProjectSettings = await fs.readJson(settingsFile);

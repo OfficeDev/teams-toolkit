@@ -111,6 +111,24 @@ export class FxCore implements Core {
     return await this._executeUserTask(ctx, func, inputs);
   }
 
+  @hooks([ErrorHandlerMW, SolutionLoaderMW, ConfigWriterMW])
+  async getQuestions(task: Stage, inputs: Inputs) : Promise<Result<QTreeNode | undefined, FxError>> {
+    let ctx:SolutionContext;
+    if(task ===  Stage.create) {
+      delete inputs.projectPath;
+      ctx = await newSolutionContext(this, inputs);
+    }
+    else{
+      ctx = await loadSolutionContext(this, inputs);
+    }  
+    return await this._getQuestions(task, inputs, ctx);
+  }
+
+  @hooks([ErrorHandlerMW, SolutionLoaderMW, ConfigWriterMW])
+  async getQuestionsForUserTask(func: FunctionRouter, inputs: Inputs) : Promise<Result<QTreeNode | undefined, FxError>>{
+    const ctx = await loadSolutionContext(this, inputs);
+    return await this._getQuestionsForUserTask(func, inputs, ctx);
+  }
 
   @hooks([QuestionModelMW, ConfigWriterMW])
   async _createProject(ctx: SolutionContext, inputs: Inputs): Promise<Result<string, FxError>> {
@@ -285,31 +303,7 @@ export class FxCore implements Core {
     throw error.TaskNotSupportError;
   }
   
-  @hooks([ErrorHandlerMW, SolutionLoaderMW, ConfigWriterMW])
-  async getQuestions(task: Stage, inputs: Inputs) : Promise<Result<QTreeNode | undefined, FxError>> {
-    let ctx:SolutionContext;
-    if(inputs.projectPath && task !==  Stage.create)
-      ctx = await loadSolutionContext(this, inputs);
-    else 
-    {
-      delete inputs.projectPath;
-      ctx = await newSolutionContext(this, inputs);
-    }  
-    return await this._getQuestions(task, inputs, ctx);
-  }
-
-  @hooks([ErrorHandlerMW, SolutionLoaderMW, ConfigWriterMW])
-  async getQuestionsForUserTask(func: FunctionRouter, inputs: Inputs) : Promise<Result<QTreeNode | undefined, FxError>>{
-    let ctx:SolutionContext;
-    if(inputs.projectPath)
-      ctx = await loadSolutionContext(this, inputs);
-    else 
-    {
-      delete inputs.projectPath;
-      ctx = await newSolutionContext(this, inputs);
-    }  
-    return await this._getQuestionsForUserTask(func, inputs, ctx);
-  }
+  
 
   @hooks([ErrorHandlerMW])
   async getProjectConfig(inputs: Inputs): Promise<Result<ProjectConfig|undefined, FxError>>{

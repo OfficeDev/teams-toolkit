@@ -29,7 +29,8 @@ import { BackendExtensionsInstaller } from "../utils/depsChecker/backendExtensio
 import { DotnetChecker } from "../utils/depsChecker/dotnetChecker";
 import { funcPluginAdapter } from "../utils/depsChecker/funcPluginAdapter";
 import { funcPluginLogger } from "../utils/depsChecker/funcPluginLogger";
-import { funcPluginTelemetry } from "../utils/depsChecker/funcPluginTelemetry";
+import { FuncPluginTelemetry } from "../utils/depsChecker/funcPluginTelemetry";
+import { PluginContext } from '@microsoft/teamsfx-api';
 
 export class FunctionDeploy {
   public static async getLastDeploymentTime(componentPath: string): Promise<Date> {
@@ -101,6 +102,7 @@ export class FunctionDeploy {
   }
 
   public static async installFuncExtensions(
+    ctx: PluginContext,
     componentPath: string,
     language: FunctionLanguage
   ): Promise<void> {
@@ -112,7 +114,7 @@ export class FunctionDeploy {
     const dotnetChecker = new DotnetChecker(
       funcPluginAdapter,
       funcPluginLogger,
-      funcPluginTelemetry
+      new FuncPluginTelemetry(ctx)
     );
     const backendExtensionsInstaller = new BackendExtensionsInstaller(
       dotnetChecker,

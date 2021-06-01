@@ -5,6 +5,7 @@ import chaiAsPromised from "chai-as-promised";
 import { it } from "mocha";
 import { SolutionRunningState, TeamsAppSolution } from " ../../../src/plugins/solution";
 import {
+  AppStudioTokenProvider,
   ConfigFolderName,
   ConfigMap,
   FxError,
@@ -19,29 +20,47 @@ import {
 import * as sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
 import {
-  BOTS_TPL,
-  COMPOSE_EXTENSIONS_TPL,
-  CONFIGURABLE_TABS_TPL,
-  DEFAULT_PERMISSION_REQUEST,
   GLOBAL_CONFIG,
-  PROGRAMMING_LANGUAGE,
   REMOTE_MANIFEST,
+  REMOTE_TEAMS_APP_ID,
   SolutionError,
   SOLUTION_PROVISION_SUCCEEDED,
-  STATIC_TABS_TPL,
 } from "../../../src/plugins/solution/fx-solution/constants";
 import {
-  AzureSolutionQuestionNames,
-  BotOptionItem,
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
-  MessageExtensionItem,
-  TabOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import { validManifest } from "./util";
+import { AppStudio } from "../../../src/plugins/solution/fx-solution/appstudio/appstudio";
+import {
+  IAppDefinition,
+} from "../../../src/plugins/solution/fx-solution/appstudio/interface";
+import _ from "lodash";
+
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
+
+class FakeAppStudioTokenProvider implements AppStudioTokenProvider {
+  async getAccessToken(showDialog?: boolean): Promise<string> {
+    return "someFakeToken";
+  }
+  getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
+    throw new Error("Method not implemented.");
+  }
+  signout(): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  setStatusChangeCallback(statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediateCall?: boolean): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  removeStatusChangeMap(name: string): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+}
 
 function mockSolutionContext(): SolutionContext {
   const config: SolutionConfig = new Map();
@@ -52,6 +71,7 @@ function mockSolutionContext(): SolutionContext {
     config,
     answers: new ConfigMap(),
     projectSettings: undefined,
+    appStudioToken: new FakeAppStudioTokenProvider,
   };
 }
 
@@ -185,11 +205,19 @@ describe("provision() with permission.json file missing", () => {
 
 });
 
-describe("provision() happy path for Azure projects", () => {
+describe("provision() happy path for SPFx projects", () => {
   const mocker = sinon.createSandbox();
-  const permissionsJsonPath = "./permissions.json";
+  // const permissionsJsonPath = "./permissions.json";
 
   const fileContent: Map<string, any> = new Map();
+  const mockedAppDef: IAppDefinition = {
+    appName: "MyApp",
+    teamsAppId: "qwertasdf"
+  };
+  const mockedManifest = _.cloneDeep(validManifest);
+  // ignore icons for simplicity
+  mockedManifest.icons.color = "";
+  mockedManifest.icons.outline = "";
   beforeEach(() => {
     mocker.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {
       fileContent.set(path.toString(), data);
@@ -197,13 +225,88 @@ describe("provision() happy path for Azure projects", () => {
     mocker.stub(fs, "writeJSON").callsFake((file: string, obj: any) => {
       fileContent.set(file, JSON.stringify(obj));
     });
-    mocker.stub<any, any>(fs, "readJson").withArgs(`./.${ConfigFolderName}/${REMOTE_MANIFEST}`).resolves(validManifest);
-    mocker.stub<any, any>(fs, "pathExists").withArgs(permissionsJsonPath).resolves(true);
+    mocker.stub<any, any>(fs, "readJson").withArgs(`./.${ConfigFolderName}/${REMOTE_MANIFEST}`).resolves(mockedManifest);
+    // mocker.stub<any, any>(fs, "pathExists").withArgs(permissionsJsonPath).resolves(true);
+    mocker.stub(AppStudio, "createApp").resolves(mockedAppDef);
+    mocker.stub(AppStudio, "updateApp").resolves(mockedAppDef);
+
   });
 
   afterEach(() => {
     mocker.restore();
   });
 
+  it("should succeed if app studio returns successfully", async () => {
+    const solution = new TeamsAppSolution();
+    const mockedCtx = mockSolutionContext();
+    mockedCtx.projectSettings = {
+      appName: "my app",
+      solutionSettings: {
+        hostType: HostTypeOptionSPFx.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [solution.spfxPlugin.name]
+      },
+    };
 
+    expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be.undefined;
+    expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).to.be.undefined;
+    const result = await solution.provision(mockedCtx);
+    expect(result.isOk()).to.be.true;
+    expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be.true;
+    expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).equals(mockedAppDef.teamsAppId);
+  });
+});
+
+describe("provision() happy path for Azure projects", () => {
+  const mocker = sinon.createSandbox();
+  const permissionsJsonPath = "./permissions.json";
+
+  const fileContent: Map<string, any> = new Map();
+  const mockedAppDef: IAppDefinition = {
+    appName: "MyApp",
+    teamsAppId: "qwertasdf"
+  };
+  const mockedManifest = _.cloneDeep(validManifest);
+  // ignore icons for simplicity
+  mockedManifest.icons.color = "";
+  mockedManifest.icons.outline = "";
+  beforeEach(() => {
+    mocker.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {
+      fileContent.set(path.toString(), data);
+    });
+    mocker.stub(fs, "writeJSON").callsFake((file: string, obj: any) => {
+      fileContent.set(file, JSON.stringify(obj));
+    });
+    mocker.stub<any, any>(fs, "readJson").withArgs(`./.${ConfigFolderName}/${REMOTE_MANIFEST}`).resolves(mockedManifest);
+    // mocker.stub<any, any>(fs, "pathExists").withArgs(permissionsJsonPath).resolves(true);
+    mocker.stub(AppStudio, "createApp").resolves(mockedAppDef);
+    mocker.stub(AppStudio, "updateApp").resolves(mockedAppDef);
+
+  });
+
+  afterEach(() => {
+    mocker.restore();
+  });
+
+  it("should succeed if app studio returns successfully", async () => {
+    const solution = new TeamsAppSolution();
+    const mockedCtx = mockSolutionContext();
+    mockedCtx.projectSettings = {
+      appName: "my app",
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [solution.fehostPlugin.name, solution.aadPlugin.name]
+      },
+    };
+
+    expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be.undefined;
+    expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).to.be.undefined;
+    const result = await solution.provision(mockedCtx);
+    expect(result.isOk()).to.be.true;
+    expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be.true;
+    expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).equals(mockedAppDef.teamsAppId);
+  });
 });

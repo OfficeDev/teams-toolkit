@@ -80,7 +80,7 @@ export class SqlPluginImpl {
       });
       this.init(ctx);
       if (this.config.azureSubscriptionId) {
-        ctx.logProvider?.info(Message.checkSql);
+        // ctx.logProvider?.info(Message.checkSql);
         const managementClient: ManagementClient = new ManagementClient(ctx, this.config);
         await managementClient.init();
         this.config.existSql = await managementClient.existAzureSQL();
@@ -117,7 +117,7 @@ export class SqlPluginImpl {
       if (ctx.answers?.platform === Platform.CLI) {
         sqlNode.addChild(skipAddingUserQuestion);
       }
-      ctx.logProvider?.info(Message.endGetQuestions);
+      // ctx.logProvider?.info(Message.endGetQuestions);
       return ok(sqlNode);
     }
     return ok(undefined);

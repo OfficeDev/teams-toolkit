@@ -34,7 +34,14 @@ export async function loadOptions(q: Question, inputs: Inputs): Promise<{autoSki
       option = await getCallFuncValue(inputs, selectQuestion.dynamicOptions) as StaticOptions;
     else 
       option = selectQuestion.staticOptions;
-    if (selectQuestion.skipSingleOption && selectQuestion.staticOptions.length === 1)
+    if(!option || option.length === 0){
+      throw (returnSystemError(
+        new Error("Select option is empty!"),
+        "API",
+        "EmptySelectOption"
+      ));
+    }
+    if (selectQuestion.skipSingleOption && option.length === 1)
       return {autoSkip:true, options: option};
     else
       return {autoSkip:false, options: option};

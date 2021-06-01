@@ -2256,7 +2256,7 @@ export class TeamsAppSolution implements Solution {
 
     if ((alreadyHaveSql && addSQL) || (alreadyHaveApim && addApim)) {
       return err(
-        returnUserError(new Error(`SQL or APIM is already enabled!`), "Solution", SolutionError.InternelError)
+        returnUserError(new Error(`SQL or APIM is already enabled!`), "Solution", SolutionError.AddResourceNotSupport)
       );
     }
 

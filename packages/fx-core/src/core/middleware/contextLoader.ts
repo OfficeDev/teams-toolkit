@@ -2,38 +2,37 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks";
 import * as error from "../error";
-import { ConfigFolderName, err, Inputs, Json, PluginConfig, ProjectSettings, SolutionConfig, SolutionContext, UserError } from "@microsoft/teamsfx-api";
+import { ConfigFolderName, Inputs, Json, PluginConfig, ProjectSettings, SolutionConfig, SolutionContext, UserError } from "@microsoft/teamsfx-api";
 import { deserializeDict, FxCore, mergeSerectData, objectToMap } from "../..";
 import * as path from "path";
 import * as fs from "fs-extra";
 
-export const ContextLoaderMW: Middleware = async (
-  ctx: HookContext,
-  next: NextFunction
-) => {
-  try {
-    const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-    const core = ctx.self as FxCore;
-    if(inputs.projectPath && ctx.method !== "createProject")
-     await loadSolutionContext(core, inputs);
-    else 
-    {
-      delete inputs.projectPath;
-      await newSolutionContext(core, inputs);
-    }  
-  }
-  catch(e) {
-    ctx.result = err(error.CreateContextError);
-    return ;
-  }
-  await next();
-};
+// export const ContextLoaderMW: Middleware = async (
+//   ctx: HookContext,
+//   next: NextFunction
+// ) => {
+//   try {
+//     const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+//     const core = ctx.self as FxCore;
+//     if(inputs.projectPath && ctx.method !== "createProject")
+//      await loadSolutionContext(core, inputs);
+//     else 
+//     {
+//       delete inputs.projectPath;
+//       await newSolutionContext(core, inputs);
+//     }  
+//   }
+//   catch(e) {
+//     ctx.result = err(error.CreateContextError);
+//     return ;
+//   }
+//   await next();
+// };
 
 
 
-async function loadSolutionContext(core: FxCore, inputs: Inputs){
+export async function loadSolutionContext(core: FxCore, inputs: Inputs):Promise<SolutionContext>{
   try {
     const confFolderPath = path.resolve(inputs.projectPath!, `.${ConfigFolderName}`);
     const settingsFile = path.resolve(confFolderPath, "settings.json");
@@ -61,7 +60,7 @@ async function loadSolutionContext(core: FxCore, inputs: Inputs){
       ... core.tools.tokenProvider,
       answers: inputs
     } ;
-    core.ctx = solutionContext;
+    return solutionContext;
   } catch (e) {
     throw new UserError(
       error.CoreErrorNames.ReadFileError,
@@ -72,7 +71,7 @@ async function loadSolutionContext(core: FxCore, inputs: Inputs){
   }
 }
 
-async function newSolutionContext(core: FxCore, inputs?: Inputs){
+export async function newSolutionContext(core: FxCore, inputs?: Inputs):Promise<SolutionContext>{
   const projectSettings:ProjectSettings = {
     appName: "",
     currentEnv: "default",
@@ -89,5 +88,5 @@ async function newSolutionContext(core: FxCore, inputs?: Inputs){
     ... core.tools.tokenProvider,
     answers: inputs
   } ;
-  core.ctx = solutionContext;
+  return solutionContext;
 }

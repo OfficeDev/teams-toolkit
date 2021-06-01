@@ -3,7 +3,7 @@
 "use strict";
 
 import { OptionItem } from "./qm";
-import { Platform, VsCodeEnv } from "./constants"; 
+import { Platform, Stage, VsCodeEnv } from "./constants"; 
 
 export type Json = Record<string,unknown>;
 
@@ -168,6 +168,7 @@ export interface ProjectStates {
 export interface Inputs extends Json{
   projectPath?:string;
   platform: Platform;
+  stage?: Stage;
   vscodeEnv?:VsCodeEnv;
   ignoreLock?:boolean;
   ignoreTypeCheck?:boolean;

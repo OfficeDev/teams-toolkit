@@ -20,7 +20,7 @@ export const ConfigWriterMW: Middleware = async (
     await next();
   }
   finally {
-    const solutionContext: SolutionContext = ctx.self.ctx;
+    const solutionContext: SolutionContext = ctx.arguments[0] as SolutionContext;
     const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
     const ignorePersist = solutionContext === undefined || inputs.projectPath === undefined || inputs.ignoreConfigPersist === true || inputs.platform === Platform.VS;
     if (ignorePersist === false) {

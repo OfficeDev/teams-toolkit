@@ -110,6 +110,8 @@ Config Name | Config Type | Description
 defaultFunctionName|string|The default function name scaffolded
 functionAppName|string|Output. The function app name.
 functionEndpoint|string|Output. The function app endpoint. `https://${functionAppName}.azurewebsites.net`
+storageAccountName|string|Output. The name of the Azure Storage Account used by the function app.
+appServicePlanName|string|Output. The name of the Azure App Service Plan used by the function app.
 
 ## Configuration schema for simple auth
 

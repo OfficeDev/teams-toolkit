@@ -1,5 +1,5 @@
 import { PluginContext } from "@microsoft/teamsfx-api";
-import { Telemetry } from "../constants";
+import { Constants, Telemetry } from "../constants";
 
 export class TelemetryUtils {
   static ctx: PluginContext;
@@ -11,8 +11,8 @@ export class TelemetryUtils {
   public static sendEvent(
     eventName: string,
     success?: boolean,
-    properties?: { [key: string]: string },
-    measurements?: { [key: string]: number }
+    properties?: { [key: string]: string; },
+    measurements?: { [key: string]: number; }
   ) {
     if (!properties) {
       properties = {};
@@ -20,10 +20,7 @@ export class TelemetryUtils {
     if (success) {
       properties[Telemetry.properties.success] = Telemetry.resultYes;
     }
-    properties[Telemetry.properties.component] = Telemetry.componentName;
-    if (this.ctx.app.id) {
-      properties[Telemetry.properties.appid] = this.ctx.app.id;
-    }
+    this.addProperties(properties);
     TelemetryUtils.ctx.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
   }
 
@@ -32,8 +29,8 @@ export class TelemetryUtils {
     errorCode: string,
     errorType: string,
     errorMessage: string,
-    properties?: { [key: string]: string },
-    measurements?: { [key: string]: number }
+    properties?: { [key: string]: string; },
+    measurements?: { [key: string]: number; }
   ) {
     if (!properties) {
       properties = {};
@@ -42,14 +39,17 @@ export class TelemetryUtils {
     properties[Telemetry.properties.errorCode] = errorCode;
     properties[Telemetry.properties.errorType] = errorType;
     properties[Telemetry.properties.errorMessage] = errorMessage;
-    properties[Telemetry.properties.component] = Telemetry.componentName;
-    if (this.ctx.app.id) {
-      properties[Telemetry.properties.appid] = this.ctx.app.id;
-    }
+    this.addProperties(properties);
     TelemetryUtils.ctx.telemetryReporter?.sendTelemetryErrorEvent(
       eventName,
       properties,
       measurements
     );
+  }
+
+  private static addProperties(properties: { [key: string]: string; }) {
+    properties[Telemetry.properties.component] = Telemetry.componentName;
+    const appId = this.ctx.configOfOtherPlugins.get(Constants.solution)?.get(Constants.remoteTeamsAppId) as string;
+    properties[Telemetry.properties.appid] = appId;
   }
 }

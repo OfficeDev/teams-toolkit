@@ -36,6 +36,7 @@ export class Constants {
     resourceNameSuffix: "resourceNameSuffix",
     location: "location",
     tenantId: "tenantId",
+    remoteTeamsAppId: "remoteTeamsAppId",
   };
 
   public static readonly identityPlugin: string = "fx-resource-identity";

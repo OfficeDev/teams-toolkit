@@ -5,7 +5,6 @@ import {
   CardFactory,
   BotState,
   TurnContext,
-  tokenExchangeOperationName,
 } from "botbuilder";
 import { MainDialog } from "./dialogs/mainDialog";
 
@@ -86,11 +85,6 @@ export class TeamsBot extends TeamsActivityHandler {
   }
 
   async onSignInInvoke(context: TurnContext) {
-    if (context.activity && context.activity.name === tokenExchangeOperationName) {
-      if (await this.dialog.shouldDedup(context)) {
-        return;
-      }
-    }
     await this.dialog.run(context, this.dialogState);
   }
 }

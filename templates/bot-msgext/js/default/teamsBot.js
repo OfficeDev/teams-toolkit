@@ -3,7 +3,6 @@ const querystring = require("querystring");
 
 const {
   TeamsActivityHandler,
-  tokenExchangeOperationName,
   ActionTypes,
   CardFactory,
 } = require("botbuilder");
@@ -87,11 +86,6 @@ class TeamsBot extends TeamsActivityHandler {
   }
 
   async onSignInInvoke(context) {
-    if (context.activity && context.activity.name === tokenExchangeOperationName) {
-      if (await this.dialog.shouldDedup(context)) {
-        return;
-      }
-    }
     await this.dialog.run(context, this.dialogState);
   }
 

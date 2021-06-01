@@ -100,8 +100,6 @@ Config Name | Config Type | Description
 ------|------|------
 sqlEndpoint|string|The sql server endpoint.  '${sqlServer}.database.windows.net'
 databaseName|string|The created database name
-userName|string|account login for local debug
-password|string|account password for local debug
 
 ## Configuration schema for Azure Functions
 

@@ -1,4 +1,4 @@
-import { DialogSet, DialogTurnStatus, WaterfallDialog } from "botbuilder-dialogs";
+import { Dialog, DialogSet, DialogTurnStatus, WaterfallDialog } from "botbuilder-dialogs";
 import { RootDialog } from "./rootDialog";
 import {
   ActivityTypes,
@@ -40,6 +40,7 @@ export class MainDialog extends RootDialog {
     this.addDialog(
       new WaterfallDialog(MAIN_WATERFALL_DIALOG, [
         this.ssoStep.bind(this),
+        this.dedupStep.bind(this),
         this.showUserInfo.bind(this),
       ])
     );
@@ -67,6 +68,15 @@ export class MainDialog extends RootDialog {
 
   async ssoStep(stepContext: any) {
     return await stepContext.beginDialog(TEAMS_SSO_PROMPT_ID);
+  }
+
+  async dedupStep(stepContext: any) {
+    const tokenResponse = stepContext.result;
+    // Only dedup after ssoStep to make sure that all Teams client would receive the login request
+    if (tokenResponse && await this.shouldDedup(stepContext.context)) {
+      return Dialog.EndOfTurn;
+    }
+    return await stepContext.next(tokenResponse);
   }
 
   async showUserInfo(stepContext: any) {

@@ -38,7 +38,9 @@ async function loadSolutionContext(core: FxCore, inputs: Inputs){
     const confFolderPath = path.resolve(inputs.projectPath!, `.${ConfigFolderName}`);
     const settingsFile = path.resolve(confFolderPath, "settings.json");
     const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
-    const envName = projectSettings.currentEnv || "default";
+    if(!projectSettings.currentEnv)
+      projectSettings.currentEnv = "default";
+    const envName = projectSettings.currentEnv;
     const jsonFilePath = path.resolve(confFolderPath, `env.${envName}.json`);
     const configJson: Json = await fs.readJson(jsonFilePath);
     const localDataPath = path.resolve(confFolderPath, `${envName}.userdata`);

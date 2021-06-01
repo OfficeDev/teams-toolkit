@@ -101,7 +101,8 @@ export async function getLocalDebugTeamsAppId(
   };
   try {
     const inputs = getSystemInputs();
-    inputs.readonly = true;
+    inputs.ignoreLock = true;
+    inputs.ignoreConfigPersist = true;
     const result = await core.executeUserTask(func, inputs);
     if (result.isErr()) {
       throw result.error;
@@ -119,7 +120,8 @@ export async function getProgrammingLanguage(): Promise<string | undefined> {
   };
   try {
     const inputs = getSystemInputs();
-    inputs.readonly = true;
+    inputs.ignoreLock = true;
+    inputs.ignoreConfigPersist = true;
     const result = await core.executeUserTask(func, inputs);
     if (result.isErr()) {
       throw result.error;

@@ -13,11 +13,8 @@ export const ProjectCheckerMW: Middleware = async (
   next: NextFunction
 ) => {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-  if(ctx.method !== "createProject" 
-      && !ctx.method?.startsWith("getQuestions") 
-      && !(ctx.method === "executeUserTask" && inputs.platform === Platform.VS)
-    ){
-
+  const ignoreCheck = inputs.ignoreTypeCheck === true || ctx.method === "createProject" || inputs.platform === Platform.VS;
+  if(ignoreCheck === false){
     const projectPath = inputs.projectPath;
     if(!projectPath) {
       ctx.result = err(NoProjectOpenedError);

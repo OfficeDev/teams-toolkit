@@ -169,6 +169,9 @@ export interface Inputs extends Json{
   projectPath?:string;
   platform: Platform;
   vscodeEnv?:VsCodeEnv;
+  ignoreLock?:boolean;
+  ignoreTypeCheck?:boolean;
+  ignoreConfigPersist?:boolean;
 }   
 
 

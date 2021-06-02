@@ -2,12 +2,15 @@
 // Licensed under the MIT license.
 import { exec } from "child_process";
 import * as fs from "fs-extra";
-import { AzureAccountProvider, ConfigFolderName, ConfigMap, Dict, err, FxError, Json, ok, OptionItem, Result, returnSystemError, returnUserError, SubscriptionInfo, Tools, UserError, UserInteraction } from "@microsoft/teamsfx-api";
+import { AzureAccountProvider, AzureSolutionSettings, ConfigFolderName, ConfigMap, Dict, err, FxError, Json, ok, OptionItem, ProjectSettings, Result, returnSystemError, returnUserError, SubscriptionInfo, Tools, UserError, UserInteraction } from "@microsoft/teamsfx-api";
 import { promisify } from "util";
 import axios from "axios";
 import AdmZip from "adm-zip";
 import * as path from "path";
 import { getResourceFolder } from "..";
+import { fakeServer } from "sinon";
+import { PluginNames } from "../plugins";
+import { AzureResourceApim, AzureResourceFunction, AzureResourceSQL, BotOptionItem, HostTypeOptionSPFx, MessageExtensionItem, TabOptionItem } from "../plugins/solution/fx-solution/question";
 
 const execAsync = promisify(exec);
 
@@ -259,19 +262,82 @@ export function isUserCancelError(error: Error): boolean {
 
 export function isValidProject(workspacePath?: string): boolean {
   if (!workspacePath) return false;
-  const checklist: string[] = [
-    path.join(workspacePath, `.${ConfigFolderName}`, "settings.json"),
-    path.join(workspacePath, `.${ConfigFolderName}`, "env.default.json"),
-    path.join(workspacePath, `.${ConfigFolderName}`, "manifest.source.json"),
-  ];
-  for (const fp of checklist) {
-    if (!fs.pathExistsSync(fp)) {
+  try{
+    const confFolderPath = path.resolve(workspacePath, `.${ConfigFolderName}`);
+    const settingsFile = path.resolve(confFolderPath, "settings.json");
+    const projectSettings: ProjectSettings = fs.readJsonSync(settingsFile);
+    if(!projectSettings.currentEnv)
+      projectSettings.currentEnv = "default";
+    if(!validateSettings(projectSettings))
+        return false;
+    const envName = projectSettings.currentEnv;
+    const jsonFilePath = path.resolve(confFolderPath, `env.${envName}.json`);
+    const configJson: Json = fs.readJsonSync(jsonFilePath);
+    if(!validateConfig(projectSettings.solutionSettings as AzureSolutionSettings, configJson))
       return false;
+    return true;
+  }
+  catch(e){
+    return false;
+  }
+}
+
+export function validateSettings(projectSettings: ProjectSettings):boolean{
+  if(!projectSettings.solutionSettings) return false;
+  const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
+  if(solutionSettings.hostType === undefined) return false;
+  if(solutionSettings.activeResourcePlugins === undefined || solutionSettings.activeResourcePlugins.length === 0)
+    return false;
+  return true;
+}
+
+export function validateConfig(solutioSettings:AzureSolutionSettings, configJson: Json): boolean {
+  if(!configJson[PluginNames.SOLUTION]) return false;
+  const capabilities = solutioSettings.capabilities;
+  const azureResources = solutioSettings.azureResources;
+  const plugins = solutioSettings.activeResourcePlugins;
+  if(!configJson[PluginNames.LDEBUG]) return false;
+  if(!plugins.includes(PluginNames.LDEBUG)) return false;
+  if(solutioSettings.hostType === HostTypeOptionSPFx.id){
+    if(!configJson[PluginNames.SPFX]) return false;
+    if(!plugins.includes(PluginNames.SPFX)) return false;
+  }
+  else {
+    if(capabilities.includes(TabOptionItem.id)){
+      if(!configJson[PluginNames.FE]) return false;
+      if(!plugins.includes(PluginNames.FE)) return false;
+
+      if(!configJson[PluginNames.AAD]) return false;
+      if(!plugins.includes(PluginNames.AAD)) return false;
+
+      if(!configJson[PluginNames.SA]) return false;
+      if(!plugins.includes(PluginNames.SA)) return false;
+    }
+    if(capabilities.includes(BotOptionItem.id)){
+      if(!configJson[PluginNames.BOT]) return false;
+      if(!plugins.includes(PluginNames.BOT)) return false;
+    }
+    if(capabilities.includes(MessageExtensionItem.id)){
+      if(!configJson[PluginNames.BOT]) return false;
+      if(!plugins.includes(PluginNames.BOT)) return false;
+    }
+    if(azureResources.includes(AzureResourceSQL.id)){
+      if(!configJson[PluginNames.SQL]) return false;
+      if(!plugins.includes(PluginNames.SQL)) return false;
+      if(!configJson[PluginNames.MSID]) return false;
+      if(!plugins.includes(PluginNames.MSID)) return false;
+    }
+    if(azureResources.includes(AzureResourceFunction.id)){
+      if(!configJson[PluginNames.FUNC]) return false;
+      if(!plugins.includes(PluginNames.FUNC)) return false;
+    }
+    if(azureResources.includes(AzureResourceApim.id)){
+      if(!configJson[PluginNames.APIM]) return false;
+      if(!plugins.includes(PluginNames.APIM)) return false;
     }
   }
   return true;
 }
-
 
 export async function askSubscription(azureAccountProvider:AzureAccountProvider, ui:UserInteraction , activeSubscriptionId?:string): Promise<Result<SubscriptionInfo, FxError>>{
   const subscriptions: SubscriptionInfo[] = await azureAccountProvider.listSubscriptions();

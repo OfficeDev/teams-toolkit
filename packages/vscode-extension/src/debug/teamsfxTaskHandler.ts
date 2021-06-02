@@ -8,7 +8,8 @@ import { getLocalTeamsAppId } from "./commonUtils";
 import { ext } from "../extensionVariables";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
-import { isWorkspaceSupported, getTeamsAppId } from "../utils/commonUtils";
+import { getTeamsAppId } from "../utils/commonUtils";
+import { isValidProject } from "@microsoft/teamsfx-core";
 
 interface IRunningTeamsfxTask {
   source: string;
@@ -68,7 +69,7 @@ function displayTerminal(taskName: string): boolean {
 }
 
 function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent): void {
-  if (ext.workspaceUri && isWorkspaceSupported(ext.workspaceUri.fsPath)) {
+  if (ext.workspaceUri && isValidProject(ext.workspaceUri.fsPath)) {
     const task = event.execution.task;
     if (task.scope !== undefined && isTeamsfxTask(task)) {
       allRunningTeamsfxTasks.set(
@@ -106,7 +107,7 @@ function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): void {
 }
 
 function onDidStartDebugSessionHandler(event: vscode.DebugSession): void {
-  if (ext.workspaceUri && isWorkspaceSupported(ext.workspaceUri.fsPath)) {
+  if (ext.workspaceUri && isValidProject(ext.workspaceUri.fsPath)) {
     const debugConfig = event.configuration;
     if (
       debugConfig &&

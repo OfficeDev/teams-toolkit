@@ -371,7 +371,7 @@ export class FxCore implements Core {
     const node = new QTreeNode({ type: "group" });
     if (stage === Stage.create) {
       
-      const scratchSelectNode = new QTreeNode(ScratchOrSampleSelect(inputs.platform === Platform.CLI));
+      const scratchSelectNode = new QTreeNode(ScratchOrSampleSelect(inputs.platform));
       node.addChild(scratchSelectNode);
 
       const scratchNode = new QTreeNode({ type: "group" });

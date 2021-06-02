@@ -31,7 +31,9 @@ import {
   UserError,
   Platform,
   QuestionType,
-  Inputs
+  Inputs,
+  DynamicPlatforms,
+  SubscriptionInfo
 } from "@microsoft/teamsfx-api";
 import { checkSubscription, fillInCommonQuestions } from "./commonQuestions";
 import { executeLifecycles, executeConcurrently, LifecyclesWithContext } from "./executor";
@@ -1294,7 +1296,7 @@ export class TeamsAppSolution implements Solution {
     stage: Stage,
     ctx: SolutionContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const isDynamicQuestion = (ctx.answers?.platform === Platform.VSCode);
+    const isDynamicQuestion = DynamicPlatforms.includes(ctx.answers?.platform!);
     const node = new QTreeNode({ type: "group" });
     let manifest: TeamsAppManifest | undefined = undefined;
     if (stage !== Stage.create && isDynamicQuestion) {
@@ -1934,7 +1936,7 @@ export class TeamsAppSolution implements Solution {
     ctx: SolutionContext,
     manifest?: TeamsAppManifest
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const isDynamicQuestion = (ctx.answers?.platform === Platform.VSCode);
+    const isDynamicQuestion = DynamicPlatforms.includes(ctx.answers?.platform!);
     const settings = this.getAzureSolutionSettings(ctx);
 
     if ( isDynamicQuestion &&
@@ -2019,8 +2021,14 @@ export class TeamsAppSolution implements Solution {
         const apim = res.value as QTreeNode;
         if (apim.data) {
           const funcNode = new QTreeNode(AskSubscriptionQuestion);
-          AskSubscriptionQuestion.func = async (inputs: Inputs): Promise<Void> => {
-            return await checkSubscription(ctx);
+          AskSubscriptionQuestion.func = async (inputs: Inputs): Promise<Result<SubscriptionInfo, FxError>> => {
+            const res = await checkSubscription(ctx);
+            if(res.isOk()){
+              const sub = res.value;
+              inputs.subscriptionId = sub.subscriptionId;
+              inputs.tenantId = sub.tenantId;
+            }
+            return res;
           };
           groupNode.addChild(funcNode);
           groupNode.addChild(apim);
@@ -2036,7 +2044,7 @@ export class TeamsAppSolution implements Solution {
     ctx: SolutionContext,
     manifest?: TeamsAppManifest
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const isDynamicQuestion = (ctx.answers?.platform === Platform.VSCode);
+    const isDynamicQuestion = DynamicPlatforms.includes(ctx.answers?.platform!);
     const settings = this.getAzureSolutionSettings(ctx);
 
     if (!(settings.hostType === HostTypeOptionAzure.id) && isDynamicQuestion) {
@@ -2109,7 +2117,7 @@ export class TeamsAppSolution implements Solution {
     func: Func,
     ctx: SolutionContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const isDynamicQuestion = (ctx.answers?.platform === Platform.VSCode);
+    const isDynamicQuestion = DynamicPlatforms.includes(ctx.answers?.platform!);
     const namespace = func.namespace;
     const array = namespace.split("/"); 
     let manifest:TeamsAppManifest|undefined = undefined;

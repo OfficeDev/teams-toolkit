@@ -4,6 +4,7 @@ import {
   FolderQuestion,
   Inputs,
   OptionItem,
+  Platform,
   SingleSelectQuestion,
   TextInputQuestion,
 } from "@microsoft/teamsfx-api";
@@ -62,37 +63,37 @@ export const QuestionSelectSolution: SingleSelectQuestion = {
   skipSingleOption: true,
 };
 
-export const ScratchOptionYes: OptionItem = {
+export const ScratchOptionYesVSC: OptionItem = {
   id: "yes",
   label: "$(new-folder) Create a new Teams app",
   detail: "Use the Teams Toolkit to create a new application.",
 };
 
-export const ScratchOptionNo: OptionItem = {
+export const ScratchOptionNoVSC: OptionItem = {
   id: "no",
   label: "$(heart) Start from a sample",
   detail: "Use an existing sample as a starting point for your new application.",
 };
 
-export const ScratchOptionYesCLI: OptionItem = {
+export const ScratchOptionYes: OptionItem = {
   id: "yes",
   label: "Create a new Teams app",
   detail: "Use the Teams Toolkit to create a new application.",
 };
 
-export const ScratchOptionNoCLI: OptionItem = {
+export const ScratchOptionNo: OptionItem = {
   id: "no",
   label: "Start from a sample",
   detail: "Use an existing sample as a starting point for your new application.",
 };
 
-export function ScratchOrSampleSelect(cli: boolean): SingleSelectQuestion {
+export function ScratchOrSampleSelect(platform: Platform): SingleSelectQuestion {
 
   return {
     type: "singleSelect",
     name: CoreQuestionNames.CreateFromScratch,
     title: "Teams Toolkit: Create a new Teams app",
-    staticOptions: cli? [ScratchOptionYesCLI, ScratchOptionNoCLI]:[ScratchOptionYes, ScratchOptionNo],
+    staticOptions: (platform === Platform.VSCode)? [ScratchOptionYesVSC, ScratchOptionNoVSC]:[ScratchOptionYes, ScratchOptionNo],
     default: ScratchOptionYes.id,
     placeholder: "Select an option",
     skipSingleOption: true,

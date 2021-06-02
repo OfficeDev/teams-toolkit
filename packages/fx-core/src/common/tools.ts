@@ -265,7 +265,10 @@ export function isValidProject(workspacePath?: string): boolean {
   try{
     const confFolderPath = path.resolve(workspacePath, `.${ConfigFolderName}`);
     const settingsFile = path.resolve(confFolderPath, "settings.json");
+    const manifestFile = path.resolve(confFolderPath, "manifest.source.json");
     const projectSettings: ProjectSettings = fs.readJsonSync(settingsFile);
+    const manifest = fs.readJSONSync(manifestFile);
+    if(!manifest) return false;
     if(!projectSettings.currentEnv)
       projectSettings.currentEnv = "default";
     if(!validateSettings(projectSettings))

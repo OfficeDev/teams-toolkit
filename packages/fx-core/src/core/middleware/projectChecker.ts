@@ -3,7 +3,7 @@
 "use strict";
  
 import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks"; 
-import { err, Inputs, Platform, StaticPlatforms } from "@microsoft/teamsfx-api";
+import { err, Inputs, StaticPlatforms } from "@microsoft/teamsfx-api";
 import { FxCore } from "..";
 import { isValidProject } from "../../common/tools";
 import { InvalidProjectError, NoProjectOpenedError } from "../error";
@@ -19,11 +19,11 @@ export const ProjectCheckerMW: Middleware = async (
   if(ignoreCheck === false){
     const projectPath = inputs.projectPath;
     if(!projectPath) {
-      ctx.result = err(NoProjectOpenedError);
+      ctx.result = err(NoProjectOpenedError());
       return;
     }
     if(!isValidProject(projectPath)){
-      ctx.result = err(InvalidProjectError);
+      ctx.result = err(InvalidProjectError());
       return;
     }
     core.tools.logProvider.debug(`[core] project type checker pass: ${projectPath}`);

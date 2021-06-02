@@ -185,7 +185,7 @@ export class FxCore implements Core {
             }
             return ok(path.join(folder, sampleId));
           } else { 
-            return err(FetchSampleError);
+            return err(FetchSampleError());
           }
         } finally {
           progress.end();
@@ -300,7 +300,7 @@ export class FxCore implements Core {
         return ok(Void);
       }
     }
-    return err(InvalidProjectError);
+    return err(InvalidProjectError());
   }
  
   @hooks([ErrorHandlerMW])

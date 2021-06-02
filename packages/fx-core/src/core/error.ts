@@ -44,36 +44,44 @@ export function NoneFxError(e: Error): SystemError {
     e);
 }
  
-export const NoProjectOpenedError = new UserError(
-  "NoProjectOpened",
-  "No project opened, you can create a new project or open an existing one.",
-  CoreSource,
-  new Error().stack
-);
+export function NoProjectOpenedError(){
+  return new UserError(
+    "NoProjectOpened",
+    "No project opened, you can create a new project or open an existing one.",
+    CoreSource,
+    new Error().stack
+  );
+}
 
-export const InvalidProjectError = new UserError(
-  "InvalidProject",
-  "The project type is invalid",
-  CoreSource,
-  new Error().stack
-);
+export function InvalidProjectError(msg?:string){
+  return new UserError(
+    "InvalidProject",
+    `The project config is invalid ${msg?":"+msg : ""}`,
+    CoreSource,
+    new Error().stack
+  );
+}
 
-export const ConcurrentError = new UserError( "ConcurrentOperation", 
-  "Concurrent operation error, please wait until the running task finishs or you can reload the window to cancel it.", 
-  CoreSource, 
-  new Error().stack
-);
+export function ConcurrentError(){ 
+  return new UserError( "ConcurrentOperation", 
+    "Concurrent operation error, please wait until the running task finishs or you can reload the window to cancel it.", 
+    CoreSource, 
+    new Error().stack
+  );
+}
 
 export function TaskNotSupportError(task:Stage) {
   return new SystemError("TaskNotSupport", `Task is not supported yet: ${task}`, CoreSource, new Error().stack);
 }
  
-export const FetchSampleError = new UserError(
-  "FetchSampleError",
-  "Failed to download sample app",
-  CoreSource,
-  new Error().stack
-);
+export function FetchSampleError(){ 
+  return new UserError(
+    "FetchSampleError",
+    "Failed to download sample app",
+    CoreSource,
+    new Error().stack
+  );
+}
 
 export function InvalidInputError(reason:string, inputs?:Inputs){
   return new UserError(

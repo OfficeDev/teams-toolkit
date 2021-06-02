@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import { exec } from "child_process";
 import * as fs from "fs-extra";
-import { AzureAccountProvider, ConfigFolderName, ConfigMap, Dict, err, FxError, Json, ok, Result, returnSystemError, returnUserError, SubscriptionInfo, Tools, UserError, UserInteraction } from "@microsoft/teamsfx-api";
+import { AzureAccountProvider, ConfigFolderName, ConfigMap, Dict, err, FxError, Json, ok, OptionItem, Result, returnSystemError, returnUserError, SubscriptionInfo, Tools, UserError, UserInteraction } from "@microsoft/teamsfx-api";
 import { promisify } from "util";
 import axios from "axios";
 import AdmZip from "adm-zip";
@@ -291,21 +291,29 @@ export async function askSubscription(azureAccountProvider:AzureAccountProvider,
       selectedSub = subscriptions[0];
     }
     else {
-      const subscriptionNames: string[] = subscriptions.map(
-        (subscription) => subscription.subscriptionName
-      );
-      /// TODO: subscriptionNames may need change to OptionItem[]
+      const options: OptionItem[] = subscriptions.map(
+        (sub) => {
+          return { 
+            id: sub.subscriptionId, 
+            label: sub.subscriptionName,
+            data: sub.tenantId
+          } as OptionItem
+        }
+      ); 
       const askRes = await ui.selectOption({
-        name: "subscription",
+        name: "asksub",
         title: "Select a subscription",
-        options: subscriptionNames
+        options: options,
+        returnObject: true
       }); 
       if(askRes.isErr()) 
         return err(askRes.error);
-      const subscriptionName = askRes.value.result;
-      selectedSub = subscriptions.find(
-        (subscription) => subscription.subscriptionName === subscriptionName
-      );
+      const subItem = askRes.value.result as OptionItem;
+      selectedSub = {
+        subscriptionId: subItem.id,
+        subscriptionName: subItem.label,
+        tenantId: subItem.data as string
+      };
     }
     if (selectedSub === undefined) {
       return err(

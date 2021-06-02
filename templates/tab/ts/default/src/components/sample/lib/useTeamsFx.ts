@@ -14,7 +14,9 @@ export function useTeamsFx() {
   const [result] = useTeams({});
   const { error, loading } = useData(async () => {
     if (!initialized) {
-      setLogLevel(LogLevel.Error);
+      if (process.env.NODE_ENV === "development") {
+        setLogLevel(LogLevel.Verbose);
+      }
       loadConfiguration({
         authentication: {
           initiateLoginEndpoint: startLoginPageUrl,

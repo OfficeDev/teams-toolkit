@@ -31,11 +31,13 @@ import {
   UserError,
   Platform,
   QuestionType,
-  Inputs
+  Inputs,
+  DynamicPlatforms,
+  SubscriptionInfo
 } from "@microsoft/teamsfx-api";
-import { askSubscription, fillInCommonQuestions } from "./commonQuestions";
+import { checkSubscription, fillInCommonQuestions } from "./commonQuestions";
 import { executeLifecycles, executeConcurrently, LifecyclesWithContext } from "./executor";
-import { getPluginContext, getSubsriptionDisplayName } from "./util";
+import { getPluginContext, getSubsriptionDisplayName} from "./util";
 import { AppStudio } from "./appstudio/appstudio";
 import * as fs from "fs-extra";
 import {
@@ -65,7 +67,6 @@ import {
   REMOTE_MANIFEST,
   BOT_ID,
   LOCAL_BOT_ID,
-  DoProvisionFirstError,
   CancelError,
 } from "./constants";
 
@@ -1295,7 +1296,7 @@ export class TeamsAppSolution implements Solution {
     stage: Stage,
     ctx: SolutionContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const isDynamicQuestion = (ctx.answers?.platform === Platform.VSCode);
+    const isDynamicQuestion = DynamicPlatforms.includes(ctx.answers?.platform!);
     const node = new QTreeNode({ type: "group" });
     let manifest: TeamsAppManifest | undefined = undefined;
     if (stage !== Stage.create && isDynamicQuestion) {
@@ -1926,61 +1927,6 @@ export class TeamsAppSolution implements Solution {
     });
   }
 
-  async callFunc(func: Func, ctx: SolutionContext): Promise<Result<any, FxError>> {
-    const namespace = func.namespace;
-    const array = namespace.split("/");
-    const maybeManifest = await this.reloadManifestAndCheckRequiredFields(ctx);
-    const manifest = maybeManifest.isOk() ? maybeManifest.value : undefined;
-    if (array.length === 2) {
-      const pluginName = array[1];
-      const plugin = this.pluginMap.get(pluginName);
-      if (plugin && plugin.callFunc) {
-        const pctx = getPluginContext(ctx, plugin.name, manifest);
-        if (func.method === "aadUpdatePermission") {
-          const result = await this.getPermissionRequest(ctx);
-          if (result.isErr()) {
-            return result;
-          }
-          ctx.config.get(GLOBAL_CONFIG)?.set(PERMISSION_REQUEST, result.value);
-        }
-        const result = await plugin.callFunc(func, pctx);
-        // Remove permissionRequest to prevent its persistence in config.
-        ctx.config.get(GLOBAL_CONFIG)?.delete(PERMISSION_REQUEST);
-        return result;
-      }
-    } else if (array.length === 1) {
-      if (func.method === "askSubscription") {
-        if (!ctx.config.get(GLOBAL_CONFIG)?.getString("subscriptionId")) {
-          const azureToken = await ctx.azureAccountProvider?.getAccountCredentialAsync();
-          if (azureToken === undefined) {
-            return err(
-              returnUserError(
-                new Error("Please login to azure using Azure Account Extension"),
-                "Solution",
-                SolutionError.NotLoginToAzure
-              )
-            );
-          }
-          const result = await askSubscription(ctx.config, ctx.azureAccountProvider, ctx.ui);
-          if (result.isErr()) {
-            return err(result.error);
-          }
-          await ctx.azureAccountProvider?.setSubscription(result.value.subscriptionId);
-          ctx.config.get(GLOBAL_CONFIG)?.set("subscriptionId", result.value.subscriptionId);
-          ctx.config.get(GLOBAL_CONFIG)?.set("tenantId", result.value.tenantId);
-        }
-        return ok(null);
-      }
-    }
-    return err(
-      returnUserError(
-        new Error(`CallFuncRouteFailed:${JSON.stringify(func)}`),
-        "Solution",
-        `CallFuncRouteFailed`
-      )
-    );
-  }
-
   getAzureSolutionSettings(ctx: SolutionContext): AzureSolutionSettings {
     return ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
   }
@@ -1990,7 +1936,7 @@ export class TeamsAppSolution implements Solution {
     ctx: SolutionContext,
     manifest?: TeamsAppManifest
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const isDynamicQuestion = (ctx.answers?.platform === Platform.VSCode);
+    const isDynamicQuestion = DynamicPlatforms.includes(ctx.answers?.platform!);
     const settings = this.getAzureSolutionSettings(ctx);
 
     if ( isDynamicQuestion &&
@@ -2064,9 +2010,9 @@ export class TeamsAppSolution implements Solution {
     }
 
     //APIM
-    if (this.apimPlugin.getQuestions && (!alreadyHaveAPIM || !isDynamicQuestion)) {
+    if (this.apimPlugin.getQuestionsForUserTask && (!alreadyHaveAPIM || !isDynamicQuestion)) {
       const pluginCtx = getPluginContext(ctx, this.apimPlugin.name, manifest);
-      const res = await this.apimPlugin.getQuestions(Stage.update, pluginCtx);
+      const res = await this.apimPlugin.getQuestionsForUserTask(func, pluginCtx);
       if (res.isErr()) return res;
       if (res.value) {
         const groupNode = new QTreeNode({ type: "group" });
@@ -2075,27 +2021,14 @@ export class TeamsAppSolution implements Solution {
         const apim = res.value as QTreeNode;
         if (apim.data) {
           const funcNode = new QTreeNode(AskSubscriptionQuestion);
-          AskSubscriptionQuestion.func = async (inputs: Inputs): Promise<Void> => {
-            if (!ctx.config.get(GLOBAL_CONFIG)?.getString("subscriptionId")) {
-              const azureToken = await ctx.azureAccountProvider?.getAccountCredentialAsync();
-              if (azureToken === undefined) {
-                return err(
-                  returnUserError(
-                    new Error("Please login to azure using Azure Account Extension"),
-                    "Solution",
-                    SolutionError.NotLoginToAzure
-                  )
-                );
-              }
-              const result = await askSubscription(ctx.config, ctx.azureAccountProvider, ctx.ui);
-              if (result.isErr()) {
-                return err(result.error);
-              }
-              await ctx.azureAccountProvider?.setSubscription(result.value.subscriptionId);
-              ctx.config.get(GLOBAL_CONFIG)?.set("subscriptionId", result.value.subscriptionId);
-              ctx.config.get(GLOBAL_CONFIG)?.set("tenantId", result.value.tenantId);
+          AskSubscriptionQuestion.func = async (inputs: Inputs): Promise<Result<SubscriptionInfo, FxError>> => {
+            const res = await checkSubscription(ctx);
+            if(res.isOk()){
+              const sub = res.value;
+              inputs.subscriptionId = sub.subscriptionId;
+              inputs.tenantId = sub.tenantId;
             }
-            return ok(Void);
+            return res;
           };
           groupNode.addChild(funcNode);
           groupNode.addChild(apim);
@@ -2105,11 +2038,13 @@ export class TeamsAppSolution implements Solution {
     return ok(addAzureResourceNode);
   }
 
+
+
   async getQuestionsForAddCapability(
     ctx: SolutionContext,
     manifest?: TeamsAppManifest
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const isDynamicQuestion = (ctx.answers?.platform === Platform.VSCode);
+    const isDynamicQuestion = DynamicPlatforms.includes(ctx.answers?.platform!);
     const settings = this.getAzureSolutionSettings(ctx);
 
     if (!(settings.hostType === HostTypeOptionAzure.id) && isDynamicQuestion) {
@@ -2182,7 +2117,7 @@ export class TeamsAppSolution implements Solution {
     func: Func,
     ctx: SolutionContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const isDynamicQuestion = (ctx.answers?.platform === Platform.VSCode);
+    const isDynamicQuestion = DynamicPlatforms.includes(ctx.answers?.platform!);
     const namespace = func.namespace;
     const array = namespace.split("/"); 
     let manifest:TeamsAppManifest|undefined = undefined;

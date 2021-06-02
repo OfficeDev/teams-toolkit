@@ -175,7 +175,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
     const subscription = subscriptions.find(
       (subscription) => subscription.subscriptionName === subscriptionName
     );
-    setSubscription(subscription);
+    await setSubscription(subscription);
     return ok(null);
   };
 

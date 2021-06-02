@@ -119,15 +119,11 @@ function getExistingAnswers(config: SolutionConfig): CommonQuestions | undefined
 }
 
 /**
- * Ask user to select a subscription. subscriptionId, tenantId
+ * make sure subscription is correct
  *
  */
-export async function askSubscription(
-  config: SolutionConfig,
-  azureAccountProvider?: AzureAccountProvider,
-  ui?:UserInteraction
-): Promise<Result<SubscriptionInfo, FxError>> {
-  if (azureAccountProvider === undefined) {
+export async function checkSubscription( ctx: SolutionContext): Promise<Result<SubscriptionInfo, FxError>> {
+  if (ctx.azureAccountProvider === undefined) {
     return err(
       returnSystemError(
         new Error("azureAccountProvider is undefined"),
@@ -136,7 +132,7 @@ export async function askSubscription(
       )
     );
   }
-  const subscriptions: SubscriptionInfo[] = await azureAccountProvider.listSubscriptions();
+  const subscriptions: SubscriptionInfo[] = await ctx.azureAccountProvider.listSubscriptions();
   if (subscriptions.length === 0) {
     return err(
       returnUserError(
@@ -146,9 +142,9 @@ export async function askSubscription(
       )
     );
   }
-  const activeSubscriptionId = config.get(GLOBAL_CONFIG)?.getString("subscriptionId");
-  const activeTenantId = config.get(GLOBAL_CONFIG)?.getString("tenantId");
-  const sub = subscriptions.find((sub) => sub.subscriptionId === activeSubscriptionId);
+  const activeSubscriptionId = ctx.config.get(GLOBAL_CONFIG)?.getString("subscriptionId");
+  const activeTenantId = ctx.config.get(GLOBAL_CONFIG)?.getString("tenantId");
+  let sub = subscriptions.find((sub) => sub.subscriptionId === activeSubscriptionId);
   if (
     activeSubscriptionId === undefined ||
     activeTenantId == undefined ||
@@ -158,7 +154,7 @@ export async function askSubscription(
       (subscription) => subscription.subscriptionName
     );
     /// TODO: subscriptionNames may need change to OptionItem[]
-    const askRes = await ui!.selectOption({
+    const askRes = await ctx.ui!.selectOption({
       name: "subscription",
       title: "Select a subscription",
       options: subscriptionNames
@@ -178,10 +174,24 @@ export async function askSubscription(
         )
       );
     }
-    return ok(selectedSub);
-  } else {
-    return ok(sub);
-  }
+    sub = selectedSub;
+  }  
+  await ctx.azureAccountProvider?.setSubscription(sub.subscriptionId);
+  ctx.config.get(GLOBAL_CONFIG)?.set("subscriptionId", sub.subscriptionId);
+  ctx.config.get(GLOBAL_CONFIG)?.set("tenantId", sub.tenantId);
+  ctx.treeProvider?.refresh([
+    {
+      commandId: "fx-extension.selectSubscription",
+      label: sub.subscriptionName,
+      callback: () => {
+        return Promise.resolve(ok(null));
+      },
+      parent: "fx-extension.signinAzure",
+      contextValue: "selectSubscription",
+      icon: "subscriptionSelected",
+    },
+  ]);
+  return ok(sub);
 }
 
 /**
@@ -208,7 +218,7 @@ async function askCommonQuestions(
   const commonQuestions = new CommonQuestions();
 
   //1. check subscriptionId
-  const subscriptionResult = await askSubscription(config, azureAccountProvider, ctx.ui);
+  const subscriptionResult = await checkSubscription(ctx);
   if (subscriptionResult.isErr()) {
     return err(subscriptionResult.error);
   }
@@ -219,21 +229,6 @@ async function askCommonQuestions(
 
   // Note setSubscription here will change the token returned by getAccountCredentialAsync according to the subscription selected.
   // So getting azureToken needs to precede setSubscription.
-  await azureAccountProvider?.setSubscription(subscriptionId);
-  if(ctx.treeProvider){
-    ctx.treeProvider.refresh([
-      {
-        commandId: "fx-extension.selectSubscription",
-        label: subscriptionResult.value.subscriptionName,
-        callback: () => {
-          return Promise.resolve(ok(null));
-        },
-        parent: "fx-extension.signinAzure",
-        contextValue: "selectSubscription",
-        icon: "subscriptionSelected",
-      },
-    ]);
-  }
   const azureToken = await azureAccountProvider?.getAccountCredentialAsync();
   if (azureToken === undefined) {
     return err(

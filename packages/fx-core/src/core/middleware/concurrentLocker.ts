@@ -3,7 +3,7 @@
 "use strict";
 
 import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks"; 
-import { ConfigFolderName, err, Inputs, Platform } from "@microsoft/teamsfx-api";
+import { ConfigFolderName, err, Inputs, Platform, StaticPlatforms } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import { ConcurrentError } from "../error";
 
@@ -14,7 +14,7 @@ export const ConcurrentLockerMW: Middleware = async (
   next: NextFunction
 ) => {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-  const ignoreLock = !inputs || !inputs.projectPath || inputs.ignoreLock === true || inputs.platform === Platform.VS; 
+  const ignoreLock = !inputs || !inputs.projectPath || inputs.ignoreLock === true || StaticPlatforms.includes(inputs.platform); 
   if(ignoreLock === false){
     const lf = path.join(inputs.projectPath!,`.${ConfigFolderName}`);
     await lockfile

@@ -6,7 +6,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks";
 import * as error from "../error";
-import { ConfigFolderName, err, Inputs, Platform, SolutionContext } from "@microsoft/teamsfx-api";
+import { ConfigFolderName, err, Inputs, Platform, SolutionContext, StaticPlatforms } from "@microsoft/teamsfx-api";
 import { mapToJson, serializeDict, sperateSecretData } from "../../common/tools";
 
 /**
@@ -22,7 +22,7 @@ export const ConfigWriterMW: Middleware = async (
   finally {
     const solutionContext: SolutionContext = ctx.arguments[0] as SolutionContext;
     const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-    const ignorePersist = solutionContext === undefined || inputs.projectPath === undefined || inputs.ignoreConfigPersist === true || inputs.platform === Platform.VS;
+    const ignorePersist = solutionContext === undefined || inputs.projectPath === undefined || inputs.ignoreConfigPersist === true || StaticPlatforms.includes(inputs.platform);
     if (ignorePersist === false) {
       try {
         const confFolderPath = path.resolve(solutionContext.root, `.${ConfigFolderName}`);

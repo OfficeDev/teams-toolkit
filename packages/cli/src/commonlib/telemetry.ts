@@ -53,7 +53,7 @@ export class CliTelemetryReporter implements TelemetryReporter {
     this.reporter.sendTelemetryException(error, properties, measurements);
   }
 
-  flush(): void {
-    this.reporter.flush();
+  async flush(): Promise<void> {
+    await this.reporter.flush();
   }
 }

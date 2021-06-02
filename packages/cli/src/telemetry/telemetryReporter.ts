@@ -235,7 +235,6 @@ export default class TelemetryReporter {
       if (this.appInsightsClient) {
         this.appInsightsClient.flush({
           callback: () => {
-            this.appInsightsClient = undefined;
             resolve(void 0);
           },
         });

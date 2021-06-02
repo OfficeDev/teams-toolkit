@@ -3,7 +3,7 @@
 "use strict";
  
 import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks"; 
-import { err, Inputs, Platform } from "@microsoft/teamsfx-api";
+import { err, Inputs, Platform, StaticPlatforms } from "@microsoft/teamsfx-api";
 import { isValidProject } from "../../common/tools";
 import { InvalidProjectError, NoProjectOpenedError } from "../error";
 
@@ -13,7 +13,7 @@ export const ProjectCheckerMW: Middleware = async (
   next: NextFunction
 ) => {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-  const ignoreCheck = inputs.ignoreTypeCheck === true || ctx.method === "createProject" || inputs.platform === Platform.VS;
+  const ignoreCheck = inputs.ignoreTypeCheck === true || ctx.method === "createProject" || StaticPlatforms.includes(inputs.platform);
   if(ignoreCheck === false){
     const projectPath = inputs.projectPath;
     if(!projectPath) {

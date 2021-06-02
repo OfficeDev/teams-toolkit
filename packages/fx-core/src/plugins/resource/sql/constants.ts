@@ -80,7 +80,6 @@ export class Telemetry {
     errorMessage: "error-message",
     appid: "appid",
     skipAddingUser: "skip-adding-user",
-    errorReason: "error-reason"
   };
 }
 

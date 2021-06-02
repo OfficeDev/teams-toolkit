@@ -29,15 +29,11 @@ export class TelemetryUtils {
     errorCode: string,
     errorType: string,
     errorMessage: string,
-    errorReason?: string,
     properties?: { [key: string]: string; },
     measurements?: { [key: string]: number; }
   ) {
     if (!properties) {
       properties = {};
-    }
-    if (errorReason) {
-      properties[Telemetry.properties.errorReason] = errorReason;
     }
     properties[Telemetry.properties.success] = Telemetry.resultNo;
     properties[Telemetry.properties.errorCode] = errorCode;

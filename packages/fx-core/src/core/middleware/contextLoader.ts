@@ -1,20 +1,17 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-"use strict";
-
-import * as error from "../error";
+ 
 import { ConfigFolderName, Inputs, Json, PluginConfig, ProjectSettings, SolutionConfig, SolutionContext, StaticPlatforms, Tools, UserError } from "@microsoft/teamsfx-api";
-import { deserializeDict,  mergeSerectData, objectToMap } from "../..";
+import { deserializeDict,  mergeSerectData, objectToMap} from "../..";
+import { ReadFileError } from "../error";
 import * as path from "path";
 import * as fs from "fs-extra";
 
 export async function loadSolutionContext(tools: Tools, inputs: Inputs):Promise<SolutionContext>{
   try {
-
     if(!inputs.projectPath || StaticPlatforms.includes(inputs.platform) || inputs.ignoreTypeCheck){
       return await newSolutionContext(tools, inputs);
     }
- 
     const confFolderPath = path.resolve(inputs.projectPath!, `.${ConfigFolderName}`);
     const settingsFile = path.resolve(confFolderPath, "settings.json");
     const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
@@ -43,12 +40,7 @@ export async function loadSolutionContext(tools: Tools, inputs: Inputs):Promise<
     } ;
     return solutionContext;
   } catch (e) {
-    throw new UserError(
-      error.CoreErrorNames.ReadFileError,
-      `Read file error:${e}`,
-      error.CoreSource,
-      e["stack"]
-    );
+    throw ReadFileError(e);
   }
 }
 

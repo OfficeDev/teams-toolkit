@@ -5,9 +5,10 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks";
-import * as error from "../error";
 import { ConfigFolderName, err, Inputs, Platform, SolutionContext, StaticPlatforms } from "@microsoft/teamsfx-api";
 import { mapToJson, serializeDict, sperateSecretData } from "../../common/tools";
+import { WriteFileError } from "../error";
+import { FxCore } from "..";
 
 /**
  * This middleware will help to persist configs if necessary.
@@ -38,8 +39,10 @@ export const ConfigWriterMW: Middleware = async (
         await fs.writeFile(jsonFilePath, JSON.stringify(configJson, null, 4));
         await fs.writeFile(localDataPath, serializeDict(localData));
         await fs.writeFile(settingPath, JSON.stringify(solutionContext.projectSettings, null, 4));
+        const core = ctx.self as FxCore;
+        core.tools.logProvider.debug(`[core] persist config folder: ${confFolderPath}`);
       } catch (e) {
-        ctx.res = err(error.WriteFileError(e));
+        ctx.res = err(WriteFileError(e));
       }
     }
   }

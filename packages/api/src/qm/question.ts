@@ -67,6 +67,7 @@ export interface UserInputQuestion extends BaseQuestion{
     prompt?: string | LocalFunc<string | undefined>;
     default?: string | string[] | LocalFunc<string | string[] | undefined>;
     validation?: ValidationSchema;
+    validationHelp?:string;
 }
 
 export interface SingleSelectQuestion extends UserInputQuestion {

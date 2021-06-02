@@ -2,90 +2,92 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { returnSystemError, returnUserError, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { Func, Inputs,  Stage, SystemError, UserError } from "@microsoft/teamsfx-api";
 
 export const CoreSource = "Core";
 
-export enum CoreErrorNames {
-  InvalidInput = "InvalidInput",
-  ProjectFolderExist = "ProjectFolderExist",
-  WriteFileError = "WriteFileError",
-  ReadFileError = "ReadFileError",
-  CallFuncRouteFailed = "CallFuncRouteFailed",
-  getQuestionsForUserTaskRouteFailed = "getQuestionsForUserTaskRouteFailed",
-  executeUserTaskRouteFailed = "executeUserTaskRouteFailed",
-  InvalidContext = "InvalidContext",
-  EnvAlreadyExist = "EnvAlreadyExist",
-  EnvNotExist = "EnvNotExist",
-  LoadSolutionFailed = "LoadSolutionFailed",
-  FileNotFound = "FileNotFound",
-  UncatchedError = "UncatchedError",
-  NotSupportedProjectType = "NotSupportedProjectType",
-  InitError = "InitError",
-  DownloadSampleFail = "DownloadSampleFail",
-  NoSubscriptionSelected = "NoSubscriptionSelected",
-  NoneFxError = "NoneFxError"
-}
-
-export function InvalidContext(): UserError {
-  return returnUserError(new Error("InvalidContext"), CoreSource, CoreErrorNames.InvalidContext);
+export function ProjectFolderExistError(path:string){ 
+  return new UserError(
+    "ProjectFolderExistError",
+    `Path ${path} alreay exists. Select a different folder.`,
+    CoreSource,
+    new Error().stack
+  );
 }
 
 export function WriteFileError(e: Error): SystemError {
-  return returnSystemError(e, CoreSource, CoreErrorNames.WriteFileError);
+  return new SystemError(
+    "WriteFileError", 
+    `write file error ${e["message"]}`, 
+    CoreSource, 
+    e.stack, 
+    undefined, 
+    e);
 }
 
 export function ReadFileError(e: Error): SystemError {
-  return returnSystemError(e, CoreSource, CoreErrorNames.ReadFileError);
+  return new SystemError("ReadFileError", 
+    `write file error ${e["message"]}`, 
+    CoreSource, 
+    e.stack, 
+    undefined, 
+    e);
 }
 
-export function EnvAlreadyExist(param: any): UserError {
-  return returnUserError(
-    new Error(`Environment already exists: ${param}`),
-    CoreSource,
-    CoreErrorNames.EnvAlreadyExist
-  );
+export function NoneFxError(e: Error): SystemError {
+  return new SystemError("NoneFxError", 
+    `NoneFxError ${e["message"]}`, 
+    CoreSource, 
+    e.stack, 
+    undefined, 
+    e);
 }
-export function UncatchedError(error: Error): SystemError {
-  return new SystemError( CoreErrorNames.UncatchedError,
-    "Uncatched Error",
-    CoreSource
-  );
-}
-export function EnvNotExist(param: any): UserError {
-  return returnUserError(
-    new Error(`Environment does not exist: ${param}`),
-    CoreSource,
-    CoreErrorNames.EnvNotExist
-  );
-}
-
+ 
 export const NoProjectOpenedError = new UserError(
   "NoProjectOpened",
   "No project opened, you can create a new project or open an existing one.",
-  CoreSource
+  CoreSource,
+  new Error().stack
 );
 
 export const InvalidProjectError = new UserError(
   "InvalidProject",
   "The project type is invalid",
-  CoreSource
+  CoreSource,
+  new Error().stack
 );
 
-export const ConcurrentError = new UserError(
-  "ConcurrentOperation",
-  "Concurrent operation",
-  CoreSource
+export const ConcurrentError = new UserError( "ConcurrentOperation", 
+  "Concurrent operation error, please wait until the running task finishs or you can reload the window to cancel it.", 
+  CoreSource, 
+  new Error().stack
 );
 
-export const TaskNotSupportError = new SystemError("TaskNotSupport", "TaskNotSupport", CoreSource);
+export function TaskNotSupportError(task:Stage) {
+  return new SystemError("TaskNotSupport", `Task is not supported yet: ${task}`, CoreSource, new Error().stack);
+}
+ 
+export const FetchSampleError = new UserError(
+  "FetchSampleError",
+  "Failed to download sample app",
+  CoreSource,
+  new Error().stack
+);
 
-export const CreateContextError = new SystemError("CreateContextError","Failed to create SolutioContext",CoreSource);
-
-export function DownloadSampleFail(): SystemError {
-  return returnUserError(
-    new Error("Failed to download sample app"),
+export function InvalidInputError(reason:string, inputs?:Inputs){
+  return new UserError(
+    "InvalidInput",
+    inputs ? `Invalid inputs: ${reason}, inputs: ${JSON.stringify(inputs)}` : `Invalid inputs: ${reason}`,
     CoreSource,
-    CoreErrorNames.DownloadSampleFail
-  );
+    new Error().stack
+  )
+};
+
+export function FunctionRouterError(func:Func){
+  return new UserError(
+    "FunctionRouterError",
+    `Failed to route function call:${JSON.stringify(func)}`,
+    CoreSource,
+    new Error().stack
+  )
 }

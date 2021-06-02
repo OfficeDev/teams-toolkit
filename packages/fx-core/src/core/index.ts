@@ -15,8 +15,6 @@ import {
   Result,
   SolutionContext,
   Stage,
-  returnUserError,
-  UserError,
   SingleSelectQuestion,
   FxError,
   ConfigFolderName,
@@ -29,7 +27,6 @@ import {
   ProjectConfig,
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
-import * as error from "./error";
 import {
   fetchCodeZip,
   saveFilesRecursively,
@@ -43,19 +40,19 @@ import {
   SampleSelect,
   ScratchOptionNo,
   ScratchOptionYes,
-  ScratchOrSampleSelect,
+  getCreateNewOrFromSampleQuestion,
 } from "./question";
 import * as jsonschema from "jsonschema";
 import AdmZip from "adm-zip";
 export * from "./error";
 import { hooks } from "@feathersjs/hooks";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
-import { QuestionModelMW } from "./middleware/question";
+import { QuestionModelMW } from "./middleware/questionModel";
 import { ConfigWriterMW } from "./middleware/configWriter";
 import { loadSolutionContext, newSolutionContext } from "./middleware/contextLoader";
 import { ProjectCheckerMW } from "./middleware/projectChecker";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
-import { InvalidProjectError } from "./error";
+import { FetchSampleError, FunctionRouterError, InvalidInputError, InvalidProjectError, ProjectFolderExistError, TaskNotSupportError, WriteFileError } from "./error";
 import { loadGlobalSolutions, loadSolution } from "./middleware/solutionLoader";
  
  
@@ -153,7 +150,7 @@ export class FxCore implements Core {
   async _createProject(ctx: SolutionContext, inputs: Inputs): Promise<Result<string, FxError>> {
     const folder = inputs[QuestionRootFolder.name] as string;
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
-    if (scratch === ScratchOptionNo.id) {
+    if (scratch === ScratchOptionNo.id) { // create from sample
       const samples = inputs[CoreQuestionNames.Samples] as OptionItem;
       if (samples && samples.data && folder) {
         const url = samples.data as string;
@@ -163,13 +160,7 @@ export class FxCore implements Core {
           (await fs.pathExists(sampleAppPath)) &&
           (await fs.readdir(sampleAppPath)).length > 0
         ) {
-          return err(
-            new UserError(
-              error.CoreErrorNames.ProjectFolderExist,
-              `Path ${sampleAppPath} alreay exists. Select a different folder.`,
-              error.CoreSource
-            )
-          );
+          return err(ProjectFolderExistError(sampleAppPath));
         }
         const progress = this.tools.dialog.createProgressBar("Fetch sample app", 2);
         progress.start();
@@ -179,7 +170,6 @@ export class FxCore implements Core {
           progress.next("Unzipping the sample package");
           if (fetchRes !== undefined) {
             await saveFilesRecursively(new AdmZip(fetchRes.data), sampleId, folder);
-
             if (inputs.platform === Platform.VSCode) {
               this.tools.dialog?.communicate(
                 new DialogMsg(DialogType.Ask, {
@@ -190,43 +180,31 @@ export class FxCore implements Core {
             }
             return ok(path.join(folder, sampleId));
           } else { 
-            return err(error.DownloadSampleFail());
+            return err(FetchSampleError);
           }
         } finally {
           progress.end();
         } 
       }
+      return err(InvalidInputError(`invalid answer for '${CoreQuestionNames.Samples}'`, inputs));
     }
 
+    // create from 
     const appName = inputs[QuestionAppName.name] as string;
     if (undefined === appName)
-      return err(
-        new UserError(error.CoreErrorNames.InvalidInput, `App Name is empty`, error.CoreSource)
-      );
+      return err( InvalidInputError(`App Name is empty`, inputs));
 
     const validateResult = jsonschema.validate(appName, {
       pattern: ProjectNamePattern,
     });
     if (validateResult.errors && validateResult.errors.length > 0) {
-      return err(
-        new UserError(
-          error.CoreErrorNames.InvalidInput,
-          `${validateResult.errors[0].message}`,
-          error.CoreSource
-        )
-      );
+      return err(InvalidInputError(`${validateResult.errors[0].message}`, inputs));
     }
 
     const projectPath = path.join(folder, appName);
     const folderExist = await fs.pathExists(projectPath);
     if (folderExist) {
-      return err(
-        new UserError(
-          error.CoreErrorNames.ProjectFolderExist,
-          `Project folder exsits:${projectPath}`,
-          error.CoreSource
-        )
-      );
+      return err(ProjectFolderExistError(projectPath));
     }
 
     inputs.projectPath = projectPath;
@@ -298,13 +276,7 @@ export class FxCore implements Core {
     if ("" !== namespace && array.length > 0 && solution.executeUserTask) {
       return await solution.executeUserTask(func, ctx);
     }
-    return err(
-      returnUserError(
-        new Error(`executeUserTaskRouteFailed:${JSON.stringify(func)}`),
-        error.CoreSource,
-        error.CoreErrorNames.executeUserTaskRouteFailed
-      )
-    );
+    return err(FunctionRouterError(func));
   }
 
    
@@ -341,39 +313,25 @@ export class FxCore implements Core {
       }
       return res;
     }
-    return err(
-      returnUserError(
-        new Error(`getQuestionsForUserTaskRouteFailed:${JSON.stringify(func)}`),
-        error.CoreSource,
-        error.CoreErrorNames.getQuestionsForUserTaskRouteFailed
-      )
-    );
+    return err(FunctionRouterError(func));
   }
   
   @hooks([ErrorHandlerMW])
-  async _getQuestionsForCreateProject(ctx:SolutionContext, inputs: Inputs): Promise<Result<QTreeNode | undefined, FxError>> {
-    const node = new QTreeNode({ type: "group" });
-
-    const scratchSelectNode = new QTreeNode(ScratchOrSampleSelect(inputs.platform));
-    node.addChild(scratchSelectNode);
-
-    const scratchNode = new QTreeNode({ type: "group" });
-    scratchNode.condition = { equals: ScratchOptionYes.id };
-    scratchSelectNode.addChild(scratchNode);
-
-    const sampleNode = new QTreeNode(SampleSelect);
-    sampleNode.condition = { equals: ScratchOptionNo.id };
-    scratchSelectNode.addChild(sampleNode);
-
+  async _getQuestionsForCreateProject(ctx:SolutionContext, inputs: Inputs): Promise<Result<QTreeNode | undefined, FxError>> { 
+    const node = new QTreeNode(getCreateNewOrFromSampleQuestion(inputs.platform));
+    // create new
+    const createNew = new QTreeNode({ type: "group" });
+    node.addChild(createNew);
+    createNew.condition = { equals: ScratchOptionYes.id };
     const globalSolutions:Solution[] = await loadGlobalSolutions(inputs);
     const solutionNames: string[] = globalSolutions.map(s=>s.name);
     const selectSolution: SingleSelectQuestion = QuestionSelectSolution;
     selectSolution.staticOptions = solutionNames;
     const solutionSelectNode = new QTreeNode(selectSolution);
-    scratchNode.addChild(solutionSelectNode);
+    createNew.addChild(solutionSelectNode);
     for (const v of globalSolutions) {
       if (v.getQuestions) {
-        const res = await v.getQuestions(Stage.create, ctx!);
+        const res = await v.getQuestions(Stage.create, ctx);
         if (res.isErr()) return res;
         if (res.value) {
           const solutionNode = res.value as QTreeNode;
@@ -382,9 +340,15 @@ export class FxCore implements Core {
         }
       }
     }
-    scratchNode.addChild(new QTreeNode(QuestionRootFolder));
-    scratchNode.addChild(new QTreeNode(QuestionAppName));
+    createNew.addChild(new QTreeNode(QuestionRootFolder));
+    createNew.addChild(new QTreeNode(QuestionAppName));
+    
+    // create from sample
+    const sampleNode = new QTreeNode(SampleSelect);
+    node.addChild(sampleNode);
+    sampleNode.condition = { equals: ScratchOptionNo.id };
     sampleNode.addChild(new QTreeNode(QuestionRootFolder));
+    
     return ok(node.trim());
   }
 
@@ -402,7 +366,7 @@ export class FxCore implements Core {
     return ok(node.trim());
   }
 
-  private async createBasicFolderStructure(inputs: Inputs): Promise<Result<null, FxError>> {
+  async createBasicFolderStructure(inputs: Inputs): Promise<Result<null, FxError>> {
     try {
       const appName = inputs[QuestionAppName.name] as string;
       await fs.writeFile(
@@ -427,22 +391,21 @@ export class FxCore implements Core {
         `node_modules\n/.${ConfigFolderName}/*.env\n/.${ConfigFolderName}/*.userdata\n.DS_Store`
       );
     } catch (e) {
-      return err(error.WriteFileError(e));
+      return err(WriteFileError(e));
     }
     return ok(null);
   }
 
-
   async buildArtifacts(inputs: Inputs) : Promise<Result<Void, FxError>>{
-      throw error.TaskNotSupportError;
+      throw TaskNotSupportError(Stage.build);
   }
   async createEnv (inputs: Inputs) : Promise<Result<Void, FxError>>{
-    throw error.TaskNotSupportError;
+    throw TaskNotSupportError(Stage.createEnv);
   }
   async removeEnv (inputs: Inputs) : Promise<Result<Void, FxError>>{
-    throw error.TaskNotSupportError;
+    throw TaskNotSupportError(Stage.removeEnv);
   }
   async switchEnv (inputs: Inputs) : Promise<Result<Void, FxError>>{
-    throw error.TaskNotSupportError;
+    throw TaskNotSupportError(Stage.switchEnv);
   }
 } 

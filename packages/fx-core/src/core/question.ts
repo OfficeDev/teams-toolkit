@@ -87,7 +87,7 @@ export const ScratchOptionNo: OptionItem = {
   detail: "Use an existing sample as a starting point for your new application.",
 };
 
-export function ScratchOrSampleSelect(platform: Platform): SingleSelectQuestion {
+export function getCreateNewOrFromSampleQuestion(platform: Platform): SingleSelectQuestion {
 
   return {
     type: "singleSelect",

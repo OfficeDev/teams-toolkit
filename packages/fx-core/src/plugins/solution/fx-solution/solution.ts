@@ -2235,7 +2235,7 @@ export class TeamsAppSolution implements Solution {
       ctx.ui?.showMessage(
           "info", 
           util.format(
-              ctx.platform === Platform.CLI ? getStrings().solution.AddResourceNoticeForCli : getStrings().solution.AddResourceNotice, 
+              ctx.answers.platform === Platform.CLI ? getStrings().solution.AddResourceNoticeForCli : getStrings().solution.AddResourceNotice, 
               notifications.join(",")), 
           false);
     }
@@ -2330,7 +2330,7 @@ export class TeamsAppSolution implements Solution {
       await ctx.dialog?.communicate(
         new DialogMsg(DialogType.Show, {
           description: util.format(
-            ctx.platform === Platform.CLI ? getStrings().solution.AddCapabilityNoticeForCli : getStrings().solution.AddCapabilityNotice,
+            ctx.answers.platform === Platform.CLI ? getStrings().solution.AddCapabilityNoticeForCli : getStrings().solution.AddCapabilityNotice,
             notifications.join(",")
           ),
           level: MsgLevel.Info,

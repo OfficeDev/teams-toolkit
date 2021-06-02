@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import { exec } from "child_process";
 import * as fs from "fs-extra";
-import { ConfigFolderName, ConfigMap, Dict, Json, UserError } from "@microsoft/teamsfx-api";
+import { AzureAccountProvider, ConfigFolderName, ConfigMap, Dict, err, FxError, Json, ok, Result, returnSystemError, returnUserError, SubscriptionInfo, Tools, UserError, UserInteraction } from "@microsoft/teamsfx-api";
 import { promisify } from "util";
 import axios from "axios";
 import AdmZip from "adm-zip";
@@ -270,4 +270,53 @@ export function isValidProject(workspacePath?: string): boolean {
     }
   }
   return true;
+}
+
+
+export async function askSubscription(azureAccountProvider:AzureAccountProvider, ui:UserInteraction , activeSubscriptionId?:string): Promise<Result<SubscriptionInfo, FxError>>{
+  const subscriptions: SubscriptionInfo[] = await azureAccountProvider.listSubscriptions();
+  if (subscriptions.length === 0) {
+    return err(
+      returnUserError(
+        new Error("Failed to find a subscription."),
+        "Core",
+        "NoSubscriptionFound"
+      )
+    );
+  }
+  let resultSub = subscriptions.find((sub) => sub.subscriptionId === activeSubscriptionId);
+  if ( activeSubscriptionId === undefined || resultSub === undefined ) {
+    let selectedSub:SubscriptionInfo|undefined = undefined;
+    if(subscriptions.length === 1){
+      selectedSub = subscriptions[0];
+    }
+    else {
+      const subscriptionNames: string[] = subscriptions.map(
+        (subscription) => subscription.subscriptionName
+      );
+      /// TODO: subscriptionNames may need change to OptionItem[]
+      const askRes = await ui.selectOption({
+        name: "subscription",
+        title: "Select a subscription",
+        options: subscriptionNames
+      }); 
+      if(askRes.isErr()) 
+        return err(askRes.error);
+      const subscriptionName = askRes.value.result;
+      selectedSub = subscriptions.find(
+        (subscription) => subscription.subscriptionName === subscriptionName
+      );
+    }
+    if (selectedSub === undefined) {
+      return err(
+        returnSystemError(
+          new Error("Subscription not found"),
+          "Core",
+          "NoSubscriptionFound"
+        )
+      );
+    }
+    resultSub = selectedSub;
+  }  
+  return ok(resultSub);
 }

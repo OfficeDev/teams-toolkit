@@ -26,8 +26,9 @@ export function WriteFileError(e: Error): SystemError {
 }
 
 export function ReadFileError(e: Error): SystemError {
-  return new SystemError("ReadFileError", 
-    `write file error ${e["message"]}`, 
+  return new SystemError(
+    "ReadFileError", 
+    `read file error ${e["message"]}`, 
     CoreSource, 
     e.stack, 
     undefined, 

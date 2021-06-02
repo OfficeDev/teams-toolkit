@@ -24,6 +24,7 @@ import { v4 as uuidv4 } from "uuid";
 import { ResourceManagementClient } from "@azure/arm-resources";
 import { SubscriptionClient } from "@azure/arm-subscriptions";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
+import { askSubscription } from "../../../common/tools";
 
 interface PartialList<T> extends Array<T> {
   nextLink?: string;
@@ -132,50 +133,9 @@ export async function checkSubscription( ctx: SolutionContext): Promise<Result<S
       )
     );
   }
-  const subscriptions: SubscriptionInfo[] = await ctx.azureAccountProvider.listSubscriptions();
-  if (subscriptions.length === 0) {
-    return err(
-      returnUserError(
-        new Error("Failed to find a subscription."),
-        "Solution",
-        SolutionError.NoSubscriptionFound
-      )
-    );
-  }
-  const activeSubscriptionId = ctx.config.get(GLOBAL_CONFIG)?.getString("subscriptionId");
-  const activeTenantId = ctx.config.get(GLOBAL_CONFIG)?.getString("tenantId");
-  let sub = subscriptions.find((sub) => sub.subscriptionId === activeSubscriptionId);
-  if (
-    activeSubscriptionId === undefined ||
-    activeTenantId == undefined ||
-    sub === undefined
-  ) {
-    const subscriptionNames: string[] = subscriptions.map(
-      (subscription) => subscription.subscriptionName
-    );
-    /// TODO: subscriptionNames may need change to OptionItem[]
-    const askRes = await ctx.ui!.selectOption({
-      name: "subscription",
-      title: "Select a subscription",
-      options: subscriptionNames
-    }); 
-    if(askRes.isErr()) 
-      throw askRes.error;
-    const subscriptionName = askRes.value.result;
-    const selectedSub = subscriptions.find(
-      (subscription) => subscription.subscriptionName === subscriptionName
-    );
-    if (selectedSub === undefined) {
-      return err(
-        returnSystemError(
-          new Error("Subscription not found"),
-          "Solution",
-          SolutionError.InternelError
-        )
-      );
-    }
-    sub = selectedSub;
-  }  
+  const askSubRes = await askSubscription(ctx.azureAccountProvider!, ctx.ui!, undefined);
+  if(askSubRes.isErr()) return err(askSubRes.error); 
+  const sub = askSubRes.value;
   await ctx.azureAccountProvider?.setSubscription(sub.subscriptionId);
   ctx.config.get(GLOBAL_CONFIG)?.set("subscriptionId", sub.subscriptionId);
   ctx.config.get(GLOBAL_CONFIG)?.set("tenantId", sub.tenantId);

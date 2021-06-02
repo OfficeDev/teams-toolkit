@@ -6,8 +6,10 @@ import { AzureSolutionSettings, err, FxError, ok, Result, returnSystemError, ret
 import { AzureAccount } from "./commonlib/azure-account.api";
 import AzureAccountManager from "./commonlib/azureLogin";
 import { ExtensionSource } from "./error";
-import { core, getSystemInputs, tools } from "./handlers";
+import { core, getSystemInputs, showError, tools } from "./handlers";
 import * as vscode from "vscode";
+import { askSubscription } from "@microsoft/teamsfx-core";
+import { VS_CODE_UI } from "./extension";
 
  
 enum TelemetryTiggerFrom {
@@ -38,16 +40,21 @@ export async function getSubscriptionId():Promise<string|undefined>{
       }
     }
   }
+  else {
+    showError(projectConfigRes.error);
+  }
   return undefined;
 }
 
 export async function getAzureSolutionSettings():Promise<AzureSolutionSettings|undefined>{ 
   const projectConfigRes = await core.getProjectConfig(getSystemInputs());
-  let solutionSettings:AzureSolutionSettings;
   if(projectConfigRes.isOk()){
     if(projectConfigRes.value){
       return projectConfigRes.value.settings?.solutionSettings as AzureSolutionSettings;
     }
+  }
+  else {
+    showError(projectConfigRes.error);
   }
   return undefined;
 }
@@ -59,6 +66,9 @@ export async function isValid():Promise<boolean>{
     if(projectConfigRes.value){
       supported = true;
     }
+  }
+  else {
+    showError(projectConfigRes.error);
   }
   return supported;
 }
@@ -138,44 +148,9 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
           ? TelemetryTiggerFrom.TreeView
           : TelemetryTiggerFrom.CommandPalette,
     });
-
-    // const azureToken = await tools.tokenProvider.azureAccountProvider.getAccountCredentialAsync();
-    const subscriptions: SubscriptionInfo[] | undefined =
-      await tools.tokenProvider.azureAccountProvider?.listSubscriptions();
-    if (!subscriptions) {
-      return err(
-        returnSystemError(
-          new Error("No subscription was found"),
-          ExtensionSource,
-          "InvalidContext"
-        )
-      );
-    }
-    const subscriptionNames: string[] = subscriptions.map(
-      (subscription) => subscription.subscriptionName
-    );
-    const askRes = await tools.ui.selectOption({
-      name: "askSub",
-      title: "Please select a subscription",
-      options: subscriptionNames
-    });
-    let subscriptionName:string|undefined;
-    if(askRes.isOk()){
-      subscriptionName = askRes.value?.result as string;
-    }
-    if (subscriptionName === undefined || subscriptionName == "unknown") {
-      return err(
-        returnUserError(
-          new Error("No subscription selected"),
-          ExtensionSource,
-          "NoSubscriptionSelected"
-        )
-      );
-    }
-    const subscription = subscriptions.find(
-      (subscription) => subscription.subscriptionName === subscriptionName
-    );
-    await setSubscription(subscription);
+    const askSubRes = await askSubscription(tools.tokenProvider.azureAccountProvider, VS_CODE_UI, undefined);
+    if(askSubRes.isErr()) return err(askSubRes.error);
+    await setSubscription(askSubRes.value);
     return ok(null);
   };
 

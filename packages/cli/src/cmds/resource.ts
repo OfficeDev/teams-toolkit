@@ -100,7 +100,13 @@ export class ResourceAddApim extends YargsCommand {
     return yargs.options(this.params);
   }
 
-  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+  public async runCommand(args: { [argName: string]: string | undefined }): Promise<Result<null, FxError>> {
+    if (!("apim-resource-group" in args)) {
+      args["apim-resource-group"] = undefined;
+    }
+    if (!("apim-service-name" in args)) {
+      args["apim-service-name"] = undefined;
+    }
     const rootFolder = path.resolve(args.folder || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.UpdateProjectStart, {
       [TelemetryProperty.Resources]: this.commandHead

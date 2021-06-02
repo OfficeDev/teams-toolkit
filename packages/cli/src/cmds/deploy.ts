@@ -49,7 +49,16 @@ export default class Deploy extends YargsCommand {
     return yargs.version(false);
   }
 
-  public async runCommand(args: { [argName: string]: string | string[] }): Promise<Result<null, FxError>> {
+  public async runCommand(args: { [argName: string]: string | string[] | undefined }): Promise<Result<null, FxError>> {
+    if (!("open-api-document" in args)) {
+      args["open-api-document"] = undefined;
+    }
+    if (!("api-prefix" in args)) {
+      args["api-prefix"] = undefined;
+    }
+    if (!("api-version" in args)) {
+      args["api-version"] = undefined;
+    }
     const rootFolder = path.resolve(args.folder as string || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.DeployStart);
 

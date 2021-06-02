@@ -196,7 +196,7 @@ export class LocalDebugPlugin implements Plugin {
       (pluginName) => pluginName === FunctionPlugin.Name
     );
     const includeBot = selectedPlugins?.some((pluginName) => pluginName === BotPlugin.Name);
-    const skipNgrok = ctx.config?.get(LocalDebugConfigKeys.SkipNgrok) as string;
+    let skipNgrok = ctx.config?.get(LocalDebugConfigKeys.SkipNgrok) as string;
 
     const telemetryProperties = {
       platform: ctx.answers?.platform as string,
@@ -243,6 +243,10 @@ export class LocalDebugPlugin implements Plugin {
       }
 
       if (includeBot) {
+        if (skipNgrok === undefined) {
+          skipNgrok = "false";
+          ctx.config.set(LocalDebugConfigKeys.SkipNgrok, skipNgrok);
+        }
         if (skipNgrok?.trim().toLowerCase() === "true") {
           const localBotEndpoint = ctx.config.get(LocalDebugConfigKeys.LocalBotEndpoint) as string;
           if (localBotEndpoint === undefined) {
@@ -286,7 +290,7 @@ export class LocalDebugPlugin implements Plugin {
       (pluginName) => pluginName === FunctionPlugin.Name
     );
     const includeBot = selectedPlugins?.some((pluginName) => pluginName === BotPlugin.Name);
-    const trustDevCert = ctx.config?.get(
+    let trustDevCert = ctx.config?.get(
       LocalDebugConfigKeys.TrustDevelopmentCertificate
     ) as string;
 
@@ -381,8 +385,11 @@ export class LocalDebugPlugin implements Plugin {
 
         // local certificate
         try {
-          const needTrust =
-            trustDevCert === undefined || trustDevCert.trim().toLowerCase() === "true";
+          if (trustDevCert === undefined) {
+            trustDevCert = "true";
+            ctx.config.set(LocalDebugConfigKeys.TrustDevelopmentCertificate, trustDevCert);
+          }
+          const needTrust = trustDevCert.trim().toLowerCase() === "true";
           const certManager = new LocalCertificateManager(ctx);
           const localCert = await certManager.setupCertificate(needTrust);
           if (localCert) {

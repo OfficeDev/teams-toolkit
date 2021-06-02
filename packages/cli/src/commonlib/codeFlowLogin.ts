@@ -7,7 +7,7 @@ import * as http from "http";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { Mutex } from "async-mutex";
-import { LogLevel, returnSystemError, UserError } from "@microsoft/teamsfx-api";
+import { returnSystemError, returnUserError, SystemError, UserError, LogLevel } from "@microsoft/teamsfx-api";
 import CliCodeLogInstance from "./log";
 import * as crypto from "crypto";
 import { AddressInfo } from "net";
@@ -24,10 +24,15 @@ import {
 } from "../telemetry/cliTelemetryEvents";
 
 class ErrorMessage {
-  static readonly loginError: string = "LoginError";
-  static readonly timeoutMessage: string = "Timeout waiting for code";
-  static readonly portConflictMessage: string = "Timeout waiting for port";
-  static readonly component: string = "LoginComponent";
+  static readonly loginFailureTitle = "LoginFail";
+  static readonly loginFailureDescription = "Cannot retrieve user login information. Login with another account.";
+  static readonly loginCodeFlowFailureTitle = "LoginCodeFail";
+  static readonly loginCodeFlowFailureDescription = "Cannot get login code for token exchange. Login with another account.";
+  static readonly loginTimeoutTitle = "LoginTimeout";
+  static readonly loginTimeoutDescription = "Timeout waiting for login. Try again.";
+  static readonly loginPortConflictTitle = "LoginPortConflict";
+  static readonly loginPortConflictDescription = "Timeout waiting for port. Try again.";
+  static readonly loginComponent = "login"
 }
 
 interface Deferred<T> {
@@ -132,10 +137,10 @@ export class CodeFlowLogin {
 
     const codeTimer = setTimeout(() => {
       deferredRedirect.reject(
-        returnSystemError(
-          new Error(ErrorMessage.timeoutMessage),
-          ErrorMessage.component,
-          ErrorMessage.loginError
+        returnUserError(
+          new Error(ErrorMessage.loginTimeoutDescription),
+          ErrorMessage.loginComponent,
+          ErrorMessage.loginTimeoutTitle
         )
       );
     }, 5 * 60 * 1000);
@@ -231,7 +236,12 @@ export class CodeFlowLogin {
       }
     } catch (error) {
       CliCodeLogInstance.necessaryLog(LogLevel.Error, "[Login] " + error.message);
-      throw LoginFailureError(error);
+      if (error.name!==ErrorMessage.loginTimeoutTitle &&
+        error.name!==ErrorMessage.loginPortConflictTitle) {
+        throw LoginCodeFlowError(error);
+      } else {
+        throw error;
+      }
     }
   }
 
@@ -289,9 +299,9 @@ export class CodeFlowLogin {
     const portTimer = setTimeout(() => {
       defferedPort.reject(
         returnSystemError(
-          new Error(ErrorMessage.portConflictMessage),
-          ErrorMessage.component,
-          ErrorMessage.loginError
+          new Error(ErrorMessage.loginPortConflictDescription),
+          ErrorMessage.loginComponent,
+          ErrorMessage.loginPortConflictTitle
         )
       );
     }, 5000);
@@ -340,9 +350,20 @@ function sendFile(
 
 export function LoginFailureError(innerError?: any): UserError {
   return new UserError(
-    "LoginFailure",
-    "Cannot get user login information. Please login correct account via browser.",
-    "Login",
+    ErrorMessage.loginCodeFlowFailureTitle,
+    ErrorMessage.loginCodeFlowFailureDescription,
+    ErrorMessage.loginComponent,
+    new Error().stack,
+    undefined,
+    innerError
+  );
+}
+
+export function LoginCodeFlowError(innerError?: any): SystemError {
+  return new SystemError(
+    ErrorMessage.loginCodeFlowFailureTitle,
+    ErrorMessage.loginCodeFlowFailureDescription,
+    ErrorMessage.loginComponent,
     new Error().stack,
     undefined,
     innerError

@@ -16,10 +16,14 @@ import {
   SolutionContext,
   TeamsAppManifest,
   Void,
+  Plugin,
+  AzureAccountProvider,
+  SubscriptionInfo,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
 import {
+  DEFAULT_PERMISSION_REQUEST,
   GLOBAL_CONFIG,
   REMOTE_MANIFEST,
   REMOTE_TEAMS_APP_ID,
@@ -36,17 +40,23 @@ import {
   IAppDefinition,
 } from "../../../src/plugins/solution/fx-solution/appstudio/interface";
 import _ from "lodash";
+import { AadAppForTeamsPlugin } from "../../../src/plugins/resource/aad";
+import { TokenCredential } from "@azure/core-auth";
+import { TokenCredentialsBase, UserTokenCredentials } from "@azure/ms-rest-nodeauth";
+import { ResourceGroups, ResourceManagementClient } from "@azure/arm-resources";
 
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-class FakeAppStudioTokenProvider implements AppStudioTokenProvider {
+class MockedAppStudioTokenProvider implements AppStudioTokenProvider {
   async getAccessToken(showDialog?: boolean): Promise<string> {
     return "someFakeToken";
   }
-  getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
-    throw new Error("Method not implemented.");
+  async getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
+    return {
+      tid: "222"
+    };
   }
   signout(): Promise<boolean> {
     throw new Error("Method not implemented.");
@@ -62,6 +72,50 @@ class FakeAppStudioTokenProvider implements AppStudioTokenProvider {
   }
 }
 
+const mockedSubscriptionName = "subname";
+const mockedSubscriptionId = "111";
+const mockedTenantId = "222";
+
+class MockedAzureTokenProvider implements AzureAccountProvider {
+  getAccountCredential(showDialog?: boolean): TokenCredentialsBase {
+    throw new Error("Method not implemented.");
+  }
+  getIdentityCredential(showDialog?: boolean): TokenCredential {
+    throw new Error("Method not implemented.");
+  }
+  async getAccountCredentialAsync(showDialog?: boolean, tenantId?: string): Promise<TokenCredentialsBase> {
+    return new UserTokenCredentials("someClientId", "some.domain", "someUserName", "somePassword");
+  }
+  getIdentityCredentialAsync(showDialog?: boolean): Promise<TokenCredential> {
+    throw new Error("Method not implemented.");
+  }
+  signout(): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  setStatusChangeCallback(statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediateCall?: boolean): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  removeStatusChangeMap(name: string): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  async getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
+    return {
+      tid: "222"
+    };
+  }
+  async listSubscriptions(): Promise<SubscriptionInfo[]> {
+    return [{ subscriptionName: mockedSubscriptionName, subscriptionId: mockedSubscriptionId, tenantId: mockedTenantId}];
+  }
+  async setSubscription(subscriptionId: string): Promise<void> {
+    return;
+  }
+
+}
+
+
 function mockSolutionContext(): SolutionContext {
   const config: SolutionConfig = new Map();
   config.set(GLOBAL_CONFIG, new ConfigMap);
@@ -71,9 +125,30 @@ function mockSolutionContext(): SolutionContext {
     config,
     answers: new ConfigMap(),
     projectSettings: undefined,
-    appStudioToken: new FakeAppStudioTokenProvider,
+    appStudioToken: new MockedAppStudioTokenProvider,
+    azureAccountProvider: new MockedAzureTokenProvider,
   };
 }
+
+function mockProvisionThatAlwaysSucceed(plugin: Plugin) {
+  plugin.preProvision = async function (
+    _ctx: PluginContext,
+  ): Promise<Result<any, FxError>> {
+    return ok(Void);
+  };
+  plugin.provision = async function (
+    _ctx: PluginContext,
+  ): Promise<Result<any, FxError>> {
+    return ok(Void);
+  };
+  plugin.postProvision = async function (
+    _ctx: PluginContext,
+  ): Promise<Result<any, FxError>> {
+    return ok(Void);
+  };
+}
+
+
 
 describe("provision() simple cases", () => {
   it("should return error if solution state is not idle", async () => {
@@ -255,6 +330,7 @@ describe("provision() happy path for SPFx projects", () => {
     expect(result.isOk()).to.be.true;
     expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be.true;
     expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).equals(mockedAppDef.teamsAppId);
+    expect(solution.runningState).equals(SolutionRunningState.Idle);
   });
 });
 
@@ -262,7 +338,6 @@ describe("provision() happy path for Azure projects", () => {
   const mocker = sinon.createSandbox();
   const permissionsJsonPath = "./permissions.json";
 
-  const fileContent: Map<string, any> = new Map();
   const mockedAppDef: IAppDefinition = {
     appName: "MyApp",
     teamsAppId: "qwertasdf"
@@ -272,17 +347,13 @@ describe("provision() happy path for Azure projects", () => {
   mockedManifest.icons.color = "";
   mockedManifest.icons.outline = "";
   beforeEach(() => {
-    mocker.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {
-      fileContent.set(path.toString(), data);
-    });
-    mocker.stub(fs, "writeJSON").callsFake((file: string, obj: any) => {
-      fileContent.set(file, JSON.stringify(obj));
-    });
+    mocker.stub<any, any>(fs, "pathExists").withArgs(permissionsJsonPath).resolves(true);
+    mocker.stub<any, any>(fs, "readJSON").withArgs(permissionsJsonPath).resolves(DEFAULT_PERMISSION_REQUEST);
     mocker.stub<any, any>(fs, "readJson").withArgs(`./.${ConfigFolderName}/${REMOTE_MANIFEST}`).resolves(mockedManifest);
-    // mocker.stub<any, any>(fs, "pathExists").withArgs(permissionsJsonPath).resolves(true);
     mocker.stub(AppStudio, "createApp").resolves(mockedAppDef);
     mocker.stub(AppStudio, "updateApp").resolves(mockedAppDef);
-
+    // mocker.stub(ResourceGroups.prototype, "checkExistence").resolves({body: true});
+    mocker.stub(ResourceGroups.prototype, "createOrUpdate").resolves({name: "ut-rg"});
   });
 
   afterEach(() => {
@@ -302,8 +373,19 @@ describe("provision() happy path for Azure projects", () => {
       },
     };
 
+    mockProvisionThatAlwaysSucceed(solution.fehostPlugin);
+    mockProvisionThatAlwaysSucceed(solution.aadPlugin);
+    const aadPlugin: AadAppForTeamsPlugin = solution.aadPlugin as any;
+    aadPlugin.setApplicationInContext = function (
+      _ctx: PluginContext, _isLocalDebug?: boolean
+    ): Result<any, FxError> {
+      return ok(Void);
+    };
+
     expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be.undefined;
     expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).to.be.undefined;
+    mockedCtx.config.get(GLOBAL_CONFIG)?.set("subscriptionId", mockedSubscriptionId);
+    mockedCtx.config.get(GLOBAL_CONFIG)?.set("tenantId", mockedTenantId);
     const result = await solution.provision(mockedCtx);
     expect(result.isOk()).to.be.true;
     expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be.true;

@@ -2,20 +2,11 @@
 // Licensed under the MIT license.
 import {
   PluginConfig,
-  Dialog,
-  FxError,
-  DialogMsg,
-  DialogType,
-  QuestionType,
   SolutionContext,
   PluginContext,
   Context,
   ConfigMap,
   TeamsAppManifest,
-  ok,
-  Result,
-  err,
-  ResultAsync,
 } from "@microsoft/teamsfx-api";
 import { SubscriptionClient } from "@azure/arm-subscriptions";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";

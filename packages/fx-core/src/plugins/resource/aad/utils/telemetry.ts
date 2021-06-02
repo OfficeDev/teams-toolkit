@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { PluginContext } from "@microsoft/teamsfx-api";
-import { Telemetry, Plugins } from "../constants";
+import { Telemetry, Plugins, ConfigKeysOfOtherPlugin } from "../constants";
 
 export class TelemetryUtils {
   static ctx: PluginContext;
@@ -21,6 +21,7 @@ export class TelemetryUtils {
     }
     properties[Telemetry.component] = Plugins.pluginNameComplex;
     properties[Telemetry.isSuccess] = Telemetry.success;
+    TelemetryUtils.addAppIdInProperty(properties, this.ctx);
     TelemetryUtils.ctx.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
   }
 
@@ -41,6 +42,7 @@ export class TelemetryUtils {
     properties[Telemetry.errorType] = errorType;
     properties[Telemetry.errorMessage] = errorMessage;
     properties[Telemetry.isSuccess] = Telemetry.fail;
+    TelemetryUtils.addAppIdInProperty(properties, this.ctx);
     TelemetryUtils.ctx.telemetryReporter?.sendTelemetryErrorEvent(
       eventName,
       properties,
@@ -54,4 +56,11 @@ export class TelemetryUtils {
       "error-message": errorMessage,
     };
   };
+
+  private static addAppIdInProperty(properties:{ [key: string]: string }, ctx: PluginContext): void {
+    const appId = ctx.configOfOtherPlugins.get(Plugins.solution)?.get(ConfigKeysOfOtherPlugin.remoteTeamsAppId);
+    if (appId) {
+      properties[Telemetry.appId] = appId as string;
+    }
+  }
 }

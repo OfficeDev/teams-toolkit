@@ -57,6 +57,7 @@ export class Telemetry {
   static isSuccess = "success";
   static success = "yes";
   static fail = "no";
+  static appId = "appid";
 }
 
 export class Plugins {
@@ -95,6 +96,7 @@ export class ConfigKeysOfOtherPlugin {
   static localDebugTabEndpoint = "localTabEndpoint";
   static localDebugBotEndpoint = "localBotEndpoint";
   static solutionPermissionRequest = "permissionRequest";
+  static remoteTeamsAppId = "remoteTeamsAppId";
 }
 
 export interface Messages {

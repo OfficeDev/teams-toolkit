@@ -29,7 +29,7 @@ This repository contains the following packages:
 <br>
 
 ## Getting Started
-To start a Teams project with TeamsFx, see the Prerequisites section of [the documentation](https://aka.ms/teamsfx-install).
+To start a Teams project with TeamsFx, see the Prerequisites section of [the documentation](https://aka.ms/teamsfx-docs).
 
 ## Contributing
 

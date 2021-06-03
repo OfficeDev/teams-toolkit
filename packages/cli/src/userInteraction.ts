@@ -338,7 +338,7 @@ export class CLIUserInteraction implements UserInteraction {
     const newConfig: InputTextConfig = {
       name: config.name,
       title: config.title,
-      default: config.default,
+      default: config.default || "./",
       validation: config.validation || pathValidation
     }
     return this.inputText(newConfig);
@@ -379,7 +379,7 @@ export class CLIUserInteraction implements UserInteraction {
     const newConfig: InputTextConfig = {
       name: config.name,
       title: config.title,
-      default: config.default,
+      default: config.default || "./",
       validation: config.validation || pathValidation
     }
     return this.inputText(newConfig);

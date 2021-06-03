@@ -158,8 +158,8 @@ export function returnSystemError(
 export const UserCancelError:UserError = new UserError("UserCancel", "UserCancel", "UI");
 
 
-export function assembleError(e: Error): FxError {
+export function assembleError(e: Error, source?:string): FxError {
     if (e instanceof UserError || e instanceof SystemError)
         return e;
-    return new SystemError(e.name, e.message, "API", e.stack);
+    return new SystemError(e.name, e.message, source?source:"API", e.stack);
 }

@@ -16,31 +16,32 @@ export const QuestionModelMW: Middleware = async (
   const inputs: Inputs = ctx.arguments[ctx.arguments.length - 1]; 
   const method = ctx.method;
   const core = (ctx.self as FxCore);
-  const solutionCtx = ctx.arguments[0] as SolutionContext; 
+  
   let getQuestionRes: Result<QTreeNode | undefined, FxError> = ok(undefined);
-  if (method === "_createProject") {
-    getQuestionRes = await core._getQuestionsForCreateProject(solutionCtx, inputs);
+  if (method === "createProject") {
+    getQuestionRes = await core._getQuestionsForCreateProject(inputs);
   }
   else {
-    const solution = ctx.arguments[1] as Solution;
-    if (method === "_provisionResources"){
-      getQuestionRes = await core._getQuestions(solutionCtx, solution, Stage.provision, inputs);
+    const solution = ctx.solution;
+    const solutionContext = ctx.solutionContext; 
+    if (method === "provisionResources"){
+      getQuestionRes = await core._getQuestions(solutionContext, solution, Stage.provision, inputs);
     }
-    else if (method === "_localDebug"){
-      getQuestionRes = await core._getQuestions(solutionCtx, solution, Stage.debug, inputs);
+    else if (method === "localDebug"){
+      getQuestionRes = await core._getQuestions(solutionContext, solution, Stage.debug, inputs);
     }
-    else if (method === "_buildArtifacts"){
-      getQuestionRes = await core._getQuestions( solutionCtx, solution, Stage.build, inputs);
+    else if (method === "buildArtifacts"){
+      getQuestionRes = await core._getQuestions( solutionContext, solution, Stage.build, inputs);
     }
-    else if (method === "_deployArtifacts"){
-      getQuestionRes = await core._getQuestions( solutionCtx, solution, Stage.deploy, inputs);
+    else if (method === "deployArtifacts"){
+      getQuestionRes = await core._getQuestions( solutionContext, solution, Stage.deploy, inputs);
     }
-    else if (method === "_publishApplication"){
-      getQuestionRes = await core._getQuestions(solutionCtx, solution, Stage.publish, inputs);
+    else if (method === "publishApplication"){
+      getQuestionRes = await core._getQuestions(solutionContext, solution, Stage.publish, inputs);
     }
-    else if (method === "_executeUserTask"){
-      const func = ctx.arguments[2] as Func;
-      getQuestionRes = await core._getQuestionsForUserTask(solutionCtx, solution, func, inputs);
+    else if (method === "executeUserTask"){
+      const func = ctx.arguments[0] as Func;
+      getQuestionRes = await core._getQuestionsForUserTask(solutionContext, solution, func, inputs);
     }
   }
   
@@ -60,7 +61,6 @@ export const QuestionModelMW: Middleware = async (
       ctx.result = err(res.error);
       return;
     }
-    solutionCtx.answers = inputs;
     const desensitized = desensitize(node, inputs);
     core.tools.logProvider.info(`[core] success to run question model for ${method}, answers:${JSON.stringify(desensitized)}`);
   }

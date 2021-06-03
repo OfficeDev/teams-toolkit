@@ -53,14 +53,24 @@ export function NoProjectOpenedError(){
   );
 }
 
-export function InvalidProjectError(msg?:string){
+export function PathNotExistError(path:string){
   return new UserError(
-    "InvalidProject",
-    `The project config is invalid ${msg?":"+msg : ""}`,
+    "PathNotExist",
+    `The path not exist: ${path}`,
     CoreSource,
     new Error().stack
   );
 }
+
+export function InvalidProjectError(msg?:string){
+  return new UserError(
+    "InvalidProject",
+    `The project config is invalid ${msg? ": " + msg : "" }`,
+    CoreSource,
+    new Error().stack
+  );
+}
+
 
 export function ConcurrentError(){ 
   return new UserError( "ConcurrentOperation", 

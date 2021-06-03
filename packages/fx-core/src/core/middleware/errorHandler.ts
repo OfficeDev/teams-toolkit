@@ -3,9 +3,8 @@
 "use strict";
 
 import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks"; 
-import { err, Inputs, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { assembleError, err, Inputs } from "@microsoft/teamsfx-api";
 import { FxCore } from "..";
-import { NoneFxError } from "../error";
 
 /**
  * in case there're some uncatched exceptions, this middleware will act as a guard
@@ -23,11 +22,6 @@ export const ErrorHandlerMW: Middleware = async (
     core.tools.logProvider.info(`[core] finish task:${ctx.method}`);
   } catch (e) {
     core.tools.logProvider.error(`[core] failed to run task:${ctx.method}`);
-    if (e instanceof UserError || e instanceof SystemError) {
-      ctx.result = err(e);
-    }
-    else {
-      ctx.result = err(NoneFxError(e));
-    }
+    ctx.result = err(assembleError(e));
   }
 };

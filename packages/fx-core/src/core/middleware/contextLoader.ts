@@ -1,17 +1,44 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
  
-import { ConfigFolderName, Inputs, Json, PluginConfig, ProjectSettings, SolutionConfig, SolutionContext, StaticPlatforms, Tools, UserError } from "@microsoft/teamsfx-api";
-import { deserializeDict,  mergeSerectData, objectToMap} from "../..";
-import { ReadFileError } from "../error";
+import { ConfigFolderName, err, Inputs, Json, PluginConfig, ProjectSettings, SolutionConfig, SolutionContext, StaticPlatforms, Tools} from "@microsoft/teamsfx-api";
+import { deserializeDict,  FxCore,  mergeSerectData, objectToMap} from "../..";
+import { InvalidProjectError, NoProjectOpenedError, PathNotExistError, ReadFileError } from "../error";
 import * as path from "path";
 import * as fs from "fs-extra";
+import { HookContext, Middleware, NextFunction } from "@feathersjs/hooks/lib";
+import { validateProject } from "../../common"; 
+
+export const ContextLoaderMW: Middleware = async (
+  ctx: HookContext,
+  next: NextFunction
+) => {
+  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+  const ignoreCheck = inputs.ignoreTypeCheck === true || StaticPlatforms.includes(inputs.platform);
+  if(!ignoreCheck)
+  {
+    if(!inputs.projectPath){
+      ctx.result = err(NoProjectOpenedError());
+      return ;
+    }
+    if(!await fs.pathExists(inputs.projectPath)) {
+      ctx.result = err(PathNotExistError(inputs.projectPath));
+      return ;
+    }
+    const core = ctx.self as FxCore;
+    const sctx = await loadSolutionContext(core.tools, inputs);
+    const validRes = validateProject(sctx);
+    if(validRes){
+      ctx.result = err(InvalidProjectError(validRes));
+      return ;
+    }
+    ctx.solutionContext = sctx;
+  }  
+  await next();
+};
 
 export async function loadSolutionContext(tools: Tools, inputs: Inputs):Promise<SolutionContext>{
   try {
-    if(!inputs.projectPath || StaticPlatforms.includes(inputs.platform) || inputs.ignoreTypeCheck){
-      return await newSolutionContext(tools, inputs);
-    }
     const confFolderPath = path.resolve(inputs.projectPath!, `.${ConfigFolderName}`);
     const settingsFile = path.resolve(confFolderPath, "settings.json");
     const projectSettings: ProjectSettings = await fs.readJson(settingsFile);

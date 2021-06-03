@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import { exec } from "child_process";
 import * as fs from "fs-extra";
-import { AzureAccountProvider, AzureSolutionSettings, ConfigFolderName, ConfigMap, Dict, err, FxError, Json, ok, OptionItem, ProjectSettings, Result, returnSystemError, returnUserError, SubscriptionInfo, Tools, UserError, UserInteraction } from "@microsoft/teamsfx-api";
+import { AzureAccountProvider, AzureSolutionSettings, ConfigFolderName, ConfigMap, Dict, err, FxError, Json, ok, OptionItem, ProjectSettings, Result, returnSystemError, returnUserError, SolutionContext, SubscriptionInfo, Tools, UserError, UserInteraction } from "@microsoft/teamsfx-api";
 import { promisify } from "util";
 import axios from "axios";
 import AdmZip from "adm-zip";
@@ -271,12 +271,12 @@ export function isValidProject(workspacePath?: string): boolean {
     if(!manifest) return false;
     if(!projectSettings.currentEnv)
       projectSettings.currentEnv = "default";
-    if(!validateSettings(projectSettings))
+    if(validateSettings(projectSettings))
         return false;
     const envName = projectSettings.currentEnv;
     const jsonFilePath = path.resolve(confFolderPath, `env.${envName}.json`);
     const configJson: Json = fs.readJsonSync(jsonFilePath);
-    if(!validateConfig(projectSettings.solutionSettings as AzureSolutionSettings, configJson))
+    if(validateConfig(projectSettings.solutionSettings as AzureSolutionSettings, configJson))
       return false;
     return true;
   }
@@ -285,61 +285,71 @@ export function isValidProject(workspacePath?: string): boolean {
   }
 }
 
-export function validateSettings(projectSettings: ProjectSettings):boolean{
-  if(!projectSettings.solutionSettings) return false;
-  const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
-  if(solutionSettings.hostType === undefined) return false;
-  if(solutionSettings.activeResourcePlugins === undefined || solutionSettings.activeResourcePlugins.length === 0)
-    return false;
-  return true;
+export function validateProject(solutionContext: SolutionContext):string|undefined{
+  let res  = validateSettings(solutionContext.projectSettings);
+  if(res) return res;
+  const configJson = mapToJson(solutionContext.config);
+  res = validateConfig(solutionContext.projectSettings!.solutionSettings as AzureSolutionSettings, configJson);
+  if(res) return res;
+  return undefined;
 }
 
-export function validateConfig(solutioSettings:AzureSolutionSettings, configJson: Json): boolean {
-  if(!configJson[PluginNames.SOLUTION]) return false;
+export function validateSettings(projectSettings?: ProjectSettings):string|undefined{
+  if(!projectSettings) return "empty projectSettings";
+  if(!projectSettings.solutionSettings) return "empty solutionSettings";
+  const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
+  if(solutionSettings.hostType === undefined) return "empty solutionSettings.hostType";
+  if(solutionSettings.activeResourcePlugins === undefined || solutionSettings.activeResourcePlugins.length === 0)
+    return "empty solutionSettings.activeResourcePlugins";
+  return undefined;
+}
+
+export function validateConfig(solutioSettings:AzureSolutionSettings, configJson: Json): string|undefined {
+  if(!configJson[PluginNames.SOLUTION]) return "solution config is missing";
   const capabilities = solutioSettings.capabilities;
   const azureResources = solutioSettings.azureResources;
   const plugins = solutioSettings.activeResourcePlugins;
-  if(!configJson[PluginNames.LDEBUG]) return false;
-  if(!plugins.includes(PluginNames.LDEBUG)) return false;
+  if(!configJson[PluginNames.LDEBUG]) return "local debug config is missing";
+  if(!plugins.includes(PluginNames.LDEBUG)) return  "local debug config is missing";
   if(solutioSettings.hostType === HostTypeOptionSPFx.id){
-    if(!configJson[PluginNames.SPFX]) return false;
-    if(!plugins.includes(PluginNames.SPFX)) return false;
+    if(!configJson[PluginNames.SPFX]) return "SPFx config is missing";
+    if(!plugins.includes(PluginNames.SPFX)) return "SPFx config is missing";
   }
   else {
     if(capabilities.includes(TabOptionItem.id)){
-      if(!configJson[PluginNames.FE]) return false;
-      if(!plugins.includes(PluginNames.FE)) return false;
+      if(!configJson[PluginNames.FE]) return "Frontend hosting config is missing";
+      if(!plugins.includes(PluginNames.FE)) return "Frontend hosting config is missing";
 
-      if(!configJson[PluginNames.AAD]) return false;
-      if(!plugins.includes(PluginNames.AAD)) return false;
+      if(!configJson[PluginNames.AAD]) return "AAD config is missing";
+      if(!plugins.includes(PluginNames.AAD)) return "AAD config is missing";
 
-      if(!configJson[PluginNames.SA]) return false;
-      if(!plugins.includes(PluginNames.SA)) return false;
+      if(!configJson[PluginNames.SA]) return "Simple auth config is missing";
+      if(!plugins.includes(PluginNames.SA)) return "Simple auth config is missing";
     }
     if(capabilities.includes(BotOptionItem.id)){
-      if(!configJson[PluginNames.BOT]) return false;
-      if(!plugins.includes(PluginNames.BOT)) return false;
+      if(!configJson[PluginNames.BOT]) return "Bot config is missing";
+      if(!plugins.includes(PluginNames.BOT)) return "Bot config is missing";
     }
     if(capabilities.includes(MessageExtensionItem.id)){
-      if(!configJson[PluginNames.BOT]) return false;
-      if(!plugins.includes(PluginNames.BOT)) return false;
+      if(!configJson[PluginNames.BOT]) return "MessagingExtension config is missing";
+      if(!plugins.includes(PluginNames.BOT)) return "MessagingExtension config is missing";
     }
     if(azureResources.includes(AzureResourceSQL.id)){
-      if(!configJson[PluginNames.SQL]) return false;
-      if(!plugins.includes(PluginNames.SQL)) return false;
-      if(!configJson[PluginNames.MSID]) return false;
-      if(!plugins.includes(PluginNames.MSID)) return false;
+      if(!configJson[PluginNames.SQL]) return "Azure SQL config is missing";
+      if(!plugins.includes(PluginNames.SQL)) return "Azure SQL config is missing";
+      if(!configJson[PluginNames.MSID]) return "SQL identity config is missing";
+      if(!plugins.includes(PluginNames.MSID)) return "SQL identity config is missing";
     }
     if(azureResources.includes(AzureResourceFunction.id)){
-      if(!configJson[PluginNames.FUNC]) return false;
-      if(!plugins.includes(PluginNames.FUNC)) return false;
+      if(!configJson[PluginNames.FUNC]) return "Azure functions config is missing";
+      if(!plugins.includes(PluginNames.FUNC)) return "Azure functions config is missing";
     }
     if(azureResources.includes(AzureResourceApim.id)){
-      if(!configJson[PluginNames.APIM]) return false;
-      if(!plugins.includes(PluginNames.APIM)) return false;
+      if(!configJson[PluginNames.APIM]) return "API Management config is missing";
+      if(!plugins.includes(PluginNames.APIM)) return "API Management config is missing";
     }
   }
-  return true;
+  return undefined;
 }
 
 export async function askSubscription(azureAccountProvider:AzureAccountProvider, ui:UserInteraction , activeSubscriptionId?:string): Promise<Result<SubscriptionInfo, FxError>>{

@@ -40,9 +40,9 @@ export async function getSubscriptionId():Promise<string|undefined>{
       }
     }
   }
-  else {
-    showError(projectConfigRes.error);
-  }
+  // else {
+  //   showError(projectConfigRes.error);
+  // }
   return undefined;
 }
 
@@ -53,9 +53,9 @@ export async function getAzureSolutionSettings():Promise<AzureSolutionSettings|u
       return projectConfigRes.value.settings?.solutionSettings as AzureSolutionSettings;
     }
   }
-  else {
-    showError(projectConfigRes.error);
-  }
+  // else {
+  //   showError(projectConfigRes.error);
+  // }
   return undefined;
 }
 
@@ -67,9 +67,9 @@ export async function isValid():Promise<boolean>{
       supported = true;
     }
   }
-  else {
-    showError(projectConfigRes.error);
-  }
+  // else {
+  //   showError(projectConfigRes.error);
+  // }
   return supported;
 }
 

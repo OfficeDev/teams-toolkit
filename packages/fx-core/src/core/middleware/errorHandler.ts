@@ -21,7 +21,7 @@ export const ErrorHandlerMW: Middleware = async (
     await next();
     core.tools.logProvider.info(`[core] finish task:${ctx.method}`);
   } catch (e) {
-    core.tools.logProvider.error(`[core] failed to run task:${ctx.method}`);
+    // core.tools.logProvider.error(`[core] failed to run task:${ctx.method}`);
     ctx.result = err(assembleError(e));
   }
 };

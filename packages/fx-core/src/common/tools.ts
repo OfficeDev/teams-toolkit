@@ -309,44 +309,44 @@ export function validateConfig(solutioSettings:AzureSolutionSettings, configJson
   const capabilities = solutioSettings.capabilities;
   const azureResources = solutioSettings.azureResources;
   const plugins = solutioSettings.activeResourcePlugins;
-  if(!configJson[PluginNames.LDEBUG]) return "local debug config is missing";
-  if(!plugins.includes(PluginNames.LDEBUG)) return  "local debug config is missing";
+  // if(!configJson[PluginNames.LDEBUG]) return "local debug config is missing";
+  if(!plugins.includes(PluginNames.LDEBUG)) return  `${PluginNames.LDEBUG} setting is missing in settings.json`;
   if(solutioSettings.hostType === HostTypeOptionSPFx.id){
-    if(!configJson[PluginNames.SPFX]) return "SPFx config is missing";
-    if(!plugins.includes(PluginNames.SPFX)) return "SPFx config is missing";
+    // if(!configJson[PluginNames.SPFX]) return "SPFx config is missing";
+    if(!plugins.includes(PluginNames.SPFX)) return "SPFx setting is missing in activeResourcePlugins";
   }
   else {
     if(capabilities.includes(TabOptionItem.id)){
-      if(!configJson[PluginNames.FE]) return "Frontend hosting config is missing";
-      if(!plugins.includes(PluginNames.FE)) return "Frontend hosting config is missing";
+      // if(!configJson[PluginNames.FE]) return "Frontend hosting config is missing";
+      if(!plugins.includes(PluginNames.FE)) return `${PluginNames.FE} setting is missing in settings.json`;
 
-      if(!configJson[PluginNames.AAD]) return "AAD config is missing";
-      if(!plugins.includes(PluginNames.AAD)) return "AAD config is missing";
+      // if(!configJson[PluginNames.AAD]) return "AAD config is missing";
+      if(!plugins.includes(PluginNames.AAD)) return `${PluginNames.AAD} setting is missing in settings.json`;
 
-      if(!configJson[PluginNames.SA]) return "Simple auth config is missing";
-      if(!plugins.includes(PluginNames.SA)) return "Simple auth config is missing";
+      // if(!configJson[PluginNames.SA]) return "Simple auth config is missing";
+      if(!plugins.includes(PluginNames.SA)) return `${PluginNames.SA} setting is missing in settings.json`;
     }
     if(capabilities.includes(BotOptionItem.id)){
-      if(!configJson[PluginNames.BOT]) return "Bot config is missing";
-      if(!plugins.includes(PluginNames.BOT)) return "Bot config is missing";
+      // if(!configJson[PluginNames.BOT]) return "Bot config is missing";
+      if(!plugins.includes(PluginNames.BOT)) return `${PluginNames.BOT} setting is missing in settings.json`;
     }
     if(capabilities.includes(MessageExtensionItem.id)){
-      if(!configJson[PluginNames.BOT]) return "MessagingExtension config is missing";
-      if(!plugins.includes(PluginNames.BOT)) return "MessagingExtension config is missing";
+      // if(!configJson[PluginNames.BOT]) return "MessagingExtension config is missing";
+      if(!plugins.includes(PluginNames.BOT)) return `${PluginNames.BOT} setting is missing in settings.json`;
     }
     if(azureResources.includes(AzureResourceSQL.id)){
-      if(!configJson[PluginNames.SQL]) return "Azure SQL config is missing";
-      if(!plugins.includes(PluginNames.SQL)) return "Azure SQL config is missing";
-      if(!configJson[PluginNames.MSID]) return "SQL identity config is missing";
-      if(!plugins.includes(PluginNames.MSID)) return "SQL identity config is missing";
+      // if(!configJson[PluginNames.SQL]) return "Azure SQL config is missing";
+      if(!plugins.includes(PluginNames.SQL)) return `${PluginNames.SQL} setting is missing in settings.json`;
+      // if(!configJson[PluginNames.MSID]) return "SQL identity config is missing";
+      if(!plugins.includes(PluginNames.MSID)) return `${PluginNames.MSID} setting is missing in settings.json`;
     }
     if(azureResources.includes(AzureResourceFunction.id)){
-      if(!configJson[PluginNames.FUNC]) return "Azure functions config is missing";
-      if(!plugins.includes(PluginNames.FUNC)) return "Azure functions config is missing";
+      // if(!configJson[PluginNames.FUNC]) return "Azure functions config is missing";
+      if(!plugins.includes(PluginNames.FUNC)) return `${PluginNames.FUNC} setting is missing in settings.json`;
     }
     if(azureResources.includes(AzureResourceApim.id)){
-      if(!configJson[PluginNames.APIM]) return "API Management config is missing";
-      if(!plugins.includes(PluginNames.APIM)) return "API Management config is missing";
+      // if(!configJson[PluginNames.APIM]) return "API Management config is missing";
+      if(!plugins.includes(PluginNames.APIM)) return `${PluginNames.APIM} setting is missing in settings.json`;
     }
   }
   return undefined;

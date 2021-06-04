@@ -148,7 +148,8 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
           ? TelemetryTiggerFrom.TreeView
           : TelemetryTiggerFrom.CommandPalette,
     });
-    const askSubRes = await askSubscription(tools.tokenProvider.azureAccountProvider, VS_CODE_UI, undefined);
+    const activeSubscriptionId = await getSubscriptionId();
+    const askSubRes = await askSubscription(tools.tokenProvider.azureAccountProvider, VS_CODE_UI, activeSubscriptionId);
     if(askSubRes.isErr()) return err(askSubRes.error);
     await setSubscription(askSubRes.value);
     return ok(null);

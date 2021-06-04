@@ -133,7 +133,8 @@ export async function checkSubscription( ctx: SolutionContext): Promise<Result<S
       )
     );
   }
-  const askSubRes = await askSubscription(ctx.azureAccountProvider!, ctx.ui!, undefined);
+  const activeSubscriptionId = ctx.config.get(GLOBAL_CONFIG)?.get("subscriptionId");
+  const askSubRes = await askSubscription(ctx.azureAccountProvider!, ctx.ui!, activeSubscriptionId);
   if(askSubRes.isErr()) return err(askSubRes.error); 
   const sub = askSubRes.value;
   await ctx.azureAccountProvider?.setSubscription(sub.subscriptionId);

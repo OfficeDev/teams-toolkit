@@ -651,14 +651,6 @@ class CoreImpl implements Core {
         return ok(null);
       };
 
-      let azureAccountLabel = "Sign in to Azure";
-      let azureAccountContextValue = "signinAzure";
-      const token = await this.ctx.azureAccountProvider?.getAccountCredentialAsync();
-      if (token !== undefined) {
-        azureAccountLabel = (token as any).username ? (token as any).username : "";
-        azureAccountContextValue = "signedinAzure";
-      }
-
       this.ctx.appStudioToken?.setStatusChangeMap(
         "tree-view",
         (
@@ -767,12 +759,12 @@ class CoreImpl implements Core {
         },
         {
           commandId: "fx-extension.signinAzure",
-          label: azureAccountLabel,
+          label: "Sign in to Azure",
           callback: async (args?: any[]) => {
             return signinAzureCallback(supported, args);
           },
           parent: TreeCategory.Account,
-          contextValue: azureAccountContextValue,
+          contextValue: "signinAzure",
           subTreeItems: [],
           icon: "azure",
           tooltip: {

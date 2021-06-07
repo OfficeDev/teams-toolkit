@@ -1,7 +1,7 @@
 export const validManifest = {
   "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.9/MicrosoftTeams.schema.json",
   "manifestVersion": "1.9",
-  "version": "{version}",
+  "version": "1.0.0",
   "id": "{appid}",
   "packageName": "com.microsoft.teams.extension",
   "developer": {

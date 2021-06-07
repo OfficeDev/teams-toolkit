@@ -19,16 +19,25 @@ import {
   Plugin,
   AzureAccountProvider,
   SubscriptionInfo,
+  Dialog,
+  DialogMsg,
+  IProgressHandler,
+  IMessage,
+  DialogType,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
 import {
   DEFAULT_PERMISSION_REQUEST,
+  FRONTEND_DOMAIN,
+  FRONTEND_ENDPOINT,
   GLOBAL_CONFIG,
+  REMOTE_AAD_ID,
   REMOTE_MANIFEST,
   REMOTE_TEAMS_APP_ID,
   SolutionError,
   SOLUTION_PROVISION_SUCCEEDED,
+  WEB_APPLICATION_INFO_SOURCE,
 } from "../../../src/plugins/solution/fx-solution/constants";
 import {
   HostTypeOptionAzure,
@@ -43,11 +52,33 @@ import _ from "lodash";
 import { AadAppForTeamsPlugin } from "../../../src/plugins/resource/aad";
 import { TokenCredential } from "@azure/core-auth";
 import { TokenCredentialsBase, UserTokenCredentials } from "@azure/ms-rest-nodeauth";
-import { ResourceGroups, ResourceManagementClient } from "@azure/arm-resources";
+import { ResourceGroups } from "@azure/arm-resources";
+import * as solutionUtil from "../../../src/plugins/solution/fx-solution/util";
 
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
+
+function instanceOfIMessage(obj: any): obj is IMessage {
+  return "items" in obj;
+}
+
+class MockedDialog implements Dialog {
+  async communicate(msg: DialogMsg): Promise<DialogMsg> {
+    if (msg.dialogType == DialogType.Show && instanceOfIMessage(msg.content) && _.isEqual(["Provision", "Pricing calculator"], msg.content.items)) {
+      return new DialogMsg(
+        DialogType.Answer,
+        "Provision"
+      );
+    }
+    throw new Error("Method not implemented.");
+  }
+
+  createProgressBar(_title: string, _totalSteps: number): IProgressHandler {
+    throw new Error("Method not implemented.");
+  }
+
+}
 
 class MockedAppStudioTokenProvider implements AppStudioTokenProvider {
   async getAccessToken(showDialog?: boolean): Promise<string> {
@@ -112,9 +143,7 @@ class MockedAzureTokenProvider implements AzureAccountProvider {
   async setSubscription(subscriptionId: string): Promise<void> {
     return;
   }
-
 }
-
 
 function mockSolutionContext(): SolutionContext {
   const config: SolutionConfig = new Map();
@@ -123,6 +152,7 @@ function mockSolutionContext(): SolutionContext {
     root: ".",
     app: new TeamsAppManifest(),
     config,
+    dialog: new MockedDialog(),
     answers: new ConfigMap(),
     projectSettings: undefined,
     appStudioToken: new MockedAppStudioTokenProvider,
@@ -147,8 +177,6 @@ function mockProvisionThatAlwaysSucceed(plugin: Plugin) {
     return ok(Void);
   };
 }
-
-
 
 describe("provision() simple cases", () => {
   it("should return error if solution state is not idle", async () => {
@@ -337,6 +365,7 @@ describe("provision() happy path for SPFx projects", () => {
 describe("provision() happy path for Azure projects", () => {
   const mocker = sinon.createSandbox();
   const permissionsJsonPath = "./permissions.json";
+  const resourceGroupName = "test-rg";
 
   const mockedAppDef: IAppDefinition = {
     appName: "MyApp",
@@ -353,7 +382,8 @@ describe("provision() happy path for Azure projects", () => {
     mocker.stub(AppStudio, "createApp").resolves(mockedAppDef);
     mocker.stub(AppStudio, "updateApp").resolves(mockedAppDef);
     // mocker.stub(ResourceGroups.prototype, "checkExistence").resolves({body: true});
-    mocker.stub(ResourceGroups.prototype, "createOrUpdate").resolves({name: "ut-rg"});
+    mocker.stub(ResourceGroups.prototype, "createOrUpdate").resolves({name: resourceGroupName});
+    mocker.stub(solutionUtil, "getSubsriptionDisplayName").resolves(mockedSubscriptionName);
   });
 
   afterEach(() => {
@@ -374,20 +404,39 @@ describe("provision() happy path for Azure projects", () => {
     };
 
     mockProvisionThatAlwaysSucceed(solution.fehostPlugin);
-    mockProvisionThatAlwaysSucceed(solution.aadPlugin);
-    const aadPlugin: AadAppForTeamsPlugin = solution.aadPlugin as any;
-    aadPlugin.setApplicationInContext = function (
-      _ctx: PluginContext, _isLocalDebug?: boolean
-    ): Result<any, FxError> {
+    solution.fehostPlugin.provision = async function (
+      ctx: PluginContext,
+    ): Promise<Result<any, FxError>> {
+      ctx.config.set(FRONTEND_ENDPOINT, "http://example.com");
+      ctx.config.set(FRONTEND_DOMAIN, "http://example.com");
       return ok(Void);
     };
 
+    mockProvisionThatAlwaysSucceed(solution.aadPlugin);
+    solution.aadPlugin.postProvision = async function (
+      ctx: PluginContext,
+    ): Promise<Result<any, FxError>> {
+      ctx.config.set(REMOTE_AAD_ID, "mockedRemoteAadId");
+      return ok(Void);
+    };
+    
+    const aadPlugin: AadAppForTeamsPlugin = solution.aadPlugin as any;
+    aadPlugin.setApplicationInContext = function (
+      ctx: PluginContext, _isLocalDebug?: boolean
+    ): Result<any, FxError> {
+      ctx.config.set(WEB_APPLICATION_INFO_SOURCE, "mockedWebApplicationInfoResouce");
+      return ok(Void);
+    };
+    const spy = mocker.spy(aadPlugin, "setApplicationInContext");
+
     expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be.undefined;
     expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).to.be.undefined;
+    // mockedCtx.config.get(GLOBAL_CONFIG)?.set("resourceGroupName", resourceGroupName);
     mockedCtx.config.get(GLOBAL_CONFIG)?.set("subscriptionId", mockedSubscriptionId);
     mockedCtx.config.get(GLOBAL_CONFIG)?.set("tenantId", mockedTenantId);
     const result = await solution.provision(mockedCtx);
     expect(result.isOk()).to.be.true;
+    expect(spy.calledOnce).to.be.true;
     expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be.true;
     expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).equals(mockedAppDef.teamsAppId);
   });

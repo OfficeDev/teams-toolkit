@@ -3,7 +3,7 @@
 import { PluginContext, ReadonlyPluginConfig } from "@microsoft/teamsfx-api";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 
-import { Constants, DependentPluginInfo, FrontendConfigInfo } from "./constants";
+import { Constants, DependentPluginInfo, FrontendConfigInfo, RegularExpr } from "./constants";
 import {
   InvalidConfigError,
   InvalidStorageNameError,
@@ -69,7 +69,7 @@ export class FrontendConfig {
         Constants.FrontendSuffix
       );
     }
-    if (!Constants.FrontendStorageNamePattern.test(storageName)) {
+    if (!RegularExpr.FrontendStorageNamePattern.test(storageName)) {
       throw new InvalidStorageNameError();
     }
 

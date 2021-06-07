@@ -2169,13 +2169,7 @@ export class TeamsAppSolution implements Solution {
         }
       }
     }
-    return err(
-      returnUserError(
-        new Error(`getQuestionsForUserTaskRouteFailed:${JSON.stringify(func)}`),
-        "Solution",
-        `getQuestionsForUserTaskRouteFailed`
-      )
-    );
+    return ok(undefined);
   }
   async executeAddResource(ctx: SolutionContext): Promise<Result<any, FxError>> {
     if (!ctx.answers) {
@@ -2261,7 +2255,12 @@ export class TeamsAppSolution implements Solution {
       ctx.logProvider?.info(`finish scaffolding ${notifications.join(",")}!`);
       if(addNewResoruceToProvision)
         ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false); //if selected plugin changed, we need to re-do provision
-      ctx.ui?.showMessage("info", util.format(getStrings().solution.AddResourceNotice,notifications.join(",")), false);
+      ctx.ui?.showMessage(
+          "info", 
+          util.format(
+              ctx.platform === Platform.CLI ? getStrings().solution.AddResourceNoticeForCli : getStrings().solution.AddResourceNotice, 
+              notifications.join(",")), 
+          false);
     }
     return ok(Void);
   }
@@ -2354,7 +2353,7 @@ export class TeamsAppSolution implements Solution {
       await ctx.dialog?.communicate(
         new DialogMsg(DialogType.Show, {
           description: util.format(
-            getStrings().solution.AddCapabilityNotice,
+            ctx.platform === Platform.CLI ? getStrings().solution.AddCapabilityNoticeForCli : getStrings().solution.AddCapabilityNotice,
             notifications.join(",")
           ),
           level: MsgLevel.Info,

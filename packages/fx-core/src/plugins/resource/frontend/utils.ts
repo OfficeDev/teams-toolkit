@@ -5,7 +5,7 @@ import { AxiosResponse } from "axios";
 import { exec } from "child_process";
 import glob from "glob";
 
-import { Constants } from "./constants";
+import { Constants, RegularExpr } from "./constants";
 import { Logger } from "./utils/logger";
 import fs from "fs-extra";
 import klaw from "klaw";
@@ -25,7 +25,7 @@ export class Utils {
     const paddingLength: number =
       Constants.AzureStorageAccountNameLenMax - resourceNameSuffix.length - suffix.length;
     const normalizedAppName: string = appName
-      .replace(Constants.FrontendAppNamePattern, Constants.EmptyString)
+      .replace(RegularExpr.FrontendAppNamePattern, Constants.EmptyString)
       .toLowerCase();
     return normalizedAppName.substr(0, paddingLength) + suffix + resourceNameSuffix;
   }

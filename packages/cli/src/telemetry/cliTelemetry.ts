@@ -105,8 +105,8 @@ export class CliTelemetry {
     CliTelemetry.reporter.withRootFolder(CliTelemetry.rootFolder).sendTelemetryException(error, properties, measurements);
   }
 
-  public flush(): void {
-    CliTelemetry.reporter.flush();
+  public async flush(): Promise<void> {
+    await CliTelemetry.reporter.flush();
   }
 }
 

@@ -144,9 +144,9 @@ export class Utils {
     return isLocalDebug ? Constants.LocalPrefix + key : key;
   }
 
-  public static addLogAndTelemetry(logProvider: LogProvider | undefined, message: Message) {
+  public static addLogAndTelemetry(logProvider: LogProvider | undefined, message: Message, properties?: { [key: string]: string }) {
     logProvider?.info(message.log);
-    TelemetryUtils.sendEvent(message.telemetry);
+    TelemetryUtils.sendEvent(message.telemetry, properties);
   }
 
   public static getConfigValueWithValidation(

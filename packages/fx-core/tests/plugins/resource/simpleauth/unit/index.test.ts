@@ -69,8 +69,11 @@ describe("simpleAuthPlugin", () => {
 
   it("provision", async function () {
     // Arrange
-    const endpoint = faker.internet.url();
-    sinon.stub(WebAppClient.prototype, "createWebApp").resolves(endpoint);
+    const webApp = {
+      "endpoint": faker.internet.url(),
+      "skuName": "B1"
+    };
+    sinon.stub(WebAppClient.prototype, "createWebApp").resolves(webApp);
     sinon.stub(WebAppClient.prototype, "zipDeploy").resolves();
     sinon.stub(WebAppClient.prototype, "configWebApp").resolves();
 
@@ -82,7 +85,7 @@ describe("simpleAuthPlugin", () => {
     chai.assert.isTrue(provisionResult.isOk());
     chai.assert.strictEqual(
       pluginContext.config.get(Constants.SimpleAuthPlugin.configKeys.endpoint),
-      endpoint
+      webApp.endpoint
     );
     chai.assert.isTrue(postProvisionResult.isOk());
   });

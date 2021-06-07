@@ -108,6 +108,7 @@ export class Telemetry {
   static component = "component";
   static errorCode = "error-code";
   static errorType = "error-type";
+  static skuName = "sku-name";
   static errorMessage = "error-message";
   static userError = "user";
   static systemError = "system";

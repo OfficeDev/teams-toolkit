@@ -81,7 +81,7 @@ export class ApimPlugin implements Plugin {
         OperationStatus.Succeeded
       );
       return ok(result);
-    } catch (error) {
+    } catch (error: any) {
       let packagedError: SystemError | UserError;
       if (error instanceof SystemError || error instanceof UserError) {
         packagedError = error;
@@ -163,7 +163,7 @@ async function _provision(ctx: PluginContext, progressBar: ProgressBar): Promise
     ProgressStep.Provision,
     ProgressMessages[ProgressStep.Provision].CreateAad
   );
-  await aadManager.provision(apimConfig, ctx.app.name.short);
+  await aadManager.provision(apimConfig, ctx.projectSettings?.appName);
 }
 
 async function _postProvision(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {

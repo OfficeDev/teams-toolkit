@@ -31,8 +31,8 @@ import { OpenAPI } from "openapi-types";
 export class ApimService {
   private readonly subscriptionId: string;
   private readonly apimClient: ApiManagementClient;
-  private readonly telemetryReporter?: TelemetryReporter;
-  private readonly logger?: LogProvider;
+  private readonly telemetryReporter: TelemetryReporter | undefined;
+  private readonly logger: LogProvider | undefined;
   private readonly credential: TokenCredentialsBase;
 
   constructor(
@@ -438,7 +438,7 @@ export class ApimService {
         OperationStatus.Succeeded
       );
       return result;
-    } catch (error) {
+    } catch (error: any) {
       if (!!errorHandler && errorHandler(error) === ErrorHandlerResult.Return) {
         this.logger?.info(LogMessages.operationSuccess(operation, resourceType, resourceId));
         Telemetry.sendApimOperationEvent(
@@ -473,16 +473,15 @@ export class ApimService {
 
   private convertApimServiceResource(src: ApiManagementServiceResource): IApimServiceResource {
     const resourceId = AssertNotEmpty("apimServiceListResponse.id", src.id);
-    const name = AssertNotEmpty("apimServiceListResponse.name", src.name);
     const matches = resourceId.match(
       /\/subscriptions\/(.*)\/resourceGroups\/(.*)\/providers\/(.*)\/(.*)/
     );
 
-    if (matches === null || matches.length < 3) {
+    if (matches === null || matches.length < 5) {
       throw BuildError(InvalidAzureResourceId, resourceId);
     }
 
-    return { serviceName: name, resourceGroupName: matches[2] };
+    return { serviceName: matches[4], resourceGroupName: matches[2] };
   }
 
   private generateVersionSetResourceId(

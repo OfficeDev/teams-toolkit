@@ -215,7 +215,7 @@ export class FxCore implements Core {
       return await this._getQuestionsForCreateProject(inputs);
     }
     else{
-      const solutionContext = ctx!.solutioContext === undefined ? await newSolutionContext(this.tools, inputs) : ctx!.solutioContext;
+      const solutionContext = ctx!.solutionContext === undefined ? await newSolutionContext(this.tools, inputs) : ctx!.solutionContext;
       const solution = ctx!.solution === undefined ? await loadSolution(inputs) : ctx!.solution;
       return await this._getQuestions(solutionContext, solution, task, inputs);
     }  
@@ -223,7 +223,7 @@ export class FxCore implements Core {
  
   @hooks([ErrorHandlerMW, ContextLoaderMW, SolutionLoaderMW, ContextInjecterMW])
   async getQuestionsForUserTask(func: FunctionRouter, inputs: Inputs, ctx?: HookContext) : Promise<Result<QTreeNode | undefined, FxError>>{
-    const solutionContext = ctx!.solutioContext === undefined ? await newSolutionContext(this.tools, inputs) : ctx!.solutioContext;
+    const solutionContext = ctx!.solutionContext === undefined ? await newSolutionContext(this.tools, inputs) : ctx!.solutionContext;
     const solution = ctx!.solution === undefined ? await loadSolution(inputs) : ctx!.solution;
     return await this._getQuestionsForUserTask(solutionContext, solution, func, inputs);
   }

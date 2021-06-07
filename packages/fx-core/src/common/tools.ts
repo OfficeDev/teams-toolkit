@@ -306,9 +306,9 @@ export function validateSettings(projectSettings?: ProjectSettings):string|undef
 
 export function validateConfig(solutioSettings:AzureSolutionSettings, configJson: Json): string|undefined {
   if(!configJson[PluginNames.SOLUTION]) return "solution config is missing";
-  const capabilities = solutioSettings.capabilities;
-  const azureResources = solutioSettings.azureResources;
-  const plugins = solutioSettings.activeResourcePlugins;
+  const capabilities = solutioSettings.capabilities  || [];
+  const azureResources = solutioSettings.azureResources || [];
+  const plugins = solutioSettings.activeResourcePlugins  || [];
   // if(!configJson[PluginNames.LDEBUG]) return "local debug config is missing";
   if(!plugins.includes(PluginNames.LDEBUG)) return  `${PluginNames.LDEBUG} setting is missing in settings.json`;
   if(solutioSettings.hostType === HostTypeOptionSPFx.id){

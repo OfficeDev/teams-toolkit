@@ -5,10 +5,11 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks";
-import { ConfigFolderName, err, Inputs, Platform, SolutionContext, StaticPlatforms } from "@microsoft/teamsfx-api";
+import { AzureSolutionSettings, ConfigFolderName, err, Inputs, Platform, SolutionContext, StaticPlatforms } from "@microsoft/teamsfx-api";
 import { mapToJson, serializeDict, sperateSecretData } from "../../common/tools";
 import { WriteFileError } from "../error";
 import { FxCore } from "..";
+import { TeamsAppSolution } from "../../plugins";
 
 /**
  * This middleware will help to persist configs if necessary.
@@ -30,6 +31,9 @@ export const ConfigWriterMW: Middleware = async (
         const confFolderPath = path.resolve(solutionContext.root, `.${ConfigFolderName}`);
         if(!solutionContext.projectSettings?.currentEnv)
           solutionContext.projectSettings!.currentEnv = "default";
+        const solutionSettings = solutionContext.projectSettings?.solutionSettings as AzureSolutionSettings;
+        if(!solutionSettings.activeResourcePlugins) solutionSettings.activeResourcePlugins = [];
+        if(!solutionSettings.azureResources) solutionSettings.azureResources = [];
         const envName = solutionContext.projectSettings?.currentEnv;
         const solutionConfig = solutionContext.config;
         const configJson = mapToJson(solutionConfig);

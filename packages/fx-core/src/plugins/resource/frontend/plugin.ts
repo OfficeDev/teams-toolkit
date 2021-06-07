@@ -15,7 +15,6 @@ import {
   runWithErrorCatchAndThrow,
   CheckStorageError,
   CheckResourceGroupError,
-  NoPreStepError,
   InvalidStorageNameError,
   StorageAccountAlreadyTakenError,
   runWithErrorCatchAndWrap,
@@ -24,9 +23,9 @@ import {
   AzureErrorCode,
   Constants,
   DependentPluginInfo,
-  FrontendConfigInfo,
   FrontendPathInfo,
   FrontendPluginInfo as PluginInfo,
+  RegularExpr,
 } from "./constants";
 import { FrontendConfig } from "./configs";
 import { FrontendDeployment } from "./ops/deploy";
@@ -74,7 +73,7 @@ export class FrontendPluginImpl {
           zip,
           path.join(ctx.root, FrontendPathInfo.WorkingDir),
           (filePath: string, data: Buffer) =>
-            filePath.replace(Constants.ReplaceTemplateExt, Constants.EmptyString),
+            filePath.replace(RegularExpr.ReplaceTemplateExt, Constants.EmptyString),
           (filePath: string, data: Buffer) =>
             Scaffold.fulfill(filePath, data, templateInfo.variables)
         )

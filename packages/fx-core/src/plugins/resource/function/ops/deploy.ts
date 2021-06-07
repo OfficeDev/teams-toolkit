@@ -27,7 +27,7 @@ import { forEachFileAndDir } from "../utils/dir-walk";
 import { requestWithRetry } from "../utils/templates-fetch";
 import { BackendExtensionsInstaller } from "../utils/depsChecker/backendExtensionsInstall";
 import { DotnetChecker } from "../utils/depsChecker/dotnetChecker";
-import { funcPluginAdapter } from "../utils/depsChecker/funcPluginAdapter";
+import { FuncPluginAdapter } from "../utils/depsChecker/funcPluginAdapter";
 import { funcPluginLogger } from "../utils/depsChecker/funcPluginLogger";
 import { FuncPluginTelemetry } from "../utils/depsChecker/funcPluginTelemetry";
 import { PluginContext } from '@microsoft/teamsfx-api';
@@ -112,7 +112,7 @@ export class FunctionDeploy {
 
     const binPath = path.join(componentPath, FunctionPluginPathInfo.functionExtensionsFolderName);
     const dotnetChecker = new DotnetChecker(
-      funcPluginAdapter,
+      new FuncPluginAdapter(ctx),
       funcPluginLogger,
       new FuncPluginTelemetry(ctx)
     );

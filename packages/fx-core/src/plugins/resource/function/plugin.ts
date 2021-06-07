@@ -65,7 +65,7 @@ import { DotnetChecker } from "./utils/depsChecker/dotnetChecker";
 import { Messages, isLinux, dotnetManualInstallHelpLink } from "./utils/depsChecker/common";
 import { DepsCheckerError } from "./utils/depsChecker/errors";
 import { getNodeVersion } from "./utils/node-version";
-import { funcPluginAdapter } from "./utils/depsChecker/funcPluginAdapter";
+import { FuncPluginAdapter } from "./utils/depsChecker/funcPluginAdapter";
 import { funcPluginLogger } from "./utils/depsChecker/funcPluginLogger";
 import { FuncPluginTelemetry } from "./utils/depsChecker/funcPluginTelemetry";
 
@@ -801,6 +801,7 @@ export class FunctionPluginImpl {
 
   private async handleDotnetChecker(ctx: PluginContext): Promise<void> {
     try {
+      const funcPluginAdapter = new FuncPluginAdapter(ctx);
       await step(StepGroup.PreDeployStepGroup, PreDeploySteps.dotnetInstall, async () => {
         const dotnetChecker = new DotnetChecker(
           funcPluginAdapter,
@@ -808,7 +809,7 @@ export class FunctionPluginImpl {
           new FuncPluginTelemetry(ctx)
         );
         try {
-          if (await dotnetChecker.isInstalled()) {
+          if (!(await dotnetChecker.isEnabled()) || await dotnetChecker.isInstalled()) {
             return;
           }
         } catch (error) {
@@ -819,7 +820,7 @@ export class FunctionPluginImpl {
 
         if (isLinux()) {
           // TODO: handle linux installation
-          if (!(await funcPluginAdapter.handleDotnetForLinux(ctx, dotnetChecker))) {
+          if (!(await funcPluginAdapter.handleDotnetForLinux(dotnetChecker))) {
             // NOTE: this is a temporary fix for Linux, to make the error message more readable.
             const message = await funcPluginAdapter.generateMsg(
               Messages.linuxDepsNotFoundHelpLinkMessage,
@@ -858,7 +859,7 @@ export class FunctionPluginImpl {
             await FunctionDeploy.installFuncExtensions(ctx, workingPath, functionLanguage);
           } catch (error) {
             // wrap the original error to UserError so the extensibility model will pop-up a dialog correctly
-            funcPluginAdapter.handleDotnetError(error);
+            new FuncPluginAdapter(ctx).handleDotnetError(error);
           }
         })
     );

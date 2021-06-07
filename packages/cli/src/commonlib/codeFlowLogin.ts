@@ -236,16 +236,12 @@ export class CodeFlowLogin {
       }
     } catch (error) {
       CliCodeLogInstance.necessaryLog(LogLevel.Error, "[Login] " + error.message);
-<<<<<<< HEAD
-      throw LoginFailureError(error);
-=======
       if (error.name!==ErrorMessage.loginTimeoutTitle &&
         error.name!==ErrorMessage.loginPortConflictTitle) {
         throw LoginCodeFlowError(error);
       } else {
         throw error;
       }
->>>>>>> origin/dev
     }
   }
 

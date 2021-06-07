@@ -88,7 +88,7 @@ export class FunctionValidator {
 
         const expectValues = new Map<string, string>([]);
         expectValues.set(BaseConfig.API_ENDPOINT, ctx[DependentPluginInfo.functionPluginName][DependentPluginInfo.apiEndpoint] as string);
-        expectValues.set(SQLConfig.SQL_ENDPOINT, ctx[DependentPluginInfo.sqlPluginName][DependentPluginInfo.sqlEndpoint] as string);
+        expectValues.set(SQLConfig.SQL_ENDPOINT, ctx[DependentPluginInfo.sqlPluginName]?.[DependentPluginInfo.sqlEndpoint] as string);
         functionObject.expectValues = expectValues;
 
         console.log("Successfully init validator for Function.");

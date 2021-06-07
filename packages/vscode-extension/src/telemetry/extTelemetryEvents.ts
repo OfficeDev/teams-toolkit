@@ -56,6 +56,9 @@ export enum TelemetryEvent {
   DebugStart = "debug-start",
   DebugStop = "debug-stop",
 
+  DebugNpmInstallStart = "debug-npm-install-start",
+  DebugNpmInstallStop = "debug-npm-installstop",
+
   Survey = "survey",
 }
 
@@ -75,6 +78,7 @@ export enum TelemetryProperty {
   DebugPort = "port",
   DebugRemote = "remote",
   DebugAppId = "debug-appid",
+  DebugNpmInstallExitCode = "debug-npm-install-exit-code",
   Internal = "internal",
   InternalAlias = "internal-alias",
   OSArch = "os-arch",

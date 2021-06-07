@@ -8,7 +8,7 @@ import { PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { IDepsTelemetry } from "./checker";
 import { DepsCheckerEvent, TelemetryMessurement } from "./common";
 import { telemetryHelper } from "../telemetry-helper";
-import { TelemetryKey } from "src/plugins/resource/function/enums";
+import { TelemetryKey } from "../../enums";
 
 export class FuncPluginTelemetry implements IDepsTelemetry {
   private readonly _source = "func-envchecker";

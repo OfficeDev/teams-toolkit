@@ -80,7 +80,7 @@ export function getLogLevel(): LogLevel {
 }
 
 class InternalLogger {
-  public level: LogLevel = LogLevel.Error;
+  public level: LogLevel = LogLevel.Info;
 
   public customLogger: Logger | undefined;
   public customLogFunction: LogFunction | undefined;

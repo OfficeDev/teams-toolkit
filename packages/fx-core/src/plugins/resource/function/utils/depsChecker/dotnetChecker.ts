@@ -73,9 +73,11 @@ export class DotnetChecker implements IDepsChecker {
   }
 
   public isEnabled(): Promise<boolean> {
-    // TODO: should send this event per user
-    // this._telemetry.sendEvent(DepsCheckerEvent.skipCheckDotnet);
-    return Promise.resolve(this._adapter.dotnetCheckerEnabled());
+    const enabled = this._adapter.dotnetCheckerEnabled();
+    if (!enabled) {
+      this._telemetry.sendEvent(DepsCheckerEvent.dotnetCheckSkipped);
+    }
+    return Promise.resolve(enabled);
   }
 
   public async isInstalled(): Promise<boolean> {

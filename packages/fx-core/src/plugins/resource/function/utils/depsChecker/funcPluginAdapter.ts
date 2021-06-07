@@ -6,7 +6,6 @@ import * as path from "path";
 import { funcPluginLogger as logger } from "./funcPluginLogger";
 import { DepsCheckerError } from "./errors";
 import {
-  ConfigMap,
   DialogMsg,
   DialogType,
   PluginContext,
@@ -17,10 +16,14 @@ import { Messages, dotnetManualInstallHelpLink, defaultHelpLink } from "./common
 import { IDepsAdapter, IDepsChecker } from "./checker";
 import { getResourceFolder } from "../../../../..";
 
-class FuncPluginAdapter implements IDepsAdapter {
+export class FuncPluginAdapter implements IDepsAdapter {
   private readonly downloadIndicatorInterval = 1000; // same as vscode-dotnet-runtime
-  private readonly answerKey = "function-dotnet-checker-enabled";
-  private enabled = false;
+  private readonly _ctx: PluginContext;
+  private readonly dotnetSettingKey = "function-dotnet-checker-enabled";
+
+  constructor(ctx: PluginContext) {
+    this._ctx = ctx;
+  }
 
   public displayLearnMore(message: string, link: string): Promise<boolean> {
     // TODO: implement learn more popup in plugin
@@ -48,7 +51,11 @@ class FuncPluginAdapter implements IDepsAdapter {
   }
 
   public dotnetCheckerEnabled(): boolean {
-    return this.enabled;
+    let enabled: boolean = true;
+    if (this._ctx.answers) {
+      enabled = <boolean>this._ctx.answers.getBoolean(this.dotnetSettingKey, true);
+    }
+    return enabled;
   }
 
   public async runWithProgressIndicator(callback: () => Promise<void>): Promise<void> {
@@ -76,10 +83,6 @@ class FuncPluginAdapter implements IDepsAdapter {
     throw new Error("Method not implemented.");
   }
 
-  public setFeatureFlag(answers?: ConfigMap): void {
-    this.enabled = answers?.getBoolean(this.answerKey) || false;
-  }
-
   public handleDotnetError(error: Error): void {
     const source = "functionDepsChecker";
     const defaultAnchor = "report-issues";
@@ -97,23 +100,22 @@ class FuncPluginAdapter implements IDepsAdapter {
     }
   }
 
-  public async handleDotnetForLinux(ctx: PluginContext, checker: IDepsChecker): Promise<boolean> {
+  public async handleDotnetForLinux(checker: IDepsChecker): Promise<boolean> {
     const confirmMessage = await this.generateMsg(Messages.linuxDepsNotFound, [checker]);
-    return this.displayContinueWithLearnMoreLink(ctx, confirmMessage, dotnetManualInstallHelpLink);
+    return this.displayContinueWithLearnMoreLink(confirmMessage, dotnetManualInstallHelpLink);
   }
 
   public async displayContinueWithLearnMoreLink(
-    ctx: PluginContext,
     message: string,
     link: string
   ): Promise<boolean> {
-    if (!ctx.dialog) {
+    if (!this._ctx.dialog) {
       // no dialog, always continue
       return true;
     }
 
     const userSelected: string | undefined = (
-      await ctx.dialog.communicate(
+      await this._ctx.dialog.communicate(
         new DialogMsg(DialogType.Ask, {
           description: message,
           type: QuestionType.Confirm,
@@ -123,14 +125,14 @@ class FuncPluginAdapter implements IDepsAdapter {
     ).getAnswer();
 
     if (userSelected === Messages.learnMoreButtonText) {
-      await ctx.dialog.communicate(
+      await this._ctx.dialog.communicate(
         new DialogMsg(DialogType.Ask, {
           type: QuestionType.OpenExternal,
           description: link,
         })
       );
 
-      return this.displayContinueWithLearnMoreLink(ctx, message, link);
+      return this.displayContinueWithLearnMoreLink(message, link);
     }
 
     return userSelected === Messages.continueButtonText;
@@ -160,5 +162,3 @@ class FuncPluginAdapter implements IDepsAdapter {
     }
   }
 }
-
-export const funcPluginAdapter = new FuncPluginAdapter();

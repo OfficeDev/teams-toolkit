@@ -7,7 +7,10 @@ import { TelemetryKeys, TelemetryValues } from "../constants";
 import { PluginBot, PluginSolution } from "../resources/strings";
 
 export class telemetryHelper {
-  static fillCommonProperty(ctx: PluginContext, properties: { [key: string]: string }) {
+  static fillCommonProperty(
+    ctx: PluginContext,
+    properties: { [key: string]: string }
+  ): void {
     properties[TelemetryKeys.Component] = PluginBot.PLUGIN_NAME;
     properties[TelemetryKeys.AppId] =
       (ctx.configOfOtherPlugins
@@ -48,8 +51,9 @@ export class telemetryHelper {
   ): void {
     properties[TelemetryKeys.Success] = TelemetryValues.Fail;
     properties[TelemetryKeys.ErrorMessage] = e.message;
+    properties[TelemetryKeys.ErrorCode] = e.name;
     this.fillCommonProperty(ctx, properties);
-    
+
     if (e instanceof SystemError) {
       properties[TelemetryKeys.ErrorType] = TelemetryValues.SystemError;
     } else if (e instanceof UserError) {

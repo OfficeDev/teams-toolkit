@@ -33,6 +33,20 @@
             ]
         }
     ],
+    "configurableTabs": [
+        {
+            "configurationUrl": "https://{teamSiteDomain}{teamSitePath}/_layouts/15/TeamsLogon.aspx?SPFX=true&dest=/_layouts/15/teamshostedapp.aspx%3FopenPropertyPane=true%26teams%26componentId=<%= componentId %>%26forceLocale={locale}",
+            "canUpdateConfiguration": true,
+            "scopes": [
+                "team",
+                "groupchat"
+            ]
+        }
+    ],
+    "permissions": [
+        "identity",
+        "messageTeamMembers"
+    ],
     "validDomains": [
         "*.login.microsoftonline.com",
         "*.sharepoint.com",

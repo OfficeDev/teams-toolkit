@@ -215,7 +215,9 @@ export class FxCore implements Core {
       return await this._getQuestionsForCreateProject(inputs);
     }
     else{
-      return await this._getQuestions(ctx!.solutionContext, ctx!.solution, task, inputs);
+      const solutionContext = ctx!.solutioContext === undefined ? await newSolutionContext(this.tools, inputs) : ctx!.solutioContext;
+      const solution = ctx!.solution === undefined ? await loadSolution(inputs) : ctx!.solution;
+      return await this._getQuestions(solutionContext, solution, task, inputs);
     }  
   }
  

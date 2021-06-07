@@ -77,7 +77,9 @@ function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent): void
       );
     } else if (isNpmInstallTask(task)) {
       try {
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugNpmInstallStart);
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugNpmInstallStart, {
+          [TelemetryProperty.DebugNpmInstallName]: task.name,
+        });
       } catch {
         // ignore telemetry error
       }
@@ -96,6 +98,7 @@ function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): void {
   } else if (isNpmInstallTask(task)) {
     try {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugNpmInstallStop, {
+        [TelemetryProperty.DebugNpmInstallName]: task.name,
         [TelemetryProperty.DebugNpmInstallExitCode]: event.exitCode + "",
       });
     } catch {

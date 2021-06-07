@@ -13,7 +13,7 @@ export class Constants {
   static FrontendIndexDocument = "index.html";
   static FrontendErrorDocument = "index.html";
   static FrontendAppNamePattern = /[^a-zA-Z0-9]/g;
-  static FrontendStorageNamePattern = /^[a-z0-9]{1,16}fe[a-z0-9]{6}$/;
+  static FrontendStorageNamePattern = /^[a-z0-9]{3,24}$/;
   static ReplaceTemplateExt = /\.tpl$/;
   static FrontendSuffix = "fe";
 

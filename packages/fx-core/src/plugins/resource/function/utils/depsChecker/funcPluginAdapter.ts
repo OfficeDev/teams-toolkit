@@ -51,7 +51,11 @@ export class FuncPluginAdapter implements IDepsAdapter {
   }
 
   public dotnetCheckerEnabled(): boolean {
-    return this._ctx.answers?.getBoolean(this.dotnetSettingKey, true) || true;
+    let enabled: boolean = true;
+    if (this._ctx.answers) {
+      enabled = <boolean>this._ctx.answers.getBoolean(this.dotnetSettingKey, true);
+    }
+    return enabled;
   }
 
   public async runWithProgressIndicator(callback: () => Promise<void>): Promise<void> {

@@ -13,89 +13,19 @@ import {
   FxError,
   Result,
   SolutionConfig,
-  SystemError,
   SolutionContext,
   AzureAccountProvider,
-  SubscriptionInfo,
-  UserInteraction
+  SubscriptionInfo
 } from "@microsoft/teamsfx-api";
 import { GLOBAL_CONFIG, SolutionError } from "./constants";
 import { v4 as uuidv4 } from "uuid";
 import { ResourceManagementClient } from "@azure/arm-resources";
-import { SubscriptionClient } from "@azure/arm-subscriptions";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { askSubscription } from "../../../common/tools";
-
-interface PartialList<T> extends Array<T> {
-  nextLink?: string;
-}
-
-// Copied from https://github.com/microsoft/vscode-azure-account/blob/2b3c1a8e81e237580465cc9a1f4da5caa34644a6/sample/src/extension.ts
-// to list all subscriptions
-async function listAll<T>(
-  client: { listNext(nextPageLink: string): Promise<PartialList<T>> },
-  first: Promise<PartialList<T>>
-): Promise<T[]> {
-  const all: T[] = [];
-  for (
-    let list = await first;
-    list.length || list.nextLink;
-    list = list.nextLink ? await client.listNext(list.nextLink) : []
-  ) {
-    all.push(...list);
-  }
-  return all;
-}
 
 export type AzureSubscription = {
   displayName: string;
   subscriptionId: string;
 };
-
-async function getSubscriptionList(azureToken: TokenCredentialsBase): Promise<AzureSubscription[]> {
-  const client = new SubscriptionClient(azureToken);
-  const subscriptions = await listAll(client.subscriptions, client.subscriptions.list());
-  const subs: Partial<AzureSubscription>[] = subscriptions.map((sub) => {
-    return { displayName: sub.displayName, subscriptionId: sub.subscriptionId };
-  });
-  const filteredSubs = subs.filter(
-    (sub) => sub.displayName !== undefined && sub.subscriptionId !== undefined
-  );
-  return filteredSubs.map((sub) => {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return { displayName: sub.displayName!, subscriptionId: sub.subscriptionId! };
-  });
-}
-
-// Parse tenantId from azure token. Azure token is just a base64-encoded JSON object.
-async function parseAzureTenantId(
-  azureToken: TokenCredentialsBase
-): Promise<Result<string, SystemError>> {
-  const token = (await azureToken.getToken()).accessToken;
-  const array = token.split(".");
-  if (array.length < 2) {
-    return err(
-      returnSystemError(
-        new Error("Invalid access token"),
-        "Solution",
-        SolutionError.FailedToParseAzureTenantId
-      )
-    );
-  }
-  const buff = Buffer.from(array[1], "base64");
-  const obj = JSON.parse(buff.toString("utf-8"));
-  const tenantId = (obj as any)["tid"];
-  if (tenantId === undefined || typeof tenantId !== "string") {
-    return err(
-      returnSystemError(
-        new Error("Tenant id not found"),
-        "Solution",
-        SolutionError.FailedToParseAzureTenantId
-      )
-    );
-  }
-  return ok(tenantId);
-}
 
 class CommonQuestions {
   resourceNameSuffix = "";
@@ -105,18 +35,6 @@ class CommonQuestions {
   // default to East US for now
   location = "East US";
   teamsAppTenantId = "";
-}
-
-function getExistingAnswers(config: SolutionConfig): CommonQuestions | undefined {
-  const commonQuestions = new CommonQuestions();
-  for (const k of Object.keys(commonQuestions)) {
-    const value = config.get(GLOBAL_CONFIG)?.getString(k);
-    if (value === undefined || typeof value !== "string") {
-      return undefined;
-    }
-    (commonQuestions as any)[k] = value;
-  }
-  return commonQuestions;
 }
 
 /**

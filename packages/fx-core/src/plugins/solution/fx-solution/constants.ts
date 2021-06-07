@@ -92,6 +92,7 @@ export enum SolutionError {
   NoResourceToDeploy = "NoResourceToDeploy",
   ProvisionInProgress = "ProvisionInProgress",
   DeploymentInProgress = "DeploymentInProgress",
+  PublishInProgress = "PublishInProgress",
   UnknownSolutionRunningState = "UnknownSolutionRunningState",
   CannotDeployBeforeProvision = "CannotDeployBeforeProvision",
   CannotPublishBeforeProvision = "CannotPublishBeforeProvision",

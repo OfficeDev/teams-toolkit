@@ -47,16 +47,19 @@ export class WebAppClient {
     this.ctx = ctx;
   }
 
-  public async createWebApp(): Promise<string> {
+  public async createWebApp(): Promise<{ endpoint: string, skuName: string }> {
+    let skuName: string;
+
     try {
       DialogUtils.progressBar?.next(Constants.ProgressBar.provision.createAppServicePlan);
+      skuName = this.getSkuName();
       const appServicePlan = await this.webSiteManagementClient.appServicePlans.createOrUpdate(
         this.resourceGroupName,
         this.appServicePlanName,
         {
           location: this.location,
           sku: {
-            name: this.getSkuName(),
+            name: skuName,
           },
         }
       );
@@ -89,7 +92,10 @@ export class WebAppClient {
       );
       this.ctx.logProvider?.info(Messages.getLog("webApp is created: " + webApp.name));
 
-      return `https://${webApp.defaultHostName}`;
+      return {
+        endpoint: `https://${webApp.defaultHostName}`,
+        skuName
+      };
     } catch (error) {
       throw ResultFactory.SystemError(
         CreateWebAppError.name,

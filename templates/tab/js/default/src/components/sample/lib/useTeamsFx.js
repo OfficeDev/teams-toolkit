@@ -16,6 +16,8 @@ export function useTeamsFx() {
     if (!initialized) {
       if (process.env.NODE_ENV === "development") {
         setLogLevel(LogLevel.Verbose);
+      } else {
+        setLogLevel(LogLevel.Error);
       }
       loadConfiguration({
         authentication: {

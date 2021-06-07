@@ -24,6 +24,7 @@ import {
   IProgressHandler,
   IMessage,
   DialogType,
+  Platform,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
@@ -150,10 +151,10 @@ function mockSolutionContext(): SolutionContext {
   config.set(GLOBAL_CONFIG, new ConfigMap);
   return {
     root: ".",
-    app: new TeamsAppManifest(),
+    // app: new TeamsAppManifest(),
     config,
     dialog: new MockedDialog(),
-    answers: new ConfigMap(),
+    answers: {platform: Platform.VSCode},
     projectSettings: undefined,
     appStudioToken: new MockedAppStudioTokenProvider,
     azureAccountProvider: new MockedAzureTokenProvider,
@@ -206,6 +207,7 @@ describe("provision() simple cases", () => {
     const someInvalidPluginName = "SomeInvalidPluginName";
     mockedCtx.projectSettings = {
       appName: "my app",
+      currentEnv: "default",
       solutionSettings: {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
@@ -224,6 +226,7 @@ describe("provision() simple cases", () => {
     const mockedCtx = mockSolutionContext();
     mockedCtx.projectSettings = {
       appName: "my app",
+      currentEnv: "default",
       solutionSettings: {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
@@ -272,6 +275,7 @@ describe("provision() with permission.json file missing", () => {
     const mockedCtx = mockSolutionContext();
     mockedCtx.projectSettings = {
       appName: "my app",
+      currentEnv: "default",
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
@@ -289,6 +293,7 @@ describe("provision() with permission.json file missing", () => {
     const mockedCtx = mockSolutionContext();
     mockedCtx.projectSettings = {
       appName: "my app",
+      currentEnv: "default",
       solutionSettings: {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
@@ -344,6 +349,7 @@ describe("provision() happy path for SPFx projects", () => {
     const mockedCtx = mockSolutionContext();
     mockedCtx.projectSettings = {
       appName: "my app",
+      currentEnv: "default",
       solutionSettings: {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
@@ -355,6 +361,7 @@ describe("provision() happy path for SPFx projects", () => {
     expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be.undefined;
     expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).to.be.undefined;
     const result = await solution.provision(mockedCtx);
+    if(result.isErr())console.log(result.error);
     expect(result.isOk()).to.be.true;
     expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be.true;
     expect(mockedCtx.config.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).equals(mockedAppDef.teamsAppId);
@@ -395,6 +402,7 @@ describe("provision() happy path for Azure projects", () => {
     const mockedCtx = mockSolutionContext();
     mockedCtx.projectSettings = {
       appName: "my app",
+      currentEnv: "default",
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
         name: "azure",

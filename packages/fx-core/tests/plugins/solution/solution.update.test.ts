@@ -308,9 +308,10 @@ describe("update()", () => {
   it("shouldn't set provisionSucceeded to false when adding a new Function endpoint", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
-    mockedCtx.answers = new ConfigMap();
+    mockedCtx.answers = {platform: Platform.VSCode};
     mockedCtx.projectSettings = {
       appName: "my app",
+      currentEnv: "default",
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
@@ -320,7 +321,7 @@ describe("update()", () => {
         azureResources: [AzureResourceFunction.id],
       },
     };
-    mockedCtx.answers?.set(AzureSolutionQuestionNames.AddResources, [AzureResourceFunction.id]);
+    mockedCtx.answers![AzureSolutionQuestionNames.AddResources] = [AzureResourceFunction.id];
     solution.doScaffold = async function (
       _ctx: SolutionContext,
       _selectedPlugins
@@ -339,9 +340,10 @@ describe("update()", () => {
   it("should set provisionSucceeded to false when adding SQL to a project with Function", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
-    mockedCtx.answers = new ConfigMap();
+    mockedCtx.answers = {platform: Platform.VSCode};
     mockedCtx.projectSettings = {
       appName: "my app",
+      currentEnv: "default",
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
@@ -351,7 +353,7 @@ describe("update()", () => {
         azureResources: [AzureResourceFunction.id],
       },
     };
-    mockedCtx.answers?.set(AzureSolutionQuestionNames.AddResources, [AzureResourceFunction.id, AzureResourceSQL.id]);
+    mockedCtx.answers![AzureSolutionQuestionNames.AddResources] = [AzureResourceFunction.id, AzureResourceSQL.id];
     solution.doScaffold = async function (
       _ctx: SolutionContext,
       _selectedPlugins

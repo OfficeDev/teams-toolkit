@@ -409,8 +409,7 @@ export class TeamsAppSolution implements Solution {
 
   private async reloadManifest(ctx: SolutionContext): Promise<Result<TeamsAppManifest, FxError>> {
     try {
-      const filePath = path.join(ctx.root,`.${ConfigFolderName}`, REMOTE_MANIFEST);
-      const manifest = await fs.readJson(filePath);
+      const manifest = await fs.readJson(`${ctx.root}/.${ConfigFolderName}/${REMOTE_MANIFEST}`);
       if (!manifest) {
         return err(
           returnSystemError(

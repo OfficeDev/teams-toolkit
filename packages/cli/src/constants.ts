@@ -33,6 +33,7 @@ export const resourceShowFunctionParamPath = path.resolve(
   "resourceShowFunctionParam.json"
 );
 export const resourceShowSQLParamPath = path.resolve(paramFolder, "resourceShowSQLParam.json");
+export const resourceShowApimParamPath = path.resolve(paramFolder, "resourceShowApimParam.json");
 
 export const provisionParamPath = path.resolve(paramFolder, "provisionParam.json");
 export const deployParamPath = path.resolve(paramFolder, "deployParam.json");

@@ -57,7 +57,7 @@ export enum TelemetryEvent {
   DebugStop = "debug-stop",
 
   DebugNpmInstallStart = "debug-npm-install-start",
-  DebugNpmInstallStop = "debug-npm-install-stop",
+  DebugNpmInstall = "debug-npm-install",
 
   Survey = "survey",
 }

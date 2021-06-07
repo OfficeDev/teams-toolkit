@@ -97,7 +97,7 @@ function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): void {
     allRunningTeamsfxTasks.delete({ source: task.source, name: task.name, scope: task.scope });
   } else if (isNpmInstallTask(task)) {
     try {
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugNpmInstallStop, {
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugNpmInstall, {
         [TelemetryProperty.DebugNpmInstallName]: task.name,
         [TelemetryProperty.DebugNpmInstallExitCode]: event.exitCode + "",
       });

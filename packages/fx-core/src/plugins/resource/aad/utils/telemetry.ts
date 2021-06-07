@@ -59,6 +59,7 @@ export class TelemetryUtils {
 
   private static addAppIdInProperty(properties:{ [key: string]: string }, ctx: PluginContext): void {
     const appId = ctx.configOfOtherPlugins.get(Plugins.solution)?.get(ConfigKeysOfOtherPlugin.remoteTeamsAppId);
+    
     if (appId) {
       properties[Telemetry.appId] = appId as string;
     }

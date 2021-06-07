@@ -121,12 +121,6 @@ export class WebviewPanel {
   }
 
   private async downloadSampleApp(msg: any){
-    // const selection = await vscode.window.showInformationMessage(
-    //   `Download '${msg.data.appName}' from Github. This will download '${msg.data.appName}' repository and open to your local machine`,
-    //   { modal: true },
-    //   "Download"
-    // );
-    // if (selection === "Download") {
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSampleStart, { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview, [TelemetryProperty.SampleAppName]: msg.data.appFolder });
     const folder = await vscode.window.showOpenDialog({
       canSelectFiles: false,
@@ -179,7 +173,6 @@ export class WebviewPanel {
     } else {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview, [TelemetryProperty.SampleAppName]: msg.data.appFolder, [TelemetryProperty.Success]: TelemetrySuccess.No });
     }
-            //}
   }
 
   private updateGlobalStepsDone(data: any) {

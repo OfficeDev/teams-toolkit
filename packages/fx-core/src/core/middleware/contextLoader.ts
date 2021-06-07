@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
  
-import { ConfigFolderName, err, Inputs, Json, PluginConfig, ProjectSettings, SolutionConfig, SolutionContext, StaticPlatforms, Tools} from "@microsoft/teamsfx-api";
+import { ConfigFolderName, err, Inputs, Json, PluginConfig, ProjectSettings, SolutionConfig, SolutionContext, Stage, StaticPlatforms, Tools} from "@microsoft/teamsfx-api";
 import { deserializeDict,  FxCore,  mergeSerectData, objectToMap} from "../..";
 import { InvalidProjectError, NoProjectOpenedError, PathNotExistError, ReadFileError } from "../error";
 import * as path from "path";
@@ -14,8 +14,14 @@ export const ContextLoaderMW: Middleware = async (
   next: NextFunction
 ) => {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-  const ignoreCheck = inputs.ignoreTypeCheck === true || StaticPlatforms.includes(inputs.platform);
-  if(!ignoreCheck)
+  const method = ctx.method;
+  let isCreate = false;
+  if(method === "getQuestions"){
+    const task = ctx.arguments[0] as Stage;
+    isCreate = (task === Stage.create);
+  }
+  const ignoreLoad = inputs.ignoreTypeCheck === true || StaticPlatforms.includes(inputs.platform) || isCreate;
+  if(!ignoreLoad)
   {
     if(!inputs.projectPath){
       ctx.result = err(NoProjectOpenedError());

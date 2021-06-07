@@ -207,30 +207,22 @@ export class FxCore implements Core {
     if(!ctx!.solutionContext)ctx!.solutionContext = await newSolutionContext(this.tools, inputs);
     return await this._executeUserTask(ctx!.solutionContext, ctx!.solution, func, inputs);
   }
-
-  /**
-   * this method is only for CLI's help command, do not support dynamic questions any more
-   */
-  @hooks([ErrorHandlerMW])
-  async getQuestions(task: Stage, inputs: Inputs) : Promise<Result<QTreeNode | undefined, FxError>> {
+ 
+  @hooks([ErrorHandlerMW, ContextLoaderMW, SolutionLoaderMW, ContextInjecterMW])
+  async getQuestions(task: Stage, inputs: Inputs, ctx?: HookContext) : Promise<Result<QTreeNode | undefined, FxError>> {
     if(task ===  Stage.create) {
       delete inputs.projectPath;
       return await this._getQuestionsForCreateProject(inputs);
     }
     else{
-      const solution = await loadSolution(inputs);
-      const solutionContext = await newSolutionContext(this.tools, inputs);
-      return await this._getQuestions(solutionContext, solution, task, inputs);
+      return await this._getQuestions(ctx!.solutionContext, ctx!.solution, task, inputs);
     }  
   }
-
-  /**
-   * this method is only for CLI's help command, do not support dynamic questions any more
-   */
-  @hooks([ErrorHandlerMW])
-  async getQuestionsForUserTask(func: FunctionRouter, inputs: Inputs) : Promise<Result<QTreeNode | undefined, FxError>>{
-    const solutionContext = await newSolutionContext(this.tools, inputs);
-    const solution = await loadSolution(inputs);
+ 
+  @hooks([ErrorHandlerMW, ContextLoaderMW, SolutionLoaderMW, ContextInjecterMW])
+  async getQuestionsForUserTask(func: FunctionRouter, inputs: Inputs, ctx?: HookContext) : Promise<Result<QTreeNode | undefined, FxError>>{
+    const solutionContext = ctx!.solutioContext === undefined ? await newSolutionContext(this.tools, inputs) : ctx!.solutioContext;
+    const solution = ctx!.solution === undefined ? await loadSolution(inputs) : ctx!.solution;
     return await this._getQuestionsForUserTask(solutionContext, solution, func, inputs);
   }
 

@@ -14,12 +14,9 @@ import {
   err,
   ok,
   Result,
-  QTreeNode,
   Question,
-  isAutoSkipSelect,
-  SingleSelectQuestion,
-  MultiSelectQuestion,
-  LogLevel
+  LogLevel,
+  Stage,
 } from "@microsoft/teamsfx-api";
 
 import activate  from "../activate";
@@ -27,11 +24,7 @@ import * as constants from "../constants";
 import { NotFoundInputedFolder, SampleAppDownloadFailed, ProjectFolderExist } from "../error";
 import { YargsCommand } from "../yargsCommand";
 import {
-  flattenNodes,
-  getJson,
-  getSingleOptionString,
   getSystemInputs,
-  toYargsOptions,
 } from "../utils";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import {
@@ -41,41 +34,22 @@ import {
 } from "../telemetry/cliTelemetryEvents";
 import CLIUIInstance from "../userInteraction";
 import CLILogProvider from "../commonlib/log";
+import { HelpParamGenerator } from "../helpParamGenerator";
 
 export default class New extends YargsCommand {
   public readonly commandHead = `new`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Create a new Teams application.";
-  public readonly paramPath = constants.newParamPath;
-
-  public readonly root = getJson<QTreeNode>(this.paramPath);
   public params: { [_: string]: Options } = {};
-  public answers = getSystemInputs();
 
   public readonly subCommands: YargsCommand[] = [new NewTemplete()];
 
   public builder(yargs: Argv): Argv<any> {
+    this.params = HelpParamGenerator.getYargsParamForHelp(Stage.create);
     this.subCommands.forEach((cmd) => {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     });
-    if (this.root) {
-      const nodes = flattenNodes(JSON.parse(JSON.stringify(this.root)));
-      const nodesWithoutGroup = nodes.filter((node) => node.data.type !== "group");
-      for (const node of nodesWithoutGroup) {
-        if (node.data.name === "folder") {
-          (node.data as any).default = "./";
-        }
-        // (node.data as any).hide = true;
-      }
-      nodesWithoutGroup.forEach((node) => {
-        const data = node.data as Question;
-        if (isAutoSkipSelect(data) &&  data.type != "func") {
-          // set the only option to default value so yargs will auto fill it.
-          data.default = getSingleOptionString(data as SingleSelectQuestion | MultiSelectQuestion);
-          (data as any).hide = true;
-        }
-        this.params[data.name] = toYargsOptions(data);
-      });
+    if (this.params) {
       yargs
         .options({
           interactive: {
@@ -96,7 +70,7 @@ export default class New extends YargsCommand {
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart);
 
     if (!args.interactive) {
-      CLIUIInstance.updatePresetAnswers(args);
+      CLIUIInstance.updatePresetAnswers(this.params, args);
     }
 
     const result = await activate();

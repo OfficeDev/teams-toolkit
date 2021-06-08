@@ -17,29 +17,29 @@ import {
 } from "@microsoft/teamsfx-api";
 
 import activate from "../activate";
-import * as constants from "../constants";
 import { YargsCommand } from "../yargsCommand";
-import { flattenNodes, getParamJson, getSystemInputs } from "../utils";
+import { flattenNodes, getSystemInputs } from "../utils";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
 import CLIUIInstance from "../userInteraction";
+import { HelpParamGenerator } from "../helpParamGenerator";
 
 export default class Deploy extends YargsCommand {
   public readonly commandHead = `deploy`;
   public readonly command = `${this.commandHead} [components...]`;
   public readonly description = "Deploy the current application.";
-  public readonly paramPath = constants.deployParamPath;
 
-  public params: { [_: string]: Options } = getParamJson(this.paramPath);
+  public params: { [_: string]: Options } = {};
   public readonly deployPluginNodeName = "deploy-plugin";
 
   public builder(yargs: Argv): Argv<any> {
+    this.params = HelpParamGenerator.getYargsParamForHelp(Stage.deploy);
     const deployPluginOption = this.params[this.deployPluginNodeName];
     yargs
       .positional("components", {
         array: true,
         choices: deployPluginOption.choices,
-        description: deployPluginOption.description
+        description: deployPluginOption.description,
       });
     for (const name in this.params) {
       if (name !== this.deployPluginNodeName) {
@@ -62,7 +62,7 @@ export default class Deploy extends YargsCommand {
     const rootFolder = path.resolve(args.folder as string || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.DeployStart);
 
-    CLIUIInstance.updatePresetAnswers(args);
+    CLIUIInstance.updatePresetAnswers(this.params, args);
     CLIUIInstance.removePresetAnswers(["components"]);
 
     const result = await activate(rootFolder);

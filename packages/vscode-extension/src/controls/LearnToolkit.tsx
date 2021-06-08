@@ -112,7 +112,7 @@ export default class LearnToolkit extends React.Component<any, any> {
 
   displayCommands = () => {
     vscode.postMessage({
-      command: Commands.DisplayCommandPalette,
+      command: Commands.DisplayCommands,
       data: "Teams",
     });
   };

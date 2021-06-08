@@ -67,6 +67,9 @@ import {
   LOCAL_BOT_ID,
   DoProvisionFirstError,
   CancelError,
+  SolutionTelemetryProperty,
+  SolutionTelemetryEvent,
+  SolutionTelemetryComponentName,
 } from "./constants";
 
 import { SpfxPlugin } from "../../resource/spfx";
@@ -376,6 +379,11 @@ export class TeamsAppSolution implements Solution {
         JSON.stringify(manifest, null, 4)
       );
       await fs.writeJSON(`${ctx.root}/permissions.json`, DEFAULT_PERMISSION_REQUEST, { spaces: 4 });
+      ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.Create, {
+        [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+        [SolutionTelemetryProperty.Resources]: JSON.stringify(solutionSettings.azureResources),
+        [SolutionTelemetryProperty.Capabilities]: JSON.stringify(solutionSettings.capabilities)
+      });
     } else {
       const manifest = await (this.spfxPlugin as unknown as SpfxPlugin).getManifest();
       await fs.writeFile(

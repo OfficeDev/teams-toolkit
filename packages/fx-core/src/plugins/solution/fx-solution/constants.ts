@@ -295,3 +295,15 @@ export const TEAMS_APP_SHORT_NAME_MAX_LENGTH = 30;
 export const DEFAULT_DEVELOPER_WEBSITE_URL = "https://www.example.com";
 export const DEFAULT_DEVELOPER_TERM_OF_USE_URL = "https://www.example.com/termofuse";
 export const DEFAULT_DEVELOPER_PRIVACY_URL = "https://www.example.com/privacy";
+
+export enum SolutionTelemetryEvent {
+  Create = "create"
+}
+
+export enum SolutionTelemetryProperty {
+  Component = "component",
+  Resources = "resources",
+  Capabilities = "capabilities"
+}
+
+export const SolutionTelemetryComponentName = "Solution";

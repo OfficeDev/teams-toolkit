@@ -1,9 +1,10 @@
 import * as path from "path";
 import { window, workspace, WorkspaceConfiguration, MessageItem, commands, Uri } from "vscode";
-import { Messages } from "./common";
-import { IDepsAdapter } from "./checker";
+import { DepsCheckerEvent, Messages } from "./common";
+import { IDepsAdapter, IDepsTelemetry } from "./checker";
 import { hasTeamsfxBackend } from "../commonUtils";
 import { vscodeLogger as logger } from "./vscodeLogger";
+import { vscodeTelemetry } from "./vscodeTelemetry";
 
 export class VSCodeAdapter implements IDepsAdapter {
   private readonly configurationPrefix = "fx-extension";
@@ -11,6 +12,11 @@ export class VSCodeAdapter implements IDepsAdapter {
   private readonly validateDotnetSdkKey = "validateDotnetSdk";
   private readonly validateFuncCoreToolsKey = "validateFuncCoreTools";
   private readonly validateNodeVersionKey = "validateNode";
+  private readonly _telemetry: IDepsTelemetry
+
+  constructor(telemetry: IDepsTelemetry) {
+    this._telemetry = telemetry;
+  }
 
   public hasTeamsfxBackend(): Promise<boolean> {
     return hasTeamsfxBackend();
@@ -52,12 +58,15 @@ export class VSCodeAdapter implements IDepsAdapter {
     );
 
     if (input === continueButton) {
+      this._telemetry.sendEvent(DepsCheckerEvent.clickContinue);
       return true;
     } else if (input == learnMoreButton) {
+      this._telemetry.sendEvent(DepsCheckerEvent.clickLearnMore);
       await VSCodeAdapter.openUrl(link);
       return await this.displayContinueWithLearnMore(message, link);
     }
 
+    this._telemetry.sendEvent(DepsCheckerEvent.clickCancel);
     return false;
   }
 
@@ -76,10 +85,12 @@ export class VSCodeAdapter implements IDepsAdapter {
     const button: MessageItem = { title: buttonText };
     const input = await window.showWarningMessage(message, { modal: true }, button);
     if (input === button) {
+      this._telemetry.sendEvent(DepsCheckerEvent.clickLearnMore);
       return await action();
     }
 
     // click cancel button
+    this._telemetry.sendEvent(DepsCheckerEvent.clickCancel);
     return false;
   }
 
@@ -103,4 +114,4 @@ export class VSCodeAdapter implements IDepsAdapter {
   }
 }
 
-export const vscodeAdapter = new VSCodeAdapter();
+export const vscodeAdapter = new VSCodeAdapter(vscodeTelemetry);

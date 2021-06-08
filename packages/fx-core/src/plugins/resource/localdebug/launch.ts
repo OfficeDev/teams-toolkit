@@ -10,46 +10,6 @@ export function generateConfigurations(
   includeBackend: boolean,
   includeBot: boolean
 ): Record<string, unknown>[] {
-  /* No attach until CLI ready
-    let launchConfigurations: object[] = [
-        {
-            name: "Attach to Frontend (Chrome)",
-            type: LaunchBrowser.chrome,
-            request: "launch",
-            url: "https://teams.microsoft.com/_#/l/app/${input:teamsAppId}?installAppPackage=true",
-            presentation: {
-                group: "partial",
-                order: 2
-            }
-        },
-        {
-            name: "Attach to Frontend (Edge)",
-            type: LaunchBrowser.edge,
-            request: "launch",
-            url: "https://teams.microsoft.com/_#/l/app/${input:teamsAppId}?installAppPackage=true",
-            presentation: {
-                group: "partial",
-                order: 4
-            }
-        }
-    ];
-
-    if (includeBackend) {
-        launchConfigurations.push(
-            {
-                name: "Attach to backend",
-                type: "node",
-                request: "attach",
-                port: 9229,
-                restart: true,
-                presentation: {
-                    group: "partial",
-                }
-            }
-        );
-    }
-    */
-
   let edgeOrder = 2,
     chromeOrder = 1;
   if (os.type() === "Windows_NT") {
@@ -62,7 +22,7 @@ export function generateConfigurations(
       name: "Launch Remote (Edge)",
       type: LaunchBrowser.edge,
       request: "launch",
-      url: "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&${account-hint}",
+      url: "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
       presentation: {
         group: "remote",
         order: edgeOrder,
@@ -72,7 +32,7 @@ export function generateConfigurations(
       name: "Launch Remote (Chrome)",
       type: LaunchBrowser.chrome,
       request: "launch",
-      url: "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&${account-hint}",
+      url: "https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
       presentation: {
         group: "remote",
         order: chromeOrder,
@@ -89,7 +49,7 @@ export function generateConfigurations(
           name: "Start and Attach to Frontend (Edge)",
           type: LaunchBrowser.edge,
           request: "launch",
-          url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&${account-hint}",
+          url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
           preLaunchTask: "Start Frontend",
           cascadeTerminateToConfigurations: ["Start and Attach to Backend"],
           presentation: {
@@ -101,7 +61,7 @@ export function generateConfigurations(
           name: "Start and Attach to Frontend (Chrome)",
           type: LaunchBrowser.chrome,
           request: "launch",
-          url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&${account-hint}",
+          url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
           preLaunchTask: "Start Frontend",
           cascadeTerminateToConfigurations: ["Start and Attach to Backend"],
           presentation: {
@@ -129,7 +89,7 @@ export function generateConfigurations(
           name: "Start and Attach to Frontend (Edge)",
           type: LaunchBrowser.edge,
           request: "launch",
-          url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&${account-hint}",
+          url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
           preLaunchTask: "Start Frontend",
           presentation: {
             group: "all",
@@ -140,7 +100,7 @@ export function generateConfigurations(
           name: "Start and Attach to Frontend (Chrome)",
           type: LaunchBrowser.chrome,
           request: "launch",
-          url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&${account-hint}",
+          url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
           preLaunchTask: "Start Frontend",
           presentation: {
             group: "all",
@@ -158,7 +118,7 @@ export function generateConfigurations(
         name: "Launch Bot (Edge)",
         type: LaunchBrowser.edge,
         request: "launch",
-        url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&${account-hint}",
+        url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
         cascadeTerminateToConfigurations: ["Start and Attach to Bot"],
         presentation: {
           group: "all",
@@ -169,7 +129,7 @@ export function generateConfigurations(
         name: "Launch Bot (Chrome)",
         type: LaunchBrowser.chrome,
         request: "launch",
-        url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&${account-hint}",
+        url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
         cascadeTerminateToConfigurations: ["Start and Attach to Bot"],
         presentation: {
           group: "all",
@@ -198,7 +158,7 @@ export function generateConfigurations(
         name: "Start and Attach to Frontend (Edge)",
         type: LaunchBrowser.edge,
         request: "launch",
-        url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&${account-hint}",
+        url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
         preLaunchTask: "Start Frontend",
         cascadeTerminateToConfigurations: includeBackend
           ? ["Start and Attach to Bot", "Start and Attach to Backend"]
@@ -212,7 +172,7 @@ export function generateConfigurations(
         name: "Start and Attach to Frontend (Chrome)",
         type: LaunchBrowser.chrome,
         request: "launch",
-        url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&${account-hint}",
+        url: "https://teams.microsoft.com/l/app/${localTeamsAppId}?installAppPackage=true&webjoin=true&${account-hint}",
         preLaunchTask: "Start Frontend",
         cascadeTerminateToConfigurations: includeBackend
           ? ["Start and Attach to Bot", "Start and Attach to Backend"]

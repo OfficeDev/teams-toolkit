@@ -54,5 +54,6 @@ export class TelemetryUtils {
       properties[Telemetry.properties.appid] = appId as string;
     } else {
       properties[Telemetry.properties.appid] = "";
-    }  }
+    }
+  }
 }

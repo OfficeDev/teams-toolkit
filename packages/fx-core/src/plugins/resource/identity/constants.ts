@@ -21,8 +21,8 @@ export class Constants {
 export class Telemetry {
   static readonly componentName = "fx-resource-azure-identity";
   static startSuffix = "-start";
-  static resultYes = "yes";
-  static resultNo = "no";
+  static valueYes = "yes";
+  static valueNo = "no";
   static userError = "user";
   static systemError = "system";
 

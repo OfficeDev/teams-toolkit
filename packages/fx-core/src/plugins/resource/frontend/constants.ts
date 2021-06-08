@@ -9,6 +9,7 @@ export class Constants {
   static AzureStorageDefaultKind = "StorageV2";
   static AzureStorageAccountNameLenMax = 24;
   static AzureStorageWebContainer = "$web";
+  static SuffixLenMax = 12;
 
   static FrontendIndexDocument = "index.html";
   static FrontendErrorDocument = "index.html";
@@ -130,7 +131,7 @@ export class AzureErrorCode {
 }
 
 export class RegularExpr {
-  static readonly FrontendAppNamePattern = /[^a-zA-Z0-9]/g;
+  static readonly allCharToBeSkippedInName = /[^a-zA-Z0-9]/g;
   static readonly FrontendStorageNamePattern = /^[a-z0-9]{3,24}$/;
   static readonly ReplaceTemplateExt = /\.tpl$/;
 }

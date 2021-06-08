@@ -15,6 +15,8 @@ on:
         description: "force release even if no update(set --force-publish if necessary)"
         required: false
         default: ""
+  schedule:
+    - cron: "0 8 * * *"
 
 jobs:
   cd:

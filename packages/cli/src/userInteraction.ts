@@ -510,15 +510,4 @@ async function pathValidation(p: string): Promise<string | undefined> {
   }
 }
 
-async function pathValidation(p: string): Promise<string | undefined> {
-  if (p === "") {
-    return "Path cannot be empty.";
-  }
-  if (await fs.pathExists(path.resolve(p))) {
-    return undefined;
-  } else {
-    return `${path.resolve(p)} does not exist.`
-  }
-}
-
 export default CLIUserInteraction.getInstance();

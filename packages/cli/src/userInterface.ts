@@ -116,7 +116,6 @@ export class DialogManager implements Dialog {
         const result = await CLIUIInstance.selectOption(
           {
             name: question.description.includes("subscription") ? "subscription" : "radio",
-            type: "radio",
             title: question.description,
             options: question.options,
           }

@@ -95,7 +95,10 @@ export class AadService {
     );
     const servicePrincipals = response?.data as IServicePrincipals;
 
-    const result = AssertNotEmpty<IServicePrincipal[]>("servicePrincipals.value", servicePrincipals?.value);
+    const result = AssertNotEmpty<IServicePrincipal[]>(
+      "servicePrincipals.value",
+      servicePrincipals?.value
+    );
 
     if (result.length === 0) {
       this.logger?.info(LogMessages.resourceNotFound(AzureResource.ServicePrincipal, appId));

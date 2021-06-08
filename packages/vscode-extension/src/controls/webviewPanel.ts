@@ -11,7 +11,7 @@ import * as fs from "fs-extra";
 import AzureAccountManager from "../commonlib/azureLogin";
 import AppStudioTokenInstance from "../commonlib/appStudioLogin";
 import { runCommand } from "../handlers";
-import { Stage } from "@microsoft/teamsfx-api";
+import { returnSystemError, Stage, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { PanelType } from "./PanelType";
 import { execSync } from "child_process";
 import { isMacOS } from "../utils/commonUtils";
@@ -23,6 +23,7 @@ import {
   TelemetryTiggerFrom,
   TelemetrySuccess,
 } from "../telemetry/extTelemetryEvents";
+import { ExtensionErrors, ExtensionSource } from "../error";
 
 export class WebviewPanel {
   private static readonly viewType = "react";
@@ -130,12 +131,15 @@ export class WebviewPanel {
     });
 
     let downloadSuccess = false;
+    let error = new UserError(ExtensionErrors.UserCancel, "Invalid folder", ExtensionSource);
     if (folder !== undefined) {
       const sampleAppPath = path.join(folder[0].fsPath, msg.data.appFolder);
       if (
         (await fs.pathExists(sampleAppPath)) &&
         (await fs.readdir(sampleAppPath)).length > 0
       ) {
+        error.name = ExtensionErrors.FolderAlreadyExist;
+        error.message = "Folder already exists";
         vscode.window.showErrorMessage(
           `Path ${sampleAppPath} alreay exists. Select a different folder.`
         );
@@ -160,8 +164,11 @@ export class WebviewPanel {
             );
             ext.context.globalState.update("openSampleReadme", true);
           } else {
+            error = new SystemError(ExtensionErrors.UnknwonError, "Empty zip file", ExtensionSource);
             vscode.window.showErrorMessage("Failed to download sample app");
           }
+        } catch(e){
+          error = returnSystemError(e, ExtensionSource, ExtensionErrors.UnknwonError);
         } finally {
           progress.end();
         }
@@ -171,7 +178,7 @@ export class WebviewPanel {
     if (downloadSuccess) {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview, [TelemetryProperty.SampleAppName]: msg.data.appFolder, [TelemetryProperty.Success]: TelemetrySuccess.Yes });
     } else {
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview, [TelemetryProperty.SampleAppName]: msg.data.appFolder, [TelemetryProperty.Success]: TelemetrySuccess.No });
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DownloadSample, error, { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview, [TelemetryProperty.SampleAppName]: msg.data.appFolder, [TelemetryProperty.Success]: TelemetrySuccess.No });
     }
   }
 

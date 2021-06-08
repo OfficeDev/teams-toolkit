@@ -3,7 +3,9 @@
 
 "use stricts";
 
+import fs from "fs-extra";
 import inquirer, { DistinctQuestion } from "inquirer";
+import path from "path";
 import open from "open";
 
 import {
@@ -35,7 +37,7 @@ import {
 } from "@microsoft/teamsfx-api";
 
 import CLILogProvider from "./commonlib/log";
-import { UnknownError } from "./error";
+import { NotValidInputValue, UnknownError } from "./error";
 import { sleep } from "./utils";
 
 /// TODO: input can be undefined
@@ -116,9 +118,19 @@ export class CLIUserInteraction implements UserInteraction {
     return process.env.CI_ENABLED === "true";
   }
 
+
   private async runInquirer<T>(question: DistinctQuestion): Promise<Result<T, FxError>> {
     if (this.presetAnswers.has(question.name!)) {
-      return ok(this.presetAnswers.get(question.name!));
+      const answer = this.presetAnswers.get(question.name!);
+      if (answer === undefined) {
+        /// TOOD: this is only for APIM
+        return ok(answer);
+      }
+      const result = await question.validate?.(answer);
+      if (typeof result === "string") {
+        return err(NotValidInputValue(question.name!, result));
+      }
+      return ok(answer);
     }
 
     /// TODO: CI ENABLED refine.
@@ -150,7 +162,7 @@ export class CLIUserInteraction implements UserInteraction {
   ): DistinctQuestion {
     return { type, name, message, choices, default: defaultValue, validate };
   }
-
+  
   private async singleSelect(
     name: string,
     message: string,
@@ -186,6 +198,7 @@ export class CLIUserInteraction implements UserInteraction {
   }
 
   private async confirm(name: string, message: string): Promise<Result<boolean, FxError>> {
+    /// TODO: add default value.
     return this.runInquirer(this.toInquirerQuestion("confirm", name, message, undefined, undefined, undefined));
   }
 
@@ -234,6 +247,21 @@ export class CLIUserInteraction implements UserInteraction {
   }
   
   public async selectOption(config: SingleSelectConfig): Promise<SingleSelectResult> {
+    if (config.name === "subscription") {
+      const subscriptions = config.options as string[];
+      if (subscriptions.length === 0) {
+        throw new Error(
+          "Your Azure account has no active subscriptions. Please switch an Azure account."
+        );
+      } else if (subscriptions.length === 1) {
+        const sub = subscriptions[0];
+        CLILogProvider.necessaryLog(
+          LogLevel.Warning,
+          `Your Azure account only has one subscription (${sub}). Use it as default.`
+        );
+        return { type: "success", result: sub };
+      }
+    }
     this.updatePresetAnswerFromConfig(config);
     return new Promise(async resolve => {
       const [choices, defaultValue] = this.toChoices(config.options, config.default);
@@ -313,16 +341,26 @@ export class CLIUserInteraction implements UserInteraction {
       type: "text",
       name: config.name,
       title: config.title,
-      default: config.default,
-      validation: config.validation
+      default: config.default || "./",
+      validation: config.validation || pathValidation
     }
     return this.inputText(newConfig);
   }
 
   public async selectFiles(config: SelectFilesConfig): Promise<SelectFilesResult> {
-    const validation = (input: string) => {
+    const validation = async (input: string) => {
       const strings = input.split(";").map(s => s.trim());
-      return config.validation?.(strings);
+      if (config.validation) {
+        return config.validation(strings);
+      } else {
+        for (const s of strings) {
+          const result = await pathValidation(s);
+          if (result !== undefined) {
+            return result;
+          }
+        }
+      }
+      return undefined;
     }
     const newConfig: InputTextConfig = {
       type: "text",
@@ -346,8 +384,8 @@ export class CLIUserInteraction implements UserInteraction {
       type: "text",
       name: config.name,
       title: config.title,
-      default: config.default,
-      validation: config.validation
+      default: config.default || "./",
+      validation: config.validation || pathValidation
     }
     return this.inputText(newConfig);
   }
@@ -449,6 +487,17 @@ export class CLIUserInteraction implements UserInteraction {
       });
       resolve({ type: "success" });
     });
+  }
+}
+
+async function pathValidation(p: string): Promise<string | undefined> {
+  if (p === "") {
+    return "Path cannot be empty.";
+  }
+  if (await fs.pathExists(path.resolve(p))) {
+    return undefined;
+  } else {
+    return `${path.resolve(p)} does not exist.`
   }
 }
 

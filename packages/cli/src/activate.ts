@@ -32,7 +32,9 @@ export default async function activate(rootPath?: string): Promise<Result<Core, 
   if (rootPath) {
     const subscription = await getSubscriptionIdFromEnvFile(rootPath);
     if (subscription) {
-      await AzureAccountManager.setSubscription(subscription);
+      try {
+        await AzureAccountManager.setSubscription(subscription);
+      } catch {}
     }
   }
 

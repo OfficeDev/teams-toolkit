@@ -224,7 +224,7 @@ export class SqlPluginImpl {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendEvent(Telemetry.stage.postProvision + Telemetry.startSuffix,
       undefined,
-      { [Telemetry.properties.skipAddingUser]: this.config.skipAddingUser ? Telemetry.resultYes : Telemetry.resultNo }
+      { [Telemetry.properties.skipAddingUser]: this.config.skipAddingUser ? Telemetry.valueYes : Telemetry.valueNo }
     );
 
     const sqlClient = new SqlClient(ctx, this.config);
@@ -294,7 +294,7 @@ export class SqlPluginImpl {
 
     TelemetryUtils.sendEvent(Telemetry.stage.postProvision,
       true,
-      { [Telemetry.properties.skipAddingUser]: this.config.skipAddingUser ? Telemetry.resultYes : Telemetry.resultNo }
+      { [Telemetry.properties.skipAddingUser]: this.config.skipAddingUser ? Telemetry.valueYes : Telemetry.valueNo }
     );
     ctx.logProvider?.info(Message.endPostProvision);
     await DialogUtils.progressBar?.end();

@@ -23,6 +23,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: validate branch
+        if: ${{ github.ref != 'refs/heads/dev' || github.ref != 'refs/heads/main' }}
+        run: |
+          exit 1
+
       - name: Checkout dev branch
         if: ${{ github.event_name == 'schedule' }}
         uses: actions/checkout@v2
@@ -108,7 +113,7 @@ jobs:
           fi
 
       - name: release prerelease npm packages to npmjs.org
-        if: ${{ (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev') && startsWith(github.event.inputs.version, 'pre') }}
+        if: ${{ startsWith(github.event.inputs.version, 'pre') }}
         run: |
           npx lerna publish --no-private --preid=${{github.event.inputs.preid }} --dist-tag=${{github.event.inputs.preid }} ${{ github.event.inputs.version }} --yes ${{ github.event.inputs.force }}
 

@@ -62,7 +62,7 @@ jobs:
             ./*.zip
 
       - name: release templates' prerelease version to github
-        if: ${{ startsWith(github.ref, 'refs/heads/release/') && github.event.inputs.version == 'prerelease' }}
+        if: ${{ startsWith(github.ref, 'refs/heads/main') && github.event.inputs.version == 'prerelease' }}
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: ${{ secrets.CD_PAT }}
@@ -108,7 +108,7 @@ jobs:
           fi
 
       - name: release prerelease npm packages to npmjs.org
-        if: ${{ github.ref == 'refs/heads/dev' && startsWith(github.event.inputs.version, 'pre') }}
+        if: ${{ startsWith(github.event.inputs.version, 'pre') }}
         run: |
           npx lerna publish --no-private --preid=${{github.event.inputs.preid }} --dist-tag=${{github.event.inputs.preid }} ${{ github.event.inputs.version }} --yes ${{ github.event.inputs.force }}
 

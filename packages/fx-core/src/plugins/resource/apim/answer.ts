@@ -18,13 +18,13 @@ export interface IAnswer {
   apiPrefix: string | undefined;
   apiId: string | undefined;
   versionIdentity: string | undefined;
-  openApiDocumentSpec?: OpenAPI.Document;
+  openApiDocumentSpec?: OpenAPI.Document | undefined;
   save(stage: Stage, apimConfig: IApimPluginConfig): void;
   validate?(stage: Stage, apimConfig: IApimPluginConfig, projectRootDir: string): Promise<void>;
 }
 
 export function buildAnswer(ctx: PluginContext): IAnswer {
-  const answers = AssertNotEmpty("ctx.answers", ctx.answers);
+  const answers = AssertNotEmpty<ConfigMap>("ctx.answers", ctx.answers);
   switch (ctx.platform) {
     case Platform.VSCode:
       return new VSCodeAnswer(answers);
@@ -211,7 +211,7 @@ export class CLIAnswer implements IAnswer {
           try {
             const openApiProcessor = new OpenApiProcessor();
             await openApiProcessor.loadOpenApiDocument(this.apiDocumentPath, projectRootDir);
-          } catch (error) {
+          } catch (error: any) {
             return `${ValidationConstants.CLI.invalidOptionMessage(
               QuestionConstants.CLI.OpenApiDocument.questionName
             )} ${error.message}`;

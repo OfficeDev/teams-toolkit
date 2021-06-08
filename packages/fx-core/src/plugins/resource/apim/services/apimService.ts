@@ -473,15 +473,16 @@ export class ApimService {
 
   private convertApimServiceResource(src: ApiManagementServiceResource): IApimServiceResource {
     const resourceId = AssertNotEmpty("apimServiceListResponse.id", src.id);
+    const name = AssertNotEmpty("apimServiceListResponse.name", src.name);
     const matches = resourceId.match(
       /\/subscriptions\/(.*)\/resourceGroups\/(.*)\/providers\/(.*)\/(.*)/
     );
 
-    if (matches === null || matches.length < 5) {
+    if (matches === null || matches.length < 3) {
       throw BuildError(InvalidAzureResourceId, resourceId);
     }
 
-    return { serviceName: matches[4], resourceGroupName: matches[2] };
+    return { serviceName: name, resourceGroupName: matches[2] };
   }
 
   private generateVersionSetResourceId(

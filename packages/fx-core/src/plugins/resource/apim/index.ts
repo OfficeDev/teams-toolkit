@@ -163,7 +163,7 @@ async function _provision(ctx: PluginContext, progressBar: ProgressBar): Promise
     ProgressStep.Provision,
     ProgressMessages[ProgressStep.Provision].CreateAad
   );
-  await aadManager.provision(apimConfig, ctx.projectSettings?.appName);
+  await aadManager.provision(apimConfig, ctx.app.name.short);
 }
 
 async function _postProvision(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {

@@ -52,9 +52,23 @@ export enum TelemetryEvent {
 
   OpenAzurePortal = "open-azure-portal",
 
+  DownloadSampleStart = "download-sample-start",
+  DownloadSample = "download-sample",
+
+  WatchVideo = "watch-video",
+
+  DisplayCommands = "display-commands",
+
+  OpenDownloadNode = "open-download-node",
+
+  NextStep = "next-step",
+
   DebugPreCheck = "debug-precheck",
   DebugStart = "debug-start",
   DebugStop = "debug-stop",
+
+  DebugNpmInstallStart = "debug-npm-install-start",
+  DebugNpmInstall = "debug-npm-install",
 
   Survey = "survey",
 }
@@ -75,10 +89,14 @@ export enum TelemetryProperty {
   DebugPort = "port",
   DebugRemote = "remote",
   DebugAppId = "debug-appid",
+  DebugNpmInstallName = "debug-npm-install-name",
+  DebugNpmInstallExitCode = "debug-npm-install-exit-code",
   Internal = "internal",
   InternalAlias = "internal-alias",
   OSArch = "os-arch",
   OSRelease = "os-release",
+  SampleAppName = "sample-app-name",
+  CurrentAction = "current-action",
 }
 
 export enum TelemetrySuccess {
@@ -89,6 +107,7 @@ export enum TelemetrySuccess {
 export enum TelemetryTiggerFrom {
   CommandPalette = "CommandPalette",
   TreeView = "TreeView",
+  Webview = "Webview",
 }
 
 export enum TelemetryErrorType {

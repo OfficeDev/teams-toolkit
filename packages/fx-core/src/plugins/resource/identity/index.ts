@@ -63,7 +63,11 @@ export class IdentityPlugin implements Plugin {
     } catch (error) {
       const errorCode = error.source + "." + error.name;
       const errorType = error instanceof SystemError ? Telemetry.systemError : Telemetry.userError;
-      TelemetryUtils.sendErrorEvent(Telemetry.stage.provision, errorCode, errorType, error.message);
+      let errorMessage = error.message;
+      if (error.innerError) {
+        errorMessage += ` Detailed error: ${error.innerError.message}.`;
+      }
+      TelemetryUtils.sendErrorEvent(Telemetry.stage.provision, errorCode, errorType, errorMessage);
       return err(error);
     }
 
@@ -122,7 +126,7 @@ export class IdentityPlugin implements Plugin {
       ctx.logProvider?.error(
         ErrorMessage.IdentityProvisionError.message(this.config.identity) + `:${_error.message}`
       );
-      const error = ResultFactory.SystemError(
+      const error = ResultFactory.UserError(
         ErrorMessage.IdentityProvisionError.name,
         ErrorMessage.IdentityProvisionError.message(this.config.identity),
         _error

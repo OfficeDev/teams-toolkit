@@ -39,10 +39,10 @@ export function Welcome(props: { showFunction?: boolean; environment?: string })
   });
 
   const { isInTeams } = useTeamsFx();
-  const credential = new TeamsUserCredential();
-  const userProfile = useData(async () =>
-    isInTeams ? await credential.getUserInfo() : undefined
-  )?.data;
+  const userProfile = useData(async () => {
+    const credential = new TeamsUserCredential();
+    return isInTeams ? await credential.getUserInfo() : undefined;
+  })?.data;
   const userName = userProfile ? userProfile.displayName : "";
   return (
     <div className="welcome page">

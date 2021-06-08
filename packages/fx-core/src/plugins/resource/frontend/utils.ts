@@ -17,17 +17,19 @@ export class Utils {
     );
   }
 
+  static normalize(raw: string): string {
+    return raw.replace(RegularExpr.allCharToBeSkippedInName, Constants.EmptyString).toLowerCase();
+  }
+
   static generateStorageAccountName(
     appName: string,
-    resourceNameSuffix: string,
-    suffix: string
+    identSuffix: string,
+    classSuffix: string
   ): string {
-    const paddingLength: number =
-      Constants.AzureStorageAccountNameLenMax - resourceNameSuffix.length - suffix.length;
-    const normalizedAppName: string = appName
-      .replace(RegularExpr.FrontendAppNamePattern, Constants.EmptyString)
-      .toLowerCase();
-    return normalizedAppName.substr(0, paddingLength) + suffix + resourceNameSuffix;
+    const suffix = Utils.normalize(classSuffix + identSuffix).substr(0, Constants.SuffixLenMax);
+    const paddingLength: number = Constants.AzureStorageAccountNameLenMax - suffix.length;
+    const normalizedAppName: string = Utils.normalize(appName).substr(0, paddingLength);
+    return normalizedAppName + suffix;
   }
 
   static async requestWithRetry(

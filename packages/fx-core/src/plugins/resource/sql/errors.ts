@@ -3,7 +3,7 @@
 import { Constants } from "./constants";
 
 export class ErrorMessage {
-  public static readonly GetDetail = "Get the detail error message in output";
+  public static readonly GetDetail = "Get the detailed error message in output.";
 
   public static readonly SqlInputError = {
     name: "SqlInputError",

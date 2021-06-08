@@ -111,6 +111,11 @@ export enum DepsCheckerEvent {
   dotnetInstallScriptCompleted = "dotnet-install-script-completed",
   dotnetInstallScriptError = "dotnet-install-script-error",
   dotnetValidationError = "dotnet-validation-error",
+  dotnetSearchDotnetSdks = "dotnet-search-dotnet-sdks",
+
+  clickLearnMore = "env-checker-click-learn-more",
+  clickContinue = "env-checker-click-continue",
+  clickCancel = "env-checker-click-cancel",
 
   nodeNotFound = "node-not-found",
   nodeNotSupportedForAzure = "node-not-supported-for-azure",
@@ -123,6 +128,7 @@ export enum TelemtryMessages {
   NPMNotFound = "npm is not found.",
   failedToExecDotnetScript = "failed to exec dotnet script.",
   failedToValidateDotnet = "failed to validate dotnet.",
+  failedToSearchDotnetSdks = "failed to search dotnet sdks.",
 }
 
 export enum TelemetryMessurement {

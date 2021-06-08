@@ -38,7 +38,7 @@ export class ManagementClient {
       this.ctx.logProvider?.error(
         ErrorMessage.SqlCreateError.message(this.config.sqlEndpoint, error.message)
       );
-      throw SqlResultFactory.SystemError(
+      throw SqlResultFactory.UserError(
         ErrorMessage.SqlCreateError.name,
         ErrorMessage.SqlCreateError.message(this.config.sqlEndpoint, ErrorMessage.GetDetail),
         error
@@ -79,7 +79,7 @@ export class ManagementClient {
         this.config.resourceGroup,
         this.config.sqlServer
       );
-      if (result.find((item: { login: string }) => item.login === this.config.aadAdmin)) {
+      if (result.find((item: { login: string; }) => item.login === this.config.aadAdmin)) {
         return true;
       } else {
         return false;
@@ -88,7 +88,7 @@ export class ManagementClient {
       this.ctx.logProvider?.error(
         ErrorMessage.SqlCheckAdminError.message(this.config.identity, error.message)
       );
-      throw SqlResultFactory.SystemError(
+      throw SqlResultFactory.UserError(
         ErrorMessage.SqlCheckAdminError.name,
         ErrorMessage.SqlCheckAdminError.message(this.config.identity, ErrorMessage.GetDetail),
         error
@@ -117,7 +117,7 @@ export class ManagementClient {
       this.ctx.logProvider?.error(
         ErrorMessage.DatabaseCreateError.message(this.config.databaseName, error.message)
       );
-      throw SqlResultFactory.SystemError(
+      throw SqlResultFactory.UserError(
         ErrorMessage.DatabaseCreateError.name,
         ErrorMessage.DatabaseCreateError.message(this.config.databaseName, ErrorMessage.GetDetail),
         error
@@ -140,7 +140,7 @@ export class ManagementClient {
       this.ctx.logProvider?.error(
         ErrorMessage.SqlCheckDBError.message(this.config.databaseName, error.message)
       );
-      throw SqlResultFactory.SystemError(
+      throw SqlResultFactory.UserError(
         ErrorMessage.SqlCheckDBError.name,
         ErrorMessage.SqlCheckDBError.message(this.config.databaseName, ErrorMessage.GetDetail),
         error
@@ -167,7 +167,7 @@ export class ManagementClient {
       this.ctx.logProvider?.error(
         ErrorMessage.SqlAddAdminError.message(this.config.aadAdmin, error.message)
       );
-      throw SqlResultFactory.SystemError(
+      throw SqlResultFactory.UserError(
         ErrorMessage.SqlAddAdminError.name,
         ErrorMessage.SqlAddAdminError.message(this.config.aadAdmin, ErrorMessage.GetDetail),
         error
@@ -191,7 +191,7 @@ export class ManagementClient {
       this.ctx.logProvider?.error(
         ErrorMessage.SqlAzureFirwallError.message(this.config.sqlEndpoint, error.message)
       );
-      throw SqlResultFactory.SystemError(
+      throw SqlResultFactory.UserError(
         ErrorMessage.SqlAzureFirwallError.name,
         ErrorMessage.SqlAzureFirwallError.message(this.config.sqlEndpoint, ErrorMessage.GetDetail),
         error
@@ -219,7 +219,7 @@ export class ManagementClient {
       this.ctx.logProvider?.error(
         ErrorMessage.SqlLocalFirwallError.message(this.config.sqlEndpoint, error.message)
       );
-      throw SqlResultFactory.SystemError(
+      throw SqlResultFactory.UserError(
         ErrorMessage.SqlLocalFirwallError.name,
         ErrorMessage.SqlLocalFirwallError.message(this.config.sqlEndpoint, ErrorMessage.GetDetail),
         error
@@ -238,7 +238,7 @@ export class ManagementClient {
       this.ctx.logProvider?.error(
         ErrorMessage.SqlDeleteLocalFirwallError.message(this.config.sqlEndpoint, error.message)
       );
-      throw SqlResultFactory.SystemError(
+      throw SqlResultFactory.UserError(
         ErrorMessage.SqlDeleteLocalFirwallError.name,
         ErrorMessage.SqlDeleteLocalFirwallError.message(
           this.config.sqlEndpoint,

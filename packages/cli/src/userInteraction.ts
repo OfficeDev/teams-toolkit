@@ -218,7 +218,9 @@ export class CLIUserInteraction implements UserInteraction {
     if (typeof option[0] === "string") {
       return [option as string[], defaultValue];
     } else {
-      const labels = (option as OptionItem[]).map(op => op.label);
+      const labels = (option as OptionItem[]).map(op => {
+        return op.label.replace("$(new-folder) ", "").replace("$(heart) ", "");
+      });
       const ids = (option as OptionItem[]).map(op => op.id);
       if (typeof defaultValue === "string" || typeof defaultValue === "undefined") {
         const index = this.findIndex(ids, defaultValue);

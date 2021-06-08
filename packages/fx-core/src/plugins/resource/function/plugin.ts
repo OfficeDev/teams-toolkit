@@ -826,12 +826,13 @@ export class FunctionPluginImpl {
 
   private async handleDotnetChecker(ctx: PluginContext): Promise<void> {
     try {
-      const funcPluginAdapter = new FuncPluginAdapter(ctx);
+      const telemetry = new FuncPluginTelemetry(ctx);
+      const funcPluginAdapter = new FuncPluginAdapter(ctx, telemetry);
       await step(StepGroup.PreDeployStepGroup, PreDeploySteps.dotnetInstall, async () => {
         const dotnetChecker = new DotnetChecker(
           funcPluginAdapter,
           funcPluginLogger,
-          new FuncPluginTelemetry(ctx)
+          telemetry,
         );
         try {
           if (!(await dotnetChecker.isEnabled()) || await dotnetChecker.isInstalled()) {
@@ -884,7 +885,8 @@ export class FunctionPluginImpl {
             await FunctionDeploy.installFuncExtensions(ctx, workingPath, functionLanguage);
           } catch (error) {
             // wrap the original error to UserError so the extensibility model will pop-up a dialog correctly
-            new FuncPluginAdapter(ctx).handleDotnetError(error);
+            const telemetry = new FuncPluginTelemetry(ctx);
+            new FuncPluginAdapter(ctx, telemetry).handleDotnetError(error);
           }
         })
     );

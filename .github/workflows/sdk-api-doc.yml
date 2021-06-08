@@ -1,8 +1,8 @@
-name: SDK API docs
+name: SDK API docs & version update
 
 on:
   schedule:
-    - cron: "0 0 * * 3" # every Wednesday
+    - cron: "0 0 * * *"
   workflow_dispatch:
 
 jobs:
@@ -36,7 +36,7 @@ jobs:
           npm run build:api-markdown
         working-directory: ./packages/sdk
 
-      - name: Commit doc changes
+      - name: Commit doc & version changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: "docs(sdk): update API"
@@ -50,7 +50,7 @@ jobs:
           # See the `pathspec`-documentation for git
           # - https://git-scm.com/docs/git-add#Documentation/git-add.txt-ltpathspecgt82308203
           # - https://git-scm.com/docs/gitglossary#Documentation/gitglossary.txt-aiddefpathspecapathspec
-          file_pattern: docs/sdk/*.md,packages/sdk/src
+          file_pattern: docs/sdk/*.md packages/sdk/src/packageMetadata.ts
 
           # Optional local file path to the repository
           # Defaults to the root of the repository

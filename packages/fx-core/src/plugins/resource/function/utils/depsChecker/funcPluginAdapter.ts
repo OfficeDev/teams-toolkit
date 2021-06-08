@@ -12,17 +12,19 @@ import {
   QuestionType,
   returnUserError,
 } from "@microsoft/teamsfx-api";
-import { Messages, dotnetManualInstallHelpLink, defaultHelpLink } from "./common";
-import { IDepsAdapter, IDepsChecker } from "./checker";
+import { Messages, dotnetManualInstallHelpLink, defaultHelpLink, DepsCheckerEvent } from "./common";
+import { IDepsAdapter, IDepsChecker, IDepsTelemetry } from "./checker";
 import { getResourceFolder } from "../../../../..";
 
 export class FuncPluginAdapter implements IDepsAdapter {
   private readonly downloadIndicatorInterval = 1000; // same as vscode-dotnet-runtime
   private readonly _ctx: PluginContext;
+  private readonly _telemetry: IDepsTelemetry;
   private readonly dotnetSettingKey = "function-dotnet-checker-enabled";
 
-  constructor(ctx: PluginContext) {
+  constructor(ctx: PluginContext, telemetry: IDepsTelemetry) {
     this._ctx = ctx;
+    this._telemetry = telemetry;
   }
 
   public displayLearnMore(message: string, link: string): Promise<boolean> {
@@ -125,6 +127,7 @@ export class FuncPluginAdapter implements IDepsAdapter {
     ).getAnswer();
 
     if (userSelected === Messages.learnMoreButtonText) {
+      this._telemetry.sendEvent(DepsCheckerEvent.clickLearnMore);
       await this._ctx.dialog.communicate(
         new DialogMsg(DialogType.Ask, {
           type: QuestionType.OpenExternal,
@@ -135,7 +138,13 @@ export class FuncPluginAdapter implements IDepsAdapter {
       return this.displayContinueWithLearnMoreLink(message, link);
     }
 
-    return userSelected === Messages.continueButtonText;
+    if (userSelected === Messages.continueButtonText) {
+      this._telemetry.sendEvent(DepsCheckerEvent.clickContinue);
+      return true;
+    } else {
+      this._telemetry.sendEvent(DepsCheckerEvent.clickCancel);
+      return false;
+    }
   }
 
   public async generateMsg(

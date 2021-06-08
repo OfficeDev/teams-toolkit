@@ -30,10 +30,10 @@ export namespace cpUtils {
       ...args
     );
     if (result.code !== 0) {
-      await logger?.debug(
-        `Failed to run command: "${command} ${result.formattedArgs}", code: '${result.code}'`
-      );
-      throw new Error(`Failed to run "${command}" command. Check output window for more details.`);
+      const errorMessage = `Failed to run command: "${command} ${result.formattedArgs}", code: "${result.code}",
+                            output: "${result.cmdOutput}", error: "${result.cmdOutputIncludingStderr}"`;
+      await logger?.debug(errorMessage);
+      throw new Error(errorMessage);
     } else {
       await logger?.debug(`Finished running command: "${command} ${result.formattedArgs}".`);
     }

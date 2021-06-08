@@ -1,4 +1,4 @@
-import { loadConfiguration, ResourceType } from "@microsoft/teamsfx";
+import { loadConfiguration, ResourceType, LogLevel, setLogLevel } from "@microsoft/teamsfx";
 import { useData } from "./useData";
 import { useTeams } from "msteams-react-base-component";
 
@@ -14,6 +14,11 @@ export function useTeamsFx() {
   const [result] = useTeams({});
   const { error, loading } = useData(async () => {
     if (!initialized) {
+      if (process.env.NODE_ENV === "development") {
+        setLogLevel(LogLevel.Verbose);
+      } else {
+        setLogLevel(LogLevel.Error);
+      }
       loadConfiguration({
         authentication: {
           initiateLoginEndpoint: startLoginPageUrl,

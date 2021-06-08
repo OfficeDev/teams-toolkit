@@ -117,6 +117,7 @@ export class CLIUserInteraction implements UserInteraction {
     return process.env.CI_ENABLED === "true";
   }
 
+
   private async runInquirer<T>(question: DistinctQuestion): Promise<Result<T, FxError>> {
     if (this.presetAnswers.has(question.name!)) {
       const answer = this.presetAnswers.get(question.name!);
@@ -160,7 +161,7 @@ export class CLIUserInteraction implements UserInteraction {
   ): DistinctQuestion {
     return { type, name, message, choices, default: defaultValue, validate };
   }
-
+  
   private async singleSelect(
     name: string,
     message: string,
@@ -495,6 +496,17 @@ export class CLIUserInteraction implements UserInteraction {
             resolve(err(UserCancelError));
         }
     );
+  }
+}
+
+async function pathValidation(p: string): Promise<string | undefined> {
+  if (p === "") {
+    return "Path cannot be empty.";
+  }
+  if (await fs.pathExists(path.resolve(p))) {
+    return undefined;
+  } else {
+    return `${path.resolve(p)} does not exist.`
   }
 }
 

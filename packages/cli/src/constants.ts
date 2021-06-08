@@ -89,6 +89,13 @@ export const templates: {
     sampleAppName: "in-meeting-app",
     sampleAppUrl: "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip",
   },
+  {
+    tags: ["Easy QnA", "Bot", "JS"],
+    title: "FAQ Plus",
+    description: "Conversational Bot which answers common questions, looping human when bots unable to help",
+    sampleAppName: "faq-plus",
+    sampleAppUrl: "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/dev.zip"
+  }
 ];
 
 export enum CLILogLevel {

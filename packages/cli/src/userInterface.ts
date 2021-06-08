@@ -109,6 +109,24 @@ export class DialogManager implements Dialog {
 
   private async askQuestion(question: IQuestion): Promise<string | undefined> {
     switch (question.type) {
+      case QuestionType.Radio: {
+        if (!question.options || question.options.length === 0) {
+          break;
+        }
+        const result = await CLIUIInstance.selectOption(
+          {
+            name: question.description.includes("subscription") ? "subscription" : "radio",
+            type: "radio",
+            title: question.description,
+            options: question.options,
+          }
+        );
+        if (result.isOk()) {
+          return result.value.result as string | undefined;
+        } else {
+          return undefined;
+        }
+      }
       case QuestionType.Confirm: {
         if (!question.options || question.options.length === 0) {
           break;

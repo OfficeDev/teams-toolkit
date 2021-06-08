@@ -129,6 +129,13 @@ export const SampleSelect: SingleSelectQuestion = {
       detail: "A template for apps using only in the context of a Teams meeting",
       data: "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip",
     },
+    {
+      id: "faq-plus",
+      label: "FAQ Plus",
+      detail:
+        "Conversational Bot which answers common questions, looping human when bots unable to help",
+      data: "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/dev.zip",
+    },
   ],
   placeholder: "Select a sample",
   returnObject: true,

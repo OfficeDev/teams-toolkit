@@ -57,7 +57,6 @@ export class VSCodeAdapter implements IDepsAdapter {
       continueButton
     );
 
-
     if (input === continueButton) {
       this._telemetry.sendEvent(DepsCheckerEvent.clickContinue);
       return true;

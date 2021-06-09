@@ -36,6 +36,7 @@ export class Constants {
     resourceNameSuffix: "resourceNameSuffix",
     location: "location",
     tenantId: "tenantId",
+    remoteTeamsAppId: "remoteTeamsAppId",
   };
 
   public static readonly identityPlugin: string = "fx-resource-identity";
@@ -59,8 +60,8 @@ export class Constants {
 export class Telemetry {
   static readonly componentName = "fx-resource-azure-sql";
   static startSuffix = "-start";
-  static resultYes = "yes";
-  static resultNo = "no";
+  static valueYes = "yes";
+  static valueNo = "no";
   static userError = "user";
   static systemError = "system";
 
@@ -78,6 +79,7 @@ export class Telemetry {
     errorType: "error-type",
     errorMessage: "error-message",
     appid: "appid",
+    skipAddingUser: "skip-adding-user",
   };
 }
 

@@ -369,7 +369,7 @@ export async function runCommand(stage: Stage): Promise<Result<null, FxError>> {
     if ("name" in e && (e as FxError).name === "DoProvisionFirst") {
       runningTasks.delete(stage);
       if (eventName) {
-        ExtTelemetry.sendTelemetryEvent(eventName, {
+        ExtTelemetry.sendTelemetryErrorEvent(eventName, e, {
           [TelemetryProperty.Success]: TelemetrySuccess.No
         });
       }

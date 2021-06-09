@@ -13,4 +13,5 @@ export enum ExtensionErrors {
   UnknownSubscription = "UnknownSubscription",
   PortAlreadyInUse = "PortAlreadyInUse",
   OpenExternalFailed = "OpenExternalFailed",
+  FolderAlreadyExist = "FolderAlreadyExist",
 }

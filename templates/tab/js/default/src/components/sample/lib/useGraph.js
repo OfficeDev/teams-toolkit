@@ -1,14 +1,12 @@
-import { useRef } from "react";
 import { useData } from "./useData";
 import { TeamsUserCredential, createMicrosoftGraphClient } from "@microsoft/teamsfx";
 
 export function useGraph(asyncFunc, options) {
-  const credential = useRef(new TeamsUserCredential());
-
   const { scope } = { scope: ["User.Read"], ...options };
   const initial = useData(async () => {
     try {
-      const graph = createMicrosoftGraphClient(credential.current, scope);
+      const credential = new TeamsUserCredential();
+      const graph = createMicrosoftGraphClient(credential, scope);
       return await asyncFunc(graph);
     } catch (err) {
       if (err.code.includes("UiRequiredError")) {
@@ -21,8 +19,9 @@ export function useGraph(asyncFunc, options) {
 
   const { data, error, loading, reload } = useData(
     async () => {
-      await credential.current.login(scope);
-      const graph = createMicrosoftGraphClient(credential.current, scope);
+      const credential = new TeamsUserCredential();
+      await credential.login(scope);
+      const graph = createMicrosoftGraphClient(credential, scope);
       return await asyncFunc(graph);
     },
     { auto: false }

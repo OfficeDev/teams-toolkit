@@ -11,6 +11,7 @@ export class Constants {
       subscriptionId: "subscriptionId",
       resourceGroupName: "resourceGroupName",
       location: "location",
+      remoteTeamsAppId: "remoteTeamsAppId",
     },
   };
 
@@ -115,6 +116,7 @@ export class Telemetry {
   static isSuccess = "success";
   static success = "yes";
   static fail = "no";
+  static appId = "appid";
 }
 
 export interface Message {

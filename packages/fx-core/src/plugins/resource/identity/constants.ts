@@ -15,13 +15,14 @@ export class Constants {
   public static readonly resourceGroupName: string = "resourceGroupName";
   public static readonly resourceNameSuffix: string = "resourceNameSuffix";
   public static readonly location: string = "location";
+  public static readonly remoteTeamsAppId: string = "remoteTeamsAppId";
 }
 
 export class Telemetry {
   static readonly componentName = "fx-resource-azure-identity";
   static startSuffix = "-start";
-  static resultYes = "yes";
-  static resultNo = "no";
+  static valueYes = "yes";
+  static valueNo = "no";
   static userError = "user";
   static systemError = "system";
 

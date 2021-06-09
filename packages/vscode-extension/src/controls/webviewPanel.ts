@@ -11,11 +11,19 @@ import * as fs from "fs-extra";
 import AzureAccountManager from "../commonlib/azureLogin";
 import AppStudioTokenInstance from "../commonlib/appStudioLogin";
 import { runCommand } from "../handlers";
-import { Stage } from "@microsoft/teamsfx-api";
+import { returnSystemError, Stage, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { PanelType } from "./PanelType";
 import { execSync } from "child_process";
 import { isMacOS } from "../utils/commonUtils";
 import { DialogManager } from "../userInterface";
+import { ExtTelemetry } from "../telemetry/extTelemetry"
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetryTiggerFrom,
+  TelemetrySuccess,
+} from "../telemetry/extTelemetryEvents";
+import { ExtensionErrors, ExtensionSource } from "../error";
 
 export class WebviewPanel {
   private static readonly viewType = "react";
@@ -73,57 +81,7 @@ export class WebviewPanel {
             vscode.env.openExternal(vscode.Uri.parse(msg.data));
             break;
           case Commands.CloneSampleApp:
-            // const selection = await vscode.window.showInformationMessage(
-            //   `Download '${msg.data.appName}' from Github. This will download '${msg.data.appName}' repository and open to your local machine`,
-            //   { modal: true },
-            //   "Download"
-            // );
-            // if (selection === "Download") {
-            const folder = await vscode.window.showOpenDialog({
-              canSelectFiles: false,
-              canSelectFolders: true,
-              canSelectMany: false,
-              title: "Select folder to download the sample app",
-            });
-            if (folder !== undefined) {
-              const sampleAppPath = path.join(folder[0].fsPath, msg.data.appFolder);
-              if (
-                (await fs.pathExists(sampleAppPath)) &&
-                (await fs.readdir(sampleAppPath)).length > 0
-              ) {
-                vscode.window.showErrorMessage(
-                  `Path ${sampleAppPath} alreay exists. Select a different folder.`
-                );
-                return;
-              }
-              const dialogManager = DialogManager.getInstance();
-              const progress = dialogManager.createProgressBar("Fetch sample app", 2);
-              progress.start();
-              try {
-                progress.next(`Downloading from '${msg.data.appUrl}'`);
-                const result = await this.fetchCodeZip(msg.data.appUrl);
-                progress.next("Unzipping the sample package");
-                if (result !== undefined) {
-                  await this.saveFilesRecursively(
-                    new AdmZip(result.data),
-                    msg.data.appFolder,
-                    folder[0].fsPath
-                  );
-                  vscode.commands.executeCommand(
-                    "vscode.openFolder",
-                    vscode.Uri.file(sampleAppPath)
-                  );
-                  ext.context.globalState.update("openSampleReadme", true);
-                } else {
-                  vscode.window.showErrorMessage("Failed to download sample app");
-                }
-              } finally {
-                progress.end();
-              }
-            }
-            //}
-            break;
-          case Commands.DisplayCommandPalette:
+            await this.downloadSampleApp(msg);
             break;
           case Commands.DisplayCommands:
             vscode.commands.executeCommand("workbench.action.quickOpen", `>${msg.data}`);
@@ -149,6 +107,8 @@ export class WebviewPanel {
           case Commands.GetGlobalStepsDone:
             this.getGlobalStepsDone();
             break;
+          case Commands.SendTelemetryEvent:
+            ExtTelemetry.sendTelemetryEvent(msg.data.eventName, msg.data.properties);
           default:
             break;
         }
@@ -159,6 +119,67 @@ export class WebviewPanel {
 
     // Set the webview's initial html content
     this.panel.webview.html = this.getHtmlForWebview(panelType);
+  }
+
+  private async downloadSampleApp(msg: any){
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSampleStart, { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview, [TelemetryProperty.SampleAppName]: msg.data.appFolder });
+    const folder = await vscode.window.showOpenDialog({
+      canSelectFiles: false,
+      canSelectFolders: true,
+      canSelectMany: false,
+      title: "Select folder to download the sample app",
+    });
+
+    let downloadSuccess = false;
+    let error = new UserError(ExtensionErrors.UserCancel, "Invalid folder", ExtensionSource);
+    if (folder !== undefined) {
+      const sampleAppPath = path.join(folder[0].fsPath, msg.data.appFolder);
+      if (
+        (await fs.pathExists(sampleAppPath)) &&
+        (await fs.readdir(sampleAppPath)).length > 0
+      ) {
+        error.name = ExtensionErrors.FolderAlreadyExist;
+        error.message = "Folder already exists";
+        vscode.window.showErrorMessage(
+          `Path ${sampleAppPath} alreay exists. Select a different folder.`
+        );
+      } else {
+        const dialogManager = DialogManager.getInstance();
+        const progress = dialogManager.createProgressBar("Fetch sample app", 2);
+        progress.start();
+        try {
+          progress.next(`Downloading from '${msg.data.appUrl}'`);
+          const result = await this.fetchCodeZip(msg.data.appUrl);
+          progress.next("Unzipping the sample package");
+          if (result !== undefined) {
+            await this.saveFilesRecursively(
+              new AdmZip(result.data),
+              msg.data.appFolder,
+              folder[0].fsPath
+            );
+            downloadSuccess = true;
+            vscode.commands.executeCommand(
+              "vscode.openFolder",
+              vscode.Uri.file(sampleAppPath)
+            );
+            ext.context.globalState.update("openSampleReadme", true);
+          } else {
+            error = new SystemError(ExtensionErrors.UnknwonError, "Empty zip file", ExtensionSource);
+            vscode.window.showErrorMessage("Failed to download sample app");
+          }
+        } catch(e){
+          error = returnSystemError(e, ExtensionSource, ExtensionErrors.UnknwonError);
+        } finally {
+          progress.end();
+        }
+      }
+    }
+
+    if (downloadSuccess) {
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview, [TelemetryProperty.SampleAppName]: msg.data.appFolder, [TelemetryProperty.Success]: TelemetrySuccess.Yes });
+    } else {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DownloadSample, error, { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview, [TelemetryProperty.SampleAppName]: msg.data.appFolder, [TelemetryProperty.Success]: TelemetrySuccess.No });
+    }
   }
 
   private updateGlobalStepsDone(data: any) {

@@ -10,4 +10,4 @@ For help and questions about using this project, please see [`#TeamsToolkit` tag
 
 ## Microsoft Support Policy  
 
-Support for this repository is limited to the resources listed above.![image](https://user-images.githubusercontent.com/25972542/121289068-fd3c8f00-c916-11eb-850e-c0df4824a63e.png)
+Support for this repository is limited to the resources listed above.

@@ -58,7 +58,7 @@ export async function askSubscription(
   if (subscriptions.length === 0) {
     return err(
       returnUserError(
-        new Error("Failed to find a subscription."),
+        new Error("No Azure Subscription found for your account."),
         "Solution",
         SolutionError.NoSubscriptionFound
       )

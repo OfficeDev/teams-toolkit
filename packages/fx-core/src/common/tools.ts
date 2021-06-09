@@ -271,3 +271,39 @@ export function isValidProject(workspacePath?: string): boolean {
   }
   return true;
 }
+
+export function getTeamsAppId(rootFolder: string | undefined) {
+  if (rootFolder) {
+    if (isWorkspaceSupported(rootFolder)) {
+      const env = getActiveEnv();
+      const envJsonPath = path.join(rootFolder, `.${ConfigFolderName}/env.${env}.json`);
+      const envJson = JSON.parse(fs.readFileSync(envJsonPath, "utf8"));
+      return envJson.solution.remoteTeamsAppId;
+    }
+  }
+
+  return undefined;
+}
+
+export function isWorkspaceSupported(workspace: string): boolean {
+  const p = workspace;
+
+  const checklist: string[] = [
+    p,
+    `${p}/package.json`,
+    `${p}/.${ConfigFolderName}`,
+    `${p}/.${ConfigFolderName}/settings.json`,
+    `${p}/.${ConfigFolderName}/env.${getActiveEnv()}.json`,
+  ];
+
+  for (const fp of checklist) {
+    if (!fs.pathExistsSync(path.resolve(fp))) {
+      return false;
+    }
+  }
+  return true;
+}
+
+export function getActiveEnv(): string {
+  return "default";
+}

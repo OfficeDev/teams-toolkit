@@ -94,7 +94,7 @@ export const templates: {
     title: "FAQ Plus",
     description: "Conversational Bot which answers common questions, looping human when bots unable to help",
     sampleAppName: "faq-plus",
-    sampleAppUrl: "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/dev.zip"
+    sampleAppUrl: "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip"
   }
 ];
 

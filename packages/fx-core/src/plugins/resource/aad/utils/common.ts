@@ -10,14 +10,15 @@ export class Utils {
     logProvider: LogProvider | undefined,
     message: Messages,
     messageLocal: Messages,
-    isLocalDebug = false
+    isLocalDebug = false,
+    properties?: { [key: string]: string },
   ) {
     if (!isLocalDebug) {
       logProvider?.info(message.log);
-      TelemetryUtils.sendEvent(message.telemetry);
+      TelemetryUtils.sendEvent(message.telemetry, properties);
     } else {
       logProvider?.info(messageLocal.log);
-      TelemetryUtils.sendEvent(messageLocal.telemetry);
+      TelemetryUtils.sendEvent(messageLocal.telemetry, properties);
     }
   }
 

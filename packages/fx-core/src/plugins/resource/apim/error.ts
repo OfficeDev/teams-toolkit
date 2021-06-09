@@ -178,8 +178,8 @@ export function AssertNotEmpty(name: string, value: any): any {
 export function AssertConfigNotEmpty<T>(
   component: TeamsToolkitComponent,
   name: string,
-  value: T | undefined
-): T {
+  value: string | undefined
+): string {
   if (!value) {
     throw BuildError(EmptyConfigValue, component, name, ConfigRetryOperations[component][name]);
   }

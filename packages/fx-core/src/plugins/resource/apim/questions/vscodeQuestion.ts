@@ -232,7 +232,7 @@ export class ApiVersionQuestion extends BaseQuestionService implements IQuestion
       const result: OptionItem = {
         id: api.name ?? "",
         label: api.apiVersion ?? "",
-        description: api.name,
+        description: api.name ?? "",
         data: api,
       };
       return result;

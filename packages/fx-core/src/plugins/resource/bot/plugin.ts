@@ -27,7 +27,7 @@ import { getZipDeployEndpoint } from "./utils/zipDeploy";
 
 import * as appService from "@azure/arm-appservice";
 import * as fs from "fs-extra";
-import { CommonStrings, PluginBot, ConfigNames } from "./resources/strings";
+import { CommonStrings, PluginBot, ConfigNames, PluginLocalDebug } from "./resources/strings";
 import { DialogUtils } from "./utils/dialog";
 import {
   CheckThrowSomethingMissing,
@@ -571,7 +571,7 @@ export class TeamsBotImpl {
 
     const botReg: IBotRegistration = {
       botId: this.config.localDebug.localBotId,
-      name: this.ctx!.app.name.short,
+      name: this.ctx!.app.name.short + PluginLocalDebug.LOCAL_DEBUG_SUFFIX,
       description: "",
       iconUrl: "",
       messagingEndpoint: endpoint,
@@ -657,7 +657,7 @@ export class TeamsBotImpl {
     // 2. Register bot by app studio.
     const botReg: IBotRegistration = {
       botId: botAuthCreds.clientId,
-      name: this.ctx!.app.name.short,
+      name: this.ctx!.app.name.short + PluginLocalDebug.LOCAL_DEBUG_SUFFIX,
       description: "",
       iconUrl: "",
       messagingEndpoint: "",

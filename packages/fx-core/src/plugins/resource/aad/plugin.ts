@@ -22,7 +22,7 @@ import {
 } from "./errors";
 import { Envs } from "./interfaces/models";
 import { DialogUtils } from "./utils/dialog";
-import { ConfigKeys, Constants, Messages, ProgressDetail, ProgressTitle } from "./constants";
+import { ConfigKeys, Constants, Messages, ProgressDetail, ProgressTitle, Telemetry } from "./constants";
 import { IPermission } from "./interfaces/IPermission";
 import { RequiredResourceAccess, ResourceAccess } from "./interfaces/IAADDefinition";
 import { validate as uuidValidate } from "uuid";
@@ -59,7 +59,8 @@ export class AadAppForTeamsImpl {
           ctx.logProvider,
           Messages.EndProvision,
           Messages.EndLocalDebug,
-          isLocalDebug
+          isLocalDebug,
+          { [Telemetry.skip]: Telemetry.yes},
         );
         return ResultFactory.Success();
       } else {

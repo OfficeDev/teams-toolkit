@@ -30,6 +30,7 @@ export class PluginAAD {
 export class PluginLocalDebug {
   public static readonly PLUGIN_NAME = "fx-resource-local-debug";
   public static readonly LOCAL_BOT_ENDPOINT = "localBotEndpoint";
+  public static readonly LOCAL_DEBUG_SUFFIX = "-local-debug"
 }
 
 export class PluginSolution {

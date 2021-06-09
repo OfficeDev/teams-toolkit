@@ -1,4 +1,4 @@
-## FreeServerFarmsQuotaError
+## SA.FreeServerFarmsQuotaError
 
 ### Error Message
 
@@ -25,3 +25,13 @@ There are three methods to mitigate this issue:
 1. Close all VS Code windows (to make environment variable take effect)
 1. Open VS Code 
 1. Run `Provision` command again
+
+## SA.MissingSubscriptionRegistrationError
+
+### Error Message
+
+The subscription is not registered to use namespace 'Microsoft.Web'.
+
+### Mitigation
+
+Please refer to this [link](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/error-register-resource-provider) to register 'Microsoft.Web' in your subscription.

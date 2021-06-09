@@ -37,7 +37,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { checkSubscription, fillInCommonQuestions } from "./commonQuestions";
 import { executeLifecycles, executeConcurrently, LifecyclesWithContext } from "./executor";
-import { getPluginContext, getSubsriptionDisplayName} from "./util";
+import { getPluginContext, getSubsriptionDisplayName, sendErrorTelemetryThenReturnError } from "./util";
 import { AppStudio } from "./appstudio/appstudio";
 import * as fs from "fs-extra";
 import {
@@ -68,6 +68,10 @@ import {
   BOT_ID,
   LOCAL_BOT_ID,
   CancelError,
+  SolutionTelemetryProperty,
+  SolutionTelemetryEvent,
+  SolutionTelemetryComponentName,
+  SolutionTelemetrySuccess,
 } from "./constants";
 
 import { SpfxPlugin } from "../../resource/spfx";
@@ -355,6 +359,10 @@ export class TeamsAppSolution implements Solution {
    * create
    */
   async create(ctx: SolutionContext): Promise<Result<any, FxError>> {
+    ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.CreateStart, {
+      [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+    });
+
     // ensure that global namespace is present
     if (!ctx.config.has(GLOBAL_CONFIG)) {
       ctx.config.set(GLOBAL_CONFIG, new ConfigMap());
@@ -367,7 +375,9 @@ export class TeamsAppSolution implements Solution {
     }
 
     const settingsRes = this.fillInSolutionSettings(ctx);
-    if (settingsRes.isErr()) return err(settingsRes.error);
+    if (settingsRes.isErr()) {
+      return err(sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.Create, settingsRes.error, ctx.telemetryReporter));
+    }
 
     const solutionSettings = settingsRes.value;
 
@@ -393,6 +403,12 @@ export class TeamsAppSolution implements Solution {
         JSON.stringify(manifest, null, 4)
       );
       await fs.writeJSON(`${ctx.root}/permissions.json`, DEFAULT_PERMISSION_REQUEST, { spaces: 4 });
+      ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.Create, {
+        [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+        [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
+        [SolutionTelemetryProperty.Resources]: solutionSettings.azureResources.join(";"),
+        [SolutionTelemetryProperty.Capabilities]: solutionSettings.capabilities.join(";")
+      });
     } else {
       const manifest = await (this.spfxPlugin as unknown as SpfxPlugin).getManifest();
       await fs.writeFile(
@@ -2163,7 +2179,12 @@ export class TeamsAppSolution implements Solution {
     }
     return ok(undefined);
   }
+
   async executeAddResource(ctx: SolutionContext): Promise<Result<any, FxError>> {
+    ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.AddResourceStart, {
+      [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+    });
+
     if (!ctx.answers) {
       return err(
         returnUserError(new Error(`answer is empty!`), "Solution", SolutionError.InternelError)
@@ -2178,13 +2199,13 @@ export class TeamsAppSolution implements Solution {
         settings.capabilities.includes(TabOptionItem.id)
       )
     ) {
-      return err(
-        returnUserError(
-          new Error("Add resource is only supported for Tab app hosted in Azure."),
-          "Solution",
-          SolutionError.AddResourceNotSupport
-        )
+      const e = returnUserError(
+        new Error("Add resource is only supported for Tab app hosted in Azure."),
+        "Solution",
+        SolutionError.AddResourceNotSupport
       );
+
+      return err(sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddResource, e, ctx.telemetryReporter));
     }
     const selectedPlugins = settings.activeResourcePlugins;
 
@@ -2205,9 +2226,12 @@ export class TeamsAppSolution implements Solution {
     const addApim = addResourcesAnswer.includes(AzureResourceApim.id);
 
     if ((alreadyHaveSql && addSQL) || (alreadyHaveApim && addApim)) {
-      return err(
-        returnUserError(new Error(`SQL or APIM is already enabled!`), "Solution", SolutionError.AddResourceNotSupport)
+      const e = returnUserError(
+        new Error("SQL/APIM is already added."),
+        "Solution",
+        SolutionError.AddResourceNotSupport
       );
+      return err(sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddResource, e, ctx.telemetryReporter));
     }
 
     let addNewResoruceToProvision = false;
@@ -2242,7 +2266,7 @@ export class TeamsAppSolution implements Solution {
       if (scaffoldRes.isErr()) {
         ctx.logProvider?.info(`failed to scaffold ${notifications.join(",")}!`);
         ctx.projectSettings!.solutionSettings = originalSettings;
-        return err(scaffoldRes.error);
+        return err(sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddResource, scaffoldRes.error, ctx.telemetryReporter));
       }
       ctx.logProvider?.info(`finish scaffolding ${notifications.join(",")}!`);
       if(addNewResoruceToProvision)
@@ -2254,9 +2278,19 @@ export class TeamsAppSolution implements Solution {
               notifications.join(",")), 
           false);
     }
+
+    ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.AddResource, {
+      [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+      [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
+      [SolutionTelemetryProperty.Resources]: addResourcesAnswer.join(";"),
+    });
     return ok(Void);
   }
+
   async executeAddCapability(func: Func, ctx: SolutionContext): Promise<Result<any, FxError>> {
+    ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.AddCapabilityStart, {
+      [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+    });
     if (!ctx.answers) {
       return err(
         returnUserError(new Error(`answer is empty!`), "Solution", SolutionError.InternelError)
@@ -2265,17 +2299,23 @@ export class TeamsAppSolution implements Solution {
     const settings = this.getAzureSolutionSettings(ctx);
     const originalSettings = deepCopy(settings);
     if (!(settings.hostType === HostTypeOptionAzure.id)) {
+      const e = returnUserError(
+        new Error("Add capability is not supported for SPFx project"),
+        "Solution",
+        SolutionError.FailedToAddCapability
+      );
       return err(
-        returnUserError(
-          new Error("Add capability is not supported for SPFx project"),
-          "Solution",
-          SolutionError.FailedToAddCapability
-        )
+        sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddCapability, e, ctx.telemetryReporter)
       );
     }
 
     const capabilitiesAnswer = ctx.answers[AzureSolutionQuestionNames.Capabilities] as string[];
     if (!capabilitiesAnswer || capabilitiesAnswer.length === 0) {
+      ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.AddCapability, {
+        [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+        [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
+        [SolutionTelemetryProperty.Capabilities]: [].join(";"),
+      });
       return ok(Void);
     }
 
@@ -2285,12 +2325,13 @@ export class TeamsAppSolution implements Solution {
       (capabilitiesAnswer.includes(BotOptionItem.id) ||
         capabilitiesAnswer.includes(MessageExtensionItem.id))
     ) {
+      const e = returnUserError(
+        new Error("Application already contains a Bot and/or Messaging Extension"),
+        "Solution",
+        SolutionError.FailedToAddCapability
+      );
       return err(
-        returnUserError(
-          new Error("Application already contains a Bot and/or Messaging Extension"),
-          "Solution",
-          SolutionError.FailedToAddCapability
-        )
+        sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddCapability, e, ctx.telemetryReporter)
       );
     }
 
@@ -2338,7 +2379,9 @@ export class TeamsAppSolution implements Solution {
       if (scaffoldRes.isErr()) {
         ctx.logProvider?.info(`failed to scaffold ${notifications.join(",")}!`);
         ctx.projectSettings!.solutionSettings = originalSettings;
-        return err(scaffoldRes.error);
+        return err(
+          sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddCapability, scaffoldRes.error, ctx.telemetryReporter)
+        );
       }
       ctx.logProvider?.info(`finish scaffolding ${notifications.join(",")}!`);
       ctx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false);
@@ -2351,6 +2394,12 @@ export class TeamsAppSolution implements Solution {
           level: MsgLevel.Info,
         })
       );
+
+      ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.AddCapability, {
+        [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+        [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
+        [SolutionTelemetryProperty.Capabilities]: capabilitiesAnswer.join(";"),
+      });
       return ok({});
     }
     const cannotAddCapWarnMsg = "Add nothing";
@@ -2360,6 +2409,11 @@ export class TeamsAppSolution implements Solution {
         level: MsgLevel.Warning,
       })
     );
+    ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.AddCapability, {
+      [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+      [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
+      [SolutionTelemetryProperty.Capabilities]: [].join(";"),
+    });
     return ok({});
   }
   /**

@@ -11,6 +11,8 @@ import {
   CreateWebAppError,
   UpdateApplicationSettingsError,
   ZipDeployError,
+  FreeServerFarmsQuotaError,
+  MissingSubscriptionRegistrationError,
 } from "./errors";
 import { ResultFactory } from "./result";
 import { DialogUtils } from "./utils/dialog";
@@ -69,11 +71,20 @@ export class WebAppClient {
     } catch (error) {
       if (error?.message?.includes(Constants.FreeServerFarmsQuotaErrorFromAzure)) {
         throw ResultFactory.UserError(
-          CreateAppServicePlanError.name,
-          CreateAppServicePlanError.message(Constants.FreeServerFarmsQuotaErrorToUser),
+          FreeServerFarmsQuotaError.name,
+          FreeServerFarmsQuotaError.message(Constants.FreeServerFarmsQuotaErrorToUser),
           error,
           undefined,
-          Constants.FreeServerFarmsQuotaErrorHelpLink
+          Constants.HelpLink
+        );
+      }
+      if (error?.message?.includes(Constants.MissingSubscriptionRegistrationErrorFromAzure)) {
+        throw ResultFactory.UserError(
+          MissingSubscriptionRegistrationError.name,
+          MissingSubscriptionRegistrationError.message(error?.message),
+          error,
+          undefined,
+          Constants.HelpLink
         );
       }
       throw ResultFactory.SystemError(

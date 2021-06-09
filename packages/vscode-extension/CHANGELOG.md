@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.1.0 - June 9 2021
+Incremental version for Teams Toolkit with the following updates:
+
+Added:
+- enable customer survey from toolkit
+- add FAQ plus to the samples
+- better local debug experience
+
 ## 2.0.1 - May 25 2021
 2.0.1 is a major version upgrade for Teams Toolkit with many new improvements and supports.
 

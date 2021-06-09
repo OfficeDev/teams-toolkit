@@ -410,6 +410,7 @@ export class VsCodeUI implements UserInteraction {
         quickPick.step = config.step;
         quickPick.totalSteps = config.totalSteps;
       }
+      let fileSelectorIsOpen = false;
       return await new Promise(
         async (resolve): Promise<void> => {
           const onDidAccept = () => {
@@ -425,7 +426,8 @@ export class VsCodeUI implements UserInteraction {
 
           disposables.push(
             quickPick.onDidHide(() => {
-              resolve({ type: "cancel" });
+              if(fileSelectorIsOpen === false)
+                resolve({ type: "cancel" });
             }),
             quickPick.onDidTriggerButton((button) => {
               if (button === QuickInputButtons.Back) resolve({ type: "back" });
@@ -439,6 +441,7 @@ export class VsCodeUI implements UserInteraction {
           ];
           const onDidChangeSelection = async function(items: QuickPickItem[]): Promise<any> {
             const defaultUrl = items[0].detail;
+            fileSelectorIsOpen = true;
             const uriList: Uri[] | undefined = await window.showOpenDialog({
               defaultUri: defaultUrl ? Uri.file(defaultUrl) : undefined,
               canSelectFiles: config.type === "file" || config.type === "files",
@@ -446,6 +449,7 @@ export class VsCodeUI implements UserInteraction {
               canSelectMany: config.type === "files",
               title: config.title
             });
+            fileSelectorIsOpen = false;
             if (uriList && uriList.length > 0) {
               if (config.type === "files") {
                 const results = uriList.map((u) => u.fsPath);
@@ -466,7 +470,7 @@ export class VsCodeUI implements UserInteraction {
           disposables.push(quickPick.onDidChangeSelection(onDidChangeSelection));
           disposables.push(quickPick);
           quickPick.show();
-
+          fileSelectorIsOpen = true;
           const uriList: Uri[] | undefined = await window.showOpenDialog({
             defaultUri: defaultValue ? Uri.file(defaultValue) : undefined,
             canSelectFiles: config.type === "file" || config.type === "files",
@@ -474,6 +478,7 @@ export class VsCodeUI implements UserInteraction {
             canSelectMany: config.type === "files",
             title: config.title
           });
+          fileSelectorIsOpen = false;
           if (uriList && uriList.length > 0) {
             if (config.type === "files") {
               const results = uriList.map((u) => u.fsPath);

@@ -26,7 +26,7 @@ const rootFolderNode = new QTreeNode({
 export class HelpParamGenerator {
   private static core: FxCore | undefined;
   private static questionsMap: Map<string, QTreeNode> = new Map<string, QTreeNode>();
-  public static async activate(): Promise<Result<FxCore, FxError>> {
+  public static activate(): Result<FxCore, FxError> {
     const tools: Tools = {
       logProvider: CLILogProvider,
       tokenProvider: {
@@ -83,7 +83,7 @@ export class HelpParamGenerator {
   }
 
   public static async initializeQuestionsForHelp(): Promise<Result<undefined, FxError>> {
-    const result = await HelpParamGenerator.activate();
+    const result = HelpParamGenerator.activate();
     if (result.isErr()) {
       return err(result.error);
     }

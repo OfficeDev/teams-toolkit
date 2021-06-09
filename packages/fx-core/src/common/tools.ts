@@ -10,7 +10,7 @@ import * as path from "path";
 import { getResourceFolder } from "..";
 import { fakeServer } from "sinon";
 import { PluginNames } from "../plugins";
-import { AzureResourceApim, AzureResourceFunction, AzureResourceSQL, BotOptionItem, HostTypeOptionSPFx, MessageExtensionItem, TabOptionItem } from "../plugins/solution/fx-solution/question";
+import { AzureResourceApim, AzureResourceFunction, AzureResourceSQL, AzureSolutionQuestionNames, BotOptionItem, HostTypeOptionSPFx, MessageExtensionItem, TabOptionItem } from "../plugins/solution/fx-solution/question";
 
 const execAsync = promisify(exec);
 
@@ -380,7 +380,7 @@ export async function askSubscription(azureAccountProvider:AzureAccountProvider,
         }
       ); 
       const askRes = await ui.selectOption({
-        name: "asksub",
+        name: AzureSolutionQuestionNames.AskSub,
         title: "Select a subscription",
         options: options,
         returnObject: true

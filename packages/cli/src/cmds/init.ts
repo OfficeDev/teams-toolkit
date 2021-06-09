@@ -19,7 +19,7 @@ export default class Init extends YargsCommand {
   public readonly command = `${this.commandHead}`;
   public readonly description = "Add Teams support to an existing Blazor application.";
 
-  public readonly params: { [_: string]: Options } = {
+  public params: { [_: string]: Options } = {
     "app-name": {
       type: "string",
       description: "Application name.",

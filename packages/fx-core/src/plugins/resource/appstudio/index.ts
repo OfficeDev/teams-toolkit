@@ -53,7 +53,7 @@ export class AppStudioPlugin implements Plugin {
           title: "Please input the teams app id in App Studio",
         });
         appStudioQuestions.addChild(remoteTeamsAppId);
-      } else {
+      } else if (ctx.answers?.platform === Platform.VSCode){
         const buildOrPublish = new QTreeNode({
           name: Constants.BUILD_OR_PUBLISH_QUESTION,
           type: "singleSelect",
@@ -154,7 +154,7 @@ export class AppStudioPlugin implements Plugin {
   public async publish(ctx: PluginContext): Promise<Result<string | undefined, FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.publish);
-    if (ctx.answers?.platform !== Platform.VS) {
+    if (ctx.answers?.platform === Platform.VSCode) {
       const answer = ctx.answers![Constants.BUILD_OR_PUBLISH_QUESTION] as string;
       if (answer === manuallySubmitOption.id) {
         const appDirectory = `${ctx.root}/.${ConfigFolderName}`;

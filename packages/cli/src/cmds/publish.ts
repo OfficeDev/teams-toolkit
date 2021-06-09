@@ -4,14 +4,14 @@
 "use strict";
 
 import { Argv, Options } from "yargs";
-import * as path from "path";
-import { FxError, err, ok, Result, Platform, Func } from "@microsoft/teamsfx-api";
+import { FxError, err, ok, Result, Platform, Func, Stage } from "@microsoft/teamsfx-api";
 import activate from "../activate";
 import * as constants from "../constants";
 import { YargsCommand } from "../yargsCommand";
-import { argsToInputs, getParamJson } from "../utils";
+import { argsToInputs } from "../utils";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
+import { HelpParamGenerator } from "../helpParamGenerator";
 
 export default class Publish extends YargsCommand {
   public readonly commandHead = `publish`;
@@ -19,9 +19,10 @@ export default class Publish extends YargsCommand {
   public readonly description = "Publish the app to Teams.";
   public readonly paramPath = constants.publishParamPath;
 
-  public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
+  public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {
+    this.params = HelpParamGenerator.getYargsParamForHelp(Stage.publish);
     return yargs.version(false).options(this.params);
   }
 
@@ -50,7 +51,7 @@ export default class Publish extends YargsCommand {
     }
 
     const core = result.value;
-    if (answers[manifestFolderParamName]) {
+    if (answers[manifestFolderParamName] && answers["teams-app-id"]) {
       answers.platform = Platform.VS;
       const func: Func = {
         namespace: "fx-solution-azure",

@@ -20,6 +20,7 @@ export class TelemetryUtils {
     }
     properties[Telemetry.isSuccess] = Telemetry.success;
     properties[Telemetry.component] = Constants.SimpleAuthPlugin.id;
+    TelemetryUtils.addAppIdInProperty(properties, this.ctx);
     TelemetryUtils.ctx.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
   }
 
@@ -39,10 +40,20 @@ export class TelemetryUtils {
     properties[Telemetry.errorCode] = `${Constants.SimpleAuthPlugin.shortName}.${errorName}`;
     properties[Telemetry.errorType] = errorType;
     properties[Telemetry.errorMessage] = errorMessage;
+    TelemetryUtils.addAppIdInProperty(properties, this.ctx);
     TelemetryUtils.ctx.telemetryReporter?.sendTelemetryErrorEvent(
       eventName,
       properties,
       measurements
     );
+  }
+
+  private static addAppIdInProperty(properties:{ [key: string]: string }, ctx: PluginContext): void {
+    const appId = ctx.configOfOtherPlugins.get(Constants.SolutionPlugin.id)?.get(Constants.SolutionPlugin.configKeys.remoteTeamsAppId);
+    if (appId) {
+      properties[Telemetry.appId] = appId as string;
+    } else {
+      properties[Telemetry.appId] = "";
+    }
   }
 }

@@ -1,22 +1,33 @@
-name: cd
+name: CD
 
 on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'which version to bump(major, minor, patch, premajor, preminor, prepatch, prerelease)'
+        description: "which version to bump(major, minor, patch, premajor, preminor, prepatch, prerelease)"
         required: true
-        default: 'prerelease'
-      force:
-        description: 'force release even if no update(set --force-publish if necessary)'
+        default: "prerelease"
+      preid:
+        description: "preid name(alpha or rc)"
         required: false
-        default: ''
+        default: "alpha"
+      force:
+        description: "force release even if no update(set --force-publish if necessary)"
+        required: false
+        default: ""
+  schedule:
+    - cron: "0 8 * * *"
 
 jobs:
   cd:
     runs-on: ubuntu-latest
 
     steps:
+      - name: validate branch
+        if: ${{ (github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/main') || (github.ref == 'refs/heads/dev' && (!startsWith(github.event.inputs.version, 'pre') || github.event.inputs.preid != 'alpha')) || (github.ref == 'refs/heads/main' && startsWith(github.event.inputs.version, 'pre') && github.event.inputs.preid != 'rc') }}
+        run: |
+          exit 1
+
       - name: Checkout dev branch
         if: ${{ github.event_name == 'schedule' }}
         uses: actions/checkout@v2
@@ -56,7 +67,7 @@ jobs:
             ./*.zip
 
       - name: release templates' prerelease version to github
-        if: ${{ startsWith(github.ref, 'refs/heads/release/') && github.event.inputs.version == 'prerelease' }}
+        if: ${{ github.ref == 'refs/heads/main' && startsWith(github.event.inputs.version, 'pre') }}
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: ${{ secrets.CD_PAT }}
@@ -70,7 +81,7 @@ jobs:
 
       - name: Download Simple Auth bits
         uses: nick-invision/retry@v2
-        with: 
+        with:
           timeout_minutes: 10
           max_attempts: 10
           retry_on: error
@@ -101,18 +112,13 @@ jobs:
             echo "::set-output name=CHANGED::false"
           fi
 
-      - name: release daily npm packages to npmjs.org
-        if: ${{ github.ref == 'refs/heads/dev' && startsWith(github.event.inputs.version, 'pre') }}
+      - name: release prerelease npm packages to npmjs.org
+        if: ${{ startsWith(github.event.inputs.version, 'pre') }}
         run: |
-          npx lerna publish --no-private --preid=alpha --dist-tag=alpha ${{ github.event.inputs.version }} --yes ${{ github.event.inputs.force }}
-
-      - name: release rc npm packages to npmjs.org
-        if: ${{ startsWith(github.ref, 'refs/heads/release/') && github.event.inputs.version == 'prerelease' }}
-        run: |
-          npx lerna publish --no-private --preid=rc --dist-tag=rc prerelease --yes ${{ github.event.inputs.force }}
+          npx lerna publish --no-private --preid=${{github.event.inputs.preid }} --dist-tag=${{github.event.inputs.preid }} ${{ github.event.inputs.version }} --yes ${{ github.event.inputs.force }}
 
       - name: release stable npm packages to npmjs.org
-        if: ${{ startsWith(github.ref, 'refs/heads/release/') && !startsWith(github.event.inputs.version, 'pre') }}
+        if: ${{ github.ref == 'refs/heads/main' && !startsWith(github.event.inputs.version, 'pre') }}
         run: |
           npx lerna publish --no-private --dist-tag=latest ${{ github.event.inputs.version }} --yes ${{ github.event.inputs.force }}
 

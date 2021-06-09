@@ -341,6 +341,10 @@ export class TeamsAppSolution implements Solution {
    * create
    */
   async create(ctx: SolutionContext): Promise<Result<any, FxError>> {
+    ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.CreateStart, {
+      [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+    });
+
     // ensure that global namespace is present
     if (!ctx.config.has(GLOBAL_CONFIG)) {
       ctx.config.set(GLOBAL_CONFIG, new ConfigMap());
@@ -381,8 +385,8 @@ export class TeamsAppSolution implements Solution {
       await fs.writeJSON(`${ctx.root}/permissions.json`, DEFAULT_PERMISSION_REQUEST, { spaces: 4 });
       ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.Create, {
         [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
-        [SolutionTelemetryProperty.Resources]: JSON.stringify(solutionSettings.azureResources),
-        [SolutionTelemetryProperty.Capabilities]: JSON.stringify(solutionSettings.capabilities)
+        [SolutionTelemetryProperty.Resources]: solutionSettings.azureResources.join(";"),
+        [SolutionTelemetryProperty.Capabilities]: solutionSettings.capabilities.join(";")
       });
     } else {
       const manifest = await (this.spfxPlugin as unknown as SpfxPlugin).getManifest();
@@ -2180,6 +2184,10 @@ export class TeamsAppSolution implements Solution {
     return ok(undefined);
   }
   async executeAddResource(ctx: SolutionContext): Promise<Result<any, FxError>> {
+    ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.AddResourceStart, {
+      [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+    });
+
     if (!ctx.answers) {
       return err(
         returnUserError(new Error(`answer is empty!`), "Solution", SolutionError.InternelError)
@@ -2270,9 +2278,18 @@ export class TeamsAppSolution implements Solution {
               notifications.join(",")), 
           false);
     }
+
+    ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.AddResource, {
+      [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+      [SolutionTelemetryProperty.ResourcesToAdd]: addResourcesAnswer.join(";"),
+    });
     return ok(Void);
   }
+
   async executeAddCapability(func: Func, ctx: SolutionContext): Promise<Result<any, FxError>> {
+    ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.AddCapabilityStart, {
+      [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+    });
     if (!ctx.answers) {
       return err(
         returnUserError(new Error(`answer is emtry!`), "Solution", SolutionError.InternelError)
@@ -2367,6 +2384,12 @@ export class TeamsAppSolution implements Solution {
           level: MsgLevel.Info,
         })
       );
+
+      ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.AddCapability, {
+        [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+        [SolutionTelemetryProperty.CapabilitiesToAdd]: capabilitiesAnswer.join(";"),
+      });
+
       return ok({});
     }
     const cannotAddCapWarnMsg = "Add nothing";
@@ -2376,6 +2399,7 @@ export class TeamsAppSolution implements Solution {
         level: MsgLevel.Warning,
       })
     );
+
     return ok({});
   }
   /**

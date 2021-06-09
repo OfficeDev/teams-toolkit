@@ -297,13 +297,22 @@ export const DEFAULT_DEVELOPER_TERM_OF_USE_URL = "https://www.example.com/termof
 export const DEFAULT_DEVELOPER_PRIVACY_URL = "https://www.example.com/privacy";
 
 export enum SolutionTelemetryEvent {
-  Create = "create"
+  CreateStart = "create-start",
+  Create = "create",
+
+  AddResourceStart = "AddResourceStart",
+  AddResource = "AddResource",
+
+  AddCapabilityStart = "AddCapabilityStart",
+  AddCapability = "AddCapability",
 }
 
 export enum SolutionTelemetryProperty {
   Component = "component",
   Resources = "resources",
-  Capabilities = "capabilities"
+  ResourcesToAdd = "resources-to-add",
+  Capabilities = "capabilities",
+  CapabilitiesToAdd = "capabilities-to-add",
 }
 
 export const SolutionTelemetryComponentName = "Solution";

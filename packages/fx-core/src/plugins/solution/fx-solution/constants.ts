@@ -313,6 +313,12 @@ export enum SolutionTelemetryProperty {
   ResourcesToAdd = "resources-to-add",
   Capabilities = "capabilities",
   CapabilitiesToAdd = "capabilities-to-add",
+  Success = "success",
+}
+
+export enum SolutionTelemetrySuccess {
+  Yes = "yes",
+  No = "no",
 }
 
 export const SolutionTelemetryComponentName = "solution";

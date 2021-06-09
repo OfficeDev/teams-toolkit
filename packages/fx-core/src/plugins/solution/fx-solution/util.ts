@@ -7,9 +7,13 @@ import {
   Context,
   ConfigMap,
   TeamsAppManifest,
+  FxError,
+  TelemetryReporter,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import { SubscriptionClient } from "@azure/arm-subscriptions";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
+import { SolutionTelemetryComponentName, SolutionTelemetryProperty } from "./constants";
 
 /**
  * A helper function to construct a plugin's context.
@@ -55,4 +59,34 @@ export async function getSubsriptionDisplayName(
   const client = new SubscriptionClient(azureToken);
   const subscription = await client.subscriptions.get(subscriptionId);
   return subscription.displayName;
+}
+
+export function sendErrorTelemetryThenReturnError(
+    eventName: string,
+    error: FxError,
+    reporter?: TelemetryReporter,
+    properties?: { [p: string]: string },
+    measurements?: { [p: string]: number },
+    errorProps?: string[],
+): FxError {
+  if (!properties) {
+    properties = {};
+  }
+
+  if (SolutionTelemetryProperty.Component in properties === false) {
+    properties[SolutionTelemetryProperty.Component] = SolutionTelemetryComponentName;
+  }
+
+  properties[SolutionTelemetryProperty.Success] = "no";
+  if (error instanceof UserError) {
+    properties["error-type"] = "user";
+  } else {
+    properties["error-type"] = "system";
+  }
+
+  properties["error-code"] = `${error.source}.${error.name}`;
+  properties["error-message"] = error.message;
+
+  reporter?.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
+  return error;
 }

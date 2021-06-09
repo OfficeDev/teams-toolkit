@@ -73,7 +73,10 @@ export class CLIUserInteraction implements UserInteraction {
       return;
     }
     const options = config.options as OptionItem[];
-    const labels = options.map(op => op.label);
+    const labels = options.map(op => {
+      /// TODO: remove this hardcode.
+      return op.label.replace("$(new-folder) ", "").replace("$(heart) ", "");
+    });
     const ids = options.map(op => op.id);
     const cliNames = options.map(op => op.cliName);
 
@@ -220,6 +223,7 @@ export class CLIUserInteraction implements UserInteraction {
       return [option as string[], defaultValue];
     } else {
       const labels = (option as OptionItem[]).map(op => {
+        /// TODO: remove this hardcode
         return op.label.replace("$(new-folder) ", "").replace("$(heart) ", "");
       });
       const ids = (option as OptionItem[]).map(op => op.id);

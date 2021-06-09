@@ -53,6 +53,10 @@
 /packages/fx-core/src/plugins/resource/bot @IvanJobs @eriolchan @YitongFeng-git
 /packages/fx-core/tests/plugins/resource/bot @IvanJobs @eriolchan @YitongFeng-git
 
+/templates/bot @YitongFeng-git @IvanJobs @eriolchan
+/templates/bot-msgext @YitongFeng-git @IvanJobs @eriolchan
+/templates/msgext @YitongFeng-git @IvanJobs @eriolchan
+
 /packages/fx-core/src/plugins/resource/frontend @hund030 @eriolchan @henzhang-ms
 /packages/fx-core/tests/plugins/resource/frontend @hund030 @eriolchan @henzhang-ms
 

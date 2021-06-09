@@ -78,37 +78,21 @@ export class SqlPluginImpl {
       const sqlNode = new QTreeNode({
         type: "group",
       });
+      if (ctx.answers?.platform === Platform.CLI_HELP) {
+        sqlNode.addChild(new QTreeNode(adminNameQuestion));
+        sqlNode.addChild(new QTreeNode(adminPasswordQuestion));
+        sqlNode.addChild(new QTreeNode(confirmPasswordQuestion));
+        sqlNode.addChild(skipAddingUserQuestion);
+        return ok(sqlNode);
+      }
       this.init(ctx);
       if (this.config.azureSubscriptionId) {
-        // ctx.logProvider?.info(Message.checkSql);
         const managementClient: ManagementClient = new ManagementClient(ctx, this.config);
         await managementClient.init();
         this.config.existSql = await managementClient.existAzureSQL();
       }
 
       if (!this.config.existSql) {
-        adminNameQuestion.validation = {
-          validFunc: async (input: string, previousInputs?: Inputs) : Promise<string | undefined> => {
-            const res = sqlUserNameValidator(input as string);
-            return res;
-          }
-        };
-        adminPasswordQuestion.validation = {
-          validFunc: async (input: string, previousInputs?: Inputs) : Promise<string | undefined> => {
-            const password = input as string;
-            const name = previousInputs![Constants.questionKey.adminName] as string;
-            const res = sqlPasswordValidatorGenerator(name)(password);
-            return res;
-          }
-        };
-        confirmPasswordQuestion.validation = {
-          validFunc: async (input: string, previousInputs?: Inputs) : Promise<string | undefined> => {
-            const confirm = input as string;
-            const password = previousInputs![Constants.questionKey.adminPassword] as string;
-            const res = sqlConfirmPasswordValidatorGenerator(password)(confirm);
-            return res;
-          }
-        };
         sqlNode.addChild(new QTreeNode(adminNameQuestion));
         sqlNode.addChild(new QTreeNode(adminPasswordQuestion));
         sqlNode.addChild(new QTreeNode(confirmPasswordQuestion));
@@ -117,7 +101,6 @@ export class SqlPluginImpl {
       if (ctx.answers?.platform === Platform.CLI) {
         sqlNode.addChild(skipAddingUserQuestion);
       }
-      // ctx.logProvider?.info(Message.endGetQuestions);
       return ok(sqlNode);
     }
     return ok(undefined);

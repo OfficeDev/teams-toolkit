@@ -6,15 +6,16 @@
 import path from "path";
 import { Argv, Options } from "yargs";
 
-import { FxError, err, ok, Result } from "@microsoft/teamsfx-api";
+import { FxError, err, ok, Result, Stage } from "@microsoft/teamsfx-api";
 
 import activate from "../activate";
 import * as constants from "../constants";
-import { getParamJson, getSystemInputs, setSubscriptionId } from "../utils";
+import { getSystemInputs, setSubscriptionId } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
 import CLIUIInstance from "../userInteraction";
+import { HelpParamGenerator } from "../helpParamGenerator";
 
 export default class Provision extends YargsCommand {
   public readonly commandHead = `provision`;
@@ -22,9 +23,10 @@ export default class Provision extends YargsCommand {
   public readonly description = "Provision the cloud resources in the current application.";
   public readonly paramPath = constants.provisionParamPath;
 
-  public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
+  public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {
+    this.params = HelpParamGenerator.getYargsParamForHelp(Stage.provision);
     return yargs.version(false).options(this.params);
   }
 
@@ -32,7 +34,7 @@ export default class Provision extends YargsCommand {
     const rootFolder = path.resolve(args.folder || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.ProvisionStart);
 
-    CLIUIInstance.updatePresetAnswers(args);
+    CLIUIInstance.updatePresetAnswers(this.params, args);
 
     {
       const result = await setSubscriptionId(args.subscription, rootFolder);

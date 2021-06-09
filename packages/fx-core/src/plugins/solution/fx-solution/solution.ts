@@ -1387,7 +1387,7 @@ export class TeamsAppSolution implements Solution {
       else {
         pluginsToProvision = this.allPlugins;
       }
-      
+      node.addChild(new QTreeNode(AskSubscriptionQuestion));
       for (const plugin of pluginsToProvision) {
         if (plugin.getQuestions) {
           const pluginCtx = getPluginContext(ctx, plugin.name, manifest);

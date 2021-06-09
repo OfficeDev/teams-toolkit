@@ -139,6 +139,7 @@ export class Factory {
           existingOpenApiDocumentFunc
         );
       case Platform.CLI:
+      case Platform.CLI_HELP:
         const cliApimServiceNameQuestion = new CLI.ApimServiceNameQuestion();
         const cliApimResourceGroupQuestion = new CLI.ApimResourceGroupQuestion();
         const cliOpenApiDocumentQuestion = new CLI.OpenApiDocumentQuestion();

@@ -38,6 +38,7 @@ import {
 import CLILogProvider from "./commonlib/log";
 import { NotValidInputValue, UnknownError } from "./error";
 import { sleep } from "./utils";
+import { Options } from "yargs";
 
 /// TODO: input can be undefined
 type ValidationType<T> = (input: T) => string | boolean | Promise<string | boolean>;
@@ -57,9 +58,11 @@ export class CLIUserInteraction implements UserInteraction {
     this.presetAnswers.set(key, value);
   }
 
-  public updatePresetAnswers(answers: { [key: string]: any}) {
+  public updatePresetAnswers(question: { [_: string]: Options },answers: { [key: string]: any}) {
     for (const key in answers) {
-      this.updatePresetAnswer(key, answers[key]);
+      if(key in question){
+        this.updatePresetAnswer(key, answers[key]);
+      }
     }
   }
 

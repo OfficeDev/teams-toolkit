@@ -310,9 +310,7 @@ export enum SolutionTelemetryEvent {
 export enum SolutionTelemetryProperty {
   Component = "component",
   Resources = "resources",
-  ResourcesToAdd = "resources-to-add",
   Capabilities = "capabilities",
-  CapabilitiesToAdd = "capabilities-to-add",
   Success = "success",
 }
 

@@ -2286,7 +2286,7 @@ export class TeamsAppSolution implements Solution {
     ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.AddResource, {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
       [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
-      [SolutionTelemetryProperty.ResourcesToAdd]: addResourcesAnswer.join(";"),
+      [SolutionTelemetryProperty.Resources]: addResourcesAnswer.join(";"),
     });
     return ok(Void);
   }
@@ -2318,7 +2318,7 @@ export class TeamsAppSolution implements Solution {
       ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.AddCapability, {
         [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
         [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
-        [SolutionTelemetryProperty.CapabilitiesToAdd]: [].join(";"),
+        [SolutionTelemetryProperty.Capabilities]: [].join(";"),
       });
       return ok(Void);
     }
@@ -2402,7 +2402,7 @@ export class TeamsAppSolution implements Solution {
       ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.AddCapability, {
         [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
         [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
-        [SolutionTelemetryProperty.CapabilitiesToAdd]: capabilitiesAnswer.join(";"),
+        [SolutionTelemetryProperty.Capabilities]: capabilitiesAnswer.join(";"),
       });
       return ok({});
     }
@@ -2416,7 +2416,7 @@ export class TeamsAppSolution implements Solution {
     ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.AddCapability, {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
       [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
-      [SolutionTelemetryProperty.CapabilitiesToAdd]: [].join(";"),
+      [SolutionTelemetryProperty.Capabilities]: [].join(";"),
     });
     return ok({});
   }

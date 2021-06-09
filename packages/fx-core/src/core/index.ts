@@ -58,6 +58,11 @@ import { FetchSampleError, FunctionRouterError, InvalidInputError, ProjectFolder
 import { loadGlobalSolutions, loadSolution, SolutionLoaderMW } from "./middleware/solutionLoader";
 import { ContextInjecterMW } from "./middleware/contextInjecter";
  
+
+export interface CoreHookContext extends HookContext{
+  solutionContext?:SolutionContext;
+  solution?:Solution;
+}
  
 export class FxCore implements Core {
   
@@ -68,7 +73,7 @@ export class FxCore implements Core {
   }
   
   @hooks([ErrorHandlerMW, QuestionModelMW, ContextInjecterMW, ConfigWriterMW])
-  async createProject(inputs: Inputs, ctx?: HookContext): Promise<Result<string, FxError>> {
+  async createProject(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     const folder = inputs[QuestionRootFolder.name] as string;
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
     if (scratch === ScratchOptionNo.id) { // create from sample
@@ -183,33 +188,39 @@ export class FxCore implements Core {
   }
 
   @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextLoaderMW, SolutionLoaderMW, QuestionModelMW, ContextInjecterMW, ConfigWriterMW])
-  async provisionResources(inputs: Inputs, ctx?: HookContext) : Promise<Result<Void, FxError>>{
-    return await this._provisionResources(ctx!.solutionContext, ctx!.solution, inputs);
+  async provisionResources(inputs: Inputs, ctx?: CoreHookContext) : Promise<Result<Void, FxError>>{
+    return await ctx!.solution!.provision(ctx!.solutionContext!);
   }
 
   @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextLoaderMW, SolutionLoaderMW, QuestionModelMW, ContextInjecterMW, ConfigWriterMW])
-  async deployArtifacts(inputs: Inputs, ctx?: HookContext) : Promise<Result<Void, FxError>>{
-    return await this._deployArtifacts(ctx!.solutionContext, ctx!.solution, inputs);
+  async deployArtifacts(inputs: Inputs, ctx?: CoreHookContext) : Promise<Result<Void, FxError>>{
+    return await ctx!.solution!.deploy(ctx!.solutionContext!);
   }
   
   @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextLoaderMW, SolutionLoaderMW, QuestionModelMW, ContextInjecterMW, ConfigWriterMW])
-  async localDebug(inputs: Inputs, ctx?: HookContext) : Promise<Result<Void, FxError>>{
-    return await this._localDebug(ctx!.solutionContext, ctx!.solution, inputs);
+  async localDebug(inputs: Inputs, ctx?: CoreHookContext) : Promise<Result<Void, FxError>>{
+    return await ctx!.solution!.localDebug(ctx!.solutionContext!);
   }
 
   @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextLoaderMW, SolutionLoaderMW, QuestionModelMW, ContextInjecterMW, ConfigWriterMW])
-  async publishApplication(inputs: Inputs, ctx?: HookContext) : Promise<Result<Void, FxError>>{
-    return await this._publishApplication(ctx!.solutionContext, ctx!.solution, inputs);
+  async publishApplication(inputs: Inputs, ctx?: CoreHookContext) : Promise<Result<Void, FxError>>{
+    return await ctx!.solution!.publish(ctx!.solutionContext!);
   }
 
   @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextLoaderMW, SolutionLoaderMW, QuestionModelMW, ContextInjecterMW, ConfigWriterMW])
-  async executeUserTask(func: Func, inputs: Inputs, ctx?: HookContext) :  Promise<Result<unknown, FxError>>{
-    if(!ctx!.solutionContext)ctx!.solutionContext = await newSolutionContext(this.tools, inputs);
-    return await this._executeUserTask(ctx!.solutionContext, ctx!.solution, func, inputs);
+  async executeUserTask(func: Func, inputs: Inputs, ctx?: CoreHookContext) :  Promise<Result<unknown, FxError>>{
+    if(ctx!.solutionContext === undefined)ctx!.solutionContext = await newSolutionContext(this.tools, inputs);
+    const solution = ctx!.solution!;
+    const namespace = func.namespace;
+    const array = namespace ? namespace.split("/") : [];
+    if ("" !== namespace && array.length > 0 && solution.executeUserTask) {
+      return await solution.executeUserTask(func, ctx!.solutionContext!);
+    }
+    return err(FunctionRouterError(func));
   }
  
   @hooks([ErrorHandlerMW, ContextLoaderMW, SolutionLoaderMW, ContextInjecterMW])
-  async getQuestions(task: Stage, inputs: Inputs, ctx?: HookContext) : Promise<Result<QTreeNode | undefined, FxError>> {
+  async getQuestions(task: Stage, inputs: Inputs, ctx?: CoreHookContext) : Promise<Result<QTreeNode | undefined, FxError>> {
     if(task ===  Stage.create) {
       delete inputs.projectPath;
       return await this._getQuestionsForCreateProject(inputs);
@@ -222,7 +233,7 @@ export class FxCore implements Core {
   }
  
   @hooks([ErrorHandlerMW, ContextLoaderMW, SolutionLoaderMW, ContextInjecterMW])
-  async getQuestionsForUserTask(func: FunctionRouter, inputs: Inputs, ctx?: HookContext) : Promise<Result<QTreeNode | undefined, FxError>>{
+  async getQuestionsForUserTask(func: FunctionRouter, inputs: Inputs, ctx?: CoreHookContext) : Promise<Result<QTreeNode | undefined, FxError>>{
     const solutionContext = ctx!.solutionContext === undefined ? await newSolutionContext(this.tools, inputs) : ctx!.solutionContext;
     const solution = ctx!.solution === undefined ? await loadSolution(inputs) : ctx!.solution;
     return await this._getQuestionsForUserTask(solutionContext, solution, func, inputs);
@@ -230,7 +241,7 @@ export class FxCore implements Core {
 
    
   @hooks([ErrorHandlerMW, ContextLoaderMW, ContextInjecterMW])
-  async getProjectConfig(inputs: Inputs, ctx?: HookContext): Promise<Result<ProjectConfig|undefined, FxError>>{
+  async getProjectConfig(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<ProjectConfig|undefined, FxError>>{
     return ok({
       settings: ctx!.solutionContext!.projectSettings,
       config: ctx!.solutionContext!.config
@@ -238,8 +249,8 @@ export class FxCore implements Core {
   }
 
   @hooks([ErrorHandlerMW, ContextLoaderMW, ContextInjecterMW, ConfigWriterMW])
-  async setSubscriptionInfo(inputs: Inputs, ctx?: HookContext) :Promise<Result<Void, FxError>>{
-    const solutionContext = ctx!.solutionContext as SolutionContext;
+  async setSubscriptionInfo(inputs: Inputs, ctx?: CoreHookContext) :Promise<Result<Void, FxError>>{
+    const solutionContext = ctx!.solutionContext! as SolutionContext;
     if(inputs.tenantId)
       solutionContext.config.get("solution")?.set("tenantId",inputs.tenantId);
     else 
@@ -250,33 +261,7 @@ export class FxCore implements Core {
       solutionContext.config.get("solution")?.delete("subscriptionId");
     return ok(Void);
   }
- 
-  async _provisionResources(ctx: SolutionContext, solution:Solution, inputs: Inputs) : Promise<Result<Void, FxError>>{
-    return await solution.provision(ctx);
-  }
-
-  async _deployArtifacts(ctx: SolutionContext, solution:Solution, inputs: Inputs) : Promise<Result<Void, FxError>>{
-    return await solution.deploy(ctx);
-  }
-
-  async _localDebug(ctx: SolutionContext, solution:Solution, inputs: Inputs) : Promise<Result<Void, FxError>>{
-    return await solution.localDebug(ctx);
-  }
-
-  async _publishApplication(ctx: SolutionContext, solution:Solution, inputs: Inputs) : Promise<Result<Void, FxError>>{
-    return await solution.publish(ctx);
-  }
-
-  async _executeUserTask(ctx: SolutionContext, solution:Solution, func: Func, inputs: Inputs) :  Promise<Result<unknown, FxError>>{
-    const namespace = func.namespace;
-    const array = namespace ? namespace.split("/") : [];
-    if ("" !== namespace && array.length > 0 && solution.executeUserTask) {
-      return await solution.executeUserTask(func, ctx);
-    }
-    return err(FunctionRouterError(func));
-  }
-
-    
+     
   async _getQuestionsForUserTask(ctx:SolutionContext, solution:Solution, func: FunctionRouter, inputs: Inputs) : Promise<Result<QTreeNode | undefined, FxError>>{
     const namespace = func.namespace;
     const array = namespace ? namespace.split("/") : [];

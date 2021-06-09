@@ -2,15 +2,15 @@
 // Licensed under the MIT license.
  
 import { ConfigFolderName, err, Inputs, Json, PluginConfig, ProjectSettings, SolutionConfig, SolutionContext, Stage, StaticPlatforms, Tools} from "@microsoft/teamsfx-api";
-import { deserializeDict,  FxCore,  mergeSerectData, objectToMap} from "../..";
+import { CoreHookContext, deserializeDict,  FxCore,  mergeSerectData, objectToMap} from "../..";
 import { InvalidProjectError, NoProjectOpenedError, PathNotExistError, ReadFileError } from "../error";
 import * as path from "path";
 import * as fs from "fs-extra";
-import { HookContext, Middleware, NextFunction } from "@feathersjs/hooks/lib";
-import { validateProject } from "../../common"; 
+import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
+import { validateProject } from "../../common";  
 
 export const ContextLoaderMW: Middleware = async (
-  ctx: HookContext,
+  ctx: CoreHookContext,
   next: NextFunction
 ) => {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;

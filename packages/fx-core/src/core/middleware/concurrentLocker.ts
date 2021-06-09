@@ -3,7 +3,7 @@
 "use strict";
 
 import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks"; 
-import { assembleError, ConfigFolderName, err, Inputs, Platform, StaticPlatforms, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { assembleError, ConfigFolderName, err, Inputs,  StaticPlatforms } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import * as fs from "fs-extra";
 import { FxCore } from "..";

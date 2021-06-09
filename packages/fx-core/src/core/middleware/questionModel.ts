@@ -1,16 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks";
-import { err, Func, FxError, Inputs, ok, QTreeNode, Result, Solution, SolutionContext, Stage, traverse } from "@microsoft/teamsfx-api";
-import { FxCore } from "../..";
-import { deepCopy } from "../../common";
+import { NextFunction, Middleware } from "@feathersjs/hooks";
+import { err, Func, FxError, Inputs, ok, QTreeNode, Result, Stage, traverse } from "@microsoft/teamsfx-api";
+import { CoreHookContext, FxCore } from "../..";
+import { deepCopy } from "../../common"; 
 
 /**
  * This middleware will help to collect input from question flow
  */
 export const QuestionModelMW: Middleware = async (
-  ctx: HookContext,
+  ctx: CoreHookContext,
   next: NextFunction
 ) => {
   const inputs: Inputs = ctx.arguments[ctx.arguments.length - 1]; 
@@ -22,8 +22,8 @@ export const QuestionModelMW: Middleware = async (
     getQuestionRes = await core._getQuestionsForCreateProject(inputs);
   }
   else {
-    const solution = ctx.solution;
-    const solutionContext = ctx.solutionContext; 
+    const solution = ctx.solution!;
+    const solutionContext = ctx.solutionContext!; 
     if (method === "provisionResources"){
       getQuestionRes = await core._getQuestions(solutionContext, solution, Stage.provision, inputs);
     }

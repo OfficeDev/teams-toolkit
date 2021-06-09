@@ -4,25 +4,24 @@
 
 import * as fs from "fs-extra";
 import * as path from "path";
-import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks";
-import { AzureSolutionSettings, ConfigFolderName, err, Inputs, Platform, SolutionContext, StaticPlatforms } from "@microsoft/teamsfx-api";
+import { NextFunction, Middleware } from "@feathersjs/hooks";
+import { AzureSolutionSettings, ConfigFolderName, err, Inputs, SolutionContext, StaticPlatforms } from "@microsoft/teamsfx-api";
 import { mapToJson, serializeDict, sperateSecretData } from "../../common/tools";
 import { WriteFileError } from "../error";
-import { FxCore } from "..";
-import { TeamsAppSolution } from "../../plugins";
+import { CoreHookContext, FxCore } from ".."; 
 
 /**
  * This middleware will help to persist configs if necessary.
  */
 export const ConfigWriterMW: Middleware = async (
-  ctx: HookContext,
+  ctx: CoreHookContext,
   next: NextFunction
 ) => {
   try {
     await next();
   }
   finally {
-    const solutionContext: SolutionContext = ctx.solutionContext;
+    const solutionContext: SolutionContext = ctx.solutionContext!;
     const lastArg = ctx.arguments[ctx.arguments.length - 1]; 
     const inputs:Inputs = lastArg === ctx ? ctx.arguments[ctx.arguments.length - 2] : lastArg;
     const ignorePersist = solutionContext === undefined || inputs.projectPath === undefined || inputs.ignoreConfigPersist === true || StaticPlatforms.includes(inputs.platform);

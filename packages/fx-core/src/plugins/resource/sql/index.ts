@@ -51,7 +51,7 @@ export class SqlPlugin implements Plugin {
     ctx: PluginContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     return this.runWithSqlError(
-      Telemetry.stage.postProvision,
+      Telemetry.stage.getQuestion,
       () => this.sqlImpl.getQuestions(stage, ctx),
       ctx
     );

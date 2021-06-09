@@ -55,9 +55,10 @@ export class Telemetry {
   static userError = "user";
   static systemError = "system";
   static isSuccess = "success";
-  static success = "yes";
-  static fail = "no";
+  static yes = "yes";
+  static no = "no";
   static appId = "appid";
+  static skip = "skip";
 }
 
 export class Plugins {

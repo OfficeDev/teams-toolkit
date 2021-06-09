@@ -121,7 +121,7 @@ export const SampleSelect: SingleSelectQuestion = {
       label: "FAQ Plus",
       detail:
         "Conversational Bot which answers common questions, looping human when bots unable to help",
-      data: "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/dev.zip",
+      data: "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip",
     },
   ],
   placeholder: "Select a sample",

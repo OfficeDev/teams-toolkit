@@ -535,8 +535,8 @@
     "url-loader": "^4.1.1",
     "uuid": "^8.3.2",
     "vsce": "^1.93.0",
-    "webpack": "^4.44.1",
-    "webpack-cli": "^3.3.12",
+    "webpack": "^5.38.1",
+    "webpack-cli": "^4.7.2",
     "winston": "^3.3.3"
   },
   "dependencies": {

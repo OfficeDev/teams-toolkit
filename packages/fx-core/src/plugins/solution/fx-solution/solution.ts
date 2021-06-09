@@ -2183,6 +2183,7 @@ export class TeamsAppSolution implements Solution {
     }
     return ok(undefined);
   }
+
   async executeAddResource(ctx: SolutionContext): Promise<Result<any, FxError>> {
     ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.AddResourceStart, {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,

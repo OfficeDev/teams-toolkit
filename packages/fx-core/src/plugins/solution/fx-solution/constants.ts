@@ -300,11 +300,11 @@ export enum SolutionTelemetryEvent {
   CreateStart = "create-start",
   Create = "create",
 
-  AddResourceStart = "AddResourceStart",
-  AddResource = "AddResource",
+  AddResourceStart = "add-resource-start",
+  AddResource = "add-resource",
 
-  AddCapabilityStart = "AddCapabilityStart",
-  AddCapability = "AddCapability",
+  AddCapabilityStart = "add-capability-start",
+  AddCapability = "add-capability",
 }
 
 export enum SolutionTelemetryProperty {
@@ -315,4 +315,4 @@ export enum SolutionTelemetryProperty {
   CapabilitiesToAdd = "capabilities-to-add",
 }
 
-export const SolutionTelemetryComponentName = "Solution";
+export const SolutionTelemetryComponentName = "solution";

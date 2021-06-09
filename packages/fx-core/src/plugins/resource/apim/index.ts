@@ -81,7 +81,7 @@ export class ApimPlugin implements Plugin {
         OperationStatus.Succeeded
       );
       return ok(result);
-    } catch (error) {
+    } catch (error: any) {
       let packagedError: SystemError | UserError;
       if (error instanceof SystemError || error instanceof UserError) {
         packagedError = error;

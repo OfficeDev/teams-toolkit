@@ -8,8 +8,8 @@ import * as fs from "fs-extra";
 import { getTemplatesFolder } from "../../../..";
 
 export class ScaffoldManager {
-  private readonly logger?: LogProvider;
-  private readonly telemetryReporter?: TelemetryReporter;
+  private readonly logger: LogProvider | undefined;
+  private readonly telemetryReporter: TelemetryReporter | undefined;
   private readonly openApiProcessor: OpenApiProcessor;
 
   constructor(

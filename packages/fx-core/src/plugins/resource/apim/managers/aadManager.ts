@@ -10,8 +10,8 @@ import { Lazy } from "../utils/commonUtils";
 import { NamingRules } from "../utils/namingRules";
 
 export class AadManager {
-  private readonly logger?: LogProvider;
-  private readonly telemetryReporter?: TelemetryReporter;
+  private readonly logger: LogProvider | undefined;
+  private readonly telemetryReporter: TelemetryReporter | undefined;
   private readonly lazyAadService: Lazy<AadService>;
 
   constructor(

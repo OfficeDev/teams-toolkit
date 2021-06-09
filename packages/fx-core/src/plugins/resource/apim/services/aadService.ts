@@ -16,8 +16,8 @@ import { Telemetry } from "../utils/telemetry";
 import { RetryHandler } from "../utils/commonUtils";
 
 export class AadService {
-  private readonly logger?: LogProvider;
-  private readonly telemetryReporter?: TelemetryReporter;
+  private readonly logger: LogProvider | undefined;
+  private readonly telemetryReporter: TelemetryReporter | undefined;
   private readonly axios: AxiosInstance;
 
   constructor(axios: AxiosInstance, telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
@@ -95,7 +95,10 @@ export class AadService {
     );
     const servicePrincipals = response?.data as IServicePrincipals;
 
-    const result = AssertNotEmpty("servicePrincipals.value", servicePrincipals?.value);
+    const result = AssertNotEmpty<IServicePrincipal[]>(
+      "servicePrincipals.value",
+      servicePrincipals?.value
+    );
 
     if (result.length === 0) {
       this.logger?.info(LogMessages.resourceNotFound(AzureResource.ServicePrincipal, appId));
@@ -157,7 +160,7 @@ export class AadService {
           executionIndex
         );
         return result;
-      } catch (error) {
+      } catch (error: any) {
         error.message = `[Detail] ${error?.response?.data?.error?.message ?? error.message}`;
         this.logger?.warning(LogMessages.operationFailed(operation, resourceType, resourceId));
         const wrappedError = BuildError(

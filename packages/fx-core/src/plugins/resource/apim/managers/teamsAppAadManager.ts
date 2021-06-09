@@ -8,8 +8,8 @@ import { AadService } from "../services/aadService";
 import { Lazy } from "../utils/commonUtils";
 
 export class TeamsAppAadManager {
-  private readonly logger?: LogProvider;
-  private readonly telemetryReporter?: TelemetryReporter;
+  private readonly logger: LogProvider | undefined;
+  private readonly telemetryReporter: TelemetryReporter | undefined;
   private readonly lazyAadService: Lazy<AadService>;
 
   constructor(

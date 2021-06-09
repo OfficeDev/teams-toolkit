@@ -24,8 +24,8 @@ export interface IQuestionService {
 }
 
 export class BaseQuestionService {
-  protected readonly logger?: LogProvider;
-  protected readonly telemetryReporter?: TelemetryReporter;
+  protected readonly logger: LogProvider | undefined;
+  protected readonly telemetryReporter: TelemetryReporter | undefined;
 
   constructor(telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
     this.telemetryReporter = telemetryReporter;

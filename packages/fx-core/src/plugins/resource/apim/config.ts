@@ -19,17 +19,17 @@ import {
 import { INamingRule, NamingRules } from "./utils/namingRules";
 
 export interface IApimPluginConfig {
-  resourceGroupName?: string;
-  serviceName?: string;
-  productId?: string;
-  oAuthServerId?: string;
-  apimClientAADObjectId?: string;
-  apimClientAADClientId?: string;
-  apimClientAADClientSecret?: string;
-  apiPrefix?: string;
-  versionSetId?: string;
-  apiPath?: string;
-  apiDocumentPath?: string;
+  resourceGroupName?: string | undefined;
+  serviceName?: string | undefined;
+  productId?: string | undefined;
+  oAuthServerId?: string | undefined;
+  apimClientAADObjectId?: string | undefined;
+  apimClientAADClientId?: string | undefined;
+  apimClientAADClientSecret?: string | undefined;
+  apiPrefix?: string | undefined;
+  versionSetId?: string | undefined;
+  apiPath?: string | undefined;
+  apiDocumentPath?: string | undefined;
 }
 
 export interface IFunctionPluginConfig {
@@ -49,7 +49,7 @@ export interface ISolutionConfig {
   teamsAppTenantId: string;
   resourceGroupName: string;
   location: string;
-  remoteTeamsAppId?: string;
+  remoteTeamsAppId?: string | undefined;
 }
 
 export class ApimPluginConfig implements IApimPluginConfig {

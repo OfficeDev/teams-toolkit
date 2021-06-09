@@ -58,7 +58,7 @@ export class Telemetry {
   static yes = "yes";
   static no = "no";
   static appId = "appid";
-	static skip = "skip";
+  static skip = "skip";
 }
 
 export class Plugins {

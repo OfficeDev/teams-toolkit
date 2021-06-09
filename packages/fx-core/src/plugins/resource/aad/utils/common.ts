@@ -11,7 +11,7 @@ export class Utils {
     message: Messages,
     messageLocal: Messages,
     isLocalDebug = false,
-		properties?: { [key: string]: string },
+    properties?: { [key: string]: string },
   ) {
     if (!isLocalDebug) {
       logProvider?.info(message.log);

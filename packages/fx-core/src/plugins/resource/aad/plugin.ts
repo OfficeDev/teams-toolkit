@@ -60,7 +60,7 @@ export class AadAppForTeamsImpl {
           Messages.EndProvision,
           Messages.EndLocalDebug,
           isLocalDebug,
-					{ [Telemetry.skip]: Telemetry.yes},
+          { [Telemetry.skip]: Telemetry.yes},
         );
         return ResultFactory.Success();
       } else {

@@ -20,10 +20,14 @@ import {
 import * as sinon from "sinon";
 import fs from "fs-extra";
 import {
+  FRONTEND_DOMAIN,
+  FRONTEND_ENDPOINT,
   GLOBAL_CONFIG,
+  REMOTE_AAD_ID,
   REMOTE_MANIFEST,
   SolutionError,
   SOLUTION_PROVISION_SUCCEEDED,
+  WEB_APPLICATION_INFO_SOURCE,
 } from "../../../src/plugins/solution/fx-solution/constants";
 import {
   AzureSolutionQuestionNames,
@@ -172,7 +176,32 @@ describe("publish()", () => {
       mockPublishThatAlwaysSucceed(solution.spfxPlugin);
       const result = await solution.publish(mockedCtx);
       expect(result.isOk()).to.be.true;
-      // expect(result._unsafeUnwrapErr().name).to.be.true;
+    });
+
+    it("should return ok for Azure projects on happy path", async () => {
+      const solution = new TeamsAppSolution();
+      const mockedCtx = mockSolutionContext();
+      mockedCtx.config.set(solution.aadPlugin.name, new ConfigMap);
+      mockedCtx.config.set(solution.fehostPlugin.name, new ConfigMap);
+      mockedCtx.config.set(solution.appStudioPlugin.name, new ConfigMap);
+      mockedCtx.projectSettings = {
+        appName: "my app",
+        solutionSettings: {
+          hostType: HostTypeOptionAzure.id,
+          name: "azure",
+          version: "1.0",
+          activeResourcePlugins: [solution.aadPlugin.name, solution.fehostPlugin.name]
+        },
+      };
+      mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+      mockedCtx.config.get(solution.fehostPlugin.name)?.set(FRONTEND_ENDPOINT, "http://example.com");
+      mockedCtx.config.get(solution.fehostPlugin.name)?.set(FRONTEND_DOMAIN, "http://example.com");
+      mockedCtx.config.get(solution.aadPlugin.name)?.set(WEB_APPLICATION_INFO_SOURCE, "mockedWebApplicationInfoResouce");
+      mockedCtx.config.get(solution.aadPlugin.name)?.set(REMOTE_AAD_ID, "mockedRemoteAadId");
+      mockPublishThatAlwaysSucceed(solution.appStudioPlugin);
+      mockPublishThatAlwaysSucceed(solution.spfxPlugin);
+      const result = await solution.publish(mockedCtx);
+      expect(result.isOk()).to.be.true;
     });
 
   });

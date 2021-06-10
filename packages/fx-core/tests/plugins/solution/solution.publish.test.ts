@@ -32,6 +32,7 @@ import {
 } from "../../../src/plugins/solution/fx-solution/question";
 import { validManifest } from "./util";
 import _ from "lodash";
+import { Solution } from "@azure/arm-appservice/esm/models/mappers";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -48,25 +49,16 @@ function mockSolutionContext(): SolutionContext {
   };
 }
 
-function mockDeployThatAlwaysSucceed(plugin: Plugin) {
-  plugin.preDeploy = async function (
-    _ctx: PluginContext,
-  ): Promise<Result<any, FxError>> {
-    return ok(Void);
-  };
-  plugin.deploy = async function (
-    _ctx: PluginContext,
-  ): Promise<Result<any, FxError>> {
-    return ok(Void);
-  };
-  plugin.postDeploy = async function (
+function mockPublishThatAlwaysSucceed(plugin: Plugin) {
+  plugin.publish = async function (
     _ctx: PluginContext,
   ): Promise<Result<any, FxError>> {
     return ok(Void);
   };
 }
 
-describe("deploy() for Azure projects", () => {
+describe("publish()", () => {
+
   it("should return error if an Azure project hasn't been provisioned", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
@@ -79,9 +71,26 @@ describe("deploy() for Azure projects", () => {
         activeResourcePlugins: [solution.aadPlugin.name]
       },
     };
-    const result = await solution.deploy(mockedCtx);
+    const result = await solution.publish(mockedCtx);
     expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr().name).equals(SolutionError.CannotDeployBeforeProvision);
+    expect(result._unsafeUnwrapErr().name).equals(SolutionError.CannotPublishBeforeProvision);
+  });
+
+  it("should return error if a SPFx project hasn't been provisioned", async () => {
+    const solution = new TeamsAppSolution();
+    const mockedCtx = mockSolutionContext();
+    mockedCtx.projectSettings = {
+      appName: "my app",
+      solutionSettings: {
+        hostType: HostTypeOptionSPFx.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [solution.spfxPlugin.name]
+      },
+    };
+    const result = await solution.publish(mockedCtx);
+    expect(result.isErr()).to.be.true;
+    expect(result._unsafeUnwrapErr().name).equals(SolutionError.CannotPublishBeforeProvision);
   });
 
   it("should return error if manifest file is not found", async () => {
@@ -97,12 +106,12 @@ describe("deploy() for Azure projects", () => {
       },
     };
     mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
-    const result = await solution.deploy(mockedCtx);
+    const result = await solution.publish(mockedCtx);
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.FailedToLoadManifestFile);
   });
 
-  describe("with valid manifest", () => {
+  describe("with valid manifest", async () => {
     const mocker = sinon.createSandbox();
     const mockedManifest = _.cloneDeep(validManifest);
     // ignore icons for simplicity
@@ -110,13 +119,14 @@ describe("deploy() for Azure projects", () => {
     mockedManifest.icons.outline = "";
     beforeEach(() => {
       mocker.stub<any, any>(fs, "readJson").withArgs(`./.${ConfigFolderName}/${REMOTE_MANIFEST}`).resolves(mockedManifest);
+      mocker.stub<any, any>(fs, "readFile").withArgs(`./.${ConfigFolderName}/${REMOTE_MANIFEST}`).resolves(JSON.stringify(mockedManifest));
     });
 
     afterEach(() => {
       mocker.restore();
     });
 
-    it("should return error if no resource is selected to deploy", async () => {
+    it("should return error if solution status is not idle", async () => {
       const solution = new TeamsAppSolution();
       const mockedCtx = mockSolutionContext();
       mockedCtx.projectSettings = {
@@ -128,83 +138,42 @@ describe("deploy() for Azure projects", () => {
           activeResourcePlugins: [solution.aadPlugin.name]
         },
       };
+      solution.runningState = SolutionRunningState.ProvisionInProgress;
       mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
-      const result = await solution.deploy(mockedCtx);
+      let result = await solution.publish(mockedCtx);
       expect(result.isErr()).to.be.true;
-      expect(result._unsafeUnwrapErr().name).equals(SolutionError.NoResourcePluginSelected);
+      expect(result._unsafeUnwrapErr().name).equals(SolutionError.ProvisionInProgress);
+
+      solution.runningState = SolutionRunningState.DeployInProgress;
+      result = await solution.publish(mockedCtx);
+      expect(result.isErr()).to.be.true;
+      expect(result._unsafeUnwrapErr().name).equals(SolutionError.DeploymentInProgress);
+      
+      solution.runningState = SolutionRunningState.PublishInProgress;
+      result = await solution.publish(mockedCtx);
+      expect(result.isErr()).to.be.true;
+      expect(result._unsafeUnwrapErr().name).equals(SolutionError.PublishInProgress);
     });
 
-    it("should return ok on happy path and set solution status to idle", async () => {
+    it("should return ok for SPFx projects on happy path", async () => {
       const solution = new TeamsAppSolution();
       const mockedCtx = mockSolutionContext();
       mockedCtx.projectSettings = {
         appName: "my app",
         solutionSettings: {
-          hostType: HostTypeOptionAzure.id,
+          hostType: HostTypeOptionSPFx.id,
           name: "azure",
           version: "1.0",
-          activeResourcePlugins: [solution.aadPlugin.name]
+          activeResourcePlugins: [solution.appStudioPlugin.name, solution.spfxPlugin.name]
         },
       };
       mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
-      mockedCtx.answers?.set(AzureSolutionQuestionNames.PluginSelectionDeploy, [solution.fehostPlugin.name]);
-      mockDeployThatAlwaysSucceed(solution.fehostPlugin);
-      
-      const result = await solution.deploy(mockedCtx);
+      mockPublishThatAlwaysSucceed(solution.appStudioPlugin);
+      mockPublishThatAlwaysSucceed(solution.spfxPlugin);
+      const result = await solution.publish(mockedCtx);
       expect(result.isOk()).to.be.true;
-      expect(solution.runningState).equals(SolutionRunningState.Idle);
+      // expect(result._unsafeUnwrapErr().name).to.be.true;
     });
+
   });
-});
-
-describe("deploy() for SPFx projects", () => {
-  const mocker = sinon.createSandbox();
-    const mockedManifest = _.cloneDeep(validManifest);
-    // ignore icons for simplicity
-    mockedManifest.icons.color = "";
-    mockedManifest.icons.outline = "";
-    beforeEach(() => {
-      mocker.stub<any, any>(fs, "readJson").withArgs(`./.${ConfigFolderName}/${REMOTE_MANIFEST}`).resolves(mockedManifest);
-    });
-
-    afterEach(() => {
-      mocker.restore();
-    });
-
-    it("doesn't require provision first and should return error if no resource is selected to deploy", async () => {
-      const solution = new TeamsAppSolution();
-      const mockedCtx = mockSolutionContext();
-      mockedCtx.projectSettings = {
-        appName: "my app",
-        solutionSettings: {
-          hostType: HostTypeOptionSPFx.id,
-          name: "azure",
-          version: "1.0",
-          activeResourcePlugins: [solution.spfxPlugin.name]
-        },
-      };
-      const result = await solution.deploy(mockedCtx);
-      expect(result.isErr()).to.be.true;
-      expect(result._unsafeUnwrapErr().name).equals(SolutionError.NoResourcePluginSelected);
-    });
-
-    it("doesn't require provision first and should return ok on happy path and set solution status to idle", async () => {
-      const solution = new TeamsAppSolution();
-      const mockedCtx = mockSolutionContext();
-      mockedCtx.projectSettings = {
-        appName: "my app",
-        solutionSettings: {
-          hostType: HostTypeOptionSPFx.id,
-          name: "azure",
-          version: "1.0",
-          activeResourcePlugins: [solution.spfxPlugin.name]
-        },
-      };
-      mockedCtx.answers?.set(AzureSolutionQuestionNames.PluginSelectionDeploy, [solution.fehostPlugin.name]);
-      mockDeployThatAlwaysSucceed(solution.fehostPlugin);
-      
-      const result = await solution.deploy(mockedCtx);
-      expect(result.isOk()).to.be.true;
-      expect(solution.runningState).equals(SolutionRunningState.Idle);
-    });
 });

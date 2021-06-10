@@ -229,30 +229,26 @@ export function getTeamsAppId(rootfolder: string | undefined): any {
 }
 
 export function getColorizedString(message: Array<{content: string, color: Colors}>): string {
-  // Only TTY support ANSI color
-  if (process.stdout.isTTY) {
-    const colorizedMessage = message.map(item => {
-      switch(item.color) {
-        case Colors.BRIGHT_WHITE:
-          return chalk.whiteBright(item.content);
-        case Colors.WHITE:
-          return chalk.white(item.content);
-        case Colors.BRIGHT_MAGENTA:
-          return chalk.magentaBright(item.content);
-        case Colors.BRIGHT_GREEN:
-          return chalk.greenBright(item.content);
-        case Colors.BRIGHT_RED:
-          return chalk.redBright(item.content);
-        case Colors.BRIGHT_YELLOW:
-          return chalk.yellowBright(item.content);
-        case Colors.BRIGHT_CYAN:
-          return chalk.cyanBright.underline(item.content);
-        default:
-          return ""
-      }
-    }).join("");
-    return colorizedMessage;
-  } else {
-    return message.map(x => x.content).join("");
-  }
+  // Color support is automatically detected by chalk
+  const colorizedMessage = message.map(item => {
+    switch(item.color) {
+      case Colors.BRIGHT_WHITE:
+        return chalk.whiteBright(item.content);
+      case Colors.WHITE:
+        return chalk.white(item.content);
+      case Colors.BRIGHT_MAGENTA:
+        return chalk.magentaBright(item.content);
+      case Colors.BRIGHT_GREEN:
+        return chalk.greenBright(item.content);
+      case Colors.BRIGHT_RED:
+        return chalk.redBright(item.content);
+      case Colors.BRIGHT_YELLOW:
+        return chalk.yellowBright(item.content);
+      case Colors.BRIGHT_CYAN:
+        return chalk.cyanBright.underline(item.content);
+      default:
+        return item.content;
+    }
+  }).join("");
+  return colorizedMessage;
 }

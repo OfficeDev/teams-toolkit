@@ -51,9 +51,13 @@ export class CLILogProvider implements LogProvider {
     if (message instanceof Array) {
       message = getColorizedString(message);
     } else {
-      message = this.white(message);
+      message = chalk.whiteBright(message);
     }
     return this.log(LogLevel.Info, message);
+  }
+
+  white(msg: string): string {
+    return chalk.whiteBright(msg);
   }
 
   warning(message: string): Promise<boolean> {
@@ -68,51 +72,20 @@ export class CLILogProvider implements LogProvider {
     return this.log(LogLevel.Fatal, message);
   }
 
-  white(msg: string): string {
-    if (process.stdout.isTTY) {
-      return chalk.whiteBright(msg);
-    }
-    return msg;
-  }
-
-  green(msg: string): string {
-    if (process.stdout.isTTY) {
-      return chalk.greenBright(msg);
-    }
-    return msg;
-  }
-
-  yellow(msg: string): string {
-    if (process.stderr.isTTY) {
-      return chalk.yellowBright(msg);
-    }
-    return msg;
-  }
-
-  red(msg: string): string {
-    if (process.stderr.isTTY) {
-      return chalk.redBright(msg);
-    }
-    return msg;
-  }
-
   linkColor(msg: string): string {
-    if (process.stdout.isTTY) {
-      return chalk.cyanBright.underline(msg);
-    }
-    return msg;
+    return chalk.cyanBright.underline(msg);
   }
 
   async log(logLevel: LogLevel, message: string): Promise<boolean> {
     switch (logLevel) {
       case LogLevel.Trace:
         if (CLILogProvider.logLevel === CLILogLevel.debug) {
-          console.trace(this.white(message));
+          console.trace(chalk.whiteBright(message));
         }
         break;
       case LogLevel.Debug:
         if (CLILogProvider.logLevel === CLILogLevel.debug) {
-          console.debug(this.white(message));
+          console.debug(chalk.whiteBright(message));
         }
         break;
       case LogLevel.Info:
@@ -125,12 +98,12 @@ export class CLILogProvider implements LogProvider {
         break;
       case LogLevel.Warning:
         if (CLILogProvider.logLevel !== CLILogLevel.error) {
-          console.warn(this.yellow(message));
+          console.warn(chalk.yellowBright(message));
         }
         break;
       case LogLevel.Error:
       case LogLevel.Fatal:
-        console.error(this.red(message));
+        console.error(chalk.redBright(message));
         break;
     }
     return true;
@@ -142,17 +115,17 @@ export class CLILogProvider implements LogProvider {
       case LogLevel.Debug:
       case LogLevel.Info:
         if (white) {
-          console.info(this.white(message));
+          console.info(chalk.whiteBright(message));
         } else {
-          console.info(this.green(message));
+          console.info(chalk.greenBright(message));
         }
         break;
       case LogLevel.Warning:
-        console.warn(this.yellow(message));
+        console.warn(chalk.yellowBright(message));
         break;
       case LogLevel.Error:
       case LogLevel.Fatal:
-        console.error(this.red(message));
+        console.error(chalk.redBright(message));
         break;
     }
   }

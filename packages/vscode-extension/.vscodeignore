@@ -6,7 +6,6 @@ src/**
 **/tsconfig.json
 **/.eslintrc.json
 **/*.map
-**/*.ts
 test-folder/**
 test/**
 build/**

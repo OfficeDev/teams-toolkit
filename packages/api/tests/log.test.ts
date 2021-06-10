@@ -13,7 +13,7 @@ class TestLogProvider implements LogProvider {
     async debug({}: string): Promise<boolean> {
         return true;
     }
-    async info({}: string): Promise<boolean> {
+    async info({}: string | Array<any>): Promise<boolean> {
         return true;
     }
     async warning({}: string): Promise<boolean> {
@@ -37,7 +37,7 @@ class TestLogProvider2 implements LogProvider {
     async debug({}: string): Promise<boolean> {
         return false;
     }
-    async info({}: string): Promise<boolean> {
+    async info({}: string | Array<any>): Promise<boolean> {
         return false;
     }
     async warning({}: string): Promise<boolean> {

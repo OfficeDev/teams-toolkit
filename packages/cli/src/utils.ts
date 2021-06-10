@@ -6,6 +6,7 @@
 import fs from "fs-extra";
 import path from "path";
 import { Options } from "yargs";
+import chalk from "chalk";
 
 import {
   NodeType,
@@ -22,6 +23,7 @@ import {
   getSingleOption,
   SingleSelectQuestion,
   MultiSelectQuestion,
+  Colors
 } from "@microsoft/teamsfx-api";
 
 import { ConfigNotFoundError, ReadFileError } from "./error";
@@ -224,4 +226,41 @@ export function getTeamsAppId(rootfolder: string | undefined): any {
   }
 
   return undefined;
+}
+
+export function getColorizedString(message: Array<{content: string, color: Colors}>): string {
+  // Only TTY support ANSI color
+  if (process.stdout.isTTY) {
+    let colorizedMessage = "";
+    (message as Array<{content: string, color: Colors}>).map(function(item) {
+      switch(item.color) {
+        case Colors.BRIGHT_WHITE:
+          colorizedMessage = colorizedMessage + chalk.whiteBright(item.content);
+          break;
+        case Colors.WHITE:
+          colorizedMessage = colorizedMessage + chalk.white(item.content);
+          break;
+        case Colors.BRIGHT_MAGENTA:
+          colorizedMessage = colorizedMessage + chalk.magentaBright(item.content);
+          break;
+        case Colors.BRIGHT_GREEN:
+          colorizedMessage = colorizedMessage + chalk.greenBright(item.content);
+          break;
+        case Colors.BRIGHT_RED:
+          colorizedMessage = colorizedMessage + chalk.redBright(item.content);
+          break;
+        case Colors.BRIGHT_YELLOW:
+          colorizedMessage = colorizedMessage + chalk.yellowBright(item.content);
+          break;
+        case Colors.BRIGHT_CYAN:
+          colorizedMessage = colorizedMessage + chalk.cyanBright.underline(item.content);
+          break;
+        default:
+          break;
+      }
+    });
+    return colorizedMessage;
+  } else {
+    return message.map(x => x.content).join("");
+  }
 }

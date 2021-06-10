@@ -56,6 +56,12 @@ export interface LogProvider {
     info(message: string): Promise<boolean>;
 
     /**
+     * Use to record info information
+     * @param message Information of log event
+     */
+    info(message: Array<{content: string, color: Colors}>): Promise<boolean>;
+
+    /**
      * Use to record warning information
      * @param message Information of log event
      */
@@ -72,4 +78,38 @@ export interface LogProvider {
      * @param message Information of log event
      */
     fatal(message: string): Promise<boolean>;
+}
+
+/**
+ * Colors for CLI output message
+ */
+export enum Colors {
+    /**
+     * Primary text color
+     */
+    BRIGHT_WHITE = 0,
+    /**
+     * Secondary text color
+     */
+    WHITE = 1,
+    /**
+     * Important text color
+     */
+    BRIGHT_MAGENTA = 2,
+    /**
+     * Success message indicator
+     */
+    BRIGHT_GREEN = 3,
+    /**
+     * Warning message indicator
+     */
+    BRIGHT_YELLOW = 4,
+    /**
+     * Error message indicator
+     */
+    BRIGHT_RED = 5,
+    /**
+     * Hyperlink
+     */
+    BRIGHT_CYAN = 6
 }

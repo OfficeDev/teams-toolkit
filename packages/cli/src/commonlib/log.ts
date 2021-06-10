@@ -3,13 +3,12 @@
 
 "use strict";
 
-import colors from "colors";
-
-import { LogLevel, LogProvider } from "@microsoft/teamsfx-api";
+import { LogLevel, LogProvider, Colors } from "@microsoft/teamsfx-api";
 
 import { CLILogLevel } from "../constants";
+import { getColorizedString } from "./../utils";
+import chalk from "chalk";
 
-colors.white.green.yellow.red;
 
 export class CLILogProvider implements LogProvider {
   private static instance: CLILogProvider;
@@ -44,7 +43,16 @@ export class CLILogProvider implements LogProvider {
     return this.log(LogLevel.Debug, message);
   }
 
-  info(message: string): Promise<boolean> {
+  info(message: Array<{content: string, color: Colors}>): Promise<boolean>;
+  
+  info(message: string): Promise<boolean>;
+
+  info(message: string | Array<{content: string, color: Colors}>): Promise<boolean> {
+    if (message instanceof Array) {
+      message = getColorizedString(message);
+    } else {
+      message = this.white(message);
+    }
     return this.log(LogLevel.Info, message);
   }
 
@@ -62,35 +70,35 @@ export class CLILogProvider implements LogProvider {
 
   white(msg: string): string {
     if (process.stdout.isTTY) {
-      return msg.white;
+      return chalk.whiteBright(msg);
     }
     return msg;
   }
 
   green(msg: string): string {
     if (process.stdout.isTTY) {
-      return msg.green;
+      return chalk.greenBright(msg);
     }
     return msg;
   }
 
   yellow(msg: string): string {
     if (process.stderr.isTTY) {
-      return msg.yellow;
+      return chalk.yellowBright(msg);
     }
     return msg;
   }
 
   red(msg: string): string {
     if (process.stderr.isTTY) {
-      return msg.red;
+      return chalk.redBright(msg);
     }
     return msg;
   }
 
   linkColor(msg: string): string {
     if (process.stdout.isTTY) {
-      return msg.cyan.underline;
+      return chalk.cyanBright.underline(msg);
     }
     return msg;
   }
@@ -112,7 +120,7 @@ export class CLILogProvider implements LogProvider {
           CLILogProvider.logLevel === CLILogLevel.debug ||
           CLILogProvider.logLevel === CLILogLevel.verbose
         ) {
-          console.info(this.white(message));
+          console.info(message);
         }
         break;
       case LogLevel.Warning:

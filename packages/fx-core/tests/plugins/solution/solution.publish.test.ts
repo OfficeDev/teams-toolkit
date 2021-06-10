@@ -20,6 +20,8 @@ import {
 import * as sinon from "sinon";
 import fs from "fs-extra";
 import {
+  BOT_DOMAIN,
+  BOT_ID,
   FRONTEND_DOMAIN,
   FRONTEND_ENDPOINT,
   GLOBAL_CONFIG,
@@ -30,13 +32,13 @@ import {
   WEB_APPLICATION_INFO_SOURCE,
 } from "../../../src/plugins/solution/fx-solution/constants";
 import {
-  AzureSolutionQuestionNames,
+  BotOptionItem,
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
+  TabOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
-import { validManifest } from "./util";
+import { mockPublishThatAlwaysSucceed, validManifest } from "./util";
 import _ from "lodash";
-import { Solution } from "@azure/arm-appservice/esm/models/mappers";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -53,13 +55,7 @@ function mockSolutionContext(): SolutionContext {
   };
 }
 
-function mockPublishThatAlwaysSucceed(plugin: Plugin) {
-  plugin.publish = async function (
-    _ctx: PluginContext,
-  ): Promise<Result<any, FxError>> {
-    return ok(Void);
-  };
-}
+
 
 describe("publish()", () => {
 
@@ -178,7 +174,7 @@ describe("publish()", () => {
       expect(result.isOk()).to.be.true;
     });
 
-    it("should return ok for Azure projects on happy path", async () => {
+    it("should return ok for Azure Tab projects on happy path", async () => {
       const solution = new TeamsAppSolution();
       const mockedCtx = mockSolutionContext();
       mockedCtx.config.set(solution.aadPlugin.name, new ConfigMap);
@@ -190,7 +186,8 @@ describe("publish()", () => {
           hostType: HostTypeOptionAzure.id,
           name: "azure",
           version: "1.0",
-          activeResourcePlugins: [solution.aadPlugin.name, solution.fehostPlugin.name]
+          activeResourcePlugins: [solution.aadPlugin.name, solution.fehostPlugin.name],
+          capabilities: [TabOptionItem.id]
         },
       };
       mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
@@ -199,10 +196,34 @@ describe("publish()", () => {
       mockedCtx.config.get(solution.aadPlugin.name)?.set(WEB_APPLICATION_INFO_SOURCE, "mockedWebApplicationInfoResouce");
       mockedCtx.config.get(solution.aadPlugin.name)?.set(REMOTE_AAD_ID, "mockedRemoteAadId");
       mockPublishThatAlwaysSucceed(solution.appStudioPlugin);
-      mockPublishThatAlwaysSucceed(solution.spfxPlugin);
       const result = await solution.publish(mockedCtx);
       expect(result.isOk()).to.be.true;
     });
 
+    it("should return ok for Azure Bot projects on happy path", async () => {
+      const solution = new TeamsAppSolution();
+      const mockedCtx = mockSolutionContext();
+      mockedCtx.config.set(solution.aadPlugin.name, new ConfigMap);
+      mockedCtx.config.set(solution.botPlugin.name, new ConfigMap);
+      mockedCtx.config.set(solution.appStudioPlugin.name, new ConfigMap);
+      mockedCtx.projectSettings = {
+        appName: "my app",
+        solutionSettings: {
+          hostType: HostTypeOptionAzure.id,
+          name: "azure",
+          version: "1.0",
+          activeResourcePlugins: [solution.aadPlugin.name, solution.botPlugin.name],
+          capabilities: [BotOptionItem.id]
+        },
+      };
+      mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+      mockedCtx.config.get(solution.botPlugin.name)?.set(BOT_ID, "someFakeId");
+      mockedCtx.config.get(solution.botPlugin.name)?.set(BOT_DOMAIN, "http://example.com");
+      mockedCtx.config.get(solution.aadPlugin.name)?.set(WEB_APPLICATION_INFO_SOURCE, "mockedWebApplicationInfoResouce");
+      mockedCtx.config.get(solution.aadPlugin.name)?.set(REMOTE_AAD_ID, "mockedRemoteAadId");
+      mockPublishThatAlwaysSucceed(solution.appStudioPlugin);
+      const result = await solution.publish(mockedCtx);
+      expect(result.isOk()).to.be.true;
+    });
   });
 });

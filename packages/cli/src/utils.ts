@@ -231,34 +231,26 @@ export function getTeamsAppId(rootfolder: string | undefined): any {
 export function getColorizedString(message: Array<{content: string, color: Colors}>): string {
   // Only TTY support ANSI color
   if (process.stdout.isTTY) {
-    let colorizedMessage = "";
-    (message as Array<{content: string, color: Colors}>).map(function(item) {
+    const colorizedMessage = message.map(item => {
       switch(item.color) {
         case Colors.BRIGHT_WHITE:
-          colorizedMessage = colorizedMessage + chalk.whiteBright(item.content);
-          break;
+          return chalk.whiteBright(item.content);
         case Colors.WHITE:
-          colorizedMessage = colorizedMessage + chalk.white(item.content);
-          break;
+          return chalk.white(item.content);
         case Colors.BRIGHT_MAGENTA:
-          colorizedMessage = colorizedMessage + chalk.magentaBright(item.content);
-          break;
+          return chalk.magentaBright(item.content);
         case Colors.BRIGHT_GREEN:
-          colorizedMessage = colorizedMessage + chalk.greenBright(item.content);
-          break;
+          return chalk.greenBright(item.content);
         case Colors.BRIGHT_RED:
-          colorizedMessage = colorizedMessage + chalk.redBright(item.content);
-          break;
+          return chalk.redBright(item.content);
         case Colors.BRIGHT_YELLOW:
-          colorizedMessage = colorizedMessage + chalk.yellowBright(item.content);
-          break;
+          return chalk.yellowBright(item.content);
         case Colors.BRIGHT_CYAN:
-          colorizedMessage = colorizedMessage + chalk.cyanBright.underline(item.content);
-          break;
+          return chalk.cyanBright.underline(item.content);
         default:
-          break;
+          return ""
       }
-    });
+    }).join("");
     return colorizedMessage;
   } else {
     return message.map(x => x.content).join("");

@@ -222,7 +222,7 @@ export class CLIAnswer implements IAnswer {
           const message = NamingRules.validate(this.versionIdentity, NamingRules.versionIdentity);
           if (message) {
             return `${ValidationConstants.CLI.invalidOptionMessage(
-              QuestionConstants.CLI.OpenApiDocument.questionName
+              QuestionConstants.CLI.ApiVersion.questionName
             )} ${message}`;
           }
         }

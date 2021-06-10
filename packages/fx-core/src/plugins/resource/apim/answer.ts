@@ -25,7 +25,7 @@ export interface IAnswer {
 
 export function buildAnswer(ctx: PluginContext): IAnswer {
   const answers = AssertNotEmpty("ctx.answers", ctx.answers);
-  switch (ctx.answers?.platform) {
+  switch (answers.platform) {
     case Platform.VSCode:
       return new VSCodeAnswer(answers);
     case Platform.CLI:

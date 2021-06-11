@@ -136,7 +136,7 @@ export type EnvConfig = Dict<string>;
  */
 export interface ProjectSettings {
   appName: string;
-  currentEnv: string;
+  currentEnv?: string;
   solutionSettings?: SolutionSettings;
 }
 

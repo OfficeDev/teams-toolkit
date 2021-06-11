@@ -52,11 +52,10 @@ function mockSolutionContextWithPlatform(platform?: Platform): SolutionContext {
   config.set(GLOBAL_CONFIG, new ConfigMap);
   return {
     root: ".",
-    app: new TeamsAppManifest(),
+    // app: new TeamsAppManifest(),
     config,
-    answers: new ConfigMap(),
+    answers: {platform:platform?platform:Platform.VSCode},
     projectSettings: undefined,
-    platform: platform,
   };
 }
 
@@ -72,15 +71,15 @@ describe("executeUserTask VSpublish", async () => {
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.UnsupportedPlatform);
 
-    mockedCtx.platform = Platform.CLI;
+    mockedCtx.answers!.platform = Platform.CLI;
     result = await solution.executeUserTask(func, mockedCtx);
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.UnsupportedPlatform);
 
-    mockedCtx.platform = undefined;
-    result = await solution.executeUserTask(func, mockedCtx);
-    expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr().name).equals(SolutionError.UnsupportedPlatform);
+    // mockedCtx.answers!.platform = undefined;
+    // result = await solution.executeUserTask(func, mockedCtx);
+    // expect(result.isErr()).to.be.true;
+    // expect(result._unsafeUnwrapErr().name).equals(SolutionError.UnsupportedPlatform);
   });
 
   describe("happy path", async () => {

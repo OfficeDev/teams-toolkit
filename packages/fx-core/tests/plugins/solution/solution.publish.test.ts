@@ -16,6 +16,7 @@ import {
   TeamsAppManifest,
   Void,
   Plugin,
+  Platform,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs from "fs-extra";
@@ -48,9 +49,9 @@ function mockSolutionContext(): SolutionContext {
   config.set(GLOBAL_CONFIG, new ConfigMap);
   return {
     root: ".",
-    app: new TeamsAppManifest(),
+    // app: new TeamsAppManifest(),
     config,
-    answers: new ConfigMap(),
+    answers: {platform:Platform.VSCode},
     projectSettings: undefined,
   };
 }

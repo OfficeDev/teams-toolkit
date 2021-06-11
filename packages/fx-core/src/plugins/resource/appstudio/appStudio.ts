@@ -132,11 +132,11 @@ export namespace AppStudioClient {
       }
 
       if (response && response.data) {
-        if (response.data.error) {
+        if (response.data.error || response.data.errorMessage) {
           throw AppStudioResultFactory.SystemError(
             AppStudioError.TeamsAppPublishFailedError.name,
             AppStudioError.TeamsAppPublishFailedError.message(teamsAppId),
-            response.data.error.message
+            response.data.error?.message || response.data.errorMessage
           );
         } else {
           return response.data.id;

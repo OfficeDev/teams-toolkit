@@ -6,6 +6,7 @@
 import fs from "fs-extra";
 import path from "path";
 import { Options } from "yargs";
+import chalk from "chalk";
 
 import {
   NodeType,
@@ -22,6 +23,7 @@ import {
   getSingleOption,
   SingleSelectQuestion,
   MultiSelectQuestion,
+  Colors
 } from "@microsoft/teamsfx-api";
 
 import { ConfigNotFoundError, ReadFileError } from "./error";
@@ -224,4 +226,29 @@ export function getTeamsAppId(rootfolder: string | undefined): any {
   }
 
   return undefined;
+}
+
+export function getColorizedString(message: Array<{content: string, color: Colors}>): string {
+  // Color support is automatically detected by chalk
+  const colorizedMessage = message.map(item => {
+    switch(item.color) {
+      case Colors.BRIGHT_WHITE:
+        return chalk.whiteBright(item.content);
+      case Colors.WHITE:
+        return chalk.white(item.content);
+      case Colors.BRIGHT_MAGENTA:
+        return chalk.magentaBright(item.content);
+      case Colors.BRIGHT_GREEN:
+        return chalk.greenBright(item.content);
+      case Colors.BRIGHT_RED:
+        return chalk.redBright(item.content);
+      case Colors.BRIGHT_YELLOW:
+        return chalk.yellowBright(item.content);
+      case Colors.BRIGHT_CYAN:
+        return chalk.cyanBright.underline(item.content);
+      default:
+        return item.content;
+    }
+  }).join("");
+  return colorizedMessage;
 }

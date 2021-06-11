@@ -1,3 +1,17 @@
+import {
+  ConfigFolderName,
+  ConfigMap,
+  FxError,
+  ok,
+  PluginContext,
+  Result,
+  SolutionConfig,
+  SolutionContext,
+  TeamsAppManifest,
+  Void,
+  Plugin,
+} from "@microsoft/teamsfx-api";
+
 export const validManifest = {
   "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.9/MicrosoftTeams.schema.json",
   "manifestVersion": "1.9",
@@ -37,3 +51,11 @@ export const validManifest = {
     "resource": "{webApplicationInfoResource}"
   }
 };
+
+export function mockPublishThatAlwaysSucceed(plugin: Plugin) {
+  plugin.publish = async function (
+    _ctx: PluginContext,
+  ): Promise<Result<any, FxError>> {
+    return ok(Void);
+  };
+}

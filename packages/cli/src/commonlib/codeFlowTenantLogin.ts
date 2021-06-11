@@ -14,7 +14,6 @@ import { AddressInfo } from "net";
 import { accountPath, UTF8 } from "./cacheAccess";
 import open from "open";
 import { azureLoginMessage, changeLoginTenantMessage, env, m365LoginMessage, MFACode } from "./common/constant";
-import colors from "colors";
 import * as constants from "../constants";
 
 class ErrorMessage {

@@ -15,4 +15,4 @@ build/**
 webpack.config.js
 .github
 node_modules
-!out/templates
+!out/templates/**

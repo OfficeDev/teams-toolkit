@@ -51,7 +51,7 @@ export function generateFakeServiceClientCredentials(): ServiceClientCredentials
 
 export function generateFakeLogProvider(): LogProvider {
   return {
-    info: (message: string) => {
+    info: (message: string | Array<any>) => {
       return Promise.resolve(true);
     },
     log: (logLevel: LogLevel, message: string) => {

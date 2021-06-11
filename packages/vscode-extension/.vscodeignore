@@ -3,8 +3,6 @@
 src/**
 .gitignore
 .yarnrc
-**/tsconfig.json
-**/.eslintrc.json
 **/*.map
 test-folder/**
 test/**

@@ -11,6 +11,7 @@ import {
   MsgLevel,
   Platform,
   QuestionType,
+  Colors,
 } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
 import lodash from "lodash";
@@ -210,18 +211,24 @@ export class SPFxPluginImpl {
       const dir = path.normalize(path.parse(sharepointPackage).dir);
       const fileName = path.parse(sharepointPackage).name + path.parse(sharepointPackage).ext;
 
-      const guidance = util.format(getStrings().plugins.SPFx.deployNotice, dir, fileName);
-      ctx.dialog
-        ?.communicate(
-          new DialogMsg(DialogType.Show, {
-            description: guidance,
-            level: MsgLevel.Info,
-            items: ["OK", Constants.READ_MORE],
-          })
-        )
-        .then((value) => {
-          const answer = value.getAnswer();
-          if (answer === Constants.READ_MORE) {
+      if (ctx.answers?.platform === Platform.CLI) {
+        const guidance = [
+          {content: "[Teams Toolkit] SharePoint package successfully built at ", color: Colors.BRIGHT_GREEN},
+          {content: dir, color: Colors.BRIGHT_MAGENTA},
+          {content: " Visit Microsoft Admin Center: ", color: Colors.BRIGHT_GREEN},
+          {content: "https://admin.microsoft.com", color: Colors.BRIGHT_CYAN},
+          {content: " and go to your tenant's SharePoint App Catalog site to upload the ", color: Colors.BRIGHT_GREEN},
+          {content: fileName, color: Colors.BRIGHT_MAGENTA},
+          {content: " Follow instructions to learn more about deploy to SharePoint: ", color: Colors.BRIGHT_GREEN},
+          {content: Constants.DEPLOY_GUIDE, color: Colors.BRIGHT_CYAN}
+        ]
+        ctx.ui?.showMessage("info", guidance, false);
+      } else {
+        const guidance = util.format(getStrings().plugins.SPFx.deployNotice, dir, fileName);
+        ctx.ui
+        ?.showMessage("info", guidance, false, "OK", Constants.READ_MORE)
+        .then((answer) => {
+          if (answer.isOk() && answer.value === Constants.READ_MORE) {
             ctx.dialog?.communicate(
               new DialogMsg(DialogType.Ask, {
                 description: Constants.DEPLOY_GUIDE,
@@ -230,7 +237,7 @@ export class SPFxPluginImpl {
             );
           }
         });
-
+      }
       return ok(undefined);
     } catch (error) {
       await ProgressHelper.endPreDeployProgress();

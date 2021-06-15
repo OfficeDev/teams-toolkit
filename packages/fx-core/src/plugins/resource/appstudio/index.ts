@@ -125,19 +125,17 @@ export class AppStudioPlugin implements Plugin {
         appDirectory,
         manifestString
       );
-      await ctx.dialog?.communicate(
-        new DialogMsg(DialogType.Show, {
-          description: `Teams Package ${appPackagePath} built successfully!`,
-          level: MsgLevel.Info,
-        })
-      );
       const builtSuccess = [
         { content: "(√)Done: ", color: Colors.BRIGHT_GREEN },
         { content: "Teams Package ", color: Colors.BRIGHT_WHITE },
         { content: appPackagePath, color: Colors.BRIGHT_MAGENTA },
         { content: " built successfully!", color: Colors.BRIGHT_WHITE }
       ]
-      ctx.logProvider?.info(builtSuccess);
+      await ctx.ui?.showMessage(
+        "info",
+        builtSuccess,
+        false
+      )
       const properties: { [key: string]: string } = {};
       properties[TelemetryPropertyKey.buildOnly] = "true";
       TelemetryUtils.sendSuccessEvent(TelemetryEventName.buildTeamsPackage, properties);

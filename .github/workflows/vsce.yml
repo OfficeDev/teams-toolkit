@@ -1,0 +1,54 @@
+name: release vsix to githb.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  cd:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout branch
+        if: ${{ github.event_name != 'schedule' }}
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.CD_PAT }}
+          ref: ${{ github.ref }}
+
+      - name: Setup node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: 14
+
+      - name: Setup npm registry
+        run: |
+          echo "${{ secrets.NPMRC }}" > ~/.npmrc
+
+      - name: Setup project
+        run: |
+          npm run setup
+
+      - name: pack vsix
+        id: pack-vsix
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 10
+          retry_on: error
+          command: |
+            sleep 5
+            cd ./packages/vscode-extension
+            npm install
+            npx vsce package
+            VERSION=`ls *.vsix | awk -F '.vsix' '{print $1}'`
+            echo "::set-output name=VERSION::$VERSION"
+
+      - name: release VSCode extension to github
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: ${{ secrets.CD_PAT }}
+          prerelease: true
+          automatic_release_tag: ${{ steps.pack-vsix.outputs.VERSION }}
+          files: |
+            ./packages/**/*.vsix

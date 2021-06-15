@@ -219,32 +219,6 @@ export class FunctionDeploy {
         )
     );
 
-    await runWithErrorCatchAndThrow(
-      new FunctionAppOpError("sync triggers"),
-      async () =>
-        await step(StepGroup.DeployStepGroup, DeploySteps.syncTrigger, async () => {
-          // TODO: combine with requestWithRetry
-          let tryCount = 0;
-          while (tryCount++ < DefaultValues.maxTryCount) {
-            try {
-              await client.webApps.syncFunctionTriggers(resourceGroupName, functionAppName);
-              break;
-            } catch (e) {
-              /* Workaround: syncFunctionTriggers throw exception even for response 200 */
-              if (e.response?.status === 200 || e.response?.status === 201) {
-                break;
-              }
-              if (tryCount === DefaultValues.maxTryCount) {
-                throw e;
-              }
-            }
-          }
-          if (tryCount > 1) {
-            Logger.info(InfoMessages.succeedWithRetry("sync triggers", tryCount));
-          }
-        })
-    );
-
     await this.saveDeploymentInfo(componentPath, zipContent, deployTime);
   }
 

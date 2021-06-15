@@ -48,7 +48,7 @@ jobs:
         run: .github/scripts/template-zip-autogen.sh
 
       - name: release templates' alpha version to github
-        if: ${{ github.ref == 'refs/heads/dev' && (github.event.inputs.version == '' || startsWith(github.event.inputs.version, 'pre')) }}
+        if: ${{ github.ref == 'refs/heads/dev' }}
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: ${{ secrets.CD_PAT }}

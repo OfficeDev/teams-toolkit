@@ -97,6 +97,10 @@ export interface UserInteraction {
     modal: boolean,
     ...items: string[]
   ): Promise<Result<string|undefined,FxError>>;
+  /**
+   * 
+   * @param message Only works for CLI info level, color for other log levels and VSCode window will be ignored
+   */
   showMessage(
     level: "info" | "warn" | "error",
     message: Array<{content: string, color: Colors}>,

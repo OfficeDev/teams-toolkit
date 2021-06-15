@@ -40,7 +40,6 @@ import CLILogProvider from "./commonlib/log";
 import { NotValidInputValue, UnknownError } from "./error";
 import { sleep, getColorizedString } from "./utils";
 import { Options } from "yargs";
-import { mergeSerectData } from "@microsoft/teamsfx-core";
 
 /// TODO: input can be undefined
 type ValidationType<T> = (input: T) => string | boolean | Promise<string | boolean>;

@@ -30,9 +30,6 @@ export const QuestionModelMW: Middleware = async (
     else if (method === "localDebug"){
       getQuestionRes = await core._getQuestions(solutionContext, solution, Stage.debug, inputs);
     }
-    else if (method === "buildArtifacts"){
-      getQuestionRes = await core._getQuestions( solutionContext, solution, Stage.build, inputs);
-    }
     else if (method === "deployArtifacts"){
       getQuestionRes = await core._getQuestions( solutionContext, solution, Stage.deploy, inputs);
     }

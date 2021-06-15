@@ -21,6 +21,7 @@
     "lint:fix": "eslint \"src/**/*.ts\" \"tests/**/*.ts\" --fix",
     "doc": "typedoc",
     "test:unit": "nyc --reporter=html --reporter=text mocha --no-timeouts --require ts-node/register tests/**/*.ts",
+    "prepublishOnly": "npm run test:unit && npm run build",
     "precommit": "lint-staged"
   },
   "devDependencies": {
@@ -33,12 +34,14 @@
     "@types/node": "^14.14.10",
     "@typescript-eslint/eslint-plugin": "^4.19.0",
     "@typescript-eslint/parser": "^4.19.0",
+    "@types/sinon": "^9.0.10",
     "chai-as-promised": "^7.1.1",
     "chai-spies": "^1.0.0",
     "eslint": "^7.22.0",
     "lint-staged": "^10.5.4",
     "mocha": "^8.2.1",
     "nyc": "^15.1.0",
+    "sinon": "^9.2.2",
     "ts-node": "^9.1.1",
     "tslint-config-prettier": "^1.18.0",
     "typedoc": "^0.20.36",

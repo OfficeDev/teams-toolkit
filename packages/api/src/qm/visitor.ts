@@ -103,7 +103,7 @@ const questionVisitor = async function (
   if (question.type === "func") {
     try{
       const res = await question.func(inputs);
-      if("isOk" in res){
+      if(typeof res === "object" && "isOk" in res){
         const fxresult = res as Result<any, FxError>;
         if(fxresult.isOk()){
           return ok({ type: "success", result: fxresult.value} );
@@ -257,23 +257,23 @@ export async function traverse(
       const inputResult = qvres.value;
       if (inputResult.type === "back") {
         //go back
-        if (curr.children) {
-          while (stack.length > 0) {
-            const tmp = stack[stack.length - 1];
-            if (curr.children.includes(tmp)) {
-              stack.pop();
-            } else {
-              break;
-            }
-          }
-        }
+        // if (curr.children) {
+        //   while (stack.length > 0) {
+        //     const tmp = stack[stack.length - 1];
+        //     if (curr.children.includes(tmp)) {
+        //       stack.pop();
+        //     } else {
+        //       break;
+        //     }
+        //   }
+        // }
         stack.push(curr);
 
         // find the previoud input that is neither group nor func nor single option select
         let found = false;
         while (history.length > 0) {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          const last = history.pop()!;
+          const last = history.pop();
+          if (!last) continue;
           if (last.children) {
             while (stack.length > 0) {
               const tmp = stack[stack.length - 1];
@@ -285,14 +285,11 @@ export async function traverse(
             }
           }
           stack.push(last);
-          if (last.data.type !== "group") delete inputs[last.data.name];
+          if (last.data.type !== "group") 
+            delete inputs[last.data.name];
 
           const lastIsAutoSkip = autoSkipSet.has(last);
-          if (
-            last.data.type !== "group" &&
-            last.data.type !== "func" &&
-            !lastIsAutoSkip
-          ) {
+          if ( last.data.type !== "group" && last.data.type !== "func" && !lastIsAutoSkip) {
             found = true;
             break;
           }

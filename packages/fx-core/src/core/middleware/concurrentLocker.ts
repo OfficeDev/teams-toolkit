@@ -3,13 +3,12 @@
 "use strict";
 
 import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks"; 
-import { assembleError, ConfigFolderName, err, Inputs,  StaticPlatforms } from "@microsoft/teamsfx-api";
+import { ConfigFolderName, err, Inputs,  StaticPlatforms } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import * as fs from "fs-extra";
 import { FxCore } from "..";
 import { ConcurrentError, InvalidProjectError, NoProjectOpenedError, PathNotExistError } from "../error";
-
-const lockfile = require("proper-lockfile"); 
+import { lock, unlock } from "proper-lockfile";
 
 export const ConcurrentLockerMW: Middleware = async (
   ctx: HookContext,
@@ -17,6 +16,7 @@ export const ConcurrentLockerMW: Middleware = async (
 ) => {
   const core = ctx.self as FxCore;
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+  const logger = (core !== undefined && core.tools!== undefined && core.tools.logProvider!== undefined) ? core.tools.logProvider:undefined;
   const ignoreLock = inputs.ignoreLock === true || StaticPlatforms.includes(inputs.platform); 
   if(ignoreLock === false){
     if(!inputs.projectPath){
@@ -32,25 +32,23 @@ export const ConcurrentLockerMW: Middleware = async (
       ctx.result = err(InvalidProjectError());
       return ;
     }
-    await lockfile
-      .lock(lf)
+    await lock(lf)
       .then(async () => {
-        core.tools.logProvider.debug(`[core] success to aquire lock on: ${lf}`);
+        if(logger)
+          logger.debug(`[core] success to aquire lock on: ${lf}`);
         try{
           await next();
         }
-        catch(e){
-          ctx.result = err(assembleError(e));
-          return ;
-        }
         finally{
-          lockfile.unlock(lf);
-          core.tools.logProvider.debug(`[core] lock released on ${lf}`);
+          await unlock(lf);
+          if(logger)
+            logger.debug(`[core] lock released on ${lf}`);
         }
       })
       .catch((e:any) => {
         if(e["code"] === "ELOCKED"){
-          core.tools.logProvider.warning(`[core] failed to aquire lock on: ${lf}`);
+          if(logger)
+            logger.warning(`[core] failed to aquire lock on: ${lf}`);
           ctx.result = err(ConcurrentError());
           return;
         }

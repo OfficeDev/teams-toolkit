@@ -16,12 +16,14 @@ export const ErrorHandlerMW: Middleware = async (
 ) => {
   const core = ctx.self as FxCore;
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+  const logger = (core !== undefined && core.tools!== undefined && core.tools.logProvider!== undefined) ? core.tools.logProvider:undefined;
   try {
-    core.tools.logProvider.info(`[core] start task:${ctx.method}, inputs:${JSON.stringify(inputs)}`);
+    if(logger)
+      logger.info(`[core] start task:${ctx.method}, inputs:${JSON.stringify(inputs)}`);
     await next();
-    core.tools.logProvider.info(`[core] finish task:${ctx.method}`);
+    if(logger)
+      logger.info(`[core] finish task:${ctx.method}`);
   } catch (e) {
-    // core.tools.logProvider.error(`[core] failed to run task:${ctx.method}`);
     ctx.result = err(assembleError(e));
   }
 };

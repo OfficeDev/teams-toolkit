@@ -27,7 +27,8 @@ export const ContextLoaderMW: Middleware = async (
       ctx.result = err(NoProjectOpenedError());
       return ;
     }
-    if(!await fs.pathExists(inputs.projectPath)) {
+    const projectPathExist = await fs.pathExists(inputs.projectPath);
+    if(!projectPathExist) {
       ctx.result = err(PathNotExistError(inputs.projectPath));
       return ;
     }
@@ -66,7 +67,7 @@ export async function loadSolutionContext(tools: Tools, inputs: Inputs):Promise<
     const solutionContext:SolutionContext = {
       projectSettings: projectSettings,
       config: solutionConfig,
-      root: inputs.projectPath!,
+      root: inputs.projectPath || "",
       ... tools,
       ... tools.tokenProvider,
       answers: inputs
@@ -89,7 +90,7 @@ export async function newSolutionContext(tools: Tools, inputs: Inputs):Promise<S
   const solutionContext:SolutionContext = {
     projectSettings: projectSettings,
     config: new Map<string, PluginConfig>(),
-    root: "",
+    root: inputs.projectPath || "",
     ... tools,
     ... tools.tokenProvider,
     answers: inputs

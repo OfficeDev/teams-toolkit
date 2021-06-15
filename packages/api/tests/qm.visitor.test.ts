@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import {
+  Colors,
   err,
   FuncQuestion,
   FxError,

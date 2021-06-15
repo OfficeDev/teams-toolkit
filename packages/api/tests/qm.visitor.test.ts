@@ -106,14 +106,28 @@ class  MockUserInteraction implements UserInteraction {
   openUrl(link: string): Promise<Result<boolean,FxError>>{
     throw new Error("Method not implemented.");
   }
-  showMessage(
+  async showMessage(
     level: "info" | "warn" | "error",
     message: string,
     modal: boolean,
     ...items: string[]
+  ): Promise<Result<string|undefined,FxError>>;
+
+  async showMessage(
+    level: "info" | "warn" | "error",
+    message: Array<{content: string, color: Colors}>,
+    modal: boolean,
+    ...items: string[]
+  ): Promise<Result<string|undefined,FxError>>;
+
+  async showMessage(
+    level: "info" | "warn" | "error",
+    message: string | Array<{content: string, color: Colors}>,
+    modal: boolean,
+    ...items: string[]
   ): Promise<Result<string|undefined,FxError>>{
     throw new Error("Method not implemented.");
-  }
+  } 
   runWithProgress<T>(task: RunnableTask<T>, config: TaskConfig, ...args:any): Promise<Result<T,FxError>>{
     throw new Error("Method not implemented.");
   }

@@ -93,16 +93,6 @@ jobs:
           git config --global user.name 'MSFT-yiz'
           git config --global user.email 'yiz@microsoft.com'
 
-      - name: check whether vscode extension changed or not
-        id: extension-checker
-        run: |
-          if npx lerna changed | grep 'ms-teams-vscode-extension';
-          then
-            echo "::set-output name=CHANGED::true"
-          else
-            echo "::set-output name=CHANGED::false"
-          fi
-
       - name: release alpha npm packages to npmjs.org
         if: ${{ github.event_name == 'schedule' }}
         run: |
@@ -133,8 +123,19 @@ jobs:
             VERSION=`ls *.vsix | awk -F '.vsix' '{print $1}'`
             echo "::set-output name=VERSION::$VERSION"
 
+      - name: check whether vscode extension changed or not
+        id: extension-checker
+        working-directory: ./packages/vscode-extension
+        run: |
+          if git diff HEAD^ package.json | grep version;
+          then
+            echo "::set-output name=CHANGED::true"
+          else
+            echo "::set-output name=CHANGED::false"
+          fi
+
       - name: release VSCode extension to github
-        if: ${{ steps.extension-checker.outputs.CHANGED == 'true' || github.event.inputs.force == '--force-publish' || (github.ref == 'refs/heads/main' && !startsWith(github.event.inputs.version, 'pre')) }}
+        if: ${{ steps.extension-checker.outputs.CHANGED == 'true' || github.event.inputs.force == '--force-publish' }}
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: ${{ secrets.CD_PAT }}

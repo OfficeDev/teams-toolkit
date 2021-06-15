@@ -32,13 +32,15 @@ import {
   UserCancelError,
   TaskConfig,
   assembleError,
-  UserInteraction
+  UserInteraction,
+  Colors
 } from "@microsoft/teamsfx-api";
 
 import CLILogProvider from "./commonlib/log";
 import { NotValidInputValue, UnknownError } from "./error";
-import { sleep } from "./utils";
+import { sleep, getColorizedString } from "./utils";
 import { Options } from "yargs";
+import { mergeSerectData } from "@microsoft/teamsfx-core";
 
 /// TODO: input can be undefined
 type ValidationType<T> = (input: T) => string | boolean | Promise<string | boolean>;
@@ -399,31 +401,55 @@ export class CLIUserInteraction implements UserInteraction {
     await open(link);
     return ok(true);
   }
-
+  
   public async showMessage(
     level: "info" | "warn" | "error",
     message: string,
     modal: boolean,
     ...items: string[]
+  ): Promise<Result<string|undefined,FxError>>;
+
+  public async showMessage(
+    level: "info" | "warn" | "error",
+    message: Array<{content: string, color: Colors}>,
+    modal: boolean,
+    ...items: string[]
+  ): Promise<Result<string|undefined,FxError>>;
+
+  public async showMessage(
+    level: "info" | "warn" | "error",
+    message: string | Array<{content: string, color: Colors}>,
+    modal: boolean,
+    ...items: string[]
   ): Promise<Result<string|undefined,FxError>> {
+    let plainText: string;
+    if (message instanceof Array) {
+      plainText = message.map(x => x.content).join("");
+    } else {
+      plainText = message;
+    }
     return new Promise(async resolve => {
       switch (items.length) {
         case 0:
           switch (level) {
             case "info":
-              CLILogProvider.necessaryLog(LogLevel.Info, message);
+              if (message instanceof Array) {
+                CLILogProvider.necessaryLog(LogLevel.Info, getColorizedString(message));
+              } else {
+                CLILogProvider.necessaryLog(LogLevel.Info, message);
+              }
               break;
             case "warn":
-              CLILogProvider.necessaryLog(LogLevel.Warning, message);
+              CLILogProvider.necessaryLog(LogLevel.Warning, plainText);
               break;
             case "error":
-              CLILogProvider.necessaryLog(LogLevel.Error, message);
+              CLILogProvider.necessaryLog(LogLevel.Error, plainText);
               break;
           }
           resolve(ok(undefined));
           break;
         case 1: {
-          const result = await this.confirm("MyConfirmQuestion", message);
+          const result = await this.confirm("MyConfirmQuestion", plainText);
           if (result.isOk()) {
             if (result.value) {
               resolve(ok(items[0]));
@@ -439,7 +465,7 @@ export class CLIUserInteraction implements UserInteraction {
           /// TODO: add default value.
           const result = await this.singleSelect(
             "MySingleSelectQuestion",
-            message,
+            plainText,
             modal ? items.concat("Cancel") : items
           );
           if (result.isOk()) {

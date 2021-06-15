@@ -4,6 +4,7 @@
 import { err, ok, Result } from "neverthrow";
 import { FxError, UserCancelError } from "../error";
 import { OptionItem, StaticOptions } from "../qm/question";
+import { Colors } from "./../utils/log";
 
 export interface UIConfig<T> {
   name: string;
@@ -93,6 +94,12 @@ export interface UserInteraction {
   showMessage(
     level: "info" | "warn" | "error",
     message: string,
+    modal: boolean,
+    ...items: string[]
+  ): Promise<Result<string|undefined,FxError>>;
+  showMessage(
+    level: "info" | "warn" | "error",
+    message: Array<{content: string, color: Colors}>,
     modal: boolean,
     ...items: string[]
   ): Promise<Result<string|undefined,FxError>>;

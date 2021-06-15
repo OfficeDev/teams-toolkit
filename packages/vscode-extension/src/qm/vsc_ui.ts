@@ -39,7 +39,8 @@ import {
   assembleError,
   ok,
   TaskConfig,
-  UserInteraction
+  UserInteraction,
+  Colors
 } from "@microsoft/teamsfx-api";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { sleep } from "../utils/commonUtils";
@@ -493,27 +494,44 @@ export class VsCodeUI implements UserInteraction {
     });
   }
 
-  async showMessage(
+  public async showMessage(
     level: "info" | "warn" | "error",
     message: string,
     modal: boolean,
     ...items: string[]
+  ): Promise<Result<string|undefined,FxError>>;
+
+  public async showMessage(
+    level: "info" | "warn" | "error",
+    message: Array<{content: string, color: Colors}>,
+    modal: boolean,
+    ...items: string[]
+  ): Promise<Result<string|undefined,FxError>>;
+
+  async showMessage(
+    level: "info" | "warn" | "error",
+    message: string | Array<{content: string, color: Colors}>,
+    modal: boolean,
+    ...items: string[]
   ): Promise<Result<string|undefined,FxError>> {
+    if (message instanceof Array) {
+      message = message.map(x => x.content).join("");
+    }
     return new Promise(async resolve => {
       const option = { modal: modal };
       try {
         let promise: Thenable<string | undefined>;
         switch (level) {
           case "info":{
-            promise = window.showInformationMessage(message, option, ...items);
+            promise = window.showInformationMessage(message as string, option, ...items);
             break;
           }
           case "warn":{
-            promise = window.showWarningMessage(message, option, ...items);
+            promise = window.showWarningMessage(message as string, option, ...items);
             break;
           }
           case "error":
-            promise = window.showErrorMessage(message, option, ...items);
+            promise = window.showErrorMessage(message as string, option, ...items);
         }
         promise.then(v=>{
           if(v)

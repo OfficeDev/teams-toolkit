@@ -134,7 +134,7 @@ jobs:
             echo "::set-output name=VERSION::$VERSION"
 
       - name: release VSCode extension to github
-        if: ${{ steps.extension-checker.outputs.CHANGED == 'true' || github.event.inputs.force == '--force-publish' }}
+        if: ${{ steps.extension-checker.outputs.CHANGED == 'true' || github.event.inputs.force == '--force-publish' || (github.ref == 'refs/heads/main' && !startsWith(github.event.inputs.version, 'pre')) }}
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: ${{ secrets.CD_PAT }}

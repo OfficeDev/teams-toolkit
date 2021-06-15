@@ -118,8 +118,7 @@ describe("Middleware", () => {
         assert.isTrue(res2.isOk() && res2.value === "");
       }
       finally {
-        await fs.rmdir(path.join(inputs.projectPath!, `.${ConfigFolderName}`));
-        await fs.rmdir(inputs.projectPath!);
+        await fs.rmdir(inputs.projectPath!,{recursive:true});
       }
     });
 
@@ -145,8 +144,7 @@ describe("Middleware", () => {
         assert.isTrue(e === UserCancelError);
       }
       finally {
-        await fs.rmdir(path.join(inputs.projectPath!, `.${ConfigFolderName}`));
-        await fs.rmdir(inputs.projectPath!);
+        await fs.rmdir(inputs.projectPath!,{recursive:true});
       }
     });
 
@@ -203,7 +201,7 @@ describe("Middleware", () => {
         assert.isTrue(res.isErr() && res.error.name === InvalidProjectError().name);
       }
       finally{
-        await fs.rmdir(inputs.projectPath!);
+        await fs.rmdir(inputs.projectPath!,{recursive:true});
       }
     });
 
@@ -231,8 +229,7 @@ describe("Middleware", () => {
         await my.myMethod(inputs);
       }
       finally {
-        await fs.rmdir(path.join(inputs.projectPath!, `.${ConfigFolderName}`));
-        await fs.rmdir(inputs.projectPath!);
+        await fs.rmdir(inputs.projectPath!,{recursive:true});
       }
     });
 
@@ -249,7 +246,7 @@ describe("Middleware", () => {
           return ok("");
         }
       }
-      hooks(MyClass, {
+      hooks(MyClass, { 
         myMethod: [ConcurrentLockerMW],
         myMethod2: [ConcurrentLockerMW]
       });
@@ -262,8 +259,7 @@ describe("Middleware", () => {
         await my.myMethod(inputs);
       }
       finally {
-        await fs.rmdir(path.join(inputs.projectPath!, `.${ConfigFolderName}`));
-        await fs.rmdir(inputs.projectPath!);
+        await fs.rmdir(inputs.projectPath!,{recursive:true});
       }
     });
   });

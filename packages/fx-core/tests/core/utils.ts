@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Solution, SolutionContext,FxError, Result, QTreeNode, Func, Stage, LogProvider, LogLevel, AzureAccountProvider, GraphTokenProvider, Tools, TokenProvider, AppStudioTokenProvider, TelemetryReporter, Dialog, UserInteraction, DialogMsg, IProgressHandler, SingleSelectConfig, MultiSelectConfig, InputTextConfig, SelectFileConfig, SelectFilesConfig, SelectFolderConfig, SingleSelectResult, MultiSelectResult, InputTextResult, SelectFileResult, SelectFilesResult, SelectFolderResult, RunnableTask, TaskConfig, SubscriptionInfo, Inputs, ProjectSettings, AzureSolutionSettings, ok, Void, ConfigMap } from "@microsoft/teamsfx-api";
+import { Solution, SolutionContext,FxError, Result, QTreeNode, Func, Stage, LogProvider, LogLevel, AzureAccountProvider, GraphTokenProvider, Tools, TokenProvider, AppStudioTokenProvider, TelemetryReporter, Dialog, UserInteraction, DialogMsg, IProgressHandler, SingleSelectConfig, MultiSelectConfig, InputTextConfig, SelectFileConfig, SelectFilesConfig, SelectFolderConfig, SingleSelectResult, MultiSelectResult, InputTextResult, SelectFileResult, SelectFilesResult, SelectFolderResult, RunnableTask, TaskConfig, SubscriptionInfo, Inputs, ProjectSettings, AzureSolutionSettings, ok, Void, ConfigMap, DialogType } from "@microsoft/teamsfx-api";
 import {TokenCredential} from "@azure/core-auth";
 import {TokenCredentialsBase} from "@azure/ms-rest-nodeauth";
 import { SolutionLoader } from "../../src/core/loader";
@@ -11,7 +11,14 @@ import { PluginNames } from "../../src/plugins/solution/fx-solution/solution";
 export class MockSolution implements Solution{
   name = "fx-solution-mock"
   async create(ctx: SolutionContext) : Promise<Result<any, FxError>>{
-    ctx.projectSettings!.solutionSettings = {
+    ctx.projectSettings!.solutionSettings = this.solutionSettings();
+    const config = new ConfigMap();
+    config.set("create", true);
+    ctx.config.set("solution",  config);
+    return ok(Void);
+  }
+  solutionSettings():AzureSolutionSettings{
+    return {
       name: this.name,
       version: "1.0.0",
       hostType: "Azure",
@@ -19,10 +26,6 @@ export class MockSolution implements Solution{
       azureResources: [],
       activeResourcePlugins: [PluginNames.FE, PluginNames.LDEBUG, PluginNames.AAD, PluginNames.SA]
     } as AzureSolutionSettings;
-    const config = new ConfigMap();
-    config.set("create", true);
-    ctx.config.set("solution",  config);
-    return ok(Void);
   }
   async scaffold(ctx: SolutionContext) : Promise<Result<any, FxError>>{
     ctx.config.get("solution")!.set("scaffold", true);
@@ -51,7 +54,8 @@ export class MockSolution implements Solution{
     return ok(undefined);
   }
   async executeUserTask(func: Func, ctx: SolutionContext) : Promise<Result<any, FxError>>{
-    return ok(undefined);
+    ctx.config.get("solution")!.set("executeUserTask", true);
+    return ok(Void);
   }
 }
 
@@ -186,11 +190,16 @@ class MockTelemetryReporter implements TelemetryReporter {
 
 class MockDialog implements Dialog{
   async communicate(msg: DialogMsg) : Promise<DialogMsg>{
-    throw new Error("Method not implemented.");
+    return new DialogMsg(DialogType.Answer, "");
   }
  
   createProgressBar(title: string, totalSteps: number): IProgressHandler{
-    throw new Error("Method not implemented.");
+    const handler: IProgressHandler = {
+      start: async (detail?: string): Promise<void> => {  },
+      next:async (detail?: string) : Promise<void>=>{} ,
+      end:async() : Promise<void>=>{} ,
+    };
+    return handler;
   }
 }
 

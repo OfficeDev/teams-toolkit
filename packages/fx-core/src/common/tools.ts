@@ -273,11 +273,11 @@ export function isValidProject(workspacePath?: string): boolean {
       projectSettings.currentEnv = "default";
     if(validateSettings(projectSettings))
         return false;
-    const envName = projectSettings.currentEnv;
-    const jsonFilePath = path.resolve(confFolderPath, `env.${envName}.json`);
-    const configJson: Json = fs.readJsonSync(jsonFilePath);
-    if(validateConfig(projectSettings.solutionSettings as AzureSolutionSettings, configJson))
-      return false;
+    // const envName = projectSettings.currentEnv;
+    // const jsonFilePath = path.resolve(confFolderPath, `env.${envName}.json`);
+    // const configJson: Json = fs.readJsonSync(jsonFilePath);
+    // if(validateConfig(projectSettings.solutionSettings as AzureSolutionSettings, configJson))
+    //   return false;
     return true;
   }
   catch(e){
@@ -286,12 +286,12 @@ export function isValidProject(workspacePath?: string): boolean {
 }
 
 export function validateProject(solutionContext: SolutionContext):string|undefined{
-  let res  = validateSettings(solutionContext.projectSettings);
-  if(res) return res;
-  const configJson = mapToJson(solutionContext.config);
-  res = validateConfig(solutionContext.projectSettings!.solutionSettings as AzureSolutionSettings, configJson);
-  if(res) return res;
-  return undefined;
+  const res  = validateSettings(solutionContext.projectSettings);
+  return res;
+  // const configJson = mapToJson(solutionContext.config);
+  // res = validateConfig(solutionContext.projectSettings!.solutionSettings as AzureSolutionSettings, configJson);
+  // if(res) return res;
+  // return undefined;
 }
 
 export function validateSettings(projectSettings?: ProjectSettings):string|undefined{
@@ -300,18 +300,13 @@ export function validateSettings(projectSettings?: ProjectSettings):string|undef
   const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
   if(solutionSettings.hostType === undefined) return "empty solutionSettings.hostType";
   if(solutionSettings.activeResourcePlugins === undefined || solutionSettings.activeResourcePlugins.length === 0)
-    return "empty solutionSettings.activeResourcePlugins";
-  return undefined;
-}
-
-export function validateConfig(solutioSettings:AzureSolutionSettings, configJson: Json): string|undefined {
-  if(!configJson[PluginNames.SOLUTION]) return "solution config is missing";
-  const capabilities = solutioSettings.capabilities  || [];
-  const azureResources = solutioSettings.azureResources || [];
-  const plugins = solutioSettings.activeResourcePlugins  || [];
+  return "empty solutionSettings.activeResourcePlugins";
+  const capabilities = solutionSettings.capabilities  || [];
+  const azureResources = solutionSettings.azureResources || [];
+  const plugins = solutionSettings.activeResourcePlugins  || [];
   // if(!configJson[PluginNames.LDEBUG]) return "local debug config is missing";
   if(!plugins.includes(PluginNames.LDEBUG)) return  `${PluginNames.LDEBUG} setting is missing in settings.json`;
-  if(solutioSettings.hostType === HostTypeOptionSPFx.id){
+  if(solutionSettings.hostType === HostTypeOptionSPFx.id){
     // if(!configJson[PluginNames.SPFX]) return "SPFx config is missing";
     if(!plugins.includes(PluginNames.SPFX)) return "SPFx setting is missing in activeResourcePlugins";
   }
@@ -351,7 +346,7 @@ export function validateConfig(solutioSettings:AzureSolutionSettings, configJson
   }
   return undefined;
 }
-
+ 
 export async function askSubscription(azureAccountProvider:AzureAccountProvider, ui:UserInteraction , activeSubscriptionId?:string): Promise<Result<SubscriptionInfo, FxError>>{
   const subscriptions: SubscriptionInfo[] = await azureAccountProvider.listSubscriptions();
   if (subscriptions.length === 0) {

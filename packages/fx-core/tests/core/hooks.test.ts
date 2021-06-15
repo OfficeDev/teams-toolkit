@@ -197,9 +197,14 @@ describe("Middleware", () => {
       const my = new MyClass();
       const inputs: Inputs = { platform: Platform.VSCode };
       inputs.projectPath = path.join(os.tmpdir(), randomAppName());
-      await fs.ensureDir(inputs.projectPath);
-      const res = await my.myMethod(inputs);
-      assert.isTrue(res.isErr() && res.error.name === InvalidProjectError().name);
+      try {
+        await fs.ensureDir(inputs.projectPath);
+        const res = await my.myMethod(inputs);
+        assert.isTrue(res.isErr() && res.error.name === InvalidProjectError().name);
+      }
+      finally{
+        await fs.rmdir(inputs.projectPath!);
+      }
     });
 
     it("concurrent: fail to get lock", async () => {
@@ -262,7 +267,6 @@ describe("Middleware", () => {
       }
     });
   });
-
 
   describe("SolutionLoaderMW, ContextInjecterMW", () => {
     it("load solution and inject", async () => {

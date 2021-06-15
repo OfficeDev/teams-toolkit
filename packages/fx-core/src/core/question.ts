@@ -88,7 +88,6 @@ export const ScratchOptionNo: OptionItem = {
 };
 
 export function getCreateNewOrFromSampleQuestion(platform: Platform): SingleSelectQuestion {
-
   return {
     type: "singleSelect",
     name: CoreQuestionNames.CreateFromScratch,
@@ -98,7 +97,7 @@ export function getCreateNewOrFromSampleQuestion(platform: Platform): SingleSele
     placeholder: "Select an option",
     skipSingleOption: true,
   };
-};
+}
 
 export const SampleSelect: SingleSelectQuestion = {
   type: "singleSelect",

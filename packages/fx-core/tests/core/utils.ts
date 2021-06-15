@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Solution, SolutionContext,FxError, Result, QTreeNode, Func, Stage, LogProvider, LogLevel, AzureAccountProvider, GraphTokenProvider, Tools, TokenProvider, AppStudioTokenProvider, TelemetryReporter, Dialog, UserInteraction, DialogMsg, IProgressHandler, SingleSelectConfig, MultiSelectConfig, InputTextConfig, SelectFileConfig, SelectFilesConfig, SelectFolderConfig, SingleSelectResult, MultiSelectResult, InputTextResult, SelectFileResult, SelectFilesResult, SelectFolderResult, RunnableTask, TaskConfig, SubscriptionInfo, Inputs, ProjectSettings, AzureSolutionSettings } from "@microsoft/teamsfx-api";
+import { Solution, SolutionContext,FxError, Result, QTreeNode, Func, Stage, LogProvider, LogLevel, AzureAccountProvider, GraphTokenProvider, Tools, TokenProvider, AppStudioTokenProvider, TelemetryReporter, Dialog, UserInteraction, DialogMsg, IProgressHandler, SingleSelectConfig, MultiSelectConfig, InputTextConfig, SelectFileConfig, SelectFilesConfig, SelectFolderConfig, SingleSelectResult, MultiSelectResult, InputTextResult, SelectFileResult, SelectFilesResult, SelectFolderResult, RunnableTask, TaskConfig, SubscriptionInfo, Inputs, ProjectSettings, AzureSolutionSettings, ok, Void, ConfigMap } from "@microsoft/teamsfx-api";
 import {TokenCredential} from "@azure/core-auth";
 import {TokenCredentialsBase} from "@azure/ms-rest-nodeauth";
 import { SolutionLoader } from "../../src/core/loader";
@@ -10,32 +10,48 @@ import { PluginNames } from "../../src/plugins/solution/fx-solution/solution";
 
 export class MockSolution implements Solution{
   name = "fx-solution-mock"
-  create(ctx: SolutionContext) : Promise<Result<any, FxError>>{
-    throw new Error();
+  async create(ctx: SolutionContext) : Promise<Result<any, FxError>>{
+    ctx.projectSettings!.solutionSettings = {
+      name: this.name,
+      version: "1.0.0",
+      hostType: "Azure",
+      capabilities: ["Tab"],
+      azureResources: [],
+      activeResourcePlugins: [PluginNames.FE, PluginNames.LDEBUG, PluginNames.AAD, PluginNames.SA]
+    } as AzureSolutionSettings;
+    const config = new ConfigMap();
+    config.set("create", true);
+    ctx.config.set("solution",  config);
+    return ok(Void);
   }
-  scaffold(ctx: SolutionContext) : Promise<Result<any, FxError>>{
-    throw new Error();
+  async scaffold(ctx: SolutionContext) : Promise<Result<any, FxError>>{
+    ctx.config.get("solution")!.set("scaffold", true);
+    return ok(Void);
   }
-  provision(ctx: SolutionContext) : Promise<Result<any, FxError>>{
-    throw new Error();
+  async provision(ctx: SolutionContext) : Promise<Result<any, FxError>>{
+    ctx.config.get("solution")!.set("provision", true);
+    return ok(Void);
   }
-  deploy(ctx: SolutionContext) : Promise<Result<any, FxError>>{
-    throw new Error();
+  async deploy(ctx: SolutionContext) : Promise<Result<any, FxError>>{
+    ctx.config.get("solution")!.set("deploy", true);
+    return ok(Void);
   }
-  publish(ctx: SolutionContext) : Promise<Result<any, FxError>>{
-    throw new Error();
+  async publish(ctx: SolutionContext) : Promise<Result<any, FxError>>{
+    ctx.config.get("solution")!.set("publish", true);
+    return ok(Void);
   }
-  localDebug(ctx: SolutionContext) : Promise<Result<any, FxError>>{
-    throw new Error();
+  async localDebug(ctx: SolutionContext) : Promise<Result<any, FxError>>{
+    ctx.config.get("solution")!.set("localDebug", true);
+    return ok(Void);
   }
-  getQuestions(task: Stage, ctx: SolutionContext) : Promise<Result<QTreeNode | undefined, FxError>>{
-    throw new Error();
+  async getQuestions(task: Stage, ctx: SolutionContext) : Promise<Result<QTreeNode | undefined, FxError>>{
+    return ok(undefined);
   }
-  getQuestionsForUserTask(func: Func, ctx: SolutionContext) : Promise<Result<QTreeNode | undefined, FxError>>{
-    throw new Error();
+  async getQuestionsForUserTask(func: Func, ctx: SolutionContext) : Promise<Result<QTreeNode | undefined, FxError>>{
+    return ok(undefined);
   }
-  executeUserTask(func: Func, ctx: SolutionContext) : Promise<Result<any, FxError>>{
-    throw new Error();
+  async executeUserTask(func: Func, ctx: SolutionContext) : Promise<Result<any, FxError>>{
+    return ok(undefined);
   }
 }
 
@@ -169,7 +185,7 @@ class MockTelemetryReporter implements TelemetryReporter {
 
 
 class MockDialog implements Dialog{
-  communicate(msg: DialogMsg) : Promise<DialogMsg>{
+  async communicate(msg: DialogMsg) : Promise<DialogMsg>{
     throw new Error("Method not implemented.");
   }
  

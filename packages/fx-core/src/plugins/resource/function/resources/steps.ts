@@ -32,7 +32,6 @@ export enum DeploySteps {
   checkFuncAppSettings = "Checking deploy settings.",
   deploy = "Uploading zip package.",
   restart = "Restarting function app.",
-  syncTrigger = "Syncing triggers.",
 }
 
 export enum StepGroup {

@@ -23,7 +23,8 @@ export class AzureOperations {
     botClient: AzureBotService,
     resourceGroup: string,
     botChannelRegistrationName: string,
-    msaAppId: string
+    msaAppId: string,
+    displayName?: string
   ): Promise<void> {
     let botResponse = undefined;
     try {
@@ -31,7 +32,7 @@ export class AzureOperations {
         location: "global",
         kind: "bot",
         properties: {
-          displayName: botChannelRegistrationName,
+          displayName: displayName?? botChannelRegistrationName,
           endpoint: "",
           msaAppId: msaAppId,
         },
@@ -56,13 +57,14 @@ export class AzureOperations {
     resourceGroup: string,
     botChannelRegistrationName: string,
     msaAppId: string,
-    endpoint: string
+    endpoint: string,
+    displayName?: string
   ): Promise<void> {
     let botResponse = undefined;
     try {
       botResponse = await botClient.bots.update(resourceGroup, botChannelRegistrationName, {
         properties: {
-          displayName: botChannelRegistrationName,
+          displayName: displayName?? botChannelRegistrationName,
           endpoint: endpoint,
           msaAppId: msaAppId,
         },

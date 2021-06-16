@@ -603,7 +603,8 @@ export class TeamsBotImpl {
       this.config.provision.resourceGroup!,
       botChannelRegistrationName,
       this.config.scaffold.botId!,
-      endpoint
+      endpoint,
+      this.ctx?.app.name.short
     );
     Logger.info(Messages.SuccessfullyUpdatedBotMessageEndpoint);
   }
@@ -743,7 +744,8 @@ export class TeamsBotImpl {
       botClient,
       this.config.provision.resourceGroup!,
       botChannelRegistrationName,
-      botAuthCreds.clientId!
+      botAuthCreds.clientId!,
+      this.ctx?.app.name.short
     );
     Logger.info(Messages.SuccessfullyProvisionedAzureBotChannelRegistration);
 

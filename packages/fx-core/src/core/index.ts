@@ -230,7 +230,7 @@ export class FxCore implements Core {
     const namespace = func.namespace;
     const array = namespace ? namespace.split("/") : [];
     if ("" !== namespace && array.length > 0 && solution.executeUserTask) {
-      return await solution.executeUserTask(func, ctx!.solutionContext!);
+			return await solution.executeUserTask(func, ctx!.solutionContext!);
     }
     return err(FunctionRouterError(func));
   }

@@ -26,12 +26,12 @@ export const TelemetrySenderMW: Middleware = async (
   let result:Result<any, FxError>|undefined = undefined;
   try {
 		sendTelemetryEvent(core.tools.telemetryReporter, inputs,  method + "-start", properties);
-    result = await next();
+    await next();
   } catch (e) {
-    result = err(assembleError(e));
+    ctx.result = err(assembleError(e));
     throw e;
   } finally{
-    if(result?.isOk()){
+    if(ctx.result?.isOk()){
 			properties[TelemetryProperty.Success] = TelemetrySuccess.Yes;
 			sendTelemetryEvent(core.tools.telemetryReporter, inputs, method, properties);
 		}

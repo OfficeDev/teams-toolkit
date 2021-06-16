@@ -131,7 +131,7 @@ export class AppStudioPlugin implements Plugin {
         { content: appPackagePath, color: Colors.BRIGHT_MAGENTA },
         { content: " built successfully!", color: Colors.BRIGHT_WHITE }
       ]
-      await ctx.ui?.showMessage(
+      ctx.ui?.showMessage(
         "info",
         builtSuccess,
         false

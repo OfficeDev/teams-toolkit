@@ -189,17 +189,32 @@ export class CodeFlowLogin {
   }
 
   async logout(): Promise<boolean> {
-    const accountCache = String(fs.readFileSync(accountPath + this.accountName, UTF8));
-    const dataCache = await this.msalTokenCache!.getAccountByHomeId(accountCache);
-    if (dataCache) {
-      this.msalTokenCache?.removeAccount(dataCache);
+    try {
+      const accountCache = String(fs.readFileSync(accountPath + this.accountName, UTF8));
+      const dataCache = await this.msalTokenCache!.getAccountByHomeId(accountCache);
+      if (dataCache) {
+        this.msalTokenCache?.removeAccount(dataCache);
+      }
+      if (fs.existsSync(accountPath + this.accountName)) {
+        fs.writeFileSync(accountPath + this.accountName, "", UTF8);
+      }
+      this.account = undefined;
+      this.status = loggedOut;
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SingOut, {
+        [TelemetryProperty.AccountType]: this.accountName,
+        [TelemetryProperty.Success]: TelemetrySuccess.Yes
+      });
+      return true;
+    } catch (e) {
+      VsCodeLogInstance.error(
+        "[Logout " + this.accountName + "] " + e.message
+      );
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SingOut, {
+        [TelemetryProperty.AccountType]: this.accountName,
+        [TelemetryProperty.Success]: TelemetrySuccess.No
+      });
+      return false;
     }
-    if (fs.existsSync(accountPath + this.accountName)) {
-      fs.writeFileSync(accountPath + this.accountName, "", UTF8);
-    }
-    this.account = undefined;
-    this.status = loggedOut;
-    return true;
   }
 
   async getToken(refresh = true): Promise<string | undefined> {

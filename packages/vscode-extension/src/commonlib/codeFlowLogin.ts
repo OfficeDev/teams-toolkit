@@ -200,7 +200,7 @@ export class CodeFlowLogin {
       }
       this.account = undefined;
       this.status = loggedOut;
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SingOut, {
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SignOut, {
         [TelemetryProperty.AccountType]: this.accountName,
         [TelemetryProperty.Success]: TelemetrySuccess.Yes
       });
@@ -209,7 +209,7 @@ export class CodeFlowLogin {
       VsCodeLogInstance.error(
         "[Logout " + this.accountName + "] " + e.message
       );
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SingOut, {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.SignOut, e, {
         [TelemetryProperty.AccountType]: this.accountName,
         [TelemetryProperty.Success]: TelemetrySuccess.No
       });

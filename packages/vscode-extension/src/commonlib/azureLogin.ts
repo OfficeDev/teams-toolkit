@@ -247,7 +247,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       await vscode.commands.executeCommand("azure-account.logout");
       AzureAccountManager.tenantId = undefined;
       AzureAccountManager.subscriptionId = undefined;
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SingOut, {
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SignOut, {
         [TelemetryProperty.AccountType]: AccountType.Azure,
         [TelemetryProperty.Success]: TelemetrySuccess.Yes
       });
@@ -258,7 +258,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       VsCodeLogInstance.error(
         "[Logout Azure] " + e.message
       );
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SingOut, {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.SignOut, e, {
         [TelemetryProperty.AccountType]: AccountType.Azure,
         [TelemetryProperty.Success]: TelemetrySuccess.No
       });

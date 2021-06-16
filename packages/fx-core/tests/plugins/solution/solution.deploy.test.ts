@@ -16,6 +16,7 @@ import {
   TeamsAppManifest,
   Void,
   Plugin,
+  Platform,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs from "fs-extra";
@@ -41,9 +42,9 @@ function mockSolutionContext(): SolutionContext {
   config.set(GLOBAL_CONFIG, new ConfigMap);
   return {
     root: ".",
-    app: new TeamsAppManifest(),
+    // app: new TeamsAppManifest(),
     config,
-    answers: new ConfigMap(),
+    answers: {platform:Platform.VSCode},
     projectSettings: undefined,
   };
 }
@@ -147,7 +148,7 @@ describe("deploy() for Azure projects", () => {
         },
       };
       mockedCtx.config.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
-      mockedCtx.answers?.set(AzureSolutionQuestionNames.PluginSelectionDeploy, [solution.fehostPlugin.name]);
+      mockedCtx.answers![AzureSolutionQuestionNames.PluginSelectionDeploy] = [solution.fehostPlugin.name];
       mockDeployThatAlwaysSucceed(solution.fehostPlugin);
       
       const result = await solution.deploy(mockedCtx);
@@ -200,7 +201,7 @@ describe("deploy() for SPFx projects", () => {
           activeResourcePlugins: [solution.spfxPlugin.name]
         },
       };
-      mockedCtx.answers?.set(AzureSolutionQuestionNames.PluginSelectionDeploy, [solution.fehostPlugin.name]);
+      mockedCtx.answers![AzureSolutionQuestionNames.PluginSelectionDeploy] = [solution.fehostPlugin.name];
       mockDeployThatAlwaysSucceed(solution.fehostPlugin);
       
       const result = await solution.deploy(mockedCtx);

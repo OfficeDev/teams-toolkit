@@ -10,8 +10,7 @@ import {
   Result,
   err,
   MultiSelectQuestion,
-  OptionItem,
-  NodeType
+  OptionItem
 } from "@microsoft/teamsfx-api";
 
 import * as constants from "../constants";
@@ -33,7 +32,7 @@ abstract class CapabilityAddGenerator extends Generator {
       return err(result.error);
     }
     const root = result.value as QTreeNode;
-    const allNodes = flattenNodes(root).filter(node => node.data.type !== NodeType.group);
+    const allNodes = flattenNodes(root).filter(node => node.data.type !== "group");
 
     // get capabilities node
     const capabilityParamName = "capabilities";
@@ -41,7 +40,7 @@ abstract class CapabilityAddGenerator extends Generator {
     if (!capabilityNode) {
       throw Error(`${capabilityParamName} is not found in the capability add's param list.`);
     }
-    const option = (capabilityNode.data as MultiSelectQuestion).option as OptionItem[];
+    const option = (capabilityNode.data as MultiSelectQuestion).staticOptions as OptionItem[];
     const optionIds = option.map((op) => op.cliName ? op.cliName : op.id);
     if (!optionIds.includes(this.capabilityName)) {
       throw Error(`${optionIds} do not include ${this.capabilityName}`);

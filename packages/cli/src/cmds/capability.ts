@@ -6,24 +6,24 @@
 import * as path from "path";
 import { Argv, Options } from "yargs";
 
-import { ConfigMap, err, FxError, ok, Platform, Result, traverse, UserCancelError } from "@microsoft/teamsfx-api";
+import { err, FxError, ok, Result } from "@microsoft/teamsfx-api";
 
-import activate, { coreExeceutor } from "../activate";
-import * as constants from "../constants";
-import { getParamJson } from "../utils";
+import activate from "../activate";
+import { getSystemInputs } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
 import CLIUIInstance from "../userInteraction";
+import { HelpParamGenerator } from "../helpParamGenerator";
 
 export class CapabilityAddTab extends YargsCommand {
   public readonly commandHead = `tab`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Add a tab.";
-  public readonly paramPath = constants.capabilityAddTabParamPath;
-  public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
+  public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {
+    this.params = HelpParamGenerator.getYargsParamForHelp("addCapability-Tab");
     return yargs.options(this.params);
   }
 
@@ -31,7 +31,7 @@ export class CapabilityAddTab extends YargsCommand {
     const rootFolder = path.resolve(args.folder || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.AddCapStart);
 
-    CLIUIInstance.updatePresetAnswers(args);
+    CLIUIInstance.updatePresetAnswers(this.params, args);
 
     const result = await activate(rootFolder);
     if (result.isErr()) {
@@ -46,30 +46,10 @@ export class CapabilityAddTab extends YargsCommand {
       method: "addCapability"
     };
 
-    const answers = new ConfigMap();
-
     const core = result.value;
-    {
-      const result = await core.getQuestionsForUserTask!(func, Platform.CLI);
-      if (result.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCap, result.error, {
-          [TelemetryProperty.Capabilities]: this.commandHead
-        });
-        return err(result.error);
-      }
-      const node = result.value;
-      if (node) {
-        const result = await traverse(node, answers, CLIUIInstance, coreExeceutor);
-        if (result.type === "error" && result.error) {
-          return err(result.error);
-        } else if (result.type === "cancel") {
-          return err(UserCancelError);
-        }
-      }
-    }
 
     {
-      const result = await core.executeUserTask!(func, answers);
+      const result = await core.executeUserTask(func, getSystemInputs(rootFolder));
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCap, result.error, {
           [TelemetryProperty.Capabilities]: this.commandHead
@@ -90,10 +70,9 @@ export class CapabilityAddBot extends YargsCommand {
   public readonly commandHead = `bot`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Add a bot.";
-  public readonly paramPath = constants.capabilityAddBotParamPath;
-  public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
-
+  public params: { [_: string]: Options } = {};
   public builder(yargs: Argv): Argv<any> {
+    this.params = HelpParamGenerator.getYargsParamForHelp("addCapability-Bot");
     return yargs.options(this.params);
   }
 
@@ -101,7 +80,7 @@ export class CapabilityAddBot extends YargsCommand {
     const rootFolder = path.resolve(args.folder || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.AddCapStart);
 
-    CLIUIInstance.updatePresetAnswers(args);
+    CLIUIInstance.updatePresetAnswers(this.params, args);
 
     const result = await activate(rootFolder);
     if (result.isErr()) {
@@ -116,30 +95,9 @@ export class CapabilityAddBot extends YargsCommand {
       method: "addCapability"
     };
 
-    const answers = new ConfigMap();
-
     const core = result.value;
     {
-      const result = await core.getQuestionsForUserTask!(func, Platform.CLI);
-      if (result.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCap, result.error, {
-          [TelemetryProperty.Capabilities]: this.commandHead
-        });
-        return err(result.error);
-      }
-      const node = result.value;
-      if (node) {
-        const result = await traverse(node, answers, CLIUIInstance, coreExeceutor);
-        if (result.type === "error" && result.error) {
-          return err(result.error);
-        } else if (result.type === "cancel") {
-          return err(UserCancelError);
-        }
-      }
-    }
-
-    {
-      const result = await core.executeUserTask!(func, answers);
+      const result = await core.executeUserTask(func, getSystemInputs(rootFolder));
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCap, result.error, {
           [TelemetryProperty.Capabilities]: this.commandHead
@@ -160,10 +118,10 @@ export class CapabilityAddMessageExtension extends YargsCommand {
   public readonly commandHead = `messaging-extension`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Add Messaging Extensions.";
-  public readonly paramPath = constants.capabilityAddMessageExtensionParamPath;
-  public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
+  public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {
+    this.params = HelpParamGenerator.getYargsParamForHelp("addCapability-MessagingExtension");
     return yargs.options(this.params);
   }
 
@@ -171,7 +129,7 @@ export class CapabilityAddMessageExtension extends YargsCommand {
     const rootFolder = path.resolve(args.folder || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.AddCapStart);
 
-    CLIUIInstance.updatePresetAnswers(args);
+    CLIUIInstance.updatePresetAnswers(this.params, args);
 
     const result = await activate(rootFolder);
     if (result.isErr()) {
@@ -186,30 +144,9 @@ export class CapabilityAddMessageExtension extends YargsCommand {
       method: "addCapability"
     };
 
-    const answers = new ConfigMap();
-
     const core = result.value;
     {
-      const result = await core.getQuestionsForUserTask!(func, Platform.CLI);
-      if (result.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCap, result.error, {
-          [TelemetryProperty.Capabilities]: this.commandHead
-        });
-        return err(result.error);
-      }
-      const node = result.value;
-      if (node) {
-        const result = await traverse(node, answers, CLIUIInstance, coreExeceutor);
-        if (result.type === "error" && result.error) {
-          return err(result.error);
-        } else if (result.type === "cancel") {
-          return err(UserCancelError);
-        }
-      }
-    }
-
-    {
-      const result = await core.executeUserTask!(func, answers);
+      const result = await core.executeUserTask(func, getSystemInputs(rootFolder));
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCap, result.error, {
           [TelemetryProperty.Capabilities]: this.commandHead

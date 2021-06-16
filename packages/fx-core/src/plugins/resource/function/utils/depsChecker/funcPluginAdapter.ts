@@ -54,8 +54,8 @@ export class FuncPluginAdapter implements IDepsAdapter {
 
   public dotnetCheckerEnabled(): boolean {
     let enabled: boolean = true;
-    if (this._ctx.answers) {
-      enabled = <boolean>this._ctx.answers.getBoolean(this.dotnetSettingKey, true);
+    if (this._ctx.answers && this._ctx.answers[this.dotnetSettingKey] !== undefined) {
+      enabled = <boolean>this._ctx.answers[this.dotnetSettingKey] as boolean;
     }
     return enabled;
   }

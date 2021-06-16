@@ -6,16 +6,17 @@
 import * as path from "path";
 import { Argv, Options } from "yargs";
 
-import { ConfigMap, err, FxError, ok, Platform, Result, Stage, traverse, UserCancelError, LogLevel } from "@microsoft/teamsfx-api";
+import { err, FxError, ok, Result, LogLevel } from "@microsoft/teamsfx-api";
 
-import activate, { coreExeceutor } from "../activate";
+import activate from "../activate";
 import * as constants from "../constants";
-import { getParamJson, readConfigs, setSubscriptionId } from "../utils";
+import { getSystemInputs, readConfigs, setSubscriptionId } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
 import CLIUIInstance from "../userInteraction";
 import CLILogProvider from "../commonlib/log";
+import { HelpParamGenerator } from "../helpParamGenerator";
 
 export class ResourceAdd extends YargsCommand {
   public readonly commandHead = `add`;
@@ -41,10 +42,10 @@ export class ResourceAddSql extends YargsCommand {
   public readonly commandHead = `azure-sql`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Add a new SQL database.";
-  public readonly paramPath = constants.resourceAddSqlParamPath;
-  public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
+  public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {
+    this.params = HelpParamGenerator.getYargsParamForHelp("addResource-sql");
     return yargs.options(this.params);
   }
 
@@ -54,7 +55,7 @@ export class ResourceAddSql extends YargsCommand {
       [TelemetryProperty.Resources]: this.commandHead
     });
 
-    CLIUIInstance.updatePresetAnswers(args);
+    CLIUIInstance.updatePresetAnswers(this.params, args);
 
     const result = await activate(rootFolder);
     if (result.isErr()) {
@@ -64,30 +65,15 @@ export class ResourceAddSql extends YargsCommand {
       return err(result.error);
     }
 
-    const answers = new ConfigMap();
+    const func = {
+      namespace: "fx-solution-azure",
+      method: "addResource"
+    };
 
     const core = result.value;
-    {
-      const result = await core.getQuestions!(Stage.update, Platform.CLI);
-      if (result.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
-          [TelemetryProperty.Resources]: this.commandHead
-        });
-        return err(result.error);
-      }
-      const node = result.value;
-      if (node) {
-        const result = await traverse(node, answers, CLIUIInstance, coreExeceutor);
-        if (result.type === "error" && result.error) {
-          return err(result.error);
-        } else if (result.type === "cancel") {
-          return err(UserCancelError);
-        }
-      }
-    }
 
     {
-      const result = await core.update(answers);
+      const result = await core.executeUserTask(func, getSystemInputs(rootFolder));
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
           [TelemetryProperty.Resources]: this.commandHead
@@ -108,10 +94,10 @@ export class ResourceAddApim extends YargsCommand {
   public readonly commandHead = `azure-apim`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Add a new API Managment service instance.";
-  public readonly paramPath = constants.resourceAddApimParamPath;
-  public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
+  public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {
+    this.params = HelpParamGenerator.getYargsParamForHelp("addResource-apim");
     return yargs.options(this.params);
   }
 
@@ -127,7 +113,7 @@ export class ResourceAddApim extends YargsCommand {
       [TelemetryProperty.Resources]: this.commandHead
     });
 
-    CLIUIInstance.updatePresetAnswers(args);
+    CLIUIInstance.updatePresetAnswers(this.params, args);
 
     {
       const result = await setSubscriptionId(args.subscription, rootFolder);
@@ -147,30 +133,14 @@ export class ResourceAddApim extends YargsCommand {
       return err(result.error);
     }
 
-    const answers = new ConfigMap();
+    const func = {
+      namespace: "fx-solution-azure",
+      method: "addResource"
+    };
 
     const core = result.value;
     {
-      const result = await core.getQuestions!(Stage.update, Platform.CLI);
-      if (result.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
-          [TelemetryProperty.Resources]: this.commandHead
-        });
-        return err(result.error);
-      }
-      const node = result.value;
-      if (node) {
-        const result = await traverse(node, answers, CLIUIInstance, coreExeceutor);
-        if (result.type === "error" && result.error) {
-          return err(result.error);
-        } else if (result.type === "cancel") {
-          return err(UserCancelError);
-        }
-      }
-    }
-
-    {
-      const result = await core.update(answers);
+      const result = await core.executeUserTask(func, getSystemInputs(rootFolder));
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
           [TelemetryProperty.Resources]: this.commandHead
@@ -191,10 +161,10 @@ export class ResourceAddFunction extends YargsCommand {
   public readonly commandHead = `azure-function`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Add a new function app.";
-  public readonly paramPath = constants.resourceAddFunctionParamPath;
-  public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
+  public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {
+    this.params = HelpParamGenerator.getYargsParamForHelp("addResource-function");
     return yargs.options(this.params);
   }
 
@@ -204,7 +174,7 @@ export class ResourceAddFunction extends YargsCommand {
       [TelemetryProperty.Resources]: this.commandHead
     });
 
-    CLIUIInstance.updatePresetAnswers(args);
+    CLIUIInstance.updatePresetAnswers(this.params, args);
 
     const result = await activate(rootFolder);
     if (result.isErr()) {
@@ -214,30 +184,14 @@ export class ResourceAddFunction extends YargsCommand {
       return err(result.error);
     }
 
-    const answers = new ConfigMap();
+    const func = {
+      namespace: "fx-solution-azure",
+      method: "addResource"
+    };
 
     const core = result.value;
     {
-      const result = await core.getQuestions!(Stage.update, Platform.CLI);
-      if (result.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
-          [TelemetryProperty.Resources]: this.commandHead
-        });
-        return err(result.error);
-      }
-      const node = result.value;
-      if (node) {
-        const result = await traverse(node, answers, CLIUIInstance, coreExeceutor);
-        if (result.type === "error" && result.error) {
-          return err(result.error);
-        } else if (result.type === "cancel") {
-          return err(UserCancelError);
-        }
-      }
-    }
-
-    {
-      const result = await core.update(answers);
+      const result = await core.executeUserTask(func, getSystemInputs(rootFolder));
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
           [TelemetryProperty.Resources]: this.commandHead
@@ -279,9 +233,10 @@ export class ResourceShowFunction extends YargsCommand {
   public readonly command = `${this.commandHead}`;
   public readonly description = "Azure Functions details";
   public readonly paramPath = constants.resourceShowFunctionParamPath;
-  public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
+  public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {
+    this.params = HelpParamGenerator.getYargsParamForHelp("ResourceShowFunction");
     return yargs.options(this.params);
   }
 
@@ -308,9 +263,10 @@ export class ResourceShowSQL extends YargsCommand {
   public readonly command = `${this.commandHead}`;
   public readonly description = "Azure SQL details";
   public readonly paramPath = constants.resourceShowSQLParamPath;
-  public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
+  public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {
+    this.params = HelpParamGenerator.getYargsParamForHelp("ResourceShowSQL");
     return yargs.options(this.params);
   }
 
@@ -337,9 +293,10 @@ export class ResourceShowApim extends YargsCommand {
   public readonly command = `${this.commandHead}`;
   public readonly description = "Azure APIM details";
   public readonly paramPath = constants.resourceShowApimParamPath;
-  public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
+  public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {
+    this.params = HelpParamGenerator.getYargsParamForHelp("ResourceShowApim");
     return yargs.options(this.params);
   }
 
@@ -366,9 +323,10 @@ export class ResourceList extends YargsCommand {
   public readonly command = `${this.commandHead}`;
   public readonly description = "List all of the resources in the current application";
   public readonly paramPath = constants.resourceListParamPath;
-  public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
+  public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {
+    this.params = HelpParamGenerator.getYargsParamForHelp("ResourceList");
     return yargs.options(this.params);
   }
 

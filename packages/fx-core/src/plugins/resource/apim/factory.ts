@@ -88,7 +88,7 @@ export class Factory {
     ctx: PluginContext,
     solutionConfig: SolutionConfig
   ): Promise<IQuestionManager> {
-    switch (ctx.platform) {
+    switch (ctx.answers?.platform) {
       case Platform.VSCode:
         // Lazy init apim service to get the latest subscription id in configuration
         const lazyApimService = new Lazy<ApimService>(
@@ -139,6 +139,7 @@ export class Factory {
           existingOpenApiDocumentFunc
         );
       case Platform.CLI:
+      case Platform.CLI_HELP:
         const cliApimServiceNameQuestion = new CLI.ApimServiceNameQuestion();
         const cliApimResourceGroupQuestion = new CLI.ApimResourceGroupQuestion();
         const cliOpenApiDocumentQuestion = new CLI.OpenApiDocumentQuestion();

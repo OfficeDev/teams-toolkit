@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import {
-  ConfigMap,
-  FileQuestion,
-  NodeType,
+  FolderQuestion,
+  Inputs,
   OptionItem,
+  Platform,
   SingleSelectQuestion,
   TextInputQuestion,
 } from "@microsoft/teamsfx-api";
@@ -25,16 +25,17 @@ export enum CoreQuestionNames {
 export const ProjectNamePattern = "^[a-zA-Z][\\da-zA-Z]+$";
 
 export const QuestionAppName: TextInputQuestion = {
-  type: NodeType.text,
+  type: "text",
   name: CoreQuestionNames.AppName,
   title: "Application name",
   validation: {
-    validFunc: async (appName: string, answer?: ConfigMap): Promise<string | undefined> => {
-      const folder = answer?.getString(CoreQuestionNames.Foler);
+    validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
+      const folder = previousInputs![CoreQuestionNames.Foler] as string;
       if (!folder) return undefined;
       const schema = {
         pattern: ProjectNamePattern,
       };
+      const appName = input as string;
       const validateResult = jsonschema.validate(appName, schema);
       if (validateResult.errors && validateResult.errors.length > 0) {
         return "Application name must start with a letter and can only contain letters and digits.";
@@ -48,50 +49,61 @@ export const QuestionAppName: TextInputQuestion = {
   placeholder: "Application name",
 };
 
-export const QuestionRootFolder: FileQuestion = {
-  type: NodeType.folder,
+export const QuestionRootFolder: FolderQuestion = {
+  type: "folder",
   name: CoreQuestionNames.Foler,
-  title: "Workspace folder",
-  validation: {
-    required: true,
-  },
+  title: "Workspace folder"
 };
 
 export const QuestionSelectSolution: SingleSelectQuestion = {
-  type: NodeType.singleSelect,
+  type: "singleSelect",
   name: CoreQuestionNames.Solution,
   title: "Select a solution",
-  option: [],
+  staticOptions: [],
   skipSingleOption: true,
 };
 
-export const ScratchOptionYes: OptionItem = {
+export const ScratchOptionYesVSC: OptionItem = {
   id: "yes",
   label: "$(new-folder) Create a new Teams app",
   detail: "Use the Teams Toolkit to create a new application.",
 };
 
-export const ScratchOptionNo: OptionItem = {
+export const ScratchOptionNoVSC: OptionItem = {
   id: "no",
   label: "$(heart) Start from a sample",
   detail: "Use an existing sample as a starting point for your new application.",
 };
 
-export const ScratchOrSampleSelect: SingleSelectQuestion = {
-  type: NodeType.singleSelect,
-  name: CoreQuestionNames.CreateFromScratch,
-  title: "Teams Toolkit: Create a new Teams app",
-  option: [ScratchOptionYes, ScratchOptionNo],
-  default: ScratchOptionYes.id,
-  placeholder: "Select an option",
-  skipSingleOption: true,
+export const ScratchOptionYes: OptionItem = {
+  id: "yes",
+  label: "Create a new Teams app",
+  detail: "Use the Teams Toolkit to create a new application.",
 };
 
+export const ScratchOptionNo: OptionItem = {
+  id: "no",
+  label: "Start from a sample",
+  detail: "Use an existing sample as a starting point for your new application.",
+};
+
+export function getCreateNewOrFromSampleQuestion(platform: Platform): SingleSelectQuestion {
+  return {
+    type: "singleSelect",
+    name: CoreQuestionNames.CreateFromScratch,
+    title: "Teams Toolkit: Create a new Teams app",
+    staticOptions: (platform === Platform.VSCode)? [ScratchOptionYesVSC, ScratchOptionNoVSC]:[ScratchOptionYes, ScratchOptionNo],
+    default: ScratchOptionYes.id,
+    placeholder: "Select an option",
+    skipSingleOption: true,
+  };
+}
+
 export const SampleSelect: SingleSelectQuestion = {
-  type: NodeType.singleSelect,
+  type: "singleSelect",
   name: CoreQuestionNames.Samples,
   title: "Start from a sample",
-  option: [
+  staticOptions: [
     {
       id: "todo-list-with-Azure-backend",
       label: "Todo List with backend on Azure",

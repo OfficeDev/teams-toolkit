@@ -3,18 +3,19 @@
 
 "use strict";
 
+import path from "path";
 import { Argv, Options } from "yargs";
-import * as path from "path";
 
-import { FxError, err, ok, Result, ConfigMap, Stage, Platform, traverse, UserCancelError } from "@microsoft/teamsfx-api";
+import { FxError, err, ok, Result, Stage } from "@microsoft/teamsfx-api";
 
-import activate, { coreExeceutor } from "../activate";
+import activate from "../activate";
 import * as constants from "../constants";
-import { getParamJson, setSubscriptionId } from "../utils";
+import { getSystemInputs, setSubscriptionId } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
 import CLIUIInstance from "../userInteraction";
+import { HelpParamGenerator } from "../helpParamGenerator";
 
 export default class Provision extends YargsCommand {
   public readonly commandHead = `provision`;
@@ -22,9 +23,10 @@ export default class Provision extends YargsCommand {
   public readonly description = "Provision the cloud resources in the current application.";
   public readonly paramPath = constants.provisionParamPath;
 
-  public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
+  public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {
+    this.params = HelpParamGenerator.getYargsParamForHelp(Stage.provision);
     return yargs.version(false).options(this.params);
   }
 
@@ -32,7 +34,7 @@ export default class Provision extends YargsCommand {
     const rootFolder = path.resolve(args.folder || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.ProvisionStart);
 
-    CLIUIInstance.updatePresetAnswers(args);
+    CLIUIInstance.updatePresetAnswers(this.params, args);
 
     {
       const result = await setSubscriptionId(args.subscription, rootFolder);
@@ -48,28 +50,9 @@ export default class Provision extends YargsCommand {
       return err(result.error);
     }
 
-    const answers = new ConfigMap();
-
     const core = result.value;
     {
-      const result = await core.getQuestions!(Stage.provision, Platform.CLI);
-      if (result.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Provision, result.error);
-        return err(result.error);
-      }
-      const node = result.value;
-      if (node) {
-        const result = await traverse(node, answers, CLIUIInstance, coreExeceutor);
-        if (result.type === "error" && result.error) {
-          return err(result.error);
-        } else if (result.type === "cancel") {
-          return err(UserCancelError);
-        }
-      }
-    }
-
-    {
-      const result = await core.provision(answers);
+      const result = await core.provisionResources(getSystemInputs(rootFolder));
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Provision, result.error);
         return err(result.error);

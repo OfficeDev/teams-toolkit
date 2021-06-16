@@ -17,6 +17,7 @@ import { FunctionPlugin } from "../../../../../src/plugins/resource/function/ind
 import { FxResult } from "../../../../../src/plugins/resource/function/result";
 import { QuestionKey } from "../../../../../src/plugins/resource/function/enums";
 import { getTemplatesFolder } from "../../../../../src";
+import { Platform } from "@microsoft/teamsfx-api";
 
 const context: any = {
   configOfOtherPlugins: new Map<string, Map<string, string>>([
@@ -76,7 +77,7 @@ describe(FunctionPluginInfo.pluginName, () => {
 
     it("Test pre-scaffold without function name", async () => {
       // Arrange
-      context.answers = new Map<string, string>();
+      context.answers = {platform: Platform.VSCode};
       const plugin: FunctionPlugin = new FunctionPlugin();
 
       // Act
@@ -88,9 +89,8 @@ describe(FunctionPluginInfo.pluginName, () => {
 
     it("Test scaffold", async () => {
       // Arrange
-      context.answers = new Map<string, string>([
-        [QuestionKey.functionName, "httpTrigger"]
-      ]);
+      context.answers = context.answers = {platform: Platform.VSCode};
+      context.answers [QuestionKey.functionName] = "httpTrigger";
       const zip = new AdmZip();
       zip.addFile("test.js.tpl", Buffer.from("{{appName}} {{functionName}}"));
       sinon.stub(fetch, "getTemplateURL").resolves(undefined);
@@ -108,9 +108,8 @@ describe(FunctionPluginInfo.pluginName, () => {
 
     it("Test scaffold with additional function", async () => {
       // Arrange
-      context.answers = new Map<string, string>([
-        [QuestionKey.functionName, "httpTrigger"]
-      ]);
+      context.answers = context.answers = {platform: Platform.VSCode};
+      context.answers [QuestionKey.functionName] = "httpTrigger";
       const zip = new AdmZip();
       zip.addFile("test.js.tpl", Buffer.from("{{appName}} {{functionName}}"));
       sinon.stub(fetch, "getTemplateURL").resolves(undefined);
@@ -128,9 +127,8 @@ describe(FunctionPluginInfo.pluginName, () => {
 
     it("Test scaffold with fallback in JS", async () => {
       // Arrange
-      context.answers = new Map<string, string>([
-        [QuestionKey.functionName, "httpTrigger"]
-      ]);
+      context.answers = context.answers = {platform: Platform.VSCode};
+      context.answers [QuestionKey.functionName] = "httpTrigger";
       sinon.stub(fetch, "getTemplateURL").rejects(new Error());
       const plugin: FunctionPlugin = new FunctionPlugin();
 

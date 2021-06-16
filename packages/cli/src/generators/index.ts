@@ -18,7 +18,7 @@ import CLILogProvider from "../commonlib/log";
 import * as constants from "../constants";
 import { CapabilityAddBotGenerator, CapabilityAddTabGenerator, CapabilityAddMessageExtensionGenerator } from "./capabilityAdd";
 
-CLILogProvider.setLogLevel(constants.CLILogLevel.verbose);
+CLILogProvider.setLogLevel(constants.CLILogLevel.debug);
 
 const execAsync = promisify(exec);
 
@@ -76,49 +76,49 @@ const RunCommand = async (command: string, folder: string) => {
   }
 
   if (runNewCommandForResourceAdd) {
-    await RunCommand(newCommandForResourceAdd, tmpFolder);
+    // await RunCommand(newCommandForResourceAdd, tmpFolder);
   }
   
   if (runResourceAddGenerator) {
     const resourceAddFunctionGenerator = new ResourceAddFunctionGenerator();
-    await resourceAddFunctionGenerator.run(projectPathForResourceAdd);
+    await resourceAddFunctionGenerator.run();
 
     const resourceAddSqlGenerator = new ResourceAddSqlGenerator();
-    await resourceAddSqlGenerator.run(projectPathForResourceAdd);
+    await resourceAddSqlGenerator.run();
 
     const resourceAddApimGenerator = new ResourceAddApimGenerator();
-    await resourceAddApimGenerator.run(projectPathForResourceAdd);
+    await resourceAddApimGenerator.run();
 
     await fs.remove(projectPathForResourceAdd);
   }
 
   if (runNewCommandForCapabilityAdd) {
-    await RunCommand(newCommandForCapabilityAddTab, tmpFolder);
-    await RunCommand(newCommandForCapabilityAddBot, tmpFolder);
-    await RunCommand(newCommandForCapabilityAddMessageExtension, tmpFolder);
+    // await RunCommand(newCommandForCapabilityAddTab, tmpFolder);
+    // await RunCommand(newCommandForCapabilityAddBot, tmpFolder);
+    // await RunCommand(newCommandForCapabilityAddMessageExtension, tmpFolder);
   }
 
   if (runCapabilityAddGenerator) {
     const capabilityAddTabGenerator = new CapabilityAddTabGenerator();
-    await capabilityAddTabGenerator.run(projectPathForCapabilityAddTab);
+    await capabilityAddTabGenerator.run();
     await fs.remove(projectPathForCapabilityAddTab);
 
     const capabilityAddBotGenerator = new CapabilityAddBotGenerator();
-    await capabilityAddBotGenerator.run(projectPathForCapabilityAddBot);
+    await capabilityAddBotGenerator.run();
     await fs.remove(projectPathForCapabilityAddBot);
 
     const capabilityAddMessageExtensionGenerator = new CapabilityAddMessageExtensionGenerator();
-    await capabilityAddMessageExtensionGenerator.run(projectPathForCapabilityAddMessageExtension);
+    await capabilityAddMessageExtensionGenerator.run();
     await fs.remove(projectPathForCapabilityAddMessageExtension);
   }
 
   if (runNewCommandForProvision) {
-    await RunCommand(newCommandForProvision, tmpFolder);
+    // await RunCommand(newCommandForProvision, tmpFolder);
   }
 
   if (runProvisionGenerator) {
     const provisionGenerator = new ProvisionGenerator();
-    await provisionGenerator.run(projectPathForProvision);
+    await provisionGenerator.run();
     await fs.remove(projectPathForProvision);
   }
 })();

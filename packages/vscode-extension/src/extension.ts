@@ -36,7 +36,7 @@ export async function activate(context: vscode.ExtensionContext) {
   // 1.2 Register the creating command.
   const updateCmd = vscode.commands.registerCommand(
     "fx-extension.update",
-    handlers.updateProjectHandler
+    handlers.addResourceHandler
   );
   context.subscriptions.push(updateCmd);
 
@@ -75,14 +75,7 @@ export async function activate(context: vscode.ExtensionContext) {
     handlers.publishHandler
   );
   context.subscriptions.push(publishCmd);
-
-  // 1.6 update aad command
-  const updateAadCmd = vscode.commands.registerCommand(
-    "fx-extension.updateAad",
-    handlers.updateAADHandler
-  );
-  context.subscriptions.push(updateAadCmd);
-
+ 
   // 1.7 validate dependencies command (hide from UI)
   const validateDependenciesCmd = vscode.commands.registerCommand(
     "fx-extension.validate-dependencies",

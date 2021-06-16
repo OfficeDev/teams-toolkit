@@ -35,7 +35,7 @@ export namespace ExtTelemetry {
       case Stage.create:
         return TelemetryEvent.CreateProject;
       case Stage.update:
-        return TelemetryEvent.UpdateProject;
+        return TelemetryEvent.AddResource;
       case Stage.provision:
         return TelemetryEvent.Provision;
       case Stage.deploy:

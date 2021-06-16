@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
+import { UserInteraction } from "../qm/ui";
 import { Dialog } from "./dialog";
 import { LogProvider } from "./log";
 import { TokenProvider } from "./login";
@@ -14,11 +15,12 @@ export * from "./telemetry";
 export * from "./dialog";
 export * from "./tree";
 
-export interface ToolsProvider
+export interface Tools
 {
     logProvider: LogProvider;
     tokenProvider: TokenProvider;
     telemetryReporter: TelemetryReporter;
-    treeProvider: TreeProvider;
+    treeProvider?: TreeProvider;
     dialog: Dialog;
+    ui: UserInteraction;
 }

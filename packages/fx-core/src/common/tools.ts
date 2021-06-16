@@ -402,3 +402,4 @@ export async function askSubscription(azureAccountProvider:AzureAccountProvider,
   }  
   return ok(resultSub);
 }
+

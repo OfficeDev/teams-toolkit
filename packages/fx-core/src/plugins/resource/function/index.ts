@@ -7,7 +7,6 @@ import {
   PluginContext,
   QTreeNode,
   Result,
-  Stage,
   SystemError,
   UserError,
   err,
@@ -26,7 +25,7 @@ import { FunctionPluginImpl } from "./plugin";
 import { FxResult, FunctionPluginResultFactory as ResultFactory } from "./result";
 import { FunctionEvent } from "./enums";
 import { Logger } from "./utils/logger";
-import { telemetryHelper } from "./utils/telemetry-helper";
+import { TelemetryHelper } from "./utils/telemetry-helper";
 
 // This layer tries to provide a uniform exception handling for function plugin.
 export class FunctionPlugin implements Plugin {
@@ -135,14 +134,14 @@ export class FunctionPlugin implements Plugin {
     sendTelemetry = true
   ): Promise<FxResult> {
     try {
-      sendTelemetry && telemetryHelper.sendStartEvent(ctx, event);
+      sendTelemetry && TelemetryHelper.sendStartEvent(ctx, event);
       const res: FxResult = await fn();
-      sendTelemetry && telemetryHelper.sendResultEvent(ctx, event, res);
+      sendTelemetry && TelemetryHelper.sendResultEvent(ctx, event, res);
       return res;
     } catch (e) {
       if (e instanceof UserError || e instanceof SystemError) {
         const res = err(e);
-        sendTelemetry && telemetryHelper.sendResultEvent(ctx, event, res);
+        sendTelemetry && TelemetryHelper.sendResultEvent(ctx, event, res);
         return res;
       }
 
@@ -151,14 +150,14 @@ export class FunctionPlugin implements Plugin {
           e.errorType === ErrorType.User
             ? ResultFactory.UserError(e.getMessage(), e.code, undefined, e, e.stack)
             : ResultFactory.SystemError(e.getMessage(), e.code, undefined, e, e.stack);
-        sendTelemetry && telemetryHelper.sendResultEvent(ctx, event, res);
+        sendTelemetry && TelemetryHelper.sendResultEvent(ctx, event, res);
         return res;
       }
 
       const UnhandledErrorCode = "UnhandledError";
       /* Never send unhandled error message for privacy concern. */
       sendTelemetry &&
-        telemetryHelper.sendResultEvent(
+        TelemetryHelper.sendResultEvent(
           ctx,
           event,
           ResultFactory.SystemError("Got an unhandled error", UnhandledErrorCode)

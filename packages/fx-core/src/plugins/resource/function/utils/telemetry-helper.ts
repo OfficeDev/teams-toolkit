@@ -8,7 +8,7 @@ import { FxResult } from "../result";
 import { FunctionEvent, TelemetryKey, TelemetryValue } from "../enums";
 import { DepsCheckerEvent } from "./depsChecker/common";
 
-export class telemetryHelper {
+export class TelemetryHelper {
   static fillCommonProperty(ctx: PluginContext, properties: { [key: string]: string }) {
     properties[TelemetryKey.Component] = FunctionPluginInfo.pluginName;
     properties[TelemetryKey.AppId] =

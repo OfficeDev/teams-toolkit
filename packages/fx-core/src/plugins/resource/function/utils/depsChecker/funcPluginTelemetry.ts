@@ -7,7 +7,7 @@ import { performance } from "perf_hooks";
 import { PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { IDepsTelemetry } from "./checker";
 import { DepsCheckerEvent, TelemetryMessurement } from "./common";
-import { telemetryHelper } from "../telemetry-helper";
+import { TelemetryHelper } from "../telemetry-helper";
 import { TelemetryKey } from "../../enums";
 
 export class FuncPluginTelemetry implements IDepsTelemetry {
@@ -30,7 +30,7 @@ export class FuncPluginTelemetry implements IDepsTelemetry {
     if (timecost) {
       measurements[TelemetryMessurement.completionTime] = timecost;
     }
-    telemetryHelper.sendSuccessEvent(this._ctx, eventName, FuncPluginTelemetry.getCommonProps(), measurements);
+    TelemetryHelper.sendSuccessEvent(this._ctx, eventName, FuncPluginTelemetry.getCommonProps(), measurements);
   }
 
   public async sendEventWithDuration(
@@ -47,12 +47,12 @@ export class FuncPluginTelemetry implements IDepsTelemetry {
       measurements[TelemetryMessurement.completionTime] = timecost;
     }
 
-    telemetryHelper.sendSuccessEvent(this._ctx, eventName, FuncPluginTelemetry.getCommonProps(), measurements);
+    TelemetryHelper.sendSuccessEvent(this._ctx, eventName, FuncPluginTelemetry.getCommonProps(), measurements);
   }
 
   public sendUserErrorEvent(eventName: DepsCheckerEvent, errorMessage: string): void {
     const error = new UserError(eventName, errorMessage, this._source);
-    telemetryHelper.sendErrorEvent(this._ctx, eventName, error, FuncPluginTelemetry.getCommonProps());
+    TelemetryHelper.sendErrorEvent(this._ctx, eventName, error, FuncPluginTelemetry.getCommonProps());
   }
 
   public sendSystemErrorEvent(
@@ -66,6 +66,6 @@ export class FuncPluginTelemetry implements IDepsTelemetry {
       this._source,
       errorStack
     );
-    telemetryHelper.sendErrorEvent(this._ctx, eventName, error, FuncPluginTelemetry.getCommonProps());
+    TelemetryHelper.sendErrorEvent(this._ctx, eventName, error, FuncPluginTelemetry.getCommonProps());
   }
 }

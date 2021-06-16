@@ -142,7 +142,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
   };
 
   const selectSubscriptionCallback = async (args?: any[]): Promise<Result<null, FxError>> => {
-    tools.telemetryReporter.sendTelemetryEvent(TelemetryEvent.SelectSubscription, {
+    tools.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.SelectSubscription, {
       [TelemetryProperty.TriggerFrom]:
         args && args.toString() === "TreeView"
           ? TelemetryTiggerFrom.TreeView

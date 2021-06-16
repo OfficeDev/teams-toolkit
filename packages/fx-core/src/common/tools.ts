@@ -7,6 +7,8 @@ import { promisify } from "util";
 import axios from "axios";
 import AdmZip from "adm-zip";
 import * as path from "path";
+import * as uuid from "uuid";
+import { glob } from "glob";
 import { getResourceFolder } from "..";
 
 const execAsync = promisify(exec);
@@ -215,6 +217,21 @@ export async function saveFilesRecursively(
         await fs.writeFile(filePath, entry.getData());
       })
   );
+}
+
+export async function downloadSampleHook(sampleId: string, sampleAppPath: string) {
+  // A temporary solution to avoid duplicate componentId
+  if (sampleId === "todo-list-SPFx") {
+    const originalId = "c314487b-f51c-474d-823e-a2c3ec82b1ff";
+    const componentId = uuid.v4();
+    const files = glob.sync(`${sampleAppPath}/**/*.json`, { nodir: true, dot: true });
+    files.forEach(async function (file) {
+      let content = (await fs.readFile(file)).toString();
+      const reg = new RegExp(originalId, "g");
+      content = content.replace(reg, componentId);
+      await fs.writeFile(file, content);
+    });         
+  }
 }
 
 export const deepCopy = <T>(target: T): T => {

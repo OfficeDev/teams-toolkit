@@ -8,6 +8,8 @@ import { Commands } from "./Commands";
 import axios from "axios";
 import * as AdmZip from "adm-zip";
 import * as fs from "fs-extra";
+import * as uuid from "uuid";
+import { glob } from "glob";
 import AzureAccountManager from "../commonlib/azureLogin";
 import AppStudioTokenInstance from "../commonlib/appStudioLogin";
 import { runCommand } from "../handlers";
@@ -157,6 +159,7 @@ export class WebviewPanel {
               msg.data.appFolder,
               folder[0].fsPath
             );
+            await this.downloadSampleHook(msg.data.appFolder, sampleAppPath);
             downloadSuccess = true;
             vscode.commands.executeCommand(
               "vscode.openFolder",
@@ -280,6 +283,21 @@ export class WebviewPanel {
           await fs.writeFile(filePath, entry.getData());
         })
     );
+  }
+
+  private async downloadSampleHook(sampleId: string, sampleAppPath: string) {
+    // A temporary solution to avoid duplicate componentId
+    if (sampleId === "todo-list-SPFx") {
+      const originalId = "c314487b-f51c-474d-823e-a2c3ec82b1ff";
+      const componentId = uuid.v4();
+      const files = glob.sync(`${sampleAppPath}/**/*.json`, { nodir: true, dot: true });
+      files.forEach(async function (file) {
+        let content = (await fs.readFile(file)).toString();
+        const reg = new RegExp(originalId, "g");
+        content = content.replace(reg, componentId);
+        await fs.writeFile(file, content);
+      });         
+    }
   }
 
   private getHtmlForWebview(panelType: PanelType) {

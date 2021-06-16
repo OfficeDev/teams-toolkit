@@ -60,7 +60,7 @@ export function sendTelemetryEvent(
 		}
 	}
 	telemetryReporter.sendTelemetryEvent(eventName, properties, measurements);
-	Logger.info(`sendTelemetryEvent, event:${eventName}, properties:${properties}`);
+	Logger.debug(`sendTelemetryEvent, event:${eventName}, properties:${JSON.stringify(properties)}`);
 }
 
 export function sendTelemetryErrorEvent(
@@ -98,6 +98,6 @@ export function sendTelemetryErrorEvent(
 	properties[TelemetryProperty.ErrorMessage] = error.message;
 
 	telemetryReporter.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
-	
-	Logger.info(`sendTelemetryErrorEvent, event:${eventName}, properties:${properties}, errorProps:${errorProps}`);
+
+	Logger.debug(`sendTelemetryErrorEvent, event:${eventName}, properties:${JSON.stringify(properties)}, errorProps:${JSON.stringify(errorProps)}`);
 }

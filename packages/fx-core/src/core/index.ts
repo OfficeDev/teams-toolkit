@@ -181,19 +181,19 @@ export class FxCore implements Core {
       progress.start();
       try {
         progress.next(`Downloading from '${url}'`);
-				sendTelemetryEvent(this.tools.telemetryReporter, inputs, TelemetryEvent.DownloadSampleStart, { [TelemetryProperty.SampleAppName]: sample.id });
+				sendTelemetryEvent(this.tools.telemetryReporter, inputs, TelemetryEvent.DownloadSampleStart, { [TelemetryProperty.SampleAppName]: sample.id, module:"fx-core" });
         const fetchRes = await fetchCodeZip(url);
         progress.next("Unzipping the sample package");
         if (fetchRes !== undefined) {
           await saveFilesRecursively(new AdmZip(fetchRes.data), sampleId, folder);
-					sendTelemetryEvent(this.tools.telemetryReporter, inputs, TelemetryEvent.DownloadSample, { [TelemetryProperty.SampleAppName]: sample.id, [TelemetryProperty.Success]: TelemetrySuccess.Yes });
+					sendTelemetryEvent(this.tools.telemetryReporter, inputs, TelemetryEvent.DownloadSample, { [TelemetryProperty.SampleAppName]: sample.id, [TelemetryProperty.Success]: TelemetrySuccess.Yes, module:"fx-core" });
           return ok(path.join(folder, sampleId));
         } else { 
-					sendTelemetryErrorEvent(this.tools.telemetryReporter, inputs, TelemetryEvent.DownloadSample, FetchSampleError(), { [TelemetryProperty.SampleAppName]: sample.id, [TelemetryProperty.Success]: TelemetrySuccess.No });
+					sendTelemetryErrorEvent(this.tools.telemetryReporter, inputs, TelemetryEvent.DownloadSample, FetchSampleError(), { [TelemetryProperty.SampleAppName]: sample.id, [TelemetryProperty.Success]: TelemetrySuccess.No, module:"fx-core" });
           return err(FetchSampleError());
         }
       } catch(e){
-				sendTelemetryErrorEvent(this.tools.telemetryReporter, inputs, TelemetryEvent.DownloadSample, assembleError(e), { [TelemetryProperty.SampleAppName]: sample.id, [TelemetryProperty.Success]: TelemetrySuccess.No });
+				sendTelemetryErrorEvent(this.tools.telemetryReporter, inputs, TelemetryEvent.DownloadSample, assembleError(e), { [TelemetryProperty.SampleAppName]: sample.id, [TelemetryProperty.Success]: TelemetrySuccess.No, module:"fx-core" });
 			} finally {
         progress.end();
       } 

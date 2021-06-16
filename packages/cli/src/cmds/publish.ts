@@ -6,7 +6,6 @@
 import { Argv, Options } from "yargs";
 import { FxError, err, ok, Result, Platform, Func, Stage } from "@microsoft/teamsfx-api";
 import activate from "../activate";
-import * as constants from "../constants";
 import { YargsCommand } from "../yargsCommand";
 import { argsToInputs } from "../utils";
 import CliTelemetry from "../telemetry/cliTelemetry";
@@ -17,7 +16,6 @@ export default class Publish extends YargsCommand {
   public readonly commandHead = `publish`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Publish the app to Teams.";
-  public readonly paramPath = constants.publishParamPath;
 
   public params: { [_: string]: Options } = {};
 

@@ -9,7 +9,6 @@ import { Argv, Options } from "yargs";
 import { FxError, err, ok, Result, Stage } from "@microsoft/teamsfx-api";
 
 import activate from "../activate";
-import * as constants from "../constants";
 import { getSystemInputs, setSubscriptionId } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 import CliTelemetry from "../telemetry/cliTelemetry";
@@ -21,7 +20,6 @@ export default class Provision extends YargsCommand {
   public readonly commandHead = `provision`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Provision the cloud resources in the current application.";
-  public readonly paramPath = constants.provisionParamPath;
 
   public params: { [_: string]: Options } = {};
 

@@ -289,3 +289,16 @@ export function isValidProject(workspacePath?: string): boolean {
   }
   return true;
 }
+
+export function getTeamsAppId(rootFolder: string | undefined) {
+  if (rootFolder) {
+    if (isValidProject(rootFolder)) {
+      const env = "default";
+      const envJsonPath = path.join(rootFolder, `.${ConfigFolderName}/env.${env}.json`);
+      const envJson = JSON.parse(fs.readFileSync(envJsonPath, "utf8"));
+      return envJson.solution.remoteTeamsAppId;
+    }
+  }
+
+  return undefined;
+}

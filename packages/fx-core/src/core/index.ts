@@ -62,6 +62,7 @@ import {
   serializeDict,
   sperateSecretData,
   downloadSampleHook,
+  getTeamsAppId
 } from "../common/tools";
 import { VscodeManager } from "./vscodeManager";
 import {
@@ -270,55 +271,14 @@ class CoreImpl implements Core {
     if (scratch === ScratchOptionNo.id) {
       const samples = answers?.getOptionItem(CoreQuestionNames.Samples);
       if (samples && samples.data && folder) {
-          const url = samples.data as string;
-          const sampleId = samples.id;
-
-          const sampleAppPath = path.resolve(folder, sampleId);
-          if (
-            (await fs.pathExists(sampleAppPath)) &&
-            (await fs.readdir(sampleAppPath)).length > 0
-          ) {
-            return err(
-              new UserError(
-                error.CoreErrorNames.ProjectFolderExist,
-                `Path ${sampleAppPath} alreay exists. Select a different folder.`,
-                error.CoreSource
-              )
-            );
-          }
-
-          const progress = this.ctx.dialog.createProgressBar("Fetch sample app", 2);
-          progress.start();
-          try {
-            progress.next(`Downloading from '${url}'`);
-            const fetchRes = await fetchCodeZip(url);
-            progress.next("Unzipping the sample package");
-            if (fetchRes !== undefined) {
-              await saveFilesRecursively(new AdmZip(fetchRes.data), sampleId, folder);
-              await downloadSampleHook(sampleId, sampleAppPath);
-              if (this.ctx.platform === Platform.VSCode) {
-                await this.ctx.dialog?.communicate(
-                  new DialogMsg(DialogType.Ask, {
-                    type: QuestionType.UpdateGlobalState,
-                    description: "openSampleReadme",
-                  })
-                );
-              }
-
-              await this.ctx.dialog?.communicate(
-                new DialogMsg(DialogType.Ask, {
-                  type: QuestionType.OpenFolder,
-                  description: path.join(folder, sampleId),
-                })
-              );
-            } else {
-              progress.end();
-              return err(error.DownloadSampleFail());
-            }
-          } finally {
-            progress.end();
-          }
-        return ok(null);
+        this.sendTelemetryEvent(TelemetryEvent.DownloadSampleStart, { [TelemetryProperty.SampleAppName]: samples.id });
+        const result = await this.downloadSample(samples, folder);
+        if (result.isOk()) {
+          this.sendTelemetryEvent(TelemetryEvent.DownloadSample, { [TelemetryProperty.SampleAppName]: samples.id, [TelemetryProperty.Success]: TelemetrySuccess.Yes });
+        } else {
+          this.sendTelemetryErrorEvent(TelemetryEvent.DownloadSample, result.error, { [TelemetryProperty.SampleAppName]: samples.id, [TelemetryProperty.Success]: TelemetrySuccess.No });
+        }
+        return result;
       }
     }
 
@@ -445,6 +405,114 @@ class CoreImpl implements Core {
     );
 
     return ok(null);
+  }
+
+  private async downloadSample(samples: any, folder: string): Promise<Result<null, FxError>> {
+    const url = samples.data as string;
+    const sampleId = samples.id;
+
+    const sampleAppPath = path.resolve(folder, sampleId);
+    if (
+      (await fs.pathExists(sampleAppPath)) &&
+      (await fs.readdir(sampleAppPath)).length > 0
+    ) {
+      return err(
+        new UserError(
+          error.CoreErrorNames.ProjectFolderExist,
+          `Path ${sampleAppPath} alreay exists. Select a different folder.`,
+          error.CoreSource
+        )
+      );
+    }
+
+    const progress = this.ctx.dialog!.createProgressBar("Fetch sample app", 2);
+    progress.start();
+    try {
+      progress.next(`Downloading from '${url}'`);
+      const fetchRes = await fetchCodeZip(url);
+      progress.next("Unzipping the sample package");
+      if (fetchRes !== undefined) {
+        await saveFilesRecursively(new AdmZip(fetchRes.data), sampleId, folder);
+        await downloadSampleHook(sampleId, sampleAppPath);
+        if (this.ctx.platform === Platform.VSCode) {
+          await this.ctx.dialog?.communicate(
+            new DialogMsg(DialogType.Ask, {
+              type: QuestionType.UpdateGlobalState,
+              description: "openSampleReadme",
+            })
+          );
+        }
+
+        await this.ctx.dialog?.communicate(
+          new DialogMsg(DialogType.Ask, {
+            type: QuestionType.OpenFolder,
+            description: path.join(folder, sampleId),
+          })
+        );
+      } else {
+        progress.end();
+        return err(error.DownloadSampleFail());
+      }
+    } finally {
+      progress.end();
+    }
+    return ok(null);
+  }
+
+  private sendTelemetryEvent(
+    eventName: string,
+    properties?: { [p: string]: string },
+    measurements?: { [p: string]: number }
+  ): void {
+    if (!properties) {
+      properties = {};
+    }
+
+    if (TelemetryProperty.Component in properties === false) {
+      if (this.ctx.platform === Platform.VSCode){
+        properties[TelemetryProperty.Component] = TelemetryVSCComponentType;
+      } else {
+        properties[TelemetryProperty.Component] = TelemetryCLIComponentType;
+      }
+    }
+
+    properties[TelemetryProperty.AppId] = getTeamsAppId(this.ctx.root);
+
+    this.ctx?.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
+  }
+
+  private sendTelemetryErrorEvent(
+    eventName: string,
+    error: FxError,
+    properties?: { [p: string]: string },
+    measurements?: { [p: string]: number },
+    errorProps?: string[]
+  ): void {
+    if (!properties) {
+      properties = {};
+    }
+
+    if (TelemetryProperty.Component in properties === false) {
+      if (this.ctx.platform === Platform.VSCode) {
+        properties[TelemetryProperty.Component] = TelemetryVSCComponentType;
+      } else {
+        properties[TelemetryProperty.Component] = TelemetryCLIComponentType;
+      }
+    }
+
+    properties[TelemetryProperty.AppId] = getTeamsAppId(this.ctx.root);
+
+    properties[TelemetryProperty.Success] = TelemetrySuccess.No;
+    if (error instanceof UserError) {
+      properties[TelemetryProperty.ErrorType] = TelemetryErrorType.UserError;
+    } else {
+      properties[TelemetryProperty.ErrorType] = TelemetryErrorType.SystemError;
+    }
+
+    properties[TelemetryProperty.ErrorCode] = `${error.source}.${error.name}`;
+    properties[TelemetryProperty.ErrorMessage] = error.message;
+
+    this.ctx?.telemetryReporter?.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
   }
 
   public async update(answers?: ConfigMap): Promise<Result<null, FxError>> {
@@ -1401,17 +1469,40 @@ export async function Default(): Promise<Result<CoreProxy, FxError>> {
 enum TelemetryTiggerFrom {
   CommandPalette = "CommandPalette",
   TreeView = "TreeView",
+  Webview = "Webview",
 }
 
 enum TelemetryProperty {
   TriggerFrom = "trigger-from",
+  Component = "component",
+  AppId = "appid",
+  Success = "success",
+  ErrorType = "error-type",
+  ErrorCode = "error-code",
+  ErrorMessage = "error-message",
+  SampleAppName = "sample-app-name",
 }
 
 enum TelemetryEvent {
   SelectSubscription = "select-subscription",
+  DownloadSampleStart = "download-sample-start",
+  DownloadSample = "download-sample",
+}
+
+enum TelemetrySuccess {
+  Yes = "yes",
+  No = "no",
+}
+
+export enum TelemetryErrorType {
+  UserError = "user",
+  SystemError = "system",
 }
 
 export enum AccountType {
   M365 = "m365",
   Azure = "azure",
 }
+
+const TelemetryVSCComponentType = "extension";
+const TelemetryCLIComponentType = "cli";

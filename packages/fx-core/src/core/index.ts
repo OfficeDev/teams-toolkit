@@ -32,6 +32,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import {
+	downloadSampleHook,
   fetchCodeZip,
   saveFilesRecursively,
 } from "../common/tools";
@@ -186,8 +187,9 @@ export class FxCore implements Core {
         progress.next("Unzipping the sample package");
         if (fetchRes !== undefined) {
           await saveFilesRecursively(new AdmZip(fetchRes.data), sampleId, folder);
+					await downloadSampleHook(sampleId, sampleAppPath);
 					sendTelemetryEvent(this.tools.telemetryReporter, inputs, TelemetryEvent.DownloadSample, { [TelemetryProperty.SampleAppName]: sample.id, [TelemetryProperty.Success]: TelemetrySuccess.Yes, module:"fx-core" });
-          return ok(path.join(folder, sampleId));
+          return ok(sampleAppPath);
         } else { 
 					sendTelemetryErrorEvent(this.tools.telemetryReporter, inputs, TelemetryEvent.DownloadSample, FetchSampleError(), { [TelemetryProperty.SampleAppName]: sample.id, [TelemetryProperty.Success]: TelemetrySuccess.No, module:"fx-core" });
           return err(FetchSampleError());

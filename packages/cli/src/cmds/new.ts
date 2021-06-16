@@ -8,6 +8,8 @@ import axios from "axios";
 import fs from "fs-extra";
 import path from "path";
 import { Argv, Options } from "yargs";
+import * as uuid from "uuid";
+import { glob } from "glob";
 
 import {
   FxError,
@@ -142,6 +144,7 @@ class NewTemplete extends YargsCommand {
 
     const result = await this.fetchCodeZip(template.sampleAppUrl);
     await this.saveFilesRecursively(new AdmZip(result.data), template.sampleAppName, folder);
+    await this.downloadSampleHook(templateName, sampleAppFolder);
     CLILogProvider.necessaryLog(
       LogLevel.Info,
       `Downloaded the '${CLILogProvider.white(template.sampleAppName)}' sample to '${CLILogProvider.white(
@@ -186,6 +189,22 @@ class NewTemplete extends YargsCommand {
           await fs.writeFile(filePath, entry.getData());
         })
     );
+  }
+
+  private async downloadSampleHook(sampleId: string, sampleAppPath: string) {
+    // A temporary solution to avoid duplicate componentId
+    if (sampleId === "todo-list-SPFx") {
+      const originalId = "c314487b-f51c-474d-823e-a2c3ec82b1ff";
+      const componentId = uuid.v4();
+      glob.glob(`${sampleAppPath}/**/*.json`, { nodir: true, dot: true }, async (err, files) => {
+        await Promise.all(files.map(async (file) => {
+          let content = (await fs.readFile(file)).toString();
+          const reg = new RegExp(originalId, "g");
+          content = content.replace(reg, componentId);
+          await fs.writeFile(file, content);
+        }));
+      });
+    }
   }
 }
 

@@ -35,11 +35,16 @@ export class FunctionPlugin implements Plugin {
     return await this.functionPluginImpl.callFunc(func, ctx);
   }
 
+  setContext(ctx: PluginContext) {
+    Logger.setLogger(ctx.logProvider);
+    TelemetryHelper.setContext(ctx);
+  }
+
   public async getQuestionsForUserTask(
     func: Func,
     ctx: PluginContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    Logger.setLogger(ctx.logProvider);
+    this.setContext(ctx);
     const res = await this.runWithErrorWrapper(
       ctx,
       FunctionEvent.getQuestions,
@@ -50,7 +55,7 @@ export class FunctionPlugin implements Plugin {
   }
 
   public async preScaffold(ctx: PluginContext): Promise<FxResult> {
-    Logger.setLogger(ctx.logProvider);
+    this.setContext(ctx);
     const res = await this.runWithErrorWrapper(ctx, FunctionEvent.preScaffold, () =>
       this.functionPluginImpl.preScaffold(ctx)
     );
@@ -58,7 +63,7 @@ export class FunctionPlugin implements Plugin {
   }
 
   public async scaffold(ctx: PluginContext): Promise<FxResult> {
-    Logger.setLogger(ctx.logProvider);
+    this.setContext(ctx);
     await StepHelperFactory.scaffoldStepHelper.start(
       Object.entries(ScaffoldSteps).length,
       ctx.dialog
@@ -71,7 +76,7 @@ export class FunctionPlugin implements Plugin {
   }
 
   public async preProvision(ctx: PluginContext): Promise<FxResult> {
-    Logger.setLogger(ctx.logProvider);
+    this.setContext(ctx);
     const res = await this.runWithErrorWrapper(ctx, FunctionEvent.preProvision, () =>
       this.functionPluginImpl.preProvision(ctx)
     );
@@ -79,7 +84,7 @@ export class FunctionPlugin implements Plugin {
   }
 
   public async provision(ctx: PluginContext): Promise<FxResult> {
-    Logger.setLogger(ctx.logProvider);
+    this.setContext(ctx);
     await StepHelperFactory.provisionStepHelper.start(
       Object.entries(ProvisionSteps).length,
       ctx.dialog
@@ -92,7 +97,7 @@ export class FunctionPlugin implements Plugin {
   }
 
   public async postProvision(ctx: PluginContext): Promise<FxResult> {
-    Logger.setLogger(ctx.logProvider);
+    this.setContext(ctx);
     await StepHelperFactory.postProvisionStepHelper.start(
       Object.entries(PostProvisionSteps).length,
       ctx.dialog
@@ -105,7 +110,7 @@ export class FunctionPlugin implements Plugin {
   }
 
   public async preDeploy(ctx: PluginContext): Promise<FxResult> {
-    Logger.setLogger(ctx.logProvider);
+    this.setContext(ctx);
     await StepHelperFactory.preDeployStepHelper.start(
       Object.entries(PreDeploySteps).length,
       ctx.dialog
@@ -118,7 +123,7 @@ export class FunctionPlugin implements Plugin {
   }
 
   public async deploy(ctx: PluginContext): Promise<FxResult> {
-    Logger.setLogger(ctx.logProvider);
+    this.setContext(ctx);
     await StepHelperFactory.deployStepHelper.start(Object.entries(DeploySteps).length, ctx.dialog);
     const res = await this.runWithErrorWrapper(ctx, FunctionEvent.deploy, () =>
       this.functionPluginImpl.deploy(ctx)
@@ -134,14 +139,14 @@ export class FunctionPlugin implements Plugin {
     sendTelemetry = true
   ): Promise<FxResult> {
     try {
-      sendTelemetry && TelemetryHelper.sendStartEvent(ctx, event);
+      sendTelemetry && TelemetryHelper.sendStartEvent(event);
       const res: FxResult = await fn();
-      sendTelemetry && TelemetryHelper.sendResultEvent(ctx, event, res);
+      sendTelemetry && TelemetryHelper.sendResultEvent(event, res);
       return res;
     } catch (e) {
       if (e instanceof UserError || e instanceof SystemError) {
         const res = err(e);
-        sendTelemetry && TelemetryHelper.sendResultEvent(ctx, event, res);
+        sendTelemetry && TelemetryHelper.sendResultEvent(event, res);
         return res;
       }
 
@@ -150,7 +155,7 @@ export class FunctionPlugin implements Plugin {
           e.errorType === ErrorType.User
             ? ResultFactory.UserError(e.getMessage(), e.code, undefined, e, e.stack)
             : ResultFactory.SystemError(e.getMessage(), e.code, undefined, e, e.stack);
-        sendTelemetry && TelemetryHelper.sendResultEvent(ctx, event, res);
+        sendTelemetry && TelemetryHelper.sendResultEvent(event, res);
         return res;
       }
 
@@ -158,7 +163,6 @@ export class FunctionPlugin implements Plugin {
       /* Never send unhandled error message for privacy concern. */
       sendTelemetry &&
         TelemetryHelper.sendResultEvent(
-          ctx,
           event,
           ResultFactory.SystemError("Got an unhandled error", UnhandledErrorCode)
         );

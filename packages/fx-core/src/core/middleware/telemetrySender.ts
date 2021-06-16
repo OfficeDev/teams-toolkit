@@ -32,12 +32,12 @@ export const TelemetrySenderMW: Middleware = async (
     throw e;
   } finally{
     if(ctx.result?.isOk()){
-			properties[TelemetryProperty.Success] = TelemetrySuccess.Yes;
-			sendTelemetryEvent(core.tools.telemetryReporter, inputs, method, properties);
-		}
-		else {
-			properties[TelemetryProperty.Success] = TelemetrySuccess.No;
-			sendTelemetryEvent(core.tools.telemetryReporter, inputs, method, properties);
-		}
+      properties[TelemetryProperty.Success] = TelemetrySuccess.Yes;
+      sendTelemetryEvent(core.tools.telemetryReporter, inputs, method, properties);
+    }
+    else {
+      properties[TelemetryProperty.Success] = TelemetrySuccess.No;
+      sendTelemetryEvent(core.tools.telemetryReporter, inputs, method, properties);
+    }
   }
 };

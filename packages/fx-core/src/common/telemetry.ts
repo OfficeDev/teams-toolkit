@@ -39,7 +39,7 @@ export enum Component{
 } 
 
 export function sendTelemetryEvent(
-	telemetryReporter: TelemetryReporter,
+	telemetryReporter: TelemetryReporter | undefined,
 	inputs: Inputs,
 	eventName: string,
 	properties?: { [p: string]: string },
@@ -59,12 +59,12 @@ export function sendTelemetryEvent(
 			properties[TelemetryProperty.Component] = Component.cli;
 		}
 	}
-	telemetryReporter.sendTelemetryEvent(eventName, properties, measurements);
+	telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
 	Logger.debug(`sendTelemetryEvent, event:${eventName}, properties:${JSON.stringify(properties)}`);
 }
 
 export function sendTelemetryErrorEvent(
-	telemetryReporter: TelemetryReporter,
+	telemetryReporter: TelemetryReporter | undefined,
 	inputs: Inputs,
 	eventName: string,
 	error: FxError,
@@ -97,7 +97,7 @@ export function sendTelemetryErrorEvent(
 	properties[TelemetryProperty.ErrorCode] = `${error.source}.${error.name}`;
 	properties[TelemetryProperty.ErrorMessage] = error.message;
 
-	telemetryReporter.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
+	telemetryReporter?.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
 
 	Logger.debug(`sendTelemetryErrorEvent, event:${eventName}, properties:${JSON.stringify(properties)}, errorProps:${JSON.stringify(errorProps)}`);
 }

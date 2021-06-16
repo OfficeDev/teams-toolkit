@@ -14,8 +14,10 @@ export class InfoMessages {
     )}'.`;
 
   public static readonly installFunctionExtensions: string = "Installing Azure Functions binding.";
-  public static readonly skipDeployment: string =
+  public static readonly noChange: string =
     "Nothing to deploy; no changes detected since last deployment.";
+  public static readonly skipDeployment: string =
+    "Skip deployment.";
   public static readonly failedToCheckDotnet = (error: Error) =>
     `Failed to check .NET SDK, error = '${error}'`;
   public static readonly failedToInstallDotnet = (error: Error) =>

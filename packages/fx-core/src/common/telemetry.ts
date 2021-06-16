@@ -39,38 +39,38 @@ export enum Component {
 }
 
 export function sendTelemetryEvent(
-  telemetryReporter: TelemetryReporter,
-  inputs: Inputs,
-  eventName: string,
-  properties?: { [p: string]: string },
-  measurements?: { [p: string]: number }
+	telemetryReporter: TelemetryReporter | undefined,
+	inputs: Inputs,
+	eventName: string,
+	properties?: { [p: string]: string },
+	measurements?: { [p: string]: number }
 ): void {
   if (!properties) {
     properties = {};
   }
 
-  if (TelemetryProperty.Component in properties === false) {
-    if (inputs.platform === Platform.VSCode) {
-      properties[TelemetryProperty.Component] = Component.vsc;
-    } else if (inputs.platform === Platform.VS) {
-      properties[TelemetryProperty.Component] = Component.vs;
-    }
-    else {
-      properties[TelemetryProperty.Component] = Component.cli;
-    }
-  }
-  telemetryReporter.sendTelemetryEvent(eventName, properties, measurements);
-  Logger.debug(`sendTelemetryEvent, event:${eventName}, properties:${JSON.stringify(properties)}`);
+	if (TelemetryProperty.Component in properties === false) {
+		if (inputs.platform === Platform.VSCode) {
+			properties[TelemetryProperty.Component] = Component.vsc;
+		} else if(inputs.platform === Platform.VS) {
+			properties[TelemetryProperty.Component] = Component.vs;
+		}
+		else {
+			properties[TelemetryProperty.Component] = Component.cli;
+		}
+	}
+	telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
+	Logger.debug(`sendTelemetryEvent, event:${eventName}, properties:${JSON.stringify(properties)}`);
 }
 
 export function sendTelemetryErrorEvent(
-  telemetryReporter: TelemetryReporter,
-  inputs: Inputs,
-  eventName: string,
-  error: FxError,
-  properties?: { [p: string]: string },
-  measurements?: { [p: string]: number },
-  errorProps?: string[]
+	telemetryReporter: TelemetryReporter | undefined,
+	inputs: Inputs,
+	eventName: string,
+	error: FxError,
+	properties ?: { [p: string]: string },
+	measurements ?: { [p: string]: number },
+	errorProps ?: string[]
 ): void {
   if (!properties) {
     properties = {};
@@ -97,7 +97,7 @@ export function sendTelemetryErrorEvent(
   properties[TelemetryProperty.ErrorCode] = `${error.source}.${error.name}`;
   properties[TelemetryProperty.ErrorMessage] = error.message;
 
-  telemetryReporter.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
+	telemetryReporter?.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
 
   Logger.debug(`sendTelemetryErrorEvent, event:${eventName}, properties:${JSON.stringify(properties)}, errorProps:${JSON.stringify(errorProps)}`);
 }

@@ -19,7 +19,7 @@ export interface Tools
 {
     logProvider: LogProvider;
     tokenProvider: TokenProvider;
-    telemetryReporter: TelemetryReporter;
+    telemetryReporter?: TelemetryReporter;
     treeProvider?: TreeProvider;
     dialog: Dialog;
     ui: UserInteraction;

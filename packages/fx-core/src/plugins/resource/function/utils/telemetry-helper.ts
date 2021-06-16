@@ -3,9 +3,10 @@
 
 import { PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
 
-import { DependentPluginInfo, FunctionPluginInfo } from "../constants";
+import { CommonConstants, DependentPluginInfo, FunctionPluginInfo } from "../constants";
 import { FxResult } from "../result";
-import { TelemetryKey, TelemetryValue } from "../enums";
+import { FunctionEvent, TelemetryKey, TelemetryValue } from "../enums";
+import { DepsCheckerEvent } from "./depsChecker/common";
 
 export class telemetryHelper {
   static fillCommonProperty(ctx: PluginContext, properties: { [key: string]: string }) {
@@ -13,12 +14,12 @@ export class telemetryHelper {
     properties[TelemetryKey.AppId] =
       (ctx.configOfOtherPlugins
         .get(DependentPluginInfo.solutionPluginName)
-        ?.get(DependentPluginInfo.remoteTeamsAppId) as string) || "";
+        ?.get(DependentPluginInfo.remoteTeamsAppId) as string) || CommonConstants.emptyString;
   }
 
   static sendStartEvent(
     ctx: PluginContext,
-    eventName: string,
+    eventName: FunctionEvent,
     properties: { [key: string]: string } = {},
     measurements: { [key: string]: number } = {}
   ): void {
@@ -29,7 +30,7 @@ export class telemetryHelper {
 
   static sendSuccessEvent(
     ctx: PluginContext,
-    eventName: string,
+    eventName: FunctionEvent | DepsCheckerEvent,
     properties: { [key: string]: string } = {},
     measurements: { [key: string]: number } = {}
   ): void {
@@ -41,7 +42,7 @@ export class telemetryHelper {
 
   static sendErrorEvent(
     ctx: PluginContext,
-    eventName: string,
+    eventName: FunctionEvent | DepsCheckerEvent,
     e: SystemError | UserError,
     properties: { [key: string]: string } = {},
     measurements: { [key: string]: number } = {}
@@ -62,7 +63,7 @@ export class telemetryHelper {
 
   static sendResultEvent(
     ctx: PluginContext,
-    eventName: string,
+    eventName: FunctionEvent | DepsCheckerEvent,
     result: FxResult,
     properties: { [key: string]: string } = {},
     measurements: { [key: string]: number } = {}

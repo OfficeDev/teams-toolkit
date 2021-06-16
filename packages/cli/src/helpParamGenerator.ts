@@ -34,7 +34,7 @@ export class HelpParamGenerator {
         graphTokenProvider: GraphTokenProvider,
         appStudioToken: AppStudioTokenProvider
       },
-      telemetryReporter: CliTelemetry.getReporter(),
+      telemetryReporter: undefined,
       dialog: DialogManagerInstance,
       ui: CLIUIInstance
     };

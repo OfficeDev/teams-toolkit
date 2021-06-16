@@ -174,15 +174,22 @@ class MockAppStudioTokenProvider implements AppStudioTokenProvider {
 }
 
 class MockTelemetryReporter implements TelemetryReporter {
-  sendTelemetryErrorEvent({}: string, {}: {[p: string]: string;}, {}: {[p: string]: number;}, {}: string[]): void {
+  sendTelemetryErrorEvent(eventName: string,
+		properties?: { [key: string]: string },
+		measurements?: { [key: string]: number },): void {
       // do nothing
   }
 
-  sendTelemetryEvent({}: string, {}: {[p: string]: string;}, {}: {[p: string]: number;}): void {
+  sendTelemetryEvent(eventName: string,
+		properties?: { [key: string]: string },
+		measurements?: { [key: string]: number },
+		errorProps?: string[],): void {
       // do nothing
   }
 
-  sendTelemetryException({}: Error, {}: {[p: string]: string;}, {}: {[p: string]: number;}): void {
+  sendTelemetryException(error: Error,
+		properties?: { [key: string]: string },
+		measurements?: { [key: string]: number },): void {
       // do nothing
   }
 }

@@ -28,16 +28,21 @@ export class UserSettings {
 
   public static getConfigSync(): Result<any, FxError> {
     const filePath = this.getUserSettingsFile();
-    if (!fs.existsSync(filePath)) {
-      try {
-        fs.writeJSONSync(filePath, {});
-      } catch (e) {
-        return err(WriteFileError(e));
+
+    try {
+      if (!fs.pathExistsSync(path.dirname(filePath))) {
+        fs.mkdirpSync(path.dirname(filePath));
       }
+
+      if (!fs.existsSync(filePath)) {
+        fs.writeJSONSync(filePath, {});
+      }
+    } catch (e) {
+      return err(WriteFileError(e));
     }
 
     try {
-      const config = fs.readJSONSync(this.getUserSettingsFile());
+      const config = fs.readJSONSync(filePath);
       return ok(config);
     } catch (e) {
       return err(ReadFileError(e));

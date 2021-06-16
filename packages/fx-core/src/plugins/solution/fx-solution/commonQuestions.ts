@@ -13,87 +13,19 @@ import {
   FxError,
   Result,
   SolutionConfig,
-  SystemError,
   SolutionContext,
   AzureAccountProvider,
-  SubscriptionInfo,
+  SubscriptionInfo
 } from "@microsoft/teamsfx-api";
 import { GLOBAL_CONFIG, SolutionError } from "./constants";
 import { v4 as uuidv4 } from "uuid";
 import { ResourceManagementClient } from "@azure/arm-resources";
-import { SubscriptionClient } from "@azure/arm-subscriptions";
-import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-
-interface PartialList<T> extends Array<T> {
-  nextLink?: string;
-}
-
-// Copied from https://github.com/microsoft/vscode-azure-account/blob/2b3c1a8e81e237580465cc9a1f4da5caa34644a6/sample/src/extension.ts
-// to list all subscriptions
-async function listAll<T>(
-  client: { listNext(nextPageLink: string): Promise<PartialList<T>> },
-  first: Promise<PartialList<T>>
-): Promise<T[]> {
-  const all: T[] = [];
-  for (
-    let list = await first;
-    list.length || list.nextLink;
-    list = list.nextLink ? await client.listNext(list.nextLink) : []
-  ) {
-    all.push(...list);
-  }
-  return all;
-}
+import { askSubscription } from "../../../common/tools";
 
 export type AzureSubscription = {
   displayName: string;
   subscriptionId: string;
 };
-
-async function getSubscriptionList(azureToken: TokenCredentialsBase): Promise<AzureSubscription[]> {
-  const client = new SubscriptionClient(azureToken);
-  const subscriptions = await listAll(client.subscriptions, client.subscriptions.list());
-  const subs: Partial<AzureSubscription>[] = subscriptions.map((sub) => {
-    return { displayName: sub.displayName, subscriptionId: sub.subscriptionId };
-  });
-  const filteredSubs = subs.filter(
-    (sub) => sub.displayName !== undefined && sub.subscriptionId !== undefined
-  );
-  return filteredSubs.map((sub) => {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return { displayName: sub.displayName!, subscriptionId: sub.subscriptionId! };
-  });
-}
-
-// Parse tenantId from azure token. Azure token is just a base64-encoded JSON object.
-async function parseAzureTenantId(
-  azureToken: TokenCredentialsBase
-): Promise<Result<string, SystemError>> {
-  const token = (await azureToken.getToken()).accessToken;
-  const array = token.split(".");
-  if (array.length < 2) {
-    return err(
-      returnSystemError(
-        new Error("Invalid access token"),
-        "Solution",
-        SolutionError.FailedToParseAzureTenantId
-      )
-    );
-  }
-  const buff = Buffer.from(array[1], "base64");
-  const obj = JSON.parse(buff.toString("utf-8"));
-  const tenantId = (obj as any)["tid"];
-  if (tenantId === undefined || typeof tenantId !== "string") {
-    return err(
-      returnSystemError(
-        new Error("Tenant id not found"),
-        "Solution",
-        SolutionError.FailedToParseAzureTenantId
-      )
-    );
-  }
-  return ok(tenantId);
-}
 
 class CommonQuestions {
   resourceNameSuffix = "";
@@ -105,28 +37,12 @@ class CommonQuestions {
   teamsAppTenantId = "";
 }
 
-function getExistingAnswers(config: SolutionConfig): CommonQuestions | undefined {
-  const commonQuestions = new CommonQuestions();
-  for (const k of Object.keys(commonQuestions)) {
-    const value = config.get(GLOBAL_CONFIG)?.getString(k);
-    if (value === undefined || typeof value !== "string") {
-      return undefined;
-    }
-    (commonQuestions as any)[k] = value;
-  }
-  return commonQuestions;
-}
-
 /**
- * Ask user to select a subscription. subscriptionId, tenantId
+ * make sure subscription is correct
  *
  */
-export async function askSubscription(
-  config: SolutionConfig,
-  azureAccountProvider?: AzureAccountProvider,
-  dialog?: Dialog
-): Promise<Result<{ subscriptionId: string; tenantId: string }, FxError>> {
-  if (azureAccountProvider === undefined) {
+export async function checkSubscription( ctx: SolutionContext): Promise<Result<SubscriptionInfo, FxError>> {
+  if (ctx.azureAccountProvider === undefined) {
     return err(
       returnSystemError(
         new Error("azureAccountProvider is undefined"),
@@ -135,60 +51,26 @@ export async function askSubscription(
       )
     );
   }
-  const subscriptions: SubscriptionInfo[] = await azureAccountProvider.listSubscriptions();
-  if (subscriptions.length === 0) {
-    return err(
-      returnUserError(
-        new Error("Failed to find a subscription."),
-        "Solution",
-        SolutionError.NoSubscriptionFound
-      )
-    );
-  }
-  const activeSubscriptionId = config.get(GLOBAL_CONFIG)?.getString("subscriptionId");
-  const activeTenantId = config.get(GLOBAL_CONFIG)?.getString("tenantId");
-  if (
-    activeSubscriptionId === undefined ||
-    activeTenantId == undefined ||
-    subscriptions.findIndex((sub) => sub.subscriptionId === activeSubscriptionId) < 0
-  ) {
-    const subscriptionNames: string[] = subscriptions.map(
-      (subscription) => subscription.subscriptionName
-    );
-    const subscriptionName = (
-      await dialog?.communicate(
-        new DialogMsg(DialogType.Ask, {
-          type: QuestionType.Radio,
-          description: "Select a subscription",
-          options: subscriptionNames,
-        })
-      )
-    )?.getAnswer();
-    if (subscriptionName === undefined) {
-      return err(
-        returnUserError(
-          new Error("No subscription selected"),
-          "Solution",
-          SolutionError.NoSubscriptionSelected
-        )
-      );
-    }
-    const subscription = subscriptions.find(
-      (subscription) => subscription.subscriptionName === subscriptionName
-    );
-    if (subscription === undefined) {
-      return err(
-        returnSystemError(
-          new Error("Subscription not found"),
-          "Solution",
-          SolutionError.InternelError
-        )
-      );
-    }
-    return ok({ subscriptionId: subscription.subscriptionId, tenantId: subscription.tenantId });
-  } else {
-    return ok({ subscriptionId: activeSubscriptionId, tenantId: activeTenantId });
-  }
+  const activeSubscriptionId = ctx.config.get(GLOBAL_CONFIG)?.get("subscriptionId");
+  const askSubRes = await askSubscription(ctx.azureAccountProvider!, ctx.ui!, activeSubscriptionId);
+  if(askSubRes.isErr()) return err(askSubRes.error); 
+  const sub = askSubRes.value;
+  await ctx.azureAccountProvider?.setSubscription(sub.subscriptionId);
+  ctx.config.get(GLOBAL_CONFIG)?.set("subscriptionId", sub.subscriptionId);
+  ctx.config.get(GLOBAL_CONFIG)?.set("tenantId", sub.tenantId);
+  ctx.treeProvider?.refresh([
+    {
+      commandId: "fx-extension.selectSubscription",
+      label: sub.subscriptionName,
+      callback: () => {
+        return Promise.resolve(ok(null));
+      },
+      parent: "fx-extension.signinAzure",
+      contextValue: "selectSubscription",
+      icon: "subscriptionSelected",
+    },
+  ]);
+  return ok(sub);
 }
 
 /**
@@ -199,7 +81,6 @@ async function askCommonQuestions(
   ctx: SolutionContext,
   appName: string,
   config: SolutionConfig,
-  dialog?: Dialog,
   azureAccountProvider?: AzureAccountProvider,
   appstudioTokenJson?: object
 ): Promise<Result<CommonQuestions, FxError>> {
@@ -216,7 +97,7 @@ async function askCommonQuestions(
   const commonQuestions = new CommonQuestions();
 
   //1. check subscriptionId
-  const subscriptionResult = await askSubscription(config, azureAccountProvider, dialog);
+  const subscriptionResult = await checkSubscription(ctx);
   if (subscriptionResult.isErr()) {
     return err(subscriptionResult.error);
   }
@@ -227,7 +108,6 @@ async function askCommonQuestions(
 
   // Note setSubscription here will change the token returned by getAccountCredentialAsync according to the subscription selected.
   // So getting azureToken needs to precede setSubscription.
-  await azureAccountProvider?.setSubscription(subscriptionId);
   const azureToken = await azureAccountProvider?.getAccountCredentialAsync();
   if (azureToken === undefined) {
     return err(
@@ -322,7 +202,6 @@ export async function fillInCommonQuestions(
     ctx,
     appName,
     config,
-    dialog,
     azureAccountProvider,
     appStudioJson
   );

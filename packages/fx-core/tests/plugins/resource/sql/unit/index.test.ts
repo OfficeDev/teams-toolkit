@@ -4,7 +4,7 @@ import chaiAsPromised from "chai-as-promised";
 import { TestHelper } from "../helper";
 import { SqlPlugin } from "../../../../../src/plugins/resource/sql";
 import * as dotenv from "dotenv";
-import { ConfigMap, PluginContext, Stage } from "@microsoft/teamsfx-api";
+import { ConfigMap, Platform, PluginContext, Stage } from "@microsoft/teamsfx-api";
 import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import * as faker from "faker";
 import * as sinon from "sinon";
@@ -68,10 +68,9 @@ describe("sqlPlugin", () => {
       userType: commonUtils.UserType.User,
     };
     sinon.stub(commonUtils, "parseToken").returns(mockInfo);
-    pluginContext.answers = new ConfigMap([
-      [Constants.questionKey.adminName, "test-admin"],
-      [Constants.questionKey.adminPassword, "test-password"],
-    ]);
+    pluginContext.answers = {platform:Platform.VSCode};
+    pluginContext.answers[Constants.questionKey.adminName] = "test-admin";
+    pluginContext.answers[Constants.questionKey.adminPassword] = "test-password";
 
     // Act
     const preProvisionResult = await sqlPlugin.preProvision(pluginContext);

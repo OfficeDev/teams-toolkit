@@ -4,8 +4,8 @@ TeamsFx CLI is a text-based command line interface that accelerates Teams applic
 # Commands
 | `teamsFx` Commands  | Descriptions |
 |:----------------  |:-------------|
-| `teamsfx new`       | Manage cloud service accounts. The supported cloud services are 'Azure' and 'M365'. |
-| `teamsfx account`   | Create a new Teams application.          |
+| `teamsfx new`       | Create a new Teams application. |
+| `teamsfx account`   | Manage cloud service accounts. The supported cloud services are 'Azure' and 'M365'.          |
 | `teamsfx capability`| Add new capabilities to the current application.         |
 | `teamsfx resource`  | Manage the resources in the current application.         |
 | `teamsfx provision` | Provision the cloud resources in the current application.             | 

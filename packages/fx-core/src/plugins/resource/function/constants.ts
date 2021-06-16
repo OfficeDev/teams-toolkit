@@ -85,6 +85,7 @@ export class DependentPluginInfo {
   public static readonly resourceNameSuffix: string = "resourceNameSuffix";
   public static readonly location: string = "location";
   public static readonly programmingLanguage: string = "programmingLanguage";
+  public static readonly remoteTeamsAppId = "remoteTeamsAppId";
 
   public static readonly aadPluginName: string = "fx-resource-aad-app-for-teams";
   public static readonly aadClientId: string = "clientId";
@@ -164,8 +165,8 @@ export class DefaultProvisionConfigs {
 }
 
 export class AzureInfo {
-  public static readonly storageAccountNameLenMax: number = 24;
-  public static readonly functionAppNameLenMax: number = 32;
+  public static readonly resourceNameLenMax: number = 24;
+  public static readonly suffixLenMax: number = 12;
   public static readonly zipDeployURL = (functionAppName: string) =>
     `https://${functionAppName}.scm.azurewebsites.net/api/zipdeploy`;
   public static readonly runFromPackageSettingKey = "WEBSITE_RUN_FROM_PACKAGE";

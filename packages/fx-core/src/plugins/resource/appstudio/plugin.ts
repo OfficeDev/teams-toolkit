@@ -73,14 +73,14 @@ export class AppStudioPluginImpl {
     return zipFileName;
   }
 
-  public async publish(ctx: PluginContext): Promise<{ name: string; id: string }> {
+  public async publish(ctx: PluginContext): Promise<{ name: string; id: string, update: boolean }> {
     let appDirectory: string | undefined = undefined;
     let manifestString: string | undefined = undefined;
 
     // For vs platform, read the local manifest.json file
     // For cli/vsc platform, get manifest from ctx
-    if (ctx.platform === Platform.VS) {
-      appDirectory = ctx.answers?.getString(Constants.PUBLISH_PATH_QUESTION);
+    if (ctx.answers?.platform === Platform.VS) {
+      appDirectory = ctx.answers![Constants.PUBLISH_PATH_QUESTION] as string;
       const manifestFile = `${appDirectory}/${Constants.MANIFEST_FILE}`;
       try {
         const manifestFileState = await fs.stat(manifestFile);
@@ -119,13 +119,13 @@ export class AppStudioPluginImpl {
       // For VS Code/CLI platform, let the user confirm before publish
       // For VS platform, do not enable confirm
       let executePublishUpdate = false;
-      if (ctx.platform === Platform.VS) {
+      if (ctx.answers?.platform === Platform.VS) {
         executePublishUpdate = true;
       } else {
         let description = `The app ${existApp.displayName} has already been submitted to tenant App Catalog.\nStatus: ${existApp.publishingState}\n`;
         if (existApp.lastModifiedDateTime) {
           description =
-            description + `Last Modified: ${existApp.lastModifiedDateTime?.toString()}\n`;
+            description + `Last Modified: ${existApp.lastModifiedDateTime?.toLocaleString()}\n`;
         }
         description = description + "Do you want to submit a new update?";
         executePublishUpdate =
@@ -142,7 +142,7 @@ export class AppStudioPluginImpl {
 
       if (executePublishUpdate) {
         const appId = await this.beforePublish(ctx, appDirectory, manifestString, true);
-        return { id: appId, name: manifest.name.short };
+        return { id: appId, name: manifest.name.short, update: true };
       } else {
         throw AppStudioResultFactory.SystemError(
           AppStudioError.TeamsAppPublishCancelError.name,
@@ -151,7 +151,7 @@ export class AppStudioPluginImpl {
       }
     } else {
       const appId = await this.beforePublish(ctx, appDirectory, manifestString, false);
-      return { id: appId, name: manifest.name.short };
+      return { id: appId, name: manifest.name.short, update: false };
     }
   }
 
@@ -176,8 +176,8 @@ export class AppStudioPluginImpl {
 
       // Update App in App Studio
       let remoteTeamsAppId: string | undefined = undefined;
-      if (ctx.platform === Platform.VS) {
-        remoteTeamsAppId = ctx.answers?.getString(Constants.REMOTE_TEAMS_APP_ID);
+      if (ctx.answers?.platform === Platform.VS) {
+        remoteTeamsAppId = ctx.answers![Constants.REMOTE_TEAMS_APP_ID] as string;
       } else {
         remoteTeamsAppId = ctx.configOfOtherPlugins
           .get("solution")
@@ -232,7 +232,7 @@ export class AppStudioPluginImpl {
     const solutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
     if (solutionSettings) {
       const selectedPlugins = solutionSettings.activeResourcePlugins;
-      return selectedPlugins.indexOf("fx-resource-spfx") !== -1;
+      return selectedPlugins && selectedPlugins.indexOf("fx-resource-spfx") !== -1;
     }
     return false;
   }

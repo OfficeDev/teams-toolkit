@@ -14,7 +14,7 @@ export class Constants {
   public static readonly READ_MORE = "Read more";
   public static readonly CANCEL = "Cancel";
   public static readonly DEPLOY_GUIDE =
-    "https://docs.microsoft.com/en-us/sharepoint/dev/spfx/web-parts/get-started/using-web-part-as-ms-teams-tab#package-and-deploy-your-web-part-to-sharepoint";
+    "https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/first-app-spfx?tabs=vscode#deploy-your-app-to-sharepoint";
 }
 
 export class PlaceHolders {

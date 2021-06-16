@@ -14,8 +14,8 @@ import { LogMessages } from "../log";
 import { OpenAPI, OpenAPIV2, OpenAPIV3 } from "openapi-types";
 
 export class OpenApiProcessor {
-  private readonly logger?: LogProvider;
-  private readonly telemetryReporter?: TelemetryReporter;
+  private readonly logger: LogProvider | undefined;
+  private readonly telemetryReporter: TelemetryReporter | undefined;
   private readonly swaggerParser: SwaggerParser;
 
   constructor(telemetryReporter?: TelemetryReporter, logger?: LogProvider) {

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { FxError, PluginContext, Result } from "@microsoft/teamsfx-api";
-import { Constants, Messages } from "./constants";
+import { Constants, Messages, Telemetry } from "./constants";
 import { UnauthenticatedError } from "./errors";
 import { ResultFactory } from "./result";
 import { Utils } from "./utils/common";
@@ -94,18 +94,18 @@ export class SimpleAuthPluginImpl {
     );
     await DialogUtils.progressBar?.start(Constants.ProgressBar.start);
 
-    const endpoint = await this.webAppClient.createWebApp();
+    const webApp = await this.webAppClient.createWebApp();
 
     await DialogUtils.progressBar?.next(Constants.ProgressBar.provision.zipDeploy);
     const simpleAuthFilePath = Utils.getSimpleAuthFilePath();
     await Utils.downloadZip(simpleAuthFilePath);
     await this.webAppClient.zipDeploy(simpleAuthFilePath);
 
-    ctx.config.set(Constants.SimpleAuthPlugin.configKeys.endpoint, endpoint);
+    ctx.config.set(Constants.SimpleAuthPlugin.configKeys.endpoint, webApp.endpoint);
 
     await DialogUtils.progressBar?.end();
 
-    Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndProvision);
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndProvision, { [Telemetry.skuName]: webApp.skuName });
     return ResultFactory.Success();
   }
 

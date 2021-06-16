@@ -5,38 +5,28 @@
 
 import AdmZip from "adm-zip";
 import axios from "axios";
-import colors from "colors";
 import fs from "fs-extra";
 import path from "path";
 import { Argv, Options } from "yargs";
+import * as uuid from "uuid";
+import { glob } from "glob";
 
 import {
   FxError,
   err,
   ok,
   Result,
-  Stage,
-  Platform,
-  ConfigMap,
-  QTreeNode,
-  NodeType,
   Question,
-  isAutoSkipSelect,
-  SingleSelectQuestion,
-  MultiSelectQuestion,
+  LogLevel,
+  Stage,
 } from "@microsoft/teamsfx-api";
 
-import activate from "../activate";
+import activate  from "../activate";
 import * as constants from "../constants";
 import { NotFoundInputedFolder, SampleAppDownloadFailed, ProjectFolderExist } from "../error";
-import { validateAndUpdateAnswers, visitInteractively } from "../question/question";
 import { YargsCommand } from "../yargsCommand";
 import {
-  flattenNodes,
-  getJson,
-  getSingleOptionString,
-  toConfigMap,
-  toYargsOptions,
+  getSystemInputs,
 } from "../utils";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import {
@@ -44,41 +34,24 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
+import CLIUIInstance from "../userInteraction";
+import CLILogProvider from "../commonlib/log";
+import { HelpParamGenerator } from "../helpParamGenerator";
 
 export default class New extends YargsCommand {
   public readonly commandHead = `new`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Create a new Teams application.";
-  public readonly paramPath = constants.newParamPath;
-
-  public readonly root = getJson<QTreeNode>(this.paramPath);
   public params: { [_: string]: Options } = {};
-  public answers: ConfigMap = new ConfigMap();
 
   public readonly subCommands: YargsCommand[] = [new NewTemplete()];
 
   public builder(yargs: Argv): Argv<any> {
+    this.params = HelpParamGenerator.getYargsParamForHelp(Stage.create);
     this.subCommands.forEach((cmd) => {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     });
-    if (this.root) {
-      const nodes = flattenNodes(JSON.parse(JSON.stringify(this.root)));
-      const nodesWithoutGroup = nodes.filter((node) => node.data.type !== NodeType.group);
-      for (const node of nodesWithoutGroup) {
-        if (node.data.name === "folder") {
-          (node.data as any).default = "./";
-        }
-        // (node.data as any).hide = true;
-      }
-      nodesWithoutGroup.forEach((node) => {
-        const data = node.data as Question;
-        if (isAutoSkipSelect(data)) {
-          // set the only option to default value so yargs will auto fill it.
-          data.default = getSingleOptionString(data as SingleSelectQuestion | MultiSelectQuestion);
-          (data as any).hide = true;
-        }
-        this.params[data.name] = toYargsOptions(data);
-      });
+    if (this.params) {
       yargs
         .options({
           interactive: {
@@ -96,19 +69,12 @@ export default class New extends YargsCommand {
   public async runCommand(args: {
     [argName: string]: string | string[];
   }): Promise<Result<null, FxError>> {
-    if (args.interactive) {
-      if (this.root) {
-        /// TODO: enable remote validation function
-        const answers = await visitInteractively(this.root);
-        this.answers = toConfigMap(answers);
-      }
-    } else {
-      for (const name in this.params) {
-        this.answers.set(name, args[name] || this.params[name].default);
-      }
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart);
+
+    if (!args.interactive) {
+      CLIUIInstance.updatePresetAnswers(this.params, args);
     }
 
-    CliTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart);
     const result = await activate();
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateProject, result.error);
@@ -116,17 +82,9 @@ export default class New extends YargsCommand {
     }
 
     const core = result.value;
-    {
-      const result = await core.getQuestions!(Stage.create, Platform.CLI);
-      if (result.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateProject, result.error);
-        return err(result.error);
-      }
-      await validateAndUpdateAnswers(result.value!, this.answers);
-    }
 
     {
-      const result = await core.create(this.answers);
+      const result = await core.createProject(getSystemInputs());
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateProject, result.error);
         return err(result.error);
@@ -162,7 +120,7 @@ class NewTemplete extends YargsCommand {
       })
       .options(RootFolderNodeData.name, {
         type: "string",
-        description: RootFolderNodeData.description,
+        description: RootFolderNodeData.type != "func" ? RootFolderNodeData.title : "unknown",
         default: RootFolderNodeData.default,
       });
     return yargs;
@@ -186,12 +144,12 @@ class NewTemplete extends YargsCommand {
 
     const result = await this.fetchCodeZip(template.sampleAppUrl);
     await this.saveFilesRecursively(new AdmZip(result.data), template.sampleAppName, folder);
-    console.log(
-      colors.green(
-        `Downloaded the '${colors.yellow(template.sampleAppName)}' sample to '${colors.yellow(
-          sampleAppFolder
-        )}'.`
-      )
+    await this.downloadSampleHook(templateName, sampleAppFolder);
+    CLILogProvider.necessaryLog(
+      LogLevel.Info,
+      `Downloaded the '${CLILogProvider.white(template.sampleAppName)}' sample to '${CLILogProvider.white(
+        sampleAppFolder
+      )}'.`
     );
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, {
@@ -232,6 +190,22 @@ class NewTemplete extends YargsCommand {
         })
     );
   }
+
+  private async downloadSampleHook(sampleId: string, sampleAppPath: string) {
+    // A temporary solution to avoid duplicate componentId
+    if (sampleId === "todo-list-SPFx") {
+      const originalId = "c314487b-f51c-474d-823e-a2c3ec82b1ff";
+      const componentId = uuid.v4();
+      glob.glob(`${sampleAppPath}/**/*.json`, { nodir: true, dot: true }, async (err, files) => {
+        await Promise.all(files.map(async (file) => {
+          let content = (await fs.readFile(file)).toString();
+          const reg = new RegExp(originalId, "g");
+          content = content.replace(reg, componentId);
+          await fs.writeFile(file, content);
+        }));
+      });
+    }
+  }
 }
 
 class NewTempleteList extends YargsCommand {
@@ -246,14 +220,13 @@ class NewTempleteList extends YargsCommand {
   public async runCommand(args: {
     [argName: string]: string | string[];
   }): Promise<Result<null, FxError>> {
-    console.log(colors.green(`The following are sample apps:`));
-    console.log(constants.templates);
-    console.log(
-      colors.green(
-        `Use the command ${colors.yellow(
-          "teamsfx new template <sampleAppName>"
-        )} to create an application from the sample app.`
-      )
+    CLILogProvider.necessaryLog(LogLevel.Info, `The following are sample apps:`);
+    CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(constants.templates, undefined, 4), true);
+    CLILogProvider.necessaryLog(
+      LogLevel.Info,
+      `Use the command ${CLILogProvider.white(
+        "teamsfx new template <sampleAppName>"
+      )} to create an application from the sample app.`
     );
     return ok(null);
   }

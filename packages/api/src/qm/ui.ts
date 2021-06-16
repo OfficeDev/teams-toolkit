@@ -3,178 +3,179 @@
 
 import { err, ok, Result } from "neverthrow";
 import { FxError, UserCancelError } from "../error";
-import { StaticOption } from "../qm/question";
+import { OptionItem, StaticOptions } from "../qm/question";
+import { Colors } from "./../utils/log";
 
-export interface UIConfig {
+export interface UIConfig<T> {
   name: string;
   title: string;
   placeholder?: string;
   prompt?: string;
   step?: number;
   totalSteps?: number;
+  default?: T;
+  validation?: (input: T) => string | undefined | Promise<string | undefined>;
 }
 
-export interface SelectOptionConfig extends UIConfig {
-  options: StaticOption;
-  default?: string;
+export interface SingleSelectConfig extends UIConfig<string> {
+  options: StaticOptions;
   returnObject?: boolean;
 }
 
-export interface SelectOptionsConfig extends UIConfig {
-  options: StaticOption;
-  default?: string[];
+export interface MultiSelectConfig extends UIConfig<string[]> {
+  options: StaticOptions;
   returnObject?: boolean;
   onDidChangeSelection?: (
     currentSelectedIds: Set<string>,
     previousSelectedIds: Set<string>
   ) => Promise<Set<string>>;
-  validation?: (input: string[]) => string | undefined | Promise<string | undefined>;
 }
 
-export interface TextInputConfig extends UIConfig {
+export interface InputTextConfig extends UIConfig<string> {
   password?: boolean;
-  default?: string;
-  validation?: (input: string) => Promise<string | undefined>;
 }
 
-export interface SelectFileConfig extends UIConfig {
-  default?: string;
-  validation?: (input: string) => Promise<string | undefined>;
+export interface SelectFileConfig extends UIConfig<string> {
+};
+
+export interface SelectFilesConfig extends UIConfig<string[]> {
+};
+
+export interface SelectFolderConfig extends UIConfig<string> {
+};
+
+export interface InputResult<T> {
+  type: "success" | "skip" | "back";
+  result?: T;
 }
 
-export interface SelectFolderConfig extends UIConfig {
-  default?: string;
-  validation?: (input: string) => Promise<string | undefined>;
+export type SingleSelectResult = InputResult<string | OptionItem>;
+
+export type MultiSelectResult = InputResult<StaticOptions>;
+
+export type InputTextResult = InputResult<string>;
+
+export type SelectFileResult = InputResult<string>;
+
+export type SelectFilesResult = InputResult<string[]>;
+
+export type SelectFolderResult = InputResult<string>; 
+
+
+export interface RunnableTask<T> {
+  name?: string;
+  current?:number;
+  readonly total?:number;
+  message?: string;
+  run(...args: any): Promise<Result<T,FxError>>;
+  cancel?(): void;
+  isCanceled?: boolean;
 }
 
-export interface SelectFilesConfig extends UIConfig {
-  validation?: (input: string[]) => Promise<string | undefined>;
+export interface TaskConfig{
+  cancellable?:boolean
+  showProgress?:boolean,
 }
 
-export enum InputResultType {
-  cancel = "cancel",
-  back = "back",
-  sucess = "sucess",
-  error = "error",
-  skip = "skip",
-}
-
-export interface InputResult {
-  type: InputResultType;
-  result?: unknown;
-  error?: FxError;
-}
-
-export enum MsgLevel {
-  Info = "Info",
-  Warning = "Warning",
-  Error = "Error",
-}
-
-export interface TimeConsumingTask<T> {
-  name: string;
-  cancelable:boolean;
-  total: number;
-  current: number;
-  message: string;
-  isCanceled: boolean;
-  run(...args: any): Promise<T>;
-  cancel(): void;
+export interface TaskGroupConfig{
+  sequential ?: boolean,
+  fastFail?: boolean
 }
 
 export interface UserInteraction {
-  selectOption: (config: SelectOptionConfig) => Promise<InputResult>;
-  selectOptions: (config: SelectOptionsConfig) => Promise<InputResult>;
-  inputText: (config: TextInputConfig) => Promise<InputResult>;
-  selectFile: (config: SelectFileConfig) => Promise<InputResult>;
-  selectFiles: (config: SelectFilesConfig) => Promise<InputResult>;
-  selectFolder: (config: SelectFolderConfig) => Promise<InputResult>;
-  openUrl(link: string): Promise<boolean>;
+  selectOption: (config: SingleSelectConfig) => Promise<Result<SingleSelectResult,FxError>>;
+  selectOptions: (config: MultiSelectConfig) => Promise<Result<MultiSelectResult,FxError>>;
+  inputText: (config: InputTextConfig) => Promise<Result<InputTextResult,FxError>>;
+  selectFile: (config: SelectFileConfig) => Promise<Result<SelectFileResult,FxError>>;
+  selectFiles: (config: SelectFilesConfig) => Promise<Result<SelectFilesResult,FxError>>;
+  selectFolder: (config: SelectFolderConfig) => Promise<Result<SelectFolderResult,FxError>>;
+  
+  openUrl(link: string): Promise<Result<boolean,FxError>>;
   showMessage(
-    level: MsgLevel,
+    level: "info" | "warn" | "error",
     message: string,
     modal: boolean,
     ...items: string[]
-  ): Promise<string | undefined>;
-  runWithProgress(task: TimeConsumingTask<any>): Promise<any>;
+  ): Promise<Result<string|undefined,FxError>>;
+  /**
+   * 
+   * @param message Only works for CLI info level, color for other log levels and VSCode window will be ignored
+   */
+  showMessage(
+    level: "info" | "warn" | "error",
+    message: Array<{content: string, color: Colors}>,
+    modal: boolean,
+    ...items: string[]
+  ): Promise<Result<string|undefined,FxError>>;
+  runWithProgress<T>(task: RunnableTask<T>, config: TaskConfig, ...args:any): Promise<Result<T,FxError>>;
 }
 
-export interface FunctionGroupTaskConfig<T>{
-  name: string,
-  tasks: (() => Promise<Result<T, Error>>)[],
-  taskNames?: string[];
-  cancelable: boolean,
-  concurrent: boolean,
-  fastFail: boolean
-}
-
-export class FunctionGroupTask<T> implements TimeConsumingTask<Result<Result<T, Error>[], Error>> {
-  name: string;
-  current = 0;
-  total = 0;
-  message = "";
+export class GroupOfTasks<T> implements RunnableTask<Result<T, FxError>[]> {
+  name?:string;
+  current:number = 0;
+  readonly total:number;
   isCanceled = false;
-  concurrent = true;
-  cancelable = true;
-  fastFail = false;
-  tasks: (() => Promise<Result<T, Error>>)[];
-  taskNames?: string[];
-  constructor(config: FunctionGroupTaskConfig<T>) {
-    this.name = config.name;
-    this.tasks = config.tasks;
-    this.taskNames = config.taskNames;
-    this.cancelable = config.cancelable;
-    this.concurrent = config.concurrent;
-    this.fastFail = config.fastFail;
+  tasks: RunnableTask<T>[]; 
+  config?: TaskGroupConfig;
+  message?:string;
+  constructor(tasks:RunnableTask<T>[], config?: TaskGroupConfig) {
+    this.tasks = tasks;
+    this.config = config;
     this.total = this.tasks.length;
   }
-  async run(): Promise<Result<Result<T, Error>[], Error>> {
-    if (this.total === 0) return ok([]);
+  async run(...args:any): Promise<Result<Result<T, FxError>[], FxError>> {
+    if (this.tasks.length === 0) return ok([]);
     return new Promise(async (resolve) => {
-      let results: Result<T, Error>[] = [];
-      if (!this.concurrent) {
-        for (let i = 0; i < this.total; ++i) {
+      let results: Result<T, FxError>[] = [];
+      const isFastFail = this.config && this.config.fastFail;
+      const isSeq = this.config && this.config.sequential;
+      if (isSeq) {
+        this.current = 0;
+        for (let i = 0; i < this.tasks.length; ++i) {
           if (this.isCanceled === true) 
           {
             resolve(err(UserCancelError));
             return ;
           }  
           const task = this.tasks[i];
-          if(this.taskNames){
-            this.message = this.taskNames[i];
+          if(task.name){
+            this.message = task.name;
           }
           try {
-            let taskRes = await task();
-            if (taskRes.isErr() && this.fastFail) {
+            let taskRes = await task.run(args);
+            if (taskRes.isErr() && isFastFail) {
               this.isCanceled = true;
               resolve(err(taskRes.error));
               return ;
             }
             results.push(taskRes);
           } catch (e) {
-            if (this.fastFail) {
+            if (isFastFail) {
               this.isCanceled = true;
               resolve(err(e));
               return ;
             }
             results.push(err(e));
+          } finally{
+            this.current = i + 1;
           }
-          this.current = i + 1;
         }
       } else {
-        let promiseResults = this.tasks.map((t) => t());
+        let promiseResults = this.tasks.map((t) => t.run(args));
         promiseResults.forEach((p) => {
           p.then((v) => {
-            this.current++;
-            if (v.isErr() && this.fastFail) {
+            this.current ++;
+            if (v.isErr() && isFastFail) {
               this.isCanceled = true;
               resolve(err(v.error));
+              return ;
             }
           }).catch((e) => {
-            this.current++;
-            if (this.fastFail) {
+            this.current ++;
+            if (isFastFail) {
               this.isCanceled = true;
               resolve(err(e));
+              return ;
             }
           });
         });
@@ -185,7 +186,9 @@ export class FunctionGroupTask<T> implements TimeConsumingTask<Result<Result<T, 
   }
 
   cancel() {
-    if(this.cancelable)
-      this.isCanceled = true;
+    for(const task of this.tasks)
+      if(task.cancel)
+        task.cancel();
+    this.isCanceled = true;
   }
 }

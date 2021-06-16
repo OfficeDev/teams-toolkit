@@ -182,7 +182,7 @@ export class AadAppClient {
         )) as IAADDefinition;
       }
     } catch (error) {
-      throw ResultFactory.SystemError(GetAppError.name, GetAppError.message(objectId), error);
+      throw ResultFactory.SystemError(GetAppError.name, GetAppError.message(), error);
     }
 
     const config = new ProvisionConfig(islocalDebug);

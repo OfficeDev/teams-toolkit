@@ -3,15 +3,15 @@
 import {
   LogProvider,
   OptionItem,
-  Validation,
   PluginContext,
   TelemetryReporter,
   Question,
+  ValidationSchema,
 } from "@microsoft/teamsfx-api";
 
 export interface IQuestionService {
   // Control whether the question is displayed to the user.
-  condition?(parentAnswerPath: string): { target?: string } & Validation;
+  condition?(parentAnswerPath: string): { target?: string } & ValidationSchema;
 
   // Define the method name
   funcName?: string;
@@ -20,12 +20,12 @@ export interface IQuestionService {
   executeFunc?(ctx: PluginContext): Promise<string | OptionItem | OptionItem[]>;
 
   // Generate the question
-  getQuestion(): Question;
+  getQuestion(ctx: PluginContext): Question;
 }
 
 export class BaseQuestionService {
-  protected readonly logger?: LogProvider;
-  protected readonly telemetryReporter?: TelemetryReporter;
+  protected readonly logger: LogProvider | undefined;
+  protected readonly telemetryReporter: TelemetryReporter | undefined;
 
   constructor(telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
     this.telemetryReporter = telemetryReporter;

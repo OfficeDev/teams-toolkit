@@ -3,45 +3,43 @@
 
 "use strict";
 
-import { Argv, Options } from "yargs";
 import * as path from "path";
+import { Argv, Options } from "yargs";
 
 import {
   FxError,
   err,
   ok,
   Result,
-  ConfigMap,
   Stage,
-  Platform,
   MultiSelectQuestion,
-  OptionItem
+  OptionItem,
 } from "@microsoft/teamsfx-api";
 
 import activate from "../activate";
-import * as constants from "../constants";
-import { validateAndUpdateAnswers } from "../question/question";
 import { YargsCommand } from "../yargsCommand";
-import { flattenNodes, getParamJson } from "../utils";
+import { flattenNodes, getSystemInputs } from "../utils";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
+import CLIUIInstance from "../userInteraction";
+import { HelpParamGenerator } from "../helpParamGenerator";
 
 export default class Deploy extends YargsCommand {
   public readonly commandHead = `deploy`;
   public readonly command = `${this.commandHead} [components...]`;
   public readonly description = "Deploy the current application.";
-  public readonly paramPath = constants.deployParamPath;
 
-  public params: { [_: string]: Options } = getParamJson(this.paramPath);
+  public params: { [_: string]: Options } = {};
   public readonly deployPluginNodeName = "deploy-plugin";
 
   public builder(yargs: Argv): Argv<any> {
+    this.params = HelpParamGenerator.getYargsParamForHelp(Stage.deploy);
     const deployPluginOption = this.params[this.deployPluginNodeName];
     yargs
       .positional("components", {
         array: true,
         choices: deployPluginOption.choices,
-        description: deployPluginOption.description
+        description: deployPluginOption.description,
       });
     for (const name in this.params) {
       if (name !== this.deployPluginNodeName) {
@@ -51,15 +49,21 @@ export default class Deploy extends YargsCommand {
     return yargs.version(false);
   }
 
-  public async runCommand(args: { [argName: string]: string | string[] }): Promise<Result<null, FxError>> {
-    const answers = new ConfigMap();
-    for (const name in this.params) {
-      answers.set(name, args[name] || this.params[name].default);
+  public async runCommand(args: { [argName: string]: string | string[] | undefined }): Promise<Result<null, FxError>> {
+    if (!("open-api-document" in args)) {
+      args["open-api-document"] = undefined;
     }
-
-    const rootFolder = path.resolve(answers.getString("folder") || "./");
-    answers.delete("folder");
+    if (!("api-prefix" in args)) {
+      args["api-prefix"] = undefined;
+    }
+    if (!("api-version" in args)) {
+      args["api-version"] = undefined;
+    }
+    const rootFolder = path.resolve(args.folder as string || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.DeployStart);
+
+    CLIUIInstance.updatePresetAnswers(this.params, args);
+    CLIUIInstance.removePresetAnswers(["components"]);
 
     const result = await activate(rootFolder);
     if (result.isErr()) {
@@ -69,26 +73,28 @@ export default class Deploy extends YargsCommand {
 
     const core = result.value;
     {
-      const result = await core.getQuestions!(Stage.deploy, Platform.CLI);
+      /// TODO: this should be removed!
+      const result = await core.getQuestions(Stage.deploy, getSystemInputs(rootFolder));
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Deploy, result.error);
         return err(result.error);
       }
-      const rootNode = result.value!;
-      const allNodes = flattenNodes(rootNode);
-      const deployPluginNode = allNodes.find(node => node.data.name === this.deployPluginNodeName)!;
-      const components = args.components as string[] || [];
-      if (components.length === 0) {
-        const option = (deployPluginNode.data as MultiSelectQuestion).option as OptionItem[];
-        answers.set(this.deployPluginNodeName, option.map(op => op.cliName));
-      } else {
-        answers.set(this.deployPluginNodeName, components);
+      const node = result.value;
+      if (node) {
+        const allNodes = flattenNodes(node);
+        const deployPluginNode = allNodes.find(node => node.data.name === this.deployPluginNodeName)!;
+        const components = args.components as string[] || [];
+        const option = (deployPluginNode.data as MultiSelectQuestion).staticOptions as OptionItem[];
+        if (components.length === 0) {
+          CLIUIInstance.updatePresetAnswer(this.deployPluginNodeName, option.map(op => op.id));
+        } else {
+          CLIUIInstance.updatePresetAnswer(this.deployPluginNodeName, components);
+        }
       }
-      await validateAndUpdateAnswers(result.value!, answers);
     }
 
     {
-      const result = await core.deploy(answers);
+      const result = await core.deployArtifacts(getSystemInputs(rootFolder));
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Deploy, result.error);
         return err(result.error);

@@ -11,6 +11,7 @@ import {
   OptionItem,
   Platform,
   SubscriptionInfo,
+  Inputs,
 } from "@microsoft/teamsfx-api";
 import {
   AadOperationError,
@@ -87,29 +88,12 @@ export class MockAzureAccountProvider implements AzureAccountProvider {
   removeStatusChangeMap(name: string): Promise<boolean> {
     throw BuildError(NotImplemented);
   }
-  setStatusChangeCallback(
-    statusChange: (
-      status: string,
-      token?: string,
-      accountInfo?: Record<string, unknown>
-    ) => Promise<void>
-  ): Promise<boolean> {
-    throw BuildError(NotImplemented);
-  }
 
   signout(): Promise<boolean> {
     throw BuildError(NotImplemented);
   }
 
   getIdentityCredentialAsync(): Promise<TokenCredential | undefined> {
-    throw BuildError(NotImplemented);
-  }
-
-  getAccountCredential(): TokenCredentialsBase | undefined {
-    throw BuildError(NotImplemented);
-  }
-
-  getIdentityCredential(): TokenCredential | undefined {
     throw BuildError(NotImplemented);
   }
 
@@ -171,15 +155,6 @@ export class MockGraphTokenProvider implements GraphTokenProvider {
   getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
     throw BuildError(NotImplemented);
   }
-  setStatusChangeCallback(
-    statusChange: (
-      status: string,
-      token?: string,
-      accountInfo?: Record<string, unknown>
-    ) => Promise<void>
-  ): Promise<boolean> {
-    throw BuildError(NotImplemented);
-  }
   signout(): Promise<boolean> {
     throw BuildError(NotImplemented);
   }
@@ -192,7 +167,7 @@ export class MockPluginContext implements PluginContext {
   root = "./~$test/scaffold";
   azureAccountProvider: MockAzureAccountProvider;
   graphTokenProvider: MockGraphTokenProvider;
-  answers: ConfigMap | undefined;
+  answers: Inputs | undefined;
   platform: Platform = Platform.VSCode;
 
   constructor(
@@ -201,7 +176,7 @@ export class MockPluginContext implements PluginContext {
     aadConfig?: IAadPluginConfig,
     functionConfig?: IFunctionPluginConfig,
     apimConfig?: IApimPluginConfig,
-    answers?: { [key: string]: OptionItem | string }
+    answers?: Inputs
   ) {
     this.graphTokenProvider = new MockGraphTokenProvider(
       EnvConfig.tenantId,
@@ -235,7 +210,7 @@ export class MockPluginContext implements PluginContext {
     }
 
     if (answers) {
-      this.answers = new ConfigMap(Object.entries(answers));
+      this.answers = answers;
     }
   }
 

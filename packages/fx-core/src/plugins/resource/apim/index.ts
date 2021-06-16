@@ -13,7 +13,7 @@ import {
   Stage,
   Func,
 } from "@microsoft/teamsfx-api";
-import { BuildError, UnhandledError } from "./error";
+import { AssertNotEmpty, BuildError, UnhandledError } from "./error";
 import { Telemetry } from "./utils/telemetry";
 import { AadPluginConfig, ApimPluginConfig, FunctionPluginConfig, SolutionConfig } from "./config";
 import {
@@ -37,6 +37,13 @@ export class ApimPlugin implements Plugin {
     ctx: PluginContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     return await this.executeWithFxError(PluginLifeCycle.GetQuestions, _getQuestions, ctx, stage);
+  }
+  
+  public async getQuestionsForUserTask(
+    func: Func,
+    ctx: PluginContext
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
+    return await this.executeWithFxError(PluginLifeCycle.GetQuestions, _getQuestionsForUserTask, ctx, func);
   }
 
   public async callFunc(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
@@ -81,7 +88,7 @@ export class ApimPlugin implements Plugin {
         OperationStatus.Succeeded
       );
       return ok(result);
-    } catch (error) {
+    } catch (error: any) {
       let packagedError: SystemError | UserError;
       if (error instanceof SystemError || error instanceof UserError) {
         packagedError = error;
@@ -116,12 +123,27 @@ async function _getQuestions(
   const questionManager = await Factory.buildQuestionManager(ctx, solutionConfig);
   switch (stage) {
     case Stage.update:
-      return await questionManager.update(apimConfig);
+      return await questionManager.update(ctx, apimConfig);
     case Stage.deploy:
-      return await questionManager.deploy(apimConfig);
+      return await questionManager.deploy(ctx, apimConfig);
     default:
       return undefined;
   }
+}
+
+
+async function _getQuestionsForUserTask(
+  ctx: PluginContext,
+  progressBar: ProgressBar,
+  func: Func
+): Promise<QTreeNode | undefined> {
+  const solutionConfig = new SolutionConfig(ctx.configOfOtherPlugins);
+  const apimConfig = new ApimPluginConfig(ctx.config);
+  const questionManager = await Factory.buildQuestionManager(ctx, solutionConfig);
+  if(func.method === "addResource"){
+    return await questionManager.update(ctx, apimConfig);
+  }
+  return undefined;
 }
 
 async function _callFunc(ctx: PluginContext, progressBar: ProgressBar, func: Func): Promise<any> {
@@ -136,6 +158,8 @@ async function _scaffold(ctx: PluginContext, progressBar: ProgressBar): Promise<
   const answer = buildAnswer(ctx);
   const scaffoldManager = await Factory.buildScaffoldManager(ctx, solutionConfig);
 
+  const appName = AssertNotEmpty("projectSettings.appName", ctx?.projectSettings?.appName);
+
   if (answer.validate) {
     await answer.validate(Stage.update, apimConfig, ctx.root);
   }
@@ -143,7 +167,7 @@ async function _scaffold(ctx: PluginContext, progressBar: ProgressBar): Promise<
   answer.save(Stage.update, apimConfig);
 
   await progressBar.next(ProgressStep.Scaffold, ProgressMessages[ProgressStep.Scaffold].Scaffold);
-  await scaffoldManager.scaffold(ctx.app.name.short, ctx.root);
+  await scaffoldManager.scaffold(appName, ctx.root);
 }
 
 async function _provision(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
@@ -153,17 +177,19 @@ async function _provision(ctx: PluginContext, progressBar: ProgressBar): Promise
   const apimManager = await Factory.buildApimManager(ctx, solutionConfig);
   const aadManager = await Factory.buildAadManager(ctx);
 
+  const appName = AssertNotEmpty("projectSettings.appName", ctx?.projectSettings?.appName);
+
   await progressBar.next(
     ProgressStep.Provision,
     ProgressMessages[ProgressStep.Provision].CreateApim
   );
-  await apimManager.provision(apimConfig, solutionConfig, ctx.app.name.short);
+  await apimManager.provision(apimConfig, solutionConfig, appName);
 
   await progressBar.next(
     ProgressStep.Provision,
     ProgressMessages[ProgressStep.Provision].CreateAad
   );
-  await aadManager.provision(apimConfig, ctx.app.name.short);
+  await aadManager.provision(apimConfig, appName);
 }
 
 async function _postProvision(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
@@ -175,6 +201,8 @@ async function _postProvision(ctx: PluginContext, progressBar: ProgressBar): Pro
   const aadManager = await Factory.buildAadManager(ctx);
   const teamsAppAadManager = await Factory.buildTeamsAppAadManager(ctx);
 
+  const appName = AssertNotEmpty("projectSettings.appName", ctx?.projectSettings?.appName);
+
   await progressBar.next(
     ProgressStep.PostProvision,
     ProgressMessages[ProgressStep.PostProvision].ConfigClientAad
@@ -185,7 +213,7 @@ async function _postProvision(ctx: PluginContext, progressBar: ProgressBar): Pro
     ProgressStep.PostProvision,
     ProgressMessages[ProgressStep.PostProvision].ConfigApim
   );
-  await apimManager.postProvision(apimConfig, solutionConfig, aadConfig, ctx.app.name.short);
+  await apimManager.postProvision(apimConfig, solutionConfig, aadConfig, appName);
 
   await progressBar.next(
     ProgressStep.PostProvision,

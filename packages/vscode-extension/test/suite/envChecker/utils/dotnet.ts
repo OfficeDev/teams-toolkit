@@ -5,7 +5,6 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as os from "os";
 import * as tmp from "tmp";
-import * as util from "util";
 
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import { cpUtils } from "../../../../src/debug/depsChecker/cpUtils";
@@ -104,6 +103,12 @@ export async function withDotnet(
     await dotnetChecker["runDotnetInstallScript"](version, installDir);
     const dotnetExecPath = DotnetChecker["getDotnetExecPathFromDotnetInstallationDir"](installDir);
 
+    if (!(await hasDotnetVersion(dotnetExecPath, version))) {
+      throw new Error(
+        `Failed to install .NET SDK version '${version}' for testing, dotnetExecPath = '${dotnetExecPath}'`
+      );
+    }
+
     if (addToPath) {
       process.env.PATH =
         path.resolve(dotnetExecPath, "..") + (isWindows() ? ";" : ":") + process.env.PATH;
@@ -131,4 +136,16 @@ export async function createTmpBackendProjectDir(
   await fs.copyFile(csprojPath, targetPath, fs.constants.COPYFILE_EXCL);
 
   return [dir, cleanupCallback];
+}
+
+export async function createMockResourceDir(dirName: string): Promise<[string, () => void]> {
+  const [dir, cleanupCallback] = await createTmpDir();
+
+  const resourceDir = path.resolve(__dirname, "../../../../src/debug/depsChecker/resource");
+  const targetDir = path.join(dir, dirName);
+
+  await fs.ensureDir(targetDir);
+  await fs.copy(resourceDir, targetDir);
+
+  return [targetDir, cleanupCallback];
 }

@@ -30,6 +30,7 @@ export enum FunctionConfigKey {
   /* Intermediate  */
   functionName = "functionName",
   skipDeploy = "skipDeploy",
+  site = "site",
 }
 
 export enum QuestionKey {
@@ -51,6 +52,9 @@ export enum TelemetryKey {
   ErrorType = "error-type",
   ErrorMessage = "error-message",
   ErrorCode = "error-code",
+  AppId = "appid",
+  OSArch = "os-arch",
+  OSRelease = "os-release"
 }
 
 export enum TelemetryValue {

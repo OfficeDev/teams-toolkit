@@ -2,78 +2,18 @@
 // Licensed under the MIT license.
 import {
   PluginConfig,
-  Dialog,
-  FxError,
-  DialogMsg,
-  DialogType,
-  QuestionType,
   SolutionContext,
   PluginContext,
   Context,
   ConfigMap,
   TeamsAppManifest,
-  ok,
-  Result,
-  err,
-  ResultAsync,
+  FxError,
+  TelemetryReporter,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import { SubscriptionClient } from "@azure/arm-subscriptions";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-
-async function ask(
-  description: string,
-  dialog?: Dialog,
-  defaultAnswer?: string
-): Promise<Result<string, FxError>> {
-  const answer: string | undefined = (
-    await dialog?.communicate(
-      new DialogMsg(DialogType.Ask, {
-        type: QuestionType.Text,
-        description,
-        defaultAnswer,
-      })
-    )
-  )?.getAnswer();
-  if (!answer) {
-    return err({
-      name: "invalidUserInput",
-      message: "User input should not be empty",
-      source: __filename,
-      timestamp: new Date(),
-    });
-  }
-  return ok(answer);
-}
-
-/**
- * Ask for user input
- *
- * @param dialog communication channel to the core module
- * @param description description of the question.
- */
-export function askWithoutDefaultAnswer(
-  description: string,
-  dialog?: Dialog
-): ResultAsync<string, FxError> {
-  return new ResultAsync(ask(description, dialog));
-}
-
-/**
- * Ask for user input with a context T for better compose-ability.
- *
- * @param dialog communication channel to the core module
- * @param description description of the question.
- * @param t the context that will be carried with the answer.
- */
-export function askWithoutDefaultAnswerWith<T>(
-  description: string,
-  t: T,
-  dialog?: Dialog
-): ResultAsync<[string, T], FxError> {
-  return new ResultAsync(ask(description, dialog)).map((answer: string) => {
-    return [answer, t];
-  });
-}
+import { SolutionTelemetryComponentName, SolutionTelemetryProperty } from "./constants";
 
 /**
  * A helper function to construct a plugin's context.
@@ -119,4 +59,34 @@ export async function getSubsriptionDisplayName(
   const client = new SubscriptionClient(azureToken);
   const subscription = await client.subscriptions.get(subscriptionId);
   return subscription.displayName;
+}
+
+export function sendErrorTelemetryThenReturnError(
+    eventName: string,
+    error: FxError,
+    reporter?: TelemetryReporter,
+    properties?: { [p: string]: string },
+    measurements?: { [p: string]: number },
+    errorProps?: string[],
+): FxError {
+  if (!properties) {
+    properties = {};
+  }
+
+  if (SolutionTelemetryProperty.Component in properties === false) {
+    properties[SolutionTelemetryProperty.Component] = SolutionTelemetryComponentName;
+  }
+
+  properties[SolutionTelemetryProperty.Success] = "no";
+  if (error instanceof UserError) {
+    properties["error-type"] = "user";
+  } else {
+    properties["error-type"] = "system";
+  }
+
+  properties["error-code"] = `${error.source}.${error.name}`;
+  properties["error-message"] = error.message;
+
+  reporter?.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
+  return error;
 }

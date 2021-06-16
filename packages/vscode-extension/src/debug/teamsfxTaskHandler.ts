@@ -8,7 +8,8 @@ import { getLocalTeamsAppId } from "./commonUtils";
 import { ext } from "../extensionVariables";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
-import { isWorkspaceSupported, getTeamsAppId } from "../utils/commonUtils";
+import { getTeamsAppId } from "../utils/commonUtils";
+import { isValidProject } from "@microsoft/teamsfx-core";
 
 interface IRunningTeamsfxTask {
   source: string;
@@ -21,6 +22,15 @@ const allRunningTeamsfxTasks: Map<IRunningTeamsfxTask, number> = new Map<
   number
 >();
 const allRunningDebugSessions: Set<string> = new Set<string>();
+const activeNpmInstallTasks = new Set<string>();
+
+function isNpmInstallTask(task: vscode.Task): boolean {
+  if (task) {
+    return task.name.trim().toLocaleLowerCase().endsWith("npm install");
+  }
+
+  return false;
+}
 
 function isTeamsfxTask(task: vscode.Task): boolean {
   // teamsfx: xxx start / xxx watch
@@ -48,27 +58,73 @@ function isTeamsfxTask(task: vscode.Task): boolean {
   return false;
 }
 
+function displayTerminal(taskName: string): boolean {
+  const terminal = vscode.window.terminals.find(t => t.name === taskName);
+  if (terminal !== undefined && terminal !== vscode.window.activeTerminal) {
+    terminal.show(true);
+    return true;
+  }
+
+  return false;
+}
+
 function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent): void {
-  if (ext.workspaceUri && isWorkspaceSupported(ext.workspaceUri.fsPath)) {
+  if (ext.workspaceUri && isValidProject(ext.workspaceUri.fsPath)) {
     const task = event.execution.task;
     if (task.scope !== undefined && isTeamsfxTask(task)) {
       allRunningTeamsfxTasks.set(
         { source: task.source, name: task.name, scope: task.scope },
         event.processId
       );
+    } else if (isNpmInstallTask(task)) {
+      try {
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugNpmInstallStart, {
+          [TelemetryProperty.DebugNpmInstallName]: task.name,
+        });
+      } catch {
+        // ignore telemetry error
+      }
+
+      activeNpmInstallTasks.add(task.name);
     }
   }
 }
 
 function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): void {
   const task = event.execution.task;
+  const activeTerminal = vscode.window.activeTerminal;
+
   if (task.scope !== undefined && isTeamsfxTask(task)) {
     allRunningTeamsfxTasks.delete({ source: task.source, name: task.name, scope: task.scope });
+  } else if (isNpmInstallTask(task)) {
+    try {
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugNpmInstall, {
+        [TelemetryProperty.DebugNpmInstallName]: task.name,
+        [TelemetryProperty.DebugNpmInstallExitCode]: event.exitCode + "",
+      });
+    } catch {
+      // ignore telemetry error
+    }
+
+    activeNpmInstallTasks.delete(task.name);
+
+    if (activeTerminal?.name === task.name && event.exitCode === 0) {
+      // when the task in active terminal is ended successfully.
+      for (const hiddenTaskName of activeNpmInstallTasks) {
+        // display the first hidden terminal.
+        if (displayTerminal(hiddenTaskName)) {
+          return;
+        }
+      }
+    } else if (activeTerminal?.name !== task.name && event.exitCode !== 0) {
+      // when the task in hidden terminal failed to execute.
+      displayTerminal(task.name);
+    }
   }
 }
 
 function onDidStartDebugSessionHandler(event: vscode.DebugSession): void {
-  if (ext.workspaceUri && isWorkspaceSupported(ext.workspaceUri.fsPath)) {
+  if (ext.workspaceUri && isValidProject(ext.workspaceUri.fsPath)) {
     const debugConfig = event.configuration;
     if (
       debugConfig &&
@@ -105,7 +161,7 @@ function onDidStartDebugSessionHandler(event: vscode.DebugSession): void {
 export function terminateAllRunningTeamsfxTasks(): void {
   for (const task of allRunningTeamsfxTasks) {
     try {
-      process.kill(task[1], "SIGINT");
+      process.kill(task[1], "SIGTERM");
     } catch (e) {
       // ignore and keep killing others
     }

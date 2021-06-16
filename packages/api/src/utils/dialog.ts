@@ -4,7 +4,10 @@
 
 import { Result } from "neverthrow";
 import { FxError } from "../error";
-import { MsgLevel } from "../qm/ui";
+
+/**
+ * @deprecated
+ */
 export interface Dialog {
   /*
    * Platforms (such as VSCode, CLI) support this function to communicate with core.
@@ -69,8 +72,19 @@ export interface IProgressHandler {
    */
   end: () => Promise<void>;
 }
- 
 
+/**
+ * @deprecated
+ */
+export enum MsgLevel {
+  Info = "Info",
+  Warning = "Warning",
+  Error = "Error",
+}
+
+/**
+ * @deprecated
+ */
 export interface IMessage {
   description: string;
   level: MsgLevel;
@@ -78,6 +92,9 @@ export interface IMessage {
   modal?: boolean;
 }
 
+/**
+ * @deprecated
+ */
 export enum QuestionType {
   Text = "Text",
   Radio = "radio",
@@ -89,6 +106,9 @@ export enum QuestionType {
   UpdateGlobalState = "UpdateGlobalState",
 }
 
+/**
+ * @deprecated
+ */
 export interface IQuestion {
   type: QuestionType;
   description: string;
@@ -101,6 +121,9 @@ export interface IQuestion {
   prompt?: string;
 }
 
+/**
+ * @deprecated
+ */
 export interface IProgressStatus {
   message: string;
   increment?: number;
@@ -116,8 +139,14 @@ export interface IProgress {
   progressIter: AsyncGenerator<IProgressStatus, Result<null, FxError>>; // An iterator of progress status
 }
 
+/**
+ * @deprecated
+ */
 export type Answer = string | undefined;
 
+/**
+ * @deprecated
+ */
 export enum DialogType {
   Show = "Show",
   ShowProgress = "ShowProgress",
@@ -126,6 +155,9 @@ export enum DialogType {
   Output = "Output",
 }
 
+/**
+ * @deprecated
+ */
 export class DialogMsg {
   public dialogType: DialogType;
   public content: IMessage | IQuestion | IProgress | Answer;

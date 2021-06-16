@@ -5,7 +5,7 @@
 
 import * as path from "path";
 
-import { NodeType, QTreeNode } from "@microsoft/teamsfx-api";
+import { QTreeNode } from "@microsoft/teamsfx-api";
 
 export const cliSource = "TeamsfxCLI";
 export const cliName = "teamsfx";
@@ -33,6 +33,7 @@ export const resourceShowFunctionParamPath = path.resolve(
   "resourceShowFunctionParam.json"
 );
 export const resourceShowSQLParamPath = path.resolve(paramFolder, "resourceShowSQLParam.json");
+export const resourceShowApimParamPath = path.resolve(paramFolder, "resourceShowApimParam.json");
 
 export const provisionParamPath = path.resolve(paramFolder, "provisionParam.json");
 export const deployParamPath = path.resolve(paramFolder, "deployParam.json");
@@ -41,16 +42,16 @@ export const buildParamPath = path.resolve(paramFolder, "buildParam.json");
 export const validateParamPath = path.resolve(paramFolder, "validateParam.json");
 
 export const RootFolderNode = new QTreeNode({
-  type: NodeType.folder,
+  type: "folder",
   name: "folder",
-  description: "Select root folder of the project",
+  title: "Select root folder of the project",
   default: "./",
 });
 
 export const SubscriptionNode = new QTreeNode({
-  type: NodeType.text,
+  type: "text",
   name: "subscription",
-  description: "Select a subscription",
+  title: "Select a subscription",
 });
 
 export const templates: {
@@ -88,6 +89,13 @@ export const templates: {
     sampleAppName: "in-meeting-app",
     sampleAppUrl: "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip",
   },
+  {
+    tags: ["Easy QnA", "Bot", "JS"],
+    title: "FAQ Plus",
+    description: "Conversational Bot which answers common questions, looping human when bots unable to help",
+    sampleAppName: "faq-plus",
+    sampleAppUrl: "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip"
+  }
 ];
 
 export enum CLILogLevel {

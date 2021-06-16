@@ -7,9 +7,9 @@ import {
   ok,
   Stage,
   QTreeNode,
-  NodeType,
   Func,
   Platform,
+  Inputs,
 } from "@microsoft/teamsfx-api";
 import { ManagementClient } from "./managementClient";
 import { ErrorMessage } from "./errors";
@@ -76,26 +76,31 @@ export class SqlPluginImpl {
     if (stage === Stage.provision) {
       ctx.logProvider?.info(Message.startGetQuestions);
       const sqlNode = new QTreeNode({
-        type: NodeType.group,
+        type: "group",
       });
+      if (ctx.answers?.platform === Platform.CLI_HELP) {
+        sqlNode.addChild(new QTreeNode(adminNameQuestion));
+        sqlNode.addChild(new QTreeNode(adminPasswordQuestion));
+        sqlNode.addChild(new QTreeNode(confirmPasswordQuestion));
+        sqlNode.addChild(skipAddingUserQuestion);
+        return ok(sqlNode);
+      }
       this.init(ctx);
       if (this.config.azureSubscriptionId) {
-        ctx.logProvider?.info(Message.checkSql);
         const managementClient: ManagementClient = new ManagementClient(ctx, this.config);
         await managementClient.init();
         this.config.existSql = await managementClient.existAzureSQL();
       }
 
       if (!this.config.existSql) {
-        sqlNode.addChild(adminNameQuestion);
-        sqlNode.addChild(adminPasswordQuestion);
-        sqlNode.addChild(confirmPasswordQuestion);
+        sqlNode.addChild(new QTreeNode(adminNameQuestion));
+        sqlNode.addChild(new QTreeNode(adminPasswordQuestion));
+        sqlNode.addChild(new QTreeNode(confirmPasswordQuestion));
       }
 
-      if (ctx.platform === Platform.CLI) {
+      if (ctx.answers?.platform === Platform.CLI) {
         sqlNode.addChild(skipAddingUserQuestion);
       }
-      ctx.logProvider?.info(Message.endGetQuestions);
       return ok(sqlNode);
     }
     return ok(undefined);
@@ -108,12 +113,12 @@ export class SqlPluginImpl {
       return ok(res);
     } else if (func.method === Constants.questionKey.adminPassword) {
       const password = func.params as string;
-      const name = ctx.answers?.get(Constants.questionKey.adminName) as string;
+      const name = ctx.answers![Constants.questionKey.adminName] as string;
       const res = sqlPasswordValidatorGenerator(name)(password);
       return ok(res);
     } else if (func.method === Constants.questionKey.confirmPassword) {
       const confirm = func.params as string;
-      const password = ctx.answers?.get(Constants.questionKey.adminPassword) as string;
+      const password = ctx.answers![Constants.questionKey.adminPassword] as string;
       const res = sqlConfirmPasswordValidatorGenerator(password)(confirm);
       return ok(res);
     }
@@ -130,8 +135,8 @@ export class SqlPluginImpl {
     TelemetryUtils.sendEvent(Telemetry.stage.preProvision + Telemetry.startSuffix);
 
     this.config.skipAddingUser = ctx.config.get(Constants.skipAddingUser) as boolean;
-    if (ctx.platform === Platform.CLI) {
-      const skipAddingUser = ctx.answers?.get(Constants.questionKey.skipAddingUser) as string;
+    if (ctx.answers?.platform === Platform.CLI) {
+      const skipAddingUser = ctx.answers![Constants.questionKey.skipAddingUser] as string;
       if (skipAddingUser) {
         this.config.skipAddingUser = skipAddingUser === "true" ? true : false;
         ctx.config.set(Constants.skipAddingUser, this.config.skipAddingUser);
@@ -141,8 +146,8 @@ export class SqlPluginImpl {
     ctx.logProvider?.debug(Message.endpoint(this.config.sqlEndpoint));
 
     if (!this.config.existSql) {
-      this.config.admin = ctx.answers?.get(Constants.questionKey.adminName) as string;
-      this.config.adminPassword = ctx.answers?.get(Constants.questionKey.adminPassword) as string;
+      this.config.admin = ctx.answers![Constants.questionKey.adminName] as string;
+      this.config.adminPassword = ctx.answers![Constants.questionKey.adminPassword] as string;
 
       if (!this.config.admin || !this.config.adminPassword) {
         const error = SqlResultFactory.SystemError(
@@ -222,7 +227,10 @@ export class SqlPluginImpl {
     ctx.logProvider?.info(Message.startPostProvision);
     DialogUtils.init(ctx, ProgressTitle.PostProvision, ProgressTitle.PostProvisionSteps);
     TelemetryUtils.init(ctx);
-    TelemetryUtils.sendEvent(Telemetry.stage.postProvision + Telemetry.startSuffix);
+    TelemetryUtils.sendEvent(Telemetry.stage.postProvision + Telemetry.startSuffix,
+      undefined,
+      { [Telemetry.properties.skipAddingUser]: this.config.skipAddingUser ? Telemetry.valueYes : Telemetry.valueNo }
+    );
 
     const sqlClient = new SqlClient(ctx, this.config);
     const managementClient: ManagementClient = new ManagementClient(ctx, this.config);
@@ -289,7 +297,10 @@ export class SqlPluginImpl {
 
     await managementClient.deleteLocalFirewallRule();
 
-    TelemetryUtils.sendEvent(Telemetry.stage.postProvision, true);
+    TelemetryUtils.sendEvent(Telemetry.stage.postProvision,
+      true,
+      { [Telemetry.properties.skipAddingUser]: this.config.skipAddingUser ? Telemetry.valueYes : Telemetry.valueNo }
+    );
     ctx.logProvider?.info(Message.endPostProvision);
     await DialogUtils.progressBar?.end();
     return ok(undefined);

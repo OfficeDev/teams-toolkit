@@ -31,8 +31,8 @@ import { OpenAPI } from "openapi-types";
 export class ApimService {
   private readonly subscriptionId: string;
   private readonly apimClient: ApiManagementClient;
-  private readonly telemetryReporter?: TelemetryReporter;
-  private readonly logger?: LogProvider;
+  private readonly telemetryReporter: TelemetryReporter | undefined;
+  private readonly logger: LogProvider | undefined;
   private readonly credential: TokenCredentialsBase;
 
   constructor(
@@ -438,7 +438,7 @@ export class ApimService {
         OperationStatus.Succeeded
       );
       return result;
-    } catch (error) {
+    } catch (error: any) {
       if (!!errorHandler && errorHandler(error) === ErrorHandlerResult.Return) {
         this.logger?.info(LogMessages.operationSuccess(operation, resourceType, resourceId));
         Telemetry.sendApimOperationEvent(
@@ -459,7 +459,7 @@ export class ApimService {
         operation.displayName,
         resourceType.displayName
       );
-      this.logger?.info(LogMessages.operationFailed(operation, resourceType, resourceId));
+      this.logger?.warning(LogMessages.operationFailed(operation, resourceType, resourceId));
       Telemetry.sendApimOperationEvent(
         this.telemetryReporter,
         operation,

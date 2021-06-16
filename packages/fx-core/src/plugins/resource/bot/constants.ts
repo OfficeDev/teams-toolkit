@@ -248,6 +248,7 @@ export class TelemetryKeys {
   public static readonly ErrorType = "error-type";
   public static readonly ErrorMessage = "error-message";
   public static readonly ErrorCode = "error-code";
+  public static readonly AppId = "appid";
 }
 
 export class TelemetryValues {

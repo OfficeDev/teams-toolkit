@@ -31,7 +31,9 @@ const config = {
   system: {
     loggerOptions: {
       loggerCallback(loglevel: any, message: any, containsPii: any) {
-        CLILogProvider.log(4 - loglevel, message);
+        if (this.logLevel<=LogLevel.Error) {
+          CLILogProvider.log(4 - loglevel, message);
+        }
       },
       piiLoggingEnabled: false,
       logLevel: LogLevel.Error,
@@ -108,25 +110,6 @@ export class AppStudioLogin extends login implements AppStudioTokenProvider {
     }
     await AppStudioLogin.codeFlowInstance.logout();
     await this.notifyStatus();
-    return new Promise((resolve) => {
-      resolve(true);
-    });
-  }
-
-  async setStatusChangeCallback(
-    statusChange: (
-      status: string,
-      token?: string,
-      accountInfo?: Record<string, unknown>
-    ) => Promise<void>
-  ): Promise<boolean> {
-    AppStudioLogin.statusChange = statusChange;
-    await AppStudioLogin.codeFlowInstance.reloadCache();
-    if (AppStudioLogin.codeFlowInstance.account) {
-      const loginToken = await AppStudioLogin.codeFlowInstance.getToken(false);
-      const tokenJson = await this.getJsonObject();
-      await AppStudioLogin.statusChange("SignedIn", loginToken, tokenJson);
-    }
     return new Promise((resolve) => {
       resolve(true);
     });

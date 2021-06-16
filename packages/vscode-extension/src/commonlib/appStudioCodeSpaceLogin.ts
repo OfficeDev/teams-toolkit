@@ -72,26 +72,6 @@ export class AppStudioCodeSpaceLogin extends login implements AppStudioTokenProv
     });
   }
 
-  async setStatusChangeCallback(
-    statusChange: (
-      status: string,
-      token?: string,
-      accountInfo?: Record<string, unknown>
-    ) => Promise<void>
-  ): Promise<boolean> {
-    AppStudioCodeSpaceLogin.statusChange = statusChange;
-    const session = await this.tryAuthenticate(false);
-    if (session && session.accessToken) {
-      // already login
-      const tokenJson = this.parseToken(session.accessToken);
-      await AppStudioCodeSpaceLogin.statusChange("SignedIn", session.accessToken, tokenJson);
-    }
-
-    return new Promise((resolve) => {
-      resolve(true);
-    });
-  }
-
   private async tryAuthenticate(
     createIfNone: boolean
   ): Promise<vscode.AuthenticationSession | undefined> {

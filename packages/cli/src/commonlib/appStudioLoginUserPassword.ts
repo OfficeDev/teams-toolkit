@@ -7,9 +7,10 @@ import axios, { AxiosRequestConfig } from "axios";
 import dotenv from "dotenv";
 import qs from "querystring";
 
-import { AppStudioTokenProvider } from "@microsoft/teamsfx-api";
+import { AppStudioTokenProvider, LogLevel } from "@microsoft/teamsfx-api";
 
 import * as cfg from "./common/userPasswordConfig";
+import CLILogProvider from "./log";
 
 dotenv.config();
 
@@ -62,7 +63,7 @@ export class AppStudioTokenProviderUserPassword implements AppStudioTokenProvide
                 AppStudioTokenProviderUserPassword.accessToken = r.data.access_token;
             })
             .catch((e: any) => {
-                console.log(e);
+                CLILogProvider.necessaryLog(LogLevel.Error, JSON.stringify(e, undefined, 4));
             });
 
         return AppStudioTokenProviderUserPassword.accessToken;
@@ -87,14 +88,6 @@ export class AppStudioTokenProviderUserPassword implements AppStudioTokenProvide
     public async signout(): Promise<boolean> {
         return new Promise((resolve) => {
           resolve(true);
-        });
-    }
-
-    async setStatusChangeCallback(
-      statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>
-    ): Promise<boolean> {
-        return new Promise((resolve) => {
-            resolve(true);
         });
     }
 

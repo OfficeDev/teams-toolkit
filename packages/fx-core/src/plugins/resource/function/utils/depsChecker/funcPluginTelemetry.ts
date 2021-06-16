@@ -2,58 +2,35 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import * as os from "os";
 import { performance } from "perf_hooks";
-import { FxError, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { IDepsTelemetry } from "./checker";
 import { DepsCheckerEvent, TelemetryMessurement } from "./common";
+import { telemetryHelper } from "../telemetry-helper";
+import { TelemetryKey } from "../../enums";
 
-// TODO: remove ExtTelemetry as it's no longer needed.
-namespace ExtTelemetry {
-  export function sendTelemetryEvent(
-    eventName: string,
-    properties?: { [p: string]: string },
-    measurements?: { [p: string]: number }
-  ): void {
-    // implement me
+export class FuncPluginTelemetry implements IDepsTelemetry {
+  private readonly _source = "func-envchecker";
+  private readonly _ctx: PluginContext;
+
+  constructor(ctx: PluginContext) {
+    this._ctx = ctx;
   }
 
-  export function sendTelemetryErrorEvent(
-    eventName: string,
-    error: FxError,
-    properties?: { [p: string]: string },
-    measurements?: { [p: string]: number },
-    errorProps?: string[]
-  ): void {
-    // implement me
+  private static getCommonProps(): { [key: string]: string } {
+    const properties: { [key: string]: string; } = {};
+    properties[TelemetryKey.OSArch] = os.arch();
+    properties[TelemetryKey.OSRelease] = os.release();
+    return properties;
   }
-
-  export function sendTelemetryException(
-    error: Error,
-    properties?: { [p: string]: string },
-    measurements?: { [p: string]: number }
-  ): void {
-    // implement me
-  }
-}
-
-enum TelemetryProperty {
-  Component = "component",
-}
-
-class FuncPluginTelemetry implements IDepsTelemetry {
-  private readonly _telemetryComponentType = "extension:debug:envchecker";
 
   public sendEvent(eventName: DepsCheckerEvent, timecost?: number): void {
-    const properties: { [p: string]: string } = {
-      [TelemetryProperty.Component]: this._telemetryComponentType,
-    };
-
     const measurements: { [p: string]: number } = {};
     if (timecost) {
       measurements[TelemetryMessurement.completionTime] = timecost;
     }
-
-    ExtTelemetry.sendTelemetryEvent(eventName, properties, measurements);
+    telemetryHelper.sendSuccessEvent(this._ctx, eventName, FuncPluginTelemetry.getCommonProps(), measurements);
   }
 
   public async sendEventWithDuration(
@@ -62,16 +39,20 @@ class FuncPluginTelemetry implements IDepsTelemetry {
   ): Promise<void> {
     const start = performance.now();
     await action();
+
     // use seconds instead of milliseconds
     const timecost = Number(((performance.now() - start) / 1000).toFixed(2));
-    this.sendEvent(eventName, timecost);
+    const measurements: { [p: string]: number } = {};
+    if (timecost) {
+      measurements[TelemetryMessurement.completionTime] = timecost;
+    }
+
+    telemetryHelper.sendSuccessEvent(this._ctx, eventName, FuncPluginTelemetry.getCommonProps(), measurements);
   }
 
   public sendUserErrorEvent(eventName: DepsCheckerEvent, errorMessage: string): void {
-    const error = new UserError(eventName, errorMessage, this._telemetryComponentType);
-    ExtTelemetry.sendTelemetryErrorEvent(eventName, error, {
-      [TelemetryProperty.Component]: this._telemetryComponentType,
-    });
+    const error = new UserError(eventName, errorMessage, this._source);
+    telemetryHelper.sendErrorEvent(this._ctx, eventName, error, FuncPluginTelemetry.getCommonProps());
   }
 
   public sendSystemErrorEvent(
@@ -82,13 +63,9 @@ class FuncPluginTelemetry implements IDepsTelemetry {
     const error = new SystemError(
       eventName,
       `errorMsg=${errorMessage},errorStack=${errorStack}`,
-      this._telemetryComponentType,
+      this._source,
       errorStack
     );
-    ExtTelemetry.sendTelemetryErrorEvent(eventName, error, {
-      [TelemetryProperty.Component]: this._telemetryComponentType,
-    });
+    telemetryHelper.sendErrorEvent(this._ctx, eventName, error, FuncPluginTelemetry.getCommonProps());
   }
 }
-
-export const funcPluginTelemetry = new FuncPluginTelemetry();

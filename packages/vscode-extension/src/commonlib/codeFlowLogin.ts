@@ -10,7 +10,7 @@ import * as http from "http";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { Mutex } from "async-mutex";
-import { returnSystemError, UserError } from "@microsoft/teamsfx-api";
+import { UserError, SystemError, returnUserError } from "@microsoft/teamsfx-api";
 import VsCodeLogInstance from "./log";
 import * as crypto from "crypto";
 import { AddressInfo } from "net";
@@ -24,13 +24,6 @@ import {
   TelemetryProperty,
   TelemetrySuccess
 } from "../telemetry/extTelemetryEvents";
-
-class ErrorMessage {
-  static readonly loginError: string = "LoginError";
-  static readonly timeoutMessage: string = "Timeout waiting for code";
-  static readonly portConflictMessage: string = "Timeout waiting for port";
-  static readonly component: string = "LoginComponent";
-}
 
 interface Deferred<T> {
   resolve: (result: T | Promise<T>) => void;
@@ -149,10 +142,10 @@ export class CodeFlowLogin {
         this.status = loggedOut;
       }
       deferredRedirect.reject(
-        returnSystemError(
-          new Error(ErrorMessage.timeoutMessage),
-          ErrorMessage.component,
-          ErrorMessage.loginError
+        returnUserError(
+          new Error(StringResources.vsc.codeFlowLogin.loginTimeoutDescription),
+          StringResources.vsc.codeFlowLogin.loginComponent,
+          StringResources.vsc.codeFlowLogin.loginTimeoutTitle
         )
       );
     }, 5 * 60 * 1000); // keep the same as azure login
@@ -245,7 +238,12 @@ export class CodeFlowLogin {
       }
     } catch (error) {
       VsCodeLogInstance.error("[Login] " + error.message);
-      throw LoginFailureError(error);
+      if (error.name!==StringResources.vsc.codeFlowLogin.loginTimeoutTitle &&
+        error.name!==StringResources.vsc.codeFlowLogin.loginPortConflictTitle) {
+        throw LoginCodeFlowError(error);
+      } else {
+        throw error;
+      }
     }
   }
 
@@ -257,10 +255,10 @@ export class CodeFlowLogin {
     );
     const portTimer = setTimeout(() => {
       defferedPort.reject(
-        returnSystemError(
-          new Error(ErrorMessage.portConflictMessage),
-          ErrorMessage.component,
-          ErrorMessage.loginError
+        returnUserError(
+          new Error(StringResources.vsc.codeFlowLogin.loginPortConflictDescription),
+          StringResources.vsc.codeFlowLogin.loginComponent,
+          StringResources.vsc.codeFlowLogin.loginPortConflictTitle
         )
       );
     }, 5000);
@@ -304,6 +302,17 @@ export function LoginFailureError(innerError?: any): UserError {
     StringResources.vsc.codeFlowLogin.loginFailureTitle,
     StringResources.vsc.codeFlowLogin.loginFailureDescription,
     "Login",
+    new Error().stack,
+    undefined,
+    innerError
+  );
+}
+
+export function LoginCodeFlowError(innerError?: any): SystemError {
+  return new SystemError(
+    StringResources.vsc.codeFlowLogin.loginCodeFlowFailureTitle,
+    StringResources.vsc.codeFlowLogin.loginCodeFlowFailureDescription,
+    StringResources.vsc.codeFlowLogin.loginComponent,
     new Error().stack,
     undefined,
     innerError

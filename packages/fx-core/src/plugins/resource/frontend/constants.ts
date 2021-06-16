@@ -9,12 +9,10 @@ export class Constants {
   static AzureStorageDefaultKind = "StorageV2";
   static AzureStorageAccountNameLenMax = 24;
   static AzureStorageWebContainer = "$web";
+  static SuffixLenMax = 12;
 
   static FrontendIndexDocument = "index.html";
   static FrontendErrorDocument = "index.html";
-  static FrontendAppNamePattern = /[^a-zA-Z0-9]/g;
-  static FrontendStorageNamePattern = /^[a-z0-9]{1,16}fe[a-z0-9]{6}$/;
-  static ReplaceTemplateExt = /\.tpl$/;
   static FrontendSuffix = "fe";
 
   static EmptyString = "";
@@ -74,6 +72,7 @@ export class DependentPluginInfo {
   static readonly ResourceNameSuffix = "resourceNameSuffix";
   static readonly Location = "location";
   static readonly ProgrammingLanguage = "programmingLanguage";
+  static readonly RemoteTeamsAppId = "remoteTeamsAppId";
 
   static readonly FunctionPluginName = "fx-resource-function";
   static readonly FunctionEndpoint = "functionEndpoint";
@@ -115,6 +114,7 @@ export class TelemetryKey {
   static readonly ErrorType = "error-type";
   static readonly ErrorMessage = "error-message";
   static readonly ErrorCode = "error-code";
+  static readonly AppId = "appid";
 }
 
 export class TelemetryValue {
@@ -128,4 +128,10 @@ export class AzureErrorCode {
   static readonly ReservedResourceName = "ReservedResourceName";
   static readonly StorageAccountAlreadyTaken = "StorageAccountAlreadyTaken";
   static readonly StorageAccountAlreadyExists = "StorageAccountAlreadyExists";
+}
+
+export class RegularExpr {
+  static readonly allCharToBeSkippedInName = /[^a-zA-Z0-9]/g;
+  static readonly FrontendStorageNamePattern = /^[a-z0-9]{3,24}$/;
+  static readonly ReplaceTemplateExt = /\.tpl$/;
 }

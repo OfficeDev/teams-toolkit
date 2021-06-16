@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { PluginContext } from "@microsoft/teamsfx-api";
+import faker from "faker";
 import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import { Constants } from "../../../../src/plugins/resource/simpleauth/constants";
 
@@ -88,6 +89,7 @@ export class TestHelper {
             ],
             [Constants.SolutionPlugin.configKeys.resourceGroupName, "junhanTest0118"],
             [Constants.SolutionPlugin.configKeys.location, "eastus"],
+            [Constants.SolutionPlugin.configKeys.remoteTeamsAppId, faker.random.uuid()],
           ]),
         ],
         [

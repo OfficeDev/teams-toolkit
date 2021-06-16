@@ -19,13 +19,17 @@ type NameValuePair = WebSiteManagementModels.NameValuePair;
 type SiteAuthSettings = WebSiteManagementModels.SiteAuthSettings;
 
 export class FunctionNaming {
-  private static concatName(appName: string, mergedSuffix: string, limit: number): string {
-    const suffix: string = mergedSuffix.substr(0, limit);
-    const paddingLength: number = AzureInfo.storageAccountNameLenMax - suffix.length;
-    const normalizedAppName = appName
-      .replace(RegularExpr.allCharToBeSkippedInName, "")
+  private static normalize(raw: string): string {
+    return raw
+      .replace(RegularExpr.allCharToBeSkippedInName, CommonConstants.emptyString)
       .toLowerCase();
-    return normalizedAppName.substr(0, paddingLength) + suffix;
+  }
+
+  private static concatName(appName: string, mergedSuffix: string): string {
+    const suffix = this.normalize(mergedSuffix).substr(0, AzureInfo.suffixLenMax);
+    const paddingLength = AzureInfo.resourceNameLenMax - suffix.length;
+    const normalizedAppName = this.normalize(appName).substr(0, paddingLength);
+    return normalizedAppName + suffix;
   }
 
   public static generateStorageAccountName(
@@ -34,7 +38,7 @@ export class FunctionNaming {
     identSuffix: string
   ): string {
     const mergedSuffix: string = classSuffix + identSuffix;
-    return this.concatName(appName, mergedSuffix, AzureInfo.storageAccountNameLenMax);
+    return this.concatName(appName, mergedSuffix);
   }
 
   public static generateFunctionAppName(
@@ -43,7 +47,7 @@ export class FunctionNaming {
     identSuffix: string
   ): string {
     const mergedSuffix: string = classSuffix + identSuffix;
-    return this.concatName(appName, mergedSuffix, AzureInfo.functionAppNameLenMax);
+    return this.concatName(appName, mergedSuffix);
   }
 }
 
@@ -75,7 +79,20 @@ export class FunctionProvision {
       },
     };
 
-    return AzureLib.ensureFunctionApp(client, resourceGroupName, functionAppName, siteEnvelope);
+    const site = await AzureLib.ensureFunctionApp(
+      client,
+      resourceGroupName,
+      functionAppName,
+      siteEnvelope
+    );
+
+    // The ensureFunctionApp may return a site found on Azure,
+    // we need to return a site with updated settings for post provision.
+    settings.forEach((pair) => {
+      pair.name && pair.value && this.pushAppSettings(site, pair.name, pair.value);
+    });
+
+    return site;
   }
 
   // TODO: Extend to support multiple language and versions.
@@ -97,7 +114,7 @@ export class FunctionProvision {
   }
 
   // Push AppSettings when it is not included.
-  private static pushAppSettings(
+  public static pushAppSettings(
     site: Site,
     newName: string,
     newValue: string,

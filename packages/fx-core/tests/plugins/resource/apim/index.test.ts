@@ -17,7 +17,7 @@ import {
   MockPluginContext,
   ResourceGroupHelper,
 } from "./testUtil";
-import { PluginContext } from "@microsoft/teamsfx-api";
+import { Inputs, Platform, PluginContext } from "@microsoft/teamsfx-api";
 import {
   AadDefaultValues,
   QuestionConstants,
@@ -123,7 +123,7 @@ async function buildContext(
     apiDocumentPath: "openapi/openapi.json",
     apiPrefix: "apim-plugin-test",
   };
-  const answer = {
+  const answer:Inputs = {
     [QuestionConstants.VSCode.Apim.questionName]: {
       id: QuestionConstants.VSCode.Apim.createNewApimOption,
       label: QuestionConstants.VSCode.Apim.createNewApimOption,
@@ -133,6 +133,7 @@ async function buildContext(
       label: QuestionConstants.VSCode.ApiVersion.createNewApiVersionOption,
     },
     [QuestionConstants.VSCode.NewApiVersion.questionName]: "v1",
+    platform: Platform.VS
   };
   const ctx = new MockPluginContext(
     resourceName,

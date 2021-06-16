@@ -80,13 +80,13 @@ describe("Teams Bot Resource Plugin", () => {
     it("Reuse an existing bot registration", async () => {
       // Arrange
       const context = testUtils.newPluginContext();
-      context.answers?.set(QuestionNames.PROGRAMMING_LANGUAGE, ProgrammingLanguage.TypeScript);
-      context.answers?.set(QuestionNames.WAY_TO_REGISTER_BOT, WayToRegisterBot.ReuseExisting);
+      context.answers![QuestionNames.PROGRAMMING_LANGUAGE] = ProgrammingLanguage.TypeScript;
+      context.answers![QuestionNames.WAY_TO_REGISTER_BOT] = WayToRegisterBot.ReuseExisting;
 
       const fakeBotId = utils.genUUID();
       const fakeBotPassword = utils.genUUID();
-      context.answers?.set(QuestionNames.GET_BOT_ID, fakeBotId);
-      context.answers?.set(QuestionNames.GET_BOT_PASSWORD, fakeBotPassword);
+      context.answers![QuestionNames.GET_BOT_ID] = fakeBotId;
+      context.answers![QuestionNames.GET_BOT_PASSWORD] = fakeBotPassword;
 
       // Act
       const result = await botPlugin.preScaffold(context);

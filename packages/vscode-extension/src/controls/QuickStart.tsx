@@ -21,6 +21,11 @@ import Step_Inactive_2 from "../../media/inactive-2.svg";
 import Step_Inactive_3 from "../../media/inactive-3.svg";
 import Step_Inactive_4 from "../../media/inactive-4.svg";
 import Step_Inactive_5 from "../../media/inactive-5.svg";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetryTiggerFrom,
+} from "../telemetry/extTelemetryEvents";
 
 export default class QuickStart extends React.Component<any, any> {
   constructor(props: any) {
@@ -37,11 +42,25 @@ export default class QuickStart extends React.Component<any, any> {
   componentDidMount() {
     window.addEventListener("message", this.receiveMessage, false);
     this.initAccountInfo();
+    this.getGlobalStepsDone();
   }
 
   initAccountInfo() {
     vscode.postMessage({
       command: Commands.InitAccountInfo,
+    });
+  }
+
+  getGlobalStepsDone() {
+    vscode.postMessage({
+      command: Commands.GetGlobalStepsDone,
+    });
+  }
+
+  setGlobalStepsDone(data: []) {
+    vscode.postMessage({
+      command: Commands.UpdateGlobalStepsDone,
+      data: data,
     });
   }
 
@@ -102,11 +121,11 @@ export default class QuickStart extends React.Component<any, any> {
                     </a>,
                     " are the extension points for building apps on the Microsoft Teams platform.",
                   ]}
-                  actionText="Watch Video (1 min)"
+                  actionText="Watch Video (< 1 min)"
                   onAction={this.onWatchVideo}
                   secondaryActionText="Next"
                   onSecondaryAction={() => {
-                    this.onNextStep(curStep);
+                    this.onNextStep(curStep, `What are Teams app "Capabilities"?`);
                   }}
                   expanded={this.state.currentStep === curStep}
                   onCollapsedCardClicked={this.onCollapsedCardClicked}
@@ -127,7 +146,7 @@ export default class QuickStart extends React.Component<any, any> {
                   onAction={this.displayCommands}
                   secondaryActionText="Next"
                   onSecondaryAction={() => {
-                    this.onNextStep(curStep);
+                    this.onNextStep(curStep, `Explore Teams Toolkit commands`);
                   }}
                   expanded={this.state.currentStep === curStep}
                   tip={[
@@ -167,7 +186,7 @@ export default class QuickStart extends React.Component<any, any> {
                     onAction={this.downloadNode}
                     secondaryActionText="Next"
                     onSecondaryAction={() => {
-                      this.onNextStep(curStep);
+                      this.onNextStep(curStep, `Install Node.js`);
                     }}
                     expanded={this.state.currentStep === curStep}
                     onCollapsedCardClicked={this.onCollapsedCardClicked}
@@ -188,12 +207,12 @@ export default class QuickStart extends React.Component<any, any> {
                   onAction={this.signinM365}
                   secondaryActionText="Next"
                   onSecondaryAction={() => {
-                    this.onNextStep(curStep);
+                    this.onNextStep(curStep, `Prepare M365 account`);
                   }}
                   expanded={this.state.currentStep === curStep}
                   onCollapsedCardClicked={this.onCollapsedCardClicked}
                   step={curStep}
-                  done={this.state.stepsDone[3] || this.state.m365Account}
+                  done={this.state.stepsDone[3] && this.state.m365Account}
                 />
               );
             })()}
@@ -210,12 +229,12 @@ export default class QuickStart extends React.Component<any, any> {
                   onAction={this.signinAzure}
                   secondaryActionText="Next"
                   onSecondaryAction={() => {
-                    this.onNextStep(curStep);
+                    this.onNextStep(curStep, `Prepare Azure account`);
                   }}
                   expanded={this.state.currentStep === curStep}
                   onCollapsedCardClicked={this.onCollapsedCardClicked}
                   step={curStep}
-                  done={this.state.stepsDone[4] || this.state.azureAccount}
+                  done={this.state.stepsDone[4] && this.state.azureAccount}
                 />
               );
             })()}
@@ -256,6 +275,7 @@ export default class QuickStart extends React.Component<any, any> {
                   className="capabilitiesVideo"
                   controls
                   disablePictureInPicture
+                  onPlay={this.onVideoPlay}
                 >
                   <source src="https://aka.ms/teamsfx-video"></source>
                 </video>
@@ -265,6 +285,7 @@ export default class QuickStart extends React.Component<any, any> {
                     className="watchOnBrowser"
                     href="https://aka.ms/teamsfx-video"
                     target="_blank"
+                    onClick={this.onVideoPlay}
                   >
                     Watch on browser
                   </a>
@@ -295,18 +316,30 @@ export default class QuickStart extends React.Component<any, any> {
       case "azureAccountChange":
         this.setState({ azureAccount: event.data.data });
         break;
+      case "updateStepsDone":
+        this.setState({stepsDone: event.data.data });
+        break;
       default:
         break;
     }
   };
 
-  onNextStep = (step: number) => {
+  onNextStep = (step: number, title: string) => {
+    vscode.postMessage({
+      command: Commands.SendTelemetryEvent,
+      data: { eventName: TelemetryEvent.NextStep, properties: { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview, [TelemetryProperty.CurrentAction]: step + title } }
+    });
+
     this.setState({
       currentStep: step + 1,
     });
   };
 
   createNewProject = () => {
+    vscode.postMessage({
+      command: Commands.SendTelemetryEvent,
+      data: { eventName: TelemetryEvent.CreateProjectStart, properties: { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview } }
+    });
     vscode.postMessage({
       command: Commands.CreateNewProject,
     });
@@ -323,12 +356,20 @@ export default class QuickStart extends React.Component<any, any> {
     if (video && video.paused) {
       video!.play();
     }
+  };
+
+  onVideoPlay = () => {
+    vscode.postMessage({
+      command: Commands.SendTelemetryEvent,
+      data: { eventName: TelemetryEvent.WatchVideo, properties: { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview } }
+    });
 
     const done = this.state.stepsDone;
     done[0] = true;
     this.setState({
       stepsDone: done,
     });
+    this.setGlobalStepsDone(done);
   };
 
   onHideWatchOnBrowser = () => {
@@ -348,6 +389,11 @@ export default class QuickStart extends React.Component<any, any> {
 
   displayCommands = () => {
     vscode.postMessage({
+      command: Commands.SendTelemetryEvent,
+      data: { eventName: TelemetryEvent.DisplayCommands, properties: { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview } }
+    });
+
+    vscode.postMessage({
       command: Commands.DisplayCommands,
       data: "Teams",
     });
@@ -357,9 +403,15 @@ export default class QuickStart extends React.Component<any, any> {
     this.setState({
       stepsDone: done,
     });
+    this.setGlobalStepsDone(done);
   };
 
   downloadNode = () => {
+    vscode.postMessage({
+      command: Commands.SendTelemetryEvent,
+      data: { eventName: TelemetryEvent.OpenDownloadNode, properties: { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview } }
+    });
+
     vscode.postMessage({
       command: Commands.OpenExternalLink,
       data: "https://nodejs.org/dist/latest-v14.x/",
@@ -370,6 +422,7 @@ export default class QuickStart extends React.Component<any, any> {
     this.setState({
       stepsDone: done,
     });
+    this.setGlobalStepsDone(done);
   };
 
   signinM365 = () => {
@@ -382,6 +435,7 @@ export default class QuickStart extends React.Component<any, any> {
     this.setState({
       stepsDone: done,
     });
+    this.setGlobalStepsDone(done);
   };
 
   signinAzure = () => {
@@ -394,14 +448,21 @@ export default class QuickStart extends React.Component<any, any> {
     this.setState({
       stepsDone: done,
     });
+    this.setGlobalStepsDone(done);
   };
 
   viewAllSamples = () => {
+    vscode.postMessage({
+      command: Commands.SendTelemetryEvent,
+      data: { eventName: TelemetryEvent.Samples, properties: { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview } }
+    });
+
     const done = this.state.stepsDone;
     done[5] = true;
     this.setState({
       stepsDone: done,
     });
+    this.setGlobalStepsDone(done);
 
     vscode.postMessage({
       command: Commands.SwitchPanel,
@@ -425,6 +486,7 @@ class GetStartedAction extends React.Component<any, any> {
             <div className="action-title">{this.props.title}</div>
           </div>
           <div className="card-line action-content">{this.props.content}</div>
+          <div className="tip">{this.props.tip}</div>
           <div className="left-right-align">
             <div className="left">
               {this.props.actionText && (
@@ -438,7 +500,6 @@ class GetStartedAction extends React.Component<any, any> {
               />
             </div>
           </div>
-          <div className="tip">{this.props.tip}</div>
         </div>
       );
     } else {

@@ -2,12 +2,17 @@
 // Licensed under the MIT license.
 import { exec } from "child_process";
 import * as fs from "fs-extra";
-import { ConfigFolderName, ConfigMap, Dict, Json, UserError } from "@microsoft/teamsfx-api";
+import { AzureAccountProvider, AzureSolutionSettings, ConfigFolderName, ConfigMap, Dict, err, FxError, Json, ok, OptionItem, ProjectSettings, Result, returnSystemError, returnUserError, SolutionContext, SubscriptionInfo, Tools, UserError, UserInteraction } from "@microsoft/teamsfx-api";
 import { promisify } from "util";
 import axios from "axios";
 import AdmZip from "adm-zip";
 import * as path from "path";
+import * as uuid from "uuid";
+import { glob } from "glob";
 import { getResourceFolder } from "..";
+import { fakeServer } from "sinon";
+import { PluginNames } from "../plugins";
+import { AzureResourceApim, AzureResourceFunction, AzureResourceSQL, AzureSolutionQuestionNames, BotOptionItem, HostTypeOptionSPFx, MessageExtensionItem, TabOptionItem } from "../plugins/solution/fx-solution/question";
 
 const execAsync = promisify(exec);
 
@@ -95,8 +100,8 @@ const SecretDataMatchers = [
   "fx-resource-apim.apimClientAADClientSecret",
 ];
 
-export function sperateSecretData(configJson: Json): Dict<string> {
-  const res: Dict<string> = {};
+export function sperateSecretData(configJson: Json): Record<string,string> {
+  const res: Record<string,string> = {};
   for (const matcher of SecretDataMatchers) {
     const splits = matcher.split(".");
     const resourceId = splits[0];
@@ -124,7 +129,7 @@ export function sperateSecretData(configJson: Json): Dict<string> {
   return res;
 }
 
-export function mergeSerectData(dict: Dict<string>, configJson: Json): void {
+export function mergeSerectData(dict: Record<string,string>, configJson: Json): void {
   for (const matcher of SecretDataMatchers) {
     const splits = matcher.split(".");
     const resourceId = splits[0];
@@ -157,7 +162,7 @@ export function mergeSerectData(dict: Dict<string>, configJson: Json): void {
   }
 }
 
-export function serializeDict(dict: Dict<string>): string {
+export function serializeDict(dict: Record<string,string>): string {
   const array: string[] = [];
   for (const key of Object.keys(dict)) {
     const value = dict[key];
@@ -166,9 +171,9 @@ export function serializeDict(dict: Dict<string>): string {
   return array.join("\n");
 }
 
-export function deserializeDict(data: string): Dict<string> {
+export function deserializeDict(data: string): Record<string,string> {
   const lines = data.split("\n");
-  const dict: Dict<string> = {};
+  const dict: Record<string,string> = {};
   for (const line of lines) {
     const index = line.indexOf("=");
     if (index > 0) {
@@ -217,6 +222,22 @@ export async function saveFilesRecursively(
   );
 }
 
+export async function downloadSampleHook(sampleId: string, sampleAppPath: string) {
+  // A temporary solution to avoid duplicate componentId
+  if (sampleId === "todo-list-SPFx") {
+    const originalId = "c314487b-f51c-474d-823e-a2c3ec82b1ff";
+    const componentId = uuid.v4();
+    glob.glob(`${sampleAppPath}/**/*.json`, { nodir: true, dot: true }, async (err, files) => {
+      await Promise.all(files.map(async (file) => {
+        let content = (await fs.readFile(file)).toString();
+        const reg = new RegExp(originalId, "g");
+        content = content.replace(reg, componentId);
+        await fs.writeFile(file, content);
+      }));
+    });
+  }
+}
+
 export const deepCopy = <T>(target: T): T => {
   if (target === null) {
     return target;
@@ -259,15 +280,144 @@ export function isUserCancelError(error: Error): boolean {
 
 export function isValidProject(workspacePath?: string): boolean {
   if (!workspacePath) return false;
-  const checklist: string[] = [
-    path.join(workspacePath, `.${ConfigFolderName}`, "settings.json"),
-    path.join(workspacePath, `.${ConfigFolderName}`, "env.default.json"),
-    path.join(workspacePath, `.${ConfigFolderName}`, "manifest.source.json"),
-  ];
-  for (const fp of checklist) {
-    if (!fs.pathExistsSync(fp)) {
-      return false;
+  try{
+    const confFolderPath = path.resolve(workspacePath, `.${ConfigFolderName}`);
+    const settingsFile = path.resolve(confFolderPath, "settings.json");
+    const manifestFile = path.resolve(confFolderPath, "manifest.source.json");
+    const projectSettings: ProjectSettings = fs.readJsonSync(settingsFile);
+    const manifest = fs.readJSONSync(manifestFile);
+    if(!manifest) return false;
+    if(!projectSettings.currentEnv)
+      projectSettings.currentEnv = "default";
+    if(validateSettings(projectSettings))
+        return false;
+    // const envName = projectSettings.currentEnv;
+    // const jsonFilePath = path.resolve(confFolderPath, `env.${envName}.json`);
+    // const configJson: Json = fs.readJsonSync(jsonFilePath);
+    // if(validateConfig(projectSettings.solutionSettings as AzureSolutionSettings, configJson))
+    //   return false;
+    return true;
+  }
+  catch(e){
+    return false;
+  }
+}
+
+export function validateProject(solutionContext: SolutionContext):string|undefined{
+  const res  = validateSettings(solutionContext.projectSettings);
+  return res;
+  // const configJson = mapToJson(solutionContext.config);
+  // res = validateConfig(solutionContext.projectSettings!.solutionSettings as AzureSolutionSettings, configJson);
+  // if(res) return res;
+  // return undefined;
+}
+
+export function validateSettings(projectSettings?: ProjectSettings):string|undefined{
+  if(!projectSettings) return "empty projectSettings";
+  if(!projectSettings.solutionSettings) return "empty solutionSettings";
+  const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
+  if(solutionSettings.hostType === undefined) return "empty solutionSettings.hostType";
+  if(solutionSettings.activeResourcePlugins === undefined || solutionSettings.activeResourcePlugins.length === 0)
+  return "empty solutionSettings.activeResourcePlugins";
+  const capabilities = solutionSettings.capabilities  || [];
+  const azureResources = solutionSettings.azureResources || [];
+  const plugins = solutionSettings.activeResourcePlugins  || [];
+  // if(!configJson[PluginNames.LDEBUG]) return "local debug config is missing";
+  if(!plugins.includes(PluginNames.LDEBUG)) return  `${PluginNames.LDEBUG} setting is missing in settings.json`;
+  if(solutionSettings.hostType === HostTypeOptionSPFx.id){
+    // if(!configJson[PluginNames.SPFX]) return "SPFx config is missing";
+    if(!plugins.includes(PluginNames.SPFX)) return "SPFx setting is missing in activeResourcePlugins";
+  }
+  else {
+    if(capabilities.includes(TabOptionItem.id)){
+      // if(!configJson[PluginNames.FE]) return "Frontend hosting config is missing";
+      if(!plugins.includes(PluginNames.FE)) return `${PluginNames.FE} setting is missing in settings.json`;
+
+      // if(!configJson[PluginNames.AAD]) return "AAD config is missing";
+      if(!plugins.includes(PluginNames.AAD)) return `${PluginNames.AAD} setting is missing in settings.json`;
+
+      // if(!configJson[PluginNames.SA]) return "Simple auth config is missing";
+      if(!plugins.includes(PluginNames.SA)) return `${PluginNames.SA} setting is missing in settings.json`;
+    }
+    if(capabilities.includes(BotOptionItem.id)){
+      // if(!configJson[PluginNames.BOT]) return "Bot config is missing";
+      if(!plugins.includes(PluginNames.BOT)) return `${PluginNames.BOT} setting is missing in settings.json`;
+    }
+    if(capabilities.includes(MessageExtensionItem.id)){
+      // if(!configJson[PluginNames.BOT]) return "MessagingExtension config is missing";
+      if(!plugins.includes(PluginNames.BOT)) return `${PluginNames.BOT} setting is missing in settings.json`;
+    }
+    if(azureResources.includes(AzureResourceSQL.id)){
+      // if(!configJson[PluginNames.SQL]) return "Azure SQL config is missing";
+      if(!plugins.includes(PluginNames.SQL)) return `${PluginNames.SQL} setting is missing in settings.json`;
+      // if(!configJson[PluginNames.MSID]) return "SQL identity config is missing";
+      if(!plugins.includes(PluginNames.MSID)) return `${PluginNames.MSID} setting is missing in settings.json`;
+    }
+    if(azureResources.includes(AzureResourceFunction.id)){
+      // if(!configJson[PluginNames.FUNC]) return "Azure functions config is missing";
+      if(!plugins.includes(PluginNames.FUNC)) return `${PluginNames.FUNC} setting is missing in settings.json`;
+    }
+    if(azureResources.includes(AzureResourceApim.id)){
+      // if(!configJson[PluginNames.APIM]) return "API Management config is missing";
+      if(!plugins.includes(PluginNames.APIM)) return `${PluginNames.APIM} setting is missing in settings.json`;
     }
   }
-  return true;
+  return undefined;
 }
+ 
+export async function askSubscription(azureAccountProvider:AzureAccountProvider, ui:UserInteraction , activeSubscriptionId?:string): Promise<Result<SubscriptionInfo, FxError>>{
+  const subscriptions: SubscriptionInfo[] = await azureAccountProvider.listSubscriptions();
+  if (subscriptions.length === 0) {
+    return err(
+      returnUserError(
+        new Error("Failed to find a subscription."),
+        "Core",
+        "NoSubscriptionFound"
+      )
+    );
+  }
+  let resultSub = subscriptions.find((sub) => sub.subscriptionId === activeSubscriptionId);
+  if ( activeSubscriptionId === undefined || resultSub === undefined ) {
+    let selectedSub:SubscriptionInfo|undefined = undefined;
+    if(subscriptions.length === 1){
+      selectedSub = subscriptions[0];
+    }
+    else {
+      const options: OptionItem[] = subscriptions.map(
+        (sub) => {
+          return { 
+            id: sub.subscriptionId, 
+            label: sub.subscriptionName,
+            data: sub.tenantId
+          } as OptionItem
+        }
+      ); 
+      const askRes = await ui.selectOption({
+        name: AzureSolutionQuestionNames.AskSub,
+        title: "Select a subscription",
+        options: options,
+        returnObject: true
+      }); 
+      if(askRes.isErr()) 
+        return err(askRes.error);
+      const subItem = askRes.value.result as OptionItem;
+      selectedSub = {
+        subscriptionId: subItem.id,
+        subscriptionName: subItem.label,
+        tenantId: subItem.data as string
+      };
+    }
+    if (selectedSub === undefined) {
+      return err(
+        returnSystemError(
+          new Error("Subscription not found"),
+          "Core",
+          "NoSubscriptionFound"
+        )
+      );
+    }
+    resultSub = selectedSub;
+  }  
+  return ok(resultSub);
+}
+

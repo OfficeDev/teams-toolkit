@@ -47,7 +47,14 @@ jobs:
       - name: Setup project
         run: |
           npm run setup
-          npm link
+
+      - name: Package CLI and install
+        run: |
+          npm run package
+          npm pack
+          mv *.tgz teamsfx-cli.tgz
+          npm install -g teamsfx-cli.tgz
+        working-directory: packages/cli
 
       - name: E2E Test clean
         run: |

@@ -14,8 +14,7 @@ import {
   OptionItem,
   MultiSelectQuestion,
   SingleSelectQuestion,
-  StaticOption,
-  IMessage,
+  StaticOptions
 } from "@microsoft/teamsfx-api";
 
 import * as constants from "./constants";
@@ -30,7 +29,7 @@ export function NotSupportedProjectType(): UserError {
 
 export function NotValidOptionValue(
   question: MultiSelectQuestion | SingleSelectQuestion,
-  options: StaticOption
+  options: StaticOptions
 ): UserError {
   if (options instanceof Array && options.length > 0 && typeof options[0] !== "string") {
     options = (options as OptionItem[]).map((op) => op.id);
@@ -86,6 +85,10 @@ export function SampleAppDownloadFailed(sampleAppUrl: string, e: Error): SystemE
 
 export function ReadFileError(e: Error): SystemError {
   return returnSystemError(e, constants.cliSource, "ReadFileError");
+}
+
+export function WriteFileError(e: Error): SystemError {
+  return returnSystemError(e, constants.cliSource, "WriteFileError");
 }
 
 export function UnknownError(e: Error): SystemError {

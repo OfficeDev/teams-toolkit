@@ -92,6 +92,7 @@ export enum SolutionError {
   NoResourceToDeploy = "NoResourceToDeploy",
   ProvisionInProgress = "ProvisionInProgress",
   DeploymentInProgress = "DeploymentInProgress",
+  PublishInProgress = "PublishInProgress",
   UnknownSolutionRunningState = "UnknownSolutionRunningState",
   CannotDeployBeforeProvision = "CannotDeployBeforeProvision",
   CannotPublishBeforeProvision = "CannotPublishBeforeProvision",
@@ -294,3 +295,28 @@ export const TEAMS_APP_SHORT_NAME_MAX_LENGTH = 30;
 export const DEFAULT_DEVELOPER_WEBSITE_URL = "https://www.example.com";
 export const DEFAULT_DEVELOPER_TERM_OF_USE_URL = "https://www.example.com/termofuse";
 export const DEFAULT_DEVELOPER_PRIVACY_URL = "https://www.example.com/privacy";
+
+export enum SolutionTelemetryEvent {
+  CreateStart = "create-start",
+  Create = "create",
+
+  AddResourceStart = "add-resource-start",
+  AddResource = "add-resource",
+
+  AddCapabilityStart = "add-capability-start",
+  AddCapability = "add-capability",
+}
+
+export enum SolutionTelemetryProperty {
+  Component = "component",
+  Resources = "resources",
+  Capabilities = "capabilities",
+  Success = "success",
+}
+
+export enum SolutionTelemetrySuccess {
+  Yes = "yes",
+  No = "no",
+}
+
+export const SolutionTelemetryComponentName = "solution";

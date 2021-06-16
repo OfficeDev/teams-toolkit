@@ -5,7 +5,7 @@ import {
   AzureSolutionSettings,
   Func,
   FxError,
-  NodeType,
+  Inputs,
   PluginContext,
   QTreeNode,
   ReadonlyPluginConfig,
@@ -65,9 +65,9 @@ import { DotnetChecker } from "./utils/depsChecker/dotnetChecker";
 import { Messages, isLinux, dotnetManualInstallHelpLink } from "./utils/depsChecker/common";
 import { DepsCheckerError } from "./utils/depsChecker/errors";
 import { getNodeVersion } from "./utils/node-version";
-import { funcPluginAdapter } from "./utils/depsChecker/funcPluginAdapter";
+import { FuncPluginAdapter } from "./utils/depsChecker/funcPluginAdapter";
 import { funcPluginLogger } from "./utils/depsChecker/funcPluginLogger";
-import { funcPluginTelemetry } from "./utils/depsChecker/funcPluginTelemetry";
+import { FuncPluginTelemetry } from "./utils/depsChecker/funcPluginTelemetry";
 
 type Site = WebSiteManagementModels.Site;
 type AppServicePlan = WebSiteManagementModels.AppServicePlan;
@@ -91,6 +91,7 @@ export interface FunctionConfig {
 
   /* Intermediate  */
   skipDeploy: boolean;
+  site?: Site;
 }
 
 export class FunctionPluginImpl {
@@ -191,13 +192,13 @@ export class FunctionPluginImpl {
         return ResultFactory.Success(ErrorMessages.invalidFunctionName);
       }
 
-      const stage: Stage | undefined = ctx.answers?.get(QuestionKey.stage) as Stage;
+      const stage: Stage | undefined = ctx.answers![QuestionKey.stage] as Stage;
       if (stage === Stage.create) {
         return ResultFactory.Success();
       }
 
       const language: FunctionLanguage =
-        (ctx.answers?.get(QuestionKey.programmingLanguage) as FunctionLanguage) ??
+        (ctx.answers![QuestionKey.programmingLanguage] as FunctionLanguage) ??
         (ctx.configOfOtherPlugins
           .get(DependentPluginInfo.solutionPluginName)
           ?.get(DependentPluginInfo.programmingLanguage) as FunctionLanguage);
@@ -211,13 +212,38 @@ export class FunctionPluginImpl {
     return ResultFactory.Success();
   }
 
-  public getQuestions(stage: Stage, ctx: PluginContext): Result<QTreeNode | undefined, FxError> {
+  public getQuestionsForUserTask(func: Func, ctx: PluginContext): Result<QTreeNode | undefined, FxError> {
     const res = new QTreeNode({
-      type: NodeType.group,
+      type: "group",
     });
 
-    if (stage === Stage.update) {
-      res.addChild(functionNameQuestion);
+    if (func.method === "addResource") {
+      functionNameQuestion.validation = {
+        validFunc: async(input: string, previousInputs?: Inputs) : Promise<string | undefined> => {
+          const workingPath: string = this.getFunctionProjectRootPath(ctx);
+          const name = input as string;
+          if (!name || !RegularExpr.validFunctionNamePattern.test(name)) {
+            return ErrorMessages.invalidFunctionName;
+          }
+
+          const stage: Stage | undefined = ctx.answers![QuestionKey.stage] as Stage;
+          if (stage === Stage.create) {
+            return undefined;
+          }
+
+          const language: FunctionLanguage =
+            (ctx.answers![QuestionKey.programmingLanguage] as FunctionLanguage) ??
+            (ctx.configOfOtherPlugins
+              .get(DependentPluginInfo.solutionPluginName)
+              ?.get(DependentPluginInfo.programmingLanguage) as FunctionLanguage);
+
+          // If language is unknown, skip checking and let scaffold handle the error.
+          if (language && (await FunctionScaffold.doesFunctionPathExist(workingPath, language, name))) {
+            return ErrorMessages.functionAlreadyExists;
+          }
+        }
+      };
+      res.addChild(new QTreeNode(functionNameQuestion));
     }
 
     return ResultFactory.Success(res);
@@ -233,7 +259,7 @@ export class FunctionPluginImpl {
     );
 
     const name: string =
-      (ctx.answers?.get(QuestionKey.functionName) as string) ?? DefaultValues.functionName;
+      (ctx.answers![QuestionKey.functionName] as string) ?? DefaultValues.functionName;
     if (await FunctionScaffold.doesFunctionPathExist(workingPath, functionLanguage, name)) {
       throw new FunctionNameConflictError();
     }
@@ -450,6 +476,8 @@ export class FunctionPluginImpl {
       throw new ProvisionError(ResourceType.functionApp);
     }
 
+    this.config.site = site;
+
     if (!this.config.functionEndpoint) {
       this.config.functionEndpoint = `https://${site.defaultHostName}`;
     }
@@ -476,47 +504,35 @@ export class FunctionPluginImpl {
       FunctionConfigKey.credential
     );
 
+    // Retrieve and do cleanup
+    const site = this.checkAndGet(this.config.site, FunctionConfigKey.site);
+    this.config.site = undefined;
+
     const webSiteManagementClient: WebSiteManagementClient = await runWithErrorCatchAndThrow(
       new InitAzureSDKError(),
       () => AzureClientFactory.getWebSiteManagementClient(credential, subscriptionId)
     );
 
-    const site: Site | undefined = await runWithErrorCatchAndThrow(
+    // We must query app settings from azure here, for two reasons:
+    // 1. The site object returned by SDK may not contain app settings.
+    // 2. Azure automatically added some app settings during creation.
+    const res: StringDictionary = await runWithErrorCatchAndThrow(
       new ConfigFunctionAppError(),
       async () =>
-        await step(StepGroup.PostProvisionStepGroup, PostProvisionSteps.findFunctionApp, async () =>
-          AzureLib.findFunctionApp(webSiteManagementClient, resourceGroupName, functionAppName)
+        await webSiteManagementClient.webApps.listApplicationSettings(
+          resourceGroupName,
+          functionAppName
         )
     );
-    if (!site) {
-      Logger.error(ErrorMessages.failToFindFunctionApp);
-      throw new ConfigFunctionAppError();
-    }
 
-    if (!site.siteConfig) {
-      Logger.info(InfoMessages.functionAppConfigIsEmpty);
-      site.siteConfig = {};
-    }
-
-    // The site queried does not contains appSettings, complete it through another API.
-    if (!site.siteConfig.appSettings) {
-      const res: StringDictionary = await runWithErrorCatchAndThrow(
-        new ConfigFunctionAppError(),
-        async () =>
-          await webSiteManagementClient.webApps.listApplicationSettings(
-            resourceGroupName,
-            functionAppName
-          )
+    if (res.properties) {
+      Object.entries(res.properties).forEach(
+        (kv: [string, string]) => {
+          // The site have some settings added in provision step,
+          // which should not be overwritten by queried settings.
+          FunctionProvision.pushAppSettings(site, kv[0], kv[1], false);
+        }
       );
-
-      if (res.properties) {
-        site.siteConfig.appSettings = Object.entries(res.properties).map(
-          (kv: [string, string]) => ({
-            name: kv[0],
-            value: kv[1],
-          })
-        );
-      }
     }
 
     this.collectFunctionAppSettings(ctx, site);
@@ -577,7 +593,7 @@ export class FunctionPluginImpl {
     // NOTE: make sure this step is before using `dotnet` command if you refactor this code.
     await this.handleDotnetChecker(ctx);
 
-    await this.handleBackendExtensionsInstall(workingPath, functionLanguage);
+    await this.handleBackendExtensionsInstall(ctx, workingPath, functionLanguage);
 
     await runWithErrorCatchAndThrow(
       new InstallNpmPackageError(),
@@ -647,9 +663,6 @@ export class FunctionPluginImpl {
   }
 
   public isPluginEnabled(ctx: PluginContext, plugin: string): boolean {
-    const solutionConfig: ReadonlyPluginConfig | undefined = ctx.configOfOtherPlugins.get(
-      DependentPluginInfo.solutionPluginName
-    );
     const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
       .activeResourcePlugins;
     return selectedPlugins.includes(plugin);
@@ -813,14 +826,16 @@ export class FunctionPluginImpl {
 
   private async handleDotnetChecker(ctx: PluginContext): Promise<void> {
     try {
+      const telemetry = new FuncPluginTelemetry(ctx);
+      const funcPluginAdapter = new FuncPluginAdapter(ctx, telemetry);
       await step(StepGroup.PreDeployStepGroup, PreDeploySteps.dotnetInstall, async () => {
         const dotnetChecker = new DotnetChecker(
           funcPluginAdapter,
           funcPluginLogger,
-          funcPluginTelemetry
+          telemetry,
         );
         try {
-          if (await dotnetChecker.isInstalled()) {
+          if (!(await dotnetChecker.isEnabled()) || await dotnetChecker.isInstalled()) {
             return;
           }
         } catch (error) {
@@ -831,9 +846,12 @@ export class FunctionPluginImpl {
 
         if (isLinux()) {
           // TODO: handle linux installation
-          if (!(await funcPluginAdapter.handleDotnetForLinux(ctx, dotnetChecker))) {
+          if (!(await funcPluginAdapter.handleDotnetForLinux(dotnetChecker))) {
             // NOTE: this is a temporary fix for Linux, to make the error message more readable.
-            const message = await funcPluginAdapter.generateMsg(Messages.linuxDepsNotFoundHelpLinkMessage, [dotnetChecker]);
+            const message = await funcPluginAdapter.generateMsg(
+              Messages.linuxDepsNotFoundHelpLinkMessage,
+              [dotnetChecker]
+            );
             funcPluginAdapter.handleDotnetError(
               new DepsCheckerError(message, dotnetManualInstallHelpLink)
             );
@@ -855,6 +873,7 @@ export class FunctionPluginImpl {
   }
 
   private async handleBackendExtensionsInstall(
+    ctx: PluginContext,
     workingPath: string,
     functionLanguage: FunctionLanguage
   ): Promise<void> {
@@ -863,10 +882,11 @@ export class FunctionPluginImpl {
       async () =>
         await step(StepGroup.PreDeployStepGroup, PreDeploySteps.installTeamsfxBinding, async () => {
           try {
-            await FunctionDeploy.installFuncExtensions(workingPath, functionLanguage);
+            await FunctionDeploy.installFuncExtensions(ctx, workingPath, functionLanguage);
           } catch (error) {
             // wrap the original error to UserError so the extensibility model will pop-up a dialog correctly
-            funcPluginAdapter.handleDotnetError(error);
+            const telemetry = new FuncPluginTelemetry(ctx);
+            new FuncPluginAdapter(ctx, telemetry).handleDotnetError(error);
           }
         })
     );

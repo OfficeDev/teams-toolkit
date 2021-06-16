@@ -22,9 +22,9 @@ import {
 import jwt_decode from "jwt-decode";
 import { Utils } from "../../../../src/plugins/resource/aad/utils/common";
 
-const permissions = '[{"resource": "Microsoft Graph","delegated": ["User.Read"],"application":[]}]';
+const permissions = "[{\"resource\": \"Microsoft Graph\",\"delegated\": [\"User.Read\"],\"application\":[]}]";
 const permissionsWrong =
-  '[{"resource": "Microsoft Graph","delegated": ["User.ReadData"],"application":[]}]';
+  "[{\"resource\": \"Microsoft Graph\",\"delegated\": [\"User.ReadData\"],\"application\":[]}]";
 
 const mockLogProvider: LogProvider = {
   async log(logLevel: LogLevel, message: string): Promise<boolean> {
@@ -32,7 +32,7 @@ const mockLogProvider: LogProvider = {
     console.log(message);
     return true;
   },
-  async info(message: string): Promise<boolean> {
+  async info(message: string | Array<any>): Promise<boolean> {
     console.log("Log info");
     console.log(message);
     return true;
@@ -181,6 +181,7 @@ function mockConfigOfOtherPluginsProvision(
           ConfigKeysOfOtherPlugin.solutionPermissionRequest,
           wrongPermission ? permissionsWrong : permissions,
         ],
+        [ConfigKeysOfOtherPlugin.remoteTeamsAppId, faker.random.uuid()]
       ]),
     ],
     [
@@ -215,6 +216,7 @@ function mockConfigOfOtherPluginsLocalDebug(
           ConfigKeysOfOtherPlugin.solutionPermissionRequest,
           wrongPermission ? permissionsWrong : permissions,
         ],
+        [ConfigKeysOfOtherPlugin.remoteTeamsAppId, faker.random.uuid()]
       ]),
     ],
     [

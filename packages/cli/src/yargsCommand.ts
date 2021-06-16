@@ -5,7 +5,7 @@
 
 import { Argv, exit } from "yargs";
 
-import { FxError, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { FxError, Result, SystemError, UserError, LogLevel } from "@microsoft/teamsfx-api";
 
 import CLILogProvider from "./commonlib/log";
 import * as constants from "./constants";
@@ -43,7 +43,7 @@ export abstract class YargsCommand {
    * @returns void or number. Where number is retured this causes yargs to terminate and becomes the yargs exit code.
    */
   abstract runCommand(args: {
-    [argName: string]: string | string[];
+    [argName: string]: string | string[] | undefined;
   }): Promise<Result<any, FxError>>;
 
   /**
@@ -75,24 +75,24 @@ export abstract class YargsCommand {
       }
     } catch (e) {
       const FxError: UserError | SystemError = "source" in e ? e : UnknownError(e);
-      console.error(`[${FxError.source}.${FxError.name}]: ${FxError.message}`.red);
+      CLILogProvider.necessaryLog(LogLevel.Error, `[${FxError.source}.${FxError.name}]: ${FxError.message}`);
       if ("helpLink" in FxError && FxError.helpLink) {
-        console.error(
-          "Get help from".red,
-          `${FxError.helpLink}#${FxError.source}${FxError.name}`.cyan.underline
+        CLILogProvider.necessaryLog(LogLevel.Error, 
+          `Get help from ${CLILogProvider.linkColor(`${FxError.helpLink}#${FxError.source}${FxError.name}`)}`
         );
       }
       if ("issueLink" in FxError && FxError.issueLink) {
-        console.error("Report this issue at".red, `${FxError.issueLink}`.cyan.underline);
+        CLILogProvider.necessaryLog(LogLevel.Error, `Report this issue at ${CLILogProvider.linkColor(FxError.issueLink)}`);
       }
       if (CLILogProvider.getLogLevel() === constants.CLILogLevel.debug) {
-        console.error("Call stack:\n".red, `${FxError.stack}`.red);
+        CLILogProvider.necessaryLog(LogLevel.Error, "Call stack:");
+        CLILogProvider.necessaryLog(LogLevel.Error, FxError.stack || "undefined");
       }
 
-      CliTelemetryInstance.flush();
+      await CliTelemetryInstance.flush();
       exit(-1, FxError);
     }
 
-    CliTelemetryInstance.flush();
+    await CliTelemetryInstance.flush();
   }
 }

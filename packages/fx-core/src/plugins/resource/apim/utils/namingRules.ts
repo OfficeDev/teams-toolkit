@@ -49,7 +49,8 @@ export class NamingRules {
     maxLength: 50,
     validPattern: ValidationConstants.serviceIdValidPattern,
     sanitize(appName: string, suffix: string): string {
-      return `${NamingRules.short(appName, 48 - suffix.length)}am${suffix}`;
+      const sanitizedAppName = NamingRules.sanitizeId(appName, false, false);
+      return `${NamingRules.short(sanitizedAppName, 48 - suffix.length)}am${suffix}`;
     },
   };
 
@@ -58,7 +59,8 @@ export class NamingRules {
     maxLength: ValidationConstants.defaultMaxLength,
     validPattern: ValidationConstants.defaultValidPattern,
     sanitize(appName: string, suffix: string): string {
-      return `${NamingRules.short(appName, 80 - suffix.length - 9)}-${suffix}-product`;
+      const sanitizedAppName = NamingRules.sanitizeId(appName, false, false);
+      return `${NamingRules.short(sanitizedAppName, 80 - suffix.length - 9)}-${suffix}-product`;
     },
   };
 
@@ -67,7 +69,8 @@ export class NamingRules {
     maxLength: ValidationConstants.defaultMaxLength,
     validPattern: ValidationConstants.defaultValidPattern,
     sanitize(appName: string, suffix: string): string {
-      return `${NamingRules.short(appName, 80 - suffix.length - 8)}-${suffix}-server`;
+      const sanitizedAppName = NamingRules.sanitizeId(appName, false, false);
+      return `${NamingRules.short(sanitizedAppName, 80 - suffix.length - 8)}-${suffix}-server`;
     },
   };
 

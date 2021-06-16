@@ -6,7 +6,7 @@
 
 import { TokenCredential } from "@azure/core-auth";
 import { DeviceTokenCredentials, TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
-import { AzureAccountProvider, UserError } from "@microsoft/teamsfx-api";
+import { AzureAccountProvider, UserError, SubscriptionInfo } from "@microsoft/teamsfx-api";
 import { ExtensionErrors } from "../error";
 import { AzureAccount } from "./azure-account.api";
 import { LoginFailureError } from "./codeFlowLogin";
@@ -50,45 +50,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     }
 
     return AzureAccountManager.instance;
-  }
-
-  /**
-   * Get AccountCredential
-   *  - Use scenario : https://docs.microsoft.com/en-us/azure/developer/javascript/core/node-sdk-azure-authenticate
-   *  - NPM guideline : https://docs.microsoft.com/en-us/azure/developer/javascript/core/node-sdk-azure-authenticate
-   * @returns the instance of TokenCredentialsBase
-   */
-  getAccountCredential(showDialog = true): TokenCredentialsBase | undefined {
-    const azureAccount: AzureAccount =
-      vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
-    if (azureAccount.status === "LoggedIn") {
-      if (azureAccount.subscriptions.length > 0) {
-        if (AzureAccountManager.tenantId) {
-          for (let i = 0; i < azureAccount.sessions.length; ++i) {
-            const item = azureAccount.sessions[i];
-            if (item.tenantId == AzureAccountManager.tenantId) {
-              return item.credentials2;
-            }
-          }
-        }
-        return azureAccount.subscriptions[0].session.credentials2;
-      } else if (azureAccount.sessions.length > 0) {
-        return azureAccount.sessions[0].credentials2;
-      } else {
-        return undefined;
-      }
-    }
-    return undefined;
-  }
-
-  /**
-   * Get IdentityCredential
-   *  - Use scenario : https://docs.microsoft.com/en-us/azure/developer/javascript/core/node-sdk-azure-authenticate
-   *  - NPM guideline : https://www.npmjs.com/package/@azure/ms-rest-nodeauth
-   * @returns the instance of TokenCredential
-   */
-  getIdentityCredential(showDialog = true): TokenCredential | undefined {
-    throw new Error("Method not implemented.");
   }
 
   /**
@@ -290,22 +251,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   /**
-   * Add update account info callback
-   */
-  async setStatusChangeCallback(
-    statusChange: (
-      status: string,
-      token?: string,
-      accountInfo?: Record<string, unknown>
-    ) => Promise<void>
-  ): Promise<boolean> {
-    AzureAccountManager.statusChange = statusChange;
-    return new Promise((resolve) => {
-      resolve(true);
-    });
-  }
-
-  /**
    * list all subscriptions
    */
   async listSubscriptions(): Promise<SubscriptionInfo[]> {
@@ -393,12 +338,5 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     });
   }
 }
-
-// TODO: remove after api update
-export type SubscriptionInfo = {
-  subscriptionName: string;
-  subscriptionId: string;
-  tenantId: string;
-};
 
 export default AzureAccountManager.getInstance();

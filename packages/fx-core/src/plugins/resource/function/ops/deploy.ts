@@ -27,9 +27,10 @@ import { forEachFileAndDir } from "../utils/dir-walk";
 import { requestWithRetry } from "../utils/templates-fetch";
 import { BackendExtensionsInstaller } from "../utils/depsChecker/backendExtensionsInstall";
 import { DotnetChecker } from "../utils/depsChecker/dotnetChecker";
-import { funcPluginAdapter } from "../utils/depsChecker/funcPluginAdapter";
+import { FuncPluginAdapter } from "../utils/depsChecker/funcPluginAdapter";
 import { funcPluginLogger } from "../utils/depsChecker/funcPluginLogger";
-import { funcPluginTelemetry } from "../utils/depsChecker/funcPluginTelemetry";
+import { FuncPluginTelemetry } from "../utils/depsChecker/funcPluginTelemetry";
+import { PluginContext } from '@microsoft/teamsfx-api';
 
 export class FunctionDeploy {
   public static async getLastDeploymentTime(componentPath: string): Promise<Date> {
@@ -101,6 +102,7 @@ export class FunctionDeploy {
   }
 
   public static async installFuncExtensions(
+    ctx: PluginContext,
     componentPath: string,
     language: FunctionLanguage
   ): Promise<void> {
@@ -109,10 +111,11 @@ export class FunctionDeploy {
     }
 
     const binPath = path.join(componentPath, FunctionPluginPathInfo.functionExtensionsFolderName);
+    const telemetry = new FuncPluginTelemetry(ctx);
     const dotnetChecker = new DotnetChecker(
-      funcPluginAdapter,
+      new FuncPluginAdapter(ctx, telemetry),
       funcPluginLogger,
-      funcPluginTelemetry
+      telemetry,
     );
     const backendExtensionsInstaller = new BackendExtensionsInstaller(
       dotnetChecker,
@@ -214,32 +217,6 @@ export class FunctionDeploy {
           DeploySteps.restart,
           async () => await client.webApps.restart(resourceGroupName, functionAppName)
         )
-    );
-
-    await runWithErrorCatchAndThrow(
-      new FunctionAppOpError("sync triggers"),
-      async () =>
-        await step(StepGroup.DeployStepGroup, DeploySteps.syncTrigger, async () => {
-          // TODO: combine with requestWithRetry
-          let tryCount = 0;
-          while (tryCount++ < DefaultValues.maxTryCount) {
-            try {
-              await client.webApps.syncFunctionTriggers(resourceGroupName, functionAppName);
-              break;
-            } catch (e) {
-              /* Workaround: syncFunctionTriggers throw exception even for response 200 */
-              if (e.response?.status === 200 || e.response?.status === 201) {
-                break;
-              }
-              if (tryCount === DefaultValues.maxTryCount) {
-                throw e;
-              }
-            }
-          }
-          if (tryCount > 1) {
-            Logger.info(InfoMessages.succeedWithRetry("sync triggers", tryCount));
-          }
-        })
     );
 
     await this.saveDeploymentInfo(componentPath, zipContent, deployTime);

@@ -14,6 +14,7 @@ import Init from "./init";
 import Publish from "./publish";
 import Build from "./build";
 import Validate from "./validate";
+import Config from "./config";
 
 export const commands: YargsCommand[] = [
   new Account(),
@@ -25,5 +26,6 @@ export const commands: YargsCommand[] = [
   new Init(),
   new Build(),
   new Validate(),
-  new Publish()
+  new Publish(),
+  new Config()
 ];

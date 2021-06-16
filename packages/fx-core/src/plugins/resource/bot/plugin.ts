@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { PluginContext, Result, Stage, QTreeNode, NodeType, FxError } from "@microsoft/teamsfx-api";
+import { PluginContext, Result, Stage, QTreeNode, FxError } from "@microsoft/teamsfx-api";
 
 import { AADRegistration } from "./aadRegistration";
 import * as factory from "./clientFactory";
@@ -27,7 +27,7 @@ import { getZipDeployEndpoint } from "./utils/zipDeploy";
 
 import * as appService from "@azure/arm-appservice";
 import * as fs from "fs-extra";
-import { CommonStrings, PluginBot, ConfigNames } from "./resources/strings";
+import { CommonStrings, PluginBot, ConfigNames, PluginLocalDebug } from "./resources/strings";
 import { DialogUtils } from "./utils/dialog";
 import {
   CheckThrowSomethingMissing,
@@ -65,7 +65,7 @@ export class TeamsBotImpl {
 
     return ResultFactory.Success(
       new QTreeNode({
-        type: NodeType.group,
+        type: "group",
       })
     );
   }
@@ -75,7 +75,7 @@ export class TeamsBotImpl {
     await this.config.restoreConfigFromContext(context);
     Logger.info(Messages.PreScaffoldingBot);
 
-    const rawWay = this.ctx.answers?.get(QuestionNames.WAY_TO_REGISTER_BOT);
+    const rawWay = this.ctx.answers![QuestionNames.WAY_TO_REGISTER_BOT];
 
     if (!rawWay) {
       throw new UserInputsError(QuestionNames.WAY_TO_REGISTER_BOT, rawWay as string);
@@ -571,7 +571,7 @@ export class TeamsBotImpl {
 
     const botReg: IBotRegistration = {
       botId: this.config.localDebug.localBotId,
-      name: this.ctx!.app.name.short,
+      name: this.ctx!.app.name.short + PluginLocalDebug.LOCAL_DEBUG_SUFFIX,
       description: "",
       iconUrl: "",
       messagingEndpoint: endpoint,
@@ -609,13 +609,13 @@ export class TeamsBotImpl {
   }
 
   private async reuseExistingBotRegistration() {
-    const rawBotId = this.ctx!.answers?.get(QuestionNames.GET_BOT_ID);
+    const rawBotId = this.ctx!.answers![QuestionNames.GET_BOT_ID];
     if (!rawBotId) {
       throw new UserInputsError(QuestionNames.GET_BOT_ID, rawBotId as string);
     }
     const botId = rawBotId as string;
 
-    const rawBotPassword = this.ctx!.answers?.get(QuestionNames.GET_BOT_PASSWORD);
+    const rawBotPassword = this.ctx!.answers![QuestionNames.GET_BOT_PASSWORD];
     if (!rawBotPassword) {
       throw new UserInputsError(QuestionNames.GET_BOT_PASSWORD, rawBotPassword as string);
     }
@@ -657,7 +657,7 @@ export class TeamsBotImpl {
     // 2. Register bot by app studio.
     const botReg: IBotRegistration = {
       botId: botAuthCreds.clientId,
-      name: this.ctx!.app.name.short,
+      name: this.ctx!.app.name.short + PluginLocalDebug.LOCAL_DEBUG_SUFFIX,
       description: "",
       iconUrl: "",
       messagingEndpoint: "",
@@ -701,6 +701,17 @@ export class TeamsBotImpl {
         appStudioToken!,
         aadDisplayName
       );
+
+      if (!this.config.scaffold.botId) {
+        this.config.scaffold.botId = botAuthCreds.clientId;
+      }
+      if (!this.config.scaffold.botPassword) {
+        this.config.scaffold.botPassword = botAuthCreds.clientSecret;
+      }
+      if (!this.config.scaffold.objectId) {
+        this.config.scaffold.objectId = botAuthCreds.objectId;
+      }
+      this.config.saveConfigIntoContext(this.ctx!); // Checkpoint for aad app provision.
     } else {
       botAuthCreds.clientId = this.config.scaffold.botId;
       botAuthCreds.clientSecret = this.config.scaffold.botPassword;
@@ -722,10 +733,10 @@ export class TeamsBotImpl {
     const botChannelRegistrationName = this.config.provision.botChannelRegName
       ? this.config.provision.botChannelRegName
       : ResourceNameFactory.createCommonName(
-          this.config.resourceNameSuffix,
-          this.ctx?.app.name.short,
-          MaxLengths.BOT_CHANNEL_REG_NAME
-        );
+        this.config.resourceNameSuffix,
+        this.ctx?.app.name.short,
+        MaxLengths.BOT_CHANNEL_REG_NAME
+      );
 
     Logger.info(Messages.ProvisioningAzureBotChannelRegistration);
     await AzureOperations.CreateBotChannelRegistration(
@@ -744,18 +755,6 @@ export class TeamsBotImpl {
       botChannelRegistrationName
     );
     Logger.info(Messages.SuccessfullyProvisionedMsTeamsChannel);
-
-    if (!this.config.scaffold.botId) {
-      this.config.scaffold.botId = botAuthCreds.clientId;
-    }
-
-    if (!this.config.scaffold.botPassword) {
-      this.config.scaffold.botPassword = botAuthCreds.clientSecret;
-    }
-
-    if (!this.config.scaffold.objectId) {
-      this.config.scaffold.objectId = botAuthCreds.objectId;
-    }
 
     if (!this.config.provision.botChannelRegName) {
       this.config.provision.botChannelRegName = botChannelRegistrationName;

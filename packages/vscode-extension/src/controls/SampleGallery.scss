@@ -75,10 +75,10 @@
     }
 
     h2 {
-      font-size: 12px;
+      font-size: 13px;
       text-align: center;
       color: var(--vscode-titleBar-activeForeground);
-      font-weight: normal;
+      font-weight: 700;
       text-align: left;
       margin: 12px 12px 0px 12px;
     }
@@ -115,6 +115,18 @@
     .right-aligned {
       margin-left: 190px;
       margin-right: 0px;
+    }
+  }
+}
+
+body.vscode-dark {
+  .sample-app-card {
+    h2 {
+      color: #E5E5E5;
+    }
+
+    h3 {
+      color: #CCCCCC;
     }
   }
 }

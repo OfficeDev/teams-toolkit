@@ -41,7 +41,11 @@
 
     h2 {
       font-size: 26px;
-      line-height: 32px;
+      font-style: normal;
+      font-weight: 600;
+      line-height: 31px;
+      letter-spacing: 0em;
+      text-align: left;
       margin-top: 0px;
       margin-bottom: 0px;
       font-weight: normal;
@@ -144,11 +148,16 @@
       align-items: center;
       text-align: center;
       font-weight: normal;
+      margin-bottom: 1px;
     }
   }
 
   .right {
     float: right;
+
+    button {
+      height: 28px;
+    }
 
     span {
       font-size: 13px;
@@ -164,6 +173,7 @@
     font-size: 11px;
     line-height: 16px;
     align-items: center;
+    margin-bottom: 8px;
   }
 
   .card-line {
@@ -172,5 +182,15 @@
 
   .left-right-align {
     overflow: hidden;
+  }
+}
+
+body.vscode-light {
+  .quick-start-page {
+    .title {
+      h2 {
+        color: #000000;
+      }
+    }
   }
 }

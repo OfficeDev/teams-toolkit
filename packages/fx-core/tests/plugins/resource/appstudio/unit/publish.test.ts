@@ -7,7 +7,7 @@ import sinon from "sinon";
 import fs from "fs-extra";
 import path from "path";
 import { v4 as uuid } from "uuid";
-import { ConfigMap, PluginContext, ok } from "@microsoft/teamsfx-api";
+import { ConfigMap, PluginContext, ok, Platform } from "@microsoft/teamsfx-api";
 import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio";
 import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio/appStudio";
 import { PublishingState } from "./../../../../../src/plugins/resource/appstudio/interfaces/IPublishingAppDefinition";
@@ -30,7 +30,8 @@ describe("Publish Teams app", () => {
             configOfOtherPlugins: new Map(),
             config: new ConfigMap(),
             app: manifest,
-            appStudioToken: mockTokenProvider()
+            appStudioToken: mockTokenProvider(),
+            answers:{platform: Platform.VSCode}
         };
         sinon.stub(AppStudioClient, "validateManifest").resolves([]);
         sinon.stub(AppStudioClient, "publishTeamsApp").resolves(uuid());

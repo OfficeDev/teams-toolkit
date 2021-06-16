@@ -16,8 +16,8 @@ import { Telemetry } from "../utils/telemetry";
 import { RetryHandler } from "../utils/commonUtils";
 
 export class AadService {
-  private readonly logger?: LogProvider;
-  private readonly telemetryReporter?: TelemetryReporter;
+  private readonly logger: LogProvider | undefined;
+  private readonly telemetryReporter: TelemetryReporter | undefined;
   private readonly axios: AxiosInstance;
 
   constructor(axios: AxiosInstance, telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
@@ -69,8 +69,7 @@ export class AadService {
       objectId,
       "get",
       `/applications/${objectId}`,
-      undefined,
-      this._resourceNotFoundErrorHandler
+      undefined
     );
     return response?.data as IAadInfo;
   }
@@ -96,7 +95,10 @@ export class AadService {
     );
     const servicePrincipals = response?.data as IServicePrincipals;
 
-    const result = AssertNotEmpty("servicePrincipals.value", servicePrincipals?.value);
+    const result = AssertNotEmpty<IServicePrincipal[]>(
+      "servicePrincipals.value",
+      servicePrincipals?.value
+    );
 
     if (result.length === 0) {
       this.logger?.info(LogMessages.resourceNotFound(AzureResource.ServicePrincipal, appId));
@@ -130,9 +132,8 @@ export class AadService {
     resourceId: string | undefined,
     method: Method,
     url: string,
-    data?: any,
-    errorHandler?: (error: any) => ErrorHandlerResult
-  ): Promise<AxiosResponse<any> | undefined> {
+    data?: any
+  ): Promise<AxiosResponse<any>> {
     return await RetryHandler.retry(async (executionIndex) => {
       try {
         this.logger?.info(
@@ -159,24 +160,9 @@ export class AadService {
           executionIndex
         );
         return result;
-      } catch (error) {
-        if (!!errorHandler && errorHandler(error) === ErrorHandlerResult.Return) {
-          this.logger?.info(LogMessages.operationSuccess(operation, resourceType, resourceId));
-          Telemetry.sendAadOperationEvent(
-            this.telemetryReporter,
-            operation,
-            resourceType,
-            OperationStatus.Succeeded,
-            executionIndex
-          );
-          if (operation === Operation.Get) {
-            this.logger?.info(LogMessages.resourceNotFound(resourceType, resourceId));
-          }
-          return undefined;
-        }
-
+      } catch (error: any) {
         error.message = `[Detail] ${error?.response?.data?.error?.message ?? error.message}`;
-        this.logger?.error(LogMessages.operationFailed(operation, resourceType, resourceId));
+        this.logger?.warning(LogMessages.operationFailed(operation, resourceType, resourceId));
         const wrappedError = BuildError(
           AadOperationError,
           error,
@@ -194,12 +180,5 @@ export class AadService {
         throw wrappedError;
       }
     });
-  }
-
-  private _resourceNotFoundErrorHandler(error: any): ErrorHandlerResult {
-    if (error?.response?.status == 404) {
-      return ErrorHandlerResult.Return;
-    }
-    return ErrorHandlerResult.Continue;
   }
 }

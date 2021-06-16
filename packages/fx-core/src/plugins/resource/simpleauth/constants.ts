@@ -11,6 +11,7 @@ export class Constants {
       subscriptionId: "subscriptionId",
       resourceGroupName: "resourceGroupName",
       location: "location",
+      remoteTeamsAppId: "remoteTeamsAppId",
     },
   };
 
@@ -100,20 +101,24 @@ export class Constants {
     "The maximum number of Free ServerFarms allowed in a Subscription is 10";
   static readonly FreeServerFarmsQuotaErrorToUser =
     "The maximum number of Free App Service Plan allowed in a Subscription is 10. Delete a free App Service plan and try again.";
-  static readonly FreeServerFarmsQuotaErrorHelpLink =
-    "https://aka.ms/teamsfx-sa-help#freeserverfarmsquotaerror";
+    static readonly MissingSubscriptionRegistrationErrorFromAzure =
+    "The subscription is not registered to use namespace 'Microsoft.Web'";
+  static readonly HelpLink =
+    "https://aka.ms/teamsfx-sa-help";
 }
 
 export class Telemetry {
   static component = "component";
   static errorCode = "error-code";
   static errorType = "error-type";
+  static skuName = "sku-name";
   static errorMessage = "error-message";
   static userError = "user";
   static systemError = "system";
   static isSuccess = "success";
   static success = "yes";
   static fail = "no";
+  static appId = "appid";
 }
 
 export interface Message {

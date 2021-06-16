@@ -16,7 +16,6 @@ export enum ProvisionSteps {
 }
 
 export enum PostProvisionSteps {
-  findFunctionApp = "Retrieving settings.",
   updateFunctionSettings = "Updating settings.",
   updateFunctionAuthSettings = "Updating auth settings.",
 }
@@ -33,7 +32,6 @@ export enum DeploySteps {
   checkFuncAppSettings = "Checking deploy settings.",
   deploy = "Uploading zip package.",
   restart = "Restarting function app.",
-  syncTrigger = "Syncing triggers.",
 }
 
 export enum StepGroup {

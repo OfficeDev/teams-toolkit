@@ -106,6 +106,10 @@ export enum DepsCheckerEvent {
   dotnetInstallScriptError = "dotnet-install-script-error",
   dotnetValidationError = "dotnet-validation-error",
 
+  clickLearnMore = "env-checker-click-learn-more",
+  clickContinue = "env-checker-click-continue",
+  clickCancel = "env-checker-click-cancel",
+
   nodeNotFound = "node-not-found",
   nodeNotSupportedForAzure = "node-not-supported-for-azure",
   nodeNotSupportedForSPFx = "node-not-supported-for-spfx",

@@ -4,14 +4,14 @@
 "use strict";
 
 import { Argv, Options } from "yargs";
-import * as path from "path";
-import { FxError, err, ok, Result, ConfigMap, Platform, Func } from "@microsoft/teamsfx-api";
+import { FxError, err, ok, Result, Platform, Func, Stage } from "@microsoft/teamsfx-api";
 import activate from "../activate";
 import * as constants from "../constants";
 import { YargsCommand } from "../yargsCommand";
-import { getParamJson } from "../utils";
+import { argsToInputs } from "../utils";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
+import { HelpParamGenerator } from "../helpParamGenerator";
 
 export default class Publish extends YargsCommand {
   public readonly commandHead = `publish`;
@@ -19,37 +19,28 @@ export default class Publish extends YargsCommand {
   public readonly description = "Publish the app to Teams.";
   public readonly paramPath = constants.publishParamPath;
 
-  public readonly params: { [_: string]: Options } = getParamJson(this.paramPath);
+  public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {
+    this.params = HelpParamGenerator.getYargsParamForHelp(Stage.publish);
     return yargs.version(false).options(this.params);
   }
 
   public async runCommand(args: {
     [argName: string]: string | string[];
   }): Promise<Result<null, FxError>> {
-    const answers = new ConfigMap();
-    for (const name in this.params) {
-      if (!args[name]) {
-        continue;
-      }
-      if (name.endsWith("folder")) {
-        answers.set(name, path.resolve(args[name] as string));
-      } else {
-        answers.set(name, args[name]);
-      }
-    }
-
+    const answers = argsToInputs(this.params, args);
+     
     const manifestFolderParamName = "manifest-folder";
     let result;
     // if input manifestFolderParam(actually also teams-app-id param),
     // this call is from VS platform, since CLI hide these two param from users.
-    if (answers.has(manifestFolderParamName)) {
+    if (answers[manifestFolderParamName]) {
       CliTelemetry.sendTelemetryEvent(TelemetryEvent.PublishStart);
       result = await activate();
     } else {
-      const rootFolder = answers.getString("folder");
-      answers.delete("folder");
+      const rootFolder = answers["folder"] as string;
+      delete answers.folder;
       CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.PublishStart);
       result = await activate(rootFolder);
     }
@@ -60,16 +51,15 @@ export default class Publish extends YargsCommand {
     }
 
     const core = result.value;
-    if (answers.has(manifestFolderParamName)) {
-      answers.set("platform", Platform.VS);
+    if (answers[manifestFolderParamName] && answers["teams-app-id"]) {
+      answers.platform = Platform.VS;
       const func: Func = {
         namespace: "fx-solution-azure",
         method: "VSpublish"
       };
       result = await core.executeUserTask!(func, answers);
     } else {
-      answers.set("platform", Platform.CLI);
-      result = await core.publish(answers);
+      result = await core.publishApplication(answers);
     }
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Publish, result.error);

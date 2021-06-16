@@ -8,6 +8,7 @@ import {
   Dialog,
   DialogMsg,
   DialogType,
+  Platform,
 } from "@microsoft/teamsfx-api";
 import { ResourceGroups, ResourceManagementClientContext } from "@azure/arm-resources";
 import { ServiceClientCredentials } from "@azure/ms-rest-js";
@@ -50,7 +51,7 @@ export function generateFakeServiceClientCredentials(): ServiceClientCredentials
 
 export function generateFakeLogProvider(): LogProvider {
   return {
-    info: (message: string) => {
+    info: (message: string | Array<any>) => {
       return Promise.resolve(true);
     },
     log: (logLevel: LogLevel, message: string) => {
@@ -123,9 +124,10 @@ export function newPluginContext(): PluginContext {
       ],
     ]),
     config: new ConfigMap(),
-    answers: new ConfigMap(),
+    answers: {platform:Platform.VSCode},
     projectSettings: {
       appName: "My App",
+      currentEnv: "default",
       solutionSettings: {
         name: "AnyName",
         version: "0.0.1",
@@ -166,9 +168,6 @@ export function newPluginContext(): PluginContext {
       signout: () => {
         return Promise.resolve(true);
       },
-      setStatusChangeCallback: (anything) => {
-        return Promise.resolve(true);
-      },
       setStatusChangeMap: (name: string, anything) => {
         return Promise.resolve(true);
       },
@@ -177,12 +176,6 @@ export function newPluginContext(): PluginContext {
       },
     },
     azureAccountProvider: {
-      getAccountCredential: (showDialog?: boolean) => {
-        return undefined;
-      },
-      getIdentityCredential: (showDialog?: boolean) => {
-        return undefined;
-      },
       getAccountCredentialAsync: (showDialog?: boolean) => {
         return Promise.resolve(undefined);
       },
@@ -190,9 +183,6 @@ export function newPluginContext(): PluginContext {
         return Promise.resolve(undefined);
       },
       signout: () => {
-        return Promise.resolve(true);
-      },
-      setStatusChangeCallback: (anything) => {
         return Promise.resolve(true);
       },
       setStatusChangeMap: (name: string, anything) => {

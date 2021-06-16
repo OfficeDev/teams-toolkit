@@ -21,6 +21,16 @@ export const CreateAppServicePlanError: PluginError = {
   message: (message) => `Failed to create App Service plan: ${message}`,
 };
 
+export const FreeServerFarmsQuotaError: PluginError = {
+  name: "FreeServerFarmsQuotaError",
+  message: (message) => `Failed to create App Service plan: ${message}`,
+};
+
+export const MissingSubscriptionRegistrationError: PluginError = {
+  name: "MissingSubscriptionRegistrationError",
+  message: (message) => `Failed to create App Service plan: ${message}`,
+};
+
 export const CreateWebAppError: PluginError = {
   name: "CreateWebAppError",
   message: (message) => `Failed to create Web App: ${message}`,

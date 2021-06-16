@@ -4,7 +4,6 @@
 import {
   PluginContext,
   QTreeNode,
-  NodeType,
   Plugin,
   FxError,
   Stage,
@@ -42,15 +41,15 @@ export class SpfxPlugin implements Plugin {
     ctx: PluginContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     const spfx_frontend_host = new QTreeNode({
-      type: NodeType.group,
+      type: "group",
     });
 
     if (stage === Stage.create) {
       const spfx_framework_type = new QTreeNode({
-        type: NodeType.singleSelect,
+        type: "singleSelect",
         name: SPFXQuestionNames.framework_type,
         title: "Framework",
-        option: [
+        staticOptions: [
           { id: "none", label: "None" },
           { id: "react", label: "React" },
         ],
@@ -60,7 +59,7 @@ export class SpfxPlugin implements Plugin {
       spfx_frontend_host.addChild(spfx_framework_type);
 
       const spfx_webpart_name = new QTreeNode({
-        type: NodeType.text,
+        type: "text",
         name: SPFXQuestionNames.webpart_name,
         title: "Web Part Name",
         default: "helloworld",
@@ -71,7 +70,7 @@ export class SpfxPlugin implements Plugin {
       spfx_frontend_host.addChild(spfx_webpart_name);
 
       const spfx_webpart_desp = new QTreeNode({
-        type: NodeType.text,
+        type: "text",
         name: SPFXQuestionNames.webpart_desp,
         title: "Web Part Description",
         default: "helloworld description",
@@ -88,11 +87,11 @@ export class SpfxPlugin implements Plugin {
   public async scaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
     //answers ---> config by huajie
     if (ctx.answers) {
-      let v = ctx.answers.getString(SPFXQuestionNames.framework_type);
+      let v = ctx.answers[SPFXQuestionNames.framework_type] as string;
       this.config.framework = v || this.config.framework;
-      v = ctx.answers.getString(SPFXQuestionNames.webpart_name);
+      v = ctx.answers[SPFXQuestionNames.webpart_name] as string;
       this.config.webpartName = v || this.config.webpartName;
-      v = ctx.answers.getString(SPFXQuestionNames.webpart_desp);
+      v = ctx.answers[SPFXQuestionNames.webpart_desp] as string;
       this.config.webpartDesc = v || this.config.webpartDesc;
     }
 

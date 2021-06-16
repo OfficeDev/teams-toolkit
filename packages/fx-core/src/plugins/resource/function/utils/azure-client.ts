@@ -148,8 +148,9 @@ export class AzureLib {
     functionAppName: string,
     siteEnvelope: Site
   ): Promise<Site> {
-    return this.ensureResource<Site>(() =>
-      client.webApps.createOrUpdate(resourceGroupName, functionAppName, siteEnvelope)
+    return this.ensureResource<Site>(
+      () => client.webApps.createOrUpdate(resourceGroupName, functionAppName, siteEnvelope),
+      () => this.findFunctionApp(client, resourceGroupName, functionAppName)
     );
   }
 }

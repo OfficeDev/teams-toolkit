@@ -51,7 +51,7 @@ export class SqlPlugin implements Plugin {
     ctx: PluginContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     return this.runWithSqlError(
-      Telemetry.stage.postProvision,
+      Telemetry.stage.getQuestion,
       () => this.sqlImpl.getQuestions(stage, ctx),
       ctx
     );
@@ -87,10 +87,13 @@ export class SqlPlugin implements Plugin {
         );
       }
       const errorCode = res.error.source + "." + res.error.name;
-      const errorType =
-        res.error instanceof SystemError ? Telemetry.systemError : Telemetry.userError;
+      const errorType = res.error instanceof SystemError ? Telemetry.systemError : Telemetry.userError;
       TelemetryUtils.init(ctx);
-      TelemetryUtils.sendErrorEvent(stage, errorCode, errorType, res.error.message);
+      let errorMessage = res.error.message;
+      if (res.error.innerError) {
+        errorMessage += ` Detailed error: ${e.innerError.message}.`;
+      }
+      TelemetryUtils.sendErrorEvent(stage, errorCode, errorType, errorMessage);
       return res;
     }
   }

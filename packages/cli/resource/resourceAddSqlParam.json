@@ -12,7 +12,7 @@
             "name": "add-azure-resources",
             "title": "Cloud resources",
             "type": "multiSelect",
-            "option": [
+            "staticOptions": [
                 {
                     "id": "function",
                     "label": "Azure Function App"

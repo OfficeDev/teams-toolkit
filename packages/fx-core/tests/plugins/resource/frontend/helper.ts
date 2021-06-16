@@ -48,9 +48,6 @@ export class TestHelper {
   } as StorageAccountsCreateResponse;
 
   static fakeAzureAccountProvider: AzureAccountProvider = {
-    getAccountCredential: () => {
-      return TestHelper.fakeCredential;
-    },
     getAccountCredentialAsync: async () => {
       return TestHelper.fakeCredential;
     },
@@ -66,7 +63,7 @@ export class TestHelper {
     async debug(message: string): Promise<boolean> {
       return true;
     },
-    async info(message: string): Promise<boolean> {
+    async info(message: string | Array<any>): Promise<boolean> {
       return true;
     },
     async warning(message: string): Promise<boolean> {
@@ -114,6 +111,7 @@ export class TestHelper {
       ]),
       projectSettings: {
         appName: TestHelper.appName,
+        currentEnv: "default",
         solutionSettings: {
           name: "",
           version: "",

@@ -111,7 +111,7 @@ export class FunctionDeploy {
     }
 
     const binPath = path.join(componentPath, FunctionPluginPathInfo.functionExtensionsFolderName);
-    const telemetry = new FuncPluginTelemetry(ctx);
+    const telemetry = new FuncPluginTelemetry();
     const dotnetChecker = new DotnetChecker(
       new FuncPluginAdapter(ctx, telemetry),
       funcPluginLogger,

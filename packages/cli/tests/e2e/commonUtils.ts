@@ -25,6 +25,7 @@ export async function execAsyncWithRetry(command: string, options: {
         if (result.stderr === "") {
             return result;
         }
+        console.log(`Run \`${command}\` failed with error msg: ${result.stderr}.`);
         retries--;
         result = await execAsync(command, options);
     }

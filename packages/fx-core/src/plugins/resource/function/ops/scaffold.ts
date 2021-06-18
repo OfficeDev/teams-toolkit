@@ -57,9 +57,9 @@ export class FunctionScaffold {
       Logger.error(e.toString());
 
       if (e instanceof FunctionPluginError) {
-        TelemetryHelper.sendFallbackEvent(e);
+        TelemetryHelper.sendScaffoldFallbackEvent(e);
       } else {
-        TelemetryHelper.sendFallbackEvent();
+        TelemetryHelper.sendScaffoldFallbackEvent();
       }
 
       return await runWithErrorCatchAndThrow(new TemplateZipFallbackError(), async () => {

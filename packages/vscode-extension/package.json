@@ -552,6 +552,7 @@
     "sudo-prompt": "^9.2.1",
     "underscore": "^1.12.1",
     "vscode-extension-telemetry": "^0.1.6",
+    "vscode-tas-client": "^0.1.22",
     "vscode-test": "^1.5.2"
   },
   "extensionDependencies": [

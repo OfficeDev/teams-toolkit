@@ -20,16 +20,16 @@ export async function execAsyncWithRetry(command: string, options: {
     stdout: string;
     stderr: string;
 }> {
-    let result = await execAsync(command, options);
     while (retries > 0) {
-        if (result.stderr === "") {
-            return result;
-        }
-        console.log(`Run \`${command}\` failed with error msg: ${result.stderr}.`);
         retries--;
-        result = await execAsync(command, options);
+        try {
+            const result = await execAsync(command, options);
+            return result;
+        } catch (e) {
+            console.log(`Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`);
+        }
     }
-    return result;
+    return execAsync(command, options);
 }
 
 const testFolder = path.resolve(os.homedir(), "test-folder");

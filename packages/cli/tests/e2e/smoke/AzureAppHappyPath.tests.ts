@@ -9,6 +9,7 @@ import { AadValidator, AppStudioValidator, FrontendValidator, FunctionValidator,
 
 import {
   execAsync,
+  execAsyncWithRetry,
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
@@ -75,7 +76,7 @@ describe("Azure App Happy Path", function () {
     }
 
     // provision
-    await execAsync(
+    await execAsyncWithRetry(
       `teamsfx provision --sql-admin-name Abc123321 --sql-password Cab232332 --sql-confirm-password Cab232332`
       + ` --sql-skip-adding-user false`,
       {
@@ -108,7 +109,7 @@ describe("Azure App Happy Path", function () {
     }
 
     // deploy
-    await execAsync(
+    await execAsyncWithRetry(
       `teamsfx deploy --open-api-document openapi/openapi.json --api-prefix qwed --api-version v1`,
       {
         cwd: projectPath,
@@ -122,7 +123,7 @@ describe("Azure App Happy Path", function () {
     }
 
     // validate the manifest
-    const validationResult = await execAsync(
+    const validationResult = await execAsyncWithRetry(
       `teamsfx validate`,
       {
         cwd: projectPath,
@@ -136,7 +137,7 @@ describe("Azure App Happy Path", function () {
     }
 
     // build
-    await execAsync(
+    await execAsyncWithRetry(
       `teamsfx build`,
       {
         cwd: projectPath,
@@ -152,7 +153,7 @@ describe("Azure App Happy Path", function () {
     }
 
     // publish
-    await execAsync(
+    await execAsyncWithRetry(
       `teamsfx publish`,
       {
         cwd: projectPath,

@@ -8,6 +8,7 @@ import { AadValidator, BotValidator } from "../../commonlib";
 
 import {
   execAsync,
+  execAsyncWithRetry,
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
@@ -48,7 +49,7 @@ describe("Provision", function () {
     console.log(`[Successfully] set subscription for ${projectPath}`);
 
     // provision
-    await execAsync(
+    await execAsyncWithRetry(
       `teamsfx provision`,
       {
         cwd: projectPath,
@@ -74,7 +75,7 @@ describe("Provision", function () {
     }
 
     // deploy
-    await execAsync(
+    await execAsyncWithRetry(
       `teamsfx deploy bot`,
       {
         cwd: projectPath,
@@ -97,7 +98,7 @@ describe("Provision", function () {
 
 
     // test (validate)
-    await execAsync(
+    await execAsyncWithRetry(
       `teamsfx validate`,
       {
         cwd: projectPath,
@@ -111,7 +112,7 @@ describe("Provision", function () {
     }
 
     // build
-    await execAsync(
+    await execAsyncWithRetry(
       `teamsfx build`,
       {
         cwd: projectPath,

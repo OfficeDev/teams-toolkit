@@ -366,6 +366,10 @@ async function setSubscription(subscription: SubscriptionInfo | undefined) {
         parent: "fx-extension.signinAzure",
         contextValue: "selectSubscription",
         icon: "subscriptionSelected",
+        tooltip: {
+          isMarkdown: false,
+          value:subscription.subscriptionName,
+        },
       },
     ]);
   }

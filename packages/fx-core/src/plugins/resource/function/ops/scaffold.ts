@@ -16,7 +16,7 @@ import { InfoMessages } from "../resources/message";
 import { LanguageStrategyFactory } from "../language-strategy";
 import { Logger } from "../utils/logger";
 import { ScaffoldSteps, StepGroup, step } from "../resources/steps";
-import { TemplateZipFallbackError, runWithErrorCatchAndThrow } from "../resources/errors";
+import { TemplateZipFallbackError, runWithErrorCatchAndThrow, FunctionPluginError } from "../resources/errors";
 import {
   convertTemplateLanguage,
   fetchZipFromURL,
@@ -24,6 +24,8 @@ import {
   unzip,
 } from "../utils/templates-fetch";
 import { getTemplatesFolder } from "../../../..";
+import { TelemetryHelper } from "../utils/telemetry-helper";
+
 export interface TemplateVariables {
   appName: string;
   functionName: string;
@@ -53,6 +55,13 @@ export class FunctionScaffold {
       return zip;
     } catch (e) {
       Logger.error(e.toString());
+
+      if (e instanceof FunctionPluginError) {
+        TelemetryHelper.sendScaffoldFallbackEvent(e);
+      } else {
+        TelemetryHelper.sendScaffoldFallbackEvent();
+      }
+
       return await runWithErrorCatchAndThrow(new TemplateZipFallbackError(), async () => {
         const templateLanguage: string = convertTemplateLanguage(language);
         const fileName: string =

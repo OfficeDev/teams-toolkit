@@ -2056,7 +2056,7 @@ export class TeamsAppSolution implements Solution {
     if (alreadyHaveBotOrMe && alreadyHaveTab) {
       const cannotAddCapWarnMsg =
         "Your App already has both Tab and Bot/Me, can not Add Capability.";
-      ctx.ui?.showMessage("warn", cannotAddCapWarnMsg, false);
+      ctx.ui?.showMessage("error", cannotAddCapWarnMsg, false);
       return ok(undefined);
     }
 

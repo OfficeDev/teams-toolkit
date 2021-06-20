@@ -45,19 +45,24 @@ export interface ProjectState extends Json{
 }
 
 export interface Inputs extends Json{
-    projectPath:string;
-    platform: Platform;
-    vscodeEnv?:VsCodeEnv;
-}    
+  platform: Platform;
+  stage?: Stage;
+  vscodeEnv?:VsCodeEnv;
+  ignoreLock?:boolean;
+  ignoreTypeCheck?:boolean;
+  ignoreConfigPersist?:boolean;
+}   
+
+
   
 export interface Context {
-    projectPath: string;
-    userInteraction: UserInteraction;
-    logProvider: LogProvider;
-    telemetryReporter: TelemetryReporter;
-    projectSetting: ProjectSetting; 
-    projectState: ProjectState;
-    projectSecrets: Json;
+  projectPath: string;
+  userInteraction: UserInteraction;
+  logProvider: LogProvider;
+  telemetryReporter: TelemetryReporter;
+  projectSetting: ProjectSetting; 
+  projectState: ProjectState;
+  projectSecrets: Json;
 }
  
 /**
@@ -73,3 +78,20 @@ export interface ProjectConfigs{
     resourceInstanceValues?: Record<string, string>;
     stateValues?: Record<string, string>;
 }
+
+export enum Stage {
+  create = "create",
+  build = "build",
+  debug = "debug",
+  provision = "provision",
+  deploy = "deploy",
+  package = "package",
+  publish = "publish",
+  createEnv = "createEnv",
+  removeEnv = "removeEnv",
+  switchEnv = "switchEnv",
+  userTask = "userTask",
+  update = "update" //never used again except APIM just for reference
+}
+
+ 

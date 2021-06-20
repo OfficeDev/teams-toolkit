@@ -6,17 +6,16 @@ import {
   EnvMeta,
   FunctionRouter,
   FxError,
-  Inputs,
   QTreeNode,
-  Stage,
   TokenProvider,
   Void,
   Func,
   Json,
 } from "../index";
-import { Context } from "./types";
+import { AppStudioTokenProvider, AzureAccountProvider } from "../utils";
+import { Context, Inputs, Stage } from "./types";
 
-export interface ResourceScaffoldResult {
+export interface ResourceTemplate {
   provisionTemplate: Json;
   deployTemplate: Json;
 }
@@ -41,47 +40,156 @@ export interface ResourcePublishContext extends Context {
   manifest: Json;
 }
 
-export interface ResourceProvisionResult{
+export interface ResourceProvisionResult {
   resourceValues: Record<string, string>;
   stateValues: Record<string, string>;
+  secretValues: Record<string, string>;
 } 
 
-type DeploymentConfig = Json;
+export interface ResourceDeploymentResult {
+  stateValues: Record<string, string>;
+  secretValues: Record<string, string>;
+}
+
+type ProvisionConfig = Json;
 
 /**
- * Interface for ResourcePlugins. a ResourcePlugin can hook into different lifecycles by implementing the corresponding API
- * All lifecycles follows the same pattern of returning a Promise<Result<T, FxError>> for error handling.
+ * Interface for ResourcePlugins. a ResourcePlugin can hook into Toolkit's 
+ * lifecycles by implementing the corresponding API.
+ * All lifecycles follows the same pattern of returning a Promise<Result<T, FxError>>.
+ * 
+ * Please prefer to return {@link UserError} or {@link SystemError} when error happens
+ * instead of throwing.
+ * 
  */
 export interface ResourcePlugin {
 
+  // Name used by the toolkit to uniquely identify this plugin.
   name: string;
+
+  // Plugin name that will be shown to end users.
   displayName: string;
 
   /**
-   * scaffold source code on disk
-   * @param {Readonly<Context>} ctx - plugin's runtime context
-   * @param {Inputs} inputs - 
+   * Scaffold source code on disk, relative to context.projectPath 
+   * @example
+   * Here's a simple example
+   * ```
+   * const fs = require("fs-extra");
+   * let content = "let x = 1;"
+   * let path = path.join(ctx.projectPath, "myFolder");
+   * let sourcePath = "somePathhere";
+   * let result = await fs.copy(sourcePath, content);
+   * ```
+   *  
+   * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
+   * @param {Inputs} inputs - User answers to quesions defined in {@link getQuestionsForLifecycleTask}
+   * for {@link Stage.create} along with some system inputs.
    * 
-   * @return {Result<Void, FxError>} It is returning Void because side effect is expected.
+   * @returns Void because side effect is expected.
    */
-  scaffoldSourceCode?: (ctx: Readonly<Context>,  inputs: Inputs) => Promise<Result<Void, FxError>>;
+  scaffoldSourceCode?: (ctx: Context,  inputs: Inputs) => Promise<Result<Void, FxError>>;
 
-  scaffoldResourceTemplate?: (ctx: Readonly<Context>,  inputs: Inputs) => Promise<Result<ResourceScaffoldResult, FxError>>;
+  /**
+   * Returns resource templates (e.g. ARM templates) for provisioning and deployment.
+   * The template is expected to be a JSON object where values can be placeholders in mustache syntax.
+   * @example
+   * ```
+   * { "version": 1, "url": "{{env.hosturl}}" }
+   * ```
+   * Toolkit will manage the resource templates for you.
+   *  
+   * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
+   * @param {Inputs} inputs - User answers to quesions defined in {@link getQuestionsForLifecycleTask}
+   * for {@link Stage.create} along with some system inputs.
+   * 
+   * @return ResourceTemplate for provisioning and deployment.
+   */
+  scaffoldResourceTemplate?: (ctx: Context,  inputs: Inputs) => Promise<Result<ResourceTemplate, FxError>>;
 
-  provisionResource?: (ctx: Readonly<Context>, tokenProvider: TokenProvider, inputs: Inputs) => Promise<Result<ResourceProvisionResult, FxError>>;
+  /**
+   * Toolkit will replace the place holders with user-supplied env config values and pass the complete
+   * provisionTemplate as parameter.
+   * Plugins are expected to submit the provisionTemplate to Azure using token provided by {@link TokenProvider}.
+   * Plugins can also do custom operations like accessing AppStudio using {@link TokenProvider}, 
+   * or use Azure SDK to change cloud settings.
+   * 
+   * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
+   * @param {EnvMeta} envMeta - environment metadata.
+   * @param {Json} provisionTemplate - a complete provision template with all placeholders replaced by user-supplied env values.
+   * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
+   * 
+   * @returns the config, project state, secrect values for the current environment. Toolkit will persist them 
+   *          and use them to generate complete deployment template.
+   */
+  
+  provisionResource?: (ctx: Context, envMeta: EnvMeta, provisionTemplate: Json, tokenProvider: TokenProvider) => Promise<Result<ResourceProvisionResult, FxError>>;
 
-  // Returns a new Deployment config json
-  configureResource?: ( ctx: Readonly<ResourceConfigureContext>) => Promise<Result<DeploymentConfig, FxError>>;
+  /**
+   * Formaly named postProvision, which is used to resolve cross plugin config dependencies.
+   * It will run right after {@link provisionResource}.
+   * Plugins are expected to read the provision values of other plugins, and return a new copy of provisionValues,
+   * possibly with added fields.
+   * 
+   * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
+   * @param {EnvMeta} envMeta - environment metadata.
+   * @param {Json} provisionTemplate - values generated by {@link provisionResource}
+   * @param {Record<string, Json>} provisionValuesOfOtherPlugins - values of other plugins generated by {@link provisionResource}
+   * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
+   * 
+   * @returns a new copy of provisionValues possibly with added fields. Toolkit will persist it for you.
+   * 
+   */
+  configureResource?: (ctx: Context, envMeta: EnvMeta, provisionValues: Json, provisionValuesOfOtherPlugins: Record<string, Json>, tokenProvider: TokenProvider) => Promise<Result<ProvisionConfig, FxError>>;
 
-  // build code or build a teams app package
+  /**
+   * todo(yefuwang): do we still need this?
+   * Builds an artifact for deployment, and stores on disk.
+   * 
+   * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
+   * @param {Inputs} inputs - User answers to quesions defined in {@link getQuestionsForLifecycleTask}
+   * for {@link Stage.build} along with some system inputs.
+   * 
+   * @returns Void because side effect is expected.
+   */
   build?: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
 
-  // Building teams package is now defined as a user task
+  /** 
+   * Generates a Teams manifest package for the current project,
+   * and stores on disk
+   * 
+   * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
+   * @param {Inputs} inputs - User answers to quesions defined in {@link getQuestionsForLifecycleTask}
+   * for {@link Stage.package} along with some system inputs.
+   * 
+   * @returns Void because side effect is expected.
+   */
   package?: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
 
-  deploy?: (ctx: ResourceDeployContext, inputs: Inputs) => Promise<Result<Void, FxError>>;
-  
-  publishApplication?: (ctx: ResourcePublishContext, inputs: Inputs) => Promise<Result<Void, FxError>>;
+  /**
+   * Depends on the values returned by {@link provisionResource} and {@link configureResource}.
+   * Toolkit will replace the placeholders with provisionValues values and pass the complete
+   * deployTemplate as parameter.
+   * Plugins are expected to submit the deployTemplate to Azure.
+   * 
+   * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
+   * @param {Json} provisionTemplate - a complete provision template with all placeholders replaced by user-supplied env values.
+   * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
+   * 
+   * @returns ResourceDeployment results. Plugins can't generate new values in this lifecycle, only states and secrets. 
+   */
+  deploy?: (ctx: Context, deployTemplate: Json, tokenProvider: AzureAccountProvider) => Promise<Result<ResourceDeployContext, FxError>>;
+
+  /**
+   * Depends on the output of {@link package}. Uploads Teams package to AppStudio
+   * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
+   * @param {AppStudioTokenProvider} tokenProvider - Token for AppStudio
+   * @param {Inputs} inputs - User answers to quesions defined in {@link getQuestionsForLifecycleTask}
+   * for {@link Stage.publish} along with some system inputs.
+   * 
+   * @returns Void because side effect is expected.
+   */
+  publishApplication?: (ctx: Context, manifest: Json, tokenProvider: AppStudioTokenProvider, inputs: Inputs) => Promise<Result<Void, FxError>>;
 
   getQuestionsForLifecycleTask?: (ctx: Context, ask: Stage, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
 

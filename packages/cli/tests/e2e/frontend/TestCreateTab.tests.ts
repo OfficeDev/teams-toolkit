@@ -8,6 +8,7 @@ import { AadValidator, FrontendValidator, SimpleAuthValidator } from "../../comm
 
 import {
     execAsync,
+    execAsyncWithRetry,
     getSubscriptionId,
     getTestFolder,
     getUniqueAppName,
@@ -47,7 +48,7 @@ describe("Create single tab", function () {
         );
 
         // provision
-        await execAsync(
+        await execAsyncWithRetry(
             `teamsfx provision`,
             {
                 cwd: projectPath,
@@ -75,7 +76,7 @@ describe("Create single tab", function () {
         }
 
         // deploy
-        await execAsync(
+        await execAsyncWithRetry(
             `teamsfx deploy`,
             {
                 cwd: projectPath,

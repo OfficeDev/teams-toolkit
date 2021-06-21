@@ -8,6 +8,7 @@ import { AadValidator, SimpleAuthValidator } from "../../commonlib";
 
 import {
   execAsync,
+  execAsyncWithRetry,
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
@@ -36,7 +37,7 @@ describe("Provision", function() {
     console.log(`[Successfully] scaffold to ${projectPath}`);
 
     // provision
-    await execAsync(
+    await execAsyncWithRetry(
       `teamsfx provision --subscription ${subscription}`,
       {
         cwd: projectPath,
@@ -57,7 +58,7 @@ describe("Provision", function() {
     await SimpleAuthValidator.validate(simpleAuth, aad, "D1");
 
     // deploy
-    await execAsync(
+    await execAsyncWithRetry(
       `teamsfx deploy frontend-hosting`,
       {
         cwd: projectPath,

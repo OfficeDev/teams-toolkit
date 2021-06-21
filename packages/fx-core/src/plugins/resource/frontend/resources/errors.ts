@@ -234,6 +234,17 @@ export class GetTemplateError extends FrontendPluginError {
   }
 }
 
+export class UnknownFallbackError extends FrontendPluginError {
+  constructor() {
+    super(
+      ErrorType.System,
+      "UnknownFallbackError",
+      "Trigger fallback caused by unknown reason.",
+      []
+    );
+  }
+}
+
 export class UnzipTemplateError extends FrontendPluginError {
   constructor() {
     super(ErrorType.User, "UnzipTemplateError", "Failed to unzip template package.", [

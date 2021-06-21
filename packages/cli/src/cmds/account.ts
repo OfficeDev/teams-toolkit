@@ -5,7 +5,7 @@
 
 import { Argv } from "yargs";
 
-import { FxError, LogLevel, ok, Question, Result } from "@microsoft/teamsfx-api";
+import { Colors, FxError, LogLevel, ok, Question, Result } from "@microsoft/teamsfx-api";
 
 import { YargsCommand } from "../yargsCommand";
 import AppStudioTokenProvider from "../commonlib/appStudioLogin";
@@ -13,20 +13,29 @@ import AzureTokenProvider from "../commonlib/azureLogin";
 import { signedIn } from "../commonlib/common/constant";
 import CLILogProvider from "../commonlib/log";
 import * as constants from "../constants";
-import { getSubscriptionIdFromEnvFile, setSubscriptionId, toYargsOptions } from "../utils";
+import { getColorizedString, getSubscriptionIdFromEnvFile, setSubscriptionId, toYargsOptions } from "../utils";
 
 async function outputM365Info(commandType: "login" | "show"): Promise<boolean> {
   const result = await AppStudioTokenProvider.getJsonObject();
   if (result) {
     if (commandType === "login") {
+      const message = [
+        {content: `[${constants.cliSource}] Successfully signed in to M365.`, color: Colors.BRIGHT_GREEN},
+        {content: " Your username is ", color: Colors.BRIGHT_WHITE},
+        {content: (result as any).upn, color: Colors.BRIGHT_MAGENTA}
+      ];
       CLILogProvider.necessaryLog(
         LogLevel.Info,
-        `[${constants.cliSource}] Successfully signed in to M365. Your username is ${CLILogProvider.white((result as any).upn)}.`
+        getColorizedString(message)
       );
     } else {
+      const message = [
+        {content: `[${constants.cliSource}] Your M365 Account is: `, color: Colors.BRIGHT_WHITE},
+        {content: (result as any).upn, color: Colors.BRIGHT_MAGENTA}
+      ];
       CLILogProvider.necessaryLog(
         LogLevel.Info,
-        `[${constants.cliSource}] Your M365 Account is: ${CLILogProvider.white((result as any).upn)}.`
+        getColorizedString(message)
       );
     }
   } else {
@@ -42,8 +51,13 @@ async function outputAzureInfo(commandType: "login" | "show", tenantId = ""): Pr
   if (result) {
     const subscriptions = await AzureTokenProvider.listSubscriptions();
     if (commandType === "login") {
+      const message = [
+        {content: `[${constants.cliSource}] Successfully signed in to Azure.`, color: Colors.BRIGHT_GREEN},
+        {content: " Your username is ", color: Colors.BRIGHT_WHITE},
+        {content: (result as any).username, color: Colors.BRIGHT_MAGENTA}
+      ]
       CLILogProvider.necessaryLog(LogLevel.Info, 
-        `[${constants.cliSource}] Successfully signed in to Azure. Your username is ${CLILogProvider.white((result as any).username)}.`
+        getColorizedString(message)
       );
       CLILogProvider.necessaryLog(LogLevel.Info, `[${constants.cliSource}] Your subscriptions are:`);
       CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(subscriptions, null, 2), true);

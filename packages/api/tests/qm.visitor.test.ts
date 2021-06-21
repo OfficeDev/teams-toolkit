@@ -32,11 +32,8 @@ import {
     TextInputQuestion,
     traverse,
     UserCancelError,
-    UserInteraction,
-    VsCodeEnv,
+    UserInteraction
 } from "../src/index";
-import * as chai from "chai";
-import {FuncValidation, validate} from "../src/qm/validation";
 import "mocha";
 import { assert } from "chai";
 import sinon from "sinon";
@@ -138,7 +135,28 @@ const mockUI = new MockUserInteraction();
 const sandbox = sinon.createSandbox();
 
 describe("Question Model - Visitor Test", () => {
+  describe("question", () => {
+    it("trim() case 1", async () => {
+      const node1 = new QTreeNode({type:"group"});
+      const node2 = new QTreeNode({type:"group"});
+      const node3 = new QTreeNode({type:"group"});
+      node1.addChild(node2);
+      node1.addChild(node3);
+      const trimed = node1.trim();
+      assert.isTrue(trimed === undefined);
+    });
 
+    it("trim() case 2", async () => {
+      const node1 = new QTreeNode({type:"group"});
+      const node2 = new QTreeNode({type:"group"});
+      const node3 = new QTreeNode({type:"text", name: "t1", title: "t1"});
+      node3.condition = {equals: "1"};
+      node1.addChild(node2);
+      node2.addChild(node3);
+      const trimed = node1.trim();
+      assert.isTrue(trimed && trimed.data.name === "t1" && trimed.validate()); 
+    });
+  });
   describe("traverse()", () => {
 
     beforeEach(() => {

@@ -6,6 +6,7 @@ import path from "path";
 import { ApimValidator } from "../../commonlib";
 import {
   execAsync,
+  execAsyncWithRetry,
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
@@ -52,7 +53,7 @@ describe("Use an existing API Management Service", function () {
       `${appName}-existing-apim`
     );
 
-    result = await execAsync(`teamsfx provision`, {
+    result = await execAsyncWithRetry(`teamsfx provision`, {
       cwd: projectPath,
       env: process.env,
       timeout: 0,
@@ -67,7 +68,7 @@ describe("Use an existing API Management Service", function () {
       `${appName}-existing-apim`
     );
 
-    result = await execAsync(
+    result = await execAsyncWithRetry(
       `teamsfx deploy apim --open-api-document openapi/openapi.json --api-prefix ${appName} --api-version v1`,
       {
         cwd: projectPath,

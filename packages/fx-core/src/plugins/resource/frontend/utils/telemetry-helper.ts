@@ -9,6 +9,7 @@ import {
   TelemetryValue,
 } from "../constants";
 import { PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { FrontendPluginError, UnknownFallbackError } from "../resources/errors";
 
 export class telemetryHelper {
   private static fillCommonProperty(
@@ -68,5 +69,18 @@ export class telemetryHelper {
     properties[TelemetryKey.ErrorCode] = e.name;
 
     ctx.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
+  }
+
+  static sendScaffoldFallbackEvent(
+    ctx: PluginContext,
+    e: FrontendPluginError = new UnknownFallbackError(),
+    properties: { [key: string]: string } = {},
+    measurements: { [key: string]: number } = {}
+  ): void {
+    telemetryHelper.fillCommonProperty(ctx, properties);
+    properties[TelemetryKey.ErrorMessage] = e.message;
+    properties[TelemetryKey.ErrorCode] = e.code;
+
+    ctx.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.scaffoldFallback, properties, measurements);
   }
 }

@@ -99,6 +99,7 @@ export class TelemetryEvent {
   static readonly startSuffix = "-start";
 
   static readonly scaffold = "scaffold";
+  static readonly scaffoldFallback = "scaffold-fallback";
 
   static readonly PreProvision = "pre-provision";
   static readonly Provision = "provision";

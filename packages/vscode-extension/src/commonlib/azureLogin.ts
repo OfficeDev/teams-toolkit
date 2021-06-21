@@ -339,6 +339,8 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   async addStatusChangeEvent() {
     const azureAccount: AzureAccount =
       vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
+    // wait for Azure Account extension initialize
+    await azureAccount.waitForSubscriptions();
     azureAccount.onStatusChanged(async (event) => {
       if (event === loggedOut) {
         if (AzureAccountManager.statusChange !== undefined) {

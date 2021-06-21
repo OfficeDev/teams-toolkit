@@ -20,7 +20,7 @@ import { PluginContext } from "@microsoft/teamsfx-api";
 import { Utils } from "../utils";
 import { TemplateInfo, TemplateVariable } from "../resources/templateInfo";
 import { selectTag, tagListURL, templateURL } from "../../../../common/templates";
-import { telemetryHelper } from "../utils/telemetry-helper";
+import { TelemetryHelper } from "../utils/telemetry-helper";
 
 export type Manifest = {
   [key: string]: {
@@ -100,9 +100,9 @@ export class FrontendScaffold {
       Logger.warning(Messages.FailedFetchTemplate());
 
       if (e instanceof FrontendPluginError) {
-        telemetryHelper.sendScaffoldFallbackEvent(e);
+        TelemetryHelper.sendScaffoldFallbackEvent(e);
       } else {
-        telemetryHelper.sendScaffoldFallbackEvent();
+        TelemetryHelper.sendScaffoldFallbackEvent();
       }
 
       return FrontendScaffold.getTemplateZipFromLocal(templateInfo);

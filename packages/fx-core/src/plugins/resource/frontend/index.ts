@@ -13,14 +13,14 @@ import {
 import { Logger } from "./utils/logger";
 import { ProgressHelper } from "./utils/progress-helper";
 import { TelemetryEvent } from "./constants";
-import { telemetryHelper } from "./utils/telemetry-helper";
+import { TelemetryHelper } from "./utils/telemetry-helper";
 
 export class FrontendPlugin implements Plugin {
   frontendPluginImpl = new FrontendPluginImpl();
 
   private static setContext(ctx: PluginContext): void {
     Logger.setLogger(ctx.logProvider);
-    telemetryHelper.setContext(ctx);
+    TelemetryHelper.setContext(ctx);
   }
 
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
@@ -71,9 +71,9 @@ export class FrontendPlugin implements Plugin {
     fn: () => Promise<TeamsFxResult>
   ): Promise<TeamsFxResult> {
     try {
-      telemetryHelper.sendStartEvent(stage);
+      TelemetryHelper.sendStartEvent(stage);
       const result = await fn();
-      telemetryHelper.sendSuccessEvent(stage);
+      TelemetryHelper.sendSuccessEvent(stage);
       return result;
     } catch (e) {
       await ProgressHelper.endAllHandlers();
@@ -88,17 +88,17 @@ export class FrontendPlugin implements Plugin {
                 e.getInnerError(),
                 e.getInnerError()?.stack
               );
-        telemetryHelper.sendErrorEvent(stage, error);
+        TelemetryHelper.sendErrorEvent(stage, error);
         return err(error);
       }
 
       if (e instanceof UserError || e instanceof SystemError) {
-        telemetryHelper.sendErrorEvent(stage, e);
+        TelemetryHelper.sendErrorEvent(stage, e);
         return err(e);
       }
 
       const error = ErrorFactory.SystemError(UnhandledErrorCode, UnhandledErrorMessage, e, e.stack);
-      telemetryHelper.sendErrorEvent(stage, error);
+      TelemetryHelper.sendErrorEvent(stage, error);
       return err(error);
     }
   }

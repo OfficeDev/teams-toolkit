@@ -11,16 +11,14 @@ import {
 import { PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { FrontendPluginError, UnknownFallbackError } from "../resources/errors";
 
-export class telemetryHelper {
-  static ctx?: PluginContext;
+export class TelemetryHelper {
+  private static ctx?: PluginContext;
 
   static setContext(ctx: PluginContext): void {
     this.ctx = ctx;
   }
 
-  private static fillCommonProperty(
-    properties: { [key: string]: string }
-  ): void {
+  private static fillCommonProperty(properties: { [key: string]: string }): void {
     properties[TelemetryKey.Component] = FrontendPluginInfo.PluginName;
     properties[TelemetryKey.AppId] =
       (this.ctx?.configOfOtherPlugins
@@ -33,7 +31,7 @@ export class telemetryHelper {
     properties: { [key: string]: string } = {},
     measurements: { [key: string]: number } = {}
   ): void {
-    telemetryHelper.fillCommonProperty(properties);
+    TelemetryHelper.fillCommonProperty(properties);
 
     this.ctx?.telemetryReporter?.sendTelemetryEvent(
       eventName + TelemetryEvent.startSuffix,
@@ -47,7 +45,7 @@ export class telemetryHelper {
     properties: { [key: string]: string } = {},
     measurements: { [key: string]: number } = {}
   ): void {
-    telemetryHelper.fillCommonProperty(properties);
+    TelemetryHelper.fillCommonProperty(properties);
     properties[TelemetryKey.Success] = TelemetryValue.Success;
 
     this.ctx?.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
@@ -59,7 +57,7 @@ export class telemetryHelper {
     properties: { [key: string]: string } = {},
     measurements: { [key: string]: number } = {}
   ): void {
-    telemetryHelper.fillCommonProperty(properties);
+    TelemetryHelper.fillCommonProperty(properties);
     properties[TelemetryKey.Success] = TelemetryValue.Fail;
 
     if (e instanceof SystemError) {
@@ -78,10 +76,14 @@ export class telemetryHelper {
     properties: { [key: string]: string } = {},
     measurements: { [key: string]: number } = {}
   ): void {
-    telemetryHelper.fillCommonProperty(properties);
+    TelemetryHelper.fillCommonProperty(properties);
     properties[TelemetryKey.ErrorMessage] = e.message;
     properties[TelemetryKey.ErrorCode] = e.code;
 
-    this.ctx?.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.scaffoldFallback, properties, measurements);
+    this.ctx?.telemetryReporter?.sendTelemetryEvent(
+      TelemetryEvent.scaffoldFallback,
+      properties,
+      measurements
+    );
   }
 }

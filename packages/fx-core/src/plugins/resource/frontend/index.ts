@@ -13,48 +13,53 @@ import {
 import { Logger } from "./utils/logger";
 import { ProgressHelper } from "./utils/progress-helper";
 import { TelemetryEvent } from "./constants";
-import { telemetryHelper } from "./utils/telemetry-helper";
+import { TelemetryHelper } from "./utils/telemetry-helper";
 
 export class FrontendPlugin implements Plugin {
   frontendPluginImpl = new FrontendPluginImpl();
 
-  public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
+  private static setContext(ctx: PluginContext): void {
     Logger.setLogger(ctx.logProvider);
+    TelemetryHelper.setContext(ctx);
+  }
+
+  public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
+    FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.scaffold, () =>
       this.frontendPluginImpl.scaffold(ctx)
     );
   }
 
   public async preProvision(ctx: PluginContext): Promise<TeamsFxResult> {
-    Logger.setLogger(ctx.logProvider);
+    FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.PreProvision, () =>
       this.frontendPluginImpl.preProvision(ctx)
     );
   }
 
   public async provision(ctx: PluginContext): Promise<TeamsFxResult> {
-    Logger.setLogger(ctx.logProvider);
+    FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.Provision, () =>
       this.frontendPluginImpl.provision(ctx)
     );
   }
 
   public async postProvision(ctx: PluginContext): Promise<TeamsFxResult> {
-    Logger.setLogger(ctx.logProvider);
+    FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.PostProvision, () =>
       this.frontendPluginImpl.postProvision(ctx)
     );
   }
 
   public async preDeploy(ctx: PluginContext): Promise<TeamsFxResult> {
-    Logger.setLogger(ctx.logProvider);
+    FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.PreDeploy, () =>
       this.frontendPluginImpl.preDeploy(ctx)
     );
   }
 
   public async deploy(ctx: PluginContext): Promise<TeamsFxResult> {
-    Logger.setLogger(ctx.logProvider);
+    FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.Deploy, () =>
       this.frontendPluginImpl.deploy(ctx)
     );
@@ -66,9 +71,9 @@ export class FrontendPlugin implements Plugin {
     fn: () => Promise<TeamsFxResult>
   ): Promise<TeamsFxResult> {
     try {
-      telemetryHelper.sendStartEvent(ctx, stage);
+      TelemetryHelper.sendStartEvent(stage);
       const result = await fn();
-      telemetryHelper.sendSuccessEvent(ctx, stage);
+      TelemetryHelper.sendSuccessEvent(stage);
       return result;
     } catch (e) {
       await ProgressHelper.endAllHandlers();
@@ -83,17 +88,17 @@ export class FrontendPlugin implements Plugin {
                 e.getInnerError(),
                 e.getInnerError()?.stack
               );
-        telemetryHelper.sendErrorEvent(ctx, stage, error);
+        TelemetryHelper.sendErrorEvent(stage, error);
         return err(error);
       }
 
       if (e instanceof UserError || e instanceof SystemError) {
-        telemetryHelper.sendErrorEvent(ctx, stage, e);
+        TelemetryHelper.sendErrorEvent(stage, e);
         return err(e);
       }
 
       const error = ErrorFactory.SystemError(UnhandledErrorCode, UnhandledErrorMessage, e, e.stack);
-      telemetryHelper.sendErrorEvent(ctx, stage, error);
+      TelemetryHelper.sendErrorEvent(stage, error);
       return err(error);
     }
   }

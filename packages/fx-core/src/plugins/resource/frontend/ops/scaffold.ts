@@ -9,6 +9,7 @@ import fs from "fs-extra";
 import {
   FetchTemplateManifestError,
   FetchTemplatePackageError,
+  FrontendPluginError,
   InvalidTemplateManifestError,
   runWithErrorCatchAndThrow,
 } from "../resources/errors";
@@ -19,6 +20,7 @@ import { PluginContext } from "@microsoft/teamsfx-api";
 import { Utils } from "../utils";
 import { TemplateInfo, TemplateVariable } from "../resources/templateInfo";
 import { selectTag, tagListURL, templateURL } from "../../../../common/templates";
+import { TelemetryHelper } from "../utils/telemetry-helper";
 
 export type Manifest = {
   [key: string]: {
@@ -94,7 +96,15 @@ export class FrontendScaffold {
       );
       return await FrontendScaffold.fetchZipFromUrl(templateUrl);
     } catch (e) {
+      Logger.debug(e.toString());
       Logger.warning(Messages.FailedFetchTemplate());
+
+      if (e instanceof FrontendPluginError) {
+        TelemetryHelper.sendScaffoldFallbackEvent(e);
+      } else {
+        TelemetryHelper.sendScaffoldFallbackEvent();
+      }
+
       return FrontendScaffold.getTemplateZipFromLocal(templateInfo);
     }
   }

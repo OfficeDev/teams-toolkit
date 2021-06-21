@@ -156,7 +156,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
   return result; 
 }
 
-export function createInputs():Inputs{
+export function getSystemInputs():Inputs{
   const answers:Inputs = {
     projectPath: getWorkspacePath(),
     platform: Platform.VSCode,
@@ -237,7 +237,7 @@ export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
       throw checkCoreRes.error;
     }
 
-    const inputs:Inputs = createInputs();
+    const inputs:Inputs = getSystemInputs();
     inputs.stage = stage;
   
     if (stage === Stage.create){
@@ -298,7 +298,7 @@ async function runUserTask(func: Func, eventName: string): Promise<Result<any, F
     if (checkCoreRes.isErr()) {
       throw checkCoreRes.error;
     }
-    const answers:Inputs = createInputs();
+    const answers:Inputs = getSystemInputs();
     result = await core.executeUserTask(func, answers);
   } catch (e) {
     result = wrapError(e);

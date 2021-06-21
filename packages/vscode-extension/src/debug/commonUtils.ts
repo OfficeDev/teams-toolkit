@@ -7,7 +7,7 @@ import * as dotenv from "dotenv";
 import * as vscode from "vscode";
 import * as constants from "./constants";
 import { ConfigFolderName, Func } from "@microsoft/teamsfx-api";
-import { core, createInputs, showError } from "../handlers";
+import { core, getSystemInputs, showError } from "../handlers";
 import * as net from "net";
 import { ext } from "../extensionVariables";
 import { getActiveEnv } from "../utils/commonUtils";
@@ -101,7 +101,7 @@ export async function getLocalDebugTeamsAppId(
     params: isLocalSideloadingConfiguration ? "local" : "remote"
   };
   try {
-    const inputs = createInputs();
+    const inputs = getSystemInputs();
     inputs.ignoreLock = true;
     inputs.ignoreConfigPersist = true;
     const result = await core.executeUserTask(func, inputs);
@@ -120,7 +120,7 @@ export async function getProgrammingLanguage(): Promise<string | undefined> {
     method: "getProgrammingLanguage",
   };
   try {
-    const inputs = createInputs();
+    const inputs = getSystemInputs();
     inputs.ignoreLock = true;
     inputs.ignoreConfigPersist = true;
     const result = await core.executeUserTask(func, inputs);

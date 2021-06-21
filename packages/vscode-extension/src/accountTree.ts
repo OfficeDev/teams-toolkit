@@ -6,7 +6,7 @@ import { AzureSolutionSettings, err, FxError, ok, Result, returnSystemError, ret
 import { AzureAccount } from "./commonlib/azure-account.api";
 import AzureAccountManager from "./commonlib/azureLogin";
 import { ExtensionSource } from "./error";
-import { core, createInputs, showError, tools } from "./handlers";
+import { core, getSystemInputs, showError, tools } from "./handlers";
 import * as vscode from "vscode";
 import { askSubscription } from "@microsoft/teamsfx-core";
 import { VS_CODE_UI } from "./extension";
@@ -31,7 +31,7 @@ export enum AccountType {
 }
 
 export async function getSubscriptionId():Promise<string|undefined>{ 
-  const projectConfigRes = await core.getProjectConfig(createInputs()); 
+  const projectConfigRes = await core.getProjectConfig(getSystemInputs()); 
   if(projectConfigRes.isOk()){
     if(projectConfigRes.value){ 
       const solutionConfig = projectConfigRes.value.config;
@@ -47,7 +47,7 @@ export async function getSubscriptionId():Promise<string|undefined>{
 }
 
 export async function getAzureSolutionSettings():Promise<AzureSolutionSettings|undefined>{ 
-  const projectConfigRes = await core.getProjectConfig(createInputs());
+  const projectConfigRes = await core.getProjectConfig(getSystemInputs());
   if(projectConfigRes.isOk()){
     if(projectConfigRes.value){
       return projectConfigRes.value.settings?.solutionSettings as AzureSolutionSettings;
@@ -60,7 +60,7 @@ export async function getAzureSolutionSettings():Promise<AzureSolutionSettings|u
 }
 
 export async function isValid():Promise<boolean>{ 
-  const projectConfigRes = await core.getProjectConfig(createInputs());
+  const projectConfigRes = await core.getProjectConfig(getSystemInputs());
   let supported = false;
   if(projectConfigRes.isOk()){
     if(projectConfigRes.value){
@@ -298,7 +298,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
             parent: "fx-extension.signinAzure"
           }
         ]);
-        await core.setSubscriptionInfo(createInputs());
+        await core.setSubscriptionInfo(getSystemInputs());
       }
 
       return Promise.resolve();
@@ -351,7 +351,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
    
 async function setSubscription(subscription: SubscriptionInfo | undefined) {
   if (subscription) {
-    const inputs = createInputs();
+    const inputs = getSystemInputs();
     inputs.tenantId = subscription.tenantId;
     inputs.subscriptionId = subscription.subscriptionId;
     await core.setSubscriptionInfo(inputs);

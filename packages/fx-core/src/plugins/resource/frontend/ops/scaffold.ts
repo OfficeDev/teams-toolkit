@@ -12,6 +12,7 @@ import {
   FrontendPluginError,
   InvalidTemplateManifestError,
   runWithErrorCatchAndThrow,
+  UnknownFallbackError,
 } from "../resources/errors";
 import { Constants, FrontendPathInfo } from "../constants";
 import { Logger } from "../utils/logger";
@@ -102,7 +103,7 @@ export class FrontendScaffold {
       if (e instanceof FrontendPluginError) {
         TelemetryHelper.sendScaffoldFallbackEvent(e);
       } else {
-        TelemetryHelper.sendScaffoldFallbackEvent();
+        TelemetryHelper.sendScaffoldFallbackEvent(new UnknownFallbackError());
       }
 
       return FrontendScaffold.getTemplateZipFromLocal(templateInfo);

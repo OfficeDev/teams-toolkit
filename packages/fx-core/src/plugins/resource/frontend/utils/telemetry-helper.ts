@@ -72,7 +72,7 @@ export class TelemetryHelper {
   }
 
   static sendScaffoldFallbackEvent(
-    e: FrontendPluginError = new UnknownFallbackError(),
+    e: FrontendPluginError,
     properties: { [key: string]: string } = {},
     measurements: { [key: string]: number } = {}
   ): void {

@@ -62,6 +62,7 @@ import { ContextInjecterMW } from "./middleware/contextInjecter";
 import { defaultSolutionLoader } from "./loader";
 import { sendTelemetryErrorEvent, sendTelemetryEvent, TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../common/telemetry";
 import { TelemetrySenderMW } from "./middleware/telemetrySender";
+import * as uuid  from "uuid";
 
 
 export interface CoreHookContext extends HookContext {
@@ -115,6 +116,7 @@ export class FxCore implements Core {
       const solution = await defaultSolutionLoader.loadSolution(inputs);
       const projectSettings: ProjectSettings = {
         appName: appName,
+        projectId: inputs.projectId || uuid.v4(),
         currentEnv: "default",
         solutionSettings: {
           name: solution.name,

@@ -40,6 +40,7 @@ import {
 } from "../../../src/plugins/solution/fx-solution/question";
 import { mockPublishThatAlwaysSucceed, validManifest } from "./util";
 import _ from "lodash";
+import * as uuid  from "uuid";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -65,6 +66,7 @@ describe("publish()", () => {
     const mockedCtx = mockSolutionContext();
     mockedCtx.projectSettings = {
       appName: "my app",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
@@ -82,6 +84,7 @@ describe("publish()", () => {
     const mockedCtx = mockSolutionContext();
     mockedCtx.projectSettings = {
       appName: "my app",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
@@ -99,6 +102,7 @@ describe("publish()", () => {
     const mockedCtx = mockSolutionContext();
     mockedCtx.projectSettings = {
       appName: "my app",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
@@ -132,6 +136,7 @@ describe("publish()", () => {
       const mockedCtx = mockSolutionContext();
       mockedCtx.projectSettings = {
         appName: "my app",
+        projectId: uuid.v4(),
         solutionSettings: {
           hostType: HostTypeOptionAzure.id,
           name: "azure",
@@ -161,6 +166,7 @@ describe("publish()", () => {
       const mockedCtx = mockSolutionContext();
       mockedCtx.projectSettings = {
         appName: "my app",
+        projectId: uuid.v4(),
         solutionSettings: {
           hostType: HostTypeOptionSPFx.id,
           name: "azure",
@@ -183,6 +189,7 @@ describe("publish()", () => {
       mockedCtx.config.set(solution.appStudioPlugin.name, new ConfigMap);
       mockedCtx.projectSettings = {
         appName: "my app",
+        projectId: uuid.v4(),
         solutionSettings: {
           hostType: HostTypeOptionAzure.id,
           name: "azure",
@@ -209,6 +216,7 @@ describe("publish()", () => {
       mockedCtx.config.set(solution.appStudioPlugin.name, new ConfigMap);
       mockedCtx.projectSettings = {
         appName: "my app",
+        projectId: uuid.v4(),
         solutionSettings: {
           hostType: HostTypeOptionAzure.id,
           name: "azure",

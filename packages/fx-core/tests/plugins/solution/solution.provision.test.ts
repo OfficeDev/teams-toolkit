@@ -55,7 +55,7 @@ import { TokenCredential } from "@azure/core-auth";
 import { TokenCredentialsBase, UserTokenCredentials } from "@azure/ms-rest-nodeauth";
 import { ResourceGroups } from "@azure/arm-resources";
 import * as solutionUtil from "../../../src/plugins/solution/fx-solution/util";
-
+import * as uuid  from "uuid";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -208,6 +208,7 @@ describe("provision() simple cases", () => {
     mockedCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
@@ -227,6 +228,7 @@ describe("provision() simple cases", () => {
     mockedCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
@@ -276,6 +278,7 @@ describe("provision() with permission.json file missing", () => {
     mockedCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
@@ -294,6 +297,7 @@ describe("provision() with permission.json file missing", () => {
     mockedCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
@@ -350,6 +354,7 @@ describe("provision() happy path for SPFx projects", () => {
     mockedCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
@@ -402,6 +407,7 @@ describe("provision() happy path for Azure projects", () => {
     mockedCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
         name: "azure",

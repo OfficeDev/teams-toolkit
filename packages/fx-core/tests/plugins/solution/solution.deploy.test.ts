@@ -33,6 +33,7 @@ import {
 } from "../../../src/plugins/solution/fx-solution/question";
 import { validManifest } from "./util";
 import _ from "lodash";
+import * as uuid  from "uuid";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -73,6 +74,7 @@ describe("deploy() for Azure projects", () => {
     const mockedCtx = mockSolutionContext();
     mockedCtx.projectSettings = {
       appName: "my app",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
@@ -90,6 +92,7 @@ describe("deploy() for Azure projects", () => {
     const mockedCtx = mockSolutionContext();
     mockedCtx.projectSettings = {
       appName: "my app",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
@@ -122,6 +125,7 @@ describe("deploy() for Azure projects", () => {
       const mockedCtx = mockSolutionContext();
       mockedCtx.projectSettings = {
         appName: "my app",
+        projectId: uuid.v4(),
         solutionSettings: {
           hostType: HostTypeOptionAzure.id,
           name: "azure",
@@ -140,6 +144,7 @@ describe("deploy() for Azure projects", () => {
       const mockedCtx = mockSolutionContext();
       mockedCtx.projectSettings = {
         appName: "my app",
+        projectId: uuid.v4(),
         solutionSettings: {
           hostType: HostTypeOptionAzure.id,
           name: "azure",
@@ -177,6 +182,7 @@ describe("deploy() for SPFx projects", () => {
       const mockedCtx = mockSolutionContext();
       mockedCtx.projectSettings = {
         appName: "my app",
+        projectId: uuid.v4(),
         solutionSettings: {
           hostType: HostTypeOptionSPFx.id,
           name: "azure",
@@ -194,6 +200,7 @@ describe("deploy() for SPFx projects", () => {
       const mockedCtx = mockSolutionContext();
       mockedCtx.projectSettings = {
         appName: "my app",
+        projectId: uuid.v4(),
         solutionSettings: {
           hostType: HostTypeOptionSPFx.id,
           name: "azure",

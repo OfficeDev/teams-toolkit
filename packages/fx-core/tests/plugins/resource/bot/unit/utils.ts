@@ -128,6 +128,7 @@ export function newPluginContext(): PluginContext {
     projectSettings: {
       appName: "My App",
       currentEnv: "default",
+      projectId: utils.genUUID(),
       solutionSettings: {
         name: "AnyName",
         version: "0.0.1",

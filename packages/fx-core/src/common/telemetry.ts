@@ -14,6 +14,8 @@ export enum TelemetryProperty {
   ErrorCode = "error-code",
   ErrorMessage = "error-message",
   SampleAppName = "sample-app-name",
+  ProjectId = "project-id",
+  CorrelationId = "correlation-id"
 }
 
 export enum TelemetryEvent {
@@ -59,6 +61,11 @@ export function sendTelemetryEvent(
 			properties[TelemetryProperty.Component] = Component.cli;
 		}
 	}
+  
+  const correlationId = inputs.correlationId;
+  if(correlationId)
+    properties[TelemetryProperty.CorrelationId] = correlationId;
+
 	telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
 	Logger.debug(`sendTelemetryEvent, event:${eventName}, properties:${JSON.stringify(properties)}`);
 }
@@ -93,6 +100,10 @@ export function sendTelemetryErrorEvent(
   } else {
     properties[TelemetryProperty.ErrorType] = TelemetryErrorType.SystemError;
   }
+
+  const correlationId = inputs.correlationId;
+  if(correlationId)
+    properties[TelemetryProperty.CorrelationId] = correlationId;
 
   properties[TelemetryProperty.ErrorCode] = `${error.source}.${error.name}`;
   properties[TelemetryProperty.ErrorMessage] = error.message;

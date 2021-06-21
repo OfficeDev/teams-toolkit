@@ -37,6 +37,7 @@ import {
 } from "../../../src/plugins/solution/fx-solution/question";
 
 import _ from "lodash";
+import * as uuid  from "uuid";
 
 function mockSolutionContext(): SolutionContext {
   const config: SolutionConfig = new Map();
@@ -70,6 +71,7 @@ describe("update()", () => {
     mockedCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
@@ -88,6 +90,7 @@ describe("update()", () => {
     mockedCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
@@ -106,6 +109,7 @@ describe("update()", () => {
     mockedCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
@@ -125,6 +129,7 @@ describe("update()", () => {
     mockedCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
@@ -150,6 +155,7 @@ describe("update()", () => {
     mockedCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
@@ -175,6 +181,7 @@ describe("update()", () => {
     mockedCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
@@ -208,6 +215,7 @@ describe("update()", () => {
     mockedCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
@@ -241,6 +249,7 @@ describe("update()", () => {
     mockedCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
@@ -278,6 +287,7 @@ describe("update()", () => {
     mockedCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
@@ -312,6 +322,7 @@ describe("update()", () => {
     mockedCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
@@ -344,6 +355,7 @@ describe("update()", () => {
     mockedCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
         name: "azure",

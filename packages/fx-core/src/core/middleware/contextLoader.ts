@@ -8,6 +8,7 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { validateProject } from "../../common";  
+import * as uuid  from "uuid";
 
 export const ContextLoaderMW: Middleware = async (
   ctx: CoreHookContext,
@@ -51,6 +52,8 @@ export async function loadSolutionContext(tools: Tools, inputs: Inputs):Promise<
     const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
     if(!projectSettings.currentEnv)
       projectSettings.currentEnv = "default";
+    if(!projectSettings.projectId)
+      projectSettings.projectId = uuid.v4();
     const envName = projectSettings.currentEnv;
     const jsonFilePath = path.resolve(confFolderPath, `env.${envName}.json`);
     const configJson: Json = await fs.readJson(jsonFilePath);
@@ -81,6 +84,7 @@ export async function loadSolutionContext(tools: Tools, inputs: Inputs):Promise<
 export async function newSolutionContext(tools: Tools, inputs: Inputs):Promise<SolutionContext>{
   const projectSettings:ProjectSettings = {
     appName: "",
+    projectId: inputs.projectId || uuid.v4(),
     currentEnv: "default",
     solutionSettings:{
       name: "fx-solution-azure",

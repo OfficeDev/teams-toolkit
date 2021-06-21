@@ -6,6 +6,8 @@ import {TokenCredential} from "@azure/core-auth";
 import {TokenCredentialsBase} from "@azure/ms-rest-nodeauth";
 import { SolutionLoader } from "../../src/core/loader";
 import { PluginNames } from "../../src/plugins/solution/fx-solution/solution";
+import * as uuid  from "uuid";
+
 
 
 export class MockSolution implements Solution{
@@ -302,6 +304,7 @@ export function MockProjectSettings(appName: string):ProjectSettings{
   return {
     appName: appName,
     currentEnv: "default",
+    projectId: uuid.v4(),
     solutionSettings:  {
       name: PluginNames.SOLUTION,
       version: "1.0.0",

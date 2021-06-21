@@ -76,6 +76,7 @@ import { SPFxNodeChecker } from "./debug/depsChecker/spfxNodeChecker";
 import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { VS_CODE_UI } from "./extension";
 import { registerAccountTreeHandler } from "./accountTree";
+import * as uuid from "uuid";
 
 export let core: FxCore; 
 export let tools:Tools;
@@ -155,12 +156,13 @@ export async function activate(): Promise<Result<Void, FxError>> {
   return result; 
 }
 
-export function getSystemInputs():Inputs{
+export function createInputs():Inputs{
   const answers:Inputs = {
     projectPath: getWorkspacePath(),
     platform: Platform.VSCode,
     vscodeEnv: detectVsCodeEnv(),
-    "function-dotnet-checker-enabled": vscodeAdapter.dotnetCheckerEnabled()
+    "function-dotnet-checker-enabled": vscodeAdapter.dotnetCheckerEnabled(),
+    correlationId: uuid.v4()
   };
   return answers;
 }
@@ -235,10 +237,11 @@ export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
       throw checkCoreRes.error;
     }
 
-    const inputs:Inputs = getSystemInputs();
+    const inputs:Inputs = createInputs();
     inputs.stage = stage;
   
     if (stage === Stage.create){
+      inputs.projectId = uuid.v4();//if extension want to track projectId when creating, generate the projectId in extension instead of generate in core
       const tmpResult = await core.createProject(inputs);
       if (tmpResult.isErr()) {
           result = err(tmpResult.error);
@@ -295,7 +298,7 @@ async function runUserTask(func: Func, eventName: string): Promise<Result<any, F
     if (checkCoreRes.isErr()) {
       throw checkCoreRes.error;
     }
-    const answers:Inputs = getSystemInputs();
+    const answers:Inputs = createInputs();
     result = await core.executeUserTask(func, answers);
   } catch (e) {
     result = wrapError(e);

@@ -16,7 +16,7 @@ import { InfoMessages } from "../resources/message";
 import { LanguageStrategyFactory } from "../language-strategy";
 import { Logger } from "../utils/logger";
 import { ScaffoldSteps, StepGroup, step } from "../resources/steps";
-import { TemplateZipFallbackError, runWithErrorCatchAndThrow, FunctionPluginError } from "../resources/errors";
+import { TemplateZipFallbackError, runWithErrorCatchAndThrow, FunctionPluginError, UnknownFallbackError } from "../resources/errors";
 import {
   convertTemplateLanguage,
   fetchZipFromURL,
@@ -59,7 +59,7 @@ export class FunctionScaffold {
       if (e instanceof FunctionPluginError) {
         TelemetryHelper.sendScaffoldFallbackEvent(e);
       } else {
-        TelemetryHelper.sendScaffoldFallbackEvent();
+        TelemetryHelper.sendScaffoldFallbackEvent(new UnknownFallbackError());
       }
 
       return await runWithErrorCatchAndThrow(new TemplateZipFallbackError(), async () => {

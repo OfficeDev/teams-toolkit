@@ -237,7 +237,7 @@ export class UploadZipError extends FunctionPluginError {
 
 export class UnknownFallbackError extends FunctionPluginError {
   constructor() {
-    super(ErrorType.User, "UnknownFallbackError", `Trigger fallback caused by unknown reason.`, []);
+    super(ErrorType.System, "UnknownFallbackError", "Trigger fallback caused by unknown reason.", []);
   }
 }
 

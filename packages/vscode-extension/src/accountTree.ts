@@ -2,33 +2,16 @@
   // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureSolutionSettings, err, FxError, ok, Result, returnSystemError, returnUserError, SubscriptionInfo, TreeCategory, TreeItem, Void } from "@microsoft/teamsfx-api";
-import { AzureAccount } from "./commonlib/azure-account.api";
+import { AzureSolutionSettings, err, FxError, ok, Result, SubscriptionInfo, TreeCategory, TreeItem, Void } from "@microsoft/teamsfx-api";
 import AzureAccountManager from "./commonlib/azureLogin";
-import { ExtensionSource } from "./error";
-import { core, getSystemInputs, showError, tools } from "./handlers";
-import * as vscode from "vscode";
+import { core, getSystemInputs, tools } from "./handlers";
 import { askSubscription } from "@microsoft/teamsfx-core";
 import { VS_CODE_UI } from "./extension";
-
- 
-enum TelemetryTiggerFrom {
-  CommandPalette = "CommandPalette",
-  TreeView = "TreeView",
-}
-
-enum TelemetryProperty {
-  TriggerFrom = "trigger-from",
-}
-
-enum TelemetryEvent {
-  SelectSubscription = "select-subscription",
-}
-
-export enum AccountType {
-  M365 = "m365",
-  Azure = "azure",
-}
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetryTiggerFrom,
+} from "./telemetry/extTelemetryEvents";
 
 export async function getSubscriptionId():Promise<string|undefined>{ 
   const projectConfigRes = await core.getProjectConfig(getSystemInputs()); 
@@ -72,8 +55,6 @@ export async function isValid():Promise<boolean>{
   // }
   return supported;
 }
-
-
 
 export async function registerAccountTreeHandler(): Promise<Result<Void, FxError>> {
    
@@ -345,10 +326,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
 
   return ok(Void);
 }
-
-
-
-   
+  
 async function setSubscription(subscription: SubscriptionInfo | undefined) {
   if (subscription) {
     const inputs = getSystemInputs();

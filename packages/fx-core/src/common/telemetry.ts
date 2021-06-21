@@ -17,7 +17,6 @@ export enum TelemetryProperty {
 }
 
 export enum TelemetryEvent {
-  SelectSubscription = "select-subscription",
   DownloadSampleStart = "download-sample-start",
   DownloadSample = "download-sample",
 }

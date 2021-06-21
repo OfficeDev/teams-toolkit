@@ -65,7 +65,7 @@ export class FrontendScaffold {
 
   public static async fetchZipFromUrl(url: string): Promise<AdmZip> {
     const result = await runWithErrorCatchAndThrow(
-      new FetchTemplateManifestError(),
+      new FetchTemplatePackageError(),
       async () =>
         await Utils.requestWithRetry(async () => {
           return axios.get(url, {

@@ -1,0 +1,96 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+import "mocha";
+import { FuncValidation, Inputs, Platform, Stage } from "@microsoft/teamsfx-api";
+import {QuestionAppName} from "../../src/core/question";
+import { assert } from "chai"; 
+import { randomAppName } from "./utils";
+import sinon from "sinon";
+import fs from "fs-extra";
+import os from "os";
+import * as path from "path";
+import { defaultSolutionLoader } from "../../src/core/loader";
+import { FetchSampleError, NoneFxError, ProjectFolderExistError, ReadFileError, TaskNotSupportError, WriteFileError } from "../../src/core/error";
+
+describe("Other test case", () => {
+
+  const sandbox = sinon.createSandbox();
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+  it("question: QuestionAppName validation", async () => {
+    const inputs:Inputs = {platform: Platform.VSCode};
+    const folder = os.tmpdir();
+    let appName = "1234";
+    inputs.folder = folder;
+ 
+    let validRes = await (QuestionAppName.validation as FuncValidation<string>).validFunc(appName, inputs);
+
+    assert.isTrue(validRes === "Application name must start with a letter and can only contain letters and digits.");
+
+    appName = randomAppName();
+    let projectPath = path.resolve(folder, appName);
+    
+    sandbox.stub<any, any>(fs, "pathExists").withArgs(projectPath).resolves(true);
+    
+    validRes = await (QuestionAppName.validation as FuncValidation<string>).validFunc(appName, inputs);
+    assert.isTrue(validRes === `Path exists: ${projectPath}. Select a different application name.`);
+
+    sandbox.restore();
+    sandbox.stub<any, any>(fs, "pathExists").withArgs(projectPath).resolves(false);
+    
+    validRes = await (QuestionAppName.validation as FuncValidation<string>).validFunc(appName, inputs);
+    assert.isTrue(validRes === undefined);
+
+  });
+
+  it("loader: DefaultSolutionLoader", async () => {
+    const inputs:Inputs = {platform: Platform.VSCode};
+    const solution = await defaultSolutionLoader.loadSolution(inputs);
+    assert.isTrue(solution.name  === "fx-solution-azure");
+    const solutions = await defaultSolutionLoader.loadGlobalSolutions(inputs);
+    assert.isTrue(solutions.length === 1 && solutions[0].name  === "fx-solution-azure");
+  });
+
+
+  it("error: ProjectFolderExistError", async () => {
+     const error = ProjectFolderExistError(os.tmpdir());
+     assert.isTrue(error.name === "ProjectFolderExistError");
+     assert.isTrue(error.message === `Path ${os.tmpdir()} alreay exists. Select a different folder.`);
+  });
+
+  it("error: WriteFileError", async () => {
+    const msg = "file not exist";
+    const error = WriteFileError(new Error(msg));
+    assert.isTrue(error.name === "WriteFileError");
+    assert.isTrue(error.message === `write file error ${msg}`);
+  });
+
+  it("error: ReadFileError", async () => {
+    const msg = "file not exist";
+    const error = ReadFileError(new Error(msg));
+    assert.isTrue(error.name === "ReadFileError");
+    assert.isTrue(error.message === `read file error ${msg}`);
+  });
+
+  it("error: NoneFxError", async () => {
+    const msg = "hahahaha";
+    const error = NoneFxError(new Error(msg));
+    assert.isTrue(error.name === "NoneFxError");
+    assert.isTrue(error.message === `NoneFxError ${msg}`);
+  });
+
+  it("error: TaskNotSupportError", async () => {
+    const error = TaskNotSupportError(Stage.createEnv);
+    assert.isTrue(error.name === "TaskNotSupport");
+    assert.isTrue(error.message === `Task is not supported yet: ${Stage.createEnv}`);
+  });
+
+  it("error: FetchSampleError", async () => {
+    const error = FetchSampleError();
+    assert.isTrue(error.name === "FetchSampleError");
+    assert.isTrue(error.message === "Failed to download sample app");
+  });
+});

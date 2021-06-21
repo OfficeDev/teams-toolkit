@@ -84,7 +84,9 @@ export default class New extends YargsCommand {
     const core = result.value;
 
     {
-      const result = await core.createProject(getSystemInputs());
+      const inputs = getSystemInputs();
+      inputs.projectId = uuid.v4();
+      const result = await core.createProject(inputs);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateProject, result.error);
         return err(result.error);

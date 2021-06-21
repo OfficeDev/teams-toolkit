@@ -7,7 +7,6 @@ import { expect } from "chai";
 
 import {
   execAsync,
-  execAsyncWithRetry,
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
@@ -48,7 +47,7 @@ describe("Aad Error Tests", function() {
 
     // provision
     try {
-      await execAsyncWithRetry(
+      await execAsync(
         `teamsfx provision --subscription ${subscription}`,
         {
           cwd: projectPath,
@@ -72,7 +71,7 @@ describe("Aad Error Tests", function() {
 
     // provision
     try {
-      await execAsyncWithRetry(
+      await execAsync(
         `teamsfx provision --subscription ${subscription}`,
         {
           cwd: projectPath,
@@ -100,7 +99,7 @@ describe("Aad Error Tests", function() {
 
     // provision
     try {
-      await execAsyncWithRetry(
+      await execAsync(
         `teamsfx provision --subscription ${subscription}`,
         {
           cwd: projectPath,
@@ -128,7 +127,7 @@ describe("Aad Error Tests", function() {
 
     // provision
     try {
-      await execAsyncWithRetry(
+      await execAsync(
         `teamsfx provision --subscription ${subscription}`,
         {
           cwd: projectPath,
@@ -156,7 +155,7 @@ describe("Aad Error Tests", function() {
 
     // provision
     try {
-      await execAsyncWithRetry(
+      await execAsync(
         `teamsfx provision --subscription ${subscription}`,
         {
           cwd: projectPath,

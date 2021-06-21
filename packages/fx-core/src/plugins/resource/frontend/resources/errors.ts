@@ -146,10 +146,13 @@ export class StorageAccountAlreadyTakenError extends FrontendPluginError {
 }
 
 export class CreateStorageAccountError extends FrontendPluginError {
-  constructor() {
-    super(ErrorType.User, "CreateStorageAccountError", "Failed to create Azure Storage Account.", [
-      tips.checkLog,
-    ]);
+  constructor(innerErrorCode: string) {
+    super(
+      ErrorType.User,
+      "CreateStorageAccountError",
+      `Failed to create Azure Storage Account, Azure error code: ${innerErrorCode}.`,
+      [tips.checkLog]
+    );
   }
 }
 

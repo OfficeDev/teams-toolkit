@@ -12,26 +12,30 @@ import { PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { FrontendPluginError, UnknownFallbackError } from "../resources/errors";
 
 export class telemetryHelper {
+  static ctx?: PluginContext;
+
+  static setContext(ctx: PluginContext): void {
+    this.ctx = ctx;
+  }
+
   private static fillCommonProperty(
-    ctx: PluginContext,
     properties: { [key: string]: string }
   ): void {
     properties[TelemetryKey.Component] = FrontendPluginInfo.PluginName;
     properties[TelemetryKey.AppId] =
-      (ctx.configOfOtherPlugins
+      (this.ctx?.configOfOtherPlugins
         .get(DependentPluginInfo.SolutionPluginName)
         ?.get(DependentPluginInfo.RemoteTeamsAppId) as string) || "";
   }
 
   static sendStartEvent(
-    ctx: PluginContext,
     eventName: string,
     properties: { [key: string]: string } = {},
     measurements: { [key: string]: number } = {}
   ): void {
-    telemetryHelper.fillCommonProperty(ctx, properties);
+    telemetryHelper.fillCommonProperty(properties);
 
-    ctx.telemetryReporter?.sendTelemetryEvent(
+    this.ctx?.telemetryReporter?.sendTelemetryEvent(
       eventName + TelemetryEvent.startSuffix,
       properties,
       measurements
@@ -39,25 +43,23 @@ export class telemetryHelper {
   }
 
   static sendSuccessEvent(
-    ctx: PluginContext,
     eventName: string,
     properties: { [key: string]: string } = {},
     measurements: { [key: string]: number } = {}
   ): void {
-    telemetryHelper.fillCommonProperty(ctx, properties);
+    telemetryHelper.fillCommonProperty(properties);
     properties[TelemetryKey.Success] = TelemetryValue.Success;
 
-    ctx.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
+    this.ctx?.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
   }
 
   static sendErrorEvent(
-    ctx: PluginContext,
     eventName: string,
     e: SystemError | UserError,
     properties: { [key: string]: string } = {},
     measurements: { [key: string]: number } = {}
   ): void {
-    telemetryHelper.fillCommonProperty(ctx, properties);
+    telemetryHelper.fillCommonProperty(properties);
     properties[TelemetryKey.Success] = TelemetryValue.Fail;
 
     if (e instanceof SystemError) {
@@ -68,19 +70,18 @@ export class telemetryHelper {
     properties[TelemetryKey.ErrorMessage] = e.message;
     properties[TelemetryKey.ErrorCode] = e.name;
 
-    ctx.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
+    this.ctx?.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
   }
 
   static sendScaffoldFallbackEvent(
-    ctx: PluginContext,
     e: FrontendPluginError = new UnknownFallbackError(),
     properties: { [key: string]: string } = {},
     measurements: { [key: string]: number } = {}
   ): void {
-    telemetryHelper.fillCommonProperty(ctx, properties);
+    telemetryHelper.fillCommonProperty(properties);
     properties[TelemetryKey.ErrorMessage] = e.message;
     properties[TelemetryKey.ErrorCode] = e.code;
 
-    ctx.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.scaffoldFallback, properties, measurements);
+    this.ctx?.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.scaffoldFallback, properties, measurements);
   }
 }

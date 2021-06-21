@@ -100,9 +100,9 @@ export class FrontendScaffold {
       Logger.warning(Messages.FailedFetchTemplate());
 
       if (e instanceof FrontendPluginError) {
-        telemetryHelper.sendScaffoldFallbackEvent(ctx, e);
+        telemetryHelper.sendScaffoldFallbackEvent(e);
       } else {
-        telemetryHelper.sendScaffoldFallbackEvent(ctx);
+        telemetryHelper.sendScaffoldFallbackEvent();
       }
 
       return FrontendScaffold.getTemplateZipFromLocal(templateInfo);

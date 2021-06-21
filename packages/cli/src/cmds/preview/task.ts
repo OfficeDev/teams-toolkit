@@ -1,4 +1,4 @@
-import { ChildProcess, spawn, SpawnOptions } from "child_process";
+import { spawn, SpawnOptions } from "child_process";
 
 interface TaskOptions {
     cwd?: string;

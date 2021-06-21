@@ -203,16 +203,6 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
     return ok(null);
   };
 
-  let azureAccountLabel = "Sign in to Azure";
-  let azureAccountContextValue = "signinAzure";
-  const azureAccount: AzureAccount = vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
-  if (azureAccount.status === "LoggedIn") {
-    const token = await tools.tokenProvider.azureAccountProvider.getAccountCredentialAsync();
-    if (token !== undefined) {
-      azureAccountLabel = (token as any).username ? (token as any).username : "";
-      azureAccountContextValue = "signedinAzure";
-    }
-  }
   tools.tokenProvider.appStudioToken?.setStatusChangeMap(
     "tree-view",
     (
@@ -320,12 +310,12 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
     },
     {
       commandId: "fx-extension.signinAzure",
-      label: azureAccountLabel,
+      label: "Sign in to Azure",
       callback: async (args?: any[]) => {
         return signinAzureCallback(args);
       },
       parent: TreeCategory.Account,
-      contextValue: azureAccountContextValue,
+      contextValue: "signinAzure",
       subTreeItems: [],
       icon: "azure",
       tooltip: {

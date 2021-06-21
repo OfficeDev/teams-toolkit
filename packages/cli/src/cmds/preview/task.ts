@@ -18,9 +18,9 @@ export interface TaskResult {
 }
 
 export class Task {
-    task: ChildProcess;
-    stdout: string = "";
-    stderr: string = "";
+    private task: ChildProcess;
+    private stdout: string = "";
+    private stderr: string = "";
 
     constructor(command: string, options: TaskOptions) {
         const spawnOptions: SpawnOptions = {

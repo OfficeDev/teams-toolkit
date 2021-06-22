@@ -1,3 +1,8 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+"use strict";
+
 import { spawn, SpawnOptions } from "child_process";
 
 interface TaskOptions {

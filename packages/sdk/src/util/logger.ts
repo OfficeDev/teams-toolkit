@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { name, version } from "../packageMetadata";
-
 /**
  * Interface for customized logger.
  * @beta
@@ -116,7 +114,7 @@ class InternalLogger {
       return;
     }
     const timestamp = new Date().toUTCString();
-    const logHeader = `[${timestamp}] : ${name}@${version} : ${LogLevel[logLevel]} - `;
+    const logHeader = `[${timestamp}] : @microsoft/teamsfx : ${LogLevel[logLevel]} - `;
     const logMessage = `${logHeader}${message}`;
     if (this.level <= logLevel) {
       if (this.customLogger) {

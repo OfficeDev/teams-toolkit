@@ -88,7 +88,7 @@ export async function loadSolutionContext(tools: Tools, inputs: Inputs):Promise<
 export async function newSolutionContext(tools: Tools, inputs: Inputs):Promise<SolutionContext>{
   const projectSettings:ProjectSettings = {
     appName: "",
-    projectId: (inputs.projectId === undefined || inputs.projectId === "") ? uuid.v4() : inputs.projectId,
+    projectId: uuid.v4(),
     currentEnv: "default",
     solutionSettings:{
       name: "fx-solution-azure",

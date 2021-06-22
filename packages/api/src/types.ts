@@ -163,7 +163,6 @@ export interface Inputs extends Json{
   ignoreLock?:boolean;
   ignoreTypeCheck?:boolean;
   ignoreConfigPersist?:boolean;
-  projectId?:string;
   correlationId?:string;
 }   
 

@@ -343,10 +343,10 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     AzureAccountManager.currentStatus = azureAccount.status;
     azureAccount.onStatusChanged(async (event) => {
       if(AzureAccountManager.currentStatus === "Initializing") {
-        AzureAccountManager.currentStatus = azureAccount.status;
+        AzureAccountManager.currentStatus = event;
         return;
       }
-      AzureAccountManager.currentStatus = azureAccount.status;
+      AzureAccountManager.currentStatus = event;
       if (event === loggedOut) {
         if (AzureAccountManager.statusChange !== undefined) {
           await AzureAccountManager.statusChange(signedOut, undefined, undefined);

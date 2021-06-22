@@ -3,6 +3,7 @@
 // Licensed under the MIT license.
 
 import { AzureSolutionSettings, err, FxError, ok, Result, SubscriptionInfo, TreeCategory, TreeItem, Void } from "@microsoft/teamsfx-api";
+import { AzureAccount } from "./commonlib/azure-account.api";
 import AzureAccountManager from "./commonlib/azureLogin";
 import { core, getSystemInputs, tools } from "./handlers";
 import { askSubscription } from "@microsoft/teamsfx-core";

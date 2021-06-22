@@ -12,7 +12,7 @@ import * as utils from "../../utils";
 import * as commonUtils from "./commonUtils";
 import * as constants from "./constants";
 import { CliTelemetry } from "../../telemetry/cliTelemetry";
-import { WorkspaceNotSupported } from "./errors";
+import { ExclusiveLocalRemoteOptions, WorkspaceNotSupported } from "./errors";
 
 export default class Preview extends YargsCommand {
     public readonly commandHead = `preview`;
@@ -21,12 +21,12 @@ export default class Preview extends YargsCommand {
 
     public builder(yargs: Argv): Argv<any> {
         yargs.option("local", {
-            description: "Preview the current application from local",
+            description: "Preview the application from local, exclusive with --remote",
             boolean: true,
             default: false,
         });
         yargs.option("remote", {
-            description: "Preview the current application from remote",
+            description: "Preview the application from remote, exclusive with --local",
             boolean: true,
             default: false,
         });
@@ -34,12 +34,16 @@ export default class Preview extends YargsCommand {
             description: "Select root folder of the project",
             string: true,
             default: "./",
-        })
+        });
 
         return yargs.version(false);
     }
 
     public async runCommand(args: { [argName: string]: boolean | string | string[] | undefined }): Promise<Result<null, FxError>> {
+        if (args.local && args.remote) {
+            return err(ExclusiveLocalRemoteOptions());
+        }
+
         const workspaceFolder = path.resolve(args.folder as string);
         if (!utils.isWorkspaceSupported(workspaceFolder)) {
             return err(WorkspaceNotSupported(workspaceFolder));

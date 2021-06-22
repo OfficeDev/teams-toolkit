@@ -29,6 +29,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   private static instance: AzureAccountManager;
   private static subscriptionId: string | undefined;
   private static tenantId: string | undefined;
+  private static currentStatus: string | undefined;
 
   private static statusChange?: (
     status: string,
@@ -339,9 +340,13 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   async addStatusChangeEvent() {
     const azureAccount: AzureAccount =
       vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
-    // wait for Azure Account extension initialize
-    await azureAccount.waitForSubscriptions();
+    AzureAccountManager.currentStatus = azureAccount.status;
     azureAccount.onStatusChanged(async (event) => {
+      if(AzureAccountManager.currentStatus === "Initializing") {
+        AzureAccountManager.currentStatus = azureAccount.status;
+        return;
+      }
+      AzureAccountManager.currentStatus = azureAccount.status;
       if (event === loggedOut) {
         if (AzureAccountManager.statusChange !== undefined) {
           await AzureAccountManager.statusChange(signedOut, undefined, undefined);

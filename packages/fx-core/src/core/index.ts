@@ -116,7 +116,7 @@ export class FxCore implements Core {
       const solution = await defaultSolutionLoader.loadSolution(inputs);
       const projectSettings: ProjectSettings = {
         appName: appName,
-        projectId: (inputs.projectId === undefined || inputs.projectId === "") ? uuid.v4() : inputs.projectId,
+        projectId:uuid.v4(),
         currentEnv: "default",
         solutionSettings: {
           name: solution.name,

@@ -2,9 +2,9 @@
 
 ## Summary
 
-Short summary on functionality and used technologies.
-
-[picture of the solution in action, if possible]
+The SharePoint Framework (SPFx) is a page and web part model that provides full support for client-side SharePoint development, easy integration with SharePoint data, and extending Microsoft Teams. This project applies SPFx to Teams personal tab and group tab support.
+![personaltab](images/personaltab.png)
+![grouptab](images/grouptab.png)
 
 ## Used SharePoint Framework Version
 
@@ -63,9 +63,14 @@ Version|Date|Comments
     Or you can use TeamsFx CLI with running this cmd under your project path:
         `teamsfx publish`
 
-You will find your app in [Microsoft Teams admin center](https://admin.teams.microsoft.com/policies/manage-apps). Enter your app name in the search box.
-Click the item and select `Publish` in the Publishing status.
+    You will find your app in [Microsoft Teams admin center](https://admin.teams.microsoft.com/policies/manage-apps). Enter your app name in the search box. Click the item and select `Publish` in the Publishing status.
+
 6. You may need to wait for a few minutes after publishing your teams app.And then login to Teams, and you will find your app in the `Apps - Built for {your-tenant-name}` category.
+
+7. Click "Add" to use the app as a personal tab.
+![addtopersonal](images/addtopersonal.png)
+    Click "Add to a team" to use the app as a group tab.
+    ![addtoateam](images/addtoateam.png)
 
 ## Features
 

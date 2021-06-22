@@ -20,7 +20,7 @@ export const ConcurrentLockerMW: Middleware = async (
   const ignoreLock = inputs.ignoreLock === true || StaticPlatforms.includes(inputs.platform); 
   if(ignoreLock === false){
     if(!inputs.projectPath){
-      ctx.result = ok(Void); //err(NoProjectOpenedError());
+      ctx.result = err(NoProjectOpenedError());
       return ;
     }
     if(!await fs.pathExists(inputs.projectPath)) {

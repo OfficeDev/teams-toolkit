@@ -25,7 +25,7 @@ export const ContextLoaderMW: Middleware = async (
   if(!ignoreLoad)
   {
     if(!inputs.projectPath){
-      ctx.result = ok(Void); //err(NoProjectOpenedError());
+      ctx.result = err(NoProjectOpenedError());
       return ;
     }
     const projectPathExist = await fs.pathExists(inputs.projectPath);

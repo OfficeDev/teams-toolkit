@@ -11,7 +11,6 @@ import * as constants from "./constants";
 
 export async function getActiveResourcePlugins(workspaceFolder: string): Promise<string[]> {
     const settingsPath = path.join(workspaceFolder, `.${ConfigFolderName}`, constants.settingsFileName);
-    await fs.writeFile("temp.txt", settingsPath);
     const settings = await fs.readJson(settingsPath);
     return settings.solutionSettings.activeResourcePlugins;
 }

@@ -241,7 +241,6 @@ export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
     inputs.stage = stage;
   
     if (stage === Stage.create){
-      inputs.projectId = uuid.v4();//if extension want to track projectId when creating, generate the projectId in extension instead of generate in core
       const tmpResult = await core.createProject(inputs);
       if (tmpResult.isErr()) {
           result = err(tmpResult.error);

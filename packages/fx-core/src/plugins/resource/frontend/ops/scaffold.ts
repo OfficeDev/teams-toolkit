@@ -12,6 +12,7 @@ import {
   FrontendPluginError,
   InvalidTemplateManifestError,
   runWithErrorCatchAndThrow,
+  UnknownFallbackError,
 } from "../resources/errors";
 import { Constants, FrontendPathInfo } from "../constants";
 import { Logger } from "../utils/logger";
@@ -64,7 +65,7 @@ export class FrontendScaffold {
 
   public static async fetchZipFromUrl(url: string): Promise<AdmZip> {
     const result = await runWithErrorCatchAndThrow(
-      new FetchTemplateManifestError(),
+      new FetchTemplatePackageError(),
       async () =>
         await Utils.requestWithRetry(async () => {
           return axios.get(url, {
@@ -102,7 +103,7 @@ export class FrontendScaffold {
       if (e instanceof FrontendPluginError) {
         TelemetryHelper.sendScaffoldFallbackEvent(e);
       } else {
-        TelemetryHelper.sendScaffoldFallbackEvent();
+        TelemetryHelper.sendScaffoldFallbackEvent(new UnknownFallbackError());
       }
 
       return FrontendScaffold.getTemplateZipFromLocal(templateInfo);

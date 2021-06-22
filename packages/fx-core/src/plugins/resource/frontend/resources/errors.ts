@@ -200,7 +200,7 @@ export class GetContainerError extends FrontendPluginError {
 
 export class FetchTemplateManifestError extends FrontendPluginError {
   constructor() {
-    super(ErrorType.System, "FetchTemplateManifestError", "Failed to fetch template manifest.", [
+    super(ErrorType.User, "FetchTemplateManifestError", "Failed to fetch template manifest.", [
       tips.checkNetwork,
     ]);
   }
@@ -219,7 +219,7 @@ export class InvalidTemplateManifestError extends FrontendPluginError {
 
 export class FetchTemplatePackageError extends FrontendPluginError {
   constructor() {
-    super(ErrorType.System, "FetchTemplatePackageError", "Failed to fetch template package.", [
+    super(ErrorType.User, "FetchTemplatePackageError", "Failed to fetch template package.", [
       tips.checkNetwork,
     ]);
   }

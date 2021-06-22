@@ -9,7 +9,7 @@ import {
   TelemetryValue,
 } from "../constants";
 import { PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
-import { FrontendPluginError, UnknownFallbackError } from "../resources/errors";
+import { FrontendPluginError } from "../resources/errors";
 
 export class TelemetryHelper {
   private static ctx?: PluginContext;
@@ -72,7 +72,7 @@ export class TelemetryHelper {
   }
 
   static sendScaffoldFallbackEvent(
-    e: FrontendPluginError = new UnknownFallbackError(),
+    e: FrontendPluginError,
     properties: { [key: string]: string } = {},
     measurements: { [key: string]: number } = {}
   ): void {

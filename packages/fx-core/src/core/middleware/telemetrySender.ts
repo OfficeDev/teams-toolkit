@@ -22,7 +22,7 @@ export const TelemetrySenderMW: Middleware = async (
   const properties: any = { module: "fx-core" };
   if (appId)
     properties[TelemetryProperty.AppId] = appId;
-  const correlationId = inputs.correlationId || "";
+  const correlationId = inputs.correlationId === undefined ? "":inputs.correlationId;
   properties[TelemetryProperty.CorrelationId] = correlationId;
   const method = kebabCase(ctx.method!);
   try {

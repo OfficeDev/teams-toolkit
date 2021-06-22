@@ -34,7 +34,7 @@ export class MessageExtensionBot extends TeamsActivityHandler {
       const preview = CardFactory.heroCard(obj.package.name);
       preview.content.tap = {
         type: "invoke",
-        value: {name: obj.package.name, description: obj.package.description },
+        value: { name: obj.package.name, description: obj.package.description },
       };
       const attachment = { ...heroCard, preview };
       attachments.push(attachment);

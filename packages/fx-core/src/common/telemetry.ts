@@ -100,10 +100,9 @@ export function sendTelemetryErrorEvent(
     properties[TelemetryProperty.ErrorType] = TelemetryErrorType.SystemError;
   }
 
-  const correlationId = inputs.correlationId;
-  if(correlationId)
-    properties[TelemetryProperty.CorrelationId] = correlationId;
-
+  const correlationId = inputs.correlationId || "";
+  properties[TelemetryProperty.CorrelationId] = correlationId;
+  
   properties[TelemetryProperty.ErrorCode] = `${error.source}.${error.name}`;
   properties[TelemetryProperty.ErrorMessage] = error.message;
 

@@ -3,7 +3,7 @@
 "use strict";
 
 import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks"; 
-import { ConfigFolderName, err, Inputs,  StaticPlatforms } from "@microsoft/teamsfx-api";
+import { ConfigFolderName, err, Inputs,  ok,  StaticPlatforms, Void } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import * as fs from "fs-extra";
 import { FxCore } from "..";
@@ -20,7 +20,7 @@ export const ConcurrentLockerMW: Middleware = async (
   const ignoreLock = inputs.ignoreLock === true || StaticPlatforms.includes(inputs.platform); 
   if(ignoreLock === false){
     if(!inputs.projectPath){
-      ctx.result = err(NoProjectOpenedError());
+      ctx.result = ok(Void); //err(NoProjectOpenedError());
       return ;
     }
     if(!await fs.pathExists(inputs.projectPath)) {

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
  
-import { ConfigFolderName, err, Inputs, Json, PluginConfig, ProjectSettings, SolutionConfig, SolutionContext, Stage, StaticPlatforms, Tools} from "@microsoft/teamsfx-api";
+import { ConfigFolderName, err, FxError, Inputs, Json, ok, PluginConfig, ProjectSettings, Result, SolutionConfig, SolutionContext, Stage, StaticPlatforms, Tools, Void} from "@microsoft/teamsfx-api";
 import { CoreHookContext, deserializeDict,  FxCore,  mergeSerectData, objectToMap} from "../..";
 import { InvalidProjectError, NoProjectOpenedError, PathNotExistError, ReadFileError } from "../error";
 import * as path from "path";
@@ -25,7 +25,7 @@ export const ContextLoaderMW: Middleware = async (
   if(!ignoreLoad)
   {
     if(!inputs.projectPath){
-      ctx.result = err(NoProjectOpenedError());
+      ctx.result = ok(Void); //err(NoProjectOpenedError());
       return ;
     }
     const projectPathExist = await fs.pathExists(inputs.projectPath);
@@ -34,18 +34,22 @@ export const ContextLoaderMW: Middleware = async (
       return ;
     }
     const core = ctx.self as FxCore;
-    const sctx = await loadSolutionContext(core.tools, inputs);
-    const validRes = validateProject(sctx);
+    const loadRes = await loadSolutionContext(core.tools, inputs);
+    if(loadRes.isErr()){
+      ctx.result = err(loadRes.error);
+      return ;
+    }
+    const validRes = validateProject(loadRes.value);
     if(validRes){
       ctx.result = err(InvalidProjectError(validRes));
       return ;
     }
-    ctx.solutionContext = sctx;
+    ctx.solutionContext = loadRes.value;
   }  
   await next();
 };
 
-export async function loadSolutionContext(tools: Tools, inputs: Inputs):Promise<SolutionContext>{
+export async function loadSolutionContext(tools: Tools, inputs: Inputs):Promise<Result<SolutionContext, FxError>>{
   try {
     const confFolderPath = path.resolve(inputs.projectPath!, `.${ConfigFolderName}`);
     const settingsFile = path.resolve(confFolderPath, "settings.json");
@@ -75,9 +79,9 @@ export async function loadSolutionContext(tools: Tools, inputs: Inputs):Promise<
       ... tools.tokenProvider,
       answers: inputs
     } ;
-    return solutionContext;
+    return ok(solutionContext);
   } catch (e) {
-    throw ReadFileError(e);
+    return err(ReadFileError(e));
   }
 }
 

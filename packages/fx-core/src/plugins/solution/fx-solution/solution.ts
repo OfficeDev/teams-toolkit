@@ -2478,13 +2478,20 @@ export class TeamsAppSolution implements Solution {
             manifestString = JSON.stringify(manifest.value);
           } else {
             ctx.logProvider?.error("[Teams Toolkit] Manifest Validation failed!");
-            await ctx.dialog?.communicate(
-              new DialogMsg(DialogType.Show, {
-                description: manifest.error.message,
-                level: MsgLevel.Error,
-              })
-            );
-            return err(manifest.error);
+            const isProvisionSucceeded = this.checkWetherProvisionSucceeded(ctx.config);
+            if (manifest.error.name === SolutionError.GetRemoteConfigError && !isProvisionSucceeded) {
+              return err(
+                returnUserError(
+                  new Error(
+                    "Manifest validation failed. You must run `Provision in the Cloud` first to fill out certain fields in manifest."
+                  ),
+                  "Solution",
+                  SolutionError.GetRemoteConfigError
+                )
+              );
+            } else {
+              return err(manifest.error);
+            }
           }
         }
         return await appStudioPlugin.validateManifest(pluginCtx, manifestString);
@@ -2508,14 +2515,21 @@ export class TeamsAppSolution implements Solution {
           if (manifest.isOk()) {
             manifestString = JSON.stringify(manifest.value);
           } else {
-            ctx.logProvider?.error("[Teams Toolkit] Teams Package built failed!");
-            await ctx.dialog?.communicate(
-              new DialogMsg(DialogType.Show, {
-                description: manifest.error.message,
-                level: MsgLevel.Error,
-              })
-            );
-            return err(manifest.error);
+            ctx.logProvider?.error("[Teams Toolkit] Teams Package build failed!");
+            const isProvisionSucceeded = this.checkWetherProvisionSucceeded(ctx.config);
+            if (manifest.error.name === SolutionError.GetRemoteConfigError && !isProvisionSucceeded) {
+              return err(
+                returnUserError(
+                  new Error(
+                    "Teams package build failed. You must run `Provision in the Cloud` first to fill out certain fields in manifest."
+                  ),
+                  "Solution",
+                  SolutionError.GetRemoteConfigError
+                )
+              );
+            } else {
+              return err(manifest.error);
+            }
           }
         }
         return await appStudioPlugin.buildTeamsPackage(

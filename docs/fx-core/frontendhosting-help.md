@@ -2,7 +2,7 @@
 ### Error Message
 Static website hosting feature is disabled for Azure Storage Account.
 ### Mitigation
-To host the tab front-end code in Azure Storage Account, you need to enable the static website feature. You can simply re-run the `Teams - Provision in the Cloud` command and toolkit automatically enable the feature. If you use CLI, try `teamsfx provision`. To manually enable this feature, see [here](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blob-static-website-how-to?tabs=azure-portal#enable-static-website-hosting)
+To host the tab front-end code in Azure Storage Account, you need to enable the static website feature. You can simply re-run the `Teams - Provision in the Cloud` command and the toolkit automatically enables the feature. If you use CLI, try `teamsfx provision`. To manually enable this feature, see [here](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-blob-static-website-how-to?tabs=azure-portal#enable-static-website-hosting)
 
 ## FE.EnableStaticWebsiteError
 ### Error Message

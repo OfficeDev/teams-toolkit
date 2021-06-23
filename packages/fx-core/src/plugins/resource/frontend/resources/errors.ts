@@ -146,10 +146,15 @@ export class StorageAccountAlreadyTakenError extends FrontendPluginError {
 }
 
 export class CreateStorageAccountError extends FrontendPluginError {
-  constructor() {
-    super(ErrorType.User, "CreateStorageAccountError", "Failed to create Azure Storage Account.", [
-      tips.checkLog,
-    ]);
+  constructor(innerErrorCode?: string) {
+    super(
+      ErrorType.User,
+      "CreateStorageAccountError",
+      `Failed to create Azure Storage Account${
+        innerErrorCode ? `, Azure error code: ${innerErrorCode}` : ""
+      }.`,
+      [tips.checkLog]
+    );
   }
 }
 
@@ -200,7 +205,7 @@ export class GetContainerError extends FrontendPluginError {
 
 export class FetchTemplateManifestError extends FrontendPluginError {
   constructor() {
-    super(ErrorType.System, "FetchTemplateManifestError", "Failed to fetch template manifest.", [
+    super(ErrorType.User, "FetchTemplateManifestError", "Failed to fetch template manifest.", [
       tips.checkNetwork,
     ]);
   }
@@ -219,7 +224,7 @@ export class InvalidTemplateManifestError extends FrontendPluginError {
 
 export class FetchTemplatePackageError extends FrontendPluginError {
   constructor() {
-    super(ErrorType.System, "FetchTemplatePackageError", "Failed to fetch template package.", [
+    super(ErrorType.User, "FetchTemplatePackageError", "Failed to fetch template package.", [
       tips.checkNetwork,
     ]);
   }
@@ -231,6 +236,17 @@ export class GetTemplateError extends FrontendPluginError {
       tips.checkNetwork,
       tips.checkFsPermissions,
     ]);
+  }
+}
+
+export class UnknownFallbackError extends FrontendPluginError {
+  constructor() {
+    super(
+      ErrorType.System,
+      "UnknownFallbackError",
+      "Trigger fallback caused by unknown reason.",
+      []
+    );
   }
 }
 

@@ -8,6 +8,7 @@ import { AadValidator } from "../../commonlib";
 
 import {
   execAsync,
+  execAsyncWithRetry,
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
@@ -41,7 +42,7 @@ describe("Provision", function() {
     }
 
     // provision
-    await execAsync(
+    await execAsyncWithRetry(
       `teamsfx provision --subscription ${subscription}`,
       {
         cwd: projectPath,

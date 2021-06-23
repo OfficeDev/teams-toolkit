@@ -7,18 +7,7 @@ import { Platform, Stage, VsCodeEnv } from "./constants";
 
 export type Json = Record<string,unknown>;
 
-
-export type ConfigValue =
-  | string
-  | string[]
-  | number
-  | number[]
-  | boolean
-  | boolean[]
-  | OptionItem[]
-  | OptionItem
-  | undefined
-  | any;
+export type ConfigValue = any;
 
 export type PluginIdentity = string;
 

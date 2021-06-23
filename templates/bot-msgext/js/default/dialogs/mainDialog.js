@@ -62,7 +62,7 @@ class MainDialog extends RootDialog {
   async dedupStep(stepContext) {
     const tokenResponse = stepContext.result;
     // Only dedup after ssoStep to make sure that all Teams client would receive the login request
-    if (tokenResponse && await this.shouldDedup(stepContext.context)) {
+    if (tokenResponse && (await this.shouldDedup(stepContext.context))) {
       return Dialog.EndOfTurn;
     }
     return await stepContext.next(tokenResponse);

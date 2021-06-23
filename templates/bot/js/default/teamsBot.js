@@ -1,8 +1,4 @@
-const {
-  TeamsActivityHandler,
-  ActionTypes,
-  CardFactory,
-} = require("botbuilder");
+const { TeamsActivityHandler, ActionTypes, CardFactory } = require("botbuilder");
 
 class TeamsBot extends TeamsActivityHandler {
   /**

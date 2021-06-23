@@ -76,4 +76,5 @@ export enum FunctionEvent {
   postDeploy = "post-deploy",
   getQuestions = "get-questions",
   callFunc = "call-func",
+  scaffoldFallback = "scaffold-fallback"
 }

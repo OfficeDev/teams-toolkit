@@ -12,6 +12,26 @@ import { cfg, AadManager, ResourceGroupManager } from "../commonlib";
 
 export const execAsync = promisify(exec);
 
+export async function execAsyncWithRetry(command: string, options: {
+    cwd?: string;
+    env?: NodeJS.ProcessEnv;
+    timeout?: number;
+}, retries = 3): Promise<{
+    stdout: string;
+    stderr: string;
+}> {
+    while (retries > 0) {
+        retries--;
+        try {
+            const result = await execAsync(command, options);
+            return result;
+        } catch (e) {
+            console.log(`Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`);
+        }
+    }
+    return execAsync(command, options);
+}
+
 const testFolder = path.resolve(os.homedir(), "test-folder");
 
 export function getTestFolder() {

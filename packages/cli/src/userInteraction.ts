@@ -3,6 +3,7 @@
 
 "use stricts";
 
+import chalk from "chalk";
 import fs from "fs-extra";
 import inquirer, { DistinctQuestion } from "inquirer";
 import path from "path";
@@ -166,7 +167,17 @@ export class CLIUserInteraction implements UserInteraction {
     defaultValue?: T,
     validate?: ValidationType<T>
   ): DistinctQuestion {
-    return { type, name, message, choices, default: defaultValue, validate };
+    return {
+      type,
+      name,
+      message: chalk.whiteBright.bold(message),
+      choices,
+      default:
+      defaultValue,
+      validate,
+      prefix: chalk.blueBright("?"),
+      suffix: chalk.whiteBright.bold(":")
+    };
   }
   
   private async singleSelect(

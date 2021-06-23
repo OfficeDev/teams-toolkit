@@ -2,33 +2,17 @@
   // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureSolutionSettings, err, FxError, ok, Result, returnSystemError, returnUserError, SubscriptionInfo, TreeCategory, TreeItem, Void } from "@microsoft/teamsfx-api";
+import { AzureSolutionSettings, err, FxError, ok, Result, SubscriptionInfo, TreeCategory, TreeItem, Void } from "@microsoft/teamsfx-api";
 import { AzureAccount } from "./commonlib/azure-account.api";
 import AzureAccountManager from "./commonlib/azureLogin";
-import { ExtensionSource } from "./error";
-import { core, getSystemInputs, showError, tools } from "./handlers";
-import * as vscode from "vscode";
+import { core, getSystemInputs, tools } from "./handlers";
 import { askSubscription } from "@microsoft/teamsfx-core";
 import { VS_CODE_UI } from "./extension";
-
- 
-enum TelemetryTiggerFrom {
-  CommandPalette = "CommandPalette",
-  TreeView = "TreeView",
-}
-
-enum TelemetryProperty {
-  TriggerFrom = "trigger-from",
-}
-
-enum TelemetryEvent {
-  SelectSubscription = "select-subscription",
-}
-
-export enum AccountType {
-  M365 = "m365",
-  Azure = "azure",
-}
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetryTiggerFrom,
+} from "./telemetry/extTelemetryEvents";
 
 export async function getSubscriptionId():Promise<string|undefined>{ 
   const projectConfigRes = await core.getProjectConfig(getSystemInputs()); 
@@ -72,8 +56,6 @@ export async function isValid():Promise<boolean>{
   // }
   return supported;
 }
-
-
 
 export async function registerAccountTreeHandler(): Promise<Result<Void, FxError>> {
    
@@ -203,16 +185,6 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
     return ok(null);
   };
 
-  let azureAccountLabel = "Sign in to Azure";
-  let azureAccountContextValue = "signinAzure";
-  const azureAccount: AzureAccount = vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
-  if (azureAccount.status === "LoggedIn") {
-    const token = await tools.tokenProvider.azureAccountProvider.getAccountCredentialAsync();
-    if (token !== undefined) {
-      azureAccountLabel = (token as any).username ? (token as any).username : "";
-      azureAccountContextValue = "signedinAzure";
-    }
-  }
   tools.tokenProvider.appStudioToken?.setStatusChangeMap(
     "tree-view",
     (
@@ -320,12 +292,12 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
     },
     {
       commandId: "fx-extension.signinAzure",
-      label: azureAccountLabel,
+      label: "Sign in to Azure",
       callback: async (args?: any[]) => {
         return signinAzureCallback(args);
       },
       parent: TreeCategory.Account,
-      contextValue: azureAccountContextValue,
+      contextValue: "signinAzure",
       subTreeItems: [],
       icon: "azure",
       tooltip: {
@@ -345,10 +317,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
 
   return ok(Void);
 }
-
-
-
-   
+  
 async function setSubscription(subscription: SubscriptionInfo | undefined) {
   if (subscription) {
     const inputs = getSystemInputs();
@@ -366,6 +335,10 @@ async function setSubscription(subscription: SubscriptionInfo | undefined) {
         parent: "fx-extension.signinAzure",
         contextValue: "selectSubscription",
         icon: "subscriptionSelected",
+        tooltip: {
+          isMarkdown: false,
+          value:subscription.subscriptionName,
+        },
       },
     ]);
   }

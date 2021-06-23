@@ -7,6 +7,7 @@ import { CommonConstants, DependentPluginInfo, FunctionPluginInfo } from "../con
 import { FxResult } from "../result";
 import { FunctionEvent, TelemetryKey, TelemetryValue } from "../enums";
 import { DepsCheckerEvent } from "./depsChecker/common";
+import { FunctionPluginError, UnknownFallbackError } from "../resources/errors";
 
 export class TelemetryHelper {
   static ctx?: PluginContext;
@@ -74,5 +75,17 @@ export class TelemetryHelper {
       () => this.sendSuccessEvent(eventName, properties, measurements),
       (e: SystemError | UserError) => this.sendErrorEvent(eventName, e, properties, measurements)
     );
+  }
+
+  static sendScaffoldFallbackEvent(
+    e: FunctionPluginError,
+    properties: { [key: string]: string } = {},
+    measurements: { [key: string]: number } = {}
+  ) {
+    this.fillCommonProperty(properties);
+    properties[TelemetryKey.ErrorMessage] = e.message;
+    properties[TelemetryKey.ErrorCode] = e.code;
+
+    this.ctx?.telemetryReporter?.sendTelemetryEvent(FunctionEvent.scaffoldFallback, properties, measurements);
   }
 }

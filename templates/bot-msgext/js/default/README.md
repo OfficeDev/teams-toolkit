@@ -1,6 +1,12 @@
-# Build UI-based Apps for Teams
+# Build Bots and Messaging Extensions for Teams
 
-Microsoft Teams supports the ability to run web-based UI inside "custom tabs" that users can install either for just themselves (personal tabs) or within a team or group chat context.
+A Messaging Extension allows users to interact with your web service while composing messages in the Microsoft Teams client. Users can invoke your web service to assist message composition, from the message compose box, or from the search bar.
+
+Messaging Extensions are implemented on top of the Bot support architecture within Teams.
+
+A bot, chatbot, or conversational bot is an app that responds to simple commands sent in chat and replies in meaningful ways. Examples of bots in everyday use include: bots that notify about build failures, bots that provide information about the weather or bus schedules, or provide travel information. A bot interaction can be a quick question and answer, or it can be a complex conversation. Being a cloud application, a bot can provide valuable and secure access to cloud services and corporate resources.
+
+This is a simple hello world application with both Bot and Message extension capabilities.
 
 ## Prerequisites
 
@@ -11,7 +17,8 @@ Microsoft Teams supports the ability to run web-based UI inside "custom tabs" th
 ## Create an application
 
 - From Visual Studio Code, open command palette and select `Teams: Create New Project`. Or from the CLI, (after `npm install -g @microsoft/teamsfx-cli`) run command `teamsfx new`.
-- Choose the "Custom tab" capability from the prompts.
+- Choose the messaging extension capability from the prompts.
+  > Note: You have the option to reuse an existing bot by entering the credential manually. But make sure that bot is not associated with any AAD apps.
 
 ## Debug
 
@@ -57,3 +64,40 @@ Once deployed, you may want to distribute your application to your organization'
 
 - From Visual Studio Code: open the command palette and select: `Teams: Publish to Teams`.
 - From TeamsFx CLI: run command `teamsfx publish` in your project directory.
+
+## Use the App
+
+This template provides some sample functionality:
+
+- You can search for `npm` packages from the search bar.
+- You can create and send an adaptive card.
+  ![CreateCard](./images/AdaptiveCard.png)
+- You can share a message in an adaptive card form.
+  ![ShareMessage](./images/ShareMessage.png)
+- You can paste a link that "unfurls" (`.botframwork.com` is monitored in this template) and a card will be rendered.
+  ![ComposeArea](./images/LinkUnfurlingImage.png)
+
+To trigger these functions, there are multiple entry points:
+
+- `@mention` Your messaging extension, from the `search box area`.
+  ![AtBotFromSearch](./images/AtBotFromSearch.png)
+- `@mention` your messaging extension from the `compose message area`.
+  ![AtBotFromMessage](./images/AtBotInMessage.png)
+- Click the `...` under compose message area, find your messaging extension.
+  ![ComposeArea](./images/ThreeDot.png)
+- Click the `...` next to any messages you received or sent.
+  ![ComposeArea](./images/ThreeDotOnMessage.png)
+
+## Further reading
+
+### Bot
+
+- [Bot Basics](https://docs.microsoft.com/azure/bot-service/bot-builder-basics?view=azure-bot-service-4.0)
+- [Bot Framework Documentation](https://docs.botframework.com/)
+- [Azure Bot Service Introduction](https://docs.microsoft.com/azure/bot-service/bot-service-overview-introduction?view=azure-bot-service-4.0)
+
+### Messaging Extension
+
+- [Search Command](https://docs.microsoft.com/en-us/microsoftteams/platform/messaging-extensions/how-to/search-commands/define-search-command)
+- [Action Command](https://docs.microsoft.com/en-us/microsoftteams/platform/messaging-extensions/how-to/action-commands/define-action-command)
+- [Link Unfurling](https://docs.microsoft.com/en-us/microsoftteams/platform/messaging-extensions/how-to/link-unfurling?tabs=dotnet)

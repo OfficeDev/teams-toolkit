@@ -1,4 +1,3 @@
-# Frontend Hosting Help
 ## FE.StaticWebsiteDisableError
 ### Error Message
 Static website hosting feature is disabled for Azure Storage Account.

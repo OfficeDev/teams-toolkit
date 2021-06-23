@@ -76,6 +76,7 @@ import { SPFxNodeChecker } from "./debug/depsChecker/spfxNodeChecker";
 import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { VS_CODE_UI } from "./extension";
 import { registerAccountTreeHandler } from "./accountTree";
+import * as uuid from "uuid";
 
 export let core: FxCore; 
 export let tools:Tools;
@@ -160,7 +161,8 @@ export function getSystemInputs():Inputs{
     projectPath: getWorkspacePath(),
     platform: Platform.VSCode,
     vscodeEnv: detectVsCodeEnv(),
-    "function-dotnet-checker-enabled": vscodeAdapter.dotnetCheckerEnabled()
+    "function-dotnet-checker-enabled": vscodeAdapter.dotnetCheckerEnabled(),
+    correlationId: uuid.v4()
   };
   return answers;
 }

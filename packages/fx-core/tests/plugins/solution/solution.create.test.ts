@@ -33,6 +33,7 @@ import {
   MessageExtensionItem,
   TabOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
+import * as uuid  from "uuid";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -89,6 +90,7 @@ describe("Solution create()", async () => {
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: undefined,
     };
     const result = await solution.create(mockedSolutionCtx);
@@ -103,6 +105,7 @@ describe("Solution create()", async () => {
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
         version: "1.0",
@@ -120,6 +123,7 @@ describe("Solution create()", async () => {
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
         version: "1.0",
@@ -139,6 +143,7 @@ describe("Solution create()", async () => {
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
         version: "1.0",
@@ -161,6 +166,7 @@ describe("Solution create()", async () => {
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
         version: "1.0",
@@ -181,6 +187,7 @@ describe("Solution create()", async () => {
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
@@ -202,6 +209,7 @@ describe("Solution create()", async () => {
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
@@ -236,6 +244,7 @@ describe("Solution create()", async () => {
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
         version: "1.0",
@@ -274,6 +283,7 @@ describe("Solution create()", async () => {
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
         version: "1.0",
@@ -309,6 +319,7 @@ describe("Solution create()", async () => {
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         name: "azure",
         version: "1.0",
@@ -343,6 +354,7 @@ describe("Solution create()", async () => {
     mockedSolutionCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
         name: "azure",

@@ -8,7 +8,7 @@ import * as path from "path";
 
 import { LocalDebugPluginInfo } from "../../../../../src/plugins/resource/localdebug/constants";
 import { LocalDebugPlugin } from "../../../../../src/plugins/resource/localdebug";
-
+import * as uuid  from "uuid";
 chai.use(chaiAsPromised);
 
 interface TestParameter {
@@ -63,6 +63,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
         pluginContext.projectSettings = {
           appName: "",
           currentEnv: "default",
+          projectId: uuid.v4(),
           solutionSettings: {
             name: "",
             version: "",
@@ -124,6 +125,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
         ]);
         pluginContext.projectSettings = {
           appName: "",
+          projectId: uuid.v4(),
           currentEnv: "default",
           solutionSettings: {
             name: "",
@@ -182,6 +184,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
         pluginContext.projectSettings = {
           appName: "",
           currentEnv: "default",
+          projectId: uuid.v4(),
           solutionSettings: {
             name: "",
             version: "",
@@ -235,6 +238,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
         ]);
         pluginContext.projectSettings = {
           appName: "",
+          projectId: uuid.v4(),
           currentEnv: "default",
           solutionSettings: {
             name: "",
@@ -299,6 +303,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
         pluginContext.projectSettings = {
           appName: "",
           currentEnv: "default",
+          projectId: uuid.v4(),
           solutionSettings: {
             name: "",
             version: "",
@@ -338,6 +343,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
       pluginContext.projectSettings = {
         appName: "",
         currentEnv: "default",
+        projectId: uuid.v4(),
         solutionSettings: {
           name: "",
           version: "",
@@ -372,6 +378,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
       pluginContext.projectSettings = {
         appName: "",
         currentEnv: "default",
+        projectId: uuid.v4(),
         solutionSettings: {
           name: "",
           version: "",

@@ -112,6 +112,7 @@ export class TestHelper {
       projectSettings: {
         appName: TestHelper.appName,
         currentEnv: "default",
+        projectId: uuid(),
         solutionSettings: {
           name: "",
           version: "",

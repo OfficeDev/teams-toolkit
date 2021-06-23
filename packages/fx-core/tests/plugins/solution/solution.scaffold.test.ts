@@ -30,6 +30,7 @@ import path from "path";
 import { getTemplatesFolder } from "../../../src";
 import { SolutionError } from "../../../src/plugins/solution/fx-solution/constants";
 import { validManifest } from "./util";
+import * as uuid  from "uuid";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -77,6 +78,7 @@ describe("Solution scaffold()", () => {
     mockedCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
@@ -95,6 +97,7 @@ describe("Solution scaffold()", () => {
     mockedCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
@@ -140,6 +143,7 @@ describe("Solution scaffold() reading manifest file with no app name", () => {
     mockedCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
@@ -186,6 +190,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
     mockedCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
@@ -207,6 +212,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
     mockedCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
@@ -229,6 +235,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
     mockedCtx.projectSettings = {
       appName: "my app",
       currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",

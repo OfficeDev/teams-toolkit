@@ -84,7 +84,7 @@ export interface BaseQuestion {
   value?: unknown;
 
   /**
-   * default value of the question
+   * default input value
    */
   default?: unknown;
 
@@ -218,6 +218,8 @@ export interface MultiSelectQuestion extends UserInputQuestion {
   skipSingleOption?: boolean;
   /**
    * a callback function which is triggered when the selected values change, which can change the final selected values.
+   * @param currentSelectedIds current selected option ids
+   * @param previousSelectedIds previous selected option ids
    * @returns the final selected option ids
    */
   onDidChangeSelection?: (currentSelectedIds: Set<string>, previousSelectedIds: Set<string>) => Promise<Set<string>>;

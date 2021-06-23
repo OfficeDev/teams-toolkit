@@ -86,23 +86,23 @@ export class AadAppForTeamsImpl {
     await DialogUtils.progress?.start(ProgressDetail.Starting);
     if (config.objectId) {
       await DialogUtils.progress?.next(ProgressDetail.GetAadApp);
-      config = await AadAppClient.getAadApp(config.objectId, isLocalDebug, config.password);
+      config = await AadAppClient.getAadApp(ctx, isLocalDebug ? Messages.EndLocalDebug.telemetry : Messages.EndProvision.telemetry, config.objectId, isLocalDebug, config.password);
       ctx.logProvider?.info(Messages.getLog(Messages.GetAadAppSuccess));
     } else {
       await DialogUtils.progress?.next(ProgressDetail.ProvisionAadApp);
-      await AadAppClient.createAadApp(config);
+      await AadAppClient.createAadApp(ctx, isLocalDebug ? Messages.EndLocalDebug.telemetry : Messages.EndProvision.telemetry, config);
       config.password = undefined;
       ctx.logProvider?.info(Messages.getLog(Messages.CreateAadAppSuccess));
     }
 
     if (!config.password) {
       await DialogUtils.progress?.next(ProgressDetail.CreateAadAppSecret);
-      await AadAppClient.createAadAppSecret(config);
+      await AadAppClient.createAadAppSecret(ctx, isLocalDebug ? Messages.EndLocalDebug.telemetry : Messages.EndProvision.telemetry, config);
       ctx.logProvider?.info(Messages.getLog(Messages.CreateAadAppPasswordSuccess));
     }
 
     await DialogUtils.progress?.next(ProgressDetail.UpdatePermission);
-    await AadAppClient.updateAadAppPermission(config.objectId as string, permissions);
+    await AadAppClient.updateAadAppPermission(ctx, isLocalDebug ? Messages.EndLocalDebug.telemetry : Messages.EndProvision.telemetry, config.objectId as string, permissions);
     ctx.logProvider?.info(Messages.getLog(Messages.UpdatePermissionSuccess));
 
     await DialogUtils.progress?.end();
@@ -172,11 +172,13 @@ export class AadAppForTeamsImpl {
       config.frontendEndpoint,
       config.botEndpoint
     );
-    await AadAppClient.updateAadAppRedirectUri(config.objectId as string, redirectUris);
+    await AadAppClient.updateAadAppRedirectUri(ctx, isLocalDebug ? Messages.EndPostLocalDebug.telemetry : Messages.EndPostProvision.telemetry, config.objectId as string, redirectUris);
     ctx.logProvider?.info(Messages.getLog(Messages.UpdateRedirectUriSuccess));
 
     await DialogUtils.progress?.next(ProgressDetail.UpdateAppIdUri);
     await AadAppClient.updateAadAppIdUri(
+      ctx,
+      isLocalDebug ? Messages.EndPostLocalDebug.telemetry : Messages.EndPostProvision.telemetry,
       config.objectId as string,
       config.applicationIdUri as string
     );
@@ -223,7 +225,7 @@ export class AadAppForTeamsImpl {
     await DialogUtils.progress?.start(ProgressDetail.Starting);
     await DialogUtils.progress?.next(ProgressDetail.UpdatePermission);
     for (const config of configs) {
-      await AadAppClient.updateAadAppPermission(config.objectId as string, permissions);
+      await AadAppClient.updateAadAppPermission(ctx, Messages.EndUpdatePermission.telemetry, config.objectId as string, permissions);
     }
     ctx.logProvider?.info(Messages.getLog(Messages.UpdatePermissionSuccess));
 

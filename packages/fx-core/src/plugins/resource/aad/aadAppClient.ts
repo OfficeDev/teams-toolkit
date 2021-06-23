@@ -1,8 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { PluginContext } from "@microsoft/teamsfx-api";
 import { AppStudio } from "./appStudio";
-import { ConfigKeys, Constants } from "./constants";
+import { ConfigKeys, Constants, Telemetry } from "./constants";
 import {
   AppStudioErrorMessage,
   CreateSecretError,
@@ -19,6 +20,7 @@ import { IAADDefinition, RequiredResourceAccess } from "./interfaces/IAADDefinit
 import { ResultFactory } from "./results";
 import { ProvisionConfig } from "./utils/configs";
 import { DialogUtils } from "./utils/dialog";
+import { TelemetryUtils } from "./utils/telemetry";
 import { TokenAudience, TokenProvider } from "./utils/tokenProvider";
 
 function delay(ms: number) {
@@ -27,7 +29,7 @@ function delay(ms: number) {
 }
 
 export class AadAppClient {
-  public static async createAadApp(config: ProvisionConfig): Promise<void> {
+  public static async createAadApp(ctx: PluginContext, stage: string, config: ProvisionConfig, ): Promise<void> {
     try {
       const provisionObject = AadAppClient.getAadAppProvisionObject(
         config.displayName as string,
@@ -35,12 +37,16 @@ export class AadAppClient {
       );
       let provisionAadResponse: IAADDefinition;
       if (TokenProvider.audience === TokenAudience.AppStudio) {
-        provisionAadResponse = (await this.retryHanlder(() =>
-          AppStudio.createAADAppV2(TokenProvider.token as string, provisionObject)
+        provisionAadResponse = (await this.retryHanlder(
+          ctx,
+          stage,
+          () => AppStudio.createAADAppV2(TokenProvider.token as string, provisionObject)
         )) as IAADDefinition;
       } else {
-        provisionAadResponse = (await this.retryHanlder(() =>
-          GraphClient.createAADApp(TokenProvider.token as string, provisionObject)
+        provisionAadResponse = (await this.retryHanlder(
+          ctx,
+          stage,
+          () => GraphClient.createAADApp(TokenProvider.token as string, provisionObject)
         )) as IAADDefinition;
       }
 
@@ -51,16 +57,20 @@ export class AadAppClient {
     }
   }
 
-  public static async createAadAppSecret(config: ProvisionConfig): Promise<void> {
+  public static async createAadAppSecret(ctx: PluginContext, stage: string, config: ProvisionConfig,): Promise<void> {
     try {
       let createSecretObject: IAADPassword;
       if (TokenProvider.audience === TokenAudience.AppStudio) {
-        createSecretObject = (await AadAppClient.retryHanlder(() =>
-          AppStudio.createAADAppPassword(TokenProvider.token as string, config.objectId as string)
+        createSecretObject = (await AadAppClient.retryHanlder(
+          ctx,
+          stage,
+          () => AppStudio.createAADAppPassword(TokenProvider.token as string, config.objectId as string)
         )) as IAADPassword;
       } else {
-        createSecretObject = (await AadAppClient.retryHanlder(() =>
-          GraphClient.createAadAppSecret(TokenProvider.token as string, config.objectId as string)
+        createSecretObject = (await AadAppClient.retryHanlder(
+          ctx,
+          stage,
+          () => GraphClient.createAadAppSecret(TokenProvider.token as string, config.objectId as string)
         )) as IAADPassword;
       }
       config.password = createSecretObject.value;
@@ -70,26 +80,24 @@ export class AadAppClient {
   }
 
   public static async updateAadAppRedirectUri(
+    ctx: PluginContext,
+    stage: string,
     objectId: string,
     redirectUris: string[]
   ): Promise<void> {
     try {
       const updateRedirectUriObject = AadAppClient.getAadUrlObject(redirectUris);
       if (TokenProvider.audience === TokenAudience.AppStudio) {
-        await AadAppClient.retryHanlder(() =>
-          AppStudio.updateAADApp(
-            TokenProvider.token as string,
-            objectId as string,
-            updateRedirectUriObject
-          )
+        await AadAppClient.retryHanlder(
+          ctx,
+          stage,
+          () => AppStudio.updateAADApp(TokenProvider.token as string, objectId as string, updateRedirectUriObject)
         );
       } else {
-        await AadAppClient.retryHanlder(() =>
-          GraphClient.updateAADApp(
-            TokenProvider.token as string,
-            objectId as string,
-            updateRedirectUriObject
-          )
+        await AadAppClient.retryHanlder(
+          ctx,
+          stage,
+          () => GraphClient.updateAADApp(TokenProvider.token as string, objectId as string, updateRedirectUriObject)
         );
       }
     } catch (error) {
@@ -102,24 +110,20 @@ export class AadAppClient {
     }
   }
 
-  public static async updateAadAppIdUri(objectId: string, applicationIdUri: string): Promise<void> {
+  public static async updateAadAppIdUri(ctx: PluginContext, stage: string, objectId: string, applicationIdUri: string): Promise<void> {
     try {
       const updateAppIdObject = AadAppClient.getAadApplicationIdObject(applicationIdUri);
       if (TokenProvider.audience === TokenAudience.AppStudio) {
-        await AadAppClient.retryHanlder(() =>
-          AppStudio.updateAADApp(
-            TokenProvider.token as string,
-            objectId as string,
-            updateAppIdObject
-          )
+        await AadAppClient.retryHanlder(
+          ctx,
+          stage,
+          () => AppStudio.updateAADApp(TokenProvider.token as string, objectId as string, updateAppIdObject)
         );
       } else {
-        await AadAppClient.retryHanlder(() =>
-          GraphClient.updateAADApp(
-            TokenProvider.token as string,
-            objectId as string,
-            updateAppIdObject
-          )
+        await AadAppClient.retryHanlder(
+          ctx,
+          stage,
+          () => GraphClient.updateAADApp(TokenProvider.token as string, objectId as string, updateAppIdObject)
         );
       }
     } catch (error) {
@@ -134,26 +138,24 @@ export class AadAppClient {
   }
 
   public static async updateAadAppPermission(
+    ctx: PluginContext,
+    stage: string,
     objectId: string,
     permissions: RequiredResourceAccess[]
   ): Promise<void> {
     try {
       const updatePermissionObject = AadAppClient.getAadPermissionObject(permissions);
       if (TokenProvider.audience === TokenAudience.AppStudio) {
-        await AadAppClient.retryHanlder(() =>
-          AppStudio.updateAADApp(
-            TokenProvider.token as string,
-            objectId as string,
-            updatePermissionObject
-          )
+        await AadAppClient.retryHanlder(
+          ctx,
+          stage,
+          () => AppStudio.updateAADApp(TokenProvider.token as string, objectId as string, updatePermissionObject)
         );
       } else {
-        await AadAppClient.retryHanlder(() =>
-          GraphClient.updateAADApp(
-            TokenProvider.token as string,
-            objectId as string,
-            updatePermissionObject
-          )
+        await AadAppClient.retryHanlder(
+          ctx,
+          stage,
+          () => GraphClient.updateAADApp(TokenProvider.token as string, objectId as string, updatePermissionObject)
         );
       }
     } catch (error) {
@@ -166,6 +168,8 @@ export class AadAppClient {
   }
 
   public static async getAadApp(
+    ctx: PluginContext,
+    stage: string,
     objectId: string,
     islocalDebug: boolean,
     clientSecret: string | undefined
@@ -173,12 +177,16 @@ export class AadAppClient {
     let getAppObject: IAADDefinition;
     try {
       if (TokenProvider.audience === TokenAudience.AppStudio) {
-        getAppObject = (await this.retryHanlder(() =>
-          AppStudio.getAadApp(TokenProvider.token as string, objectId)
+        getAppObject = (await this.retryHanlder(
+          ctx,
+          stage,
+          () => AppStudio.getAadApp(TokenProvider.token as string, objectId)
         )) as IAADDefinition;
       } else {
-        getAppObject = (await this.retryHanlder(() =>
-          GraphClient.getAadApp(TokenProvider.token as string, objectId)
+        getAppObject = (await this.retryHanlder(
+          ctx,
+          stage,
+          () => GraphClient.getAadApp(TokenProvider.token as string, objectId)
         )) as IAADDefinition;
       }
     } catch (error) {
@@ -204,10 +212,13 @@ export class AadAppClient {
   }
 
   private static async retryHanlder(
-    fn: () => Promise<IAADDefinition | IAADPassword | void>
+    ctx: PluginContext,
+    stage: string,
+    fn: () => Promise<IAADDefinition | IAADPassword | void>,
   ): Promise<IAADDefinition | IAADPassword | undefined | void> {
     let retries = 10;
     let response;
+    TelemetryUtils.init(ctx);
     while (retries > 0) {
       retries = retries - 1;
 
@@ -218,6 +229,7 @@ export class AadAppClient {
         if (retries === 0) {
           throw error;
         } else {
+          TelemetryUtils.sendEvent(stage, {[Telemetry.methodName]: fn.toString(), [Telemetry.retryTimes]: (10-retries).toString()});
           await delay(5000);
         }
       }

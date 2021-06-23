@@ -57,6 +57,8 @@ export class Telemetry {
   static isSuccess = "success";
   static yes = "yes";
   static no = "no";
+  static retryTimes = "retry-times";
+  static methodName = "method-name";
   static appId = "appid";
   static skip = "skip";
 }

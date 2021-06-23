@@ -20,6 +20,19 @@ export class TelemetryUtils {
       properties = {};
     }
     properties[Telemetry.component] = Plugins.pluginNameComplex;
+    TelemetryUtils.addAppIdInProperty(properties, this.ctx);
+    TelemetryUtils.ctx.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
+  }
+
+  public static sendSuccessEvent(
+    eventName: string,
+    properties?: { [key: string]: string },
+    measurements?: { [key: string]: number }
+  ): void {
+    if (!properties) {
+      properties = {};
+    }
+    properties[Telemetry.component] = Plugins.pluginNameComplex;
     properties[Telemetry.isSuccess] = Telemetry.yes;
     TelemetryUtils.addAppIdInProperty(properties, this.ctx);
     TelemetryUtils.ctx.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);

@@ -5,7 +5,7 @@ on:
     inputs:
       version:
         description: "which version to bump(major, minor, patch, premajor, preminor, prepatch, prerelease)"
-        required: true
+        required: false
         default: "prerelease"
       preid:
         description: "preid name(alpha, rc, stable)"
@@ -17,7 +17,7 @@ on:
         default: ""
       conventional-commits:
         description: "bump up release version by lerna conventional commits(yes or no)"
-        required: false
+        required: true
         default: "no"
   schedule:
     - cron: "0 8 * * *"

@@ -8,6 +8,7 @@ import { SqlValidator } from "../../commonlib";
 
 import {
   execAsync,
+  execAsyncWithRetry,
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
@@ -36,7 +37,7 @@ describe("Provision to Azure with SQL", function () {
     await setSimpleAuthSkuNameToB1(projectPath);
 
     // provision
-    await execAsync(
+    await execAsyncWithRetry(
       `teamsfx provision --subscription ${subscription} --sql-admin-name Abc123321 --sql-password Cab232332 --sql-confirm-password Cab232332 --sql-skip-adding-user false`,
       {
         cwd: projectPath,

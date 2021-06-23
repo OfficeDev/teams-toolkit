@@ -125,6 +125,7 @@ export type EnvConfig = Dict<string>;
  */
 export interface ProjectSettings {
   appName: string;
+  projectId: string;
   currentEnv?: string;
   solutionSettings?: SolutionSettings;
 }
@@ -162,6 +163,7 @@ export interface Inputs extends Json{
   ignoreLock?:boolean;
   ignoreTypeCheck?:boolean;
   ignoreConfigPersist?:boolean;
+  correlationId?:string;
 }   
 
 

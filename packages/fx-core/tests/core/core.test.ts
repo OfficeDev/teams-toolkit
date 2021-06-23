@@ -65,13 +65,17 @@ describe("Core basic APIs", () => {
       const res = await core.createProject(inputs);
       assert.isTrue (res.isOk() && res.value === projectPath);
       assert.deepEqual(expectedInputs, inputs);
-      const solutionContext = await loadSolutionContext(tools, inputs);
-      const validRes = validateProject(solutionContext);
-      assert.isTrue(validRes === undefined);
-      const solutioConfig = solutionContext.config.get("solution");
-      assert.isTrue(solutioConfig !== undefined);
-      assert.isTrue(solutioConfig!.get("create") === true);
-      assert.isTrue(solutioConfig!.get("scaffold") === true);
+      const loadRes = await loadSolutionContext(tools, inputs);
+      assert.isTrue(loadRes.isOk());
+      if(loadRes.isOk()){
+        const solutionContext = loadRes.value;
+        const validRes = validateProject(solutionContext);
+        assert.isTrue(validRes === undefined);
+        const solutioConfig = solutionContext.config.get("solution");
+        assert.isTrue(solutioConfig !== undefined);
+        assert.isTrue(solutioConfig!.get("create") === true);
+        assert.isTrue(solutioConfig!.get("scaffold") === true);
+      }
     }
     {
       const inputs:Inputs = {platform:Platform.CLI, projectPath: projectPath};
@@ -90,17 +94,21 @@ describe("Core basic APIs", () => {
       const func:Func = {method: "test", namespace: "fx-solution-mock"};
       const res2 = await core.executeUserTask(func, inputs);
       assert.isTrue (res2.isOk());
-
-      const solutionContext = await loadSolutionContext(tools, inputs);
-      const validRes = validateProject(solutionContext);
-      assert.isTrue(validRes === undefined);
-      const solutioConfig = solutionContext.config.get("solution");
-      assert.isTrue(solutioConfig !== undefined);
-      assert.isTrue(solutioConfig!.get("provision") === true);
-      assert.isTrue(solutioConfig!.get("deploy") === true);
-      assert.isTrue(solutioConfig!.get("localDebug") === true);
-      assert.isTrue(solutioConfig!.get("publish") === true);
-      assert.isTrue(solutioConfig!.get("executeUserTask") === true);
+ 
+      const loadRes = await loadSolutionContext(tools, inputs);
+      assert.isTrue(loadRes.isOk());
+      if(loadRes.isOk()){
+        const solutionContext = loadRes.value;
+        const validRes = validateProject(solutionContext);
+        assert.isTrue(validRes === undefined);
+        const solutioConfig = solutionContext.config.get("solution");
+        assert.isTrue(solutioConfig !== undefined);
+        assert.isTrue(solutioConfig!.get("provision") === true);
+        assert.isTrue(solutioConfig!.get("deploy") === true);
+        assert.isTrue(solutioConfig!.get("localDebug") === true);
+        assert.isTrue(solutioConfig!.get("publish") === true);
+        assert.isTrue(solutioConfig!.get("executeUserTask") === true);
+      }
     }
     
     //getQuestion
@@ -206,11 +214,16 @@ describe("Core basic APIs", () => {
       assert.isTrue (res.isOk() && res.value === projectPath);
       assert.deepEqual(expectedInputs, inputs);
       inputs.projectPath = projectPath;
-      const solutionContext = await loadSolutionContext(tools, inputs);
-      const validRes = validateProject(solutionContext);
-      assert.isTrue(validRes === undefined);
-      const solutioConfig = solutionContext.config.get("solution");
-      assert.isTrue(solutioConfig !== undefined);
+      const loadRes = await loadSolutionContext(tools, inputs);
+      assert.isTrue(loadRes.isOk());
+      if(loadRes.isOk()){
+        const solutionContext = loadRes.value;
+        const validRes = validateProject(solutionContext);
+        assert.isTrue(validRes === undefined);
+        const solutioConfig = solutionContext.config.get("solution");
+        assert.isTrue(solutioConfig !== undefined);
+      }
+     
     }
     {
       const inputs:Inputs = {platform:Platform.CLI, projectPath: projectPath};
@@ -229,17 +242,20 @@ describe("Core basic APIs", () => {
       const func:Func = {method: "test", namespace: "fx-solution-mock"};
       const res2 = await core.executeUserTask(func, inputs);
       assert.isTrue (res2.isOk());
-
-      const solutionContext = await loadSolutionContext(tools, inputs);
-      const validRes = validateProject(solutionContext);
-      assert.isTrue(validRes === undefined);
-      const solutioConfig = solutionContext.config.get("solution");
-      assert.isTrue(solutioConfig !== undefined);
-      assert.isTrue(solutioConfig!.get("provision") === true);
-      assert.isTrue(solutioConfig!.get("deploy") === true);
-      assert.isTrue(solutioConfig!.get("localDebug") === true);
-      assert.isTrue(solutioConfig!.get("publish") === true);
-      assert.isTrue(solutioConfig!.get("executeUserTask") === true);
+      const loadRes = await loadSolutionContext(tools, inputs);
+      assert.isTrue(loadRes.isOk());
+      if(loadRes.isOk()){
+        const solutionContext = loadRes.value;
+        const validRes = validateProject(solutionContext);
+        assert.isTrue(validRes === undefined);
+        const solutioConfig = solutionContext.config.get("solution");
+        assert.isTrue(solutioConfig !== undefined);
+        assert.isTrue(solutioConfig!.get("provision") === true);
+        assert.isTrue(solutioConfig!.get("deploy") === true);
+        assert.isTrue(solutioConfig!.get("localDebug") === true);
+        assert.isTrue(solutioConfig!.get("publish") === true);
+        assert.isTrue(solutioConfig!.get("executeUserTask") === true);
+      }
     }
   });
 

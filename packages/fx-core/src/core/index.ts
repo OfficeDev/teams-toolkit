@@ -62,6 +62,7 @@ import { ContextInjecterMW } from "./middleware/contextInjecter";
 import { defaultSolutionLoader } from "./loader";
 import { sendTelemetryErrorEvent, sendTelemetryEvent, TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../common/telemetry";
 import { TelemetrySenderMW } from "./middleware/telemetrySender";
+import * as uuid  from "uuid";
 
 
 export interface CoreHookContext extends HookContext {
@@ -80,17 +81,20 @@ export class FxCore implements Core {
     Logger = tools.logProvider;
   }
 
-  @hooks([TelemetrySenderMW, ErrorHandlerMW, QuestionModelMW, ContextInjecterMW, ConfigWriterMW])
+  @hooks([ErrorHandlerMW, QuestionModelMW, ContextInjecterMW, ConfigWriterMW])
   async createProject(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     const folder = inputs[QuestionRootFolder.name] as string;
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
     let projectPath: string;
+    let globalStateDescription: string = "openReadme";
+
     if (scratch === ScratchOptionNo.id) { // create from sample
       const downloadRes = await this.downloadSample(inputs);
       if (downloadRes.isErr()) {
         return err(downloadRes.error);
       }
       projectPath = downloadRes.value;
+      globalStateDescription = "openSampleReadme";
     }
     else {
       // create from new 
@@ -115,6 +119,7 @@ export class FxCore implements Core {
       const solution = await defaultSolutionLoader.loadSolution(inputs);
       const projectSettings: ProjectSettings = {
         appName: appName,
+        projectId:uuid.v4(),
         currentEnv: "default",
         solutionSettings: {
           name: solution.name,
@@ -157,7 +162,7 @@ export class FxCore implements Core {
       await this.tools.dialog?.communicate(
         new DialogMsg(DialogType.Ask, {
           type: QuestionType.UpdateGlobalState,
-          description: "openReadme",
+          description: globalStateDescription,
         })
       );
     }
@@ -203,27 +208,27 @@ export class FxCore implements Core {
     return err(InvalidInputError(`invalid answer for '${CoreQuestionNames.Samples}'`, inputs));
   }
 
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextLoaderMW, TelemetrySenderMW, SolutionLoaderMW(defaultSolutionLoader), QuestionModelMW, ContextInjecterMW, ConfigWriterMW])
+  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextLoaderMW, SolutionLoaderMW(defaultSolutionLoader), QuestionModelMW, ContextInjecterMW, ConfigWriterMW])
   async provisionResources(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     return await ctx!.solution!.provision(ctx!.solutionContext!);
   }
 
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextLoaderMW, TelemetrySenderMW, SolutionLoaderMW(defaultSolutionLoader), QuestionModelMW, ContextInjecterMW, ConfigWriterMW])
+  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextLoaderMW, SolutionLoaderMW(defaultSolutionLoader), QuestionModelMW, ContextInjecterMW, ConfigWriterMW])
   async deployArtifacts(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     return await ctx!.solution!.deploy(ctx!.solutionContext!);
   }
 
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextLoaderMW, TelemetrySenderMW, SolutionLoaderMW(defaultSolutionLoader), QuestionModelMW, ContextInjecterMW, ConfigWriterMW])
+  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextLoaderMW, SolutionLoaderMW(defaultSolutionLoader), QuestionModelMW, ContextInjecterMW, ConfigWriterMW])
   async localDebug(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     return await ctx!.solution!.localDebug(ctx!.solutionContext!);
   }
 
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextLoaderMW, TelemetrySenderMW, SolutionLoaderMW(defaultSolutionLoader), QuestionModelMW, ContextInjecterMW, ConfigWriterMW])
+  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextLoaderMW, SolutionLoaderMW(defaultSolutionLoader), QuestionModelMW, ContextInjecterMW, ConfigWriterMW])
   async publishApplication(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     return await ctx!.solution!.publish(ctx!.solutionContext!);
   }
 
-  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextLoaderMW, TelemetrySenderMW, SolutionLoaderMW(defaultSolutionLoader), QuestionModelMW, ContextInjecterMW, ConfigWriterMW])
+  @hooks([ErrorHandlerMW, ConcurrentLockerMW, ContextLoaderMW, SolutionLoaderMW(defaultSolutionLoader), QuestionModelMW, ContextInjecterMW, ConfigWriterMW])
   async executeUserTask(func: Func, inputs: Inputs, ctx?: CoreHookContext): Promise<Result<unknown, FxError>> {
     if (ctx!.solutionContext === undefined) ctx!.solutionContext = await newSolutionContext(this.tools, inputs);
     const solution = ctx!.solution!;
@@ -235,7 +240,7 @@ export class FxCore implements Core {
     return err(FunctionRouterError(func));
   }
 
-  @hooks([ErrorHandlerMW, ContextLoaderMW, TelemetrySenderMW, SolutionLoaderMW(defaultSolutionLoader), ContextInjecterMW])
+  @hooks([ErrorHandlerMW, ContextLoaderMW, SolutionLoaderMW(defaultSolutionLoader), ContextInjecterMW])
   async getQuestions(task: Stage, inputs: Inputs, ctx?: CoreHookContext): Promise<Result<QTreeNode | undefined, FxError>> {
     if (task === Stage.create) {
       delete inputs.projectPath;
@@ -248,7 +253,7 @@ export class FxCore implements Core {
     }
   }
 
-  @hooks([ErrorHandlerMW, ContextLoaderMW, TelemetrySenderMW, SolutionLoaderMW(defaultSolutionLoader), ContextInjecterMW])
+  @hooks([ErrorHandlerMW, ContextLoaderMW, SolutionLoaderMW(defaultSolutionLoader), ContextInjecterMW])
   async getQuestionsForUserTask(func: FunctionRouter, inputs: Inputs, ctx?: CoreHookContext): Promise<Result<QTreeNode | undefined, FxError>> {
     const solutionContext = ctx!.solutionContext === undefined ? await newSolutionContext(this.tools, inputs) : ctx!.solutionContext;
     const solution = ctx!.solution === undefined ? await defaultSolutionLoader.loadSolution(inputs) : ctx!.solution;
@@ -256,7 +261,7 @@ export class FxCore implements Core {
   }
 
 
-  @hooks([ErrorHandlerMW, ContextLoaderMW, TelemetrySenderMW, ContextInjecterMW])
+  @hooks([ErrorHandlerMW, ContextLoaderMW, ContextInjecterMW])
   async getProjectConfig(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<ProjectConfig | undefined, FxError>> {
     return ok({
       settings: ctx!.solutionContext!.projectSettings,
@@ -264,7 +269,7 @@ export class FxCore implements Core {
     });
   }
 
-  @hooks([ErrorHandlerMW, ContextLoaderMW, TelemetrySenderMW, ContextInjecterMW, ConfigWriterMW])
+  @hooks([ErrorHandlerMW, ContextLoaderMW, ContextInjecterMW, ConfigWriterMW])
   async setSubscriptionInfo(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     const solutionContext = ctx!.solutionContext! as SolutionContext;
     if (inputs.tenantId)

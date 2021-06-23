@@ -7,7 +7,7 @@ import fs from "fs-extra";
 import path from "path";
 import { Options } from "yargs";
 import chalk from "chalk";
-
+import * as uuid from "uuid";
 import {
   OptionItem,
   Question,
@@ -233,7 +233,8 @@ export function getTeamsAppId(rootfolder: string | undefined): any {
 export function getSystemInputs(projectPath?: string):Inputs{
   const systemInputs:Inputs = {
     platform: Platform.CLI,
-    projectPath: projectPath
+    projectPath: projectPath,
+    correlationId: uuid.v4()
   };
   return systemInputs;
 }

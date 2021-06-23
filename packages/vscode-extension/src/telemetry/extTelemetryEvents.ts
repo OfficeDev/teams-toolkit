@@ -13,6 +13,8 @@ export enum TelemetryEvent {
   SignOutStart = "sign-out-start",
   SignOut = "sign-out",
 
+  SelectSubscription = "select-subscription",
+
   CreateProjectStart = "create-project-start",
   CreateProject = "create-project",
 

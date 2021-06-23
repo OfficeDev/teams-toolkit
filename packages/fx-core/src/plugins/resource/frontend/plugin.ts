@@ -120,7 +120,7 @@ export class FrontendPluginImpl {
       ) {
         return new StorageAccountAlreadyTakenError();
       }
-      return new CreateStorageAccountError();
+      return new CreateStorageAccountError(innerError.code);
     };
     config.endpoint = await runWithErrorCatchAndWrap(
       createStorageErrorWrapper,

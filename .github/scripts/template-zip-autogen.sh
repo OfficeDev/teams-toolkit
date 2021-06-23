@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -x
 
+python ./.github/scripts/merge.py
+
 LANGUAGE_LIST=(js ts)
 
 TEMPLATE_LIST=(

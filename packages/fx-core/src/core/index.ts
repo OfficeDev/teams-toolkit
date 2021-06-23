@@ -188,6 +188,14 @@ export class FxCore implements Core {
         if (fetchRes !== undefined) {
           await saveFilesRecursively(new AdmZip(fetchRes.data), sampleId, folder);
           await downloadSampleHook(sampleId, sampleAppPath);
+          if (inputs.platform === Platform.VSCode) {
+            await this.tools.dialog?.communicate(
+              new DialogMsg(DialogType.Ask, {
+                type: QuestionType.UpdateGlobalState,
+                description: "openSampleReadme",
+              })
+            );
+          }
           sendTelemetryEvent(this.tools.telemetryReporter, inputs, TelemetryEvent.DownloadSample, { [TelemetryProperty.SampleAppName]: sample.id, [TelemetryProperty.Success]: TelemetrySuccess.Yes, module: "fx-core" });
           return ok(sampleAppPath);
         } else {

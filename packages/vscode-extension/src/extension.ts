@@ -15,6 +15,7 @@ import VsCodeLogInstance from "./commonlib/log";
 import * as StringResources from "./resources/Strings.json";
 import { openWelcomePageAfterExtensionInstallation } from "./controls/openWelcomePage";
 import { VsCodeUI } from "./qm/vsc_ui";
+import { exp } from "./exp";
 
 export let VS_CODE_UI:VsCodeUI;
 
@@ -25,6 +26,8 @@ export async function activate(context: vscode.ExtensionContext) {
   initializeExtensionVariables(context);
 
   context.subscriptions.push(new ExtTelemetry.Reporter(context));
+
+  await exp.initialize(context);
 
   // 1.1 Register the creating command.
   const createCmd = vscode.commands.registerCommand(

@@ -18,10 +18,16 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
   private readonly reporter: Reporter;
   private readonly extVersion: string;
 
+  private sharedProperties: {[key: string]: string} = {};
+
   constructor(key: string, extensionVersion: string, extensionId: string) {
     super(async () => await this.reporter.dispose());
     this.reporter = new Reporter(extensionId, extensionVersion, key, true);
     this.extVersion = getPackageVersion(extensionVersion);
+  }
+
+  addSharedProperty(name: string, value: string): void {
+    this.sharedProperties[name] = value;
   }
 
   sendTelemetryErrorEvent(
@@ -30,6 +36,11 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
     measurements?: { [p: string]: number },
     errorProps?: string[]
   ): void {
+    if (!properties) {
+      properties = { ...this.sharedProperties };
+    } else {
+      properties = { ...this.sharedProperties, ...properties};
+    }
     this.reporter.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
   }
 
@@ -38,6 +49,11 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
     properties?: { [p: string]: string },
     measurements?: { [p: string]: number }
   ): void {
+    if (!properties) {
+      properties = { ...this.sharedProperties };
+    } else {
+      properties = { ...this.sharedProperties, ...properties};
+    }
     this.reporter.sendTelemetryEvent(eventName, properties, measurements);
   }
 
@@ -46,6 +62,11 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
     properties?: { [p: string]: string },
     measurements?: { [p: string]: number }
   ): void {
+    if (!properties) {
+      properties = { ...this.sharedProperties };
+    } else {
+      properties = { ...this.sharedProperties, ...properties};
+    }
     this.reporter.sendTelemetryException(error, properties, measurements);
   }
 }

@@ -85,12 +85,15 @@ export class FxCore implements Core {
     const folder = inputs[QuestionRootFolder.name] as string;
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
     let projectPath: string;
+    let globalStateDescription: string = "openReadme";
+
     if (scratch === ScratchOptionNo.id) { // create from sample
       const downloadRes = await this.downloadSample(inputs);
       if (downloadRes.isErr()) {
         return err(downloadRes.error);
       }
       projectPath = downloadRes.value;
+      globalStateDescription = "openSampleReadme";
     }
     else {
       // create from new 
@@ -157,7 +160,7 @@ export class FxCore implements Core {
       await this.tools.dialog?.communicate(
         new DialogMsg(DialogType.Ask, {
           type: QuestionType.UpdateGlobalState,
-          description: "openReadme",
+          description: globalStateDescription,
         })
       );
     }
@@ -188,14 +191,6 @@ export class FxCore implements Core {
         if (fetchRes !== undefined) {
           await saveFilesRecursively(new AdmZip(fetchRes.data), sampleId, folder);
           await downloadSampleHook(sampleId, sampleAppPath);
-          if (inputs.platform === Platform.VSCode) {
-            await this.tools.dialog?.communicate(
-              new DialogMsg(DialogType.Ask, {
-                type: QuestionType.UpdateGlobalState,
-                description: "openSampleReadme",
-              })
-            );
-          }
           sendTelemetryEvent(this.tools.telemetryReporter, inputs, TelemetryEvent.DownloadSample, { [TelemetryProperty.SampleAppName]: sample.id, [TelemetryProperty.Success]: TelemetrySuccess.Yes, module: "fx-core" });
           return ok(sampleAppPath);
         } else {

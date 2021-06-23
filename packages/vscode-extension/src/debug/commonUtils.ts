@@ -7,10 +7,12 @@ import * as dotenv from "dotenv";
 import * as vscode from "vscode";
 import * as constants from "./constants";
 import { ConfigFolderName, Func } from "@microsoft/teamsfx-api";
-import { core, showError } from "../handlers";
+import { core, getSystemInputs, showError } from "../handlers";
 import * as net from "net";
 import { ext } from "../extensionVariables";
-import { getActiveEnv, isWorkspaceSupported } from "../utils/commonUtils";
+import { getActiveEnv } from "../utils/commonUtils";
+import { initializeFocusRects } from "@fluentui/utilities";
+import { isValidProject } from "@microsoft/teamsfx-core";
 
 export async function getProjectRoot(
   folderPath: string,
@@ -96,10 +98,13 @@ export async function getLocalDebugTeamsAppId(
   const func: Func = {
     namespace: "fx-solution-azure/fx-resource-local-debug",
     method: "getLaunchInput",
-    params: isLocalSideloadingConfiguration ? "local" : "remote",
+    params: isLocalSideloadingConfiguration ? "local" : "remote"
   };
   try {
-    const result = await core.callFunc(func);
+    const inputs = getSystemInputs();
+    inputs.ignoreLock = true;
+    inputs.ignoreConfigPersist = true;
+    const result = await core.executeUserTask(func, inputs);
     if (result.isErr()) {
       throw result.error;
     }
@@ -115,7 +120,10 @@ export async function getProgrammingLanguage(): Promise<string | undefined> {
     method: "getProgrammingLanguage",
   };
   try {
-    const result = await core.callFunc(func);
+    const inputs = getSystemInputs();
+    inputs.ignoreLock = true;
+    inputs.ignoreConfigPersist = true;
+    const result = await core.executeUserTask(func, inputs);
     if (result.isErr()) {
       throw result.error;
     }
@@ -216,7 +224,7 @@ export async function getPortsInUse(): Promise<number[]> {
 export function getTeamsAppTenantId(): string | undefined {
   if (ext.workspaceUri) {
     const ws = ext.workspaceUri.fsPath;
-    if (isWorkspaceSupported(ws)) {
+    if (isValidProject(ws)) {
       const env = getActiveEnv();
       const envJsonPath = path.join(ws, `.${ConfigFolderName}/env.${env}.json`);
       const envJson = JSON.parse(fs.readFileSync(envJsonPath, "utf8"));
@@ -230,7 +238,7 @@ export function getTeamsAppTenantId(): string | undefined {
 export function getLocalTeamsAppId(): string | undefined {
   if (ext.workspaceUri) {
     const ws = ext.workspaceUri.fsPath;
-    if (isWorkspaceSupported(ws)) {
+    if (isValidProject(ws)) {
       const env = getActiveEnv();
       const envJsonPath = path.join(ws, `.${ConfigFolderName}/env.${env}.json`);
       const envJson = JSON.parse(fs.readFileSync(envJsonPath, "utf8"));

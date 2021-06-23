@@ -11,6 +11,7 @@ import { YargsCommand } from "../yargsCommand";
 import activate from "../activate";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
+import { argsToInputs } from "../utils";
 import CLILogProvider from "../commonlib/log";
 
 export default class Init extends YargsCommand {
@@ -18,7 +19,7 @@ export default class Init extends YargsCommand {
   public readonly command = `${this.commandHead}`;
   public readonly description = "Add Teams support to an existing Blazor application.";
 
-  public readonly params: { [_: string]: Options } = {
+  public params: { [_: string]: Options } = {
     "app-name": {
       type: "string",
       description: "Application name.",
@@ -56,11 +57,7 @@ export default class Init extends YargsCommand {
   public async runCommand(args: {
     [argName: string]: string | string[];
   }): Promise<Result<null, FxError>> {
-    const answers = new ConfigMap();
-    for (const name in this.params) {
-      answers.set(name, args[name] || this.params[name].default);
-    }
-
+    const answers = argsToInputs(this.params, args);
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.InitStart);
     const result = await activate();
     if (result.isErr()) {
@@ -70,7 +67,7 @@ export default class Init extends YargsCommand {
 
     const core = result.value;
     {
-      answers.set("platform", Platform.VS);
+      answers.platform = Platform.VS;
 
       const func: Func = {
         namespace: "fx-solution-azure",

@@ -8,6 +8,7 @@ import {
   Dialog,
   DialogMsg,
   DialogType,
+  Platform,
 } from "@microsoft/teamsfx-api";
 import { ResourceGroups, ResourceManagementClientContext } from "@azure/arm-resources";
 import { ServiceClientCredentials } from "@azure/ms-rest-js";
@@ -50,7 +51,7 @@ export function generateFakeServiceClientCredentials(): ServiceClientCredentials
 
 export function generateFakeLogProvider(): LogProvider {
   return {
-    info: (message: string) => {
+    info: (message: string | Array<any>) => {
       return Promise.resolve(true);
     },
     log: (logLevel: LogLevel, message: string) => {
@@ -123,9 +124,11 @@ export function newPluginContext(): PluginContext {
       ],
     ]),
     config: new ConfigMap(),
-    answers: new ConfigMap(),
+    answers: {platform:Platform.VSCode},
     projectSettings: {
       appName: "My App",
+      currentEnv: "default",
+      projectId: utils.genUUID(),
       solutionSettings: {
         name: "AnyName",
         version: "0.0.1",

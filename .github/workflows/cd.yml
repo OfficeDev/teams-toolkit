@@ -5,16 +5,20 @@ on:
     inputs:
       version:
         description: "which version to bump(major, minor, patch, premajor, preminor, prepatch, prerelease)"
-        required: true
+        required: false
         default: "prerelease"
       preid:
-        description: "preid name(alpha or rc)"
+        description: "preid name(alpha, rc, stable)"
         required: false
         default: "alpha"
       force:
         description: "force release even if no update(set --force-publish if necessary)"
         required: false
         default: ""
+      conventional-commits:
+        description: "bump up release version by lerna conventional commits(yes or no)"
+        required: true
+        default: "no"
   schedule:
     - cron: "0 8 * * *"
 
@@ -23,21 +27,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: validate branch
-        if: ${{ (github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/main') || (github.ref == 'refs/heads/dev' && (!startsWith(github.event.inputs.version, 'pre') || github.event.inputs.preid != 'alpha')) || (github.ref == 'refs/heads/main' && startsWith(github.event.inputs.version, 'pre') && github.event.inputs.preid != 'rc') }}
+      - name: Validate inputs
+        if: ${{ github.event_name == 'workflow_dispatch' && ((github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/main') || (github.ref == 'refs/heads/dev' && (!startsWith(github.event.inputs.version, 'pre') || github.event.inputs.preid != 'alpha')) || (github.ref == 'refs/heads/main' && startsWith(github.event.inputs.version, 'pre') && github.event.inputs.preid != 'rc') || (github.ref == 'ref/heads/dev' && github.event.input.conventional-commits == 'yes') || (github.ref == 'ref/heads/main' && github.event.input.conventional-commits == 'yes' && !(github.event.input.preid == 'rc' || github.event.input.preid == 'stable'))) }}
         run: |
           exit 1
 
-      - name: Checkout dev branch
-        if: ${{ github.event_name == 'schedule' }}
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.CD_PAT }}
-          ref: dev
-
-      - name: Checkout release branch
-        if: ${{ github.event_name != 'schedule' }}
+      - name: Checkout branch
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
@@ -56,8 +51,8 @@ jobs:
       - name: generate templates
         run: .github/scripts/template-zip-autogen.sh
 
-      - name: release templates' daily version to github
-        if: ${{ github.ref == 'refs/heads/dev' && startsWith(github.event.inputs.version, 'pre') }}
+      - name: release templates' alpha version to github
+        if: ${{ github.ref == 'refs/heads/dev' }}
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: ${{ secrets.CD_PAT }}
@@ -66,7 +61,7 @@ jobs:
           files: |
             ./*.zip
 
-      - name: release templates' prerelease version to github
+      - name: release templates' rc version to github
         if: ${{ github.ref == 'refs/heads/main' && startsWith(github.event.inputs.version, 'pre') }}
         uses: marvinpinto/action-automatic-releases@latest
         with:
@@ -102,25 +97,30 @@ jobs:
           git config --global user.name 'MSFT-yiz'
           git config --global user.email 'yiz@microsoft.com'
 
-      - name: check whether vscode extension changed or not
-        id: extension-checker
+      - name: release alpha npm packages to npmjs.org
+        if: ${{ github.event_name == 'schedule' }}
         run: |
-          if npx lerna changed | grep 'ms-teams-vscode-extension';
-          then
-            echo "::set-output name=CHANGED::true"
-          else
-            echo "::set-output name=CHANGED::false"
-          fi
+          npx lerna publish --no-private --preid=alpha.$(git rev-parse --short HEAD) --dist-tag=alpha prerelease --no-git-tag-version --no-changelog --no-push --no-git-reset --yes --allow-branch dev
 
-      - name: release prerelease npm packages to npmjs.org
-        if: ${{ startsWith(github.event.inputs.version, 'pre') }}
+      - name: release rc npm packages to npmjs.org
+        if: ${{ github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.version, 'pre') && github.events.inputs.conventional-commits == 'no'}}
         run: |
-          npx lerna publish --no-private --preid=${{github.event.inputs.preid }} --dist-tag=${{github.event.inputs.preid }} ${{ github.event.inputs.version }} --yes ${{ github.event.inputs.force }}
+          npx lerna publish --no-private --preid=${{ github.event.inputs.preid }} --dist-tag=${{ github.event.inputs.preid }} ${{ github.event.inputs.version }} --yes ${{ github.event.inputs.force }}
 
       - name: release stable npm packages to npmjs.org
-        if: ${{ github.ref == 'refs/heads/main' && !startsWith(github.event.inputs.version, 'pre') }}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && !startsWith(github.event.inputs.version, 'pre') && github.events.inputs.conventional-commits == 'no'}}
         run: |
           npx lerna publish --no-private --dist-tag=latest ${{ github.event.inputs.version }} --yes ${{ github.event.inputs.force }}
+
+      - name: release rc npm packages to npmjs.org by conventional-commits
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.events.inputs.conventional-commits == 'yes' && github.events.inputs.preid == 'rc'}}
+        run: |
+          npx lerna publish --conventional-prerelease --preid=rc --yes
+
+      - name: release stable npm packages to npmjs.org by conventional-commits
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'ref/heads/main' && github.events.inputs.conventional-commits == 'yes' && github.events.inputs.preid == 'stable'}}
+        run: |
+          npx lerna publish --conventional-graduate --yes
 
       - name: pack vsix
         id: pack-vsix
@@ -136,6 +136,17 @@ jobs:
             npx vsce package
             VERSION=`ls *.vsix | awk -F '.vsix' '{print $1}'`
             echo "::set-output name=VERSION::$VERSION"
+
+      - name: check whether vscode extension changed or not
+        id: extension-checker
+        working-directory: ./packages/vscode-extension
+        run: |
+          if git diff HEAD^ package.json | grep version;
+          then
+            echo "::set-output name=CHANGED::true"
+          else
+            echo "::set-output name=CHANGED::false"
+          fi
 
       - name: release VSCode extension to github
         if: ${{ steps.extension-checker.outputs.CHANGED == 'true' || github.event.inputs.force == '--force-publish' }}

@@ -7,14 +7,13 @@ import * as http from "http";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { Mutex } from "async-mutex";
-import { returnSystemError, returnUserError, SystemError, UserError, LogLevel } from "@microsoft/teamsfx-api";
+import { returnSystemError, returnUserError, SystemError, UserError, LogLevel, Colors } from "@microsoft/teamsfx-api";
 import CliCodeLogInstance from "./log";
 import * as crypto from "crypto";
 import { AddressInfo } from "net";
 import { accountPath, UTF8 } from "./cacheAccess";
 import open from "open";
 import { azureLoginMessage, env, m365LoginMessage, MFACode } from "./common/constant";
-import colors from "colors";
 import * as constants from "../constants";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import {
@@ -22,6 +21,7 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
+import { getColorizedString } from "../utils";
 
 class ErrorMessage {
   static readonly loginFailureTitle = "LoginFail";
@@ -154,9 +154,17 @@ export class CodeFlowLogin {
       await this.startServer(server, serverPort!);
       this.pca!.getAuthCodeUrl(authCodeUrlParameters).then(async (url: string) => {
         if (this.accountName == "azure") {
-          CliCodeLogInstance.necessaryLog(LogLevel.Info, `[${constants.cliSource}] ${azureLoginMessage}${url}`);
+          const message = [
+            {content: `[${constants.cliSource}] ${azureLoginMessage}`, color: Colors.BRIGHT_WHITE },
+            {content: url, color: Colors.BRIGHT_CYAN}
+          ];
+          CliCodeLogInstance.necessaryLog(LogLevel.Info, getColorizedString(message));
         } else {
-          CliCodeLogInstance.necessaryLog(LogLevel.Info, `[${constants.cliSource}] ${m365LoginMessage}${url}`);
+          const message = [
+            {content: `[${constants.cliSource}] ${m365LoginMessage}`, color: Colors.BRIGHT_WHITE },
+            {content: url, color: Colors.BRIGHT_CYAN}
+          ];
+          CliCodeLogInstance.necessaryLog(LogLevel.Info, getColorizedString(message));
         }
         open(url);
       });

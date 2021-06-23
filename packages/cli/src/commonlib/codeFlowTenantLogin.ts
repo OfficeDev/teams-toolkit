@@ -7,15 +7,15 @@ import * as http from "http";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { Mutex } from "async-mutex";
-import { LogLevel, returnSystemError, UserError } from "@microsoft/teamsfx-api";
+import { LogLevel, returnSystemError, UserError, Colors } from "@microsoft/teamsfx-api";
 import CliCodeLogInstance from "./log";
 import * as crypto from "crypto";
 import { AddressInfo } from "net";
 import { accountPath, UTF8 } from "./cacheAccess";
 import open from "open";
 import { azureLoginMessage, changeLoginTenantMessage, env, m365LoginMessage, MFACode } from "./common/constant";
-import colors from "colors";
 import * as constants from "../constants";
+import { getColorizedString } from "../utils";
 
 class ErrorMessage {
   static readonly loginError: string = "LoginError";
@@ -138,9 +138,17 @@ export class CodeFlowTenantLogin {
       await this.startServer(server, serverPort!);
       this.pca!.getAuthCodeUrl(authCodeUrlParameters).then(async (response: string) => {
         if (this.accountName == "azure") {
-          CliCodeLogInstance.necessaryLog(LogLevel.Info, `[${constants.cliSource}] ${azureLoginMessage}`);
+          const message = [
+            {content: `[${constants.cliSource}] ${azureLoginMessage}`, color: Colors.BRIGHT_WHITE },
+            {content: response, color: Colors.BRIGHT_CYAN}
+          ];
+          CliCodeLogInstance.necessaryLog(LogLevel.Info, getColorizedString(message));
         } else {
-          CliCodeLogInstance.necessaryLog(LogLevel.Info, `[${constants.cliSource}] ${m365LoginMessage}`);
+          const message = [
+            {content: `[${constants.cliSource}] ${m365LoginMessage}`, color: Colors.BRIGHT_WHITE },
+            {content: response, color: Colors.BRIGHT_CYAN}
+          ];
+          CliCodeLogInstance.necessaryLog(LogLevel.Info, getColorizedString(message));
         }
         open(response);
       });

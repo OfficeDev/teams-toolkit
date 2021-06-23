@@ -64,7 +64,7 @@ export enum TelemetryValue {
   SystemError = "system",
 }
 
-export enum LifeCycle {
+export enum FunctionEvent {
   preScaffold = "pre-scaffold",
   scaffold = "scaffold",
   postScaffold = "post-scaffold",
@@ -76,4 +76,5 @@ export enum LifeCycle {
   postDeploy = "post-deploy",
   getQuestions = "get-questions",
   callFunc = "call-func",
+  scaffoldFallback = "scaffold-fallback"
 }

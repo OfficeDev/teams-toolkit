@@ -15,6 +15,7 @@ import {
   TeamsAppManifest,
   Void,
   Plugin,
+  Platform,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
@@ -29,6 +30,7 @@ import path from "path";
 import { getTemplatesFolder } from "../../../src";
 import { SolutionError } from "../../../src/plugins/solution/fx-solution/constants";
 import { validManifest } from "./util";
+import * as uuid  from "uuid";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -37,9 +39,9 @@ function mockSolutionContext(): SolutionContext {
   const config: SolutionConfig = new Map();
   return {
     root: ".",
-    app: new TeamsAppManifest(),
+    // app: new TeamsAppManifest(),
     config,
-    answers: new ConfigMap(),
+    answers: {platform:Platform.VSCode},
     projectSettings: undefined,
   };
 }
@@ -75,6 +77,8 @@ describe("Solution scaffold()", () => {
     const mockedCtx = mockSolutionContext();
     mockedCtx.projectSettings = {
       appName: "my app",
+      currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
@@ -92,6 +96,8 @@ describe("Solution scaffold()", () => {
     const mockedCtx = mockSolutionContext();
     mockedCtx.projectSettings = {
       appName: "my app",
+      currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
@@ -136,6 +142,8 @@ describe("Solution scaffold() reading manifest file with no app name", () => {
     const mockedCtx = mockSolutionContext();
     mockedCtx.projectSettings = {
       appName: "my app",
+      currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
@@ -181,6 +189,8 @@ describe("Solution scaffold() reading valid manifest file", () => {
     const mockedCtx = mockSolutionContext();
     mockedCtx.projectSettings = {
       appName: "my app",
+      currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
@@ -201,6 +211,8 @@ describe("Solution scaffold() reading valid manifest file", () => {
     const mockedCtx = mockSolutionContext();
     mockedCtx.projectSettings = {
       appName: "my app",
+      currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",
@@ -222,6 +234,8 @@ describe("Solution scaffold() reading valid manifest file", () => {
     const mockedCtx = mockSolutionContext();
     mockedCtx.projectSettings = {
       appName: "my app",
+      currentEnv: "default",
+      projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionSPFx.id,
         name: "azure",

@@ -1,42 +1,55 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { RemoteFuncValidation, NodeType, QTreeNode } from "@microsoft/teamsfx-api";
+import { Inputs, QTreeNode, TextInputQuestion } from "@microsoft/teamsfx-api";
 import { Constants } from "./constants";
+import { sqlConfirmPasswordValidatorGenerator, sqlPasswordValidatorGenerator, sqlUserNameValidator } from "./utils/checkInput";
 
-export const adminNameQuestion = new QTreeNode({
+export const adminNameQuestion: TextInputQuestion = {
   name: Constants.questionKey.adminName,
-  description: Constants.userQuestion.adminName,
-  type: NodeType.text,
+  title: Constants.userQuestion.adminName,
+  type: "text",
   validation: {
-    namespace: `${Constants.solutionPluginFullName}/${Constants.pluginFullName}`,
-    method: Constants.questionKey.adminName,
-  } as RemoteFuncValidation,
-});
+    validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
+      const res = sqlUserNameValidator(input as string);
+      return res;
+    }
+  }
+};
 
-export const adminPasswordQuestion = new QTreeNode({
+export const adminPasswordQuestion: TextInputQuestion = {
   name: Constants.questionKey.adminPassword,
-  description: Constants.userQuestion.adminPassword,
-  type: NodeType.password,
+  title: Constants.userQuestion.adminPassword,
+  type: "text",
+  password: true,
   validation: {
-    namespace: `${Constants.solutionPluginFullName}/${Constants.pluginFullName}`,
-    method: Constants.questionKey.adminPassword,
-  } as RemoteFuncValidation,
-});
+    validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
+      const password = input as string;
+      const name = previousInputs![Constants.questionKey.adminName] as string;
+      const res = sqlPasswordValidatorGenerator(name)(password);
+      return res;
+    }
+  }
+};
 
-export const confirmPasswordQuestion = new QTreeNode({
+export const confirmPasswordQuestion: TextInputQuestion = {
   name: Constants.questionKey.confirmPassword,
-  description: Constants.userQuestion.confirmPassword,
-  type: NodeType.password,
+  title: Constants.userQuestion.confirmPassword,
+  type: "text",
+  password: true,
   validation: {
-    namespace: `${Constants.solutionPluginFullName}/${Constants.pluginFullName}`,
-    method: Constants.questionKey.confirmPassword,
-  } as RemoteFuncValidation,
-});
+    validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
+      const confirm = input as string;
+      const password = previousInputs![Constants.questionKey.adminPassword] as string;
+      const res = sqlConfirmPasswordValidatorGenerator(password)(confirm);
+      return res;
+    }
+  }
+};
 
 export const skipAddingUserQuestion = new QTreeNode({
   name: Constants.questionKey.skipAddingUser,
-  description: Constants.userQuestion.confirmPassword,
-  type: NodeType.singleSelect,
-  option: ["true", "false"],
+  title: Constants.userQuestion.confirmPassword,
+  type: "singleSelect",
+  staticOptions: ["true", "false"],
   default: "false",
 });

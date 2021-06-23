@@ -3,7 +3,7 @@
 
 "use strict";
 
-import { LogLevel, LogProvider } from "@microsoft/teamsfx-api";
+import { LogLevel, LogProvider, Colors } from "@microsoft/teamsfx-api";
 import * as vscode from "vscode";
 
 const outputChannelDisplayName = "Teams Toolkit";
@@ -37,7 +37,15 @@ export class VsCodeLogProvider implements LogProvider {
     return this.log(LogLevel.Debug, message);
   }
 
-  info(message: string): Promise<boolean> {
+  info(message: Array<{content: string, color: Colors}>): Promise<boolean>;
+  
+  info(message: string): Promise<boolean>;
+
+  info(message: string | Array<{content: string, color: Colors}>): Promise<boolean> {
+    // VSCode output channel is not TTY, does not support ANSI color
+    if (message instanceof Array) {
+      message = message.map(x => x.content).join("");
+    }
     return this.log(LogLevel.Info, message);
   }
 

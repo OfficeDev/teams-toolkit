@@ -111,7 +111,7 @@ export class FunctionDeploy {
     }
 
     const binPath = path.join(componentPath, FunctionPluginPathInfo.functionExtensionsFolderName);
-    const telemetry = new FuncPluginTelemetry(ctx);
+    const telemetry = new FuncPluginTelemetry();
     const dotnetChecker = new DotnetChecker(
       new FuncPluginAdapter(ctx, telemetry),
       funcPluginLogger,
@@ -217,32 +217,6 @@ export class FunctionDeploy {
           DeploySteps.restart,
           async () => await client.webApps.restart(resourceGroupName, functionAppName)
         )
-    );
-
-    await runWithErrorCatchAndThrow(
-      new FunctionAppOpError("sync triggers"),
-      async () =>
-        await step(StepGroup.DeployStepGroup, DeploySteps.syncTrigger, async () => {
-          // TODO: combine with requestWithRetry
-          let tryCount = 0;
-          while (tryCount++ < DefaultValues.maxTryCount) {
-            try {
-              await client.webApps.syncFunctionTriggers(resourceGroupName, functionAppName);
-              break;
-            } catch (e) {
-              /* Workaround: syncFunctionTriggers throw exception even for response 200 */
-              if (e.response?.status === 200 || e.response?.status === 201) {
-                break;
-              }
-              if (tryCount === DefaultValues.maxTryCount) {
-                throw e;
-              }
-            }
-          }
-          if (tryCount > 1) {
-            Logger.info(InfoMessages.succeedWithRetry("sync triggers", tryCount));
-          }
-        })
     );
 
     await this.saveDeploymentInfo(componentPath, zipContent, deployTime);

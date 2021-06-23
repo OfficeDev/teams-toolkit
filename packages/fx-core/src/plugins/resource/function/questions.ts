@@ -1,23 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { RemoteFuncValidation, NodeType, QTreeNode } from "@microsoft/teamsfx-api";
+import { TextInputQuestion } from "@microsoft/teamsfx-api";
 
 import {
   DefaultValues,
-  DependentPluginInfo,
-  FunctionPluginInfo,
-  QuestionValidationFunc,
 } from "./constants";
 import { QuestionKey } from "./enums";
 import { InfoMessages } from "./resources/message";
 
-export const functionNameQuestion = new QTreeNode({
+export const functionNameQuestion:TextInputQuestion = {
   name: QuestionKey.functionName,
-  description: InfoMessages.askFunctionName,
-  type: NodeType.text,
-  default: DefaultValues.functionName,
-  validation: {
-    namespace: `${DependentPluginInfo.solutionPluginFullName}/${FunctionPluginInfo.pluginName}`,
-    method: QuestionValidationFunc.validateFunctionName,
-  } as RemoteFuncValidation,
-});
+  title: InfoMessages.askFunctionName,
+  type: "text",
+  default: DefaultValues.functionName
+};

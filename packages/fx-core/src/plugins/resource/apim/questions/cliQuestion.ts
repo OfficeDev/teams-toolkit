@@ -2,9 +2,9 @@
 // Licensed under the MIT license.
 import {
   LogProvider,
-  NodeType,
   TextInputQuestion,
   TelemetryReporter,
+  Inputs,
 } from "@microsoft/teamsfx-api";
 import { QuestionConstants } from "../constants";
 import { NamingRules } from "../utils/namingRules";
@@ -17,12 +17,12 @@ export class ApimServiceNameQuestion extends BaseQuestionService implements IQue
 
   public getQuestion(): TextInputQuestion {
     return {
-      type: NodeType.text,
+      type: "text",
       name: QuestionConstants.CLI.ApimServiceName.questionName,
-      description: QuestionConstants.CLI.ApimServiceName.description,
+      title: QuestionConstants.CLI.ApimServiceName.description,
       validation: {
-        validFunc: (input: string): string | undefined =>
-          NamingRules.validate(input, NamingRules.apimServiceName),
+        validFunc: (input: string, previousInputs?: Inputs): string | undefined =>
+          NamingRules.validate(input as string, NamingRules.apimServiceName),
       },
     };
   }
@@ -35,12 +35,12 @@ export class ApimResourceGroupQuestion extends BaseQuestionService implements IQ
 
   public getQuestion(): TextInputQuestion {
     return {
-      type: NodeType.text,
+      type: "text",
       name: QuestionConstants.CLI.ApimResourceGroup.questionName,
-      description: QuestionConstants.CLI.ApimResourceGroup.description,
+      title: QuestionConstants.CLI.ApimResourceGroup.description,
       validation: {
-        validFunc: (input: string): string | undefined =>
-          NamingRules.validate(input, NamingRules.resourceGroupName),
+        validFunc: (input: string, previousInputs?: Inputs): string | undefined =>
+          NamingRules.validate(input as string, NamingRules.resourceGroupName),
       },
     };
   }
@@ -53,9 +53,9 @@ export class OpenApiDocumentQuestion extends BaseQuestionService implements IQue
 
   public getQuestion(): TextInputQuestion {
     return {
-      type: NodeType.text,
+      type: "text",
       name: QuestionConstants.CLI.OpenApiDocument.questionName,
-      description: QuestionConstants.CLI.OpenApiDocument.description,
+      title: QuestionConstants.CLI.OpenApiDocument.description,
       // TODO: Validate OpenAPI document after CLI support remote validation func
     };
   }
@@ -68,13 +68,13 @@ export class ApiPrefixQuestion extends BaseQuestionService implements IQuestionS
 
   public getQuestion(): TextInputQuestion {
     return {
-      type: NodeType.text,
+      type: "text",
       name: QuestionConstants.CLI.ApiPrefix.questionName,
-      description: QuestionConstants.CLI.ApiPrefix.description,
+      title: QuestionConstants.CLI.ApiPrefix.description,
       // TODO: Validate API prefix after CLI support remote validation func
       validation: {
-        validFunc: (input: string): string | undefined =>
-          NamingRules.validate(input, NamingRules.apiPrefix),
+        validFunc: (input: string, previousInputs?: Inputs): string | undefined =>
+          NamingRules.validate(input as string, NamingRules.apiPrefix),
       },
     };
   }
@@ -88,13 +88,13 @@ export class ApiIdQuestion extends BaseQuestionService implements IQuestionServi
 
   public getQuestion(): TextInputQuestion {
     return {
-      type: NodeType.text,
+      type: "text",
       name: QuestionConstants.CLI.ApiId.questionName,
-      description: QuestionConstants.CLI.ApiId.description,
+      title: QuestionConstants.CLI.ApiId.description,
       // TODO: Validate API id after CLI support remote validation func
       validation: {
-        validFunc: (input: string): string | undefined =>
-          NamingRules.validate(input, NamingRules.apiId),
+        validFunc: (input: string, previousInputs?: Inputs): string | undefined =>
+          NamingRules.validate(input as string, NamingRules.apiId),
       },
     };
   }
@@ -107,12 +107,12 @@ export class ApiVersionQuestion extends BaseQuestionService implements IQuestion
 
   public getQuestion(): TextInputQuestion {
     return {
-      type: NodeType.text,
+      type: "text",
       name: QuestionConstants.CLI.ApiVersion.questionName,
-      description: QuestionConstants.CLI.ApiVersion.description,
+      title: QuestionConstants.CLI.ApiVersion.description,
       validation: {
-        validFunc: (input: string): string | undefined =>
-          NamingRules.validate(input, NamingRules.versionIdentity),
+        validFunc: (input: string, previousInputs?: Inputs): string | undefined =>
+          NamingRules.validate(input as string, NamingRules.versionIdentity),
         required: true,
       },
     };

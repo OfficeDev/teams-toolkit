@@ -63,7 +63,7 @@ export class TestHelper {
     async debug(message: string): Promise<boolean> {
       return true;
     },
-    async info(message: string): Promise<boolean> {
+    async info(message: string | Array<any>): Promise<boolean> {
       return true;
     },
     async warning(message: string): Promise<boolean> {
@@ -111,6 +111,8 @@ export class TestHelper {
       ]),
       projectSettings: {
         appName: TestHelper.appName,
+        currentEnv: "default",
+        projectId: uuid(),
         solutionSettings: {
           name: "",
           version: "",

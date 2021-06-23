@@ -32,7 +32,7 @@ const mockLogProvider: LogProvider = {
     console.log(message);
     return true;
   },
-  async info(message: string): Promise<boolean> {
+  async info(message: string | Array<any>): Promise<boolean> {
     console.log("Log info");
     console.log(message);
     return true;

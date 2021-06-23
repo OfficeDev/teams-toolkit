@@ -18,6 +18,10 @@ import { getTeamsAppId } from "../utils/commonUtils";
 export namespace ExtTelemetry {
   export let reporter: VSCodeTelemetryReporter;
 
+  export function addSharedProperty(name: string, value: string): void {
+    reporter.addSharedProperty(name, value);
+  }
+
   export class Reporter extends vscode.Disposable {
     constructor(ctx: vscode.ExtensionContext) {
       super(() => reporter.dispose());
@@ -35,7 +39,7 @@ export namespace ExtTelemetry {
       case Stage.create:
         return TelemetryEvent.CreateProject;
       case Stage.update:
-        return TelemetryEvent.UpdateProject;
+        return TelemetryEvent.AddResource;
       case Stage.provision:
         return TelemetryEvent.Provision;
       case Stage.deploy:

@@ -9,6 +9,8 @@ import yargs from "yargs";
 
 import { commands } from "./cmds";
 import * as constants from "./constants";
+import { registerPrompts } from "./prompts";
+import { HelpParamGenerator } from "./helpParamGenerator";
 
 /**
  * Registers cli and partner commands with yargs.
@@ -38,7 +40,9 @@ function getVersion(): string {
 /**
  * Starts the CLI process.
  */
-export function start() {
+export async function start() {
+  registerPrompts();
+  await HelpParamGenerator.initializeQuestionsForHelp();
   register(yargs);
   yargs
     .options("verbose", {

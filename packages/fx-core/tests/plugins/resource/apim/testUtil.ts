@@ -11,6 +11,7 @@ import {
   OptionItem,
   Platform,
   SubscriptionInfo,
+  Inputs,
 } from "@microsoft/teamsfx-api";
 import {
   AadOperationError,
@@ -166,7 +167,7 @@ export class MockPluginContext implements PluginContext {
   root = "./~$test/scaffold";
   azureAccountProvider: MockAzureAccountProvider;
   graphTokenProvider: MockGraphTokenProvider;
-  answers: ConfigMap | undefined;
+  answers: Inputs | undefined;
   platform: Platform = Platform.VSCode;
 
   constructor(
@@ -175,7 +176,7 @@ export class MockPluginContext implements PluginContext {
     aadConfig?: IAadPluginConfig,
     functionConfig?: IFunctionPluginConfig,
     apimConfig?: IApimPluginConfig,
-    answers?: { [key: string]: OptionItem | string }
+    answers?: Inputs
   ) {
     this.graphTokenProvider = new MockGraphTokenProvider(
       EnvConfig.tenantId,
@@ -209,7 +210,7 @@ export class MockPluginContext implements PluginContext {
     }
 
     if (answers) {
-      this.answers = new ConfigMap(Object.entries(answers));
+      this.answers = answers;
     }
   }
 

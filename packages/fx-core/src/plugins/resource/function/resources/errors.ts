@@ -235,6 +235,12 @@ export class UploadZipError extends FunctionPluginError {
   }
 }
 
+export class UnknownFallbackError extends FunctionPluginError {
+  constructor() {
+    super(ErrorType.System, "UnknownFallbackError", "Trigger fallback caused by unknown reason.", []);
+  }
+}
+
 export async function runWithErrorCatchAndThrow<T>(
   error: FunctionPluginError,
   fn: () => T | Promise<T>

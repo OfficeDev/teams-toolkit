@@ -38,6 +38,13 @@ export class ApimPlugin implements Plugin {
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     return await this.executeWithFxError(PluginLifeCycle.GetQuestions, _getQuestions, ctx, stage);
   }
+  
+  public async getQuestionsForUserTask(
+    func: Func,
+    ctx: PluginContext
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
+    return await this.executeWithFxError(PluginLifeCycle.GetQuestions, _getQuestionsForUserTask, ctx, func);
+  }
 
   public async callFunc(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
     return await this.executeWithFxError(PluginLifeCycle.CallFunc, _callFunc, ctx, func);
@@ -116,12 +123,27 @@ async function _getQuestions(
   const questionManager = await Factory.buildQuestionManager(ctx, solutionConfig);
   switch (stage) {
     case Stage.update:
-      return await questionManager.update(apimConfig);
+      return await questionManager.update(ctx, apimConfig);
     case Stage.deploy:
-      return await questionManager.deploy(apimConfig);
+      return await questionManager.deploy(ctx, apimConfig);
     default:
       return undefined;
   }
+}
+
+
+async function _getQuestionsForUserTask(
+  ctx: PluginContext,
+  progressBar: ProgressBar,
+  func: Func
+): Promise<QTreeNode | undefined> {
+  const solutionConfig = new SolutionConfig(ctx.configOfOtherPlugins);
+  const apimConfig = new ApimPluginConfig(ctx.config);
+  const questionManager = await Factory.buildQuestionManager(ctx, solutionConfig);
+  if(func.method === "addResource"){
+    return await questionManager.update(ctx, apimConfig);
+  }
+  return undefined;
 }
 
 async function _callFunc(ctx: PluginContext, progressBar: ProgressBar, func: Func): Promise<any> {

@@ -6,10 +6,9 @@
 import fs from "fs-extra";
 import path from "path";
 import { Options } from "yargs";
-
+import chalk from "chalk";
+import * as uuid from "uuid";
 import {
-  NodeType,
-  QTreeNode,
   OptionItem,
   Question,
   err,
@@ -22,6 +21,10 @@ import {
   getSingleOption,
   SingleSelectQuestion,
   MultiSelectQuestion,
+  QTreeNode,
+  Inputs,
+  Platform,
+  Colors
 } from "@microsoft/teamsfx-api";
 
 import { ConfigNotFoundError, ReadFileError } from "./error";
@@ -57,7 +60,7 @@ export function getChoicesFromQTNodeQuestion(
   data: Question,
   interactive = false
 ): string[] | undefined {
-  const option = "option" in data ? data.option : undefined;
+  const option = "staticOptions" in data ? data.staticOptions : undefined;
   if (option && option instanceof Array && option.length > 0) {
     if (typeof option[0] === "string") {
       return option as string[];
@@ -78,7 +81,7 @@ export function getSingleOptionString(
 ): string | string[] {
   const singleOption = getSingleOption(q);
   if (q.returnObject) {
-    if (q.type === NodeType.singleSelect) {
+    if (q.type === "singleSelect") {
       return singleOption.id;
     } else {
       return [singleOption[0].id];
@@ -93,6 +96,7 @@ export function toYargsOptions(data: Question): Options {
   // if (choices && choices.length > 0 && data.default === undefined) {
   //   data.default = choices[0];
   // }
+  
   const defaultValue = data.default;
   if (defaultValue && defaultValue instanceof Array && defaultValue.length > 0) {
     data.default = defaultValue.map((item) => item.toLocaleLowerCase());
@@ -101,16 +105,16 @@ export function toYargsOptions(data: Question): Options {
   }
   if (data.default === undefined) {
     return {
-      array: data.type === NodeType.multiSelect,
-      description: data.description || data.title || "",
+      array: data.type === "multiSelect",
+      description: data.title || "",
       choices: choices,
       hidden: !!(data as any).hide,
       global: false,
     }
   }
   return {
-    array: data.type === NodeType.multiSelect,
-    description: data.description || data.title || "",
+    array: data.type === "multiSelect",
+    description: data.title || "",
     default: data.default,
     choices: choices,
     hidden: !!(data as any).hide,
@@ -224,4 +228,54 @@ export function getTeamsAppId(rootfolder: string | undefined): any {
   }
 
   return undefined;
+}
+
+export function getSystemInputs(projectPath?: string):Inputs{
+  const systemInputs:Inputs = {
+    platform: Platform.CLI,
+    projectPath: projectPath,
+    correlationId: uuid.v4()
+  };
+  return systemInputs;
+}
+
+export function argsToInputs(params: { [_: string]: Options }, args: { [argName: string]: string|string[] }):Inputs{
+  const inputs = getSystemInputs();
+  for (const name in params) {
+    if (name.endsWith("folder") && args[name]) {
+      inputs[name] = path.resolve(args[name] as string);
+    } 
+    else {
+      inputs[name] = args[name];
+    }
+  }
+  const rootFolder = path.resolve(inputs["folder"] as string || "./");
+  delete inputs["folder"];
+  inputs.projectPath = rootFolder;
+  return inputs;
+}
+
+export function getColorizedString(message: Array<{content: string, color: Colors}>): string {
+  // Color support is automatically detected by chalk
+  const colorizedMessage = message.map(item => {
+    switch(item.color) {
+      case Colors.BRIGHT_WHITE:
+        return chalk.whiteBright(item.content);
+      case Colors.WHITE:
+        return chalk.white(item.content);
+      case Colors.BRIGHT_MAGENTA:
+        return chalk.magentaBright(item.content);
+      case Colors.BRIGHT_GREEN:
+        return chalk.greenBright(item.content);
+      case Colors.BRIGHT_RED:
+        return chalk.redBright(item.content);
+      case Colors.BRIGHT_YELLOW:
+        return chalk.yellowBright(item.content);
+      case Colors.BRIGHT_CYAN:
+        return chalk.cyanBright.underline(item.content);
+      default:
+        return item.content;
+    }
+  }).join("");
+  return colorizedMessage;
 }

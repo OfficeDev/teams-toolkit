@@ -17,6 +17,7 @@ import { login, LoginStatus } from "./common/login";
 import * as StringResources from "../resources/Strings.json";
 import * as util from "util";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
+import VsCodeLogInstance from "./log";
 import {
   TelemetryEvent,
   TelemetryProperty,
@@ -28,6 +29,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   private static instance: AzureAccountManager;
   private static subscriptionId: string | undefined;
   private static tenantId: string | undefined;
+  private static currentStatus: string | undefined;
 
   private static statusChange?: (
     status: string,
@@ -242,12 +244,27 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         "SignOut"
       );
     }
-    await vscode.commands.executeCommand("azure-account.logout");
-    AzureAccountManager.tenantId = undefined;
-    AzureAccountManager.subscriptionId = undefined;
-    return new Promise((resolve) => {
-      resolve(true);
-    });
+    try {
+      await vscode.commands.executeCommand("azure-account.logout");
+      AzureAccountManager.tenantId = undefined;
+      AzureAccountManager.subscriptionId = undefined;
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SignOut, {
+        [TelemetryProperty.AccountType]: AccountType.Azure,
+        [TelemetryProperty.Success]: TelemetrySuccess.Yes
+      });
+      return new Promise((resolve) => {
+        resolve(true);
+      });
+    } catch (e) {
+      VsCodeLogInstance.error(
+        "[Logout Azure] " + e.message
+      );
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.SignOut, e, {
+        [TelemetryProperty.AccountType]: AccountType.Azure,
+        [TelemetryProperty.Success]: TelemetrySuccess.No
+      });
+      return Promise.resolve(false);
+    }
   }
 
   /**
@@ -323,7 +340,13 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   async addStatusChangeEvent() {
     const azureAccount: AzureAccount =
       vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
+    AzureAccountManager.currentStatus = azureAccount.status;
     azureAccount.onStatusChanged(async (event) => {
+      if(AzureAccountManager.currentStatus === "Initializing") {
+        AzureAccountManager.currentStatus = event;
+        return;
+      }
+      AzureAccountManager.currentStatus = event;
       if (event === loggedOut) {
         if (AzureAccountManager.statusChange !== undefined) {
           await AzureAccountManager.statusChange(signedOut, undefined, undefined);

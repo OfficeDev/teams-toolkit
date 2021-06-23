@@ -8,6 +8,7 @@ import { ApimValidator } from "../../commonlib";
 
 import {
   execAsync,
+  execAsyncWithRetry,
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
@@ -42,14 +43,14 @@ describe("Import API into API Management", function () {
     });
     console.log(`Add APIM resource. Error message: ${result.stderr}`);
 
-    result = await execAsync(`teamsfx provision`, {
+    result = await execAsyncWithRetry(`teamsfx provision`, {
       cwd: projectPath,
       env: process.env,
       timeout: 0,
     });
     console.log(`Provision. Error message: ${result.stderr}`);
 
-    result = await execAsync(
+    result = await execAsyncWithRetry(
       `teamsfx deploy apim --open-api-document openapi/openapi.json --api-prefix ${appName} --api-version v1`,
       {
         cwd: projectPath,
@@ -62,7 +63,7 @@ describe("Import API into API Management", function () {
 
   it(`Create a new API version in Azure API Management`, async function () {
     await ApimValidator.init(subscriptionId, AzureLogin, GraphLogin);
-    const result = await execAsync(`teamsfx deploy apim --api-version v2`, {
+    const result = await execAsyncWithRetry(`teamsfx deploy apim --api-version v2`, {
       cwd: projectPath,
       env: process.env,
       timeout: 0,
@@ -75,7 +76,7 @@ describe("Import API into API Management", function () {
 
   it(`Update an existing API version in Azure API Management`, async function () {
     await ApimValidator.init(subscriptionId, AzureLogin, GraphLogin);
-    const result = await execAsync(`teamsfx deploy apim --api-version v1`, {
+    const result = await execAsyncWithRetry(`teamsfx deploy apim --api-version v1`, {
       cwd: projectPath,
       env: process.env,
       timeout: 0,

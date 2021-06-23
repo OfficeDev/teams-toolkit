@@ -5,7 +5,7 @@ import {
   AzureSolutionSettings,
   Func,
   FxError,
-  NodeType,
+  Inputs,
   PluginContext,
   QTreeNode,
   ReadonlyPluginConfig,
@@ -192,13 +192,13 @@ export class FunctionPluginImpl {
         return ResultFactory.Success(ErrorMessages.invalidFunctionName);
       }
 
-      const stage: Stage | undefined = ctx.answers?.get(QuestionKey.stage) as Stage;
+      const stage: Stage | undefined = ctx.answers![QuestionKey.stage] as Stage;
       if (stage === Stage.create) {
         return ResultFactory.Success();
       }
 
       const language: FunctionLanguage =
-        (ctx.answers?.get(QuestionKey.programmingLanguage) as FunctionLanguage) ??
+        (ctx.answers![QuestionKey.programmingLanguage] as FunctionLanguage) ??
         (ctx.configOfOtherPlugins
           .get(DependentPluginInfo.solutionPluginName)
           ?.get(DependentPluginInfo.programmingLanguage) as FunctionLanguage);
@@ -212,13 +212,38 @@ export class FunctionPluginImpl {
     return ResultFactory.Success();
   }
 
-  public getQuestions(stage: Stage, ctx: PluginContext): Result<QTreeNode | undefined, FxError> {
+  public getQuestionsForUserTask(func: Func, ctx: PluginContext): Result<QTreeNode | undefined, FxError> {
     const res = new QTreeNode({
-      type: NodeType.group,
+      type: "group",
     });
 
-    if (stage === Stage.update) {
-      res.addChild(functionNameQuestion);
+    if (func.method === "addResource") {
+      functionNameQuestion.validation = {
+        validFunc: async(input: string, previousInputs?: Inputs) : Promise<string | undefined> => {
+          const workingPath: string = this.getFunctionProjectRootPath(ctx);
+          const name = input as string;
+          if (!name || !RegularExpr.validFunctionNamePattern.test(name)) {
+            return ErrorMessages.invalidFunctionName;
+          }
+
+          const stage: Stage | undefined = ctx.answers![QuestionKey.stage] as Stage;
+          if (stage === Stage.create) {
+            return undefined;
+          }
+
+          const language: FunctionLanguage =
+            (ctx.answers![QuestionKey.programmingLanguage] as FunctionLanguage) ??
+            (ctx.configOfOtherPlugins
+              .get(DependentPluginInfo.solutionPluginName)
+              ?.get(DependentPluginInfo.programmingLanguage) as FunctionLanguage);
+
+          // If language is unknown, skip checking and let scaffold handle the error.
+          if (language && (await FunctionScaffold.doesFunctionPathExist(workingPath, language, name))) {
+            return ErrorMessages.functionAlreadyExists;
+          }
+        }
+      };
+      res.addChild(new QTreeNode(functionNameQuestion));
     }
 
     return ResultFactory.Success(res);
@@ -234,7 +259,7 @@ export class FunctionPluginImpl {
     );
 
     const name: string =
-      (ctx.answers?.get(QuestionKey.functionName) as string) ?? DefaultValues.functionName;
+      (ctx.answers![QuestionKey.functionName] as string) ?? DefaultValues.functionName;
     if (await FunctionScaffold.doesFunctionPathExist(workingPath, functionLanguage, name)) {
       throw new FunctionNameConflictError();
     }
@@ -559,8 +584,8 @@ export class FunctionPluginImpl {
 
     const updated: boolean = await FunctionDeploy.hasUpdatedContent(workingPath, functionLanguage);
     if (!updated) {
-      Logger.info(InfoMessages.skipDeployment);
-      DialogUtils.show(ctx, InfoMessages.skipDeployment);
+      Logger.info(InfoMessages.noChange);
+      DialogUtils.show(ctx, InfoMessages.noChange);
       this.config.skipDeploy = true;
       return ResultFactory.Success();
     }
@@ -585,6 +610,7 @@ export class FunctionPluginImpl {
 
   public async deploy(ctx: PluginContext): Promise<FxResult> {
     if (this.config.skipDeploy) {
+      Logger.info(InfoMessages.skipDeployment);
       return ResultFactory.Success();
     }
 
@@ -801,7 +827,7 @@ export class FunctionPluginImpl {
 
   private async handleDotnetChecker(ctx: PluginContext): Promise<void> {
     try {
-      const telemetry = new FuncPluginTelemetry(ctx);
+      const telemetry = new FuncPluginTelemetry();
       const funcPluginAdapter = new FuncPluginAdapter(ctx, telemetry);
       await step(StepGroup.PreDeployStepGroup, PreDeploySteps.dotnetInstall, async () => {
         const dotnetChecker = new DotnetChecker(
@@ -860,7 +886,7 @@ export class FunctionPluginImpl {
             await FunctionDeploy.installFuncExtensions(ctx, workingPath, functionLanguage);
           } catch (error) {
             // wrap the original error to UserError so the extensibility model will pop-up a dialog correctly
-            const telemetry = new FuncPluginTelemetry(ctx);
+            const telemetry = new FuncPluginTelemetry();
             new FuncPluginAdapter(ctx, telemetry).handleDotnetError(error);
           }
         })

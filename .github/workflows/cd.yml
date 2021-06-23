@@ -28,7 +28,7 @@ jobs:
 
     steps:
       - name: Validate inputs
-        if: ${{ github.event_name == 'workflow_dispatch' && ((github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/main') || (github.ref == 'refs/heads/dev' && (!startsWith(github.event.inputs.version, 'pre') || github.event.inputs.preid != 'alpha')) || (github.ref == 'refs/heads/main' && startsWith(github.event.inputs.version, 'pre') && github.event.inputs.preid != 'rc') || (github.ref == 'ref/heads/dev' && github.event.inputs.conventional-commits == 'yes') || (github.ref == 'ref/heads/main' && github.event.inputs.conventional-commits == 'yes' && !(github.event.inputs.preid == 'rc' || github.event.inputs.preid == 'stable'))) }}
+        if: ${{ github.event_name == 'workflow_dispatch' && ((github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/main') || (github.ref == 'refs/heads/dev' && (!startsWith(github.event.inputs.version, 'pre') || github.event.inputs.preid != 'alpha')) || (github.ref == 'refs/heads/main' && startsWith(github.event.inputs.version, 'pre') && github.event.inputs.preid != 'rc') || (github.ref == 'refs/heads/dev' && github.event.inputs.conventional-commits == 'yes') || (github.ref == 'refs/heads/main' && github.event.inputs.conventional-commits == 'yes' && !(github.event.inputs.preid == 'rc' || github.event.inputs.preid == 'stable'))) }}
         run: |
           exit 1
 
@@ -118,7 +118,7 @@ jobs:
           npx lerna publish --conventional-prerelease --preid=rc --yes
 
       - name: release stable npm packages to npmjs.org by conventional-commits
-        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'ref/heads/main' && github.event.inputs.conventional-commits == 'yes' && github.event.inputs.preid == 'stable'}}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.conventional-commits == 'yes' && github.event.inputs.preid == 'stable'}}
         run: |
           npx lerna publish --conventional-graduate --yes
 

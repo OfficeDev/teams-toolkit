@@ -144,7 +144,7 @@ export type SelectFileResult = InputResult<string>;
 
 export type SelectFilesResult = InputResult<string[]>;
 
-export type SelectFolderResult = InputResult<string>; 
+export type SelectFolderResult = InputResult<string>;
 
 /**
  * Definition of a runnable task
@@ -157,11 +157,11 @@ export interface RunnableTask<T> {
   /**
    * current progress
    */
-  current?:number;
+  current?: number;
   /**
    * total progress
    */
-  readonly total?:number;
+  readonly total?: number;
   /**
    * status message
    */
@@ -170,7 +170,7 @@ export interface RunnableTask<T> {
    * a function that realy implements the running of the task
    * @param args args
    */
-  run(...args: any): Promise<Result<T,FxError>>;
+  run(...args: any): Promise<Result<T, FxError>>;
   /**
    * a function that implements the cancalling of the task
    */
@@ -183,26 +183,26 @@ export interface RunnableTask<T> {
 /**
  * task running configuration
  */
-export interface TaskConfig{
+export interface TaskConfig {
   /**
    * whether task can be cancelled or not
    */
-  cancellable?:boolean
+  cancellable?: boolean
   /**
    * whether to show the numeric progress of the task
    */
-  showProgress?:boolean,
+  showProgress?: boolean,
 }
 
 /**
  * task group configuration
  */
-export interface TaskGroupConfig{
+export interface TaskGroupConfig {
   /**
    * if true, the tasks in the group are running in paralel
    * if false, the tasks are running in sequence.
    */
-  sequential ?: boolean,
+  sequential?: boolean,
   /**
    * whether to terminate all tasks if some task is failed or canceled
    */
@@ -219,49 +219,49 @@ export interface UserInteraction {
    * @returns A promise that resolves to the single select result wrapper or FxError
    * @throws FxError
    */
-  selectOption: (config: SingleSelectConfig) => Promise<Result<SingleSelectResult,FxError>>;
+  selectOption: (config: SingleSelectConfig) => Promise<Result<SingleSelectResult, FxError>>;
   /**
    * Shows a multiple selection list
    * @param config multiple selection config
    * @returns A promise that resolves to the multiple select result wrapper or FxError
    * @throws FxError
    */
-  selectOptions: (config: MultiSelectConfig) => Promise<Result<MultiSelectResult,FxError>>;
+  selectOptions: (config: MultiSelectConfig) => Promise<Result<MultiSelectResult, FxError>>;
   /**
    * Opens an input box to ask the user for input.
    * @param config text input config
    * @returns A promise that resolves to the text input result wrapper or FxError
    * @throws FxError
    */
-  inputText: (config: InputTextConfig) => Promise<Result<InputTextResult,FxError>>;
+  inputText: (config: InputTextConfig) => Promise<Result<InputTextResult, FxError>>;
   /**
    * Shows a file open dialog to the user which allows to select a single file
    * @param config file selector config
    * @returns A promise that resolves to the file selector result wrapper or FxError
    * @throws FxError
    */
-  selectFile: (config: SelectFileConfig) => Promise<Result<SelectFileResult,FxError>>;
+  selectFile: (config: SelectFileConfig) => Promise<Result<SelectFileResult, FxError>>;
   /**
    * Shows a file open dialog to the user which allows to select multiple files
    * @param config multiple files selector config
    * @returns A promise that resolves to the multiple files selector result wrapper or FxError
    * @throws FxError
    */
-  selectFiles: (config: SelectFilesConfig) => Promise<Result<SelectFilesResult,FxError>>;
+  selectFiles: (config: SelectFilesConfig) => Promise<Result<SelectFilesResult, FxError>>;
   /**
    * Shows a file open dialog to the user which allows to select a folder
    * @param config folder selector config
    * @returns A promise that resolves to the folder selector result wrapper or FxError
    * @throws FxError
    */
-  selectFolder: (config: SelectFolderConfig) => Promise<Result<SelectFolderResult,FxError>>;
-   
+  selectFolder: (config: SelectFolderConfig) => Promise<Result<SelectFolderResult, FxError>>;
+
   /**
    * Opens a link externally in the browser. 
    * @param link The uri that should be opened.
    * @returns A promise indicating if open was successful.
    */
-  openUrl(link: string): Promise<Result<boolean,FxError>>;
+  openUrl(link: string): Promise<Result<boolean, FxError>>;
   /**
    * Show an information/warnning/error message to users. Optionally provide an array of items which will be presented as clickable buttons.
    * @param level message level
@@ -274,8 +274,8 @@ export interface UserInteraction {
     message: string,
     modal: boolean,
     ...items: string[]
-  ): Promise<Result<string|undefined,FxError>>;
-  
+  ): Promise<Result<string | undefined, FxError>>;
+
   /**
    * Show an information/warnning/error message with different colors to users, which only works for CLI.  
    * @param level message level
@@ -285,10 +285,10 @@ export interface UserInteraction {
    */
   showMessage(
     level: "info" | "warn" | "error",
-    message: Array<{content: string, color: Colors}>,
+    message: Array<{ content: string, color: Colors }>,
     modal: boolean,
     ...items: string[]
-  ): Promise<Result<string|undefined,FxError>>;
+  ): Promise<Result<string | undefined, FxError>>;
 
   /**
    * A function to run a task with progress bar. (CLI and VS Code has different UI experience for progress bar)
@@ -297,26 +297,26 @@ export interface UserInteraction {
    * @param args args for task run() API
    * @returns A promise that resolves the wrapper of task running result or FxError
    */
-  runWithProgress<T>(task: RunnableTask<T>, config: TaskConfig, ...args:any): Promise<Result<T,FxError>>;
+  runWithProgress<T>(task: RunnableTask<T>, config: TaskConfig, ...args: any): Promise<Result<T, FxError>>;
 }
 
 /**
  * An implementation of task group that will define the progress when all tasks are running
  */
 export class GroupOfTasks<T> implements RunnableTask<Result<T, FxError>[]> {
-  name?:string;
-  current:number = 0;
-  readonly total:number;
+  name?: string;
+  current: number = 0;
+  readonly total: number;
   isCanceled = false;
-  tasks: RunnableTask<T>[]; 
+  tasks: RunnableTask<T>[];
   config?: TaskGroupConfig;
-  message?:string;
-  constructor(tasks:RunnableTask<T>[], config?: TaskGroupConfig) {
+  message?: string;
+  constructor(tasks: RunnableTask<T>[], config?: TaskGroupConfig) {
     this.tasks = tasks;
     this.config = config;
     this.total = this.tasks.length;
   }
-  async run(...args:any): Promise<Result<Result<T, FxError>[], FxError>> {
+  async run(...args: any): Promise<Result<Result<T, FxError>[], FxError>> {
     if (this.tasks.length === 0) return ok([]);
     return new Promise(async (resolve) => {
       let results: Result<T, FxError>[] = [];
@@ -325,13 +325,12 @@ export class GroupOfTasks<T> implements RunnableTask<Result<T, FxError>[]> {
       if (isSeq) {
         this.current = 0;
         for (let i = 0; i < this.tasks.length; ++i) {
-          if (this.isCanceled === true) 
-          {
+          if (this.isCanceled === true) {
             resolve(err(UserCancelError));
-            return ;
-          }  
+            return;
+          }
           const task = this.tasks[i];
-          if(task.name){
+          if (task.name) {
             this.message = task.name;
           }
           try {
@@ -339,17 +338,17 @@ export class GroupOfTasks<T> implements RunnableTask<Result<T, FxError>[]> {
             if (taskRes.isErr() && isFastFail) {
               this.isCanceled = true;
               resolve(err(taskRes.error));
-              return ;
+              return;
             }
             results.push(taskRes);
           } catch (e) {
             if (isFastFail) {
               this.isCanceled = true;
               resolve(err(e));
-              return ;
+              return;
             }
             results.push(err(e));
-          } finally{
+          } finally {
             this.current = i + 1;
           }
         }
@@ -357,18 +356,18 @@ export class GroupOfTasks<T> implements RunnableTask<Result<T, FxError>[]> {
         let promiseResults = this.tasks.map((t) => t.run(args));
         promiseResults.forEach((p) => {
           p.then((v) => {
-            this.current ++;
+            this.current++;
             if (v.isErr() && isFastFail) {
               this.isCanceled = true;
               resolve(err(v.error));
-              return ;
+              return;
             }
           }).catch((e) => {
-            this.current ++;
+            this.current++;
             if (isFastFail) {
               this.isCanceled = true;
               resolve(err(e));
-              return ;
+              return;
             }
           });
         });
@@ -379,8 +378,8 @@ export class GroupOfTasks<T> implements RunnableTask<Result<T, FxError>[]> {
   }
 
   cancel() {
-    for(const task of this.tasks)
-      if(task.cancel)
+    for (const task of this.tasks)
+      if (task.cancel)
         task.cancel();
     this.isCanceled = true;
   }

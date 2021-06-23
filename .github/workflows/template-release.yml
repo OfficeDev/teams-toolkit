@@ -1,7 +1,7 @@
 name: Templates Release
 
 on:
-  push:
+  create:
     tags:
     - templates@*
 

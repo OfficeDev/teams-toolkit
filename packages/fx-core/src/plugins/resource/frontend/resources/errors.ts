@@ -37,14 +37,22 @@ export class FrontendPluginError extends Error {
   public message: string;
   public suggestions: string[];
   public errorType: ErrorType;
+  public helpLink?: string;
   public innerError?: Error;
 
-  constructor(errorType: ErrorType, code: string, message: string, suggestions: string[]) {
+  constructor(
+    errorType: ErrorType,
+    code: string,
+    message: string,
+    suggestions: string[],
+    helpLink?: string
+  ) {
     super(message);
     this.code = code;
     this.message = message;
     this.suggestions = suggestions;
     this.errorType = errorType;
+    this.helpLink = helpLink;
   }
 
   getMessage(): string {

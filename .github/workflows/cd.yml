@@ -28,7 +28,7 @@ jobs:
 
     steps:
       - name: Validate inputs
-        if: ${{ github.event_name == 'workflow_dispatch' && ((github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/main') || (github.ref == 'refs/heads/dev' && (!startsWith(github.event.inputs.version, 'pre') || github.event.inputs.preid != 'alpha')) || (github.ref == 'refs/heads/main' && startsWith(github.event.inputs.version, 'pre') && github.event.inputs.preid != 'rc') || (github.ref == 'ref/heads/dev' && github.event.input.conventional-commits == 'yes') || (github.ref == 'ref/heads/main' && github.event.input.conventional-commits == 'yes' && !(github.event.input.preid == 'rc' || github.event.input.preid == 'stable'))) }}
+        if: ${{ github.event_name == 'workflow_dispatch' && ((github.ref != 'refs/heads/dev' && github.ref != 'refs/heads/main') || (github.ref == 'refs/heads/dev' && (!startsWith(github.event.inputs.version, 'pre') || github.event.inputs.preid != 'alpha')) || (github.ref == 'refs/heads/main' && startsWith(github.event.inputs.version, 'pre') && github.event.inputs.preid != 'rc') || (github.ref == 'ref/heads/dev' && github.event.inputs.conventional-commits == 'yes') || (github.ref == 'ref/heads/main' && github.event.inputs.conventional-commits == 'yes' && !(github.event.inputs.preid == 'rc' || github.event.inputs.preid == 'stable'))) }}
         run: |
           exit 1
 
@@ -103,22 +103,22 @@ jobs:
           npx lerna publish --no-private --preid=alpha.$(git rev-parse --short HEAD) --dist-tag=alpha prerelease --no-git-tag-version --no-changelog --no-push --no-git-reset --yes --allow-branch dev
 
       - name: release rc npm packages to npmjs.org
-        if: ${{ github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.version, 'pre') && github.events.inputs.conventional-commits == 'no'}}
+        if: ${{ github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.version, 'pre') && github.event.inputs.conventional-commits == 'no'}}
         run: |
           npx lerna publish --no-private --preid=${{ github.event.inputs.preid }} --dist-tag=${{ github.event.inputs.preid }} ${{ github.event.inputs.version }} --yes ${{ github.event.inputs.force }}
 
       - name: release stable npm packages to npmjs.org
-        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && !startsWith(github.event.inputs.version, 'pre') && github.events.inputs.conventional-commits == 'no'}}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && !startsWith(github.event.inputs.version, 'pre') && github.event.inputs.conventional-commits == 'no'}}
         run: |
           npx lerna publish --no-private --dist-tag=latest ${{ github.event.inputs.version }} --yes ${{ github.event.inputs.force }}
 
       - name: release rc npm packages to npmjs.org by conventional-commits
-        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.events.inputs.conventional-commits == 'yes' && github.events.inputs.preid == 'rc'}}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.conventional-commits == 'yes' && github.event.inputs.preid == 'rc'}}
         run: |
           npx lerna publish --conventional-prerelease --preid=rc --yes
 
       - name: release stable npm packages to npmjs.org by conventional-commits
-        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'ref/heads/main' && github.events.inputs.conventional-commits == 'yes' && github.events.inputs.preid == 'stable'}}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'ref/heads/main' && github.event.inputs.conventional-commits == 'yes' && github.event.inputs.preid == 'stable'}}
         run: |
           npx lerna publish --conventional-graduate --yes
 

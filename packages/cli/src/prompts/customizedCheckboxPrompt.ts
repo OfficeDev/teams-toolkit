@@ -8,6 +8,8 @@ import inquirer from "inquirer";
 import { Interface as ReadlineInterface } from "readline";
 import CheckboxPrompt from "inquirer/lib/prompts/checkbox";
 
+import { addChoiceDetail } from "./utils";
+
 /**
  * The question-options for the `ChoicePrompt<T>`.
  */
@@ -90,6 +92,10 @@ export default class CustomizedCheckboxPrompt extends CheckboxPrompt {
 function renderChoices(choices: any, pointer: number): string {
   let output = '';
   let separatorOffset = 0;
+  let prefixWidth = 1;
+  choices.forEach((choice: any) => {
+    prefixWidth = Math.max(prefixWidth, choice.disabled ? 0 : choice.name.length + 1);
+  });
 
   choices.forEach((choice: any, i: number) => {
     if (choice.type === 'separator') {
@@ -103,11 +109,14 @@ function renderChoices(choices: any, pointer: number): string {
       output += ' - ' + choice.name;
       output += ' (' + (lodash.isString(choice.disabled) ? choice.disabled : 'Disabled') + ')';
     } else {
-      const line = getCheckbox(choice.checked) + ' ' + choice.name;
       if (i - separatorOffset === pointer) {
-        output += chalk.blueBright(line);
+        output += getCheckbox(choice.checked) + " " + chalk.blueBright(choice.name);
       } else {
-        output += line;
+        output += getCheckbox(choice.checked) + " " + chalk.whiteBright(choice.name);
+      }
+
+      if (choice.extra?.detail) {
+        output = addChoiceDetail(output, choice.extra.detail, choice.name.length, prefixWidth);
       }
     }
 

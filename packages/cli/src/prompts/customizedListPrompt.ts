@@ -8,6 +8,8 @@ import inquirer from "inquirer";
 import { Interface as ReadlineInterface } from "readline";
 import ListPrompt from "inquirer/lib/prompts/list";
 
+import { addChoiceDetail, white } from "./utils";
+
 /**
  * The question-options for the `ListPrompt<T>`.
  */
@@ -27,7 +29,7 @@ export default class CustomizedListPrompt extends ListPrompt {
     let message = this.getQuestion();
 
     if (this.firstRender) {
-      message += chalk.dim('(Use arrow keys)');
+      message += white('(Use arrow keys)');
     }
 
     // Render choices or answer depending on the state
@@ -77,6 +79,10 @@ export default class CustomizedListPrompt extends ListPrompt {
 function listRender(choices: any, pointer: number): string {
   let output = '';
   let separatorOffset = 0;
+  let prefixWidth = 1;
+  choices.forEach((choice: any) => {
+    prefixWidth = Math.max(prefixWidth, choice.disabled ? 0 : choice.name.length + 1);
+  });
 
   choices.forEach((choice: any, i: number) => {
     if (choice.type === 'separator') {
@@ -97,7 +103,11 @@ function listRender(choices: any, pointer: number): string {
     if (isSelected) {
       output += chalk.blueBright(figures.radioOn + " " + choice.name);
     } else {
-      output += chalk.blueBright(figures.radioOff) + " " + choice.name;
+      output += chalk.blueBright(figures.radioOff) + " " + chalk.whiteBright(choice.name);
+    }
+
+    if (choice.extra?.detail) {
+      output = addChoiceDetail(output, choice.extra.detail, choice.name.length, prefixWidth);
     }
 
     output += '\n';

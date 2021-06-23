@@ -46,9 +46,19 @@ export interface StringArrayValidation extends StaticValidation {
 * The validation is checked by a validFunc provided by user
 */
 export interface FuncValidation<T extends string|string[]|undefined> {
+  /**
+   * A function that will be called to validate input and to give a hint to the user.
+   *
+   * @param input The current value of the input to be validated.
+   * @return A human-readable string which is presented as diagnostic message.
+   * Return `undefined` when 'value' is valid.
+   */
   validFunc: (input: T, previousInputs?: Inputs) => string | undefined|Promise<string | undefined>;
 }
 
+/**
+ * Definition of validation schema
+ */
 export type ValidationSchema =
   | StringValidation
   | StringArrayValidation
